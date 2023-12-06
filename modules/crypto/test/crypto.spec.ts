@@ -34,8 +34,7 @@ const TEST_CASES = [
     title: 'binary data (repeated)',
     data: repeatedData,
     digests: {
-      sha256: 'SnGMX2AgkPh21d2sxow8phQa8lh8rjf2Vc7GFCIwj2g='
-      // 'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s=',
+      sha256: 'bSCTuOJei5XsmAnqtmm2Aw/2EvUHldNdAxYb3mjSK9s='
     }
   }
 ];
