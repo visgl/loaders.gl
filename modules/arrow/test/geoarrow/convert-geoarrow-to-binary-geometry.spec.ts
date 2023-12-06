@@ -6,7 +6,7 @@ import test, {Test} from 'tape-promise/tape';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 import {load} from '@loaders.gl/core';
 import {
-  BINARY_GEOMETRY_TEMPLATE,
+  getBinaryGeometryTemplate,
   ArrowLoader,
   getBinaryGeometriesFromArrow,
   serializeArrowSchema
@@ -27,7 +27,7 @@ const expectedPointBinaryGeometry = {
     {
       shape: 'binary-feature-collection',
       points: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Point',
         globalFeatureIds: {value: new Uint32Array([0, 1]), size: 1},
         positions: {value: new Float64Array([1, 1, 2, 2]), size: 2},
@@ -35,12 +35,12 @@ const expectedPointBinaryGeometry = {
         featureIds: {value: new Uint32Array([0, 1]), size: 1}
       },
       lines: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'LineString',
         pathIndices: {value: new Uint16Array(0), size: 1}
       },
       polygons: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Polygon',
         polygonIndices: {value: new Uint16Array(0), size: 1},
         primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
@@ -60,7 +60,7 @@ const expectedMultiPointBinaryGeometry = {
     {
       shape: 'binary-feature-collection',
       points: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Point',
         globalFeatureIds: {value: new Uint32Array([0, 0, 1, 1]), size: 1},
         positions: {value: new Float64Array([1, 1, 2, 2, 3, 3, 4, 4]), size: 2},
@@ -68,12 +68,12 @@ const expectedMultiPointBinaryGeometry = {
         featureIds: {value: new Uint32Array([0, 0, 1, 1]), size: 1}
       },
       lines: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'LineString',
         pathIndices: {value: new Uint16Array(0), size: 1}
       },
       polygons: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Polygon',
         polygonIndices: {value: new Uint16Array(0), size: 1},
         primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
@@ -93,11 +93,11 @@ const expectedLineBinaryGeometry = {
     {
       shape: 'binary-feature-collection',
       points: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Point'
       },
       lines: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'LineString',
         globalFeatureIds: {value: new Uint32Array([0, 0, 1, 1]), size: 1},
         positions: {value: new Float64Array([0, 0, 1, 1, 2, 2, 3, 3]), size: 2},
@@ -106,7 +106,7 @@ const expectedLineBinaryGeometry = {
         pathIndices: {value: new Int32Array([0, 2, 4]), size: 1}
       },
       polygons: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Polygon',
         polygonIndices: {value: new Uint16Array(0), size: 1},
         primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
@@ -126,11 +126,11 @@ const expectedMultiLineBinaryGeometry = {
     {
       shape: 'binary-feature-collection',
       points: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Point'
       },
       lines: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'LineString',
         globalFeatureIds: {value: new Uint32Array([0, 0, 0, 0, 1, 1, 1, 1]), size: 1},
         positions: {
@@ -142,7 +142,7 @@ const expectedMultiLineBinaryGeometry = {
         pathIndices: {value: new Int32Array([0, 2, 4, 6, 8]), size: 1}
       },
       polygons: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Polygon',
         polygonIndices: {value: new Uint16Array(0), size: 1},
         primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
@@ -162,16 +162,16 @@ const expectedPolygonBinaryGeometry = {
     {
       shape: 'binary-feature-collection',
       points: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Point'
       },
       lines: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'LineString',
         pathIndices: {value: new Uint16Array(0), size: 1}
       },
       polygons: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Polygon',
         globalFeatureIds: {
           value: new Uint32Array([0, 0, 0, 0, 0, 1, 1, 1, 1, 1]),
@@ -204,16 +204,16 @@ const expectedMultiPolygonBinaryGeometry = {
     {
       shape: 'binary-feature-collection',
       points: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Point'
       },
       lines: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'LineString',
         pathIndices: {value: new Uint16Array(0), size: 1}
       },
       polygons: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Polygon',
         globalFeatureIds: {
           value: new Uint32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
@@ -244,16 +244,16 @@ const expectedMultiPolygonHolesBinaryGeometry = {
     {
       shape: 'binary-feature-collection',
       points: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Point'
       },
       lines: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'LineString',
         pathIndices: {value: new Uint16Array(0), size: 1}
       },
       polygons: {
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         type: 'Polygon',
         globalFeatureIds: {
           value: new Uint32Array([

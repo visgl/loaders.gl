@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/gltf",
-  "version": "4.0.4",
+  "version": "4.1.0-alpha.1",
   "description": "Framework-independent loader for the glTF format",
   "license": "MIT",
   "type": "module",
@@ -42,10 +42,10 @@
     "build-bundle": "ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/draco": "4.0.4",
-    "@loaders.gl/images": "4.0.4",
-    "@loaders.gl/loader-utils": "4.0.4",
-    "@loaders.gl/textures": "4.0.4",
+    "@loaders.gl/draco": "4.1.0-alpha.1",
+    "@loaders.gl/images": "4.1.0-alpha.1",
+    "@loaders.gl/loader-utils": "4.1.0-alpha.1",
+    "@loaders.gl/textures": "4.1.0-alpha.1",
     "@math.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
