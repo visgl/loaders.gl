@@ -32,7 +32,7 @@ const GEOARROW_COLUMN_METADATA_METADATA = 'ARROW:extension:metadata';
 export type GeoArrowMetadata = {
   encoding?: GeoArrowEncoding;
   crs?: Record<string, unknown>;
-  egdes?: 'spherical';
+  edges?: 'spherical';
   [key: string]: unknown;
 };
 

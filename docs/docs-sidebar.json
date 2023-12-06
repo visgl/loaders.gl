@@ -68,6 +68,8 @@
     "label": "Formats",
     "items": [
       "formats/README",
+      "modules/arrow/formats/arrow",
+      "modules/arrow/formats/geoarrow",
       "modules/bson/formats/bson",
       "modules/csv/formats/csv",
       "modules/pcd/formats/pcd",

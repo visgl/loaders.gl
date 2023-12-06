@@ -2352,7 +2352,7 @@
     "@babel/runtime" "^7.12.0"
     "@math.gl/core" "4.0.0"
 
-"@math.gl/polygon@^4.0.0":
+"@math.gl/polygon@4.0.0", "@math.gl/polygon@^4.0.0":
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/@math.gl/polygon/-/polygon-4.0.0.tgz#17d2b1c7569d5a7fd1cde67e885d77e5742c23ec"
   integrity sha512-BsseetloYtSZkphH5Fqn02uCL9UWsD26DNLfGhvd2farhU9BaJnn0JGuZnRWT/rf+glZZcDJkyqHq5pDnSX/BQ==

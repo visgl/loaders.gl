@@ -37,7 +37,7 @@ type PropTypes = React.PropsWithChildren<{
   }) => void;
 }>;
 
-export default class ControlPanel extends PureComponent<PropTypes> {
+export class ControlPanel extends PureComponent<PropTypes> {
   static defaultProps: PropTypes = {
     examples: {},
     droppedFile: null,

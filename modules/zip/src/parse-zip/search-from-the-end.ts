@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {FileProvider} from '@loaders.gl/loader-utils';
 
 /** Description of zip signature type */

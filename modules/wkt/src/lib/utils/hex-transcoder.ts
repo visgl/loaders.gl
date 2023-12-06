@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // Forked from https://github.com/jessetane/hex-transcoder under MIT license
 
 const alphabet = '0123456789abcdef';

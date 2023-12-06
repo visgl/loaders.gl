@@ -35,7 +35,7 @@ if (requestToken) {
 - `throttleRequests`?: boolean;
 - `maxRequests`?: number;
 
-### scheduleRequest(handle: any, getPriority?: () => number): Promise<{done: () => any)}>;
+### `scheduleRequest(handle: any, getPriority?: () => number): Promise<{done: () => any)}>`
 
 Called by an application that wants to issue a request, without having it deeply queued by the browser
 

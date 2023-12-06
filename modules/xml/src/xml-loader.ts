@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ParseXMLOptions} from './lib/parsers/parse-xml';
 import {parseXMLSync} from './lib/parsers/parse-xml';

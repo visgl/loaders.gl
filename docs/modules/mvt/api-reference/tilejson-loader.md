@@ -1,6 +1,10 @@
-# PMTilesLoader
+# TileJSONLoader
 
-The `PMTilesLoader` parses header/metadata from a pmtiles archive
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
+</p>
+
+The `TileJSONLoader` parses header/metadata from a pmtiles archive
 
 | Loader                | Characteristic                                     |
 | --------------------- | -------------------------------------------------- |

@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 export function checkCompressedTexture(t, imageData, testCase) {
   t.ok(imageData instanceof Array);
   t.ok(imageData.length > 0);

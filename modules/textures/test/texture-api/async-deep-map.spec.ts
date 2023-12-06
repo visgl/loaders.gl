@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {asyncDeepMap} from '../../src/lib/texture-api/async-deep-map';
 

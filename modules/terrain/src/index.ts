@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {parseFromContext} from '@loaders.gl/loader-utils';
 import {parseQuantizedMesh} from './lib/parse-quantized-mesh';

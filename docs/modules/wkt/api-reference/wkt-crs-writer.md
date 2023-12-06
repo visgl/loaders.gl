@@ -1,10 +1,10 @@
 # WKTCRSWriter 🆕 🚧
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
-
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
 </p>
+
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 Writes WKT-CRS ([Well-known text representation of coordinate reference systems](../formats/wkt-crs)).
 

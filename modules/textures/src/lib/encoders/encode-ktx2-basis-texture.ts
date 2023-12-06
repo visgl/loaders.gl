@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {ImageDataType} from '@loaders.gl/images';
 import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
 

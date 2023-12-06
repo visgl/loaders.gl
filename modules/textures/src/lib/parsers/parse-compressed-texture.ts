@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {TextureLevel} from '@loaders.gl/schema';
 import {isKTX, parseKTX} from './parse-ktx';
 import {isDDS, parseDDS} from './parse-dds';

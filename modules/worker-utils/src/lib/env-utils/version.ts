@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // Version constant cannot be imported, it needs to correspond to the build version of **this** module.
 
 /**

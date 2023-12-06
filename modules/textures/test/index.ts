@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import './utils/format-utils.spec';
 
 import './texture-api/async-deep-map.spec';

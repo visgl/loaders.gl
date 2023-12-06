@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {WorkerObject} from './types';
 import {VERSION} from './lib/env-utils/version';
 
@@ -25,6 +28,8 @@ export {default as WorkerFarm} from './lib/worker-farm/worker-farm';
 export {default as WorkerPool} from './lib/worker-farm/worker-pool';
 export {default as WorkerBody} from './lib/worker-farm/worker-body';
 
+// PROCESS ON WORKER
+export type {ProcessOnWorkerOptions} from './lib/worker-api/process-on-worker';
 export {processOnWorker, canProcessOnWorker} from './lib/worker-api/process-on-worker';
 export {createWorker} from './lib/worker-api/create-worker';
 

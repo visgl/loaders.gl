@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {validateWorkerVersion} from '../../../src/lib/worker-api/validate-worker-version';
 
