@@ -84,6 +84,12 @@ function getRefine(refine?: string): TILE_REFINEMENT | string | undefined {
 }
 
 function resolveUri(uri: string = '', basePath: string): string {
+  if (uri === '') {
+    // if there's no URI we don't want to make a request to just the basePath
+    // and the URI may not exist if we're dealing with a sparse implicit tileset
+    return '';
+  }
+
   // url scheme per RFC3986
   const urlSchemeRegex = /^[a-z][0-9a-z+.-]*:/i;
 
