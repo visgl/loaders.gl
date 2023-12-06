@@ -81,7 +81,7 @@ export class CryptoHash extends Hash {
       hash.update(typedWordArray);
       yield chunk;
     }
-    
+
     // Map our encoding constant to Crypto library
     const enc = encoding === 'base64' ? CryptoJS.enc.Base64 : CryptoJS.enc.Hex;
     const digest = hash.finalize().toString(enc);
