@@ -12,13 +12,9 @@ export class FileHandleFile implements FileProvider {
   /** The FileHandle from which data is provided */
   private file: NodeFile;
 
-  /** The file length in bytes */
-  private size: bigint;
-
   /** Create a new FileHandleFile */
   constructor(path: string, append: boolean = false) {
     this.file = new NodeFile(path, append ? 'a+' : 'r');
-    this.size = this.file.bigsize;
   }
 
   /**
@@ -27,7 +23,6 @@ export class FileHandleFile implements FileProvider {
    */
   async truncate(length: number): Promise<void> {
     await this.file.truncate(length);
-    this.size = (await this.file.stat()).bigsize;
   }
 
   /**
@@ -36,7 +31,6 @@ export class FileHandleFile implements FileProvider {
    */
   async append(buffer: Uint8Array): Promise<void> {
     await this.file.append(buffer);
-    this.size = (await this.file.stat()).bigsize;
   }
 
   /** Close file */
@@ -114,6 +108,6 @@ export class FileHandleFile implements FileProvider {
    * the length (in bytes) of the data.
    */
   get length(): bigint {
-    return this.size;
+    return this.file.bigsize;
   }
 }

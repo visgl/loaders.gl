@@ -36,12 +36,12 @@ export class NodeFileFacade implements ReadableFile, WritableFile {
     throw NOT_IMPLEMENTED;
   }
 
-  /** Truncates the file descriptor. */
+  /** Truncates the file descriptor. Only available on NodeFile. */
   async truncate(length: number): Promise<void> {
     throw NOT_IMPLEMENTED;
   }
 
-  /** Append data to a file. */
+  /** Append data to a file. Only available on NodeFile. */
   async append(data: Uint8Array): Promise<void> {
     throw NOT_IMPLEMENTED;
   }

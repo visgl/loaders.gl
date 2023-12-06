@@ -11,10 +11,16 @@ export class NodeFile implements ReadableFile, WritableFile {
   constructor(path: string, flags: 'r' | 'w' | 'wx' | 'a+', mode?: number) {
     path = resolvePath(path);
     this.handle = fs.openSync(path, flags, mode);
+    this.size = 0;
+    this.bigsize = 0n;
+    this.updateSize();
+    this.url = path;
+  }
+
+  updateSize() {
     const stats = fs.fstatSync(this.handle, {bigint: true});
     this.size = Number(stats.size);
     this.bigsize = stats.size;
-    this.url = path;
   }
 
   async close(): Promise<void> {
@@ -25,13 +31,27 @@ export class NodeFile implements ReadableFile, WritableFile {
 
   async truncate(length: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.ftruncate(this.handle, length, (err) => (err ? reject(err) : resolve()));
+      fs.ftruncate(this.handle, length, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          this.updateSize();
+          resolve();
+        }
+      });
     });
   }
 
   async append(data: Uint8Array): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.appendFile(this.handle, data, (err) => (err ? reject(err) : resolve()));
+      fs.appendFile(this.handle, data, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          this.updateSize();
+          resolve();
+        }
+      });
     });
   }
 
