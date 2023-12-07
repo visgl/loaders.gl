@@ -45,7 +45,7 @@ type BinaryGeometryContent = {
   geomOffset: Int32Array;
   /** Array of geometry indicies: the start index of each geometry */
   geometryIndicies: Uint16Array;
-  /** (Optional) indices of triangels returned from polygon tessellation (Polygon only) */
+  /** (Optional) indices of triangels returned from polygon triangulation (Polygon only) */
   triangles?: Uint32Array;
   /** (Optional) array of mean center of each geometry */
   meanCenters?: Float64Array;
@@ -54,17 +54,21 @@ type BinaryGeometryContent = {
 /**
  * binary geometry template, see deck.gl BinaryGeometry
  */
-export const BINARY_GEOMETRY_TEMPLATE = {
-  globalFeatureIds: {value: new Uint32Array(0), size: 1},
-  positions: {value: new Float32Array(0), size: 2},
-  properties: [],
-  numericProps: {},
-  featureIds: {value: new Uint32Array(0), size: 1}
-};
+export function getBinaryGeometryTemplate() {
+  return {
+    globalFeatureIds: {value: new Uint32Array(0), size: 1},
+    positions: {value: new Float32Array(0), size: 2},
+    properties: [],
+    numericProps: {},
+    featureIds: {value: new Uint32Array(0), size: 1}
+  };
+}
 
 export type BinaryGeometriesFromArrowOptions = {
   /** option to specify which chunk to get binary geometries from, for progressive rendering */
   chunkIndex?: number;
+  /** The offset (beginning index of rows) of input chunk. Used for reconstructing globalFeatureIds in web workers */
+  chunkOffset?: number;
   /** option to get mean centers from geometries, for polygon filtering */
   calculateMeanCenters?: boolean;
   /** option to compute the triangle indices by tesselating polygons */
@@ -90,9 +94,12 @@ export function getBinaryGeometriesFromArrow(
     line: geoEncoding === 'geoarrow.multilinestring' || geoEncoding === 'geoarrow.linestring'
   };
 
-  const chunks = options?.chunkIndex ? [geoColumn.data[options?.chunkIndex]] : geoColumn.data;
+  const chunks =
+    options?.chunkIndex !== undefined && options?.chunkIndex >= 0
+      ? [geoColumn.data[options?.chunkIndex]]
+      : geoColumn.data;
   let bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
-  let globalFeatureIdOffset = 0;
+  let globalFeatureIdOffset = options?.chunkOffset || 0;
   const binaryGeometries: BinaryFeatures[] = [];
 
   chunks.forEach((chunk) => {
@@ -111,6 +118,7 @@ export function getBinaryGeometriesFromArrow(
         size: nDim
       },
       featureIds: {value: featureIds, size: 1},
+      // eslint-disable-next-line no-loop-func
       properties: [...Array(chunk.length).keys()].map((i) => ({
         index: i + globalFeatureIdOffset
       }))
@@ -123,18 +131,18 @@ export function getBinaryGeometriesFromArrow(
       shape: 'binary-feature-collection',
       points: {
         type: 'Point',
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         ...(featureTypes.point ? binaryContent : {})
       },
       lines: {
         type: 'LineString',
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         ...(featureTypes.line ? binaryContent : {}),
         pathIndices: {value: featureTypes.line ? geomOffset : new Uint16Array(0), size: 1}
       },
       polygons: {
         type: 'Polygon',
-        ...BINARY_GEOMETRY_TEMPLATE,
+        ...getBinaryGeometryTemplate(),
         ...(featureTypes.polygon ? binaryContent : {}),
         polygonIndices: {
           // use geomOffset as polygonIndices same as primitivePolygonIndices since we are using earcut to get triangule indices
@@ -281,7 +289,7 @@ function getBinaryGeometriesFromChunk(
  * @param primitivePolygonIndices Indices within positions of the start of each primitive Polygon/ring
  * @param flatCoordinateArray Array of x, y or x, y, z positions
  * @param nDim - number of dimensions per position
- * @returns
+ * @returns triangle indices or null if invalid polygon and earcut fails
  */
 export function getTriangleIndices(
   polygonIndices: Uint16Array,
@@ -306,13 +314,14 @@ export function getTriangleIndices(
         }
         primitiveIndex++;
       }
+      // TODO check if each ring is closed
       const triangleIndices = earcut(
         slicedFlatCoords,
         holeIndices.length > 0 ? holeIndices : undefined,
         nDim
       );
       if (triangleIndices.length === 0) {
-        throw Error('can not tesselate invalid polygon');
+        throw Error('earcut failed e.g. invalid polygon');
       }
       for (let j = 0; j < triangleIndices.length; j++) {
         triangles.push(triangleIndices[j] + startIdx);
@@ -325,9 +334,7 @@ export function getTriangleIndices(
     }
     return trianglesUint32;
   } catch (error) {
-    // TODO - add logging
-    // there is an expection when tesselating invalid polygon, e.g. polygon with self-intersection
-    // return null to skip tesselating
+    // if earcut fails, return null
     return null;
   }
 }
@@ -379,8 +386,8 @@ function getBinaryPolygonsFromChunk(
 
   return {
     featureIds,
-    flatCoordinateArray,
     nDim,
+    flatCoordinateArray,
     geomOffset,
     geometryIndicies,
     ...(options?.triangulate && triangles ? {triangles} : {})
