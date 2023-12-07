@@ -46,12 +46,7 @@ const TEST_CASES = [
   }
 ];
 
-const HASHES = {
-  crc32: () => new CRC32Hash(),
-  crc32c: () => new CRC32CHash(),
-  md5: () => new MD5Hash(),
-  sha256: () => new SHA256Hash({modules})
-};
+const HASHES = [new CRC32Hash(), new CRC32CHash(), new MD5Hash(), new SHA256Hash({modules})];
 
 test('crypto#atomic hashes', async (t) => {
   await loadTestCaseData();
@@ -79,6 +74,7 @@ test('crypto#streaming hashes', async (t) => {
         const Hash = cryptoHash1.constructor;
 
         let hash;
+        // @ts-expect-error
         const cryptoHash = new Hash({
           crypto: {
             onEnd: (result) => {
@@ -130,8 +126,8 @@ test('NodeHash#hash', async (t) => {
 
 // HELPERS
 
-function getHash(algorithm: string) {
-  const hash = HASHES[algorithm]?.();
+function getHash(algorithm) {
+  const hash = HASHES.find((hash_) => hash_.name === algorithm);
   if (!hash) {
     throw new Error(algorithm);
   }
