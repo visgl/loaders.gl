@@ -2,7 +2,8 @@
 // Copyright (c) vis.gl contributors
 
 // Inspired by https://gist.github.com/wqli78/1330293/6d85cc967f32cccfcbad94ae7d088a3dcfc14bd9
-
+// Full crc32 docs: https://www.kernel.org/doc/Documentation/crc32.txt
+// Better JS implementation: https://stackoverflow.com/a/18639999
 /**
  * Calculates the CRC32 checksum of a string.
  */
@@ -24,7 +25,12 @@ export default class CRC32 {
   }
 
   finalize() {
-    this.crc = Math.abs(this.crc ^ -1);
+    // performing final division and making crc unsigned.
+    // The reason why we can't use Math.abs() ther is that 1 in bite representation is 00000000000000000000000000000001
+    // and -1 is 11111111111111111111111111111111. So Math.abs() completely changes the bits there,
+    // but what we need is just make JS count first 1 bit as a part of a number and not the sign marker.
+    // We don't need to change anything else in this bit representation. And that's exactly what >>> does.
+    this.crc = (this.crc ^ -1) >>> 0;
     return this.crc;
   }
 }

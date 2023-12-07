@@ -24,6 +24,13 @@ const TEST_CASES = [
     }
   },
   {
+    title: 'binary data, crc32 negative result case',
+    data: new Uint8Array(100),
+    digests: {
+      crc32: 'mYjGyg=='
+    }
+  },
+  {
     title: 'binary data',
     data: binaryData,
     digests: {
