@@ -47,6 +47,7 @@ export type Writer<DataT = unknown, BatchT = unknown, WriterOptionsT = WriterOpt
   /** Is the input of this loader text */
   text?: boolean;
 
+  /** Default options for this writer */
   options: WriterOptionsT;
   deprecatedOptions?: Record<string, string>;
 };
@@ -59,13 +60,22 @@ export type WriterWithEncoder<
   BatchT = unknown,
   WriterOptionsT = WriterOptions
 > = Writer<DataT, BatchT, WriterOptionsT> & {
-  encode?(data: DataT, options?: WriterOptionsT): Promise<ArrayBuffer>;
+  /** Encode to binary,  asynchronously */
+  encode(data: DataT, options?: WriterOptionsT): Promise<ArrayBuffer>;
+  /** Encode to binary, synchronously */
   encodeSync?(data: DataT, options?: WriterOptionsT): ArrayBuffer;
-
-  encodeText?(table: DataT, options?: WriterOptionsT): Promise<string>;
-  encodeTextSync?(table: DataT, options?: WriterOptionsT): string;
-
+  /** Encode to binary in batches */
   encodeInBatches?(data: AsyncIterable<any>, options?: WriterOptionsT): AsyncIterable<ArrayBuffer>;
+
+  /** Encode to text, asynchronously. For text formats. */
+  encodeText?(table: DataT, options?: WriterOptionsT): Promise<string>;
+  /** Encode to text, synchronously. For text formats. */
+  encodeTextSync?(table: DataT, options?: WriterOptionsT): string;
+  /** Encode to text in batched. For text formats. */
+  encodeTextInBatches?(
+    data: AsyncIterable<any>,
+    options?: WriterOptionsT
+  ): AsyncIterable<ArrayBuffer>;
 
   encodeURLtoURL?: (
     inputUrl: string,

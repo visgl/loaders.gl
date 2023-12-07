@@ -14,7 +14,7 @@ import type {GeoJSONWriterOptions} from '../../geojson-writer';
  */
 // eslint-disable-next-line max-statements
 export async function* encodeTableAsGeojsonInBatches(
-  batchIterator: AsyncIterable<TableBatch>, // | Iterable<TableBatch>,
+  batchIterator: AsyncIterable<TableBatch> | Iterable<TableBatch>, // | Iterable<TableBatch>,
   inputOpts: GeoJSONWriterOptions = {}
 ): AsyncIterable<ArrayBuffer> {
   // @ts-expect-error
