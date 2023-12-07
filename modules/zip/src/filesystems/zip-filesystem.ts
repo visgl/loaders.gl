@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {FileSystem, isBrowser} from '@loaders.gl/loader-utils';
 import {FileProvider, isFileProvider} from '@loaders.gl/loader-utils';
 import {FileHandleFile} from '@loaders.gl/loader-utils';

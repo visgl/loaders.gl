@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {NullWorker} from '@loaders.gl/worker-utils';

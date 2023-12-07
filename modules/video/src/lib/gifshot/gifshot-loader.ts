@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // @ts-nocheck
 import {loadLibrary} from '@loaders.gl/worker-utils';
 

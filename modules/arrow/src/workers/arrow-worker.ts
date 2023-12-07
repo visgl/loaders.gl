@@ -2,6 +2,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {ArrowLoader} from '../index';
+import {ArrowLoader} from '../arrow-loader';
 
 createLoaderWorker(ArrowLoader);

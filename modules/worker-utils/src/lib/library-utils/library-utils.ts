@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* global importScripts */
 import {isBrowser, isWorker} from '../env-utils/globals';
 import * as node from '../node/require-utils.node';

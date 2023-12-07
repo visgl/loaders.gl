@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {GPUTextureFormat} from '@loaders.gl/schema';
 
 const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];

@@ -1,6 +1,6 @@
 import React, {PureComponent} from 'react';
 import styled from 'styled-components';
-import ParsedFile from './parsed-file';
+import {ParsedFile} from './parsed-file';
 
 const Container = styled.div`
   display: flex;
@@ -32,7 +32,7 @@ type FileUploaderState = {
   uploadedFile: File | null;
 }
 
-export default class FileUploader extends PureComponent<FileUploaderProps, FileUploaderState> {
+export class FileUploader extends PureComponent<FileUploaderProps, FileUploaderState> {
   constructor(props) {
     super(props);
 

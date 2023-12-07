@@ -1,8 +1,7 @@
 # TWKBLoader 🆕 🚧
 
-
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" />
+  <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
 </p>
 
 Loader for the [Well-known binary][wkb] format for representation of geometry.

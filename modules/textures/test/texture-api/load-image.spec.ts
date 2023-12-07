@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {loadImageTexture, loadImageTextureArray, loadImageTextureCube} from '@loaders.gl/textures';
 import {isImage} from '@loaders.gl/images';

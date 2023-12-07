@@ -13,7 +13,7 @@ Over the years, a number of different JavaScript APIs have emerged. Depending on
 
 loaders.gl standardizes on the `fetch()` API. The result of a `fetch` operation is a `Response` object which can be passed to many loaders.gl functions, meaning that the application can call `fetch()` itself to fully control the requests.
 
-:::information
+:::info
 The `fetch()` API emerged in browsers, but is now also supported natively on Node, starting with Node.js v18.
 For older Node.js versions, `@loaders.gl/polyfills` installs polyfills of `fetch`, `Response` and `Headers` classes.
 :::

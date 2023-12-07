@@ -62,8 +62,10 @@ test('ArrowLoader#parseSync(simple.arrow) type="object-row-table"', async (t) =>
 // https://github.com/apache/arrow/blob/f1d2fc92f9d898fc067d46a0d032d9b117a2d7fc/js/src/ipc/metadata/message.ts#L389
 test.skip('ArrowLoader#parseSync(dictionary.arrow)', async (t) => {
   const columnarTable = await parse(fetchFile(ARROW_DICTIONARY), ArrowLoader);
-  // Check loader specific results
-  t.ok(columnarTable.data['example-csv'], 'example-csv loaded');
+  t.equal(columnarTable.shape, 'columnar-table');
+  if (columnarTable.shape === 'columnar-table') {
+    t.ok(columnarTable.data['example-csv'], 'example-csv loaded');
+  }
   t.end();
 });
 

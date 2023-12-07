@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase */
 export const GL_EXTENSIONS_CONSTANTS = {
   // WEBGL_compressed_texture_s3tc

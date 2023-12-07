@@ -48,7 +48,7 @@ The following fields will be supplied as named parameters to the `getUrl` functi
 
 Note: In addition to these values, all `options` passed in to `loadImageCube` are also available in the `getUrl` method.
 
-### loadImageCube(getUrl : ({face, direction, index}) => String, options? : Object) : Object
+### loadImageCube(getUrl : `({face, direction, index}) => String`, options? : Object) : Object
 
 Loads and image cube, i.e. 6 images keyed by WebGL face constants (see table).
 

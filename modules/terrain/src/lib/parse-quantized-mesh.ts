@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {Mesh, getMeshBoundingBox} from '@loaders.gl/schema';
 import decode, {DECODING_STEPS} from './decode-quantized-mesh';
 import {addSkirt} from './helpers/skirt';

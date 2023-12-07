@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // eslint-disable-next-line import/no-unresolved
 import type {Store} from 'zarr/types/storage/types';
 import {loadMultiscales, guessTileSize, guessLabels, normalizeStore, validLabels} from './utils';

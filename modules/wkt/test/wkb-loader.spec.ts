@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {fetchFile, parseSync} from '@loaders.gl/core';
 import {WKBLoader, isWKB} from '@loaders.gl/wkt';

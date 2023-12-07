@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
 import {isMobile, isBrowser} from '../env-utils/globals';
 import WorkerThread from './worker-thread';

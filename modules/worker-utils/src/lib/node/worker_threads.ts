@@ -3,5 +3,6 @@
 
 import * as WorkerThreads from 'worker_threads';
 export * from 'worker_threads';
+export const parentPort = WorkerThreads?.parentPort;
 export const NodeWorker = WorkerThreads.Worker;
 export type NodeWorkerType = WorkerThreads.Worker;

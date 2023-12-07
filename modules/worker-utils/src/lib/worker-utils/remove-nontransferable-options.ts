@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 /**
  * Recursively drop non serializable values like functions and regexps.
  * @param object

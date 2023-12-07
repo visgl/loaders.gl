@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import './lib/async-queue/async-queue.spec';
 
 // import './lib/library-utils/require-utils.spec';

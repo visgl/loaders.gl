@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {WorkerBody, WorkerMessagePayload} from '@loaders.gl/worker-utils';
 import {KTX2BasisWriter, KTX2BasisWriterOptions} from '../ktx2-basis-writer';
 

@@ -24,9 +24,9 @@ Returns:
   - `json()`: Promise.String` - Loads the file and decodes it into JSON.
   - `body` : ReadableStream` - A stream that can be used to incrementally read the contents of the file.
 
-::info
+:::info
 Use of `fetchFile` is optional. loaders.gl `parse()` function can be used with data loaded via any mechanism the application prefers, e.g. directly using `fetch`, `XMLHttpRequest` etc.
-::
+:::
 
 ## Node.js local file system support
 
@@ -39,10 +39,10 @@ The `fetchFile()` function supports fetching data from the local file system und
 `fetchFile` will delegate any url that starts with `http://` `https://` or `data://`
 to the built-in `fetch` function. Other URLs will be interpreted as local files.
 
-::caution
+:::caution
 loaders.gl v4.0+ applications no longer need to install the `@loaders.gl/polyfills` 
 module to get `fetch` support under Node.js v18+.
-::
+:::
 
 ## Path prefix resolution
 

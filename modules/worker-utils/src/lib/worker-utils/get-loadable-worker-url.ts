@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {assert} from '../env-utils/assert';
 
 const workerURLCache = new Map();

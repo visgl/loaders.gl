@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import type {TextureLevel} from '@loaders.gl/schema';
 import {assert} from '@loaders.gl/loader-utils';
 import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';

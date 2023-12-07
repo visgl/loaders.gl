@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // import type {TextureLevel} from '@loaders.gl/schema';
 import {TypedArray} from '@math.gl/types';
 // import {TypedArrayConstructor} from "@math.gl/types";

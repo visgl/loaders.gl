@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 import {assert} from '@loaders.gl/loader-utils';
 import {ImageLoader, getImageSize} from '@loaders.gl/images';
 import type {GetUrl, UrlOptions} from './texture-api-types';

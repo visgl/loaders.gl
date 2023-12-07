@@ -1,3 +1,6 @@
+// loaders.gl, MIT license
+// Copyright (c) vis.gl contributors
+
 // TODO - these utilities could be moved to the XML parser.
 // uncapitalizeKeys could be an XMLLoader option
 
