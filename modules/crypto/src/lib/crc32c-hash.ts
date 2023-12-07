@@ -12,7 +12,6 @@ export class CRC32CHash extends Hash {
   readonly name = 'crc32c';
 
   options;
-  private _hash: CRC32C;
 
   /**
    * Atomic hash calculation
@@ -21,7 +20,6 @@ export class CRC32CHash extends Hash {
   constructor(options = {}) {
     super();
     this.options = {crypto: {}, ...options};
-    this._hash = new CRC32C(options);
   }
 
   /**
@@ -33,8 +31,9 @@ export class CRC32CHash extends Hash {
   }
 
   hashSync(input: ArrayBuffer, encoding: 'hex' | 'base64'): string {
-    this._hash.update(input);
-    const digest = this._hash.finalize();
+    const hash = new CRC32C(this.options);
+    hash.update(input);
+    const digest = hash.finalize();
     return encodeNumber(digest, encoding);
   }
 
@@ -44,12 +43,12 @@ export class CRC32CHash extends Hash {
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
     encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
+    const hash = new CRC32C(this.options);
     for await (const chunk of asyncIterator) {
-      this._hash.update(chunk);
+      hash.update(chunk);
       yield chunk;
     }
-    const digest = this._hash.finalize();
-    const hash = encodeNumber(digest, encoding);
-    this.options.crypto?.onEnd?.({hash});
+    const digest = hash.finalize();
+    this.options.crypto?.onEnd?.({hash: encodeNumber(digest, encoding)});
   }
 }
