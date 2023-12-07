@@ -3,12 +3,12 @@
 
 import test from 'tape-promise/tape';
 
-import {encodeSync} from '@loaders.gl/core';
+import {encodeTextSync} from '@loaders.gl/core';
 import {WKTWriter} from '@loaders.gl/wkt';
 
 test('WKTWriter', (t) => {
   t.throws(
-    () => encodeSync({type: 'FeatureCollection'}, WKTWriter),
+    () => encodeTextSync({type: 'FeatureCollection'}, WKTWriter),
     'does not accept featurecollections'
   );
 
@@ -29,7 +29,7 @@ test('WKTWriter', (t) => {
   // fixtures.forEach((fix) => t.equal(fix, encodeSync(parse(fix, WKTLoader), WKTWriter), fix));
 
   t.equal(
-    encodeSync(
+    encodeTextSync(
       {
         type: 'Feature',
         properties: {},

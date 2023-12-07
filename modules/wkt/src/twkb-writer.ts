@@ -1,26 +1,35 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeTWKB} from './lib/encode-twkb';
-import {BinaryGeometry} from '@loaders.gl/schema';
+import {Geometry} from '@loaders.gl/schema';
+
+export type TWKBWriterOptions = WriterOptions & {
+  twkb?: {
+    hasZ?: boolean;
+    hasM?: boolean;
+  };
+};
 
 /**
  * WKB exporter
  */
-export const TWKBWriter: Writer<BinaryGeometry, never, WriterOptions> = {
+export const TWKBWriter: WriterWithEncoder<Geometry, never, TWKBWriterOptions> = {
   name: 'TWKB (Tiny Well Known Binary)',
   id: 'twkb',
   module: 'wkt',
   version: VERSION,
   extensions: ['twkb'],
-  // @ts-expect-error not implemented yet
-  encodeSync: async (data: BinaryGeometry, options) => encodeTWKB,
+  encode: async (geometry: Geometry, options?: TWKBWriterOptions) =>
+    encodeTWKB(geometry, options?.twkb),
+  encodeSync: (geometry: Geometry, options?: TWKBWriterOptions) =>
+    encodeTWKB(geometry, options?.twkb),
   options: {
     twkb: {
-      // hasZ: false,
-      // hasM: false
+      hasZ: false,
+      hasM: false
     }
   }
 };

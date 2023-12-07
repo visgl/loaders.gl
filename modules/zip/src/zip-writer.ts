@@ -1,8 +1,11 @@
 // loaders.gl, MIT license
 // Copyright (c) vis.gl contributors
 
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import JSZip, {JSZipGeneratorOptions} from 'jszip';
+
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ZipWriterOptions = WriterOptions & {
   zip?: {
@@ -15,19 +18,27 @@ export type ZipWriterOptions = WriterOptions & {
 /**
  * Zip exporter
  */
-export const ZipWriter: Writer<FileReaderEventMap, never, ZipWriterOptions> = {
+export const ZipWriter: WriterWithEncoder<Record<string, ArrayBuffer>, never, ZipWriterOptions> = {
   name: 'Zip Archive',
+  id: 'zip',
+  module: 'zip',
+  version: VERSION,
   extensions: ['zip'],
   category: 'archive',
   mimeTypes: ['application/zip'],
-  // @ts-ignore
+  options: {
+    zip: {
+      onUpdate: () => {}
+    },
+    jszip: {}
+  },
   encode: encodeZipAsync
 };
 
 async function encodeZipAsync(
   fileMap: Record<string, ArrayBuffer>,
   options: ZipWriterOptions = {}
-) {
+): Promise<ArrayBuffer> {
   const jsZip = new JSZip();
   // add files to the zip
   for (const subFileName in fileMap) {
@@ -38,14 +49,16 @@ async function encodeZipAsync(
     jsZip.file(subFileName, subFileData, options?.jszip || {});
   }
 
-  // always generate the full zip as an arraybuffer
-  const jszipOptions: JSZipGeneratorOptions = {...options?.jszip, type: 'arraybuffer'};
-  const {onUpdate = () => {}} = options;
+  const zipOptions = {...ZipWriter.options.zip, ...options?.zip};
+  const jszipOptions: JSZipGeneratorOptions = {...ZipWriter.options?.jszip, ...options.jszip};
 
   try {
-    return await jsZip.generateAsync(jszipOptions, onUpdate);
+    return await jsZip.generateAsync(
+      {...jszipOptions, type: 'arraybuffer'}, // generate an arraybuffer
+      zipOptions.onUpdate
+    );
   } catch (error) {
-    options.log.error(`Unable to write zip archive: ${error}`);
+    options.log.error(`Unable to encode zip archive: ${error}`);
     throw error;
   }
 }

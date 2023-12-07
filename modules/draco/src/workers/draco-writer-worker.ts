@@ -12,7 +12,7 @@ import {DracoWriter} from '../draco-writer';
       case 'process':
         try {
           const {input, options} = payload;
-          const result = await DracoWriter.encode!(input, options);
+          const result = await DracoWriter.encode(input, options);
           WorkerBody.postMessage('done', {result});
         } catch (error) {
           const message = error instanceof Error ? error.message : '';
