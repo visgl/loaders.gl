@@ -19,6 +19,7 @@ export const WKTWriter: WriterWithEncoder<Geometry, never, WKTWriterOptions> = {
   module: 'wkt',
   version: VERSION,
   extensions: ['wkt'],
+  text: true,
   encode: async (geometry: Geometry) => encodeWKTSync(geometry),
   encodeSync: encodeWKTSync,
   encodeTextSync: encodeWKT,

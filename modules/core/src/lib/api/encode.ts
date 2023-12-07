@@ -89,7 +89,7 @@ export function encodeTextSync(
   writer: WriterWithEncoder,
   options?: WriterOptions
 ): string {
-  if (writer.text && writer.encodeTextSync) {
+  if (writer.encodeTextSync) {
     return writer.encodeTextSync(data, options);
   }
 
