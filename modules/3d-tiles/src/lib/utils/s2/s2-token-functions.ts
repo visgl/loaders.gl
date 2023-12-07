@@ -1,5 +1,6 @@
-// loaders.gl, MIT license
-// Copyright (c) vis.gl contributors
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
 
 import Long from 'long';
 

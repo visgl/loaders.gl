@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {S2Cell} from '../s2geometry/s2-geometry';
 import {IJToST, STToUV, FaceUVToXYZ, XYZToLngLat} from '../s2geometry/s2-geometry';
 

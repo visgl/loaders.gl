@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {Subtree, Availability} from '../../../types';
 import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
 

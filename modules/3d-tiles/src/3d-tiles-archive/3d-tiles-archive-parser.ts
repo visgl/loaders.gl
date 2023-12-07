@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import {FileProvider} from '@loaders.gl/loader-utils';
 import {
   CD_HEADER_SIGNATURE,

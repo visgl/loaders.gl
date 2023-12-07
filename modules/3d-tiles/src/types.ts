@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {GLTFPostprocessed, FeatureTableJson} from '@loaders.gl/gltf';
 export type {FeatureTableJson};
 

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // Minimal support to load tilsets from the Cesium ION services
 
 import {fetchFile} from '@loaders.gl/core';

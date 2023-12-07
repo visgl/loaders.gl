@@ -1,4 +1,5 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
 
 import {TileSource, GetTileParameters} from './tile-source';
 import {ImageSource, ImageSourceMetadata} from './image-source';

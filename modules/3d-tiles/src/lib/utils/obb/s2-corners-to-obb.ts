@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import {Vector3} from '@math.gl/core';
 import {OrientedBoundingBox, makeOrientedBoundingBoxFromPoints} from '@math.gl/culling';
 

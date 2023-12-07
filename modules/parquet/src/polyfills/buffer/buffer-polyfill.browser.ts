@@ -1,4 +1,6 @@
-// luma.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
 
 import {Buffer as BufferPolyfill} from './buffer';
 

@@ -1,4 +1,5 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
 type TypedIntArray = Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array;

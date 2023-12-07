@@ -1,4 +1,5 @@
-// loaders.gl, MIT License
+// loaders.gl
+// SPDX-License-Identifier: MIT
 
 export function installFilePolyfills() {}
 
