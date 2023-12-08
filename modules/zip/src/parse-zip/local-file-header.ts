@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider, compareArrayBuffers} from '@loaders.gl/loader-utils';
+import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {ZipSignature} from './search-from-the-end';
+import {NUMBER_SETTERS, createZip64Info} from './zip64-info-generation';
 
 /**
  * zip local file header info
@@ -95,3 +96,121 @@ export const parseZipLocalFileHeader = async (
     compressionMethod
   };
 };
+
+/** info that can be placed into cd header */
+type GenerateLocalOptions = {
+  /** CRC-32 of uncompressed data */
+  crc32: number;
+  /** File name */
+  fileName: string;
+  /** File size */
+  length: number;
+};
+
+export function generateLocalHeader(options: GenerateLocalOptions) {
+  const optionsToUse = {
+    ...options,
+    extraLength: 0,
+    fnlength: options.fileName.length
+  };
+
+  let zip64header: ArrayBuffer = new ArrayBuffer(0);
+
+  const optionsToZip64: any = {};
+  if (optionsToUse.length >= 0xffffffff) {
+    optionsToZip64.size = optionsToUse.length;
+    optionsToUse.length = 0xffffffff;
+  }
+
+  if (Object.keys(optionsToZip64).length) {
+    zip64header = createZip64Info(optionsToZip64);
+    optionsToUse.extraLength = zip64header.byteLength;
+  }
+
+  // base length without file name and extra info is static
+  const header = new DataView(new ArrayBuffer(Number(FILE_NAME_OFFSET)));
+
+  for (const field of ZIP_HEADER_FIELDS) {
+    NUMBER_SETTERS[field.size](
+      header,
+      field.offset,
+      optionsToUse[field.name ?? ''] ?? field.default ?? 0
+    );
+  }
+
+  const encodedName = new TextEncoder().encode(optionsToUse.fileName);
+
+  const resHeader = concatenateArrayBuffers(header.buffer, encodedName, zip64header);
+
+  return resHeader;
+}
+
+const ZIP_HEADER_FIELDS = [
+  {
+    offset: 0,
+    size: 4,
+    description: 'Local file header signature = 0x04034b50',
+    default: new DataView(signature.buffer).getUint32(0, true)
+  },
+  {
+    offset: 4,
+    size: 2,
+    description: 'Version needed to extract (minimum)',
+    default: 45
+  },
+  {
+    offset: 6,
+    size: 2,
+    description: 'General purpose bit flag',
+    default: 0
+  },
+  {
+    offset: 8,
+    size: 2,
+    description: 'Compression method',
+    default: 0
+  },
+  {
+    offset: 10,
+    size: 2,
+    description: 'File last modification time',
+    default: 0
+  },
+  {
+    offset: 12,
+    size: 2,
+    description: 'File last modification date',
+    default: 0
+  },
+  {
+    offset: 14,
+    size: 4,
+    description: 'CRC-32 of uncompressed data',
+    name: 'crc32'
+  },
+  {
+    offset: 18,
+    size: 4,
+    description: 'Compressed size (or 0xffffffff for ZIP64)',
+    name: 'length'
+  },
+  {
+    offset: 22,
+    size: 4,
+    description: 'Uncompressed size (or 0xffffffff for ZIP64)',
+    name: 'length'
+  },
+  {
+    offset: 26,
+    size: 2,
+    description: 'File name length (n)',
+    name: 'fnlength'
+  },
+  {
+    offset: 28,
+    size: 2,
+    description: 'Extra field length (m)',
+    default: 0,
+    name: 'extraLength'
+  }
+];

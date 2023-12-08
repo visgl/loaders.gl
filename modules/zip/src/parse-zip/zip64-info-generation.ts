@@ -41,15 +41,15 @@ export function createZip64Info(options: Zip64Options): ArrayBuffer {
  * @param offset offset of the writing start
  * @param value value to be written
  */
-type NumberSetter = (header: DataView, offset: number, value: number) => void;
+type NumberSetter = (header: DataView, offset: number, value: number | bigint) => void;
 
 /** functions to write values into buffer according to the bytes amount */
 export const NUMBER_SETTERS: {[key: number]: NumberSetter} = {
   2: (header, offset, value) => {
-    header.setUint16(offset, value, true);
+    header.setUint16(offset, Number(value), true);
   },
   4: (header, offset, value) => {
-    header.setUint32(offset, value, true);
+    header.setUint32(offset, Number(value), true);
   },
   8: (header, offset, value) => {
     header.setBigUint64(offset, BigInt(value), true);
