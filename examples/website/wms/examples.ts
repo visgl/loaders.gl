@@ -1,4 +1,5 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
 export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';

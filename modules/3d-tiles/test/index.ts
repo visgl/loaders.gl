@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import './lib/classes/tile-3d-feature-table.spec';
 import './lib/classes/tile-3d-batch-table.spec';
 

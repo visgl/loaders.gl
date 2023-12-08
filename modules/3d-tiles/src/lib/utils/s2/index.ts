@@ -1,4 +1,6 @@
-// math.gl MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
 
 export {getS2CellIdFromToken, getS2TokenFromCellId, getS2ChildCellId} from './s2-token-functions';
 export {getS2BoundaryFlat, getS2LngLat} from './s2-geometry-functions';

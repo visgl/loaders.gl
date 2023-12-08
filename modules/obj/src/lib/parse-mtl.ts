@@ -1,4 +1,5 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 // Forked from THREE.js under MIT license
 // https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/MTLLoader.js

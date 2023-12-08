@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {Tiles3DArchiveFileLoader} from '../src';

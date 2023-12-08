@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import test from 'tape-promise/tape';
 
 import {normalizeTileData} from '../../../src/lib/parsers/parse-3d-tile-header';

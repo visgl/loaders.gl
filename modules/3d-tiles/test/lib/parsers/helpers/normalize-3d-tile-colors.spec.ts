@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {GL} from '@loaders.gl/math';

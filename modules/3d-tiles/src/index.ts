@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // LOADERS
 export {Tiles3DLoader} from './tiles-3d-loader';
 export {CesiumIonLoader} from './cesium-ion-loader';

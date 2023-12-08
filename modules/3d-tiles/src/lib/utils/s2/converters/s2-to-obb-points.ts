@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import {getS2Cell} from '../s2geometry/s2-cell-utils';
 import {getS2Region} from './s2-to-region';
 import {Vector3} from '@math.gl/core';

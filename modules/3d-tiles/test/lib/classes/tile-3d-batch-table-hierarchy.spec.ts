@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
+
 /* eslint-disable camelcase */
 // @ts-nocheck
 import test from 'tape-promise/tape';

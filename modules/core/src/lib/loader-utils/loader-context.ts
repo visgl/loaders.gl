@@ -1,4 +1,5 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
