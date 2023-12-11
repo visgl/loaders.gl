@@ -43,8 +43,24 @@ export function createZip64Info(options: Zip64Options): ArrayBuffer {
  */
 type NumberSetter = (header: DataView, offset: number, value: number | bigint) => void;
 
+/**
+ * Writes values into buffer according to the bytes amount
+ * @param header header where to write the data
+ * @param fieldSize size of the field in bytes
+ * @param fieldOffset offset of the field
+ * @param value value to be written
+ */
+export function setFieldToNumber(
+  header: DataView,
+  fieldSize: number,
+  fieldOffset: number,
+  value: number | bigint
+): void {
+  NUMBER_SETTERS[fieldSize](header, fieldOffset, value);
+}
+
 /** functions to write values into buffer according to the bytes amount */
-export const NUMBER_SETTERS: {[key: number]: NumberSetter} = {
+const NUMBER_SETTERS: {[key: number]: NumberSetter} = {
   2: (header, offset, value) => {
     header.setUint16(offset, Number(value), true);
   },

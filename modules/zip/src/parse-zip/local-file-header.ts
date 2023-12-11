@@ -4,7 +4,7 @@
 
 import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {ZipSignature} from './search-from-the-end';
-import {NUMBER_SETTERS, createZip64Info} from './zip64-info-generation';
+import {createZip64Info, setFieldToNumber} from './zip64-info-generation';
 
 /**
  * zip local file header info
@@ -107,7 +107,12 @@ type GenerateLocalOptions = {
   length: number;
 };
 
-export function generateLocalHeader(options: GenerateLocalOptions) {
+/**
+ * generates local header for the file
+ * @param options info that can be placed into local header
+ * @returns buffer with header
+ */
+export function generateLocalHeader(options: GenerateLocalOptions): ArrayBuffer {
   const optionsToUse = {
     ...options,
     extraLength: 0,
@@ -131,8 +136,9 @@ export function generateLocalHeader(options: GenerateLocalOptions) {
   const header = new DataView(new ArrayBuffer(Number(FILE_NAME_OFFSET)));
 
   for (const field of ZIP_HEADER_FIELDS) {
-    NUMBER_SETTERS[field.size](
+    setFieldToNumber(
       header,
+      field.size,
       field.offset,
       optionsToUse[field.name ?? ''] ?? field.default ?? 0
     );
@@ -146,70 +152,70 @@ export function generateLocalHeader(options: GenerateLocalOptions) {
 }
 
 const ZIP_HEADER_FIELDS = [
+  // Local file header signature = 0x04034b50
   {
     offset: 0,
     size: 4,
-    description: 'Local file header signature = 0x04034b50',
     default: new DataView(signature.buffer).getUint32(0, true)
   },
+  // Version needed to extract (minimum)
   {
     offset: 4,
     size: 2,
-    description: 'Version needed to extract (minimum)',
     default: 45
   },
+  // General purpose bit flag
   {
     offset: 6,
     size: 2,
-    description: 'General purpose bit flag',
     default: 0
   },
+  // Compression method
   {
     offset: 8,
     size: 2,
-    description: 'Compression method',
     default: 0
   },
+  // File last modification time
   {
     offset: 10,
     size: 2,
-    description: 'File last modification time',
     default: 0
   },
+  // File last modification date
   {
     offset: 12,
     size: 2,
-    description: 'File last modification date',
     default: 0
   },
+  // CRC-32 of uncompressed data
   {
     offset: 14,
     size: 4,
-    description: 'CRC-32 of uncompressed data',
     name: 'crc32'
   },
+  // Compressed size (or 0xffffffff for ZIP64)
   {
     offset: 18,
     size: 4,
-    description: 'Compressed size (or 0xffffffff for ZIP64)',
     name: 'length'
   },
+  // Uncompressed size (or 0xffffffff for ZIP64)
   {
     offset: 22,
     size: 4,
-    description: 'Uncompressed size (or 0xffffffff for ZIP64)',
     name: 'length'
   },
+  // File name length (n)
   {
     offset: 26,
     size: 2,
-    description: 'File name length (n)',
     name: 'fnlength'
   },
+  // Extra field length (m)
   {
     offset: 28,
     size: 2,
-    description: 'Extra field length (m)',
     default: 0,
     name: 'extraLength'
   }
