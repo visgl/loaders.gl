@@ -31,9 +31,9 @@ export async function* parseJSONInBatches(
 
     if (rows.length > 0 && isFirstChunk) {
       if (metadata) {
-        const initialBatch: MetadataBatch = {
+        const initialBatch: TableBatch = {
           // Common fields
-          shape: 'metadata',
+          shape: options?.json?.shape || 'array-row-table',
           batchType: 'partial-result',
           data: [],
           length: 0,

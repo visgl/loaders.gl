@@ -177,20 +177,20 @@ test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
   for await (const batch of iterator) {
     switch (batch.batchType) {
       case 'metadata':
-      case 'data':
-        break;
       case 'partial-result':
+        break;
+      case 'data':
         const rowBatch = batch as ObjectRowTableBatch;
         rowCount += getTableLength(rowBatch);
-        t.equal(rowCount, 247);
         // t.equal(rowBatch?.data?.[0].length, 10);
         break;
       case 'final-result':
         if (batch.shape === 'json') {
-          t.ok(batch.container);
+          t.ok(batch.container, 'final batch contains json');
         }
     }
   }
+  t.equal(rowCount, 247, '247 rows found');
 
   t.end();
 });
