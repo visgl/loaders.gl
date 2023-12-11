@@ -2172,7 +2172,7 @@
 - core: Fixes to `parse` (#345)
 - docs: front page update
 - core: Add error handling to `parse*` functions (#342)
-- core: Name workers for debugger (#339)
+- core: Name workers for easier debugging (#339)
 - fix bug with read property match of undefined (#340) (#341)
 - Fix tranformMatrix regression (#338)
 - Add back DracoWorkerLoader (#337)

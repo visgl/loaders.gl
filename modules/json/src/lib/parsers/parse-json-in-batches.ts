@@ -1,5 +1,5 @@
 import type {TableBatch} from '@loaders.gl/schema';
-import type {JSONLoaderOptions} from '../../json-loader';
+import type {JSONLoaderOptions, MetadataBatch, JSONBatch} from '../../json-loader';
 import {TableBatchBuilder} from '@loaders.gl/schema';
 import {assert, makeTextDecoderIterator} from '@loaders.gl/loader-utils';
 import StreamingJSONParser from '../json-parser/streaming-json-parser';
@@ -10,7 +10,7 @@ import JSONPath from '../jsonpath/jsonpath';
 export async function* parseJSONInBatches(
   binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options: JSONLoaderOptions
-): AsyncIterable<TableBatch> {
+): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const asyncIterator = makeTextDecoderIterator(binaryAsyncIterator);
 
   const {metadata} = options;
@@ -18,15 +18,9 @@ export async function* parseJSONInBatches(
 
   let isFirstChunk: boolean = true;
 
-  // TODO fix Schema deduction
-  const schema = null; // new Schema([]);
-  // TODO - detect shape from data?
-  const shape = options?.json?.shape || 'object-row-table';
-  // @ts-ignore
-  const tableBatchBuilder = new TableBatchBuilder(schema, {
-    ...options,
-    shape
-  });
+  // @ts-expect-error TODO fix Schema deduction
+  const schema: Schema = null;
+  const tableBatchBuilder = new TableBatchBuilder(schema, options);
 
   const parser = new StreamingJSONParser({jsonpaths});
 
@@ -39,7 +33,7 @@ export async function* parseJSONInBatches(
       if (metadata) {
         const initialBatch: TableBatch = {
           // Common fields
-          shape,
+          shape: options?.json?.shape || 'array-row-table',
           batchType: 'partial-result',
           data: [],
           length: 0,
@@ -79,11 +73,12 @@ export async function* parseJSONInBatches(
   }
 
   if (metadata) {
-    const finalBatch: TableBatch = {
-      shape,
+    const finalBatch: JSONBatch = {
+      shape: 'json',
       batchType: 'final-result',
       container: parser.getPartialResult(),
       jsonpath: parser.getStreamingJsonPathAsString(),
+      /** Data Just to avoid crashing? */
       data: [],
       length: 0
       // schema: null

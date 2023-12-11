@@ -91,7 +91,7 @@ export class StreamingXMLParser {
     } else if (Array.isArray(container)) {
       container.push(value);
     } else if (container) {
-      // debugger
+      // break for debug
     }
   }
 

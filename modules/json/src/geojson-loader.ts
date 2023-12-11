@@ -102,7 +102,7 @@ function parseInBatches(asyncIterator, options): AsyncIterable<TableBatch> {
     case 'binary':
       return makeBinaryGeometryIterator(geojsonIterator);
     default:
-      return geojsonIterator;
+      return geojsonIterator as AsyncIterable<TableBatch>;
   }
 }
 

@@ -112,6 +112,7 @@ async function parseWithLoaderInBatches(
   }
 
   const metadataBatch = {
+    shape: 'metadata',
     batchType: 'metadata',
     metadata: {
       _loader: loader,

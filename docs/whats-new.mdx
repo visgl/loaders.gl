@@ -779,7 +779,7 @@ The 1.3 release is focused on production quality 3D tiles support, maturing the 
 
 - **Worker Thread Pool**
   - Now reuses worker threads. Performance gains by avoiding worker startup overhead.
-  - Worker threads are named, easy to track in debugger
+  - Worker threads are named, easy to track while debugging
   - Worker based loaders can now call `parse` recursively to delegate parsing of embedded data (e.g. glTF, Draco) to other loaders
 
 ## v1.2
