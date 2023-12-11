@@ -52,17 +52,33 @@ test('Tile3DSubtreeLoader#Should load quadtree subtree with expicitBitstream', a
 
 test('Tile3DSubtreeLoader#Should load octree subtree with expicitBitstream', async (t) => {
   const EXPECTED = {
-    buffers: [{byteLength: 9}],
+    buffers: [{byteLength: 96}],
     bufferViews: [
-      {buffer: 0, byteOffset: 0, byteLength: 1},
-      {buffer: 0, byteOffset: 1, byteLength: 8}
+      {buffer: 0, byteOffset: 0, byteLength: 10},
+      {buffer: 0, byteOffset: 16, byteLength: 10},
+      {buffer: 0, byteOffset: 32, byteLength: 64}
     ],
-    tileAvailability: {bufferView: 0, explicitBitstream: new Uint8Array([3])},
-    childSubtreeAvailability: {
-      bufferView: 1,
-      explicitBitstream: new Uint8Array([2, 0, 0, 0, 0, 0, 0, 0])
+    tileAvailability: {
+      bitstream: 0,
+      availableCount: 14,
+      explicitBitstream: new Uint8Array([31, 1, 2, 3, 3, 1, 0, 0, 2, 1])
     },
-    contentAvailability: {bufferView: 0, explicitBitstream: new Uint8Array([3])}
+    contentAvailability: [
+      {
+        bitstream: 1,
+        availableCount: 3,
+        explicitBitstream: new Uint8Array([2, 0, 2, 1, 0, 0, 0, 0, 0, 0])
+      }
+    ],
+    childSubtreeAvailability: {
+      bitstream: 2,
+      availableCount: 12,
+      explicitBitstream: new Uint8Array([
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 129, 0, 0, 0, 0, 0, 0, 129, 129, 0, 0, 0, 0,
+        0, 0, 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 129, 0,
+        0, 0, 0, 0, 0, 129
+      ])
+    }
   };
 
   const availabilitySubtree = await load(

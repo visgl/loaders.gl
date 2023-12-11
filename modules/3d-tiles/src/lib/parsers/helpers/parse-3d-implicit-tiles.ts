@@ -14,12 +14,12 @@ import Long from 'long';
 import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
 import {ImplicitOptions} from '../parse-3d-tile-header';
 
-const QUADTREE_DEVISION_COUNT = 4;
-const OCTREE_DEVISION_COUNT = 8;
+const QUADTREE_DIVISION_COUNT = 4;
+const OCTREE_DIVISION_COUNT = 8;
 
 const SUBDIVISION_COUNT_MAP = {
-  QUADTREE: QUADTREE_DEVISION_COUNT,
-  OCTREE: OCTREE_DEVISION_COUNT
+  QUADTREE: QUADTREE_DIVISION_COUNT,
+  OCTREE: OCTREE_DIVISION_COUNT
 };
 
 /**
@@ -107,17 +107,20 @@ export async function parseImplicitTiles(params: {
       z: 0
     },
     childIndex = 0,
+    s2VolumeBox,
+    loaderOptions
+  } = params;
+  let {
+    subtree,
+    level = 0,
     globalData = {
       level: 0,
       mortonIndex: 0,
       x: 0,
       y: 0,
       z: 0
-    },
-    s2VolumeBox,
-    loaderOptions
+    }
   } = params;
-  let {subtree, level = 0} = params;
   const {
     subdivisionScheme,
     subtreeLevels,
@@ -167,9 +170,9 @@ export async function parseImplicitTiles(params: {
     );
   }
 
-  const x = concatBits(globalData.x, childTileX, level * bitsPerTile);
-  const y = concatBits(globalData.y, childTileY, level * bitsPerTile);
-  const z = concatBits(globalData.z, childTileZ, level * bitsPerTile);
+  const x = concatBits(globalData.x, childTileX, level);
+  const y = concatBits(globalData.y, childTileY, level);
+  const z = concatBits(globalData.z, childTileZ, level);
 
   if (isChildSubtreeAvailable) {
     const subtreePath = `${basePath}/${subtreesUriTemplate}`;
@@ -178,11 +181,13 @@ export async function parseImplicitTiles(params: {
 
     subtree = childSubtree;
 
-    globalData.mortonIndex = childTileMortonIndex;
-    globalData.x = childTileX;
-    globalData.y = childTileY;
-    globalData.z = childTileZ;
-    globalData.level = level;
+    globalData = {
+      mortonIndex: childTileMortonIndex,
+      x: childTileX,
+      y: childTileY,
+      z: childTileZ,
+      level
+    };
 
     childTileMortonIndex = 0;
     tileAvailabilityIndex = 0;
