@@ -29,9 +29,16 @@ test('TileJSONLoader#load', async (t) => {
   t.end();
 });
 
-test.skip('TileJSONLoader#tippecanoe', async (t) => {
-  const metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
-  const expected = await load(TIPPECANOE_EXPECTED, JSONLoader);
-  t.deepEqual(metadata, expected, 'Tippecanoe TileJSON loaded correctly');
+test.only('TileJSONLoader#tippecanoe', async (t) => {
+  // let metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
+  // const expected = await load(TIPPECANOE_EXPECTED, JSONLoader);
+  // t.deepEqual(metadata, expected, 'Tippecanoe TileJSON loaded correctly');
+
+  let metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
+  t.equal(metadata.layers[0].fields[10].values.length, 100, '100 unique values');
+
+  metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader, {tilejson: {maxValues: 10}});
+  t.equal(metadata.layers[0].fields[10].values.length, 10, 'maxValue clips unique values');
+
   t.end();
 });

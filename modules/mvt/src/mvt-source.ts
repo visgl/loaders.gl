@@ -6,7 +6,13 @@ import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/lo
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
-import {MVTLoader, MVTLoaderOptions, TileJSONLoader, TileJSON, TileJSONLoaderOptions} from '@loaders.gl/mvt';
+import {
+  MVTLoader,
+  MVTLoaderOptions,
+  TileJSONLoader,
+  TileJSON,
+  TileJSONLoaderOptions
+} from '@loaders.gl/mvt';
 
 import {TileLoadParameters} from '@loaders.gl/loader-utils';
 
