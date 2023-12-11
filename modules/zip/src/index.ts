@@ -14,7 +14,8 @@ export {
 } from './parse-zip/cd-file-header';
 export {
   parseZipLocalFileHeader,
-  signature as localHeaderSignature
+  signature as localHeaderSignature,
+  generateLocalHeader
 } from './parse-zip/local-file-header';
 export {parseEoCDRecord} from './parse-zip/end-of-central-directory';
 export {searchFromTheEnd} from './parse-zip/search-from-the-end';

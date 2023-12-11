@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider, compareArrayBuffers} from '@loaders.gl/loader-utils';
+import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {ZipSignature} from './search-from-the-end';
+import {createZip64Info, setFieldToNumber} from './zip64-info-generation';
 
 /**
  * zip local file header info
@@ -95,3 +96,127 @@ export const parseZipLocalFileHeader = async (
     compressionMethod
   };
 };
+
+/** info that can be placed into cd header */
+type GenerateLocalOptions = {
+  /** CRC-32 of uncompressed data */
+  crc32: number;
+  /** File name */
+  fileName: string;
+  /** File size */
+  length: number;
+};
+
+/**
+ * generates local header for the file
+ * @param options info that can be placed into local header
+ * @returns buffer with header
+ */
+export function generateLocalHeader(options: GenerateLocalOptions): ArrayBuffer {
+  const optionsToUse = {
+    ...options,
+    extraLength: 0,
+    fnlength: options.fileName.length
+  };
+
+  let zip64header: ArrayBuffer = new ArrayBuffer(0);
+
+  const optionsToZip64: any = {};
+  if (optionsToUse.length >= 0xffffffff) {
+    optionsToZip64.size = optionsToUse.length;
+    optionsToUse.length = 0xffffffff;
+  }
+
+  if (Object.keys(optionsToZip64).length) {
+    zip64header = createZip64Info(optionsToZip64);
+    optionsToUse.extraLength = zip64header.byteLength;
+  }
+
+  // base length without file name and extra info is static
+  const header = new DataView(new ArrayBuffer(Number(FILE_NAME_OFFSET)));
+
+  for (const field of ZIP_HEADER_FIELDS) {
+    setFieldToNumber(
+      header,
+      field.size,
+      field.offset,
+      optionsToUse[field.name ?? ''] ?? field.default ?? 0
+    );
+  }
+
+  const encodedName = new TextEncoder().encode(optionsToUse.fileName);
+
+  const resHeader = concatenateArrayBuffers(header.buffer, encodedName, zip64header);
+
+  return resHeader;
+}
+
+const ZIP_HEADER_FIELDS = [
+  // Local file header signature = 0x04034b50
+  {
+    offset: 0,
+    size: 4,
+    default: new DataView(signature.buffer).getUint32(0, true)
+  },
+  // Version needed to extract (minimum)
+  {
+    offset: 4,
+    size: 2,
+    default: 45
+  },
+  // General purpose bit flag
+  {
+    offset: 6,
+    size: 2,
+    default: 0
+  },
+  // Compression method
+  {
+    offset: 8,
+    size: 2,
+    default: 0
+  },
+  // File last modification time
+  {
+    offset: 10,
+    size: 2,
+    default: 0
+  },
+  // File last modification date
+  {
+    offset: 12,
+    size: 2,
+    default: 0
+  },
+  // CRC-32 of uncompressed data
+  {
+    offset: 14,
+    size: 4,
+    name: 'crc32'
+  },
+  // Compressed size (or 0xffffffff for ZIP64)
+  {
+    offset: 18,
+    size: 4,
+    name: 'length'
+  },
+  // Uncompressed size (or 0xffffffff for ZIP64)
+  {
+    offset: 22,
+    size: 4,
+    name: 'length'
+  },
+  // File name length (n)
+  {
+    offset: 26,
+    size: 2,
+    name: 'fnlength'
+  },
+  // Extra field length (m)
+  {
+    offset: 28,
+    size: 2,
+    default: 0,
+    name: 'extraLength'
+  }
+];

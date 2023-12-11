@@ -5,7 +5,7 @@
 import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {parseEoCDRecord} from './end-of-central-directory';
 import {ZipSignature} from './search-from-the-end';
-import {createZip64Info, NUMBER_SETTERS} from './zip64-info-generation';
+import {createZip64Info, setFieldToNumber} from './zip64-info-generation';
 
 /**
  * zip central directory file header info
@@ -234,8 +234,9 @@ export function generateCDHeader(options: GenerateCDOptions): ArrayBuffer {
   const header = new DataView(new ArrayBuffer(46));
 
   for (const field of ZIP_HEADER_FIELDS) {
-    NUMBER_SETTERS[field.size](
+    setFieldToNumber(
       header,
+      field.size,
       field.offset,
       optionsToUse[field.name ?? ''] ?? field.default ?? 0
     );
