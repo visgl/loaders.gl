@@ -27,6 +27,7 @@ export function parseWKB(
     case 'geojson-geometry':
       return binaryToGeometry(binaryGeometry);
     case 'geometry':
+      // eslint-disable-next-line no-console
       console.error('WKBLoader: "geometry" shape is deprecated, use "binary-geometry" instead');
       return binaryToGeometry(binaryGeometry);
     default:

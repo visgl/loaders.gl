@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table, TableBatch} from '@loaders.gl/schema';
+import type {Table, TableBatch, Batch} from '@loaders.gl/schema';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
@@ -11,10 +11,14 @@ import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-type ParseJSONOptions = {
-  shape: 'object-row-table'; // TODO - 'auto'?
-  table?: boolean;
-  jsonpaths?: string[];
+export type MetadataBatch = Batch & {
+  shape: 'metadata';
+};
+
+export type JSONBatch = Batch & {
+  shape: 'json';
+  /** JSON data */
+  container: any;
 };
 
 /**
@@ -22,19 +26,19 @@ type ParseJSONOptions = {
  * @param jsonpaths -
  */
 export type JSONLoaderOptions = LoaderOptions & {
-  json?: ParseJSONOptions;
+  json?: {
+    /** Not specifying shape leaves avoids changes */
+    shape?: 'object-row-table' | 'array-row-table';
+    table?: boolean;
+    jsonpaths?: string[];
+  };
 };
 
-const DEFAULT_JSON_LOADER_OPTIONS: {json: Required<ParseJSONOptions>} = {
-  json: {
-    shape: 'object-row-table',
-    table: false,
-    jsonpaths: []
-    // batchSize: 'auto'
-  }
-};
-
-export const JSONLoader: LoaderWithParser<Table, TableBatch, JSONLoaderOptions> = {
+export const JSONLoader: LoaderWithParser<
+  Table,
+  TableBatch | MetadataBatch | JSONBatch,
+  JSONLoaderOptions
+> = {
   name: 'JSON',
   id: 'json',
   module: 'json',
@@ -43,10 +47,17 @@ export const JSONLoader: LoaderWithParser<Table, TableBatch, JSONLoaderOptions> 
   mimeTypes: ['application/json'],
   category: 'table',
   text: true,
+  options: {
+    json: {
+      shape: undefined,
+      table: false,
+      jsonpaths: []
+      // batchSize: 'auto'
+    }
+  },
   parse,
   parseTextSync,
-  parseInBatches,
-  options: DEFAULT_JSON_LOADER_OPTIONS
+  parseInBatches
 };
 
 async function parse(arrayBuffer: ArrayBuffer, options?: JSONLoaderOptions) {
@@ -54,14 +65,14 @@ async function parse(arrayBuffer: ArrayBuffer, options?: JSONLoaderOptions) {
 }
 
 function parseTextSync(text: string, options?: JSONLoaderOptions) {
-  const jsonOptions = {...options, json: {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options?.json}};
+  const jsonOptions = {...options, json: {...JSONLoader.options.json, ...options?.json}};
   return parseJSONSync(text, jsonOptions as JSONLoaderOptions);
 }
 
 function parseInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: JSONLoaderOptions
-): AsyncIterable<TableBatch> {
-  const jsonOptions = {...options, json: {...DEFAULT_JSON_LOADER_OPTIONS.json, ...options?.json}};
+): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
+  const jsonOptions = {...options, json: {...JSONLoader.options.json, ...options?.json}};
   return parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions);
 }

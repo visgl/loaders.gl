@@ -4,29 +4,33 @@
 
 import type {Schema} from '../../../types/schema';
 import type {TableBatch} from '../../../types/category-table';
-// import type {ArrayRowTableBatch, ObjectRowTableBatch} from '../../category/table';
-import {convertToArrayRow, convertToObjectRow} from '../simple-table/row-utils';
 import {TableBatchAggregator, TableBatchOptions} from './table-batch-aggregator';
+import {
+  convertToArrayRow,
+  convertToObjectRow,
+  inferHeadersFromArrayRow,
+  inferHeadersFromObjectRow
+} from '../simple-table/row-utils';
 
 const DEFAULT_ROW_COUNT = 100;
 
 export class RowTableBatchAggregator implements TableBatchAggregator {
-  schema: Schema;
+  schema: Schema | null;
   options: TableBatchOptions;
 
   length: number = 0;
   objectRows: {[columnName: string]: unknown}[] | null = null;
   arrayRows: unknown[][] | null = null;
   cursor: number = 0;
-  private _headers: string[] = [];
+  private _headers: string[] | null = null;
 
-  constructor(schema: Schema, options: TableBatchOptions) {
+  constructor(schema: Schema | null, options: TableBatchOptions) {
     this.options = options;
     this.schema = schema;
 
     // schema is an array if there're no headers
     // object if there are headers
-    if (!Array.isArray(schema)) {
+    if (schema) {
       this._headers = [];
       for (const key in schema) {
         this._headers[schema[key].index] = schema[key].name;
@@ -42,6 +46,9 @@ export class RowTableBatchAggregator implements TableBatchAggregator {
     if (Number.isFinite(cursor)) {
       this.cursor = cursor as number;
     }
+
+    // TODO - infer schema at a higher level, instead of hacking headers here?
+    this._headers ||= inferHeadersFromArrayRow(row);
 
     // eslint-disable-next-line default-case
     switch (this.options.shape) {
@@ -61,6 +68,9 @@ export class RowTableBatchAggregator implements TableBatchAggregator {
     if (Number.isFinite(cursor)) {
       this.cursor = cursor as number;
     }
+
+    // TODO - infer schema at a higher level, instead of hacking headers here?
+    this._headers ||= inferHeadersFromObjectRow(row);
 
     // eslint-disable-next-line default-case
     switch (this.options.shape) {
@@ -91,6 +101,7 @@ export class RowTableBatchAggregator implements TableBatchAggregator {
       batchType: 'data',
       data: rows,
       length: this.length,
+      // @ts-expect-error we should infer a schema
       schema: this.schema,
       cursor: this.cursor
     };
