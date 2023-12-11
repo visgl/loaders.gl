@@ -11,7 +11,9 @@ import {parseTileJSON} from './lib/parse-tilejson';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type TileJSONLoaderOptions = LoaderOptions & {
+  /** Options for the TileJSONLoader */
   tilejson?: {
+    /** Max number of unique values */
     maxValues?: number | false;
   };
 };
@@ -30,7 +32,7 @@ export const TileJSONLoader: LoaderWithParser<TileJSON, never, TileJSONLoaderOpt
   text: true,
   options: {
     tilejson: {
-      maxValues: 10
+      maxValues: false
     }
   },
   parse: async (arrayBuffer, options?: TileJSONLoaderOptions) => {

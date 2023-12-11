@@ -6,8 +6,8 @@ import type {TileLoadParameters, GetTileParameters} from '@loaders.gl/loader-uti
 import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
-import {ImageLoader} from '@loaders.gl/images';
-import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
+import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
+import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
 
 import * as pmtiles from 'pmtiles';
 const {PMTiles} = pmtiles;
@@ -50,6 +50,7 @@ export const PMTilesService: ServiceWithSource<PMTilesSource, PMTilesSourceProps
 export type PMTilesSourceProps = DataSourceProps & {
   url: string | Blob;
   attributions?: string[];
+  loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
 };
 
 /**
@@ -77,7 +78,12 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   async getMetadata(): Promise<PMTilesMetadata> {
     const pmtilesHeader = await this.pmtiles.getHeader();
     const pmtilesMetadata = await this.pmtiles.getMetadata();
-    const metadata: PMTilesMetadata = parsePMTilesHeader(pmtilesHeader, pmtilesMetadata);
+    const metadata: PMTilesMetadata = parsePMTilesHeader(
+      pmtilesHeader,
+      pmtilesMetadata,
+      {includeFormatHeader: false},
+      this.loadOptions
+    );
     // Add additional attribution if necessary
     if (this.props.attributions) {
       metadata.attributions = [...this.props.attributions, ...(metadata.attributions || [])];

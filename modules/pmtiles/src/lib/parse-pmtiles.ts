@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {TileJSON} from '@loaders.gl/mvt';
 import {TileJSONLoader} from '@loaders.gl/mvt';
 // import {Source, PMTiles, Header, TileType} from 'pmtiles';
@@ -55,12 +56,14 @@ export type PMTilesMetadata = {
  * @param header
  * @param tilejsonMetadata
  * @param options
+ * @param loadOptions
  * @returns
  */
 export function parsePMTilesHeader(
   header: pmtiles.Header,
   pmtilesMetadata: Record<string, unknown> | null,
-  options?: {includeFormatHeader?: boolean}
+  options?: {includeFormatHeader?: boolean},
+  loadOptions?: LoaderOptions
 ): PMTilesMetadata {
   // Ironically, to use the TileJSON loader we need to stringify the metadata again.
   // This is the price of integrating with the existing pmtiles library.
@@ -69,7 +72,7 @@ export function parsePMTilesHeader(
   if (pmtilesMetadata) {
     try {
       const string = JSON.stringify(pmtilesMetadata);
-      tilejson = TileJSONLoader.parseTextSync?.(string) || null;
+      tilejson = TileJSONLoader.parseTextSync?.(string, loadOptions) || null;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('PMTiles metadata could not be interpreted as TileJSON', error);
