@@ -34,6 +34,8 @@ export function parseArrowInBatches(
     const readers = arrow.RecordBatchReader.readAll(asyncIterator);
     for await (const reader of readers) {
       for await (const recordBatch of reader) {
+        // TODO use options.batchDebounceMs to add a delay between batches if needed
+        await new Promise((resolve) => setTimeout(resolve, 10));
         const arrowTabledBatch: ArrowTableBatch = {
           shape: 'arrow-table',
           batchType: 'data',
