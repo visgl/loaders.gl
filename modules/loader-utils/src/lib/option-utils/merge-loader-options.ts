@@ -24,7 +24,7 @@ function mergeOptionsRecursively(
 ): Record<string, unknown> {
   // Sanity check (jest test runner overwrites the console object which can lead to infinite recursion)
   if (level > 3) {
-    return baseOptions;
+    return newOptions;
   }
 
   const options = {...baseOptions};
