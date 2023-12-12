@@ -1,8 +1,29 @@
 # CHANGELOG for loaders.gl
 
-## v4.0
+## v4.1
+
+### v4.1.0-alpha.3
+
+- feat(mvt): Add templateUrl etc to MVTSource. (#2837)
+- fix(mvt): TileJSONLoader options.maxValues default (#2835)
+- chore(deps): bump vite from 4.4.9 to 4.5.1 (#2822)
+- fix(3d-tiles): Fix implicit tileset subtree parsing (#2823)
+- fix(json): Fix row-object and array-object shape inference (#2833)
+- fix: Fix version injection (#2834)
+- fix(zip): Local file header generation implemented (#2832)
+- fix: webpack bson bundling issue (#2831)
+- chore: Start adopting SPDX license headers (#2828)
+- chore: ensure all Writers have an encode() method (#2826)
+- feat(zip): Added append and truncate functionality (#2800)
+- fix(crypto): crc32 algorithm fix (#2819)
+- fix(crypto):  Reuse of Hash instance failures (#2824)
+
+### v4.1.0-alpha.2
+
+- feat(arrow): Triangulate on worker (#2789)
 
 ### v4.1.0-alpha.1
+
 - feat(zip): cd header and zip64 info generation implemented (#2792)
 - fix: wms example (#2814)
 - fix(tile-converter): trailing slash Removing from path in i3s-server (#2813)
@@ -21,6 +42,8 @@
 - chore: update package.json keywords (#2797)
 - Convert GetImageParameters to WMSGetMapParameters (#2799)
 - chore(arrow): Support WKT and WKB geoarrow encodings (v4.1) (#2798)
+
+## v4.0
 
 ### v4.0.4
 - feat(arrow): GeoArrowLoader (#2796)
