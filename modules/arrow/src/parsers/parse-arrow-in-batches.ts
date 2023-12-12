@@ -4,12 +4,14 @@
 
 import type {ArrowTableBatch} from '../lib/arrow-table';
 import * as arrow from 'apache-arrow';
+import {ArrowLoaderOptions} from '../arrow-loader';
 // import {isIterable} from '@loaders.gl/core';
 
 /**
  */
 export function parseArrowInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  options?: ArrowLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   // Creates the appropriate arrow.RecordBatchReader subclasses from the input
   // This will also close the underlying source in case of early termination or errors
@@ -34,6 +36,10 @@ export function parseArrowInBatches(
     const readers = arrow.RecordBatchReader.readAll(asyncIterator);
     for await (const reader of readers) {
       for await (const recordBatch of reader) {
+        // use options.batchDebounceMs to add a delay between batches if needed (use case: incremental loading)
+        if (options?.arrow?.batchDebounceMs !== undefined && options?.arrow?.batchDebounceMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, options.arrow?.batchDebounceMs || 0));
+        }
         const arrowTabledBatch: ArrowTableBatch = {
           shape: 'arrow-table',
           batchType: 'data',
