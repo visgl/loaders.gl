@@ -8,7 +8,7 @@
 
  Create as many sidebars as you want.
  */
- const sidebars = {
+const sidebars = {
   examplesSidebar: [
     {
       type: 'doc',
@@ -28,17 +28,12 @@
         'geospatial/gpx',
         'geospatial/tcx',
         'geopackage'
-      ],
+      ]
     },
     {
       type: 'category',
       label: 'Geospatial Tile Loaders',
-      items: [
-        'pmtiles',
-        'wms',
-        'i3s',
-        '3d-tiles'
-      ]
+      items: ['pmtiles', 'wms', 'i3s', 'i3s-building-scene-layer', '3d-tiles']
     },
     {
       type: 'category',
@@ -47,7 +42,7 @@
         'textures',
         // 'gltf',
         'pointcloud'
-      ],
+      ]
     }
     // {
     //   type: 'category',
