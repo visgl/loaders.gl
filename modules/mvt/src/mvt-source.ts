@@ -51,7 +51,8 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     super(props);
     this.props = props;
     this.url = resolvePath(props.url);
-    this.metadataUrl = props.metadataUrl === undefined ? `${this.url}/tilejson.json` : props.metadataUrl;
+    this.metadataUrl =
+      props.metadataUrl === undefined ? `${this.url}/tilejson.json` : props.metadataUrl;
     this.extension = props.extension || '.png';
     this.data = this.url;
 
