@@ -2,17 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TypedArray} from '../types';
-
 // @ts-ignore typescript 5.3 error
 declare module 'geotiff' {
   function fromUrl(url: string, headers?: Record<string, unknown>): Promise<GeoTIFF>;
   function fromBlob(blob: Blob): Promise<GeoTIFF>;
   function fromFile(path: string): Promise<GeoTIFF>;
+  function fromArrayBuffer(buffer: ArrayBuffer): Promise<GeoTIFF>;
 
   class GeoTIFF {
-    readRasters(options?: RasterOptions): Promise<TypedArray>;
-    getImage(index: number): Promise<GeoTIFFImage>;
+    readRasters(options?: RasterOptions): Promise<Uint8Array>;
+    getImage(index?: number): Promise<GeoTIFFImage>;
     parseFileDirectoryAt(offset: number): Promise<ImageFileDirectory>;
     ifdRequests: {[key: number]: Promise<ImageFileDirectory>};
     dataView: DataView;
@@ -38,7 +37,7 @@ declare module 'geotiff' {
     signal?: AbortSignal;
   }
 
-  type RasterData = (TypedArray | TypedArray[]) & {
+  type RasterData = (Uint8Array | Uint8Array[]) & {
     width: number;
     height: number;
   };
@@ -60,7 +59,19 @@ declare module 'geotiff' {
     getTileHeight(): number;
     getTileWidth(): number;
     getWidth(): number;
+    getGeoKeys(): Record<string, unknown>;
     readRasters(options?: RasterOptions): Promise<RasterData>;
+
+    readRGB(options: {
+      window?;
+      interleave?: boolean;
+      pool?;
+      width?;
+      height?;
+      resampleMethod?;
+      enableAlpha?: boolean;
+      signal?;
+    }): Promise<RasterData>;
   }
 
   interface FileDirectory {

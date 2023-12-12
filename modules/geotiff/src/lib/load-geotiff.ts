@@ -12,7 +12,7 @@ import {
 // import Pool from './lib/Pool';
 
 import {loadOmeTiff, isOmeTiff} from './ome/load-ome-tiff';
-import type TiffPixelSource from './tiff-pixel-source';
+import type {TiffPixelSource} from './tiff-pixel-source';
 
 /** Options for initializing a tiff pixel source. */
 interface GeoTIFFOptions {

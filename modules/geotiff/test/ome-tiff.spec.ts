@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {fromFile} from 'geotiff';
 import {resolvePath, isBrowser} from '@loaders.gl/core';
@@ -56,7 +60,7 @@ test('Correct OME-XML.', async (t) => {
   const tiff = await fromFile(TIFF_URL);
   const {metadata} = await loadGeoTiff(tiff);
   const {Name, Pixels} = metadata;
-  t.equal(Name, 'multi-channel.ome.tif', `Name should be 'multi-channel.ome.tif'.`);
+  t.equal(Name, 'multi-channel.ome.tif', "Name should be 'multi-channel.ome.tif'.");
   // @ts-ignore
   t.equal(Pixels.SizeC, 3, 'Should have three channels.');
   // @ts-ignore

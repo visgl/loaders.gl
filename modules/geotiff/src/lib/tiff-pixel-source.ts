@@ -17,7 +17,7 @@ import type {
   TypedArray
 } from '../types';
 
-class TiffPixelSource<S extends string[]> implements PixelSource<S> {
+export class TiffPixelSource<S extends string[]> implements PixelSource<S> {
   public dtype: Dtype;
   public tileSize: number;
   public shape: number[];
@@ -99,5 +99,3 @@ class TiffPixelSource<S extends string[]> implements PixelSource<S> {
     console.error(err); // eslint-disable-line no-console
   }
 }
-
-export default TiffPixelSource;
