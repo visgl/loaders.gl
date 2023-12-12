@@ -150,10 +150,10 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
 
   async getVectorTile(tileParams: GetTileParameters): Promise<unknown | null> {
     const arrayBuffer = await this.getTile(tileParams);
-    return arrayBuffer ? this.__parseVectorTile(arrayBuffer, tileParams) : null;
+    return arrayBuffer ? this._parseVectorTile(arrayBuffer, tileParams) : null;
   }
 
-  protected async __parseVectorTile(
+  protected async _parseVectorTile(
     arrayBuffer: ArrayBuffer,
     tileParams: GetTileParameters
   ): Promise<unknown | null> {
@@ -192,7 +192,7 @@ export function isURLTemplate(s: string): boolean {
   return /(?=.*{z})(?=.*{x})(?=.*({y}|{-y}))|(?=.*{x})(?=.*({y}|{-y})(?=.*{z}))/.test(s);
 }
 
-export type URLTemplate = string | string[] | null;
+export type URLTemplate = string | string[];
 
 const xRegex = new RegExp('{x}', 'g');
 const yRegex = new RegExp('{y}', 'g');
@@ -214,11 +214,7 @@ export function getURLFromTemplate(
   y: number,
   z: number,
   id: string = '0'
-): string | null {
-  if (!template || !template.length) {
-    return null;
-  }
-
+): string {
   if (Array.isArray(template)) {
     const i = stringHash(id) % template.length;
     template = template[i];
