@@ -13,16 +13,16 @@ type GeoTiffData =  {
     imageData: ImageData,
 }
 
-interface RGBGeoTiffLoaderOptions extends LoaderOptions {
+interface GeoTiffLoaderOptions extends LoaderOptions {
     enableAlpha: boolean;
 }
 
 /**
  * Loads a GeoTIFF file containing a RGB image.
  */
-const loadRgbGeoTiff = async (
+const loadGeoTiff = async (
     data: ArrayBuffer, 
-    options?: RGBGeoTiffLoaderOptions
+    options?: GeoTiffLoaderOptions
 ): Promise<GeoTiffData> => {
     // Load using Geotiff.js
     const tiff = await fromArrayBuffer(data);
@@ -54,7 +54,7 @@ const loadRgbGeoTiff = async (
 };
 
 // Export loader
-export const RGBGeoTiffLoader: LoaderWithParser<GeoTiffData, never, RGBGeoTiffLoaderOptions> = {
+export const GeoTiffLoader: LoaderWithParser<GeoTiffData, never, GeoTiffLoaderOptions> = {
     id: "geotiff",
     name: "GeoTIFF",
     module: "geotiff",
@@ -64,5 +64,5 @@ export const RGBGeoTiffLoader: LoaderWithParser<GeoTiffData, never, RGBGeoTiffLo
     },
     mimeTypes: ["image/tiff", "image/geotiff"],
     extensions: ["geotiff", "tiff", "geotif", "tif"],
-    parse: loadRgbGeoTiff,
+    parse: loadGeoTiff,
 };
