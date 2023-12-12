@@ -19,12 +19,12 @@ export function mergeLoaderOptions<Options extends LoaderOptions>(
 
 function mergeOptionsRecursively(
   baseOptions: Record<string, unknown>,
-  newOptions: Record<string, unknown>, 
+  newOptions: Record<string, unknown>,
   level = 0
 ): Record<string, unknown> {
   // Sanity check (jest test runner overwrites the console object which can lead to infinite recursion)
   if (level > 3) {
-    return baseOptions
+    return baseOptions;
   }
 
   const options = {...baseOptions};
@@ -32,7 +32,7 @@ function mergeOptionsRecursively(
     if (newValue && typeof newValue === 'object' && !Array.isArray(newValue)) {
       options[key] = mergeOptionsRecursively(
         (options[key] as Record<string, unknown>) || {},
-        newOptions[key] as Record<string, unknown>, 
+        newOptions[key] as Record<string, unknown>,
         level + 1
       );
       // Object.assign(options[key] as object, newOptions[key]);
