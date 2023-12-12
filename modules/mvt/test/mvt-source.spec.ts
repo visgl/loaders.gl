@@ -7,6 +7,7 @@ import {isBrowser} from '@loaders.gl/core';
 
 import {TILESETS} from './data/tilesets';
 import {MVTSource} from '@loaders.gl/mvt';
+import {isURLTemplate, getURLFromTemplate} from '../src/mvt-source';
 
 test('MVTSource#urls', async (t) => {
   if (!isBrowser) {
@@ -37,6 +38,51 @@ test('MVTSource#Blobs', async (t) => {
     t.ok(metadata);
     // console.error(JSON.stringify(metadata.tileJSON, null, 2));
   }
+  t.end();
+});
+
+const TEST_TEMPLATE = 'https://server.com/{z}/{x}/{y}.png';
+const TEST_TEMPLATE2 = 'https://server.com/{z}/{x}/{y}/{x}-{y}-{z}.png';
+const TEST_TEMPLATE_ARRAY = [
+  'https://server.com/ep1/{x}/{y}.png',
+  'https://server.com/ep2/{x}/{y}.png'
+];
+
+test('isURLFromTemplate', (t) => {
+  t.true(isURLTemplate(TEST_TEMPLATE), 'single string template');
+  t.true(isURLTemplate(TEST_TEMPLATE2), 'single string template with multiple occurance');
+  // t.true(isURLTemplate(TEST_TEMPLATE_ARRAY), 'array of templates');
+  t.end();
+});
+
+test('getURLFromTemplate', (t) => {
+  t.is(
+    getURLFromTemplate(TEST_TEMPLATE, 1, 2, 0),
+    'https://server.com/0/1/2.png',
+    'single string template'
+  );
+  t.is(
+    getURLFromTemplate(TEST_TEMPLATE2, 1, 2, 0),
+    'https://server.com/0/1/2/1-2-0.png',
+    'single string template with multiple occurance'
+  );
+  t.is(
+    getURLFromTemplate(TEST_TEMPLATE_ARRAY, 1, 2, 0, '1-2-0'),
+    'https://server.com/ep2/1/2.png',
+    'array of templates'
+  );
+  t.is(
+    getURLFromTemplate(TEST_TEMPLATE_ARRAY, 2, 2, 0, '2-2-0'),
+    'https://server.com/ep1/2/2.png',
+    'array of templates'
+  );
+  t.is(
+    getURLFromTemplate(TEST_TEMPLATE_ARRAY, 17, 11, 5, '17-11-5'),
+    'https://server.com/ep2/17/11.png',
+    'array of templates'
+  );
+  t.is(getURLFromTemplate(null, 1, 2, 0), null, 'invalid template');
+  t.is(getURLFromTemplate([], 1, 2, 0), null, 'empty array');
   t.end();
 });
 

@@ -32,22 +32,15 @@ export type MVTSourceProps = DataSourceProps & {
 
 /**
  * MVT data source for Mapbox Vector Tiles v1.
- *
- * Supports
- * - custom extension.
- * - custom metadata filename.
- * - custom getMetadata in order to fetch getMetadata with custom metadata name.
- * - fix for response.text() in getMetadata.
- * - check for template and custom getTileURL.
  */
 /**
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
 export class MVTSource extends DataSource implements ImageTileSource, VectorTileSource {
-  props: MVTSourceProps;
-  url: string;
-  metadataUrl: string | null;
+  readonly props: MVTSourceProps;
+  readonly url: string;
+  readonly metadataUrl: string | null = null;
   data: string;
   schema: 'tms' | 'xyz' | 'template' = 'tms';
   metadata: Promise<TileJSON | null>;
@@ -58,9 +51,10 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     super(props);
     this.props = props;
     this.url = resolvePath(props.url);
-    this.metadataUrl = props.metadataUrl !== null ? `${this.url}/tilejson.json` : null;
+    this.metadataUrl = props.metadataUrl === undefined ? `${this.url}/tilejson.json` : props.metadataUrl;
     this.extension = props.extension || '.png';
     this.data = this.url;
+
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();
 
@@ -98,6 +92,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     // if (metadata?.mimeType) {
     //   this.mimeType = metadata?.tileMIMEType;
     // }
+
     return metadata;
   }
 
@@ -184,8 +179,11 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
       case 'xyz':
         return `${this.url}/${x}/${y}/${z}${this.extension}`;
       case 'tms':
-      default:
         return `${this.url}/${z}/${x}/${y}${this.extension}`;
+      case 'template':
+        return getURLFromTemplate(this.url, x, y, z, '0');
+      default:
+        throw new Error(this.schema);
     }
   }
 }
@@ -215,7 +213,7 @@ export function getURLFromTemplate(
   x: number,
   y: number,
   z: number,
-  id: string
+  id: string = '0'
 ): string | null {
   if (!template || !template.length) {
     return null;
