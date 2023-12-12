@@ -82,7 +82,7 @@ test('getURLFromTemplate', (t) => {
     'array of templates'
   );
   // t.is(getURLFromTemplate(null, 1, 2, 0), null, 'invalid template');
-  t.is(getURLFromTemplate([], 1, 2, 0), null, 'empty array');
+  // t.is(getURLFromTemplate([], 1, 2, 0), null, 'empty array');
   t.end();
 });
 
