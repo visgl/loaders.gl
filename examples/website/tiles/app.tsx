@@ -50,12 +50,16 @@ const LINK_STYLE = {
   cursor: 'grab'
 };
 
-function createTileSource(example: Example): TileSource {
+function createTileSource(example: Example): TileSource<any> {
   switch (example.format) {
-  case 'pmtiles': 
-    return new PMTilesSource({url: example.data, attributions: example.attributions});
-  case 'mvt':
-    return new MVTSource({url: example.data});
+    case 'pmtiles':
+      return new PMTilesSource({
+        url: example.data,
+        attributions: example.attributions,
+        loadOptions: {tilejson: {maxValues: 10}}
+      });
+    case 'mvt':
+      return new MVTSource({url: example.data});
     default:
       throw new Error(`Unknown source format ${example.format}`);
   }
@@ -64,12 +68,14 @@ function createTileSource(example: Example): TileSource {
 export default function App({showBorder = false, onTilesLoad = null}) {
   const [selectedCategory, setSelectedCategory] = useState(INITIAL_CATEGORY_NAME);
   const [selectedExample, setSelectedExample] = useState(INITIAL_EXAMPLE_NAME);
-  const [example, setExample] = useState<Example | null>(EXAMPLES[selectedCategory][selectedExample]);
+  const [example, setExample] = useState<Example | null>(
+    EXAMPLES[selectedCategory][selectedExample]
+  );
   const [tileSource, setTileSource] = useState<PMTilesSource | null>(null);
   const [metadata, setMetadata] = useState<PMTilesMetadata | null>(null);
 
   useEffect(() => {
-    let tileSource = createTileSource(example); 
+    let tileSource = createTileSource(example);
     setTileSource(tileSource);
     setMetadata(null);
 
@@ -89,7 +95,8 @@ export default function App({showBorder = false, onTilesLoad = null}) {
     console.log('initialViewState', initialViewState);
   }
 
-  const tileLayer = tileSource && new TileSourceLayer({tileSource, showBorder, metadata, onTilesLoad});
+  const tileLayer =
+    tileSource && new TileSourceLayer({tileSource, showBorder, metadata, onTilesLoad});
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
@@ -120,7 +127,8 @@ export default function App({showBorder = false, onTilesLoad = null}) {
 }
 
 function renderControlPanel(props) {
-  const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, viewState} = props;
+  const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, viewState} =
+    props;
 
   return (
     <ControlPanel

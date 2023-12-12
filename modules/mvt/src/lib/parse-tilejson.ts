@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 export type TileJSONOptions = {
-  maxValues?: number | false;
+  /** max number of values. If not provided, include all values in the source tilestats */
+  maxValues?: number;
 };
 
 /** Parsed and typed TileJSON, merges Tilestats information if present */
@@ -401,10 +402,16 @@ function attributeToField(
   if (typeof attribute.count === 'number') {
     field.uniqueValueCount = attribute.count;
   }
-  if (options.maxValues !== false && attribute.values) {
+  if (attribute.values) {
     // Too much data? Add option?
-    field.values = attribute.values?.slice(0, options.maxValues);
+    field.values = attribute.values;
   }
+
+  if (field.values && typeof options.maxValues === 'number') {
+    // Too much data? Add option?
+    field.values = field.values?.slice(0, options.maxValues);
+  }
+
   return field;
 }
 

@@ -5,12 +5,19 @@
 import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
-import {ImageLoader, getBinaryImageMetadata} from '@loaders.gl/images';
-import {MVTLoader, MVTLoaderOptions, TileJSONLoader, TileJSON} from '@loaders.gl/mvt';
+import {ImageLoader, ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
+import {
+  MVTLoader,
+  MVTLoaderOptions,
+  TileJSONLoader,
+  TileJSON,
+  TileJSONLoaderOptions
+} from '@loaders.gl/mvt';
 
 import {TileLoadParameters} from '@loaders.gl/loader-utils';
 
 export type MVTSourceProps = DataSourceProps & {
+  loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
   url: string;
   attributions?: string[];
 };

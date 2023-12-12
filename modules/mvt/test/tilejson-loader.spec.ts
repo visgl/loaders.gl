@@ -5,13 +5,13 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {load, JSONLoader} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
 import {TileJSONLoader} from '@loaders.gl/mvt';
 
 import {TILEJSONS} from './data/tilejson/tilejson';
 
 const TIPPECANOE_TILEJSON = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.tilejson';
-const TIPPECANOE_EXPECTED = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.expected.json';
+// const TIPPECANOE_EXPECTED = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.expected.json';
 
 test('TileJSONLoader#loader conformance', (t) => {
   validateLoader(t, TileJSONLoader, 'TileJSONLoader');
@@ -29,9 +29,16 @@ test('TileJSONLoader#load', async (t) => {
   t.end();
 });
 
-test.skip('TileJSONLoader#tippecanoe', async (t) => {
-  const metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
-  const expected = await load(TIPPECANOE_EXPECTED, JSONLoader);
-  t.deepEqual(metadata, expected, 'Tippecanoe TileJSON loaded correctly');
+test('TileJSONLoader#tippecanoe', async (t) => {
+  // let metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
+  // const expected = await load(TIPPECANOE_EXPECTED, JSONLoader);
+  // t.deepEqual(metadata, expected, 'Tippecanoe TileJSON loaded correctly');
+
+  let metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
+  t.equal(metadata.layers?.[0]?.fields?.[10]?.values?.length, 100, '100 unique values');
+
+  metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader, {tilejson: {maxValues: 10}});
+  t.equal(metadata.layers?.[0]?.fields?.[10]?.values?.length, 10, 'maxValue clips unique values');
+
   t.end();
 });
