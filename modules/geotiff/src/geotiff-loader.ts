@@ -12,8 +12,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 // Return type definition for GeoTIFF loader
 type GeoTIFFData = {
+  crs?: string;
   bounds: number[];
-  geoKeys: Record<string, unknown>;
+  metadata: Record<string, unknown>;
 
   width: number;
   height: number;
@@ -94,14 +95,21 @@ async function parseGeoTIFF(
 
   // Get geo data
   const bounds = image.getBoundingBox();
-  const geoKeys = image.getGeoKeys();
+  const metadata = image.getGeoKeys();
+
+  // ProjectedCSTypeGeoKey is the only key we support for now, we assume it is an EPSG code
+  let crs: string | undefined;
+  if (metadata?.ProjectedCSTypeGeoKey) {
+    crs = `EPSG:${metadata.ProjectedCSTypeGeoKey}`;
+  }
 
   // Return GeoReferenced image data
   return {
+    crs,
     bounds,
     width,
     height,
     data: imageData,
-    geoKeys
+    metadata
   };
 }
