@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /** eslint-disable */
-import type {FileDirectory} from 'geotiff';
+import {FileDirectory} from 'geotiff';
 
 // import Worker from 'web-worker:./decoder.worker.ts';
 

@@ -4,15 +4,15 @@
 
 import {fromUrl, fromBlob, GeoTIFF} from 'geotiff';
 
-import {
-  // createPoolProxy,
-  createOffsetsProxy,
-  checkProxies
-} from './utils/proxies';
+// import {
+//   // createPoolProxy,
+//   createOffsetsProxy,
+//   checkProxies
+// } from './utils/proxies.ts.disabled';
 // import Pool from './lib/Pool';
 
 import {loadOmeTiff, isOmeTiff} from './ome/load-ome-tiff';
-import type TiffPixelSource from './tiff-pixel-source';
+import type {TiffPixelSource} from './tiff-pixel-source';
 
 /** Options for initializing a tiff pixel source. */
 interface GeoTIFFOptions {
@@ -69,14 +69,14 @@ export async function loadGeoTiff(
      * create a proxy that intercepts calls to `tiff.getImage`
      * and injects the pre-computed offsets.
      */
-    tiff = createOffsetsProxy(tiff, offsets);
+    // tiff = createOffsetsProxy(tiff, offsets);
   }
 
   /*
    * Inspect tiff source for our performance enhancing proxies.
    * Prints warnings to console if `offsets` or `pool` are missing.
    */
-  checkProxies(tiff);
+  // checkProxies(tiff);
 
   const firstImage = await tiff.getImage(0);
 

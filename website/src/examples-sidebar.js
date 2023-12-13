@@ -19,15 +19,15 @@
       type: 'category',
       label: 'Geospatial Table Loaders',
       items: [
+        'flatgeobuf',
         'geoarrow',
         'geoparquet',
-        'geopackage',
-        'flatgeobuf',
         'geojson',
         'geospatial/shapefile',
         'geospatial/kml',
         'geospatial/gpx',
-        'geospatial/tcx'
+        'geospatial/tcx',
+        'geopackage'
       ],
     },
     {
