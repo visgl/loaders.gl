@@ -581,6 +581,24 @@ class App extends PureComponent {
             <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
           )}
         </DeckGL>
+        <div
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            background: 'rgba(0,0,0,0.3)',
+            color: 'white',
+            padding: 7
+          }}
+        >
+          Advanced I3S BSL example available at{' '}
+          <a
+            style={{color: 'white', textDecoration: 'underline'}}
+            href="https://i3s.loaders.gl/viewer?tileset=turanga-library"
+          >
+            I3S Explorer
+          </a>
+        </div>
       </div>
     );
   }
