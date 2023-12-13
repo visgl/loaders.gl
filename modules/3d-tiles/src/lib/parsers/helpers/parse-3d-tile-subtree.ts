@@ -72,7 +72,7 @@ export default async function parse3DTilesSubtree(
  * @param internalBinaryBuffer - subtree binary buffer
  * @param context - loaders.gl context
  */
-async function loadExplicitBitstream(
+export async function loadExplicitBitstream(
   subtree: Subtree,
   availabilityObject: Availability,
   internalBinaryBuffer: ArrayBuffer,
@@ -109,8 +109,13 @@ async function loadExplicitBitstream(
     );
     return;
   }
+
+  const bufferStart = subtree.buffers
+    .slice(0, bufferView.buffer)
+    .reduce((offset, buf) => offset + buf.byteLength, 0);
+
   availabilityObject.explicitBitstream = new Uint8Array(
-    internalBinaryBuffer,
+    internalBinaryBuffer.slice(bufferStart, bufferStart + buffer.byteLength),
     bufferView.byteOffset,
     bufferView.byteLength
   );

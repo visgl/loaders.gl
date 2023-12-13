@@ -321,10 +321,10 @@ export type Subtree = {
    */
   childSubtreeAvailability: Availability;
   // TODO: These are unused properties. Improve types when they are required
-  propertyTables: unknown;
-  tileMetadata: unknown;
-  contentMetadata: unknown;
-  subtreeMetadata: unknown;
+  propertyTables?: unknown;
+  tileMetadata?: unknown;
+  contentMetadata?: unknown;
+  subtreeMetadata?: unknown;
 };
 
 export type Availability = {
