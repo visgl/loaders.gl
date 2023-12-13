@@ -45,6 +45,7 @@
       "modules/draco/api-reference/draco-writer",
       "modules/flatgeobuf/api-reference/flatgeobuf-loader",
       "modules/geopackage/api-reference/geopackage-loader",
+      "modules/geotiff/api-reference/geotiff-loader",
       "modules/gltf/api-reference/gltf-loader",
       "modules/gltf/api-reference/gltf-writer",
       "modules/gltf/api-reference/glb-loader",
@@ -108,6 +109,7 @@
       "modules/gltf/formats/glb",
       "modules/gltf/formats/gltf",
       "modules/geopackage/formats/geopackage",
+      "modules/geotiff/formats/geotiff",
       "modules/kml/formats/kml",
       "modules/kml/formats/gpx",
       "modules/kml/formats/tcx",
@@ -276,6 +278,11 @@
         "type": "category",
         "label": "@loaders.gl/draco",
         "items": ["modules/draco/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/geotiff",
+        "items": ["modules/geotiff/README"]
       },
       {
         "type": "category",
