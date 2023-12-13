@@ -25,7 +25,7 @@ test('SLPKLoader#central directory file header generation', async (t) => {
   const header = generateCDHeader({
     crc32: 0,
     fileName: '@specialIndexFileHASH128@1',
-    offset: 0xffffffffff,
+    offset: BigInt(0xffffffffff),
     length: 0
   });
   t.equal(header.byteLength, 84);

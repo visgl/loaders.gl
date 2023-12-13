@@ -53,10 +53,10 @@ type NumberSetter = (header: DataView, offset: number, value: number | bigint) =
 export function setFieldToNumber(
   header: DataView,
   fieldSize: number,
-  fieldOffset: number,
+  fieldOffset: number | bigint,
   value: number | bigint
 ): void {
-  NUMBER_SETTERS[fieldSize](header, fieldOffset, value);
+  NUMBER_SETTERS[fieldSize](header, Number(fieldOffset), value);
 }
 
 /** functions to write values into buffer according to the bytes amount */

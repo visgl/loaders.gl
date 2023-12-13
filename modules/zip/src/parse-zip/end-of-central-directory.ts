@@ -4,6 +4,7 @@
 
 import {FileProvider, compareArrayBuffers} from '@loaders.gl/loader-utils';
 import {ZipSignature, searchFromTheEnd} from './search-from-the-end';
+import {setFieldToNumber} from './zip64-info-generation';
 
 /**
  * End of central directory info
@@ -14,6 +15,12 @@ export type ZipEoCDRecord = {
   cdStartOffset: bigint;
   /** Relative offset of local file header */
   cdRecordsNumber: bigint;
+  offsets: {
+    zipEoCDOffset: bigint;
+
+    zip64EoCDOffset?: bigint;
+    zip64EoCDLocatorOffset?: bigint;
+  };
 };
 
 const eoCDSignature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x05, 0x06]);
@@ -22,9 +29,13 @@ const zip64EoCDSignature = new Uint8Array([0x50, 0x4b, 0x06, 0x06]);
 
 // offsets accroding to https://en.wikipedia.org/wiki/ZIP_(file_format)
 const CD_RECORDS_NUMBER_OFFSET = 8n;
+const CD_RECORDS_NUMBER_ON_DISC_OFFSET = 10n;
+const CD_CD_BYTE_SIZE_OFFSET = 12n;
 const CD_START_OFFSET_OFFSET = 16n;
 const ZIP64_EOCD_START_OFFSET_OFFSET = 8n;
 const ZIP64_CD_RECORDS_NUMBER_OFFSET = 24n;
+const ZIP64_CD_RECORDS_NUMBER_ON_DISC_OFFSET = 32n;
+const ZIP64_CD_CD_BYTE_SIZE_OFFSET = 40n;
 const ZIP64_CD_START_OFFSET_OFFSET = 48n;
 
 /**
@@ -38,14 +49,12 @@ export const parseEoCDRecord = async (file: FileProvider): Promise<ZipEoCDRecord
   let cdRecordsNumber = BigInt(await file.getUint16(zipEoCDOffset + CD_RECORDS_NUMBER_OFFSET));
   let cdStartOffset = BigInt(await file.getUint32(zipEoCDOffset + CD_START_OFFSET_OFFSET));
 
-  if (cdStartOffset === BigInt(0xffffffff) || cdRecordsNumber === BigInt(0xffffffff)) {
-    const zip64EoCDLocatorOffset = zipEoCDOffset - 20n;
+  let zip64EoCDLocatorOffset = zipEoCDOffset - 20n;
+  let zip64EoCDOffset = 0n;
 
-    const magicBytes = await file.slice(zip64EoCDLocatorOffset, zip64EoCDLocatorOffset + 4n);
-    if (!compareArrayBuffers(magicBytes, zip64EoCDLocatorSignature)) {
-      throw new Error('zip64 EoCD locator not found');
-    }
-    const zip64EoCDOffset = await file.getBigUint64(
+  const magicBytes = await file.slice(zip64EoCDLocatorOffset, zip64EoCDLocatorOffset + 4n);
+  if (compareArrayBuffers(magicBytes, zip64EoCDLocatorSignature)) {
+    zip64EoCDOffset = await file.getBigUint64(
       zip64EoCDLocatorOffset + ZIP64_EOCD_START_OFFSET_OFFSET
     );
 
@@ -56,10 +65,84 @@ export const parseEoCDRecord = async (file: FileProvider): Promise<ZipEoCDRecord
 
     cdRecordsNumber = await file.getBigUint64(zip64EoCDOffset + ZIP64_CD_RECORDS_NUMBER_OFFSET);
     cdStartOffset = await file.getBigUint64(zip64EoCDOffset + ZIP64_CD_START_OFFSET_OFFSET);
+  } else {
+    zip64EoCDLocatorOffset = 0n;
   }
 
   return {
     cdRecordsNumber,
-    cdStartOffset
+    cdStartOffset,
+    offsets: {
+      zip64EoCDOffset,
+      zip64EoCDLocatorOffset,
+      zipEoCDOffset
+    }
   };
 };
+
+/**
+ * updates EoCD record to add one more file to the archieve
+ * @param eocdBody buffer containing header
+ * @param oldEoCDinfo info read from EoCD record befor updating
+ * @param newCDStartOffset CD start offset to be updated
+ * @param eocdStartOffset EoCD start offset to be updated
+ * @returns new EoCD header
+ */
+export async function updateEoCD(
+  eocdBody: ArrayBuffer,
+  oldEoCDinfo: ZipEoCDRecord,
+  newCDStartOffset: bigint,
+  eocdStartOffset: bigint
+): Promise<Uint8Array> {
+  const eocd = new DataView(eocdBody);
+
+  const classicEoCDOffset =
+    oldEoCDinfo.offsets.zipEoCDOffset - (oldEoCDinfo.offsets.zip64EoCDOffset ?? 0n);
+
+  // updating classic EoCD record with new CD records number in general and on disc
+  const newRecordsNumber = oldEoCDinfo.cdRecordsNumber + 1n;
+  if (Number(oldEoCDinfo.cdRecordsNumber) <= 0xffff) {
+    setFieldToNumber(eocd, 2, classicEoCDOffset + CD_RECORDS_NUMBER_OFFSET, newRecordsNumber);
+    setFieldToNumber(
+      eocd,
+      2,
+      classicEoCDOffset + CD_RECORDS_NUMBER_ON_DISC_OFFSET,
+      newRecordsNumber
+    );
+  }
+
+  // updating zip64 EoCD record with new size of CD
+  if (eocdStartOffset - newCDStartOffset <= 0xffffffff) {
+    setFieldToNumber(
+      eocd,
+      4,
+      classicEoCDOffset + CD_CD_BYTE_SIZE_OFFSET,
+      eocdStartOffset - newCDStartOffset
+    );
+  }
+
+  // updating classic EoCD record with new CD start offset
+  if (newCDStartOffset < 0xffffffff) {
+    setFieldToNumber(eocd, 4, classicEoCDOffset + CD_START_OFFSET_OFFSET, newCDStartOffset);
+  }
+
+  // updating zip64 EoCD locator and record with new EoCD record start offset and cd records number
+  if (oldEoCDinfo.offsets.zip64EoCDLocatorOffset && oldEoCDinfo.offsets.zip64EoCDOffset) {
+    // updating zip64 EoCD locator with new EoCD record start offset
+    const locatorOffset =
+      oldEoCDinfo.offsets.zip64EoCDLocatorOffset - oldEoCDinfo.offsets.zip64EoCDOffset;
+    setFieldToNumber(eocd, 8, locatorOffset + ZIP64_EOCD_START_OFFSET_OFFSET, eocdStartOffset);
+
+    // updating zip64 EoCD record with new cd start offset
+    setFieldToNumber(eocd, 8, ZIP64_CD_START_OFFSET_OFFSET, newCDStartOffset);
+
+    // updating zip64 EoCD record with new cd records number
+    setFieldToNumber(eocd, 8, ZIP64_CD_RECORDS_NUMBER_OFFSET, newRecordsNumber);
+    setFieldToNumber(eocd, 8, ZIP64_CD_RECORDS_NUMBER_ON_DISC_OFFSET, newRecordsNumber);
+
+    // updating zip64 EoCD record with new size of CD
+    setFieldToNumber(eocd, 8, ZIP64_CD_CD_BYTE_SIZE_OFFSET, eocdStartOffset - newCDStartOffset);
+  }
+
+  return new Uint8Array(eocd.buffer);
+}
