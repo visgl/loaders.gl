@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoTIFFImage, RasterOptions} from 'geotiff';
+import type {GeoTIFFImage} from 'geotiff';
 import {getImageSize, isInterleaved, SIGNAL_ABORTED} from './utils/tiff-utils';
 
 import type {
@@ -16,6 +16,8 @@ import type {
   PixelData,
   TypedArray
 } from '../types';
+
+type ReadRasterOptions = Record<string, any>;
 
 export class TiffPixelSource<S extends string[]> implements PixelSource<S> {
   public dtype: Dtype;
@@ -57,7 +59,7 @@ export class TiffPixelSource<S extends string[]> implements PixelSource<S> {
     return this._readRasters(image, {window, width, height, signal});
   }
 
-  private async _readRasters(image: GeoTIFFImage, props?: RasterOptions) {
+  private async _readRasters(image: GeoTIFFImage, props?: ReadRasterOptions) {
     const interleave = isInterleaved(this.shape);
     const raster = await image.readRasters({interleave, ...props});
 

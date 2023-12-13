@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoTIFFImage, GeoTIFF, ImageFileDirectory} from 'geotiff';
+import type {GeoTIFFImage, GeoTIFF} from 'geotiff';
 import type {OMEXML} from '../ome/omexml';
+
+export type ImageFileDirectory = any;
 
 export type OmeTiffSelection = {t: number; c: number; z: number};
 export type OmeTiffIndexer = (sel: OmeTiffSelection, z: number) => Promise<GeoTIFFImage>;
@@ -82,13 +84,14 @@ export function getOmeSubIFDIndexer(tiff: GeoTIFF, rootMeta: OMEXML): OmeTiffInd
       const subIfdOffset = SubIFDs[pyramidLevel - 1];
       ifdCache.set(key, tiff.parseFileDirectoryAt(subIfdOffset));
     }
-    const ifd = (await ifdCache.get(key)) as ImageFileDirectory;
+    const ifd = await ifdCache.get(key);
 
     // Create a new image object manually from IFD
     // https://github.com/geotiffjs/geotiff.js/blob/8ef472f41b51d18074aece2300b6a8ad91a21ae1/src/geotiff.js#L447-L453
     return new (baseImage.constructor as any)(
       ifd.fileDirectory,
       ifd.geoKeyDirectory,
+      // @ts-expect-error
       tiff.dataView,
       tiff.littleEndian,
       tiff.cache,

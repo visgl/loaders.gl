@@ -41,6 +41,31 @@ export const GeoTIFFLoader: LoaderWithParser<GeoTIFFData, never, GeoTIFFLoaderOp
   parse: parseGeoTIFF
 };
 
+export function isTiff(arrayBuffer: ArrayBuffer): boolean {
+  const dataView = new DataView(arrayBuffer);
+  // Byte offset
+  const endianness = dataView.getUint16(0);
+  let littleEndian: boolean;
+  switch (endianness) {
+    case 0x4949:
+      littleEndian = true;
+      break;
+    case 0x4d4d:
+      littleEndian = false;
+      break;
+    default:
+      return false;
+    // throw new Error(`invalid byte order: 0x${endianness.toString(16)}`);
+  }
+
+  // Magic number
+  if (dataView.getUint16(2, littleEndian) !== 42) {
+    return false;
+  }
+
+  return true;
+}
+
 /**
  * Loads a GeoTIFF file containing a RGB image.
  */
