@@ -200,7 +200,7 @@ type GenerateCDOptions = {
   /** File size */
   length: number;
   /** Relative offset of local file header */
-  offset: number;
+  offset: bigint;
 };
 
 /**
@@ -220,7 +220,7 @@ export function generateCDHeader(options: GenerateCDOptions): ArrayBuffer {
   const optionsToZip64: any = {};
   if (optionsToUse.offset >= 0xffffffff) {
     optionsToZip64.offset = optionsToUse.offset;
-    optionsToUse.offset = 0xffffffff;
+    optionsToUse.offset = BigInt(0xffffffff);
   }
   if (optionsToUse.length >= 0xffffffff) {
     optionsToZip64.size = optionsToUse.length;
@@ -231,7 +231,7 @@ export function generateCDHeader(options: GenerateCDOptions): ArrayBuffer {
     zip64header = createZip64Info(optionsToZip64);
     optionsToUse.extraLength = zip64header.byteLength;
   }
-  const header = new DataView(new ArrayBuffer(46));
+  const header = new DataView(new ArrayBuffer(Number(CD_FILE_NAME_OFFSET)));
 
   for (const field of ZIP_HEADER_FIELDS) {
     setFieldToNumber(
