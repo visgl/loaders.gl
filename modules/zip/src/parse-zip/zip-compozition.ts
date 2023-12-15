@@ -101,5 +101,13 @@ export async function addOneFile(zipUrl: string, fileToAdd: ArrayBuffer, fileNam
   // remember where eocd starts
   const eocdOffset = provider.length;
 
-  await provider.append(await updateEoCD(eocdBody, oldEoCDinfo, newCDStartOffset, eocdOffset));
+  await provider.append(
+    await updateEoCD(
+      eocdBody,
+      oldEoCDinfo.offsets,
+      newCDStartOffset,
+      eocdOffset,
+      oldEoCDinfo.cdRecordsNumber + 1n
+    )
+  );
 }
