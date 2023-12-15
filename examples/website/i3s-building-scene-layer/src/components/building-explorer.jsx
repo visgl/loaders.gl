@@ -5,7 +5,7 @@ import {Font, Color} from './styles';
 import {Checkbox, CheckboxOption, CheckboxSpan} from './checkbox';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faAngleRight, faAngleDown, faCircle} from '@fortawesome/free-solid-svg-icons';
-import ToggleSwitch from './toggle-switch';
+import {ToggleSwitch} from './toggle-switch';
 
 const BuildingExplorerContainer = styled.div`
   height: ${(props) => (props.isShown ? '450px' : '40px')};

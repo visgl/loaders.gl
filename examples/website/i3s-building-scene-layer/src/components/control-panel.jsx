@@ -5,7 +5,7 @@ import {EXAMPLES} from '../examples';
 import {MAP_STYLES} from '../constants';
 import {DropDownStyle, Font, Color, Flex} from './styles';
 import BuildingExplorer from './building-explorer';
-import ToggleSwitch from './toggle-switch';
+import {ToggleSwitch} from './toggle-switch';
 
 const Container = styled.div`
   ${Flex}
@@ -158,7 +158,6 @@ export default class ControlPanel extends PureComponent {
       </MapContainer>
     );
   }
-
 
   _renderTerrainControl() {
     const {useTerrainLayer, toggleTerrain} = this.props;

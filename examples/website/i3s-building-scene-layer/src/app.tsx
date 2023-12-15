@@ -16,6 +16,7 @@ import {
 import {TerrainLayer, Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
+import {Stats} from '@probe.gl/stats';
 
 import {lumaStats} from '@luma.gl/core';
 import {load, fetchFile} from '@loaders.gl/core';
@@ -27,7 +28,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faSpinner} from '@fortawesome/free-solid-svg-icons';
 import {Color, Flex, Font} from './components/styles';
 import {buildSublayersTree} from './helpers/sublayers';
-import {initStats, sumTilesetsStats} from './helpers/stats';
+import {sumTilesetsStats} from './helpers/stats';
 import {getElevationByCentralTile} from './helpers/terrain-elevation';
 import {INITIAL_MAP_STYLE} from './constants';
 import {
@@ -133,7 +134,7 @@ class App extends PureComponent {
       flattenedSublayers: [],
       sublayers: [],
       sublayersUpdateCounter: 0,
-      tilesetsStats: initStats(),
+      tilesetsStats: null,
       useTerrainLayer: false,
       terrainTiles: {}
     };
@@ -171,7 +172,7 @@ class App extends PureComponent {
     } else {
       tileset = EXAMPLES[INITIAL_EXAMPLE_NAME];
     }
-    this.setState({tilesetsStats: initStats(tilesetUrl)});
+    this.setState({tilesetsStats: new Stats({id: tilesetUrl})});
     this._onSelectTileset(tileset);
   }
 
@@ -185,10 +186,11 @@ class App extends PureComponent {
     try {
       const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
       const sublayersTree = buildSublayersTree(tileset.header.sublayers);
-      for (const sublayer of sublayersTree?.sublayers) {
+      const childSublayers = sublayersTree?.sublayers || [];
+      for (const sublayer of childSublayers) {
         sublayer.visibility = true;
       }
-      this.setState({sublayers: sublayersTree.sublayers});
+      this.setState({sublayers: childSublayers});
       const sublayers = tileset?.sublayers.filter((sublayer) => sublayer.name !== 'Overview');
       return sublayers;
     } catch (e) {
@@ -205,7 +207,7 @@ class App extends PureComponent {
     this.setState({metadata, selectedFeatureAttributes: null, flattenedSublayers});
     this._loadedTilesets = [];
     this.needTransitionToTileset = true;
-    const tilesetsStats = initStats(tilesetUrl);
+    const tilesetsStats = new Stats({id: tilesetUrl});
     this._tilesetStatsWidget.setStats(tilesetsStats);
     this.setState({tilesetsStats, showBuildingExplorer: false});
   }

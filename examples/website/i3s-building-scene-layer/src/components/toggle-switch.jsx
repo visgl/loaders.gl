@@ -60,7 +60,7 @@ const Slider = styled.span`
   }
 `;
 
-export default function ToggleSwitch({checked, onChange, name, id, title}) {
+export const ToggleSwitch = ({checked, onChange, name, id, title}) => {
   return (
     <Label htmlFor={id} title={title}>
       <Input
@@ -74,4 +74,4 @@ export default function ToggleSwitch({checked, onChange, name, id, title}) {
       <Slider />
     </Label>
   );
-}
+};
