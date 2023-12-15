@@ -13,6 +13,7 @@ import './lib/parsers/parse-3d-tile-header.spec';
 // TODO v4.0 restore these tests
 // import './lib/parsers/helpers/gpu-memory-usage.spec';
 import './lib/parsers/helpers/normalize-3d-tile-colors.spec';
+import './lib/parsers/helpers/parse-3d-tile-subtree.spec';
 
 // import './styles/expression.spec';
 // import './styles/conditions-expression.spec';
