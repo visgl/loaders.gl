@@ -341,7 +341,7 @@ export class TilesetTraverser {
       const tile = stack.pop();
 
       const traverse = !tile.hasRenderContent && this.canTraverse(tile, frameState, false, false);
-      const emptyLeaf = !tile.hasRenderableContent && tile.children.length === 0;
+      const emptyLeaf = !tile.hasRenderContent && tile.children.length === 0;
 
       // Traversal stops but the tile does not have content yet
       // There will be holes if the parent tries to refine to its children, so don't refine
