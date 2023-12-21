@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {MD5Hash} from '@loaders.gl/crypto';
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProvider, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {makeZipCDHeaderIterator} from './parse-zip/cd-file-header';
 
 /**
@@ -54,4 +54,45 @@ export async function makeHashTableFromZipHeaders(
   }
 
   return hashTable;
+}
+
+export async function composeHashFile(fileProvider: FileProvider): Promise<ArrayBuffer> {
+  const hashArray = await makeHashTableFromZipHeaders(fileProvider);
+  const bufferArray = Object.entries(hashArray)
+    .map(([key, value]) => concatenateArrayBuffers(hexStringToBuffer(key), bigintToBuffer(value)))
+    .sort(compareHashes);
+  console.log(bufferArray);
+  return concatenateArrayBuffers(...bufferArray);
+}
+
+/**
+ * Function to compare md5 hashes according to https://github.com/Esri/i3s-spec/blob/master/docs/2.0/slpk_hashtable.pcsl.md
+ * @param arrA first hash to compare
+ * @param arrB second hash to compare
+ * @returns 0 if equal, negative number if a<b, pozitive if a>b
+ */
+function compareHashes(arrA: ArrayBuffer, arrB: ArrayBuffer): number {
+  const a = new BigUint64Array(arrA);
+  const b = new BigUint64Array(arrB);
+
+  return Number(a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+}
+
+/**
+ * converts hex string to buffer
+ * @param str hex string to convert
+ * @returns conversion result
+ */
+function hexStringToBuffer(str: string): ArrayBuffer {
+  const byteArray = str.match(/../g)?.map((h) => parseInt(h, 16));
+  return new Uint8Array(byteArray ?? new Array(16)).buffer;
+}
+
+/**
+ * converts bigint to buffer
+ * @param n bigint to convert
+ * @returns convertion result
+ */
+function bigintToBuffer(n: bigint): ArrayBuffer {
+  return new BigUint64Array([n]).buffer;
 }
