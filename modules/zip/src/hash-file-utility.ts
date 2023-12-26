@@ -56,12 +56,16 @@ export async function makeHashTableFromZipHeaders(
   return hashTable;
 }
 
+/**
+ * creates hash file that later can be added to the SLPK archive
+ * @param fileProvider SLPK archive where we need to add hash file
+ * @returns ArrayBuffer containing hash file
+ */
 export async function composeHashFile(fileProvider: FileProvider): Promise<ArrayBuffer> {
   const hashArray = await makeHashTableFromZipHeaders(fileProvider);
   const bufferArray = Object.entries(hashArray)
     .map(([key, value]) => concatenateArrayBuffers(hexStringToBuffer(key), bigintToBuffer(value)))
     .sort(compareHashes);
-  console.log(bufferArray);
   return concatenateArrayBuffers(...bufferArray);
 }
 
