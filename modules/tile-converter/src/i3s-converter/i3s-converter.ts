@@ -566,7 +566,6 @@ export default class I3SConverter {
       );
 
       const hashTable = await composeHashFile(new FileHandleFile(slpkFileName));
-
       await addOneFile(slpkFileName, hashTable, '@specialIndexFileHASH128@');
 
       // TODO: `addFileToZip` corrupts archive so it can't be validated with windows i3s_converter.exe
