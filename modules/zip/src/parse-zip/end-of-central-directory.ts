@@ -103,7 +103,9 @@ export async function updateEoCD(
 ): Promise<Uint8Array> {
   const eocd = new DataView(eocdBody);
 
-  const classicEoCDOffset = oldEoCDOffsets.zipEoCDOffset - (oldEoCDOffsets.zip64EoCDOffset ?? 0n);
+  const classicEoCDOffset = oldEoCDOffsets.zip64EoCDOffset
+    ? oldEoCDOffsets.zipEoCDOffset - oldEoCDOffsets.zip64EoCDOffset
+    : 0n;
 
   // updating classic EoCD record with new CD records number in general and on disc
   if (Number(newCDRecordsNumber) <= 0xffff) {
