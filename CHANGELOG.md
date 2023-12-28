@@ -2,6 +2,22 @@
 
 ## v4.1
 
+### v4.1.0-alpha.5
+
+- chore(tile-converter): hash file creation and addition to the slpk implemented (#2848)
+- fix(3d-tiles): Update the empty traversal algorithm to match CesiumJS, possible fix for low-res flickering (#2847)
+- chore: Add missing icon for I3S BSL example (#2845)
+
+### v4.1.0-alpha.4
+
+- feat(zip): adding file to the end of zip archive implementation (#2842)
+- fix(3d-tiles): loadExplicitBitstream use offset+length to extract from combined binary blob (#2844)
+- chore(website): Add I3S Building Scene Layer as a separate example (#2840)
+- fix(loader-utils): Guard against infinite recursion (#2838)
+- feat(geotiff): Fix GeoTIFFLoader (#2841)
+- feat(geotiff): RGB GeoTIFFLoader (#2839)
+- feat(GeoArrow): add optional delay between batches in parseArrowInBatches (#2836)
+
 ### v4.1.0-alpha.3
 
 - feat(mvt): Add templateUrl etc to MVTSource. (#2837)
