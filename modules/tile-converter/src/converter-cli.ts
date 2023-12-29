@@ -11,6 +11,10 @@ import {
   getURLValue,
   validateOptionsWithEqual
 } from './lib/utils/cli-utils';
+import {addOneFile, composeHashFile} from '@loaders.gl/zip';
+import {FileHandleFile} from '@loaders.gl/loader-utils';
+import promptSync from 'prompt-sync';
+import {copyFile} from 'node:fs/promises';
 
 type TileConversionOptions = {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
@@ -50,6 +54,8 @@ type TileConversionOptions = {
   maxDepth?: number;
   /** 3DTiles->I3S only. Whether the converter generates *.slpk (Scene Layer Package) I3S output file */
   slpk: boolean;
+  /** adds hash file to the slpk if there's no one */
+  addHash: boolean;
   /** Feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
   metadataClass?: string;
   /** With this options the tileset content will be analyzed without conversion */
@@ -71,6 +77,8 @@ const TILESET_TYPE = {
   _3DTILES: '3DTILES'
 };
 
+const prompt = promptSync({sigint: true});
+
 /**
  * CLI entry
  * @returns
@@ -89,6 +97,31 @@ async function main() {
   if (options.installDependencies) {
     const depthInstaller = new DepsInstaller();
     depthInstaller.install('deps');
+    return;
+  }
+
+  if (options.addHash) {
+    if (!options.tileset) {
+      return;
+    }
+    let finalPath = options.tileset;
+    if (!options.output || options.output === 'data') {
+      const nameWithoutExt = options.tileset.substring(0, options.tileset.length - 5);
+      const response = prompt(
+        `Would you like to change the current file? If no, a new file ${nameWithoutExt}-hash.slpk with hash file inside will be created (Y/N): `
+      );
+      if (response.toLocaleLowerCase() !== 'y') {
+        finalPath = `${nameWithoutExt}-hash.slpk`;
+      }
+    } else {
+      finalPath = options.output;
+    }
+    if (finalPath !== options.tileset) {
+      await copyFile(options.tileset, finalPath);
+    }
+    const hashTable = await composeHashFile(new FileHandleFile(finalPath));
+    await addOneFile(finalPath, hashTable, '@specialIndexFileHASH128@');
+
     return;
   }
 
@@ -256,7 +289,8 @@ function parseOptions(args: string[]): TileConversionOptions {
     generateTextures: false,
     generateBoundingVolumes: false,
     validate: false,
-    slpk: false
+    slpk: false,
+    addHash: false
   };
 
   // eslint-disable-next-line complexity
@@ -286,6 +320,9 @@ function parseOptions(args: string[]): TileConversionOptions {
           break;
         case '--slpk':
           opts.slpk = getBooleanValue(index, args);
+          break;
+        case '--add-hash':
+          opts.addHash = getBooleanValue(index, args);
           break;
         case '--7zExe':
           opts.sevenZipExe = getStringValue(index, args);
