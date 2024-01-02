@@ -11,7 +11,6 @@ export type TilesetTraverserProps = {
   loadSiblings?: boolean;
   skipLevelOfDetail?: boolean;
   updateTransforms?: boolean;
-  maximumScreenSpaceError?: number;
   onTraversalEnd?: (frameState) => any;
   viewportTraversersMap?: Record<string, any>;
   basePath?: string;
@@ -20,7 +19,6 @@ export type TilesetTraverserProps = {
 export const DEFAULT_PROPS: Required<TilesetTraverserProps> = {
   loadSiblings: false,
   skipLevelOfDetail: false,
-  maximumScreenSpaceError: 2,
   updateTransforms: true,
   onTraversalEnd: () => {},
   viewportTraversersMap: {},
@@ -295,7 +293,7 @@ export class TilesetTraverser {
       screenSpaceError = tile.getScreenSpaceError(frameState, true);
     }
 
-    return screenSpaceError > this.options.maximumScreenSpaceError;
+    return screenSpaceError > tile.tileset.memoryAdjustedScreenSpaceError;
   }
 
   updateTileVisibility(tile: Tile3D, frameState: FrameState): void {
