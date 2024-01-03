@@ -13,7 +13,6 @@ import {
 } from './lib/utils/cli-utils';
 import {addOneFile, composeHashFile} from '@loaders.gl/zip';
 import {FileHandleFile} from '@loaders.gl/loader-utils';
-import promptSync from 'prompt-sync';
 import {copyFile} from 'node:fs/promises';
 
 type TileConversionOptions = {
@@ -77,8 +76,6 @@ const TILESET_TYPE = {
   _3DTILES: '3DTILES'
 };
 
-const prompt = promptSync({sigint: true});
-
 /**
  * CLI entry
  * @returns
@@ -101,23 +98,40 @@ async function main() {
   }
 
   if (options.addHash) {
-    if (!options.tileset) {
-      return;
-    }
-    let finalPath = options.tileset;
-    if (!options.output || options.output === 'data') {
-      const nameWithoutExt = options.tileset.substring(0, options.tileset.length - 5);
-      const response = prompt(
-        `Would you like to change the current file? If no, a new file ${nameWithoutExt}-hash.slpk with hash file inside will be created (Y/N): `
+    const validatedOptions = validateOptions(options, true);
+    let finalPath = validatedOptions.tileset;
+    if (validatedOptions.output === 'data') {
+      const nameWithoutExt = validatedOptions.tileset.substring(
+        0,
+        validatedOptions.tileset.length - 5
       );
-      if (response.toLocaleLowerCase() !== 'y') {
+
+      const result = await inquirer.prompt<{isNewFileRequired: boolean}>([
+        {
+          name: 'isNewFileRequired',
+          type: 'list',
+          message: 'What would you like to do?',
+          choices: [
+            {
+              name: 'Add hash file to the current SLPK file',
+              value: false
+            },
+            {
+              name: `Create a new file ${nameWithoutExt}-hash.slpk with hash file inside`,
+              value: true
+            }
+          ]
+        }
+      ]);
+
+      if (result.isNewFileRequired) {
         finalPath = `${nameWithoutExt}-hash.slpk`;
       }
     } else {
-      finalPath = options.output;
+      finalPath = validatedOptions.output;
     }
-    if (finalPath !== options.tileset) {
-      await copyFile(options.tileset, finalPath);
+    if (finalPath !== validatedOptions.tileset) {
+      await copyFile(validatedOptions.tileset, finalPath);
     }
     const hashTable = await composeHashFile(new FileHandleFile(finalPath));
     await addOneFile(finalPath, hashTable, '@specialIndexFileHASH128@');
@@ -232,7 +246,10 @@ async function convert(options: ValidatedTileConversionOptions) {
  * @param options - input options of the CLI command
  * @returns validated options
  */
-function validateOptions(options: TileConversionOptions): ValidatedTileConversionOptions {
+function validateOptions(
+  options: TileConversionOptions,
+  addHash?: boolean
+): ValidatedTileConversionOptions {
   const mandatoryOptionsWithExceptions: {
     [key: string]: {
       getMessage: () => void;
@@ -241,7 +258,7 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
   } = {
     name: {
       getMessage: () => console.log('Missed: --name [Tileset name]'),
-      condition: (value: any) => Boolean(value) || Boolean(options.analyze)
+      condition: (value: any) => addHash || Boolean(value) || Boolean(options.analyze)
     },
     output: {getMessage: () => console.log('Missed: --output [Output path name]')},
     sevenZipExe: {getMessage: () => console.log('Missed: --7zExe [7z archiver executable path]')},
@@ -251,7 +268,7 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
       getMessage: () =>
         console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]'),
       condition: (value) =>
-        Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase())
+        addHash || (Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase()))
     }
   };
   const exceptions: (() => void)[] = [];
