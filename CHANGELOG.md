@@ -2,6 +2,10 @@
 
 ## v4.1
 
+### v4.1.0-alpha.6
+
+- feat(tile-converter): --add-hash mode (#2849)
+
 ### v4.1.0-alpha.5
 
 - chore(tile-converter): hash file creation and addition to the slpk implemented (#2848)
