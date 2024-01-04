@@ -11,6 +11,9 @@ import {
   getURLValue,
   validateOptionsWithEqual
 } from './lib/utils/cli-utils';
+import {addOneFile, composeHashFile} from '@loaders.gl/zip';
+import {FileHandleFile} from '@loaders.gl/loader-utils';
+import {copyFile} from 'node:fs/promises';
 
 type TileConversionOptions = {
   /** "I3S" - for I3S to 3DTiles conversion, "3DTILES" for 3DTiles to I3S conversion */
@@ -50,6 +53,8 @@ type TileConversionOptions = {
   maxDepth?: number;
   /** 3DTiles->I3S only. Whether the converter generates *.slpk (Scene Layer Package) I3S output file */
   slpk: boolean;
+  /** adds hash file to the slpk if there's no one */
+  addHash: boolean;
   /** Feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
   metadataClass?: string;
   /** With this options the tileset content will be analyzed without conversion */
@@ -89,6 +94,48 @@ async function main() {
   if (options.installDependencies) {
     const depthInstaller = new DepsInstaller();
     depthInstaller.install('deps');
+    return;
+  }
+
+  if (options.addHash) {
+    const validatedOptions = validateOptions(options, true);
+    let finalPath = validatedOptions.tileset;
+    if (validatedOptions.output === 'data') {
+      const nameWithoutExt = validatedOptions.tileset.substring(
+        0,
+        validatedOptions.tileset.length - 5
+      );
+
+      const result = await inquirer.prompt<{isNewFileRequired: boolean}>([
+        {
+          name: 'isNewFileRequired',
+          type: 'list',
+          message: 'What would you like to do?',
+          choices: [
+            {
+              name: 'Add hash file to the current SLPK file',
+              value: false
+            },
+            {
+              name: `Create a new file ${nameWithoutExt}-hash.slpk with hash file inside`,
+              value: true
+            }
+          ]
+        }
+      ]);
+
+      if (result.isNewFileRequired) {
+        finalPath = `${nameWithoutExt}-hash.slpk`;
+      }
+    } else {
+      finalPath = validatedOptions.output;
+    }
+    if (finalPath !== validatedOptions.tileset) {
+      await copyFile(validatedOptions.tileset, finalPath);
+    }
+    const hashTable = await composeHashFile(new FileHandleFile(finalPath));
+    await addOneFile(finalPath, hashTable, '@specialIndexFileHASH128@');
+
     return;
   }
 
@@ -199,7 +246,10 @@ async function convert(options: ValidatedTileConversionOptions) {
  * @param options - input options of the CLI command
  * @returns validated options
  */
-function validateOptions(options: TileConversionOptions): ValidatedTileConversionOptions {
+function validateOptions(
+  options: TileConversionOptions,
+  addHash?: boolean
+): ValidatedTileConversionOptions {
   const mandatoryOptionsWithExceptions: {
     [key: string]: {
       getMessage: () => void;
@@ -208,7 +258,7 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
   } = {
     name: {
       getMessage: () => console.log('Missed: --name [Tileset name]'),
-      condition: (value: any) => Boolean(value) || Boolean(options.analyze)
+      condition: (value: any) => addHash || Boolean(value) || Boolean(options.analyze)
     },
     output: {getMessage: () => console.log('Missed: --output [Output path name]')},
     sevenZipExe: {getMessage: () => console.log('Missed: --7zExe [7z archiver executable path]')},
@@ -218,7 +268,7 @@ function validateOptions(options: TileConversionOptions): ValidatedTileConversio
       getMessage: () =>
         console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]'),
       condition: (value) =>
-        Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase())
+        addHash || (Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase()))
     }
   };
   const exceptions: (() => void)[] = [];
@@ -256,7 +306,8 @@ function parseOptions(args: string[]): TileConversionOptions {
     generateTextures: false,
     generateBoundingVolumes: false,
     validate: false,
-    slpk: false
+    slpk: false,
+    addHash: false
   };
 
   // eslint-disable-next-line complexity
@@ -286,6 +337,9 @@ function parseOptions(args: string[]): TileConversionOptions {
           break;
         case '--slpk':
           opts.slpk = getBooleanValue(index, args);
+          break;
+        case '--add-hash':
+          opts.addHash = getBooleanValue(index, args);
           break;
         case '--7zExe':
           opts.sevenZipExe = getStringValue(index, args);
