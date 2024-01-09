@@ -254,7 +254,8 @@ export class Tileset3D {
    * will instead use this (larger) adjusted screen space error to achieve the
    * best possible visual quality within the available memory.
    */
-  private _memoryAdjustedScreenSpaceError: number = 0.0;
+  memoryAdjustedScreenSpaceError: number = 0.0;
+
   private _cacheBytes: number = 0;
   private _cacheOverflowBytes: number = 0;
 
@@ -277,7 +278,6 @@ export class Tileset3D {
   private _requestedTiles: Tile3D[] = [];
   private _emptyTiles: Tile3D[] = [];
   private frameStateData: any = {};
-  private _memoryExceeded = false;
 
   _traverser: TilesetTraverser;
   _cache = new TilesetCache();
@@ -321,7 +321,7 @@ export class Tileset3D {
       maxRequests: this.options.maxRequests
     });
 
-    this._memoryAdjustedScreenSpaceError = this.options.maximumScreenSpaceError;
+    this.memoryAdjustedScreenSpaceError = this.options.maximumScreenSpaceError;
     this._cacheBytes = this.options.maximumMemoryUsage * 1024 * 1024;
     this._cacheOverflowBytes = this.options.memoryCacheOverflow * 1024 * 1024;
 
@@ -354,10 +354,6 @@ export class Tileset3D {
 
   get queryParams(): string {
     return new URLSearchParams(this._queryParams).toString();
-  }
-
-  get memoryAdjustedScreenSpaceError(): number {
-    return this._memoryAdjustedScreenSpaceError;
   }
 
   setProps(props: Tileset3DProps): void {
@@ -435,17 +431,16 @@ export class Tileset3D {
     return this.updatePromise;
   }
 
-  increaseScreenSpaceError(): void {
-    this._memoryAdjustedScreenSpaceError *= 1.02;
+  adjustScreenSpaceError(): void {
+    if (this.gpuMemoryUsageInBytes < this._cacheBytes) {
+      this.memoryAdjustedScreenSpaceError = Math.max(
+        this.memoryAdjustedScreenSpaceError / 1.02,
+        this.options.maximumScreenSpaceError
+      );
+    } else if (this.gpuMemoryUsageInBytes > this._cacheBytes + this._cacheOverflowBytes) {
+      this.memoryAdjustedScreenSpaceError *= 1.02;
+    }
   }
-
-  decreaseScreenSpaceError(): void {
-    this._memoryAdjustedScreenSpaceError = Math.max(
-      this._memoryAdjustedScreenSpaceError / 1.02,
-      this.options.maximumScreenSpaceError
-    );
-  }
-
   /**
    * Update visible tiles relying on a list of viewports
    * @param viewports viewports
@@ -579,14 +574,7 @@ export class Tileset3D {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
     // requestedTiles.sort((a, b) => a._priority - b._priority);
-
-    // Stop loading tiles if memory was exceeded
-    this._memoryExceeded = false;
-
     for (const tile of this._requestedTiles) {
-      if (this._memoryExceeded) {
-        break;
-      }
       if (tile.contentUnloaded) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this._loadTile(tile);
@@ -617,7 +605,7 @@ export class Tileset3D {
     this.stats.get(TILES_IN_VIEW).count = this.selectedTiles.length;
     this.stats.get(TILES_RENDERABLE).count = tilesRenderable;
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
-    this.stats.get(MAXIMUM_SSE).count = this._memoryAdjustedScreenSpaceError;
+    this.stats.get(MAXIMUM_SSE).count = this.memoryAdjustedScreenSpaceError;
   }
 
   async _initializeTileSet(tilesetJson: TilesetJSON): Promise<void> {
@@ -891,12 +879,7 @@ export class Tileset3D {
 
     // Adjust SSE based on cache limits
     if (this.options.memoryAdjustedScreenSpaceError) {
-      if (this.gpuMemoryUsageInBytes < this._cacheBytes) {
-        this.decreaseScreenSpaceError();
-      } else if (this.gpuMemoryUsageInBytes > this._cacheBytes + this._cacheOverflowBytes) {
-        this._memoryExceeded = true;
-        this.increaseScreenSpaceError();
-      }
+      this.adjustScreenSpaceError();
     }
   }
 
