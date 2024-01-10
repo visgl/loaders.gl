@@ -18,12 +18,12 @@ import { inferGeometryType } from '../generic/header.js';
 
 import {
   FeatureCollection as GeoJsonFeatureCollection,
-  Point,
-  MultiPoint,
-  LineString,
-  MultiLineString,
-  Polygon,
-  MultiPolygon,
+  // Point,
+  // MultiPoint,
+  // LineString,
+  // MultiLineString,
+  // Polygon,
+  // MultiPolygon,
   GeometryCollection,
 } from 'geojson';
 
