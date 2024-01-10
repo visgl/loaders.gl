@@ -10,7 +10,7 @@ export { ISimpleGeometry } from './generic/geometry.js';
 export { IFeature } from './generic/feature.js';
 export { FromFeatureFn } from './generic/featurecollection.js';
 
-export { IGeoJsonFeature } from './geojson/feature';
+export { IGeoJsonFeature } from './geojson/feature.js';
 
 export { default as HeaderMeta } from './header-meta.js';
 export { default as ColumnMeta } from './column-meta.js';

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Geometry as FGBGeometry, Feature as FGBFeature} from 'flatgeobuf';
+import {Geometry as FGBGeometry, Feature as FGBFeature} from '../flatgeobuf-v3.27.2';
 // import {GeometryType} from 'flatgeobuf/generic';
 // Copy geometry type as it is hard to access the export
 export declare enum GeometryType {
