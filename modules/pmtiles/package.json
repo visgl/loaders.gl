@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/pmtiles",
-  "version": "4.1.0-alpha.6",
+  "version": "4.1.0-alpha.7",
   "description": "Framework-independent loader for the pmtiles format",
   "license": "MIT",
   "type": "module",
@@ -45,10 +45,10 @@
     "build-bundle": "ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/images": "4.1.0-alpha.6",
-    "@loaders.gl/loader-utils": "4.1.0-alpha.6",
-    "@loaders.gl/mvt": "4.1.0-alpha.6",
-    "@loaders.gl/schema": "4.1.0-alpha.6",
+    "@loaders.gl/images": "4.1.0-alpha.7",
+    "@loaders.gl/loader-utils": "4.1.0-alpha.7",
+    "@loaders.gl/mvt": "4.1.0-alpha.7",
+    "@loaders.gl/schema": "4.1.0-alpha.7",
     "pmtiles": "^2.7.2"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"

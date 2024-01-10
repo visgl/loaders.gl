@@ -2,6 +2,10 @@
 
 ## v4.1
 
+### v4.1.0-alpha.7
+
+- chore(flatgeobuf): fork flatgeobuf TS to fix bundling and import issues (#2853)
+
 ### v4.1.0-alpha.6
 
 - feat(tile-converter): --add-hash mode (#2849)
