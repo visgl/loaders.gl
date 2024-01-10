@@ -17,4 +17,4 @@ npm install @loaders.gl/core
 
 ## Attribution
 
-The `FlatGeobufLoader` wraps the [`flatgeobuf`](https://github.com/bjornharrtell/flatgeobuf) NPM module under the ISC license.
+The `FlatGeobufLoader` forks the [`flatgeobuf`](https://github.com/bjornharrtell/flatgeobuf) NPM module under the ISC license.

@@ -46,7 +46,10 @@
     "@loaders.gl/gis": "4.1.0-alpha.6",
     "@loaders.gl/loader-utils": "4.1.0-alpha.6",
     "@math.gl/proj4": "^4.0.0",
-    "flatgeobuf": "3.27.0"
+    "flatgeobuf": "3.27.2"
+  },
+  "devDependencies": {
+    "stream-buffers": "3.0.2"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
