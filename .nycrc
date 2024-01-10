@@ -18,6 +18,7 @@
     "**/text-encoding.js",
     "**/encoding.js",
     "**/laz-perf.js",
-    "**3d-tiles/src/styles/**"
+    "**3d-tiles/src/styles/**",
+    "**/src/flatgeobuf/**"
   ]
 }
