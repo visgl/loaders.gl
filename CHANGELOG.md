@@ -2,6 +2,10 @@
 
 ## v4.1
 
+### v4.1.0-alpha.8
+
+-  fix(flatgeobuf): restore worker build (#2855)
+
 ### v4.1.0-alpha.7
 
 - chore(flatgeobuf): fork flatgeobuf TS to fix bundling and import issues (#2853)
