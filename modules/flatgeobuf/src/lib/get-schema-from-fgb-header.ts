@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, Field, DataType} from '@loaders.gl/schema';
-import * as fgb from 'flatgeobuf';
+import * as fgb from '../flatgeobuf-v3.27.2';
 
 /**
  * @param fgbHeader

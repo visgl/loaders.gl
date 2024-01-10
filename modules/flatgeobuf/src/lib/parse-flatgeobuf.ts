@@ -11,9 +11,9 @@ import type {GeoJSONTable, Table, Schema} from '@loaders.gl/schema';
 import {fgbToBinaryGeometry} from './binary-geometries';
 import {getSchemaFromFGBHeader} from './get-schema-from-fgb-header';
 
-import * as fgb from 'flatgeobuf';
-import * as geojson from 'flatgeobuf/lib/mjs/geojson.js';
-import * as generic from 'flatgeobuf/lib/mjs/generic.js';
+import * as fgb from '../flatgeobuf-v3.27.2';
+import * as geojson from '../flatgeobuf-v3.27.2/geojson.js';
+import * as generic from '../flatgeobuf-v3.27.2/generic.js';
 import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/mjs/generic/feature';
 
 const deserializeGeoJson = geojson.deserialize;

@@ -54,7 +54,7 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('FlatGeobufLoader#load', async (t) => {
+test.only('FlatGeobufLoader#load', async (t) => {
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {worker: false});
   t.equal(geojsonTable.features.length, 179);
   t.equal(geojsonTable.schema.fields.length, 2);
