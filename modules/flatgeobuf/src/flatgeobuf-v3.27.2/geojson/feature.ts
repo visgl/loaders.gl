@@ -9,18 +9,18 @@ import { Feature as GeoJsonFeature } from 'geojson';
 export interface IGeoJsonFeature extends IFeature, GeoJsonFeature {}
 
 export function fromFeature(
-    feature: Feature,
-    header: HeaderMeta,
+  feature: Feature,
+  header: HeaderMeta,
 ): IGeoJsonFeature {
-    const columns = header.columns;
-    const geometry = fromGeometry(
+  const columns = header.columns;
+  const geometry = fromGeometry(
         feature.geometry() as Geometry,
         header.geometryType,
-    );
-    const geoJsonfeature: GeoJsonFeature = {
-        type: 'Feature',
-        geometry,
-        properties: parseProperties(feature, columns),
-    };
-    return geoJsonfeature;
+  );
+  const geoJsonfeature: GeoJsonFeature = {
+    type: 'Feature',
+    geometry,
+    properties: parseProperties(feature, columns),
+  };
+  return geoJsonfeature;
 }

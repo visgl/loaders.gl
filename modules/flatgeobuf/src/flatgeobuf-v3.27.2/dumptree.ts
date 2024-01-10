@@ -15,7 +15,7 @@ const buffer = readFileSync('./test/data/tiger_roads.fgb');
 const bytes = new Uint8Array(buffer);
 
 if (!bytes.subarray(0, 3).every((v, i) => magicbytes[i] === v))
-    throw new Error('Not a FlatGeobuf file');
+  throw new Error('Not a FlatGeobuf file');
 
 const bb = new flatbuffers.ByteBuffer(bytes);
 const headerLength = bb.readUint32(magicbytes.length);
@@ -30,53 +30,53 @@ const numItems = headerMeta.featuresCount;
 const nodeSize = headerMeta.indexNodeSize;
 const envelope = headerMeta.envelope;
 
-console.log('Number of items in tree: ' + numItems);
-console.log('Envelope: ' + envelope);
-console.log('Tree node index size: ' + nodeSize);
-console.log('Offset: ' + offset);
+console.log(`Number of items in tree: ${  numItems}`);
+console.log(`Envelope: ${  envelope}`);
+console.log(`Tree node index size: ${  nodeSize}`);
+console.log(`Offset: ${  offset}`);
 
 const treeSize = calcTreeSize(numItems, nodeSize);
 const levelBounds = generateLevelBounds(numItems, nodeSize).reverse();
 
 console.log('Level bounds:');
-for (const levelBound of levelBounds) console.log('  ' + levelBound);
+for (const levelBound of levelBounds) console.log(`  ${  levelBound}`);
 
-console.log('Size: ' + treeSize);
+console.log(`Size: ${  treeSize}`);
 
 const items: any[] = [];
 
 function readNode(level: number) {
-    const minx = buffer.readDoubleLE(offset + 0);
-    const miny = buffer.readDoubleLE(offset + 8);
-    const maxx = buffer.readDoubleLE(offset + 16);
-    const maxy = buffer.readDoubleLE(offset + 24);
-    items.push([level, minx, miny, maxx, maxy]);
-    offset += 40;
+  const minx = buffer.readDoubleLE(offset + 0);
+  const miny = buffer.readDoubleLE(offset + 8);
+  const maxx = buffer.readDoubleLE(offset + 16);
+  const maxy = buffer.readDoubleLE(offset + 24);
+  items.push([level, minx, miny, maxx, maxy]);
+  offset += 40;
 }
 
 let level = 0;
 for (const levelBound of levelBounds) {
-    for (let i = levelBound[0]; i < levelBound[1]; i++) readNode(level);
-    level++;
+  for (let i = levelBound[0]; i < levelBound[1]; i++) readNode(level);
+  level++;
 }
 
 const writer = new GeoJSONWriter();
 const factory = new GeometryFactory();
 
 const geojsonfeatures = items.map((i) => {
-    const geometry = factory.toGeometry(new Envelope(i[1], i[3], i[2], i[4]));
-    return {
-        type: 'Feature',
-        geometry: writer.write(geometry),
-        properties: {
-            level: i[0],
-        },
-    };
+  const geometry = factory.toGeometry(new Envelope(i[1], i[3], i[2], i[4]));
+  return {
+    type: 'Feature',
+    geometry: writer.write(geometry),
+    properties: {
+      level: i[0],
+    },
+  };
 });
 
 const geojson = {
-    type: 'FeatureCollection',
-    features: geojsonfeatures,
+  type: 'FeatureCollection',
+  features: geojsonfeatures,
 };
 
 writeFileSync('out.geojson', JSON.stringify(geojson));
