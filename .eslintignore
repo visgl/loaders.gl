@@ -13,9 +13,11 @@ public/
 .cache/
 
 examples/**
+examples/experimental/gltf-with-raw-webgl/
 
+modules/flatgeobuf/src/flatgeobuf*
+modules/potree/test/data/**/cloud.js
 modules/tiles/src/bundle.ts
 modules/zarr
+
 modules/tile-converter/
-modules/potree/test/data/**/cloud.js
-examples/experimental/gltf-with-raw-webgl/

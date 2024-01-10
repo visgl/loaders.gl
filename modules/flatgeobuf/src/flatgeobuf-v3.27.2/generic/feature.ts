@@ -1,41 +1,33 @@
 import * as flatbuffers from 'flatbuffers';
 
 import ColumnMeta from '../column-meta.js';
-import { ColumnType } from '../flat-geobuf/column-type.js';
-import { Feature } from '../flat-geobuf/feature.js';
+import {ColumnType} from '../flat-geobuf/column-type.js';
+import {Feature} from '../flat-geobuf/feature.js';
 import HeaderMeta from '../header-meta.js';
-import {
-  buildGeometry,
-  ISimpleGeometry,
-  ICreateGeometry,
-  IParsedGeometry,
-} from './geometry.js';
+import {buildGeometry, ISimpleGeometry, ICreateGeometry, IParsedGeometry} from './geometry.js';
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
 export interface IFeature {
-    getGeometry?(): ISimpleGeometry;
-    getProperties?(): any;
-    setProperties?(properties: Record<string, unknown>): any;
+  getGeometry?(): ISimpleGeometry;
+  getProperties?(): any;
+  setProperties?(properties: Record<string, unknown>): any;
 }
 
 export interface ICreateFeature {
-    (
-        geometry?: ISimpleGeometry,
-        properties?: Record<string, unknown>,
-    ): IFeature;
+  (geometry?: ISimpleGeometry, properties?: Record<string, unknown>): IFeature;
 }
 
 export interface IProperties {
-    [key: string]: boolean | number | string | any;
+  [key: string]: boolean | number | string | any;
 }
 
 export function fromFeature(
   feature: Feature,
   header: HeaderMeta,
   createGeometry: ICreateGeometry,
-  createFeature: ICreateFeature,
+  createFeature: ICreateFeature
 ): IFeature {
   const columns = header.columns;
   const geometry = feature.geometry();
@@ -47,7 +39,7 @@ export function fromFeature(
 export function buildFeature(
   geometry: IParsedGeometry,
   properties: IProperties,
-  header: HeaderMeta,
+  header: HeaderMeta
 ): Uint8Array {
   const columns = header.columns;
   const builder = new flatbuffers.Builder();
@@ -137,17 +129,14 @@ export function buildFeature(
           break;
         }
         default:
-          throw new Error(`Unknown type ${  column.type}`);
+          throw new Error(`Unknown type ${column.type}`);
       }
     }
   }
 
   let propertiesOffset: number | null = null;
   if (offset > 0)
-    propertiesOffset = Feature.createPropertiesVector(
-      builder,
-      bytes.slice(0, offset),
-    );
+    propertiesOffset = Feature.createPropertiesVector(builder, bytes.slice(0, offset));
 
   const geometryOffset = buildGeometry(builder, geometry);
   Feature.startFeature(builder);
@@ -155,12 +144,12 @@ export function buildFeature(
   if (propertiesOffset) Feature.addProperties(builder, propertiesOffset);
   const featureOffset = Feature.endFeature(builder);
   builder.finishSizePrefixed(featureOffset);
-  return builder.asUint8Array() ;
+  return builder.asUint8Array();
 }
 
 export function parseProperties(
   feature: Feature,
-  columns?: ColumnMeta[] | null,
+  columns?: ColumnMeta[] | null
 ): Record<string, unknown> {
   const properties: Record<string, unknown> = {};
   if (!columns || columns.length === 0) return properties;
@@ -234,24 +223,20 @@ export function parseProperties(
       case ColumnType.String: {
         const length = view.getUint32(offset, true);
         offset += 4;
-        properties[name] = textDecoder.decode(
-          array.subarray(offset, offset + length),
-        );
+        properties[name] = textDecoder.decode(array.subarray(offset, offset + length));
         offset += length;
         break;
       }
       case ColumnType.Json: {
         const length = view.getUint32(offset, true);
         offset += 4;
-        const str = textDecoder.decode(
-          array.subarray(offset, offset + length),
-        );
+        const str = textDecoder.decode(array.subarray(offset, offset + length));
         properties[name] = JSON.parse(str);
         offset += length;
         break;
       }
       default:
-        throw new Error(`Unknown type ${  column.type}`);
+        throw new Error(`Unknown type ${column.type}`);
     }
   }
   return properties;

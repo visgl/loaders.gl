@@ -1,5 +1,5 @@
-import { GeometryType } from '../flat-geobuf/geometry-type.js';
-import { Geometry } from '../flat-geobuf/geometry.js';
+import {GeometryType} from '../flat-geobuf/geometry-type.js';
+import {Geometry} from '../flat-geobuf/geometry.js';
 
 import {
   Geometry as GeoJsonGeometry,
@@ -9,30 +9,19 @@ import {
   MultiLineString,
   Polygon,
   MultiPolygon,
-  GeometryCollection,
+  GeometryCollection
 } from 'geojson';
 
-import {
-  IParsedGeometry,
-  flat,
-  pairFlatCoordinates,
-  toGeometryType,
-} from '../generic/geometry.js';
+import {IParsedGeometry, flat, pairFlatCoordinates, toGeometryType} from '../generic/geometry.js';
 
 export interface IGeoJsonGeometry {
-    type: string;
-    coordinates: number[] | number[][] | number[][][] | number[][][][];
-    geometries?: IGeoJsonGeometry[];
+  type: string;
+  coordinates: number[] | number[][] | number[][][] | number[][][][];
+  geometries?: IGeoJsonGeometry[];
 }
 
 export function parseGeometry(
-  geometry:
-        | Point
-        | MultiPoint
-        | LineString
-        | MultiLineString
-        | Polygon
-        | MultiPolygon,
+  geometry: Point | MultiPoint | LineString | MultiLineString | Polygon | MultiPolygon
 ): IParsedGeometry {
   const cs = geometry.coordinates;
   const xy: number[] = [];
@@ -60,7 +49,7 @@ export function parseGeometry(
       const csss = cs as number[][][][];
       const geometries = csss.map((coordinates) => ({
         type: 'Polygon',
-        coordinates,
+        coordinates
       })) as Polygon[];
       parts = geometries.map(parseGeometry);
       break;
@@ -71,7 +60,7 @@ export function parseGeometry(
     z: z.length > 0 ? z : undefined,
     ends,
     type,
-    parts,
+    parts
   } as IParsedGeometry;
 }
 
@@ -85,7 +74,7 @@ export function parseGC(geometry: GeometryCollection): IParsedGeometry {
   }
   return {
     type,
-    parts,
+    parts
   } as IParsedGeometry;
 }
 
@@ -98,9 +87,7 @@ function extractParts(xy: Float64Array, z: Float64Array, ends: Uint32Array) {
     s = 0;
     zSlices = Array.from(ends).map((e) => z.slice(s, (s = e)));
   }
-  return xySlices.map((xy, i) =>
-    pairFlatCoordinates(xy, zSlices ? zSlices[i] : undefined),
-  );
+  return xySlices.map((xy, i) => pairFlatCoordinates(xy, zSlices ? zSlices[i] : undefined));
 }
 
 function toGeoJsonCoordinates(geometry: Geometry, type: GeometryType) {
@@ -122,10 +109,7 @@ function toGeoJsonCoordinates(geometry: Geometry, type: GeometryType) {
   }
 }
 
-export function fromGeometry(
-  geometry: Geometry,
-  headerType: GeometryType,
-): GeoJsonGeometry {
+export function fromGeometry(geometry: Geometry, headerType: GeometryType): GeoJsonGeometry {
   let type = headerType;
   if (type === GeometryType.Unknown) {
     type = geometry.type();
@@ -139,25 +123,20 @@ export function fromGeometry(
     }
     return {
       type: GeometryType[type],
-      geometries,
+      geometries
     } as GeoJsonGeometry;
   } else if (type === GeometryType.MultiPolygon) {
     const geometries: GeoJsonGeometry[] = [];
     for (let i = 0; i < geometry.partsLength(); i++)
-      geometries.push(
-        fromGeometry(
-                    geometry.parts(i) as Geometry,
-                    GeometryType.Polygon,
-        ),
-      );
+      geometries.push(fromGeometry(geometry.parts(i) as Geometry, GeometryType.Polygon));
     return {
       type: GeometryType[type],
-      coordinates: geometries.map((g) => (g as Polygon).coordinates),
+      coordinates: geometries.map((g) => (g as Polygon).coordinates)
     } as GeoJsonGeometry;
   }
   const coordinates = toGeoJsonCoordinates(geometry, type);
   return {
     type: GeometryType[type],
-    coordinates,
+    coordinates
   } as GeoJsonGeometry;
 }

@@ -2,19 +2,19 @@ import * as flatbuffers from 'flatbuffers';
 
 import ColumnMeta from './column-meta.js';
 import CrsMeta from './crs-meta.js';
-import { GeometryType } from './flat-geobuf/geometry-type.js';
-import { Header } from './flat-geobuf/header.js';
+import {GeometryType} from './flat-geobuf/geometry-type.js';
+import {Header} from './flat-geobuf/header.js';
 
 export default interface HeaderMeta {
-    geometryType: GeometryType;
-    columns: ColumnMeta[] | null;
-    envelope: Float64Array | null;
-    featuresCount: number;
-    indexNodeSize: number;
-    crs: CrsMeta | null;
-    title: string | null;
-    description: string | null;
-    metadata: string | null;
+  geometryType: GeometryType;
+  columns: ColumnMeta[] | null;
+  envelope: Float64Array | null;
+  featuresCount: number;
+  indexNodeSize: number;
+  crs: CrsMeta | null;
+  title: string | null;
+  description: string | null;
+  metadata: string | null;
 }
 
 export function fromByteBuffer(bb: flatbuffers.ByteBuffer): HeaderMeta {
@@ -37,19 +37,19 @@ export function fromByteBuffer(bb: flatbuffers.ByteBuffer): HeaderMeta {
       scale: column.scale(),
       nullable: column.nullable(),
       unique: column.unique(),
-      primary_key: column.primaryKey(),
+      primary_key: column.primaryKey()
     });
   }
   const crs = header.crs();
   const crsMeta: CrsMeta | null = crs
     ? {
-      org: crs.org(),
-      code: crs.code(),
-      name: crs.name(),
-      description: crs.description(),
-      wkt: crs.wkt(),
-      code_string: crs.codeString(),
-    }
+        org: crs.org(),
+        code: crs.code(),
+        name: crs.name(),
+        description: crs.description(),
+        wkt: crs.wkt(),
+        code_string: crs.codeString()
+      }
     : null;
   const headerMeta: HeaderMeta = {
     geometryType: header.geometryType(),
@@ -60,7 +60,7 @@ export function fromByteBuffer(bb: flatbuffers.ByteBuffer): HeaderMeta {
     crs: crsMeta,
     title: header.title(),
     description: header.description(),
-    metadata: header.metadata(),
+    metadata: header.metadata()
   };
   return headerMeta;
 }

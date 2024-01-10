@@ -15,10 +15,10 @@ export const NODE_ITEM_LEN = NODE_ITEM_BYTE_LEN;
 export const DEFAULT_NODE_SIZE = 16;
 
 export interface Rect {
-    minX: number;
-    minY: number;
-    maxX: number;
-    maxY: number;
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
 }
 
 export function calcTreeSize(numItems: number, nodeSize: number): number {
@@ -35,13 +35,9 @@ export function calcTreeSize(numItems: number, nodeSize: number): number {
 /**
  * returns [levelOffset, numNodes] for each level
  */
-export function generateLevelBounds(
-  numItems: number,
-  nodeSize: number,
-): Array<[number, number]> {
+export function generateLevelBounds(numItems: number, nodeSize: number): Array<[number, number]> {
   if (nodeSize < 2) throw new Error('Node size must be at least 2');
-  if (numItems === 0)
-    throw new Error('Number of items must be greater than 0');
+  if (numItems === 0) throw new Error('Number of items must be greater than 0');
 
   // number of nodes per level in bottom-up order
   let n = numItems;
@@ -95,194 +91,165 @@ export async function* streamSearch(
   numItems: number,
   nodeSize: number,
   rect: Rect,
-  readNode: ReadNodeFn,
+  readNode: ReadNodeFn
 ): AsyncGenerator<SearchResult, void, unknown> {
-    type NodeIdx = number;
-    class NodeRange {
-        _level: number;
-        nodes: [NodeIdx, NodeIdx];
-        constructor(nodes: [NodeIdx, NodeIdx], level: number) {
-          this._level = level;
-          this.nodes = nodes;
-        }
-
-        level(): number {
-          return this._level;
-        }
-
-        startNodeIdx(): NodeIdx {
-          return this.nodes[0];
-        }
-
-        endNodeIdx(): NodeIdx {
-          return this.nodes[1];
-        }
-
-        extendEndNodeIdx(newIdx: number) {
-          console.assert(newIdx > this.nodes[1]);
-          this.nodes[1] = newIdx;
-        }
-
-        toString(): string {
-          return `[NodeRange level: ${this._level}, nodes: ${this.nodes[0]}-${this.nodes[1]}]`;
-        }
+  type NodeIdx = number;
+  class NodeRange {
+    _level: number;
+    nodes: [NodeIdx, NodeIdx];
+    constructor(nodes: [NodeIdx, NodeIdx], level: number) {
+      this._level = level;
+      this.nodes = nodes;
     }
 
-    const { minX, minY, maxX, maxY } = rect;
-    Logger.info(`tree items: ${numItems}, nodeSize: ${nodeSize}`);
-    const levelBounds = generateLevelBounds(numItems, nodeSize);
-    const firstLeafNodeIdx = levelBounds[0][0];
+    level(): number {
+      return this._level;
+    }
 
-    const rootNodeRange: NodeRange = (() => {
-      const range: [number, number] = [0, 1];
-      const level = levelBounds.length - 1;
-      return new NodeRange(range, level);
+    startNodeIdx(): NodeIdx {
+      return this.nodes[0];
+    }
+
+    endNodeIdx(): NodeIdx {
+      return this.nodes[1];
+    }
+
+    extendEndNodeIdx(newIdx: number) {
+      console.assert(newIdx > this.nodes[1]);
+      this.nodes[1] = newIdx;
+    }
+
+    toString(): string {
+      return `[NodeRange level: ${this._level}, nodes: ${this.nodes[0]}-${this.nodes[1]}]`;
+    }
+  }
+
+  const {minX, minY, maxX, maxY} = rect;
+  Logger.info(`tree items: ${numItems}, nodeSize: ${nodeSize}`);
+  const levelBounds = generateLevelBounds(numItems, nodeSize);
+  const firstLeafNodeIdx = levelBounds[0][0];
+
+  const rootNodeRange: NodeRange = (() => {
+    const range: [number, number] = [0, 1];
+    const level = levelBounds.length - 1;
+    return new NodeRange(range, level);
+  })();
+
+  const queue: Array<NodeRange> = [rootNodeRange];
+
+  Logger.debug(
+    `starting stream search with queue: ${queue}, numItems: ${numItems}, nodeSize: ${nodeSize}, levelBounds: ${levelBounds}`
+  );
+
+  while (queue.length != 0) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const nodeRange = queue.shift()!;
+
+    Logger.debug(`popped node: ${nodeRange}, queueLength: ${queue.length}`);
+
+    const nodeRangeStartIdx = nodeRange.startNodeIdx();
+    const isLeafNode = nodeRangeStartIdx >= firstLeafNodeIdx;
+
+    // find the end index of the node
+    const nodeRangeEndIdx = (() => {
+      const [, levelBound] = levelBounds[nodeRange.level()];
+      const nodeIdx = Math.min(nodeRange.endNodeIdx() + nodeSize, levelBound);
+
+      if (isLeafNode && nodeIdx < levelBound) {
+        // We can infer the length of *this* feature by getting the start of the *next*
+        // feature, so we get an extra node.
+        // This approach doesn't work for the final node in the index,
+        // but in that case we know that the feature runs to the end of the FGB file and
+        // could make an open ended range request to get "the rest of the data".
+        return nodeIdx + 1;
+      }
+      return nodeIdx;
     })();
 
-    const queue: Array<NodeRange> = [rootNodeRange];
+    const numNodesInRange = nodeRangeEndIdx - nodeRangeStartIdx;
 
-    Logger.debug(
-      `starting stream search with queue: ${queue}, numItems: ${numItems}, nodeSize: ${nodeSize}, levelBounds: ${levelBounds}`,
+    const buffer = await readNode(
+      nodeRangeStartIdx * NODE_ITEM_BYTE_LEN,
+      numNodesInRange * NODE_ITEM_BYTE_LEN
     );
 
-    while (queue.length != 0) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const nodeRange = queue.shift()!;
+    const dataView = new DataView(buffer);
+    for (let nodeIdx = nodeRangeStartIdx; nodeIdx < nodeRangeEndIdx; nodeIdx++) {
+      const nodeIdxInDataView = nodeIdx - nodeRangeStartIdx;
+      const dataViewByteStart = nodeIdxInDataView * NODE_ITEM_BYTE_LEN;
+      if (maxX < dataView.getFloat64(dataViewByteStart + 0, true)) continue; // maxX < nodeMinX
+      if (maxY < dataView.getFloat64(dataViewByteStart + 8, true)) continue; // maxY < nodeMinY
+      if (minX > dataView.getFloat64(dataViewByteStart + 16, true)) continue; // minX > nodeMaxX
+      if (minY > dataView.getFloat64(dataViewByteStart + 24, true)) continue; // minY > nodeMaxY
 
-      Logger.debug(`popped node: ${nodeRange}, queueLength: ${queue.length}`);
+      // `offset` is:
+      // For leaf nodes: the byte-offset into the feature buffer.
+      // For inner nodes: the node-idx of its first child.
+      const offset = dataView.getBigUint64(dataViewByteStart + 32, true);
 
-      const nodeRangeStartIdx = nodeRange.startNodeIdx();
-      const isLeafNode = nodeRangeStartIdx >= firstLeafNodeIdx;
-
-      // find the end index of the node
-      const nodeRangeEndIdx = (() => {
-        const [, levelBound] = levelBounds[nodeRange.level()];
-        const nodeIdx = Math.min(
-          nodeRange.endNodeIdx() + nodeSize,
-          levelBound,
-        );
-
-        if (isLeafNode && nodeIdx < levelBound) {
-          // We can infer the length of *this* feature by getting the start of the *next*
-          // feature, so we get an extra node.
-          // This approach doesn't work for the final node in the index,
-          // but in that case we know that the feature runs to the end of the FGB file and
-          // could make an open ended range request to get "the rest of the data".
-          return nodeIdx + 1;
-        } 
-        return nodeIdx;
-            
-      })();
-
-      const numNodesInRange = nodeRangeEndIdx - nodeRangeStartIdx;
-
-      const buffer = await readNode(
-        nodeRangeStartIdx * NODE_ITEM_BYTE_LEN,
-        numNodesInRange * NODE_ITEM_BYTE_LEN,
-      );
-
-      const dataView = new DataView(buffer);
-      for (
-        let nodeIdx = nodeRangeStartIdx;
-        nodeIdx < nodeRangeEndIdx;
-        nodeIdx++
-      ) {
-        const nodeIdxInDataView = nodeIdx - nodeRangeStartIdx;
-        const dataViewByteStart = nodeIdxInDataView * NODE_ITEM_BYTE_LEN;
-        if (maxX < dataView.getFloat64(dataViewByteStart + 0, true))
-          continue; // maxX < nodeMinX
-        if (maxY < dataView.getFloat64(dataViewByteStart + 8, true))
-          continue; // maxY < nodeMinY
-        if (minX > dataView.getFloat64(dataViewByteStart + 16, true))
-          continue; // minX > nodeMaxX
-        if (minY > dataView.getFloat64(dataViewByteStart + 24, true))
-          continue; // minY > nodeMaxY
-
-        // `offset` is:
-        // For leaf nodes: the byte-offset into the feature buffer.
-        // For inner nodes: the node-idx of its first child.
-        const offset = dataView.getBigUint64(dataViewByteStart + 32, true);
-
-        if (isLeafNode) {
-          const featureByteOffset = offset;
-          const featureLength = (() => {
-            if (nodeIdx < numItems - 1) {
-              // Since features are tightly packed, we infer the
-              // length of _this_ feature by measuring to the _next_
-              // feature's start.
-              const nextPos =
-                            (nodeIdxInDataView + 1) * NODE_ITEM_BYTE_LEN;
-              // console.debug(`nodeIdx: ${nodeIdx} of ${numItems}, nodeRangeStartIdx: ${nodeRangeStartIdx}, nextPos: ${nextPos}, dataView.byteLength: ${dataView.byteLength}`,);
-              const nextOffset = dataView.getBigUint64(
-                nextPos + 32,
-                true,
-              );
-              return nextOffset - featureByteOffset;
-            } 
-            // This is the last feature - there's no "next" feature
-            // to measure to, so we can't know it's length.
-            return null;
-                    
-          })();
-
-          // Logger.debug(`featureByteOffset: ${featureByteOffset}, nodeIdx: ${nodeIdx}, featureLength: ${featureLength}`);
-          const featureIdx = nodeIdx - firstLeafNodeIdx;
-          yield [
-            Number(featureByteOffset),
-            featureIdx,
-            Number(featureLength),
-          ];
-          continue;
-        }
-
-        const firstChildNodeIdx = offset;
-
-        // request up to this many nodes if it means we can eliminate an
-        // extra request
-        const extraRequestThresholdNodes =
-                Config.global.extraRequestThreshold() / NODE_ITEM_BYTE_LEN;
-
-        // Since we're traversing the tree by monotonically increasing byte
-        // offset, the most recently enqueued node range will be the
-        // nearest, and thus presents the best candidate for merging.
-        const nearestNodeRange = queue[queue.length - 1];
-        if (
-          nearestNodeRange !== undefined &&
-                nearestNodeRange.level() == nodeRange.level() - 1 &&
-                firstChildNodeIdx <
-                    nearestNodeRange.endNodeIdx() + extraRequestThresholdNodes
-        ) {
-          Logger.debug(
-            `Merging "nodeRange" request into existing range: ${nearestNodeRange}, newEndNodeIdx: ${nearestNodeRange.endNodeIdx()} -> ${firstChildNodeIdx}`,
-          );
-          nearestNodeRange.extendEndNodeIdx(Number(firstChildNodeIdx));
-          continue;
-        }
-
-        const newNodeRange: NodeRange = (() => {
-          const level = nodeRange.level() - 1;
-          const range: [number, number] = [
-            Number(firstChildNodeIdx),
-            Number(firstChildNodeIdx) + 1,
-          ];
-          return new NodeRange(range, level);
+      if (isLeafNode) {
+        const featureByteOffset = offset;
+        const featureLength = (() => {
+          if (nodeIdx < numItems - 1) {
+            // Since features are tightly packed, we infer the
+            // length of _this_ feature by measuring to the _next_
+            // feature's start.
+            const nextPos = (nodeIdxInDataView + 1) * NODE_ITEM_BYTE_LEN;
+            // console.debug(`nodeIdx: ${nodeIdx} of ${numItems}, nodeRangeStartIdx: ${nodeRangeStartIdx}, nextPos: ${nextPos}, dataView.byteLength: ${dataView.byteLength}`,);
+            const nextOffset = dataView.getBigUint64(nextPos + 32, true);
+            return nextOffset - featureByteOffset;
+          }
+          // This is the last feature - there's no "next" feature
+          // to measure to, so we can't know it's length.
+          return null;
         })();
 
-        // We're going to add a new node range - log the reason
-        if (
-          nearestNodeRange !== undefined &&
-                nearestNodeRange.level() == newNodeRange.level()
-        ) {
-          Logger.info(
-            `Same level, but too far away. Pushing new request for nodeIdx: ${firstChildNodeIdx} rather than merging with distant ${nearestNodeRange}`,
-          );
-        } else {
-          Logger.info(
-            `Pushing new level for ${newNodeRange} onto queue with nearestNodeRange: ${nearestNodeRange} since there's not already a range for this level.`,
-          );
-        }
-
-        queue.push(newNodeRange);
+        // Logger.debug(`featureByteOffset: ${featureByteOffset}, nodeIdx: ${nodeIdx}, featureLength: ${featureLength}`);
+        const featureIdx = nodeIdx - firstLeafNodeIdx;
+        yield [Number(featureByteOffset), featureIdx, Number(featureLength)];
+        continue;
       }
+
+      const firstChildNodeIdx = offset;
+
+      // request up to this many nodes if it means we can eliminate an
+      // extra request
+      const extraRequestThresholdNodes = Config.global.extraRequestThreshold() / NODE_ITEM_BYTE_LEN;
+
+      // Since we're traversing the tree by monotonically increasing byte
+      // offset, the most recently enqueued node range will be the
+      // nearest, and thus presents the best candidate for merging.
+      const nearestNodeRange = queue[queue.length - 1];
+      if (
+        nearestNodeRange !== undefined &&
+        nearestNodeRange.level() == nodeRange.level() - 1 &&
+        firstChildNodeIdx < nearestNodeRange.endNodeIdx() + extraRequestThresholdNodes
+      ) {
+        Logger.debug(
+          `Merging "nodeRange" request into existing range: ${nearestNodeRange}, newEndNodeIdx: ${nearestNodeRange.endNodeIdx()} -> ${firstChildNodeIdx}`
+        );
+        nearestNodeRange.extendEndNodeIdx(Number(firstChildNodeIdx));
+        continue;
+      }
+
+      const newNodeRange: NodeRange = (() => {
+        const level = nodeRange.level() - 1;
+        const range: [number, number] = [Number(firstChildNodeIdx), Number(firstChildNodeIdx) + 1];
+        return new NodeRange(range, level);
+      })();
+
+      // We're going to add a new node range - log the reason
+      if (nearestNodeRange !== undefined && nearestNodeRange.level() == newNodeRange.level()) {
+        Logger.info(
+          `Same level, but too far away. Pushing new request for nodeIdx: ${firstChildNodeIdx} rather than merging with distant ${nearestNodeRange}`
+        );
+      } else {
+        Logger.info(
+          `Pushing new level for ${newNodeRange} onto queue with nearestNodeRange: ${nearestNodeRange} since there's not already a range for this level.`
+        );
+      }
+
+      queue.push(newNodeRange);
     }
+  }
 }

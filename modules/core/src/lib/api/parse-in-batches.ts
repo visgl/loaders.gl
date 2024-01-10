@@ -189,11 +189,11 @@ function convertDataToBatch(parsedData: unknown, loader: Loader): Batch {
   const batch: Batch = isTable(parsedData)
     ? makeBatchFromTable(parsedData)
     : {
-      shape: 'unknown',
-      batchType: 'data',
-      data: parsedData,
-      length: Array.isArray(parsedData) ? parsedData.length : 1
-    };
+        shape: 'unknown',
+        batchType: 'data',
+        data: parsedData,
+        length: Array.isArray(parsedData) ? parsedData.length : 1
+      };
 
   batch.mimeType = loader.mimeTypes[0];
 

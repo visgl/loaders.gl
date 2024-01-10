@@ -3,21 +3,21 @@ import slice from 'slice-source';
 
 import ColumnMeta from '../column-meta.js';
 
-import { Header } from '../flat-geobuf/header.js';
+import {Header} from '../flat-geobuf/header.js';
 
-import { Column } from '../flat-geobuf/column.js';
-import { ColumnType } from '../flat-geobuf/column-type.js';
-import { Feature } from '../flat-geobuf/feature.js';
-import HeaderMeta, { fromByteBuffer } from '../header-meta.js';
+import {Column} from '../flat-geobuf/column.js';
+import {ColumnType} from '../flat-geobuf/column-type.js';
+import {Feature} from '../flat-geobuf/feature.js';
+import HeaderMeta, {fromByteBuffer} from '../header-meta.js';
 
-import { buildFeature, IFeature } from './feature.js';
-import { HttpReader } from '../http-reader.js';
+import {buildFeature, IFeature} from './feature.js';
+import {HttpReader} from '../http-reader.js';
 import Logger from '../logger.js';
-import { Rect, calcTreeSize } from '../packedrtree.js';
-import { parseGeometry } from './geometry.js';
-import { HeaderMetaFn } from '../generic.js';
-import { magicbytes, SIZE_PREFIX_LEN } from '../constants.js';
-import { inferGeometryType } from './header.js';
+import {Rect, calcTreeSize} from '../packedrtree.js';
+import {parseGeometry} from './geometry.js';
+import {HeaderMetaFn} from '../generic.js';
+import {magicbytes, SIZE_PREFIX_LEN} from '../constants.js';
+import {inferGeometryType} from './header.js';
 
 export type FromFeatureFn = (feature: Feature, header: HeaderMeta) => IFeature;
 type ReadFn = (size: number, purpose: string) => Promise<ArrayBuffer>;
@@ -30,22 +30,16 @@ export function serialize(features: IFeature[]): Uint8Array {
   const headerMeta = introspectHeaderMeta(features);
   const header = buildHeader(headerMeta);
   const featureBuffers: Uint8Array[] = features.map((f) => {
-    if (!f.getGeometry)
-      throw new Error('Missing getGeometry implementation');
-    if (!f.getProperties)
-      throw new Error('Missing getProperties implementation');
+    if (!f.getGeometry) throw new Error('Missing getGeometry implementation');
+    if (!f.getProperties) throw new Error('Missing getProperties implementation');
     return buildFeature(
       parseGeometry(f.getGeometry(), headerMeta.geometryType),
       f.getProperties(),
-      headerMeta,
+      headerMeta
     );
   });
-  const featuresLength = featureBuffers
-    .map((f) => f.length)
-    .reduce((a, b) => a + b);
-  const uint8 = new Uint8Array(
-    magicbytes.length + header.length + featuresLength,
-  );
+  const featuresLength = featureBuffers.map((f) => f.length).reduce((a, b) => a + b);
+  const uint8 = new Uint8Array(magicbytes.length + header.length + featuresLength);
   uint8.set(header, magicbytes.length);
   let offset = magicbytes.length + header.length;
   for (const feature of featureBuffers) {
@@ -59,7 +53,7 @@ export function serialize(features: IFeature[]): Uint8Array {
 export function deserialize(
   bytes: Uint8Array,
   fromFeature: FromFeatureFn,
-  headerMetaFn?: HeaderMetaFn,
+  headerMetaFn?: HeaderMetaFn
 ): IFeature[] {
   if (!bytes.subarray(0, 3).every((v, i) => magicbytes[i] === v))
     throw new Error('Not a FlatGeobuf file');
@@ -73,7 +67,7 @@ export function deserialize(
 
   let offset = magicbytes.length + SIZE_PREFIX_LEN + headerLength;
 
-  const { indexNodeSize, featuresCount } = headerMeta;
+  const {indexNodeSize, featuresCount} = headerMeta;
   if (indexNodeSize > 0) offset += calcTreeSize(featuresCount, indexNodeSize);
 
   const features: IFeature[] = [];
@@ -91,7 +85,7 @@ export function deserialize(
 export async function* deserializeStream(
   stream: ReadableStream,
   fromFeature: FromFeatureFn,
-  headerMetaFn?: HeaderMetaFn,
+  headerMetaFn?: HeaderMetaFn
 ): AsyncGenerator<IFeature> {
   const reader = slice(stream);
   const read: ReadFn = async (size) => await reader.slice(size);
@@ -108,21 +102,20 @@ export async function* deserializeStream(
   const headerMeta = fromByteBuffer(bb);
   if (headerMetaFn) headerMetaFn(headerMeta);
 
-  const { indexNodeSize, featuresCount } = headerMeta;
+  const {indexNodeSize, featuresCount} = headerMeta;
   if (indexNodeSize > 0) {
     const treeSize = calcTreeSize(featuresCount, indexNodeSize);
     await read(treeSize, 'entire index, w/o rect');
   }
   let feature: IFeature | undefined;
-  while ((feature = await readFeature(read, headerMeta, fromFeature)))
-    yield feature;
+  while ((feature = await readFeature(read, headerMeta, fromFeature))) yield feature;
 }
 
 export async function* deserializeFiltered(
   url: string,
   rect: Rect,
   fromFeature: FromFeatureFn,
-  headerMetaFn?: HeaderMetaFn,
+  headerMetaFn?: HeaderMetaFn
 ): AsyncGenerator<IFeature> {
   const reader = await HttpReader.open(url);
   Logger.debug('opened reader');
@@ -136,7 +129,7 @@ export async function* deserializeFiltered(
 async function readFeature(
   read: ReadFn,
   headerMeta: HeaderMeta,
-  fromFeature: FromFeatureFn,
+  fromFeature: FromFeatureFn
 ): Promise<IFeature | undefined> {
   let bytes = new Uint8Array(await read(4, 'feature length'));
   if (bytes.byteLength === 0) return;
@@ -166,7 +159,7 @@ export function buildHeader(header: HeaderMeta): Uint8Array {
   if (header.columns)
     columnOffsets = Header.createColumnsVector(
       builder,
-      header.columns.map((c) => buildColumn(builder, c)),
+      header.columns.map((c) => buildColumn(builder, c))
     );
 
   const nameOffset = builder.createString('L1');
@@ -179,7 +172,7 @@ export function buildHeader(header: HeaderMeta): Uint8Array {
   Header.addName(builder, nameOffset);
   const offset = Header.endHeader(builder);
   builder.finishSizePrefixed(offset);
-  return builder.asUint8Array() ;
+  return builder.asUint8Array();
 }
 
 function valueToType(value: boolean | number | string): ColumnType {
@@ -204,15 +197,13 @@ export function mapColumn(properties: any, k: string): ColumnMeta {
     scale: -1,
     nullable: true,
     unique: false,
-    primary_key: false,
+    primary_key: false
   };
 }
 
 function introspectHeaderMeta(features: IFeature[]): HeaderMeta {
   const sampleFeature = features[0];
-  const properties = sampleFeature.getProperties
-    ? sampleFeature.getProperties()
-    : {};
+  const properties = sampleFeature.getProperties ? sampleFeature.getProperties() : {};
 
   let columns: ColumnMeta[] | null = null;
   if (properties)
@@ -230,7 +221,7 @@ function introspectHeaderMeta(features: IFeature[]): HeaderMeta {
     crs: null,
     title: null,
     description: null,
-    metadata: null,
+    metadata: null
   };
   return headerMeta;
 }

@@ -1,11 +1,11 @@
-import { ReadableStream } from 'web-streams-polyfill';
-import { ReadableStreamBuffer } from 'stream-buffers';
-import { Readable } from 'stream';
+import {ReadableStream} from 'web-streams-polyfill';
+import {ReadableStreamBuffer} from 'stream-buffers';
+import {Readable} from 'stream';
 
 export function arrayToStream(array: ArrayBuffer): ReadableStream {
   const myReadableStreamBuffer = new ReadableStreamBuffer({
     frequency: 10, // in milliseconds.
-    chunkSize: 2048, // in bytes.
+    chunkSize: 2048 // in bytes.
   });
 
   myReadableStreamBuffer.put(Buffer.from(array));
@@ -18,12 +18,12 @@ export function arrayToStream(array: ArrayBuffer): ReadableStream {
 
 export async function takeAsync(
   asyncIterable: AsyncIterable<any>,
-  count = Infinity,
+  count = Infinity
 ): Promise<any[]> {
   const result: any[] = [];
   const iterator = asyncIterable[Symbol.asyncIterator]();
   while (result.length < count) {
-    const { value, done } = await iterator.next();
+    const {value, done} = await iterator.next();
     if (done) break;
     result.push(value);
   }
@@ -54,8 +54,7 @@ export function nodeToWeb(nodeStream: Readable): ReadableStream {
       if (destroyed) return;
       destroyed = true;
 
-      for (const name in listeners)
-        nodeStream.removeListener(name, listeners[name]);
+      for (const name in listeners) nodeStream.removeListener(name, listeners[name]);
 
       if (err) controller.error(err);
       else controller.close();
@@ -70,13 +69,12 @@ export function nodeToWeb(nodeStream: Readable): ReadableStream {
   function cancel() {
     destroyed = true;
 
-    for (const name in listeners)
-      nodeStream.removeListener(name, listeners[name]);
+    for (const name in listeners) nodeStream.removeListener(name, listeners[name]);
 
     nodeStream.push(null);
     nodeStream.pause();
     nodeStream.destroy();
   }
 
-  return new ReadableStream({ start, pull, cancel });
+  return new ReadableStream({start, pull, cancel});
 }

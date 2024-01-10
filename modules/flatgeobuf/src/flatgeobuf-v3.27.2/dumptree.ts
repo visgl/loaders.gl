@@ -5,11 +5,11 @@ import flatbuffers from 'flatbuffers';
 import Envelope from 'jsts/org/locationtech/jts/geom/Envelope.js';
 import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory.js';
 import GeoJSONWriter from 'jsts/org/locationtech/jts/io/GeoJSONWriter.js';
-import { readFileSync, writeFileSync } from 'fs';
+import {readFileSync, writeFileSync} from 'fs';
 
-import { magicbytes, SIZE_PREFIX_LEN } from './constants.js';
-import { fromByteBuffer } from './header-meta.js';
-import { calcTreeSize, generateLevelBounds } from './packedrtree.js';
+import {magicbytes, SIZE_PREFIX_LEN} from './constants.js';
+import {fromByteBuffer} from './header-meta.js';
+import {calcTreeSize, generateLevelBounds} from './packedrtree.js';
 
 const buffer = readFileSync('./test/data/tiger_roads.fgb');
 const bytes = new Uint8Array(buffer);
@@ -30,18 +30,18 @@ const numItems = headerMeta.featuresCount;
 const nodeSize = headerMeta.indexNodeSize;
 const envelope = headerMeta.envelope;
 
-console.log(`Number of items in tree: ${  numItems}`);
-console.log(`Envelope: ${  envelope}`);
-console.log(`Tree node index size: ${  nodeSize}`);
-console.log(`Offset: ${  offset}`);
+console.log(`Number of items in tree: ${numItems}`);
+console.log(`Envelope: ${envelope}`);
+console.log(`Tree node index size: ${nodeSize}`);
+console.log(`Offset: ${offset}`);
 
 const treeSize = calcTreeSize(numItems, nodeSize);
 const levelBounds = generateLevelBounds(numItems, nodeSize).reverse();
 
 console.log('Level bounds:');
-for (const levelBound of levelBounds) console.log(`  ${  levelBound}`);
+for (const levelBound of levelBounds) console.log(`  ${levelBound}`);
 
-console.log(`Size: ${  treeSize}`);
+console.log(`Size: ${treeSize}`);
 
 const items: any[] = [];
 
@@ -69,14 +69,14 @@ const geojsonfeatures = items.map((i) => {
     type: 'Feature',
     geometry: writer.write(geometry),
     properties: {
-      level: i[0],
-    },
+      level: i[0]
+    }
   };
 });
 
 const geojson = {
   type: 'FeatureCollection',
-  features: geojsonfeatures,
+  features: geojsonfeatures
 };
 
 writeFileSync('out.geojson', JSON.stringify(geojson));

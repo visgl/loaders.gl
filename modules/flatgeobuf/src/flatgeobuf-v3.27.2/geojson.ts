@@ -2,14 +2,14 @@ import {
   deserialize as fcDeserialize,
   deserializeStream as fcDeserializeStream,
   deserializeFiltered as fcDeserializeFiltered,
-  serialize as fcSerialize,
+  serialize as fcSerialize
 } from './geojson/featurecollection.js';
 
-import { FeatureCollection as GeoJsonFeatureCollection } from 'geojson';
+import {FeatureCollection as GeoJsonFeatureCollection} from 'geojson';
 
-import { Rect } from './packedrtree.js';
-import { IGeoJsonFeature } from './geojson/feature.js';
-import { HeaderMetaFn } from './generic.js';
+import {Rect} from './packedrtree.js';
+import {IGeoJsonFeature} from './geojson/feature.js';
+import {HeaderMetaFn} from './generic.js';
 
 /**
  * Serialize GeoJSON to FlatGeobuf
@@ -29,10 +29,9 @@ export function serialize(geojson: GeoJsonFeatureCollection): Uint8Array {
 export function deserialize(
   input: Uint8Array | ReadableStream | string,
   rect?: Rect,
-  headerMetaFn?: HeaderMetaFn,
+  headerMetaFn?: HeaderMetaFn
 ): GeoJsonFeatureCollection | AsyncGenerator<IGeoJsonFeature> {
   if (input instanceof Uint8Array) return fcDeserialize(input, headerMetaFn);
-  else if (input instanceof ReadableStream)
-    return fcDeserializeStream(input, headerMetaFn);
+  else if (input instanceof ReadableStream) return fcDeserializeStream(input, headerMetaFn);
   return fcDeserializeFiltered(input, rect as Rect, headerMetaFn);
 }
