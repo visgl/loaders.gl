@@ -128,6 +128,7 @@ const DEFAULT_PROPS: Props = {
   modelMatrix: new Matrix4(),
   throttleRequests: true,
   maxRequests: 64,
+  /** Default memory values optimized for viewing mesh-based 3D Tiles on both mobile and desktop devices */
   maximumMemoryUsage: 32,
   memoryCacheOverflow: 1,
   maximumTilesSelected: 0,
