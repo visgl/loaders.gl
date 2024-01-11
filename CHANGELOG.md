@@ -2,6 +2,10 @@
 
 ## v4.1
 
+### v4.1.0-alpha.9
+
+-  fix(tile-converter): support portable NodeJS (#2854)
+
 ### v4.1.0-alpha.8
 
 -  fix(flatgeobuf): restore worker build (#2855)
