@@ -1,4 +1,3 @@
-// loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
@@ -53,6 +52,7 @@ export type Tileset3DProps = {
   loadTiles?: boolean;
   basePath?: string;
   maximumMemoryUsage?: number;
+  memoryCacheOverflow?: number;
   maximumTilesSelected?: number;
   debounceTime?: number;
 
@@ -66,6 +66,7 @@ export type Tileset3DProps = {
 
   // Traversal
   maximumScreenSpaceError?: number;
+  memoryAdjustedScreenSpaceError?: boolean;
   viewportTraversersMap?: any;
   updateTransforms?: boolean;
   viewDistanceScale?: number;
@@ -87,7 +88,10 @@ type Props = {
   throttleRequests: boolean;
   /** Number of simultaneous requsts, if throttleRequests is true */
   maxRequests: number;
+  /* Maximum amount of GPU memory (in MB) that may be used to cache tiles. */
   maximumMemoryUsage: number;
+  /* The maximum additional memory (in MB) to allow for cache headroom before adjusting the screen spacer error */
+  memoryCacheOverflow: number;
   /** Maximum number limit of tiles selected for show. 0 means no limit */
   maximumTilesSelected: number;
   /** Delay time before the tileset traversal. It prevents traversal requests spam.*/
@@ -102,6 +106,8 @@ type Props = {
   onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
   /** The maximum screen space error used to drive level of detail refinement. */
   maximumScreenSpaceError: number;
+  /** Whether to adjust the maximum screen space error to comply with the maximum memory limitation */
+  memoryAdjustedScreenSpaceError: boolean;
   viewportTraversersMap: Record<string, any> | null;
   attributions: string[];
   loadTiles: boolean;
@@ -122,7 +128,9 @@ const DEFAULT_PROPS: Props = {
   modelMatrix: new Matrix4(),
   throttleRequests: true,
   maxRequests: 64,
+  /** Default memory values optimized for viewing mesh-based 3D Tiles on both mobile and desktop devices */
   maximumMemoryUsage: 32,
+  memoryCacheOverflow: 1,
   maximumTilesSelected: 0,
   debounceTime: 0,
   onTileLoad: () => {},
@@ -132,6 +140,7 @@ const DEFAULT_PROPS: Props = {
   contentLoader: undefined,
   viewDistanceScale: 1.0,
   maximumScreenSpaceError: 8,
+  memoryAdjustedScreenSpaceError: false,
   loadTiles: true,
   updateTransforms: true,
   viewportTraversersMap: null,
@@ -152,6 +161,7 @@ const TILES_UNLOADED = 'Tiles Unloaded';
 const TILES_LOAD_FAILED = 'Failed Tile Loads';
 const POINTS_COUNT = 'Points/Vertices';
 const TILES_GPU_MEMORY = 'Tile Memory Use';
+const MAXIMUM_SSE = 'Maximum Screen Space Error';
 
 /**
  * The Tileset loading and rendering flow is as below,
@@ -239,6 +249,17 @@ export class Tileset3D {
   /** The total amount of GPU memory in bytes used by the tileset. */
   gpuMemoryUsageInBytes: number = 0;
 
+  /**
+   * If loading the level of detail required by maximumScreenSpaceError
+   * results in the memory usage exceeding maximumMemoryUsage (GPU), level of detail refinement
+   * will instead use this (larger) adjusted screen space error to achieve the
+   * best possible visual quality within the available memory.
+   */
+  memoryAdjustedScreenSpaceError: number = 0.0;
+
+  private _cacheBytes: number = 0;
+  private _cacheOverflowBytes: number = 0;
+
   /** Update tracker. increase in each update cycle. */
   _frameNumber: number = 0;
   private _queryParams: Record<string, string> = {};
@@ -300,6 +321,10 @@ export class Tileset3D {
       throttleRequests: this.options.throttleRequests,
       maxRequests: this.options.maxRequests
     });
+
+    this.memoryAdjustedScreenSpaceError = this.options.maximumScreenSpaceError;
+    this._cacheBytes = this.options.maximumMemoryUsage * 1024 * 1024;
+    this._cacheOverflowBytes = this.options.memoryCacheOverflow * 1024 * 1024;
 
     // METRICS
     // The total amount of GPU memory in bytes used by the tileset.
@@ -407,6 +432,16 @@ export class Tileset3D {
     return this.updatePromise;
   }
 
+  adjustScreenSpaceError(): void {
+    if (this.gpuMemoryUsageInBytes < this._cacheBytes) {
+      this.memoryAdjustedScreenSpaceError = Math.max(
+        this.memoryAdjustedScreenSpaceError / 1.02,
+        this.options.maximumScreenSpaceError
+      );
+    } else if (this.gpuMemoryUsageInBytes > this._cacheBytes + this._cacheOverflowBytes) {
+      this.memoryAdjustedScreenSpaceError *= 1.02;
+    }
+  }
   /**
    * Update visible tiles relying on a list of viewports
    * @param viewports viewports
@@ -571,6 +606,7 @@ export class Tileset3D {
     this.stats.get(TILES_IN_VIEW).count = this.selectedTiles.length;
     this.stats.get(TILES_RENDERABLE).count = tilesRenderable;
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
+    this.stats.get(MAXIMUM_SSE).count = this.memoryAdjustedScreenSpaceError;
   }
 
   async _initializeTileSet(tilesetJson: TilesetJSON): Promise<void> {
@@ -668,6 +704,7 @@ export class Tileset3D {
     this.stats.get(TILES_LOAD_FAILED);
     this.stats.get(POINTS_COUNT);
     this.stats.get(TILES_GPU_MEMORY, 'memory');
+    this.stats.get(MAXIMUM_SSE);
   }
 
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
@@ -836,9 +873,15 @@ export class Tileset3D {
     this.stats.get(TILES_LOADED).incrementCount();
     this.stats.get(TILES_IN_MEMORY).incrementCount();
 
-    // Good enough? Just use the raw binary ArrayBuffer's byte length.
+    // TODO: Calculate GPU memory usage statistics for a tile.
     this.gpuMemoryUsageInBytes += tile.gpuMemoryUsageInBytes || 0;
+
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
+
+    // Adjust SSE based on cache limits
+    if (this.options.memoryAdjustedScreenSpaceError) {
+      this.adjustScreenSpaceError();
+    }
   }
 
   _unloadTile(tile) {
