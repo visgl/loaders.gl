@@ -1,7 +1,7 @@
 import {load, fetchFile} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 import {writeFile} from '../lib/utils/file-utils';
-import {join} from 'path';
+import {join, dirname} from 'path';
 import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 import {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from '@loaders.gl/draco';
 import {BASIS_EXTERNAL_LIBRARIES} from '@loaders.gl/textures';
@@ -80,8 +80,9 @@ export class DepsInstaller {
 
     console.log('Installing "join-images" npm package');
     const childProcess = new ChildProcessProxy();
+    const nodeDir = dirname(process.execPath);
     await childProcess.start({
-      command: process.platform === 'win32' ? 'npm.cmd' : 'npm',
+      command: `${nodeDir}/${process.platform === 'win32' ? 'npm.cmd' : 'npm'}`,
       // `npm install sharp join-images` works unstable. It fails because installed `sharp` version
       // may be different from the version required by `join-images`. Pointing to specific versions
       // resolve this issue
