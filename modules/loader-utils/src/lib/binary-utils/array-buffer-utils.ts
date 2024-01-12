@@ -26,10 +26,18 @@ export function compareArrayBuffers(
 }
 
 /**
- * Concatenate a sequence of ArrayBuffers
+ * Concatenate a sequence of ArrayBuffers from arguments
  * @return A concatenated ArrayBuffer
  */
-export function concatenateArrayBuffers(...sources: (ArrayBuffer | Uint8Array)[]): ArrayBuffer {
+export function concatenateArrayBuffers(...sources: (ArrayBuffer | Uint8Array)[]): any {
+  return concatenateArrayBuffersFromArray(sources);
+}
+
+/**
+ * Concatenate a sequence of ArrayBuffers from array
+ * @return A concatenated ArrayBuffer
+ */
+export function concatenateArrayBuffersFromArray(sources: (ArrayBuffer | Uint8Array)[]): any {
   // Make sure all inputs are wrapped in typed arrays
   const sourceArrays = sources.map((source2) =>
     source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2

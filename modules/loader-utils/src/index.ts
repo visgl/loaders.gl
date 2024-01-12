@@ -64,6 +64,7 @@ export {parseJSON} from './lib/parser-utils/parse-json';
 export {
   sliceArrayBuffer,
   concatenateArrayBuffers,
+  concatenateArrayBuffersFromArray,
   concatenateTypedArrays,
   compareArrayBuffers
 } from './lib/binary-utils/array-buffer-utils';
