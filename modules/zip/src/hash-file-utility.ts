@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import {MD5Hash} from '@loaders.gl/crypto';
-import {FileProvider, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {
+  FileProvider,
+  concatenateArrayBuffers,
+  concatenateArrayBuffersFromArray
+} from '@loaders.gl/loader-utils';
 import {makeZipCDHeaderIterator} from './parse-zip/cd-file-header';
 
 /**
@@ -66,7 +70,7 @@ export async function composeHashFile(fileProvider: FileProvider): Promise<Array
   const bufferArray = Object.entries(hashArray)
     .map(([key, value]) => concatenateArrayBuffers(hexStringToBuffer(key), bigintToBuffer(value)))
     .sort(compareHashes);
-  return concatenateArrayBuffers(...bufferArray);
+  return concatenateArrayBuffersFromArray(bufferArray);
 }
 
 /**
