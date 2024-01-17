@@ -2,9 +2,9 @@
 // run with fx. TS_NODE_PROJECT=config/tsconfig.test.json node --loader ts-node/esm.mjs src/ts/dumptree.ts
 
 import flatbuffers from 'flatbuffers';
-import Envelope from 'jsts/org/locationtech/jts/geom/Envelope';
-import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory';
-import GeoJSONWriter from 'jsts/org/locationtech/jts/io/GeoJSONWriter';
+import Envelope from 'jsts/org/locationtech/jts/geom/Envelope.js';
+import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory.js';
+import GeoJSONWriter from 'jsts/org/locationtech/jts/io/GeoJSONWriter.js';
 import {readFileSync, writeFileSync} from 'fs';
 
 import {magicbytes, SIZE_PREFIX_LEN} from './constants';
