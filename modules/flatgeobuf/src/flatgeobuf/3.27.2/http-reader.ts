@@ -7,12 +7,12 @@ import {
   DEFAULT_NODE_SIZE,
   NODE_ITEM_BYTE_LEN,
   streamSearch
-} from './packedrtree.js';
-import {magicbytes, SIZE_PREFIX_LEN} from './constants.js';
-import Config from './config.js';
-import Logger from './logger.js';
-import HeaderMeta, {fromByteBuffer} from './header-meta.js';
-import {Feature} from './flat-geobuf/feature.js';
+} from './packedrtree';
+import {magicbytes, SIZE_PREFIX_LEN} from './constants';
+import Config from './config';
+import Logger from './logger';
+import HeaderMeta, {fromByteBuffer} from './header-meta';
+import {Feature} from './flat-geobuf/feature';
 
 export class HttpReader {
   private headerClient: BufferedHttpRangeClient;

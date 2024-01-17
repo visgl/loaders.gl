@@ -1,5 +1,5 @@
-import Config from './config.js';
-import Logger from './logger.js';
+import Config from './config';
+import Logger from './logger';
 
 export const NODE_ITEM_BYTE_LEN: number = 8 * 4 + 8;
 /**

@@ -3,13 +3,13 @@ import {
   deserializeStream as fcDeserializeStream,
   deserializeFiltered as fcDeserializeFiltered,
   serialize as fcSerialize
-} from './geojson/featurecollection.js';
+} from './geojson/featurecollection';
 
 import {FeatureCollection as GeoJsonFeatureCollection} from 'geojson';
 
-import {Rect} from './packedrtree.js';
-import {IGeoJsonFeature} from './geojson/feature.js';
-import {HeaderMetaFn} from './generic.js';
+import {Rect} from './packedrtree';
+import {IGeoJsonFeature} from './geojson/feature';
+import {HeaderMetaFn} from './generic';
 
 /**
  * Serialize GeoJSON to FlatGeobuf

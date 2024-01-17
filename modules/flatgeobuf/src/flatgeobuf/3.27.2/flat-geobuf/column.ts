@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import {ColumnType} from '../flat-geobuf/column-type.js';
+import {ColumnType} from '../flat-geobuf/column-type';
 
 export class Column {
   bb: flatbuffers.ByteBuffer | null = null;

@@ -1,20 +1,20 @@
-import ColumnMeta from '../column-meta.js';
-import HeaderMeta from '../header-meta.js';
+import ColumnMeta from '../column-meta';
+import HeaderMeta from '../header-meta';
 
-import {fromFeature} from './feature.js';
-import {parseGeometry, parseGC} from './geometry.js';
+import {fromFeature} from './feature';
+import {parseGeometry, parseGC} from './geometry';
 import {
   buildHeader,
   deserialize as genericDeserialize,
   deserializeStream as genericDeserializeStream,
   deserializeFiltered as genericDeserializeFiltered,
   mapColumn
-} from '../generic/featurecollection.js';
-import {Rect} from '../packedrtree.js';
-import {buildFeature, IProperties} from '../generic/feature.js';
-import {HeaderMetaFn} from '../generic.js';
-import {magicbytes} from '../constants.js';
-import {inferGeometryType} from '../generic/header.js';
+} from '../generic/featurecollection';
+import {Rect} from '../packedrtree';
+import {buildFeature, IProperties} from '../generic/feature';
+import {HeaderMetaFn} from '../generic';
+import {magicbytes} from '../constants';
+import {inferGeometryType} from '../generic/header';
 
 import {
   FeatureCollection as GeoJsonFeatureCollection,

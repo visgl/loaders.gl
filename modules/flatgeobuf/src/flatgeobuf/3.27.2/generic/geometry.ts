@@ -1,6 +1,6 @@
 import * as flatbuffers from 'flatbuffers';
-import {GeometryType} from '../flat-geobuf/geometry-type.js';
-import {Geometry} from '../flat-geobuf/geometry.js';
+import {GeometryType} from '../flat-geobuf/geometry-type';
+import {Geometry} from '../flat-geobuf/geometry';
 
 export interface IParsedGeometry {
   xy: number[];
