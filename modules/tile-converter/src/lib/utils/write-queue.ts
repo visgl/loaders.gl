@@ -6,6 +6,7 @@ const MEMORY_LIMIT = 4 * 1024 * 1024 * 1024; // 4GB
 
 export type WriteQueueItem = {
   archiveKey?: string;
+  convertedTileDumpMap?: any;
   /**
    * writePromise() returns a Promise that will be awaited in Promise.allSettled(promises);
    * Arguments for this call are specified in writeQueue.enqueue call like this:
@@ -28,6 +29,7 @@ export type WriteQueueItem = {
 export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   private intervalId?: NodeJS.Timeout;
   public writePromise: Promise<void> | null = null;
+  public writeDumpFile: (() => void) | undefined;
   public fileMap: {[key: string]: string} = {};
   public listeningInterval: number;
   public writeConcurrency: number;
@@ -81,18 +83,21 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
     while (this.length) {
       const promises: Promise<string | null>[] = [];
       const archiveKeys: (string | undefined)[] = [];
+      const convertedTileDumpMaps: any[] = [];
       for (let i = 0; i < this.writeConcurrency; i++) {
         const item = this.dequeue();
         if (!item) {
           break;
         }
-        const {archiveKey, writePromise} = item as WriteQueueItem;
+        const {archiveKey, convertedTileDumpMap, writePromise} = item as WriteQueueItem;
         archiveKeys.push(archiveKey);
+        convertedTileDumpMaps.push(convertedTileDumpMap);
         const promise = writePromise();
         promises.push(promise);
       }
       const writeResults = await Promise.allSettled(promises);
       this.updateFileMap(archiveKeys, writeResults);
+      this.updateConvertedTilesMap(convertedTileDumpMaps, writeResults);
     }
   }
 
@@ -105,6 +110,33 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
       if (archiveKey && 'value' in writeResults[i]) {
         this.fileMap[archiveKey] = (writeResults[i] as PromiseFulfilledResult<string>).value;
       }
+    }
+  }
+
+  private updateConvertedTilesMap(
+    convertedTileDumpMaps: any[],
+    writeResults: PromiseSettledResult<string | null>[]
+  ) {
+    for (let i = 0; i < convertedTileDumpMaps.length; i++) {
+      if (convertedTileDumpMaps[i] && 'value' in writeResults[i]) {
+        const {dumpTileRecord} = convertedTileDumpMaps[i];
+        let done = true;
+        for (const node of dumpTileRecord.nodes) {
+          if (node.nodeId === convertedTileDumpMaps[i].nodeId) {
+            node.done.set(convertedTileDumpMaps[i].resourceType, true);
+          }
+          for (const [_, value] of node.done) {
+            done = value;
+          }
+          if (done) {
+            delete node.done;
+            node.done = true;
+          }
+        }
+      }
+    }
+    if (this.writeDumpFile) {
+      this.writeDumpFile();
     }
   }
 }
