@@ -1,5 +1,7 @@
 # Overview
 
+![flatgeobuf-logo]( ./images/flatgeobuf-logo.png)
+
 The `@loaders.gl/flatgeobuf` module handles the [FlatGeobuf](http://flatgeobuf.org/) format, a binary FlatBuffers-encoded format that defines geospatial geometries.
 
 ## Installation
@@ -17,4 +19,4 @@ npm install @loaders.gl/core
 
 ## Attribution
 
-The `FlatGeobufLoader` forks the [`flatgeobuf`](https://github.com/bjornharrtell/flatgeobuf) NPM module under the ISC license.
+The `FlatGeobufLoader` forks the [`flatgeobuf`](https://github.com/bjornharrtell/flatgeobuf) NPM module under the BSD 2-Clause license.

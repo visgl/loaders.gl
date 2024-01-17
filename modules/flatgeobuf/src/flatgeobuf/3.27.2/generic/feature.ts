@@ -1,10 +1,10 @@
 import * as flatbuffers from 'flatbuffers';
 
-import ColumnMeta from '../column-meta.js';
-import {ColumnType} from '../flat-geobuf/column-type.js';
-import {Feature} from '../flat-geobuf/feature.js';
-import HeaderMeta from '../header-meta.js';
-import {buildGeometry, ISimpleGeometry, ICreateGeometry, IParsedGeometry} from './geometry.js';
+import ColumnMeta from '../column-meta';
+import {ColumnType} from '../flat-geobuf/column-type';
+import {Feature} from '../flat-geobuf/feature';
+import HeaderMeta from '../header-meta';
+import {buildGeometry, ISimpleGeometry, ICreateGeometry, IParsedGeometry} from './geometry';
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();

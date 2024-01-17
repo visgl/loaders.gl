@@ -2,8 +2,8 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import {Column} from '../flat-geobuf/column.js';
-import {Geometry} from '../flat-geobuf/geometry.js';
+import {Column} from '../flat-geobuf/column';
+import {Geometry} from '../flat-geobuf/geometry';
 
 export class Feature {
   bb: flatbuffers.ByteBuffer | null = null;

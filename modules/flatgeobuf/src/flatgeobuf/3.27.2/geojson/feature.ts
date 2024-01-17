@@ -1,8 +1,8 @@
-import {Feature} from '../flat-geobuf/feature.js';
-import {Geometry} from '../flat-geobuf/geometry.js';
-import HeaderMeta from '../header-meta.js';
-import {fromGeometry} from './geometry.js';
-import {IFeature, parseProperties} from '../generic/feature.js';
+import {Feature} from '../flat-geobuf/feature';
+import {Geometry} from '../flat-geobuf/geometry';
+import HeaderMeta from '../header-meta';
+import {fromGeometry} from './geometry';
+import {IFeature, parseProperties} from '../generic/feature';
 
 import {Feature as GeoJsonFeature} from 'geojson';
 

@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import {GeometryType} from '../flat-geobuf/geometry-type.js';
+import {GeometryType} from '../flat-geobuf/geometry-type';
 
 export class Geometry {
   bb: flatbuffers.ByteBuffer | null = null;

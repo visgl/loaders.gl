@@ -1,23 +1,23 @@
 import * as flatbuffers from 'flatbuffers';
 import slice from 'slice-source';
 
-import ColumnMeta from '../column-meta.js';
+import ColumnMeta from '../column-meta';
 
-import {Header} from '../flat-geobuf/header.js';
+import {Header} from '../flat-geobuf/header';
 
-import {Column} from '../flat-geobuf/column.js';
-import {ColumnType} from '../flat-geobuf/column-type.js';
-import {Feature} from '../flat-geobuf/feature.js';
-import HeaderMeta, {fromByteBuffer} from '../header-meta.js';
+import {Column} from '../flat-geobuf/column';
+import {ColumnType} from '../flat-geobuf/column-type';
+import {Feature} from '../flat-geobuf/feature';
+import HeaderMeta, {fromByteBuffer} from '../header-meta';
 
-import {buildFeature, IFeature} from './feature.js';
-import {HttpReader} from '../http-reader.js';
-import Logger from '../logger.js';
-import {Rect, calcTreeSize} from '../packedrtree.js';
-import {parseGeometry} from './geometry.js';
-import {HeaderMetaFn} from '../generic.js';
-import {magicbytes, SIZE_PREFIX_LEN} from '../constants.js';
-import {inferGeometryType} from './header.js';
+import {buildFeature, IFeature} from './feature';
+import {HttpReader} from '../http-reader';
+import Logger from '../logger';
+import {Rect, calcTreeSize} from '../packedrtree';
+import {parseGeometry} from './geometry';
+import {HeaderMetaFn} from '../generic';
+import {magicbytes, SIZE_PREFIX_LEN} from '../constants';
+import {inferGeometryType} from './header';
 
 export type FromFeatureFn = (feature: Feature, header: HeaderMeta) => IFeature;
 type ReadFn = (size: number, purpose: string) => Promise<ArrayBuffer>;

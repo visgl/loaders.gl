@@ -1,5 +1,9 @@
 # Parquet
 
+![parquet-logo](../images/parquet-logo-small.png)
+&emsp;
+![apache-logo](../../../images/logos/apache-logo.png)
+
 - *[`@loaders.gl/parquet`](/docs/modules/parquet)*
 - *[Parquet](https://parquet.apache.org/docs/file-format/)*
 
@@ -108,3 +112,7 @@ TBA - This table is not complete
 | `parquet`           | `map, type=MAP, convertedtype=MAP, keytype=BYTE_ARRAY, keyconvertedtype=UTF8, valuetype=INT32"` |           |
 | `list`              | `MAP` convertedtype=LIST, valuetype=BYTE_ARRAY, valueconvertedtype=UTF8                         |           |
 | `repeated           | `INT32` repetitiontype=REPEATED"`                                                               |           |
+
+## Format Structure
+
+![parquet-file-format](../images/parquet-file-format.png)

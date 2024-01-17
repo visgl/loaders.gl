@@ -7,9 +7,9 @@ import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory.js';
 import GeoJSONWriter from 'jsts/org/locationtech/jts/io/GeoJSONWriter.js';
 import {readFileSync, writeFileSync} from 'fs';
 
-import {magicbytes, SIZE_PREFIX_LEN} from './constants.js';
-import {fromByteBuffer} from './header-meta.js';
-import {calcTreeSize, generateLevelBounds} from './packedrtree.js';
+import {magicbytes, SIZE_PREFIX_LEN} from './constants';
+import {fromByteBuffer} from './header-meta';
+import {calcTreeSize, generateLevelBounds} from './packedrtree';
 
 const buffer = readFileSync('./test/data/tiger_roads.fgb');
 const bytes = new Uint8Array(buffer);

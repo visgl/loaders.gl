@@ -1,5 +1,9 @@
 # GeoParquet
 
+![parquet-logo](../images/parquet-logo-small.png)
+&emsp;
+![apache-logo](../../../images/logos/apache-logo.png)
+
 - *[`loaders.gl/parquet`](/docs/modules/parquet)*
 - *[geoparquet.org](https://geoparquet.org)*
 

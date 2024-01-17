@@ -3,11 +3,11 @@ import {
   deserializeStream,
   deserializeFiltered,
   FromFeatureFn
-} from './generic/featurecollection.js';
+} from './generic/featurecollection';
 
-import {Rect} from './packedrtree.js';
-import {IFeature} from './generic/feature.js';
-import HeaderMeta from './header-meta.js';
+import {Rect} from './packedrtree';
+import {IFeature} from './generic/feature';
+import HeaderMeta from './header-meta';
 
 export type HeaderMetaFn = (headerMeta: HeaderMeta) => void;
 
@@ -27,7 +27,7 @@ export function deserialize(
   return deserializeFiltered(input, rect as Rect, fromFeature);
 }
 
-export {serialize} from './generic/featurecollection.js';
+export {serialize} from './generic/featurecollection';
 
-export {GeometryType} from './flat-geobuf/geometry-type.js';
-export {ColumnType} from './flat-geobuf/column-type.js';
+export {GeometryType} from './flat-geobuf/geometry-type';
+export {ColumnType} from './flat-geobuf/column-type';
