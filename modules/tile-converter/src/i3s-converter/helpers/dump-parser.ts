@@ -5,10 +5,10 @@ import {isMap} from 'util/types';
  * @param tilesConverted - Map of tilesConverted with conversion status
  * @returns tilesConverted Map converted to Object
  */
-export const dumpToObject = (tilesConverted: Map<string, any>) => {
+export const dumpTilesToObject = (tilesConverted: Map<string, any>) => {
   const object = {};
   for (const [key, value] of tilesConverted) {
-    if (value && value.nodes) {
+    if (value?.nodes) {
       object[key] = {nodes: []};
       for (const node of value.nodes) {
         if (isMap(node.done)) {

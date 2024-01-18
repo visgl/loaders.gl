@@ -83,7 +83,7 @@ import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-t
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
 import {Progress} from './helpers/progress';
 import {addOneFile, composeHashFile} from '@loaders.gl/zip';
-import {dumpToObject} from './helpers/dump-parser';
+import {dumpTilesToObject} from './helpers/dump-parser';
 
 const ION_DEFAULT_TOKEN = process.env?.IonToken;
 const HARDCODED_NODES_PER_PAGE = 64;
@@ -734,17 +734,6 @@ export default class I3SConverter {
       propertyTable
     );
 
-    //update a record in dump map and file
-    if (sourceTile.id) {
-      const fileName = path.filename(sourceTile.id);
-      this.tilesConverted.set(fileName, {
-        nodes: resourcesData?.map((node) => {
-          return {nodeId: node.nodeId, done: new Map()};
-        })
-      });
-      this.writeDumpFile();
-    }
-
     const nodes: NodeIndexDocument[] = [];
     const nodeIds: number[] = [];
     const nodesInPage: NodeInPage[] = [];
@@ -792,7 +781,19 @@ export default class I3SConverter {
       nodes.push(node);
 
       if (nodeInPage.mesh) {
-        this._writeResources(resources, node.id, sourceTile);
+        //update a record in a dump map file
+        const nodeId = parseInt(node.id);
+        if (!isNaN(nodeId) && sourceTile.id) {
+          const fileName = path.filename(sourceTile.id);
+          const {nodes} = this.tilesConverted.get(fileName) || {nodes: []};
+          nodes.push({nodeId, done: new Map()});
+          if (nodes.length === 1) {
+            this.tilesConverted.set(fileName, {nodes});
+          }
+          this.writeDumpFile();
+        }
+        //write resources
+        await this._writeResources(resources, node.id, sourceTile);
       }
 
       if (this.validate) {
@@ -965,7 +966,7 @@ export default class I3SConverter {
       childPath,
       slpkChildPath,
       dumpTileRecord,
-      resources.nodeId
+      parseInt(nodePath)
     );
     await this._writeShared(
       sharedResources,
@@ -973,15 +974,15 @@ export default class I3SConverter {
       slpkChildPath,
       nodePath,
       dumpTileRecord,
-      resources.nodeId
+      parseInt(nodePath)
     );
-    await this._writeTexture(texture, childPath, slpkChildPath, dumpTileRecord, resources.nodeId);
+    await this._writeTexture(texture, childPath, slpkChildPath, dumpTileRecord, parseInt(nodePath));
     await this._writeAttributes(
       attributes,
       childPath,
       slpkChildPath,
       dumpTileRecord,
-      resources.nodeId
+      parseInt(nodePath)
     );
   }
 
@@ -1137,16 +1138,15 @@ export default class I3SConverter {
       const formats: TextureSetDefinitionFormats = [];
       const textureData = texture.bufferView!.data;
 
-      for (const node of dumpTileRecord.nodes) {
-        if (node.nodeId === nodeId) {
-          node.done.set(ResourceType.TEXTURE, false);
-        }
-      }
-
       switch (format) {
         case 'jpg':
         case 'png': {
           formats.push({name: '0', format});
+          for (const node of dumpTileRecord.nodes) {
+            if (node.nodeId === nodeId) {
+              node.done.set(`${ResourceType.TEXTURE}/${format}`, false);
+            }
+          }
           await this.writeTextureFile(
             textureData,
             '0',
@@ -1180,7 +1180,7 @@ export default class I3SConverter {
 
             for (const node of dumpTileRecord.nodes) {
               if (node.nodeId === nodeId) {
-                node.done.set(ResourceType.TEXTURE_KTX2, false);
+                node.done.set(`${ResourceType.TEXTURE}/ktx2`, false);
               }
             }
 
@@ -1200,6 +1200,11 @@ export default class I3SConverter {
 
         case 'ktx2': {
           formats.push({name: '1', format});
+          for (const node of dumpTileRecord.nodes) {
+            if (node.nodeId === nodeId) {
+              node.done.set(`${ResourceType.TEXTURE}/${format}`, false);
+            }
+          }
           await this.writeTextureFile(
             textureData,
             '1',
@@ -1213,6 +1218,11 @@ export default class I3SConverter {
           if (this.generateTextures) {
             formats.push({name: '0', format: 'jpg'});
             const decodedFromKTX2TextureData = encode(texture.image!.data[0], ImageWriter);
+            for (const node of dumpTileRecord.nodes) {
+              if (node.nodeId === nodeId) {
+                node.done.set(`${ResourceType.TEXTURE}/jpg`, false);
+              }
+            }
             await this.writeTextureFile(
               decodedFromKTX2TextureData,
               '0',
@@ -1261,7 +1271,7 @@ export default class I3SConverter {
         convertedTileDumpMap: {
           dumpTileRecord,
           nodeId: nodeId,
-          resourceType: ResourceType.TEXTURE
+          resourceType: `${ResourceType.TEXTURE}/${format}`
         },
         writePromise: () =>
           writeFileForSlpk(slpkTexturePath, textureData, `${name}.${format}`, compress)
@@ -1272,7 +1282,7 @@ export default class I3SConverter {
         convertedTileDumpMap: {
           dumpTileRecord,
           nodeId: nodeId,
-          resourceType: ResourceType.TEXTURE
+          resourceType: `${ResourceType.TEXTURE}/${format}`
         },
         writePromise: () => writeFile(texturePath, textureData, `index.${format}`)
       });
@@ -1506,11 +1516,11 @@ export default class I3SConverter {
    */
   private async writeDumpFile(): Promise<void> {
     try {
-      await writeFile(
+      writeFile(
         this.options.outputPath,
         JSON.stringify({
           options: this.options,
-          tilesConverted: dumpToObject(this.tilesConverted)
+          tilesConverted: dumpTilesToObject(this.tilesConverted)
         }),
         `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
       );

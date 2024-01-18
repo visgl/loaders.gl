@@ -1,3 +1,4 @@
+import {isMap} from 'util/types';
 import {Queue} from './queue';
 import process from 'process';
 
@@ -120,17 +121,20 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
     for (let i = 0; i < convertedTileDumpMaps.length; i++) {
       if (convertedTileDumpMaps[i] && 'value' in writeResults[i]) {
         const {dumpTileRecord} = convertedTileDumpMaps[i];
-        let done = true;
         for (const node of dumpTileRecord.nodes) {
           if (node.nodeId === convertedTileDumpMaps[i].nodeId) {
             node.done.set(convertedTileDumpMaps[i].resourceType, true);
           }
-          for (const [_, value] of node.done) {
-            done = value;
-          }
-          if (done) {
-            delete node.done;
-            node.done = true;
+          if (isMap(node.done)) {
+            let done = false;
+            for (const [_, value] of node.done) {
+              done = value;
+              if (!done) break;
+            }
+            if (done) {
+              delete node.done;
+              node.done = true;
+            }
           }
         }
       }

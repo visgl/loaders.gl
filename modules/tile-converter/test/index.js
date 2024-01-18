@@ -13,6 +13,7 @@ import './i3s-converter/helpers/preprocess-3d-tiles.spec';
 import './i3s-converter/helpers/geometry-attributes.spec';
 import './i3s-converter/helpers/attribute-metadata-info.spec.ts';
 import './i3s-converter/helpers/progress.spec.ts';
+import './i3s-converter/helpers/dump-parser.spec.ts';
 
 import './i3s-converter/i3s-converter.spec';
 import './slpk-extractor/slpk-extractor.spec';
