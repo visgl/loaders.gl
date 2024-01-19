@@ -62,10 +62,10 @@ export function setFieldToNumber(
 /** functions to write values into buffer according to the bytes amount */
 const NUMBER_SETTERS: {[key: number]: NumberSetter} = {
   2: (header, offset, value) => {
-    header.setUint16(offset, Number(value), true);
+    header.setUint16(offset, Number(value > 0xffff ? 0xffff : value), true);
   },
   4: (header, offset, value) => {
-    header.setUint32(offset, Number(value), true);
+    header.setUint32(offset, Number(value > 0xffffffff ? 0xffffffff : value), true);
   },
   8: (header, offset, value) => {
     header.setBigUint64(offset, BigInt(value), true);
