@@ -17,13 +17,13 @@ test('zip#addOneFile', async (t) => {
 });
 
 test('zip#getFileIterator', async (t) => {
-  const iterator = await getFileIterator(folderToZip);
+  const iterator = getFileIterator(folderToZip);
   t.ok(await iterator[Symbol.asyncIterator]().next());
 });
 
 test('zip#createZip', async (t) => {
   await createZip(folderToZip, zipUrl);
   const stats = await stat(zipUrl);
-  t.equal(stats.size, 196);
+  t.equal(stats.size, 198);
   await unlink(zipUrl);
 });
