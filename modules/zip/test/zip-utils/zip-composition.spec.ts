@@ -1,4 +1,4 @@
-import {addOneFile, createZip, getFileIterator} from '../../src/parse-zip/zip-compozition';
+import {addOneFile, createZip, getFileIterator} from '../../src/parse-zip/zip-composition';
 import test from 'tape-promise/tape';
 import {copyFile, unlink, stat} from 'node:fs/promises';
 

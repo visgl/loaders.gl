@@ -1,10 +1,14 @@
-import {FileHandleFile, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {
+  FileHandleFile,
+  concatenateArrayBuffers,
+  path,
+  NodeFilesystem,
+  NodeFile
+} from '@loaders.gl/loader-utils';
 import {ZipEoCDRecord, generateEoCD, parseEoCDRecord, updateEoCD} from './end-of-central-directory';
 import {CRC32Hash} from '@loaders.gl/crypto';
 import {generateLocalHeader} from './local-file-header';
 import {generateCDHeader} from './cd-file-header';
-import path from 'path';
-import {NodeFilesystem, NodeFile} from '@loaders.gl/loader-utils';
 import {fetchFile} from '@loaders.gl/core';
 
 const fs = new NodeFilesystem({});
@@ -119,11 +123,12 @@ export async function addOneFile(zipUrl: string, fileToAdd: ArrayBuffer, fileNam
 
 /**
  * creates zip archive with no compression
+ * @note This is a node specific function that works on files
  * @param inputPath path where files for the achive are stored
  * @param outputPath path where zip archive will be placed
  */
 export async function createZip(inputPath: string, outputPath: string) {
-  const fileIterator = await getFileIterator(inputPath);
+  const fileIterator = getFileIterator(inputPath);
 
   const resFile = new NodeFile(outputPath, 'w');
 
@@ -151,17 +156,17 @@ export async function createZip(inputPath: string, outputPath: string) {
  * @param inputPath path to the input folder
  * @returns iterator
  */
-export async function getFileIterator(
+export function getFileIterator(
   inputPath: string
-): Promise<AsyncIterable<{path: string; file: ArrayBuffer}>> {
-  const fileList = await getAllFiles(inputPath);
-  const iterable = (async function* () {
+): AsyncIterable<{path: string; file: ArrayBuffer}> {
+  async function* iterable() {
+    const fileList = await getAllFiles(inputPath);
     for (const filePath of fileList) {
       const file = await (await fetchFile(path.join(inputPath, filePath))).arrayBuffer();
       yield {path: filePath, file};
     }
-  })();
-  return iterable;
+  }
+  return iterable();
 }
 
 /**
