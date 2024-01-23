@@ -3,6 +3,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {NodeIndexDocument} from '../../../src/i3s-converter/helpers/node-index-document';
 import I3SConverter from '../../../src/i3s-converter/i3s-converter';
 import WriteQueue from '../../../src/lib/utils/write-queue';
+import {ConversionDump} from '../../../src/lib/utils/conversion-dump';
 
 const getConverter = ({slpk, instantNodeWriting} = {slpk: false, instantNodeWriting: false}) => {
   const converter = new I3SConverter();
@@ -11,7 +12,7 @@ const getConverter = ({slpk, instantNodeWriting} = {slpk: false, instantNodeWrit
     instantNodeWriting
   };
   converter.layers0Path = '.data/node-pages-test/layers/0';
-  converter.writeQueue = new WriteQueue();
+  converter.writeQueue = new WriteQueue(new ConversionDump());
   return converter;
 };
 

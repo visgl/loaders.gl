@@ -1,13 +1,15 @@
-import {isMap} from 'util/types';
 import {Queue} from './queue';
 import process from 'process';
+import {ConversionDump} from './conversion-dump';
 
 /** Memory limit size is based on testing */
 const MEMORY_LIMIT = 4 * 1024 * 1024 * 1024; // 4GB
 
 export type WriteQueueItem = {
   archiveKey?: string;
-  convertedTileDumpMap?: any;
+  sourceId?: string;
+  outputId?: number;
+  resourceType?: string;
   /**
    * writePromise() returns a Promise that will be awaited in Promise.allSettled(promises);
    * Arguments for this call are specified in writeQueue.enqueue call like this:
@@ -29,14 +31,19 @@ export type WriteQueueItem = {
 
 export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   private intervalId?: NodeJS.Timeout;
+  private conversionDump: ConversionDump;
   public writePromise: Promise<void> | null = null;
-  public writeDumpFile: (() => void) | undefined;
   public fileMap: {[key: string]: string} = {};
   public listeningInterval: number;
   public writeConcurrency: number;
 
-  constructor(listeningInterval: number = 2000, writeConcurrency: number = 400) {
+  constructor(
+    conversionDump: ConversionDump,
+    listeningInterval: number = 2000,
+    writeConcurrency: number = 400
+  ) {
     super();
+    this.conversionDump = conversionDump;
     this.listeningInterval = listeningInterval;
     this.writeConcurrency = writeConcurrency;
   }
@@ -84,21 +91,21 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
     while (this.length) {
       const promises: Promise<string | null>[] = [];
       const archiveKeys: (string | undefined)[] = [];
-      const convertedTileDumpMaps: any[] = [];
+      const changedRecords: {outputId?: number; sourceId?: string; resourceType?: string}[] = [];
       for (let i = 0; i < this.writeConcurrency; i++) {
         const item = this.dequeue();
         if (!item) {
           break;
         }
-        const {archiveKey, convertedTileDumpMap, writePromise} = item as WriteQueueItem;
+        const {archiveKey, sourceId, outputId, resourceType, writePromise} = item as WriteQueueItem;
         archiveKeys.push(archiveKey);
-        convertedTileDumpMaps.push(convertedTileDumpMap);
+        changedRecords.push({sourceId, outputId, resourceType});
         const promise = writePromise();
         promises.push(promise);
       }
       const writeResults = await Promise.allSettled(promises);
       this.updateFileMap(archiveKeys, writeResults);
-      this.updateConvertedTilesMap(convertedTileDumpMaps, writeResults);
+      this.conversionDump.updateConvertedTilesDump(changedRecords, writeResults);
     }
   }
 
@@ -111,36 +118,6 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
       if (archiveKey && 'value' in writeResults[i]) {
         this.fileMap[archiveKey] = (writeResults[i] as PromiseFulfilledResult<string>).value;
       }
-    }
-  }
-
-  private updateConvertedTilesMap(
-    convertedTileDumpMaps: any[],
-    writeResults: PromiseSettledResult<string | null>[]
-  ) {
-    for (let i = 0; i < convertedTileDumpMaps.length; i++) {
-      if (convertedTileDumpMaps[i] && 'value' in writeResults[i]) {
-        const {dumpTileRecord} = convertedTileDumpMaps[i];
-        for (const node of dumpTileRecord.nodes) {
-          if (node.nodeId === convertedTileDumpMaps[i].nodeId) {
-            node.done.set(convertedTileDumpMaps[i].resourceType, true);
-          }
-          if (isMap(node.done)) {
-            let done = false;
-            for (const [_, value] of node.done) {
-              done = value;
-              if (!done) break;
-            }
-            if (done) {
-              delete node.done;
-              node.done = true;
-            }
-          }
-        }
-      }
-    }
-    if (this.writeDumpFile) {
-      this.writeDumpFile();
     }
   }
 }
