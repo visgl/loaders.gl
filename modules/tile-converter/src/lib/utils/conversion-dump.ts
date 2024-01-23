@@ -41,7 +41,7 @@ export class ConversionDump {
    * Create a dump file with convertion options
    * @param options - converter options
    */
-  createDumpFile(options: ConversionDumpOptions): void {
+  async createDumpFile(options: ConversionDumpOptions): Promise<void> {
     const {
       tilesetName,
       slpk,
@@ -74,7 +74,7 @@ export class ConversionDump {
     };
 
     try {
-      writeFile(
+      await writeFile(
         options.outputPath,
         JSON.stringify({options: this.options}),
         `${options.tilesetName}${DUMP_FILE_SUFFIX}`
@@ -87,10 +87,10 @@ export class ConversionDump {
   /**
    * Update conversion status in the dump file
    */
-  updateDumpFile(): void {
+  private async updateDumpFile(): Promise<void> {
     if (this.options?.outputPath && this.options.tilesetName) {
       try {
-        writeFile(
+        await writeFile(
           this.options.outputPath,
           JSON.stringify({
             options: this.options,
@@ -107,9 +107,11 @@ export class ConversionDump {
   /**
    * Delete a dump file
    */
-  deleteDumpFile(): void {
+  async deleteDumpFile(): Promise<void> {
     if (this.options?.outputPath && this.options.tilesetName) {
-      removeFile(join(this.options.outputPath, `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`));
+      await removeFile(
+        join(this.options.outputPath, `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`)
+      );
     }
   }
 
@@ -118,7 +120,7 @@ export class ConversionDump {
    * @param fileName - source filename
    * @returns existing object from the tilesConverted Map
    */
-  getRecord(fileName: string) {
+  private getRecord(fileName: string) {
     return this.tilesConverted[fileName];
   }
 
@@ -127,8 +129,22 @@ export class ConversionDump {
    * @param fileName - key - source filename
    * @param object - value
    */
-  setRecord(fileName: string, object: any) {
+  private setRecord(fileName: string, object: any) {
     this.tilesConverted[fileName] = object;
+  }
+
+  /**
+   * Add a node into the dump file for the source file record
+   * @param fileName - source filename
+   * @param nodeId - nodeId of the node
+   */
+  async addNode(filename: string, nodeId: number) {
+    const {nodes} = this.getRecord(filename) || {nodes: []};
+    nodes.push({nodeId, done: {}});
+    if (nodes.length === 1) {
+      this.setRecord(filename, {nodes});
+    }
+    await this.updateDumpFile();
   }
 
   /**
@@ -152,7 +168,7 @@ export class ConversionDump {
    * @param changedRecords - array of parameters ids for the written resources
    * @param writeResults - array of writing resource files results
    */
-  updateConvertedTilesDump(
+  async updateConvertedTilesDump(
     changedRecords: {outputId?: number; sourceId?: string; resourceType?: string}[],
     writeResults: PromiseSettledResult<string | null>[]
   ) {
@@ -177,6 +193,6 @@ export class ConversionDump {
         }
       }
     }
-    this.updateDumpFile();
+    await this.updateDumpFile();
   }
 }

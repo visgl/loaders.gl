@@ -30,3 +30,5 @@ import './i3s-server/controllers/index-controller.spec';
 import './i3s-server/controllers/slpk-controller.spec';
 import './i3s-server/utils/create-scene-server.spec.ts';
 import './i3s-server/utils/server-utils.spec';
+
+import './lib/utils/conversion-dump.spec.ts';

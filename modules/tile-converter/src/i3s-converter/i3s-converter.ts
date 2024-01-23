@@ -265,7 +265,7 @@ export default class I3SConverter {
     }
 
     //create a dump file with convertion options
-    this.conversionDump.createDumpFile(options as ConversionDumpOptions);
+    await this.conversionDump.createDumpFile(options as ConversionDumpOptions);
 
     try {
       const preloadOptions = await this._fetchPreloadOptions();
@@ -563,6 +563,7 @@ export default class I3SConverter {
    * @param tilesetPath - Path to save file
    */
   private async _createSlpk(tilesetPath: string): Promise<void> {
+    await this.conversionDump.deleteDumpFile();
     if (this.options.slpk) {
       const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
       const slpkFileName = `${tilesetPath}.slpk`;
@@ -767,15 +768,10 @@ export default class I3SConverter {
 
       if (nodeInPage.mesh) {
         //update a record in a dump file
-        const nodeId = parseInt(node.id);
-        if (!isNaN(nodeId) && sourceTile.id) {
-          const {nodes} = this.conversionDump.getRecord(sourceTile.id) || {nodes: []};
-          nodes.push({nodeId, done: {}});
-          if (nodes.length === 1) {
-            this.conversionDump.setRecord(sourceTile.id, {nodes});
-          }
-          this.conversionDump.updateDumpFile();
+        if (sourceTile.id) {
+          await this.conversionDump.addNode(sourceTile.id, nodeInPage.index);
         }
+
         //write resources
         await this._writeResources(resources, node.id, sourceTile);
       }
@@ -950,7 +946,7 @@ export default class I3SConverter {
       compressedGeometry!,
       childPath,
       slpkChildPath,
-      sourceTile.id!,
+      sourceTile.id || '',
       parseInt(nodePath)
     );
     await this._writeShared(
@@ -958,15 +954,21 @@ export default class I3SConverter {
       childPath,
       slpkChildPath,
       nodePath,
-      sourceTile.id!,
+      sourceTile.id || '',
       parseInt(nodePath)
     );
-    await this._writeTexture(texture, childPath, slpkChildPath, sourceTile.id!, parseInt(nodePath));
+    await this._writeTexture(
+      texture,
+      childPath,
+      slpkChildPath,
+      sourceTile.id || '',
+      parseInt(nodePath)
+    );
     await this._writeAttributes(
       attributes,
       childPath,
       slpkChildPath,
-      sourceTile.id!,
+      sourceTile.id || '',
       parseInt(nodePath)
     );
   }
@@ -1407,7 +1409,6 @@ export default class I3SConverter {
     console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line no-undef, no-console
     console.log(`Percentage of tiles with "ADD" refinement type:`, addRefinementPercentage, '%'); // eslint-disable-line no-undef, no-console
     console.log(`------------------------------------------------`); // eslint-disable-line no-undef, no-console
-    this.conversionDump.deleteDumpFile();
   }
 
   /**

@@ -105,7 +105,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
       }
       const writeResults = await Promise.allSettled(promises);
       this.updateFileMap(archiveKeys, writeResults);
-      this.conversionDump.updateConvertedTilesDump(changedRecords, writeResults);
+      await this.conversionDump.updateConvertedTilesDump(changedRecords, writeResults);
     }
   }
 
