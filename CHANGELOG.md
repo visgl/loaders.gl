@@ -2,13 +2,22 @@
 
 ## v4.1
 
+### v4.1.0-alpha.10
+
+- feat(tile-converter): add convertion status dump file (#2858)
+- chore: Fix publint issues, step 1 (#2862)
+- docs: Improve flatgeobuf docs (#2859)
+- concatenateArrayBuffers fix (#2856)
+- feat(tiles): Memory adjusted screen space error (#2851)
+- chore(deps): bump follow-redirects from 1.15.2 to 1.15.4 in /website (#2852)
+
 ### v4.1.0-alpha.9
 
--  fix(tile-converter): support portable NodeJS (#2854)
+- fix(tile-converter): support portable NodeJS (#2854)
 
 ### v4.1.0-alpha.8
 
--  fix(flatgeobuf): restore worker build (#2855)
+- fix(flatgeobuf): restore worker build (#2855)
 
 ### v4.1.0-alpha.7
 
