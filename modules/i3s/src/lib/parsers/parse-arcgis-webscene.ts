@@ -29,7 +29,7 @@ const NOT_SUPPORTED_CRS_ERROR = 'NOT_SUPPORTED_CRS_ERROR';
 class LayerError extends Error {
   constructor(
     message: string,
-    public details: string
+    public details: any
   ) {
     super(message);
     this.name = 'LayerError';
@@ -45,9 +45,8 @@ export async function parseWebscene(data: ArrayBuffer): Promise<ArcGISWebSceneDa
   const {operationalLayers} = layer0;
   const {layers, unsupportedLayers} = await parseOperationalLayers(operationalLayers, true);
 
-  if (!layers.length || unsupportedLayers.length) {
-    const errorDetails = unsupportedLayers.length ? JSON.stringify(unsupportedLayers) : '';
-    throw new LayerError(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR, errorDetails);
+  if (!layers.length) {
+    throw new LayerError(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR, unsupportedLayers);
   }
 
   return {
