@@ -29,7 +29,7 @@ const NOT_SUPPORTED_CRS_ERROR = 'NOT_SUPPORTED_CRS_ERROR';
 class LayerError extends Error {
   constructor(
     message: string,
-    public details: any
+    public details: unknown
   ) {
     super(message);
     this.name = 'LayerError';
