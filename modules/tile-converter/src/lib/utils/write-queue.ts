@@ -1,11 +1,15 @@
 import {Queue} from './queue';
 import process from 'process';
+import {ConversionDump} from './conversion-dump';
 
 /** Memory limit size is based on testing */
 const MEMORY_LIMIT = 4 * 1024 * 1024 * 1024; // 4GB
 
 export type WriteQueueItem = {
   archiveKey?: string;
+  sourceId?: string;
+  outputId?: number;
+  resourceType?: string;
   /**
    * writePromise() returns a Promise that will be awaited in Promise.allSettled(promises);
    * Arguments for this call are specified in writeQueue.enqueue call like this:
@@ -27,13 +31,19 @@ export type WriteQueueItem = {
 
 export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   private intervalId?: NodeJS.Timeout;
+  private conversionDump: ConversionDump;
   public writePromise: Promise<void> | null = null;
   public fileMap: {[key: string]: string} = {};
   public listeningInterval: number;
   public writeConcurrency: number;
 
-  constructor(listeningInterval: number = 2000, writeConcurrency: number = 400) {
+  constructor(
+    conversionDump: ConversionDump,
+    listeningInterval: number = 2000,
+    writeConcurrency: number = 400
+  ) {
     super();
+    this.conversionDump = conversionDump;
     this.listeningInterval = listeningInterval;
     this.writeConcurrency = writeConcurrency;
   }
@@ -81,18 +91,21 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
     while (this.length) {
       const promises: Promise<string | null>[] = [];
       const archiveKeys: (string | undefined)[] = [];
+      const changedRecords: {outputId?: number; sourceId?: string; resourceType?: string}[] = [];
       for (let i = 0; i < this.writeConcurrency; i++) {
         const item = this.dequeue();
         if (!item) {
           break;
         }
-        const {archiveKey, writePromise} = item as WriteQueueItem;
+        const {archiveKey, sourceId, outputId, resourceType, writePromise} = item as WriteQueueItem;
         archiveKeys.push(archiveKey);
+        changedRecords.push({sourceId, outputId, resourceType});
         const promise = writePromise();
         promises.push(promise);
       }
       const writeResults = await Promise.allSettled(promises);
       this.updateFileMap(archiveKeys, writeResults);
+      await this.conversionDump.updateConvertedTilesDump(changedRecords, writeResults);
     }
   }
 

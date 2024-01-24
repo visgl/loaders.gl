@@ -241,3 +241,11 @@ export const AttributeType = {
   /** Integer data type name for feature attributes */
   SHORT_INT_TYPE: 'Int32'
 } as const;
+
+export enum ResourceType {
+  ATTRIBUTES = 'ATTRIBUTES',
+  DRACO_GEOMETRY = 'DRACO_GEOMETRY',
+  GEOMETRY = 'GEOMETRY',
+  SHARED = 'SHARED',
+  TEXTURE = 'TEXTURE'
+}
