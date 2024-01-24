@@ -19,7 +19,7 @@ export {
 } from './parse-zip/local-file-header';
 export {parseEoCDRecord} from './parse-zip/end-of-central-directory';
 export {searchFromTheEnd} from './parse-zip/search-from-the-end';
-export {addOneFile} from './parse-zip/zip-compozition';
+export {addOneFile} from './parse-zip/zip-composition';
 
 // export type {HashElement} from './hash-file-utility';
 export {parseHashTable, makeHashTableFromZipHeaders, composeHashFile} from './hash-file-utility';

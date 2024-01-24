@@ -1,8 +1,17 @@
-import {FileHandleFile, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
-import {ZipEoCDRecord, parseEoCDRecord, updateEoCD} from './end-of-central-directory';
+import {
+  FileHandleFile,
+  concatenateArrayBuffers,
+  path,
+  NodeFilesystem,
+  NodeFile
+} from '@loaders.gl/loader-utils';
+import {ZipEoCDRecord, generateEoCD, parseEoCDRecord, updateEoCD} from './end-of-central-directory';
 import {CRC32Hash} from '@loaders.gl/crypto';
 import {generateLocalHeader} from './local-file-header';
 import {generateCDHeader} from './cd-file-header';
+import {fetchFile} from '@loaders.gl/core';
+
+const fs = new NodeFilesystem({});
 
 /**
  * cut off CD and EoCD records from zip file
@@ -102,7 +111,7 @@ export async function addOneFile(zipUrl: string, fileToAdd: ArrayBuffer, fileNam
   const eocdOffset = provider.length;
 
   await provider.append(
-    await updateEoCD(
+    updateEoCD(
       eocdBody,
       oldEoCDinfo.offsets,
       newCDStartOffset,
@@ -110,4 +119,76 @@ export async function addOneFile(zipUrl: string, fileToAdd: ArrayBuffer, fileNam
       oldEoCDinfo.cdRecordsNumber + 1n
     )
   );
+}
+
+/**
+ * creates zip archive with no compression
+ * @note This is a node specific function that works on files
+ * @param inputPath path where files for the achive are stored
+ * @param outputPath path where zip archive will be placed
+ */
+export async function createZip(inputPath: string, outputPath: string) {
+  const fileIterator = getFileIterator(inputPath);
+
+  const resFile = new NodeFile(outputPath, 'w');
+
+  const cdArray: ArrayBuffer[] = [];
+  for await (const file of fileIterator) {
+    const size = (await resFile.stat()).bigsize;
+    const [localPart, cdHeaderPart] = await generateFileHeaders(file.path, file.file, size);
+    await resFile.append(localPart);
+    cdArray.push(cdHeaderPart);
+  }
+  // TODO add hash file there
+  const cdOffset = (await resFile.stat()).bigsize;
+  const cd = concatenateArrayBuffers(...cdArray);
+  await resFile.append(new Uint8Array(cd));
+  const eoCDStart = (await resFile.stat()).bigsize;
+  await resFile.append(
+    new Uint8Array(
+      generateEoCD({recordsNumber: cdArray.length, cdSize: cd.byteLength, cdOffset, eoCDStart})
+    )
+  );
+}
+
+/**
+ * creates iterator providing buffer with file content and path to every file in the input folder
+ * @param inputPath path to the input folder
+ * @returns iterator
+ */
+export function getFileIterator(
+  inputPath: string
+): AsyncIterable<{path: string; file: ArrayBuffer}> {
+  async function* iterable() {
+    const fileList = await getAllFiles(inputPath);
+    for (const filePath of fileList) {
+      const file = await (await fetchFile(path.join(inputPath, filePath))).arrayBuffer();
+      yield {path: filePath, file};
+    }
+  }
+  return iterable();
+}
+
+/**
+ * creates a list of relative paths to all files in the provided folder
+ * @param basePath path of the root folder
+ * @param subfolder relative path from the root folder.
+ * @returns list of paths
+ */
+export async function getAllFiles(basePath: string, subfolder: string = ''): Promise<string[]> {
+  const files = await fs.readdir(path.join(basePath, subfolder));
+
+  const arrayOfFiles: string[] = [];
+
+  for (const file of files) {
+    const fullPath = path.join(basePath, subfolder, file);
+    if ((await fs.stat(fullPath)).isDirectory) {
+      const files = await getAllFiles(basePath, path.join(subfolder, file));
+      arrayOfFiles.push(...files);
+    } else {
+      arrayOfFiles.push(path.join(subfolder, file));
+    }
+  }
+
+  return arrayOfFiles;
 }
