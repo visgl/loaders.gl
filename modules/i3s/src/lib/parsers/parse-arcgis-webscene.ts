@@ -26,6 +26,16 @@ const SUPPORTED_LAYERS_TYPES = [
 const NO_AVAILABLE_SUPPORTED_LAYERS_ERROR = 'NO_AVAILABLE_SUPPORTED_LAYERS_ERROR';
 const NOT_SUPPORTED_CRS_ERROR = 'NOT_SUPPORTED_CRS_ERROR';
 
+class LayerError extends Error {
+  constructor(
+    message: string,
+    public details: string
+  ) {
+    super(message);
+    this.name = 'LayerError';
+  }
+}
+
 /**
  * Parses ArcGIS WebScene
  * @param data
@@ -35,8 +45,9 @@ export async function parseWebscene(data: ArrayBuffer): Promise<ArcGISWebSceneDa
   const {operationalLayers} = layer0;
   const {layers, unsupportedLayers} = await parseOperationalLayers(operationalLayers, true);
 
-  if (!layers.length) {
-    throw new Error(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR);
+  if (!layers.length || unsupportedLayers.length) {
+    const errorDetails = unsupportedLayers.length ? JSON.stringify(unsupportedLayers) : '';
+    throw new LayerError(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR, errorDetails);
   }
 
   return {
