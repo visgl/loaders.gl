@@ -6,37 +6,33 @@ Also Apache Arrow JS follows a common cross-language versioning number scheme wh
 
 The biggest changes were made in Apache Arrow JS Version 9.0 (based on feedback from loaders.gl users).
 
-## Upgrading to v13.0
+## Upgrading to v15.0
 
 - No significant changes in Apache Arrow JS
-- [Apache Arrow 13.0.0](https://arrow.apache.org/release/12.0.0.html)
+
+## Upgrading to v14.0
+
+- No significant changes in Apache Arrow JS
+
+## Upgrading to v13.0
+
+- Under the hood, Apache Arrow JS removed "big int" fallback handling (big ints are now supported by all current browsers and Node.js versions).
 
 ## Upgrading to v12.0
 
-- Under the hood, Apache Arrow JS removed "big int" fallback handling (big ints are now supported by all current browsers and Node.js versions).
 - Bug found: Can break table reads in rare cases, e.g when dicts have big int keys.
-- [Apache Arrow 12.0.0](https://arrow.apache.org/release/12.0.0.html)
 
 ## Upgrading to v11.0
 
 - No significant changes in Apache Arrow JS
-- [Apache Arrow 11.0.0](https://arrow.apache.org/release/11.0.0.html)
 
 ## Upgrading to v10.0
 
 - No significant changes in Apache Arrow JS
-- [Apache Arrow 10.0.0](https://arrow.apache.org/release/10.0.0.html)
-
-## Upgrading to v9.0
-
-
-In case it is helpful, changes made to loaders.gl can be found in this [PR](https://github.com/visgl/loaders.gl/pull/2276/files)
 
 ## Upgrading to v7.0 / v8.0 / v9.0
 
-- [Apache Arrow 7.0.0](https://arrow.apache.org/release/7.0.0.html)
-- [Apache Arrow 8.0.0](https://arrow.apache.org/release/8.0.0.html)
-- [Apache Arrow 9.0.0](https://arrow.apache.org/release/9.0.0.html)
+> In case it is helpful, changes made to loaders.gl can be found in this [PR](https://github.com/visgl/loaders.gl/pull/2276/files)
 
 These releases made a series of breaking changes to Apache Arrow JS to transform it into a lean, tree-shakeable "core" library.
 
@@ -76,4 +72,4 @@ Finally, in case it is helpful, changes made to loaders.gl can be found in this 
 
 ## Upgrading to v6.0 and earlier
 
-Unfortunately we don't have any release notes for these releases.
+Unfortunately we don't have any notes for these releases.
