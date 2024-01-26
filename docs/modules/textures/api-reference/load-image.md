@@ -33,7 +33,7 @@ for (const lodImage of imageArray) {
 A basic image loading function for loading a single image (or an array of mipmap images representing a single image).
 
 - `getUrl`: A function that generates the url for each image, it is called for each image with the `lod` of that image.
-- `options`: Supports the same options as [`ImageLoader`](modules/images/docs/api-reference/image-loader).
+- `options`: Supports the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader).
 
 Returns
 
@@ -41,7 +41,7 @@ Returns
 
 ## Options
 
-Accepts the same options as [`ImageLoader`](modules/images/docs/api-reference/image-loader), and
+Accepts the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader), and
 
 | Option            | Type    | Default | Description |
 | ----------------- | ------- | ------- | ----------- | ------------------------------------------------------ |

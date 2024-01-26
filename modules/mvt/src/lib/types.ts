@@ -59,9 +59,7 @@ export type MVTMapboxCoordinates = {
 export type MVTLoaderOptions = LoaderOptions & {
   mvt?: MVTOptions;
   gis?: {
-    /**
-     * When set to `true`, the parser will output the data in binary format. This is equivalent to loading the data as GeoJSON and then applying [geojsonToBinary](https://loaders.gl/modules/gis/docs/api-reference/geojson-to-binary).
-     */
+    /** `true`: parser will output the data in binary format. Equivalent to loading the data as GeoJSON and then applying geojsonToBinary */
     binary?: boolean;
     /** @deprecated. Use options.mvt.shape */
     format?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';

@@ -12,7 +12,7 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 | File Type      | Json, Binary                                        |
 | File Extension | `.json` (layer), `.bin` (geometries)                |
 | File Format    | [i3s](https://www.opengeospatial.org/standards/i3s) |
-| Data Format    | [Data formats](#data-formats)                       |
+| Data Format    | Data formats                                        |
 | Supported APIs | `load`, `parse`                                     |
 
 ## I3S Layer type support
@@ -244,7 +244,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                                                         |
 | `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                                                         |
 | `attributes`         | `Object`     | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/README.md) properties |
-| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader)                             |
+| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](/docs/modules/images/api-reference/image-loader)                                               |
 | `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                                             |
 
 `attributes` contains following fields

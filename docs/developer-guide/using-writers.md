@@ -2,7 +2,7 @@
 
 Writers allow applications to encoded data for a number of the formats supported by loaders.gl.
 
-For a detailed specification of the writer object format see the [API reference](docs/specifications/writer-object-format).
+For a detailed specification of the writer object format see the [API reference](/docs/specifications/writer-object-format).
 
 ## Usage
 

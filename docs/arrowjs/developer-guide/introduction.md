@@ -8,20 +8,20 @@ Arrow represents columns of values in sets of contiguous buffers. This is in con
 
 The Arrow library is organized into separate components responsible for creating, reading, writing, serializing, deserializing, or manipulating Tables or Columns.
 
-* [Data Types](/docs/arrowjs/developer-guide/introduction#arrow-data-types) - Classes that define the fixed-width, variable-width, and composite data types Arrow can represent
-* [Vectors](/docs/arrowjs/developer-guide/introduction#arrow-vectors) - Classes to read and decode JavaScript values from the underlying buffers or Vectors for each data type
-* [Builders](/docs/arrowjs/developer-guide/introduction#arrow-builders) - Classes to write and encode JavaScript values into the underlying buffers or Vectors for each data type
-* [Visitors](/docs/arrowjs/developer-guide/introduction#arrow-visitors) - Classes to traverse, manipulate, read, write, or aggregate values from trees of Arrow Vectors or DataTypes
-* [IPC Readers and Writers](/docs/arrowjs/developer-guide/introduction#arrow-ipc-primitives) - Classes to read and write the Arrow IPC (inter-process communication) binary file and stream formats
-* [Fields, Schemas, RecordBatches, Tables, and Columns](/docs/arrowjs/developer-guide/introduction#fields-schemas-recordbatches-tables-and-columns) - Classes to describe, manipulate, read, and write groups of strongly-typed Vectors or Columns
+* [Data Types](/docs/arrowjs/developer-guide/data-types) - Classes that define the fixed-width, variable-width, and composite data types Arrow can represent
+* Vectors - Classes to read and decode JavaScript values from the underlying buffers or Vectors for each data type
+* [Builders](/docs/arrowjs/developer-guide/builders) - Classes to write and encode JavaScript values into the underlying buffers or Vectors for each data type
+* Visitors - Classes to traverse, manipulate, read, write, or aggregate values from trees of Arrow Vectors or DataTypes
+* [IPC Readers and Writers](/docs/arrowjs/developer-guide/reading-and-writing) - Classes to read and write the Arrow IPC (inter-process communication) binary file and stream formats
+* [Fields, Schemas, RecordBatches, Tables, and Columns](/docs/arrowjs/developer-guide/schemas) - Classes to describe, manipulate, read, and write groups of strongly-typed Vectors or Columns
 
-## [Data Types](/docs/arrowjs/developer-guide/data-types)
+## Data Types
 
 At the heart of Arrow is set of well-known logical [data types](/docs/arrowjs/developer-guide/data-types), ensuring each Column in an Arrow Table is strongly-typed. These data types define how a Column's underlying buffers should be constructed and read, and includes configurable (and custom) metadata fields for further annotating a Column. A Schema describing each Column's name and data type is encoded alongside each Column's data buffers, allowing you to consume an Arrow data source without knowing the data types or column layout beforehand.
 
 Each data type falls into one of three rough categories: Fixed-width types, variable-width types, or composite types that contain other Arrow data types. All data types can represent null values, which are stored in a separate validity [bitmask](https://en.wikipedia.org/wiki/Mask_(computing)). Follow the links below for a more detailed description of each data type.
 
-### [Fixed-width Data Types](/docs/arrowjs/developer-guide/data-types#fixed-width-data-types)
+### Fixed-width Data Types
 
 Fixed-width data types describe physical primitive values (bytes or bits of some fixed size), or logical values that can be represented as primitive values. In addition to an optional [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) validity bitmask, these data types have a physical data buffer (a [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#TypedArray_objects) corresponding to the data type's physical element width).
 
@@ -37,7 +37,7 @@ Fixed-width data types describe physical primitive values (bytes or bits of some
  * [Interval](/docs/arrowjs/developer-guide/data-types#interval) - Time intervals as pairs of either (year, month) or (day, time) in SQL style
  * [FixedSizeList](/docs/arrowjs/developer-guide/data-types#fixedsizelist) - Fixed-size sequences of another logical Arrow data type
 
-### [Variable-width Data Types](/docs/arrowjs/developer-guide/data-types#variable-width-data-types)
+### Variable-width Data Types
 
 Variable-width types describe lists of values with different widths, including binary blobs, Utf8 code-points, or slices of another underlying Arrow data type. These types store the values contiguously in memory, and have a physical [`Int32Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array) of offsets that describe the start and end indicies of each list element.
 
@@ -45,7 +45,7 @@ Variable-width types describe lists of values with different widths, including b
  * [Utf8](/docs/arrowjs/developer-guide/data-types#utf8) - Variable-length byte sequences of UTF8 code-points (strings)
  * [Binary](/docs/arrowjs/developer-guide/data-types#binary) - Variable-length byte sequences (no guarantee of UTF8-ness)
 
-### [Composite Data Types](/docs/arrowjs/developer-guide/data-types#composite-data-types)
+### Composite Data Types
 
 Composite types don't have physical data buffers of their own. They contain other Arrow data types and delegate work to them.
 
