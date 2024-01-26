@@ -25,7 +25,7 @@ export function createZip64Info(options: Zip64Options): ArrayBuffer {
 
   for (const field of ZIP64_FIELDS) {
     if (!optionsToUse[field.name ?? ''] && !field.default) {
-      continue;
+      continue; // eslint-disable-line no-continue
     }
     const newValue = new DataView(new ArrayBuffer(field.size));
     NUMBER_SETTERS[field.size](newValue, 0, optionsToUse[field.name ?? ''] ?? field.default);

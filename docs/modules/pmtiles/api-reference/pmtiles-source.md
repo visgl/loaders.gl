@@ -6,15 +6,15 @@
 
 The `PMTilesSource` reads individual tiles from a PMTiles archive file.
 
-| Loader                | Characteristic                                |
-| --------------------- | ----------------------------------------------- |
-| File Extension        | `.pmtiles`                                      |
-| File Type             | Binary Archive                                  |
+| Loader                | Characteristic                                   |
+| --------------------- | ------------------------------------------------ |
+| File Extension        | `.pmtiles`                                       |
+| File Type             | Binary Archive                                   |
 | File Format           | [PMTiles](/docs/modules/pmtiles/formats/pmtiles) |
-| Data Format           | Metadata                                        |
+| Data Format           | Metadata                                         |
 | Decoder Type          | Asynchronous                                     |
-| Worker Thread Support | No                                              |
-| Streaming Support     | No                                              |
+| Worker Thread Support | No                                               |
+| Streaming Support     | No                                               |
 
 ## Usage
 

@@ -1,4 +1,4 @@
-import type {TableBatch} from '@loaders.gl/schema';
+import type {Schema, TableBatch} from '@loaders.gl/schema';
 import type {JSONLoaderOptions, MetadataBatch, JSONBatch} from '../../json-loader';
 import {TableBatchBuilder} from '@loaders.gl/schema';
 import {assert, makeTextDecoderIterator} from '@loaders.gl/loader-utils';
