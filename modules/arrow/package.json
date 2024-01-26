@@ -57,7 +57,7 @@
     "@loaders.gl/schema": "4.1.0-alpha.10",
     "@loaders.gl/wkt": "4.1.0-alpha.10",
     "@math.gl/polygon": "4.0.0",
-    "apache-arrow": "^13.0.0"
+    "apache-arrow": ">= 15.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
