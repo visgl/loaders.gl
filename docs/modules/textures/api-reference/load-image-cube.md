@@ -55,7 +55,7 @@ Loads and image cube, i.e. 6 images keyed by WebGL face constants (see table).
 Parameters:
 
 - `getUrl`: A function that generates the url for each image, it is called for each image with the `index` of that image.
-- `options`: Supports the same options as [`ImageLoader`](modules/images/docs/api-reference/image-loader).
+- `options`: Supports the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader).
 
 Returns
 
@@ -63,7 +63,7 @@ Returns
 
 ## Options
 
-Accepts the same options as [`ImageLoader`](modules/images/docs/api-reference/image-loader), and
+Accepts the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader), and
 
 | Option            | Type    | Default | Description |
 | ----------------- | ------- | ------- | ----------- | ------------------------------------------------------ |
@@ -73,4 +73,4 @@ Number of mip level images to load: Use `0` to indicate a single image with no m
 
 ## Remarks
 
-- Returned images can be passed directly to WebGL texture methods. See [`ImageLoader`](modules/images/docs/api-reference/image-loader) for details about the type of the returned images.
+- Returned images can be passed directly to WebGL texture methods. See [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for details about the type of the returned images.

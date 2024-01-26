@@ -6,7 +6,7 @@ The `DracoWriter` encodes a mesh or point cloud (maps of attributes) using [Drac
 | --------------------- | -------------------------------------------- |
 | File Extension        | `.drc`                                       |
 | File Typoe            | Binary                                       |
-| Data Format           | [Mesh](docs/specifications/category-mesh) |
+| Data Format           | [Mesh](/docs/specifications/category-mesh) |
 | File Format           | [Draco](https://google.github.io/draco/)     |
 | Encoder Type          | Synchronous                                  |
 | Worker Thread Support | Yes                                          |

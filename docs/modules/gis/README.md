@@ -12,4 +12,4 @@ npm install @loaders.gl/gis
 
 | Utility Functions                                                       |
 | ----------------------------------------------------------------------- |
-| [`geojson-to-binary`](modules/gis/docs/api-reference/geojson-to-binary) |
+| [`geojson-to-binary`](/docs/modules/gis/api-reference/geojson-to-binary) |
