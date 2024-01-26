@@ -38,7 +38,6 @@ function triangulateBatch(data: TriangulateInput): TriangulateResult {
   // Parse any WKT/WKB geometries
   // Build binary geometries
   // Call earcut and triangulate
-  console.error('TriangulationWorker: tessellating batch', data);
   const triangleIndices = getTriangleIndices(
     data.polygonIndices,
     data.primitivePolygonIndices,

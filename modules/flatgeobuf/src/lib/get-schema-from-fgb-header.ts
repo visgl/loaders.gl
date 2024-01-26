@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/* eslint-disable camelcase */
+
 import type {Schema, Field, DataType} from '@loaders.gl/schema';
 import * as fgb from '../flatgeobuf/3.27.2';
 

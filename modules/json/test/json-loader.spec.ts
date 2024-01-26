@@ -188,6 +188,8 @@ test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
         if (batch.shape === 'json') {
           t.ok(batch.container, 'final batch contains json');
         }
+        break;
+      default:
     }
   }
   t.equal(rowCount, 247, '247 rows found');
