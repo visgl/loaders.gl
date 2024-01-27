@@ -10,3 +10,5 @@ import './mvt-source.spec';
 
 // geojson-vt
 import './lib/geojson-tiler';
+
+import './lib/get-schemas-from-tilejson.spec';

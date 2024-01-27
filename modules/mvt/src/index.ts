@@ -15,3 +15,8 @@ export {MVTSource} from './mvt-source';
 
 export type {GeoJSONTilerOptions} from './lib/geojson-tiler/geojson-tiler';
 export {GeoJSONTiler} from './lib/geojson-tiler/geojson-tiler';
+
+// EXPDERIMENTAL
+
+export type {LayerSchemas} from './lib/get-schemas-from-tilejson';
+export {getSchemasFromTileJSON} from './lib/get-schemas-from-tilejson';

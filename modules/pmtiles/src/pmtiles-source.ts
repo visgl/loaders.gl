@@ -15,8 +15,7 @@ const {PMTiles} = pmtiles;
 import type {PMTilesMetadata} from './lib/parse-pmtiles';
 import {parsePMTilesHeader} from './lib/parse-pmtiles';
 import {BlobSource} from './lib/blob-source';
-
-const VERSION = '1.0.0';
+import {VERSION} from './lib/version';
 
 export type Service = {
   name: string;

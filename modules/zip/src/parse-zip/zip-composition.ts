@@ -11,7 +11,8 @@ import {generateLocalHeader} from './local-file-header';
 import {generateCDHeader} from './cd-file-header';
 import {fetchFile} from '@loaders.gl/core';
 
-const fs = new NodeFilesystem({});
+// TODO - this should not be a global variable
+let fs: NodeFilesystem;
 
 /**
  * cut off CD and EoCD records from zip file
@@ -176,6 +177,7 @@ export function getFileIterator(
  * @returns list of paths
  */
 export async function getAllFiles(basePath: string, subfolder: string = ''): Promise<string[]> {
+  fs ||= new NodeFilesystem({});
   const files = await fs.readdir(path.join(basePath, subfolder));
 
   const arrayOfFiles: string[] = [];
