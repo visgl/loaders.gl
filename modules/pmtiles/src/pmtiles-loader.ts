@@ -1,4 +1,3 @@
-import type {Tables} from '@loaders.gl/schema';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LayerSchemas} from '@loaders.gl/mvt';
 import {getSchemasFromTileJSON} from '@loaders.gl/mvt';
@@ -24,7 +23,7 @@ export const PMTilesLoader: LoaderWithParser<LayerSchemas, never, PMTilesLoaderO
   options: {
     pmtiles: {}
   },
-  parse: async (arrayBuffer, options): Promise<Tables> => {
+  parse: async (arrayBuffer, options): Promise<LayerSchemas> => {
     const source = new PMTilesSource({url: new Blob([arrayBuffer]), ...options});
     const metadata = await source.getMetadata();
     if (metadata.tilejson) {
