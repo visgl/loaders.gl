@@ -11,5 +11,5 @@ export const TILEJSONS = [
 ];
 
 export const TILEJSONS_WITH_TILESTATS = [
-  {url: '@loaders.gl/mvt/test/data/tilejson/tippecanoe.tilejson', bad: false},
+  {url: '@loaders.gl/mvt/test/data/tilejson/tippecanoe.tilejson', bad: false}
 ];

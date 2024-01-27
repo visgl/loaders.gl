@@ -4,8 +4,8 @@ import type {TileJSON, TileJSONLayer, TileJSONField} from './parse-tilejson';
 export type LayerSchemas = {
   metadata: Record<string, string>;
   layers: {
-    name: string; 
-    schema: Schema
+    name: string;
+    schema: Schema;
   }[];
 };
 
@@ -16,7 +16,7 @@ export function getSchemasFromTileJSON(tilejson: TileJSON): LayerSchemas {
     schema: getSchemaFromTileJSONLayer(layer)
   }));
   const metadata = getMetadataFromTileJSON(tilejson);
-  return {metadata, layers};;
+  return {metadata, layers};
 }
 
 function getMetadataFromTileJSON(tilejson: TileJSON): Record<string, string> {
