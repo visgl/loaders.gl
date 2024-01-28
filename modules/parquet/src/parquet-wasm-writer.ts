@@ -4,11 +4,18 @@
 
 import type {WriterWithEncoder} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/arrow';
-import {encode, ParquetWriterOptions} from './lib/wasm/encode-parquet-wasm';
+import {encode} from './lib/wasm/encode-parquet-wasm';
+import type {WriterOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type ParquetWriterOptions = WriterOptions & {
+  parquet?: {
+    wasmUrl?: string;
+  };
+};
 
 /** Parquet WASM writer */
 export const ParquetWasmWriter: WriterWithEncoder<ArrowTable, never, ParquetWriterOptions> = {
@@ -24,5 +31,8 @@ export const ParquetWasmWriter: WriterWithEncoder<ArrowTable, never, ParquetWrit
       wasmUrl: 'https://unpkg.com/parquet-wasm@0.3.1/esm2/arrow1_bg.wasm'
     }
   },
-  encode
+  encode(arrowTable: ArrowTable, options?: ParquetWriterOptions) {
+    options = {parquet: {...ParquetWasmWriter.options.parquet, ...options?.parquet}, ...options};
+    return encode(arrowTable, options);
+  }
 };

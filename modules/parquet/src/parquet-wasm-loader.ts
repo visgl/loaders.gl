@@ -34,7 +34,7 @@ export const ParquetWasmWorkerLoader: Loader<ArrowTable, never, ParquetWasmLoade
   options: {
     parquet: {
       type: 'arrow-table',
-      wasmUrl: 'https://unpkg.com/parquet-wasm@0.3.1/esm2/arrow1_bg.wasm'
+      wasmUrl: 'https://unpkg.com/parquet-wasm@0.6.0-beta.1/esm/arrow1_bg.wasm'
     }
   }
 };
@@ -42,5 +42,8 @@ export const ParquetWasmWorkerLoader: Loader<ArrowTable, never, ParquetWasmLoade
 /** Parquet WASM table loader */
 export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
   ...ParquetWasmWorkerLoader,
-  parse: parseParquetWasm
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetWasmLoaderOptions) {
+    options = {parquet: {...ParquetWasmLoader.options.parquet, ...options?.parquet}, ...options};
+    return parseParquetWasm(arrayBuffer, options);
+  }
 };

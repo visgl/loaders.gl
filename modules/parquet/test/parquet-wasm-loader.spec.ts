@@ -21,7 +21,7 @@ test('ParquetLoader#loader objects', (t) => {
   t.end();
 });
 
-test('Load Parquet file', async (t) => {
+test('ParquetWasmLoader#Load Parquet file', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const table = await load(url, ParquetWasmLoader, {
     parquet: {

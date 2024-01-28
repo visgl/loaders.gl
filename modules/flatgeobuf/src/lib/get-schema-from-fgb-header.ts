@@ -86,6 +86,7 @@ enum fgbColumnType {
 }
 
 /** Convert FGB types to arrow like types */
+// eslint-disable-next-line complexity
 function getTypeFromFGBType(fgbType: fgbColumnType /* fgb.ColumnMeta['type'] */): DataType {
   switch (fgbType) {
     case fgbColumnType.Byte:
