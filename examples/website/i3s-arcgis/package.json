@@ -3,6 +3,7 @@
   "name": "i3s-arcgis-loaders-example",
   "version": "1.0.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",

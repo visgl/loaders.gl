@@ -3,6 +3,7 @@
   "name": "loaders.gl-example-pointcloud-loaders",
   "version": "3.3.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",

@@ -4,6 +4,7 @@
   "description": "Minimal working example of using loaders.gl with Next.js.",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "dependencies": {
     "@deck.gl/geo-layers": "^8.9.28",
     "@deck.gl/layers": "^8.9.28",

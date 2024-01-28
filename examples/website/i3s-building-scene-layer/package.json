@@ -4,6 +4,7 @@
   "description": "I3S loaders building scene layer",
   "version": "0.0.1",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
