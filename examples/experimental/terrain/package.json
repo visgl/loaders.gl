@@ -2,6 +2,7 @@
   "name": "terrain",
   "version": "0.0.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open",
     "start-local-deck": "webpack-dev-server --env.local --env.esnext --env.deck --progress --hot --open",

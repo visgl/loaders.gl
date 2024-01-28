@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Gallery of simple HTML page examples for loaders.gl",
   "license": "MIT",
+  "type": "module",
   "private": true,
   "scripts": {
     "start-progress": "open progress.html"

@@ -4,6 +4,7 @@
   "description": "WMS loaders.",
   "version": "0.0.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",

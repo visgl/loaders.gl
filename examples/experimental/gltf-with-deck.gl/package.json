@@ -3,6 +3,7 @@
   "name": "loadersgl-gltf-with-deckgl-example",
   "version": "1.0.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start": "webpack-dev-server --progress --hot --open",
     "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"
