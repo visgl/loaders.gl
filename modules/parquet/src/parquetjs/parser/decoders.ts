@@ -19,7 +19,7 @@ import {
   Type
 } from '../parquet-thrift';
 import {decompress} from '../compression';
-import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../constants';
+import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../lib/constants';
 import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils';
 
 /**

@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+export const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+export const PARQUET_WASM_URL = 'https://unpkg.com/parquet-wasm@0.6.0-beta.1/esm/arrow1_bg.wasm';
+
 /**
  * Parquet File Magic String
  */
