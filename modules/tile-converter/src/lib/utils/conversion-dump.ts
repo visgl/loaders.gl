@@ -1,6 +1,8 @@
+import {isDeepStrictEqual} from 'util';
 import {DUMP_FILE_SUFFIX} from '../../constants';
 import {removeFile, writeFile} from './file-utils';
 import {join} from 'path';
+import {BoundingVolumes, I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
 
 export type ConversionDumpOptions = {
   inputUrl: string;
@@ -22,10 +24,28 @@ type NodeDoneStatus = {
   nodeId: number;
   done: boolean;
   progress: Record<string, boolean>;
+  dumpMetadata?: DumpMetadata;
 };
 
 type TilesConverted = {
   nodes: NodeDoneStatus[];
+};
+
+type DumpMetadata = {
+  boundingVolumes: BoundingVolumes | null;
+  attributes: Array<any>;
+  featureCount: number | null;
+  geometry: boolean;
+  hasUvRegions: boolean;
+  meshMaterial: I3SMaterialDefinition | null | undefined;
+  texture: any;
+  vertexCount: number | null;
+  attributeTypesMap: Record<string, string> | null | undefined;
+};
+
+export type TextureSetDefinition = {
+  formats: TextureSetDefinitionFormats;
+  atlas?: boolean;
 };
 
 export class ConversionDump {
@@ -33,9 +53,27 @@ export class ConversionDump {
   private options?: ConversionDumpOptions;
   /** Tiles conversion progress status map */
   tilesConverted: Record<string, TilesConverted>;
+  /** Textures formats definitions */
+  textureSetDefinitions?: TextureSetDefinition[];
 
   constructor() {
     this.tilesConverted = {};
+  }
+
+  /**
+   * Init a dump
+   * @param options - converter options
+   * @param tilesConverted - converted tiles status
+   * @param textureSetDefinitions - texture definitions
+   */
+  init(
+    options: ConversionDumpOptions,
+    tilesConverted: Record<string, TilesConverted>,
+    textureSetDefinitions: TextureSetDefinition[]
+  ): void {
+    this.options = options;
+    this.tilesConverted = tilesConverted;
+    this.textureSetDefinitions = textureSetDefinitions;
   }
 
   /**
@@ -74,9 +112,10 @@ export class ConversionDump {
       analyze
     };
 
+    this.tilesConverted = {};
     try {
       await writeFile(
-        options.outputPath,
+        join(this.options.outputPath, this.options.tilesetName),
         JSON.stringify({options: this.options}),
         `${options.tilesetName}${DUMP_FILE_SUFFIX}`
       );
@@ -92,10 +131,11 @@ export class ConversionDump {
     if (this.options?.outputPath && this.options.tilesetName) {
       try {
         await writeFile(
-          this.options.outputPath,
+          join(this.options.outputPath, this.options.tilesetName),
           JSON.stringify({
             options: this.options,
-            tilesConverted: this.tilesConverted
+            tilesConverted: this.tilesConverted,
+            textureSetDefinitions: this.textureSetDefinitions
           }),
           `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
         );
@@ -111,7 +151,10 @@ export class ConversionDump {
   async deleteDumpFile(): Promise<void> {
     if (this.options?.outputPath && this.options.tilesetName) {
       await removeFile(
-        join(this.options.outputPath, `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`)
+        join(
+          join(this.options.outputPath, this.options.tilesetName),
+          `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
+        )
       );
     }
   }
@@ -139,13 +182,29 @@ export class ConversionDump {
    * @param fileName - source filename
    * @param nodeId - nodeId of the node
    */
-  async addNode(filename: string, nodeId: number) {
+  async addNode(filename: string, nodeId: number, dumpMetadata: DumpMetadata) {
     const {nodes} = this.getRecord(filename) || {nodes: []};
-    nodes.push({nodeId, done: false, progress: {}});
+    nodes.push({nodeId, done: false, progress: {}, dumpMetadata});
     if (nodes.length === 1) {
       this.setRecord(filename, {nodes});
     }
     await this.updateDumpFile();
+  }
+
+  /**
+   * Clear dump record got the source filename
+   * @param fileName - source filename
+   */
+  clearDumpRecord(filename: string) {
+    this.setRecord(filename, {nodes: []});
+  }
+
+  /**
+   * Add textures definitions into the dump file
+   * @param textureDefinitions - textures definitions array
+   */
+  addTexturesDefinitions(textureDefinitions: TextureSetDefinition[]) {
+    this.textureSetDefinitions = textureDefinitions;
   }
 
   /**
@@ -199,5 +258,68 @@ export class ConversionDump {
       }
     }
     await this.updateDumpFile();
+  }
+
+  /**
+   * Check is source file conversion complete
+   * @param filename - source filename
+   * @returns true if source file conversion complete
+   */
+  isFileConversionComplete(filename: string): boolean {
+    let result = true;
+    for (const node of this.tilesConverted[filename]?.nodes || []) {
+      if (!node.done) {
+        result = false;
+        break;
+      }
+    }
+    return result && this.tilesConverted[filename]?.nodes?.length > 0;
+  }
+
+  /**
+   * Static method to check conversion options
+   * @param dumpedOptions - dumped options
+   * @param converterOptions - current converter options
+   * @returns true if dumped and converter options are equal
+   */
+  static compareOptions(
+    dumpedOptions: ConversionDumpOptions,
+    converterOptions: ConversionDumpOptions
+  ): boolean {
+    const {
+      tilesetName,
+      slpk,
+      egmFilePath,
+      inputUrl,
+      outputPath,
+      draco = true,
+      maxDepth,
+      token,
+      generateTextures,
+      generateBoundingVolumes,
+      mergeMaterials = true,
+      metadataClass,
+      analyze = false
+    } = converterOptions;
+    return isDeepStrictEqual(
+      dumpedOptions,
+      JSON.parse(
+        JSON.stringify({
+          tilesetName,
+          slpk,
+          egmFilePath,
+          inputUrl,
+          outputPath,
+          draco,
+          maxDepth,
+          token,
+          generateTextures,
+          generateBoundingVolumes,
+          mergeMaterials,
+          metadataClass,
+          analyze
+        })
+      )
+    );
   }
 }

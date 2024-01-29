@@ -29,7 +29,14 @@ import transform from 'json-map-transform';
 import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
-import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
+import {
+  writeFile,
+  removeDir,
+  writeFileForSlpk,
+  removeFile,
+  isFileExists,
+  openJson
+} from '../lib/utils/file-utils';
 import {compressFileWithGzip} from '../lib/utils/compress-util';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
@@ -59,7 +66,7 @@ import {
 } from './types';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
-import {BROWSER_ERROR_MESSAGE} from '../constants';
+import {BROWSER_ERROR_MESSAGE, DUMP_FILE_SUFFIX} from '../constants';
 import {
   getAttributeTypesMapFromPropertyTable,
   getAttributeTypesMapFromSchema
@@ -141,6 +148,7 @@ export default class I3SConverter {
   };
   progresses: Record<string, Progress> = {};
   conversionDump: ConversionDump;
+  resumeConversion: boolean = false;
 
   constructor() {
     this.attributeMetadataInfo = new AttributeMetadataInfo();
@@ -258,9 +266,6 @@ export default class I3SConverter {
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
     }
-
-    //create a dump file with convertion options
-    await this.conversionDump.createDumpFile(options as ConversionDumpOptions);
 
     try {
       const preloadOptions = await this._fetchPreloadOptions();
@@ -415,14 +420,40 @@ export default class I3SConverter {
    */
   private async _createAndSaveTileset(outputPath: string, tilesetName: string): Promise<void> {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
-    // Removing the tilesetPath needed to exclude erroneous files after conversion
-    try {
-      await removeDir(tilesetPath);
-    } catch (e) {
-      // do nothing
+
+    if (await isFileExists(join(tilesetPath, `${tilesetName}${DUMP_FILE_SUFFIX}`))) {
+      const {options, tilesConverted, textureSetDefinitions} = await openJson(
+        tilesetPath,
+        `${tilesetName}${DUMP_FILE_SUFFIX}`
+      );
+      if (ConversionDump.compareOptions(options, this.options) && this.options.inquirer) {
+        const result = await this.options.inquirer.prompt([
+          {
+            name: 'resumeConversion',
+            type: 'confirm',
+            message:
+              'Dump file of the previous conversion exists, do you want to resume that conversion?'
+          }
+        ]);
+        this.resumeConversion = result.resumeConversion;
+        if (this.resumeConversion) {
+          this.conversionDump.init(options, tilesConverted, textureSetDefinitions);
+        }
+      }
     }
 
     this.layers0Path = join(tilesetPath, 'SceneServer', 'layers', '0');
+
+    // Removing the tilesetPath needed to exclude erroneous files after conversion
+    try {
+      await removeDir(this.resumeConversion ? join(this.layers0Path, 'nodepages') : tilesetPath);
+    } catch (e) {
+      // do nothing
+    }
+    //create a dump file with convertion options
+    if (!this.resumeConversion) {
+      await this.conversionDump.createDumpFile(this.options as ConversionDumpOptions);
+    }
 
     this.materialDefinitions = [];
     this.materialMap = new Map();
@@ -469,6 +500,10 @@ export default class I3SConverter {
 
     if (this.attributeMetadataInfo.attributeStorageInfo.length) {
       this.layers0!.layerType = _3D_OBJECT_LAYER_TYPE;
+    }
+
+    if (this.resumeConversion && this.conversionDump.textureSetDefinitions) {
+      this.layers0!.textureSetDefinitions = this.conversionDump.textureSetDefinitions;
     }
 
     this.layers0!.materialDefinitions = this.materialDefinitions;
@@ -668,6 +703,69 @@ export default class I3SConverter {
 
     await this._updateTilesetOptions();
 
+    if (
+      this.resumeConversion &&
+      sourceTile.id &&
+      this.conversionDump.isFileConversionComplete(sourceTile.id)
+    ) {
+      const nodes: NodeIndexDocument[] = [];
+      for (const convertedNode of this.conversionDump.tilesConverted[sourceTile.id].nodes) {
+        const sourceBoundingVolume = createBoundingVolume(
+          sourceTile.boundingVolume,
+          transformationMatrix,
+          null
+        );
+        let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+        if (convertedNode.dumpMetadata?.attributeTypesMap) {
+          this.createAttributeStorageInfo(null, null, convertedNode.dumpMetadata.attributeTypesMap);
+        }
+
+        this.layersHasTexture =
+          this.layersHasTexture || Boolean(convertedNode.dumpMetadata?.texture);
+
+        if (this.generateBoundingVolumes && convertedNode.dumpMetadata?.boundingVolumes) {
+          boundingVolumes = convertedNode.dumpMetadata.boundingVolumes;
+        }
+
+        const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, boundingVolumes);
+        const maxScreenThresholdSQ = lodSelection.find(
+          (val) => val.metricType === 'maxScreenThresholdSQ'
+        ) || {maxError: 0};
+
+        const draftObb = {
+          center: [],
+          halfSize: [],
+          quaternion: []
+        };
+
+        await this.nodePages.push({index: 0, obb: draftObb}, parentNode.inPageId);
+
+        const nodeInPage = await this._updateNodeInNodePages(
+          maxScreenThresholdSQ,
+          boundingVolumes,
+          sourceTile,
+          parentNode.inPageId,
+          convertedNode.dumpMetadata as unknown as I3SConvertedResources,
+          convertedNode.nodeId
+        );
+
+        const nodeData = await NodeIndexDocument.createNodeIndexDocument(
+          parentNode,
+          boundingVolumes,
+          lodSelection,
+          nodeInPage,
+          convertedNode.dumpMetadata as unknown as I3SConvertedResources
+        );
+
+        const node = await new NodeIndexDocument(convertedNode.nodeId, this).addData(nodeData);
+        nodes.push(node);
+      }
+      return nodes;
+    } else if (this.resumeConversion && sourceTile.id) {
+      //clear existing record in a dump
+      this.conversionDump.clearDumpRecord(sourceTile.id);
+    }
+
     let tileContent: Tiles3DTileContent | null = null;
     try {
       tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, this.loadOptions);
@@ -682,7 +780,7 @@ export default class I3SConverter {
     let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
     const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
-    this.createAttributeStorageInfo(tileContent, propertyTable);
+    const attributeTypesMap = this.createAttributeStorageInfo(tileContent, propertyTable);
 
     const resourcesData = await this._convertResources(
       sourceTile,
@@ -742,7 +840,25 @@ export default class I3SConverter {
       if (nodeInPage.mesh) {
         //update a record in a dump file
         if (sourceTile.id) {
-          await this.conversionDump.addNode(sourceTile.id, nodeInPage.index);
+          const dumpMetadata = {
+            boundingVolumes: resources.boundingVolumes,
+            attributes: Array(resources.attributes?.length),
+            featureCount: resources.featureCount,
+            geometry: Boolean(resources.geometry),
+            hasUvRegions: resources.hasUvRegions,
+            meshMaterial: resources.meshMaterial,
+            texture: resources.texture?.image
+              ? {
+                  image: {
+                    height: resources.texture?.image?.height,
+                    width: resources.texture?.image?.width
+                  }
+                }
+              : resources.texture,
+            vertexCount: resources.vertexCount,
+            attributeTypesMap
+          };
+          await this.conversionDump.addNode(sourceTile.id, nodeInPage.index, dumpMetadata);
         }
 
         //write resources
@@ -829,7 +945,8 @@ export default class I3SConverter {
     boundingVolumes: BoundingVolumes,
     sourceTile: Tiles3DTileJSONPostprocessed,
     parentId: number,
-    resources: I3SConvertedResources
+    resources: I3SConvertedResources,
+    outputId?: number
   ): Promise<NodeInPage> {
     const {meshMaterial, texture, vertexCount, featureCount, geometry, hasUvRegions} = resources;
     const nodeInPage: NodeInPage = {
@@ -853,7 +970,7 @@ export default class I3SConverter {
       };
     }
 
-    let nodeId = resources.nodeId;
+    let nodeId = resources.nodeId || outputId;
     let node: NodeInPage;
     if (!nodeId) {
       node = await this.nodePages.push(nodeInPage, parentId);
@@ -1178,6 +1295,9 @@ export default class I3SConverter {
       if (!this.layers0!.textureSetDefinitions!.length) {
         this.layers0!.textureSetDefinitions!.push({formats});
         this.layers0!.textureSetDefinitions!.push({formats, atlas: true});
+        if (this.layers0!.textureSetDefinitions) {
+          this.conversionDump.addTexturesDefinitions(this.layers0!.textureSetDefinitions);
+        }
       }
     }
   }
@@ -1333,8 +1453,14 @@ export default class I3SConverter {
    */
   private createAttributeStorageInfo(
     tileContent: Tiles3DTileContent | null,
-    propertyTable: FeatureTableJson | null
-  ): void {
+    propertyTable: FeatureTableJson | null,
+    dumpedAttributeTypesMap?: Record<string, Attribute> | null
+  ): Record<string, Attribute> | null {
+    if (dumpedAttributeTypesMap) {
+      // Add new storage attributes, fields and create popupInfo
+      this.attributeMetadataInfo.addMetadataInfo(dumpedAttributeTypesMap);
+      return null;
+    }
     /*
     In case the tileset doesn't have either EXT_structural_metadata or EXT_feature_metadata
     that can be a source of attribute information so metadataClass is not specified
@@ -1357,6 +1483,8 @@ export default class I3SConverter {
       // Add new storage attributes, fields and create popupInfo
       this.attributeMetadataInfo.addMetadataInfo(attributeTypesMap);
     }
+
+    return attributeTypesMap;
   }
 
   /**
