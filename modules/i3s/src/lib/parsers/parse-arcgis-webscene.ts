@@ -26,7 +26,13 @@ const SUPPORTED_LAYERS_TYPES = [
 const NO_AVAILABLE_SUPPORTED_LAYERS_ERROR = 'NO_AVAILABLE_SUPPORTED_LAYERS_ERROR';
 const NOT_SUPPORTED_CRS_ERROR = 'NOT_SUPPORTED_CRS_ERROR';
 
-class LayerError extends Error {
+/**
+ * Provides additional information in the exception Error object, e.g. unsupported layer types.
+ * @param message - message used in the Error object
+ * @param details - additional information that can be used to handle the exception.
+ * @example throw new LayerError(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR, unsupportedLayers);
+ */
+export class LayerError extends Error {
   constructor(
     message: string,
     public details: unknown
