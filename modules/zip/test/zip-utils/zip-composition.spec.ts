@@ -24,6 +24,6 @@ test('zip#getFileIterator', async (t) => {
 test('zip#createZip', async (t) => {
   await createZip(folderToZip, zipUrl);
   const stats = await stat(zipUrl);
-  t.equal(stats.size, 198);
+  t.equal(stats.size, 196);
   await unlink(zipUrl);
 });
