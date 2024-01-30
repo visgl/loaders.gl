@@ -8,7 +8,7 @@ import {
   concatenateArrayBuffers,
   concatenateArrayBuffersFromArray
 } from '@loaders.gl/loader-utils';
-import {makeZipCDHeaderIterator} from './parse-zip/cd-file-header';
+import {ZipCDFileHeader, makeZipCDHeaderIterator} from './parse-zip/cd-file-header';
 
 /**
  * Reads hash file from buffer and returns it in ready-to-use form
@@ -45,6 +45,17 @@ export async function makeHashTableFromZipHeaders(
   fileProvider: FileProvider
 ): Promise<Record<string, bigint>> {
   const zipCDIterator = makeZipCDHeaderIterator(fileProvider);
+  return getHashTable(zipCDIterator);
+}
+
+/**
+ * creates hash table from file offset iterator
+ * @param zipCDIterator iterator to use
+ * @returns hash table
+ */
+export async function getHashTable(
+  zipCDIterator: AsyncIterable<ZipCDFileHeader>
+): Promise<Record<string, bigint>> {
   const md5Hash = new MD5Hash();
   const textEncoder = new TextEncoder();
 
@@ -60,16 +71,36 @@ export async function makeHashTableFromZipHeaders(
   return hashTable;
 }
 
+/** item of the file offset list */
+type FileListItem = {
+  fileName: string;
+  localHeaderOffset: bigint;
+};
+
 /**
  * creates hash file that later can be added to the SLPK archive
- * @param fileProvider SLPK archive where we need to add hash file
+ * @param zipCDIterator iterator to use
  * @returns ArrayBuffer containing hash file
  */
-export async function composeHashFile(fileProvider: FileProvider): Promise<ArrayBuffer> {
-  const hashArray = await makeHashTableFromZipHeaders(fileProvider);
-  const bufferArray = Object.entries(hashArray)
-    .map(([key, value]) => concatenateArrayBuffers(hexStringToBuffer(key), bigintToBuffer(value)))
-    .sort(compareHashes);
+export async function composeHashFile(
+  zipCDIterator: AsyncIterable<FileListItem> | Iterable<FileListItem>
+): Promise<ArrayBuffer> {
+  const md5Hash = new MD5Hash();
+  const textEncoder = new TextEncoder();
+
+  const hashArray: ArrayBuffer[] = [];
+
+  for await (const cdHeader of zipCDIterator) {
+    const filename = cdHeader.fileName.split('\\').join('/').toLocaleLowerCase();
+    const arrayBuffer = textEncoder.encode(filename).buffer;
+    const md5 = await md5Hash.hash(arrayBuffer, 'hex');
+    hashArray.push(
+      concatenateArrayBuffers(hexStringToBuffer(md5), bigintToBuffer(cdHeader.localHeaderOffset))
+    );
+  }
+
+  const bufferArray = hashArray.sort(compareHashes);
+
   return concatenateArrayBuffersFromArray(bufferArray);
 }
 

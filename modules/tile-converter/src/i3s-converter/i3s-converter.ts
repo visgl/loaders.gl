@@ -30,12 +30,7 @@ import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
-import {
-  compressFileWithGzip,
-  compressWithChildProcess
-  // generateHash128FromZip,
-  // addFileToZip
-} from '../lib/utils/compress-util';
+import {compressFileWithGzip} from '../lib/utils/compress-util';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
 import {
@@ -51,7 +46,7 @@ import {GEOMETRY_DEFINITION as geometryDefinitionTemlate} from './json-templates
 import {SHARED_RESOURCES as sharedResourcesTemplate} from './json-templates/shared-resources';
 import {validateNodeBoundingVolumes} from './helpers/node-debug';
 import {KTX2BasisWriterWorker} from '@loaders.gl/textures';
-import {FileHandleFile, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
 import {ImageWriter} from '@loaders.gl/images';
 import {GLTFImagePostprocessed} from '@loaders.gl/gltf';
@@ -82,7 +77,7 @@ import {createBoundingVolume} from '@loaders.gl/tiles';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
 import {Progress} from './helpers/progress';
-import {addOneFile, composeHashFile} from '@loaders.gl/zip';
+import {composeHashFile, createZip} from '@loaders.gl/zip';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
 
 const ION_DEFAULT_TOKEN = process.env?.IonToken;
@@ -567,35 +562,12 @@ export default class I3SConverter {
     if (this.options.slpk) {
       const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
       const slpkFileName = `${tilesetPath}.slpk`;
-      await compressWithChildProcess(
-        slpkTilesetPath,
-        slpkFileName,
-        0,
-        '.',
-        this.options.sevenZipExe
-      );
 
-      const hashTable = await composeHashFile(new FileHandleFile(slpkFileName));
-      await addOneFile(slpkFileName, hashTable, '@specialIndexFileHASH128@');
+      await createZip(slpkTilesetPath, slpkFileName, async (fileList) => ({
+        path: '@specialIndexFileHASH128@',
+        file: await composeHashFile(fileList)
+      }));
 
-      // TODO: `addFileToZip` corrupts archive so it can't be validated with windows i3s_converter.exe
-      // const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
-      // try {
-      //   await generateHash128FromZip(slpkFileName, fileHash128Path);
-      //   await addFileToZip(
-      //     tilesetPath,
-      //     '@specialIndexFileHASH128@',
-      //     slpkFileName,
-      //     this.options.sevenZipExe
-      //   );
-      // } catch (error) {
-      //   if (error.code === FS_FILE_TOO_LARGE) {
-      //     console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
-      //   } else {
-      //     console.error(error); // eslint-disable-line
-      //   }
-      // }
-      // All converted files are contained in slpk now they can be deleted
       try {
         await removeDir(tilesetPath);
       } catch (e) {

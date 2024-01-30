@@ -127,19 +127,27 @@ export async function addOneFile(zipUrl: string, fileToAdd: ArrayBuffer, fileNam
  * @param inputPath path where files for the achive are stored
  * @param outputPath path where zip archive will be placed
  */
-export async function createZip(inputPath: string, outputPath: string) {
+export async function createZip(
+  inputPath: string,
+  outputPath: string,
+  createAdditionalData?: (
+    fileList: {fileName: string; localHeaderOffset: bigint}[]
+  ) => Promise<{path: string; file: ArrayBuffer}>
+) {
   const fileIterator = getFileIterator(inputPath);
 
   const resFile = new NodeFile(outputPath, 'w');
+  const fileList: {fileName: string; localHeaderOffset: bigint}[] = [];
 
   const cdArray: ArrayBuffer[] = [];
   for await (const file of fileIterator) {
-    const size = (await resFile.stat()).bigsize;
-    const [localPart, cdHeaderPart] = await generateFileHeaders(file.path, file.file, size);
-    await resFile.append(localPart);
-    cdArray.push(cdHeaderPart);
+    await addFile(file, resFile, cdArray, fileList);
   }
-  // TODO add hash file there
+  if (createAdditionalData) {
+    const additionaldata = await createAdditionalData(fileList);
+    console.log(additionaldata);
+    await addFile(additionaldata, resFile, cdArray);
+  }
   const cdOffset = (await resFile.stat()).bigsize;
   const cd = concatenateArrayBuffers(...cdArray);
   await resFile.append(new Uint8Array(cd));
@@ -149,6 +157,26 @@ export async function createZip(inputPath: string, outputPath: string) {
       generateEoCD({recordsNumber: cdArray.length, cdSize: cd.byteLength, cdOffset, eoCDStart})
     )
   );
+}
+
+/**
+ * Adds file to zip parts
+ * @param file file to add
+ * @param resFile zip file body
+ * @param cdArray zip file central directory
+ * @param fileList list of file offsets
+ */
+async function addFile(
+  file: {path: string; file: ArrayBuffer},
+  resFile: NodeFile,
+  cdArray: ArrayBuffer[],
+  fileList?: {fileName: string; localHeaderOffset: bigint}[]
+) {
+  const size = (await resFile.stat()).bigsize;
+  fileList?.push({fileName: file.path, localHeaderOffset: size});
+  const [localPart, cdHeaderPart] = await generateFileHeaders(file.path, file.file, size);
+  await resFile.append(localPart);
+  cdArray.push(cdHeaderPart);
 }
 
 /**
@@ -176,19 +204,29 @@ export function getFileIterator(
  * @returns list of paths
  */
 export async function getAllFiles(basePath: string, subfolder: string = ''): Promise<string[]> {
-  const files = await fs.readdir(path.join(basePath, subfolder));
+  const files = await fs.readdir(pathJoin(basePath, subfolder));
 
   const arrayOfFiles: string[] = [];
 
   for (const file of files) {
-    const fullPath = path.join(basePath, subfolder, file);
+    const fullPath = pathJoin(basePath, subfolder, file);
     if ((await fs.stat(fullPath)).isDirectory) {
-      const files = await getAllFiles(basePath, path.join(subfolder, file));
+      const files = await getAllFiles(basePath, pathJoin(subfolder, file));
       arrayOfFiles.push(...files);
     } else {
-      arrayOfFiles.push(path.join(subfolder, file));
+      arrayOfFiles.push(pathJoin(subfolder, file));
     }
   }
 
   return arrayOfFiles;
+}
+
+/**
+ * removes empty parts from path array and joins it
+ * @param paths paths to join
+ * @returns joined path
+ */
+function pathJoin(...paths: string[]): string {
+  const resPaths: string[] = paths.filter((val) => val.length);
+  return path.join(...resPaths);
 }

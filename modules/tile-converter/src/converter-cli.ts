@@ -11,7 +11,7 @@ import {
   getURLValue,
   validateOptionsWithEqual
 } from './lib/utils/cli-utils';
-import {addOneFile, composeHashFile} from '@loaders.gl/zip';
+import {addOneFile, composeHashFile, makeZipCDHeaderIterator} from '@loaders.gl/zip';
 import {FileHandleFile} from '@loaders.gl/loader-utils';
 import {copyFile} from 'node:fs/promises';
 
@@ -133,7 +133,7 @@ async function main() {
     if (finalPath !== validatedOptions.tileset) {
       await copyFile(validatedOptions.tileset, finalPath);
     }
-    const hashTable = await composeHashFile(new FileHandleFile(finalPath));
+    const hashTable = await composeHashFile(makeZipCDHeaderIterator(new FileHandleFile(finalPath)));
     await addOneFile(finalPath, hashTable, '@specialIndexFileHASH128@');
 
     return;
