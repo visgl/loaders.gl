@@ -9,6 +9,9 @@ import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
 
 const Z_UP_TO_Y_UP_MATRIX = new Matrix4([1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1]);
 const scratchVector = new Vector3();
+const KHR_MATERIALS_UNLIT = 'KHR_materials_unlit';
+const METALLIC_FACTOR_DEFAULT = 1.0;
+const ROUGHNESS_FACTOR_DEFAULT = 1.0;
 
 export type I3SAttributesData = {
   tileContent: I3STileContent;
@@ -60,6 +63,22 @@ export default class B3dmConverter {
     const gltfBuilder = new GLTFScenegraph();
 
     const textureIndex = await this._addI3sTextureToGLTF(tileContent, textureFormat, gltfBuilder);
+
+    // Add KHR_MATERIALS_UNLIT extension in the following cases:
+    // - metallicFactor or roughnessFactor are set to default values
+    // - metallicFactor or roughnessFactor are not set
+    const pbrMetallicRoughness = material?.pbrMetallicRoughness;
+    if (
+      pbrMetallicRoughness &&
+      (pbrMetallicRoughness.metallicFactor === undefined ||
+        pbrMetallicRoughness.metallicFactor === METALLIC_FACTOR_DEFAULT) &&
+      (pbrMetallicRoughness.roughnessFactor === undefined ||
+        pbrMetallicRoughness.roughnessFactor === ROUGHNESS_FACTOR_DEFAULT)
+    ) {
+      gltfBuilder.addObjectExtension(material, KHR_MATERIALS_UNLIT, {});
+      gltfBuilder.addExtension(KHR_MATERIALS_UNLIT);
+    }
+
     const pbrMaterialInfo = this._convertI3sMaterialToGLTFMaterial(material, textureIndex);
     const materialIndex = gltfBuilder.addMaterial(pbrMaterialInfo);
 
