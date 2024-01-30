@@ -68,12 +68,12 @@ test('tile-converter(i3s)#ConversionDump - Add node to the dump', async (t) => {
   t.deepEqual(tilesConverted, {
     '1.glb': {
       nodes: [
-        {nodeId: 1, done: {}},
-        {nodeId: 2, done: {}}
+        {nodeId: 1, done: false, progress: {}},
+        {nodeId: 2, done: false, progress: {}}
       ]
     },
     '2.glb': {
-      nodes: [{nodeId: 3, done: {}}]
+      nodes: [{nodeId: 3, done: false, progress: {}}]
     }
   });
 
@@ -95,7 +95,7 @@ test('tile-converter(i3s)#ConversionDump - update Done Status', async (t) => {
 
   t.deepEqual(conversionDump.tilesConverted, {
     '1.glb': {
-      nodes: [{nodeId: 1, done: {testResource: false}}]
+      nodes: [{nodeId: 1, done: false, progress: {testResource: false}}]
     }
   });
 
@@ -123,7 +123,7 @@ test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump', async (t) 
 
   t.deepEqual(conversionDump.tilesConverted, {
     '1.glb': {
-      nodes: [{nodeId: 1, done: true}]
+      nodes: [{nodeId: 1, done: true, progress: {}}]
     }
   });
 
@@ -134,7 +134,7 @@ test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump', async (t) 
 
   t.deepEqual(tilesConverted, {
     '1.glb': {
-      nodes: [{nodeId: 1, done: true}]
+      nodes: [{nodeId: 1, done: true, progress: {}}]
     }
   });
 

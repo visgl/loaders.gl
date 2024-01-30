@@ -20,7 +20,8 @@ export type ConversionDumpOptions = {
 
 type NodeDoneStatus = {
   nodeId: number;
-  done: Record<string, boolean> | boolean;
+  done: boolean;
+  progress: Record<string, boolean>;
 };
 
 type TilesConverted = {
@@ -140,7 +141,7 @@ export class ConversionDump {
    */
   async addNode(filename: string, nodeId: number) {
     const {nodes} = this.getRecord(filename) || {nodes: []};
-    nodes.push({nodeId, done: {}});
+    nodes.push({nodeId, done: false, progress: {}});
     if (nodes.length === 1) {
       this.setRecord(filename, {nodes});
     }
@@ -159,7 +160,10 @@ export class ConversionDump {
       (element) => element.nodeId === nodeId
     );
     if (nodeDump) {
-      nodeDump.done[resourceType] = value;
+      nodeDump.progress[resourceType] = value;
+      if (!value) {
+        nodeDump.done = false;
+      }
     }
   }
 
@@ -177,18 +181,19 @@ export class ConversionDump {
         const {sourceId, resourceType, outputId} = changedRecords[i];
         if (!sourceId || !resourceType || !outputId) continue;
         for (const node of this.tilesConverted[sourceId].nodes) {
-          if (typeof node.done !== 'boolean' && node.nodeId === outputId) {
-            node.done[resourceType] = true;
-          }
-          if (typeof node.done !== 'boolean') {
+          if (node.nodeId === outputId) {
+            node.progress[resourceType] = true;
+
             let done = false;
-            for (const key in node.done) {
-              done = node.done[key];
+            for (const key in node.progress) {
+              done = node.progress[key];
               if (!done) break;
             }
-            if (done) {
-              node.done = true;
+            node.done = done;
+            if (node.done) {
+              node.progress = {};
             }
+            break;
           }
         }
       }
