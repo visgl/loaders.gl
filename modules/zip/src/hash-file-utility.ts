@@ -45,7 +45,7 @@ export async function makeHashTableFromZipHeaders(
   fileProvider: FileProvider
 ): Promise<Record<string, bigint>> {
   const zipCDIterator = makeZipCDHeaderIterator(fileProvider);
-  return getHashTable(zipCDIterator)
+  return getHashTable(zipCDIterator);
 }
 
 export async function getHashTable(
@@ -67,26 +67,30 @@ export async function getHashTable(
 }
 
 type FileListItem = {
-  fileName: string,
-  localHeaderOffset: bigint
-}
+  fileName: string;
+  localHeaderOffset: bigint;
+};
 
 /**
  * creates hash file that later can be added to the SLPK archive
  * @param fileProvider SLPK archive where we need to add hash file
  * @returns ArrayBuffer containing hash file
  */
-export async function composeHashFile(zipCDIterator: AsyncIterable<FileListItem> | Iterable<FileListItem>): Promise<ArrayBuffer> {
+export async function composeHashFile(
+  zipCDIterator: AsyncIterable<FileListItem> | Iterable<FileListItem>
+): Promise<ArrayBuffer> {
   const md5Hash = new MD5Hash();
   const textEncoder = new TextEncoder();
 
-  const hashArray: ArrayBuffer[] = []
+  const hashArray: ArrayBuffer[] = [];
 
   for await (const cdHeader of zipCDIterator) {
     const filename = cdHeader.fileName.split('\\').join('/').toLocaleLowerCase();
     const arrayBuffer = textEncoder.encode(filename).buffer;
     const md5 = await md5Hash.hash(arrayBuffer, 'hex');
-    hashArray.push(concatenateArrayBuffers(hexStringToBuffer(md5), bigintToBuffer(cdHeader.localHeaderOffset)))
+    hashArray.push(
+      concatenateArrayBuffers(hexStringToBuffer(md5), bigintToBuffer(cdHeader.localHeaderOffset))
+    );
   }
 
   const bufferArray = hashArray.sort(compareHashes);

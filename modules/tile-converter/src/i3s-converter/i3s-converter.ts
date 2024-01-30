@@ -577,7 +577,10 @@ export default class I3SConverter {
       // const hashTable = await composeHashFile(new FileHandleFile(slpkFileName));
       // await addOneFile(slpkFileName, hashTable, '@specialIndexFileHASH128@');
 
-      await createZip(slpkTilesetPath, slpkFileName, async fileList => ({path: '@specialIndexFileHASH128@', file: await composeHashFile(fileList)}))
+      await createZip(slpkTilesetPath, slpkFileName, async (fileList) => ({
+        path: '@specialIndexFileHASH128@',
+        file: await composeHashFile(fileList)
+      }));
 
       // TODO: `addFileToZip` corrupts archive so it can't be validated with windows i3s_converter.exe
       // const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;

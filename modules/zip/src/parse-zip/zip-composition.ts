@@ -127,21 +127,27 @@ export async function addOneFile(zipUrl: string, fileToAdd: ArrayBuffer, fileNam
  * @param inputPath path where files for the achive are stored
  * @param outputPath path where zip archive will be placed
  */
-export async function createZip(inputPath: string, outputPath: string, createAdditionalData?: (fileList: {fileName: string, localHeaderOffset: bigint}[]) => Promise<{path: string, file: ArrayBuffer}>) {
+export async function createZip(
+  inputPath: string,
+  outputPath: string,
+  createAdditionalData?: (
+    fileList: {fileName: string; localHeaderOffset: bigint}[]
+  ) => Promise<{path: string; file: ArrayBuffer}>
+) {
   const fileIterator = getFileIterator(inputPath);
 
   const resFile = new NodeFile(outputPath, 'w');
-  const fileList: {fileName: string, localHeaderOffset: bigint}[] = [];
+  const fileList: {fileName: string; localHeaderOffset: bigint}[] = [];
 
   const cdArray: ArrayBuffer[] = [];
   for await (const file of fileIterator) {
-    await addFile(file, resFile, fileList, cdArray)
+    await addFile(file, resFile, fileList, cdArray);
   }
   // TODO add hash file there
   if (createAdditionalData) {
-    const additionaldata = await createAdditionalData(fileList)
-    console.log(additionaldata)
-    await addFile(additionaldata, resFile, fileList, cdArray)
+    const additionaldata = await createAdditionalData(fileList);
+    console.log(additionaldata);
+    await addFile(additionaldata, resFile, fileList, cdArray);
   }
   const cdOffset = (await resFile.stat()).bigsize;
   const cd = concatenateArrayBuffers(...cdArray);
@@ -154,7 +160,12 @@ export async function createZip(inputPath: string, outputPath: string, createAdd
   );
 }
 
-async function addFile (file: {path: string, file: ArrayBuffer}, resFile: NodeFile, fileList: {fileName: string, localHeaderOffset: bigint}[], cdArray: ArrayBuffer[]) {
+async function addFile(
+  file: {path: string; file: ArrayBuffer},
+  resFile: NodeFile,
+  fileList: {fileName: string; localHeaderOffset: bigint}[],
+  cdArray: ArrayBuffer[]
+) {
   const size = (await resFile.stat()).bigsize;
   fileList.push({fileName: file.path, localHeaderOffset: size});
   const [localPart, cdHeaderPart] = await generateFileHeaders(file.path, file.file, size);
@@ -204,7 +215,7 @@ export async function getAllFiles(basePath: string, subfolder: string = ''): Pro
   return arrayOfFiles;
 }
 
-function pathJoin(...paths: (string)[]): string {
-  const resPaths: string[] = paths.filter(val => val.length)
-  return path.join(...resPaths)
+function pathJoin(...paths: string[]): string {
+  const resPaths: string[] = paths.filter((val) => val.length);
+  return path.join(...resPaths);
 }

@@ -37,7 +37,9 @@ export function concatenateArrayBuffers(...sources: (ArrayBuffer | Uint8Array)[]
  * Concatenate a sequence of ArrayBuffers from array
  * @return A concatenated ArrayBuffer
  */
-export function concatenateArrayBuffersFromArray(sources: (ArrayBuffer | Uint8Array)[]): ArrayBuffer {
+export function concatenateArrayBuffersFromArray(
+  sources: (ArrayBuffer | Uint8Array)[]
+): ArrayBuffer {
   // Make sure all inputs are wrapped in typed arrays
   const sourceArrays = sources.map((source2) =>
     source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2
