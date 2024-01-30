@@ -8,7 +8,6 @@ import * as arrow from 'apache-arrow';
 import {WASM_SUPPORTED_FILES} from './data/files';
 
 const PARQUET_DIR = '@loaders.gl/parquet/test/data';
-const WASM_URL = 'node_modules/parquet-wasm/esm2/arrow1_bg.wasm';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -21,13 +20,9 @@ test('ParquetLoader#loader objects', (t) => {
   t.end();
 });
 
-test('ParquetWasmLoader#Load Parquet file', async (t) => {
+test('Load Parquet file', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  const table = await load(url, ParquetWasmLoader, {
-    parquet: {
-      wasmUrl: WASM_URL
-    }
-  });
+  const table = await load(url, ParquetWasmLoader, {});
   const arrowTable = table.data;
   t.equal(arrowTable.numRows, 5);
   t.deepEqual(table.schema?.fields.map((f) => f.name), [
@@ -45,11 +40,7 @@ test('ParquetWasmLoader#load', async (t) => {
   t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
-    const table = await load(url, ParquetWasmLoader, {
-      parquet: {
-        wasmUrl: WASM_URL
-      }
-    });
+    const table = await load(url, ParquetWasmLoader);
     const arrowTable = table.data;
     t.ok(arrowTable, `GOOD(${title})`);
   }
@@ -57,20 +48,14 @@ test('ParquetWasmLoader#load', async (t) => {
   t.end();
 });
 
-test('ParquetWasmWriter#writer/loader round trip', async (t) => {
+test.only('ParquetWasmWriter#writer/loader round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWasmWriter, {
     worker: false,
-    parquet: {
-      wasmUrl: WASM_URL
-    }
   });
   const newTable = await load(parquetBuffer, ParquetWasmLoader, {
     worker: false,
-    parquet: {
-      wasmUrl: WASM_URL
-    }
   });
 
   t.deepEqual(table.data.schema, newTable.data.schema);

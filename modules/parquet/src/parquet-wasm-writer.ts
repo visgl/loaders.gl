@@ -7,9 +7,7 @@ import type {ArrowTable} from '@loaders.gl/arrow';
 import {encode} from './lib/wasm/encode-parquet-wasm';
 import type {WriterOptions} from '@loaders.gl/loader-utils';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {VERSION, PARQUET_WASM_URL} from './lib/constants';
 
 export type ParquetWriterOptions = WriterOptions & {
   parquet?: {
@@ -28,7 +26,7 @@ export const ParquetWasmWriter: WriterWithEncoder<ArrowTable, never, ParquetWrit
   binary: true,
   options: {
     parquet: {
-      wasmUrl: 'https://unpkg.com/parquet-wasm@0.3.1/esm2/arrow1_bg.wasm'
+      wasmUrl: PARQUET_WASM_URL
     }
   },
   encode(arrowTable: ArrowTable, options?: ParquetWriterOptions) {

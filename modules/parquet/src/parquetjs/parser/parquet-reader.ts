@@ -5,7 +5,7 @@ import {ParquetSchema} from '../schema/schema';
 import {decodeSchema} from './decoders';
 import {materializeRows} from '../schema/shred';
 
-import {PARQUET_MAGIC, PARQUET_MAGIC_ENCRYPTED} from '../../constants';
+import {PARQUET_MAGIC, PARQUET_MAGIC_ENCRYPTED} from '../../lib/constants';
 import {ColumnChunk, CompressionCodec, FileMetaData, RowGroup, Type} from '../parquet-thrift';
 import {
   ParquetRowGroup,
