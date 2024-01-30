@@ -204,12 +204,8 @@ export function getFileIterator(
  * @returns list of paths
  */
 export async function getAllFiles(basePath: string, subfolder: string = ''): Promise<string[]> {
-<<<<<<< HEAD
-  const files = await fs.readdir(pathJoin(basePath, subfolder));
-=======
   fs ||= new NodeFilesystem({});
-  const files = await fs.readdir(path.join(basePath, subfolder));
->>>>>>> cc8ee65a1 (feat(parquet): restore ParquetWasm loader)
+  const files = await fs.readdir(pathJoin(basePath, subfolder));
 
   const arrayOfFiles: string[] = [];
 
