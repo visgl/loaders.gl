@@ -143,7 +143,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should add KHR_materials_unlit e
   }
 });
 
-test.only('tile-converter(3d-tiles)#b3dm converter - should NOT add KHR_materials_unlit extension', async (t) => {
+test('tile-converter(3d-tiles)#b3dm converter - should NOT add KHR_materials_unlit extension', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({
       i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
