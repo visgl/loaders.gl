@@ -11,8 +11,6 @@ import {generateLocalHeader} from './local-file-header';
 import {generateCDHeader} from './cd-file-header';
 import {fetchFile} from '@loaders.gl/core';
 
-const fs = new NodeFilesystem({});
-
 /**
  * cut off CD and EoCD records from zip file
  * @param provider zip file
@@ -203,7 +201,12 @@ export function getFileIterator(
  * @param subfolder relative path from the root folder.
  * @returns list of paths
  */
-export async function getAllFiles(basePath: string, subfolder: string = ''): Promise<string[]> {
+export async function getAllFiles(
+  basePath: string,
+  subfolder: string = '',
+  fsPassed?: NodeFilesystem
+): Promise<string[]> {
+  const fs = fsPassed ? fsPassed : new NodeFilesystem({});
   const files = await fs.readdir(pathJoin(basePath, subfolder));
 
   const arrayOfFiles: string[] = [];
