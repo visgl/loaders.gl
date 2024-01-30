@@ -48,6 +48,11 @@ export async function makeHashTableFromZipHeaders(
   return getHashTable(zipCDIterator);
 }
 
+/**
+ * creates hash table from file offset iterator
+ * @param zipCDIterator iterator to use
+ * @returns hash table
+ */
 export async function getHashTable(
   zipCDIterator: AsyncIterable<ZipCDFileHeader>
 ): Promise<Record<string, bigint>> {
@@ -66,6 +71,7 @@ export async function getHashTable(
   return hashTable;
 }
 
+/** item of the file offset list */
 type FileListItem = {
   fileName: string;
   localHeaderOffset: bigint;
@@ -73,7 +79,7 @@ type FileListItem = {
 
 /**
  * creates hash file that later can be added to the SLPK archive
- * @param fileProvider SLPK archive where we need to add hash file
+ * @param zipCDIterator iterator to use
  * @returns ArrayBuffer containing hash file
  */
 export async function composeHashFile(

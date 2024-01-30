@@ -141,13 +141,12 @@ export async function createZip(
 
   const cdArray: ArrayBuffer[] = [];
   for await (const file of fileIterator) {
-    await addFile(file, resFile, fileList, cdArray);
+    await addFile(file, resFile, cdArray, fileList);
   }
-  // TODO add hash file there
   if (createAdditionalData) {
     const additionaldata = await createAdditionalData(fileList);
     console.log(additionaldata);
-    await addFile(additionaldata, resFile, fileList, cdArray);
+    await addFile(additionaldata, resFile, cdArray);
   }
   const cdOffset = (await resFile.stat()).bigsize;
   const cd = concatenateArrayBuffers(...cdArray);
@@ -160,14 +159,21 @@ export async function createZip(
   );
 }
 
+/**
+ * Adds file to zip parts
+ * @param file file to add
+ * @param resFile zip file body
+ * @param cdArray zip file central directory
+ * @param fileList list of file offsets
+ */
 async function addFile(
   file: {path: string; file: ArrayBuffer},
   resFile: NodeFile,
-  fileList: {fileName: string; localHeaderOffset: bigint}[],
-  cdArray: ArrayBuffer[]
+  cdArray: ArrayBuffer[],
+  fileList?: {fileName: string; localHeaderOffset: bigint}[]
 ) {
   const size = (await resFile.stat()).bigsize;
-  fileList.push({fileName: file.path, localHeaderOffset: size});
+  fileList?.push({fileName: file.path, localHeaderOffset: size});
   const [localPart, cdHeaderPart] = await generateFileHeaders(file.path, file.file, size);
   await resFile.append(localPart);
   cdArray.push(cdHeaderPart);
@@ -215,6 +221,11 @@ export async function getAllFiles(basePath: string, subfolder: string = ''): Pro
   return arrayOfFiles;
 }
 
+/**
+ * removes empty parts from path array and joins it
+ * @param paths paths to join
+ * @returns joined path
+ */
 function pathJoin(...paths: string[]): string {
   const resPaths: string[] = paths.filter((val) => val.length);
   return path.join(...resPaths);

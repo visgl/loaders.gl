@@ -30,11 +30,7 @@ import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
-import {
-  compressFileWithGzip
-  // generateHash128FromZip,
-  // addFileToZip
-} from '../lib/utils/compress-util';
+import {compressFileWithGzip} from '../lib/utils/compress-util';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
 import {
@@ -566,40 +562,12 @@ export default class I3SConverter {
     if (this.options.slpk) {
       const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
       const slpkFileName = `${tilesetPath}.slpk`;
-      // await compressWithChildProcess(
-      //   slpkTilesetPath,
-      //   slpkFileName,
-      //   0,
-      //   '.',
-      //   this.options.sevenZipExe
-      // );
-
-      // const hashTable = await composeHashFile(new FileHandleFile(slpkFileName));
-      // await addOneFile(slpkFileName, hashTable, '@specialIndexFileHASH128@');
 
       await createZip(slpkTilesetPath, slpkFileName, async (fileList) => ({
         path: '@specialIndexFileHASH128@',
         file: await composeHashFile(fileList)
       }));
 
-      // TODO: `addFileToZip` corrupts archive so it can't be validated with windows i3s_converter.exe
-      // const fileHash128Path = `${tilesetPath}/@specialIndexFileHASH128@`;
-      // try {
-      //   await generateHash128FromZip(slpkFileName, fileHash128Path);
-      //   await addFileToZip(
-      //     tilesetPath,
-      //     '@specialIndexFileHASH128@',
-      //     slpkFileName,
-      //     this.options.sevenZipExe
-      //   );
-      // } catch (error) {
-      //   if (error.code === FS_FILE_TOO_LARGE) {
-      //     console.warn(`${slpkFileName} file is too big to generate a hash`); // eslint-disable-line
-      //   } else {
-      //     console.error(error); // eslint-disable-line
-      //   }
-      // }
-      // All converted files are contained in slpk now they can be deleted
       try {
         await removeDir(tilesetPath);
       } catch (e) {
