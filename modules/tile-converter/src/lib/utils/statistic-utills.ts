@@ -44,7 +44,7 @@ function timeConverterFromSecondsAndMilliseconds(timeInSeconds: number, millisec
   }
 
   if (!result) {
-    result += `${milliseconds}ms`;
+    result += `${Math.floor(milliseconds)}ms`;
   }
 
   return result;

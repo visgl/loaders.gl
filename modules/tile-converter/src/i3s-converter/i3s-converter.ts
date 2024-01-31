@@ -625,8 +625,9 @@ export default class I3SConverter {
         timeRemainingString = `${timeRemainingStringBasedOnCount} left`;
       }
 
-      let percentString = this.progresses[PROGRESS_PHASE1_COUNT].getPercentString();
-      console.log(`[converted ${percentString}%, ${timeRemainingString}]: ${sourceTile.id}`); // eslint-disable-line
+      const percentString = this.progresses[PROGRESS_PHASE1_COUNT].getPercentString();
+      const progressString = percentString ? ` ${percentString}%, ${timeRemainingString}` : '';
+      console.log(`[converted${progressString}]: ${sourceTile.id}`); // eslint-disable-line
     }
     return newTraversalProps;
   }

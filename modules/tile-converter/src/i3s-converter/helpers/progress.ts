@@ -119,7 +119,7 @@ export class Progress {
    * @returns Number of milliseconds remaining
    */
   getTimeRemaining(): {timeRemaining: number; trust: boolean} | null {
-    if (!this._stepsDone || !this.startTime) {
+    if (!this._stepsTotal || !this._stepsDone || !this.startTime) {
       return null;
     }
 
