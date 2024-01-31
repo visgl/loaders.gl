@@ -16,10 +16,13 @@ test('tile-converter(i3s)#Progress methods', async (t) => {
   // stepsTotal has not been set yet
   t.equal(progress.getPercentString(), '');
 
+  progress.stepsDone += 1;
+  // expecting an empty string because stepsTotal has not been set yet even if stepsDone has been incremented
+  t.equal(progress.getPercentString(), '');
+
   progress.stepsTotal += 10;
   t.equal(progress.stepsTotal, 10);
 
-  progress.stepsDone += 1;
   t.equal(progress.stepsDone, 1);
 
   t.equal(progress.getPercent(), 10);
@@ -32,10 +35,10 @@ test('tile-converter(i3s)#Progress methods', async (t) => {
   t.equal(progress.getTimeCurrentlyElapsed(), 3671000);
   progress.stopMonitoring();
 
-  currentTimeMS = 1000; // 10s
+  currentTimeMS = 1000; // 1s
   progress.startMonitoring();
 
-  currentTimeMS = 11000; // 10s
+  currentTimeMS = 11000; // 10s (elapsed)
   progress.stepsDone += 1;
   // 1 step completion took 10s
   let timeRemainingObject = progress.getTimeRemaining();
@@ -64,6 +67,25 @@ test('tile-converter(i3s)#Progress methods', async (t) => {
   t.equal(timeRemainingObject?.timeRemaining, 38500);
   t.equal(timeRemainingString, '38s');
   t.equal(progress.getTimeCurrentlyElapsed(), 16500);
+
+  progress.stopMonitoring();
+
+  currentTimeMS = 1000;
+  progress.stepsTotal = 10;
+  progress.startMonitoring();
+
+  currentTimeMS = 1007; // +7 ms
+  progress.stepsDone += 1;
+  currentTimeMS = 1014; // +7 ms
+  progress.stepsDone += 1;
+  currentTimeMS = 1023; // +9 ms
+  progress.stepsDone += 1;
+
+  timeRemainingObject = progress.getTimeRemaining();
+  timeRemainingString = progress.getTimeRemainingString();
+
+  t.equal(timeRemainingObject?.timeRemaining, 53.66666666666667);
+  t.equal(timeRemainingString, '53ms');
 
   t.end();
 });
