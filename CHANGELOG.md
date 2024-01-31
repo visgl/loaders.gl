@@ -2,6 +2,19 @@
 
 ## v4.1
 
+### v4.1.0-alpha.11
+
+- fix(tile-converter): add KHR_materials_unlit extension to materials (#2870)
+- fix(tile-converter): fix status dump structure (#2872)
+- Browser-test fix (#2874)
+- chore(zip): zip composition feature integration (#2871)
+- fix(i3s-scene-parser): provide unsupported layer types in the exception (#2863)
+- chore: Update examples to type: module (#2867)
+- chore: Require apache-arrow v15 or higher (#2865)
+- chore: Website polish (#2866)
+- docs: Update PMTiles format docs (#2864)
+- chore(zip): Zip composition function added (#2860)
+
 ### v4.1.0-alpha.10
 
 - feat(tile-converter): add convertion status dump file (#2858)
