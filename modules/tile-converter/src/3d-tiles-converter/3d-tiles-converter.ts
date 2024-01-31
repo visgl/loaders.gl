@@ -115,15 +115,13 @@ export default class Tiles3DConverter {
         box: i3sObbTo3dTilesObb(rootNode.obb, this.geoidHeightModel)
       },
       geometricError: convertScreenThresholdToGeometricError(rootNode),
-      children: []
+      children: [],
+      refine: 'REPLACE'
     };
 
     await this._addChildren(rootNode, rootTile, 1);
 
     const tileset = transform({root: rootTile}, tilesetTemplate());
-    if (!tileset.root.refine) {
-      tileset.root.refine = 'REPLACE';
-    }
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
 
     this._finishConversion({slpk: false, outputPath, tilesetName});
