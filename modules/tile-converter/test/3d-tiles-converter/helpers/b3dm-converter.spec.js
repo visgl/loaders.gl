@@ -111,6 +111,70 @@ test('tile-converter(3d-tiles)#b3dm converter - should normalise positions corre
   }
 });
 
+test('tile-converter(3d-tiles)#b3dm converter - should add KHR_materials_unlit extension', async (t) => {
+  if (!isBrowser) {
+    const tile = await loadI3STile({
+      i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
+    });
+    const i3sContent = tile.content;
+
+    i3sContent.material.pbrMetallicRoughness.metallicFactor = 1.0;
+    i3sContent.material.pbrMetallicRoughness.roughnessFactor = 1.0;
+
+    const b3dmConverter = new B3dmConverter();
+
+    const encodedContent = await b3dmConverter.convert({
+      tileContent: i3sContent,
+      textureFormat: tile.header.textureFormat,
+      box: tile.header.boundingVolume.box
+    });
+
+    const decodedContent = await load(encodedContent, Tiles3DLoader, {
+      '3d-tiles': {
+        isTileset: false
+      },
+      tile: {type: 'b3dm'}
+    });
+    t.ok(decodedContent);
+
+    const material = decodedContent.gltf.meshes[0].primitives[0].material;
+    t.ok(material.unlit);
+    t.end();
+  }
+});
+
+test('tile-converter(3d-tiles)#b3dm converter - should NOT add KHR_materials_unlit extension', async (t) => {
+  if (!isBrowser) {
+    const tile = await loadI3STile({
+      i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false}
+    });
+    const i3sContent = tile.content;
+
+    i3sContent.material.pbrMetallicRoughness.metallicFactor = 2.0;
+    i3sContent.material.pbrMetallicRoughness.roughnessFactor = 2.0;
+
+    const b3dmConverter = new B3dmConverter();
+
+    const encodedContent = await b3dmConverter.convert({
+      tileContent: i3sContent,
+      textureFormat: tile.header.textureFormat,
+      box: tile.header.boundingVolume.box
+    });
+
+    const decodedContent = await load(encodedContent, Tiles3DLoader, {
+      '3d-tiles': {
+        isTileset: false
+      },
+      tile: {type: 'b3dm'}
+    });
+    t.ok(decodedContent);
+
+    const material = decodedContent.gltf.meshes[0].primitives[0].material;
+    t.notOk(material.unlit);
+    t.end();
+  }
+});
+
 test('tile-converter(3d-tiles)#b3dm converter - should convert material', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
