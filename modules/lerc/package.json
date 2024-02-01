@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/lerc",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "Framework-independent loader for LERC (Limited Error Raster Compression) files",
   "license": "MIT",
   "type": "module",
@@ -39,8 +39,8 @@
     "build-worker": "# esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.0.4",
-    "@loaders.gl/schema": "4.0.4",
+    "@loaders.gl/loader-utils": "4.0.5",
+    "@loaders.gl/schema": "4.0.5",
     "lerc": "^4.0.1"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"

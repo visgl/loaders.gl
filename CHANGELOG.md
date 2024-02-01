@@ -2,7 +2,13 @@
 
 ## v4.0
 
+### v4.0.5
+
+- fix(tile-converter): 3d-tiles converter freezes in the end (#2877)
+- Convert GetImageParameters to WMSGetMapParameters (#2799)
+
 ### v4.0.4
+
 - feat(arrow): GeoArrowLoader (#2796)
 - fix(draco): revert --format=esm for the worker (#2795)
 - feat(arrow): Support GeoJSON output from Geo ArrowLoader (#2794)
