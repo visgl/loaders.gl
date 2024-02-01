@@ -44,6 +44,8 @@ export default class Tiles3DConverter {
   loaderOptions: I3SLoaderOptions = {
     _nodeWorkers: true,
     reuseWorkers: true,
+    // TODO: converter freezes in the end because of i3s-content-worker
+    worker: false,
     i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false},
     // We need to load local fs workers because nodejs can't load workers from the Internet
     'i3s-content': {
@@ -208,11 +210,9 @@ export default class Tiles3DConverter {
     if (this.options.maxDepth && level > this.options.maxDepth) {
       return;
     }
-    const promises: Promise<void>[] = [];
     for (const childNodeInfo of parentSourceNode.children || []) {
-      promises.push(this.convertChildNode(parentSourceNode, parentNode, level, childNodeInfo));
+      await this.convertChildNode(parentSourceNode, parentNode, level, childNodeInfo);
     }
-    await Promise.all(promises);
   }
 
   /**

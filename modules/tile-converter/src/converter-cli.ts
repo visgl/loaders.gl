@@ -158,7 +158,7 @@ async function convert(options: ValidatedTileConversionOptions) {
   switch (inputType) {
     case TILESET_TYPE.I3S:
       const tiles3DConverter = new Tiles3DConverter();
-      tiles3DConverter.convert({
+      await tiles3DConverter.convert({
         inputUrl: options.tileset,
         outputPath: options.output,
         tilesetName: options.name,
