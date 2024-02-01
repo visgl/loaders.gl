@@ -143,7 +143,6 @@ export async function createZip(
   }
   if (createAdditionalData) {
     const additionaldata = await createAdditionalData(fileList);
-    console.log(additionaldata);
     await addFile(additionaldata, resFile, cdArray);
   }
   const cdOffset = (await resFile.stat()).bigsize;
