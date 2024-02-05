@@ -2,6 +2,10 @@
 
 ## v4.0
 
+### v4.0.6
+
+- fix: Fix version injection (#2879)
+
 ### v4.0.5
 
 - fix(tile-converter): 3d-tiles converter freezes in the end (#2877)
