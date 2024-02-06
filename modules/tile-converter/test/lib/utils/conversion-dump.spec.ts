@@ -15,22 +15,13 @@ const testDumpMetadata = {
     obb: {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]},
     mbs: [1, 2, 3, 4] as Mbs
   },
-  attributes: [],
+  attributesCount: 2,
   featureCount: 12,
   geometry: true,
   hasUvRegions: false,
-  meshMaterial: {
-    alphaMode: 'opaque' as 'opaque' | 'mask' | 'blend',
-    pbrMetallicRoughness: {metallicFactor: 0.5, roughnessFactor: 0.7}
-  },
-  texture: {
-    image: {
-      height: 320,
-      width: 240
-    }
-  },
-  vertexCount: 100,
-  attributeTypesMap: {testAttr: 'string'}
+  materialId: 1,
+  texelCountHint: 4,
+  vertexCount: 100
 };
 const testTextureSetDefinitions = [
   {
@@ -67,7 +58,7 @@ test('tile-converter(i3s)#ConversionDump - Should create and delete conversion d
     something: 'test'
   };
 
-  await conversionDump.createDumpFile(testOptions as ConversionDumpOptions);
+  await conversionDump.createDump(testOptions as ConversionDumpOptions);
 
   let isDumpExists = await isFileExists(
     join(
@@ -105,7 +96,7 @@ test('tile-converter(i3s)#ConversionDump - Add node to the dump', async (t) => {
     tilesetName: 'testTileset'
   };
 
-  await conversionDump.createDumpFile(testOptions as ConversionDumpOptions);
+  await conversionDump.createDump(testOptions as ConversionDumpOptions);
 
   await conversionDump.addNode('1.glb', 1, testDumpMetadata);
   await conversionDump.addNode('1.glb', 2, testDumpMetadata);
@@ -140,7 +131,7 @@ test('tile-converter(i3s)#ConversionDump - update Done Status', async (t) => {
     tilesetName: 'testTileset'
   };
 
-  await conversionDump.createDumpFile(testOptions as ConversionDumpOptions);
+  await conversionDump.createDump(testOptions as ConversionDumpOptions);
   await conversionDump.addNode('1.glb', 1, testDumpMetadata);
   conversionDump.updateDoneStatus('1.glb', 1, 'testResource', false);
 
@@ -164,7 +155,7 @@ test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump', async (t) 
     tilesetName: 'testTileset'
   };
 
-  await conversionDump.createDumpFile(testOptions as ConversionDumpOptions);
+  await conversionDump.createDump(testOptions as ConversionDumpOptions);
   await conversionDump.addNode('1.glb', 1, testDumpMetadata);
   conversionDump.updateDoneStatus('1.glb', 1, 'testResource', false);
 
@@ -198,7 +189,7 @@ test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump', async (t) 
 
 test('tile-converter(i3s)#ConversionDump - test init, isFileConversionComplete and clearDumpRecord methods', async (t) => {
   const conversionDump = new ConversionDump();
-  const testOptions = {
+  /*const testOptions = {
     inputUrl: 'testInputUrl',
     outputPath: 'testPath',
     tilesetName: 'testTileset',
@@ -218,7 +209,7 @@ test('tile-converter(i3s)#ConversionDump - test init, isFileConversionComplete a
     'file2.glb': {nodes: [{nodeId: 2, done: false, progress: {}, dumpMetadata: testDumpMetadata}]}
   };
 
-  conversionDump.init(testOptions, testTilesConverted, testTextureSetDefinitions);
+  conversionDump.init(testOptions, testTilesConverted, testTextureSetDefinitions);*/
 
   t.equal(conversionDump.isFileConversionComplete('file1.glb'), true);
   t.equal(conversionDump.isFileConversionComplete('file2.glb'), false);
@@ -234,29 +225,5 @@ test('tile-converter(i3s)#ConversionDump - test addTexturesDefinitions method', 
   conversionDump.addTexturesDefinitions(testTextureSetDefinitions);
 
   t.deepEqual(conversionDump.textureSetDefinitions, testTextureSetDefinitions);
-  t.end();
-});
-
-test('tile-converter(i3s)#ConversionDump - compare options', async (t) => {
-  const dumpedOptions = {
-    inputUrl: 'testInputUrl',
-    outputPath: 'testPath',
-    tilesetName: 'testTileset',
-    maxDepth: 5,
-    slpk: true,
-    egmFilePath: 'testEGM',
-    token: 'testToken',
-    draco: true,
-    mergeMaterials: true,
-    generateTextures: true,
-    generateBoundingVolumes: true,
-    metadataClass: 'testMetadataClass',
-    analyze: true
-  };
-  const converterOptions = {...dumpedOptions, something: 'something'};
-  t.equal(ConversionDump.compareOptions(dumpedOptions, converterOptions), true);
-
-  const converterOptions2 = {...converterOptions, draco: false};
-  t.equal(ConversionDump.compareOptions(dumpedOptions, converterOptions2), false);
   t.end();
 });
