@@ -30,14 +30,7 @@ import transform from 'json-map-transform';
 import md5 from 'md5';
 
 import NodePages from './helpers/node-pages';
-import {
-  writeFile,
-  removeDir,
-  writeFileForSlpk,
-  removeFile,
-  isFileExists,
-  openJson
-} from '../lib/utils/file-utils';
+import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
 import {compressFileWithGzip} from '../lib/utils/compress-util';
 import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
 import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
@@ -67,7 +60,7 @@ import {
 } from './types';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
 import WriteQueue from '../lib/utils/write-queue';
-import {BROWSER_ERROR_MESSAGE, DUMP_FILE_SUFFIX} from '../constants';
+import {BROWSER_ERROR_MESSAGE} from '../constants';
 import {
   getAttributeTypesMapFromPropertyTable,
   getAttributeTypesMapFromSchema
@@ -149,7 +142,6 @@ export default class I3SConverter {
   };
   progresses: Record<string, Progress> = {};
   conversionDump: ConversionDump;
-  resumeConversion: boolean = false;
 
   constructor() {
     this.attributeMetadataInfo = new AttributeMetadataInfo();
@@ -698,6 +690,105 @@ export default class I3SConverter {
     }
   }
 
+  private async _generateNodeIndexDocument(
+    boundingVolumes: BoundingVolumes,
+    resources: I3SConvertedResources | DumpMetadata,
+    parentNode: NodeIndexDocument,
+    sourceTile: Tiles3DTileJSONPostprocessed,
+    isDumped: boolean
+  ): Promise<{node: NodeIndexDocument; nodeInPage: NodeInPage; nodeData: Node3DIndexDocument}> {
+    this.layersHasTexture =
+      this.layersHasTexture ||
+      Boolean(
+        ('texture' in resources && resources.texture) ||
+          ('texelCountHint' in resources && resources.texelCountHint)
+      );
+
+    if (this.generateBoundingVolumes && resources.boundingVolumes) {
+      boundingVolumes = resources.boundingVolumes;
+    }
+
+    const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, boundingVolumes);
+    const maxScreenThresholdSQ = lodSelection.find(
+      (val) => val.metricType === 'maxScreenThresholdSQ'
+    ) || {maxError: 0};
+
+    if (isDumped) {
+      const draftObb = {
+        center: [],
+        halfSize: [],
+        quaternion: []
+      };
+      await this.nodePages.push({index: 0, obb: draftObb}, parentNode.inPageId);
+    }
+
+    const nodeInPage = await this._updateNodeInNodePages(
+      maxScreenThresholdSQ,
+      boundingVolumes,
+      sourceTile,
+      parentNode.inPageId,
+      resources
+    );
+
+    const nodeData = await NodeIndexDocument.createNodeIndexDocument(
+      parentNode,
+      boundingVolumes,
+      lodSelection,
+      nodeInPage,
+      resources
+    );
+
+    const node = await new NodeIndexDocument(nodeInPage.index, this).addData(nodeData);
+    return {node, nodeInPage, nodeData};
+  }
+
+  /**
+   * Restore 3DNodeIndexDocument from a comversion dump file
+   * @param parentNode - 3DNodeIndexDocument of parent node
+   * @param sourceTile - source 3DTile data
+   * @param transformationMatrix - transformation matrix of the current tile, calculated recursively multiplying
+   *                               transform of all parent tiles and transform of the current tile
+   */
+  private async _restoreNode(
+    parentNode: NodeIndexDocument,
+    sourceTile: Tiles3DTileJSONPostprocessed,
+    transformationMatrix: Matrix4
+  ): Promise<null | NodeIndexDocument[]> {
+    this._checkAddRefinementTypeForTile(sourceTile);
+    await this._updateTilesetOptions();
+    if (
+      this.conversionDump.restored &&
+      sourceTile.id &&
+      this.conversionDump.isFileConversionComplete(sourceTile.id)
+    ) {
+      const sourceBoundingVolume = createBoundingVolume(
+        sourceTile.boundingVolume,
+        transformationMatrix,
+        null
+      );
+      let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+      const nodes: NodeIndexDocument[] = [];
+      for (const convertedNode of this.conversionDump.tilesConverted[sourceTile.id].nodes) {
+        const {node} = await this._generateNodeIndexDocument(
+          boundingVolumes,
+          {
+            ...(convertedNode.dumpMetadata as DumpMetadata),
+            nodeId: convertedNode.nodeId
+          } as I3SConvertedResources | DumpMetadata,
+          parentNode,
+          sourceTile,
+          true
+        );
+        nodes.push(node);
+      }
+      return nodes;
+    } else if (this.conversionDump.restored && sourceTile.id) {
+      //clear existing record in a dump
+      this.conversionDump.clearDumpRecord(sourceTile.id);
+    }
+    return null;
+  }
+
   /**
    * Generate NodeIndexDocument
    * @param boundingVolumes - Bounding volumes
@@ -823,69 +914,6 @@ export default class I3SConverter {
 
     await this._updateTilesetOptions();
 
-    if (
-      this.resumeConversion &&
-      sourceTile.id &&
-      this.conversionDump.isFileConversionComplete(sourceTile.id)
-    ) {
-      const nodes: NodeIndexDocument[] = [];
-      for (const convertedNode of this.conversionDump.tilesConverted[sourceTile.id].nodes) {
-        const sourceBoundingVolume = createBoundingVolume(
-          sourceTile.boundingVolume,
-          transformationMatrix,
-          null
-        );
-        let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
-        if (convertedNode.dumpMetadata?.attributeTypesMap) {
-          this.createAttributeStorageInfo(null, null, convertedNode.dumpMetadata.attributeTypesMap);
-        }
-
-        this.layersHasTexture =
-          this.layersHasTexture || Boolean(convertedNode.dumpMetadata?.texture);
-
-        if (this.generateBoundingVolumes && convertedNode.dumpMetadata?.boundingVolumes) {
-          boundingVolumes = convertedNode.dumpMetadata.boundingVolumes;
-        }
-
-        const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, boundingVolumes);
-        const maxScreenThresholdSQ = lodSelection.find(
-          (val) => val.metricType === 'maxScreenThresholdSQ'
-        ) || {maxError: 0};
-
-        const draftObb = {
-          center: [],
-          halfSize: [],
-          quaternion: []
-        };
-
-        await this.nodePages.push({index: 0, obb: draftObb}, parentNode.inPageId);
-
-        const nodeInPage = await this._updateNodeInNodePages(
-          maxScreenThresholdSQ,
-          boundingVolumes,
-          sourceTile,
-          parentNode.inPageId,
-          convertedNode.dumpMetadata as unknown as I3SConvertedResources,
-          convertedNode.nodeId
-        );
-
-        const nodeData = await NodeIndexDocument.createNodeIndexDocument(
-          parentNode,
-          boundingVolumes,
-          lodSelection,
-          nodeInPage,
-          convertedNode.dumpMetadata as unknown as I3SConvertedResources
-        );
-
-        const node = await new NodeIndexDocument(convertedNode.nodeId, this).addData(nodeData);
-        nodes.push(node);
-      }
-      return nodes;
-    } else if (this.resumeConversion && sourceTile.id) {
-      //clear existing record in a dump
-      this.conversionDump.clearDumpRecord(sourceTile.id);
-    }
-
     let tileContent: Tiles3DTileContent | null = null;
     try {
       tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, this.loadOptions);
@@ -900,7 +928,13 @@ export default class I3SConverter {
     let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
     const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
-    const attributeTypesMap = this.createAttributeStorageInfo(tileContent, propertyTable);
+    this.createAttributeStorageInfo(tileContent, propertyTable);
+
+    this.conversionDump.attributeMetadataInfo = {
+      attributeStorageInfo: this.attributeMetadataInfo.attributeStorageInfo,
+      fields: this.attributeMetadataInfo.fields,
+      popupInfo: this.attributeMetadataInfo.popupInfo
+    };
 
     this.conversionDump.attributeMetadataInfo = {
       attributeStorageInfo: this.attributeMetadataInfo.attributeStorageInfo,
