@@ -8,7 +8,7 @@ import {join} from 'path';
 import {isFileExists, openJson} from '../../../src/lib/utils/file-utils';
 import {DUMP_FILE_SUFFIX} from '../../../src/constants';
 import {cleanUpPath} from '../../utils/file-utils';
-import {Mbs} from '@loaders.gl/i3s';
+import {I3SMaterialDefinition, Mbs} from '@loaders.gl/i3s';
 
 const testDumpMetadata = {
   boundingVolumes: {
@@ -38,27 +38,39 @@ const testTextureSetDefinitions = [
     atlas: true
   } as TextureSetDefinition
 ];
+const testOptions = {
+  inputUrl: 'testInputUrl',
+  outputPath: 'testPath',
+  tilesetName: 'testTileset',
+  maxDepth: 5,
+  slpk: true,
+  egmFilePath: 'testEGM',
+  token: 'testToken',
+  draco: true,
+  mergeMaterials: true,
+  generateTextures: true,
+  generateBoundingVolumes: true,
+  metadataClass: 'testMetadataClass',
+  analyze: true,
+  something: 'test'
+};
+const testMaterialDefinitions = [
+  {
+    doubleSided: true,
+    emissiveFactor: [255, 255, 255],
+    alphaMode: 'opaque',
+    pbrMetallicRoughness: {
+      roughnessFactor: 1,
+      metallicFactor: 1,
+      baseColorTexture: {textureSetDefinitionId: 0}
+    }
+  }
+];
 
-test('tile-converter(i3s)#ConversionDump - Should create and delete conversion dump with options', async (t) => {
+test('tile-converter(i3s)#ConversionDump - Should create conversion dump with options, add node and delete dump file', async (t) => {
   const conversionDump = new ConversionDump();
-  const testOptions = {
-    inputUrl: 'testInputUrl',
-    outputPath: 'testPath',
-    tilesetName: 'testTileset',
-    maxDepth: 5,
-    slpk: true,
-    egmFilePath: 'testEGM',
-    token: 'testToken',
-    draco: true,
-    mergeMaterials: true,
-    generateTextures: true,
-    generateBoundingVolumes: true,
-    metadataClass: 'testMetadataClass',
-    analyze: true,
-    something: 'test'
-  };
-
   await conversionDump.createDump(testOptions as ConversionDumpOptions);
+  await conversionDump.addNode('1.b3dm', 1, testDumpMetadata);
 
   let isDumpExists = await isFileExists(
     join(
@@ -69,12 +81,16 @@ test('tile-converter(i3s)#ConversionDump - Should create and delete conversion d
   );
   t.equal(isDumpExists, true);
 
-  const {options} = await openJson(
+  const {options, tilesConverted} = await openJson(
     join(testOptions.outputPath, testOptions.tilesetName),
     `${testOptions.tilesetName}${DUMP_FILE_SUFFIX}`
   );
   const {something, ...correctOptions} = testOptions;
   t.deepEqual(options, correctOptions);
+
+  t.deepEqual(tilesConverted['1.b3dm'], {
+    nodes: [{nodeId: 1, progress: {}, done: false, dumpMetadata: testDumpMetadata}]
+  });
 
   await conversionDump.deleteDumpFile();
   isDumpExists = await isFileExists(
@@ -85,6 +101,35 @@ test('tile-converter(i3s)#ConversionDump - Should create and delete conversion d
     )
   );
   t.equal(isDumpExists, false);
+  await cleanUpPath(testOptions.outputPath);
+  t.end();
+});
+
+test('tile-converter(i3s)#ConversionDump - Should restore conversion dump with options and tilesConverted data, then reset the dump', async (t) => {
+  const conversionDump = new ConversionDump();
+  await conversionDump.createDump(testOptions as ConversionDumpOptions);
+  await conversionDump.addNode('1.b3dm', 1, testDumpMetadata);
+
+  const conversionDumpNew = new ConversionDump();
+  await conversionDumpNew.createDump(testOptions as ConversionDumpOptions);
+
+  const {options} = await openJson(
+    join(testOptions.outputPath, testOptions.tilesetName),
+    `${testOptions.tilesetName}${DUMP_FILE_SUFFIX}`
+  );
+  const {something, ...correctOptions} = testOptions;
+  t.deepEqual(options, correctOptions);
+
+  t.equal(conversionDumpNew.restored, true);
+  t.deepEqual(conversionDumpNew.tilesConverted['1.b3dm'], {
+    nodes: [{nodeId: 1, progress: {}, done: false, dumpMetadata: testDumpMetadata}]
+  });
+
+  conversionDumpNew.reset();
+  t.equal(conversionDumpNew.restored, false);
+  t.deepEqual(conversionDumpNew.tilesConverted, {});
+
+  await conversionDumpNew.deleteDumpFile();
   await cleanUpPath(testOptions.outputPath);
   t.end();
 });
@@ -148,16 +193,13 @@ test('tile-converter(i3s)#ConversionDump - update Done Status', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump', async (t) => {
+test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump, isFileConversionComplete', async (t) => {
   const conversionDump = new ConversionDump();
-  const testOptions = {
-    outputPath: 'testPath',
-    tilesetName: 'testTileset'
-  };
-
   await conversionDump.createDump(testOptions as ConversionDumpOptions);
   await conversionDump.addNode('1.glb', 1, testDumpMetadata);
   conversionDump.updateDoneStatus('1.glb', 1, 'testResource', false);
+
+  t.equal(conversionDump.isFileConversionComplete('1.glb'), false);
 
   const promises: Promise<string | null>[] = [];
   promises.push(Promise.resolve(''));
@@ -167,7 +209,7 @@ test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump', async (t) 
 
   t.deepEqual(conversionDump.tilesConverted, {
     '1.glb': {
-      nodes: [{nodeId: 1, done: true, progress: {}, dumpMetadata: testDumpMetadata}]
+      nodes: [{nodeId: 1, done: true, dumpMetadata: testDumpMetadata}]
     }
   });
 
@@ -178,52 +220,40 @@ test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump', async (t) 
 
   t.deepEqual(tilesConverted, {
     '1.glb': {
-      nodes: [{nodeId: 1, done: true, progress: {}, dumpMetadata: testDumpMetadata}]
+      nodes: [{nodeId: 1, done: true, dumpMetadata: testDumpMetadata}]
     }
   });
+
+  t.equal(conversionDump.isFileConversionComplete('1.glb'), true);
 
   await conversionDump.deleteDumpFile();
   await cleanUpPath(testOptions.outputPath);
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - test init, isFileConversionComplete and clearDumpRecord methods', async (t) => {
+test('tile-converter(i3s)#ConversionDump - test clearDumpRecord', async (t) => {
   const conversionDump = new ConversionDump();
-  /*const testOptions = {
-    inputUrl: 'testInputUrl',
-    outputPath: 'testPath',
-    tilesetName: 'testTileset',
-    maxDepth: 5,
-    slpk: true,
-    egmFilePath: 'testEGM',
-    token: 'testToken',
-    draco: true,
-    mergeMaterials: true,
-    generateTextures: true,
-    generateBoundingVolumes: true,
-    metadataClass: 'testMetadataClass',
-    analyze: true
-  };
-  const testTilesConverted = {
-    'file1.glb': {nodes: [{nodeId: 1, done: true, progress: {}, dumpMetadata: testDumpMetadata}]},
-    'file2.glb': {nodes: [{nodeId: 2, done: false, progress: {}, dumpMetadata: testDumpMetadata}]}
-  };
+  await conversionDump.createDump(testOptions as ConversionDumpOptions);
+  await conversionDump.addNode('1.glb', 1, testDumpMetadata);
+  conversionDump.updateDoneStatus('1.glb', 1, 'testResource', false);
+  conversionDump.clearDumpRecord('1.glb');
+  t.deepEqual(conversionDump.tilesConverted['1.glb'], {nodes: []});
 
-  conversionDump.init(testOptions, testTilesConverted, testTextureSetDefinitions);*/
-
-  t.equal(conversionDump.isFileConversionComplete('file1.glb'), true);
-  t.equal(conversionDump.isFileConversionComplete('file2.glb'), false);
-
-  conversionDump.clearDumpRecord('file2.glb');
-  t.deepEqual(conversionDump.tilesConverted['file2.glb'], {nodes: []});
+  await conversionDump.deleteDumpFile();
+  await cleanUpPath(testOptions.outputPath);
   t.end();
 });
 
 test('tile-converter(i3s)#ConversionDump - test addTexturesDefinitions method', async (t) => {
   const conversionDump = new ConversionDump();
-
   conversionDump.addTexturesDefinitions(testTextureSetDefinitions);
-
   t.deepEqual(conversionDump.textureSetDefinitions, testTextureSetDefinitions);
+  t.end();
+});
+
+test('tile-converter(i3s)#ConversionDump - test setMaterialsDefinitions method', async (t) => {
+  const conversionDump = new ConversionDump();
+  conversionDump.setMaterialsDefinitions(testMaterialDefinitions as I3SMaterialDefinition[]);
+  t.deepEqual(conversionDump.materialDefinitions, testMaterialDefinitions);
   t.end();
 });

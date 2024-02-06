@@ -133,7 +133,7 @@ export class ConversionDump {
   /**
    * Reset a dump
    */
-  async reset(): Promise<void> {
+  reset(): void {
     this.restored = false;
     this.tilesConverted = {};
     if (this.textureSetDefinitions) {
