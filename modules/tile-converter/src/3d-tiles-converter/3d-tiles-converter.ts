@@ -117,7 +117,8 @@ export default class Tiles3DConverter {
         box: i3sObbTo3dTilesObb(rootNode.obb, this.geoidHeightModel)
       },
       geometricError: convertScreenThresholdToGeometricError(rootNode),
-      children: []
+      children: [],
+      refine: 'REPLACE'
     };
 
     await this._addChildren(rootNode, rootTile, 1);

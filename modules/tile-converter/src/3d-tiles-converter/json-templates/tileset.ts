@@ -14,6 +14,9 @@ const TILE = () => ({
   geometricError: {
     path: 'geometricError'
   },
+  refine: {
+    path: 'refine'
+  },
   content: {
     path: 'content'
   },
