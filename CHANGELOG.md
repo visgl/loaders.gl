@@ -1,6 +1,10 @@
 # CHANGELOG for loaders.gl
 
+## v4.2 (alpha)
+
 ## v4.1
+
+### v4.1.0
 
 ### v4.1.0-alpha.11
 

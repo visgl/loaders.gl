@@ -3332,7 +3332,7 @@ anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
-"apache-arrow@>= 13.0.0", apache-arrow@^15.0.0:
+"apache-arrow@>= 15.0.0", apache-arrow@^15.0.0:
   version "15.0.0"
   resolved "https://registry.yarnpkg.com/apache-arrow/-/apache-arrow-15.0.0.tgz#d1dc537dd64e4180ff22f7bedbf3fb6cbf2502d8"
   integrity sha512-e6aunxNKM+woQf137ny3tp/xbLjFJS2oGQxQhYGqW6dGeIwNV1jOeEAeR6sS2jwAI2qLO83gYIP2MBz02Gw5Xw==
