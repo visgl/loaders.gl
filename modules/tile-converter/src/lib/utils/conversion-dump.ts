@@ -1,9 +1,10 @@
 import {isDeepStrictEqual} from 'util';
 import {DUMP_FILE_SUFFIX} from '../../constants';
-import {isFileExists, openJson, removeFile, writeFile} from './file-utils';
+import {isFileExists, openJson, removeFile, renameFile, writeFile} from './file-utils';
 import {join} from 'path';
 import {BoundingVolumes, I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
 import {AttributeMetadataInfoObject} from '../../i3s-converter/helpers/attribute-metadata-info';
+import process from 'process';
 
 export type ConversionDumpOptions = {
   inputUrl: string;
@@ -22,7 +23,7 @@ export type ConversionDumpOptions = {
 };
 
 type NodeDoneStatus = {
-  nodeId: number;
+  nodeId: number | string;
   done: boolean;
   progress?: Record<string, boolean>;
   dumpMetadata?: DumpMetadata;
@@ -60,7 +61,7 @@ export class ConversionDump {
   /** Attributes Metadata */
   attributeMetadataInfo?: AttributeMetadataInfoObject;
   /** Array of materials definitions */
-  materialDefinitions: I3SMaterialDefinition[] = [];
+  materialDefinitions?: I3SMaterialDefinition[];
 
   constructor() {
     this.tilesConverted = {};
@@ -142,8 +143,8 @@ export class ConversionDump {
     if (this.attributeMetadataInfo) {
       delete this.attributeMetadataInfo;
     }
-    if (this.materialDefinitions.length > 0) {
-      this.materialDefinitions = [];
+    if (this.materialDefinitions) {
+      delete this.materialDefinitions;
     }
   }
 
@@ -153,6 +154,7 @@ export class ConversionDump {
   private async updateDumpFile(): Promise<void> {
     if (this.options?.outputPath && this.options.tilesetName) {
       try {
+        const time = process.hrtime();
         await writeFile(
           join(this.options.outputPath, this.options.tilesetName),
           JSON.stringify({
@@ -162,7 +164,19 @@ export class ConversionDump {
             attributeMetadataInfo: this.attributeMetadataInfo,
             materialDefinitions: this.materialDefinitions
           }),
-          `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
+          `${this.options.tilesetName}${DUMP_FILE_SUFFIX}.${time[0]}.${time[1]}`
+        );
+        await renameFile(
+          join(
+            this.options.outputPath,
+            this.options.tilesetName,
+            `${this.options.tilesetName}${DUMP_FILE_SUFFIX}.${time[0]}.${time[1]}`
+          ),
+          join(
+            this.options.outputPath,
+            this.options.tilesetName,
+            `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
+          )
         );
       } catch (error) {
         console.log("Can't update dump file", error);
@@ -218,9 +232,9 @@ export class ConversionDump {
    * @param fileName - source filename
    * @param nodeId - nodeId of the node
    */
-  async addNode(filename: string, nodeId: number, dumpMetadata: DumpMetadata) {
+  async addNode(filename: string, nodeId: number | string, dumpMetadata?: DumpMetadata) {
     const {nodes} = this.getRecord(filename) || {nodes: []};
-    nodes.push({nodeId, done: false, progress: {}, dumpMetadata});
+    nodes.push({nodeId, done: false, dumpMetadata});
     if (nodes.length === 1) {
       this.setRecord(filename, {nodes});
     }
@@ -250,7 +264,12 @@ export class ConversionDump {
    * @param resourceType - resource type to update status
    * @param value - value
    */
-  updateDoneStatus(filename: string, nodeId: number, resourceType: string, value: boolean) {
+  updateDoneStatus(
+    filename: string,
+    nodeId: number | string,
+    resourceType: string,
+    value: boolean
+  ) {
     const nodeDump = this.tilesConverted[filename]?.nodes.find(
       (element) => element.nodeId === nodeId
     );
@@ -271,7 +290,7 @@ export class ConversionDump {
    * @param writeResults - array of writing resource files results
    */
   async updateConvertedTilesDump(
-    changedRecords: {outputId?: number; sourceId?: string; resourceType?: string}[],
+    changedRecords: {outputId?: number | string; sourceId?: string; resourceType?: string}[],
     writeResults: PromiseSettledResult<string | null>[]
   ) {
     for (let i = 0; i < changedRecords.length; i++) {
@@ -297,6 +316,26 @@ export class ConversionDump {
       }
     }
     await this.updateDumpFile();
+  }
+
+  /**
+   * Update 3d-tiles-converter dump file
+   * @param filename - source filename
+   * @param nodeId - nodeId
+   * @param done - conversion status
+   */
+  async updateConvertedNodesDumpFile(
+    filename: string,
+    nodeId: number | string,
+    done: boolean
+  ): Promise<void> {
+    const nodeDump = this.tilesConverted[filename]?.nodes.find(
+      (element) => element.nodeId === nodeId
+    );
+    if (nodeDump) {
+      nodeDump.done = done;
+      await this.updateDumpFile();
+    }
   }
 
   /**
