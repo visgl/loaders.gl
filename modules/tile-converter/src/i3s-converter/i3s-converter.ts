@@ -690,6 +690,15 @@ export default class I3SConverter {
     }
   }
 
+  /**
+   * Generate NodeIndexDocument
+   * @param boundingVolumes - Bounding volumes
+   * @param resources - converted or dumped node resources data
+   * @param parentNode - 3DNodeIndexDocument of parent node
+   * @param sourceTile - source 3DTile data
+   * @param isDumped - indicator if the node is dumped
+   * @return NodeIndexDocument, nodeInPage and node data
+   */
   private async _generateNodeIndexDocument(
     boundingVolumes: BoundingVolumes,
     resources: I3SConvertedResources | DumpMetadata,
@@ -1595,14 +1604,8 @@ export default class I3SConverter {
    */
   private createAttributeStorageInfo(
     tileContent: Tiles3DTileContent | null,
-    propertyTable: FeatureTableJson | null,
-    dumpedAttributeTypesMap?: Record<string, Attribute> | null
-  ): Record<string, Attribute> | null {
-    if (dumpedAttributeTypesMap) {
-      // Add new storage attributes, fields and create popupInfo
-      this.attributeMetadataInfo.addMetadataInfo(dumpedAttributeTypesMap);
-      return null;
-    }
+    propertyTable: FeatureTableJson | null
+  ): void {
     /*
     In case the tileset doesn't have either EXT_structural_metadata or EXT_feature_metadata
     that can be a source of attribute information so metadataClass is not specified
@@ -1625,8 +1628,6 @@ export default class I3SConverter {
       // Add new storage attributes, fields and create popupInfo
       this.attributeMetadataInfo.addMetadataInfo(attributeTypesMap);
     }
-
-    return attributeTypesMap;
   }
 
   /**
