@@ -2,6 +2,10 @@
 
 ## v4.2 (alpha)
 
+### v4.2.0-alpha.1
+
+- feat(tile-converter): add conversion resume (#2869)
+
 ## v4.1
 
 ### v4.1.0
