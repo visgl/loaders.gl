@@ -1,6 +1,9 @@
+import {isDeepStrictEqual} from 'util';
 import {DUMP_FILE_SUFFIX} from '../../constants';
-import {removeFile, writeFile} from './file-utils';
+import {isFileExists, openJson, removeFile, writeFile} from './file-utils';
 import {join} from 'path';
+import {BoundingVolumes, I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
+import {AttributeMetadataInfoObject} from '../../i3s-converter/helpers/attribute-metadata-info';
 
 export type ConversionDumpOptions = {
   inputUrl: string;
@@ -21,28 +24,53 @@ export type ConversionDumpOptions = {
 type NodeDoneStatus = {
   nodeId: number;
   done: boolean;
-  progress: Record<string, boolean>;
+  progress?: Record<string, boolean>;
+  dumpMetadata?: DumpMetadata;
 };
 
 type TilesConverted = {
   nodes: NodeDoneStatus[];
 };
 
+export type DumpMetadata = {
+  boundingVolumes: BoundingVolumes | null;
+  attributesCount?: number;
+  featureCount: number | null;
+  geometry: boolean;
+  hasUvRegions: boolean;
+  materialId: number | null;
+  texelCountHint?: number;
+  vertexCount: number | null;
+};
+
+export type TextureSetDefinition = {
+  formats: TextureSetDefinitionFormats;
+  atlas?: boolean;
+};
+
 export class ConversionDump {
+  /**Restored/resumed dump indicator */
+  restored: boolean = false;
   /** Conversion options */
   private options?: ConversionDumpOptions;
   /** Tiles conversion progress status map */
   tilesConverted: Record<string, TilesConverted>;
+  /** Textures formats definitions */
+  textureSetDefinitions?: TextureSetDefinition[];
+  /** Attributes Metadata */
+  attributeMetadataInfo?: AttributeMetadataInfoObject;
+  /** Array of materials definitions */
+  materialDefinitions: I3SMaterialDefinition[] = [];
 
   constructor() {
     this.tilesConverted = {};
   }
 
   /**
-   * Create a dump file with convertion options
-   * @param options - converter options
+   * Create a dump with convertion options
+   * @param currentOptions - converter options
    */
-  async createDumpFile(options: ConversionDumpOptions): Promise<void> {
+  async createDump(currentOptions: ConversionDumpOptions): Promise<void> {
     const {
       tilesetName,
       slpk,
@@ -57,7 +85,7 @@ export class ConversionDump {
       mergeMaterials = true,
       metadataClass,
       analyze = false
-    } = options;
+    } = currentOptions;
     this.options = {
       tilesetName,
       slpk,
@@ -74,14 +102,48 @@ export class ConversionDump {
       analyze
     };
 
-    try {
-      await writeFile(
-        options.outputPath,
-        JSON.stringify({options: this.options}),
-        `${options.tilesetName}${DUMP_FILE_SUFFIX}`
+    const dumpFilename = join(
+      this.options.outputPath,
+      this.options.tilesetName,
+      `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
+    );
+    if (await isFileExists(dumpFilename)) {
+      const {
+        options,
+        tilesConverted,
+        textureSetDefinitions,
+        attributeMetadataInfo,
+        materialDefinitions
+      } = await openJson(
+        join(this.options.outputPath, this.options.tilesetName),
+        `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
       );
-    } catch (error) {
-      console.log("Can't create dump file", error);
+      if (isDeepStrictEqual(options, JSON.parse(JSON.stringify(this.options)))) {
+        this.tilesConverted = tilesConverted;
+        this.textureSetDefinitions = textureSetDefinitions;
+        this.attributeMetadataInfo = attributeMetadataInfo;
+        this.materialDefinitions = materialDefinitions;
+        this.restored = true;
+        return;
+      }
+    }
+    await this.deleteDumpFile();
+  }
+
+  /**
+   * Reset a dump
+   */
+  reset(): void {
+    this.restored = false;
+    this.tilesConverted = {};
+    if (this.textureSetDefinitions) {
+      delete this.textureSetDefinitions;
+    }
+    if (this.attributeMetadataInfo) {
+      delete this.attributeMetadataInfo;
+    }
+    if (this.materialDefinitions.length > 0) {
+      this.materialDefinitions = [];
     }
   }
 
@@ -92,10 +154,13 @@ export class ConversionDump {
     if (this.options?.outputPath && this.options.tilesetName) {
       try {
         await writeFile(
-          this.options.outputPath,
+          join(this.options.outputPath, this.options.tilesetName),
           JSON.stringify({
             options: this.options,
-            tilesConverted: this.tilesConverted
+            tilesConverted: this.tilesConverted,
+            textureSetDefinitions: this.textureSetDefinitions,
+            attributeMetadataInfo: this.attributeMetadataInfo,
+            materialDefinitions: this.materialDefinitions
           }),
           `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
         );
@@ -109,9 +174,23 @@ export class ConversionDump {
    * Delete a dump file
    */
   async deleteDumpFile(): Promise<void> {
-    if (this.options?.outputPath && this.options.tilesetName) {
+    if (
+      this.options?.outputPath &&
+      this.options.tilesetName &&
+      (await isFileExists(
+        join(
+          this.options.outputPath,
+          this.options.tilesetName,
+          `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
+        )
+      ))
+    ) {
       await removeFile(
-        join(this.options.outputPath, `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`)
+        join(
+          this.options.outputPath,
+          this.options.tilesetName,
+          `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
+        )
       );
     }
   }
@@ -139,13 +218,29 @@ export class ConversionDump {
    * @param fileName - source filename
    * @param nodeId - nodeId of the node
    */
-  async addNode(filename: string, nodeId: number) {
+  async addNode(filename: string, nodeId: number, dumpMetadata: DumpMetadata) {
     const {nodes} = this.getRecord(filename) || {nodes: []};
-    nodes.push({nodeId, done: false, progress: {}});
+    nodes.push({nodeId, done: false, progress: {}, dumpMetadata});
     if (nodes.length === 1) {
       this.setRecord(filename, {nodes});
     }
     await this.updateDumpFile();
+  }
+
+  /**
+   * Clear dump record got the source filename
+   * @param fileName - source filename
+   */
+  clearDumpRecord(filename: string) {
+    this.setRecord(filename, {nodes: []});
+  }
+
+  /**
+   * Add textures definitions into the dump file
+   * @param textureDefinitions - textures definitions array
+   */
+  addTexturesDefinitions(textureDefinitions: TextureSetDefinition[]) {
+    this.textureSetDefinitions = textureDefinitions;
   }
 
   /**
@@ -160,6 +255,9 @@ export class ConversionDump {
       (element) => element.nodeId === nodeId
     );
     if (nodeDump) {
+      if (!nodeDump.progress) {
+        nodeDump.progress = {};
+      }
       nodeDump.progress[resourceType] = value;
       if (!value) {
         nodeDump.done = false;
@@ -181,7 +279,7 @@ export class ConversionDump {
         const {sourceId, resourceType, outputId} = changedRecords[i];
         if (!sourceId || !resourceType || !outputId) continue;
         for (const node of this.tilesConverted[sourceId].nodes) {
-          if (node.nodeId === outputId) {
+          if (node.nodeId === outputId && node.progress) {
             node.progress[resourceType] = true;
 
             let done = false;
@@ -191,7 +289,7 @@ export class ConversionDump {
             }
             node.done = done;
             if (node.done) {
-              node.progress = {};
+              delete node.progress;
             }
             break;
           }
@@ -199,5 +297,29 @@ export class ConversionDump {
       }
     }
     await this.updateDumpFile();
+  }
+
+  /**
+   * Check is source file conversion complete
+   * @param filename - source filename
+   * @returns true if source file conversion complete
+   */
+  isFileConversionComplete(filename: string): boolean {
+    let result = true;
+    for (const node of this.tilesConverted[filename]?.nodes || []) {
+      if (!node.done) {
+        result = false;
+        break;
+      }
+    }
+    return result && this.tilesConverted[filename]?.nodes?.length > 0;
+  }
+
+  /**
+   * Set materialDefinitions into a dump
+   * @param materialDefinitions - Array materialDefinitions
+   */
+  setMaterialsDefinitions(materialDefinitions: I3SMaterialDefinition[]): void {
+    this.materialDefinitions = materialDefinitions;
   }
 }
