@@ -837,12 +837,6 @@ export default class I3SConverter {
       popupInfo: this.attributeMetadataInfo.popupInfo
     };
 
-    this.conversionDump.attributeMetadataInfo = {
-      attributeStorageInfo: this.attributeMetadataInfo.attributeStorageInfo,
-      fields: this.attributeMetadataInfo.fields,
-      popupInfo: this.attributeMetadataInfo.popupInfo
-    };
-
     const resourcesData = await this._convertResources(
       sourceTile,
       transformationMatrix,
