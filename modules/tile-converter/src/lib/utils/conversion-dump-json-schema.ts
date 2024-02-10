@@ -42,8 +42,8 @@ export const dumpJsonSchema = {
                         properties: {
                           mbs: {
                             type: 'array',
-                            minItems: 3,
-                            maxItems: 3,
+                            minItems: 4,
+                            maxItems: 4,
                             items: {type: 'number'}
                           },
                           obb: {
