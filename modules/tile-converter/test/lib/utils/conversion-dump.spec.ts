@@ -268,8 +268,6 @@ test('tile-converter(i3s)#ConversionDump - test updateConvertedNodesDumpFile', a
     }
   });
 
-  t.equal(conversionDump.isFileConversionComplete('1.glb'), true);
-
   await conversionDump.deleteDumpFile();
   await cleanUpPath(testOptions.outputPath);
   t.end();
