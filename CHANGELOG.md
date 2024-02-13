@@ -4,6 +4,10 @@
 
 ## v4.1
 
+### v4.1.1
+
+- fix(flatgeobuf): Add missing index files (#2884)
+
 ### v4.1.0
 
 ### v4.1.0-alpha.11
