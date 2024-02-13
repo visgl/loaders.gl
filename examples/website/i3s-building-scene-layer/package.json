@@ -11,7 +11,6 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "deck.gl": "^8.9.28",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
@@ -20,12 +19,13 @@
     "@loaders.gl/tiles": "^4.0.0",
     "@luma.gl/core": "^8.5.21",
     "@probe.gl/stats-widget": "^4.0.2",
+    "deck.gl": "^8.9.28",
     "mapbox-gl": "npm:empty-npm-package@^1.0.0",
     "maplibre-gl": "^2.4.0",
     "prop-types": "^15.7.2",
-    "react": "^16.8.0",
+    "react": "^18.2.0",
     "react-color": "^2.19.3",
-    "react-dom": "^16.8.0",
+    "react-dom": "^18.2.0",
     "react-map-gl": "^7.0.21",
     "styled-components": "^4.2.0"
   },
