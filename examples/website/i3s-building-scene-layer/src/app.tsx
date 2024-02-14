@@ -13,18 +13,19 @@ import {
   WebMercatorViewport
 } from '@deck.gl/core';
 
-import {Tile3DLayer} from '@deck.gl/geo-layers';
+import {DataDrivenTile3DLayer} from '@deck.gl-community/layers';
 import {
   BuildingSceneSublayer,
   COORDINATE_SYSTEM,
   I3SBuildingSceneLayerLoader,
   I3SLoader
 } from '@loaders.gl/i3s';
-import {load} from '@loaders.gl/core';
+import {fetchFile, load} from '@loaders.gl/core';
 import {Sublayer, buildSublayersTree} from './helpers/sublayers';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {getLonLatWithElevationOffset} from './utils/elevation-utils';
 import {BuildingExplorer} from './components/building-explorer';
+import {filterTile} from '@deck.gl-community/layers';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Turanga_Library/SceneServer/layers/0';
@@ -64,13 +65,14 @@ export default function App() {
   const [flattenedSublayers, setFlattenedSublayers] = useState<BuildingSceneSublayer[]>([]);
   const [sublayers, setSublayers] = useState<Sublayer[]>([]);
   const [needTransitionToTileset, setNeedTransitionToTileset] = useState<boolean>(true);
+  const [buildingLevels, setBuildingLevels] = useState<string | number>(['All']);
+  const [filtersByAttribute, setFiltersByAttribute] = useState<{
+    attributeName: string;
+    value: number;
+  } | null>(null);
   let currentViewport: WebMercatorViewport = null;
 
   useEffect(() => {
-    /**
-     * Tries to get Building Scene Layer sublayer urls if exists.
-     * @param {string} tilesetUrl
-     */
     const getFlattenedSublayers = async (tilesetUrl: string): Promise<void> => {
       try {
         const tileset = await load(tilesetUrl, I3SBuildingSceneLayerLoader);
@@ -86,8 +88,40 @@ export default function App() {
         setFlattenedSublayers([{url: tilesetUrl, visibility: true} as BuildingSceneSublayer]);
       }
     };
+    const getBSLStatisticsSummary = async (tilesetUrl: string): Promise<void> => {
+      try {
+        let dataResponse = await fetchFile(tilesetUrl);
+        let data = JSON.parse(await dataResponse.text());
+        if (data && data.statisticsHRef) {
+          dataResponse = await fetchFile(tilesetUrl + '/' + data.statisticsHRef);
+          data = JSON.parse(await dataResponse.text());
+          if (data?.summary?.length > 0) {
+            for (const attrStats of data?.summary) {
+              if (attrStats.fieldName === 'BldgLevel') {
+                const bldgLevels = attrStats.mostFrequentValues.sort();
+                setBuildingLevels(['All', ...bldgLevels]);
+                break;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        //do nothing
+      }
+    };
+
     getFlattenedSublayers(TILESET_URL);
+    getBSLStatisticsSummary(TILESET_URL);
   }, []);
+
+  const onSelectHandler = (item: string) => {
+    const itemValue = parseInt(item);
+    if (item === 'All') {
+      setFiltersByAttribute(null);
+    } else if (!isNaN(itemValue)) {
+      setFiltersByAttribute({attributeName: 'BldgLevel', value: itemValue});
+    }
+  };
 
   const onTilesetLoadHandler = (tileset: Tileset3D) => {
     if (needTransitionToTileset) {
@@ -146,14 +180,14 @@ export default function App() {
       .filter((sublayer) => sublayer.visibility)
       .map(
         (sublayer) =>
-          new Tile3DLayer({
+          new DataDrivenTile3DLayer({
             id: `tile-layer-${sublayer.id}`,
             data: sublayer.url,
             loader: I3SLoader,
             onTilesetLoad: onTilesetLoadHandler,
-            //onTileLoad: () => this._updateStatWidgets(),
-            //onTileUnload: () => this._updateStatWidgets(),
-            loadOptions
+            loadOptions,
+            filtersByAttribute,
+            filterTile
           })
       );
 
@@ -186,8 +220,10 @@ export default function App() {
       </DeckGL>
       {sublayers?.length ? (
         <BuildingExplorer
-          sublayers={sublayers}
           isShown
+          sublayers={sublayers}
+          buildingLevels={buildingLevels}
+          onSelect={onSelectHandler}
           onUpdateSublayerVisibility={updateSublayerVisibility}
         />
       ) : null}

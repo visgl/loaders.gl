@@ -6,24 +6,19 @@ import {faAngleDown, faAngleRight, faCircle} from '@fortawesome/free-solid-svg-i
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {IconProp, SizeProp} from '@fortawesome/fontawesome-svg-core';
 import {Sublayer} from '../helpers/sublayers';
+import {DropDown} from './drop-down';
 
 const BuildingExplorerContainer = styled.div`
-  height: 450px;
+  max-height: 100%;
+  width: 246px;
   overflow: auto;
   align-items: flex-start;
   position: absolute;
-  top: 10px;
-  left: 10px;
   display: flex;
   flex-direction: column;
   background: #0e111a;
   border-radius: 8px;
-  padding-top: 4px;
-  @media (max-width: 768px) {
-    top: 63px;
-    width: 100%;
-    border-radius: 0;
-  }
+  padding-top: 8px;
 `;
 
 const BuildingExplorerSublayers = styled.div`
@@ -59,12 +54,16 @@ const TopLabel = styled.h2`
 type BuildingExplorerProps = {
   isShown: boolean;
   sublayers: Sublayer[];
+  buildingLevels: (string | number)[];
+  onSelect: (item: string) => void;
   onUpdateSublayerVisibility: (sublayer: Sublayer) => void;
 };
 
 export const BuildingExplorer = ({
   isShown,
   sublayers,
+  buildingLevels,
+  onSelect,
   onUpdateSublayerVisibility
 }: BuildingExplorerProps) => {
   const toggleGroup = (sublayer: Sublayer) => {
@@ -133,9 +132,9 @@ export const BuildingExplorer = ({
 
   return (
     <BuildingExplorerContainer isShown={isShown}>
-      <CheckboxOption style={{marginRight: '16px', paddingBottom: 0}}>
-        <TopLabel>Building Explorer</TopLabel>
-      </CheckboxOption>
+      <TopLabel>Building Explorer</TopLabel>
+      <Label>Select building level:</Label>
+      <DropDown items={buildingLevels} onSelect={onSelect} />
       {isShown ? (
         <BuildingExplorerSublayers>{renderSublayers(sublayers)}</BuildingExplorerSublayers>
       ) : null}
