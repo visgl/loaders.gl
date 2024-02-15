@@ -15,7 +15,12 @@ const Container = styled.div`
   z-index: 15;
 `;
 
-export const ControlPanel = ({tileSets, onSelectTileset}) => {
+type ControlPanelProps = {
+  tileSets: string[];
+  onSelectTileset: (item: string) => void;
+};
+
+export const ControlPanel = ({tileSets, onSelectTileset}: ControlPanelProps) => {
   return (
     <Container>
       <DropDown items={tileSets} onSelect={onSelectTileset} />
