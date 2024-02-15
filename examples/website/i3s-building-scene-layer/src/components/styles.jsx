@@ -1,5 +1,4 @@
 export const Font = `
-  font-family: 'Uber Move' sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;

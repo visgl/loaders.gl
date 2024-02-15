@@ -5,13 +5,7 @@ import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 
 import DeckGL from '@deck.gl/react';
-import {
-  ViewState,
-  MapController,
-  FlyToInterpolator,
-  MapView,
-  WebMercatorViewport
-} from '@deck.gl/core';
+import {ViewState, MapController, FlyToInterpolator} from '@deck.gl/core';
 
 import {DataDrivenTile3DLayer} from '@deck.gl-community/layers';
 import {
@@ -23,7 +17,6 @@ import {
 import {fetchFile, load} from '@loaders.gl/core';
 import {Sublayer, buildSublayersTree} from './helpers/sublayers';
 import {Tileset3D} from '@loaders.gl/tiles';
-import {getLonLatWithElevationOffset} from './utils/elevation-utils';
 import {BuildingExplorer} from './components/building-explorer';
 import {filterTile} from '@deck.gl-community/layers';
 
@@ -40,14 +33,6 @@ const MAP_CONTROLLER = {
   touchRotate: true,
   dragMode: false
 };
-
-const MAIN_VIEW = new MapView({
-  id: 'main',
-  controller: {
-    inertia: true
-  },
-  farZMultiplier: 2.02
-});
 
 const INITIAL_VIEW_STATE = {
   longitude: -120,
@@ -70,7 +55,6 @@ export default function App() {
     attributeName: string;
     value: number;
   } | null>(null);
-  let currentViewport: WebMercatorViewport = null;
 
   useEffect(() => {
     const getFlattenedSublayers = async (tilesetUrl: string): Promise<void> => {
@@ -127,32 +111,18 @@ export default function App() {
     if (needTransitionToTileset) {
       const {zoom, cartographicCenter} = tileset;
       const [longitude, latitude] = cartographicCenter || [];
-      const viewport = currentViewport;
-      const {pitch, bearing} = viewState;
-      const [pLongitude, pLatitude] = getLonLatWithElevationOffset(
-        0,
-        pitch,
-        bearing,
-        longitude,
-        latitude,
-        viewport
-      );
 
       const newViewState = {
         ...viewState,
         zoom: zoom + 2,
-        longitude: pLongitude,
-        latitude: pLatitude,
+        longitude,
+        latitude,
         transitionDuration: TRANSITION_DURAITON,
         transitionInterpolator: new FlyToInterpolator()
       };
       setViewState(newViewState);
       setNeedTransitionToTileset(false);
     }
-  };
-
-  const onViewStateChangeHandler = ({viewState}) => {
-    setViewState(viewState);
   };
 
   const updateSublayerVisibility = (sublayer: Sublayer) => {
@@ -196,20 +166,7 @@ export default function App() {
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <DeckGL
-        layers={renderLayers()}
-        viewState={viewState}
-        views={[MAIN_VIEW]}
-        onViewStateChange={onViewStateChangeHandler}
-        controller={MAP_CONTROLLER}
-        glOptions={{
-          preserveDrawingBuffer: true
-        }}
-      >
-        {({viewport}) => {
-          currentViewport = viewport;
-        }}
-
+      <DeckGL initialViewState={viewState} layers={renderLayers()} controller={MAP_CONTROLLER}>
         <Map
           reuseMaps
           mapLib={maplibregl}

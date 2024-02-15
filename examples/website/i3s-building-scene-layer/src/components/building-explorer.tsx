@@ -59,39 +59,39 @@ type BuildingExplorerProps = {
   onUpdateSublayerVisibility: (sublayer: Sublayer) => void;
 };
 
-export const BuildingExplorer = ({
+export function BuildingExplorer({
   isShown,
   sublayers,
   buildingLevels,
   onSelect,
   onUpdateSublayerVisibility
-}: BuildingExplorerProps) => {
-  const toggleGroup = (sublayer: Sublayer) => {
+}: BuildingExplorerProps) {
+  function toggleGroup(sublayer: Sublayer) {
     sublayer.expanded = !sublayer.expanded;
     onUpdateSublayerVisibility(sublayer);
-  };
+  }
 
-  const toggleSublayer = (sublayer: Sublayer) => {
+  function toggleSublayer(sublayer: Sublayer) {
     sublayer.visibility = !sublayer.visibility;
     onUpdateSublayerVisibility(sublayer);
     setChildren(sublayer.sublayers, sublayer.visibility);
-  };
+  }
 
-  const setChild = (sublayer: Sublayer, isShown: boolean) => {
+  function setChild(sublayer: Sublayer, isShown: boolean) {
     sublayer.visibility = isShown;
     onUpdateSublayerVisibility(sublayer);
     setChildren(sublayer.sublayers, isShown);
-  };
+  }
 
-  const setChildren = (sublayers: Sublayer[] | undefined, isShown: boolean) => {
+  function setChildren(sublayers: Sublayer[] | undefined, isShown: boolean) {
     if (sublayers) {
       for (const sublayer of sublayers) {
         setChild(sublayer, isShown);
       }
     }
-  };
+  }
 
-  const renderSublayers = (sublayers: Sublayer[]) => {
+  function renderSublayers(sublayers: Sublayer[]) {
     return sublayers.map((sublayer) => {
       const childLayers = sublayer.sublayers || [];
       let icon = faCircle;
@@ -128,7 +128,7 @@ export const BuildingExplorer = ({
         </CheckboxContainer>
       );
     });
-  };
+  }
 
   return (
     <BuildingExplorerContainer isShown={isShown}>
@@ -140,4 +140,4 @@ export const BuildingExplorer = ({
       ) : null}
     </BuildingExplorerContainer>
   );
-};
+}

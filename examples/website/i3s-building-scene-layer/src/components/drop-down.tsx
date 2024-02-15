@@ -38,7 +38,7 @@ type DropDownProps = {
   onSelect: (item: string) => void;
 };
 
-export const DropDown = ({items, onSelect}: DropDownProps) => {
+export function DropDown({items, onSelect}: DropDownProps) {
   return (
     <StyledDropDown onChange={(evt) => onSelect(evt.target.value)}>
       {items.map((item) => (
@@ -46,4 +46,4 @@ export const DropDown = ({items, onSelect}: DropDownProps) => {
       ))}
     </StyledDropDown>
   );
-};
+}

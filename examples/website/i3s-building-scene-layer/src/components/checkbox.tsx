@@ -45,16 +45,18 @@ type CheckboxProps = {
   onChange: (sublayer: Sublayer) => void;
 };
 
-export const Checkbox = ({value, checked, onChange}: CheckboxProps) => (
-  <CheckboxContainer>
-    <HiddenCheckbox checked={checked} value={value} onChange={onChange} />
-    <StyledCheckbox checked={checked}>
-      <Icon viewBox="0 0 24 24">
-        <polyline points="20 6 9 17 4 12" />
-      </Icon>
-    </StyledCheckbox>
-  </CheckboxContainer>
-);
+export function Checkbox({value, checked, onChange}: CheckboxProps) {
+  return (
+    <CheckboxContainer>
+      <HiddenCheckbox checked={checked} value={value} onChange={onChange} />
+      <StyledCheckbox checked={checked}>
+        <Icon viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12" />
+        </Icon>
+      </StyledCheckbox>
+    </CheckboxContainer>
+  );
+}
 
 export const CheckboxOption = styled.div`
   display: flex;
