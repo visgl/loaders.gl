@@ -17,6 +17,7 @@
   "dependencies": {
     "@algolia/autocomplete-js": "^1.8.3",
     "@arcgis/core": "^4.25.0",
+    "@deck.gl-community/layers": "^0.0.0",
     "@deck.gl/arcgis": "^8.9.28",
     "@deck.gl/core": "^8.9.28",
     "@deck.gl/extensions": "^8.9.28",
@@ -37,6 +38,7 @@
     "@loaders.gl/loader-utils": "^4.0.0",
     "@loaders.gl/obj": "^4.0.0",
     "@loaders.gl/ply": "^4.0.0",
+    "@loaders.gl/schema": "^4.0.0",
     "@luma.gl/experimental": "^8.5.0",
     "@material-ui/core": "^4.10.2",
     "@material-ui/icons": "^4.9.1",
