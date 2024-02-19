@@ -5,6 +5,8 @@ import {join} from 'path';
 import {BoundingVolumes, I3SMaterialDefinition, TextureSetDefinitionFormats} from '@loaders.gl/i3s';
 import {AttributeMetadataInfoObject} from '../../i3s-converter/helpers/attribute-metadata-info';
 import process from 'process';
+import Ajv from 'ajv';
+import {dumpJsonSchema} from '../json-schemas/conversion-dump-json-schema';
 
 export type ConversionDumpOptions = {
   inputUrl: string;
@@ -109,23 +111,34 @@ export class ConversionDump {
       `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
     );
     if (await isFileExists(dumpFilename)) {
-      const {
-        options,
-        tilesConverted,
-        textureSetDefinitions,
-        attributeMetadataInfo,
-        materialDefinitions
-      } = await openJson(
-        join(this.options.outputPath, this.options.tilesetName),
-        `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
-      );
-      if (isDeepStrictEqual(options, JSON.parse(JSON.stringify(this.options)))) {
-        this.tilesConverted = tilesConverted;
-        this.textureSetDefinitions = textureSetDefinitions;
-        this.attributeMetadataInfo = attributeMetadataInfo;
-        this.materialDefinitions = materialDefinitions;
-        this.restored = true;
-        return;
+      try {
+        const dump = await openJson(
+          join(this.options.outputPath, this.options.tilesetName),
+          `${this.options.tilesetName}${DUMP_FILE_SUFFIX}`
+        );
+
+        const {
+          options,
+          tilesConverted,
+          textureSetDefinitions,
+          attributeMetadataInfo,
+          materialDefinitions
+        } = dump;
+
+        const ajv = new Ajv();
+        const dumpJsonValidate = ajv.compile(dumpJsonSchema);
+        const isDumpValid = dumpJsonValidate(dump);
+
+        if (isDumpValid && isDeepStrictEqual(options, JSON.parse(JSON.stringify(this.options)))) {
+          this.tilesConverted = tilesConverted;
+          this.textureSetDefinitions = textureSetDefinitions;
+          this.attributeMetadataInfo = attributeMetadataInfo;
+          this.materialDefinitions = materialDefinitions;
+          this.restored = true;
+          return;
+        }
+      } catch (error) {
+        console.log("Can't open dump file", error);
       }
     }
     await this.deleteDumpFile();
