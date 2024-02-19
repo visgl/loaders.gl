@@ -89,7 +89,7 @@ test('tile-converter(i3s)#ConversionDump - Should create conversion dump with op
   t.deepEqual(options, correctOptions);
 
   t.deepEqual(tilesConverted['1.b3dm'], {
-    nodes: [{nodeId: 1, progress: {}, done: false, dumpMetadata: testDumpMetadata}]
+    nodes: [{nodeId: 1, done: false, dumpMetadata: testDumpMetadata}]
   });
 
   await conversionDump.deleteDumpFile();
@@ -122,7 +122,7 @@ test('tile-converter(i3s)#ConversionDump - Should restore conversion dump with o
 
   t.equal(conversionDumpNew.restored, true);
   t.deepEqual(conversionDumpNew.tilesConverted['1.b3dm'], {
-    nodes: [{nodeId: 1, progress: {}, done: false, dumpMetadata: testDumpMetadata}]
+    nodes: [{nodeId: 1, done: false, dumpMetadata: testDumpMetadata}]
   });
 
   conversionDumpNew.reset();
@@ -155,12 +155,12 @@ test('tile-converter(i3s)#ConversionDump - Add node to the dump', async (t) => {
   t.deepEqual(tilesConverted, {
     '1.glb': {
       nodes: [
-        {nodeId: 1, done: false, progress: {}, dumpMetadata: testDumpMetadata},
-        {nodeId: 2, done: false, progress: {}, dumpMetadata: testDumpMetadata}
+        {nodeId: 1, done: false, dumpMetadata: testDumpMetadata},
+        {nodeId: 2, done: false, dumpMetadata: testDumpMetadata}
       ]
     },
     '2.glb': {
-      nodes: [{nodeId: 3, done: false, progress: {}, dumpMetadata: testDumpMetadata}]
+      nodes: [{nodeId: 3, done: false, dumpMetadata: testDumpMetadata}]
     }
   });
 
@@ -238,6 +238,35 @@ test('tile-converter(i3s)#ConversionDump - test clearDumpRecord', async (t) => {
   conversionDump.updateDoneStatus('1.glb', 1, 'testResource', false);
   conversionDump.clearDumpRecord('1.glb');
   t.deepEqual(conversionDump.tilesConverted['1.glb'], {nodes: []});
+
+  await conversionDump.deleteDumpFile();
+  await cleanUpPath(testOptions.outputPath);
+  t.end();
+});
+
+test('tile-converter(i3s)#ConversionDump - test updateConvertedNodesDumpFile', async (t) => {
+  const conversionDump = new ConversionDump();
+  await conversionDump.createDump(testOptions as ConversionDumpOptions);
+  await conversionDump.addNode('1.b3dm', '1');
+
+  t.deepEqual(JSON.parse(JSON.stringify(conversionDump.tilesConverted)), {
+    '1.b3dm': {
+      nodes: [{nodeId: '1', done: false}]
+    }
+  });
+
+  await conversionDump.updateConvertedNodesDumpFile('1.b3dm', '1', true);
+
+  const {tilesConverted} = await openJson(
+    join(testOptions.outputPath, testOptions.tilesetName),
+    `${testOptions.tilesetName}${DUMP_FILE_SUFFIX}`
+  );
+
+  t.deepEqual(tilesConverted, {
+    '1.b3dm': {
+      nodes: [{nodeId: '1', done: true}]
+    }
+  });
 
   await conversionDump.deleteDumpFile();
   await cleanUpPath(testOptions.outputPath);

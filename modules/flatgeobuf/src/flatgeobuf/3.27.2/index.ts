@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BSD-2-Clause AND ISC
+// Copyright (c) 2018, Björn Harrtell
+
 export * as generic from './generic';
 export * as geojson from './geojson';
 // export * as ol from './ol';

@@ -138,3 +138,16 @@ export function removeFile(path: string) {
 export function getAbsoluteFilePath(filePath: string) {
   return isAbsolute(filePath) ? filePath : join(process.cwd(), filePath);
 }
+
+/**
+ * Rename file with old path by new path
+ * @param oldPath
+ * @param newPath
+ */
+export async function renameFile(oldPath: string, newPath: string): Promise<void> {
+  try {
+    await fs.rename(oldPath, newPath);
+  } catch (err) {
+    console.log("Can't rename file", err);
+  }
+}

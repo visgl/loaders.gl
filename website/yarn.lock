@@ -2326,6 +2326,20 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
+"@deck.gl-community/layers@^0.0.0":
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/@deck.gl-community/layers/-/layers-0.0.0.tgz#ee62547a2057d83475a811719af669c2be9a1b5f"
+  integrity sha512-valcMi8jJPHvJcyUcCLKfE5+sUVbntcRuoo8LyG8ht6cTiCgnqAO1vUPUSwcApNJ3P6NDjrUqkvUlJXko8Wgwg==
+  dependencies:
+    "@deck.gl/core" "^8.9.28"
+    "@deck.gl/extensions" "8.9.28"
+    "@deck.gl/geo-layers" "^8.9.28"
+    "@deck.gl/layers" "^8.9.28"
+    "@deck.gl/mesh-layers" "^8.9.28"
+    "@deck.gl/react" "^8.9.28"
+    "@loaders.gl/core" "^4.0.0"
+    "@loaders.gl/loader-utils" "^4.0.0"
+
 "@deck.gl/arcgis@^8.9.28":
   version "8.9.28"
   resolved "https://registry.yarnpkg.com/@deck.gl/arcgis/-/arcgis-8.9.28.tgz#35655445a3467c0d7a39fd4c57eb41ff48f4cf00"
@@ -2355,7 +2369,7 @@
     math.gl "^3.6.2"
     mjolnir.js "^2.7.0"
 
-"@deck.gl/extensions@^8.9.28":
+"@deck.gl/extensions@8.9.28", "@deck.gl/extensions@^8.9.28":
   version "8.9.28"
   resolved "https://registry.yarnpkg.com/@deck.gl/extensions/-/extensions-8.9.28.tgz#cb37918e1081f28a1f584ac8061856a41ba7c67e"
   integrity sha512-4j1k9a2epu+ZOOhrXm2OKwjsn3fS9l6X1K+iTPXHuRGCpf6r9ArrmF8YnI3sdr6u1Tr4JIjgOvV0r6+Ntqagng==
@@ -3337,6 +3351,13 @@
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-4.0.2.tgz#700dcb4166e406a478ef5d7ed05319378453e908"
   integrity sha512-R7SI7u4WNrTVbKpOMtpCVfCB/s5OjVBjvO/NtF8IItR4cWMVaGXS5TjYXa0BheLEoJcsIIPcY9FLtMnOXCeGLg==
+  dependencies:
+    "@types/geojson" "^7946.0.7"
+
+"@loaders.gl/schema@^4.0.0":
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/@loaders.gl/schema/-/schema-4.1.1.tgz#16289891666c3f8d8b5071ab1bfb70b071390fec"
+  integrity sha512-P+PoxD8lnakhAZp7rUvpE3pkBaB7D11YyZx3HhsCSBrvUc+O2o/4fZ0yln+8nN7TPRhyhnVFtlysEwJV9QwRLw==
   dependencies:
     "@types/geojson" "^7946.0.7"
 

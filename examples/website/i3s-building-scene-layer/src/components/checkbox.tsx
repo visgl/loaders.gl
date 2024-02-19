@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
+import {Sublayer} from '../helpers/sublayers';
 
 const CheckboxContainer = styled.div`
   display: inline-block;
   vertical-align: middle;
-  cursor: ${(props) => (props.disabled ? 'auto' : 'pointer')}};
 `;
 const Icon = styled.svg`
   fill: none;
@@ -23,44 +23,50 @@ const HiddenCheckbox = styled.input.attrs({type: 'checkbox'})`
   white-space: nowrap;
   width: 1px;
 `;
-const StyledCheckbox = styled.div`
+const StyledCheckbox = styled.div<{checked: boolean}>`
   display: inline-block;
   width: 22px;
   height: 22px;
   margin-right: 8px;
-  background: ${(props) => (props.checked ? '#4F52CC' : '#0E111A')};
-  border: ${(props) => (props.disabled ? '1px solid rgba(255,255,255, .6)' : '1px solid #4F52CC')};
+  background: ${({checked}) => (checked ? '#4F52CC' : '#0E111A')};
   border-radius: 4px;
   transition: all 150ms;
-
-  ${HiddenCheckbox}:focus + & {
-    box-shadow: 0 0 0 2px #4f52cc;
-  }
+  box-shadow: 0 0 0 2px #4f52cc;
 
   ${Icon} {
-    visibility: ${(props) => (props.checked ? 'visible' : 'hidden')};
+    visibility: ${({checked}) => (checked ? 'visible' : 'hidden')};
   }
 `;
-export const Checkbox = ({checked, ...props}) => (
-  <CheckboxContainer disabled={props.disabled}>
-    <HiddenCheckbox checked={checked} {...props} />
-    <StyledCheckbox disabled={props.disabled} checked={checked}>
-      <Icon viewBox="0 0 24 24">
-        <polyline points="20 6 9 17 4 12" />
-      </Icon>
-    </StyledCheckbox>
-  </CheckboxContainer>
-);
+
+type CheckboxProps = {
+  id: string;
+  value?: boolean;
+  checked?: boolean;
+  onChange: (sublayer: Sublayer) => void;
+};
+
+export function Checkbox({value, checked, onChange}: CheckboxProps) {
+  return (
+    <CheckboxContainer>
+      <HiddenCheckbox checked={checked} value={value} onChange={onChange} />
+      <StyledCheckbox checked={checked}>
+        <Icon viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12" />
+        </Icon>
+      </StyledCheckbox>
+    </CheckboxContainer>
+  );
+}
 
 export const CheckboxOption = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
-  width: 246px;
+  width: wrap-content;
   padding-bottom: 8px;
 `;
 
 export const CheckboxSpan = styled.span`
-  margin-left: 5;
+  margin-left: 5px;
   cursor: pointer;
 `;

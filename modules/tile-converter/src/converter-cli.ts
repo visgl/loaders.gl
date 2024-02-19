@@ -210,7 +210,8 @@ async function convert(options: ValidatedTileConversionOptions) {
         outputPath: options.output,
         tilesetName: options.name,
         maxDepth: options.maxDepth,
-        egmFilePath: options.egm
+        egmFilePath: options.egm,
+        inquirer
       });
       break;
     case TILESET_TYPE._3DTILES:
