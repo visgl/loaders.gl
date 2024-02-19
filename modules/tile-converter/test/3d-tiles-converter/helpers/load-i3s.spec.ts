@@ -15,7 +15,7 @@ test('tile-converter(i3s)#loadNestedTileset', async (t) => {
   const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, TEST_LAYER_URL, {});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   const i3sTilesetHeader = await getI3sTileHeader({}, false, i3sTilesetData);
-  const content = await loadI3SContent(i3sTilesetHeader, node1, {});
+  const content = await loadI3SContent(i3sTilesetHeader, node1, {}, null);
   t.ok(content);
   t.equal(content?.vertexCount, 25638);
 });

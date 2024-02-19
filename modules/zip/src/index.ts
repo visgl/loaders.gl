@@ -22,6 +22,8 @@ export {searchFromTheEnd} from './parse-zip/search-from-the-end';
 export {addOneFile, createZip} from './parse-zip/zip-composition';
 
 // export type {HashElement} from './hash-file-utility';
+export {IndexedArchive} from './filesystems/IndexedArchive';
 export {parseHashTable, makeHashTableFromZipHeaders, composeHashFile} from './hash-file-utility';
 
-export {ZipFileSystem} from './filesystems/zip-filesystem';
+export {ZipFileSystem, ZIP_COMPRESSION_HANDLERS} from './filesystems/zip-filesystem';
+export type {CompressionHandler} from './filesystems/zip-filesystem';

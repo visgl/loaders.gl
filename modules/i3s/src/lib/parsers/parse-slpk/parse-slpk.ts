@@ -17,7 +17,8 @@ import {SLPKArchive} from './slpk-archieve';
  */
 export async function parseSLPKArchive(
   fileProvider: FileProvider,
-  cb?: (msg: string) => void
+  cb?: (msg: string) => void,
+  fileName?: string
 ): Promise<SLPKArchive> {
   const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);
 
@@ -48,5 +49,5 @@ export async function parseSLPKArchive(
     hashTable = parseHashTable(hashFile);
   }
 
-  return new SLPKArchive(fileProvider, hashTable);
+  return new SLPKArchive(fileProvider, hashTable, fileName);
 }

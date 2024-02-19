@@ -62,7 +62,7 @@ export async function parseI3STileContent(
 
   if (tileOptions.textureUrl) {
     // @ts-expect-error options is not properly typed
-    const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
+    const url = getUrlWithToken(getInternalUrl(tileOptions.textureUrl), options?.i3s?.token);
     const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
     const fetchFunc = context?.fetch || fetch;
     const response = await fetchFunc(url); // options?.fetch
@@ -109,6 +109,25 @@ export async function parseI3STileContent(
   }
 
   return await parseI3SNodeGeometry(arrayBuffer, content, tileOptions, tilesetOptions, options);
+}
+
+/**
+ * Get the URL inside SLPK archive
+ * @param url - full url with *.slpk prefix
+ * @returns URL inside SLPK archive
+ */
+function getInternalUrl(url: string) {
+  const slpkUrlParts = url.split('.slpk');
+  let filename: string | null;
+  // Not '.slpk'. The file will be loaded with global fetch function
+  if (slpkUrlParts.length === 1) {
+    filename = url;
+  } else if (slpkUrlParts.length === 2) {
+    filename = slpkUrlParts[1].slice(1);
+  } else {
+    filename = url;
+  }
+  return filename;
 }
 
 /* eslint-disable max-statements */

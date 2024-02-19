@@ -5,7 +5,7 @@
 import {FileProvider} from '@loaders.gl/loader-utils';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {DeflateCompression, NoCompression} from '@loaders.gl/compression';
-import {parseZipLocalFileHeader} from '@loaders.gl/zip';
+import {IndexedArchive, parseZipLocalFileHeader} from '@loaders.gl/zip';
 
 type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
 
@@ -22,19 +22,17 @@ const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
 /**
  * Class for handling information about 3tz file
  */
-export class Tiles3DArchive {
-  /** FileProvider with whe whole file */
-  private fileProvider: FileProvider;
+export class Tiles3DArchive extends IndexedArchive {
   /** hash info */
-  private hashTable: Record<string, bigint>;
+  private hashTable?: Record<string, bigint>;
 
   /**
    * creates Tiles3DArchive handler
    * @param fileProvider - FileProvider with the whole file
    * @param hashTable - hash info
    */
-  constructor(fileProvider: FileProvider, hashTable: Record<string, bigint>) {
-    this.fileProvider = fileProvider;
+  constructor(fileProvider: FileProvider, hashTable?: Record<string, bigint>, fileName?: string) {
+    super(fileProvider, hashTable, fileName);
     this.hashTable = hashTable;
   }
 
@@ -63,28 +61,35 @@ export class Tiles3DArchive {
    * @returns buffer with the raw file data
    */
   private async getFileBytes(path: string): Promise<ArrayBuffer | null> {
-    const arrayBuffer = new TextEncoder().encode(path).buffer;
-    const nameHash = await new MD5Hash().hash(arrayBuffer, 'hex');
-    const byteOffset = this.hashTable[nameHash];
-    if (byteOffset === undefined) {
-      return null;
+    let uncompressedFile: ArrayBuffer;
+    if (this.hashTable) {
+      const arrayBuffer = new TextEncoder().encode(path).buffer;
+      const nameHash = await new MD5Hash().hash(arrayBuffer, 'hex');
+      const byteOffset = this.hashTable[nameHash];
+      if (byteOffset === undefined) {
+        return null;
+      }
+
+      const localFileHeader = await parseZipLocalFileHeader(byteOffset, this.fileProvider);
+      if (!localFileHeader) {
+        return null;
+      }
+
+      const compressedFile = await this.fileProvider.slice(
+        localFileHeader.fileDataOffset,
+        localFileHeader.fileDataOffset + localFileHeader.compressedSize
+      );
+
+      const compressionMethod = COMPRESSION_METHODS[localFileHeader.compressionMethod];
+      if (!compressionMethod) {
+        throw Error('Only Deflation compression is supported');
+      }
+
+      uncompressedFile = await compressionMethod(compressedFile);
+    } else {
+      uncompressedFile = await this.getFileWithoutHash(path);
     }
 
-    const localFileHeader = await parseZipLocalFileHeader(byteOffset, this.fileProvider);
-    if (!localFileHeader) {
-      return null;
-    }
-
-    const compressedFile = await this.fileProvider.slice(
-      localFileHeader.fileDataOffset,
-      localFileHeader.fileDataOffset + localFileHeader.compressedSize
-    );
-
-    const compressionMethod = COMPRESSION_METHODS[localFileHeader.compressionMethod];
-    if (!compressionMethod) {
-      throw Error('Only Deflation compression is supported');
-    }
-
-    return compressionMethod(compressedFile);
+    return uncompressedFile;
   }
 }

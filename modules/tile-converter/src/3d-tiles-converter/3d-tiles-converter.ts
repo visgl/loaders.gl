@@ -24,8 +24,9 @@ import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import B3dmConverter, {I3SAttributesData} from './helpers/b3dm-converter';
 import {I3STileHeader} from '@loaders.gl/i3s/src/types';
-import {loadI3SContent} from './helpers/load-i3s';
+import {loadFromArchive, loadI3SContent, openSlpk} from './helpers/load-i3s';
 import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
+import {ZipFileSystem} from '../../../zip/src';
 
 const I3S = 'I3S';
 
@@ -41,6 +42,7 @@ export default class Tiles3DConverter {
   sourceTileset: I3STilesetHeader | null;
   attributeStorageInfo?: AttributeStorageInfo[] | null;
   workerSource: {[key: string]: string} = {};
+  slpkFilesystem: ZipFileSystem | null = null;
   loaderOptions: I3SLoaderOptions = {
     _nodeWorkers: true,
     reuseWorkers: true,
@@ -92,7 +94,18 @@ export default class Tiles3DConverter {
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
     console.log('Loading egm file completed!'); // eslint-disable-line
 
-    this.sourceTileset = await load(inputUrl, I3SLoader, this.loaderOptions);
+    this.slpkFilesystem = await openSlpk(inputUrl);
+
+    this.sourceTileset = await loadFromArchive(
+      inputUrl,
+      I3SLoader,
+      {
+        ...this.loaderOptions,
+        // @ts-expect-error `isTileset` can be boolean of 'auto' but TS expects a string
+        i3s: {...this.loaderOptions.i3s, isTileset: true}
+      },
+      this.slpkFilesystem
+    );
 
     if (!this.sourceTileset) {
       return;
@@ -126,7 +139,11 @@ export default class Tiles3DConverter {
     const tileset = transform({root: rootTile}, tilesetTemplate());
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
 
-    this._finishConversion({slpk: false, outputPath, tilesetName});
+    await this._finishConversion({slpk: false, outputPath, tilesetName});
+
+    if (this.slpkFilesystem) {
+      this.slpkFilesystem.destroy();
+    }
 
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
@@ -148,7 +165,12 @@ export default class Tiles3DConverter {
   ): Promise<void> {
     const sourceChild = await this._loadChildNode(parentSourceNode, childNodeInfo);
     if (sourceChild.contentUrl) {
-      const content = await loadI3SContent(this.sourceTileset, sourceChild, this.loaderOptions);
+      const content = await loadI3SContent(
+        this.sourceTileset,
+        sourceChild,
+        this.loaderOptions,
+        this.slpkFilesystem
+      );
 
       if (!content) {
         await this._addChildren(sourceChild, parentNode, level + 1);
@@ -235,16 +257,17 @@ export default class Tiles3DConverter {
     } else {
       const nodeUrl = this._relativeUrlToFullUrl(parentNode.url, childNodeInfo.href!);
       // load metadata
-      const options = {
+      const options: I3SLoaderOptions = {
         i3s: {
           ...this.loaderOptions,
+          // @ts-expect-error
           isTileHeader: true,
           loadContent: false
         }
       };
 
       console.log(`Node conversion: ${nodeUrl}`); // eslint-disable-line no-console,no-undef
-      header = await load(nodeUrl, I3SLoader, options);
+      header = await loadFromArchive(nodeUrl, I3SLoader, options, this.slpkFilesystem);
     }
     return header;
   }
@@ -292,7 +315,7 @@ export default class Tiles3DConverter {
         attributeType: this._getAttributeType(attribute)
       };
 
-      promises.push(load(inputUrl, I3SAttributeLoader, options));
+      promises.push(loadFromArchive(inputUrl, I3SAttributeLoader, options, this.slpkFilesystem));
     }
     const attributesList = await Promise.all(promises);
     this._replaceNestedArrays(attributesList);

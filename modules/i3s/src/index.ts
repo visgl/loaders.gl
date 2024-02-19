@@ -49,7 +49,7 @@ export {I3SBuildingSceneLayerLoader} from './i3s-building-scene-layer-loader';
 export {I3SNodePageLoader} from './i3s-node-page-loader';
 export {ArcGISWebSceneLoader} from './arcgis-webscene-loader';
 
-export type {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
+export {SLPKArchive} from './lib/parsers/parse-slpk/slpk-archieve';
 export {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
 export {LayerError} from './lib/parsers/parse-arcgis-webscene';
 export {customizeColors} from './lib/utils/customize-colors';

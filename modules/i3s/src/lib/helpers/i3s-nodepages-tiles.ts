@@ -58,7 +58,9 @@ export default class I3SNodePagesTiles {
     const pageIndex = Math.floor(id / this.nodesPerPage);
     if (!this.nodePages[pageIndex] && !this.pendingNodePages[pageIndex]) {
       const nodePageUrl = getUrlWithToken(
-        `${this.url}/nodepages/${pageIndex}`,
+        this.url.indexOf('.slpk') !== -1
+          ? `nodepages/${pageIndex}`
+          : `${this.url}/nodepages/${pageIndex}`,
         // @ts-expect-error this.options is not properly typed
         this.options.i3s?.token
       );

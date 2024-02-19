@@ -1,6 +1,6 @@
 import {MD5Hash} from '@loaders.gl/crypto';
 import {FileProvider} from '@loaders.gl/loader-utils';
-import {parseZipLocalFileHeader} from '@loaders.gl/zip';
+import {IndexedArchive, parseZipLocalFileHeader} from '@loaders.gl/zip';
 import {GZipCompression} from '@loaders.gl/compression';
 
 /** Description of real paths for different file types */
@@ -42,20 +42,22 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
 /**
  * Class for handling information about slpk file
  */
-export class SLPKArchive {
-  /** A DataView representation of the archive */
-  private slpkArchive: FileProvider;
+export class SLPKArchive extends IndexedArchive {
   // Maps hex-encoded md5 filename hashes to bigint offsets into the archive
-  private hashTable: Record<string, bigint>;
-  /** Array of hashes and offsets into archive */
-  // hashToOffsetMap: Record<string, number>;
+  private hashTable?: Record<string, bigint>;
 
   protected _textEncoder = new TextEncoder();
   protected _textDecoder = new TextDecoder();
   protected _md5Hash = new MD5Hash();
 
-  constructor(slpkArchive: FileProvider, hashTable: Record<string, bigint>) {
-    this.slpkArchive = slpkArchive;
+  /**
+   * Constructor
+   * @param fileProvider - instance of a binary data reader
+   * @param hashTable - pre-loaded hashTable. If presented, getFile will skip reading the hash file
+   * @param fileName - name of the archive. It is used to add to an URL of a loader context
+   */
+  constructor(fileProvider: FileProvider, hashTable?: Record<string, bigint>, fileName?: string) {
+    super(fileProvider, hashTable, fileName);
     this.hashTable = hashTable;
   }
 
@@ -125,23 +127,32 @@ export class SLPKArchive {
    * @returns buffer with the raw file data
    */
   private async getFileBytes(path: string): Promise<ArrayBuffer | undefined> {
-    const binaryPath = this._textEncoder.encode(path);
-    const nameHash = await this._md5Hash.hash(binaryPath.buffer, 'hex');
+    let compressedFile: ArrayBuffer | undefined;
+    if (this.hashTable) {
+      const binaryPath = this._textEncoder.encode(path);
+      const nameHash = await this._md5Hash.hash(binaryPath.buffer, 'hex');
 
-    const offset = this.hashTable[nameHash];
-    if (offset === undefined) {
-      return undefined;
+      const offset = this.hashTable[nameHash];
+      if (offset === undefined) {
+        return undefined;
+      }
+
+      const localFileHeader = await parseZipLocalFileHeader(offset, this.fileProvider);
+      if (!localFileHeader) {
+        return undefined;
+      }
+
+      compressedFile = await this.fileProvider.slice(
+        localFileHeader.fileDataOffset,
+        localFileHeader.fileDataOffset + localFileHeader.compressedSize
+      );
+    } else {
+      try {
+        compressedFile = await this.getFileWithoutHash(path);
+      } catch {
+        compressedFile = undefined;
+      }
     }
-
-    const localFileHeader = await parseZipLocalFileHeader(offset, this.slpkArchive);
-    if (!localFileHeader) {
-      return undefined;
-    }
-
-    const compressedFile = this.slpkArchive.slice(
-      localFileHeader.fileDataOffset,
-      localFileHeader.fileDataOffset + localFileHeader.compressedSize
-    );
 
     return compressedFile;
   }
