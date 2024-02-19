@@ -6,7 +6,7 @@ import {BoundingVolumes, I3SMaterialDefinition, TextureSetDefinitionFormats} fro
 import {AttributeMetadataInfoObject} from '../../i3s-converter/helpers/attribute-metadata-info';
 import process from 'process';
 import Ajv from 'ajv';
-import {dumpJsonSchema} from './conversion-dump-json-schema';
+import {dumpJsonSchema} from '../json-schemas/conversion-dump-json-schema';
 
 export type ConversionDumpOptions = {
   inputUrl: string;
