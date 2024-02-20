@@ -1,4 +1,4 @@
-export const Font = `
+export const FONT = `
   font-family: sans-serif;
   font-size: 16px;
   font-style: normal;
@@ -8,14 +8,14 @@ export const Font = `
   text-align: left;
 `;
 
-export const Flex = `
+export const FLEX = `
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   position: absolute;
 `;
 
-export const Color = `
+export const COLOR = `
   background: #0E111A;
   color: white;
 `;

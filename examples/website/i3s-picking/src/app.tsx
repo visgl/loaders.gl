@@ -50,9 +50,7 @@ export default function App() {
   const tileSets: string[] = Object.keys(EXAMPLES);
   const [tilesetSelected, setTilesetSelected] = useState<string>(EXAMPLES['San Francisco'].url);
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
-  const [flattenedSublayers, setFlattenedSublayers] = useState<
-    {url: string; visibility: boolean}[]
-  >([]);
+  const [flattenedSublayers, setFlattenedSublayers] = useState<{url: string}[]>([]);
   const [highlightedObjectIndex, setHighlightedObjectIndex] = useState<number>(-1);
   const [attributesObject, setAttributesObject] = useState(null);
 
@@ -98,20 +96,18 @@ export default function App() {
 
   function renderLayers() {
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
-    const layers = flattenedSublayers
-      .filter((sublayer) => sublayer.visibility)
-      .map(
-        (sublayer) =>
-          new Tile3DLayer({
-            id: `tile-layer-${sublayer.id}`,
-            data: sublayer.url,
-            loader: I3SLoader,
-            onTilesetLoad: onTilesetLoadHandler,
-            loadOptions,
-            pickable: true,
-            highlightedObjectIndex
-          })
-      );
+    const layers = flattenedSublayers.map(
+      (sublayer) =>
+        new Tile3DLayer({
+          id: `tile-layer-${sublayer.url}`,
+          data: sublayer.url,
+          loader: I3SLoader,
+          onTilesetLoad: onTilesetLoadHandler,
+          loadOptions,
+          pickable: true,
+          highlightedObjectIndex
+        })
+    );
     return layers;
   }
 
@@ -122,7 +118,6 @@ export default function App() {
         title={title}
         attributesObject={attributesObject}
         handleClosePanel={handleCloseAttributesPanel}
-        isControlPanelShown
       />
     );
   }
