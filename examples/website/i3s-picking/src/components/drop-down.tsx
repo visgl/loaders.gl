@@ -2,7 +2,10 @@ import React from 'react';
 import styled from 'styled-components';
 import {COLOR, FONT} from './styles';
 
-export const DropDownStyle = `
+const StyledDropDown = styled.select`
+  ${COLOR}
+  ${FONT}
+  width: 200px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -13,21 +16,14 @@ export const DropDownStyle = `
   box-sizing: border-box;
   option {
     color: white;
-    background: #0E111A;
+    background: #0e111a;
     display: flex;
     white-space: pre;
   }
   &:hover {
-    background: #4F52CC;
+    background: #4f52cc;
     color: black;
   }
-`;
-
-const StyledDropDown = styled.select`
-  ${COLOR}
-  ${FONT}
-  ${DropDownStyle}
-  width: 200px;
 `;
 
 type DropDownProps = {

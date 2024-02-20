@@ -14,7 +14,7 @@ const Container = styled.div`
   right: 10px;
   width: 320px;
   height: auto;
-  max-height: 75%;
+  max-height: 90%;
   padding: 0 15px;
   word-break: break-word;
   border-radius: 8px;
