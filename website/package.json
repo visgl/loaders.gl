@@ -63,7 +63,6 @@
     "react-color": "^2.19.3",
     "react-dom": "^18.2.0",
     "react-map-gl": "^7.0.0",
-    "recharts": "^2.12.0",
     "sql.js": "1.8.0",
     "styled-components": "^5.3.3"
   },

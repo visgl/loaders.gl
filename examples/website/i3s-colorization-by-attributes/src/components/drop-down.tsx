@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import {Color, Font} from './styles';
+import {COLOR, FONT} from './styles';
 
-export const DropDownStyle = `
+const DropDownStyle = `
   position: static;
   display: flex;
   flex-direction: row;
@@ -12,12 +12,12 @@ export const DropDownStyle = `
   cursor: pointer;
   border-radius: 4px;
   box-sizing: border-box;
-    option {
-      color: white;
-      background: #0E111A;
-      display: flex;
-      white-space: pre;
-    }
+  option {
+    color: white;
+    background: #0E111A;
+    display: flex;
+    white-space: pre;
+  }
   &:hover {
     background: #4F52CC;
     color: black;
@@ -25,10 +25,10 @@ export const DropDownStyle = `
 `;
 
 const StyledDropDown = styled.select`
-  ${Color}
-  ${Font}
+  ${COLOR}
+  ${FONT}
   ${DropDownStyle}
-  width: 200px;
+  width: 170px;
 `;
 
 type DropDownProps = {

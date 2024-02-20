@@ -5,63 +5,74 @@ import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 
 import DeckGL from '@deck.gl/react';
-import {ViewState, MapController, FlyToInterpolator, PickingInfo} from '@deck.gl/core';
+import {ViewState, FlyToInterpolator} from '@deck.gl/core';
 
 import {DataDrivenTile3DLayer, colorizeTile} from '@deck.gl-community/layers';
 
-import {COORDINATE_SYSTEM, I3SLoader, StatisticsInfo, loadFeatureAttributes} from '@loaders.gl/i3s';
+import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {ControlPanel} from './components/control-panel';
-import {AttributesPanel, AttributesSidePanelWrapper} from './components/attributes-panel';
-import {ColorsByAttribute} from './types';
-
-export const EXAMPLES = {
-  'New York': {
-    name: 'New York',
-    url: 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0'
-  }
-};
-
-export const TRANSITION_DURAITON = 4000;
-
-const MAP_CONTROLLER = {
-  type: MapController,
-  maxPitch: 60,
-  inertia: true,
-  scrollZoom: {speed: 0.01, smooth: true},
-  touchRotate: true,
-  dragMode: false
-};
-
-const INITIAL_VIEW_STATE = {
-  longitude: -120,
-  latitude: 34,
-  pitch: 45,
-  maxPitch: 90,
-  bearing: 0,
-  minZoom: 2,
-  maxZoom: 30,
-  zoom: 14.5
-};
+import {AttributeData, ColorsByAttribute} from './types';
+import {ColorizationPanel} from './components/colorization-panel';
+import {
+  COLORIZE_MODES,
+  COLORS_BY_ATTRIBUTE,
+  EXAMPLES,
+  INITIAL_VIEW_STATE,
+  MAP_CONTROLLER,
+  TRANSITION_DURAITON
+} from './constants';
+import {getNumericAttributeInfo} from './utils/fetch-attributes-data';
 
 export default function App() {
   const tileSets: string[] = Object.keys(EXAMPLES);
   const [tilesetSelected, setTilesetSelected] = useState<string>(tileSets[0]);
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
-  const [flattenedSublayers, setFlattenedSublayers] = useState<
-    {url: string; visibility: boolean}[]
-  >([]);
-  const [highlightedObjectIndex, setHighlightedObjectIndex] = useState<number>(-1);
-  const [attributesObject, setAttributesObject] = useState(null);
-  const [tilesetStatisticsInfo, setTilesetStatisticsInfo] = useState<StatisticsInfo[] | null>(null);
+  const [attributesObject, setAttributesObject] = useState<Record<string, AttributeData>>({});
+  const [colorizeParams, setColorizeParams] = useState<{mode: string; attributeName: string}>({
+    mode: COLORIZE_MODES[0],
+    attributeName: ''
+  });
   const [colorsByAttribute, setColorsByAttribute] = useState<ColorsByAttribute | null>(null);
-
-  useEffect(() => {
-    setFlattenedSublayers([{url: EXAMPLES[tilesetSelected].url, visibility: true}]);
-  }, [tilesetSelected]);
 
   function onSelectTilesetHandler(item: string) {
     setTilesetSelected(item);
+  }
+
+  useEffect(() => {
+    if (colorizeParams.mode !== 'none' && colorizeParams.attributeName !== '') {
+      setColorsByAttribute({
+        attributeName: colorizeParams.attributeName,
+        minValue: attributesObject[colorizeParams.attributeName]?.min || 0,
+        maxValue: attributesObject[colorizeParams.attributeName]?.max || 0,
+        minColor: COLORS_BY_ATTRIBUTE.min.rgba,
+        maxColor: COLORS_BY_ATTRIBUTE.max.rgba,
+        mode: colorizeParams.mode
+      });
+    } else {
+      setColorsByAttribute(null);
+    }
+  }, [colorizeParams]);
+
+  function getAttributes(tileset: Tileset3D) {
+    const promises: Promise<AttributeData | null>[] = [];
+    for (const attribute of tileset.tileset?.statisticsInfo) {
+      promises.push(
+        getNumericAttributeInfo(tileset.tileset?.basePath, attribute.href, attribute.name)
+      );
+    }
+    Promise.allSettled(promises).then((results) => {
+      const attributes: Record<string, AttributeData> = {};
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value && result.value.name) {
+          attributes[result.value.name] = {min: result.value.min, max: result.value.max};
+        }
+      }
+      if (Object.keys(attributes).length > 0) {
+        setAttributesObject(attributes);
+        setColorizeParams({...colorizeParams, attributeName: Object.keys(attributes)[0]});
+      }
+    });
   }
 
   function onTilesetLoadHandler(tileset: Tileset3D) {
@@ -76,77 +87,34 @@ export default function App() {
       transitionInterpolator: new FlyToInterpolator()
     };
     setViewState(newViewState);
-    handleCloseAttributesPanel();
+    getAttributes(tileset);
   }
 
-  function handleCloseAttributesPanel() {
-    setHighlightedObjectIndex(-1);
-    setAttributesObject(null);
+  function onColorizeModeSelectHandler(mode: string) {
+    setColorizeParams({...colorizeParams, mode});
   }
 
-  function onClickHandler(info: PickingInfo) {
-    if (!info.object || info.index < 0 || !info.layer) {
-      setAttributesObject({});
-      handleCloseAttributesPanel();
-      return;
-    }
-    setHighlightedObjectIndex(info.index);
-    loadFeatureAttributes(info.object, info.index).then((result) => {
-      setAttributesObject(result);
-      const statisticsInfo = info.object.tileset?.tileset?.statisticsInfo;
-      if (statisticsInfo) {
-        setTilesetStatisticsInfo(statisticsInfo);
-      }
-    });
+  function onAttributeSelectHandler(attributeName: string) {
+    setColorizeParams({...colorizeParams, attributeName});
   }
 
   function renderLayers() {
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
-    const layers = flattenedSublayers
-      .filter((sublayer) => sublayer.visibility)
-      .map(
-        (sublayer) =>
-          new DataDrivenTile3DLayer({
-            id: `tile-layer-${sublayer.id}`,
-            data: sublayer.url,
-            loader: I3SLoader,
-            onTilesetLoad: onTilesetLoadHandler,
-            loadOptions,
-            pickable: true,
-            highlightedObjectIndex,
-            colorsByAttribute,
-            customizeColors: colorizeTile
-          })
-      );
-    return layers;
-  }
+    const layers = new DataDrivenTile3DLayer({
+      data: EXAMPLES[tilesetSelected].url,
+      loader: I3SLoader,
+      onTilesetLoad: onTilesetLoadHandler,
+      loadOptions,
+      colorsByAttribute,
+      customizeColors: colorizeTile
+    });
 
-  function renderAttributesPanel() {
-    const title = attributesObject?.NAME || attributesObject?.OBJECTID;
-    return (
-      <AttributesSidePanelWrapper>
-        <AttributesPanel
-          title={title}
-          attributes={attributesObject}
-          onClose={handleCloseAttributesPanel}
-          tilesetName={tilesetSelected}
-          tilesetBasePath={EXAMPLES[tilesetSelected].url}
-          statisticsInfo={tilesetStatisticsInfo}
-          colorsByAttribute={colorsByAttribute}
-          onColorsByAttributeChange={setColorsByAttribute}
-        />
-      </AttributesSidePanelWrapper>
-    );
+    return layers;
   }
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <DeckGL
-        initialViewState={viewState}
-        layers={renderLayers()}
-        controller={MAP_CONTROLLER}
-        onClick={onClickHandler}
-      >
+      <DeckGL initialViewState={viewState} layers={renderLayers()} controller={MAP_CONTROLLER}>
         <Map
           reuseMaps
           mapLib={maplibregl}
@@ -156,7 +124,12 @@ export default function App() {
         />
       </DeckGL>
       <ControlPanel tileSets={tileSets} onSelectTileset={onSelectTilesetHandler} />
-      {highlightedObjectIndex > -1 && renderAttributesPanel()}
+      <ColorizationPanel
+        colorizeModes={COLORIZE_MODES}
+        colorizeAttributes={attributesObject}
+        onSelectColorizeMode={onColorizeModeSelectHandler}
+        onSelectAttribute={onAttributeSelectHandler}
+      />
     </div>
   );
 }

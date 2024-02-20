@@ -1,7 +1,5 @@
-/// <reference types="vite-plugin-svgr/client" />
 import {defineConfig} from 'vite';
 import fs from 'fs';
-import svgr from 'vite-plugin-svgr';
 
 /** Run against local source */
 const getAliases = async (frameworkName, frameworkRootDir) => {
@@ -17,6 +15,5 @@ const getAliases = async (frameworkName, frameworkRootDir) => {
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
   resolve: {alias: await getAliases('@loaders.gl', `${__dirname}/../../..`)},
-  server: {open: true},
-  plugins: [svgr()]
+  server: {open: true}
 }));
