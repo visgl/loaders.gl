@@ -8,7 +8,7 @@ import {
   parseSLPKArchive
 } from '@loaders.gl/i3s';
 import {FileHandleFile} from '@loaders.gl/loader-utils';
-import {ZipFileSystem} from '@loaders.gl/zip';
+import {ZipFileSystem, makeZipCDHeaderIterator} from '@loaders.gl/zip';
 
 export type SLPKUrlParts = {slpkFileName: string; internalFileName: string};
 
@@ -128,4 +128,24 @@ function getSlpkUrlParts(url: string): SLPKUrlParts | null {
     throw new Error('Unexpected URL format');
   }
   return result;
+}
+
+/**
+ * Get nodes count inside SLPK
+ * @param fileSystem - file system of SLPK
+ * @returns number of nodes
+ */
+export async function getNodesCount(fileSystem: ZipFileSystem | null): Promise<number> {
+  if (!fileSystem?.fileProvider) {
+    return 0;
+  }
+  let count = 0;
+  const filesIterator = makeZipCDHeaderIterator(fileSystem.fileProvider);
+  for await (const file of filesIterator) {
+    const filename = file.fileName;
+    if (filename.indexOf('3dNodeIndexDocument.json.gz') >= 0) {
+      count++;
+    }
+  }
+  return count;
 }
