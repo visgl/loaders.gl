@@ -1,36 +1,45 @@
-import {load} from '@loaders.gl/core';
+import {LoaderWithParser, load} from '@loaders.gl/core';
 import {
   I3STileContent,
   I3STileHeader,
   I3STilesetHeader,
   I3SLoader,
-  I3SLoaderOptions
+  I3SLoaderOptions,
+  parseSLPKArchive
 } from '@loaders.gl/i3s';
+import {FileHandleFile} from '@loaders.gl/loader-utils';
+import {ZipFileSystem} from '@loaders.gl/zip';
+
+export type SLPKUrlParts = {slpkFileName: string; internalFileName: string};
 
 /**
  * Load I3S node content
  * @param sourceTileset - source layer JSON
  * @param sourceTile - source I3S node metadata
  * @param tilesetLoadOptions - load options for Tiles3DLoader
+ * @param slpkFilesystem - loaded instance of ZipFileSystem for local convertion from SLPK file
  * @returns - 3DTiles tile content or null
  */
 export const loadI3SContent = async (
   sourceTileset: I3STilesetHeader | null,
   sourceTile: I3STileHeader,
-  tilesetLoadOptions: I3SLoaderOptions
+  tilesetLoadOptions: I3SLoaderOptions,
+  slpkFilesystem: ZipFileSystem | null
 ): Promise<I3STileContent | null> => {
   if (!sourceTileset || !sourceTile.contentUrl) {
     return null;
   }
 
-  const loadOptions = {
+  const loadOptions: I3SLoaderOptions = {
     ...tilesetLoadOptions,
     i3s: {
       ...tilesetLoadOptions.i3s,
+      // @ts-expect-error
       isTileset: false,
+      // @ts-expect-error
       isTileHeader: false,
       _tileOptions: {
-        attributeUrls: sourceTile.attributeUrls,
+        attributeUrls: sourceTile.attributeUrls || [],
         textureUrl: sourceTile.textureUrl,
         textureFormat: sourceTile.textureFormat,
         textureLoaderOptions: sourceTile.textureLoaderOptions,
@@ -40,13 +49,83 @@ export const loadI3SContent = async (
       },
       _tilesetOptions: {
         store: sourceTileset.store,
+        // @ts-expect-error
         attributeStorageInfo: sourceTileset.attributeStorageInfo,
+        // @ts-expect-error
         fields: sourceTileset.fields
       }
     }
   };
-  const tileContent = await load(sourceTile.contentUrl, I3SLoader, loadOptions);
+  const tileContent = await loadFromArchive(
+    sourceTile.contentUrl,
+    I3SLoader,
+    loadOptions,
+    slpkFilesystem
+  );
 
-  // @ts-expect-error
   return tileContent;
 };
+
+/**
+ * Load local SLPK file to ZipFileSystem instance
+ * @param url - path to SLPK file
+ * @returns instance of ZipFileSystem or null if url is not an SLPK file
+ */
+export async function openSLPK(url: string): Promise<ZipFileSystem | null> {
+  const slpkUrlParts = url.split('.slpk');
+  const {slpkFileName} = getSlpkUrlParts(url) || {};
+  if (slpkFileName) {
+    const slpkFileName = `${slpkUrlParts[0]}.slpk`;
+    const fileProvider = new FileHandleFile(slpkFileName);
+    const archive = await parseSLPKArchive(fileProvider, undefined, slpkFileName);
+    const fileSystem = new ZipFileSystem(archive);
+    return fileSystem;
+  }
+  return null;
+}
+
+/**
+ * Load a resource with load options and .3tz format support
+ * @param url - resource URL
+ * @param loader - loader to parse data (Tiles3DLoader / CesiumIonLoader)
+ * @param loadOptions - i3s loader options
+ * @returns i3s resource
+ */
+export async function loadFromArchive(
+  url: string,
+  loader: LoaderWithParser,
+  loadOptions: I3SLoaderOptions,
+  fileSystem: ZipFileSystem | null
+) {
+  const slpkUrlParts = getSlpkUrlParts(url);
+  if (fileSystem !== null && slpkUrlParts !== null) {
+    const {internalFileName} = slpkUrlParts;
+    const content = await load(internalFileName, loader, {
+      ...loadOptions,
+      fetch: fileSystem.fetch.bind(fileSystem)
+    });
+    return content;
+  }
+  return await load(url, loader, loadOptions);
+}
+
+/**
+ * Extract slpk file path and internal from the url
+ * For example, for `./path/to/file.slpk/nodes/0` it returns
+ * {"slpkFileName": "./path/to/file.slpk", "internalFileName": "/nodes/0" }
+ * @param url full internal file path
+ * @returns object with internal slpk file parts
+ */
+function getSlpkUrlParts(url: string): SLPKUrlParts | null {
+  const slpkUrlParts = url.split('.slpk');
+  let result: SLPKUrlParts | null;
+  // Not '.slpk'. The file will be loaded with global fetch function
+  if (slpkUrlParts.length === 1) {
+    result = null;
+  } else if (slpkUrlParts.length === 2) {
+    result = {slpkFileName: `${slpkUrlParts[0]}.slpk`, internalFileName: slpkUrlParts[1].slice(1)};
+  } else {
+    throw new Error('Unexpected URL format');
+  }
+  return result;
+}

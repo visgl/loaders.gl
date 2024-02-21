@@ -12,6 +12,7 @@ const TILESET_WITH_KTX_2_TEXTURE = '@loaders.gl/3d-tiles/test/data/VNext/agi-ktx
 const TILESET_WITH_FAILING_CONTENT =
   '@loaders.gl/tile-converter/test/data/failing-content-error/tileset.json';
 const TILESET_CDB_YEMEN = '@loaders.gl/3d-tiles/test/data/VNext/cdb-yemen-cut/tileset.json';
+const TILESET_3TZ = './modules/3d-tiles/test/data/test.3tz';
 
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
@@ -389,5 +390,25 @@ test('tile-converter(i3s)#convert with --metadata-class option', async (t) => {
     t.ok(nodePageJson);
   }
   await cleanUpPath('data/CDB_Yemen');
+  t.end();
+});
+
+test('tile-converter(i3s)#convert 3tz arhive', async (t) => {
+  if (!isBrowser) {
+    const converter = new I3SConverter();
+    await converter.convert({
+      inputUrl: TILESET_3TZ,
+      outputPath: 'data',
+      tilesetName: '3tz-test',
+      sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
+      egmFilePath: PGM_FILE_PATH
+    });
+    const nodePageJson = await fs.readFile(
+      'data/3tz-test/SceneServer/layers/0/nodepages/0/index.json',
+      'utf8'
+    );
+    t.ok(nodePageJson);
+  }
+  await cleanUpPath('data/3tz-test');
   t.end();
 });

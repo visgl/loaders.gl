@@ -4,8 +4,17 @@ import type {
   Tiles3DTileJSONPostprocessed,
   Tiles3DTilesetJSONPostprocessed
 } from '@loaders.gl/3d-tiles';
-import {Tiles3DArchiveFileSystem} from '@loaders.gl/3d-tiles';
+import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {LoaderWithParser, load} from '@loaders.gl/core';
+import {FileHandleFile, FileProvider} from '@loaders.gl/loader-utils';
+import {
+  CD_HEADER_SIGNATURE,
+  ZipFileSystem,
+  parseHashTable,
+  parseZipCDFileHeader,
+  parseZipLocalFileHeader,
+  searchFromTheEnd
+} from '@loaders.gl/zip';
 
 /**
  * Load nested 3DTiles tileset. If the sourceTile is not nested tileset - do nothing
@@ -104,7 +113,10 @@ export async function loadFromArchive(
   }
   if (filename) {
     const tz3Path = `${tz3UrlParts[0]}.3tz`;
-    const fileSystem = new Tiles3DArchiveFileSystem(tz3Path);
+    const fileProvider = new FileHandleFile(tz3Path);
+    const hashTable = await loadHashTable(fileProvider);
+    const archive = new Tiles3DArchive(fileProvider, hashTable, tz3Path);
+    const fileSystem = new ZipFileSystem(archive);
     const content = await load(filename, loader, {
       ...loadOptions,
       fetch: fileSystem.fetch.bind(fileSystem)
@@ -122,4 +134,42 @@ export async function loadFromArchive(
  */
 export function isNestedTileset(tile: Tiles3DTileJSONPostprocessed) {
   return tile?.type === 'json' || tile?.type === '3tz';
+}
+
+/**
+ * Load hash file from 3TZ
+ * @param fileProvider - binary reader of 3TZ
+ * @returns hash table of the 3TZ file content or undefined if the hash file is not presented inside
+ */
+async function loadHashTable(
+  fileProvider: FileProvider
+): Promise<undefined | Record<string, bigint>> {
+  let hashTable: undefined | Record<string, bigint>;
+
+  const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);
+
+  const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
+
+  // '@3dtilesIndex1@' is index file that must be the last in the archive. It allows
+  // to improve load and read performance when the archive contains a very large number
+  // of files.
+  if (cdFileHeader?.fileName === '@3dtilesIndex1@') {
+    const localFileHeader = await parseZipLocalFileHeader(
+      cdFileHeader.localHeaderOffset,
+      fileProvider
+    );
+    if (!localFileHeader) {
+      throw new Error('corrupted 3tz');
+    }
+
+    const fileDataOffset = localFileHeader.fileDataOffset;
+    const hashFile = await fileProvider.slice(
+      fileDataOffset,
+      fileDataOffset + localFileHeader.compressedSize
+    );
+
+    hashTable = parseHashTable(hashFile);
+  }
+
+  return hashTable;
 }

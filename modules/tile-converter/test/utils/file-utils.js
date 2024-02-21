@@ -5,7 +5,7 @@ export async function cleanUpPath(testPath) {
   // Do not run under browser
   if (!isBrowser) {
     try {
-      await fs.rmdir(testPath, {recursive: true});
+      await fs.rm(testPath, {recursive: true});
     } catch (e) {
       // Do nothing
     }

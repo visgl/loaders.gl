@@ -61,8 +61,11 @@ export async function parseI3STileContent(
   };
 
   if (tileOptions.textureUrl) {
-    // @ts-expect-error options is not properly typed
-    const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
+    const url = getUrlWithToken(
+      getInternalPathFromUrl(tileOptions.textureUrl),
+      // @ts-expect-error options is not properly typed
+      options?.i3s?.token
+    );
     const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
     const fetchFunc = context?.fetch || fetch;
     const response = await fetchFunc(url); // options?.fetch
@@ -109,6 +112,25 @@ export async function parseI3STileContent(
   }
 
   return await parseI3SNodeGeometry(arrayBuffer, content, tileOptions, tilesetOptions, options);
+}
+
+/**
+ * Get the URL inside SLPK archive
+ * @param url - full url with *.slpk prefix
+ * @returns URL inside SLPK archive
+ */
+function getInternalPathFromUrl(url: string): string {
+  const slpkUrlParts = url.split('.slpk');
+  let filename: string | null;
+  // Not '.slpk'. The file will be loaded with global fetch function
+  if (slpkUrlParts.length === 1) {
+    filename = url;
+  } else if (slpkUrlParts.length === 2) {
+    filename = slpkUrlParts[1].slice(1);
+  } else {
+    filename = url;
+  }
+  return filename;
 }
 
 /* eslint-disable max-statements */
@@ -196,6 +218,7 @@ async function parseI3SNodeGeometry(
 
   if (
     !options?.i3s?.coordinateSystem ||
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
   ) {
     const enuMatrix = parsePositions(attributes.position, tileOptions);

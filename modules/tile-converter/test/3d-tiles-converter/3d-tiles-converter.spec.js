@@ -2,10 +2,13 @@
 import test from 'tape-promise/tape';
 import {Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
+import {readdir} from 'fs/promises';
 import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
+import {cleanUpPath} from '../utils/file-utils';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_3DObjects_1_7/SceneServer/layers/0';
+const SLPK_URL = './modules/i3s/test/data/DA12_subset.slpk';
 const PGM_FILE_PATH = '@loaders.gl/tile-converter/test/data/egm84-30.pgm';
 
 setLoaderOptions({
@@ -40,5 +43,23 @@ test('tile-converter(3d-tiles)#should return error in browser environment', asyn
     });
     t.equals(tilesetJson, BROWSER_ERROR_MESSAGE);
   }
+  t.end();
+});
+
+test('tile-converter(3d-tiles)#converts SLPK file', async (t) => {
+  if (!isBrowser) {
+    const converter = new Tiles3DConverter();
+    await converter.convert({
+      inputUrl: SLPK_URL,
+      outputPath: 'data',
+      tilesetName: 'NY',
+      egmFilePath: PGM_FILE_PATH
+    });
+  }
+
+  const files = await readdir('./data/NY');
+  t.equals(files.length, 32);
+
+  await cleanUpPath('data/NY');
   t.end();
 });

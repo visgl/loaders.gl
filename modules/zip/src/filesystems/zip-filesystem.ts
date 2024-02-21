@@ -8,10 +8,11 @@ import {FileHandleFile} from '@loaders.gl/loader-utils';
 import {ZipCDFileHeader, makeZipCDHeaderIterator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {DeflateCompression} from '@loaders.gl/compression';
+import {IndexedArchive} from './IndexedArchive';
 
-type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
+export type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
 /** Handling different compression types in zip */
-const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
+export const ZIP_COMPRESSION_HANDLERS: {[key: number]: CompressionHandler} = {
   /** No compression */
   0: async (compressedFile) => compressedFile,
   /** Deflation */
@@ -30,12 +31,13 @@ export class ZipFileSystem implements FileSystem {
   /** FileProvider instance promise */
   protected fileProvider: FileProvider | null = null;
   public fileName?: string;
+  public archive: IndexedArchive | null = null;
 
   /**
    * Constructor
    * @param file - instance of FileProvider or file path string
    */
-  constructor(file: FileProvider | string) {
+  constructor(file: FileProvider | IndexedArchive | string) {
     // Try to open file in NodeJS
     if (typeof file === 'string') {
       this.fileName = file;
@@ -44,6 +46,10 @@ export class ZipFileSystem implements FileSystem {
       } else {
         throw new Error('Cannot open file for random access in a WEB browser');
       }
+    } else if (file instanceof IndexedArchive) {
+      this.fileProvider = file.fileProvider;
+      this.archive = file;
+      this.fileName = file.fileName;
     } else if (isFileProvider(file)) {
       this.fileProvider = file;
     }
@@ -88,32 +94,40 @@ export class ZipFileSystem implements FileSystem {
    * @returns - Response with file data
    */
   async fetch(filename: string): Promise<Response> {
-    if (!this.fileProvider) {
-      throw new Error('No data detected in the zip archive');
-    }
-    const cdFileHeader = await this.getCDFileHeader(filename);
-    const localFileHeader = await parseZipLocalFileHeader(
-      cdFileHeader.localHeaderOffset,
-      this.fileProvider
-    );
-    if (!localFileHeader) {
-      throw new Error('Local file header has not been found in the zip archive`');
-    }
+    let uncompressedFile: ArrayBuffer;
+    if (this.archive) {
+      uncompressedFile = await this.archive.getFile(filename, 'http');
+    } else {
+      if (!this.fileProvider) {
+        throw new Error('No data detected in the zip archive');
+      }
+      const cdFileHeader = await this.getCDFileHeader(filename);
+      const localFileHeader = await parseZipLocalFileHeader(
+        cdFileHeader.localHeaderOffset,
+        this.fileProvider
+      );
+      if (!localFileHeader) {
+        throw new Error('Local file header has not been found in the zip archive`');
+      }
 
-    const compressionHandler = COMPRESSION_METHODS[localFileHeader.compressionMethod.toString()];
-    if (!compressionHandler) {
-      throw Error('Only Deflation compression is supported');
+      const compressionHandler =
+        ZIP_COMPRESSION_HANDLERS[localFileHeader.compressionMethod.toString()];
+      if (!compressionHandler) {
+        throw Error('Only Deflation compression is supported');
+      }
+
+      const compressedFile = await this.fileProvider.slice(
+        localFileHeader.fileDataOffset,
+        localFileHeader.fileDataOffset + localFileHeader.compressedSize
+      );
+
+      uncompressedFile = await compressionHandler(compressedFile);
     }
-
-    const compressedFile = await this.fileProvider.slice(
-      localFileHeader.fileDataOffset,
-      localFileHeader.fileDataOffset + localFileHeader.compressedSize
-    );
-
-    const uncompressedFile = await compressionHandler(compressedFile);
 
     const response = new Response(uncompressedFile);
-    Object.defineProperty(response, 'url', {value: `${this.fileName || ''}/${filename}`});
+    Object.defineProperty(response, 'url', {
+      value: filename ? `${this.fileName || ''}/${filename}` : this.fileName || ''
+    });
     return response;
   }
 
