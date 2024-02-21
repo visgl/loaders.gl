@@ -13,7 +13,8 @@ import {
   MultiLineString,
   Polygon,
   MultiPolygon,
-  Feature
+  Feature,
+  GeoJsonObject
 } from 'geojson';
 
 /**
@@ -24,18 +25,27 @@ export type GeoArrowReturnType = {
   geometry: ArrowVector;
 };
 
+// type guard to check if feature is a GeoJSON Feature or Geometry
+export function isFeature(json: unknown): json is Feature {
+  return Boolean((json as Feature).type === 'Feature');
+}
+
 /**
  * Convert GeoJson Features to GeoArrow
  * @param name
  * @param features
  * @returns GeoArrowReturnType
  */
-export function geojsonFeaturesToArrow(name: string, features: Feature[]): GeoArrowReturnType {
+export function geojsonFeaturesToArrow(
+  name: string,
+  features: Array<Feature | GeoJsonObject>
+): GeoArrowReturnType {
   // get the geometry type by iterating all features
   // if one geometry is multi-, then the whole geometry is multi-
   let geometryType = '';
   for (let i = 0; i < features.length; i++) {
-    const {geometry} = features[i];
+    const feature = features[i];
+    const geometry = isFeature(feature) ? feature.geometry : feature;
     if (i === 0) {
       geometryType = geometry.type;
     }
@@ -66,9 +76,13 @@ export function geojsonFeaturesToArrow(name: string, features: Feature[]): GeoAr
  * @param points GeoJSON Points
  * @returns GeoArrowReturnType
  */
-export function geojsonPointToArrow(name: string, points: Feature[]): GeoArrowReturnType {
+export function geojsonPointToArrow(
+  name: string,
+  points: Array<Feature | GeoJsonObject>
+): GeoArrowReturnType {
+  const firstPoint = isFeature(points[0]) ? points[0].geometry : points[0];
   // get dimension from the first point
-  const dimension = (points[0].geometry as Point).coordinates.length;
+  const dimension = (firstPoint as Point).coordinates.length;
   const pointFieldName = dimension === 2 ? 'xy' : 'xyz';
 
   // get point type
@@ -91,7 +105,9 @@ export function geojsonPointToArrow(name: string, points: Feature[]): GeoArrowRe
 
   // fill builder with coordinates
   for (let i = 0; i < points.length; i++) {
-    const coords = (points[i].geometry as Point).coordinates;
+    const point = points[i];
+    const geometry = isFeature(point) ? point.geometry : point;
+    const coords = (geometry as Point).coordinates;
     // @ts-ignore
     builder.append(coords);
   }
@@ -108,9 +124,13 @@ export function geojsonPointToArrow(name: string, points: Feature[]): GeoArrowRe
 /**
  * convert GeoJSON Point to arrow.Vector
  */
-export function geojsonMultiPointToArrow(name: string, points: Feature[]): GeoArrowReturnType {
+export function geojsonMultiPointToArrow(
+  name: string,
+  points: Array<Feature | GeoJsonObject>
+): GeoArrowReturnType {
+  const firstPoint = isFeature(points[0]) ? points[0].geometry : points[0];
   // get dimension from the first multipoint
-  const dimension = (points[0].geometry as MultiPoint).coordinates[0].length;
+  const dimension = (firstPoint as MultiPoint).coordinates[0].length;
   const pointFieldName = dimension === 2 ? 'xy' : 'xyz';
 
   // get multipoint type
@@ -135,7 +155,9 @@ export function geojsonMultiPointToArrow(name: string, points: Feature[]): GeoAr
 
   // const pointBuilder = builder.getChildAt(0);
   for (let i = 0; i < points.length; i++) {
-    const coords = (points[i].geometry as MultiPoint).coordinates;
+    const point = points[i];
+    const geometry = isFeature(point) ? point.geometry : point;
+    const coords = (geometry as MultiPoint).coordinates;
     // @ts-ignore
     builder.append(coords);
   }
@@ -151,9 +173,13 @@ export function geojsonMultiPointToArrow(name: string, points: Feature[]): GeoAr
 /**
  * Convert GeoJSON LineString to arrow.Data
  */
-export function geojsonLineStringToArrow(name: string, lines: Feature[]): GeoArrowReturnType {
+export function geojsonLineStringToArrow(
+  name: string,
+  lines: Array<Feature | GeoJsonObject>
+): GeoArrowReturnType {
+  const firstLine = isFeature(lines[0]) ? lines[0].geometry : lines[0];
   // get dimension from the first line
-  const dimension = (lines[0].geometry as LineString).coordinates[0].length;
+  const dimension = (firstLine as LineString).coordinates[0].length;
   const pointFieldName = dimension === 2 ? 'xy' : 'xyz';
 
   // get line type
@@ -176,7 +202,9 @@ export function geojsonLineStringToArrow(name: string, lines: Feature[]): GeoArr
   });
 
   for (let i = 0; i < lines.length; i++) {
-    const coords = (lines[i].geometry as LineString).coordinates;
+    const line = lines[i];
+    const geometry = isFeature(line) ? line.geometry : line;
+    const coords = (geometry as LineString).coordinates;
     // @ts-ignore
     builder.append(coords);
   }
@@ -192,9 +220,13 @@ export function geojsonLineStringToArrow(name: string, lines: Feature[]): GeoArr
 /**
  * Convert GeoJSON MultiLineString to arrow.Vector
  */
-export function geojsonMultiLineStringToArrow(name: string, lines: Feature[]): GeoArrowReturnType {
+export function geojsonMultiLineStringToArrow(
+  name: string,
+  lines: Array<Feature | GeoJsonObject>
+): GeoArrowReturnType {
+  const firstLine = isFeature(lines[0]) ? lines[0].geometry : lines[0];
   // get dimension from the first line
-  const dimension = (lines[0].geometry as MultiLineString).coordinates[0].length;
+  const dimension = (firstLine as MultiLineString).coordinates[0].length;
   const pointFieldName = dimension === 2 ? 'xy' : 'xyz';
 
   // get multi-line data type
@@ -220,7 +252,9 @@ export function geojsonMultiLineStringToArrow(name: string, lines: Feature[]): G
   });
 
   for (let i = 0; i < lines.length; i++) {
-    const coords = (lines[i].geometry as MultiLineString).coordinates;
+    const line = lines[i];
+    const geometry = isFeature(line) ? line.geometry : line;
+    const coords = (geometry as MultiLineString).coordinates;
     // @ts-ignore
     builder.append(coords);
   }
@@ -236,9 +270,13 @@ export function geojsonMultiLineStringToArrow(name: string, lines: Feature[]): G
 /**
  * Convert GeoJSON Polygon to arrow.Data
  */
-export function geojsonPolygonToArrow(name: string, polygons: Feature[]): GeoArrowReturnType {
+export function geojsonPolygonToArrow(
+  name: string,
+  polygons: Array<Feature | GeoJsonObject>
+): GeoArrowReturnType {
+  const firstPolygon = isFeature(polygons[0]) ? polygons[0].geometry : polygons[0];
   // get dimension from the first polygon
-  const dimension = (polygons[0].geometry as Polygon).coordinates[0][0].length;
+  const dimension = (firstPolygon as Polygon).coordinates[0][0].length;
   const pointFieldName = dimension === 2 ? 'xy' : 'xyz';
 
   // get polygon data type
@@ -262,7 +300,9 @@ export function geojsonPolygonToArrow(name: string, polygons: Feature[]): GeoArr
   });
 
   for (let i = 0; i < polygons.length; i++) {
-    const coords = (polygons[i].geometry as Polygon).coordinates;
+    const poly = polygons[i];
+    const geometry = isFeature(poly) ? poly.geometry : poly;
+    const coords = (geometry as Polygon).coordinates;
     // @ts-ignore
     builder.append(coords);
   }
@@ -275,12 +315,23 @@ export function geojsonPolygonToArrow(name: string, polygons: Feature[]): GeoArr
   };
 }
 
+// type guard to check if a Geometry is Polygon or MultiPolygon
+export function isPolygon(geometry: GeoJsonObject): geometry is Polygon | MultiPolygon {
+  return geometry.type === 'Polygon' || geometry.type === 'MultiPolygon';
+}
+
 /**
  * Convert GeoJSON MultiPolygon to arrow.Vector
  */
-export function geojsonMultiPolygonToArrow(name: string, polygons: Feature[]): GeoArrowReturnType {
+export function geojsonMultiPolygonToArrow(
+  name: string,
+  polygons: Array<Feature | GeoJsonObject>
+): GeoArrowReturnType {
+  const firstPolygon = isFeature(polygons[0]) ? polygons[0].geometry : polygons[0];
   // get dimension from the first polygon
-  const dimension = (polygons[0].geometry as MultiPolygon).coordinates[0][0][0].length;
+  const dimension =
+    (firstPolygon as MultiPolygon).coordinates[0][0][0].length ||
+    (firstPolygon as Polygon).coordinates[0][0].length;
   const pointFieldName = dimension === 2 ? 'xy' : 'xyz';
 
   // get polygon data type
@@ -305,7 +356,12 @@ export function geojsonMultiPolygonToArrow(name: string, polygons: Feature[]): G
   });
 
   for (let i = 0; i < polygons.length; i++) {
-    const coords = (polygons[i].geometry as MultiPolygon).coordinates;
+    const poly = polygons[i];
+    const geometry = isFeature(poly) ? poly.geometry : poly;
+    const coords =
+      geometry.type === 'MultiPolygon'
+        ? (geometry as MultiPolygon).coordinates
+        : [(geometry as Polygon).coordinates];
     // @ts-ignore
     builder.append(coords);
   }
