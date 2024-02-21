@@ -2,6 +2,14 @@
 
 ## v4.2 (alpha)
 
+### v4.2.0-alpha.2
+
+- feat(tile-converter): convert SLPK (#2888)
+- feat(tile-converter): conversion dump json validation (#2883)
+- chore(examples): Rewrite I3S BSL example with React FC (#2885)
+- fix(flatgeobuf): Add missing index files (#2884)
+- feat(tile-converter): add 3d-tiles-converter resume (#2882)
+
 ### v4.2.0-alpha.1
 
 - feat(tile-converter): add conversion resume (#2869)

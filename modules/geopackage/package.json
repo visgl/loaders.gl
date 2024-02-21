@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/geopackage",
   "description": "GeoPackage data loaders",
-  "version": "4.2.0-alpha.1",
+  "version": "4.2.0-alpha.2",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -44,9 +44,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/gis": "4.2.0-alpha.1",
-    "@loaders.gl/schema": "4.2.0-alpha.1",
-    "@loaders.gl/wkt": "4.2.0-alpha.1",
+    "@loaders.gl/gis": "4.2.0-alpha.2",
+    "@loaders.gl/schema": "4.2.0-alpha.2",
+    "@loaders.gl/wkt": "4.2.0-alpha.2",
     "@math.gl/proj4": "^4.0.0",
     "@types/sql.js": "^1.4.5",
     "fs": "^0.0.1-security",
