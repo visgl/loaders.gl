@@ -24,7 +24,7 @@ import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import B3dmConverter, {I3SAttributesData} from './helpers/b3dm-converter';
 import {I3STileHeader} from '@loaders.gl/i3s/src/types';
-import {loadFromArchive, loadI3SContent, openSlpk} from './helpers/load-i3s';
+import {loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
 import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
 import {ZipFileSystem} from '../../../zip/src';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
@@ -98,7 +98,7 @@ export default class Tiles3DConverter {
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
     console.log('Loading egm file completed!'); // eslint-disable-line
 
-    this.slpkFilesystem = await openSlpk(inputUrl);
+    this.slpkFilesystem = await openSLPK(inputUrl);
 
     this.sourceTileset = await loadFromArchive(
       inputUrl,
