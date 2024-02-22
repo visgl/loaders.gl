@@ -322,7 +322,6 @@ export default class I3SConverter {
       console.log('Feature metadata classes have not been found');
     }
 
-    console.log(`------------------------------------------------`);
     if (
       !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLES) &&
       !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLE_STRIP)
@@ -334,6 +333,7 @@ export default class I3SConverter {
       return false;
     }
 
+    console.log(`------------------------------------------------`);
     return true;
   }
 

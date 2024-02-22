@@ -211,6 +211,7 @@ async function convert(options: ValidatedTileConversionOptions) {
         tilesetName: options.name,
         maxDepth: options.maxDepth,
         egmFilePath: options.egm,
+        analyze: options.analyze,
         inquirer
       });
       break;

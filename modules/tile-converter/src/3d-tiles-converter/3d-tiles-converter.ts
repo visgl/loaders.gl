@@ -24,10 +24,11 @@ import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import B3dmConverter, {I3SAttributesData} from './helpers/b3dm-converter';
 import {I3STileHeader} from '@loaders.gl/i3s/src/types';
-import {loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
+import {getNodeCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
 import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
 import {ZipFileSystem} from '../../../zip/src';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
+import {Progress} from '../i3s-converter/helpers/progress';
 
 const I3S = 'I3S';
 
@@ -56,6 +57,7 @@ export default class Tiles3DConverter {
     }
   };
   conversionDump: ConversionDump;
+  progress: Progress;
 
   constructor() {
     this.options = {};
@@ -67,6 +69,7 @@ export default class Tiles3DConverter {
     this.attributeStorageInfo = null;
     this.workerSource = {};
     this.conversionDump = new ConversionDump();
+    this.progress = new Progress();
   }
 
   /**
@@ -85,12 +88,13 @@ export default class Tiles3DConverter {
     maxDepth?: number;
     egmFilePath: string;
     inquirer?: Promise<unknown>;
+    analyze?: boolean;
   }): Promise<any> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE);
       return BROWSER_ERROR_MESSAGE;
     }
-    const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath, inquirer} = options;
+    const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath, inquirer, analyze} = options;
     this.conversionStartTime = process.hrtime();
     this.options = {maxDepth, inquirer};
 
@@ -99,6 +103,16 @@ export default class Tiles3DConverter {
     console.log('Loading egm file completed!'); // eslint-disable-line
 
     this.slpkFilesystem = await openSLPK(inputUrl);
+
+    let preprocessResult = true;
+    if (analyze || this.slpkFilesystem) {
+      preprocessResult = await this.preprocessConversion();
+      if (!preprocessResult || analyze) {
+        return;
+      }
+    }
+
+    this.progress.startMonitoring();
 
     this.sourceTileset = await loadFromArchive(
       inputUrl,
@@ -161,6 +175,8 @@ export default class Tiles3DConverter {
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
     await this.conversionDump.deleteDumpFile();
 
+    this.progress.stopMonitoring();
+
     await this._finishConversion({slpk: false, outputPath, tilesetName});
 
     if (this.slpkFilesystem) {
@@ -170,6 +186,32 @@ export default class Tiles3DConverter {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
+  }
+
+  /**
+   * Preprocess stage of the tile converter. Calculate number of nodes
+   * @returns true - the conversion is possible, false - the tileset's content is not supported
+   */
+  private async preprocessConversion(): Promise<boolean> {
+    console.log(`Analyze source layer`);
+    const nodesCount = await getNodeCount(this.slpkFilesystem);
+    this.progress.stepsTotal = nodesCount;
+
+    console.log(`------------------------------------------------`);
+    console.log(`Preprocess results:`);
+    if (this.slpkFilesystem) {
+      console.log(`Node count: ${nodesCount}`);
+      if (nodesCount === 0) {
+        console.log('Node count is 0. The conversion will be interrupted.');
+        console.log(`------------------------------------------------`);
+        return false;
+      }
+    } else {
+      console.log(`Node count cannot be calculated for the remote dataset`);
+    }
+
+    console.log(`------------------------------------------------`);
+    return true;
   }
 
   /**
@@ -185,6 +227,7 @@ export default class Tiles3DConverter {
     level: number,
     childNodeInfo: NodeReference
   ): Promise<void> {
+    let nextParentNode = parentNode;
     const sourceChild = await this._loadChildNode(parentSourceNode, childNodeInfo);
     if (sourceChild.contentUrl) {
       if (
@@ -235,11 +278,20 @@ export default class Tiles3DConverter {
         true
       );
       parentNode.children.push(child);
-
-      await this._addChildren(sourceChild, child, level + 1);
-    } else {
-      await this._addChildren(sourceChild, parentNode, level + 1);
+      nextParentNode = child;
     }
+
+    this.progress.stepsDone += 1;
+    let timeRemainingString = 'Calculating time left...';
+    const timeRemaining = this.progress.getTimeRemainingString();
+    if (timeRemaining) {
+      timeRemainingString = `${timeRemaining} left`;
+    }
+    const percentString = this.progress.getPercentString();
+    const progressString = percentString ? ` ${percentString}%, ${timeRemainingString}` : '';
+    console.log(`[converted${progressString}]: ${childNodeInfo.id}`); // eslint-disable-line
+
+    await this._addChildren(sourceChild, nextParentNode, level + 1);
   }
 
   /**

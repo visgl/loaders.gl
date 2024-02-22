@@ -29,7 +29,7 @@ export const ZIP_COMPRESSION_HANDLERS: {[key: number]: CompressionHandler} = {
  */
 export class ZipFileSystem implements FileSystem {
   /** FileProvider instance promise */
-  protected fileProvider: FileProvider | null = null;
+  public fileProvider: FileProvider | null = null;
   public fileName?: string;
   public archive: IndexedArchive | null = null;
 
