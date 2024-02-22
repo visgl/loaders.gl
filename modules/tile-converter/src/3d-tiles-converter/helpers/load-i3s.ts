@@ -135,7 +135,7 @@ function getSlpkUrlParts(url: string): SLPKUrlParts | null {
  * @param fileSystem - file system of SLPK
  * @returns number of nodes
  */
-export async function getNodesCount(fileSystem: ZipFileSystem | null): Promise<number> {
+export async function getNodeCount(fileSystem: ZipFileSystem | null): Promise<number> {
   if (!fileSystem?.fileProvider) {
     return 0;
   }

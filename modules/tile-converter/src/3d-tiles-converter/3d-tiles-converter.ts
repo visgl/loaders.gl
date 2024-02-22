@@ -24,7 +24,7 @@ import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
 import B3dmConverter, {I3SAttributesData} from './helpers/b3dm-converter';
 import {I3STileHeader} from '@loaders.gl/i3s/src/types';
-import {getNodesCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
+import {getNodeCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
 import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
 import {ZipFileSystem} from '../../../zip/src';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
@@ -104,11 +104,12 @@ export default class Tiles3DConverter {
 
     this.slpkFilesystem = await openSLPK(inputUrl);
 
-    const preprocessResult =
-      this.slpkFilesystem || analyze ? await this.preprocessConversion() : true;
-
-    if (!preprocessResult || analyze) {
-      return;
+    let preprocessResult = true;
+    if (analyze || this.slpkFilesystem) {
+      preprocessResult = await this.preprocessConversion();
+      if (!preprocessResult || analyze) {
+        return;
+      }
     }
 
     this.progress.startMonitoring();
@@ -193,17 +194,20 @@ export default class Tiles3DConverter {
    */
   private async preprocessConversion(): Promise<boolean> {
     console.log(`Analyze source layer`);
-    const nodesCount = await getNodesCount(this.slpkFilesystem);
+    const nodesCount = await getNodeCount(this.slpkFilesystem);
     this.progress.stepsTotal = nodesCount;
 
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
-    console.log(`Nodes count: ${nodesCount}`);
-
-    if (nodesCount === 0) {
-      console.log('The nodes count is 0. The conversion will be interrupted.');
-      console.log(`------------------------------------------------`);
-      return false;
+    if (this.slpkFilesystem) {
+      console.log(`Nodes count: ${nodesCount}`);
+      if (nodesCount === 0) {
+        console.log('The nodes count is 0. The conversion will be interrupted.');
+        console.log(`------------------------------------------------`);
+        return false;
+      }
+    } else {
+      console.log(`Nodes count cannot be calculated for remote dataset`);
     }
 
     console.log(`------------------------------------------------`);
