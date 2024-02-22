@@ -200,14 +200,14 @@ export default class Tiles3DConverter {
     console.log(`------------------------------------------------`);
     console.log(`Preprocess results:`);
     if (this.slpkFilesystem) {
-      console.log(`Nodes count: ${nodesCount}`);
+      console.log(`Node count: ${nodesCount}`);
       if (nodesCount === 0) {
-        console.log('The nodes count is 0. The conversion will be interrupted.');
+        console.log('Node count is 0. The conversion will be interrupted.');
         console.log(`------------------------------------------------`);
         return false;
       }
     } else {
-      console.log(`Nodes count cannot be calculated for remote dataset`);
+      console.log(`Node count cannot be calculated for the remote dataset`);
     }
 
     console.log(`------------------------------------------------`);
