@@ -36,19 +36,19 @@ test('Load Parquet file', async (t) => {
   t.end();
 });
 
-test('ParquetWasmLoader#load', async (t) => {
+test.only('ParquetWasmLoader#load', async (t) => {
   t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
     const table = await load(url, ParquetWasmLoader);
     const arrowTable = table.data;
-    t.ok(arrowTable, `GOOD(${title})`);
+    t.ok(arrowTable instanceof arrow.Table, `GOOD(${title})`);
   }
 
   t.end();
 });
 
-test.only('ParquetWasmWriter#writer/loader round trip', async (t) => {
+test('ParquetWasmWriter#writer/loader round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWasmWriter, {

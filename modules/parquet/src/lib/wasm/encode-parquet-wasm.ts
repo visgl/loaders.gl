@@ -24,10 +24,10 @@ export async function encode(
   const ipcStream = arrow.tableToIPC(arrowTable);
 
   // Pass the IPC stream to the Parquet writer.
-  // const wasmTable = wasm.Table.fromIPCStream(ipcStream);
+  const wasmTable = wasm.Table.fromIPCStream(ipcStream);
   const wasmProperties = new wasm.WriterPropertiesBuilder().build();
   try {
-    const parquetBytes = wasm.writeParquet(ipcStream, wasmProperties);
+    const parquetBytes = wasm.writeParquet(wasmTable, wasmProperties);
     // const parquetBytes = wasm.writeParquet(wasmTable, wasmProperties);
     return parquetBytes.buffer.slice(
       parquetBytes.byteOffset,

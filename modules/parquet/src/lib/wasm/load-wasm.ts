@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // eslint-disable-next-line import/default
-import initWasm from 'parquet-wasm/esm/arrow1';
+import initWasm from 'parquet-wasm';
 import * as parquetWasm from 'parquet-wasm';
 import {PARQUET_WASM_URL} from '../constants';
 
