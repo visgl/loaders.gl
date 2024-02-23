@@ -12,6 +12,7 @@ export type RequestSchedulerProps = {
   id?: string;
   throttleRequests?: boolean;
   maxRequests?: number;
+  debounce?: number;
 };
 
 const STAT_QUEUED_REQUESTS = 'Queued Requests';
@@ -25,7 +26,10 @@ const DEFAULT_PROPS: Required<RequestSchedulerProps> = {
   // Specifies if the request scheduler should throttle incoming requests, mainly for comparative testing
   throttleRequests: true,
   // The maximum number of simultaneous active requests. Un-throttled requests do not observe this limit.
-  maxRequests: 6
+  maxRequests: 6,
+  // Specifies a debounce time, in milliseconds. All requests are queued, until no new requests have
+  // been added to the queue for this amount of time.
+  debounce: 0
 };
 
 /** Tracks one request */
@@ -132,14 +136,17 @@ export default class RequestScheduler {
 
   /** We check requests asynchronously, to prevent multiple updates */
   _issueNewRequests(): void {
-    if (!this.deferredUpdate) {
-      this.deferredUpdate = setTimeout(() => this._issueNewRequestsAsync(), 0);
+    if (this.deferredUpdate !== null) {
+      clearTimeout(this.deferredUpdate);
     }
+    this.deferredUpdate = setTimeout(() => this._issueNewRequestsAsync(), this.props.debounce);
   }
 
   /** Refresh all requests  */
   _issueNewRequestsAsync() {
-    // TODO - shouldn't we clear the timeout?
+    if (this.deferredUpdate !== null) {
+      clearTimeout(this.deferredUpdate);
+    }
     this.deferredUpdate = null;
 
     const freeSlots = Math.max(this.props.maxRequests - this.activeRequestCount, 0);
