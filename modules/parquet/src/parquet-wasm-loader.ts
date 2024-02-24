@@ -6,10 +6,7 @@ import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-u
 import type {ArrowTable} from '@loaders.gl/arrow';
 
 import {parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {VERSION, PARQUET_WASM_URL} from './lib/constants';
 
 /** Parquet WASM loader options */
 export type ParquetWasmLoaderOptions = LoaderOptions & {
@@ -34,7 +31,7 @@ export const ParquetWasmWorkerLoader: Loader<ArrowTable, never, ParquetWasmLoade
   options: {
     parquet: {
       type: 'arrow-table',
-      wasmUrl: 'https://unpkg.com/parquet-wasm@0.3.1/esm2/arrow1_bg.wasm'
+      wasmUrl: PARQUET_WASM_URL
     }
   }
 };
@@ -42,5 +39,8 @@ export const ParquetWasmWorkerLoader: Loader<ArrowTable, never, ParquetWasmLoade
 /** Parquet WASM table loader */
 export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
   ...ParquetWasmWorkerLoader,
-  parse: parseParquetWasm
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetWasmLoaderOptions) {
+    options = {parquet: {...ParquetWasmLoader.options.parquet, ...options?.parquet}, ...options};
+    return parseParquetWasm(arrayBuffer, options);
+  }
 };
