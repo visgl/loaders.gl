@@ -200,17 +200,12 @@ export function getFileIterator(
  * @param subfolder relative path from the root folder.
  * @returns list of paths
  */
-<<<<<<< HEAD
 export async function getAllFiles(
   basePath: string,
   subfolder: string = '',
   fsPassed?: NodeFilesystem
 ): Promise<string[]> {
   const fs = fsPassed ? fsPassed : new NodeFilesystem({});
-=======
-export async function getAllFiles(basePath: string, subfolder: string = ''): Promise<string[]> {
-  fs ||= new NodeFilesystem({});
->>>>>>> 7e5932d46 (feat(parquet): restore ParquetWasm loader)
   const files = await fs.readdir(pathJoin(basePath, subfolder));
 
   const arrayOfFiles: string[] = [];
