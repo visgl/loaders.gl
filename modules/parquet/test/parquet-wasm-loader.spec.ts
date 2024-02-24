@@ -36,7 +36,7 @@ test('Load Parquet file', async (t) => {
   t.end();
 });
 
-test.only('ParquetWasmLoader#load', async (t) => {
+test('ParquetWasmLoader#load', async (t) => {
   t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
