@@ -2,6 +2,12 @@
 
 ## v4.2 (alpha)
 
+### v4.2.0-alpha.3
+
+- feat(tile-converter): quiet mode (#2891)
+- feat(parquet): restore ParquetWasm loader (#2868)
+- feat(tile-converter): 3d-tiles-converter progress (#2890)
+
 ### v4.2.0-alpha.2
 
 - feat(tile-converter): convert SLPK (#2888)
