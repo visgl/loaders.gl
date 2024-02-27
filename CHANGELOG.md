@@ -2,6 +2,11 @@
 
 ## v4.2 (alpha)
 
+### v4.2.0-alpha.4
+
+- fix(tile-converter): compose SLPK hash file (#2895)
+- chore(i3s examples): Add i3s picking example (#2886)
+
 ### v4.2.0-alpha.3
 
 - feat(tile-converter): quiet mode (#2891)
