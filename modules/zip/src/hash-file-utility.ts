@@ -91,7 +91,13 @@ export async function composeHashFile(
   const hashArray: ArrayBuffer[] = [];
 
   for await (const cdHeader of zipCDIterator) {
-    const filename = cdHeader.fileName.split('\\').join('/').toLocaleLowerCase();
+    let filename = cdHeader.fileName.split('\\').join('/');
+    // I3S edge case. All files should be lower case by spec. However, ArcGIS
+    // and official i3s_converter https://github.com/Esri/i3s-spec/blob/master/i3s_converter/i3s_converter_ReadMe.md
+    // expect `3dSceneLayer.json.gz` in camel case
+    if (filename !== '3dSceneLayer.json.gz') {
+      filename = filename.toLocaleLowerCase();
+    }
     const arrayBuffer = textEncoder.encode(filename).buffer;
     const md5 = await md5Hash.hash(arrayBuffer, 'hex');
     hashArray.push(
