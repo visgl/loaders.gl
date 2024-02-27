@@ -19,11 +19,11 @@ export type PLYLoaderOptions = LoaderOptions & {
 /**
  * Loader for PLY - Polygon File Format
  */
-export const PLYLoader: LoaderWithParser<PLYMesh, any, PLYLoaderOptions> = {
+export const PLYLoader = {
   ...PLYWorkerLoader,
   // Note: parsePLY supports both text and binary
   parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply), // TODO - this may not detect text correctly?
   parseTextSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
   parseSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
   parseInBatches: (arrayBuffer, options) => parsePLYInBatches(arrayBuffer, options?.ply)
-};
+} as const satisfies LoaderWithParser<PLYMesh, any, PLYLoaderOptions>;

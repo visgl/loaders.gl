@@ -16,7 +16,10 @@ export type TerrainLoaderOptions = ImageLoaderOptions & {
 /**
  * Worker loader for image encoded terrain
  */
-export const TerrainLoader: Loader<Mesh, never, TerrainLoaderOptions> = {
+export const TerrainLoader = {
+  dataType: null as unknown as Mesh,
+  batchType: null as never,
+
   name: 'Terrain',
   id: 'terrain',
   module: 'terrain',
@@ -38,4 +41,4 @@ export const TerrainLoader: Loader<Mesh, never, TerrainLoaderOptions> = {
       skirtHeight: undefined
     }
   }
-};
+} as const satisfies Loader<Mesh, never, TerrainLoaderOptions>;

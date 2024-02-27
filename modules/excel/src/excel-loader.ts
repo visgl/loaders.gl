@@ -11,22 +11,17 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ExcelLoaderOptions = LoaderOptions & {
   excel?: {
-    shape: /* 'array-row-table' | */ 'object-row-table';
+    shape?: /* 'array-row-table' | */ 'object-row-table';
     sheet?: string; // Load default Sheet
   };
-};
-
-const DEFAULT_EXCEL_LOADER_OPTIONS: ExcelLoaderOptions = {
-  excel: {
-    shape: 'object-row-table',
-    sheet: undefined // Load default Sheet
-  }
 };
 
 /**
  * Worker Loader for Excel files
  */
-export const ExcelLoader: Loader<ObjectRowTable, never, ExcelLoaderOptions> = {
+export const ExcelLoader = {
+  dataType: null as unknown as ObjectRowTable,
+  batchType: null as never,
   name: 'Excel',
   id: 'excel',
   module: 'excel',
@@ -39,5 +34,10 @@ export const ExcelLoader: Loader<ObjectRowTable, never, ExcelLoaderOptions> = {
   ],
   category: 'table',
   binary: true,
-  options: DEFAULT_EXCEL_LOADER_OPTIONS
-};
+  options: {
+    excel: {
+      shape: 'object-row-table',
+      sheet: undefined // Load default Sheet
+    }
+  }
+} as const satisfies Loader<ObjectRowTable, never, ExcelLoaderOptions>;

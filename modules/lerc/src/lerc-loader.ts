@@ -26,7 +26,10 @@ export type LERCLoaderOptions = LoaderOptions & {
 /**
  * Loader for the LERC raster format
  */
-export const LERCLoader: LoaderWithParser<LERCData, never, LERCLoaderOptions> = {
+export const LERCLoader = {
+  dataType: null as unknown as LERCData,
+  batchType: null as never,
+
   id: 'lerc',
   name: 'LERC',
 
@@ -41,7 +44,7 @@ export const LERCLoader: LoaderWithParser<LERCData, never, LERCLoaderOptions> = 
   },
   parse: async (arrayBuffer: ArrayBuffer, options?: LERCLoaderOptions) =>
     parseLERC(arrayBuffer, options)
-};
+} as const satisfies LoaderWithParser<LERCData, never, LERCLoaderOptions>;
 
 async function parseLERC(arrayBuffer: ArrayBuffer, options?: LERCLoaderOptions): Promise<LERCData> {
   // Load the WASM library

@@ -22,7 +22,9 @@ export type GLTFLoaderOptions = LoaderOptions &
 /**
  * GLTF loader
  */
-export const GLTFLoader: LoaderWithParser<GLTFWithBuffers, never, GLBLoaderOptions> = {
+export const GLTFLoader = {
+  dataType: null as unknown as GLTFWithBuffers,
+  batchType: null as never,
   name: 'glTF',
   id: 'gltf',
   module: 'gltf',
@@ -46,7 +48,7 @@ export const GLTFLoader: LoaderWithParser<GLTFWithBuffers, never, GLBLoaderOptio
     // common?
     log: console // eslint-disable-line
   }
-};
+} as const satisfies LoaderWithParser<GLTFWithBuffers, never, GLBLoaderOptions>;
 
 export async function parse(
   arrayBuffer,

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {DataViewFile} from '@loaders.gl/loader-utils';
 import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
@@ -21,7 +25,10 @@ export type SLPKLoaderOptions = LoaderOptions & {
  * @todo - this reloads the entire archive for every tile, should be optimized
  * @todo - this should be updated to use `parseFile` and ReadableFile
  */
-export const SLPKLoader: LoaderWithParser<ArrayBuffer, never, SLPKLoaderOptions> = {
+export const SLPKLoader = {
+  dataType: null as unknown as ArrayBuffer,
+  batchType: null as never,
+
   name: 'I3S SLPK (Scene Layer Package)',
   id: 'slpk',
   module: 'i3s',
@@ -33,4 +40,4 @@ export const SLPKLoader: LoaderWithParser<ArrayBuffer, never, SLPKLoaderOptions>
     const archive = await parseSLPKArchive(new DataViewFile(new DataView(data)));
     return archive.getFile(options.slpk?.path ?? '', options.slpk?.pathMode);
   }
-};
+} as const satisfies LoaderWithParser<ArrayBuffer, never, SLPKLoaderOptions>;

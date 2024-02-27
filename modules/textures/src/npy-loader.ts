@@ -16,7 +16,10 @@ export type NPYLoaderOptions = LoaderOptions & {
 /**
  * Worker loader for numpy "tiles"
  */
-export const NPYWorkerLoader: Loader<NPYTile, never, NPYLoaderOptions> = {
+export const NPYWorkerLoader = {
+  dataType: null as any as NPYTile,
+  batchType: null as never,
+
   name: 'NPY',
   id: 'npy',
   module: 'textures',
@@ -28,13 +31,13 @@ export const NPYWorkerLoader: Loader<NPYTile, never, NPYLoaderOptions> = {
   options: {
     npy: {}
   }
-};
+} as const satisfies Loader<NPYTile, never, NPYLoaderOptions>;
 
 /**
  * Loader for numpy "tiles"
  */
-export const NPYLoader: LoaderWithParser<any, any, NPYLoaderOptions> = {
+export const NPYLoader = {
   ...NPYWorkerLoader,
   parseSync: parseNPY,
   parse: async (arrayBuffer: ArrayBuffer, options?: LoaderOptions) => parseNPY(arrayBuffer, options)
-};
+} as const satisfies LoaderWithParser<any, any, NPYLoaderOptions>;

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -10,7 +14,10 @@ export type POTreeLoaderOptions = LoaderOptions & {
 
 /** Potree loader */
 // @ts-ignore
-export const PotreeLoader: LoaderWithParser<any, never, POTreeLoaderOptions> = {
+export const PotreeLoader = {
+  dataType: null as unknown as any,
+  batchType: null as never,
+
   name: 'potree',
   id: 'potree',
   module: 'potree',
@@ -22,4 +29,5 @@ export const PotreeLoader: LoaderWithParser<any, never, POTreeLoaderOptions> = {
   options: {
     potree: {}
   }
-};
+  // @ts-ignore
+} as const satisfies LoaderWithParser<any, never, POTreeLoaderOptions>;

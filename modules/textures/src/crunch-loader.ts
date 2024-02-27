@@ -16,7 +16,10 @@ export type CrunchLoaderOptions = LoaderOptions & {
  * Worker loader for the Crunch compressed texture container format
  * @note We avoid bundling crunch - it is a rare format and large lib, so we only offer worker loader
  */
-export const CrunchLoader: Loader<TextureLevel[], never, CrunchLoaderOptions> = {
+export const CrunchLoader = {
+  dataType: null as unknown as TextureLevel[],
+  batchType: null as never,
+
   id: 'crunch',
   name: 'Crunch',
   module: 'textures',
@@ -30,4 +33,4 @@ export const CrunchLoader: Loader<TextureLevel[], never, CrunchLoaderOptions> = 
       libraryPath: 'libs/'
     }
   }
-};
+} as const satisfies Loader<TextureLevel[], never, CrunchLoaderOptions>;

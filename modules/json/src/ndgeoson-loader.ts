@@ -18,11 +18,10 @@ export type NDGeoJSONLoaderOptions = LoaderOptions & {
 };
 
 /** NDGeoJSONLoader */
-export const NDJSONLoader: LoaderWithParser<
-  ArrayRowTable | ObjectRowTable,
-  Batch,
-  NDGeoJSONLoaderOptions
-> = {
+export const NDJSONLoader = {
+  dataType: null as unknown as ArrayRowTable | ObjectRowTable,
+  batchType: null as unknown as Batch,
+
   name: 'NDJSON',
   id: 'ndjson',
   module: 'json',
@@ -48,4 +47,8 @@ export const NDJSONLoader: LoaderWithParser<
       format: 'geojson'
     }
   }
-};
+} as const satisfies LoaderWithParser<
+  ArrayRowTable | ObjectRowTable,
+  Batch,
+  NDGeoJSONLoaderOptions
+>;

@@ -9,7 +9,7 @@ import encode3DTile from './lib/encoders/encode-3d-tile';
 /**
  * Exporter for 3D Tiles
  */
-export const Tile3DWriter: WriterWithEncoder<unknown, never, WriterOptions> = {
+export const Tile3DWriter = {
   name: '3D Tile',
   id: '3d-tiles',
   module: '3d-tiles',
@@ -22,7 +22,7 @@ export const Tile3DWriter: WriterWithEncoder<unknown, never, WriterOptions> = {
   },
   encode: async (tile, options) => encodeSync(tile, options),
   encodeSync
-};
+} as const satisfies WriterWithEncoder<unknown, never, WriterOptions>;
 
 function encodeSync(tile, options) {
   return encode3DTile(tile, options);

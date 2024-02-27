@@ -17,7 +17,7 @@ export type TWKBWriterOptions = WriterOptions & {
 /**
  * WKB exporter
  */
-export const TWKBWriter: WriterWithEncoder<Geometry, never, TWKBWriterOptions> = {
+export const TWKBWriter = {
   name: 'TWKB (Tiny Well Known Binary)',
   id: 'twkb',
   module: 'wkt',
@@ -33,4 +33,4 @@ export const TWKBWriter: WriterWithEncoder<Geometry, never, TWKBWriterOptions> =
       hasM: false
     }
   }
-};
+} as const satisfies WriterWithEncoder<Geometry, never, TWKBWriterOptions>;

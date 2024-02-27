@@ -14,6 +14,7 @@ export {WMSLayerDescription};
  */
 export const WMSLayerDescriptionLoader = {
   ...WMSCapabilitiesLoader,
+  dataType: null as unknown as WMSLayerDescription,
 
   id: 'wms-layer-description',
   name: 'WMS DescribeLayer',
@@ -21,6 +22,4 @@ export const WMSLayerDescriptionLoader = {
   parse: async (arrayBuffer: ArrayBuffer, options?: XMLLoaderOptions) =>
     parseWMSLayerDescription(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: XMLLoaderOptions) => parseWMSLayerDescription(text, options)
-};
-
-export const _typecheckWMSFeatureInfoLoader: LoaderWithParser = WMSLayerDescriptionLoader;
+} as const satisfies LoaderWithParser<WMSLayerDescription, never, XMLLoaderOptions>;

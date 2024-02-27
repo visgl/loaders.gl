@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import {load, fetchFile} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 import {writeFile} from '../lib/utils/file-utils';

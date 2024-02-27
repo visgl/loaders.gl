@@ -29,7 +29,7 @@ const DEFAULT_DRACO_WRITER_OPTIONS = {
 /**
  * Exporter for Draco3D compressed geometries
  */
-export const DracoWriter: WriterWithEncoder<DracoMesh, unknown, DracoWriterOptions> = {
+export const DracoWriter = {
   name: 'DRACO',
   id: 'draco',
   module: 'draco',
@@ -39,7 +39,7 @@ export const DracoWriter: WriterWithEncoder<DracoMesh, unknown, DracoWriterOptio
     draco: DEFAULT_DRACO_WRITER_OPTIONS
   },
   encode
-};
+} as const satisfies WriterWithEncoder<DracoMesh, unknown, DracoWriterOptions>;
 
 async function encode(data: DracoMesh, options: DracoWriterOptions = {}): Promise<ArrayBuffer> {
   // Dynamically load draco

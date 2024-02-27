@@ -15,7 +15,7 @@ export type ImageWriterOptions = WriterOptions & {
 };
 
 /** Writer for image data */
-export const ImageWriter: WriterWithEncoder<ImageDataType, never, ImageWriterOptions> = {
+export const ImageWriter = {
   name: 'Images',
   id: 'image',
   module: 'images',
@@ -28,4 +28,4 @@ export const ImageWriter: WriterWithEncoder<ImageDataType, never, ImageWriterOpt
     }
   },
   encode: encodeImage
-};
+} as const satisfies WriterWithEncoder<ImageDataType, never, ImageWriterOptions>;

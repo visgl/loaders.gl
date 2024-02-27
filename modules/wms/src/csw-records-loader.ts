@@ -20,7 +20,10 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
 /**
  * Loader for the response to the CSW GetCapability request
  */
-export const CSWRecordsLoader: LoaderWithParser<CSWRecords, never, CSWLoaderOptions> = {
+export const CSWRecordsLoader = {
+  dataType: null as unknown as CSWRecords,
+  batchType: null as never,
+
   id: 'csw-records',
   name: 'CSW Records',
   module: 'wms',
@@ -35,7 +38,7 @@ export const CSWRecordsLoader: LoaderWithParser<CSWRecords, never, CSWLoaderOpti
   parse: async (arrayBuffer: ArrayBuffer, options?: CSWLoaderOptions) =>
     parseCSWRecords(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: CSWLoaderOptions) => parseCSWRecords(text, options)
-};
+} as const satisfies LoaderWithParser<CSWRecords, never, CSWLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

@@ -23,7 +23,7 @@ export type WKBWriterOptions = WriterOptions & {
 /**
  * WKB exporter
  */
-export const WKBWriter: WriterWithEncoder<Geometry | Feature, never, WriterOptions> = {
+export const WKBWriter = {
   name: 'WKB (Well Known Binary)',
   id: 'wkb',
   module: 'wkt',
@@ -41,4 +41,4 @@ export const WKBWriter: WriterWithEncoder<Geometry | Feature, never, WriterOptio
   encodeSync(data: Geometry | Feature, options?: WriterOptions): ArrayBuffer {
     return encodeWKB(data, options?.wkb);
   }
-};
+} as const satisfies WriterWithEncoder<Geometry | Feature, never, WriterOptions>;

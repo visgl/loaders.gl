@@ -11,7 +11,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ParquetWriterOptions = {};
 
-export const ParquetWriter: WriterWithEncoder<Table, TableBatch, ParquetWriterOptions> = {
+export const ParquetWriter = {
   name: 'Apache Parquet',
   id: 'parquet',
   module: 'parquet',
@@ -22,7 +22,7 @@ export const ParquetWriter: WriterWithEncoder<Table, TableBatch, ParquetWriterOp
   options: {},
   encode: async (data, options) => encodeSync(data, options),
   encodeSync
-};
+} as const satisfies WriterWithEncoder<Table, TableBatch, ParquetWriterOptions>;
 
 function encodeSync(data, options?: ParquetWriterOptions) {
   return new ArrayBuffer(0);

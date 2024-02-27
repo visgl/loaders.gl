@@ -10,7 +10,10 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 /**
  * SHP file loader
  */
-export const SHPWorkerLoader: Loader = {
+export const SHPWorkerLoader = {
+  dataType: null as unknown,
+  batchType: null as never,
+
   name: 'SHP',
   id: 'shp',
   module: 'shapefile',
@@ -26,7 +29,7 @@ export const SHPWorkerLoader: Loader = {
       _maxDimensions: 4
     }
   }
-};
+} as const satisfies Loader;
 
 /** SHP file loader */
 export const SHPLoader: LoaderWithParser = {

@@ -15,7 +15,7 @@ export type CSVWriterOptions = WriterOptions & {
   useDisplayNames?: never;
 };
 
-export const CSVWriter: WriterWithEncoder<Table, TableBatch, CSVWriterOptions> = {
+export const CSVWriter = {
   id: 'csv',
   version: 'latest',
   module: 'csv',
@@ -31,4 +31,4 @@ export const CSVWriter: WriterWithEncoder<Table, TableBatch, CSVWriterOptions> =
   encode: async (table, options) =>
     new TextEncoder().encode(encodeTableAsCSV(table, options)).buffer,
   encodeTextSync: (table, options) => encodeTableAsCSV(table, options)
-};
+} as const satisfies WriterWithEncoder<Table, TableBatch, CSVWriterOptions>;

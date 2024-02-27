@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import {fromArrayBuffer} from 'geotiff';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 
@@ -53,8 +57,11 @@ const loadGeoTiff = async (
   };
 };
 
-// Export loader
-export const GeoTiffLoader: LoaderWithParser<GeoTiffData, never, GeoTiffLoaderOptions> = {
+// /** @deprecated Double definition */
+export const GeoTiffLoader = {
+  dataType: null as unknown as GeoTiffData,
+  batchType: null as never,
+
   id: 'geotiff',
   name: 'GeoTIFF',
   module: 'geotiff',
@@ -65,4 +72,4 @@ export const GeoTiffLoader: LoaderWithParser<GeoTiffData, never, GeoTiffLoaderOp
   mimeTypes: ['image/tiff', 'image/geotiff'],
   extensions: ['geotiff', 'tiff', 'geotif', 'tif'],
   parse: loadGeoTiff
-};
+} as const satisfies LoaderWithParser<GeoTiffData, never, GeoTiffLoaderOptions>;

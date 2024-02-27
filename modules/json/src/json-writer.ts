@@ -19,7 +19,7 @@ type RowArray = unknown[];
 type RowObject = {[key: string]: unknown};
 type TableJSON = RowArray[] | RowObject[];
 
-export const JSONWriter: WriterWithEncoder<Table, TableBatch, JSONWriterOptions> = {
+export const JSONWriter = {
   id: 'json',
   version: 'latest',
   module: 'json',
@@ -31,4 +31,4 @@ export const JSONWriter: WriterWithEncoder<Table, TableBatch, JSONWriterOptions>
   encode: async (table: Table, options: JSONWriterOptions) =>
     new TextEncoder().encode(encodeTableAsJSON(table, options)).buffer,
   encodeTextSync: (table: Table, options: JSONWriterOptions) => encodeTableAsJSON(table, options)
-};
+} as const satisfies WriterWithEncoder<Table, TableBatch, JSONWriterOptions>;
