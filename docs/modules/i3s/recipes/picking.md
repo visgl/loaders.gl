@@ -15,7 +15,7 @@ Please find source code of the example <a href="https://github.com/visgl/loaders
 
 To get selected object highlighted it needs to set prop `pickable` of the `Tile3DLayer` to `true` and prop `highlightedObjectIndex` to value of index of the selected object. Please take a look at the short codesnippet below:
 
-```javascript
+```ts
 import DeckGL from '@deck.gl/react';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import Map from 'react-map-gl';
@@ -50,7 +50,7 @@ function renderLayers() {
 
 To get attributes data for the selected object it needs to invoke `loadFeatureAttributes` with the selected object and object's index as a params.
 
-```javascript
+```ts
 import DeckGL from '@deck.gl/react';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
 import Map from 'react-map-gl';
