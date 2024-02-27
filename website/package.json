@@ -55,7 +55,7 @@
     "docusaurus-mdx-checker": "^3.0.0",
     "docusaurus-node-polyfills": "^1.0.0",
     "expr-eval": "^2.0.2",
-    "mapbox-gl": "npm:empty-npm-package@1.0.0",
+    "mapbox-gl": "^3.1.2",
     "maplibre-gl": "^2.4.0",
     "marked": "^0.7.0",
     "prism-react-renderer": "^2.1.0",
