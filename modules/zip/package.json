@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zip",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "Zip Archive Loader",
   "license": "MIT",
   "type": "module",
@@ -38,9 +38,9 @@
     "build-bundle": "ocular-bundle ./src/index.ts"
   },
   "dependencies": {
-    "@loaders.gl/compression": "4.1.1",
-    "@loaders.gl/crypto": "4.1.1",
-    "@loaders.gl/loader-utils": "4.1.1",
+    "@loaders.gl/compression": "4.1.2",
+    "@loaders.gl/crypto": "4.1.2",
+    "@loaders.gl/loader-utils": "4.1.2",
     "jszip": "^3.1.5",
     "md5": "^2.3.0"
   },
