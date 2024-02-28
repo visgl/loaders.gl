@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import {Map} from 'react-map-gl';
+import Map from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator} from '@deck.gl/core';
@@ -114,7 +115,7 @@ export default function App() {
 
       const newViewState = {
         ...viewState,
-        zoom: zoom + 2,
+        zoom: zoom + 1,
         longitude,
         latitude,
         transitionDuration: TRANSITION_DURAITON,
