@@ -2,12 +2,7 @@
   {
     "type": "category",
     "label": "Overview",
-    "items": [
-      "README",
-      "developer-guide/get-started",
-      "whats-new",
-      "upgrade-guide"
-    ]
+    "items": ["README", "developer-guide/get-started", "whats-new", "upgrade-guide"]
   },
   {
     "type": "category",
@@ -29,9 +24,7 @@
       {
         "type": "category",
         "label": "Sources and Services",
-        "items": [
-          "modules/pmtiles/api-reference/pmtiles-source"
-        ]
+        "items": ["modules/pmtiles/api-reference/pmtiles-source"]
       },
       "modules/3d-tiles/api-reference/tiles-3d-loader",
       "modules/3d-tiles/api-reference/cesium-ion-loader",
@@ -183,7 +176,8 @@
         "label": "I3S",
         "items": [
           "modules/i3s/recipes/building-scene-layer",
-          "modules/i3s/recipes/attribute-driven-colorization"
+          "modules/i3s/recipes/attribute-driven-colorization",
+          "modules/i3s/recipes/picking"
         ]
       }
     ]
