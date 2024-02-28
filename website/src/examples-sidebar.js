@@ -36,7 +36,6 @@ const sidebars = {
       items: [
         'pmtiles',
         'wms',
-        'i3s',
         'i3s-building-scene-layer',
         'i3s-picking',
         'i3s-colorization-by-attributes',
