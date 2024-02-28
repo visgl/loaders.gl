@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 
 import Map from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator, PickingInfo} from '@deck.gl/core';
