@@ -16,7 +16,7 @@
     "@loaders.gl/core": "^4.0.0",
     "@loaders.gl/i3s": "^4.0.0",
     "@luma.gl/core": "^8.5.21",
-    "mapbox-gl": "^3.1.2",
+    "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "maplibre-gl": "^3.6.2",
     "prop-types": "^15.7.2",
     "react": "^18.2.0",
