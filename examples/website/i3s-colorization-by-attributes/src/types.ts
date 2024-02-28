@@ -1,11 +1,11 @@
-export type COLOR = [number, number, number, number];
+import Color from '@deck.gl/core';
 
 export type ColorsByAttribute = {
   attributeName: string;
   minValue: number;
   maxValue: number;
-  minColor: COLOR;
-  maxColor: COLOR;
+  minColor: Color;
+  maxColor: Color;
   mode: string;
 };
 
