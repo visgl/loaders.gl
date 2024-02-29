@@ -29,3 +29,7 @@ PMTiles is a container format and can in principle contain any type of quadtree-
 
 The pmtiles header has a metadata field that can store arbitrary JSON metadata about the tileset. This means that for MVT pmtiles, [TileJSON](/docs/modules/mvt/formats/tilejson) is typically available in the PMTiles header.
 
+## Advanced Features
+
+pmtiles supports refreshing the index if the underlying PMTiles file is rewritten and the storage backend supports ETag headers (which Amazon S3 does). 
+

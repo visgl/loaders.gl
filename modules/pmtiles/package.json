@@ -49,7 +49,7 @@
     "@loaders.gl/loader-utils": "4.2.0-alpha.4",
     "@loaders.gl/mvt": "4.2.0-alpha.4",
     "@loaders.gl/schema": "4.2.0-alpha.4",
-    "pmtiles": "^2.7.2"
+    "pmtiles": "^3.0.4"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
