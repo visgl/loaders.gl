@@ -16,6 +16,11 @@ Target Release Date: February 6, 2024
 
 - Loading flatgeobuf into a `GeoJSONTable` now extracts a Schema object from the flatgeobuf header, and uses it to infer the types of the columns in the table.
 
+**@loaders.gl/loader-utils**
+
+- **Request Scheduling**
+  - [`RequestScheduler`](/docs/modules/loader-utils/api-reference/request-scheduler) now includes a 'debounceMs' option. When enabled, may reduce bandwidth usage and total loading time during interactive view transitions.
+
 ## v4.0
 
 Release Date: Oct 30, 2023
