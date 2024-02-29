@@ -6,9 +6,9 @@ import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
 // import {StaticMap} from 'react-map-gl';
 
-import DeckGL from '@deck.gl/react/typed';
-import {MapController} from '@deck.gl/core/typed';
-import {_WMSLayer as WMSLayer} from '@deck.gl/geo-layers/typed';
+import DeckGL from '@deck.gl/react';
+import {MapController} from '@deck.gl/core';
+import {_WMSLayer as WMSLayer} from '@deck.gl/geo-layers';
 
 import {WMSService, type ImageSourceMetadata} from '@loaders.gl/wms';
 
