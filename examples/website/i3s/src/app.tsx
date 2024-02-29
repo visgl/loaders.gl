@@ -17,7 +17,7 @@ import {TerrainLayer, Tile3DLayer} from '@deck.gl/geo-layers';
 import {I3SLoader, I3SBuildingSceneLayerLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
-import {lumaStats} from '@luma.gl/core';
+import {luma} from '@luma.gl/core';
 import {load, fetchFile} from '@loaders.gl/core';
 
 
@@ -148,7 +148,7 @@ class App extends PureComponent {
   }
 
   componentDidMount() {
-    this._memWidget = new StatsWidget(lumaStats.get('Memory Usage'), {
+    this._memWidget = new StatsWidget(luma.stats.get('Memory Usage'), {
       framesPerUpdate: 1,
       formatters: {
         'GPU Memory': 'memory',

@@ -6,7 +6,7 @@ import maplibregl from 'maplibre-gl';
 import {HuePicker, MaterialPicker} from 'react-color';
 import styled from 'styled-components';
 
-import {lumaStats} from '@luma.gl/core';
+import {luma} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {
   FlyToInterpolator,
@@ -266,7 +266,7 @@ export default class App extends PureComponent {
   }
 
   componentDidMount() {
-    this._memWidget = new StatsWidget(lumaStats.get('Memory Usage'), {
+    this._memWidget = new StatsWidget(luma.stats.get('Memory Usage'), {
       framesPerUpdate: 1,
       formatters: {
         'GPU Memory': 'memory',
@@ -699,13 +699,13 @@ export default class App extends PureComponent {
         getColor: (d) => d.color,
         getWidth: 2
       }),
-      new BoundingVolumeLayer({
-        id: 'bounding-volume-layer',
-        visible: boundingVolume,
-        tiles,
-        getBoundingVolumeColor: this.getBoundingVolumeColor.bind(this),
-        boundingVolumeType
-      }),
+      // new BoundingVolumeLayer({
+      //   id: 'bounding-volume-layer',
+      //   visible: boundingVolume,
+      //   tiles,
+      //   getBoundingVolumeColor: this.getBoundingVolumeColor.bind(this),
+      //   boundingVolumeType
+      // }),
       new LineLayer({
         id: 'normals-debug',
         data: normalsDebugData,
