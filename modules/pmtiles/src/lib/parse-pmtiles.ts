@@ -61,10 +61,12 @@ export type PMTilesMetadata = {
  */
 export function parsePMTilesHeader(
   header: pmtiles.Header,
-  pmtilesMetadata: Record<string, unknown> | null,
+  pmmetadata: unknown,
   options?: {includeFormatHeader?: boolean},
   loadOptions?: LoaderOptions
 ): PMTilesMetadata {
+  const pmtilesMetadata = pmmetadata as Record<string, unknown> | null;
+
   // Ironically, to use the TileJSON loader we need to stringify the metadata again.
   // This is the price of integrating with the existing pmtiles library.
   // TODO - provide a non-standard TileJSONLoader parsers that accepts a JSON object?
