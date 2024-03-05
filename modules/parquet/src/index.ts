@@ -37,4 +37,4 @@ export {
 } from './lib/arrow/convert-schema-from-parquet';
 
 // Experimental
-export {BufferPolyfill, installBufferPolyfill} from './polyfills/buffer';
+export {BufferPolyfill, installBufferPolyfill} from './polyfills/buffer/index';

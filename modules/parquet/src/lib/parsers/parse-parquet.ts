@@ -9,7 +9,7 @@ import type {ParquetLoaderOptions} from '../../parquet-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
-import {installBufferPolyfill} from '../../polyfills/buffer';
+import {installBufferPolyfill} from '../../polyfills/buffer/index';
 
 /**
  *  * Parse a parquet file using parquetjs

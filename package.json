@@ -29,7 +29,7 @@
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "clean": "ocular-clean",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
-    "build": "ocular-build && lerna run pre-build",
+    "build": "ocular-clean && ocular-clean && ocular-build && lerna run pre-build",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
     "publish": "ocular-publish",

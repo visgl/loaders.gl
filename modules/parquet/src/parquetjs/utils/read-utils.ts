@@ -1,5 +1,5 @@
-import {TBufferedTransport, TCompactProtocol, TFramedTransport} from '../parquet-thrift';
-import {FileMetaData, PageHeader} from '../parquet-thrift';
+import {TBufferedTransport, TCompactProtocol, TFramedTransport} from '../parquet-thrift/index';
+import {FileMetaData, PageHeader} from '../parquet-thrift/index';
 
 class UFramedTransport extends TFramedTransport {
   public readPos: number = 0;

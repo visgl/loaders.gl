@@ -9,5 +9,20 @@
     "noEmit": false,
     // Uncomment to debug
     // "listEmittedFiles": true
+    "plugins": [
+      {
+        "transform": "ocular-dev-tools/ts-transform-version-inline"
+      },
+      {
+        "transform": "ocular-dev-tools/ts-transform-append-extension",
+        "extensions": [".js", ".node.js"],
+        "after": true
+      },
+      {
+        "transform": "ocular-dev-tools/ts-transform-append-extension",
+        "extensions": [".js", ".node.js"],
+        "afterDeclarations": true
+      }
+    ]
   }
 }

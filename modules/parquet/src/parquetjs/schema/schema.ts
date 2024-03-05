@@ -1,6 +1,6 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 
-import {PARQUET_CODECS} from '../codecs';
+import {PARQUET_CODECS} from '../codecs/index';
 import {PARQUET_COMPRESSION_METHODS} from '../compression';
 import {
   FieldDefinition,
