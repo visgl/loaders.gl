@@ -34,7 +34,7 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker",
+    "pre-build": "# npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-worker",
     "build-bundle": "# ocular-bundle ./src/index.ts",
     "build-worker": "# esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
