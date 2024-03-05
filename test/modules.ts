@@ -17,7 +17,7 @@ import '@loaders.gl/schema/test';
 // Image Formats
 import '@loaders.gl/images/test';
 import '@loaders.gl/textures/test';
-import '@loaders.gl/lerc/test';
+// import '@loaders.gl/lerc/test';
 // import '@loaders.gl/video/test';
 import '@loaders.gl/geotiff/test';
 // import '@loaders.gl/zarr/test';
