@@ -73,8 +73,7 @@ export const loadI3SContent = async (
  */
 export async function openSLPK(url: string): Promise<ZipFileSystem | null> {
   const slpkUrlParts = url.split('.slpk');
-  const {slpkFileName} = getSlpkUrlParts(url) || {};
-  if (slpkFileName) {
+  if (slpkUrlParts.length == 2) {
     const slpkFileName = `${slpkUrlParts[0]}.slpk`;
     const fileProvider = new FileHandleFile(slpkFileName);
     const archive = await parseSLPKArchive(fileProvider, undefined, slpkFileName);
@@ -97,37 +96,14 @@ export async function loadFromArchive(
   loadOptions: I3SLoaderOptions,
   fileSystem: ZipFileSystem | null
 ) {
-  const slpkUrlParts = getSlpkUrlParts(url);
-  if (fileSystem !== null && slpkUrlParts !== null) {
-    const {internalFileName} = slpkUrlParts;
-    const content = await load(internalFileName, loader, {
+  if (fileSystem !== null) {
+    const content = await load(url, loader, {
       ...loadOptions,
       fetch: fileSystem.fetch.bind(fileSystem)
     });
     return content;
   }
   return await load(url, loader, loadOptions);
-}
-
-/**
- * Extract slpk file path and internal from the url
- * For example, for `./path/to/file.slpk/nodes/0` it returns
- * {"slpkFileName": "./path/to/file.slpk", "internalFileName": "/nodes/0" }
- * @param url full internal file path
- * @returns object with internal slpk file parts
- */
-function getSlpkUrlParts(url: string): SLPKUrlParts | null {
-  const slpkUrlParts = url.split('.slpk');
-  let result: SLPKUrlParts | null;
-  // Not '.slpk'. The file will be loaded with global fetch function
-  if (slpkUrlParts.length === 1) {
-    result = null;
-  } else if (slpkUrlParts.length === 2) {
-    result = {slpkFileName: `${slpkUrlParts[0]}.slpk`, internalFileName: slpkUrlParts[1].slice(1)};
-  } else {
-    throw new Error('Unexpected URL format');
-  }
-  return result;
 }
 
 /**

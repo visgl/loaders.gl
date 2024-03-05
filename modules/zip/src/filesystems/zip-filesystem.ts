@@ -94,6 +94,10 @@ export class ZipFileSystem implements FileSystem {
    * @returns - Response with file data
    */
   async fetch(filename: string): Promise<Response> {
+    if (this.fileName && filename.indexOf(this.fileName) === 0) {
+      filename = filename.substring(this.fileName.length + 1);
+    }
+
     let uncompressedFile: ArrayBuffer;
     if (this.archive) {
       uncompressedFile = await this.archive.getFile(filename, 'http');
