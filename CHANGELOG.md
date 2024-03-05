@@ -2,6 +2,15 @@
 
 # v3.4
 
+## v3.4.15
+
+- Downgrade probe.gl to v3
+
+## 3.4.14
+
+- Fix import-is-undefined error in some bundlers (#2618)
+- chore: Clean up module imports, remove default exports in images module (#2617)
+
 ## v3.4.13
 
 - Try fix bundling error (#2605)
