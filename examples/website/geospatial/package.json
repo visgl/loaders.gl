@@ -11,9 +11,9 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^9.0.0-beta.5",
-    "@deck.gl/layers": "^9.0.0-beta.5",
-    "@deck.gl/react": "^9.0.0-beta.5",
+    "@deck.gl/core": "^9.0.0-beta.6",
+    "@deck.gl/layers": "^9.0.0-beta.6",
+    "@deck.gl/react": "^9.0.0-beta.6",
     "@loaders.gl/arrow": "^4.1.0",
     "@loaders.gl/core": "^4.1.0",
     "@loaders.gl/flatgeobuf": "^4.1.0",
