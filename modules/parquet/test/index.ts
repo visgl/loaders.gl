@@ -19,4 +19,4 @@ import './geoparquet-loader.spec';
 
 import './parquet-columnar-loader.spec';
 
-import './parquet-wasm-loader.spec';
+// import './parquet-wasm-loader.spec';

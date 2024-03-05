@@ -26,6 +26,10 @@ const config = {
     test: testDir
   },
 
+  coverage: {
+    test: 'browser'
+  },
+
   bundle: {
     globalName: 'loader',
     externals: ['fs', 'path', 'util', 'events', 'stream', 'crypto', 'http', 'https'],
