@@ -31,7 +31,7 @@ jobs:
 
       - name: Run tests
         run: |
-          npm run test ci
+          npm run test-ci
 
       - name: Coveralls
         if: matrix.node-version == 18
