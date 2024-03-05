@@ -8,9 +8,9 @@ import {createRoot} from 'react-dom/client';
 import {Map} from 'react-map-gl';
 import maplibregl, {Properties} from 'maplibre-gl';
 
-import {DeckGL} from '@deck.gl/react/typed';
-import {MapController} from '@deck.gl/core/typed';
-import {GeoJsonLayer} from '@deck.gl/layers/typed';
+import {DeckGL} from '@deck.gl/react';
+import {MapController} from '@deck.gl/core';
+import {GeoJsonLayer} from '@deck.gl/layers';
 
 import {ControlPanel} from './components/control-panel';
 // import {FileUploader} from './components/file-uploader';

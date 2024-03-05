@@ -8,8 +8,8 @@ import {createRoot} from 'react-dom/client';
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 
-import DeckGL from '@deck.gl/react/typed';
-import {MapView} from '@deck.gl/core/typed';
+import DeckGL from '@deck.gl/react';
+import {MapView} from '@deck.gl/core';
 
 import {TileSourceLayer} from './components/tile-source-layer';
 

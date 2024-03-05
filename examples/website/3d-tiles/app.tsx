@@ -8,7 +8,7 @@ import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 import styled from 'styled-components';
 
-import {lumaStats} from '@luma.gl/core';
+import {luma} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {Tile3DLayer} from '@deck.gl/geo-layers';
@@ -85,7 +85,7 @@ export default class App extends PureComponent {
     const container = this._statsWidgetContainer;
     // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
     // TODO - Revisit after upgrade luma to use most recent StatsWidget API
-    this._memWidget = new StatsWidget(lumaStats.get('Memory Usage'), {
+    this._memWidget = new StatsWidget(luma.stats.get('Memory Usage'), {
       framesPerUpdate: 1,
       formatters: {
         'GPU Memory': 'memory',
