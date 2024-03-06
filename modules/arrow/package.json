@@ -44,8 +44,9 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-triangulation-worker",
-    "build-bundle": "ocular-bundle ./src/index.ts",
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-triangulation-worker",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-triangulation-worker": "esbuild src/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "pre-build2": "cp fixed-package.json ../../node_modules/apache-arrow/package.json && npm run build-bundle && npm run build-worker",
     "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -58,6 +59,9 @@
     "@loaders.gl/wkt": "4.2.0-alpha.4",
     "@math.gl/polygon": "4.0.0",
     "apache-arrow": ">= 15.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

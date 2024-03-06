@@ -40,7 +40,8 @@
   ],
   "scripts": {
     "pre-build": "echo npm run build-worker && yarn run copy-wasm",
-    "build-bundle": "ocular-bundle ./src/index.ts",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --bundle --minify --sourcemap --external:{util,fs,path,crypto,events} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "copy-wasm": "cp ../../node_modules/parquet-wasm/esm2/arrow1_bg.wasm dist/arrow1_bg.wasm"
   },
@@ -90,6 +91,9 @@
     "@types/thrift": "^0.10.8",
     "@types/varint": "^5.0.0",
     "apache-arrow": "^15.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

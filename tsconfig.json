@@ -2,8 +2,7 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "esnext",
-    "jsx": "react",
+    "module": "es2020",
     "strict": true,
     "noImplicitAny": false,
     "allowJs": true,

@@ -31,7 +31,7 @@ const config = {
   },
 
   bundle: {
-    globalName: 'loader',
+    globalName: 'loaders',
     externals: ['fs', 'path', 'util', 'events', 'stream', 'crypto', 'http', 'https'],
     target: ['chrome110', 'firefox110', 'safari15'],
     format: 'umd',

@@ -40,12 +40,11 @@
     "./dist/index.js": "./dist/index.browser.js"
   },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-node-bundle",
-    "build-bundle": "ocular-bundle ./src/index.ts",
-    "build-node-bundle": "esbuild src/index.ts --outfile=dist/index.cjs --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "# ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "# ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
     "@loaders.gl/crypto": "4.2.0-alpha.4",
     "@loaders.gl/loader-utils": "4.2.0-alpha.4",
     "buffer": "^6.0.3",
@@ -55,6 +54,9 @@
     "stream-to-async-iterator": "^1.0.0",
     "through": "^2.3.8",
     "web-streams-polyfill": "^3.2.1"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
