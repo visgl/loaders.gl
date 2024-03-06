@@ -40,7 +40,7 @@
     "README.md"
   ],
   "scripts": {
-    "prepublishOnly": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
+    "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",

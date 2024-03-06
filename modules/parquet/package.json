@@ -82,9 +82,6 @@
     "varint": "^5.0.0",
     "zstd-codec": "^0.1"
   },
-  "peerDependencies": {
-    "apache-arrow": ">= 15.0.0"
-  },
   "devDependencies": {
     "@types/node": "^10.14.15",
     "@types/node-int64": "^0.4.29",
@@ -93,6 +90,7 @@
     "apache-arrow": "^15.0.0"
   },
   "peerDependencies": {
+    "apache-arrow": ">= 15.0.0",
     "@loaders.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
