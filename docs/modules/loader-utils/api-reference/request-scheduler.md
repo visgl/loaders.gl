@@ -32,8 +32,11 @@ if (requestToken) {
 ### constructor(options?: object)
 
 - `id`?: string;
-- `throttleRequests`?: boolean;
-- `maxRequests`?: number;
+- `throttleRequests`?: boolean; — Whether to throttle requests.
+- `maxRequests`?: number; — Maximum concurrent requests to be opened by this scheduler. Additional requests are queued until an open request has completed.
+- `debounceTime`?: number; — Queue requests until no new requests have been added for at least `debounceTime` milliseconds.
+
+When `throttleRequests` is disabled, `maxRequeusts` and `debounceTime` options have no effect.
 
 ### `scheduleRequest(handle: any, getPriority?: () => number): Promise<{done: () => any)}>`
 
