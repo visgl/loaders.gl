@@ -6,7 +6,7 @@
 import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import GL from '@luma.gl/constants';
-import {AnimationLoop, setParameters, clear, log, lumaStats} from '@luma.gl/core';
+import {AnimationLoop, setParameters, clear, log, luma} from '@luma.gl/core';
 import {GLTFEnvironment} from '@luma.gl/experimental';
 import {createGLTFObjects} from './create-gltf-objects';
 import {Matrix4, radians} from '@math.gl/core';
@@ -202,7 +202,7 @@ export class AppAnimationLoop extends AnimationLoop {
     this.scenes.forEach((scene) => scene.delete());
     this.scenes = [];
 
-    lumaStats.get('Resource Counts').forEach(({name, count}) => {
+    luma.stats.get('Resource Counts').forEach(({name, count}) => {
       log.info(3, `${name}: ${count}`)();
     });
   }

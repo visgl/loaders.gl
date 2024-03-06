@@ -11,14 +11,14 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl-community/layers": "^0.0.0",
+    "@deck.gl-community/layers": "^9.0.0-alpha.1",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loaders.gl/core": "^4.0.0",
     "@loaders.gl/i3s": "^4.0.0",
-    "@luma.gl/core": "^8.5.21",
-    "deck.gl": "^8.9.28",
+    "@luma.gl/core": "^9.0.0-beta.6",
+    "deck.gl": "^9.0.0-beta.6",
     "mapbox-gl": "npm:empty-npm-package@^1.0.0",
     "maplibre-gl": "^3.6.2",
     "prop-types": "^15.7.2",
@@ -27,6 +27,11 @@
     "react-dom": "^18.2.0",
     "react-map-gl": "^7.1.7",
     "styled-components": "^4.2.0"
+  },
+  "resolutions": {
+    "deck.gl": "^9.0.0-beta.6",
+    "@math.gl/core": "^4.0.0",
+    "@math.gl/web-mercator": "^4.0.0"
   },
   "devDependencies": {
     "typescript": "^5.3.0",

@@ -13,14 +13,14 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('ParquetLoader#loader objects', (t) => {
+test('ParquetWASMLoader#loader objects', (t) => {
   // Not sure why validateLoader calls parse? Raises an error about "Invalid Parquet file"
   // validateLoader(t, ParquetWasmLoader, 'ParquetLoader');
   // validateLoader(t, ParquetWasmWorkerLoader, 'ParquetWorkerLoader');
   t.end();
 });
 
-test('Load Parquet file', async (t) => {
+test('ParquetWASMLoader#Load Parquet file', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const table = await load(url, ParquetWasmLoader, {});
   const arrowTable = table.data;
