@@ -27,7 +27,7 @@ export function getGlobalLoaderState(): GlobalLoaderState {
 
   // Add _state object to keep separate from modules added to globalThis.loaders
   if (!loaders._state) {
-     loaders._state = {};
+    loaders._state = {};
   }
   return loaders._state;
 }
