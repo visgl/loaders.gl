@@ -59,8 +59,8 @@ test('RequestScheduler#scheduleRequest', async (t) => {
 });
 
 test('RequestScheduler#debounce', async (t) => {
-  const scheduler = new RequestScheduler({debounceMs: 0, maxRequests: 1});
-  const schedulerDebounced = new RequestScheduler({debounceMs: 10, maxRequests: 1});
+  const scheduler = new RequestScheduler({debounceTime: 0, maxRequests: 1});
+  const schedulerDebounced = new RequestScheduler({debounceTime: 10, maxRequests: 1});
 
   const request1 = scheduler.scheduleRequest({id: 1});
   const request2 = schedulerDebounced.scheduleRequest({id: 2});

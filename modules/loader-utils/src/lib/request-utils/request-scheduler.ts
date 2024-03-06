@@ -12,7 +12,7 @@ export type RequestSchedulerProps = {
   id?: string;
   throttleRequests?: boolean;
   maxRequests?: number;
-  debounceMs?: number;
+  debounceTime?: number;
 };
 
 const STAT_QUEUED_REQUESTS = 'Queued Requests';
@@ -31,7 +31,7 @@ const DEFAULT_PROPS: Required<RequestSchedulerProps> = {
    * Specifies a debounce time, in milliseconds. All requests are queued, until no new requests have
    * been added to the queue for this amount of time.
    */
-  debounceMs: 0
+  debounceTime: 0
 };
 
 /** Tracks one request */
@@ -141,7 +141,7 @@ export default class RequestScheduler {
     if (this.updateTimer !== null) {
       clearTimeout(this.updateTimer);
     }
-    this.updateTimer = setTimeout(() => this._issueNewRequestsAsync(), this.props.debounceMs);
+    this.updateTimer = setTimeout(() => this._issueNewRequestsAsync(), this.props.debounceTime);
   }
 
   /** Refresh all requests  */
