@@ -4,6 +4,12 @@
 
 ## v4.1
 
+### v4.1.3
+
+### v4.1.2
+
+- fix(tile-converter): compose SLPK hash file (#2895)
+
 ### v4.1.1
 
 - fix(flatgeobuf): Add missing index files (#2884)
