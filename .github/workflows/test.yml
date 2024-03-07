@@ -17,11 +17,9 @@ jobs:
         node-version: [20]
 
     steps:
-      - name: Checkout and Set up Node ${{ matrix.node-version }}
+      - name: Node ${{ matrix.node-version }}
       - uses: actions/checkout@v4.1.1
       - uses: volta-cli/action@v4
-        with:
-          node-version: ${{ matrix.node-version }}
 
       - name: Bootstrap
         run: |
