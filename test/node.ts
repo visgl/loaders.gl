@@ -20,4 +20,5 @@ import '@loaders.gl/polyfills';
 import './modules';
 
 // Tile converter
-import '@loaders.gl/tile-converter/test';
+// TODO - Action Engine to restore
+// import '@loaders.gl/tile-converter/test';
