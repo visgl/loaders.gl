@@ -1,9 +1,11 @@
 // This is a base TS config for the entire mono repo, mainly for linting
 {
+  "ts-node": {
+    "transpileOnly": true
+  },
   "compilerOptions": {
     "target": "es2020",
-    "module": "esnext",
-    "jsx": "react",
+    "module": "es2020",
     "strict": true,
     "noImplicitAny": false,
     "allowJs": true,

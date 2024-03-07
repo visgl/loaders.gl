@@ -8,7 +8,7 @@ import {
   PrimitiveType,
   SchemaDefinition
 } from '../schema/declare';
-import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from '../codecs';
+import {CursorBuffer, ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
 import {
   ConvertedType,
   Encoding,
@@ -17,7 +17,7 @@ import {
   PageType,
   SchemaElement,
   Type
-} from '../parquet-thrift';
+} from '../parquet-thrift/index';
 import {decompress} from '../compression';
 import {PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING} from '../../lib/constants';
 import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils';

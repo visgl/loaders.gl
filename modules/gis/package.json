@@ -41,5 +41,8 @@
   "devDependencies": {
     "@math.gl/proj4": "^4.0.0"
   },
+  "peerDependencies": {
+    "@loaders.gl/core": "^4.0.0"
+  },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

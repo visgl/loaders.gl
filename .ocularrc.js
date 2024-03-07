@@ -1,31 +1,44 @@
-import {resolve} from 'path';
+/** @typedef {import('ocular-dev-tools').OcularConfig} OcularConfig */
 
-export default {
-  aliases: {
-    test: resolve('./test')
+import {dirname, join} from 'path';
+import {fileURLToPath} from 'url';
+
+const packageRoot = dirname(fileURLToPath(import.meta.url));
+const devModules = join(packageRoot, 'dev-modules');
+const testDir = join(packageRoot, 'test');
+
+/** @type {OcularConfig} */
+const config = {
+  babel: false,
+
+  lint: {
+    paths: ['modules', 'dev-docs', 'docs'], // , 'test', 'examples'],
+    extensions: ['js', 'ts']
+    // extensions: ['js', 'jsx', 'mjs', 'ts', 'tsx', 'md']
   },
 
   typescript: {
     project: 'tsconfig.build.json'
   },
 
+  aliases: {
+    // TEST
+    test: testDir
+  },
+
+  coverage: {
+    test: 'browser'
+  },
+
   bundle: {
-    globalName: 'loader',
+    globalName: 'loaders',
     externals: ['fs', 'path', 'util', 'events', 'stream', 'crypto', 'http', 'https'],
-    target: ['supports async-functions', 'not dead'],
+    target: ['chrome110', 'firefox110', 'safari15'],
     format: 'umd',
     globals: {
       '@loaders.gl/*': 'globalThis.loaders'
     }
   },
-
-  lint: {
-    // TODO - comment out while getting typescript to work
-    paths: ['dev-docs', 'docs', 'modules'] // 'examples', test', 'website', 'examples'],
-    // extensions: ['js', 'jsx', 'mjs', 'ts', 'tsx', 'md']
-  },
-
-  webpack: {},
 
   entry: {
     test: 'test/node.ts',
@@ -34,4 +47,13 @@ export default {
     'bench-browser': 'test/bench/browser.js',
     size: 'test/size/import-nothing.js'
   }
+  // entry: {
+  //   test: 'test/index.ts',
+  //   'test-browser': 'test/browser.ts',
+  //   bench: 'test/bench/index.js',
+  //   'bench-browser': 'test/bench/browser.js',
+  //   size: 'test/size/import-nothing.js'
+  // }
 };
+
+export default config;

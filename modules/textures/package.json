@@ -40,9 +40,10 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle -- --env=dev && npm run build-workers",
+    "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
-    "build-bundle": "ocular-bundle ./src/index.ts",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-workers": "npm run build-basis-worker && npm run build-basis-worker-node && npm run build-npy-worker && npm run build-compressed-texture-worker && npm run build-crunch-worker && npm run build-ktx2-basis-writer-worker && npm run build-ktx2-basis-writer-worker-node",
     "build-basis-worker": "esbuild src/workers/basis-worker.ts --outfile=dist/basis-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-basis-worker-node": "esbuild src/workers/basis-worker-node.ts --outfile=dist/basis-worker-node.js --target=node16  --platform=node --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
@@ -62,6 +63,9 @@
   },
   "devDependencies": {
     "@loaders.gl/polyfills": "4.2.0-alpha.4"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

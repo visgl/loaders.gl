@@ -24,22 +24,21 @@
     "modules/*"
   ],
   "scripts": {
-    "bootstrap": "yarn install-fast && ocular-bootstrap",
-    "install-fast": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn",
+    "bootstrap": "yarn && ocular-bootstrap",
+    "postinstall": "echo postinstall",
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
-    "clean": "ocular-clean && npm run tsclean",
-    "build": "npm run clean && ocular-build && lerna run pre-build",
-    "build-workers": "lerna run pre-build",
+    "clean": "ocular-clean",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
+    "build": "ocular-clean && ocular-build && lerna run pre-build",
     "cover": "ocular-test cover",
-    "lint": "tsc && ocular-lint",
-    "bump": "ocular-bump",
+    "lint": "ocular-lint",
     "publish": "ocular-publish",
     "test": "ocular-test",
-    "metrics": "./scripts/metrics.sh && ocular-metrics",
-    "version": "yarn build",
+    "test-ci": "ocular-lint && ocular-test node && ocular-test cover",
+    "test-fast": "ocular-test fast",
     "pre-commit": "yarn lint",
-    "pre-push": "yarn lint"
+    "pre-push": "yarn lint",
+    "metrics": "./scripts/metrics.sh && ocular-metrics"
   },
   "devDependencies": {
     "@probe.gl/bench": "^4.0.2",
@@ -47,7 +46,7 @@
     "@types/tape-promise": "^4.0.1",
     "base64-inline-loader": "^1.1.1",
     "base64-loader": "^1.0.0",
-    "ocular-dev-tools": "2.0.0-alpha.18",
+    "ocular-dev-tools": "2.0.0-alpha.28",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1"
   },
@@ -56,14 +55,10 @@
   "dependencies": {},
   "resolutions_notes": [
     "Ensure we use recent typescript",
-    "Note: prettier 3 required for JSON import assertions",
     "apache-arrow version should be aligned with parquet-wasm version"
   ],
   "resolutions": {
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
     "apache-arrow": "^15.0.0",
-    "prettier": "3.0.3",
     "typescript": "^5.3.0"
   },
   "volta": {

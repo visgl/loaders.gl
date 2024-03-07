@@ -1,7 +1,7 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
 /* eslint-disable camelcase */
 import {stream} from '@loaders.gl/loader-utils';
-import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs';
+import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
 import * as Compression from '../compression';
 import {
   ParquetRowGroup,
@@ -29,7 +29,7 @@ import {
   RowGroup,
   SchemaElement,
   Type
-} from '../parquet-thrift';
+} from '../parquet-thrift/index';
 import {osopen, oswrite, osclose} from '../utils/file-utils';
 import {getBitWidth, serializeThrift} from '../utils/read-utils';
 import Int64 from 'node-int64';

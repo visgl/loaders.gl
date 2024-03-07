@@ -181,7 +181,7 @@ export {
   IntervalYearMonth,
   FixedSizeList,
   Struct
-} from './lib/table/arrow-api';
+} from './lib/table/arrow-api/index';
 
 // EXPERIMENTAL APIs
 

@@ -35,15 +35,14 @@
     "fs": false
   },
   "scripts_comments": [
-    "build-bundle: ocular-bundle does not seem to respect --external and --define options"
+    "build-bundle: ocular-bundle does not seem to respect --external"
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle -- --env=dev",
-    "build-bundle": "# ocular-bundle ./src/index.ts --external:{util,fs,path}  --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-bundle": "# ocular-bundle ./bundle.ts --output=dist/dist.min.js --external=util,fs,path",
     "build-worker": "# esbuild src/workers/geopackage-worker.ts --bundle --outfile=dist/geopackage-worker.js --external:{util,fs,path} --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
     "@loaders.gl/gis": "4.2.0-alpha.4",
     "@loaders.gl/schema": "4.2.0-alpha.4",
     "@loaders.gl/wkt": "4.2.0-alpha.4",
@@ -52,6 +51,9 @@
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
     "sql.js": "1.8.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

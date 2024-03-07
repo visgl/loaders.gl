@@ -43,20 +43,22 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
-    "build-bundle": "# ocular-bundle ./src/index.ts --external:{util,fs,path}"
+    "build-bundle": "# ocular-bundle ./bundle.ts --external:{util,fs,path}"
   },
   "browser": {
     "fs": false,
     "path": false
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
     "@loaders.gl/images": "4.2.0-alpha.4",
     "@loaders.gl/loader-utils": "4.2.0-alpha.4",
     "@loaders.gl/schema": "4.2.0-alpha.4",
     "@loaders.gl/xml": "4.2.0-alpha.4",
     "@turf/rewind": "^5.1.5",
     "deep-strict-equal": "^0.2.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "^4.0.0"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }

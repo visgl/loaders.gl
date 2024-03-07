@@ -10,7 +10,7 @@ import {ParquetRowGroup} from '../../parquetjs/schema/declare';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumns} from '../../parquetjs/schema/shred';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
-import {installBufferPolyfill} from '../../polyfills/buffer';
+import {installBufferPolyfill} from '../../polyfills/buffer/index';
 
 /**
  * @deprecated
