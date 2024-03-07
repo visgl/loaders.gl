@@ -60,6 +60,7 @@ A major release that brings:
 **@loaders.gl/csv**
 
 - New [`CSVWriter`](/docs/modules/csv/api-reference/csv-writer) allows export of tables in CSV format.
+- Migration: The promise of parse() now returns `{ shape: string; data: [] }` instead of `[]`, so you should add `.data` to get the records.
 
 **@laoders.gl/json**
 
