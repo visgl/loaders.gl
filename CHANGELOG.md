@@ -2,6 +2,20 @@
 
 ## v4.2 (alpha)
 
+### v4.2.0-alpha.5
+
+- chore: Upgrade ocular-dev-tools to tsc+esbuild (#2897)
+- fix(core): Avoid reassigning loaders._state (#2905)
+- feat(loader-utils): Add RequestScheduler 'debounceTime' option (#2892)
+- chore: Port I3S examples to v9 (#2903)
+- chore: Move examples to deck.gl@9.0.0-beta.5 (#2901)
+- chore(examples): loading of slpk in browser experimental(#2904)
+- feat(pmtiles): Upgrade to pmtiles v3 (#2902)
+- chore(docs): Add I3S Picking Tutorial (#2896)
+- chore(examples): delete i3s example (#2899)
+- chore(docs): Add live example into I3S BSL tutorial (#2898)
+- chore(docs): Update i3s colorization tutorial (#2900)
+
 ### v4.2.0-alpha.4
 
 - fix(tile-converter): compose SLPK hash file (#2895)
