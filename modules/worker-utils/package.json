@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "4.2.0-alpha.4",
+  "version": "4.2.0-alpha.5",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "type": "module",
@@ -48,8 +48,6 @@
     "pre-build": "npm run build-worker && npm run build-worker-node",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
-  },
-  "dependencies": {
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
