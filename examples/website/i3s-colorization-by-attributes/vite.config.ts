@@ -8,7 +8,6 @@ const getAliases = async (frameworkName, frameworkRootDir) => {
   modules.forEach((module) => {
     aliases[`${frameworkName}/${module}`] = `${frameworkRootDir}/modules/${module}/src`;
   });
-  console.log(aliases);
   return aliases;
 };
 
