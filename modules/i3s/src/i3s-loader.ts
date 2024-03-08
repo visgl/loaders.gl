@@ -12,6 +12,7 @@ import {getUrlWithoutParams} from './lib/utils/url-utils';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const TILESET_REGEX = /layers\/[0-9]+$/;
+const LOCAL_SLPK_REGEX = /\.slpk$/;
 const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
 const SLPK_HEX = '504b0304';
 const POINT_CLOUD = 'PointCloud';
@@ -63,7 +64,7 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context): Promise<
   // auto detect file type based on url
   let isTileset;
   if (options.i3s.isTileset === 'auto') {
-    isTileset = TILESET_REGEX.test(urlWithoutParams);
+    isTileset = TILESET_REGEX.test(urlWithoutParams) || LOCAL_SLPK_REGEX.test(urlWithoutParams);
   } else {
     isTileset = options.i3s.isTileset;
   }
