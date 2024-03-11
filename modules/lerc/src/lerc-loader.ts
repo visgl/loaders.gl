@@ -4,7 +4,8 @@
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LERCData} from './lib/parsers/lerc/lerc-types';
-import * as Lerc from 'lerc';
+// import * as Lerc from 'lerc';
+const Lerc: any = {};
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
