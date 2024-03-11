@@ -25,6 +25,7 @@
     {"path": "modules/json"},
     {"path": "modules/kml"},
     {"path": "modules/las"},
+    {"path": "modules/lerc"},
     {"path": "modules/loader-utils"},
     {"path": "modules/math"},
     {"path": "modules/mvt"},
