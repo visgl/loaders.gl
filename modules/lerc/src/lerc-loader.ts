@@ -4,14 +4,15 @@
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LERCData} from './lib/parsers/lerc/lerc-types';
-// import * as Lerc from 'lerc';
-const Lerc: any = {};
+import * as Lerc from 'lerc';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** LERC loader options */
 export type LERCLoaderOptions = LoaderOptions & {
+  /** LERC loader options */
   lerc?: {
     /**	The number of bytes to skip in the input byte stream. A valid Lerc file is expected at that position. */
     inputOffset?: number;
@@ -29,14 +30,14 @@ export const LERCLoader: LoaderWithParser<LERCData, never, LERCLoaderOptions> = 
   id: 'lerc',
   name: 'LERC',
 
-  module: 'wms',
+  module: 'lerc',
   version: VERSION,
   worker: false,
   extensions: ['lrc', 'lerc', 'lerc2', 'lerc1'],
   mimeTypes: ['application/octet-stream'],
   // test: ?,
   options: {
-    wms: {}
+    lerc: {}
   },
   parse: async (arrayBuffer: ArrayBuffer, options?: LERCLoaderOptions) =>
     parseLERC(arrayBuffer, options)
