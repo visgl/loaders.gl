@@ -35,9 +35,9 @@
   ],
   "scripts": {
     "pre-build": "# npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js --external={url,fs,path}",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js --external={url,fs,path}",
+    "build-worker": "esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\" --external={url,fs,path}"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.2.0-alpha.5",
