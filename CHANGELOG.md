@@ -4,6 +4,10 @@
 
 ## v4.1
 
+### v4.1.4
+
+- feat(loader-utils): Add RequestScheduler 'debounceTime' option (#2892)
+
 ### v4.1.3
 
 ### v4.1.2

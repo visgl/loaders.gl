@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/obj",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "Framework-independent loader for the OBJ format",
   "license": "MIT",
   "type": "module",
@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.1.3",
-    "@loaders.gl/schema": "4.1.3"
+    "@loaders.gl/loader-utils": "4.1.4",
+    "@loaders.gl/schema": "4.1.4"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
 }
