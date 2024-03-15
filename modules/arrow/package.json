@@ -57,6 +57,7 @@
     "@loaders.gl/loader-utils": "4.2.0-alpha.5",
     "@loaders.gl/schema": "4.2.0-alpha.5",
     "@loaders.gl/wkt": "4.2.0-alpha.5",
+    "@loaders.gl/worker-utils": "4.2.0-alpha.5",
     "@math.gl/polygon": "4.0.0",
     "apache-arrow": ">= 15.0.0"
   },

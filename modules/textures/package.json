@@ -58,6 +58,7 @@
     "@loaders.gl/loader-utils": "4.2.0-alpha.5",
     "@loaders.gl/schema": "4.2.0-alpha.5",
     "@loaders.gl/worker-utils": "4.2.0-alpha.5",
+    "@math.gl/types": "^4.0.1",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
   },

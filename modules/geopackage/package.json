@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@loaders.gl/gis": "4.2.0-alpha.5",
+    "@loaders.gl/loader-utils": "4.2.0-alpha.5",
     "@loaders.gl/schema": "4.2.0-alpha.5",
     "@loaders.gl/wkt": "4.2.0-alpha.5",
     "@math.gl/proj4": "^4.0.0",

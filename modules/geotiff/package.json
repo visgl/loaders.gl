@@ -46,6 +46,7 @@
     "geotiff": "ilan-gold/geotiff.js#ilan-gold/viv_094"
   },
   "dependencies": {
+    "@loaders.gl/loader-utils": "4.2.0-alpha.5",
     "fast-xml-parser": "^4.2.5",
     "geotiff": "^2.1.0"
   },
