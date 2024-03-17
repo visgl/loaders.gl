@@ -72,7 +72,13 @@ test('checkResponseSync', (t) => {
 });
 
 test('checkResponse', async (t) => {
-  const response = new Response('{message: "server died"}', {status: 500});
+  const response = new Response('{message: "server died"}', {
+    status: 500,
+    statusText: 'Internal Server Error'
+  });
+  Object.defineProperty(response, 'url', {
+    value: 'https://some.url/not/even/very/long'
+  });
   t.equal(response.ok, false, 'Check reponse.ok');
   t.rejects(() => checkResponse(response), /500/, 'Check reponse throws');
   // t.throws()

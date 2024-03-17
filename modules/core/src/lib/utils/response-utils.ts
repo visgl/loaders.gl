@@ -58,8 +58,8 @@ export async function makeResponse(resource: unknown): Promise<Response> {
  */
 export async function checkResponse(response: Response): Promise<void> {
   if (!response.ok) {
-    const message = await getResponseError(response);
-    throw new Error(message);
+    const error = await getResponseError(response);
+    throw error;
   }
 }
 
@@ -77,20 +77,24 @@ export function checkResponseSync(response: Response): void {
 
 // HELPERS
 
-async function getResponseError(response: Response): Promise<string> {
-  let message = `Failed to fetch resource ${response.url} (${response.status}): `;
+async function getResponseError(response: Response): Promise<Error> {
+  const message = `${response.status} ${response.statusText}: Failed to fetch resource`;
+  const cause: {
+    url: string;
+    response?: any;
+  } = {url: response.url};
   try {
     const contentType = response.headers.get('Content-Type');
-    let text = response.statusText;
     if (contentType?.includes('application/json')) {
-      text += ` ${await response.text()}`;
+      cause.response = await response.json();
+    } else {
+      cause.response = await response.text();
     }
-    message += text;
-    message = message.length > 60 ? `${message.slice(0, 60)}...` : message;
   } catch (error) {
     // eslint forbids return in a finally statement, so we just catch here
   }
-  return message;
+  // @ts-expect-error TS does not support Error option?
+  return new Error(message, {cause});
 }
 
 async function getInitialDataUrl(
