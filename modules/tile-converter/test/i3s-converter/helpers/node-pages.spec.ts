@@ -124,7 +124,6 @@ test('tile-converter(i3s)#NodePages', async (t) => {
   t.test(
     'tile-converter(i3s)#NodePages - Push method should set "resource" property in the "mesh" equal to the new node index',
     async (st) => {
-      /** @type {import('@loaders.gl/i3s').NodeInPage} */
       const newNodeWithMesh = {
         ...newNodeStub,
         mesh: {
@@ -143,14 +142,14 @@ test('tile-converter(i3s)#NodePages', async (t) => {
         0
       );
       st.equal(geometry0.resource, 0);
-      st.deepEqual(material0, {});
+      st.deepEqual(material0, {definition: 0});
       await nodePages.push(newNodeWithMesh);
       const {material: material1, geometry: geometry1} = getMaterialAndGeometryFromNode(
         nodePages,
         1
       );
       st.equal(geometry1.resource, 1);
-      st.deepEqual(material1, {});
+      st.deepEqual(material1, {definition: 0});
       st.end();
     }
   );

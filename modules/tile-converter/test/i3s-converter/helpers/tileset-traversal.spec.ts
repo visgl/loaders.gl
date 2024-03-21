@@ -27,12 +27,12 @@ test('tile-converter(i3s)#traverseDatasetWith', async (t) => {
       t.equal(result.token, AUTH_TOKEN);
     }
   };
-  await traverseDatasetWith(
-    nestedTileset.root,
-    {token: AUTH_TOKEN},
-    processTileCallback,
-    postprocessTileCallback
-  );
+  await traverseDatasetWith({
+    tile: nestedTileset.root,
+    traversalProps: {token: AUTH_TOKEN},
+    processTile: processTileCallback,
+    postprocessTile: postprocessTileCallback
+  });
   t.end();
 });
 
@@ -46,11 +46,20 @@ test('tile-converter(i3s)#traverseDatasetWith - maxDepth', async (t) => {
     }
     processCalls++;
   };
-  await traverseDatasetWith(nestedTileset.root, undefined, processTileCallback);
+  await traverseDatasetWith({
+    tile: nestedTileset.root,
+    traversalProps: undefined,
+    processTile: processTileCallback
+  });
   t.equal(processCalls, 5);
 
   processCalls = 0;
-  await traverseDatasetWith(nestedTileset.root, undefined, processTileCallback, undefined, 2);
+  await traverseDatasetWith({
+    tile: nestedTileset.root,
+    traversalProps: undefined,
+    processTile: processTileCallback,
+    maxDepth: 2
+  });
   t.equal(processCalls, 4);
   t.end();
 });
