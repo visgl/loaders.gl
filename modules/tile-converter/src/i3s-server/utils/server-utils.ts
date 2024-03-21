@@ -32,7 +32,9 @@ export function normalizePort(val: string): number | string | false {
  */
 export function formErrorHandler(
   optionalPort: string | number
+  // eslint-disable-next-line no-undef
 ): (error: NodeJS.ErrnoException) => void {
+  // eslint-disable-next-line no-undef
   return function onError(error: NodeJS.ErrnoException) {
     if (error.syscall !== 'listen') {
       throw error;
@@ -43,12 +45,12 @@ export function formErrorHandler(
     // handle specific listen errors with friendly messages
     switch (error.code) {
       case 'EACCES':
-        console.error(`${bind} requires elevated privileges`); // eslint-disable-line no-console, no-undef
-        process.exit(1); // eslint-disable-line no-process-exit, no-undef
+        console.error(`${bind} requires elevated privileges`); // eslint-disable-line no-console
+        process.exit(1); // eslint-disable-line no-process-exit
         break;
       case 'EADDRINUSE':
-        console.error(`${bind} is already in use`); // eslint-disable-line no-console, no-undef
-        process.exit(1); // eslint-disable-line no-process-exit, no-undef
+        console.error(`${bind} is already in use`); // eslint-disable-line no-console
+        process.exit(1); // eslint-disable-line no-process-exit
         break;
       default:
         throw error;

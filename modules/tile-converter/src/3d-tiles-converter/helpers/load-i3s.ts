@@ -73,7 +73,7 @@ export const loadI3SContent = async (
  */
 export async function openSLPK(url: string): Promise<ZipFileSystem | null> {
   const slpkUrlParts = url.split('.slpk');
-  if (slpkUrlParts.length == 2) {
+  if (slpkUrlParts.length === 2) {
     const slpkFileName = `${slpkUrlParts[0]}.slpk`;
     const fileProvider = new FileHandleFile(slpkFileName);
     const archive = await parseSLPKArchive(fileProvider, undefined, slpkFileName);

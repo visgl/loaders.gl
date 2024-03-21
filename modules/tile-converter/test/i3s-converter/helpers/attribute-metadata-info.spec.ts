@@ -4,7 +4,7 @@ import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribut
 test('tile-converter(i3s)#createPopupInfo - Should create popup info', async (t) => {
   const attributeNames = ['OBJECTID', 'color', 'name', 'opt_uint8'];
 
-  const popupInfo_expected = {
+  const popupInfoExpected = {
     title: '{OBJECTID}',
     mediaInfos: [],
     popupElements: [
@@ -71,10 +71,11 @@ test('tile-converter(i3s)#createPopupInfo - Should create popup info', async (t)
   // @ts-expect-error
   // Calling a private method
   const popupInfo = attributeMetadataInfo.createPopupInfo(attributeNames);
-  t.deepEqual(popupInfo, popupInfo_expected, 'popupInfo');
+  t.deepEqual(popupInfo, popupInfoExpected, 'popupInfo');
 });
 
 test('tile-converter(i3s)#createStorageAttributes - Should create Attribute storage info', async (t) => {
+  /* eslint-disable camelcase */
   const attributeTypesMap1 = {
     color: 'string',
     name: 'string',
@@ -91,10 +92,11 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
     opt_float32: 'double',
     opt_enum: 'string'
   };
+  /* eslint-enable camelcase */
 
   const attributeTypesMap3 = {};
 
-  const attributeStorageInfo1_expected = [
+  const attributeStorageInfoExpected1 = [
     {
       key: 'f_0',
       name: 'OBJECTID',
@@ -175,7 +177,7 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
     }
   ];
 
-  const fields1_expected = [
+  const fieldsExpected1 = [
     {
       name: 'OBJECTID',
       type: 'esriFieldTypeOID',
@@ -198,7 +200,7 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
     }
   ];
 
-  const popupInfo1_expected = {
+  const popupInfoExpected1 = {
     title: '{OBJECTID}',
     mediaInfos: [],
     popupElements: [
@@ -260,8 +262,8 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
     ],
     expressionInfos: []
   };
-  //////////////////////////
-  const attributeStorageInfo2_expected = [
+  // ////////////////////////
+  const attributeStorageInfoExpected2 = [
     {
       key: 'f_0',
       name: 'OBJECTID',
@@ -405,7 +407,7 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
     }
   ];
 
-  const fields2_expected = [
+  const fieldsExpected2 = [
     {
       name: 'OBJECTID',
       type: 'esriFieldTypeOID',
@@ -443,7 +445,7 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
     }
   ];
 
-  const popupInfo2_expected = {
+  const popupInfoExpected2 = {
     title: '{OBJECTID}',
     mediaInfos: [],
     popupElements: [
@@ -547,29 +549,29 @@ test('tile-converter(i3s)#createStorageAttributes - Should create Attribute stor
 
   t.deepEqual(
     attributeMetadataInfo.attributeStorageInfo,
-    attributeStorageInfo1_expected,
+    attributeStorageInfoExpected1,
     'attributeStorageInfo #1'
   );
-  t.deepEqual(attributeMetadataInfo.fields, fields1_expected, 'fields #1');
-  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfo1_expected, 'popupInfo #1');
+  t.deepEqual(attributeMetadataInfo.fields, fieldsExpected1, 'fields #1');
+  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfoExpected1, 'popupInfo #1');
 
   attributeMetadataInfo.addMetadataInfo(attributeTypesMap2);
 
   t.deepEqual(
     attributeMetadataInfo.attributeStorageInfo,
-    attributeStorageInfo2_expected,
+    attributeStorageInfoExpected2,
     'attributeStorageInfo #2'
   );
-  t.deepEqual(attributeMetadataInfo.fields, fields2_expected, 'fields #2');
-  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfo2_expected, 'popupInfo #2');
+  t.deepEqual(attributeMetadataInfo.fields, fieldsExpected2, 'fields #2');
+  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfoExpected2, 'popupInfo #2');
 
   attributeMetadataInfo.addMetadataInfo(attributeTypesMap3);
   // The result should be the same as for #2
   t.deepEqual(
     attributeMetadataInfo.attributeStorageInfo,
-    attributeStorageInfo2_expected,
+    attributeStorageInfoExpected2,
     'attributeStorageInfo #3'
   );
-  t.deepEqual(attributeMetadataInfo.fields, fields2_expected, 'fields #3');
-  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfo2_expected, 'popupInfo #3');
+  t.deepEqual(attributeMetadataInfo.fields, fieldsExpected2, 'fields #3');
+  t.deepEqual(attributeMetadataInfo.popupInfo, popupInfoExpected2, 'popupInfo #3');
 });

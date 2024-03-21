@@ -20,7 +20,7 @@ export async function writeFile(
   if (data instanceof Promise) {
     toWriteData = new Uint8Array(await data);
   } else if (data instanceof ArrayBuffer) {
-    toWriteData = new Uint8Array(data as ArrayBuffer);
+    toWriteData = new Uint8Array(data);
   } else {
     toWriteData = data;
   }
@@ -31,7 +31,7 @@ export async function writeFile(
   } catch (err) {
     throw err;
   }
-  console.log(`${pathFile} saved.`); // eslint-disable-line
+  console.log(`${pathFile} saved.`); // eslint-disable-line no-console
   return pathFile;
 }
 
@@ -57,15 +57,13 @@ export async function writeFileForSlpk(
       if (!compressList.includes(pathFile)) {
         compressList.push(pathFile);
         return `${pathFile}.gz`;
-      } else {
-        return null;
       }
-    } else {
-      const pathGzFile = await compressFileWithGzip(pathFile);
-      // After compression, we don't need an uncompressed file
-      await removeFile(pathFile);
-      return pathGzFile;
+      return null;
     }
+    const pathGzFile = await compressFileWithGzip(pathFile);
+    // After compression, we don't need an uncompressed file
+    await removeFile(pathFile);
+    return pathGzFile;
   }
   return pathFile;
 }
@@ -79,7 +77,7 @@ export async function writeFileForSlpk(
 export async function openJson(path: string, fileName: string): Promise<{[key: string]: any}> {
   return new Promise((resolve, reject) => {
     let count = 0;
-    console.log(`load ${path}/${fileName}.`); // eslint-disable-line
+    console.log(`load ${path}/${fileName}.`); // eslint-disable-line no-console
     const intervalId = setInterval(() => {
       const pathFile = join(path, fileName);
       load(pathFile, JSONLoader)
@@ -148,6 +146,7 @@ export async function renameFile(oldPath: string, newPath: string): Promise<void
   try {
     await fs.rename(oldPath, newPath);
   } catch (err) {
-    console.log("Can't rename file", err);
+    // prettier-ignore
+    console.log('Can\'t rename file', err); // eslint-disable-line no-console
   }
 }

@@ -25,6 +25,7 @@ export class DepsInstaller {
    *    This path is '' by default and is not used by tile-converter.
    *    It is used in tests to prevent rewriting actual workers during tests running
    */
+  // eslint-disable-next-line max-statements
   async install(path: string = ''): Promise<void> {
     console.log('Installing "EGM2008-5" model...'); // eslint-disable-line no-console
     const fileMap = await load(PGM_LINK, ZipLoader, {});
@@ -78,6 +79,7 @@ export class DepsInstaller {
     await this.installFromNpm('textures', BASIS_EXTERNAL_LIBRARIES.ENCODER, 'libs');
     await this.installFromNpm('textures', BASIS_EXTERNAL_LIBRARIES.ENCODER_WASM, 'libs');
 
+    // eslint-disable-next-line no-console
     console.log('Installing "join-images" npm package');
     const childProcess = new ChildProcessProxy();
     const nodeDir = dirname(process.execPath);

@@ -113,6 +113,7 @@ function getFrequentValue(values: number[]): number {
  * @param  attributes
  * @returns sorted list of attribute objects.
  */
+// eslint-disable-next-line max-statements
 function makeAttributeObjects(attributes: GeometryAttributes): GroupedByFeatureIdAttributes[] {
   const {
     featureIds,
@@ -125,11 +126,11 @@ function makeAttributeObjects(attributes: GeometryAttributes): GroupedByFeatureI
   } = attributes;
   const groupedData: GroupedByFeatureIdAttributes[] = [];
 
-  let positionsList = new Float32Array(positions);
-  let normalsList = new Float32Array(normals);
-  let colorsList = new Uint8Array(colors);
-  let texCoordsList = new Float32Array(texCoords);
-  let uvRegionsList = new Uint16Array(uvRegions);
+  const positionsList = new Float32Array(positions);
+  const normalsList = new Float32Array(normals);
+  const colorsList = new Uint8Array(colors);
+  const texCoordsList = new Float32Array(texCoords);
+  const uvRegionsList = new Uint16Array(uvRegions);
   let positionsOffset = 0;
   let normalsOffset = 0;
   let colorsOffset = 0;

@@ -293,11 +293,11 @@ function parseHeaders(arrayBuffer: ArrayBuffer, options: I3STilesetOptions) {
   for (const {property, type} of options.store.defaultGeometrySchema.header) {
     const TypedArrayTypeHeader = getConstructorForDataFormat(type);
     switch (property) {
-      case HeaderAttributeProperty.vertexCount:
+      case HeaderAttributeProperty.vertexCount.toString():
         vertexCount = new TypedArrayTypeHeader(arrayBuffer, 0, 4)[0];
         byteOffset += sizeOf(type);
         break;
-      case HeaderAttributeProperty.featureCount:
+      case HeaderAttributeProperty.featureCount.toString():
         featureCount = new TypedArrayTypeHeader(arrayBuffer, 4, 4)[0];
         byteOffset += sizeOf(type);
         break;

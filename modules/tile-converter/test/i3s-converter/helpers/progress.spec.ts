@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
 import {Progress} from '../../../src/i3s-converter/helpers/progress';
 
+// eslint-disable-next-line max-statements
 test('tile-converter(i3s)#Progress methods', async (t) => {
   let currentTimeMS: number = 0;
   /*
@@ -11,7 +12,7 @@ test('tile-converter(i3s)#Progress methods', async (t) => {
   const getTime = () => {
     return BigInt(currentTimeMS) * BigInt(1e6);
   };
-  const progress = new Progress({getTime: getTime});
+  const progress = new Progress({getTime});
 
   // stepsTotal has not been set yet
   t.equal(progress.getPercentString(), '');

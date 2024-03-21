@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import {GLTFAccessorPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
 import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
@@ -94,7 +95,7 @@ function handleExtMeshFeaturesExtension(
   },
   extMeshFeatures: GLTF_EXT_mesh_features
 ): NumericArray {
-  for (let ids of extMeshFeatures.featureIds) {
+  for (const ids of extMeshFeatures.featureIds) {
     if (typeof ids.propertyTable !== 'undefined') {
       // propertyTable is an index that can be 0
       // return the first featureID set that corresponts to property table.
@@ -240,6 +241,7 @@ function generateBatchIdsFromTexture(
       batchIds.push(batchId);
     }
   } else {
+    // eslint-disable-next-line no-console
     console.warn(`Can't get batch Ids from ${image?.mimeType || ''} compressed texture`);
   }
 

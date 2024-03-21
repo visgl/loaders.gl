@@ -52,7 +52,7 @@ export type TextureSetDefinition = {
 };
 
 export class ConversionDump {
-  /**Restored/resumed dump indicator */
+  /** Restored/resumed dump indicator */
   restored: boolean = false;
   /** Conversion options */
   private options?: ConversionDumpOptions;
@@ -138,7 +138,8 @@ export class ConversionDump {
           return;
         }
       } catch (error) {
-        console.log("Can't open dump file", error);
+        // prettier-ignore
+        console.log('Can\'t open dump file', error); // eslint-disable-line no-console
       }
     }
     await this.deleteDumpFile();
@@ -192,7 +193,8 @@ export class ConversionDump {
           )
         );
       } catch (error) {
-        console.log("Can't update dump file", error);
+        // prettier-ignore
+        console.log('Can\'t update dump file', error); // eslint-disable-line no-console
       }
     }
   }
@@ -305,30 +307,43 @@ export class ConversionDump {
   async updateConvertedTilesDump(
     changedRecords: {outputId?: number | string; sourceId?: string; resourceType?: string}[],
     writeResults: PromiseSettledResult<string | null>[]
-  ) {
+  ): Promise<void> {
     for (let i = 0; i < changedRecords.length; i++) {
       if (changedRecords[i] && 'value' in writeResults[i]) {
         const {sourceId, resourceType, outputId} = changedRecords[i];
-        if (!sourceId || !resourceType || !outputId) continue;
-        for (const node of this.tilesConverted[sourceId].nodes) {
-          if (node.nodeId === outputId && node.progress) {
-            node.progress[resourceType] = true;
-
-            let done = false;
-            for (const key in node.progress) {
-              done = node.progress[key];
-              if (!done) break;
-            }
-            node.done = done;
-            if (node.done) {
-              delete node.progress;
-            }
-            break;
-          }
-        }
+        this.updateNodes(sourceId, outputId, resourceType);
       }
     }
     await this.updateDumpFile();
+  }
+
+  /**
+   * Update done status for a node
+   * @param sourceId - source resource Id
+   * @param outputId - output node/tile Id
+   * @param resourceType - type of resource
+   * @returns void
+   */
+  private updateNodes(sourceId?: string, outputId?: string | number, resourceType?: string) {
+    if (!sourceId || !resourceType || !outputId) {
+      return;
+    }
+    for (const node of this.tilesConverted[sourceId].nodes) {
+      if (node.nodeId === outputId && node.progress) {
+        node.progress[resourceType] = true;
+
+        let done = false;
+        for (const key in node.progress) {
+          done = node.progress[key];
+          if (!done) break;
+        }
+        node.done = done;
+        if (node.done) {
+          delete node.progress;
+        }
+        break;
+      }
+    }
   }
 
   /**

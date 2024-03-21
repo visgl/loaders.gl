@@ -9,9 +9,11 @@ let slpkArchive: SLPKArchive;
  * @param fullLayerPath - full path to SLPK file
  */
 export async function loadArchive(fullLayerPath: string): Promise<void> {
-  slpkArchive = await parseSLPKArchive(new FileHandleFile(fullLayerPath), (msg) =>
-    console.log(msg)
+  slpkArchive = await parseSLPKArchive(
+    new FileHandleFile(fullLayerPath),
+    (msg) => console.log(msg) // eslint-disable-line no-console
   );
+  // eslint-disable-next-line no-console
   console.log('The server is ready to use');
 }
 

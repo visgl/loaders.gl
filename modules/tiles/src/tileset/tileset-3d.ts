@@ -15,7 +15,7 @@ import {getZoomFromBoundingVolume, getZoomFromExtent, getZoomFromFullExtent} fro
 
 import type {GeospatialViewport, Viewport} from '../types';
 import {Tile3D} from './tile-3d';
-import {TILESET_TYPE} from '../constants';
+import {TILESET_TYPE, TilesetType} from '../constants';
 
 import {TilesetTraverser} from './tileset-traverser';
 
@@ -201,7 +201,7 @@ export class Tileset3D {
   options: Props;
   loadOptions: LoaderOptions;
 
-  type: string;
+  type: TilesetType;
   tileset: TilesetJSON;
   loader: LoaderWithParser;
   url: string;
@@ -841,7 +841,7 @@ export class Tileset3D {
           break;
         default:
       }
-    } else if (this.type === TILESET_TYPE.TILES3D) {
+    } else if (this.type === 'TILES3D') {
       const {extensionsRemoved = []} = tile.content?.gltf || {};
       if (extensionsRemoved.includes('KHR_draco_mesh_compression')) {
         this.contentFormats.draco = true;

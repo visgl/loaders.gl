@@ -46,13 +46,15 @@ test('tile-converter(i3s)#getAttributeType - Should return the type of attribute
   const attributes = ['', 'myName', 0, 1, 2n, 3.5];
   const typesExpected = ['string', 'string', 'Int32', 'Int32', 'string', 'double'];
   const types: string[] = [];
-  for (let attribute of attributes) {
+  for (const attribute of attributes) {
     types.push(getAttributeType(attribute));
   }
   t.deepEqual(types, typesExpected, 'popupInfo');
 });
 
 test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes type taken from the extension schema', async (t) => {
+  /* eslint-disable camelcase */
+
   const gltfJson = {
     extensions: {
       EXT_structural_metadata: {
@@ -105,7 +107,9 @@ test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes
     opt_enum: 'string'
   };
 
-  let attributePropertySet = getAttributeTypesMapFromSchema(
+  /* eslint-enable camelcase */
+
+  const attributePropertySet = getAttributeTypesMapFromSchema(
     gltfJson as unknown as GLTFPostprocessed,
     'owt_lulc'
   );
@@ -113,6 +117,8 @@ test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes
 });
 
 test('tile-converter(i3s)#getAttributeTypesFromPropertyTable - Should return attributes type taken from the extension schema', async (t) => {
+  /* eslint-disable camelcase */
+
   const propertyTable = {
     color: ['red', 'green'],
     name: ['myRed', 'myGreen'],
@@ -129,6 +135,8 @@ test('tile-converter(i3s)#getAttributeTypesFromPropertyTable - Should return att
     opt_float32: 'double'
   };
 
-  let attributeTypes = getAttributeTypesMapFromPropertyTable(propertyTable);
+  /* eslint-enable camelcase */
+
+  const attributeTypes = getAttributeTypesMapFromPropertyTable(propertyTable);
   t.deepEqual(attributeTypes, typesExpected, 'attribute type taken from the property table');
 });

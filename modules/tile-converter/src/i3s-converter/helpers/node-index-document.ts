@@ -85,7 +85,7 @@ export class NodeIndexDocument {
 
     let data: Node3DIndexDocument | null = this.data;
     if (this.converter.options.instantNodeWriting) {
-      data = (await this.load()) as Node3DIndexDocument;
+      data = await this.load();
     }
     if (data) {
       data.children = data.children ?? [];
@@ -227,14 +227,21 @@ export class NodeIndexDocument {
    * @param converter - I3SConverter instance
    * @returns NodeIndexDocument instance
    */
-  static async createNode(
-    parentNode: NodeIndexDocument,
-    boundingVolumes: BoundingVolumes,
-    lodSelection: LodSelection[],
-    nodeInPage: NodeInPage,
-    resources: I3SConvertedResources,
-    converter: I3SConverter
-  ): Promise<NodeIndexDocument> {
+  static async createNode({
+    parentNode,
+    boundingVolumes,
+    lodSelection,
+    nodeInPage,
+    resources,
+    converter
+  }: {
+    parentNode: NodeIndexDocument;
+    boundingVolumes: BoundingVolumes;
+    lodSelection: LodSelection[];
+    nodeInPage: NodeInPage;
+    resources: I3SConvertedResources;
+    converter: I3SConverter;
+  }): Promise<NodeIndexDocument> {
     const data = await NodeIndexDocument.createNodeIndexDocument(
       parentNode,
       boundingVolumes,
@@ -283,6 +290,7 @@ export class NodeIndexDocument {
    * @param resources.attributes - feature attributes
    * @return 3DNodeIndexDocument https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DNodeIndexDocument.cmn.md object
    */
+  // eslint-disable-next-line complexity
   static async createNodeIndexDocument(
     parentNode: NodeIndexDocument,
     boundingVolumes: BoundingVolumes,
@@ -290,7 +298,7 @@ export class NodeIndexDocument {
     nodeInPage: NodeInPage,
     resources: I3SConvertedResources | DumpMetadata
   ): Promise<Node3DIndexDocument> {
-    const nodeId = nodeInPage.index!;
+    const nodeId = nodeInPage.index;
     const parentNodeData = await parentNode.load();
     const nodeData = {
       version: parentNodeData.version,

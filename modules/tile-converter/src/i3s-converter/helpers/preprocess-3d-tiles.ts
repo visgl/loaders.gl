@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import {GLTFPrimitiveModeString, PreprocessData} from '../types';
 import {

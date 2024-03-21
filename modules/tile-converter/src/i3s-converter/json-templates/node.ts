@@ -46,7 +46,7 @@ export const NODE = () => ({
       },
       {
         metricType: 'maxScreenThreshold',
-        maxError: 999.99999999999994
+        maxError: 999.9999999999999
       }
     ]
   },

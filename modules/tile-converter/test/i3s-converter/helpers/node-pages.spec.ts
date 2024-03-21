@@ -128,10 +128,12 @@ test('tile-converter(i3s)#NodePages', async (t) => {
       const newNodeWithMesh = {
         ...newNodeStub,
         mesh: {
-          // @ts-expect-error
           geometry: {
-            definition: 0
-          }
+            definition: 0,
+            resource: 0
+          },
+          material: {definition: 0},
+          attribute: {resource: 0}
         }
       };
       const nodePages = new NodePages(() => {}, 64, getConverter());
@@ -166,7 +168,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
   t.test(
     'tile-converter(i3s)#NodePages - Should save node pages to the file system ',
     async (st) => {
-      const savePaths = [];
+      const savePaths: string[] = [];
       const writeFileFuncForSlpk = (layerPath, data, slpk) => {
         savePaths.push(layerPath);
       };
@@ -191,9 +193,15 @@ test('tile-converter(i3s)#NodePages', async (t) => {
       const newNodeWithMesh = {
         ...newNodeStub,
         mesh: {
-          // @ts-expect-error
           geometry: {
+            definition: 0,
+            resource: 0
+          },
+          material: {
             definition: 0
+          },
+          attribute: {
+            resource: 0
           }
         }
       };
@@ -211,7 +219,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
   );
 
   t.test('tile-converter(i3s)#NodePages - Should save node pages', async (st) => {
-    const savedNodePages = [];
+    const savedNodePages: any[] = [];
     const writeFileFunc = async (layerPath, data, slpk) => {
       savedNodePages.push(data);
     };
@@ -230,7 +238,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
   t.test(
     'tile-converter(i3s)#NodePages - Should save node pages for slpk packaging',
     async (st) => {
-      const savedNodePages = [];
+      const savedNodePages: any[] = [];
       const writeFileFuncForSlpk = (layerPath, data, slpk) => {
         savedNodePages.push(data);
       };
@@ -248,7 +256,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
   );
 
   t.test('tile-converter(i3s)#NodePages - Should save node pages', async (st) => {
-    const savedNodePages = [];
+    const savedNodePages: any[] = [];
     const writeFileFunc = (layerPath, data, slpk) => {
       savedNodePages.push(data);
     };
@@ -267,7 +275,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
   t.test(
     'tile-converter(i3s)#NodePages - Should save node pages for slpk packaging',
     async (st) => {
-      const savedNodePages = [];
+      const savedNodePages: any[] = [];
       const writeFileFuncForSlpk = (layerPath, data, slpk) => {
         savedNodePages.push(data);
       };

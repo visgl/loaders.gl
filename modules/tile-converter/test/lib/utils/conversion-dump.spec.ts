@@ -85,7 +85,7 @@ test('tile-converter(i3s)#ConversionDump - Should create conversion dump with op
     join(testOptions.outputPath, testOptions.tilesetName),
     `${testOptions.tilesetName}${DUMP_FILE_SUFFIX}`
   );
-  const {something, ...correctOptions} = testOptions;
+  const {...correctOptions} = testOptions;
   t.deepEqual(options, correctOptions);
 
   t.deepEqual(tilesConverted['1.b3dm'], {
@@ -117,7 +117,7 @@ test('tile-converter(i3s)#ConversionDump - Should restore conversion dump with o
     join(testOptions.outputPath, testOptions.tilesetName),
     `${testOptions.tilesetName}${DUMP_FILE_SUFFIX}`
   );
-  const {something, ...correctOptions} = testOptions;
+  const {...correctOptions} = testOptions;
   t.deepEqual(options, correctOptions);
 
   t.equal(conversionDumpNew.restored, true);
@@ -273,14 +273,14 @@ test('tile-converter(i3s)#ConversionDump - test updateConvertedNodesDumpFile', a
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - test addTexturesDefinitions method', async (t) => {
+test('tile-converter(i3s)#ConversionDump - test addTexturesDefinitions method', (t) => {
   const conversionDump = new ConversionDump();
   conversionDump.addTexturesDefinitions(testTextureSetDefinitions);
   t.deepEqual(conversionDump.textureSetDefinitions, testTextureSetDefinitions);
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - test setMaterialsDefinitions method', async (t) => {
+test('tile-converter(i3s)#ConversionDump - test setMaterialsDefinitions method', (t) => {
   const conversionDump = new ConversionDump();
   conversionDump.setMaterialsDefinitions(testMaterialDefinitions as I3SMaterialDefinition[]);
   t.deepEqual(conversionDump.materialDefinitions, testMaterialDefinitions);
