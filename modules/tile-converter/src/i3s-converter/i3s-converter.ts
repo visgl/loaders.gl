@@ -962,21 +962,22 @@ export default class I3SConverter {
       halfSize: [],
       quaternion: []
     };
-    const resourcesData = await convertB3dmToI3sGeometry(
+    const resourcesData = await convertB3dmToI3sGeometry({
       tileContent,
-      transformationMatrix,
-      boundingVolume,
-      async () => (await this.nodePages.push({index: 0, obb: draftObb}, parentId)).index,
+      tileTransform: transformationMatrix,
+      tileBoundingVolume: boundingVolume,
+      addNodeToNodePage: async () =>
+        (await this.nodePages.push({index: 0, obb: draftObb}, parentId)).index,
       propertyTable,
-      this.featuresHashArray,
-      this.attributeMetadataInfo.attributeStorageInfo,
-      this.options.draco,
-      this.generateBoundingVolumes,
-      this.options.mergeMaterials,
-      this.geoidHeightModel!,
-      this.loadOptions.modules as Record<string, string>,
-      this.options.metadataClass
-    );
+      featuresHashArray: this.featuresHashArray,
+      attributeStorageInfo: this.attributeMetadataInfo.attributeStorageInfo,
+      draco: this.options.draco,
+      generateBoundingVolumes: this.generateBoundingVolumes,
+      shouldMergeMaterials: this.options.mergeMaterials,
+      geoidHeightModel: this.geoidHeightModel!,
+      libraries: this.loadOptions.modules as Record<string, string>,
+      metadataClass: this.options.metadataClass
+    });
     return resourcesData;
   }
 
