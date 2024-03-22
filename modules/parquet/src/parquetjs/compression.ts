@@ -35,7 +35,7 @@ function toArrayBuffer(buffer: Buffer): ArrayBuffer {
 // import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
 // import lzo from 'lzo';
-// import {ZstdCodec} from 'zstd-codec';
+import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
 const modules = {
@@ -46,9 +46,9 @@ const modules = {
   //     throw new Error('brotli compress');
   //   }
   // },
-  lz4js
+  lz4js,
   // lzo
-  // 'zstd-codec': ZstdCodec
+  'zstd-codec': ZstdCodec
 };
 
 /**
