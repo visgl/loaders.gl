@@ -98,6 +98,11 @@ export class DepsInstaller {
     const fileResponse = await fetchFile(
       `https://unpkg.com/@loaders.gl/${module}@${VERSION}/dist/${extraPath}/${name}`
     );
+
+    if (fileResponse.status < 200 || fileResponse.status >= 300) {
+      throw new Error(`Failed to load resource ${name}`);
+    }
+
     const fileData = await fileResponse.arrayBuffer();
     if (!fileData) {
       return;
