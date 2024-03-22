@@ -13,7 +13,7 @@ import {load} from '@loaders.gl/core';
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
 import type {DoublyLinkedListNode} from '../utils/doubly-linked-list-node';
-import {TILE_REFINEMENT, TILE_CONTENT_STATE} from '../constants';
+import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
 
 import {FrameState} from './helpers/frame-state';
 import {
@@ -274,9 +274,9 @@ export class Tile3D {
   /** Get the tile's screen space error. */
   getScreenSpaceError(frameState, useParentLodMetric) {
     switch (this.tileset.type) {
-      case 'I3S':
+      case TILESET_TYPE.I3S:
         return getProjectedRadius(this, frameState);
-      case 'TILES3D':
+      case TILESET_TYPE.TILES3D:
         return getTiles3DScreenSpaceError(this, frameState, useParentLodMetric);
       default:
         // eslint-disable-next-line
