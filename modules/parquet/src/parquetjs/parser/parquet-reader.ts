@@ -36,7 +36,7 @@ export type ParquetIterationProps = {
  */
 export class ParquetReader {
   static defaultProps: Required<ParquetReaderProps> = {
-    //max ArrayBuffer size in js is 2Gb
+    // max ArrayBuffer size in js is 2Gb
     defaultDictionarySize: 2147483648,
     preserveBinary: false
   };
