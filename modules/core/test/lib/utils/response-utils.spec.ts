@@ -72,10 +72,7 @@ test('checkResponseSync', (t) => {
 });
 
 test('checkResponse', async (t) => {
-  const response = new Response('{message: "server died"}', {
-    status: 500,
-    statusText: 'Internal Server Error'
-  });
+  const response = new Response('{message: "server died"}', {status: 500});
   Object.defineProperty(response, 'url', {
     value: 'https://some.url/not/even/very/long'
   });

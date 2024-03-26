@@ -78,7 +78,9 @@ export function checkResponseSync(response: Response): void {
 // HELPERS
 
 async function getResponseError(response: Response): Promise<Error> {
-  const message = `${response.status} ${response.statusText}: Failed to fetch resource`;
+  let message = `Failed to fetch resource (${response.status}): ${response.url}`;
+  message = message.length > 65 ? `${message.slice(0, 65)}...` : message;
+
   const cause: {
     url: string;
     response?: any;
