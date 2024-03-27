@@ -46,7 +46,7 @@ const modules = {
   //     throw new Error('brotli compress');
   //   }
   // },
-  lz4js,
+  lz4js
   // lzo
   // 'zstd-codec': ZstdCodec
 };
