@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {GLTFEnvironment} from '@luma.gl/experimental';
-import GL from '@luma.gl/constants';
+import {GL} from '@luma.gl/constants';
 
 const GLTF_ENV_BASE_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/luma.gl/examples/gltf/';
