@@ -20,9 +20,9 @@ import {} from '../types/gltf-json-schema';
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 
 /** Extension name */
-const EXT_MESHOPT_TRANSFORM = 'KHR_texture_transform';
+const KHR_TEXTURE_TRANSFORM = 'KHR_texture_transform';
 
-export const name = EXT_MESHOPT_TRANSFORM;
+export const name = KHR_TEXTURE_TRANSFORM;
 
 const scratchVector = new Vector3();
 const scratchRotationMatrix = new Matrix3();
@@ -60,7 +60,7 @@ type TransformParameters = {
  */
 export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptions) {
   const gltfScenegraph = new GLTFScenegraph(gltfData);
-  const hasExtension = gltfScenegraph.hasExtension(EXT_MESHOPT_TRANSFORM);
+  const hasExtension = gltfScenegraph.hasExtension(KHR_TEXTURE_TRANSFORM);
   if (!hasExtension || !options.gltf?.loadBuffers) {
     return;
   }
@@ -76,28 +76,22 @@ export async function decode(gltfData: GLTFWithBuffers, options: GLTFLoaderOptio
  * @param gltfData gltf buffers and json
  */
 function transformTexCoords(materialIndex: number, gltfData: GLTFWithBuffers): void {
+  const material = gltfData.json.materials?.[materialIndex];
+  const materialTextures = [
+    material?.pbrMetallicRoughness?.baseColorTexture,
+    material?.emissiveTexture,
+    material?.normalTexture,
+    material?.occlusionTexture,
+    material?.pbrMetallicRoughness?.metallicRoughnessTexture
+  ];
+
   // Save processed texCoords in order no to process the same twice
   const processedTexCoords: [number, number][] = [];
-  const material = gltfData.json.materials?.[materialIndex];
-  const baseColorTexture = material?.pbrMetallicRoughness?.baseColorTexture;
-  if (baseColorTexture) {
-    transformPrimitives(gltfData, materialIndex, baseColorTexture, processedTexCoords);
-  }
-  const emisiveTexture = material?.emissiveTexture;
-  if (emisiveTexture) {
-    transformPrimitives(gltfData, materialIndex, emisiveTexture, processedTexCoords);
-  }
-  const normalTexture = material?.normalTexture;
-  if (normalTexture) {
-    transformPrimitives(gltfData, materialIndex, normalTexture, processedTexCoords);
-  }
-  const occlusionTexture = material?.occlusionTexture;
-  if (occlusionTexture) {
-    transformPrimitives(gltfData, materialIndex, occlusionTexture, processedTexCoords);
-  }
-  const metallicRoughnessTexture = material?.pbrMetallicRoughness?.metallicRoughnessTexture;
-  if (metallicRoughnessTexture) {
-    transformPrimitives(gltfData, materialIndex, metallicRoughnessTexture, processedTexCoords);
+
+  for (const textureInfo of materialTextures) {
+    if (textureInfo && textureInfo?.extensions?.[KHR_TEXTURE_TRANSFORM]) {
+      transformPrimitives(gltfData, materialIndex, textureInfo, processedTexCoords);
+    }
   }
 }
 
@@ -139,7 +133,7 @@ function getTransformParameters(
   texture: CompoundGLTFTextureInfo,
   processedTexCoords: [number, number][]
 ): TransformParameters | null {
-  const textureInfo = texture.extensions?.[EXT_MESHOPT_TRANSFORM];
+  const textureInfo = texture.extensions?.[KHR_TEXTURE_TRANSFORM];
   const {texCoord: originalTexCoord = 0} = texture;
   // If texCoord is not set in the extension, original attribute data will be replaced
   const {texCoord = originalTexCoord} = textureInfo;
