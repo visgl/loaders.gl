@@ -305,7 +305,7 @@ class LAZLoader {
 
         instance.readOffset++;
       }
-
+      Module._free(bufRead);
       return {
         buffer: thisBuf.buffer,
         count: pointsRead,
@@ -323,6 +323,7 @@ class LAZLoader {
   close(): boolean {
     try {
       if (this.instance !== null) {
+        Module._free(this.instance.buf);
         this.instance.delete();
         this.instance = null;
       }
