@@ -23,14 +23,21 @@ export type TraversalConversionProps = {
  *                traversal at the some level of the tree
  * @returns void
  */
-export const traverseDatasetWith = async <TProps>(
-  tile: Tiles3DTileJSONPostprocessed,
-  traversalProps: TProps,
-  processTile: (tile: Tiles3DTileJSONPostprocessed, traversalProps: TProps) => Promise<TProps>,
-  postprocessTile?: (processResults: TProps[], currentTraversalProps: TProps) => Promise<void>,
-  maxDepth?: number,
+export const traverseDatasetWith = async <TProps>({
+  tile,
+  traversalProps,
+  processTile,
+  postprocessTile,
+  maxDepth,
   level = 0
-): Promise<void> => {
+}: {
+  tile: Tiles3DTileJSONPostprocessed;
+  traversalProps: TProps;
+  processTile: (tile: Tiles3DTileJSONPostprocessed, traversalProps: TProps) => Promise<TProps>;
+  postprocessTile?: (processResults: TProps[], currentTraversalProps: TProps) => Promise<void>;
+  maxDepth?: number;
+  level?: number;
+}): Promise<void> => {
   if (maxDepth && level > maxDepth) {
     return;
   }
@@ -38,14 +45,16 @@ export const traverseDatasetWith = async <TProps>(
   const newTraversalProps: TProps = await processTile(tile, traversalProps);
   processResults.push(newTraversalProps);
   for (const childTile of tile.children) {
-    await traverseDatasetWith(
-      childTile,
-      newTraversalProps,
+    await traverseDatasetWith({
+      tile: childTile,
+      traversalProps: newTraversalProps,
       processTile,
       postprocessTile,
       maxDepth,
-      level + 1
-    );
+      level: level + 1
+    });
   }
-  postprocessTile && (await postprocessTile(processResults, traversalProps));
+  if (postprocessTile) {
+    await postprocessTile(processResults, traversalProps);
+  }
 };

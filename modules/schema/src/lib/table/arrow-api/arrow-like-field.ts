@@ -46,8 +46,8 @@ export class ArrowLikeField {
   }
 
   toString(): string {
-    return `${this.type}${this.nullable ? ', nullable' : ''}${
-      this.metadata ? `, metadata: ${this.metadata}` : ''
+    return `${JSON.stringify(this.type)}${this.nullable ? ', nullable' : ''}${
+      this.metadata ? `, metadata: ${JSON.stringify(this.metadata)}` : ''
     }`;
   }
 }

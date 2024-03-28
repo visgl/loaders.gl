@@ -66,14 +66,14 @@ test('tile-converter(i3s)#NodeIndexDocument', async (t) => {
       boundingVolumes: null,
       hasUvRegions: false
     };
-    const node = await NodeIndexDocument.createNode(
+    const node = await NodeIndexDocument.createNode({
       parentNode,
-      {obb, mbs: [1, 2, 3, 4]},
-      [{metricType: 'metricType', maxError: 12345}],
+      boundingVolumes: {obb, mbs: [1, 2, 3, 4]},
+      lodSelection: [{metricType: 'metricType', maxError: 12345}],
       nodeInPage,
-      emptyResources,
-      getConverter()
-    );
+      resources: emptyResources,
+      converter: getConverter()
+    });
     st.ok(node instanceof NodeIndexDocument);
     st.equal(node.inPageId, 5);
     st.equal(node.id, '5');

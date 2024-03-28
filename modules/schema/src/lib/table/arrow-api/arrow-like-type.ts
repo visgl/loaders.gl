@@ -476,7 +476,7 @@ export class FixedSizeList extends DataType {
     return 'FixedSizeList';
   }
   toString(): string {
-    return `FixedSizeList[${this.listSize}]<${this.valueType}>`;
+    return `FixedSizeList[${this.listSize}]<${JSON.stringify(this.valueType)}>`;
   }
 }
 
@@ -492,7 +492,9 @@ export class Struct extends DataType {
     return Type.Struct;
   }
   public toString() {
-    return `Struct<{${this.children.map((f) => `${f.name}:${f.type}`).join(', ')}}>`;
+    return `Struct<{${this.children
+      .map((f) => `${f.name}:${JSON.stringify(f.type)}`)
+      .join(', ')}}>`;
   }
   get [Symbol.toStringTag](): string {
     return 'Struct';

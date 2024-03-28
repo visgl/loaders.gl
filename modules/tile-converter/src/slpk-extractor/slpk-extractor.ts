@@ -33,6 +33,7 @@ export default class SLPKExtractor {
    */
   public async extract(options: {inputUrl: string; outputPath: string}): Promise<string> {
     if (isBrowser) {
+      // eslint-disable-next-line no-console
       console.log(BROWSER_ERROR_MESSAGE);
       return BROWSER_ERROR_MESSAGE;
     }
@@ -71,7 +72,7 @@ export default class SLPKExtractor {
       return path.join(path.dirname(fileName), 'index.json.gz');
     }
     // finds path with name part and extention part
-    let parts = /^(.*\/[^\/\.]*)(\..+)$/.exec(fileName);
+    const parts = /^(.*\/[^\/\.]*)(\..+)$/.exec(fileName);
     if (!parts) {
       return null;
     }

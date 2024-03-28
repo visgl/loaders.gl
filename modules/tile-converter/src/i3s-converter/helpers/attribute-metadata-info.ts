@@ -94,7 +94,7 @@ export class AttributeMetadataInfo {
       Use attributeStorageInfo as a source of attribute names to create the popupInfo.
       */
       const attributeNames: string[] = [];
-      for (let info of this._attributeStorageInfo) {
+      for (const info of this._attributeStorageInfo) {
         attributeNames.push(info.name);
       }
       this._popupInfo = this.createPopupInfo(attributeNames);

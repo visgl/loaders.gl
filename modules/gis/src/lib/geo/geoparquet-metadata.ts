@@ -125,10 +125,11 @@ function unpackGeoFieldMetadata(field: Field, columnMetadata): void {
         for (const [crsKey, crsValue] of Object.entries(value || {})) {
           switch (crsKey) {
             case 'id':
+              // prettier-ignore
               const crsId =
                 typeof crsValue === 'object'
                   ? // @ts-ignore
-                    `${crsValue?.authority}:${crsValue?.code}`
+                  `${crsValue?.authority}:${crsValue?.code}`
                   : JSON.stringify(crsValue);
               setFieldMetadata(field, `geo.crs.${crsKey}`, crsId);
               break;

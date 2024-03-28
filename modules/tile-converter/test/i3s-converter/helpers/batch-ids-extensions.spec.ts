@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import test from 'tape-promise/tape';
 import {handleBatchIdsExtensions} from '../../../src/i3s-converter/helpers/batch-ids-extensions';
 

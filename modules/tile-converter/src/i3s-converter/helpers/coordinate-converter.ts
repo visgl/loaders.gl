@@ -67,8 +67,8 @@ export function createBoundingVolumesFromGeometry(
   const geometryObb = makeOrientedBoundingBoxFromPoints(positionVectors);
   const geometryMbs = makeBoundingSphereFromPoints(positionVectors);
 
-  let mbsCenter = Ellipsoid.WGS84.cartesianToCartographic(geometryMbs.center, new Vector3());
-  let obbCenter = Ellipsoid.WGS84.cartesianToCartographic(geometryObb.center, new Vector3());
+  const mbsCenter = Ellipsoid.WGS84.cartesianToCartographic(geometryMbs.center, new Vector3());
+  const obbCenter = Ellipsoid.WGS84.cartesianToCartographic(geometryObb.center, new Vector3());
 
   mbsCenter[2] = mbsCenter[2] - geoidHeightModel.getHeight(mbsCenter[1], mbsCenter[0]);
   obbCenter[2] = obbCenter[2] - geoidHeightModel.getHeight(obbCenter[1], obbCenter[0]);

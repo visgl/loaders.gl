@@ -99,9 +99,8 @@ export default class NodePages {
     if (await isFileExists(fullName)) {
       console.log(`load ${fullName}.`); // eslint-disable-line
       return (await openJson(filePath, fileName)) as {nodes: NodeInPage[]};
-    } else {
-      return {nodes: []};
     }
+    return {nodes: []};
   }
 
   /**
@@ -180,34 +179,33 @@ export default class NodePages {
   async saveNode(node: NodeInPage): Promise<void> {
     if (!this.converter.options.instantNodeWriting) {
       return;
+    }
+    const nodePageIndex = this.getPageIndexByNodeId(node.index);
+    const nodePage = await this.getPageByNodeId(node.index);
+    const {filePath, fileName} = this.getNodePageFileName(nodePageIndex);
+    const nodeToUpdate = await this.getNodeById(node.index, nodePage);
+    if (nodeToUpdate) {
+      NodePages.updateAll(nodeToUpdate, node);
     } else {
-      const nodePageIndex = this.getPageIndexByNodeId(node.index);
-      const nodePage = await this.getPageByNodeId(node.index);
-      const {filePath, fileName} = this.getNodePageFileName(nodePageIndex);
-      const nodeToUpdate = await this.getNodeById(node.index, nodePage);
-      if (nodeToUpdate) {
-        NodePages.updateAll(nodeToUpdate, node);
-      } else {
-        nodePage.nodes.push(node);
-      }
-      const nodePageStr = JSON.stringify(nodePage);
-      if (this.converter.options.slpk) {
-        await this.converter.writeQueue.enqueue(
-          {
-            archiveKey: `nodePages/${nodePageIndex.toString()}.json.gz`,
-            writePromise: () =>
-              this.writeFile(filePath, nodePageStr, fileName, true, this.converter.compressList)
-          },
-          true
-        );
-      } else {
-        await this.converter.writeQueue.enqueue(
-          {
-            writePromise: () => this.writeFile(filePath, nodePageStr)
-          },
-          true
-        );
-      }
+      nodePage.nodes.push(node);
+    }
+    const nodePageStr = JSON.stringify(nodePage);
+    if (this.converter.options.slpk) {
+      await this.converter.writeQueue.enqueue(
+        {
+          archiveKey: `nodePages/${nodePageIndex.toString()}.json.gz`,
+          writePromise: () =>
+            this.writeFile(filePath, nodePageStr, fileName, true, this.converter.compressList)
+        },
+        true
+      );
+    } else {
+      await this.converter.writeQueue.enqueue(
+        {
+          writePromise: () => this.writeFile(filePath, nodePageStr)
+        },
+        true
+      );
     }
   }
 

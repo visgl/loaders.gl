@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import '@loaders.gl/polyfills';
 import SLPKExtractor from './slpk-extractor/slpk-extractor';
 import {getURLValue, validateOptionsWithEqual} from './lib/utils/cli-utils';
@@ -41,18 +40,21 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.log(error);
-  process.exit(1); // eslint-disable-line
+  console.log(error); // eslint-disable-line no-console
+  process.exit(1); // eslint-disable-line no-process-exit
 });
 
 /**
  * Output for `npx slpk-extractor --help`
  */
 function printHelp(): void {
+  // eslint-disable-next-line no-console
   console.log('cli: converter slpk to I3S...');
+  // eslint-disable-next-line no-console
   console.log('--output [Output folder, default: "data" folder]');
+  // eslint-disable-next-line no-console
   console.log('--tileset [SLPK file]');
-  process.exit(0); // eslint-disable-line
+  process.exit(0); // eslint-disable-line no-process-exit
 }
 
 /**
@@ -60,9 +62,12 @@ function printHelp(): void {
  * @param options validated slpk-extractor options
  */
 async function convert(options: ValidatedSLPKExtractionOptions) {
-  console.log(`------------------------------------------------`); // eslint-disable-line
-  console.log(`Starting conversion of SLPK`); // eslint-disable-line
-  console.log(`------------------------------------------------`); // eslint-disable-line
+  // eslint-disable-next-line no-console
+  console.log('------------------------------------------------');
+  // eslint-disable-next-line no-console
+  console.log('Starting conversion of SLPK');
+  // eslint-disable-next-line no-console
+  console.log('------------------------------------------------');
   const slpkExtractor = new SLPKExtractor();
   slpkExtractor.extract({
     inputUrl: options.tileset,
@@ -80,7 +85,9 @@ function validateOptions(options: SLPKExtractionOptions): ValidatedSLPKExtractio
   const mandatoryOptionsWithExceptions: {
     [key: string]: () => void;
   } = {
+    // eslint-disable-next-line no-console
     output: () => console.log('Missed: --output [Output path name]'),
+    // eslint-disable-next-line no-console
     tileset: () => console.log('Missed: --tileset [SLPK file]')
   };
   const exceptions: (() => void)[] = [];
@@ -92,7 +99,7 @@ function validateOptions(options: SLPKExtractionOptions): ValidatedSLPKExtractio
   }
   if (exceptions.length) {
     exceptions.forEach((exeption) => exeption());
-    process.exit(1);
+    process.exit(1); // eslint-disable-line no-process-exit
   }
   return <ValidatedSLPKExtractionOptions>options;
 }
@@ -119,6 +126,7 @@ function parseOptions(args: string[]): SLPKExtractionOptions {
           printHelp();
           break;
         default:
+          // eslint-disable-next-line no-console
           console.warn(`Unknown option ${arg}`);
           process.exit(0); // eslint-disable-line
       }

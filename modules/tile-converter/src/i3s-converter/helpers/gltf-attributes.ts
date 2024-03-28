@@ -18,7 +18,7 @@ export function prepareDataForAttributesConversion(
   tileTransform: Matrix4,
   boundingVolume: OrientedBoundingBox | BoundingSphere
 ): GLTFAttributesData {
-  let nodes =
+  const nodes =
     tileContent.gltf?.scene?.nodes ||
     tileContent.gltf?.scenes?.[0]?.nodes ||
     tileContent.gltf?.nodes ||
@@ -29,19 +29,18 @@ export function prepareDataForAttributesConversion(
       // Need data only for uncompressed images because we can't get batchIds from compressed textures.
       if (imageObject?.image?.compressed) {
         return null;
-      } else {
-        const data = imageObject?.image?.data;
-        const dataCopy = new Uint8Array(data.length);
-        dataCopy.set(data);
-        return {
-          data: dataCopy,
-          compressed: false,
-          height: imageObject.image.height,
-          width: imageObject.image.width,
-          components: imageObject.image.components,
-          mimeType: imageObject.mimeType
-        };
       }
+      const data = imageObject?.image?.data;
+      const dataCopy = new Uint8Array(data.length);
+      dataCopy.set(data);
+      return {
+        data: dataCopy,
+        compressed: false,
+        height: imageObject.image.height,
+        width: imageObject.image.width,
+        components: imageObject.image.components,
+        mimeType: imageObject.mimeType
+      };
     }) || [];
 
   prepareNodes(nodes);

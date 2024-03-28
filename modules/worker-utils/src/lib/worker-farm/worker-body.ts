@@ -54,7 +54,9 @@ export default class WorkerBody {
 
     getParentPort().then((parentPort) => {
       if (parentPort) {
-        parentPort.on('message', handleMessage);
+        parentPort.on('message', (message) => {
+          handleMessage(message);
+        });
         // if (message == 'exit') { parentPort.unref(); }
         // eslint-disable-next-line
         parentPort.on('exit', () => console.debug('Node worker closing'));

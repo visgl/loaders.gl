@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import type {FeatureTableJson, Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 import type {
   GLTFAccessorPostprocessed,
@@ -95,21 +96,35 @@ let scratchVector = new Vector3();
  * @param metadataClass `- user selected feature metadata class name`
  * @returns Array of node resources to create one or more i3s nodes
  */
-export default async function convertB3dmToI3sGeometry(
-  tileContent: Tiles3DTileContent,
-  tileTransform: Matrix4,
-  tileBoundingVolume: OrientedBoundingBox | BoundingSphere,
-  addNodeToNodePage: () => Promise<number>,
-  propertyTable: FeatureTableJson | null,
-  featuresHashArray: string[],
-  attributeStorageInfo: AttributeStorageInfo[] | undefined,
-  draco: boolean,
-  generateBoundingVolumes: boolean,
-  shouldMergeMaterials: boolean,
-  geoidHeightModel: Geoid,
-  libraries: Record<string, string>,
-  metadataClass?: string
-): Promise<I3SConvertedResources[] | null> {
+export default async function convertB3dmToI3sGeometry({
+  tileContent,
+  tileTransform,
+  tileBoundingVolume,
+  addNodeToNodePage,
+  propertyTable,
+  featuresHashArray,
+  attributeStorageInfo,
+  draco,
+  generateBoundingVolumes,
+  shouldMergeMaterials,
+  geoidHeightModel,
+  libraries,
+  metadataClass
+}: {
+  tileContent: Tiles3DTileContent;
+  tileTransform: Matrix4;
+  tileBoundingVolume: OrientedBoundingBox | BoundingSphere;
+  addNodeToNodePage: () => Promise<number>;
+  propertyTable: FeatureTableJson | null;
+  featuresHashArray: string[];
+  attributeStorageInfo: AttributeStorageInfo[] | undefined;
+  draco: boolean;
+  generateBoundingVolumes: boolean;
+  shouldMergeMaterials: boolean;
+  geoidHeightModel: Geoid;
+  libraries: Record<string, string>;
+  metadataClass?: string;
+}): Promise<I3SConvertedResources[] | null> {
   const useCartesianPositions = generateBoundingVolumes;
   const materialAndTextureList: I3SMaterialWithTexture[] = await convertMaterials(
     tileContent.gltf?.materials,
@@ -149,7 +164,7 @@ export default async function convertB3dmToI3sGeometry(
     }
     const convertedAttributes = convertedAttributesMap.get(originarMaterialId);
     if (!convertedAttributes) {
-      continue;
+      continue; // eslint-disable-line no-continue
     }
     const {material, texture} = materialAndTexture;
     const nodeId = await addNodeToNodePage();
@@ -278,21 +293,22 @@ async function _makeNodeResources({
       faceRange.buffer
     )
   );
+  // prettier-ignore
   const compressedGeometry = draco
     ? generateCompressedGeometry(
-        vertexCount,
-        convertedAttributes,
-        {
-          positions,
-          normals,
-          texCoords: texture ? texCoords : new Float32Array(0),
-          colors,
-          uvRegions,
-          featureIds,
-          faceRange
-        },
-        libraries
-      )
+      vertexCount,
+      convertedAttributes,
+      {
+        positions,
+        normals,
+        texCoords: texture ? texCoords : new Float32Array(0),
+        colors,
+        uvRegions,
+        featureIds,
+        faceRange
+      },
+      libraries
+    )
     : null;
 
   let attributes: ArrayBuffer[] = [];
@@ -356,21 +372,20 @@ export async function convertAttributes(
     }
   }
 
-  convertNodes(
+  convertNodes({
     nodes,
     images,
     cartographicOrigin,
     cartesianModelMatrix,
     attributesMap,
     useCartesianPositions,
-    undefined,
     featureTexture
-  );
+  });
 
   for (const attrKey of attributesMap.keys()) {
     const attributes = attributesMap.get(attrKey);
     if (!attributes) {
-      continue;
+      continue; // eslint-disable-line no-continue
     }
     if (attributes.positions.length === 0) {
       attributesMap.delete(attrKey);
@@ -401,19 +416,28 @@ export async function convertAttributes(
  * @param featureTexture - feature texture key
  * @returns {void}
  */
-function convertNodes(
-  nodes: GLTFNodePostprocessed[],
-  images: (TextureImageProperties | null)[],
-  cartographicOrigin: Vector3,
-  cartesianModelMatrix: Matrix4,
-  attributesMap: Map<string, ConvertedAttributes>,
-  useCartesianPositions: boolean,
-  matrix: Matrix4 = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
-  featureTexture: string | null
-) {
+function convertNodes({
+  nodes,
+  images,
+  cartographicOrigin,
+  cartesianModelMatrix,
+  attributesMap,
+  useCartesianPositions,
+  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+  featureTexture
+}: {
+  nodes: GLTFNodePostprocessed[];
+  images: (TextureImageProperties | null)[];
+  cartographicOrigin: Vector3;
+  cartesianModelMatrix: Matrix4;
+  attributesMap: Map<string, ConvertedAttributes>;
+  useCartesianPositions: boolean;
+  matrix?: Matrix4;
+  featureTexture: string | null;
+}) {
   if (nodes) {
     for (const node of nodes) {
-      convertNode(
+      convertNode({
         node,
         images,
         cartographicOrigin,
@@ -422,7 +446,7 @@ function convertNodes(
         useCartesianPositions,
         matrix,
         featureTexture
-      );
+      });
     }
   }
 }
@@ -470,43 +494,52 @@ function getCompositeTransformationMatrix(node: GLTFNodePostprocessed, matrix: M
  * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
  * @param featureTexture - feature texture key
  */
-function convertNode(
-  node: GLTFNodePostprocessed,
-  images: (TextureImageProperties | null)[],
-  cartographicOrigin: Vector3,
-  cartesianModelMatrix: Matrix4,
-  attributesMap: Map<string, ConvertedAttributes>,
+function convertNode({
+  node,
+  images,
+  cartographicOrigin,
+  cartesianModelMatrix,
+  attributesMap,
   useCartesianPositions,
   matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
-  featureTexture: string | null
-) {
+  featureTexture
+}: {
+  node: GLTFNodePostprocessed;
+  images: (TextureImageProperties | null)[];
+  cartographicOrigin: Vector3;
+  cartesianModelMatrix: Matrix4;
+  attributesMap: Map<string, ConvertedAttributes>;
+  useCartesianPositions: boolean;
+  matrix: Matrix4;
+  featureTexture: string | null;
+}) {
   const transformationMatrix = getCompositeTransformationMatrix(node, matrix);
 
   const mesh = node.mesh;
 
   if (mesh) {
-    convertMesh(
+    convertMesh({
       mesh,
       images,
       cartographicOrigin,
       cartesianModelMatrix,
       attributesMap,
       useCartesianPositions,
-      transformationMatrix,
+      matrix: transformationMatrix,
       featureTexture
-    );
+    });
   }
 
-  convertNodes(
-    node.children || [],
+  convertNodes({
+    nodes: node.children || [],
     images,
     cartographicOrigin,
     cartesianModelMatrix,
     attributesMap,
     useCartesianPositions,
-    transformationMatrix,
+    matrix: transformationMatrix,
     featureTexture
-  );
+  });
 }
 
 /**
@@ -524,16 +557,25 @@ function convertNode(
  * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
  * @param featureTexture - feature texture key
  */
-function convertMesh(
-  mesh: GLTFMeshPostprocessed,
-  images: (TextureImageProperties | null)[],
-  cartographicOrigin: Vector3,
-  cartesianModelMatrix: Matrix4,
-  attributesMap: Map<string, ConvertedAttributes>,
+function convertMesh({
+  mesh,
+  images,
+  cartographicOrigin,
+  cartesianModelMatrix,
+  attributesMap,
   useCartesianPositions = false,
-  matrix = new Matrix4([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
-  featureTexture: string | null
-) {
+  matrix,
+  featureTexture
+}: {
+  mesh: GLTFMeshPostprocessed;
+  images: (TextureImageProperties | null)[];
+  cartographicOrigin: Vector3;
+  cartesianModelMatrix: Matrix4;
+  attributesMap: Map<string, ConvertedAttributes>;
+  useCartesianPositions: boolean;
+  matrix: Matrix4;
+  featureTexture: string | null;
+}) {
   for (const primitive of mesh.primitives) {
     let outputAttributes: ConvertedAttributes | null | undefined = null;
     let materialUvRegion: Uint16Array | undefined;
@@ -556,7 +598,7 @@ function convertMesh(
     );
     const attributes = primitive.attributes;
     if (!outputAttributes) {
-      continue;
+      continue; // eslint-disable-line no-continue
     }
 
     const indices = normalizeIndices(primitive);
@@ -647,7 +689,7 @@ function normalizeIndices(primitive: GLTFMeshPrimitivePostprocessed): TypedArray
     }
     indices = newIndices;
   }
-  return indices as TypedArray;
+  return indices;
 }
 
 /**
@@ -893,6 +935,7 @@ async function convertMaterials(
  * @param materials materials array
  * @returns merged materials array
  */
+// eslint-disable-next-line max-statements, complexity
 async function mergeAllMaterials(
   materials: I3SMaterialWithTexture[]
 ): Promise<I3SMaterialWithTexture[]> {
@@ -984,6 +1027,7 @@ async function mergeMaterials(
         .toFormat(material1.texture.mimeType === 'image/png' ? 'png' : 'jpeg')
         .toBuffer();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log(
         'Join images into a texture atlas has failed. Consider usage `--split-nodes` option. (See documentation https://loaders.gl/modules/tile-converter/docs/cli-reference/tile-converter)'
       );
@@ -1035,7 +1079,7 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
   }
 
   sourceMaterial.id = Number.isFinite(sourceMaterial.id) ? sourceMaterial.id : uuidv4();
-  let mergedMaterials: MergedMaterial[] = [{originalMaterialId: sourceMaterial.id}];
+  const mergedMaterials: MergedMaterial[] = [{originalMaterialId: sourceMaterial.id}];
   if (!texture) {
     // Should use default baseColorFactor if it is not present in source material
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
@@ -1419,6 +1463,7 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
 function getAttributeType(key: string, attributeStorageInfo: any[]): string {
   const attribute = attributeStorageInfo.find((attr) => attr.name === key);
   if (!attribute) {
+    // eslint-disable-next-line no-console
     console.error(
       `attribute is null, key=${key}, attributeStorageInfo=${JSON.stringify(
         attributeStorageInfo,
@@ -1429,6 +1474,7 @@ function getAttributeType(key: string, attributeStorageInfo: any[]): string {
     return '';
   }
   if (!attribute.attributeValues) {
+    // eslint-disable-next-line no-console
     console.error(`attributeValues is null, attribute=${attribute}`);
     return '';
   }

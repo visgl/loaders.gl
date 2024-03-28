@@ -384,7 +384,7 @@ function calculateBoundingVolumeForChildTile(
     return rootBoundingVolume;
   }
 
-  throw new Error(`Unsupported bounding volume type ${rootBoundingVolume}`);
+  throw new Error(`Unsupported bounding volume type ${JSON.stringify(rootBoundingVolume)}`);
 }
 
 /**

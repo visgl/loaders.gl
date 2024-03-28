@@ -9,7 +9,7 @@ test('tile-converter(i3s-server)#createSceneServer', async (t) => {
     return;
   }
 
-  const result = await createSceneServer('Buildings_3D_Multipatch_DA12_Subset', LAYER);
+  const result = createSceneServer('Buildings_3D_Multipatch_DA12_Subset', LAYER);
   t.equals(JSON.stringify(result).length, 4889);
 
   t.end();

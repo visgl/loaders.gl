@@ -30,7 +30,7 @@ export type WriteQueueItem = {
 };
 
 export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
-  private intervalId?: NodeJS.Timeout;
+  private intervalId?: NodeJS.Timer; // eslint-disable-line no-undef
   private conversionDump: ConversionDump;
   public writePromise: Promise<void> | null = null;
   public fileMap: {[key: string]: string} = {};
@@ -65,7 +65,7 @@ export default class WriteQueue<T extends WriteQueueItem> extends Queue<T> {
   }
 
   startListening() {
-    this.intervalId = setInterval(this.startWrite.bind(this), this.listeningInterval);
+    this.intervalId = setInterval(() => this.startWrite.bind(this), this.listeningInterval);
   }
 
   stopListening() {

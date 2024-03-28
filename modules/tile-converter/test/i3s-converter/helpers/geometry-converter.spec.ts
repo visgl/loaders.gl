@@ -51,7 +51,7 @@ test('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt t
     const attributeStorageInfo = [];
     const shouldMergeMaterials = false;
     try {
-      const convertedResources = await convertB3dmToI3sGeometry(
+      const convertedResources = await convertB3dmToI3sGeometry({
         tileContent,
         tileTransform,
         tileBoundingVolume,
@@ -63,8 +63,8 @@ test('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt t
         generateBoundingVolumes,
         shouldMergeMaterials,
         geoidHeightModel,
-        {}
-      );
+        libraries: {}
+      });
       t.ok(convertedResources);
       if (!convertedResources) {
         return;
@@ -86,17 +86,18 @@ test('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt t
             height: 1024,
             bitmapByteLength: 8388608
           },
+          // prettier-ignore
           boundingVolumes: generateBoundingVolumes
             ? {
-                mbs: [8.622161535185821, 50.0841151227351, -188.79808730024337, 633.1951829721843],
-                obb: {
-                  center: [8.622050871641566, 50.084076204176576, -194.3917133680221],
-                  halfSize: [611.3686583875675, 484.1319449471776, 365.7073438855587],
-                  quaternion: [
-                    0.478909280552476, -0.3432001871992151, 0.5224020278817846, 0.6164054297068876
-                  ]
-                }
+              mbs: [8.622161535185821, 50.0841151227351, -188.79808730024337, 633.1951829721843],
+              obb: {
+                center: [8.622050871641566, 50.084076204176576, -194.3917133680221],
+                halfSize: [611.3686583875675, 484.1319449471776, 365.7073438855587],
+                quaternion: [
+                  0.478909280552476, -0.3432001871992151, 0.5224020278817846, 0.6164054297068876
+                ]
               }
+            }
             : false
         },
         t
@@ -115,6 +116,7 @@ test('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt t
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile content', async (t) => {
   if (isBrowser) {
     t.end();
@@ -124,7 +126,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
-  const generageBoundingVolumes = false;
+  const generateBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(BERLIN_B3DM_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
@@ -135,7 +137,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = [];
   try {
-    const convertedResources = await convertB3dmToI3sGeometry(
+    const convertedResources = await convertB3dmToI3sGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -144,11 +146,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
       featuresHashArray,
       attributeStorageInfo,
       draco,
-      generageBoundingVolumes,
+      generateBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      {}
-    );
+      libraries: {}
+    });
     t.ok(convertedResources);
     if (!convertedResources) {
       return;
@@ -193,6 +195,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York tile content', async (t) => {
   if (isBrowser) {
     t.end();
@@ -202,7 +205,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
-  const generageBoundingVolumes = false;
+  const generateBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(NEW_YORK_B3DM_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
@@ -215,7 +218,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry(
+    const convertedResources = await convertB3dmToI3sGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -224,11 +227,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
       featuresHashArray,
       attributeStorageInfo,
       draco,
-      generageBoundingVolumes,
+      generateBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      {}
-    );
+      libraries: {}
+    });
     t.ok(convertedResources);
     if (!convertedResources) {
       return;
@@ -256,6 +259,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile content', async (t) => {
   if (isBrowser) {
     t.end();
@@ -265,7 +269,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
-  const generageBoundingVolumes = false;
+  const generateBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(FERRY_GLTF_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
@@ -280,7 +284,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry(
+    const convertedResources = await convertB3dmToI3sGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -289,11 +293,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
       featuresHashArray,
       attributeStorageInfo,
       draco,
-      generageBoundingVolumes,
+      generateBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      {}
-    );
+      libraries: {}
+    });
     t.ok(convertedResources);
     if (!convertedResources) {
       return;
@@ -327,6 +331,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
   const EXPECT_VERTEX_COUNT = [42891, 12861];
 
@@ -339,7 +344,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
-  const generageBoundingVolumes = false;
+  const generateBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(TRIANGLE_STRIP_B3DM_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
@@ -353,7 +358,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry(
+    const convertedResources = await convertB3dmToI3sGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -362,11 +367,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
       featuresHashArray,
       attributeStorageInfo,
       draco,
-      generageBoundingVolumes,
+      generateBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      {}
-    );
+      libraries: {}
+    });
     t.ok(convertedResources);
     if (!convertedResources) {
       return;
@@ -394,7 +399,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
-  const generageBoundingVolumes = false;
+  const generateBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(HELSINKI_GLB_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent);
@@ -409,7 +414,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    await convertB3dmToI3sGeometry(
+    await convertB3dmToI3sGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -418,11 +423,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
       featuresHashArray,
       attributeStorageInfo,
       draco,
-      generageBoundingVolumes,
+      generateBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      {}
-    );
+      libraries: {}
+    });
     t.fail('The conversion should fail');
   } catch (e) {
     // @ts-ignore 'e' is of type 'unknown'
@@ -456,6 +461,7 @@ test('tile-converter(i3s)#getPropertyTable - should get the property table from 
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async (t) => {
   if (isBrowser) {
     t.end();
@@ -465,7 +471,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
-  const generageBoundingVolumes = false;
+  const generateBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(MUSCATATUCK_GLB_FILE_PATH, Tiles3DLoader);
   const propertyTable = getPropertyTable(tileContent, 'r3dm::uncertainty_ce90sum');
@@ -474,7 +480,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry(
+    const convertedResources = await convertB3dmToI3sGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -483,12 +489,12 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
       featuresHashArray,
       attributeStorageInfo,
       draco,
-      generageBoundingVolumes,
+      generateBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      {},
-      'r3dm::uncertainty_ce90sum'
-    );
+      libraries: {},
+      metadataClass: 'r3dm::uncertainty_ce90sum'
+    });
     t.ok(convertedResources);
     if (!convertedResources) {
       return;
@@ -522,6 +528,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be converted to a node attibute of type string', async (t) => {
   if (isBrowser) {
     t.end();
@@ -552,7 +559,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
-  const generageBoundingVolumes = false;
+  const generateBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(BASEGLOBE_GLB_FILE_PATH, Tiles3DLoader);
   const metadataClass = 'owt_lulc';
@@ -566,7 +573,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry(
+    const convertedResources = await convertB3dmToI3sGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -575,12 +582,12 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
       featuresHashArray,
       attributeStorageInfo,
       draco,
-      generageBoundingVolumes,
+      generateBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      {},
+      libraries: {},
       metadataClass
-    );
+    });
     const attributes = convertedResources?.[0].attributes?.[1];
     t.deepEquals(new Uint8Array(attributes || []), expectedArray, 'Array represents ');
   } finally {
@@ -592,6 +599,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
   t.end();
 });
 
+// eslint-disable-next-line max-statements
 test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async (t) => {
   if (isBrowser) {
     t.end();
@@ -627,7 +635,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
   const addNodeToNodePage = async () => nodeId++;
   const featuresHashArray = [];
   const draco = true;
-  const generageBoundingVolumes = false;
+  const generateBoundingVolumes = false;
   const shouldMergeMaterials = false;
   const tileContent = await load(FERRY_GLTF_FILE_PATH, Tiles3DLoader);
   const tileTransform = new Matrix4([
@@ -641,7 +649,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
   const geoidHeightModel = await load(PGM_FILE_PATH, PGMLoader);
   const attributeStorageInfo = getAttributeStorageInfo(propertyTable);
   try {
-    const convertedResources = await convertB3dmToI3sGeometry(
+    const convertedResources = await convertB3dmToI3sGeometry({
       tileContent,
       tileTransform,
       tileBoundingVolume,
@@ -650,11 +658,11 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attri
       featuresHashArray,
       attributeStorageInfo,
       draco,
-      generageBoundingVolumes,
+      generateBoundingVolumes,
       shouldMergeMaterials,
       geoidHeightModel,
-      {}
-    );
+      libraries: {}
+    });
     if (!convertedResources?.[0].attributes?.[1]) {
       return;
     }
