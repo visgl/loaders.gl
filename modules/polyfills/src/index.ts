@@ -17,6 +17,7 @@ import {fetchNode} from './filesystems/fetch-node';
 import {NodeHash} from './crypto/node-hash';
 
 // NODE VERSION
+// @ts-expect-error
 import {versions} from 'node:process';
 export const nodeVersion = parseInt(versions.node.split('.')[0]);
 

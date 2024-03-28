@@ -13,6 +13,7 @@ import {
 } from './lib/utils/cli-utils';
 import {addOneFile, composeHashFile, makeZipCDHeaderIterator} from '@loaders.gl/zip';
 import {FileHandleFile} from '@loaders.gl/loader-utils';
+// @ts-ignore
 import {copyFile} from 'node:fs/promises';
 
 type TileConversionOptions = {

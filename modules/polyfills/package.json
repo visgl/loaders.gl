@@ -34,10 +34,10 @@
     "README.md"
   ],
   "browser": {
-    "fs": false,
-    "path": false,
+    "./dist/index.js": "./dist/index.browser.js",
     "./src/index.ts": "./src/index.browser.ts",
-    "./dist/index.js": "./dist/index.browser.js"
+    "fs": false,
+    "path": false
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev",

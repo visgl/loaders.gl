@@ -4,7 +4,10 @@
 
 import type {WorkerMessageData, WorkerMessageType, WorkerMessagePayload} from '../../types';
 import {getTransferList} from '../worker-utils/get-transfer-list';
-import {TransferListItem, parentPort} from '../node/worker_threads';
+// import type {TransferListItem} from '../node/worker_threads';
+import {parentPort} from '../node/worker_threads';
+
+type TransferListItem = any;
 
 /** Vile hack to defeat over-zealous bundlers from stripping out the require */
 async function getParentPort() {
