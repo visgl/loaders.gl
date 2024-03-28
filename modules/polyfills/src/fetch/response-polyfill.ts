@@ -55,8 +55,10 @@ export class Response {
     if (isReadableNodeStream(body)) {
       this._body = decompressReadStream(body, headers);
     } else if (typeof body === 'string') {
+      // @ts-expect-error
       this._body = stream.Readable.from([new TextEncoder().encode(body)]);
     } else {
+      // @ts-expect-error
       this._body = stream.Readable.from([body || new ArrayBuffer(0)]);
     }
   }

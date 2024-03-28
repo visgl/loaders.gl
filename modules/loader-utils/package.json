@@ -35,16 +35,15 @@
     "README.md"
   ],
   "browser": {
-    "./src/lib/node/buffer.ts": "./src/lib/node/buffer.browser.ts",
     "./dist/lib/node/buffer.js": "./dist/lib/node/buffer.browser.js",
-    "./src/lib/node/fs.ts": "./src/lib/node/fs.browser.ts",
     "./dist/lib/node/fs.js": "./dist/lib/node/fs.browser.js",
-    "./src/lib/node/stream.ts": "./src/lib/node/stream.browser.ts",
     "./dist/lib/node/stream.js": "./dist/lib/node/stream.browser.js",
+    "./src/lib/node/buffer.ts": "./src/lib/node/buffer.browser.ts",
+    "./src/lib/node/fs.ts": "./src/lib/node/fs.browser.ts",
+    "./src/lib/node/stream.ts": "./src/lib/node/stream.browser.ts",
     "fs": false,
     "stream": false
   },
-  "scripts": {},
   "dependencies": {
     "@loaders.gl/schema": "4.2.0-alpha.5",
     "@loaders.gl/worker-utils": "4.2.0-alpha.5",

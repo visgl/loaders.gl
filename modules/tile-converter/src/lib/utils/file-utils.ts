@@ -117,6 +117,7 @@ export async function isFileExists(fileName: string): Promise<boolean> {
  */
 export function removeDir(path: string) {
   // (node:35607) [DEP0147] DeprecationWarning: In future versions of Node.js, fs.rmdir(path, { recursive: true }) will be removed. Use fs.rm(path, { recursive: true }) instead
+  // @ts-ignore
   return fs.rm(path, {recursive: true});
 }
 

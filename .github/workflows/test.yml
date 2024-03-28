@@ -27,6 +27,10 @@ jobs:
 
       - name: Bootstrap
         run: |
+          yarn
+
+      - name: Bootstrap
+        run: |
           yarn bootstrap
 
       - name: Run tests

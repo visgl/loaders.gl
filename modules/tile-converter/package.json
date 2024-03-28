@@ -28,9 +28,9 @@
   },
   "sideEffects": false,
   "bin": {
-    "tile-converter": "./bin/converter.js",
+    "i3s-server": "./bin/i3s-server.js",
     "slpk-extractor": "./bin/slpk-extractor.js",
-    "i3s-server": "./bin/i3s-server.js"
+    "tile-converter": "./bin/converter.js"
   },
   "files": [
     "src",
@@ -39,11 +39,11 @@
     "README.md"
   ],
   "browser": {
-    "fs": false,
-    "path": false,
-    "process": false,
     "archiver": false,
-    "join-images": false
+    "fs": false,
+    "join-images": false,
+    "path": false,
+    "process": false
   },
   "scripts": {
     "pre-build": "npm run build-converter-bundle && npm run build-slpk-extractor-bundle && npm run build-i3s-server-bundle",

@@ -39,8 +39,8 @@
   ],
   "browser": {
     "lzo": false,
-    "zlib": false,
-    "util": false
+    "util": false,
+    "zlib": false
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",

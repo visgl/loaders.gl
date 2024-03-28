@@ -32,10 +32,10 @@
   },
   "sideEffects": false,
   "browser": {
+    "crypto": false,
     "fs": false,
     "path": false,
-    "ws": false,
-    "crypto": false
+    "ws": false
   },
   "files": [
     "src",

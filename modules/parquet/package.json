@@ -46,15 +46,15 @@
     "copy-wasm": "cp ../../node_modules/parquet-wasm/esm2/arrow1_bg.wasm dist/arrow1_bg.wasm"
   },
   "browser": {
-    "child_process": false,
-    "net": false,
-    "tls": false,
-    "stream": false,
-    "fs": false,
-    "util": false,
-    "events": false,
+    "./dist/polyfills/buffer/buffer-polyfill.node.js": "./dist/polyfills/buffer/buffer-polyfill.browser.js",
     "./src/polyfills/buffer/buffer-polyfill.node.ts": "./src/polyfills/buffer/buffer-polyfill.browser.ts",
-    "./dist/polyfills/buffer/buffer-polyfill.node.js": "./dist/polyfills/buffer/buffer-polyfill.browser.js"
+    "child_process": false,
+    "events": false,
+    "fs": false,
+    "net": false,
+    "stream": false,
+    "tls": false,
+    "util": false
   },
   "comments": [
     "base64-js and ieee754 are used by buffer polyfill"
