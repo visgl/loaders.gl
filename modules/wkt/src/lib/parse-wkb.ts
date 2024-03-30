@@ -317,8 +317,8 @@ function concatenateBinaryPolygonGeometries(
   return {
     type: 'Polygon',
     positions: {value: concatenatedPositions, size: dimension},
-    polygonIndices: {value: new Uint16Array(polygonIndices), size: 1},
-    primitivePolygonIndices: {value: new Uint16Array(primitivePolygonIndices), size: 1}
+    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1},
+    primitivePolygonIndices: {value: new Uint32Array(primitivePolygonIndices), size: 1}
   };
 }
 
