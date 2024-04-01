@@ -2,6 +2,28 @@
 
 ## v4.2 (alpha)
 
+### v4.2.0-alpha.6
+
+- docs: migration info loaders v4 (#2908)
+- feat(i3s): local slpk rendering example (#2906)
+- website: new hero example (#2907)
+- chore(lerc): Restore lerc module (#2912)
+- fix(parquet): Restore ParquetWASMLoader after esbuild upgrade (#2915)
+- fix(*): Fix transitive internal dependencies (#2919)
+- fix(parquet): Zstd-codec import turned on (#2922)
+- chore(deps): bump webpack-dev-middleware from 5.3.3 to 5.3.4 in /website (#2926)
+- chore(deps): bump follow-redirects from 1.15.4 to 1.15.6 in /website (#2920)
+- fix (parquet): Increased max dictionary size to the max size of ArrayBuffer (#2924)
+- chore(deps): bump katex from 0.16.9 to 0.16.10 in /website (#2927)
+- fix(tile-converter): --install-dependencies don't raise error (#2925)
+- chore(deps): bump express from 4.18.2 to 4.19.2 in /website (#2931)
+- chore: fix eslint issues (#2923)
+- chore: Upgrade website and examples to deck.gl v9 (#2932)
+- chore(deps): bump express from 4.18.2 to 4.19.2 (#2930)
+- chore: Upgrade to yarn 4 (#2917)
+- fix(gltf): Support models where some TextureInfo definitions use KHR_texture_transform and others do not. (#2928)
+- fix(wkt): Increased amount of memory for polygon indices (#2934)
+
 ### v4.2.0-alpha.5
 
 - chore: Upgrade ocular-dev-tools to tsc+esbuild (#2897)

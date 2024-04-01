@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/core",
-  "version": "4.2.0-alpha.5",
+  "version": "4.2.0-alpha.6",
   "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
   "type": "module",
@@ -55,9 +55,9 @@
     "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.2.0-alpha.5",
-    "@loaders.gl/schema": "4.2.0-alpha.5",
-    "@loaders.gl/worker-utils": "4.2.0-alpha.5",
+    "@loaders.gl/loader-utils": "4.2.0-alpha.6",
+    "@loaders.gl/schema": "4.2.0-alpha.6",
+    "@loaders.gl/worker-utils": "4.2.0-alpha.6",
     "@probe.gl/log": "^4.0.2"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
