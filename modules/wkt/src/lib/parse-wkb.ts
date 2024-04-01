@@ -308,12 +308,11 @@ function concatenateBinaryPolygonGeometries(
   const primitivePolygonIndices = [0];
   for (const primitivePolygon of primitivePolygons) {
     for (const value of primitivePolygon) {
-      if (value <= 0) {
-        continue; // eslint-disable-line no-continue
+      if (value > 0) {
+        primitivePolygonIndices.push(
+          value + primitivePolygonIndices[primitivePolygonIndices.length - 1]
+        );
       }
-      primitivePolygonIndices.push(
-        value + primitivePolygonIndices[primitivePolygonIndices.length - 1]
-      );
     }
   }
 
