@@ -58,7 +58,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     },
     Countries: {
       format: 'geojson',
-      data: `${DECKGL_DATA_URL}/examples/geojson/countries.json`,
+      data: `${DECKGL_DATA_URL}/examples/geojson/countries.geojson`,
       viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   },
