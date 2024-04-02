@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // Copyright (c) 2012 Pierre Curto
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,12 +27,12 @@
 
 // LZ4
 import {toArrayBuffer} from '@loaders.gl/loader-utils';
+import {registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
+
 // import lz4js from 'lz4js'; // https://bundlephobia.com/package/lz4
 const LZ4_MAGIC_NUMBER = 0x184d2204;
-
-let lz4js;
 
 /**
  * LZ4 compression / decompression
@@ -44,13 +48,15 @@ export class LZ4Compression extends Compression {
     super(options);
     this.options = options;
 
-    lz4js = lz4js || this.options?.modules?.lz4js;
-    if (!lz4js) {
-      throw new Error(this.name);
-    }
+    registerJSModules(options?.modules);
+  }
+
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    registerJSModules(modules);
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
+    const lz4js = getJSModule('lz4js', this.name);
     const inputArray = new Uint8Array(input);
     return lz4js.compress(inputArray).buffer;
   }
@@ -62,6 +68,7 @@ export class LZ4Compression extends Compression {
    * If data provided without magic number we will parse it as block
    */
   decompressSync(data: ArrayBuffer, maxSize?: number): ArrayBuffer {
+    const lz4js = getJSModule('lz4js', this.name);
     try {
       const isMagicNumberExists = this.checkMagicNumber(data);
       const inputArray = new Uint8Array(data);

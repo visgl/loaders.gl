@@ -1,9 +1,16 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // ZSTD
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
+import {registerJSModules} from '@loaders.gl/loader-utils';
+import {checkJSModule, getJSModule, getJSModuleOrNull} from '@loaders.gl/loader-utils';
+
 // import {ZstdCodec} from 'zstd-codec'; // https://bundlephobia.com/package/zstd-codec
 
-let ZstdCodec;
+let zstdPromise: Promise<any>;
 let zstd;
 
 /**
@@ -23,27 +30,29 @@ export class ZstdCompression extends Compression {
   constructor(options: CompressionOptions) {
     super(options);
     this.options = options;
-
-    ZstdCodec = this.options?.modules?.['zstd-codec'];
-    if (!ZstdCodec) {
-      // eslint-disable-next-line no-console
-      console.warn(`${this.name} library not installed`);
-    }
+    registerJSModules(options?.modules);
   }
 
-  async preload(): Promise<void> {
-    if (!zstd && ZstdCodec) {
-      zstd = await new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd)));
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    registerJSModules(modules);
+    checkJSModule('zstd-codec', this.name);
+    const ZstdCodec = getJSModuleOrNull('zstd-codec');
+    // eslint-disable-next-line  @typescript-eslint/no-misused-promises
+    if (!zstdPromise && ZstdCodec) {
+      zstdPromise = new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd)));
+      zstd = await zstdPromise;
     }
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
+    getJSModule('zstd-codec', this.name);
     const simpleZstd = new zstd.Simple();
     const inputArray = new Uint8Array(input);
     return simpleZstd.compress(inputArray).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
+    getJSModule('zstd-codec', this.name);
     const simpleZstd = new zstd.Simple();
     // var ddict = new zstd.Dict.Decompression(dictData);
     // var jsonBytes = simpleZstd.decompressUsingDict(jsonZstData, ddict);

@@ -340,7 +340,8 @@ function fromPrimitive_JSON(value: any): unknown {
 }
 
 function toPrimitive_BSON(value: any): Buffer {
-  const arrayBuffer = BSONWriter.encodeSync?.(value);
+  // @ts-ignore
+  const arrayBuffer: ArrayBuffer = BSONWriter.encodeSync?.(value);
   return Buffer.from(arrayBuffer);
 }
 

@@ -57,6 +57,7 @@ export function getLibraryUrl(
   libraryName = libraryName || library;
 
   // Allow application to import and supply libraries through `options.modules`
+  // TODO - See js-module-utils in loader-utils
   const modules = options.modules || {};
   if (modules[libraryName]) {
     return modules[libraryName];

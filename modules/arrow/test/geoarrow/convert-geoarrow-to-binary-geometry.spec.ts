@@ -38,13 +38,13 @@ const expectedPointBinaryGeometry = {
       lines: {
         ...getBinaryGeometryTemplate(),
         type: 'LineString',
-        pathIndices: {value: new Uint16Array(0), size: 1}
+        pathIndices: {value: new Uint32Array(0), size: 1}
       },
       polygons: {
         ...getBinaryGeometryTemplate(),
         type: 'Polygon',
-        polygonIndices: {value: new Uint16Array(0), size: 1},
-        primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
+        polygonIndices: {value: new Uint32Array(0), size: 1},
+        primitivePolygonIndices: {value: new Uint32Array(0), size: 1}
       }
     }
   ],
@@ -71,13 +71,13 @@ const expectedMultiPointBinaryGeometry = {
       lines: {
         ...getBinaryGeometryTemplate(),
         type: 'LineString',
-        pathIndices: {value: new Uint16Array(0), size: 1}
+        pathIndices: {value: new Uint32Array(0), size: 1}
       },
       polygons: {
         ...getBinaryGeometryTemplate(),
         type: 'Polygon',
-        polygonIndices: {value: new Uint16Array(0), size: 1},
-        primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
+        polygonIndices: {value: new Uint32Array(0), size: 1},
+        primitivePolygonIndices: {value: new Uint32Array(0), size: 1}
       }
     }
   ],
@@ -109,8 +109,8 @@ const expectedLineBinaryGeometry = {
       polygons: {
         ...getBinaryGeometryTemplate(),
         type: 'Polygon',
-        polygonIndices: {value: new Uint16Array(0), size: 1},
-        primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
+        polygonIndices: {value: new Uint32Array(0), size: 1},
+        primitivePolygonIndices: {value: new Uint32Array(0), size: 1}
       }
     }
   ],
@@ -145,8 +145,8 @@ const expectedMultiLineBinaryGeometry = {
       polygons: {
         ...getBinaryGeometryTemplate(),
         type: 'Polygon',
-        polygonIndices: {value: new Uint16Array(0), size: 1},
-        primitivePolygonIndices: {value: new Uint16Array(0), size: 1}
+        polygonIndices: {value: new Uint32Array(0), size: 1},
+        primitivePolygonIndices: {value: new Uint32Array(0), size: 1}
       }
     }
   ],
@@ -169,7 +169,7 @@ const expectedPolygonBinaryGeometry = {
       lines: {
         ...getBinaryGeometryTemplate(),
         type: 'LineString',
-        pathIndices: {value: new Uint16Array(0), size: 1}
+        pathIndices: {value: new Uint32Array(0), size: 1}
       },
       polygons: {
         ...getBinaryGeometryTemplate(),
@@ -211,7 +211,7 @@ const expectedMultiPolygonBinaryGeometry = {
       lines: {
         ...getBinaryGeometryTemplate(),
         type: 'LineString',
-        pathIndices: {value: new Uint16Array(0), size: 1}
+        pathIndices: {value: new Uint32Array(0), size: 1}
       },
       polygons: {
         ...getBinaryGeometryTemplate(),
@@ -251,7 +251,7 @@ const expectedMultiPolygonHolesBinaryGeometry = {
       lines: {
         ...getBinaryGeometryTemplate(),
         type: 'LineString',
-        pathIndices: {value: new Uint16Array(0), size: 1}
+        pathIndices: {value: new Uint32Array(0), size: 1}
       },
       polygons: {
         ...getBinaryGeometryTemplate(),
