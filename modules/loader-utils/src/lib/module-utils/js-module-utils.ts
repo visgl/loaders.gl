@@ -11,18 +11,17 @@ import {log} from '../log-utils/log';
 export function registerJSModules(modules?: Record<string, any>): void {
   globalThis.loaders ||= {};
   globalThis.loaders.modules ||= {};
-  Object.assign({}, globalThis.loaders.modules, modules);
+  Object.assign(globalThis.loaders.modules, modules);
 }
 
 /**
  * Get a pre-registered application-imported module, warn if not present
  */
-export function checkJSModule<ModuleT = any>(name: string, caller: string): ModuleT {
+export function checkJSModule(name: string, caller: string): void {
   const module = globalThis.loaders?.modules?.[name];
   if (!module) {
     log.warn(`${caller}: ${name} library not installed`)();
   }
-  return module;
 }
 
 /**

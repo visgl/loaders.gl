@@ -12,6 +12,7 @@ import {
   LZ4Compression,
   ZstdCompression
 } from '@loaders.gl/compression';
+import {registerJSModules} from '@loaders.gl/loader-utils';
 
 import {ParquetCompression} from './schema/declare';
 
@@ -73,6 +74,7 @@ export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression
  * @param options.modules External library dependencies
  */
 export async function preloadCompressions(options?: {modules?: {[key: string]: any}}) {
+  registerJSModules(options?.modules);
   const compressions = Object.values(PARQUET_COMPRESSION_METHODS);
   return await Promise.all(
     compressions.map((compression) => compression.preload(options?.modules))

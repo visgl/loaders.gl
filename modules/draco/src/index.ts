@@ -51,7 +51,7 @@ export const DracoLoader = {
 } as const satisfies LoaderWithParser<DracoMesh, never, DracoLoaderOptions>;
 
 async function parse(arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions): Promise<DracoMesh> {
-  const {draco} = await loadDracoDecoderModule(options || {});
+  const {draco} = await loadDracoDecoderModule(options);
   const dracoParser = new DracoParser(draco);
   try {
     return dracoParser.parseSync(arrayBuffer, options?.draco);
