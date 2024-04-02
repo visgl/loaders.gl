@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {Loader, LoaderOptions, registerJSModules} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
@@ -53,6 +53,8 @@ export function setGlobalOptions(options: LoaderOptions): void {
   const globalOptions = getGlobalLoaderOptions();
   // @ts-expect-error First param looks incorrect
   state.globalOptions = normalizeOptionsInternal(globalOptions, options);
+  // Make sure any new modules are registered
+  registerJSModules(options.modules);
 }
 
 /**

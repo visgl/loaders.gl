@@ -22,6 +22,8 @@ which [Parquet format features](/docs/modules/parquet/formats/parquet) are suppo
 
 ## Usage
 
+Load a Parquet file as a table.
+
 ```typescript
 import {ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
@@ -46,6 +48,25 @@ for await (const batch of batches) {
     }
   }
 }
+```
+
+## Compressions
+
+Some compressions are big and need to be imported explicitly by the application
+and passed to the `ParquetLoader`
+
+```typescript
+import {ParquetLoader} from '@loaders.gl/parquet';
+import {load} from '@loaders.gl/core';
+
+import {ZstdCodec} from 'zstd-codec';
+import lz4js from 'lz4js';
+
+const data = await load(url, ParquetLoader, {modules: {
+  'zstd-codec': ZstdCodec,
+  'lz4js': lz4js,
+  // brotli - only needed for compression
+});
 ```
 
 ## Data Format

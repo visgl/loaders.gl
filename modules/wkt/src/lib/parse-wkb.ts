@@ -120,7 +120,7 @@ function parseLineString(
     geometry: {
       type: 'LineString',
       positions: {value: positions, size: dimension},
-      pathIndices: {value: new Uint16Array(pathIndices), size: 1}
+      pathIndices: {value: new Uint32Array(pathIndices), size: 1}
     },
     offset
   };
@@ -159,10 +159,10 @@ function parsePolygon(
       type: 'Polygon',
       positions: {value: concatenatedPositions, size: dimension},
       polygonIndices: {
-        value: new Uint16Array(polygonIndices),
+        value: new Uint32Array(polygonIndices),
         size: 1
       },
-      primitivePolygonIndices: {value: new Uint16Array(primitivePolygonIndices), size: 1}
+      primitivePolygonIndices: {value: new Uint32Array(primitivePolygonIndices), size: 1}
     },
     offset
   };
@@ -283,7 +283,7 @@ function concatenateBinaryLineGeometries(
   return {
     type: 'LineString',
     positions: {value: concatenatedPositions, size: dimension},
-    pathIndices: {value: new Uint16Array(pathIndices), size: 1}
+    pathIndices: {value: new Uint32Array(pathIndices), size: 1}
   };
 }
 

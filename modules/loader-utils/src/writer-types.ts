@@ -8,8 +8,14 @@
 export type WriterOptions = {
   /** worker source. If is set will be used instead of loading worker from the Internet */
   source?: string | null;
+
+  // module loading
+
+  /** Any additional JS libraries */
+  modules?: Record<string, any>;
   /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
   useLocalLibraries?: boolean;
+
   /** writer-specific options */
   [writerId: string]: any;
 };

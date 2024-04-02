@@ -72,9 +72,11 @@ export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression
  * Register compressions that have big external libraries
  * @param options.modules External library dependencies
  */
-export async function preloadCompressions(options?: {modules: {[key: string]: any}}) {
+export async function preloadCompressions(options?: {modules?: {[key: string]: any}}) {
   const compressions = Object.values(PARQUET_COMPRESSION_METHODS);
-  return await Promise.all(compressions.map((compression) => compression.preload()));
+  return await Promise.all(
+    compressions.map((compression) => compression.preload(options?.modules))
+  );
 }
 
 /**

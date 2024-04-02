@@ -29,8 +29,6 @@ export type LoaderOptions = {
   // general
   /** Experimental: Supply a logger to the parser */
   log?: any;
-  /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
-  useLocalLibraries?: boolean;
 
   // batched parsing
 
@@ -46,6 +44,13 @@ export type LoaderOptions = {
   metadata?: boolean;
   /** Transforms to run on incoming batches */
   transforms?: TransformBatches[];
+
+  // module loading
+
+  /** Any additional JS libraries */
+  modules?: Record<string, any>;
+  /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
+  useLocalLibraries?: boolean;
 
   // workers
 

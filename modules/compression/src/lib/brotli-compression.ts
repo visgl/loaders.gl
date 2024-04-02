@@ -1,7 +1,13 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // BROTLI
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
+import {registerJSModules, getJSModule, getJSModuleOrNull} from '@loaders.gl/loader-utils';
+
 import type brotliNamespace from 'brotli';
 // import brotli from 'brotli';  // https://bundlephobia.com/package/brotli
 import {BrotliDecode} from '../brotli/decode';
@@ -25,7 +31,7 @@ const DEFAULT_BROTLI_OPTIONS = {
   }
 };
 
-let brotli: typeof brotliNamespace;
+type Brotli = typeof brotliNamespace;
 
 /**
  * brotli compression / decompression
@@ -40,18 +46,15 @@ export class BrotliCompression extends Compression {
   constructor(options: BrotliCompressionOptions) {
     super(options);
     this.options = options;
+    registerJSModules(options?.modules);
   }
 
   /**
    * brotli is an injectable dependency due to big size
    * @param options
    */
-  async preload(): Promise<void> {
-    brotli = brotli || this.options?.modules?.brotli;
-    if (!brotli) {
-      // eslint-disable-next-line no-console
-      console.warn(`${this.name} library not installed`);
-    }
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    registerJSModules(modules);
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
@@ -72,10 +75,7 @@ export class BrotliCompression extends Compression {
     const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
     const inputArray = new Uint8Array(input);
 
-    if (!brotli) {
-      throw new Error('brotli compression: brotli module not installed');
-    }
-
+    const brotli = getJSModule<Brotli>('brotli', this.name);
     // @ts-ignore brotli types state that only Buffers are accepted...
     const outputArray = brotli.compress(inputArray, brotliOptions);
     return outputArray.buffer;
@@ -100,6 +100,7 @@ export class BrotliCompression extends Compression {
     const brotliOptions = {...DEFAULT_BROTLI_OPTIONS.brotli, ...this.options?.brotli};
     const inputArray = new Uint8Array(input);
 
+    const brotli = getJSModuleOrNull<Brotli>('brotli');
     if (brotli) {
       // @ts-ignore brotli types state that only Buffers are accepted...
       const outputArray = brotli.decompress(inputArray, brotliOptions);

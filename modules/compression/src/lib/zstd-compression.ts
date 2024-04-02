@@ -1,9 +1,15 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // ZSTD
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
+import {registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
+
 // import {ZstdCodec} from 'zstd-codec'; // https://bundlephobia.com/package/zstd-codec
 
-let ZstdCodec;
+let zstdPromise: Promise<any>;
 let zstd;
 
 /**
@@ -23,17 +29,16 @@ export class ZstdCompression extends Compression {
   constructor(options: CompressionOptions) {
     super(options);
     this.options = options;
-
-    ZstdCodec = this.options?.modules?.['zstd-codec'];
-    if (!ZstdCodec) {
-      // eslint-disable-next-line no-console
-      console.warn(`${this.name} library not installed`);
-    }
+    registerJSModules(options?.modules);
+    getJSModule('zstd-codec', this.name);
   }
 
-  async preload(): Promise<void> {
-    if (!zstd && ZstdCodec) {
-      zstd = await new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd)));
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    registerJSModules(modules);
+    const ZstdCodec = getJSModule('zstd-codec', this.name);
+    if (!zstdPromise && ZstdCodec) {
+      zstdPromise = new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd)));
+      zstd = await zstdPromise;
     }
   }
 

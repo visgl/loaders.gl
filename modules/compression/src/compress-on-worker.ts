@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // import type {WorkerObject} from '@loaders.gl/worker-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 
