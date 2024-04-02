@@ -35,7 +35,7 @@ function toArrayBuffer(buffer: Buffer): ArrayBuffer {
 // import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
 // import lzo from 'lzo';
-import {ZstdCodec} from 'zstd-codec';
+// import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
 const modules = {
@@ -46,9 +46,9 @@ const modules = {
   //     throw new Error('brotli compress');
   //   }
   // },
-  lz4js,
+  lz4js
   // lzo
-  'zstd-codec': ZstdCodec
+  // 'zstd-codec': ZstdCodec
 };
 
 /**
@@ -73,6 +73,14 @@ export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression
  * @param options.modules External library dependencies
  */
 export async function preloadCompressions(options?: {modules: {[key: string]: any}}) {
+  // Re-initialize compression instances with new options
+  const mergedOptions = {...options, modules: {...modules, ...options?.modules}};
+  for (const method in PARQUET_COMPRESSION_METHODS) {
+    PARQUET_COMPRESSION_METHODS[method] = new PARQUET_COMPRESSION_METHODS[method].constructor(
+      mergedOptions
+    );
+  }
+
   const compressions = Object.values(PARQUET_COMPRESSION_METHODS);
   return await Promise.all(compressions.map((compression) => compression.preload()));
 }

@@ -40,7 +40,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     multipolygon_hole: {
       format: 'geoarrow',
       data: `${GEOARROW_TEST_DATA}/multipolygon_hole.arrow`,
-      viewState: {...VIEW_STATE, longitude: 10.388, latitude:   1.447, zoom: 4}
+      viewState: {...VIEW_STATE, longitude: 10.388, latitude: 1.447, zoom: 4}
     }
   },
   GeoParquet: {
@@ -48,6 +48,22 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       format: 'geoparquet',
       data: `${LOADERS_URL}/modules/parquet/test/data/geoparquet/airports.parquet`,
       viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
+    },
+    'Countries (zstd)': {
+      format: 'geoparquet',
+      data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/geoparquet/countries/countries_zstd.parquet',
+      viewState: {
+        height: 600,
+        width: 800,
+        pitch: 45,
+        maxPitch: 60,
+        bearing: 0,
+        minZoom: 1,
+        maxZoom: 30,
+        zoom: 1.76,
+        longitude: -4.65,
+        latitude: -29.76
+      }
     }
   },
   GeoJSON: {
@@ -220,7 +236,7 @@ function getGeoParquetTestExamples() {
       maxPitch: 89,
       bearing: 0
     }
-  }
+  };
 
   return GeoParquet;
 }

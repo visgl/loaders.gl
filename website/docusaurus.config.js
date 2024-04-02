@@ -48,6 +48,7 @@ const config = {
         excludeAliases: ['console']
       }
     ],
+    require.resolve('./webpack-plugin'),
     [
       './ocular-docusaurus-plugin',
       {
