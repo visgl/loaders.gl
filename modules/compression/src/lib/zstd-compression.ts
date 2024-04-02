@@ -36,6 +36,7 @@ export class ZstdCompression extends Compression {
   async preload(modules: Record<string, any> = {}): Promise<void> {
     registerJSModules(modules);
     const ZstdCodec = getJSModule('zstd-codec', this.name);
+    // eslint-disable-next-line  @typescript-eslint/no-misused-promises
     if (!zstdPromise && ZstdCodec) {
       zstdPromise = new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd)));
       zstd = await zstdPromise;
