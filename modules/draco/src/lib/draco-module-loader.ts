@@ -2,6 +2,7 @@
 // https://github.com/mrdoob/three.js/blob/398c4f39ebdb8b23eefd4a7a5ec49ec0c96c7462/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
+import {getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
 const DRACO_DECODER_VERSION = '1.5.6';
@@ -30,33 +31,31 @@ export const DRACO_EXTERNAL_LIBRARY_URLS = {
 let loadDecoderPromise;
 let loadEncoderPromise;
 
-export async function loadDracoDecoderModule(options) {
-  const modules = options.modules || {};
+export async function loadDracoDecoderModule(options: {modules?: Record<string, any>}) {
+  registerJSModules(options.modules);
 
   // Check if a bundled draco3d library has been supplied by application
-  if (modules.draco3d) {
-    loadDecoderPromise =
-      loadDecoderPromise ||
-      modules.draco3d.createDecoderModule({}).then((draco) => {
-        return {draco};
-      });
+  const draco3d = getJSModuleOrNull('draco3d');
+  if (draco3d) {
+    loadDecoderPromise ||= draco3d.createDecoderModule({}).then((draco) => {
+      return {draco};
+    });
   } else {
     // If not, dynamically load the WASM script from our CDN
-    loadDecoderPromise = loadDecoderPromise || loadDracoDecoder(options);
+    loadDecoderPromise ||= loadDracoDecoder(options);
   }
   return await loadDecoderPromise;
 }
 
-export async function loadDracoEncoderModule(options) {
-  const modules = options.modules || {};
+export async function loadDracoEncoderModule(options: {modules?: Record<string, any>}) {
+  registerJSModules(options.modules);
 
   // Check if a bundled draco3d library has been supplied by application
-  if (modules.draco3d) {
-    loadEncoderPromise =
-      loadEncoderPromise ||
-      modules.draco3d.createEncoderModule({}).then((draco) => {
-        return {draco};
-      });
+  const draco3d = getJSModuleOrNull('draco3d');
+  if (draco3d) {
+    loadEncoderPromise ||= draco3d.createEncoderModule({}).then((draco) => {
+      return {draco};
+    });
   } else {
     // If not, dynamically load the WASM script from our CDN
     loadEncoderPromise = loadEncoderPromise || loadDracoEncoder(options);
