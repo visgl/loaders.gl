@@ -307,13 +307,11 @@ function concatenateBinaryPolygonGeometries(
   // Combine primitivePolygonIndices from each individual polygon
   const primitivePolygonIndices = [0];
   for (const primitivePolygon of primitivePolygons) {
-    for (const value of primitivePolygon) {
-      if (value > 0) {
-        primitivePolygonIndices.push(
-          value + primitivePolygonIndices[primitivePolygonIndices.length - 1]
-        );
-      }
-    }
+    primitivePolygonIndices.push(
+      ...primitivePolygon
+        .filter((x: number) => x > 0)
+        .map((x: number) => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
+    );
   }
 
   return {
