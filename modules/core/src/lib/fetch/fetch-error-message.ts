@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// TODO - duplicates response-utils code
 export function getErrorMessageFromResponseSync(response: Response): string {
   return `Failed to fetch resource ${response.url}(${response.status}): ${response.statusText} `;
 }
 
+// TODO - duplicates response-utils code
 export async function getErrorMessageFromResponse(response: Response): Promise<string> {
   let message = `Failed to fetch resource ${response.url} (${response.status}): `;
   try {

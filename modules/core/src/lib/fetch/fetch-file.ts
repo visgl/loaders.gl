@@ -4,6 +4,7 @@
 
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {makeResponse} from '../utils/response-utils';
+// import {FetchError} from './fetch-error';
 
 export function isNodePath(url: string): boolean {
   return !isRequestURL(url) && !isDataURL(url);

@@ -3,22 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {isResponse} from '../../javascript-utils/is-type';
+import {FetchError} from '../fetch/fetch-error';
 import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
-
-export class FetchError extends Error {
-  constructor(message: string, info: {url: string; reason: string; response?: Response}) {
-    super(message);
-    this.reason = info.reason;
-    this.url = info.url;
-    this.response = info.response;
-  }
-  /** A best effort reason for why the fetch failed */
-  reason: string;
-  /** The URL that failed to load. Empty string if not available. */
-  url: string;
-  /** The Response object, if any. */
-  response?: Response;
-}
+import {shortenUrlForDisplay} from './url-utils';
 
 /**
  * Returns a Response object
@@ -93,8 +80,9 @@ export function checkResponseSync(response: Response): void {
 // HELPERS
 
 async function getResponseError(response: Response): Promise<Error> {
-  let message = `Failed to fetch resource (${response.status}) ${response.statusText}: ${response.url}`;
-  message = message.length > 65 ? `${message.slice(0, 65)}...` : message;
+  const shortUrl = shortenUrlForDisplay(response.url);
+  let message = `Failed to fetch resource (${response.status}) ${response.statusText}: ${shortUrl}`;
+  message = message.length > 100 ? `${message.slice(0, 100)}...` : message;
 
   const info = {
     reason: response.statusText,

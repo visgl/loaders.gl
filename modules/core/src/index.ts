@@ -22,7 +22,7 @@ export type {
 
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
-export {FetchError} from './lib/utils/response-utils';
+export {FetchError} from './lib/fetch/fetch-error';
 
 export {readArrayBuffer} from './lib/fetch/read-array-buffer';
 // export {readFileSync} from './lib/fetch/read-file';
