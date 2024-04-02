@@ -17,7 +17,10 @@ export type TextureLoaderOptions = {
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
  */
-export const CompressedTextureWorkerLoader: Loader<any, never, TextureLoaderOptions> = {
+export const CompressedTextureWorkerLoader = {
+  dataType: null as unknown as any,
+  batchType: null as never,
+
   name: 'Texture Containers',
   id: 'compressed-texture',
   module: 'textures',
@@ -43,12 +46,12 @@ export const CompressedTextureWorkerLoader: Loader<any, never, TextureLoaderOpti
       useBasis: false
     }
   }
-};
+} as const satisfies Loader<any, never, TextureLoaderOptions>;
 
 /**
  * Loader for KTX, DDS, and PVR texture container formats
  */
-export const CompressedTextureLoader: LoaderWithParser<any, never, TextureLoaderOptions> = {
+export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer, options?: TextureLoaderOptions) => {
     if (options?.['compressed-texture']?.useBasis) {
@@ -68,4 +71,4 @@ export const CompressedTextureLoader: LoaderWithParser<any, never, TextureLoader
     }
     return parseCompressedTexture(arrayBuffer);
   }
-};
+} as const satisfies LoaderWithParser<any, never, TextureLoaderOptions>;

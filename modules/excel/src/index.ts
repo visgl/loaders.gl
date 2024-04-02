@@ -16,10 +16,10 @@ export {ExcelWorkerLoader};
 /**
  * Loader for Excel files
  */
-export const ExcelLoader: LoaderWithParser<ObjectRowTable, never, ExcelLoaderOptions> = {
+export const ExcelLoader = {
   ...ExcelWorkerLoader,
   async parse(arrayBuffer: ArrayBuffer, options?: ExcelLoaderOptions): Promise<ObjectRowTable> {
     const data = parseExcel(arrayBuffer, options);
     return {shape: 'object-row-table', data};
   }
-};
+} as const satisfies LoaderWithParser<ObjectRowTable, never, ExcelLoaderOptions>;

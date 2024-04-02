@@ -11,7 +11,9 @@ export type JSONLoaderOptions = LoaderOptions;
  * A JSON Micro loader (minimal bundle size)
  * Alternative to `@loaders.gl/json`
  */
-export const JSONLoader: LoaderWithParser<Table, TableBatch, JSONLoaderOptions> = {
+export const JSONLoader = {
+  dataType: null as unknown as Table,
+  batchType: null as unknown as TableBatch,
   name: 'JSON',
   id: 'json',
   module: 'json',
@@ -23,7 +25,7 @@ export const JSONLoader: LoaderWithParser<Table, TableBatch, JSONLoaderOptions> 
   parseTextSync,
   parse: async (arrayBuffer) => parseTextSync(new TextDecoder().decode(arrayBuffer)),
   options: {}
-};
+} as const satisfies LoaderWithParser<Table, TableBatch, JSONLoaderOptions>;
 
 // TODO - Better error handling!
 function parseTextSync(text) {

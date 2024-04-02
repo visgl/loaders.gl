@@ -30,11 +30,10 @@ const GPX_HEADER = `\
 /**
  * Loader for GPX (GPS exchange format)
  */
-export const GPXLoader: LoaderWithParser<
-  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
-  never,
-  GPXLoaderOptions
-> = {
+export const GPXLoader = {
+  dataType: null as unknown as ObjectRowTable | GeoJSONTable,
+  batchType: null as never,
+
   name: 'GPX (GPS exchange format)',
   id: 'gpx',
   module: 'kml',
@@ -50,7 +49,11 @@ export const GPXLoader: LoaderWithParser<
     gpx: {shape: 'geojson-table'},
     gis: {}
   }
-};
+} as const satisfies LoaderWithParser<
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
+  never,
+  GPXLoaderOptions
+>;
 
 function parseTextSync(
   text: string,

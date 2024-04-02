@@ -8,8 +8,8 @@
 
 import test from 'tape-promise/tape';
 import {
-  _WMSLayerDescriptionLoader as WMSLayerDescriptionLoader,
-  _WMSLayerDescription as WMSLayerDescription
+  _WMSLayerDescriptionLoader as WMSLayerDescriptionLoader
+  // _WMSLayerDescription as WMSLayerDescription
 } from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
@@ -21,7 +21,7 @@ test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async (t) => {
     '  </LayerDescription>' +
     '</WMS_DescribeLayerResponse>';
 
-  const description = (await parse(text, WMSLayerDescriptionLoader)) as WMSLayerDescription;
+  const description = await parse(text, WMSLayerDescriptionLoader);
   t.ok(description);
 
   // const res = description.layers;

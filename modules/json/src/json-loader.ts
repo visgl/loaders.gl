@@ -34,11 +34,10 @@ export type JSONLoaderOptions = LoaderOptions & {
   };
 };
 
-export const JSONLoader: LoaderWithParser<
-  Table,
-  TableBatch | MetadataBatch | JSONBatch,
-  JSONLoaderOptions
-> = {
+export const JSONLoader = {
+  dataType: null as unknown as Table,
+  batchType: null as unknown as TableBatch | MetadataBatch | JSONBatch,
+
   name: 'JSON',
   id: 'json',
   module: 'json',
@@ -58,7 +57,11 @@ export const JSONLoader: LoaderWithParser<
   parse,
   parseTextSync,
   parseInBatches
-};
+} as const satisfies LoaderWithParser<
+  Table,
+  TableBatch | MetadataBatch | JSONBatch,
+  JSONLoaderOptions
+>;
 
 async function parse(arrayBuffer: ArrayBuffer, options?: JSONLoaderOptions) {
   return parseTextSync(new TextDecoder().decode(arrayBuffer), options);

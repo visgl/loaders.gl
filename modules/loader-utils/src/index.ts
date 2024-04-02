@@ -50,7 +50,12 @@ export {
   document
 } from './lib/env-utils/globals';
 
+export {log} from './lib/log-utils/log';
+
+// Options and modules
 export {mergeLoaderOptions} from './lib/option-utils/merge-loader-options';
+export {registerJSModules} from './lib/module-utils/js-module-utils';
+export {checkJSModule, getJSModule, getJSModuleOrNull} from './lib/module-utils/js-module-utils';
 
 // LOADERS.GL-SPECIFIC WORKER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';

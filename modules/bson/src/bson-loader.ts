@@ -17,7 +17,9 @@ export type BSONLoaderOptions = LoaderOptions & {
   bson?: ParseBSONOptions;
 };
 
-export const BSONLoader: LoaderWithParser<Record<string, unknown>, never, BSONLoaderOptions> = {
+export const BSONLoader = {
+  dataType: null as unknown as Record<string, unknown>,
+  batchType: null as never,
   name: 'BSON',
   id: 'bson',
   module: 'bson',
@@ -31,7 +33,7 @@ export const BSONLoader: LoaderWithParser<Record<string, unknown>, never, BSONLo
   options: {
     bson: {}
   }
-};
+} as const satisfies LoaderWithParser<Record<string, unknown>, never, BSONLoaderOptions>;
 
 async function parse(arrayBuffer: ArrayBuffer, options?: BSONLoaderOptions) {
   const bsonOptions = {...BSONLoader.options.bson, ...options?.bson};

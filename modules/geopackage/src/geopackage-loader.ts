@@ -27,11 +27,10 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
   };
 };
 
-export const GeoPackageLoader: LoaderWithParser<
-  GeoJSONTable | Tables<GeoJSONTable>,
-  never,
-  GeoPackageLoaderOptions
-> = {
+export const GeoPackageLoader = {
+  dataType: null as unknown as GeoJSONTable | Tables<GeoJSONTable>,
+  batchType: null as never,
+
   id: 'geopackage',
   name: 'GeoPackage',
   module: 'geopackage',
@@ -47,24 +46,8 @@ export const GeoPackageLoader: LoaderWithParser<
     },
     gis: {}
   }
-};
-
-/** Geopackage loader *
-export const GeoPackageTableLoader: LoaderWithParser<Record<string, Feature[]>, never, GeoPackageLoaderOptions> = {
-  id: 'geopackage',
-  name: 'GeoPackage',
-  module: 'geopackage',
-  version: VERSION,
-  extensions: ['gpkg'],
-  mimeTypes: ['application/geopackage+sqlite3'],
-  category: 'geometry',
-  parse: parseGeoPackage,
-  options: {
-    geopackage: {
-      sqlJsCDN: DEFAULT_SQLJS_CDN,
-    },
-    gis: {
-    }
-  }
-};
-*/
+} as const satisfies LoaderWithParser<
+  GeoJSONTable | Tables<GeoJSONTable>,
+  never,
+  GeoPackageLoaderOptions
+>;

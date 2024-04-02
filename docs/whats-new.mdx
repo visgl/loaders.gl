@@ -4,10 +4,32 @@
 
 Target Release Date: March, 2024
 
+- Tooling upgrades: faster build via tsc/esbuild. yarn 4.
+- Improved developer experience: Preserve loader object information through `as const satisfies` rather than assigning `Loader` types. 
+
+**@loaders.gl/tile-converter**
+
+- Resume conversion from the last tile processed in case of an interruption.
+- Quiet mode.
+
+**@loaders.gl/parquet**
+
+- Many parquet files that previously failed now load correctly. A combination of fixes, increased limits etc. 
+
 **@loaders.gl/pmtiles**
 
 - Now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
-- Now supports refreshing the already loaded index if the underlying PMTiles file is rewritten (and the storage backend supports ETag headers, which e.g. Amazon S3 does). 
+- Now can refresh the already loaded index if the underlying PMTiles file is rewritten. 
+
+**@loaders.gl/las**
+
+- A big memory leak plugged.
+
+**@loaders.gl/gltf**
+
+- Support models with more complex use of `KHR_texture_transform` extension.
+
+
 
 ## v4.1
 

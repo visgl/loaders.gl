@@ -17,10 +17,10 @@ import {
 
 export {TerrainWorkerLoader};
 
-export const TerrainLoader: LoaderWithParser<any, never, TerrainLoaderOptions> = {
+export const TerrainLoader = {
   ...TerrainWorkerLoader,
   parse: parseTerrain
-};
+} as const satisfies LoaderWithParser<any, never, TerrainLoaderOptions>;
 
 export async function parseTerrain(
   arrayBuffer: ArrayBuffer,
@@ -46,9 +46,9 @@ export {QuantizedMeshWorkerLoader};
 /**
  * Loader for quantized meshes
  */
-export const QuantizedMeshLoader: LoaderWithParser<any, never, QuantizedMeshLoaderOptions> = {
+export const QuantizedMeshLoader = {
   ...QuantizedMeshWorkerLoader,
   parseSync: (arrayBuffer, options) => parseQuantizedMesh(arrayBuffer, options?.['quantized-mesh']),
   parse: async (arrayBuffer, options) =>
     parseQuantizedMesh(arrayBuffer, options?.['quantized-mesh'])
-};
+} as const satisfies LoaderWithParser<any, never, QuantizedMeshLoaderOptions>;

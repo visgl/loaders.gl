@@ -22,7 +22,7 @@ async function preload(url, options = {}) {
 /**
  * Loader for 3D tiles from Cesium ION
  */
-export const CesiumIonLoader: LoaderWithParser<unknown, never, LoaderOptions> = {
+export const CesiumIonLoader = {
   ...Tiles3DLoader,
   id: 'cesium-ion',
   name: 'Cesium Ion',
@@ -41,4 +41,4 @@ export const CesiumIonLoader: LoaderWithParser<unknown, never, LoaderOptions> = 
       accessToken: null
     }
   }
-};
+} as const satisfies LoaderWithParser<unknown, never, LoaderOptions>;

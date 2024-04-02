@@ -33,11 +33,9 @@ export type Tiles3DLoaderOptions = LoaderOptions &
 /**
  * Loader for 3D Tiles
  */
-export const Tiles3DLoader: LoaderWithParser<
-  any, // Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed,
-  never,
-  Tiles3DLoaderOptions
-> = {
+export const Tiles3DLoader = {
+  dataType: null as any,
+  batchType: null as never,
   id: '3d-tiles',
   name: '3D Tiles',
   module: '3d-tiles',
@@ -54,7 +52,8 @@ export const Tiles3DLoader: LoaderWithParser<
       assetGltfUpAxis: null
     }
   }
-};
+  // Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed,
+} as const satisfies LoaderWithParser<any, never, Tiles3DLoaderOptions>;
 
 /** Parses a tileset or tile */
 async function parse(

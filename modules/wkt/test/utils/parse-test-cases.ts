@@ -106,11 +106,11 @@ export function parseTestCases(
       binary.positions.value = new Float64Array(binary.positions.value);
     }
     if (binary && binary.type === 'LineString') {
-      binary.pathIndices.value = new Uint16Array(binary.pathIndices.value);
+      binary.pathIndices.value = new Uint32Array(binary.pathIndices.value);
     }
     if (binary && binary.type === 'Polygon') {
-      binary.polygonIndices.value = new Uint16Array(binary.polygonIndices.value);
-      binary.primitivePolygonIndices.value = new Uint16Array(binary.primitivePolygonIndices.value);
+      binary.polygonIndices.value = new Uint32Array(binary.polygonIndices.value);
+      binary.primitivePolygonIndices.value = new Uint32Array(binary.primitivePolygonIndices.value);
     }
 
     const parsedTestCase: ParsedTestCase = {

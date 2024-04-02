@@ -1,6 +1,10 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // LZO
 // import {loadLibrary} from '@loaders.gl/worker-utils';
-import {toBuffer} from '@loaders.gl/loader-utils';
+import {registerJSModules, getJSModule, toBuffer} from '@loaders.gl/loader-utils';
 
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
@@ -11,8 +15,6 @@ import {Compression} from './compression';
 
 // const LZO_WASM_JS_URL = './node_modules/lzo-wasm/lzo-wasm.js';
 // const LZO_WASM_WASM_URL = './node_modules/lzo-wasm/lzo-wasm.wasm';
-
-let lzo;
 
 /**
  * Lempel-Ziv-Oberheimer compression / decompression
@@ -31,20 +33,18 @@ export class LZOCompression extends Compression {
   constructor(options: CompressionOptions) {
     super(options);
     this.options = options;
-
-    lzo = lzo || this.options?.modules?.lzo;
-    if (!lzo) {
-      throw new Error(this.name);
-    }
+    registerJSModules(options?.modules);
   }
 
-  async preload() {
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    registerJSModules(modules);
     // await loadLibrary(LZO_WASM_JS_URL);
     // await loadLibrary(LZO_WASM_WASM_URL);
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {
     await this.preload();
+    const lzo = getJSModule('lzo', this.name);
     // const inputArray = new Uint8Array(input);
     const inputBuffer = toBuffer(input);
     return lzo.compress(inputBuffer).buffer;
@@ -53,6 +53,7 @@ export class LZOCompression extends Compression {
   async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
     try {
       await this.preload();
+      const lzo = getJSModule('lzo', this.name);
       // const inputArray = new Uint8Array(input);
       const inputBuffer = toBuffer(input);
       return lzo.decompress(inputBuffer).buffer;

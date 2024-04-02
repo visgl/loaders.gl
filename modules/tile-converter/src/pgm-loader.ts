@@ -16,7 +16,10 @@ export type PGMLoaderOptions = LoaderOptions & {
 /**
  * Loader for PGM - Netpbm grayscale image format
  */
-export const PGMLoader: LoaderWithParser<Geoid, never, PGMLoaderOptions> = {
+export const PGMLoader = {
+  dataType: null as unknown as Geoid,
+  batchType: null as never,
+
   name: 'PGM - Netpbm grayscale image format',
   id: 'pgm',
   module: 'tile-converter',
@@ -29,4 +32,4 @@ export const PGMLoader: LoaderWithParser<Geoid, never, PGMLoaderOptions> = {
       cubic: false
     }
   }
-};
+} as const satisfies LoaderWithParser<Geoid, never, PGMLoaderOptions>;

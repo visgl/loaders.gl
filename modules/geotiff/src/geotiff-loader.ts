@@ -29,7 +29,10 @@ export type GeoTIFFLoaderOptions = LoaderOptions & {
 };
 
 /** GeoTIFF loader */
-export const GeoTIFFLoader: LoaderWithParser<GeoTIFFData, never, GeoTIFFLoaderOptions> = {
+export const GeoTIFFLoader = {
+  dataType: null as unknown as GeoTIFFData,
+  batchType: null as never,
+
   id: 'geotiff',
   name: 'GeoTIFF',
   module: 'geotiff',
@@ -40,7 +43,7 @@ export const GeoTIFFLoader: LoaderWithParser<GeoTIFFData, never, GeoTIFFLoaderOp
   mimeTypes: ['image/tiff', 'image/geotiff'],
   extensions: ['geotiff', 'tiff', 'geotif', 'tif'],
   parse: parseGeoTIFF
-};
+} as const satisfies LoaderWithParser<GeoTIFFData, never, GeoTIFFLoaderOptions>;
 
 export function isTiff(arrayBuffer: ArrayBuffer): boolean {
   const dataView = new DataView(arrayBuffer);

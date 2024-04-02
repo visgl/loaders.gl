@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // GZIP
 // import {isBrowser} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';

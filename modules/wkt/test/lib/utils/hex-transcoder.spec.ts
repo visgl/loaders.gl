@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 import {HexWKBLoader} from '@loaders.gl/wkt';
 
-const isHexWKB = HexWKBLoader.testText!;
+const isHexWKB = HexWKBLoader.testText;
 
 test('datasetUtils.isHexWKB', (t) => {
   t.notOk(isHexWKB(''), 'empty string is not a valid hex wkb');

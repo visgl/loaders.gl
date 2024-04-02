@@ -25,7 +25,10 @@ export type ArrowLoaderOptions = LoaderOptions & {
 };
 
 /** ArrowJS table loader */
-export const ArrowWorkerLoader: Loader<ArrowTable, never, ArrowLoaderOptions> = {
+export const ArrowWorkerLoader = {
+  dataType: null as unknown as ArrowTable,
+  batchType: null as never,
+
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',
@@ -45,18 +48,18 @@ export const ArrowWorkerLoader: Loader<ArrowTable, never, ArrowLoaderOptions> = 
       shape: 'columnar-table'
     }
   }
-};
+} as const satisfies Loader<ArrowTable, never, ArrowLoaderOptions>;
 
 /** ArrowJS table loader */
-export const ArrowLoader: LoaderWithParser<
-  ArrowTable | ColumnarTable | ObjectRowTable | ArrayRowTable,
-  ArrowTableBatch,
-  ArrowLoaderOptions
-> = {
+export const ArrowLoader = {
   ...ArrowWorkerLoader,
   parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
     parseArrowSync(arraybuffer, options?.arrow),
   parseSync: (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
     parseArrowSync(arraybuffer, options?.arrow),
   parseInBatches: parseArrowInBatches
-};
+} as const satisfies LoaderWithParser<
+  ArrowTable | ColumnarTable | ObjectRowTable | ArrayRowTable,
+  ArrowTableBatch,
+  ArrowLoaderOptions
+>;

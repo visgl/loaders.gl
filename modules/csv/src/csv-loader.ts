@@ -48,7 +48,10 @@ export type CSVLoaderOptions = LoaderOptions & {
   };
 };
 
-export const CSVLoader: LoaderWithParser<Table, TableBatch, CSVLoaderOptions> = {
+export const CSVLoader = {
+  dataType: null as unknown as Table,
+  batchType: null as unknown as TableBatch,
+
   id: 'csv',
   module: 'csv',
   name: 'CSV',
@@ -81,7 +84,7 @@ export const CSVLoader: LoaderWithParser<Table, TableBatch, CSVLoaderOptions> = 
       // fastMode: auto
     }
   }
-};
+} as const satisfies LoaderWithParser<Table, TableBatch, CSVLoaderOptions>;
 
 async function parseCSV(
   csvText: string,
@@ -110,7 +113,7 @@ async function parseCSV(
   const result = Papa.parse(csvText, papaparseConfig);
   const rows = result.data as any[];
 
-  const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix!, firstRow.length);
+  const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix, firstRow.length);
 
   const shape = csvOptions.shape || DEFAULT_CSV_SHAPE;
   switch (shape) {
@@ -195,7 +198,7 @@ function parseCSVInBatches(
       if (isFirstRow) {
         isFirstRow = false;
         if (!headerRow) {
-          headerRow = generateHeader(csvOptions.columnPrefix!, row.length);
+          headerRow = generateHeader(csvOptions.columnPrefix, row.length);
         }
         schema = deduceSchema(row, headerRow);
       }

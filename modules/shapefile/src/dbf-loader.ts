@@ -8,8 +8,11 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /**
  * DBFLoader - DBF files are used to contain non-geometry columns in Shapefiles
  */
-export const DBFWorkerLoader: Loader = {
+export const DBFWorkerLoader = {
   name: 'DBF',
+  dataType: null as unknown,
+  batchType: null as never,
+
   id: 'dbf',
   module: 'shapefile',
   version: VERSION,
@@ -22,7 +25,7 @@ export const DBFWorkerLoader: Loader = {
       encoding: 'latin1'
     }
   }
-};
+} as const satisfies Loader;
 
 /** DBF file loader */
 export const DBFLoader: LoaderWithParser = {

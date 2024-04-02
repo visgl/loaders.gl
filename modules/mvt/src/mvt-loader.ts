@@ -16,11 +16,10 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /**
  * Worker loader for the Mapbox Vector Tile format
  */
-export const MVTWorkerLoader: Loader<
-  any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
-  never,
-  MVTLoaderOptions
-> = {
+export const MVTWorkerLoader = {
+  dataType: null as any,
+  batchType: null as never,
+
   name: 'Mapbox Vector Tile',
   id: 'mvt',
   module: 'mvt',
@@ -44,18 +43,22 @@ export const MVTWorkerLoader: Loader<
       tileIndex: null
     }
   }
-};
+} as const satisfies Loader<
+  any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
+  never,
+  MVTLoaderOptions
+>;
 
 /**
  * Loader for the Mapbox Vector Tile format
  */
-export const MVTLoader: LoaderWithParser<
-  any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
-  never,
-  MVTLoaderOptions
-> = {
+export const MVTLoader = {
   ...MVTWorkerLoader,
   parse: async (arrayBuffer, options?: MVTLoaderOptions) => parseMVT(arrayBuffer, options),
   parseSync: parseMVT,
   binary: true
-};
+} as const satisfies LoaderWithParser<
+  any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
+  never,
+  MVTLoaderOptions
+>;

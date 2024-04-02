@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /**
  * Seedable Random number generator
  * Useful for testing as it can generated identical sequences on each run

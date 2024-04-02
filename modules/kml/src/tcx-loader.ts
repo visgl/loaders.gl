@@ -30,11 +30,10 @@ const TCX_HEADER = `\
 /**
  * Loader for TCX (Training Center XML) - Garmin GPS track format
  */
-export const TCXLoader: LoaderWithParser<
-  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
-  never,
-  TCXLoaderOptions
-> = {
+export const TCXLoader = {
+  dataType: null as unknown as ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
+  batchType: null as never,
+
   name: 'TCX (Training Center XML)',
   id: 'tcx',
   module: 'kml',
@@ -50,7 +49,11 @@ export const TCXLoader: LoaderWithParser<
     tcx: {shape: 'geojson-table'},
     gis: {}
   }
-};
+} as const satisfies LoaderWithParser<
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
+  never,
+  TCXLoaderOptions
+>;
 
 function parseTextSync(
   text: string,

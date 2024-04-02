@@ -26,7 +26,10 @@ const KML_HEADER = `\
 /**
  * Loader for KML (Keyhole Markup Language)
  */
-export const KMLLoader: LoaderWithParser<ObjectRowTable | GeoJSONTable, never, KMLLoaderOptions> = {
+export const KMLLoader = {
+  dataType: null as unknown as ObjectRowTable | GeoJSONTable,
+  batchType: null as never,
+
   name: 'KML (Keyhole Markup Language)',
   id: 'kml',
   module: 'kml',
@@ -42,7 +45,7 @@ export const KMLLoader: LoaderWithParser<ObjectRowTable | GeoJSONTable, never, K
     kml: {shape: 'geojson-table'},
     gis: {}
   }
-};
+} as const satisfies LoaderWithParser<ObjectRowTable | GeoJSONTable, never, KMLLoaderOptions>;
 
 function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable | GeoJSONTable {
   const doc = new DOMParser().parseFromString(text, 'text/xml');

@@ -18,7 +18,7 @@ export type WKTCRSWriterOptions = WriterOptions & {
  * @see OGC Standard: https://www.ogc.org/standards/wkt-crs
  * @see Wikipedia Page: https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems
  */
-export const WKTCRSWriter: WriterWithEncoder<WKTCRS, never, WKTCRSWriterOptions> = {
+export const WKTCRSWriter = {
   name: 'WKT CRS (Well-Known Text Coordinate Reference System)',
   id: 'wkt-crs',
   module: 'wkt-crs',
@@ -36,4 +36,4 @@ export const WKTCRSWriter: WriterWithEncoder<WKTCRS, never, WKTCRSWriterOptions>
   encodeSync: (wktcrs, options) =>
     new TextEncoder().encode(encodeWKTCRS(wktcrs, options?.['wkt-crs'])),
   encodeTextSync: (wktcrs, options) => encodeWKTCRS(wktcrs, options?.['wkt-crs'])
-};
+} as const satisfies WriterWithEncoder<WKTCRS, never, WKTCRSWriterOptions>;

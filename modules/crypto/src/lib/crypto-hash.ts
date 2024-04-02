@@ -1,3 +1,4 @@
+import {getJSModule, registerJSModules} from '@loaders.gl/loader-utils';
 import {Hash} from './hash';
 
 type CryptoHashOptions = {
@@ -7,8 +8,6 @@ type CryptoHashOptions = {
     onEnd?: (result: {hash: string}) => any;
   };
 };
-
-let CryptoJS: any;
 
 /**
  * A transform that calculates Cryptographic Hash using Crypto JS library
@@ -26,6 +25,8 @@ export class CryptoHash extends Hash {
   constructor(options: CryptoHashOptions) {
     super();
     this.options = options;
+    registerJSModules(options?.modules);
+
     this._algorithm = this.options?.crypto?.algorithm;
     if (!this._algorithm) {
       throw new Error(this.name);
@@ -34,12 +35,7 @@ export class CryptoHash extends Hash {
   }
 
   async preload(): Promise<void> {
-    if (!CryptoJS) {
-      CryptoJS = this.options?.modules?.CryptoJS;
-    }
-    if (!CryptoJS) {
-      throw new Error(this.name);
-    }
+    const CryptoJS = getJSModule('CryptoJS', this.name);
     this._algo = CryptoJS.algo[this._algorithm];
   }
 
@@ -55,6 +51,7 @@ export class CryptoHash extends Hash {
       throw new Error(this.name);
     }
 
+    const CryptoJS = getJSModule('CryptoJS', this.name);
     // arrayBuffer is accepted, even though types and docs say no
     // https://stackoverflow.com/questions/25567468/how-to-decrypt-an-arraybuffer
     const typedWordArray = CryptoJS.lib.WordArray.create(input);
@@ -68,6 +65,7 @@ export class CryptoHash extends Hash {
     encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     await this.preload();
+    const CryptoJS = getJSModule('CryptoJS', this.name);
 
     const hash = this._algo.create();
     if (!hash) {

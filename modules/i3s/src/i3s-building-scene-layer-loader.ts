@@ -8,14 +8,14 @@ import {parseBuildingSceneLayer} from './lib/parsers/parse-i3s-building-scene-la
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 /**
  * Loader for I3S - Building Scene Layer
  */
-export const I3SBuildingSceneLayerLoader: LoaderWithParser<
-  BuildingSceneLayerTileset,
-  never,
-  I3SLoaderOptions
-> = {
+export const I3SBuildingSceneLayerLoader = {
+  dataType: null as unknown as BuildingSceneLayerTileset,
+  batchType: null as never,
+
   name: 'I3S Building Scene Layer',
   id: 'i3s-building-scene-layer',
   module: 'i3s',
@@ -24,7 +24,7 @@ export const I3SBuildingSceneLayerLoader: LoaderWithParser<
   parse,
   extensions: ['json'],
   options: {}
-};
+} as const satisfies LoaderWithParser<BuildingSceneLayerTileset, never, I3SLoaderOptions>;
 
 async function parse(
   data: ArrayBuffer,

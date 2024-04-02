@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /** @typedef {import('@loaders.gl/compression').Compression} Compression */
 import test from 'tape-promise/tape';
 import {

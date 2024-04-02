@@ -34,11 +34,10 @@ export type WMSCapabilitiesLoaderOptions = XMLLoaderOptions & {
 /**
  * Loader for the response to the WMS GetCapability request
  */
-export const WMSCapabilitiesLoader: LoaderWithParser<
-  WMSCapabilities,
-  never,
-  WMSCapabilitiesLoaderOptions
-> = {
+export const WMSCapabilitiesLoader = {
+  dataType: null as unknown as WMSCapabilities,
+  batchType: null as never,
+
   id: 'wms-capabilities',
   name: 'WMS Capabilities',
 
@@ -57,7 +56,7 @@ export const WMSCapabilitiesLoader: LoaderWithParser<
   parseTextSync: (text: string, options?: WMSCapabilitiesLoaderOptions) =>
     // TODO pass in XML options
     parseWMSCapabilities(text, options?.wms)
-};
+} as const satisfies LoaderWithParser<WMSCapabilities, never, WMSCapabilitiesLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

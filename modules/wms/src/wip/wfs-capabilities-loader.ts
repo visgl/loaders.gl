@@ -17,7 +17,10 @@ export type WFSLoaderOptions = LoaderOptions & {
 /**
  * Loader for the response to the WFS GetCapability request
  */
-export const WFSCapabilitiesLoader: LoaderWithParser<WFSCapabilities, never, WFSLoaderOptions> = {
+export const WFSCapabilitiesLoader = {
+  dataType: null as unknown as WFSCapabilities,
+  batchType: null as never,
+
   id: 'wfs-capabilities',
   name: 'WFS Capabilities',
 
@@ -33,7 +36,7 @@ export const WFSCapabilitiesLoader: LoaderWithParser<WFSCapabilities, never, WFS
   parse: async (arrayBuffer: ArrayBuffer, options?: WFSLoaderOptions) =>
     parseWFSCapabilities(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: WFSLoaderOptions) => parseWFSCapabilities(text, options)
-};
+} as const satisfies LoaderWithParser<WFSCapabilities, never, WFSLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

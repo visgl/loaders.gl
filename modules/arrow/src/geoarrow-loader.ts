@@ -11,42 +11,34 @@ import {parseGeoArrowInBatches} from './parsers/parse-geoarrow-in-batches';
 
 export type GeoArrowLoaderOptions = LoaderOptions & {
   arrow?: {
-    shape: 'arrow-table' | 'binary-geometry';
+    shape?: 'arrow-table' | 'binary-geometry';
   };
 };
 
 /** ArrowJS table loader */
-export const GeoArrowWorkerLoader: Loader<
-  ArrowTable | BinaryGeometry,
-  never,
-  GeoArrowLoaderOptions
-> = {
+export const GeoArrowWorkerLoader = {
   ...ArrowWorkerLoader,
   options: {
     arrow: {
       shape: 'arrow-table'
     }
   }
-};
+} as const satisfies Loader<ArrowTable | BinaryGeometry, never, GeoArrowLoaderOptions>;
 
 /**
  * GeoArrowLoader loads an Apache Arrow table, parses GeoArrow type extension data
  * to convert it to a GeoJSON table or a BinaryGeometry
  */
-export const GeoArrowLoader: LoaderWithParser<
-  ArrowTable | GeoJSONTable, // | BinaryGeometry,
-  ArrowTableBatch | GeoJSONTableBatch, // | BinaryGeometry,
-  GeoArrowLoaderOptions
-> = {
-  ...ArrowWorkerLoader,
-  options: {
-    arrow: {
-      shape: 'arrow-table'
-    }
-  },
+export const GeoArrowLoader = {
+  ...GeoArrowWorkerLoader,
+
   parse: async (arraybuffer: ArrayBuffer, options?: GeoArrowLoaderOptions) =>
     parseGeoArrowSync(arraybuffer, options?.arrow),
   parseSync: (arraybuffer: ArrayBuffer, options?: GeoArrowLoaderOptions) =>
     parseGeoArrowSync(arraybuffer, options?.arrow),
   parseInBatches: parseGeoArrowInBatches
-};
+} as const satisfies LoaderWithParser<
+  ArrowTable | GeoJSONTable, // | BinaryGeometry,
+  ArrowTableBatch | GeoJSONTableBatch, // | BinaryGeometry,
+  GeoArrowLoaderOptions
+>;

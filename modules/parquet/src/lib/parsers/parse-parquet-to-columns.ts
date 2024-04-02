@@ -11,6 +11,7 @@ import {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumns} from '../../parquetjs/schema/shred';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
 import {installBufferPolyfill} from '../../polyfills/buffer/index';
+import {preloadCompressions} from '../../parquetjs/compression';
 
 /**
  * @deprecated
@@ -20,6 +21,8 @@ export async function parseParquetFileInColumns(
   options?: ParquetLoaderOptions
 ): Promise<ColumnarTable> {
   installBufferPolyfill();
+  await preloadCompressions(options);
+
   for await (const batch of parseParquetFileInColumnarBatches(file, options)) {
     return {
       shape: 'columnar-table',
@@ -37,6 +40,9 @@ export async function* parseParquetFileInColumnarBatches(
   file: ReadableFile,
   options?: ParquetLoaderOptions
 ): AsyncIterable<ColumnarTableBatch> {
+  installBufferPolyfill();
+  await preloadCompressions();
+
   const reader = new ParquetReader(file);
 
   // Extract schema and geo metadata

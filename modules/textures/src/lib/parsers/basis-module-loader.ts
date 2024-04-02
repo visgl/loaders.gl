@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {registerJSModules, getJSModuleOrNull} from '@loaders.gl/loader-utils';
 import {loadLibrary} from '@loaders.gl/worker-utils';
 
 export const BASIS_EXTERNAL_LIBRARIES = {
@@ -23,12 +24,13 @@ let loadBasisTranscoderPromise;
  * @returns {BasisFile} promise
  */
 export async function loadBasisTranscoderModule(options) {
-  const modules = options.modules || {};
-  if (modules.basis) {
-    return modules.basis;
+  registerJSModules(options.modules);
+  const basis = getJSModuleOrNull('basis');
+  if (basis) {
+    return basis;
   }
 
-  loadBasisTranscoderPromise = loadBasisTranscoderPromise || loadBasisTranscoder(options);
+  loadBasisTranscoderPromise ||= loadBasisTranscoder(options);
   return await loadBasisTranscoderPromise;
 }
 
