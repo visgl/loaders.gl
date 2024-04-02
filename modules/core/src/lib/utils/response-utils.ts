@@ -5,6 +5,21 @@
 import {isResponse} from '../../javascript-utils/is-type';
 import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
 
+export class FetchError extends Error {
+  constructor(message: string, info: {url: string; reason: string; response?: Response}) {
+    super(message);
+    this.reason = info.reason;
+    this.url = info.url;
+    this.response = info.response;
+  }
+  /** A best effort reason for why the fetch failed */
+  reason: string;
+  /** The URL that failed to load. Empty string if not available. */
+  url: string;
+  /** The Response object, if any. */
+  response?: Response;
+}
+
 /**
  * Returns a Response object
  * Adds content-length header when possible
@@ -78,25 +93,24 @@ export function checkResponseSync(response: Response): void {
 // HELPERS
 
 async function getResponseError(response: Response): Promise<Error> {
-  let message = `Failed to fetch resource (${response.status}): ${response.url}`;
+  let message = `Failed to fetch resource (${response.status}) ${response.statusText}: ${response.url}`;
   message = message.length > 65 ? `${message.slice(0, 65)}...` : message;
 
-  const cause: {
-    url: string;
-    response?: any;
-  } = {url: response.url};
+  const info = {
+    reason: response.statusText,
+    url: response.url,
+    response
+  };
+
   try {
     const contentType = response.headers.get('Content-Type');
-    if (contentType?.includes('application/json')) {
-      cause.response = await response.json();
-    } else {
-      cause.response = await response.text();
-    }
+    info.reason = contentType?.includes('application/json')
+      ? await response.json()
+      : response.text();
   } catch (error) {
     // eslint forbids return in a finally statement, so we just catch here
   }
-  // @ts-expect-error TS does not support Error option?
-  return new Error(message, {cause});
+  return new FetchError(message, info);
 }
 
 async function getInitialDataUrl(
