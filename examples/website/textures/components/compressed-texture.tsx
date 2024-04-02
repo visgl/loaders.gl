@@ -1,6 +1,11 @@
-import React, {PureComponent} from 'react';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import * as React from 'react';
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
+
+import {load, registerLoaders, selectLoader, fetchFile, LoaderOptions} from '@loaders.gl/core';
 import {
   BasisLoader,
   CompressedTextureLoader,
@@ -9,9 +14,10 @@ import {
   getSupportedGPUTextureFormats,
   selectSupportedBasisFormat
 } from '@loaders.gl/textures';
-import {ImageLoader} from '@loaders.gl/images';
-import {load, registerLoaders, selectLoader, fetchFile} from '@loaders.gl/core';
-import {Texture2D} from '@luma.gl/core';
+import {ImageLoader, ImageType} from '@loaders.gl/images';
+
+import {Device, Texture} from '@luma.gl/core';
+import {Model} from '@luma.gl/engine';
 
 const {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -118,22 +124,76 @@ const TextureInfo = styled.ul`
 
 registerLoaders([BasisLoader, CompressedTextureLoader, ImageLoader]);
 
-const propTypes = {
-  canvas: PropTypes.object,
-  image: PropTypes.object,
-  gl: PropTypes.object,
-  program: PropTypes.object
-};
+// TEXTURE SHADERS
 
-const defaultProps = {
-  canvas: null,
-  image: null,
-  gl: null,
-  program: null
-};
+const vs = `\
+#version 300 es
+precision highp float;
 
-export default class CompressedTexture extends PureComponent {
-  constructor(props) {
+in vec2 position;
+
+out vec2 uv;
+
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+  uv = vec2(position.x * .5, -position.y * .5) + vec2(.5, .5);
+}
+`;
+
+const fs = `\
+#version 300 es
+precision highp float;
+
+uniform sampler2D uTexture;
+
+in vec2 uv;
+
+out vec4 fragColor;
+
+void main() {
+  fragColor = vec4(texture(uTexture, uv).rgb, 1.);
+}
+`;
+
+/** Create a reusable model */
+export function createModel(device: Device): Model {
+  const data = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
+  const position = device.createBuffer({data});
+
+  return new Model(device, {
+    vs,
+    fs,
+    topology: 'triangle-strip',
+    vertexCount: 4,
+    bufferLayout: [{name: 'position', format: 'float32x2'}],
+    attributes: {position}
+  });
+}
+
+type CompressedTextureProps = {
+  device: Device;
+  canvas: HTMLCanvasElement;
+  image: ImageType;
+  model: Model;
+}
+
+type CompressedTextureState = {
+  loadOptions: LoaderOptions,
+  textureError: Error | null;
+  showStats: boolean;
+  stats: any[];
+  dataUrl: string | null;
+}
+
+export class CompressedTexture extends React.PureComponent<CompressedTextureProps, CompressedTextureState> {
+  static defaultProps = {
+    device: null,
+    canvas: null,
+    image: null,
+    model: null
+  };
+  
+  constructor(props: CompressedTextureProps) {
     super(props);
 
     const loadOptions = this.getLoadOptions();
@@ -148,18 +208,18 @@ export default class CompressedTexture extends PureComponent {
   }
 
   async componentDidMount() {
-    const dataUrl = await this.getTextureDataUrl();
+    const dataUrl = await this.getTextureDataUrl(this.props.device);
     // eslint-disable-next-line react/no-did-mount-set-state
     this.setState({dataUrl});
   }
 
   getExtension(name) {
-    const {gl} = this.props;
+    const {device} = this.props;
     const vendorPrefixes = ['', 'WEBKIT_', 'MOZ_'];
     let ext = null;
 
     for (const index in vendorPrefixes) {
-      ext = Boolean(gl.getExtension(vendorPrefixes[index] + name));
+      ext = Boolean(device.getExtension(vendorPrefixes[index] + name));
       if (ext) {
         break;
       }
@@ -176,47 +236,50 @@ export default class CompressedTexture extends PureComponent {
   }
 
   // eslint-disable-next-line max-statements
-  async getTextureDataUrl() {
+  async getTextureDataUrl(device: Device) {
     const {loadOptions} = this.state;
-    const {canvas, gl, program, image} = this.props;
+    const {canvas, model, image} = this.props;
 
     try {
       const {arrayBuffer, length, src, useBasis} = await this.getLoadedData(image);
+
+      const options = {...loadOptions};
+      if (useBasis) {
+        options['compressed-texture'] = {useBasis: true};
+      }
+
       const loader = await selectLoader(src, [
         CompressedTextureLoader,
         CrunchWorkerLoader,
         BasisLoader,
         ImageLoader
       ]);
-      const options = {...loadOptions};
-      if (useBasis) {
-        options['compressed-texture'] = {useBasis: true};
-      }
+
       const result = loader && (await load(arrayBuffer, loader, options));
 
       this.addStat('File Size', Math.floor(length / 1024), 'Kb');
 
-      switch (loader && loader.id) {
+      switch (loader?.id) {
         case 'crunch':
         case 'compressed-texture':
-          this.renderEmptyTexture(gl, program);
-          this.renderCompressedTexture(gl, program, result, loader.name, src);
+          this.renderEmptyTexture(device, model);
+          this.renderCompressedTexture(device, model, result, loader.name, src);
           break;
         case 'image':
-          this.renderEmptyTexture(gl, program);
-          this.renderImageTexture(gl, program, result);
+          this.renderEmptyTexture(device, model);
+          this.renderImageTexture(device, model, result);
           break;
         case 'basis':
           const basisTextures = result[0];
-          this.renderEmptyTexture(gl, program);
-          this.renderCompressedTexture(gl, program, basisTextures, loader.name, src);
+          this.renderEmptyTexture(device, model);
+          this.renderCompressedTexture(device, model, basisTextures, loader.name, src);
           break;
         default:
           throw new Error('Unknown texture loader');
       }
     } catch (error) {
       console.error(error); // eslint-disable-line
-      this.renderEmptyTexture(gl, program);
+      this.renderEmptyTexture(device, model);
       this.setState({textureError: error.message});
     }
 
@@ -224,10 +287,10 @@ export default class CompressedTexture extends PureComponent {
   }
 
   async getLoadedData(image) {
-    let arrayBuffer = null;
     let length = 0;
     let src = '';
     let useBasis = false;
+    let arrayBuffer: ArrayBuffer;
 
     // eslint-disable-next-line no-undef
     if (image instanceof File) {
@@ -245,63 +308,65 @@ export default class CompressedTexture extends PureComponent {
     return {arrayBuffer, length, src, useBasis};
   }
 
-  createCompressedTexture2D(gl, images) {
-    const texture = new Texture2D(gl, {
+  createCompressedTexture(device: Device, images: any): Texture {
+    const texture = device.createTexture({
       data: images,
       compressed: true,
       mipmaps: false,
-      parameters: {
-        [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
-        [gl.TEXTURE_MIN_FILTER]: images.length > 1 ? gl.LINEAR_MIPMAP_NEAREST : gl.LINEAR,
-        [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
-        [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
-      }
+      // parameters: {
+      //   [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
+      //   [gl.TEXTURE_MIN_FILTER]: images.length > 1 ? gl.LINEAR_MIPMAP_NEAREST : gl.LINEAR,
+      //   [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
+      //   [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
+      // }
     });
 
-    return texture.handle;
+    return texture;
   }
 
-  renderEmptyTexture(gl, program) {
+  renderEmptyTexture(device: Device, model: Model): Texture {
     const brownColor = new Uint8Array([68, 0, 0, 255]);
-    const lumaTexture = new Texture2D(gl, {
+    const emptyTexture = device.createTexture({
       width: 1,
       height: 1,
       data: brownColor,
       mipmaps: true,
-      parameters: {
-        [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
-        [gl.TEXTURE_MIN_FILTER]: gl.LINEAR,
-        [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
-        [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
-      }
+      // parameters: {
+      //   [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
+      //   [gl.TEXTURE_MIN_FILTER]: gl.LINEAR,
+      //   [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
+      //   [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
+      // }
     });
 
-    const texture = lumaTexture.handle;
+    const renderPass = device.beginRenderPass();
+    model.setBindings({uTexture: emptyTexture})
+    model.draw(renderPass);
+    renderPass.end();
 
-    gl.useProgram(program);
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    // Looks like formats can still be rendered, but presumably as converted textures...
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    // model.draw();
+    return emptyTexture;
   }
 
-  renderImageTexture(gl, program, image) {
-    const lumaTexture = new Texture2D(gl, {
+  renderImageTexture(device: Device, model: Model, image: any) {
+    const texture = device.createTexture({
       data: image,
-      parameters: {
-        [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
-        [gl.TEXTURE_MIN_FILTER]: gl.LINEAR,
-        [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
-        [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
-      }
+      // parameters: {
+      //   [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
+      //   [gl.TEXTURE_MIN_FILTER]: gl.LINEAR,
+      //   [gl.TEXTURE_WRAP_S]: gl.CLAMP_TO_EDGE,
+      //   [gl.TEXTURE_WRAP_T]: gl.CLAMP_TO_EDGE
+      // }
     });
 
-    gl.useProgram(program);
+    const renderPass = device.beginRenderPass();
+    model.setBindings({uTexture: texture})
+    model.draw(renderPass);
+    renderPass.end();
 
-    gl.bindTexture(gl.TEXTURE_2D, lumaTexture.handle);
     const startTime = new Date();
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    const uploadTime = Date.now() - startTime;
+    const uploadTime = Date.now() - startTime.getMilliseconds();
 
     this.addStat('Upload time', `${Math.floor(uploadTime)} ms`);
     this.addStat('Dimensions', `${image.width} x ${image.height}`);
@@ -312,7 +377,7 @@ export default class CompressedTexture extends PureComponent {
     );
   }
 
-  renderCompressedTexture(gl, program, images, loaderName, texturePath) {
+  renderCompressedTexture(device, model, images, loaderName, texturePath) {
     if (!images || !images.length) {
       throw new Error(`${loaderName} loader doesn't support texture ${texturePath} format`);
     }
@@ -324,13 +389,14 @@ export default class CompressedTexture extends PureComponent {
     }
 
     const startTime = new Date();
-    const texture = this.createCompressedTexture2D(gl, images);
+    const texture = this.createCompressedTexture(device, images);
 
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.useProgram(program);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    const renderPass = device.beginRenderPass();
+    model.setBindings({uTexture: texture})
+    model.draw(renderPass);
+    renderPass.end();
 
-    const uploadTime = Date.now() - startTime;
+    const uploadTime = Date.now() - startTime.getMilliseconds();
 
     this.addStat('Upload time', `${Math.floor(uploadTime)} ms`);
     this.addStat('Dimensions', `${width} x ${height}`);
@@ -340,7 +406,7 @@ export default class CompressedTexture extends PureComponent {
   }
 
   // eslint-disable-next-line complexity
-  isFormatSupported(format) {
+  isFormatSupported(format: any): boolean {
     if (typeof format !== 'number') {
       throw new Error('Invalid internal format of compressed texture');
     }
@@ -466,6 +532,3 @@ export default class CompressedTexture extends PureComponent {
     ) : null;
   }
 }
-
-CompressedTexture.propTypes = propTypes;
-CompressedTexture.defaultProps = defaultProps;
