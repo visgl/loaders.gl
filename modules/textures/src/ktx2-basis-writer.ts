@@ -21,7 +21,7 @@ export type KTX2BasisWriterOptions = WriterOptions & {
  *  Basis Universal Supercompressed GPU Texture.
  *  Spec - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/textureSetDefinitionFormat.cmn.md
  */
-export const KTX2BasisWriter: WriterWithEncoder<ImageDataType, unknown, KTX2BasisWriterOptions> = {
+export const KTX2BasisWriter = {
   name: 'Basis Universal Supercompressed GPU Texture',
   id: 'ktx2-basis-writer',
   module: 'textures',
@@ -38,4 +38,4 @@ export const KTX2BasisWriter: WriterWithEncoder<ImageDataType, unknown, KTX2Basi
   },
 
   encode: encodeKTX2BasisTexture
-};
+} as const satisfies WriterWithEncoder<ImageDataType, unknown, KTX2BasisWriterOptions>;

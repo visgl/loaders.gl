@@ -17,7 +17,9 @@ export type XMLLoaderOptions = LoaderOptions & {
 /**
  * Loader for XML files
  */
-export const XMLLoader: LoaderWithParser<any, never, XMLLoaderOptions> = {
+export const XMLLoader = {
+  dataType: null as any,
+  batchType: null as never,
   name: 'XML',
   id: 'xml',
   module: 'xml',
@@ -42,7 +44,7 @@ export const XMLLoader: LoaderWithParser<any, never, XMLLoaderOptions> = {
     }),
   parseTextSync: (text: string, options?: XMLLoaderOptions) =>
     parseXMLSync(text, {...XMLLoader.options.xml, ...options?.xml})
-};
+} as const satisfies LoaderWithParser<any, never, XMLLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

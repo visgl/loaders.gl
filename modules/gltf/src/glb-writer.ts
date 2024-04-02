@@ -16,7 +16,7 @@ export type GLBWriterOptions = WriterOptions & {
  * GLB exporter
  * GLB is the binary container format for GLTF
  */
-export const GLBWriter: WriterWithEncoder<GLB, never, GLBWriterOptions> = {
+export const GLBWriter = {
   name: 'GLB',
   id: 'glb',
   module: 'gltf',
@@ -31,7 +31,7 @@ export const GLBWriter: WriterWithEncoder<GLB, never, GLBWriterOptions> = {
 
   encode: async (glb, options: GLBWriterOptions = {}) => encodeSync(glb, options),
   encodeSync
-};
+} as const satisfies WriterWithEncoder<GLB, never, GLBWriterOptions>;
 
 function encodeSync(glb, options) {
   const {byteOffset = 0} = options;

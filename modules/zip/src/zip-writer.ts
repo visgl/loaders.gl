@@ -19,7 +19,7 @@ export type ZipWriterOptions = WriterOptions & {
 /**
  * Zip exporter
  */
-export const ZipWriter: WriterWithEncoder<Record<string, ArrayBuffer>, never, ZipWriterOptions> = {
+export const ZipWriter = {
   name: 'Zip Archive',
   id: 'zip',
   module: 'zip',
@@ -34,7 +34,7 @@ export const ZipWriter: WriterWithEncoder<Record<string, ArrayBuffer>, never, Zi
     jszip: {}
   },
   encode: encodeZipAsync
-};
+} as const satisfies WriterWithEncoder<Record<string, ArrayBuffer>, never, ZipWriterOptions>;
 
 async function encodeZipAsync(
   fileMap: Record<string, ArrayBuffer>,

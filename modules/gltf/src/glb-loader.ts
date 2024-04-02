@@ -16,7 +16,9 @@ export type GLBLoaderOptions = LoaderOptions & {
  * GLB Loader -
  * GLB is the binary container format for GLTF
  */
-export const GLBLoader: LoaderWithParser<GLB, never, GLBLoaderOptions> = {
+export const GLBLoader = {
+  dataType: null as unknown as GLB,
+  batchType: null as never,
   name: 'GLB',
   id: 'glb',
   module: 'gltf',
@@ -31,7 +33,7 @@ export const GLBLoader: LoaderWithParser<GLB, never, GLBLoaderOptions> = {
       strict: false // Enables deprecated XVIZ support (illegal CHUNK formats)
     }
   }
-};
+} as const satisfies LoaderWithParser<GLB, never, GLBLoaderOptions>;
 
 async function parse(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): Promise<GLB> {
   return parseSync(arrayBuffer, options);

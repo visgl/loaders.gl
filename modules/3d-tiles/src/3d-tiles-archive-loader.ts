@@ -21,11 +21,9 @@ export type Tiles3DArchiveFileLoaderOptions = LoaderOptions & {
 /**
  * Loader for 3tz packages
  */
-export const Tiles3DArchiveFileLoader: LoaderWithParser<
-  ArrayBuffer,
-  never,
-  Tiles3DArchiveFileLoaderOptions
-> = {
+export const Tiles3DArchiveFileLoader = {
+  dataType: null as unknown as ArrayBuffer,
+  batchType: null as never,
   name: '3tz',
   id: '3tz',
   module: '3d-tiles',
@@ -34,7 +32,7 @@ export const Tiles3DArchiveFileLoader: LoaderWithParser<
   parse: parse3DTilesArchive,
   extensions: ['3tz'],
   options: {}
-};
+} satisfies LoaderWithParser<ArrayBuffer, never, Tiles3DArchiveFileLoaderOptions>;
 
 /**
  * returns a single file from the 3tz archive

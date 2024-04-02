@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Mesh} from '@loaders.gl/schema';
 import {parseOBJ} from './lib/parse-obj';
@@ -16,21 +20,21 @@ export {OBJWorkerLoader};
 /**
  * Loader for the OBJ geometry format
  */
-export const OBJLoader: LoaderWithParser<Mesh, never, OBJLoaderOptions> = {
+export const OBJLoader = {
   ...OBJWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer, options?: OBJLoaderOptions) =>
     parseOBJ(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: OBJLoaderOptions) => parseOBJ(text, options)
-};
+} as const satisfies LoaderWithParser<Mesh, never, OBJLoaderOptions>;
 
 // MTLLoader
 
 /**
  * Loader for the MTL material format
  */
-export const MTLLoader: LoaderWithParser<MTLMaterial[], never, MTLLoaderOptions> = {
+export const MTLLoader = {
   ...MTLWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer, options?: MTLLoaderOptions) =>
     parseMTL(new TextDecoder().decode(arrayBuffer), options?.mtl),
   parseTextSync: (text: string, options?: MTLLoaderOptions) => parseMTL(text, options?.mtl)
-};
+} as const satisfies LoaderWithParser<MTLMaterial[], never, MTLLoaderOptions>;

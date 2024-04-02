@@ -12,7 +12,10 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /**
  * Worker loader for PCD - Point Cloud Data
  */
-export const PCDLoader: Loader<PCDMesh, never, LoaderOptions> = {
+export const PCDLoader = {
+  dataType: null as unknown as PCDMesh,
+  batchType: null as never,
+
   name: 'PCD (Point Cloud Data)',
   id: 'pcd',
   module: 'pcd',
@@ -23,4 +26,4 @@ export const PCDLoader: Loader<PCDMesh, never, LoaderOptions> = {
   options: {
     pcd: {}
   }
-};
+} as const satisfies Loader<PCDMesh, never, LoaderOptions>;

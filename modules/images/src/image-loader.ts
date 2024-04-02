@@ -37,7 +37,9 @@ const DEFAULT_IMAGE_LOADER_OPTIONS: ImageLoaderOptions = {
  * Loads a platform-specific image type
  * Note: This type can be used as input data to WebGL texture creation
  */
-export const ImageLoader: LoaderWithParser<ImageType, never, ImageLoaderOptions> = {
+export const ImageLoader = {
+  dataType: null as unknown as ImageType,
+  batchType: null as never,
   id: 'image',
   module: 'images',
   name: 'Images',
@@ -48,4 +50,4 @@ export const ImageLoader: LoaderWithParser<ImageType, never, ImageLoaderOptions>
   // TODO: byteOffset, byteLength;
   tests: [(arrayBuffer) => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer)))],
   options: DEFAULT_IMAGE_LOADER_OPTIONS
-};
+} as const satisfies LoaderWithParser<ImageType, never, ImageLoaderOptions>;

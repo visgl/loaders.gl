@@ -15,7 +15,9 @@ export type HexWKBLoaderOptions = WKBLoaderOptions;
 /**
  * Worker loader for Hex-encoded WKB (Well-Known Binary)
  */
-export const HexWKBLoader: LoaderWithParser<BinaryGeometry, never, HexWKBLoaderOptions> = {
+export const HexWKBLoader = {
+  dataType: null as unknown as BinaryGeometry,
+  batchType: null as never,
   name: 'Hexadecimal WKB',
   id: 'wkb',
   module: 'wkt',
@@ -30,7 +32,7 @@ export const HexWKBLoader: LoaderWithParser<BinaryGeometry, never, HexWKBLoaderO
   // TODO - encoding here seems wasteful - extend hex transcoder?
   parse: async (arrayBuffer: ArrayBuffer) => parseHexWKB(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseHexWKB
-};
+} as const satisfies LoaderWithParser<BinaryGeometry, never, HexWKBLoaderOptions>;
 
 function parseHexWKB(text: string, options?: HexWKBLoaderOptions): BinaryGeometry {
   const uint8Array = decodeHex(text);

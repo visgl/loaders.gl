@@ -16,7 +16,9 @@ export type WKTCRSLoaderOptions = LoaderOptions & {
  * @see OGC Standard: https://www.ogc.org/standards/wkt-crs
  * @see Wikipedia Page: https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems
  */
-export const WKTCRSLoader: LoaderWithParser<WKTCRS, never, WKTCRSLoaderOptions> = {
+export const WKTCRSLoader = {
+  dataType: null as unknown as WKTCRS,
+  batchType: null as never,
   name: 'WKT CRS (Well-Known Text Coordinate Reference System)',
   id: 'wkt-crs',
   module: 'wkt-crs',
@@ -32,4 +34,4 @@ export const WKTCRSLoader: LoaderWithParser<WKTCRS, never, WKTCRSLoaderOptions> 
   parse: async (arrayBuffer, options) =>
     parseWKTCRS(new TextDecoder().decode(arrayBuffer), options?.['wkt-crs']),
   parseTextSync: (string, options) => parseWKTCRS(string, options?.['wkt-crs'])
-};
+} as const satisfies LoaderWithParser<WKTCRS, never, WKTCRSLoaderOptions>;

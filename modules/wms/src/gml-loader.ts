@@ -17,7 +17,10 @@ export type GMLLoaderOptions = LoaderOptions & {
 /**
  * Loader for the response to the GML GetCapability request
  */
-export const GMLLoader: LoaderWithParser<Geometry | null, never, GMLLoaderOptions> = {
+export const GMLLoader = {
+  dataType: null as unknown as Geometry | null,
+  batchType: null as never,
+
   name: 'GML',
   id: 'gml',
 
@@ -33,7 +36,7 @@ export const GMLLoader: LoaderWithParser<Geometry | null, never, GMLLoaderOption
   parse: async (arrayBuffer: ArrayBuffer, options?: GMLLoaderOptions) =>
     parseGML(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: GMLLoaderOptions) => parseGML(text, options)
-};
+} as const satisfies LoaderWithParser<Geometry | null, never, GMLLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

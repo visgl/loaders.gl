@@ -16,7 +16,9 @@ export type NullLoaderOptions = LoaderOptions & {
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullWorkerLoader: Loader<null, never, NullLoaderOptions> = {
+export const NullWorkerLoader = {
+  dataType: null,
+  batchType: null as never,
   name: 'Null loader',
   id: 'null',
   module: 'core',
@@ -28,12 +30,15 @@ export const NullWorkerLoader: Loader<null, never, NullLoaderOptions> = {
   options: {
     null: {}
   }
-};
+} as const satisfies Loader<null, never, NullLoaderOptions>;
 
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullLoader: LoaderWithParser<null, null, NullLoaderOptions> = {
+export const NullLoader = {
+  dataType: null,
+  batchType: null,
+
   name: 'Null loader',
   id: 'null',
   module: 'core',
@@ -52,7 +57,7 @@ export const NullLoader: LoaderWithParser<null, null, NullLoaderOptions> = {
   options: {
     null: {}
   }
-};
+} as const satisfies LoaderWithParser<null, null, NullLoaderOptions>;
 
 /**
  * Returns arguments passed to the parse API in a format that can be transferred to a

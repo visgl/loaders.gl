@@ -19,7 +19,7 @@ export type GeoJSONWriterOptions = WriterOptions & {
   chunkSize?: number;
 };
 
-export const GeoJSONWriter: WriterWithEncoder<Table, TableBatch, GeoJSONWriterOptions> = {
+export const GeoJSONWriter = {
   id: 'geojson',
   version: 'latest',
   module: 'geojson',
@@ -42,4 +42,4 @@ export const GeoJSONWriter: WriterWithEncoder<Table, TableBatch, GeoJSONWriterOp
 
   encodeInBatches: (tableIterator: AsyncIterable<TableBatch> | Iterable<TableBatch>, options) =>
     encodeTableAsGeojsonInBatches(tableIterator, options)
-};
+} as const satisfies WriterWithEncoder<Table, TableBatch, GeoJSONWriterOptions>;

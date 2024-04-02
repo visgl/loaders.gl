@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
@@ -12,9 +14,9 @@ export {WMSFeatureInfo};
 /**
  * Loader for the response to the WMS GetFeatureInfo request
  */
-// @ts-expect-error
-export const WMSFeatureInfoLoader: LoaderWithParser<WMSFeatureInfo, never, XMLLoaderOptions> = {
+export const WMSFeatureInfoLoader = {
   ...WMSCapabilitiesLoader,
+  dataType: null as unknown as WMSFeatureInfo,
 
   id: 'wms-feature-info',
   name: 'WMS FeatureInfo',
@@ -22,6 +24,4 @@ export const WMSFeatureInfoLoader: LoaderWithParser<WMSFeatureInfo, never, XMLLo
   parse: async (arrayBuffer: ArrayBuffer, options?: XMLLoaderOptions) =>
     parseWMSFeatureInfo(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: XMLLoaderOptions) => parseWMSFeatureInfo(text, options)
-};
-
-export const _typecheckWMSFeatureInfoLoader: LoaderWithParser = WMSFeatureInfoLoader;
+} as const satisfies LoaderWithParser<WMSFeatureInfo, never, XMLLoaderOptions>;

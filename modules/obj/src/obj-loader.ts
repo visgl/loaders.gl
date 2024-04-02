@@ -12,7 +12,10 @@ export type OBJLoaderOptions = LoaderOptions & {
 /**
  * Worker loader for the OBJ geometry format
  */
-export const OBJLoader: Loader<Mesh, never, OBJLoaderOptions> = {
+export const OBJLoader = {
+  dataType: null as unknown as Mesh,
+  batchType: null as never,
+
   name: 'OBJ',
   id: 'obj',
   module: 'obj',
@@ -24,7 +27,7 @@ export const OBJLoader: Loader<Mesh, never, OBJLoaderOptions> = {
   options: {
     obj: {}
   }
-};
+} as const satisfies Loader<Mesh, never, OBJLoaderOptions>;
 
 function testOBJFile(text: string): boolean {
   // TODO - There could be comment line first

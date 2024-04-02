@@ -11,7 +11,7 @@ import {
 
 import {NDJSONLoader} from '@loaders.gl/json';
 
-const parseNDJSONInBatches = NDJSONLoader.parseInBatches!;
+const parseNDJSONInBatches = NDJSONLoader.parseInBatches;
 
 const setTimeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 

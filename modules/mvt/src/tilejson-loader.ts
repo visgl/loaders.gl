@@ -21,7 +21,10 @@ export type TileJSONLoaderOptions = LoaderOptions & {
 /**
  * Loader for TileJSON metadata
  */
-export const TileJSONLoader: LoaderWithParser<TileJSON, never, TileJSONLoaderOptions> = {
+export const TileJSONLoader = {
+  dataType: null as unknown as TileJSON,
+  batchType: null as never,
+
   name: 'TileJSON',
   id: 'tilejson',
   module: 'pmtiles',
@@ -46,4 +49,4 @@ export const TileJSONLoader: LoaderWithParser<TileJSON, never, TileJSONLoaderOpt
     const tilejsonOptions = {...TileJSONLoader.options.tilejson, ...options?.tilejson};
     return parseTileJSON(json, tilejsonOptions) as TileJSON;
   }
-};
+} as const satisfies LoaderWithParser<TileJSON, never, TileJSONLoaderOptions>;

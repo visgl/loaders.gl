@@ -14,7 +14,7 @@ export type HTMLLoaderOptions = XMLLoaderOptions;
  * This split enables applications can control whether they want HTML responses to be parsed by the XML loader or not.
  * This loader does not have any additional understanding of the structure of HTML or the document.
  */
-export const HTMLLoader: LoaderWithParser<any, never, HTMLLoaderOptions> = {
+export const HTMLLoader = {
   ...XMLLoader,
   name: 'HTML',
   id: 'html',
@@ -24,7 +24,7 @@ export const HTMLLoader: LoaderWithParser<any, never, HTMLLoaderOptions> = {
   parse: async (arrayBuffer: ArrayBuffer, options?: XMLLoaderOptions) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: XMLLoaderOptions) => parseTextSync(text, options)
-};
+} as const satisfies LoaderWithParser<any, never, HTMLLoaderOptions>;
 
 function testHTMLFile(text: string): boolean {
   // TODO - There could be space first.

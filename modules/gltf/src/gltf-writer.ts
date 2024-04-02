@@ -1,4 +1,4 @@
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encoders/encode-gltf';
 
@@ -11,6 +11,9 @@ export type GLTFWriterOptions = WriterOptions & {
  * GLTF exporter
  */
 export const GLTFWriter = {
+  dataType: null as unknown as any,
+  batchType: null as never,
+
   name: 'glTF',
   id: 'gltf',
   module: 'gltf',
@@ -25,7 +28,7 @@ export const GLTFWriter = {
 
   encode: async (gltf, options: GLTFWriterOptions = {}) => encodeSync(gltf, options),
   encodeSync
-};
+} as WriterWithEncoder<any, never, GLTFWriterOptions>;
 
 function encodeSync(gltf, options: GLTFWriterOptions = {}) {
   const {byteOffset = 0} = options;
@@ -38,6 +41,3 @@ function encodeSync(gltf, options: GLTFWriterOptions = {}) {
 
   return arrayBuffer;
 }
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckGLBLoader: Writer = GLTFWriter;

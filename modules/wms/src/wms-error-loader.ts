@@ -21,7 +21,10 @@ export type WMSLoaderOptions = LoaderOptions & {
 /**
  * Loader for the response to the WMS GetCapability request
  */
-export const WMSErrorLoader: LoaderWithParser<string, never, WMSLoaderOptions> = {
+export const WMSErrorLoader = {
+  dataType: null as unknown as string,
+  batchType: null as never,
+
   id: 'wms-error',
   name: 'WMS Error',
 
@@ -41,7 +44,7 @@ export const WMSErrorLoader: LoaderWithParser<string, never, WMSLoaderOptions> =
   parseSync: (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions): string =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: WMSLoaderOptions): string => parseTextSync(text, options)
-};
+} as const satisfies LoaderWithParser<string, never, WMSLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

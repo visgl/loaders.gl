@@ -20,7 +20,10 @@ export type WKTLoaderOptions = LoaderOptions & {
 /**
  * Well-Known text worker loader
  */
-export const WKTWorkerLoader: Loader<Geometry, never, WKTLoaderOptions> = {
+export const WKTWorkerLoader = {
+  dataType: null as unknown as Geometry,
+  batchType: null as never,
+
   name: 'WKT (Well-Known Text)',
   id: 'wkt',
   module: 'wkt',
@@ -38,13 +41,13 @@ export const WKTWorkerLoader: Loader<Geometry, never, WKTLoaderOptions> = {
       crs: true
     }
   }
-};
+} as const satisfies Loader<Geometry, never, WKTLoaderOptions>;
 
 /**
  * Well-Known text loader
  */
-export const WKTLoader: LoaderWithParser<Geometry, never, WKTLoaderOptions> = {
+export const WKTLoader = {
   ...WKTWorkerLoader,
-  parse: async (arrayBuffer, options) => parseWKT(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: parseWKT
-};
+  parse: async (arrayBuffer, options?) => parseWKT(new TextDecoder().decode(arrayBuffer), options),
+  parseTextSync: (string: string, options?) => parseWKT(string, options)
+} as const satisfies LoaderWithParser<Geometry, never, WKTLoaderOptions>;
