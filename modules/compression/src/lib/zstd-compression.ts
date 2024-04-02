@@ -5,7 +5,7 @@
 // ZSTD
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
+import {registerJSModules, getJSModule, getJSModuleOrNull} from '@loaders.gl/loader-utils';
 
 // import {ZstdCodec} from 'zstd-codec'; // https://bundlephobia.com/package/zstd-codec
 
@@ -30,12 +30,11 @@ export class ZstdCompression extends Compression {
     super(options);
     this.options = options;
     registerJSModules(options?.modules);
-    getJSModule('zstd-codec', this.name);
   }
 
   async preload(modules: Record<string, any> = {}): Promise<void> {
     registerJSModules(modules);
-    const ZstdCodec = getJSModule('zstd-codec', this.name);
+    const ZstdCodec = getJSModuleOrNull('zstd-codec', this.name);
     // eslint-disable-next-line  @typescript-eslint/no-misused-promises
     if (!zstdPromise && ZstdCodec) {
       zstdPromise = new Promise((resolve) => ZstdCodec.run((zstd) => resolve(zstd)));
@@ -44,12 +43,14 @@ export class ZstdCompression extends Compression {
   }
 
   compressSync(input: ArrayBuffer): ArrayBuffer {
+    getJSModule('zstd-codec', this.name);
     const simpleZstd = new zstd.Simple();
     const inputArray = new Uint8Array(input);
     return simpleZstd.compress(inputArray).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
+    getJSModule('zstd-codec', this.name);
     const simpleZstd = new zstd.Simple();
     // var ddict = new zstd.Dict.Decompression(dictData);
     // var jsonBytes = simpleZstd.decompressUsingDict(jsonZstData, ddict);
