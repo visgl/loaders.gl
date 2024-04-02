@@ -31,7 +31,7 @@ export function getResourceUrl(resource: unknown): string {
     const blob = resource as Blob;
     // File objects have a "name" property. Blob objects don't have any
     // url (name) information
-    return blob.name || '';
+    return (blob as any).name || '';
   }
 
   if (typeof resource === 'string') {

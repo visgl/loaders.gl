@@ -9,7 +9,7 @@ import {ImageSource, ImageSourceMetadata} from './image-source';
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export class TileSourceAdapter<MetadataT> implements TileSource<ImageSourceMetadata> {
+export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
   readonly viewportSource: ImageSource;
   constructor(source: ImageSource) {
     this.viewportSource = source;

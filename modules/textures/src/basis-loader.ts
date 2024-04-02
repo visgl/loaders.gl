@@ -10,7 +10,10 @@ import parseBasis from './lib/parsers/parse-basis';
 /**
  * Worker loader for Basis super compressed textures
  */
-export const BasisWorkerLoader: Loader<TextureLevel[][], never, LoaderOptions> = {
+export const BasisWorkerLoader = {
+  dataType: null as unknown as TextureLevel[][],
+  batchType: null as never,
+
   name: 'Basis',
   id: 'basis',
   module: 'textures',
@@ -28,12 +31,12 @@ export const BasisWorkerLoader: Loader<TextureLevel[][], never, LoaderOptions> =
       module: 'transcoder' // 'transcoder' || 'encoder'
     }
   }
-};
+} as const satisfies Loader<TextureLevel[][], never, LoaderOptions>;
 
 /**
  * Loader for Basis super compressed textures
  */
-export const BasisLoader: LoaderWithParser<TextureLevel[][], never, LoaderOptions> = {
+export const BasisLoader = {
   ...BasisWorkerLoader,
   parse: parseBasis
-};
+} as const satisfies LoaderWithParser<TextureLevel[][], never, LoaderOptions>;

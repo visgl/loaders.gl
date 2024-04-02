@@ -58,7 +58,7 @@ export class Tile3D {
   url: string;
   parent: Tile3D;
   /* Specifies the type of refine that is used when traversing this tile for rendering. */
-  refine: number;
+  refine: TILE_REFINEMENT;
   type: string;
   contentUrl: string;
   /** Different refinement algorithms used by I3S and 3D tiles */

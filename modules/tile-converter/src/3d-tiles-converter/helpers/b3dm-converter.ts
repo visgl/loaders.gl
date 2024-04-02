@@ -54,6 +54,7 @@ export default class B3dmConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded glb content
    */
+  // eslint-disable-next-line max-statements
   async buildGLTF(
     i3sAttributesData: I3SAttributesData,
     featureAttributes: any

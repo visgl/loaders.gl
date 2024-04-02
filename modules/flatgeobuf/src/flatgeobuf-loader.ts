@@ -22,7 +22,10 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
   };
 };
 
-export const FlatGeobufWorkerLoader: Loader<any, any, FlatGeobufLoaderOptions> = {
+export const FlatGeobufWorkerLoader = {
+  dataType: null as any,
+  batchType: null as any,
+
   id: 'flatgeobuf',
   name: 'FlatGeobuf',
   module: 'flatgeobuf',
@@ -40,13 +43,13 @@ export const FlatGeobufWorkerLoader: Loader<any, any, FlatGeobufLoaderOptions> =
       reproject: false
     }
   }
-};
+} as const satisfies Loader<any, any, FlatGeobufLoaderOptions>;
 
-export const FlatGeobufLoader: LoaderWithParser<any, any, FlatGeobufLoaderOptions> = {
+export const FlatGeobufLoader = {
   ...FlatGeobufWorkerLoader,
   parse: async (arrayBuffer, options) => parseFlatGeobuf(arrayBuffer, options),
   parseSync: parseFlatGeobuf,
   // @ts-expect-error this is a stream parser not an async iterator parser
   parseInBatchesFromStream: parseFlatGeobufInBatches,
   binary: true
-};
+} as const satisfies LoaderWithParser<any, any, FlatGeobufLoaderOptions>;

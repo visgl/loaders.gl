@@ -13,10 +13,10 @@ export {LASWorkerLoader};
  * Loader for the LAS (LASer) point cloud format
  * @note Does not support LAS v1.4
  */
-export const LASLoader: LoaderWithParser<LASMesh, never, LASLoaderOptions> = {
+export const LASLoader = {
   ...LASWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
     parseLAS(arrayBuffer, options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
     parseLAS(arrayBuffer, options)
-};
+} as const satisfies LoaderWithParser<LASMesh, never, LASLoaderOptions>;

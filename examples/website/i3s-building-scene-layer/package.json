@@ -17,8 +17,8 @@
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loaders.gl/core": "^4.0.0",
     "@loaders.gl/i3s": "^4.0.0",
-    "@luma.gl/core": "^9.0.0-beta.6",
-    "deck.gl": "^9.0.0-beta.6",
+    "@luma.gl/core": "^9.0.1",
+    "deck.gl": "^9.0.1",
     "mapbox-gl": "npm:empty-npm-package@^1.0.0",
     "maplibre-gl": "^3.6.2",
     "prop-types": "^15.7.2",
@@ -29,7 +29,7 @@
     "styled-components": "^4.2.0"
   },
   "resolutions": {
-    "deck.gl": "^9.0.0-beta.6",
+    "deck.gl": "^9.0.1",
     "@math.gl/core": "^4.0.0",
     "@math.gl/web-mercator": "^4.0.0"
   },

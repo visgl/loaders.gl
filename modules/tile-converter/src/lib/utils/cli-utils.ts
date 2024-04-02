@@ -25,7 +25,9 @@ export function getStringValue(index: number, args: string[]): string {
  */
 export function getURLValue(index: number, args: string[]): string {
   const value = getStringValue(index, args);
+  // eslint-disable-next-line no-console
   console.log(`Input tileset value: ${value}`);
+  // eslint-disable-next-line no-console
   console.log(`Modified tileset value: ${value.replace(/\\/g, '/')}`);
   return value.replace(/\\/g, '/');
 }

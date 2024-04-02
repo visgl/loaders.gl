@@ -16,7 +16,7 @@ export type ParquetWriterOptions = WriterOptions & {
 };
 
 /** Parquet WASM writer */
-export const ParquetWasmWriter: WriterWithEncoder<ArrowTable, never, ParquetWriterOptions> = {
+export const ParquetWasmWriter = {
   name: 'Apache Parquet',
   id: 'parquet-wasm',
   module: 'parquet',
@@ -33,4 +33,4 @@ export const ParquetWasmWriter: WriterWithEncoder<ArrowTable, never, ParquetWrit
     options = {parquet: {...ParquetWasmWriter.options.parquet, ...options?.parquet}, ...options};
     return encode(arrowTable, options);
   }
-};
+} as const satisfies WriterWithEncoder<ArrowTable, never, ParquetWriterOptions>;

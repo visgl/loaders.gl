@@ -74,7 +74,7 @@ import {
 } from './helpers/load-3d-tiles';
 import {Matrix4} from '@math.gl/core';
 import {BoundingSphere, OrientedBoundingBox} from '@math.gl/culling';
-import {createBoundingVolume} from '@loaders.gl/tiles';
+import {TILE_REFINEMENT, createBoundingVolume} from '@loaders.gl/tiles';
 import {TraversalConversionProps, traverseDatasetWith} from './helpers/tileset-traversal';
 import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-tiles';
 import {Progress} from './helpers/progress';
@@ -184,6 +184,7 @@ export default class I3SConverter {
    * @param options.generateBoundingVolumes - generate bounding volumes from vertices coordinates instead of source tiles bounding volumes
    * @param options.instantNodeWriting - Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed
    */
+  // eslint-disable-next-line max-statements, complexity
   async convert(options: {
     inputUrl: string;
     outputPath: string;
@@ -204,7 +205,7 @@ export default class I3SConverter {
     analyze?: boolean;
   }): Promise<string> {
     if (isBrowser) {
-      console.log(BROWSER_ERROR_MESSAGE);
+      console.log(BROWSER_ERROR_MESSAGE); // eslint-disable-line no-console
       return BROWSER_ERROR_MESSAGE;
     }
     this.conversionStartTime = process.hrtime();
@@ -298,27 +299,34 @@ export default class I3SConverter {
    * @returns true - the conversion is possible, false - the tileset's content is not supported
    */
   private async preprocessConversion(): Promise<boolean> {
-    console.log(`Analyze source tileset`);
-    const sourceRootTile: Tiles3DTileJSONPostprocessed = this.sourceTileset!.root!;
-    await traverseDatasetWith<null>(
-      sourceRootTile,
-      null,
-      this.analyzeTile.bind(this),
-      undefined,
-      this.options.maxDepth
-    );
+    // eslint-disable-next-line no-console
+    console.log('Analyze source tileset');
+    const sourceRootTile: Tiles3DTileJSONPostprocessed = this.sourceTileset!.root;
+    await traverseDatasetWith<null>({
+      tile: sourceRootTile,
+      traversalProps: null,
+      processTile: this.analyzeTile.bind(this),
+      postprocessTile: undefined,
+      maxDepth: this.options.maxDepth
+    });
     const {meshTopologyTypes, metadataClasses} = this.preprocessData;
 
-    console.log(`------------------------------------------------`);
-    console.log(`Preprocess results:`);
+    // eslint-disable-next-line no-console
+    console.log('------------------------------------------------');
+    // eslint-disable-next-line no-console
+    console.log('Preprocess results:');
+    // eslint-disable-next-line no-console
     console.log(`Tile count: ${this.progresses[PROGRESS_PHASE1_COUNT].stepsTotal}`);
+    // eslint-disable-next-line no-console
     console.log(`glTF mesh topology types: ${Array.from(meshTopologyTypes).join(', ')}`);
 
     if (metadataClasses.size) {
+      // eslint-disable-next-line no-console
       console.log(
         `Feature metadata classes have been found: ${Array.from(metadataClasses).join(', ')}`
       );
     } else {
+      // eslint-disable-next-line no-console
       console.log('Feature metadata classes have not been found');
     }
 
@@ -326,14 +334,17 @@ export default class I3SConverter {
       !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLES) &&
       !meshTopologyTypes.has(GLTFPrimitiveModeString.TRIANGLE_STRIP)
     ) {
+      // eslint-disable-next-line no-console
       console.log(
         'The tileset is of unsupported mesh topology types. The conversion will be interrupted.'
       );
-      console.log(`------------------------------------------------`);
+      // eslint-disable-next-line no-console
+      console.log('------------------------------------------------');
       return false;
     }
 
-    console.log(`------------------------------------------------`);
+    // eslint-disable-next-line no-console
+    console.log('------------------------------------------------');
     return true;
   }
 
@@ -364,6 +375,7 @@ export default class I3SConverter {
         '3d-tiles': {...this.loadOptions['3d-tiles'], loadGLTF: false}
       });
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log(
         `[warning]: Failed to load ${sourceTile.contentUrl}. An I3S tile with empty content will be added to the output tileset`
       );
@@ -381,6 +393,7 @@ export default class I3SConverter {
     const {metadataClasses} = this.preprocessData;
     if (metadataClasses.size > 1) {
       if (this.options.metadataClass?.length) {
+        // eslint-disable-next-line no-console
         console.log(`${this.options.metadataClass} has been selected`);
       } else if (this.options.inquirer) {
         const result = await this.options.inquirer.prompt([
@@ -392,14 +405,17 @@ export default class I3SConverter {
           }
         ]);
         this.options.metadataClass = result.metadataClass;
+        // eslint-disable-next-line no-console
         console.log(`${result.metadataClass} has been selected`);
       } else {
+        // eslint-disable-next-line no-console
         console.log(
           `A feature metadata class has not been selected. Start the converter with option "--metadata-class". For example, "npx tile-converter ... --metadata-class ${
             Array.from(metadataClasses)[0]
           }"`
         );
-        console.log(`------------------------------------------------`);
+        // eslint-disable-next-line no-console
+        console.log('------------------------------------------------');
         return false;
       }
     }
@@ -411,6 +427,7 @@ export default class I3SConverter {
    * @param outputPath - path to save output data
    * @param tilesetName - new tileset path
    */
+  // eslint-disable-next-line max-statements, complexity
   private async _createAndSaveTileset(outputPath: string, tilesetName: string): Promise<void> {
     const tilesetPath = join(`${outputPath}`, `${tilesetName}`);
 
@@ -456,7 +473,7 @@ export default class I3SConverter {
       this.materialDefinitions = this.conversionDump.materialDefinitions;
     }
 
-    const sourceRootTile: Tiles3DTileJSONPostprocessed = this.sourceTileset!.root!;
+    const sourceRootTile: Tiles3DTileJSONPostprocessed = this.sourceTileset!.root;
     const sourceBoundingVolume = createBoundingVolume(
       sourceRootTile.boundingVolume,
       new Matrix4(sourceRootTile.transform),
@@ -479,16 +496,16 @@ export default class I3SConverter {
     });
     this.progresses[PROGRESS_PHASE1_COUNT].startMonitoring();
     const rootNode = await NodeIndexDocument.createRootNode(boundingVolumes, this);
-    await traverseDatasetWith<TraversalConversionProps>(
-      sourceRootTile,
-      {
+    await traverseDatasetWith<TraversalConversionProps>({
+      tile: sourceRootTile,
+      traversalProps: {
         transform: new Matrix4(sourceRootTile.transform),
         parentNodes: [rootNode]
       },
-      this.convertTile.bind(this),
-      this.finalizeTile.bind(this),
-      this.options.maxDepth
-    );
+      processTile: this.convertTile.bind(this),
+      postprocessTile: this.finalizeTile.bind(this),
+      maxDepth: this.options.maxDepth
+    });
     this.progresses[PROGRESS_PHASE1_COUNT].stopMonitoring();
     console.log(`[finalizing conversion]`); // eslint-disable-line
 
@@ -616,6 +633,7 @@ export default class I3SConverter {
    * @param traversalProps - traversal properties calculated recursively
    * @returns - traversal properties for the child tiles
    */
+  // eslint-disable-next-line max-statements
   private async convertTile(
     sourceTile: Tiles3DTileJSONPostprocessed,
     traversalProps: TraversalConversionProps
@@ -775,7 +793,7 @@ export default class I3SConverter {
         transformationMatrix,
         null
       );
-      let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+      const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
       const nodes: NodeIndexDocument[] = [];
       for (const convertedNode of this.conversionDump.tilesConverted[sourceTile.id].nodes) {
         const {node} = await this._generateNodeIndexDocument(
@@ -792,7 +810,7 @@ export default class I3SConverter {
       }
       return nodes;
     } else if (this.conversionDump.restored && sourceTile.id) {
-      //clear existing record in a dump
+      // clear existing record in a dump
       this.conversionDump.clearDumpRecord(sourceTile.id);
     }
     return null;
@@ -806,6 +824,7 @@ export default class I3SConverter {
    *                               transform of all parent tiles and transform of the current tile
    * @param level - tree level
    */
+  // eslint-disable-next-line max-statements
   private async _createNode(
     parentNode: NodeIndexDocument,
     sourceTile: Tiles3DTileJSONPostprocessed,
@@ -819,6 +838,7 @@ export default class I3SConverter {
     try {
       tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, this.loadOptions);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.log(`[warning]: Failed to load ${sourceTile.contentUrl}`);
     }
     const sourceBoundingVolume = createBoundingVolume(
@@ -826,7 +846,7 @@ export default class I3SConverter {
       transformationMatrix,
       null
     );
-    let boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
 
     const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
     this.createAttributeStorageInfo(tileContent, propertyTable);
@@ -837,14 +857,14 @@ export default class I3SConverter {
       popupInfo: this.attributeMetadataInfo.popupInfo
     };
 
-    const resourcesData = await this._convertResources(
+    const resourcesData = await this._convertResources({
       sourceTile,
       transformationMatrix,
-      sourceBoundingVolume,
+      boundingVolume: sourceBoundingVolume,
       tileContent,
-      parentNode.inPageId,
+      parentId: parentNode.inPageId,
       propertyTable
-    );
+    });
 
     const nodes: NodeIndexDocument[] = [];
     const nodeIds: number[] = [];
@@ -873,7 +893,7 @@ export default class I3SConverter {
       nodes.push(node);
 
       if (nodeInPage.mesh) {
-        //update a record in a dump file
+        // update a record in a dump file
         if (sourceTile.id) {
           const dumpMetadata = {
             boundingVolumes: resources.boundingVolumes,
@@ -889,7 +909,7 @@ export default class I3SConverter {
           await this.conversionDump.addNode(sourceTile.id, nodeInPage.index, dumpMetadata);
         }
 
-        //write resources
+        // write resources
         await this._writeResources(resources, node.id, sourceTile);
       }
 
@@ -919,14 +939,21 @@ export default class I3SConverter {
    * @param propertyTable - batch table from b3dm / feature properties from EXT_FEATURE_METADATA, EXT_MESH_FEATURES or EXT_STRUCTURAL_METADATA
    * @returns - converted node resources
    */
-  private async _convertResources(
-    sourceTile: Tiles3DTileJSONPostprocessed,
-    transformationMatrix: Matrix4,
-    boundingVolume: OrientedBoundingBox | BoundingSphere,
-    tileContent: Tiles3DTileContent | null,
-    parentId: number,
-    propertyTable: FeatureTableJson | null
-  ): Promise<I3SConvertedResources[] | null> {
+  private async _convertResources({
+    sourceTile,
+    transformationMatrix,
+    boundingVolume,
+    tileContent,
+    parentId,
+    propertyTable
+  }: {
+    sourceTile: Tiles3DTileJSONPostprocessed;
+    transformationMatrix: Matrix4;
+    boundingVolume: OrientedBoundingBox | BoundingSphere;
+    tileContent: Tiles3DTileContent | null;
+    parentId: number;
+    propertyTable: FeatureTableJson | null;
+  }): Promise<I3SConvertedResources[] | null> {
     if (!this.isContentSupported(sourceTile) || !tileContent) {
       return null;
     }
@@ -935,21 +962,22 @@ export default class I3SConverter {
       halfSize: [],
       quaternion: []
     };
-    const resourcesData = await convertB3dmToI3sGeometry(
+    const resourcesData = await convertB3dmToI3sGeometry({
       tileContent,
-      transformationMatrix,
-      boundingVolume,
-      async () => (await this.nodePages.push({index: 0, obb: draftObb}, parentId)).index,
+      tileTransform: transformationMatrix,
+      tileBoundingVolume: boundingVolume,
+      addNodeToNodePage: async () =>
+        (await this.nodePages.push({index: 0, obb: draftObb}, parentId)).index,
       propertyTable,
-      this.featuresHashArray,
-      this.attributeMetadataInfo.attributeStorageInfo,
-      this.options.draco,
-      this.generateBoundingVolumes,
-      this.options.mergeMaterials,
-      this.geoidHeightModel!,
-      this.loadOptions.modules as Record<string, string>,
-      this.options.metadataClass
-    );
+      featuresHashArray: this.featuresHashArray,
+      attributeStorageInfo: this.attributeMetadataInfo.attributeStorageInfo,
+      draco: this.options.draco,
+      generateBoundingVolumes: this.generateBoundingVolumes,
+      shouldMergeMaterials: this.options.mergeMaterials,
+      geoidHeightModel: this.geoidHeightModel!,
+      libraries: this.loadOptions.modules as Record<string, string>,
+      metadataClass: this.options.metadataClass
+    });
     return resourcesData;
   }
 
@@ -968,6 +996,7 @@ export default class I3SConverter {
    * @param resources.geometry - Uint8Array with geometry attributes
    * @return the node object in node pages
    */
+  // eslint-disable-next-line max-statements, complexity
   private async _updateNodeInNodePages(
     maxScreenThresholdSQ: MaxScreenThresholdSQ,
     boundingVolumes: BoundingVolumes,
@@ -1003,7 +1032,7 @@ export default class I3SConverter {
       };
     }
 
-    let nodeId = 'nodeId' in resources ? resources.nodeId : undefined;
+    const nodeId = 'nodeId' in resources ? resources.nodeId : undefined;
     let node: NodeInPage;
     if (!nodeId) {
       node = await this.nodePages.push(nodeInPage, parentId);
@@ -1012,6 +1041,7 @@ export default class I3SConverter {
     }
 
     if (!nodeInPage.mesh) {
+      // eslint-disable-next-line no-console
       console.log(`[warning]: node ${node.index} is created with empty content`);
     }
 
@@ -1068,22 +1098,22 @@ export default class I3SConverter {
     const childPath = join(this.layers0Path, 'nodes', nodePath);
     const slpkChildPath = join('nodes', nodePath);
 
-    await this._writeGeometries(
-      geometryBuffer!,
-      compressedGeometry!,
+    await this._writeGeometries({
+      geometryBuffer,
+      compressedGeometry,
       childPath,
       slpkChildPath,
-      sourceTile.id || '',
-      parseInt(nodePath)
-    );
-    await this._writeShared(
+      sourceId: sourceTile.id || '',
+      nodeId: parseInt(nodePath)
+    });
+    await this._writeShared({
       sharedResources,
       childPath,
       slpkChildPath,
       nodePath,
-      sourceTile.id || '',
-      parseInt(nodePath)
-    );
+      sourceId: sourceTile.id || '',
+      nodeId: parseInt(nodePath)
+    });
     await this._writeTexture(
       texture,
       childPath,
@@ -1109,14 +1139,25 @@ export default class I3SConverter {
    * @param sourceId - source filename
    * @param nodeId - nodeId of a converted node for the writing
    */
-  private async _writeGeometries(
-    geometryBuffer: ArrayBuffer,
-    compressedGeometry: Promise<ArrayBuffer>,
-    childPath: string,
-    slpkChildPath: string,
-    sourceId: string,
-    nodeId: number
-  ): Promise<void> {
+  private async _writeGeometries({
+    geometryBuffer,
+    compressedGeometry,
+    childPath,
+    slpkChildPath,
+    sourceId,
+    nodeId
+  }: {
+    geometryBuffer: ArrayBuffer | null;
+    compressedGeometry?: Promise<ArrayBuffer> | null;
+    childPath: string;
+    slpkChildPath: string;
+    sourceId: string;
+    nodeId: number;
+  }): Promise<void> {
+    if (!geometryBuffer) {
+      return;
+    }
+
     this.conversionDump.updateDoneStatus(sourceId, nodeId, ResourceType.GEOMETRY, false);
 
     if (this.options.slpk) {
@@ -1138,7 +1179,7 @@ export default class I3SConverter {
       });
     }
 
-    if (this.options.draco) {
+    if (this.options.draco && compressedGeometry) {
       this.conversionDump.updateDoneStatus(sourceId, nodeId, ResourceType.DRACO_GEOMETRY, false);
 
       if (this.options.slpk) {
@@ -1172,14 +1213,21 @@ export default class I3SConverter {
    * @param sourceId - source filename
    * @param nodeId - nodeId of a converted node for the writing
    */
-  private async _writeShared(
-    sharedResources: SharedResourcesArrays | null,
-    childPath: string,
-    slpkChildPath: string,
-    nodePath: string,
-    sourceId: string,
-    nodeId: number
-  ): Promise<void> {
+  private async _writeShared({
+    sharedResources,
+    childPath,
+    slpkChildPath,
+    nodePath,
+    sourceId,
+    nodeId
+  }: {
+    sharedResources: SharedResourcesArrays | null;
+    childPath: string;
+    slpkChildPath: string;
+    nodePath: string;
+    sourceId: string;
+    nodeId: number;
+  }): Promise<void> {
     if (!sharedResources) {
       return;
     }
@@ -1215,6 +1263,7 @@ export default class I3SConverter {
    * @param sourceId - source filename
    * @param nodeId - nodeId of a converted node for the writing
    */
+  // eslint-disable-next-line max-statements
   private async _writeTexture(
     texture: GLTFImagePostprocessed,
     childPath: string,
@@ -1237,15 +1286,15 @@ export default class I3SConverter {
             `${ResourceType.TEXTURE}/${format}`,
             false
           );
-          await this.writeTextureFile(
+          await this.writeTextureFile({
             textureData,
-            '0',
+            name: '0',
             format,
             childPath,
             slpkChildPath,
             sourceId,
             nodeId
-          );
+          });
 
           if (this.generateTextures) {
             formats.push({name: '1', format: 'ktx2'});
@@ -1275,15 +1324,15 @@ export default class I3SConverter {
               false
             );
 
-            await this.writeTextureFile(
-              ktx2TextureData,
-              '1',
-              'ktx2',
+            await this.writeTextureFile({
+              textureData: ktx2TextureData,
+              name: '1',
+              format: 'ktx2',
               childPath,
               slpkChildPath,
               sourceId,
               nodeId
-            );
+            });
           }
 
           break;
@@ -1297,36 +1346,38 @@ export default class I3SConverter {
             `${ResourceType.TEXTURE}/${format}`,
             false
           );
-          await this.writeTextureFile(
+          await this.writeTextureFile({
             textureData,
-            '1',
+            name: '1',
             format,
             childPath,
             slpkChildPath,
             sourceId,
             nodeId
-          );
+          });
 
           if (this.generateTextures) {
             formats.push({name: '0', format: 'jpg'});
-            const decodedFromKTX2TextureData = encode(texture.image!.data[0], ImageWriter);
+            const decodedFromKTX2TextureData = encode(texture.image.data[0], ImageWriter);
             this.conversionDump.updateDoneStatus(
               sourceId,
               nodeId,
               `${ResourceType.TEXTURE}/jpg`,
               false
             );
-            await this.writeTextureFile(
-              decodedFromKTX2TextureData,
-              '0',
-              'jpg',
+            await this.writeTextureFile({
+              textureData: decodedFromKTX2TextureData,
+              name: '0',
+              format: 'jpg',
               childPath,
               slpkChildPath,
               sourceId,
               nodeId
-            );
+            });
           }
+          break;
         }
+        default:
       }
 
       if (!this.layers0!.textureSetDefinitions!.length) {
@@ -1349,15 +1400,23 @@ export default class I3SConverter {
    * @param sourceId
    * @param nodeId
    */
-  private async writeTextureFile(
-    textureData: Uint8Array | Promise<ArrayBuffer>,
-    name: string,
-    format: 'jpg' | 'png' | 'ktx2',
-    childPath: string,
-    slpkChildPath: string,
-    sourceId: string,
-    nodeId: number
-  ): Promise<void> {
+  private async writeTextureFile({
+    textureData,
+    name,
+    format,
+    childPath,
+    slpkChildPath,
+    sourceId,
+    nodeId
+  }: {
+    textureData: Uint8Array | Promise<ArrayBuffer>;
+    name: string;
+    format: 'jpg' | 'png' | 'ktx2';
+    childPath: string;
+    slpkChildPath: string;
+    sourceId: string;
+    nodeId: number;
+  }): Promise<void> {
     if (this.options.slpk) {
       const slpkTexturePath = join(childPath, 'textures');
       const compress = false;
@@ -1532,13 +1591,13 @@ export default class I3SConverter {
     const filesSize = await calculateFilesSize(params);
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
-    console.log(`------------------------------------------------`); // eslint-disable-line no-undef, no-console
+    console.log('------------------------------------------------'); // eslint-disable-line no-undef, no-console
     console.log(`Finishing conversion of ${_3D_TILES}`); // eslint-disable-line no-undef, no-console
     console.log(`Total conversion time: ${conversionTime}`); // eslint-disable-line no-undef, no-console
-    console.log(`Vertex count: `, this.vertexCounter); // eslint-disable-line no-undef, no-console
-    console.log(`File(s) size: `, filesSize, ' bytes'); // eslint-disable-line no-undef, no-console
-    console.log(`Percentage of tiles with "ADD" refinement type:`, addRefinementPercentage, '%'); // eslint-disable-line no-undef, no-console
-    console.log(`------------------------------------------------`); // eslint-disable-line no-undef, no-console
+    console.log('Vertex count: ', this.vertexCounter); // eslint-disable-line no-undef, no-console
+    console.log('File(s) size: ', filesSize, ' bytes'); // eslint-disable-line no-undef, no-console
+    console.log('Percentage of tiles with "ADD" refinement type:', addRefinementPercentage, '%'); // eslint-disable-line no-undef, no-console
+    console.log('------------------------------------------------'); // eslint-disable-line no-undef, no-console
   }
 
   /**
@@ -1580,7 +1639,7 @@ export default class I3SConverter {
    * @param tile
    */
   private _checkAddRefinementTypeForTile(tile: Tiles3DTileJSONPostprocessed): void {
-    const ADD_TILE_REFINEMENT = 1;
+    const ADD_TILE_REFINEMENT = TILE_REFINEMENT.ADD;
 
     if (tile.refine === ADD_TILE_REFINEMENT) {
       this.refinementCounter.tilesWithAddRefineCount += 1;

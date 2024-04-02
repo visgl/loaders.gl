@@ -14,7 +14,7 @@ export type WKTWriterOptions = WriterOptions & {
 /**
  * WKT exporter
  */
-export const WKTWriter: WriterWithEncoder<Geometry, never, WKTWriterOptions> = {
+export const WKTWriter = {
   name: 'WKT (Well Known Text)',
   id: 'wkt',
   module: 'wkt',
@@ -27,7 +27,7 @@ export const WKTWriter: WriterWithEncoder<Geometry, never, WKTWriterOptions> = {
   options: {
     wkt: {}
   }
-};
+} as const satisfies WriterWithEncoder<Geometry, never, WKTWriterOptions>;
 
 function encodeWKTSync(geometry: Geometry): ArrayBuffer {
   return new TextEncoder().encode(encodeWKT(geometry)).buffer;

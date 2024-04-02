@@ -14,7 +14,9 @@ const REJECTED_STATUS = 'rejected';
 /**
  * Loader for I3S attributes
  */
-export const I3SAttributeLoader: LoaderWithParser<I3STileAttributes, never, I3SLoaderOptions> = {
+export const I3SAttributeLoader = {
+  dataType: null as unknown as I3STileAttributes,
+  batchType: null as never,
   name: 'I3S Attribute',
   id: 'i3s-attribute',
   module: 'i3s',
@@ -24,7 +26,7 @@ export const I3SAttributeLoader: LoaderWithParser<I3STileAttributes, never, I3SL
   extensions: ['bin'],
   options: {},
   binary: true
-};
+} as const satisfies LoaderWithParser<I3STileAttributes, never, I3SLoaderOptions>;
 
 
 // TODO - these seem to use the loader rather than being part of the loader. Move to different file...

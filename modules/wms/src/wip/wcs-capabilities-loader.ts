@@ -18,6 +18,9 @@ export type WCSLoaderOptions = LoaderOptions & {
  * Loader for the response to the WCS GetCapability request
  */
 export const WCSCapabilitiesLoader = {
+  dataType: null as unknown as WCSCapabilities,
+  batchType: null as never,
+
   id: 'wcs-capabilities',
   name: 'WFS Capabilities',
 
@@ -33,7 +36,7 @@ export const WCSCapabilitiesLoader = {
   parse: async (arrayBuffer: ArrayBuffer, options?: WCSLoaderOptions) =>
     parseWCSCapabilities(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: WCSLoaderOptions) => parseWCSCapabilities(text, options)
-};
+} as const satisfies LoaderWithParser<WCSCapabilities, never, WCSLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

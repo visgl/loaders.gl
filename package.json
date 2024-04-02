@@ -24,7 +24,7 @@
     "modules/*"
   ],
   "scripts": {
-    "bootstrap": "yarn && ocular-bootstrap",
+    "bootstrap": "ocular-bootstrap",
     "postinstall": "echo postinstall",
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "clean": "ocular-clean",
@@ -44,15 +44,12 @@
     "@probe.gl/bench": "^4.0.2",
     "@probe.gl/test-utils": "^4.0.2",
     "@types/tape-promise": "^4.0.1",
-    "base64-inline-loader": "^1.1.1",
-    "base64-loader": "^1.0.0",
     "ocular-dev-tools": "2.0.0-alpha.28",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1"
   },
   "pre-commit": "pre-commit",
   "pre-push": "pre-push",
-  "dependencies": {},
   "resolutions_notes": [
     "Ensure we use recent typescript",
     "apache-arrow version should be aligned with parquet-wasm version"
@@ -63,6 +60,6 @@
   },
   "volta": {
     "node": "18.19.0",
-    "yarn": "1.22.19"
+    "yarn": "4.1.1"
   }
 }

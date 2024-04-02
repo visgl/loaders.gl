@@ -13,7 +13,7 @@ type ArrowWriterOptions = WriterOptions & {
 };
 
 /** Apache Arrow writer */
-export const ArrowWriter: WriterWithEncoder<ColumnarTable, never, ArrowWriterOptions> = {
+export const ArrowWriter = {
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',
@@ -32,4 +32,4 @@ export const ArrowWriter: WriterWithEncoder<ColumnarTable, never, ArrowWriterOpt
   encodeSync(data, options?) {
     return encodeArrowSync(data);
   }
-};
+} as const satisfies WriterWithEncoder<ColumnarTable, never, ArrowWriterOptions>;

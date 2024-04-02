@@ -20,7 +20,10 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
 /**
  * Loader for the response to the CSW GetCapability request
  */
-export const CSWDomainLoader: LoaderWithParser<CSWDomain, never, CSWLoaderOptions> = {
+export const CSWDomainLoader = {
+  dataType: null as unknown as CSWDomain,
+  batchType: null as never,
+
   id: 'csw-domain',
   name: 'CSW Domain',
 
@@ -36,7 +39,7 @@ export const CSWDomainLoader: LoaderWithParser<CSWDomain, never, CSWLoaderOption
   parse: async (arrayBuffer: ArrayBuffer, options?: CSWLoaderOptions) =>
     parseCSWDomain(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync: (text: string, options?: CSWLoaderOptions) => parseCSWDomain(text, options)
-};
+} as const satisfies LoaderWithParser<CSWDomain, never, CSWLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

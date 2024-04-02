@@ -16,13 +16,15 @@ import {formErrorHandler, formListeningHandler, normalizePort} from '../utils/se
 /** Get port from environment and store in Express. */
 const httpPort = normalizePort(process.env.PORT || '80');
 if (httpPort === false) {
-  console.error(`Incorrect HTTP port`);
-  process.exit(1);
+  // eslint-disable-next-line no-console
+  console.error('Incorrect HTTP port');
+  process.exit(1); // eslint-disable-line no-process-exit
 }
 const httpsPort = normalizePort(process.env.HTTPS_PORT || '443');
 if (httpsPort === false) {
-  console.error(`Incorrect HTTPs port`);
-  process.exit(1);
+  // eslint-disable-next-line no-console
+  console.error('Incorrect HTTPs port');
+  process.exit(1); // eslint-disable-line no-process-exit
 }
 
 /** Create HTTP server. */

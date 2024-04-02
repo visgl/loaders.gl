@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import type {FeatureTableJson} from '@loaders.gl/3d-tiles';
 import type {Attribute} from '@loaders.gl/i3s';
 import type {
@@ -137,7 +138,7 @@ export const getAttributeTypesMapFromSchema = (
     gltfJson.extensions?.[EXT_FEATURE_METADATA] as GLTF_EXT_feature_metadata_GLTF
   )?.schema?.classes?.[metadataClass];
   if (extFeatureMetadataSchemaClass) {
-    for (let propertyName in extFeatureMetadataSchemaClass.properties) {
+    for (const propertyName in extFeatureMetadataSchemaClass.properties) {
       const property = extFeatureMetadataSchemaClass.properties[propertyName];
       const attributeProperty = getAttributeTypeFromExtFeatureMetadata(property);
       attributeTypesMap[propertyName] = attributeProperty;
@@ -149,7 +150,7 @@ export const getAttributeTypesMapFromSchema = (
     gltfJson.extensions?.[EXT_STRUCTURAL_METADATA] as GLTF_EXT_structural_metadata_GLTF
   )?.schema?.classes?.[metadataClass];
   if (extStructuralMetadataSchemaClass) {
-    for (let propertyName in extStructuralMetadataSchemaClass.properties) {
+    for (const propertyName in extStructuralMetadataSchemaClass.properties) {
       const property = extStructuralMetadataSchemaClass.properties[propertyName];
       const attributeProperty = getAttributeTypeFromExtStructuralMetadata(property);
       attributeTypesMap[propertyName] = attributeProperty;
@@ -166,6 +167,7 @@ export const getAttributeTypesMapFromSchema = (
  * @param property - schema of the class property for Ext_feature_metadata
  * @returns attribute's type
  */
+// eslint-disable-next-line complexity
 const getAttributeTypeFromExtFeatureMetadata = (
   property: GLTF_EXT_feature_metadata_ClassProperty
 ): Attribute => {
@@ -207,6 +209,7 @@ const getAttributeTypeFromExtFeatureMetadata = (
  * @param property - schema of the class property for Ext_structural_metadata
  * @returns attribute's type
  */
+// eslint-disable-next-line complexity
 const getAttributeTypeFromExtStructuralMetadata = (
   property: GLTF_EXT_structural_metadata_ClassProperty
 ): Attribute => {

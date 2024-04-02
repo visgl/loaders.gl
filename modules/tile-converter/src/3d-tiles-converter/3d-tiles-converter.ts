@@ -81,6 +81,7 @@ export default class Tiles3DConverter {
    * @param options.egmFilePath location of *.pgm file to convert heights from ellipsoidal to gravity-related format
    * @param options.maxDepth The max tree depth of conversion
    */
+  // eslint-disable-next-line complexity, max-statements
   public async convert(options: {
     inputUrl: string;
     outputPath: string;
@@ -89,9 +90,9 @@ export default class Tiles3DConverter {
     egmFilePath: string;
     inquirer?: Promise<unknown>;
     analyze?: boolean;
-  }): Promise<any> {
+  }): Promise<string | undefined> {
     if (isBrowser) {
-      console.log(BROWSER_ERROR_MESSAGE);
+      console.log(BROWSER_ERROR_MESSAGE); // eslint-disable-line no-console
       return BROWSER_ERROR_MESSAGE;
     }
     const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath, inquirer, analyze} = options;
@@ -108,7 +109,7 @@ export default class Tiles3DConverter {
     if (analyze || this.slpkFilesystem) {
       preprocessResult = await this.preprocessConversion();
       if (!preprocessResult || analyze) {
-        return;
+        return undefined;
       }
     }
 
@@ -126,7 +127,7 @@ export default class Tiles3DConverter {
     );
 
     if (!this.sourceTileset) {
-      return;
+      return undefined;
     }
 
     const rootNode = this.sourceTileset?.root;
@@ -186,6 +187,7 @@ export default class Tiles3DConverter {
     // Clean up worker pools
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
+    return undefined;
   }
 
   /**
@@ -193,24 +195,32 @@ export default class Tiles3DConverter {
    * @returns true - the conversion is possible, false - the tileset's content is not supported
    */
   private async preprocessConversion(): Promise<boolean> {
-    console.log(`Analyze source layer`);
+    // eslint-disable-next-line no-console
+    console.log('Analyze source layer');
     const nodesCount = await getNodeCount(this.slpkFilesystem);
     this.progress.stepsTotal = nodesCount;
 
-    console.log(`------------------------------------------------`);
-    console.log(`Preprocess results:`);
+    // eslint-disable-next-line no-console
+    console.log('------------------------------------------------');
+    // eslint-disable-next-line no-console
+    console.log('Preprocess results:');
     if (this.slpkFilesystem) {
+      // eslint-disable-next-line no-console
       console.log(`Node count: ${nodesCount}`);
       if (nodesCount === 0) {
+        // eslint-disable-next-line no-console
         console.log('Node count is 0. The conversion will be interrupted.');
-        console.log(`------------------------------------------------`);
+        // eslint-disable-next-line no-console
+        console.log('------------------------------------------------');
         return false;
       }
     } else {
-      console.log(`Node count cannot be calculated for the remote dataset`);
+      // eslint-disable-next-line no-console
+      console.log('Node count cannot be calculated for the remote dataset');
     }
 
-    console.log(`------------------------------------------------`);
+    // eslint-disable-next-line no-console
+    console.log('------------------------------------------------');
     return true;
   }
 
@@ -221,6 +231,7 @@ export default class Tiles3DConverter {
    * @param level a current level of a tree depth
    * @param childNodeInfo child node to convert
    */
+  // eslint-disable-next-line complexity, max-statements
   private async convertChildNode(
     parentSourceNode: I3STileHeader,
     parentNode: Tiles3DTileJSON,

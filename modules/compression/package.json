@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/compression",
-  "version": "4.2.0-alpha.5",
+  "version": "4.2.0-alpha.6",
   "description": "Decompression and compression plugins for loaders.gl",
   "license": "MIT",
   "type": "module",
@@ -39,8 +39,8 @@
   ],
   "browser": {
     "lzo": false,
-    "zlib": false,
-    "util": false
+    "util": false,
+    "zlib": false
   },
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
@@ -50,8 +50,8 @@
     "build-worker-node": "esbuild src/workers/compression-worker-node.ts --outfile=dist/compression-worker-node.js --platform=node --target=node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.2.0-alpha.5",
-    "@loaders.gl/worker-utils": "4.2.0-alpha.5",
+    "@loaders.gl/loader-utils": "4.2.0-alpha.6",
+    "@loaders.gl/worker-utils": "4.2.0-alpha.6",
     "@types/brotli": "^1.3.0",
     "@types/pako": "^1.0.1",
     "fflate": "0.7.4",

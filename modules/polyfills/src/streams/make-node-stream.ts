@@ -14,11 +14,12 @@ export function makeNodeStream<ArrayBuffer>(
   options?: ReadableOptions
 ): ReadableType {
   // @ts-ignore AsyncGenerator
+  // prettier-ignore
   const iterator = source[Symbol.asyncIterator]
     ? // @ts-ignore AsyncGenerator
-      source[Symbol.asyncIterator]()
+    source[Symbol.asyncIterator]()
     : // @ts-ignore AsyncGenerator
-      source[Symbol.iterator]();
+    source[Symbol.iterator]();
   return new AsyncIterableReadable(iterator, options);
 }
 

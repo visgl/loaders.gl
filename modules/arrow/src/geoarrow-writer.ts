@@ -13,11 +13,7 @@ type ArrowWriterOptions = WriterOptions & {
 };
 
 /** Apache Arrow writer */
-export const GeoArrowWriter: WriterWithEncoder<
-  GeoJSONTable | BinaryGeometry,
-  never,
-  ArrowWriterOptions
-> = {
+export const GeoArrowWriter = {
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',
@@ -38,4 +34,4 @@ export const GeoArrowWriter: WriterWithEncoder<
     // @ts-expect-error
     return encodeGeoArrowSync(data);
   }
-};
+} as const satisfies WriterWithEncoder<GeoJSONTable | BinaryGeometry, never, ArrowWriterOptions>;

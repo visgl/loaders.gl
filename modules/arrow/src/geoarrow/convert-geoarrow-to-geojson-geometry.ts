@@ -77,14 +77,14 @@ function arrowWKBToFeature(arrowCellValue: any) {
     arrowCellValue.byteOffset,
     arrowCellValue.byteOffset + arrowCellValue.byteLength
   );
-  const binaryGeometry = WKBLoader.parseSync?.(arrayBuffer)! as BinaryGeometry;
+  const binaryGeometry = WKBLoader.parseSync?.(arrayBuffer) as BinaryGeometry;
   const geometry = binaryToGeometry(binaryGeometry);
   return geometry;
 }
 
 function arrowWKTToFeature(arrowCellValue: any) {
   const string: string = arrowCellValue;
-  return WKTLoader.parseTextSync?.(string)!;
+  return WKTLoader.parseTextSync?.(string);
 }
 
 /**

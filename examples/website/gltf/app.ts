@@ -5,10 +5,10 @@
 /* eslint-disable camelcase */
 import {load} from '@loaders.gl/core';
 import {GLTFLoader} from '@loaders.gl/gltf';
-import GL from '@luma.gl/constants';
+import {GL} from '@luma.gl/constants';
 import {AnimationLoop, setParameters, clear, log, luma} from '@luma.gl/core';
-import {GLTFEnvironment} from '@luma.gl/experimental';
-import {createGLTFObjects} from './create-gltf-objects';
+import {GLTFEnvironment} from '@luma.gl/gltf';
+import {createGLTFModel} from '@luma.gl/gltf';
 import {Matrix4, radians} from '@math.gl/core';
 
 // Missing types in luma.gl/experimental v8
@@ -180,7 +180,7 @@ export class AppAnimationLoop extends AnimationLoop {
     // const rawGltf = await load(file, GLTFLoader, {fetch: {mode: 'no-cors'}});
     const rawGltf = await load(file, GLTFLoader);
 
-    const {gltf, scenes, animator} = await createGLTFObjects(gl, rawGltf, this.gltfCreateOptions);
+    const {gltf, scenes, animator} = await createGLTFModel(gl, rawGltf, this.gltfCreateOptions);
 
     this.scenes = scenes;
     this.animator = animator;
@@ -195,7 +195,7 @@ export class AppAnimationLoop extends AnimationLoop {
     (this.gltf.bufferViews || []).forEach((bufferView) => delete bufferView.lumaBuffers);
 
     this._deleteScenes();
-    Object.assign(this, createGLTFObjects(this.gl, this.gltf, this.gltfCreateOptions));
+    Object.assign(this, createGLTFModel(this.gl, this.gltf, this.gltfCreateOptions));
   }
 
   _deleteScenes() {

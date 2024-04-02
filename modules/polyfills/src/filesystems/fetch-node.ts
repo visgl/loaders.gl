@@ -55,8 +55,10 @@ export async function fetchNode(url: string, options?: RequestInit): Promise<Res
     if (isReadableNodeStream(body)) {
       bodyStream = decompressReadStream(body, responseHeaders);
     } else if (typeof body === 'string') {
+      // @ts-expect-error
       bodyStream = Readable.from([new TextEncoder().encode(body)]);
     } else {
+      // @ts-expect-error
       bodyStream = Readable.from([body || new ArrayBuffer(0)]);
     }
 

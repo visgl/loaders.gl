@@ -15,7 +15,10 @@ export type QuantizedMeshLoaderOptions = LoaderOptions & {
 /**
  * Worker loader for quantized meshes
  */
-export const QuantizedMeshLoader: Loader<any, never, QuantizedMeshLoaderOptions> = {
+export const QuantizedMeshLoader = {
+  dataType: null as unknown as any, // Mesh,
+  batchType: null as never,
+
   name: 'Quantized Mesh',
   id: 'quantized-mesh',
   module: 'terrain',
@@ -29,4 +32,4 @@ export const QuantizedMeshLoader: Loader<any, never, QuantizedMeshLoaderOptions>
       skirtHeight: null
     }
   }
-};
+} as const satisfies Loader<any, never, QuantizedMeshLoaderOptions>;

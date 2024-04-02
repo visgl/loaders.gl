@@ -16,7 +16,10 @@ export type WKBLoaderOptions = LoaderOptions & {
 /**
  * Worker loader for WKB (Well-Known Binary)
  */
-export const TWKBWorkerLoader: Loader<Geometry, never, WKBLoaderOptions> = {
+export const TWKBWorkerLoader = {
+  dataType: null as unknown as Geometry,
+  batchType: null as never,
+
   name: 'TWKB (Tiny Well-Known Binary)',
   id: 'twkb',
   module: 'wkt',
@@ -32,13 +35,13 @@ export const TWKBWorkerLoader: Loader<Geometry, never, WKBLoaderOptions> = {
       shape: 'binary-geometry' // 'geojson-geometry'
     }
   }
-};
+} as const satisfies Loader<Geometry, never, WKBLoaderOptions>;
 
 /**
  * Loader for WKB (Well-Known Binary)
  */
-export const TWKBLoader: LoaderWithParser<BinaryGeometry | Geometry, never, WKBLoaderOptions> = {
+export const TWKBLoader = {
   ...TWKBWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer) => parseTWKBGeometry(arrayBuffer),
   parseSync: parseTWKBGeometry
-};
+} as const satisfies LoaderWithParser<BinaryGeometry | Geometry, never, WKBLoaderOptions>;

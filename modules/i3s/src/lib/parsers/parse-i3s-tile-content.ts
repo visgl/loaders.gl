@@ -76,17 +76,16 @@ export async function parseI3STileContent(
         try {
           // Image constructor is not supported in worker thread.
           // Do parsing image data on the main thread by using context to avoid worker issues.
-          const texture = await parseFromContext(arrayBuffer, [], options, context!);
-          // @ts-expect-error
+          const texture: any = await parseFromContext(arrayBuffer, [], options, context!);
           content.texture = texture;
         } catch (e) {
           // context object is different between worker and node.js conversion script.
           // To prevent error we parse data in ordinary way if it is not parsed by using context.
-          const texture = await parse(arrayBuffer, loader, options, context);
+          const texture: any = await parse(arrayBuffer, loader, options, context);
           content.texture = texture;
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        let texture = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
+        let texture: any = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
         if (loader === BasisLoader) {
           texture = texture[0];
         }
@@ -293,11 +292,11 @@ function parseHeaders(arrayBuffer: ArrayBuffer, options: I3STilesetOptions) {
   for (const {property, type} of options.store.defaultGeometrySchema.header) {
     const TypedArrayTypeHeader = getConstructorForDataFormat(type);
     switch (property) {
-      case HeaderAttributeProperty.vertexCount:
+      case HeaderAttributeProperty.vertexCount.toString():
         vertexCount = new TypedArrayTypeHeader(arrayBuffer, 0, 4)[0];
         byteOffset += sizeOf(type);
         break;
-      case HeaderAttributeProperty.featureCount:
+      case HeaderAttributeProperty.featureCount.toString():
         featureCount = new TypedArrayTypeHeader(arrayBuffer, 4, 4)[0];
         byteOffset += sizeOf(type);
         break;

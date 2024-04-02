@@ -14,7 +14,7 @@ export type BSONWriterOptions = WriterOptions & {
   bson?: EncodeBSONOptions
 }
 
-export const BSONWriter: WriterWithEncoder<Record<string, unknown>, never, BSONWriterOptions> = {
+export const BSONWriter = {
   name: 'BSON',
   id: 'bson',
   module: 'bson',
@@ -29,4 +29,4 @@ export const BSONWriter: WriterWithEncoder<Record<string, unknown>, never, BSONW
   encodeSync(data: Record<string, unknown>, options?: WriterOptions): ArrayBuffer {
     return encodeBSONSync(data, {}); // options
   }
-};
+} as const satisfies WriterWithEncoder<Record<string, unknown>, never, BSONWriterOptions>;

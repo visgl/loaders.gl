@@ -14,13 +14,12 @@ export function timeConverter(time: number | [number, number]): string {
     const timeInSeconds = Math.floor(time / milliSecondsInSecond);
     const milliseconds = time - timeInSeconds * milliSecondsInSecond;
     return timeConverterFromSecondsAndMilliseconds(timeInSeconds, milliseconds);
-  } else {
-    // time - high-resolution real time in a [seconds, nanoseconds] tuple Array
-    const nanoSecondsInMillisecond = 1e6;
-    const timeInSeconds = time[0];
-    const milliseconds = time[1] / nanoSecondsInMillisecond;
-    return timeConverterFromSecondsAndMilliseconds(timeInSeconds, milliseconds);
   }
+  // time - high-resolution real time in a [seconds, nanoseconds] tuple Array
+  const nanoSecondsInMillisecond = 1e6;
+  const timeInSeconds = time[0];
+  const milliseconds = time[1] / nanoSecondsInMillisecond;
+  return timeConverterFromSecondsAndMilliseconds(timeInSeconds, milliseconds);
 }
 
 function timeConverterFromSecondsAndMilliseconds(timeInSeconds: number, milliseconds: number) {

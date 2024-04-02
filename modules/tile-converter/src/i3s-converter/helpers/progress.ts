@@ -32,6 +32,7 @@ export class Progress {
   private getTime: () => bigint;
 
   constructor(options: {threshold?: number; getTime?: () => bigint} = {}) {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     this.getTime = options.getTime || process.hrtime.bigint;
     this.threshold = options.threshold || THRESHOLD_DEFAULT;
   }

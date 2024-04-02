@@ -10,7 +10,9 @@ import {VERSION} from './lib/utils/version';
 /**
  * Loader for 3D Tiles Subtree
  */
-export const Tile3DSubtreeLoader: LoaderWithParser<Subtree, never, LoaderOptions> = {
+export const Tile3DSubtreeLoader = {
+  dataType: null as unknown as Subtree,
+  batchType: null as never,
   id: '3d-tiles-subtree',
   name: '3D Tiles Subtree',
   module: '3d-tiles',
@@ -20,4 +22,4 @@ export const Tile3DSubtreeLoader: LoaderWithParser<Subtree, never, LoaderOptions
   tests: ['subtree'],
   parse: parse3DTilesSubtree,
   options: {}
-};
+} as const satisfies LoaderWithParser<Subtree, never, LoaderOptions>;

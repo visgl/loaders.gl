@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import {load, fetchFile} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 import {writeFile} from '../lib/utils/file-utils';
@@ -25,6 +29,7 @@ export class DepsInstaller {
    *    This path is '' by default and is not used by tile-converter.
    *    It is used in tests to prevent rewriting actual workers during tests running
    */
+  // eslint-disable-next-line max-statements
   async install(path: string = ''): Promise<void> {
     console.log('Installing "EGM2008-5" model...'); // eslint-disable-line no-console
     const fileMap = await load(PGM_LINK, ZipLoader, {});
@@ -78,6 +83,7 @@ export class DepsInstaller {
     await this.installFromNpm('textures', BASIS_EXTERNAL_LIBRARIES.ENCODER, 'libs');
     await this.installFromNpm('textures', BASIS_EXTERNAL_LIBRARIES.ENCODER_WASM, 'libs');
 
+    // eslint-disable-next-line no-console
     console.log('Installing "join-images" npm package');
     const childProcess = new ChildProcessProxy();
     const nodeDir = dirname(process.execPath);
@@ -98,6 +104,11 @@ export class DepsInstaller {
     const fileResponse = await fetchFile(
       `https://unpkg.com/@loaders.gl/${module}@${VERSION}/dist/${extraPath}/${name}`
     );
+
+    if (fileResponse.status < 200 || fileResponse.status >= 300) {
+      throw new Error(`Failed to load resource ${name}`);
+    }
+
     const fileData = await fileResponse.arrayBuffer();
     if (!fileData) {
       return;

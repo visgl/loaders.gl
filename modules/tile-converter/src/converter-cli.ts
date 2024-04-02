@@ -13,6 +13,7 @@ import {
 } from './lib/utils/cli-utils';
 import {addOneFile, composeHashFile, makeZipCDHeaderIterator} from '@loaders.gl/zip';
 import {FileHandleFile} from '@loaders.gl/loader-utils';
+// @ts-ignore
 import {copyFile} from 'node:fs/promises';
 
 type TileConversionOptions = {
@@ -82,6 +83,7 @@ const TILESET_TYPE = {
  * CLI entry
  * @returns
  */
+// eslint-disable-next-line max-statements
 async function main() {
   const [, , ...args] = process.argv;
 
@@ -152,7 +154,7 @@ async function main() {
 
 main().catch((error) => {
   console.log(error);
-  process.exit(1); // eslint-disable-line
+  process.exit(1); // eslint-disable-line no-process-exit
 });
 
 /**
@@ -295,7 +297,7 @@ function validateOptions(
   }
   if (exceptions.length) {
     exceptions.forEach((exeption) => exeption());
-    process.exit(1);
+    process.exit(1); // eslint-disable-line no-process-exit
   }
   return <ValidatedTileConversionOptions>options;
 }

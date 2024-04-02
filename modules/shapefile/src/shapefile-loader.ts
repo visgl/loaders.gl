@@ -17,7 +17,7 @@ export type ShapefileLoaderOptions = LoaderOptions & {
  * Shapefile loader
  * @note Shapefile is multifile format and requires providing additional files
  */
-export const ShapefileLoader: LoaderWithParser<GeoJSONTable, Batch, ShapefileLoaderOptions> = {
+export const ShapefileLoader = {
   name: 'Shapefile',
   id: 'shapefile',
   module: 'shapefile',
@@ -38,4 +38,4 @@ export const ShapefileLoader: LoaderWithParser<GeoJSONTable, Batch, ShapefileLoa
   parse: parseShapefile,
   // @ts-expect-error
   parseInBatches: parseShapefileInBatches
-};
+} as const satisfies LoaderWithParser<GeoJSONTable, Batch, ShapefileLoaderOptions>;

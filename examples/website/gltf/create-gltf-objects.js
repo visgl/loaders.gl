@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // TODO - move to @luma.gl/addons
-import {createGLTFObjects as createGLTFObjectsSync} from '@luma.gl/experimental';
+import {createGLTFObjects as createGLTFObjectsSync} from '@luma.gl/gltf';
 
 export async function createGLTFObjects(gl, gltf, options) {
   const gltfObjects = createGLTFObjectsSync(gl, gltf, options);

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "4.2.0-alpha.5",
+  "version": "4.2.0-alpha.6",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
   "type": "module",
@@ -41,7 +41,7 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.2.0-alpha.5"
+    "@loaders.gl/loader-utils": "4.2.0-alpha.6"
   },
   "devDependencies": {
     "@types/get-pixels": "^3.3.2"

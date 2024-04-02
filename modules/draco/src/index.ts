@@ -45,10 +45,10 @@ export {DracoWorkerLoader};
 /**
  * Loader for Draco3D compressed geometries
  */
-export const DracoLoader: LoaderWithParser<DracoMesh, never, DracoLoaderOptions> = {
+export const DracoLoader = {
   ...DracoWorkerLoader,
   parse
-};
+} as const satisfies LoaderWithParser<DracoMesh, never, DracoLoaderOptions>;
 
 async function parse(arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions): Promise<DracoMesh> {
   const {draco} = await loadDracoDecoderModule(options);

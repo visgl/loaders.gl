@@ -50,7 +50,7 @@ export async function requireFromFile(filename: string): Promise<any> {
   if (!filename.startsWith('/')) {
     filename = `${process.cwd()}/${filename}`;
   }
-  const code = await fs.readFileSync(filename, 'utf8');
+  const code = fs.readFileSync(filename, 'utf8');
   return requireFromString(code);
 }
 

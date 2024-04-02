@@ -17,7 +17,10 @@ export type ParquetWasmLoaderOptions = LoaderOptions & {
 };
 
 /** Parquet WASM table loader */
-export const ParquetWasmWorkerLoader: Loader<ArrowTable, never, ParquetWasmLoaderOptions> = {
+export const ParquetWasmWorkerLoader = {
+  dataType: null as unknown as ArrowTable,
+  batchType: null as never,
+
   name: 'Apache Parquet',
   id: 'parquet-wasm',
   module: 'parquet',
@@ -34,13 +37,13 @@ export const ParquetWasmWorkerLoader: Loader<ArrowTable, never, ParquetWasmLoade
       wasmUrl: PARQUET_WASM_URL
     }
   }
-};
+} as const satisfies Loader<ArrowTable, never, ParquetWasmLoaderOptions>;
 
 /** Parquet WASM table loader */
-export const ParquetWasmLoader: LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions> = {
+export const ParquetWasmLoader = {
   ...ParquetWasmWorkerLoader,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetWasmLoaderOptions) {
     options = {parquet: {...ParquetWasmLoader.options.parquet, ...options?.parquet}, ...options};
     return parseParquetWasm(arrayBuffer, options);
   }
-};
+} as const satisfies LoaderWithParser<ArrowTable, never, ParquetWasmLoaderOptions>;
