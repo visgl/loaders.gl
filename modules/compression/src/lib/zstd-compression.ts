@@ -69,7 +69,7 @@ export class ZstdCompression extends Compression {
 
     const chunks: ArrayBuffer[] = [];
     for (let i = 0; i <= inputArray.length; i += CHUNK_SIZE) {
-      chunks.push(inputArray.slice(i, i + CHUNK_SIZE));
+      chunks.push(inputArray.subarray(i, i + CHUNK_SIZE));
     }
 
     const decompressResult = await simpleZstd.decompressChunks(chunks);
