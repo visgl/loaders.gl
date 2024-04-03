@@ -2,33 +2,32 @@
 
 ## v4.2 (In development, alpha releases available)
 
-Target Release Date: March, 2024
+Target Release Date: April, 2024
 
-- Tooling upgrades: faster build via tsc/esbuild. yarn 4.
-- Improved developer experience: Preserve loader object information through `as const satisfies` rather than assigning `Loader` types. 
+- Internal tooling upgrades: 10x faster builds via esbuild. Faster installs via yarn 4.
+- Improved developer experience: More loader object information is visible when hovering over a loader object in vscode (loader objects are now typed using `as const satisfies Loader<...>`). 
 
 **@loaders.gl/tile-converter**
 
-- Resume conversion from the last tile processed in case of an interruption.
-- Quiet mode.
-
-**@loaders.gl/parquet**
-
-- Many parquet files that previously failed now load correctly. A combination of fixes, increased limits etc. 
+- New feature: Resume conversion from the last tile processed in case of an interruption.
+- New feature: Quiet mode.
 
 **@loaders.gl/pmtiles**
 
 - Now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
-- Now can refresh the already loaded index if the underlying PMTiles file is rewritten. 
+- Now refreshes the already loaded index if a PMTiles file being loaded from is changed (rewritten). 
+
+**@loaders.gl/parquet**
+
+- Fix: Many parquet files that previously failed to load now load correctly.
 
 **@loaders.gl/las**
 
-- A big memory leak plugged.
+- Fix: A big memory leak plugged.
 
 **@loaders.gl/gltf**
 
-- Support models with more complex use of `KHR_texture_transform` extension.
-
+- Fix: Support models with more complex use of `KHR_texture_transform` extension.
 
 
 ## v4.1
