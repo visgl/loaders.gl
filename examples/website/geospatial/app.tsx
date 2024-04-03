@@ -181,14 +181,21 @@ export default function App(props: AppProps) {
         onViewStateChange={({viewState}) => setState((state) => ({...state, viewState}))}
         controller={{type: MapController, maxPitch: 85}}
         getTooltip={({object}) => {
-          const {name, ADMIN, ...properties} = object?.properties || {};
+          const {getTooltipData} =
+            state.examples[state.selectedLoader]?.[state.selectedExample] ?? {};
+          if (state.examples[state.selectedExample]) {
+            console.log('found');
+          }
+          const {title, properties} = getTooltipData
+            ? getTooltipData({object})
+            : getDefaultTooltipData({object});
           const props = Object.entries(properties)
             .map(([key, value]) => `<div>${key}: ${value}</div>`)
             .join('\n');
           return (
             object && {
               html: `\
-<h2>${name || ADMIN}</h2>
+<h2>${title}</h2>
 ${props}
 <div>Coords: ${object.geometry?.coordinates?.[0]};${object.geometry?.coordinates?.[1]}</div>`,
               style: {
@@ -209,7 +216,6 @@ async function onExampleChange(args: {
   selectedLoader: string;
   selectedExample: string;
   example: Example;
-  // isParquetReady: boolean;
   state: AppState;
   setState: Function;
 }) {
@@ -264,6 +270,14 @@ function renderLayer({selectedExample, selectedLoader, examples, loadedTable}) {
       ...layerProps
     })
   ];
+}
+
+function getDefaultTooltipData({object}) {
+  const {name, ...properties} = object?.properties || {};
+  return {
+    title: name,
+    properties
+  };
 }
 
 export function renderToDOM(container) {

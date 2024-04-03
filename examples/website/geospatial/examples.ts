@@ -27,6 +27,11 @@ export type Example = {
   data: string;
   viewState?: Record<string, number>;
   layerProps?: Record<string, any>;
+  getTooltipData?: (event: {
+    object?: {
+      properties?: Record<string, unknown>;
+    };
+  }) => null | {title: string; properties: Record<string, unknown>};
 };
 
 export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
@@ -63,6 +68,13 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
         zoom: 1.76,
         longitude: -4.65,
         latitude: -29.76
+      },
+      getTooltipData: function ({object}) {
+        const {ADMIN, ...properties} = object?.properties || {};
+        return {
+          title: ADMIN as string,
+          properties
+        };
       }
     }
   },
