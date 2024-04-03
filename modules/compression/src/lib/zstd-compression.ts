@@ -10,6 +10,8 @@ import {checkJSModule, getJSModule, getJSModuleOrNull} from '@loaders.gl/loader-
 
 // import {ZstdCodec} from 'zstd-codec'; // https://bundlephobia.com/package/zstd-codec
 
+const CHUNK_SIZE = 1000000; // Tested value
+
 let zstdPromise: Promise<any>;
 let zstd;
 
@@ -58,5 +60,19 @@ export class ZstdCompression extends Compression {
     // var jsonBytes = simpleZstd.decompressUsingDict(jsonZstData, ddict);
     const inputArray = new Uint8Array(input);
     return simpleZstd.decompress(inputArray).buffer;
+  }
+
+  async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
+    await this.preload();
+    const simpleZstd = new zstd.Streaming();
+    const inputArray = new Uint8Array(input);
+
+    const chunks: ArrayBuffer[] = [];
+    for (let i = 0; i <= inputArray.length; i += CHUNK_SIZE) {
+      chunks.push(inputArray.subarray(i, i + CHUNK_SIZE));
+    }
+
+    const decompressResult = await simpleZstd.decompressChunks(chunks);
+    return decompressResult.buffer;
   }
 }

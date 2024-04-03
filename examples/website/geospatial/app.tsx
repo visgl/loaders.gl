@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {Map} from 'react-map-gl';
@@ -21,10 +21,11 @@ import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} 
 import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load /* registerLoaders */} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
-import {GeoParquetLoader, installBufferPolyfill} from '@loaders.gl/parquet';
+import {GeoParquetLoader, installBufferPolyfill, preloadCompressions} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
+import {ZstdCodec} from 'zstd-codec';
 
 // GeoPackage depends on sql.js which has bundling issues in docusuarus.
 // import {GeoPackageLoader} from '@loaders.gl/geopackage';
@@ -43,6 +44,9 @@ const LOADERS: Loader[] = [
 ];
 const LOADER_OPTIONS = {
   worker: false,
+  modules: {
+    'zstd-codec': ZstdCodec
+  },
   gis: {
     reproject: true,
     _targetCrs: 'WGS84'
@@ -111,6 +115,8 @@ export default function App(props: AppProps) {
     loadedTable: null,
     error: null
   });
+  const stateRef = useRef<string>();
+  stateRef.current = state;
 
   // Initialize the examples (each demo might focus on a different "props.format")
   useEffect(() => {
@@ -175,14 +181,18 @@ export default function App(props: AppProps) {
         onViewStateChange={({viewState}) => setState((state) => ({...state, viewState}))}
         controller={{type: MapController, maxPitch: 85}}
         getTooltip={({object}) => {
-          const {name, ...properties} = object?.properties || {};
+          const {getTooltipData} =
+            state.examples[state.selectedLoader]?.[state.selectedExample] ?? {};
+          const {title, properties} = getTooltipData
+            ? getTooltipData({object})
+            : getDefaultTooltipData({object});
           const props = Object.entries(properties)
             .map(([key, value]) => `<div>${key}: ${value}</div>`)
             .join('\n');
           return (
             object && {
               html: `\
-<h2>${name}</h2>
+<h2>${title}</h2>
 ${props}
 <div>Coords: ${object.geometry?.coordinates?.[0]};${object.geometry?.coordinates?.[1]}</div>`,
               style: {
@@ -257,6 +267,14 @@ function renderLayer({selectedExample, selectedLoader, examples, loadedTable}) {
       ...layerProps
     })
   ];
+}
+
+function getDefaultTooltipData({object}) {
+  const {name, ...properties} = object?.properties || {};
+  return {
+    title: name,
+    properties
+  };
 }
 
 export function renderToDOM(container) {
