@@ -1,196 +1,179 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable react/no-unescaped-entities */
+
 import React, {PureComponent} from 'react';
-import {render} from 'react-dom';
-import {instrumentGLContext, Program} from '@luma.gl/core';
-import {IMAGES_DATA} from './textures-data';
-import CompressedTexture from './components/compressed-texture';
-import TextureUploader from './components/textures-uploader';
+import {createRoot} from 'react-dom/client';
 
-// TEXTURE SHADERS
+import {luma, Device} from '@luma.gl/core';
+import {WebGLDevice} from '@luma.gl/webgl';
+import {Model} from '@luma.gl/engine';
 
-const vs = `
-precision highp float;
+import {IMAGES_DATA, TextureFormatsInfo} from './textures-data';
+import {CompressedTexture, createModel} from './components/compressed-texture';
+import {TextureUploader} from './components/textures-uploader';
 
-attribute vec2 position;
-varying vec2 uv;
+type AppProps = {};
 
-void main() {
-  gl_Position = vec4(position, 0.0, 1.0);
-  uv = vec2(position.x * .5, -position.y * .5) + vec2(.5, .5);
-}
-`;
+type AppState = {
+  canvas: HTMLCanvasElement | null;
+  device: Device | null;
+  model: Model | null;
+};
 
-const fs = `
-precision highp float;
+export default class App extends React.PureComponent<AppProps, AppState> {
+  device: Device;
 
-uniform sampler2D tex;
-varying vec2 uv;
-
-void main() {
-  gl_FragColor = vec4(texture2D(tex, uv).rgb, 1.);
-}
-`;
-
-export default class App extends PureComponent {
   constructor(props) {
     super(props);
 
     this.state = {
       canvas: null,
-      gl: null,
-      program: null
+      device: null,
+      model: null
     };
   }
 
-  componentDidMount() {
-    const canvas = this.initializeWebGL();
-    const gl = canvas.getContext('webgl');
-    instrumentGLContext(gl);
-    this.createAndFillBufferObject(gl);
-    const program = new Program(gl, {vs, fs});
-    // eslint-disable-next-line react/no-did-mount-set-state
-    this.setState({canvas, gl, program: program.handle});
-  }
+  async componentDidMount() {
+    luma.registerDevices([WebGLDevice]);
 
-  initializeWebGL() {
     // eslint-disable-next-line no-undef
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
-    return canvas;
-  }
 
-  createAndFillBufferObject(gl) {
-    const data = new Float32Array([-1, -1, -1, 1, 1, -1, 1, 1]);
-    const startingArrayIndex = 0;
-    const bufferId = gl.createBuffer();
-
-    if (!bufferId) {
-      console.error('Failed to create the buffer object'); // eslint-disable-line
-    }
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
-    gl.enableVertexAttribArray(startingArrayIndex);
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    gl.vertexAttribPointer(startingArrayIndex, 2, gl.FLOAT, false, 0, 0);
-  }
-
-  renderTexturesBlocks() {
-    const {canvas, gl, program} = this.state;
-
-    return IMAGES_DATA.map((imagesData, index) => {
-      return (
-        <div key={index}>
-          {this.renderTexturesHeader(imagesData)}
-          {this.renderTextures(gl, canvas, program, imagesData.images)}
-          {this.renderTexturesDescription(imagesData)}
-        </div>
-      );
-    });
-  }
-
-  renderTexturesHeader(imagesData) {
-    const {formatName, link} = imagesData;
-
-    return (
-      <div style={{display: 'flex', flexFlow: 'column'}}>
-        <h2 style={{borderBottom: '1px solid black', marginBottom: 0}}>
-          {link ? (
-            <a style={{textDecoration: 'none'}} href={link}>
-              {formatName}
-            </a>
-          ) : (
-            formatName
-          )}
-        </h2>
-      </div>
-    );
-  }
-
-  renderTexturesDescription(imagesData) {
-    const {description, codeSample, availability} = imagesData;
-    return (
-      <div>
-        {description && (
-          <p>
-            <b>{'Description: '}</b>
-            {description}
-          </p>
-        )}
-        {availability && (
-          <p>
-            <b>{'Availability: '}</b>
-            {availability}
-          </p>
-        )}
-        {codeSample && (
-          <div>
-            <p>
-              <code>{codeSample}</code>
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  renderTextures(gl, canvas, program, images) {
-    return images.map((image, index) => (
-      <CompressedTexture key={index} image={image} canvas={canvas} gl={gl} program={program} />
-    ));
-  }
-
-  renderDescription() {
-    return (
-      <div>
-        <h1>Texture Loaders</h1>
-        <p>
-          This page loads every &nbsp;
-          <a href="https://loaders.gl/modules/textures/docs/using-compressed-textures">
-            texture format
-          </a>{' '}
-          &nbsp; supported by loaders.gl and attempts to display them in WebGL using the{' '}
-          <a href="https://luma.gl">
-            <b>luma.gl</b>
-          </a>{' '}
-          <code>Texture2D</code> class.
-        </p>
-        <p>
-          The <code>@loaders.gl/textures</code> &nbsp; module provides loaders for compressed
-          textures stored in <b>KTX</b>, <b>DDS</b> and <b>PVR</b> container files, plus <b>CRN</b>{' '}
-          (Crunch), and <b>Basis</b> supercompressed textures.
-        </p>
-        <p>This page also shows which compressed texture types your device and browser supports.</p>
-        <p>
-          <i>
-            Note that multiple textures on this page will fail to display due to lack of GPU support
-            (reported via WebGL extensions). For example: DXT formats are usually only supported on
-            Desktops while PVRTC is typically only available on mobile devices with PowerVR
-            chipsets.
-          </i>
-        </p>
-        <p>
-          <i>
-            Inspired by toji's awesome{' '}
-            <a href="http://toji.github.io/texture-tester">texture-tester</a>
-          </i>
-        </p>
-      </div>
-    );
+    const device = await luma.createDevice({canvas, type: 'webgl'});
+    const model = createModel(device);
+    // eslint-disable-next-line react/no-did-mount-set-state
+    this.setState({canvas, device, model});
   }
 
   render() {
-    const {gl, canvas, program} = this.state;
+    const {device, canvas, model} = this.state;
+    if (!device) {
+      return <div />
+    }
     return (
       <div style={{margin: 30}}>
-        {this.renderDescription()}
-        {gl && <TextureUploader canvas={canvas} gl={gl} program={program} />}
-        {gl && this.renderTexturesBlocks()}
+        <Description />
+        {device && <TextureUploader canvas={canvas} device={device} model={model} />}
+        {device && <TexturesBlocks canvas={canvas} device={device} model={model} />}
       </div>
     );
   }
 }
 
+function TexturesBlocks(props: {device: Device; canvas: HTMLCanvasElement; model: Model}) {
+  const {device, canvas, model} = props;
+
+  return IMAGES_DATA.map((imagesData, index) => {
+    return (
+      <div key={index}>
+        <TexturesHeader imagesData={imagesData} />
+        <TexturesList device={device} canvas={canvas} model={model} images={imagesData.images} />
+        <TexturesDescription imagesData={imagesData} />
+      </div>
+    );
+  });
+}
+
+function TexturesHeader(props: {imagesData: TextureFormatsInfo}) {
+  const {formatName, link} = props.imagesData;
+
+  return (
+    <div style={{display: 'flex', flexFlow: 'column'}}>
+      <h2 style={{borderBottom: '1px solid black', marginBottom: 0}}>
+        {link ? (
+          <a style={{textDecoration: 'none'}} href={link}>
+            {formatName}
+          </a>
+        ) : (
+          formatName
+        )}
+      </h2>
+    </div>
+  );
+}
+
+function TexturesDescription(props: {imagesData: TextureFormatsInfo}) {
+  const {description, codeSample, availability} = props.imagesData;
+  return (
+    <div>
+      {description && (
+        <p>
+          <b>{'Description: '}</b>
+          {description}
+        </p>
+      )}
+      {availability && (
+        <p>
+          <b>{'Availability: '}</b>
+          {availability}
+        </p>
+      )}
+      {codeSample && (
+        <div>
+          <p>
+            <code>{codeSample}</code>
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TexturesList(props: {
+  device: Device,
+  canvas: HTMLCanvasElement;
+  model: Model;
+  images: TextureFormatsInfo['images'];
+}) {
+  const {device, canvas, model, images} = props;
+  return images.map((image, index) => (
+    <CompressedTexture key={index} image={image} device={device} canvas={canvas} model={model} />
+  ));
+}
+
+function Description() {
+  return (
+    <div>
+      <h1>Texture Loaders</h1>
+      <p>
+        This page loads every &nbsp;
+        <a href="https://loaders.gl/modules/textures/docs/using-compressed-textures">
+          texture format
+        </a>{' '}
+        &nbsp; supported by loaders.gl and attempts to display them in WebGL using the{' '}
+        <a href="https://luma.gl">
+          <b>luma.gl</b>
+        </a>{' '}
+        <code>Texture2D</code> class.
+      </p>
+      <p>
+        The <code>@loaders.gl/textures</code> &nbsp; module provides loaders for compressed textures
+        stored in <b>KTX</b>, <b>DDS</b> and <b>PVR</b> container files, plus <b>CRN</b> (Crunch),
+        and <b>Basis</b> supercompressed textures.
+      </p>
+      <p>This page also shows which compressed texture types your device and browser supports.</p>
+      <p>
+        <i>
+          Note that multiple textures on this page will fail to display due to lack of GPU support
+          (reported via WebGL extensions). For example: DXT formats are usually only supported on
+          Desktops while PVRTC is typically only available on mobile devices with PowerVR chipsets.
+        </i>
+      </p>
+      <p>
+        <i>
+          Inspired by toji's awesome{' '}
+          <a href="http://toji.github.io/texture-tester">texture-tester</a>
+        </i>
+      </p>
+    </div>
+  );
+}
+
 export function renderToDOM(container) {
-  render(<App />, container);
+  createRoot(container).render(<App />);
 }

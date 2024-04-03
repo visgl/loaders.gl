@@ -1,4 +1,17 @@
-export const IMAGES_DATA = [
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+export type TextureFormatsInfo = {
+  formatName: string;
+  description?: string;
+  availability?: string;
+  link?: string;
+  codeSample?: string;
+  images: {format: string; src: string}[];
+}
+
+export const IMAGES_DATA: TextureFormatsInfo[] = [
   {
     formatName: 'Standard Image Formats',
     description:

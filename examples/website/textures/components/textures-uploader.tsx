@@ -1,7 +1,10 @@
-import React, {PureComponent} from 'react';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import React from 'react';
 import styled from 'styled-components';
-import CompressedTexture from './compressed-texture';
-import PropTypes from 'prop-types';
+import {CompressedTexture} from './compressed-texture';
 
 const Container = styled.div`
   display: flex;
@@ -24,19 +27,17 @@ const ImageContainer = styled.div`
   width: 270px;
 `;
 
-const propTypes = {
-  canvas: PropTypes.object,
-  gl: PropTypes.object,
-  program: PropTypes.object
+type TextureUploaderProps = {
+  canvas: object;
+  model: object;
 };
 
-const defaultProps = {
-  canvas: null,
-  gl: null,
-  program: null
-};
+export class TextureUploader extends React.PureComponent<TextureUploaderProps> {
+  static defaultProps = {
+    canvas: null,
+    model: null
+  };
 
-export default class TextureUploader extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -59,7 +60,7 @@ export default class TextureUploader extends PureComponent {
   }
 
   render() {
-    const {canvas, gl, program} = this.props;
+    const {canvas, device, model} = this.props;
     const {uploadedImage, files} = this.state;
 
     return (
@@ -77,7 +78,7 @@ export default class TextureUploader extends PureComponent {
         )}
         <ImageContainer>
           {uploadedImage && (
-            <CompressedTexture image={uploadedImage} canvas={canvas} gl={gl} program={program} />
+            <CompressedTexture image={uploadedImage} canvas={canvas} device={device} model={model} />
           )}
           {uploadedImage && <button onClick={this.handleCleanTexture}>Clean</button>}
         </ImageContainer>
@@ -85,6 +86,3 @@ export default class TextureUploader extends PureComponent {
     );
   }
 }
-
-TextureUploader.propTypes = propTypes;
-TextureUploader.defaultProps = defaultProps;

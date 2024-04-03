@@ -25,30 +25,30 @@ Each data type falls into one of three rough categories: Fixed-width types, vari
 
 Fixed-width data types describe physical primitive values (bytes or bits of some fixed size), or logical values that can be represented as primitive values. In addition to an optional [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) validity bitmask, these data types have a physical data buffer (a [`TypedArray`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#TypedArray_objects) corresponding to the data type's physical element width).
 
- * [Null](/docs/arrowjs/developer-guide/data-types#null) - A column of NULL values having no physical storage
- * [Bool](/docs/arrowjs/developer-guide/data-types#bool) - Booleans as either 0 or 1 (bit-packed, LSB-ordered)
- * [Int](/docs/arrowjs/developer-guide/data-types#int) - Signed or unsigned 8, 16, 32, or 64-bit little-endian integers
- * [Float](/docs/arrowjs/developer-guide/data-types#float) - 2, 4, or 8-byte floating point values
- * [Decimal](/docs/arrowjs/developer-guide/data-types#decimal) - Precision-and-scale-based 128-bit decimal values
- * [FixedSizeBinary](/docs/arrowjs/developer-guide/data-types#fixedsizebinary) - A list of fixed-size binary sequences, where each value occupies the same number of bytes
- * [Date](/docs/arrowjs/developer-guide/data-types#date) - Date as signed 32-bit integer days or 64-bit integer milliseconds since the UNIX epoch
- * [Time](/docs/arrowjs/developer-guide/data-types#time) - Time as signed 32 or 64-bit integers, representing either seconds, millisecond, microseconds, or nanoseconds since midnight (00:00:00)
- * [Timestamp](/docs/arrowjs/developer-guide/data-types#timestamp) - Exact timestamp as signed 64-bit integers, representing either seconds, milliseconds, microseconds, or nanoseconds since the UNIX epoch
- * [Interval](/docs/arrowjs/developer-guide/data-types#interval) - Time intervals as pairs of either (year, month) or (day, time) in SQL style
- * [FixedSizeList](/docs/arrowjs/developer-guide/data-types#fixedsizelist) - Fixed-size sequences of another logical Arrow data type
+ * [Null](/docs/arrowjs/developer-guide/data-types) - A column of NULL values having no physical storage
+ * [Bool](/docs/arrowjs/developer-guide/data-types) - Booleans as either 0 or 1 (bit-packed, LSB-ordered)
+ * [Int](/docs/arrowjs/developer-guide/data-types) - Signed or unsigned 8, 16, 32, or 64-bit little-endian integers
+ * [Float](/docs/arrowjs/developer-guide/data-types) - 2, 4, or 8-byte floating point values
+ * [Decimal](/docs/arrowjs/developer-guide/data-types) - Precision-and-scale-based 128-bit decimal values
+ * [FixedSizeBinary](/docs/arrowjs/developer-guide/data-types) - A list of fixed-size binary sequences, where each value occupies the same number of bytes
+ * [Date](/docs/arrowjs/developer-guide/data-types) - Date as signed 32-bit integer days or 64-bit integer milliseconds since the UNIX epoch
+ * [Time](/docs/arrowjs/developer-guide/data-types) - Time as signed 32 or 64-bit integers, representing either seconds, millisecond, microseconds, or nanoseconds since midnight (00:00:00)
+ * [Timestamp](/docs/arrowjs/developer-guide/data-types) - Exact timestamp as signed 64-bit integers, representing either seconds, milliseconds, microseconds, or nanoseconds since the UNIX epoch
+ * [Interval](/docs/arrowjs/developer-guide/data-types) - Time intervals as pairs of either (year, month) or (day, time) in SQL style
+ * [FixedSizeList](/docs/arrowjs/developer-guide/data-types) - Fixed-size sequences of another logical Arrow data type
 
 ### Variable-width Data Types
 
 Variable-width types describe lists of values with different widths, including binary blobs, Utf8 code-points, or slices of another underlying Arrow data type. These types store the values contiguously in memory, and have a physical [`Int32Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Int32Array) of offsets that describe the start and end indicies of each list element.
 
- * [List](/docs/arrowjs/developer-guide/data-types#list) - Variable-length sequences of another logical Arrow data type
- * [Utf8](/docs/arrowjs/developer-guide/data-types#utf8) - Variable-length byte sequences of UTF8 code-points (strings)
- * [Binary](/docs/arrowjs/developer-guide/data-types#binary) - Variable-length byte sequences (no guarantee of UTF8-ness)
+ * [List](/docs/arrowjs/developer-guide/data-types) - Variable-length sequences of another logical Arrow data type
+ * [Utf8](/docs/arrowjs/developer-guide/data-types) - Variable-length byte sequences of UTF8 code-points (strings)
+ * [Binary](/docs/arrowjs/developer-guide/data-types) - Variable-length byte sequences (no guarantee of UTF8-ness)
 
 ### Composite Data Types
 
 Composite types don't have physical data buffers of their own. They contain other Arrow data types and delegate work to them.
 
- * [Union](/docs/arrowjs/developer-guide/data-types#union) - Union of logical child data types
- * [Map](/docs/arrowjs/developer-guide/data-types#map) - Map of named logical child data types
- * [Struct](/docs/arrowjs/developer-guide/data-types#struct) - Struct of ordered logical child data types
+ * [Union](/docs/arrowjs/developer-guide/data-types) - Union of logical child data types
+ * [Map](/docs/arrowjs/developer-guide/data-types) - Map of named logical child data types
+ * [Struct](/docs/arrowjs/developer-guide/data-types) - Struct of ordered logical child data types
