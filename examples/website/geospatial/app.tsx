@@ -44,6 +44,9 @@ const LOADERS: Loader[] = [
 ];
 const LOADER_OPTIONS = {
   worker: false,
+  modules: {
+    'zstd-codec': ZstdCodec
+  },
   gis: {
     reproject: true,
     _targetCrs: 'WGS84'
@@ -101,7 +104,6 @@ type AppState = {
  * A Geospatial table map viewer
  */
 export default function App(props: AppProps) {
-  const [isParquetReady, setIsParquetReady] = useState<boolean>(false);
   const [state, setState] = useState<AppState>({
     // EXAMPLE STATE
     examples: EXAMPLES,
@@ -115,28 +117,6 @@ export default function App(props: AppProps) {
   });
   const stateRef = useRef<string>();
   stateRef.current = state;
-
-  useEffect(() => {
-    if (isParquetReady) {
-      return;
-    }
-    async function prepareParquet() {
-      await preloadCompressions({modules: {'zstd-codec': ZstdCodec}});
-      const {selectedLoader, selectedExample, examples} = stateRef.current;
-      if (selectedLoader === 'GeoParquet' || selectedLoader === 'GeoParquetTest') {
-        onExampleChange({
-          selectedLoader,
-          selectedExample,
-          example: examples[selectedLoader][selectedExample],
-          isParquetReady: true,
-          state,
-          setState
-        });
-      }
-      setIsParquetReady(true);
-    }
-    prepareParquet();
-  }, [isParquetReady]);
 
   // Initialize the examples (each demo might focus on a different "props.format")
   useEffect(() => {
@@ -155,7 +135,6 @@ export default function App(props: AppProps) {
       selectedLoader,
       selectedExample,
       example: examples[selectedLoader][selectedExample],
-      isParquetReady,
       state,
       setState
     });
@@ -173,7 +152,7 @@ export default function App(props: AppProps) {
         examples={state.examples}
         selectedExample={state.selectedExample}
         selectedLoader={state.selectedLoader}
-        onExampleChange={(props) => onExampleChange({...props, state, isParquetReady, setState})}
+        onExampleChange={(props) => onExampleChange({...props, state, setState})}
       >
         {state.error ? <div style={{color: 'red'}}>{state.error}</div> : ''}
         <div style={{textAlign: 'center'}}>
@@ -230,15 +209,11 @@ async function onExampleChange(args: {
   selectedLoader: string;
   selectedExample: string;
   example: Example;
-  isParquetReady: boolean;
+  // isParquetReady: boolean;
   state: AppState;
   setState: Function;
 }) {
-  const {selectedLoader, selectedExample, example, isParquetReady, state, setState} = args;
-
-  if ((selectedLoader === 'GeoParquet' || selectedLoader === 'GeoParquetTest') && !isParquetReady) {
-    return;
-  }
+  const {selectedLoader, selectedExample, example, state, setState} = args;
 
   const url = example.data;
   try {

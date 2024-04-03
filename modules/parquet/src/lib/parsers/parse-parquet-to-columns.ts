@@ -41,7 +41,7 @@ export async function* parseParquetFileInColumnarBatches(
   options?: ParquetLoaderOptions
 ): AsyncIterable<ColumnarTableBatch> {
   installBufferPolyfill();
-  await preloadCompressions();
+  await preloadCompressions(options);
 
   const reader = new ParquetReader(file);
 

@@ -23,7 +23,7 @@ export async function parseParquetFile(
   options?: ParquetLoaderOptions
 ): Promise<ObjectRowTable> {
   installBufferPolyfill();
-  await preloadCompressions();
+  await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary
@@ -60,7 +60,7 @@ export async function* parseParquetFileInBatches(
   options?: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
   installBufferPolyfill();
-  await preloadCompressions();
+  await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
     preserveBinary: options?.parquet?.preserveBinary
