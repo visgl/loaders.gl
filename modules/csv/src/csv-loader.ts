@@ -7,7 +7,6 @@ import type {ArrayRowTable, ObjectRowTable, TableBatch} from '@loaders.gl/schema
 
 import {
   AsyncQueue,
-  Table,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
@@ -48,7 +47,11 @@ export type CSVLoaderOptions = LoaderOptions & {
   };
 };
 
-export const CSVLoader: LoaderWithParser<Table, TableBatch, CSVLoaderOptions> = {
+export const CSVLoader: LoaderWithParser<
+  ObjectRowTable | ArrayRowTable,
+  TableBatch,
+  CSVLoaderOptions
+> = {
   id: 'csv',
   module: 'csv',
   name: 'CSV',
