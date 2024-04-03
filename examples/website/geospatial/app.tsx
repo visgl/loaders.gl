@@ -183,9 +183,6 @@ export default function App(props: AppProps) {
         getTooltip={({object}) => {
           const {getTooltipData} =
             state.examples[state.selectedLoader]?.[state.selectedExample] ?? {};
-          if (state.examples[state.selectedExample]) {
-            console.log('found');
-          }
           const {title, properties} = getTooltipData
             ? getTooltipData({object})
             : getDefaultTooltipData({object});
