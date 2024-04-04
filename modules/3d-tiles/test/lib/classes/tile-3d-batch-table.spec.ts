@@ -8,10 +8,10 @@ import {concatTypedArrays} from '@loaders.gl/math'; // '@math.gl/geometry';
 // import {loadTileset} from '../utils/load-utils';
 
 // const WITH_BATCH_TABLE_URL =
-//  '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithBatchTable/tileset.json';
+//  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBatchTable/tileset.json';
 // const WITHOUT_BATCH_TABLE_URL =
-//   '@loaders.gl/3d-tiles/test/data//Batched/BatchedWithoutBatchTable/tileset.json';
-// const NO_BATCH_IDS_URL = '@loaders.gl/3d-tiles/test/data//Batched/BatchedNoBatchIds/tileset.json';
+//   '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithoutBatchTable/tileset.json';
+// const NO_BATCH_IDS_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedNoBatchIds/tileset.json';
 
 const MOCK_TILESET = {
   _statistics: {

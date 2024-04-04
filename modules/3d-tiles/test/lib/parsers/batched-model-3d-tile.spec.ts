@@ -14,25 +14,27 @@ import {loadRootTileFromTileset, loadRootTile} from '../utils/load-utils';
 const EPSILON = 1e-12;
 
 const WITH_BATCH_TABLE_URL =
-  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTable/tileset.json';
-const WITH_Z_UP_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColorsZUp/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBatchTable/tileset.json';
+const WITH_Z_UP_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedColorsZUp/tileset.json';
 const WITH_BATCH_TABLE_BINARY_URL =
-  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithBatchTableBinary/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBatchTableBinary/tileset.json';
 const WITHOUT_BATCH_TABLE_URL =
-  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithoutBatchTable/tileset.json';
-const TRANSLUCENT_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTranslucent/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithoutBatchTable/tileset.json';
+const TRANSLUCENT_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedTranslucent/tileset.json';
 const TRANSLUCENT_OPAQUE_MIX_URL =
-  '@loaders.gl/3d-tiles/test/data/Batched/BatchedTranslucentOpaqueMix/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedTranslucentOpaqueMix/tileset.json';
 const WITH_TRANSFORM_BOX_URL =
-  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithTransformBox/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformBox/tileset.json';
 const WITH_TRANSFORM_SPHERE_URL =
-  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithTransformSphere/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformSphere/tileset.json';
 const WITH_TRANSFORM_REGION_URL =
-  '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithTransformRegion/tileset.json';
-const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedTextured/tileset.json';
-// const DEPRECATED1_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated1/tileset.json';
-// const DEPRECATED2_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedDeprecated2/tileset.json';
-// const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedWithRtcCenter/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformRegion/tileset.json';
+const TEXTURED_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedTextured/tileset.json';
+// const DEPRECATED1_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedDeprecated1/tileset.json';
+// const DEPRECATED2_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedDeprecated2/tileset.json';
+// const WITH_RTC_CENTER_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedWithRtcCenter/tileset.json';
 const CESIUM_RTC_EXTENSION_URL = '@loaders.gl/3d-tiles/test/data/cesium-rtc-extension.b3dm';
 
 test('batched model tile#throws with invalid version', async (t) => {

@@ -64,7 +64,11 @@ const DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP = {
   4: Uint16Array,
   5: Int32Array,
   6: Uint32Array,
-  9: Float32Array
+  7: BigInt64Array,
+  8: BigUint64Array,
+  9: Float32Array,
+  10: Float64Array
+  // 11: BOOL - What array type do we use for this?
 };
 
 const INDEX_ITEM_SIZE = 4;
@@ -351,6 +355,9 @@ export default class DracoParser {
     attribute: DracoAttribute
   ): {value: TypedArray; size: number} {
     const TypedArrayCtor = DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP[attribute.data_type];
+    if (!TypedArrayCtor) {
+      throw new Error(`DRACO: Unsupported attribute data type ${attribute.data_type}.`);
+    }
     const numComponents = attribute.num_components;
     const numPoints = dracoGeometry.num_points();
     const numValues = numPoints * numComponents;
