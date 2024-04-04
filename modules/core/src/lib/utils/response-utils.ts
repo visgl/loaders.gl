@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import {isResponse} from '../../javascript-utils/is-type';
+import {FetchError} from '../fetch/fetch-error';
 import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
+import {shortenUrlForDisplay} from './url-utils';
 
 /**
  * Returns a Response object
@@ -58,8 +60,8 @@ export async function makeResponse(resource: unknown): Promise<Response> {
  */
 export async function checkResponse(response: Response): Promise<void> {
   if (!response.ok) {
-    const message = await getResponseError(response);
-    throw new Error(message);
+    const error = await getResponseError(response);
+    throw error;
   }
 }
 
@@ -77,20 +79,26 @@ export function checkResponseSync(response: Response): void {
 
 // HELPERS
 
-async function getResponseError(response: Response): Promise<string> {
-  let message = `Failed to fetch resource ${response.url} (${response.status}): `;
+async function getResponseError(response: Response): Promise<Error> {
+  const shortUrl = shortenUrlForDisplay(response.url);
+  let message = `Failed to fetch resource (${response.status}) ${response.statusText}: ${shortUrl}`;
+  message = message.length > 100 ? `${message.slice(0, 100)}...` : message;
+
+  const info = {
+    reason: response.statusText,
+    url: response.url,
+    response
+  };
+
   try {
     const contentType = response.headers.get('Content-Type');
-    let text = response.statusText;
-    if (contentType?.includes('application/json')) {
-      text += ` ${await response.text()}`;
-    }
-    message += text;
-    message = message.length > 60 ? `${message.slice(0, 60)}...` : message;
+    info.reason = contentType?.includes('application/json')
+      ? await response.json()
+      : response.text();
   } catch (error) {
     // eslint forbids return in a finally statement, so we just catch here
   }
-  return message;
+  return new FetchError(message, info);
 }
 
 async function getInitialDataUrl(
