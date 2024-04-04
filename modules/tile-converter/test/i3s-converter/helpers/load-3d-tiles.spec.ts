@@ -6,8 +6,9 @@ import {
   loadTile3DContent
 } from '../../../src/i3s-converter/helpers/load-3d-tiles';
 
-const TILESET_URL = '@loaders.gl/3d-tiles/test/data/Batched/BatchedColors/tileset.json';
-const NESTED_TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset.json';
+const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/tileset.json';
+const NESTED_TILESET_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
 
 test('tile-converter(i3s)#loadNestedTileset', async (t) => {
   const simpleTileset = await load(TILESET_URL, Tiles3DLoader, {});

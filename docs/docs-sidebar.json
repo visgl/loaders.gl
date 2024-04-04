@@ -94,6 +94,7 @@
       "modules/arrow/formats/geoarrow",
       "modules/bson/formats/bson",
       "modules/csv/formats/csv",
+      "modules/draco/formats/draco",
       "modules/pcd/formats/pcd",
       "modules/ply/formats/ply",
       "modules/flatgeobuf/formats/flatgeobuf",

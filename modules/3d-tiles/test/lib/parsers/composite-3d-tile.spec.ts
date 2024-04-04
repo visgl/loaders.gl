@@ -10,11 +10,11 @@ import {parse, parseSync, encodeSync} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadRootTileFromTileset} from '../utils/load-utils';
 
-const COMPOSITE_URL = '@loaders.gl/3d-tiles/test/data/Composite/Composite/tileset.json';
+const COMPOSITE_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Composite/Composite/tileset.json';
 const COMPOSITE_OF_COMPOSITE_URL =
-  '@loaders.gl/3d-tiles/test/data/Composite/CompositeOfComposite/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Composite/CompositeOfComposite/tileset.json';
 const COMPOSITE_OF_INSTANCED_URL =
-  '@loaders.gl/3d-tiles/test/data/Composite/CompositeOfInstanced/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Composite/CompositeOfInstanced/tileset.json';
 
 test('composite tile#invalid version', (t) => {
   const TILE = {

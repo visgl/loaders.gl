@@ -3053,7 +3053,8 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.2.0-alpha.6"
     "@loaders.gl/schema": "npm:4.2.0-alpha.6"
     "@loaders.gl/worker-utils": "npm:4.2.0-alpha.6"
-    draco3d: "npm:1.5.5"
+    "@types/draco3d": "npm:^1.4.9"
+    draco3d: "npm:1.5.7"
   peerDependencies:
     "@loaders.gl/core": ^4.0.0
   languageName: unknown
@@ -4422,6 +4423,13 @@ __metadata:
   version: 4.1.1
   resolution: "@types/crypto-js@npm:4.1.1"
   checksum: 10c0/e53b712c5d3b72d19c67a06c8bbaaafd989d78f71a2168f1376c8fb84d5744e5166b58d79528a124645e13f13fe4d2c97ee8f03d649ef913e93ca6b8cee41370
+  languageName: node
+  linkType: hard
+
+"@types/draco3d@npm:^1.4.9":
+  version: 1.4.9
+  resolution: "@types/draco3d@npm:1.4.9"
+  checksum: 10c0/5ebf7b6f70d0e10801d05e65e76b4bae2b7b3352605ed3a371e1965d63fcb08884e876139b1e14e037497712948d82b206ff7d26be5f4884e6fe8af02af8753f
   languageName: node
   linkType: hard
 
@@ -7552,10 +7560,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"draco3d@npm:1.5.5":
-  version: 1.5.5
-  resolution: "draco3d@npm:1.5.5"
-  checksum: 10c0/bbf5d91ee7fb24aba80d75030590141ac14cf2865ad9d0a5127bdf73e89ce81cce15f28bb262940fd997a4dbae925ea52895a65db2e1941d52be293853fd3df0
+"draco3d@npm:1.5.7":
+  version: 1.5.7
+  resolution: "draco3d@npm:1.5.7"
+  checksum: 10c0/4419509bb93c31560a22a1a54e1c394a5b5017cab39941120c75151d941c11dec05925abf31f597ac2694c570b78c04f82aa3d69e5311f8f8e71fc8b9d92d12f
   languageName: node
   linkType: hard
 

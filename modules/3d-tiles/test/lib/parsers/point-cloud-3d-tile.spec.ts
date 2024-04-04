@@ -7,36 +7,36 @@
 
 import test from 'tape-promise/tape';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
-import {parseSync, encodeSync, LoaderContext} from '@loaders.gl/core';
+import {load, parseSync, encodeSync, LoaderContext} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadDraco} from '../../../src/lib/parsers/parse-3d-tile-point-cloud';
 // import {loadRootTileFromTileset} from '../utils/load-utils';
 
 /*
-const POINTCLOUD_RGB_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB/tileset.json';
-const POINTCLOUD_RGBA_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGBA/tileset.json';
+const POINTCLOUD_RGB_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGB/tileset.json';
+const POINTCLOUD_RGBA_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGBA/tileset.json';
 const POINTCLOUD_RGB565_URL =
-  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudRGB565/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGB565/tileset.json';
 const POINTCLOUD_NO_COLOR_URL =
-  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudNoColor/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudNoColor/tileset.json';
 const POINTCLOUD_CONSTANT_COLOR_URL =
-  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudConstantColor/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudConstantColor/tileset.json';
 const POINTCLOUD_NORMALS_URL =
-  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudNormals/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudNormals/tileset.json';
 const POINTCLOUD_NORMALS_OCT_ENCODED_URL =
-  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudNormalsOctEncoded/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudNormalsOctEncoded/tileset.json';
 const POINTCLOUD_QUANTIZED_URL =
-  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudQuantized/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudQuantized/tileset.json';
 const POINTCLOUD_QUANTIZED_OCT_ENCODED_URL =
-  '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudQuantizedOctEncoded/tileset.json';
-const POINTCLOUD_DRACO_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDraco/tileset.json';
-const POINTCLOUD_DRACO_PARTIAL_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDracoPartial/tileset.json';
-const POINTCLOUD_DRACO_BATCHED_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudDracoBatched/tileset.json';
-const POINTCLOUD_WGS84_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudWGS84/tileset.json';
-const POINTCLOUD_BATCHED_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudBatched/tileset.json';
-const POINTCLOUD_WITH_PER_POINT_PROPERTIES_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudWithPerPointProperties/tileset.json';
-const POINTCLOUD_WITH_TRANSFORM_URL = '@loaders.gl/3d-tiles/test/data/PointCloud/PointCloudWithTransform/tileset.json';
-const POINTCLOUD_TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetPoints/tileset.json';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudQuantizedOctEncoded/tileset.json';
+const POINTCLOUD_DRACO_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudDraco/tileset.json';
+const POINTCLOUD_DRACO_PARTIAL_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudDracoPartial/tileset.json';
+const POINTCLOUD_DRACO_BATCHED_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudDracoBatched/tileset.json';
+const POINTCLOUD_WGS84_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudWGS84/tileset.json';
+const POINTCLOUD_BATCHED_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudBatched/tileset.json';
+const POINTCLOUD_WITH_PER_POINT_PROPERTIES_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudWithPerPointProperties/tileset.json';
+const POINTCLOUD_WITH_TRANSFORM_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudWithTransform/tileset.json';
+const POINTCLOUD_TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetPoints/tileset.json';
 */
 
 test('point cloud tile#throws with invalid version', (t) => {
@@ -122,6 +122,15 @@ test('loadDraco# Pass options to draco loader properly', async (t) => {
     reuseWorkers: true
   };
   await loadDraco({shape: 'tile3d'}, dracoData, options, context);
+});
+
+// TODO - we need a test file with 64 bit data
+test.skip('point cloud tile#64bit attribute', async (t) => {
+  const POINTCLOUD_64BIT_URL = '@loaders.gl/3d-tiles/test/data/64-bit-attribute/1.pnts';
+  const result = await load(POINTCLOUD_64BIT_URL, Tiles3DLoader, {worker: false});
+  t.ok(result.attributes.gpstime instanceof Float64Array);
+  t.equal(result.attributes.gpstime.length, 31648);
+  t.end();
 });
 
 /*

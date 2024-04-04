@@ -1,11 +1,11 @@
 {
   "Batched": {
     "name": "Batched",
-    "path": "./modules/3d-tiles/test/data/Batched",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/Batched",
     "examples": {
       "BatchedColors": {
         "name": "BatchedColors",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedColors",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedColors",
         "tileset": "tileset.json",
         "files": [
           "batchedColors.b3dm"
@@ -13,7 +13,7 @@
       },
       "BatchedColorsMix": {
         "name": "BatchedColorsMix",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedColorsMix",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedColorsMix",
         "tileset": "tileset.json",
         "files": [
           "batchedColorsMix.b3dm"
@@ -21,7 +21,7 @@
       },
       "BatchedColorsTranslucent": {
         "name": "BatchedColorsTranslucent",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedColorsTranslucent",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedColorsTranslucent",
         "tileset": "tileset.json",
         "files": [
           "batchedColorsTranslucent.b3dm"
@@ -29,7 +29,7 @@
       },
       "BatchedDeprecated1": {
         "name": "BatchedDeprecated1",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedDeprecated1",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedDeprecated1",
         "tileset": "tileset.json",
         "files": [
           "batchedDeprecated1.b3dm"
@@ -37,7 +37,7 @@
       },
       "BatchedDeprecated2": {
         "name": "BatchedDeprecated2",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedDeprecated2",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedDeprecated2",
         "tileset": "tileset.json",
         "files": [
           "batchedDeprecated2.b3dm"
@@ -45,7 +45,7 @@
       },
       "BatchedExpiration": {
         "name": "BatchedExpiration",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedExpiration",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedExpiration",
         "tileset": "tileset.json",
         "files": [
           "batchedExpiration.b3dm"
@@ -53,7 +53,7 @@
       },
       "BatchedNoBatchIds": {
         "name": "BatchedNoBatchIds",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedNoBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedNoBatchIds",
         "tileset": "tileset.json",
         "files": [
           "batchedNoBatchIds.b3dm"
@@ -61,7 +61,7 @@
       },
       "BatchedTextured": {
         "name": "BatchedTextured",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedTextured",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedTextured",
         "tileset": "tileset.json",
         "files": [
           "batchedTextured.b3dm"
@@ -69,7 +69,7 @@
       },
       "BatchedTranslucent": {
         "name": "BatchedTranslucent",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedTranslucent",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedTranslucent",
         "tileset": "tileset.json",
         "files": [
           "batchedTranslucent.b3dm"
@@ -77,7 +77,7 @@
       },
       "BatchedTranslucentOpaqueMix": {
         "name": "BatchedTranslucentOpaqueMix",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedTranslucentOpaqueMix",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedTranslucentOpaqueMix",
         "tileset": "tileset.json",
         "files": [
           "batchedTranslucentOpaqueMix.b3dm"
@@ -85,7 +85,7 @@
       },
       "BatchedWGS84": {
         "name": "BatchedWGS84",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWGS84",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWGS84",
         "tileset": "tileset.json",
         "files": [
           "batchedWGS84.b3dm"
@@ -93,7 +93,7 @@
       },
       "BatchedWithBatchTable": {
         "name": "BatchedWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "batchedWithBatchTable.b3dm"
@@ -101,7 +101,7 @@
       },
       "BatchedWithBatchTableBinary": {
         "name": "BatchedWithBatchTableBinary",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithBatchTableBinary",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBatchTableBinary",
         "tileset": "tileset.json",
         "files": [
           "batchedWithBatchTableBinary.b3dm"
@@ -109,7 +109,7 @@
       },
       "BatchedWithBoundingSphere": {
         "name": "BatchedWithBoundingSphere",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithBoundingSphere",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithBoundingSphere",
         "tileset": "tileset.json",
         "files": [
           "batchedWithBoundingSphere.b3dm"
@@ -117,13 +117,13 @@
       },
       "BatchedWithContentDataUri": {
         "name": "BatchedWithContentDataUri",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithContentDataUri",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithContentDataUri",
         "tileset": "tileset.json",
         "files": []
       },
       "BatchedWithRtcCenter": {
         "name": "BatchedWithRtcCenter",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithRtcCenter",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithRtcCenter",
         "tileset": "tileset.json",
         "files": [
           "batchedWithRtcCenter.b3dm"
@@ -131,7 +131,7 @@
       },
       "BatchedWithTransformBox": {
         "name": "BatchedWithTransformBox",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithTransformBox",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformBox",
         "tileset": "tileset.json",
         "files": [
           "batchedWithTransformBox.b3dm"
@@ -139,7 +139,7 @@
       },
       "BatchedWithTransformRegion": {
         "name": "BatchedWithTransformRegion",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithTransformRegion",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformRegion",
         "tileset": "tileset.json",
         "files": [
           "batchedWithTransformRegion.b3dm"
@@ -147,7 +147,7 @@
       },
       "BatchedWithTransformSphere": {
         "name": "BatchedWithTransformSphere",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithTransformSphere",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithTransformSphere",
         "tileset": "tileset.json",
         "files": [
           "batchedWithTransformSphere.b3dm"
@@ -155,7 +155,7 @@
       },
       "BatchedWithVertexColors": {
         "name": "BatchedWithVertexColors",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithVertexColors",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithVertexColors",
         "tileset": "tileset.json",
         "files": [
           "batchedWithVertexColors.b3dm"
@@ -163,7 +163,7 @@
       },
       "BatchedWithoutBatchTable": {
         "name": "BatchedWithoutBatchTable",
-        "path": "./modules/3d-tiles/test/data/Batched/BatchedWithoutBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Batched/BatchedWithoutBatchTable",
         "tileset": "tileset.json",
         "files": [
           "batchedWithoutBatchTable.b3dm"
@@ -173,11 +173,11 @@
   },
   "Composite": {
     "name": "Composite",
-    "path": "./modules/3d-tiles/test/data/Composite",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/Composite",
     "examples": {
       "Composite": {
         "name": "Composite",
-        "path": "./modules/3d-tiles/test/data/Composite/Composite",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Composite/Composite",
         "tileset": "tileset.json",
         "files": [
           "composite.cmpt"
@@ -185,7 +185,7 @@
       },
       "CompositeOfComposite": {
         "name": "CompositeOfComposite",
-        "path": "./modules/3d-tiles/test/data/Composite/CompositeOfComposite",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Composite/CompositeOfComposite",
         "tileset": "tileset.json",
         "files": [
           "compositeOfComposite.cmpt"
@@ -193,7 +193,7 @@
       },
       "CompositeOfInstanced": {
         "name": "CompositeOfInstanced",
-        "path": "./modules/3d-tiles/test/data/Composite/CompositeOfInstanced",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Composite/CompositeOfInstanced",
         "tileset": "tileset.json",
         "files": [
           "box.glb",
@@ -204,11 +204,11 @@
   },
   "Geometry": {
     "name": "Geometry",
-    "path": "./modules/3d-tiles/test/data/Geometry",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry",
     "examples": {
       "GeometryTileAll": {
         "name": "GeometryTileAll",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAll",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileAll",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -220,7 +220,7 @@
       },
       "GeometryTileAllBatchedChildren": {
         "name": "GeometryTileAllBatchedChildren",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAllBatchedChildren",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileAllBatchedChildren",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -229,7 +229,7 @@
       },
       "GeometryTileAllBatchedChildrenWithBatchTable": {
         "name": "GeometryTileAllBatchedChildrenWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAllBatchedChildrenWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileAllBatchedChildrenWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -238,7 +238,7 @@
       },
       "GeometryTileAllWithBatchIds": {
         "name": "GeometryTileAllWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAllWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileAllWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -247,7 +247,7 @@
       },
       "GeometryTileAllWithBatchTable": {
         "name": "GeometryTileAllWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileAllWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileAllWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -259,7 +259,7 @@
       },
       "GeometryTileBoxes": {
         "name": "GeometryTileBoxes",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxes",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileBoxes",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -271,7 +271,7 @@
       },
       "GeometryTileBoxesBatchedChildren": {
         "name": "GeometryTileBoxesBatchedChildren",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxesBatchedChildren",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileBoxesBatchedChildren",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -280,7 +280,7 @@
       },
       "GeometryTileBoxesBatchedChildrenWithBatchTable": {
         "name": "GeometryTileBoxesBatchedChildrenWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxesBatchedChildrenWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileBoxesBatchedChildrenWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -289,7 +289,7 @@
       },
       "GeometryTileBoxesWithBatchIds": {
         "name": "GeometryTileBoxesWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxesWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileBoxesWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -298,7 +298,7 @@
       },
       "GeometryTileBoxesWithBatchTable": {
         "name": "GeometryTileBoxesWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileBoxesWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileBoxesWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -310,7 +310,7 @@
       },
       "GeometryTileCylinders": {
         "name": "GeometryTileCylinders",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylinders",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileCylinders",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -322,7 +322,7 @@
       },
       "GeometryTileCylindersBatchedChildren": {
         "name": "GeometryTileCylindersBatchedChildren",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylindersBatchedChildren",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileCylindersBatchedChildren",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -331,7 +331,7 @@
       },
       "GeometryTileCylindersBatchedChildrenWithBatchTable": {
         "name": "GeometryTileCylindersBatchedChildrenWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylindersBatchedChildrenWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileCylindersBatchedChildrenWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -340,7 +340,7 @@
       },
       "GeometryTileCylindersWithBatchIds": {
         "name": "GeometryTileCylindersWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylindersWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileCylindersWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -349,7 +349,7 @@
       },
       "GeometryTileCylindersWithBatchTable": {
         "name": "GeometryTileCylindersWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileCylindersWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileCylindersWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -361,7 +361,7 @@
       },
       "GeometryTileEllipsoids": {
         "name": "GeometryTileEllipsoids",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoids",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileEllipsoids",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -373,7 +373,7 @@
       },
       "GeometryTileEllipsoidsBatchedChildren": {
         "name": "GeometryTileEllipsoidsBatchedChildren",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsBatchedChildren",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileEllipsoidsBatchedChildren",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -382,7 +382,7 @@
       },
       "GeometryTileEllipsoidsBatchedChildrenWithBatchTable": {
         "name": "GeometryTileEllipsoidsBatchedChildrenWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsBatchedChildrenWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileEllipsoidsBatchedChildrenWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -391,7 +391,7 @@
       },
       "GeometryTileEllipsoidsWithBatchIds": {
         "name": "GeometryTileEllipsoidsWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileEllipsoidsWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -400,7 +400,7 @@
       },
       "GeometryTileEllipsoidsWithBatchTable": {
         "name": "GeometryTileEllipsoidsWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileEllipsoidsWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileEllipsoidsWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -412,7 +412,7 @@
       },
       "GeometryTileSpheres": {
         "name": "GeometryTileSpheres",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheres",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileSpheres",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -424,7 +424,7 @@
       },
       "GeometryTileSpheresBatchedChildren": {
         "name": "GeometryTileSpheresBatchedChildren",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheresBatchedChildren",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileSpheresBatchedChildren",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -433,7 +433,7 @@
       },
       "GeometryTileSpheresBatchedChildrenWithBatchTable": {
         "name": "GeometryTileSpheresBatchedChildrenWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheresBatchedChildrenWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileSpheresBatchedChildrenWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -442,7 +442,7 @@
       },
       "GeometryTileSpheresWithBatchIds": {
         "name": "GeometryTileSpheresWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheresWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileSpheresWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "children.geom",
@@ -451,7 +451,7 @@
       },
       "GeometryTileSpheresWithBatchTable": {
         "name": "GeometryTileSpheresWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Geometry/GeometryTileSpheresWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Geometry/GeometryTileSpheresWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "ll.geom",
@@ -465,11 +465,11 @@
   },
   "Hierarchy": {
     "name": "Hierarchy",
-    "path": "./modules/3d-tiles/test/data/Hierarchy",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/Hierarchy",
     "examples": {
       "BatchTableHierarchy": {
         "name": "BatchTableHierarchy",
-        "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchy",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchy",
         "tileset": "tileset.json",
         "files": [
           "tile.b3dm"
@@ -477,7 +477,7 @@
       },
       "BatchTableHierarchyBinary": {
         "name": "BatchTableHierarchyBinary",
-        "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyBinary",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchyBinary",
         "tileset": "tileset.json",
         "files": [
           "tile.b3dm"
@@ -485,7 +485,7 @@
       },
       "BatchTableHierarchyLegacy": {
         "name": "BatchTableHierarchyLegacy",
-        "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyLegacy",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchyLegacy",
         "tileset": "tileset.json",
         "files": [
           "tile.b3dm"
@@ -493,7 +493,7 @@
       },
       "BatchTableHierarchyMultipleParents": {
         "name": "BatchTableHierarchyMultipleParents",
-        "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyMultipleParents",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchyMultipleParents",
         "tileset": "tileset.json",
         "files": [
           "tile.b3dm"
@@ -501,7 +501,7 @@
       },
       "BatchTableHierarchyNoParents": {
         "name": "BatchTableHierarchyNoParents",
-        "path": "./modules/3d-tiles/test/data/Hierarchy/BatchTableHierarchyNoParents",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Hierarchy/BatchTableHierarchyNoParents",
         "tileset": "tileset.json",
         "files": [
           "tile.b3dm"
@@ -511,11 +511,11 @@
   },
   "Instanced": {
     "name": "Instanced",
-    "path": "./modules/3d-tiles/test/data/Instanced",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced",
     "examples": {
       "InstancedGltfExternal": {
         "name": "InstancedGltfExternal",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedGltfExternal",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedGltfExternal",
         "tileset": "tileset.json",
         "files": [
           "box.glb",
@@ -524,7 +524,7 @@
       },
       "InstancedOct32POrientation": {
         "name": "InstancedOct32POrientation",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedOct32POrientation",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedOct32POrientation",
         "tileset": "tileset.json",
         "files": [
           "instancedOct32POrientation.i3dm"
@@ -532,7 +532,7 @@
       },
       "InstancedOrientation": {
         "name": "InstancedOrientation",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedOrientation",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedOrientation",
         "tileset": "tileset.json",
         "files": [
           "instancedOrientation.i3dm"
@@ -540,7 +540,7 @@
       },
       "InstancedQuantized": {
         "name": "InstancedQuantized",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedQuantized",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedQuantized",
         "tileset": "tileset.json",
         "files": [
           "instancedQuantized.i3dm"
@@ -548,7 +548,7 @@
       },
       "InstancedQuantizedOct32POrientation": {
         "name": "InstancedQuantizedOct32POrientation",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedQuantizedOct32POrientation",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedQuantizedOct32POrientation",
         "tileset": "tileset.json",
         "files": [
           "instancedQuantizedOct32POrientation.i3dm"
@@ -556,7 +556,7 @@
       },
       "InstancedRTC": {
         "name": "InstancedRTC",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedRTC",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedRTC",
         "tileset": "tileset.json",
         "files": [
           "instancedRTC.i3dm"
@@ -564,7 +564,7 @@
       },
       "InstancedRedMaterial": {
         "name": "InstancedRedMaterial",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedRedMaterial",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedRedMaterial",
         "tileset": "tileset.json",
         "files": [
           "instancedRedMaterial.i3dm"
@@ -572,7 +572,7 @@
       },
       "InstancedScale": {
         "name": "InstancedScale",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedScale",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedScale",
         "tileset": "tileset.json",
         "files": [
           "instancedScale.i3dm"
@@ -580,7 +580,7 @@
       },
       "InstancedScaleNonUniform": {
         "name": "InstancedScaleNonUniform",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedScaleNonUniform",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedScaleNonUniform",
         "tileset": "tileset.json",
         "files": [
           "instancedScaleNonUniform.i3dm"
@@ -588,7 +588,7 @@
       },
       "InstancedTextured": {
         "name": "InstancedTextured",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedTextured",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedTextured",
         "tileset": "tileset.json",
         "files": [
           "instancedTextured.i3dm"
@@ -596,7 +596,7 @@
       },
       "InstancedWithBatchIds": {
         "name": "InstancedWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "instancedWithBatchIds.i3dm"
@@ -604,7 +604,7 @@
       },
       "InstancedWithBatchTable": {
         "name": "InstancedWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "instancedWithBatchTable.i3dm"
@@ -612,7 +612,7 @@
       },
       "InstancedWithBatchTableBinary": {
         "name": "InstancedWithBatchTableBinary",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithBatchTableBinary",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedWithBatchTableBinary",
         "tileset": "tileset.json",
         "files": [
           "instancedWithBatchTableBinary.i3dm"
@@ -620,7 +620,7 @@
       },
       "InstancedWithTransform": {
         "name": "InstancedWithTransform",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithTransform",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedWithTransform",
         "tileset": "tileset.json",
         "files": [
           "instancedWithTransform.i3dm"
@@ -628,7 +628,7 @@
       },
       "InstancedWithoutBatchTable": {
         "name": "InstancedWithoutBatchTable",
-        "path": "./modules/3d-tiles/test/data/Instanced/InstancedWithoutBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Instanced/InstancedWithoutBatchTable",
         "tileset": "tileset.json",
         "files": [
           "instancedWithoutBatchTable.i3dm"
@@ -638,11 +638,11 @@
   },
   "PointCloud": {
     "name": "PointCloud",
-    "path": "./modules/3d-tiles/test/data/PointCloud",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud",
     "examples": {
       "PointCloudBatched": {
         "name": "PointCloudBatched",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudBatched",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudBatched",
         "tileset": "tileset.json",
         "files": [
           "pointCloudBatched.pnts"
@@ -650,7 +650,7 @@
       },
       "PointCloudConstantColor": {
         "name": "PointCloudConstantColor",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudConstantColor",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudConstantColor",
         "tileset": "tileset.json",
         "files": [
           "pointCloudConstantColor.pnts"
@@ -658,7 +658,7 @@
       },
       "PointCloudDraco": {
         "name": "PointCloudDraco",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudDraco",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudDraco",
         "tileset": "tileset.json",
         "files": [
           "pointCloudDraco.pnts"
@@ -666,7 +666,7 @@
       },
       "PointCloudDracoBatched": {
         "name": "PointCloudDracoBatched",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudDracoBatched",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudDracoBatched",
         "tileset": "tileset.json",
         "files": [
           "pointCloudDracoBatched.pnts"
@@ -674,7 +674,7 @@
       },
       "PointCloudDracoPartial": {
         "name": "PointCloudDracoPartial",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudDracoPartial",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudDracoPartial",
         "tileset": "tileset.json",
         "files": [
           "pointCloudDracoPartial.pnts"
@@ -682,7 +682,7 @@
       },
       "PointCloudNoColor": {
         "name": "PointCloudNoColor",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudNoColor",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudNoColor",
         "tileset": "tileset.json",
         "files": [
           "pointCloudNoColor.pnts"
@@ -690,7 +690,7 @@
       },
       "PointCloudNormals": {
         "name": "PointCloudNormals",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudNormals",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudNormals",
         "tileset": "tileset.json",
         "files": [
           "pointCloudNormals.pnts"
@@ -698,7 +698,7 @@
       },
       "PointCloudNormalsOctEncoded": {
         "name": "PointCloudNormalsOctEncoded",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudNormalsOctEncoded",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudNormalsOctEncoded",
         "tileset": "tileset.json",
         "files": [
           "pointCloudNormalsOctEncoded.pnts"
@@ -706,7 +706,7 @@
       },
       "PointCloudQuantized": {
         "name": "PointCloudQuantized",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudQuantized",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudQuantized",
         "tileset": "tileset.json",
         "files": [
           "pointCloudQuantized.pnts"
@@ -714,7 +714,7 @@
       },
       "PointCloudQuantizedOctEncoded": {
         "name": "PointCloudQuantizedOctEncoded",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudQuantizedOctEncoded",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudQuantizedOctEncoded",
         "tileset": "tileset.json",
         "files": [
           "pointCloudQuantizedOctEncoded.pnts"
@@ -722,7 +722,7 @@
       },
       "PointCloudRGB": {
         "name": "PointCloudRGB",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudRGB",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGB",
         "tileset": "tileset.json",
         "files": [
           "pointCloudRGB.pnts"
@@ -730,7 +730,7 @@
       },
       "PointCloudRGB565": {
         "name": "PointCloudRGB565",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudRGB565",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGB565",
         "tileset": "tileset.json",
         "files": [
           "pointCloudRGB565.pnts"
@@ -738,7 +738,7 @@
       },
       "PointCloudRGBA": {
         "name": "PointCloudRGBA",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudRGBA",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudRGBA",
         "tileset": "tileset.json",
         "files": [
           "pointCloudRGBA.pnts"
@@ -746,7 +746,7 @@
       },
       "PointCloudTimeDynamic": {
         "name": "PointCloudTimeDynamic",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamic",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudTimeDynamic",
         "tileset": null,
         "files": [
           "0.pnts",
@@ -758,7 +758,7 @@
       },
       "PointCloudTimeDynamicDraco": {
         "name": "PointCloudTimeDynamicDraco",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamicDraco",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudTimeDynamicDraco",
         "tileset": null,
         "files": [
           "0.pnts",
@@ -770,7 +770,7 @@
       },
       "PointCloudTimeDynamicWithTransform": {
         "name": "PointCloudTimeDynamicWithTransform",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudTimeDynamicWithTransform",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudTimeDynamicWithTransform",
         "tileset": null,
         "files": [
           "0.pnts",
@@ -782,7 +782,7 @@
       },
       "PointCloudWGS84": {
         "name": "PointCloudWGS84",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudWGS84",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudWGS84",
         "tileset": "tileset.json",
         "files": [
           "pointCloudWGS84.pnts"
@@ -790,7 +790,7 @@
       },
       "PointCloudWithPerPointProperties": {
         "name": "PointCloudWithPerPointProperties",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudWithPerPointProperties",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudWithPerPointProperties",
         "tileset": "tileset.json",
         "files": [
           "pointCloudWithPerPointProperties.pnts"
@@ -798,7 +798,7 @@
       },
       "PointCloudWithTransform": {
         "name": "PointCloudWithTransform",
-        "path": "./modules/3d-tiles/test/data/PointCloud/PointCloudWithTransform",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudWithTransform",
         "tileset": "tileset.json",
         "files": [
           "pointCloudWithTransform.pnts"
@@ -808,16 +808,16 @@
   },
   "Style": {
     "name": "Style",
-    "path": "./modules/3d-tiles/test/data/Style",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/Style",
     "examples": {}
   },
   "Tilesets": {
     "name": "Tilesets",
-    "path": "./modules/3d-tiles/test/data/Tilesets",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets",
     "examples": {
       "Tileset": {
         "name": "Tileset",
-        "path": "./modules/3d-tiles/test/data/Tilesets/Tileset",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/Tileset",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -829,7 +829,7 @@
       },
       "TilesetEmptyRoot": {
         "name": "TilesetEmptyRoot",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetEmptyRoot",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetEmptyRoot",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -840,7 +840,7 @@
       },
       "TilesetOfTilesets": {
         "name": "TilesetOfTilesets",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetOfTilesets",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets",
         "tileset": "tileset.json",
         "files": [
           "lr.b3dm",
@@ -853,7 +853,7 @@
       },
       "TilesetPoints": {
         "name": "TilesetPoints",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetPoints",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetPoints",
         "tileset": "tileset.json",
         "files": [
           "0.pnts",
@@ -869,7 +869,7 @@
       },
       "TilesetRefinementMix": {
         "name": "TilesetRefinementMix",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetRefinementMix",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetRefinementMix",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -881,7 +881,7 @@
       },
       "TilesetReplacement1": {
         "name": "TilesetReplacement1",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetReplacement1",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement1",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -893,7 +893,7 @@
       },
       "TilesetReplacement2": {
         "name": "TilesetReplacement2",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetReplacement2",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement2",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -903,7 +903,7 @@
       },
       "TilesetReplacement3": {
         "name": "TilesetReplacement3",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetReplacement3",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacement3",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -916,7 +916,7 @@
       },
       "TilesetReplacementWithViewerRequestVolume": {
         "name": "TilesetReplacementWithViewerRequestVolume",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetReplacementWithViewerRequestVolume",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetReplacementWithViewerRequestVolume",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -928,7 +928,7 @@
       },
       "TilesetSubtreeExpiration": {
         "name": "TilesetSubtreeExpiration",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetSubtreeExpiration",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetSubtreeExpiration",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -941,7 +941,7 @@
       },
       "TilesetUniform": {
         "name": "TilesetUniform",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetUniform",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetUniform",
         "tileset": "tileset.json",
         "files": [
           "0_0_0.b3dm",
@@ -968,7 +968,7 @@
       },
       "TilesetWithExternalResources": {
         "name": "TilesetWithExternalResources",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetWithExternalResources",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetWithExternalResources",
         "tileset": "tileset.json",
         "files": [
           "embed.i3dm",
@@ -980,7 +980,7 @@
       },
       "TilesetWithTransforms": {
         "name": "TilesetWithTransforms",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetWithTransforms",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetWithTransforms",
         "tileset": "tileset.json",
         "files": [
           "buildings.b3dm",
@@ -989,7 +989,7 @@
       },
       "TilesetWithViewerRequestVolume": {
         "name": "TilesetWithViewerRequestVolume",
-        "path": "./modules/3d-tiles/test/data/Tilesets/TilesetWithViewerRequestVolume",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Tilesets/TilesetWithViewerRequestVolume",
         "tileset": "tileset.json",
         "files": [
           "ll.b3dm",
@@ -1003,11 +1003,11 @@
   },
   "Vector": {
     "name": "Vector",
-    "path": "./modules/3d-tiles/test/data/Vector",
+    "path": "./modules/3d-tiles/test/data/CesiumJS/Vector",
     "examples": {
       "VectorTileCombined": {
         "name": "VectorTileCombined",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTileCombined",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTileCombined",
         "tileset": "tileset.json",
         "files": [
           "tile.vctr"
@@ -1015,7 +1015,7 @@
       },
       "VectorTileCombinedWithBatchIds": {
         "name": "VectorTileCombinedWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTileCombinedWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTileCombinedWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "tile.vctr"
@@ -1023,7 +1023,7 @@
       },
       "VectorTilePoints": {
         "name": "VectorTilePoints",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePoints",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePoints",
         "tileset": "tileset.json",
         "files": [
           "ll.vctr",
@@ -1035,7 +1035,7 @@
       },
       "VectorTilePointsBatchedChildren": {
         "name": "VectorTilePointsBatchedChildren",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePointsBatchedChildren",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePointsBatchedChildren",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1044,7 +1044,7 @@
       },
       "VectorTilePointsBatchedChildrenWithBatchTable": {
         "name": "VectorTilePointsBatchedChildrenWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePointsBatchedChildrenWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePointsBatchedChildrenWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1053,7 +1053,7 @@
       },
       "VectorTilePointsWithBatchIds": {
         "name": "VectorTilePointsWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePointsWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePointsWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1062,7 +1062,7 @@
       },
       "VectorTilePointsWithBatchTable": {
         "name": "VectorTilePointsWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePointsWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePointsWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "ll.vctr",
@@ -1074,7 +1074,7 @@
       },
       "VectorTilePolygons": {
         "name": "VectorTilePolygons",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygons",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolygons",
         "tileset": "tileset.json",
         "files": [
           "ll.vctr",
@@ -1086,7 +1086,7 @@
       },
       "VectorTilePolygonsBatchedChildren": {
         "name": "VectorTilePolygonsBatchedChildren",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygonsBatchedChildren",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolygonsBatchedChildren",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1095,7 +1095,7 @@
       },
       "VectorTilePolygonsBatchedChildrenWithBatchTable": {
         "name": "VectorTilePolygonsBatchedChildrenWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygonsBatchedChildrenWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolygonsBatchedChildrenWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1104,7 +1104,7 @@
       },
       "VectorTilePolygonsWithBatchIds": {
         "name": "VectorTilePolygonsWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygonsWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolygonsWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1113,7 +1113,7 @@
       },
       "VectorTilePolygonsWithBatchTable": {
         "name": "VectorTilePolygonsWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolygonsWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolygonsWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "ll.vctr",
@@ -1125,7 +1125,7 @@
       },
       "VectorTilePolylines": {
         "name": "VectorTilePolylines",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylines",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolylines",
         "tileset": "tileset.json",
         "files": [
           "ll.vctr",
@@ -1137,7 +1137,7 @@
       },
       "VectorTilePolylinesBatchedChildren": {
         "name": "VectorTilePolylinesBatchedChildren",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylinesBatchedChildren",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolylinesBatchedChildren",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1146,7 +1146,7 @@
       },
       "VectorTilePolylinesBatchedChildrenWithBatchTable": {
         "name": "VectorTilePolylinesBatchedChildrenWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylinesBatchedChildrenWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolylinesBatchedChildrenWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1155,7 +1155,7 @@
       },
       "VectorTilePolylinesWithBatchIds": {
         "name": "VectorTilePolylinesWithBatchIds",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylinesWithBatchIds",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolylinesWithBatchIds",
         "tileset": "tileset.json",
         "files": [
           "children.vctr",
@@ -1164,7 +1164,7 @@
       },
       "VectorTilePolylinesWithBatchTable": {
         "name": "VectorTilePolylinesWithBatchTable",
-        "path": "./modules/3d-tiles/test/data/Vector/VectorTilePolylinesWithBatchTable",
+        "path": "./modules/3d-tiles/test/data/CesiumJS/Vector/VectorTilePolylinesWithBatchTable",
         "tileset": "tileset.json",
         "files": [
           "ll.vctr",
