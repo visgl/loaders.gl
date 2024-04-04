@@ -8,7 +8,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type OBJLoaderOptions = LoaderOptions & {
   obj?: {
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;    
+    workerUrl?: string;
   };
 };
 

@@ -56,10 +56,8 @@ test('ShapefileLoader#load (from browser File objects)', async (t) => {
     for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
       const fileList = SHAPEFILE_JS_TEST_FILES[testFileName];
       const fileSystem = new BrowserFileSystem(fileList);
-      
-      // TODO - should this be bound?
-      // eslint-ignore-next-line
-      const {fetch} = fileSystem;
+      // eslint-disable-next-line
+      const fetch = fileSystem.fetch.bind(fileSystem.fetch);
       const filename = `${testFileName}.shp`;
       // @ts-ignore
       const data = await load(filename, ShapefileLoader, {fetch});

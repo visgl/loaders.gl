@@ -15,7 +15,7 @@ export type ExcelLoaderOptions = LoaderOptions & {
     /** Format of returned data */
     shape?: /* 'array-row-table' | */ 'object-row-table';
     /** Specify which sheet to load, if omitted loads default sheet */
-    sheet?: string; 
+    sheet?: string;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };

@@ -58,4 +58,3 @@ export {getSupportedGPUTextureFormats} from './lib/utils/texture-formats';
 export {CrunchLoader as CrunchWorkerLoader} from './crunch-loader';
 // @deprecated
 export type {CompressedTextureLoaderOptions as TextureLoaderOptions} from './compressed-texture-loader';
-

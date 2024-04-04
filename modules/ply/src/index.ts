@@ -4,13 +4,14 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {PLYMesh} from './lib/ply-types';
+import type {PLYLoaderOptions} from './ply-loader';
 import {PLYLoader as PLYWorkerLoader} from './ply-loader';
 import {parsePLY} from './lib/parse-ply';
 import {parsePLYInBatches} from './lib/parse-ply-in-batches';
 
 // PLYLoader
 
-export type {PLYLoaderOptions} from './ply-loader';
+export type {PLYLoaderOptions};
 
 export {PLYWorkerLoader};
 

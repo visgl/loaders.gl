@@ -13,8 +13,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type MVTLoaderOptions = LoaderOptions & {
   mvt?: MVTOptions & {
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
-    workerUrl?: string;    
-
+    workerUrl?: string;
   };
   gis?: {
     /** `true`: parser will output the data in binary format. Equivalent to loading the data as GeoJSON and then applying geojsonToBinary */
