@@ -11,6 +11,13 @@ Target Release Date: April, 2024
 
 - New feature: Resume conversion from the last tile processed in case of an interruption.
 - New feature: Quiet mode.
+- New feature: Convert I3S to 3D Tiles from local SLPK file.
+
+**@loaders.gl/parquet**
+
+- Support compression modes: 'zstd', 'snappy', 'gzip', 'brotli', 'no_compression'.
+- Geoparquet: support large 'Polygons' and 'MultiPolygons'. Up to 68159 for 'MultiPolygon' and 20062 for 'Polygon' number of vertices tested.
+- Many parquet files that previously failed due to size limits now load correctly. 
 
 **@loaders.gl/pmtiles**
 
@@ -29,6 +36,9 @@ Target Release Date: April, 2024
 
 - Fix: Support models with more complex use of `KHR_texture_transform` extension.
 
+**@loaders.gl/i3s
+
+- Render local SLPK in a web browser.
 
 ## v4.1
 
