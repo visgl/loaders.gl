@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import Protobuf from 'pbf';
 import {getPolygonSignedArea} from '@math.gl/polygon';
 import {FlatIndexedGeometry, FlatPolygon} from '@loaders.gl/schema';

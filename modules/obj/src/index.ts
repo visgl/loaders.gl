@@ -15,6 +15,8 @@ import {MTLLoader as MTLWorkerLoader} from './mtl-loader';
 
 // OBJLoader
 
+export type {OBJLoaderOptions} from './obj-loader';
+
 export {OBJWorkerLoader};
 
 /**

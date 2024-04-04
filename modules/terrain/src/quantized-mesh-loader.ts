@@ -5,10 +5,14 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 
+/** QuantizedMeshLoader options */
 export type QuantizedMeshLoaderOptions = LoaderOptions & {
+  /** QuantizedMeshLoader options */
   'quantized-mesh'?: {
     bounds?: [number, number, number, number];
     skirtHeight?: number | null;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 

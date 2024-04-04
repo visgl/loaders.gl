@@ -9,11 +9,14 @@ import {Geometry} from '@loaders.gl/schema';
 import {isWKT, WKT_MAGIC_STRINGS} from './lib/parse-wkt';
 
 export type WKTLoaderOptions = LoaderOptions & {
-  /** Options for the WKT parser */
+  /** Options for the WKTLoader */
   wkt?: {
+    /** Shape of returned geometry */
     shape?: 'geojson-geometry'; // 'binary-geometry'
     /** Whether to add any CRS, if found, as undocumented CRS property on the returned geometry */
     crs?: boolean;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 

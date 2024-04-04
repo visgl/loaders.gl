@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 export interface SHPHeader {
   /** SHP Magic number */
   magic: number;

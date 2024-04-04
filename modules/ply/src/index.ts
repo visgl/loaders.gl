@@ -2,19 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {PLYMesh} from './lib/ply-types';
 import {PLYLoader as PLYWorkerLoader} from './ply-loader';
-import {ParsePLYOptions, parsePLY} from './lib/parse-ply';
+import {parsePLY} from './lib/parse-ply';
 import {parsePLYInBatches} from './lib/parse-ply-in-batches';
 
 // PLYLoader
 
-export {PLYWorkerLoader};
+export type {PLYLoaderOptions} from './ply-loader';
 
-export type PLYLoaderOptions = LoaderOptions & {
-  ply?: ParsePLYOptions;
-};
+export {PLYWorkerLoader};
 
 /**
  * Loader for PLY - Polygon File Format

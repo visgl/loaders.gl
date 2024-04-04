@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 /* eslint-disable indent */
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 

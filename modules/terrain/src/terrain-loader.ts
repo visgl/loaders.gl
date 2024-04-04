@@ -9,8 +9,13 @@ import {VERSION} from './lib/utils/version';
 import {TerrainOptions} from './lib/parse-terrain';
 import {Mesh} from '@loaders.gl/schema';
 
+/** TerrainLoader options */
 export type TerrainLoaderOptions = ImageLoaderOptions & {
-  terrain?: TerrainOptions;
+  /** TerrainLoader options */
+  terrain?: TerrainOptions & {
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
 };
 
 /**

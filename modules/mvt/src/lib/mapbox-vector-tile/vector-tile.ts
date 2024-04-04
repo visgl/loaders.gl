@@ -1,9 +1,13 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import VectorTileLayer from './vector-tile-layer';
 import Protobuf from 'pbf';
 
-export default class VectorTile {
+export class VectorTile {
   layers: {[x: string]: VectorTileLayer};
   constructor(pbf: Protobuf, end?: number) {
     this.layers = pbf.readFields(readTile, {}, end);

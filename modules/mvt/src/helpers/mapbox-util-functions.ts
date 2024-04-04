@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import Protobuf from 'pbf';
 import {MVTMapboxGeometry} from '../lib/types';
 import VectorTileFeature from '../lib/mapbox-vector-tile/vector-tile-feature';

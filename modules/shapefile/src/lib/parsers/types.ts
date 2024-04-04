@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {Schema, ObjectRowTable} from '@loaders.gl/schema';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 

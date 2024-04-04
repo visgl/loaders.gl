@@ -20,6 +20,8 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
     table?: string;
     /** Use null in Node */
     sqlJsCDN?: string | null;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
   gis?: {
     reproject?: boolean;

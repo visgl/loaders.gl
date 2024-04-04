@@ -12,6 +12,8 @@ export type LASLoaderOptions = LoaderOptions & {
     fp64?: boolean;
     skip?: number;
     colorDepth?: number | string;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
   onProgress?: Function;
 };

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {SHP_MAGIC_NUMBER} from './shp-loader';
 import {parseShapefile, parseShapefileInBatches} from './lib/parsers/parse-shapefile';
@@ -10,6 +14,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type ShapefileLoaderOptions = LoaderOptions & {
   shapefile?: {
     shape?: 'geojson-table' | 'v3';
+    /** @deprecated Worker URLs must be specified with .dbf.workerUrl * .shp.workerUrl */
+    workerUrl?: never;
   };
 };
 

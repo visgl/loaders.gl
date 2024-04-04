@@ -9,10 +9,11 @@ import {VERSION} from './lib/utils/version';
 
 export type DracoLoaderOptions = LoaderOptions & {
   draco?: DracoParseOptions & {
+    /** @deprecated WASM decoding is faster but JS is more backwards compatible */
     decoderType?: 'wasm' | 'js';
+    /** @deprecated Specify where to load the Draco decoder library */
     libraryPath?: string;
-    extraAttributes?;
-    attributeNameEntry?: string;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
 };

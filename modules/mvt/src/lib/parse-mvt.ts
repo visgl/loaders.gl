@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import {flatGeojsonToBinary} from '@loaders.gl/gis';
 import type {
   FlatFeature,
@@ -22,7 +26,7 @@ import VectorTileFeatureMapBox from './mapbox-vector-tile/vector-tile-feature';
  * @param options
  * @returns A GeoJSON geometry object or a binary representation
  */
-export default function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
+export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
   const mvtOptions = normalizeOptions(options);
 
   const shape: string | undefined =

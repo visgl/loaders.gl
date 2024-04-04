@@ -6,9 +6,14 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {TextureLevel} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
 
+/** CrunchLoader options */
 export type CrunchLoaderOptions = LoaderOptions & {
+  /** CrunchLoader options */
   crunch?: {
+    /** @deprecated Specify where to load the Crunch decoder library */
     libraryPath?: string;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 

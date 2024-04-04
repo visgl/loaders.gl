@@ -10,9 +10,14 @@ import type {ObjectRowTable} from '@loaders.gl/schema';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ExcelLoaderOptions = LoaderOptions & {
+  /** Options for ExcelLoader */
   excel?: {
+    /** Format of returned data */
     shape?: /* 'array-row-table' | */ 'object-row-table';
-    sheet?: string; // Load default Sheet
+    /** Specify which sheet to load, if omitted loads default sheet */
+    sheet?: string; 
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 
