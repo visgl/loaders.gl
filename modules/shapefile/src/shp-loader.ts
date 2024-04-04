@@ -1,4 +1,8 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -6,6 +10,15 @@ import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
+
+/** SHPLoader */
+export type SHPLoaderOptions = LoaderOptions & {
+  dbf?: {
+    _maxDimensions?: number;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+};
 
 /**
  * SHP file loader
@@ -29,7 +42,7 @@ export const SHPWorkerLoader = {
       _maxDimensions: 4
     }
   }
-} as const satisfies Loader;
+} as const satisfies Loader<any, any, SHPLoaderOptions>;
 
 /** SHP file loader */
 export const SHPLoader: LoaderWithParser = {

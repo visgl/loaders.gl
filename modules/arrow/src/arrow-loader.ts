@@ -17,10 +17,16 @@ import {parseArrowInBatches} from './parsers/parse-arrow-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** ArrowLoader options */
 export type ArrowLoaderOptions = LoaderOptions & {
+  /** ArrowLoader options */
   arrow?: {
+    /** Shape of returned data */
     shape: 'arrow-table' | 'columnar-table' | 'array-row-table' | 'object-row-table';
+    /** Debounce time between batches (prevent excessive numbers of small batches) */
     batchDebounceMs?: number;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 

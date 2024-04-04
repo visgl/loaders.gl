@@ -1,9 +1,21 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type DBFLoaderOptions = LoaderOptions & {
+  dbf?: {
+    encoding?: string;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+};
 
 /**
  * DBFLoader - DBF files are used to contain non-geometry columns in Shapefiles
@@ -25,7 +37,7 @@ export const DBFWorkerLoader = {
       encoding: 'latin1'
     }
   }
-} as const satisfies Loader;
+} as const satisfies Loader<any, any, DBFLoaderOptions>;
 
 /** DBF file loader */
 export const DBFLoader: LoaderWithParser = {

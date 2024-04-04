@@ -1,9 +1,13 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 import Protobuf from 'pbf';
 import {MVTMapboxCoordinates, MVTMapboxGeometry} from '../types';
 import {readFeature, classifyRings} from '../../helpers/mapbox-util-functions';
 
-export default class VectorTileFeature {
+export class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
   extent: any;
   type: number;

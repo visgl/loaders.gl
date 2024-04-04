@@ -7,6 +7,8 @@ import parsePCDSync from './lib/parse-pcd';
 import {PCDLoader as PCDWorkerLoader} from './pcd-loader';
 import {PCDMesh} from './lib/pcd-types';
 
+export type {PCDLoaderOptions} from './pcd-loader';
+
 export {PCDWorkerLoader};
 
 /**

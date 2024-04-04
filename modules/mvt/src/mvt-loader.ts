@@ -1,17 +1,27 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {MVTLoaderOptions} from './lib/types';
-// import type {
-//   Feature,
-//   BinaryFeatureCollection,
-//   GeoJSONTable,
-//   Geometry,
-//   GeoJsonProperties
-// } from '@loaders.gl/schema';
-import parseMVT from './lib/parse-mvt';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import {parseMVT} from './lib/parse-mvt';
+import type {MVTOptions} from './lib/types';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type MVTLoaderOptions = LoaderOptions & {
+  mvt?: MVTOptions & {
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+  gis?: {
+    /** `true`: parser will output the data in binary format. Equivalent to loading the data as GeoJSON and then applying geojsonToBinary */
+    binary?: boolean;
+    /** @deprecated. Use options.mvt.shape */
+    format?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
+  };
+};
 
 /**
  * Worker loader for the Mapbox Vector Tile format

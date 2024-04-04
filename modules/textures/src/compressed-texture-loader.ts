@@ -7,10 +7,15 @@ import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 import parseBasis from './lib/parsers/parse-basis';
 
-export type TextureLoaderOptions = {
+/** Options for the CompressedTextureLoader */
+export type CompressedTextureLoaderOptions = {
   'compressed-texture'?: {
+    /** @deprecated Specify path to libraries */
     libraryPath?: string;
+    /** Whether to use Basis decoding */
     useBasis?: boolean;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 
@@ -46,14 +51,14 @@ export const CompressedTextureWorkerLoader = {
       useBasis: false
     }
   }
-} as const satisfies Loader<any, never, TextureLoaderOptions>;
+} as const satisfies Loader<any, never, CompressedTextureLoaderOptions>;
 
 /**
  * Loader for KTX, DDS, and PVR texture container formats
  */
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?: TextureLoaderOptions) => {
+  parse: async (arrayBuffer: ArrayBuffer, options?: CompressedTextureLoaderOptions) => {
     if (options?.['compressed-texture']?.useBasis) {
       // @ts-expect-error TODO not allowed to modify inputs
       options.basis = {
@@ -71,4 +76,4 @@ export const CompressedTextureLoader = {
     }
     return parseCompressedTexture(arrayBuffer);
   }
-} as const satisfies LoaderWithParser<any, never, TextureLoaderOptions>;
+} as const satisfies LoaderWithParser<any, never, CompressedTextureLoaderOptions>;

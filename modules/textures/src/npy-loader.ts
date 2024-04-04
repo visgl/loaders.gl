@@ -9,8 +9,13 @@ import {parseNPY, NPYTile} from './lib/parsers/parse-npy';
 // \x93NUMPY
 const NPY_MAGIC_NUMBER = new Uint8Array([147, 78, 85, 77, 80, 89]);
 
+/** NPYLoader for numpy tiles */
 export type NPYLoaderOptions = LoaderOptions & {
-  npy?: {};
+  /** NPYLoader for numpy tiles */
+  npy?: {
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
 };
 
 /**

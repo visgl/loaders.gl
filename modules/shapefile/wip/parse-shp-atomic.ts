@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import BinaryReader from '../../streaming/binary-reader';
 import {parseRecord} from '../parse-shp-geometry';
 

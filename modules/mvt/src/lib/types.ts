@@ -1,4 +1,6 @@
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
 
 /** For local coordinates, the tileIndex is not required */
 type MVTLocalCoordinatesOptions = {
@@ -54,14 +56,4 @@ export type MVTMapboxCoordinates = {
   };
   properties: {[x: string]: string | number | boolean | null};
   id?: number;
-};
-
-export type MVTLoaderOptions = LoaderOptions & {
-  mvt?: MVTOptions;
-  gis?: {
-    /** `true`: parser will output the data in binary format. Equivalent to loading the data as GeoJSON and then applying geojsonToBinary */
-    binary?: boolean;
-    /** @deprecated. Use options.mvt.shape */
-    format?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
-  };
 };

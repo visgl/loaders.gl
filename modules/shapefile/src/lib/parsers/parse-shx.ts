@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {parseSHPHeader} from './parse-shp-header';
 
 export interface SHXOutput {

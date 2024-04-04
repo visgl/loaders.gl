@@ -6,7 +6,8 @@ Target Release Date: April, 2024
 
 - deck.gl v9: Website and `examples/website/*` updated to deck.gl v9.
 - Internal tooling upgrades: ~10x faster builds via esbuild. ~2x faster installs via yarn 4.
-- Improved developer experience: More loader object information is visible in applications when hovering over a loader object, e.g. in vscode (loader objects are now typed using `as const satisfies Loader<...>`).
+- Types: More loader object information is preserved (e.g. when hovering over a loader object in vscod). loaders are now typed using `as const satisfies Loader<...>`. 
+- Types: Loaders that support workers now declare the `workerUrl` field in their LoaderOptions type removing type errors when overriding.
 
 **@loaders.gl/tile-converter**
 

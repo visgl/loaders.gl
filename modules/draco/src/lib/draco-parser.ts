@@ -28,18 +28,17 @@ import type {
 import {getMeshBoundingBox} from '@loaders.gl/schema';
 import {getDracoSchema} from './utils/get-draco-schema';
 
-/**
- * @param topology - How triangle indices should be generated (mesh only)
- * @param attributeNameEntry
- * @param extraAttributes
- * @param quantizedAttributes
- * @param octahedronAttributes
- */
+/** Options to control draco parsing */
 export type DracoParseOptions = {
+  /** How triangle indices should be generated (mesh only) */
   topology?: 'triangle-list' | 'triangle-strip';
+  /** Specify which attribute metadata entry stores the attribute name */
   attributeNameEntry?: string;
+  /** Names and ids of extra attributes to include in the output */
   extraAttributes?: {[uniqueId: string]: number};
+  /** Skip transforms specific quantized attributes */
   quantizedAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
+  /** Skip transforms specific octahedron encoded  attributes */
   octahedronAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
 };
 

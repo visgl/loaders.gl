@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export type {MVTLoaderOptions} from './lib/types';
+export type {MVTLoaderOptions} from './mvt-loader';
 export {MVTLoader, MVTWorkerLoader} from './mvt-loader';
 
 export type {TileJSON} from './lib/parse-tilejson';

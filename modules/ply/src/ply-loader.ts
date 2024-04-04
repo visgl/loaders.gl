@@ -1,10 +1,18 @@
 // PLY Loader
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {PLYMesh} from './lib/ply-types';
+import type {ParsePLYOptions} from './lib/parse-ply';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type PLYLoaderOptions = LoaderOptions & {
+  ply?: ParsePLYOptions & {
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+};
 
 /**
  * Worker loader for PLY - Polygon File Format (aka Stanford Triangle Format)'

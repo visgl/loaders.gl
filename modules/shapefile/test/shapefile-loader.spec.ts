@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {
   setLoaderOptions,
@@ -52,7 +56,8 @@ test('ShapefileLoader#load (from browser File objects)', async (t) => {
     for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
       const fileList = SHAPEFILE_JS_TEST_FILES[testFileName];
       const fileSystem = new BrowserFileSystem(fileList);
-      const {fetch} = fileSystem;
+      // eslint-disable-next-line
+      const fetch = fileSystem.fetch.bind(fileSystem.fetch);
       const filename = `${testFileName}.shp`;
       // @ts-ignore
       const data = await load(filename, ShapefileLoader, {fetch});
@@ -185,6 +190,7 @@ async function getFileList(testFileName) {
     const filename = `${testFileName}${extension}`;
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${filename}`);
     if (response.ok) {
+      // @ts-expect-error
       fileList.push(new File([await response.blob()], filename));
     }
   }

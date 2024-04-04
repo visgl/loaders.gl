@@ -6,8 +6,11 @@ import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeImageURLToCompressedTextureURL} from './lib/encoders/encode-texture';
 
+/** Compressed Texture writer options */
 export type CompressedTextureWriterOptions = WriterOptions & {
+  /** @deprecated current working directory */
   cwd?: string;
+  /** Compressed Texture writer options */
   texture?: {
     format: string;
     compression: string;

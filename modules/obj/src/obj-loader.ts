@@ -6,7 +6,10 @@ import {Mesh} from '@loaders.gl/schema';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type OBJLoaderOptions = LoaderOptions & {
-  obj?: {};
+  obj?: {
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
 };
 
 /**

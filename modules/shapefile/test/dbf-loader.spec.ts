@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
 import {DBFLoader} from '@loaders.gl/shapefile';

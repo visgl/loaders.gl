@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {Field, ObjectRowTable} from '@loaders.gl/schema';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {
