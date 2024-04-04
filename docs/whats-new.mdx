@@ -4,25 +4,26 @@
 
 Target Release Date: April, 2024
 
-- Internal tooling upgrades: 10x faster builds via esbuild. Faster installs via yarn 4.
-- Improved developer experience: More loader object information is visible when hovering over a loader object in vscode (loader objects are now typed using `as const satisfies Loader<...>`). 
+- deck.gl v9: Website and `examples/website/*` updated to deck.gl v9.
+- Internal tooling upgrades: ~10x faster builds via esbuild. ~2x faster installs via yarn 4.
+- Improved developer experience: More loader object information is visible in applications when hovering over a loader object, e.g. in vscode (loader objects are now typed using `as const satisfies Loader<...>`).
 
 **@loaders.gl/tile-converter**
 
-- New feature: Resume conversion from the last tile processed in case of an interruption.
-- New feature: Quiet mode.
-- New feature: Convert I3S to 3D Tiles from local SLPK file.
+- New: Resume conversion from the last tile processed in case of an interruption.
+- New: Quiet mode.
+- New: Convert I3S to 3D Tiles from local SLPK file.
 
 **@loaders.gl/pmtiles**
 
 - Now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
-- Now refreshes the already loaded index if a PMTiles file being loaded from is changed (rewritten). 
+- New: Now refreshes the already loaded index if a PMTiles file being loaded from is changed (rewritten). 
 
 **@loaders.gl/parquet**
 
 - Support compression modes: 'zstd', 'snappy', 'gzip', 'brotli', 'no_compression'.
 - Geoparquet: support large 'Polygons' and 'MultiPolygons'. Up to 68159 vertices for 'MultiPolygon' and 20062 vertices for 'Polygon' has been tested.
-- Fix: Many parquet files that previously failed to load now load correctly.
+- Fixes: Many parquet files that previously failed to load now load correctly.
 
 **@loaders.gl/las**
 
