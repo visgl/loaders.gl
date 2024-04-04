@@ -12,12 +12,13 @@ import type {
 } from '@loaders.gl/schema';
 import Protobuf from 'pbf';
 
-import type {MVTMapboxCoordinates, MVTOptions, MVTLoaderOptions} from '../lib/types';
+import type {MVTMapboxCoordinates, MVTOptions} from '../lib/types';
+import type {MVTLoaderOptions} from '../mvt-loader';
 
-import VectorTile from './mapbox-vector-tile/vector-tile';
-import BinaryVectorTile from './binary-vector-tile/vector-tile';
-import VectorTileFeatureBinary from './binary-vector-tile/vector-tile-feature';
-import VectorTileFeatureMapBox from './mapbox-vector-tile/vector-tile-feature';
+import {VectorTile} from './mapbox-vector-tile/vector-tile';
+import {BinaryVectorTile} from './binary-vector-tile/vector-tile';
+import {BinaryVectorTileFeature} from './binary-vector-tile/vector-tile-feature';
+import {VectorTileFeature as VectorTileFeatureMapBox} from './mapbox-vector-tile/vector-tile-feature';
 
 /**
  * Parse MVT arrayBuffer and return GeoJSON.
@@ -183,12 +184,12 @@ function getDecodedFeature(
  * @returns decoded binary feature
  */
 function getDecodedFeatureBinary(
-  feature: VectorTileFeatureBinary,
+  feature: BinaryVectorTileFeature,
   options: MVTOptions,
   layerName: string
 ): FlatFeature {
   const decodedFeature = feature.toBinaryCoordinates(
-    // @ts-expect-error What is going on here?
+    // @ts-expect-error
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinatesBinary
   );
 

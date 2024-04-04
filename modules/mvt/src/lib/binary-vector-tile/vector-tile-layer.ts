@@ -5,11 +5,11 @@
 /* eslint-disable indent */
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
-import VectorTileFeature from './vector-tile-feature';
+import {BinaryVectorTileFeature} from './vector-tile-feature';
 import Protobuf from 'pbf';
 import {GeojsonGeometryInfo} from '@loaders.gl/schema';
 
-export default class VectorTileLayer {
+export class BinaryVectorTileLayer {
   version: number;
   name: string;
   extent: number;
@@ -37,13 +37,13 @@ export default class VectorTileLayer {
   }
 
   /**
-   * return feature `i` from this layer as a `VectorTileFeature`
+   * return feature `i` from this layer as a `BinaryVectorTileFeature`
    *
    * @param index
    * @param geometryInfo
-   * @returns {VectorTileFeature}
+   * @returns {BinaryVectorTileFeature}
    */
-  feature(i: number, geometryInfo: GeojsonGeometryInfo): VectorTileFeature {
+  feature(i: number, geometryInfo: GeojsonGeometryInfo): BinaryVectorTileFeature {
     if (i < 0 || i >= this._features.length) {
       throw new Error('feature index out of bounds');
     }
@@ -51,7 +51,7 @@ export default class VectorTileLayer {
     this._pbf.pos = this._features[i];
 
     const end = this._pbf.readVarint() + this._pbf.pos;
-    return new VectorTileFeature(
+    return new BinaryVectorTileFeature(
       this._pbf,
       end,
       this.extent,
@@ -68,7 +68,7 @@ export default class VectorTileLayer {
  * @param layer
  * @param pbf
  */
-function readLayer(tag: number, layer?: VectorTileLayer, pbf?: Protobuf): void {
+function readLayer(tag: number, layer?: BinaryVectorTileLayer, pbf?: Protobuf): void {
   if (layer && pbf) {
     if (tag === 15) layer.version = pbf.readVarint();
     else if (tag === 1) layer.name = pbf.readString();

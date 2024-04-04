@@ -4,7 +4,7 @@
 
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
-import VectorTileLayer from './vector-tile-layer';
+import {VectorTileLayer} from './vector-tile-layer';
 import Protobuf from 'pbf';
 
 export class VectorTile {

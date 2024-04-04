@@ -5,7 +5,7 @@
 import Protobuf from 'pbf';
 import {getPolygonSignedArea} from '@math.gl/polygon';
 import {FlatIndexedGeometry, FlatPolygon} from '@loaders.gl/schema';
-import VectorTileFeature from '../lib/binary-vector-tile/vector-tile-feature';
+import {BinaryVectorTileFeature} from '../lib/binary-vector-tile/vector-tile-feature';
 
 /**
  * Classifies an array of rings into polygons with outer rings and holes
@@ -101,7 +101,7 @@ export function project(data: number[], x0: number, y0: number, size: number): v
  * @param feature
  * @param pbf
  */
-export function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf): void {
+export function readFeature(tag: number, feature?: BinaryVectorTileFeature, pbf?: Protobuf): void {
   if (feature && pbf) {
     if (tag === 1) feature.id = pbf.readVarint();
     else if (tag === 2) readTag(pbf, feature);
@@ -114,7 +114,7 @@ export function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Prot
  * @param pbf
  * @param feature
  */
-export function readTag(pbf: Protobuf, feature: VectorTileFeature): void {
+export function readTag(pbf: Protobuf, feature: BinaryVectorTileFeature): void {
   const end = pbf.readVarint() + pbf.pos;
 
   while (pbf.pos < end) {

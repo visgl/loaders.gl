@@ -7,7 +7,7 @@ import Protobuf from 'pbf';
 import {MVTMapboxCoordinates, MVTMapboxGeometry} from '../types';
 import {readFeature, classifyRings} from '../../helpers/mapbox-util-functions';
 
-export default class VectorTileFeature {
+export class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
   extent: any;
   type: number;

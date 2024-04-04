@@ -4,7 +4,7 @@
 
 import Protobuf from 'pbf';
 import {MVTMapboxGeometry} from '../lib/types';
-import VectorTileFeature from '../lib/mapbox-vector-tile/vector-tile-feature';
+import {VectorTileFeature} from '../lib/mapbox-vector-tile/vector-tile-feature';
 
 /**
  * Classifies an array of rings into polygons with outer rings and holes

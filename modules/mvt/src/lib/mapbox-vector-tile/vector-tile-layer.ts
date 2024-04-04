@@ -6,7 +6,7 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import Protobuf from 'pbf';
-import VectorTileFeature from './vector-tile-feature';
+import {VectorTileFeature} from './vector-tile-feature';
 
 export class VectorTileLayer {
   version: number;

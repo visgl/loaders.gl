@@ -21,7 +21,7 @@ export const TEST_EXPORTS = {
   classifyRings
 };
 
-export default class VectorTileFeature {
+export class BinaryVectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
   extent: any;
   type: number;
