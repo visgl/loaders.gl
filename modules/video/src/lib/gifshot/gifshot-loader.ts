@@ -4,13 +4,15 @@
 
 // @ts-nocheck
 import {loadLibrary} from '@loaders.gl/worker-utils';
+import {registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
 
 let loadGifshotPromise;
 
 export async function loadGifshotModule(options = {}) {
-  const modules = options.modules || {};
-  if (modules.gifshot) {
-    return modules.gifshot;
+  registerJSModules(options.modules);
+  const gifshot = getJSModule('gifshot');
+  if (gifshot) {
+    return gifshot;
   }
   loadGifshotPromise = loadGifshotPromise || loadGifshot(options);
   return await loadGifshotPromise;
