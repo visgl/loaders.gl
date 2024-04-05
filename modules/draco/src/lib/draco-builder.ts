@@ -273,7 +273,7 @@ export default class DracoBuilder {
     attributeName: string,
     attribute: TypedArray,
     vertexCount: number
-  ) {
+  ): number {
     if (!ArrayBuffer.isView(attribute)) {
       return -1;
     }
@@ -319,13 +319,14 @@ export default class DracoBuilder {
       case Float32Array:
         return builder.AddFloatAttribute(mesh, type, vertexCount, size, new Float32Array(buffer));
 
-        // case Float64Array:
-        // Add attribute does not seem to be exposed
-        //   return builder.AddAttribute(mesh, type, vertexCount, size, new Float32Array(buffer));
+      // case Float64Array:
+      // Add attribute does not seem to be exposed
+      //   return builder.AddAttribute(mesh, type, vertexCount, size, new Float32Array(buffer));
 
       default:
         // eslint-disable-next-line no-console
         console.warn('Unsupported attribute type', attribute);
+        return -1;
     }
   }
 

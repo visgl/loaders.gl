@@ -66,7 +66,7 @@ const DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP = {
   6: Uint32Array,
   // 7: BigInt64Array,
   // 8: BigUint64Array,
-  9: Float32Array,
+  9: Float32Array
   // 10: Float64Array
   // 11: BOOL - What array type do we use for this?
 };

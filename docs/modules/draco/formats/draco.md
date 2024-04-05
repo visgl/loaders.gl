@@ -28,13 +28,15 @@ While possible to use independently, Draco compression is primarily used to comp
 | `DT_UINT16` (4)   | ✅             | ✅             | `Uint16Array`  |
 | `DT_INT32` (5)    | ✅             | ✅             | `Int32Array`   |
 | `DT_UINT32` (6)   | ✅             | ✅             | `Uint32Array`  |
-| `DT_INT64` (7)    | ✅             | ❌             | `Int64Array`   |
-| `DT_UINT64` (8)   | ✅             | ❌             | `Uint64Array`  |
+| `DT_INT64` (7)    | ❌             | ❌             | `Int64Array`   |
+| `DT_UINT64` (8)   | ❌             | ❌             | `Uint64Array`  |
 | `DT_FLOAT32` (9)  | ✅             | ✅             | `Float32Array` |
-| `DT_FLOAT64` (10) | ✅             | ❌             | `Float64Array` |
+| `DT_FLOAT64` (10) | ❌             | ❌             | `Float64Array` |
 | `DT_BOOL` (11)    | ❌             | ❌             | N/A            |
 
-Note: Float64 and other 64 bit formats are not valid for glTF geometry attributes, and is normally only used for extra attributes. They can appear for instance when converting LAS files to glTF or 3D Tiles.
+Notes: 
+- `Float64` and other 64 bit formats are not valid for glTF geometry attributes, These are normally only used for "extra" attributes. 64 bit attributes can appear when converting LAS files with metadata to glTF or 3D Tiles, see [CesiumJS blog]( https://cesium.com/blog/2024/03/20/preserving-more-metadata-for-point-clouds-using-3dtiles/)
+- loaders.gl ignores unsupported attributes.
 
 ## Draco Metadata Support
 
