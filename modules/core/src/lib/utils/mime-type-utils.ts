@@ -9,6 +9,20 @@ const DATA_URL_PATTERN = /^data:([-\w.]+\/[-\w.+]+)(;|,)/;
 const MIME_TYPE_PATTERN = /^([-\w.]+\/[-\w.+]+)/;
 
 /**
+ * Compare two MIME types, case insensitively etc.
+ * @param mimeType1
+ * @param mimeType2
+ * @returns true if the MIME types are equivalent
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#structure_of_a_mime_type
+ */
+export function compareMIMETypes(mimeType1: string, mimeType2: string): boolean {
+  if (mimeType1.toLowerCase() === mimeType2.toLowerCase()) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Remove extra data like `charset` from MIME types
  * @param mimeString
  * @returns A clean MIME type, or an empty string
