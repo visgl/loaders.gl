@@ -6,41 +6,52 @@ Target Release Date: April, 2024
 
 - deck.gl v9: Website and `examples/website/*` updated to deck.gl v9.
 - Internal tooling upgrades: ~10x faster builds via esbuild. ~2x faster installs via yarn 4.
-- Types: More loader object information is preserved (e.g. when hovering over a loader object in vscod). loaders are now typed using `as const satisfies Loader<...>`. 
-- Types: Loaders that support workers now declare the `workerUrl` field in their LoaderOptions type removing type errors when overriding.
+
+- TypeScript: More loader object information is preserved (e.g. when hovering over a loader object in vscod). loaders are now typed using `as const satisfies Loader<...>`. 
+- TypeScript: Loaders with workers now declare a `workerUrl` field in their LoaderOptions types (removing type errors when overriding the workerUrl field).
+
+**@loaders.gl/core**
+
+- `selectLoader()` - MIME type comparisons are now case insensitive.
 
 **@loaders.gl/tile-converter**
 
-- New: Resume conversion from the last tile processed in case of an interruption.
-- New: Quiet mode.
-- New: Convert I3S to 3D Tiles from local SLPK file.
+- `tile-converter` - Resume conversion from the last tile processed in case of an interruption.
+- `tile-converter` - Quiet mode.
+- `tile-converter` - Convert I3S to 3D Tiles from local SLPK file.
 
 **@loaders.gl/pmtiles**
 
-- Now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
-- New: Now refreshes the already loaded index if a PMTiles file being loaded from is changed (rewritten). 
+- `PMTilesSource` - now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
+- `PMTilesSource` - Now refreshes the already loaded index if the underlying PMTiles file being loaded from is changed (rewritten). 
 
 **@loaders.gl/parquet**
 
-- Support compression modes: 'zstd', 'snappy', 'gzip', 'brotli', 'no_compression'.
-- Geoparquet: support large 'Polygons' and 'MultiPolygons'. Up to 68159 vertices for 'MultiPolygon' and 20062 vertices for 'Polygon' has been tested.
-- Fixes: Many parquet files that previously failed to load now load correctly.
+- `ParquetLoader` - Node supports Zstandard (de)compression if the `zstd-codec` library is supplied (or pre-registered).
+- `ParquetLoader` - Many parquet files that previously failed to load now load correctly.
+- `GeoparquetLoader` - Improved support for large `Polygons` and `MultiPolygons`.
 
-**@loaders.gl/las**
+**@loaders.gl/i3s**
 
-- Fix: A big memory leak plugged.
+- `SLPKLoader` - Experimental feature: Render local SLPK in a web browser.
 
-**@loaders.gl/gltf**
+**@loaders.gl/3d-tiles**
 
-- Fix: Support models with more complex use of `KHR_texture_transform` extension.
+- `Tile3DLoader` - Now extracts Draco3D FLOAT64, INT64 and UINT64 attributes from `.PNTS` files. See [LAS to 3D Tiles conversion](https://cesium.com/blog/2024/03/20/preserving-more-metadata-for-point-clouds-using-3dtiles/).
 
 **@loaders.gl/draco**
 
 - `DracoLoader` now ignores unsupported attributes such as FLOAT64, INT64, UINT64.
+- `DracoLoader`, `DracoWriter` - Now uses [draco3d `v1.5.7`](https://github.com/google/draco#version-157-release) _decoders_.
+- Note: Still uses the draco3d `v1.4.1` _encoder_ to avoid performance regression.
 
-**@loaders.gl/i3s
+**@loaders.gl/gltf**
 
-- Experimental feature: Render local SLPK in a web browser.
+- `GLTFLoader`: Support models with more complex use of `KHR_texture_transform` extension.
+
+**@loaders.gl/las**
+
+- `LASLoader`: A big memory leak plugged.
 
 ## v4.1
 
