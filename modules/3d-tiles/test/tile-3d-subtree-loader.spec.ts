@@ -9,11 +9,12 @@ import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {Tile3DSubtreeLoader} from '@loaders.gl/3d-tiles';
 
-const FULL_SUBTREE_FILE_URL = '@loaders.gl/3d-tiles/test/data/FullQuadtree/subtrees/0/0/0.subtree';
+const FULL_SUBTREE_FILE_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/FullQuadtree/subtrees/0/0/0.subtree';
 const INTERNAL_BINARY_SUBTREE_FILE_URL =
-  '@loaders.gl/3d-tiles/test/data/BasicExample/subtrees/0/0/0.subtree';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/BasicExample/subtrees/0/0/0.subtree';
 const INTERNAL_BINARY_SPARSE_SUBTREE_FILE_URL =
-  '@loaders.gl/3d-tiles/test/data/SparseOctree/subtrees/0/0/0/0.subtree';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/SparseOctree/subtrees/0/0/0/0.subtree';
 
 test('Tile3DSubtreeLoader#Should load quadtree subtree with constant availability', async (t) => {
   const EXPECTED = {

@@ -20,17 +20,17 @@ test('3D Tiles#getMemoryUsageGLTF', async (t) => {
 
 const TEST_CASES = [
   {
-    url: '@loaders.gl/3d-tiles/test/data/Tilesets/Tileset/tileset.json',
+    url: '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json',
     type: 'scenegraph',
     gpuMemoryUsageInBytes: 7440
   },
   {
-    url: '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetPoints/tileset.json',
+    url: '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetPoints/tileset.json',
     type: 'pointcloud',
     gpuMemoryUsageInBytes: 15108
   },
   {
-    url: '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetEmptyRoot/tileset.json',
+    url: '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetEmptyRoot/tileset.json',
     type: 'empty',
     gpuMemoryUsageInBytes: 0
   }

@@ -4,7 +4,8 @@ import {load} from '@loaders.gl/core';
 import {traverseDatasetWith} from '../../../src/i3s-converter/helpers/tileset-traversal';
 import {loadNestedTileset} from '../../../src/i3s-converter/helpers/load-3d-tiles';
 
-const NESTED_TILESET_URL = '@loaders.gl/3d-tiles/test/data/Tilesets/TilesetOfTilesets/tileset.json';
+const NESTED_TILESET_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
 
 test('tile-converter(i3s)#traverseDatasetWith', async (t) => {
   const nestedTileset = await load(NESTED_TILESET_URL, Tiles3DLoader, {});

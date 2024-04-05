@@ -52,8 +52,11 @@ export const Tiles3DLoader = {
       assetGltfUpAxis: null
     }
   }
-  // Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed,
-} as const satisfies LoaderWithParser<any, never, Tiles3DLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed,
+  never,
+  Tiles3DLoaderOptions
+>;
 
 /** Parses a tileset or tile */
 async function parse(

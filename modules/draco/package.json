@@ -60,7 +60,10 @@
     "@loaders.gl/loader-utils": "4.2.0-alpha.6",
     "@loaders.gl/schema": "4.2.0-alpha.6",
     "@loaders.gl/worker-utils": "4.2.0-alpha.6",
-    "draco3d": "1.5.5"
+    "draco3d": "1.5.7"
+  },
+  "devDependencies": {
+    "@types/draco3d": "^1.4.9"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
