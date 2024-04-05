@@ -376,6 +376,11 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
     vendorParameters?: Record<string, unknown>
   ): string {
     wmsParameters = this._getWMS130Parameters(wmsParameters);
+
+    // Replace the GetImage `boundingBox` parameter with the WMS flat `bbox` parameter.
+    const {boundingBox, bbox} = wmsParameters as any;
+    wmsParameters.bbox = boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox;
+
     const options: Required<WMSGetFeatureInfoParameters> = {
       version: this.wmsParameters.version,
       // query_layers: [],
@@ -509,6 +514,22 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
         const bbox = this._flipBoundingBox(value, wmsParameters);
         if (bbox) {
           value = bbox;
+        }
+        break;
+
+      case 'x':
+        // i is the parameter used in WMS 1.3
+        // TODO - change parameter to `i` and convert to `x` if not 1.3
+        if (wmsParameters.version === '1.3.0') {
+          key = 'i';
+        }
+        break;
+
+      case 'y':
+        // j is the parameter used in WMS 1.3
+        // TODO - change parameter to `j` and convert to `y` if not 1.3
+        if (wmsParameters.version === '1.3.0') {
+          key = 'j';
         }
         break;
 
