@@ -293,14 +293,17 @@ export default class DracoParser {
     for (const loaderAttribute of Object.values(loaderData.attributes)) {
       const attributeName = this._deduceAttributeName(loaderAttribute, options);
       loaderAttribute.name = attributeName;
-      const {value, size} = this._getAttributeValues(dracoGeometry, loaderAttribute);
-      attributes[attributeName] = {
-        value,
-        size,
-        byteOffset: loaderAttribute.byte_offset,
-        byteStride: loaderAttribute.byte_stride,
-        normalized: loaderAttribute.normalized
-      };
+      const values = this._getAttributeValues(dracoGeometry, loaderAttribute);
+      if (values) {
+        const {value, size} = values;
+        attributes[attributeName] = {
+          value,
+          size,
+          byteOffset: loaderAttribute.byte_offset,
+          byteStride: loaderAttribute.byte_stride,
+          normalized: loaderAttribute.normalized
+        };
+      }
     }
 
     return attributes;
@@ -350,8 +353,13 @@ export default class DracoParser {
   _getAttributeValues(
     dracoGeometry: Mesh | PointCloud,
     attribute: DracoAttribute
-  ): {value: TypedArray; size: number} {
+  ): {value: TypedArray; size: number} | null {
     const TypedArrayCtor = DRACO_DATA_TYPE_TO_TYPED_ARRAY_MAP[attribute.data_type];
+    if (!TypedArrayCtor) {
+      // eslint-disable-next-line no-console
+      console.warn(`DRACO: Unsupported attribute type ${attribute.data_type}`);
+      return null;
+    }
     const numComponents = attribute.num_components;
     const numPoints = dracoGeometry.num_points();
     const numValues = numPoints * numComponents;
