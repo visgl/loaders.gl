@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.2.0">
 <title data-rh="true">What&#x27;s New | loaders.gl</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://loaders.gl/docs/whats-new"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="What&#x27;s New | loaders.gl"><meta data-rh="true" name="description" content="v4.2 (In development, alpha releases available)"><meta data-rh="true" property="og:description" content="v4.2 (In development, alpha releases available)"><link data-rh="true" rel="icon" href="/favicon.png"><link data-rh="true" rel="canonical" href="https://loaders.gl/docs/whats-new"><link data-rh="true" rel="alternate" href="https://loaders.gl/docs/whats-new" hreflang="en"><link data-rh="true" rel="alternate" href="https://loaders.gl/docs/whats-new" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.eab3410f.css">
-<script src="/assets/js/runtime~main.f4813463.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.f0d6cf37.js" defer="defer"></script>
 <script src="/assets/js/main.2b3eb006.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard" data-theme="light">
@@ -12,22 +12,27 @@
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="v42-in-development-alpha-releases-available">v4.2 (In development, alpha releases available)<a href="#v42-in-development-alpha-releases-available" class="hash-link" aria-label="Direct link to v4.2 (In development, alpha releases available)" title="Direct link to v4.2 (In development, alpha releases available)">​</a></h2>
 <p>Target Release Date: April, 2024</p>
 <ul>
-<li>Internal tooling upgrades: 10x faster builds via esbuild. Faster installs via yarn 4.</li>
-<li>Improved developer experience: More loader object information is visible when hovering over a loader object in vscode (loader objects are now typed using <code>as const satisfies Loader&lt;...&gt;</code>).</li>
+<li>deck.gl v9: Website and <code>examples/website/*</code> updated to deck.gl v9.</li>
+<li>Internal tooling upgrades: ~10x faster builds via esbuild. ~2x faster installs via yarn 4.</li>
+<li>Types: More loader object information is preserved (e.g. when hovering over a loader object in vscod). loaders are now typed using <code>as const satisfies Loader&lt;...&gt;</code>.</li>
+<li>Types: Loaders that support workers now declare the <code>workerUrl</code> field in their LoaderOptions type removing type errors when overriding.</li>
 </ul>
 <p><strong>@loaders.gl/tile-converter</strong></p>
 <ul>
-<li>New feature: Resume conversion from the last tile processed in case of an interruption.</li>
-<li>New feature: Quiet mode.</li>
+<li>New: Resume conversion from the last tile processed in case of an interruption.</li>
+<li>New: Quiet mode.</li>
+<li>New: Convert I3S to 3D Tiles from local SLPK file.</li>
 </ul>
 <p><strong>@loaders.gl/pmtiles</strong></p>
 <ul>
 <li>Now uses <a href="https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md" target="_blank" rel="noopener noreferrer"><code>pmtiles</code> version 3</a>.</li>
-<li>Now refreshes the already loaded index if a PMTiles file being loaded from is changed (rewritten).</li>
+<li>New: Now refreshes the already loaded index if a PMTiles file being loaded from is changed (rewritten).</li>
 </ul>
 <p><strong>@loaders.gl/parquet</strong></p>
 <ul>
-<li>Fix: Many parquet files that previously failed to load now load correctly.</li>
+<li>Support compression modes: &#x27;zstd&#x27;, &#x27;snappy&#x27;, &#x27;gzip&#x27;, &#x27;brotli&#x27;, &#x27;no_compression&#x27;.</li>
+<li>Geoparquet: support large &#x27;Polygons&#x27; and &#x27;MultiPolygons&#x27;. Up to 68159 vertices for &#x27;MultiPolygon&#x27; and 20062 vertices for &#x27;Polygon&#x27; has been tested.</li>
+<li>Fixes: Many parquet files that previously failed to load now load correctly.</li>
 </ul>
 <p><strong>@loaders.gl/las</strong></p>
 <ul>
@@ -36,6 +41,10 @@
 <p><strong>@loaders.gl/gltf</strong></p>
 <ul>
 <li>Fix: Support models with more complex use of <code>KHR_texture_transform</code> extension.</li>
+</ul>
+<p>**@loaders.gl/i3s</p>
+<ul>
+<li>Experimental feature: Render local SLPK in a web browser.</li>
 </ul>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="v41">v4.1<a href="#v41" class="hash-link" aria-label="Direct link to v4.1" title="Direct link to v4.1">​</a></h2>
 <p>Release Date: February 6, 2024</p>
