@@ -7,6 +7,7 @@ import {compareArrayBuffers, path} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {log} from '../utils/log';
 import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
+import {compareMIMETypes} from '../utils/mime-type-utils';
 import {getRegisteredLoaders} from './register-loaders';
 import {isBlob} from '../../javascript-utils/is-type';
 import {stripQueryString} from '../utils/url-utils';
@@ -216,13 +217,13 @@ function findLoaderByExtension(loaders: Loader[], extension: string): Loader | n
 
 function findLoaderByMIMEType(loaders: Loader[], mimeType: string): Loader | null {
   for (const loader of loaders) {
-    if (loader.mimeTypes && loader.mimeTypes.includes(mimeType)) {
+    if (loader.mimeTypes?.some((mimeType1) => compareMIMETypes(mimeType, mimeType1))) {
       return loader;
     }
 
     // Support referring to loaders using the "unregistered tree"
     // https://en.wikipedia.org/wiki/Media_type#Unregistered_tree
-    if (mimeType === `application/x.${loader.id}`) {
+    if (compareMIMETypes(mimeType, `application/x.${loader.id}`)) {
       return loader;
     }
   }

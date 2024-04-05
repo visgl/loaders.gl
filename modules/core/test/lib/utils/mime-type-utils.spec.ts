@@ -4,9 +4,17 @@
 
 import test from 'tape-promise/tape';
 import {parseMIMEType, parseMIMETypeFromURL} from '@loaders.gl/core/lib/utils/mime-type-utils';
+import {compareMIMETypes} from '@loaders.gl/core/lib/utils/mime-type-utils';
 
 const DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';
+
+test('compareMIMETypes', (t) => {
+  t.equal(compareMIMETypes('image/png', 'image/jpeg'), false);
+  t.equal(compareMIMETypes('image/png', 'image/png'), true);
+  t.equal(compareMIMETypes('image/png', 'image/PNG'), true);
+  t.end();
+});
 
 test('parseMIMEType', (t) => {
   t.equal(parseMIMEType('image/png;'), 'image/png');
