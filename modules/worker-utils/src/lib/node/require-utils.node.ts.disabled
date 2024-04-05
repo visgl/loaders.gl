@@ -40,10 +40,14 @@ export async function readFileAsText(filename: string): Promise<string> {
   return text;
 }
 
-// Node.js Dynamically require from file
-// Relative names are resolved relative to cwd
-// This indirect function is provided because webpack will try to bundle `module.require`.
-// this file is not visible to webpack (it is excluded in the package.json "browser" field).
+/**
+ * Node.js Dynamically require from file
+ * This indirect function is provided because webpack will try to bundle `module.require`.
+ * this file is not visible to webpack (it is excluded in the package.json "browser" field).
+ * 
+ * @param filename - Relative names are resolved relative to cwd
+ * @returns 
+ */
 export async function requireFromFile(filename: string): Promise<any> {
   if (filename.startsWith('http')) {
     const response = await fetch(filename);
@@ -58,12 +62,14 @@ export async function requireFromFile(filename: string): Promise<any> {
   return requireFromString(code);
 }
 
-// Dynamically require from string
-// - `code` - Required - Type: string - Module code.
-// - `filename` - Type: string - Default: '' - Optional filename.
-// - `options.appendPaths` Type: Array List of paths, that will be appended to module paths.
-// Useful, when you want to be able require modules from these paths.
-// - `options.prependPaths` Type: Array Same as appendPaths, but paths will be prepended.
+/**
+ * Dynamically require from string * 
+ * @param `code` - Required - Type: string - Module code. 
+ * @param `filename` - Type: string - Default: '' - Optional filename. 
+ * @param `options.appendPaths` Type: Array List of paths, that will be appended to module paths. 
+ *         Useful, when you want to be able require modules from these paths.
+ * @param `options.prependPaths` Type: Array Same as appendPaths, but paths will be prepended.
+ */
 export function requireFromString(
   code: string,
   filename = '',

@@ -4,7 +4,6 @@
 
 /* global importScripts */
 import {isBrowser, isWorker} from '../env-utils/globals';
-import * as node from '../node/require-utils.node';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';
 
@@ -96,7 +95,8 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
     //   console.error(error);
     // }
     try {
-      return node && node.requireFromFile && (await node.requireFromFile(libraryUrl));
+      const {requireFromFile} = globalThis.loaders || {};
+      return await requireFromFile?.(libraryUrl);
     } catch (error) {
       console.error(error); // eslint-disable-line no-console
       return null;
@@ -134,7 +134,8 @@ async function loadScriptFromFile(libraryUrl) {
 // we could create a`LibraryLoader` or`ModuleLoader`
 function loadLibraryFromString(scriptSource: string, id: string): null | any {
   if (!isBrowser) {
-    return node.requireFromString && node.requireFromString(scriptSource, id);
+    const {requireFromString} = globalThis.loaders || {};
+    return requireFromString?.(scriptSource, id);
   }
 
   if (isWorker) {
@@ -173,11 +174,12 @@ function combineWorkerWithLibrary(worker, jsContent) {
 */
 
 async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
-  if (isBrowser || !node.readFileAsArrayBuffer || url.startsWith('http')) {
+  const {readFileAsArrayBuffer} = globalThis.loaders || {};
+  if (isBrowser || !readFileAsArrayBuffer || url.startsWith('http')) {
     const response = await fetch(url);
     return await response.arrayBuffer();
   }
-  return await node.readFileAsArrayBuffer(url);
+  return await readFileAsArrayBuffer(url);
 }
 
 /**
@@ -186,9 +188,10 @@ async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
  * @returns
  */
 async function loadAsText(url: string): Promise<string> {
-  if (isBrowser || !node.readFileAsText || url.startsWith('http')) {
+  const {readFileAsText} = globalThis.loaders || {};
+  if (isBrowser || !readFileAsText || url.startsWith('http')) {
     const response = await fetch(url);
     return await response.text();
   }
-  return await node.readFileAsText(url);
+  return await readFileAsText(url);
 }
