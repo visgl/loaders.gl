@@ -2,6 +2,26 @@
 
 ## v4.2 (alpha)
 
+### v4.2.0-beta.1
+
+- chore(worker-utils): Use polyfills in worker-utils to avoid build warnings (#2953)
+- docs: Polish release notes (#2957)
+- fix(core): Case insensitive MIME type comparison (#2956)
+- feat(3d-tiles): Test cleanup (#2954)
+- chore(draco): Clean up loader (#2955)
+- fix(wms): Use correct featureInfo parameters for WMS 1.3 (#2952)
+- fix(draco): Ignore unknown attribute types (#2951)
+- feat: Add options.<loader>.workerUrl (#2950)
+- Throws more useful error when fetch fails (#2921)
+- docs: update whats-new (#2946)
+- fix(csv): CSVLoader - narrow result types (#2945)
+- chore: Bump to 4.2-beta (#2948)
+- fix(examples): Fix texture example (+ website) (#2943)
+- fix(parquet): zstd decompression (#2937)
+- chore(compression/parquet): Improved handling of injected modules (#2940)
+- chore: Use `const satisfies on Loaders and Writers (#2938)
+- Fix laslaz-decoder.ts: free memory after laz file parsed. (#2933)
+
 ### v4.2.0-alpha.6
 
 - docs: migration info loaders v4 (#2908)
