@@ -2,9 +2,9 @@
 
 ## v4.2 (alpha)
 
-### v4.2.0-alpha.7
+### v4.2.0-beta.1
 
--chore(worker-utils): Use polyfills in worker-utils to avoid build warnings (#2953)
+- chore(worker-utils): Use polyfills in worker-utils to avoid build warnings (#2953)
 - docs: Polish release notes (#2957)
 - fix(core): Case insensitive MIME type comparison (#2956)
 - feat(3d-tiles): Test cleanup (#2954)
