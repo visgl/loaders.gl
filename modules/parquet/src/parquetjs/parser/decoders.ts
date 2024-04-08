@@ -67,6 +67,8 @@ export async function decodeDataPages(
       Encoding,
       page.pageHeader.data_page_header?.encoding!
     ) as ParquetCodec;
+    // Pages might be in different encodings. We don't need to decode in case
+    // of 'PLAIN' encoding because all values are already in place
     if (dictionary.length && valueEncoding !== 'PLAIN') {
       // eslint-disable-next-line no-loop-func
       page.values = page.values.map((value) => dictionary[value]);
