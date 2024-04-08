@@ -89,12 +89,16 @@ export function decodeValues(
   while (values.length < count) {
     const header = varint.decode(cursor.buffer, cursor.offset);
     cursor.offset += varint.encodingLength(header);
+    let decodedValues: number[];
     if (header & 1) {
       const count = (header >> 1) * 8;
-      values.push(...decodeRunBitpacked(cursor, count, opts));
+      decodedValues = decodeRunBitpacked(cursor, count, opts);
     } else {
       const count = header >> 1;
-      values.push(...decodeRunRepeated(cursor, count, opts));
+      decodedValues = decodeRunRepeated(cursor, count, opts);
+    }
+    for (const value of decodedValues) {
+      values.push(value);
     }
   }
   values = values.slice(0, count);
