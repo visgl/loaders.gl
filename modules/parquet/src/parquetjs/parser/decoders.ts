@@ -63,7 +63,11 @@ export async function decodeDataPages(
       continue;
     }
 
-    if (dictionary.length) {
+    const valueEncoding = getThriftEnum(
+      Encoding,
+      page.pageHeader.data_page_header?.encoding!
+    ) as ParquetCodec;
+    if (dictionary.length && valueEncoding !== 'PLAIN') {
       // eslint-disable-next-line no-loop-func
       page.values = page.values.map((value) => dictionary[value]);
     }
