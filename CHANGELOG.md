@@ -2,6 +2,12 @@
 
 ## v4.2 (alpha)
 
+### v4.2.0-beta.2
+
+- fix(parquet): fix stack overflow for large datasets (#2960)
+- fix(parquet): incorrect dictionary loading (#2959)
+- fix(loader-utils): Do not require dataType and batchType on loaders. (#2961)
+
 ### v4.2.0-beta.1
 
 - chore(worker-utils): Use polyfills in worker-utils to avoid build warnings (#2953)
