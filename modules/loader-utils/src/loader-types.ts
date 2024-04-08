@@ -115,9 +115,9 @@ type PreloadOptions = {
  */
 export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = {
   /** The result type of this loader  */
-  dataType: DataT;
+  dataType?: DataT;
   /** The batched result type of this loader  */
-  batchType: BatchT;
+  batchType?: BatchT;
 
   /** Default Options */
   options: LoaderOptionsT;
