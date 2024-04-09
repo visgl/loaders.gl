@@ -1,6 +1,8 @@
 # CHANGELOG for loaders.gl
 
-## v4.2 (alpha)
+## v4.2
+
+### v4.2.0
 
 ### v4.2.0-beta.2
 
