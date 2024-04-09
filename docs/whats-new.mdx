@@ -7,9 +7,9 @@ Release Date: April 9, 2024
 A minor release that includes:
 
 - **deck.gl v9**: All [website examples](https://github.com/visgl/loaders.gl/tree/master/examples/website) updated to deck.gl v9.
-- **TypeScript**: Loader objects are now typed using `as const satisfies`, which preserves more type information. 
-- **TypeScript**: Loaders with workers now declare a `workerUrl` field in their LoaderOptions types (removing type errors when overriding the workerUrl field).
-- **Build tooling**: loaders.gl builds ~10x faster via esbuild, and installs ~2x faster via yarn 4.
+- **TypeScript**: Loader objects are typed via `as const satisfies`, preserving more type information. 
+- **TypeScript**: Loaders with workers now declare the `workerUrl` field in their `...LoaderOptions` types.
+- **Build tooling**: loaders.gl itself now builds ~10x faster via esbuild, and installs ~2x faster via yarn 4.
 
 **@loaders.gl/core**
 
@@ -47,6 +47,10 @@ A minor release that includes:
 **@loaders.gl/las**
 
 - `LASLoader`: Memory leak plugged.
+
+**@loaders.gl/wms**
+
+- `WMSService`: `getFeatureInfo()` now also supports querying WMS 1.3 services.
 
 **@loaders.gl/tile-converter**
 
