@@ -1,5 +1,9 @@
 # Upgrade Guide
 
+## Upgrading to v4.2
+
+- It is recommended (but not required) to add `dataType` and `batchType` fields to any custom loaders.
+
 ## Upgrading to v4.1
 
 **@loaders.gl/wkt**
