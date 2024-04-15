@@ -12,7 +12,7 @@ import {COORDINATE_SYSTEM, I3SLoader, parseSLPKArchive} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {ControlPanel} from './components/control-panel';
 import {ZipFileSystem} from '@loaders.gl/zip';
-import {LoaderWithParser, BrowserFile} from '@loaders.gl/loader-utils';
+import {LoaderWithParser, RangeRequestFile} from '@loaders.gl/loader-utils';
 import CustomTile3DLayer from './custom-tile-3d-layer';
 
 export const TRANSITION_DURAITON = 4000;
@@ -39,23 +39,24 @@ const INITIAL_VIEW_STATE = {
 
 export default function App() {
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
-  const [file, setFile] = useState<File | null>(null);
+  const [url, setUrl] = useState<string>('');
   const [fileSystem, setFileSystem] = useState<ZipFileSystem | null>(null);
 
   useEffect(() => {
-    if (!file) {
+    if (!url) {
       return;
     }
 
-    const createFileSystem = async (file: File) => {
-      const fileProvider = new BrowserFile(file);
-      const archive = await parseSLPKArchive(fileProvider, undefined, file.name);
+    const createFileSystem = async (url: string) => {
+      console.log("New url", url)
+      const fileProvider = await RangeRequestFile.create(url);
+      const archive = await parseSLPKArchive(fileProvider, undefined, url);
       const fileSystem = new ZipFileSystem(archive);
       setFileSystem(fileSystem);
     };
 
-    createFileSystem(file);
-  }, [file]);
+    createFileSystem(url);
+  }, [url]);
 
   function onTilesetLoadHandler(tileset: Tileset3D) {
     const {zoom, cartographicCenter} = tileset;
@@ -95,13 +96,14 @@ export default function App() {
       <DeckGL initialViewState={viewState} layers={renderLayers()} controller={MAP_CONTROLLER}>
         <Map
           reuseMaps
+          // @ts-ignore
           mapLib={maplibregl}
           mapStyle={'https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json'}
           preventStyleDiffing
           preserveDrawingBuffer
         />
       </DeckGL>
-      <ControlPanel onFileSelected={([file]) => setFile(file)} />
+      <ControlPanel onFileSelected={(file) => setUrl(file)} />
     </div>
   );
 }
