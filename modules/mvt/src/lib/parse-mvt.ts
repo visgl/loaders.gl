@@ -12,13 +12,13 @@ import type {
 } from '@loaders.gl/schema';
 import Protobuf from 'pbf';
 
-import type {MVTMapboxCoordinates, MVTOptions} from '../lib/types';
+import type {MVTOptions} from '../lib/types';
 import type {MVTLoaderOptions} from '../mvt-loader';
 
-import {VectorTile} from './mapbox-vector-tile/vector-tile';
-import {BinaryVectorTile} from './binary-vector-tile/vector-tile';
-import {BinaryVectorTileFeature} from './binary-vector-tile/vector-tile-feature';
-import {VectorTileFeature as VectorTileFeatureMapBox} from './mapbox-vector-tile/vector-tile-feature';
+import {VectorTile} from './vector-tile/vector-tile';
+import {VectorTileFeature} from './vector-tile/vector-tile-feature';
+import {BinaryVectorTile} from './binary-vector-tile/binary-vector-tile';
+import {BinaryVectorTileFeature} from './binary-vector-tile/binary-vector-tile-feature';
 
 /**
  * Parse MVT arrayBuffer and return GeoJSON.
@@ -113,7 +113,7 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): 
     return [];
   }
 
-  const features: MVTMapboxCoordinates[] = [];
+  const features: Feature[] = [];
   const tile = new VectorTile(new Protobuf(arrayBuffer));
 
   const selectedLayers = Array.isArray(options.layers) ? options.layers : Object.keys(tile.layers);
@@ -131,7 +131,7 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): 
     }
   });
 
-  return features as Feature[];
+  return features;
 }
 
 function normalizeOptions(options?: MVTLoaderOptions): MVTOptions {
@@ -161,10 +161,10 @@ function normalizeOptions(options?: MVTLoaderOptions): MVTOptions {
  * @returns decoded feature
  */
 function getDecodedFeature(
-  feature: VectorTileFeatureMapBox,
+  feature: VectorTileFeature,
   options: MVTOptions,
   layerName: string
-): MVTMapboxCoordinates {
+): Feature {
   const decodedFeature = feature.toGeoJSON(
     // @ts-expect-error What is going on here?
     options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinates
@@ -172,6 +172,7 @@ function getDecodedFeature(
 
   // Add layer name to GeoJSON properties
   if (options.layerProperty) {
+    decodedFeature.properties ||= {};
     decodedFeature.properties[options.layerProperty] = layerName;
   }
 

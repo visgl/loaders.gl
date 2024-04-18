@@ -3,9 +3,9 @@
 // Copyright vis.gl contributors
 
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
+import {Feature} from '@loaders.gl/schema';
 import Protobuf from 'pbf';
-import {MVTMapboxCoordinates, MVTMapboxGeometry} from '../types';
-import {readFeature, classifyRings} from '../../helpers/mapbox-util-functions';
+import {classifyRings} from '../../helpers/geometry-utils';
 
 export class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
@@ -43,7 +43,7 @@ export class VectorTileFeature {
   }
 
   // eslint-disable-next-line complexity, max-statements
-  loadGeometry(): MVTMapboxGeometry {
+  loadGeometry(): number[][][] {
     const pbf = this._pbf;
     pbf.pos = this._geometry;
 
@@ -64,23 +64,27 @@ export class VectorTileFeature {
 
       length--;
 
-      if (cmd === 1 || cmd === 2) {
-        x += pbf.readSVarint();
-        y += pbf.readSVarint();
+      switch (cmd) {
+        case 1:
+        case 2:
+          x += pbf.readSVarint();
+          y += pbf.readSVarint();
 
-        if (cmd === 1) {
-          // moveTo
-          if (line) lines.push(line);
-          line = [];
-        }
-        if (line) line.push([x, y]);
-      } else if (cmd === 7) {
-        // Workaround for https://github.com/mapbox/mapnik-vector-tile/issues/90
-        if (line) {
-          line.push(line[0].slice()); // closePolygon
-        }
-      } else {
-        throw new Error(`unknown command ${cmd}`);
+          if (cmd === 1) {
+            // moveTo
+            if (line) lines.push(line);
+            line = [];
+          }
+          if (line) line.push([x, y]);
+          break;
+        case 7:
+          // Workaround for https://github.com/mapbox/mapnik-vector-tile/issues/90
+          if (line) {
+            line.push(line[0].slice()); // closePolygon
+          }
+          break;
+        default:
+          throw new Error(`unknown command ${cmd}`);
       }
     }
 
@@ -128,66 +132,13 @@ export class VectorTileFeature {
     return [x1, y1, x2, y2];
   }
 
-  _toGeoJSON(transform) {
-    let coords = this.loadGeometry();
-    let type = VectorTileFeature.types[this.type];
-    let i: number;
-    let j: number;
-
-    // eslint-disable-next-line default-case
-    switch (this.type) {
-      case 1:
-        const points: number[] = [];
-        for (i = 0; i < coords.length; i++) {
-          points[i] = coords[i][0];
-        }
-        coords = points;
-        transform(coords, this);
-        break;
-
-      case 2:
-        for (i = 0; i < coords.length; i++) {
-          transform(coords[i], this);
-        }
-        break;
-
-      case 3:
-        coords = classifyRings(coords);
-        for (i = 0; i < coords.length; i++) {
-          for (j = 0; j < coords[i].length; j++) {
-            transform(coords[i][j], this);
-          }
-        }
-        break;
-    }
-
-    if (coords.length === 1) {
-      coords = coords[0];
-    } else {
-      type = `Multi${type}`;
-    }
-
-    const result: MVTMapboxCoordinates = {
-      type: 'Feature',
-      geometry: {
-        type,
-        coordinates: coords
-      },
-      properties: this.properties
-    };
-
-    if (this.id !== null) {
-      result.id = this.id;
-    }
-
-    return result;
-  }
-
   toGeoJSON(
     options: {x: number; y: number; z: number} | ((data: number[], feature: {extent: any}) => void)
-  ): MVTMapboxCoordinates {
+  ): Feature {
+    const coords = this.loadGeometry();
+
     if (typeof options === 'function') {
-      return this._toGeoJSON(options);
+      return _toGeoJSON(this, coords, options);
     }
     const {x, y, z} = options;
     const size = this.extent * Math.pow(2, z);
@@ -202,6 +153,97 @@ export class VectorTileFeature {
         p[1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;
       }
     }
-    return this._toGeoJSON(project);
+    return _toGeoJSON(this, coords, project);
+  }
+}
+
+function _toGeoJSON(vtFeature: VectorTileFeature, coords: number[][][], transform): Feature {
+  let type = VectorTileFeature.types[vtFeature.type];
+  let i: number;
+  let j: number;
+
+  let coordinates: number[][] | number[][][] | number[][][][];
+  switch (vtFeature.type) {
+    case 1:
+      const points: number[][] = [];
+      for (i = 0; i < coords.length; i++) {
+        points[i] = coords[i][0];
+      }
+      coordinates = points;
+      transform(coordinates, vtFeature);
+      break;
+
+    case 2:
+      coordinates = coords;
+      for (i = 0; i < coordinates.length; i++) {
+        transform(coordinates[i], vtFeature);
+      }
+      break;
+
+    case 3:
+      coordinates = classifyRings(coords);
+      for (i = 0; i < coordinates.length; i++) {
+        for (j = 0; j < coordinates[i].length; j++) {
+          transform(coordinates[i][j], vtFeature);
+        }
+      }
+      break;
+
+    default:
+      throw new Error('illegal vector tile type');
+  }
+
+  if (coordinates.length === 1) {
+    // @ts-expect-error
+    coordinates = coordinates[0];
+  } else {
+    type = `Multi${type}`;
+  }
+
+  const result: Feature = {
+    type: 'Feature',
+    geometry: {
+      type: type as any,
+      coordinates: coordinates as any
+    },
+    properties: vtFeature.properties
+  };
+
+  if (vtFeature.id !== null) {
+    result.id = vtFeature.id;
+  }
+
+  return result;
+}
+
+// PBF READER UTILS
+
+/**
+ *
+ * @param tag
+ * @param feature
+ * @param pbf
+ */
+function readFeature(tag: number, feature?: VectorTileFeature, pbf?: Protobuf): void {
+  if (feature && pbf) {
+    if (tag === 1) feature.id = pbf.readVarint();
+    else if (tag === 2) readTag(pbf, feature);
+    else if (tag === 3) feature.type = pbf.readVarint();
+    else if (tag === 4) feature._geometry = pbf.pos;
+  }
+}
+
+/**
+ *
+ * @param pbf
+ * @param feature
+ */
+function readTag(pbf: Protobuf, feature: VectorTileFeature): void {
+  const end = pbf.readVarint() + pbf.pos;
+
+  while (pbf.pos < end) {
+    const key = feature._keys[pbf.readVarint()];
+    const value = feature._values[pbf.readVarint()];
+    feature.properties[key] = value;
   }
 }
