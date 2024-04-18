@@ -2,7 +2,13 @@
 
 ## Upgrading to v4.2
 
-- It is recommended (but not required) to add `dataType` and `batchType` fields to any custom loaders.
+**@loaders.gl/mvt** 
+
+- `options.gis.forma`t is deprecated. Use `options.mvt.shape` instead.
+
+## Upgrading to v4.2
+
+- For improved type checks, it is now possible to add `dataType` and `batchType` fields to any custom loader objects.
 
 ## Upgrading to v4.1
 

@@ -1,7 +1,7 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND ISC
 // Copyright (c) vis.gl contributors
-// Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
+// Based on https://github.com/mapbox/geojson-vt under compatible ISC license
 
 /* eslint-disable no-console, no-continue */
 
@@ -12,12 +12,12 @@ import {
 } from '@loaders.gl/loader-utils';
 import {Feature, GeoJSONTable} from '@loaders.gl/schema';
 
-import type {GeoJSONTile, GeoJSONTileFeature} from './lib/geojson-tiler/tile';
-import {convert} from './lib/geojson-tiler/convert'; // GeoJSON conversion and preprocessing
-import {clip} from './lib/geojson-tiler/clip'; // stripe clipping algorithm
-import {wrap} from './lib/geojson-tiler/wrap'; // date line processing
-import {transformTile} from './lib/geojson-tiler/transform'; // coordinate transformation
-import {createTile} from './lib/geojson-tiler/tile'; // final simplified tile generation
+import type {GeoJSONTile, GeoJSONTileFeature} from './lib/geojsonvt/tile';
+import {convert} from './lib/geojsonvt/convert'; // GeoJSON conversion and preprocessing
+import {clip} from './lib/geojsonvt/clip'; // stripe clipping algorithm
+import {wrap} from './lib/geojsonvt/wrap'; // date line processing
+import {transformTile} from './lib/geojsonvt/transform'; // coordinate transformation
+import {createTile} from './lib/geojsonvt/tile'; // final simplified tile generation
 
 /** Options to configure tiling */
 export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
@@ -59,13 +59,12 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
   stats: Record<string, number> = {};
   total: number = 0;
 
-  /** Resolves when the input data promise has been resolved and the top-level tiling is done */
+  /** Sync methods can be called: the input data promise has been resolved and initial top-level tiling is done */
   ready: Promise<void>;
 
   constructor(data: GeoJSONTable | Promise<GeoJSONTable>, options?: GeoJSONTileSourceOptions) {
     this.options = {...GeoJSONTileSource.defaultOptions, ...options};
     this.getTileData = this.getTileData.bind(this);
-
     this.ready = this.initializeTilesAsync(data);
   }
 

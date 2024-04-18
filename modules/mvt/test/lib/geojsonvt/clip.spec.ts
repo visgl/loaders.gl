@@ -1,11 +1,11 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND ISC
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import test from 'tape-promise/tape';
 // @ts-ignore-error
-import {clip} from '@loaders.gl/mvt/lib/geojson-tiler/clip';
+import {clip} from '@loaders.gl/mvt/lib/geojsonvt/clip';
 
 /* eslint comma-spacing:0*/
 

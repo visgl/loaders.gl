@@ -127,8 +127,8 @@ function addFeature(tile: GeoJSONTile, feature, tolerance: number, options: Crea
         type === 'Polygon' || type === 'MultiPolygon'
           ? 3
           : type === 'LineString' || type === 'MultiLineString'
-            ? 2
-            : 1,
+          ? 2
+          : 1,
       tags
     };
     if (feature.id !== null) {
