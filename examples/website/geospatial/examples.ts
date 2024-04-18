@@ -201,17 +201,23 @@ function getGeoParquetTestExamples() {
         longitude: -105.1003626,
         latitude: 40.5529294,
         zoom: 13
+      },
+      layerProps: {
+        getPointRadius: 5,
+        pointRadiusScale: 1,
+        pointRadiusUnits: 'meters'
       }
     }
   ];
 
   for (const file of files) {
-    const {name, urlPrefix, hasZstd, viewState} = file;
+    const {name, urlPrefix, hasZstd, layerProps, viewState} = file;
     for (const compression of compressions) {
       const data = `${DECKGL_DATA_URL}${PARQUET_PATH}/${urlPrefix}_${PARQUET_VERSION}_${compression}${parquetExtension}`;
       GeoParquet[`${name} (${compression})`] = {
         format: 'geoparquet',
         data,
+        layerProps,
         viewState: {
           ...VIEW_STATE,
           longitude: -4.65,
@@ -226,6 +232,7 @@ function getGeoParquetTestExamples() {
       GeoParquet[`${name} (zstd)`] = {
         format: 'geoparquet',
         data,
+        layerProps,
         viewState: {
           ...VIEW_STATE,
           longitude: -4.65,

@@ -3320,6 +3320,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.2.0"
     "@loaders.gl/schema": "npm:4.2.0"
     "@loaders.gl/wkt": "npm:4.2.0"
+    "@probe.gl/log": "npm:^4.0.9"
     "@types/node": "npm:^10.14.15"
     "@types/node-int64": "npm:^0.4.29"
     "@types/thrift": "npm:^0.10.8"
@@ -4141,6 +4142,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@probe.gl/env@npm:4.0.9":
+  version: 4.0.9
+  resolution: "@probe.gl/env@npm:4.0.9"
+  checksum: 10c0/c6fcd1742aea014d15fe36a6cf0724d7faf3eeda27856978d87c1658b26ceaefc86254b011de65de35c1dfc0e3074fdbeaef5fd4362a05541a5e46b880e4024f
+  languageName: node
+  linkType: hard
+
 "@probe.gl/log@npm:4.0.3, @probe.gl/log@npm:^4.0.1, @probe.gl/log@npm:^4.0.2":
   version: 4.0.3
   resolution: "@probe.gl/log@npm:4.0.3"
@@ -4177,6 +4185,15 @@ __metadata:
     "@babel/runtime": "npm:^7.0.0"
     "@probe.gl/env": "npm:4.0.4"
   checksum: 10c0/0ed1dafec30589600c1b7017d11bad7e0f59f9275e347468bc24f1a81f22191eddca6802aefcee123a8c941839bc29af8553abc6cdf7213121f63695ac7ad04f
+  languageName: node
+  linkType: hard
+
+"@probe.gl/log@npm:^4.0.9":
+  version: 4.0.9
+  resolution: "@probe.gl/log@npm:4.0.9"
+  dependencies:
+    "@probe.gl/env": "npm:4.0.9"
+  checksum: 10c0/23521b46fdda80470d8b38d70c62d77f3b50257a63b3e7660655936593cf5f54ec7f1e2b0a36e8ecb7635c7fd45280bb66bd379a3e58afbde99f23d46f43c112
   languageName: node
   linkType: hard
 
