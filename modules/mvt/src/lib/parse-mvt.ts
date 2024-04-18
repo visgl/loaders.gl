@@ -17,7 +17,6 @@ import type {MVTLoaderOptions} from '../mvt-loader';
 
 import {VectorTile} from './vector-tile/vector-tile';
 import {VectorTileFeature} from './vector-tile/vector-tile-feature';
-import {BinaryVectorTileFeature} from './vector-tile/binary-vector-tile-feature';
 
 /**
  * Parse MVT arrayBuffer and return GeoJSON.
