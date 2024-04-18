@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {GeoJSON, GeoJSONTable, TableBatch} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection, GeoJSONTable, TableBatch} from '@loaders.gl/schema';
 import type {JSONLoaderOptions} from './json-loader';
 import {geojsonToBinary} from '@loaders.gl/gis';
 // import {parseJSONSync} from './lib/parsers/parse-json';
@@ -15,7 +15,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GeoJSONLoaderOptions = JSONLoaderOptions & {
   geojson?: {
-    shape?: 'object-row-table';
+    shape?: 'geojson-table';
   };
   gis?: {
     format?: 'geojson' | 'binary';
@@ -26,7 +26,7 @@ export type GeoJSONLoaderOptions = JSONLoaderOptions & {
  * GeoJSON loader
  */
 export const GeoJSONWorkerLoader = {
-  dataType: null as unknown as GeoJSON,
+  dataType: null as unknown as GeoJSONTable,
   batchType: null as unknown as TableBatch,
 
   name: 'GeoJSON',
@@ -40,7 +40,7 @@ export const GeoJSONWorkerLoader = {
   text: true,
   options: {
     geojson: {
-      shape: 'object-row-table'
+      shape: 'geojson-table'
     },
     json: {
       shape: 'object-row-table',
@@ -50,7 +50,7 @@ export const GeoJSONWorkerLoader = {
       format: 'geojson'
     }
   }
-} as const satisfies Loader<GeoJSON, TableBatch, GeoJSONLoaderOptions>;
+} as const satisfies Loader<GeoJSONTable, TableBatch, GeoJSONLoaderOptions>;
 
 export const GeoJSONLoader = {
   ...GeoJSONWorkerLoader,
@@ -59,13 +59,19 @@ export const GeoJSONLoader = {
   // @ts-expect-error
   parseTextSync,
   parseInBatches
-} as const satisfies LoaderWithParser<GeoJSON, TableBatch, GeoJSONLoaderOptions>;
+} as const satisfies LoaderWithParser<GeoJSONTable, TableBatch, GeoJSONLoaderOptions>;
 
-async function parse(arrayBuffer: ArrayBuffer, options?: GeoJSONLoaderOptions) {
+async function parse(
+  arrayBuffer: ArrayBuffer,
+  options?: GeoJSONLoaderOptions
+): Promise<GeoJSONTable | BinaryFeatureCollection> {
   return parseTextSync(new TextDecoder().decode(arrayBuffer), options);
 }
 
-function parseTextSync(text: string, options?: GeoJSONLoaderOptions) {
+function parseTextSync(
+  text: string,
+  options?: GeoJSONLoaderOptions
+): GeoJSONTable | BinaryFeatureCollection {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GeoJSONLoader.options, ...options};
   options.geojson = {...GeoJSONLoader.options.geojson, ...options.geojson};

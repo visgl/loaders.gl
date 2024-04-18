@@ -6,7 +6,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {Feature} from '@loaders.gl/schema';
+import type {Feature, FeatureCollection} from '@loaders.gl/schema';
 import type {GeoJSONTileFeature} from './tile';
 
 import {simplify} from './simplify';
@@ -14,7 +14,7 @@ import {createFeature} from './feature';
 
 // converts GeoJSON feature into an intermediate projected JSON vector format with simplification data
 
-export function convert(data: Feature, options): GeoJSONTileFeature[] {
+export function convert(data: Feature | FeatureCollection, options): GeoJSONTileFeature[] {
   const features = [];
   if (data.type === 'FeatureCollection') {
     for (let i = 0; i < data.features.length; i++) {

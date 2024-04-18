@@ -5,16 +5,22 @@
 
 /* eslint-disable no-console, no-continue */
 
-import type {GeoJSONTile, GeoJSONTileFeature} from './tile';
+import {
+  VectorTileSource,
+  VectorTileSourceProps,
+  TileLoadParameters
+} from '@loaders.gl/loader-utils';
+import {Feature, GeoJSONTable} from '@loaders.gl/schema';
 
-import {convert} from './convert'; // GeoJSON conversion and preprocessing
-import {clip} from './clip'; // stripe clipping algorithm
-import {wrap} from './wrap'; // date line processing
-import {transformTile} from './transform'; // coordinate transformation
-import {createTile} from './tile'; // final simplified tile generation
+import type {GeoJSONTile, GeoJSONTileFeature} from './lib/geojson-tiler/tile';
+import {convert} from './lib/geojson-tiler/convert'; // GeoJSON conversion and preprocessing
+import {clip} from './lib/geojson-tiler/clip'; // stripe clipping algorithm
+import {wrap} from './lib/geojson-tiler/wrap'; // date line processing
+import {transformTile} from './lib/geojson-tiler/transform'; // coordinate transformation
+import {createTile} from './lib/geojson-tiler/tile'; // final simplified tile generation
 
 /** Options to configure tiling */
-export type GeoJSONTilerOptions = {
+export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
   maxZoom?: number /** max zoom to preserve detail on */;
   indexMaxZoom?: number /** max zoom in the tile index */;
   indexMaxPoints?: number /** max number of points per tile in the tile index */;
@@ -27,22 +33,24 @@ export type GeoJSONTilerOptions = {
   debug?: number /** logging level (0, 1 or 2) */;
 };
 
-const DEFAULT_OPTIONS: Required<GeoJSONTilerOptions> = {
-  maxZoom: 14, // max zoom to preserve detail on
-  indexMaxZoom: 5, // max zoom in the tile index
-  indexMaxPoints: 100000, // max number of points per tile in the tile index
-  tolerance: 3, // simplification tolerance (higher means simpler)
-  extent: 4096, // tile extent
-  buffer: 64, // tile buffer on each side
-  lineMetrics: false, // whether to calculate line metrics
-  // @ts-expect-error Ensures all these required params have defaults
-  promoteId: undefined, // name of a feature property to be promoted to feature.id
-  generateId: false, // whether to generate feature ids. Cannot be used with promoteId
-  debug: 0 // logging level (0, 1 or 2)
-};
+export class GeoJSONTileSource implements VectorTileSource<any> {
+  static defaultOptions: Required<GeoJSONTileSourceOptions> = {
+    maxZoom: 14, // max zoom to preserve detail on
+    indexMaxZoom: 5, // max zoom in the tile index
+    indexMaxPoints: 100000, // max number of points per tile in the tile index
+    tolerance: 3, // simplification tolerance (higher means simpler)
+    extent: 4096, // tile extent
+    buffer: 64, // tile buffer on each side
+    lineMetrics: false, // whether to calculate line metrics
+    // @ts-expect-error
+    promoteId: undefined, // name of a feature property to be promoted to feature.id
+    generateId: false, // whether to generate feature ids. Cannot be used with promoteId
+    debug: 0 // logging level (0, 1 or 2)
+  };
 
-export class GeoJSONTiler {
-  options: Required<GeoJSONTilerOptions>;
+  mimeType = 'application/vnd.mapbox-vector-tile';
+
+  options: Required<GeoJSONTileSourceOptions>;
 
   // tiles and tileCoords are part of the public API
   tiles: Record<string, GeoJSONTile> = {};
@@ -51,10 +59,23 @@ export class GeoJSONTiler {
   stats: Record<string, number> = {};
   total: number = 0;
 
-  constructor(data, options?: GeoJSONTilerOptions) {
-    this.options = {...DEFAULT_OPTIONS, ...options};
-    options = this.options;
+  /** Resolves when the input data promise has been resolved and the top-level tiling is done */
+  ready: Promise<void>;
 
+  constructor(data: GeoJSONTable | Promise<GeoJSONTable>, options?: GeoJSONTileSourceOptions) {
+    this.options = {...GeoJSONTileSource.defaultOptions, ...options};
+    this.getTileData = this.getTileData.bind(this);
+
+    this.ready = this.initializeTilesAsync(data);
+  }
+
+  async initializeTilesAsync(dataPromise: GeoJSONTable | Promise<GeoJSONTable>): Promise<void> {
+    const data = await dataPromise;
+    this.initializeTilesSync(data);
+  }
+
+  initializeTilesSync(data: GeoJSONTable): void {
+    const options = this.options;
     const debug = options.debug;
 
     if (debug) console.time('preprocess data');
@@ -96,6 +117,10 @@ export class GeoJSONTiler {
     }
   }
 
+  async getMetadata(): Promise<unknown> {
+    return {};
+  }
+
   /**
    * Get a tile at the specified index
    * @param z
@@ -103,8 +128,50 @@ export class GeoJSONTiler {
    * @param y
    * @returns
    */
+  async getVectorTile(tileIndex: {
+    zoom: number;
+    x: number;
+    y: number;
+  }): Promise<GeoJSONTable | null> {
+    await this.ready;
+    const table = this.getTileSync(tileIndex);
+    console.log('getTileSync', tileIndex, table);
+    return table;
+  }
+
+  async getTile(tileIndex: {zoom: number; x: number; y: number}): Promise<GeoJSONTable | null> {
+    await this.ready;
+    return this.getTileSync(tileIndex);
+  }
+
+  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
+    const {x, y, z} = tileParams.index;
+    return await this.getVectorTile({x, y, zoom: z});
+  }
+
+  // Implementation
+
+  /**
+   * Synchronously request a tile
+   * @note Application must await `source.ready` before calling sync methods.
+   */
+  getTileSync(tileIndex: {zoom: number; x: number; y: number}): GeoJSONTable | null {
+    const rawTile = this.getRawTile(tileIndex);
+    if (!rawTile) {
+      return null;
+    }
+
+    return convertToGeoJSONTable(rawTile, this.options.extent);
+  }
+
+  /**
+   * Return geojsonvt-style "half formed" vector tile
+   * @note Application must await `source.ready` before calling sync methods.
+   */
   // eslint-disable-next-line complexity, max-statements
-  getTile(z: number, x: number, y: number): GeoJSONTile | null {
+  getRawTile(tileIndex: {zoom: number; x: number; y: number}): GeoJSONTile | null {
+    const {zoom: z, y} = tileIndex;
+    let {x} = tileIndex;
     // z = +z;
     // x = +x;
     // y = +y;
@@ -278,6 +345,86 @@ export class GeoJSONTiler {
   }
 }
 
-function toID(z, x, y) {
+function toID(z, x, y): number {
   return ((1 << z) * y + x) * 32 + z;
+}
+
+function convertToGeoJSONTable(vtTile: GeoJSONTile, extent: number): GeoJSONTable {
+  const features: Feature[] = [];
+  for (const rawFeature of vtTile.features) {
+    if (!rawFeature || !rawFeature.geometry) {
+      continue;
+    }
+
+    let type:
+      | 'Point'
+      | 'MultiPoint'
+      | 'LineString'
+      | 'MultiLineString'
+      | 'Polygon'
+      | 'MultiPolygon';
+
+    let coordinates: any;
+
+    // raw geometry
+    switch (rawFeature.type) {
+      case 1:
+        if (rawFeature.geometry.length === 1) {
+          type = 'Point';
+          coordinates = rawFeature.geometry[0];
+        } else {
+          type = 'MultiPoint';
+          coordinates = rawFeature.geometry;
+        }
+        break;
+      case 2:
+        if (rawFeature.geometry.length === 1) {
+          type = 'LineString';
+          coordinates = rawFeature.geometry[0];
+        } else {
+          type = 'MultiLineString';
+          coordinates = rawFeature.geometry;
+        }
+        break;
+      case 3:
+        if (rawFeature.geometry.length > 1) {
+          type = 'MultiPolygon';
+          coordinates = [rawFeature.geometry];
+        } else {
+          type = 'Polygon';
+          coordinates = rawFeature.geometry;
+        }
+        break;
+      default:
+        continue;
+    }
+
+    coordinates = toLngLat(coordinates, extent);
+
+    const feature: Feature = {
+      type: 'Feature',
+      geometry: {
+        type,
+        coordinates
+      },
+      properties: rawFeature.tags || {}
+    };
+
+    features.push(feature);
+  }
+
+  const table: GeoJSONTable = {
+    shape: 'geojson-table',
+    type: 'FeatureCollection',
+    features
+  };
+
+  return table;
+}
+
+function toLngLat(coords: any, extent: number): any {
+  if (Array.isArray(coords[0])) {
+    return coords.map((c) => toLngLat(c, extent));
+  }
+  return [coords[0] / extent, coords[1] / extent];
 }
