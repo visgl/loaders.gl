@@ -183,7 +183,7 @@ function getDecodedFeature(
  * @returns decoded binary feature
  */
 function getDecodedFeatureBinary(
-  feature: BinaryVectorTileFeature,
+  feature: VectorTileFeature,
   options: MVTOptions,
   layerName: string
 ): FlatFeature {
