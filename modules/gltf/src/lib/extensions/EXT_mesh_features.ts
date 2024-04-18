@@ -11,6 +11,8 @@ import type {
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getPrimitiveTextureData} from './utils/3d-tiles-utils';
+import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
+import type {TypedArray} from '@loaders.gl/schema';
 
 const EXT_MESH_FEATURES_NAME = 'EXT_mesh_features';
 export const name = EXT_MESH_FEATURES_NAME;
@@ -90,4 +92,87 @@ function processMeshPrimitiveFeatures(
 
     featureId.data = featureIdData;
   }
+}
+
+/*
+  Encoding data
+*/
+
+/**
+ * Ecnodes a feature ID set to extension.
+ * @param scenegraph - Instance of the class for structured access to GLTF data.
+ * @param featureIdArray - array of feature IDs.
+ * @param meshIndex - index of the mesh comntaining the target primitive.
+ * @param primitiveIndex - index of the primitive where the data encoded should be put.
+ * @returns primitive updated
+ * @see https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
+ */
+export function encodeExtMeshFeatures(
+  scenegraph: GLTFScenegraph,
+  featureIdArray: number[] | TypedArray,
+  meshIndex: number,
+  primitiveIndex: number = 0
+) {
+  const meshes = scenegraph.gltf.json.meshes;
+  if (!meshes) {
+    return;
+  }
+  const primitive = meshes?.[meshIndex]?.primitives?.[primitiveIndex];
+  if (!primitive) {
+    return;
+  }
+
+  const {accessorKey, index} = createAccessorKey(primitive.attributes);
+
+  if (!primitive.extensions) {
+    primitive.extensions = {};
+  }
+  let extension = primitive.extensions[EXT_MESH_FEATURES_NAME] as GLTF_EXT_mesh_features;
+  if (!extension) {
+    extension = {featureIds: []};
+    primitive.extensions[EXT_MESH_FEATURES_NAME] = extension;
+  }
+
+  const featureIds: GLTF_EXT_mesh_features_featureId[] = extension.featureIds;
+  const featureId: GLTF_EXT_mesh_features_featureId = {
+    featureCount: featureIdArray.length,
+    attribute: index
+  };
+  featureIds.push(featureId);
+
+  const typedArray = new Uint32Array(featureIdArray);
+  const bufferIndex =
+    scenegraph.gltf.buffers.push({
+      arrayBuffer: typedArray.buffer,
+      byteOffset: typedArray.byteOffset,
+      byteLength: typedArray.byteLength
+    }) - 1;
+  const bufferViewIndex = scenegraph.addBufferView(typedArray, bufferIndex, 0);
+  const accessorIndex = scenegraph.addAccessor(bufferViewIndex, {
+    size: 1,
+    componentType: getComponentTypeFromArray(typedArray),
+    count: typedArray.length
+  });
+  primitive.attributes[accessorKey] = accessorIndex;
+
+  scenegraph.addObjectExtension(primitive, EXT_MESH_FEATURES_NAME, extension);
+  meshes[meshIndex].primitives[primitiveIndex] = primitive;
+}
+
+function createAccessorKey(attributes: {}) {
+  const prefix = '_FEATURE_ID_';
+  // Search for all "_FEATURE_ID_n" attribures in the primitive provided if any.
+  // If there are some, e.g. "_FEATURE_ID_0", "_FEATURE_ID_1",
+  // we will add a new one with the name "_FEATURE_ID_2"
+  const attrs = Object.keys(attributes).filter((item) => item.indexOf(prefix) !== -1);
+  let max = -1;
+  for (const a of attrs) {
+    const n = Number(a.substring(prefix.length));
+    if (n > max) {
+      max = n;
+    }
+  }
+  max++;
+  const accessorKey = `${prefix}${max}`;
+  return {accessorKey, index: max};
 }

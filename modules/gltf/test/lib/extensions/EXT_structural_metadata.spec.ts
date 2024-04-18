@@ -2,6 +2,8 @@
 import test from 'tape-promise/tape';
 
 import {decodeExtensions} from '../../../src/lib/api/gltf-extensions';
+import {encodeExtStructuralMetadata} from '../../../src/lib/extensions/EXT_structural_metadata';
+import {GLTFScenegraph} from '@loaders.gl/gltf';
 
 test('gltf#EXT_structural_metadata - Should decode', async (t) => {
   const binaryBufferData = [
@@ -184,5 +186,132 @@ test('gltf#EXT_structural_metadata - Should decode', async (t) => {
 
   // Modifies input
   t.deepEqual(GLTF_WITH_EXTENSION.json, expectedJson);
+  t.end();
+});
+
+test('gltf#EXT_structural_metadata - Should encode', async (t) => {
+  const SCHEMA_CLASS_ID = 'schemaClassId';
+
+  const ATTRIBUTES = [
+    {
+      name: 'OBJECTID',
+      valueType: 'Oid32',
+      valuesPerElement: 1,
+      values: [1060555, 1059993, 1058835, 1077325]
+    },
+    {
+      name: 'BIN',
+      valueType: 'Int32',
+      valuesPerElement: 1,
+      values: [3197233, 3197234, 3197231, 3197232]
+    },
+    {
+      name: 'LSTMODDATE',
+      valueType: 'String',
+      valuesPerElement: 1,
+      values: ['2/14/2009', '2/14/2009', '2/14/2009', '2/14/2009']
+    },
+    {
+      name: 'HEIGHTROOF',
+      valueType: 'Float64',
+      valuesPerElement: 1,
+      values: [31.46, 31.49, 31.49, 31.49]
+    }
+  ];
+
+  const EXPECTED_GLTF_JSON_WITH_EXTENSION = {
+    asset: {
+      version: '2.0',
+      generator: 'loaders.gl'
+    },
+    buffers: [],
+    extensions: {
+      EXT_structural_metadata: {
+        schema: {
+          id: 'schema_id',
+          classes: {
+            schemaClassId: {
+              properties: {
+                OBJECTID: {
+                  type: 'SCALAR',
+                  componentType: 'UINT32'
+                },
+                BIN: {
+                  type: 'SCALAR',
+                  componentType: 'INT32'
+                },
+                LSTMODDATE: {
+                  type: 'STRING'
+                },
+                HEIGHTROOF: {
+                  type: 'SCALAR',
+                  componentType: 'FLOAT64'
+                }
+              }
+            }
+          }
+        },
+        propertyTables: [
+          {
+            class: 'schemaClassId',
+            count: 4,
+            properties: {
+              OBJECTID: {
+                values: 0
+              },
+              BIN: {
+                values: 1
+              },
+              LSTMODDATE: {
+                values: 3,
+                stringOffsets: 2
+              },
+              HEIGHTROOF: {
+                values: 4
+              }
+            }
+          }
+        ]
+      }
+    },
+    extensionsRequired: [],
+    extensionsUsed: ['EXT_structural_metadata'],
+    bufferViews: [
+      {
+        buffer: 0,
+        byteOffset: 0,
+        byteLength: 16
+      },
+      {
+        buffer: 1,
+        byteOffset: 0,
+        byteLength: 16
+      },
+      {
+        buffer: 2,
+        byteOffset: 0,
+        byteLength: 20
+      },
+      {
+        buffer: 3,
+        byteOffset: 0,
+        byteLength: 36
+      },
+      {
+        buffer: 4,
+        byteOffset: 0,
+        byteLength: 32
+      }
+    ]
+  };
+
+  const scenegraph = new GLTFScenegraph();
+
+  encodeExtStructuralMetadata(scenegraph, SCHEMA_CLASS_ID, ATTRIBUTES);
+  t.equal(scenegraph.byteLength, 120);
+  t.deepEqual(
+    JSON.stringify(scenegraph.gltf.json),
+    JSON.stringify(EXPECTED_GLTF_JSON_WITH_EXTENSION)
+  );
   t.end();
 });
