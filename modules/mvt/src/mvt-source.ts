@@ -56,10 +56,7 @@ export type MVTTileSourceProps = DataSourceProps & {
 
 /**
  * MVT data source for Mapbox Vector Tiles v1.
- */
-/**
- * A PMTiles data source
- * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
+ * @note Can be either a raster or vector tile source depending on the contents of the tilejson file.
  */
 export class MVTTileSource extends DataSource implements ImageTileSource, VectorTileSource {
   readonly props: MVTTileSourceProps;

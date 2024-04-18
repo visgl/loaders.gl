@@ -42,12 +42,13 @@ const DropDown = styled.select`
 `;
 
 export type Example = {
-  sourceType: 'mvt' | 'pmtiles' | 'table';
+  sourceType: 'mvt' | 'pmtiles' | 'table' | 'wms';
   data: string;
   attributions?: string[];
   viewState?: Record<string, unknown>;
   tileSize?: number[];
-};
+}
+
 
 export type ExamplePanelProps = React.PropsWithChildren<{
   /** list of examples to show */

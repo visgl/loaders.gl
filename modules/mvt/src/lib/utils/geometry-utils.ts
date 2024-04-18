@@ -6,7 +6,7 @@ import {getPolygonSignedArea} from '@math.gl/polygon';
 import {FlatIndexedGeometry, FlatPolygon} from '@loaders.gl/schema';
 
 /**
- *
+ * Calculates signed area of a polygon (winding order controls sign)
  * @param ring
  * @returns sum
  */
@@ -18,6 +18,29 @@ export function signedArea(ring: number[][]) {
     sum += (p2[0] - p1[0]) * (p1[1] + p2[1]);
   }
   return sum;
+}
+
+/**
+ * Calculates the extents of a tile
+ * @param tileIndex 
+ * @returns 
+ */
+export function getTileExtents(tileIndex: {x: number; y: number; z: number}): [number, number] {
+  const scale = Math.pow(2, tileIndex.z);
+  const y2 = (180 - tileIndex.y * 360) / scale;
+  return [
+    (tileIndex.x * 360) / scale - 180,
+    (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90
+  ];
+}
+
+export function getTileBoundingBox(tileIndex: {x: number; y: number; z: number}): [[number, number], [number, number]] {
+  const [x0, y0] = getTileExtents(tileIndex);
+  const [x1, y1] = getTileExtents({x: tileIndex.x + 1, y: tileIndex.y + 1, z: tileIndex.z});
+  return [
+    [x0, y0],
+    [x1, y1]
+  ];
 }
 
 /**
@@ -108,7 +131,7 @@ export function projectTileCoordinatesToLngLat(
  */
 
 /**
- *
+ * Projects tile coordinates to lng lat flat
  * @param data
  * @param x0
  * @param y0

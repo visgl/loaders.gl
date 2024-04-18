@@ -1,8 +1,9 @@
 // loaders.gl
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT AND ISC
+// Copyright (c) vis.gl contributors
 
-import {TileSource, GetTileParameters, GetTileDataParameters} from './tile-source';
-import {ImageSource, ImageSourceMetadata} from './image-source';
+import {TileSource, GetTileParameters, GetTileDataParameters} from '@loaders.gl/loader-utils';
+import {ImageSource, ImageSourceMetadata} from '@loaders.gl/loader-utils';
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) extents
