@@ -14,7 +14,6 @@ export class Slice extends Array<number> {
   end?: number;
 }
 
-
 /**
  * Clip features between two vertical or horizontal axis-parallel lines:
  *     |        |

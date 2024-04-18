@@ -85,9 +85,9 @@ function convertFeature(
           targetFeatures.push(createFeature(id, 'LineString', geometry, feature.properties));
         }
         return;
-      } else {
-        convertLines(feature.geometry.coordinates, tolerance, false, geometry);
       }
+      convertLines(feature.geometry.coordinates, tolerance, false, geometry);
+
       break;
     case 'Polygon':
       convertLines(feature.geometry.coordinates, tolerance, true, geometry);
@@ -108,12 +108,7 @@ function convertFeature(
           properties: feature.properties
         };
 
-        convertFeature(
-          targetFeatures,
-          singleFeature,
-          index,
-          options
-        );
+        convertFeature(targetFeatures, singleFeature, index, options);
       }
       return;
     default:
@@ -127,8 +122,14 @@ function convertPoint(coords: number[], target: FlatPointsArray): void {
   target.push(projectX(coords[0]), projectY(coords[1]), 0);
 }
 
-function convertLine(ring: number[][], tolerance: number, isPolygon: boolean, target: FlatPointsArray): void {
-  let x0: number, y0: number;
+function convertLine(
+  ring: number[][],
+  tolerance: number,
+  isPolygon: boolean,
+  target: FlatPointsArray
+): void {
+  let x0: number;
+  let y0: number;
   let size: number = 0;
 
   for (let j = 0; j < ring.length; j++) {
@@ -158,7 +159,12 @@ function convertLine(ring: number[][], tolerance: number, isPolygon: boolean, ta
   target.end = target.size;
 }
 
-function convertLines(rings: number[][][], tolerance: number, isPolygon: boolean, target: FlatPointsArray[]): void {
+function convertLines(
+  rings: number[][][],
+  tolerance: number,
+  isPolygon: boolean,
+  target: FlatPointsArray[]
+): void {
   for (let i = 0; i < rings.length; i++) {
     const geometry: FlatPointsArray = [];
     convertLine(rings[i], tolerance, isPolygon, geometry);

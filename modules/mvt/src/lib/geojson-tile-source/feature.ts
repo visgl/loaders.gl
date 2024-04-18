@@ -16,7 +16,7 @@ type BoundingBox = {
   minY: number;
   maxX: number;
   maxY: number;
-}
+};
 
 export function createFeature(
   id: string | number | null,
@@ -24,7 +24,6 @@ export function createFeature(
   geometry: number[],
   properties: Record<string, string>
 ): GeoJSONTileFeature {
-
   let simplifiedType: 1 | 2 | 3;
   const boundingBox: BoundingBox = {
     minX: Infinity,
@@ -61,7 +60,7 @@ export function createFeature(
     id: id == null ? null : id,
     type,
     simplifiedType,
-    geometry: geometry,
+    geometry,
     properties,
     ...boundingBox
   };

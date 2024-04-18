@@ -17,22 +17,25 @@ export type GeoJSONTileFeature = GeoJSONTileGeometry & {
   maxY: number;
 };
 
-export type GeoJSONTileGeometry = GeoJSONTilePointGeometry | GeoJSONTileLineGeometry | GeoJSONTilePolygonGeometry;
+export type GeoJSONTileGeometry =
+  | GeoJSONTilePointGeometry
+  | GeoJSONTileLineGeometry
+  | GeoJSONTilePolygonGeometry;
 
 export type GeoJSONTilePointGeometry = {
   simplifiedType: 1;
   geometry: number[];
-}
+};
 
 export type GeoJSONTileLineGeometry = {
   simplifiedType: 1;
   geometry: number[][];
-}
+};
 
 export type GeoJSONTilePolygonGeometry = {
   simplifiedType: 1;
   geometry: number[][][];
-}
+};
 
 export type GeoJSONTile = {
   features: GeoJSONTileFeature[]; // Feature[]; Doesn't seem JSON compatible??
@@ -91,7 +94,12 @@ export function createTile(features: any[], z, tx, ty, options: CreateTileOption
 }
 
 // eslint-disable-next-line complexity, max-statements
-function addFeature(tile: GeoJSONTile, feature: GeoJSONTileFeature, tolerance: number, options: CreateTileOptions) {
+function addFeature(
+  tile: GeoJSONTile,
+  feature: GeoJSONTileFeature,
+  tolerance: number,
+  options: CreateTileOptions
+) {
   tile.minX = Math.min(tile.minX, feature.minX);
   tile.minY = Math.min(tile.minY, feature.minY);
   tile.maxX = Math.max(tile.maxX, feature.maxX);
@@ -103,33 +111,33 @@ function addFeature(tile: GeoJSONTile, feature: GeoJSONTileFeature, tolerance: n
   const type = feature.type;
 
   switch (type) {
-  case 'Point': 
-  case 'MultiPoint':
-    for (let i = 0; i < geometry.length; i += 3) {
-      simplified.push(geometry[i], geometry[i + 1]);
-      tile.numPoints++;
-      tile.numSimplified++;
-    }
-    break;
-
-  case 'LineString':
-    addLine(simplified, geometry, tile, tolerance, false, false);
-    break;
-
-  case 'MultiLineString': 
-  case 'Polygon':
-    for (let i = 0; i < geometry.length; i++) {
-      addLine(simplified, geometry[i], tile, tolerance, type === 'Polygon', i === 0);
-    }
-    break;
-
-  case 'MultiPolygon':
-    for (const polygon of geometry) {
-      for (const point of polygon) {
-        addLine(simplified, point, tile, tolerance, true, i === 0);
+    case 'Point':
+    case 'MultiPoint':
+      for (let i = 0; i < geometry.length; i += 3) {
+        simplified.push(geometry[i], geometry[i + 1]);
+        tile.numPoints++;
+        tile.numSimplified++;
       }
-    }
-    break;
+      break;
+
+    case 'LineString':
+      addLine(simplified, geometry, tile, tolerance, false, false);
+      break;
+
+    case 'MultiLineString':
+    case 'Polygon':
+      for (let i = 0; i < geometry.length; i++) {
+        addLine(simplified, geometry[i], tile, tolerance, type === 'Polygon', i === 0);
+      }
+      break;
+
+    case 'MultiPolygon':
+      for (const polygon of geometry) {
+        for (const point of polygon) {
+          addLine(simplified, point, tile, tolerance, true, i === 0);
+        }
+      }
+      break;
   }
 
   if (simplified.length) {
@@ -149,12 +157,12 @@ function addFeature(tile: GeoJSONTile, feature: GeoJSONTileFeature, tolerance: n
     const tileFeature: GeoJSONTileFeature = {
       geometry: simplified,
       type,
-      simplifiedType: 
+      simplifiedType:
         type === 'Polygon' || type === 'MultiPolygon'
           ? 3
           : type === 'LineString' || type === 'MultiLineString'
-            ? 2
-            : 1,
+          ? 2
+          : 1,
       properties
     };
     if (feature.id !== null) {

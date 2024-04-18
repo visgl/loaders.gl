@@ -24,7 +24,7 @@ const square = [
   }
 ];
 
-test('GeoJSONTileSource#constructor', t => {
+test('GeoJSONTileSource#constructor', (t) => {
   const source = new GeoJSONTileSource({
     data: {
       type: 'FeatureCollection',
@@ -44,14 +44,22 @@ test('GeoJSONTileSource#getTileSync#us-states.json', async (t) => {
   const geojson = await getJSON('us-states.json');
   const index = new GeoJSONTileSource(geojson, {debug: 2});
 
-  t.same(index.getTileSync({zoom: 7, x: 37, y: 48})?.features, await getJSON('us-states-z7-37-48.json'), 'z7-37-48');
+  t.same(
+    index.getTileSync({zoom: 7, x: 37, y: 48})?.features,
+    await getJSON('us-states-z7-37-48.json'),
+    'z7-37-48'
+  );
   // t.same(index.getTileSync({zoom: '7',x:  '37', y: '48}')?.features, getJSON('us-states-z7-37-48.json'), 'z, x, y as strings');
 
-  t.same(index.getTileSync({zoom: 9, x: 148, y: 192})?.features, square, 'z9-148-192 (clipped square)');
+  t.same(
+    index.getTileSync({zoom: 9, x: 148, y: 192})?.features,
+    square,
+    'z9-148-192 (clipped square)'
+  );
   // t.same(index.getTileSync({zoom: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
 
   t.equal(index.getTileSync({zoom: 11, x: 800, y: 400}), null, 'non-existing tile');
-  t.equal(index.getTileSync({zoom: -5, x: 123.25,y:  400.25}), null, 'invalid tile');
+  t.equal(index.getTileSync({zoom: -5, x: 123.25, y: 400.25}), null, 'invalid tile');
   t.equal(index.getTileSync({zoom: 25, x: 200, y: 200}), null, 'invalid tile');
 
   console.log = log;
@@ -221,7 +229,6 @@ test('GeoJSONTileSource#handle points in the leftside world and the rightside wo
 
 // full spect
 
-
 testTiles('us-states.json', 'us-states-tiles.json', {indexMaxZoom: 7, indexMaxPoints: 200});
 testTiles('dateline.json', 'dateline-tiles.json', {indexMaxZoom: 0, indexMaxPoints: 10000});
 testTiles('dateline.json', 'dateline-metrics-tiles.json', {
@@ -243,7 +250,10 @@ test('GeoJSONTileSource#throws on invalid GeoJSON', (t) => {
 });
 
 function testTiles(inputFile, expectedFile, options) {
-  test(`GeoJSONTileSource#full tiling test: ${expectedFile.replace('-tiles.json', '')}`, async (t) => {
+  test(`GeoJSONTileSource#full tiling test: ${expectedFile.replace(
+    '-tiles.json',
+    ''
+  )}`, async (t) => {
     const parsedGeojson = await getJSON(inputFile);
     const tiles = genTiles(parsedGeojson, options);
     // fs.writeFileSync(path.join(__dirname, '/fixtures/' + expectedFile), JSON.stringify(tiles));
@@ -287,7 +297,8 @@ function genTiles(data, options?: GeoJSONTileSourceOptions) {
   for (const id in index.tiles) {
     const tile = index.tiles[id];
     const z = tile.z;
-    output[`z${z}-${tile.x}-${tile.y}`] = index.getTileSync({zoom: z, x: tile.x,y:  tile}.y)?.features;
+    output[`z${z}-${tile.x}-${tile.y}`] = index.getTileSync({zoom: z, x: tile.x, y: tile}.y)
+      ?.features;
   }
 
   return output;
