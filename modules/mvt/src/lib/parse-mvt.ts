@@ -17,8 +17,7 @@ import type {MVTLoaderOptions} from '../mvt-loader';
 
 import {VectorTile} from './vector-tile/vector-tile';
 import {VectorTileFeature} from './vector-tile/vector-tile-feature';
-import {BinaryVectorTile} from './binary-vector-tile/binary-vector-tile';
-import {BinaryVectorTileFeature} from './binary-vector-tile/binary-vector-tile-feature';
+import {BinaryVectorTileFeature} from './vector-tile/binary-vector-tile-feature';
 
 /**
  * Parse MVT arrayBuffer and return GeoJSON.
@@ -87,7 +86,7 @@ function parseToFlatGeoJson(
     return [features, geometryInfo];
   }
 
-  const tile = new BinaryVectorTile(new Protobuf(arrayBuffer));
+  const tile = new VectorTile(new Protobuf(arrayBuffer));
 
   const selectedLayers =
     options && Array.isArray(options.layers) ? options.layers : Object.keys(tile.layers);
@@ -99,7 +98,7 @@ function parseToFlatGeoJson(
     }
 
     for (let i = 0; i < vectorTileLayer.length; i++) {
-      const vectorTileFeature = vectorTileLayer.feature(i, geometryInfo);
+      const vectorTileFeature = vectorTileLayer.getBinaryFeature(i, geometryInfo);
       const decodedFeature = getDecodedFeatureBinary(vectorTileFeature, options, layerName);
       features.push(decodedFeature);
     }
@@ -125,7 +124,7 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): 
     }
 
     for (let i = 0; i < vectorTileLayer.length; i++) {
-      const vectorTileFeature = vectorTileLayer.feature(i);
+      const vectorTileFeature = vectorTileLayer.getGeoJSONFeature(i);
       const decodedFeature = getDecodedFeature(vectorTileFeature, options, layerName);
       features.push(decodedFeature);
     }
