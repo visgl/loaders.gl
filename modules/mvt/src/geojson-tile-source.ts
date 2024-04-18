@@ -59,13 +59,14 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
   stats: Record<string, number> = {};
   total: number = 0;
 
-  initPromise: Promise<void>;
+  /** Resolves when the input data promise has been resolved and the top-level tiling is done */
+  ready: Promise<void>;
 
   constructor(data: GeoJSONTable | Promise<GeoJSONTable>, options?: GeoJSONTileSourceOptions) {
     this.options = {...GeoJSONTileSource.defaultOptions, ...options};
     this.getTileData = this.getTileData.bind(this);
 
-    this.initPromise = this.initializeTilesAsync(data);
+    this.ready = this.initializeTilesAsync(data);
   }
 
   async initializeTilesAsync(dataPromise: GeoJSONTable | Promise<GeoJSONTable>): Promise<void> {
@@ -127,20 +128,20 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
    * @param y
    * @returns
    */
-  async getVectorTile(parameters: {
+  async getVectorTile(tileIndex: {
     zoom: number;
     x: number;
     y: number;
   }): Promise<GeoJSONTable | null> {
-    await this.initPromise;
-    const table = this.getTileSync(parameters);
-    console.log('getTileSync', parameters, table);
+    await this.ready;
+    const table = this.getTileSync(tileIndex);
+    console.log('getTileSync', tileIndex, table);
     return table;
   }
 
-  async getTile(parameters: {zoom: number; x: number; y: number}): Promise<GeoJSONTable | null> {
-    await this.initPromise;
-    return this.getTileSync(parameters);
+  async getTile(tileIndex: {zoom: number; x: number; y: number}): Promise<GeoJSONTable | null> {
+    await this.ready;
+    return this.getTileSync(tileIndex);
   }
 
   async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
@@ -150,9 +151,12 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
 
   // Implementation
 
-  getTileSync(parameters: {zoom: number; x: number; y: number}): GeoJSONTable | null {
-    const {zoom, x, y} = parameters;
-    const rawTile = this.getRawTile(zoom, x, y);
+  /**
+   * Synchronously request a tile
+   * @note Application must await `source.ready` before calling sync methods.
+   */
+  getTileSync(tileIndex: {zoom: number; x: number; y: number}): GeoJSONTable | null {
+    const rawTile = this.getRawTile(tileIndex);
     if (!rawTile) {
       return null;
     }
@@ -160,8 +164,14 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
     return convertToGeoJSONTable(rawTile, this.options.extent);
   }
 
+  /**
+   * Return geojsonvt-style "half formed" vector tile
+   * @note Application must await `source.ready` before calling sync methods.
+   */
   // eslint-disable-next-line complexity, max-statements
-  getRawTile(z: number, x: number, y: number): GeoJSONTile | null {
+  getRawTile(tileIndex: {zoom: number; x: number; y: number}): GeoJSONTile | null {
+    const {zoom: z, y} = tileIndex;
+    let {x} = tileIndex;
     // z = +z;
     // x = +x;
     // y = +y;
