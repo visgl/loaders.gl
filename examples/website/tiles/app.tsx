@@ -25,6 +25,7 @@ import {
   INITIAL_MAP_STYLE,
   EXAMPLES
 } from './examples';
+import {GeoJSONTileSource} from '../../../modules/mvt/src';
 
 const INITIAL_VIEW_STATE = {
   latitude: 47.65,
@@ -60,6 +61,8 @@ function createTileSource(example: Example): TileSource<any> {
       });
     case 'mvt':
       return new MVTSource({url: example.data});
+    case 'geojson':
+      return new GeoJSONTileSource({url: example.data});
     default:
       throw new Error(`Unknown source format ${example.format}`);
   }
@@ -144,6 +147,28 @@ function renderControlPanel(props) {
       <pre style={{textAlign: 'center', margin: 0}}>
         {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
         {/* viewState.zoom.toFixed(2) */}
+      </pre>
+    </ControlPanel>
+  );
+}
+
+function renderControlPanel(props) {
+  const {selectedExample, viewState, selectedCategory, loading, metadata, error} = props;
+
+  return (
+    <ControlPanel
+      title="Tileset Metadata"
+      metadata={JSON.stringify(metadata, null, 2)}
+      examples={EXAMPLES}
+      selectedExample={selectedExample}
+      selectedCategory={selectedCategory}
+      onExampleChange={() => {}}
+      loading={loading}
+    >
+      {error ? <div style={{color: 'red'}}>{error}</div> : ''}
+      <pre style={{textAlign: 'center', margin: 0}}>
+        { /* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */ }
+        { /* viewState.zoom.toFixed(2) */ }
       </pre>
     </ControlPanel>
   );

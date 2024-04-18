@@ -30,6 +30,9 @@ export type Example = {
   tileSize?: number[];
 }
 
+export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
+const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
+
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   MVT: {
     'OpenStreetMap Tiles': {
@@ -57,6 +60,18 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       format: 'pmtiles',
       data:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles",
       tileSize: [512,512]
+    }
+  },
+  GeoJSON: {
+    Vancouver: {
+      format: 'geojson',
+      data: `${DECKGL_DATA_URL}/examples/geojson/vancouver-blocks.json`,
+      viewState: {...VIEW_STATE, latitude: 49.254, longitude: -123.13}
+    },
+    Countries: {
+      format: 'geojson',
+      data: `${LOADERS_URL}/modules/geojson/test/data/countries.json`,
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   }
 };

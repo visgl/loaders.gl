@@ -7,7 +7,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {GeoJSONTiler} from '@loaders.gl/mvt';
+import {GeoJSONTileSource} from '@loaders.gl/mvt';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
 
@@ -28,32 +28,40 @@ const square = [
   }
 ];
 
-test('GeoJSONVT#getTile#us-states.json', async (t) => {
+test('GeoJSONTileSource#getTile#us-states.json', async (t) => {
   const log = console.log;
   console.log = function () {};
 
   const geojson = await getJSON('us-states.json');
-  const index = new GeoJSONTiler(geojson, {debug: 2});
+  const source = new GeoJSONTileSource(geojson, {debug: 2});
 
-  t.same(index.getTile(7, 37, 48)?.features, await getJSON('us-states-z7-37-48.json'), 'z7-37-48');
-  // t.same(index.getTile('7', '37', '48')?.features, getJSON('us-states-z7-37-48.json'), 'z, x, y as strings');
+  t.same(
+    source.getTileSync({zoom: 7, x: 37, y: 48})?.features,
+    await getJSON('us-states-z7-37-48.json'),
+    'z7-37-48'
+  );
+  // t.same(source.getTileSync({zoom: '7', x: '37' y:,} '48')?.features, getJSON('us-states-z7-37-48.json'), 'z, x, y as strings');
 
-  t.same(index.getTile(9, 148, 192)?.features, square, 'z9-148-192 (clipped square)');
-  // t.same(index.getTile(11, 592, 768)?.features, square, 'z11-592-768 (clipped square)');
+  t.same(
+    source.getTileSync({zoom: 9, x: 148, y: 192})?.features,
+    square,
+    'z9-148-192 (clipped square)'
+  );
+  // t.same(source.getTileSync({zoom: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
 
-  t.equal(index.getTile(11, 800, 400), null, 'non-existing tile');
-  t.equal(index.getTile(-5, 123.25, 400.25), null, 'invalid tile');
-  t.equal(index.getTile(25, 200, 200), null, 'invalid tile');
+  t.equal(source.getTileSync({zoom: 11, x: 800, y: 400}), null, 'non-existing tile');
+  t.equal(source.getTileSync({zoom: -5, x: 123.25, y: 400.25}), null, 'invalid tile');
+  t.equal(source.getTileSync({zoom: 25, x: 200, y: 200}), null, 'invalid tile');
 
   console.log = log;
 
-  t.equal(index.total, 37);
+  t.equal(source.total, 37);
 
   t.end();
 });
 
-test('GeoJSONVT#getTile#unbuffered tile left/right edges', (t) => {
-  const index = new GeoJSONTiler(
+test('GeoJSONTileSource#getTile#unbuffered tile left/right edges', (t) => {
+  const source = new GeoJSONTileSource(
     {
       type: 'LineString',
       coordinates: [
@@ -66,8 +74,8 @@ test('GeoJSONVT#getTile#unbuffered tile left/right edges', (t) => {
     }
   );
 
-  t.same(index.getTile(2, 1, 1), null);
-  t.same(index.getTile(2, 2, 1)?.features, [
+  t.same(source.getTileSync({zoom: 2, x: 1, y: 1}), null);
+  t.same(source.getTileSync({zoom: 2, x: 2, y: 1})?.features, [
     {
       geometry: [
         [
@@ -82,8 +90,8 @@ test('GeoJSONVT#getTile#unbuffered tile left/right edges', (t) => {
   t.end();
 });
 
-test('GeoJSONVT#getTile#unbuffered tile top/bottom edges', (t) => {
-  const index = new GeoJSONTiler(
+test('GeoJSONTileSource#getTile#unbuffered tile top/bottom edges', (t) => {
+  const source = new GeoJSONTileSource(
     {
       type: 'LineString',
       coordinates: [
@@ -96,7 +104,7 @@ test('GeoJSONVT#getTile#unbuffered tile top/bottom edges', (t) => {
     }
   );
 
-  t.same(index.getTile(2, 1, 0)?.features, [
+  t.same(source.getTileSync({zoom: 2, x: 1, y: 0})?.features, [
     {
       geometry: [
         [
@@ -108,12 +116,12 @@ test('GeoJSONVT#getTile#unbuffered tile top/bottom edges', (t) => {
       tags: null
     }
   ]);
-  t.same(index.getTile(2, 1, 1)?.features, []);
+  t.same(source.getTileSync({zoom: 2, x: 1, y: 1})?.features, []);
   t.end();
 });
 
-test('GeoJSONVT#getTile#polygon clipping on the boundary', (t) => {
-  const index = new GeoJSONTiler(
+test('GeoJSONTileSource#getTile#polygon clipping on the boundary', (t) => {
+  const source = new GeoJSONTileSource(
     {
       type: 'Polygon',
       coordinates: [
@@ -131,7 +139,7 @@ test('GeoJSONVT#getTile#polygon clipping on the boundary', (t) => {
     }
   );
 
-  t.same(index.getTile(5, 19, 9)?.features, [
+  t.same(source.getTileSync({zoom: 5, x: 19, y: 9})?.features, [
     {
       geometry: [
         [
