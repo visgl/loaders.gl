@@ -5,13 +5,6 @@
 
 /* eslint-disable no-console, no-continue */
 
-import type {
-  VectorTileSource,
-  GetTileParameters,
-  TileLoadParameters
-} from '@loaders.gl/loader-utils';
-import type {Feature, FeatureCollection, Geometry} from '@loaders.gl/schema';
-
 import type {GeoJSONTile, GeoJSONTileFeature} from './tile';
 
 import {convert} from './convert'; // GeoJSON conversion and preprocessing
@@ -19,10 +12,9 @@ import {clip} from './clip'; // stripe clipping algorithm
 import {wrap} from './wrap'; // date line processing
 import {transformTile} from './transform'; // coordinate transformation
 import {createTile} from './tile'; // final simplified tile generation
-// import VectorTile from '../mapbox-vector-tile/vector-tile';
 
 /** Options to configure tiling */
-export type GeoJSONTileSourceOptions = {
+export type GeoJSONTilerOptions = {
   maxZoom?: number /** max zoom to preserve detail on */;
   indexMaxZoom?: number /** max zoom in the tile index */;
   indexMaxPoints?: number /** max number of points per tile in the tile index */;
@@ -35,22 +27,22 @@ export type GeoJSONTileSourceOptions = {
   debug?: number /** logging level (0, 1 or 2) */;
 };
 
-export class GeoJSONTileSource implements VectorTileSource {
-  static defaultOptions: Readonly<Required<GeoJSONTileSourceOptions>> = {
-    maxZoom: 14, // max zoom to preserve detail on
-    indexMaxZoom: 5, // max zoom in the tile index
-    indexMaxPoints: 100000, // max number of points per tile in the tile index
-    tolerance: 3, // simplification tolerance (higher means simpler)
-    extent: 4096, // tile extent
-    buffer: 64, // tile buffer on each side
-    lineMetrics: false, // whether to calculate line metrics
-    // @ts-expect-error Ensures all these required params have defaults
-    promoteId: undefined, // name of a feature property to be promoted to feature.id
-    generateId: false, // whether to generate feature ids. Cannot be used with promoteId
-    debug: 0 // logging level (0, 1 or 2)
-  };
+const DEFAULT_OPTIONS: Required<GeoJSONTilerOptions> = {
+  maxZoom: 14, // max zoom to preserve detail on
+  indexMaxZoom: 5, // max zoom in the tile index
+  indexMaxPoints: 100000, // max number of points per tile in the tile index
+  tolerance: 3, // simplification tolerance (higher means simpler)
+  extent: 4096, // tile extent
+  buffer: 64, // tile buffer on each side
+  lineMetrics: false, // whether to calculate line metrics
+  // @ts-expect-error Ensures all these required params have defaults
+  promoteId: undefined, // name of a feature property to be promoted to feature.id
+  generateId: false, // whether to generate feature ids. Cannot be used with promoteId
+  debug: 0 // logging level (0, 1 or 2)
+};
 
-  options: Required<GeoJSONTileSourceOptions>;
+export class GeoJSONTiler {
+  options: Required<GeoJSONTilerOptions>;
 
   // tiles and tileCoords are part of the public API
   tiles: Record<string, GeoJSONTile> = {};
@@ -59,8 +51,8 @@ export class GeoJSONTileSource implements VectorTileSource {
   stats: Record<string, number> = {};
   total: number = 0;
 
-  constructor(data: Feature[], options?: GeoJSONTileSourceOptions) {
-    this.options = {...GeoJSONTileSource.defaultOptions, ...options};
+  constructor(data, options?: GeoJSONTilerOptions) {
+    this.options = {...DEFAULT_OPTIONS, ...options};
     options = this.options;
 
     const debug = options.debug;
@@ -104,67 +96,6 @@ export class GeoJSONTileSource implements VectorTileSource {
     }
   }
 
-  async getMetadata() {
-    return {};
-  }
-
-  async getTileData(parameters: TileLoadParameters): Promise<unknown | null> {
-    return null;
-  }
-
-  async getVectorTile(parameters: GetTileParameters): Promise<unknown | null> {
-    return null;
-  }
-
-  async getTile(parameters: GetTileParameters): Promise<GeoJSONTile | null> {
-    return this.getTileSync(parameters);
-  }
-
-  getGeoJSONTile(parameters: GetTileParameters): FeatureCollection {
-    const tile = this.getTileSync(parameters);
-
-    const features: Feature[] = [];
-    for (const simplifiedFeature of tile?.features || []) {
-
-      let geometry: Geometry;
-
-      switch (simplifiedFeature.simplifiedType) {
-      case 1:
-        if (simplifiedFeature.geometry.length == 1) {
-          geometry = {type: 'Point', coordinates: simplifiedFeature.geometry[0]};
-        } else {
-          geometry = {type: 'MultiPoint', coordinates: simplifiedFeature.geometry};
-        }
-        break;
-      case 2:
-        if (simplifiedFeature.geometry.length == 1) {
-          geometry = {type: 'LineString', coordinates: simplifiedFeature.geometry[0]};
-        } else {
-          geometry = {type: 'MultiLineString', coordinates: simplifiedFeature.geometry};
-        }
-        break;
-      case 3:
-        if (simplifiedFeature.geometry.length > 1) {
-          geometry = {type: 'MultiPolygon', coordinates: [simplifiedFeature.geometry]};
-        } else {
-          geometry = {type: 'Polygon', coordinates: simplifiedFeature.geometry};
-        }
-        break;
-      }
-    
-      features.push({
-        'type': 'Feature',
-        geometry,
-        'properties': simplifiedFeature.properties
-      });
-    }
-
-    return {
-      type: 'FeatureCollection',
-      features
-    }
-  }
-
   /**
    * Get a tile at the specified index
    * @param z
@@ -173,8 +104,12 @@ export class GeoJSONTileSource implements VectorTileSource {
    * @returns
    */
   // eslint-disable-next-line complexity, max-statements
-  getTileSync(tileParams: GetTileParameters): GeoJSONTile | null {
-    let {x, y, zoom: z} = tileParams;
+  getTile(z: number, x: number, y: number): GeoJSONTile | null {
+    // z = +z;
+    // x = +x;
+    // y = +y;
+
+    const {extent, debug} = this.options;
 
     if (z < 0 || z > 24) {
       return null;
@@ -185,12 +120,10 @@ export class GeoJSONTileSource implements VectorTileSource {
 
     const id = toID(z, x, y);
     if (this.tiles[id]) {
-      return transformTile(this.tiles[id], this.options.extent);
+      return transformTile(this.tiles[id], extent);
     }
 
-    if (this.options.debug > 1) {
-      console.log('drilling down to z%d-%d-%d', z, x, y);
-    }
+    if (debug > 1) console.log('drilling down to z%d-%d-%d', z, x, y);
 
     let z0 = z;
     let x0 = x;
@@ -209,16 +142,16 @@ export class GeoJSONTileSource implements VectorTileSource {
     }
 
     // if we found a parent tile containing the original geometry, we can drill down from it
-    if (this.options.debug > 1) {
+    if (debug > 1) {
       console.log('found parent tile z%d-%d-%d', z0, x0, y0);
       console.time('drilling down');
     }
     this.splitTile(parent.source, z0, x0, y0, z, x, y);
-    if (this.options.debug > 1) {
+    if (debug > 1) {
       console.timeEnd('drilling down');
     }
 
-    return this.tiles[id] ? transformTile(this.tiles[id], this.options.extent) : null;
+    return this.tiles[id] ? transformTile(this.tiles[id], extent) : null;
   }
 
   /**
@@ -302,13 +235,9 @@ export class GeoJSONTileSource implements VectorTileSource {
       // if we slice further down, no need to keep source geometry
       tile.source = null;
 
-      if (features.length === 0) {
-        continue;
-      }
+      if (features.length === 0) continue;
 
-      if (debug > 1) {
-        console.time('clipping');
-      }
+      if (debug > 1) console.time('clipping');
 
       // values we'll use for clipping
       const k1 = (0.5 * options.buffer) / options.extent;
@@ -339,9 +268,7 @@ export class GeoJSONTileSource implements VectorTileSource {
         right = null;
       }
 
-      if (debug > 1) {
-        console.timeEnd('clipping');
-      }
+      if (debug > 1) console.timeEnd('clipping');
 
       stack.push(tl || [], z + 1, x * 2, y * 2);
       stack.push(bl || [], z + 1, x * 2, y * 2 + 1);
@@ -349,7 +276,6 @@ export class GeoJSONTileSource implements VectorTileSource {
       stack.push(br || [], z + 1, x * 2 + 1, y * 2 + 1);
     }
   }
-  
 }
 
 function toID(z, x, y) {

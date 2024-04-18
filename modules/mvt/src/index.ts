@@ -13,6 +13,5 @@ export {MVTSource} from './mvt-source';
 
 // GeoJSONTiler
 
-export type {GeoJSONTile, GeoJSONTileFeature} from './lib/geojson-tile-source/tile';
-export type {GeoJSONTileSourceOptions} from './lib/geojson-tile-source/geojson-tile-source';
-export {GeoJSONTileSource} from './lib/geojson-tile-source/geojson-tile-source';
+export type {GeoJSONTilerOptions} from './lib/geojson-tiler/geojson-tiler';
+export {GeoJSONTiler} from './lib/geojson-tiler/geojson-tiler';

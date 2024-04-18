@@ -22,7 +22,7 @@ const WITH_FEATURE_ID = '@loaders.gl/mvt/test/data/mvt/with_feature_id.mvt';
 
 // Geometry Array Results
 
-// GeoJSON Results
+// // GeoJSON Results
 import decodedPolygonsGeometry from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_polygons_array.json' assert {type: 'json'};
 
 // GeoJSON Results

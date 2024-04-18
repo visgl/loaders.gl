@@ -53,6 +53,10 @@ export type TileSourceLayer = {
  * Generic parameters for requesting an image from an image source
  */
 export type GetTileParameters = {
+  /** Layers to render */
+  layers: string | string[];
+  /** Styling */
+  styles?: unknown;
   /** bounding box of the requested map image */
   zoom: number;
   /** tile x coordinate */
@@ -61,10 +65,6 @@ export type GetTileParameters = {
   y: number;
   /** Coordinate reference system for the image (not the bounding box) */
   crs?: string;
-  /** Layers to render */
-  layers?: string | string[];
-  /** Styling */
-  styles?: unknown;
   /** requested format for the return image */
   format?: 'image/png';
 };

@@ -149,28 +149,6 @@ function renderControlPanel(props) {
   );
 }
 
-function renderControlPanel(props) {
-  const {selectedExample, viewState, selectedCategory, loading, metadata, error} = props;
-
-  return (
-    <ControlPanel
-      title="Tileset Metadata"
-      metadata={JSON.stringify(metadata, null, 2)}
-      examples={EXAMPLES}
-      selectedExample={selectedExample}
-      selectedCategory={selectedCategory}
-      onExampleChange={() => {}}
-      loading={loading}
-    >
-      {error ? <div style={{color: 'red'}}>{error}</div> : ''}
-      <pre style={{textAlign: 'center', margin: 0}}>
-        { /* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */ }
-        { /* viewState.zoom.toFixed(2) */ }
-      </pre>
-    </ControlPanel>
-  );
-}
-
 function getTooltip(info) {
   if (info.tile) {
     const {x, y, z} = info.tile.index;
