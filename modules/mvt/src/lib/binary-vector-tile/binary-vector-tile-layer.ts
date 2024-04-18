@@ -5,7 +5,7 @@
 /* eslint-disable indent */
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
-import {BinaryVectorTileFeature} from './vector-tile-feature';
+import {BinaryVectorTileFeature} from './binary-vector-tile-feature';
 import Protobuf from 'pbf';
 import {GeojsonGeometryInfo} from '@loaders.gl/schema';
 

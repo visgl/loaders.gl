@@ -6,7 +6,7 @@
 
 import Protobuf from 'pbf';
 import {FlatFeature, FlatIndexedGeometry, GeojsonGeometryInfo} from '@loaders.gl/schema';
-import {classifyRings, project, readFeature} from '../../helpers/binary-util-functions';
+import {classifyRingsFlat, projectToLngLatFlat} from '../../helpers/geometry-utils';
 
 // Reduce GC by reusing variables
 let endPos: number;
@@ -16,10 +16,6 @@ let length: number;
 let x: number;
 let y: number;
 let i: number;
-
-export const TEST_EXPORTS = {
-  classifyRings
-};
 
 export class BinaryVectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
@@ -161,7 +157,7 @@ export class BinaryVectorTileFeature {
         break;
 
       case 3: // Polygon
-        geometry = classifyRings(geom);
+        geometry = classifyRingsFlat(geom);
 
         // Unlike Point & LineString geom.indices is a 2D array, thanks
         // to the classifyRings method
@@ -193,11 +189,39 @@ export class BinaryVectorTileFeature {
     if (typeof options === 'function') {
       return this._toBinaryCoordinates(options);
     }
-    const {x, y, z} = options;
-    const size = this.extent * Math.pow(2, z);
-    const x0 = this.extent * x;
-    const y0 = this.extent * y;
+    const tileIndex = options;
+    return this._toBinaryCoordinates((data: number[]) =>
+      projectToLngLatFlat(data, tileIndex, this.extent)
+    );
+  }
+}
 
-    return this._toBinaryCoordinates((data: number[]) => project(data, x0, y0, size));
+/**
+ *
+ * @param tag
+ * @param feature
+ * @param pbf
+ */
+function readFeature(tag: number, feature?: BinaryVectorTileFeature, pbf?: Protobuf): void {
+  if (feature && pbf) {
+    if (tag === 1) feature.id = pbf.readVarint();
+    else if (tag === 2) readTag(pbf, feature);
+    else if (tag === 3) feature.type = pbf.readVarint();
+    else if (tag === 4) feature._geometry = pbf.pos;
+  }
+}
+
+/**
+ *
+ * @param pbf
+ * @param feature
+ */
+function readTag(pbf: Protobuf, feature: BinaryVectorTileFeature): void {
+  const end = pbf.readVarint() + pbf.pos;
+
+  while (pbf.pos < end) {
+    const key = feature._keys[pbf.readVarint()];
+    const value = feature._values[pbf.readVarint()];
+    feature.properties[key] = value;
   }
 }
