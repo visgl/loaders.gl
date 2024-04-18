@@ -97,7 +97,8 @@ export type TileSourceProps = {}; // DataSourceProps;
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export interface TileSource<MetadataT extends TileSourceMetadata> { // extends DataSource {
+export interface TileSource<MetadataT extends TileSourceMetadata> {
+  // extends DataSource {
   getMetadata(): Promise<MetadataT>;
   /** Flat parameters */
   getTile(parameters: GetTileParameters): Promise<unknown | null>;

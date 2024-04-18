@@ -5,7 +5,11 @@
 
 /* eslint-disable no-console, no-continue */
 
-import {VectorTileSource, VectorTileSourceProps, TileLoadParameters} from '@loaders.gl/loader-utils';
+import {
+  VectorTileSource,
+  VectorTileSourceProps,
+  TileLoadParameters
+} from '@loaders.gl/loader-utils';
 import {Feature, GeoJSONTable} from '@loaders.gl/schema';
 
 import type {GeoJSONTile, GeoJSONTileFeature} from './lib/geojson-tiler/tile';
@@ -390,7 +394,7 @@ function convertToGeoJSONTable(vtTile: GeoJSONTile, extent: number): GeoJSONTabl
     const feature: Feature = {
       type: 'Feature',
       geometry: {
-        type: type,
+        type,
         coordinates
       },
       properties: rawFeature.tags || {}
@@ -410,10 +414,7 @@ function convertToGeoJSONTable(vtTile: GeoJSONTile, extent: number): GeoJSONTabl
 
 function toLngLat(coords: any, extent: number): any {
   if (Array.isArray(coords[0])) {
-    return coords.map(c => toLngLat(c, extent));
+    return coords.map((c) => toLngLat(c, extent));
   }
-  return [
-    coords[0] / extent,
-    coords[1] / extent
-  ];
+  return [coords[0] / extent, coords[1] / extent];
 }
