@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// import type {DataSourceProps} from './data-source';
+// import {DataSource} from './data-source';
+
 /**
  * Normalized capabilities of an Image service
  * Sources are expected to normalize the response to capabilities
@@ -87,14 +90,14 @@ export type NonGeoBoundingBox = {left: number; top: number; right: number; botto
 /**
  * Props for a TileSource
  */
-export type TileSourceProps = {};
+export type TileSourceProps = {}; // DataSourceProps;
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) extents
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export interface TileSource<MetadataT extends TileSourceMetadata> {
+export interface TileSource<MetadataT extends TileSourceMetadata> { // extends DataSource {
   getMetadata(): Promise<MetadataT>;
   /** Flat parameters */
   getTile(parameters: GetTileParameters): Promise<unknown | null>;

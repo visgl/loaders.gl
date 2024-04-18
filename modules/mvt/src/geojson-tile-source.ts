@@ -5,7 +5,7 @@
 
 /* eslint-disable no-console, no-continue */
 
-import {VectorTileSource} from '@loaders.gl/loader-utils';
+import {VectorTileSource, VectorTileSourceProps, TileLoadParameters} from '@loaders.gl/loader-utils';
 import {Feature, GeoJSONTable} from '@loaders.gl/schema';
 
 import type {GeoJSONTile, GeoJSONTileFeature} from './lib/geojson-tiler/tile';
@@ -16,7 +16,7 @@ import {transformTile} from './lib/geojson-tiler/transform'; // coordinate trans
 import {createTile} from './lib/geojson-tiler/tile'; // final simplified tile generation
 
 /** Options to configure tiling */
-export type GeoJSONTileSourceOptions = {
+export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
   maxZoom?: number /** max zoom to preserve detail on */;
   indexMaxZoom?: number /** max zoom in the tile index */;
   indexMaxPoints?: number /** max number of points per tile in the tile index */;
@@ -29,21 +29,23 @@ export type GeoJSONTileSourceOptions = {
   debug?: number /** logging level (0, 1 or 2) */;
 };
 
-const DEFAULT_OPTIONS: Required<GeoJSONTileSourceOptions> = {
-  maxZoom: 14, // max zoom to preserve detail on
-  indexMaxZoom: 5, // max zoom in the tile index
-  indexMaxPoints: 100000, // max number of points per tile in the tile index
-  tolerance: 3, // simplification tolerance (higher means simpler)
-  extent: 4096, // tile extent
-  buffer: 64, // tile buffer on each side
-  lineMetrics: false, // whether to calculate line metrics
-  // @ts-expect-error Ensures all these required params have defaults
-  promoteId: undefined, // name of a feature property to be promoted to feature.id
-  generateId: false, // whether to generate feature ids. Cannot be used with promoteId
-  debug: 0 // logging level (0, 1 or 2)
-};
-
 export class GeoJSONTileSource implements VectorTileSource<any> {
+  static defaultOptions: Required<GeoJSONTileSourceOptions> = {
+    maxZoom: 14, // max zoom to preserve detail on
+    indexMaxZoom: 5, // max zoom in the tile index
+    indexMaxPoints: 100000, // max number of points per tile in the tile index
+    tolerance: 3, // simplification tolerance (higher means simpler)
+    extent: 4096, // tile extent
+    buffer: 64, // tile buffer on each side
+    lineMetrics: false, // whether to calculate line metrics
+    // @ts-expect-error
+    promoteId: undefined, // name of a feature property to be promoted to feature.id
+    generateId: false, // whether to generate feature ids. Cannot be used with promoteId
+    debug: 0 // logging level (0, 1 or 2)
+  };
+
+  mimeType = 'application/vnd.mapbox-vector-tile';
+
   options: Required<GeoJSONTileSourceOptions>;
 
   // tiles and tileCoords are part of the public API
@@ -53,10 +55,22 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
   stats: Record<string, number> = {};
   total: number = 0;
 
-  constructor(data, options?: GeoJSONTileSourceOptions) {
-    this.options = {...DEFAULT_OPTIONS, ...options};
-    options = this.options;
+  initPromise: Promise<void>;
 
+  constructor(data: GeoJSONTable | Promise<GeoJSONTable>, options?: GeoJSONTileSourceOptions) {
+    this.options = {...GeoJSONTileSource.defaultOptions, ...options};
+    this.getTileData = this.getTileData.bind(this);
+
+    this.initPromise = this.initializeTilesAsync(data);
+  }
+
+  async initializeTilesAsync(dataPromise: GeoJSONTable | Promise<GeoJSONTable>): Promise<void> {
+    const data = await dataPromise;
+    this.initializeTilesSync(data);
+  }
+
+  initializeTilesSync(data: GeoJSONTable): void {
+    const options = this.options;
     const debug = options.debug;
 
     if (debug) console.time('preprocess data');
@@ -114,12 +128,23 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
     x: number;
     y: number;
   }): Promise<GeoJSONTable | null> {
-    return this.getTileSync(parameters);
+    await this.initPromise;
+    const table = this.getTileSync(parameters);
+    console.log('getTileSync', parameters, table);
+    return table;
   }
 
   async getTile(parameters: {zoom: number; x: number; y: number}): Promise<GeoJSONTable | null> {
+    await this.initPromise;
     return this.getTileSync(parameters);
   }
+
+  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
+    const {x, y, z} = tileParams.index;
+    return await this.getVectorTile({x, y, zoom: z});
+  }
+
+  // Implementation
 
   getTileSync(parameters: {zoom: number; x: number; y: number}): GeoJSONTable | null {
     const {zoom, x, y} = parameters;
@@ -128,7 +153,7 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
       return null;
     }
 
-    return convertToGeoJSONTable(rawTile);
+    return convertToGeoJSONTable(rawTile, this.options.extent);
   }
 
   // eslint-disable-next-line complexity, max-statements
@@ -310,43 +335,63 @@ function toID(z, x, y): number {
   return ((1 << z) * y + x) * 32 + z;
 }
 
-function convertToGeoJSONTable(vtTile: GeoJSONTile): GeoJSONTable {
+function convertToGeoJSONTable(vtTile: GeoJSONTile, extent: number): GeoJSONTable {
   const features: Feature[] = [];
   for (const rawFeature of vtTile.features) {
     if (!rawFeature || !rawFeature.geometry) {
       continue;
     }
 
-    let type;
-    let geometry = rawFeature.geometry;
+    let type:
+      | 'Point'
+      | 'MultiPoint'
+      | 'LineString'
+      | 'MultiLineString'
+      | 'Polygon'
+      | 'MultiPolygon';
+
+    let coordinates: any;
 
     // raw geometry
     switch (rawFeature.type) {
       case 1:
-        type = 'MultiPoint';
-        if (geometry.length == 1) {
+        if (rawFeature.geometry.length === 1) {
           type = 'Point';
-          geometry = geometry[0];
+          coordinates = rawFeature.geometry[0];
+        } else {
+          type = 'MultiPoint';
+          coordinates = rawFeature.geometry;
         }
+        break;
       case 2:
-        type = 'MultiLineString';
-        if (geometry.length == 1) {
+        if (rawFeature.geometry.length === 1) {
           type = 'LineString';
-          geometry = geometry[0];
+          coordinates = rawFeature.geometry[0];
+        } else {
+          type = 'MultiLineString';
+          coordinates = rawFeature.geometry;
         }
+        break;
       case 3:
-        type = 'Polygon';
-        if (geometry.length > 1) {
+        if (rawFeature.geometry.length > 1) {
           type = 'MultiPolygon';
-          geometry = [geometry];
+          coordinates = [rawFeature.geometry];
+        } else {
+          type = 'Polygon';
+          coordinates = rawFeature.geometry;
         }
+        break;
+      default:
+        continue;
     }
+
+    coordinates = toLngLat(coordinates, extent);
 
     const feature: Feature = {
       type: 'Feature',
       geometry: {
         type: type,
-        coordinates: geometry
+        coordinates
       },
       properties: rawFeature.tags || {}
     };
@@ -361,4 +406,14 @@ function convertToGeoJSONTable(vtTile: GeoJSONTile): GeoJSONTable {
   };
 
   return table;
+}
+
+function toLngLat(coords: any, extent: number): any {
+  if (Array.isArray(coords[0])) {
+    return coords.map(c => toLngLat(c, extent));
+  }
+  return [
+    coords[0] / extent,
+    coords[1] / extent
+  ];
 }

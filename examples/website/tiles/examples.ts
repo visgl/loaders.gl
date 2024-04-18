@@ -7,8 +7,8 @@ export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/m
 // export const INITIAL_CATEGORY_NAME = 'MVT';
 // export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap Tiles';
 
-export const INITIAL_CATEGORY_NAME = 'PMTILES';
-export const INITIAL_EXAMPLE_NAME = 'FSQ Tiles';
+export const INITIAL_CATEGORY_NAME = 'GeoJSON';
+export const INITIAL_EXAMPLE_NAME = 'Vancouver';
 
 export const INITIAL_MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 
@@ -70,7 +70,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     },
     Countries: {
       format: 'geojson',
-      data: `${LOADERS_URL}/modules/geojson/test/data/countries.json`,
+      data: `${LOADERS_URL}/modules/flatgeobuf/test/data/countries.json`,
       viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   }
