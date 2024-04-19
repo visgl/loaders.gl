@@ -3792,6 +3792,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.2.0"
     "@loaders.gl/schema": "npm:4.2.0"
     "@loaders.gl/wkt": "npm:4.2.0"
+    "@probe.gl/log": "npm:^4.0.9"
     "@types/node": "npm:^10.14.15"
     "@types/node-int64": "npm:^0.4.29"
     "@types/thrift": "npm:^0.10.8"

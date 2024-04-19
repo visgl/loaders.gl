@@ -44,6 +44,7 @@ const LOADERS: Loader[] = [
 ];
 const LOADER_OPTIONS = {
   worker: false,
+  limit: 1800000,
   modules: {
     'zstd-codec': ZstdCodec
   },

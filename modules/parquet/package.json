@@ -67,6 +67,7 @@
     "@loaders.gl/loader-utils": "4.2.0",
     "@loaders.gl/schema": "4.2.0",
     "@loaders.gl/wkt": "4.2.0",
+    "@probe.gl/log": "^4.0.9",
     "async-mutex": "^0.2.2",
     "base64-js": "^1.3.1",
     "brotli": "^1.3.2",
