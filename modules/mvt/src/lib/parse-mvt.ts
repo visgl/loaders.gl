@@ -2,21 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
+import type {FlatFeature, Feature, GeojsonGeometryInfo} from '@loaders.gl/schema';
+import type {GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
 import {flatGeojsonToBinary} from '@loaders.gl/gis';
-import type {
-  FlatFeature,
-  Feature,
-  GeojsonGeometryInfo,
-  BinaryFeatureCollection,
-  GeoJSONTable
-} from '@loaders.gl/schema';
+import {log} from '@loaders.gl/loader-utils';
 import Protobuf from 'pbf';
-
-import type {MVTOptions} from '../lib/types';
-import type {MVTLoaderOptions} from '../mvt-loader';
 
 import {VectorTile} from './vector-tile/vector-tile';
 import {VectorTileFeature} from './vector-tile/vector-tile-feature';
+
+import type {MVTLoaderOptions} from '../mvt-loader';
+type MVTOptions = Required<MVTLoaderOptions>['mvt'];
 
 /**
  * Parse MVT arrayBuffer and return GeoJSON.
@@ -26,7 +22,7 @@ import {VectorTileFeature} from './vector-tile/vector-tile-feature';
  * @returns A GeoJSON geometry object or a binary representation
  */
 export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
-  const mvtOptions = normalizeOptions(options);
+  const mvtOptions = checkOptions(options);
 
   const shape: string | undefined =
     options?.gis?.format || options?.mvt?.shape || (options?.shape as string);
@@ -132,22 +128,18 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): 
   return features;
 }
 
-function normalizeOptions(options?: MVTLoaderOptions): MVTOptions {
+/** Check that options are good */
+function checkOptions(options?: MVTLoaderOptions): MVTOptions {
   if (!options?.mvt) {
     throw new Error('mvt options required');
   }
 
-  // Validate
-  const wgs84Coordinates = options.mvt?.coordinates === 'wgs84';
-  const {tileIndex} = options.mvt;
-  const hasTileIndex =
-    tileIndex &&
-    Number.isFinite(tileIndex.x) &&
-    Number.isFinite(tileIndex.y) &&
-    Number.isFinite(tileIndex.z);
-
-  if (wgs84Coordinates && !hasTileIndex) {
+  if (options.mvt?.coordinates === 'wgs84' && !options.mvt.tileIndex) {
     throw new Error('MVT Loader: WGS84 coordinates need tileIndex property');
+  }
+
+  if (options.gis) {
+    log.warn('MVTLoader: "options.gis" is deprecated, use "options.mvt.shape" instead')();
   }
 
   return options.mvt;

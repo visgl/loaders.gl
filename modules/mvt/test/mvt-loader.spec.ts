@@ -7,7 +7,6 @@ import test from 'tape-promise/tape';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
-import {classifyRingsFlat} from '../src/helpers/geometry-utils';
 
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/mvt/points_4-2-6.mvt';
 const MVT_LINES_DATA_URL = '@loaders.gl/mvt/test/data/mvt/lines_2-2-1.mvt';
@@ -27,12 +26,6 @@ import decodedPolygonsGeometry from '@loaders.gl/mvt/test/data/mvt-results/decod
 import decodedPointsGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_points.json' assert {type: 'json'};
 import decodedLinesGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_lines.json' assert {type: 'json'};
 import decodedPolygonsGeoJSON from '@loaders.gl/mvt/test/data/mvt-results/decoded_mvt_polygons.json' assert {type: 'json'};
-
-// Rings
-import ringsSingleRing from '@loaders.gl/mvt/test/data/rings/rings_single_ring.json' assert {type: 'json'};
-import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings/rings_ring_and_hole.json' assert {type: 'json'};
-import ringsTwoRings from '@loaders.gl/mvt/test/data/rings/rings_two_rings.json' assert {type: 'json'};
-import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings/rings_zero_size_hole.json' assert {type: 'json'};
 
 setLoaderOptions({
   _workerType: 'test'
@@ -100,7 +93,7 @@ test('Polygon MVT to local coordinates JSON', async (t) => {
 });
 
 test('MVTLoader#Parse Point MVT', async (t) => {
-  for (const binary of [false, false]) {
+  for (const binary of [true, false]) {
     const outputFormat = binary ? 'binary' : 'geojson';
     const response = await fetchFile(MVT_POINTS_DATA_URL);
     const mvtArrayBuffer = await response.arrayBuffer();
@@ -292,7 +285,7 @@ test('Features with top-level id', async (t) => {
   const response = await fetchFile(WITH_FEATURE_ID);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const binary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
+  const binary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
   t.ok(binary.points.fields.length, 'feature.id fields are preserved');
   t.ok(binary.lines.fields.length, 'feature.id fields are preserved');
   t.ok(binary.polygons.fields.length, 'feature.id fields are preserved');
@@ -339,41 +332,5 @@ test('Triangulation is supported', async (t) => {
   t.equals(minI, 0);
   t.equals(maxI, 29); // Don't expect to find 30 as closed polygon
 
-  t.end();
-});
-
-test('classifyRingsFlat#single ring', async (t) => {
-  const geom = {...ringsSingleRing};
-  const classified = classifyRingsFlat(geom);
-  t.deepEqual(classified.areas, [[-0.02624368667602539]]);
-  t.deepEqual(classified.indices, [[0]]);
-  t.end();
-});
-
-test('classifyRingsFlat#ring and hole', async (t) => {
-  const geom = {...ringsRingAndHole};
-  const classified = classifyRingsFlat(geom);
-  t.deepEqual(classified.areas, [[-0.02624368667602539, 0.001363515853881836]]);
-  t.deepEqual(classified.indices, [[0, 10]]);
-  t.end();
-});
-
-test('classifyRingsFlat#two rings', async (t) => {
-  const geom = {...ringsTwoRings};
-  const classified = classifyRingsFlat(geom);
-  t.deepEqual(classified.areas, [[-0.02624368667602539], [-0.001363515853881836]]);
-  t.deepEqual(classified.indices, [[0], [10]]);
-  t.end();
-});
-
-test('classifyRingsFlat#zero sized hole', async (t) => {
-  // In addition to checking the result,
-  // verify that the data array is shortened
-  const geom = {...ringsZeroSizeHole};
-  t.equal(geom.data.length, 20);
-  const classified = classifyRingsFlat(geom);
-  t.deepEqual(classified.areas, [[-0.44582176208496094]]);
-  t.deepEqual(classified.indices, [[0]]);
-  t.equal(classified.data.length, 12);
   t.end();
 });

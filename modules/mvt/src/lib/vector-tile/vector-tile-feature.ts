@@ -6,7 +6,7 @@
 import {Feature} from '@loaders.gl/schema';
 import {FlatFeature, FlatIndexedGeometry, GeojsonGeometryInfo} from '@loaders.gl/schema';
 import Protobuf from 'pbf';
-import {classifyRings, classifyRingsFlat, projectToLngLatFlat} from '../../helpers/geometry-utils';
+import {classifyRings, classifyRingsFlat, projectToLngLatFlat} from '../utils/geometry-utils';
 
 export class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
