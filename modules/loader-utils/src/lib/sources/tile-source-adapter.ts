@@ -17,6 +17,7 @@ export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
   async getMetadata(): Promise<ImageSourceMetadata> {
     return await this.viewportSource.getMetadata();
   }
+
   /** Flat parameters */
   getTile(parameters: GetTileParameters): Promise<unknown> {
     const width = 512;

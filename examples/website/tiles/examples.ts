@@ -7,8 +7,8 @@ export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/m
 // export const INITIAL_CATEGORY_NAME = 'MVT';
 // export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap Tiles';
 
-export const INITIAL_CATEGORY_NAME = 'PMTILES';
-export const INITIAL_EXAMPLE_NAME = 'FSQ Tiles';
+export const INITIAL_CATEGORY_NAME = 'GeoJSON';
+export const INITIAL_EXAMPLE_NAME = 'Vancouver';
 
 export const INITIAL_MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 
@@ -29,6 +29,9 @@ export type Example = {
   viewState?: Record<string, unknown>;
   tileSize?: number[];
 }
+
+export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
+const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   MVT: {
@@ -57,6 +60,18 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       format: 'pmtiles',
       data:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles",
       tileSize: [512,512]
+    }
+  },
+  GeoJSON: {
+    Vancouver: {
+      format: 'geojson',
+      data: `${DECKGL_DATA_URL}/examples/geojson/vancouver-blocks.json`,
+      viewState: {...VIEW_STATE, latitude: 49.254, longitude: -123.13}
+    },
+    Countries: {
+      format: 'geojson',
+      data: `${LOADERS_URL}/modules/flatgeobuf/test/data/countries.json`,
+      viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   }
 };

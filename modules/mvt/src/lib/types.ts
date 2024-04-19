@@ -41,6 +41,7 @@ export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOption
   layers?: string[];
 };
 
+/** TODO where is this used? */
 export type MVTMapboxGeometry = {
   type?: string;
   id?: number;
