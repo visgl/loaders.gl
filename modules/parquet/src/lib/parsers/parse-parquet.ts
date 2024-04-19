@@ -46,7 +46,7 @@ export async function parseParquetFile(
       rows.push(row);
     }
     if (limitHasReached) {
-      log.warn(`Rows number limit has been reached. Only first ${options?.limit} are loaded`);
+      log.warn(`Rows number limit has been reached. Only first ${options?.limit} are loaded`)();
       break;
     }
   }
