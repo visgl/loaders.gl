@@ -37,6 +37,14 @@ export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
   debug?: number /** logging level (0, 1 or 2) */;
 };
 
+/**
+ * Tiles a GeoJSONTable (can be initialized with a promise).
+ * @todo - metadata should scan all rows to determine schema
+ * @todo - metadata scan all rows to determine tilestats (field values[] etc).
+ * @todo - generate binary output
+ * @todo - handle binary input
+ * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
+ */
 export class GeoJSONTileSource implements VectorTileSource<any> {
   static defaultOptions: Required<GeoJSONTileSourceOptions> = {
     coordinates: 'wgs84', // coordinates in tile coordinates or lng/lat

@@ -66,7 +66,7 @@ function deduceSchemaFromRows(rowTable: unknown[][] | {[key: string]: unknown}[]
 }
 
 /** Given a GeoJSON, try to deduce a schema */
-function deduceSchemaFromGeoJSON(features: {properties: Record<string, number>}[]): Schema {
+function deduceSchemaFromGeoJSON(features: {properties: Record<string, number> | null}[]): Schema {
   if (!features.length) {
     throw new Error('deduce from empty table');
   }

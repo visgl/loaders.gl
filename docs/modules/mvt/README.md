@@ -18,11 +18,12 @@ npm install @loaders.gl/core
 | -------------------------------------------------------- |
 | [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) |
 
-## Components
+## Sources
 
 | Component                                                      |
 | -------------------------------------------------------------- |
-| [`GeoJSONTiler`](/docs/modules/mvt/api-reference/geojson-tiler) |
+| [`MVTSource`](/docs/modules/mvt/api-reference/mvt-source) |
+| [`GeoJSONTiler`](/docs/modules/mvt/api-reference/geojson-tile-source) |
 
 ## Attribution
 

@@ -103,13 +103,13 @@ export default function App({showTileBorders = false, onTilesLoad = null}) {
         ...initialViewState,
         zoom: (metadata.maxZoom + metadata.minZoom) / 2
       };
-      // if (metadata.center && metadata.center[0] !== 0 && metadata.center[1] !== 0) {
-      //   initialViewState = {
-      //     ...initialViewState,
-      //     longitude: metadata.center[0],
-      //     latitude: metadata.center[1]
-      //   };
-      // }
+      if (metadata.center && metadata.center[0] !== 0 && metadata.center[1] !== 0) {
+        initialViewState = {
+          ...initialViewState,
+          longitude: metadata.center[0],
+          latitude: metadata.center[1]
+        };
+      }
       console.log('initialViewState', initialViewState);
     }
     setViewState(initialViewState);
