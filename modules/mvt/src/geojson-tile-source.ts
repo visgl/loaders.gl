@@ -356,6 +356,7 @@ function toID(z, x, y): number {
   return ((1 << z) * y + x) * 32 + z;
 }
 
+// eslint-disable-next-line max-statements, complexity
 function convertToGeoJSONTable(
   vtTile: GeoJSONTile,
   options: {

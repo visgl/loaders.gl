@@ -20,7 +20,7 @@ export function deduceTableSchema(table: Table): Schema {
     case 'object-row-table':
       return deduceSchemaFromRows(table.data);
 
-      case 'geojson-table':
+    case 'geojson-table':
       return deduceSchemaFromGeoJSON(table.features);
 
     case 'columnar-table':
