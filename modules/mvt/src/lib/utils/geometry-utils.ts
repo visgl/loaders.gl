@@ -62,7 +62,7 @@ export function projectToLngLat(
 ): void {
   if (typeof line[0][0] !== 'number') {
     for (const point of line) {
-      //@ts-expect-error
+      // @ts-expect-error
       projectToLngLat(point, tileIndex, extent);
     }
     return;
