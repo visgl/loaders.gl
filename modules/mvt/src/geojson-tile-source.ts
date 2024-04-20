@@ -122,30 +122,23 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
 
   /**
    * Get a tile at the specified index
-   * @param z
-   * @param x
-   * @param y
+   * @param tileIndex z, x, y of tile
    * @returns
    */
-  async getVectorTile(tileIndex: {
-    zoom: number;
-    x: number;
-    y: number;
-  }): Promise<GeoJSONTable | null> {
+  async getVectorTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
     await this.ready;
     const table = this.getTileSync(tileIndex);
-    console.log('getTileSync', tileIndex, table);
     return table;
   }
 
-  async getTile(tileIndex: {zoom: number; x: number; y: number}): Promise<GeoJSONTable | null> {
+  async getTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
     await this.ready;
     return this.getTileSync(tileIndex);
   }
 
   async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
     const {x, y, z} = tileParams.index;
-    return await this.getVectorTile({x, y, zoom: z});
+    return await this.getVectorTile({x, y, z});
   }
 
   // Implementation
@@ -154,7 +147,7 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
    * Synchronously request a tile
    * @note Application must await `source.ready` before calling sync methods.
    */
-  getTileSync(tileIndex: {zoom: number; x: number; y: number}): GeoJSONTable | null {
+  getTileSync(tileIndex: {z: number; x: number; y: number}): GeoJSONTable | null {
     const rawTile = this.getRawTile(tileIndex);
     if (!rawTile) {
       return null;
@@ -168,8 +161,8 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
    * @note Application must await `source.ready` before calling sync methods.
    */
   // eslint-disable-next-line complexity, max-statements
-  getRawTile(tileIndex: {zoom: number; x: number; y: number}): GeoJSONTile | null {
-    const {zoom: z, y} = tileIndex;
+  getRawTile(tileIndex: {z: number; x: number; y: number}): GeoJSONTile | null {
+    const {z, y} = tileIndex;
     let {x} = tileIndex;
     // z = +z;
     // x = +x;

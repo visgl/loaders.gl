@@ -51,22 +51,22 @@ test('GeoJSONTileSource#getTile#us-states.json', async (t) => {
   await source.ready;
 
   t.same(
-    source.getRawTile({zoom: 7, x: 37, y: 48})?.features,
+    source.getRawTile({z: 7, x: 37, y: 48})?.features,
     await getJSON('us-states-z7-37-48.json'),
     'z7-37-48'
   );
-  // t.same(source.getRawTile({zoom: '7', x: '37' y:,} '48')?.features, getJSON('us-states-z7-37-48.json'), 'z, x, y as strings');
+  // t.same(source.getRawTile({z: '7', x: '37' y:,} '48')?.features, getJSON('us-states-z7-37-48.json'), 'z, x, y as strings');
 
   t.same(
-    source.getRawTile({zoom: 9, x: 148, y: 192})?.features,
+    source.getRawTile({z: 9, x: 148, y: 192})?.features,
     square,
     'z9-148-192 (clipped square)'
   );
-  // t.same(source.getRawTile({zoom: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
+  // t.same(source.getRawTile({z: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
 
-  t.equal(source.getRawTile({zoom: 11, x: 800, y: 400}), null, 'non-existing tile');
-  t.equal(source.getRawTile({zoom: -5, x: 123.25, y: 400.25}), null, 'invalid tile');
-  t.equal(source.getRawTile({zoom: 25, x: 200, y: 200}), null, 'invalid tile');
+  t.equal(source.getRawTile({z: 11, x: 800, y: 400}), null, 'non-existing tile');
+  t.equal(source.getRawTile({z: -5, x: 123.25, y: 400.25}), null, 'invalid tile');
+  t.equal(source.getRawTile({z: 25, x: 200, y: 200}), null, 'invalid tile');
 
   console.log = log;
 
@@ -90,9 +90,9 @@ test('GeoJSONTileSource#getTile#unbuffered tile left/right edges', async (t) => 
   );
   await source.ready;
 
-  let tile = source.getRawTile({zoom: 2, x: 1, y: 1});
+  let tile = source.getRawTile({z: 2, x: 1, y: 1});
   t.same(tile, null);
-  tile = source.getRawTile({zoom: 2, x: 2, y: 1});
+  tile = source.getRawTile({z: 2, x: 2, y: 1});
   t.same(tile?.features, [
     {
       geometry: [
@@ -123,7 +123,7 @@ test('GeoJSONTileSource#getTile#unbuffered tile top/bottom edges', async (t) => 
   );
   await source.ready;
 
-  t.same(source.getRawTile({zoom: 2, x: 1, y: 0})?.features, [
+  t.same(source.getRawTile({z: 2, x: 1, y: 0})?.features, [
     {
       geometry: [
         [
@@ -135,7 +135,7 @@ test('GeoJSONTileSource#getTile#unbuffered tile top/bottom edges', async (t) => 
       tags: null
     }
   ]);
-  t.same(source.getRawTile({zoom: 2, x: 1, y: 1})?.features, []);
+  t.same(source.getRawTile({z: 2, x: 1, y: 1})?.features, []);
   t.end();
 });
 
@@ -159,7 +159,7 @@ test('GeoJSONTileSource#getTile#polygon clipping on the boundary', async (t) => 
   );
   await source.ready;
 
-  t.same(source.getRawTile({zoom: 5, x: 19, y: 9})?.features, [
+  t.same(source.getRawTile({z: 5, x: 19, y: 9})?.features, [
     {
       geometry: [
         [
