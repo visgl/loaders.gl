@@ -2447,6 +2447,7 @@ __metadata:
   dependencies:
     "@loaders.gl/schema": "npm:4.3.0-alpha.2"
     "@loaders.gl/worker-utils": "npm:4.3.0-alpha.2"
+    "@probe.gl/log": "npm:^4.0.2"
     "@probe.gl/stats": "npm:^4.0.2"
   peerDependencies:
     "@loaders.gl/core": ^4.0.0

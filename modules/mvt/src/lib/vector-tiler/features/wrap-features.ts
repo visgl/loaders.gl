@@ -4,7 +4,7 @@
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import type {ProtoFeature} from './proto-feature';
-import {createFeature} from './proto-feature';
+import {createProtoFeature} from './proto-feature';
 import {clipFeatures} from './clip-features';
 
 /**
@@ -22,7 +22,7 @@ export type WrapFeaturesOptions = {
  * @param options buffer and extent
  * @returns
  */
-export function wrapFeatures(features: ProtoFeature[], options: WrapFeaturesOptions) {
+export function wrapFeatures(features: ProtoFeature[], options: WrapFeaturesOptions): ProtoFeature[] {
   const buffer = options.buffer / options.extent;
   let merged: ProtoFeature[] = features;
   const left = clipFeatures(features, 1, -1 - buffer, buffer, 0, -1, 2, options); // left world copy
@@ -57,26 +57,34 @@ function shiftFeatureCoords(features: ProtoFeature[], offset: number): ProtoFeat
 
     let newGeometry;
 
-    if (type === 'Point' || type === 'MultiPoint' || type === 'LineString') {
-      newGeometry = shiftCoords(feature.geometry, offset);
-    } else if (type === 'MultiLineString' || type === 'Polygon') {
-      newGeometry = [];
-      for (const line of feature.geometry) {
-        newGeometry.push(shiftCoords(line, offset));
-      }
-    } else if (type === 'MultiPolygon') {
-      newGeometry = [];
-      for (const polygon of feature.geometry) {
-        const newPolygon: Points = [];
-        for (const line of polygon) {
-          // @ts-expect-error TODO
-          newPolygon.push(shiftCoords(line, offset));
+    switch (type) {
+      case 'Point':
+      case 'MultiPoint':
+      case 'LineString':
+        newGeometry = shiftCoords(feature.geometry, offset);
+        break;
+
+      case 'MultiLineString':
+      case 'Polygon':
+        newGeometry = [];
+        for (const line of feature.geometry) {
+          newGeometry.push(shiftCoords(line, offset));
         }
-        newGeometry.push(newPolygon);
-      }
+        break;
+
+      case 'MultiPolygon':
+        newGeometry = [];
+        for (const polygon of feature.geometry) {
+          const newPolygon: Points = [];
+          for (const line of polygon) {
+            // @ts-expect-error TODO
+            newPolygon.push(shiftCoords(line, offset));
+          }
+          newGeometry.push(newPolygon);
+        }
     }
 
-    newFeatures.push(createFeature(feature.id, type, newGeometry, feature.tags));
+    newFeatures.push(createProtoFeature(feature.id, type, newGeometry, feature.tags));
   }
 
   return newFeatures;

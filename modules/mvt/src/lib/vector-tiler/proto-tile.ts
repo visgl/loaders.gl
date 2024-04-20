@@ -3,31 +3,39 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-// import type {Feature} from '@loaders.gl/schema';
-
 import type {ProtoFeature} from './features/proto-feature';
 
 export type ProtoTile = {
-  features: ProtoFeature[]; // Feature[]; Doesn't seem JSON compatible??
-  type?: number;
+  /** Processed features */
+  protoFeatures: ProtoFeature[];
+  /** if we slice further down, no need to keep source geometry */
+  sourceFeatures: ProtoFeature[] | null;
+
+  /** Properties */
   tags?: Record<string, string>;
 
-  // tile coordinates
+  /** tile x coordinate */
   x: number;
+  /** tile y coordinate */
   y: number;
+  /** tile z coordinate */
   z: number;
 
-  // spatial extents
+  /** spatial extent */
   minX: number;
+  /** spatial extent */
   maxX: number;
+  /** spatial extent */
   minY: number;
+  /** spatial extent */
   maxY: number;
 
+  /** Whether this tile has been transformed */
   transformed: boolean;
   numPoints: number;
   numSimplified: number;
+  /** Number of features in this tile */
   numFeatures: number;
-  source: any | null;
 };
 
 export type CreateTileOptions = {
@@ -40,14 +48,20 @@ export type CreateTileOptions = {
 /**
  * Create a tile from features and tile index
  */
-export function createTile(features: any[], z, tx, ty, options: CreateTileOptions): ProtoTile {
+export function createProtoTile(
+  features: ProtoFeature[],
+  z,
+  tx,
+  ty,
+  options: CreateTileOptions
+): ProtoTile {
   const tolerance = z === options.maxZoom ? 0 : options.tolerance / ((1 << z) * options.extent);
   const tile: ProtoTile = {
-    features: [],
+    protoFeatures: [],
+    sourceFeatures: null,
     numPoints: 0,
     numSimplified: 0,
     numFeatures: features.length,
-    source: null,
     x: tx,
     y: ty,
     z,
@@ -58,77 +72,106 @@ export function createTile(features: any[], z, tx, ty, options: CreateTileOption
     maxY: 0
   };
   for (const feature of features) {
-    addFeature(tile, feature, tolerance, options);
+    addProtoFeature(tile, feature, tolerance, options);
   }
   return tile;
 }
 
 // eslint-disable-next-line complexity, max-statements
-function addFeature(tile: ProtoTile, feature, tolerance: number, options: CreateTileOptions) {
-  const geom = feature.geometry;
+function addProtoFeature(
+  tile: ProtoTile,
+  feature: ProtoFeature,
+  tolerance: number,
+  options: CreateTileOptions
+) {
+  const geometry = feature.geometry;
   const type = feature.type;
-  const simplified: number[] = [];
+  const simplifiedGeometry: number[] = [];
 
   tile.minX = Math.min(tile.minX, feature.minX);
   tile.minY = Math.min(tile.minY, feature.minY);
   tile.maxX = Math.max(tile.maxX, feature.maxX);
   tile.maxY = Math.max(tile.maxY, feature.maxY);
 
-  if (type === 'Point' || type === 'MultiPoint') {
-    for (let i = 0; i < geom.length; i += 3) {
-      simplified.push(geom[i], geom[i + 1]);
-      tile.numPoints++;
-      tile.numSimplified++;
-    }
-  } else if (type === 'LineString') {
-    addLine(simplified, geom, tile, tolerance, false, false);
-  } else if (type === 'MultiLineString' || type === 'Polygon') {
-    for (let i = 0; i < geom.length; i++) {
-      addLine(simplified, geom[i], tile, tolerance, type === 'Polygon', i === 0);
-    }
-  } else if (type === 'MultiPolygon') {
-    for (let k = 0; k < geom.length; k++) {
-      const polygon = geom[k];
-      for (let i = 0; i < polygon.length; i++) {
-        addLine(simplified, polygon[i], tile, tolerance, true, i === 0);
+  let simplifiedType: 1 | 2 | 3;
+  switch (type) {
+    case 'Point':
+    case 'MultiPoint':
+      simplifiedType = 1;
+      for (let i = 0; i < geometry.length; i += 3) {
+        simplifiedGeometry.push(geometry[i], geometry[i + 1]);
+        tile.numPoints++;
+        tile.numSimplified++;
       }
-    }
+      break;
+
+    case 'LineString':
+      simplifiedType = 2;
+      addProtoLine(simplifiedGeometry, geometry, tile, tolerance, false, false);
+      break;
+
+    case 'MultiLineString':
+      simplifiedType = 2;
+      for (let i = 0; i < geometry.length; i++) {
+        addProtoLine(simplifiedGeometry, geometry[i], tile, tolerance, false, i === 0);
+      }
+      break;
+
+    case 'Polygon':
+      simplifiedType = 3;
+      for (let i = 0; i < geometry.length; i++) {
+        addProtoLine(simplifiedGeometry, geometry[i], tile, tolerance, true, i === 0);
+      }
+      break;
+
+    case 'MultiPolygon':
+      simplifiedType = 3;
+      for (let k = 0; k < geometry.length; k++) {
+        const polygon = geometry[k];
+        for (let i = 0; i < polygon.length; i++) {
+          addProtoLine(simplifiedGeometry, polygon[i], tile, tolerance, true, i === 0);
+        }
+      }
+      break;
+
+    default:
+      throw new Error(`Unknown geometry type: ${type}`);
   }
 
-  if (simplified.length) {
-    let tags = feature.tags || null;
+  if (simplifiedGeometry.length) {
+    let tags: Record<string, unknown> | null = feature.tags || null;
 
     if (type === 'LineString' && options.lineMetrics) {
       tags = {};
-      for (const key in feature.tags) tags[key] = feature.tags[key];
+      for (const key in feature.tags) {
+        tags[key] = feature.tags[key];
+      }
+      // @ts-expect-error adding fields to arrays
       // eslint-disable-next-line camelcase
-      tags.mapbox_clip_start = geom.start / geom.size;
+      tags.mapbox_clip_start = geometry.start / geometry.size;
+      // @ts-expect-error adding fields to arrays
       // eslint-disable-next-line camelcase
-      tags.mapbox_clip_end = geom.end / geom.size;
+      tags.mapbox_clip_end = geometry.end / geometry.size;
     }
 
-    // @ts-expect-error TODO - create sub type?
     const tileFeature: ProtoFeature = {
-      geometry: simplified,
-      type:
-        type === 'Polygon' || type === 'MultiPolygon'
-          ? 3
-          : type === 'LineString' || type === 'MultiLineString'
-          ? 2
-          : 1,
+      geometry: simplifiedGeometry,
+      simplifiedType,
+      // @ts-expect-error
       tags
     };
     if (feature.id !== null) {
       tileFeature.id = feature.id;
     }
-    tile.features.push(tileFeature);
+    
+    tile.protoFeatures.push(tileFeature);
   }
 }
 
 // eslint-disable-next-line max-params, max-statements
-function addLine(
-  result,
-  geom,
+function addProtoLine(
+  result: any[],
+  geometry: any,
   tile: ProtoTile,
   tolerance: number,
   isPolygon: boolean,
@@ -136,17 +179,17 @@ function addLine(
 ): void {
   const sqTolerance = tolerance * tolerance;
 
-  if (tolerance > 0 && geom.size < (isPolygon ? sqTolerance : tolerance)) {
-    tile.numPoints += geom.length / 3;
+  if (tolerance > 0 && geometry.size < (isPolygon ? sqTolerance : tolerance)) {
+    tile.numPoints += geometry.length / 3;
     return;
   }
 
   const ring: number[] = [];
 
-  for (let i = 0; i < geom.length; i += 3) {
-    if (tolerance === 0 || geom[i + 2] > sqTolerance) {
+  for (let i = 0; i < geometry.length; i += 3) {
+    if (tolerance === 0 || geometry[i + 2] > sqTolerance) {
       tile.numSimplified++;
-      ring.push(geom[i], geom[i + 1]);
+      ring.push(geometry[i], geometry[i + 1]);
     }
     tile.numPoints++;
   }
