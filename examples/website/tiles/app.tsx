@@ -60,17 +60,21 @@ function createTileSource(example: Example): TileSource<any> {
         attributions: example.attributions,
         loadOptions: {tilejson: {maxValues: 10}}
       });
+
     case 'mvt':
       return new MVTSource({url: example.data});
+
     case 'geojson':
+      // GeoJSONTileSource can be created synchronously with a promise
       const geojsonTablePromise = load(example.data, GeoJSONLoader);
       return new GeoJSONTileSource(geojsonTablePromise);
+
     default:
       throw new Error(`Unknown source format ${example.format}`);
   }
 }
 
-export default function App({showBorder = false, onTilesLoad = null}) {
+export default function App({showTileBorders = false, onTilesLoad = null}) {
 
   const [selectedCategory, setSelectedCategory] = useState(INITIAL_CATEGORY_NAME);
   const [selectedExample, setSelectedExample] = useState(INITIAL_EXAMPLE_NAME);
@@ -112,7 +116,14 @@ export default function App({showBorder = false, onTilesLoad = null}) {
   }, [metadata, example]);
 
   const tileLayer =
-    tileSource && new TileSourceLayer({tileSource, showBorder, metadata, onTilesLoad});
+    tileSource && new TileSourceLayer({
+      tileSource, 
+      showTileBorders: true,
+      metadata, 
+      onTilesLoad, 
+      pickable: true, 
+      autoHighlight: true, 
+    });
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
@@ -167,28 +178,6 @@ function renderControlPanel(props) {
     </ControlPanel>
   );
 }
-
-// function renderControlPanel(props) {
-//   const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, viewState} = props;
-
-//   return (
-//     <ControlPanel
-//       title="Tileset Metadata"
-//       metadata={JSON.stringify(metadata, null, 2)}
-//       examples={EXAMPLES}
-//       selectedExample={selectedExample}
-//       selectedCategory={selectedCategory}
-//       onExampleChange={onExampleChange}
-//       loading={loading}
-//     >
-//       {error ? <div style={{color: 'red'}}>{error}</div> : ''}
-//       <pre style={{textAlign: 'center', margin: 0}}>
-//         {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
-//         {/* viewState.zoom.toFixed(2) */}
-//       </pre>
-//     </ControlPanel>
-//   );
-// }
 
 function getTooltip(info) {
   if (info.tile) {

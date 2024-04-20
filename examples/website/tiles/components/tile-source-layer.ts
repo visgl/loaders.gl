@@ -56,34 +56,39 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
         getTileData: tileSource.getTileData,
         // Assume the pmtiles file support HTTP/2, so we aren't limited by the browser to a certain number per domain.
         maxRequests: 20,
-    
+
         pickable: true,
-        onViewportLoad: onTilesLoad,
         autoHighlight: showTileBorders,
-        highlightColor: [60, 60, 60, 40],
+
+        onViewportLoad: onTilesLoad,
+
         minZoom,
         maxZoom,
         tileSize: 256,
         // TOOD - why is this needed?
         zoomOffset: devicePixelRatio === 1 ? -1 : 0,
         renderSubLayers,
-    
+
         // Custom prop
         tileSource,
         showTileBorders
       })
     ];
-  }  
+  }
 }
 
-function renderSubLayers(props: TileSourceLayerProps & {tile: {index, bbox: {west, south, east, north}}}) {
+function renderSubLayers(
+  props: TileSourceLayerProps & {tile: {index; bbox: {west; south; east; north}}}
+) {
   const {
-    tileSource, 
-    showTileBorders, 
+    tileSource,
+    showTileBorders,
     minZoom,
     maxZoom,
-    tile: {index: {z: zoom}, 
-    bbox: {west, south, east, north}}
+    tile: {
+      index: {z: zoom},
+      bbox: {west, south, east, north}
+    }
   } = props;
 
   const layers: Layer[] = [];
@@ -97,9 +102,11 @@ function renderSubLayers(props: TileSourceLayerProps & {tile: {index, bbox: {wes
           id: `${props.id}-geojson`,
           data: props.data,
           pickable: true,
-          getFillColor: [0, 190, 80, 255],
+          autoHighlight: true,
           lineWidthScale: 500,
-          lineWidthMinPixels: 0.5
+          lineWidthMinPixels: 0.5,
+          getFillColor: [100, 120, 140, 255],
+          highlightColor: [0, 0, 200, 255]
         })
       );
       break;

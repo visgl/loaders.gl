@@ -28,7 +28,7 @@ export function signedArea(ring: number[][]) {
  * @param line
  * @param feature
  */
-export function projectToLocalCoordinates(line: number[], feature: {extent: number}): void {
+export function projectToLocalCoordinates(line: number[][], feature: {extent: number}): void {
   const {extent} = feature;
   for (let i = 0; i < line.length; i++) {
     const p = line[i];
@@ -50,11 +50,23 @@ export function projectToLocalCoordinatesFlat(data: number[], feature: {extent: 
   }
 }
 
+/**
+ * Projects local tile coordinates to lngLat in place.
+ * @param points
+ * @param tileIndex
+ */
 export function projectToLngLat(
-  line: number[],
+  line: number[] | number[][] | number[][][],
   tileIndex: {x: number; y: number; z: number},
   extent: number
 ): void {
+  if (typeof line[0][0] !== 'number') {
+    for (const point of line) {
+      //@ts-expect-error
+      projectToLngLat(point, tileIndex, extent);
+    }
+    return;
+  }
   const size = extent * Math.pow(2, tileIndex.z);
   const x0 = extent * tileIndex.x;
   const y0 = extent * tileIndex.y;
@@ -70,7 +82,6 @@ export function projectToLngLat(
  * Projects local tile coordinates to lngLat in place.
  * @param points
  * @param tileIndex
- */
 export function projectTileCoordinatesToLngLat(
   points: number[][],
   tileIndex: {x: number; y: number; z: number},
@@ -87,6 +98,7 @@ export function projectTileCoordinatesToLngLat(
     p[1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;
   }
 }
+ */
 
 /**
  *

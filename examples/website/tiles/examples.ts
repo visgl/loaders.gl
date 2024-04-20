@@ -8,7 +8,7 @@ export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/m
 // export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap Tiles';
 
 export const INITIAL_CATEGORY_NAME = 'GeoJSON';
-export const INITIAL_EXAMPLE_NAME = 'Vancouver';
+export const INITIAL_EXAMPLE_NAME = 'Countries';
 
 export const INITIAL_MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 
@@ -63,14 +63,15 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     }
   },
   GeoJSON: {
-    Vancouver: {
-      format: 'geojson',
-      data: `${DECKGL_DATA_URL}/examples/geojson/vancouver-blocks.json`,
-      viewState: {...VIEW_STATE, latitude: 49.254, longitude: -123.13}
-    },
+    // Vancouver: {
+    //   format: 'geojson',
+    //   data: `${DECKGL_DATA_URL}/examples/geojson/vancouver-blocks.json`,
+    //   viewState: {...VIEW_STATE, latitude: 49.254, longitude: -123.13}
+    // },
     Countries: {
       format: 'geojson',
-      data: `${LOADERS_URL}/modules/flatgeobuf/test/data/countries.json`,
+      data: 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_admin_0_scale_rank.geojson',
+      // data: `${LOADERS_URL}/modules/flatgeobuf/test/data/countries.json`,
       viewState: {...VIEW_STATE, longitude: -4.65, latitude: -29.76, zoom: 1.76}
     }
   }

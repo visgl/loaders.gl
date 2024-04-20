@@ -24,6 +24,7 @@ import {projectToLocalCoordinates} from './lib/utils/geometry-utils';
 
 /** Options to configure tiling */
 export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
+  coordinates: 'wgs84' | 'local';
   maxZoom?: number /** max zoom to preserve detail on */;
   indexMaxZoom?: number /** max zoom in the tile index */;
   indexMaxPoints?: number /** max number of points per tile in the tile index */;
@@ -38,6 +39,7 @@ export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
 
 export class GeoJSONTileSource implements VectorTileSource<any> {
   static defaultOptions: Required<GeoJSONTileSourceOptions> = {
+    coordinates: 'wgs84', // coordinates in tile coordinates or lng/lat
     maxZoom: 14, // max zoom to preserve detail on
     indexMaxZoom: 5, // max zoom in the tile index
     indexMaxPoints: 100000, // max number of points per tile in the tile index
@@ -47,7 +49,7 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
     lineMetrics: false, // whether to calculate line metrics
     // @ts-expect-error
     promoteId: undefined, // name of a feature property to be promoted to feature.id
-    generateId: false, // whether to generate feature ids. Cannot be used with promoteId
+    generateId: true, // whether to generate feature ids. Cannot be used with promoteId
     debug: 0 // logging level (0, 1 or 2)
   };
 
@@ -131,6 +133,7 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
   async getVectorTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
     await this.ready;
     const table = this.getTileSync(tileIndex);
+    console.info('getVectorTile', tileIndex, table);
     return table;
   }
 
@@ -156,7 +159,11 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
       return null;
     }
 
-    return convertToGeoJSONTable(rawTile, this.options.extent);
+    return convertToGeoJSONTable(rawTile, {
+      coordinates: this.options.coordinates,
+      tileIndex,
+      extent: this.options.extent
+    });
   }
 
   /**
@@ -344,11 +351,14 @@ function toID(z, x, y): number {
   return ((1 << z) * y + x) * 32 + z;
 }
 
-function convertToGeoJSONTable(vtTile: GeoJSONTile, options: {
-  coordinates: 'wgs84' | 'local',
-  tileIndex: {x: number; y: number; z: number}
-  extent: number
-}): GeoJSONTable {
+function convertToGeoJSONTable(
+  vtTile: GeoJSONTile,
+  options: {
+    coordinates: 'wgs84' | 'local';
+    tileIndex: {x: number; y: number; z: number};
+    extent: number;
+  }
+): GeoJSONTable | null {
   const features: Feature[] = [];
   for (const rawFeature of vtTile.features) {
     if (!rawFeature || !rawFeature.geometry) {
@@ -400,7 +410,7 @@ function convertToGeoJSONTable(vtTile: GeoJSONTile, options: {
 
     switch (options.coordinates) {
       case 'wgs84':
-        projectToLngLat(coordinates, tileIndex, options.extent);
+        projectToLngLat(coordinates, options.tileIndex, options.extent);
         break;
       default:
         projectToLocalCoordinates(coordinates, options);
@@ -413,10 +423,15 @@ function convertToGeoJSONTable(vtTile: GeoJSONTile, options: {
         type,
         coordinates
       },
-      properties: rawFeature.tags || {}
+      properties: rawFeature.tags || {},
+      id: rawFeature.id
     };
 
     features.push(feature);
+  }
+
+  if (features.length === 0) {
+    return null;
   }
 
   const table: GeoJSONTable = {

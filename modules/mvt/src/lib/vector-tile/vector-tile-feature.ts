@@ -61,7 +61,7 @@ export class VectorTileFeature {
         return _toGeoJSONFeature(this, coords, projectToLocalCoordinates);
 
       default:
-        return _toGeoJSONFeature(this, coords, (line: number[]) =>
+        return _toGeoJSONFeature(this, coords, (line: number[][]) =>
           projectToLngLat(line, tileIndex!, this.extent)
         );
     }
@@ -319,7 +319,11 @@ export class VectorTileFeature {
   }
 }
 
-function _toGeoJSONFeature(vtFeature: VectorTileFeature, coords: number[][][], transform): Feature {
+function _toGeoJSONFeature(
+  vtFeature: VectorTileFeature,
+  coords: number[][][],
+  transform: (data: number[][], feature: {extent: any}) => void
+): Feature {
   let type = VectorTileFeature.types[vtFeature.type];
   let i: number;
   let j: number;
@@ -372,7 +376,8 @@ function _toGeoJSONFeature(vtFeature: VectorTileFeature, coords: number[][][], t
   };
 
   if (vtFeature.id !== null) {
-    result.id = vtFeature.id;
+    result.properties ||= {};
+    result.properties.id = vtFeature.id;
   }
 
   return result;
