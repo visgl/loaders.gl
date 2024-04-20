@@ -3,14 +3,10 @@
 // Copyright (c) vis.gl contributors
 // Based on https://github.com/mapbox/geojson-vt under compatible ISC license
 
-/* eslint-disable no-console, no-continue */
-
-import {
-  VectorTileSource,
-  VectorTileSourceProps,
-  TileLoadParameters
-} from '@loaders.gl/loader-utils';
+import type {VectorTileSourceProps, TileLoadParameters} from '@loaders.gl/loader-utils';
+import {VectorTileSource, log} from '@loaders.gl/loader-utils';
 import {Schema, deduceTableSchema, Feature, GeoJSONTable} from '@loaders.gl/schema';
+import {Stats, Stat} from '@probe.gl/stats';
 
 import type {TableTile, TableTileFeature} from './lib/geojsonvt/tile';
 import {convert} from './lib/geojsonvt/convert'; // GeoJSON conversion and preprocessing
@@ -48,15 +44,22 @@ export type TableTileSourceProps = VectorTileSourceProps & {
 };
 
 /**
- * Tiles a GeoJSONTable (can be initialized with a promise).
+ * Dynamically vector tiles a table (the table needs a geometry column)
+ * - Tiles are generated when requested.
+ * - Each tile contains a tables of clipped features.
+ *
+ * @note - Currently only accepts `GeoJSONTable` tables
+ * @note - Currently only outputs `GeoJSONTable`
+ * @note - (can be initialized with a promise that resolves to GeoJSONTable).
+ *
  * @todo - metadata should scan all rows to determine schema
  * @todo - metadata scan all rows to determine tilestats (field values[] etc).
- * @todo - generate binary output
- * @todo - handle binary input
+ * @todo - handle binary input tables
+ * @todo - generate binary output tables
  * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
  */
 export class TableTileSource implements VectorTileSource<any> {
-  static defaultOptions: Required<TableTileSourceProps> = {
+  static defaultProps: Required<TableTileSourceProps> = {
     coordinates: 'wgs84', // coordinates in tile coordinates or lng/lat
     maxZoom: 14, // max zoom to preserve detail on
     indexMaxZoom: 5, // max zoom in the tile index
@@ -70,6 +73,18 @@ export class TableTileSource implements VectorTileSource<any> {
     generateId: false, // whether to generate feature ids. Cannot be used with promoteId
     debug: 0 // logging level (0, 1 or 2)
   };
+
+  /** Global stats for all TableTileSources */
+  static stats = new Stats({
+    id: 'table-tile-source-all',
+    stats: [new Stat('count', 'tiles'), new Stat('count', 'features')]
+  });
+
+  /** Stats for this TableTileSource */
+  stats = new Stats({
+    id: 'table-tile-source',
+    stats: [new Stat('tiles', 'count'), new Stat('features', 'count')]
+  });
 
   /** The props that this tile source was created with */
   props: Required<TableTileSourceProps>;
@@ -85,18 +100,13 @@ export class TableTileSource implements VectorTileSource<any> {
   /** Array of tile coordinates */
   tileCoords: {x: number; y: number; z: number}[] = [];
 
-  /** Stats for the generated tiles */
-  stats: Record<string, number> = {};
-  /** total number of generated tiles */
-  total: number = 0;
-
   /** Input data has loaded, initial top-level tiling is done, sync methods can now be called */
   ready: Promise<void>;
   /** Metadata for the tile source (generated TileJSON/tilestats */
   metadata: Promise<unknown>;
 
   constructor(table: GeoJSONTable | Promise<GeoJSONTable>, props?: TableTileSourceProps) {
-    this.props = {...TableTileSource.defaultOptions, ...props};
+    this.props = {...TableTileSource.defaultProps, ...props};
     this.getTileData = this.getTileData.bind(this);
     this.ready = this.initializeTilesAsync(table);
     this.metadata = this.getMetadata();
@@ -105,7 +115,7 @@ export class TableTileSource implements VectorTileSource<any> {
   async initializeTilesAsync(tablePromise: GeoJSONTable | Promise<GeoJSONTable>): Promise<void> {
     const table = await tablePromise;
     this.schema = deduceTableSchema(table);
-    this.createInitialTiles(table);
+    this.createRootTiles(table);
   }
 
   async getMetadata(): Promise<unknown> {
@@ -121,7 +131,7 @@ export class TableTileSource implements VectorTileSource<any> {
   async getVectorTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
     await this.ready;
     const table = this.getTileSync(tileIndex);
-    console.info('getVectorTile', tileIndex, table);
+    log.info(2, 'getVectorTile', tileIndex, table)();
     return table;
   }
 
@@ -158,43 +168,39 @@ export class TableTileSource implements VectorTileSource<any> {
    * Create the initial tiles
    * @note the tiles stores all the features together with additional data
    */
-  createInitialTiles(data: GeoJSONTable): void {
-    const props = this.props;
-    const debug = props.debug;
-
-    if (debug) console.time('preprocess data');
-
+  createRootTiles(table: GeoJSONTable): void {
     if (this.props.maxZoom < 0 || this.props.maxZoom > 24) {
       throw new Error('maxZoom should be in the 0-24 range');
     }
-    if (props.promoteId && this.props.generateId) {
+    if (this.props.promoteId && this.props.generateId) {
       throw new Error('promoteId and generateId cannot be used together.');
     }
 
-    // projects and adds simplification info
-    let features = convert(data, props);
+    log.log(1, 'TableTileSource creating root tiles', this.props)();
 
-    if (debug) {
-      console.timeEnd('preprocess data');
-      console.log('index: maxZoom: %d, maxPoints: %d', props.indexMaxZoom, props.maxPointsPerTile);
-      console.time('generate tiles');
-    }
+    // projects and adds simplification info
+    log.time(1, 'preprocess table')();
+    let features = convert(table, this.props);
+    log.timeEnd(1, 'preprocess table')();
 
     // wraps features (ie extreme west and extreme east)
+    log.time(1, 'generate tiles')();
+
     features = wrap(features, this.props);
 
     // start slicing from the top tile down
-    if (features.length) {
-      this.splitTile(features, 0, 0, 0);
+    if (features.length === 0) {
+      log.log(1, 'TableTileSource: no features generated')();
+      return;
     }
 
-    if (debug) {
-      if (features.length) {
-        console.log('features: %d, points: %d', this.tiles[0].numFeatures, this.tiles[0].numPoints);
-      }
-      console.timeEnd('generate tiles');
-      console.log('tiles generated:', this.total, JSON.stringify(this.stats));
-    }
+    this.splitTile(features, 0, 0, 0);
+
+    const rootTile = this.tiles[0];
+    log.log(1, `root tile features: ${rootTile.numFeatures}, points: ${rootTile.numPoints}`)();
+
+    log.timeEnd(1, 'generate tiles')();
+    log.log(1, `TableTileSource: tiles generated: ${this.stats.get('total').count}`, this.stats)();
   }
 
   /**
@@ -209,7 +215,7 @@ export class TableTileSource implements VectorTileSource<any> {
     // x = +x;
     // y = +y;
 
-    const {extent, debug} = this.props;
+    const {extent} = this.props;
 
     if (z < 0 || z > 24) {
       return null;
@@ -223,7 +229,7 @@ export class TableTileSource implements VectorTileSource<any> {
       return transformTile(this.tiles[id], extent);
     }
 
-    if (debug > 1) console.log('drilling down to z%d-%d-%d', z, x, y);
+    log.log(log, 'drilling down to z%d-%d-%d', z, x, y)();
 
     let z0 = z;
     let x0 = x;
@@ -242,14 +248,12 @@ export class TableTileSource implements VectorTileSource<any> {
     }
 
     // if we found a parent tile containing the original geometry, we can drill down from it
-    if (debug > 1) {
-      console.log('found parent tile z%d-%d-%d', z0, x0, y0);
-      console.time('drilling down');
-    }
+    log.log(1, 'found parent tile z%d-%d-%d', z0, x0, y0)();
+    log.time(1, 'drilling down')();
+
     this.splitTile(parent.source, z0, x0, y0, z, x, y);
-    if (debug > 1) {
-      console.timeEnd('drilling down');
-    }
+
+    log.timeEnd(1, 'drilling down')();
 
     return this.tiles[id] ? transformTile(this.tiles[id], extent) : null;
   }
@@ -273,8 +277,6 @@ export class TableTileSource implements VectorTileSource<any> {
     cy?: number
   ): void {
     const stack: any[] = [features, z, x, y];
-    const props = this.props;
-    const debug = props.debug;
 
     // avoid recursion by using a processing queue
     while (stack.length) {
@@ -288,47 +290,59 @@ export class TableTileSource implements VectorTileSource<any> {
       let tile = this.tiles[id];
 
       if (!tile) {
-        if (debug > 1) {
-          console.time('creation');
-        }
+        log.time(2, 'tile creation')();
 
-        tile = this.tiles[id] = createTile(features, z, x, y, props);
+        tile = this.tiles[id] = createTile(features, z, x, y, this.props);
         this.tileCoords.push({z, x, y});
 
         const key = `z${z}`;
-        this.stats[key] = (this.stats[key] || 0) + 1;
-        this.total++;
+        let stat = this.stats.get(key, 'count');
+        stat.incrementCount();
 
-        if (debug > 1) {
-          console.log(
-            'tile z%d-%d-%d (features: %d, points: %d, simplified: %d)',
-            z,
-            x,
-            y,
-            tile.numFeatures,
-            tile.numPoints,
-            tile.numSimplified
-          );
-          console.timeEnd('creation');
-        }
+        stat = this.stats.get('total');
+        stat.incrementCount();
+
+        stat = TableTileSource.stats.get(key, 'count');
+        stat.incrementCount();
+
+        stat = TableTileSource.stats.get('total');
+        stat.incrementCount();
+
+        log.log(
+          2,
+          'tile z%d-%d-%d (features: %d, points: %d, simplified: %d)',
+          z,
+          x,
+          y,
+          tile.numFeatures,
+          tile.numPoints,
+          tile.numSimplified
+        )();
+        log.timeEnd(2, 'tile creation')();
       }
 
       // save reference to original geometry in tile so that we can drill down later if we stop now
       tile.source = features;
 
+      /** eslint-disable no-continue */
+
       // if it's the first-pass tiling
       if (cz === undefined) {
         // stop tiling if we reached max zoom, or if the tile is too simple
-        if (z === props.indexMaxZoom || tile.numPoints <= props.maxPointsPerTile) continue;
+        if (z === this.props.indexMaxZoom || tile.numPoints <= this.props.maxPointsPerTile) {
+          continue;
+        }
         // if a drilldown to a specific tile
-      } else if (z === props.maxZoom || z === cz) {
+      } else if (z === this.props.maxZoom || z === cz) {
         // stop tiling if we reached base zoom or our target tile zoom
         continue;
       } else if (cz !== undefined) {
         // stop tiling if it's not an ancestor of the target tile
         const zoomSteps = cz - z;
         // @ts-expect-error TODO fix the types of cx cy
-        if (x !== cx >> zoomSteps || y !== cy >> zoomSteps) continue;
+        if (x !== cx >> zoomSteps || y !== cy >> zoomSteps) {
+          continue;
+        }
       }
 
       // if we slice further down, no need to keep source geometry
@@ -336,10 +350,10 @@ export class TableTileSource implements VectorTileSource<any> {
 
       if (features.length === 0) continue;
 
-      if (debug > 1) console.time('clipping');
+      log.time(2, 'clipping tile')();
 
       // values we'll use for clipping
-      const k1 = (0.5 * props.buffer) / props.extent;
+      const k1 = (0.5 * this.props.buffer) / this.props.extent;
       const k2 = 0.5 - k1;
       const k3 = 0.5 + k1;
       const k4 = 1 + k1;
@@ -349,25 +363,25 @@ export class TableTileSource implements VectorTileSource<any> {
       let tr: TableTileFeature[] | null = null;
       let br: TableTileFeature[] | null = null;
 
-      let left = clip(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, props);
-      let right = clip(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, props);
+      let left = clip(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, this.props);
+      let right = clip(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, this.props);
 
       // @ts-expect-error - unclear why this is needed?
       features = null;
 
       if (left) {
-        tl = clip(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, props);
-        bl = clip(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, props);
+        tl = clip(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
+        bl = clip(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
         left = null;
       }
 
       if (right) {
-        tr = clip(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, props);
-        br = clip(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, props);
+        tr = clip(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
+        br = clip(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
         right = null;
       }
 
-      if (debug > 1) console.timeEnd('clipping');
+      log.timeEnd(2, 'clipping tile')();
 
       stack.push(tl || [], z + 1, x * 2, y * 2);
       stack.push(bl || [], z + 1, x * 2, y * 2 + 1);
