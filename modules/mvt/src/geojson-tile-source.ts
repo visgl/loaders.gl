@@ -10,7 +10,7 @@ import {
   VectorTileSourceProps,
   TileLoadParameters
 } from '@loaders.gl/loader-utils';
-import {Feature, GeoJSONTable} from '@loaders.gl/schema';
+import {Schema, deduceTableSchema, Feature, GeoJSONTable} from '@loaders.gl/schema';
 
 import type {GeoJSONTile, GeoJSONTileFeature} from './lib/geojsonvt/tile';
 import {convert} from './lib/geojsonvt/convert'; // GeoJSON conversion and preprocessing
@@ -63,19 +63,69 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
 
   stats: Record<string, number> = {};
   total: number = 0;
+  schema: Schema | null = null;
 
   /** Sync methods can be called: the input data promise has been resolved and initial top-level tiling is done */
   ready: Promise<void>;
+  metadata: Promise<unknown>;
 
   constructor(data: GeoJSONTable | Promise<GeoJSONTable>, options?: GeoJSONTileSourceOptions) {
     this.options = {...GeoJSONTileSource.defaultOptions, ...options};
     this.getTileData = this.getTileData.bind(this);
     this.ready = this.initializeTilesAsync(data);
+    this.metadata = this.getMetadata();
   }
 
   async initializeTilesAsync(dataPromise: GeoJSONTable | Promise<GeoJSONTable>): Promise<void> {
     const data = await dataPromise;
+    this.schema = deduceTableSchema(data);
     this.initializeTilesSync(data);
+  }
+
+  async getMetadata(): Promise<unknown> {
+    await this.ready;
+    return {schema: this.schema, minZoom: 0, maxZoom: this.options.maxZoom};
+  }
+
+  /**
+   * Get a tile at the specified index
+   * @param tileIndex z, x, y of tile
+   * @returns
+   */
+  async getVectorTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
+    await this.ready;
+    const table = this.getTileSync(tileIndex);
+    console.info('getVectorTile', tileIndex, table);
+    return table;
+  }
+
+  async getTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
+    await this.ready;
+    return this.getTileSync(tileIndex);
+  }
+
+  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
+    const {x, y, z} = tileParams.index;
+    return await this.getVectorTile({x, y, z});
+  }
+
+  // Implementation
+
+  /**
+   * Synchronously request a tile
+   * @note Application must await `source.ready` before calling sync methods.
+   */
+  getTileSync(tileIndex: {z: number; x: number; y: number}): GeoJSONTable | null {
+    const rawTile = this.getRawTile(tileIndex);
+    if (!rawTile) {
+      return null;
+    }
+
+    return convertToGeoJSONTable(rawTile, {
+      coordinates: this.options.coordinates,
+      tileIndex,
+      extent: this.options.extent
+    });
   }
 
   initializeTilesSync(data: GeoJSONTable): void {
@@ -119,51 +169,6 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
       console.timeEnd('generate tiles');
       console.log('tiles generated:', this.total, JSON.stringify(this.stats));
     }
-  }
-
-  async getMetadata(): Promise<unknown> {
-    return {};
-  }
-
-  /**
-   * Get a tile at the specified index
-   * @param tileIndex z, x, y of tile
-   * @returns
-   */
-  async getVectorTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
-    await this.ready;
-    const table = this.getTileSync(tileIndex);
-    console.info('getVectorTile', tileIndex, table);
-    return table;
-  }
-
-  async getTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
-    await this.ready;
-    return this.getTileSync(tileIndex);
-  }
-
-  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
-    const {x, y, z} = tileParams.index;
-    return await this.getVectorTile({x, y, z});
-  }
-
-  // Implementation
-
-  /**
-   * Synchronously request a tile
-   * @note Application must await `source.ready` before calling sync methods.
-   */
-  getTileSync(tileIndex: {z: number; x: number; y: number}): GeoJSONTable | null {
-    const rawTile = this.getRawTile(tileIndex);
-    if (!rawTile) {
-      return null;
-    }
-
-    return convertToGeoJSONTable(rawTile, {
-      coordinates: this.options.coordinates,
-      tileIndex,
-      extent: this.options.extent
-    });
   }
 
   /**
