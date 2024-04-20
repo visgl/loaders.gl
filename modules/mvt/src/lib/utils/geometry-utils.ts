@@ -21,6 +21,52 @@ export function signedArea(ring: number[][]) {
 }
 
 /**
+ * This function projects local coordinates in a
+ * [0 - bufferSize, this.extent + bufferSize] range to a
+ * [0 - (bufferSize / this.extent), 1 + (bufferSize / this.extent)] range.
+ * The resulting extent would be 1.
+ * @param line
+ * @param feature
+ */
+export function projectToLocalCoordinates(line: number[], feature: {extent: number}): void {
+  const {extent} = feature;
+  for (let i = 0; i < line.length; i++) {
+    const p = line[i];
+    p[0] /= extent;
+    p[1] /= extent;
+  }
+}
+
+/**
+ * For the binary code path, the feature data is just
+ * one big flat array, so we just divide each value
+ * @param data
+ * @param feature
+ */
+export function projectToLocalCoordinatesFlat(data: number[], feature: {extent: number}): void {
+  const {extent} = feature;
+  for (let i = 0, il = data.length; i < il; ++i) {
+    data[i] /= extent;
+  }
+}
+
+export function projectToLngLat(
+  line: number[],
+  tileIndex: {x: number; y: number; z: number},
+  extent: number
+): void {
+  const size = extent * Math.pow(2, tileIndex.z);
+  const x0 = extent * tileIndex.x;
+  const y0 = extent * tileIndex.y;
+  for (let j = 0; j < line.length; j++) {
+    const p = line[j];
+    p[0] = ((p[0] + x0) * 360) / size - 180;
+    const y2 = 180 - ((p[1] + y0) * 360) / size;
+    p[1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;
+  }
+}
+
+/**
  * Projects local tile coordinates to lngLat in place.
  * @param points
  * @param tileIndex
@@ -29,7 +75,7 @@ export function projectTileCoordinatesToLngLat(
   points: number[][],
   tileIndex: {x: number; y: number; z: number},
   extent: number
-) {
+): void {
   const {x, y, z} = tileIndex;
   const size = extent * Math.pow(2, z);
   const x0 = extent * x;

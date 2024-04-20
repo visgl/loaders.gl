@@ -6,7 +6,9 @@
 import {Feature} from '@loaders.gl/schema';
 import {FlatFeature, FlatIndexedGeometry, GeojsonGeometryInfo} from '@loaders.gl/schema';
 import Protobuf from 'pbf';
-import {classifyRings, classifyRingsFlat, projectToLngLatFlat} from '../utils/geometry-utils';
+import {classifyRings, classifyRingsFlat} from '../utils/geometry-utils';
+import {projectToLngLat, projectToLngLatFlat} from '../utils/geometry-utils';
+import {projectToLocalCoordinates, projectToLocalCoordinatesFlat} from '../utils/geometry-utils';
 
 export class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
@@ -48,47 +50,45 @@ export class VectorTileFeature {
     pbf.readFields(readFeature, this, end);
   }
 
-  toGeoJSON(
-    options: {x: number; y: number; z: number} | ((data: number[], feature: {extent: any}) => void)
+  toGeoJSONFeature(
+    coordinates: 'wgs84' | 'local',
+    tileIndex?: {x: number; y: number; z: number}
   ): Feature {
     const coords = this.loadGeometry();
 
-    if (typeof options === 'function') {
-      return _toGeoJSON(this, coords, options);
-    }
-    const {x, y, z} = options;
-    const size = this.extent * Math.pow(2, z);
-    const x0 = this.extent * x;
-    const y0 = this.extent * y;
+    switch (coordinates) {
+      case 'wgs84':
+        return _toGeoJSONFeature(this, coords, projectToLocalCoordinates);
 
-    function project(line: number[]) {
-      for (let j = 0; j < line.length; j++) {
-        const p = line[j];
-        p[0] = ((p[0] + x0) * 360) / size - 180;
-        const y2 = 180 - ((p[1] + y0) * 360) / size;
-        p[1] = (360 / Math.PI) * Math.atan(Math.exp((y2 * Math.PI) / 180)) - 90;
-      }
+      default:
+        return _toGeoJSONFeature(this, coords, (line: number[]) =>
+          projectToLngLat(line, tileIndex!, this.extent)
+        );
     }
-    return _toGeoJSON(this, coords, project);
   }
-
   /**
    *
    * @param options
    * @returns
    */
-  toBinaryCoordinates(
-    options: {x: number; y: number; z: number} | ((data: number[], feature: {extent: any}) => void)
+  toBinaryFeature(
+    coordinates: 'wgs84' | 'local',
+    tileIndex?: {x: number; y: number; z: number}
   ): FlatFeature {
-    if (typeof options === 'function') {
-      return this._toBinaryCoordinates(options);
+    const geom = this.loadFlatGeometry();
+
+    switch (coordinates) {
+      case 'wgs84':
+        return this._toBinaryCoordinates(geom, projectToLocalCoordinatesFlat);
+
+      default:
+        return this._toBinaryCoordinates(geom, (coords: number[]) =>
+          projectToLngLatFlat(coords, tileIndex!, this.extent)
+        );
     }
-    const tileIndex = options;
-    return this._toBinaryCoordinates((data: number[]) =>
-      projectToLngLatFlat(data, tileIndex, this.extent)
-    );
   }
 
+  /** Read a bounding box from the feature */
   // eslint-disable-next-line max-statements
   bbox() {
     const pbf = this._pbf;
@@ -135,28 +135,10 @@ export class VectorTileFeature {
    * @param transform
    * @returns result
    */
-  _toBinaryCoordinates(transform) {
-    // Expands the protobuf data to an intermediate Flat GeoJSON
-    // data format, which maps closely to the binary data buffers.
-    // It is similar to GeoJSON, but rather than storing the coordinates
-    // in multidimensional arrays, we have a 1D `data` with all the
-    // coordinates, and then index into this using the `indices`
-    // parameter, e.g.
-    //
-    // geometry: {
-    //   type: 'Point', data: [1,2], indices: [0]
-    // }
-    // geometry: {
-    //   type: 'LineString', data: [1,2,3,4,...], indices: [0]
-    // }
-    // geometry: {
-    //   type: 'Polygon', data: [1,2,3,4,...], indices: [[0, 2]]
-    // }
-    // Thus the indices member lets us look up the relevant range
-    // from the data array.
-    // The Multi* versions of the above types share the same data
-    // structure, just with multiple elements in the indices array
-    const geom = this.loadFlatGeometry();
+  _toBinaryCoordinates(
+    geom: FlatIndexedGeometry,
+    transform: (data: number[], feature: {extent: any}) => void
+  ) {
     let geometry;
 
     // Apply the supplied transformation to data
@@ -259,6 +241,28 @@ export class VectorTileFeature {
     return lines;
   }
 
+  /**
+   * Expands the protobuf data to an intermediate Flat GeoJSON
+   * data format, which maps closely to the binary data buffers.
+   * It is similar to GeoJSON, but rather than storing the coordinates
+   * in multidimensional arrays, we have a 1D `data` with all the
+   * coordinates, and then index into this using the `indices`
+   * parameter, e.g.
+   *
+   * geometry: {
+   *   type: 'Point', data: [1,2], indices: [0]
+   * }
+   * geometry: {
+   *   type: 'LineString', data: [1,2,3,4,...], indices: [0]
+   * }
+   * geometry: {
+   *   type: 'Polygon', data: [1,2,3,4,...], indices: [[0, 2]]
+   * }
+   * Thus the indices member lets us look up the relevant range
+   * from the data array.
+   * The Multi* versions of the above types share the same data
+   * structure, just with multiple elements in the indices array
+   */
   // eslint-disable-next-line complexity, max-statements
   loadFlatGeometry(): FlatIndexedGeometry {
     const pbf = this._pbf;
@@ -315,7 +319,7 @@ export class VectorTileFeature {
   }
 }
 
-function _toGeoJSON(vtFeature: VectorTileFeature, coords: number[][][], transform): Feature {
+function _toGeoJSONFeature(vtFeature: VectorTileFeature, coords: number[][][], transform): Feature {
   let type = VectorTileFeature.types[vtFeature.type];
   let i: number;
   let j: number;

@@ -155,9 +155,9 @@ function getDecodedFeature(
   options: MVTOptions,
   layerName: string
 ): Feature {
-  const decodedFeature = feature.toGeoJSON(
-    // @ts-expect-error What is going on here?
-    options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinates
+  const decodedFeature = feature.toGeoJSONFeature(
+    options.coordinates || 'local',
+    options.tileIndex
   );
 
   // Add layer name to GeoJSON properties
@@ -179,10 +179,7 @@ function getDecodedFeatureBinary(
   options: MVTOptions,
   layerName: string
 ): FlatFeature {
-  const decodedFeature = feature.toBinaryCoordinates(
-    // @ts-expect-error
-    options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinatesBinary
-  );
+  const decodedFeature = feature.toBinaryFeature(options.coordinates || 'local', options.tileIndex);
 
   // Add layer name to GeoJSON properties
   if (options.layerProperty && decodedFeature.properties) {
@@ -190,30 +187,4 @@ function getDecodedFeatureBinary(
   }
 
   return decodedFeature;
-}
-
-/**
- * @param line
- * @param feature
- */
-function transformToLocalCoordinates(line: number[], feature: {extent: any}): void {
-  // This function transforms local coordinates in a
-  // [0 - bufferSize, this.extent + bufferSize] range to a
-  // [0 - (bufferSize / this.extent), 1 + (bufferSize / this.extent)] range.
-  // The resulting extent would be 1.
-  const {extent} = feature;
-  for (let i = 0; i < line.length; i++) {
-    const p = line[i];
-    p[0] /= extent;
-    p[1] /= extent;
-  }
-}
-
-function transformToLocalCoordinatesBinary(data: number[], feature: {extent: any}) {
-  // For the binary code path, the feature data is just
-  // one big flat array, so we just divide each value
-  const {extent} = feature;
-  for (let i = 0, il = data.length; i < il; ++i) {
-    data[i] /= extent;
-  }
 }

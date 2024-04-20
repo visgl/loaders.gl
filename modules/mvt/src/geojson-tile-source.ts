@@ -19,6 +19,9 @@ import {wrap} from './lib/geojsonvt/wrap'; // date line processing
 import {transformTile} from './lib/geojsonvt/transform'; // coordinate transformation
 import {createTile} from './lib/geojsonvt/tile'; // final simplified tile generation
 
+import {projectToLngLat} from './lib/utils/geometry-utils';
+import {projectToLocalCoordinates} from './lib/utils/geometry-utils';
+
 /** Options to configure tiling */
 export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
   maxZoom?: number /** max zoom to preserve detail on */;
@@ -341,7 +344,11 @@ function toID(z, x, y): number {
   return ((1 << z) * y + x) * 32 + z;
 }
 
-function convertToGeoJSONTable(vtTile: GeoJSONTile, extent: number): GeoJSONTable {
+function convertToGeoJSONTable(vtTile: GeoJSONTile, options: {
+  coordinates: 'wgs84' | 'local',
+  tileIndex: {x: number; y: number; z: number}
+  extent: number
+}): GeoJSONTable {
   const features: Feature[] = [];
   for (const rawFeature of vtTile.features) {
     if (!rawFeature || !rawFeature.geometry) {
@@ -391,7 +398,14 @@ function convertToGeoJSONTable(vtTile: GeoJSONTile, extent: number): GeoJSONTabl
         continue;
     }
 
-    coordinates = toLngLat(coordinates, extent);
+    switch (options.coordinates) {
+      case 'wgs84':
+        projectToLngLat(coordinates, tileIndex, options.extent);
+        break;
+      default:
+        projectToLocalCoordinates(coordinates, options);
+        break;
+    }
 
     const feature: Feature = {
       type: 'Feature',
@@ -412,11 +426,4 @@ function convertToGeoJSONTable(vtTile: GeoJSONTile, extent: number): GeoJSONTabl
   };
 
   return table;
-}
-
-function toLngLat(coords: any, extent: number): any {
-  if (Array.isArray(coords[0])) {
-    return coords.map((c) => toLngLat(c, extent));
-  }
-  return [coords[0] / extent, coords[1] / extent];
 }
