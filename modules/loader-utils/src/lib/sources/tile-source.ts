@@ -57,7 +57,7 @@ export type TileSourceLayer = {
  */
 export type GetTileParameters = {
   /** bounding box of the requested map image */
-  zoom: number;
+  z: number;
   /** tile x coordinate */
   x: number;
   /** tile y coordinate */

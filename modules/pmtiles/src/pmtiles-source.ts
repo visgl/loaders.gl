@@ -96,7 +96,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   }
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
-    const {x, y, zoom: z} = tileParams;
+    const {x, y, z} = tileParams;
     const rangeResponse = await this.pmtiles.getZxy(z, x, y);
     const arrayBuffer = rangeResponse?.data;
     if (!arrayBuffer) {
@@ -114,9 +114,9 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
     const metadata = await this.metadata;
     switch (metadata.tileMIMEType) {
       case 'application/vnd.mapbox-vector-tile':
-        return await this.getVectorTile({x, y, zoom: z, layers: []});
+        return await this.getVectorTile({x, y, z, layers: []});
       default:
-        return await this.getImageTile({x, y, zoom: z, layers: []});
+        return await this.getImageTile({x, y, z, layers: []});
     }
   }
 
@@ -135,7 +135,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
       shape: 'geojson-table',
       mvt: {
         coordinates: 'wgs84',
-        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.zoom},
+        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         ...(this.loadOptions as MVTLoaderOptions)?.mvt
       },
       ...this.loadOptions

@@ -102,7 +102,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
   }
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
-    const {x, y, zoom: z} = tileParams;
+    const {x, y, z} = tileParams;
     const tileUrl = this.getTileURL(x, y, z);
     const response = await this.fetch(tileUrl);
     if (!response.ok) {
@@ -120,7 +120,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     // const metadata = await this.metadata;
     // mimeType = metadata?.tileMIMEType || 'application/vnd.mapbox-vector-tile';
 
-    const arrayBuffer = await this.getTile({x, y, zoom: z, layers: []});
+    const arrayBuffer = await this.getTile({x, y, z, layers: []});
     if (arrayBuffer === null) {
       return null;
     }
@@ -130,7 +130,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
       this.mimeType || imageMetadata?.mimeType || 'application/vnd.mapbox-vector-tile';
     switch (this.mimeType) {
       case 'application/vnd.mapbox-vector-tile':
-        return await this._parseVectorTile(arrayBuffer, {x, y, zoom: z, layers: []});
+        return await this._parseVectorTile(arrayBuffer, {x, y, z, layers: []});
       default:
         return await this._parseImageTile(arrayBuffer);
     }
@@ -162,7 +162,7 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
       shape: 'geojson-table',
       mvt: {
         coordinates: 'wgs84',
-        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.zoom},
+        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         ...(this.loadOptions as MVTLoaderOptions)?.mvt
       },
       ...this.loadOptions

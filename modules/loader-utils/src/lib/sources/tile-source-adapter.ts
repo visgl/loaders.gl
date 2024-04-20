@@ -38,7 +38,7 @@ export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
     if (parameters.crs && parameters.crs !== 'ESPG3758') {
       throw new Error('SRS not ESPG3758');
     }
-    const {x, y, zoom} = parameters;
+    const {x, y, z: zoom} = parameters;
 
     return [
       /** Bounding box of tile in this tileset `[[w, s], ...]`  */
