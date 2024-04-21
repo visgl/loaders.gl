@@ -755,7 +755,7 @@ export class Tileset3D {
     const message = error.message || error.toString();
     const url = tile.url;
     // TODO - Allow for probe log to be injected instead of console?
-    console.error(`A 3D tile failed to load: ${tile.url} ${message}`); // eslint-disable-line
+    console.error(`xxxA 3D tile failed to load: ${tile.url} ${message}`); // eslint-disable-line
     this.options.onTileError(tile, message, url);
   }
 
