@@ -12,14 +12,11 @@ const I3S_LAYER_PATH = process.env.I3sLayerPath || '';
  */
 export async function getFileNameByUrl(url: string): Promise<string | null> {
   const extensions = ['json', 'bin', 'jpg', 'jpeg', 'png', 'bin.dds', 'ktx2'];
-  const absolutePath = /^[^.]+/.exec(I3S_LAYER_PATH);
   let filePath = process.cwd();
-  let fileURLToPath = url;
-  if (absolutePath) {
+  if (I3S_LAYER_PATH.startsWith('/')) {
     filePath = '';
-    fileURLToPath = '';
   }
-  const FULL_LAYER_PATH = path.join(filePath, I3S_LAYER_PATH, fileURLToPath);
+  const FULL_LAYER_PATH = path.join(filePath, I3S_LAYER_PATH, url);
   for (const ext of extensions) {
     const fileName = `${FULL_LAYER_PATH}/index.${ext}`;
     try {

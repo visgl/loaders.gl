@@ -24,7 +24,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
 if (/\.slpk$/.test(I3S_LAYER_PATH)) {
-  loadArchive(FULL_LAYER_PATH);
+  let filePath = FULL_LAYER_PATH;
+  if (I3S_LAYER_PATH.startsWith('/')) {
+    filePath = I3S_LAYER_PATH;
+  }
+  loadArchive(filePath);
   app.use('/SceneServer/layers/0', router);
   app.use('/SceneServer', sceneServerRouter);
 } else {
