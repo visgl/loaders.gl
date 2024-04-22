@@ -8,7 +8,7 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {GeoJSONTileSource} from '@loaders.gl/mvt';
-import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
+import {Feature, FeatureCollection, GeoJSONTable, Geometry} from '@loaders.gl/schema';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
 
@@ -42,20 +42,21 @@ function makeGeoJSONTable(geometry: Geometry): GeoJSONTable {
   };
 }
 
-test('GeoJSONTileSource#getTile#us-states.json', async (t) => {
+test.only('GeoJSONTileSource#getTile#us-states.json', async (t) => {
+  debugger
   const log = console.log;
   console.log = function () {};
 
-  const geojson = await getJSON('us-states.json');
-  const source = new GeoJSONTileSource(geojson, {debug: 2});
+  const geojson = await getGeoJSON('us-states.json');
+  const source = new GeoJSONTileSource(geojson, {coordinates: 'wgs84'}); // , debug: 2});
   await source.ready;
 
   t.same(
     source.getRawTile({z: 7, x: 37, y: 48})?.features,
-    await getJSON('us-states-z7-37-48.json'),
+    await getGeoJSON('us-states-z7-37-48.json'),
     'z7-37-48'
   );
-  // t.same(source.getRawTile({z: '7', x: '37' y:,} '48')?.features, getJSON('us-states-z7-37-48.json'), 'z, x, y as strings');
+  // t.same(source.getRawTile({z: '7', x: '37' y:,} '48')?.features, getGeoJSON('us-states-z7-37-48.json'), 'z, x, y as strings');
 
   t.same(
     source.getRawTile({z: 9, x: 148, y: 192})?.features,
@@ -178,8 +179,8 @@ test('GeoJSONTileSource#getTile#polygon clipping on the boundary', async (t) => 
   t.end();
 });
 
-async function getJSON(name) {
+async function getGeoJSON(name): Promise<GeoJSONTable> {
   const response = await fetchFile(`${DATA_PATH}/${name}`);
-  const json = await response.json();
-  return json;
+  const json = await response.json() as FeatureCollection;
+  return {shape: 'geojson-table', ...json};
 }

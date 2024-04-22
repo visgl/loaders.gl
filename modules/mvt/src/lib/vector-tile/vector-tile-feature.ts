@@ -58,12 +58,12 @@ export class VectorTileFeature {
 
     switch (coordinates) {
       case 'wgs84':
-        return _toGeoJSONFeature(this, coords, projectToLocalCoordinates);
-
-      default:
         return _toGeoJSONFeature(this, coords, (line: number[][]) =>
           projectToLngLat(line, tileIndex!, this.extent)
         );
+
+      default:
+        return _toGeoJSONFeature(this, coords, projectToLocalCoordinates);
     }
   }
   /**
@@ -79,12 +79,12 @@ export class VectorTileFeature {
 
     switch (coordinates) {
       case 'wgs84':
-        return this._toBinaryCoordinates(geom, projectToLocalCoordinatesFlat);
-
-      default:
         return this._toBinaryCoordinates(geom, (coords: number[]) =>
           projectToLngLatFlat(coords, tileIndex!, this.extent)
         );
+
+      default:
+        return this._toBinaryCoordinates(geom, projectToLocalCoordinatesFlat);
     }
   }
 
