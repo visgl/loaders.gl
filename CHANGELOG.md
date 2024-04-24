@@ -1,5 +1,18 @@
 # CHANGELOG for loaders.gl
 
+## v4.3
+
+### v4.3.0-alpha.1
+
+- fix(tile-converter): failing i3s-server (#2980)
+- chore: Standardize tileIndex zoom->z (#2976)
+- chore(mvt): loader and source cleanup (#2975)
+- feat(parquet): support 'limit' option (#2973)
+- chore(mvt): Deduplicate vector tile code (#2974)
+- feat(mvt): GeoJSONTileSource (#2969)
+- chore(mvt): refactor for clarity (#2971)
+- docs: v4.2 release notes (#2963)
+
 ## v4.2
 
 ### v4.2.0

@@ -21,7 +21,6 @@
     "KML"
   ],
   "workspaces": [
-    "examples/website/tiles",
     "modules/*"
   ],
   "scripts": {
