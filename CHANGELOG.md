@@ -2,6 +2,10 @@
 
 ## v4.2
 
+### v4.2.1
+
+- fix(tile-converter): failing i3s-server (#2980)
+
 ### v4.2.0
 
 ### v4.2.0-beta.2

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/excel",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "Framework-independent loader for Excel files",
   "license": "MIT",
   "type": "module",
@@ -44,8 +44,8 @@
     "build-worker": "esbuild src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.2.0",
-    "@loaders.gl/schema": "4.2.0",
+    "@loaders.gl/loader-utils": "4.2.1",
+    "@loaders.gl/schema": "4.2.1",
     "xlsx": "^0.18.5"
   },
   "peerDependencies": {
