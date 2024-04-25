@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {
+  DataViewFile,
+  FileProvider,
+  compareArrayBuffers,
+  concatenateArrayBuffers
+} from '@loaders.gl/loader-utils';
 import {parseEoCDRecord} from './end-of-central-directory';
 import {ZipSignature} from './search-from-the-end';
 import {createZip64Info, setFieldToNumber} from './zip64-info-generation';
@@ -43,12 +48,12 @@ type Zip64Data = {
 };
 
 // offsets accroding to https://en.wikipedia.org/wiki/ZIP_(file_format)
-const CD_COMPRESSED_SIZE_OFFSET = 20n;
-const CD_UNCOMPRESSED_SIZE_OFFSET = 24n;
-const CD_FILE_NAME_LENGTH_OFFSET = 28n;
-const CD_EXTRA_FIELD_LENGTH_OFFSET = 30n;
-const CD_START_DISK_OFFSET = 32n;
-const CD_LOCAL_HEADER_OFFSET_OFFSET = 42n;
+const CD_COMPRESSED_SIZE_OFFSET = 20;
+const CD_UNCOMPRESSED_SIZE_OFFSET = 24;
+const CD_FILE_NAME_LENGTH_OFFSET = 28;
+const CD_EXTRA_FIELD_LENGTH_OFFSET = 30;
+const CD_START_DISK_OFFSET = 32;
+const CD_LOCAL_HEADER_OFFSET_OFFSET = 42;
 const CD_FILE_NAME_OFFSET = 46n;
 
 export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x01, 0x02]);
@@ -63,28 +68,35 @@ export const parseZipCDFileHeader = async (
   headerOffset: bigint,
   file: FileProvider
 ): Promise<ZipCDFileHeader | null> => {
-  const magicBytes = await file.slice(headerOffset, headerOffset + 4n);
+  const mainHeader = new DataView(
+    await file.slice(headerOffset, headerOffset + CD_FILE_NAME_OFFSET)
+  );
+
+  const magicBytes = mainHeader.buffer.slice(0, 4);
   if (!compareArrayBuffers(magicBytes, signature.buffer)) {
     return null;
   }
 
-  const compressedSize = BigInt(await file.getUint32(headerOffset + CD_COMPRESSED_SIZE_OFFSET));
-  const uncompressedSize = BigInt(await file.getUint32(headerOffset + CD_UNCOMPRESSED_SIZE_OFFSET));
-  const extraFieldLength = await file.getUint16(headerOffset + CD_EXTRA_FIELD_LENGTH_OFFSET);
-  const startDisk = BigInt(await file.getUint16(headerOffset + CD_START_DISK_OFFSET));
-  const fileNameLength = await file.getUint16(headerOffset + CD_FILE_NAME_LENGTH_OFFSET);
-  const filenameBytes = await file.slice(
+  const compressedSize = BigInt(mainHeader.getUint32(CD_COMPRESSED_SIZE_OFFSET, true));
+  const uncompressedSize = BigInt(mainHeader.getUint32(CD_UNCOMPRESSED_SIZE_OFFSET, true));
+  const extraFieldLength = mainHeader.getUint16(CD_EXTRA_FIELD_LENGTH_OFFSET, true);
+  const startDisk = BigInt(mainHeader.getUint16(CD_START_DISK_OFFSET, true));
+  const fileNameLength = mainHeader.getUint16(CD_FILE_NAME_LENGTH_OFFSET, true);
+
+  const additionalHeader = await file.slice(
     headerOffset + CD_FILE_NAME_OFFSET,
-    headerOffset + CD_FILE_NAME_OFFSET + BigInt(fileNameLength)
+    headerOffset + CD_FILE_NAME_OFFSET + BigInt(fileNameLength + extraFieldLength)
   );
+
+  const filenameBytes = additionalHeader.slice(0, fileNameLength);
   const fileName = new TextDecoder().decode(filenameBytes);
 
   const extraOffset = headerOffset + CD_FILE_NAME_OFFSET + BigInt(fileNameLength);
-  const oldFormatOffset = await file.getUint32(headerOffset + CD_LOCAL_HEADER_OFFSET_OFFSET);
+  const oldFormatOffset = mainHeader.getUint32(CD_LOCAL_HEADER_OFFSET_OFFSET, true);
 
   const localHeaderOffset = BigInt(oldFormatOffset);
   const extraField = new DataView(
-    await file.slice(extraOffset, extraOffset + BigInt(extraFieldLength))
+    additionalHeader.slice(fileNameLength, additionalHeader.byteLength)
   );
   // looking for info that might be also be in zip64 extra field
 
@@ -114,13 +126,16 @@ export const parseZipCDFileHeader = async (
 export async function* makeZipCDHeaderIterator(
   fileProvider: FileProvider
 ): AsyncIterable<ZipCDFileHeader> {
-  const {cdStartOffset} = await parseEoCDRecord(fileProvider);
-  let cdHeader = await parseZipCDFileHeader(cdStartOffset, fileProvider);
-  while (cdHeader) {
+  const {cdStartOffset, cdByteSize} = await parseEoCDRecord(fileProvider);
+  const cd = new DataViewFile(
+    new DataView(await fileProvider.slice(cdStartOffset, cdStartOffset + cdByteSize))
+  );
+  let cdHeader = await parseZipCDFileHeader(0n, cd);
+  while (cdHeader && cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength) < cd.length) {
     yield cdHeader;
     cdHeader = await parseZipCDFileHeader(
       cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
-      fileProvider
+      cd
     );
   }
 }

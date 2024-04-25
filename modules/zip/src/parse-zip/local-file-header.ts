@@ -26,11 +26,11 @@ export type ZipLocalFileHeader = {
 };
 
 // offsets accroding to https://en.wikipedia.org/wiki/ZIP_(file_format)
-const COMPRESSION_METHOD_OFFSET = 8n;
-const COMPRESSED_SIZE_OFFSET = 18n;
-const UNCOMPRESSED_SIZE_OFFSET = 22n;
-const FILE_NAME_LENGTH_OFFSET = 26n;
-const EXTRA_FIELD_LENGTH_OFFSET = 28n;
+const COMPRESSION_METHOD_OFFSET = 8;
+const COMPRESSED_SIZE_OFFSET = 18;
+const UNCOMPRESSED_SIZE_OFFSET = 22;
+const FILE_NAME_LENGTH_OFFSET = 26;
+const EXTRA_FIELD_LENGTH_OFFSET = 28;
 const FILE_NAME_OFFSET = 30n;
 
 export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
@@ -43,48 +43,52 @@ export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
  */
 export const parseZipLocalFileHeader = async (
   headerOffset: bigint,
-  buffer: FileProvider
+  file: FileProvider
 ): Promise<ZipLocalFileHeader | null> => {
-  const magicBytes = await buffer.slice(headerOffset, headerOffset + 4n);
+  const mainHeader = new DataView(await file.slice(headerOffset, headerOffset + FILE_NAME_OFFSET));
+
+  const magicBytes = mainHeader.buffer.slice(0, 4);
   if (!compareArrayBuffers(magicBytes, signature)) {
     return null;
   }
 
-  const fileNameLength = await buffer.getUint16(headerOffset + FILE_NAME_LENGTH_OFFSET);
+  const fileNameLength = mainHeader.getUint16(FILE_NAME_LENGTH_OFFSET, true);
 
-  const fileName = new TextDecoder()
-    .decode(
-      await buffer.slice(
-        headerOffset + FILE_NAME_OFFSET,
-        headerOffset + FILE_NAME_OFFSET + BigInt(fileNameLength)
-      )
-    )
-    .split('\\')
-    .join('/');
-  const extraFieldLength = await buffer.getUint16(headerOffset + EXTRA_FIELD_LENGTH_OFFSET);
+  const extraFieldLength = mainHeader.getUint16(EXTRA_FIELD_LENGTH_OFFSET, true);
+
+  const additionalHeader = await file.slice(
+    headerOffset + FILE_NAME_OFFSET,
+    headerOffset + FILE_NAME_OFFSET + BigInt(fileNameLength + extraFieldLength)
+  );
+
+  const fileNameBuffer = additionalHeader.slice(0, fileNameLength);
+
+  const extraDataBuffer = new DataView(
+    additionalHeader.slice(fileNameLength, additionalHeader.byteLength)
+  );
+
+  const fileName = new TextDecoder().decode(fileNameBuffer).split('\\').join('/');
 
   let fileDataOffset = headerOffset + FILE_NAME_OFFSET + BigInt(fileNameLength + extraFieldLength);
 
-  const compressionMethod = await buffer.getUint16(headerOffset + COMPRESSION_METHOD_OFFSET);
+  const compressionMethod = mainHeader.getUint16(COMPRESSION_METHOD_OFFSET, true);
 
-  let compressedSize = BigInt(await buffer.getUint32(headerOffset + COMPRESSED_SIZE_OFFSET)); // add zip 64 logic
+  let compressedSize = BigInt(mainHeader.getUint32(COMPRESSED_SIZE_OFFSET, true)); // add zip 64 logic
 
-  let uncompressedSize = BigInt(await buffer.getUint32(headerOffset + UNCOMPRESSED_SIZE_OFFSET)); // add zip 64 logic
+  let uncompressedSize = BigInt(mainHeader.getUint32(UNCOMPRESSED_SIZE_OFFSET, true)); // add zip 64 logic
 
-  const extraOffset = headerOffset + FILE_NAME_OFFSET + BigInt(fileNameLength);
-
-  let offsetInZip64Data = 4n;
+  let offsetInZip64Data = 4;
   // looking for info that might be also be in zip64 extra field
   if (uncompressedSize === BigInt(0xffffffff)) {
-    uncompressedSize = await buffer.getBigUint64(extraOffset + offsetInZip64Data);
-    offsetInZip64Data += 8n;
+    uncompressedSize = extraDataBuffer.getBigUint64(offsetInZip64Data, true);
+    offsetInZip64Data += 8;
   }
   if (compressedSize === BigInt(0xffffffff)) {
-    compressedSize = await buffer.getBigUint64(extraOffset + offsetInZip64Data);
-    offsetInZip64Data += 8n;
+    compressedSize = extraDataBuffer.getBigUint64(offsetInZip64Data, true);
+    offsetInZip64Data += 8;
   }
   if (fileDataOffset === BigInt(0xffffffff)) {
-    fileDataOffset = await buffer.getBigUint64(extraOffset + offsetInZip64Data); // setting it to the one from zip64
+    fileDataOffset = extraDataBuffer.getBigUint64(offsetInZip64Data, true); // setting it to the one from zip64
   }
 
   return {
