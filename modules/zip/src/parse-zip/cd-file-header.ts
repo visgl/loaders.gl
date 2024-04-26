@@ -127,15 +127,18 @@ export async function* makeZipCDHeaderIterator(
   fileProvider: FileProvider
 ): AsyncIterable<ZipCDFileHeader> {
   const {cdStartOffset, cdByteSize} = await parseEoCDRecord(fileProvider);
-  const cd = new DataViewFile(
+  const centralDirectory = new DataViewFile(
     new DataView(await fileProvider.slice(cdStartOffset, cdStartOffset + cdByteSize))
   );
-  let cdHeader = await parseZipCDFileHeader(0n, cd);
-  while (cdHeader && cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength) < cd.length) {
+  let cdHeader = await parseZipCDFileHeader(0n, centralDirectory);
+  while (
+    cdHeader &&
+    cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength) < centralDirectory.length
+  ) {
     yield cdHeader;
     cdHeader = await parseZipCDFileHeader(
       cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
-      cd
+      centralDirectory
     );
   }
 }
