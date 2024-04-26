@@ -23,10 +23,11 @@ test('tile-converter(i3s-server)#getFileNameByUrl', async (t) => {
   }
 
   const cwd = process.cwd();
-
   for (const testCase of TEST_CASES) {
-    const result = await getFileNameByUrl(`${URL_PREFIX}${testCase.input}`);
-    t.equals(result, `${cwd}${URL_PREFIX}/${testCase.output}`);
+    const resultRelativePath = await getFileNameByUrl(`${URL_PREFIX}${testCase.input}`);
+    const resultAbsolutePath = await getFileNameByUrl(`${testCase.input}`, `${cwd}${URL_PREFIX}`);
+    t.equals(resultRelativePath, `${cwd}${URL_PREFIX}/${testCase.output}`);
+    t.equals(resultAbsolutePath, `${cwd}${URL_PREFIX}/${testCase.output}`);
   }
 
   t.end();

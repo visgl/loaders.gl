@@ -25,7 +25,9 @@ app.use(cors());
 
 if (/\.slpk$/.test(I3S_LAYER_PATH)) {
   let filePath = FULL_LAYER_PATH;
-  if (I3S_LAYER_PATH.startsWith('/')) {
+  // Checks if the first character is not a point to indicate absolute path
+  const absolutePath = /^[^.]/.exec(I3S_LAYER_PATH);
+  if (absolutePath) {
     filePath = I3S_LAYER_PATH;
   }
   loadArchive(filePath);
