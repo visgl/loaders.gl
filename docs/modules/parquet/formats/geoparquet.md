@@ -23,13 +23,15 @@ GeoParquet file is a Parquet file that additionally follows these conventions:
 | Parse file metadata                                                                          | ✅        |
 | Geometry column encoding: WKB                                                                | ✅        |
 | Geometry column encoding: single-geometry type encodings based on the GeoArrow specification | ❌        |
-| "crs" column metadata: reorder vertices if set "counterclockwise"                            | ❌        |
+| "crs" column metadata: transformt CRS to WGS84 with longitude, latitude representation.      | ❌        |
 | "orientation" column metadata: reorder vertices if set "counterclockwise"                    | ❌        |
 | "covering" column metadata: per-row bounding boxes                                           | ❌        |
 
 ## Data size limitation
 
-Parquet files might be large in size (multiple gigabytes). The capacity of GeoParquetLoader is limited by the platform limitations. As an example in Chrome tab is chrashed when it reachs 4GB memory size. As "coverting" columns are not supported yet, it is not possible to make an efficient filtering of data. To prevent memory overflow it is possible to use the `limit` loader option that limits number of output rows. In that case the loader will return first `n` rows ommiting the rest of file.
+Parquet files might be large in size (multiple gigabytes). The capacity of GeoParquetLoader is limited by the memory limitations of your current platform. As an example a Chrome tab crashes when it reaches a certain platform dependent size. 
+	
+As "covering" metadata is not supported yet, it is not possible to make an efficient filtering of data. To prevent memory overflow it is possible to use the `limit` loader option that limits number of rows being parsed. In that case the loader will return first `limit` rows, omitting the rest of file.
 
 ## Alternatives
 
