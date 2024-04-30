@@ -16,9 +16,10 @@ export async function parseParquetWasm(
   const arr = new Uint8Array(arrayBuffer);
 
   const wasmUrl = options?.parquet?.wasmUrl;
-  const wasm = await loadWasm(wasmUrl);
-  const wasmTable = wasm.readParquet(arr);
   try {
+    const wasm = await loadWasm(wasmUrl);
+    const wasmTable = wasm.readParquet(arr);
+
     const ipcStream = wasmTable.intoIPCStream();
     const arrowTable = arrow.tableFromIPC(ipcStream);
 

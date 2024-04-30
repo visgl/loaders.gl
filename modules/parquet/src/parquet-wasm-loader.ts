@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTable} from '@loaders.gl/arrow';
+import type {ArrowTable} from '@loaders.gl/schema';
 
 import {parseParquetWasm} from './lib/wasm/parse-parquet-wasm';
 import {VERSION, PARQUET_WASM_URL} from './lib/constants';

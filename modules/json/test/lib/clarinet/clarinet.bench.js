@@ -1,6 +1,6 @@
 import {_ClarinetParser} from '@loaders.gl/json';
 
-import BASIC from '../../data/clarinet/basic.json';
+import BASIC from '../../data/clarinet/basic.json' assert {type: 'json'};
 
 export default function clarinetBench(bench) {
   const STRING = JSON.stringify(BASIC);
