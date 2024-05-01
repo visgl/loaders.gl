@@ -5,7 +5,7 @@
 import type {ArrowTable} from '@loaders.gl/arrow';
 
 import * as arrow from 'apache-arrow';
-import {loadWasm} from './load-wasm';
+import {loadWasm} from '../utils/load-wasm';
 
 import type {ParquetWriterOptions} from '../../parquet-wasm-writer';
 
