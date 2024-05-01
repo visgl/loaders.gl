@@ -6,7 +6,7 @@
 import type {ArrowTable} from '@loaders.gl/arrow';
 import {serializeArrowSchema} from '@loaders.gl/arrow';
 import type {ParquetWasmLoaderOptions} from '../../parquet-wasm-loader';
-import {loadWasm} from './load-wasm';
+import {loadWasm} from '../utils/load-wasm';
 import * as arrow from 'apache-arrow';
 
 export async function parseParquetWasm(

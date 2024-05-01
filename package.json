@@ -44,7 +44,7 @@
     "@probe.gl/bench": "^4.0.2",
     "@probe.gl/test-utils": "^4.0.2",
     "@types/tape-promise": "^4.0.1",
-    "ocular-dev-tools": "2.0.0-alpha.28",
+    "ocular-dev-tools": "2.0.0-alpha.31",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1"
   },
