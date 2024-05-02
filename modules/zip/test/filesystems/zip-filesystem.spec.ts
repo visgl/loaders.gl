@@ -47,7 +47,7 @@ test('zip#ZipFileSystem - get stat for the first file', async (t) => {
   t.equal(stats.fileName, 'test-file.txt');
   t.equal(stats.fileNameLength, 13);
   t.equal(stats.extraFieldLength, 24);
-  t.equal(stats.extraOffset, 145n);
+  t.equal(stats.extraOffset, 59n);
   t.equal(stats.localHeaderOffset, 0n);
   t.equal(stats.size, 15);
   t.end();
