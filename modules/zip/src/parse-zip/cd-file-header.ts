@@ -68,6 +68,9 @@ export const parseZipCDFileHeader = async (
   headerOffset: bigint,
   file: FileProvider
 ): Promise<ZipCDFileHeader | null> => {
+  if (headerOffset >= file.length) {
+    return null;
+  }
   const mainHeader = new DataView(
     await file.slice(headerOffset, headerOffset + CD_FILE_NAME_OFFSET)
   );
@@ -131,10 +134,7 @@ export async function* makeZipCDHeaderIterator(
     new DataView(await fileProvider.slice(cdStartOffset, cdStartOffset + cdByteSize))
   );
   let cdHeader = await parseZipCDFileHeader(0n, centralDirectory);
-  while (
-    cdHeader &&
-    cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength) < centralDirectory.length
-  ) {
+  while (cdHeader) {
     yield cdHeader;
     cdHeader = await parseZipCDFileHeader(
       cdHeader.extraOffset + BigInt(cdHeader.extraFieldLength),
