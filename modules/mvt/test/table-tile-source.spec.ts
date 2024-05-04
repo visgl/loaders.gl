@@ -56,7 +56,8 @@ test('TableTileSource#getTile#us-states.json', async (t) => {
 
   // Check total number of tiles generated
 
-  t.equal(source.total, 37);
+  const total = source.stats.get('total').count;
+  t.equal(total, 37);
 
   t.end();
 });
