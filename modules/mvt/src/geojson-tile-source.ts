@@ -23,18 +23,28 @@ import {projectToLngLat} from './lib/utils/geometry-utils';
 import {projectToLocalCoordinates} from './lib/utils/geometry-utils';
 
 /** Options to configure tiling */
-export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
+export type GeoJSONTileSourceProps = VectorTileSourceProps & {
   coordinates: 'wgs84' | 'local';
-  maxZoom?: number /** max zoom to preserve detail on */;
-  indexMaxZoom?: number /** max zoom in the tile index */;
-  indexMaxPoints?: number /** max number of points per tile in the tile index */;
-  tolerance?: number /** simplification tolerance (higher means simpler) */;
-  extent?: number /** tile extent */;
-  buffer?: number /** tile buffer on each side */;
-  lineMetrics?: boolean /** whether to calculate line metrics */;
-  promoteId?: string /** name of a feature property to be promoted to feature.id */;
-  generateId?: boolean /** whether to generate feature ids. Cannot be used with promoteId */;
-  debug?: number /** logging level (0, 1 or 2) */;
+  /** max zoom to preserve detail on */
+  maxZoom?: number;
+  /** max zoom in the tile index */
+  indexMaxZoom?: number;
+  /** max number of points per tile in the tile index */
+  maxPointsPerTile?: number;
+  /** simplification tolerance (higher means simpler) */
+  tolerance?: number;
+  /** tile extent */
+  extent?: number;
+  /** tile buffer on each side */
+  buffer?: number;
+  /** name of a feature property to be promoted to feature.id */
+  promoteId?: string;
+  /** whether to generate feature ids. Cannot be used with promoteId */
+  generateId?: boolean;
+  /** logging level (0, 1 or 2) */
+  debug?: number;
+  /** whether to calculate line metrics */
+  lineMetrics?: boolean;
 };
 
 /**
@@ -46,11 +56,11 @@ export type GeoJSONTileSourceOptions = VectorTileSourceProps & {
  * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
  */
 export class GeoJSONTileSource implements VectorTileSource<any> {
-  static defaultOptions: Required<GeoJSONTileSourceOptions> = {
+  static defaultOptions: Required<GeoJSONTileSourceProps> = {
     coordinates: 'wgs84', // coordinates in tile coordinates or lng/lat
     maxZoom: 14, // max zoom to preserve detail on
     indexMaxZoom: 5, // max zoom in the tile index
-    indexMaxPoints: 100000, // max number of points per tile in the tile index
+    maxPointsPerTile: 100000, // max number of points per tile in the tile index
     tolerance: 3, // simplification tolerance (higher means simpler)
     extent: 4096, // tile extent
     buffer: 64, // tile buffer on each side
@@ -61,24 +71,32 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
     debug: 0 // logging level (0, 1 or 2)
   };
 
+  /** The props that this tile source was created with */
+  prop: Required<GeoJSONTileSourceProps>;
+
+  /** MIME type of the tiles emitted by this tile source */
   mimeType = 'application/vnd.mapbox-vector-tile';
 
-  options: Required<GeoJSONTileSourceOptions>;
-
-  // tiles and tileCoords are part of the public API
-  tiles: Record<string, GeoJSONTile> = {};
-  tileCoords: {x: number; y: number; z: number}[] = [];
-
-  stats: Record<string, number> = {};
-  total: number = 0;
+  /* Schema of the data */
   schema: Schema | null = null;
 
-  /** Sync methods can be called: the input data promise has been resolved and initial top-level tiling is done */
+  /** Map of generated tiles, indexed by stringified tile coordinates */
+  tiles: Record<string, GeoJSONTile> = {};
+  /** Array of tile coordinates */
+  tileCoords: {x: number; y: number; z: number}[] = [];
+
+  /** Stats for the generated tiles */
+  stats: Record<string, number> = {};
+  /** total number of generated tiles */
+  total: number = 0;
+
+  /** Input data has loaded, initial top-level tiling is done, sync methods can now be called */
   ready: Promise<void>;
+  /** Metadata for the tile source (generated TileJSON/tilestats */
   metadata: Promise<unknown>;
 
-  constructor(data: GeoJSONTable | Promise<GeoJSONTable>, options?: GeoJSONTileSourceOptions) {
-    this.options = {...GeoJSONTileSource.defaultOptions, ...options};
+  constructor(data: GeoJSONTable | Promise<GeoJSONTable>, prop?: GeoJSONTileSourceProps) {
+    this.prop = {...GeoJSONTileSource.defaultOptions, ...prop};
     this.getTileData = this.getTileData.bind(this);
     this.ready = this.initializeTilesAsync(data);
     this.metadata = this.getMetadata();
@@ -92,7 +110,7 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
 
   async getMetadata(): Promise<unknown> {
     await this.ready;
-    return {schema: this.schema, minZoom: 0, maxZoom: this.options.maxZoom};
+    return {schema: this.schema, minZoom: 0, maxZoom: this.prop.maxZoom};
   }
 
   /**
@@ -130,40 +148,40 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
     }
 
     return convertToGeoJSONTable(rawTile, {
-      coordinates: this.options.coordinates,
+      coordinates: this.prop.coordinates,
       tileIndex,
-      extent: this.options.extent
+      extent: this.prop.extent
     });
   }
 
   initializeTilesSync(data: GeoJSONTable): void {
-    const options = this.options;
-    const debug = options.debug;
+    const prop = this.prop;
+    const debug = prop.debug;
 
     if (debug) console.time('preprocess data');
 
-    if (this.options.maxZoom < 0 || this.options.maxZoom > 24) {
+    if (this.prop.maxZoom < 0 || this.prop.maxZoom > 24) {
       throw new Error('maxZoom should be in the 0-24 range');
     }
-    if (options.promoteId && this.options.generateId) {
+    if (prop.promoteId && this.prop.generateId) {
       throw new Error('promoteId and generateId cannot be used together.');
     }
 
     // projects and adds simplification info
-    let features = convert(data, options);
+    let features = convert(data, prop);
 
     if (debug) {
       console.timeEnd('preprocess data');
       console.log(
         'index: maxZoom: %d, maxPoints: %d',
-        options.indexMaxZoom,
-        options.indexMaxPoints
+        prop.indexMaxZoom,
+        prop.maxPointsPerTile
       );
       console.time('generate tiles');
     }
 
     // wraps features (ie extreme west and extreme east)
-    features = wrap(features, this.options);
+    features = wrap(features, this.prop);
 
     // start slicing from the top tile down
     if (features.length) {
@@ -191,7 +209,7 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
     // x = +x;
     // y = +y;
 
-    const {extent, debug} = this.options;
+    const {extent, debug} = this.prop;
 
     if (z < 0 || z > 24) {
       return null;
@@ -242,7 +260,7 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
    * @param cz, cx, and cy are the coordinates of the target tile
    *
    * If no target tile is specified, splitting stops when we reach the maximum
-   * zoom or the number of points is low as specified in the options.
+   * zoom or the number of points is low as specified in the prop.
    */
   // eslint-disable-next-line max-params, max-statements, complexity
   splitTile(
@@ -255,8 +273,8 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
     cy?: number
   ): void {
     const stack: any[] = [features, z, x, y];
-    const options = this.options;
-    const debug = options.debug;
+    const prop = this.prop;
+    const debug = prop.debug;
 
     // avoid recursion by using a processing queue
     while (stack.length) {
@@ -274,25 +292,24 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
           console.time('creation');
         }
 
-        tile = this.tiles[id] = createTile(features, z, x, y, options);
+        tile = this.tiles[id] = createTile(features, z, x, y, prop);
         this.tileCoords.push({z, x, y});
 
-        if (debug) {
-          if (debug > 1) {
-            console.log(
-              'tile z%d-%d-%d (features: %d, points: %d, simplified: %d)',
-              z,
-              x,
-              y,
-              tile.numFeatures,
-              tile.numPoints,
-              tile.numSimplified
-            );
-            console.timeEnd('creation');
-          }
-          const key = `z${z}`;
-          this.stats[key] = (this.stats[key] || 0) + 1;
-          this.total++;
+        const key = `z${z}`;
+        this.stats[key] = (this.stats[key] || 0) + 1;
+        this.total++;
+
+        if (debug > 1) {
+          console.log(
+            'tile z%d-%d-%d (features: %d, points: %d, simplified: %d)',
+            z,
+            x,
+            y,
+            tile.numFeatures,
+            tile.numPoints,
+            tile.numSimplified
+          );
+          console.timeEnd('creation');
         }
       }
 
@@ -302,9 +319,9 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
       // if it's the first-pass tiling
       if (cz === undefined) {
         // stop tiling if we reached max zoom, or if the tile is too simple
-        if (z === options.indexMaxZoom || tile.numPoints <= options.indexMaxPoints) continue;
+        if (z === prop.indexMaxZoom || tile.numPoints <= prop.maxPointsPerTile) continue;
         // if a drilldown to a specific tile
-      } else if (z === options.maxZoom || z === cz) {
+      } else if (z === prop.maxZoom || z === cz) {
         // stop tiling if we reached base zoom or our target tile zoom
         continue;
       } else if (cz !== undefined) {
@@ -322,7 +339,7 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
       if (debug > 1) console.time('clipping');
 
       // values we'll use for clipping
-      const k1 = (0.5 * options.buffer) / options.extent;
+      const k1 = (0.5 * prop.buffer) / prop.extent;
       const k2 = 0.5 - k1;
       const k3 = 0.5 + k1;
       const k4 = 1 + k1;
@@ -332,21 +349,21 @@ export class GeoJSONTileSource implements VectorTileSource<any> {
       let tr: GeoJSONTileFeature[] | null = null;
       let br: GeoJSONTileFeature[] | null = null;
 
-      let left = clip(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, options);
-      let right = clip(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, options);
+      let left = clip(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, prop);
+      let right = clip(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, prop);
 
       // @ts-expect-error - unclear why this is needed?
       features = null;
 
       if (left) {
-        tl = clip(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, options);
-        bl = clip(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, options);
+        tl = clip(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, prop);
+        bl = clip(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, prop);
         left = null;
       }
 
       if (right) {
-        tr = clip(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, options);
-        br = clip(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, options);
+        tr = clip(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, prop);
+        br = clip(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, prop);
         right = null;
       }
 
@@ -367,7 +384,7 @@ function toID(z, x, y): number {
 // eslint-disable-next-line max-statements, complexity
 function convertToGeoJSONTable(
   vtTile: GeoJSONTile,
-  options: {
+  prop: {
     coordinates: 'wgs84' | 'local';
     tileIndex: {x: number; y: number; z: number};
     extent: number;
@@ -422,12 +439,12 @@ function convertToGeoJSONTable(
         continue;
     }
 
-    switch (options.coordinates) {
+    switch (prop.coordinates) {
       case 'wgs84':
-        projectToLngLat(coordinates, options.tileIndex, options.extent);
+        projectToLngLat(coordinates, prop.tileIndex, prop.extent);
         break;
       default:
-        projectToLocalCoordinates(coordinates, options);
+        projectToLocalCoordinates(coordinates, prop);
         break;
     }
 

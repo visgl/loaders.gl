@@ -5,7 +5,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {GeoJSONTileSource, GeoJSONTileSourceOptions} from '@loaders.gl/mvt';
+import {GeoJSONTileSource, GeoJSONTileSourceProps} from '@loaders.gl/mvt';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
 
@@ -100,7 +100,7 @@ async function getJSON(name) {
 }
 
 /** Generate tiles for a GeoJSON files */
-async function genTiles(data, options?: GeoJSONTileSourceOptions) {
+async function genTiles(data, options?: GeoJSONTileSourceProps) {
   const source = new GeoJSONTileSource(
     data,
     Object.assign(
