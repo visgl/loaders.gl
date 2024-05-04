@@ -5,7 +5,7 @@
 
 // import type {Feature} from '@loaders.gl/schema';
 
-export type GeoJSONTileFeature = {
+export type TableTileFeature = {
   type: any;
   geometry: any;
 
@@ -20,8 +20,8 @@ export type GeoJSONTileFeature = {
   maxY: number;
 };
 
-export type GeoJSONTile = {
-  features: GeoJSONTileFeature[]; // Feature[]; Doesn't seem JSON compatible??
+export type TableTile = {
+  features: TableTileFeature[]; // Feature[]; Doesn't seem JSON compatible??
   type?: number;
   tags?: Record<string, string>;
 
@@ -53,9 +53,9 @@ export type CreateTileOptions = {
 /**
  * Create a tile from features and tile index
  */
-export function createTile(features: any[], z, tx, ty, options: CreateTileOptions): GeoJSONTile {
+export function createTile(features: any[], z, tx, ty, options: CreateTileOptions): TableTile {
   const tolerance = z === options.maxZoom ? 0 : options.tolerance / ((1 << z) * options.extent);
-  const tile: GeoJSONTile = {
+  const tile: TableTile = {
     features: [],
     numPoints: 0,
     numSimplified: 0,
@@ -77,7 +77,7 @@ export function createTile(features: any[], z, tx, ty, options: CreateTileOption
 }
 
 // eslint-disable-next-line complexity, max-statements
-function addFeature(tile: GeoJSONTile, feature, tolerance: number, options: CreateTileOptions) {
+function addFeature(tile: TableTile, feature, tolerance: number, options: CreateTileOptions) {
   const geom = feature.geometry;
   const type = feature.type;
   const simplified: number[] = [];
@@ -121,14 +121,14 @@ function addFeature(tile: GeoJSONTile, feature, tolerance: number, options: Crea
     }
 
     // @ts-expect-error TODO - create sub type?
-    const tileFeature: GeoJSONTileFeature = {
+    const tileFeature: TableTileFeature = {
       geometry: simplified,
       type:
         type === 'Polygon' || type === 'MultiPolygon'
           ? 3
           : type === 'LineString' || type === 'MultiLineString'
-            ? 2
-            : 1,
+          ? 2
+          : 1,
       tags
     };
     if (feature.id !== null) {
@@ -142,7 +142,7 @@ function addFeature(tile: GeoJSONTile, feature, tolerance: number, options: Crea
 function addLine(
   result,
   geom,
-  tile: GeoJSONTile,
+  tile: TableTile,
   tolerance: number,
   isPolygon: boolean,
   isOuter: boolean

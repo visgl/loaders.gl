@@ -3,10 +3,10 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import {GeoJSONTileFeature} from './tile';
+import {TableTileFeature} from './tile';
 
-export function createFeature(id, type, geom, tags): GeoJSONTileFeature {
-  const feature: GeoJSONTileFeature = {
+export function createFeature(id, type, geom, tags): TableTileFeature {
+  const feature: TableTileFeature = {
     // eslint-disable-next-line
     id: id == null ? null : id,
     type,

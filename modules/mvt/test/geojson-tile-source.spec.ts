@@ -5,7 +5,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {GeoJSONTileSource} from '@loaders.gl/mvt';
+import {TableTileSource} from '@loaders.gl/mvt';
 import {Feature, FeatureCollection, GeoJSONTable, Geometry} from '@loaders.gl/schema';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
@@ -27,27 +27,25 @@ const square = [
   }
 ];
 
-test.only('GeoJSONTileSource#getTile#us-states.json', async (t) => {
+test('TableTileSource#getTile#us-states.json', async (t) => {
   const geojson = await loadGeoJSONTable('us-states.json');
-  const source = new GeoJSONTileSource(geojson, {coordinates: 'wgs84'}); // , debug: 2});
+  const source = new TableTileSource(geojson, {coordinates: 'wgs84'}); // , debug: 2});
   await source.ready;
 
   // Check that tiles are correctly generated
 
-  debugger;
-  let features = source.getRawTile({z: 7, x: 37, y: 48})?.features;
-  let expected = await loadGeoJSONTable('us-states-z7-37-48.json');
-  t.same(features, expected, 'z7-37-48');
+  let tile = source.getRawTile({z: 7, x: 37, y: 48});
+  const expected = await loadGeoJSONTable('us-states-z7-37-48.json');
+  t.same(tile?.features, expected.features, 'z7-37-48');
 
-  debugger;
-  features = source.getRawTile({z: 9, x: 148, y: 192})?.features,
-  t.same(features, square, 'z9-148-192 (clipped square)');
-  
+  tile = source.getRawTile({z: 9, x: 148, y: 192});
+  t.same(tile?.features, square, 'z9-148-192 (clipped square)');
+
   // t.same(source.getRawTile({z: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
 
   // Check non-existing tiles (no geometry in these tile indices => no tile generated)
 
-  let tile = source.getRawTile({z: 11, x: 800, y: 400});
+  tile = source.getRawTile({z: 11, x: 800, y: 400});
   t.equal(tile, null, 'non-existing tile');
 
   tile = source.getRawTile({z: -5, x: 123.25, y: 400.25});
@@ -63,7 +61,7 @@ test.only('GeoJSONTileSource#getTile#us-states.json', async (t) => {
   t.end();
 });
 
-test('GeoJSONTileSource#getTile#unbuffered tile left/right edges', async (t) => {
+test('TableTileSource#getTile#unbuffered tile left/right edges', async (t) => {
   const geojson = makeGeoJSONTable({
     type: 'LineString',
     coordinates: [
@@ -71,7 +69,7 @@ test('GeoJSONTileSource#getTile#unbuffered tile left/right edges', async (t) => 
       [0, -90]
     ]
   });
-  const source = new GeoJSONTileSource(geojson, {
+  const source = new TableTileSource(geojson, {
     coordinates: 'local',
     buffer: 0
   });
@@ -95,7 +93,7 @@ test('GeoJSONTileSource#getTile#unbuffered tile left/right edges', async (t) => 
   t.end();
 });
 
-test('GeoJSONTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
+test('TableTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
   const geojson = makeGeoJSONTable({
     type: 'LineString',
     coordinates: [
@@ -103,7 +101,7 @@ test('GeoJSONTileSource#getTile#unbuffered tile top/bottom edges', async (t) => 
       [90, 66.51326044311188]
     ]
   });
-  const source = new GeoJSONTileSource(geojson, {
+  const source = new TableTileSource(geojson, {
     coordinates: 'local',
     buffer: 0
   });
@@ -125,7 +123,7 @@ test('GeoJSONTileSource#getTile#unbuffered tile top/bottom edges', async (t) => 
   t.end();
 });
 
-test('GeoJSONTileSource#getTile#polygon clipping on the boundary', async (t) => {
+test('TableTileSource#getTile#polygon clipping on the boundary', async (t) => {
   const geojson = makeGeoJSONTable({
     type: 'Polygon',
     coordinates: [
@@ -138,7 +136,7 @@ test('GeoJSONTileSource#getTile#polygon clipping on the boundary', async (t) => 
       ]
     ]
   });
-  const source = new GeoJSONTileSource(geojson, {
+  const source = new TableTileSource(geojson, {
     coordinates: 'local',
     buffer: 1024
   });
@@ -180,6 +178,8 @@ function makeGeoJSONTable(geometry: Geometry): GeoJSONTable {
 
 async function loadGeoJSONTable(filename: string): Promise<GeoJSONTable> {
   const response = await fetchFile(`${DATA_PATH}/${filename}`);
-  const json = (await response.json()) as FeatureCollection;
-  return {shape: 'geojson-table', ...json};
+  const json = await response.json();
+  return Array.isArray(json)
+    ? {shape: 'geojson-table', features: json, type: 'FeatureCollection'}
+    : {shape: 'geojson-table', ...json};
 }

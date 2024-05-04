@@ -13,7 +13,7 @@ While it is hard to predict what work will be completed and when, current develo
 
 ## v4.x
 
-- `GeoJSONTileSource` - tile adapter for WMS (support binary in/out)
+- `TableTileSource` - tile adapter for WMS (support binary in/out)
 - `Tile3DSource` - tile source for 3D Tiles
 - Better examples, integrate examples into pages, improve drag and drop for testing.
 - Better schema support in all loaders

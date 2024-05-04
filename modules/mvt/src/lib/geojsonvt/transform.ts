@@ -3,13 +3,13 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import type {GeoJSONTile} from './tile';
+import type {TableTile} from './tile';
 
 /**
  * Transforms the coordinates of each feature in the given tile from
  * mercator-projected space into (extent x extent) tile space.
  */
-export function transformTile(tile: GeoJSONTile, extent: number): GeoJSONTile {
+export function transformTile(tile: TableTile, extent: number): TableTile {
   if (tile.transformed) {
     return tile;
   }

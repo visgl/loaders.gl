@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import type {GeoJSONTileFeature} from './tile';
+import type {TableTileFeature} from './tile';
 import {clip} from './clip';
 import {createFeature} from './feature';
 
@@ -22,9 +22,9 @@ export type WrapOptions = {
  * @param options buffer and extent
  * @returns
  */
-export function wrap(features: GeoJSONTileFeature[], options: WrapOptions) {
+export function wrap(features: TableTileFeature[], options: WrapOptions) {
   const buffer = options.buffer / options.extent;
-  let merged: GeoJSONTileFeature[] = features;
+  let merged: TableTileFeature[] = features;
   const left = clip(features, 1, -1 - buffer, buffer, 0, -1, 2, options); // left world copy
   const right = clip(features, 1, 1 - buffer, 2 + buffer, 0, -1, 2, options); // right world copy
 
@@ -48,8 +48,8 @@ export function wrap(features: GeoJSONTileFeature[], options: WrapOptions) {
  * @param offset
  * @returns
  */
-function shiftFeatureCoords(features: GeoJSONTileFeature[], offset: number): GeoJSONTileFeature[] {
-  const newFeatures: GeoJSONTileFeature[] = [];
+function shiftFeatureCoords(features: TableTileFeature[], offset: number): TableTileFeature[] {
+  const newFeatures: TableTileFeature[] = [];
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];

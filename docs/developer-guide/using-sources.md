@@ -21,17 +21,17 @@ An advantage of using a specific type of source abstraction in your application 
 
 ## Adapter Sources
 
-While most `Source` implementations provide an interface for interacting with some WebService or perhaps cloud archive file format (`PMtilesSource`), it is also possible to create adapters that provide a `Source` interface to local data (`GeoJSONTileSource`) or that adapts one type of Source to another (e.g. `ImageTileSource` calling an `ImageSource` to generate each tile).
+While most `Source` implementations provide an interface for interacting with some WebService or perhaps cloud archive file format (`PMtilesSource`), it is also possible to create adapters that provide a `Source` interface to local data (`TableTileSource`) or that adapts one type of Source to another (e.g. `ImageTileSource` calling an `ImageSource` to generate each tile).
 
 
 ## Example
 
 ```typescript
-import {GeoJSONTileSource} from '@loaders.gl/mvt';
+import {TableTileSource} from '@loaders.gl/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
 // build an initial index of tiles. Convieniently, 
-const tileSource = new GeoJSONTileSource(load(url, GeoJSONLoader));
+const tileSource = new TableTileSource(load(url, GeoJSONLoader));
 // request a particular tile
 const features = tileSource.getTile(z, x, y).features;
 ```

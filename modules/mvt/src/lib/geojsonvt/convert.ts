@@ -7,14 +7,16 @@
 // @ts-nocheck
 
 import type {Feature, FeatureCollection} from '@loaders.gl/schema';
-import type {GeoJSONTileFeature} from './tile';
+import type {TableTileFeature} from './tile';
 
 import {simplify} from './simplify';
 import {createFeature} from './feature';
 
-// converts GeoJSON feature into an intermediate projected JSON vector format with simplification data
-
-export function convert(data: Feature | FeatureCollection, options): GeoJSONTileFeature[] {
+/**
+ * converts a GeoJSON feature into an intermediate projected JSON vector format
+ * with simplification data
+ */
+export function convert(data: Feature | FeatureCollection, options): TableTileFeature[] {
   const features = [];
   if (data.type === 'FeatureCollection') {
     for (let i = 0; i < data.features.length; i++) {
@@ -31,14 +33,22 @@ export function convert(data: Feature | FeatureCollection, options): GeoJSONTile
 }
 
 export type ConvertFeatureOptions = {
+  /** max zoom to preserve detail on */
   maxZoom?: number;
-  tolerance: number;
-  extent: number;
-  lineMetrics: boolean;
+  /** simplification tolerance (higher means simpler) */
+  tolerance?: number;
+  /** tile extent */
+  extent?: number;
+  /** whether to calculate line metrics */
+  lineMetrics?: boolean;
 };
 
+/**
+ * converts a GeoJSON feature into an intermediate projected JSON vector format
+ * with simplification data
+ */
 function convertFeature(
-  features: GeoJSONTileFeature[],
+  features: TableTileFeature[],
   geojson: Feature,
   options: ConvertFeatureOptions,
   index: number

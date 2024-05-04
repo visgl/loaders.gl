@@ -16,7 +16,7 @@ import {TileSourceLayer} from './components/tile-source-layer';
 import type {TileSource} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
 import {PMTilesSource, PMTilesMetadata} from '@loaders.gl/pmtiles';
-import {MVTSource, GeoJSONTileSource} from '@loaders.gl/mvt';
+import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
 
 import {ControlPanel} from './components/control-panel';
 import {
@@ -65,9 +65,9 @@ function createTileSource(example: Example): TileSource<any> {
       return new MVTSource({url: example.data});
 
     case 'geojson':
-      // GeoJSONTileSource can be created synchronously with a promise
+      // TableTileSource can be created synchronously with a promise
       const geojsonTablePromise = load(example.data, GeoJSONLoader);
-      return new GeoJSONTileSource(geojsonTablePromise);
+      return new TableTileSource(geojsonTablePromise);
 
     default:
       throw new Error(`Unknown source format ${example.format}`);
