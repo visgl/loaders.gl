@@ -1,5 +1,9 @@
 # Upgrade Guide
 
+## Upgrading to v4.3 (In development)
+
+- Note: internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
+
 ## Upgrading to v4.2
 
 **@loaders.gl/mvt** 

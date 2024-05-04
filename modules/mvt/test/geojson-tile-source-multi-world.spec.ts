@@ -4,7 +4,7 @@
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import test from 'tape-promise/tape';
-import {GeoJSONTileSource} from '@loaders.gl/mvt';
+import {TableTileSource} from '@loaders.gl/mvt';
 
 const leftPoint = {
   type: 'Feature',
@@ -26,7 +26,7 @@ const rightPoint = {
 
 test('GeoJSONVT#handle point only in the rightside world', async (t) => {
   try {
-    const source = new GeoJSONTileSource(rightPoint);
+    const source = new TableTileSource(rightPoint);
     await source.ready;
 
     t.equal(source.tiles[0].features[0].geometry[0], 1);
@@ -39,7 +39,7 @@ test('GeoJSONVT#handle point only in the rightside world', async (t) => {
 
 test('GeoJSONVT#handle point only in the leftside world', async (t) => {
   try {
-    const source = new GeoJSONTileSource(leftPoint);
+    const source = new TableTileSource(leftPoint);
     t.equal(source.tiles[0].features[0].geometry[0], 0);
     t.equal(source.tiles[0].features[0].geometry[1], 0.5);
   } catch (err) {
@@ -50,7 +50,7 @@ test('GeoJSONVT#handle point only in the leftside world', async (t) => {
 
 test('GeoJSONVT#handle points in the leftside world and the rightside world', async (t) => {
   try {
-    const source = new GeoJSONTileSource({
+    const source = new TableTileSource({
       type: 'FeatureCollection',
       features: [leftPoint, rightPoint]
     });

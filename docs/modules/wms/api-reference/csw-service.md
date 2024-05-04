@@ -1,17 +1,16 @@
-# CSWService
-
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
+# CSWService 🚧
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />
-  &nbsp;
-	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
+  <img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-The `CSWService` class provides a type safe API for what 
+
+The `CSWService` class provides OGC CSW (catalog service for the web) access 
 - Type safe methods to call and parse results (and errors) from a CSW service's endpoints
-- In particular the big `GetCapabilities` metadata is normalized into a fully typed data structure.
+- In particular, the big `GetCapabilities` metadata is normalized into a fully typed data structure.
 
 > The `CSWService` generates URLs with URL parameters intended to be used with HTTP GET requests against a CSW server. The OGC CSW standard also allows CSW services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported by this class.
  

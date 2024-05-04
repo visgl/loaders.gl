@@ -3,12 +3,10 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-/* eslint-disable no-console */
-
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {GeoJSONTileSource} from '@loaders.gl/mvt';
-import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
+import {TableTileSource} from '@loaders.gl/mvt';
+import {Feature, FeatureCollection, GeoJSONTable, Geometry} from '@loaders.gl/schema';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
 
@@ -29,65 +27,52 @@ const square = [
   }
 ];
 
-function makeGeoJSONTable(geometry: Geometry): GeoJSONTable {
-  const feature: Feature = {
-    geometry,
-    properties: null
-  } as Feature;
-
-  return {
-    shape: 'geojson-table',
-    type: 'FeatureCollection',
-    features: [feature]
-  };
-}
-
-test('GeoJSONTileSource#getTile#us-states.json', async (t) => {
-  const log = console.log;
-  console.log = function () {};
-
-  const geojson = await getJSON('us-states.json');
-  const source = new GeoJSONTileSource(geojson, {debug: 2});
+test('TableTileSource#getTile#us-states.json', async (t) => {
+  const geojson = await loadGeoJSONTable('us-states.json');
+  const source = new TableTileSource(geojson, {coordinates: 'wgs84'}); // , debug: 2});
   await source.ready;
 
-  t.same(
-    source.getRawTile({z: 7, x: 37, y: 48})?.features,
-    await getJSON('us-states-z7-37-48.json'),
-    'z7-37-48'
-  );
-  // t.same(source.getRawTile({z: '7', x: '37' y:,} '48')?.features, getJSON('us-states-z7-37-48.json'), 'z, x, y as strings');
+  // Check that tiles are correctly generated
 
-  t.same(
-    source.getRawTile({z: 9, x: 148, y: 192})?.features,
-    square,
-    'z9-148-192 (clipped square)'
-  );
+  let tile = source.getRawTile({z: 7, x: 37, y: 48});
+  const expected = await loadGeoJSONTable('us-states-z7-37-48.json');
+  t.same(tile?.features, expected.features, 'z7-37-48');
+
+  tile = source.getRawTile({z: 9, x: 148, y: 192});
+  t.same(tile?.features, square, 'z9-148-192 (clipped square)');
+
   // t.same(source.getRawTile({z: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
 
-  t.equal(source.getRawTile({z: 11, x: 800, y: 400}), null, 'non-existing tile');
-  t.equal(source.getRawTile({z: -5, x: 123.25, y: 400.25}), null, 'invalid tile');
-  t.equal(source.getRawTile({z: 25, x: 200, y: 200}), null, 'invalid tile');
+  // Check non-existing tiles (no geometry in these tile indices => no tile generated)
 
-  console.log = log;
+  tile = source.getRawTile({z: 11, x: 800, y: 400});
+  t.equal(tile, null, 'non-existing tile');
+
+  tile = source.getRawTile({z: -5, x: 123.25, y: 400.25});
+  t.equal(tile, null, 'invalid tile');
+
+  tile = source.getRawTile({z: 25, x: 200, y: 200});
+  t.equal(tile, null, 'invalid tile');
+
+  // Check total number of tiles generated
 
   t.equal(source.total, 37);
 
   t.end();
 });
 
-test('GeoJSONTileSource#getTile#unbuffered tile left/right edges', async (t) => {
-  const source = new GeoJSONTileSource(
-    makeGeoJSONTable({
-      type: 'LineString',
-      coordinates: [
-        [0, 90],
-        [0, -90]
-      ]
-    }),
-    {
-      buffer: 0
-    }
-  );
+test('TableTileSource#getTile#unbuffered tile left/right edges', async (t) => {
+  const geojson = makeGeoJSONTable({
+    type: 'LineString',
+    coordinates: [
+      [0, 90],
+      [0, -90]
+    ]
+  });
+  const source = new TableTileSource(geojson, {
+    coordinates: 'local',
+    buffer: 0
+  });
   await source.ready;
 
   let tile = source.getRawTile({z: 2, x: 1, y: 1});
@@ -108,19 +93,18 @@ test('GeoJSONTileSource#getTile#unbuffered tile left/right edges', async (t) => 
   t.end();
 });
 
-test('GeoJSONTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
-  const source = new GeoJSONTileSource(
-    makeGeoJSONTable({
-      type: 'LineString',
-      coordinates: [
-        [-90, 66.51326044311188],
-        [90, 66.51326044311188]
-      ]
-    }),
-    {
-      buffer: 0
-    }
-  );
+test('TableTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
+  const geojson = makeGeoJSONTable({
+    type: 'LineString',
+    coordinates: [
+      [-90, 66.51326044311188],
+      [90, 66.51326044311188]
+    ]
+  });
+  const source = new TableTileSource(geojson, {
+    coordinates: 'local',
+    buffer: 0
+  });
   await source.ready;
 
   t.same(source.getRawTile({z: 2, x: 1, y: 0})?.features, [
@@ -139,24 +123,23 @@ test('GeoJSONTileSource#getTile#unbuffered tile top/bottom edges', async (t) => 
   t.end();
 });
 
-test('GeoJSONTileSource#getTile#polygon clipping on the boundary', async (t) => {
-  const source = new GeoJSONTileSource(
-    makeGeoJSONTable({
-      type: 'Polygon',
-      coordinates: [
-        [
-          [42.1875, 57.32652122521708],
-          [47.8125, 57.32652122521708],
-          [47.8125, 54.16243396806781],
-          [42.1875, 54.16243396806781],
-          [42.1875, 57.32652122521708]
-        ]
+test('TableTileSource#getTile#polygon clipping on the boundary', async (t) => {
+  const geojson = makeGeoJSONTable({
+    type: 'Polygon',
+    coordinates: [
+      [
+        [42.1875, 57.32652122521708],
+        [47.8125, 57.32652122521708],
+        [47.8125, 54.16243396806781],
+        [42.1875, 54.16243396806781],
+        [42.1875, 57.32652122521708]
       ]
-    }),
-    {
-      buffer: 1024
-    }
-  );
+    ]
+  });
+  const source = new TableTileSource(geojson, {
+    coordinates: 'local',
+    buffer: 1024
+  });
   await source.ready;
 
   t.same(source.getRawTile({z: 5, x: 19, y: 9})?.features, [
@@ -178,8 +161,25 @@ test('GeoJSONTileSource#getTile#polygon clipping on the boundary', async (t) => 
   t.end();
 });
 
-async function getJSON(name) {
-  const response = await fetchFile(`${DATA_PATH}/${name}`);
+// HELPERS
+
+function makeGeoJSONTable(geometry: Geometry): GeoJSONTable {
+  const feature: Feature = {
+    geometry,
+    properties: null
+  } as Feature;
+
+  return {
+    shape: 'geojson-table',
+    type: 'FeatureCollection',
+    features: [feature]
+  };
+}
+
+async function loadGeoJSONTable(filename: string): Promise<GeoJSONTable> {
+  const response = await fetchFile(`${DATA_PATH}/${filename}`);
   const json = await response.json();
-  return json;
+  return Array.isArray(json)
+    ? {shape: 'geojson-table', features: json, type: 'FeatureCollection'}
+    : {shape: 'geojson-table', ...json};
 }

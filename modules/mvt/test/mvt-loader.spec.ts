@@ -263,8 +263,9 @@ const TEST_FILES = [
   MVT_POLYGON_ZERO_SIZE_HOLE_DATA_URL,
   MVT_MULTIPLE_LAYERS_DATA_URL
 ];
-for (const filename of TEST_FILES) {
-  test('MVTLoader#Parse geojson-to-binary', async (t) => {
+
+test('MVTLoader#Parse geojson-to-binary', async (t) => {
+  for (const filename of TEST_FILES) {
     const response = await fetchFile(filename);
     const mvtArrayBuffer = await response.arrayBuffer();
     const geojson = await parse(mvtArrayBuffer, MVTLoader);
@@ -277,9 +278,9 @@ for (const filename of TEST_FILES) {
 
     const expectedBinary = geojsonToBinary(geojson);
     t.deepEqual(expectedBinary, binary);
-    t.end();
-  });
-}
+  }
+  t.end();
+});
 
 test('Features with top-level id', async (t) => {
   const response = await fetchFile(WITH_FEATURE_ID);

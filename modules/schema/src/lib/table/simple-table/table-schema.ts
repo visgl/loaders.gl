@@ -20,6 +20,9 @@ export function deduceTableSchema(table: Table): Schema {
     case 'object-row-table':
       return deduceSchemaFromRows(table.data);
 
+    case 'geojson-table':
+      return deduceSchemaFromGeoJSON(table.features);
+
     case 'columnar-table':
       return deduceSchemaFromColumns(table.data);
 
@@ -52,6 +55,23 @@ function deduceSchemaFromRows(rowTable: unknown[][] | {[key: string]: unknown}[]
   }
   const fields: Field[] = [];
   const row0 = rowTable[0];
+  // TODO - fields can be nullable, false detection...
+  // Could look at additional rows if nulls in first row
+  // TODO - if array, column names will be numbers
+  for (const [columnName, value] of Object.entries(row0)) {
+    fields.push(deduceFieldFromValue(value, columnName));
+  }
+
+  return {fields, metadata: {}};
+}
+
+/** Given a GeoJSON, try to deduce a schema */
+function deduceSchemaFromGeoJSON(features: {properties: Record<string, number> | null}[]): Schema {
+  if (!features.length) {
+    throw new Error('deduce from empty table');
+  }
+  const fields: Field[] = [];
+  const row0 = features[0].properties || {};
   // TODO - fields can be nullable, false detection...
   // Could look at additional rows if nulls in first row
   // TODO - if array, column names will be numbers
