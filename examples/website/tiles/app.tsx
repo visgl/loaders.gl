@@ -31,7 +31,7 @@ import {GeoJSONLoader} from '../../../modules/json/src/geojson-loader';
 const INITIAL_VIEW_STATE = {
   latitude: 47.65,
   longitude: 7,
-  zoom: 4.5,
+  zoom: 2,
   maxZoom: 20,
   maxPitch: 89,
   bearing: 0
@@ -46,31 +46,36 @@ const COPYRIGHT_LICENSE_STYLE = {
   font: '12px/20px Helvetica Neue,Arial,Helvetica,sans-serif'
 };
 
-const LINK_STYLE = {
-  textDecoration: 'none',
-  color: 'rgba(0,0,0,.75)',
-  cursor: 'grab'
-};
+// const LINK_STYLE = {
+//   textDecoration: 'none',
+//   color: 'rgba(0,0,0,.75)',
+//   cursor: 'grab'
+// };
 
 function createTileSource(example: Example): TileSource<any> {
-  switch (example.format) {
+  switch (example.sourceType) {
+
     case 'pmtiles':
       return new PMTilesSource({
         url: example.data,
         attributions: example.attributions,
+        // Make the Schema more presentable by limiting the number of values per column the field metadata
         loadOptions: {tilejson: {maxValues: 10}}
       });
 
     case 'mvt':
       return new MVTSource({url: example.data});
 
-    case 'geojson':
-      // TableTileSource can be created synchronously with a promise
-      const geojsonTablePromise = load(example.data, GeoJSONLoader);
-      return new TableTileSource(geojsonTablePromise);
+    case 'table':
+      const tablePromise = load(example.data, GeoJSONLoader);
+      // TableTileSource can be created with a promise, no need to wait for table to load.
+      return new TableTileSource(tablePromise, {
+        // To support multi-tile feature highlighting, each feature must have a unique id.
+        generateId: true
+      });
 
     default:
-      throw new Error(`Unknown source format ${example.format}`);
+      throw new Error(`Unknown source type ${example.sourceType}`);
   }
 }
 
@@ -91,7 +96,7 @@ export default function App({showTileBorders = false, onTilesLoad = null}) {
     setMetadata(null);
 
     (async () => {
-      const metadata = await tileSource.metadata;
+      const metadata = await tileSource.metadata; // getMetadata();
       setMetadata(metadata);
     })();
   }, [example]);
@@ -99,9 +104,10 @@ export default function App({showTileBorders = false, onTilesLoad = null}) {
   useEffect(() => {
     let initialViewState = {...viewState, ...example.viewState};
     if (metadata) {
+      const newZoom = (metadata.maxZoom + metadata.minZoom) / 2;
       initialViewState = {
         ...initialViewState,
-        zoom: (metadata.maxZoom + metadata.minZoom) / 2
+        zoom: Number.isNaN(newZoom) ? initialViewState.zoom : newZoom
       };
       if (metadata.center && metadata.center[0] !== 0 && metadata.center[1] !== 0) {
         initialViewState = {
@@ -117,12 +123,15 @@ export default function App({showTileBorders = false, onTilesLoad = null}) {
 
   const tileLayer =
     tileSource && new TileSourceLayer({
+      data: tileSource,
       tileSource, 
       showTileBorders: true,
       metadata, 
       onTilesLoad, 
       pickable: true, 
       autoHighlight: true, 
+      layerMode: 'mvt',
+      // custom props
     });
 
   return (
@@ -156,6 +165,20 @@ export default function App({showTileBorders = false, onTilesLoad = null}) {
   );
 }
 
+function getTooltip(info) {
+  if (info.tile) {
+    const {x, y, z} = info.tile.index;
+    return `tile: x: ${x}, y: ${y}, z: ${z}`;
+  }
+  return null;
+}
+
+export function renderToDOM(container) {
+  createRoot(container).render(<App />);
+}
+
+// EXAMPLE CONTROL PANEL, CAN BE CUT IF THIS CODE IS COPIED
+
 function renderControlPanel(props) {
   const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, viewState} =
     props;
@@ -177,16 +200,4 @@ function renderControlPanel(props) {
       </pre>
     </ControlPanel>
   );
-}
-
-function getTooltip(info) {
-  if (info.tile) {
-    const {x, y, z} = info.tile.index;
-    return `tile: x: ${x}, y: ${y}, z: ${z}`;
-  }
-  return null;
-}
-
-export function renderToDOM(container) {
-  createRoot(container).render(<App />);
 }

@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GetTileParameters, ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
+import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
+import type {GetTileParameters, GetTileDataParameters} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
 import {
@@ -13,8 +14,6 @@ import {
   TileJSON,
   TileJSONLoaderOptions
 } from '@loaders.gl/mvt';
-
-import {TileLoadParameters} from '@loaders.gl/loader-utils';
 
 /** Properties for a Mapbox Vector Tile Source */
 export type MVTSourceProps = DataSourceProps & {
@@ -101,8 +100,8 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
     return this.mimeType;
   }
 
-  async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
-    const {x, y, z} = tileParams;
+  async getTile(parameters: GetTileParameters): Promise<ArrayBuffer | null> {
+    const {x, y, z} = parameters;
     const tileUrl = this.getTileURL(x, y, z);
     const response = await this.fetch(tileUrl);
     if (!response.ok) {
@@ -115,8 +114,8 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
   // Tile Source interface implementation: deck.gl compatible API
   // TODO - currently only handles image tiles, not vector tiles
 
-  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
-    const {x, y, z} = tileParams.index;
+  async getTileData(parameters: GetTileDataParameters): Promise<any> {
+    const {x, y, z} = parameters.index;
     // const metadata = await this.metadata;
     // mimeType = metadata?.tileMIMEType || 'application/vnd.mapbox-vector-tile';
 

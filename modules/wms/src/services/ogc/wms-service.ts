@@ -559,7 +559,7 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
       wmsParameters.version === '1.3.0' &&
       // Flip if we are dealing with a CRS that was flipped in 1.3.0
       this.flipCRS.includes(wmsParameters.crs || '') &&
-      // Don't flip if we are subsituting EPSG:4326 with CRS:84
+      // Don't flip if we are substituting EPSG:4326 with CRS:84
       !(this.substituteCRS84 && wmsParameters.crs === 'EPSG:4326');
 
     const bbox = bboxValue as [number, number, number, number];

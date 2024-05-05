@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {TileSource, TileSourceProps, TileSourceMetadata} from './tile-source';
-import type {GetTileParameters} from './tile-source';
+import type {Schema, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
+import {TileSource, TileSourceProps, TileSourceMetadata, GetTileParameters} from './tile-source';
+import type {GetTileDataParameters} from './tile-source';
 
 export type VectorTile = unknown;
 
@@ -15,5 +16,9 @@ export type VectorTileSourceProps = TileSourceProps;
  */
 export interface VectorTileSource<MetadataT extends TileSourceMetadata = TileSourceMetadata>
   extends TileSource<MetadataT> {
+  getSchema(): Promise<Schema>;
   getVectorTile(parameters: GetTileParameters): Promise<VectorTile | null>;
+  getTileData(
+    parameters: GetTileDataParameters
+  ): Promise<Feature[] | BinaryFeatureCollection | null>;
 }

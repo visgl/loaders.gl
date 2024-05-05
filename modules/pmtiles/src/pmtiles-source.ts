@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TileLoadParameters, GetTileParameters} from '@loaders.gl/loader-utils';
+import type {Schema} from '@loaders.gl/schema';
+import type {GetTileParameters, GetTileDataParameters} from '@loaders.gl/loader-utils';
 import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
@@ -75,6 +76,10 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
     this.metadata = this.getMetadata();
   }
 
+  async getSchema(): Promise<Schema> {
+    return {fields: [], metadata: {}};
+  }
+
   async getMetadata(): Promise<PMTilesMetadata> {
     const pmtilesHeader = await this.pmtiles.getHeader();
     const pmtilesMetadata = await this.pmtiles.getMetadata();
@@ -109,7 +114,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   // Tile Source interface implementation: deck.gl compatible API
   // TODO - currently only handles image tiles, not vector tiles
 
-  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
+  async getTileData(tileParams: GetTileDataParameters): Promise<any> {
     const {x, y, z} = tileParams.index;
     const metadata = await this.metadata;
     switch (metadata.tileMIMEType) {
