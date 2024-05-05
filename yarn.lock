@@ -2474,6 +2474,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.3.0-alpha.1"
     "@loaders.gl/schema": "npm:4.3.0-alpha.1"
     "@math.gl/polygon": "npm:^4.0.0"
+    "@probe.gl/stats": "npm:^4.0.0"
     "@types/pbf": "npm:^3.0.2"
     pbf: "npm:^3.2.1"
   peerDependencies:
@@ -3592,6 +3593,13 @@ __metadata:
   dependencies:
     "@babel/runtime": "npm:^7.0.0"
   checksum: 10c0/81077d458314a5d08ed5f2393cdd7572f40ea68589bc16ff0cc3e690f54db1443df6499e77c44af0a0ca3faff8613d6895df4e0203f785bf9d83801ff402cc66
+  languageName: node
+  linkType: hard
+
+"@probe.gl/stats@npm:^4.0.0":
+  version: 4.0.9
+  resolution: "@probe.gl/stats@npm:4.0.9"
+  checksum: 10c0/23c205232a45941b13d1e87efe060d81f3a09339b0294991fc9fdf6dd9d090a9e6c79cccf23ce8f09e5c14aa44ef128836639490df22729a13214b0ff3c7cd80
   languageName: node
   linkType: hard
 

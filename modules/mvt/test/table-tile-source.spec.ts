@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {TableTileSource} from '@loaders.gl/mvt';
-import {Feature, FeatureCollection, GeoJSONTable, Geometry} from '@loaders.gl/schema';
+import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
 
@@ -56,7 +56,8 @@ test('TableTileSource#getTile#us-states.json', async (t) => {
 
   // Check total number of tiles generated
 
-  t.equal(source.total, 37);
+  const total = source.stats.get('total').count;
+  t.equal(total, 37);
 
   t.end();
 });
