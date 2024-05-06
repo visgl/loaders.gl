@@ -88,15 +88,7 @@
     "fs": false,
     "path": false
   },
-  "browserslist": [
-    ">0.2% and supports async-functions",
-    "not dead"
-  ],
-  "engines": {
-    "node": ">=18.0"
-  },
   "volta": {
-    "node": "18.18.2",
-    "yarn": "4.1.0"
+    "extends": "../package.json"
   }
 }
