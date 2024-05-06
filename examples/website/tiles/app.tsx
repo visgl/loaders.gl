@@ -37,21 +37,11 @@ const INITIAL_VIEW_STATE = {
   bearing: 0
 };
 
-const COPYRIGHT_LICENSE_STYLE = {
-  position: 'absolute',
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'hsla(0,0%,100%,.5)',
-  padding: '0 5px',
-  font: '12px/20px Helvetica Neue,Arial,Helvetica,sans-serif'
-};
-
-// const LINK_STYLE = {
-//   textDecoration: 'none',
-//   color: 'rgba(0,0,0,.75)',
-//   cursor: 'grab'
-// };
-
+/**
+ * 
+ * @param example 
+ * @returns 
+ */
 function createTileSource(example: Example): TileSource<any> {
   switch (example.sourceType) {
 
@@ -102,21 +92,10 @@ export default function App({showTileBorders = false, onTilesLoad = null}) {
   }, [example]);
 
   useEffect(() => {
+    // Apply the examples view state, if it overrides
     let initialViewState = {...viewState, ...example.viewState};
     if (metadata) {
-      const newZoom = (metadata.maxZoom + metadata.minZoom) / 2;
-      initialViewState = {
-        ...initialViewState,
-        zoom: Number.isNaN(newZoom) ? initialViewState.zoom : newZoom
-      };
-      if (metadata.center && metadata.center[0] !== 0 && metadata.center[1] !== 0) {
-        initialViewState = {
-          ...initialViewState,
-          longitude: metadata.center[0],
-          latitude: metadata.center[1]
-        };
-      }
-      console.log('initialViewState', initialViewState);
+      initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
     }
     setViewState(initialViewState);
   }, [metadata, example]);
@@ -156,9 +135,7 @@ export default function App({showTileBorders = false, onTilesLoad = null}) {
         getTooltip={getTooltip}
       >
         <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
-        <div style={COPYRIGHT_LICENSE_STYLE}>
-          {metadata?.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
-        </div>
+        <Attributions attributions={metadata?.attributions} />
       </DeckGL>
 
     </div>
@@ -173,11 +150,58 @@ function getTooltip(info) {
   return null;
 }
 
-export function renderToDOM(container) {
+export function renderToDOM(container: HTMLElement) {
   createRoot(container).render(<App />);
 }
 
+/** 
+ * Helper function to adjust view state based on tileset metadata, keep zoom in visible range etc 
+ * TODO - perhaps TileSourceLayer could provide a callback to let app adjust view state to fit within available tile levels
+ */
+function adjustViewStateToMetadata(viewState, metadata) {
+  // Copy to make sure we don't modify input
+  viewState = {...viewState};
+
+  // Ensure we are zoomed in to an available zoom level
+  if (metadata.minZoom < viewState.zoom) {
+    // TODO - basemap seems to get out of sync at too low zooms, so apply a lower bottom.
+    viewState.zoom = Math.max(metadata.minZoom, 1.2);
+  }
+  if (metadata.minZoom > viewState.zoom) {
+    viewState.zoom = metadata.maxZoom;
+  }
+  // If the tileset has a center, user it
+  if (typeof metadata.center?.[0] === 'number' && typeof metadata.center?.[1] === 'number') {
+    viewState = {
+      ...viewState,
+      longitude: metadata.center[0],
+      latitude: metadata.center[1]
+    };
+  }
+  console.log('viewState', viewState);
+  return viewState;
+}
+
 // EXAMPLE CONTROL PANEL, CAN BE CUT IF THIS CODE IS COPIED
+
+const COPYRIGHT_LICENSE_STYLE = {
+  position: 'absolute',
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'hsla(0,0%,100%,.5)',
+  padding: '0 5px',
+  font: '12px/20px Helvetica Neue,Arial,Helvetica,sans-serif'
+};
+
+/** TODO - check that these are visible. For which datasets? */
+function Attributions(props: {attributions?: string[]}) {
+  return (
+    <div style={COPYRIGHT_LICENSE_STYLE}>
+      {props.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
+    </div>
+  )
+}
+
 
 function renderControlPanel(props) {
   const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, viewState} =
