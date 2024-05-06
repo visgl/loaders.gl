@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 
-import {TileSource, GetTileParameters} from './tile-source';
+import {TileSource, GetTileParameters, GetTileDataParameters} from './tile-source';
 import {ImageSource, ImageSourceMetadata} from './image-source';
 
 /**
@@ -27,9 +27,9 @@ export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
   }
 
   /** deck.gl style parameters */
-  // getTileData(parameters: TileLoadParameters): Promise<unknown | null> {
-  //   return this.viewportSource.getImage
-  // }
+  getTileData(parameters: GetTileDataParameters): Promise<unknown | null> {
+    return this.getTile(parameters.index);
+  }
 
   /** Bounding box of tiles in this tileset `[[w, s], [e, n]]`  */
   protected getTileBoundingBox(

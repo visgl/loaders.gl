@@ -6,11 +6,8 @@
 // import {DataSource} from './data-source';
 
 /**
- * Normalized capabilities of an Image service
+ * Normalized capabilities of an tile service
  * Sources are expected to normalize the response to capabilities
- * @example
- *  A WMS service would normalize the response to the WMS `GetCapabilities` data structure extracted from WMS XML response
- *  into an TileSourceMetadata.
  */
 export type TileSourceMetadata = {
   format?: string;
@@ -53,7 +50,7 @@ export type TileSourceLayer = {
 };
 
 /**
- * Generic parameters for requesting an image from an image source
+ * Generic parameters for requesting an tile from an tile source
  */
 export type GetTileParameters = {
   /** bounding box of the requested map image */
@@ -62,34 +59,38 @@ export type GetTileParameters = {
   x: number;
   /** tile y coordinate */
   y: number;
-  /** Coordinate reference system for the image (not the bounding box) */
+  /** Coordinate reference system for the tile */
   crs?: string;
   /** Layers to render */
   layers?: string | string[];
   /** Styling */
   styles?: unknown;
-  /** requested format for the return image */
+  /** requested format for the return image (in case of bitmap tiles) */
   format?: 'image/png';
 };
 
-export type TileLoadParameters = {
+/** deck.gl compatibility: parameters for TileSource.getTileData() */
+export type GetTileDataParameters = {
+  /** Tile index */
   index: {x: number; y: number; z: number};
   id: string;
+  /** Bounding Box */
   bbox: TileBoundingBox;
+  /** Zoom level */
   zoom?: number;
   url?: string | null;
   signal?: AbortSignal;
   userData?: Record<string, any>;
 };
 
-/** deck.gl compatible bounding box */
+/** deck.gl compatibility: bounding box */
 export type TileBoundingBox = NonGeoBoundingBox | GeoBoundingBox;
+/** deck.gl compatibility: bounding box */
 export type GeoBoundingBox = {west: number; north: number; east: number; south: number};
+/** deck.gl compatibility: bounding box */
 export type NonGeoBoundingBox = {left: number; top: number; right: number; bottom: number};
 
-/**
- * Props for a TileSource
- */
+/** Props for a TileSource */
 export type TileSourceProps = {}; // DataSourceProps;
 
 /**
@@ -102,6 +103,6 @@ export interface TileSource<MetadataT extends TileSourceMetadata> {
   getMetadata(): Promise<MetadataT>;
   /** Flat parameters */
   getTile(parameters: GetTileParameters): Promise<unknown | null>;
-  /** deck.gl style parameters */
-  getTileData?(parameters: TileLoadParameters): Promise<unknown | null>;
+  /** deck.gl compatibility: TileLayer and MTVLayer */
+  getTileData(parameters: GetTileDataParameters): Promise<unknown | null>;
 }

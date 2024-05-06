@@ -3,9 +3,14 @@
 // Copyright (c) vis.gl contributors
 // Based on https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import type {VectorTileSourceProps, TileLoadParameters} from '@loaders.gl/loader-utils';
+import type {
+  VectorTileSourceProps,
+  GetTileDataParameters,
+  GetTileParameters
+} from '@loaders.gl/loader-utils';
 import {VectorTileSource, log} from '@loaders.gl/loader-utils';
-import {Schema, deduceTableSchema, Feature, GeoJSONTable} from '@loaders.gl/schema';
+import {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
+import {deduceTableSchema} from '@loaders.gl/schema';
 import {Stats, Stat} from '@probe.gl/stats';
 
 import type {TableTile, TableTileFeature} from './lib/geojsonvt/tile';
@@ -16,11 +21,11 @@ import {transformTile} from './lib/geojsonvt/transform'; // coordinate transform
 import {createTile} from './lib/geojsonvt/tile'; // final simplified tile generation
 
 import {projectToLngLat} from './lib/utils/geometry-utils';
-import {projectToLocalCoordinates} from './lib/utils/geometry-utils';
+import {convertToLocalCoordinates} from './lib/utils/geometry-utils';
 
 /** Options to configure tiling */
 export type TableTileSourceProps = VectorTileSourceProps & {
-  coordinates: 'wgs84' | 'local';
+  coordinates: 'local' | 'wgs84' | 'EPSG:4326';
   /** max zoom to preserve detail on */
   maxZoom?: number;
   /** max zoom in the tile index */
@@ -86,11 +91,12 @@ export class TableTileSource implements VectorTileSource<any> {
     stats: [new Stat('tiles', 'count'), new Stat('features', 'count')]
   });
 
+  /** MIME type of the tiles emitted by this tile source */
+  readonly mimeType = 'application/vnd.mapbox-vector-tile';
+  readonly localCoordinates = true;
+
   /** The props that this tile source was created with */
   props: Required<TableTileSourceProps>;
-
-  /** MIME type of the tiles emitted by this tile source */
-  mimeType = 'application/vnd.mapbox-vector-tile';
 
   /* Schema of the data */
   schema: Schema | null = null;
@@ -123,12 +129,17 @@ export class TableTileSource implements VectorTileSource<any> {
     return {schema: this.schema, minZoom: 0, maxZoom: this.props.maxZoom};
   }
 
+  async getSchema(): Promise<Schema> {
+    await this.ready;
+    return this.schema!;
+  }
+
   /**
    * Get a tile at the specified index
    * @param tileIndex z, x, y of tile
    * @returns
    */
-  async getVectorTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
+  async getVectorTile(tileIndex: GetTileParameters): Promise<GeoJSONTable | null> {
     await this.ready;
     const table = this.getTileSync(tileIndex);
     log.info(2, 'getVectorTile', tileIndex, table)();
@@ -140,9 +151,12 @@ export class TableTileSource implements VectorTileSource<any> {
     return this.getTileSync(tileIndex);
   }
 
-  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
+  async getTileData(
+    tileParams: GetTileDataParameters
+  ): Promise<Feature[] | BinaryFeatureCollection> {
     const {x, y, z} = tileParams.index;
-    return await this.getVectorTile({x, y, z});
+    const tile = await this.getVectorTile({x, y, z});
+    return tile?.features || [];
   }
 
   // Implementation
@@ -399,7 +413,7 @@ function toID(z, x, y): number {
 function convertToGeoJSONTable(
   vtTile: TableTile,
   props: {
-    coordinates: 'wgs84' | 'local';
+    coordinates: 'local' | 'wgs84' | 'EPSG:4326';
     tileIndex: {x: number; y: number; z: number};
     extent: number;
   }
@@ -454,12 +468,17 @@ function convertToGeoJSONTable(
     }
 
     switch (props.coordinates) {
+      case 'EPSG:4326':
       case 'wgs84':
         projectToLngLat(coordinates, props.tileIndex, props.extent);
         break;
-      default:
-        projectToLocalCoordinates(coordinates, props);
+
+      case 'local':
+        convertToLocalCoordinates(coordinates, props.extent);
         break;
+
+      default:
+        throw new Error(`Unsupported CRS ${props.coordinates}`);
     }
 
     const feature: Feature = {

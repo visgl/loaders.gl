@@ -3,9 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-utils';
-import {compareArrayBuffers, path} from '@loaders.gl/loader-utils';
+import {compareArrayBuffers, path, log} from '@loaders.gl/loader-utils';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
-import {log} from '../utils/log';
 import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
 import {compareMIMETypes} from '../utils/mime-type-utils';
 import {getRegisteredLoaders} from './register-loaders';

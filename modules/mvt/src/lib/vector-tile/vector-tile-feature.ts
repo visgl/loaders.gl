@@ -8,7 +8,7 @@ import {FlatFeature, FlatIndexedGeometry, GeojsonGeometryInfo} from '@loaders.gl
 import Protobuf from 'pbf';
 import {classifyRings, classifyRingsFlat} from '../utils/geometry-utils';
 import {projectToLngLat, projectToLngLatFlat} from '../utils/geometry-utils';
-import {projectToLocalCoordinates, projectToLocalCoordinatesFlat} from '../utils/geometry-utils';
+import {convertToLocalCoordinates, convertToLocalCoordinatesFlat} from '../utils/geometry-utils';
 
 export class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};
@@ -63,7 +63,7 @@ export class VectorTileFeature {
         );
 
       default:
-        return _toGeoJSONFeature(this, coords, projectToLocalCoordinates);
+        return _toGeoJSONFeature(this, coords, convertToLocalCoordinates);
     }
   }
   /**
@@ -84,7 +84,7 @@ export class VectorTileFeature {
         );
 
       default:
-        return this._toBinaryCoordinates(geom, projectToLocalCoordinatesFlat);
+        return this._toBinaryCoordinates(geom, convertToLocalCoordinatesFlat);
     }
   }
 
@@ -137,12 +137,12 @@ export class VectorTileFeature {
    */
   _toBinaryCoordinates(
     geom: FlatIndexedGeometry,
-    transform: (data: number[], feature: {extent: any}) => void
+    transform: (data: number[], extent: number) => void
   ) {
     let geometry;
 
     // Apply the supplied transformation to data
-    transform(geom.data, this);
+    transform(geom.data, this.extent);
 
     const coordLength = 2;
 
@@ -322,7 +322,7 @@ export class VectorTileFeature {
 function _toGeoJSONFeature(
   vtFeature: VectorTileFeature,
   coords: number[][][],
-  transform: (data: number[][], feature: {extent: any}) => void
+  transform: (data: number[][], extent: number) => void
 ): Feature {
   let type = VectorTileFeature.types[vtFeature.type];
   let i: number;
@@ -336,13 +336,13 @@ function _toGeoJSONFeature(
         points[i] = coords[i][0];
       }
       coordinates = points;
-      transform(coordinates, vtFeature);
+      transform(coordinates, vtFeature.extent);
       break;
 
     case 2:
       coordinates = coords;
       for (i = 0; i < coordinates.length; i++) {
-        transform(coordinates[i], vtFeature);
+        transform(coordinates[i], vtFeature.extent);
       }
       break;
 
@@ -350,7 +350,7 @@ function _toGeoJSONFeature(
       coordinates = classifyRings(coords);
       for (i = 0; i < coordinates.length; i++) {
         for (j = 0; j < coordinates[i].length; j++) {
-          transform(coordinates[i][j], vtFeature);
+          transform(coordinates[i][j], vtFeature.extent);
         }
       }
       break;

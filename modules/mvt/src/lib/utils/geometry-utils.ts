@@ -28,13 +28,21 @@ export function signedArea(ring: number[][]) {
  * @param line
  * @param feature
  */
-export function projectToLocalCoordinates(line: number[][], feature: {extent: number}): void {
-  const {extent} = feature;
-  for (let i = 0; i < line.length; i++) {
-    const p = line[i];
-    p[0] /= extent;
-    p[1] /= extent;
+export function convertToLocalCoordinates(
+  coordinates: number[] | number[][] | number[][][] | number[][][][],
+  extent: number
+): void {
+  if (Array.isArray(coordinates[0])) {
+    for (const subcoords of coordinates) {
+      convertToLocalCoordinates(subcoords as number[] | number[][] | number[][][], extent);
+    }
+    return;
   }
+
+  // Just a point
+  const p = coordinates as number[];
+  p[0] /= extent;
+  p[1] /= extent;
 }
 
 /**
@@ -43,8 +51,7 @@ export function projectToLocalCoordinates(line: number[][], feature: {extent: nu
  * @param data
  * @param feature
  */
-export function projectToLocalCoordinatesFlat(data: number[], feature: {extent: number}): void {
-  const {extent} = feature;
+export function convertToLocalCoordinatesFlat(data: number[], extent: number): void {
   for (let i = 0, il = data.length; i < il; ++i) {
     data[i] /= extent;
   }
