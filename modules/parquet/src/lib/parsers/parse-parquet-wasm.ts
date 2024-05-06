@@ -50,7 +50,7 @@ export async function* parseParquetFileInBatchesWasm(
 
   let parquetFile: parquetWasm.ParquetFile;
   if (file.handle instanceof Blob) {
-    // TBD - does this work on Blob or just on File?
+    // Works on Blobs: https://kylebarron.dev/parquet-wasm/classes/esm_parquet_wasm.ParquetFile.html#fromFile
     parquetFile = await wasm.ParquetFile.fromFile(file.handle as File);
   } else {
     parquetFile = await wasm.ParquetFile.fromUrl(file.url);
