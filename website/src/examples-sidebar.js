@@ -34,7 +34,9 @@ const sidebars = {
       type: 'category',
       label: 'Geospatial Tile Loaders',
       items: [
-        'pmtiles',
+        'tiles/mvt',
+        'tiles/pmtiles',
+        'tiles/table-tiler',
         'wms',
         'i3s-building-scene-layer',
         'i3s-picking',

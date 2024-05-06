@@ -3197,7 +3197,7 @@ __metadata:
     snappyjs: "npm:^0.6.0"
     thrift: "npm:^0.19.0"
     util: "npm:^0.12.5"
-    varint: "npm:^5.0.0"
+    varint: "npm:^6.0.0"
     zstd-codec: "npm:^0.1"
   peerDependencies:
     "@loaders.gl/core": ^4.0.0
@@ -16413,10 +16413,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"varint@npm:^5.0.0":
-  version: 5.0.2
-  resolution: "varint@npm:5.0.2"
-  checksum: 10c0/a8e6c304cb140389cc56f14c808cd2ad4764d81f8afdaf4e49e9804231f2a62d9443098dba6b1249b0bd160b823fc7886d51e1cb0fca54209f842310d1d2591d
+"varint@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "varint@npm:6.0.0"
+  checksum: 10c0/737fc37088a62ed3bd21466e318d21ca7ac4991d0f25546f518f017703be4ed0f9df1c5559f1dd533dddba4435a1b758fd9230e4772c1a930ef72b42f5c750fd
   languageName: node
   linkType: hard
 

@@ -13,7 +13,7 @@ import {MapView} from '@deck.gl/core';
 
 import {TileSourceLayer} from './components/tile-source-layer';
 
-import type {TileSource} from '@loaders.gl/loader-utils';
+import type {TileSource, VectorTileSource, ImageTileSource} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
 import {PMTilesSource, PMTilesMetadata} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
@@ -38,13 +38,12 @@ const INITIAL_VIEW_STATE = {
 };
 
 /**
- * 
- * @param example 
- * @returns 
+ *
+ * @param example
+ * @returns
  */
-function createTileSource(example: Example): TileSource<any> {
-  switch (example.sourceType) {
-
+function createTileSource(example: Example): VectorTileSource | ImageTileSource {
+  switch (example?.sourceType || null) {
     case 'pmtiles':
       return new PMTilesSource({
         url: example.data,
@@ -69,47 +68,104 @@ function createTileSource(example: Example): TileSource<any> {
   }
 }
 
-export default function App({showTileBorders = false, onTilesLoad = null}) {
+type AppProps = {
+  /** Format */
+  format?: string;
+  /** Show tile borders */
+  showTileBorders?: boolean;
+  /** On tiles load */
+  onTilesLoad?: Function;
+};
 
-  const [selectedCategory, setSelectedCategory] = useState(INITIAL_CATEGORY_NAME);
-  const [selectedExample, setSelectedExample] = useState(INITIAL_EXAMPLE_NAME);
-  const [example, setExample] = useState<Example | null>(
-    EXAMPLES[selectedCategory][selectedExample]
-  );
-  const [tileSource, setTileSource] = useState<PMTilesSource | null>(null);
-  const [metadata, setMetadata] = useState<PMTilesMetadata | null>(null);
-  const [viewState, setViewState] = useState<Record<string, number>>(INITIAL_VIEW_STATE);
+type AppState = {
+  /** list of examples */
+  examples: Record<string, Record<string, Example>>;
+  /** CURRENT VIEW POINT / CAMERA POSITION */
+  viewState: Record<string, number>;
 
+  // EXAMPLE STATE
+  selectedExample: string;
+  selectedFormat: string;
+  example: Example | null;
+
+  tileSource: VectorTileSource | ImageTileSource;
+
+  // loadedTable: Table | null;
+};
+
+export default function App(props: AppProps = {}) {
+  debugger
+  const [state, setState] = useState<AppState>({
+    examples: EXAMPLES,
+    viewState: INITIAL_VIEW_STATE,
+    selectedExample: null,
+    selectedFormat: null,
+    example: null,
+
+    // tileSource: null,
+    error: null
+  });
+
+  // const [selectedCategory, setSelectedCategory] = useState(INITIAL_CATEGORY_NAME);
+  // const [selectedExample, setSelectedExample] = useState(INITIAL_EXAMPLE_NAME);
+  // const [example, setExample] = useState<Example | null>(
+  //   EXAMPLES[selectedCategory][selectedExample]
+  // );
+  // const [tileSource, setTileSource] = useState<PMTilesSource | null>(null);
+  // const [metadata, setMetadata] = useState<PMTilesMetadata | null>(null);
+  // const [viewState, setViewState] = useState<Record<string, number>>(INITIAL_VIEW_STATE);
+
+  // setState((state) => ({...state, examples, selectedExample, selectedFormat}));
+
+  // Initialize the examples (each demo might focus on a different "props.format")
   useEffect(() => {
-    let tileSource = createTileSource(example);
-    setTileSource(tileSource);
-    setMetadata(null);
+    const examples = getExamplesForFormat(props.format, EXAMPLES);
 
-    (async () => {
-      const metadata = await tileSource.metadata; // getMetadata();
-      setMetadata(metadata);
-    })();
-  }, [example]);
+    const selectedFormat = props.format || INITIAL_CATEGORY_NAME;
+    let selectedExample = props.format
+      ? Object.keys(examples[selectedFormat])[0]
+      : INITIAL_EXAMPLE_NAME;
+
+    onExampleChange({
+      selectedFormat,
+      selectedExample,
+      example: examples[selectedFormat][selectedExample],
+      state,
+      setState
+    });
+  }, [props.format]);
+
+  // useEffect(() => {
+  //   let tileSource = createTileSource(state.example);
+  //   setState((state) => ({...state, tileSource, metadata: null}));
+
+  //   (async () => {
+  //     const metadata = await tileSource.metadata; // getMetadata();
+  //     setState((state) => ({...state, metadata}));
+  //   })();
+  // }, [state.example]);
 
   useEffect(() => {
     // Apply the examples view state, if it overrides
-    let initialViewState = {...viewState, ...example.viewState};
+    let initialViewState = {...state.viewState, ...state.example?.viewState};
     if (metadata) {
       initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
     }
-    setViewState(initialViewState);
-  }, [metadata, example]);
+    setState((state) => ({...state, viewState: initialViewState}));
+  }, [state.metadata, state.example]);
 
+  const {tileSource, metadata} = state;
   const tileLayer =
-    tileSource && new TileSourceLayer({
+    tileSource &&
+    new TileSourceLayer({
       data: tileSource,
-      tileSource, 
+      tileSource,
       showTileBorders: true,
-      metadata, 
-      onTilesLoad, 
-      pickable: true, 
-      autoHighlight: true, 
-      layerMode: 'mvt',
+      metadata,
+      onTilesLoad: props.onTilesLoad,
+      pickable: true,
+      autoHighlight: true,
+      layerMode: 'mvt'
       // custom props
     });
 
@@ -117,27 +173,21 @@ export default function App({showTileBorders = false, onTilesLoad = null}) {
     <div style={{position: 'relative', height: '100%'}}>
       {renderControlPanel({
         metadata,
-        selectedCategory,
-        selectedExample,
-        onExampleChange({selectedCategory, selectedExample, example}) {
-          // setViewState({...initialViewState, ...example.viewState})
-          setSelectedCategory(selectedCategory);
-          setSelectedExample(selectedExample);
-          setExample(example);
-        }
+        selectedCategory: state.selectedFormat,
+        selectedExample: state.selectedExample,
+        onExampleChange
       })}
 
       <DeckGL
         layers={[tileLayer]}
         views={new MapView({repeat: true})}
-        initialViewState={viewState}
+        initialViewState={state.viewState}
         controller={true}
         getTooltip={getTooltip}
       >
         <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
         <Attributions attributions={metadata?.attributions} />
       </DeckGL>
-
     </div>
   );
 }
@@ -154,8 +204,8 @@ export function renderToDOM(container: HTMLElement) {
   createRoot(container).render(<App />);
 }
 
-/** 
- * Helper function to adjust view state based on tileset metadata, keep zoom in visible range etc 
+/**
+ * Helper function to adjust view state based on tileset metadata, keep zoom in visible range etc
  * TODO - perhaps TileSourceLayer could provide a callback to let app adjust view state to fit within available tile levels
  */
 function adjustViewStateToMetadata(viewState, metadata) {
@@ -199,9 +249,8 @@ function Attributions(props: {attributions?: string[]}) {
     <div style={COPYRIGHT_LICENSE_STYLE}>
       {props.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
     </div>
-  )
+  );
 }
-
 
 function renderControlPanel(props) {
   const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, viewState} =
@@ -224,4 +273,66 @@ function renderControlPanel(props) {
       </pre>
     </ControlPanel>
   );
+}
+
+// Helpers
+
+/** Filter out examples that are not of the given format. */
+function getExamplesForFormat(
+  format: string,
+  examples: Record<string, Record<string, Example>>
+): Record<string, Record<string, Example>> {
+  if (format) {
+    // Keep only the preferred format examples
+    return {[format]: EXAMPLES[format]};
+  }
+  return {...examples};
+}
+
+// TOD - Remove. Old code
+// onExampleChange({selectedCategory, selectedExample, example}) {
+//   // setViewState({...initialViewState, ...example.viewState})
+//   setSelectedCategory(selectedCategory);
+//   setSelectedExample(selectedExample);
+//   setExample(example);
+// }
+
+async function onExampleChange(args: {
+  selectedFormat: string;
+  selectedExample: string;
+  example: Example;
+  state: AppState;
+  setState: Function;
+}) {
+  const {selectedFormat, selectedExample, example, state, setState} = args;
+
+  const url = example.data;
+  try {
+    //
+    console.log('Selecting example', example);
+    const viewState = {...state.viewState, ...example.viewState};
+
+    let tileSource = createTileSource(example);
+
+    setState((state) => ({
+      ...state,
+      selectedFormat,
+      selectedExample,
+      example,
+      viewState,
+      tileSource,
+      metadata: null
+    }));
+
+    (async () => {
+      const metadata = await tileSource.metadata; // getMetadata();
+      setState((state) => ({
+        ...state,
+        metadata
+      }));
+    })();
+  } catch (error) {
+    console.error('Failed to load data', url, error);
+    setState((state) => ({...state, error: `Could not load ${selectedExample}: ${error.message}`}));
+  }
 }

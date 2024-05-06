@@ -4,11 +4,11 @@
 
 export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 
-export const INITIAL_CATEGORY_NAME = 'MVT';
-export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap Tiles';
+// export const INITIAL_CATEGORY_NAME = 'MVT';
+// export const INITIAL_EXAMPLE_NAME = 'OpenStreetMap Tiles';
 
-// export const INITIAL_CATEGORY_NAME = 'GeoJSON';
-// export const INITIAL_EXAMPLE_NAME = 'Countries';
+export const INITIAL_CATEGORY_NAME = 'GeoJSON';
+export const INITIAL_EXAMPLE_NAME = 'Countries';
 
 export const INITIAL_MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 

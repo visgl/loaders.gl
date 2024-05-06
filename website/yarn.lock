@@ -10576,9 +10576,15 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.668":
+<<<<<<< HEAD
   version: 1.4.757
   resolution: "electron-to-chromium@npm:1.4.757"
   checksum: 10c0/77fddf3870ff66280f4b639c409ff0a82661ba50e6519b571bb79325e6ea2c4fef645bcf65dcc1ced8b6151cc78083af8b781877247e62986ce39dee1d642cfe
+=======
+  version: 1.4.756
+  resolution: "electron-to-chromium@npm:1.4.756"
+  checksum: 10c0/c983c7d1b84f0bc73211f77504c3a4c58f2d01f55af640d230549eaca0a0667ad515672ddb2ae5c3f37762ca6a71aa20c2baaea0a63a61cb52415105c44b85c0
+>>>>>>> 1e43f93f7 (examples: Modernize tiles example)
   languageName: node
   linkType: hard
 

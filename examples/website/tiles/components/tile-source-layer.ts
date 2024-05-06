@@ -47,9 +47,9 @@ class MVTSourceLayer extends MVTLayer {
     vectorTileSource: VectorTileSource | null;
   };
 
-  constructor(props: MVTLayerProps) {
-    super(props);
-  }
+  // constructor(props: MVTLayerProps) {
+  //   super(props);
+  // }
 
   updateState(params) {
     super.updateState(params);
@@ -108,6 +108,13 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
   state: {
     tileSource: TileSource<any> | null;
   };
+
+  constructor(props: TileSourceLayerProps) {
+    console.log('constructing...')
+    debugger
+    super(props);
+    console.log('...done')
+  }
 
   initializeState() {
     this.setState({
