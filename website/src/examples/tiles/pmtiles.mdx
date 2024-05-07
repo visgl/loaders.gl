@@ -4,6 +4,11 @@ import Demo from 'examples/website/tiles/app';
 
 <div style={{height: '100vh'}}> 
   <Demo format="PMTILES">
-      <div>A <code><b>PMTilesSource</b></code> dynamically <b>loading</b> tiles from a single giant PMTiles archive file via HTTP range requests.</div>
+     [**`PMTilesSource`**](/docs/modules/pmtiles/api-reference/pmtiles-source) **dynamically loads** tiles from a single gigantic PMTiles file on cloud storage using HTTP range requests. 
+    <small>
+      Uses [**`MVTLoader`**](/docs/modules/mvt/api-reference/mvt-loader) for Mapbox Vector Tiles files.
+      and [**`ImageLoader`**](/docs/modules/images/api-reference/image-loader) for image tiles (JPEG, PNG etc).
+    </small>
   </Demo>
 </div>
+

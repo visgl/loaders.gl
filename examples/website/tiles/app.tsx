@@ -81,6 +81,7 @@ export default function App(props: AppProps = {}) {
       <ExamplePanel
         title="Tileset Metadata"
         examples={EXAMPLES}
+        format={props.format}
         initialCategoryName={INITIAL_CATEGORY_NAME}
         initialExampleName={INITIAL_EXAMPLE_NAME}
         onExampleChange={onExampleChange}
@@ -192,6 +193,10 @@ function createTileSource(example: Example): VectorTileSource | ImageTileSource 
  * TODO - perhaps TileSourceLayer could provide a callback to let app adjust view state to fit within available tile levels
  */
 function adjustViewStateToMetadata(viewState, metadata) {
+  if (!metadata) {
+    return viewState;
+  }
+  
   // Copy to make sure we don't modify input
   viewState = {...viewState};
 
@@ -211,6 +216,5 @@ function adjustViewStateToMetadata(viewState, metadata) {
       latitude: metadata.center[1]
     };
   }
-  console.log('viewState', viewState);
   return viewState;
 }

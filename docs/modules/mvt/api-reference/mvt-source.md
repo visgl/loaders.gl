@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
 </p>
 
-The `MVTSource` reads individual tiles from a PMTiles archive file.
+The `MVTSource` dynamically loads tiles, typically from big pre-tiled hierarchies on cloud storage.
 
 | Source                | Characteristic                                       |
 | --------------------- | ---------------------------------------------------- |
