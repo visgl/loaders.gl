@@ -11,7 +11,7 @@ export {TileJSONLoader} from './tilejson-loader';
 
 export {MVTSource} from './mvt-source';
 
-// GeoJSONTiler
+// TableTileSource
 
-export type {GeoJSONTilerOptions} from './lib/geojson-tiler/geojson-tiler';
-export {GeoJSONTiler} from './lib/geojson-tiler/geojson-tiler';
+export type {TableTileSourceProps} from './table-tile-source';
+export {TableTileSource} from './table-tile-source';

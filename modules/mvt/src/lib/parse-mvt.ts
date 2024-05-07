@@ -2,23 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
+import type {FlatFeature, Feature, GeojsonGeometryInfo} from '@loaders.gl/schema';
+import type {GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
 import {flatGeojsonToBinary} from '@loaders.gl/gis';
-import type {
-  FlatFeature,
-  Feature,
-  GeojsonGeometryInfo,
-  BinaryFeatureCollection,
-  GeoJSONTable
-} from '@loaders.gl/schema';
+import {log} from '@loaders.gl/loader-utils';
 import Protobuf from 'pbf';
 
-import type {MVTMapboxCoordinates, MVTOptions} from '../lib/types';
-import type {MVTLoaderOptions} from '../mvt-loader';
+import {VectorTile} from './vector-tile/vector-tile';
+import {VectorTileFeature} from './vector-tile/vector-tile-feature';
 
-import {VectorTile} from './mapbox-vector-tile/vector-tile';
-import {BinaryVectorTile} from './binary-vector-tile/vector-tile';
-import {BinaryVectorTileFeature} from './binary-vector-tile/vector-tile-feature';
-import {VectorTileFeature as VectorTileFeatureMapBox} from './mapbox-vector-tile/vector-tile-feature';
+import type {MVTLoaderOptions} from '../mvt-loader';
+type MVTOptions = Required<MVTLoaderOptions>['mvt'];
 
 /**
  * Parse MVT arrayBuffer and return GeoJSON.
@@ -28,7 +22,7 @@ import {VectorTileFeature as VectorTileFeatureMapBox} from './mapbox-vector-tile
  * @returns A GeoJSON geometry object or a binary representation
  */
 export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
-  const mvtOptions = normalizeOptions(options);
+  const mvtOptions = checkOptions(options);
 
   const shape: string | undefined =
     options?.gis?.format || options?.mvt?.shape || (options?.shape as string);
@@ -87,7 +81,7 @@ function parseToFlatGeoJson(
     return [features, geometryInfo];
   }
 
-  const tile = new BinaryVectorTile(new Protobuf(arrayBuffer));
+  const tile = new VectorTile(new Protobuf(arrayBuffer));
 
   const selectedLayers =
     options && Array.isArray(options.layers) ? options.layers : Object.keys(tile.layers);
@@ -99,7 +93,7 @@ function parseToFlatGeoJson(
     }
 
     for (let i = 0; i < vectorTileLayer.length; i++) {
-      const vectorTileFeature = vectorTileLayer.feature(i, geometryInfo);
+      const vectorTileFeature = vectorTileLayer.getBinaryFeature(i, geometryInfo);
       const decodedFeature = getDecodedFeatureBinary(vectorTileFeature, options, layerName);
       features.push(decodedFeature);
     }
@@ -113,7 +107,7 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): 
     return [];
   }
 
-  const features: MVTMapboxCoordinates[] = [];
+  const features: Feature[] = [];
   const tile = new VectorTile(new Protobuf(arrayBuffer));
 
   const selectedLayers = Array.isArray(options.layers) ? options.layers : Object.keys(tile.layers);
@@ -125,31 +119,27 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): 
     }
 
     for (let i = 0; i < vectorTileLayer.length; i++) {
-      const vectorTileFeature = vectorTileLayer.feature(i);
+      const vectorTileFeature = vectorTileLayer.getGeoJSONFeature(i);
       const decodedFeature = getDecodedFeature(vectorTileFeature, options, layerName);
       features.push(decodedFeature);
     }
   });
 
-  return features as Feature[];
+  return features;
 }
 
-function normalizeOptions(options?: MVTLoaderOptions): MVTOptions {
+/** Check that options are good */
+function checkOptions(options?: MVTLoaderOptions): MVTOptions {
   if (!options?.mvt) {
     throw new Error('mvt options required');
   }
 
-  // Validate
-  const wgs84Coordinates = options.mvt?.coordinates === 'wgs84';
-  const {tileIndex} = options.mvt;
-  const hasTileIndex =
-    tileIndex &&
-    Number.isFinite(tileIndex.x) &&
-    Number.isFinite(tileIndex.y) &&
-    Number.isFinite(tileIndex.z);
-
-  if (wgs84Coordinates && !hasTileIndex) {
+  if (options.mvt?.coordinates === 'wgs84' && !options.mvt.tileIndex) {
     throw new Error('MVT Loader: WGS84 coordinates need tileIndex property');
+  }
+
+  if (options.gis) {
+    log.warn('MVTLoader: "options.gis" is deprecated, use "options.mvt.shape" instead')();
   }
 
   return options.mvt;
@@ -161,17 +151,18 @@ function normalizeOptions(options?: MVTLoaderOptions): MVTOptions {
  * @returns decoded feature
  */
 function getDecodedFeature(
-  feature: VectorTileFeatureMapBox,
+  feature: VectorTileFeature,
   options: MVTOptions,
   layerName: string
-): MVTMapboxCoordinates {
-  const decodedFeature = feature.toGeoJSON(
-    // @ts-expect-error What is going on here?
-    options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinates
+): Feature {
+  const decodedFeature = feature.toGeoJSONFeature(
+    options.coordinates || 'local',
+    options.tileIndex
   );
 
   // Add layer name to GeoJSON properties
   if (options.layerProperty) {
+    decodedFeature.properties ||= {};
     decodedFeature.properties[options.layerProperty] = layerName;
   }
 
@@ -184,14 +175,11 @@ function getDecodedFeature(
  * @returns decoded binary feature
  */
 function getDecodedFeatureBinary(
-  feature: BinaryVectorTileFeature,
+  feature: VectorTileFeature,
   options: MVTOptions,
   layerName: string
 ): FlatFeature {
-  const decodedFeature = feature.toBinaryCoordinates(
-    // @ts-expect-error
-    options.coordinates === 'wgs84' ? options.tileIndex : transformToLocalCoordinatesBinary
-  );
+  const decodedFeature = feature.toBinaryFeature(options.coordinates || 'local', options.tileIndex);
 
   // Add layer name to GeoJSON properties
   if (options.layerProperty && decodedFeature.properties) {
@@ -199,30 +187,4 @@ function getDecodedFeatureBinary(
   }
 
   return decodedFeature;
-}
-
-/**
- * @param line
- * @param feature
- */
-function transformToLocalCoordinates(line: number[], feature: {extent: any}): void {
-  // This function transforms local coordinates in a
-  // [0 - bufferSize, this.extent + bufferSize] range to a
-  // [0 - (bufferSize / this.extent), 1 + (bufferSize / this.extent)] range.
-  // The resulting extent would be 1.
-  const {extent} = feature;
-  for (let i = 0; i < line.length; i++) {
-    const p = line[i];
-    p[0] /= extent;
-    p[1] /= extent;
-  }
-}
-
-function transformToLocalCoordinatesBinary(data: number[], feature: {extent: any}) {
-  // For the binary code path, the feature data is just
-  // one big flat array, so we just divide each value
-  const {extent} = feature;
-  for (let i = 0, il = data.length; i < il; ++i) {
-    data[i] /= extent;
-  }
 }

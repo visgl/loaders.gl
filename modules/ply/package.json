@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/ply",
-  "version": "4.2.0",
+  "version": "4.3.0-alpha.1",
   "description": "Framework-independent loader for the PLY format",
   "license": "MIT",
   "type": "module",
@@ -42,8 +42,8 @@
     "build-worker": "esbuild src/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.2.0",
-    "@loaders.gl/schema": "4.2.0"
+    "@loaders.gl/loader-utils": "4.3.0-alpha.1",
+    "@loaders.gl/schema": "4.3.0-alpha.1"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"

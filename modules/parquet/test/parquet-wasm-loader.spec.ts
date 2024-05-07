@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {load, encode, setLoaderOptions} from '@loaders.gl/core';
+import {load, loadInBatches, encode, setLoaderOptions} from '@loaders.gl/core';
 import {ArrowTable} from '@loaders.gl/arrow';
 import {ParquetWasmLoader, ParquetWasmWriter} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
@@ -59,6 +59,21 @@ test('ParquetWasmWriter#writer/loader round trip', async (t) => {
   });
 
   t.deepEqual(table.data.schema, newTable.data.schema);
+  t.end();
+});
+
+// TODO not implemented yet
+test.skip('ParquetWasmLoader#loadInBatches', async (t) => {
+  t.comment('SUPPORTED FILES');
+  for (const {title, path} of WASM_SUPPORTED_FILES) {
+    const url = `${PARQUET_DIR}/apache/${path}`;
+    const iterator = await loadInBatches(url, ParquetWasmLoader);
+    for await (const batch of iterator) {
+      const recordBatch = batch.data;
+      t.ok(recordBatch instanceof arrow.RecordBatch, `GOOD(${title})`);
+    }
+  }
+
   t.end();
 });
 

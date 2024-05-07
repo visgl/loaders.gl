@@ -2,14 +2,23 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {TileSource, TileSourceMetadata} from './tile-source';
-import {GetTileParameters} from './tile-source';
+import type {Schema, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
+import {TileSource, TileSourceProps, TileSourceMetadata, GetTileParameters} from './tile-source';
+import type {GetTileDataParameters} from './tile-source';
+
+export type VectorTile = unknown;
+
+export type VectorTileSourceProps = TileSourceProps;
 
 /**
- * MapTileSource - data sources that allow data to be queried by (geospatial) tile
+ * VectorTileSource - data sources that allow data to be queried by (geospatial) tile
  * @note If geospatial, bounding box is expected to be in web mercator coordinates
  */
 export interface VectorTileSource<MetadataT extends TileSourceMetadata = TileSourceMetadata>
   extends TileSource<MetadataT> {
-  getVectorTile(parameters: GetTileParameters): Promise<unknown | null>;
+  getSchema(): Promise<Schema>;
+  getVectorTile(parameters: GetTileParameters): Promise<VectorTile | null>;
+  getTileData(
+    parameters: GetTileDataParameters
+  ): Promise<Feature[] | BinaryFeatureCollection | null>;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/csv",
-  "version": "4.2.0",
+  "version": "4.3.0-alpha.1",
   "description": "Framework-independent loader for CSV and DSV table formats",
   "license": "MIT",
   "type": "module",
@@ -44,8 +44,8 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.2.0",
-    "@loaders.gl/schema": "4.2.0"
+    "@loaders.gl/loader-utils": "4.3.0-alpha.1",
+    "@loaders.gl/schema": "4.3.0-alpha.1"
   },
   "devDependencies": {
     "d3-dsv": "^1.2.0"

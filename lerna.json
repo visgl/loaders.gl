@@ -1,14 +1,21 @@
 {
-  "lerna": "2.9.1",
+  "lerna": "2.0.0",
   "version": "4.2.0",
-  "command": {
-    "publish": {},
-    "bootstrap": {}
-  },
   "npmClient": "yarn",
-  "useWorkspaces": true,
   "exact": true,
   "packages": [
     "modules/*"
-  ]
+  ],
+  "command": {
+    "publish": {
+      "ignoreChanges": [
+        "test",
+        "*.md"
+      ]
+    },
+    "bootstrap": {}
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
