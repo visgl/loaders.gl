@@ -25,7 +25,6 @@ const VIEW_STATE = {
 };
 
 export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
-const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   MVT: {
