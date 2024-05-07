@@ -5,7 +5,7 @@
 
 import test from 'tape-promise/tape';
 // @ts-ignore-error
-import {simplify} from '@loaders.gl/mvt/lib/geojsonvt/simplify';
+import {simplify} from '@loaders.gl/mvt/lib/vector-tiler/simplify';
 
 /* eslint comma-spacing:0, no-shadow: 0*/
 

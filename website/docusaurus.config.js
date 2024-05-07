@@ -162,6 +162,13 @@ const config = {
       '@docusaurus/plugin-client-redirects',
       {
         createRedirects(existingPath) {
+          const pageRedirects = {
+            '/examples/pmtiles': '/examples/tiles/pmtiles',
+            '/examples/wms': '/examples/tiles/wms',
+          };
+          if (pageRedirects[existingPath]) {
+            return [pageRedirects[existingPath]];
+          }
           // docs/modules/*/api-reference <= modules/*/docs/api-reference
           if (existingPath.includes('/docs/modules/')) {
             return [

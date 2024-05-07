@@ -47,9 +47,9 @@ class MVTSourceLayer extends MVTLayer {
     vectorTileSource: VectorTileSource | null;
   };
 
-  constructor(props: MVTLayerProps) {
-    super(props);
-  }
+  // constructor(props: MVTLayerProps) {
+  //   super(props);
+  // }
 
   updateState(params) {
     super.updateState(params);

@@ -5,7 +5,7 @@
 
 import test from 'tape-promise/tape';
 // @ts-ignore-error
-import {clip} from '@loaders.gl/mvt/lib/geojsonvt/clip';
+import {clip} from '@loaders.gl/mvt/lib/vector-tiler/clip';
 
 /* eslint comma-spacing:0*/
 

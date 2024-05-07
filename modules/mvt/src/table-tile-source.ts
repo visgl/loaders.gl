@@ -13,12 +13,12 @@ import {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.g
 import {deduceTableSchema} from '@loaders.gl/schema';
 import {Stats, Stat} from '@probe.gl/stats';
 
-import type {TableTile, TableTileFeature} from './lib/geojsonvt/tile';
-import {convert} from './lib/geojsonvt/convert'; // GeoJSON conversion and preprocessing
-import {clip} from './lib/geojsonvt/clip'; // stripe clipping algorithm
-import {wrap} from './lib/geojsonvt/wrap'; // date line processing
-import {transformTile} from './lib/geojsonvt/transform'; // coordinate transformation
-import {createTile} from './lib/geojsonvt/tile'; // final simplified tile generation
+import type {TableTile, TableTileFeature} from './lib/vector-tiler/tile';
+import {convert} from './lib/vector-tiler/convert'; // GeoJSON conversion and preprocessing
+import {clip} from './lib/vector-tiler/clip'; // stripe clipping algorithm
+import {wrap} from './lib/vector-tiler/wrap'; // date line processing
+import {transformTile} from './lib/vector-tiler/transform'; // coordinate transformation
+import {createTile} from './lib/vector-tiler/tile'; // final simplified tile generation
 
 import {projectToLngLat} from './lib/utils/geometry-utils';
 import {convertToLocalCoordinates} from './lib/utils/geometry-utils';

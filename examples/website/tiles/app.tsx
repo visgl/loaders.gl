@@ -2,49 +2,168 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// React
 import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
-
-import DeckGL from '@deck.gl/react';
-import {MapView} from '@deck.gl/core';
-
-import {TileSourceLayer} from './components/tile-source-layer';
-
-import type {TileSource} from '@loaders.gl/loader-utils';
+// loaders.gl sources and loaders
+import type {TileSource, VectorTileSource, ImageTileSource} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
 import {PMTilesSource, PMTilesMetadata} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
+import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
-import {ControlPanel} from './components/control-panel';
-import {
-  Example,
-  INITIAL_CATEGORY_NAME,
-  INITIAL_EXAMPLE_NAME,
-  INITIAL_MAP_STYLE,
-  EXAMPLES
-} from './examples';
-import {GeoJSONLoader} from '../../../modules/json/src/geojson-loader';
+// D\deck.gl + layers
+import DeckGL from '@deck.gl/react';
+import {MapView} from '@deck.gl/core';
+import {TileSourceLayer} from './components/tile-source-layer';
 
-const INITIAL_VIEW_STATE = {
-  latitude: 47.65,
-  longitude: 7,
-  zoom: 2,
-  maxZoom: 20,
-  maxPitch: 89,
-  bearing: 0
+// Basemap
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+
+// CUT IF YOU COPY THIS EXAMPLE
+import {Example, ExamplePanel, Attributions} from './components/example-panel';
+import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples';
+import {INITIAL_MAP_STYLE} from './examples';
+// END CUT
+
+/** Arbitrary initial view state */
+const INITIAL_VIEW_STATE = {latitude: 47.65, longitude: 7, zoom: 2, maxZoom: 20};
+
+/** Application props (used by website MDX pages to configure example */
+type AppProps = {
+  /** Format */
+  format?: string;
+  /** Show tile borders */
+  showTileBorders?: boolean;
+  /** On tiles load */
+  onTilesLoad?: Function;
+  /** Any informational text to display in the overlay */
+  children?: React.Children;
 };
 
-/**
- * 
- * @param example 
- * @returns 
- */
-function createTileSource(example: Example): TileSource<any> {
-  switch (example.sourceType) {
+/** Application state */
+type AppState = {
+  /** Currently active tile source */
+  tileSource: VectorTileSource | ImageTileSource;
+  /** Metadata loaded from active tile source */
+  metadata: any;
+  /**Current view state */
+  viewState: Record<string, number>;
+};
 
+export default function App(props: AppProps = {}) {
+  const [state, setState] = useState<AppState>({
+    tileSource: null,
+    viewState: INITIAL_VIEW_STATE,
+    // TODO - handle errors
+    error: null
+  });
+
+  const {tileSource, metadata} = state;
+  const tileLayer =
+    tileSource &&
+    new TileSourceLayer({
+      data: tileSource,
+      tileSource,
+      showTileBorders: true,
+      // @ts-expect-error
+      metadata,
+      onTilesLoad: props.onTilesLoad,
+      pickable: true,
+      autoHighlight: true
+      // custom props
+    });
+
+  return (
+    <div style={{position: 'relative', height: '100%'}}>
+      <ExamplePanel
+        title="Tileset Metadata"
+        examples={EXAMPLES}
+        format={props.format}
+        initialCategoryName={INITIAL_CATEGORY_NAME}
+        initialExampleName={INITIAL_EXAMPLE_NAME}
+        onExampleChange={onExampleChange}
+        schema={metadata ? JSON.stringify(metadata, null, 2) : ''}
+      >
+        {props.children}
+        {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
+        <pre style={{textAlign: 'center', margin: 0}}>
+          {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
+          {/* viewState.zoom.toFixed(2) */}
+        </pre>
+      </ExamplePanel>
+
+      <DeckGL
+        layers={[tileLayer]}
+        views={new MapView({repeat: true})}
+        initialViewState={state.viewState}
+        controller={true}
+        getTooltip={getTooltip}
+      >
+        <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
+        <Attributions attributions={metadata?.attributions} />
+      </DeckGL>
+    </div>
+  );
+
+  async function onExampleChange(args: {
+    categoryName: string;
+    exampleName: string;
+    example: Example;
+  }) {
+    const {categoryName, exampleName, example} = args;
+
+    const url = example.data;
+    try {
+
+      let tileSource = createTileSource(example);
+
+      setState((state) => ({
+        ...state,
+        tileSource,
+        metadata: null
+      }));
+
+      (async () => {
+        const metadata = await tileSource.getMetadata();
+        let initialViewState = {...state.viewState, ...example.viewState};
+        initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
+
+        setState((state) => ({
+          ...state,
+          initialViewState,
+          metadata
+        }));
+      })();
+    } catch (error) {
+      console.error('Failed to load data', url, error);
+      setState((state) => ({...state, error: `Could not load ${exampleName}: ${error.message}`}));
+    }
+  }
+}
+
+function getTooltip(info) {
+  if (info.tile) {
+    const {x, y, z} = info.tile.index;
+    return `tile: x: ${x}, y: ${y}, z: ${z}`;
+  }
+  return null;
+}
+
+export function renderToDOM(container: HTMLElement) {
+  createRoot(container).render(<App />);
+}
+
+// Helpers
+
+/**
+ * @param example
+ * @returns
+ */
+function createTileSource(example: Example): VectorTileSource | ImageTileSource {
+  switch (example?.sourceType || null) {
     case 'pmtiles':
       return new PMTilesSource({
         url: example.data,
@@ -69,96 +188,15 @@ function createTileSource(example: Example): TileSource<any> {
   }
 }
 
-export default function App({showTileBorders = false, onTilesLoad = null}) {
-
-  const [selectedCategory, setSelectedCategory] = useState(INITIAL_CATEGORY_NAME);
-  const [selectedExample, setSelectedExample] = useState(INITIAL_EXAMPLE_NAME);
-  const [example, setExample] = useState<Example | null>(
-    EXAMPLES[selectedCategory][selectedExample]
-  );
-  const [tileSource, setTileSource] = useState<PMTilesSource | null>(null);
-  const [metadata, setMetadata] = useState<PMTilesMetadata | null>(null);
-  const [viewState, setViewState] = useState<Record<string, number>>(INITIAL_VIEW_STATE);
-
-  useEffect(() => {
-    let tileSource = createTileSource(example);
-    setTileSource(tileSource);
-    setMetadata(null);
-
-    (async () => {
-      const metadata = await tileSource.metadata; // getMetadata();
-      setMetadata(metadata);
-    })();
-  }, [example]);
-
-  useEffect(() => {
-    // Apply the examples view state, if it overrides
-    let initialViewState = {...viewState, ...example.viewState};
-    if (metadata) {
-      initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
-    }
-    setViewState(initialViewState);
-  }, [metadata, example]);
-
-  const tileLayer =
-    tileSource && new TileSourceLayer({
-      data: tileSource,
-      tileSource, 
-      showTileBorders: true,
-      metadata, 
-      onTilesLoad, 
-      pickable: true, 
-      autoHighlight: true, 
-      layerMode: 'mvt',
-      // custom props
-    });
-
-  return (
-    <div style={{position: 'relative', height: '100%'}}>
-      {renderControlPanel({
-        metadata,
-        selectedCategory,
-        selectedExample,
-        onExampleChange({selectedCategory, selectedExample, example}) {
-          // setViewState({...initialViewState, ...example.viewState})
-          setSelectedCategory(selectedCategory);
-          setSelectedExample(selectedExample);
-          setExample(example);
-        }
-      })}
-
-      <DeckGL
-        layers={[tileLayer]}
-        views={new MapView({repeat: true})}
-        initialViewState={viewState}
-        controller={true}
-        getTooltip={getTooltip}
-      >
-        <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
-        <Attributions attributions={metadata?.attributions} />
-      </DeckGL>
-
-    </div>
-  );
-}
-
-function getTooltip(info) {
-  if (info.tile) {
-    const {x, y, z} = info.tile.index;
-    return `tile: x: ${x}, y: ${y}, z: ${z}`;
-  }
-  return null;
-}
-
-export function renderToDOM(container: HTMLElement) {
-  createRoot(container).render(<App />);
-}
-
-/** 
- * Helper function to adjust view state based on tileset metadata, keep zoom in visible range etc 
+/**
+ * Helper function to adjust view state based on tileset metadata, keep zoom in visible range etc
  * TODO - perhaps TileSourceLayer could provide a callback to let app adjust view state to fit within available tile levels
  */
 function adjustViewStateToMetadata(viewState, metadata) {
+  if (!metadata) {
+    return viewState;
+  }
+  
   // Copy to make sure we don't modify input
   viewState = {...viewState};
 
@@ -178,50 +216,5 @@ function adjustViewStateToMetadata(viewState, metadata) {
       latitude: metadata.center[1]
     };
   }
-  console.log('viewState', viewState);
   return viewState;
-}
-
-// EXAMPLE CONTROL PANEL, CAN BE CUT IF THIS CODE IS COPIED
-
-const COPYRIGHT_LICENSE_STYLE = {
-  position: 'absolute',
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'hsla(0,0%,100%,.5)',
-  padding: '0 5px',
-  font: '12px/20px Helvetica Neue,Arial,Helvetica,sans-serif'
-};
-
-/** TODO - check that these are visible. For which datasets? */
-function Attributions(props: {attributions?: string[]}) {
-  return (
-    <div style={COPYRIGHT_LICENSE_STYLE}>
-      {props.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
-    </div>
-  )
-}
-
-
-function renderControlPanel(props) {
-  const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, viewState} =
-    props;
-
-  return (
-    <ControlPanel
-      title="Tileset Metadata"
-      metadata={metadata ? JSON.stringify(metadata, null, 2) : ''}
-      examples={EXAMPLES}
-      selectedExample={selectedExample}
-      selectedCategory={selectedCategory}
-      onExampleChange={onExampleChange}
-      loading={loading}
-    >
-      {error ? <div style={{color: 'red'}}>{error}</div> : ''}
-      <pre style={{textAlign: 'center', margin: 0}}>
-        {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
-        {/* viewState.zoom.toFixed(2) */}
-      </pre>
-    </ControlPanel>
-  );
 }

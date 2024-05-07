@@ -26,6 +26,7 @@ import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
 import {ZstdCodec} from 'zstd-codec';
+import {requireFromString} from '@loaders.gl/polyfills/src/load-library/require-utils.node';
 
 // GeoPackage depends on sql.js which has bundling issues in docusuarus.
 // import {GeoPackageLoader} from '@loaders.gl/geopackage';
@@ -121,12 +122,9 @@ export default function App(props: AppProps) {
 
   // Initialize the examples (each demo might focus on a different "props.format")
   useEffect(() => {
-    let examples: Record<string, Record<string, Example>> = {...EXAMPLES};
-    if (props.format) {
-      // Keep only the preferred format examples
-      examples = {[props.format]: EXAMPLES[props.format]};
-    }
 
+    const examples = getExamplesForFormat(props.format, EXAMPLES);
+    
     const selectedLoader = props.format || INITIAL_LOADER_NAME;
     let selectedExample = props.format
       ? Object.keys(examples[selectedLoader])[0]
@@ -281,3 +279,15 @@ function getDefaultTooltipData({object}) {
 export function renderToDOM(container) {
   createRoot(container).render(<App />);
 }
+
+// Helpers
+
+/** Filter out examples that are not of the given format. */
+function getExamplesForFormat(format: string, examples:  Record<string, Record<string, Example>>): Record<string, Record<string, Example>> {
+  if (format) {
+    // Keep only the preferred format examples
+    return {[format]: EXAMPLES[format]};
+  }
+  return {...examples};
+}
+
