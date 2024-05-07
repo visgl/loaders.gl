@@ -109,13 +109,6 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
     tileSource: TileSource<any> | null;
   };
 
-  constructor(props: TileSourceLayerProps) {
-    console.log('constructing...')
-    debugger
-    super(props);
-    console.log('...done')
-  }
-
   initializeState() {
     this.setState({
       tileSource: null

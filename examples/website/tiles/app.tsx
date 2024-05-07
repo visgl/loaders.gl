@@ -38,7 +38,6 @@ const INITIAL_VIEW_STATE = {
 };
 
 /**
- *
  * @param example
  * @returns
  */
@@ -75,6 +74,8 @@ type AppProps = {
   showTileBorders?: boolean;
   /** On tiles load */
   onTilesLoad?: Function;
+  /** Any informational text to display in the overlay */
+  children?: React.Children;
 };
 
 type AppState = {
@@ -88,13 +89,11 @@ type AppState = {
   selectedFormat: string;
   example: Example | null;
 
+  // Currently active tile source
   tileSource: VectorTileSource | ImageTileSource;
-
-  // loadedTable: Table | null;
 };
 
 export default function App(props: AppProps = {}) {
-  debugger
   const [state, setState] = useState<AppState>({
     examples: EXAMPLES,
     viewState: INITIAL_VIEW_STATE,
@@ -106,16 +105,6 @@ export default function App(props: AppProps = {}) {
     error: null
   });
 
-  // const [selectedCategory, setSelectedCategory] = useState(INITIAL_CATEGORY_NAME);
-  // const [selectedExample, setSelectedExample] = useState(INITIAL_EXAMPLE_NAME);
-  // const [example, setExample] = useState<Example | null>(
-  //   EXAMPLES[selectedCategory][selectedExample]
-  // );
-  // const [tileSource, setTileSource] = useState<PMTilesSource | null>(null);
-  // const [metadata, setMetadata] = useState<PMTilesMetadata | null>(null);
-  // const [viewState, setViewState] = useState<Record<string, number>>(INITIAL_VIEW_STATE);
-
-  // setState((state) => ({...state, examples, selectedExample, selectedFormat}));
 
   // Initialize the examples (each demo might focus on a different "props.format")
   useEffect(() => {
@@ -134,16 +123,6 @@ export default function App(props: AppProps = {}) {
       setState
     });
   }, [props.format]);
-
-  // useEffect(() => {
-  //   let tileSource = createTileSource(state.example);
-  //   setState((state) => ({...state, tileSource, metadata: null}));
-
-  //   (async () => {
-  //     const metadata = await tileSource.metadata; // getMetadata();
-  //     setState((state) => ({...state, metadata}));
-  //   })();
-  // }, [state.example]);
 
   useEffect(() => {
     // Apply the examples view state, if it overrides
@@ -175,7 +154,8 @@ export default function App(props: AppProps = {}) {
         metadata,
         selectedCategory: state.selectedFormat,
         selectedExample: state.selectedExample,
-        onExampleChange
+        onExampleChange,
+        info: props.children
       })}
 
       <DeckGL
@@ -203,6 +183,51 @@ function getTooltip(info) {
 export function renderToDOM(container: HTMLElement) {
   createRoot(container).render(<App />);
 }
+
+// EXAMPLE CONTROL PANEL, CAN BE CUT IF THIS CODE IS COPIED
+
+const COPYRIGHT_LICENSE_STYLE = {
+  position: 'absolute',
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'hsla(0,0%,100%,.5)',
+  padding: '0 5px',
+  font: '12px/20px Helvetica Neue,Arial,Helvetica,sans-serif'
+};
+
+/** TODO - check that these are visible. For which datasets? */
+function Attributions(props: {attributions?: string[]}) {
+  return (
+    <div style={COPYRIGHT_LICENSE_STYLE}>
+      {props.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
+    </div>
+  );
+}
+
+function renderControlPanel(props) {
+  const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, info, viewState} =
+    props;
+  return (
+    <ControlPanel
+      title="Tileset Metadata"
+      metadata={metadata ? JSON.stringify(metadata, null, 2) : ''}
+      examples={EXAMPLES}
+      selectedExample={selectedExample}
+      selectedCategory={selectedCategory}
+      onExampleChange={onExampleChange}
+      loading={loading}
+    >
+      {info}
+      {error ? <div style={{color: 'red'}}>{error}</div> : ''}
+      <pre style={{textAlign: 'center', margin: 0}}>
+        {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
+        {/* viewState.zoom.toFixed(2) */}
+      </pre>
+    </ControlPanel>
+  );
+}
+
+// Helpers
 
 /**
  * Helper function to adjust view state based on tileset metadata, keep zoom in visible range etc
@@ -232,51 +257,6 @@ function adjustViewStateToMetadata(viewState, metadata) {
   return viewState;
 }
 
-// EXAMPLE CONTROL PANEL, CAN BE CUT IF THIS CODE IS COPIED
-
-const COPYRIGHT_LICENSE_STYLE = {
-  position: 'absolute',
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'hsla(0,0%,100%,.5)',
-  padding: '0 5px',
-  font: '12px/20px Helvetica Neue,Arial,Helvetica,sans-serif'
-};
-
-/** TODO - check that these are visible. For which datasets? */
-function Attributions(props: {attributions?: string[]}) {
-  return (
-    <div style={COPYRIGHT_LICENSE_STYLE}>
-      {props.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
-    </div>
-  );
-}
-
-function renderControlPanel(props) {
-  const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, viewState} =
-    props;
-
-  return (
-    <ControlPanel
-      title="Tileset Metadata"
-      metadata={metadata ? JSON.stringify(metadata, null, 2) : ''}
-      examples={EXAMPLES}
-      selectedExample={selectedExample}
-      selectedCategory={selectedCategory}
-      onExampleChange={onExampleChange}
-      loading={loading}
-    >
-      {error ? <div style={{color: 'red'}}>{error}</div> : ''}
-      <pre style={{textAlign: 'center', margin: 0}}>
-        {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
-        {/* viewState.zoom.toFixed(2) */}
-      </pre>
-    </ControlPanel>
-  );
-}
-
-// Helpers
-
 /** Filter out examples that are not of the given format. */
 function getExamplesForFormat(
   format: string,
@@ -288,14 +268,6 @@ function getExamplesForFormat(
   }
   return {...examples};
 }
-
-// TOD - Remove. Old code
-// onExampleChange({selectedCategory, selectedExample, example}) {
-//   // setViewState({...initialViewState, ...example.viewState})
-//   setSelectedCategory(selectedCategory);
-//   setSelectedExample(selectedExample);
-//   setExample(example);
-// }
 
 async function onExampleChange(args: {
   selectedFormat: string;

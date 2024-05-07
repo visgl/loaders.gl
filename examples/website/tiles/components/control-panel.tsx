@@ -54,6 +54,7 @@ type ControlPanelProps = {
   onExampleChange?: Function;
   droppedFile?: any;
   onChange?: Function;
+  children: React.Children;
 };
 
 const defaultProps: ControlPanelProps = {
@@ -138,6 +139,7 @@ export class ControlPanel extends PureComponent<ControlPanelProps> {
         <pre className="loading-indicator" style={{opacity: props.loading ? 1 : 0}}>
           loading tile...
         </pre>
+        {props.children}
         <h2>{props.title}</h2>
         <MonacoEditor
           language="json"
