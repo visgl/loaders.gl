@@ -2,40 +2,160 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// React
 import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
-import {Map} from 'react-map-gl';
-import maplibregl from 'maplibre-gl';
-
-import DeckGL from '@deck.gl/react';
-import {MapView} from '@deck.gl/core';
-
-import {TileSourceLayer} from './components/tile-source-layer';
-
+// loaders.gl sources and loaders
 import type {TileSource, VectorTileSource, ImageTileSource} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
 import {PMTilesSource, PMTilesMetadata} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
+import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
-import {ControlPanel} from './components/control-panel';
-import {
-  Example,
-  INITIAL_CATEGORY_NAME,
-  INITIAL_EXAMPLE_NAME,
-  INITIAL_MAP_STYLE,
-  EXAMPLES
-} from './examples';
-import {GeoJSONLoader} from '../../../modules/json/src/geojson-loader';
+// D\deck.gl + layers
+import DeckGL from '@deck.gl/react';
+import {MapView} from '@deck.gl/core';
+import {TileSourceLayer} from './components/tile-source-layer';
 
-const INITIAL_VIEW_STATE = {
-  latitude: 47.65,
-  longitude: 7,
-  zoom: 2,
-  maxZoom: 20,
-  maxPitch: 89,
-  bearing: 0
+// Basemap
+import {Map} from 'react-map-gl';
+import maplibregl from 'maplibre-gl';
+
+// CUT IF YOU COPY THIS EXAMPLE
+import {Example, ExamplePanel, Attributions} from './components/example-panel';
+import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples';
+import {INITIAL_MAP_STYLE} from './examples';
+// END CUT
+
+/** Arbitrary initial view state */
+const INITIAL_VIEW_STATE = {latitude: 47.65, longitude: 7, zoom: 2, maxZoom: 20};
+
+/** Application props (used by website MDX pages to configure example */
+type AppProps = {
+  /** Format */
+  format?: string;
+  /** Show tile borders */
+  showTileBorders?: boolean;
+  /** On tiles load */
+  onTilesLoad?: Function;
+  /** Any informational text to display in the overlay */
+  children?: React.Children;
 };
+
+/** Application state */
+type AppState = {
+  /** Currently active tile source */
+  tileSource: VectorTileSource | ImageTileSource;
+  /** Metadata loaded from active tile source */
+  metadata: any;
+  /**Current view state */
+  viewState: Record<string, number>;
+};
+
+export default function App(props: AppProps = {}) {
+  const [state, setState] = useState<AppState>({
+    tileSource: null,
+    viewState: INITIAL_VIEW_STATE,
+    // TODO - handle errors
+    error: null
+  });
+
+  const {tileSource, metadata} = state;
+  const tileLayer =
+    tileSource &&
+    new TileSourceLayer({
+      data: tileSource,
+      tileSource,
+      showTileBorders: true,
+      // @ts-expect-error
+      metadata,
+      onTilesLoad: props.onTilesLoad,
+      pickable: true,
+      autoHighlight: true
+      // custom props
+    });
+
+  return (
+    <div style={{position: 'relative', height: '100%'}}>
+      <ExamplePanel
+        title="Tileset Metadata"
+        examples={EXAMPLES}
+        initialCategoryName={INITIAL_CATEGORY_NAME}
+        initialExampleName={INITIAL_EXAMPLE_NAME}
+        onExampleChange={onExampleChange}
+        schema={metadata ? JSON.stringify(metadata, null, 2) : ''}
+      >
+        {props.children}
+        {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
+        <pre style={{textAlign: 'center', margin: 0}}>
+          {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
+          {/* viewState.zoom.toFixed(2) */}
+        </pre>
+      </ExamplePanel>
+
+      <DeckGL
+        layers={[tileLayer]}
+        views={new MapView({repeat: true})}
+        initialViewState={state.viewState}
+        controller={true}
+        getTooltip={getTooltip}
+      >
+        <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
+        <Attributions attributions={metadata?.attributions} />
+      </DeckGL>
+    </div>
+  );
+
+  async function onExampleChange(args: {
+    categoryName: string;
+    exampleName: string;
+    example: Example;
+  }) {
+    const {categoryName, exampleName, example} = args;
+
+    const url = example.data;
+    try {
+
+      let tileSource = createTileSource(example);
+
+      setState((state) => ({
+        ...state,
+        tileSource,
+        metadata: null
+      }));
+
+      (async () => {
+        const metadata = await tileSource.getMetadata();
+        let initialViewState = {...state.viewState, ...example.viewState};
+        initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
+
+        setState((state) => ({
+          ...state,
+          initialViewState,
+          metadata
+        }));
+      })();
+    } catch (error) {
+      console.error('Failed to load data', url, error);
+      setState((state) => ({...state, error: `Could not load ${exampleName}: ${error.message}`}));
+    }
+  }
+}
+
+function getTooltip(info) {
+  if (info.tile) {
+    const {x, y, z} = info.tile.index;
+    return `tile: x: ${x}, y: ${y}, z: ${z}`;
+  }
+  return null;
+}
+
+export function renderToDOM(container: HTMLElement) {
+  createRoot(container).render(<App />);
+}
+
+// Helpers
 
 /**
  * @param example
@@ -67,168 +187,6 @@ function createTileSource(example: Example): VectorTileSource | ImageTileSource 
   }
 }
 
-type AppProps = {
-  /** Format */
-  format?: string;
-  /** Show tile borders */
-  showTileBorders?: boolean;
-  /** On tiles load */
-  onTilesLoad?: Function;
-  /** Any informational text to display in the overlay */
-  children?: React.Children;
-};
-
-type AppState = {
-  /** list of examples */
-  examples: Record<string, Record<string, Example>>;
-  /** CURRENT VIEW POINT / CAMERA POSITION */
-  viewState: Record<string, number>;
-
-  // EXAMPLE STATE
-  selectedExample: string;
-  selectedFormat: string;
-  example: Example | null;
-
-  // Currently active tile source
-  tileSource: VectorTileSource | ImageTileSource;
-};
-
-export default function App(props: AppProps = {}) {
-  const [state, setState] = useState<AppState>({
-    examples: EXAMPLES,
-    viewState: INITIAL_VIEW_STATE,
-    selectedExample: null,
-    selectedFormat: null,
-    example: null,
-
-    // tileSource: null,
-    error: null
-  });
-
-
-  // Initialize the examples (each demo might focus on a different "props.format")
-  useEffect(() => {
-    const examples = getExamplesForFormat(props.format, EXAMPLES);
-
-    const selectedFormat = props.format || INITIAL_CATEGORY_NAME;
-    let selectedExample = props.format
-      ? Object.keys(examples[selectedFormat])[0]
-      : INITIAL_EXAMPLE_NAME;
-
-    onExampleChange({
-      selectedFormat,
-      selectedExample,
-      example: examples[selectedFormat][selectedExample],
-      state,
-      setState
-    });
-  }, [props.format]);
-
-  useEffect(() => {
-    // Apply the examples view state, if it overrides
-    let initialViewState = {...state.viewState, ...state.example?.viewState};
-    if (metadata) {
-      initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
-    }
-    setState((state) => ({...state, viewState: initialViewState}));
-  }, [state.metadata, state.example]);
-
-  const {tileSource, metadata} = state;
-  const tileLayer =
-    tileSource &&
-    new TileSourceLayer({
-      data: tileSource,
-      tileSource,
-      showTileBorders: true,
-      metadata,
-      onTilesLoad: props.onTilesLoad,
-      pickable: true,
-      autoHighlight: true,
-      layerMode: 'mvt'
-      // custom props
-    });
-
-  return (
-    <div style={{position: 'relative', height: '100%'}}>
-      {renderControlPanel({
-        metadata,
-        selectedCategory: state.selectedFormat,
-        selectedExample: state.selectedExample,
-        onExampleChange,
-        info: props.children
-      })}
-
-      <DeckGL
-        layers={[tileLayer]}
-        views={new MapView({repeat: true})}
-        initialViewState={state.viewState}
-        controller={true}
-        getTooltip={getTooltip}
-      >
-        <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
-        <Attributions attributions={metadata?.attributions} />
-      </DeckGL>
-    </div>
-  );
-}
-
-function getTooltip(info) {
-  if (info.tile) {
-    const {x, y, z} = info.tile.index;
-    return `tile: x: ${x}, y: ${y}, z: ${z}`;
-  }
-  return null;
-}
-
-export function renderToDOM(container: HTMLElement) {
-  createRoot(container).render(<App />);
-}
-
-// EXAMPLE CONTROL PANEL, CAN BE CUT IF THIS CODE IS COPIED
-
-const COPYRIGHT_LICENSE_STYLE = {
-  position: 'absolute',
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'hsla(0,0%,100%,.5)',
-  padding: '0 5px',
-  font: '12px/20px Helvetica Neue,Arial,Helvetica,sans-serif'
-};
-
-/** TODO - check that these are visible. For which datasets? */
-function Attributions(props: {attributions?: string[]}) {
-  return (
-    <div style={COPYRIGHT_LICENSE_STYLE}>
-      {props.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
-    </div>
-  );
-}
-
-function renderControlPanel(props) {
-  const {selectedExample, selectedCategory, onExampleChange, loading, metadata, error, info, viewState} =
-    props;
-  return (
-    <ControlPanel
-      title="Tileset Metadata"
-      metadata={metadata ? JSON.stringify(metadata, null, 2) : ''}
-      examples={EXAMPLES}
-      selectedExample={selectedExample}
-      selectedCategory={selectedCategory}
-      onExampleChange={onExampleChange}
-      loading={loading}
-    >
-      {info}
-      {error ? <div style={{color: 'red'}}>{error}</div> : ''}
-      <pre style={{textAlign: 'center', margin: 0}}>
-        {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
-        {/* viewState.zoom.toFixed(2) */}
-      </pre>
-    </ControlPanel>
-  );
-}
-
-// Helpers
-
 /**
  * Helper function to adjust view state based on tileset metadata, keep zoom in visible range etc
  * TODO - perhaps TileSourceLayer could provide a callback to let app adjust view state to fit within available tile levels
@@ -255,56 +213,4 @@ function adjustViewStateToMetadata(viewState, metadata) {
   }
   console.log('viewState', viewState);
   return viewState;
-}
-
-/** Filter out examples that are not of the given format. */
-function getExamplesForFormat(
-  format: string,
-  examples: Record<string, Record<string, Example>>
-): Record<string, Record<string, Example>> {
-  if (format) {
-    // Keep only the preferred format examples
-    return {[format]: EXAMPLES[format]};
-  }
-  return {...examples};
-}
-
-async function onExampleChange(args: {
-  selectedFormat: string;
-  selectedExample: string;
-  example: Example;
-  state: AppState;
-  setState: Function;
-}) {
-  const {selectedFormat, selectedExample, example, state, setState} = args;
-
-  const url = example.data;
-  try {
-    //
-    console.log('Selecting example', example);
-    const viewState = {...state.viewState, ...example.viewState};
-
-    let tileSource = createTileSource(example);
-
-    setState((state) => ({
-      ...state,
-      selectedFormat,
-      selectedExample,
-      example,
-      viewState,
-      tileSource,
-      metadata: null
-    }));
-
-    (async () => {
-      const metadata = await tileSource.metadata; // getMetadata();
-      setState((state) => ({
-        ...state,
-        metadata
-      }));
-    })();
-  } catch (error) {
-    console.error('Failed to load data', url, error);
-    setState((state) => ({...state, error: `Could not load ${selectedExample}: ${error.message}`}));
-  }
 }

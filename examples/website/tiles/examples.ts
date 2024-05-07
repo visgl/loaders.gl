@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Example} from './components/example-panel';
+
 export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 
 // export const INITIAL_CATEGORY_NAME = 'MVT';
@@ -21,14 +23,6 @@ const VIEW_STATE = {
   pitch: 0,
   bearing: 0
 };
-
-export type Example = {
-  sourceType: 'mvt' | 'pmtiles' | 'table';
-  data: string;
-  attributions?: string[];
-  viewState?: Record<string, unknown>;
-  tileSize?: number[];
-}
 
 export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
