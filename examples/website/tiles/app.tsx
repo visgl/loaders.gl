@@ -33,7 +33,7 @@ const INITIAL_VIEW_STATE = {latitude: 47.65, longitude: 7, zoom: 2, maxZoom: 20}
 
 /** Application props (used by website MDX pages to configure example */
 type AppProps = {
-  /** Format */
+  /** Controls which examples are shown */
   format?: string;
   /** Show tile borders */
   showTileBorders?: boolean;
