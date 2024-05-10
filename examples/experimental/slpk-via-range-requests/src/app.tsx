@@ -12,7 +12,7 @@ import {COORDINATE_SYSTEM, I3SLoader, parseSLPKArchive} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {ControlPanel} from './components/control-panel';
 import {ZipFileSystem} from '@loaders.gl/zip';
-import {LoaderWithParser, RangeRequestFile} from '@loaders.gl/loader-utils';
+import {LoaderWithParser, HttpFile, FileProvider} from '@loaders.gl/loader-utils';
 import CustomTile3DLayer from './custom-tile-3d-layer';
 
 export const TRANSITION_DURAITON = 4000;
@@ -49,7 +49,7 @@ export default function App() {
 
     const createFileSystem = async (url: string) => {
       console.log("New url", url)
-      const fileProvider = await RangeRequestFile.create(url);
+      const fileProvider = await FileProvider.create(new HttpFile(url));
       const archive = await parseSLPKArchive(fileProvider, undefined, url);
       const fileSystem = new ZipFileSystem(archive);
       setFileSystem(fileSystem);
