@@ -2,8 +2,32 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// import type {DataSourceProps} from './data-source';
-// import {DataSource} from './data-source';
+import type {DataSourceProps} from './data-source';
+import {DataSource} from './data-source';
+
+/**
+ * Props for a TileSource
+ */
+export type TileSourceProps = DataSourceProps;
+
+/**
+ * MapTileSource - data sources that allow data to be queried by (geospatial) extents
+ * @note
+ * - If geospatial, bounding box is expected to be in web mercator coordinates
+ */
+export interface TileSource<
+  PropsT extends TileSourceProps = TileSourceProps,
+  MetadataT extends TileSourceMetadata = TileSourceMetadata
+> extends DataSource<PropsT> {
+  // extends DataSource {
+  getMetadata(): Promise<MetadataT>;
+  /** Flat parameters */
+  getTile(parameters: GetTileParameters): Promise<unknown | null>;
+  /** deck.gl compatibility: TileLayer and MTVLayer */
+  getTileData(parameters: GetTileDataParameters): Promise<unknown | null>;
+}
+
+// HELPER TYPES
 
 /**
  * Normalized capabilities of an tile service
@@ -89,20 +113,3 @@ export type TileBoundingBox = NonGeoBoundingBox | GeoBoundingBox;
 export type GeoBoundingBox = {west: number; north: number; east: number; south: number};
 /** deck.gl compatibility: bounding box */
 export type NonGeoBoundingBox = {left: number; top: number; right: number; bottom: number};
-
-/** Props for a TileSource */
-export type TileSourceProps = {}; // DataSourceProps;
-
-/**
- * MapTileSource - data sources that allow data to be queried by (geospatial) extents
- * @note
- * - If geospatial, bounding box is expected to be in web mercator coordinates
- */
-export interface TileSource<MetadataT extends TileSourceMetadata> {
-  // extends DataSource {
-  getMetadata(): Promise<MetadataT>;
-  /** Flat parameters */
-  getTile(parameters: GetTileParameters): Promise<unknown | null>;
-  /** deck.gl compatibility: TileLayer and MTVLayer */
-  getTileData(parameters: GetTileDataParameters): Promise<unknown | null>;
-}

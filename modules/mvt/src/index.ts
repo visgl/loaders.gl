@@ -13,5 +13,5 @@ export {MVTSource} from './mvt-source';
 
 // TableTileSource
 
-export type {TableTileSourceProps} from './table-tile-source';
+export type {GeoJSONTileSource, GeoJSONTileSourceProps} from './table-tile-source';
 export {TableTileSource} from './table-tile-source';

@@ -6,6 +6,7 @@ import type {LoaderOptions} from '@loaders.gl/loader-utils';
 
 /** Common properties for all data sources */
 export type DataSourceProps = {
+  url?: string | Blob;
   /** LoaderOptions provide an option to override `fetch`. Will also be passed to any sub loaders */
   loadOptions?: LoaderOptions;
 };

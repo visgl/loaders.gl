@@ -10,8 +10,8 @@ import {WMSSource} from '@loaders.gl/wms';
 const WMS_SERVICE_URL = 'https:/mock-wms-service';
 const WMS_VERSION = '1.3.0';
 
-test('WMSSource#', async (t) => {
-  const wmsService = new WMSSource({url: WMS_SERVICE_URL});
+test('WMSSource#constructor', async (t) => {
+  const wmsService = WMSSource.createDataSource(WMS_SERVICE_URL, {});
   const getCapabilitiesUrl = wmsService.getCapabilitiesURL();
 
   t.equal(
@@ -23,7 +23,7 @@ test('WMSSource#', async (t) => {
 });
 
 test('WMSSource#getMapURL', async (t) => {
-  let wmsService = new WMSSource({url: WMS_SERVICE_URL});
+  let wmsService = WMSSource.createDataSource(WMS_SERVICE_URL, {});
   let getMapUrl = wmsService.getMapURL({
     width: 800,
     height: 600,
@@ -37,7 +37,7 @@ test('WMSSource#getMapURL', async (t) => {
     'getMapURL layers in params'
   );
 
-  wmsService = new WMSSource({
+  wmsService = WMSSource.createDataSource({
     url: WMS_SERVICE_URL,
     wmsParameters: {layers: ['oms'], crs: 'EPSG:3857'}
   });
@@ -55,14 +55,14 @@ test('WMSSource#getMapURL', async (t) => {
 });
 
 test('WMSSource#getFeatureInfoURL', async (t) => {
-  // const wmsService = new WMSSource({url: WMS_SERVICE_URL});
+  // const wmsService = WMSSource.createDataSource({url: WMS_SERVICE_URL});
   // const getFeatureInfoUrl = wmsService.getFeatureInfoURL({x: 400, y: 300});
   // t.equal(getFeatureInfoUrl, 'https:/mock-wms-service?REQUEST=GetFeatureInfo', 'getFeatureInfoURL');
   t.end();
 });
 
 test('WMSSource#describeLayerURL', async (t) => {
-  const wmsService = new WMSSource({url: WMS_SERVICE_URL});
+  const wmsService = WMSSource.createDataSource({url: WMS_SERVICE_URL});
   const describeLayerUrl = wmsService.describeLayerURL({});
   t.equal(
     describeLayerUrl,
@@ -73,7 +73,7 @@ test('WMSSource#describeLayerURL', async (t) => {
 });
 
 test('WMSSource#getLegendGraphicURL', async (t) => {
-  const wmsService = new WMSSource({url: WMS_SERVICE_URL});
+  const wmsService = WMSSource.createDataSource({url: WMS_SERVICE_URL});
   const getLegendGraphicUrl = wmsService.getLegendGraphicURL({});
   t.equal(
     getLegendGraphicUrl,
@@ -85,7 +85,7 @@ test('WMSSource#getLegendGraphicURL', async (t) => {
 });
 
 test('WMSSource#WMS versions', async (t) => {
-  const wms111Service = new WMSSource({
+  const wms111Service = WMSSource.createDataSource({
     url: WMS_SERVICE_URL,
     wmsParameters: {version: '1.1.1', layers: ['oms']}
   });
@@ -99,7 +99,7 @@ test('WMSSource#WMS versions', async (t) => {
     'https:/mock-wms-service?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image/png&LAYERS=oms&STYLES=&SRS=EPSG:4326&WIDTH=800&HEIGHT=600&BBOX=30,70,35,75',
     'getMapURL replaces CRS with SRS in WMS 1.1.1'
   );
-  const wms130Service = new WMSSource({
+  const wms130Service = WMSSource.createDataSource({
     url: WMS_SERVICE_URL,
     substituteCRS84: true,
     wmsParameters: {version: '1.3.0', layers: ['oms']}
@@ -120,7 +120,11 @@ test('WMSSource#WMS versions', async (t) => {
 // TODO - move to image-source.spec.ts
 test('WMSSource#fetch override', async (t) => {
   const loadOptions = {fetch: {headers: {Authorization: 'Bearer abc'}}};
-  const wmsService = new WMSSource({url: WMS_SERVICE_URL, loadOptions, substituteCRS84: true});
+  const wmsService = WMSSource.createDataSource({
+    url: WMS_SERVICE_URL,
+    loadOptions,
+    substituteCRS84: true
+  });
   const generatedUrl = wmsService.getFeatureInfoURL({
     x: 1,
     y: 1,
@@ -154,7 +158,7 @@ test('WMSSource#fetch override', async (t) => {
 });
 
 test('WMSSource#getImage', async (t) => {
-  const wmsService = new WMSSource({url: WMS_SERVICE_URL});
+  const wmsService = WMSSource.createDataSource({url: WMS_SERVICE_URL});
   let getMapParameters;
 
   // @ts-ignore

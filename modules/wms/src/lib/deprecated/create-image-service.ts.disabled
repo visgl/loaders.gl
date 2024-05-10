@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {ImageSource, Service} from '@loaders.gl/loader-utils';
-import {ImageServiceProps} from './image-service';
+import {ImageService, ImageServiceProps} from './image-service';
 
 export type CreateImageServiceProps = ImageServiceProps & {
   type?: string | 'auto';
@@ -18,7 +18,7 @@ export type CreateImageServiceProps = ImageServiceProps & {
  */
 export function createImageService(
   props: CreateImageServiceProps,
-  services: Service[]
+  services: ImageService[]
 ): ImageSource {
   const {type = 'auto'} = props;
   const service: Service | null =
@@ -27,11 +27,11 @@ export function createImageService(
   if (!service) {
     throw new Error('Not a valid image source type');
   }
-  return service.create(props);
+  return service.createSource(props) as ImageService;
 }
 
 /** Guess service type from URL */
-function getServiceOfType(type: string, services: Service[]): Service | null {
+function getServiceOfType(type: string, services: ImageService[]): ImageService | null {
   // if (type === 'template') {
   //   return ImageService;
   // }
