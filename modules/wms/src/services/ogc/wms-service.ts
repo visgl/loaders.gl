@@ -30,29 +30,35 @@ export const WMSSource = {
   extensions: [],
   mimeTypes: [],
   options: {
-    url: undefined!,
     wms: {
       // TODO - add options here
     }
   },
   type: 'wms',
+  fromUrl: true,
+  fromBlob: false,
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
-  createDataSource: (url, props: WMSImageSourceProps) =>
-    new WMSImageSource({...props, url: url as string})
+  createDataSource: (url, props: WMSImageSourceProps) => new WMSImageSource(url as string, props)
 } as const satisfies Source<WMSImageSource, WMSImageSourceProps>;
 
 /** Properties for creating a enw WMS service */
 export type WMSImageSourceProps = ImageSourceProps & {
-  /** Base URL to the service */
-  url: string;
-  /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+  /** @deprecated Use props.wms.substituteCRS84 */
   substituteCRS84?: boolean;
-  /** Default WMS parameters. If not provided here, must be provided in the various request */
+  /** @deprecated Use props.wms.wmsParameters */
   wmsParameters?: WMSParameters;
-  /** Any additional service specific parameters */
+  /** @deprecated Use props.wms.vendorParameters */
   vendorParameters?: Record<string, unknown>;
-  wms?: {};
+  wms?: {
+    // TODO - move parameters inside WMS scope
+    /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+    substituteCRS84?: boolean;
+    /** Default WMS parameters. If not provided here, must be provided in the various request */
+    wmsParameters?: WMSParameters;
+    /** Any additional service specific parameters */
+    vendorParameters?: Record<string, unknown>;
+  };
 };
 
 // PARAMETER TYPES FOR WMS SOURCE
@@ -215,17 +221,17 @@ export class WMSImageSource extends ImageSource<WMSImageSourceProps> {
   capabilities: WMSCapabilities | null = null;
 
   /** Create a WMSImageSource */
-  constructor(props: WMSImageSourceProps) {
+  constructor(url: string, props: WMSImageSourceProps) {
     super(props);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WMS URL more likely to make this class just work.
     // const {baseUrl, parameters} = this._parseWMSUrl(props.url);
 
-    this.url = props.url;
-    this.data = props.url;
+    this.url = url;
+    this.data = url;
 
-    this.substituteCRS84 = props.substituteCRS84 ?? false;
+    this.substituteCRS84 = props.wms?.substituteCRS84 ?? props.substituteCRS84 ?? false;
     this.flipCRS = ['EPSG:4326'];
 
     this.wmsParameters = {
@@ -239,10 +245,11 @@ export class WMSImageSource extends ImageSource<WMSImageSourceProps> {
       transparent: undefined!,
       time: undefined!,
       elevation: undefined!,
-      ...props.wmsParameters
+      ...props.wmsParameters, // deprecated
+      ...props.wms?.wmsParameters
     };
 
-    this.vendorParameters = props.vendorParameters || {};
+    this.vendorParameters = props.wms?.vendorParameters || props.vendorParameters || {};
   }
 
   // ImageSource implementation

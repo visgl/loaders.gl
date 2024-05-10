@@ -12,7 +12,7 @@ import type {DataSource, DataSourceProps} from './lib/sources/data-source';
  */
 export interface Source<
   DataSourceT extends DataSource = DataSource,
-  DataSourcePropsT extends DataSourceProps = DataSourceProps
+  DataSourcePropsT extends DataSourceProps = any // TODO - DataSourceProps
 > {
   /** Type of source created by this service */
   source?: DataSourceT;
@@ -34,6 +34,9 @@ export interface Source<
   options: DataSourcePropsT;
 
   type: string;
+  fromUrl: boolean;
+  fromBlob: boolean;
+
   /** Check if a URL can support this service */
   testURL: (url: string) => boolean;
   /** Test data */
