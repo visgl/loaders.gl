@@ -1,13 +1,13 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import {FileProvider} from './file-provider';
+import {FileProviderInterface} from './file-provider-interface';
 
 /**
  * Provides file data using range requests to the server
  * @deprecated - will be replaced with ReadableFile
  */
-export class RangeRequestFile implements FileProvider {
+export class RangeRequestFile implements FileProviderInterface {
   /** The File object from which data is provided */
   private url: string;
   private size: bigint;

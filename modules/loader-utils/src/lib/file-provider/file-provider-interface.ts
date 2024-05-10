@@ -2,7 +2,7 @@
  * Interface for providing file data
  * @deprecated - will be replaced with ReadableFile
  */
-export interface FileProvider {
+export interface FileProviderInterface {
   /**
    * Cleanup class data
    */
@@ -50,8 +50,8 @@ export interface FileProvider {
  */
 export const isFileProvider = (fileProvider: unknown) => {
   return (
-    (fileProvider as FileProvider)?.getUint8 &&
-    (fileProvider as FileProvider)?.slice &&
-    (fileProvider as FileProvider)?.length
+    (fileProvider as FileProviderInterface)?.getUint8 &&
+    (fileProvider as FileProviderInterface)?.slice &&
+    (fileProvider as FileProviderInterface)?.length
   );
 };

@@ -1,13 +1,13 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProviderInterface} from '@loaders.gl/loader-utils';
 
 /**
  * Provides file data using node fs library
  * @deprecated - will be replaced with ReadableFile
  */
-export class BrowserFile implements FileProvider {
+export class BrowserFile implements FileProviderInterface {
   /** The File object from which data is provided */
   private file: File;
 

@@ -4,7 +4,7 @@
 
 import {
   DataViewFile,
-  FileProvider,
+  FileProviderInterface,
   compareArrayBuffers,
   concatenateArrayBuffers
 } from '@loaders.gl/loader-utils';
@@ -66,7 +66,7 @@ export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x01, 0x02]);
  */
 export const parseZipCDFileHeader = async (
   headerOffset: bigint,
-  file: FileProvider
+  file: FileProviderInterface
 ): Promise<ZipCDFileHeader | null> => {
   if (headerOffset >= file.length) {
     return null;
@@ -127,7 +127,7 @@ export const parseZipCDFileHeader = async (
  * @param fileProvider - file provider that provider random access to the file
  */
 export async function* makeZipCDHeaderIterator(
-  fileProvider: FileProvider
+  fileProvider: FileProviderInterface
 ): AsyncIterable<ZipCDFileHeader> {
   const {cdStartOffset, cdByteSize} = await parseEoCDRecord(fileProvider);
   const centralDirectory = new DataViewFile(

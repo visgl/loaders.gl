@@ -133,8 +133,8 @@ export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesys
 export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-filesystem-facade';
 
 // TODO - replace with ReadableFile
-export type {FileProvider} from './lib/file-provider/file-provider';
-export {isFileProvider} from './lib/file-provider/file-provider';
+export type {FileProviderInterface} from './lib/file-provider/file-provider-interface';
+export {isFileProvider} from './lib/file-provider/file-provider-interface';
 export {FileHandleFile} from './lib/file-provider/file-handle-file';
 export {DataViewFile} from './lib/file-provider/data-view-file';
 export {RangeRequestFile} from './lib/file-provider/range-request-file';

@@ -1,4 +1,4 @@
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProviderInterface} from '@loaders.gl/loader-utils';
 import {ZipFileSystem} from './zip-filesystem';
 
 /**
@@ -6,7 +6,7 @@ import {ZipFileSystem} from './zip-filesystem';
  * a hash file inside that allows to increase reading speed
  */
 export abstract class IndexedArchive {
-  public fileProvider: FileProvider;
+  public fileProvider: FileProviderInterface;
   public fileName?: string;
 
   /**
@@ -15,7 +15,11 @@ export abstract class IndexedArchive {
    * @param hashTable - pre-loaded hashTable. If presented, getFile will skip reading the hash file
    * @param fileName - name of the archive. It is used to add to an URL of a loader context
    */
-  constructor(fileProvider: FileProvider, hashTable?: Record<string, bigint>, fileName?: string) {
+  constructor(
+    fileProvider: FileProviderInterface,
+    hashTable?: Record<string, bigint>,
+    fileName?: string
+  ) {
     this.fileProvider = fileProvider;
     this.fileName = fileName;
   }
