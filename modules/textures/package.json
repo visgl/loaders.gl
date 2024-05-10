@@ -59,7 +59,7 @@
     "@loaders.gl/schema": "4.3.0-alpha.1",
     "@loaders.gl/worker-utils": "4.3.0-alpha.1",
     "@math.gl/types": "^4.0.1",
-    "ktx-parse": "^0.0.4",
+    "ktx-parse": "^0.7.0",
     "texture-compressor": "^1.0.2"
   },
   "peerDependencies": {

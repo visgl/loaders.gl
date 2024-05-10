@@ -133,6 +133,7 @@ test('BasisLoader#auto-select a decoder format', async (t) => {
   });
   const ktx2Image = ktx2Images[0];
   t.ok(ktx2Image, 'Transcode .ktx2');
+  t.is(ktx2Image.length, 10, 'Transcode .ktx2 mips');
 
   t.end();
 });

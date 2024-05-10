@@ -2650,7 +2650,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.3.0-alpha.1"
     "@loaders.gl/worker-utils": "npm:4.3.0-alpha.1"
     "@math.gl/types": "npm:^4.0.1"
-    ktx-parse: "npm:^0.0.4"
+    ktx-parse: "npm:^0.7.0"
     texture-compressor: "npm:^1.0.2"
   peerDependencies:
     "@loaders.gl/core": ^4.0.0
@@ -9770,10 +9770,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ktx-parse@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "ktx-parse@npm:0.0.4"
-  checksum: 10c0/806d5005696c25147dcc9aa6a2033587041fb391c58faaecd88b94ad17b3edfc145d3d69746a218f569600e8e9c7116886e70251c5fd1c813086a093271643b2
+"ktx-parse@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "ktx-parse@npm:0.7.0"
+  checksum: 10c0/5953518c1c895ae05c8f12a22d46aadbd0885b6f018e82198d31085a73b6ffa351ab5d2ae740823a1eb503042a52d7e31cdb5cbf5ddbfcad819663b49f1fbf42
   languageName: node
   linkType: hard
 
