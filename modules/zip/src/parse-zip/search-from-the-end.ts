@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProviderInterface} from '@loaders.gl/loader-utils';
 
 /** Description of zip signature type */
 export type ZipSignature = Uint8Array;
@@ -16,7 +16,7 @@ const buffLength = 1024;
  * @returns
  */
 export const searchFromTheEnd = async (
-  file: FileProvider,
+  file: FileProviderInterface,
   target: ZipSignature
 ): Promise<bigint> => {
   const searchWindow = [

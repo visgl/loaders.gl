@@ -4,7 +4,7 @@
 
 import {MD5Hash} from '@loaders.gl/crypto';
 import {
-  FileProvider,
+  FileProviderInterface,
   concatenateArrayBuffers,
   concatenateArrayBuffersFromArray
 } from '@loaders.gl/loader-utils';
@@ -42,7 +42,7 @@ function bufferToHex(buffer: ArrayBuffer, start: number, length: number): string
  * @returns ready to use hash info
  */
 export async function makeHashTableFromZipHeaders(
-  fileProvider: FileProvider
+  fileProvider: FileProviderInterface
 ): Promise<Record<string, bigint>> {
   const zipCDIterator = makeZipCDHeaderIterator(fileProvider);
   return getHashTable(zipCDIterator);

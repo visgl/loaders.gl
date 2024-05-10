@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {
+  FileProviderInterface,
+  compareArrayBuffers,
+  concatenateArrayBuffers
+} from '@loaders.gl/loader-utils';
 import {ZipSignature} from './search-from-the-end';
 import {createZip64Info, setFieldToNumber} from './zip64-info-generation';
 
@@ -43,7 +47,7 @@ export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
  */
 export const parseZipLocalFileHeader = async (
   headerOffset: bigint,
-  file: FileProvider
+  file: FileProviderInterface
 ): Promise<ZipLocalFileHeader | null> => {
   const mainHeader = new DataView(await file.slice(headerOffset, headerOffset + FILE_NAME_OFFSET));
 

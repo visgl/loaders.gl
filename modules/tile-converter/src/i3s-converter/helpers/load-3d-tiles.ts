@@ -6,7 +6,7 @@ import type {
 } from '@loaders.gl/3d-tiles';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {LoaderWithParser, load} from '@loaders.gl/core';
-import {FileHandleFile, FileProvider} from '@loaders.gl/loader-utils';
+import {FileHandleFile, FileProviderInterface} from '@loaders.gl/loader-utils';
 import {
   CD_HEADER_SIGNATURE,
   ZipFileSystem,
@@ -142,7 +142,7 @@ export function isNestedTileset(tile: Tiles3DTileJSONPostprocessed) {
  * @returns hash table of the 3TZ file content or undefined if the hash file is not presented inside
  */
 async function loadHashTable(
-  fileProvider: FileProvider
+  fileProvider: FileProviderInterface
 ): Promise<undefined | Record<string, bigint>> {
   let hashTable: undefined | Record<string, bigint>;
 

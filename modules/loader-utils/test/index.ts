@@ -22,5 +22,6 @@ import './lib/request-utils/request-scheduler.spec';
 
 import './lib/file-provider/data-view-file.spec';
 import './lib/file-provider/file-handle-file.spec';
+import './lib/file-provider/file-provider.spec';
 
 import './lib/worker-loader-utils/parse-with-worker.spec';

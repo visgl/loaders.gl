@@ -1,5 +1,5 @@
 import {MD5Hash} from '@loaders.gl/crypto';
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProviderInterface} from '@loaders.gl/loader-utils';
 import {IndexedArchive, parseZipLocalFileHeader} from '@loaders.gl/zip';
 import {GZipCompression} from '@loaders.gl/compression';
 
@@ -56,7 +56,11 @@ export class SLPKArchive extends IndexedArchive {
    * @param hashTable - pre-loaded hashTable. If presented, getFile will skip reading the hash file
    * @param fileName - name of the archive. It is used to add to an URL of a loader context
    */
-  constructor(fileProvider: FileProvider, hashTable?: Record<string, bigint>, fileName?: string) {
+  constructor(
+    fileProvider: FileProviderInterface,
+    hashTable?: Record<string, bigint>,
+    fileName?: string
+  ) {
     super(fileProvider, hashTable, fileName);
     this.hashTable = hashTable;
   }
