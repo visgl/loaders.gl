@@ -76,6 +76,80 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
           properties
         };
       }
+    },
+    'Major rivers (gzip)': {
+      format: 'geoparquet',
+      data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/geoparquet/major-rivers/major-rivers_0.4.0_gzip.parquet',
+      viewState: {
+        height: 600,
+        width: 800,
+        pitch: 45,
+        maxPitch: 60,
+        bearing: 0,
+        minZoom: 1,
+        maxZoom: 30,
+        zoom: 1.76,
+        longitude: -4.65,
+        latitude: -29.76
+      },
+      getTooltipData: function ({object}) {
+        const {NAME, ...properties} = object?.properties || {};
+        return {
+          title: NAME as string,
+          properties
+        };
+      }
+    },
+    'Fort Collins streets (brotli)': {
+      format: 'geoparquet',
+      data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/geoparquet/fort-collins-streets/fort-collins-streets_0.4.0_brotli.parquet',
+      viewState: {
+        height: 600,
+        width: 800,
+        pitch: 45,
+        maxPitch: 60,
+        bearing: 0,
+        minZoom: 1,
+        maxZoom: 30,
+        zoom: 13,
+        longitude: -105.073,
+        latitude: 40.542
+      },
+      getTooltipData: function ({object}) {
+        const {STRNAME, ...properties} = object?.properties || {};
+        return {
+          title: STRNAME as string,
+          properties
+        };
+      }
+    },
+    'Fort Collins address (no_compression)': {
+      format: 'geoparquet',
+      data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/geoparquet/fort-collins-address/fort-collins-address_0.4.0_no_compression.parquet',
+      viewState: {
+        height: 600,
+        width: 800,
+        pitch: 45,
+        maxPitch: 60,
+        bearing: 0,
+        minZoom: 1,
+        maxZoom: 30,
+        longitude: -105.1003626,
+        latitude: 40.5529294,
+        zoom: 13
+      },
+      layerProps: {
+        getPointRadius: 5,
+        pointRadiusScale: 1,
+        pointRadiusUnits: 'meters'
+      },
+      getTooltipData: function ({object}) {
+        const {STRNAME, UNIT, NUMBER, ...properties} = object?.properties || {};
+        return {
+          title: `${UNIT || NUMBER} ${STRNAME}`,
+          properties
+        };
+      }
     }
   },
   GeoJSON: {
@@ -201,17 +275,23 @@ function getGeoParquetTestExamples() {
         longitude: -105.1003626,
         latitude: 40.5529294,
         zoom: 13
+      },
+      layerProps: {
+        getPointRadius: 5,
+        pointRadiusScale: 1,
+        pointRadiusUnits: 'meters'
       }
     }
   ];
 
   for (const file of files) {
-    const {name, urlPrefix, hasZstd, viewState} = file;
+    const {name, urlPrefix, hasZstd, layerProps, viewState} = file;
     for (const compression of compressions) {
       const data = `${DECKGL_DATA_URL}${PARQUET_PATH}/${urlPrefix}_${PARQUET_VERSION}_${compression}${parquetExtension}`;
       GeoParquet[`${name} (${compression})`] = {
         format: 'geoparquet',
         data,
+        layerProps,
         viewState: {
           ...VIEW_STATE,
           longitude: -4.65,
@@ -226,6 +306,7 @@ function getGeoParquetTestExamples() {
       GeoParquet[`${name} (zstd)`] = {
         format: 'geoparquet',
         data,
+        layerProps,
         viewState: {
           ...VIEW_STATE,
           longitude: -4.65,

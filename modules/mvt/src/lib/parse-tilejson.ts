@@ -16,11 +16,6 @@ export type TileJSON = {
   tileFormat?: string;
   tilesetType?: string;
 
-  /** Generating application. Tippecanoe adds this. */
-  generator?: string;
-  /** Generating application options. Tippecanoe adds this. */
-  generatorOptions?: string;
-
   /** Tile indexing scheme */
   scheme?: 'xyz' | 'tms';
   /** Sharded URLs */
@@ -37,6 +32,11 @@ export type TileJSON = {
 
   // Combination of tilestats (if present) and tilejson layer information
   layers?: TileJSONLayer[];
+
+  /** Generating application. Tippecanoe adds this. */
+  generator?: string;
+  /** Generating application options. Tippecanoe adds this. */
+  generatorOptions?: string;
 
   /** Any nested JSON metadata */
   metaJson?: any | null;

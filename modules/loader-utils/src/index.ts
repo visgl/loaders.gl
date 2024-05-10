@@ -146,19 +146,16 @@ export type {Service} from './service-types';
 export type {DataSourceProps} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 
+export {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';
 export type {ImageSourceProps, ImageSourceMetadata} from './lib/sources/image-source';
 export type {GetImageParameters} from './lib/sources/image-source';
-export {ImageSource} from './lib/sources/image-source';
 
-export type {
-  TileSourceProps,
-  TileSourceMetadata,
-  GetTileParameters,
-  TileLoadParameters
-} from './lib/sources/tile-source';
-export type {TileSource} from './lib/sources/tile-source';
+export type {TileSource, TileSourceProps} from './lib/sources/tile-source';
+export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
+export type {GetTileDataParameters} from './lib/sources/tile-source';
 
 export type {ImageTileSource} from './lib/sources/image-tile-source';
 
-export type {VectorTileSource} from './lib/sources/vector-tile-source';
+export type {VectorTileSource, VectorTileSourceProps} from './lib/sources/vector-tile-source';
+export type {VectorTile} from './lib/sources/vector-tile-source';

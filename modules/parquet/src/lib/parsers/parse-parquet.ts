@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {default as log} from '@probe.gl/log';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
 
@@ -35,9 +36,18 @@ export async function parseParquetFile(
 
   const rowBatches = reader.rowBatchIterator(options?.parquet);
   for await (const rowBatch of rowBatches) {
+    let limitHasReached = false;
     // we have only one input batch so return
     for (const row of rowBatch) {
+      if (options?.limit && rows.length >= options?.limit) {
+        limitHasReached = true;
+        break;
+      }
       rows.push(row);
+    }
+    if (limitHasReached) {
+      log.warn(`Rows number limit has been reached. Only first ${options?.limit} are loaded`)();
+      break;
     }
   }
   const objectRowTable: ObjectRowTable = {

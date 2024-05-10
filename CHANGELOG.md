@@ -1,5 +1,18 @@
 # CHANGELOG for loaders.gl
 
+## v4.3
+
+### v4.3.0-alpha.1
+
+- fix(tile-converter): failing i3s-server (#2980)
+- chore: Standardize tileIndex zoom->z (#2976)
+- chore(mvt): loader and source cleanup (#2975)
+- feat(parquet): support 'limit' option (#2973)
+- chore(mvt): Deduplicate vector tile code (#2974)
+- feat(mvt): TableTileSource (#2969)
+- chore(mvt): refactor for clarity (#2971)
+- docs: v4.2 release notes (#2963)
+
 ## v4.2
 
 ### v4.2.0
@@ -744,7 +757,7 @@
 - feat(wms): New WMS loader module (#2292)
 - chore(deps): bump @xmldom/xmldom from 0.7.6 to 0.7.7 (#2287)
 - chore(deps): bump loader-utils from 1.4.1 to 1.4.2 in /website (#2290)
-- chore(mvt): convert GeoJSONTiler to TypeScript (#2294)
+- chore(mvt): convert TableTiler to TypeScript (#2294)
 - feat(mvt): automatic tile generation from GeoJSON (geojson-vt fork). (#2293)
 - fix(tile-converter): lint error (#2289)
 - feat(xml): New XML loader module (#2291)

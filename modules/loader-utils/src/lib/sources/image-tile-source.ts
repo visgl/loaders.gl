@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ImageType} from './utils/image-type';
-import type {TileSource, TileSourceMetadata} from './tile-source';
-import type {GetTileParameters} from './tile-source';
+import type {TileSource, TileSourceMetadata, GetTileParameters} from './tile-source';
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) tile

@@ -44,7 +44,7 @@ The parser will return an array of [GeoJSON objects](https://tools.ietf.org/html
 import {MVTLoader} from '@loaders.gl/mvt';
 import {load} from '@loaders.gl/core';
 
-const loaderOptions = {
+const geoJSONfeatures = await load(url, MVTLoader,  {
   mvt: {
     coordinates: 'wgs84',
     tileIndex: {
@@ -53,9 +53,7 @@ const loaderOptions = {
       z: zTileIndex
     }
   }
-};
-
-const geoJSONfeatures = await load(url, MVTLoader, loaderOptions);
+});
 ```
 
 ### GeoJSON with local coordinates
@@ -70,6 +68,8 @@ Note that local coordinates are relative to tile origin, which is in the top lef
 import {MVTLoader} from '@loaders.gl/mvt';
 import {load} from '@loaders.gl/core';
 
+const geoJSONfeatures = await load(url, MVTLoader);
+
 /*
  * Default loader options are:
  *
@@ -80,21 +80,20 @@ import {load} from '@loaders.gl/core';
  * }
  */
 
-const geoJSONfeatures = await load(url, MVTLoader);
 ```
 
 ## Options
 
-| Option            | Type                                         | Default     | Description                                                                                                                                                                                                                                                                            |
-| ----------------- | -------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| gis.binary        | Boolean                                      | `null`      | When set to `true`, the parser will output the data in binary format. This is equivalent to loading the data as GeoJSON and then applying [geojsonToBinary](/docs/modules/gis/api-reference/geojson-to-binary).                                                                         |
-| mvt.coordinates   | `'local' | 'wgs84'`                          | `local`     | When set to `wgs84`, the parser will return a flat array of GeoJSON objects with coordinates in longitude, latitude decoded from the provided tile index. When set to `local`, the parser will return a flat array of GeoJSON objects with local coordinates decoded from tile origin. |
-| mvt.layerProperty | String                                       | `layerName` | When non-`null`, the layer name of each feature is added to `feature.properties[layerProperty]`. (A `feature.properties` object is created if the feature has no existing properties). If set to `null`, a layer name property will not be added.                                      |
-| mvt.layers        | String[]                                     | `null`      | Optional list of layer names. If not `null`, only features belonging to the named layers will be included in the output. If `null`, features from all layers are returned.                                                                                                             |
-| mvt.tileIndex     | Object (`{x: number, y: number, z: number}`) | `null`      | Mandatory with `wgs84` coordinates option. An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84.                                                                                                                                       |
+| Option            | Type                                | Default       | Description                                                                                                                                                 |
+| ----------------- | ----------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| mvt.shape         | `'geojson'                          | `binary`      | `geojson`: returns GeoJSON objects. `binary`: returns binary                                                                                          data. |
+| mvt.coordinates   | `'local'                            | `local`       | `wgs84`: returns coordinates in longitude, latitude using the provided tile index. `local` returns local `0-1` coordinates relative to the tile origin.     |
+| mvt.tileIndex     | `{x: number, y: number, z: number}` | N/A           | When the `wgs84` coordinates option, the index of the tile being loaded (`x`, `y`, `z`) must be supplied.                                                   |
+| mvt.layerProperty | `string \| null`                    | `'layerName'` | When non-`null`, the layer name of each feature is added to `feature.properties[layerProperty]`. If `null`, a layer name property will not be added.        |
+| mvt.layers        | `string[]`                          | N/A           | If provided, only features belonging to the named layers will be included, otherwise features from all layers are returned.                                 |
 
 If you want to know more about how geometries are encoded into MVT tiles, please read [this documentation section](https://docs.mapbox.com/vector-tiles/specification/#encoding-geometry).
 
 ## Attribution
 
-The `MVTLoader` uses [`@mapbox/vector-tile`](https://github.com/mapbox/vector-tile-js) module under the BSD-3-Clause.
+The `MVTLoader` is a fork of [`@mapbox/vector-tile`](https://github.com/mapbox/vector-tile-js) module under the BSD-3-Clause.

@@ -19,23 +19,25 @@ const sidebars = {
       type: 'category',
       label: 'Geospatial Table Loaders',
       items: [
-        'flatgeobuf',
-        'geoarrow',
-        'geoparquet',
-        'geojson',
+        'geospatial/flatgeobuf',
+        'geospatial/geoarrow',
+        'geospatial/geoparquet',
+        'geospatial/geopackage',
+        'geospatial/geojson',
         'geospatial/shapefile',
         'geospatial/kml',
         'geospatial/gpx',
         'geospatial/tcx',
-        'geopackage'
       ]
     },
     {
       type: 'category',
       label: 'Geospatial Tile Loaders',
       items: [
-        'pmtiles',
-        'wms',
+        'tiles/mvt',
+        'tiles/pmtiles',
+        'tiles/table-tiler',
+        'tiles/wms',
         'i3s-building-scene-layer',
         'i3s-picking',
         'i3s-colorization-by-attributes',

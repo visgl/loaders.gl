@@ -14,7 +14,7 @@ import dracoBench from '@loaders.gl/draco/test/draco.bench';
 import excelBench from '@loaders.gl/excel/test/excel.bench';
 import imageBench from '@loaders.gl/images/test/images.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
-import mvtBench from '@loaders.gl/mvt/test/mvt-loader.bench';
+// import mvtBench from '@loaders.gl/mvt/test/mvt-loader.bench';
 import {parquetBench} from '@loaders.gl/parquet/test/parquet.bench';
 import shapefileBench from '@loaders.gl/shapefile/test/shapefile.bench';
 
@@ -33,7 +33,7 @@ export async function addModuleBenchmarksToSuite(suite) {
 
   // await shapefileBench(suite);
 
-  await mvtBench(suite);
+  // await mvtBench(suite);
   await loaderUtilsBench(suite);
 
   await imageBench(suite);

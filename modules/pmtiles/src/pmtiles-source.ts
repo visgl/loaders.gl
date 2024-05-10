@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TileLoadParameters, GetTileParameters} from '@loaders.gl/loader-utils';
+import type {Schema} from '@loaders.gl/schema';
+import type {GetTileParameters, GetTileDataParameters} from '@loaders.gl/loader-utils';
 import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
@@ -75,6 +76,10 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
     this.metadata = this.getMetadata();
   }
 
+  async getSchema(): Promise<Schema> {
+    return {fields: [], metadata: {}};
+  }
+
   async getMetadata(): Promise<PMTilesMetadata> {
     const pmtilesHeader = await this.pmtiles.getHeader();
     const pmtilesMetadata = await this.pmtiles.getMetadata();
@@ -96,7 +101,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   }
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
-    const {x, y, zoom: z} = tileParams;
+    const {x, y, z} = tileParams;
     const rangeResponse = await this.pmtiles.getZxy(z, x, y);
     const arrayBuffer = rangeResponse?.data;
     if (!arrayBuffer) {
@@ -109,14 +114,14 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   // Tile Source interface implementation: deck.gl compatible API
   // TODO - currently only handles image tiles, not vector tiles
 
-  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
+  async getTileData(tileParams: GetTileDataParameters): Promise<any> {
     const {x, y, z} = tileParams.index;
     const metadata = await this.metadata;
     switch (metadata.tileMIMEType) {
       case 'application/vnd.mapbox-vector-tile':
-        return await this.getVectorTile({x, y, zoom: z, layers: []});
+        return await this.getVectorTile({x, y, z, layers: []});
       default:
-        return await this.getImageTile({x, y, zoom: z, layers: []});
+        return await this.getImageTile({x, y, z, layers: []});
     }
   }
 
@@ -135,7 +140,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
       shape: 'geojson-table',
       mvt: {
         coordinates: 'wgs84',
-        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.zoom},
+        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         ...(this.loadOptions as MVTLoaderOptions)?.mvt
       },
       ...this.loadOptions
