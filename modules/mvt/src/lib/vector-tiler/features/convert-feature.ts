@@ -7,16 +7,16 @@
 // @ts-nocheck
 
 import type {Feature, FeatureCollection} from '@loaders.gl/schema';
-import type {TableTileFeature} from './tile';
+import type {ProtoFeature} from './proto-feature';
 
-import {simplify} from './simplify';
-import {createFeature} from './feature';
+import {simplify} from './simplify-path';
+import {createFeature} from './proto-feature';
 
 /**
  * converts a GeoJSON feature into an intermediate projected JSON vector format
  * with simplification data
  */
-export function convert(data: Feature | FeatureCollection, options): TableTileFeature[] {
+export function convert(data: Feature | FeatureCollection, options): ProtoFeature[] {
   const features = [];
   if (data.type === 'FeatureCollection') {
     for (let i = 0; i < data.features.length; i++) {
@@ -48,7 +48,7 @@ export type ConvertFeatureOptions = {
  * with simplification data
  */
 function convertFeature(
-  features: TableTileFeature[],
+  features: ProtoFeature[],
   geojson: Feature,
   options: ConvertFeatureOptions,
   index: number

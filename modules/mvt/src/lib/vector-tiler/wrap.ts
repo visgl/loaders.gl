@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import type {TableTileFeature} from './tile';
+import type {ProtoFeature} from './features/proto-feature';
+import {createFeature} from './features/proto-feature';
 import {clip} from './clip';
-import {createFeature} from './feature';
 
 /**
  * Options for wrap()
@@ -22,9 +22,9 @@ export type WrapOptions = {
  * @param options buffer and extent
  * @returns
  */
-export function wrap(features: TableTileFeature[], options: WrapOptions) {
+export function wrap(features: ProtoFeature[], options: WrapOptions) {
   const buffer = options.buffer / options.extent;
-  let merged: TableTileFeature[] = features;
+  let merged: ProtoFeature[] = features;
   const left = clip(features, 1, -1 - buffer, buffer, 0, -1, 2, options); // left world copy
   const right = clip(features, 1, 1 - buffer, 2 + buffer, 0, -1, 2, options); // right world copy
 
@@ -48,8 +48,8 @@ export function wrap(features: TableTileFeature[], options: WrapOptions) {
  * @param offset
  * @returns
  */
-function shiftFeatureCoords(features: TableTileFeature[], offset: number): TableTileFeature[] {
-  const newFeatures: TableTileFeature[] = [];
+function shiftFeatureCoords(features: ProtoFeature[], offset: number): ProtoFeature[] {
+  const newFeatures: ProtoFeature[] = [];
 
   for (let i = 0; i < features.length; i++) {
     const feature = features[i];
