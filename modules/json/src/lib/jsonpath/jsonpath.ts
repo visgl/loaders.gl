@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /**
  * A parser for a minimal subset of the jsonpath standard
  * Full JSON path parsers for JS exist but are quite large (bundle size)
