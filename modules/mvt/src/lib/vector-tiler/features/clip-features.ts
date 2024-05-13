@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import type {ProtoFeature} from './features/proto-feature';
-import {createFeature} from './features/proto-feature';
+import type {ProtoFeature} from './proto-feature';
+import {createFeature} from './proto-feature';
 
 /* eslint-disable no-continue */
 
@@ -20,7 +20,7 @@ import {createFeature} from './features/proto-feature';
  * @param minAll and maxAll: minimum and maximum coordinate value for all features
  */
 // eslint-disable-next-line max-params, complexity, max-statements
-export function clip(
+export function clipFeatures(
   features: ProtoFeature[],
   scale: number,
   k1: number,

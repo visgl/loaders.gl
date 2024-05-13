@@ -3,14 +3,14 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import type {ProtoFeature} from './features/proto-feature';
-import {createFeature} from './features/proto-feature';
-import {clip} from './clip';
+import type {ProtoFeature} from './proto-feature';
+import {createFeature} from './proto-feature';
+import {clipFeatures} from './clip-features';
 
 /**
  * Options for wrap()
  */
-export type WrapOptions = {
+export type WrapFeaturesOptions = {
   buffer: number /** number of pixels of buffer for the tile */;
   extent: number /** extent of each tile */;
   lineMetrics: boolean;
@@ -18,18 +18,18 @@ export type WrapOptions = {
 
 /**
  * Wrap across antemeridian, by clipping into two tiles, shifting the overflowing x coordinates
- * @param features list of features to be wrapped
+ * @param list of features to be wrapped
  * @param options buffer and extent
  * @returns
  */
-export function wrap(features: ProtoFeature[], options: WrapOptions) {
+export function wrapFeatures(features: ProtoFeature[], options: WrapFeaturesOptions) {
   const buffer = options.buffer / options.extent;
   let merged: ProtoFeature[] = features;
-  const left = clip(features, 1, -1 - buffer, buffer, 0, -1, 2, options); // left world copy
-  const right = clip(features, 1, 1 - buffer, 2 + buffer, 0, -1, 2, options); // right world copy
+  const left = clipFeatures(features, 1, -1 - buffer, buffer, 0, -1, 2, options); // left world copy
+  const right = clipFeatures(features, 1, 1 - buffer, 2 + buffer, 0, -1, 2, options); // right world copy
 
   if (left || right) {
-    merged = clip(features, 1, -buffer, 1 + buffer, 0, -1, 2, options) || []; // center world copy
+    merged = clipFeatures(features, 1, -buffer, 1 + buffer, 0, -1, 2, options) || []; // center world copy
 
     if (left) {
       merged = shiftFeatureCoords(left, 1).concat(merged); // merge left into center

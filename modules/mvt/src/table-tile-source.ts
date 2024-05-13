@@ -16,8 +16,8 @@ import {Stats, Stat} from '@probe.gl/stats';
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
 import type {ProtoTile} from './lib/vector-tiler/proto-tile';
 import {convert} from './lib/vector-tiler/features/convert-feature'; // GeoJSON conversion and preprocessing
-import {clip} from './lib/vector-tiler/clip'; // stripe clipping algorithm
-import {wrap} from './lib/vector-tiler/wrap'; // date line processing
+import {clipFeatures} from './lib/vector-tiler/features/clip-features'; // stripe clipping algorithm
+import {wrapFeatures} from './lib/vector-tiler/features/wrap-features'; // date line processing
 import {transformTile} from './lib/vector-tiler/transform-tile'; // coordinate transformation
 import {createTile} from './lib/vector-tiler/proto-tile'; // final simplified tile generation
 
@@ -201,7 +201,7 @@ export class TableTileSource implements VectorTileSource<any> {
     // wraps features (ie extreme west and extreme east)
     log.time(1, 'generate tiles')();
 
-    features = wrap(features, this.props);
+    features = wrapFeatures(features, this.props);
 
     // start slicing from the top tile down
     if (features.length === 0) {
@@ -378,21 +378,21 @@ export class TableTileSource implements VectorTileSource<any> {
       let tr: ProtoFeature[] | null = null;
       let br: ProtoFeature[] | null = null;
 
-      let left = clip(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, this.props);
-      let right = clip(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, this.props);
+      let left = clipFeatures(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, this.props);
+      let right = clipFeatures(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, this.props);
 
       // @ts-expect-error - unclear why this is needed?
       features = null;
 
       if (left) {
-        tl = clip(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
-        bl = clip(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
+        tl = clipFeatures(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
+        bl = clipFeatures(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
         left = null;
       }
 
       if (right) {
-        tr = clip(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
-        br = clip(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
+        tr = clipFeatures(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
+        br = clipFeatures(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
         right = null;
       }
 
