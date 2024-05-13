@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // geojson-vt
-import './lib/vector-tiler/clip.spec';
+import './lib/vector-tiler/clip-features.spec';
 import './lib/vector-tiler/simplify-path.spec';
 // './get-tile.spec.ts' Was used as basis for geojson-tile-source.spec
 // './full.spec'  Was used as basis for geojson-tile-source-full.spec

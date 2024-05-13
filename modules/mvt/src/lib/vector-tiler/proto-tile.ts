@@ -6,6 +6,7 @@
 // import type {Feature} from '@loaders.gl/schema';
 
 import type {ProtoFeature} from './features/proto-feature';
+
 export type ProtoTile = {
   features: ProtoFeature[]; // Feature[]; Doesn't seem JSON compatible??
   type?: number;
