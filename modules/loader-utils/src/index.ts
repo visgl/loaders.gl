@@ -140,6 +140,7 @@ export {DataViewFile} from './lib/file-provider/data-view-file';
 
 // EXPERIMENTAL: DATA SOURCES
 export type {Service} from './service-types';
+export type {Source} from './source-types';
 
 export type {DataSourceProps} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
