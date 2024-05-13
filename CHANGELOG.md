@@ -2,6 +2,24 @@
 
 ## v4.3
 
+### v4.3.0-alpha.2
+
+- examples: Modernize geospatial example (#2996)
+- examples: Modernize tiles example (#2995)
+- feat(tile-converter): Add absolute path support for i3s-server (#2970)
+- chore: update yarn and docusaurus deps (#2994)
+- example: TileSourceLayer can now render MVTLayer (#2992)
+- feat(parquet): Adopt new parquet-wasm File reader API. (#2987)
+- feat(mvt): TableTileSource uses probe.gl Stats and Log (#2989)
+- feat(mvt): Add WGS84 support to GeoJSONTileSource (#2977)
+- fix(zip): zip optimization for range requests (#2983)
+- chore: Bump ocular-dev-tools@alpha.31 (#2988)
+- chore(parquet): Upgrade parquet-wasm 0.6.0 (#2986)
+- fix: restore bench tests (#2985)
+- chore(parquet): Upgrade parquet-wasm 0.6.0
+- chore(parquet): more GeoParquet docs & examples (#2984)
+- fix: yarn.lock (#2982)
+
 ### v4.3.0-alpha.1
 
 - fix(tile-converter): failing i3s-server (#2980)

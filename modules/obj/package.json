@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/obj",
-  "version": "4.3.0-alpha.1",
+  "version": "4.3.0-alpha.2",
   "description": "Framework-independent loader for the OBJ format",
   "license": "MIT",
   "type": "module",
@@ -42,8 +42,8 @@
     "build-worker": "esbuild src/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.3.0-alpha.1",
-    "@loaders.gl/schema": "4.3.0-alpha.1"
+    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
+    "@loaders.gl/schema": "4.3.0-alpha.2"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
