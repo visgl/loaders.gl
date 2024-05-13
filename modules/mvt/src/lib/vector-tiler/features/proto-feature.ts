@@ -3,10 +3,23 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import {TableTileFeature} from './tile';
+export type ProtoFeature = {
+  type: any;
+  geometry: any;
 
-export function createFeature(id, type, geom, tags): TableTileFeature {
-  const feature: TableTileFeature = {
+  // book keeping
+  id?: string;
+  tags?: string[];
+
+  // spatial extents
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+};
+
+export function createFeature(id, type, geom, tags): ProtoFeature {
+  const feature: ProtoFeature = {
     // eslint-disable-next-line
     id: id == null ? null : id,
     type,

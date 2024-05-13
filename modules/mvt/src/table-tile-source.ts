@@ -13,12 +13,13 @@ import {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.g
 import {deduceTableSchema} from '@loaders.gl/schema';
 import {Stats, Stat} from '@probe.gl/stats';
 
-import type {TableTile, TableTileFeature} from './lib/vector-tiler/tile';
-import {convert} from './lib/vector-tiler/convert'; // GeoJSON conversion and preprocessing
+import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
+import type {ProtoTile} from './lib/vector-tiler/proto-tile';
+import {convert} from './lib/vector-tiler/features/convert-feature'; // GeoJSON conversion and preprocessing
 import {clip} from './lib/vector-tiler/clip'; // stripe clipping algorithm
 import {wrap} from './lib/vector-tiler/wrap'; // date line processing
-import {transformTile} from './lib/vector-tiler/transform'; // coordinate transformation
-import {createTile} from './lib/vector-tiler/tile'; // final simplified tile generation
+import {transformTile} from './lib/vector-tiler/transform-tile'; // coordinate transformation
+import {createTile} from './lib/vector-tiler/proto-tile'; // final simplified tile generation
 
 import {projectToLngLat} from './lib/utils/geometry-utils';
 import {convertToLocalCoordinates} from './lib/utils/geometry-utils';
@@ -102,7 +103,7 @@ export class TableTileSource implements VectorTileSource<any> {
   schema: Schema | null = null;
 
   /** Map of generated tiles, indexed by stringified tile coordinates */
-  tiles: Record<string, TableTile> = {};
+  tiles: Record<string, ProtoTile> = {};
   /** Array of tile coordinates */
   tileCoords: {x: number; y: number; z: number}[] = [];
 
@@ -222,7 +223,7 @@ export class TableTileSource implements VectorTileSource<any> {
    * @note Application must await `source.ready` before calling sync methods.
    */
   // eslint-disable-next-line complexity, max-statements
-  getRawTile(tileIndex: {z: number; x: number; y: number}): TableTile | null {
+  getRawTile(tileIndex: {z: number; x: number; y: number}): ProtoTile | null {
     const {z, y} = tileIndex;
     let {x} = tileIndex;
     // z = +z;
@@ -282,7 +283,7 @@ export class TableTileSource implements VectorTileSource<any> {
    */
   // eslint-disable-next-line max-params, max-statements, complexity
   splitTile(
-    features: TableTileFeature[],
+    features: ProtoFeature[],
     z: number,
     x: number,
     y: number,
@@ -372,10 +373,10 @@ export class TableTileSource implements VectorTileSource<any> {
       const k3 = 0.5 + k1;
       const k4 = 1 + k1;
 
-      let tl: TableTileFeature[] | null = null;
-      let bl: TableTileFeature[] | null = null;
-      let tr: TableTileFeature[] | null = null;
-      let br: TableTileFeature[] | null = null;
+      let tl: ProtoFeature[] | null = null;
+      let bl: ProtoFeature[] | null = null;
+      let tr: ProtoFeature[] | null = null;
+      let br: ProtoFeature[] | null = null;
 
       let left = clip(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, this.props);
       let right = clip(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, this.props);
@@ -411,7 +412,7 @@ function toID(z, x, y): number {
 
 // eslint-disable-next-line max-statements, complexity
 function convertToGeoJSONTable(
-  vtTile: TableTile,
+  vtTile: ProtoTile,
   props: {
     coordinates: 'local' | 'wgs84' | 'EPSG:4326';
     tileIndex: {x: number; y: number; z: number};
