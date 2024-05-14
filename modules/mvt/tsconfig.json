@@ -9,7 +9,6 @@
   },
   "references": [
     {"path": "../images"},
-    {"path": "../json"},
     {"path": "../loader-utils"},
     {"path": "../gis"}
   ]

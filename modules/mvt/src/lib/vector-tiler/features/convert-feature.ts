@@ -16,7 +16,7 @@ import {createFeature} from './proto-feature';
  * converts a GeoJSON feature into an intermediate projected JSON vector format
  * with simplification data
  */
-export function convert(data: Feature | FeatureCollection, options): ProtoFeature[] {
+export function convertFeatures(data: Feature | FeatureCollection, options): ProtoFeature[] {
   const features = [];
   if (data.type === 'FeatureCollection') {
     for (let i = 0; i < data.features.length; i++) {

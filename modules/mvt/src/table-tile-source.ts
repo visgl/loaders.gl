@@ -7,7 +7,8 @@ import {Source} from '@loaders.gl/loader-utils';
 import type {
   VectorTileSourceProps,
   GetTileDataParameters,
-  GetTileParameters
+  GetTileParameters,
+  LoaderWithParser
 } from '@loaders.gl/loader-utils';
 import {VectorTileSource, TileSourceMetadata, log} from '@loaders.gl/loader-utils';
 import {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
@@ -16,12 +17,11 @@ import {Stats, Stat} from '@probe.gl/stats';
 
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
 import type {ProtoTile} from './lib/vector-tiler/proto-tile';
-// import {convertFeatures} from './lib/vector-tiler/features/convert-feature'; // GeoJSON conversion and preprocessing
+import {convertFeatures} from './lib/vector-tiler/features/convert-feature'; // GeoJSON conversion and preprocessing
 import {clipFeatures} from './lib/vector-tiler/features/clip-features'; // stripe clipping algorithm
 import {wrapFeatures} from './lib/vector-tiler/features/wrap-features'; // date line processing
 import {transformTile} from './lib/vector-tiler/transform-tile'; // coordinate transformation
 import {createTile} from './lib/vector-tiler/proto-tile'; // final simplified tile generation
-import {_GeoJSONLoader} from '@loaders.gl/json';
 
 import {projectToLngLat} from './lib/utils/geometry-utils';
 import {convertToLocalCoordinates} from './lib/utils/geometry-utils';
@@ -43,31 +43,36 @@ export const TableTileSource = {
       tolerance: 3,
       extent: 4096,
       buffer: 64,
-      generateId: true
+      generateId: undefined
     }
   },
   type: 'table',
   testURL: (url: string): boolean => url.endsWith('.geojson'),
-  createDataSource(url: string | Blob, options: GeoJSONTileSourceProps): GeoJSONTileSource {
-    const tablePromise = loadTable(url);
-    return new GeoJSONTileSource(tablePromise, options);
+  createDataSource(
+    url: string | Blob | GeoJSONTable | Promise<GeoJSONTable>,
+    options: VectorTilerSourceProps
+  ): VectorTilerSource {
+    const needsLoading = typeof url === 'string' || url instanceof Blob;
+    const loader = options?.table?.loaders?.[0]!;
+    const tablePromise = needsLoading ? loadTable(url, loader) : url;
+    return new VectorTilerSource(tablePromise, options);
   }
   // @ts-expect-error
-} as const satisfies Source<GeoJSONTileSource, GeoJSONTileSourceProps>;
+} as const satisfies Source<VectorTilerSource, VectorTilerSourceProps>;
 
-async function loadTable(url: string | Blob): Promise<GeoJSONTable> {
+async function loadTable(url: string | Blob, loader: LoaderWithParser): Promise<GeoJSONTable> {
   if (typeof url === 'string') {
     const response = await fetch(url);
     const data = await response.arrayBuffer();
-    return (await _GeoJSONLoader.parse(data)) as GeoJSONTable;
+    return (await loader.parse(data)) as GeoJSONTable;
   }
 
   const data = await url.arrayBuffer();
-  return (await _GeoJSONLoader.parse(data)) as GeoJSONTable; //  options.loaders, options.loadOptions)
+  return (await loader.parse(data)) as GeoJSONTable; //  options.loaders, options.loadOptions)
 }
 
 /** Options to configure tiling */
-export type GeoJSONTileSourceProps = VectorTileSourceProps & {
+export type VectorTilerSourceProps = VectorTileSourceProps & {
   table: {
     coordinates: 'local' | 'wgs84' | 'EPSG:4326';
     /** max zoom to preserve detail on */
@@ -90,6 +95,8 @@ export type GeoJSONTileSourceProps = VectorTileSourceProps & {
     debug?: number;
     /** whether to calculate line metrics */
     lineMetrics?: boolean;
+    /** table loders */
+    loaders?: LoaderWithParser[];
   };
 };
 
@@ -108,16 +115,16 @@ export type GeoJSONTileSourceProps = VectorTileSourceProps & {
  * @todo - generate binary output tables
  * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
  */
-export class GeoJSONTileSource
-  implements VectorTileSource<GeoJSONTileSourceProps, TileSourceMetadata>
+export class VectorTilerSource
+  implements VectorTileSource<VectorTilerSourceProps, TileSourceMetadata>
 {
-  /** Global stats for all GeoJSONTileSources */
+  /** Global stats for all VectorTilerSources */
   static stats = new Stats({
     id: 'table-tile-source-all',
     stats: [new Stat('count', 'tiles'), new Stat('count', 'features')]
   });
 
-  /** Stats for this GeoJSONTileSource */
+  /** Stats for this VectorTilerSource */
   stats = new Stats({
     id: 'table-tile-source',
     stats: [new Stat('tiles', 'count'), new Stat('features', 'count')]
@@ -129,7 +136,7 @@ export class GeoJSONTileSource
 
   /** The props that this tile source was created with */
   // @ts-expect-error
-  props: Required<GeoJSONTileSourceProps['table']>;
+  props: Required<VectorTilerSourceProps['table']>;
 
   /* Schema of the data */
   schema: Schema | null = null;
@@ -144,7 +151,7 @@ export class GeoJSONTileSource
   /** Metadata for the tile source (generated TileJSON/tilestats */
   metadata: Promise<unknown>;
 
-  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, props?: GeoJSONTileSourceProps) {
+  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, props?: VectorTilerSourceProps) {
     // @ts-expect-error
     this.props = {...TableTileSource.options.table, ...props?.table};
     this.getTileData = this.getTileData.bind(this);
@@ -224,11 +231,11 @@ export class GeoJSONTileSource
       throw new Error('promoteId and generateId cannot be used together.');
     }
 
-    log.log(1, 'GeoJSONTileSource creating root tiles', this.props)();
+    log.log(1, 'VectorTilerSource creating root tiles', this.props)();
 
     // projects and adds simplification info
     log.time(1, 'preprocess table')();
-    let features = convert(table, this.props);
+    let features = convertFeatures(table, this.props);
     log.timeEnd(1, 'preprocess table')();
 
     // wraps features (ie extreme west and extreme east)
@@ -238,7 +245,7 @@ export class GeoJSONTileSource
 
     // start slicing from the top tile down
     if (features.length === 0) {
-      log.log(1, 'GeoJSONTileSource: no features generated')();
+      log.log(1, 'VectorTilerSource: no features generated')();
       return;
     }
 
@@ -250,7 +257,7 @@ export class GeoJSONTileSource
     log.timeEnd(1, 'generate tiles')();
     log.log(
       1,
-      `GeoJSONTileSource: tiles generated: ${this.stats.get('total').count}`,
+      `VectorTilerSource: tiles generated: ${this.stats.get('total').count}`,
       this.stats
     )();
   }
@@ -354,10 +361,10 @@ export class GeoJSONTileSource
         stat = this.stats.get('total');
         stat.incrementCount();
 
-        stat = GeoJSONTileSource.stats.get(key, 'count');
+        stat = VectorTilerSource.stats.get(key, 'count');
         stat.incrementCount();
 
-        stat = GeoJSONTileSource.stats.get('total');
+        stat = VectorTilerSource.stats.get('total');
         stat.incrementCount();
 
         log.log(

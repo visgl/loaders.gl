@@ -15,7 +15,7 @@ test('PMTilesSource#urls', async (t) => {
     return;
   }
   for (const tilesetUrl of PMTILESETS) {
-    const source = PMTilesSource.createDataSource({url: tilesetUrl});
+    const source = PMTilesSource.createDataSource(tilesetUrl, {url: tilesetUrl});
     t.ok(source);
     const metadata = await source.getMetadata();
     t.ok(metadata);
@@ -33,7 +33,7 @@ test('PMTilesSource#Blobs', async (t) => {
   for (const tilesetUrl of PMTILESETS) {
     const response = await fetchFile(tilesetUrl);
     const blob = await response.blob();
-    const source = PMTilesSource.createDataSource({url: blob});
+    const source = PMTilesSource.createDataSource(blob, {url: blob});
     t.ok(source);
     const metadata = await source.getMetadata();
     t.ok(metadata);

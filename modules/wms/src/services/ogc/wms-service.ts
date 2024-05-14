@@ -38,7 +38,8 @@ export const WMSSource = {
   type: 'wms',
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
-  createDataSource: (url, props: WMSImageSourceProps) => new WMSImageSource(props)
+  createDataSource: (url, props: WMSImageSourceProps) =>
+    new WMSImageSource({...props, url: url as string})
 } as const satisfies Source<WMSImageSource, WMSImageSourceProps>;
 
 /** Properties for creating a enw WMS service */
