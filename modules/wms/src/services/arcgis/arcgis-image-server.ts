@@ -2,17 +2,44 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ImageType} from '@loaders.gl/images';
-import type {Service, ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
-
-import type {ImageServiceProps} from '../../lib/services/image-service';
-import {ImageService} from '../../lib/services/image-service';
+import type {ImageType} from '@loaders.gl/images';
+import type {
+  Source,
+  ImageSourceProps,
+  ImageSourceMetadata,
+  GetImageParameters
+} from '@loaders.gl/loader-utils';
+import {ImageSource} from '@loaders.gl/loader-utils';
 
 // import type {ImageSourceProps} from '@loaders.gl/loader-utils';
 // import {ImageSource} from '@loaders.gl/loader-utils';
 
-export type ArcGISImageServerProps = ImageServiceProps & {
+export const ArcGISImageServerSource = {
+  name: 'ArcGISImageServer',
+  id: 'arcgis-image-server',
+  module: 'wms',
+  version: '0.0.0',
+  extensions: [],
+  mimeTypes: [],
+  options: {
+    url: undefined!,
+    'arcgis-image-server': {
+      // TODO - add options here
+    }
+  },
+
+  type: 'arcgis-image-server',
+
+  testURL: (url: string): boolean => url.toLowerCase().includes('ImageServer'),
+  createDataSource: (url, props: ArcGISImageSourceProps): ArcGISImageSource =>
+    new ArcGISImageSource(props)
+} as const satisfies Source<ArcGISImageSource, ArcGISImageSourceProps>;
+
+export type ArcGISImageSourceProps = ImageSourceProps & {
   url: string;
+  'arcgis-image-server'?: {
+    // TODO - add options here
+  };
 };
 
 /**
@@ -20,10 +47,10 @@ export type ArcGISImageServerProps = ImageServiceProps & {
  * Note - exports a big API, that could be exposed here if there is a use case
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/image-service.htm
  */
-export class ArcGISImageSource extends ImageService<ArcGISImageServerProps> {
+export class ArcGISImageSource extends ImageSource<ArcGISImageSourceProps> {
   data: string;
 
-  constructor(props: ArcGISImageServerProps) {
+  constructor(props: ArcGISImageSourceProps) {
     super(props);
     this.data = props.url;
   }
@@ -155,9 +182,3 @@ export class ArcGISImageSource extends ImageService<ArcGISImageServerProps> {
     }
   }
 }
-
-export const ArcGISImageService: Service = {
-  type: 'arcgis-image-server',
-  testURL: (url: string): boolean => url.toLowerCase().includes('ImageServer'),
-  create: (props: ArcGISImageServerProps): ArcGISImageSource => new ArcGISImageSource(props)
-};

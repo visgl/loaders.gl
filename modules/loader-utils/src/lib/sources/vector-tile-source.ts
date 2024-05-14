@@ -14,8 +14,10 @@ export type VectorTileSourceProps = TileSourceProps;
  * VectorTileSource - data sources that allow data to be queried by (geospatial) tile
  * @note If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export interface VectorTileSource<MetadataT extends TileSourceMetadata = TileSourceMetadata>
-  extends TileSource<MetadataT> {
+export interface VectorTileSource<
+  PropsT extends VectorTileSourceProps = VectorTileSourceProps,
+  MetadataT extends TileSourceMetadata = TileSourceMetadata
+> extends TileSource<PropsT, MetadataT> {
   getSchema(): Promise<Schema>;
   getVectorTile(parameters: GetTileParameters): Promise<VectorTile | null>;
   getTileData(
