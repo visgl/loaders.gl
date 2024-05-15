@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {
+  FileProviderInterface,
+  compareArrayBuffers,
+  concatenateArrayBuffers
+} from '@loaders.gl/loader-utils';
 import {ZipSignature, searchFromTheEnd} from './search-from-the-end';
 import {setFieldToNumber} from './zip64-info-generation';
 
@@ -64,7 +68,7 @@ const ZIP64_COMMENT_OFFSET = 56n;
  * @param file - FileProvider instance
  * @returns Info from the header
  */
-export const parseEoCDRecord = async (file: FileProvider): Promise<ZipEoCDRecord> => {
+export const parseEoCDRecord = async (file: FileProviderInterface): Promise<ZipEoCDRecord> => {
   const zipEoCDOffset = await searchFromTheEnd(file, eoCDSignature);
 
   let cdRecordsNumber = BigInt(await file.getUint16(zipEoCDOffset + CD_RECORDS_NUMBER_OFFSET));

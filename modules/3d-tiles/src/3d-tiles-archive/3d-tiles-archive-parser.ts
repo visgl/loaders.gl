@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProviderInterface} from '@loaders.gl/loader-utils';
 import {
   CD_HEADER_SIGNATURE,
   makeHashTableFromZipHeaders,
@@ -20,7 +20,7 @@ import {Tiles3DArchive} from './3d-tiles-archive-archive';
  * @returns 3tz file handler
  */
 export const parse3DTilesArchive = async (
-  fileProvider: FileProvider,
+  fileProvider: FileProviderInterface,
   cb?: (msg: string) => void
 ): Promise<Tiles3DArchive> => {
   const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);

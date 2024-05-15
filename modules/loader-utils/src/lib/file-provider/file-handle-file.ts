@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider} from './file-provider';
+import {FileProviderInterface} from './file-provider-interface';
 import {NodeFileFacade as NodeFile} from '../files/node-file-facade';
 
 /**
  * Provides file data using node fs library
  * @deprecated - will be replaced with ReadableFile
  */
-export class FileHandleFile implements FileProvider {
+export class FileHandleFile implements FileProviderInterface {
   /** The FileHandle from which data is provided */
   private file: NodeFile;
 

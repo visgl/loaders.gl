@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProviderInterface} from '@loaders.gl/loader-utils';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {DeflateCompression, NoCompression} from '@loaders.gl/compression';
 import {IndexedArchive, parseZipLocalFileHeader} from '@loaders.gl/zip';
@@ -31,7 +31,11 @@ export class Tiles3DArchive extends IndexedArchive {
    * @param fileProvider - FileProvider with the whole file
    * @param hashTable - hash info
    */
-  constructor(fileProvider: FileProvider, hashTable?: Record<string, bigint>, fileName?: string) {
+  constructor(
+    fileProvider: FileProviderInterface,
+    hashTable?: Record<string, bigint>,
+    fileName?: string
+  ) {
     super(fileProvider, hashTable, fileName);
     this.hashTable = hashTable;
   }
