@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
 import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';

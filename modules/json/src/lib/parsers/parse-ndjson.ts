@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {ArrayRowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {makeTableFromData} from '@loaders.gl/schema';
 

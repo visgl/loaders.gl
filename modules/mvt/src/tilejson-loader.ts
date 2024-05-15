@@ -38,13 +38,13 @@ export const TileJSONLoader = {
       maxValues: undefined
     }
   },
-  parse: async (arrayBuffer, options?: TileJSONLoaderOptions) => {
+  parse: async (arrayBuffer: ArrayBuffer, options?: TileJSONLoaderOptions) => {
     const jsonString = new TextDecoder().decode(arrayBuffer);
     const json = JSON.parse(jsonString);
     const tilejsonOptions = {...TileJSONLoader.options.tilejson, ...options?.tilejson};
     return parseTileJSON(json, tilejsonOptions) as TileJSON;
   },
-  parseTextSync: (text, options) => {
+  parseTextSync: (text: string, options?: TileJSONLoaderOptions) => {
     const json = JSON.parse(text);
     const tilejsonOptions = {...TileJSONLoader.options.tilejson, ...options?.tilejson};
     return parseTileJSON(json, tilejsonOptions) as TileJSON;

@@ -137,12 +137,11 @@ export type {FileProviderInterface} from './lib/file-provider/file-provider-inte
 export {isFileProvider} from './lib/file-provider/file-provider-interface';
 export {FileHandleFile} from './lib/file-provider/file-handle-file';
 export {DataViewFile} from './lib/file-provider/data-view-file';
-export {RangeRequestFile} from './lib/file-provider/range-request-file';
 export {BrowserFile} from './lib/file-provider/browser-file';
 export {FileProvider} from './lib/file-provider/file-provider';
 
 // EXPERIMENTAL: DATA SOURCES
-export type {Service} from './service-types';
+export type {Source} from './source-types';
 
 export type {DataSourceProps} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';

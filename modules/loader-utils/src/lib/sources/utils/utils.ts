@@ -29,7 +29,7 @@ export function getFetchFunction(options?: LoaderOptions) {
   return (url) => fetch(url);
 }
 
-export function mergeImageServiceProps<Props extends {loadOptions?: any}>(
+export function mergeImageSourceLoaderProps<Props extends {loadOptions?: any}>(
   props: Props
 ): Required<Props> {
   // @ts-expect-error

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/polyfills",
-  "version": "4.3.0-alpha.1",
+  "version": "4.3.0-alpha.2",
   "description": "Polyfills for TextEncoder/TextDecoder",
   "license": "MIT",
   "type": "module",
@@ -45,8 +45,8 @@
     "build-bundle-dev": "# ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/crypto": "4.3.0-alpha.1",
-    "@loaders.gl/loader-utils": "4.3.0-alpha.1",
+    "@loaders.gl/crypto": "4.3.0-alpha.2",
+    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
     "buffer": "^6.0.3",
     "get-pixels": "^3.3.3",
     "ndarray": "^1.0.19",
@@ -58,5 +58,5 @@
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "gitHead": "77a3cb538ab7a1fbf74245f25590210451689f5c"
 }

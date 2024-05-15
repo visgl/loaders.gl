@@ -5,23 +5,10 @@
 
 // import type {Feature} from '@loaders.gl/schema';
 
-export type TableTileFeature = {
-  type: any;
-  geometry: any;
+import type {ProtoFeature} from './features/proto-feature';
 
-  // book keeping
-  id?: string;
-  tags?: string[];
-
-  // spatial extents
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-};
-
-export type TableTile = {
-  features: TableTileFeature[]; // Feature[]; Doesn't seem JSON compatible??
+export type ProtoTile = {
+  features: ProtoFeature[]; // Feature[]; Doesn't seem JSON compatible??
   type?: number;
   tags?: Record<string, string>;
 
@@ -53,9 +40,9 @@ export type CreateTileOptions = {
 /**
  * Create a tile from features and tile index
  */
-export function createTile(features: any[], z, tx, ty, options: CreateTileOptions): TableTile {
+export function createTile(features: any[], z, tx, ty, options: CreateTileOptions): ProtoTile {
   const tolerance = z === options.maxZoom ? 0 : options.tolerance / ((1 << z) * options.extent);
-  const tile: TableTile = {
+  const tile: ProtoTile = {
     features: [],
     numPoints: 0,
     numSimplified: 0,
@@ -77,7 +64,7 @@ export function createTile(features: any[], z, tx, ty, options: CreateTileOption
 }
 
 // eslint-disable-next-line complexity, max-statements
-function addFeature(tile: TableTile, feature, tolerance: number, options: CreateTileOptions) {
+function addFeature(tile: ProtoTile, feature, tolerance: number, options: CreateTileOptions) {
   const geom = feature.geometry;
   const type = feature.type;
   const simplified: number[] = [];
@@ -121,7 +108,7 @@ function addFeature(tile: TableTile, feature, tolerance: number, options: Create
     }
 
     // @ts-expect-error TODO - create sub type?
-    const tileFeature: TableTileFeature = {
+    const tileFeature: ProtoFeature = {
       geometry: simplified,
       type:
         type === 'Polygon' || type === 'MultiPolygon'
@@ -142,7 +129,7 @@ function addFeature(tile: TableTile, feature, tolerance: number, options: Create
 function addLine(
   result,
   geom,
-  tile: TableTile,
+  tile: ProtoTile,
   tolerance: number,
   isPolygon: boolean,
   isOuter: boolean

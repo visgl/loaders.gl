@@ -55,28 +55,17 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // EXPERIMENTAL: DATA SOURCES
 
-// TODO - restore once deck.gl has been udpated
-export {ImageSource} from '@loaders.gl/loader-utils';
-
-export type {ImageType} from '@loaders.gl/images';
-
-export type {CreateImageServiceProps} from './lib/services/create-image-service';
-export {createImageService} from './lib/services/create-image-service';
-
-export type {ImageServiceType} from './services/create-image-source';
-export {createImageSource} from './services/create-image-source';
-
-// Generic (Template URL) Services
-
-export type {ImageServiceProps} from './lib/services/image-service';
-export {ImageService} from './lib/services/image-service';
-
 // OGC Services
 
-export {CSWService} from './services/ogc/csw-service';
-export {WMSSource, WMSService} from './services/ogc/wms-service';
+// export {CSWSource} from './services/ogc/csw-service';
+export {WMSSource, WMSImageSource} from './services/ogc/wms-service';
 
-// ArcGIS Services
+// ArcGIS SourceLoaders
 
 export {getArcGISServices as _getArcGISServices} from './services/arcgis/arcgis-server';
-export {ArcGISImageService as _ArcGISImageService} from './services/arcgis/arcgis-image-service';
+export {ArcGISImageServerSource as _ArcGISImageServerSource} from './services/arcgis/arcgis-image-server';
+
+// DEPRECATED: TODO - remove once deck.gl has been udpated
+export {ImageSource} from '@loaders.gl/loader-utils';
+export type {ImageType} from '@loaders.gl/images';
+export {createImageSource} from './lib/deprecated/create-image-source';

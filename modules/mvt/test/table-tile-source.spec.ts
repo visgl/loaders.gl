@@ -29,7 +29,7 @@ const square = [
 
 test('TableTileSource#getTile#us-states.json', async (t) => {
   const geojson = await loadGeoJSONTable('us-states.json');
-  const source = new TableTileSource(geojson, {coordinates: 'wgs84'}); // , debug: 2});
+  const source = TableTileSource.createDataSource(geojson, {table: {coordinates: 'wgs84'}}); // , debug: 2});
   await source.ready;
 
   // Check that tiles are correctly generated
@@ -70,9 +70,11 @@ test('TableTileSource#getTile#unbuffered tile left/right edges', async (t) => {
       [0, -90]
     ]
   });
-  const source = new TableTileSource(geojson, {
-    coordinates: 'local',
-    buffer: 0
+  const source = TableTileSource.createDataSource(geojson, {
+    table: {
+      coordinates: 'local',
+      buffer: 0
+    }
   });
   await source.ready;
 
@@ -102,9 +104,11 @@ test('TableTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
       [90, 66.51326044311188]
     ]
   });
-  const source = new TableTileSource(geojson, {
-    coordinates: 'local',
-    buffer: 0
+  const source = TableTileSource.createDataSource(geojson, {
+    table: {
+      coordinates: 'local',
+      buffer: 0
+    }
   });
   await source.ready;
 
@@ -137,9 +141,11 @@ test('TableTileSource#getTile#polygon clipping on the boundary', async (t) => {
       ]
     ]
   });
-  const source = new TableTileSource(geojson, {
-    coordinates: 'local',
-    buffer: 1024
+  const source = TableTileSource.createDataSource(geojson, {
+    table: {
+      coordinates: 'local',
+      buffer: 1024
+    }
   });
   await source.ready;
 

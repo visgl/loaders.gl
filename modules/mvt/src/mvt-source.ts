@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Source} from '@loaders.gl/loader-utils';
 import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
 import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 import type {GetTileParameters, GetTileDataParameters} from '@loaders.gl/loader-utils';
@@ -15,18 +16,42 @@ import {
   TileJSONLoaderOptions
 } from '@loaders.gl/mvt';
 
+/** Creates an MVTTileSource */
+export const MVTSource = {
+  name: 'MVT',
+  id: 'mvt',
+  module: 'mvt',
+  version: '0.0.0',
+  extensions: ['mvt'],
+  mimeTypes: ['application/octet-stream'],
+  options: {
+    url: undefined!,
+    mvt: {
+      // TODO - add options here
+    }
+  },
+  type: 'mvt',
+  testURL: (url: string): boolean => true,
+  createDataSource(url: string, props: MVTTileSourceProps): MVTTileSource {
+    return new MVTTileSource({...props, url});
+  }
+} as const satisfies Source<MVTTileSource, MVTTileSourceProps>;
+
 /** Properties for a Mapbox Vector Tile Source */
-export type MVTSourceProps = DataSourceProps & {
+export type MVTTileSourceProps = DataSourceProps & {
   /** Root url of tileset */
   url: string;
-  /** if not supplied, loads tilejson.json, If null does not load metadata */
-  metadataUrl?: string | null;
-  /** Override extension (necessary if no metadata) */
-  extension?: string;
-  /** Additional attribution, adds to any attribution loaded from tileset metadata */
-  attributions?: string[];
-  /** Specify load options for all sub loaders */
-  loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+  mvt?: {
+    // TODO - add options here
+    /** if not supplied, loads tilejson.json, If null does not load metadata */
+    metadataUrl?: string | null;
+    /** Override extension (necessary if no metadata) */
+    extension?: string;
+    /** Additional attribution, adds to any attribution loaded from tileset metadata */
+    attributions?: string[];
+    /** Specify load options for all sub loaders */
+    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+  };
 };
 
 /**
@@ -36,8 +61,8 @@ export type MVTSourceProps = DataSourceProps & {
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
-export class MVTSource extends DataSource implements ImageTileSource, VectorTileSource {
-  readonly props: MVTSourceProps;
+export class MVTTileSource extends DataSource implements ImageTileSource, VectorTileSource {
+  readonly props: MVTTileSourceProps;
   readonly url: string;
   readonly metadataUrl: string | null = null;
   data: string;
@@ -46,13 +71,12 @@ export class MVTSource extends DataSource implements ImageTileSource, VectorTile
   extension: string;
   mimeType: string | null = null;
 
-  constructor(props: MVTSourceProps) {
+  constructor(props: MVTTileSourceProps) {
     super(props);
     this.props = props;
     this.url = resolvePath(props.url);
-    this.metadataUrl =
-      props.metadataUrl === undefined ? `${this.url}/tilejson.json` : props.metadataUrl;
-    this.extension = props.extension || '.png';
+    this.metadataUrl = props.mvt?.metadataUrl || `${this.url}/tilejson.json`;
+    this.extension = props.mvt?.extension || '.png';
     this.data = this.url;
 
     this.getTileData = this.getTileData.bind(this);

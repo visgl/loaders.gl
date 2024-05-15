@@ -5,7 +5,7 @@
 
 import test from 'tape-promise/tape';
 // @ts-ignore-error
-import {clip} from '@loaders.gl/mvt/lib/vector-tiler/clip';
+import {clipFeatures} from '@loaders.gl/mvt/lib/vector-tiler/features/clip-features';
 
 /* eslint comma-spacing:0*/
 
@@ -15,8 +15,8 @@ const geom1 = [
 ];
 const geom2 = [0, 0, 0, 50, 0, 0, 50, 10, 0, 0, 10, 0];
 
-test('GeoJSONVT#clip#clips polylines', (t) => {
-  const clipped = clip(
+test('VectorTiler#clipFeatures#clips polylines', (t) => {
+  const clipped = clipFeatures(
     [
       {geometry: geom1, type: 'LineString', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},
       {geometry: geom2, type: 'LineString', tags: 2, minX: 0, minY: 0, maxX: 50, maxY: 10}
@@ -66,7 +66,7 @@ test('GeoJSONVT#clip#clips polylines', (t) => {
   t.end();
 });
 
-test('GeoJSONVT#clip#clips lines with line metrics on', (t) => {
+test('VectorTiler#clipFeatures#clips lines with line metrics on', (t) => {
   const geom = geom1.slice();
   // @ts-expect-error
   geom.size = 0;
@@ -81,7 +81,7 @@ test('GeoJSONVT#clip#clips lines with line metrics on', (t) => {
   // @ts-expect-error
   geom.end = geom.size;
 
-  const clipped = clip(
+  const clipped = clipFeatures(
     [{geometry: geom, type: 'LineString', minX: 0, minY: 0, maxX: 50, maxY: 60}],
     1,
     10,
@@ -109,8 +109,8 @@ function closed(geometry) {
   return [geometry.concat(geometry.slice(0, 3))];
 }
 
-test('GeoJSONVT#clip#clips polygons', (t) => {
-  const clipped = clip(
+test('VectorTiler#clipFeatures#clips polygons', (t) => {
+  const clipped = clipFeatures(
     [
       {geometry: closed(geom1), type: 'Polygon', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},
       {geometry: closed(geom2), type: 'Polygon', tags: 2, minX: 0, minY: 0, maxX: 50, maxY: 10}
@@ -157,8 +157,8 @@ test('GeoJSONVT#clip#clips polygons', (t) => {
   t.end();
 });
 
-test('GeoJSONVT#clip#clips points', (t) => {
-  const clipped = clip(
+test('VectorTiler#clipFeatures#clips points', (t) => {
+  const clipped = clipFeatures(
     [
       {geometry: geom1, type: 'MultiPoint', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},
       {geometry: geom2, type: 'MultiPoint', tags: 2, minX: 0, minY: 0, maxX: 50, maxY: 10}

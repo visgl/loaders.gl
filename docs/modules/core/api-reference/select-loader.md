@@ -60,7 +60,7 @@ await selectLoader(blob, DracoLoader); // => DracoLoader
 
 ## Functions
 
-### `selectLoader(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderWithParser[], options?: object, context?: object): Promise<boolean>`
+### `selectLoader(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderWithParser[], options?: object, context?: object): Promise<Loader>`
 
 Selects an appropriate loader for a file from a list of candidate loaders by examining the `data` parameter, looking at URL extension, mimeType ('Content-Type') and/or an initial data chunk.
 
@@ -85,7 +85,7 @@ Regarding the `loaders` parameter:
 - a `null` loader list will use the pre-registered list of loaders.
 - A supplied list of loaders will be searched for a matching loader.
 
-### `selectLoaderSync(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderWithParser[], options?: object, context?: object): boolean`
+### `selectLoaderSync(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderWithParser[], options?: object, context?: object): Loader`
 
 ## Supported Formats
 

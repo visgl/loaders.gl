@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import type {TableTileFeature} from './tile';
-import {createFeature} from './feature';
+import type {ProtoFeature} from './proto-feature';
+import {createFeature} from './proto-feature';
 
 /* eslint-disable no-continue */
 
@@ -20,8 +20,8 @@ import {createFeature} from './feature';
  * @param minAll and maxAll: minimum and maximum coordinate value for all features
  */
 // eslint-disable-next-line max-params, complexity, max-statements
-export function clip(
-  features: TableTileFeature[],
+export function clipFeatures(
+  features: ProtoFeature[],
   scale: number,
   k1: number,
   k2: number,
@@ -29,7 +29,7 @@ export function clip(
   minAll: number,
   maxAll: number,
   options: {lineMetrics: boolean}
-): TableTileFeature[] | null {
+): ProtoFeature[] | null {
   k1 /= scale;
   k2 /= scale;
 
@@ -41,7 +41,7 @@ export function clip(
     return null; // trivial reject
   }
 
-  const clipped: TableTileFeature[] = [];
+  const clipped: ProtoFeature[] = [];
 
   for (const feature of features) {
     const geometry = feature.geometry;

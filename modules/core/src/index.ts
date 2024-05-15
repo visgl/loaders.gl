@@ -46,6 +46,10 @@ export {encodeTable, encodeTableAsText, encodeTableInBatches} from './lib/api/en
 export {encode, encodeSync, encodeInBatches, encodeURLtoURL} from './lib/api/encode';
 export {encodeText, encodeTextSync} from './lib/api/encode';
 
+// SERVICES AND SOURCES
+export {createDataSource} from './lib/api/create-data-source';
+export {selectSource as _selectSource} from './lib/api/select-source';
+
 // CORE UTILS SHARED WITH LOADERS (RE-EXPORTED FROM LOADER-UTILS)
 export {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
 export {RequestScheduler} from '@loaders.gl/loader-utils';

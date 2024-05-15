@@ -3,10 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema} from '@loaders.gl/schema';
-import type {GetTileParameters, GetTileDataParameters} from '@loaders.gl/loader-utils';
-import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
-import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
-import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
+import type {Source} from '@loaders.gl/loader-utils';
+import type {
+  VectorTileSource,
+  GetTileParameters,
+  GetTileDataParameters
+} from '@loaders.gl/loader-utils';
+import type {ImageTileSource, ImageType} from '@loaders.gl/loader-utils';
+import {DataSource, DataSourceProps, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
 
@@ -19,53 +23,44 @@ import {BlobSource} from './lib/blob-source';
 
 const VERSION = '1.0.0';
 
-export type Service = {
-  name: string;
-  id: string;
-  module: string;
-  version: string;
-  extensions: string[];
-  mimeTypes: string[];
-  options: Record<string, unknown>;
-};
-
-export type ServiceWithSource<SourceT, SourcePropsT> = Service & {
-  _source?: SourceT;
-  _sourceProps?: SourcePropsT;
-  createSource: (props: SourcePropsT) => SourceT;
-};
-
-export const PMTilesService: ServiceWithSource<PMTilesSource, PMTilesSourceProps> = {
+/**
+ * Creates vector tile data sources for PMTiles urls or blobs
+ */
+export const PMTilesSource = {
   name: 'PMTiles',
   id: 'pmtiles',
   module: 'pmtiles',
   version: VERSION,
   extensions: ['pmtiles'],
   mimeTypes: ['application/octet-stream'],
-  options: {
-    pmtiles: {}
-  },
-  createSource: (props: PMTilesSourceProps) => new PMTilesSource(props)
-};
+  options: {url: undefined!, pmtiles: {}},
+  type: 'pmtiles',
+  testURL: (url: string) => url.endsWith('.pmtiles'),
+  createDataSource: (url: string | Blob, props: PMTilesTileSourceProps) =>
+    new PMTilesTileSource({...props, url})
+} as const satisfies Source<PMTilesTileSource, PMTilesTileSourceProps>;
 
-export type PMTilesSourceProps = DataSourceProps & {
+export type PMTilesTileSourceProps = DataSourceProps & {
   url: string | Blob;
   attributions?: string[];
-  loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+  pmtiles?: {
+    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+    // TODO - add options here
+  };
 };
 
 /**
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
-export class PMTilesSource extends DataSource implements ImageTileSource, VectorTileSource {
+export class PMTilesTileSource extends DataSource implements ImageTileSource, VectorTileSource {
   data: string | Blob;
-  props: PMTilesSourceProps;
+  props: PMTilesTileSourceProps;
   mimeType: string | null = null;
   pmtiles: pmtiles.PMTiles;
   metadata: Promise<PMTilesMetadata>;
 
-  constructor(props: PMTilesSourceProps) {
+  constructor(props: PMTilesTileSourceProps) {
     super(props);
     this.props = props;
     const url =

@@ -6,10 +6,29 @@ import type {DataSourceProps} from './data-source';
 import {DataSource} from './data-source';
 import {ImageType} from './utils/image-type';
 
+export type ImageSourceProps = DataSourceProps;
+
+/**
+ * MapImageSource - data sources that allow data to be queried by (geospatial) extents
+ * @note
+ * - If geospatial, bounding box is expected to be in web mercator coordinates
+ */
+export abstract class ImageSource<
+  PropsT extends ImageSourceProps = ImageSourceProps
+> extends DataSource<PropsT> {
+  static type: string = 'template';
+  static testURL = (url: string): boolean => false;
+
+  abstract getMetadata(): Promise<ImageSourceMetadata>;
+  abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
+}
+
+// PARAMETER TYPES
+
 /**
  * Normalized capabilities of an Image service
  * @example
- *  The WMSService will normalize the response to the WMS `GetCapabilities`
+ *  The WMSSourceLoader will normalize the response to the WMS `GetCapabilities`
  *  data structure extracted from WMS XML response into an ImageSourceMetadata.
  */
 export type ImageSourceMetadata = {
@@ -53,20 +72,3 @@ export type GetImageParameters = {
   /** requested format for the return image */
   format?: 'image/png';
 };
-
-export type ImageSourceProps = DataSourceProps;
-
-/**
- * MapImageSource - data sources that allow data to be queried by (geospatial) extents
- * @note
- * - If geospatial, bounding box is expected to be in web mercator coordinates
- */
-export abstract class ImageSource<
-  PropsT extends ImageSourceProps = ImageSourceProps
-> extends DataSource<PropsT> {
-  static type: string = 'template';
-  static testURL = (url: string): boolean => false;
-
-  abstract getMetadata(): Promise<ImageSourceMetadata>;
-  abstract getImage(parameters: GetImageParameters): Promise<ImageType>;
-}

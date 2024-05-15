@@ -221,6 +221,8 @@
           "modules/core/api-reference/select-loader",
           "modules/core/api-reference/set-loader-options",
           "modules/core/api-reference/register-loaders",
+          "modules/core/api-reference/select-source",
+          "modules/core/api-reference/create-data-source",
           "modules/core/api-reference/encode",
           "modules/core/api-reference/save",
           "modules/core/api-reference/fetch-file",

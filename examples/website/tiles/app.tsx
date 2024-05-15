@@ -7,9 +7,9 @@ import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
 // loaders.gl sources and loaders
-import type {TileSource, VectorTileSource, ImageTileSource} from '@loaders.gl/loader-utils';
-import {load} from '@loaders.gl/core';
-import {PMTilesSource, PMTilesMetadata} from '@loaders.gl/pmtiles';
+import type {VectorTileSource, ImageTileSource} from '@loaders.gl/loader-utils';
+import {createDataSource} from '@loaders.gl/core';
+import {PMTilesSource} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
@@ -23,7 +23,7 @@ import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 
 // CUT IF YOU COPY THIS EXAMPLE
-import {Example, ExamplePanel, Attributions} from './components/example-panel';
+import {Example, ExamplePanel, Attributions, MetadataViewer} from './components/example-panel';
 import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './examples';
 // END CUT
@@ -48,7 +48,7 @@ type AppState = {
   /** Currently active tile source */
   tileSource: VectorTileSource | ImageTileSource;
   /** Metadata loaded from active tile source */
-  metadata: any;
+  metadata: string;
   /**Current view state */
   viewState: Record<string, number>;
 };
@@ -56,6 +56,7 @@ type AppState = {
 export default function App(props: AppProps = {}) {
   const [state, setState] = useState<AppState>({
     tileSource: null,
+    metadata: null,
     viewState: INITIAL_VIEW_STATE,
     // TODO - handle errors
     error: null
@@ -85,8 +86,8 @@ export default function App(props: AppProps = {}) {
         initialCategoryName={INITIAL_CATEGORY_NAME}
         initialExampleName={INITIAL_EXAMPLE_NAME}
         onExampleChange={onExampleChange}
-        schema={metadata ? JSON.stringify(metadata, null, 2) : ''}
       >
+        <MetadataViewer metadata={metadata} />
         {props.children}
         {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
         <pre style={{textAlign: 'center', margin: 0}}>
@@ -117,7 +118,6 @@ export default function App(props: AppProps = {}) {
 
     const url = example.data;
     try {
-
       let tileSource = createTileSource(example);
 
       setState((state) => ({
@@ -134,7 +134,7 @@ export default function App(props: AppProps = {}) {
         setState((state) => ({
           ...state,
           initialViewState,
-          metadata
+          metadata: metadata ? JSON.stringify(metadata, null, 2) : ''
         }));
       })();
     } catch (error) {
@@ -158,34 +158,25 @@ export function renderToDOM(container: HTMLElement) {
 
 // Helpers
 
-/**
- * @param example
- * @returns
- */
+/** Create a source from the example url */
 function createTileSource(example: Example): VectorTileSource | ImageTileSource {
-  switch (example?.sourceType || null) {
-    case 'pmtiles':
-      return new PMTilesSource({
-        url: example.data,
+  const url = example.data;
+  return createDataSource<VectorTileSource | ImageTileSource>(
+    url,
+    [PMTilesSource, TableTileSource, MVTSource],
+    {
+      pmtiles: {
         attributions: example.attributions,
         // Make the Schema more presentable by limiting the number of values per column the field metadata
         loadOptions: {tilejson: {maxValues: 10}}
-      });
-
-    case 'mvt':
-      return new MVTSource({url: example.data});
-
-    case 'table':
-      const tablePromise = load(example.data, GeoJSONLoader);
-      // TableTileSource can be created with a promise, no need to wait for table to load.
-      return new TableTileSource(tablePromise, {
-        // To support multi-tile feature highlighting, each feature must have a unique id.
-        generateId: true
-      });
-
-    default:
-      throw new Error(`Unknown source type ${example.sourceType}`);
-  }
+      },
+      table: {
+        generateId: true,
+        loaders: [GeoJSONLoader]
+      },
+      mvt: {}
+    }
+  );
 }
 
 /**
@@ -196,7 +187,7 @@ function adjustViewStateToMetadata(viewState, metadata) {
   if (!metadata) {
     return viewState;
   }
-  
+
   // Copy to make sure we don't modify input
   viewState = {...viewState};
 

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/tile-converter",
-  "version": "4.3.0-alpha.1",
+  "version": "4.3.0-alpha.2",
   "description": "Converter",
   "license": "MIT",
   "type": "module",
@@ -53,20 +53,20 @@
     "copy-certificates": "cp -R src/i3s-server/certs dist/i3s-server"
   },
   "dependencies": {
-    "@loaders.gl/3d-tiles": "4.3.0-alpha.1",
-    "@loaders.gl/compression": "4.3.0-alpha.1",
-    "@loaders.gl/crypto": "4.3.0-alpha.1",
-    "@loaders.gl/draco": "4.3.0-alpha.1",
-    "@loaders.gl/gltf": "4.3.0-alpha.1",
-    "@loaders.gl/i3s": "4.3.0-alpha.1",
-    "@loaders.gl/images": "4.3.0-alpha.1",
-    "@loaders.gl/loader-utils": "4.3.0-alpha.1",
-    "@loaders.gl/math": "4.3.0-alpha.1",
-    "@loaders.gl/polyfills": "4.3.0-alpha.1",
-    "@loaders.gl/textures": "4.3.0-alpha.1",
-    "@loaders.gl/tiles": "4.3.0-alpha.1",
-    "@loaders.gl/worker-utils": "4.3.0-alpha.1",
-    "@loaders.gl/zip": "4.3.0-alpha.1",
+    "@loaders.gl/3d-tiles": "4.3.0-alpha.2",
+    "@loaders.gl/compression": "4.3.0-alpha.2",
+    "@loaders.gl/crypto": "4.3.0-alpha.2",
+    "@loaders.gl/draco": "4.3.0-alpha.2",
+    "@loaders.gl/gltf": "4.3.0-alpha.2",
+    "@loaders.gl/i3s": "4.3.0-alpha.2",
+    "@loaders.gl/images": "4.3.0-alpha.2",
+    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
+    "@loaders.gl/math": "4.3.0-alpha.2",
+    "@loaders.gl/polyfills": "4.3.0-alpha.2",
+    "@loaders.gl/textures": "4.3.0-alpha.2",
+    "@loaders.gl/tiles": "4.3.0-alpha.2",
+    "@loaders.gl/worker-utils": "4.3.0-alpha.2",
+    "@loaders.gl/zip": "4.3.0-alpha.2",
     "@math.gl/core": "^4.0.0",
     "@math.gl/culling": "^4.0.0",
     "@math.gl/geoid": "^4.0.0",
@@ -94,5 +94,5 @@
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "gitHead": "77a3cb538ab7a1fbf74245f25590210451689f5c"
 }

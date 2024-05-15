@@ -3,49 +3,101 @@
 // Copyright (c) vis.gl contributors
 // Based on https://github.com/mapbox/geojson-vt under compatible ISC license
 
+import {Source} from '@loaders.gl/loader-utils';
 import type {
   VectorTileSourceProps,
   GetTileDataParameters,
-  GetTileParameters
+  GetTileParameters,
+  LoaderWithParser
 } from '@loaders.gl/loader-utils';
-import {VectorTileSource, log} from '@loaders.gl/loader-utils';
+import {VectorTileSource, TileSourceMetadata, log} from '@loaders.gl/loader-utils';
 import {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
 import {deduceTableSchema} from '@loaders.gl/schema';
 import {Stats, Stat} from '@probe.gl/stats';
 
-import type {TableTile, TableTileFeature} from './lib/vector-tiler/tile';
-import {convert} from './lib/vector-tiler/convert'; // GeoJSON conversion and preprocessing
-import {clip} from './lib/vector-tiler/clip'; // stripe clipping algorithm
-import {wrap} from './lib/vector-tiler/wrap'; // date line processing
-import {transformTile} from './lib/vector-tiler/transform'; // coordinate transformation
-import {createTile} from './lib/vector-tiler/tile'; // final simplified tile generation
+import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
+import type {ProtoTile} from './lib/vector-tiler/proto-tile';
+import {convertFeatures} from './lib/vector-tiler/features/convert-feature'; // GeoJSON conversion and preprocessing
+import {clipFeatures} from './lib/vector-tiler/features/clip-features'; // stripe clipping algorithm
+import {wrapFeatures} from './lib/vector-tiler/features/wrap-features'; // date line processing
+import {transformTile} from './lib/vector-tiler/transform-tile'; // coordinate transformation
+import {createTile} from './lib/vector-tiler/proto-tile'; // final simplified tile generation
 
 import {projectToLngLat} from './lib/utils/geometry-utils';
 import {convertToLocalCoordinates} from './lib/utils/geometry-utils';
 
 /** Options to configure tiling */
-export type TableTileSourceProps = VectorTileSourceProps & {
-  coordinates: 'local' | 'wgs84' | 'EPSG:4326';
-  /** max zoom to preserve detail on */
-  maxZoom?: number;
-  /** max zoom in the tile index */
-  indexMaxZoom?: number;
-  /** max number of points per tile in the tile index */
-  maxPointsPerTile?: number;
-  /** simplification tolerance (higher means simpler) */
-  tolerance?: number;
-  /** tile extent */
-  extent?: number;
-  /** tile buffer on each side */
-  buffer?: number;
-  /** name of a feature property to be promoted to feature.id */
-  promoteId?: string;
-  /** whether to generate feature ids. Cannot be used with promoteId */
-  generateId?: boolean;
-  /** logging level (0, 1 or 2) */
-  debug?: number;
-  /** whether to calculate line metrics */
-  lineMetrics?: boolean;
+export const TableTileSource = {
+  name: 'TableTiler',
+  id: 'table-tiler',
+  version: '0.0.0',
+  extensions: ['mvt'],
+  mimeTypes: ['application/octet-stream'],
+  options: {
+    table: {
+      coordinates: 'local',
+      promoteId: undefined!,
+      maxZoom: 14,
+      indexMaxZoom: 5,
+      maxPointsPerTile: 10000,
+      tolerance: 3,
+      extent: 4096,
+      buffer: 64,
+      generateId: undefined
+    }
+  },
+  type: 'table',
+  testURL: (url: string): boolean => url.endsWith('.geojson'),
+  createDataSource(
+    url: string | Blob | GeoJSONTable | Promise<GeoJSONTable>,
+    options: VectorTilerSourceProps
+  ): VectorTilerSource {
+    const needsLoading = typeof url === 'string' || url instanceof Blob;
+    const loader = options?.table?.loaders?.[0]!;
+    const tablePromise = needsLoading ? loadTable(url, loader) : url;
+    return new VectorTilerSource(tablePromise, options);
+  }
+  // @ts-expect-error
+} as const satisfies Source<VectorTilerSource, VectorTilerSourceProps>;
+
+async function loadTable(url: string | Blob, loader: LoaderWithParser): Promise<GeoJSONTable> {
+  if (typeof url === 'string') {
+    const response = await fetch(url);
+    const data = await response.arrayBuffer();
+    return (await loader.parse(data)) as GeoJSONTable;
+  }
+
+  const data = await url.arrayBuffer();
+  return (await loader.parse(data)) as GeoJSONTable; //  options.loaders, options.loadOptions)
+}
+
+/** Options to configure tiling */
+export type VectorTilerSourceProps = VectorTileSourceProps & {
+  table: {
+    coordinates: 'local' | 'wgs84' | 'EPSG:4326';
+    /** max zoom to preserve detail on */
+    maxZoom?: number;
+    /** max zoom in the tile index */
+    indexMaxZoom?: number;
+    /** max number of points per tile in the tile index */
+    maxPointsPerTile?: number;
+    /** simplification tolerance (higher means simpler) */
+    tolerance?: number;
+    /** tile extent */
+    extent?: number;
+    /** tile buffer on each side */
+    buffer?: number;
+    /** name of a feature property to be promoted to feature.id */
+    promoteId?: string;
+    /** whether to generate feature ids. Cannot be used with promoteId */
+    generateId?: boolean;
+    /** logging level (0, 1 or 2) */
+    debug?: number;
+    /** whether to calculate line metrics */
+    lineMetrics?: boolean;
+    /** table loders */
+    loaders?: LoaderWithParser[];
+  };
 };
 
 /**
@@ -63,29 +115,16 @@ export type TableTileSourceProps = VectorTileSourceProps & {
  * @todo - generate binary output tables
  * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
  */
-export class TableTileSource implements VectorTileSource<any> {
-  static defaultProps: Required<TableTileSourceProps> = {
-    coordinates: 'wgs84', // coordinates in tile coordinates or lng/lat
-    maxZoom: 14, // max zoom to preserve detail on
-    indexMaxZoom: 5, // max zoom in the tile index
-    maxPointsPerTile: 100000, // max number of points per tile in the tile index
-    tolerance: 3, // simplification tolerance (higher means simpler)
-    extent: 4096, // tile extent
-    buffer: 64, // tile buffer on each side
-    lineMetrics: false, // whether to calculate line metrics
-    // @ts-expect-error
-    promoteId: undefined, // name of a feature property to be promoted to feature.id
-    generateId: false, // whether to generate feature ids. Cannot be used with promoteId
-    debug: 0 // logging level (0, 1 or 2)
-  };
-
-  /** Global stats for all TableTileSources */
+export class VectorTilerSource
+  implements VectorTileSource<VectorTilerSourceProps, TileSourceMetadata>
+{
+  /** Global stats for all VectorTilerSources */
   static stats = new Stats({
     id: 'table-tile-source-all',
     stats: [new Stat('count', 'tiles'), new Stat('count', 'features')]
   });
 
-  /** Stats for this TableTileSource */
+  /** Stats for this VectorTilerSource */
   stats = new Stats({
     id: 'table-tile-source',
     stats: [new Stat('tiles', 'count'), new Stat('features', 'count')]
@@ -96,13 +135,14 @@ export class TableTileSource implements VectorTileSource<any> {
   readonly localCoordinates = true;
 
   /** The props that this tile source was created with */
-  props: Required<TableTileSourceProps>;
+  // @ts-expect-error
+  props: Required<VectorTilerSourceProps['table']>;
 
   /* Schema of the data */
   schema: Schema | null = null;
 
   /** Map of generated tiles, indexed by stringified tile coordinates */
-  tiles: Record<string, TableTile> = {};
+  tiles: Record<string, ProtoTile> = {};
   /** Array of tile coordinates */
   tileCoords: {x: number; y: number; z: number}[] = [];
 
@@ -111,8 +151,9 @@ export class TableTileSource implements VectorTileSource<any> {
   /** Metadata for the tile source (generated TileJSON/tilestats */
   metadata: Promise<unknown>;
 
-  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, props?: TableTileSourceProps) {
-    this.props = {...TableTileSource.defaultProps, ...props};
+  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, props?: VectorTilerSourceProps) {
+    // @ts-expect-error
+    this.props = {...TableTileSource.options.table, ...props?.table};
     this.getTileData = this.getTileData.bind(this);
     this.ready = this.initializeTilesAsync(table);
     this.metadata = this.getMetadata();
@@ -124,7 +165,7 @@ export class TableTileSource implements VectorTileSource<any> {
     this.createRootTiles(table);
   }
 
-  async getMetadata(): Promise<unknown> {
+  async getMetadata(): Promise<TileSourceMetadata & {schema: Schema | null}> {
     await this.ready;
     return {schema: this.schema, minZoom: 0, maxZoom: this.props.maxZoom};
   }
@@ -190,21 +231,21 @@ export class TableTileSource implements VectorTileSource<any> {
       throw new Error('promoteId and generateId cannot be used together.');
     }
 
-    log.log(1, 'TableTileSource creating root tiles', this.props)();
+    log.log(1, 'VectorTilerSource creating root tiles', this.props)();
 
     // projects and adds simplification info
     log.time(1, 'preprocess table')();
-    let features = convert(table, this.props);
+    let features = convertFeatures(table, this.props);
     log.timeEnd(1, 'preprocess table')();
 
     // wraps features (ie extreme west and extreme east)
     log.time(1, 'generate tiles')();
 
-    features = wrap(features, this.props);
+    features = wrapFeatures(features, this.props);
 
     // start slicing from the top tile down
     if (features.length === 0) {
-      log.log(1, 'TableTileSource: no features generated')();
+      log.log(1, 'VectorTilerSource: no features generated')();
       return;
     }
 
@@ -214,7 +255,11 @@ export class TableTileSource implements VectorTileSource<any> {
     log.log(1, `root tile features: ${rootTile.numFeatures}, points: ${rootTile.numPoints}`)();
 
     log.timeEnd(1, 'generate tiles')();
-    log.log(1, `TableTileSource: tiles generated: ${this.stats.get('total').count}`, this.stats)();
+    log.log(
+      1,
+      `VectorTilerSource: tiles generated: ${this.stats.get('total').count}`,
+      this.stats
+    )();
   }
 
   /**
@@ -222,7 +267,7 @@ export class TableTileSource implements VectorTileSource<any> {
    * @note Application must await `source.ready` before calling sync methods.
    */
   // eslint-disable-next-line complexity, max-statements
-  getRawTile(tileIndex: {z: number; x: number; y: number}): TableTile | null {
+  getRawTile(tileIndex: {z: number; x: number; y: number}): ProtoTile | null {
     const {z, y} = tileIndex;
     let {x} = tileIndex;
     // z = +z;
@@ -282,7 +327,7 @@ export class TableTileSource implements VectorTileSource<any> {
    */
   // eslint-disable-next-line max-params, max-statements, complexity
   splitTile(
-    features: TableTileFeature[],
+    features: ProtoFeature[],
     z: number,
     x: number,
     y: number,
@@ -316,10 +361,10 @@ export class TableTileSource implements VectorTileSource<any> {
         stat = this.stats.get('total');
         stat.incrementCount();
 
-        stat = TableTileSource.stats.get(key, 'count');
+        stat = VectorTilerSource.stats.get(key, 'count');
         stat.incrementCount();
 
-        stat = TableTileSource.stats.get('total');
+        stat = VectorTilerSource.stats.get('total');
         stat.incrementCount();
 
         log.log(
@@ -372,26 +417,26 @@ export class TableTileSource implements VectorTileSource<any> {
       const k3 = 0.5 + k1;
       const k4 = 1 + k1;
 
-      let tl: TableTileFeature[] | null = null;
-      let bl: TableTileFeature[] | null = null;
-      let tr: TableTileFeature[] | null = null;
-      let br: TableTileFeature[] | null = null;
+      let tl: ProtoFeature[] | null = null;
+      let bl: ProtoFeature[] | null = null;
+      let tr: ProtoFeature[] | null = null;
+      let br: ProtoFeature[] | null = null;
 
-      let left = clip(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, this.props);
-      let right = clip(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, this.props);
+      let left = clipFeatures(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, this.props);
+      let right = clipFeatures(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, this.props);
 
       // @ts-expect-error - unclear why this is needed?
       features = null;
 
       if (left) {
-        tl = clip(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
-        bl = clip(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
+        tl = clipFeatures(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
+        bl = clipFeatures(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
         left = null;
       }
 
       if (right) {
-        tr = clip(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
-        br = clip(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
+        tr = clipFeatures(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
+        br = clipFeatures(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
         right = null;
       }
 
@@ -411,7 +456,7 @@ function toID(z, x, y): number {
 
 // eslint-disable-next-line max-statements, complexity
 function convertToGeoJSONTable(
-  vtTile: TableTile,
+  vtTile: ProtoTile,
   props: {
     coordinates: 'local' | 'wgs84' | 'EPSG:4326';
     tileIndex: {x: number; y: number; z: number};
