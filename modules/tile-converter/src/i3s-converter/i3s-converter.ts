@@ -770,7 +770,7 @@ export default class I3SConverter {
   }
 
   /**
-   * Restore 3DNodeIndexDocument from a conversion dump file
+   * Restore 3DNodeIndexDocument from a comversion dump file
    * @param parentNode - 3DNodeIndexDocument of parent node
    * @param sourceTile - source 3DTile data
    * @param transformationMatrix - transformation matrix of the current tile, calculated recursively multiplying

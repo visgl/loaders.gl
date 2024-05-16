@@ -1,12 +1,6 @@
-import type {I3STileContent, AttributeStorageInfo, FeatureAttribute} from '@loaders.gl/i3s';
+import type {I3STileContent} from '@loaders.gl/i3s';
 import {encodeSync} from '@loaders.gl/core';
-import {
-  GLTFScenegraph,
-  GLTFWriter,
-  createExtStructuralMetadata,
-  createExtMeshFeatures,
-  type TypedFeatureAttribute
-} from '@loaders.gl/gltf';
+import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
@@ -40,10 +34,9 @@ export default class B3dmConverter {
    */
   async convert(
     i3sAttributesData: I3SAttributesData,
-    featureAttributes: FeatureAttribute | null = null,
-    attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
+    featureAttributes: any = null
   ): Promise<ArrayBuffer> {
-    const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes, attributeStorageInfo);
+    const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes);
     const b3dm = encodeSync(
       {
         gltfEncoded: new Uint8Array(gltf),
@@ -64,8 +57,7 @@ export default class B3dmConverter {
   // eslint-disable-next-line max-statements
   async buildGLTF(
     i3sAttributesData: I3SAttributesData,
-    featureAttributes: FeatureAttribute | null,
-    attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
+    featureAttributes: any
   ): Promise<ArrayBuffer> {
     const {tileContent, textureFormat, box} = i3sAttributesData;
     const {material, attributes, indices: originalIndices, modelMatrix} = tileContent;
@@ -125,69 +117,16 @@ export default class B3dmConverter {
       material: materialIndex,
       mode: 4
     });
-
-    this._createMetadataExtensions(
-      gltfBuilder,
-      meshIndex,
-      featureAttributes,
-      attributeStorageInfo,
-      tileContent
-    );
-
     const transformMatrix = this._generateTransformMatrix(cartesianOrigin);
     const nodeIndex = gltfBuilder.addNode({meshIndex, matrix: transformMatrix});
     const sceneIndex = gltfBuilder.addScene({nodeIndices: [nodeIndex]});
     gltfBuilder.setDefaultScene(sceneIndex);
 
-    const gltfBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter, {gltfBuilder});
+    gltfBuilder.createBinaryChunk();
+
+    const gltfBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
+
     return gltfBuffer;
-  }
-
-  _createMetadataExtensions(
-    gltfBuilder: GLTFScenegraph,
-    meshIndex: number,
-    featureAttributes: FeatureAttribute | null,
-    attributeStorageInfo: AttributeStorageInfo[] | null | undefined,
-    tileContent: I3STileContent
-  ) {
-    const typedAttributes = this._createTypedAttibutes(featureAttributes, attributeStorageInfo);
-    const tableIndex = createExtStructuralMetadata(gltfBuilder, typedAttributes);
-
-    const mesh = gltfBuilder.getMesh(meshIndex);
-    for (const primitive of mesh.primitives) {
-      if (tileContent.attributes._BATCHID?.value) {
-        createExtMeshFeatures(
-          gltfBuilder,
-          primitive,
-          tileContent.attributes._BATCHID.value,
-          tableIndex
-        );
-      }
-    }
-  }
-
-  _createTypedAttibutes(
-    featureAttributes: FeatureAttribute | null,
-    attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
-  ): TypedFeatureAttribute[] {
-    if (!featureAttributes || !attributeStorageInfo) {
-      return [];
-    }
-    const attrs: TypedFeatureAttribute[] = [];
-    for (const attrName in featureAttributes) {
-      const info = attributeStorageInfo.find((e) => e.name === attrName);
-      const attributes = featureAttributes[attrName];
-      if (info) {
-        const attr: TypedFeatureAttribute = {
-          name: attrName,
-          valueType: info.attributeValues?.valueType ?? '',
-          valuesPerElement: info.attributeValues?.valuesPerElement ?? 0,
-          values: attributes
-        };
-        attrs.push(attr);
-      }
-    }
-    return attrs;
   }
 
   /**
