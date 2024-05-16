@@ -1,57 +1,127 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+import {ReadableFile} from '../files/file';
+import {FileProviderInterface} from './file-provider-interface';
+
 /**
- * Interface for providing file data
+ * Provides file data using range requests to the server
  * @deprecated - will be replaced with ReadableFile
  */
-export interface FileProvider {
+export class FileProvider implements FileProviderInterface {
+  /** The File object from which data is provided */
+  private file: ReadableFile;
+  private size: bigint;
+
+  /** Create a new BrowserFile */
+  private constructor(file: ReadableFile, size: bigint | number) {
+    this.file = file;
+    this.size = BigInt(size);
+  }
+
+  static async create(file: ReadableFile): Promise<FileProvider> {
+    return new FileProvider(
+      file,
+      file.bigsize > 0n
+        ? file.bigsize
+        : file.size > 0n
+        ? file.size
+        : (await file.stat?.())?.bigsize ?? 0n
+    );
+  }
+
   /**
-   * Cleanup class data
+   * Truncates the file descriptor.
+   * @param length desired file lenght
    */
-  destroy(): Promise<void>;
+  async truncate(length: number): Promise<void> {
+    throw new Error('file loaded via range requests cannot be changed');
+  }
+
+  /**
+   * Append data to a file.
+   * @param buffer data to append
+   */
+  async append(buffer: Uint8Array): Promise<void> {
+    throw new Error('file loaded via range requests cannot be changed');
+  }
+
+  /** Close file */
+  async destroy(): Promise<void> {
+    throw new Error('file loaded via range requests cannot be changed');
+  }
+
   /**
    * Gets an unsigned 8-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
-  getUint8(offset: bigint): Promise<number>;
+  async getUint8(offset: number | bigint): Promise<number> {
+    const arrayBuffer = await this.file.read(offset, 1);
+    const val = new Uint8Array(arrayBuffer).at(0);
+    if (val === undefined) {
+      throw new Error('something went wrong');
+    }
+    return val;
+  }
 
   /**
    * Gets an unsigned 16-bit integer at the specified byte offset from the start of the file.
    * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
-  getUint16(offset: bigint): Promise<number>;
+  async getUint16(offset: number | bigint): Promise<number> {
+    const arrayBuffer = await this.file.read(offset, 2);
+    const val = new Uint16Array(arrayBuffer).at(0);
+    if (val === undefined) {
+      throw new Error('something went wrong');
+    }
+    return val;
+  }
 
   /**
    * Gets an unsigned 32-bit integer at the specified byte offset from the start of the file.
-   * @param offset The offset, in bytes, from the file of the view where to read the data.
+   * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
-  getUint32(offset: bigint): Promise<number>;
+  async getUint32(offset: number | bigint): Promise<number> {
+    const arrayBuffer = await this.file.read(offset, 4);
+    const val = new Uint32Array(arrayBuffer).at(0);
+    if (val === undefined) {
+      throw new Error('something went wrong');
+    }
+    return val;
+  }
 
   /**
    * Gets an unsigned 32-bit integer at the specified byte offset from the start of the file.
-   * @param offset The offset, in byte, from the file of the view where to read the data.
+   * @param offset The offset, in bytes, from the start of the file where to read the data.
    */
-  getBigUint64(offset: bigint): Promise<bigint>;
+  async getBigUint64(offset: number | bigint): Promise<bigint> {
+    const arrayBuffer = await this.file.read(offset, 8);
+    const val = new BigInt64Array(arrayBuffer).at(0);
+    if (val === undefined) {
+      throw new Error('something went wrong');
+    }
+    return val;
+  }
 
   /**
    * returns an ArrayBuffer whose contents are a copy of this file bytes from startOffset, inclusive, up to endOffset, exclusive.
-   * @param startOffset The offset, in bytes, from the start of the file where to start reading the data.
+   * @param startOffset The offset, in byte, from the start of the file where to start reading the data.
    * @param endOffset The offset, in bytes, from the start of the file where to end reading the data.
    */
-  slice(startOffset: bigint, endOffset: bigint): Promise<ArrayBuffer>;
+  async slice(startOffset: bigint | number, endOffset: bigint | number): Promise<ArrayBuffer> {
+    const bigLength = BigInt(endOffset) - BigInt(startOffset);
+    if (bigLength > Number.MAX_SAFE_INTEGER) {
+      throw new Error('too big slice');
+    }
+    const length = Number(bigLength);
+
+    return await this.file.read(startOffset, length);
+  }
 
   /**
    * the length (in bytes) of the data.
    */
-  length: bigint;
+  get length(): bigint {
+    return this.size;
+  }
 }
-
-/**
- * Check is the object has FileProvider members
- * @param fileProvider - tested object
- */
-export const isFileProvider = (fileProvider: unknown) => {
-  return (
-    (fileProvider as FileProvider)?.getUint8 &&
-    (fileProvider as FileProvider)?.slice &&
-    (fileProvider as FileProvider)?.length
-  );
-};

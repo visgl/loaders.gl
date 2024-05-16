@@ -97,7 +97,9 @@ export function decodeValues(
       const count = header >> 1;
       decodedValues = decodeRunRepeated(cursor, count, opts);
     }
-    for (const value of decodedValues) {
+
+    // strange failure in docusaurus / webpack if we don't cast the type here
+    for (const value of decodedValues as any[]) {
       values.push(value);
     }
   }

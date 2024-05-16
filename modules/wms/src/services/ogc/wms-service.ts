@@ -7,9 +7,9 @@ import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 
-import type {Service, ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
+import type {Source, ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
+import type {ImageSourceProps} from '@loaders.gl/loader-utils';
 import {ImageSource} from '@loaders.gl/loader-utils';
-import type {ImageServiceProps} from '../../lib/services/image-service';
 
 import type {WMSCapabilities} from '../../wms-capabilities-loader';
 import type {WMSFeatureInfo} from '../../wip/wms-feature-info-loader';
@@ -22,15 +22,44 @@ import {WMSLayerDescriptionLoader} from '../../wip/wms-layer-description-loader'
 import type {WMSLoaderOptions} from '../../wms-error-loader';
 import {WMSErrorLoader} from '../../wms-error-loader';
 
-export const WMSService: Service<WMSSource, WMSSourceProps> = {
+export const WMSSource = {
+  name: 'Web Map Service (OGC WMS)',
+  id: 'wms',
+  module: 'wms',
+  version: '0.0.0',
+  extensions: [],
+  mimeTypes: [],
+  options: {
+    url: undefined!,
+    wms: {
+      // TODO - add options here
+    }
+  },
   type: 'wms',
+
   testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
-  create: (props: WMSSourceProps) => new WMSSource(props)
+  createDataSource: (url, props: WMSImageSourceProps) =>
+    new WMSImageSource({...props, url: url as string})
+} as const satisfies Source<WMSImageSource, WMSImageSourceProps>;
+
+/** Properties for creating a enw WMS service */
+export type WMSImageSourceProps = ImageSourceProps & {
+  /** Base URL to the service */
+  url: string;
+  /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+  substituteCRS84?: boolean;
+  /** Default WMS parameters. If not provided here, must be provided in the various request */
+  wmsParameters?: WMSParameters;
+  /** Any additional service specific parameters */
+  vendorParameters?: Record<string, unknown>;
+  wms?: {};
 };
+
+// PARAMETER TYPES FOR WMS SOURCE
 
 /**
  * "Static" WMS parameters (not viewport or selected pixel dependent)
- * These can be provided as defaults in the WMSSource constructor
+ * These can be provided as defaults in the WMSImageSource constructor
  */
 export type WMSParameters = {
   /** WMS version (all requests) */
@@ -48,7 +77,7 @@ export type WMSParameters = {
   info_format?: 'text/plain' | 'application/geojson' | 'application/vnd.ogc.gml';
   /** Styling - Not yet supported */
   styles?: unknown;
-  /** Any additional parameters specific to this WMSSource (GetMap) */
+  /** Any additional parameters specific to this WMSImageSource (GetMap) */
   transparent?: boolean;
   /** If layer supports time dimension */
   time?: string;
@@ -161,26 +190,14 @@ export type WMSGetLegendGraphicParameters = {
 
 //
 
-/** Properties for creating a enw WMS service */
-export type WMSSourceProps = ImageServiceProps & {
-  /** Base URL to the service */
-  url: string;
-  /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
-  substituteCRS84?: boolean;
-  /** Default WMS parameters. If not provided here, must be provided in the various request */
-  wmsParameters?: WMSParameters;
-  /** Any additional service specific parameters */
-  vendorParameters?: Record<string, unknown>;
-};
-
 /**
- * The WMSSource class provides
+ * The WMSImageSource class provides
  * - provides type safe methods to form URLs to a WMS service
  * - provides type safe methods to query and parse results (and errors) from a WMS service
- * - implements the ImageService interface
+ * - implements the ImageSource interface
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class WMSSource extends ImageSource<WMSSourceProps> {
+export class WMSImageSource extends ImageSource<WMSImageSourceProps> {
   /** Base URL to the service */
   readonly url: string;
   readonly data: string;
@@ -197,8 +214,8 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
 
   capabilities: WMSCapabilities | null = null;
 
-  /** Create a WMSSource */
-  constructor(props: WMSSourceProps) {
+  /** Create a WMSImageSource */
+  constructor(props: WMSImageSourceProps) {
     super(props);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
@@ -228,7 +245,7 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
     this.vendorParameters = props.vendorParameters || {};
   }
 
-  // ImageService implementation
+  // ImageSource implementation
   async getMetadata(): Promise<ImageSourceMetadata> {
     const capabilities = await this.getCapabilities();
     return this.normalizeMetadata(capabilities);
@@ -559,7 +576,7 @@ export class WMSSource extends ImageSource<WMSSourceProps> {
       wmsParameters.version === '1.3.0' &&
       // Flip if we are dealing with a CRS that was flipped in 1.3.0
       this.flipCRS.includes(wmsParameters.crs || '') &&
-      // Don't flip if we are subsituting EPSG:4326 with CRS:84
+      // Don't flip if we are substituting EPSG:4326 with CRS:84
       !(this.substituteCRS84 && wmsParameters.crs === 'EPSG:4326');
 
     const bbox = bboxValue as [number, number, number, number];

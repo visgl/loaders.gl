@@ -1,4 +1,4 @@
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProviderInterface} from '@loaders.gl/loader-utils';
 import {
   parseZipCDFileHeader,
   CD_HEADER_SIGNATURE,
@@ -16,7 +16,7 @@ import {SLPKArchive} from './slpk-archieve';
  * @returns slpk file handler
  */
 export async function parseSLPKArchive(
-  fileProvider: FileProvider,
+  fileProvider: FileProviderInterface,
   cb?: (msg: string) => void,
   fileName?: string
 ): Promise<SLPKArchive> {

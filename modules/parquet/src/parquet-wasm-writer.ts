@@ -4,7 +4,7 @@
 
 import type {WriterWithEncoder} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/arrow';
-import {encode} from './lib/wasm/encode-parquet-wasm';
+import {encode} from './lib/encoders/encode-parquet-wasm';
 import type {WriterOptions} from '@loaders.gl/loader-utils';
 
 import {VERSION, PARQUET_WASM_URL} from './lib/constants';

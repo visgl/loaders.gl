@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/gis",
   "description": "Helpers for GIS category data",
-  "version": "4.2.0",
+  "version": "4.3.0-alpha.2",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -32,8 +32,8 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.2.0",
-    "@loaders.gl/schema": "4.2.0",
+    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
+    "@loaders.gl/schema": "4.3.0-alpha.2",
     "@mapbox/vector-tile": "^1.3.1",
     "@math.gl/polygon": "^4.0.0",
     "pbf": "^3.2.1"
@@ -44,5 +44,5 @@
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "gitHead": "77a3cb538ab7a1fbf74245f25590210451689f5c"
 }

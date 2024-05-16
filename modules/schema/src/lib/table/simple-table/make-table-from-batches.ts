@@ -2,15 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  TableBatch,
-  Table,
-  Schema,
-  ObjectRowTable,
-  ArrayRowTable,
-  Feature
-} from '@loaders.gl/schema';
-import {getTableLength} from '@loaders.gl/schema';
+import type {Schema} from '../../../types/schema';
+import type {TableBatch, Table, ObjectRowTable, ArrayRowTable} from '../../../types/category-table';
+import type {Feature} from '../../../types/category-gis';
+import {getTableLength} from './table-accessors';
 
 /**
  * Returns an iterator that yields a single table as a sequence of batches.

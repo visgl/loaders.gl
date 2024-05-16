@@ -1,8 +1,18 @@
 # Upgrade Guide
 
+## Upgrading to v4.3 (In development)
+
+- Note: internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
+
 ## Upgrading to v4.2
 
-- It is recommended (but not required) to add `dataType` and `batchType` fields to any custom loaders.
+**@loaders.gl/mvt** 
+
+- `options.gis.forma`t is deprecated. Use `options.mvt.shape` instead.
+
+## Upgrading to v4.2
+
+- For improved type checks, it is now possible to add `dataType` and `batchType` fields to any custom loader objects.
 
 ## Upgrading to v4.1
 

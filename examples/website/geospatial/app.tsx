@@ -12,11 +12,11 @@ import {DeckGL} from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 
-import {ControlPanel} from './components/control-panel';
+import {ExamplePanel, MetadataViewer} from './components/example-panel';
 // import {FileUploader} from './components/file-uploader';
 
 import type {Example} from './examples';
-import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE, EXAMPLES} from './examples';
+import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 
 import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load /* registerLoaders */} from '@loaders.gl/core';
@@ -25,12 +25,15 @@ import {GeoParquetLoader, installBufferPolyfill, preloadCompressions} from '@loa
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
+// import {GeoPackageLoader} from '@loaders.gl/geopackage'; // GeoPackage depends on sql.js which has bundling issues in docusuarus.
+
+// Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
 
-// GeoPackage depends on sql.js which has bundling issues in docusuarus.
-// import {GeoPackageLoader} from '@loaders.gl/geopackage';
-
 installBufferPolyfill();
+
+export const INITIAL_MAP_STYLE =
+  'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 
 const LOADERS: Loader[] = [
   GeoArrowLoader,
@@ -44,6 +47,7 @@ const LOADERS: Loader[] = [
 ];
 const LOADER_OPTIONS = {
   worker: false,
+  limit: 1800000,
   modules: {
     'zstd-codec': ZstdCodec
   },
@@ -76,6 +80,17 @@ const LOADER_OPTIONS = {
   }
 };
 
+const VIEW_STATE = {
+  height: 600,
+  width: 800,
+  pitch: 45,
+  maxPitch: 60,
+  bearing: 0,
+  minZoom: 1,
+  maxZoom: 30,
+  zoom: 11
+};
+
 export const INITIAL_VIEW_STATE = {
   latitude: 49.254,
   longitude: -123.13,
@@ -86,18 +101,19 @@ export const INITIAL_VIEW_STATE = {
 };
 
 type AppProps = {
+  /** Controls which examples are shown */
   format?: string;
+  /** Any informational text to display in the overlay */
+  children?: React.Children;
 };
 
 type AppState = {
-  examples: Record<string, Record<string, Example>>;
+  // EXAMPLE STATE
+  table: Table | null;
+  layerProps?: Record<string, unknown>;
+  getTooltipData?: Function; // (object: Properties) => {title: string; properties: Record<string, unknown>};
   // CURRENT VIEW POINT / CAMERA POSITION
   viewState: Record<string, number>;
-
-  // EXAMPLE STATE
-  selectedExample: string;
-  selectedLoader: string;
-  loadedTable: Table | null;
 };
 
 /**
@@ -105,55 +121,23 @@ type AppState = {
  */
 export default function App(props: AppProps) {
   const [state, setState] = useState<AppState>({
-    // EXAMPLE STATE
-    examples: EXAMPLES,
-    selectedExample: null,
-    selectedLoader: null,
-
-    // CURRENT VIEW POINT / CAMERA POSITION
+    table: null,
     viewState: INITIAL_VIEW_STATE,
-    loadedTable: null,
     error: null
   });
   const stateRef = useRef<string>();
   stateRef.current = state;
 
-  // Initialize the examples (each demo might focus on a different "props.format")
-  useEffect(() => {
-    let examples: Record<string, Record<string, Example>> = {...EXAMPLES};
-    if (props.format) {
-      // Keep only the preferred format examples
-      examples = {[props.format]: EXAMPLES[props.format]};
-    }
-
-    const selectedLoader = props.format || INITIAL_LOADER_NAME;
-    let selectedExample = props.format
-      ? Object.keys(examples[selectedLoader])[0]
-      : INITIAL_EXAMPLE_NAME;
-
-    onExampleChange({
-      selectedLoader,
-      selectedExample,
-      example: examples[selectedLoader][selectedExample],
-      state,
-      setState
-    });
-    setState((state) => ({...state, examples, selectedExample, selectedLoader}));
-  }, [props.format]);
-
-  let schema = state.loadedTable?.schema
-    ? {metadata: state.loadedTable?.schema.metadata, ...state.loadedTable?.schema}
-    : null;
-
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <ControlPanel
-        schema={schema && JSON.stringify(schema, null, 2)}
-        examples={state.examples}
-        selectedExample={state.selectedExample}
-        selectedLoader={state.selectedLoader}
-        onExampleChange={(props) => onExampleChange({...props, state, setState})}
+      <ExamplePanel
+        examples={EXAMPLES}
+        initialCategoryName={INITIAL_LOADER_NAME}
+        initialExampleName={INITIAL_EXAMPLE_NAME}
+        format={props.format}
+        onExampleChange={onExampleChange}
       >
+        {props.children}
         {state.error ? <div style={{color: 'red'}}>{state.error}</div> : ''}
         <div style={{textAlign: 'center'}}>
           center long/lat: {state.viewState.longitude.toFixed(3)},
@@ -161,87 +145,64 @@ export default function App(props: AppProps) {
         </div>
         {/* TODO -restore drag and drop
         <FileUploader
-          onFileRemoved={() => setState(state => ({...state, loadedTable: null}))}
+          onFileRemoved={() => setState(state => ({...state, table: null}))}
           onFileSelected={async (uploadedFile: File) => {
             // TODO - error handling
             const data = (await load(uploadedFile, LOADERS, LOADER_OPTIONS)) as Table;
             setState(state => ({
               ...state,
               selectedExample: uploadedFile.name,
-              loadedTable: data
+              table: data
             }));
           }}
         />
         */}
-      </ControlPanel>
+        <h2>Table Schema</h2>
+        <MetadataViewer metadata={state.table?.schema && JSON.stringify(state.table.schema, null, 2)} />
+      </ExamplePanel>
 
       <DeckGL
         layers={renderLayer(state)}
         viewState={state.viewState}
         onViewStateChange={({viewState}) => setState((state) => ({...state, viewState}))}
         controller={{type: MapController, maxPitch: 85}}
-        getTooltip={({object}) => {
-          const {getTooltipData} =
-            state.examples[state.selectedLoader]?.[state.selectedExample] ?? {};
-          const {title, properties} = getTooltipData
-            ? getTooltipData({object})
-            : getDefaultTooltipData({object});
-          const props = Object.entries(properties)
-            .map(([key, value]) => `<div>${key}: ${value}</div>`)
-            .join('\n');
-          return (
-            object && {
-              html: `\
-<h2>${title}</h2>
-${props}
-<div>Coords: ${object.geometry?.coordinates?.[0]};${object.geometry?.coordinates?.[1]}</div>`,
-              style: {
-                backgroundColor: '#ddd',
-                fontSize: '0.8em'
-              }
-            }
-          );
-        }}
+        getTooltip={({object}) => getTooltipData({object}, state)}
       >
         <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
       </DeckGL>
     </div>
   );
-}
 
-async function onExampleChange(args: {
-  selectedLoader: string;
-  selectedExample: string;
-  example: Example;
-  state: AppState;
-  setState: Function;
-}) {
-  const {selectedLoader, selectedExample, example, state, setState} = args;
+  async function onExampleChange(args: {
+    selectedLoader: string;
+    selectedExample: string;
+    example: Example;
+  }) {
+    const {selectedLoader, selectedExample, example} = args;
 
-  const url = example.data;
-  try {
-    const data = (await load(url, LOADERS, LOADER_OPTIONS)) as Table;
-    console.log('Loaded data', url, data);
-    const viewState = {...state.viewState, ...example.viewState};
-    setState((state) => ({
-      ...state,
-      selectedLoader,
-      selectedExample,
-      viewState,
-      loadedTable: data
-    }));
-  } catch (error) {
-    console.error('Failed to load data', url, error);
-    setState((state) => ({...state, error: `Could not load ${selectedExample}: ${error.message}`}));
+    const url = example.data;
+    try {
+      const table = (await load(url, LOADERS, LOADER_OPTIONS)) as Table;
+      console.log('Loaded table', url, table);
+      const viewState = {...state.viewState, ...example.viewState};
+      setState((state) => ({
+        ...state,
+        table,
+        viewState,
+        layerProps: example.layerProps
+      }));
+    } catch (error) {
+      console.error('Failed to load table', url, error);
+      setState((state) => ({...state, error: `Could not load ${selectedExample}: ${error.message}`}));
+    }
   }
 }
 
-function renderLayer({selectedExample, selectedLoader, examples, loadedTable}) {
-  const geojson = loadedTable as GeoJSON;
-  const layerProps = examples[selectedLoader]?.[selectedExample]?.layerProps || {};
+function renderLayer({table, layerProps, index}) {
+  const geojson = table as GeoJSON;
   return [
     new GeoJsonLayer({
-      id: `geojson-${selectedExample}(${selectedLoader})`,
+      id: `geojson-${index})`,
       data: geojson,
 
       pickable: true,
@@ -267,6 +228,27 @@ function renderLayer({selectedExample, selectedLoader, examples, loadedTable}) {
       ...layerProps
     })
   ];
+}
+
+function getTooltipData({object}, state) {
+  const {title, properties} = state.getTooltipData
+  ? state.getTooltipData({object})
+  : getDefaultTooltipData({object});
+  const props = Object.entries(properties)
+    .map(([key, value]) => `<div>${key}: ${value}</div>`)
+    .join('\n');
+  return (
+    object && {
+      html: `\
+<h2>${title}</h2>
+${props}
+<div>Coords: ${object.geometry?.coordinates?.[0]};${object.geometry?.coordinates?.[1]}</div>`,
+      style: {
+        backgroundColor: '#ddd',
+        fontSize: '0.8em'
+      }
+    }
+  );
 }
 
 function getDefaultTooltipData({object}) {

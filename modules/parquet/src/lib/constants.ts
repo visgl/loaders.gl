@@ -5,7 +5,8 @@
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 export const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-export const PARQUET_WASM_URL = 'https://unpkg.com/parquet-wasm@0.6.0-beta.1/esm/arrow1_bg.wasm';
+
+export const PARQUET_WASM_URL = 'https://unpkg.com/parquet-wasm@0.6.1/esm/parquet_wasm_bg.wasm';
 
 /**
  * Parquet File Magic String

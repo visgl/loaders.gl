@@ -18,6 +18,23 @@ import {CSWDomainLoader} from '../../csw-domain-loader';
 
 import {WMSErrorLoader as CSWErrorLoader} from '../../wms-error-loader';
 
+export type CSWServiceProps = DataSourceProps & {
+  url: string;
+};
+
+/** Describes a service or resource exposed by the catalog */
+export type Service = {
+  /** name of service or resource */
+  name: string;
+  /** type of service or resource */
+  type: string;
+  url: string;
+  params?: string;
+  scheme?: string;
+};
+
+// CSW PARAMETER TYPES
+
 type CSWCommonParameters = {
   /** In case the endpoint supports multiple services */
   service?: 'CSW';
@@ -41,21 +58,6 @@ export type CSWGetDomainParameters = CSWCommonParameters & {
   /** Request type */
   request?: 'GetDomain';
   // TBA
-};
-
-/** Describes a service or resource exposed by the catalog */
-export type Service = {
-  /** name of service or resource */
-  name: string;
-  /** type of service or resource */
-  type: string;
-  url: string;
-  params?: string;
-  scheme?: string;
-};
-
-export type CSWServiceProps = DataSourceProps & {
-  url: string;
 };
 
 /**

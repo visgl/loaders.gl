@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 
-import {TileSource, GetTileParameters} from './tile-source';
+import {TileSource, GetTileParameters, GetTileDataParameters} from './tile-source';
 import {ImageSource, ImageSourceMetadata} from './image-source';
 
 /**
@@ -9,6 +9,7 @@ import {ImageSource, ImageSourceMetadata} from './image-source';
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
+// @ts-expect-error TODO - does not implement all DataSource members
 export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
   readonly viewportSource: ImageSource;
   constructor(source: ImageSource) {
@@ -17,6 +18,7 @@ export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
   async getMetadata(): Promise<ImageSourceMetadata> {
     return await this.viewportSource.getMetadata();
   }
+
   /** Flat parameters */
   getTile(parameters: GetTileParameters): Promise<unknown> {
     const width = 512;
@@ -26,9 +28,9 @@ export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
   }
 
   /** deck.gl style parameters */
-  // getTileData(parameters: TileLoadParameters): Promise<unknown | null> {
-  //   return this.viewportSource.getImage
-  // }
+  getTileData(parameters: GetTileDataParameters): Promise<unknown | null> {
+    return this.getTile(parameters.index);
+  }
 
   /** Bounding box of tiles in this tileset `[[w, s], [e, n]]`  */
   protected getTileBoundingBox(
@@ -37,7 +39,7 @@ export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
     if (parameters.crs && parameters.crs !== 'ESPG3758') {
       throw new Error('SRS not ESPG3758');
     }
-    const {x, y, zoom} = parameters;
+    const {x, y, z: zoom} = parameters;
 
     return [
       /** Bounding box of tile in this tileset `[[w, s], ...]`  */

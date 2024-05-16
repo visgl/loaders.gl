@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider, compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import {
+  FileProviderInterface,
+  compareArrayBuffers,
+  concatenateArrayBuffers
+} from '@loaders.gl/loader-utils';
 import {ZipSignature, searchFromTheEnd} from './search-from-the-end';
 import {setFieldToNumber} from './zip64-info-generation';
 
@@ -11,10 +15,12 @@ import {setFieldToNumber} from './zip64-info-generation';
  * according to https://en.wikipedia.org/wiki/ZIP_(file_format)
  */
 export type ZipEoCDRecord = {
-  /** Relative offset of local file header */
+  /** Relative offset of cd start */
   cdStartOffset: bigint;
-  /** Relative offset of local file header */
+  /** Total number of central directory records */
   cdRecordsNumber: bigint;
+  /** Size of central directory */
+  cdByteSize: bigint;
   offsets: ZipEoCDRecordOffsets;
 };
 
@@ -62,10 +68,11 @@ const ZIP64_COMMENT_OFFSET = 56n;
  * @param file - FileProvider instance
  * @returns Info from the header
  */
-export const parseEoCDRecord = async (file: FileProvider): Promise<ZipEoCDRecord> => {
+export const parseEoCDRecord = async (file: FileProviderInterface): Promise<ZipEoCDRecord> => {
   const zipEoCDOffset = await searchFromTheEnd(file, eoCDSignature);
 
   let cdRecordsNumber = BigInt(await file.getUint16(zipEoCDOffset + CD_RECORDS_NUMBER_OFFSET));
+  let cdByteSize = BigInt(await file.getUint32(zipEoCDOffset + CD_CD_BYTE_SIZE_OFFSET));
   let cdStartOffset = BigInt(await file.getUint32(zipEoCDOffset + CD_START_OFFSET_OFFSET));
 
   let zip64EoCDLocatorOffset = zipEoCDOffset - 20n;
@@ -83,6 +90,7 @@ export const parseEoCDRecord = async (file: FileProvider): Promise<ZipEoCDRecord
     }
 
     cdRecordsNumber = await file.getBigUint64(zip64EoCDOffset + ZIP64_CD_RECORDS_NUMBER_OFFSET);
+    cdByteSize = await file.getBigUint64(zip64EoCDOffset + ZIP64_CD_CD_BYTE_SIZE_OFFSET);
     cdStartOffset = await file.getBigUint64(zip64EoCDOffset + ZIP64_CD_START_OFFSET_OFFSET);
   } else {
     zip64EoCDLocatorOffset = 0n;
@@ -91,6 +99,7 @@ export const parseEoCDRecord = async (file: FileProvider): Promise<ZipEoCDRecord
   return {
     cdRecordsNumber,
     cdStartOffset,
+    cdByteSize,
     offsets: {
       zip64EoCDOffset,
       zip64EoCDLocatorOffset,

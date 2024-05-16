@@ -2,10 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TileLoadParameters, GetTileParameters} from '@loaders.gl/loader-utils';
-import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
-import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
-import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
+import type {Schema} from '@loaders.gl/schema';
+import type {Source} from '@loaders.gl/loader-utils';
+import type {
+  VectorTileSource,
+  GetTileParameters,
+  GetTileDataParameters
+} from '@loaders.gl/loader-utils';
+import type {ImageTileSource, ImageType} from '@loaders.gl/loader-utils';
+import {DataSource, DataSourceProps, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
 
@@ -18,53 +23,44 @@ import {BlobSource} from './lib/blob-source';
 
 const VERSION = '1.0.0';
 
-export type Service = {
-  name: string;
-  id: string;
-  module: string;
-  version: string;
-  extensions: string[];
-  mimeTypes: string[];
-  options: Record<string, unknown>;
-};
-
-export type ServiceWithSource<SourceT, SourcePropsT> = Service & {
-  _source?: SourceT;
-  _sourceProps?: SourcePropsT;
-  createSource: (props: SourcePropsT) => SourceT;
-};
-
-export const PMTilesService: ServiceWithSource<PMTilesSource, PMTilesSourceProps> = {
+/**
+ * Creates vector tile data sources for PMTiles urls or blobs
+ */
+export const PMTilesSource = {
   name: 'PMTiles',
   id: 'pmtiles',
   module: 'pmtiles',
   version: VERSION,
   extensions: ['pmtiles'],
   mimeTypes: ['application/octet-stream'],
-  options: {
-    pmtiles: {}
-  },
-  createSource: (props: PMTilesSourceProps) => new PMTilesSource(props)
-};
+  options: {url: undefined!, pmtiles: {}},
+  type: 'pmtiles',
+  testURL: (url: string) => url.endsWith('.pmtiles'),
+  createDataSource: (url: string | Blob, props: PMTilesTileSourceProps) =>
+    new PMTilesTileSource({...props, url})
+} as const satisfies Source<PMTilesTileSource, PMTilesTileSourceProps>;
 
-export type PMTilesSourceProps = DataSourceProps & {
+export type PMTilesTileSourceProps = DataSourceProps & {
   url: string | Blob;
   attributions?: string[];
-  loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+  pmtiles?: {
+    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+    // TODO - add options here
+  };
 };
 
 /**
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
-export class PMTilesSource extends DataSource implements ImageTileSource, VectorTileSource {
+export class PMTilesTileSource extends DataSource implements ImageTileSource, VectorTileSource {
   data: string | Blob;
-  props: PMTilesSourceProps;
+  props: PMTilesTileSourceProps;
   mimeType: string | null = null;
   pmtiles: pmtiles.PMTiles;
   metadata: Promise<PMTilesMetadata>;
 
-  constructor(props: PMTilesSourceProps) {
+  constructor(props: PMTilesTileSourceProps) {
     super(props);
     this.props = props;
     const url =
@@ -73,6 +69,10 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
     this.pmtiles = new PMTiles(url);
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();
+  }
+
+  async getSchema(): Promise<Schema> {
+    return {fields: [], metadata: {}};
   }
 
   async getMetadata(): Promise<PMTilesMetadata> {
@@ -96,7 +96,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   }
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
-    const {x, y, zoom: z} = tileParams;
+    const {x, y, z} = tileParams;
     const rangeResponse = await this.pmtiles.getZxy(z, x, y);
     const arrayBuffer = rangeResponse?.data;
     if (!arrayBuffer) {
@@ -109,14 +109,14 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
   // Tile Source interface implementation: deck.gl compatible API
   // TODO - currently only handles image tiles, not vector tiles
 
-  async getTileData(tileParams: TileLoadParameters): Promise<unknown | null> {
+  async getTileData(tileParams: GetTileDataParameters): Promise<any> {
     const {x, y, z} = tileParams.index;
     const metadata = await this.metadata;
     switch (metadata.tileMIMEType) {
       case 'application/vnd.mapbox-vector-tile':
-        return await this.getVectorTile({x, y, zoom: z, layers: []});
+        return await this.getVectorTile({x, y, z, layers: []});
       default:
-        return await this.getImageTile({x, y, zoom: z, layers: []});
+        return await this.getImageTile({x, y, z, layers: []});
     }
   }
 
@@ -135,7 +135,7 @@ export class PMTilesSource extends DataSource implements ImageTileSource, Vector
       shape: 'geojson-table',
       mvt: {
         coordinates: 'wgs84',
-        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.zoom},
+        tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         ...(this.loadOptions as MVTLoaderOptions)?.mvt
       },
       ...this.loadOptions

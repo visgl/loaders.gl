@@ -1,12 +1,10 @@
 # WMSService
 
-![ogc-logo](../../../images/logos/ogc-logo-60.png)
-
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
-  &nbsp;
-	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
+
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
 The `WMSService` class helps applications interact with a WMS service (discover its capabilities, request map images and information about geospatial features, etc).
 

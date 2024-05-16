@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "4.2.0",
+  "version": "4.3.0-alpha.2",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "type": "module",
@@ -53,16 +53,16 @@
     "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.2.0",
-    "@loaders.gl/loader-utils": "4.2.0",
-    "@loaders.gl/schema": "4.2.0",
-    "@loaders.gl/wkt": "4.2.0",
-    "@loaders.gl/worker-utils": "4.2.0",
+    "@loaders.gl/gis": "4.3.0-alpha.2",
+    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
+    "@loaders.gl/schema": "4.3.0-alpha.2",
+    "@loaders.gl/wkt": "4.3.0-alpha.2",
+    "@loaders.gl/worker-utils": "4.3.0-alpha.2",
     "@math.gl/polygon": "4.0.0",
     "apache-arrow": ">= 15.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "gitHead": "77a3cb538ab7a1fbf74245f25590210451689f5c"
 }

@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileProviderInterface} from '@loaders.gl/loader-utils';
 
 /** Description of zip signature type */
 export type ZipSignature = Uint8Array;
+
+const buffLength = 1024;
 
 /**
  * looking for the last occurrence of the provided
@@ -14,7 +16,7 @@ export type ZipSignature = Uint8Array;
  * @returns
  */
 export const searchFromTheEnd = async (
-  file: FileProvider,
+  file: FileProviderInterface,
   target: ZipSignature
 ): Promise<bigint> => {
   const searchWindow = [
@@ -24,19 +26,26 @@ export const searchFromTheEnd = async (
     undefined
   ];
 
-  let targetOffset = 0n;
+  let targetOffset = -1;
 
   // looking for the last record in the central directory
-  for (let i = file.length - 4n; i > -1; i--) {
-    searchWindow[3] = searchWindow[2];
-    searchWindow[2] = searchWindow[1];
-    searchWindow[1] = searchWindow[0];
-    searchWindow[0] = await file.getUint8(i);
-    if (searchWindow.every((val, index) => val === target[index])) {
-      targetOffset = i;
-      break;
+  let point = file.length - 4n;
+  do {
+    const prevPoint = point;
+    point -= BigInt(buffLength);
+    point = point >= 0n ? point : 0n;
+    const buff = new Uint8Array(await file.slice(point, prevPoint));
+    for (let i = buff.length - 1; i > -1; i--) {
+      searchWindow[3] = searchWindow[2];
+      searchWindow[2] = searchWindow[1];
+      searchWindow[1] = searchWindow[0];
+      searchWindow[0] = buff[i];
+      if (searchWindow.every((val, index) => val === target[index])) {
+        targetOffset = i;
+        break;
+      }
     }
-  }
+  } while (targetOffset === -1 && point > 0n);
 
-  return targetOffset;
+  return point + BigInt(targetOffset);
 };

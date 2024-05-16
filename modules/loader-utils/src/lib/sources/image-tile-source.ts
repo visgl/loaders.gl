@@ -3,14 +3,18 @@
 // Copyright (c) vis.gl contributors
 
 import type {ImageType} from './utils/image-type';
-import type {TileSource, TileSourceMetadata} from './tile-source';
-import type {GetTileParameters} from './tile-source';
+import type {TileSourceProps, TileSourceMetadata, GetTileParameters} from './tile-source';
+import type {TileSource} from './tile-source';
+
+export type ImageTileSourceProps = TileSourceProps;
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) tile
  * @note If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export interface ImageTileSource<MetadataT extends TileSourceMetadata = TileSourceMetadata>
-  extends TileSource<MetadataT> {
+export interface ImageTileSource<
+  PropsT extends TileSourceProps = TileSourceProps,
+  MetadataT extends TileSourceMetadata = TileSourceMetadata
+> extends TileSource<PropsT, MetadataT> {
   getImageTile(parameters: GetTileParameters): Promise<ImageType | null>;
 }

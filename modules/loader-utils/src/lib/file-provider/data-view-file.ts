@@ -1,4 +1,4 @@
-import {FileProvider} from './file-provider';
+import {FileProviderInterface} from './file-provider-interface';
 
 /**
  * Checks if bigint can be converted to number and convert it if possible
@@ -16,7 +16,7 @@ const toNumber = (bigint: bigint) => {
  * Provides file data using DataView
  * @deprecated - will be replaced with ReadableFile
  */
-export class DataViewFile implements FileProvider {
+export class DataViewFile implements FileProviderInterface {
   /** The DataView from which data is provided */
   private file: DataView;
 
