@@ -714,17 +714,19 @@ export interface TypedFeatureAttribute {
   values: number[] | string[];
 }
 
+const SCHEMA_CLASS_ID_DEFAULT = 'schemaClassId';
+
 /**
- * Encodes feature data into property table.
+ * Creates ExtStructuralMetadata, creates the schema and creates a property table containing feature data provided.
  * @param scenegraph - Instance of the class for structured access to GLTF data.
- * @param typedAttributes - array of feature data to encode
- * @param extension - Top-level extension.
- * @returns Index of the new table
+ * @param typedFeatureAttributes - Feature attributes
+ * @param classId - classId to use for encoding metadata.
+ * @returns Index of the table created.
  */
-export function encodeExtStructuralMetadata(
+export function createExtStructuralMetadata(
   scenegraph: GLTFScenegraph,
-  classId: string,
-  featureAttributes: TypedFeatureAttribute[]
+  typedFeatureAttributes: TypedFeatureAttribute[],
+  classId: string = SCHEMA_CLASS_ID_DEFAULT
 ): number {
   let extension: GLTF_EXT_structural_metadata_GLTF | null = scenegraph.getExtension(
     EXT_STRUCTURAL_METADATA_NAME
@@ -733,13 +735,12 @@ export function encodeExtStructuralMetadata(
     extension = scenegraph.addExtension(EXT_STRUCTURAL_METADATA_NAME);
   }
 
-  extension.schema = createSchema(featureAttributes, classId, extension.schema);
-  const table = createPropertyTable(scenegraph, extension.schema, classId, featureAttributes);
+  extension.schema = createSchema(typedFeatureAttributes, classId, extension.schema);
+  const table = createPropertyTable(scenegraph, extension.schema, classId, typedFeatureAttributes);
   if (!extension.propertyTables) {
     extension.propertyTables = [];
   }
-  const length = extension.propertyTables.push(table);
-  return length - 1;
+  return extension.propertyTables.push(table) - 1; // index of the table
 }
 
 function createSchema(
@@ -815,7 +816,9 @@ function createPropertyTable(
   const schemaClass = schema.classes?.[classId];
 
   for (const attribute of typedAttributes) {
-    if (count === 0) count = attribute.values.length;
+    if (count === 0) {
+      count = attribute.values.length;
+    }
 
     // The number of elements in all typedAttributes must be the same
     if (count !== attribute.values.length && attribute.values.length) {

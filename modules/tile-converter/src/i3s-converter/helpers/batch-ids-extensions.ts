@@ -98,7 +98,7 @@ function handleExtMeshFeaturesExtension(
   for (const ids of extMeshFeatures.featureIds) {
     if (typeof ids.propertyTable !== 'undefined') {
       // propertyTable is an index that can be 0
-      // return the first featureID set that corresponts to property table.
+      // return the first featureID set that corresponds to property table.
       return ids.data as NumericArray;
     }
   }

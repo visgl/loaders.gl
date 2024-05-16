@@ -279,7 +279,11 @@ export default class Tiles3DConverter {
       };
 
       const b3dmConverter = new B3dmConverter();
-      const b3dm = await b3dmConverter.convert(i3sAttributesData, featureAttributes);
+      const b3dm = await b3dmConverter.convert(
+        i3sAttributesData,
+        featureAttributes,
+        this.attributeStorageInfo
+      );
 
       await this.conversionDump.addNode(`${sourceChild.id}.b3dm`, sourceChild.id);
       await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.b3dm`);

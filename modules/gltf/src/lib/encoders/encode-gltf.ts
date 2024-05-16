@@ -1,4 +1,7 @@
 import {encodeGLBSync} from './encode-glb';
+import {encodeExtensions} from '../api/gltf-extensions';
+import {GLTFWriterOptions} from '../../gltf-writer';
+import {GLTFWithBuffers} from '@loaders.gl/gltf';
 
 export type GLTFEncodeOptions = Record<string, any>;
 
@@ -19,7 +22,17 @@ export type GLTFEncodeOptions = Record<string, any>;
  * @param options
  * @returns
  */
-export function encodeGLTFSync(gltf, arrayBuffer, byteOffset, options) {
+export function encodeGLTFSync(
+  gltf: GLTFWithBuffers,
+  arrayBuffer: DataView | null,
+  byteOffset: number,
+  options: GLTFWriterOptions
+) {
+  if (!arrayBuffer) {
+    const {gltfBuilder} = options;
+    encodeExtensions(gltfBuilder?.gltf);
+    gltfBuilder?.createBinaryChunk();
+  }
   convertBuffersToBase64(gltf);
 
   // TODO: Copy buffers to binary

@@ -93,7 +93,7 @@ export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
 
 export {
-  encodeExtStructuralMetadata,
+  createExtStructuralMetadata,
   type TypedFeatureAttribute
 } from './lib/extensions/EXT_structural_metadata';
-export {encodeExtMeshFeatures} from './lib/extensions/EXT_mesh_features';
+export {createExtMeshFeatures} from './lib/extensions/EXT_mesh_features';

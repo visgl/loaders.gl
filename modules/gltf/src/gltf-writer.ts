@@ -1,10 +1,12 @@
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encoders/encode-gltf';
+import {GLTFScenegraph, GLTFWithBuffers} from '@loaders.gl/gltf';
 
 export type GLTFWriterOptions = WriterOptions & {
   gltf?: {};
   byteOffset?: number;
+  gltfBuilder?: GLTFScenegraph;
 };
 
 /**
@@ -26,11 +28,12 @@ export const GLTFWriter = {
     gltf: {}
   },
 
-  encode: async (gltf, options: GLTFWriterOptions = {}) => encodeSync(gltf, options),
+  encode: async (gltf: GLTFWithBuffers, options: GLTFWriterOptions = {}) =>
+    encodeSync(gltf, options),
   encodeSync
 } as WriterWithEncoder<any, never, GLTFWriterOptions>;
 
-function encodeSync(gltf, options: GLTFWriterOptions = {}) {
+function encodeSync(gltf: GLTFWithBuffers, options: GLTFWriterOptions = {}) {
   const {byteOffset = 0} = options;
 
   // Calculate length, then create arraybuffer and encode
