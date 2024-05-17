@@ -17,6 +17,7 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
     shape?: 'geojson-table' | 'columnar-table' | 'binary';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
+    boundingBox?: [[number, number], [number, number]]
   };
   gis?: {
     reproject?: boolean;
@@ -24,6 +25,7 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
   };
 };
 
+/** Load flatgeobuf on a worker */
 export const FlatGeobufWorkerLoader = {
   dataType: null as any,
   batchType: null as any,

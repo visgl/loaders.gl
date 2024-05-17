@@ -4,14 +4,13 @@
 
 import type {DataSourceProps} from './data-source';
 import {DataSource} from './data-source';
+// TODO - can we import from schema?
 import {ImageType} from './utils/image-type';
 
 export type ImageSourceProps = DataSourceProps;
 
 /**
- * MapImageSource - data sources that allow data to be queried by (geospatial) extents
- * @note
- * - If geospatial, bounding box is expected to be in web mercator coordinates
+ * ImageSource - data sources that allow images to be queried by (geospatial) extents
  */
 export abstract class ImageSource<
   PropsT extends ImageSourceProps = ImageSourceProps
