@@ -87,7 +87,7 @@ export function createProtoFeature(
       }
       break;
 
-      default:
+    default:
       throw new Error(String(type));
   }
 

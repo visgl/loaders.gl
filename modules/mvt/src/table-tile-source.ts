@@ -114,7 +114,7 @@ export type DynamicVectorTileSourceProps = VectorTileSourceProps & {
  * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
  */
 export class DynamicVectorTileSource
-  implements VectorTileSource<DynamicVectorTileSourceProps, TileSourceMetadata>
+implements VectorTileSource<DynamicVectorTileSourceProps, TileSourceMetadata>
 {
   /** Global stats for all DynamicVectorTileSources */
   static stats = new Stats({
