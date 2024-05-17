@@ -75,7 +75,8 @@ function parseInBatchesFromStream(stream: any, options: FlatGeobufLoaderOptions)
 function getOptions(options: FlatGeobufLoaderOptions): ParseFlatGeobufOptions {
   options = {
     ...options,
-    flatgeobuf: {...FlatGeobufLoader.options.flatgeobuf, ...options?.flatgeobuf}
+    flatgeobuf: {...FlatGeobufLoader.options.flatgeobuf, ...options?.flatgeobuf},
+    gis: {...FlatGeobufLoader.options.gis, ...options?.gis}
   };
   return {
     shape: options?.flatgeobuf?.shape ?? 'geojson-table',
