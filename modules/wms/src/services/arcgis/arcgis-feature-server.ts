@@ -123,6 +123,8 @@ export const ArcGISFeatureServerSource = {
   },
 
   type: 'arcgis-feature-server',
+  fromUrl: true,
+  fromBlob: false,
 
   testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
   createDataSource: (url, props: ArcGISVectorSourceProps): ArcGISVectorSource =>
