@@ -35,9 +35,12 @@ export const PMTilesSource = {
   mimeTypes: ['application/octet-stream'],
   options: {url: undefined!, pmtiles: {}},
   type: 'pmtiles',
+  fromUrl: true,
+  fromBlob: true,
+
   testURL: (url: string) => url.endsWith('.pmtiles'),
   createDataSource: (url: string | Blob, props: PMTilesTileSourceProps) =>
-    new PMTilesTileSource({...props, url})
+    new PMTilesTileSource(url, props)
 } as const satisfies Source<PMTilesTileSource, PMTilesTileSourceProps>;
 
 export type PMTilesTileSourceProps = DataSourceProps & {
@@ -60,11 +63,10 @@ export class PMTilesTileSource extends DataSource implements ImageTileSource, Ve
   pmtiles: pmtiles.PMTiles;
   metadata: Promise<PMTilesMetadata>;
 
-  constructor(props: PMTilesTileSourceProps) {
+  constructor(data: string | Blob, props: PMTilesTileSourceProps) {
     super(props);
     this.props = props;
-    const url =
-      typeof props.url === 'string' ? resolvePath(props.url) : new BlobSource(props.url, 'pmtiles');
+    const url = typeof data === 'string' ? resolvePath(data) : new BlobSource(data, 'pmtiles');
     this.data = props.url;
     this.pmtiles = new PMTiles(url);
     this.getTileData = this.getTileData.bind(this);

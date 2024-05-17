@@ -33,6 +33,8 @@ export const FlatGeobufSource = {
   },
 
   type: 'flatgeobuf-server',
+  fromUrl: true,
+  fromBlob: false, // TODO check if supported by library?
 
   testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
   createDataSource: (url, props: FlatGeobufVectorSourceProps): FlatGeobufVectorSource =>

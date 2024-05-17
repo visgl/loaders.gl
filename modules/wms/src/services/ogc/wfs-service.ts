@@ -35,6 +35,8 @@ export const WFSSource = {
   },
 
   type: 'wfs',
+  fromUrl: true,
+  fromBlob: false,
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
   createDataSource: (url, props: WFSVectorSourceProps): WFSVectorSource =>
