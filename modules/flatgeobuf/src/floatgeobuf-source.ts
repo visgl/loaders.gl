@@ -11,12 +11,7 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {Source, VectorSource} from '@loaders.gl/loader-utils';
 
-import {FlatgeobufLoader} from './flatgeobuf-loader';
-
-const TEST_SERVICE =
-  'https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0';
-const TEST_QUERY =
-  'query?returnGeometry=true&where=1%3D1&outSR=4326&outFields=*&inSR=4326&geometry=${-90}%2C+${30}%2C+${-70}%2C+${50}&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&geometryPrecision=6&resultType=tile&f=geojson';
+import {FlatGeobufLoader} from './flatgeobuf-loader';
 
 /**
  * @ndeprecated This is a WIP, not fully implemented
@@ -58,12 +53,14 @@ export type FlatGeobufVectorSourceProps = VectorSourceProps & {
  */
 export class FlatGeobufVectorSource extends VectorSource<FlatGeobufVectorSourceProps> {
   data: string;
-  protected formatSpecificMetadata: Promise<any>;
+  url: string;
+  protected formatSpecificMetadata: Promise<any> | null = null;
 
   constructor(props: FlatGeobufVectorSourceProps) {
     super(props);
     this.data = props.url;
-    this.formatSpecificMetadata = this._getFormatSpecificMetadata();
+    this.url = props.url;
+    // this.formatSpecificMetadata = this._getFormatSpecificMetadata();
   }
 
   /** TODO - not yet clear if we can find schema information in the FeatureServer metadata or if we need to request a feature */
@@ -75,24 +72,27 @@ export class FlatGeobufVectorSource extends VectorSource<FlatGeobufVectorSourceP
   async getMetadata(options: {formatSpecificMetadata}): Promise<VectorSourceMetadata> {
     // Wait for raw metadata to load
     if (!this.formatSpecificMetadata) {
-      this.formatSpecificMetadata = await this._getFormatSpecificMetadata();
+      // this.formatSpecificMetadata = await this._getFormatSpecificMetadata();
     }
 
-    const metadata = parseFlatGeobufMetadata(this.formatSpecificMetadata);
+    // const metadata = parseFlatGeobufMetadata(this.formatSpecificMetadata);
 
     // Only add the big blob of source metadata if explicitly requested
     if (options.formatSpecificMetadata) {
-      metadata.formatSpecificMetadata = this.formatSpecificMetadata;
+      // metadata.formatSpecificMetadata = this.formatSpecificMetadata;
     }
-    return metadata;
+    // @ts-expect-error
+    return {};
   }
 
   async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
-    const url = `${TEST_SERVICE}/${TEST_QUERY}`;
-    const response = await this.fetch(url);
+    const response = await this.fetch(this.url);
     const arrayBuffer = await response.arrayBuffer();
     // TODO - hack - done to avoid pulling in selectLoader from core
-    const loader = this.props['flatgeobuf-server']?.loaders?.[0];
-    const table = loader?.parse(arrayBuffer);
-    return table;
+
+    const table = await FlatGeobufLoader.parse(arrayBuffer, {});
+    // const loader = this.props['flatgeobuf-server']?.loaders?.[0];
+    // const table = loader?.parse(arrayBuffer);
+    return table as GeoJSONTable;
   }
+}

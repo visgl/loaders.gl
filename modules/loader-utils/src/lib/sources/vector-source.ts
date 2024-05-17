@@ -21,7 +21,9 @@ export abstract class VectorSource<
 
   abstract getSchema(): Promise<Schema>;
   abstract getMetadata(options: {formatSpecificMetadata?: boolean}): Promise<VectorSourceMetadata>;
-  abstract getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable | BinaryFeatureCollection>;
+  abstract getFeatures(
+    parameters: GetFeaturesParameters
+  ): Promise<GeoJSONTable | BinaryFeatureCollection>;
 }
 
 // PARAMETER TYPES
@@ -38,7 +40,7 @@ export type VectorSourceMetadata = {
   abstract?: string;
   keywords: string[];
   layers: VectorSourceLayer[];
-  /** 
+  /**
    * Attempts to preserve the original format specific metadata from the underlying source,
    * May be an approximate representation
    */

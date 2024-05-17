@@ -74,31 +74,28 @@ function parseFlatGeobufToGeoJSONTable(
     return {shape: 'geojson-table', type: 'FeatureCollection', features: []};
   }
 
-  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+  const {reproject = false, crs = 'WGS84'} = options;
 
   const arr = new Uint8Array(arrayBuffer);
 
-  let fgbHeader;
+  let fgbHeader: fgb.HeaderMeta | undefined;
   let schema: Schema | undefined;
 
-  const rect: options.boundingBox && convertBoundingBox(options.boundingBox);
-  if (options.boundingBox) {
-    convert
-  }
+  const rect = options.boundingBox && convertBoundingBox(options.boundingBox);
 
   // @ts-expect-error this looks wrong
-  let {features} = deserializeGeoJson(arr, undefined, (headerMeta) => {
+  let {features} = deserializeGeoJson(arr, rect, (headerMeta) => {
     fgbHeader = headerMeta;
     schema = getSchemaFromFGBHeader(fgbHeader);
   });
 
-  const crs = fgbHeader && fgbHeader.crs;
+  const fromCRS = fgbHeader?.crs?.wkt;
   let projection;
-  if (reproject && crs) {
+  if (reproject && fromCRS) {
     // Constructing the projection may fail for some invalid WKT strings
     try {
-      projection = new Proj4Projection({from: crs.wkt, to: _targetCrs});
-    } catch (e) {
+      projection = new Proj4Projection({from: fromCRS, to: crs});
+    } catch (error) {
       // no op
     }
   }
@@ -118,7 +115,7 @@ function parseFlatGeobufToGeoJSONTable(
  */
 // eslint-disable-next-line complexity
 export function parseFlatGeobufInBatches(stream, options: ParseFlatGeobufOptions) {
-  const shape = options.flatgeobuf?.shape;
+  const shape = options.shape;
   switch (shape) {
     case 'binary':
       return parseFlatGeobufInBatchesToBinary(stream, options);
@@ -133,8 +130,10 @@ function parseFlatGeobufInBatchesToBinary(stream, options: ParseFlatGeobufOption
   // TODO: reproject binary streaming features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
+  const rect = options.boundingBox && convertBoundingBox(options.boundingBox);
+
   // @ts-expect-error
-  const iterator = deserializeGeneric(stream, binaryFromFeature);
+  const iterator = deserializeGeneric(stream, binaryFromFeature, rect);
   return iterator;
 }
 
@@ -145,7 +144,7 @@ function parseFlatGeobufInBatchesToBinary(stream, options: ParseFlatGeobufOption
  */
 // eslint-disable-next-line complexity
 async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: ParseFlatGeobufOptions) {
-  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+  const {reproject = false, crs = 'WGS84'} = options || {};
 
   let fgbHeader;
   // let schema: Schema | undefined;
@@ -159,9 +158,9 @@ async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: ParseFlatGeob
   // @ts-expect-error this looks wrong
   for await (const feature of iterator) {
     if (firstRecord) {
-      const crs = fgbHeader && fgbHeader.crs;
-      if (reproject && crs) {
-        projection = new Proj4Projection({from: crs.wkt, to: _targetCrs});
+      const fromCRS = fgbHeader?.crs?.wkt;
+      if (reproject && fromCRS) {
+        projection = new Proj4Projection({from: fromCRS, to: crs});
       }
 
       firstRecord = false;
