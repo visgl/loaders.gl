@@ -21,7 +21,7 @@ const square = [
         [-64, 4160]
       ]
     ],
-    type: 3,
+    simplifiedType: 3,
     tags: {name: 'Pennsylvania', density: 284.3},
     id: '42'
   }
@@ -34,24 +34,24 @@ test('TableTileSource#getTile#us-states.json', async (t) => {
 
   // Check that tiles are correctly generated
 
-  let tile = source.getRawTile({z: 7, x: 37, y: 48});
+  let tile = source.getProtoTile({z: 7, x: 37, y: 48});
   const expected = await loadGeoJSONTable('us-states-z7-37-48.json');
-  t.same(tile?.features, expected.features, 'z7-37-48');
+  t.same(tile?.protoFeatures, expected.features, 'z7-37-48');
 
-  tile = source.getRawTile({z: 9, x: 148, y: 192});
-  t.same(tile?.features, square, 'z9-148-192 (clipped square)');
+  tile = source.getProtoTile({z: 9, x: 148, y: 192});
+  t.same(tile?.protoFeatures, square, 'z9-148-192 (clipped square)');
 
-  // t.same(source.getRawTile({z: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
+  // t.same(source.getProtoTile({z: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
 
   // Check non-existing tiles (no geometry in these tile indices => no tile generated)
 
-  tile = source.getRawTile({z: 11, x: 800, y: 400});
+  tile = source.getProtoTile({z: 11, x: 800, y: 400});
   t.equal(tile, null, 'non-existing tile');
 
-  tile = source.getRawTile({z: -5, x: 123.25, y: 400.25});
+  tile = source.getProtoTile({z: -5, x: 123.25, y: 400.25});
   t.equal(tile, null, 'invalid tile');
 
-  tile = source.getRawTile({z: 25, x: 200, y: 200});
+  tile = source.getProtoTile({z: 25, x: 200, y: 200});
   t.equal(tile, null, 'invalid tile');
 
   // Check total number of tiles generated
@@ -78,10 +78,10 @@ test('TableTileSource#getTile#unbuffered tile left/right edges', async (t) => {
   });
   await source.ready;
 
-  let tile = source.getRawTile({z: 2, x: 1, y: 1});
+  let tile = source.getProtoTile({z: 2, x: 1, y: 1});
   t.same(tile, null);
-  tile = source.getRawTile({z: 2, x: 2, y: 1});
-  t.same(tile?.features, [
+  tile = source.getProtoTile({z: 2, x: 2, y: 1});
+  t.same(tile?.protoFeatures, [
     {
       geometry: [
         [
@@ -89,7 +89,7 @@ test('TableTileSource#getTile#unbuffered tile left/right edges', async (t) => {
           [0, 4096]
         ]
       ],
-      type: 2,
+      simplifiedType: 2,
       tags: null
     }
   ]);
@@ -112,7 +112,7 @@ test('TableTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
   });
   await source.ready;
 
-  t.same(source.getRawTile({z: 2, x: 1, y: 0})?.features, [
+  t.same(source.getProtoTile({z: 2, x: 1, y: 0})?.protoFeatures, [
     {
       geometry: [
         [
@@ -120,11 +120,11 @@ test('TableTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
           [4096, 4096]
         ]
       ],
-      type: 2,
+      simplifiedType: 2,
       tags: null
     }
   ]);
-  t.same(source.getRawTile({z: 2, x: 1, y: 1})?.features, []);
+  t.same(source.getProtoTile({z: 2, x: 1, y: 1})?.protoFeatures, []);
   t.end();
 });
 
@@ -149,7 +149,7 @@ test('TableTileSource#getTile#polygon clipping on the boundary', async (t) => {
   });
   await source.ready;
 
-  t.same(source.getRawTile({z: 5, x: 19, y: 9})?.features, [
+  t.same(source.getProtoTile({z: 5, x: 19, y: 9})?.protoFeatures, [
     {
       geometry: [
         [
@@ -160,7 +160,7 @@ test('TableTileSource#getTile#polygon clipping on the boundary', async (t) => {
           [3072, 3072]
         ]
       ],
-      type: 3,
+      simplifiedType: 3,
       tags: null
     }
   ]);

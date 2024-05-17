@@ -52,7 +52,7 @@ export function convertToLocalCoordinates(
  * @param feature
  */
 export function convertToLocalCoordinatesFlat(data: number[], extent: number): void {
-  for (let i = 0, il = data.length; i < il; ++i) {
+  for (let i = 0; i < data.length; ++i) {
     data[i] /= extent;
   }
 }

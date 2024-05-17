@@ -18,6 +18,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Geospatial Table Loaders',
+      collapsed: false,
       items: [
         'geospatial/flatgeobuf',
         'geospatial/geoarrow',
@@ -27,12 +28,13 @@ const sidebars = {
         'geospatial/shapefile',
         'geospatial/kml',
         'geospatial/gpx',
-        'geospatial/tcx',
+        'geospatial/tcx'
       ]
     },
     {
       type: 'category',
       label: 'Geospatial Tile Loaders',
+      collapsed: false,
       items: [
         'tiles/mvt',
         'tiles/pmtiles',
@@ -47,6 +49,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'General Loaders',
+      collapsed: false,
       items: [
         'textures',
         // 'gltf',

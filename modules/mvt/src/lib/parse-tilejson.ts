@@ -419,7 +419,7 @@ function attributeTypeToFieldType(aType: string): {type: string} {
   const type = aType.toLowerCase();
   if (!type || !attrTypeMap[type]) {
     // console.warn(
-    //   `cannot convert attribute type ${type} to loaders.gl data type, use string by default`
+    //   `cannot convert feature type ${type} to loaders.gl data type, use string by default`
     // );
   }
   return attrTypeMap[type] || {type: 'string'};
