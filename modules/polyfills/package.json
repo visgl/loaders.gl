@@ -53,7 +53,7 @@
     "save-pixels": "^2.3.6",
     "stream-to-async-iterator": "^1.0.0",
     "through": "^2.3.8",
-    "web-streams-polyfill": "^3.2.1"
+    "web-streams-polyfill": "^4.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
