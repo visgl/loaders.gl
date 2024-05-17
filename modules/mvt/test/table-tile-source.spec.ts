@@ -8,6 +8,7 @@ import {fetchFile} from '@loaders.gl/core';
 import {TableTileSource} from '@loaders.gl/mvt';
 import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
 import {expect} from 'test/utils/expect-assertions';
+import {SingleMap} from '../../../../foursquare/studio-monorepo/modules/react/src';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
 
@@ -28,7 +29,7 @@ const square = [
   }
 ];
 
-test.only('TableTileSource#getTile#us-states.json', async (t) => {
+test('TableTileSource#getTile#us-states.json', async (t) => {
   const geojson = await loadGeoJSONTable('us-states.json');
   const source = TableTileSource.createDataSource(geojson, {table: {coordinates: 'wgs84'}}); // , debug: 2});
   await source.ready;
@@ -90,7 +91,7 @@ test('TableTileSource#getTile#unbuffered tile left/right edges', async (t) => {
           [0, 4096]
         ]
       ],
-      type: 2,
+      simplifiedType: 2,
       tags: null
     }
   ]);
@@ -121,7 +122,7 @@ test('TableTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
           [4096, 4096]
         ]
       ],
-      type: 2,
+      simplifiedType: 2,
       tags: null
     }
   ]);
@@ -161,7 +162,7 @@ test('TableTileSource#getTile#polygon clipping on the boundary', async (t) => {
           [3072, 3072]
         ]
       ],
-      type: 3,
+      simplifiedType: 3,
       tags: null
     }
   ]);

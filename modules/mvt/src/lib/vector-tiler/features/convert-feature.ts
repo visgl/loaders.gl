@@ -55,9 +55,7 @@ export function convertFeaturesToProtoFeature(
  * with simplification data
  */
 function convertFeature(
-  features: ProtoFeature[],
   geojson: Feature,
-  features: ProtoFeature[],
   options: ConvertFeatureOptions,
   index: number
 ): ProtoFeature {
