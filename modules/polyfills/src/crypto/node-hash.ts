@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // This dependency is too big, application must provide it
 import {Hash} from '@loaders.gl/crypto';
 import * as crypto from 'crypto'; // Node.js builtin

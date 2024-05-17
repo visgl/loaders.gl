@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // Based on binary-gltf-utils under MIT license: Copyright (c) 2016-17 Karl Cheng
 
 const isArrayBuffer = (x) => x && x instanceof ArrayBuffer;

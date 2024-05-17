@@ -2588,7 +2588,7 @@ __metadata:
     save-pixels: "npm:^2.3.6"
     stream-to-async-iterator: "npm:^1.0.0"
     through: "npm:^2.3.8"
-    web-streams-polyfill: "npm:^3.2.1"
+    web-streams-polyfill: "npm:^4.0.0"
   peerDependencies:
     "@loaders.gl/core": ^4.0.0
   languageName: unknown
@@ -14708,10 +14708,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-streams-polyfill@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "web-streams-polyfill@npm:3.2.1"
-  checksum: 10c0/70ed6b5708e14afa2ab699221ea197d7c68ec0c8274bbe0181aecc5ba636ca27cbd383d2049f0eb9d529e738f5c088825502b317f3df24d18a278e4cc9a10e8b
+"web-streams-polyfill@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "web-streams-polyfill@npm:4.0.0"
+  checksum: 10c0/c570cea10db4c88eb630e1ddc2b3390eaf215527ab1229258ac6d1eb6ed3bb095312d4ce5c35090b590c051e1a94043b11d00fe4188413c67112bdf61e554b87
   languageName: node
   linkType: hard
 
