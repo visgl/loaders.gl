@@ -15,7 +15,7 @@ test('TextDecoder', (t) => {
   t.end();
 });
 
-test.only('ReadableStream', (t) => {
+test('ReadableStream', (t) => {
   t.ok(ReadableStream, 'ReadableStream defined');
   t.end();
 });
