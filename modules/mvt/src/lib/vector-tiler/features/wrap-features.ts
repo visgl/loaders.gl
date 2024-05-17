@@ -85,6 +85,7 @@ function shiftFeatureCoords(features: ProtoFeature[], offset: number): ProtoFeat
           }
           newGeometry.push(newPolygon);
         }
+        break;
 
       default:
         throw new Error(String(type));
