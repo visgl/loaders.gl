@@ -24,7 +24,6 @@ import {convertFeaturesToProtoFeature} from './lib/vector-tiler/features/convert
 import {clipFeatures} from './lib/vector-tiler/features/clip-features'; // stripe clipping algorithm
 import {wrapFeatures} from './lib/vector-tiler/features/wrap-features'; // date line processing
 
-
 /** Options to configure tiling */
 export const TableTileSource = {
   name: 'TableTiler',

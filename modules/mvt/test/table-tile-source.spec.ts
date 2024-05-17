@@ -7,8 +7,6 @@ import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {TableTileSource} from '@loaders.gl/mvt';
 import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
-import {expect} from 'test/utils/expect-assertions';
-import {SingleMap} from '../../../../foursquare/studio-monorepo/modules/react/src';
 
 const DATA_PATH = '@loaders.gl/mvt/test/data/geojson-vt';
 

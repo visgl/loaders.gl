@@ -22,7 +22,10 @@ export type WrapFeaturesOptions = {
  * @param options buffer and extent
  * @returns
  */
-export function wrapFeatures(features: ProtoFeature[], options: WrapFeaturesOptions): ProtoFeature[] {
+export function wrapFeatures(
+  features: ProtoFeature[],
+  options: WrapFeaturesOptions
+): ProtoFeature[] {
   const buffer = options.buffer / options.extent;
   let merged: ProtoFeature[] = features;
   const left = clipFeatures(features, 1, -1 - buffer, buffer, 0, -1, 2, options); // left world copy
@@ -82,6 +85,9 @@ function shiftFeatureCoords(features: ProtoFeature[], offset: number): ProtoFeat
           }
           newGeometry.push(newPolygon);
         }
+
+      default:
+        throw new Error(String(type));
     }
 
     newFeatures.push(createProtoFeature(feature.id, type, newGeometry, feature.tags));

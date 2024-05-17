@@ -21,6 +21,7 @@ export function convertTileToGeoJSON(
   const features: Feature[] = [];
   for (const rawFeature of protoTile.protoFeatures) {
     if (!rawFeature || !rawFeature.geometry) {
+      // eslint-disable-next-line no-continue
       continue;
     }
 

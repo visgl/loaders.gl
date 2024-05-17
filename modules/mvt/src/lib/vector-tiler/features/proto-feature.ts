@@ -86,6 +86,9 @@ export function createProtoFeature(
         calcLineBBox(feature, polygon[0]);
       }
       break;
+
+      default:
+      throw new Error(String(type));
   }
 
   return feature;

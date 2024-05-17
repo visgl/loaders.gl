@@ -163,7 +163,7 @@ function addProtoFeature(
     if (feature.id !== null) {
       tileFeature.id = feature.id;
     }
-    
+
     tile.protoFeatures.push(tileFeature);
   }
 }
