@@ -25,8 +25,8 @@ export class FileProvider implements FileProviderInterface {
       file.bigsize > 0n
         ? file.bigsize
         : file.size > 0n
-          ? file.size
-          : (await file.stat?.())?.bigsize ?? 0n
+        ? file.size
+        : (await file.stat?.())?.bigsize ?? 0n
     );
   }
 
