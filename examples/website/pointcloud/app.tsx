@@ -1,5 +1,8 @@
-/* eslint-disable no-unused-vars */
-import React, {PureComponent} from 'react';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import React, {useState} from 'react';
 import {render} from 'react-dom';
 
 import DeckGL from '@deck.gl/react';
@@ -13,11 +16,14 @@ import {PCDLoader} from '@loaders.gl/pcd';
 import {OBJLoader} from '@loaders.gl/obj';
 import {load, registerLoaders} from '@loaders.gl/core';
 
-import ControlPanel from './components/control-panel';
-import FILE_INDEX from './file-index';
+import {ExamplePanel, Example, MetadataViewer} from './components/example-panel';
+import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples';
 
 // Additional format support can be added here, see
-registerLoaders([DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader]);
+const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader];
+
+// TODO - move away from registerLoaders
+registerLoaders(POINT_CLOUD_LOADERS);
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -31,6 +37,214 @@ const INITIAL_VIEW_STATE = {
 };
 
 const transitionInterpolator = new LinearInterpolator(['rotationOrbit']);
+
+/** Application props (used by website MDX pages to configure example */
+type AppProps = {
+  /** Controls which examples are shown */
+  format?: string;
+  /** Show tile borders */
+  showTileBorders?: boolean;
+  /** On tiles load */
+  onTilesLoad?: Function;
+  /** Any informational text to display in the overlay */
+  children?: React.Children;
+};
+
+/** Application state */
+type AppState = {
+  /** Currently active tile source */
+  pointData: any;
+  /** Metadata loaded from active tile source */
+  metadata: string;
+  /**Current view state */
+  viewState: Record<string, number>;
+};
+
+export default function App(props: AppProps = {}) {
+  const [state, setState] = useState<AppState>({
+    viewState: INITIAL_VIEW_STATE,
+    pointData: null,
+    metadata: null,
+    // TODO - handle errors
+    // error: null
+  });
+
+  const {pointData, selectedExample} = state;
+  
+  const layers = [
+    pointData &&
+      new PointCloudLayer({
+        // Layers can't reinitialize with new binary data
+        id: `point-cloud-layer-${selectedExample}`,
+        coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+        data: pointData,
+        getNormal: [0, 1, 0],
+        getColor: [255, 255, 255],
+        opacity: 0.5,
+        pointSize: 0.5
+      })
+  ];
+  
+  return (
+    <div style={{position: 'relative', height: '100%'}}>
+      <ExamplePanel
+        title="Tileset Metadata"
+        examples={EXAMPLES}
+        format={props.format}
+        initialCategoryName={INITIAL_CATEGORY_NAME}
+        initialExampleName={INITIAL_EXAMPLE_NAME}
+        onExampleChange={onExampleChange}
+      >
+        <MetadataViewer metadata={''} />
+        {props.children}
+        {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
+        <pre style={{textAlign: 'center', margin: 0}}>
+          {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
+          {/* viewState.zoom.toFixed(2) 
+                  vertexCount={pointData && pointData.length}
+        loadTimeMs={loadTimeMs}
+        */}
+        </pre>
+      </ExamplePanel>
+
+      <DeckGL
+        layers={layers}
+        views={new OrbitView({})}
+        viewState={state.viewState}
+        initialViewState={state.viewState}
+        controller={{inertia: true}}
+        onViewStateChange={onViewStateChange}
+        // TODO - move to view
+        parameters={{
+          clearColor: [0.07, 0.14, 0.19, 1]
+        }}
+        getTooltip={getTooltip}
+      >
+
+      </DeckGL>
+    </div>
+  );
+
+  /*
+    <Attributions attributions={metadata?.attributions} />
+    render() {
+    const {viewState} = state;
+    // eslint-disable-next-line react/prop-types
+    const {panel = true} = props;
+    return (
+      <div style={{position: 'relative', height: '100%'}}>
+        <div style={{visibility: panel ? 'default' : 'hidden'}}>{_renderControlPanel()}</div>
+        <DeckGL
+          views={new OrbitView()}
+          viewState={viewState}
+          controller={{inertia: true}}
+          onViewStateChange={_onViewStateChange}
+          layers={_renderLayers()}
+          parameters={{
+            clearColor: [0.07, 0.14, 0.19, 1]
+          }}
+        />
+      </div>
+    );
+  }
+  */
+
+  function onViewStateChange({viewState}) {
+    setState(state => ({...state, viewState}));
+  }
+
+  function rotateCamera() {
+    const {viewState} = state;
+    setState(state => ({
+      ...state, 
+      viewState: {
+        ...viewState,
+        rotationOrbit: viewState.rotationOrbit + 10,
+        transitionDuration: 600,
+        transitionInterpolator,
+        onTransitionEnd: rotateCamera
+      }
+    }));
+  }
+
+
+  async function onExampleChange(example: Example): Promise<void> {
+    // TODO - timing could be done automatically by `load`.
+    
+    setState(state => ({
+      ...state, 
+      pointData: null,
+      metadata: null,
+      loadTimeMs: undefined,
+      loadStartMs: Date.now()   
+    }));
+
+    const {url} = example;
+    const {header, loaderData, attributes, progress} = await load(url);
+
+    // metadata from LAZ file header
+    const {maxs, mins} =
+      loaderData.header?.mins && loaderData.header?.maxs
+        ? loaderData.header
+        : calculateBounds(attributes);
+
+    let {viewState} = state;
+
+    // File contains bounding box info
+    viewState = {
+      ...INITIAL_VIEW_STATE,
+      target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
+      zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
+    };
+
+    setState(
+      state => ({
+        ...state,
+        loadTimeMs: Date.now() - state.loadStartMs,
+        // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
+        // in which case the vertex count is not correct for display as points
+        // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
+        // in which case the loader throws away indices and just return the vertices?
+        pointData: convertLoadersMeshToDeckPointCloudData(attributes),
+        viewState
+      }),
+      rotateCamera
+    );
+  }
+
+  /**
+  async function onExampleChange2(args: {example: Example;}) {
+    const url = example.data;
+    try {
+
+      (async () => {
+        const metadata = await tileSource.getMetadata();
+        let initialViewState = {...state.viewState, ...example.viewState};
+        initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
+
+        setState((state) => ({
+          ...state,
+          initialViewState,
+          metadata: metadata ? JSON.stringify(metadata, null, 2) : ''
+        }));
+      })();
+    } catch (error) {
+      console.error('Failed to load data', url, error);
+      setState((state) => ({...state, error: `Could not load ${exampleName}: ${error.message}`}));
+    }
+  }
+}
+
+function getTooltip(info) {
+  if (info.tile) {
+    const {x, y, z} = info.tile.index;
+    return `tile: x: ${x}, y: ${y}, z: ${z}`;
+  }
+  return null;
+}
+ */
+
+// HELPER FUNCTIONS
 
 // basic helper method to calculate a models upper and lower bounds
 function calculateBounds(attributes) {
@@ -72,137 +286,6 @@ function convertLoadersMeshToDeckPointCloudData(attributes) {
   };
 }
 
-export default class App extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      viewState: INITIAL_VIEW_STATE,
-      pointData: null,
-      // control panel
-      selectedExample: 'Richmond Azaelias',
-      selectedCategory: 'PLY'
-    };
-
-    this._onLoad = this._onLoad.bind(this);
-    this._rotateCamera = this._rotateCamera.bind(this);
-    this._onViewStateChange = this._onViewStateChange.bind(this);
-    this._onExampleChange = this._onExampleChange.bind(this);
-  }
-
-  _onViewStateChange({viewState}) {
-    this.setState({viewState});
-  }
-
-  _rotateCamera() {
-    const {viewState} = this.state;
-    this.setState({
-      viewState: {
-        ...viewState,
-        rotationOrbit: viewState.rotationOrbit + 10,
-        transitionDuration: 600,
-        transitionInterpolator,
-        onTransitionEnd: this._rotateCamera
-      }
-    });
-  }
-
-  _onExampleChange({selectedCategory, selectedExample, example}) {
-    const {uri} = example;
-    // TODO - timing could be done automatically by `load`.
-    this._loadStartMs = Date.now();
-    this.setState({
-      selectedCategory,
-      selectedExample,
-      pointData: null,
-      loadTimeMs: undefined
-    });
-    load(uri).then(this._onLoad.bind(this));
-  }
-
-  _onLoad({header, loaderData, attributes, progress}) {
-    // metadata from LAZ file header
-    const {maxs, mins} =
-      loaderData.header?.mins && loaderData.header?.maxs
-        ? loaderData.header
-        : calculateBounds(attributes);
-
-    let {viewState} = this.state;
-
-    // File contains bounding box info
-    viewState = {
-      ...INITIAL_VIEW_STATE,
-      target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
-      zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
-    };
-
-    this.setState(
-      {
-        loadTimeMs: Date.now() - this._loadStartMs,
-        // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
-        // in which case the vertex count is not correct for display as points
-        // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
-        // in which case the loader throws away indices and just return the vertices?
-        pointData: convertLoadersMeshToDeckPointCloudData(attributes),
-        viewState
-      },
-      this._rotateCamera
-    );
-  }
-
-  _renderLayers() {
-    const {pointData, selectedExample} = this.state;
-
-    return [
-      pointData &&
-        new PointCloudLayer({
-          // Layers can't reinitialize with new binary data
-          id: `point-cloud-layer-${selectedExample}`,
-          coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-          data: pointData,
-          getNormal: [0, 1, 0],
-          getColor: [255, 255, 255],
-          opacity: 0.5,
-          pointSize: 0.5
-        })
-    ];
-  }
-
-  _renderControlPanel() {
-    const {selectedExample, pointData, selectedCategory, loadTimeMs} = this.state;
-    return (
-      <ControlPanel
-        examples={FILE_INDEX}
-        selectedCategory={selectedCategory}
-        selectedExample={selectedExample}
-        onExampleChange={this._onExampleChange}
-        vertexCount={pointData && pointData.length}
-        loadTimeMs={loadTimeMs}
-      />
-    );
-  }
-
-  render() {
-    const {viewState} = this.state;
-    // eslint-disable-next-line react/prop-types
-    const {panel = true} = this.props;
-    return (
-      <div style={{position: 'relative', height: '100%'}}>
-        <div style={{visibility: panel ? 'default' : 'hidden'}}>{this._renderControlPanel()}</div>
-        <DeckGL
-          views={new OrbitView()}
-          viewState={viewState}
-          controller={{inertia: true}}
-          onViewStateChange={this._onViewStateChange}
-          layers={this._renderLayers()}
-          parameters={{
-            clearColor: [0.07, 0.14, 0.19, 1]
-          }}
-        />
-      </div>
-    );
-  }
-}
 
 export function renderToDOM(container) {
   render(<App />, container);
