@@ -10,7 +10,7 @@ import {ImageLoaderOptions} from '@loaders.gl/images';
 import {TileJSONLoaderOptions} from '@loaders.gl/mvt';
 import {getTileBoundingBox} from './lib/utils/geometry-utils';
 
-/** Properties for a Mapbox Vector Tile Source */
+/** Properties for ImageSource->ImageTileSource adapter */
 export type ImageTileSourceAdapterProps = DataSourceProps & {
   /** Root url of tileset */
   url: string;
@@ -25,11 +25,8 @@ export type ImageTileSourceAdapterProps = DataSourceProps & {
 };
 
 /**
- * MVT data source for Mapbox Vector Tiles v1.
- */
-/**
- * A PMTiles data source
- * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
+ * Adapts an ImageSource to an ImageTileSource.
+ * @deprecated This is still an incomplete work in progress.
  */
 export class ImageTileSourceAdapter extends DataSource implements ImageTileSource {
   readonly props: ImageTileSourceAdapterProps;

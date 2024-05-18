@@ -22,8 +22,8 @@ export function signedArea(ring: number[][]) {
 
 /**
  * Calculates the extents of a tile
- * @param tileIndex 
- * @returns 
+ * @param tileIndex
+ * @returns
  */
 export function getTileExtents(tileIndex: {x: number; y: number; z: number}): [number, number] {
   const scale = Math.pow(2, tileIndex.z);
@@ -34,7 +34,11 @@ export function getTileExtents(tileIndex: {x: number; y: number; z: number}): [n
   ];
 }
 
-export function getTileBoundingBox(tileIndex: {x: number; y: number; z: number}): [[number, number], [number, number]] {
+export function getTileBoundingBox(tileIndex: {
+  x: number;
+  y: number;
+  z: number;
+}): [[number, number], [number, number]] {
   const [x0, y0] = getTileExtents(tileIndex);
   const [x1, y1] = getTileExtents({x: tileIndex.x + 1, y: tileIndex.y + 1, z: tileIndex.z});
   return [
