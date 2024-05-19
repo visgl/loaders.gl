@@ -42,7 +42,7 @@ const DropDown = styled.select`
 `;
 
 export type Example = {
-  sourceType: 'mvt' | 'pmtiles' | 'table';
+  type: 'las' | 'draco' | 'pcd' | 'ply'  | 'obj';
   url: string;
   attributions?: string[];
   viewState?: Record<string, unknown>;
@@ -107,13 +107,15 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
   // Initialize the examples (each demo might focus on a different "props.format")
   useEffect(() => {
     const examples = getExamplesForFormat(props.examples, props.format);
+    console.log(examples);
 
     const categoryName = props.format || props.initialCategoryName;
     let exampleName = props.format
       ? Object.keys(examples[categoryName])[0]
       : props.initialExampleName;
-
+    console.log(categoryName, exampleName);
     const example = examples[categoryName][exampleName];
+    console.log(example);
     setState((state) => ({...state, examples, exampleName, categoryName, example}));
   }, [props.examples, props.format, props.initialCategoryName, props.initialExampleName]);
 
@@ -240,6 +242,24 @@ const ExampleDropDown: React.FC<ExampleDropDownProps> = (props: ExampleDropDownP
     </DropDown>
   );
 };
+
+/** 
+ * Add drag and drop functions for given canvas
+ * TODO - not yet used
+ */
+export function addFileDropToCanvas(canvas, onDrop) {
+  canvas.ondragover = (event) => {
+    event.dataTransfer.dropEffect = 'link';
+    event.preventDefault();
+  };
+
+  canvas.ondrop = (event) => {
+    event.preventDefault();
+    if (event.dataTransfer.files && event.dataTransfer.files.length === 1) {
+      onDrop(event.dataTransfer.files[0]);
+    }
+  };
+}
 
 /** Filter out examples that are not of the given format. */
 function getExamplesForFormat(

@@ -68,12 +68,8 @@ export default function App(props: AppProps = {}) {
     // error: null
   });
 
-  // useEffect(() => {
-  //   async function rotate() {
-  //     rotateCamera();
-  //   }
-  //   rotate();
-  // }, [state.viewState]);
+  // Start rotation
+  useEffect(() => rotateCamera(state.viewsState), []);
 
   const {pointData, selectedExample} = state;
 
@@ -85,7 +81,7 @@ export default function App(props: AppProps = {}) {
         coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
         data: pointData,
         getNormal: [0, 1, 0],
-        getColor: [255, 255, 255],
+        getColor: [200, 200, 255],
         opacity: 0.5,
         pointSize: 0.5
       })
@@ -94,7 +90,6 @@ export default function App(props: AppProps = {}) {
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <ExamplePanel
-        title="Tileset Metadata"
         examples={EXAMPLES}
         format={props.format}
         initialCategoryName={INITIAL_CATEGORY_NAME}
@@ -103,7 +98,11 @@ export default function App(props: AppProps = {}) {
       >
         {props.children}
         {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
-        <PointCloudStats vertexCount={pointData?.length || 0} loadTimeMs={state.loadTimeMs} />
+        <PointCloudStats
+          vertexCount={pointData?.length || 0}
+          loadTimeMs={state.loadTimeMs}
+          loadStartMs={state.loadStartMs}
+        />
         <h3>Schema and Metadata</h3>
         <MetadataViewer metadata={state.metadata} />
       </ExamplePanel>
@@ -128,8 +127,7 @@ export default function App(props: AppProps = {}) {
     setState((state) => ({...state, viewState}));
   }
 
-  function rotateCamera() {
-    const {viewState} = state;
+  function rotateCamera(viewState) {
     setState((state) => ({
       ...state,
       viewState: {
@@ -142,7 +140,13 @@ export default function App(props: AppProps = {}) {
     }));
   }
 
-  async function onExampleChange({example}: {example: Example}): Promise<void> {
+  async function onExampleChange({
+    example,
+    exampleName
+  }: {
+    example: Example;
+    exampleName: string;
+  }): Promise<void> {
     // TODO - timing could be done automatically by `load`.
 
     setState((state) => ({
@@ -154,42 +158,40 @@ export default function App(props: AppProps = {}) {
     }));
 
     const {url} = example;
-    const pointCloud = await load(url, POINT_CLOUD_LOADERS) as Mesh;
-    const {schema, loaderData, attributes} = pointCloud;
+    try {
+      const pointCloud = (await load(url, POINT_CLOUD_LOADERS)) as Mesh;
+      const {schema, header, loaderData, attributes} = pointCloud;
 
-    // metadata from LAZ file header
-    const {maxs, mins} =
-      loaderData?.header?.mins && loaderData?.header?.maxs
-        ? loaderData.header
-        : calculateBounds(attributes);
+      const viewState = getViewState(state, loaderData, attributes);
 
-    let {viewState} = state;
+      const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
 
-    // File contains bounding box info
-    viewState = {
-      ...INITIAL_VIEW_STATE,
-      ...viewState,
-      target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
-      zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
-    };
-
-    const metadata = JSON.stringify({schema, loaderData}, null, 2);
-
-    setState((state) => ({
-      ...state,
-      loadTimeMs: Date.now() - state.loadStartMs,
-      // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
-      // in which case the vertex count is not correct for display as points
-      // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
-      // in which case the loader throws away indices and just return the vertices?
-      pointData: convertLoadersMeshToDeckPointCloudData(attributes),
-      viewState,
-      metadata
-    }));
+      setState((state) => ({
+        ...state,
+        loadTimeMs: Date.now() - state.loadStartMs,
+        loadStartMs: undefined,
+        // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
+        // in which case the vertex count is not correct for display as points
+        // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
+        // in which case the loader throws away indices and just return the vertices?
+        pointData: convertLoadersMeshToDeckPointCloudData(attributes),
+        viewState,
+        metadata
+      }));
+    } catch (error) {
+      console.error('Failed to load data', url, error);
+      setState((state) => ({...state, error: `Could not load ${exampleName}: ${error.message}`}));
+    }
   }
 }
-function PointCloudStats(props: {vertexCount: number; loadTimeMs: number}) {
-  const {vertexCount, loadTimeMs} = props;
+
+/**
+ * Component that renders formatted stats for the point cloud
+ * @param props
+ * @returns
+ */
+function PointCloudStats(props: {vertexCount: number; loadTimeMs: number; loadStartMs: number}) {
+  const {vertexCount, loadTimeMs, loadStartMs} = props;
   let message;
   if (vertexCount >= 1e7) {
     message = `${(vertexCount / 1e6).toFixed(0)}M`;
@@ -202,49 +204,51 @@ function PointCloudStats(props: {vertexCount: number; loadTimeMs: number}) {
   } else {
     message = `${vertexCount}`;
   }
+
+  let loadMessage = '';
+  if (loadTimeMs) {
+    loadMessage = `Load time: ${(loadTimeMs / 1000).toFixed(1)}s`;
+  } else if (loadStartMs) {
+    loadMessage = 'Loading...';
+  }
+
   return (
     <pre style={{textAlign: 'center', margin: 0}}>
       <div>{Number.isFinite(vertexCount) ? `Points: ${message}` : null}</div>
       <div>
-        {Number.isFinite(loadTimeMs) ? `Load time: ${(loadTimeMs / 1000).toFixed(1)}s` : null}
+        {loadMessage}
       </div>
     </pre>
   );
 }
 
-/**
-  async function onExampleChange2(args: {example: Example;}) {
-    const url = example.data;
-    try {
-
-      (async () => {
-        const metadata = await tileSource.getMetadata();
-        let initialViewState = {...state.viewState, ...example.viewState};
-        initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
-
-        setState((state) => ({
-          ...state,
-          initialViewState,
-          metadata: metadata ? JSON.stringify(metadata, null, 2) : ''
-        }));
-      })();
-    } catch (error) {
-      console.error('Failed to load data', url, error);
-      setState((state) => ({...state, error: `Could not load ${exampleName}: ${error.message}`}));
-    }
-  }
-}
-
-function getTooltip(info) {
-  if (info.tile) {
-    const {x, y, z} = info.tile.index;
-    return `tile: x: ${x}, y: ${y}, z: ${z}`;
-  }
-  return null;
-}
- */
+// function getTooltip(info) {
+//   if (info.tile) {
+//     const {x, y, z} = info.tile.index;
+//     return `tile: x: ${x}, y: ${y}, z: ${z}`;
+//   }
+//   return null;
+// }
 
 // HELPER FUNCTIONS
+
+function getViewState(state: AppState, loaderData, attributes) {
+  // metadata from LAZ file header
+  const {maxs, mins} =
+    loaderData?.header?.mins && loaderData?.header?.maxs
+      ? loaderData.header
+      : calculateBounds(attributes);
+
+  let {viewState} = state;
+
+  // File contains bounding box info
+  return {
+    ...INITIAL_VIEW_STATE,
+    ...viewState,
+    target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
+    zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
+  };
+}
 
 // basic helper method to calculate a models upper and lower bounds
 function calculateBounds(attributes) {
