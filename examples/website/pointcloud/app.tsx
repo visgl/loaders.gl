@@ -2,28 +2,27 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {render} from 'react-dom';
 
 import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
+import {load} from '@loaders.gl/core';
+import type {Mesh} from '@loaders.gl/schema';
+
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 import {PLYLoader} from '@loaders.gl/ply';
 import {PCDLoader} from '@loaders.gl/pcd';
 import {OBJLoader} from '@loaders.gl/obj';
-import {load, registerLoaders} from '@loaders.gl/core';
 
 import {ExamplePanel, Example, MetadataViewer} from './components/example-panel';
 import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples';
 
 // Additional format support can be added here, see
 const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader];
-
-// TODO - move away from registerLoaders
-registerLoaders(POINT_CLOUD_LOADERS);
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -64,13 +63,20 @@ export default function App(props: AppProps = {}) {
   const [state, setState] = useState<AppState>({
     viewState: INITIAL_VIEW_STATE,
     pointData: null,
-    metadata: null,
+    metadata: null
     // TODO - handle errors
     // error: null
   });
 
+  // useEffect(() => {
+  //   async function rotate() {
+  //     rotateCamera();
+  //   }
+  //   rotate();
+  // }, [state.viewState]);
+
   const {pointData, selectedExample} = state;
-  
+
   const layers = [
     pointData &&
       new PointCloudLayer({
@@ -84,7 +90,7 @@ export default function App(props: AppProps = {}) {
         pointSize: 0.5
       })
   ];
-  
+
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <ExamplePanel
@@ -95,68 +101,37 @@ export default function App(props: AppProps = {}) {
         initialExampleName={INITIAL_EXAMPLE_NAME}
         onExampleChange={onExampleChange}
       >
-        <MetadataViewer metadata={''} />
         {props.children}
         {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
-        <pre style={{textAlign: 'center', margin: 0}}>
-          {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
-          {/* viewState.zoom.toFixed(2) 
-                  vertexCount={pointData && pointData.length}
-        loadTimeMs={loadTimeMs}
-        */}
-        </pre>
+        <PointCloudStats vertexCount={pointData?.length || 0} loadTimeMs={state.loadTimeMs} />
+        <h3>Schema and Metadata</h3>
+        <MetadataViewer metadata={state.metadata} />
       </ExamplePanel>
 
       <DeckGL
         layers={layers}
         views={new OrbitView({})}
         viewState={state.viewState}
-        initialViewState={state.viewState}
         controller={{inertia: true}}
         onViewStateChange={onViewStateChange}
         // TODO - move to view
         parameters={{
           clearColor: [0.07, 0.14, 0.19, 1]
         }}
-        getTooltip={getTooltip}
-      >
-
-      </DeckGL>
+      ></DeckGL>
     </div>
   );
 
-  /*
-    <Attributions attributions={metadata?.attributions} />
-    render() {
-    const {viewState} = state;
-    // eslint-disable-next-line react/prop-types
-    const {panel = true} = props;
-    return (
-      <div style={{position: 'relative', height: '100%'}}>
-        <div style={{visibility: panel ? 'default' : 'hidden'}}>{_renderControlPanel()}</div>
-        <DeckGL
-          views={new OrbitView()}
-          viewState={viewState}
-          controller={{inertia: true}}
-          onViewStateChange={_onViewStateChange}
-          layers={_renderLayers()}
-          parameters={{
-            clearColor: [0.07, 0.14, 0.19, 1]
-          }}
-        />
-      </div>
-    );
-  }
-  */
+  /* <Attributions attributions={metadata?.attributions} /> */
 
   function onViewStateChange({viewState}) {
-    setState(state => ({...state, viewState}));
+    setState((state) => ({...state, viewState}));
   }
 
   function rotateCamera() {
     const {viewState} = state;
-    setState(state => ({
-      ...state, 
+    setState((state) => ({
+      ...state,
       viewState: {
         ...viewState,
         rotationOrbit: viewState.rotationOrbit + 10,
@@ -167,24 +142,24 @@ export default function App(props: AppProps = {}) {
     }));
   }
 
-
-  async function onExampleChange(example: Example): Promise<void> {
+  async function onExampleChange({example}: {example: Example}): Promise<void> {
     // TODO - timing could be done automatically by `load`.
-    
-    setState(state => ({
-      ...state, 
+
+    setState((state) => ({
+      ...state,
       pointData: null,
       metadata: null,
       loadTimeMs: undefined,
-      loadStartMs: Date.now()   
+      loadStartMs: Date.now()
     }));
 
     const {url} = example;
-    const {header, loaderData, attributes, progress} = await load(url);
+    const pointCloud = await load(url, POINT_CLOUD_LOADERS) as Mesh;
+    const {schema, loaderData, attributes} = pointCloud;
 
     // metadata from LAZ file header
     const {maxs, mins} =
-      loaderData.header?.mins && loaderData.header?.maxs
+      loaderData?.header?.mins && loaderData?.header?.maxs
         ? loaderData.header
         : calculateBounds(attributes);
 
@@ -193,26 +168,51 @@ export default function App(props: AppProps = {}) {
     // File contains bounding box info
     viewState = {
       ...INITIAL_VIEW_STATE,
+      ...viewState,
       target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
       zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
     };
 
-    setState(
-      state => ({
-        ...state,
-        loadTimeMs: Date.now() - state.loadStartMs,
-        // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
-        // in which case the vertex count is not correct for display as points
-        // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
-        // in which case the loader throws away indices and just return the vertices?
-        pointData: convertLoadersMeshToDeckPointCloudData(attributes),
-        viewState
-      }),
-      rotateCamera
-    );
-  }
+    const metadata = JSON.stringify({schema, loaderData}, null, 2);
 
-  /**
+    setState((state) => ({
+      ...state,
+      loadTimeMs: Date.now() - state.loadStartMs,
+      // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
+      // in which case the vertex count is not correct for display as points
+      // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
+      // in which case the loader throws away indices and just return the vertices?
+      pointData: convertLoadersMeshToDeckPointCloudData(attributes),
+      viewState,
+      metadata
+    }));
+  }
+}
+function PointCloudStats(props: {vertexCount: number; loadTimeMs: number}) {
+  const {vertexCount, loadTimeMs} = props;
+  let message;
+  if (vertexCount >= 1e7) {
+    message = `${(vertexCount / 1e6).toFixed(0)}M`;
+  } else if (vertexCount >= 1e6) {
+    message = `${(vertexCount / 1e6).toFixed(1)}M`;
+  } else if (vertexCount >= 1e4) {
+    message = `${(vertexCount / 1e3).toFixed(0)}K`;
+  } else if (vertexCount >= 1e3) {
+    message = `${(vertexCount / 1e3).toFixed(1)}K`;
+  } else {
+    message = `${vertexCount}`;
+  }
+  return (
+    <pre style={{textAlign: 'center', margin: 0}}>
+      <div>{Number.isFinite(vertexCount) ? `Points: ${message}` : null}</div>
+      <div>
+        {Number.isFinite(loadTimeMs) ? `Load time: ${(loadTimeMs / 1000).toFixed(1)}s` : null}
+      </div>
+    </pre>
+  );
+}
+
+/**
   async function onExampleChange2(args: {example: Example;}) {
     const url = example.data;
     try {
@@ -285,7 +285,6 @@ function convertLoadersMeshToDeckPointCloudData(attributes) {
     attributes: deckAttributes
   };
 }
-
 
 export function renderToDOM(container) {
   render(<App />, container);

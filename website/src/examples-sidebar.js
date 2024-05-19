@@ -34,7 +34,6 @@ const sidebars = {
     {
       type: 'category',
       label: 'Geospatial Tile Loaders',
-      collapsed: false,
       items: [
         'tiles/mvt',
         'tiles/pmtiles',
@@ -48,12 +47,22 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Point Cloud Loaders',
+      items: [
+        'pointclouds/draco',
+        'pointclouds/las',
+        'pointclouds/pcd',
+        'pointclouds/ply',
+        'pointclouds/obj'
+      ]
+    },
+    {
+      type: 'category',
       label: 'General Loaders',
       collapsed: false,
       items: [
         'textures',
         // 'gltf',
-        'pointcloud'
       ]
     }
     // {

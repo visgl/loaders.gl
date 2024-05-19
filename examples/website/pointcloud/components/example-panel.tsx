@@ -43,7 +43,7 @@ const DropDown = styled.select`
 
 export type Example = {
   sourceType: 'mvt' | 'pmtiles' | 'table';
-  data: string;
+  url: string;
   attributions?: string[];
   viewState?: Record<string, unknown>;
   tileSize?: number[];
