@@ -2,6 +2,10 @@
 
 ## v4.2
 
+### v4.2.2
+
+- fix(i3s): slpk full path on Windows (#3011)
+
 ### v4.2.1
 
 - fix(tile-converter): failing i3s-server (#2980)

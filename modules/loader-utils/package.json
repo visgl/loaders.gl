@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/loader-utils",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
   "type": "module",
@@ -45,8 +45,8 @@
     "stream": false
   },
   "dependencies": {
-    "@loaders.gl/schema": "4.2.1",
-    "@loaders.gl/worker-utils": "4.2.1",
+    "@loaders.gl/schema": "4.2.2",
+    "@loaders.gl/worker-utils": "4.2.2",
     "@probe.gl/stats": "^4.0.2"
   },
   "peerDependencies": {
