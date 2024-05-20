@@ -60,13 +60,13 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   },
 
   OBJ: {
-    Magnolia: {
-      type: 'obj',
-      url: `${LOADERS_URI}/modules/obj/test/data/magnolia.obj`
-    },
     Bunny: {
       type: 'obj',
       url: `${LOADERS_URI}/modules/obj/test/data/bunny.obj`
+    },
+    Magnolia: {
+      type: 'obj',
+      url: `${LOADERS_URI}/modules/obj/test/data/magnolia.obj`
     }
     // TODO need fix
     // Cube: {
