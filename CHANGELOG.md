@@ -2,6 +2,22 @@
 
 ## v4.3
 
+### v4.3.0-alpha.3
+
+- fix(i3s): slpk full path on Windows (#3011)
+- feat(mvt): TableTileSource refactor, improved typing (#2990)
+- chore: Cleanup of Source parameters (#3015)
+- fix(csv): move d3-dsv from devDependencies to dependencies (#3009)
+- fix(loader-utils): add missing dependency for @probe.gl/log (#3008)
+- docs: Fix table formatting (#3014)
+- feat: Add VectorSource (#3012)
+- fix: ReadableStream (#3013)
+- chore(loader-utils): Preparing to migrate from FileProviders to ReadableFiles (#3000)
+- feat(core): Add createDataSource API (#3002)
+- chore(mvt): prep for refactor (#3005)
+- chore(mv): rename vector-tiler files (#3004)
+- chore: Source-related code org (#3003)
+
 ### v4.3.0-alpha.2
 
 - examples: Modernize geospatial example (#2996)
