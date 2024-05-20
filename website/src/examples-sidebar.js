@@ -47,12 +47,22 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Point Cloud Formats',
+      items: [
+        'pointclouds/draco',
+        'pointclouds/las',
+        'pointclouds/pcd',
+        'pointclouds/ply',
+        'pointclouds/obj'
+      ]
+    },
+    {
+      type: 'category',
       label: 'General Formats',
       collapsed: false,
       items: [
         'textures',
         // 'gltf',
-        'pointcloud'
       ]
     }
     // {
