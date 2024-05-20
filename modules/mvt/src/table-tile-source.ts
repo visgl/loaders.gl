@@ -17,14 +17,12 @@ import {Stats, Stat} from '@probe.gl/stats';
 
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
 import type {ProtoTile} from './lib/vector-tiler/proto-tile';
-import {convertFeatures} from './lib/vector-tiler/features/convert-feature'; // GeoJSON conversion and preprocessing
+import {createProtoTile} from './lib/vector-tiler/proto-tile';
+import {transformTile} from './lib/vector-tiler/transform-tile'; // coordinate transformation
+import {convertTileToGeoJSON} from './lib/vector-tiler/tile-to-geojson'; // tile clipping and wrapping
+import {convertFeaturesToProtoFeature} from './lib/vector-tiler/features/convert-feature';
 import {clipFeatures} from './lib/vector-tiler/features/clip-features'; // stripe clipping algorithm
 import {wrapFeatures} from './lib/vector-tiler/features/wrap-features'; // date line processing
-import {transformTile} from './lib/vector-tiler/transform-tile'; // coordinate transformation
-import {createTile} from './lib/vector-tiler/proto-tile'; // final simplified tile generation
-
-import {projectToLngLat} from './lib/utils/geometry-utils';
-import {convertToLocalCoordinates} from './lib/utils/geometry-utils';
 
 /** Options to configure tiling */
 export const TableTileSource = {
@@ -50,15 +48,15 @@ export const TableTileSource = {
   testURL: (url: string): boolean => url.endsWith('.geojson'),
   createDataSource(
     url: string | Blob | GeoJSONTable | Promise<GeoJSONTable>,
-    options: VectorTilerSourceProps
-  ): VectorTilerSource {
+    options: DynamicVectorTileSourceProps
+  ): DynamicVectorTileSource {
     const needsLoading = typeof url === 'string' || url instanceof Blob;
     const loader = options?.table?.loaders?.[0]!;
     const tablePromise = needsLoading ? loadTable(url, loader) : url;
-    return new VectorTilerSource(tablePromise, options);
+    return new DynamicVectorTileSource(tablePromise, options);
   }
   // @ts-expect-error
-} as const satisfies Source<VectorTilerSource, VectorTilerSourceProps>;
+} as const satisfies Source<DynamicVectorTileSource, DynamicVectorTileSourceProps>;
 
 async function loadTable(url: string | Blob, loader: LoaderWithParser): Promise<GeoJSONTable> {
   if (typeof url === 'string') {
@@ -72,7 +70,7 @@ async function loadTable(url: string | Blob, loader: LoaderWithParser): Promise<
 }
 
 /** Options to configure tiling */
-export type VectorTilerSourceProps = VectorTileSourceProps & {
+export type DynamicVectorTileSourceProps = VectorTileSourceProps & {
   table: {
     coordinates: 'local' | 'wgs84' | 'EPSG:4326';
     /** max zoom to preserve detail on */
@@ -115,16 +113,16 @@ export type VectorTilerSourceProps = VectorTileSourceProps & {
  * @todo - generate binary output tables
  * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
  */
-export class VectorTilerSource
-  implements VectorTileSource<VectorTilerSourceProps, TileSourceMetadata>
+export class DynamicVectorTileSource
+  implements VectorTileSource<DynamicVectorTileSourceProps, TileSourceMetadata>
 {
-  /** Global stats for all VectorTilerSources */
+  /** Global stats for all DynamicVectorTileSources */
   static stats = new Stats({
     id: 'table-tile-source-all',
     stats: [new Stat('count', 'tiles'), new Stat('count', 'features')]
   });
 
-  /** Stats for this VectorTilerSource */
+  /** Stats for this DynamicVectorTileSource */
   stats = new Stats({
     id: 'table-tile-source',
     stats: [new Stat('tiles', 'count'), new Stat('features', 'count')]
@@ -136,7 +134,7 @@ export class VectorTilerSource
 
   /** The props that this tile source was created with */
   // @ts-expect-error
-  props: Required<VectorTilerSourceProps['table']>;
+  props: Required<DynamicVectorTileSourceProps['table']>;
 
   /* Schema of the data */
   schema: Schema | null = null;
@@ -151,7 +149,7 @@ export class VectorTilerSource
   /** Metadata for the tile source (generated TileJSON/tilestats */
   metadata: Promise<unknown>;
 
-  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, props?: VectorTilerSourceProps) {
+  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, props?: DynamicVectorTileSourceProps) {
     // @ts-expect-error
     this.props = {...TableTileSource.options.table, ...props?.table};
     this.getTileData = this.getTileData.bind(this);
@@ -207,12 +205,12 @@ export class VectorTilerSource
    * @note Application must await `source.ready` before calling sync methods.
    */
   getTileSync(tileIndex: {z: number; x: number; y: number}): GeoJSONTable | null {
-    const rawTile = this.getRawTile(tileIndex);
-    if (!rawTile) {
+    const protoTile = this.getProtoTile(tileIndex);
+    if (!protoTile) {
       return null;
     }
 
-    return convertToGeoJSONTable(rawTile, {
+    return convertTileToGeoJSON(protoTile, {
       coordinates: this.props.coordinates,
       tileIndex,
       extent: this.props.extent
@@ -231,11 +229,11 @@ export class VectorTilerSource
       throw new Error('promoteId and generateId cannot be used together.');
     }
 
-    log.log(1, 'VectorTilerSource creating root tiles', this.props)();
+    log.log(1, 'DynamicVectorTileSource creating root tiles', this.props)();
 
     // projects and adds simplification info
     log.time(1, 'preprocess table')();
-    let features = convertFeatures(table, this.props);
+    let features = convertFeaturesToProtoFeature(table, this.props);
     log.timeEnd(1, 'preprocess table')();
 
     // wraps features (ie extreme west and extreme east)
@@ -245,7 +243,7 @@ export class VectorTilerSource
 
     // start slicing from the top tile down
     if (features.length === 0) {
-      log.log(1, 'VectorTilerSource: no features generated')();
+      log.log(1, 'DynamicVectorTileSource: no features generated')();
       return;
     }
 
@@ -257,7 +255,7 @@ export class VectorTilerSource
     log.timeEnd(1, 'generate tiles')();
     log.log(
       1,
-      `VectorTilerSource: tiles generated: ${this.stats.get('total').count}`,
+      `DynamicVectorTileSource: tiles generated: ${this.stats.get('total').count}`,
       this.stats
     )();
   }
@@ -267,7 +265,7 @@ export class VectorTilerSource
    * @note Application must await `source.ready` before calling sync methods.
    */
   // eslint-disable-next-line complexity, max-statements
-  getRawTile(tileIndex: {z: number; x: number; y: number}): ProtoTile | null {
+  getProtoTile(tileIndex: {z: number; x: number; y: number}): ProtoTile | null {
     const {z, y} = tileIndex;
     let {x} = tileIndex;
     // z = +z;
@@ -281,7 +279,7 @@ export class VectorTilerSource
     }
 
     const z2 = 1 << z;
-    x = (x + z2) & (z2 - 1); // wrap tile x coordinate
+    x = (x + z2) & (z2 - 1); // wrapFeatures tile x coordinate
 
     const id = toID(z, x, y);
     if (this.tiles[id]) {
@@ -302,7 +300,7 @@ export class VectorTilerSource
       parent = this.tiles[toID(z0, x0, y0)];
     }
 
-    if (!parent || !parent.source) {
+    if (!parent || !parent.sourceFeatures) {
       return null;
     }
 
@@ -310,7 +308,7 @@ export class VectorTilerSource
     log.log(1, 'found parent tile z%d-%d-%d', z0, x0, y0)();
     log.time(1, 'drilling down')();
 
-    this.splitTile(parent.source, z0, x0, y0, z, x, y);
+    this.splitTile(parent.sourceFeatures, z0, x0, y0, z, x, y);
 
     log.timeEnd(1, 'drilling down')();
 
@@ -351,7 +349,7 @@ export class VectorTilerSource
       if (!tile) {
         log.time(2, 'tile creation')();
 
-        tile = this.tiles[id] = createTile(features, z, x, y, this.props);
+        tile = this.tiles[id] = createProtoTile(features, z, x, y, this.props);
         this.tileCoords.push({z, x, y});
 
         const key = `z${z}`;
@@ -361,10 +359,10 @@ export class VectorTilerSource
         stat = this.stats.get('total');
         stat.incrementCount();
 
-        stat = VectorTilerSource.stats.get(key, 'count');
+        stat = DynamicVectorTileSource.stats.get(key, 'count');
         stat.incrementCount();
 
-        stat = VectorTilerSource.stats.get('total');
+        stat = DynamicVectorTileSource.stats.get('total');
         stat.incrementCount();
 
         log.log(
@@ -381,9 +379,9 @@ export class VectorTilerSource
       }
 
       // save reference to original geometry in tile so that we can drill down later if we stop now
-      tile.source = features;
+      tile.sourceFeatures = features;
 
-      /** eslint-disable no-continue */
+      /* eslint-disable no-continue */
 
       // if it's the first-pass tiling
       if (cz === undefined) {
@@ -405,7 +403,7 @@ export class VectorTilerSource
       }
 
       // if we slice further down, no need to keep source geometry
-      tile.source = null;
+      tile.sourceFeatures = null;
 
       if (features.length === 0) continue;
 
@@ -453,6 +451,7 @@ export class VectorTilerSource
 function toID(z, x, y): number {
   return ((1 << z) * y + x) * 32 + z;
 }
+/*
 
 // eslint-disable-next-line max-statements, complexity
 function convertToGeoJSONTable(
@@ -551,3 +550,4 @@ function convertToGeoJSONTable(
 
   return table;
 }
+*/

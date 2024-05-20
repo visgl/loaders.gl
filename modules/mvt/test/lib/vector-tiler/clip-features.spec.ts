@@ -176,6 +176,7 @@ test('VectorTiler#clipFeatures#clips points', (t) => {
     {
       id: null,
       type: 'MultiPoint',
+      simplifiedType: undefined,
       geometry: [20, 10, 0, 20, 20, 0, 30, 20, 0, 30, 30, 0, 25, 40, 0, 25, 50, 0, 25, 60, 0],
       tags: 1,
       minX: 20,

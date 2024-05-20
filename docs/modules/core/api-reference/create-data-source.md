@@ -55,7 +55,7 @@ Parses data asynchronously either using the provided source or sources, or using
 
 - `data`: loaded data or an object that allows data to be loaded. See table below for valid input types for this parameter.
 - `sources` - can be a single source or an array of sources. If ommitted, will use the list of pre-registered sources (see `registerLoaders`)
-- `options`: See [`LoaderOptions`](./source-options).
+- `options`: Passed to the data source.
 - `url`: optional, assists in the autoselection of a source if multiple sources are supplied to `source`.
 
 Returns:

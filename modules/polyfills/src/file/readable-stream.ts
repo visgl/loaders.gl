@@ -1,8 +1,8 @@
-import {ReadableStream as WSPReadableStream} from 'web-streams-polyfill';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
 
-// Want a polyfill, but please don't install it
-// @ts-ignore
-delete globalThis.ReadableStream;
+import {ReadableStream as WSPReadableStream} from 'web-streams-polyfill';
 
 // @ts-ignore
 export class ReadableStreamPolyfill<T> extends WSPReadableStream<T> implements ReadableStream {}

@@ -4,8 +4,8 @@ The _table_ category loaders supports loading tables in _row-based_, _columnar_ 
 
 ## Table Category Loaders
 
-| Loader                                                         | Notes                              |
-| -------------------------------------------------------------- | ---------------------------------- |
+| Loader                                                          | Notes                              |
+| --------------------------------------------------------------- | ---------------------------------- |
 | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader) |                                    |
 | [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader)       |                                    |
 | [`JSONLoader`](/docs/modules/json/api-reference/json-loader)    | Set `options.json.table` to `true` |
@@ -49,18 +49,18 @@ Using the Arrow API it is possible to work extremely efficiently with very large
 loaders.gl provides a range of table accessors.
 
 | Accessor                                                                                           | Description                                                                            |
-| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------- |
-| `getTableLength`(table: Table): number                                                             | Returns length (number of rows) in the table                                           |
-| `getTableNumCols`(table: Table): number                                                            | Returns number of columns in the table                                                 |
-| `getTableCell`(table: Table, rowIndex: number, columnName: string): unknown                        | Gets the value in a cell by column name and row index                                  |
-| `getTableCellAt`(table: Table, rowIndex: number, columnIndex: number): unknown                     | Gets the value of a cell by column index and row index                                 |
-| `getTableRowShape`(table: Table): 'array-row-table'                                                | 'object-row-table'                                                                     | Gets the shape of each table row |
-| `getTableColumnIndex`(table: Table, columnName: string): number                                    | Gets the index of a named column                                                       |
-| `getTableColumnName`(table: Table, columnIndex: number): string                                    | Gets the name of a column by index                                                     |
-| `getTableRowAsObject`(table: Table, rowIndex: number, target?: unknown[], copy?: 'copy'):          | Gets a row from the table. Parameters contol whether a new object is minted or reused. |
-| `getTableRowAsArray`(table: Table, rowIndex: number, target?: unknown[], copy?: 'copy'): unknown[] | Gets a row from the table. Parameters contol whether a new array is minted or reused.  |
-| `makeArrayRowTable`(table: Table): ArrayRowTable                                                   | Copies a table into 'array-row-table' format.                                          |
-| `makeObjectRowTable`(table: Table): ObjectRowTable                                                 | Copies a table into 'object-row-table' format                                          |
+| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | 
+| `getTableLength(table: Table): number`                                                             | Returns length (number of rows) in the table                                           |
+| `getTableNumCols(table: Table): number`                                                            | Returns number of columns in the table                                                 |
+| `getTableCell(table: Table, rowIndex: number, columnName: string): unknown`                        | Gets the value in a cell by column name and row index                                  |
+| `getTableCellAt(table: Table, rowIndex: number, columnIndex: number): unknown`                     | Gets the value of a cell by column index and row index                                 |
+| `getTableRowShape(table: Table): 'array-row-table' \| 'object-row-table'`                          | Gets the shape of each table row                                                       |
+| `getTableColumnIndex(table: Table, columnName: string): number`                                    | Gets the index of a named column                                                       |
+| `getTableColumnName(table: Table, columnIndex: number): string`                                    | Gets the name of a column by index                                                     |
+| `getTableRowAsObject(table: Table, rowIndex: number, target?: unknown[], copy?: 'copy')`           | Gets a row from the table. Parameters contol whether a new object is minted or reused. |
+| `getTableRowAsArray(table: Table, rowIndex: number, target?: unknown[], copy?: 'copy'): unknown[]` | Gets a row from the table. Parameters contol whether a new array is minted or reused.  |
+| `makeArrayRowTable(table: Table): ArrayRowTable`                                                   | Copies a table into 'array-row-table' format.                                          |
+| `makeObjectRowTable(table: Table): ObjectRowTable`                                                 | Copies a table into 'object-row-table' format                                          |
 
 ## Apache Arrow support
 

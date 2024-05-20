@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // import {ReadableStreamPolyfill} from './readable-stream';
 import {FileReaderPolyfill} from './file-reader';
 import {FilePolyfill} from './file';

@@ -6,27 +6,27 @@
 import type {ProtoTile} from './proto-tile';
 
 /**
- * Transforms the coordinates of each feature in the given tile from
- * mercator-projected space into (extent x extent) tile space.
+ * Transforms the coordinates of each protoFeature in the given protoTile from
+ * mercator-projected space into (extent x extent) protoTile space.
  */
-export function transformTile(tile: ProtoTile, extent: number): ProtoTile {
-  if (tile.transformed) {
-    return tile;
+export function transformTile(protoTile: ProtoTile, extent: number): ProtoTile {
+  if (protoTile.transformed) {
+    return protoTile;
   }
 
-  const z2 = 1 << tile.z;
-  const tx = tile.x;
-  const ty = tile.y;
+  const z2 = 1 << protoTile.z;
+  const tx = protoTile.x;
+  const ty = protoTile.y;
 
-  for (const feature of tile.features) {
-    const geom = feature.geometry;
-    const type = feature.type;
+  for (const protoFeature of protoTile.protoFeatures) {
+    const geom = protoFeature.geometry;
+    const simplifiedType = protoFeature.simplifiedType;
 
-    feature.geometry = [];
+    protoFeature.geometry = [];
 
-    if (type === 1) {
+    if (simplifiedType === 1) {
       for (let j = 0; j < geom.length; j += 2) {
-        feature.geometry.push(transformPoint(geom[j], geom[j + 1], extent, z2, tx, ty));
+        protoFeature.geometry.push(transformPoint(geom[j], geom[j + 1], extent, z2, tx, ty));
       }
     } else {
       for (let j = 0; j < geom.length; j++) {
@@ -34,14 +34,14 @@ export function transformTile(tile: ProtoTile, extent: number): ProtoTile {
         for (let k = 0; k < geom[j].length; k += 2) {
           ring.push(transformPoint(geom[j][k], geom[j][k + 1], extent, z2, tx, ty));
         }
-        feature.geometry.push(ring);
+        protoFeature.geometry.push(ring);
       }
     }
   }
 
-  tile.transformed = true;
+  protoTile.transformed = true;
 
-  return tile;
+  return protoTile;
 }
 
 // eslint-disable-next-line max-params

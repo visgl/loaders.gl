@@ -83,11 +83,14 @@ export type WFSCapabilities = {
  * @note Error handlings is fairly weak
  */
 export function parseWFSCapabilities(text: string, options): WFSCapabilities {
-  const parsedXML = XMLLoader.parseTextSync?.(text, {...options, xml: {
-    ...options?.xml, 
-    removeNSPrefix: true,
-    uncapitalizeKeys: true
-  }});
+  const parsedXML = XMLLoader.parseTextSync?.(text, {
+    ...options,
+    xml: {
+      ...options?.xml,
+      removeNSPrefix: true,
+      uncapitalizeKeys: true
+    }
+  });
 
   const xmlCapabilities: any = parsedXML.Capabilities || parsedXML;
   return xmlCapabilities;
