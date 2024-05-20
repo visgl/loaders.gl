@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/textures",
-  "version": "4.3.0-alpha.2",
+  "version": "4.3.0-alpha.3",
   "description": "Framework-independent loaders for compressed and super compressed (basis) textures ",
   "license": "MIT",
   "type": "module",
@@ -54,10 +54,10 @@
     "build-crunch-worker": "esbuild src/workers/crunch-worker.ts --outfile=dist/crunch-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/images": "4.3.0-alpha.2",
-    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
-    "@loaders.gl/schema": "4.3.0-alpha.2",
-    "@loaders.gl/worker-utils": "4.3.0-alpha.2",
+    "@loaders.gl/images": "4.3.0-alpha.3",
+    "@loaders.gl/loader-utils": "4.3.0-alpha.3",
+    "@loaders.gl/schema": "4.3.0-alpha.3",
+    "@loaders.gl/worker-utils": "4.3.0-alpha.3",
     "@math.gl/types": "^4.0.1",
     "ktx-parse": "^0.0.4",
     "texture-compressor": "^1.0.2"
@@ -65,5 +65,5 @@
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
   },
-  "gitHead": "77a3cb538ab7a1fbf74245f25590210451689f5c"
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }
