@@ -123,7 +123,6 @@ export default function App(props: AppProps) {
   const [state, setState] = useState<AppState>({
     table: null,
     viewState: INITIAL_VIEW_STATE,
-    selectedCategory: null,
     selectedExample: null,
     error: null
   });
@@ -182,7 +181,7 @@ export default function App(props: AppProps) {
     exampleName: string;
     example: Example;
   }) {
-    const {categoryName, exampleName, example} = args;
+    const {exampleName, example} = args;
 
     const url = example.data;
     try {
@@ -193,9 +192,7 @@ export default function App(props: AppProps) {
         ...state,
         table,
         viewState,
-        selectedCategory: categoryName,
-        selectedExample: exampleName,
-        layerProps: example.layerProps
+        selectedExample: example
       }));
     } catch (error) {
       console.error('Failed to load table', url, error);
@@ -207,7 +204,7 @@ export default function App(props: AppProps) {
   }
 }
 
-function renderLayer({table, layerProps, index}) {
+function renderLayer({table, selectedExample, index}) {
   const geojson = table as GeoJSON;
   return [
     new GeoJsonLayer({
@@ -234,14 +231,13 @@ function renderLayer({table, layerProps, index}) {
       getPointRadius: 100,
       pointRadiusScale: 500,
       // pointRadiusUnits: 'pixels',
-      ...layerProps
+      ...selectedExample?.layerProps
     })
   ];
 }
 
 function getTooltipData({object}, state) {
-  const {getTooltipData: getSpecialTooltipData} =
-    EXAMPLES[state.selectedCategory]?.[state.selectedExample] ?? {};
+  const {getTooltipData: getSpecialTooltipData} = state.selectedExample ?? {};
   const {title, properties} = getSpecialTooltipData
     ? getSpecialTooltipData({object})
     : getDefaultTooltipData({object});
