@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/potree",
-  "version": "4.3.0-alpha.2",
+  "version": "4.3.0-alpha.3",
   "description": "potree loaders for large point clouds.",
   "license": "MIT",
   "type": "module",
@@ -44,7 +44,7 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/math": "4.3.0-alpha.2",
+    "@loaders.gl/math": "4.3.0-alpha.3",
     "@math.gl/core": "^4.0.0"
   },
   "peerDependencies": {

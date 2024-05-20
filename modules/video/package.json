@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/video",
-  "version": "4.3.0-alpha.2",
+  "version": "4.3.0-alpha.3",
   "description": "Framework-independent loaders and writers for video (MP4, WEBM, ...)",
   "license": "MIT",
   "type": "module",
@@ -41,8 +41,8 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
-    "@loaders.gl/worker-utils": "4.3.0-alpha.2",
+    "@loaders.gl/loader-utils": "4.3.0-alpha.3",
+    "@loaders.gl/worker-utils": "4.3.0-alpha.3",
     "gifshot": "^0.4.5"
   },
   "peerDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/draco",
-  "version": "4.3.0-alpha.2",
+  "version": "4.3.0-alpha.3",
   "description": "Framework-independent loader and writer for Draco compressed meshes and point clouds",
   "license": "MIT",
   "type": "module",
@@ -57,9 +57,9 @@
     "build-writer-worker-node": "esbuild src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
-    "@loaders.gl/schema": "4.3.0-alpha.2",
-    "@loaders.gl/worker-utils": "4.3.0-alpha.2",
+    "@loaders.gl/loader-utils": "4.3.0-alpha.3",
+    "@loaders.gl/schema": "4.3.0-alpha.3",
+    "@loaders.gl/worker-utils": "4.3.0-alpha.3",
     "draco3d": "1.5.7"
   },
   "devDependencies": {
