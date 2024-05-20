@@ -7,9 +7,6 @@ import {Example} from './components/example-panel';
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 
-export const INITIAL_CATEGORY_NAME = 'PLY';
-export const INITIAL_EXAMPLE_NAME = 'Richmond Azaelias';
-
 export const EXAMPLES: Record<string, Record<string, Example>> = {
   PLY: {
     'Richmond Azaelias': {

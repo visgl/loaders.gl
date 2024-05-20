@@ -19,7 +19,7 @@ import {PCDLoader} from '@loaders.gl/pcd';
 import {OBJLoader} from '@loaders.gl/obj';
 
 import {ExamplePanel, Example, MetadataViewer} from './components/example-panel';
-import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples';
+import {EXAMPLES} from './examples';
 
 // Additional format support can be added here, see
 const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader];
@@ -68,9 +68,6 @@ export default function App(props: AppProps = {}) {
     // error: null
   });
 
-  // Start rotation
-  useEffect(() => rotateCamera(state.viewsState), []);
-
   const {pointData, selectedExample} = state;
 
   const layers = [
@@ -92,8 +89,6 @@ export default function App(props: AppProps = {}) {
       <ExamplePanel
         examples={EXAMPLES}
         format={props.format}
-        initialCategoryName={INITIAL_CATEGORY_NAME}
-        initialExampleName={INITIAL_EXAMPLE_NAME}
         onExampleChange={onExampleChange}
       >
         {props.children}
@@ -127,12 +122,13 @@ export default function App(props: AppProps = {}) {
     setState((state) => ({...state, viewState}));
   }
 
-  function rotateCamera(viewState) {
+  function rotateCamera() {
+    console.log('rotateCamera', state.viewState)
     setState((state) => ({
       ...state,
       viewState: {
-        ...viewState,
-        rotationOrbit: viewState.rotationOrbit + 10,
+        ...state.viewState,
+        rotationOrbit: state.viewState.rotationOrbit + 10,
         transitionDuration: 600,
         transitionInterpolator,
         onTransitionEnd: rotateCamera
@@ -178,6 +174,8 @@ export default function App(props: AppProps = {}) {
         viewState,
         metadata
       }));
+
+      rotateCamera();
     } catch (error) {
       console.error('Failed to load data', url, error);
       setState((state) => ({...state, error: `Could not load ${exampleName}: ${error.message}`}));
