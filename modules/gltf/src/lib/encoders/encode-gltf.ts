@@ -2,6 +2,7 @@ import {encodeGLBSync} from './encode-glb';
 import {encodeExtensions} from '../api/gltf-extensions';
 import {GLTFWriterOptions} from '../../gltf-writer';
 import {GLTFWithBuffers} from '@loaders.gl/gltf';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
 
 export type GLTFEncodeOptions = Record<string, any>;
 
@@ -29,9 +30,9 @@ export function encodeGLTFSync(
   options: GLTFWriterOptions
 ) {
   if (!arrayBuffer) {
-    const {gltfBuilder} = options;
-    encodeExtensions(gltfBuilder?.gltf);
-    gltfBuilder?.createBinaryChunk();
+    encodeExtensions(gltf);
+    const scenegraph = new GLTFScenegraph(gltf);
+    scenegraph.createBinaryChunk();
   }
   convertBuffersToBase64(gltf);
 
