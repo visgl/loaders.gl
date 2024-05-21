@@ -2144,7 +2144,7 @@ __metadata:
     "@loaders.gl/wkt": "npm:4.3.0-alpha.3"
     "@loaders.gl/worker-utils": "npm:4.3.0-alpha.3"
     "@math.gl/polygon": "npm:4.0.0"
-    apache-arrow: "npm:>= 15.0.0"
+    apache-arrow: "npm:>= 16.1.0"
   peerDependencies:
     "@loaders.gl/core": ^4.0.0
   languageName: unknown
@@ -2520,7 +2520,7 @@ __metadata:
     "@types/node-int64": "npm:^0.4.29"
     "@types/thrift": "npm:^0.10.8"
     "@types/varint": "npm:^5.0.0"
-    apache-arrow: "npm:^15.0.0"
+    apache-arrow: "npm:^16.1.0"
     async-mutex: "npm:^0.2.2"
     base64-js: "npm:^1.3.1"
     brotli: "npm:^1.3.2"
@@ -2537,7 +2537,7 @@ __metadata:
     zstd-codec: "npm:^0.1"
   peerDependencies:
     "@loaders.gl/core": ^4.0.0
-    apache-arrow: ">= 15.0.0"
+    apache-arrow: ">= 16.1.0"
   languageName: unknown
   linkType: soft
 
@@ -3772,12 +3772,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swc/helpers@npm:^0.5.2":
-  version: 0.5.3
-  resolution: "@swc/helpers@npm:0.5.3"
+"@swc/helpers@npm:^0.5.10":
+  version: 0.5.11
+  resolution: "@swc/helpers@npm:0.5.11"
   dependencies:
     tslib: "npm:^2.4.0"
-  checksum: 10c0/7003b9dafad38e27a4474a3dcf78d2aee85ce4bb7ee171ecc2d5b533768fb4f8fc9dbd6a1c3a9df5f8001e61ff416b93681e0a7dcbdc0df109b3e09c50cd4615
+  checksum: 10c0/7d1987ee6b887277d373a9be8c445cd2259c3258c08b16908c06864121fd8eac8bb89b179c91b6c5395f38194a903b5772575947c7eb3ca23285152cb0f66caa
   languageName: node
   linkType: hard
 
@@ -3942,14 +3942,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/command-line-args@npm:^5.2.1":
+"@types/command-line-args@npm:^5.2.3":
   version: 5.2.3
   resolution: "@types/command-line-args@npm:5.2.3"
   checksum: 10c0/3a9bc58fd26e546391f6369dd28c03d59349dc4ac39eada1a5c39cc3578e02e4aac222615170e0db79b198ffba2af84fdbdda46e08c6edc4da42bc17ea85200f
   languageName: node
   linkType: hard
 
-"@types/command-line-usage@npm:^5.0.2":
+"@types/command-line-usage@npm:^5.0.4":
   version: 5.0.4
   resolution: "@types/command-line-usage@npm:5.0.4"
   checksum: 10c0/67840ebf4bcfee200c07d978669ad596fe2adc350fd5c19d44ec2248623575d96ec917f513d1d59453f8f57e879133861a4cc41c20045c07f6c959f1fcaac7ad
@@ -4145,12 +4145,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.6.0":
-  version: 20.11.7
-  resolution: "@types/node@npm:20.11.7"
+"@types/node@npm:^20.12.7":
+  version: 20.12.12
+  resolution: "@types/node@npm:20.12.12"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10c0/ba4b41542b64f21a881a277189e761c553d00af0b1c02f2d8a47ebe8bc29a00ed21b45adf0bf9af2cf8ea6c92a443853d4f7b690081ceaecc150719cc574e9ea
+  checksum: 10c0/f374b763c744e8f16e4f38cf6e2c0eef31781ec9228c9e43a6f267880fea420fab0a238b59f10a7cb3444e49547c5e3785787e371fc242307310995b21988812
   languageName: node
   linkType: hard
 
@@ -4696,22 +4696,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apache-arrow@npm:^15.0.0":
-  version: 15.0.0
-  resolution: "apache-arrow@npm:15.0.0"
+"apache-arrow@npm:^16.1.0":
+  version: 16.1.0
+  resolution: "apache-arrow@npm:16.1.0"
   dependencies:
-    "@swc/helpers": "npm:^0.5.2"
-    "@types/command-line-args": "npm:^5.2.1"
-    "@types/command-line-usage": "npm:^5.0.2"
-    "@types/node": "npm:^20.6.0"
+    "@swc/helpers": "npm:^0.5.10"
+    "@types/command-line-args": "npm:^5.2.3"
+    "@types/command-line-usage": "npm:^5.0.4"
+    "@types/node": "npm:^20.12.7"
     command-line-args: "npm:^5.2.1"
     command-line-usage: "npm:^7.0.1"
-    flatbuffers: "npm:^23.5.26"
+    flatbuffers: "npm:^24.3.25"
     json-bignum: "npm:^0.0.3"
     tslib: "npm:^2.6.2"
   bin:
     arrow2csv: bin/arrow2csv.cjs
-  checksum: 10c0/706921d06c89841d1973a0a7d53150862d065f503091d824173535d0d58322e7b2600932fd3bfeb62be99d94e91acfef6961161776fcf51a18a9cc23172ca243
+  checksum: 10c0/dc14576ff255b7f9b1d14c134afaa3ae8c2bbb49e5de8084fa78fa0672fcb91dd665b11ee20d480e271ffba96a100baf26b848cbc9a740d7a91096d901aac79a
   languageName: node
   linkType: hard
 
@@ -7748,10 +7748,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatbuffers@npm:23.5.26, flatbuffers@npm:^23.5.26":
+"flatbuffers@npm:23.5.26":
   version: 23.5.26
   resolution: "flatbuffers@npm:23.5.26"
   checksum: 10c0/69e0903caa3aa8d2bdbf1557995835fd097806d413abc9b4b7440301a8ae2bd427220be1d613af80609c38d38cdbdeb459706903080433b509ceb64faf91b711
+  languageName: node
+  linkType: hard
+
+"flatbuffers@npm:^24.3.25":
+  version: 24.3.25
+  resolution: "flatbuffers@npm:24.3.25"
+  checksum: 10c0/a40a1d46f6d474f1299091970700f36dc5bd86616b71cd99a1b6f521ca33b05f5d7623bd0ffadaa1e10fc63d6663aa3f9595f4916cd379e80c15787257e17a61
   languageName: node
   linkType: hard
 

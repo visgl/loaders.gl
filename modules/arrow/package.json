@@ -59,7 +59,7 @@
     "@loaders.gl/wkt": "4.3.0-alpha.3",
     "@loaders.gl/worker-utils": "4.3.0-alpha.3",
     "@math.gl/polygon": "4.0.0",
-    "apache-arrow": ">= 15.0.0"
+    "apache-arrow": ">= 16.1.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"

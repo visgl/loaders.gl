@@ -6,6 +6,10 @@ Also Apache Arrow JS follows a common cross-language versioning number scheme wh
 
 The biggest changes were made in Apache Arrow JS Version 9.0 (based on feedback from loaders.gl users).
 
+## Upgrading to v16.0
+
+- No significant changes in Apache Arrow JS
+
 ## Upgrading to v15.0
 
 - No significant changes in Apache Arrow JS

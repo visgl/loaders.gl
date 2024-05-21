@@ -55,7 +55,7 @@
     "apache-arrow version should be aligned with parquet-wasm version"
   ],
   "resolutions": {
-    "apache-arrow": "^15.0.0",
+    "apache-arrow": "^16.1.0",
     "typescript": "^5.3.0"
   },
   "volta": {
