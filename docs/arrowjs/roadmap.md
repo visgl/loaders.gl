@@ -1,24 +1,25 @@
-# Roadmap
+# Usability Feedback
 
-What's Next for Apache Arrow in Javascript
+As loaders.gl and the rest of the vis.gl / Open Visualization frameworks increase their usage of Arrow JS, we are facing some challenges with the library.
+This can be considered an open letter of feedback to Arrow JS maintainers.
 
-There are a lot of features we'd like to add over the next few Javascript releases:
+## General packaging and documentation
 
-- **Inline predicates**: Function calls in the inner loop of a scan over millions of records can be very expensive. We can potentially save that time by generating a new scan function with the predicates inlined when a filter is created.
+- **Semver** - Conforming to semantic versioning (semver) conventions would be a big improvement. Depending on a specific arrowjs version in a vis.gl project is hard as there will soon be a new major version. We need to identify ranges of major versions that are likely to work starting from the last breaking version.
+- **Arrow JS release notes** - Solid clean arrowjs release notes written for an end user would help a lot. loaders.gl maintains a page that tries to make sense of the commit lists but keeping it current is a challenge.
+- **Roadmap info** - when breaking changes are being worked on
+- **Upgrade guides** - 
+- **Updated docs** - Arrow JS docs on web are outdated. It’s hard enough for the vis.gl maintainers to learn the api, docs are not been great for e.g average vis.gl user audience.
 
-- **Cache filter results**: Right now every time we do a scan on a filtered DataFrame we re-check the predicate on every row. There should be an (optional?) lazily computed index to store the predicate results for subsequent re-use.
+## Feature wish list
 
-- **Friendlier API**: I shouldn't have to write a custom scan function just to take a look at the results of a filter! Every DataFrame should have a toJSON() function (See ARROW-2202).
+This set of features are perhaps more specific to the usage patterns in the vis.gl frameworks, but still could be general improvements to the library.
 
-- **node.js ↔ (Python, C++, Java, ...) interaction**: A big benefit of Arrow's common in-memory format is that different tools can operate on the same memory. Unfortunately we're pretty closed off in the browser, but node doesn't have that problem! Finishing ARROW-1700, node.js Plasma store client should make this type of interaction possible.
+### Pure JS representation of parsed Arrow data.
 
-Have an idea? Tell us! Generally JIRAs are preferred but we'll take GitHub issues too. If you just want to discuss something, reach out on the mailing list or slack. But PRs are the best of all, we can always use more contributors!
+loaders.gl's philosophy is to return pure JavaScript structures, rather than classes. 
+The Arrow JS type system (schemas etc could be represented in this way, in fact loaders.gl maintains such an alternative representation).
+This reduces the need for serialization and deserialization.
+Having a helper class that can be instantiated on top of the pure data structure is of course fine.
 
-## Feature Completeness
-
-Ideally each Apache Arrow language binding would offer the same set of features, at least to the extent that the language/platform in question allows. In practice however, not all features have been implemented in all language bindings.
-
-In comparison with the C++ Arrow API bindings, there are some missing features in the JavaScript bindings:
-
-- Tensors are not yet supported.
-- No explicit support for Apache Arrow Flight
+TBA...
