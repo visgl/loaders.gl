@@ -4,7 +4,7 @@
 - [*PMTiles specification*](https://github.com/protomaps/PMTiles)
 - [*PMTiles example*](/examples/tiles/pmtiles).
 
-PMTiles is a general format for storing tiled data addressed by Z/X/Y coordinates in a single (big) archive file. PMTiles is optimized for the cloud and can be hosted on commodity storage platforms like S3, enabling low-cost, zero-maintenance map applications, without requiring a server in the middle. PMTiles is structured to minimize overhead requests. The current V3 version of the format includes directories and tile data.
+PMTiles is a format for storing tiled data addressed by Z/X/Y coordinates in a single (big) archive file. PMTiles is optimized for the cloud and can be hosted on commodity storage platforms like S3, enabling low-cost, zero-maintenance map applications, without requiring a server in the middle. PMTiles is structured to minimize overhead requests. The current V3 version of the format includes directories and tile data.
 
 PMTiles is commonly used for visualization (e.g. for cartographic basemap vector tiles), and then often contains vector data, where each tile data contained within the archive is encoded as a Mapbox Vector Tile (MVT), however it can also be used to store image tiles (in PNG and JPEG format) containing e.g. raster data or terrain mesh data.
 
