@@ -44,7 +44,6 @@ export const PMTilesSource = {
 } as const satisfies Source<PMTilesTileSource, PMTilesTileSourceProps>;
 
 export type PMTilesTileSourceProps = DataSourceProps & {
-  url: string | Blob;
   attributions?: string[];
   pmtiles?: {
     loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
@@ -67,7 +66,7 @@ export class PMTilesTileSource extends DataSource implements ImageTileSource, Ve
     super(props);
     this.props = props;
     const url = typeof data === 'string' ? resolvePath(data) : new BlobSource(data, 'pmtiles');
-    this.data = props.url;
+    this.data = data;
     this.pmtiles = new PMTiles(url);
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();
@@ -79,7 +78,7 @@ export class PMTilesTileSource extends DataSource implements ImageTileSource, Ve
 
   async getMetadata(): Promise<PMTilesMetadata> {
     const pmtilesHeader = await this.pmtiles.getHeader();
-    const pmtilesMetadata = await this.pmtiles.getMetadata();
+    const pmtilesMetadata = await this.pmtiles.getMetadata() as Record<string, unknown> || {};
     const metadata: PMTilesMetadata = parsePMTilesHeader(
       pmtilesHeader,
       pmtilesMetadata,
