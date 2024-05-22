@@ -52,7 +52,7 @@ async function parseFileAsPMTiles(
     case 'application/vnd.mapbox-vector-tile':
       return {
         shape: 'vector-source',
-        layers: layers.map(layer => ({name: layer.name, schema: layer.schema})),
+        layers: layers.map((layer) => ({name: layer.name, schema: layer.schema})),
         tables: [],
         formatSpecificMetadata
       } as VectorSourceInfo;

@@ -272,12 +272,9 @@ function parseTilestatsForLayer(layer: TilestatsLayer, options: TileJSONOptions)
 function mergeLayers(layers: TileJSONLayer[], tilestatsLayers: TileJSONLayer[]): TileJSONLayer[] {
   return layers.map((layer: TileJSONLayer): TileJSONLayer => {
     const tilestatsLayer = tilestatsLayers.find((tsLayer) => tsLayer.name === layer.name);
-    // For aesthetics in JSON dumps, we preserve field order (make sure layersTileJSONLayer is last)
-    const fields = tilestatsLayer?.fields || [];
-    const layer2: Partial<TileJSONLayer> = {...layer};
-    delete layer2.fields;
+    const fields = tilestatsLayer?.fields || layer.fields || [];
     const mergedLayer = {
-      ...layer2,
+      ...layer,
       ...tilestatsLayer,
       fields
     } as TileJSONLayer;

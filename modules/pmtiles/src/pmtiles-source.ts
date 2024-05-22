@@ -78,7 +78,7 @@ export class PMTilesTileSource extends DataSource implements ImageTileSource, Ve
 
   async getMetadata(): Promise<PMTilesMetadata> {
     const pmtilesHeader = await this.pmtiles.getHeader();
-    const pmtilesMetadata = await this.pmtiles.getMetadata() as Record<string, unknown> || {};
+    const pmtilesMetadata = ((await this.pmtiles.getMetadata()) as Record<string, unknown>) || {};
     const metadata: PMTilesMetadata = parsePMTilesHeader(
       pmtilesHeader,
       pmtilesMetadata,
