@@ -1,9 +1,6 @@
 # Attributions for Sample Files
 
-## pmtiles
+## pmtiles-v2, pmtiles-v3
 
 https://github.com/protomaps/PMTiles/tree/main/js/test/data under BSD-3 license
 
-## tilejson
-
-https://github.com/mapbox/node-tilejson/tree/master/test under BSD-2 license
