@@ -7,7 +7,8 @@ import {isBrowser} from '@loaders.gl/core';
 import {
   makeResponse,
   checkResponse,
-  checkResponseSync
+  checkResponseSync,
+  getResponseError
 } from '@loaders.gl/core/lib/utils/response-utils';
 
 test('Response', async (t) => {
@@ -65,8 +66,8 @@ test('makeResponse(File)', async (t) => {
 
 test('checkResponseSync', (t) => {
   const response = new Response('{message: "server died"}', {status: 500});
-  t.equal(response.ok, false, 'Check reponse.ok');
-  t.throws(() => checkResponseSync(response), /500/, 'Check reponse throws');
+  t.equal(response.ok, false, 'Check response.ok');
+  t.throws(() => checkResponseSync(response), /500/, 'Check response throws');
   // t.throws()
   t.end();
 });
@@ -76,8 +77,22 @@ test('checkResponse', async (t) => {
   Object.defineProperty(response, 'url', {
     value: 'https://some.url/not/even/very/long'
   });
-  t.equal(response.ok, false, 'Check reponse.ok');
-  t.rejects(() => checkResponse(response), /500/, 'Check reponse throws');
-  // t.throws()
+
+  t.equal(response.ok, false, 'Check response.ok');
+  t.rejects(() => checkResponse(response), /500/, 'Check response throws');
+
+  t.end();
+});
+
+test('checkResponse(body used)', async (t) => {
+  const response = new Response('{message: "server died"}', {status: 500});
+  await response.text();
+  Object.defineProperty(response, 'url', {
+    value: 'https://some.url/not/even/very/long'
+  });
+
+  t.equal(response.ok, false, 'Check response.ok');
+  t.rejects(() => checkResponse(response), /500/, 'Check response throws');
+
   t.end();
 });
