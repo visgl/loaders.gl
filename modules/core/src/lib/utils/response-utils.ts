@@ -93,9 +93,10 @@ async function getResponseError(response: Response): Promise<Error> {
   // See if we got an error message in the body
   try {
     const contentType = response.headers.get('Content-Type');
-    info.reason = !response.bodyUsed && contentType?.includes('application/json')
-      ? await response.json()
-      : await response.text();
+    info.reason =
+      !response.bodyUsed && contentType?.includes('application/json')
+        ? await response.json()
+        : await response.text();
   } catch (error) {
     // eslint forbids return in a finally statement, so we just catch here
   }

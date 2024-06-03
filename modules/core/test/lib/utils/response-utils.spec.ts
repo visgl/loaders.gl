@@ -77,7 +77,7 @@ test('checkResponse', async (t) => {
   Object.defineProperty(response, 'url', {
     value: 'https://some.url/not/even/very/long'
   });
-  
+
   t.equal(response.ok, false, 'Check response.ok');
   t.rejects(() => checkResponse(response), /500/, 'Check response throws');
 
@@ -90,7 +90,7 @@ test('checkResponse(body used)', async (t) => {
   Object.defineProperty(response, 'url', {
     value: 'https://some.url/not/even/very/long'
   });
-  
+
   t.equal(response.ok, false, 'Check response.ok');
   t.rejects(() => checkResponse(response), /500/, 'Check response throws');
 
