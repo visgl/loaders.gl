@@ -26,6 +26,8 @@ export type MVTLoaderOptions = LoaderOptions & {
     workerUrl?: string;
   };
   gis?: {
+    /** @deprecated Use options.mvt.shape === 'binary-geometry' */
+    binary?: boolean;
     /** @deprecated. Use options.mvt.shape */
     format?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
   };

@@ -22,7 +22,7 @@
 # ...                   Converter options (described here: modules/tile-converter/docs/cli-reference/tile-converter.md)
 
 # change to alpine
-FROM node:16-alpine
+FROM node:18-alpine
 
 # copy pgm and dist converter
 WORKDIR /loaders-bundle

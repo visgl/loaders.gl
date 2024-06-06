@@ -63,6 +63,10 @@ if (!globalThis.TextDecoder) {
   globalThis.TextDecoder = TextDecoder;
 }
 
+if (!globalThis.ReadableStream) {
+  globalThis.ReadableStream = ReadableStream;
+}
+
 // POLYFILLS: btoa, atob
 // - Node: Yes
 // - Browser: No

@@ -2,9 +2,27 @@
 
 ## v4.3 (in development)
 
+Target Release Date: June 2024
+
+A minor release that includes:
+
+- **[`Source`](/docs/developer-guide/using-sources) support** - Improvements for multi-step data loading.
+- **examples** - modernized to latest React and minimized boilerplate code.
+- **website** - more format examples are now available.
+
+**@loaders.gl/core**
+
+- [`createDataSource`](/docs/modules/core/api-reference/create-data-source) - Create a `DataSource` from a list of `Source` objects.
+- [`selectSource`](/docs/modules/core/api-reference/select-source) - Select the appropriate `Source` from a list of `Source` objects.
+
 **@loaders.gl/mvt**
 
-- `TableTileSource` - tables can be tiled dynamically in the browser for better rendering performance.
+- [`TableTileSource`](/docs/modules/mvt/api-reference/table-tile-source) - tables can now be vector tiled dynamically in the app.
+
+**@loaders.gl/textures**
+
+- [`Comp[ressedTextureLoader]`](/docs/modules/textures/api-reference/compressed-texture-loader) - Now supports mipmaps in KTX2 textures.
+
 
 ## v4.2
 
@@ -104,7 +122,7 @@ A major release that brings:
 **@loaders.gl/parquet** 
 
 - The [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) now supports loading [GeoParquet](/docs/modules/parquet/formats/geoparquet) files.
-- New [GeoParquet example](/examples/geoparquet).
+- New [GeoParquet example](/examples/geospatial/geoparquet).
 
 **@loaders.gl/mvt**
 

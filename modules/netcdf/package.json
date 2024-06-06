@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/netcdf",
   "description": "Loader for NetCDF",
-  "version": "4.3.0-alpha.2",
+  "version": "4.3.0-alpha.3",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -39,10 +39,10 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.3.0-alpha.2"
+    "@loaders.gl/loader-utils": "4.3.0-alpha.3"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
   },
-  "gitHead": "77a3cb538ab7a1fbf74245f25590210451689f5c"
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

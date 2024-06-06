@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/las",
-  "version": "4.3.0-alpha.2",
+  "version": "4.3.0-alpha.3",
   "description": "Framework-independent loader for the LAS and LAZ formats",
   "license": "MIT",
   "type": "module",
@@ -49,12 +49,12 @@
     "build-worker": "esbuild src/workers/las-worker.ts --bundle --outfile=dist/las-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.3.0-alpha.2",
-    "@loaders.gl/schema": "4.3.0-alpha.2",
+    "@loaders.gl/loader-utils": "4.3.0-alpha.3",
+    "@loaders.gl/schema": "4.3.0-alpha.3",
     "laz-perf": "^0.0.6"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"
   },
-  "gitHead": "77a3cb538ab7a1fbf74245f25590210451689f5c"
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

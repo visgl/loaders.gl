@@ -14,3 +14,8 @@ test('TextDecoder', (t) => {
   t.ok(new TextDecoder(), 'TextDecoder successfully instantiated (available or polyfilled)');
   t.end();
 });
+
+test('ReadableStream', (t) => {
+  t.ok(ReadableStream, 'ReadableStream defined');
+  t.end();
+});

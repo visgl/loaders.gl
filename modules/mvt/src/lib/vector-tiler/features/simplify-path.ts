@@ -11,7 +11,12 @@
  * @param last last coord to simplify
  * @param sqTolerance tolerance (square distance)
  */
-export function simplify(coords: number[], first: number, last: number, sqTolerance: number): void {
+export function simplifyPath(
+  coords: number[],
+  first: number,
+  last: number,
+  sqTolerance: number
+): void {
   let maxSqDist = sqTolerance;
   const mid = (last - first) >> 1;
   let minPosToMid = last - first;
@@ -41,9 +46,9 @@ export function simplify(coords: number[], first: number, last: number, sqTolera
   }
 
   if (maxSqDist > sqTolerance) {
-    if (index - first > 3) simplify(coords, first, index, sqTolerance);
+    if (index - first > 3) simplifyPath(coords, first, index, sqTolerance);
     coords[index + 2] = maxSqDist;
-    if (last - index > 3) simplify(coords, index, last, sqTolerance);
+    if (last - index > 3) simplifyPath(coords, index, last, sqTolerance);
   }
 }
 

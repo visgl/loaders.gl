@@ -12,7 +12,7 @@ import type {DataSource, DataSourceProps} from './lib/sources/data-source';
  */
 export interface Source<
   DataSourceT extends DataSource = DataSource,
-  DataSourcePropsT extends DataSourceProps = DataSourceProps
+  DataSourcePropsT extends DataSourceProps = any
 > {
   /** Type of source created by this service */
   source?: DataSourceT;
@@ -30,10 +30,16 @@ export interface Source<
   extensions: string[];
   /** MIME extensions that this service uses */
   mimeTypes: string[];
-  /** MIME extensions that this service uses */
+  /** Default options */
   options: DataSourcePropsT;
 
+  /** Type string identifying this service, e.g. 'wms' */
   type: string;
+  /** Can source be created from a URL */
+  fromUrl: boolean;
+  /** Can source be created from a Blob or File */
+  fromBlob: boolean;
+
   /** Check if a URL can support this service */
   testURL: (url: string) => boolean;
   /** Test data */
