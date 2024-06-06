@@ -21,18 +21,18 @@ export class BrowserFile implements FileProviderInterface {
    * @param lenght Length of read data
    */
   private async getBytesFromFile(start: number, lenght: number): Promise<ArrayBuffer> {
-    const reader = new FileReader();
+    let reader = new FileReader();
     reader.readAsArrayBuffer(this.file.slice(start, start + lenght));
     return new Promise<ArrayBuffer>((res, rej) => {
-      reader.onload = function () {
-        const arrayBuffer = reader.result;
+      reader.onload = function() {
+        const arrayBuffer = reader.result
         if (!arrayBuffer || typeof arrayBuffer === 'string') {
           rej(new Error('something went wrong'));
         } else {
-          res(arrayBuffer);
+          res(arrayBuffer)
         }
-      };
-    });
+      }
+    })
   }
 
   /**
@@ -40,7 +40,7 @@ export class BrowserFile implements FileProviderInterface {
    * @param length desired file lenght
    */
   async truncate(length: number): Promise<void> {
-    throw new Error('file loaded in browser cannot be changed');
+    throw new Error("file loaded in browser cannot be changed");
   }
 
   /**
@@ -48,12 +48,12 @@ export class BrowserFile implements FileProviderInterface {
    * @param buffer data to append
    */
   async append(buffer: Uint8Array): Promise<void> {
-    throw new Error('file loaded in browser cannot be changed');
+    throw new Error("file loaded in browser cannot be changed");
   }
 
   /** Close file */
   async destroy(): Promise<void> {
-    throw new Error('file loaded in browser cannot be changed');
+    throw new Error("file loaded in browser cannot be changed");
   }
 
   /**

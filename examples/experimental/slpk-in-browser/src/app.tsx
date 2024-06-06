@@ -11,8 +11,9 @@ import {MapController, FlyToInterpolator, MapViewState} from '@deck.gl/core/type
 import {COORDINATE_SYSTEM, I3SLoader, parseSLPKArchive} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {ControlPanel} from './components/control-panel';
+import {BrowserFile} from './browser-file';
 import {ZipFileSystem} from '@loaders.gl/zip';
-import {LoaderWithParser, BrowserFile} from '@loaders.gl/loader-utils';
+import {LoaderWithParser} from '@loaders.gl/loader-utils';
 import CustomTile3DLayer from './custom-tile-3d-layer';
 
 export const TRANSITION_DURAITON = 4000;
