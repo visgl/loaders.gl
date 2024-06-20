@@ -13,9 +13,12 @@ export type {
   AnyArray
 } from './types/types';
 
-export type {Schema, Field, DataType, SchemaMetadata, FieldMetadata} from './types/schema';
+// SCHEMAS AND DATA TYPES
 
+export type {Schema, Field, DataType, SchemaMetadata, FieldMetadata} from './types/schema';
 export type {Batch} from './types/batch';
+
+export {getArrayTypeFromDataType} from './lib/table/simple-table/data-type';
 
 // TABLE CATEGORY TYPES
 export type {
