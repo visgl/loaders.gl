@@ -18,7 +18,7 @@ import {Geoid} from '@math.gl/geoid';
  */
 export function createBoundingVolumes(
   sourceBoundingVolume: OrientedBoundingBox | BoundingSphere,
-  geoidHeightModel: Geoid
+  geoidHeightModel: Geoid | null
 ): BoundingVolumes {
   let radius;
   let halfSize;
@@ -28,9 +28,13 @@ export function createBoundingVolumes(
     sourceBoundingVolume.center,
     new Vector3()
   );
-  cartographicCenter[2] =
-    cartographicCenter[2] -
-    geoidHeightModel.getHeight(cartographicCenter[1], cartographicCenter[0]);
+
+  if (geoidHeightModel) {
+    cartographicCenter[2] =
+      cartographicCenter[2] -
+      geoidHeightModel.getHeight(cartographicCenter[1], cartographicCenter[0]);
+  }
+
   if (sourceBoundingVolume instanceof OrientedBoundingBox) {
     halfSize = sourceBoundingVolume.halfSize;
     radius = new Vector3(halfSize[0], halfSize[1], halfSize[2]).len();
@@ -60,7 +64,7 @@ export function createBoundingVolumes(
  */
 export function createBoundingVolumesFromGeometry(
   cartesianPositions: Float32Array,
-  geoidHeightModel: Geoid
+  geoidHeightModel: Geoid | null
 ): {mbs: Mbs; obb: Obb} {
   const positionVectors = convertPositionsToVectors(cartesianPositions);
 
@@ -70,8 +74,10 @@ export function createBoundingVolumesFromGeometry(
   const mbsCenter = Ellipsoid.WGS84.cartesianToCartographic(geometryMbs.center, new Vector3());
   const obbCenter = Ellipsoid.WGS84.cartesianToCartographic(geometryObb.center, new Vector3());
 
-  mbsCenter[2] = mbsCenter[2] - geoidHeightModel.getHeight(mbsCenter[1], mbsCenter[0]);
-  obbCenter[2] = obbCenter[2] - geoidHeightModel.getHeight(obbCenter[1], obbCenter[0]);
+  if (geoidHeightModel) {
+    mbsCenter[2] = mbsCenter[2] - geoidHeightModel.getHeight(mbsCenter[1], mbsCenter[0]);
+    obbCenter[2] = obbCenter[2] - geoidHeightModel.getHeight(obbCenter[1], obbCenter[0]);
+  }
 
   return {
     mbs: [mbsCenter[0], mbsCenter[1], mbsCenter[2], geometryMbs.radius],

@@ -203,6 +203,7 @@ export default class I3SConverter {
     inquirer?: Promise<unknown>;
     metadataClass?: string;
     analyze?: boolean;
+    noEgm?: boolean;
   }): Promise<string> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE); // eslint-disable-line no-console
@@ -226,7 +227,8 @@ export default class I3SConverter {
       mergeMaterials = true,
       inquirer,
       metadataClass,
-      analyze = false
+      analyze = false,
+      noEgm = false
     } = options;
     this.options = {
       outputPath,
@@ -253,9 +255,13 @@ export default class I3SConverter {
     this.writeQueue = new WriteQueue(this.conversionDump);
     this.writeQueue.startListening();
 
-    console.log('Loading egm file...'); // eslint-disable-line
-    this.geoidHeightModel = await load(egmFilePath, PGMLoader);
-    console.log('Loading egm file completed!'); // eslint-disable-line
+    if (!noEgm) {
+      console.log('--no-egm option selected, skip loading egm file'); // eslint-disable-line
+    } else {
+      console.log('Loading egm file...'); // eslint-disable-line
+      this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+      console.log('Loading egm file completed!'); // eslint-disable-line
+    }
 
     if (slpk) {
       this.nodePages.useWriteFunction(writeFileForSlpk);
@@ -486,7 +492,7 @@ export default class I3SConverter {
       this.sourceTileset?.root?.boundingVolume?.region
     );
 
-    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel);
 
     await this.nodePages.push({
       index: 0,
@@ -793,7 +799,7 @@ export default class I3SConverter {
         transformationMatrix,
         null
       );
-      const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+      const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel);
       const nodes: NodeIndexDocument[] = [];
       for (const convertedNode of this.conversionDump.tilesConverted[sourceTile.id].nodes) {
         const {node} = await this._generateNodeIndexDocument(
@@ -846,7 +852,7 @@ export default class I3SConverter {
       transformationMatrix,
       null
     );
-    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel);
 
     const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
     this.createAttributeStorageInfo(tileContent, propertyTable);
@@ -974,7 +980,7 @@ export default class I3SConverter {
       draco: this.options.draco,
       generateBoundingVolumes: this.generateBoundingVolumes,
       shouldMergeMaterials: this.options.mergeMaterials,
-      geoidHeightModel: this.geoidHeightModel!,
+      geoidHeightModel: this.geoidHeightModel,
       libraries: this.loadOptions.modules as Record<string, string>,
       metadataClass: this.options.metadataClass
     });
