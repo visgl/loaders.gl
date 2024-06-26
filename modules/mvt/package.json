@@ -26,6 +26,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./mvt-worker.js": {
+      "import": "./dist/mvt-worker.js"
     }
   },
   "sideEffects": false,
