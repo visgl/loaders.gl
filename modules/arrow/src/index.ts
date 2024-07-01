@@ -58,6 +58,15 @@ export {
   getTriangleIndices,
   getMeanCentersFromBinaryGeometries
 } from './geoarrow/convert-geoarrow-to-binary-geometry';
+export {
+  geojsonFeaturesToArrow,
+  geojsonPointToArrow,
+  geojsonMultiPointToArrow,
+  geojsonLineStringToArrow,
+  geojsonMultiLineStringToArrow,
+  geojsonPolygonToArrow,
+  geojsonMultiPolygonToArrow
+} from './geoarrow/convert-geojson-feature-to-arrow';
 
 export {updateBoundsFromGeoArrowSamples} from './geoarrow/get-arrow-bounds';
 
