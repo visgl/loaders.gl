@@ -2,6 +2,27 @@
 
 ## v4.3
 
+### v4.3.0-alpha.4
+
+- fix(mvt): Add mvt-worker.js bundle to exports path (#3035)
+- chore(deps): bump braces from 3.0.2 to 3.0.3 (#3027)
+- Tiles traverser: do not check for visibility in canTraverse. (#3032)
+- feat(tile-converter): Option not to use Geod transformation (#3033)
+- Send json data as object rather then Buffer (#3031)
+- feat(copc): Now module for COPC format (#3030)
+- chore(loader-utils): Example working on range requests (#2966)
+- fix(core): checkResponse crash when Request body is already used (#3026)
+- feat(pmtiles): Experimental PMTilesLoader (#3023)
+- Add Open.js Code Of Conduct File (#3022)
+- docs: Release notes for 4.3 (#3020)
+- fix(examples): geoparquet tooltips (#3021)
+- examples: Modernize pointcloud example (#3018)
+- feat(ktx2): Support loading mipmaps in KTX2 textures (#2999)
+- examples: modernize WMS example (#3019)
+- chore(tile-converter): upgrade node in the docker image (#3017)
+- chore: CHANGELOG.md (#3016)
+- chore: gitHead change
+
 ### v4.3.0-alpha.3
 
 - fix(i3s): slpk full path on Windows (#3011)
