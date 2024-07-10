@@ -2693,6 +2693,7 @@ __metadata:
     "@math.gl/geoid": "npm:^4.0.0"
     "@math.gl/geospatial": "npm:^4.0.0"
     "@types/express": "npm:^4.17.17"
+    "@types/inquirer": "npm:^9.0.7"
     ajv: "npm:^8.12.0"
     archiver: "npm:^5.0.0"
     cors: "npm:^2.8.5"
@@ -4057,6 +4058,16 @@ __metadata:
   version: 2.0.1
   resolution: "@types/http-errors@npm:2.0.1"
   checksum: 10c0/3bbc8c84fb02b381737e2eec563b434121384b1aef4e070edec4479a1bc74f27373edc09162680cd3ea1035ef8e5ab6d606bd7c99e3855c424045fb74376cb66
+  languageName: node
+  linkType: hard
+
+"@types/inquirer@npm:^9.0.7":
+  version: 9.0.7
+  resolution: "@types/inquirer@npm:9.0.7"
+  dependencies:
+    "@types/through": "npm:*"
+    rxjs: "npm:^7.2.0"
+  checksum: 10c0/b7138af41226c0457b99ff9b179da4a82078bc1674762e812d3cc3e3276936d7326b9fa6b98212b8eb055b2b6aaebe3c20359eebe176a6ca71061f4e08ce3a0f
   languageName: node
   linkType: hard
 
@@ -13016,7 +13027,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.5.5":
+"rxjs@npm:^7.2.0, rxjs@npm:^7.5.5":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:

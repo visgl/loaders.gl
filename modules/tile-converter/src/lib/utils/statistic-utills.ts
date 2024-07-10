@@ -49,38 +49,16 @@ function timeConverterFromSecondsAndMilliseconds(timeInSeconds: number, millisec
   return result;
 }
 
-export async function calculateFilesSize(params) {
-  const {slpk, outputPath, tilesetName} = params;
+export async function calculateFilesSize(params: {outputPath: string; tilesetName: string}) {
+  const {outputPath, tilesetName} = params;
   const fullOutputPath = getAbsoluteFilePath(outputPath);
 
   try {
-    if (slpk) {
-      const slpkPath = join(fullOutputPath, `${tilesetName}.slpk`);
-      const stat = await fs.stat(slpkPath);
-      return stat.size;
-    }
-
-    const directoryPath = join(fullOutputPath, tilesetName);
-    const totalSize = await getTotalFilesSize(directoryPath);
-    return totalSize;
+    const slpkPath = join(fullOutputPath, `${tilesetName}.slpk`);
+    const stat = await fs.stat(slpkPath);
+    return stat.size;
   } catch (error) {
     console.log('Calculate file sizes error: ', error); // eslint-disable-line
     return null;
   }
-}
-
-async function getTotalFilesSize(dirPath) {
-  let totalFileSize = 0;
-
-  const files = await fs.readdir(dirPath);
-
-  for (const file of files) {
-    const fileStat = await fs.stat(join(dirPath, file));
-    if (fileStat.isDirectory()) {
-      totalFileSize += await getTotalFilesSize(join(dirPath, file));
-    } else {
-      totalFileSize += fileStat.size;
-    }
-  }
-  return totalFileSize;
 }
