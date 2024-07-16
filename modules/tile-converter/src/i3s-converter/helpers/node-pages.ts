@@ -51,7 +51,7 @@ export default class NodePages {
    * @param writeFileFunc - function to save one nodePage into a file
    * @param nodesPerPage - length limit for one nodePage. An additional nodePage is created when this limit is met
    */
-  constructor(writeFileFunc, nodesPerPage, converter: I3SConverter) {
+  constructor(writeFileFunc, nodesPerPage: number, converter: I3SConverter) {
     this.nodesPerPage = nodesPerPage;
     this.nodesCounter = 0;
     // @ts-expect-error
@@ -75,7 +75,7 @@ export default class NodePages {
    * @param nodePageId - node page id
    * @returns file path and file name
    */
-  private getNodePageFileName(nodePageId): {filePath: string; fileName: string} {
+  private getNodePageFileName(nodePageId: number): {filePath: string; fileName: string} {
     const filePath = join(this.converter.layers0Path, 'nodepages');
     const fileName = `${nodePageId.toString()}.json`;
     return {filePath, fileName};
