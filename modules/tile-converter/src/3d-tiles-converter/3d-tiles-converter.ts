@@ -29,6 +29,7 @@ import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
 import {ZipFileSystem} from '../../../zip/src';
 import {ConversionDump, ConversionDumpOptions} from '../lib/utils/conversion-dump';
 import {Progress} from '../i3s-converter/helpers/progress';
+import {PromptModule} from 'inquirer';
 
 const I3S = 'I3S';
 
@@ -88,7 +89,7 @@ export default class Tiles3DConverter {
     tilesetName: string;
     maxDepth?: number;
     egmFilePath: string;
-    inquirer?: Promise<unknown>;
+    inquirer?: {prompt: PromptModule};
     analyze?: boolean;
   }): Promise<string | undefined> {
     if (isBrowser) {
