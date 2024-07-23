@@ -2710,7 +2710,6 @@ __metadata:
     "@loaders.gl/core": ^4.0.0
   bin:
     i3s-server: ./bin/i3s-server.js
-    slpk-extractor: ./bin/slpk-extractor.js
     tile-converter: ./bin/converter.js
   languageName: unknown
   linkType: soft
