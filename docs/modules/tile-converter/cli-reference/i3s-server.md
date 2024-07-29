@@ -28,7 +28,7 @@ npm i @loaders.gl/tile-converter
 
 ## Serve the output data of `tile-converter`
 
-Convert 3DTiles tileset to I3S without `--slpk` option:
+Convert 3DTiles tileset to I3S:
 
 ```bash
 npx tile-converter --install-dependencies
@@ -37,7 +37,7 @@ npx tile-converter --input-type 3DTILES --tileset /path/to/tileset.json --name N
 
 ### Start HTTP server
 ```bash
-PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./data" DEBUG=i3s-server:* npx i3s-server
+PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./data/NewTileset.slpk" DEBUG=i3s-server:* npx i3s-server
 ```
 
 #### The layer should be available on URLs
@@ -52,30 +52,8 @@ PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./data" DEBUG=i3s-server:* npx i3s-serve
 
 `https://i3s.loaders.gl/viewer?tileset=http://localhost:8080/NewTileset/SceneServer/layers/0`
 
-## Serve SLPK
-
-Example for path `../datasets/Rancho_Mesh_mesh_v17_1.slpk`:
-
-### Start the server
-
-```bash
-PORT=8080 HTTPS_PORT=4443 I3sLayerPath="../datasets/Rancho_Mesh_mesh_v17_1.slpk" DEBUG=i3s-server:* npx i3s-server
-```
-#### The layer should be available on URLs
-
-- `http://localhost:8080/SceneServer/layers/0/...`
-- `https://localhost:4443/SceneServer/layers/0/...`
-
-#### Open in ArcGIS
-
-`https://www.arcgis.com/home/webscene/viewer.html?url=http://localhost:8080/SceneServer`
-
-#### Open in I3S Explorer
-
-`https://i3s.loaders.gl/viewer?tileset=http://localhost:8080/SceneServer/layers/0`
-
 ## ENV variables
 
-- `I3sLayerPath` - path to converted data or SLPK file.
+- `I3sLayerPath` - path to resulting SLPK file.
 - `PORT` - HTTP port. Eg for `PORT = 8080 npx i3s-server` the server will work on host `http://localhost:8080/...`. Default value is `80`;
 - `HTTPS_PORT` - HTTPS port. Eg for `PORT = 4443 npx i3s-server` the server will work on host `https://localhost:4443/...`. Default value is `443`

@@ -30,14 +30,12 @@ Constructs a new `I3SConverter` instance.
 
 ### convert(options: object): object
 
-Converts a tileset to I3S format
+Converts a tileset to I3S SLPK format
 
 - `options.inputUrl: string` the url to read the tileset from
 - `options.outputPath: string` the output filename
 - `options.tilesetName: string` the output name of the tileset
 - `options.maxDepth: number` The max tree depth of conversion
-- `options.slpk: boolean` Whether the resulting layer be saved as "\*.slpk" package
-- `options.sevenZipExe: string` Windows only option. The path of 7-zip archiver tool for creating "\*.slpk" file
 - `options.egmFilePath: string` location of \*.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html
 - `options.token: string` ION token of input tileset
 - `options.draco: boolean` Default: `true`. Whether the converter creates DRACO compressed geometry in path "layers/0/nodes/xxx/geometries/1" along with non-compressed geometry in path "layers/0/nodes/xxx/geometries/0"

@@ -33,6 +33,12 @@ const options = {
   cert: fs.readFileSync(path.join(__dirname, '../certs/cert.pem'))
 };
 
+if (!app) {
+  // eslint-disable-next-line no-console
+  console.error('This server supports *.slpk files only');
+  process.exit(1); // eslint-disable-line no-process-exit
+}
+
 const httpServer = http.createServer(app);
 const httpsServer = https.createServer(options, app);
 
