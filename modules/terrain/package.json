@@ -27,7 +27,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
     "./terrain-worker.js": {
       "import": "./dist/terrain-worker.js"
     }
