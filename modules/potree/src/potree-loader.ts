@@ -13,21 +13,20 @@ export type POTreeLoaderOptions = LoaderOptions & {
 };
 
 /** Potree loader */
-// @ts-ignore
 export const PotreeLoader = {
   dataType: null as unknown as any,
   batchType: null as never,
 
-  name: 'potree',
+  name: 'potree metadata',
   id: 'potree',
   module: 'potree',
   version: VERSION,
-  extensions: ['json'],
+  extensions: ['js'],
   mimeTypes: ['application/json'],
   testText: (text) => text.indexOf('octreeDir') >= 0,
+  parse: (data: ArrayBuffer) => JSON.parse(new TextDecoder().decode(data)),
   parseTextSync: (text) => JSON.parse(text),
   options: {
     potree: {}
   }
-  // @ts-ignore
 } as const satisfies LoaderWithParser<any, never, POTreeLoaderOptions>;
