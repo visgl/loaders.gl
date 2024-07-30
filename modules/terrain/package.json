@@ -28,6 +28,9 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
+    "./terrain-worker.js": {
+      "import": "./dist/terrain-worker.js"
+    }
   },
   "sideEffects": false,
   "files": [
