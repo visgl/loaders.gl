@@ -10,7 +10,7 @@ import {PotreeLoader} from '../potree-loader';
 export type PotreeNodesSourceProps = DataSourceProps & {
   attributions?: string[];
   potree?: {
-    loadOptions?: LoaderOptions; // COPCLoaderOptions;
+    loadOptions?: LoaderOptions; // PotreeLoaderOptions;
     // TODO - add options here
   };
 };
@@ -103,8 +103,8 @@ export class PotreeNodesSource extends DataSource {
     let currentParent = this.root;
     let name = '';
     let result = true;
-    for (const levelNode of path) {
-      const newName = `${name}${levelNode}`;
+    for (const nodeLevel of path) {
+      const newName = `${name}${nodeLevel}`;
       const node = currentParent.children.find((child) => child.name === newName);
       if (node) {
         currentParent = node;
