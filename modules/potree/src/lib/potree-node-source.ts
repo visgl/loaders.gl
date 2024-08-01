@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {load} from '@loaders.gl/core';
 import {MeshGeometry} from '@loaders.gl/schema';
 import {DataSource, DataSourceProps, LoaderOptions, resolvePath} from '@loaders.gl/loader-utils';
@@ -6,6 +10,7 @@ import {PotreeMetadata} from '../types/potree-metadata';
 import {POTreeNode} from '../parsers/parse-potree-hierarchy-chunk';
 import {PotreeHierarchyChunkLoader} from '../potree-hierarchy-chunk-loader';
 import {PotreeLoader} from '../potree-loader';
+import {parseVersion} from '../utils/parse-version';
 
 export type PotreeNodesSourceProps = DataSourceProps & {
   attributions?: string[];
@@ -17,28 +22,62 @@ export type PotreeNodesSourceProps = DataSourceProps & {
 
 /**
  * A Potree data source
+ * @version 1.0 - https://github.com/potree/potree/blob/1.0RC/docs/file_format.md
+ * @version 1.7 - https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
  * @note Point cloud nodes tile source
  */
 export class PotreeNodesSource extends DataSource {
-  url: string;
+  /** Dataset base URL */
+  baseUrl: string = '';
+  /** Input data: string - dataset url, blob - single file data */
   data: string | Blob;
+  /** Input props */
   props: PotreeNodesSourceProps;
+  /** Meta information from `cloud.js` */
   metadata: PotreeMetadata | null = null;
+  /** Root node */
   root: POTreeNode | null = null;
+  /** Is data source ready to use after initial loading */
   isReady = false;
 
   private initPromise: Promise<void> | null = null;
 
-  get isSupported(): boolean {
+  /**
+   * @constructor
+   * @param data  - if string - data set path url or path to `cloud.js` metadata file
+   *              - if Blob - single file data
+   * @param props - data source properties
+   */
+  constructor(data: string | Blob, props: PotreeNodesSourceProps) {
+    super(props);
+    this.props = props;
+    this.data = data;
+    this.makeBaseUrl(this.data);
+
+    this.initPromise = this.init();
+  }
+
+  /** Initial data source loading */
+  async init() {
+    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
+    await this.loadHierarchy();
+    this.isReady = true;
+  }
+
+  /** Is data set supported */
+  isSupported(): boolean {
+    const {minor, major} = parseVersion(this.metadata?.version ?? '');
     return (
       this.isReady &&
-      ['1.4', '1.7'].includes(this.metadata?.version ?? '') &&
+      major === 1 &&
+      minor < 2 &&
       typeof this.metadata?.pointAttributes === 'string' &&
       ['LAS', 'LAZ'].includes(this.metadata?.pointAttributes)
     );
   }
 
-  get contentExtension(): string | null {
+  /** Get content files extension */
+  getContentExtension(): string | null {
     if (!this.isReady) {
       return null;
     }
@@ -52,47 +91,46 @@ export class PotreeNodesSource extends DataSource {
     }
   }
 
-  constructor(data: string | Blob, props: PotreeNodesSourceProps) {
-    super(props);
-    this.props = props;
-    this.data = data;
-    this.url = typeof data === 'string' ? resolvePath(data) : '';
-
-    this.initPromise = this.init();
-  }
-
-  async init() {
-    this.metadata = await load(`${this.url}/cloud.js`, PotreeLoader);
-    await this.loadHierarchy();
-    this.isReady = true;
-  }
-
+  /**
+   * Load octree node content
+   * @param path array of numbers between 0-7 specifying successive octree divisions.
+   * @return node content geometry or null if the node doesn't exist
+   */
   async loadNodeContent(path: number[]): Promise<MeshGeometry | null> {
     await this.initPromise;
 
-    if (!this.isSupported) {
+    if (!this.isSupported()) {
       return null;
     }
 
-    const isAvailable = await this.getNodeAvailability(path);
+    const isAvailable = await this.isNodeAvailable(path);
     if (isAvailable) {
       return load(
-        `${this.url}/${this.metadata?.octreeDir}/r/r${path.join()}.${this.contentExtension}`,
+        `${this.baseUrl}/${this.metadata
+          ?.octreeDir}/r/r${path.join()}.${this.getContentExtension()}`,
         LASLoader
       );
     }
     return null;
   }
 
+  /**
+   * Load data source hierarchy into tree of available nodes
+   */
   async loadHierarchy(): Promise<void> {
     await this.initPromise;
     this.root = await load(
-      `${this.url}/${this.metadata?.octreeDir}/r/r.hrc`,
+      `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
       PotreeHierarchyChunkLoader
     );
   }
 
-  async getNodeAvailability(path: number[]): Promise<boolean> {
+  /**
+   * Check if a node exists in the octree
+   * @param path array of numbers between 0-7 specifying successive octree divisions
+   * @returns true - the node does exist, false - the nodes doesn't exist
+   */
+  async isNodeAvailable(path: number[]): Promise<boolean> {
     if (this.metadata?.hierarchy) {
       return this.metadata.hierarchy.findIndex((item) => item[0] === `r${path.join()}`) !== -1;
     }
@@ -115,5 +153,19 @@ export class PotreeNodesSource extends DataSource {
       }
     }
     return result;
+  }
+
+  /**
+   * Deduce base url from the input url sring
+   * @param data - data source input data
+   */
+  private makeBaseUrl(data: string | Blob): void {
+    this.baseUrl = typeof data === 'string' ? resolvePath(data) : '';
+    if (this.baseUrl.endsWith('cloud.js')) {
+      this.baseUrl = this.baseUrl.substring(0, -8);
+    }
+    if (this.baseUrl.endsWith('/')) {
+      this.baseUrl = this.baseUrl.substring(0, -1);
+    }
   }
 }

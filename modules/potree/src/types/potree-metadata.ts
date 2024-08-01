@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /** Bounding box */
 export interface PotreeBoundingBox {
   /** Min X */
@@ -14,21 +18,41 @@ export interface PotreeBoundingBox {
   uz: number;
 }
 
+/** Attribute types for *.bin content */
 export type PotreeAttribute =
+  /** 3 (uint32) numbers: x, y, z */
   | 'POSITION_CARTESIAN'
+  /** 4 x (uint8) numbers for the color: r, g, b, a */
   | 'RGBA_PACKED'
+  /** 4 x (uint8) numbers for the color: r, g, b, a */
   | 'COLOR_PACKED'
+  /** 3 x (uint8) numbers for the color: r, g, b */
   | 'RGB_PACKED'
+  /** 3 x (float) numbers: x', y', z'  */
   | 'NORMAL_FLOATS'
+  /** (uint8) number */
   | 'FILLER_1B'
+  /** (uint16) number specifying the point's intensity */
   | 'INTENSITY'
+  /** (uint8) id for the class used */
   | 'CLASSIFICATION'
+  /** Note: might need to be revisited, best don't use */
   | 'NORMAL_SPHEREMAPPED'
+  /** Note: might need to be revisited, best don't use */
   | 'NORMAL_OCT16'
+  /** 3 x (float) numbers: x', y', z' */
   | 'NORMAL';
 
+/** Hierarchy item: [node name leading with 'r', points count
+ * @example [r043, 145]
+] */
 export type HierarchyItem = [string, number];
 
+/**
+ * Potree data set format metadata (cloud.js)
+ * @version 1.7
+ * @link https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
+ * */
 export interface PotreeMetadata {
   /** Version number in which this file is written */
   version: string;
