@@ -5,7 +5,6 @@ import cors from 'cors';
 // For local debug
 // import {fileURLToPath} from 'url';
 import {loadArchive} from './controllers/slpk-controller';
-import {router as indexRouter} from './routes';
 import {sceneServerRouter, router} from './routes/slpk-router';
 
 // For local debug
@@ -15,15 +14,15 @@ import {sceneServerRouter, router} from './routes/slpk-router';
 const I3S_LAYER_PATH = process.env.I3sLayerPath || ''; // eslint-disable-line no-process-env, no-undef
 const FULL_LAYER_PATH = path.join(process.cwd(), I3S_LAYER_PATH); // eslint-disable-line no-undef
 
-export const app = express();
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors());
+export let app: ReturnType<typeof express> | undefined;
 
 if (/\.slpk$/.test(I3S_LAYER_PATH)) {
+  app = express();
+  app.use(logger('dev'));
+  app.use(express.json());
+  app.use(express.urlencoded({extended: false}));
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(cors());
   let filePath = FULL_LAYER_PATH;
   // Checks if the first character is not a point to indicate absolute path
   const absolutePath = /^[^.]/.exec(I3S_LAYER_PATH);
@@ -33,6 +32,4 @@ if (/\.slpk$/.test(I3S_LAYER_PATH)) {
   loadArchive(filePath);
   app.use('/SceneServer/layers/0', router);
   app.use('/SceneServer', sceneServerRouter);
-} else {
-  app.use('/', indexRouter);
 }
