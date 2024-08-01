@@ -2,6 +2,14 @@
 
 ## v4.3
 
+### v4.3.0-alpha.5
+
+- Directory structure mode removerd fron i3s-server (#3048)
+- feat(potree): data source initial (#3050)
+- chore(tile-converter): Slpk extractor removed (#3044)
+- chore: puppeteer version upgraded (#3045)
+- chore:(tile-converter) Remove "expanded slpk" usage from tile-converter (#3042)
+
 ### v4.3.0-alpha.4
 
 - fix(mvt): Add mvt-worker.js bundle to exports path (#3035)
