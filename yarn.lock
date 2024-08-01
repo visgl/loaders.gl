@@ -2420,7 +2420,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/las@workspace:modules/las":
+"@loaders.gl/las@npm:4.3.0-alpha.4, @loaders.gl/las@workspace:modules/las":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/las@workspace:modules/las"
   dependencies:
@@ -2611,7 +2611,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/potree@workspace:modules/potree"
   dependencies:
+    "@loaders.gl/las": "npm:4.3.0-alpha.4"
     "@loaders.gl/math": "npm:4.3.0-alpha.4"
+    "@loaders.gl/schema": "npm:4.3.0-alpha.4"
     "@math.gl/core": "npm:^4.0.0"
   peerDependencies:
     "@loaders.gl/core": ^4.0.0
