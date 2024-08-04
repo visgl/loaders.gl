@@ -19,7 +19,7 @@
     "@luma.gl/constants": "^9.0.7",
     "@luma.gl/core": "^9.0.7",
     "@luma.gl/gltf": "^9.0.7",
-    "@math.gl/core": "^4.0.0"
+    "@math.gl/core": "4.1.0-alpha.3"
   },
   "devDependencies": {
     "typescript": "^5.3.0",

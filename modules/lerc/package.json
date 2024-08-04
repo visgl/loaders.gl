@@ -45,5 +45,8 @@
     "@loaders.gl/schema": "4.3.0-alpha.5",
     "lerc": "^4.0.4"
   },
+  "peerDependencies": {
+    "@loaders.gl/core": "^4.0.0"
+  },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }
