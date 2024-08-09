@@ -1,7 +1,10 @@
-import type {I3STileContent} from '@loaders.gl/i3s';
+/* eslint-disable no-console */
+
+import type {I3STileContent, FeatureAttribute} from '@loaders.gl/i3s';
 import {encodeSync} from '@loaders.gl/core';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
+import {TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
@@ -26,6 +29,11 @@ export default class B3dmConverter {
   // @ts-expect-error
   rtcCenter: Float32Array;
   i3sTile: any;
+  tilesVersion: string;
+
+  constructor(options: {tilesVersion: string} = {tilesVersion: '1.1'}) {
+    this.tilesVersion = options.tilesVersion;
+  }
 
   /**
    * The starter of content conversion
@@ -34,13 +42,13 @@ export default class B3dmConverter {
    */
   async convert(
     i3sAttributesData: I3SAttributesData,
-    featureAttributes: any = null
+    featureAttributes: FeatureAttribute | null = null
   ): Promise<ArrayBuffer> {
     const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes);
     const b3dm = encodeSync(
       {
         gltfEncoded: new Uint8Array(gltf),
-        type: 'b3dm',
+        type: this.tilesVersion === '1.0' ? TILE3D_TYPE.BATCHED_3D_MODEL : TILE3D_TYPE.GLTF,
         featuresLength: this._getFeaturesLength(featureAttributes),
         batchTable: featureAttributes
       },
@@ -57,7 +65,7 @@ export default class B3dmConverter {
   // eslint-disable-next-line max-statements
   async buildGLTF(
     i3sAttributesData: I3SAttributesData,
-    featureAttributes: any
+    featureAttributes: FeatureAttribute | null
   ): Promise<ArrayBuffer> {
     const {tileContent, textureFormat, box} = i3sAttributesData;
     const {material, attributes, indices: originalIndices, modelMatrix} = tileContent;

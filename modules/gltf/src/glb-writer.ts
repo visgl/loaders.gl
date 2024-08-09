@@ -34,7 +34,7 @@ export const GLBWriter = {
 } as const satisfies WriterWithEncoder<GLB, never, GLBWriterOptions>;
 
 function encodeSync(glb, options) {
-  const {byteOffset = 0} = options;
+  const {byteOffset = 0} = options ?? {};
 
   // Calculate length and allocate buffer
   const byteLength = encodeGLBSync(glb, null, byteOffset, options);

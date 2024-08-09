@@ -59,6 +59,7 @@ export default class Tiles3DConverter {
   };
   conversionDump: ConversionDump;
   progress: Progress;
+  fileExt: string;
 
   constructor() {
     this.options = {};
@@ -71,6 +72,7 @@ export default class Tiles3DConverter {
     this.workerSource = {};
     this.conversionDump = new ConversionDump();
     this.progress = new Progress();
+    this.fileExt = 'b3dm';
   }
 
   /**
@@ -78,6 +80,7 @@ export default class Tiles3DConverter {
    * @param options
    * @param options.inputUrl the url to read the tileset from
    * @param options.outputPath the output filename
+   * @param options.tilesVersion the version of 3DTiles
    * @param options.tilesetName the output name of the tileset
    * @param options.egmFilePath location of *.pgm file to convert heights from ellipsoidal to gravity-related format
    * @param options.maxDepth The max tree depth of conversion
@@ -87,6 +90,7 @@ export default class Tiles3DConverter {
     inputUrl: string;
     outputPath: string;
     tilesetName: string;
+    tilesVersion?: string;
     maxDepth?: number;
     egmFilePath: string;
     inquirer?: {prompt: PromptModule};
@@ -96,9 +100,19 @@ export default class Tiles3DConverter {
       console.log(BROWSER_ERROR_MESSAGE); // eslint-disable-line no-console
       return BROWSER_ERROR_MESSAGE;
     }
-    const {inputUrl, outputPath, tilesetName, maxDepth, egmFilePath, inquirer, analyze} = options;
+    const {
+      inputUrl,
+      outputPath,
+      tilesVersion,
+      tilesetName,
+      maxDepth,
+      egmFilePath,
+      inquirer,
+      analyze
+    } = options;
     this.conversionStartTime = process.hrtime();
-    this.options = {maxDepth, inquirer};
+    this.options = {maxDepth, inquirer, tilesVersion};
+    this.fileExt = this.options.tilesVersion === '1.0' ? 'b3dm' : 'glb';
 
     console.log('Loading egm file...'); // eslint-disable-line
     this.geoidHeightModel = await load(egmFilePath, PGMLoader);
@@ -173,7 +187,7 @@ export default class Tiles3DConverter {
 
     await this._addChildren(rootNode, rootTile, 1);
 
-    const tileset = transform({root: rootTile}, tilesetTemplate());
+    const tileset = transform({asset: {version: tilesVersion}, root: rootTile}, tilesetTemplate());
     await writeFile(this.tilesetPath, JSON.stringify(tileset), 'tileset.json');
     await this.conversionDump.deleteDumpFile();
 
@@ -244,7 +258,7 @@ export default class Tiles3DConverter {
     if (sourceChild.contentUrl) {
       if (
         this.conversionDump.restored &&
-        this.conversionDump.isFileConversionComplete(`${sourceChild.id}.b3dm`) &&
+        this.conversionDump.isFileConversionComplete(`${sourceChild.id}.${this.fileExt}`) &&
         (sourceChild.obb || sourceChild.mbs)
       ) {
         const {child} = this._createChildAndBoundingVolume(sourceChild);
@@ -279,13 +293,13 @@ export default class Tiles3DConverter {
         textureFormat: sourceChild.textureFormat
       };
 
-      const b3dmConverter = new B3dmConverter();
+      const b3dmConverter = new B3dmConverter({tilesVersion: this.options.tilesVersion});
       const b3dm = await b3dmConverter.convert(i3sAttributesData, featureAttributes);
 
-      await this.conversionDump.addNode(`${sourceChild.id}.b3dm`, sourceChild.id);
-      await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.b3dm`);
+      await this.conversionDump.addNode(`${sourceChild.id}.${this.fileExt}`, sourceChild.id);
+      await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.${this.fileExt}`);
       await this.conversionDump.updateConvertedNodesDumpFile(
-        `${sourceChild.id}.b3dm`,
+        `${sourceChild.id}.${this.fileExt}`,
         sourceChild.id,
         true
       );
@@ -379,7 +393,7 @@ export default class Tiles3DConverter {
       geometricError: convertScreenThresholdToGeometricError(sourceChild),
       children: [],
       content: {
-        uri: `${sourceChild.id}.b3dm`,
+        uri: `${sourceChild.id}.${this.fileExt}`,
         boundingVolume
       }
     };

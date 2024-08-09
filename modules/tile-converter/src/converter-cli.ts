@@ -26,6 +26,9 @@ type TileConversionOptions = {
   /** Output folder. This folder will be created by converter if doesn't exist. It is relative to the converter path.
    * Default: "data" folder */
   output: string;
+  /** 3DTile version.
+   * Default: version "1.1" */
+  tilesVersion?: string;
   /** Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed */
   instantNodeWriting: boolean;
   /** Try to merge similar materials to be able to merge meshes into one node (I3S to 3DTiles conversion only) */
@@ -178,6 +181,7 @@ function printHelp(): void {
     '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
   );
   console.log('--input-type [tileset input type: I3S or 3DTILES]');
+  console.log('--tile-version [3dtile version: 1.0 or 1.1, default: 1.1]');
   console.log(
     '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html], default: "./deps/egm2008-5.zip"'
   );
@@ -214,6 +218,7 @@ async function convert(options: ValidatedTileConversionOptions) {
       await tiles3DConverter.convert({
         inputUrl: options.tileset,
         outputPath: options.output,
+        tilesVersion: options.tilesVersion,
         tilesetName: options.name,
         maxDepth: options.maxDepth,
         egmFilePath: options.egm,
@@ -274,6 +279,15 @@ function validateOptions(
         console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]'),
       condition: (value) =>
         addHash || (Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase()))
+    },
+    tilesVersion: {
+      getMessage: () => console.log('Incorrect: --tilesVersion [1.0 or 1.1]'),
+      condition: (value) =>
+        addHash ||
+        (Boolean(value) &&
+          Object.values(['1.0', '1.1']).includes(value) &&
+          Boolean(options.inputType === 'I3S')) ||
+        Boolean(options.analyze)
     }
   };
   const exceptions: (() => void)[] = [];
@@ -302,6 +316,7 @@ function validateOptions(
 function parseOptions(args: string[]): TileConversionOptions {
   const opts: TileConversionOptions = {
     output: 'data',
+    tilesVersion: '1.1',
     instantNodeWriting: false,
     mergeMaterials: true,
     egm: join(process.cwd(), 'deps', 'egm2008-5.pgm'),
@@ -330,6 +345,9 @@ function parseOptions(args: string[]): TileConversionOptions {
           break;
         case '--output':
           opts.output = getStringValue(index, args);
+          break;
+        case '--tiles-version':
+          opts.tilesVersion = getStringValue(index, args);
           break;
         case '--instant-node-writing':
           opts.instantNodeWriting = getBooleanValue(index, args);
