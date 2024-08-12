@@ -107,7 +107,6 @@ type ConverterProps = {
   inquirer?: {prompt: PromptModule};
   metadataClass?: string;
   analyze?: boolean;
-  noEgm?: boolean;
 };
 
 /**
@@ -224,8 +223,7 @@ export default class I3SConverter {
       mergeMaterials = true,
       inquirer,
       metadataClass,
-      analyze = false,
-      noEgm = false
+      analyze = false
     } = options;
     this.options = {
       outputPath,
@@ -250,8 +248,8 @@ export default class I3SConverter {
     this.writeQueue = new WriteQueue(this.conversionDump);
     this.writeQueue.startListening();
 
-    if (!noEgm) {
-      console.log('--no-egm option selected, skip loading egm file'); // eslint-disable-line
+    if (egmFilePath.toLowerCase() === 'none') {
+      console.log('--egm chousen to be "none", skip loading egm file'); // eslint-disable-line
     } else {
       console.log('Loading egm file...'); // eslint-disable-line
       this.geoidHeightModel = await load(egmFilePath, PGMLoader);

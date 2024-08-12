@@ -41,7 +41,7 @@ npx tile-converter --install-dependencies
 Run conversion:
 
 ```bash
-npx tile-converter --input-type \<I3S\|3DTILES\> --tileset \<tileset\> --name <tileset name> [--output <output folder>] [--no-draco] [--max-depth 4] [--slpk] [--7zExe <path/to/7z.exe>] [--token <ION token>] [--egm <pat/to/*.pgm>] [--split-nodes] [--instant-node-writing] [--generate-textures] [--generate-bounding-volumes]
+npx tile-converter --input-type \<I3S\|3DTILES\> --tileset \<tileset\> --name <tileset name> [--output <output folder>] [--no-draco] [--max-depth 4] [--slpk] [--7zExe <path/to/7z.exe>] [--token <ION token>] [--egm <pat/to/*.pgm|none>] [--split-nodes] [--instant-node-writing] [--generate-textures] [--generate-bounding-volumes]
 ```
 
 Alternatively, you can use syntax with the equal sign:
