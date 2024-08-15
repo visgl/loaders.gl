@@ -4,7 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {encodeNumber, encodeHex, encodeBase64} from '@loaders.gl/crypto';
-import TEST_CASES from '../crc32c-test-cases.json' assert {type: 'json'};
+import TEST_CASES from '../crc32c-test-cases.json' with {type: 'json'};
 
 test('encodeHexToBase64#crc32 test cases', (t) => {
   for (const type in TEST_CASES) {

@@ -2,6 +2,7 @@
 
 ## Upgrading to v4.3 (In development)
 
+- Now requires Node.js v18.20 or higher (needs support for `import ... with { ... }` syntax)
 - Note: internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
 
 ## Upgrading to v4.2

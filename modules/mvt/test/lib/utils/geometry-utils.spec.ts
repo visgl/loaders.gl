@@ -7,10 +7,10 @@ import test from 'tape-promise/tape';
 import {classifyRingsFlat} from '@loaders.gl/mvt/lib/utils/geometry-utils';
 
 // Rings
-import ringsSingleRing from '@loaders.gl/mvt/test/data/rings/rings_single_ring.json' assert {type: 'json'};
-import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings/rings_ring_and_hole.json' assert {type: 'json'};
-import ringsTwoRings from '@loaders.gl/mvt/test/data/rings/rings_two_rings.json' assert {type: 'json'};
-import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings/rings_zero_size_hole.json' assert {type: 'json'};
+import ringsSingleRing from '@loaders.gl/mvt/test/data/rings/rings_single_ring.json' with {type: 'json'};
+import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings/rings_ring_and_hole.json' with {type: 'json'};
+import ringsTwoRings from '@loaders.gl/mvt/test/data/rings/rings_two_rings.json' with {type: 'json'};
+import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings/rings_zero_size_hole.json' with {type: 'json'};
 
 test('classifyRingsFlat#single ring', async (t) => {
   const geom = {...ringsSingleRing};

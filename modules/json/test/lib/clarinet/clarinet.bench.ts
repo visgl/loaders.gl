@@ -1,6 +1,10 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {_ClarinetParser} from '@loaders.gl/json';
 
-import BASIC from '../../data/clarinet/basic.json' assert {type: 'json'};
+import BASIC from '../../data/clarinet/basic.json' with {type: 'json'};
 
 export default function clarinetBench(bench) {
   const STRING = JSON.stringify(BASIC);
