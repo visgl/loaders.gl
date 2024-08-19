@@ -4,7 +4,7 @@
 
 import {load} from '@loaders.gl/core';
 import {MeshGeometry} from '@loaders.gl/schema';
-import {DataSource, DataSourceProps, LoaderOptions, resolvePath} from '@loaders.gl/loader-utils';
+import {Tile3DSource, Tile3DSourceProps, LoaderOptions, resolvePath} from '@loaders.gl/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
 import {PotreeMetadata} from '../types/potree-metadata';
 import {POTreeNode} from '../parsers/parse-potree-hierarchy-chunk';
@@ -12,7 +12,7 @@ import {PotreeHierarchyChunkLoader} from '../potree-hierarchy-chunk-loader';
 import {PotreeLoader} from '../potree-loader';
 import {parseVersion} from '../utils/parse-version';
 
-export type PotreeNodesSourceProps = DataSourceProps & {
+export type PotreeNodesSourceProps = Tile3DSourceProps & {
   attributions?: string[];
   potree?: {
     loadOptions?: LoaderOptions; // PotreeLoaderOptions;
@@ -26,7 +26,7 @@ export type PotreeNodesSourceProps = DataSourceProps & {
  * @version 1.7 - https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
  * @note Point cloud nodes tile source
  */
-export class PotreeNodesSource extends DataSource {
+export class PotreeNodesSource implements Tile3DSource {
   /** Dataset base URL */
   baseUrl: string = '';
   /** Input data: string - dataset url, blob - single file data */

@@ -162,3 +162,6 @@ export type {ImageTileSource} from './lib/sources/image-tile-source';
 
 export type {VectorTileSource, VectorTileSourceProps} from './lib/sources/vector-tile-source';
 export type {VectorTile} from './lib/sources/vector-tile-source';
+
+export type {Tile3DSource, Tile3DSourceProps} from './lib/sources/tile-3d-source';
+export type {Tile3DSourceMetadata, GetNodeParameters} from './lib/sources/tile-3d-source';
