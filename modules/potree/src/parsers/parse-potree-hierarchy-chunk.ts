@@ -54,35 +54,53 @@ Would have an index looking like this:
 | r36  | `0b00000000` (=0)  | `1`    |
 */
 
-/** @todo these types are an incorrect mess */
+/** Node metadata from index file */
 export type POTreeTileHeader = {
+  /** Number of child nodes */
   childCount: number;
+  /** Human readable name */
   name: string;
+  /** Child availability mask */
   childMask: number;
 };
 
-/** @todo these types are an incorrect mess */
+/** Hierarchical potree node structure */
 export type POTreeNode = {
+  /** Index data */
   header: POTreeTileHeader;
+  /** Human readable name */
   name: string;
+  /** Number of points */
   pointCount: number;
+  /** Node's level in the tree */
   level: number;
+  /** Has children */
   hasChildren: boolean;
+  /** Space between points */
   spacing: number;
+  /** Available children */
   children: POTreeNode[];
+  /** All children including unavailable */
   childrenByIndex: POTreeNode[];
 };
 
-// type POTreeTileNode = POTreeNode;
-
-// load hierarchy
-export function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer) {
+/**
+ * load hierarchy
+ * @param arrayBuffer - binary index data
+ * @returns root node
+ **/
+export function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer): POTreeNode {
   const tileHeaders = parseBinaryChunk(arrayBuffer);
   return buildHierarchy(tileHeaders);
 }
 
-// Parses the binary rows
-function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
+/**
+ * Parses the binary rows
+ * @param arrayBuffer - binary index data to parse
+ * @param byteOffset - byte offset to start from
+ * @returns flat nodes array
+ * */
+function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0): POTreeNode[] {
   const dataView = new DataView(arrayBuffer);
 
   const stack: POTreeNode[] = [];
@@ -121,7 +139,14 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
   return tileHeaders;
 }
 
-function decodeRow(dataView: DataView, byteOffset: number, tileHeader: POTreeNode) {
+/**
+ * Reads next row from binary index file
+ * @param dataView - index data
+ * @param byteOffset - current offset in the index data
+ * @param tileHeader - container to read to
+ * @returns new offset
+ */
+function decodeRow(dataView: DataView, byteOffset: number, tileHeader: POTreeNode): number {
   tileHeader.header = tileHeader.header || {};
   tileHeader.header.childMask = dataView.getUint8(byteOffset);
   tileHeader.header.childCount = 0;
@@ -131,7 +156,7 @@ function decodeRow(dataView: DataView, byteOffset: number, tileHeader: POTreeNod
   return byteOffset;
 }
 
-// Resolves the binary rows into a hierarchy (tree structure)
+/** Resolves the binary rows into a hierarchy (tree structure) */
 function buildHierarchy(flatNodes: POTreeNode[], options: {spacing?: number} = {}): POTreeNode {
   const DEFAULT_OPTIONS = {spacing: 100}; // TODO assert instead of default?
   options = {...DEFAULT_OPTIONS, ...options};
