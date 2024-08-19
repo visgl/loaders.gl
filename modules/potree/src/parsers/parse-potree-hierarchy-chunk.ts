@@ -66,6 +66,9 @@ export type POTreeNode = {
   header: POTreeTileHeader;
   name: string;
   pointCount: number;
+  level: number;
+  hasChildren: boolean;
+  spacing: number;
   children: POTreeNode[];
   childrenByIndex: POTreeNode[];
 };
@@ -90,8 +93,7 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
   byteOffset = decodeRow(dataView, byteOffset, topTileHeader);
 
   stack.push(topTileHeader);
-
-  const tileHeaders: POTreeTileHeader[] = [];
+  const tileHeaders: POTreeNode[] = [topTileHeader];
 
   while (stack.length > 0) {
     const snode = stack.shift();
@@ -100,11 +102,10 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
     for (let i = 0; i < 8; i++) {
       if (snode && (snode.header.childMask & mask) !== 0) {
         // @ts-expect-error
-        const tileHeader: POTreeTileHeader = {};
+        const tileHeader: POTreeNode = {};
         byteOffset = decodeRow(dataView, byteOffset, tileHeader);
         tileHeader.name = snode.name + i;
 
-        // @ts-expect-error
         stack.push(tileHeader);
         tileHeaders.push(tileHeader);
         snode.header.childCount++;
@@ -120,7 +121,7 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
   return tileHeaders;
 }
 
-function decodeRow(dataView, byteOffset, tileHeader) {
+function decodeRow(dataView: DataView, byteOffset: number, tileHeader: POTreeNode) {
   tileHeader.header = tileHeader.header || {};
   tileHeader.header.childMask = dataView.getUint8(byteOffset);
   tileHeader.header.childCount = 0;
@@ -131,15 +132,15 @@ function decodeRow(dataView, byteOffset, tileHeader) {
 }
 
 // Resolves the binary rows into a hierarchy (tree structure)
-function buildHierarchy(tileHeaders, options: {spacing?: number} = {}): POTreeNode {
+function buildHierarchy(flatNodes: POTreeNode[], options: {spacing?: number} = {}): POTreeNode {
   const DEFAULT_OPTIONS = {spacing: 100}; // TODO assert instead of default?
   options = {...DEFAULT_OPTIONS, ...options};
 
-  const topNode = tileHeaders[0];
+  const topNode: POTreeNode = flatNodes[0];
   const nodes = {};
 
-  for (const tileHeader of tileHeaders) {
-    const {name} = tileHeader;
+  for (const node of flatNodes) {
+    const {name} = node;
 
     const index = parseInt(name.charAt(name.length - 1), 10);
     const parentName = name.substring(0, name.length - 1);
@@ -147,20 +148,20 @@ function buildHierarchy(tileHeaders, options: {spacing?: number} = {}): POTreeNo
     const level = name.length - 1;
     // assert(parentNode && level >= 0);
 
-    tileHeader.level = level;
-    tileHeader.hasChildren = tileHeader.header.childCount;
-    tileHeader.children = [];
-    tileHeader.childrenByIndex = new Array(8).fill(null);
-    tileHeader.spacing = (options?.spacing || 0) / Math.pow(2, level);
+    node.level = level;
+    node.hasChildren = Boolean(node.header.childCount);
+    node.children = [];
+    node.childrenByIndex = new Array(8).fill(null);
+    node.spacing = (options?.spacing || 0) / Math.pow(2, level);
     // tileHeader.boundingVolume = Utils.createChildAABB(parentNode.boundingBox, index);
 
     if (parentNode) {
-      parentNode.children.push(tileHeader);
-      parentNode.childrenByIndex[index] = tileHeader;
+      parentNode.children.push(node);
+      parentNode.childrenByIndex[index] = node;
     }
 
     // Add the node to the map
-    nodes[name] = tileHeader;
+    nodes[name] = node;
   }
 
   // First node is the root
