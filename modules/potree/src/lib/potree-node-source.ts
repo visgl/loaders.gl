@@ -57,6 +57,17 @@ export class PotreeNodesSource extends DataSource {
     this.initPromise = this.init();
   }
 
+  /** Initial data source loading */
+  async init() {
+    if (this.initPromise) {
+      await this.initPromise;
+      return;
+    }
+    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
+    await this.loadHierarchy();
+    this.isReady = true;
+  }
+
   /** Is data set supported */
   isSupported(): boolean {
     const {minor, major} = parseVersion(this.metadata?.version ?? '');
@@ -135,17 +146,6 @@ export class PotreeNodesSource extends DataSource {
       }
     }
     return result;
-  }
-
-  /** Initial data source loading */
-  private async init() {
-    if (this.initPromise) {
-      await this.initPromise;
-      return;
-    }
-    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
-    await this.loadHierarchy();
-    this.isReady = true;
   }
 
   /**
