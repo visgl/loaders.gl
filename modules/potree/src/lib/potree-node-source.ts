@@ -57,13 +57,6 @@ export class PotreeNodesSource extends DataSource {
     this.initPromise = this.init();
   }
 
-  /** Initial data source loading */
-  async init() {
-    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
-    await this.loadHierarchy();
-    this.isReady = true;
-  }
-
   /** Is data set supported */
   isSupported(): boolean {
     const {minor, major} = parseVersion(this.metadata?.version ?? '');
@@ -115,17 +108,6 @@ export class PotreeNodesSource extends DataSource {
   }
 
   /**
-   * Load data source hierarchy into tree of available nodes
-   */
-  async loadHierarchy(): Promise<void> {
-    await this.initPromise;
-    this.root = await load(
-      `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
-      PotreeHierarchyChunkLoader
-    );
-  }
-
-  /**
    * Check if a node exists in the octree
    * @param path array of numbers between 0-7 specifying successive octree divisions
    * @returns true - the node does exist, false - the nodes doesn't exist
@@ -153,6 +135,27 @@ export class PotreeNodesSource extends DataSource {
       }
     }
     return result;
+  }
+
+  /** Initial data source loading */
+  private async init() {
+    if (this.initPromise) {
+      await this.initPromise;
+      return;
+    }
+    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
+    await this.loadHierarchy();
+    this.isReady = true;
+  }
+
+  /**
+   * Load data source hierarchy into tree of available nodes
+   */
+  private async loadHierarchy(): Promise<void> {
+    this.root = await load(
+      `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
+      PotreeHierarchyChunkLoader
+    );
   }
 
   /**
