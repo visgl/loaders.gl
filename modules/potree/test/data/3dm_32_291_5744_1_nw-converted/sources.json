@@ -1,0 +1,1 @@
+{"bounds":{"min":[291000.0,5744000.0,8.44],"max":[291999.99,5744999.99,87.51]},"projection":"+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs","sources":[{"name":"3dm_32_291_5744_1_nw.laz","points":6690318,"bounds":{"min":[291000.0,5744000.0,8.44],"max":[291999.99,5744999.99,87.51]}}]}
