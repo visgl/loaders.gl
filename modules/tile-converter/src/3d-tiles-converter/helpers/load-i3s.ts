@@ -119,9 +119,9 @@ export async function getNodeCount(fileSystem: ZipFileSystem | null): Promise<nu
   const filesIterator = makeZipCDHeaderIterator(fileSystem.fileProvider);
   for await (const file of filesIterator) {
     const filename = file.fileName;
-    const checkRes = /^nodes\/(\d+)\//.exec(filename);
-    if (checkRes) {
-      nodeSet.add(checkRes[1]);
+    const nodeNumberSearchResult = /^nodes\/(\d+)\//.exec(filename);
+    if (nodeNumberSearchResult) {
+      nodeSet.add(nodeNumberSearchResult[1]);
     }
   }
   return nodeSet.size;
