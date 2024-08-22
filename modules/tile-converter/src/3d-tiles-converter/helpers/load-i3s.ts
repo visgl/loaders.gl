@@ -115,13 +115,14 @@ export async function getNodeCount(fileSystem: ZipFileSystem | null): Promise<nu
   if (!fileSystem?.fileProvider) {
     return 0;
   }
-  let count = 0;
+  const nodeSet = new Set();
   const filesIterator = makeZipCDHeaderIterator(fileSystem.fileProvider);
   for await (const file of filesIterator) {
     const filename = file.fileName;
-    if (filename.indexOf('3dNodeIndexDocument.json.gz') >= 0) {
-      count++;
+    const nodeNumberSearchResult = /^nodes\/(\d+)\//.exec(filename);
+    if (nodeNumberSearchResult) {
+      nodeSet.add(nodeNumberSearchResult[1]);
     }
   }
-  return count;
+  return nodeSet.size;
 }
