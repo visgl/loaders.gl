@@ -32,7 +32,7 @@ import md5 from 'md5';
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
 import {compressFileWithGzip} from '../lib/utils/compress-util';
-import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utils';
+import {calculateDatasetSize, timeConverter} from '../lib/utils/statistic-utils';
 import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
 import {
   createBoundingVolumes,
@@ -1526,7 +1526,7 @@ export default class I3SConverter {
     const addRefinementPercentage = tilesWithAddRefineCount
       ? (tilesWithAddRefineCount / tilesCount) * 100
       : 0;
-    const filesSize = await calculateFilesSize(params);
+    const filesSize = await calculateDatasetSize(params);
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
     console.log('------------------------------------------------'); // eslint-disable-line no-undef, no-console
