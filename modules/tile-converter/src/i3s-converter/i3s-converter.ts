@@ -32,7 +32,7 @@ import md5 from 'md5';
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
 import {compressFileWithGzip} from '../lib/utils/compress-util';
-import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
+import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utils';
 import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
 import {
   createBoundingVolumes,

@@ -1,5 +1,5 @@
 import process from 'process';
-import {timeConverter} from '../../lib/utils/statistic-utills';
+import {timeConverter} from '../../lib/utils/statistic-utils';
 
 /** Defines a threshold that is used to check if the process velocity can be consifered trust. */
 const THRESHOLD_DEFAULT = 0.2;
