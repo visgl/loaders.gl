@@ -17,7 +17,7 @@ import {PGMLoader} from '../pgm-loader';
 import {i3sObbTo3dTilesObb} from './helpers/i3s-obb-to-3d-tiles-obb';
 import {convertScreenThresholdToGeometricError} from '../lib/utils/lod-conversion-utils';
 import {writeFile, removeDir} from '../lib/utils/file-utils';
-import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
+import {calculateDatasetSize, timeConverter} from '../lib/utils/statistic-utils';
 import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
@@ -475,7 +475,7 @@ export default class Tiles3DConverter {
     outputPath: string;
     tilesetName: string;
   }): Promise<void> {
-    const filesSize = await calculateFilesSize(params);
+    const filesSize = await calculateDatasetSize(params);
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
 
