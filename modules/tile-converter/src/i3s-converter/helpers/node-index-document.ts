@@ -8,7 +8,7 @@ import {
 } from '@loaders.gl/i3s';
 import transform from 'json-map-transform';
 import {v4 as uuidv4} from 'uuid';
-import {openJson, writeFile, writeFileForSlpk} from '../../lib/utils/file-utils';
+import {openJson, writeFileForSlpk} from '../../lib/utils/file-utils';
 import I3SConverter from '../i3s-converter';
 import {NODE as nodeTemplate} from '../json-templates/node';
 import {I3SConvertedResources} from '../types';
@@ -155,27 +155,20 @@ export class NodeIndexDocument {
    */
   private async write(node: Node3DIndexDocument): Promise<void> {
     const path = join(this.converter.layers0Path, 'nodes', this.id);
-    if (this.converter.options.slpk) {
-      await this.converter.writeQueue.enqueue(
-        {
-          archiveKey: `nodes/${this.id}/3dNodeIndexDocument.json.gz`,
-          writePromise: () =>
-            writeFileForSlpk(
-              path,
-              JSON.stringify(node),
-              '3dNodeIndexDocument.json',
-              true,
-              this.converter.compressList
-            )
-        },
-        true
-      );
-    } else {
-      await this.converter.writeQueue.enqueue(
-        {writePromise: () => writeFile(path, JSON.stringify(node))},
-        true
-      );
-    }
+    await this.converter.writeQueue.enqueue(
+      {
+        archiveKey: `nodes/${this.id}/3dNodeIndexDocument.json.gz`,
+        writePromise: () =>
+          writeFileForSlpk(
+            path,
+            JSON.stringify(node),
+            '3dNodeIndexDocument.json',
+            true,
+            this.converter.compressList
+          )
+      },
+      true
+    );
   }
 
   /**
@@ -188,10 +181,7 @@ export class NodeIndexDocument {
     }
     const path = this.id;
     const parentNodePath = join(this.converter.layers0Path, 'nodes', path);
-    let parentNodeFileName = 'index.json';
-    if (this.converter.options.slpk) {
-      parentNodeFileName = '3dNodeIndexDocument.json';
-    }
+    const parentNodeFileName = '3dNodeIndexDocument.json';
     return (await openJson(parentNodePath, parentNodeFileName)) as Node3DIndexDocument;
   }
 

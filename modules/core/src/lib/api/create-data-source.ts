@@ -8,9 +8,9 @@ import {DataSource, Source} from '@loaders.gl/loader-utils';
 /**
  * Creates a source from a service
  * If type is not supplied, will try to automatically detect the the
- * @param url URL to the image source
+ * @param url URL to the data source
  * @param type type of source. if not known, set to 'auto'
- * @returns an ImageSource instance
+ * @returns an DataSource instance
  */
 export function createDataSource<
   DataSourcePropsT extends DataSourceProps = DataSourceProps,
@@ -24,6 +24,8 @@ export function createDataSource<
   }
   return source.createDataSource(data, props) as DataSourceT;
 }
+
+// TODO - use selectSource...
 
 /** Guess service type from URL */
 function selectSource(url: string | Blob, sources: Source[]): Source | null {

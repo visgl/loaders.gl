@@ -30,15 +30,13 @@ Constructs a new `I3SConverter` instance.
 
 ### convert(options: object): object
 
-Converts a tileset to I3S format
+Converts a tileset to I3S SLPK format
 
 - `options.inputUrl: string` the url to read the tileset from
 - `options.outputPath: string` the output filename
 - `options.tilesetName: string` the output name of the tileset
 - `options.maxDepth: number` The max tree depth of conversion
-- `options.slpk: boolean` Whether the resulting layer be saved as "\*.slpk" package
-- `options.sevenZipExe: string` Windows only option. The path of 7-zip archiver tool for creating "\*.slpk" file
-- `options.egmFilePath: string` location of \*.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html
+- `options.egmFilePath: string` location of \*.pgm file to convert heights from ellipsoidal to gravity-related format or "None" to not use it. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html
 - `options.token: string` ION token of input tileset
 - `options.draco: boolean` Default: `true`. Whether the converter creates DRACO compressed geometry in path "layers/0/nodes/xxx/geometries/1" along with non-compressed geometry in path "layers/0/nodes/xxx/geometries/0"
 - `options.mergeMaterials: boolean` Default: `true`. Whether the converter should try to merge PBR materials. If `true`, the converter will try to merge PBR materials, joining textures in an atlas. This operation allows to create one I3S node for one 3DTiles tile. If one material has a texture but another doesn't have, materials are not merged and the 3DTiles tile will be splitted into 2 I3S nodes.

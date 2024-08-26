@@ -6,13 +6,18 @@ import {Node3DIndexDocument, SceneLayer3D} from '../../types';
  * @returns url without search params
  */
 export function getUrlWithoutParams(url: string): string {
-  let urlWithoutParams;
+  let urlWithoutParams: string | null;
 
   try {
     const urlObj = new URL(url);
     urlWithoutParams = `${urlObj.origin}${urlObj.pathname}`;
+
+    // On Windows `new URL(url)` makes `C:\...` -> `null\...`
+    if (urlWithoutParams.startsWith('null')) {
+      urlWithoutParams = null;
+    }
   } catch (e) {
-    // do nothing
+    urlWithoutParams = null;
   }
   return urlWithoutParams || url;
 }

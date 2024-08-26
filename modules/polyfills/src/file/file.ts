@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // Forked from @gozala's web-file under MIT license https://github.com/Gozala/web-file
 
 /**

@@ -8,6 +8,9 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../core"},
+    {"path": "../las"},
+    {"path": "../schema"},
     {"path": "../math"}
   ]
 }

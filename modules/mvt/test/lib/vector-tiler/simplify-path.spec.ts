@@ -4,8 +4,7 @@
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import test from 'tape-promise/tape';
-// @ts-ignore-error
-import {simplify} from '@loaders.gl/mvt/lib/vector-tiler/features/simplify-path';
+import {simplifyPath} from '@loaders.gl/mvt/lib/vector-tiler/features/simplify-path';
 
 /* eslint comma-spacing:0, no-shadow: 0*/
 
@@ -149,7 +148,7 @@ const simplified = [
   [0.86636, 0.48077]
 ];
 
-test('GeoJSONVT#simplify#simplifies points correctly with the given tolerance', (t) => {
+test('GeoJSONVT#simplifyPath#simplifies points correctly with the given tolerance', (t) => {
   const coords: number[] = [];
   for (let i = 0; i < points.length; i++) {
     coords.push(points[i][0], points[i][1], 0);
@@ -157,7 +156,7 @@ test('GeoJSONVT#simplify#simplifies points correctly with the given tolerance', 
 
   coords[2] = 1;
   coords[coords.length - 1] = 1;
-  simplify(coords, 0, coords.length - 3, 0.001 * 0.001);
+  simplifyPath(coords, 0, coords.length - 3, 0.001 * 0.001);
 
   const result: number[][] = [];
   for (let i = 0; i < coords.length; i += 3) {
@@ -169,14 +168,14 @@ test('GeoJSONVT#simplify#simplifies points correctly with the given tolerance', 
   t.end();
 });
 
-test('GeoJSONVT#simplify#does not throw max call stack error on bad long input', (t) => {
+test('GeoJSONVT#simplifyPath#does not throw max call stack error on bad long input', (t) => {
   const coords: number[][] = [];
   for (let i = 0; i < 1400; i++) {
     coords.push([0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]);
   }
 
   t.doesNotThrow(() => {
-    simplify(coords, 2e-15);
+    simplifyPath(coords, 2e-15);
   });
 
   t.end();

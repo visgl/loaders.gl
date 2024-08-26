@@ -32,9 +32,11 @@
     "build": "ocular-clean && ocular-build && lerna run pre-build",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
-    "publish": "ocular-publish",
+    "publish-beta": "ocular-publish beta",
+    "publish-prod": "ocular-publish prod",
     "test": "ocular-test",
-    "test-ci": "ocular-lint && ocular-test node && ocular-test cover",
+    "test-ci": "ocular-lint && ocular-test node && ocular-test cover && yarn test-website",
+    "test-website": "cd website && yarn && yarn build && cd ..",
     "test-fast": "ocular-test fast",
     "pre-commit": "yarn lint",
     "pre-push": "yarn lint",
@@ -59,7 +61,7 @@
     "typescript": "^5.3.0"
   },
   "volta": {
-    "node": "18.19.0",
-    "yarn": "4.2.1"
+    "node": "20.16.0",
+    "yarn": "4.4.0"
   }
 }

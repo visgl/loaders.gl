@@ -4,7 +4,7 @@
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import type {ProtoFeature} from './proto-feature';
-import {createFeature} from './proto-feature';
+import {createProtoFeature} from './proto-feature';
 
 /* eslint-disable no-continue */
 
@@ -82,7 +82,7 @@ export function clipFeatures(
     if (newGeometry.length) {
       if (options.lineMetrics && type === 'LineString') {
         for (const line of newGeometry) {
-          clipped.push(createFeature(feature.id, type, line, feature.tags));
+          clipped.push(createProtoFeature(feature.id, type, line, feature.tags));
         }
         continue;
       }
@@ -100,7 +100,7 @@ export function clipFeatures(
         type = newGeometry.length === 3 ? 'Point' : 'MultiPoint';
       }
 
-      clipped.push(createFeature(feature.id, type, newGeometry, feature.tags));
+      clipped.push(createProtoFeature(feature.id, type, newGeometry, feature.tags));
     }
   }
 

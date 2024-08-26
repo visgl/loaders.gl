@@ -29,7 +29,7 @@ selectSourceSync('filename.pmtiles', [PMTilesSource, MVTSource]); // => PMTilesS
 
 ## Functions
 
-### `selectSource(data: String | Blob, ..., sources?: Source[], options?: DataSourceOptions): Promise<Source | null>`
+### `selectSource(data: String | Blob, ..., sources?: Source[], options?): Promise<Source | null>`
 
 Selects an appropriate source for a file from a list of candidate sources by examining the `data` parameter, looking at URL extension, mimeType ('Content-Type') and/or an initial data chunk.
 
@@ -37,7 +37,7 @@ Parameters:
 
 - `data` - data to perform autodetection against
 - `sources` - can be a single source or an array of sources, or null.
-- `options` - See [`DataSourceOptions`](./source-options).
+- `options.type` - Force selection to a specific type of source (must still be provided in the source list).
 - `options.nothrow`=`false` - Return null instead of throwing exception if no source can be found
 
 Returns:

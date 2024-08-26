@@ -171,6 +171,11 @@ const config = {
             '/examples/pmtiles': '/examples/tiles/pmtiles',
             '/examples/wms': '/examples/tiles/wms',
           };
+          for (const [oldLink, newLink] of Object.entries(pageRedirects)) {
+            if (existingPath.includes(oldLink)) {
+              return existingPath.replace(oldLink, newLink);
+            }
+          }
           if (pageRedirects[existingPath]) {
             return [pageRedirects[existingPath]];
           }

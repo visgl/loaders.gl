@@ -4,19 +4,22 @@ loaders.gl provides a number of `Source` exports that support multi-step data lo
 
 **Sources** are designed encapsulates the following data access models: 
 
-| Encapsulated Data           | Description                                                                     |
+| Data Access Model           | Description                                                                     |
 | --------------------------- | ------------------------------------------------------------------------------- |
-| ***web service**            | interact with a web service that returns data assets for different regions etc. |
-| **cloud storage**           |
-| **archive files**           | read individual assets from a (very large) multi-asset archive files.           |
-| **dynamic data generation** |
+| ***web service**            | Interact with a web service that returns data assets for different regions etc. |
+| **cloud storage**           | Read static assets as-needed from large cloud-native file formats               |
+| **archive files**           | Read individual assets from a (very large) multi-asset archive files.           |
+| **dynamic data generation** | Generate data (tiles, images etc) dynamically based on application requests.    |
 
+## Source
 
-The `Source` instance provides methods to query metadata, and to query data for specific geospatial areas.
+A `Source` object provides information for creating a `DataSource` 
 
 ## DataSource Interfaces
 
-A `Source` can (and sometimes must) expose a completely unique API. However a big advantages comes when a `Source` conforms to an existing Source interface. 
+A `DateSource` instance provides methods to query metadata, and to query data for specific geospatial areas.
+
+A `DataSource` can (and sometimes must) expose a completely unique API. However a big advantages comes when a `DataSource` conforms to an existing Source interface. 
 
 This means that applications written against that interface can now support the new source without any changes to existing logic.
 
@@ -26,6 +29,11 @@ This means that applications written against that interface can now support the 
 | `VectorSource`     | Load "features" in a region               | WFS (N/A), ArcGIS FeatureServer         |
 | `ImageTileSource`  | Load image covering a specific tile index | WMTS (N/A)                              |
 | `VectorTileSource` | Load "features" in a specific tile index  | Mapbox Vector Tiles, `PMTilesSource`    |
+
+## Metadata
+
+A `DateSource` instance provides methods to query metadata: `await dataSource.getMetadata()`.
+
 
 ## Adapter Sources
 

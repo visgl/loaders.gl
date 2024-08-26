@@ -42,10 +42,9 @@ export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms
 
 // WFS - Web Feature Service
 
-export type {WFSLoaderOptions as _WFSLoaderOptions} from './wip/wfs-capabilities-loader';
-
-export type {WFSCapabilities as _WFSCapabilities} from './wip/wfs-capabilities-loader';
-export {WFSCapabilitiesLoader as _WFSCapabilitiesLoader} from './wip/wfs-capabilities-loader';
+export type {WFSLoaderOptions as _WFSLoaderOptions} from './wfs-capabilities-loader';
+export type {WFSCapabilities as _WFSCapabilities} from './wfs-capabilities-loader';
+export {WFSCapabilitiesLoader as _WFSCapabilitiesLoader} from './wfs-capabilities-loader';
 
 // GML - Geographic Markup Language
 

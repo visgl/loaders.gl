@@ -8,8 +8,9 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../gis"},
     {"path": "../images"},
     {"path": "../loader-utils"},
-    {"path": "../gis"}
+    {"path": "../schema"}
   ]
 }

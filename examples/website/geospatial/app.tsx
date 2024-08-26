@@ -123,6 +123,7 @@ export default function App(props: AppProps) {
   const [state, setState] = useState<AppState>({
     table: null,
     viewState: INITIAL_VIEW_STATE,
+    selectedExample: null,
     error: null
   });
   const stateRef = useRef<string>();
@@ -158,7 +159,9 @@ export default function App(props: AppProps) {
         />
         */}
         <h2>Table Schema</h2>
-        <MetadataViewer metadata={state.table?.schema && JSON.stringify(state.table.schema, null, 2)} />
+        <MetadataViewer
+          metadata={state.table?.schema && JSON.stringify(state.table.schema, null, 2)}
+        />
       </ExamplePanel>
 
       <DeckGL
@@ -174,11 +177,11 @@ export default function App(props: AppProps) {
   );
 
   async function onExampleChange(args: {
-    selectedLoader: string;
-    selectedExample: string;
+    categoryName: string;
+    exampleName: string;
     example: Example;
   }) {
-    const {selectedLoader, selectedExample, example} = args;
+    const {exampleName, example} = args;
 
     const url = example.data;
     try {
@@ -189,16 +192,19 @@ export default function App(props: AppProps) {
         ...state,
         table,
         viewState,
-        layerProps: example.layerProps
+        selectedExample: example
       }));
     } catch (error) {
       console.error('Failed to load table', url, error);
-      setState((state) => ({...state, error: `Could not load ${selectedExample}: ${error.message}`}));
+      setState((state) => ({
+        ...state,
+        error: `Could not load ${exampleName}: ${error.message}`
+      }));
     }
   }
 }
 
-function renderLayer({table, layerProps, index}) {
+function renderLayer({table, selectedExample, index}) {
   const geojson = table as GeoJSON;
   return [
     new GeoJsonLayer({
@@ -225,15 +231,16 @@ function renderLayer({table, layerProps, index}) {
       getPointRadius: 100,
       pointRadiusScale: 500,
       // pointRadiusUnits: 'pixels',
-      ...layerProps
+      ...selectedExample?.layerProps
     })
   ];
 }
 
 function getTooltipData({object}, state) {
-  const {title, properties} = state.getTooltipData
-  ? state.getTooltipData({object})
-  : getDefaultTooltipData({object});
+  const {getTooltipData: getSpecialTooltipData} = state.selectedExample ?? {};
+  const {title, properties} = getSpecialTooltipData
+    ? getSpecialTooltipData({object})
+    : getDefaultTooltipData({object});
   const props = Object.entries(properties)
     .map(([key, value]) => `<div>${key}: ${value}</div>`)
     .join('\n');

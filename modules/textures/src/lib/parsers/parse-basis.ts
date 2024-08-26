@@ -204,7 +204,6 @@ function parseKTX2File(KTX2File, data: ArrayBuffer, options): TextureLevel[][] {
 
     for (let levelIndex = 0; levelIndex < levelsCount; levelIndex++) {
       levels.push(transcodeKTX2Image(ktx2File, levelIndex, options));
-      break; // texture app can only show one level for some reason
     }
 
     return [levels];

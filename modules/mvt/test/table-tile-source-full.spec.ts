@@ -117,9 +117,11 @@ async function genTiles(data, options?: TableTileSourceProps) {
 
   for (const id in source.tiles) {
     const tile = source.tiles[id];
-    const zoom = tile.z;
-    output[`z${zoom}-${tile.x}-${tile.y}`] = source.getRawTile({zoom, x: tile.x, y: tile.y})
-      ?.features;
+    output[`z${tile.z}-${tile.x}-${tile.y}`] = source.getProtoTile({
+      z: tile.z,
+      x: tile.x,
+      y: tile.y
+    })?.protoFeatures;
   }
 
   return output;

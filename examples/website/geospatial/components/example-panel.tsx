@@ -42,11 +42,17 @@ const DropDown = styled.select`
 `;
 
 export type Example = {
-  sourceType: 'mvt' | 'pmtiles' | 'table';
+  format: 'mvt' | 'pmtiles' | 'table';
   data: string;
   attributions?: string[];
   viewState?: Record<string, unknown>;
   tileSize?: number[];
+  layerProps?: Record<string, any>;
+  getTooltipData?: (event: {
+    object?: {
+      properties?: Record<string, unknown>;
+    };
+  }) => null | {title: string; properties: Record<string, unknown>};
 };
 
 export type ExamplePanelProps = React.PropsWithChildren<{

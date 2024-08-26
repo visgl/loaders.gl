@@ -2,6 +2,67 @@
 
 ## v4.3
 
+### v4.3.0-alpha.6
+
+- fix(tile-converter): Returned non-slpk behavior for calculateFilesSize function (#3066)
+- fix(tile-converter): Wrong percent calculation fix (#3063)
+- Create security policy (#3064)
+- test(potree): Add tests for PotreeSource (#3062)
+- fix(potree): hierarchy loading (#3061)
+- chore(deps): bump elliptic from 6.5.4 to 6.5.7 in /website (#3058)
+- chore(deps): bump axios from 1.6.8 to 1.7.4 (#3059)
+- chore(deps): bump @75lb/deep-merge from 1.1.1 to 1.1.2 (#3060)
+- chore: Upgrade to node@20 and yarn@4.4.0 (#3056)
+- chore(tile-converter): egm=None feature updated (#3055)
+- fix(terrain): Add terrain-worker.js bundle to exports path (#3051)
+- chore(deps): bump fast-xml-parser from 4.2.5 to 4.4.1 (#3049)
+- chore(deps): bump ws from 5.2.3 to 5.2.4 (#3046)
+
+### v4.3.0-alpha.5
+
+- Directory structure mode removerd fron i3s-server (#3048)
+- feat(potree): data source initial (#3050)
+- chore(tile-converter): Slpk extractor removed (#3044)
+- chore: puppeteer version upgraded (#3045)
+- chore:(tile-converter) Remove "expanded slpk" usage from tile-converter (#3042)
+
+### v4.3.0-alpha.4
+
+- fix(mvt): Add mvt-worker.js bundle to exports path (#3035)
+- chore(deps): bump braces from 3.0.2 to 3.0.3 (#3027)
+- Tiles traverser: do not check for visibility in canTraverse. (#3032)
+- feat(tile-converter): Option not to use Geod transformation (#3033)
+- Send json data as object rather then Buffer (#3031)
+- feat(copc): Now module for COPC format (#3030)
+- chore(loader-utils): Example working on range requests (#2966)
+- fix(core): checkResponse crash when Request body is already used (#3026)
+- feat(pmtiles): Experimental PMTilesLoader (#3023)
+- Add Open.js Code Of Conduct File (#3022)
+- docs: Release notes for 4.3 (#3020)
+- fix(examples): geoparquet tooltips (#3021)
+- examples: Modernize pointcloud example (#3018)
+- feat(ktx2): Support loading mipmaps in KTX2 textures (#2999)
+- examples: modernize WMS example (#3019)
+- chore(tile-converter): upgrade node in the docker image (#3017)
+- chore: CHANGELOG.md (#3016)
+- chore: gitHead change
+
+### v4.3.0-alpha.3
+
+- fix(i3s): slpk full path on Windows (#3011)
+- feat(mvt): TableTileSource refactor, improved typing (#2990)
+- chore: Cleanup of Source parameters (#3015)
+- fix(csv): move d3-dsv from devDependencies to dependencies (#3009)
+- fix(loader-utils): add missing dependency for @probe.gl/log (#3008)
+- docs: Fix table formatting (#3014)
+- feat: Add VectorSource (#3012)
+- fix: ReadableStream (#3013)
+- chore(loader-utils): Preparing to migrate from FileProviders to ReadableFiles (#3000)
+- feat(core): Add createDataSource API (#3002)
+- chore(mvt): prep for refactor (#3005)
+- chore(mv): rename vector-tiler files (#3004)
+- chore: Source-related code org (#3003)
+
 ### v4.3.0-alpha.2
 
 - examples: Modernize geospatial example (#2996)

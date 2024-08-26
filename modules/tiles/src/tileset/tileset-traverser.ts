@@ -250,12 +250,7 @@ export class TilesetTraverser {
   // tile should be visible
   // tile should have children
   // tile LoD (level of detail) is not sufficient under current viewport
-  canTraverse(
-    tile: Tile3D,
-    frameState: FrameState,
-    useParentMetric: boolean = false,
-    ignoreVisibility: boolean = false
-  ): boolean {
+  canTraverse(tile: Tile3D, frameState: FrameState): boolean {
     if (!tile.hasChildren) {
       return false;
     }
@@ -267,11 +262,7 @@ export class TilesetTraverser {
       return !tile.contentExpired;
     }
 
-    if (!ignoreVisibility && !tile.isVisibleAndInRequestVolume) {
-      return false;
-    }
-
-    return this.shouldRefine(tile, frameState, useParentMetric);
+    return this.shouldRefine(tile, frameState);
   }
 
   shouldLoadTile(tile: Tile3D): boolean {
@@ -338,7 +329,7 @@ export class TilesetTraverser {
     while (stack.length > 0) {
       const tile = stack.pop();
 
-      const traverse = !tile.hasRenderContent && this.canTraverse(tile, frameState, false, false);
+      const traverse = !tile.hasRenderContent && this.canTraverse(tile, frameState);
       const emptyLeaf = !tile.hasRenderContent && tile.children.length === 0;
 
       // Traversal stops but the tile does not have content yet

@@ -30,9 +30,8 @@ type TileConversionOptions = {
   instantNodeWriting: boolean;
   /** Try to merge similar materials to be able to merge meshes into one node (I3S to 3DTiles conversion only) */
   mergeMaterials: boolean;
-  /** 3DTiles->I3S only. location of 7z.exe archiver to create slpk on Windows OS, default: "C:\Program Files\7-Zip\7z.exe" */
-  sevenZipExe: string;
   /** location of the Earth Gravity Model (*.pgm) file to convert heights from ellipsoidal to gravity-related format,
+   * "None" for not using Earth Gravity Model (*.pgm)
    * default: "./deps/egm2008-5.pgm". A model file can be loaded from GeographicLib
    * https://geographiclib.sourceforge.io/html/geoid.html */
   egm: string;
@@ -52,8 +51,6 @@ type TileConversionOptions = {
   validate: boolean;
   /** Maximal depth of the hierarchical tiles tree traversal, default: infinite */
   maxDepth?: number;
-  /** 3DTiles->I3S only. Whether the converter generates *.slpk (Scene Layer Package) I3S output file */
-  slpk: boolean;
   /** adds hash file to the slpk if there's no one */
   addHash: boolean;
   /** Feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
@@ -176,16 +173,12 @@ function printHelp(): void {
   console.log(
     '--split-nodes [Prevent to merge similar materials that could lead to incorrect visualization (I3S to 3DTiles conversion only)]'
   );
-  console.log('--slpk [Generate slpk (Scene Layer Packages) I3S output file]');
   console.log(
     '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
   );
   console.log('--input-type [tileset input type: I3S or 3DTILES]');
   console.log(
-    '--7zExe [location of 7z.exe archiver to create slpk on Windows, default: "C:\\Program Files\\7-Zip\\7z.exe"]'
-  );
-  console.log(
-    '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html], default: "./deps/egm2008-5.zip"'
+    '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format or "None" to not use it. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html], default: "./deps/egm2008-5.zip"'
   );
   console.log('--token [Token for Cesium ION tilesets authentication]');
   console.log('--no-draco [Disable draco compression for geometry]');
@@ -233,8 +226,6 @@ async function convert(options: ValidatedTileConversionOptions) {
         outputPath: options.output,
         tilesetName: options.name,
         maxDepth: options.maxDepth,
-        slpk: options.slpk,
-        sevenZipExe: options.sevenZipExe,
         egmFilePath: options.egm,
         token: options.token,
         draco: options.draco,
@@ -274,7 +265,6 @@ function validateOptions(
       condition: (value: any) => addHash || Boolean(value) || Boolean(options.analyze)
     },
     output: {getMessage: () => console.log('Missed: --output [Output path name]')},
-    sevenZipExe: {getMessage: () => console.log('Missed: --7zExe [7z archiver executable path]')},
     egm: {getMessage: () => console.log('Missed: --egm [*.pgm earth gravity model file path]')},
     tileset: {getMessage: () => console.log('Missed: --tileset [tileset.json file]')},
     inputType: {
@@ -312,14 +302,12 @@ function parseOptions(args: string[]): TileConversionOptions {
     output: 'data',
     instantNodeWriting: false,
     mergeMaterials: true,
-    sevenZipExe: 'C:\\Program Files\\7-Zip\\7z.exe',
     egm: join(process.cwd(), 'deps', 'egm2008-5.pgm'),
     draco: true,
     installDependencies: false,
     generateTextures: false,
     generateBoundingVolumes: false,
     validate: false,
-    slpk: false,
     addHash: false,
     quiet: false
   };
@@ -349,14 +337,8 @@ function parseOptions(args: string[]): TileConversionOptions {
         case '--max-depth':
           opts.maxDepth = getIntegerValue(index, args);
           break;
-        case '--slpk':
-          opts.slpk = getBooleanValue(index, args);
-          break;
         case '--add-hash':
           opts.addHash = getBooleanValue(index, args);
-          break;
-        case '--7zExe':
-          opts.sevenZipExe = getStringValue(index, args);
           break;
         case '--egm':
           opts.egm = getStringValue(index, args);

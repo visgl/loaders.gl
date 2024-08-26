@@ -32,7 +32,7 @@ import md5 from 'md5';
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
 import {compressFileWithGzip} from '../lib/utils/compress-util';
-import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
+import {calculateDatasetSize, timeConverter} from '../lib/utils/statistic-utils';
 import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
 import {
   createBoundingVolumes,
@@ -80,6 +80,7 @@ import {analyzeTileContent, mergePreprocessData} from './helpers/preprocess-3d-t
 import {Progress} from './helpers/progress';
 import {composeHashFile, createZip} from '@loaders.gl/zip';
 import {ConversionDump, ConversionDumpOptions, DumpMetadata} from '../lib/utils/conversion-dump';
+import {PromptModule} from 'inquirer';
 
 const ION_DEFAULT_TOKEN = process.env?.IonToken;
 const HARDCODED_NODES_PER_PAGE = 64;
@@ -90,13 +91,31 @@ const CESIUM_DATASET_PREFIX = 'https://';
 // const FS_FILE_TOO_LARGE = 'ERR_FS_FILE_TOO_LARGE';
 const PROGRESS_PHASE1_COUNT = 'phase1-count';
 
+type ConverterProps = {
+  inputUrl: string;
+  outputPath: string;
+  tilesetName: string;
+  egmFilePath: string;
+  maxDepth?: number;
+  token?: string;
+  draco?: boolean;
+  mergeMaterials?: boolean;
+  validate?: boolean;
+  generateTextures?: boolean;
+  generateBoundingVolumes?: boolean;
+  instantNodeWriting?: boolean;
+  inquirer?: {prompt: PromptModule};
+  metadataClass?: string;
+  analyze?: boolean;
+};
+
 /**
  * Converter from 3d-tiles tileset to i3s layer
  */
 export default class I3SConverter {
   attributeMetadataInfo: AttributeMetadataInfo;
   nodePages: NodePages;
-  options: any;
+  options: Partial<ConverterProps>;
   layers0Path: string;
   materialMap: Map<string, number>;
   materialDefinitions: I3SMaterialDefinition[];
@@ -174,8 +193,6 @@ export default class I3SConverter {
    * @param options.outputPath the output filename
    * @param options.tilesetName the output name of the tileset
    * @param options.maxDepth The max tree depth of conversion
-   * @param options.slpk Generate slpk (Scene Layer Packages) output file
-   * @param options.sevenZipExe Location of 7z.exe archiver to create slpk on Windows
    * @param options.egmFilePath location of *.pgm file to convert heights from ellipsoidal to gravity-related format
    * @param options.token Token for Cesium ION tilesets authentication
    * @param options.draco Generate I3S 1.7 draco compressed geometries
@@ -185,25 +202,7 @@ export default class I3SConverter {
    * @param options.instantNodeWriting - Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed
    */
   // eslint-disable-next-line max-statements, complexity
-  async convert(options: {
-    inputUrl: string;
-    outputPath: string;
-    tilesetName: string;
-    sevenZipExe: string;
-    egmFilePath: string;
-    maxDepth?: number;
-    slpk?: boolean;
-    token?: string;
-    draco?: boolean;
-    mergeMaterials?: boolean;
-    validate?: boolean;
-    generateTextures?: boolean;
-    generateBoundingVolumes?: boolean;
-    instantNodeWriting?: boolean;
-    inquirer?: Promise<unknown>;
-    metadataClass?: string;
-    analyze?: boolean;
-  }): Promise<string> {
+  async convert(options: ConverterProps): Promise<string> {
     if (isBrowser) {
       console.log(BROWSER_ERROR_MESSAGE); // eslint-disable-line no-console
       return BROWSER_ERROR_MESSAGE;
@@ -211,13 +210,11 @@ export default class I3SConverter {
     this.conversionStartTime = process.hrtime();
     const {
       tilesetName,
-      slpk,
       egmFilePath,
       inputUrl,
       validate,
       outputPath,
       draco = true,
-      sevenZipExe,
       maxDepth,
       token,
       generateTextures,
@@ -232,8 +229,6 @@ export default class I3SConverter {
       outputPath,
       tilesetName,
       maxDepth,
-      slpk,
-      sevenZipExe,
       egmFilePath,
       draco,
       token,
@@ -253,13 +248,15 @@ export default class I3SConverter {
     this.writeQueue = new WriteQueue(this.conversionDump);
     this.writeQueue.startListening();
 
-    console.log('Loading egm file...'); // eslint-disable-line
-    this.geoidHeightModel = await load(egmFilePath, PGMLoader);
-    console.log('Loading egm file completed!'); // eslint-disable-line
-
-    if (slpk) {
-      this.nodePages.useWriteFunction(writeFileForSlpk);
+    if (egmFilePath.toLowerCase() === 'none') {
+      console.log('--egm chousen to be "none", skip loading egm file'); // eslint-disable-line
+    } else {
+      console.log('Loading egm file...'); // eslint-disable-line
+      this.geoidHeightModel = await load(egmFilePath, PGMLoader);
+      console.log('Loading egm file completed!'); // eslint-disable-line
     }
+
+    this.nodePages.useWriteFunction(writeFileForSlpk);
 
     try {
       const preloadOptions = await this._fetchPreloadOptions();
@@ -279,7 +276,7 @@ export default class I3SConverter {
         const selectMetadataClassResult = await this.selectMetadataClass();
         if (selectMetadataClassResult) {
           await this._createAndSaveTileset(outputPath, tilesetName);
-          await this._finishConversion({slpk: Boolean(slpk), outputPath, tilesetName});
+          await this._finishConversion({outputPath, tilesetName});
         }
       }
     } catch (error) {
@@ -486,7 +483,7 @@ export default class I3SConverter {
       this.sourceTileset?.root?.boundingVolume?.region
     );
 
-    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel);
 
     await this.nodePages.push({
       index: 0,
@@ -590,17 +587,11 @@ export default class I3SConverter {
    * Write 3DSceneLayer https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3DSceneLayer.cmn.md in file
    */
   private async _writeLayers0(): Promise<void> {
-    if (this.options.slpk) {
-      await this.writeQueue.enqueue({
-        archiveKey: '3dSceneLayer.json.gz',
-        writePromise: () =>
-          writeFileForSlpk(this.layers0Path, JSON.stringify(this.layers0), '3dSceneLayer.json')
-      });
-    } else {
-      await this.writeQueue.enqueue({
-        writePromise: () => writeFile(this.layers0Path, JSON.stringify(this.layers0))
-      });
-    }
+    await this.writeQueue.enqueue({
+      archiveKey: '3dSceneLayer.json.gz',
+      writePromise: () =>
+        writeFileForSlpk(this.layers0Path, JSON.stringify(this.layers0), '3dSceneLayer.json')
+    });
   }
 
   /**
@@ -609,20 +600,18 @@ export default class I3SConverter {
    */
   private async _createSlpk(tilesetPath: string): Promise<void> {
     await this.conversionDump.deleteDumpFile();
-    if (this.options.slpk) {
-      const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
-      const slpkFileName = `${tilesetPath}.slpk`;
+    const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
+    const slpkFileName = `${tilesetPath}.slpk`;
 
-      await createZip(slpkTilesetPath, slpkFileName, async (fileList) => ({
-        path: '@specialIndexFileHASH128@',
-        file: await composeHashFile(fileList)
-      }));
+    await createZip(slpkTilesetPath, slpkFileName, async (fileList) => ({
+      path: '@specialIndexFileHASH128@',
+      file: await composeHashFile(fileList)
+    }));
 
-      try {
-        await removeDir(tilesetPath);
-      } catch (e) {
-        // do nothing
-      }
+    try {
+      await removeDir(tilesetPath);
+    } catch (e) {
+      // do nothing
     }
   }
 
@@ -793,7 +782,7 @@ export default class I3SConverter {
         transformationMatrix,
         null
       );
-      const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+      const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel);
       const nodes: NodeIndexDocument[] = [];
       for (const convertedNode of this.conversionDump.tilesConverted[sourceTile.id].nodes) {
         const {node} = await this._generateNodeIndexDocument(
@@ -846,7 +835,7 @@ export default class I3SConverter {
       transformationMatrix,
       null
     );
-    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel!);
+    const boundingVolumes = createBoundingVolumes(sourceBoundingVolume, this.geoidHeightModel);
 
     const propertyTable = getPropertyTable(tileContent, this.options.metadataClass);
     this.createAttributeStorageInfo(tileContent, propertyTable);
@@ -971,10 +960,10 @@ export default class I3SConverter {
       propertyTable,
       featuresHashArray: this.featuresHashArray,
       attributeStorageInfo: this.attributeMetadataInfo.attributeStorageInfo,
-      draco: this.options.draco,
+      draco: this.options.draco ?? false,
       generateBoundingVolumes: this.generateBoundingVolumes,
-      shouldMergeMaterials: this.options.mergeMaterials,
-      geoidHeightModel: this.geoidHeightModel!,
+      shouldMergeMaterials: this.options.mergeMaterials ?? false,
+      geoidHeightModel: this.geoidHeightModel,
       libraries: this.loadOptions.modules as Record<string, string>,
       metadataClass: this.options.metadataClass
     });
@@ -1160,47 +1149,27 @@ export default class I3SConverter {
 
     this.conversionDump.updateDoneStatus(sourceId, nodeId, ResourceType.GEOMETRY, false);
 
-    if (this.options.slpk) {
-      const slpkGeometryPath = join(childPath, 'geometries');
-      await this.writeQueue.enqueue({
-        archiveKey: `${slpkChildPath}/geometries/0.bin.gz`,
-        sourceId,
-        outputId: nodeId,
-        resourceType: ResourceType.GEOMETRY,
-        writePromise: () => writeFileForSlpk(slpkGeometryPath, geometryBuffer, '0.bin')
-      });
-    } else {
-      const geometryPath = join(childPath, 'geometries/0/');
-      await this.writeQueue.enqueue({
-        sourceId,
-        outputId: nodeId,
-        resourceType: ResourceType.GEOMETRY,
-        writePromise: () => writeFile(geometryPath, geometryBuffer, 'index.bin')
-      });
-    }
+    const slpkGeometryPath = join(childPath, 'geometries');
+    await this.writeQueue.enqueue({
+      archiveKey: `${slpkChildPath}/geometries/0.bin.gz`,
+      sourceId,
+      outputId: nodeId,
+      resourceType: ResourceType.GEOMETRY,
+      writePromise: () => writeFileForSlpk(slpkGeometryPath, geometryBuffer, '0.bin')
+    });
 
     if (this.options.draco && compressedGeometry) {
       this.conversionDump.updateDoneStatus(sourceId, nodeId, ResourceType.DRACO_GEOMETRY, false);
 
-      if (this.options.slpk) {
-        const slpkCompressedGeometryPath = join(childPath, 'geometries');
-        await this.writeQueue.enqueue({
-          archiveKey: `${slpkChildPath}/geometries/1.bin.gz`,
-          sourceId,
-          outputId: nodeId,
-          resourceType: ResourceType.DRACO_GEOMETRY,
-          writePromise: () =>
-            writeFileForSlpk(slpkCompressedGeometryPath, compressedGeometry, '1.bin')
-        });
-      } else {
-        const compressedGeometryPath = join(childPath, 'geometries/1/');
-        await this.writeQueue.enqueue({
-          sourceId,
-          outputId: nodeId,
-          resourceType: ResourceType.DRACO_GEOMETRY,
-          writePromise: () => writeFile(compressedGeometryPath, compressedGeometry, 'index.bin')
-        });
-      }
+      const slpkCompressedGeometryPath = join(childPath, 'geometries');
+      await this.writeQueue.enqueue({
+        archiveKey: `${slpkChildPath}/geometries/1.bin.gz`,
+        sourceId,
+        outputId: nodeId,
+        resourceType: ResourceType.DRACO_GEOMETRY,
+        writePromise: () =>
+          writeFileForSlpk(slpkCompressedGeometryPath, compressedGeometry, '1.bin')
+      });
     }
   }
 
@@ -1235,24 +1204,14 @@ export default class I3SConverter {
     const sharedData = transform(sharedResources, sharedResourcesTemplate());
     const sharedDataStr = JSON.stringify(sharedData);
     this.conversionDump.updateDoneStatus(sourceId, nodeId, ResourceType.SHARED, false);
-    if (this.options.slpk) {
-      const slpkSharedPath = join(childPath, 'shared');
-      await this.writeQueue.enqueue({
-        archiveKey: `${slpkChildPath}/shared/sharedResource.json.gz`,
-        sourceId,
-        outputId: nodeId,
-        resourceType: ResourceType.SHARED,
-        writePromise: () => writeFileForSlpk(slpkSharedPath, sharedDataStr, 'sharedResource.json')
-      });
-    } else {
-      const sharedPath = join(childPath, 'shared/');
-      await this.writeQueue.enqueue({
-        sourceId,
-        outputId: nodeId,
-        resourceType: ResourceType.SHARED,
-        writePromise: () => writeFile(sharedPath, sharedDataStr)
-      });
-    }
+    const slpkSharedPath = join(childPath, 'shared');
+    await this.writeQueue.enqueue({
+      archiveKey: `${slpkChildPath}/shared/sharedResource.json.gz`,
+      sourceId,
+      outputId: nodeId,
+      resourceType: ResourceType.SHARED,
+      writePromise: () => writeFileForSlpk(slpkSharedPath, sharedDataStr, 'sharedResource.json')
+    });
   }
 
   /**
@@ -1417,27 +1376,17 @@ export default class I3SConverter {
     sourceId: string;
     nodeId: number;
   }): Promise<void> {
-    if (this.options.slpk) {
-      const slpkTexturePath = join(childPath, 'textures');
-      const compress = false;
+    const slpkTexturePath = join(childPath, 'textures');
+    const compress = false;
 
-      await this.writeQueue.enqueue({
-        archiveKey: `${slpkChildPath}/textures/${name}.${format}`,
-        sourceId,
-        outputId: nodeId,
-        resourceType: `${ResourceType.TEXTURE}/${format}`,
-        writePromise: () =>
-          writeFileForSlpk(slpkTexturePath, textureData, `${name}.${format}`, compress)
-      });
-    } else {
-      const texturePath = join(childPath, `textures/${name}/`);
-      await this.writeQueue.enqueue({
-        sourceId,
-        outputId: nodeId,
-        resourceType: `${ResourceType.TEXTURE}/${format}`,
-        writePromise: () => writeFile(texturePath, textureData, `index.${format}`)
-      });
-    }
+    await this.writeQueue.enqueue({
+      archiveKey: `${slpkChildPath}/textures/${name}.${format}`,
+      sourceId,
+      outputId: nodeId,
+      resourceType: `${ResourceType.TEXTURE}/${format}`,
+      writePromise: () =>
+        writeFileForSlpk(slpkTexturePath, textureData, `${name}.${format}`, compress)
+    });
   }
 
   /**
@@ -1470,24 +1419,14 @@ export default class I3SConverter {
           `${ResourceType.ATTRIBUTES}/${folderName}`,
           false
         );
-        if (this.options.slpk) {
-          const slpkAttributesPath = join(childPath, 'attributes', folderName);
-          await this.writeQueue.enqueue({
-            archiveKey: `${slpkChildPath}/attributes/${folderName}.bin.gz`,
-            sourceId,
-            outputId: nodeId,
-            resourceType: `${ResourceType.ATTRIBUTES}/${folderName}`,
-            writePromise: () => writeFileForSlpk(slpkAttributesPath, fileBuffer, '0.bin')
-          });
-        } else {
-          const attributesPath = join(childPath, `attributes/${folderName}/0`);
-          await this.writeQueue.enqueue({
-            sourceId,
-            outputId: nodeId,
-            resourceType: `${ResourceType.ATTRIBUTES}/${folderName}`,
-            writePromise: () => writeFile(attributesPath, fileBuffer, 'index.bin')
-          });
-        }
+        const slpkAttributesPath = join(childPath, 'attributes', folderName);
+        await this.writeQueue.enqueue({
+          archiveKey: `${slpkChildPath}/attributes/${folderName}.bin.gz`,
+          sourceId,
+          outputId: nodeId,
+          resourceType: `${ResourceType.ATTRIBUTES}/${folderName}`,
+          writePromise: () => writeFileForSlpk(slpkAttributesPath, fileBuffer, '0.bin')
+        });
       }
     }
   }
@@ -1580,7 +1519,6 @@ export default class I3SConverter {
    * @param params - output files data
    */
   private async _finishConversion(params: {
-    slpk: boolean;
     outputPath: string;
     tilesetName: string;
   }): Promise<void> {
@@ -1588,7 +1526,7 @@ export default class I3SConverter {
     const addRefinementPercentage = tilesWithAddRefineCount
       ? (tilesWithAddRefineCount / tilesCount) * 100
       : 0;
-    const filesSize = await calculateFilesSize(params);
+    const filesSize = await calculateDatasetSize(params);
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
     console.log('------------------------------------------------'); // eslint-disable-line no-undef, no-console
@@ -1610,7 +1548,7 @@ export default class I3SConverter {
     const options = {
       'cesium-ion': {accessToken: this.options.token || ION_DEFAULT_TOKEN}
     };
-    const preloadOptions = await this.Loader.preload(this.options.inputUrl, options);
+    const preloadOptions = await this.Loader.preload(this.options.inputUrl ?? '', options);
     this.refreshTokenTime = process.hrtime();
     return {...options, ...preloadOptions};
   }

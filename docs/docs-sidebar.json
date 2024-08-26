@@ -97,7 +97,7 @@
         "items": [
           "modules/pmtiles/api-reference/pmtiles-source",
           "modules/mvt/api-reference/mvt-source",
-          "modules/mvt/api-reference/geojson-tile-source",
+          "modules/mvt/api-reference/table-tile-source",
           "modules/wms/api-reference/csw-service",
           "modules/wms/api-reference/wms-service"
         ]
@@ -455,7 +455,6 @@
     "items": [
       "modules/tile-converter/cli-reference/tile-converter",
       "modules/tile-converter/cli-reference/i3s-server",
-      "modules/tile-converter/cli-reference/slpk-extractor",
       "modules/tile-converter/cli-reference/supported-features"
     ]
   }

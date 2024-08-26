@@ -2,23 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Example} from './components/example-panel';
+
 export const INITIAL_LOADER_NAME = 'GeoParquet';
 export const INITIAL_EXAMPLE_NAME = 'Airports';
-
 // export const INITIAL_LOADER_NAME = 'GeoJSON';
 // export const INITIAL_EXAMPLE_NAME = 'Vancouver';
-
-export type Example = {
-  format: string;
-  data: string;
-  viewState?: Record<string, number>;
-  layerProps?: Record<string, any>;
-  getTooltipData?: (event: {
-    object?: {
-      properties?: Record<string, unknown>;
-    };
-  }) => null | {title: string; properties: Record<string, unknown>};
-};
 
 export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';

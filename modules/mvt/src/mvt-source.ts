@@ -25,22 +25,22 @@ export const MVTSource = {
   extensions: ['mvt'],
   mimeTypes: ['application/octet-stream'],
   options: {
-    url: undefined!,
     mvt: {
       // TODO - add options here
     }
   },
   type: 'mvt',
+  fromUrl: true,
+  fromBlob: false,
+
   testURL: (url: string): boolean => true,
   createDataSource(url: string, props: MVTTileSourceProps): MVTTileSource {
-    return new MVTTileSource({...props, url});
+    return new MVTTileSource(url, props);
   }
 } as const satisfies Source<MVTTileSource, MVTTileSourceProps>;
 
 /** Properties for a Mapbox Vector Tile Source */
 export type MVTTileSourceProps = DataSourceProps & {
-  /** Root url of tileset */
-  url: string;
   mvt?: {
     // TODO - add options here
     /** if not supplied, loads tilejson.json, If null does not load metadata */
@@ -71,10 +71,10 @@ export class MVTTileSource extends DataSource implements ImageTileSource, Vector
   extension: string;
   mimeType: string | null = null;
 
-  constructor(props: MVTTileSourceProps) {
+  constructor(url: string, props: MVTTileSourceProps) {
     super(props);
     this.props = props;
-    this.url = resolvePath(props.url);
+    this.url = resolvePath(url);
     this.metadataUrl = props.mvt?.metadataUrl || `${this.url}/tilejson.json`;
     this.extension = props.mvt?.extension || '.png';
     this.data = this.url;

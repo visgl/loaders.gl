@@ -5,12 +5,9 @@ import I3SConverter from '../../../src/i3s-converter/i3s-converter';
 import WriteQueue from '../../../src/lib/utils/write-queue';
 import {ConversionDump} from '../../../src/lib/utils/conversion-dump';
 
-const getConverter = ({slpk, instantNodeWriting} = {slpk: false, instantNodeWriting: false}) => {
+const getConverter = ({instantNodeWriting} = {instantNodeWriting: false}) => {
   const converter = new I3SConverter();
-  converter.options = {
-    slpk,
-    instantNodeWriting
-  };
+  converter.options = {instantNodeWriting};
   converter.layers0Path = '.data/node-pages-test/layers/0';
   converter.writeQueue = new WriteQueue(new ConversionDump());
   return converter;
@@ -174,13 +171,13 @@ test('tile-converter(i3s)#NodePages', async (t) => {
       const nodePages = new NodePages(
         writeFileFuncForSlpk,
         64,
-        getConverter({slpk: false, instantNodeWriting: true})
+        getConverter({instantNodeWriting: true})
       );
       for (let i = 0; i <= 65; i++) {
         await nodePages.push({...newNodeStub});
       }
       st.equal(savePaths.length, 66);
-      st.equal(savePaths[55], '.data/node-pages-test/layers/0/nodepages/0');
+      st.equal(savePaths[55], '.data/node-pages-test/layers/0/nodepages');
       st.end();
     }
   );
@@ -222,7 +219,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
     const writeFileFunc = async (layerPath, data, slpk) => {
       savedNodePages.push(data);
     };
-    const converter = getConverter({slpk: false, instantNodeWriting: false});
+    const converter = getConverter({instantNodeWriting: false});
     const nodePages = new NodePages(writeFileFunc, 64, converter);
     for (let i = 0; i <= 65; i++) {
       await nodePages.push(newNodeStub);
@@ -230,7 +227,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
     await nodePages.save();
     await converter.writeQueue.finalize();
     st.equal(typeof savedNodePages[1], 'string');
-    st.equal(savedNodePages.length, 2);
+    st.equal(savedNodePages.length, 3);
     st.end();
   });
 
@@ -241,7 +238,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
       const writeFileFuncForSlpk = (layerPath, data, slpk) => {
         savedNodePages.push(data);
       };
-      const converter = getConverter({slpk: true, instantNodeWriting: false});
+      const converter = getConverter({instantNodeWriting: false});
       const nodePages = new NodePages(writeFileFuncForSlpk, 64, converter);
       for (let i = 0; i <= 65; i++) {
         await nodePages.push(newNodeStub);
@@ -254,23 +251,6 @@ test('tile-converter(i3s)#NodePages', async (t) => {
     }
   );
 
-  t.test('tile-converter(i3s)#NodePages - Should save node pages', async (st) => {
-    const savedNodePages: any[] = [];
-    const writeFileFunc = (layerPath, data, slpk) => {
-      savedNodePages.push(data);
-    };
-    const converter = getConverter();
-    const nodePages = new NodePages(writeFileFunc, 64, converter);
-    for (let i = 0; i <= 65; i++) {
-      await nodePages.push(newNodeStub);
-    }
-    await nodePages.save();
-    await converter.writeQueue.finalize();
-    st.equal(typeof savedNodePages[1], 'string');
-    st.equal(savedNodePages.length, 2);
-    st.end();
-  });
-
   t.test(
     'tile-converter(i3s)#NodePages - Should save node pages for slpk packaging',
     async (st) => {
@@ -278,7 +258,7 @@ test('tile-converter(i3s)#NodePages', async (t) => {
       const writeFileFuncForSlpk = (layerPath, data, slpk) => {
         savedNodePages.push(data);
       };
-      const converter = getConverter({slpk: true, instantNodeWriting: false});
+      const converter = getConverter({instantNodeWriting: false});
       const nodePages = new NodePages(writeFileFuncForSlpk, 64, converter);
       for (let i = 0; i <= 65; i++) {
         await nodePages.push(newNodeStub);

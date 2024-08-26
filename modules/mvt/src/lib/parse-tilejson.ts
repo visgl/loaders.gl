@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {Schema} from '@loaders.gl/schema';
+import {getSchemaFromTileJSONLayer} from './get-schemas-from-tilejson';
+
 export type TileJSONOptions = {
   /** max number of values. If not provided, include all values in the source tilestats */
   maxValues?: number;
@@ -9,12 +12,20 @@ export type TileJSONOptions = {
 
 /** Parsed and typed TileJSON, merges Tilestats information if present */
 export type TileJSON = {
+  /** Name of the tileset (for presentation in UI) */
   name?: string;
+  /** A description of the contents or purpose of the tileset */
   description?: string;
+  /** The version of the tileset */
   version?: string;
 
   tileFormat?: string;
   tilesetType?: string;
+
+  /** Generating application. Tippecanoe adds this. */
+  generator?: string;
+  /** Generating application options. Tippecanoe adds this. */
+  generatorOptions?: string;
 
   /** Tile indexing scheme */
   scheme?: 'xyz' | 'tms';
@@ -32,11 +43,6 @@ export type TileJSON = {
 
   // Combination of tilestats (if present) and tilejson layer information
   layers?: TileJSONLayer[];
-
-  /** Generating application. Tippecanoe adds this. */
-  generator?: string;
-  /** Generating application options. Tippecanoe adds this. */
-  generatorOptions?: string;
 
   /** Any nested JSON metadata */
   metaJson?: any | null;
@@ -61,6 +67,8 @@ export type TileJSONLayer = {
   minZoom?: number;
   maxZoom?: number;
   fields: TileJSONField[];
+
+  schema?: Schema;
 };
 
 export type TileJSONField = {
@@ -262,17 +270,16 @@ function parseTilestatsForLayer(layer: TilestatsLayer, options: TileJSONOptions)
 }
 
 function mergeLayers(layers: TileJSONLayer[], tilestatsLayers: TileJSONLayer[]): TileJSONLayer[] {
-  return layers.map((layer) => {
+  return layers.map((layer: TileJSONLayer): TileJSONLayer => {
     const tilestatsLayer = tilestatsLayers.find((tsLayer) => tsLayer.name === layer.name);
-    // For aesthetics in JSON dumps, we preserve field order (make sure layers is last)
-    const fields = tilestatsLayer?.fields || [];
-    const layer2: Partial<TileJSONLayer> = {...layer};
-    delete layer2.fields;
-    return {
-      ...layer2,
+    const fields = tilestatsLayer?.fields || layer.fields || [];
+    const mergedLayer = {
+      ...layer,
       ...tilestatsLayer,
       fields
     } as TileJSONLayer;
+    mergedLayer.schema = getSchemaFromTileJSONLayer(mergedLayer);
+    return mergedLayer;
   });
 }
 

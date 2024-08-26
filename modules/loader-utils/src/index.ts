@@ -150,6 +150,10 @@ export type {ImageType} from './lib/sources/utils/image-type';
 export type {ImageSourceProps, ImageSourceMetadata} from './lib/sources/image-source';
 export type {GetImageParameters} from './lib/sources/image-source';
 
+export {VectorSource} from './lib/sources/vector-source';
+export type {VectorSourceProps, VectorSourceMetadata} from './lib/sources/vector-source';
+export type {GetFeaturesParameters} from './lib/sources/vector-source';
+
 export type {TileSource, TileSourceProps} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
 export type {GetTileDataParameters} from './lib/sources/tile-source';

@@ -25,7 +25,12 @@ router.get('*', (req, res, next) => {
   async function routerCallback(req, res, next) {
     const file = await getFileByUrl(req.path.replace(/\/+$/, ''));
     if (file) {
-      res.send(Buffer.from(file));
+      try {
+        const json = JSON.parse(textDecoder.decode(file));
+        res.send(json);
+      } catch (e) {
+        res.send(Buffer.from(file));
+      }
     } else {
       res.status(404);
       res.send('File not found');

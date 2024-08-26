@@ -22,21 +22,21 @@ export const ArcGISImageServerSource = {
   extensions: [],
   mimeTypes: [],
   options: {
-    url: undefined!,
     'arcgis-image-server': {
       // TODO - add options here
     }
   },
 
   type: 'arcgis-image-server',
+  fromUrl: true,
+  fromBlob: false,
 
   testURL: (url: string): boolean => url.toLowerCase().includes('ImageServer'),
   createDataSource: (url, props: ArcGISImageSourceProps): ArcGISImageSource =>
-    new ArcGISImageSource(props)
+    new ArcGISImageSource(url as string, props)
 } as const satisfies Source<ArcGISImageSource, ArcGISImageSourceProps>;
 
 export type ArcGISImageSourceProps = ImageSourceProps & {
-  url: string;
   'arcgis-image-server'?: {
     // TODO - add options here
   };
@@ -48,11 +48,13 @@ export type ArcGISImageSourceProps = ImageSourceProps & {
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/image-service.htm
  */
 export class ArcGISImageSource extends ImageSource<ArcGISImageSourceProps> {
+  url: string;
   data: string;
 
-  constructor(props: ArcGISImageSourceProps) {
+  constructor(url: string, props: ArcGISImageSourceProps) {
     super(props);
-    this.data = props.url;
+    this.url = url;
+    this.data = url;
   }
 
   // ImageSource (normalized endpoints)
@@ -106,7 +108,7 @@ export class ArcGISImageSource extends ImageSource<ArcGISImageSourceProps> {
   // URL creators
 
   metadataURL(options: {parameters?: Record<string, unknown>}): string {
-    return `${this.props.url}?f=pjson`;
+    return `${this.url}?f=pjson`;
   }
 
   /** 
@@ -158,7 +160,7 @@ export class ArcGISImageSource extends ImageSource<ArcGISImageSourceProps> {
     options: Record<string, unknown>,
     extra?: Record<string, unknown>
   ): string {
-    let url = `${this.props.url}/${path}`;
+    let url = `${this.url}/${path}`;
     let first = true;
     for (const [key, value] of Object.entries(options)) {
       url += first ? '?' : '&';

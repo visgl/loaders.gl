@@ -51,7 +51,7 @@ export default class NodePages {
    * @param writeFileFunc - function to save one nodePage into a file
    * @param nodesPerPage - length limit for one nodePage. An additional nodePage is created when this limit is met
    */
-  constructor(writeFileFunc, nodesPerPage, converter: I3SConverter) {
+  constructor(writeFileFunc, nodesPerPage: number, converter: I3SConverter) {
     this.nodesPerPage = nodesPerPage;
     this.nodesCounter = 0;
     // @ts-expect-error
@@ -75,16 +75,9 @@ export default class NodePages {
    * @param nodePageId - node page id
    * @returns file path and file name
    */
-  private getNodePageFileName(nodePageId): {filePath: string; fileName: string} {
-    let filePath;
-    let fileName;
-    if (this.converter.options.slpk) {
-      filePath = join(this.converter.layers0Path, 'nodepages');
-      fileName = `${nodePageId.toString()}.json`;
-    } else {
-      filePath = join(this.converter.layers0Path, 'nodepages', nodePageId.toString());
-      fileName = 'index.json';
-    }
+  private getNodePageFileName(nodePageId: number): {filePath: string; fileName: string} {
+    const filePath = join(this.converter.layers0Path, 'nodepages');
+    const fileName = `${nodePageId.toString()}.json`;
     return {filePath, fileName};
   }
 
@@ -190,23 +183,14 @@ export default class NodePages {
       nodePage.nodes.push(node);
     }
     const nodePageStr = JSON.stringify(nodePage);
-    if (this.converter.options.slpk) {
-      await this.converter.writeQueue.enqueue(
-        {
-          archiveKey: `nodePages/${nodePageIndex.toString()}.json.gz`,
-          writePromise: () =>
-            this.writeFile(filePath, nodePageStr, fileName, true, this.converter.compressList)
-        },
-        true
-      );
-    } else {
-      await this.converter.writeQueue.enqueue(
-        {
-          writePromise: () => this.writeFile(filePath, nodePageStr)
-        },
-        true
-      );
-    }
+    await this.converter.writeQueue.enqueue(
+      {
+        archiveKey: `nodePages/${nodePageIndex.toString()}.json.gz`,
+        writePromise: () =>
+          this.writeFile(filePath, nodePageStr, fileName, true, this.converter.compressList)
+      },
+      true
+    );
   }
 
   /**
@@ -236,25 +220,15 @@ export default class NodePages {
       await this.saveMetadata();
       return;
     }
-    if (this.converter.options.slpk) {
-      for (const [index, nodePage] of this.nodePages.entries()) {
-        const nodePageStr = JSON.stringify(nodePage);
-        const slpkPath = join(this.converter.layers0Path, 'nodepages');
-        await this.converter.writeQueue.enqueue({
-          archiveKey: `nodePages/${index.toString()}.json.gz`,
-          writePromise: () => this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`)
-        });
-      }
-      await this.saveMetadata();
-    } else {
-      for (const [index, nodePage] of this.nodePages.entries()) {
-        const nodePageStr = JSON.stringify(nodePage);
-        const nodePagePath = join(this.converter.layers0Path, 'nodepages', index.toString());
-        await this.converter.writeQueue.enqueue({
-          writePromise: () => this.writeFile(nodePagePath, nodePageStr)
-        });
-      }
+    for (const [index, nodePage] of this.nodePages.entries()) {
+      const nodePageStr = JSON.stringify(nodePage);
+      const slpkPath = join(this.converter.layers0Path, 'nodepages');
+      await this.converter.writeQueue.enqueue({
+        archiveKey: `nodePages/${index.toString()}.json.gz`,
+        writePromise: () => this.writeFile(slpkPath, nodePageStr, `${index.toString()}.json`)
+      });
     }
+    await this.saveMetadata();
   }
 
   /**

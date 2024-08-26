@@ -20,14 +20,17 @@ export class FileProvider implements FileProviderInterface {
   }
 
   static async create(file: ReadableFile): Promise<FileProvider> {
-    return new FileProvider(
-      file,
-      file.bigsize > 0n
-        ? file.bigsize
-        : file.size > 0n
-        ? file.size
-        : (await file.stat?.())?.bigsize ?? 0n
-    );
+    let size: bigint | number = 0n;
+    if (file.bigsize > 0n) {
+      size = file.bigsize;
+    } else if (file.size > 0) {
+      size = file.size;
+    } else {
+      const stats = await file.stat?.();
+      size = stats?.bigsize ?? 0n;
+    }
+
+    return new FileProvider(file, size);
   }
 
   /**
