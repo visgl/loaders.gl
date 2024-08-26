@@ -43,6 +43,8 @@ export function encodeGLTFSync(
 
 function convertBuffersToBase64(gltf, {firstBuffer = 0} = {}) {
   if (gltf.buffers && gltf.buffers.length > firstBuffer) {
-    throw new Error('encodeGLTF: multiple buffers not yet implemented');
+    throw new Error(
+      `encodeGLTF: multiple buffers not yet implemented, gltf.buffers.length=${gltf.buffers.length}, firstBuffer=${firstBuffer}`
+    );
   }
 }
