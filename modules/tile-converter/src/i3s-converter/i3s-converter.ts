@@ -32,7 +32,7 @@ import md5 from 'md5';
 import NodePages from './helpers/node-pages';
 import {writeFile, removeDir, writeFileForSlpk, removeFile} from '../lib/utils/file-utils';
 import {compressFileWithGzip} from '../lib/utils/compress-util';
-import {calculateFilesSize, timeConverter} from '../lib/utils/statistic-utills';
+import {calculateDatasetSize, timeConverter} from '../lib/utils/statistic-utils';
 import convertB3dmToI3sGeometry, {getPropertyTable} from './helpers/geometry-converter';
 import {
   createBoundingVolumes,
@@ -107,7 +107,6 @@ type ConverterProps = {
   inquirer?: {prompt: PromptModule};
   metadataClass?: string;
   analyze?: boolean;
-  noEgm?: boolean;
 };
 
 /**
@@ -224,8 +223,7 @@ export default class I3SConverter {
       mergeMaterials = true,
       inquirer,
       metadataClass,
-      analyze = false,
-      noEgm = false
+      analyze = false
     } = options;
     this.options = {
       outputPath,
@@ -250,8 +248,8 @@ export default class I3SConverter {
     this.writeQueue = new WriteQueue(this.conversionDump);
     this.writeQueue.startListening();
 
-    if (!noEgm) {
-      console.log('--no-egm option selected, skip loading egm file'); // eslint-disable-line
+    if (egmFilePath.toLowerCase() === 'none') {
+      console.log('--egm chousen to be "none", skip loading egm file'); // eslint-disable-line
     } else {
       console.log('Loading egm file...'); // eslint-disable-line
       this.geoidHeightModel = await load(egmFilePath, PGMLoader);
@@ -1528,7 +1526,7 @@ export default class I3SConverter {
     const addRefinementPercentage = tilesWithAddRefineCount
       ? (tilesWithAddRefineCount / tilesCount) * 100
       : 0;
-    const filesSize = await calculateFilesSize(params);
+    const filesSize = await calculateDatasetSize(params);
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
     console.log('------------------------------------------------'); // eslint-disable-line no-undef, no-console

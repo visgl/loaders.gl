@@ -54,32 +54,53 @@ Would have an index looking like this:
 | r36  | `0b00000000` (=0)  | `1`    |
 */
 
-/** @todo these types are an incorrect mess */
+/** Node metadata from index file */
 export type POTreeTileHeader = {
+  /** Number of child nodes */
   childCount: number;
+  /** Human readable name */
   name: string;
+  /** Child availability mask */
   childMask: number;
 };
 
-/** @todo these types are an incorrect mess */
+/** Hierarchical potree node structure */
 export type POTreeNode = {
+  /** Index data */
   header: POTreeTileHeader;
+  /** Human readable name */
   name: string;
+  /** Number of points */
   pointCount: number;
+  /** Node's level in the tree */
+  level: number;
+  /** Has children */
+  hasChildren: boolean;
+  /** Space between points */
+  spacing: number;
+  /** Available children */
   children: POTreeNode[];
+  /** All children including unavailable */
   childrenByIndex: POTreeNode[];
 };
 
-// type POTreeTileNode = POTreeNode;
-
-// load hierarchy
-export function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer) {
+/**
+ * load hierarchy
+ * @param arrayBuffer - binary index data
+ * @returns root node
+ **/
+export function parsePotreeHierarchyChunk(arrayBuffer: ArrayBuffer): POTreeNode {
   const tileHeaders = parseBinaryChunk(arrayBuffer);
   return buildHierarchy(tileHeaders);
 }
 
-// Parses the binary rows
-function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
+/**
+ * Parses the binary rows
+ * @param arrayBuffer - binary index data to parse
+ * @param byteOffset - byte offset to start from
+ * @returns flat nodes array
+ * */
+function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0): POTreeNode[] {
   const dataView = new DataView(arrayBuffer);
 
   const stack: POTreeNode[] = [];
@@ -90,8 +111,7 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
   byteOffset = decodeRow(dataView, byteOffset, topTileHeader);
 
   stack.push(topTileHeader);
-
-  const tileHeaders: POTreeTileHeader[] = [];
+  const tileHeaders: POTreeNode[] = [topTileHeader];
 
   while (stack.length > 0) {
     const snode = stack.shift();
@@ -100,11 +120,10 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
     for (let i = 0; i < 8; i++) {
       if (snode && (snode.header.childMask & mask) !== 0) {
         // @ts-expect-error
-        const tileHeader: POTreeTileHeader = {};
+        const tileHeader: POTreeNode = {};
         byteOffset = decodeRow(dataView, byteOffset, tileHeader);
         tileHeader.name = snode.name + i;
 
-        // @ts-expect-error
         stack.push(tileHeader);
         tileHeaders.push(tileHeader);
         snode.header.childCount++;
@@ -120,7 +139,14 @@ function parseBinaryChunk(arrayBuffer: ArrayBuffer, byteOffset = 0) {
   return tileHeaders;
 }
 
-function decodeRow(dataView, byteOffset, tileHeader) {
+/**
+ * Reads next row from binary index file
+ * @param dataView - index data
+ * @param byteOffset - current offset in the index data
+ * @param tileHeader - container to read to
+ * @returns new offset
+ */
+function decodeRow(dataView: DataView, byteOffset: number, tileHeader: POTreeNode): number {
   tileHeader.header = tileHeader.header || {};
   tileHeader.header.childMask = dataView.getUint8(byteOffset);
   tileHeader.header.childCount = 0;
@@ -130,16 +156,16 @@ function decodeRow(dataView, byteOffset, tileHeader) {
   return byteOffset;
 }
 
-// Resolves the binary rows into a hierarchy (tree structure)
-function buildHierarchy(tileHeaders, options: {spacing?: number} = {}): POTreeNode {
+/** Resolves the binary rows into a hierarchy (tree structure) */
+function buildHierarchy(flatNodes: POTreeNode[], options: {spacing?: number} = {}): POTreeNode {
   const DEFAULT_OPTIONS = {spacing: 100}; // TODO assert instead of default?
   options = {...DEFAULT_OPTIONS, ...options};
 
-  const topNode = tileHeaders[0];
+  const topNode: POTreeNode = flatNodes[0];
   const nodes = {};
 
-  for (const tileHeader of tileHeaders) {
-    const {name} = tileHeader;
+  for (const node of flatNodes) {
+    const {name} = node;
 
     const index = parseInt(name.charAt(name.length - 1), 10);
     const parentName = name.substring(0, name.length - 1);
@@ -147,20 +173,20 @@ function buildHierarchy(tileHeaders, options: {spacing?: number} = {}): POTreeNo
     const level = name.length - 1;
     // assert(parentNode && level >= 0);
 
-    tileHeader.level = level;
-    tileHeader.hasChildren = tileHeader.header.childCount;
-    tileHeader.children = [];
-    tileHeader.childrenByIndex = new Array(8).fill(null);
-    tileHeader.spacing = (options?.spacing || 0) / Math.pow(2, level);
+    node.level = level;
+    node.hasChildren = Boolean(node.header.childCount);
+    node.children = [];
+    node.childrenByIndex = new Array(8).fill(null);
+    node.spacing = (options?.spacing || 0) / Math.pow(2, level);
     // tileHeader.boundingVolume = Utils.createChildAABB(parentNode.boundingBox, index);
 
     if (parentNode) {
-      parentNode.children.push(tileHeader);
-      parentNode.childrenByIndex[index] = tileHeader;
+      parentNode.children.push(node);
+      parentNode.childrenByIndex[index] = node;
     }
 
     // Add the node to the map
-    nodes[name] = tileHeader;
+    nodes[name] = node;
   }
 
   // First node is the root

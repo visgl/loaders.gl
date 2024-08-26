@@ -34,11 +34,10 @@ type TileConversionOptions = {
   /** Try to merge similar materials to be able to merge meshes into one node (I3S to 3DTiles conversion only) */
   mergeMaterials: boolean;
   /** location of the Earth Gravity Model (*.pgm) file to convert heights from ellipsoidal to gravity-related format,
+   * "None" for not using Earth Gravity Model (*.pgm)
    * default: "./deps/egm2008-5.pgm". A model file can be loaded from GeographicLib
    * https://geographiclib.sourceforge.io/html/geoid.html */
   egm: string;
-  /** 3DTiles->I3S only. Whether the converter uses Earth Gravity Model (*.pgm) */
-  noEgm: boolean;
   /** 3DTile->I3S only. Token for Cesium ION tileset authentication. */
   token?: string;
   /** 3DTiles->I3S only. Enable draco compression for geometry. Default: true */
@@ -183,9 +182,8 @@ function printHelp(): void {
   console.log('--input-type [tileset input type: I3S or 3DTILES]');
   console.log('--tile-version [3dtile version: 1.0 or 1.1, default: 1.1]');
   console.log(
-    '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html], default: "./deps/egm2008-5.zip"'
+    '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format or "None" to not use it. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html], default: "./deps/egm2008-5.zip"'
   );
-  console.log('--no-egm [Disable Geod transformation via the EGM file]');
   console.log('--token [Token for Cesium ION tilesets authentication]');
   console.log('--no-draco [Disable draco compression for geometry]');
   console.log(
@@ -326,8 +324,7 @@ function parseOptions(args: string[]): TileConversionOptions {
     generateBoundingVolumes: false,
     validate: false,
     addHash: false,
-    quiet: false,
-    noEgm: false
+    quiet: false
   };
 
   // eslint-disable-next-line complexity
@@ -363,9 +360,6 @@ function parseOptions(args: string[]): TileConversionOptions {
           break;
         case '--egm':
           opts.egm = getStringValue(index, args);
-          break;
-        case '--no-egm':
-          opts.noEgm = getBooleanValue(index, args);
           break;
         case '--token':
           opts.token = getStringValue(index, args);
