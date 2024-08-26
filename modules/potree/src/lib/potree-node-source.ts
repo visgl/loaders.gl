@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {load} from '@loaders.gl/core';
-import {MeshGeometry} from '@loaders.gl/schema';
+import {Mesh} from '@loaders.gl/schema';
 import {DataSource, DataSourceProps, LoaderOptions, resolvePath} from '@loaders.gl/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
 import {PotreeMetadata} from '../types/potree-metadata';
@@ -74,7 +74,7 @@ export class PotreeNodesSource extends DataSource {
     return (
       this.isReady &&
       major === 1 &&
-      minor < 2 &&
+      minor <= 8 &&
       typeof this.metadata?.pointAttributes === 'string' &&
       ['LAS', 'LAZ'].includes(this.metadata?.pointAttributes)
     );
@@ -100,7 +100,7 @@ export class PotreeNodesSource extends DataSource {
    * @param path array of numbers between 0-7 specifying successive octree divisions.
    * @return node content geometry or null if the node doesn't exist
    */
-  async loadNodeContent(path: number[]): Promise<MeshGeometry | null> {
+  async loadNodeContent(path: number[]): Promise<Mesh | null> {
     await this.initPromise;
 
     if (!this.isSupported()) {
@@ -110,8 +110,9 @@ export class PotreeNodesSource extends DataSource {
     const isAvailable = await this.isNodeAvailable(path);
     if (isAvailable) {
       return load(
-        `${this.baseUrl}/${this.metadata
-          ?.octreeDir}/r/r${path.join()}.${this.getContentExtension()}`,
+        `${this.baseUrl}/${this.metadata?.octreeDir}/r/r${path.join(
+          ''
+        )}.${this.getContentExtension()}`,
         LASLoader
       );
     }
