@@ -2,7 +2,8 @@ import test from 'tape-promise/tape';
 import {PotreeSource} from '@loaders.gl/potree';
 
 const POTREE_BIN_URL = '@loaders.gl/potree/test/data/lion_takanawa';
-const POTREE_LAZ_URL = '@loaders.gl/potree/test/data/3dm_32_291_5744_1_nw-converted';
+const POTREE_LAZ_URL =
+  'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted';
 
 test('PotreeSource#initialize', async (t) => {
   const DS = PotreeSource;
