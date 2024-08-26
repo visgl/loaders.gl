@@ -8,19 +8,19 @@ import {Matrix4, Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
 import {RequestScheduler, path, LoaderWithParser, LoaderOptions, Tile3DSource} from '@loaders.gl/loader-utils';
-import {TilesetCache} from './tileset-cache';
+import {TilesetCache} from './micro-tileset-cache';
 import {calculateTransformProps} from './helpers/transform-utils';
 import {FrameState, getFrameState, limitSelectedTiles} from './helpers/frame-state';
 import {getZoomFromBoundingVolume, getZoomFromExtent, getZoomFromFullExtent} from './helpers/zoom';
 
 import type {GeospatialViewport, Viewport} from '../types';
-import {Tile3D} from './tile-3d';
+import {Tile3D} from './micro-tile-3d';
 import {TILESET_TYPE} from '../constants';
 
-import {TilesetTraverser} from './tileset-traverser';
+import {TilesetTraverser} from './micro-tileset-traverser';
 
 // TODO - these should be moved into their respective modules
-import {Tileset3DTraverser} from './format-3d-tiles/tileset-3d-traverser';
+import {Tileset3DTraverser} from './micro-tileset-3d-traverser';
 import {I3STilesetTraverser} from './format-i3s/i3s-tileset-traverser';
 
 export type TilesetJSON = any;

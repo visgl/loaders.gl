@@ -2,6 +2,22 @@
 
 ## v4.3
 
+### v4.3.0-alpha.6
+
+- fix(tile-converter): Returned non-slpk behavior for calculateFilesSize function (#3066)
+- fix(tile-converter): Wrong percent calculation fix (#3063)
+- Create security policy (#3064)
+- test(potree): Add tests for PotreeSource (#3062)
+- fix(potree): hierarchy loading (#3061)
+- chore(deps): bump elliptic from 6.5.4 to 6.5.7 in /website (#3058)
+- chore(deps): bump axios from 1.6.8 to 1.7.4 (#3059)
+- chore(deps): bump @75lb/deep-merge from 1.1.1 to 1.1.2 (#3060)
+- chore: Upgrade to node@20 and yarn@4.4.0 (#3056)
+- chore(tile-converter): egm=None feature updated (#3055)
+- fix(terrain): Add terrain-worker.js bundle to exports path (#3051)
+- chore(deps): bump fast-xml-parser from 4.2.5 to 4.4.1 (#3049)
+- chore(deps): bump ws from 5.2.3 to 5.2.4 (#3046)
+
 ### v4.3.0-alpha.5
 
 - Directory structure mode removerd fron i3s-server (#3048)

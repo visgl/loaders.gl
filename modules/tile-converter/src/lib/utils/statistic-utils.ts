@@ -49,16 +49,55 @@ function timeConverterFromSecondsAndMilliseconds(timeInSeconds: number, millisec
   return result;
 }
 
-export async function calculateFilesSize(params: {outputPath: string; tilesetName: string}) {
-  const {outputPath, tilesetName} = params;
+/**
+ * Calculates overall datatset size
+ * @param params - params object
+ * @param params.slpk - if dataset is in slpk format
+ * @param params.outputPath - path to the folder containing the dataset
+ * @param params.tilesetName - tileset name
+ * @returns dataset size in bytes
+ */
+export async function calculateDatasetSize(params: {
+  slpk?: boolean;
+  outputPath: string;
+  tilesetName: string;
+}): Promise<number | null> {
+  const {slpk, outputPath, tilesetName} = params;
   const fullOutputPath = getAbsoluteFilePath(outputPath);
 
   try {
-    const slpkPath = join(fullOutputPath, `${tilesetName}.slpk`);
-    const stat = await fs.stat(slpkPath);
-    return stat.size;
+    if (slpk) {
+      const slpkPath = join(fullOutputPath, `${tilesetName}.slpk`);
+      const stat = await fs.stat(slpkPath);
+      return stat.size;
+    }
+
+    const directoryPath = join(fullOutputPath, tilesetName);
+    const totalSize = await getDirectorySize(directoryPath);
+    return totalSize;
   } catch (error) {
     console.log('Calculate file sizes error: ', error); // eslint-disable-line
     return null;
   }
+}
+
+/**
+ * Calculates directory size
+ * @param dirPath - path to the directory
+ * @returns directory size in bytes
+ */
+async function getDirectorySize(dirPath: string): Promise<number> {
+  let totalFileSize = 0;
+
+  const files = await fs.readdir(dirPath);
+
+  for (const file of files) {
+    const fileStat = await fs.stat(join(dirPath, file));
+    if (fileStat.isDirectory()) {
+      totalFileSize += await getDirectorySize(join(dirPath, file));
+    } else {
+      totalFileSize += fileStat.size;
+    }
+  }
+  return totalFileSize;
 }

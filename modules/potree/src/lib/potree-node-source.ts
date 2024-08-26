@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {load} from '@loaders.gl/core';
-import {MeshGeometry} from '@loaders.gl/schema';
 import {Tile3DSource, Tile3DSourceProps, LoaderOptions, resolvePath} from '@loaders.gl/loader-utils';
+import {Mesh} from '@loaders.gl/schema';
 import {LASLoader} from '@loaders.gl/las';
 import {PotreeMetadata} from '../types/potree-metadata';
 import {POTreeNode} from '../parsers/parse-potree-hierarchy-chunk';
@@ -26,7 +26,7 @@ export type PotreeNodesSourceProps = Tile3DSourceProps & {
  * @version 1.7 - https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
  * @note Point cloud nodes tile source
  */
-export class PotreeNodesSource implements Tile3DSource {
+export class PotreeNodesSource<PropsT= PotreeNodesSourceProps, MetadataT = {}> implements Tile3DSource {
   /** Dataset base URL */
   baseUrl: string = '';
   /** Input data: string - dataset url, blob - single file data */
@@ -59,6 +59,10 @@ export class PotreeNodesSource implements Tile3DSource {
 
   /** Initial data source loading */
   async init() {
+    if (this.initPromise) {
+      await this.initPromise;
+      return;
+    }
     this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
     await this.loadHierarchy();
     this.isReady = true;
@@ -70,7 +74,7 @@ export class PotreeNodesSource implements Tile3DSource {
     return (
       this.isReady &&
       major === 1 &&
-      minor < 2 &&
+      minor <= 8 &&
       typeof this.metadata?.pointAttributes === 'string' &&
       ['LAS', 'LAZ'].includes(this.metadata?.pointAttributes)
     );
@@ -96,7 +100,7 @@ export class PotreeNodesSource implements Tile3DSource {
    * @param path array of numbers between 0-7 specifying successive octree divisions.
    * @return node content geometry or null if the node doesn't exist
    */
-  async loadNodeContent(path: number[]): Promise<MeshGeometry | null> {
+  async loadNodeContent(path: number[]): Promise<Mesh | null> {
     await this.initPromise;
 
     if (!this.isSupported()) {
@@ -106,23 +110,13 @@ export class PotreeNodesSource implements Tile3DSource {
     const isAvailable = await this.isNodeAvailable(path);
     if (isAvailable) {
       return load(
-        `${this.baseUrl}/${this.metadata
-          ?.octreeDir}/r/r${path.join()}.${this.getContentExtension()}`,
+        `${this.baseUrl}/${this.metadata?.octreeDir}/r/r${path.join(
+          ''
+        )}.${this.getContentExtension()}`,
         LASLoader
       );
     }
     return null;
-  }
-
-  /**
-   * Load data source hierarchy into tree of available nodes
-   */
-  async loadHierarchy(): Promise<void> {
-    await this.initPromise;
-    this.root = await load(
-      `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
-      PotreeHierarchyChunkLoader
-    );
   }
 
   /**
@@ -153,6 +147,30 @@ export class PotreeNodesSource implements Tile3DSource {
       }
     }
     return result;
+  }
+
+  // DATA SOURCE METHODS
+
+  async getMetadata(): Promise<MetadataT> { 
+    // @ts-expect-error TODO
+    return {}; 
+  }
+  /** */
+  getNode(parameters: GetNodeParameters): Promise<unknown | null>;
+  /** Flat parameters */
+  getTile3D(parameters: GetNodeParameters): Promise<unknown | null>;
+    
+
+  // INTERNAL METHODS
+
+  /**
+   * Load data source hierarchy into tree of available nodes
+   */
+  private async loadHierarchy(): Promise<void> {
+    this.root = await load(
+      `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
+      PotreeHierarchyChunkLoader
+    );
   }
 
   /**

@@ -7,13 +7,11 @@ const POTREE_HIERARCHY_CHUNK_URL = '@loaders.gl/potree/test/data/lion_takanawa/d
 test('PotreeHierarchyChunkLoader#parse', async (t) => {
   const response = await fetchFile(POTREE_HIERARCHY_CHUNK_URL);
   const rootNode = await parse(response, PotreeHierarchyChunkLoader);
-  // TODO - results not quite correct
-  // t.equal(countTreeNodes(rootNode), 166);
-  t.equal(countTreeNodes(rootNode), 45);
-  t.equal(rootNode.name, '0', 'rootNode.name');
-  t.equal(rootNode.pointCount, 4511, 'rootNode.pointCount');
-  // t.equal(rootNode.childCount, 3, 'rootNode.childCount');
-  t.equal(rootNode.children.length, 8, 'rootNode.children');
+  t.equal(countTreeNodes(rootNode), 167);
+  t.equal(rootNode.name, '', 'rootNode.name');
+  t.equal(rootNode.pointCount, 3751, 'rootNode.pointCount');
+  t.equal(rootNode.header.childCount, 6, 'rootNode.childCount');
+  t.equal(rootNode.children.length, 6, 'rootNode.children');
   t.equal(rootNode.childrenByIndex.length, 8, 'rootNode.childrenByIndex');
   t.end();
 });
