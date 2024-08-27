@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {validateWriter} from 'test/common/conformance';
 
-import {parse, encodeSync, encode, isBrowser, load} from '@loaders.gl/core';
+import {parse, encodeSync, encode, load} from '@loaders.gl/core';
 import {GLTFLoader, GLTFWriter, GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
 import {ImageWriter} from '@loaders.gl/images';
 
