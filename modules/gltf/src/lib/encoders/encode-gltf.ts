@@ -1,8 +1,6 @@
 import {encodeGLBSync} from './encode-glb';
-import {encodeExtensions} from '../api/gltf-extensions';
 import {GLTFWriterOptions} from '../../gltf-writer';
 import {GLTFWithBuffers} from '@loaders.gl/gltf';
-import {GLTFScenegraph} from '../api/gltf-scenegraph';
 
 export type GLTFEncodeOptions = Record<string, any>;
 
@@ -29,24 +27,12 @@ export function encodeGLTFSync(
   byteOffset: number,
   options: GLTFWriterOptions
 ) {
-  let gltfToEncode = gltf;
-  if (!arrayBuffer) {
-    encodeExtensions(gltf);
-    const scenegraph = new GLTFScenegraph(gltf);
-    scenegraph.createBinaryChunk();
-    gltfToEncode = scenegraph.gltf;
-  }
-  convertBuffersToBase64(gltfToEncode);
-
-  // TODO: Copy buffers to binary
-
-  return encodeGLBSync(gltfToEncode, arrayBuffer, byteOffset, options);
+  validateGltf(gltf);
+  return encodeGLBSync(gltf, arrayBuffer, byteOffset, options);
 }
 
-function convertBuffersToBase64(gltf, {firstBuffer = 0} = {}) {
-  if (gltf.buffers && gltf.buffers.length > firstBuffer + 1) {
-    throw new Error(
-      `encodeGLTF: multiple buffers not yet implemented, gltf.buffers.length=${gltf.buffers.length}, firstBuffer=${firstBuffer}`
-    );
+function validateGltf(gltf) {
+  if (gltf.buffers && gltf.buffers.length > 1) {
+    throw new Error('encodeGLTF: multiple buffers not yet implemented');
   }
 }
