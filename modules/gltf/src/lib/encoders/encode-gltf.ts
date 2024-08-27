@@ -29,20 +29,22 @@ export function encodeGLTFSync(
   byteOffset: number,
   options: GLTFWriterOptions
 ) {
+  let gltfToEncode = gltf;
   if (!arrayBuffer) {
     encodeExtensions(gltf);
     const scenegraph = new GLTFScenegraph(gltf);
     scenegraph.createBinaryChunk();
+    gltfToEncode = scenegraph.gltf;
   }
-  convertBuffersToBase64(gltf);
+  convertBuffersToBase64(gltfToEncode);
 
   // TODO: Copy buffers to binary
 
-  return encodeGLBSync(gltf, arrayBuffer, byteOffset, options);
+  return encodeGLBSync(gltfToEncode, arrayBuffer, byteOffset, options);
 }
 
 function convertBuffersToBase64(gltf, {firstBuffer = 0} = {}) {
-  if (gltf.buffers && gltf.buffers.length > firstBuffer) {
+  if (gltf.buffers && gltf.buffers.length > firstBuffer + 1) {
     throw new Error(
       `encodeGLTF: multiple buffers not yet implemented, gltf.buffers.length=${gltf.buffers.length}, firstBuffer=${firstBuffer}`
     );
