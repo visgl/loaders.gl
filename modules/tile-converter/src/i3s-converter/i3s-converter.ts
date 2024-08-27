@@ -1526,7 +1526,7 @@ export default class I3SConverter {
     const addRefinementPercentage = tilesWithAddRefineCount
       ? (tilesWithAddRefineCount / tilesCount) * 100
       : 0;
-    const filesSize = await calculateDatasetSize(params);
+    const filesSize = await calculateDatasetSize({...params, slpk: true});
     const diff = process.hrtime(this.conversionStartTime);
     const conversionTime = timeConverter(diff);
     console.log('------------------------------------------------'); // eslint-disable-line no-undef, no-console
