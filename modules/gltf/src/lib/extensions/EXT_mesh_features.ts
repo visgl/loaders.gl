@@ -23,9 +23,11 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
   decodeExtMeshFeatures(scenegraph, options);
 }
 
-export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): void {
+export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): {json: GLTF} {
   const scenegraph = new GLTFScenegraph(gltfData);
   encodeExtMeshFeatures(scenegraph, options);
+  scenegraph.createBinaryChunk();
+  return scenegraph.gltf;
 }
 
 /**
@@ -86,6 +88,8 @@ function processMeshPrimitiveFeatures(
     // Process "Feature ID by Texture Coordinates"
     else if (typeof featureId.texture !== 'undefined' && options?.gltf?.loadImages) {
       featureIdData = getPrimitiveTextureData(scenegraph, featureId.texture, primitive);
+      // Clean up input data
+      featureId.texture = undefined;
     }
 
     // Process "Feature ID by Index"
@@ -175,14 +179,13 @@ function encodeExtMeshFeaturesForPrimitive(
       featureId.attribute = index;
       const typedArray = new Uint32Array(featureId.data as number[]);
 
-      const bufferIndex =
-        scenegraph.gltf.buffers.push({
-          arrayBuffer: typedArray.buffer,
-          byteOffset: typedArray.byteOffset,
-          byteLength: typedArray.byteLength
-        }) - 1;
+      scenegraph.gltf.buffers.push({
+        arrayBuffer: typedArray.buffer,
+        byteOffset: typedArray.byteOffset,
+        byteLength: typedArray.byteLength
+      });
 
-      const bufferViewIndex = scenegraph.addBufferView(typedArray, bufferIndex, 0);
+      const bufferViewIndex = scenegraph.addBufferView(typedArray);
       const accessorIndex = scenegraph.addAccessor(bufferViewIndex, {
         size: 1,
         componentType: getComponentTypeFromArray(typedArray),

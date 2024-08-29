@@ -740,6 +740,9 @@ export function createExtStructuralMetadata(
   if (!extension.propertyTables) {
     extension.propertyTables = [];
   }
+
+  scenegraph.createBinaryChunk();
+
   return extension.propertyTables.push(table) - 1; // index of the table
 }
 
@@ -909,11 +912,10 @@ function propertyDataString(strings: string[]): {
 }
 
 function createBufferView(typedArray: TypedArray, scenegraph: GLTFScenegraph): number {
-  const bufferIndex =
-    scenegraph.gltf.buffers.push({
-      arrayBuffer: typedArray.buffer,
-      byteOffset: typedArray.byteOffset,
-      byteLength: typedArray.byteLength
-    }) - 1;
-  return scenegraph.addBufferView(typedArray, bufferIndex, 0);
+  scenegraph.gltf.buffers.push({
+    arrayBuffer: typedArray.buffer,
+    byteOffset: typedArray.byteOffset,
+    byteLength: typedArray.byteLength
+  });
+  return scenegraph.addBufferView(typedArray);
 }

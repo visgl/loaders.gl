@@ -224,7 +224,7 @@ const EXPECTED_GLTF_JSON_WITH_EXTENSION = {
     version: '2.0',
     generator: 'loaders.gl'
   },
-  buffers: [],
+  buffers: [{byteLength: 120}],
   extensions: {
     EXT_structural_metadata: {
       schema: {
@@ -277,31 +277,11 @@ const EXPECTED_GLTF_JSON_WITH_EXTENSION = {
   extensionsRequired: [],
   extensionsUsed: ['EXT_structural_metadata'],
   bufferViews: [
-    {
-      buffer: 0,
-      byteOffset: 0,
-      byteLength: 16
-    },
-    {
-      buffer: 1,
-      byteOffset: 0,
-      byteLength: 16
-    },
-    {
-      buffer: 2,
-      byteOffset: 0,
-      byteLength: 20
-    },
-    {
-      buffer: 3,
-      byteOffset: 0,
-      byteLength: 36
-    },
-    {
-      buffer: 4,
-      byteOffset: 0,
-      byteLength: 32
-    }
+    {buffer: 0, byteOffset: 0, byteLength: 16},
+    {buffer: 0, byteOffset: 16, byteLength: 16},
+    {buffer: 0, byteOffset: 32, byteLength: 20},
+    {buffer: 0, byteOffset: 52, byteLength: 36},
+    {buffer: 0, byteOffset: 88, byteLength: 32}
   ]
 };
 

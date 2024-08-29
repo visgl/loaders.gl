@@ -50,7 +50,7 @@ export class GLTFScenegraph {
   byteLength: number;
 
   // TODO - why is this not GLTFWithBuffers - what happens to images?
-  constructor(gltf?: {json: GLTF; buffers?: any[]; images?: any[]; binary?: any}) {
+  constructor(gltf?: {json: GLTF; buffers?: any[]; images?: any[]}) {
     // Declare locally so
 
     this.gltf = {
@@ -62,9 +62,6 @@ export class GLTFScenegraph {
     this.byteLength = 0;
 
     // Initialize buffers
-    if (gltf?.binary) {
-      this.gltf.buffers[0] = gltf?.binary;
-    }
     if (this.gltf.buffers && this.gltf.buffers[0]) {
       this.byteLength = this.gltf.buffers[0].byteLength;
       this.sourceBuffers = [this.gltf.buffers[0]];
@@ -560,9 +557,6 @@ export class GLTFScenegraph {
 
   /** Pack the binary chunk */
   createBinaryChunk(): void {
-    // Encoder expects this array undefined or empty
-    this.gltf.buffers = [];
-
     // Allocate total array
     const totalByteLength = this.byteLength;
     const arrayBuffer = new ArrayBuffer(totalByteLength);
@@ -586,6 +580,7 @@ export class GLTFScenegraph {
 
     // Put arrayBuffer to sourceBuffers for possible additional writing data in the chunk
     this.sourceBuffers = [arrayBuffer];
+    this.gltf.buffers = [{arrayBuffer, byteOffset: 0, byteLength: arrayBuffer.byteLength}];
   }
 
   // PRIVATE
