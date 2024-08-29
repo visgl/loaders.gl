@@ -35,10 +35,7 @@ export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): {jso
  * @param {GLTFScenegraph} scenegraph - Instance of the class for structured access to GLTF data.
  * @param {GLTFLoaderOptions} options - GLTFLoader options.
  */
-export function decodeExtMeshFeatures(
-  scenegraph: GLTFScenegraph,
-  options: GLTFLoaderOptions
-): void {
+function decodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFLoaderOptions): void {
   const json = scenegraph.gltf.json;
   if (!json.meshes) {
     return;
@@ -111,7 +108,7 @@ function processMeshPrimitiveFeatures(
   Encoding data
 */
 
-export function encodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFWriterOptions) {
+function encodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFWriterOptions) {
   const meshes = scenegraph.gltf.json.meshes;
   if (!meshes) {
     return;
