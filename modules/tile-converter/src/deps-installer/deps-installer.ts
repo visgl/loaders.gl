@@ -87,14 +87,8 @@ export class DepsInstaller {
     console.log('Installing "join-images" npm package');
     const childProcess = new ChildProcessProxy();
     const nodeDir = dirname(process.execPath);
-    let spaceEscape = '\\ ';
-    let npmBinaryName = 'npm';
-    if (process.platform === 'win32') {
-      spaceEscape = '^ ';
-      npmBinaryName = 'npm.cmd';
-    }
     await childProcess.start({
-      command: `${nodeDir.replaceAll(' ', spaceEscape)}/${npmBinaryName}`,
+      command: `"${nodeDir}/${process.platform === 'win32' ? 'npm.cmd' : 'npm'}"`,
       // `npm install sharp join-images` works unstable. It fails because installed `sharp` version
       // may be different from the version required by `join-images`. Pointing to specific versions
       // resolve this issue
