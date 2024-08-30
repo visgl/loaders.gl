@@ -13,7 +13,6 @@ import type {
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getPrimitiveTextureData} from './utils/3d-tiles-utils';
 import {getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
-import type {TypedArray} from '@loaders.gl/schema';
 
 const EXT_MESH_FEATURES_NAME = 'EXT_mesh_features';
 export const name = EXT_MESH_FEATURES_NAME;
@@ -85,8 +84,6 @@ function processMeshPrimitiveFeatures(
     // Process "Feature ID by Texture Coordinates"
     else if (typeof featureId.texture !== 'undefined' && options?.gltf?.loadImages) {
       featureIdData = getPrimitiveTextureData(scenegraph, featureId.texture, primitive);
-      // Clean up input data
-      featureId.texture = undefined;
     }
 
     // Process "Feature ID by Index"
@@ -125,14 +122,14 @@ function encodeExtMeshFeatures(scenegraph: GLTFScenegraph, options: GLTFWriterOp
 /**
  * Creates ExtMeshFeatures, creates a featureId containing feature ids provided.
  * @param scenegraph - Instance of the class for structured access to GLTF data.
- * @primitive - target primitive instance that will contain the extension
+ * @param primitive - target primitive instance that will contain the extension
  * @param featureIdArray - Array of feature id
  * @param propertyTableIndex - index of the property table created by the ExtStructuralMetadata (optional).
  */
 export function createExtMeshFeatures(
   scenegraph: GLTFScenegraph,
   primitive: GLTFMeshPrimitive,
-  featureIdArray: TypedArray,
+  featureIdArray: NumericArray,
   propertyTableIndex?: number
 ) {
   if (!primitive.extensions) {
@@ -144,7 +141,7 @@ export function createExtMeshFeatures(
     primitive.extensions[EXT_MESH_FEATURES_NAME] = extension;
   }
 
-  const featureIds: GLTF_EXT_mesh_features_featureId[] = extension.featureIds;
+  const {featureIds} = extension;
   const featureId: GLTF_EXT_mesh_features_featureId = {
     featureCount: featureIdArray.length,
     propertyTable: propertyTableIndex,
@@ -170,11 +167,19 @@ function encodeExtMeshFeaturesForPrimitive(
     return;
   }
   const featureIds: GLTF_EXT_mesh_features_featureId[] = extension.featureIds;
-  for (const featureId of featureIds) {
+  featureIds.forEach((featureId, ind) => {
     if (featureId.data) {
       const {accessorKey, index} = createAccessorKey(primitive.attributes);
-      featureId.attribute = index;
-      const typedArray = new Uint32Array(featureId.data as number[]);
+      const typedArray = new Uint32Array(featureId.data as NumericArray);
+
+      // Clean up featureId object.
+      // Everything that could come from the original extension in case of round-trip decode/encode operations should be deleted.
+      // We need make sure the featureId object is clean.
+      featureIds[ind] = {
+        featureCount: typedArray.length,
+        propertyTable: featureId.propertyTable,
+        attribute: index
+      };
 
       scenegraph.gltf.buffers.push({
         arrayBuffer: typedArray.buffer,
@@ -189,10 +194,8 @@ function encodeExtMeshFeaturesForPrimitive(
         count: typedArray.length
       });
       primitive.attributes[accessorKey] = accessorIndex;
-
-      featureId.data = undefined; // Delete the data already encoded.
     }
-  }
+  });
 }
 
 function createAccessorKey(attributes: {}) {
@@ -200,7 +203,7 @@ function createAccessorKey(attributes: {}) {
   // Search for all "_FEATURE_ID_n" attribures in the primitive provided if any.
   // If there are some, e.g. "_FEATURE_ID_0", "_FEATURE_ID_1",
   // we will add a new one with the name "_FEATURE_ID_2"
-  const attrs = Object.keys(attributes).filter((item) => item.indexOf(prefix) !== -1);
+  const attrs = Object.keys(attributes).filter((item) => item.indexOf(prefix) === 0);
   let max = -1;
   for (const a of attrs) {
     const n = Number(a.substring(prefix.length));

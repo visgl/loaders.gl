@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+/* eslint-disable no-console */
 import test from 'tape-promise/tape';
 
 import {decodeExtensions, encodeExtensions} from '../../../src/lib/api/gltf-extensions';
@@ -214,10 +215,9 @@ test('gltf#EXT_mesh_features - Should encode featureIDs', (t) => {
   const scenegraph = new GLTFScenegraph(gltf as unknown as {json: GLTF});
   const primitive = gltf.json.meshes[0].primitives[0];
   const featureIds = [4, 4, 4, 3, 0, 1, 2];
-  const typedArray = new Uint32Array(featureIds);
   const tableIndex = 8;
 
-  createExtMeshFeatures(scenegraph, primitive, typedArray, tableIndex);
+  createExtMeshFeatures(scenegraph, primitive, featureIds, tableIndex);
   encodeExtensions(scenegraph.gltf, {});
 
   // The clone of GLTF_WITH_EXTENSION has been modified
@@ -262,7 +262,7 @@ const GLTF_JSON_ROUNDTRIP_EXPECTED = {
           indices: 0,
           material: 0,
           extensions: {
-            EXT_mesh_features: {featureIds: [{featureCount: 1, propertyTable: 0, attribute: 0}]}
+            EXT_mesh_features: {featureIds: [{featureCount: 4, propertyTable: 0, attribute: 0}]}
           }
         }
       ]
