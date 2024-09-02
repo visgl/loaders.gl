@@ -6,11 +6,10 @@
 // @author Filipe Caixeta / http://filipecaixeta.com.br
 // @author Mugen87 / https://github.com/Mugen87
 
-import {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema';
-import {decompressLZF} from './decompress-lzf';
-import {getPCDSchema} from './get-pcd-schema';
-import type {PCDHeader, PCDMesh} from './pcd-types';
+import { getMeshBoundingBox, MeshAttribute, MeshAttributes } from '@loaders.gl/schema';
+import { decompressLZF } from './decompress-lzf';
+import { getPCDSchema } from './get-pcd-schema';
+import type { PCDHeader, PCDMesh } from './pcd-types';
 
 type MeshHeader = {
   vertexCount: number;
@@ -244,11 +243,14 @@ function parsePCDHeader(data: string): PCDHeader {
   if (pcdHeader.fields !== null && pcdHeader.size !== null) {
     for (let i = 0; i < pcdHeader.fields.length; i++) {
       if (pcdHeader.data === 'ascii') {
-        pcdHeader.offset[pcdHeader.fields[i]] = i;
+        // pcdHeader.offset[pcdHeader.fields[i]] = i;
+        sizeSum += pcdHeader.count[i];
       } else {
-        pcdHeader.offset[pcdHeader.fields[i]] = sizeSum;
-        sizeSum += pcdHeader.size[i];
+        // pcdHeader.offset[pcdHeader.fields[i]] = sizeSum;
+        // sizeSum += pcdHeader.size[i];
+        sizeSum += pcdHeader.size[i] * pcdHeader.count[i];
       }
+      pcdHeader.offset[pcdHeader.fields[i]] = sizeSum
     }
   }
 
