@@ -92,6 +92,5 @@ export type WriterWithEncoder<
 };
 
 /** Typescript helper to extract the writer options type from a generic writer type */
-export type WriterOptionsType<T = Writer> = T extends Writer<unknown, unknown, infer Options>
-  ? Options
-  : never;
+export type WriterOptionsType<T = Writer> =
+  T extends Writer<unknown, unknown, infer Options> ? Options : never;

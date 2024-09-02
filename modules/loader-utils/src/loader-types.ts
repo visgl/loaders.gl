@@ -294,13 +294,11 @@ export type LoaderContext = {
 type Preload = (url: string, options?: PreloadOptions) => any;
 
 /** Typescript helper to extract options type from a generic loader type */
-export type LoaderOptionsType<T = Loader> = T extends Loader<any, any, infer Options>
-  ? Options
-  : never;
+export type LoaderOptionsType<T = Loader> =
+  T extends Loader<any, any, infer Options> ? Options : never;
 /** Typescript helper to extract data type from a generic loader type */
-export type LoaderReturnType<T = Loader> = T extends Loader<infer Return, any, any>
-  ? Return
-  : never;
+export type LoaderReturnType<T = Loader> =
+  T extends Loader<infer Return, any, any> ? Return : never;
 /** Typescript helper to extract batch type from a generic loader type */
 export type LoaderBatchType<T = Loader> = T extends Loader<any, infer Batch, any> ? Batch : never;
 
