@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-/* eslint-disable no-console */
 import test from 'tape-promise/tape';
 
 import {decodeExtensions, encodeExtensions} from '../../../src/lib/api/gltf-extensions';
@@ -15,10 +14,10 @@ const binaryBufferData = [
 
 const binaryBufferDataAlligned = binaryBufferData.concat([0, 0]);
 
-const GLTF_WITH_EXTENSION = {
+const getGltfWithExtension = () => ({
   buffers: [
     {
-      arrayBuffer: [],
+      arrayBuffer: new Uint8Array(0).buffer,
       byteOffset: 0,
       byteLength: 128
     }
@@ -168,14 +167,13 @@ const GLTF_WITH_EXTENSION = {
       }
     ]
   }
-};
+});
 
 test('gltf#EXT_mesh_features - Should decode', async (t) => {
   const options = {gltf: {loadImages: true, loadBuffers: true}};
-  const gltf = JSON.parse(JSON.stringify(GLTF_WITH_EXTENSION));
+  const gltf = getGltfWithExtension();
   gltf.buffers[0].arrayBuffer = new Uint8Array(binaryBufferDataAlligned).buffer;
   await decodeExtensions(gltf, options);
-  // The clone of GLTF_WITH_EXTENSION has been modified
 
   t.deepEqual(
     gltf.json.meshes[0].primitives[0].extensions.EXT_mesh_features.featureIds[0].data,
@@ -196,7 +194,8 @@ const PRIMITIVE_EXPECTED = {
           texture: {
             index: 1
           },
-          propertyTable: 0
+          propertyTable: 0,
+          data: undefined
         },
         {
           featureCount: 7,
@@ -209,7 +208,7 @@ const PRIMITIVE_EXPECTED = {
 };
 
 test('gltf#EXT_mesh_features - Should encode featureIDs', (t) => {
-  const gltf = JSON.parse(JSON.stringify(GLTF_WITH_EXTENSION));
+  const gltf = getGltfWithExtension();
   gltf.buffers[0].arrayBuffer = new Uint8Array(binaryBufferDataAlligned).buffer;
 
   const scenegraph = new GLTFScenegraph(gltf as unknown as {json: GLTF});
@@ -220,8 +219,7 @@ test('gltf#EXT_mesh_features - Should encode featureIDs', (t) => {
   createExtMeshFeatures(scenegraph, primitive, featureIds, tableIndex);
   encodeExtensions(scenegraph.gltf, {});
 
-  // The clone of GLTF_WITH_EXTENSION has been modified
-  t.deepEqual(JSON.stringify(primitive), JSON.stringify(PRIMITIVE_EXPECTED));
+  t.deepEqual(primitive, PRIMITIVE_EXPECTED);
   t.end();
 });
 
@@ -250,7 +248,7 @@ const GLTF_JSON_ROUNDTRIP_EXPECTED = {
       min: [-48149.36831235606, -47655.16766258143, -53559.4425966118]
     },
     {bufferView: 2, byteOffset: 0, componentType: 5126, count: 4, type: 'VEC2'},
-    {bufferView: 8, type: 'SCALAR', componentType: 5125, count: 4}
+    {bufferView: 8, type: 'SCALAR', componentType: 5125, count: 4, max: undefined, min: undefined}
   ],
   extensions: {},
   extensionsUsed: ['EXT_mesh_features'],
@@ -274,29 +272,20 @@ const GLTF_JSON_ROUNDTRIP_EXPECTED = {
   ]
 };
 // Note, binaryBufferData is not alligned.
-const BUFFER_ROUNDTRIP_EXPECTED = binaryBufferData.concat([
-  1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0
-]);
+const BUFFER_ROUNDTRIP_EXPECTED = new Uint8Array(
+  binaryBufferData.concat([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0])
+).buffer;
 
 test('gltf#EXT_mesh_features - Roundtrip encode/decode', async (t) => {
   const options = {gltf: {loadImages: true, loadBuffers: true}};
-  const gltf = JSON.parse(JSON.stringify(GLTF_WITH_EXTENSION));
+  const gltf = getGltfWithExtension();
   gltf.buffers[0].arrayBuffer = new Uint8Array(binaryBufferDataAlligned).buffer;
 
   await decodeExtensions(gltf, options);
-  // The clone of GLTF_WITH_EXTENSION has been modified
   const gltfBin = encodeExtensions(gltf, options);
 
-  const json = deleteUndefined(gltfBin.json);
-  t.deepEqual(json, GLTF_JSON_ROUNDTRIP_EXPECTED);
+  t.deepEqual(gltfBin.json, GLTF_JSON_ROUNDTRIP_EXPECTED);
 
-  t.deepEqual(
-    new Uint8Array(gltfBin.buffers[0].arrayBuffer),
-    new Uint8Array(BUFFER_ROUNDTRIP_EXPECTED)
-  );
+  t.deepEqual(gltfBin.buffers[0].arrayBuffer, BUFFER_ROUNDTRIP_EXPECTED);
   t.end();
 });
-
-function deleteUndefined(obj: object) {
-  return JSON.parse(JSON.stringify(obj));
-}
