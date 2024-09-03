@@ -51,6 +51,9 @@ const getGltfWithExtension = () => ({
     }
   ],
   json: {
+    asset: {
+      version: '2.0'
+    },
     buffers: [
       {
         byteLength: 126
@@ -224,6 +227,9 @@ test('gltf#EXT_mesh_features - Should encode featureIDs', (t) => {
 });
 
 const GLTF_JSON_ROUNDTRIP_EXPECTED = {
+  asset: {
+    version: '2.0'
+  },
   buffers: [{byteLength: 144}],
   bufferViews: [
     {buffer: 0, byteOffset: 0, byteLength: 24, target: 34963},
@@ -282,10 +288,12 @@ test('gltf#EXT_mesh_features - Roundtrip encode/decode', async (t) => {
   gltf.buffers[0].arrayBuffer = new Uint8Array(binaryBufferDataAlligned).buffer;
 
   await decodeExtensions(gltf, options);
-  const gltfBin = encodeExtensions(gltf, options);
+  encodeExtensions(gltf, options);
+  const scenegraph = new GLTFScenegraph(gltf);
+  scenegraph.createBinaryChunk();
 
-  t.deepEqual(gltfBin.json, GLTF_JSON_ROUNDTRIP_EXPECTED);
+  t.deepEqual(scenegraph.gltf.json, GLTF_JSON_ROUNDTRIP_EXPECTED);
 
-  t.deepEqual(gltfBin.buffers[0].arrayBuffer, BUFFER_ROUNDTRIP_EXPECTED);
+  t.deepEqual(scenegraph.gltf.buffers[0].arrayBuffer, BUFFER_ROUNDTRIP_EXPECTED);
   t.end();
 });

@@ -22,11 +22,12 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
   decodeExtMeshFeatures(scenegraph, options);
 }
 
-export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): {json: GLTF} {
+// export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): {json: GLTF} {
+export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): void {
   const scenegraph = new GLTFScenegraph(gltfData);
   encodeExtMeshFeatures(scenegraph, options);
-  scenegraph.createBinaryChunk();
-  return scenegraph.gltf;
+  // scenegraph.createBinaryChunk();
+  // return scenegraph.gltf;
 }
 
 /**
@@ -167,7 +168,7 @@ function encodeExtMeshFeaturesForPrimitive(
     return;
   }
   const featureIds: GLTF_EXT_mesh_features_featureId[] = extension.featureIds;
-  featureIds.forEach((featureId, ind) => {
+  featureIds.forEach((featureId, elementIndex) => {
     if (featureId.data) {
       const {accessorKey, index} = createAccessorKey(primitive.attributes);
       const typedArray = new Uint32Array(featureId.data as NumericArray);
@@ -175,7 +176,7 @@ function encodeExtMeshFeaturesForPrimitive(
       // Clean up featureId object.
       // Everything that could come from the original extension in case of round-trip decode/encode operations should be deleted.
       // We need make sure the featureId object is clean.
-      featureIds[ind] = {
+      featureIds[elementIndex] = {
         featureCount: typedArray.length,
         propertyTable: featureId.propertyTable,
         attribute: index
@@ -198,7 +199,13 @@ function encodeExtMeshFeaturesForPrimitive(
   });
 }
 
-function createAccessorKey(attributes: {}) {
+/**
+ * Creates an accessor key for the attribute array provided.
+ * The generated key has a suffix (number) that is the next consequtive in the list of existing accessors.
+ * @param attributes - attribute array
+ * @returns accessor key and the key suffix (number) used in the key.
+ */
+function createAccessorKey(attributes: {[k: string]: number}) {
   const prefix = '_FEATURE_ID_';
   // Search for all "_FEATURE_ID_n" attribures in the primitive provided if any.
   // If there are some, e.g. "_FEATURE_ID_0", "_FEATURE_ID_1",

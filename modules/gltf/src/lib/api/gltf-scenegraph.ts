@@ -62,9 +62,13 @@ export class GLTFScenegraph {
     this.byteLength = 0;
 
     // Initialize buffers
-    if (this.gltf.buffers && this.gltf.buffers[0]) {
-      this.byteLength = this.gltf.buffers[0].byteLength;
-      this.sourceBuffers = [this.gltf.buffers[0]];
+    if (this.gltf.buffers) {
+      for (const buf of this.gltf.buffers) {
+        if (buf) {
+          this.byteLength += buf.byteLength;
+        }
+      }
+      this.sourceBuffers = [...this.gltf.buffers];
     }
   }
 

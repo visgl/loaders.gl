@@ -10,6 +10,7 @@ import './lib/api/gltf-scenegraph-modifiers.spec';
 import './lib/api/gltf-scenegraph-accessors.spec';
 import './lib/api/post-process-gltf.spec';
 import './lib/api/gltf-roundtrip.spec';
+import './lib/api/gltf-scenegraph.spec';
 
 import './lib/extensions/KHR_draco_mesh_compression.spec';
 import './lib/extensions/KHR_lights_punctual.spec';
