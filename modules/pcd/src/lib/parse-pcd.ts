@@ -243,14 +243,13 @@ function parsePCDHeader(data: string): PCDHeader {
   if (pcdHeader.fields !== null && pcdHeader.size !== null) {
     for (let i = 0; i < pcdHeader.fields.length; i++) {
       if (pcdHeader.data === 'ascii') {
-        // pcdHeader.offset[pcdHeader.fields[i]] = i;
-        sizeSum += pcdHeader.count[i];
+        pcdHeader.offset[pcdHeader.fields[i]] = i;
       } else {
-        // pcdHeader.offset[pcdHeader.fields[i]] = sizeSum;
-        // sizeSum += pcdHeader.size[i];
+        pcdHeader.offset[pcdHeader.fields[i]] = sizeSum
+        // the pcdHeader likely contains multiple data points for each field
+        // By multiplying the size of each field by its count, calculates the total size occupied by that field in the data buffer. 
         sizeSum += pcdHeader.size[i] * pcdHeader.count[i];
       }
-      pcdHeader.offset[pcdHeader.fields[i]] = sizeSum
     }
   }
 
