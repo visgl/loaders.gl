@@ -2,6 +2,10 @@
 
 ## v4.2
 
+### v4.2.3
+
+- fix(tile-converter): Fix according to new NodeJS security limitations (#3071)
+
 ### v4.2.2
 
 - fix(i3s): slpk full path on Windows (#3011)
