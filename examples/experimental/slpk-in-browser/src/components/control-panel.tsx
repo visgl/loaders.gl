@@ -15,6 +15,7 @@ const Container = styled.div`
   margin: 10px;
   line-height: 28px;
   border-radius: 8px;
+  font-size: 13px;
 `;
 
 interface ControlPanelProps {
@@ -24,6 +25,7 @@ interface ControlPanelProps {
 export const ControlPanel = ({onFileSelected}: ControlPanelProps) => {
   return (
     <Container>
+      <div>Choose *.slpk file from your filesystem</div>
       <input
         type="file"
         accept=".slpk"

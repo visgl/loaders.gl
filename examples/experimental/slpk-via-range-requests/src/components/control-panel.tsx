@@ -15,6 +15,7 @@ const Container = styled.div`
   margin: 10px;
   line-height: 28px;
   border-radius: 8px;
+  font-size: 13px;
 `;
 
 interface ControlPanelProps {
@@ -25,6 +26,7 @@ export const ControlPanel = ({onFileSelected}: ControlPanelProps) => {
   const [url, setUrl] = useState<string>('')
   return (
     <Container>
+      <div>Enter SLPK file URL<br/>Server should support HEAD and range requests</div>
       <input
         type="text"
         value={url}

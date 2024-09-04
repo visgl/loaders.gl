@@ -6,7 +6,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
-import {MapController, FlyToInterpolator, MapViewState} from '@deck.gl/core/typed';
+import {MapController, FlyToInterpolator, MapViewState} from '@deck.gl/core';
 
 import {COORDINATE_SYSTEM, I3SLoader, parseSLPKArchive} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';

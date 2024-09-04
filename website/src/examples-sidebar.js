@@ -42,6 +42,8 @@ const sidebars = {
         'i3s-building-scene-layer',
         'i3s-picking',
         'i3s-colorization-by-attributes',
+        'i3s-slpk-in-browser',
+        'i3s-slpk-via-range-requests',
         '3d-tiles'
       ]
     },
