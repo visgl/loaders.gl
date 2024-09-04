@@ -88,8 +88,9 @@ export async function decodeExtensions(gltf, options: GLTFLoaderOptions = {}, co
 /** Call before resource writing */
 export function encodeExtensions(gltf, options: GLTFWriterOptions = {}) {
   for (const extension of EXTENSIONS_ENCODING) {
-    extension.encode?.(gltf, options);
+    gltf = extension.encode?.(gltf, options) ?? gltf;
   }
+  return gltf;
 }
 
 function useExtension(extensionName: string, options: GLTFLoaderOptions) {

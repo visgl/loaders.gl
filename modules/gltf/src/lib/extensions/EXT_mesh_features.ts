@@ -22,12 +22,15 @@ export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions)
   decodeExtMeshFeatures(scenegraph, options);
 }
 
-// export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): {json: GLTF} {
-export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): void {
+// export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): void {
+//   const scenegraph = new GLTFScenegraph(gltfData);
+//   encodeExtMeshFeatures(scenegraph, options);
+// }
+export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions): {json: GLTF} {
   const scenegraph = new GLTFScenegraph(gltfData);
   encodeExtMeshFeatures(scenegraph, options);
-  // scenegraph.createBinaryChunk();
-  // return scenegraph.gltf;
+  scenegraph.createBinaryChunk();
+  return scenegraph.gltf;
 }
 
 /**

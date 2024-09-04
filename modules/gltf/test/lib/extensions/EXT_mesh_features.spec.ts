@@ -288,12 +288,10 @@ test('gltf#EXT_mesh_features - Roundtrip encode/decode', async (t) => {
   gltf.buffers[0].arrayBuffer = new Uint8Array(binaryBufferDataAlligned).buffer;
 
   await decodeExtensions(gltf, options);
-  encodeExtensions(gltf, options);
-  const scenegraph = new GLTFScenegraph(gltf);
-  scenegraph.createBinaryChunk();
+  const gltfBin = encodeExtensions(gltf, options);
 
-  t.deepEqual(scenegraph.gltf.json, GLTF_JSON_ROUNDTRIP_EXPECTED);
+  t.deepEqual(gltfBin.json, GLTF_JSON_ROUNDTRIP_EXPECTED);
 
-  t.deepEqual(scenegraph.gltf.buffers[0].arrayBuffer, BUFFER_ROUNDTRIP_EXPECTED);
+  t.deepEqual(gltfBin.buffers[0].arrayBuffer, BUFFER_ROUNDTRIP_EXPECTED);
   t.end();
 });
