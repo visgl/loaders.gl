@@ -54,7 +54,7 @@ export const ParquetWorkerLoader = {
   id: 'parquet',
   module: 'parquet',
   version: VERSION,
-  worker: true,
+  worker: false,
   category: 'table',
   extensions: ['parquet'],
   mimeTypes: ['application/octet-stream'],
