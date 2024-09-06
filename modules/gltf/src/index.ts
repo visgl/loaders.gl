@@ -96,3 +96,4 @@ export {
   createExtStructuralMetadata,
   type PropertyAttribute
 } from './lib/extensions/EXT_structural_metadata';
+export {createExtMeshFeatures} from './lib/extensions/EXT_mesh_features';

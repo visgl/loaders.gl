@@ -557,9 +557,6 @@ export class GLTFScenegraph {
 
   /** Pack the binary chunk */
   createBinaryChunk(): void {
-    // Encoder expects this array undefined or empty
-    this.gltf.buffers = [];
-
     // Allocate total array
     const totalByteLength = this.byteLength;
     const arrayBuffer = new ArrayBuffer(totalByteLength);
@@ -583,6 +580,7 @@ export class GLTFScenegraph {
 
     // Put arrayBuffer to sourceBuffers for possible additional writing data in the chunk
     this.sourceBuffers = [arrayBuffer];
+    this.gltf.buffers = [{arrayBuffer, byteOffset: 0, byteLength: arrayBuffer.byteLength}];
   }
 
   // PRIVATE
