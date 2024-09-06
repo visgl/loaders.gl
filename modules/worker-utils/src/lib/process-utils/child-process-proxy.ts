@@ -22,7 +22,7 @@ export type ChildProcessProxyProps = {
   /** wait: 0 - infinity */
   wait?: number;
   /** Options passed on to Node'.js `spawn` */
-  spawn?: any; // ChildProcess.SpawnOptionsWithoutStdio;
+  spawn?: ChildProcess.SpawnOptions;
   /** Should proceed if stderr stream recieved data */
   ignoreStderr?: boolean;
   /** Callback when the  */

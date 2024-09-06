@@ -2,6 +2,13 @@
 
 ## v4.3
 
+### v4.3.0-alpha.7
+
+- fix(tile-converter): Fix according to new NodeJS security limitations (#3071)
+- fix(tile-converter): Added flag to size calculation (#3069)
+- chore(gltf): fix env dependency in a test (#3068)
+- chore(potree): test PotreeSource on a supported dataset (#3065)
+
 ### v4.3.0-alpha.6
 
 - fix(tile-converter): Returned non-slpk behavior for calculateFilesSize function (#3066)
