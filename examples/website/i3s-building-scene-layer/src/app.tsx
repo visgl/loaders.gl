@@ -8,7 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator} from '@deck.gl/core';
 
-import {DataDrivenTile3DLayer} from '@deck.gl-community/layers';
+import {DataDrivenTile3DLayer} from '@deck.gl-community/experimental';
 import {
   BuildingSceneSublayer,
   COORDINATE_SYSTEM,
@@ -19,7 +19,7 @@ import {fetchFile, load} from '@loaders.gl/core';
 import {Sublayer, buildSublayersTree} from './helpers/sublayers';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {BuildingExplorer} from './components/building-explorer';
-import {filterTile} from '@deck.gl-community/layers';
+import {filterTile} from '@deck.gl-community/experimental';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Turanga_Library/SceneServer/layers/0';

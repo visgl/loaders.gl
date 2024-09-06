@@ -17,7 +17,7 @@
   "dependencies": {
     "@algolia/autocomplete-js": "^1.17.0",
     "@arcgis/core": "^4.25.0",
-    "@deck.gl-community/layers": "^9.0.0-alpha.1",
+    "@deck.gl-community/experimental": "^9.0.3",
     "@deck.gl/arcgis": "^9.0.4",
     "@deck.gl/core": "^9.0.4",
     "@deck.gl/extensions": "^9.0.4",

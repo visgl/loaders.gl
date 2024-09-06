@@ -8,7 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import DeckGL from '@deck.gl/react';
 import {ViewState, FlyToInterpolator} from '@deck.gl/core';
 
-import {DataDrivenTile3DLayer, colorizeTile} from '@deck.gl-community/layers';
+import {DataDrivenTile3DLayer, colorizeTile} from '@deck.gl-community/experimental';
 
 import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
