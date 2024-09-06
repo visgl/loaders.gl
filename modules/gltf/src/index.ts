@@ -91,3 +91,8 @@ export {GLBWriter} from './glb-writer';
 export {GLTFScenegraph} from './lib/api/gltf-scenegraph';
 export {postProcessGLTF} from './lib/api/post-process-gltf';
 export {getMemoryUsageGLTF as _getMemoryUsageGLTF} from './lib/gltf-utils/gltf-utils';
+
+export {
+  createExtStructuralMetadata,
+  type PropertyAttribute
+} from './lib/extensions/EXT_structural_metadata';
