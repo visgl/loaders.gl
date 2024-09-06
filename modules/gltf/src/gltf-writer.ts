@@ -1,7 +1,7 @@
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encoders/encode-gltf';
-import {GLTFScenegraph, GLTFWithBuffers} from '@loaders.gl/gltf';
+import {GLTFWithBuffers} from '@loaders.gl/gltf';
 import {encodeExtensions} from './lib/api/gltf-extensions';
 
 export type GLTFWriterOptions = WriterOptions & {
@@ -35,11 +35,7 @@ export const GLTFWriter = {
 
 function encodeSync(gltf: GLTFWithBuffers, options: GLTFWriterOptions = {}) {
   const {byteOffset = 0} = options;
-
-  encodeExtensions(gltf);
-  const scenegraph = new GLTFScenegraph(gltf);
-  scenegraph.createBinaryChunk();
-  const gltfToEncode = scenegraph.gltf;
+  const gltfToEncode = encodeExtensions(gltf);
 
   // Calculate length, then create arraybuffer and encode
   const byteLength = encodeGLTFSync(gltfToEncode, null, byteOffset, options);
