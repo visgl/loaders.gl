@@ -33,11 +33,25 @@ jobs:
         run: |
           yarn bootstrap
 
-      - name: Run tests
+      - name: Run browser tests (generate coverage)
         run: |
-          npm run test-ci
+          yarn run test-cover
 
-      - name: Coveralls
+      - name: Run node tests
+        run: |
+          yarn run test-node
+  
+      - name: Run lint
+        run: |
+          yarn lint
+
+      - name: Build website
+        run: |
+          cd website
+          yarn install
+          yarn build
+  
+        - name: Coveralls
         if: matrix.node-version == 18
         uses: coverallsapp/github-action@master
         with:
