@@ -25,13 +25,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Bootstrap
+      - name: Install dependencies
         run: |
-          yarn
+          yarn install
 
-      - name: Bootstrap
+      - name: Build
         run: |
-          yarn bootstrap
+          yarn run bootstrap
 
       - name: Run browser tests (generate coverage)
         run: |
@@ -40,16 +40,16 @@ jobs:
       - name: Run node tests
         run: |
           yarn run test-node
-  
+
       - name: Run lint
         run: |
-          yarn lint
+          yarn run lint
 
       - name: Build website
         run: |
-          cd website
-          yarn install
-          yarn build
+          cd website |
+          yarn install |
+          yarn run build
   
         - name: Coveralls
         if: matrix.node-version == 18
