@@ -30,8 +30,8 @@
   },
   "resolutions": {
     "deck.gl": "^9.0.1",
-    "@math.gl/core": "^4.0.0",
-    "@math.gl/web-mercator": "^4.0.0"
+    "@math.gl/core": "^4.1.0",
+    "@math.gl/web-mercator": "^4.1.0"
   },
   "devDependencies": {
     "typescript": "^5.3.0",
