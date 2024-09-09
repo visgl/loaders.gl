@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import {GLTF} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
+import {GLTFWriterOptions} from '../../gltf-writer';
 
 // GLTF 1.0 extensions (decode only)
 // import * as KHR_binary_gltf from './KHR_draco_mesh_compression';
@@ -33,7 +34,7 @@ type GLTFExtensionPlugin = {
     options: GLTFLoaderOptions,
     context
   ) => Promise<void>;
-  encode?: (gltfData: {json: GLTF}, options: GLTFLoaderOptions) => void;
+  encode?: (gltfData: {json: GLTF}, options: GLTFWriterOptions) => void;
 };
 
 /**
@@ -61,6 +62,11 @@ export const EXTENSIONS: GLTFExtensionPlugin[] = [
   EXT_feature_metadata
 ];
 
+/**
+ * List of extensions processed by the GLTFWriter
+ */
+const EXTENSIONS_ENCODING: GLTFExtensionPlugin[] = [EXT_structural_metadata, EXT_mesh_features];
+
 /** Call before any resource loading starts */
 export function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
   const extensions = EXTENSIONS.filter((extension) => useExtension(extension.name, options));
@@ -77,6 +83,14 @@ export async function decodeExtensions(gltf, options: GLTFLoaderOptions = {}, co
     // Currently we only have Draco, but when we add Basis we may revisit
     await extension.decode?.(gltf, options, context);
   }
+}
+
+/** Call before resource writing */
+export function encodeExtensions(gltf, options: GLTFWriterOptions = {}) {
+  for (const extension of EXTENSIONS_ENCODING) {
+    gltf = extension.encode?.(gltf, options) ?? gltf;
+  }
+  return gltf;
 }
 
 function useExtension(extensionName: string, options: GLTFLoaderOptions) {

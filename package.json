@@ -35,7 +35,8 @@
     "publish-beta": "ocular-publish beta",
     "publish-prod": "ocular-publish prod",
     "test": "ocular-test",
-    "test-ci": "ocular-lint && ocular-test node && ocular-test cover && yarn test-website",
+    "test-node": "ocular-test node",
+    "test-cover": "ocular-test cover",
     "test-website": "cd website && yarn && yarn build && cd ..",
     "test-fast": "ocular-test fast",
     "pre-commit": "yarn lint",
@@ -62,6 +63,6 @@
   },
   "volta": {
     "node": "20.16.0",
-    "yarn": "4.4.0"
+    "yarn": "4.4.1"
   }
 }

@@ -12,9 +12,11 @@ import type {
   GLTF_EXT_structural_metadata_GLTF,
   GLTF_EXT_structural_metadata_PropertyTexture,
   GLTF_EXT_structural_metadata_PropertyTable_Property,
-  GLTF_EXT_structural_metadata_Primitive
+  GLTF_EXT_structural_metadata_Primitive,
+  GLTF_EXT_structural_metadata_Class
 } from '../types/gltf-ext-structural-metadata-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
+import {GLTFWriterOptions} from '../../gltf-writer';
 
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {
@@ -35,6 +37,13 @@ export const name = EXT_STRUCTURAL_METADATA_NAME;
 export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions): Promise<void> {
   const scenegraph = new GLTFScenegraph(gltfData);
   decodeExtStructuralMetadata(scenegraph, options);
+}
+
+export function encode(gltfData: {json: GLTF}, options: GLTFWriterOptions) {
+  const scenegraph = new GLTFScenegraph(gltfData);
+  encodeExtStructuralMetadata(scenegraph, options);
+  scenegraph.createBinaryChunk();
+  return scenegraph.gltf;
 }
 
 /*
@@ -700,4 +709,226 @@ function getEnumByValue(
   }
 
   return null;
+}
+
+/*
+  Encoding data
+*/
+
+export interface PropertyAttribute {
+  name: string;
+  elementType: string;
+  componentType?: string;
+  values: number[] | string[];
+}
+
+const SCHEMA_CLASS_ID_DEFAULT = 'schemaClassId';
+
+function encodeExtStructuralMetadata(scenegraph: GLTFScenegraph, options: GLTFWriterOptions) {
+  const extension: GLTF_EXT_structural_metadata_GLTF | null = scenegraph.getExtension(
+    EXT_STRUCTURAL_METADATA_NAME
+  );
+  if (!extension) {
+    return;
+  }
+  if (extension.propertyTables) {
+    for (const table of extension.propertyTables) {
+      const classId = table.class;
+      const schemaClass = extension.schema?.classes?.[classId];
+      if (table.properties && schemaClass) {
+        encodeProperties(table, schemaClass, scenegraph);
+      }
+    }
+  }
+}
+
+function encodeProperties(
+  table: GLTF_EXT_structural_metadata_PropertyTable,
+  schemaClass: GLTF_EXT_structural_metadata_Class,
+  scenegraph: GLTFScenegraph
+) {
+  for (const propertyName in table.properties) {
+    const data = table.properties[propertyName].data;
+    if (data) {
+      const classProperty = schemaClass.properties[propertyName];
+      if (classProperty) {
+        const tableProperty = createPropertyTableProperty(
+          data as number[] | string[],
+          classProperty,
+          scenegraph
+        );
+        // Override table property that came with "data"
+        table.properties[propertyName] = tableProperty;
+      }
+    }
+  }
+}
+
+/**
+ * Creates ExtStructuralMetadata, creates the schema and creates a property table containing feature data provided.
+ * @param scenegraph - Instance of the class for structured access to GLTF data.
+ * @param propertyAttributes - property attributes
+ * @param classId - classId to use for encoding metadata.
+ * @returns Index of the table created.
+ */
+export function createExtStructuralMetadata(
+  scenegraph: GLTFScenegraph,
+  propertyAttributes: PropertyAttribute[],
+  classId: string = SCHEMA_CLASS_ID_DEFAULT
+): number {
+  let extension: GLTF_EXT_structural_metadata_GLTF | null = scenegraph.getExtension(
+    EXT_STRUCTURAL_METADATA_NAME
+  );
+  if (!extension) {
+    extension = scenegraph.addExtension(EXT_STRUCTURAL_METADATA_NAME);
+  }
+
+  extension.schema = createSchema(propertyAttributes, classId, extension.schema);
+  const table = createPropertyTable(propertyAttributes, classId, extension.schema);
+  if (!extension.propertyTables) {
+    extension.propertyTables = [];
+  }
+
+  return extension.propertyTables.push(table) - 1; // index of the table
+}
+
+function createSchema(
+  propertyAttributes: PropertyAttribute[],
+  classId: string,
+  schemaToUpdate?: GLTF_EXT_structural_metadata_Schema
+): GLTF_EXT_structural_metadata_Schema {
+  const schema: GLTF_EXT_structural_metadata_Schema = schemaToUpdate ?? {
+    id: 'schema_id'
+  };
+  const schemaClass: GLTF_EXT_structural_metadata_Class = {
+    properties: {}
+  };
+  for (const attribute of propertyAttributes) {
+    const classProperty: GLTF_EXT_structural_metadata_ClassProperty = {
+      type: attribute.elementType,
+      componentType: attribute.componentType
+    };
+    schemaClass.properties[attribute.name] = classProperty;
+  }
+
+  schema.classes = {};
+  schema.classes[classId] = schemaClass;
+  return schema;
+}
+
+function createPropertyTable(
+  propertyAttributes: PropertyAttribute[],
+  classId: string,
+  schema: GLTF_EXT_structural_metadata_Schema
+): GLTF_EXT_structural_metadata_PropertyTable {
+  const table: GLTF_EXT_structural_metadata_PropertyTable = {
+    class: classId,
+    count: 0
+  };
+  // count is a number of rows in the table
+  let count = 0;
+  const schemaClass = schema.classes?.[classId];
+
+  for (const attribute of propertyAttributes) {
+    if (count === 0) {
+      count = attribute.values.length;
+    }
+
+    // The number of elements in all propertyAttributes must be the same
+    if (count !== attribute.values.length && attribute.values.length) {
+      throw new Error('Illegal values in attributes');
+    }
+
+    const classProperty = schemaClass?.properties[attribute.name];
+    if (classProperty) {
+      // const tableProperty = createPropertyTableProperty(attribute, classProperty, scenegraph);
+      if (!table.properties) {
+        table.properties = {};
+      }
+      // values is a required field. Its real value will be set while encoding data
+      table.properties[attribute.name] = {values: 0, data: attribute.values};
+    }
+  }
+
+  table.count = count;
+  return table;
+}
+
+function createPropertyTableProperty(
+  // attribute: PropertyAttribute,
+  values: number[] | string[],
+  classProperty: GLTF_EXT_structural_metadata_ClassProperty,
+  scenegraph: GLTFScenegraph
+): GLTF_EXT_structural_metadata_PropertyTable_Property {
+  const prop: GLTF_EXT_structural_metadata_PropertyTable_Property = {values: 0};
+
+  if (classProperty.type === 'STRING') {
+    const {stringData, stringOffsets} = createPropertyDataString(values as string[]);
+    prop.stringOffsets = createBufferView(stringOffsets, scenegraph);
+    prop.values = createBufferView(stringData, scenegraph);
+  } else if (classProperty.type === 'SCALAR' && classProperty.componentType) {
+    const data = createPropertyDataScalar(values as number[], classProperty.componentType);
+    prop.values = createBufferView(data, scenegraph);
+  }
+
+  return prop;
+}
+
+const COMPONENT_TYPE_TO_ARRAY_CONSTRUCTOR = {
+  INT8: Int8Array,
+  UINT8: Uint8Array,
+  INT16: Int16Array,
+  UINT16: Uint16Array,
+  INT32: Int32Array,
+  UINT32: Uint32Array,
+  INT64: Int32Array,
+  UINT64: Uint32Array,
+  FLOAT32: Float32Array,
+  FLOAT64: Float64Array
+};
+
+function createPropertyDataScalar(array: number[], componentType: string): TypedArray {
+  const numberArray: number[] = [];
+  for (const value of array) {
+    numberArray.push(Number(value));
+  }
+  const Construct = COMPONENT_TYPE_TO_ARRAY_CONSTRUCTOR[componentType];
+  if (!Construct) {
+    throw new Error('Illegal component type');
+  }
+  return new Construct(numberArray);
+}
+
+function createPropertyDataString(strings: string[]): {
+  stringData: TypedArray;
+  stringOffsets: TypedArray;
+} {
+  const utf8Encode = new TextEncoder();
+  const arr: Uint8Array[] = [];
+  let len = 0;
+  for (const str of strings) {
+    const uint8Array = utf8Encode.encode(str);
+    len += uint8Array.length;
+    arr.push(uint8Array);
+  }
+  const strArray = new Uint8Array(len);
+  const strOffsets: number[] = [];
+  let offset = 0;
+  for (const str of arr) {
+    strArray.set(str, offset);
+    strOffsets.push(offset);
+    offset += str.length;
+  }
+  strOffsets.push(offset); // The last offset represents the byte offset after the last string.
+  const stringOffsetsTypedArray = new Uint32Array(strOffsets); // Its length = len+1
+  return {stringData: strArray, stringOffsets: stringOffsetsTypedArray};
+}
+
+function createBufferView(typedArray: TypedArray, scenegraph: GLTFScenegraph): number {
+  scenegraph.gltf.buffers.push({
+    arrayBuffer: typedArray.buffer,
+    byteOffset: typedArray.byteOffset,
+    byteLength: typedArray.byteLength
+  });
+  return scenegraph.addBufferView(typedArray);
 }
