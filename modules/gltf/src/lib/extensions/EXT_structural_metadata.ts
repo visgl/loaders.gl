@@ -789,8 +789,6 @@ export function createExtStructuralMetadata(
     extension.propertyTables = [];
   }
 
-  // scenegraph.createBinaryChunk();
-
   return extension.propertyTables.push(table) - 1; // index of the table
 }
 
@@ -847,8 +845,6 @@ function createPropertyTable(
       if (!table.properties) {
         table.properties = {};
       }
-      // table.properties[attribute.name] = tableProperty;
-
       // values is a required field. Its real value will be set while encoding data
       table.properties[attribute.name] = {values: 0, data: attribute.values};
     }
@@ -867,11 +863,11 @@ function createPropertyTableProperty(
   const prop: GLTF_EXT_structural_metadata_PropertyTable_Property = {values: 0};
 
   if (classProperty.type === 'STRING') {
-    const {stringData, stringOffsets} = propertyDataString(values as string[]);
+    const {stringData, stringOffsets} = createPropertyDataString(values as string[]);
     prop.stringOffsets = createBufferView(stringOffsets, scenegraph);
     prop.values = createBufferView(stringData, scenegraph);
   } else if (classProperty.type === 'SCALAR' && classProperty.componentType) {
-    const data = propertyDataScalar(values as number[], classProperty.componentType);
+    const data = createPropertyDataScalar(values as number[], classProperty.componentType);
     prop.values = createBufferView(data, scenegraph);
   }
 
@@ -891,7 +887,7 @@ const COMPONENT_TYPE_TO_ARRAY_CONSTRUCTOR = {
   FLOAT64: Float64Array
 };
 
-function propertyDataScalar(array: number[], componentType: string): TypedArray {
+function createPropertyDataScalar(array: number[], componentType: string): TypedArray {
   const numberArray: number[] = [];
   for (const value of array) {
     numberArray.push(Number(value));
@@ -903,7 +899,7 @@ function propertyDataScalar(array: number[], componentType: string): TypedArray 
   return new Construct(numberArray);
 }
 
-function propertyDataString(strings: string[]): {
+function createPropertyDataString(strings: string[]): {
   stringData: TypedArray;
   stringOffsets: TypedArray;
 } {
