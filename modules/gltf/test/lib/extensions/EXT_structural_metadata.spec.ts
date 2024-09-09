@@ -1,7 +1,12 @@
 /* eslint-disable camelcase */
 import test from 'tape-promise/tape';
-
-import {decodeExtensions} from '../../../src/lib/api/gltf-extensions';
+import {decodeExtensions, encodeExtensions} from '../../../src/lib/api/gltf-extensions';
+import {
+  GLTFScenegraph,
+  createExtStructuralMetadata,
+  type PropertyAttribute,
+  GLTF_EXT_structural_metadata_GLTF
+} from '@loaders.gl/gltf';
 
 test('gltf#EXT_structural_metadata - Should decode', async (t) => {
   const binaryBufferData = [
@@ -184,5 +189,143 @@ test('gltf#EXT_structural_metadata - Should decode', async (t) => {
 
   // Modifies input
   t.deepEqual(GLTF_WITH_EXTENSION.json, expectedJson);
+  t.end();
+});
+
+const ATTRIBUTES: PropertyAttribute[] = [
+  {
+    name: 'OBJECTID',
+    elementType: 'SCALAR',
+    componentType: 'UINT32',
+    values: [1060555, 1059993, 1058835, 1077325]
+  },
+  {
+    name: 'BIN',
+    elementType: 'SCALAR',
+    componentType: 'INT32',
+    values: [3197233, 3197234, 3197231, 3197232]
+  },
+  {
+    name: 'LSTMODDATE',
+    elementType: 'STRING',
+    values: ['2/14/2009', '2/14/2009', '2/14/2009', '2/14/2009']
+  },
+  {
+    name: 'HEIGHTROOF',
+    elementType: 'SCALAR',
+    componentType: 'FLOAT64',
+    values: [31.46, 31.49, 31.49, 31.49]
+  }
+];
+
+const EXPECTED_GLTF_JSON_WITH_EXTENSION = {
+  asset: {
+    version: '2.0',
+    generator: 'loaders.gl'
+  },
+  buffers: [{byteLength: 120}],
+  extensions: {
+    EXT_structural_metadata: {
+      schema: {
+        id: 'schema_id',
+        classes: {
+          schemaClassId: {
+            properties: {
+              OBJECTID: {
+                type: 'SCALAR',
+                componentType: 'UINT32'
+              },
+              BIN: {
+                type: 'SCALAR',
+                componentType: 'INT32'
+              },
+              LSTMODDATE: {
+                type: 'STRING'
+              },
+              HEIGHTROOF: {
+                type: 'SCALAR',
+                componentType: 'FLOAT64'
+              }
+            }
+          }
+        }
+      },
+      propertyTables: [
+        {
+          class: 'schemaClassId',
+          count: 4,
+          properties: {
+            OBJECTID: {
+              values: 0
+            },
+            BIN: {
+              values: 1
+            },
+            LSTMODDATE: {
+              values: 3,
+              stringOffsets: 2
+            },
+            HEIGHTROOF: {
+              values: 4
+            }
+          }
+        }
+      ]
+    }
+  },
+  extensionsRequired: [],
+  extensionsUsed: ['EXT_structural_metadata'],
+  bufferViews: [
+    {buffer: 0, byteOffset: 0, byteLength: 16},
+    {buffer: 0, byteOffset: 16, byteLength: 16},
+    {buffer: 0, byteOffset: 32, byteLength: 20},
+    {buffer: 0, byteOffset: 52, byteLength: 36},
+    {buffer: 0, byteOffset: 88, byteLength: 32}
+  ]
+};
+
+test('gltf#EXT_structural_metadata - Should encode', async (t) => {
+  const scenegraph = new GLTFScenegraph();
+  const tableIndex = createExtStructuralMetadata(scenegraph, ATTRIBUTES);
+  const gltfBin = encodeExtensions(scenegraph.gltf, {});
+  const scenegraph1 = new GLTFScenegraph(gltfBin);
+  scenegraph1.createBinaryChunk();
+
+  t.equal(tableIndex, 0);
+  t.equal(scenegraph1.gltf.buffers[0].byteLength, 120);
+
+  t.deepEqual(
+    JSON.stringify(scenegraph1.gltf.json),
+    JSON.stringify(EXPECTED_GLTF_JSON_WITH_EXTENSION)
+  );
+  t.end();
+});
+
+test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async (t) => {
+  const scenegraph = new GLTFScenegraph();
+  createExtStructuralMetadata(scenegraph, ATTRIBUTES);
+  const gltfBin = encodeExtensions(scenegraph.gltf, {});
+
+  const scenegraph1 = new GLTFScenegraph(gltfBin);
+  scenegraph1.createBinaryChunk();
+
+  const options = {gltf: {loadImages: true, loadBuffers: true}};
+  await decodeExtensions(scenegraph1.gltf, options);
+
+  const scenegraph2 = new GLTFScenegraph(scenegraph1.gltf);
+  scenegraph2.createBinaryChunk();
+
+  for (const attr of ATTRIBUTES) {
+    const name = attr.name;
+    const ext = scenegraph2.gltf.json.extensions
+      ?.EXT_structural_metadata as GLTF_EXT_structural_metadata_GLTF;
+    const data = ext.propertyTables?.[0].properties?.[name].data;
+    if (ext.schema?.classes?.schemaClassId.properties[name].type === 'STRING') {
+      t.deepEqual(JSON.stringify(data), JSON.stringify(attr.values));
+    } else {
+      const dataArray: number[] = [...(data as any)];
+      t.deepEqual(JSON.stringify(dataArray), JSON.stringify(attr.values));
+    }
+  }
   t.end();
 });
