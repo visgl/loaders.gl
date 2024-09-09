@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {loadI3STile} from '@loaders.gl/i3s/test/test-utils/load-utils';
-import B3dmConverter from '../../../src/3d-tiles-converter/helpers/b3dm-converter';
+import {GltfConverter} from '../../../src/3d-tiles-converter/helpers/b3dm-converter';
 import {isBrowser, parse} from '@loaders.gl/core';
 import {load} from '@loaders.gl/core';
 import {I3SAttributeLoader, COORDINATE_SYSTEM} from '@loaders.gl/i3s';
@@ -57,7 +57,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should convert i3s node data to 
     const i3sContent = tile.content;
     t.ok(i3sContent);
     const attributes = await _loadAttributes(tile, ATTRIBUTES_STORAGE_INFO_STUB);
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
     const encodedContent = await b3dmConverter.convert(
       {
         tileContent: tile.content,
@@ -86,7 +86,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should normalise positions corre
     const i3sContent = tile.content;
     const originPositions = i3sContent.attributes.positions.value;
     const cartographicOrigin = i3sContent.cartographicOrigin;
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
 
     const encodedContent = await b3dmConverter.convert({
       tileContent: i3sContent,
@@ -121,7 +121,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should add KHR_materials_unlit e
     i3sContent.material.pbrMetallicRoughness.metallicFactor = 1.0;
     i3sContent.material.pbrMetallicRoughness.roughnessFactor = 1.0;
 
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
 
     const encodedContent = await b3dmConverter.convert({
       tileContent: i3sContent,
@@ -153,7 +153,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should NOT add KHR_materials_unl
     i3sContent.material.pbrMetallicRoughness.metallicFactor = 2.0;
     i3sContent.material.pbrMetallicRoughness.roughnessFactor = 2.0;
 
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
 
     const encodedContent = await b3dmConverter.convert({
       tileContent: i3sContent,
@@ -178,7 +178,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should NOT add KHR_materials_unl
 test('tile-converter(3d-tiles)#b3dm converter - should convert material', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
     const encodedContent = await b3dmConverter.convert({
       tileContent: tile.content,
       textureFormat: tile.header.textureFormat,
@@ -205,7 +205,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should convert material', async 
 test('tile-converter(3d-tiles)#b3dm converter - should not convert incorrect normals', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
     const encodedContent = await b3dmConverter.convert({
       tileContent: tile.content,
       textureFormat: tile.header.textureFormat,
@@ -246,7 +246,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should not convert incorrect nor
 test('tile-converter(3d-tiles)#b3dm converter - should handle geometry without normals', async (t) => {
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
 
     delete tile.content.attributes.normals;
     const encodedContent = await b3dmConverter.convert({
@@ -280,7 +280,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should convert i3s node data to 
     t.equal(tile.header.textureFormat, 'ktx2');
 
     const attributes = await _loadAttributes(tile, ATTRIBUTES_STORAGE_INFO_STUB);
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
     const encodedContent = await b3dmConverter.convert(
       {
         tileContent: tile.content,
@@ -298,7 +298,7 @@ test('tile-converter(3d-tiles)#b3dm converter - should generate batchIds during 
   if (!isBrowser) {
     const tile = await loadI3STile({i3s: {decodeTextures: false}});
     const attributes = await _loadAttributes(tile, ATTRIBUTES_STORAGE_INFO_STUB);
-    const b3dmConverter = new B3dmConverter();
+    const b3dmConverter = new GltfConverter();
     const encodedContent = await b3dmConverter.convert(
       {
         tileContent: tile.content,

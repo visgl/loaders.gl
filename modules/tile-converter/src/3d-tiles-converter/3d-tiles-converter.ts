@@ -22,9 +22,7 @@ import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
-import {I3SAttributesData} from './helpers/tiles-converter';
-import B3dmConverter from './helpers/b3dm-converter';
-import GltfConverter from './helpers/gltf-converter';
+import {GltfConverter, type I3SAttributesData} from './helpers/b3dm-converter';
 import {I3STileHeader} from '@loaders.gl/i3s/src/types';
 import {getNodeCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
 import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
@@ -296,7 +294,9 @@ export default class Tiles3DConverter {
       };
 
       const converter =
-        this.options.tilesVersion === '1.0' ? new B3dmConverter() : new GltfConverter();
+        this.options.tilesVersion === '1.0'
+          ? new GltfConverter({tilesVersion: '1.0'})
+          : new GltfConverter();
       const b3dm = await converter.convert(i3sAttributesData, featureAttributes);
 
       await this.conversionDump.addNode(`${sourceChild.id}.${this.fileExt}`, sourceChild.id);
