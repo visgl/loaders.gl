@@ -10,11 +10,11 @@
   </a>
 </p>
 
-The `tile-converter` is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both an OGC community standard. It can load tilesets to be converted directly from an URL or file based formats. I3S and 3DTiles are large formats that include different layer types and data formats. See [Supported Features](/docs/modules/tile-converter/cli-reference/supported-features) page that describes what the tile-converter supports.
+The `tile-converter` is a command line utility (CLI) for two-way batch conversion between [I3S](https://www.ogc.org/standards/i3s) and [3D Tiles](https://www.ogc.org/standards/3DTiles), both are OGC community standards. It can load tilesets to be converted directly from a URL or file based formats. I3S and 3DTiles are large formats that include different layer types and data formats. See [Supported Features](/docs/modules/tile-converter/cli-reference/supported-features) page which describes what tile-converter supports.
 
 ## Installation
 
-The tile-converter is published as an npm module and as a docker image.
+The tile-converter is published as an npm module and as a docker image ([docker info here](#docker-image)).
 
 Installing `@loaders.gl/tile-converter` from npm makes the `tile-converter` command line tool available.
 
@@ -60,9 +60,11 @@ See more details [here](#docker-image)
 
 ## Supported Platforms
 
+For tile-converter v4.0 and up:
+
 Operationg Systems: Windows 8.1 or higher, Ubuntu 20.04 or higher
 
-NodeJS 14 or higher is required.
+NodeJS 16 or higher is required.
 
 ## Options
 
@@ -99,9 +101,9 @@ An input glTF resource may contain [EXT_feature_metadata](https://github.com/Ces
 Those extensions provide the structural metadata storage. Metadata - represented as entities and properties - may be closely associated with parts of 3D content, with data representations appropriate for large, distributed datasets. For the most detailed use cases, properties allow vertex- and texel-level associations; higher-level property associations are also supported.
 
 One glTF resource might include more than one metadata class. That means that parts of a mesh might be associated with different sets of properties.
-For example, the glTF might have `bridges` and `buildings` classes. In that case, one part of the mesh is related to `bridges` properties (eg. `construction_year`, `type`) and another part of the mesh is related to `buildings` properties (eg. `construction_year`, `height`, `number_of_floors`, `ownership`).
+For example, a glTF might have `bridges` and `buildings` classes. In that case, one part of the mesh is related to `bridges` properties (eg. `construction_year`, `type`) and another part of the mesh is related to `buildings` properties (eg. `construction_year`, `height`, `number_of_floors`, `ownership`).
 
-On another side there is an output I3S layer that doesn't support structural metadata and multiple classes. I3S has [feature attributes](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md) metadata that is the same for every node in the layer. So I3S can consume only one set of properties.
+As output (when converting from 3D Tiles to I3S) there is an I3S layer which doesn't support structural metadata and multiple classes by its specification (v1.8). I3S has [feature attributes](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md) metadata that is the same for every node in the layer. As a result, I3S must consume only one set of properties.
 
 In case when the input 3DTiles dataset has multiple metadata classes, the tile-converter provides a promt to select one class from the list:
 
@@ -115,29 +117,29 @@ npx tile-converter --input-type 3DTILES --tileset ..... --metadata-class bridges
 
 ## Quiet mode
 
-Use `--quet` option to avoid user prompts during conversion. In some cases, tile-converter stops and waits for an input from a user, for example, asks weither resume conversion or start a new one.
+Use `--quiet` option to avoid user prompts during conversion. In some cases, tile-converter stops and waits for an input from a user, for example, it can ask whether to resume conversion or start anew.
 
 ```bash
 npx tile-converter ..... --quiet
 ```
 
-With `--quiet` option, tile-converter won't ask a user to make a decision, it will do a default action instead.
+With `--quiet` option present, tile-converter will not ask a user to make a decision, it will do a default action instead.
 
-### `--add-hash` and `--quiet`
+### Using `--add-hash` and `--quiet` together
 
-In `--add-hash` case tile-converter offers to create a new file or modify the existing SLPK. With `--quiet` option, the existing SLPK will be modified.
+With `--add-hash` option tile-converter by default offers to create a new file with hash or modify the existing SLPK. When `--quiet` option is added, the existing SLPK will be modified.
 
 ### Resume conversion with `--quiet` option
 
-Resume conversion is a feature that allows to resume a conversion that was unpredictably stopped, for example when terminal was closed or a user pressed `CTRL+C`. When converter detects a previous conversion, it offers to resume it or start a new one.
-With `--quiet` option, tile-converter will resume. To start a new conversion with `--quiet` option, remove output folder that was created by tile-converter before.
+Resume conversion is a feature that allows to resume a conversion that was unpredictably stopped, for example when a terminal was closed or a user pressed `CTRL+C`. By default, when tile-converter detects a previous conversion, it offers to resume it or start a new one.
+When `--quiet` option is added, tile-converter will resume. To start a new conversion with `--quiet` option, remove output folder that was created by tile-converter before.
 
 ### Metadata class selection with `--quiet` option
 
 _This topic is applicable only for source type "3DTILES"._
 
 This case is applicable for the specific type of datasets. See [Metadata class selection](#metadata-class-selection).
-With `--quiet` option and when multiple metadata classes was detected, tile-converter will stop. To convert such a dataset with `--quiet` option, use `--metadata-class` option to select a metadata class.
+When `--quiet` option is present and multiple metadata classes have been detected, tile-converter will stop. To convert such a dataset with `--quiet` option, use `--metadata-class` option to select a metadata class.
 
 ## Running local server to handle I3S layer
 
