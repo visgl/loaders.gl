@@ -12,7 +12,6 @@ import {encodeComposite3DTile} from './encode-3d-tile-composite';
 import {encodeBatchedModel3DTile} from './encode-3d-tile-batched-model';
 import {encodeInstancedModel3DTile} from './encode-3d-tile-instanced-model';
 import {encodePointCloud3DTile} from './encode-3d-tile-point-cloud';
-import {encodeGltf3DTile} from './encode-3d-tile-gltf';
 
 export default function encode3DTile(tile, options) {
   const byteLength = encode3DTileToDataView(tile, null, 0, options);
@@ -34,8 +33,6 @@ function encode3DTileToDataView(tile, dataView, byteOffset, options) {
       return encodeBatchedModel3DTile(tile, dataView, byteOffset, options);
     case TILE3D_TYPE.INSTANCED_3D_MODEL:
       return encodeInstancedModel3DTile(tile, dataView, byteOffset, options);
-    case TILE3D_TYPE.GLTF:
-      return encodeGltf3DTile(tile, dataView, byteOffset, options);
     default:
       throw new Error('3D Tiles: unknown tile type');
   }

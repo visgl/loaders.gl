@@ -180,7 +180,7 @@ function printHelp(): void {
     '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
   );
   console.log('--input-type [tileset input type: I3S or 3DTILES]');
-  console.log('--tile-version [3dtile version: 1.0 or 1.1, default: 1.1]');
+  console.log('--tiles-version [3dtile version: 1.0 or 1.1, default: 1.1]');
   console.log(
     '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format or "None" to not use it. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html], default: "./deps/egm2008-5.zip"'
   );
@@ -279,12 +279,14 @@ function validateOptions(
         addHash || (Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase()))
     },
     tilesVersion: {
-      getMessage: () => console.log('Incorrect: --tilesVersion [1.0 or 1.1]'),
+      getMessage: () =>
+        console.log('Incorrect: --tiles-version [1.0 or 1.1] for --input-type "I3S" only'),
       condition: (value) =>
         addHash ||
         (Boolean(value) &&
           Object.values(['1.0', '1.1']).includes(value) &&
           Boolean(options.inputType === 'I3S')) ||
+        Boolean(options.inputType !== 'I3S') ||
         Boolean(options.analyze)
     }
   };

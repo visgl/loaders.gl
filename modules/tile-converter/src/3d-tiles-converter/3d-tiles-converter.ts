@@ -22,7 +22,7 @@ import {TILESET as tilesetTemplate} from './json-templates/tileset';
 import {createObbFromMbs} from '../i3s-converter/helpers/coordinate-converter';
 import {WorkerFarm} from '@loaders.gl/worker-utils';
 import {BROWSER_ERROR_MESSAGE} from '../constants';
-import {GltfConverter, type I3SAttributesData} from './helpers/b3dm-converter';
+import {GltfConverter, type I3SAttributesData} from './helpers/gltf-converter';
 import {I3STileHeader} from '@loaders.gl/i3s/src/types';
 import {getNodeCount, loadFromArchive, loadI3SContent, openSLPK} from './helpers/load-i3s';
 import {I3SLoaderOptions} from '@loaders.gl/i3s/src/i3s-loader';
@@ -72,7 +72,7 @@ export default class Tiles3DConverter {
     this.workerSource = {};
     this.conversionDump = new ConversionDump();
     this.progress = new Progress();
-    this.fileExt = 'b3dm';
+    this.fileExt = '';
   }
 
   /**
@@ -297,7 +297,11 @@ export default class Tiles3DConverter {
         this.options.tilesVersion === '1.0'
           ? new GltfConverter({tilesVersion: '1.0'})
           : new GltfConverter();
-      const b3dm = await converter.convert(i3sAttributesData, featureAttributes);
+      const b3dm = await converter.convert(
+        i3sAttributesData,
+        featureAttributes,
+        this.attributeStorageInfo
+      );
 
       await this.conversionDump.addNode(`${sourceChild.id}.${this.fileExt}`, sourceChild.id);
       await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.${this.fileExt}`);

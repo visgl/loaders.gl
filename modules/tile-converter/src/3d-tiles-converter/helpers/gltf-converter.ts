@@ -1,8 +1,12 @@
-/* eslint-disable no-console */
-
-import type {I3STileContent, FeatureAttribute} from '@loaders.gl/i3s';
+import type {I3STileContent, FeatureAttribute, AttributeStorageInfo} from '@loaders.gl/i3s';
 import {encodeSync} from '@loaders.gl/core';
-import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
+import {
+  GLTFScenegraph,
+  GLTFWriter,
+  createExtStructuralMetadata,
+  createExtMeshFeatures,
+  type PropertyAttribute
+} from '@loaders.gl/gltf';
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
@@ -30,9 +34,11 @@ export class GltfConverter {
   rtcCenter: Float32Array;
   i3sTile: any;
   tilesVersion: string;
+  tileType: string;
 
   constructor(options: {tilesVersion: string} = {tilesVersion: '1.1'}) {
     this.tilesVersion = options.tilesVersion;
+    this.tileType = this.tilesVersion === '1.0' ? TILE3D_TYPE.BATCHED_3D_MODEL : TILE3D_TYPE.GLTF;
   }
 
   /**
@@ -42,19 +48,26 @@ export class GltfConverter {
    */
   async convert(
     i3sAttributesData: I3SAttributesData,
-    featureAttributes: FeatureAttribute | null = null
+    featureAttributes: FeatureAttribute | null = null,
+    attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
   ): Promise<ArrayBuffer> {
-    const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes);
-    const tiles = encodeSync(
-      {
-        gltfEncoded: new Uint8Array(gltf),
-        type: this.tilesVersion === '1.0' ? TILE3D_TYPE.BATCHED_3D_MODEL : TILE3D_TYPE.GLTF,
-        featuresLength: this._getFeaturesLength(featureAttributes),
-        batchTable: featureAttributes
-      },
-      Tile3DWriter
-    );
-    return tiles;
+    const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes, attributeStorageInfo);
+
+    if (this.tileType === TILE3D_TYPE.BATCHED_3D_MODEL) {
+      const b3dm = encodeSync(
+        {
+          gltfEncoded: new Uint8Array(gltf),
+          type: 'b3dm',
+          featuresLength: this._getFeaturesLength(featureAttributes),
+          batchTable: featureAttributes
+        },
+        Tile3DWriter
+      );
+      return b3dm;
+    } else if (this.tileType === TILE3D_TYPE.GLTF) {
+      return gltf;
+    }
+    return new ArrayBuffer(0);
   }
 
   /**
@@ -62,10 +75,11 @@ export class GltfConverter {
    * @param i3sTile - Tile3D instance for I3S node
    * @returns - encoded glb content
    */
-  // eslint-disable-next-line max-statements
+  // eslint-disable-next-line complexity, max-statements
   async buildGLTF(
     i3sAttributesData: I3SAttributesData,
-    featureAttributes: FeatureAttribute | null
+    featureAttributes: FeatureAttribute | null,
+    attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
   ): Promise<ArrayBuffer> {
     const {tileContent, textureFormat, box} = i3sAttributesData;
     const {material, attributes, indices: originalIndices, modelMatrix} = tileContent;
@@ -113,6 +127,7 @@ export class GltfConverter {
       cartographicOrigin,
       modelMatrix
     );
+
     this._createBatchIds(tileContent, featureAttributes);
     if (attributes.normals && !this._checkNormals(attributes.normals.value)) {
       delete attributes.normals;
@@ -125,16 +140,126 @@ export class GltfConverter {
       material: materialIndex,
       mode: 4
     });
+    if (this.tileType === TILE3D_TYPE.GLTF) {
+      this._createMetadataExtensions(
+        gltfBuilder,
+        meshIndex,
+        featureAttributes,
+        attributeStorageInfo,
+        tileContent
+      );
+    }
     const transformMatrix = this._generateTransformMatrix(cartesianOrigin);
     const nodeIndex = gltfBuilder.addNode({meshIndex, matrix: transformMatrix});
     const sceneIndex = gltfBuilder.addScene({nodeIndices: [nodeIndex]});
     gltfBuilder.setDefaultScene(sceneIndex);
 
     gltfBuilder.createBinaryChunk();
+    return encodeSync(gltfBuilder.gltf, GLTFWriter, {gltfBuilder});
+  }
 
-    const gltfBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
+  _createMetadataExtensions(
+    gltfBuilder: GLTFScenegraph,
+    meshIndex: number,
+    featureAttributes: FeatureAttribute | null,
+    attributeStorageInfo: AttributeStorageInfo[] | null | undefined,
+    tileContent: I3STileContent
+  ) {
+    const propertyAttributes = this._createPropertyAttibutes(
+      featureAttributes,
+      attributeStorageInfo
+    );
+    const tableIndex = createExtStructuralMetadata(gltfBuilder, propertyAttributes);
 
-    return gltfBuffer;
+    const mesh = gltfBuilder.getMesh(meshIndex);
+    for (const primitive of mesh.primitives) {
+      if (tileContent.attributes._BATCHID?.value) {
+        createExtMeshFeatures(
+          gltfBuilder,
+          primitive,
+          tileContent.attributes._BATCHID.value,
+          tableIndex
+        );
+      }
+    }
+  }
+
+  _createPropertyAttibutes(
+    featureAttributes: FeatureAttribute | null,
+    attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
+  ): PropertyAttribute[] {
+    if (!featureAttributes || !attributeStorageInfo) {
+      return [];
+    }
+    const propertyAttributeArray: PropertyAttribute[] = [];
+    for (const attributeName in featureAttributes) {
+      const propertyAttribute = this._convertAttributeStorageInfoToPropertyAttribute(
+        attributeName,
+        attributeStorageInfo,
+        featureAttributes
+      );
+      if (propertyAttribute) {
+        propertyAttributeArray.push(propertyAttribute);
+      }
+    }
+    return propertyAttributeArray;
+  }
+
+  _convertAttributeStorageInfoToPropertyAttribute(
+    attributeName: string,
+    attributeStorageInfo: AttributeStorageInfo[],
+    featureAttributes: FeatureAttribute
+  ): PropertyAttribute | null {
+    const attributes = featureAttributes[attributeName];
+    const info = attributeStorageInfo.find((e) => e.name === attributeName);
+    if (!info) {
+      return null;
+    }
+    const attribute = info.attributeValues;
+    if (!attribute?.valueType) {
+      return null;
+    }
+    let elementType: string;
+    let componentType: string | undefined;
+    switch (attribute.valueType.toLowerCase()) {
+      case 'oid32':
+        elementType = 'SCALAR';
+        componentType = 'UINT32';
+        break;
+      case 'int32':
+        elementType = 'SCALAR';
+        componentType = 'INT32';
+        break;
+      case 'uint32':
+        elementType = 'SCALAR';
+        componentType = 'UINT32';
+        break;
+      case 'int16':
+        elementType = 'SCALAR';
+        componentType = 'INT16';
+        break;
+      case 'uint16':
+        elementType = 'SCALAR';
+        componentType = 'UINT16';
+        break;
+      case 'float64':
+        elementType = 'SCALAR';
+        componentType = 'FLOAT64';
+        break;
+      case 'string':
+        elementType = 'STRING';
+        break;
+      default:
+        elementType = '';
+        break;
+    }
+    const propertyAttribute: PropertyAttribute = {
+      name: attributeName,
+      elementType,
+      componentType,
+      values: attributes
+    };
+    return propertyAttribute;
   }
 
   /**
