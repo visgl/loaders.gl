@@ -29,16 +29,16 @@ export type I3SAttributesData = {
 /**
  * Converts content of an I3S node to 3D Tiles file content
  */
-export class GltfConverter {
+export class Tiles3DContentConverter {
   // @ts-expect-error
   rtcCenter: Float32Array;
   i3sTile: any;
-  tilesVersion: string;
+  outputVersion: string;
   tileType: string;
 
-  constructor(options: {tilesVersion: string} = {tilesVersion: '1.1'}) {
-    this.tilesVersion = options.tilesVersion;
-    this.tileType = this.tilesVersion === '1.0' ? TILE3D_TYPE.BATCHED_3D_MODEL : TILE3D_TYPE.GLTF;
+  constructor(options: {outputVersion: string} = {outputVersion: '1.1'}) {
+    this.outputVersion = options.outputVersion;
+    this.tileType = this.outputVersion === '1.0' ? TILE3D_TYPE.BATCHED_3D_MODEL : TILE3D_TYPE.GLTF;
   }
 
   /**
@@ -64,10 +64,8 @@ export class GltfConverter {
         Tile3DWriter
       );
       return b3dm;
-    } else if (this.tileType === TILE3D_TYPE.GLTF) {
-      return gltf;
     }
-    return new ArrayBuffer(0);
+    return gltf;
   }
 
   /**
@@ -210,18 +208,18 @@ export class GltfConverter {
     attributeStorageInfo: AttributeStorageInfo[],
     featureAttributes: FeatureAttribute
   ): PropertyAttribute | null {
-    const attributes = featureAttributes[attributeName];
+    const attributeValues = featureAttributes[attributeName];
     const info = attributeStorageInfo.find((e) => e.name === attributeName);
     if (!info) {
       return null;
     }
-    const attribute = info.attributeValues;
-    if (!attribute?.valueType) {
+    const attributeMetadata = info.attributeValues;
+    if (!attributeMetadata?.valueType) {
       return null;
     }
     let elementType: string;
     let componentType: string | undefined;
-    switch (attribute.valueType.toLowerCase()) {
+    switch (attributeMetadata.valueType.toLowerCase()) {
       case 'oid32':
         elementType = 'SCALAR';
         componentType = 'UINT32';
@@ -257,7 +255,7 @@ export class GltfConverter {
       name: attributeName,
       elementType,
       componentType,
-      values: attributes
+      values: attributeValues
     };
     return propertyAttribute;
   }
