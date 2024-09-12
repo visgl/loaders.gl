@@ -33,12 +33,11 @@ export class Tiles3DContentConverter {
   // @ts-expect-error
   rtcCenter: Float32Array;
   i3sTile: any;
-  outputVersion: string;
   tileType: string;
 
   constructor(options: {outputVersion: string} = {outputVersion: '1.1'}) {
-    this.outputVersion = options.outputVersion;
-    this.tileType = this.outputVersion === '1.0' ? TILE3D_TYPE.BATCHED_3D_MODEL : TILE3D_TYPE.GLTF;
+    this.tileType =
+      options.outputVersion === '1.0' ? TILE3D_TYPE.BATCHED_3D_MODEL : TILE3D_TYPE.GLTF;
   }
 
   /**
