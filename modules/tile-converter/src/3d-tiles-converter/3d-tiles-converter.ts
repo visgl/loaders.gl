@@ -2,7 +2,8 @@ import type {
   AttributeStorageInfo,
   FeatureAttribute,
   NodeReference,
-  I3STilesetHeader
+  I3STilesetHeader,
+  I3STileAttributes
 } from '@loaders.gl/i3s';
 import type {Tile3DBoundingVolume, Tiles3DTileJSON} from '@loaders.gl/3d-tiles';
 
@@ -283,7 +284,7 @@ export default class Tiles3DConverter {
 
       this.vertexCounter += content?.vertexCount || 0;
 
-      let featureAttributes: FeatureAttribute | null = null;
+      let featureAttributes: I3STileAttributes | null = null;
       if (this.attributeStorageInfo) {
         featureAttributes = await this._loadChildAttributes(sourceChild, this.attributeStorageInfo);
       }
@@ -297,14 +298,18 @@ export default class Tiles3DConverter {
       };
 
       const converter = new Tiles3DContentConverter({outputVersion: this.options.outputVersion});
-      const b3dm = await converter.convert(
+      const contentData = await converter.convert(
         i3sAttributesData,
         featureAttributes,
         this.attributeStorageInfo
       );
 
       await this.conversionDump.addNode(`${sourceChild.id}.${this.fileExt}`, sourceChild.id);
-      await writeFile(this.tilesetPath, new Uint8Array(b3dm), `${sourceChild.id}.${this.fileExt}`);
+      await writeFile(
+        this.tilesetPath,
+        new Uint8Array(contentData),
+        `${sourceChild.id}.${this.fileExt}`
+      );
       await this.conversionDump.updateConvertedNodesDumpFile(
         `${sourceChild.id}.${this.fileExt}`,
         sourceChild.id,
@@ -438,7 +443,7 @@ export default class Tiles3DConverter {
   private async _loadChildAttributes(
     sourceChild: I3STileHeader,
     attributeStorageInfo: AttributeStorageInfo[]
-  ): Promise<FeatureAttribute> {
+  ): Promise<I3STileAttributes> {
     const promises: any[] = [];
     const {attributeUrls = []} = sourceChild;
 

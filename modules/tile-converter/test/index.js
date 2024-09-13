@@ -17,7 +17,7 @@ import './i3s-converter/helpers/progress.spec.ts';
 import './i3s-converter/i3s-converter.spec';
 import './utils/cli-utils.spec';
 
-import './3d-tiles-converter/helpers/b3dm-converter.spec';
+import './3d-tiles-converter/helpers/3d-tiles-content-converter.spec';
 import './3d-tiles-converter/helpers/i3s-obb-to-3d-tiles-obb.spec';
 import './3d-tiles-converter/helpers/texture-atlas.spec';
 import './3d-tiles-converter/helpers/load-i3s.spec';

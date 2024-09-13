@@ -1,4 +1,4 @@
-import type {I3STileContent, FeatureAttribute, AttributeStorageInfo} from '@loaders.gl/i3s';
+import type {I3STileContent, AttributeStorageInfo, I3STileAttributes} from '@loaders.gl/i3s';
 import {encodeSync} from '@loaders.gl/core';
 import {
   GLTFScenegraph,
@@ -10,6 +10,7 @@ import {
 import {Tile3DWriter} from '@loaders.gl/3d-tiles';
 import {TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
+import {isTypedArray} from '@math.gl/types';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {convertTextureAtlas} from './texture-atlas';
 import {generateSyntheticIndices} from '../../lib/utils/geometry-utils';
@@ -47,7 +48,7 @@ export class Tiles3DContentConverter {
    */
   async convert(
     i3sAttributesData: I3SAttributesData,
-    featureAttributes: FeatureAttribute | null = null,
+    featureAttributes: I3STileAttributes | null = null,
     attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
   ): Promise<ArrayBuffer> {
     const gltf = await this.buildGLTF(i3sAttributesData, featureAttributes, attributeStorageInfo);
@@ -75,7 +76,7 @@ export class Tiles3DContentConverter {
   // eslint-disable-next-line complexity, max-statements
   async buildGLTF(
     i3sAttributesData: I3SAttributesData,
-    featureAttributes: FeatureAttribute | null,
+    featureAttributes: I3STileAttributes | null,
     attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
   ): Promise<ArrayBuffer> {
     const {tileContent, textureFormat, box} = i3sAttributesData;
@@ -155,10 +156,10 @@ export class Tiles3DContentConverter {
     return encodeSync(gltfBuilder.gltf, GLTFWriter, {gltfBuilder});
   }
 
-  _createMetadataExtensions(
+  private _createMetadataExtensions(
     gltfBuilder: GLTFScenegraph,
     meshIndex: number,
-    featureAttributes: FeatureAttribute | null,
+    featureAttributes: I3STileAttributes | null,
     attributeStorageInfo: AttributeStorageInfo[] | null | undefined,
     tileContent: I3STileContent
   ) {
@@ -181,8 +182,8 @@ export class Tiles3DContentConverter {
     }
   }
 
-  _createPropertyAttibutes(
-    featureAttributes: FeatureAttribute | null,
+  private _createPropertyAttibutes(
+    featureAttributes: I3STileAttributes | null,
     attributeStorageInfo?: AttributeStorageInfo[] | null | undefined
   ): PropertyAttribute[] {
     if (!featureAttributes || !attributeStorageInfo) {
@@ -202,10 +203,11 @@ export class Tiles3DContentConverter {
     return propertyAttributeArray;
   }
 
-  _convertAttributeStorageInfoToPropertyAttribute(
+  // eslint-disable-next-line complexity
+  private _convertAttributeStorageInfoToPropertyAttribute(
     attributeName: string,
     attributeStorageInfo: AttributeStorageInfo[],
-    featureAttributes: FeatureAttribute
+    featureAttributes: I3STileAttributes
   ): PropertyAttribute | null {
     const attributeValues = featureAttributes[attributeName];
     const info = attributeStorageInfo.find((e) => e.name === attributeName);
@@ -254,8 +256,13 @@ export class Tiles3DContentConverter {
       name: attributeName,
       elementType,
       componentType,
-      values: attributeValues
+      values: []
     };
+    if (isTypedArray(attributeValues)) {
+      propertyAttribute.values = Array.prototype.slice.call(attributeValues);
+    } else if (attributeValues !== null) {
+      propertyAttribute.values = attributeValues;
+    }
     return propertyAttribute;
   }
 

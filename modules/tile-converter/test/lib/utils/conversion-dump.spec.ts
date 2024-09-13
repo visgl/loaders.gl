@@ -52,7 +52,7 @@ const testOptions = {
   generateBoundingVolumes: true,
   metadataClass: 'testMetadataClass',
   analyze: true,
-  tilesVersion: '1.0'
+  outputVersion: '1.0'
 };
 const testMaterialDefinitions = [
   {
