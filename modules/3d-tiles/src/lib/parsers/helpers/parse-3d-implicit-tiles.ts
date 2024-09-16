@@ -86,7 +86,7 @@ function getChildS2VolumeBox(
  * @param parentData - the coordinates of the parent tile, relative to the current subtree.
  *     The overall coordinates of the current tile can be found by combining the coordinates of the current subtree, the parent tile,
  *     and tje single-bit coordinates that can be calculated from the childIndex.
- * @param childIndex - which child the current tile is of its parent. In the range 0-7 for OCTREE, 0-3 for QUADTREE. 
+ * @param childIndex - which child the current tile is of its parent. In the range 0-7 for OCTREE, 0-3 for QUADTREE.
  * @param implicitOptions - options specified at the root of this implicit tile tree - numbers of levels, URL templates.
  * @param loaderOptions - see Tiles3DLoaderOptions.
  */
@@ -94,7 +94,13 @@ function getChildS2VolumeBox(
 export async function parseImplicitTiles(params: {
   subtree: Subtree;
   subtreeData?: {level: number; x: number; y: number; z: number};
-  parentData?: {mortonIndex: number; localLevel: number; localX: number; localY: number; localZ: number};
+  parentData?: {
+    mortonIndex: number;
+    localLevel: number;
+    localX: number;
+    localY: number;
+    localZ: number;
+  };
   childIndex?: number;
   implicitOptions: ImplicitOptions;
   loaderOptions: Tiles3DLoaderOptions;
@@ -139,7 +145,7 @@ export async function parseImplicitTiles(params: {
 
   // Local tile level - relative to the current subtree.
   const localLevel = parentData.localLevel + 1;
-  // Global tile level - relative to the root tile of this implicit subdivision scheme. 
+  // Global tile level - relative to the root tile of this implicit subdivision scheme.
   const level = subtreeData.level + localLevel;
 
   if (level > maximumLevel) {
@@ -167,8 +173,9 @@ export async function parseImplicitTiles(params: {
 
   const mortonIndex = concatBits(parentData.mortonIndex, childIndex, bitsPerTile);
 
-  const isChildSubtreeAvailable = (localLevel === subtreeLevels) && 
-      getAvailabilityResult(subtree.childSubtreeAvailability, mortonIndex);
+  const isChildSubtreeAvailable =
+    localLevel === subtreeLevels &&
+    getAvailabilityResult(subtree.childSubtreeAvailability, mortonIndex);
 
   // Context to provide the next recursive call.
   // This context is set up differently depending on whether its time to start a new subtree or not.
@@ -190,7 +197,6 @@ export async function parseImplicitTiles(params: {
     nextSubtreeData = {level, x, y, z};
     // The next parent is also the current tile - so it has local coordinates of 0 relative to the next subtree.
     nextParentData = {mortonIndex: 0, localLevel: 0, localX: 0, localY: 0, localZ: 0};
-
   } else {
     // Continue on with the same subtree as we're using currently.
     nextSubtree = subtree;
@@ -203,12 +209,18 @@ export async function parseImplicitTiles(params: {
     nextParentData = {mortonIndex, localLevel, localX, localY, localZ};
   }
 
-  const isTileAvailable = getAvailabilityResult(nextSubtree.tileAvailability, tileAvailabilityIndex);
+  const isTileAvailable = getAvailabilityResult(
+    nextSubtree.tileAvailability,
+    tileAvailabilityIndex
+  );
   if (!isTileAvailable) {
     return tile;
   }
 
-  const isContentAvailable = getAvailabilityResult(nextSubtree.contentAvailability, tileAvailabilityIndex);
+  const isContentAvailable = getAvailabilityResult(
+    nextSubtree.contentAvailability,
+    tileAvailabilityIndex
+  );
   if (isContentAvailable) {
     tile.contentUrl = replaceContentUrlTemplate(contentUrlTemplate, level, x, y, z);
   }
@@ -237,14 +249,9 @@ export async function parseImplicitTiles(params: {
     }
   }
 
-  if (tile.contentUrl || tile.children.length) {;
+  if (tile.contentUrl || tile.children.length) {
     const coordinates = {level, x, y, z};
-    const formattedTile = formatTileData(
-      tile,
-      coordinates,
-      implicitOptions,
-      s2VolumeBox
-    );
+    const formattedTile = formatTileData(tile, coordinates, implicitOptions, s2VolumeBox);
     return formattedTile;
   }
 
@@ -299,7 +306,7 @@ function getAvailabilityResult(
  */
 function formatTileData(
   tile,
-  coordinates: {level: number, x: number; y: number; z: number},
+  coordinates: {level: number; x: number; y: number; z: number},
   options: ImplicitOptions,
   s2VolumeBox?: S2VolumeBox
 ) {
@@ -349,7 +356,7 @@ function formatTileData(
  */
 function calculateBoundingVolumeForChildTile(
   rootBoundingVolume: Tile3DBoundingVolume,
-  coordinates: {level: number, x: number; y: number; z: number},
+  coordinates: {level: number; x: number; y: number; z: number},
   subdivisionScheme: string
 ): Tile3DBoundingVolume {
   if (rootBoundingVolume.region) {
@@ -373,7 +380,10 @@ function calculateBoundingVolumeForChildTile(
     let childMaximumHeight: number;
     if (subdivisionScheme === 'OCTREE') {
       const sizeZ = (maximumHeight - minimumHeight) / boundingVolumesCount;
-      [childMinimumHeight, childMaximumHeight] = [minimumHeight + sizeZ * z, minimumHeight + sizeZ * (z + 1)];
+      [childMinimumHeight, childMaximumHeight] = [
+        minimumHeight + sizeZ * z,
+        minimumHeight + sizeZ * (z + 1)
+      ];
     } else {
       [childMinimumHeight, childMaximumHeight] = [minimumHeight, maximumHeight];
     }
