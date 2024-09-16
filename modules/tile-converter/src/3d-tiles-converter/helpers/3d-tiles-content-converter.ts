@@ -259,7 +259,7 @@ export class Tiles3DContentConverter {
       values: []
     };
     if (isTypedArray(attributeValues)) {
-      propertyAttribute.values = Array.prototype.slice.call(attributeValues);
+      propertyAttribute.values = Array.from(attributeValues);
     } else if (attributeValues !== null) {
       propertyAttribute.values = attributeValues;
     }
