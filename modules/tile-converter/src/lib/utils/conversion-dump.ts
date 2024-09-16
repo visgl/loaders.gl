@@ -22,6 +22,7 @@ export type ConversionDumpOptions = {
   generateBoundingVolumes: boolean;
   metadataClass: string;
   analyze: boolean;
+  outputVersion: string;
 };
 
 type NodeDoneStatus = {
@@ -87,7 +88,8 @@ export class ConversionDump {
       generateBoundingVolumes,
       mergeMaterials = true,
       metadataClass,
-      analyze = false
+      analyze = false,
+      outputVersion = '1.1'
     } = currentOptions;
     this.options = {
       tilesetName,
@@ -102,7 +104,8 @@ export class ConversionDump {
       generateBoundingVolumes,
       mergeMaterials,
       metadataClass,
-      analyze
+      analyze,
+      outputVersion
     };
 
     const dumpFilename = join(

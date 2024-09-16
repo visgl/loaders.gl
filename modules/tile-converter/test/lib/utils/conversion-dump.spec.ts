@@ -51,7 +51,8 @@ const testOptions = {
   generateTextures: true,
   generateBoundingVolumes: true,
   metadataClass: 'testMetadataClass',
-  analyze: true
+  analyze: true,
+  outputVersion: '1.0'
 };
 const testMaterialDefinitions = [
   {
