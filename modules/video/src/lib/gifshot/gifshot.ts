@@ -1531,17 +1531,17 @@ AnimatedGIF.prototype = {
     const textXCoordinate = gifshotOptions.textXCoordinate
       ? gifshotOptions.textXCoordinate
       : textAlign === 'left'
-      ? 1
-      : textAlign === 'right'
-      ? width
-      : width / 2;
+        ? 1
+        : textAlign === 'right'
+          ? width
+          : width / 2;
     const textYCoordinate = gifshotOptions.textYCoordinate
       ? gifshotOptions.textYCoordinate
       : textBaseline === 'top'
-      ? 1
-      : textBaseline === 'center'
-      ? height / 2
-      : height;
+        ? 1
+        : textBaseline === 'center'
+          ? height / 2
+          : height;
     const font = `${fontWeight} ${fontSize} ${fontFamily}`;
     let imageData = void 0;
     try {
@@ -1769,17 +1769,17 @@ const screenShot = {
     const textXCoordinate = options.textXCoordinate
       ? options.textXCoordinate
       : textAlign === 'left'
-      ? 1
-      : textAlign === 'right'
-      ? gifWidth
-      : gifWidth / 2;
+        ? 1
+        : textAlign === 'right'
+          ? gifWidth
+          : gifWidth / 2;
     const textYCoordinate = options.textYCoordinate
       ? options.textYCoordinate
       : textBaseline === 'top'
-      ? 1
-      : textBaseline === 'center'
-      ? gifHeight / 2
-      : gifHeight;
+        ? 1
+        : textBaseline === 'center'
+          ? gifHeight / 2
+          : gifHeight;
     const font = `${fontWeight} ${fontSize} ${fontFamily}`;
     let sourceX = crop ? Math.floor(crop.scaledWidth / 2) : 0;
     let sourceWidth = crop ? videoWidth - crop.scaledWidth : 0;
@@ -2030,8 +2030,8 @@ var videoStream = {
     const videoElement = utils.isElement(existingVideo)
       ? existingVideo
       : webcamVideoElement
-      ? webcamVideoElement
-      : document.createElement('video');
+        ? webcamVideoElement
+        : document.createElement('video');
     const cameraStream = void 0;
     if (crossOrigin) {
       videoElement.crossOrigin = options.crossOrigin;
