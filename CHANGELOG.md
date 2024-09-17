@@ -2,6 +2,16 @@
 
 ## v4.3
 
+### v4.3.0-alpha.8
+
+- fix(3d-tiles): Rewrite of parseImplicitTiles for readability (#3086)
+- feat(converter): support writing 3DTILES of version 1.1 (#3054)
+- chore: bump ocular-dev-tools (#3075)
+- feat(gltf): ext-structural-metadata encoding (#3080)
+- chore(examples): bump @deck.gl version (#3081)
+- chore: Bump to math.gl@4.1.0 (#3082)
+- feat(gltf): extensions, encoding feature metadata (#2972)
+
 ### v4.3.0-alpha.7
 
 - fix(tile-converter): Fix according to new NodeJS security limitations (#3071)
