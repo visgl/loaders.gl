@@ -19,7 +19,7 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
   },
   {
     test: /^nodes\/\d+\/textures\/.+$/,
-    extensions: ['.jpg', '.png', '.bin.dds.gz', '.ktx']
+    extensions: ['.jpg', '.png', '.bin.dds.gz', '.ktx', '.ktx2']
   },
   {
     test: /^nodes\/\d+\/geometries\/\d+$/,
