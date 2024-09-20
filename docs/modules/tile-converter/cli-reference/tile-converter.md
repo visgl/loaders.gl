@@ -14,7 +14,7 @@ The `tile-converter` is a command line utility (CLI) for two-way batch conversio
 
 ## Installation
 
-The tile-converter is published as an npm module and as a docker image ([docker info here](#docker-image)).
+The tile-converter is published as an npm module and as a [docker image](#docker-image).
 
 Installing `@loaders.gl/tile-converter` from npm makes the `tile-converter` command line tool available.
 
@@ -64,7 +64,7 @@ For tile-converter v4.0 and up:
 
 Operationg Systems: Windows 8.1 or higher, Ubuntu 20.04 or higher
 
-NodeJS 16 or higher is required.
+NodeJS 18 or higher is required.
 
 ## Options
 
@@ -103,7 +103,7 @@ Those extensions provide the structural metadata storage. Metadata - represe
 One glTF resource might include more than one metadata class. That means that parts of a mesh might be associated with different sets of properties.
 For example, a glTF might have `bridges` and `buildings` classes. In that case, one part of the mesh is related to `bridges` properties (eg. `construction_year`, `type`) and another part of the mesh is related to `buildings` properties (eg. `construction_year`, `height`, `number_of_floors`, `ownership`).
 
-As output (when converting from 3D Tiles to I3S) there is an I3S layer which doesn't support structural metadata and multiple classes by its specification (v1.8). I3S has [feature attributes](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md) metadata that is the same for every node in the layer. As a result, I3S must consume only one set of properties.
+As output (when converting from 3D Tiles to I3S) there is an I3S layer which doesn't support structural metadata and multiple classes by its specification (v1.8). I3S has [feature attributes](https://github.com/Esri/i3s-spec/blob/master/docs/1.9/attributeStorageInfo.cmn.md) metadata that is the same for every node in the layer. As a result, I3S can consume only one set of properties.
 
 In case when the input 3DTiles dataset has multiple metadata classes, the tile-converter provides a promt to select one class from the list:
 
