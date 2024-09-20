@@ -2,6 +2,10 @@
 
 ## v4.2
 
+### v4.2.4
+
+- fix: ReadableStream (#3013) (#3088)
+
 ### v4.2.3
 
 - fix(tile-converter): Fix according to new NodeJS security limitations (#3071)
