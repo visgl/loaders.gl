@@ -50,6 +50,7 @@
     "ocular-dev-tools": "2.0.0-alpha.35",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
+    "puppeteer": "^23.4.0",
     "tap-spec": "^5.0.0"
   },
   "pre-commit": "pre-commit",
