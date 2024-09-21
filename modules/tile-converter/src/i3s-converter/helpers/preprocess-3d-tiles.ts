@@ -6,10 +6,10 @@ import {
   GLTF,
   GLTFLoader,
   GLTF_EXT_feature_metadata_GLTF,
-  GLTF_EXT_structural_metadata_GLTF
+  GLTF_EXT_structural_metadata_GLTF,
+  EXT_FEATURE_METADATA
 } from '@loaders.gl/gltf';
 import {parse} from '@loaders.gl/core';
-import {EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
 
 /**
  * glTF primitive modes

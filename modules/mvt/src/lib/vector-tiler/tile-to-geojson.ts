@@ -6,8 +6,7 @@
 import {ProtoTile} from './proto-tile';
 import {Feature, GeoJSONTable} from '@loaders.gl/schema';
 
-import {projectToLngLat} from '../utils/geometry-utils';
-import {convertToLocalCoordinates} from '../utils/geometry-utils';
+import {projectToLngLat, convertToLocalCoordinates} from '../utils/geometry-utils';
 
 // eslint-disable-next-line max-statements, complexity
 export function convertTileToGeoJSON(

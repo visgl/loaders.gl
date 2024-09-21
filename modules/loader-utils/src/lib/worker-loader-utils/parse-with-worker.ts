@@ -2,10 +2,11 @@ import {
   WorkerJob,
   WorkerMessageType,
   WorkerMessagePayload,
-  isBrowser
+  isBrowser,
+  WorkerFarm,
+  getWorkerURL
 } from '@loaders.gl/worker-utils';
 import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
-import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
 
 /**
  * Determines if a loader can parse with worker

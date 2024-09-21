@@ -4,9 +4,8 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
-import {parseWKT} from './lib/parse-wkt';
+import {parseWKT, isWKT, WKT_MAGIC_STRINGS} from './lib/parse-wkt';
 import {Geometry} from '@loaders.gl/schema';
-import {isWKT, WKT_MAGIC_STRINGS} from './lib/parse-wkt';
 
 export type WKTLoaderOptions = LoaderOptions & {
   /** Options for the WKTLoader */

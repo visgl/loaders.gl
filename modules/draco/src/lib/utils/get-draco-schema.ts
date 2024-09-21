@@ -1,5 +1,4 @@
-import {deduceMeshField, MeshAttribute} from '@loaders.gl/schema';
-import {Schema, Field} from '@loaders.gl/schema';
+import {deduceMeshField, MeshAttribute, Schema, Field} from '@loaders.gl/schema';
 import type {DracoAttribute, DracoLoaderData, DracoMetadataEntry} from '../draco-types';
 
 /** Extract an arrow-like schema from a Draco mesh */

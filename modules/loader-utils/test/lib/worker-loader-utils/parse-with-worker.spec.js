@@ -5,8 +5,7 @@
 import test from 'tape-promise/tape';
 import {WorkerPool} from '@loaders.gl/worker-utils';
 import {toArrayBuffer, parseWithWorker} from '@loaders.gl/loader-utils';
-import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core';
-import {NullWorkerLoader} from '@loaders.gl/core';
+import {registerLoaders, _unregisterLoaders, NullWorkerLoader} from '@loaders.gl/core';
 
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;

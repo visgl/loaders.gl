@@ -8,8 +8,15 @@ import {validateLoader} from 'test/common/conformance';
 import * as fs from 'fs';
 
 import {ArrowLoader} from '@loaders.gl/arrow';
-import {isBrowser, makeIterator, resolvePath} from '@loaders.gl/core';
-import {setLoaderOptions, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
+import {
+  isBrowser,
+  makeIterator,
+  resolvePath,
+  setLoaderOptions,
+  fetchFile,
+  parse,
+  parseInBatches
+} from '@loaders.gl/core';
 
 const ArrowWorkerLoader = ArrowLoader;
 

@@ -5,9 +5,7 @@
 import test from 'tape-promise/tape';
 
 import {fetchFile, isBrowser} from '@loaders.gl/core';
-import {FileHandleFile} from '@loaders.gl/loader-utils';
-import {DataViewFile} from '@loaders.gl/loader-utils';
-import {FileProvider} from '@loaders.gl/loader-utils';
+import {FileHandleFile, DataViewFile, FileProvider} from '@loaders.gl/loader-utils';
 import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
 
 const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';

@@ -3,9 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
-import {canEncodeWithWorker, NodeFile, resolvePath} from '@loaders.gl/loader-utils';
+import {canEncodeWithWorker, NodeFile, resolvePath, isBrowser} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
-import {isBrowser} from '@loaders.gl/loader-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {getLoaderOptions} from './loader-options';
 

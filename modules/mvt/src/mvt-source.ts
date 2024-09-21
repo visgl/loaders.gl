@@ -2,10 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Source} from '@loaders.gl/loader-utils';
-import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
-import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
-import type {GetTileParameters, GetTileDataParameters} from '@loaders.gl/loader-utils';
+import type {
+  Source,
+  ImageType,
+  DataSourceProps,
+  ImageTileSource,
+  VectorTileSource,
+  GetTileParameters,
+  GetTileDataParameters
+} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
 import {

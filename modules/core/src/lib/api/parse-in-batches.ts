@@ -3,9 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import {isTable, makeBatchFromTable, type Batch} from '@loaders.gl/schema';
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {LoaderContext, BatchableDataType} from '@loaders.gl/loader-utils';
-import type {LoaderBatchType, LoaderOptionsType} from '@loaders.gl/loader-utils';
+import type {
+  Loader,
+  LoaderWithParser,
+  LoaderOptions,
+  LoaderContext,
+  BatchableDataType,
+  LoaderBatchType,
+  LoaderOptionsType
+} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';

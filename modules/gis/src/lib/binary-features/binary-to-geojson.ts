@@ -13,10 +13,11 @@ import type {
   // BinaryPointFeature,
   // BinaryLineFeature,
   // BinaryPolygonFeature,
-  BinaryAttribute
-} from '@loaders.gl/schema';
-import type {Feature, Geometry, Position, GeoJsonProperties} from '@loaders.gl/schema';
-import type {
+  BinaryAttribute,
+  Feature,
+  Geometry,
+  Position,
+  GeoJsonProperties,
   Point,
   MultiPoint,
   LineString,

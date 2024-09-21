@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {XMLLoaderOptions, convertXMLFieldToArrayInPlace} from '@loaders.gl/xml';
-import {XMLLoader} from '@loaders.gl/xml';
+import {XMLLoaderOptions, convertXMLFieldToArrayInPlace, XMLLoader} from '@loaders.gl/xml';
 import {parseExceptionReport} from './parse-exception-report';
 
 export type CSWRecords = {

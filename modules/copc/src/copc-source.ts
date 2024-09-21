@@ -7,9 +7,9 @@ import type {
   Source,
   LoaderOptions,
   GetTileParameters,
-  GetTileDataParameters
+  GetTileDataParameters,
+  TileSource
 } from '@loaders.gl/loader-utils';
-import type {TileSource} from '@loaders.gl/loader-utils';
 // import {getArrayTypeFromDataType} from '@loaders.gl/schema';
 import {DataSource, DataSourceProps, resolvePath} from '@loaders.gl/loader-utils';
 

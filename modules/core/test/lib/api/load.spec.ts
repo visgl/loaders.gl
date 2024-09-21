@@ -4,8 +4,14 @@
 
 import test from 'tape-promise/tape';
 import {parseFromContext} from '@loaders.gl/loader-utils';
-import {isBrowser, load, fetchFile, registerLoaders, resolvePath} from '@loaders.gl/core';
-import {NullWorkerLoader} from '@loaders.gl/core';
+import {
+  isBrowser,
+  load,
+  fetchFile,
+  registerLoaders,
+  resolvePath,
+  NullWorkerLoader
+} from '@loaders.gl/core';
 import {JSONLoader} from '@loaders.gl/json';
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';

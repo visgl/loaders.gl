@@ -3,8 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {ImageType} from './utils/image-type';
-import type {TileSourceProps, TileSourceMetadata, GetTileParameters} from './tile-source';
-import type {TileSource} from './tile-source';
+import type {
+  TileSourceProps,
+  TileSourceMetadata,
+  GetTileParameters,
+  TileSource
+} from './tile-source';
 
 export type ImageTileSourceProps = TileSourceProps;
 

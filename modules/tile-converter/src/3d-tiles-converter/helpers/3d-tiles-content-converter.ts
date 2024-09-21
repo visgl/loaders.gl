@@ -7,8 +7,7 @@ import {
   createExtMeshFeatures,
   type PropertyAttribute
 } from '@loaders.gl/gltf';
-import {Tile3DWriter} from '@loaders.gl/3d-tiles';
-import {TILE3D_TYPE} from '@loaders.gl/3d-tiles';
+import {Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {Matrix4, Vector3} from '@math.gl/core';
 import {isTypedArray} from '@math.gl/types';
 import {Ellipsoid} from '@math.gl/geospatial';
