@@ -20,7 +20,12 @@ import {Ellipsoid} from '@math.gl/geospatial';
 
 import {DracoWriterWorker} from '@loaders.gl/draco';
 import {assert, encode} from '@loaders.gl/core';
-import {concatenateArrayBuffers, concatenateTypedArrays} from '@loaders.gl/loader-utils';
+import {
+  concatenateArrayBuffers,
+  concatenateTypedArrays,
+  NumberArray,
+  TypedArray
+} from '@loaders.gl/loader-utils';
 import md5 from 'md5';
 import {v4 as uuidv4} from 'uuid';
 import {generateAttributes} from './geometry-attributes';
@@ -38,7 +43,6 @@ import {
   MaterialDefinitionInfo,
   TextureDefinitionInfo
 } from '@loaders.gl/i3s';
-import {NumberArray, TypedArray} from '@loaders.gl/loader-utils';
 import {Geoid} from '@math.gl/geoid';
 import {prepareDataForAttributesConversion} from './gltf-attributes';
 import {getTextureByMetadataClass, handleBatchIdsExtensions} from './batch-ids-extensions';

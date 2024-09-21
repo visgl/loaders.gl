@@ -2,9 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {LoaderContext, SyncDataType} from '@loaders.gl/loader-utils';
-import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
+import type {
+  Loader,
+  LoaderWithParser,
+  LoaderOptions,
+  LoaderContext,
+  SyncDataType,
+  LoaderOptionsType,
+  LoaderReturnType
+} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';

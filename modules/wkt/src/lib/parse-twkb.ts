@@ -3,9 +3,16 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz
 
-import type {Geometry, GeometryCollection} from '@loaders.gl/schema';
-import type {Point, LineString, Polygon} from '@loaders.gl/schema';
-import type {MultiPoint, MultiLineString, MultiPolygon} from '@loaders.gl/schema';
+import type {
+  Geometry,
+  GeometryCollection,
+  Point,
+  LineString,
+  Polygon,
+  MultiPoint,
+  MultiLineString,
+  MultiPolygon
+} from '@loaders.gl/schema';
 import {BinaryReader} from './utils/binary-reader';
 import {WKBGeometryType} from './parse-wkb-header';
 

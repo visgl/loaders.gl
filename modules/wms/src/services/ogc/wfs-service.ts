@@ -3,8 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import {Schema, GeoJSONTable} from '@loaders.gl/schema';
-import type {VectorSourceProps, VectorSourceMetadata} from '@loaders.gl/loader-utils';
-import type {LoaderWithParser, GetFeaturesParameters} from '@loaders.gl/loader-utils';
+import type {
+  VectorSourceProps,
+  VectorSourceMetadata,
+  LoaderWithParser,
+  GetFeaturesParameters
+} from '@loaders.gl/loader-utils';
 import {Source, VectorSource, mergeLoaderOptions} from '@loaders.gl/loader-utils';
 
 import type {WFSCapabilities} from '../../wfs-capabilities-loader';

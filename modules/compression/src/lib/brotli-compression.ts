@@ -5,14 +5,19 @@
 // BROTLI
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
-import {registerJSModules, getJSModule, getJSModuleOrNull} from '@loaders.gl/loader-utils';
+import {
+  isBrowser,
+  toArrayBuffer,
+  registerJSModules,
+  getJSModule,
+  getJSModuleOrNull,
+  promisify1
+} from '@loaders.gl/loader-utils';
 
 import type brotliNamespace from 'brotli';
 // import brotli from 'brotli';  // https://bundlephobia.com/package/brotli
 import {BrotliDecode} from '../brotli/decode';
 import zlib from 'zlib';
-import {promisify1} from '@loaders.gl/loader-utils';
 
 export type BrotliCompressionOptions = CompressionOptions & {
   brotli?: {

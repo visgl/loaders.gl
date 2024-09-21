@@ -6,8 +6,7 @@
 // @author Filipe Caixeta / http://filipecaixeta.com.br
 // @author Mugen87 / https://github.com/Mugen87
 
-import {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema';
+import {MeshAttribute, MeshAttributes, getMeshBoundingBox} from '@loaders.gl/schema';
 import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
 import type {PCDHeader, PCDMesh} from './pcd-types';

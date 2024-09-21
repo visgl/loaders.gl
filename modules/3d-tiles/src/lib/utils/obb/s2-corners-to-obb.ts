@@ -6,9 +6,8 @@ import {Vector3} from '@math.gl/core';
 import {OrientedBoundingBox, makeOrientedBoundingBoxFromPoints} from '@math.gl/culling';
 
 import type {S2HeightInfo} from '../../utils/s2/index';
-import {getS2OrientedBoundingBoxCornerPoints} from '../../utils/s2/index';
+import {getS2OrientedBoundingBoxCornerPoints, getS2LngLat} from '../../utils/s2/index';
 
-import {getS2LngLat} from '../../utils/s2/index';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 export type S2VolumeInfo = {

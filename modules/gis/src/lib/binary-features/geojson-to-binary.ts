@@ -1,5 +1,4 @@
-import type {Feature} from '@loaders.gl/schema';
-import type {BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
 
 import {extractGeometryInfo} from './extract-geometry-info';
 import {geojsonToFlatGeojson} from './geojson-to-flat-geojson';

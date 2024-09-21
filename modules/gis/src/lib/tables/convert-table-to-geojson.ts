@@ -3,8 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {ArrayRowTable, GeoJSONTable, ObjectRowTable, Schema} from '@loaders.gl/schema';
-import type {Feature, Geometry} from '@loaders.gl/schema';
+import type {
+  ArrayRowTable,
+  GeoJSONTable,
+  ObjectRowTable,
+  Schema,
+  Feature,
+  Geometry
+} from '@loaders.gl/schema';
 import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema';
 
 import {GeoColumnMetadata, getGeoMetadata} from '../geo/geoparquet-metadata';

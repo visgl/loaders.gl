@@ -4,10 +4,8 @@
 
 import test from 'tape-promise/tape';
 
-import {isBrowser} from '@loaders.gl/core';
+import {isBrowser, load, setLoaderOptions} from '@loaders.gl/core';
 import {CrunchWorkerLoader} from '@loaders.gl/textures';
-import {load} from '@loaders.gl/core';
-import {setLoaderOptions} from '@loaders.gl/core';
 
 const CRUNCH_URL = '@loaders.gl/textures/test/data/shannon-dxt1.crn';
 

@@ -6,9 +6,14 @@
 import {Feature} from '@loaders.gl/schema';
 import {FlatFeature, FlatIndexedGeometry, GeojsonGeometryInfo} from '@loaders.gl/schema';
 import Protobuf from 'pbf';
-import {classifyRings, classifyRingsFlat} from '../utils/geometry-utils';
-import {projectToLngLat, projectToLngLatFlat} from '../utils/geometry-utils';
-import {convertToLocalCoordinates, convertToLocalCoordinatesFlat} from '../utils/geometry-utils';
+import {
+  classifyRings,
+  classifyRingsFlat,
+  projectToLngLat,
+  projectToLngLatFlat,
+  convertToLocalCoordinates,
+  convertToLocalCoordinatesFlat
+} from '../utils/geometry-utils';
 
 export class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};

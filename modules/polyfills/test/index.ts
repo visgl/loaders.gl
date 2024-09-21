@@ -13,7 +13,6 @@ import './file/file-polyfill.spec';
 import './filesystems/fetch-node.spec';
 import './filesystems/node-file.spec';
 import './filesystems/node-filesystem.spec';
-import './filesystems/fetch-node.spec';
 
 // TODO - v4.0 restore these tests
 // import './load-library/require-utils.spec';

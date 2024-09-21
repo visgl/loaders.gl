@@ -5,8 +5,7 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 
-import {DracoLoader} from '@loaders.gl/draco';
-import {DracoLoaderOptions} from '@loaders.gl/draco';
+import {DracoLoader, DracoLoaderOptions} from '@loaders.gl/draco';
 
 import type {
   GLTF,

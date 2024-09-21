@@ -5,11 +5,14 @@
 /* eslint-disable camelcase */
 import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
-import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
+import {mergeLoaderOptions, ImageSource} from '@loaders.gl/loader-utils';
 
-import type {Source, ImageSourceMetadata, GetImageParameters} from '@loaders.gl/loader-utils';
-import type {ImageSourceProps} from '@loaders.gl/loader-utils';
-import {ImageSource} from '@loaders.gl/loader-utils';
+import type {
+  Source,
+  ImageSourceMetadata,
+  GetImageParameters,
+  ImageSourceProps
+} from '@loaders.gl/loader-utils';
 
 import type {WMSCapabilities} from '../../wms-capabilities-loader';
 import type {WMSFeatureInfo} from '../../wip/wms-feature-info-loader';

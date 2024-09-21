@@ -3,13 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema} from '@loaders.gl/schema';
-import type {Source} from '@loaders.gl/loader-utils';
 import type {
+  Source,
   VectorTileSource,
   GetTileParameters,
-  GetTileDataParameters
+  GetTileDataParameters,
+  ImageTileSource,
+  ImageType
 } from '@loaders.gl/loader-utils';
-import type {ImageTileSource, ImageType} from '@loaders.gl/loader-utils';
 import {DataSource, DataSourceProps, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';

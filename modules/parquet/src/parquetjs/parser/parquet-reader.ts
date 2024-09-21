@@ -2,7 +2,7 @@
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 
 import {ParquetSchema} from '../schema/schema';
-import {decodeSchema} from './decoders';
+import {decodeSchema, decodeDataPages, decodePage} from './decoders';
 import {materializeRows} from '../schema/shred';
 
 import {PARQUET_MAGIC, PARQUET_MAGIC_ENCRYPTED} from '../../lib/constants';
@@ -15,7 +15,6 @@ import {
   ParquetReaderContext
 } from '../schema/declare';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
-import {decodeDataPages, decodePage} from './decoders';
 
 export type ParquetReaderProps = {
   defaultDictionarySize?: number;

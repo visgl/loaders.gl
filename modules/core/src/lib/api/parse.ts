@@ -2,15 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {DataType, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
-import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
+import type {
+  Loader,
+  LoaderContext,
+  LoaderOptions,
+  DataType,
+  LoaderWithParser,
+  LoaderOptionsType,
+  LoaderReturnType
+} from '@loaders.gl/loader-utils';
+import {parseWithWorker, canParseWithWorker, mergeLoaderOptions} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {isResponse} from '../../javascript-utils/is-type';
 import {normalizeOptions} from '../loader-utils/option-utils';
-import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';

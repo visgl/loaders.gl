@@ -3,16 +3,20 @@
 // Copyright (c) vis.gl contributors
 // Based on https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import {Source} from '@loaders.gl/loader-utils';
+import {Source, VectorTileSource, TileSourceMetadata, log} from '@loaders.gl/loader-utils';
 import type {
   VectorTileSourceProps,
   GetTileDataParameters,
   GetTileParameters,
   LoaderWithParser
 } from '@loaders.gl/loader-utils';
-import {VectorTileSource, TileSourceMetadata, log} from '@loaders.gl/loader-utils';
-import {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
-import {deduceTableSchema} from '@loaders.gl/schema';
+import {
+  Schema,
+  GeoJSONTable,
+  Feature,
+  BinaryFeatureCollection,
+  deduceTableSchema
+} from '@loaders.gl/schema';
 import {Stats, Stat} from '@probe.gl/stats';
 
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';

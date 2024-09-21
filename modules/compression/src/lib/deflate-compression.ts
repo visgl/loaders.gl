@@ -5,10 +5,9 @@
 // DEFLATE
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
+import {isBrowser, toArrayBuffer, promisify1} from '@loaders.gl/loader-utils';
 import pako from 'pako'; // https://bundlephobia.com/package/pako
 import zlib from 'zlib';
-import {promisify1} from '@loaders.gl/loader-utils';
 
 export type DeflateCompressionOptions = CompressionOptions & {
   deflate?: pako.InflateOptions & pako.DeflateOptions & {useZlib?: boolean};

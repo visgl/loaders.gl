@@ -5,8 +5,12 @@
 // ZSTD
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {registerJSModules} from '@loaders.gl/loader-utils';
-import {checkJSModule, getJSModule, getJSModuleOrNull} from '@loaders.gl/loader-utils';
+import {
+  registerJSModules,
+  checkJSModule,
+  getJSModule,
+  getJSModuleOrNull
+} from '@loaders.gl/loader-utils';
 
 // import {ZstdCodec} from 'zstd-codec'; // https://bundlephobia.com/package/zstd-codec
 

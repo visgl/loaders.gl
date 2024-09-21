@@ -4,10 +4,9 @@ import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
   GLTF_EXT_feature_metadata_FeatureIdTexture,
   GLTF_EXT_feature_metadata_GLTF,
-  GLTF_EXT_feature_metadata_Primitive
+  GLTF_EXT_feature_metadata_Primitive,
+  GLTF_EXT_mesh_features
 } from '@loaders.gl/gltf';
-
-import type {GLTF_EXT_mesh_features} from '@loaders.gl/gltf';
 
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../types';
