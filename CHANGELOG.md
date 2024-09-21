@@ -2,6 +2,10 @@
 
 ## v4.3
 
+### v4.3.0-beta.1
+
+- feat(gltf): extensions, encoding feature metadata (#2972)
+
 ### v4.3.0-alpha.8
 
 - fix(3d-tiles): Rewrite of parseImplicitTiles for readability (#3086)
@@ -10,7 +14,6 @@
 - feat(gltf): ext-structural-metadata encoding (#3080)
 - chore(examples): bump @deck.gl version (#3081)
 - chore: Bump to math.gl@4.1.0 (#3082)
-- feat(gltf): extensions, encoding feature metadata (#2972)
 
 ### v4.3.0-alpha.7
 
