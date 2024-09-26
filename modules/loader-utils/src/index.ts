@@ -29,7 +29,9 @@ export type {
   LoaderOptions,
   LoaderOptionsType,
   LoaderReturnType,
-  LoaderBatchType
+  LoaderBatchType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType
 } from './loader-types';
 
 export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';

@@ -293,14 +293,24 @@ export type LoaderContext = {
 
 type Preload = (url: string, options?: PreloadOptions) => any;
 
-/** Typescript helper to extract options type from a generic loader type */
+/** Typescript helper to extract options type from a loader type */
 export type LoaderOptionsType<T = Loader> =
   T extends Loader<any, any, infer Options> ? Options : never;
-/** Typescript helper to extract data type from a generic loader type */
+/** Typescript helper to extract data type from a loader type */
 export type LoaderReturnType<T = Loader> =
   T extends Loader<infer Return, any, any> ? Return : never;
-/** Typescript helper to extract batch type from a generic loader type */
+/** Typescript helper to extract batch type from a loader type */
 export type LoaderBatchType<T = Loader> = T extends Loader<any, infer Batch, any> ? Batch : never;
+
+/** Typescript helper to extract options type from an array of loader types */
+export type LoaderArrayOptionsType<LoadersT extends Loader[] = Loader[]> =
+  LoadersT[number]['options'];
+/** Typescript helper to extract data type from a loader type */
+export type LoaderArrayReturnType<LoadersT extends Loader[] = Loader[]> =
+  LoadersT[number]['dataType'];
+/** Typescript helper to extract batch type from a loader type */
+export type LoaderArrayBatchType<LoadersT extends Loader[] = Loader[]> =
+  LoadersT[number]['batchType'];
 
 /**
  * Parses `data` asynchronously using the supplied loader, parse function provided via the loader context
