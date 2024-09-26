@@ -2,25 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataSourceProps} from './data-source';
-import {DataSource} from './data-source';
-
 /**
  * Props for a TileSource
  */
-export type TileSourceProps = DataSourceProps;
+export type TileSourceProps = {};
 
 /**
  * MapTileSource - data sources that allow data to be queried by (geospatial) extents
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export interface TileSource<
-  PropsT extends TileSourceProps = TileSourceProps,
-  MetadataT extends TileSourceMetadata = TileSourceMetadata
-> extends DataSource<PropsT> {
+export interface TileSource {
   // extends DataSource {
-  getMetadata(): Promise<MetadataT>;
+  getMetadata(): Promise<TileSourceMetadata>;
   /** Flat parameters */
   getTile(parameters: GetTileParameters): Promise<unknown | null>;
   /** deck.gl compatibility: TileLayer and MTVLayer */

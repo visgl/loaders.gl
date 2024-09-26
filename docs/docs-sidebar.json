@@ -98,8 +98,8 @@
           "modules/pmtiles/api-reference/pmtiles-source",
           "modules/mvt/api-reference/mvt-source",
           "modules/mvt/api-reference/table-tile-source",
-          "modules/wms/api-reference/csw-service",
-          "modules/wms/api-reference/wms-service"
+          "modules/wms/api-reference/csw-source",
+          "modules/wms/api-reference/wms-source"
         ]
       }
     ]

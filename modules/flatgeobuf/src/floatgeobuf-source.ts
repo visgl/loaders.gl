@@ -4,64 +4,54 @@
 
 import {Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
-  VectorSourceProps,
+  DataSourceOptions,
   VectorSourceMetadata,
-  GetFeaturesParameters,
-  LoaderWithParser
+  GetFeaturesParameters
 } from '@loaders.gl/loader-utils';
-import {Source, VectorSource} from '@loaders.gl/loader-utils';
+import {Source, DataSource, VectorSource} from '@loaders.gl/loader-utils';
 
 import {FlatGeobufLoader} from './flatgeobuf-loader';
 
+export type FlatGeobuSourceOptions = DataSourceOptions & {
+  flatgeobuf?: {};
+};
+
 /**
+ * FlatGeobufSource
+ * Incrementally load bounding boxes from a spatially indexed FlatGeobuf file
  * @ndeprecated This is a WIP, not fully implemented
- * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
  */
 export const FlatGeobufSource = {
   name: 'FlatGeobuf',
-  id: 'flatgeobuf-server',
+  id: 'flatgeobuf',
   module: 'wms',
   version: '0.0.0',
   extensions: [],
   mimeTypes: [],
-  options: {
-    url: undefined!,
-    'flatgeobuf-server': {
-      /** Tabular loaders, normally the GeoJSONLoader */
-      loaders: []
-    }
-  },
-
   type: 'flatgeobuf-server',
   fromUrl: true,
   fromBlob: false, // TODO check if supported by library?
 
-  testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
-  createDataSource: (url, props: FlatGeobufVectorSourceProps): FlatGeobufVectorSource =>
-    new FlatGeobufVectorSource(props)
-} as const satisfies Source<FlatGeobufVectorSource, FlatGeobufVectorSourceProps>;
+  defaultOptions: {
+    flatgeobuf: {}
+  },
 
-export type FlatGeobufVectorSourceProps = VectorSourceProps & {
-  url: string;
-  'flatgeobuf-server'?: {
-    loaders: LoaderWithParser[];
-  };
-};
+  testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
+  createDataSource: (url: string, options: FlatGeobuSourceOptions): FlatGeobufVectorSource =>
+    new FlatGeobufVectorSource(url, options)
+} as const satisfies Source<FlatGeobufVectorSource>;
 
 /**
- * ArcGIS ImageServer
- * Note - exports a big API, that could be exposed here if there is a use case
- * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
+ * FlatGeobufVectorSource
  */
-export class FlatGeobufVectorSource extends VectorSource<FlatGeobufVectorSourceProps> {
-  data: string;
-  url: string;
+export class FlatGeobufVectorSource
+  extends DataSource<string, FlatGeobuSourceOptions>
+  implements VectorSource
+{
   protected formatSpecificMetadata: Promise<any> | null = null;
 
-  constructor(props: FlatGeobufVectorSourceProps) {
-    super(props);
-    this.data = props.url;
-    this.url = props.url;
+  constructor(data: string, options: FlatGeobuSourceOptions) {
+    super(data, options, FlatGeobufSource.defaultOptions);
     // this.formatSpecificMetadata = this._getFormatSpecificMetadata();
   }
 
@@ -93,7 +83,7 @@ export class FlatGeobufVectorSource extends VectorSource<FlatGeobufVectorSourceP
     // TODO - hack - done to avoid pulling in selectLoader from core
 
     const table = await FlatGeobufLoader.parse(arrayBuffer, {});
-    // const loader = this.props['flatgeobuf-server']?.loaders?.[0];
+    // const loader = this.options['flatgeobuf-server']?.loaders?.[0];
     // const table = loader?.parse(arrayBuffer);
     return table as GeoJSONTable;
   }

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
+import {mergeOptions} from '@loaders.gl/loader-utils';
 import {XMLLoader, XMLLoaderOptions} from './xml-loader';
 
 export type HTMLLoaderOptions = XMLLoaderOptions;
@@ -35,7 +35,7 @@ function parseTextSync(text: string, options?: XMLLoaderOptions): any {
   // fast-xml-parser can recognize HTML entities
   // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/2.XMLparseOptions.md#htmlentities
   // https://github.com/NaturalIntelligence/fast-xml-parser/blob/master/docs/v4/5.Entities.md
-  options = mergeLoaderOptions(options, {
+  options = mergeOptions(options, {
     xml: {
       _parser: 'fast-xml-parser',
       _fastXML: {

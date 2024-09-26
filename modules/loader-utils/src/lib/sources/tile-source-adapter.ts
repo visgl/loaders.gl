@@ -9,12 +9,12 @@ import {ImageSource, ImageSourceMetadata} from './image-source';
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-// @ts-expect-error TODO - does not implement all DataSource members
-export class TileSourceAdapter implements TileSource<ImageSourceMetadata> {
-  readonly viewportSource: ImageSource;
-  constructor(source: ImageSource) {
+export class TileSourceAdapter<ImageSourceT extends ImageSource> implements TileSource {
+  readonly viewportSource: ImageSourceT;
+  constructor(source: ImageSourceT) {
     this.viewportSource = source;
   }
+
   async getMetadata(): Promise<ImageSourceMetadata> {
     return await this.viewportSource.getMetadata();
   }

@@ -1,6 +1,9 @@
 # Using Sources
 
-loaders.gl provides a number of `Source` exports that support multi-step data loading. **Sources** are different from **loaders**, in that the latter are designed for "one-shot" atomic or streaming loads of data, while a `Source` can be thought of as a multi-step or multi-resource loader. (A source can use one or more loaders internally).
+loaders.gl provides a number of `Source` exports that support multi-step data loading. **Sources** are different from **loaders**:
+
+- loaders are designed for "one-shot" atomic or streaming loads of data
+- while a `Source` can be thought of as a multi-step or multi-resource loader, which is required for a number of data formats and access patterns.
 
 **Sources** are designed encapsulates the following data access models:
 
@@ -13,13 +16,13 @@ loaders.gl provides a number of `Source` exports that support multi-step data lo
 
 ## Source
 
-A `Source` object provides information for creating a `DataSource`
+A `Source` object provides general information about the supported resource format, and the capability to a `DataSource` for that format.
 
-## DataSource Interfaces
+## DataSource
 
 A `DateSource` instance provides methods to query metadata, and to query data for specific geospatial areas.
 
-A `DataSource` can (and sometimes must) expose a completely unique API. However a big advantages comes when a `DataSource` conforms to an existing Source interface.
+A `DataSource` can (and sometimes must) expose a completely unique API. However a big advantages comes when a `DataSource` conforms to an existing `*Source` interface.
 
 This means that applications written against that interface can now support the new source without any changes to existing logic.
 
@@ -49,14 +52,46 @@ Just like the appropriate loader can be selected automatically from a list of `L
 
 Just like applications can create their own own loaders, apps can also create (and potentially contribute) their own sources and use them with loaders.gl, as long as they follow the required interfaces (e.g, every source instance must inherit from `DataSource`).
 
+## Options
+
+Just like loaders, sources accept nested options, so that options for multiple sources can be specified:
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {PMTileseSource} from '@loaders.gl/pmtiles';
+import {MVTSource} from '@loaders.gl/mvt`;
+
+const dataSource = createDataSource(url, [PMTileSource, MVTSource], {
+  core: {
+    // Any common options for createDataSource
+  }
+  pmtiles: {
+    // Options specific to PMTilesSource, used if the URL is determined to reference a PMTiles file.
+  },
+  mvt: {
+    // Options specific to MVTSource, used if the URL is determined to reference an MVT file hierarchy.
+  }
+});
+```
+
+A source can sometimes use one or more loaders internally to load sub resources. In this case, the application can pass options to those loaders using the `core.loadOptions` property.
+
 ## Example
 
+An advanced source is the `TableTileSource` which lets you dynamically generate MVT tiles from a table.
+
 ```typescript
+import {createDataSource} from '@loaders.gl/core';
 import {TableTileSource} from '@loaders.gl/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
-// build an initial index of tiles. Convieniently,
-const tileSource = new TableTileSource(load(url, GeoJSONLoader));
+// build an initial index of tiles.
+const tileSource = createDataSource(url, TableTileSource, {
+  core: {
+    loaders: [GeoJSONLoader]
+  }
+});
+
 // request a particular tile
 const features = tileSource.getTile(z, x, y).features;
 ```

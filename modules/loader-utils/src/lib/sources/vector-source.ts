@@ -3,19 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
-import type {DataSourceProps} from './data-source';
-import {DataSource} from './data-source';
 
-export type VectorSourceProps = DataSourceProps;
+export type VectorSourceProps = {};
 
 /**
  * VectorSource - data sources that allow features to be queried by (geospatial) extents
  * @note
  * - If geospatial, bounding box is expected to be in web mercator coordinates
  */
-export abstract class VectorSource<
-  PropsT extends VectorSourceProps = VectorSourceProps
-> extends DataSource<PropsT> {
+export abstract class VectorSource {
   static type: string = 'template';
   static testURL = (url: string): boolean => false;
 

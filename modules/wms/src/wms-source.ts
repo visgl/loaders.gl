@@ -3,56 +3,30 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import type {ImageType} from '@loaders.gl/images';
-import {ImageLoader} from '@loaders.gl/images';
-import {mergeLoaderOptions, ImageSource} from '@loaders.gl/loader-utils';
-
 import type {
   Source,
+  DataSourceOptions,
   ImageSourceMetadata,
-  GetImageParameters,
-  ImageSourceProps
+  GetImageParameters
 } from '@loaders.gl/loader-utils';
+import {DataSource, ImageSource, mergeOptions} from '@loaders.gl/loader-utils';
 
-import type {WMSCapabilities} from '../../wms-capabilities-loader';
-import type {WMSFeatureInfo} from '../../wip/wms-feature-info-loader';
-import type {WMSLayerDescription} from '../../wip/wms-layer-description-loader';
+import type {ImageType} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 
-import {WMSCapabilitiesLoader} from '../../wms-capabilities-loader';
-import {WMSFeatureInfoLoader} from '../../wip/wms-feature-info-loader';
-import {WMSLayerDescriptionLoader} from '../../wip/wms-layer-description-loader';
+import type {WMSCapabilities} from './wms-capabilities-loader';
+import type {WMSFeatureInfo} from './wip/wms-feature-info-loader';
+import type {WMSLayerDescription} from './wip/wms-layer-description-loader';
 
-import type {WMSLoaderOptions} from '../../wms-error-loader';
-import {WMSErrorLoader} from '../../wms-error-loader';
+import {WMSCapabilitiesLoader} from './wms-capabilities-loader';
+import {WMSFeatureInfoLoader} from './wip/wms-feature-info-loader';
+import {WMSLayerDescriptionLoader} from './wip/wms-layer-description-loader';
 
-export const WMSSource = {
-  name: 'Web Map Service (OGC WMS)',
-  id: 'wms',
-  module: 'wms',
-  version: '0.0.0',
-  extensions: [],
-  mimeTypes: [],
-  options: {
-    wms: {
-      // TODO - add options here
-    }
-  },
-  type: 'wms',
-  fromUrl: true,
-  fromBlob: false,
-
-  testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
-  createDataSource: (url, props: WMSImageSourceProps) => new WMSImageSource(url as string, props)
-} as const satisfies Source<WMSImageSource, WMSImageSourceProps>;
+import type {WMSLoaderOptions} from './wms-error-loader';
+import {WMSErrorLoader} from './wms-error-loader';
 
 /** Properties for creating a enw WMS service */
-export type WMSImageSourceProps = ImageSourceProps & {
-  /** @deprecated Use props.wms.substituteCRS84 */
-  substituteCRS84?: boolean;
-  /** @deprecated Use props.wms.wmsParameters */
-  wmsParameters?: WMSParameters;
-  /** @deprecated Use props.wms.vendorParameters */
-  vendorParameters?: Record<string, unknown>;
+export type WMSSourceOptions = DataSourceOptions & {
   wms?: {
     // TODO - move parameters inside WMS scope
     /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
@@ -63,6 +37,27 @@ export type WMSImageSourceProps = ImageSourceProps & {
     vendorParameters?: Record<string, unknown>;
   };
 };
+
+export const WMSSource = {
+  name: 'Web Map Service (OGC WMS)',
+  id: 'wms',
+  module: 'wms',
+  version: '0.0.0',
+  extensions: [],
+  mimeTypes: [],
+  type: 'wms',
+  fromUrl: true,
+  fromBlob: false,
+
+  defaultOptions: {
+    wms: {
+      // TODO - add options here
+    }
+  },
+
+  testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
+  createDataSource: (url, options: WMSSourceOptions) => new WMSImageSource(url as string, options)
+} as const satisfies Source<WMSImageSource>;
 
 // PARAMETER TYPES FOR WMS SOURCE
 
@@ -206,11 +201,7 @@ export type WMSGetLegendGraphicParameters = {
  * - implements the ImageSource interface
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class WMSImageSource extends ImageSource<WMSImageSourceProps> {
-  /** Base URL to the service */
-  readonly url: string;
-  readonly data: string;
-
+export class WMSImageSource extends DataSource<string, WMSSourceOptions> implements ImageSource {
   /** In WMS 1.3.0, replaces references to EPSG:4326 with CRS:84. But not always supported. Default: false */
   substituteCRS84: boolean;
   /** In WMS 1.3.0, flips x,y (lng, lat) coordinates for the supplied coordinate systems. Default: ['ESPG:4326'] */
@@ -224,17 +215,14 @@ export class WMSImageSource extends ImageSource<WMSImageSourceProps> {
   capabilities: WMSCapabilities | null = null;
 
   /** Create a WMSImageSource */
-  constructor(url: string, props: WMSImageSourceProps) {
-    super(props);
+  constructor(url: string, options: WMSSourceOptions) {
+    super(url, options, WMSSource.defaultOptions);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WMS URL more likely to make this class just work.
-    // const {baseUrl, parameters} = this._parseWMSUrl(props.url);
+    // const {baseUrl, parameters} = this._parseWMSUrl(options.url);
 
-    this.url = url;
-    this.data = url;
-
-    this.substituteCRS84 = props.wms?.substituteCRS84 ?? props.substituteCRS84 ?? false;
+    this.substituteCRS84 = options.wms?.substituteCRS84 ?? false;
     this.flipCRS = ['EPSG:4326'];
 
     this.wmsParameters = {
@@ -248,11 +236,11 @@ export class WMSImageSource extends ImageSource<WMSImageSourceProps> {
       transparent: undefined!,
       time: undefined!,
       elevation: undefined!,
-      ...props.wmsParameters, // deprecated
-      ...props.wms?.wmsParameters
+      ...options.wmsParameters, // deprecated
+      ...options.wms?.wmsParameters
     };
 
-    this.vendorParameters = props.wms?.vendorParameters || props.vendorParameters || {};
+    this.vendorParameters = options.wms?.vendorParameters || options.vendorParameters || {};
   }
 
   // ImageSource implementation
@@ -606,7 +594,7 @@ export class WMSImageSource extends ImageSource<WMSImageSourceProps> {
     const contentType = response.headers['content-type'];
     if (!response.ok || WMSErrorLoader.mimeTypes.includes(contentType)) {
       // We want error responses to throw exceptions, the WMSErrorLoader can do this
-      const loadOptions = mergeLoaderOptions<WMSLoaderOptions>(this.loadOptions, {
+      const loadOptions = mergeOptions<WMSLoaderOptions>(this.loadOptions, {
         wms: {throwOnError: true}
       });
       const error = WMSErrorLoader.parseSync?.(arrayBuffer, loadOptions);
@@ -616,7 +604,7 @@ export class WMSImageSource extends ImageSource<WMSImageSourceProps> {
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = WMSErrorLoader.parseSync?.(arrayBuffer, this.loadOptions);
+    const error = WMSErrorLoader.parseSync?.(arrayBuffer, this.options.core?.loadOptions);
     return new Error(error);
   }
 }

@@ -4,23 +4,19 @@
 
 /* eslint-disable camelcase */
 
-import type {DataSourceProps} from '@loaders.gl/loader-utils';
+import type {Source, DataSourceOptions} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
-import type {CSWCapabilities} from '../../csw-capabilities-loader';
-import {CSWCapabilitiesLoader} from '../../csw-capabilities-loader';
+import type {CSWCapabilities} from './csw-capabilities-loader';
+import {CSWCapabilitiesLoader} from './csw-capabilities-loader';
 
-import type {CSWRecords} from '../../csw-records-loader';
-import {CSWRecordsLoader} from '../../csw-records-loader';
+import type {CSWRecords} from './csw-records-loader';
+import {CSWRecordsLoader} from './csw-records-loader';
 
-import type {CSWDomain} from '../../csw-domain-loader';
-import {CSWDomainLoader} from '../../csw-domain-loader';
+import type {CSWDomain} from './csw-domain-loader';
+import {CSWDomainLoader} from './csw-domain-loader';
 
-import {WMSErrorLoader as CSWErrorLoader} from '../../wms-error-loader';
-
-export type CSWServiceProps = DataSourceProps & {
-  url: string;
-};
+import {WMSErrorLoader as CSWErrorLoader} from './wms-error-loader';
 
 /** Describes a service or resource exposed by the catalog */
 export type Service = {
@@ -60,28 +56,47 @@ export type CSWGetDomainParameters = CSWCommonParameters & {
   // TBA
 };
 
+export type CSWSourceOptions = DataSourceOptions & {
+  csw?: {};
+};
+
+export const CSWSource = {
+  name: 'CSW',
+  id: 'csw',
+  module: 'wms',
+  version: '0.0.0',
+  extensions: [],
+  mimeTypes: [],
+  type: 'csw',
+  fromUrl: true,
+  fromBlob: false,
+
+  defaultOptions: {
+    wfs: {}
+  },
+
+  testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
+  createDataSource: (url: string, options: CSWSourceOptions): CSWCatalogSource =>
+    new CSWCatalogSource(url, options)
+} as const satisfies Source<CSWCatalogSource>;
+
 /**
- * The CSWService class
+ * The CSWCatalogSource class
  * - provides type safe methods to form URLs to a CSW service
  * - provides type safe methods to query and parse results (and errors) from a CSW service
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class CSWService extends DataSource<CSWServiceProps> {
+export class CSWCatalogSource extends DataSource<string, CSWSourceOptions> {
   static readonly type = 'csw';
   static testURL = (url: string): boolean => url.toLowerCase().includes('csw');
 
   capabilities: CSWCapabilities | null = null;
-  data: string;
-  url: string;
-
-  /** A list of loaders used by the CSWService methods */
+  /** A list of loaders used by the CSWCatalogSource methods */
   readonly loaders = [CSWErrorLoader, CSWCapabilitiesLoader];
 
-  /** Create a CSWService */
-  constructor(props: CSWServiceProps) {
-    super(props);
-    this.url = props.url;
-    this.data = props.url;
+  /** Create a CSWCatalogSource */
+  constructor(url: string, options: CSWSourceOptions) {
+    super(url, options, CSWSource.defaultOptions);
   }
 
   async getMetadata(): Promise<CSWCapabilities> {
@@ -141,39 +156,39 @@ export class CSWService extends DataSource<CSWServiceProps> {
 
   /** Get Capabilities */
   async getCapabilities(
-    wmsParameters?: CSWGetCapabilitiesParameters,
+    cswParameters?: CSWGetCapabilitiesParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<CSWCapabilities> {
-    const url = this.getCapabilitiesURL(wmsParameters, vendorParameters);
+    const url = this.getCapabilitiesURL(cswParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    const capabilities = await CSWCapabilitiesLoader.parse(arrayBuffer, this.props.loadOptions);
+    const capabilities = await CSWCapabilitiesLoader.parse(arrayBuffer, this.options.loadOptions);
     return capabilities;
   }
 
   /** Get Records */
   async getRecords(
-    wmsParameters?: CSWGetRecordsParameters,
+    cswParameters?: CSWGetRecordsParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<CSWRecords> {
-    const url = this.getRecordsURL(wmsParameters, vendorParameters);
+    const url = this.getRecordsURL(cswParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await CSWRecordsLoader.parse(arrayBuffer, this.props.loadOptions);
+    return await CSWRecordsLoader.parse(arrayBuffer, this.options.loadOptions);
   }
 
   /** Get Domain */
   async getDomain(
-    wmsParameters?: CSWGetDomainParameters,
+    cswParameters?: CSWGetDomainParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<CSWDomain> {
-    const url = this.getDomainURL(wmsParameters, vendorParameters);
+    const url = this.getDomainURL(cswParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await CSWDomainLoader.parse(arrayBuffer, this.props.loadOptions);
+    return await CSWDomainLoader.parse(arrayBuffer, this.options.loadOptions);
   }
 
   // Typed URL creators
@@ -181,12 +196,12 @@ export class CSWService extends DataSource<CSWServiceProps> {
 
   /** Generate a URL for the GetCapabilities request */
   getCapabilitiesURL(
-    wmsParameters?: CSWGetCapabilitiesParameters,
+    cswParameters?: CSWGetCapabilitiesParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
     const options: Required<CSWGetCapabilitiesParameters> = {
       version: '3.0.0',
-      ...wmsParameters,
+      ...cswParameters,
       ...vendorParameters,
       service: 'CSW',
       request: 'GetCapabilities'
@@ -196,13 +211,13 @@ export class CSWService extends DataSource<CSWServiceProps> {
 
   /** Generate a URL for the GetCapabilities request */
   getRecordsURL(
-    wmsParameters?: CSWGetRecordsParameters,
+    cswParameters?: CSWGetRecordsParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
     const options: Required<CSWGetRecordsParameters> = {
       version: '3.0.0',
       typenames: 'csw:Record',
-      ...wmsParameters,
+      ...cswParameters,
       ...vendorParameters,
       service: 'CSW',
       request: 'GetRecords'
@@ -212,12 +227,12 @@ export class CSWService extends DataSource<CSWServiceProps> {
 
   /** Generate a URL for the GetCapabilities request */
   getDomainURL(
-    wmsParameters?: CSWGetDomainParameters,
+    cswParameters?: CSWGetDomainParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
     const options: Required<CSWGetDomainParameters> = {
       version: '3.0.0',
-      ...wmsParameters,
+      ...cswParameters,
       ...vendorParameters,
       service: 'CSW',
       request: 'GetDomain'
@@ -234,7 +249,7 @@ export class CSWService extends DataSource<CSWServiceProps> {
     options: Record<string, unknown>,
     vendorParameters?: Record<string, unknown>
   ): string {
-    let url = this.props.url;
+    let url = this.url;
     let first = true;
     for (const [key, value] of Object.entries(options)) {
       url += first ? '?' : '&';
@@ -252,14 +267,14 @@ export class CSWService extends DataSource<CSWServiceProps> {
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers['content-type'];
     if (!response.ok || CSWErrorLoader.mimeTypes.includes(contentType)) {
-      const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.props.loadOptions);
+      const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.options.loadOptions);
       throw new Error(error);
     }
   }
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.props.loadOptions);
+    const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.options.loadOptions);
     return new Error(error);
   }
 }

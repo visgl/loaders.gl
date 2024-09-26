@@ -13,7 +13,7 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayReturnType
 } from '@loaders.gl/loader-utils';
-import {parseWithWorker, canParseWithWorker, mergeLoaderOptions} from '@loaders.gl/loader-utils';
+import {parseWithWorker, canParseWithWorker, mergeOptions} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {isResponse} from '../../javascript-utils/is-type';
@@ -124,7 +124,7 @@ async function parseWithLoader(
 ): Promise<unknown> {
   validateWorkerVersion(loader);
 
-  options = mergeLoaderOptions(loader.options, options);
+  options = mergeOptions(loader.options, options);
 
   if (isResponse(data)) {
     // Serialize to support passing the response to web worker

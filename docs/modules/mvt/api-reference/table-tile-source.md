@@ -41,11 +41,16 @@ Or just import via a browser script tag:
 ### Usage
 
 ```typescript
+import {createDataSource} from '@loaders.gl/core';
 import {TableTileSource} from '@loaders.gl/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
-// build an initial index of tiles. Convieniently,
-const tileSource = new TableTileSource(load(url, GeoJSONLoader));
+// build an initial index of tiles.,
+const tileSource = createDataSource(url, [TableTileSource], {
+	core: {
+		loaders: [GeoJSONLoader]
+	}
+};
 
 // request a particular tile
 const features = tileSource.getTile(z, x, y).features;
@@ -60,23 +65,24 @@ The tiles are in geojson table format.
 You can fine-tune the results with an options object,
 although the defaults are sensible and work well for most use cases.
 
-| Option           | Default   | Description                                                          |
-| ---------------- | --------- | -------------------------------------------------------------------- |
-| `coordinates`    | `'wgs84'` | Set to`'local'` to return tile-relative coordinates [`0-1`].         |
-| `maxZoom`        | `14`      | Max zoom to preserve detail on; can't be higher than 24              |
-| `generateId`     | `false`   | Whether to generate feature ids.                                     |
-| `promoteId`      | N/A       | Name of a feature property to use for feature.id.                    |
-| `tolerance`      | `3`       | Simplification tolerance (higher means simpler)                      |
-| `indexMaxZoom`   | `5`       | Max zoom in the initial tile index                                   |
-| `indexMaxPoints` | `100000`  | Max number of points per tile in the index                           |
-| `debug`          | `0`       | Logging level (0 to disable, 1 or 2)                                 |
-| `lineMetrics`    | `false`   | Enable line metrics tracking for LineString/MultiLineString features |
-| `extent`         | `4096`    | tile extent (both width and height)                                  |
-| `buffer`         | `64`      | Tile buffer on each side                                             |
+| Option                 | Default   | Description                                                          |
+| ---------------------- | --------- | -------------------------------------------------------------------- |
+| `table.coordinates`    | `'wgs84'` | Set to`'local'` to return tile-relative coordinates [`0-1`].         |
+| `table.maxZoom`        | `14`      | Max zoom to preserve detail on; can't be higher than 24              |
+| `table.generateId`     | `false`   | Whether to generate feature ids.                                     |
+| `table.promoteId`      | N/A       | Name of a feature property to use for feature.id.                    |
+| `table.tolerance`      | `3`       | Simplification tolerance (higher means simpler)                      |
+| `table.indexMaxZoom`   | `5`       | Max zoom in the initial tile index                                   |
+| `table.indexMaxPoints` | `100000`  | Max number of points per tile in the index                           |
+| `table.debug`          | `0`       | Logging level (0 to disable, 1 or 2)                                 |
+| `table.lineMetrics`    | `false`   | Enable line metrics tracking for LineString/MultiLineString features |
+| `table.extent`         | `4096`    | tile extent (both width and height)                                  |
+| `table.buffer`         | `64`      | Tile buffer on each side                                             |
 
 ```typescript
+import {createDataSource} from '@loaders.gl/core';
 import {TableTileSource} from '@loaders.gl/mvt`
-const tileSource = new TableTileSource(parsedGeojson, {
+const tileSource = createDataSource(parsedGeojson, [TableTileSource], {
 	maxZoom: 14,      // max zoom to preserve detail on; can't be higher than 24
 	tolerance: 3,     // simplification tolerance (higher means simpler)
 	debug: 0,     // logging level (0 to disable, 1 or 2)

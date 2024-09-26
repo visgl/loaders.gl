@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {LoaderOptions} from '../../loader-types';
+export type RequiredOptions<T> = Required<{[K in keyof T]: Required<T[K]>}>;
+
+export function getRequiredOptions<T>(options: T): RequiredOptions<T> {
+  return options as RequiredOptions<T>;
+}
 
 /**
  *
@@ -10,11 +14,11 @@ import {LoaderOptions} from '../../loader-types';
  * @param newOptions
  * @returns
  */
-export function mergeLoaderOptions<Options extends LoaderOptions>(
-  baseOptions: Options | undefined,
-  newOptions: Options
-): Options {
-  return mergeOptionsRecursively(baseOptions || {}, newOptions) as Options;
+export function mergeOptions<OptionsT extends Record<string, unknown>>(
+  baseOptions: OptionsT | undefined,
+  newOptions: OptionsT
+): OptionsT {
+  return mergeOptionsRecursively(baseOptions || {}, newOptions) as OptionsT;
 }
 
 function mergeOptionsRecursively(

@@ -5,7 +5,7 @@
 export {PMTilesSource} from './pmtiles-source';
 
 export type {PMTilesMetadata} from './lib/parse-pmtiles';
-export type {PMTilesTileSourceProps} from './pmtiles-source';
+export type {PMTilesSourceOptions} from './pmtiles-source';
 export {PMTilesTileSource} from './pmtiles-source';
 
 export {PMTilesLoader as _PMTilesLoader} from './pmtiles-loader';

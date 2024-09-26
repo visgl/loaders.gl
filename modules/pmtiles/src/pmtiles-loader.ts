@@ -7,10 +7,10 @@ import {BlobFile} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/version';
 
 import {VectorSourceInfo, ImageSourceInfo} from './source-info';
-import {PMTilesTileSource, PMTilesTileSourceProps} from './pmtiles-source';
+import {PMTilesTileSource, PMTilesSourceOptions} from './pmtiles-source';
 
 export type PMTilesLoaderOptions = LoaderOptions & {
-  pmtiles?: PMTilesTileSourceProps['pmtiles'];
+  pmtiles?: PMTilesSourceOptions['pmtiles'];
 };
 
 /**

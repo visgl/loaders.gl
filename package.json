@@ -61,7 +61,12 @@
   ],
   "resolutions": {
     "apache-arrow": "^15.0.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.6.0",
+    "@cmfcmf/docusaurus-search-local": "~1.1.0",
+    "@docusaurus/module-type-aliases": "~3.3.2",
+    "@docusaurus/plugin-client-redirects": "~3.3.2",
+    "@docusaurus/plugin-content-docs": "~3.3.2",
+    "@docusaurus/tsconfig": "~3.3.2"
   },
   "volta": {
     "node": "20.16.0",

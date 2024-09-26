@@ -4,12 +4,13 @@
 
 import {Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
-  VectorSourceProps,
+  DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters,
+  VectorSource,
   LoaderWithParser
 } from '@loaders.gl/loader-utils';
-import {Source, VectorSource} from '@loaders.gl/loader-utils';
+import {Source, DataSource} from '@loaders.gl/loader-utils';
 
 const TEST_SERVICE =
   'https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0';
@@ -34,74 +35,9 @@ export type ArcGISImageServiceQueryOptions = {
   f?: 'geojson'; // TODO - look up valid values in Esri docs
 };
 
-// const DEFAULT_QUERY_OPTIONS: Required<ArcGISImageServiceQueryOptions>  = {
-//   returnGeometry:true,
-//   where: '1%3D1',
-//   outSR: 4326,
-//   outFields: '*',
-//   inSR: 4326,
-//   geometry: `${-90}%2C+${30}%2C+${-70}%2C+${50}`,
-//   geometryType: 'esriGeometryEnvelope',
-//   spatialRel: 'esriSpatialRelIntersects',
-//   geometryPrecision: 6,
-//   resultType: 'tile',
-//   f: 'geojson'
-// };
-
-// export type ArcGISFeatureServiceProps = ArcGISImageServiceQueryOptions & {
-//   url: string;
-//   loadOptions?: LoaderOptions;
-//   fetch?: typeof fetch | FetchLike;
-// };
-
-// export class ArcGISFeatureService {
-//   url: string;
-//   loadOptions: LoaderOptions;
-//   fetch: typeof fetch | FetchLike;
-
-//   constructor(props: ArcGISFeatureServiceProps) {
-//     this.url = props.url;
-//     this.loadOptions = props.loadOptions || {};
-//     this.fetch = props.fetch || fetch;
-//   }
-
-//   // URL creators
-
-//   metadataURL(options: {parameters?: Record<string, unknown>}): string {
-//     return this.getUrl({...options});
-//   }
-
-//   /**
-//    * Form a URL to an ESRI FeatureServer
-// // https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0/query?
-// //   returnGeometry=true&where=1%3D1&outSR=4326&outFields=*&inSR=4326&geometry=${-90}%2C+${30}%2C+${-70}%2C+${50}&
-// //   geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&geometryPrecision=6&resultType=tile&f=geojson`
-//    */
-//   exportImageURL(options: {
-//     boundingBox: [number, number, number, number];
-//     boundingBoxSR?: string;
-//     width: number;
-//     height: number;
-//     imageSR?: string;
-//     time?: never;
-//     f?: 'geojson';
-//     resultType?: 'tile';
-//     noData?: never;
-//     noDataInterpretation?: 'esriNoDataMatchAny';
-//     interpolation?: '+RSP_NearestNeighbor';
-//     compression?: never
-//     compressionQuality?: never;
-//     bandIds?: never;
-//     mosaicRule?: never;
-//     renderingRule?: never;
-//     f?: 'image';
-//   }): string {
-//     const {boundingBox} = options;
-//     // const bbox = `bbox=${boundingBox[0]},${boundingBox[1]},${boundingBox[2]},${boundingBox[3]}`;
-//     // const size = `size=${width},${height}`
-//     return this.getUrl({path: 'exportImage', });
-//   }
-// }
+export type ArcGIFeatureServerSourceOptions = DataSourceOptions & {
+  'arcgis-feature-server'?: {};
+};
 
 /**
  * @ndeprecated This is a WIP, not fully implemented
@@ -114,42 +50,33 @@ export const ArcGISFeatureServerSource = {
   version: '0.0.0',
   extensions: [],
   mimeTypes: [],
-  options: {
-    url: undefined!,
-    'arcgis-feature-server': {
-      /** Tabular loaders, normally the GeoJSONLoader */
-      loaders: []
-    }
-  },
-
   type: 'arcgis-feature-server',
   fromUrl: true,
   fromBlob: false,
 
-  testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
-  createDataSource: (url, props: ArcGISVectorSourceProps): ArcGISVectorSource =>
-    new ArcGISVectorSource(props)
-} as const satisfies Source<ArcGISVectorSource, ArcGISVectorSourceProps>;
+  defaultOptions: {
+    url: undefined!,
+    'arcgis-feature-server': {}
+  },
 
-export type ArcGISVectorSourceProps = VectorSourceProps & {
-  url: string;
-  'arcgis-feature-server'?: {
-    loaders: LoaderWithParser[];
-  };
-};
+  testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
+  createDataSource: (url: string, options: ArcGIFeatureServerSourceOptions): ArcGISVectorSource =>
+    new ArcGISVectorSource(url, options)
+} as const satisfies Source<ArcGISVectorSource>;
 
 /**
  * ArcGIS ImageServer
  * Note - exports a big API, that could be exposed here if there is a use case
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
  */
-export class ArcGISVectorSource extends VectorSource<ArcGISVectorSourceProps> {
-  data: string;
+export class ArcGISVectorSource
+  extends DataSource<string, ArcGIFeatureServerSourceOptions>
+  implements VectorSource
+{
   protected formatSpecificMetadata: Promise<any>;
 
-  constructor(props: ArcGISVectorSourceProps) {
-    super(props);
-    this.data = props.url;
+  constructor(url: string, options: ArcGIFeatureServerSourceOptions) {
+    super(url, options, ArcGISFeatureServerSource.defaultOptions);
     this.formatSpecificMetadata = this._getFormatSpecificMetadata();
   }
 
@@ -177,7 +104,7 @@ export class ArcGISVectorSource extends VectorSource<ArcGISVectorSourceProps> {
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     // TODO - hack - done to avoid pulling in selectLoader from core
-    const loader = this.props['arcgis-feature-server']?.loaders?.[0];
+    const loader = this.options.core?.loaders?.[0] as LoaderWithParser;
     const table = loader?.parse(arrayBuffer);
     return table;
   }
@@ -241,7 +168,7 @@ export class ArcGISVectorSource extends VectorSource<ArcGISVectorSourceProps> {
   // URL creators
 
   metadataURL(options: {parameters?: Record<string, unknown>}): string {
-    return `${this.props.url}?f=pjson`;
+    return `${this.options.url}?f=pjson`;
   }
 
   /** 
@@ -293,7 +220,7 @@ export class ArcGISVectorSource extends VectorSource<ArcGISVectorSourceProps> {
     options: Record<string, unknown>,
     extra?: Record<string, unknown>
   ): string {
-    let url = `${this.props.url}/${path}`;
+    let url = `${this.options.url}/${path}`;
     let first = true;
     for (const [key, value] of Object.entries(options)) {
       url += first ? '?' : '&';
@@ -328,6 +255,75 @@ function parseArcGISFeatureServerMetadata(json: any): VectorSourceMetadata {
     layers
   };
 }
+
+// const DEFAULT_QUERY_OPTIONS: Required<ArcGISImageServiceQueryOptions>  = {
+//   returnGeometry:true,
+//   where: '1%3D1',
+//   outSR: 4326,
+//   outFields: '*',
+//   inSR: 4326,
+//   geometry: `${-90}%2C+${30}%2C+${-70}%2C+${50}`,
+//   geometryType: 'esriGeometryEnvelope',
+//   spatialRel: 'esriSpatialRelIntersects',
+//   geometryPrecision: 6,
+//   resultType: 'tile',
+//   f: 'geojson'
+// };
+
+// export type ArcGISFeatureServiceProps = ArcGISImageServiceQueryOptions & {
+//   url: string;
+//   loadOptions?: LoaderOptions;
+//   fetch?: typeof fetch | FetchLike;
+// };
+
+// export class ArcGISFeatureService {
+//   url: string;
+//   loadOptions: LoaderOptions;
+//   fetch: typeof fetch | FetchLike;
+
+//   constructor(options: ArcGISFeatureServiceProps) {
+//     this.url = options.url;
+//     this.loadOptions = options.loadOptions || {};
+//     this.fetch = options.fetch || fetch;
+//   }
+
+//   // URL creators
+
+//   metadataURL(options: {parameters?: Record<string, unknown>}): string {
+//     return this.getUrl({...options});
+//   }
+
+//   /**
+//    * Form a URL to an ESRI FeatureServer
+// // https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0/query?
+// //   returnGeometry=true&where=1%3D1&outSR=4326&outFields=*&inSR=4326&geometry=${-90}%2C+${30}%2C+${-70}%2C+${50}&
+// //   geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&geometryPrecision=6&resultType=tile&f=geojson`
+//    */
+//   exportImageURL(options: {
+//     boundingBox: [number, number, number, number];
+//     boundingBoxSR?: string;
+//     width: number;
+//     height: number;
+//     imageSR?: string;
+//     time?: never;
+//     f?: 'geojson';
+//     resultType?: 'tile';
+//     noData?: never;
+//     noDataInterpretation?: 'esriNoDataMatchAny';
+//     interpolation?: '+RSP_NearestNeighbor';
+//     compression?: never
+//     compressionQuality?: never;
+//     bandIds?: never;
+//     mosaicRule?: never;
+//     renderingRule?: never;
+//     f?: 'image';
+//   }): string {
+//     const {boundingBox} = options;
+//     // const bbox = `bbox=${boundingBox[0]},${boundingBox[1]},${boundingBox[2]},${boundingBox[3]}`;
+//     // const size = `size=${width},${height}`
+//     return this.getUrl({path: 'exportImage', });
+//   }
+// }
 
 /** Sample metadata
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
