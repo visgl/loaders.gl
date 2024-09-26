@@ -3,14 +3,14 @@
 ## Upgrading to v4.3 (In development)
 
 **Breaking Changes**
-- `loaders.gl/core` - Stricter loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
+- `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
 
 **Deprecations**
 - `loaders.gl/core` - `registerLoaders()` is deprecated. Loader registration erases types and it is preferable that applications manage loader registration themselves if needed.
 
 **Recommendations**
-- For improved type checks, make sure you don't erase types of arrays of Loader objects: Replace `const loaders: Loader[] = [CSVLoader, JSONLoader];` with `const loaders = [CSVLoader, JSONLoader] as const satisfies Loader[];` or `const loaders: Loader[] = [CSVLoader, JSONLoader] as const;`.
+- For improved type checks, make sure you do not erase types of arrays of Loader objects: Replace `const loaders: Loader[] = [CSVLoader, JSONLoader];` with `const loaders = [CSVLoader, JSONLoader] as const satisfies Loader[];` or `const loaders: Loader[] = [CSVLoader, JSONLoader] as const;`.
 
 ## Upgrading to v4.2
 
