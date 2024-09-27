@@ -240,20 +240,17 @@ function parsePCDHeader(data: string): PCDHeader {
   pcdHeader.offset = {};
 
   let sizeSum = 0;
-  if (pcdHeader.fields !== null && pcdHeader.size !== null) {
-    for (let i = 0; i < pcdHeader.fields.length; i++) {
-      if (pcdHeader.data === 'ascii') {
-        pcdHeader.offset[pcdHeader.fields[i]] = i;
-      } else {
-        pcdHeader.offset[pcdHeader.fields[i]] = sizeSum;
-        sizeSum += pcdHeader.size[i];
-      }
+  for (let i = 0, l = pcdHeader.fields.length; i < l; i++) {
+    if (pcdHeader.data === 'ascii') {
+      pcdHeader.offset[pcdHeader.fields[i]] = i;
+    } else {
+      pcdHeader.offset[pcdHeader.fields[i]] = sizeSum;
+      sizeSum += pcdHeader.size[i] * pcdHeader.count[i];
     }
   }
 
   // for binary only
   pcdHeader.rowSize = sizeSum;
-
   return pcdHeader;
 }
 
