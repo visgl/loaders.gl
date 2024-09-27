@@ -8,7 +8,9 @@ import type {
   LoaderContext,
   LoaderOptions,
   LoaderOptionsType,
-  LoaderReturnType
+  LoaderReturnType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType
 } from '@loaders.gl/loader-utils';
 import {isBlob} from '../../javascript-utils/is-type';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -36,26 +38,33 @@ export async function load<
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT>>;
 
-export async function load(
+export async function load<
+  LoaderArrayT extends Loader[],
+  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+>(
   url: string | DataType,
-  loaders: Loader[],
-  options?: LoaderOptions,
+  loaders: LoaderArrayT,
+  options?: OptionsT,
   context?: LoaderContext
-): Promise<unknown>;
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
 
+/**
+ * Loads data asynchronously by matching a pre-registered loader
+ * @deprecated Loader registration is deprecated, use load(data, loaders, options) instead
+ */
 export async function load(
   url: string | DataType,
   loaders?: LoaderOptions,
   context?: LoaderContext
 ): Promise<unknown>;
 
-export async function load(url: string | DataType, loaders: LoaderOptions): Promise<any>;
+// export async function load(url: string | DataType, loaders: LoaderOptions): Promise<any>;
 
 // implementation signature
 export async function load(
   url: string | DataType,
   loaders?: Loader[] | LoaderOptions,
-  options?: LoaderOptions,
+  options?: LoaderOptions | LoaderContext,
   context?: LoaderContext
 ): Promise<unknown> {
   let resolvedLoaders: Loader | Loader[];
@@ -68,7 +77,7 @@ export async function load(
     context = undefined; // context not supported in short signature
   } else {
     resolvedLoaders = loaders as Loader | Loader[];
-    resolvedOptions = options;
+    resolvedOptions = options as LoaderOptions;
   }
 
   // Select fetch function

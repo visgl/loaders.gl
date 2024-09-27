@@ -91,6 +91,11 @@ export type WriterWithEncoder<
   ) => Promise<string>;
 };
 
-/** Typescript helper to extract the writer options type from a generic writer type */
+/** Typescript helper to extract the writer options type from a writer type */
 export type WriterOptionsType<T = Writer> =
-  T extends Writer<unknown, unknown, infer Options> ? Options : never;
+  T extends Writer<unknown, unknown, infer OptionsType> ? OptionsType : never;
+/** Typescript helper to extract input data type from a writer type */
+export type WriterDataType<T = Writer> =
+  T extends Writer<infer DataType, any, any> ? DataType : never;
+export type WriterBatchType<T = Writer> =
+  T extends Writer<any, infer BatchType, any> ? BatchType : never;

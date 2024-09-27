@@ -2,31 +2,41 @@
 
 ## Upgrading to v4.3 (In development)
 
-- Note: internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
+**Breaking Changes**
+- `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
+- `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
+
+**Deprecations**
+- `loaders.gl/core` - `registerLoaders()` is deprecated. Loader registration erases types and it is preferable that applications manage loader registration themselves if needed.
+
+**Recommendations**
+- For improved type checks, make sure you do not erase types of arrays of Loader objects: Replace `const loaders: Loader[] = [CSVLoader, JSONLoader];` with `const loaders = [CSVLoader, JSONLoader] as const satisfies Loader[];` or `const loaders: Loader[] = [CSVLoader, JSONLoader] as const;`.
 
 ## Upgrading to v4.2
 
 **@loaders.gl/mvt** 
 
-- `options.gis.forma`t is deprecated. Use `options.mvt.shape` instead.
+**Deprecations**
+- `loaders.gl/mvt` - options.gis.format` is deprecated. Use `options.mvt.shape` instead.
 
 ## Upgrading to v4.2
 
+**Recommendations**
 - For improved type checks, it is now possible to add `dataType` and `batchType` fields to any custom loader objects.
 
 ## Upgrading to v4.1
 
-**@loaders.gl/wkt**
+**Breaking Changes**
+- `@loaders.gl/wkt`- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
 
-- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
-- The `geometry` shape is deprecated, and now called `geojson-geometry`.
+**Deprecations**
+- `@loaders.gl/wkt`- The `geometry` shape is deprecated, and now called `geojson-geometry`.
 
 ## Upgrading to v4.0
 
 **Node.js v18+**
 
-When using loaders.gl on Node.js your application should import the `@loaders.gl/polyfills` module
-before calling any loaders.gl functions.
+When using loaders.gl on Node.js your application should import the `@loaders.gl/polyfills` module before calling any loaders.gl functions.
 
 **Typed Loaders**
 

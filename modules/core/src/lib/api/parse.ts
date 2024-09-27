@@ -9,7 +9,9 @@ import type {
   DataType,
   LoaderWithParser,
   LoaderOptionsType,
-  LoaderReturnType
+  LoaderReturnType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType
 } from '@loaders.gl/loader-utils';
 import {parseWithWorker, canParseWithWorker, mergeLoaderOptions} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
@@ -39,15 +41,19 @@ export async function parse<
 /**
  * Parses `data` asynchronously by matching one of the supplied loader
  */
-export async function parse(
+export async function parse<
+  LoaderArrayT extends Loader[],
+  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+>(
   data: DataType | Promise<DataType>,
-  loaders: Loader[],
-  options?: LoaderOptions,
+  loaders: LoaderArrayT,
+  options?: OptionsT,
   context?: LoaderContext
-): Promise<unknown>;
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
 
 /**
  * Parses data asynchronously by matching a pre-registered loader
+ * @deprecated Loader registration is deprecated, use parse(data, loaders, options) instead
  */
 export async function parse(
   data: DataType | Promise<DataType>,

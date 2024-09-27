@@ -29,14 +29,24 @@ export type {
   LoaderOptions,
   LoaderOptionsType,
   LoaderReturnType,
-  LoaderBatchType
+  LoaderBatchType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType,
+  LoaderArrayBatchType
 } from './loader-types';
 
 export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';
 
 // writers
 
-export type {Writer, WriterWithEncoder, WriterOptions, WriterOptionsType} from './writer-types';
+export type {
+  Writer,
+  WriterWithEncoder,
+  WriterOptions,
+  WriterOptionsType,
+  WriterDataType,
+  WriterBatchType
+} from './writer-types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
