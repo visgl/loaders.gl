@@ -6,13 +6,15 @@ Target Release Date: June 2024
 
 A minor release that includes:
 
-- **[`Source`](/docs/developer-guide/using-sources) support** - Improvements for multi-step data loading.
+- **TypeScript improvements** - Typecript v5.6, loader type inference improvements
+- **multi-step data loading** - See [`DataSource`](/docs/developer-guide/using-sources)
 - **examples** - modernized to latest React and minimized boilerplate code.
 - **website** - more format examples are now available.
 - **Node.js** - Tests now run on Node 20.
 
 **@loaders.gl/core**
 
+- loader type inference improvements: `load()`, `parse()`, etc now infer correct option and return types when an array of loaders is passed.
 - [`createDataSource`](/docs/modules/core/api-reference/create-data-source) - Create a `DataSource` from a list of `Source` objects.
 - [`selectSource`](/docs/modules/core/api-reference/select-source) - Select the appropriate `Source` from a list of `Source` objects.
 

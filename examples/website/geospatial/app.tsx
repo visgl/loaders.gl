@@ -79,7 +79,7 @@ const LOADER_OPTIONS = {
   tcx: {
     shape: 'geojson-table'
   }
-};
+} as const;
 
 const VIEW_STATE = {
   height: 600,

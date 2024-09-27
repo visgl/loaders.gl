@@ -16,8 +16,8 @@ const getGlobalLoaderRegistry = () => {
   return state.loaderRegistry;
 };
 
-/** 
- * Register a list of global loaders 
+/**
+ * Register a list of global loaders
  * @note Registration erases loader type information.
  * @deprecated It is recommended that applications manage loader registration. This function will likely be remove in loaders.gl v5
  */

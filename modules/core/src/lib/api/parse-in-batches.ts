@@ -9,8 +9,10 @@ import type {
   LoaderOptions,
   LoaderContext,
   BatchableDataType,
+  LoaderOptionsType,
   LoaderBatchType,
-  LoaderOptionsType
+  LoaderArrayOptionsType,
+  LoaderArrayBatchType
 } from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -39,15 +41,19 @@ export async function parseInBatches<
 /**
  * Parses `data` using one of the supplied loaders
  */
-export async function parseInBatches(
+export async function parseInBatches<
+  LoaderArrayT extends Loader[],
+  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+>(
   data: BatchableDataType,
-  loaders: Loader[],
-  options?: LoaderOptions,
+  loaders: LoaderArrayT,
+  options?: OptionsT,
   context?: LoaderContext
-): Promise<AsyncIterable<unknown>>;
+): Promise<LoaderArrayBatchType<LoaderArrayT>>;
 
 /**
  * Parses `data` in batches by selecting a pre-registered loader
+ * @deprecated Loader registration is deprecated, use parseInBatches(data, loaders, options) instead
  */
 export async function parseInBatches(
   data: BatchableDataType,
