@@ -5,7 +5,7 @@
 import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {TextureLevel} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
-import parseBasis from './lib/parsers/parse-basis';
+import {parseBasis} from './lib/parsers/parse-basis';
 
 /** Options for the BasisLoader */
 export type BasisLoaderOptions = LoaderOptions & {

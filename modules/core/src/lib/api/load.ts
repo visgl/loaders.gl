@@ -48,24 +48,17 @@ export async function load<
   context?: LoaderContext
 ): Promise<LoaderArrayReturnType<LoaderArrayT>>;
 
-// export async function load(
-//   url: string | DataType,
-//   loaders: Loader[],
-//   options?: LoaderOptions,
-//   context?: LoaderContext
-// ): Promise<unknown>;
-
+/**
+ * Loads data asynchronously by matching a pre-registered loader
+ * @deprecated Loader registration is deprecated, use load(data, loaders, options) instead
+ */
 export async function load(
   url: string | DataType,
   loaders?: LoaderOptions,
   context?: LoaderContext
 ): Promise<unknown>;
 
-/**
- * Loads data asynchronously by matching a pre-registered loader
- * @deprecated Loader registration is deprecated, use load(data, loaders, options) instead
- */
-export async function load(url: string | DataType, loaders: LoaderOptions): Promise<any>;
+// export async function load(url: string | DataType, loaders: LoaderOptions): Promise<any>;
 
 // implementation signature
 export async function load(

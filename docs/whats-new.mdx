@@ -6,7 +6,7 @@ Target Release Date: June 2024
 
 A minor release that includes:
 
-- **TypeScript improvements** - Typecript v5.6, loader type inference improvements
+- **TypeScript improvements** - Typecript v5.6, loader and writer type inference improvements
 - **multi-step data loading** - See [`DataSource`](/docs/developer-guide/using-sources)
 - **examples** - modernized to latest React and minimized boilerplate code.
 - **website** - more format examples are now available.
@@ -14,7 +14,8 @@ A minor release that includes:
 
 **@loaders.gl/core**
 
-- loader type inference improvements: `load()`, `parse()`, etc now infer correct option and return types when an array of loaders is passed.
+- `Loader` type inference improvements: `load()`, `parse()`, `parseSync()` and `parseInBatches()` now infer correct option and return types when an array of loaders is passed.
+- `Writer` type inference improvements: `encode()`, `encodeSync()` and `encodeInBatches()` now infer correct option and data types matching the specified writer.
 - [`createDataSource`](/docs/modules/core/api-reference/create-data-source) - Create a `DataSource` from a list of `Source` objects.
 - [`selectSource`](/docs/modules/core/api-reference/select-source) - Select the appropriate `Source` from a list of `Source` objects.
 
