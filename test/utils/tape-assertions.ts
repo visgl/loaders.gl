@@ -26,6 +26,13 @@ export function tapeEquals(t: TapeTest, a: any, b: any, msg?: string, extra?: an
 }
 
 // eslint-disable-next-line max-params
-export function tapeEqualsEpsilon(t: TapeTest, a: any, b: any, epsilon: number, msg?: string, extra?: any) {
+export function tapeEqualsEpsilon(
+  t: TapeTest,
+  a: any,
+  b: any,
+  epsilon: number,
+  msg?: string,
+  extra?: any
+) {
   return withEpsilon(epsilon, () => tapeEquals(t, a, b, msg, extra));
 }

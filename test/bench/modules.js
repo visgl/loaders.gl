@@ -16,7 +16,7 @@ import imageBench from '@loaders.gl/images/test/images.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 // import mvtBench from '@loaders.gl/mvt/test/mvt-loader.bench';
 import {parquetBench} from '@loaders.gl/parquet/test/parquet.bench';
-import shapefileBench from '@loaders.gl/shapefile/test/shapefile.bench';
+// import shapefileBench from '@loaders.gl/shapefile/test/shapefile.bench';
 
 import cryptoBench from '@loaders.gl/crypto/test/crypto.bench';
 // import i3sLoaderBench from '@loaders.gl/i3s/test/i3s-loader.bench';

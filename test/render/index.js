@@ -8,13 +8,13 @@ import {TEST_CASES} from './test-cases';
 
 const TOTAL_TIMEOUT = TEST_CASES.reduce((t, testCase) => t + (testCase.timeout || 2000), 0);
 
-test('RenderTest', t => {
+test('RenderTest', (t) => {
   t.timeoutAfter(TOTAL_TIMEOUT);
 
   new SnapshotTestRunner({width: 800, height: 450})
     .add(TEST_CASES)
     .run({
-      onTestStart: testCase => t.comment(testCase.name),
+      onTestStart: (testCase) => t.comment(testCase.name),
       onTestPass: (testCase, result) => t.pass(`match: ${result.matchPercentage}`),
       onTestFail: (testCase, result) => t.fail(result.error || `match: ${result.matchPercentage}`),
 

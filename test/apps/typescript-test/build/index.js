@@ -1,6 +1,6 @@
-import { SHPLoader } from "@loaders.gl/shapefile";
+import {SHPLoader} from '@loaders.gl/shapefile';
 (() => {
-    if (SHPLoader) {
-        console.log('compiled');
-    }
+  if (SHPLoader) {
+    console.log('compiled');
+  }
 })();

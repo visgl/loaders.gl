@@ -90,7 +90,7 @@ function getChildS2VolumeBox(
  * @param implicitOptions - options specified at the root of this implicit tile tree - numbers of levels, URL templates.
  * @param loaderOptions - see Tiles3DLoaderOptions.
  */
-// eslint-disable-next-line max-statements
+// eslint-disable-next-line max-statements, complexity
 export async function parseImplicitTiles(params: {
   subtree: Subtree;
   subtreeData?: {level: number; x: number; y: number; z: number};
