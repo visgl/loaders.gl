@@ -33,7 +33,7 @@ getSupportedImageTypes(): Promise<Set<string>>
 
 Returns a promise that resolves to a `Set` of MIME types that `@loaders.gl/images` can parse on the current platform (depends on the current browser, or whether the app is running under Node.js).
 
-> This function is asynchronous which can be inconvenient to use. However, for technical reasons, asynchronous testing of supported image formats is significantly more reliable and is recommended in browsers. 
+> This function is asynchronous which can be inconvenient to use. However, for technical reasons, asynchronous testing of supported image formats is significantly more reliable and is recommended in browsers.
 >
 > A small caveat is that some formats like AVIF and WebP support different options in terms of bit-depths and packing and a specific browser may not support all combinations, this function just tests for basic image support.
 
@@ -49,7 +49,7 @@ isImageTypeSupported(mimeType : string): boolean
 
 - `mimeType`: value to test
 
-Synchronously checks if an image type is supported. 
+Synchronously checks if an image type is supported.
 
 Returns `true` if `mimeType` is one of the MIME types that `@loaders.gl/images` can use on the current platform (depends on browser, or whether running under Node.js).
 
@@ -88,11 +88,12 @@ The following image types are distinguished
 | Image Type      | JavaScript Type                                                         | Description                                                                                                                                       |
 | --------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `'data'`        | A simple JavaScript object with `data`, `width`, `height` etc. fields.. | Useful when additional manipulation of the image data is desired. Always used in Node.js since `ImageBitmap` and `Image` types are not available. |
-| `'imagebitmap'` | [`ImageBitmap`][image_bitmap]                                                           | The preferred new HTML5 image class that is optimized for fast rendering (avialble in modern browsers only)                                    |
-| `'image'`       | [`Image`][image] (aka `HTMLImageElement`)                                          | Fallback, supported in all browsers (but less performant and flexible than ImageBitmap)                                                           |
+| `'imagebitmap'` | [`ImageBitmap`][image_bitmap]                                           | The preferred new HTML5 image class that is optimized for fast rendering (avialble in modern browsers only)                                       |
+| `'image'`       | [`Image`][image] (aka `HTMLImageElement`)                               | Fallback, supported in all browsers (but less performant and flexible than ImageBitmap)                                                           |
 
 [image_bitmap]: https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap
 [image]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image
+
 ### getImageData()
 
 ```typescript

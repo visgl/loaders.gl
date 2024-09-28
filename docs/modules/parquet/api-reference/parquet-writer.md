@@ -5,7 +5,6 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg)](/studio/user-guide/import" alt="BETA" />
 </p>
 
-
 ## Supported Files
 
 The Parquet format supports a large set of features (data types, encodings, compressions, encryptions etc) it require time and contributions for the loaders.gl implementation to provide support for all variations.

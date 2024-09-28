@@ -4,10 +4,10 @@ Streaming loader for GeoJSON encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
-| File Extension | `.geojson`                                              |
-| Media Type     | `application/geo+json` |
+| File Extension | `.geojson`                                           |
+| Media Type     | `application/geo+json`                               |
 | File Type      | Text                                                 |
-| File Format    | [GeoJSON][format_geojson]            |
+| File Format    | [GeoJSON][format_geojson]                            |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
 

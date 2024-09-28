@@ -4,11 +4,11 @@ Support for loading tiled data from [PMTiles](/docs/modules/pmtiles/formats/pmti
 
 ## Loaders and Writers
 
-| Loader                                                                  |
-| ----------------------------------------------------------------------- |
+| Loader                                                                |
+| --------------------------------------------------------------------- |
 | [`PMTilesSource`](/docs/modules/pmtiles/api-reference/pmtiles-source) |
 
 ## Attribution
 
-This module wraps the [protomaps PMTiles library](https://github.com/protomaps/PMTiles/blob/main/LICENSE) 
+This module wraps the [protomaps PMTiles library](https://github.com/protomaps/PMTiles/blob/main/LICENSE)
 under BSD 3-Clause license.

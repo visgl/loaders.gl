@@ -6,17 +6,17 @@ Several geospatial formats return data in the form of lists of lng/lat encoded g
 
 ## Geospatial Category Loaders
 
-| Loader                                                   | Type   | `geojson`                               | `binary`          | `raw`      | `batch`         | comments |
-| -------------------------------------------------------- | ------ | --------------------------------------- | ----------------- | ---------- | --------------- | -------- |
+| Loader                                                    | Type   | `geojson`                               | `binary`          | `raw`      | `batch`         | comments |
+| --------------------------------------------------------- | ------ | --------------------------------------- | ----------------- | ---------- | --------------- | -------- |
 | [`GPXLoader`](/docs/modules/kml/api-reference/gpx-loader) | Layers | `FeatureCollection`                     | attributes object | parsed XML |
 | [`KMLLoader`](/docs/modules/kml/api-reference/kml-loader) | Layers | `FeatureCollection`                     | attributes object | parsed XML |
 | [`TCXLoader`](/docs/modules/kml/api-reference/tcx-loader) |        | `FeatureCollection`                     | attributes object | parsed XML |
-| `GeoJSONLoader`                                          |        | `FeatureCollection`                     |
-| `ShapefileLoader`                                        |        | `FeatureCollection`                     | attributes object | -          |                 |
-| `SHPLoader`                                              |        | `FeatureCollection`                     | attributes object | -          | only geometries |
-| `FlatGeobufLoader`                                       |        | `FeatureCollection`                     | -                 | -          |
+| `GeoJSONLoader`                                           |        | `FeatureCollection`                     |
+| `ShapefileLoader`                                         |        | `FeatureCollection`                     | attributes object | -          |                 |
+| `SHPLoader`                                               |        | `FeatureCollection`                     | attributes object | -          | only geometries |
+| `FlatGeobufLoader`                                        |        | `FeatureCollection`                     | -                 | -          |
 | [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) | Layers | `FeatureCollections`                    |
-| `GeoPackageLoader`                                       | Layers | `FeatureCollections`                    | -                 | -          |
+| `GeoPackageLoader`                                        | Layers | `FeatureCollections`                    | -                 | -          |
 | [`WKBLoader`](/docs/modules/wkt/api-reference/wkb-loader) | Single | a single geojson geometry (not feature) | -                 | -          | only geometry   |
 | [`WKTLoader`](/docs/modules/wkt/api-reference/wkt-loader) | Single | a single geojson geometry (not feature) | -                 | -          | only geometry   |
 

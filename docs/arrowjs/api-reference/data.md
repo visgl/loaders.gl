@@ -2,7 +2,6 @@
 
 > This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
 
-
 Untyped storage backing for `Vector`.
 
 Can be thought of as array of `ArrayBuffer` instances.
@@ -36,7 +35,6 @@ readonly typeId: T['TType'];
 readonly buffers: `Buffers<T>`;
 
 readonly nullCount: Number;
-
 
 ## Static Methods
 
@@ -79,8 +77,8 @@ Convenience methods for creating Data instances for each of the Arrow Vector typ
 ### `Data.Union<T extends SparseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, children: `(Data | Vector)[])` : Data
 
 ### `Data.Union<T extends DenseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, valueOffsets: ValueOffsetsBuffer, children: `(Data | Vector)[])` : Data
-}
 
+}
 
 ## Methods
 
@@ -89,5 +87,3 @@ Convenience methods for creating Data instances for each of the Arrow Vector typ
 ### clone(type: DataType, offset?: Number, length?: Number, nullCount?: Number, buffers?: `Buffers<R>`, childData?: (Data | Vector)[]) : Data;
 
 ### slice(offset: Number, length: Number) : Data
-
-

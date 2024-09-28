@@ -6,11 +6,11 @@
 
 The `@loaders.gl/wkt` module handles the following formats:
 
-| Format                                         | Description                      |
-| ---------------------------------------------- | -------------------------------- |
-| [`Well Known Text (WKT)`](/docs/modules/wkt/formats/wkt)         | ASCII format for geometry features |
-| [`Well Known Binary (WKB)`](/docs/modules/wkt/formats/wkb)         | Binary format for geometry features         |
-| [`Well Known Text Coordinate Reference System (WKT-CRS)`](/docs/modules/wkt/formats/wkt-crs) | Text format for spatial reference systems        |
+| Format                                                                                       | Description                               |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| [`Well Known Text (WKT)`](/docs/modules/wkt/formats/wkt)                                     | ASCII format for geometry features        |
+| [`Well Known Binary (WKB)`](/docs/modules/wkt/formats/wkb)                                   | Binary format for geometry features       |
+| [`Well Known Text Coordinate Reference System (WKT-CRS)`](/docs/modules/wkt/formats/wkt-crs) | Text format for spatial reference systems |
 
 ## Loaders and Writers
 
@@ -22,7 +22,6 @@ The `@loaders.gl/wkt` module handles the following formats:
 | [`WKTWriter`](/docs/modules/wkt/api-reference/wkt-writer)        |
 | [`WKTCRSLoader`](/docs/modules/wkt/api-reference/wkt-crs-loader) |
 | [`WKTCRSWriter`](/docs/modules/wkt/api-reference/wkt-crs-writer) |
-
 
 ## Attribution
 

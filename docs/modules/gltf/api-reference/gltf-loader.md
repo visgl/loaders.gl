@@ -58,10 +58,9 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 | `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).             |
 | `gltf.normalize`        | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format. |
 
-
 ## Working with GLTF data
 
-The job of `GLTFLoader` is to open the glTF container file(s) and extract the glTF JSON, together with any associated binary chunks and images. 
+The job of `GLTFLoader` is to open the glTF container file(s) and extract the glTF JSON, together with any associated binary chunks and images.
 
 If you already have access to libraries or code that process standard glTF JSON directly, this format may be appropriate. However, in this 'storage optimized" form, traversing the loaded glTF scene graph tends to required verbose and repetitive code with lots of checks and guards.
 
@@ -90,7 +89,6 @@ The standard glTF JSON structure will be available in the `json` field.
 ```
 
 However, the objects inside these arrays will have been pre-processed to simplify usage. For details on changes and extra fields added to the various glTF objects, see [post processing](post-process-gltf).
-
 
 ```typescripton
 {
@@ -127,4 +125,3 @@ However, the objects inside these arrays will have been pre-processed to simplif
 | `buffers[\*].byteOffset`  | `Number`      | `null`  | offset of buffer (embedded in larger binary block)               |
 | `buffers[\*].byteLength`  | `ArrayBuffer` | `null`  | length of buffer (embedded in larger binary block)               |
 | `_glb`?                   | `Object`      | N/A     | The output of the GLBLoader if the parsed file was GLB formatted |
-

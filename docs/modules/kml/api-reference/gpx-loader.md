@@ -6,16 +6,15 @@
 
 The `GPXLoader` parses [GPX files][gpx_wikipedia] into GeoJSON. From Wikipedia:
 
-
-| Loader                | Characteristic                             |
-| --------------------- | ------------------------------------------ |
-| File Extension        | `.gpx`                                     |
-| File Type             | Text                                       |
-| File Format           | [GPX][gpx_wikipedia]                       |
+| Loader                | Characteristic                           |
+| --------------------- | ---------------------------------------- |
+| File Extension        | `.gpx`                                   |
+| File Type             | Text                                     |
+| File Format           | [GPX][gpx_wikipedia]                     |
 | Data Format           | [GIS](/docs/specifications/category-gis) |
-| Decoder Type          | Synchronous                                |
-| Worker Thread Support | No                                         |
-| Streaming Support     | No                                         |
+| Decoder Type          | Synchronous                              |
+| Worker Thread Support | No                                       |
+| Streaming Support     | No                                       |
 
 [gpx_wikipedia]: https://en.wikipedia.org/wiki/GPS_Exchange_Format
 

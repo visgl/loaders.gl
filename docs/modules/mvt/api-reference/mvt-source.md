@@ -6,12 +6,12 @@
 
 The `MVTSource` dynamically loads tiles, typically from big pre-tiled hierarchies on cloud storage.
 
-| Source                | Characteristic                                       |
-| --------------------- | ---------------------------------------------------- |
-| File Extension        | `.mvt` `.tilejson`                                   |
-| File Type             | Binary Archive                                       |
-| File Format           | [Mapbox Vector Tiles](/docs/modules/mvt/formats/mvt) |
-| Data Format           | GeoJSON                                              |
+| Source         | Characteristic                                       |
+| -------------- | ---------------------------------------------------- |
+| File Extension | `.mvt` `.tilejson`                                   |
+| File Type      | Binary Archive                                       |
+| File Format    | [Mapbox Vector Tiles](/docs/modules/mvt/formats/mvt) |
+| Data Format    | GeoJSON                                              |
 
 ## Usage
 

@@ -112,7 +112,7 @@ Returns an array of extensions at any level of the glTF hierarchy that are requi
 
 ### getRemovedExtensions(): string[]
 
-When loaders.gl parses a glTF file, by default it pre-processes and removes certain extensions (e.g. various mesh and image compression formats), see documentation on glTF extensions for more information. 
+When loaders.gl parses a glTF file, by default it pre-processes and removes certain extensions (e.g. various mesh and image compression formats), see documentation on glTF extensions for more information.
 
 The resulting glTF is intended to be identical to a glTF created without those extensions. However in some cases it is useful to know what extensions were removed during preprocessing.
 
@@ -188,7 +188,7 @@ Add extensionName to list of required extensions
 
 ### removeExtension(extensionName)
 
-Removes an extension name string from the top-level glTF extension fields (`extensionsUsed` and `extensionsRequired`) if present. 
+Removes an extension name string from the top-level glTF extension fields (`extensionsUsed` and `extensionsRequired`) if present.
 Also adds the same extensionName to the `extensionsRemoved`.
 
 ### setObjectExtension(object, extensionName, data)

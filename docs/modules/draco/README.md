@@ -12,8 +12,8 @@ npm install @loaders.gl/core @loaders.gl/draco
 
 ## Loaders and Writers
 
-| Loader                                                               |
-| -------------------------------------------------------------------- |
+| Loader                                                                |
+| --------------------------------------------------------------------- |
 | [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)       |
 | [`DracoWorkerLoader`](/docs/modules/draco/api-reference/draco-loader) |
 | [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer)       |

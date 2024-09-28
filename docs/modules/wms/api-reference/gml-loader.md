@@ -8,7 +8,7 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-The `GMLLoader` parses the XML-formatted response from the 
+The `GMLLoader` parses the XML-formatted response from the
 the [OGC](https://www.opengeospatial.org/)-standardized [GML](https://www.ogc.org/standards/wms) (Geographic Markup Language) file format into a standard geospatial feature table.
 
 > Note that the GML standard is very ambitious and full support of the format is out of scope.
@@ -18,7 +18,7 @@ the [OGC](https://www.opengeospatial.org/)-standardized [GML](https://www.ogc.or
 | File Extension        | `.gml`                                               |
 | File Type             | Text                                                 |
 | File Format           | [GML](https://en.wikipedia.org/wiki/Web_Map_Service) |
-| Data Format           | Data structure         |
+| Data Format           | Data structure                                       |
 | Decoder Type          | Synchronous                                          |
 | Worker Thread Support | Yes                                                  |
 | Streaming Support     | No                                                   |

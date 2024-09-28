@@ -8,7 +8,7 @@ Synchronous parsing is not supported by all loaders. Refer to the documentation 
 When calling parse from a loader to invoke a sub-loader, do not use this function. Use `parseSyncWithContext` counterparts in `@loaders.gl/loader-utils``
 :::
 
-The `parseSync()` function parses data synchronously using the provided loader, if possible. 
+The `parseSync()` function parses data synchronously using the provided loader, if possible.
 
 ```typescript
 parseSync(data: ArrayBuffer | string, loaders: Loader, options?: LoaderOptions, url?: string]]) : unknown

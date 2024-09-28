@@ -1,7 +1,7 @@
 # postProcessGLTF
 
-The `postProcessGLTF` function transforms standards-compliant glTF JSON 
-into an inter-linked JavaScript data structure that it significantly easier to work with. 
+The `postProcessGLTF` function transforms standards-compliant glTF JSON
+into an inter-linked JavaScript data structure that it significantly easier to work with.
 
 For details see below.
 
@@ -44,22 +44,21 @@ The GLTF post processor copies objects in the input gltf json field as necessary
 - Returns a strongly typed "modified version" of glTF: `GLTFPostprocessed`
 - The `GLTFPostprocessed` type has less optional fields. Many optional `GLTF` fields will be required and populated with empty arrays etc as appropriate.
 - "Resolves" references to GLTF objects. glTF objects reference other object with integer indexes. Such indexes will be replaced with object references, simplifying iteration over the scenegraph.
-- Generates required `id` fields for all objects. 
+- Generates required `id` fields for all objects.
 
 ## Post Processing of glTF Extensions
 
-Mhile many glTF extensions can only be handled in the final renderer, some extensions are "structural" and can be processed during the loading / post processing stage. 
+Mhile many glTF extensions can only be handled in the final renderer, some extensions are "structural" and can be processed during the loading / post processing stage.
 
-Such structural extensions may represent alternate, optional, more efficient ways to store data etc. 
+Such structural extensions may represent alternate, optional, more efficient ways to store data etc.
 Examples are mesh compressions such as Draco, or alternate image formats for textures.
 
 By handling these extensions during loading, less work needs to be done by the upstream renderer.
 
-| Extension                                               | Preprocessed | Description                                |
-| ------------------------------------------------------- | ------------ | ------------------------------------------ |
+| Extension                                                | Preprocessed | Description                                |
+| -------------------------------------------------------- | ------------ | ------------------------------------------ |
 | [KHR_draco_mesh_compression][KHR_draco_mesh_compression] | Y            | Decompresses draco-compressed geometries   |
 | [EXT_meshopt_compression][EXT_meshopt_compression])      | Y            | Decompresses meshopt-compressed geometries |
-
 
 ## Detailed Post Processing Notes
 

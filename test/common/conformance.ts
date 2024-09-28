@@ -64,7 +64,7 @@ export function validateMeshCategoryData(t, data) {
  * Check if the returned data from loaders use the format specified in `ColumnarTable`:
  *  modules/schema/src/category/table/table-types.ts
  */
- export function validateTableCategoryData(t, data) {
+export function validateTableCategoryData(t, data) {
   t.equals(data.shape, 'columnar-table');
   t.ok(data.data);
   let hasAttributes = false;
@@ -72,7 +72,9 @@ export function validateMeshCategoryData(t, data) {
   for (const attributeName in data.data) {
     hasAttributes = true;
     const value = data.data[attributeName];
-    if (!('length' in value && 'byteOffset' in value && 'byteLength' in value && 'buffer' in value)) {
+    if (
+      !('length' in value && 'byteOffset' in value && 'byteLength' in value && 'buffer' in value)
+    ) {
       attributesError = true;
     }
   }

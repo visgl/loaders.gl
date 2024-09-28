@@ -11,8 +11,8 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers
 
-| Loader                                                   |
-| -------------------------------------------------------- |
+| Loader                                                    |
+| --------------------------------------------------------- |
 | [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader) |
 
 ## Attribution

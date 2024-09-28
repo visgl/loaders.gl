@@ -30,7 +30,6 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, BSONLoader, {bson: options});
 ```
 
-
 ## Options
 
 Supports table category options such as `batchType` and `batchSize`.
@@ -38,5 +37,5 @@ Supports table category options such as `batchType` and `batchSize`.
 | Option | From | Type | Default | Description |
 | ------ | ---- | ---- | ------- | ----------- |
 
-Note: Currently passes through options to the underlying `js-bson` module 
+Note: Currently passes through options to the underlying `js-bson` module
 but this may change in future versions and should not be relied upon.

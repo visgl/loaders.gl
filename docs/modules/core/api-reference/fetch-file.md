@@ -1,7 +1,7 @@
 # fetchFile
 
-The `fetchFile()` function is an alternative to the built-in 
-[`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/fetch) function. 
+The `fetchFile()` function is an alternative to the built-in
+[`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/fetch) function.
 `fetchFile` provides additional functionality to support Node.js and testing use cases:
 
 - load from local file system under Node.js
@@ -12,8 +12,7 @@ The `fetchFile()` function is an alternative to the built-in
 fetchFile(url: string | Blob, options?: RequestInit) : Promise<Response>
 ```
 
-A wrapper around the platform  function with some additions:
-
+A wrapper around the platform function with some additions:
 
 Returns:
 
@@ -40,14 +39,14 @@ The `fetchFile()` function supports fetching data from the local file system und
 to the built-in `fetch` function. Other URLs will be interpreted as local files.
 
 :::caution
-loaders.gl v4.0+ applications no longer need to install the `@loaders.gl/polyfills` 
+loaders.gl v4.0+ applications no longer need to install the `@loaders.gl/polyfills`
 module to get `fetch` support under Node.js v18+.
 :::
 
 ## Path prefix resolution
 
-`fetchFile()` injects any prefix set by the `setPathPrefix()` API. 
-Note that the path prefix mechanism is mainly intended to help small example applications 
+`fetchFile()` injects any prefix set by the `setPathPrefix()` API.
+Note that the path prefix mechanism is mainly intended to help small example applications
 to load data from the right place. It is not intended to support general application use cases, so use sparingly.
 
 ## Alias resolution
@@ -95,7 +94,6 @@ const data = await parse(fetch(url), OBJLoader);
 ```
 
 ## Functions
-
 
 ## Remarks
 

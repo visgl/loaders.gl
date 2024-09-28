@@ -4,7 +4,6 @@
 
 - `biogrid-nodes.arrow` - from graphistry.
 
-
 ## geoarrow
 
 ```sh

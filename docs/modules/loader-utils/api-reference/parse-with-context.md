@@ -22,4 +22,3 @@ parse(data: ArrayBuffer, options: LoaderOptions, context?: LoaderContext) {
 ### parseSyncWithContext
 
 ### parseInBatchesWithContext
-

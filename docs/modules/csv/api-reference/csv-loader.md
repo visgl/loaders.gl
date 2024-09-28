@@ -2,14 +2,14 @@
 
 Streaming loader for comma-separated value and [delimiter-separated value](https://en.wikipedia.org/wiki/Delimiter-separated_values) encoded files.
 
-| Loader         | Characteristic                                       |
-| -------------- | ---------------------------------------------------- |
+| Loader         | Characteristic                                      |
+| -------------- | --------------------------------------------------- |
 | File Format    | [CSV](/docs/modules/csv/formats/csv)                |
 | Data Format    | [Tables](/docs/specifications/category-table)       |
-| File Type      | Text                                                 |
-| File Extension | `.csv`, `.tsv`, `.dsv`                               |
-| MIME Types     | `text/csv`, `text/tab-separated-values`, `text/dsv`  |
-| Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
+| File Type      | Text                                                |
+| File Extension | `.csv`, `.tsv`, `.dsv`                              |
+| MIME Types     | `text/csv`, `text/tab-separated-values`, `text/dsv` |
+| Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`      |
 
 ## Usage
 
@@ -35,7 +35,7 @@ const data = await load(url_to_csv_without_header, CSVLoader, {csv: {header: fal
 ## Options
 
 | Option                  | Type              | Default            | Description                                                                                                                                                                                                                                                                                     |
-| ----------------------- | ----------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ----------------------- | ----------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `csv.shape`             | String            | `object-row-table` | `'object-row-table'` rows are objects (keyed by colum name). `'array-row-table'` rows are arrays of values.                                                                                                                                                                                     |
 | `csv.header`            | Boolean \| String | `auto`             | If `true`, the first row of parsed data will be interpreted as field names. If `false`, the first row is interpreted as data.                                                                                                                                                                   |
 | `csv.columnPrefix`      | String            | `column`           | The prefix to use when naming columns for CSV files with no header. Defaults to 'column1', 'column2' etc.                                                                                                                                                                                       |

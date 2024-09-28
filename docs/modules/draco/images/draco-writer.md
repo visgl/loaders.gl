@@ -2,15 +2,15 @@
 
 The `DracoWriter` encodes a mesh or point cloud (maps of attributes) using [Draco3D](https://google.github.io/draco/) compression.
 
-| Loader                | Characteristic                               |
-| --------------------- | -------------------------------------------- |
-| File Extension        | `.drc`                                       |
-| File Typoe            | Binary                                       |
+| Loader                | Characteristic                             |
+| --------------------- | ------------------------------------------ |
+| File Extension        | `.drc`                                     |
+| File Typoe            | Binary                                     |
 | Data Format           | [Mesh](/docs/specifications/category-mesh) |
-| File Format           | [Draco](https://google.github.io/draco/)     |
-| Encoder Type          | Synchronous                                  |
-| Worker Thread Support | Yes                                          |
-| Streaming Support     | No                                           |
+| File Format           | [Draco](https://google.github.io/draco/)   |
+| Encoder Type          | Synchronous                                |
+| Worker Thread Support | Yes                                        |
+| Streaming Support     | No                                         |
 
 ## Usage
 

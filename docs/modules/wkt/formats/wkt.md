@@ -7,8 +7,8 @@
 
 Well-known text (WKT) for geometry is a text markup language for representing vector geometry objects. It is specified in the OGC Simple Feature Access standard (ISO/IEC 13249-3:2016).
 
-- WKT should not be confused with [WKT CRS](./wkt-crs) which describes spatial reference systems. 
-- WKT has a binary equivalent, well-known binary [WKB](./wkb), which is a more compact, but non human-readable form. 
+- WKT should not be confused with [WKT CRS](./wkt-crs) which describes spatial reference systems.
+- WKT has a binary equivalent, well-known binary [WKB](./wkb), which is a more compact, but non human-readable form.
 
 ## Examples
 
@@ -28,8 +28,7 @@ Well-known text (WKT) for geometry is a text markup language for representing ve
 
 | Format | Support | Description                                        |
 | ------ | ------- | -------------------------------------------------- |
-| EWKT   | ❌       | WKT that starts with a spatial reference id (SRID) |
-
+| EWKT   | ❌      | WKT that starts with a spatial reference id (SRID) |
 
 ## Alternatives
 
@@ -48,7 +47,7 @@ Well-known text (WKT) for geometry is a text markup language for representing ve
 
 WKT can represent a range of distinct geometric objects.
 
-*Note that some implementations, including loaders.gl, only handle the core GeoJSON geometry equivalents (points, line strings, polygons and to a varying degrees geometry collections of the same).*
+_Note that some implementations, including loaders.gl, only handle the core GeoJSON geometry equivalents (points, line strings, polygons and to a varying degrees geometry collections of the same)._
 
 | Geometry                               |
 | -------------------------------------- |
@@ -60,4 +59,3 @@ WKT can represent a range of distinct geometric objects.
 | `Triangle`                             |
 | `PolyhedralSurface`                    |
 | `TIN` (Triangulated irregular network) |
-

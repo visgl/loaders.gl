@@ -14,75 +14,77 @@ The `WMSService` implements the `ImageService` interface, allowing WMS services 
 
 ## Usage
 
-A `WMSService` instance provides type safe methods to send requests to a WMS service and parse the responses: 
+A `WMSService` instance provides type safe methods to send requests to a WMS service and parse the responses:
 
 ```typescript
-  const wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {layers: ['oms']}});
-  const mapImage = await wmsService.getMap({
-    width: 800,
-    height: 600,
-    bbox: [30, 70, 35, 75]
-  });
-  // Render mapImage...
+const wmsService = new WMSService({url: WMS_SERVICE_URL, wmsParameters: {layers: ['oms']}});
+const mapImage = await wmsService.getMap({
+  width: 800,
+  height: 600,
+  bbox: [30, 70, 35, 75]
+});
+// Render mapImage...
 ```
 
-Capabilities metadata can be queried: 
+Capabilities metadata can be queried:
+
 ```typescript
-  const wmsService = new WMSService({url: WMS_SERVICE_URL});
-  const capabilities = await wmsService.getCapabilities({});
-  // Check capabilities
+const wmsService = new WMSService({url: WMS_SERVICE_URL});
+const capabilities = await wmsService.getCapabilities({});
+// Check capabilities
 ```
 
 The WMS version as well as other default WMS parameters can be specified in the constructor
 
 ```typescript
-  // Specify the older 1.1.1 version (1.3.0 is the default)
-  const wmsService = new WMSService({url: WMS_SERVICE_URL, version: '1.1.1', layers: ['oms']});
-  const getMap = await wmsService.getMap({
-    width: 800,
-    height: 600,
-    bbox: [30, 70, 35, 75],
-    
-  });
+// Specify the older 1.1.1 version (1.3.0 is the default)
+const wmsService = new WMSService({url: WMS_SERVICE_URL, version: '1.1.1', layers: ['oms']});
+const getMap = await wmsService.getMap({
+  width: 800,
+  height: 600,
+  bbox: [30, 70, 35, 75]
+});
 ```
 
-Custom fetch options, such as HTTP headers, and loader-specific options can be specified via the 
+Custom fetch options, such as HTTP headers, and loader-specific options can be specified via the
 standard loaders.gl `loadOptions` argument, which is forwarded to all load and parse operations:
 
 ```typescript
-  const wmsService = new WMSService({url: WMS_SERVICE_URL, loadOptions: {
+const wmsService = new WMSService({
+  url: WMS_SERVICE_URL,
+  loadOptions: {
     fetch: {
       headers: {
         Authentication: 'Bearer abc...'
       }
     }
-  }});
+  }
+});
 
-  const getMap = await wmsService.getMap({
-    width: 800,
-    height: 600,
-    bbox: [30, 70, 35, 75],
-    layers: ['oms']
-  });
+const getMap = await wmsService.getMap({
+  width: 800,
+  height: 600,
+  bbox: [30, 70, 35, 75],
+  layers: ['oms']
+});
 ```
 
 For special use cases, is possible to use the `WMSService` to just generate URLs, so that the application issue its own requests and parse responses.
 
 ```typescript
-  const wmsService = new WMSService({url: WMS_SERVICE_URL});
-  const getMapUrl = await wmsService.getMapURL({
-    width: 800,
-    height: 600,
-    bbox: [30, 70, 35, 75],
-    layers: ['oms']
-  });
-  const response = await myCustomFetch(getMapURL);
-  // parse...
+const wmsService = new WMSService({url: WMS_SERVICE_URL});
+const getMapUrl = await wmsService.getMapURL({
+  width: 800,
+  height: 600,
+  bbox: [30, 70, 35, 75],
+  layers: ['oms']
+});
+const response = await myCustomFetch(getMapURL);
+// parse...
 ```
 
-
 ## Methods
-  
+
 ### constructor()
 
 Creates a `WMSService` instance
@@ -133,15 +135,15 @@ Get a map image
 
 ```typescript
 export type WMSGetMapParameters = {
-  bbox: [number, number, number, number]; // bounding box of the requested map image 
-  width: number; // pixel width of returned image 
-  height: number; // pixels 
+  bbox: [number, number, number, number]; // bounding box of the requested map image
+  width: number; // pixel width of returned image
+  height: number; // pixels
 
   // constructor parameters can be overridden in the actual calls
-  layers?: string | string[]; // Layers to render 
-  styles?: unknown; // Styling 
-  crs?: string; // crs for the image (not the bounding box) 
-  format?: 'image/png'; // requested format for the return image 
+  layers?: string | string[]; // Layers to render
+  styles?: unknown; // Styling
+  crs?: string; // crs for the image (not the bounding box)
+  format?: 'image/png'; // requested format for the return image
 };
 ```
 
@@ -179,7 +181,7 @@ export type WMSGetFeatureInfoParameters = {
 
 > This request is not supported by all WNS servers. Use `getCapabilities()` to determine if it is.
 
-Get more information about a layer. 
+Get more information about a layer.
 
 ```typescript
   async describeLayer(
@@ -208,12 +210,9 @@ Get an image with a semantic legend
 ```
 
 ```typescript
-export type WMSGetLegendGraphicParameters = {
-};
+export type WMSGetLegendGraphicParameters = {};
 ```
 
 ## Limitations
 
 The `WMSService` only supports WMS URL parameters generation and HTTP GET requests against a WMS server. The OGC WMS standard also allows WMS services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported.
- 
-

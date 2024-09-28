@@ -7,15 +7,15 @@
 
 > The experimental `KTX2BasisUniversalTextureWriter` class can encode a decoded image into a KTX2 texture.
 
-| Loader         | Characteristic                                         |
-| -------------- | ------------------------------------------------------ |
-| File Extension | `.ktx2`                                                |
-| File Type      | Binary                                                 |
-| Data Format    | https://github.com/KhronosGroup/KTX-Specification/blob/main/ktxspec.adoc         |
-| File Format    | KTX2                                                   |
-| Encoder Type   | Asynchronous                                           |
-| Worker Thread  | No (but may run on separate native thread in browsers) |
-| Streaming      | No                                                     |
+| Loader         | Characteristic                                                           |
+| -------------- | ------------------------------------------------------------------------ |
+| File Extension | `.ktx2`                                                                  |
+| File Type      | Binary                                                                   |
+| Data Format    | https://github.com/KhronosGroup/KTX-Specification/blob/main/ktxspec.adoc |
+| File Format    | KTX2                                                                     |
+| Encoder Type   | Asynchronous                                                             |
+| Worker Thread  | No (but may run on separate native thread in browsers)                   |
+| Streaming      | No                                                                       |
 
 ## Usage
 

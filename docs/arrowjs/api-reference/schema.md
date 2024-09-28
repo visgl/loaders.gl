@@ -22,16 +22,12 @@ TBD - List of dictionaries (each dictionary is associated with a column that is 
 
 TBD - List of fields
 
-
 ## Methods
 
 ### constructor(fields: Field[], metadata?: Object, dictionaries?: Object, dictionaryFields?: Object)
 
 Creates a new schema instance.
 
-
 ### select(columnNames) : Schema
 
 Returns a new `Schema` with the Fields indicated by the column names.
-
-

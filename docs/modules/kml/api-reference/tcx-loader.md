@@ -6,15 +6,15 @@
 
 The `TCXLoader` parses [TCX files][tcx_wikipedia] into GeoJSON. From Wikipedia:
 
-| Loader                | Characteristic                             |
-| --------------------- | ------------------------------------------ |
-| File Extension        | `.tcx`                                     |
-| File Type             | Text                                       |
-| File Format           | [TCX][tcx_wikipedia]                       |
+| Loader                | Characteristic                           |
+| --------------------- | ---------------------------------------- |
+| File Extension        | `.tcx`                                   |
+| File Type             | Text                                     |
+| File Format           | [TCX][tcx_wikipedia]                     |
 | Data Format           | [GIS](/docs/specifications/category-gis) |
-| Decoder Type          | Synchronous                                |
-| Worker Thread Support | No                                         |
-| Streaming Support     | No                                         |
+| Decoder Type          | Synchronous                              |
+| Worker Thread Support | No                                       |
+| Streaming Support     | No                                       |
 
 [tcx_wikipedia]: https://en.wikipedia.org/wiki/Training_Center_XML
 

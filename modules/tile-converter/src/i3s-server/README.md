@@ -23,6 +23,7 @@ Example for path `./data/BatchTextured/SceneServer/layers/0/...`:
 ```bash
 PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./data" DEBUG=i3s-server:* npx i3s-server
 ```
+
 #### Check the layer availability
 
 The layer should be available on URLs:
@@ -47,6 +48,7 @@ Example for path `../datasets/Rancho_Mesh_mesh_v17_1.slpk`:
 ```bash
 PORT=8080 HTTPS_PORT=4443 I3sLayerPath="../datasets/Rancho_Mesh_mesh_v17_1.slpk" DEBUG=i3s-server:* npx i3s-server
 ```
+
 #### Check the layer availability
 
 The layer should be available on URLs:

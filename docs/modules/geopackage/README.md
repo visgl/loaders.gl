@@ -12,8 +12,8 @@ npm install @loaders.gl/geopackage
 
 ## Loaders and Writers
 
-| Loader                                                                        |
-| ----------------------------------------------------------------------------- |
+| Loader                                                                         |
+| ------------------------------------------------------------------------------ |
 | [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) |
 
 ## Attribution

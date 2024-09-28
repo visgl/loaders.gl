@@ -4,8 +4,8 @@
 &emsp;
 ![apache-logo](../../../images/logos/apache-logo.png)
 
-- *[`@loaders.gl/parquet`](/docs/modules/parquet)*
-- *[Parquet](https://parquet.apache.org/docs/file-format/)*
+- _[`@loaders.gl/parquet`](/docs/modules/parquet)_
+- _[Parquet](https://parquet.apache.org/docs/file-format/)_
 
 Parquet is a binary columnar format optimized for compact storage on disk.
 
@@ -26,16 +26,15 @@ Since Parquet is designed for read-write access, compression is applied per colu
 A wide range of compression codecs are supported. Internal parquet compression formats.
 
 | Type           | Read | Write |
-| -------------- | ---- | ----- |
-| `UNCOMPRESSED` | ✅    | ✅     |
-| `GZIP`         | ✅    | ✅     |
-| `SNAPPY`       | ✅    | ✅     |                                                                         |
-| `BROTLI`       | ✅    | No    |                                                                         |
-| `LZO`          | ❌    | ❌     | There is currently no readily available browser-based LZO module for JS |
-| `LZ4`          | ✅    | ✅     |
-| `LZ4_RAW`      | ✅    | ✅     |
-| `ZSTD`         | ✅    | ✅     |                                                                         |
-
+| -------------- | ---- | ----- | ----------------------------------------------------------------------- |
+| `UNCOMPRESSED` | ✅   | ✅    |
+| `GZIP`         | ✅   | ✅    |
+| `SNAPPY`       | ✅   | ✅    |                                                                         |
+| `BROTLI`       | ✅   | No    |                                                                         |
+| `LZO`          | ❌   | ❌    | There is currently no readily available browser-based LZO module for JS |
+| `LZ4`          | ✅   | ✅    |
+| `LZ4_RAW`      | ✅   | ✅    |
+| `ZSTD`         | ✅   | ✅    |                                                                         |
 
 ## Encoding
 
@@ -45,12 +44,12 @@ The following Parquet encodings are supported:
 
 | Encoding                  | Read | Write | Types                                                                                                                                                                    |
 | ------------------------- | ---- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `PLAIN`                   | ✅    | ✅     | All                                                                                                                                                                      |
-| `PLAIN_DICTIONARY`        | ✅    | ✅     | All                                                                                                                                                                      |
-| `RLE_DICTIONARY`          | ✅    | ❌     | All                                                                                                                                                                      |
-| `DELTA_BINARY_PACKED`     | ❌    | ❌     | `INT32`, `INT64`, `INT_8`, `INT_16`, `INT_32`, `INT_64`, `UINT_8`, `UINT_16`, `UINT_32`, `UINT_64`, `TIME_MILLIS`, `TIME_MICROS`, `TIMESTAMP_MILLIS`, `TIMESTAMP_MICROS` |
-| `DELTA_BYTE_ARRAY`        | ❌    | ❌     | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
-| `DELTA_LENGTH_BYTE_ARRAY` | ❌    | ❌     | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
+| `PLAIN`                   | ✅   | ✅    | All                                                                                                                                                                      |
+| `PLAIN_DICTIONARY`        | ✅   | ✅    | All                                                                                                                                                                      |
+| `RLE_DICTIONARY`          | ✅   | ❌    | All                                                                                                                                                                      |
+| `DELTA_BINARY_PACKED`     | ❌   | ❌    | `INT32`, `INT64`, `INT_8`, `INT_16`, `INT_32`, `INT_64`, `UINT_8`, `UINT_16`, `UINT_32`, `UINT_64`, `TIME_MILLIS`, `TIME_MICROS`, `TIMESTAMP_MILLIS`, `TIMESTAMP_MICROS` |
+| `DELTA_BYTE_ARRAY`        | ❌   | ❌    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
+| `DELTA_LENGTH_BYTE_ARRAY` | ❌   | ❌    | `BYTE_ARRAY`, `UTF8`                                                                                                                                                     |
 
 ## Repetition
 
@@ -58,17 +57,15 @@ There are three repetition types in Parquet:
 
 | Repetition | Supported |
 | ---------- | --------- |
-| `REQUIRED` | ✅         |
-| `OPTIONAL` | ✅         |
-| `REPEATED` | ✅         |
-
+| `REQUIRED` | ✅        |
+| `OPTIONAL` | ✅        |
+| `REPEATED` | ✅        |
 
 ### Record Shredding
 
 The optional and repeated flags allow for very flexible, nested JSON like data storage in table cells.
 
 The algorithm for compacting is referred to as [Record Shredding](https://www.joekearney.co.uk/posts/understanding-record-shredding)
-
 
 ## Types
 

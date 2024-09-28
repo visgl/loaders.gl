@@ -3,33 +3,40 @@
 ## Upgrading to v4.3 (In development)
 
 **Breaking Changes**
+
 - `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
 - `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
 
 **Deprecations**
+
 - `loaders.gl/core` - `registerLoaders()` is deprecated. Loader registration erases types and it is preferable that applications manage loader registration themselves if needed.
 
 **Recommendations**
+
 - For improved type checks, make sure you do not erase types of arrays of Loader objects: Replace `const loaders: Loader[] = [CSVLoader, JSONLoader];` with `const loaders = [CSVLoader, JSONLoader] as const satisfies Loader[];` or `const loaders: Loader[] = [CSVLoader, JSONLoader] as const;`.
 
 ## Upgrading to v4.2
 
-**@loaders.gl/mvt** 
+**@loaders.gl/mvt**
 
 **Deprecations**
-- `loaders.gl/mvt` - options.gis.format` is deprecated. Use `options.mvt.shape` instead.
+
+- `loaders.gl/mvt` - options.gis.format`is deprecated. Use`options.mvt.shape` instead.
 
 ## Upgrading to v4.2
 
 **Recommendations**
+
 - For improved type checks, it is now possible to add `dataType` and `batchType` fields to any custom loader objects.
 
 ## Upgrading to v4.1
 
 **Breaking Changes**
+
 - `@loaders.gl/wkt`- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
 
 **Deprecations**
+
 - `@loaders.gl/wkt`- The `geometry` shape is deprecated, and now called `geojson-geometry`.
 
 ## Upgrading to v4.0
@@ -46,17 +53,17 @@ Loaders now return typed data. This addition of types into previously untyped co
 
 Some loaders can return multiple formats, often controlled with the loader options `shape` parameter. Note that many returned data types now also include a `shape` field which contain a string value the specifies the shape of the data. This goal is that this should result in a "discriminated union". Switching on the `returnedData.shape` field will then allow typescript to correctly determine which type of data was returned.
 
-**Apache Arrow JS** 
+**Apache Arrow JS**
 
-loaders.gl now imports `apache-arrow` v13 which is a major upgrade but Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x_). 
+loaders.gl now imports `apache-arrow` v13 which is a major upgrade but Apache Arrow JS v9 introduces breaking change (compared with Apache Arrow v4 which is used by loaders.gl v3.x\_).
 
-If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes. 
+If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes.
 
-On the upside, the new Apache Arrow API is more modular and "tree shakeable" (meaning that only the Apache Arrow functionality your application is actually using is included in your application bundle). 
+On the upside, the new Apache Arrow API is more modular and "tree shakeable" (meaning that only the Apache Arrow functionality your application is actually using is included in your application bundle).
 
 Since Apache Arrow JS does yet not come with upgrade notes, you can refer to the [loaders.gl Arrow documentation](/docs/arrowjs/upgrade-guide).
 
-**Table Schemas** 
+**Table Schemas**
 
 If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" lower-overhead loaders.gl schemas. You can recover Arrow schemas as follows
 
@@ -68,7 +75,7 @@ const arrowSchema = deserializeArrowSchema(table.schema);
 
 **Polyfills**
 
-If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` 
+If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()`
 function under Node.js that supported fetching from local files.
 loaders.gl v4 uses the built-in fetch in Node.js v18+ (which doesn't support fetching from local files), so fetch from local files, you now need to use `fetchFile()` instead.
 

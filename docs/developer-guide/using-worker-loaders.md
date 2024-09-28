@@ -89,7 +89,7 @@ This can be useful e.g. when building applications that cannot access CDNs or wh
 ```typescript
 /**
  * For instance, with vite.
- * 
+ *
  * https://vitejs.dev/guide/assets.html#explicit-url-imports
  */
 import mvtLoaderUrl from '@loaders.gl/mvt/mvt-worker.js?url';

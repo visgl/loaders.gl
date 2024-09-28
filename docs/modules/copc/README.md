@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square" alt="From-v4.1" />
 </p>
 
-The `@loaders.gl/copc` module provides support for the [COPC](/docs/modules/copc/formats/copc) format. 
+The `@loaders.gl/copc` module provides support for the [COPC](/docs/modules/copc/formats/copc) format.
 
 ## Installation
 

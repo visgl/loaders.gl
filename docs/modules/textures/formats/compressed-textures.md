@@ -56,7 +56,7 @@ As mentioned the actual compressed subimages are not parsed or modified by loade
 The following is a list of the most common compressed texture formats, which loaders.gl can properly tag:
 
 | Format                                                                 | aka                | Description                                     |
-| ---------------------------------------------------------------------- | ------------------ |
+| ---------------------------------------------------------------------- | ------------------ | ----------------------------------------------- |
 | [`S3TC`](https://en.wikipedia.org/wiki/S3_Texture_Compression)         | DXTn, DXTC, or BCn | S3 texture compression formats                  |
 | [`PVRTC`](https://en.wikipedia.org/wiki/PVRTC)                         |                    | PowerVR texture compression formats             |
 | [`ETC`](https://en.wikipedia.org/wiki/Ericsson_Texture_Compression)    | ETC1, ETC2, EAC    | Ericsoon texture compression formats            |

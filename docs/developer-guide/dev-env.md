@@ -56,10 +56,12 @@ You will of course need to install the basic JavaScript development tools. Unles
 - `https://www.liquidweb.com/kb/how-to-install-nvm-node-version-manager-for-node-js-on-ubuntu-12-04-lts/`
 - `https://github.com/nvm-sh/nvm#install--update-script`
 - `https://github.com/nvm-sh/nvm/releases`
+
 ```bash
 nvm install 16
 nvm use 16
 ```
+
 (Node 16 is currently recommeded for building and development of loaders 3.3. NPM comes with the NodeJS in this case)
 
 #### Optional: Install Node and NPM manually
@@ -88,6 +90,7 @@ sudo apt-get install jq
 ```
 
 ### Install build-essential package
+
 This step might be required for some systems that do not have required packages pre-installed.
 
 ```bash

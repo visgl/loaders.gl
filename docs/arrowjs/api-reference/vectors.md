@@ -4,11 +4,9 @@
 
 ## Overview
 
-
 ## Usage
 
 Constructing new `Vector` instances is done through the static `from()` methods
-
 
 ## Special Vectors
 
@@ -18,45 +16,45 @@ The Dictionary type is a special array type that enables one or more record batc
 
 A `Dictionary` is similar to a `factor` in R or a pandas, or "Categorical" in Python. It is is often used with strings to save memory and improve performance.
 
-
 ### StructVector
 
 Holds nested fields.
 
-
 ### Bool Vectors
 
-| Bool Vectors            |
-| ---                     |
-| `BoolVector`            |
-
+| Bool Vectors |
+| ------------ |
+| `BoolVector` |
 
 ### Binary Vectors
 
-| Binary Vectors          |
-| ---                     |
-| `BinaryVector`          |
-
+| Binary Vectors |
+| -------------- |
+| `BinaryVector` |
 
 ## FloatVectors
 
-| Float Vectors           | Backing         | Comments                  |
-| ---                     |
-| `Float16Vector`         | `Uint16Array`   | No native JS 16 bit type, additional methods available |
-| `Float32Vector`         | `Float32Array`  | Holds 32 bit floats       |
-| `Float64Vector`         | `Float64Array`  | Holds 64 bit floats       |
-
+| Float Vectors   | Backing        | Comments                                               |
+| --------------- | -------------- | ------------------------------------------------------ |
+| `Float16Vector` | `Uint16Array`  | No native JS 16 bit type, additional methods available |
+| `Float32Vector` | `Float32Array` | Holds 32 bit floats                                    |
+| `Float64Vector` | `Float64Array` | Holds 64 bit floats                                    |
 
 ### Static FloatVector Methods
 
 ### FloatVector.from(data: Uint16Array): Float16Vector;
-### FloatVector.from(data: Float32Array): Float32Vector;
-### FloatVector.from(data: Float64Array): Float64Vector;
-### FloatVector16.from(data: Uint8Array | `Iterable<Number>`): Float16Vector;
-### FloatVector16.from(data: Uint16Array | `Iterable<Number>`): Float16Vector;
-### FloatVector32.from(data: Float32['TArray'] | `Iterable<Number>`): Float32Vector;
-### FloatVector64.from(data: Float64['TArray'] | `Iterable<Number>`): Float64Vector;
 
+### FloatVector.from(data: Float32Array): Float32Vector;
+
+### FloatVector.from(data: Float64Array): Float64Vector;
+
+### FloatVector16.from(data: Uint8Array | `Iterable<Number>`): Float16Vector;
+
+### FloatVector16.from(data: Uint16Array | `Iterable<Number>`): Float16Vector;
+
+### FloatVector32.from(data: Float32['TArray'] | `Iterable<Number>`): Float32Vector;
+
+### FloatVector64.from(data: Float64['TArray'] | `Iterable<Number>`): Float64Vector;
 
 ## Float16Vector Methods
 
@@ -76,19 +74,18 @@ This method will convert values to 32 bit floats. Allocates a new Array.
 
 This method will convert values to 64 bit floats. Allocates a new Array.
 
-
 ## IntVectors
 
-| Int Vectors             | Backing         | Comments                  |
-| ---                     | ---             | ---                       |
-| `Int8Vector`            | `Int8Array`     |                           |
-| `Int16Vector`           | `Int16Array`    |                           |
-| `Int32Vector`           | `Int32Array`    |                           |
-| `Int64Vector`           | `Int32Array`    | 64-bit values stored as pairs of `lo, hi` 32-bit values for engines without BigInt support, extra methods available |
-| `Uint8Vector`           | `Uint8Array`    |                           |
-| `Uint16Vector`          | `Uint16Array `  |                           |
-| `Uint32Vector`          | `Uint32Array `  |                           |
-| `Uint64Vector`          | `Uint32Array`   | 64-bit values stored as pairs of `lo, hi` 32-bit values for engines without BigInt support, extra methods available |
+| Int Vectors    | Backing        | Comments                                                                                                            |
+| -------------- | -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `Int8Vector`   | `Int8Array`    |                                                                                                                     |
+| `Int16Vector`  | `Int16Array`   |                                                                                                                     |
+| `Int32Vector`  | `Int32Array`   |                                                                                                                     |
+| `Int64Vector`  | `Int32Array`   | 64-bit values stored as pairs of `lo, hi` 32-bit values for engines without BigInt support, extra methods available |
+| `Uint8Vector`  | `Uint8Array`   |                                                                                                                     |
+| `Uint16Vector` | `Uint16Array ` |                                                                                                                     |
+| `Uint32Vector` | `Uint32Array ` |                                                                                                                     |
+| `Uint64Vector` | `Uint32Array`  | 64-bit values stored as pairs of `lo, hi` 32-bit values for engines without BigInt support, extra methods available |
 
 ## Int64Vector Methods
 
@@ -117,25 +114,36 @@ Note: as of 03/2019, `BigUint64Array` is only available in v8/Chrome. In JS runt
 ## Static IntVector Methods
 
 ### IntVector.from(data: Int8Array): Int8Vector;
+
 ### IntVector.from(data: Int16Array): Int16Vector;
+
 ### IntVector.from(data: Int32Array, is64?: boolean): Int32Vector | Int64Vector;
+
 ### IntVector.from(data: Uint8Array): Uint8Vector;
+
 ### IntVector.from(data: Uint16Array): Uint16Vector;
+
 ### IntVector.from(data: Uint32Array, is64?: boolean): Uint32Vector | Uint64Vector;
 
-### Int8Vector.from(this: typeof Int8Vector,   data: Int8Array   | `Iterable<number>`): Int8Vector;
-### Int16Vector.from(this: typeof Int16Vector,  data: Int16Array  | `Iterable<number>`): Int16Vector;
-### Int32Vector.from(this: typeof Int32Vector,  data: Int32Array  | `Iterable<number>`): Int32Vector;
-### Int64Vector.from(this: typeof Int64Vector,  data: Int32Array  | `Iterable<number>`): Int64Vector;
-### Uint8Vector.from(this: typeof Uint8Vector,  data: Uint8Array  | `Iterable<number>`): Uint8Vector;
-### Uint16Vector.from(this: typeof Uint16Vector, data: Uint16Array | `Iterable<number>`): Uint16Vector;
-### Uint32Vector.from(this: typeof Uint32Vector, data: Uint32Array | `Iterable<number>`): Uint32Vector;
-### Uint64Vector.from(this: typeof Uint64Vector, data: Uint32Array | `Iterable<number>`): Uint64Vector;
+### Int8Vector.from(this: typeof Int8Vector, data: Int8Array | `Iterable<number>`): Int8Vector;
 
+### Int16Vector.from(this: typeof Int16Vector, data: Int16Array | `Iterable<number>`): Int16Vector;
+
+### Int32Vector.from(this: typeof Int32Vector, data: Int32Array | `Iterable<number>`): Int32Vector;
+
+### Int64Vector.from(this: typeof Int64Vector, data: Int32Array | `Iterable<number>`): Int64Vector;
+
+### Uint8Vector.from(this: typeof Uint8Vector, data: Uint8Array | `Iterable<number>`): Uint8Vector;
+
+### Uint16Vector.from(this: typeof Uint16Vector, data: Uint16Array | `Iterable<number>`): Uint16Vector;
+
+### Uint32Vector.from(this: typeof Uint32Vector, data: Uint32Array | `Iterable<number>`): Uint32Vector;
+
+### Uint64Vector.from(this: typeof Uint64Vector, data: Uint32Array | `Iterable<number>`): Uint64Vector;
 
 ## Date Vectors
 
-| Date Vectors            | Backing       |                     |
-| ---                     | ---           | ---                 |
-| `DateDayVector`         | `Int32Array`  |                     |
-| `DateMillisecondVector` | `Int32Array`  | TBD - stride: 2?    |
+| Date Vectors            | Backing      |                  |
+| ----------------------- | ------------ | ---------------- |
+| `DateDayVector`         | `Int32Array` |                  |
+| `DateMillisecondVector` | `Int32Array` | TBD - stride: 2? |

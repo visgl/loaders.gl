@@ -14,8 +14,8 @@ The `@loaders.gl/wms` module provides support for a subset of the OGC Web Servic
 
 ## Services
 
-| OGC Protocol/Format                                                    | Supported    | Description                                                                                                                          |
-| ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| OGC Protocol/Format                                                                 | Supported    | Description                                                                                                                          |
+| ----------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | [**CSW**](/docs/modules/wms/formats/csw) (Catalog Service for the Web) protocol     | Y            | protocol for reading a catalog of geospatial assets and services from a URL.                                                         |
 | [**WMS**](/docs/modules/wms/formats/wms) (Web Map Service) protocol                 | Y            | protocol for serving geo-referenced map images over the internet.                                                                    |
 | [**WFS**](/docs/modules/wms/formats/wfs) (Web Feature Service) protocol             | experimental | protocol for serving geo-referenced map features (geometries) over the internet.                                                     |

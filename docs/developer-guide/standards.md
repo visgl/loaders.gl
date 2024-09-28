@@ -32,10 +32,9 @@ Developing standards
 | **WMC**                                                                         | No                | Used in WMS clients to save the configuration of maps and to load them again later. Can also be exchanged between different clients. |
 | **OWS Context**                                                                 | No                | Allows configured information resources to be passed between applications primarily as a collection of services.                     |
 
-
 ## Non-Standards
 
-| Format                                                                               |
-| ------------------------------------------------------------------------------------ | ----------------------- |
-| Shapefile                                                                            | `@loaders.gl/shapefile` |
-| [**LERC**](/docs/modules/lerc/formats/lerc) (Limited Error Raster Compression) format | `@loaders.gl/wms`       | . |
+| Format                                                                                |
+| ------------------------------------------------------------------------------------- | ----------------------- | --- |
+| Shapefile                                                                             | `@loaders.gl/shapefile` |
+| [**LERC**](/docs/modules/lerc/formats/lerc) (Limited Error Raster Compression) format | `@loaders.gl/wms`       | .   |

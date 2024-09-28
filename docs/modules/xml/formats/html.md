@@ -1,12 +1,13 @@
 # HTML
 
-- *[`@loaders.gl/xml`](/docs/modules/xml)*
+- _[`@loaders.gl/xml`](/docs/modules/xml)_
 
-HTML (Hyper Text Markup Language) is a (slightly incompatible) profile of XML. 
+HTML (Hyper Text Markup Language) is a (slightly incompatible) profile of XML.
 
-The goals of the `HTMLLoader` in loaders.gl are quite limited. 
+The goals of the `HTMLLoader` in loaders.gl are quite limited.
 
-It is designed for minimal ad-hoc use cases such as 
+It is designed for minimal ad-hoc use cases such as
+
 - the extraction of an error string from an HTML formatted error response from a server
 - or possibly to extract some valuable information (perhaps the URL to a geospatial service) from a server that doesn't provide more structured return formats (such as JSON or XML).
 

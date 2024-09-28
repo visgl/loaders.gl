@@ -4,15 +4,15 @@
 
 The `KMLLoader` parses [KML files][kml_wikipedia] into GeoJSON. From Wikipedia:
 
-| Loader                | Characteristic                             |
-| --------------------- | ------------------------------------------ |
-| File Extension        | `.kml`                                     |
-| File Type             | Text                                       |
-| File Format           | [KML][kml_wikipedia]                       |
+| Loader                | Characteristic                           |
+| --------------------- | ---------------------------------------- |
+| File Extension        | `.kml`                                   |
+| File Type             | Text                                     |
+| File Format           | [KML][kml_wikipedia]                     |
 | Data Format           | [GIS](/docs/specifications/category-gis) |
-| Decoder Type          | Synchronous                                |
-| Worker Thread Support | No                                         |
-| Streaming Support     | No                                         |
+| Decoder Type          | Synchronous                              |
+| Worker Thread Support | No                                       |
+| Streaming Support     | No                                       |
 
 [kml_wikipedia]: https://en.wikipedia.org/wiki/Keyhole_Markup_Language
 

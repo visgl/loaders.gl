@@ -8,4 +8,4 @@ const suite = new Bench({
   minIterations: 1
 });
 
-addModuleBenchmarksToSuite(suite).then(_ => suite.run());
+addModuleBenchmarksToSuite(suite).then((_) => suite.run());

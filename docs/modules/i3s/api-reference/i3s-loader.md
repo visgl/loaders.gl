@@ -17,8 +17,8 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 
 ## I3S Layer type support
 
-| Layer Type           | Supported      | I3S Spec Link                                                                  |
-| -------------------- | -------------- | ------------------------------------------------------------------------------ |
+| Layer Type           | Supported       | I3S Spec Link                                                                  |
+| -------------------- | --------------- | ------------------------------------------------------------------------------ |
 | 3DObject             | ✅              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/3Dobject_ReadMe.md       |
 | Integrated Mesh      | ✅              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/IntegratedMesh_ReadMe.md |
 | Points               | ❌              | https://github.com/Esri/i3s-spec/blob/master/docs/1.7/Point_ReadMe.md          |
@@ -29,18 +29,18 @@ A loader for loading an [Indexed 3d Scene (I3S) layer](https://github.com/Esri/i
 
 | Aspect                | Supported | I3S Spec Link                                                                                |
 | --------------------- | --------- | -------------------------------------------------------------------------------------------- |
-| Node pages            | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md                        |
-| Compressed attributes | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/compressedAttributes.cmn.md            |
-| PBR materials         | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md            |
-| Feature attributes    | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/attributeStorageInfo.cmn.md            |
-| Texture Atlas         | ✅         | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md#atlas-usage-and-regions |
+| Node pages            | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/nodePage.cmn.md                        |
+| Compressed attributes | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/compressedAttributes.cmn.md            |
+| PBR materials         | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/pbrMetallicRoughness.cmn.md            |
+| Feature attributes    | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/attributeStorageInfo.cmn.md            |
+| Texture Atlas         | ✅        | https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md#atlas-usage-and-regions |
 
 ## Texture formats
 
 I3S textures specification - https://github.com/Esri/i3s-spec/blob/master/docs/1.8/texture.cmn.md
 
-| Texture                                        | Supported    |
-| ---------------------------------------------- | ------------ |
+| Texture                                        | Supported     |
+| ---------------------------------------------- | ------------- |
 | JPEG                                           | ✅            |
 | PNG                                            | ✅            |
 | .dds with DXT1 (no alpha)                      | ✅            |

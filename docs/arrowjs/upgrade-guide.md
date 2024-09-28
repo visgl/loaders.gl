@@ -2,7 +2,7 @@
 
 Unfortunately for JavaScript users, Apache Arrow JS does not publish detailed ugrade guides notes beyond the common [Apache Arrow release notes](https://arrow.apache.org/release/).
 
-Also Apache Arrow JS follows a common cross-language versioning number scheme which leads to frequent major release bumps, that confusingly do not contain any significant JavaScript changes (sometimes a major version bump has no JavaScript changes at all). 
+Also Apache Arrow JS follows a common cross-language versioning number scheme which leads to frequent major release bumps, that confusingly do not contain any significant JavaScript changes (sometimes a major version bump has no JavaScript changes at all).
 
 The biggest changes were made in Apache Arrow JS Version 9.0 (based on feedback from loaders.gl users).
 
@@ -46,7 +46,6 @@ The downside is that upgrading through Arrow JS v7.0-v9.0 tends to require a big
 | --------------- | -------------- | --------------------------------------------------------------------------------- |
 | `Column` class  | `Vector` class | The `Vector` class now supports chunking, removing the need for a `Column` class. |
 
-
 **Removed static constructors**
 
 | Removed Feature                 | Alternative             | Comment                                                                           |
@@ -55,7 +54,6 @@ The downside is that upgrading through Arrow JS v7.0-v9.0 tends to require a big
 | `Column` static factory methods | `makeVector()` function |
 | `Table` static factory methods  | `makeTable()` function  |
 | `Schema` static factory methods | `makeSchema()` function |
-
 
 **DataFrame removal** - A number of pre-9.0 features didn’t really fit into Arrow core functionality. These features were really a library on top of Arrow, and in the trade-off of keeping the Arrow JS core lean, they were removed.
 

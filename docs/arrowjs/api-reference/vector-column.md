@@ -7,25 +7,27 @@ An immutable column data structure consisting of a field (type metadata) and a c
 ## Usage
 
 Copy a column
+
 ```typescript
 const typedArray = column.slice();
 ```
 
 Get a contiguous typed array from a `Column` (creates a new typed array unless only one chunk)
+
 ```typescript
 const typedArray = column.toArray();
 ```
 
 columns are iterable
+
 ```typescript
 let max = column.get(0);
 let min = max;
 for (const value of column) {
-  if      (value > max) max = value;
+  if (value > max) max = value;
   else if (value < min) min = value;
 }
 ```
-
 
 ## Inheritance
 
@@ -41,12 +43,9 @@ The name of the column (short for `field.name`)
 
 Returns the `Field` instance that describes for the column.
 
-
 ## Methods
 
-
 ### constructor(field : Field, vectors: Vector, offsets?: Uint32Array)
-
 
 ### clone
 
@@ -54,4 +53,4 @@ Returns a new `Column` instance with the same properties.
 
 ### getChildAt(index : Number) : Vector
 
-Returns the `Vector` that contains the element with 
+Returns the `Vector` that contains the element with
