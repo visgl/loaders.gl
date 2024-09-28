@@ -1,13 +1,13 @@
 # PLY - Polygon File Format
 
-- *[`@loaders.gl/ply`](/docs/modules/ply)*
-- *[PLY documentation](http://paulbourke.net/dataformats/ply/)*
+- _[`@loaders.gl/ply`](/docs/modules/ply)_
+- _[PLY documentation](http://paulbourke.net/dataformats/ply/)_
 
 PLY (Polygon File Format, also known as the Stanford Triangle Format) is a format for storing graphical objects that are described as a collection of polygons.
 
 The PLY format has two sub-formats: an ASCII representation for easily getting started, and a binary version for compact storage and for rapid saving and loading.
 
-PLY files are sometimes used for storing point clouds, however the format is designed to describes a mesh object as a collection of vertices, faces and other elements, along with properties such as color and normal direction that can be attached to these elements. 
+PLY files are sometimes used for storing point clouds, however the format is designed to describes a mesh object as a collection of vertices, faces and other elements, along with properties such as color and normal direction that can be attached to these elements.
 
 Sources
 
@@ -24,13 +24,13 @@ This is the structure of a typical PLY file:
 - Face List
 - (lists of other elements)
 
-The header is a series of carriage-return terminated lines of text that describe the remainder of the file. The ASCII header contains lines such as 
-- a description of each element type, including the element's name (e.g. "edge"), 
-- how many such elements are in the object, and a list of the various properties associated with the element. 
-- whether the file is binary or ASCII. 
+The header is a series of carriage-return terminated lines of text that describe the remainder of the file. The ASCII header contains lines such as
+
+- a description of each element type, including the element's name (e.g. "edge"),
+- how many such elements are in the object, and a list of the various properties associated with the element.
+- whether the file is binary or ASCII.
 
 Following the header is one list of elements for each element type, presented in the order described in the header.
-
 
 ## Example File
 

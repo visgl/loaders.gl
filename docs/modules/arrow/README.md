@@ -4,7 +4,7 @@
 &emsp;
 ![apache-logo](../../images/logos/apache-logo.png)
 
-The `@loaders.gl/arrow` module provides support for the [Apache Arrow](/docs/modules/arrow/formats/arrow) and [GeoArrow](/docs/modules/arrow/formats/geoarrow) formats. 
+The `@loaders.gl/arrow` module provides support for the [Apache Arrow](/docs/modules/arrow/formats/arrow) and [GeoArrow](/docs/modules/arrow/formats/geoarrow) formats.
 
 ## Installation
 
@@ -14,14 +14,14 @@ npm install @loaders.gl/core @loaders.gl/arrow
 
 ## Loaders and Writers
 
-| Loader                                                               |
-| -------------------------------------------------------------------- |
+| Loader                                                                |
+| --------------------------------------------------------------------- |
 | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader)       |
 | [`ArrowWorkerLoader`](/docs/modules/arrow/api-reference/arrow-loader) |
-| [`GeoArrowLoader`](/docs/modules/arrow/api-reference/geoarrow-loader)       |
+| [`GeoArrowLoader`](/docs/modules/arrow/api-reference/geoarrow-loader) |
 
-| Writer                                                         |
-| -------------------------------------------------------------- |
+| Writer                                                          |
+| --------------------------------------------------------------- |
 | [`ArrowWriter`](/docs/modules/arrow/api-reference/arrow-writer) |
 
 ## Additional APIs

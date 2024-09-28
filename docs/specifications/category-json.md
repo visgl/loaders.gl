@@ -1,9 +1,10 @@
 # JSON-style Loaders
 
 The _json_ category loaders supports loading loosely structured data including:
-- associative arrays (also known as name-value pairs), 
+
+- associative arrays (also known as name-value pairs),
 - integer indexed arrays
-- and a suite of fundamental scalar types. 
+- and a suite of fundamental scalar types.
 
 ## JSON Category Loaders
 

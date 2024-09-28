@@ -2,16 +2,16 @@
 
 The `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values.
 
-| Loader                | Characteristic                                |
-| --------------------- | --------------------------------------------- |
-| File Extension        | `.png`, `.pngraw`                             |
-| File Type             | Binary                                        |
-| File Format           | Encoded height map                            |
+| Loader                | Characteristic                             |
+| --------------------- | ------------------------------------------ |
+| File Extension        | `.png`, `.pngraw`                          |
+| File Type             | Binary                                     |
+| File Format           | Encoded height map                         |
 | Data Format           | [Mesh](/docs/specifications/category-mesh) |
-| Supported APIs        | `load`, `parse`                               |
-| Decoder Type          | Asynchronous                                  |
-| Worker Thread Support | Yes                                           |
-| Streaming Support     | No                                            |
+| Supported APIs        | `load`, `parse`                            |
+| Decoder Type          | Asynchronous                               |
+| Worker Thread Support | Yes                                        |
+| Streaming Support     | No                                         |
 
 ## Usage
 

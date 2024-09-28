@@ -2,7 +2,6 @@
 
 > This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
 
-
 The combination of a field name and data type, with optional metadata. Fields are used to describe the individual constituents of a nested DataType or a Schema.
 
 ## Members
@@ -31,13 +30,12 @@ TBD?
 
 TBD? Used if data type is a dictionary.
 
-
 ## Methods
 
 ### constructor(name : String, nullable?: Boolean, metadata?: Object)
 
 Creates an instance of `Field` with parameters initialized as follows:
 
-* `name` - Name of the column
-* `nullable`=`false` - Whether a null-array is maintained.
-* `metadata`=`null` - Map of metadata
+- `name` - Name of the column
+- `nullable`=`false` - Whether a null-array is maintained.
+- `metadata`=`null` - Map of metadata

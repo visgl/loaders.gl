@@ -2,13 +2,12 @@
 
 Arrow supports a rich set of data types:
 
-* Fixed-length primitive types: numbers, booleans, date and times, fixed size binary, decimals, and other values that fit into a given number
-* Variable-length primitive types: binary, string
-* Nested types: list, struct, and union
-* Dictionary type: An encoded categorical type
+- Fixed-length primitive types: numbers, booleans, date and times, fixed size binary, decimals, and other values that fit into a given number
+- Variable-length primitive types: binary, string
+- Nested types: list, struct, and union
+- Dictionary type: An encoded categorical type
 
 ## Data Type Descriptor Objects
-
 
 ### Converting Dates
 
@@ -16,7 +15,6 @@ Apache Arrow Timestamp is a 64-bit int of milliseconds since the epoch, represen
 
 ```typescript
 function toDate(timestamp) {
-  return new Date((timestamp[1] * Math.pow(2, 32) + timestamp[0])/1000);
+  return new Date((timestamp[1] * Math.pow(2, 32) + timestamp[0]) / 1000);
 }
 ```
-

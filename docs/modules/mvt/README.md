@@ -19,9 +19,9 @@ npm install @loaders.gl/core
 
 ## Sources
 
-| Component                                                                |
-| ------------------------------------------------------------------------ |
-| [`MVTSource`](/docs/modules/mvt/api-reference/mvt-source)                |
+| Component                                                              |
+| ---------------------------------------------------------------------- |
+| [`MVTSource`](/docs/modules/mvt/api-reference/mvt-source)              |
 | [`TableTileSource`](/docs/modules/mvt/api-reference/table-tile-source) |
 
 ## Attribution

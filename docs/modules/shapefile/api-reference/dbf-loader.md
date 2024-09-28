@@ -8,15 +8,15 @@ A sub loader for the `.dbf` (attributes/properties) file component of a shapefil
 
 Note: Most applications will want to use the `ShapefileLoader` instead of this loader.
 
-| Loader                | Characteristic                               |
-| --------------------- | -------------------------------------------- |
-| File Format           | [Shapefile](/docs/modules/shapefile/formats/shapefile)                                   |
-| Data Format           | [Table](/docs/specifications/category-table) |
-| File Extension        | `.dbf`,                                      |
-| File Type             | Binary                                       |
-| Supported APIs        | `load`, `parse`, `parseSync`                 |
-| Decoder Type          | Synchronous                                  |
-| Worker Thread Support | Yes                                          |
+| Loader                | Characteristic                                         |
+| --------------------- | ------------------------------------------------------ |
+| File Format           | [Shapefile](/docs/modules/shapefile/formats/shapefile) |
+| Data Format           | [Table](/docs/specifications/category-table)           |
+| File Extension        | `.dbf`,                                                |
+| File Type             | Binary                                                 |
+| Supported APIs        | `load`, `parse`, `parseSync`                           |
+| Decoder Type          | Synchronous                                            |
+| Worker Thread Support | Yes                                                    |
 
 ## Usage
 

@@ -1,7 +1,7 @@
 # TileJSON / Tilestats
 
-- *[`@loaders.gl/mvt`](/docs/modules/mvt)*
-- *[TileJSON specification](https://github.com/mapbox/tilejson-spec/blob/master/3.0.0/README.md)* - *[Tilestats information](https://github.com/mapbox/mapbox-geostats) - *[Tilestats generation](https://github.com/mapbox/mapbox-geostats#output-the-stats)
+- _[`@loaders.gl/mvt`](/docs/modules/mvt)_
+- _[TileJSON specification](https://github.com/mapbox/tilejson-spec/blob/master/3.0.0/README.md)_ - _[Tilestats information](https://github.com/mapbox/mapbox-geostats) - _[Tilestats generation](https://github.com/mapbox/mapbox-geostats#output-the-stats)
 
 ## TileJSON
 
@@ -9,12 +9,12 @@ A TileJSON file contains JSON-encoded metadata about a vector tileset including 
 
 The information in the TileJSON enables clients (such as web viewers) to understand the structure of data in the tileset up front, instead of piecing it together as tiles are loaded.
 
-
 While not all vector tilesets have a TileJSON file, when it is present there is normally a single TileJSON file per tileset, and this file is typically found at the root in TMS or XYZ based URL schemas, so that applications can make a speculative attempt to fetch it from a known place.
 
 ## tilestats
 
 `tilestats`` is an inofficial "extension" to TileJSON. It provides column statistics, notably:
+
 - the data type of each column
 - min/max values for numeric columns (enabling e.g. global color scale calculations).
 - a sample of values for each column
@@ -53,7 +53,7 @@ export type TileJSON
 | `htmlAttribution?`  | `string`           |          |           | Attribution (can contain HTML syntax)                                 |
 | `htmlLegend?`       | `string`           |          |           | Legend (can contain HTML syntax)                                      |
 | `layers?`           | `TileJSONLayer[]`  |          |           | Layer information (combines tilestats (if present) and tilejson info) |
-| `metaJson?`         | `any`              |          |           | Any unparsed, nested JSON metadata                                              |
+| `metaJson?`         | `any`              |          |           | Any unparsed, nested JSON metadata                                    |
 
 - `boundingBox` typing: `[min: [w: number, s: number], max: [e: number, n: number]]`
 
@@ -71,7 +71,6 @@ export type TileJSONLayer;
 | `maxZoom?`          | `number`          |          |           |                                                                                      |
 | `fields`            | `TileJSONField[]` |          |           |                                                                                      |
 
-
 ```ts
 export type TileJSONField;
 ```
@@ -81,7 +80,7 @@ export type TileJSONField;
 | `name`              | `string`    |          |           | The name of this attribute                           |
 | `description?`      | `string`    |          |           |                                                      |
 | `type`              | `string`    |          |           |                                                      |
-| `min?`              | `number`    |          |           | min value (if there are *any* numbers in the values) |
-| `max?`              | `number`    |          |           | max value (if there are *any* numbers in the values) |
+| `min?`              | `number`    |          |           | min value (if there are _any_ numbers in the values) |
+| `max?`              | `number`    |          |           | max value (if there are _any_ numbers in the values) |
 | `uniqueValueCount?` | `number`    |          |           | Number of unique values across the tileset           |
 | `values?`           | `unknown[]` |          |           | An array of this attribute's first 100 unique values |

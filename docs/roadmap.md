@@ -5,7 +5,7 @@ While it is hard to predict what work will be completed and when, current develo
 
 ## v5.0
 
-- **Cloud native** (raster/data): `GeoTIFFLoader`, `ZarrLoader`, kerchunk, NetCDF4, ... 
+- **Cloud native** (raster/data): `GeoTIFFLoader`, `ZarrLoader`, kerchunk, NetCDF4, ...
 - **Cloud native** (point clouds): `COPCService`, `POTreeV2Service`...
 - Unbundled loaders (load non-worker loaders as separate bundle, similar to how workers are loaded today).
 - More comprehensive support for `options.shape` to control the output format of loaders.
@@ -21,7 +21,8 @@ While it is hard to predict what work will be completed and when, current develo
 - user controlled logging
 - `BasisLoader` - WebGPU / luma v9 compatibility
 
-"Completionist tasks" 
+"Completionist tasks"
+
 - ArcGISImageServerSource
 - ArcGISFeatureServerSource
 - WFSSource
@@ -32,5 +33,5 @@ While it is hard to predict what work will be completed and when, current develo
 
 - EcmaScript module support ✅
 - More gLTF Extensions: `EXT_mesh_features` and `EXT_structural_metadata` for 1.1 3D Tiles attributes support ✅
-- More comprehensive support for `options.shape` to control the output format of loaders.  ✅
-- Node v18 support.  ✅
+- More comprehensive support for `options.shape` to control the output format of loaders. ✅
+- Node v18 support. ✅

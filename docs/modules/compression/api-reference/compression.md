@@ -43,7 +43,6 @@ Asynchronously decompresses data.
 For some compressions `preload()` must have been called and completed before
 synchronous operations are available.
 
-
 #### `compressBatches(data: AsyncIterable<ArrayBuffer>): AsyncIterable<ArrayBuffer>`
 
 Asynchronously compresses data in batches.

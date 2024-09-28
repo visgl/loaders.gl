@@ -21,10 +21,9 @@ npm install @loaders.gl/core
 
 ## API
 
-| Loader                                                            | Description |
-| ----------------------------------------------------------------- | ----------- |
+| Loader                                                             | Description |
+| ------------------------------------------------------------------ | ----------- |
 | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) |             |
-
 
 ## Return Types
 
@@ -32,15 +31,14 @@ The `BasisLoader` returns Array of Array of ArrayBuffer
 
 See [`BasisLoader`](/docs/modules/images/api-reference/image-loader) for more details on options etc.
 
-
 ## Texture APIs
 
 The textures API offers functions to load "composite" images for WebGL textures, cube textures and image mip levels.
 
 These functions take a `getUrl` parameter that enables the app to supply the url for each "sub-image", and return a single promise enabling applications to for instance load all the faces of a cube texture, with one image for each mip level for each face in a single async operation.
 
-| Function                                                               | Description                                                                                                           |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Function                                                                  | Description                                                                                                           |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | [`loadImage`](/docs/modules/textures/api-reference/load-image)            | Load a single image                                                                                                   |
 | [`loadImageArray`](/docs/modules/textures/api-reference/load-image-array) | Load an array of images, e.g. for a `Texture2DArray` or `Texture3D`                                                   |
 | [`loadImageCube`](/docs/modules/textures/api-reference/load-image-cube)   | Load a map of 6 images for the faces of a cube map, or a map of 6 arrays of images for the mip levels of the 6 faces. |

@@ -12,15 +12,15 @@ LERC (Limited Error Raster Compression), also written Lerc, is a format for comp
 It may appear in a file by itself, or as part of MRF format, or be used as a compression method in a format such as GeoTIFF.
 There are two major versions, known as "Lerc1" and "Lerc2".
 
-| Loader                | Characteristic                                       |
-| --------------------- | ---------------------------------------------------- |
-| File Extension        | `.lrc`, `.lerc`, `.lerc2`, `.lerc1`                                                |
-| File Type             | Binary                                                 |
+| Loader                | Characteristic                                        |
+| --------------------- | ----------------------------------------------------- |
+| File Extension        | `.lrc`, `.lerc`, `.lerc2`, `.lerc1`                   |
+| File Type             | Binary                                                |
 | File Format           | [LERC](https://en.wikipedia.org/wiki/Web_Map_Service) |
-| Data Format           | Data structure         |
-| Decoder Type          | Synchronous                                          |
-| Worker Thread Support | Yes                                                  |
-| Streaming Support     | No                                                   |
+| Data Format           | Data structure                                        |
+| Decoder Type          | Synchronous                                           |
+| Worker Thread Support | Yes                                                   |
+| Streaming Support     | No                                                    |
 
 ## Usage
 
@@ -58,7 +58,7 @@ export type LERCData = {
   bandMasks?: Uint8Array[];
 };
 
-export type LercPixelType = "S8" | "U8" | "S16" | "U16" | "S32" | "U32" | "F32" | "F64";
+export type LercPixelType = 'S8' | 'U8' | 'S16' | 'U16' | 'S32' | 'U32' | 'F32' | 'F64';
 
 export interface BandStats {
   minValue: number;
@@ -72,8 +72,8 @@ export interface BandStats {
 
 ## Options
 
-| Option | Type | Default | Description |
-| ------ | ---- | ------- | ----------- |
-| `lerc.inputOffset?` | `number` | `0` | The number of bytes to skip in the input byte stream. A valid Lerc file is expected at that position |
-| `lerc.noDataValue?` | `number` | `false` | It is recommended to use the returned mask instead of setting this value |
-| `lerc.returnInterleaved?` | `boolean` | `false` | (ndepth LERC2 only) If true, returned depth values are pixel-interleaved |
+| Option                    | Type      | Default | Description                                                                                          |
+| ------------------------- | --------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| `lerc.inputOffset?`       | `number`  | `0`     | The number of bytes to skip in the input byte stream. A valid Lerc file is expected at that position |
+| `lerc.noDataValue?`       | `number`  | `false` | It is recommended to use the returned mask instead of setting this value                             |
+| `lerc.returnInterleaved?` | `boolean` | `false` | (ndepth LERC2 only) If true, returned depth values are pixel-interleaved                             |

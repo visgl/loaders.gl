@@ -32,7 +32,7 @@ const config = getESLintConfig({
       eqeqeq: ['warn'],
       radix: 0,
       'no-use-before-define': 0,
-      'no-shadow': ['warn'],
+      'no-shadow': ['warn']
       // 'accessor-pairs': ['error', {getWithoutSet: false, setWithoutGet: false}]
     },
 

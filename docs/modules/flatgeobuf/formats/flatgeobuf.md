@@ -2,13 +2,13 @@
 
 ![flatgeobuf-logo](../images/flatgeobuf-logo.png)
 
-- *[`@loaders.gl/flatgeobuf`](/docs/modules/flatgeobuf)*
-- *[FlatGeobuf](http://flatgeobuf.org/)*
+- _[`@loaders.gl/flatgeobuf`](/docs/modules/flatgeobuf)_
+- _[FlatGeobuf](http://flatgeobuf.org/)_
 
 FlatGeobuf is a binary (FlatBuffers-encoded) format that defines geospatial geometries. It is row-oriented rather than columnar like GeoParquet and GeoArrow and offers a different set of trade-offs.
-FlatGeobuf was inspired by [geobuf](https://github.com/mapbox/geobuf) and [flatbush](https://github.com/mourner/flatbush). 
+FlatGeobuf was inspired by [geobuf](https://github.com/mapbox/geobuf) and [flatbush](https://github.com/mourner/flatbush).
 
-## Characteristics 
+## Characteristics
 
 - Binary
 - Row oriented
@@ -19,33 +19,32 @@ Goals are to be suitable for large volumes of static data, significantly faster 
 
 ## Geometries
 
-FlatGeobuf supports any vector geometry type defined in the OGC Simple Features specification (the same feature types supported by the WKB 2D geometry type enumeration). 
+FlatGeobuf supports any vector geometry type defined in the OGC Simple Features specification (the same feature types supported by the WKB 2D geometry type enumeration).
 
 :::caution
-GeoBuf geometries include the standard building blocks of `Point`, `LineString`, `Polygon`,`MultiPoint`, `MultiLineString`, `MultiPolygon`, and `GeometryCollection`, but also includes more infrequently types such as `CircularString`, `Surface`, and `TIN`` (Triangulated irregular network). These additional types are not supported by loaders.gl. 
+GeoBuf geometries include the standard building blocks of `Point`, `LineString`, `Polygon`,`MultiPoint`, `MultiLineString`, `MultiPolygon`, and `GeometryCollection`, but also includes more infrequently types such as `CircularString`, `Surface`, and `TIN`` (Triangulated irregular network). These additional types are not supported by loaders.gl.
 :::
-
 
 | Type               | Value | loaders.gl | Comment |
 | ------------------ | ----- | ---------- | ------- |
-| Unknown            | 0     | ❌          |         |
-| Point              | 1     | ✅          |         |
-| LineString         | 2     | ✅          |         |
-| Polygon            | 3     | ✅          |         |
-| MultiPoint         | 4     | ✅          |         |
-| MultiLineString    | 5     | ✅          |         |
-| MultiPolygon       | 6     | ✅          |         |
-| GeometryCollection | 7     | ✅          |         |
-| CircularString     | 8     | ❌          |         |
-| CompoundCurve      | 9     | ❌          |         |
-| CurvePolygon       | 10    | ❌          |         |
-| MultiCurve         | 11    | ❌          |         |
-| MultiSurface       | 12    | ❌          |         |
-| Curve              | 13    | ❌          |         |
-| Surface            | 14    | ❌          |         |
-| PolyhedralSurface  | 15    | ❌          |         |
-| TIN                | 16    | ❌          |         |
-| Triangle           | 1     | ❌          |         |
+| Unknown            | 0     | ❌         |         |
+| Point              | 1     | ✅         |         |
+| LineString         | 2     | ✅         |         |
+| Polygon            | 3     | ✅         |         |
+| MultiPoint         | 4     | ✅         |         |
+| MultiLineString    | 5     | ✅         |         |
+| MultiPolygon       | 6     | ✅         |         |
+| GeometryCollection | 7     | ✅         |         |
+| CircularString     | 8     | ❌         |         |
+| CompoundCurve      | 9     | ❌         |         |
+| CurvePolygon       | 10    | ❌         |         |
+| MultiCurve         | 11    | ❌         |         |
+| MultiSurface       | 12    | ❌         |         |
+| Curve              | 13    | ❌         |         |
+| Surface            | 14    | ❌         |         |
+| PolyhedralSurface  | 15    | ❌         |         |
+| TIN                | 16    | ❌         |         |
+| Triangle           | 1     | ❌         |         |
 
 Note: Storing only geometries with the same type allows readers to know which geometry type is stored without scanning the entire file.
 
@@ -131,7 +130,7 @@ FlatGeobuf files can optionally contain a spatial index. The spatial index is op
 
 The spatial index clusters the data on a [packed Hilbert R-Tree](https://en.wikipedia.org/wiki/Hilbert_R-tree#Packed_Hilbert_R-trees) enabling fast bounding box spatial filtering.
 
- The Hilbert curve imposes a linear ordering on the data rectangles and then traverses the sorted list, assigning each set of C rectangles to a node in the R-tree. The final result is that the set of data rectangles on the same node will be close to each other in the linear order.
+The Hilbert curve imposes a linear ordering on the data rectangles and then traverses the sorted list, assigning each set of C rectangles to a node in the R-tree. The final result is that the set of data rectangles on the same node will be close to each other in the linear order.
 
 ### Optimizing Remotely Hosted FlatGeobufs
 

@@ -4,13 +4,13 @@
 
 The `DracoWriter` encodes a mesh or point cloud using [Draco](/docs/modules/draco/formats/draco) compression.
 
-| Loader         | Characteristic                               |
-| -------------- | -------------------------------------------- |
-| File Format    | [Draco](/docs/modules/draco/formats/draco)   |
+| Loader         | Characteristic                             |
+| -------------- | ------------------------------------------ |
+| File Format    | [Draco](/docs/modules/draco/formats/draco) |
 | Data Format    | [Mesh](/docs/specifications/category-mesh) |
-| File Extension | `.drc`                                       |
-| File Type      | Binary                                       |
-| Support API    | `encode`                                     |
+| File Extension | `.drc`                                     |
+| File Type      | Binary                                     |
+| Support API    | `encode`                                   |
 
 ## Support
 

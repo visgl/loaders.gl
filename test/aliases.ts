@@ -49,6 +49,7 @@ function makeAliases() {
     '@loaders.gl/xml/test': resolve('./modules/xml/test'),
     '@loaders.gl/zarr/test': resolve('./modules/zarr/test'),
     '@loaders.gl/zip/test': resolve('./modules/zip/test'),
+    // eslint-disable-next-line camelcase
     node_modules: resolve('./node_modules')
   };
 }

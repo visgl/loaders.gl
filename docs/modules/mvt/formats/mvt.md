@@ -1,7 +1,7 @@
 # Mapbox Vector Tile
 
-- *[`@loaders.gl/mvt`](/docs/modules/mvt)*
-- *[Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec)*
+- _[`@loaders.gl/mvt`](/docs/modules/mvt)_
+- _[Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec)_
 
 A specification for encoding tiled vector data.
 
@@ -16,4 +16,3 @@ It is often useful to have global metadata about a tileset. A common complementa
 ## Encoding
 
 If you want to know more about how geometries are encoded into MVT tiles, see this section in the [specification](https://docs.mapbox.com/vector-tiles/specification/#encoding-geometry).
-

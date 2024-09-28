@@ -1,8 +1,7 @@
 # Schema
 
-loaders.gl provides a simple serializable schema class to help describe tables and table like data. 
+loaders.gl provides a simple serializable schema class to help describe tables and table like data.
 The Schema is modelled after Arrow.
-
 
 ## Schema Deduction
 

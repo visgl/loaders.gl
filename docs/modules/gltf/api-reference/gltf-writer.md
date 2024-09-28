@@ -21,7 +21,7 @@ const arrayBuffer = encodeSync(gltf, GLTFWriter, options);
 
 ## Options
 
-| Option        | Type                                                  | Default | Description                                                                                   |
-| ------------- | ----------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
+| Option        | Type                                                          | Default | Description                                                                                   |
+| ------------- | ------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
 | `DracoWriter` | [DracoWriter](/docs/modules/draco/api-reference/draco-writer) | `null`  | To enable DRACO encoding, the application needs to import and supply the `DracoWriter` class. |
 | `DracoLoader` | [DracoLoader](/docs/modules/draco/api-reference/draco-loader) | `null`  | To enable DRACO encoding, the application needs to import and supply the `DracoLoader` class. |

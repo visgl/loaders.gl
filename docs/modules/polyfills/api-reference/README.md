@@ -2,7 +2,7 @@
 
 The `@loaders.gl/polyfills` module installs support for Node.js. This module should be imported before you call any loaders.gl functionality under Node.js
 
-loaders.gl is based on the HTML5 API provided by modern, evergreen browsers. 
+loaders.gl is based on the HTML5 API provided by modern, evergreen browsers.
 
 ## Installation
 
@@ -30,7 +30,8 @@ The polyfills module installs the following capabilities.
 - Node Stream support
 - Node library loading
 - Image parsing and encoding under Node.js
-                                 |
+  |
+
 ## Deprecated polyfills
 
 Before Node v18, `fetch` needed to be polyfilled. The `@loaders.gl/polyfills` module still conditionally installs a fetch polyfill on Node 16, but this is expected to be removed in next major release.

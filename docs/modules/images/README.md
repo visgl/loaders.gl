@@ -11,13 +11,12 @@ npm install @loaders.gl/core
 
 ## API
 
-| Loader                                                          | Description |
-| --------------------------------------------------------------- | ----------- |
+| Loader                                                           | Description |
+| ---------------------------------------------------------------- | ----------- |
 | [`ImageLoader`](/docs/modules/images/api-reference/image-loader) |             |
 | [`ImageWriter`](/docs/modules/images/api-reference/image-writer) |             |
 
 ### Parsed Image API
-
 
 ### Binary Image API
 

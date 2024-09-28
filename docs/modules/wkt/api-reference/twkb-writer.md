@@ -12,7 +12,7 @@ Writer for the [Tiny Well-known binary][twkb] format for representation of geome
 | --------------------- | --------------------------------------------- |
 | File Extension        | `.wkb`,                                       |
 | File Type             | Binary                                        |
-| File Format           | [Tiny Well Known Binary][twkb]                      |
+| File Format           | [Tiny Well Known Binary][twkb]                |
 | Data Format           | [Geometry](/docs/specifications/category-gis) |
 | Supported APIs        | `encode`, `encodeSync`                        |
 | Encoder Type          | Synchronous                                   |
@@ -32,10 +32,17 @@ import {TWKBWriter} from '@loaders.gl/wkt';
 import {encodeSync} from '@loaders.gl/core';
 
 const geometry = {
-  type: "Polygon",
-  coordinates: [[[1, 2], [3, 4], [5, 6], [1, 2]]]
-}
-const arrayBuffer = encodeSync(geometry, TWKBWriter, {wkt: {hasZ: false, hasM: false}})
+  type: 'Polygon',
+  coordinates: [
+    [
+      [1, 2],
+      [3, 4],
+      [5, 6],
+      [1, 2]
+    ]
+  ]
+};
+const arrayBuffer = encodeSync(geometry, TWKBWriter, {wkt: {hasZ: false, hasM: false}});
 ```
 
 ## Options

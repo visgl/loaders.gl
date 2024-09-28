@@ -169,7 +169,7 @@ See the [properties schema reference](https://github.com/AnalyticalGraphicsInc/3
 
 ### maximumScreenSpaceError : Number
 
-Threshold that controls the level of detail of loaded tiles. A higher value means tile traversal stops early, displaying lower quality tiles (but much faster load times & less bandwidth used), because we're using a high "error tolerance". A lower value means lower tolerance for error, so traversal goes deeper in the tree and displays higher quality tiles. 
+Threshold that controls the level of detail of loaded tiles. A higher value means tile traversal stops early, displaying lower quality tiles (but much faster load times & less bandwidth used), because we're using a high "error tolerance". A lower value means lower tolerance for error, so traversal goes deeper in the tree and displays higher quality tiles.
 
 A tile's screen space error is roughly equivalent to the number of pixels wide that would be drawn if a sphere with a
 radius equal to the tile's <b>geometric error</b> were rendered at the tile's position. If this value exceeds

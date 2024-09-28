@@ -1,6 +1,6 @@
 # Overview
 
-![flatgeobuf-logo]( ./images/flatgeobuf-logo.png)
+![flatgeobuf-logo](./images/flatgeobuf-logo.png)
 
 The `@loaders.gl/flatgeobuf` module handles the [FlatGeobuf](http://flatgeobuf.org/) format, a binary FlatBuffers-encoded format that defines geospatial geometries.
 

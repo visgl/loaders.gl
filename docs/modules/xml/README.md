@@ -12,9 +12,7 @@ The `@loaders.gl/xml` module handles the [eXtensible Markup Language](https://ww
 
 ### Requests
 
-
 ## Remarks
-
 
 ## Installation
 
@@ -25,8 +23,8 @@ npm install @loaders.gl/core
 
 ## Attribution
 
-This module contains a fork of [sax-ts](https://github.com/Maxim-Mazurok/sax-ts), 
-which is in turn is a TypeScript fork of Isaac Schlueter's 
+This module contains a fork of [sax-ts](https://github.com/Maxim-Mazurok/sax-ts),
+which is in turn is a TypeScript fork of Isaac Schlueter's
 [sax-js](https://github.com/isaacs/sax-js), both licensed under the MIT-compatible ISC license.
 
 ```

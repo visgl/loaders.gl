@@ -36,11 +36,13 @@ npx tile-converter --input-type 3DTILES --tileset /path/to/tileset.json --name N
 ```
 
 ### Start HTTP server
+
 ```bash
 PORT=8080 HTTPS_PORT=4443 I3sLayerPath="./data/NewTileset.slpk" DEBUG=i3s-server:* npx i3s-server
 ```
 
 #### The layer should be available on URLs
+
 - `http://localhost:8080/NewTileset/SceneServer/layers/0`
 - `https://localhost:4443/NewTileset/SceneServer/layers/0`
 

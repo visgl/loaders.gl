@@ -149,7 +149,7 @@
 - website: new hero example (#2907)
 - chore(lerc): Restore lerc module (#2912)
 - fix(parquet): Restore ParquetWASMLoader after esbuild upgrade (#2915)
-- fix(*): Fix transitive internal dependencies (#2919)
+- fix(\*): Fix transitive internal dependencies (#2919)
 - fix(parquet): Zstd-codec import turned on (#2922)
 - chore(deps): bump webpack-dev-middleware from 5.3.3 to 5.3.4 in /website (#2926)
 - chore(deps): bump follow-redirects from 1.15.4 to 1.15.6 in /website (#2920)
@@ -167,7 +167,7 @@
 ### v4.2.0-alpha.5
 
 - chore: Upgrade ocular-dev-tools to tsc+esbuild (#2897)
-- fix(core): Avoid reassigning loaders._state (#2905)
+- fix(core): Avoid reassigning loaders.\_state (#2905)
 - feat(loader-utils): Add RequestScheduler 'debounceTime' option (#2892)
 - chore: Port I3S examples to v9 (#2903)
 - chore: Move examples to deck.gl@9.0.0-beta.5 (#2901)
@@ -273,7 +273,7 @@
 - chore: ensure all Writers have an encode() method (#2826)
 - feat(zip): Added append and truncate functionality (#2800)
 - fix(crypto): crc32 algorithm fix (#2819)
-- fix(crypto):  Reuse of Hash instance failures (#2824)
+- fix(crypto): Reuse of Hash instance failures (#2824)
 
 ### v4.1.0-alpha.2
 
@@ -303,6 +303,7 @@
 ## v4.0
 
 ### v4.0.4
+
 - feat(arrow): GeoArrowLoader (#2796)
 - fix(draco): revert --format=esm for the worker (#2795)
 - feat(arrow): Support GeoJSON output from Geo ArrowLoader (#2794)
@@ -499,7 +500,7 @@
 - chore: Add loader type parameters (#2626)
 - feat(tile-converter): support EXT_mesh_features and EXT_structural_metadata (#2566)
 - feat(core): non-specific parse functions return unknown (#2625)
-- chore(csv): Ensure tests  use typed CSVLoader (#2621)
+- chore(csv): Ensure tests use typed CSVLoader (#2621)
 - docs(core): Typed loaders (#2624)
 - chore(zip): Remove zip module dependency on @loaders.gl/core (#2622)
 - chore: Clean up module imports, remove default exports in images module (#2617) (#2623)

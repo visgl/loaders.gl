@@ -13,7 +13,7 @@ const config = {
 
   lint: {
     paths: ['modules', 'dev-docs', 'docs', 'test'], //, 'examples'],
-    extensions: ['js', 'ts']
+    extensions: ['js', 'jsx', 'cjs', 'mjs', 'ts', 'tsx', 'md'] // , 'mdx'],
     // extensions: ['js', 'jsx', 'mjs', 'ts', 'tsx', 'md']
   },
 

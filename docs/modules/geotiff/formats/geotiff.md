@@ -2,17 +2,17 @@
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-- *[`@loaders.gl/geotiff`](/docs/modules/geotiff)*
-- *[OGC Standard](https://www.ogc.org/standard/geotiff/)*
+- _[`@loaders.gl/geotiff`](/docs/modules/geotiff)_
+- _[OGC Standard](https://www.ogc.org/standard/geotiff/)_
 
 ## GeoTIFF Metadata
 
-GeoTIFF is a public domain metadata standard that enables georeferencing information to be embedded within an image file. 
-The GeoTIFF format embeds geospatial metadata into image files such as aerial photography, satellite imagery, 
+GeoTIFF is a public domain metadata standard that enables georeferencing information to be embedded within an image file.
+The GeoTIFF format embeds geospatial metadata into image files such as aerial photography, satellite imagery,
 and digitized maps so that they can be used in GIS applications.
 
 https://gis.stackexchange.com/questions/62837/understanding-geotiff-tags
-http://duff.ess.washington.edu/data/raster/drg/docs/geotiff.txt 
+http://duff.ess.washington.edu/data/raster/drg/docs/geotiff.txt
 
 ## TIFF
 

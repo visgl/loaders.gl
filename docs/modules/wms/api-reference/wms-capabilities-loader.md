@@ -8,7 +8,7 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-The `WMSCapabilitiesLoader` parses the XML-formatted response from the 
+The `WMSCapabilitiesLoader` parses the XML-formatted response from the
 the [OGC](https://www.opengeospatial.org/) [WMS](https://www.ogc.org/standards/wms) (Web Map Service) standard `GetCapabilities` request into a strongly typed JavaScript data structure.
 
 | Loader                | Characteristic                                       |
@@ -160,8 +160,8 @@ export type parseWMSCapabilitiesOptions = {
 
 ## Options
 
-| Option                 | Type      | Default | Description                                                                                 |
-| ---------------------- | --------- | ------- | ------------------------------------------------------------------------------------------- |
+| Option                     | Type      | Default | Description                                                                                 |
+| -------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------- |
 | `wms.inheritedLayerProps?` | `boolean` | `false` | Adds inherited layer information from parent layers to sub layers                           |
 | `wms.includeRawData?`      | `boolean` | `false` | Include the "raw" JSON (parsed but untyped, unprocessed XML). May contain additional fields |
 | `wms.includeXMLText?`      | `boolean` | `false` | Include the original XML document text. May contain additional information.                 |

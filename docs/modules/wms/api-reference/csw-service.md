@@ -7,13 +7,13 @@
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
+The `CSWService` class provides OGC CSW (catalog service for the web) access
 
-The `CSWService` class provides OGC CSW (catalog service for the web) access 
 - Type safe methods to call and parse results (and errors) from a CSW service's endpoints
 - In particular, the big `GetCapabilities` metadata is normalized into a fully typed data structure.
 
 > The `CSWService` generates URLs with URL parameters intended to be used with HTTP GET requests against a CSW server. The OGC CSW standard also allows CSW services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported by this class.
- 
+
 ## Usage
 
 A `CSWService` instance provides type safe methods that make calls to the service and parse the responses.
@@ -21,35 +21,39 @@ A `CSWService` instance provides type safe methods that make calls to the servic
 Get a normalized array of all the services and resources referenced by this catalog server:
 
 ```typescript
-  const cswService = new CSWService({url: CSW_SERVICE_URL});
-  const serviceDirectory = await cswService.getServiceDirectory({includeUnknown: true});
-  console.log(serviceDirectory);
+const cswService = new CSWService({url: CSW_SERVICE_URL});
+const serviceDirectory = await cswService.getServiceDirectory({includeUnknown: true});
+console.log(serviceDirectory);
 ```
 
-Capabilities metadata can be queried: 
+Capabilities metadata can be queried:
 
 ```typescript
-  const cswService = new CSWService({url: CSW_SERVICE_URL});
-  const capabilities = await cswService.getCapabilities({});
-  // Check capabilities
+const cswService = new CSWService({url: CSW_SERVICE_URL});
+const capabilities = await cswService.getCapabilities({});
+// Check capabilities
 ```
 
-Custom fetch options, such as HTTP headers, and loader-specific options can be specified via the 
+Custom fetch options, such as HTTP headers, and loader-specific options can be specified via the
 standard loaders.gl `loadOptions` argument, which is forwarded to all load and parse operations:
+
 ```typescript
-  const cswService = new CSWService({url: CSW_SERVICE_URL, loadOptions: {
+const cswService = new CSWService({
+  url: CSW_SERVICE_URL,
+  loadOptions: {
     fetch: {
       headers: {
         Authentication: 'Bearer abc...'
       }
     }
-  }});
+  }
+});
 
-  const serviceDirectory = await cswService.getServiceDirectory();
+const serviceDirectory = await cswService.getServiceDirectory();
 ```
 
 ## Methods
-  
+
 ### constructor()
 
 Creates a `CSWService` instance
@@ -80,7 +84,7 @@ Get a list of all service exposed by this catalog server.
 
 ```typescript
 async getServiceDirectory(
-  options: CSWGetMapParameters, 
+  options: CSWGetMapParameters,
   vendorParameters?: Record<string, unknown>
 ): Promise<Service[]>
 ```

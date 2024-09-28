@@ -2,14 +2,15 @@
 
 ![bson-logo](../../../images/logos/bson-logo.png)
 
-- *[`@loaders.gl/bson`](/docs/modules/bson) *
-- *[BSON specification](https://bsonspec.org/)*
-- *[Wikipedia article](https://en.wikipedia.org/wiki/BSON)*
+- _[`@loaders.gl/bson`](/docs/modules/bson) _
+- _[BSON specification](https://bsonspec.org/)_
+- _[Wikipedia article](https://en.wikipedia.org/wiki/BSON)_
 
-The BSON ("Binary JSON") specification defines a binary format for storing JSON data in a more efficient and type safe way, including: 
+The BSON ("Binary JSON") specification defines a binary format for storing JSON data in a more efficient and type safe way, including:
+
 - associative arrays (also known as name-value pairs)
 - integer indexed arrays
-- a suite of fundamental scalar types.  
+- a suite of fundamental scalar types.
 
 ## Data types and syntax
 
@@ -48,11 +49,11 @@ Implementations are available in a variety of languages such as C, C++, C#, D, D
 
 ## Example
 
-A JSON "document" such as 
+A JSON "document" such as
 
 ```typescripton
 {"hello": "world"}
-``` 
+```
 
 will be stored as:
 

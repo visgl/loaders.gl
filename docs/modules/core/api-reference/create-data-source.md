@@ -1,7 +1,7 @@
- # createDataSource 🚧
+# createDataSource 🚧
 
- This function creates a `DataSource` for an 
- (i.e. parses the entire data set in one operation). It can be called on "already loaded" data such as `ArrayBuffer` and `string` objects.
+This function creates a `DataSource` for an
+(i.e. parses the entire data set in one operation). It can be called on "already loaded" data such as `ArrayBuffer` and `string` objects.
 
 In contrast to `load` and `parse` which parse a single file, the returned `DataSource` is a a class instance that offers an API for querying additional data (such as tiles from a tile server).
 
@@ -48,6 +48,7 @@ try {
 Parses data asynchronously either using the provided source or sources, or using the pre-registered sources (see `register-sources`).
 
 - `data`: loaded data or an object that allows data to be loaded. This parameter can be any of the following types:
+
   - `String` - Parse from text data in a string. (Only works for sources that support textual input).
   - `File` - A browser file object (from drag-and-drop or file selection operations).
 
@@ -65,6 +66,3 @@ Returns:
 Notes:
 
 ### createDataSourceSync(data: String | Blob, sources: Source\[], options?: Object) : Promise\<Any\>
-
-
-

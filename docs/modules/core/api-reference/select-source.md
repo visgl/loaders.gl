@@ -26,7 +26,6 @@ import {MVTSource} from '@loaders.gl/csv';
 selectSourceSync('filename.pmtiles', [PMTilesSource, MVTSource]); // => PMTilesSource
 ```
 
-
 ## Functions
 
 ### `selectSource(data: String | Blob, ..., sources?: Source[], options?): Promise<Source | null>`

@@ -49,7 +49,7 @@ Using the Arrow API it is possible to work extremely efficiently with very large
 loaders.gl provides a range of table accessors.
 
 | Accessor                                                                                           | Description                                                                            |
-| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | 
+| -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `getTableLength(table: Table): number`                                                             | Returns length (number of rows) in the table                                           |
 | `getTableNumCols(table: Table): number`                                                            | Returns number of columns in the table                                                 |
 | `getTableCell(table: Table, rowIndex: number, columnName: string): unknown`                        | Gets the value in a cell by column name and row index                                  |
@@ -76,7 +76,6 @@ It is of course possible to work with the underlying IPC data structure.
 
 A JavaScript table has the freedom that a column can contain any type.
 
-
 ```typescript
 const arrowTable = makeArrowTable(table).data;
 ```
@@ -96,4 +95,3 @@ console.log(arrowTable.compareTo(arrowTableCopy));
 ```
 
 Note: Currently the batch structure of a table is lost during serialization.
-
