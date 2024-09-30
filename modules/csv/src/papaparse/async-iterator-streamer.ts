@@ -9,12 +9,12 @@
 import Papa from './papaparse';
 const {ChunkStreamer} = Papa;
 
-export default function AsyncIteratorStreamer(config) {
-  config = config || {};
+export default class AsyncIteratorStreamer extends ChunkStreamer {
+  textDecoder = new TextDecoder(this._config.encoding);
 
-  ChunkStreamer.call(this, config);
-
-  this.textDecoder = new TextDecoder(this._config.encoding);
+  constructor(config = {}) {
+    super(config);
+  }
 
   // Implement ChunkStreamer base class methods
 
@@ -27,7 +27,7 @@ export default function AsyncIteratorStreamer(config) {
   //   this._input.resume();
   // };
 
-  this.stream = async function (asyncIterator) {
+  async stream(asyncIterator) {
     this._input = asyncIterator;
 
     try {
@@ -55,17 +55,14 @@ export default function AsyncIteratorStreamer(config) {
       // Inform ChunkStreamer base class of error
       this._sendError(error);
     }
-  };
+  }
 
-  this._nextChunk = function nextChunk() {
+  _nextChunk() {
     // Left empty, as async iterator automatically pulls next chunk
-  };
+  }
 
   // HELPER METHODS
-  this.getStringChunk = function (chunk) {
+  getStringChunk(chunk) {
     return typeof chunk === 'string' ? chunk : this.textDecoder.decode(chunk, {stream: true});
-  };
+  }
 }
-
-AsyncIteratorStreamer.prototype = Object.create(ChunkStreamer.prototype);
-AsyncIteratorStreamer.prototype.constructor = AsyncIteratorStreamer;

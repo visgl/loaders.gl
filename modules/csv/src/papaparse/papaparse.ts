@@ -17,32 +17,6 @@ License: MIT
 /* eslint-disable */
 const BYTE_ORDER_MARK = '\ufeff';
 
-const Papa = {
-  parse: CsvToJson,
-  unparse: JsonToCsv,
-
-  RECORD_SEP: String.fromCharCode(30),
-  UNIT_SEP: String.fromCharCode(31),
-  BYTE_ORDER_MARK,
-  BAD_DELIMITERS: ['\r', '\n', '"', BYTE_ORDER_MARK],
-  WORKERS_SUPPORTED: false, // !IS_WORKER && !!globalThis.Worker
-  NODE_STREAM_INPUT: 1,
-
-  // Configurable chunk sizes for local and remote files, respectively
-  LocalChunkSize: 1024 * 1024 * 10, // 10 M,
-  RemoteChunkSize: 1024 * 1024 * 5, // 5 M,
-  DefaultDelimiter: ',', // Used if not specified and detection fail,
-
-  // Exposed for testing and development only
-  Parser: Parser,
-  ParserHandle: ParserHandle,
-
-  // BEGIN FORK
-  ChunkStreamer: ChunkStreamer,
-  StringStreamer: StringStreamer
-};
-export default Papa;
-
 /*
 Papa.NetworkStreamer = NetworkStreamer;
 Papa.FileStreamer = FileStreamer;
@@ -304,25 +278,26 @@ function JsonToCsv(_input, _config) {
 }
 
 /** ChunkStreamer is the base prototype for various streamer implementations. */
-function ChunkStreamer(config) {
-  this._handle = null;
-  this._finished = false;
-  this._completed = false;
-  this._input = null;
-  this._baseIndex = 0;
-  this._partialLine = '';
-  this._rowCount = 0;
-  this._start = 0;
-  this._nextChunk = null;
-  this.isFirstChunk = true;
-  this._completeResults = {
-    data: [],
-    errors: [],
-    meta: {}
-  };
-  replaceConfig.call(this, config);
+class ChunkStreamer {
+  constructor(config) {
+    this._handle = null;
+    this._finished = false;
+    this._completed = false;
+    this._input = null;
+    this._baseIndex = 0;
+    this._partialLine = '';
+    this._rowCount = 0;
+    this._start = 0;
+    this.isFirstChunk = true;
+    this._completeResults = {
+      data: [],
+      errors: [],
+      meta: {}
+    };
+    replaceConfig.call(this, config);
+  }
 
-  this.parseChunk = function (chunk, isFakeChunk) {
+  parseChunk(chunk, isFakeChunk) {
     // First chunk pre-processing
     if (this.isFirstChunk && isFunction(this._config.beforeFirstChunk)) {
       var modifiedChunk = this._config.beforeFirstChunk(chunk);
@@ -376,42 +351,44 @@ function ChunkStreamer(config) {
     if (!finishedIncludingPreview && (!results || !results.meta.paused)) this._nextChunk();
 
     return results;
-  };
+  }
 
-  this._sendError = function (error) {
+  _sendError(error) {
     if (isFunction(this._config.error)) this._config.error(error);
-  };
-
-  function replaceConfig(config) {
-    // Deep-copy the config so we can edit it
-    var configCopy = copy(config);
-    configCopy.chunkSize = parseInt(configCopy.chunkSize); // parseInt VERY important so we don't concatenate strings!
-    if (!config.step && !config.chunk) configCopy.chunkSize = null; // disable Range header if not streaming; bad values break IIS - see issue #196
-    this._handle = new ParserHandle(configCopy);
-    this._handle.streamer = this;
-    this._config = configCopy; // persist the copy to the caller
   }
 }
-function StringStreamer(config) {
-  config = config || {};
-  ChunkStreamer.call(this, config);
 
-  var remaining;
-  this.stream = function (s) {
-    remaining = s;
+function replaceConfig(config) {
+  // Deep-copy the config so we can edit it
+  var configCopy = copy(config);
+  configCopy.chunkSize = parseInt(configCopy.chunkSize); // parseInt VERY important so we don't concatenate strings!
+  if (!config.step && !config.chunk) configCopy.chunkSize = null; // disable Range header if not streaming; bad values break IIS - see issue #196
+  this._handle = new ParserHandle(configCopy);
+  this._handle.streamer = this;
+  this._config = configCopy; // persist the copy to the caller
+}
+
+class StringStreamer extends ChunkStreamer {
+  remaining;
+
+  constructor(config = {}) {
+    super(config);
+  }
+
+  stream(s) {
+    this.remaining = s;
     return this._nextChunk();
-  };
-  this._nextChunk = function () {
+  }
+
+  _nextChunk() {
     if (this._finished) return;
     var size = this._config.chunkSize;
-    var chunk = size ? remaining.substr(0, size) : remaining;
-    remaining = size ? remaining.substr(size) : '';
-    this._finished = !remaining;
+    var chunk = size ? this.remaining.substr(0, size) : this.remaining;
+    this.remaining = size ? this.remaining.substr(size) : '';
+    this._finished = !this.remaining;
     return this.parseChunk(chunk);
-  };
+  }
 }
-StringStreamer.prototype = Object.create(StringStreamer.prototype);
-StringStreamer.prototype.constructor = StringStreamer;
 
 // Use one ParserHandle per entire CSV file or string
 function ParserHandle(_config) {
@@ -1075,3 +1052,29 @@ function copy(obj) {
 function isFunction(func) {
   return typeof func === 'function';
 }
+
+const Papa = {
+  parse: CsvToJson,
+  unparse: JsonToCsv,
+
+  RECORD_SEP: String.fromCharCode(30),
+  UNIT_SEP: String.fromCharCode(31),
+  BYTE_ORDER_MARK,
+  BAD_DELIMITERS: ['\r', '\n', '"', BYTE_ORDER_MARK],
+  WORKERS_SUPPORTED: false, // !IS_WORKER && !!globalThis.Worker
+  NODE_STREAM_INPUT: 1,
+
+  // Configurable chunk sizes for local and remote files, respectively
+  LocalChunkSize: 1024 * 1024 * 10, // 10 M,
+  RemoteChunkSize: 1024 * 1024 * 5, // 5 M,
+  DefaultDelimiter: ',', // Used if not specified and detection fail,
+
+  // Exposed for testing and development only
+  Parser: Parser,
+  ParserHandle: ParserHandle,
+
+  // BEGIN FORK
+  ChunkStreamer: ChunkStreamer,
+  StringStreamer: StringStreamer
+};
+export default Papa;

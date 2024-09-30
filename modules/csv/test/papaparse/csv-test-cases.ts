@@ -10,6 +10,7 @@ License: MIT
 
 /* eslint-disable camelcase, quotes, max-len, prefer-template, wrap-regex */
 
+const __dirname = import.meta.dirname;
 const BASE_PATH = `${__dirname}/../../data/csv/`;
 const RECORD_SEP = String.fromCharCode(30);
 const UNIT_SEP = String.fromCharCode(31);
@@ -1737,6 +1738,7 @@ export const PARSE_ASYNC_TESTS = [
       errors: []
     }
   },
+  /**
   {
     description: 'Simple file',
     disabled: !FILES_ENABLED,
@@ -1765,4 +1767,5 @@ export const PARSE_ASYNC_TESTS = [
       errors: []
     }
   }
+     */
 ];
