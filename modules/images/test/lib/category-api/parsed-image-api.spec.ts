@@ -1,9 +1,9 @@
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
-import {ImageLoader, ImageType} from '@loaders.gl/images';
-
-// PARSED IMAGE API
 import {
+  ImageLoader,
+  ImageType,
+  // PARSED IMAGE API
   getDefaultImageType,
   isImageTypeSupported,
   isImage,

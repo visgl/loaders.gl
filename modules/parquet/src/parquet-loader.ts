@@ -20,7 +20,11 @@ import {
   parseParquetFileInColumnarBatches
 } from './lib/parsers/parse-parquet-to-columns';
 
-export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
+// Note: The Buffer polyfill is quite fragile
+// For some reason, just exporting directly fails with some bundlers
+// export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
+import {Buffer} from './polyfills/buffer/install-buffer-polyfill';
+export {Buffer};
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

@@ -26,8 +26,7 @@
 /* eslint-disable max-statements */
 
 // LZ4
-import {toArrayBuffer} from '@loaders.gl/loader-utils';
-import {registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
+import {toArrayBuffer, registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 

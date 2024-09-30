@@ -1,18 +1,20 @@
 /* eslint-disable camelcase */
-import {GLTFAccessorPostprocessed, GLTFMeshPrimitivePostprocessed} from '@loaders.gl/gltf';
 import type {NumericArray} from '@loaders.gl/loader-utils';
 import type {
+  GLTFAccessorPostprocessed,
+  GLTFMeshPrimitivePostprocessed,
   GLTF_EXT_feature_metadata_FeatureIdTexture,
   GLTF_EXT_feature_metadata_GLTF,
   GLTF_EXT_feature_metadata_Primitive,
-  GLTF_EXT_mesh_features
+  GLTF_EXT_mesh_features,
+  EXT_MESH_FEATURES,
+  EXT_FEATURE_METADATA
 } from '@loaders.gl/gltf';
+import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 
 import {TypedArray} from '@math.gl/core';
 import {TextureImageProperties} from '../types';
 import {emod} from '@loaders.gl/math';
-import {EXT_MESH_FEATURES, EXT_FEATURE_METADATA} from '@loaders.gl/gltf';
-import {Tiles3DTileContent} from '@loaders.gl/3d-tiles';
 
 /**
  * Get featureTexture by a metadata class.
