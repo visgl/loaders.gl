@@ -347,6 +347,7 @@ export function getTriangleIndices(
  * @param options options for getting binary geometries
  * @returns BinaryGeometryContent
  */
+// eslint-disable-next-line complexity
 function getBinaryPolygonsFromChunk(
   chunk: arrow.Data,
   geoEncoding: string,
@@ -355,19 +356,32 @@ function getBinaryPolygonsFromChunk(
   const isMultiPolygon = geoEncoding === 'geoarrow.multipolygon';
 
   const polygonData = isMultiPolygon ? chunk.children[0] : chunk;
-  const polygonOffset = polygonData.valueOffsets;
-  const partData = isMultiPolygon
-    ? chunk.valueOffsets.map((i) => polygonOffset.at(i) || i)
-    : chunk.valueOffsets;
   const ringData = polygonData.children[0];
   const pointData = ringData.children[0];
   const coordData = pointData.children[0];
   const nDim = pointData.stride;
-  const geomOffset = ringData.valueOffsets;
   const flatCoordinateArray = coordData.values;
 
-  const geometryIndicies = new Uint16Array(polygonOffset.length);
-  for (let i = 0; i < polygonOffset.length; i++) {
+  const geomOffset =
+    ringData.length === ringData.valueOffsets.length - 1
+      ? ringData.valueOffsets
+      : ringData.valueOffsets.slice(0, ringData.length + 1);
+
+  const polygonOffset = polygonData.valueOffsets;
+
+  // const partData = isMultiPolygon
+  //   ? chunk.valueOffsets.map((i) => polygonOffset.at(i) || i)
+  //   : chunk.valueOffsets;
+  const partData: number[] = [];
+  for (let i = 0; i < chunk.length + 1; i++) {
+    partData.push(
+      isMultiPolygon ? polygonOffset[chunk.valueOffsets[i]] || i : chunk.valueOffsets[i]
+    );
+  }
+
+  // const geometryIndicies = new Uint16Array(polygonOffset.length);
+  const geometryIndicies = new Uint16Array(polygonData.length + 1);
+  for (let i = 0; i < polygonData.length + 1; i++) {
     geometryIndicies[i] = geomOffset[polygonOffset[i]];
   }
 
