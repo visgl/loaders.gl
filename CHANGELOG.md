@@ -2,6 +2,11 @@
 
 ## v4.2
 
+### v4.2.5
+
+- fix(slpk): add ktx2 to the list of file extensions (#3100)
+- fix(yarn-lock): update yarn.lock (#3099)
+
 ### v4.2.4
 
 - fix: ReadableStream (#3013) (#3088)
