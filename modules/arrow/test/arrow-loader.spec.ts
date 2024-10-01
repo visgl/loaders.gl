@@ -18,15 +18,14 @@ import {
   parseInBatches
 } from '@loaders.gl/core';
 
+import {
+  ARROW_SIMPLE,
+  ARROW_DICTIONARY,
+  ARROW_STRUCT,
+  ARROW_BIOGRID_NODES
+} from './data/arrow/test-cases';
+
 const ArrowWorkerLoader = ArrowLoader;
-
-// Small Arrow Sample Files
-const ARROW_SIMPLE = '@loaders.gl/arrow/test/data/simple.arrow';
-const ARROW_DICTIONARY = '@loaders.gl/arrow/test/data/dictionary.arrow';
-const ARROW_STRUCT = '@loaders.gl/arrow/test/data/struct.arrow';
-
-// Bigger, batched sample file
-const ARROW_BIOGRID_NODES = '@loaders.gl/arrow/test/data/biogrid-nodes.arrow';
 
 setLoaderOptions({
   _workerType: 'test'

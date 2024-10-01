@@ -6,6 +6,16 @@ import type {DataType, Field, Schema, SchemaMetadata} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
+export function convertArrowToSchema(arrowSchema: arrow.Schema): Schema {
+  return serializeArrowSchema(arrowSchema);
+}
+
+/** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
+export function convertSchemaToArrow(schema: Schema): arrow.Schema {
+  return deserializeArrowSchema(schema);
+}
+
+/** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
 export function serializeArrowSchema(arrowSchema: arrow.Schema): Schema {
   return {
     fields: arrowSchema.fields.map((arrowField) => serializeArrowField(arrowField)),

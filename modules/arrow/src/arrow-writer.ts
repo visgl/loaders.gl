@@ -1,7 +1,7 @@
 // import type {} from '@loaders.gl/loader-utils';
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
-import {ColumnarTable, encodeArrowSync} from './lib/encode-arrow';
+import {ColumnarTable, encodeArrowSync} from './lib/encoders/encode-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

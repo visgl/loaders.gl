@@ -2,28 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {ArrowWorkerLoader} from './arrow-loader';
-import type {GeoJSONTable, GeoJSONTableBatch, BinaryGeometry} from '@loaders.gl/schema';
-import type {ArrowTable, ArrowTableBatch} from './lib/arrow-table';
-import {parseGeoArrowSync} from './parsers/parse-geoarrow-sync';
-import {parseGeoArrowInBatches} from './parsers/parse-geoarrow-in-batches';
-
-export type GeoArrowLoaderOptions = LoaderOptions & {
-  arrow?: {
-    shape?: 'arrow-table' | 'binary-geometry';
-  };
-};
-
-/** ArrowJS table loader */
-export const GeoArrowWorkerLoader = {
-  ...ArrowWorkerLoader,
-  options: {
-    arrow: {
-      shape: 'arrow-table'
-    }
-  }
-} as const satisfies Loader<ArrowTable | BinaryGeometry, never, GeoArrowLoaderOptions>;
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch} from './schema/arrow-table-type';
+import {parseGeoArrowSync, parseGeoArrowInBatches} from './lib/parsers/parse-geoarrow';
+import type {GeoArrowLoaderOptions} from './exports/geoarrow-loader';
+import {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
 
 /**
  * GeoArrowLoader loads an Apache Arrow table, parses GeoArrow type extension data

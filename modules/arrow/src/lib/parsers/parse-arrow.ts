@@ -2,13 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTableBatch} from '../lib/arrow-table';
 import * as arrow from 'apache-arrow';
-import {ArrowLoaderOptions} from '../arrow-loader';
-// import {isIterable} from '@loaders.gl/core';
+import type {Table} from '@loaders.gl/schema';
+import type {ArrowTableBatch} from '../../schema/arrow-table-type';
+import {ArrowLoaderOptions} from '../../exports/arrow-loader';
+import {convertArrowToTable} from '../tables/convert-arrow-to-table';
 
-/**
- */
+/** Parses arrow to a loaders.gl table. Defaults to `arrow-table` */
+export function parseArrowSync(arrayBuffer, options?: {shape?: Table['shape']}): Table {
+  const shape = options?.shape || 'arrow-table';
+  const arrowTable = arrow.tableFromIPC([new Uint8Array(arrayBuffer)]);
+  return convertArrowToTable(arrowTable, shape);
+}
+
 export function parseArrowInBatches(
   asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
   options?: ArrowLoaderOptions

@@ -32,6 +32,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./exports/*": {
+      "types": "./dist/exports/*.d.ts",
+      "import": "./dist/exports/*.js"
     }
   },
   "sideEffects": false,

@@ -51,6 +51,7 @@ export {
   getTableLength,
   getTableNumCols,
   getTableCell,
+  getTableCellAt,
   getTableRowShape,
   getTableColumnIndex,
   getTableColumnName,
