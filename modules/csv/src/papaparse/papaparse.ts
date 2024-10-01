@@ -13,13 +13,29 @@ License: MIT
 // - Remove unused Worker support (loaders.gl worker system used instead)
 // - Remove unused jQuery plugin support
 
+export type CSVParserConfig = {
+  dynamicTyping?: boolean | Function | {};
+  dynamicTypingFunction?: Function;
+  transform?: boolean;
+  newline?: string;
+  skipEmptyLines?: boolean;
+  comments?: string;
+  delimitersToGuess?: string[];
+};
+
+const defaultConfig: Required<CSVParserConfig> = {
+  dynamicTyping: false,
+  dynamicTypingFunction: undefined!,
+  transform: false
+};
+
 /* eslint-disable */
 const BYTE_ORDER_MARK = '\ufeff';
 
 function CsvToJson(
   _input,
-  _config,
-  UserDefinedStreamer? // BEGIN FORK
+  _config: CSVParserConfig = {},
+  Streamer: any = StringStreamer
 ) {
   _config = _config || {};
   var dynamicTyping = _config.dynamicTyping || false;
@@ -32,8 +48,7 @@ function CsvToJson(
 
   _config.transform = isFunction(_config.transform) ? _config.transform : false;
 
-  var streamer =
-    typeof _input === 'string' ? new StringStreamer(_config) : new UserDefinedStreamer(_config);
+  var streamer = new Streamer(_config);
 
   return streamer.stream(_input);
 }
@@ -328,26 +343,34 @@ const ISO_DATE =
 class ParserHandle {
   _config;
 
-  _stepCounter = 0; // Number of times step was called (number of rows parsed)
-  _rowCounter = 0; // Number of rows that have been parsed so far
-  _input; // The input being parsed
-  _parser; // The core parser being used
-  _paused = false; // Whether we are paused or not
-  _aborted = false; // Whether the parser has aborted or not
-  _delimiterError: boolean = false; // Temporary state between delimiter detection and processing results
-  _fields: string[] = []; // Fields are from the header row of the input, if there is one
+  /** Number of times step was called (number of rows parsed) */
+  _stepCounter = 0;
+  /** Number of rows that have been parsed so far */
+  _rowCounter = 0;
+  /** The input being parsed */
+  _input;
+  /** The core parser being used */
+  _parser;
+  /** Whether we are paused or not */
+  _paused = false;
+  /** Whether the parser has aborted or not */
+  _aborted = false;
+  /** Temporary state between delimiter detection and processing results */
+  _delimiterError: boolean = false;
+  /** Fields are from the header row of the input, if there is one */
+  _fields: string[] = [];
+  /** The last results returned from the parser */
   _results: {
     data: any[][] | Record<string, any>[];
     errors: any[];
     meta: Record<string, any>;
   } = {
-    // The last results returned from the parser
     data: [],
     errors: [],
     meta: {}
   };
 
-  constructor(_config) {
+  constructor(_config: CSVParserConfig) {
     // One goal is to minimize the use of regular expressions...
 
     if (isFunction(_config.step)) {
@@ -1004,7 +1027,7 @@ function copy(obj) {
   return cpy;
 }
 
-function isFunction(func) {
+function isFunction(func: unknown): func is Function {
   return typeof func === 'function';
 }
 
