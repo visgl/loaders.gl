@@ -30,14 +30,14 @@ test('polyfills#fetchNode() ignores url query params when loading file (NODE)', 
 
 test('polyfills#fetchNode() error handling (NODE)', async (t) => {
   if (!isBrowser) {
-    const response = await fetchNode('non-existent-file');
-    // t.comment(response.statusText);
+    let response = await fetchNode('non-existent-file');
+    t.comment(response.statusText);
     t.ok(response.statusText.includes('ENOENT'), 'fetchNode statusText forwards node ENOENT error');
     t.notOk(response.ok, 'fetchNode polyfill fails cleanly on non-existent file');
     t.ok(response.arrayBuffer(), 'Response.arrayBuffer() does not throw');
 
-    // response = await fetchNode('.');
-    // t.comment(response.statusText);
+    response = await fetchNode('.');
+    t.comment(response.statusText);
     t.ok(response.statusText.includes('EISDIR'), 'fetchNode statusText forwards node error');
     t.notOk(response.ok, 'fetchNode polyfill fails cleanly on directory');
     t.ok(response.arrayBuffer(), 'Response.arrayBuffer() does not throw');
