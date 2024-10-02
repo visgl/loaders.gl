@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ColumnarTableBatchAggregator} from '@loaders.gl/schema-utils';
-import type {ArrowTableBatch} from './arrow-table-type';
+import type {ArrowTableBatch} from '@loaders.gl/schema';
+import {ColumnarTableBatchAggregator} from './columnar-table-batch-aggregator';
 import * as arrow from 'apache-arrow';
 
 /** @note Should be part of @loaders.gl/schema - kept separate to avoid hard arrow dependency */

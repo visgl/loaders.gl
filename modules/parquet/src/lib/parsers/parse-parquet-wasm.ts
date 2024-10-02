@@ -56,17 +56,17 @@ export async function* parseParquetFileInBatchesWasm(
     parquetFile = await wasm.ParquetFile.fromUrl(file.url);
   }
 
-  const stream: ReadableStream<arrow.Table> = await parquetFile.stream(options);
+  const stream: ReadableStream<arrow.RecordBatch> = await parquetFile.stream(options);
 
   let schema: Schema;
-  for await (const table of makeStreamIterator(stream)) {
-    schema ||= serializeArrowSchema(table.schema);
+  for await (const recordBatch of makeStreamIterator(stream)) {
+    schema ||= serializeArrowSchema(recordBatch.schema);
     yield {
       batchType: 'data',
       shape: 'arrow-table',
       schema,
-      data: table.batches[0],
-      length: table.numRows
+      data: new arrow.Table(recordBatch),
+      length: recordBatch.numRows
     };
   }
 }

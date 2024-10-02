@@ -3,9 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {BinaryGeometry} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, BinaryGeometry} from '@loaders.gl/schema';
 import {ArrowWorkerLoader} from './arrow-loader';
-import type {ArrowTable, ArrowTableBatch} from '../schema/arrow-table-type';
 
 export type GeoArrowLoaderOptions = LoaderOptions & {
   arrow?: {

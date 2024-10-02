@@ -33,7 +33,7 @@ export type {
   FlatPolygon,
   FlatGeometry,
   FlatFeature
-} from './flat-geometries';
+} from '../geometry/flat-geometries';
 
 // BINARY FORMAT GEOMETRY
 export type {
@@ -49,7 +49,7 @@ export type {
   BinaryPointFeature,
   BinaryLineFeature,
   BinaryPolygonFeature
-} from './binary-geometries';
+} from '../geometry/binary-geometries';
 
 /** Aggregate information for converting GeoJSON into other formats */
 export type GeojsonGeometryInfo = {

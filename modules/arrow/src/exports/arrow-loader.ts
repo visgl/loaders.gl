@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTable} from '../schema/arrow-table-type';
+import type {ArrowTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable} from '@loaders.gl/arrow';
+import type {ArrowTable} from '@loaders.gl/schema';
 
 import * as arrow from 'apache-arrow';
 import {loadWasm} from '../utils/load-wasm';

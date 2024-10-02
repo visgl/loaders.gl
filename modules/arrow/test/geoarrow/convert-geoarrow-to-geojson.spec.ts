@@ -8,7 +8,7 @@ import {GEOARROW_TEST_CASES, GEOARROW_ENCODINGS} from '../data/geoarrow/test-cas
 import {load} from '@loaders.gl/core';
 import type {FeatureCollection} from '@loaders.gl/schema';
 import {ArrowLoader, serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
-import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
+import {getGeometryColumnsFromSchema} from '@loaders.gl/schema-utils';
 
 test('ArrowUtils#parseGeometryFromArrow', async (t) => {
   for (const testCase of GEOARROW_TEST_CASES) {

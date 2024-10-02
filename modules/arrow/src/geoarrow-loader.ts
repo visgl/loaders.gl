@@ -3,8 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/schema';
-import type {ArrowTable, ArrowTableBatch} from './schema/arrow-table-type';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  GeoJSONTable,
+  GeoJSONTableBatch
+} from '@loaders.gl/schema';
 import {parseGeoArrowSync, parseGeoArrowInBatches} from './lib/parsers/parse-geoarrow';
 import type {GeoArrowLoaderOptions} from './exports/geoarrow-loader';
 import {GeoArrowWorkerLoader} from './exports/geoarrow-loader';

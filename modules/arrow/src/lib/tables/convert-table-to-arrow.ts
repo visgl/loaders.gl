@@ -17,7 +17,7 @@ import {deserializeArrowSchema} from '../tables/convert-arrow-schema';
 export function convertTableToArrow(table: Table, options?: {batchSize?: number}): arrow.Table {
   switch (table.shape) {
     case 'arrow-table':
-      return table.data as arrow.Table;
+      return table.data;
 
     case 'columnar-table':
     // TODO - optimized implementation is possible
