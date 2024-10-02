@@ -10,22 +10,13 @@ License: MIT
 
 /* eslint-disable camelcase, quotes, max-len, prefer-template, wrap-regex */
 
+// @ts-expect-error
+const __dirname = import.meta.dirname;
 const BASE_PATH = `${__dirname}/../../data/csv/`;
 const RECORD_SEP = String.fromCharCode(30);
 const UNIT_SEP = String.fromCharCode(31);
-const FILES_ENABLED = true;
+const FILES_ENABLED = false;
 const XHR_ENABLED = false;
-
-/*
-try {
-  new File([''], ''); // eslint-disable-line no-new
-  FILES_ENABLED = true;
-} catch (e) {} // safari, ie
-try {
-  new XMLHttpRequest(); // eslint-disable-line no-new
-  XHR_ENABLED = true;
-} catch (e) {} // safari, ie
-*/
 
 // Tests for the core parser using new Papa.Parser().parse() (CSV to JSON)
 export const CORE_PARSER_TESTS = [

@@ -1,5 +1,5 @@
 // Uncomment to test papaparse
-// import './papaparse/papaparse.spec';
+import './papaparse/papaparse.spec';
 // import './csv-writer-papaparse.spec';
 
 import './csv-loader.spec';

@@ -11,8 +11,6 @@ export type CSVWriterOptions = WriterOptions & {
   csv?: {
     useDisplayNames?: boolean;
   };
-  /** @deprecated */
-  useDisplayNames?: never;
 };
 
 export const CSVWriter = {

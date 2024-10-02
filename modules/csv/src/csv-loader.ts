@@ -274,7 +274,6 @@ function isHeaderRow(row: string[]): boolean {
  */
 function readFirstRow(csvText: string): any[] {
   const result = Papa.parse(csvText, {
-    download: false,
     dynamicTyping: true,
     preview: 1
   });

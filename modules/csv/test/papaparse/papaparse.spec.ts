@@ -14,6 +14,7 @@ import test from 'tape-promise/tape';
 import Papa from '../../src/papaparse/papaparse';
 import {CORE_PARSER_TESTS, PARSE_TESTS, PARSE_ASYNC_TESTS} from './csv-test-cases';
 
+const __dirname = import.meta.dirname;
 const BASE_PATH = `${__dirname}/../../data/csv/`;
 const FILES_ENABLED = false;
 const XHR_ENABLED = false;
