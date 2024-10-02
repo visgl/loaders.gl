@@ -13,7 +13,7 @@ import type {
 } from '@loaders.gl/schema';
 import type {ArrowTable} from '../../schema/arrow-table-type';
 
-import {convertTable} from '@loaders.gl/schema';
+import {convertTable} from '@loaders.gl/schema-utils';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 import {convertArrowToSchema} from '../tables/convert-arrow-schema';
 import {parseGeometryFromArrow} from '../geoarrow/convert-geoarrow-to-geojson-geometry';

@@ -8,7 +8,7 @@ export {VECTOR_TYPES} from './lib/types';
 import {ArrowTableBatchAggregator} from './schema/arrow-table-batch';
 
 // Make the ArrowBatch type available
-import {TableBatchBuilder} from '@loaders.gl/schema';
+import {TableBatchBuilder} from '@loaders.gl/schema-utils';
 TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
 
 // Arrow loader / Writer
