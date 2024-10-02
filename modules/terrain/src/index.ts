@@ -29,13 +29,13 @@ export async function parseTerrain(
 ) {
   const loadImageOptions = {
     ...options,
-    mimeType: 'application/x.image',
+    core: {...options?.core, mimeType: 'application/x.image'},
     image: {...options?.image, type: 'data'}
   };
   const image = await parseFromContext(arrayBuffer, [], loadImageOptions, context!);
   // Extend function to support additional mesh generation options (square grid or delatin)
   const terrainOptions = {...TerrainLoader.options.terrain, ...options?.terrain} as TerrainOptions;
-  // @ts-expect-error sort out image typing asap
+  // @ts-expect-error TODO - fix typing
   return makeTerrainMeshFromImage(image, terrainOptions);
 }
 

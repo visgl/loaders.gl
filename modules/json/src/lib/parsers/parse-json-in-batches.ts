@@ -24,7 +24,7 @@ export async function* parseJSONInBatches(
 
   // @ts-expect-error TODO fix Schema deduction
   const schema: Schema = null;
-  const tableBatchBuilder = new TableBatchBuilder(schema, options);
+  const tableBatchBuilder = new TableBatchBuilder(schema, options?.core);
 
   const parser = new StreamingJSONParser({jsonpaths});
 

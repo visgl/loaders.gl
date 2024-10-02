@@ -21,8 +21,8 @@ export type ImageLoaderOptions = LoaderOptions & {
   image?: {
     type?: 'auto' | 'data' | 'imagebitmap' | 'image';
     decode?: boolean;
+    imagebitmap?: ImageBitmapOptions;
   };
-  imagebitmap?: ImageBitmapOptions;
 };
 
 const DEFAULT_IMAGE_LOADER_OPTIONS: ImageLoaderOptions = {

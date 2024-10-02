@@ -139,8 +139,8 @@ export class PMTilesTileSource
   async getVectorTile(tileParams: GetTileParameters): Promise<unknown | null> {
     const arrayBuffer = await this.getTile(tileParams);
     const loadOptions: MVTLoaderOptions = {
-      shape: 'geojson-table',
       mvt: {
+        shape: 'geojson-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         ...(this.loadOptions as MVTLoaderOptions)?.mvt

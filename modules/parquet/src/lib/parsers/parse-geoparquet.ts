@@ -20,7 +20,7 @@ export async function parseGeoParquetFile(
   file: ReadableFile,
   options?: ParquetLoaderOptions
 ): Promise<ObjectRowTable | GeoJSONTable> {
-  const table = await parseParquetFile(file, {...options, shape: 'object-row-table'});
+  const table = await parseParquetFile(file, {...options, parquet: {shape: 'object-row-table'}});
   const shape = options?.parquet?.shape;
   return convertTable(table, shape);
 }
@@ -29,7 +29,10 @@ export async function* parseGeoParquetFileInBatches(
   file: ReadableFile,
   options?: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch | GeoJSONTableBatch> {
-  const tableBatches = parseParquetFileInBatches(file, {...options, shape: 'object-row-table'});
+  const tableBatches = parseParquetFileInBatches(file, {
+    ...options,
+    parquet: {shape: 'object-row-table'}
+  });
 
   for await (const batch of tableBatches) {
     const shape = options?.parquet?.shape;

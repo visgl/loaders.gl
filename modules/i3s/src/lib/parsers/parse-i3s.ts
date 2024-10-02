@@ -97,7 +97,6 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
     root = await load(rootNodeUrl, I3SLoader, {
       ...options,
       i3s: {
-        // @ts-expect-error options is not properly typed
         ...options.i3s,
         loadContent: false, isTileHeader: true, isTileset: false}
     });

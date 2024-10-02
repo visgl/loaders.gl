@@ -159,7 +159,6 @@ export default class I3SNodePagesTiles {
     const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
     let geometryIndex = -1;
     // Try to find DRACO geometryDefinition of `useDracoGeometry` option is set
-    // @ts-expect-error this.options is not properly typed
     if (this.options.i3s && this.options.i3s.useDracoGeometry) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
         (buffer) => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
@@ -274,7 +273,6 @@ export default class I3SNodePagesTiles {
    */
   private getSupportedTextureFormats(): I3STextureFormat[] {
     const formats: I3STextureFormat[] = [];
-    // @ts-expect-error this.options is not properly typed
     if (!this.options.i3s || this.options.i3s.useCompressedTextures) {
       // I3S 1.7 selection
       const supportedCompressedFormats = getSupportedGPUTextureFormats();

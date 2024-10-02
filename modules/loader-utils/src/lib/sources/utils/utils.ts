@@ -12,7 +12,7 @@ import type {LoaderOptions} from '@loaders.gl/loader-utils';
  * @param context
  */
 export function getFetchFunction(options?: LoaderOptions) {
-  const fetchFunction = options?.fetch;
+  const fetchFunction = options?.core?.fetch;
 
   // options.fetch can be a function
   if (fetchFunction && typeof fetchFunction === 'function') {

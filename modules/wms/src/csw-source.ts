@@ -163,7 +163,10 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceOptions> {
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    const capabilities = await CSWCapabilitiesLoader.parse(arrayBuffer, this.options.loadOptions);
+    const capabilities = await CSWCapabilitiesLoader.parse(
+      arrayBuffer,
+      this.options.core.loadOptions
+    );
     return capabilities;
   }
 
@@ -176,7 +179,7 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceOptions> {
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await CSWRecordsLoader.parse(arrayBuffer, this.options.loadOptions);
+    return await CSWRecordsLoader.parse(arrayBuffer, this.options.core.loadOptions);
   }
 
   /** Get Domain */
@@ -188,7 +191,7 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceOptions> {
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await CSWDomainLoader.parse(arrayBuffer, this.options.loadOptions);
+    return await CSWDomainLoader.parse(arrayBuffer, this.options.core.loadOptions);
   }
 
   // Typed URL creators
@@ -267,14 +270,14 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceOptions> {
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers['content-type'];
     if (!response.ok || CSWErrorLoader.mimeTypes.includes(contentType)) {
-      const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.options.loadOptions);
+      const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.options.core.loadOptions);
       throw new Error(error);
     }
   }
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.options.loadOptions);
+    const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.options.core.loadOptions);
     return new Error(error);
   }
 }

@@ -119,7 +119,7 @@ export async function loadFromArchive(
     const fileSystem = new ZipFileSystem(archive);
     const content = await load(filename, loader, {
       ...loadOptions,
-      fetch: fileSystem.fetch.bind(fileSystem)
+      core: {...loadOptions?.core, fetch: fileSystem.fetch.bind(fileSystem)}
     });
     await fileSystem.destroy();
     return content;
