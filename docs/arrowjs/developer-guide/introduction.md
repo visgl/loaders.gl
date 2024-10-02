@@ -17,7 +17,7 @@ The Arrow library is organized into separate components responsible for creating
 
 ## Concepts
 
- it's probably good to define some terminology:
+it's probably good to define some terminology:
 
 - `Data` a collection of rows in contiguous Arrow memory. This is called "Array" in most arrow implementations but is called `Data` in Arrow JS to avoid shadowing the JS `Array` type. `Data` can have one or more underlying buffers but those buffers all represent the same data. E.g. integer storage like a `Data` of type `Uint8` has two buffers: one for the raw data (directly viewable by a `Uint8Array`) and another for the nullability bitmask: one bit for each row to confer whether the row is null or not. Nested types can have more buffers. E.g. points can be represented as a `Data` of struct type, where there's a buffer for the `x` coordinates and another buffer for the `y` coordinates.
 - `Vector` a collection of rows in batches. This is essentially a list of `Data`.
@@ -26,9 +26,8 @@ The Arrow library is organized into separate components responsible for creating
 - `RecordBatch` an ordered and named collection of `Data` instances. This is essentially a `List<Data>` plus a `Schema`.
 - `Table`: an ordered and named collection of `Vector` instances. This is essentially a `List<Vector>` plus a `Schema`.
 
-
 ## Data Types
 
 At the heart of Arrow is set of well-known logical [data types](/docs/arrowjs/developer-guide/data-types), ensuring each Column in an Arrow Table is strongly-typed. These data types define how a Column's underlying buffers should be constructed and read, and includes configurable (and custom) metadata fields for further annotating a Column. A Schema describing each Column's name and data type is encoded alongside each Column's data buffers, allowing you to consume an Arrow data source without knowing the data types or column layout beforehand.
 
-Each data type falls into one of three rough categories: Fixed-width types, variable-width types, or composite types that contain other Arrow data types. All data types can represent null values, which are stored in a separate validity [bitmask](https://en.wikipedia.org/wiki/Mask_(computing)). Follow the links below for a more detailed description of each data type.
+Each data type falls into one of three rough categories: Fixed-width types, variable-width types, or composite types that contain other Arrow data types. All data types can represent null values, which are stored in a separate validity [bitmask](<https://en.wikipedia.org/wiki/Mask_(computing)>). Follow the links below for a more detailed description of each data type.
