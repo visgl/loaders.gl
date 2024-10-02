@@ -3,7 +3,7 @@ import {validateWriter, validateMeshCategoryData} from 'test/common/conformance'
 
 import {DracoLoader, DracoWriterOptions, DracoWriter, DracoWriterWorker} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
-import {getMeshSize} from '@loaders.gl/schema';
+// import {getMeshSize} from '@loaders.gl/schema';
 import draco3d from 'draco3d';
 import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
 import {cloneTypeArray} from './test-utils/copyTypedArray';
@@ -70,10 +70,11 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
-    const ratio = meshSize / compressedMesh.byteLength;
+
+    // const meshSize = getMeshSize(mesh.attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
@@ -120,13 +121,14 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
       ...tc.options,
       _workerType: 'test'
     });
-    const ratio = meshSize / compressedMesh.byteLength;
+
+    // const meshSize = getMeshSize(mesh.attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
@@ -166,14 +168,15 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
       // @ts-expect-error
       mesh.indices = cloneTypeArray(data.indices?.value);
     }
-    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
       ...tc.options,
       _workerType: 'test'
     });
+
     // const compressedMesh = await encode(mesh, DracoWriter, tc.options);
-    const ratio = meshSize / compressedMesh.byteLength;
+    // const meshSize = getMeshSize(mesh.attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
@@ -217,7 +220,6 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, {
       ...tc.options,
@@ -225,7 +227,9 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
         draco3d
       }
     });
-    const ratio = meshSize / compressedMesh.byteLength;
+
+    // const meshSize = getMeshSize(mesh.attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
@@ -264,11 +268,10 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const attributes = tc.options.draco?.pointcloud ? pointCloudAttributes : meshAttributes;
-    const meshSize = getMeshSize(attributes);
-
     const compressedMesh = await encode(attributes, DracoWriter, tc.options);
 
-    const ratio = meshSize / compressedMesh.byteLength;
+    // const meshSize = getMeshSize(attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
     // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {

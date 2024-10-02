@@ -24,8 +24,8 @@ test('DracoWriter#compressRawBuffers', async (t) => {
   // Encode mesh
   // TODO - Replace with draco writer
   const compressedMesh = await encode({attributes}, DracoWriter, {draco: {pointcloud: true}});
-  const meshSize = getMeshSize(attributes);
-  const ratio = meshSize / compressedMesh.byteLength;
+  // const meshSize = getMeshSize(attributes);
+  // const ratio = meshSize / compressedMesh.byteLength;
   // t.comment(`Draco compression ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
   // Ensure we can parse it
