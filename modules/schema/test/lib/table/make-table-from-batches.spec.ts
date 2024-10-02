@@ -36,7 +36,7 @@ test.skip('makeTableFromBatches', async (t) => {
   const tempTable = makeTableFromData(ALL_TYPES_PLAIN_PLAIN_TABLE);
   const batch = makeBatchFromTable(tempTable);
   const table = await makeTableFromBatches([batch]);
-  t.equal(getTableLength(table!), 8);
+  t.equal(getTableLength(table), 8);
   t.end();
 });
 
@@ -45,7 +45,7 @@ test('makeTableFromBatches', async (t) => {
     const tempTable = makeTableFromData(tc.table);
     const batch = makeBatchFromTable(tempTable);
     const table = await makeTableFromBatches([batch]);
-    t.equal(getTableLength(table!), tc.length, tc.name);
+    t.equal(getTableLength(table), tc.length, tc.name);
   }
   t.end();
 });
