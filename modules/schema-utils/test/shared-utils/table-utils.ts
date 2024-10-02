@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2023 Foursquare Labs, Inc.
 
-import {Table, Schema, Field} from '@loaders.gl/schema';
+import type {Table, Schema, Field} from '@loaders.gl/schema';
 
 export type TableTestCase = {
   name: string;

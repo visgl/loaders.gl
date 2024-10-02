@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {makeTableFromData} from '@loaders.gl/schema';
+import {makeTableFromData} from '@loaders.gl/schema-utils';
 
 // import * from '../../data/table/tables';
 import {

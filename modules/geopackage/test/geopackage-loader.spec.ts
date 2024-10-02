@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {load, fetchFile} from '@loaders.gl/core';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
-// import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
+// import type {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
 
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojson';

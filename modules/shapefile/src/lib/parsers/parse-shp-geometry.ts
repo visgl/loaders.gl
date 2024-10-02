@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
+import type {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
 import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {SchemaMetadata, Field} from '@loaders.gl/schema';
+import type {SchemaMetadata, Field} from '@loaders.gl/schema';
 import {ArrowLikeField} from './arrow-like-field';
 
 export class ArrowLikeSchema {

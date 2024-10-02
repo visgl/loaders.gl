@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import type {Geometry} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
 import {encodeWKT} from './lib/encode-wkt';
-import {Geometry} from '@loaders.gl/schema';
 
 export type WKTWriterOptions = WriterOptions & {
   wkt?: {};

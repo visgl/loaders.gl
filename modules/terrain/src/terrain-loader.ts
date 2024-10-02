@@ -3,11 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/loader-utils';
+import type {Mesh} from '@loaders.gl/schema';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
-import {TerrainOptions} from './lib/parse-terrain';
-import {Mesh} from '@loaders.gl/schema';
+import type {TerrainOptions} from './lib/parse-terrain';
 
 /** TerrainLoader options */
 export type TerrainLoaderOptions = ImageLoaderOptions & {

@@ -4,7 +4,7 @@
 
 import * as arrow from 'apache-arrow';
 import {earcut} from '@math.gl/polygon';
-import {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection as BinaryFeatures} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/gis';
 import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 import {TypedArray} from '@loaders.gl/loader-utils';

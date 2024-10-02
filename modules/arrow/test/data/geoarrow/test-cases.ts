@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FeatureCollection} from '@loaders.gl/schema';
+import type {FeatureCollection} from '@loaders.gl/schema';
 
 export const GEOARROW_POINT_FILE = '@loaders.gl/arrow/test/data/geoarrow/point.arrow';
 export const GEOARROW_MULTIPOINT_FILE = '@loaders.gl/arrow/test/data/geoarrow/multipoint.arrow';

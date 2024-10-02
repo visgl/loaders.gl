@@ -6,7 +6,7 @@ import test, {Test} from 'tape-promise/tape';
 import {GEOARROW_TEST_CASES, GEOARROW_ENCODINGS} from '../data/geoarrow/test-cases';
 
 import {load} from '@loaders.gl/core';
-import {FeatureCollection} from '@loaders.gl/schema';
+import type {FeatureCollection} from '@loaders.gl/schema';
 import {ArrowLoader, serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
 

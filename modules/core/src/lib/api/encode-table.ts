@@ -9,7 +9,7 @@ import {
   WriterOptionsType,
   WriterWithEncoder
 } from '@loaders.gl/loader-utils';
-import {Table} from '@loaders.gl/schema';
+import type {Table} from '@loaders.gl/schema';
 
 export async function encodeTable<WriterT extends WriterWithEncoder = WriterWithEncoder>(
   data: Table,

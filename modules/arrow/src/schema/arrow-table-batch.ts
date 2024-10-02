@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ColumnarTableBatchAggregator} from '@loaders.gl/schema';
+import {ColumnarTableBatchAggregator} from '@loaders.gl/schema-utils';
 import type {ArrowTableBatch} from './arrow-table-type';
 import * as arrow from 'apache-arrow';
 

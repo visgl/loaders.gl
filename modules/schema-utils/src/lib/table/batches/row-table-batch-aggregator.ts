@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema} from '../../../types/schema';
-import type {TableBatch} from '../../../types/category-table';
+import type {Schema, TableBatch} from '@loaders.gl/schema';
 import {TableBatchAggregator, TableBatchOptions} from './table-batch-aggregator';
 import {
   convertToArrayRow,

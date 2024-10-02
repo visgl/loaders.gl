@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Schema, GeoJSONTable} from '@loaders.gl/schema';
+import type {Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
   DataSourceOptions,
   VectorSourceMetadata,

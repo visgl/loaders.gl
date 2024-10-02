@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {load, loadInBatches} from '@loaders.gl/core';
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';

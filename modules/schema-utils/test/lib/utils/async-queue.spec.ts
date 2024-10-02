@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {AsyncQueue} from '@loaders.gl/schema';
+import {AsyncQueue} from '@loaders.gl/schema-utils';
 
 test('Enqueue before dequeue', async (t) => {
   const queue = new AsyncQueue();

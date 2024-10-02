@@ -9,7 +9,8 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {Table, getTableLength, getTableNumCols, isTable} from '@loaders.gl/schema';
+import type {Table} from '@loaders.gl/schema';
+import {getTableLength, getTableNumCols, isTable} from '@loaders.gl/schema-utils';
 
 type TestCase = {
   name: string;
