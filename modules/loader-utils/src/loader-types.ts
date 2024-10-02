@@ -295,12 +295,13 @@ type Preload = (url: string, options?: PreloadOptions) => any;
 
 /** Typescript helper to extract options type from a loader type */
 export type LoaderOptionsType<T = Loader> =
-  T extends Loader<any, any, infer Options> ? Options : never;
+  T extends Loader<unknown, unknown, infer Options> ? Options : never;
 /** Typescript helper to extract data type from a loader type */
 export type LoaderReturnType<T = Loader> =
-  T extends Loader<infer Return, any, any> ? Return : never;
+  T extends Loader<infer Return, unknown, unknown> ? Return : never;
 /** Typescript helper to extract batch type from a loader type */
-export type LoaderBatchType<T = Loader> = T extends Loader<any, infer Batch, any> ? Batch : never;
+export type LoaderBatchType<T = Loader> =
+  T extends Loader<unknown, infer Batch, unknown> ? Batch : never;
 
 /** Typescript helper to extract options type from an array of loader types */
 export type LoaderArrayOptionsType<LoadersT extends Loader[] = Loader[]> =

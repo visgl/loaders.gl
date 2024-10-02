@@ -4,23 +4,34 @@
 
 import {Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
-  VectorSourceProps,
+  DataSourceOptions,
   VectorSourceMetadata,
-  LoaderWithParser,
   GetFeaturesParameters
 } from '@loaders.gl/loader-utils';
-import {Source, VectorSource, mergeLoaderOptions} from '@loaders.gl/loader-utils';
+import {Source, DataSource, VectorSource, mergeOptions} from '@loaders.gl/loader-utils';
 
-import type {WFSCapabilities} from '../../wfs-capabilities-loader';
-import {WFSCapabilitiesLoader} from '../../wfs-capabilities-loader';
+import type {WFSCapabilities} from './wfs-capabilities-loader';
+import {WFSCapabilitiesLoader} from './wfs-capabilities-loader';
 
-import type {WMSLoaderOptions} from '../../wms-error-loader';
-import {WMSErrorLoader} from '../../wms-error-loader';
+import type {WMSLoaderOptions} from './wms-error-loader';
+import {WMSErrorLoader} from './wms-error-loader';
 
 /* eslint-disable camelcase */ // WFS XML parameters use snake_case
 
+/** Properties for creating a enw WFS service */
+export type WFSourceOptions = DataSourceOptions & {
+  wfs?: {
+    /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
+    substituteCRS84?: boolean;
+    /** Default WFS parameters. If not provided here, must be provided in the various request */
+    wfsParameters?: WFSParameters;
+    /** Any additional service specific parameters */
+    vendorParameters?: Record<string, unknown>;
+  };
+};
+
 /**
- * @ndeprecated This is a WIP, not fully implemented
+ * @deprecated This is a WIP, not fully implemented
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
  */
 export const WFSSource = {
@@ -30,36 +41,18 @@ export const WFSSource = {
   version: '0.0.0',
   extensions: [],
   mimeTypes: [],
-  options: {
-    url: undefined!,
-    wfs: {
-      /** Tabular loaders, normally the GeoJSONLoader */
-      loaders: []
-    }
-  },
-
   type: 'wfs',
   fromUrl: true,
   fromBlob: false,
 
-  testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
-  createDataSource: (url, props: WFSVectorSourceProps): WFSVectorSource =>
-    new WFSVectorSource(props)
-} as const satisfies Source<WFSVectorSource, WFSVectorSourceProps>;
+  defaultOptions: {
+    wfs: {}
+  },
 
-/** Properties for creating a enw WFS service */
-export type WFSVectorSourceProps = VectorSourceProps & {
-  url: string;
-  wfs?: {
-    loaders: LoaderWithParser[];
-    /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
-    substituteCRS84?: boolean;
-    /** Default WFS parameters. If not provided here, must be provided in the various request */
-    wmsParameters?: WFSParameters;
-    /** Any additional service specific parameters */
-    vendorParameters?: Record<string, unknown>;
-  };
-};
+  testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
+  createDataSource: (url: string, options: WFSourceOptions): WFSVectorSource =>
+    new WFSVectorSource(url, options)
+} as const satisfies Source<WFSVectorSource>;
 
 // PARAMETER TYPES FOR WFS SOURCE
 
@@ -203,52 +196,19 @@ export type WFSGetLegendGraphicParameters = {
  * - implements the VectorSource interface
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
-  /** Base URL to the service */
-  readonly url: string;
-  readonly data: string;
-
-  // /** In WFS 1.3.0, replaces references to EPSG:4326 with CRS:84. But not always supported. Default: false */
-  // substituteCRS84: boolean;
-  // /** In WFS 1.3.0, flips x,y (lng, lat) coordinates for the supplied coordinate systems. Default: ['ESPG:4326'] */
-  // flipCRS: string[];
-
-  // /** Default static WFS parameters */
-  // wmsParameters: Required<WFSParameters>;
+export class WFSVectorSource extends DataSource<string, WFSourceOptions> implements VectorSource {
   /** Default static vendor parameters */
   vendorParameters?: Record<string, unknown>;
 
   capabilities: WFSCapabilities | null = null;
 
   /** Create a WFSVectorSource */
-  constructor(props: WFSVectorSourceProps) {
-    super(props);
+  constructor(data: string, options: WFSourceOptions) {
+    super(data, options, WFSSource.defaultOptions);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WFS URL more likely to make this class just work.
-    // const {baseUrl, parameters} = this._parseWFSUrl(props.url);
-
-    this.url = props.url;
-    this.data = props.url;
-
-    // this.substituteCRS84 = props.substituteCRS84 ?? false;
-    // this.flipCRS = ['EPSG:4326'];
-
-    // this.wmsParameters = {
-    //   layers: undefined!,
-    //   query_layers: undefined!,
-    //   styles: undefined,
-    //   version: '1.3.0',
-    //   crs: 'EPSG:4326',
-    //   format: 'image/png',
-    //   info_format: 'text/plain',
-    //   transparent: undefined!,
-    //   time: undefined!,
-    //   elevation: undefined!,
-    //   ...props.wmsParameters
-    // };
-
-    // this.vendorParameters = props.vendorParameters || {};
+    // const {baseUrl, parameters} = this._parseWFSUrl(options.url);
   }
 
   async getSchema(): Promise<Schema> {
@@ -264,7 +224,7 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
   async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
     // Replace the GetImage `boundingBox` parameter with the WFS flat `bbox` parameter.
     // const {boundingBox, bbox, ...rest} = parameters;
-    // const wmsParameters: WFSGetMapParameters = {
+    // const wfsParameters: WFSGetMapParameters = {
     //   bbox: boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!,
     //   ...rest
     // };
@@ -279,10 +239,10 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
   /** Get Capabilities */
   async getCapabilities(
-    wmsParameters?: WFSGetCapabilitiesParameters,
+    wfsParameters?: WFSGetCapabilitiesParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<WFSCapabilities> {
-    const url = this.getCapabilitiesURL(wmsParameters, vendorParameters);
+    const url = this.getCapabilitiesURL(wfsParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
@@ -293,10 +253,10 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
   /** Get a map image *
   async getMap(
-    wmsParameters: WFSGetMapParameters,
+    wfsParameters: WFSGetMapParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<ImageType> {
-    const url = this.getMapURL(wmsParameters, vendorParameters);
+    const url = this.getMapURL(wfsParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
@@ -309,10 +269,10 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
   /** Get Feature Info for a coordinate *
   async getFeatureInfo(
-    wmsParameters: WFSGetFeatureInfoParameters,
+    wfsParameters: WFSGetFeatureInfoParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<WFSFeatureInfo> {
-    const url = this.getFeatureInfoURL(wmsParameters, vendorParameters);
+    const url = this.getFeatureInfoURL(wfsParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
@@ -321,10 +281,10 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
   /** Get Feature Info for a coordinate *
   async getFeatureInfoText(
-    wmsParameters: WFSGetFeatureInfoParameters,
+    wfsParameters: WFSGetFeatureInfoParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<string> {
-    const url = this.getFeatureInfoURL(wmsParameters, vendorParameters);
+    const url = this.getFeatureInfoURL(wfsParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
@@ -333,10 +293,10 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
   /** Get more information about a layer *
   async describeLayer(
-    wmsParameters: WFSDescribeLayerParameters,
+    wfsParameters: WFSDescribeLayerParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<WFSLayerDescription> {
-    const url = this.describeLayerURL(wmsParameters, vendorParameters);
+    const url = this.describeLayerURL(wfsParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
@@ -345,10 +305,10 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
   /** Get an image with a semantic legend *
   async getLegendGraphic(
-    wmsParameters: WFSGetLegendGraphicParameters,
+    wfsParameters: WFSGetLegendGraphicParameters,
     vendorParameters?: Record<string, unknown>
   ): Promise<ImageType> {
-    const url = this.getLegendGraphicURL(wmsParameters, vendorParameters);
+    const url = this.getLegendGraphicURL(wfsParameters, vendorParameters);
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
@@ -365,94 +325,94 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
   /** Generate a URL for the GetCapabilities request */
   getCapabilitiesURL(
-    wmsParameters?: WFSGetCapabilitiesParameters,
+    wfsParameters?: WFSGetCapabilitiesParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
     // @ts-expect-error
     const options: Required<WFSGetCapabilitiesParameters> = {
-      // version: this.wmsParameters.version,
-      ...wmsParameters
+      // version: this.wfsParameters.version,
+      ...wfsParameters
     };
     return this._getWFSUrl('GetCapabilities', options, vendorParameters);
   }
 
   /** Generate a URL for the GetMap request */
   getMapURL(
-    wmsParameters: WFSGetMapParameters,
+    wfsParameters: WFSGetMapParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
-    wmsParameters = this._getWFS130Parameters(wmsParameters);
+    wfsParameters = this._getWFS130Parameters(wfsParameters);
     // @ts-expect-error
     const options: Required<WFSGetMapParameters> = {
-      // version: this.wmsParameters.version,
-      // format: this.wmsParameters.format,
-      // transparent: this.wmsParameters.transparent,
-      // time: this.wmsParameters.time,
-      // elevation: this.wmsParameters.elevation,
-      // layers: this.wmsParameters.layers,
-      // styles: this.wmsParameters.styles,
-      // crs: this.wmsParameters.crs,
+      // version: this.wfsParameters.version,
+      // format: this.wfsParameters.format,
+      // transparent: this.wfsParameters.transparent,
+      // time: this.wfsParameters.time,
+      // elevation: this.wfsParameters.elevation,
+      // layers: this.wfsParameters.layers,
+      // styles: this.wfsParameters.styles,
+      // crs: this.wfsParameters.crs,
       // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
       // width: 1200,
       // height: 900,
-      ...wmsParameters
+      ...wfsParameters
     };
     return this._getWFSUrl('GetMap', options, vendorParameters);
   }
 
   /** Generate a URL for the GetFeatureInfo request */
   getFeatureInfoURL(
-    wmsParameters: WFSGetFeatureInfoParameters,
+    wfsParameters: WFSGetFeatureInfoParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
-    wmsParameters = this._getWFS130Parameters(wmsParameters);
+    wfsParameters = this._getWFS130Parameters(wfsParameters);
 
     // Replace the GetImage `boundingBox` parameter with the WFS flat `bbox` parameter.
-    const {boundingBox, bbox} = wmsParameters as any;
-    wmsParameters.bbox = boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!;
+    const {boundingBox, bbox} = wfsParameters as any;
+    wfsParameters.bbox = boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!;
 
     // @ts-expect-error
     const options: Required<WFSGetFeatureInfoParameters> = {
-      // version: this.wmsParameters.version,
+      // version: this.wfsParameters.version,
       // // query_layers: [],
-      // // format: this.wmsParameters.format,
-      // info_format: this.wmsParameters.info_format,
-      // layers: this.wmsParameters.layers,
-      // query_layers: this.wmsParameters.query_layers,
-      // styles: this.wmsParameters.styles,
-      // crs: this.wmsParameters.crs,
+      // // format: this.wfsParameters.format,
+      // info_format: this.wfsParameters.info_format,
+      // layers: this.wfsParameters.layers,
+      // query_layers: this.wfsParameters.query_layers,
+      // styles: this.wfsParameters.styles,
+      // crs: this.wfsParameters.crs,
       // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
       // width: 1200,
       // height: 900,
       // x: undefined!,
       // y: undefined!,
-      ...wmsParameters
+      ...wfsParameters
     };
     return this._getWFSUrl('GetFeatureInfo', options, vendorParameters);
   }
 
   /** Generate a URL for the GetFeatureInfo request */
   describeLayerURL(
-    wmsParameters: WFSDescribeLayerParameters,
+    wfsParameters: WFSDescribeLayerParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
     // @ts-expect-error
     const options: Required<WFSDescribeLayerParameters> = {
-      // version: this.wmsParameters.version,
-      ...wmsParameters
+      // version: this.wfsParameters.version,
+      ...wfsParameters
     };
     return this._getWFSUrl('DescribeLayer', options, vendorParameters);
   }
 
   getLegendGraphicURL(
-    wmsParameters: WFSGetLegendGraphicParameters,
+    wfsParameters: WFSGetLegendGraphicParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
     // @ts-expect-error
     const options: Required<WFSGetLegendGraphicParameters> = {
-      // version: this.wmsParameters.version,
+      // version: this.wfsParameters.version,
       // format?
-      ...wmsParameters
+      ...wfsParameters
     };
     return this._getWFSUrl('GetLegendGraphic', options, vendorParameters);
   }
@@ -479,7 +439,7 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
    * */
   protected _getWFSUrl(
     request: string,
-    wmsParameters: {version?: '1.3.0' | '1.1.1'; [key: string]: unknown},
+    wfsParameters: {version?: '1.3.0' | '1.1.1'; [key: string]: unknown},
     vendorParameters?: Record<string, unknown>
   ): string {
     let url = this.url;
@@ -488,9 +448,9 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
     // Add any vendor searchParams
     const allParameters = {
       service: 'WFS',
-      version: wmsParameters.version,
+      version: wfsParameters.version,
       request,
-      ...wmsParameters,
+      ...wfsParameters,
       ...this.vendorParameters,
       ...vendorParameters
     };
@@ -502,7 +462,7 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
       if (!IGNORE_EMPTY_KEYS.includes(key) || value) {
         url += first ? '?' : '&';
         first = false;
-        url += this._getURLParameter(key, value, wmsParameters);
+        url += this._getURLParameter(key, value, wfsParameters);
       }
     }
 
@@ -510,9 +470,9 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
   }
 
   _getWFS130Parameters<ParametersT extends {crs?: string; srs?: string}>(
-    wmsParameters: ParametersT
+    wfsParameters: ParametersT
   ): ParametersT {
-    const newParameters = {...wmsParameters};
+    const newParameters = {...wfsParameters};
     if (newParameters.srs) {
       newParameters.crs = newParameters.crs || newParameters.srs;
       delete newParameters.srs;
@@ -521,12 +481,12 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
   }
 
   // eslint-disable-next-line complexity
-  _getURLParameter(key: string, value: unknown, wmsParameters: WFSParameters): string {
+  _getURLParameter(key: string, value: unknown, wfsParameters: WFSParameters): string {
     // Substitute by key
     switch (key) {
       case 'crs':
         // CRS was called SRS before WFS 1.3.0
-        if (wmsParameters.version !== '1.3.0') {
+        if (wfsParameters.version !== '1.3.0') {
           key = 'srs';
           // } else if (this.substituteCRS84 && value === 'EPSG:4326') {
           //   /** In 1.3.0, replaces references to 'EPSG:4326' with the new backwards compatible CRS:84 */
@@ -537,14 +497,14 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
       case 'srs':
         // CRS was called SRS before WFS 1.3.0
-        if (wmsParameters.version === '1.3.0') {
+        if (wfsParameters.version === '1.3.0') {
           key = 'crs';
         }
         break;
 
       case 'bbox':
         // Coordinate order is flipped for certain CRS in WFS 1.3.0
-        const bbox = this._flipBoundingBox(value, wmsParameters);
+        const bbox = this._flipBoundingBox(value, wfsParameters);
         if (bbox) {
           value = bbox;
         }
@@ -553,7 +513,7 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
       case 'x':
         // i is the parameter used in WFS 1.3
         // TODO - change parameter to `i` and convert to `x` if not 1.3
-        if (wmsParameters.version === '1.3.0') {
+        if (wfsParameters.version === '1.3.0') {
           key = 'i';
         }
         break;
@@ -561,7 +521,7 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
       case 'y':
         // j is the parameter used in WFS 1.3
         // TODO - change parameter to `j` and convert to `y` if not 1.3
-        if (wmsParameters.version === '1.3.0') {
+        if (wfsParameters.version === '1.3.0') {
           key = 'j';
         }
         break;
@@ -580,7 +540,7 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
   /** Coordinate order is flipped for certain CRS in WFS 1.3.0 */
   _flipBoundingBox(
     bboxValue: unknown,
-    wmsParameters: WFSParameters
+    wfsParameters: WFSParameters
   ): [number, number, number, number] | null {
     // Sanity checks
     if (!Array.isArray(bboxValue) || bboxValue.length !== 4) {
@@ -589,11 +549,11 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
 
     const flipCoordinates = false;
     // // Only affects WFS 1.3.0
-    // wmsParameters.version === '1.3.0' &&
+    // wfsParameters.version === '1.3.0' &&
     // // Flip if we are dealing with a CRS that was flipped in 1.3.0
-    // this.flipCRS.includes(wmsParameters.crs || '') &&
+    // this.flipCRS.includes(wfsParameters.crs || '') &&
     // // Don't flip if we are substituting EPSG:4326 with CRS:84
-    // !(this.substituteCRS84 && wmsParameters.crs === 'EPSG:4326');
+    // !(this.substituteCRS84 && wfsParameters.crs === 'EPSG:4326');
 
     const bbox = bboxValue as [number, number, number, number];
     return flipCoordinates ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
@@ -612,7 +572,7 @@ export class WFSVectorSource extends VectorSource<WFSVectorSourceProps> {
     const contentType = response.headers['content-type'];
     if (!response.ok || WMSErrorLoader.mimeTypes.includes(contentType)) {
       // We want error responses to throw exceptions, the WMSErrorLoader can do this
-      const loadOptions = mergeLoaderOptions<WMSLoaderOptions>(this.loadOptions, {
+      const loadOptions = mergeOptions<WMSLoaderOptions>(this.loadOptions, {
         wms: {throwOnError: true}
       });
       const error = WMSErrorLoader.parseSync?.(arrayBuffer, loadOptions);

@@ -4,7 +4,7 @@ import {createSceneServer} from '../utils/create-scene-server';
 
 const textDecoder = new TextDecoder();
 
-export const sceneServerRouter = express.Router();
+export const sceneServerRouter: any = express.Router();
 sceneServerRouter.get('*', (req, res, next) => {
   async function routerCallback(req, res, next) {
     const file = await getFileByUrl('/');
@@ -20,7 +20,7 @@ sceneServerRouter.get('*', (req, res, next) => {
   routerCallback(req, res, next);
 });
 
-export const router = express.Router();
+export const router: any = express.Router();
 router.get('*', (req, res, next) => {
   async function routerCallback(req, res, next) {
     const file = await getFileByUrl(req.path.replace(/\/+$/, ''));

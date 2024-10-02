@@ -38,7 +38,6 @@ test('WMSSource#getMapURL', async (t) => {
   );
 
   wmsImageSource = WMSSource.createDataSource(WMS_SERVICE_URL, {
-    url: WMS_SERVICE_URL,
     wmsParameters: {layers: ['oms'], crs: 'EPSG:3857'}
   });
   getMapUrl = wmsImageSource.getMapURL({
@@ -86,7 +85,6 @@ test('WMSSource#getLegendGraphicURL', async (t) => {
 
 test('WMSSource#WMS versions', async (t) => {
   const wms111Service = WMSSource.createDataSource(WMS_SERVICE_URL, {
-    url: WMS_SERVICE_URL,
     wmsParameters: {version: '1.1.1', layers: ['oms']}
   });
   let getMapUrl = wms111Service.getMapURL({
@@ -100,8 +98,9 @@ test('WMSSource#WMS versions', async (t) => {
     'getMapURL replaces CRS with SRS in WMS 1.1.1'
   );
   const wms130Service = WMSSource.createDataSource(WMS_SERVICE_URL, {
-    url: WMS_SERVICE_URL,
-    substituteCRS84: true,
+    wms: {
+      substituteCRS84: true
+    },
     wmsParameters: {version: '1.3.0', layers: ['oms']}
   });
   getMapUrl = wms130Service.getMapURL({
@@ -121,9 +120,12 @@ test('WMSSource#WMS versions', async (t) => {
 test('WMSSource#fetch override', async (t) => {
   const loadOptions = {fetch: {headers: {Authorization: 'Bearer abc'}}};
   const wmsImageSource = WMSSource.createDataSource(WMS_SERVICE_URL, {
-    url: WMS_SERVICE_URL,
-    loadOptions,
-    substituteCRS84: true
+    core: {
+      loadOptions
+    },
+    wms: {
+      substituteCRS84: true
+    }
   });
   const generatedUrl = wmsImageSource.getFeatureInfoURL({
     x: 1,

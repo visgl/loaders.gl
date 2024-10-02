@@ -2,10 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Source} from '@loaders.gl/loader-utils';
-import {PotreeNodesSource, PotreeNodesSourceProps} from './lib/potree-node-source';
+import {Source, DataSourceOptions} from '@loaders.gl/loader-utils';
+import {PotreeNodesSource} from './lib/potree-node-source';
 
 const VERSION = '1.7';
+
+export type PotreeSourceOptions = DataSourceOptions & {
+  potree?: {};
+};
 
 /**
  * Creates point cloud data sources for Potree urls
@@ -17,12 +21,15 @@ export const PotreeSource = {
   version: VERSION,
   extensions: ['bin', 'las', 'laz'],
   mimeTypes: ['application/octet-stream'],
-  options: {url: undefined!, potree: {}},
   type: 'potree',
   fromUrl: true,
   fromBlob: true,
 
+  defaultOptions: {
+    potree: {}
+  },
+
   testURL: (url: string) => url.endsWith('.js'),
-  createDataSource: (url: string | Blob, props: PotreeNodesSourceProps) =>
-    new PotreeNodesSource(url, props)
-} as const satisfies Source<PotreeNodesSource, PotreeNodesSourceProps>;
+  createDataSource: (url: string, options: PotreeSourceOptions) =>
+    new PotreeNodesSource(url, options) // , PotreeNodesSource.defaultOptions)
+} as const satisfies Source<PotreeNodesSource>;

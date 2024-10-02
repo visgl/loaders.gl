@@ -39,10 +39,9 @@ jobs:
 
       - name: Build website
         run: |
-          cd website ; yarn install ; yarn run build
+          cd website ; yarn install
   
       - name: Coveralls
-        if: matrix.node-version == 18
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

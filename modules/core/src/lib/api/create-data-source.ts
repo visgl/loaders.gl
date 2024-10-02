@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataSourceProps} from '@loaders.gl/loader-utils';
-import {DataSource, Source} from '@loaders.gl/loader-utils';
+import {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from '@loaders.gl/loader-utils';
 
 /**
  * Creates a source from a service
@@ -12,23 +11,29 @@ import {DataSource, Source} from '@loaders.gl/loader-utils';
  * @param type type of source. if not known, set to 'auto'
  * @returns an DataSource instance
  */
-export function createDataSource<
-  DataSourcePropsT extends DataSourceProps = DataSourceProps,
-  DataSourceT extends DataSource = DataSource
->(data: string | Blob, sources: Source[], props: DataSourcePropsT & {type?: string}): DataSourceT {
-  const {type = 'auto'} = props;
+// DataSourceOptionsT extends DataSourceOptions = DataSourceOptions,
+// DataSourceT extends DataSource = DataSource
+export function createDataSource<SourceArrayT extends Source[]>(
+  data: string | Blob,
+  sources: Readonly<SourceArrayT>,
+  options: Readonly<SourceArrayOptionsType<SourceArrayT>>
+): SourceArrayDataSourceType<SourceArrayT> {
+  const type = options?.core?.type || (options.type as unknown as string) || 'auto';
   const source = type === 'auto' ? selectSource(data, sources) : getSourceOfType(type, sources);
 
   if (!source) {
-    throw new Error('Not a valid image source type');
+    throw new Error('Not a valid source type');
   }
-  return source.createDataSource(data, props) as DataSourceT;
+  return source.createDataSource(data, options);
 }
 
 // TODO - use selectSource...
 
 /** Guess service type from URL */
-function selectSource(url: string | Blob, sources: Source[]): Source | null {
+function selectSource<SourceArrayT extends Source[]>(
+  url: string | Blob,
+  sources: Readonly<SourceArrayT>
+): SourceArrayT[number] | null {
   for (const service of sources) {
     // @ts-expect-error
     if (service.testURL && service.testURL(url)) {
@@ -40,7 +45,7 @@ function selectSource(url: string | Blob, sources: Source[]): Source | null {
 }
 
 /** Guess service type from URL */
-function getSourceOfType(type: string, sources: Source[]): Source | null {
+function getSourceOfType(type: string, sources: Readonly<Source[]>): Source | null {
   for (const service of sources) {
     if (service.type === type) {
       return service;

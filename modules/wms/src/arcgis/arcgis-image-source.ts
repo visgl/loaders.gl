@@ -5,14 +5,17 @@
 import type {ImageType} from '@loaders.gl/images';
 import type {
   Source,
-  ImageSourceProps,
+  DataSourceOptions,
   ImageSourceMetadata,
   GetImageParameters
 } from '@loaders.gl/loader-utils';
-import {ImageSource} from '@loaders.gl/loader-utils';
+import {DataSource, ImageSource} from '@loaders.gl/loader-utils';
 
-// import type {ImageSourceProps} from '@loaders.gl/loader-utils';
-// import {ImageSource} from '@loaders.gl/loader-utils';
+export type ArcGISImageSourceProps = DataSourceOptions & {
+  'arcgis-image-server'?: {
+    // TODO - add options here
+  };
+};
 
 export const ArcGISImageServerSource = {
   name: 'ArcGISImageServer',
@@ -21,40 +24,32 @@ export const ArcGISImageServerSource = {
   version: '0.0.0',
   extensions: [],
   mimeTypes: [],
-  options: {
+  type: 'arcgis-image-server',
+  fromUrl: true,
+  fromBlob: false,
+
+  defaultOptions: {
     'arcgis-image-server': {
       // TODO - add options here
     }
   },
 
-  type: 'arcgis-image-server',
-  fromUrl: true,
-  fromBlob: false,
-
   testURL: (url: string): boolean => url.toLowerCase().includes('ImageServer'),
   createDataSource: (url, props: ArcGISImageSourceProps): ArcGISImageSource =>
     new ArcGISImageSource(url as string, props)
-} as const satisfies Source<ArcGISImageSource, ArcGISImageSourceProps>;
-
-export type ArcGISImageSourceProps = ImageSourceProps & {
-  'arcgis-image-server'?: {
-    // TODO - add options here
-  };
-};
+} as const satisfies Source<ArcGISImageSource>;
 
 /**
  * ArcGIS ImageServer
  * Note - exports a big API, that could be exposed here if there is a use case
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/image-service.htm
  */
-export class ArcGISImageSource extends ImageSource<ArcGISImageSourceProps> {
-  url: string;
-  data: string;
-
+export class ArcGISImageSource
+  extends DataSource<string, ArcGISImageSourceProps>
+  implements ImageSource
+{
   constructor(url: string, props: ArcGISImageSourceProps) {
-    super(props);
-    this.url = url;
-    this.data = url;
+    super(url, props, ArcGISImageServerSource.defaultOptions);
   }
 
   // ImageSource (normalized endpoints)

@@ -161,18 +161,22 @@ export function renderToDOM(container: HTMLElement) {
 /** Create a source from the example url */
 function createTileSource(example: Example): VectorTileSource | ImageTileSource {
   const url = example.data;
-  return createDataSource<VectorTileSource | ImageTileSource>(
+  return createDataSource(
     url,
     [PMTilesSource, TableTileSource, MVTSource],
     {
-      pmtiles: {
+      core: {
         attributions: example.attributions,
+        loaders: [GeoJSONLoader],
         // Make the Schema more presentable by limiting the number of values per column the field metadata
-        loadOptions: {tilejson: {maxValues: 10}}
+        loadOptions: {
+          tilejson: {maxValues: 10}
+        }
+      },
+      pmtiles: {
       },
       table: {
         generateId: true,
-        loaders: [GeoJSONLoader]
       },
       mvt: {}
     }

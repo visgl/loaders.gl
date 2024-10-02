@@ -3,13 +3,16 @@
 // Copyright (c) vis.gl contributors
 // Based on https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import {Source, VectorTileSource, TileSourceMetadata, log} from '@loaders.gl/loader-utils';
 import type {
-  VectorTileSourceProps,
+  Source,
+  DataSourceOptions,
+  VectorTileSource,
+  TileSourceMetadata,
   GetTileDataParameters,
   GetTileParameters,
   LoaderWithParser
 } from '@loaders.gl/loader-utils';
+import {DataSource, getRequiredOptions, log} from '@loaders.gl/loader-utils';
 import {
   Schema,
   GeoJSONTable,
@@ -29,54 +32,9 @@ import {clipFeatures} from './lib/vector-tiler/features/clip-features'; // strip
 import {wrapFeatures} from './lib/vector-tiler/features/wrap-features'; // date line processing
 
 /** Options to configure tiling */
-export const TableTileSource = {
-  name: 'TableTiler',
-  id: 'table-tiler',
-  version: '0.0.0',
-  extensions: ['mvt'],
-  mimeTypes: ['application/octet-stream'],
-  options: {
-    table: {
-      coordinates: 'local',
-      promoteId: undefined!,
-      maxZoom: 14,
-      indexMaxZoom: 5,
-      maxPointsPerTile: 10000,
-      tolerance: 3,
-      extent: 4096,
-      buffer: 64,
-      generateId: undefined
-    }
-  },
-  type: 'table',
-  testURL: (url: string): boolean => url.endsWith('.geojson'),
-  createDataSource(
-    url: string | Blob | GeoJSONTable | Promise<GeoJSONTable>,
-    options: DynamicVectorTileSourceProps
-  ): DynamicVectorTileSource {
-    const needsLoading = typeof url === 'string' || url instanceof Blob;
-    const loader = options?.table?.loaders?.[0]!;
-    const tablePromise = needsLoading ? loadTable(url, loader) : url;
-    return new DynamicVectorTileSource(tablePromise, options);
-  }
-  // @ts-expect-error
-} as const satisfies Source<DynamicVectorTileSource, DynamicVectorTileSourceProps>;
-
-async function loadTable(url: string | Blob, loader: LoaderWithParser): Promise<GeoJSONTable> {
-  if (typeof url === 'string') {
-    const response = await fetch(url);
-    const data = await response.arrayBuffer();
-    return (await loader.parse(data)) as GeoJSONTable;
-  }
-
-  const data = await url.arrayBuffer();
-  return (await loader.parse(data)) as GeoJSONTable; //  options.loaders, options.loadOptions)
-}
-
-/** Options to configure tiling */
-export type DynamicVectorTileSourceProps = VectorTileSourceProps & {
-  table: {
-    coordinates: 'local' | 'wgs84' | 'EPSG:4326';
+export type TableTileSourceOptions = DataSourceOptions & {
+  table?: {
+    coordinates?: 'local' | 'wgs84' | 'EPSG:4326';
     /** max zoom to preserve detail on */
     maxZoom?: number;
     /** max zoom in the tile index */
@@ -97,10 +55,46 @@ export type DynamicVectorTileSourceProps = VectorTileSourceProps & {
     debug?: number;
     /** whether to calculate line metrics */
     lineMetrics?: boolean;
-    /** table loders */
-    loaders?: LoaderWithParser[];
   };
 };
+
+/** Options to configure tiling */
+export const TableTileSource = {
+  name: 'TableTiler',
+  id: 'table-tiler',
+  module: 'mvt',
+  version: '0.0.0',
+  extensions: ['mvt'],
+  mimeTypes: ['application/octet-stream'],
+  type: 'table',
+  fromUrl: false,
+  fromBlob: false,
+
+  defaultOptions: {
+    table: {
+      coordinates: 'local',
+      promoteId: undefined!,
+      maxZoom: 14,
+      indexMaxZoom: 5,
+      maxPointsPerTile: 10000,
+      tolerance: 3,
+      extent: 4096,
+      buffer: 64,
+      generateId: undefined
+    }
+  },
+
+  testURL: (url: string): boolean => url.endsWith('.geojson'),
+  createDataSource(
+    url: string | Blob | GeoJSONTable | Promise<GeoJSONTable>,
+    options: TableTileSourceOptions
+  ): TableVectorTileSource {
+    const needsLoading = typeof url === 'string' || url instanceof Blob;
+    const loader = options?.core?.loaders?.[0] as LoaderWithParser;
+    const tablePromise = needsLoading ? loadTable(url, loader) : url;
+    return new TableVectorTileSource(tablePromise, options);
+  }
+} as const satisfies Source<TableVectorTileSource>;
 
 /**
  * Dynamically vector tiles a table (the table needs a geometry column)
@@ -117,8 +111,9 @@ export type DynamicVectorTileSourceProps = VectorTileSourceProps & {
  * @todo - generate binary output tables
  * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
  */
-export class DynamicVectorTileSource
-  implements VectorTileSource<DynamicVectorTileSourceProps, TileSourceMetadata>
+export class TableVectorTileSource
+  extends DataSource<GeoJSONTable | Promise<GeoJSONTable>, TableTileSourceOptions>
+  implements VectorTileSource
 {
   /** Global stats for all DynamicVectorTileSources */
   static stats = new Stats({
@@ -126,7 +121,7 @@ export class DynamicVectorTileSource
     stats: [new Stat('count', 'tiles'), new Stat('count', 'features')]
   });
 
-  /** Stats for this DynamicVectorTileSource */
+  /** Stats for this TableVectorTileSource */
   stats = new Stats({
     id: 'table-tile-source',
     stats: [new Stat('tiles', 'count'), new Stat('features', 'count')]
@@ -135,10 +130,7 @@ export class DynamicVectorTileSource
   /** MIME type of the tiles emitted by this tile source */
   readonly mimeType = 'application/vnd.mapbox-vector-tile';
   readonly localCoordinates = true;
-
-  /** The props that this tile source was created with */
-  // @ts-expect-error
-  props: Required<DynamicVectorTileSourceProps['table']>;
+  readonly tableOptions: Required<Required<TableTileSourceOptions>['table']>;
 
   /* Schema of the data */
   schema: Schema | null = null;
@@ -153,9 +145,9 @@ export class DynamicVectorTileSource
   /** Metadata for the tile source (generated TileJSON/tilestats */
   metadata: Promise<unknown>;
 
-  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, props?: DynamicVectorTileSourceProps) {
-    // @ts-expect-error
-    this.props = {...TableTileSource.options.table, ...props?.table};
+  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, options: TableTileSourceOptions) {
+    super(table, options, TableTileSource.defaultOptions);
+    this.tableOptions = getRequiredOptions(this.options).table;
     this.getTileData = this.getTileData.bind(this);
     this.ready = this.initializeTilesAsync(table);
     this.metadata = this.getMetadata();
@@ -169,7 +161,7 @@ export class DynamicVectorTileSource
 
   async getMetadata(): Promise<TileSourceMetadata & {schema: Schema | null}> {
     await this.ready;
-    return {schema: this.schema, minZoom: 0, maxZoom: this.props.maxZoom};
+    return {schema: this.schema, minZoom: 0, maxZoom: this.tableOptions.maxZoom};
   }
 
   async getSchema(): Promise<Schema> {
@@ -215,9 +207,9 @@ export class DynamicVectorTileSource
     }
 
     return convertTileToGeoJSON(protoTile, {
-      coordinates: this.props.coordinates,
+      coordinates: this.tableOptions.coordinates,
       tileIndex,
-      extent: this.props.extent
+      extent: this.tableOptions.extent
     });
   }
 
@@ -226,28 +218,28 @@ export class DynamicVectorTileSource
    * @note the tiles stores all the features together with additional data
    */
   createRootTiles(table: GeoJSONTable): void {
-    if (this.props.maxZoom < 0 || this.props.maxZoom > 24) {
+    if (this.tableOptions.maxZoom < 0 || this.tableOptions.maxZoom > 24) {
       throw new Error('maxZoom should be in the 0-24 range');
     }
-    if (this.props.promoteId && this.props.generateId) {
+    if (this.tableOptions.promoteId && this.tableOptions.generateId) {
       throw new Error('promoteId and generateId cannot be used together.');
     }
 
-    log.log(1, 'DynamicVectorTileSource creating root tiles', this.props)();
+    log.log(1, 'TableVectorTileSource creating root tiles', this.tableOptions)();
 
     // projects and adds simplification info
     log.time(1, 'preprocess table')();
-    let features = convertFeaturesToProtoFeature(table, this.props);
+    let features = convertFeaturesToProtoFeature(table, this.tableOptions);
     log.timeEnd(1, 'preprocess table')();
 
     // wraps features (ie extreme west and extreme east)
     log.time(1, 'generate tiles')();
 
-    features = wrapFeatures(features, this.props);
+    features = wrapFeatures(features, this.tableOptions);
 
     // start slicing from the top tile down
     if (features.length === 0) {
-      log.log(1, 'DynamicVectorTileSource: no features generated')();
+      log.log(1, 'TableVectorTileSource: no features generated')();
       return;
     }
 
@@ -259,7 +251,7 @@ export class DynamicVectorTileSource
     log.timeEnd(1, 'generate tiles')();
     log.log(
       1,
-      `DynamicVectorTileSource: tiles generated: ${this.stats.get('total').count}`,
+      `TableVectorTileSource: tiles generated: ${this.stats.get('total').count}`,
       this.stats
     )();
   }
@@ -276,7 +268,7 @@ export class DynamicVectorTileSource
     // x = +x;
     // y = +y;
 
-    const {extent} = this.props;
+    const {extent} = this.tableOptions;
 
     if (z < 0 || z > 24) {
       return null;
@@ -325,7 +317,7 @@ export class DynamicVectorTileSource
    * @param cz, cx, and cy are the coordinates of the target tile
    *
    * If no target tile is specified, splitting stops when we reach the maximum
-   * zoom or the number of points is low as specified in the props.
+   * zoom or the number of points is low as specified in the options.
    */
   // eslint-disable-next-line max-params, max-statements, complexity
   splitTile(
@@ -353,7 +345,7 @@ export class DynamicVectorTileSource
       if (!tile) {
         log.time(2, 'tile creation')();
 
-        tile = this.tiles[id] = createProtoTile(features, z, x, y, this.props);
+        tile = this.tiles[id] = createProtoTile(features, z, x, y, this.tableOptions);
         this.tileCoords.push({z, x, y});
 
         const key = `z${z}`;
@@ -363,10 +355,10 @@ export class DynamicVectorTileSource
         stat = this.stats.get('total');
         stat.incrementCount();
 
-        stat = DynamicVectorTileSource.stats.get(key, 'count');
+        stat = TableVectorTileSource.stats.get(key, 'count');
         stat.incrementCount();
 
-        stat = DynamicVectorTileSource.stats.get('total');
+        stat = TableVectorTileSource.stats.get('total');
         stat.incrementCount();
 
         log.log(
@@ -390,11 +382,14 @@ export class DynamicVectorTileSource
       // if it's the first-pass tiling
       if (cz === undefined) {
         // stop tiling if we reached max zoom, or if the tile is too simple
-        if (z === this.props.indexMaxZoom || tile.numPoints <= this.props.maxPointsPerTile) {
+        if (
+          z === this.tableOptions.indexMaxZoom ||
+          tile.numPoints <= this.tableOptions.maxPointsPerTile
+        ) {
           continue;
         }
         // if a drilldown to a specific tile
-      } else if (z === this.props.maxZoom || z === cz) {
+      } else if (z === this.tableOptions.maxZoom || z === cz) {
         // stop tiling if we reached base zoom or our target tile zoom
         continue;
       } else if (cz !== undefined) {
@@ -414,7 +409,7 @@ export class DynamicVectorTileSource
       log.time(2, 'clipping tile')();
 
       // values we'll use for clipping
-      const k1 = (0.5 * this.props.buffer) / this.props.extent;
+      const k1 = (0.5 * this.tableOptions.buffer) / this.tableOptions.extent;
       const k2 = 0.5 - k1;
       const k3 = 0.5 + k1;
       const k4 = 1 + k1;
@@ -424,21 +419,39 @@ export class DynamicVectorTileSource
       let tr: ProtoFeature[] | null = null;
       let br: ProtoFeature[] | null = null;
 
-      let left = clipFeatures(features, z2, x - k1, x + k3, 0, tile.minX, tile.maxX, this.props);
-      let right = clipFeatures(features, z2, x + k2, x + k4, 0, tile.minX, tile.maxX, this.props);
+      let left = clipFeatures(
+        features,
+        z2,
+        x - k1,
+        x + k3,
+        0,
+        tile.minX,
+        tile.maxX,
+        this.tableOptions
+      );
+      let right = clipFeatures(
+        features,
+        z2,
+        x + k2,
+        x + k4,
+        0,
+        tile.minX,
+        tile.maxX,
+        this.tableOptions
+      );
 
       // @ts-expect-error - unclear why this is needed?
       features = null;
 
       if (left) {
-        tl = clipFeatures(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
-        bl = clipFeatures(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
+        tl = clipFeatures(left, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.tableOptions);
+        bl = clipFeatures(left, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.tableOptions);
         left = null;
       }
 
       if (right) {
-        tr = clipFeatures(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.props);
-        br = clipFeatures(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.props);
+        tr = clipFeatures(right, z2, y - k1, y + k3, 1, tile.minY, tile.maxY, this.tableOptions);
+        br = clipFeatures(right, z2, y + k2, y + k4, 1, tile.minY, tile.maxY, this.tableOptions);
         right = null;
       }
 
@@ -455,12 +468,24 @@ export class DynamicVectorTileSource
 function toID(z, x, y): number {
   return ((1 << z) * y + x) * 32 + z;
 }
+
+async function loadTable(url: string | Blob, loader: LoaderWithParser): Promise<GeoJSONTable> {
+  if (typeof url === 'string') {
+    const response = await fetch(url);
+    const data = await response.arrayBuffer();
+    return (await loader.parse(data)) as GeoJSONTable;
+  }
+
+  const data = await url.arrayBuffer();
+  return (await loader.parse(data)) as GeoJSONTable; //  options.loaders, options.loadOptions)
+}
+
 /*
 
 // eslint-disable-next-line max-statements, complexity
 function convertToGeoJSONTable(
   vtTile: ProtoTile,
-  props: {
+  options: {
     coordinates: 'local' | 'wgs84' | 'EPSG:4326';
     tileIndex: {x: number; y: number; z: number};
     extent: number;
@@ -515,18 +540,18 @@ function convertToGeoJSONTable(
         continue;
     }
 
-    switch (props.coordinates) {
+    switch (options.coordinates) {
       case 'EPSG:4326':
       case 'wgs84':
-        projectToLngLat(coordinates, props.tileIndex, props.extent);
+        projectToLngLat(coordinates, options.tileIndex, options.extent);
         break;
 
       case 'local':
-        convertToLocalCoordinates(coordinates, props.extent);
+        convertToLocalCoordinates(coordinates, options.extent);
         break;
 
       default:
-        throw new Error(`Unsupported CRS ${props.coordinates}`);
+        throw new Error(`Unsupported CRS ${options.coordinates}`);
     }
 
     const feature: Feature = {

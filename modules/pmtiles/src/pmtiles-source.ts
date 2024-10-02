@@ -11,7 +11,7 @@ import type {
   ImageTileSource,
   ImageType
 } from '@loaders.gl/loader-utils';
-import {DataSource, DataSourceProps, resolvePath} from '@loaders.gl/loader-utils';
+import {DataSource, DataSourceOptions, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
 
@@ -24,6 +24,13 @@ import {BlobSource} from './lib/blob-source';
 
 const VERSION = '1.0.0';
 
+export type PMTilesSourceOptions = DataSourceOptions & {
+  core?: DataSourceOptions['core'] & {
+    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+  };
+  pmtiles?: {};
+};
+
 /**
  * Creates vector tile data sources for PMTiles urls or blobs
  */
@@ -34,41 +41,36 @@ export const PMTilesSource = {
   version: VERSION,
   extensions: ['pmtiles'],
   mimeTypes: ['application/octet-stream'],
-  options: {url: undefined!, pmtiles: {}},
   type: 'pmtiles',
   fromUrl: true,
   fromBlob: true,
 
-  testURL: (url: string) => url.endsWith('.pmtiles'),
-  createDataSource: (url: string | Blob, props: PMTilesTileSourceProps) =>
-    new PMTilesTileSource(url, props)
-} as const satisfies Source<PMTilesTileSource, PMTilesTileSourceProps>;
+  defaultOptions: {
+    pmtiles: {}
+  },
 
-export type PMTilesTileSourceProps = DataSourceProps & {
-  attributions?: string[];
-  pmtiles?: {
-    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
-    // TODO - add options here
-  };
-};
+  testURL: (url: string) => url.endsWith('.pmtiles'),
+  createDataSource: (url: string | Blob, options: PMTilesSourceOptions) =>
+    new PMTilesTileSource(url, options)
+} as const satisfies Source<PMTilesTileSource>;
 
 /**
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
-export class PMTilesTileSource extends DataSource implements ImageTileSource, VectorTileSource {
-  data: string | Blob;
-  props: PMTilesTileSourceProps;
+export class PMTilesTileSource
+  extends DataSource<string | Blob, PMTilesSourceOptions>
+  implements ImageTileSource, VectorTileSource
+{
   mimeType: string | null = null;
   pmtiles: pmtiles.PMTiles;
   metadata: Promise<PMTilesMetadata>;
 
-  constructor(data: string | Blob, props: PMTilesTileSourceProps) {
-    super(props);
-    this.props = props;
-    const url = typeof data === 'string' ? resolvePath(data) : new BlobSource(data, 'pmtiles');
-    this.data = data;
-    this.pmtiles = new PMTiles(url);
+  constructor(data: string | Blob, options: PMTilesSourceOptions) {
+    super(data, options, PMTilesSource.defaultOptions);
+    const urlOrBlob =
+      typeof data === 'string' ? resolvePath(data) : new BlobSource(data, 'pmtiles');
+    this.pmtiles = new PMTiles(urlOrBlob);
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();
   }
@@ -87,8 +89,11 @@ export class PMTilesTileSource extends DataSource implements ImageTileSource, Ve
       this.loadOptions
     );
     // Add additional attribution if necessary
-    if (this.props.attributions) {
-      metadata.attributions = [...this.props.attributions, ...(metadata.attributions || [])];
+    if (this.options.attributions) {
+      metadata.attributions = [
+        ...(this.options.core?.attributions || []),
+        ...(metadata.attributions || [])
+      ];
     }
     if (metadata?.tileMIMEType) {
       this.mimeType = metadata?.tileMIMEType;

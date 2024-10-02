@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// Forked code
 // Copyright (c) 2012 Pierre Curto
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
