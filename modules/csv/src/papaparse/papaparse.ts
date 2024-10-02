@@ -249,6 +249,7 @@ class ChunkStreamer {
   constructor(config: CSVParserConfig) {
     // Deep-copy the config so we can edit it
     var configCopy = {...config};
+    // @ts-expect-error
     configCopy.chunkSize = parseInt(configCopy.chunkSize); // parseInt VERY important so we don't concatenate strings!
     if (!config.step && !config.chunk) {
       configCopy.chunkSize = null; // disable Range header if not streaming; bad values break IIS - see issue #196
