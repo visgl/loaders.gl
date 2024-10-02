@@ -8,6 +8,6 @@
     "outDir": "dist"
   },
   "references": [
-    "../schema"
+    {"path": "../schema"}
   ]
 }
