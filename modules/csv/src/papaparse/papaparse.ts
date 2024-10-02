@@ -16,18 +16,27 @@ License: MIT
 export type CSVParserConfig = {
   dynamicTyping?: boolean | Function | {};
   dynamicTypingFunction?: Function;
+  chunk?: boolean;
+  chunkSize?: number | null;
+  step?: Function;
   transform?: boolean;
+  preview?: number;
   newline?: string;
-  skipEmptyLines?: boolean;
-  comments?: string;
+  comments?: boolean;
+  skipEmptyLines?: boolean | 'greedy';
   delimitersToGuess?: string[];
+  quoteChar?: string;
+  escapeChar?: string;
+  delimiter?: string;
+  // Convert numbers and boolean values in rows from strings
+  fastMode?: boolean;
 };
 
-const defaultConfig: Required<CSVParserConfig> = {
-  dynamicTyping: false,
-  dynamicTypingFunction: undefined!,
-  transform: false
-};
+// const defaultConfig: Required<CSVParserConfig> = {
+//   dynamicTyping: false,
+//   dynamicTypingFunction: undefined!,
+//   transform: false
+// };
 
 /* eslint-disable */
 const BYTE_ORDER_MARK = '\ufeff';
@@ -241,11 +250,13 @@ class ChunkStreamer {
     meta: {}
   };
 
-  constructor(config) {
+  constructor(config: CSVParserConfig) {
     // Deep-copy the config so we can edit it
-    var configCopy = copy(config);
+    var configCopy = {...config};
     configCopy.chunkSize = parseInt(configCopy.chunkSize); // parseInt VERY important so we don't concatenate strings!
-    if (!config.step && !config.chunk) configCopy.chunkSize = null; // disable Range header if not streaming; bad values break IIS - see issue #196
+    if (!config.step && !config.chunk) {
+      configCopy.chunkSize = null; // disable Range header if not streaming; bad values break IIS - see issue #196
+    }
     this._handle = new ParserHandle(configCopy);
     this._handle.streamer = this;
     this._config = configCopy; // persist the copy to the caller
