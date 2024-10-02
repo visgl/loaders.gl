@@ -37,7 +37,9 @@ export const GeoTIFFLoader = {
   module: 'geotiff',
   version: VERSION,
   options: {
-    enableAlpha: true
+    geotiff: {
+      enableAlpha: true
+    }
   },
   mimeTypes: ['image/tiff', 'image/geotiff'],
   extensions: ['geotiff', 'tiff', 'geotif', 'tif'],

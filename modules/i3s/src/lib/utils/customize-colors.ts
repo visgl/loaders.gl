@@ -161,8 +161,10 @@ async function loadFeatureAttributeData(
   const objectIdAttributeUrl = getUrlWithToken(attributeUrls[attributeIndex], token);
   const attributeType = getAttributeValueType(attributeStorageInfo[attributeIndex]);
   const objectIdAttributeData = await load(objectIdAttributeUrl, I3SAttributeLoader, {
-    attributeName,
-    attributeType
+    i3s: {
+      attributeName,
+      attributeType
+    }
   });
 
   return objectIdAttributeData;

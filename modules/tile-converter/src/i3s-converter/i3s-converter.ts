@@ -135,9 +135,11 @@ export default class I3SConverter {
   refreshTokenTime: [number, number] = [0, 0];
   sourceTileset: Tiles3DTilesetJSONPostprocessed | null = null;
   loadOptions: Tiles3DLoaderOptions = {
-    _nodeWorkers: true,
-    reuseWorkers: true,
-    useLocalLibraries: true,
+    core: {
+      _nodeWorkers: true,
+      reuseWorkers: true,
+      useLocalLibraries: true
+    },
     basis: {
       format: 'rgba32',
       // We need to load local fs workers because nodejs can't load workers from the Internet

@@ -94,7 +94,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
  * @param context
  */
 export function getFetchFunction(options?: LoaderOptions) {
-  const fetchFunction = options?.fetch;
+  const fetchFunction = options?.core?.fetch;
 
   // options.fetch can be a function
   if (fetchFunction && typeof fetchFunction === 'function') {

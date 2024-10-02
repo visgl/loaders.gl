@@ -52,10 +52,10 @@ test('ParquetWasmWriter#writer/loader round trip', async (t) => {
   const table = createArrowTable();
 
   const parquetBuffer = await encode(table, ParquetWasmWriter, {
-    worker: false,
+    // core: {worker: false},
   });
   const newTable = await load(parquetBuffer, ParquetWasmLoader, {
-    worker: false,
+    core: {worker: false},
   });
 
   t.deepEqual(table.data.schema, newTable.data.schema);

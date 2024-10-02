@@ -382,11 +382,10 @@ export class Tile3D {
       const options = {
         ...this.tileset.loadOptions,
         [loader.id]: {
-          // @ts-expect-error
           ...this.tileset.loadOptions[loader.id],
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)
-        }
+        } // TODO add typecheck - as const satisfies ...
       };
 
       this.content = await load(contentUrl, loader, options);

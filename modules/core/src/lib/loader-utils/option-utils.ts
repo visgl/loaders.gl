@@ -89,10 +89,7 @@ function validateOptions(options: LoaderOptions, loaders: Loader[]): void {
   validateOptionsObject(options, null, DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS, loaders);
   for (const loader of loaders) {
     // Get the scoped, loader specific options from the user supplied options
-    const idOptions: Record<string, unknown> = ((options && options[loader.id]) || {}) as Record<
-      string,
-      unknown
-    >;
+    const idOptions: Record<string, unknown> = (options && options[loader.id]) || {};
 
     // Get scoped, loader specific default and deprecated options from the selected loader
     const loaderOptions = (loader.options && loader.options[loader.id]) || {};
@@ -169,8 +166,8 @@ function normalizeOptionsInternal(
   addUrlOptions(mergedOptions, url);
 
   // LOGGING: options.log can be set to `null` to defeat logging
-  if (mergedOptions.log === null) {
-    mergedOptions.log = new NullLog();
+  if (mergedOptions.core?.log === null) {
+    mergedOptions.core = {...mergedOptions.core, log: new NullLog()};
   }
 
   mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
@@ -209,6 +206,8 @@ function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions)
  */
 function addUrlOptions(options: LoaderOptions, url?: string): void {
   if (url && !('baseUri' in options)) {
-    options.baseUri = url;
+    options.core ||= {};
+    // @ts-expect-error TODO - remove
+    options.core.baseUri = url;
   }
 }

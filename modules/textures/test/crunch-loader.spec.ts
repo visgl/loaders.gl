@@ -22,7 +22,9 @@ test('CrunchWorkerLoader#imports', (t) => {
 test.skip('CrunchWorkerLoader#load', async (t) => {
   // Decoder lib `src/libs/crunch.js` works only in browser
   if (isBrowser) {
-    const texture = await load(CRUNCH_URL, CrunchWorkerLoader, {worker: false});
+    const texture = await load(CRUNCH_URL, CrunchWorkerLoader, {
+      core: {worker: false}
+    });
     t.ok(texture, 'Crunch container loaded OK');
   }
   t.end();

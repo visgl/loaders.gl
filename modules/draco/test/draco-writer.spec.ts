@@ -367,7 +367,7 @@ test('DracoWriter#geometry metadata', async (t) => {
 
   // Decode the mesh
   const data2 = await parse(compressedMesh, DracoLoader, {
-    worker: false
+    core: {worker: false}
   });
   validateMeshCategoryData(t, data2);
 
@@ -430,7 +430,7 @@ test('DracoWriter#attributes metadata', async (t) => {
 
   // Decode the mesh
   const data2 = await parse(compressedMesh, DracoLoader, {
-    worker: false
+    core: {worker: false}
   });
   validateMeshCategoryData(t, data2);
   validatePositionMetadata(t, data2);
@@ -465,7 +465,7 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
     }
   });
   const data2 = await parse(compressedMesh, DracoLoader, {
-    worker: false,
+    core: {worker: false},
     draco: {
       attributeNameEntry: 'custom-attribute-name'
     }

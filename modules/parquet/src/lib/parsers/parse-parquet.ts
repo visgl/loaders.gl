@@ -39,14 +39,16 @@ export async function parseParquetFile(
     let limitHasReached = false;
     // we have only one input batch so return
     for (const row of rowBatch) {
-      if (options?.limit && rows.length >= options?.limit) {
+      if (options?.limit && rows.length >= options?.core?.limit!) {
         limitHasReached = true;
         break;
       }
       rows.push(row);
     }
     if (limitHasReached) {
-      log.warn(`Rows number limit has been reached. Only first ${options?.limit} are loaded`)();
+      log.warn(
+        `Rows number limit has been reached. Only first ${options?.core?.limit} are loaded`
+      )();
       break;
     }
   }

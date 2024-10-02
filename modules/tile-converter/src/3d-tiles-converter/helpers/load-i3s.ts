@@ -99,7 +99,7 @@ export async function loadFromArchive(
   if (fileSystem !== null) {
     const content = await load(url, loader, {
       ...loadOptions,
-      fetch: fileSystem.fetch.bind(fileSystem)
+      core: {...loadOptions?.core, fetch: fileSystem.fetch.bind(fileSystem)}
     });
     return content;
   }

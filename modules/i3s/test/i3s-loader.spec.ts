@@ -4,7 +4,11 @@ import {loadI3STileContent} from './test-utils/load-utils';
 import {I3SLoader} from '@loaders.gl/i3s';
 
 test('I3SLoader#Load tile content', async (t) => {
-  const content = await loadI3STileContent({loadOptions: {worker: false}});
+  const content = await loadI3STileContent({
+    loadOptions: {
+      core: {worker: false}
+    }
+  });
   t.ok(content);
   t.ok(content.attributes);
   t.ok(content.attributes.positions);
@@ -30,7 +34,9 @@ test('I3SLoader#Load tile content', async (t) => {
 test('I3SLoader#DRACO geometry', async (t) => {
   const content = await loadI3STileContent({
     i3s: {useDracoGeometry: true},
-    loadOptions: {worker: false}
+    loadOptions: {
+      core: {worker: false}
+    }
   });
   t.ok(content);
   t.ok(content.attributes);

@@ -81,7 +81,7 @@ The image category support some generic options (specified using `options.image.
 
 ### About worker loading
 
-Worker loading is only supported for the `data` and `imagebitmap` formats. Since image worker loading is only available on some browsers (Chrome and Firefox), the `ImageLoader` dynamically determines if worker loading is available. Use `options.worker: false` to disable worker loading of images.
+Worker loading is only supported for the `data` and `imagebitmap` formats. Since image worker loading is only available on some browsers (Chrome and Firefox), the `ImageLoader` dynamically determines if worker loading is available. Use `options.core.worker: false` to disable worker loading of images.
 
 ## Image API
 

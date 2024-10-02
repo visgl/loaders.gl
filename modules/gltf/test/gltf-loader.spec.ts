@@ -54,12 +54,11 @@ test('GLTFLoader#load(text)', async (t) => {
 });
 
 test('GLTFLoader#load(3d tile GLB)', async (t) => {
-  t.ok(await load(GLB_TILE_URL, [GLTFLoader, DracoLoader]), 'Test that GLB from 3D tile parses');
+  const result = await load(GLB_TILE_URL, [GLTFLoader, DracoLoader]);
+  t.ok(result, 'Test that GLB from 3D tile parses');
 
-  t.ok(
-    await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageLoader]),
-    'Parses Draco GLB with supplied DracoLoader'
-  );
+  const result2 = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageLoader]);
+  t.ok(result2, 'Parses Draco GLB with supplied DracoLoader');
 
   // TODO - prone to flakiness since we have async unregisterLoaders calls
   registerLoaders([DracoLoader, ImageLoader]);

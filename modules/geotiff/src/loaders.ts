@@ -18,7 +18,9 @@ type GeoTiffData = {
 };
 
 interface GeoTiffLoaderOptions extends LoaderOptions {
-  enableAlpha: boolean;
+  geotiff?: {
+    enableAlpha?: boolean;
+  };
 }
 
 /**
@@ -38,7 +40,7 @@ const loadGeoTiff = async (
   // TODO: Add support for worker pools here.
   // TODO: Add support for more image formats.
   const rgbData = await image.readRGB({
-    enableAlpha: options?.enableAlpha
+    enableAlpha: options?.geotiff?.enableAlpha
   });
   const width = image.getWidth();
   const height = image.getHeight();
@@ -67,7 +69,9 @@ export const GeoTiffLoader = {
   module: 'geotiff',
   version: VERSION,
   options: {
-    enableAlpha: true
+    geotiff: {
+      enableAlpha: true
+    }
   },
   mimeTypes: ['image/tiff', 'image/geotiff'],
   extensions: ['geotiff', 'tiff', 'geotif', 'tif'],

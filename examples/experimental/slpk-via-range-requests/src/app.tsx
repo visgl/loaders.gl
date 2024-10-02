@@ -48,7 +48,7 @@ export default function App() {
     }
 
     const createFileSystem = async (url: string) => {
-      console.log("New url", url)
+      console.log('New url', url);
       const fileProvider = await FileProvider.create(new HttpFile(url));
       const archive = await parseSLPKArchive(fileProvider, undefined, url);
       const fileSystem = new ZipFileSystem(archive);
@@ -78,8 +78,10 @@ export default function App() {
     }
     const loadOptions = {
       i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS},
-      fetch: fileSystem.fetch.bind(fileSystem),
-      worker: false
+      core: {
+        fetch: fileSystem.fetch.bind(fileSystem),
+        worker: false
+      }
     };
     // @ts-expect-error
     const layers = new CustomTile3DLayer({

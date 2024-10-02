@@ -22,7 +22,12 @@ const SLPK_HEX = '504b0304';
 const POINT_CLOUD = 'PointCloud';
 
 export type I3SLoaderOptions = LoaderOptions & {
-  i3s?: I3SParseOptions;
+  i3s?: I3SParseOptions & {
+    /** For I3SAttributeLoader */
+    attributeName?: string;
+    /** For I3SAttributeLoader */
+    attributeType?: string;
+  };
 };
 
 /**
@@ -77,7 +82,7 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context): Promise<
   }
 
   let isTileHeader;
-  if (options.isTileHeader === 'auto') {
+  if (options.i3s.isTileHeader === 'auto') {
     isTileHeader = TILE_HEADER_REGEX.test(urlWithoutParams);
   } else {
     isTileHeader = options.i3s.isTileHeader;

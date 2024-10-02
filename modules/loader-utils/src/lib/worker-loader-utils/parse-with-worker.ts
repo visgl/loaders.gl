@@ -40,7 +40,7 @@ export async function parseWithWorker(
   const name = loader.id; // TODO
   const url = getWorkerURL(loader, options);
 
-  const workerFarm = WorkerFarm.getWorkerFarm(options);
+  const workerFarm = WorkerFarm.getWorkerFarm(options?.core);
   const workerPool = workerFarm.getWorkerPool({name, url});
 
   // options.log object contains functions which cannot be transferred

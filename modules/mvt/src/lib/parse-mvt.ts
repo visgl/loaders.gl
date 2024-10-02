@@ -30,6 +30,7 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
   const mvtOptions = checkOptions(options);
 
   const shape: string | undefined =
+    // @ts-expect-error TODO should we support top-level shape?
     options?.gis?.format || options?.mvt?.shape || (options?.shape as string);
   switch (shape) {
     case 'columnar-table': // binary + some JS arrays

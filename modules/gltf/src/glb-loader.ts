@@ -6,10 +6,13 @@ import {parseGLBSync} from './lib/parsers/parse-glb';
 
 /** GLB loader options */
 export type GLBLoaderOptions = LoaderOptions & {
-  /** GLB Parser Options */
-  glb?: ParseGLBOptions;
-  /** GLB specific: byteOffset to start parsing from */
-  byteOffset?: number;
+  glb?: {
+    /** GLB Parser Options */
+    glb?: ParseGLBOptions;
+    /** GLB specific: byteOffset to start parsing from */
+    byteOffset?: number;
+    strict?: boolean;
+  };
 };
 
 /**
@@ -40,8 +43,7 @@ async function parse(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): Prom
 }
 
 function parseSync(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): GLB {
-  const {byteOffset = 0} = options || {};
   const glb: GLB = {} as GLB;
-  parseGLBSync(glb, arrayBuffer, byteOffset, options?.glb);
+  parseGLBSync(glb, arrayBuffer, options?.glb?.byteOffset || 0, options?.glb);
   return glb;
 }

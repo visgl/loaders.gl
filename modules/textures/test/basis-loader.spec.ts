@@ -22,7 +22,9 @@ test('BasisLoader#imports', (t) => {
 });
 
 test('BasisLoader#load(URL, worker: false)', async (t) => {
-  const images = await load(BASIS_TEST_URL, BasisLoader, {worker: false});
+  const images = await load(BASIS_TEST_URL, BasisLoader, {
+    core: {worker: false}
+  });
 
   const image = images[0][0];
 
@@ -62,7 +64,10 @@ test('BasisLoader#load(URL, worker: true)', async (t) => {
 
 test('BasisLoader#auto-select a target format', async (t) => {
   // Can't auto-select format in worker because gl context isn't not available on a worker thread
-  const images = await load(BASIS_TEST_URL, BasisLoader, {worker: false, basis: {format: 'auto'}});
+  const images = await load(BASIS_TEST_URL, BasisLoader, {
+    core: {worker: false},
+    basis: {format: 'auto'}
+  });
 
   const image = images[0][0];
 
@@ -82,7 +87,7 @@ test('BasisLoader#auto-select a target format', async (t) => {
     t.ok(image.compressed, 'Basis transcodes to compressed texture');
   } else {
     t.notOk(image.format, 'Basis transcodes to RGB565 in NodeJS');
-    t.notOk(image.compressed, 'Basis can\'t transcode to compressed texture in NodeJS');
+    t.notOk(image.compressed, "Basis can't transcode to compressed texture in NodeJS");
   }
 
   t.end();
