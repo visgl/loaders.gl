@@ -182,8 +182,8 @@ export class MVTTileSource
     tileParams: GetTileParameters
   ): Promise<unknown | null> {
     const loadOptions: MVTLoaderOptions = {
-      shape: 'geojson-table',
       mvt: {
+        shape: 'geojson-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         ...(this.loadOptions as MVTLoaderOptions)?.mvt

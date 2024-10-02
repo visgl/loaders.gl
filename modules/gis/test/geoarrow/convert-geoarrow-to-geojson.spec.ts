@@ -28,10 +28,8 @@ async function testParseFromArrow(
   expectedGeojson: FeatureCollection
 ): Promise<void> {
   const arrowTable = await load(arrowFile, ArrowLoader, {
-    worker: false,
-    arrow: {
-      shape: 'arrow-table'
-    }
+    core: {worker: false},
+    arrow: {shape: 'arrow-table'}
   });
 
   t.equal(arrowTable.shape, 'arrow-table');

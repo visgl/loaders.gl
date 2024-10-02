@@ -127,7 +127,7 @@ test('loadDraco# Pass options to draco loader properly', async (t) => {
 // TODO - we need a test file with 64 bit data
 test.skip('point cloud tile#64bit attribute', async (t) => {
   const POINTCLOUD_64BIT_URL = '@loaders.gl/3d-tiles/test/data/64-bit-attribute/1.pnts';
-  const result = await load(POINTCLOUD_64BIT_URL, Tiles3DLoader, {worker: false});
+  const result = await load(POINTCLOUD_64BIT_URL, Tiles3DLoader, {core: {worker: false}});
   t.ok(result.attributes.gpstime instanceof Float64Array);
   t.equal(result.attributes.gpstime.length, 31648);
   t.end();

@@ -25,6 +25,7 @@ A minor release that includes:
 - `Writer` type inference improvements: `encode()`, `encodeSync()` and `encodeInBatches()` now infer correct option and data types matching the specified writer.
 - [`createDataSource`](/docs/modules/core/api-reference/create-data-source) - Create a `DataSource` from a list of `Source` objects.
 - [`selectSource`](/docs/modules/core/api-reference/select-source) - Select the appropriate `Source` from a list of `Source` objects.
+- Loader-wide options such as `fetch`, `worker`, `nothrow`, batching limits, etc. are now grouped under `options.core`, while the deprecated top-level aliases continue to work for backwards compatibility.
 
 **@loaders.gl/mvt**
 
@@ -801,7 +802,7 @@ The 2.0 release brings potentially dramatic bundle size savings through dynamic 
 - **Worker Loaders**
 
   - Ease-of-use: Worker loading is provided by the main loader objects. It is not necessary to import the `...WorkerLoader` objects to enable worker loading (but see below about bundle size)
-  - Performance: Loading on worker threads is now the default: All worker enabled loaders now run on worker threads by default (set `options.worker: false` to disable worker-thread loading and run the loader on the main thread).
+  - Performance: Loading on worker threads is now the default: All worker enabled loaders now run on worker threads by default (set `options.core.worker: false` to disable worker-thread loading and run the loader on the main thread).
   - Debugging: Development builds of workers are now available on `unpkg.com` CDN, eabling debugging of worker loaders.
   - Bundle size: Workers are no longer bundled, but loaded from from the `unpkg.com` CDN.
   - Bundle size: Note that the old `...WorkerLoader` classes are still available. Using these can save even more bundle space since during tree-shaking since they do not depend on the non-worker parser.
