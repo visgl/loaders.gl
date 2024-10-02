@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {
+  Table,
+  ArrayRowTable,
+  ObjectRowTable,
+  ColumnarTable,
+  ArrowTable
+} from '@loaders.gl/schema';
 import {
   getTableCell,
   getTableLength,
   getTableRowAsArray,
   getTableRowAsObject
 } from './table-accessors';
-import {
-  Table,
-  ArrayRowTable,
-  ObjectRowTable,
-  ColumnarTable,
-  ArrowTable
-} from '../../../types/category-table';
 import {deduceTableSchema} from './table-schema';
 import {makeColumnFromField} from './table-column';
 

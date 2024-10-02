@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TableBatch} from '@loaders.gl/schema';
-import {TableBatchBuilder} from '@loaders.gl/schema';
+import {TableBatchBuilder} from '../table-batch-builder';
 import {
   LoaderOptions,
   makeLineIterator,
