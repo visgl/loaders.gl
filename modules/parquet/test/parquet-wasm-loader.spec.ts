@@ -37,7 +37,7 @@ test('ParquetWASMLoader#Load Parquet file', async (t) => {
 });
 
 test('ParquetWasmLoader#load', async (t) => {
-  t.comment('SUPPORTED FILES');
+  // t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
     const table = await load(url, ParquetWasmLoader);
@@ -64,7 +64,7 @@ test('ParquetWasmWriter#writer/loader round trip', async (t) => {
 
 // TODO not implemented yet
 test.skip('ParquetWasmLoader#loadInBatches', async (t) => {
-  t.comment('SUPPORTED FILES');
+  // t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
     const iterator = await loadInBatches(url, ParquetWasmLoader);

@@ -216,7 +216,7 @@ test('ParquetColumnarLoader#load', async (t) => {
 
   // Buffer is not defined issue in worker thread of browser.
   if (!isBrowser) {
-    t.comment('SUPPORTED FILES with worker');
+    // t.comment('SUPPORTED FILES with worker');
     for (const {title, path} of SUPPORTED_FILES) {
       const url = `${PARQUET_DIR}/${path}`;
       const table = await load(url, ParquetColumnarLoader, {parquet: {url}, worker: true});
@@ -224,7 +224,7 @@ test('ParquetColumnarLoader#load', async (t) => {
     }
   }
 
-  t.comment('UNSUPPORTED FILES');
+  // t.comment('UNSUPPORTED FILES');
   for (const {title, path} of UNSUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/${path}`;
     try {
@@ -236,7 +236,7 @@ test('ParquetColumnarLoader#load', async (t) => {
     }
   }
 
-  t.comment('ENCRYPTED FILES');
+  // t.comment('ENCRYPTED FILES');
   for (const {title, path} of ENCRYPTED_FILES) {
     const url = `${PARQUET_DIR}/${path}`;
     try {

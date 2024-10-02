@@ -16,7 +16,7 @@ test('MTLLoader#parse(windmill.mtl', async (t) => {
   /** @type {import('../src/lib/parse-mtl').MTLMaterial[]} */
   const materials = await load(MTL_URL, MTLLoader);
 
-  t.comment(JSON.stringify(materials));
+  // t.comment(JSON.stringify(materials));
   t.equal(materials.length, 2, '2 material');
 
   t.equal(materials[0].name, 'Material', 'Material');

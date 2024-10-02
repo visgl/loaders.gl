@@ -52,7 +52,7 @@ test('GMLLoader#parse', async (t) => {
       const geojson = (await parse(xmlText, GMLLoader)) as GeoJSON;
 
       t.equal(typeof geojson, 'object', `Parsed ${fileName}`);
-      t.comment(JSON.stringify(geojson));
+      // t.comment(JSON.stringify(geojson));
     }
   }
 

@@ -56,7 +56,7 @@ const CSW_RESPONSE_2_0_2 =
   '</csw:GetRecordsResponse>';
 test('CSWGetRecordsLoader', async (t) => {
   const cswRecords = await parse(CSW_RESPONSE_2_0_2, CSWRecordsLoader);
-  t.comment(JSON.stringify(cswRecords));
+  // t.comment(JSON.stringify(cswRecords));
 
   const searchStatus = cswRecords.searchStatus;
   const searchResults = cswRecords.searchResults;

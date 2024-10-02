@@ -17,16 +17,16 @@ test('DracoWriter#compressRawBuffers', async (t) => {
     COLOR_0: new Uint8ClampedArray(COLORS)
   };
 
-  t.comment(
-    `Encoding ${attributes.POSITION.length} positions, ${attributes.COLOR_0.length} colors...`
-  );
+  // t.comment(
+  //   `Encoding ${attributes.POSITION.length} positions, ${attributes.COLOR_0.length} colors...`
+  // );
 
   // Encode mesh
   // TODO - Replace with draco writer
   const compressedMesh = await encode({attributes}, DracoWriter, {draco: {pointcloud: true}});
-  const meshSize = getMeshSize(attributes);
-  const ratio = meshSize / compressedMesh.byteLength;
-  t.comment(`Draco compression ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+  // const meshSize = getMeshSize(attributes);
+  // const ratio = meshSize / compressedMesh.byteLength;
+  // t.comment(`Draco compression ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
   // Ensure we can parse it
   const data2 = await parse(compressedMesh, DracoLoader);

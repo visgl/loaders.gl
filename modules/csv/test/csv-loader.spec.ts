@@ -239,9 +239,9 @@ test('CSVLoader#loadInBatches(sample.csv, object-rows)', async (t) => {
   for await (const batch of iterator) {
     t.equal(batch.shape, 'object-row-table', 'Got correct batch shape');
     if (batch.shape === 'object-row-table') {
-      t.comment(
-        `BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`
-      );
+      // t.comment(
+      //   `BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`
+      // );
       t.equal(batch.length, 2, 'Got correct batch size');
       t.deepEqual(batch.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
     }

@@ -20,9 +20,9 @@ test('GLTFBuilder#addCompressedPointCloud', async t => {
     POSITIONS: new Float32Array(POSITIONS),
     COLORS: new Uint8ClampedArray(COLORS)
   };
-  t.comment(
-    `Encoding ${attributes.POSITIONS.length} positions, ${attributes.COLORS.length} colors...`
-  );
+  // t.comment(
+  //   `Encoding ${attributes.POSITIONS.length} positions, ${attributes.COLORS.length} colors...`
+  // );
 
   const gltfBuilder = new GLTFBuilder({DracoWriter, DracoLoader});
   t.equal(gltfBuilder.addCompressedPointCloud(attributes), 0, 'valid index for point cloud data');
