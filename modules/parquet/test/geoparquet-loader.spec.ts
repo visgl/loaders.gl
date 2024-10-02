@@ -47,7 +47,7 @@ test('Load GeoParquet file', async (t) => {
 });
 
 test.skip('GeoParquetColumnarLoader#load', async (t) => {
-  t.comment('SUPPORTED FILES');
+  // t.comment('SUPPORTED FILES');
   for (const fileName of GEOPARQUET_FILES) {
     const url = `${PARQUET_DIR}/geoparquet/${fileName}`;
     const data = await load(url, ParquetColumnarLoader, {worker: false});

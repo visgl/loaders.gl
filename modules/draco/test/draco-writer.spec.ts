@@ -74,7 +74,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
     const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -127,7 +127,7 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
       _workerType: 'test'
     });
     const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -174,7 +174,7 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
     });
     // const compressedMesh = await encode(mesh, DracoWriter, tc.options);
     const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -226,7 +226,7 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
       }
     });
     const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -269,7 +269,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
     const compressedMesh = await encode(attributes, DracoWriter, tc.options);
 
     const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh

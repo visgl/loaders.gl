@@ -169,7 +169,7 @@ test('loadImageTexture#worker', t => {
     }
 
     const {title, width, height} = testCase;
-    t.comment(title);
+    // t.comment(title);
 
     let {url} = testCase;
     url = url.startsWith('data:') ? url : resolvePath(CONTENT_BASE + url);
