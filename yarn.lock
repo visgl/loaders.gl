@@ -2269,6 +2269,7 @@ __metadata:
   dependencies:
     "@loaders.gl/loader-utils": "npm:^5.0.0-alpha.0"
     "@loaders.gl/schema": "npm:^5.0.0-alpha.0"
+    "@loaders.gl/schema-utils": "npm:^5.0.0-alpha.0"
     "@loaders.gl/worker-utils": "npm:^5.0.0-alpha.0"
     "@probe.gl/log": "npm:^4.0.2"
   languageName: unknown
@@ -2668,7 +2669,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/schema-utils@workspace:modules/schema-utils":
+"@loaders.gl/schema-utils@npm:^5.0.0-alpha.0, @loaders.gl/schema-utils@workspace:modules/schema-utils":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/schema-utils@workspace:modules/schema-utils"
   dependencies:
