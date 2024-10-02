@@ -3,9 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // Type deduction
-import {Schema, Field} from '../../../types/schema';
-import {ArrayType} from '../../../types/types';
-import {Table} from '../../../types/category-table';
+import {Schema, Field, ArrayType, Table} from '@loaders.gl/schema';
 import {getDataTypeFromArray, getDataTypeFromValue} from './data-type';
 
 /**

@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema} from '../../../types/schema';
-import type {TableBatch, Table, ObjectRowTable, ArrayRowTable} from '../../../types/category-table';
-import type {Feature} from '../../../types/category-gis';
+import type {Schema, TableBatch, Table, ObjectRowTable, ArrayRowTable, Feature} from '@loaders.gl/schema';
 import {getTableLength} from './table-accessors';
 
 /**

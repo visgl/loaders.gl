@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DataType} from '../../../types/schema';
-import {TypedArray, TypedArrayConstructor, ArrayType} from '../../../types/types';
+import {DataType, TypedArray, TypedArrayConstructor, ArrayType} from '@loaders.gl/schema';
 
 /** Deduce column types from values */
 export function getDataTypeFromValue(
