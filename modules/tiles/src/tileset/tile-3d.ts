@@ -379,14 +379,15 @@ export class Tile3D {
       const contentUrl = this.tileset.getTileUrl(this.contentUrl);
       // The content can be a binary tile ot a JSON tileset
       const loader = this.tileset.loader;
+      const tilesetLoaderOptions =
+        (this.tileset.loadOptions[loader.id] as Record<string, unknown>) || {};
       const options = {
         ...this.tileset.loadOptions,
         [loader.id]: {
-          // @ts-expect-error
-          ...this.tileset.loadOptions[loader.id],
+          ...tilesetLoaderOptions,
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)
-        }
+        } // TODO add typecheck - as const satisfies ...
       };
 
       this.content = await load(contentUrl, loader, options);

@@ -38,7 +38,12 @@ export async function selectLoader(
   }
 
   // First make a sync attempt, disabling exceptions
-  let loader = selectLoaderSync(data, loaders, {...options, nothrow: true}, context);
+  let loader = selectLoaderSync(
+    data,
+    loaders,
+    {...options, core: {...options?.core, nothrow: true}},
+    context
+  );
   if (loader) {
     return loader;
   }
@@ -126,8 +131,8 @@ function selectLoaderInternal(
   let reason: string = '';
 
   // if options.mimeType is supplied, it takes precedence
-  if (options?.mimeType) {
-    loader = findLoaderByMIMEType(loaders, options?.mimeType);
+  if (options?.core?.mimeType) {
+    loader = findLoaderByMIMEType(loaders, options?.core?.mimeType);
     reason = `match forced by supplied MIME type ${options?.mimeType}`;
   }
 
@@ -146,8 +151,8 @@ function selectLoaderInternal(
   reason = reason || (loader ? `matched initial data ${getFirstCharacters(data)}` : '');
 
   // Look up loader by fallback mime type
-  if (options?.fallbackMimeType) {
-    loader = loader || findLoaderByMIMEType(loaders, options?.fallbackMimeType);
+  if (options?.core?.fallbackMimeType) {
+    loader = loader || findLoaderByMIMEType(loaders, options?.core?.fallbackMimeType);
     reason = reason || (loader ? `matched fallback MIME type ${type}` : '');
   }
 

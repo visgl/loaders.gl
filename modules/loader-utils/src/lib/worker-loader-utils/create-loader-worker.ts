@@ -117,7 +117,10 @@ async function parseData({
   options = {
     ...options,
     modules: (loader && loader.options && loader.options.modules) || {},
-    worker: false
+    core: {
+      ...options.core,
+      worker: false
+    }
   };
 
   return await parser(data, {...options}, context, loader);

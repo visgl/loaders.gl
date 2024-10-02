@@ -43,10 +43,7 @@ export const GLTFLoader = {
       loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
       loadImages: true, // Create image objects
       decompressMeshes: true // Decompress Draco encoded meshes
-    },
-
-    // common?
-    log: console // eslint-disable-line
+    }
   }
 } as const satisfies LoaderWithParser<GLTFWithBuffers, never, GLBLoaderOptions>;
 
@@ -60,7 +57,7 @@ export async function parse(
   // @ts-ignore
   options.gltf = {...GLTFLoader.options.gltf, ...options.gltf};
 
-  const {byteOffset = 0} = options;
+  const byteOffset = options?.glb?.byteOffset || 0;
   const gltf = {};
   return await parseGLTF(gltf as GLTFWithBuffers, arrayBuffer, byteOffset, options, context);
 }
