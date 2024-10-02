@@ -57,6 +57,7 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "^5.0.0-alpha.0",
     "@loaders.gl/schema": "^5.0.0-alpha.0",
+    "@loaders.gl/schema-utils": "^5.0.0-alpha.0",
     "@loaders.gl/worker-utils": "^5.0.0-alpha.0",
     "@probe.gl/log": "^4.0.2"
   },

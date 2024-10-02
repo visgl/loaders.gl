@@ -11,8 +11,9 @@ import '@loaders.gl/math/test';
 
 // Core
 import '@loaders.gl/loader-utils/test';
-import '@loaders.gl/core/test';
 import '@loaders.gl/schema/test';
+import '@loaders.gl/schema-utils/test';
+import '@loaders.gl/core/test';
 
 // Image Formats
 import '@loaders.gl/images/test';

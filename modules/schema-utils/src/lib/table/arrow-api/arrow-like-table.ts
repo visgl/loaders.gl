@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Table} from '../../../types/category-table';
+import {Table} from '@loaders.gl/schema';
 
 import {ArrowLikeSchema} from './arrow-like-schema';
-
 import {deduceTableSchema} from '../simple-table/table-schema';
 
 import {

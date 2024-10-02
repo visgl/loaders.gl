@@ -13,13 +13,8 @@ import type {
   LoaderWithParser
 } from '@loaders.gl/loader-utils';
 import {DataSource, getRequiredOptions, log} from '@loaders.gl/loader-utils';
-import {
-  Schema,
-  GeoJSONTable,
-  Feature,
-  BinaryFeatureCollection,
-  deduceTableSchema
-} from '@loaders.gl/schema';
+import type {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
+import {deduceTableSchema} from '@loaders.gl/schema-utils';
 import {Stats, Stat} from '@probe.gl/stats';
 
 import type {ProtoFeature} from './lib/vector-tiler/features/proto-feature';
