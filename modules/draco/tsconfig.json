@@ -10,6 +10,7 @@
   "references": [
     {"path": "../loader-utils"},
     {"path": "../schema"},
+    {"path": "../schema-utils"},
     {"path": "../worker-utils"},
     {"path": "../polyfills"}
   ]

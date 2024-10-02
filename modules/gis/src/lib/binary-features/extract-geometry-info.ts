@@ -1,4 +1,8 @@
-import {Feature, GeojsonGeometryInfo} from '@loaders.gl/schema';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Feature, GeojsonGeometryInfo} from '@loaders.gl/schema';
 
 /**
  *  Initial scan over GeoJSON features

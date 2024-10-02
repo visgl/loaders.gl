@@ -25,7 +25,7 @@ import type {
   DracoOctahedronTransform
 } from './draco-types';
 
-import {getMeshBoundingBox} from '@loaders.gl/schema';
+import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import {getDracoSchema} from './utils/get-draco-schema';
 
 /** Options to control draco parsing */

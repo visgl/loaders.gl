@@ -1,8 +1,12 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // ported and es6-ified from https://github.com/verma/plasio/
 // import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../las-loader';
 import type {LASMesh, LASHeader} from './las-types';
-import {getMeshBoundingBox /* , convertMesh */} from '@loaders.gl/schema';
+import {getMeshBoundingBox /* , convertMesh */} from '@loaders.gl/schema-utils';
 import {LASFile} from './laslaz-decoder';
 import {getLASSchema} from './get-las-schema';
 

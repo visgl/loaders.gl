@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {fetchFile, parse, encode} from '@loaders.gl/core';
-import {getMeshSize} from '@loaders.gl/schema';
+// import {getMeshSize} from '@loaders.gl/schema-utils';
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {validateMeshCategoryData} from 'test/common/conformance';
 

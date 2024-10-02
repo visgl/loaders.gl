@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Geometry} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
 import {parseWKT, isWKT, WKT_MAGIC_STRINGS} from './lib/parse-wkt';
-import {Geometry} from '@loaders.gl/schema';
 
 export type WKTLoaderOptions = LoaderOptions & {
   /** Options for the WKTLoader */

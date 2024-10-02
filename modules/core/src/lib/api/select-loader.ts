@@ -4,13 +4,13 @@
 
 import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import {compareArrayBuffers, path, log} from '@loaders.gl/loader-utils';
+import {TypedArray} from '@loaders.gl/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
 import {compareMIMETypes} from '../utils/mime-type-utils';
 import {getRegisteredLoaders} from './register-loaders';
 import {isBlob} from '../../javascript-utils/is-type';
 import {stripQueryString} from '../utils/url-utils';
-import {TypedArray} from '@loaders.gl/schema';
 
 const EXT_PATTERN = /\.([^.]+)$/;
 

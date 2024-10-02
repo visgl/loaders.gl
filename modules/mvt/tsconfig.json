@@ -11,6 +11,7 @@
     {"path": "../gis"},
     {"path": "../images"},
     {"path": "../loader-utils"},
-    {"path": "../schema"}
+    {"path": "../schema"},
+    {"path": "../schema-utils"}
   ]
 }

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 
-import {Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/schema';
 
 /* eslint-disable */
 // @ts-nocheck

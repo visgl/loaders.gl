@@ -4,7 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema';
+import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
 import {JSONLoader} from '@loaders.gl/json';
 
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';

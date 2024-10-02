@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import {Table, makeRowIterator} from '@loaders.gl/schema';
+import type {Table} from '@loaders.gl/schema';
+import {makeRowIterator} from '@loaders.gl/schema-utils';
 import type {JSONWriterOptions} from '../../json-writer';
 
 /**

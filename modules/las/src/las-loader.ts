@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // LASER (LAS) FILE FORMAT
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LASMesh} from './lib/las-types';

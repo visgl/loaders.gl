@@ -1,7 +1,15 @@
 /* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
 import {isBrowser} from '@loaders.gl/loader-utils';
 import {WKBLoader} from '@loaders.gl/wkt';
-import {Schema, Field, Geometry, DataType, Tables, GeoJSONTable, Feature} from '@loaders.gl/schema';
+import type {
+  Schema,
+  Field,
+  Geometry,
+  DataType,
+  Tables,
+  GeoJSONTable,
+  Feature
+} from '@loaders.gl/schema';
 import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';

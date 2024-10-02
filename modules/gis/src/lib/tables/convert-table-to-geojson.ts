@@ -11,7 +11,7 @@ import type {
   Feature,
   Geometry
 } from '@loaders.gl/schema';
-import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema';
+import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema-utils';
 
 import {GeoColumnMetadata, getGeoMetadata} from '../geo/geoparquet-metadata';
 

@@ -7,7 +7,7 @@ import {loadInBatches, fetchFile, isBrowser} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
-import {ObjectRowTableBatch} from '@loaders.gl/schema';
+import type {ObjectRowTableBatch} from '@loaders.gl/schema';
 
 const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';

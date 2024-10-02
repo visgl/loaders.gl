@@ -3,7 +3,7 @@ import {validateLoader} from 'test/common/conformance';
 
 import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
 import {CSVLoader} from '../src/csv-loader';
-import {getTableLength} from '@loaders.gl/schema';
+import {getTableLength} from '@loaders.gl/schema-utils';
 
 // Small CSV Sample Files
 const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';

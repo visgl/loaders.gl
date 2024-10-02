@@ -4,7 +4,7 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 import type {TableBatch} from '@loaders.gl/schema';
-import {getTableLength} from '@loaders.gl/schema';
+import {getTableLength} from '@loaders.gl/schema-utils';
 import {detectGeometryColumnIndex} from '../encoder-utils/encode-utils';
 import {encodeTableRow} from '../encoder-utils/encode-table-row';
 import {Utf8ArrayBufferEncoder} from '../encoder-utils/utf8-encoder';

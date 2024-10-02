@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 
 import {JSONWriter} from '@loaders.gl/json';
 import {encodeTableAsText} from '@loaders.gl/core';
-import {emptyTable, tableWithData} from '@loaders.gl/schema/test/shared-utils';
+import {emptyTable, tableWithData} from '@loaders.gl/schema-utils/test/shared-utils';
 
 test('JSONWriter#encodeTableAsText - empty table', async (t) => {
   const encodedText = await encodeTableAsText(emptyTable, JSONWriter);

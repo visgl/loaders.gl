@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import {Table, getTableLength, getTableNumCols, getTableRowAsArray} from '@loaders.gl/schema';
+import type {Table} from '@loaders.gl/schema';
+import {getTableLength, getTableNumCols, getTableRowAsArray} from '@loaders.gl/schema-utils';
 
 type Row = {[key: string]: unknown};
 

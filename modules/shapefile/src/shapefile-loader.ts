@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Batch, GeoJSONTable} from '@loaders.gl/schema';
 import {SHP_MAGIC_NUMBER} from './shp-loader';
 import {parseShapefile, parseShapefileInBatches} from './lib/parsers/parse-shapefile';
-import {Batch, GeoJSONTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

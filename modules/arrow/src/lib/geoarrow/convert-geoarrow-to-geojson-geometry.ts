@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // import * as arrow from 'apache-arrow';
-import {
+import type {
   MultiPolygon,
   Position,
   Polygon,

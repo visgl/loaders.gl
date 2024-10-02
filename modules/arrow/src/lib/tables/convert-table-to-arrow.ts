@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import {Table, getTableLength, getTableNumCols, getTableCellAt} from '@loaders.gl/schema';
+import type {Table} from '@loaders.gl/schema';
+import {getTableLength, getTableNumCols, getTableCellAt} from '@loaders.gl/schema-utils';
 import {deserializeArrowSchema} from '../tables/convert-arrow-schema';
 
 /**

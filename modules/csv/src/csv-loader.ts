@@ -10,7 +10,7 @@ import {
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
-} from '@loaders.gl/schema';
+} from '@loaders.gl/schema-utils';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 
