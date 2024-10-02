@@ -4,7 +4,7 @@
 
 /* eslint-disable no-else-return */
 
-import {Table, ArrayRowTable, ObjectRowTable} from '../../../types/category-table';
+import type {Table, ArrayRowTable, ObjectRowTable} from '@loaders.gl/schema';
 
 export function isTable(table: any): table is Table {
   const shape = typeof table === 'object' && table?.shape;
