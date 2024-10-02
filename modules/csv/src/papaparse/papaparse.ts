@@ -41,11 +41,7 @@ export type CSVParserConfig = {
 /* eslint-disable */
 const BYTE_ORDER_MARK = '\ufeff';
 
-function CsvToJson(
-  _input,
-  _config: CSVParserConfig = {},
-  Streamer: any = StringStreamer
-) {
+function CsvToJson(_input, _config: CSVParserConfig = {}, Streamer: any = StringStreamer) {
   _config = _config || {};
   var dynamicTyping = _config.dynamicTyping || false;
   if (isFunction(dynamicTyping)) {
