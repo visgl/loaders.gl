@@ -4,7 +4,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {ParquetColumnarLoader} from '@loaders.gl/parquet';
-import {getTableLength} from '@loaders.gl/schema';
+import {getTableLength} from '@loaders.gl/schema-utils';
 import {isBrowser, load, setLoaderOptions} from '@loaders.gl/core';
 
 import {SUPPORTED_FILES, UNSUPPORTED_FILES, ENCRYPTED_FILES, BAD_FILES} from './data/files';
