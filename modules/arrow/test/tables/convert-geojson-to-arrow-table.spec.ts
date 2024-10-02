@@ -22,10 +22,8 @@ async function testConversion(
   expectedGeojson: FeatureCollection
 ): Promise<void> {
   const table = await parse(fetchFile(arrowFile), GeoArrowLoader, {
-    worker: false,
-    arrow: {
-      shape: 'geojson-table'
-    }
+    core: {worker: false},
+    arrow: {shape: 'geojson-table'}
   });
 
   t.equal(table.shape, 'geojson-table');

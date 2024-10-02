@@ -15,18 +15,24 @@ export async function parquetBench(suite) {
   const geoArrayBuffer = await response.arrayBuffer();
 
   suite.addAsync('load(ParquetLoader) - Parquet load', {multiplier: 40000, unit: 'rows'}, async () => {
-    await load(arrayBuffer, ParquetLoader, {worker: false});
+    await load(arrayBuffer, ParquetLoader, {
+      core: {worker: false}
+    });
   });
 
   // let i = 0;
   suite.addAsync('load(ParquetColumnarLoader) - Parquet load', {multiplier: 40000, unit: 'rows'}, async () => {
     // const j = i++;
     // console.time(`load-${j}`);
-    await load(arrayBuffer, ParquetColumnarLoader, {worker: false});
+    await load(arrayBuffer, ParquetColumnarLoader, {
+      core: {worker: false}
+    });
     // console.timeEnd(`load-${j}`);
   });
 
   suite.addAsync('load(ParquetColumnarLoader) - GeoParquet load', {multiplier: 40000, unit: 'rows'}, async () => {
-    await load(geoArrayBuffer, ParquetColumnarLoader, {worker: false});
+    await load(geoArrayBuffer, ParquetColumnarLoader, {
+      core: {worker: false}
+    });
   });
 }

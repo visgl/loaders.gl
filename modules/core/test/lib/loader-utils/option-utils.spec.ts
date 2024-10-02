@@ -19,7 +19,7 @@ const TEST_CASES = [
   },
   {
     loader: LASLoader,
-    options: {las: {skip: 10}, worker: false},
+    options: {las: {skip: 10}, core: {worker: false}},
     assert: (t, options) => {
       t.equal(options.las.skip, 10);
       t.equal(options.worker, false);
