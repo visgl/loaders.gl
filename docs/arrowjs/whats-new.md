@@ -18,6 +18,33 @@ especially if your app uses multiple JavaScript packages dependent on arrow. You
 different arrow js versions or the build may break due to version requirement incompatibilities.
 :::
 
+## v17.0
+
+July 16, 2024
+
+- [Apache Arrow 16.0.0](https://arrow.apache.org/release/17.0.0.html)
+
+## v16.1
+
+May 14, 2024
+
+- GH-40407 - [JS] Fix string coercion in MapRowProxyHandler.ownKeys (#40408)
+- GH-39131 - [JS] Add at() for array like types (#40730)
+- GH-39482 - [JS] Refactor imports (#39483)
+- GH-40959 - [JS] Store Timestamps in 64 bits (#40960)
+- GH-40989 - [JS] Update dependencies (#40990)
+
+## v16.0
+
+April 20, 2024
+
+- [Apache Arrow 16.0.0](https://arrow.apache.org/release/16.0.0.html)
+- GH-40718 - [JS] Fix set visitor in vectors for js dates (#40725)
+- GH-40851 - [JS] Fix nullcount and make vectors created from typed arrays not nullable (#40852)
+- GH-40891 - [JS] Store Dates as TimestampMillisecond (#40892)
+- GH-41015 - [JS][Benchmarking] allow JS benchmarks to run more portably (#41031)
+- GH-40784 - [JS] Use bigIntToNumber (#40785)
+
 ## v15.0
 
 Jan 21, 2024

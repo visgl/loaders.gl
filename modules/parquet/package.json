@@ -87,12 +87,11 @@
     "@types/node": "^10.14.15",
     "@types/node-int64": "^0.4.29",
     "@types/thrift": "^0.10.8",
-    "@types/varint": "^5.0.0",
-    "apache-arrow": "^15.0.0"
+    "@types/varint": "^5.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0",
-    "apache-arrow": ">= 15.0.0"
+    "apache-arrow": ">= 16.1.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }
