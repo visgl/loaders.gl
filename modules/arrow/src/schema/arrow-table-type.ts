@@ -8,6 +8,7 @@ import type * as arrow from 'apache-arrow';
 /**
  * A table organized as an Apache Arrow table
  * @note This is a variant of the type from loaders.gl/schema
+ * @note Should be part of @loaders.gl/schema - kept separate to avoid hard arrow dependency
  */
 export type ArrowTable = {
   shape: 'arrow-table';
@@ -18,6 +19,7 @@ export type ArrowTable = {
 /**
  * Batch for a table organized as an Apache Arrow table
  * @note This is a variant of the type from loaders.gl/schema
+ * @note Should be part of @loaders.gl/schema - kept separate to avoid hard arrow dependency
  */
 export type ArrowTableBatch = Batch & {
   shape: 'arrow-table';

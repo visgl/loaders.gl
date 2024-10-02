@@ -2,35 +2,33 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowLoaderOptions} from './arrow-loader';
-import {TableBatchBuilder} from '@loaders.gl/schema';
-import {ArrowTableBatchAggregator} from './lib/arrow-table-batch';
+// Types
+export type {ArrowTable, ArrowTableBatch} from './schema/arrow-table-type';
+export {VECTOR_TYPES} from './lib/types';
+import {ArrowTableBatchAggregator} from './schema/arrow-table-batch';
 
 // Make the ArrowBatch type available
+import {TableBatchBuilder} from '@loaders.gl/schema';
 TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
-
-// TYPES
-
-export {getArrowType} from './schema/arrow-type-utils';
-
-// SCHEMA
-
-// Types
-export type {ArrowTable, ArrowTableBatch} from './lib/arrow-table';
-export {VECTOR_TYPES} from './types';
 
 // Arrow loader / Writer
 
-export type {ArrowLoaderOptions};
-export {ArrowLoader, ArrowWorkerLoader} from './arrow-loader';
+export type {ArrowLoaderOptions} from './exports/arrow-loader';
+export {ArrowWorkerLoader} from './exports/arrow-loader';
+export {ArrowLoader} from './arrow-loader';
 
 export {ArrowWriter} from './arrow-writer';
 
 // Geoarrow loader
-export {GeoArrowLoader, GeoArrowWorkerLoader} from './geoarrow-loader';
+export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
+export {GeoArrowLoader} from './geoarrow-loader';
 
 // Schema utils
 export {
+  convertArrowToSchema,
+  convertSchemaToArrow,
+
+  // DETAILED FUNCTIONS
   serializeArrowSchema,
   deserializeArrowSchema,
   serializeArrowMetadata,
@@ -39,7 +37,11 @@ export {
   deserializeArrowField,
   serializeArrowType,
   deserializeArrowType
-} from './schema/convert-arrow-schema';
+} from './lib//tables/convert-arrow-schema';
+
+// Table utils
+export {convertArrowToTable} from './lib/tables/convert-arrow-to-table';
+export {convertTableToArrow} from './lib/tables/convert-table-to-arrow';
 
 // EXPERIMENTAL
 
@@ -51,19 +53,17 @@ export type {GeoArrowEncoding} from '@loaders.gl/gis';
 export type {
   BinaryDataFromGeoArrow,
   BinaryGeometriesFromArrowOptions
-} from './geoarrow/convert-geoarrow-to-binary-geometry';
+} from './lib/geoarrow/convert-geoarrow-to-binary-geometry';
 export {
   getBinaryGeometryTemplate,
   getBinaryGeometriesFromArrow,
   getTriangleIndices,
   getMeanCentersFromBinaryGeometries
-} from './geoarrow/convert-geoarrow-to-binary-geometry';
+} from './lib/geoarrow/convert-geoarrow-to-binary-geometry';
 
-export {updateBoundsFromGeoArrowSamples} from './geoarrow/get-arrow-bounds';
+export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';
 
-export {parseGeometryFromArrow} from './geoarrow/convert-geoarrow-to-geojson-geometry';
-
-export {convertArrowToGeoJSONTable} from './tables/convert-arrow-to-geojson-table';
+export {parseGeometryFromArrow} from './lib/geoarrow/convert-geoarrow-to-geojson-geometry';
 
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';

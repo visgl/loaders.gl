@@ -3,9 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import {ColumnarTableBatchAggregator} from '@loaders.gl/schema';
-import type {ArrowTableBatch} from './arrow-table';
+import type {ArrowTableBatch} from './arrow-table-type';
 import * as arrow from 'apache-arrow';
 
+/** @note Should be part of @loaders.gl/schema - kept separate to avoid hard arrow dependency */
 export class ArrowTableBatchAggregator extends ColumnarTableBatchAggregator {
   arrowSchema: arrow.Schema | null;
 

@@ -122,26 +122,28 @@ export function makeObjectRowTable(table: Table): ObjectRowTable {
 }
 
 /**
-/**
  *
  * @note - should be part of schema module
+ *
 export function convertColumnarToRowFormatTable(columnarTable: ColumnarTable): ObjectRowTable {
-  const tableKeys = ;
+  const tableKeys = Object.keys(columnarTable);
   const tableRowsCount = columnarTable[tableKeys[0]].length;
 
-  const objectRows: ObjectRowTable['data'] = [];
+  const rowFormatTable: {}[] = [];
 
   for (let index = 0; index < tableRowsCount; index++) {
-    const objectRow = {};
-    for (const fieldName of Object.keys(columnarTable.data)) {
-      objectRow[fieldName] = columnarTable[fieldName][index];
+    const tableItem = {};
+    for (let keyIndex = 0; keyIndex < tableKeys.length; keyIndex++) {
+      const fieldName = tableKeys[keyIndex];
+      tableItem[fieldName] = columnarTable[fieldName][index];
     }
-    objectRows.push(objectRow);
+    rowFormatTable.push(tableItem);
   }
 
   return {
     shape: 'object-row-table',
-    data: objectRows
+    schema: columnarTable.schema,
+    data: rowFormatTable
   };
 }
- */
+*/
