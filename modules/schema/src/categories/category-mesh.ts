@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema} from './schema';
-import type {TypedArray} from './types';
+import type {Schema} from '../types/schema';
+import type {TypedArray} from '../types/types';
 import type {ColumnarTable, ArrowTable} from './category-table';
 
 /** Mesh as columnar table */

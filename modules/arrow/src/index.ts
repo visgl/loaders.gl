@@ -3,13 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // Types
-export type {ArrowTable, ArrowTableBatch} from './schema/arrow-table-type';
 export {VECTOR_TYPES} from './lib/types';
-import {ArrowTableBatchAggregator} from './schema/arrow-table-batch';
-
-// Make the ArrowBatch type available
-import {TableBatchBuilder} from '@loaders.gl/schema-utils';
-TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
 
 // Arrow loader / Writer
 
@@ -46,7 +40,6 @@ export {convertTableToArrow} from './lib/tables/convert-table-to-arrow';
 // EXPERIMENTAL
 
 // Arrow Utils
-export type {GeoArrowEncoding} from '@loaders.gl/gis';
 // getGeometryColumnsFromArrowTable,
 // getGeoArrowEncoding
 

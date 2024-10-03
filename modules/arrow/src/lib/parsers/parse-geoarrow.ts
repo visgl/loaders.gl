@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoJSONTable, GeoJSONTableBatch} from '@loaders.gl/schema';
-import type {ArrowTable, ArrowTableBatch} from '../../schema/arrow-table-type';
+import type {
+  GeoJSONTable,
+  GeoJSONTableBatch,
+  ArrowTable,
+  ArrowTableBatch
+} from '@loaders.gl/schema';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
 import {convertArrowToTable} from '../tables/convert-arrow-to-table';
 

@@ -41,7 +41,8 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@types/geojson": "^7946.0.7"
+    "@types/geojson": "^7946.0.7",
+    "apache-arrow": ">= 15.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"

@@ -7,6 +7,7 @@ import type {TableBatchAggregator, TableBatchConstructor} from './table-batch-ag
 import {BaseTableBatchAggregator} from './base-table-batch-aggregator';
 import {RowTableBatchAggregator} from './row-table-batch-aggregator';
 import {ColumnarTableBatchAggregator} from './columnar-table-batch-aggregator';
+import {ArrowTableBatchAggregator} from './arrow-table-batch-aggregator';
 
 // TODO define interface instead
 type TableBatchBuilderOptions = {
@@ -29,8 +30,6 @@ const DEFAULT_OPTIONS: Required<TableBatchBuilderOptions> = {
   limit: 0,
   _limitMB: 0
 };
-
-const ERR_MESSAGE = 'TableBatchBuilder';
 
 /** Incrementally builds batches from a stream of rows */
 export class TableBatchBuilder {
@@ -178,10 +177,7 @@ export class TableBatchBuilder {
       case 'columnar-table':
         return ColumnarTableBatchAggregator;
       case 'arrow-table':
-        if (!TableBatchBuilder.ArrowBatch) {
-          throw new Error(ERR_MESSAGE);
-        }
-        return TableBatchBuilder.ArrowBatch;
+        return ArrowTableBatchAggregator;
       default:
         return BaseTableBatchAggregator;
     }

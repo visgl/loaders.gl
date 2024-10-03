@@ -46,7 +46,8 @@
   "dependencies": {
     "@loaders.gl/gis": "^5.0.0-alpha.0",
     "@loaders.gl/loader-utils": "^5.0.0-alpha.0",
-    "@loaders.gl/schema": "^5.0.0-alpha.0"
+    "@loaders.gl/schema": "^5.0.0-alpha.0",
+    "@loaders.gl/schema-utils": "^5.0.0-alpha.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"

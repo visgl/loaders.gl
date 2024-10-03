@@ -4,7 +4,7 @@
 
 import test, {Test} from 'tape-promise/tape';
 
-import {getGeometryColumnsFromSchema} from '@loaders.gl/gis';
+import {getGeometryColumnsFromSchema} from '@loaders.gl/schema-utils';
 import {load} from '@loaders.gl/core';
 import {
   getBinaryGeometryTemplate,

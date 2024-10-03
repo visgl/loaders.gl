@@ -12,9 +12,10 @@ import type {
   MultiLineString,
   LineString,
   Geometry,
-  BinaryGeometry
+  BinaryGeometry,
+  GeoArrowEncoding
 } from '@loaders.gl/schema';
-import {binaryToGeometry, type GeoArrowEncoding} from '@loaders.gl/gis';
+import {binaryToGeometry} from '@loaders.gl/gis';
 import {WKBLoader, WKTLoader} from '@loaders.gl/wkt';
 
 /**

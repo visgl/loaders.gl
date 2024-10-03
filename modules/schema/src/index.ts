@@ -28,7 +28,7 @@ export type {
   ColumnarTable,
   ArrowTable,
   Tables
-} from './types/category-table';
+} from './categories/category-table';
 export type {
   TableBatch,
   ArrayRowTableBatch,
@@ -36,7 +36,7 @@ export type {
   GeoJSONTableBatch,
   ColumnarTableBatch,
   ArrowTableBatch
-} from './types/category-table';
+} from './categories/category-table';
 
 // MESH CATEGORY
 export type {
@@ -46,15 +46,17 @@ export type {
   MeshGeometry,
   MeshAttribute,
   MeshAttributes
-} from './types/category-mesh';
+} from './categories/category-mesh';
 
 // TEXTURES
-export type {TextureLevel, GPUTextureFormat} from './types/category-texture';
+export type {TextureLevel, GPUTextureFormat} from './categories/category-texture';
 
 // IMAGES
-export type {ImageDataType, ImageType, ImageTypeEnum} from './types/category-image';
+export type {ImageDataType, ImageType, ImageTypeEnum} from './categories/category-image';
 
-// TYPES
+// GIS CATEGORY - GEOARROW
+export type {GeoArrowMetadata, GeoArrowEncoding} from './geometry/geoarrow-metadata';
+
 // GIS CATEGORY - GEOJSON
 export type {
   GeoJSON,
@@ -70,9 +72,9 @@ export type {
   Polygon,
   MultiPolygon,
   GeometryCollection
-} from './types/category-gis';
+} from './categories/category-gis';
 
-export type {GeojsonGeometryInfo} from './types/category-gis';
+export type {GeojsonGeometryInfo} from './categories/category-gis';
 
 // GIS CATEGORY - FLAT GEOJSON
 export type {
@@ -83,7 +85,7 @@ export type {
   FlatPoint,
   FlatLineString,
   FlatPolygon
-} from './types/category-gis';
+} from './categories/category-gis';
 
 // GIS CATEGORY - BINARY
 export type {
@@ -93,14 +95,14 @@ export type {
   BinaryLineGeometry,
   BinaryPolygonGeometry,
   BinaryAttribute
-} from './types/category-gis';
+} from './categories/category-gis';
 export type {
   BinaryFeatureCollection,
   BinaryFeature,
   BinaryPointFeature,
   BinaryLineFeature,
   BinaryPolygonFeature
-} from './types/category-gis';
+} from './categories/category-gis';
 
 // SCHEMA
 // export {

@@ -2,15 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema} from './schema';
-import type {Batch} from './batch';
+import type {Schema} from '../types/schema';
+import type {Batch} from '../types/batch';
 import type {Feature} from './category-gis';
-
-// Avoid a big dependency, apparently even a type import can pull in a lot of code
-// import type {Table as ApacheArrowTable} from 'apache-arrow';
-
-type ApacheArrowTable = unknown;
-type ApacheRecordBatch = unknown;
+import type * as arrow from 'apache-arrow';
 
 /** A general table */
 export type Table =
@@ -58,11 +53,13 @@ export type ColumnarTable = {
   data: {[columnName: string]: ArrayLike<unknown>};
 };
 
-/** A table organized as an Apache Arrow table */
+/**
+ * A table that wraps an Apache Arrow table
+ */
 export type ArrowTable = {
   shape: 'arrow-table';
   schema?: Schema;
-  data: ApacheArrowTable;
+  data: arrow.Table;
 };
 
 /** A collection of tables */
@@ -118,11 +115,11 @@ export type ColumnarTableBatch = Batch & {
   length: number;
 };
 
-/** Batch for a table organized as an Apache Arrow table */
+/** Batch that wraps an Apache Arrow RecordBatch */
 export type ArrowTableBatch = Batch & {
   shape: 'arrow-table';
   schemaType?: 'explicit' | 'deduced';
   schema?: Schema;
-  data: ApacheRecordBatch;
+  data: arrow.Table; // RecordBatch wrapped in Table
   length: number;
 };

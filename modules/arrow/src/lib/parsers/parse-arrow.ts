@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import * as arrow from 'apache-arrow';
-import type {Table} from '@loaders.gl/schema';
-import type {ArrowTableBatch} from '../../schema/arrow-table-type';
+import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
 import {convertArrowToTable} from '../tables/convert-arrow-to-table';
 

@@ -9,9 +9,6 @@ export type {GeoMetadata} from './lib/geo/geoparquet-metadata';
 export {getGeoMetadata, setGeoMetadata, unpackGeoMetadata} from './lib/geo/geoparquet-metadata';
 export {unpackJSONStringMetadata} from './lib/geo/geoparquet-metadata';
 
-export type {GeoArrowEncoding, GeoArrowMetadata} from './lib/geo/geoarrow-metadata';
-export {getGeometryColumnsFromSchema} from './lib/geo/geoarrow-metadata';
-
 // Table conversion
 export {convertWKBTableToGeoJSON} from './lib/tables/convert-table-to-geojson';
 

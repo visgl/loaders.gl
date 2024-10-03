@@ -42,7 +42,8 @@
   },
   "dependencies": {
     "@loaders.gl/schema": "^4.0.0",
-    "@types/geojson": "^7946.0.7"
+    "@types/geojson": "^7946.0.7",
+    "apache-arrow": ">= 15.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "^4.0.0"

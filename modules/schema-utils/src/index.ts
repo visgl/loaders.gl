@@ -51,6 +51,7 @@ export {
 } from './lib/mesh/deduce-mesh-schema';
 
 // GIS CATEGORY - GEOJSON
+export {getGeometryColumnsFromSchema} from './lib/geometry/geoarrow-metadata';
 
 // SCHEMA
 export {
