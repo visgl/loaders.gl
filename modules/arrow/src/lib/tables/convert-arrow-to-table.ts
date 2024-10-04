@@ -13,9 +13,9 @@ import type {
   Feature
 } from '@loaders.gl/schema';
 
-import {convertTable, getGeometryColumnsFromSchema} from '@loaders.gl/schema-utils';
-import {convertArrowToSchema} from '../tables/convert-arrow-schema';
-import {parseGeometryFromArrow} from '../geoarrow/convert-geoarrow-to-geojson-geometry';
+import {convertTable} from '@loaders.gl/schema-utils';
+import {convertArrowToSchema} from './convert-arrow-schema';
+import {getGeometryColumnsFromSchema, parseGeometryFromArrow} from '@loaders.gl/gis';
 
 /**
  * Convert an Apache Arrow table to a loaders.gl Table

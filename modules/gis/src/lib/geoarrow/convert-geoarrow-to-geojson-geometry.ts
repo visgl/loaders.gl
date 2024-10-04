@@ -15,8 +15,7 @@ import type {
   BinaryGeometry,
   GeoArrowEncoding
 } from '@loaders.gl/schema';
-import {binaryToGeometry} from '@loaders.gl/gis';
-import {WKBLoader, WKTLoader} from '@loaders.gl/wkt';
+import {binaryToGeometry, parseWKB, parseWKT} from '@loaders.gl/gis';
 
 /**
  * parse geometry from arrow data that is returned from processArrowData()
@@ -78,14 +77,14 @@ function arrowWKBToFeature(arrowCellValue: any) {
     arrowCellValue.byteOffset,
     arrowCellValue.byteOffset + arrowCellValue.byteLength
   );
-  const binaryGeometry = WKBLoader.parseSync?.(arrayBuffer) as BinaryGeometry;
+  const binaryGeometry = parseWKB(arrayBuffer) as BinaryGeometry;
   const geometry = binaryToGeometry(binaryGeometry);
   return geometry;
 }
 
 function arrowWKTToFeature(arrowCellValue: any) {
   const string: string = arrowCellValue;
-  return WKTLoader.parseTextSync?.(string);
+  return parseWKT(string);
 }
 
 /**
