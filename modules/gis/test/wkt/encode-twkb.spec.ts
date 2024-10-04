@@ -13,7 +13,7 @@ const WKB_2D_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkb-testdata2d-nan.json
 const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkb-testdataZ.json';
 const WKB_Z_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkb-testdataZ-nan.json';
 
-test('TWKBWriter#2D', async (t) => {
+test('encodeTWKB#2D', async (t) => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -26,7 +26,7 @@ test('TWKBWriter#2D', async (t) => {
   t.end();
 });
 
-test('TWKBWriter#2D NaN', async (t) => {
+test('encodeTWKB#2D NaN', async (t) => {
   const response = await fetchFile(WKB_2D_NAN_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -39,7 +39,7 @@ test('TWKBWriter#2D NaN', async (t) => {
   t.end();
 });
 
-test('TWKBWriter#Z', async (t) => {
+test('encodeTWKB#Z', async (t) => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -52,7 +52,7 @@ test('TWKBWriter#Z', async (t) => {
   t.end();
 });
 
-test('TWKBWriter#Z NaN', async (t) => {
+test('encodeTWKB#Z NaN', async (t) => {
   const response = await fetchFile(WKB_Z_NAN_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 

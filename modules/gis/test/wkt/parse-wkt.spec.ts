@@ -5,8 +5,7 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 
 import test from 'tape-promise/tape';
-import {validateLoader} from 'test/common/conformance';
-import {WKTLoader, WKTWorkerLoader} from '@loaders.gl/wkt';
+import {WKTLoader} from '@loaders.gl/wkt';
 import {setLoaderOptions, fetchFile, parseSync} from '@loaders.gl/core';
 
 import fuzzer from 'fuzzer';
@@ -18,14 +17,8 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('WKTWorkerLoader#loader objects', async (t) => {
-  validateLoader(t, WKTLoader, 'WKTLoader');
-  validateLoader(t, WKTWorkerLoader, 'WKTWorkerLoader');
-  t.end();
-});
-
 // eslint-disable-next-line max-statements
-test('WKTLoader', async (t) => {
+test('parseWKT', async (t) => {
   let response = await fetchFile(GEOMETRYCOLLECTION_WKT_URL);
   const GEOMETRYCOLLECTION_WKT = await response.text();
 
@@ -496,7 +489,7 @@ test('WKTLoader', async (t) => {
 //   t.end();
 // });
 
-test('WKTLoader#fuzz', (t) => {
+test('parseWKT#fuzz', (t) => {
   fuzzer.seed(0);
   const inputs = [
     'MULTIPOLYGON (((30 20, 10 40, 45 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))',

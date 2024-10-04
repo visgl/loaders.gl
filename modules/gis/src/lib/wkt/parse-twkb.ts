@@ -13,7 +13,7 @@ import type {
   MultiLineString,
   MultiPolygon
 } from '@loaders.gl/schema';
-import {BinaryReader} from './utils/binary-reader';
+import {BinaryReader} from '../utils/binary-reader';
 import {WKBGeometryType} from './parse-wkb-header';
 
 /**
@@ -57,7 +57,7 @@ type TWKBHeader = {
   mPrecisionFactor: number;
 };
 
-export function parseTWKBGeometry(arrayBuffer: ArrayBuffer): Geometry {
+export function parseTWKB(arrayBuffer: ArrayBuffer): Geometry {
   const binaryReader = new BinaryReader(arrayBuffer);
 
   const context = parseTWKBHeader(binaryReader);

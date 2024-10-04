@@ -18,3 +18,27 @@ export {geojsonToBinary} from './lib/binary-features/geojson-to-binary';
 export {geojsonToFlatGeojson} from './lib/binary-features/geojson-to-flat-geojson';
 export {binaryToGeojson, binaryToGeometry} from './lib/binary-features/binary-to-geojson';
 export {transformBinaryCoords, transformGeoJsonCoords} from './lib/binary-features/transform';
+
+// WKT
+
+export {parseWKT, isWKT, WKT_MAGIC_STRINGS} from './lib/wkt/parse-wkt';
+
+export {encodeWKT} from './lib/wkt/encode-wkt';
+
+export {isWKB} from './lib/wkt/parse-wkb-header';
+export {parseWKB} from './lib/wkt/parse-wkb';
+export {encodeWKB} from './lib/wkt/encode-wkb';
+
+export {parseTWKB, isTWKB} from './lib/wkt/parse-twkb';
+export {encodeTWKB} from './lib/wkt/encode-twkb';
+
+export type {ParseWKTCRSOptions, WKTCRS} from './lib/wkt/parse-wkt-crs';
+export {parseWKTCRS} from './lib/wkt/parse-wkt-crs';
+export type {EncodeWKTCRSOptions} from './lib/wkt/encode-wkt-crs';
+export {encodeWKTCRS} from './lib/wkt/encode-wkt-crs';
+
+// EXPERIMENTAL APIs
+
+export type {WKBHeader} from './lib/wkt/parse-wkb-header';
+
+export {encodeHex, decodeHex} from './lib/utils/hex-transcoder';

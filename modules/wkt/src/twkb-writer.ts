@@ -4,8 +4,8 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {VERSION} from './lib/utils/version';
-import {encodeTWKB} from './lib/encode-twkb';
+import {encodeTWKB} from '@loaders.gl/gis';
+import {VERSION} from './lib/version';
 
 export type TWKBWriterOptions = WriterOptions & {
   twkb?: {

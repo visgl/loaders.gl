@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {VERSION} from './lib/utils/version';
-import type {ParseWKTCRSOptions, WKTCRS} from './lib/parse-wkt-crs';
-import {parseWKTCRS} from './lib/parse-wkt-crs';
+import type {ParseWKTCRSOptions, WKTCRS} from '@loaders.gl/gis';
+import {parseWKTCRS} from '@loaders.gl/gis';
+import {VERSION} from './lib/version';
 
 export type WKTCRSLoaderOptions = LoaderOptions & {
   'wkt-crs'?: ParseWKTCRSOptions;

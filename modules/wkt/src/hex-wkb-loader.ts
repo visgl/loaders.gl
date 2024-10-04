@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {BinaryGeometry} from '@loaders.gl/schema';
+import type {Geometry, BinaryGeometry} from '@loaders.gl/schema';
+import {parseWKB, decodeHex} from '@loaders.gl/gis';
 
 import type {WKBLoaderOptions} from './wkb-loader';
 import {WKBLoader} from './wkb-loader';
-import {VERSION} from './lib/utils/version';
-import {decodeHex} from './lib/utils/hex-transcoder';
+import {VERSION} from './lib/version';
 
 export type HexWKBLoaderOptions = WKBLoaderOptions;
 
@@ -16,7 +16,7 @@ export type HexWKBLoaderOptions = WKBLoaderOptions;
  * Worker loader for Hex-encoded WKB (Well-Known Binary)
  */
 export const HexWKBLoader = {
-  dataType: null as unknown as BinaryGeometry,
+  dataType: null as unknown as Geometry | BinaryGeometry,
   batchType: null as never,
   name: 'Hexadecimal WKB',
   id: 'wkb',
@@ -32,12 +32,11 @@ export const HexWKBLoader = {
   // TODO - encoding here seems wasteful - extend hex transcoder?
   parse: async (arrayBuffer: ArrayBuffer) => parseHexWKB(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseHexWKB
-} as const satisfies LoaderWithParser<BinaryGeometry, never, HexWKBLoaderOptions>;
+} as const satisfies LoaderWithParser<Geometry | BinaryGeometry, never, HexWKBLoaderOptions>;
 
-function parseHexWKB(text: string, options?: HexWKBLoaderOptions): BinaryGeometry {
+function parseHexWKB(text: string, options?: HexWKBLoaderOptions): Geometry | BinaryGeometry {
   const uint8Array = decodeHex(text);
-  const binaryGeometry = WKBLoader.parseSync?.(uint8Array.buffer, options);
-  // @ts-expect-error
+  const binaryGeometry = parseWKB(uint8Array.buffer, options?.wkb);
   return binaryGeometry;
 }
 
@@ -47,6 +46,7 @@ function parseHexWKB(text: string, options?: HexWKBLoaderOptions): BinaryGeometr
  *
  * @param str input string
  * @returns true if string is a valid WKB in HEX format
+ * @todo Avoid costly regex check
  */
 export function isHexWKB(string: string | null): boolean {
   if (!string) {
