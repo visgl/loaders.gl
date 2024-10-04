@@ -15,13 +15,3 @@ export {HexWKBLoader} from './hex-wkb-loader';
 
 export {TWKBLoader} from './twkb-loader';
 export {TWKBWriter} from './twkb-writer';
-
-// EXPERIMENTAL APIs
-export {isWKT} from './lib/parse-wkt';
-
-export {isWKB, parseWKBHeader} from './lib/parse-wkb-header';
-export type {WKBHeader} from './lib/parse-wkb-header';
-
-export {isTWKB} from './lib/parse-twkb';
-
-export {encodeHex, decodeHex} from './lib/utils/hex-transcoder';

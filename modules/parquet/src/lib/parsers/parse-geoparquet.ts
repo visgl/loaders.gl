@@ -10,7 +10,6 @@ import type {
   ObjectRowTableBatch
 } from '@loaders.gl/schema';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
-import {WKTLoader, WKBLoader} from '@loaders.gl/wkt';
 
 import type {ParquetLoaderOptions} from '../../parquet-loader';
 
@@ -47,10 +46,7 @@ function convertTable(
 
     case 'geojson-table':
       try {
-        return convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema!, [
-          WKTLoader,
-          WKBLoader
-        ]);
+        return convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema!);
       } catch (error) {
         return objectRowTable;
       }
@@ -70,10 +66,7 @@ function convertBatch(
 
     case 'geojson-table':
       try {
-        const geojsonTable = convertWKBTableToGeoJSON(objectRowBatch, objectRowBatch.schema!, [
-          WKTLoader,
-          WKBLoader
-        ]);
+        const geojsonTable = convertWKBTableToGeoJSON(objectRowBatch, objectRowBatch.schema!);
         return {
           ...objectRowBatch,
           ...geojsonTable

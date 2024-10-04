@@ -4,14 +4,13 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
-import {VERSION} from './lib/utils/version';
-import {parseWKB} from './lib/parse-wkb';
-import {isWKB} from './lib/parse-wkb-header';
+import {parseWKB, isWKB} from '@loaders.gl/gis';
+import {VERSION} from './lib/version';
 
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
     /** 'geometry' is deprecated use 'geojson-geometry' */
-    shape: 'geojson-geometry' | 'binary-geometry' | 'geometry';
+    shape: 'geojson-geometry' | 'binary-geometry';
   };
 };
 
@@ -43,6 +42,6 @@ export const WKBWorkerLoader = {
  */
 export const WKBLoader = {
   ...WKBWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer) => parseWKB(arrayBuffer),
-  parseSync: parseWKB
+  parse: async (arrayBuffer: ArrayBuffer, options?) => parseWKB(arrayBuffer, options?.wkb),
+  parseSync: (arrayBuffer: ArrayBuffer, options?) => parseWKB(arrayBuffer, options?.wkb)
 } as const satisfies LoaderWithParser<BinaryGeometry | Geometry, never, WKBLoaderOptions>;

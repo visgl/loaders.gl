@@ -11,7 +11,7 @@ import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
 // const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
 
-test('TWKBLoader#2D', async (t) => {
+test('parseHexTWKB#2D', async (t) => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -42,7 +42,7 @@ test('TWKBLoader#2D', async (t) => {
   t.end();
 });
 
-// test('TWKBLoader#Z', async (t) => {
+// test('parseHexTWKB#Z', async (t) => {
 //   const response = await fetchFile(WKB_Z_TEST_CASES);
 //   const TEST_CASES = parseTestCases(await response.json());
 

@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import './lib/utils/hex-transcoder.spec';
-
 import './wkb-loader.spec';
 import './wkb-writer.spec';
 

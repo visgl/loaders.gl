@@ -11,34 +11,26 @@ import type {
   Geometry
 } from '@loaders.gl/schema';
 import {binaryToGeometry} from '@loaders.gl/gis';
-import type {WKBLoaderOptions} from '../wkb-loader';
 
 import {parseWKBHeader, WKBGeometryType} from './parse-wkb-header';
 
 export function parseWKB(
   arrayBuffer: ArrayBuffer,
-  options?: WKBLoaderOptions
+  options?: {shape?: 'geojson-geometry' | 'binary-geometry'}
 ): BinaryGeometry | Geometry {
-  const binaryGeometry = parseWKBToBinary(arrayBuffer, options);
-  const shape = options?.wkb?.shape || 'binary-geometry';
+  const binaryGeometry = parseWKBToBinary(arrayBuffer);
+  const shape = options?.shape || 'binary-geometry';
   switch (shape) {
     case 'binary-geometry':
       return binaryGeometry;
     case 'geojson-geometry':
-      return binaryToGeometry(binaryGeometry);
-    case 'geometry':
-      // eslint-disable-next-line no-console
-      console.error('WKBLoader: "geometry" shape is deprecated, use "binary-geometry" instead');
       return binaryToGeometry(binaryGeometry);
     default:
       throw new Error(shape);
   }
 }
 
-export function parseWKBToBinary(
-  arrayBuffer: ArrayBuffer,
-  options?: WKBLoaderOptions
-): BinaryGeometry {
+export function parseWKBToBinary(arrayBuffer: ArrayBuffer): BinaryGeometry {
   const dataView = new DataView(arrayBuffer);
 
   const wkbHeader = parseWKBHeader(dataView);

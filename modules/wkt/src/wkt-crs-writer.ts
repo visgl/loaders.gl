@@ -3,11 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
-import {VERSION} from './lib/utils/version';
-
-import type {WKTCRS} from './lib/parse-wkt-crs';
-import type {EncodeWKTCRSOptions} from './lib/encode-wkt-crs';
-import {encodeWKTCRS} from './lib/encode-wkt-crs';
+import type {WKTCRS, EncodeWKTCRSOptions} from '@loaders.gl/gis';
+import {encodeWKTCRS} from '@loaders.gl/gis';
+import {VERSION} from './lib/version';
 
 export type WKTCRSWriterOptions = WriterOptions & {
   'wkt-crs'?: EncodeWKTCRSOptions;

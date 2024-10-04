@@ -5,12 +5,12 @@
 import test from 'tape-promise/tape';
 import {fetchFile, encodeSync} from '@loaders.gl/core';
 import {WKBWriter} from '@loaders.gl/wkt';
-import {parseTestCases} from './utils/parse-test-cases';
+import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
-const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
-const WKB_2D_NAN_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d-nan.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ.json';
-const WKB_Z_NAN_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ-nan.json';
+const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
+const WKB_2D_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d-nan.json';
+const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
+const WKB_Z_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ-nan.json';
 
 test('WKBWriter#2D', async (t) => {
   const response = await fetchFile(WKB_2D_TEST_CASES);

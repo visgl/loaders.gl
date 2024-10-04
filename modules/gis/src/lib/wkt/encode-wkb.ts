@@ -16,7 +16,7 @@ import type {
   GeometryCollection
 } from '@loaders.gl/schema';
 
-import {BinaryWriter} from './utils/binary-writer';
+import {BinaryWriter} from '../utils/binary-writer';
 
 /**
  * Integer code for geometry type
