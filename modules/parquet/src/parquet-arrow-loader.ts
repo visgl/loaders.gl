@@ -13,9 +13,8 @@ import {
 import {VERSION, PARQUET_WASM_URL} from './lib/constants';
 
 /** Parquet WASM loader options */
-export type ParquetWasmLoaderOptions = LoaderOptions & {
+export type ParquetArrowLoaderOptions = LoaderOptions & {
   parquet?: {
-    shape?: 'arrow-table';
     limit?: number; // Provide a limit to the number of rows to be read.
     offset?: number; // Provide an offset to skip over the given number of rows.
     batchSize?: number; // The number of rows in each batch. If not provided, the upstream parquet default is 1024.
@@ -27,7 +26,7 @@ export type ParquetWasmLoaderOptions = LoaderOptions & {
 };
 
 /** Parquet WASM table loader */
-export const ParquetWasmWorkerLoader = {
+export const ParquetArrowWorkerLoader = {
   dataType: null as unknown as ArrowTable,
   batchType: null as unknown as ArrowTableBatch,
 
@@ -43,7 +42,6 @@ export const ParquetWasmWorkerLoader = {
   tests: ['PAR1', 'PARE'],
   options: {
     parquet: {
-      shape: 'arrow-table',
       limit: undefined, // Provide a limit to the number of rows to be read.
       offset: 0, // Provide an offset to skip over the given number of rows.
       batchSize: undefined, // The number of rows in each batch. If not provided, the upstream parquet default is 1024.
@@ -53,24 +51,24 @@ export const ParquetWasmWorkerLoader = {
       wasmUrl: PARQUET_WASM_URL
     }
   }
-} as const satisfies Loader<ArrowTable, ArrowTableBatch, ParquetWasmLoaderOptions>;
+} as const satisfies Loader<ArrowTable, ArrowTableBatch, ParquetArrowLoaderOptions>;
 
 /** Parquet WASM table loader */
-export const ParquetWasmLoader = {
-  ...ParquetWasmWorkerLoader,
+export const ParquetArrowLoader = {
+  ...ParquetArrowWorkerLoader,
 
-  parse(arrayBuffer: ArrayBuffer, options?: ParquetWasmLoaderOptions) {
-    const wasmOptions = {...ParquetWasmLoader.options.parquet, ...options?.parquet};
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetArrowLoaderOptions) {
+    const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
     return parseParquetFileWasm(new BlobFile(arrayBuffer), wasmOptions);
   },
 
-  parseFile(file: ReadableFile, options?: ParquetWasmLoaderOptions) {
-    const wasmOptions = {...ParquetWasmLoader.options.parquet, ...options?.parquet};
+  parseFile(file: ReadableFile, options?: ParquetArrowLoaderOptions) {
+    const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
     return parseParquetFileWasm(file, wasmOptions);
   },
 
-  parseFileInBatches(file: ReadableFile, options?: ParquetWasmLoaderOptions) {
-    const wasmOptions = {...ParquetWasmLoader.options.parquet, ...options?.parquet};
+  parseFileInBatches(file: ReadableFile, options?: ParquetArrowLoaderOptions) {
+    const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
     return parseParquetFileInBatchesWasm(file, wasmOptions);
   }
-} as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, ParquetWasmLoaderOptions>;
+} as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, ParquetArrowLoaderOptions>;

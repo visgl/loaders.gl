@@ -2,9 +2,9 @@ import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
 import {
-  ParquetColumnarLoader,
-  ParquetLoader,
-  _ParquetWriter as ParquetWriter
+  ParquetJSONColumnarLoader,
+  ParquetJSONLoader,
+  _ParquetJSONWriter as ParquetJSONWriter
 } from '@loaders.gl/parquet';
 import {load, encode, setLoaderOptions} from '@loaders.gl/core';
 import {getTableLength} from '@loaders.gl/schema-utils';
@@ -18,7 +18,7 @@ const GEOPARQUET_FILES = ['example.parquet', 'airports.parquet', 'geojson-big.pa
 setLoaderOptions({_workerType: 'test'});
 
 test.skip('Load GeoParquet#airports.parquet', async (t) => {
-  const table = await load(`${PARQUET_DIR}/airports.parquet`, ParquetLoader, {
+  const table = await load(`${PARQUET_DIR}/airports.parquet`, ParquetJSONLoader, {
     worker: false,
     parquet: {
       shape: 'geojson-table',
@@ -36,7 +36,7 @@ test.skip('Load GeoParquet#airports.parquet', async (t) => {
 });
 
 test('Load GeoParquet file', async (t) => {
-  const table = await load(GEOPARQUET_EXAMPLE, ParquetColumnarLoader, {worker: false});
+  const table = await load(GEOPARQUET_EXAMPLE, ParquetJSONColumnarLoader, {worker: false});
 
   t.equal(getTableLength(table), 5);
   t.deepEqual(
@@ -46,22 +46,22 @@ test('Load GeoParquet file', async (t) => {
   t.end();
 });
 
-test.skip('GeoParquetColumnarLoader#load', async (t) => {
+test.skip('GeoParquetJSONColumnarLoader#load', async (t) => {
   // t.comment('SUPPORTED FILES');
   for (const fileName of GEOPARQUET_FILES) {
     const url = `${PARQUET_DIR}/geoparquet/${fileName}`;
-    const data = await load(url, ParquetColumnarLoader, {worker: false});
+    const data = await load(url, ParquetJSONColumnarLoader, {worker: false});
     t.ok(data, `GOOD(${fileName})`);
   }
 
   t.end();
 });
 
-test.skip('ParquetWriterLoader round trip', async (t) => {
+test.skip('ParquetJSONWriterLoader round trip', async (t) => {
   const table = createArrowTable();
 
-  const parquetBuffer = await encode(table, ParquetWriter, {worker: false});
-  const newTable = await load(parquetBuffer, ParquetColumnarLoader, {worker: false});
+  const parquetBuffer = await encode(table, ParquetJSONWriter, {worker: false});
+  const newTable = await load(parquetBuffer, ParquetJSONColumnarLoader, {worker: false});
 
   t.deepEqual(table.schema, newTable.schema);
   t.end();

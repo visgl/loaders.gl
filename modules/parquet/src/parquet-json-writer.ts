@@ -4,26 +4,24 @@
 
 import type {WriterWithEncoder} from '@loaders.gl/loader-utils';
 import {Table, TableBatch} from '@loaders.gl/schema';
+import {ParquetFormat} from './parquet-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type ParquetWriterOptions = {};
+export type ParquetJSONWriterOptions = {};
 
-export const ParquetWriter = {
-  name: 'Apache Parquet',
+export const ParquetJSONWriter = {
+  ...ParquetFormat,
   id: 'parquet',
   module: 'parquet',
   version: VERSION,
-  extensions: ['parquet'],
-  mimeTypes: ['application/octet-stream'],
-  binary: true,
   options: {},
   encode: async (data, options) => encodeSync(data, options),
   encodeSync
-} as const satisfies WriterWithEncoder<Table, TableBatch, ParquetWriterOptions>;
+} as const satisfies WriterWithEncoder<Table, TableBatch, ParquetJSONWriterOptions>;
 
-function encodeSync(data, options?: ParquetWriterOptions) {
+function encodeSync(data, options?: ParquetJSONWriterOptions) {
   return new ArrayBuffer(0);
 }
