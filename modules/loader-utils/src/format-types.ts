@@ -1,5 +1,9 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /**
- * A worker loader definition that can be used with `@loaders.gl/core` functions
+ * An object that describes a format
  */
 export type Format = {
   /** Human readable name */
@@ -18,7 +22,6 @@ export type Format = {
   binary?: boolean;
   /** Is this a text format */
   text?: boolean;
-
   /** Test some initial bytes of content to see if this loader might be a match */
   tests?: (((ArrayBuffer: ArrayBuffer) => boolean) | ArrayBuffer | string)[];
 };

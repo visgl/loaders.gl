@@ -6,7 +6,7 @@ import {default as log} from '@probe.gl/log';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
 
-import type {ParquetLoaderOptions} from '../../parquet-loader';
+import type {ParquetJSONLoaderOptions} from '../../parquet-json-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
@@ -21,7 +21,7 @@ import {preloadCompressions} from '../../parquetjs/compression';
  */
 export async function parseParquetFile(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSONLoaderOptions
 ): Promise<ObjectRowTable> {
   installBufferPolyfill();
   await preloadCompressions(options);
@@ -56,8 +56,7 @@ export async function parseParquetFile(
     data: rows
   };
 
-  const shape = options?.parquet?.shape;
-  return convertTable(objectRowTable, shape);
+  return objectRowTable;
 }
 
 /**
@@ -67,7 +66,7 @@ export async function parseParquetFile(
  */
 export async function* parseParquetFileInBatches(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSONLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
   installBufferPolyfill();
   await preloadCompressions(options);
@@ -84,31 +83,12 @@ export async function* parseParquetFileInBatches(
       schema,
       data: rows
     };
-    const shape = options?.parquet?.shape;
-    const table = convertTable(objectRowTable, shape);
 
     yield {
       batchType: 'data',
       schema,
-      ...table,
+      ...objectRowTable,
       length: rows.length
     };
-  }
-}
-
-function convertTable(
-  objectRowTable: ObjectRowTable,
-  shape?: 'object-row-table' | 'geojson-table'
-): ObjectRowTable {
-  switch (shape) {
-    case 'object-row-table':
-      return objectRowTable;
-
-    // Hack until geoparquet fixes up forwarded shape
-    case 'geojson-table':
-      return objectRowTable;
-
-    default:
-      throw new Error(shape);
   }
 }
