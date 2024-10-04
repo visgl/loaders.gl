@@ -4,16 +4,26 @@
 
 loaders.gl v5 is a major re-imagination of the library the optimizes loaders.gl for big cloud-native, binary data.
 
-- **Apache Arrow** - When possible, loaders now return binary data in the Apache Arrow format. This aligns with parallel efforts in companion libraries like deck.gl to work with zero-copy, compact binary data instead of bloated, deserialized javascript data structures, resulting in up to an order of magnitude better loading and processing performance on big data.
+**Apache Arrow as the core format**
 
-- **Single output format per loader** - The `shape` option that was introduced in loaders.gl v3 to allow loaders to return 
-different data formats is now deprecated and removed in many places. 
-Instead, applications can use utilities in the `@loaders.gl/schema-utils` and `@loaders.gl/gis` modules to 
-convert for Apache Arrow and Apache GeoArrow to more traditional JavaScript formats.
+- Most loaders now return binary data in the Apache Arrow format.
+- This aligns with parallel efforts in companion libraries like deck.gl to work with zero-copy, compact binary data instead of bloated, deserialized javascript data structures.
+- Binary columnar data can bring in an order of magnitude better memory usage and load/processing performance on big datasets.
 
-- **Improved `DataSource` API** - 
+**Single output format per loader**
 
+- The `shape` option that was introduced in loaders.gl v3 to allow loaders to return different data formats is now deprecated and removed in many places.
+- Instead, applications can use utilities in the `@loaders.gl/schema-utils` and `@loaders.gl/gis` modules to convert for Apache Arrow and Apache GeoArrow to more traditional (but less efficient) JavaScript formats.
 
+**Apache Arrow JS**
+
+- The Apache Arrow JS library is now a central dependency.
+- This does add to the bundle size, especially for the script versions of the loaders where code reuse between bundles is harder.
+- The Apache Arrow JS library is powerful but can be hard to work with as it can handle very complex binary data schemas. loaders.gl provides its own set of Apache Arrow docs and a suite of utility functions making it easier
+
+**Improved `DataSource` APIs**
+
+- The `Source` and `DataSource` APIs have matured leading to some minor breaking changes.
 
 ## Upgrading to v4.3 (In development)
 
