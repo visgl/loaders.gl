@@ -9,8 +9,9 @@ import {
   getBinaryGeometryTemplate,
   getBinaryGeometriesFromArrow
 } from '@loaders.gl/gis';
+import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {load} from '@loaders.gl/core';
-import {ArrowLoader, serializeArrowSchema} from '@loaders.gl/arrow';
+import {ArrowLoader} from '@loaders.gl/arrow';
 
 import {
   GEOARROW_POINT_FILE,
@@ -336,7 +337,7 @@ async function testGetBinaryGeometriesFromArrow(
     const geoColumn = table.getChild('geometry');
     t.notEqual(geoColumn, null, 'geoColumn is not null');
 
-    const schema = serializeArrowSchema(table.schema);
+    const schema = convertArrowToSchema(table.schema);
     const geometryColumns = getGeometryColumnsFromSchema(schema);
     const encoding = geometryColumns.geometry.encoding;
 

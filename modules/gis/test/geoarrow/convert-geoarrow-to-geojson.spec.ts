@@ -10,8 +10,9 @@ import {
 
 import {load} from '@loaders.gl/core';
 import type {FeatureCollection} from '@loaders.gl/schema';
-import {convertArrowToSchema, ArrowLoader} from '@loaders.gl/arrow';
+import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {getGeometryColumnsFromSchema, parseGeometryFromArrow} from '@loaders.gl/gis';
+import {ArrowLoader} from '@loaders.gl/arrow';
 
 test('ArrowUtils#parseGeometryFromArrow', async (t) => {
   for (const testCase of GEOARROW_TEST_CASES) {

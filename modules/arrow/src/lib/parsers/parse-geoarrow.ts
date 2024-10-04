@@ -9,7 +9,7 @@ import type {
   ArrowTableBatch
 } from '@loaders.gl/schema';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
-import {convertArrowToTable} from '@loaders.gl/schema-utils';
+import {convertGeoArrowToTable} from '@loaders.gl/gis';
 
 // Parses arrow to a columnar table
 export function parseGeoArrowSync(
@@ -20,7 +20,7 @@ export function parseGeoArrowSync(
   const table = parseArrowSync(arrayBuffer, {shape: 'arrow-table'}) as ArrowTable;
   switch (options?.shape) {
     case 'geojson-table':
-      return convertArrowToTable(table.data, 'geojson-table');
+      return convertGeoArrowToTable(table.data, 'geojson-table');
     default:
       return table;
   }

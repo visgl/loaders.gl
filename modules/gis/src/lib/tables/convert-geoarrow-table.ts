@@ -93,19 +93,22 @@ export function* makeTableToArrowBatchesIterator(
  * Convert an Apache Arrow table to a loaders.gl Table
  * @note Currently does not convert schema
  */
-export function convertArrowToTable(arrow: arrow.Table, shape: 'arrow-table'): ArrowTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: 'columnar-table'): ColumnarTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: 'object-row-table'): ObjectRowTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: 'array-row-table'): ArrayRowTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: 'geojson-table'): GeoJSONTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: 'columnar-table'): ColumnarTable;
-export function convertArrowToTable(arrow: arrow.Table, shape: Table['shape']): Table;
+export function convertGeoArrowToTable(arrow: arrow.Table, shape: 'arrow-table'): ArrowTable;
+export function convertGeoArrowToTable(arrow: arrow.Table, shape: 'columnar-table'): ColumnarTable;
+export function convertGeoArrowToTable(
+  arrow: arrow.Table,
+  shape: 'object-row-table'
+): ObjectRowTable;
+export function convertGeoArrowToTable(arrow: arrow.Table, shape: 'array-row-table'): ArrayRowTable;
+export function convertGeoArrowToTable(arrow: arrow.Table, shape: 'geojson-table'): GeoJSONTable;
+export function convertGeoArrowToTable(arrow: arrow.Table, shape: 'columnar-table'): ColumnarTable;
+export function convertGeoArrowToTable(arrow: arrow.Table, shape: Table['shape']): Table;
 
 /**
  * Convert an Apache Arrow table to a loaders.gl Table
  * @note Currently does not convert schema
  */
-export function convertArrowToTable(arrowTable: arrow.Table, shape: Table['shape']): Table {
+export function convertGeoArrowToTable(arrowTable: arrow.Table, shape: Table['shape']): Table {
   switch (shape) {
     case 'arrow-table':
       return convertArrowToArrowTable(arrowTable);
