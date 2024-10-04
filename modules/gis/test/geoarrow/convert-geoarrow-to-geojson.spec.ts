@@ -3,12 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import test, {Test} from 'tape-promise/tape';
-import {GEOARROW_TEST_CASES, GEOARROW_ENCODINGS} from '../data/geoarrow/test-cases';
+import {
+  GEOARROW_TEST_CASES,
+  GEOARROW_ENCODINGS
+} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
 
 import {load} from '@loaders.gl/core';
 import type {FeatureCollection} from '@loaders.gl/schema';
-import {ArrowLoader, serializeArrowSchema, parseGeometryFromArrow} from '@loaders.gl/arrow';
-import {getGeometryColumnsFromSchema} from '@loaders.gl/schema-utils';
+import {convertArrowToSchema, ArrowLoader} from '@loaders.gl/arrow';
+import {getGeometryColumnsFromSchema, parseGeometryFromArrow} from '@loaders.gl/gis';
 
 test('ArrowUtils#parseGeometryFromArrow', async (t) => {
   for (const testCase of GEOARROW_TEST_CASES) {
@@ -48,7 +51,7 @@ async function testParseFromArrow(
       t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
     );
 
-    const schema = serializeArrowSchema(table.schema);
+    const schema = convertArrowToSchema(table.schema);
     const geometryColumns = getGeometryColumnsFromSchema(schema);
 
     // check 'geometry' is in geometryColumns (geometryColumns is a Map object)

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test, {Test} from 'tape-promise/tape';
-import {GEOARROW_TEST_CASES} from '../data/geoarrow/test-cases';
+import {GEOARROW_TEST_CASES} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
 
 import {fetchFile, parse} from '@loaders.gl/core';
 import {FeatureCollection} from '@loaders.gl/schema';

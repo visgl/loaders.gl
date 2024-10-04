@@ -4,14 +4,13 @@
 
 import test, {Test} from 'tape-promise/tape';
 
-import {getGeometryColumnsFromSchema} from '@loaders.gl/schema-utils';
-import {load} from '@loaders.gl/core';
 import {
+  getGeometryColumnsFromSchema,
   getBinaryGeometryTemplate,
-  ArrowLoader,
-  getBinaryGeometriesFromArrow,
-  serializeArrowSchema
-} from '@loaders.gl/arrow';
+  getBinaryGeometriesFromArrow
+} from '@loaders.gl/gis';
+import {load} from '@loaders.gl/core';
+import {ArrowLoader, serializeArrowSchema} from '@loaders.gl/arrow';
 
 import {
   GEOARROW_POINT_FILE,
@@ -21,7 +20,7 @@ import {
   GEOARROW_POLYGON_FILE,
   GEOARROW_MULTIPOLYGON_FILE,
   GEOARROW_MULTIPOLYGON_HOLE_FILE
-} from '../data/geoarrow/test-cases';
+} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
 
 const expectedPointBinaryGeometry = {
   binaryGeometries: [

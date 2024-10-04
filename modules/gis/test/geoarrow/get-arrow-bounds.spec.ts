@@ -4,7 +4,7 @@
 
 import test from 'tape-promise/tape';
 
-import {updateBoundsFromGeoArrowSamples} from '@loaders.gl/arrow';
+import {updateBoundsFromGeoArrowSamples} from '@loaders.gl/gis';
 
 // fix a bug that map bounds are not updated correctly from arrow samples
 test('ArrowUtils#updateBoundsFromGeoArrowSamples', (t) => {
