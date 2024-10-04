@@ -4,7 +4,7 @@
 
 // import type {TypedArray,} from '../../../types/types';
 import type {Field} from '@loaders.gl/schema';
-import {getArrayTypeFromDataType} from './data-type';
+import {getArrayTypeFromDataType} from '../../schema/data-type';
 
 export interface ArrayType<T = unknown> {
   readonly length: number;

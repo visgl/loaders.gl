@@ -2,8 +2,27 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// COMMON CATEGORY
-export {getArrayTypeFromDataType} from './lib/table/simple-table/data-type';
+// Schema
+export {getArrayTypeFromDataType} from './lib/schema/data-type';
+
+// Schema utils
+export {
+  convertArrowToSchema,
+  convertSchemaToArrow,
+  // DETAILED FUNCTIONS
+  serializeArrowSchema,
+  deserializeArrowSchema,
+  serializeArrowMetadata,
+  deserializeArrowMetadata,
+  serializeArrowField,
+  deserializeArrowField,
+  serializeArrowType,
+  deserializeArrowType
+} from './lib/schema/convert-arrow-schema';
+export {getDataTypeFromArray} from './lib/schema/data-type';
+
+// Table utils
+export {convertArrowToTable, convertTableToArrow} from './lib/table/tables/convert-arrow-table';
 
 // TABLE CATEGORY UTILS
 export {TableBatchBuilder} from './lib/table/batches/table-batch-builder';
@@ -25,19 +44,15 @@ export {
   makeRowIterator,
   makeArrayRowIterator,
   makeObjectRowIterator
-} from './lib/table/simple-table/table-accessors';
+} from './lib/table/tables/table-accessors';
+
+export {makeTableFromData} from './lib/table/tables/make-table';
+export {makeTableFromBatches, makeBatchFromTable} from './lib/table/tables/make-table-from-batches';
+export {convertTable} from './lib/table/tables/convert-table';
+export {deduceTableSchema} from './lib/schema/deduce-table-schema';
+export {convertToObjectRow, convertToArrayRow} from './lib/table/tables/row-utils';
 
 export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
-
-export {makeTableFromData} from './lib/table/simple-table/make-table';
-export {
-  makeTableFromBatches,
-  makeBatchFromTable
-} from './lib/table/simple-table/make-table-from-batches';
-export {convertTable} from './lib/table/simple-table/convert-table';
-export {deduceTableSchema} from './lib/table/simple-table/table-schema';
-export {convertToObjectRow, convertToArrayRow} from './lib/table/simple-table/row-utils';
-export {getDataTypeFromArray} from './lib/table/simple-table/data-type';
 
 // MESH CATEGORY
 
@@ -54,40 +69,40 @@ export {
 export {
   Schema as ArrowLikeSchema,
   Field as ArrowLikeField,
-  DataType as ArrowLikeDataType,
-  Null,
-  Binary,
-  Bool,
-  Int,
-  Int8,
-  Int16,
-  Int32,
-  Int64,
-  Uint8,
-  Uint16,
-  Uint32,
-  Uint64,
-  Float,
-  Float16,
-  Float32,
-  Float64,
-  Utf8,
-  Date,
-  DateDay,
-  DateMillisecond,
-  Time,
-  TimeMillisecond,
-  TimeSecond,
-  Timestamp,
-  TimestampSecond,
-  TimestampMillisecond,
-  TimestampMicrosecond,
-  TimestampNanosecond,
-  Interval,
-  IntervalDayTime,
-  IntervalYearMonth,
-  FixedSizeList,
-  Struct
+  DataType as ArrowLikeDataType
+  // Null,
+  // Binary,
+  // Bool,
+  // Int,
+  // Int8,
+  // Int16,
+  // Int32,
+  // Int64,
+  // Uint8,
+  // Uint16,
+  // Uint32,
+  // Uint64,
+  // Float,
+  // Float16,
+  // Float32,
+  // Float64,
+  // Utf8,
+  // Date,
+  // DateDay,
+  // DateMillisecond,
+  // Time,
+  // TimeMillisecond,
+  // TimeSecond,
+  // Timestamp,
+  // TimestampSecond,
+  // TimestampMillisecond,
+  // TimestampMicrosecond,
+  // TimestampNanosecond,
+  // Interval,
+  // IntervalDayTime,
+  // IntervalYearMonth,
+  // FixedSizeList,
+  // Struct
 } from './lib/table/arrow-api/index';
 
 // EXPERIMENTAL APIs

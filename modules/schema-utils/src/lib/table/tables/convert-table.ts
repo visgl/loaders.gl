@@ -15,7 +15,7 @@ import {
   getTableRowAsArray,
   getTableRowAsObject
 } from './table-accessors';
-import {deduceTableSchema} from './table-schema';
+import {deduceTableSchema} from '../../schema/deduce-table-schema';
 import {makeColumnFromField} from './table-column';
 
 export function convertTable(table: Table, shape: 'object-row-table'): ObjectRowTable;

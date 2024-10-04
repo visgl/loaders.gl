@@ -37,10 +37,7 @@ export {parseWKTCRS} from './lib/wkt/parse-wkt-crs';
 export type {EncodeWKTCRSOptions} from './lib/wkt/encode-wkt-crs';
 export {encodeWKTCRS} from './lib/wkt/encode-wkt-crs';
 
-// Arrow Utils
-// getGeometryColumnsFromArrowTable,
-// getGeoArrowEncoding
-
+// Arrow Geometries
 export type {
   BinaryDataFromGeoArrow,
   BinaryGeometriesFromArrowOptions
