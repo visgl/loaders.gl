@@ -13,7 +13,7 @@ import {
 } from '@loaders.gl/arrow';
 import {fetchFile} from '@loaders.gl/core';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
-import {GEOARROW_POINT_FILE} from './data/geoarrow/test-cases';
+import {GEOARROW_POINT_FILE} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
 
 // WORKER TESTS
 test('TriangulationWorker#plumbing', async (t) => {

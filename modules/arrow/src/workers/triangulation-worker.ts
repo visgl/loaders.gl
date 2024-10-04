@@ -8,7 +8,7 @@ import {
   getTriangleIndices,
   getBinaryGeometriesFromArrow,
   BinaryDataFromGeoArrow
-} from '../lib/geoarrow/convert-geoarrow-to-binary-geometry';
+} from '@loaders.gl/gis';
 import type {
   TriangulationWorkerInput,
   TriangulateInput,

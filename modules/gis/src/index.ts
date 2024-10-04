@@ -37,8 +37,26 @@ export {parseWKTCRS} from './lib/wkt/parse-wkt-crs';
 export type {EncodeWKTCRSOptions} from './lib/wkt/encode-wkt-crs';
 export {encodeWKTCRS} from './lib/wkt/encode-wkt-crs';
 
+// Arrow Utils
+// getGeometryColumnsFromArrowTable,
+// getGeoArrowEncoding
+
+export type {
+  BinaryDataFromGeoArrow,
+  BinaryGeometriesFromArrowOptions
+} from './lib/geoarrow/convert-geoarrow-to-binary-geometry';
+export {
+  getBinaryGeometryTemplate,
+  getBinaryGeometriesFromArrow,
+  getTriangleIndices,
+  getMeanCentersFromBinaryGeometries
+} from './lib/geoarrow/convert-geoarrow-to-binary-geometry';
+
+export {parseGeometryFromArrow} from './lib/geoarrow/convert-geoarrow-to-geojson-geometry';
+export {getGeometryColumnsFromSchema} from './lib/geoarrow/geoarrow-metadata';
+export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';
+
 // EXPERIMENTAL APIs
 
 export type {WKBHeader} from './lib/wkt/parse-wkb-header';
-
 export {encodeHex, decodeHex} from './lib/utils/hex-transcoder';

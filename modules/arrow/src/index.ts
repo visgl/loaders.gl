@@ -37,27 +37,6 @@ export {
 export {convertArrowToTable} from './lib/tables/convert-arrow-to-table';
 export {convertTableToArrow} from './lib/tables/convert-table-to-arrow';
 
-// EXPERIMENTAL
-
-// Arrow Utils
-// getGeometryColumnsFromArrowTable,
-// getGeoArrowEncoding
-
-export type {
-  BinaryDataFromGeoArrow,
-  BinaryGeometriesFromArrowOptions
-} from './lib/geoarrow/convert-geoarrow-to-binary-geometry';
-export {
-  getBinaryGeometryTemplate,
-  getBinaryGeometriesFromArrow,
-  getTriangleIndices,
-  getMeanCentersFromBinaryGeometries
-} from './lib/geoarrow/convert-geoarrow-to-binary-geometry';
-
-export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';
-
-export {parseGeometryFromArrow} from './lib/geoarrow/convert-geoarrow-to-geojson-geometry';
-
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';
 
