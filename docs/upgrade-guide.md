@@ -1,5 +1,20 @@
 # Upgrade Guide
 
+## Upgrading to v5.0 (In development)
+
+loaders.gl v5 is a major re-imagination of the library the optimizes loaders.gl for big cloud-native, binary data.
+
+- **Apache Arrow** - When possible, loaders now return binary data in the Apache Arrow format. This aligns with parallel efforts in companion libraries like deck.gl to work with zero-copy, compact binary data instead of bloated, deserialized javascript data structures, resulting in up to an order of magnitude better loading and processing performance on big data.
+
+- **Single output format per loader** - The `shape` option that was introduced in loaders.gl v3 to allow loaders to return 
+different data formats is now deprecated and removed in many places. 
+Instead, applications can use utilities in the `@loaders.gl/schema-utils` and `@loaders.gl/gis` modules to 
+convert for Apache Arrow and Apache GeoArrow to more traditional JavaScript formats.
+
+- **Improved `DataSource` API** - 
+
+
+
 ## Upgrading to v4.3 (In development)
 
 **Breaking Changes**
