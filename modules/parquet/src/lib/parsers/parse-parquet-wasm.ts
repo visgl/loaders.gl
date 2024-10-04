@@ -5,7 +5,7 @@
 // eslint-disable
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
-import {serializeArrowSchema} from '@loaders.gl/arrow';
+import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
 import type * as parquetWasm from 'parquet-wasm';
 import * as arrow from 'apache-arrow';
@@ -35,7 +35,7 @@ export async function parseParquetFileWasm(
 
   return {
     shape: 'arrow-table',
-    schema: serializeArrowSchema(arrowTable.schema),
+    schema: convertArrowToSchema(arrowTable.schema),
     data: arrowTable
   };
 }
@@ -60,7 +60,7 @@ export async function* parseParquetFileInBatchesWasm(
 
   let schema: Schema;
   for await (const recordBatch of makeStreamIterator(stream)) {
-    schema ||= serializeArrowSchema(recordBatch.schema);
+    schema ||= convertArrowToSchema(recordBatch.schema);
     yield {
       batchType: 'data',
       shape: 'arrow-table',

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {MeshAttribute, MeshAttributes, Schema, Field} from '@loaders.gl/schema';
-import {getDataTypeFromTypedArray} from '../table/simple-table/data-type';
+import {getDataTypeFromTypedArray} from '../schema/data-type';
 
 /**
  * Create a schema for mesh attributes data

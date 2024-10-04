@@ -9,7 +9,7 @@ import {
   convertToObjectRow,
   inferHeadersFromArrayRow,
   inferHeadersFromObjectRow
-} from '../simple-table/row-utils';
+} from '../tables/row-utils';
 
 const DEFAULT_ROW_COUNT = 100;
 

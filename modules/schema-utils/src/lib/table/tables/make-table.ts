@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Table, ArrayRowTable, ObjectRowTable, ColumnarTable} from '@loaders.gl/schema';
-import {deduceTableSchema} from './table-schema';
+import {deduceTableSchema} from '../../schema/deduce-table-schema';
 
 /**
  * Makes a typed table from data.

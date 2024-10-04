@@ -5,7 +5,7 @@
 import type {Table} from '@loaders.gl/schema';
 
 import {ArrowLikeSchema} from './arrow-like-schema';
-import {deduceTableSchema} from '../simple-table/table-schema';
+import {deduceTableSchema} from '../../schema/deduce-table-schema';
 
 import {
   getTableCell,
@@ -17,7 +17,7 @@ import {
   // getTableColumnName,
   // getTableRowAsObject,
   // getTableRowAsArray
-} from '../simple-table/table-accessors';
+} from '../tables/table-accessors';
 
 class ArrowLikeVector {
   table: Table;

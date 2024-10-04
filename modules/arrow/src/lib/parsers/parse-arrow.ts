@@ -5,7 +5,7 @@
 import * as arrow from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
-import {convertArrowToTable} from '../tables/convert-arrow-to-table';
+import {convertArrowToTable} from '@loaders.gl/schema-utils';
 
 /** Parses arrow to a loaders.gl table. Defaults to `arrow-table` */
 export function parseArrowSync(arrayBuffer, options?: {shape?: Table['shape']}): Table {

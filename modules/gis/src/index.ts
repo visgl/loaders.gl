@@ -10,7 +10,8 @@ export {getGeoMetadata, setGeoMetadata, unpackGeoMetadata} from './lib/geo/geopa
 export {unpackJSONStringMetadata} from './lib/geo/geoparquet-metadata';
 
 // Table conversion
-export {convertWKBTableToGeoJSON} from './lib/tables/convert-table-to-geojson';
+export {convertGeoArrowToTable} from './lib/tables/convert-geoarrow-table';
+export {convertWKBTableToGeoJSON} from './lib/tables/convert-wkb-table-to-geojson';
 
 // Binary Geometries
 export {flatGeojsonToBinary} from './lib/binary-features/flat-geojson-to-binary';
@@ -37,10 +38,7 @@ export {parseWKTCRS} from './lib/wkt/parse-wkt-crs';
 export type {EncodeWKTCRSOptions} from './lib/wkt/encode-wkt-crs';
 export {encodeWKTCRS} from './lib/wkt/encode-wkt-crs';
 
-// Arrow Utils
-// getGeometryColumnsFromArrowTable,
-// getGeoArrowEncoding
-
+// Arrow Geometries
 export type {
   BinaryDataFromGeoArrow,
   BinaryGeometriesFromArrowOptions

@@ -17,25 +17,11 @@ export {ArrowWriter} from './arrow-writer';
 export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
 export {GeoArrowLoader} from './geoarrow-loader';
 
-// Schema utils
-export {
-  convertArrowToSchema,
-  convertSchemaToArrow,
+// EXPERIMENTAL
 
-  // DETAILED FUNCTIONS
-  serializeArrowSchema,
-  deserializeArrowSchema,
-  serializeArrowMetadata,
-  deserializeArrowMetadata,
-  serializeArrowField,
-  deserializeArrowField,
-  serializeArrowType,
-  deserializeArrowType
-} from './lib//tables/convert-arrow-schema';
-
-// Table utils
-export {convertArrowToTable} from './lib/tables/convert-arrow-to-table';
-export {convertTableToArrow} from './lib/tables/convert-table-to-arrow';
+// Arrow Utils
+// getGeometryColumnsFromArrowTable,
+// getGeoArrowEncoding
 
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';
