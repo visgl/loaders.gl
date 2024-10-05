@@ -15,7 +15,6 @@ import type {
 import Protobuf from 'pbf';
 
 import type {MVTFeature} from './mvt-types';
-// import * as PBF from './pbf-constants';
 
 import {
   classifyRings,
@@ -27,6 +26,86 @@ import {
 } from '../utils/geometry-utils';
 
 const MVT_GEOMETRY_TYPES = ['Unknown', 'Point', 'LineString', 'Polygon'] as const;
+
+export class VectorTileFeature implements MVTFeature {
+  properties: Record<string, string | number | boolean | null>;
+  extent: any;
+  type: number;
+  id: number | null;
+  _pbf: Protobuf;
+  _geometryPos: number;
+  _keys: string[];
+  _values: (string | number | boolean | null)[];
+  _geometryInfo: GeojsonGeometryInfo;
+
+  static types = MVT_GEOMETRY_TYPES;
+
+  // eslint-disable-next-line max-params
+  constructor(
+    pbf: Protobuf,
+    end: number,
+    extent: any,
+    keys: string[],
+    values: (string | number | boolean | null)[],
+    geometryInfo?: GeojsonGeometryInfo
+  ) {
+    // Public
+    this.properties = {};
+    this.extent = extent;
+    this.type = 0;
+    this.id = null;
+
+    // Private
+    this._pbf = pbf;
+    this._geometryPos = -1;
+    this._keys = keys;
+    this._values = values;
+
+    // Only used by binary tiles
+    this._geometryInfo = geometryInfo!;
+
+    pbf.readFields(readFeature, this, end);
+  }
+
+  toGeoJSONFeature(
+    coordinates: 'wgs84' | 'local',
+    tileIndex?: {x: number; y: number; z: number},
+  ): Feature {
+    return readGeoJSONFeatureFromPBF(this, coordinates, this.extent, tileIndex);
+  }
+
+  /**
+   *
+   * @param options
+   * @returns
+   */
+  toBinaryFeature(
+    coordinates: 'wgs84' | 'local',
+    tileIndex?: {x: number; y: number; z: number}
+  ): FlatFeature {
+    return readBinaryFeatureFromPBF(this, coordinates, this.extent, tileIndex);
+  }
+
+  /** Read a bounding box from the feature */
+  bbox() {
+    this._pbf.pos = this._geometryPos;
+    return readBoundingBoxFromPBF(this._pbf);
+  }
+
+  // Geometry helpers
+
+  /** Parses protobuf data to nested "GeoJSON like" coordinates array */
+  loadGeometry(): number[][][] {
+    this._pbf.pos = this._geometryPos;
+    return loadGeometryFromPBF(this._pbf);
+  }
+
+  /** Parses protobuf data to an intermediate "Flat GeoJSON" data format */
+  loadFlatGeometry(): FlatIndexedGeometry {
+    this._pbf.pos = this._geometryPos;
+    return loadFlatGeometryFromPBF(this._pbf);
+  }
+}
 
 // const EMPTY_VECTOR_TILE_FEATURE = {
 //   type: 0,
@@ -429,85 +508,4 @@ function loadFlatGeometryFromPBF(pbf: Protobuf): FlatIndexedGeometry {
   }
 
   return {data, indices};
-}
-
-export class VectorTileFeature implements MVTFeature {
-  properties: Record<string, string | number | boolean | null>;
-  extent: any;
-  type: number;
-  id: number | null;
-  _pbf: Protobuf;
-  _geometryPos: number;
-  _keys: string[];
-  _values: (string | number | boolean | null)[];
-  _geometryInfo: GeojsonGeometryInfo;
-
-  static types = MVT_GEOMETRY_TYPES;
-
-  // eslint-disable-next-line max-params
-  constructor(
-    pbf: Protobuf,
-    end: number,
-    extent: any,
-    keys: string[],
-    values: (string | number | boolean | null)[],
-    geometryInfo?: GeojsonGeometryInfo
-  ) {
-    // Public
-    this.properties = {};
-    debugger
-    this.extent = extent;
-    this.type = 0;
-    this.id = null;
-
-    // Private
-    this._pbf = pbf;
-    this._geometryPos = -1;
-    this._keys = keys;
-    this._values = values;
-
-    // Only used by binary tiles
-    this._geometryInfo = geometryInfo!;
-
-    pbf.readFields(readFeature, this, end);
-  }
-
-  toGeoJSONFeature(
-    coordinates: 'wgs84' | 'local',
-    tileIndex?: {x: number; y: number; z: number},
-  ): Feature {
-    return readGeoJSONFeatureFromPBF(this, coordinates, this.extent, tileIndex);
-  }
-
-  /**
-   *
-   * @param options
-   * @returns
-   */
-  toBinaryFeature(
-    coordinates: 'wgs84' | 'local',
-    tileIndex?: {x: number; y: number; z: number}
-  ): FlatFeature {
-    return readBinaryFeatureFromPBF(this, coordinates, this.extent, tileIndex);
-  }
-
-  /** Read a bounding box from the feature */
-  bbox() {
-    this._pbf.pos = this._geometryPos;
-    return readBoundingBoxFromPBF(this._pbf);
-  }
-
-  // Geometry helpers
-
-  /** Parses protobuf data to nested "GeoJSON like" coordinates array */
-  loadGeometry(): number[][][] {
-    this._pbf.pos = this._geometryPos;
-    return loadGeometryFromPBF(this._pbf);
-  }
-
-  /** Parses protobuf data to an intermediate "Flat GeoJSON" data format */
-  loadFlatGeometry(): FlatIndexedGeometry {
-    this._pbf.pos = this._geometryPos;
-    return loadFlatGeometryFromPBF(this._pbf);
-  }
 }

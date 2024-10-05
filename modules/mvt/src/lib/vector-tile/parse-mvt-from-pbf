@@ -1,0 +1,320 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
+// This code is inspired by https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
+
+import Protobuf from 'pbf';
+import {Schema, GeojsonGeometryInfo} from '@loaders.gl/schema';
+import type {MVTTile, MVTLayer} from './mvt-types';
+import * as MVT from './mvt-constants';
+import {VectorTileFeature} from './vector-tile-feature';
+
+const DEFAULT_LAYER = {
+  version: 1,
+  name: '',
+  extent: 4096,
+  length: 0,
+  schema: {fields: [], metadata: {}},
+  columns: {},
+  geometryColumn: [],
+  idColumn: [],
+
+  // Private
+  _keys: [],
+  _values: [],
+  _currentFeature: 0,
+  _featurePositions: [],
+  _geometryPositions: [],
+} as const satisfies MVTLayer;
+
+export function parseTile(pbf: Protobuf, end?: number): MVTTile {
+  const tile = {layers: {}} satisfies MVTTile;
+  pbf.readFields(readTileFieldFromPBF, tile, end);
+  return tile;
+}
+
+/**
+ * Protobuf read callback for a top-level tile object
+ * @param tag
+ * @param layers
+ * @param pbf
+ */
+function readTileFieldFromPBF(tag: number, tile?: MVTTile, pbf?: Protobuf): void {
+  if (!pbf || !tile) {
+    return;
+  }
+
+  switch (tag as MVT.TileInfo) {
+    case MVT.TileInfo.layers:
+      // TODO what are we skipping here?
+      const byteLength = pbf.readVarint();
+      const end = byteLength + pbf.pos;
+
+      const layer = readLayerFromPBF(pbf, end);
+      tile.layers[layer.name] = layer;
+      break;
+    default:
+    // ignore? log?
+  }
+}
+
+export function readLayerFromPBF(pbf: Protobuf, end?: number): MVTLayer {
+  const layer: MVTLayer = {...DEFAULT_LAYER};
+  pbf.readFields(readLayerFromPBF, layer, end);
+
+  // Read features
+  for (let featureIndex = 0; featureIndex < layer._featurePositions.length; featureIndex++) {
+    // Determine start and end of feature in PBF
+    const featurePosition = layer._featurePositions[featureIndex];
+
+    pbf.pos = featurePosition;
+    const byteLength = pbf.readVarint();
+    const end = byteLength + pbf.pos;
+
+    layer._currentFeature = featureIndex;
+    pbf.readFields(readFeatureFromPBF, layer, end);
+  }
+
+  // Post prcessing
+
+  layer.schema = makeMVTSchema(layer._keys, layer._values);
+  return layer;
+}
+
+/**
+ *
+ * @param tag
+ * @param layer
+ * @param pbf
+ */
+function readLayerFromPBF(tag: number, layer?: MVTLayer, pbf?: Protobuf): void {
+  if (!layer || !pbf) {
+    return;
+  }
+
+  switch (tag as MVT.LayerInfo) {
+    case MVT.LayerInfo.version:
+      layer.version = pbf.readVarint();
+      break;
+    case MVT.LayerInfo.name:
+      layer.name = pbf.readString();
+      break;
+    case MVT.LayerInfo.extent:
+      layer.extent = pbf.readVarint();
+      break;
+    case MVT.LayerInfo.features:
+      layer._featurePositions.push(pbf.pos);
+      break;
+    case MVT.LayerInfo.keys:
+      layer._keys.push(pbf.readString());
+      break;
+    case MVT.LayerInfo.values:
+      layer._values.push(readValuesFromPBF(pbf));
+      break;
+    default:
+    // ignore? Log?
+  }
+}
+
+/**
+ * @param pbf
+ * @returns value
+ */
+function readValuesFromPBF(pbf: Protobuf) {
+  let value: string | number | boolean | null = null;
+
+  // TODO - can we have multiple values?
+  const end = pbf.readVarint() + pbf.pos;
+  while (pbf.pos < end) {
+    value = readValueFromPBF(pbf);
+  }
+  return value;
+}
+
+/** Read a type tagged value from the protobuf at current position */
+function readValueFromPBF(pbf: Protobuf) {
+  const tag = pbf.readVarint() >> 3;
+
+  switch (tag as MVT.PropertyType) {
+    case MVT.PropertyType.string_value:
+      return pbf.readString();
+    case MVT.PropertyType.float_value:
+      return pbf.readFloat();
+    case MVT.PropertyType.double_value:
+      return pbf.readDouble();
+    case MVT.PropertyType.int_value:
+      return pbf.readVarint64();
+    case MVT.PropertyType.uint_value:
+      return pbf.readVarint();
+    case MVT.PropertyType.sint_value:
+      return pbf.readSVarint();
+    case MVT.PropertyType.bool_value:
+      return pbf.readBoolean();
+    default:
+      return null;
+  }
+}
+
+/**
+ *
+ * @param tag
+ * @param feature
+ * @param pbf
+ */
+function readFeatureFromPBF(tag: number, layer?: MVTLayer, pbf?: Protobuf): void {
+  if (!pbf || !layer) {
+    return;
+  }
+
+  switch (tag as MVT.FeatureInfo) {
+    case MVT.FeatureInfo.id:
+      const id = pbf.readVarint();
+      layer.columns.id = layer.columns.id || [];
+      layer.columns.id[layer._currentFeature] = id;
+      break;
+    case MVT.FeatureInfo.tags:
+      readColumnValuesFromPBF(pbf, layer);
+      break;
+    case MVT.FeatureInfo.type:
+      const type = pbf.readVarint();
+      layer.columns.type ||= [];
+      layer.columns.type[layer._currentFeature] = type;
+      break;
+    case MVT.FeatureInfo.geometry:
+      layer._geometryPositions[layer._currentFeature] = pbf.pos;
+      break;
+    default:
+    // ignore? log?
+  }
+}
+
+/**
+ *
+ * @param pbf
+ * @param feature
+ */
+function readColumnValuesFromPBF(pbf: Protobuf, layer: MVTLayer): void {
+  const end = pbf.readVarint() + pbf.pos;
+
+  while (pbf.pos < end) {
+    const keyIndex = pbf.readVarint();
+    const valueIndex = pbf.readVarint();
+    const columnName = layer._keys[keyIndex];
+    const value = layer._values[valueIndex];
+    layer.columns[columnName] = [];
+    layer.columns[columnName].push(value);
+  }
+}
+
+// Schema Builder
+
+function makeMVTSchema(keys: string[], values: (string | number | boolean | null)[]): Schema {
+  const fields: Schema['fields'] = [];
+  for (let i = 0; i < keys.length; i++) {
+    switch (values[i] as MVT.PropertyType) {
+      case MVT.PropertyType.string_value:
+        fields.push({name: keys[i], type: 'null', nullable: true});
+        break;
+      case MVT.PropertyType.float_value:
+        fields.push({name: keys[i], type: 'null', nullable: true});
+        break;
+      case MVT.PropertyType.double_value:
+        fields.push({name: keys[i], type: 'null', nullable: true});
+        break;
+      case MVT.PropertyType.int_value:
+        fields.push({name: keys[i], type: 'null', nullable: true});
+        break;
+      case MVT.PropertyType.uint_value:
+        fields.push({name: keys[i], type: 'null', nullable: true});
+        break;
+      case MVT.PropertyType.sint_value:
+        fields.push({name: keys[i], type: 'null', nullable: true});
+        break;
+      case MVT.PropertyType.bool_value:
+        fields.push({name: keys[i], type: 'null', nullable: true});
+        break;
+      default:
+      // ignore?
+    }
+  }
+
+  return {fields, metadata: {}};
+}
+
+// DEPRECATED
+
+/** @deprecated Use MVTLayer */
+export class VectorTileLayer {
+  version: number;
+  name: string;
+  extent: number;
+  length: number;
+  schema: Schema;
+
+  _pbf: Protobuf;
+  _keys: string[];
+  _values: (string | number | boolean | null)[];
+  _featurePositions: number[];
+
+  constructor(pbf: Protobuf, end: number) {
+    // Public
+    this.version = 1;
+    this.name = '';
+    this.extent = 4096;
+    this.length = 0;
+    this.schema = {fields: [], metadata: {}};
+
+    // Private
+    this._pbf = pbf;
+    this._keys = [];
+    this._values = [];
+    this._featurePositions = [];
+
+    const layer = readLayerFromPBF(pbf, end);
+    Object.assign(this, layer);
+
+    this.length = this._featurePositions.length;
+  }
+
+  /**
+   * return feature `i` from this layer as a `VectorTileFeature`
+   * @param index
+   * @returns feature
+   */
+  getGeoJSONFeature(i: number): VectorTileFeature {
+    if (i < 0 || i >= this._featurePositions.length) {
+      throw new Error('feature index out of bounds');
+    }
+
+    this._pbf.pos = this._featurePositions[i];
+
+    const end = this._pbf.readVarint() + this._pbf.pos;
+    return new VectorTileFeature(this._pbf, end, this.extent, this._keys, this._values);
+  }
+
+  /**
+   * return binary feature `i` from this layer as a `VectorTileFeature`
+   *
+   * @param index
+   * @param geometryInfo
+   * @returns binary feature
+   */
+  getBinaryFeature(i: number, geometryInfo: GeojsonGeometryInfo): VectorTileFeature {
+    if (i < 0 || i >= this._featurePositions.length) {
+      throw new Error('feature index out of bounds');
+    }
+
+    this._pbf.pos = this._featurePositions[i];
+
+    const end = this._pbf.readVarint() + this._pbf.pos;
+    return new VectorTileFeature(
+      this._pbf,
+      end,
+      this.extent,
+      this._keys,
+      this._values,
+      geometryInfo
+    );
+  }
+}
