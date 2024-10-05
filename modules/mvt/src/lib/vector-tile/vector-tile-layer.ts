@@ -6,9 +6,115 @@
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
 
 import Protobuf from 'pbf';
-import {VectorTileFeature} from './vector-tile-feature';
 import {GeojsonGeometryInfo} from '@loaders.gl/schema';
+import type {MVTLayer} from './mvt-types';
+import * as MVT from './mvt-constants';
+import {VectorTileFeature} from './vector-tile-feature';
 
+const DEFAULT_LAYER = {
+  version: 1,
+  name: '',
+  extent: 4096,
+  length: 0,
+  _keys: [],
+  _values: [],
+  _features: []
+} as const satisfies MVTLayer;
+
+export function readLayer(pbf: Protobuf, end?): MVTLayer {
+  const layer: MVTLayer = {...DEFAULT_LAYER};
+  pbf.readFields(readLayerFromProtobuf, layer, end);
+  return layer;
+}
+
+/**
+ *
+ * @param tag
+ * @param layer
+ * @param pbf
+ */
+function readLayerFromProtobuf(tag: number, layer?: MVTLayer, pbf?: Protobuf): void {
+  if (!layer || !pbf) {
+    return;
+  }
+
+  switch (tag as MVT.LayerInfoType) {
+    case MVT.LayerInfoType.version:
+      layer.version = pbf.readVarint();
+      break;
+    case MVT.LayerInfoType.name:
+      layer.name = pbf.readString();
+      break;
+    case MVT.LayerInfoType.extent:
+      layer.extent = pbf.readVarint();
+      break;
+    case MVT.LayerInfoType.features:
+      layer._features.push(pbf.pos);
+      break;
+    case MVT.LayerInfoType.keys:
+      layer._keys.push(pbf.readString());
+      break;
+    case MVT.LayerInfoType.values:
+      layer._values.push(readValueMessage(pbf));
+      break;
+    default:
+    // ignore? Log?
+  }
+}
+
+/**
+ *
+ * @param pbf
+ * @returns value
+ */
+function readValueMessage(pbf: Protobuf) {
+  let value: string | number | boolean | null = null;
+  const end = pbf.readVarint() + pbf.pos;
+
+  while (pbf.pos < end) {
+    const tag = pbf.readVarint() >> 3;
+
+    // (string = 1), // string_value
+    //   (float = 2), // float_value
+    //   (double = 3), // double_value
+    //   (int64 = 4), // int_value
+    //   (uint64 = 5), // uint_value
+    //   (sint64 = 6), // sint_value
+    //   (bool = 7); // bool_value
+
+    switch (tag as MVT.PropertyType) {
+      case MVT.PropertyType.string:
+        value = pbf.readString();
+        break;
+      case MVT.PropertyType.float:
+        value = pbf.readFloat();
+        break;
+      case MVT.PropertyType.double:
+        value = pbf.readDouble();
+        break;
+      case MVT.PropertyType.int64:
+        value = pbf.readVarint64();
+        break;
+      case MVT.PropertyType.uint64:
+        value = pbf.readVarint();
+        break;
+      case MVT.PropertyType.sint64:
+        value = pbf.readSVarint();
+        break;
+      case MVT.PropertyType.bool:
+        value = pbf.readBoolean();
+        break;
+      default:
+        value = null;
+    }
+  }
+
+  return value;
+}
+
+// DEPRECATED
+
+/** @deprecated Use MVTLayer */
 export class VectorTileLayer {
   version: number;
   name: string;
@@ -32,7 +138,7 @@ export class VectorTileLayer {
     this._values = [];
     this._features = [];
 
-    pbf.readFields(readLayer, this, end);
+    pbf.readFields(readLayerFromProtobuf, this, end);
 
     this.length = this._features.length;
   }
@@ -77,54 +183,4 @@ export class VectorTileLayer {
       geometryInfo
     );
   }
-}
-
-/**
- *
- * @param tag
- * @param layer
- * @param pbf
- */
-function readLayer(tag: number, layer?: VectorTileLayer, pbf?: Protobuf): void {
-  if (layer && pbf) {
-    if (tag === 15) layer.version = pbf.readVarint();
-    else if (tag === 1) layer.name = pbf.readString();
-    else if (tag === 5) layer.extent = pbf.readVarint();
-    else if (tag === 2) layer._features.push(pbf.pos);
-    else if (tag === 3) layer._keys.push(pbf.readString());
-    else if (tag === 4) layer._values.push(readValueMessage(pbf));
-  }
-}
-
-/**
- *
- * @param pbf
- * @returns value
- */
-function readValueMessage(pbf: Protobuf) {
-  let value: string | number | boolean | null = null;
-  const end = pbf.readVarint() + pbf.pos;
-
-  while (pbf.pos < end) {
-    const tag = pbf.readVarint() >> 3;
-
-    value =
-      tag === 1
-        ? pbf.readString()
-        : tag === 2
-          ? pbf.readFloat()
-          : tag === 3
-            ? pbf.readDouble()
-            : tag === 4
-              ? pbf.readVarint64()
-              : tag === 5
-                ? pbf.readVarint()
-                : tag === 6
-                  ? pbf.readSVarint()
-                  : tag === 7
-                    ? pbf.readBoolean()
-                    : null;
-  }
-
-  return value;
 }
