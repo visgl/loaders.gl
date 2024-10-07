@@ -14,7 +14,7 @@ export class PotreeTile3DLayer<
   ExtraProps extends {} = {}
 > extends Tile3DLayer<DataT, Tile3DLayerProps & PotreeTile3DLayerProps & ExtraProps> {
   static layerName = 'PotreeTile3DLayer';
-  static defaultProps = Tile3DLayer.defaultProps as any;
+  static defaultProps = Tile3DLayer.defaultProps;
 
   //@ts-expect-error
   updateState({props, oldProps, changeFlags}: UpdateParameters<this>): void {
