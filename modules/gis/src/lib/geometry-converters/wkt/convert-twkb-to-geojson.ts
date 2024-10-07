@@ -13,7 +13,7 @@ import type {
   MultiLineString,
   MultiPolygon
 } from '@loaders.gl/schema';
-import {BinaryReader} from '../../../utils/binary-reader';
+import {BinaryReader} from '../../utils/binary-reader';
 import {WKBGeometryType} from './helpers/parse-wkb-header';
 
 /**

@@ -3,8 +3,8 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {extractGeometryInfo} from '@loaders.gl/gis/lib/binary-features/extract-geometry-info';
-import {TEST_EXPORTS} from '@loaders.gl/gis/lib/binary-features/flat-geojson-to-binary';
+import {extractGeometryInfo} from '@loaders.gl/gis/lib/converters/feature-collections/helpers/extract-geometry-info';
+import {TEST_EXPORTS} from '@loaders.gl/gis/lib/converters/feature-collections/convert-flat-geojson-to-binary-features';
 
 const {extractNumericPropTypes} = TEST_EXPORTS;
 

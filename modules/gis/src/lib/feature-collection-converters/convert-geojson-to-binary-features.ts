@@ -1,8 +1,12 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
 
-import {extractGeometryInfo} from './extract-geometry-info';
-import {geojsonToFlatGeojson} from './geojson-to-flat-geojson';
-import {flatGeojsonToBinary} from './flat-geojson-to-binary';
+import {extractGeometryInfo} from './helpers/extract-geometry-info';
+import {convertGeojsonToFlatGeojson} from './convert-geojson-to-flat-geojson';
+import {convertFlatGeojsonToBinaryFeatureCollection} from './convert-flat-geojson-to-binary-features';
 
 /**
  * Options for `geojsonToBinary`
@@ -21,15 +25,15 @@ export type GeojsonToBinaryOptions = {
  * @param options
  * @returns features in binary format, grouped by geometry type
  */
-export function geojsonToBinary(
+export function convertGeojsonToBinaryFeatureCollection(
   features: Feature[],
   options: GeojsonToBinaryOptions = {fixRingWinding: true, triangulate: true}
 ): BinaryFeatureCollection {
   const geometryInfo = extractGeometryInfo(features);
   const coordLength = geometryInfo.coordLength;
   const {fixRingWinding} = options;
-  const flatFeatures = geojsonToFlatGeojson(features, {coordLength, fixRingWinding});
-  return flatGeojsonToBinary(flatFeatures, geometryInfo, {
+  const flatFeatures = convertGeojsonToFlatGeojson(features, {coordLength, fixRingWinding});
+  return convertFlatGeojsonToBinaryFeatureCollection(flatFeatures, geometryInfo, {
     numericPropKeys: options.numericPropKeys,
     PositionDataType: options.PositionDataType || Float32Array,
     triangulate: options.triangulate

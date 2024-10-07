@@ -6,7 +6,7 @@ import * as arrow from 'apache-arrow';
 import {createWorker} from '@loaders.gl/worker-utils';
 import {
   getTriangleIndices,
-  getBinaryGeometriesFromArrow,
+  convertGeoArrowToBinaryFeatureCollection,
   BinaryDataFromGeoArrow
 } from '@loaders.gl/gis';
 import type {
@@ -75,7 +75,7 @@ function parseGeoArrowBatch(data: ParseGeoArrowInput): ParseGeoArrowResult {
   if (geometryColumn) {
     // NOTE: for a rebuild arrow.Vector, there is only one chunk, so chunkIndex is always 0
     const options = {calculateMeanCenters, triangle, chunkIndex: 0, chunkOffset};
-    binaryDataFromGeoArrow = getBinaryGeometriesFromArrow(
+    binaryDataFromGeoArrow = convertGeoArrowToBinaryFeatureCollection(
       geometryColumn,
       geometryEncoding,
       options

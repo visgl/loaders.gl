@@ -4,7 +4,7 @@
 
 // import type {Feature} from '@loaders.gl/gis';
 import {LoaderContext, parseInBatchesFromContext, parseFromContext} from '@loaders.gl/loader-utils';
-import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {convertBinaryGeometryToGeoJSON, transformGeoJsonCoords} from '@loaders.gl/gis';
 import type {
   BinaryGeometry,
   Geometry,
@@ -193,7 +193,7 @@ export async function parseShapefile(
 function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
   const geojsonGeometries: any[] = [];
   for (const geom of geometries) {
-    geojsonGeometries.push(binaryToGeometry(geom));
+    geojsonGeometries.push(convertBinaryGeometryToGeoJSON(geom));
   }
   return geojsonGeometries;
 }

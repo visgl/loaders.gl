@@ -14,8 +14,8 @@ import type {
   Geometry,
   GeoArrowEncoding
 } from '@loaders.gl/schema';
-import {convertWKTToGeoJSON} from '../converters/geometry/wkt/convert-wkt-to-geojson';
-import {convertWKBToGeoJSON} from '../converters/geometry/wkt/convert-wkb-to-geojson';
+import {convertWKBToGeoJSON} from './wkt/convert-wkb-to-geojson';
+import {convertWKTToGeoJSON} from './wkt/convert-wkt-to-geojson';
 
 /**
  * parse geometry from arrow data that is returned from processArrowData()
@@ -26,7 +26,7 @@ import {convertWKBToGeoJSON} from '../converters/geometry/wkt/convert-wkb-to-geo
  * @param encoding the geoarrow encoding of the geometry column
  * @returns Feature or null
  */
-export function parseGeometryFromArrow(
+export function convertGeoArrowGeometryToGeoJSON(
   arrowCellValue: any,
   encoding?: GeoArrowEncoding
 ): Geometry | null {
@@ -59,7 +59,7 @@ export function parseGeometryFromArrow(
   }
 }
 
-function arrowWKBToGeometry(arrowCellValue: any) {
+function arrowWKBToGeometry(arrowCellValue: any): Geometry | null {
   // The actual WKB array buffer starts from byteOffset and ends at byteOffset + byteLength
   const arrayBuffer: ArrayBuffer = arrowCellValue.buffer.slice(
     arrowCellValue.byteOffset,
@@ -68,7 +68,7 @@ function arrowWKBToGeometry(arrowCellValue: any) {
   return convertWKBToGeoJSON(arrayBuffer);
 }
 
-function arrowWKTToGeometry(arrowCellValue: any) {
+function arrowWKTToGeometry(arrowCellValue: any): Geometry | null {
   const string: string = arrowCellValue;
   return convertWKTToGeoJSON(string);
 }

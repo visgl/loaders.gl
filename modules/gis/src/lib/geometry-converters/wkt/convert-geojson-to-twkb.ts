@@ -14,7 +14,7 @@ import type {
   Geometry
 } from '@loaders.gl/schema';
 
-import {BinaryWriter} from '../../../utils/binary-writer';
+import {BinaryWriter} from '../../utils/binary-writer';
 import {WKBGeometryType} from './helpers/parse-wkb-header';
 
 type TWKBPrecision = {

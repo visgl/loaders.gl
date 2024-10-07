@@ -6,7 +6,6 @@ import test from 'tape-promise/tape';
 
 import {encodeTextSync} from '@loaders.gl/core';
 import {WKTWriter} from '@loaders.gl/wkt';
-import {geojson} from 'modules/flatgeobuf/src/flatgeobuf/3.27.2';
 
 test('WKTWriter', (t) => {
   t.throws(

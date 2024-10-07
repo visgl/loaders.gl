@@ -4,7 +4,7 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertWKBToBinaryGeometry, decodeHex} from '@loaders.gl/gis';
+import {convertWKBToGeoJSON, decodeHex} from '@loaders.gl/gis';
 
 import type {WKBLoaderOptions} from './wkb-loader';
 import {WKBLoader} from './wkb-loader';
@@ -36,7 +36,7 @@ export const HexWKBLoader = {
 
 function parseHexWKB(text: string, options?: HexWKBLoaderOptions): Geometry {
   const uint8Array = decodeHex(text);
-  const binaryGeometry = convertWKBToBinaryGeometry(uint8Array.buffer); // , options?.wkb);
+  const binaryGeometry = convertWKBToGeoJSON(uint8Array.buffer); // , options?.wkb);
   return binaryGeometry;
 }
 

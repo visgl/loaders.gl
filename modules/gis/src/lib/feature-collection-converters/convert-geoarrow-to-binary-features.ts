@@ -4,9 +4,9 @@
 
 import * as arrow from 'apache-arrow';
 import {earcut} from '@math.gl/polygon';
-import type {BinaryFeatureCollection as BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {BinaryFeatureCollection} from '@loaders.gl/schema';
 import {GeoArrowEncoding} from '@loaders.gl/schema';
-import {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
+import {updateBoundsFromGeoArrowSamples} from '../geoarrow/get-arrow-bounds';
 import {TypedArray} from '@loaders.gl/loader-utils';
 
 /**
@@ -45,25 +45,12 @@ type BinaryGeometryContent = {
   /** Array of geometry offsets: the start index of primitive geometry */
   geomOffset: Int32Array;
   /** Array of geometry indicies: the start index of each geometry */
-  geometryIndicies: Uint16Array;
+  geometryIndexes: Uint16Array;
   /** (Optional) indices of triangels returned from polygon triangulation (Polygon only) */
   triangles?: Uint32Array;
   /** (Optional) array of mean center of each geometry */
   meanCenters?: Float64Array;
 };
-
-/**
- * binary geometry template, see deck.gl BinaryGeometry
- */
-export function getBinaryGeometryTemplate() {
-  return {
-    globalFeatureIds: {value: new Uint32Array(0), size: 1},
-    positions: {value: new Float32Array(0), size: 2},
-    properties: [],
-    numericProps: {},
-    featureIds: {value: new Uint32Array(0), size: 1}
-  };
-}
 
 export type BinaryGeometriesFromArrowOptions = {
   /** option to specify which chunk to get binary geometries from, for progressive rendering */
@@ -84,7 +71,7 @@ export type BinaryGeometriesFromArrowOptions = {
  * @param options options for getting binary geometries {meanCenter: boolean}
  * @returns BinaryDataFromGeoArrow
  */
-export function getBinaryGeometriesFromArrow(
+export function convertGeoArrowToBinaryFeatureCollection(
   geoColumn: arrow.Vector,
   geoEncoding: GeoArrowEncoding,
   options?: BinaryGeometriesFromArrowOptions
@@ -168,6 +155,19 @@ export function getBinaryGeometriesFromArrow(
     ...(options?.calculateMeanCenters
       ? {meanCenters: getMeanCentersFromBinaryGeometries(binaryGeometries)}
       : {})
+  };
+}
+
+/**
+ * binary geometry template, see deck.gl BinaryGeometry
+ */
+export function getBinaryGeometryTemplate() {
+  return {
+    globalFeatureIds: {value: new Uint32Array(0), size: 1},
+    positions: {value: new Float32Array(0), size: 2},
+    properties: [],
+    numericProps: {},
+    featureIds: {value: new Uint32Array(0), size: 1}
   };
 }
 
@@ -368,9 +368,9 @@ function getBinaryPolygonsFromChunk(
   const geomOffset = ringData.valueOffsets;
   const flatCoordinateArray = coordData.values;
 
-  const geometryIndicies = new Uint16Array(polygonOffset.length);
+  const geometryIndexes = new Uint16Array(polygonOffset.length);
   for (let i = 0; i < polygonOffset.length; i++) {
-    geometryIndicies[i] = geomOffset[polygonOffset[i]];
+    geometryIndexes[i] = geomOffset[polygonOffset[i]];
   }
 
   const numOfVertices = flatCoordinateArray.length / nDim;
@@ -384,7 +384,7 @@ function getBinaryPolygonsFromChunk(
   }
 
   const triangles = options?.triangulate
-    ? getTriangleIndices(geometryIndicies, geomOffset, flatCoordinateArray, nDim)
+    ? getTriangleIndices(geometryIndexes, geomOffset, flatCoordinateArray, nDim)
     : null;
 
   return {
@@ -392,7 +392,7 @@ function getBinaryPolygonsFromChunk(
     nDim,
     flatCoordinateArray,
     geomOffset,
-    geometryIndicies,
+    geometryIndexes,
     ...(options?.triangulate && triangles ? {triangles} : {})
   };
 }
@@ -414,8 +414,8 @@ function getBinaryLinesFromChunk(chunk: arrow.Data, geoEncoding: string): Binary
   const geomOffset = lineData.valueOffsets;
   const flatCoordinateArray = coordData.values;
 
-  // geometryIndicies is not needed for line string
-  const geometryIndicies = new Uint16Array(0);
+  // geometryIndexes is not needed for line string
+  const geometryIndexes = new Uint16Array(0);
 
   const numOfVertices = flatCoordinateArray.length / nDim;
   const featureIds = new Uint32Array(numOfVertices);
@@ -444,7 +444,7 @@ function getBinaryLinesFromChunk(chunk: arrow.Data, geoEncoding: string): Binary
     flatCoordinateArray,
     nDim,
     geomOffset,
-    geometryIndicies
+    geometryIndexes
   };
 }
 
@@ -464,7 +464,7 @@ function getBinaryPointsFromChunk(chunk: arrow.Data, geoEncoding: string): Binar
   const flatCoordinateArray = coordData.values;
 
   // geometryIndices is not needed for point
-  const geometryIndicies = new Uint16Array(0);
+  const geometryIndexes = new Uint16Array(0);
   // geomOffset is not needed for point
   const geomOffset = new Int32Array(0);
 
@@ -491,6 +491,6 @@ function getBinaryPointsFromChunk(chunk: arrow.Data, geoEncoding: string): Binar
     flatCoordinateArray,
     nDim,
     geomOffset,
-    geometryIndicies
+    geometryIndexes
   };
 }
