@@ -1,18 +1,18 @@
 import {Tile3DLayer, Tile3DLayerProps} from '@deck.gl/geo-layers';
 import {UpdateParameters} from '@deck.gl/core/typed';
-import { Viewport } from '@deck.gl/core';
+import {Viewport} from '@deck.gl/core';
 import {Source} from '@loaders.gl/loader-utils';
-import { PointcloudTileset } from './pointcloud-tileset';
+import {PointcloudTileset} from './pointcloud-tileset';
 
 export type PotreeTile3DLayerProps = {
-  dataSource: Source
-}
+  source: Source;
+};
 
-export default class PotreeTile3DLayer<
+export class PotreeTile3DLayer<
   DataT = any,
   // eslint-disable-next-line @typescript-eslint/ban-types
   ExtraProps extends {} = {}
-> extends Tile3DLayer<DataT, Tile3DLayerProps & PotreeTile3DLayerProps & ExtraProps > {
+> extends Tile3DLayer<DataT, Tile3DLayerProps & PotreeTile3DLayerProps & ExtraProps> {
   static layerName = 'PotreeTile3DLayer';
   static defaultProps = Tile3DLayer.defaultProps as any;
 
@@ -43,7 +43,7 @@ export default class PotreeTile3DLayer<
   private async _loadTileset(tilesetUrl) {
     const {loadOptions = {}} = this.props;
 
-    const dataSource = this.props.dataSource.createDataSource(tilesetUrl, {});
+    const dataSource = this.props.source.createDataSource(tilesetUrl, {});
 
     const tileset3d = new PointcloudTileset(dataSource);
 
@@ -69,7 +69,7 @@ export default class PotreeTile3DLayer<
     }
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    tileset3d.selectTiles(Object.values(viewports)).then(frameNumber => {
+    tileset3d.selectTiles(Object.values(viewports)).then((frameNumber) => {
       const tilesetChanged = this.state.frameNumber !== frameNumber;
       if (tilesetChanged) {
         this.setState({frameNumber});

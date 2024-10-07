@@ -9,7 +9,7 @@ import DeckGL from '@deck.gl/react';
 import {MapViewState} from '@deck.gl/core';
 import {PotreeSource} from '@loaders.gl/potree';
 
-import PotreeTile3DLayer from './potree-tile-3d-layer';
+import {PotreeTile3DLayer} from './potree-tile-3d-layer';
 
 export const TRANSITION_DURAITON = 4000;
 
@@ -30,7 +30,7 @@ export default function App() {
   function renderLayers() {
     const layers = new PotreeTile3DLayer({
       data: 'https://raw.githubusercontent.com/visgl/deck.gl-data/refs/heads/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted',
-      dataSource: PotreeSource
+      source: PotreeSource
     });
     return [layers];
   }
