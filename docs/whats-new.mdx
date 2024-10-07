@@ -1,8 +1,46 @@
 # What's New
 
+## v5.0 (in early development)
+
+Target Release Date: Q1 2025
+
+loaders.gl v5 is going to be a re-imagined library that now focuses on cloud-native, binary data.
+When possible, loaders now return binary data in the Apache Arrow and Apache GeoArrow formats.
+
+While no loader support has been removed, the flavor of the library has changed significantly. Please consult the upgrade guide for information on breaking changes.
+
+**Apache Arrow as the core format**  
+  - Most loaders now return binary data in the Apache Arrow format. 
+  - This aligns with parallel efforts in companion libraries like deck.gl (as well as the ecosystem at large) to work with zero-copy, compact binary data instead of bloated, deserialized javascript data structures.
+  - Binary columnar data can bring in an order of magnitude better memory usage and load/processing performance on big datasets.
+
+**Single output format per loader**
+  - `<LoaderOptions>.shape` is no longer supported.
+  - This simplifies the loader implementations.
+  - Applications benefit from more predictable return types for loaders.
+  - When needed, applications can now instead use utilities in the `@loaders.gl/schema-utils` and `@loaders.gl/gis` modules to convert Apache Arrow and Apache GeoArrow to more traditional (but less efficient) JavaScript formats.
+
+**Apache Arrow JS**
+  - The Apache Arrow JS library is now a central dependency of loaders.gl. 
+  
+**Improved `DataSource` APIs**
+  - The `Source` and `DataSource` APIs have matured and are now easier to work with.
+
+Per-module changes
+
+- **`@loaders.gl/parquet`**
+  - `ParquetLoader` now returns Apache Arrow tables and leverages the highly performant `parquet-wasm` library.
+  - The v4 Parquet loader is still available as `ParquetJSONLoader`
+
+- **`@loaders.gl/schema-utils`**
+  - New module for working with and converting Apache Arrow data.
+
+- **`@loaders.gl/gis`**
+  - Now provides support for working Apache GeoArrow data.
+
 ## v4.3 (in development)
 
-Target Release Date: June 2024
+Target Release Date: Dec 2024
 
 A minor release that includes:
 
