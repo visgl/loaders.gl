@@ -95,3 +95,5 @@ export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';
 // EXPERIMENTAL APIs
 
 export {encodeHex, decodeHex} from './lib/utils/hex-transcoder';
+export {extractGeometryInfo as _extractGeometryInfo} from './lib/feature-collection-converters/helpers/extract-geometry-info';
+export {extractNumericPropTypes as _extractNumericPropTypes} from './lib/feature-collection-converters/convert-flat-geojson-to-binary-features';

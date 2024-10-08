@@ -17,18 +17,18 @@ test('HexWKBLoader#2D', async (t) => {
   // TODO parseWKB outputs TypedArrays; testCase contains regular arrays
   for (const testCase of Object.values(TEST_CASES)) {
     // Little endian
-    if (testCase.wkbHex && testCase.binary) {
+    if (testCase.wkbHex && testCase.geoJSON) {
       t.deepEqual(
-        parseSync(testCase.wkbHex, HexWKBLoader, {wkb: {shape: 'binary-geometry'}}),
-        testCase.binary
+        parseSync(testCase.wkbHex, HexWKBLoader),
+        testCase.geoJSON
       );
     }
 
     // Big endian
-    if (testCase.wkbHexXdr && testCase.binary) {
+    if (testCase.wkbHexXdr && testCase.geoJSON) {
       t.deepEqual(
-        parseSync(testCase.wkbHexXdr, HexWKBLoader, {wkb: {shape: 'binary-geometry'}}),
-        testCase.binary
+        parseSync(testCase.wkbHexXdr, HexWKBLoader),
+        testCase.geoJSON
       );
     }
   }
@@ -43,19 +43,19 @@ test('HexWKBLoader#Z', async (t) => {
   // TODO parseWKB outputs TypedArrays; testCase contains regular arrays
   for (const testCase of Object.values(TEST_CASES)) {
     // Little endian
-    if (testCase.wkbHex && testCase.binary) {
+    if (testCase.wkbHex && testCase.geoJSON) {
       t.deepEqual(
-        parseSync(testCase.wkbHex, HexWKBLoader, {wkb: {shape: 'binary-geometry'}}),
-        testCase.binary,
+        parseSync(testCase.wkbHex, HexWKBLoader),
+        testCase.geoJSON,
         testCase.wkbHex.slice(0, 60)
       );
     }
 
     // Big endian
-    if (testCase.wkbHexXdr && testCase.binary) {
+    if (testCase.wkbHexXdr && testCase.geoJSON) {
       t.deepEqual(
-        parseSync(testCase.wkbHexXdr, HexWKBLoader, {wkb: {shape: 'binary-geometry'}}),
-        testCase.binary,
+        parseSync(testCase.wkbHexXdr, HexWKBLoader),
+        testCase.geoJSON,
         testCase.wkbHexXdr.slice(0, 60)
       );
     }

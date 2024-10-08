@@ -3,15 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {fetchFile, parseSync} from '@loaders.gl/core';
-import {isWKB} from '@loaders.gl/gis';
-import {WKBLoader} from '@loaders.gl/wkt';
+import {fetchFile} from '@loaders.gl/core';
+import {convertWKBToBinaryGeometry, convertWKBToBinaryGeometry, isWKB} from '@loaders.gl/gis';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
 
-test('parseWKB#2D', async (t) => {
+test('convertWKBToBinaryGeometry#2D', async (t) => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -21,14 +20,14 @@ test('parseWKB#2D', async (t) => {
     // Little endian
     if (testCase.wkb && testCase.binary) {
       t.ok(isWKB(testCase.wkb), 'isWKB(2D)');
-      const result = parseSync(testCase.wkb, WKBLoader, {wkb: {shape: 'binary-geometry'}});
+      const result = convertWKBToBinaryGeometry(testCase.wkb);
       t.deepEqual(result, testCase.binary, title);
     }
 
     // Big endian
     if (testCase.wkbXdr && testCase.binary) {
       t.ok(isWKB(testCase.wkbXdr), 'isWKB(2D)');
-      const result = parseSync(testCase.wkbXdr, WKBLoader, {wkb: {shape: 'binary-geometry'}});
+      const result = convertWKBToBinaryGeometry(testCase.wkbXdr);
       t.deepEqual(result, testCase.binary, title);
     }
   }
@@ -36,7 +35,7 @@ test('parseWKB#2D', async (t) => {
   t.end();
 });
 
-test('parseWKB#Z', async (t) => {
+test('convertWKBToBinaryGeometry#Z', async (t) => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -45,14 +44,14 @@ test('parseWKB#Z', async (t) => {
     // Little endian
     if (testCase.wkb && testCase.binary) {
       t.ok(isWKB(testCase.wkb), 'isWKB(Z)');
-      const result = parseSync(testCase.wkb, WKBLoader);
+      const result = convertWKBToBinaryGeometry(testCase.wkb);
       t.deepEqual(result, testCase.binary, title);
     }
 
     // Big endian
     if (testCase.wkbXdr && testCase.binary) {
       t.ok(isWKB(testCase.wkbXdr), 'isWKB(Z)');
-      const result = parseSync(testCase.wkbXdr, WKBLoader);
+      const result = convertWKBToBinaryGeometry(testCase.wkbXdr);
       t.deepEqual(result, testCase.binary, title);
     }
 

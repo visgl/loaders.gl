@@ -65,17 +65,13 @@ export type FlatGeojsonToBinaryOptions = {
   triangulate?: boolean;
 };
 
-export const TEST_EXPORTS = {
-  extractNumericPropTypes
-};
-
 /**
  * Extracts properties that are always numeric
  *
  * @param features
  * @returns object with numeric types
  */
-function extractNumericPropTypes(features: FlatFeature[]): {
+export function extractNumericPropTypes(features: FlatFeature[]): {
   [key: string]: PropArrayConstructor;
 } {
   const propArrayTypes = {};

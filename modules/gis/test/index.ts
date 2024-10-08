@@ -12,14 +12,17 @@ import './binary-features/transform.spec';
 import './utils/hex-transcoder.spec';
 
 // wkt format family parsers/encoder
-import './wkt/parse-wkb.spec';
-import './wkt/encode-wkb.spec';
-// import './wkt/parse-twkb.spec';
-import './wkt/encode-twkb.spec';
-import './wkt/parse-hex-wkb.spec';
-import './wkt/parse-wkt.spec';
-import './wkt/encode-wkt.spec';
-import './wkt/parse-wkt-crs.spec';
+import './wkt/convert-wkb-to-geometry.spec';
+// import './wkt/convert-twkb-to-geometry.spec';
+import './wkt/convert-wkt-to-geometry.spec';
+
+import './wkt/convert-geometry-to-wkb.spec';
+import './wkt/convert-geometry-to-twkb.spec';
+import './wkt/convert-geometry-to-wkt.spec';
+
+// import './wkt/parse-hex-wkb.spec';
+
+import './wkt-crs/parse-wkt-crs.spec';
 
 // geoarrow
 import './geoarrow/convert-geoarrow-to-binary-geometry.spec';

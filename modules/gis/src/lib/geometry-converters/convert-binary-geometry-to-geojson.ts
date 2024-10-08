@@ -106,8 +106,8 @@ function lineStringToGeoJson(
 /** Parse binary data of type Point */
 function pointToGeoJson(
   data: BinaryPointGeometry,
-  startIndex: number = -Infinity,
-  endIndex: number = Infinity
+  startIndex: number,
+  endIndex: number
 ): Point | MultiPoint {
   const {positions} = data;
   const coordinates = ringToGeoJson(positions, startIndex, endIndex);
