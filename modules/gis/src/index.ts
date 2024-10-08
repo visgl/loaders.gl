@@ -56,16 +56,16 @@ export type {WKBHeader} from './lib/geometry-converters/wkt/helpers/parse-wkb-he
 export {WKT_MAGIC_STRINGS} from './lib/geometry-converters/wkt/convert-wkt-to-geojson';
 
 // GEOMETRY CONVERSION
-export {convertBinaryGeometryToGeoJSON} from './lib/geometry-converters/convert-binary-geometry-to-geojson';
+export {convertBinaryGeometryToGeometry} from './lib/geometry-converters/convert-binary-geometry-to-geojson';
 
-export {convertWKTToGeoJSON} from './lib/geometry-converters/wkt/convert-wkt-to-geojson';
-export {convertWKBToGeoJSON} from './lib/geometry-converters/wkt/convert-wkb-to-geojson';
-export {convertTWKBToGeoJSON} from './lib/geometry-converters/wkt/convert-twkb-to-geojson';
+export {convertWKTToGeometry} from './lib/geometry-converters/wkt/convert-wkt-to-geojson';
+export {convertWKBToGeometry} from './lib/geometry-converters/wkt/convert-wkb-to-geojson';
 export {convertWKBToBinaryGeometry} from './lib/geometry-converters/wkt/convert-wkb-to-binary-geometry';
+export {convertTWKBToGeometry} from './lib/geometry-converters/wkt/convert-twkb-to-geojson';
 
-export {convertGeoJSONToWKT} from './lib/geometry-converters/wkt/convert-geojson-to-wkt';
-export {convertGeoJSONToWKB} from './lib/geometry-converters/wkt/convert-geojson-to-wkb';
-export {convertGeoJSONToTWKB} from './lib/geometry-converters/wkt/convert-geojson-to-twkb';
+export {convertGeometryToWKT} from './lib/geometry-converters/wkt/convert-geojson-to-wkt';
+export {convertGeometryToWKB} from './lib/geometry-converters/wkt/convert-geojson-to-wkb';
+export {convertGeometryToTWKB} from './lib/geometry-converters/wkt/convert-geojson-to-twkb';
 
 // CRS
 export type {WKTCRS, ParseWKTCRSOptions} from './lib//wkt-crs/parse-wkt-crs';

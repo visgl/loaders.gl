@@ -14,8 +14,8 @@ import type {
   Geometry,
   GeoArrowEncoding
 } from '@loaders.gl/schema';
-import {convertWKBToGeoJSON} from './wkt/convert-wkb-to-geojson';
-import {convertWKTToGeoJSON} from './wkt/convert-wkt-to-geojson';
+import {convertWKBToGeometry} from './wkt/convert-wkb-to-geojson';
+import {convertWKTToGeometry} from './wkt/convert-wkt-to-geojson';
 
 /**
  * parse geometry from arrow data that is returned from processArrowData()
@@ -65,12 +65,12 @@ function arrowWKBToGeometry(arrowCellValue: any): Geometry | null {
     arrowCellValue.byteOffset,
     arrowCellValue.byteOffset + arrowCellValue.byteLength
   );
-  return convertWKBToGeoJSON(arrayBuffer);
+  return convertWKBToGeometry(arrayBuffer);
 }
 
 function arrowWKTToGeometry(arrowCellValue: any): Geometry | null {
   const string: string = arrowCellValue;
-  return convertWKTToGeoJSON(string);
+  return convertWKTToGeometry(string);
 }
 
 /**

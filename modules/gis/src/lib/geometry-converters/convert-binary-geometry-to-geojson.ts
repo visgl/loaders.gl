@@ -19,7 +19,7 @@ import type {
 } from '@loaders.gl/schema';
 
 /** Parse input binary data and return a valid GeoJSON geometry object */
-export function convertBinaryGeometryToGeoJSON(
+export function convertBinaryGeometryToGeometry(
   data: BinaryGeometry,
   startIndex?: number,
   endIndex?: number
@@ -106,8 +106,8 @@ function lineStringToGeoJson(
 /** Parse binary data of type Point */
 function pointToGeoJson(
   data: BinaryPointGeometry,
-  startIndex: number,
-  endIndex: number
+  startIndex?: number,
+  endIndex?: number
 ): Point | MultiPoint {
   const {positions} = data;
   const coordinates = ringToGeoJson(positions, startIndex, endIndex);

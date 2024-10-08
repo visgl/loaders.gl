@@ -10,7 +10,7 @@ import type {Geometry} from '@loaders.gl/schema';
  * @param geojson
  * @returns string
  */
-export function convertGeoJSONToWKT(geometry: Geometry): string {
+export function convertGeometryToWKT(geometry: Geometry): string {
   switch (geometry.type) {
     case 'Point':
       return `POINT ${wrapParens(pairWKT(geometry.coordinates))}`;
@@ -25,10 +25,10 @@ export function convertGeoJSONToWKT(geometry: Geometry): string {
     case 'MultiLineString':
       return `MULTILINESTRING ${wrapParens(ringsWKT(geometry.coordinates))}`;
     case 'GeometryCollection':
-      return `GEOMETRYCOLLECTION ${wrapParens(geometry.geometries.map(convertGeoJSONToWKT).join(', '))}`;
+      return `GEOMETRYCOLLECTION ${wrapParens(geometry.geometries.map(convertGeometryToWKT).join(', '))}`;
     default:
       throw new Error(
-        'convertGeoJSONToWKT requires a valid GeoJSON Geometry (not Feature) as input'
+        'convertGeometryToWKT requires a valid GeoJSON Geometry (not Feature) as input'
       );
   }
 }

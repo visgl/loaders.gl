@@ -58,7 +58,7 @@ type TWKBHeader = {
 };
 
 /** Converts a TWKB encoded buffer to a GeoJSON Geometry */
-export function convertTWKBToGeoJSON(arrayBuffer: ArrayBuffer): Geometry {
+export function convertTWKBToGeometry(arrayBuffer: ArrayBuffer): Geometry {
   const binaryReader = new BinaryReader(arrayBuffer);
 
   const context = parseTWKBHeader(binaryReader);

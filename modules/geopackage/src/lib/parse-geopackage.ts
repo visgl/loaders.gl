@@ -9,7 +9,7 @@ import type {
   GeoJSONTable,
   Feature
 } from '@loaders.gl/schema';
-import {convertWKBToGeoJSON, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {convertWKBToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
 
@@ -399,7 +399,7 @@ function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
   const wkbOffset = 8 + envelopeLength;
 
   const wkbBytes = arrayBuffer.slice(wkbOffset);
-  return convertWKBToGeoJSON(wkbBytes);
+  return convertWKBToGeometry(wkbBytes);
 }
 
 /**

@@ -4,7 +4,7 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Geometry, Feature} from '@loaders.gl/schema';
-import {convertGeoJSONToWKB} from '@loaders.gl/gis';
+import {convertGeometryToWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 
 export type WKBWriterOptions = WriterOptions & {
@@ -35,10 +35,10 @@ export const WKBWriter = {
       hasM: false
     }
   },
-  async encode(data: Geometry | Feature, options?: WriterOptions): Promise<ArrayBuffer> {
-    return convertGeoJSONToWKB(data); // , options?.wkb);
+  async encode(data: Geometry | Feature, options?: WKBWriterOptions): Promise<ArrayBuffer> {
+    return convertGeometryToWKB(data); // , options?.wkb);
   },
-  encodeSync(data: Geometry | Feature, options?: WriterOptions): ArrayBuffer {
-    return convertGeoJSONToWKB(data); // , options?.wkb);
+  encodeSync(data: Geometry | Feature, options?: WKBWriterOptions): ArrayBuffer {
+    return convertGeometryToWKB(data); // , options?.wkb);
   }
-} as const satisfies WriterWithEncoder<Geometry | Feature, never, WriterOptions>;
+} as const satisfies WriterWithEncoder<Geometry | Feature, never, WKBWriterOptions>;

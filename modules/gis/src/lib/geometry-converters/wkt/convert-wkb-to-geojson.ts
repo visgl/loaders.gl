@@ -3,10 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import type {Geometry} from '@loaders.gl/schema';
-import {convertBinaryGeometryToGeoJSON} from '../convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToGeometry} from '../convert-binary-geometry-to-geojson';
 import {convertWKBToBinaryGeometry} from './convert-wkb-to-binary-geometry';
 
-export function convertWKBToGeoJSON(arrayBuffer: ArrayBuffer): Geometry {
+export type convertWKBOptions = {
+  /** Does the GeoJSON input have Z values? */
+  hasZ?: boolean;
+
+  /** Does the GeoJSON input have M values? */
+  hasM?: boolean;
+
+  /** Spatial reference for input GeoJSON */
+  srid?: any;
+};
+
+export function convertWKBToGeometry(arrayBuffer: ArrayBuffer): Geometry {
   const binaryGeometry = convertWKBToBinaryGeometry(arrayBuffer);
-  return convertBinaryGeometryToGeoJSON(binaryGeometry);
+  return convertBinaryGeometryToGeometry(binaryGeometry);
 }

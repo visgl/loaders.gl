@@ -13,8 +13,8 @@ import type {
 import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema-utils';
 
 import {GeoColumnMetadata, getGeoMetadata} from '../geoarrow/geoparquet-metadata';
-import {convertWKBToGeoJSON} from '../geometry-converters/wkt/convert-wkb-to-geojson';
-import {convertWKTToGeoJSON} from '../geometry-converters/wkt/convert-wkt-to-geojson';
+import {convertWKBToGeometry} from '../geometry-converters/wkt/convert-wkb-to-geojson';
+import {convertWKTToGeometry} from '../geometry-converters/wkt/convert-wkt-to-geojson';
 
 /** TODO - move to loaders.gl/gis? */
 export function convertWKBTableToGeoJSON(
@@ -45,12 +45,12 @@ export function convertWKBTableToGeoJSON(
 function parseGeometry(geometry: unknown, columnMetadata: GeoColumnMetadata): Geometry | null {
   switch (columnMetadata.encoding) {
     case 'wkt':
-      return convertWKTToGeoJSON(geometry as string) || null;
+      return convertWKTToGeometry(geometry as string) || null;
     case 'wkb':
     default:
       const arrayBuffer = ArrayBuffer.isView(geometry)
         ? geometry.buffer.slice(geometry.byteOffset, geometry.byteOffset + geometry.byteLength)
         : (geometry as ArrayBuffer);
-      return convertWKBToGeoJSON(arrayBuffer);
+      return convertWKBToGeometry(arrayBuffer);
   }
 }

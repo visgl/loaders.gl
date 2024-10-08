@@ -51,7 +51,7 @@ type WKBOptions = {
  * @param geojson A GeoJSON Feature or Geometry
  * @returns string
  */
-export function convertGeoJSONToWKB(
+export function convertGeometryToWKB(
   geometry: Geometry | Feature,
   options: WKBOptions = {}
 ): ArrayBuffer {
@@ -186,7 +186,7 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
   writer.writeInt8(1);
 
   writeWkbType(writer, WKB.Polygon, options);
-  const [exteriorRing, ...interiorRings] = coordinates;
+  const [exteriorRing = [], ...interiorRings] = coordinates;
 
   if (exteriorRing.length > 0) {
     writer.writeUInt32LE(1 + interiorRings.length);
@@ -213,7 +213,7 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
 /** Get encoded size of Polygon geometry */
 function getPolygonSize(coordinates: Polygon['coordinates'], options: WKBOptions): number {
   const coordinateSize = getCoordinateSize(options);
-  const [exteriorRing, ...interiorRings] = coordinates;
+  const [exteriorRing = [], ...interiorRings] = coordinates;
 
   let size = 1 + 4 + 4;
 
@@ -330,7 +330,7 @@ function encodeGeometryCollection(
 
   for (const geometry of collection.geometries) {
     // TODO: handle srid? {srid: collection.srid}
-    const arrayBuffer = convertGeoJSONToWKB(geometry, options);
+    const arrayBuffer = convertGeometryToWKB(geometry, options);
     writer.writeBuffer(arrayBuffer);
   }
 

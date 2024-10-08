@@ -4,22 +4,22 @@
 
 import type {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 
-import {convertGeoJSONToWKB} from './wkt/convert-geojson-to-wkb';
-import {convertGeoJSONToWKT} from './wkt/convert-geojson-to-wkt';
+import {convertGeometryToWKB} from './wkt/convert-geojson-to-wkb';
+import {convertGeometryToWKT} from './wkt/convert-geojson-to-wkt';
 import {convertWKBToBinaryGeometry} from './wkt/convert-wkb-to-binary-geometry';
-import {convertWKTToGeoJSON} from './wkt/convert-wkt-to-geojson';
+import {convertWKTToGeometry} from './wkt/convert-wkt-to-geojson';
 
-import {convertBinaryGeometryToGeoJSON} from './convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToGeometry} from './convert-binary-geometry-to-geojson';
 
 export function convertToGeoJSON(geometry: ArrayBuffer | string): Geometry {
   if (geometry instanceof ArrayBuffer) {
     const binaryGeometry = convertWKBToBinaryGeometry(geometry);
-    return convertBinaryGeometryToGeoJSON(binaryGeometry);
+    return convertBinaryGeometryToGeometry(binaryGeometry);
   }
 
   // Assume string encoded WKT
   if (typeof geometry === 'string') {
-    return convertWKTToGeoJSON(geometry)!;
+    return convertWKTToGeometry(geometry)!;
   }
 
   throw new Error('Geo conversion not implemented');
@@ -32,7 +32,7 @@ export function convertToBinaryGeometry(geometry: ArrayBuffer | string | Geometr
 
   // Assume string encoded WKT
   if (typeof geometry === 'string') {
-    // const geometry = convertWKTToGeoJSON(geometry);
+    // const geometry = convertWKTToGeometry(geometry);
     // return convertGeometryToBinaryGeometry(geometry);
   }
 
@@ -40,13 +40,13 @@ export function convertToBinaryGeometry(geometry: ArrayBuffer | string | Geometr
 }
 
 export function convertToWKT(geometry: Geometry): string {
-  return convertGeoJSONToWKT(geometry);
+  return convertGeometryToWKT(geometry);
 }
 
 export function convertToWKB(geometry: Geometry): ArrayBuffer {
-  return convertGeoJSONToWKB(geometry);
+  return convertGeometryToWKB(geometry);
 }
 
 // export function convertToTWKB(geometry: Geometry): ArrayBuffer {
-//   return convertGeoJSONToTWKB(geometry);
+//   return convertGeometryToTWKB(geometry);
 // }

@@ -4,7 +4,7 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertGeoJSONToWKT} from '@loaders.gl/gis';
+import {convertGeometryToWKT} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 
 export type WKTWriterOptions = WriterOptions & {
@@ -21,16 +21,16 @@ export const WKTWriter = {
   version: VERSION,
   extensions: ['wkt'],
   text: true,
-  encode: async (geometry: Geometry) => convertGeoJSONToWKTSync(geometry),
-  encodeSync: convertGeoJSONToWKTSync,
-  encodeTextSync: convertGeoJSONToWKT,
+  encode: async (geometry: Geometry) => convertGeometryToWKTSync(geometry),
+  encodeSync: convertGeometryToWKTSync,
+  encodeTextSync: convertGeometryToWKT,
   options: {
     wkt: {}
   }
 } as const satisfies WriterWithEncoder<Geometry, never, WKTWriterOptions>;
 
-function convertGeoJSONToWKTSync(geometry: Geometry): ArrayBuffer {
-  const wktString = convertGeoJSONToWKT(geometry);
+function convertGeometryToWKTSync(geometry: Geometry): ArrayBuffer {
+  const wktString = convertGeometryToWKT(geometry);
   const wktTypedArray = new TextEncoder().encode(wktString);
   return wktTypedArray.buffer;
 }

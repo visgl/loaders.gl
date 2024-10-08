@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
-import {convertTWKBToGeoJSON, isTWKB} from '@loaders.gl/gis';
+import {convertTWKBToGeometry, isTWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 
 export type WKBLoaderOptions = LoaderOptions & {
@@ -42,6 +42,6 @@ export const TWKBWorkerLoader = {
  */
 export const TWKBLoader = {
   ...TWKBWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer) => convertTWKBToGeoJSON(arrayBuffer),
-  parseSync: convertTWKBToGeoJSON
+  parse: async (arrayBuffer: ArrayBuffer) => convertTWKBToGeometry(arrayBuffer),
+  parseSync: convertTWKBToGeometry
 } as const satisfies LoaderWithParser<BinaryGeometry | Geometry, never, WKBLoaderOptions>;

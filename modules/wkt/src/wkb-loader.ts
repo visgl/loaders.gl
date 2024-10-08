@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertWKBToGeoJSON, isWKB} from '@loaders.gl/gis';
+import {convertWKBToGeometry, isWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 
 export type WKBLoaderOptions = LoaderOptions & {
@@ -53,7 +53,7 @@ export function parseWKB(
   const shape = options?.shape || 'geojson-geometry';
   switch (shape) {
     case 'geojson-geometry':
-      return convertWKBToGeoJSON(arrayBuffer);
+      return convertWKBToGeometry(arrayBuffer);
     default:
       throw new Error(shape);
   }

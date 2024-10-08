@@ -12,9 +12,9 @@ import type {
   Feature,
   GeoJsonProperties
 } from '@loaders.gl/schema';
-import {convertBinaryGeometryToGeoJSON} from '../geometry-converters/convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToGeometry} from '../geometry-converters/convert-binary-geometry-to-geojson';
 
-// Note:L We do not handle GeometryCollection, define a limited Geometry type that always has coordinates.
+// Note: We do not handle GeometryCollection, define a limited Geometry type that always has coordinates.
 // type FeatureGeometry = Point | MultiPoint | LineString | MultiLineString | Polygon | MultiPolygon;
 
 type BinaryToGeoJsonOptions = {
@@ -131,7 +131,7 @@ function parseFeatureCollection(dataArray: BinaryFeature[]): Feature[] {
 
 /** Parse input binary data and return a single GeoJSON Feature */
 function parseFeature(data: BinaryFeature, startIndex?: number, endIndex?: number): Feature {
-  const geometry = convertBinaryGeometryToGeoJSON(data, startIndex, endIndex);
+  const geometry = convertBinaryGeometryToGeometry(data, startIndex, endIndex);
   const properties = parseProperties(data, startIndex, endIndex);
   const fields = parseFields(data, startIndex, endIndex);
   return {type: 'Feature', geometry, properties, ...fields};

@@ -31,7 +31,7 @@ type TWKBEncoderContext = TWKBPrecision & {
   hasM?: boolean;
 };
 
-export function convertGeoJSONToTWKB(
+export function convertGeometryToTWKB(
   geometry: Geometry,
   options?: {hasZ?: boolean; hasM?: boolean}
 ): ArrayBuffer {

@@ -60,7 +60,7 @@ type ParseWKTState = {
  *
  * @note We only support the "geojson" subset of the OGC simple features standard
  **/
-export function convertWKTToGeoJSON(input: string, options?: ParseWKTOptions): Geometry | null {
+export function convertWKTToGeometry(input: string, options?: ParseWKTOptions): Geometry | null {
   const parts = input.split(';');
   let _ = parts.pop();
   const srid = (parts.shift() || '').split('=').pop();
