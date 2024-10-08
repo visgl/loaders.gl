@@ -4,7 +4,22 @@
 
 ### v4.3.0-beta.1
 
-- feat(gltf): extensions, encoding feature metadata (#2972)
+- chore(arrow): table conversion (#3108)
+- chore(CSV): Convert parser to typescript (#3107)
+- fix(parquet): More robust Buffer polyfill export (#3105)
+- chore: eslint cleanup (#3103)
+- feat(core): Type inference for arrays of loader objects (#3102)
+- chore(deps): bump micromatch from 4.0.5 to 4.0.8 in /website (#3098)
+- chore: Update typescript and other dependencies (#3097)
+- fix(parquet): ParquetLoader worker: false (#3079)
+- chore: Bump to 4.3.0-beta (#3096)
+- chore: Add issue templates (#3095)
+- chore: prettier (#3094)
+- chore(deps): bump vite from 4.5.3 to 4.5.5 (#3091)
+- chore(deps): bump express from 4.19.2 to 4.21.0 in /website (#3087)
+- chore(deps): bump fast-xml-parser from 4.2.7 to 4.5.0 in /website (#3083)
+- chore(deps): bump webpack from 5.89.0 to 5.94.0 in /website (#3078)
+- chore(deps): bump micromatch in /test/apps/typescript-test (#3067)
 
 ### v4.3.0-alpha.8
 
