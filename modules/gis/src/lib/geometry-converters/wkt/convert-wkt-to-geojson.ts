@@ -46,18 +46,6 @@ export function isWKT(input: string): boolean {
   return WKT_MAGIC_STRINGS.some((magicString) => input.startsWith(magicString));
 }
 
-/**
- * Parse WKT and return GeoJSON.
- * @param input A WKT geometry string
- * @return A GeoJSON geometry object
- *
- * @note We only support the "geojson" subset of the OGC simple features standard
- **/
-export function parseWKT(input: string, options?: ParseWKTOptions): Geometry {
-  // TODO handle options.wkt.shape
-  return parseWKTToGeometry(input, options)!;
-}
-
 /** State of parser, passed around between parser functions */
 type ParseWKTState = {
   parts: string[];
@@ -65,8 +53,14 @@ type ParseWKTState = {
   i: number;
 };
 
-/** Parse into GeoJSON geometry */
-function parseWKTToGeometry(input: string, options?: ParseWKTOptions): Geometry | null {
+/**
+ * Parse WKT and return GeoJSON.
+ * @param input A WKT geometry string
+ * @return A GeoJSON geometry object
+ *
+ * @note We only support the "geojson" subset of the OGC simple features standard
+ **/
+export function convertWKTToGeometry(input: string, options?: ParseWKTOptions): Geometry | null {
   const parts = input.split(';');
   let _ = parts.pop();
   const srid = (parts.shift() || '').split('=').pop();

@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import type {BinaryFeatureCollection, FeatureCollection} from '@loaders.gl/schema';
 import {fetchFile} from '@loaders.gl/core';
-import {binaryToGeojson, binaryToGeometry} from '@loaders.gl/gis';
+import {binaryToGeojson, convertBinaryGeometryToGeometry} from '@loaders.gl/gis';
 
 import {GEOMETRY_TEST_CASES} from '@loaders.gl/gis/test/data/binary-features/geometry-test-cases';
 import {EMPTY_BINARY_DATA} from '@loaders.gl/gis/test/data/binary-features/empty_binary';
@@ -36,7 +36,7 @@ test('binary-to-geojson feature collections', async (t) => {
 test('binary-to-geojson geometries', (t) => {
   for (const testCase of GEOMETRY_TEST_CASES) {
     const binaryData = testCase.binary;
-    t.deepEqual(binaryToGeometry(binaryData), testCase.geoJSON);
+    t.deepEqual(convertBinaryGeometryToGeometry(binaryData), testCase.geoJSON);
     // t.deepEqual(binaryToGeoJson(binaryData, binaryData.type, 'geometry'), testCase.geoJSON);
   }
 

@@ -16,7 +16,7 @@ import type {
   GeometryCollection
 } from '@loaders.gl/schema';
 
-import {BinaryWriter} from '../utils/binary-writer';
+import {BinaryWriter} from '../../utils/binary-writer';
 
 /**
  * Integer code for geometry type
@@ -51,7 +51,10 @@ type WKBOptions = {
  * @param geojson A GeoJSON Feature or Geometry
  * @returns string
  */
-export function encodeWKB(geometry: Geometry | Feature, options: WKBOptions = {}): ArrayBuffer {
+export function convertGeometryToWKB(
+  geometry: Geometry | Feature,
+  options: WKBOptions = {}
+): ArrayBuffer {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
   }
@@ -183,7 +186,7 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
   writer.writeInt8(1);
 
   writeWkbType(writer, WKB.Polygon, options);
-  const [exteriorRing, ...interiorRings] = coordinates;
+  const [exteriorRing = [], ...interiorRings] = coordinates;
 
   if (exteriorRing.length > 0) {
     writer.writeUInt32LE(1 + interiorRings.length);
@@ -210,7 +213,7 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
 /** Get encoded size of Polygon geometry */
 function getPolygonSize(coordinates: Polygon['coordinates'], options: WKBOptions): number {
   const coordinateSize = getCoordinateSize(options);
-  const [exteriorRing, ...interiorRings] = coordinates;
+  const [exteriorRing = [], ...interiorRings] = coordinates;
 
   let size = 1 + 4 + 4;
 
@@ -327,7 +330,7 @@ function encodeGeometryCollection(
 
   for (const geometry of collection.geometries) {
     // TODO: handle srid? {srid: collection.srid}
-    const arrayBuffer = encodeWKB(geometry, options);
+    const arrayBuffer = convertGeometryToWKB(geometry, options);
     writer.writeBuffer(arrayBuffer);
   }
 

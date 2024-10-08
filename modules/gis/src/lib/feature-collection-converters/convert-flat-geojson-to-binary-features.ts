@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable indent */
 import {earcut} from '@math.gl/polygon';
 import type {
@@ -11,7 +15,12 @@ import type {
   GeojsonGeometryInfo,
   TypedArray
 } from '@loaders.gl/schema';
-import {PropArrayConstructor, Lines, Points, Polygons} from './flat-geojson-to-binary-types';
+import {
+  PropArrayConstructor,
+  Lines,
+  Points,
+  Polygons
+} from './helpers/flat-geojson-to-binary-types';
 
 /**
  * Convert binary features to flat binary arrays. Similar to
@@ -26,11 +35,11 @@ import {PropArrayConstructor, Lines, Points, Polygons} from './flat-geojson-to-b
  * @param options
  * @returns filled arrays
  */
-export function flatGeojsonToBinary(
+export function convertFlatGeojsonToBinaryFeatureCollection(
   features: FlatFeature[],
   geometryInfo: GeojsonGeometryInfo,
   options?: FlatGeojsonToBinaryOptions
-) {
+): BinaryFeatureCollection {
   const propArrayTypes = extractNumericPropTypes(features);
   const numericPropKeys = Object.keys(propArrayTypes).filter((k) => propArrayTypes[k] !== Array);
   return fillArrays(
@@ -56,17 +65,13 @@ export type FlatGeojsonToBinaryOptions = {
   triangulate?: boolean;
 };
 
-export const TEST_EXPORTS = {
-  extractNumericPropTypes
-};
-
 /**
  * Extracts properties that are always numeric
  *
  * @param features
  * @returns object with numeric types
  */
-function extractNumericPropTypes(features: FlatFeature[]): {
+export function extractNumericPropTypes(features: FlatFeature[]): {
   [key: string]: PropArrayConstructor;
 } {
   const propArrayTypes = {};

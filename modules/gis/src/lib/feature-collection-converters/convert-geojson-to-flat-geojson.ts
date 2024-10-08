@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {getPolygonSignedArea} from '@math.gl/polygon';
 
 import {Feature, Position, FlatFeature} from '@loaders.gl/schema';
@@ -24,7 +28,7 @@ type PolygonCoordinates = Position[][];
  * @param options
  * @returns an Array of Flat GeoJSON features
  */
-export function geojsonToFlatGeojson(
+export function convertGeojsonToFlatGeojson(
   features: Feature[],
   options: GeojsonToFlatGeojsonOptions = {coordLength: 2, fixRingWinding: true}
 ): FlatFeature[] {

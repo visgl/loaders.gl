@@ -7,7 +7,7 @@ import test, {Test} from 'tape-promise/tape';
 import {
   getGeometryColumnsFromSchema,
   getBinaryGeometryTemplate,
-  getBinaryGeometriesFromArrow
+  convertGeoArrowToBinaryFeatureCollection
 } from '@loaders.gl/gis';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {load} from '@loaders.gl/core';
@@ -300,17 +300,17 @@ const expectedMultiPolygonHolesBinaryGeometry = {
   ]
 };
 
-test('ArrowUtils#getBinaryGeometriesFromArrow', async (t) => {
-  const testCases = [
-    [GEOARROW_POINT_FILE, expectedPointBinaryGeometry],
-    [GEOARROW_MULTIPOINT_FILE, expectedMultiPointBinaryGeometry],
-    [GEOARROW_LINE_FILE, expectedLineBinaryGeometry],
-    [GEOARROW_MULTILINE_FILE, expectedMultiLineBinaryGeometry],
-    [GEOARROW_POLYGON_FILE, expectedPolygonBinaryGeometry],
-    [GEOARROW_MULTIPOLYGON_FILE, expectedMultiPolygonBinaryGeometry],
-    [GEOARROW_MULTIPOLYGON_HOLE_FILE, expectedMultiPolygonHolesBinaryGeometry]
-  ];
+const testCases = [
+  [GEOARROW_POINT_FILE, expectedPointBinaryGeometry],
+  [GEOARROW_MULTIPOINT_FILE, expectedMultiPointBinaryGeometry],
+  [GEOARROW_LINE_FILE, expectedLineBinaryGeometry],
+  [GEOARROW_MULTILINE_FILE, expectedMultiLineBinaryGeometry],
+  [GEOARROW_POLYGON_FILE, expectedPolygonBinaryGeometry],
+  [GEOARROW_MULTIPOLYGON_FILE, expectedMultiPolygonBinaryGeometry],
+  [GEOARROW_MULTIPOLYGON_HOLE_FILE, expectedMultiPolygonHolesBinaryGeometry]
+];
 
+test('ArrowUtils#convertGeoArrowToBinaryFeatureCollection', async (t) => {
   for (const testCase of testCases) {
     await testGetBinaryGeometriesFromArrow(t, testCase[0], testCase[1]);
   }
@@ -344,7 +344,7 @@ async function testGetBinaryGeometriesFromArrow(
     t.notEqual(encoding, undefined, 'encoding is not undefined');
     if (geoColumn && encoding) {
       const options = {calculateMeanCenters: true, triangulate: true};
-      const binaryData = getBinaryGeometriesFromArrow(geoColumn, encoding, options);
+      const binaryData = convertGeoArrowToBinaryFeatureCollection(geoColumn, encoding, options);
       t.deepEqual(binaryData, expectedBinaryGeometries, 'binary geometries are correct');
     }
   }

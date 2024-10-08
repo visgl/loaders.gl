@@ -12,9 +12,9 @@ import type {
 } from '@loaders.gl/schema';
 import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema-utils';
 
-import {GeoColumnMetadata, getGeoMetadata} from '../geo/geoparquet-metadata';
-import {parseWKB} from '../wkt/parse-wkb';
-import {parseWKT} from '../wkt/parse-wkt';
+import {GeoColumnMetadata, getGeoMetadata} from '../geoarrow/geoparquet-metadata';
+import {convertWKBToGeometry} from '../geometry-converters/wkt/convert-wkb-to-geojson';
+import {convertWKTToGeometry} from '../geometry-converters/wkt/convert-wkt-to-geojson';
 
 /** TODO - move to loaders.gl/gis? */
 export function convertWKBTableToGeoJSON(
@@ -45,16 +45,12 @@ export function convertWKBTableToGeoJSON(
 function parseGeometry(geometry: unknown, columnMetadata: GeoColumnMetadata): Geometry | null {
   switch (columnMetadata.encoding) {
     case 'wkt':
-      return parseWKT(geometry as string) || null;
+      return convertWKTToGeometry(geometry as string) || null;
     case 'wkb':
     default:
       const arrayBuffer = ArrayBuffer.isView(geometry)
         ? geometry.buffer.slice(geometry.byteOffset, geometry.byteOffset + geometry.byteLength)
         : (geometry as ArrayBuffer);
-      const geojson = parseWKB(arrayBuffer, {shape: 'geojson-geometry'}) as unknown as Geometry;
-      return geojson; // binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
-    // const binaryGeometry = WKBLoader.parseSync?.(geometry);
-    // ts-ignore
-    // return binaryGeometry ? binaryToGeometry(binaryGeometry) : null;
+      return convertWKBToGeometry(arrayBuffer);
   }
 }

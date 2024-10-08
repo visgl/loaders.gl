@@ -12,18 +12,21 @@ import './binary-features/transform.spec';
 import './utils/hex-transcoder.spec';
 
 // wkt format family parsers/encoder
-import './wkt/parse-wkb.spec';
-import './wkt/encode-wkb.spec';
-// import './wkt/parse-twkb.spec';
-import './wkt/encode-twkb.spec';
-import './wkt/parse-hex-wkb.spec';
-import './wkt/parse-wkt.spec';
-import './wkt/encode-wkt.spec';
-import './wkt/parse-wkt-crs.spec';
+import './geometry-converters/convert-wkb-to-geometry.spec';
+// import './geometry-converters/convert-twkb-to-geometry.spec';
+import './geometry-converters/convert-wkt-to-geometry.spec';
+
+import './geometry-converters/convert-geometry-to-wkb.spec';
+import './geometry-converters/convert-geometry-to-twkb.spec';
+import './geometry-converters/convert-geometry-to-wkt.spec';
+
+// import './wkt/parse-hex-wkb.spec';
+
+import './wkt-crs/parse-wkt-crs.spec';
 
 // geoarrow
 import './geoarrow/convert-geoarrow-to-binary-geometry.spec';
 import './geoarrow/convert-geoarrow-to-geojson.spec';
 import './geoarrow/get-arrow-bounds.spec';
 
-import './tables/convert-geojson-to-arrow-table.spec';
+import './table-converters/convert-geojson-to-arrow-table.spec';

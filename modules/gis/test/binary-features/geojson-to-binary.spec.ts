@@ -2,11 +2,7 @@
 // @ts-nocheck
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {geojsonToBinary} from '@loaders.gl/gis';
-import {extractGeometryInfo} from '@loaders.gl/gis/lib/binary-features/extract-geometry-info';
-import {TEST_EXPORTS} from '@loaders.gl/gis/lib/binary-features/flat-geojson-to-binary';
-
-const {extractNumericPropTypes} = TEST_EXPORTS;
+import {geojsonToBinary, _extractGeometryInfo, _extractNumericPropTypes} from '@loaders.gl/gis';
 
 // Sample GeoJSON data derived from examples in GeoJSON specification
 // https://tools.ietf.org/html/rfc7946#appendix-A
@@ -24,7 +20,7 @@ const GEOJSON_NO_PROPERTIES =
 test('gis#geojson-to-binary geometry info 2D features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
-  const geometryInfo = extractGeometryInfo(features);
+  const geometryInfo = _extractGeometryInfo(features);
   const {
     pointPositionsCount,
     pointFeaturesCount,
@@ -54,7 +50,7 @@ test('gis#geojson-to-binary geometry info 2D features, no properties', async (t)
 test('gis#geojson-to-binary geometry info 3D features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
-  const geometryInfo = extractGeometryInfo(features);
+  const geometryInfo = _extractGeometryInfo(features);
   const {
     pointPositionsCount,
     pointFeaturesCount,
@@ -84,7 +80,7 @@ test('gis#geojson-to-binary geometry info 3D features, no properties', async (t)
 test('gis#geojson-to-binary geometry info mixed-dimension features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_MIXED);
   const {features} = await response.json();
-  const geometryInfo = extractGeometryInfo(features);
+  const geometryInfo = _extractGeometryInfo(features);
   const {
     pointPositionsCount,
     pointFeaturesCount,
@@ -128,7 +124,7 @@ test('gis#geojson-to-binary geometry info mixed-dimension features, no propertie
 test('gis#geojson-to-binary numericPropTypes 2D features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
-  const numericPropTypes = extractNumericPropTypes(features);
+  const numericPropTypes = _extractNumericPropTypes(features);
   t.deepEquals(numericPropTypes, []);
   t.end();
 });
@@ -192,7 +188,7 @@ test('gis#geojson-to-binary properties', async (t) => {
   }
   features[0].properties.numeric2 = 1;
 
-  const numericPropTypes = extractNumericPropTypes(features);
+  const numericPropTypes = _extractNumericPropTypes(features);
   const expectedNumericPropTypes = {
     string1: Array,
     string2: Array,

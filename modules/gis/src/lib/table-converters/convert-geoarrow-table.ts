@@ -22,7 +22,7 @@ import {
   getTableCellAt
 } from '@loaders.gl/schema-utils';
 import {getGeometryColumnsFromSchema} from '../geoarrow/geoarrow-metadata';
-import {parseGeometryFromArrow} from '../geoarrow/convert-geoarrow-to-geojson-geometry';
+import {convertGeoArrowGeometryToGeoJSON} from '../geometry-converters/convert-geoarrow-to-geojson';
 
 /**
  * * Convert a loaders.gl Table to an Apache Arrow Table
@@ -202,7 +202,7 @@ function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
     // Note that type can vary
     const arrowGeometry = arrowGeometryColumn?.get(row);
     // parse arrow geometry to geojson feature
-    const feature = parseGeometryFromArrow(arrowGeometry, encoding);
+    const feature = convertGeoArrowGeometryToGeoJSON(arrowGeometry, encoding);
     if (feature) {
       const properties = propertiesTable.get(row)?.toJSON() || {};
       features.push({type: 'Feature', geometry: feature, properties});

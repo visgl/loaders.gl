@@ -14,8 +14,8 @@ import type {
   Geometry
 } from '@loaders.gl/schema';
 
-import {BinaryWriter} from '../utils/binary-writer';
-import {WKBGeometryType} from './parse-wkb-header';
+import {BinaryWriter} from '../../utils/binary-writer';
+import {WKBGeometryType} from './helpers/parse-wkb-header';
 
 type TWKBPrecision = {
   xy: number;
@@ -31,7 +31,7 @@ type TWKBEncoderContext = TWKBPrecision & {
   hasM?: boolean;
 };
 
-export function encodeTWKB(
+export function convertGeometryToTWKB(
   geometry: Geometry,
   options?: {hasZ?: boolean; hasM?: boolean}
 ): ArrayBuffer {
