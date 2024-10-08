@@ -12,14 +12,14 @@ import type {
   MultiLineString,
   LineString,
   Geometry,
-  BinaryGeometry,
   GeoArrowEncoding
 } from '@loaders.gl/schema';
-import {binaryToGeometry, parseWKB, parseWKT} from '@loaders.gl/gis';
+import {convertWKTToGeoJSON} from '../converters/geometry/wkt/convert-wkt-to-geojson';
+import {convertWKBToGeoJSON} from '../converters/geometry/wkt/convert-wkb-to-geojson';
 
 /**
  * parse geometry from arrow data that is returned from processArrowData()
- * NOTE: this function could be deduplicated with the binaryToFeature() in deck.gl,
+ * NOTE: this function could be deduplicated with the binaryToGeometry() in deck.gl,
  * it is currently used for deck.gl picking because currently deck.gl returns only the index of the feature
  *
  * @param data data extraced from arrow vector representing a geometry
@@ -36,61 +36,47 @@ export function parseGeometryFromArrow(
     return null;
   }
 
-  let geometry: Geometry;
-
   switch (encoding) {
     case 'geoarrow.multipolygon':
-      geometry = arrowMultiPolygonToFeature(arrowCellValue);
-      break;
+      return arrowMultiPolygonToGeometry(arrowCellValue);
     case 'geoarrow.polygon':
-      geometry = arrowPolygonToFeature(arrowCellValue);
-      break;
+      return arrowPolygonToGeometry(arrowCellValue);
     case 'geoarrow.multipoint':
-      geometry = arrowMultiPointToFeature(arrowCellValue);
-      break;
+      return arrowMultiPointToGeometry(arrowCellValue);
     case 'geoarrow.point':
-      geometry = arrowPointToFeature(arrowCellValue);
-      break;
+      return arrowPointToGeometry(arrowCellValue);
     case 'geoarrow.multilinestring':
-      geometry = arrowMultiLineStringToFeature(arrowCellValue);
-      break;
+      return arrowMultiLineStringToGeometry(arrowCellValue);
     case 'geoarrow.linestring':
-      geometry = arrowLineStringToFeature(arrowCellValue);
-      break;
+      return arrowLineStringToGeometry(arrowCellValue);
     case 'geoarrow.wkb':
-      geometry = arrowWKBToFeature(arrowCellValue);
-      break;
+      return arrowWKBToGeometry(arrowCellValue);
     case 'geoarrow.wkt':
-      geometry = arrowWKTToFeature(arrowCellValue);
-      break;
+      return arrowWKTToGeometry(arrowCellValue);
     default: {
       throw Error(`GeoArrow encoding not supported ${encoding}`);
     }
   }
-
-  return geometry;
 }
 
-function arrowWKBToFeature(arrowCellValue: any) {
+function arrowWKBToGeometry(arrowCellValue: any) {
   // The actual WKB array buffer starts from byteOffset and ends at byteOffset + byteLength
   const arrayBuffer: ArrayBuffer = arrowCellValue.buffer.slice(
     arrowCellValue.byteOffset,
     arrowCellValue.byteOffset + arrowCellValue.byteLength
   );
-  const binaryGeometry = parseWKB(arrayBuffer) as BinaryGeometry;
-  const geometry = binaryToGeometry(binaryGeometry);
-  return geometry;
+  return convertWKBToGeoJSON(arrayBuffer);
 }
 
-function arrowWKTToFeature(arrowCellValue: any) {
+function arrowWKTToGeometry(arrowCellValue: any) {
   const string: string = arrowCellValue;
-  return parseWKT(string);
+  return convertWKTToGeoJSON(string);
 }
 
 /**
  * convert Arrow MultiPolygon to geojson Feature
  */
-function arrowMultiPolygonToFeature(arrowMultiPolygon: any): MultiPolygon {
+function arrowMultiPolygonToGeometry(arrowMultiPolygon: any): MultiPolygon {
   const multiPolygon: Position[][][] = [];
   for (let m = 0; m < arrowMultiPolygon.length; m++) {
     const arrowPolygon = arrowMultiPolygon.get(m);
@@ -117,7 +103,7 @@ function arrowMultiPolygonToFeature(arrowMultiPolygon: any): MultiPolygon {
 /**
  * convert Arrow Polygon to geojson Feature
  */
-function arrowPolygonToFeature(arrowPolygon: any): Polygon {
+function arrowPolygonToGeometry(arrowPolygon: any): Polygon {
   const polygon: Position[][] = [];
   for (let i = 0; arrowPolygon && i < arrowPolygon.length; i++) {
     const arrowRing = arrowPolygon.get(i);
@@ -139,7 +125,7 @@ function arrowPolygonToFeature(arrowPolygon: any): Polygon {
 /**
  * convert Arrow MultiPoint to geojson MultiPoint
  */
-function arrowMultiPointToFeature(arrowMultiPoint: any): MultiPoint {
+function arrowMultiPointToGeometry(arrowMultiPoint: any): MultiPoint {
   const multiPoint: Position[] = [];
   for (let i = 0; arrowMultiPoint && i < arrowMultiPoint.length; i++) {
     const arrowPoint = arrowMultiPoint.get(i);
@@ -157,7 +143,7 @@ function arrowMultiPointToFeature(arrowMultiPoint: any): MultiPoint {
 /**
  * convert Arrow Point to geojson Point
  */
-function arrowPointToFeature(arrowPoint: any): Point {
+function arrowPointToGeometry(arrowPoint: any): Point {
   const point: Position = Array.from(arrowPoint);
   return {
     type: 'Point',
@@ -168,7 +154,7 @@ function arrowPointToFeature(arrowPoint: any): Point {
 /**
  * convert Arrow MultiLineString to geojson MultiLineString
  */
-function arrowMultiLineStringToFeature(arrowMultiLineString: any): MultiLineString {
+function arrowMultiLineStringToGeometry(arrowMultiLineString: any): MultiLineString {
   const multiLineString: Position[][] = [];
   for (let i = 0; arrowMultiLineString && i < arrowMultiLineString.length; i++) {
     const arrowLineString = arrowMultiLineString.get(i);
@@ -191,7 +177,7 @@ function arrowMultiLineStringToFeature(arrowMultiLineString: any): MultiLineStri
 /**
  * convert Arrow LineString to geojson LineString
  */
-function arrowLineStringToFeature(arrowLineString: any): LineString {
+function arrowLineStringToGeometry(arrowLineString: any): LineString {
   const lineString: Position[] = [];
   for (let i = 0; arrowLineString && i < arrowLineString.length; i++) {
     const arrowCoord = arrowLineString.get(i);

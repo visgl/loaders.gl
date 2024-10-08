@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {parseWKT, isWKT, WKT_MAGIC_STRINGS} from '@loaders.gl/gis';
+import {isWKT, WKT_MAGIC_STRINGS, convertWKTToGeoJSON} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 
 export type WKTLoaderOptions = LoaderOptions & {
@@ -50,6 +50,7 @@ export const WKTWorkerLoader = {
  */
 export const WKTLoader = {
   ...WKTWorkerLoader,
-  parse: async (arrayBuffer, options?) => parseWKT(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (string: string, options?) => parseWKT(string, options)
+  parse: async (arrayBuffer, options?) =>
+    convertWKTToGeoJSON(new TextDecoder().decode(arrayBuffer), options)!,
+  parseTextSync: (string: string, options?) => convertWKTToGeoJSON(string, options)!
 } as const satisfies LoaderWithParser<Geometry, never, WKTLoaderOptions>;

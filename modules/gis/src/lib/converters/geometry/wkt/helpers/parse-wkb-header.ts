@@ -39,6 +39,26 @@ export type WKBHeader = {
   byteOffset: number;
 };
 
+/**
+ * Check if an array buffer might be a TWKB array buffer
+ * @param arrayBuffer The array buffer to check
+ * @returns false if this is definitely not a TWKB array buffer, true if it might be a TWKB array buffer
+ */
+export function isTWKB(arrayBuffer: ArrayBuffer): boolean {
+  const dataView = new DataView(arrayBuffer);
+  const byteOffset = 0;
+
+  const type = dataView.getUint8(byteOffset);
+  const geometryType = type & 0x0f;
+
+  // Only geometry types 1 to 7 (point to geometry collection are currently defined)
+  if (geometryType < 1 || geometryType > 7) {
+    return false;
+  }
+
+  return true;
+}
+
 /** Sanity checks that first to 5-9 bytes could represent a supported WKB dialect header */
 export function isWKB(arrayBuffer: ArrayBuffer): boolean {
   const dataView = new DataView(arrayBuffer);

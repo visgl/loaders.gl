@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {Geometry, BinaryGeometry} from '@loaders.gl/schema';
-import {parseWKB, decodeHex} from '@loaders.gl/gis';
+import type {Geometry} from '@loaders.gl/schema';
+import {convertWKBToBinaryGeometry, decodeHex} from '@loaders.gl/gis';
 
 import type {WKBLoaderOptions} from './wkb-loader';
 import {WKBLoader} from './wkb-loader';
@@ -16,7 +16,7 @@ export type HexWKBLoaderOptions = WKBLoaderOptions;
  * Worker loader for Hex-encoded WKB (Well-Known Binary)
  */
 export const HexWKBLoader = {
-  dataType: null as unknown as Geometry | BinaryGeometry,
+  dataType: null as unknown as Geometry,
   batchType: null as never,
   name: 'Hexadecimal WKB',
   id: 'wkb',
@@ -32,11 +32,11 @@ export const HexWKBLoader = {
   // TODO - encoding here seems wasteful - extend hex transcoder?
   parse: async (arrayBuffer: ArrayBuffer) => parseHexWKB(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseHexWKB
-} as const satisfies LoaderWithParser<Geometry | BinaryGeometry, never, HexWKBLoaderOptions>;
+} as const satisfies LoaderWithParser<Geometry, never, HexWKBLoaderOptions>;
 
-function parseHexWKB(text: string, options?: HexWKBLoaderOptions): Geometry | BinaryGeometry {
+function parseHexWKB(text: string, options?: HexWKBLoaderOptions): Geometry {
   const uint8Array = decodeHex(text);
-  const binaryGeometry = parseWKB(uint8Array.buffer, options?.wkb);
+  const binaryGeometry = convertWKBToBinaryGeometry(uint8Array.buffer); // , options?.wkb);
   return binaryGeometry;
 }
 

@@ -16,7 +16,7 @@ import type {
   GeometryCollection
 } from '@loaders.gl/schema';
 
-import {BinaryWriter} from '../utils/binary-writer';
+import {BinaryWriter} from '../../../utils/binary-writer';
 
 /**
  * Integer code for geometry type
@@ -51,7 +51,10 @@ type WKBOptions = {
  * @param geojson A GeoJSON Feature or Geometry
  * @returns string
  */
-export function encodeWKB(geometry: Geometry | Feature, options: WKBOptions = {}): ArrayBuffer {
+export function convertGeoJSONToWKB(
+  geometry: Geometry | Feature,
+  options: WKBOptions = {}
+): ArrayBuffer {
   if (geometry.type === 'Feature') {
     geometry = geometry.geometry;
   }
@@ -327,7 +330,7 @@ function encodeGeometryCollection(
 
   for (const geometry of collection.geometries) {
     // TODO: handle srid? {srid: collection.srid}
-    const arrayBuffer = encodeWKB(geometry, options);
+    const arrayBuffer = convertGeoJSONToWKB(geometry, options);
     writer.writeBuffer(arrayBuffer);
   }
 

@@ -7,30 +7,18 @@ import type {
   BinaryGeometry,
   BinaryPointGeometry,
   BinaryLineGeometry,
-  BinaryPolygonGeometry,
-  Geometry
+  BinaryPolygonGeometry
 } from '@loaders.gl/schema';
-import {binaryToGeometry} from '@loaders.gl/gis';
 
-import {parseWKBHeader, WKBGeometryType} from './parse-wkb-header';
+import {
+  concatenateBinaryPointGeometries,
+  concatenateBinaryLineGeometries,
+  concatenateBinaryPolygonGeometries
+} from '../../../api/binary-geometry-utils';
+import {parseWKBHeader, WKBGeometryType} from './helpers/parse-wkb-header';
+import {concatTypedArrays} from '../../../utils/concat-typed-arrays';
 
-export function parseWKB(
-  arrayBuffer: ArrayBuffer,
-  options?: {shape?: 'geojson-geometry' | 'binary-geometry'}
-): BinaryGeometry | Geometry {
-  const binaryGeometry = parseWKBToBinary(arrayBuffer);
-  const shape = options?.shape || 'binary-geometry';
-  switch (shape) {
-    case 'binary-geometry':
-      return binaryGeometry;
-    case 'geojson-geometry':
-      return binaryToGeometry(binaryGeometry);
-    default:
-      throw new Error(shape);
-  }
-}
-
-export function parseWKBToBinary(arrayBuffer: ArrayBuffer): BinaryGeometry {
+export function convertWKBToBinaryGeometry(arrayBuffer: ArrayBuffer): BinaryGeometry {
   const dataView = new DataView(arrayBuffer);
 
   const wkbHeader = parseWKBHeader(dataView);
@@ -246,90 +234,4 @@ function parseMultiPolygon(
   }
 
   return concatenateBinaryPolygonGeometries(binaryPolygonGeometries, dimension);
-}
-
-// TODO - move to loaders.gl/schema/gis
-
-function concatenateBinaryPointGeometries(
-  binaryPointGeometries: BinaryPointGeometry[],
-  dimension: number
-): BinaryPointGeometry {
-  const positions: TypedArray[] = binaryPointGeometries.map((geometry) => geometry.positions.value);
-  const concatenatedPositions = new Float64Array(concatTypedArrays(positions).buffer);
-
-  return {
-    type: 'Point',
-    positions: {value: concatenatedPositions, size: dimension}
-  };
-}
-
-function concatenateBinaryLineGeometries(
-  binaryLineGeometries: BinaryLineGeometry[],
-  dimension: number
-): BinaryLineGeometry {
-  const lines: TypedArray[] = binaryLineGeometries.map((geometry) => geometry.positions.value);
-  const concatenatedPositions = new Float64Array(concatTypedArrays(lines).buffer);
-  const pathIndices = lines.map((line) => line.length / dimension).map(cumulativeSum(0));
-  pathIndices.unshift(0);
-
-  return {
-    type: 'LineString',
-    positions: {value: concatenatedPositions, size: dimension},
-    pathIndices: {value: new Uint32Array(pathIndices), size: 1}
-  };
-}
-
-function concatenateBinaryPolygonGeometries(
-  binaryPolygonGeometries: BinaryPolygonGeometry[],
-  dimension: number
-): BinaryPolygonGeometry {
-  const polygons: TypedArray[] = [];
-  const primitivePolygons: TypedArray[] = [];
-
-  for (const binaryPolygon of binaryPolygonGeometries) {
-    const {positions, primitivePolygonIndices} = binaryPolygon;
-    polygons.push(positions.value);
-    primitivePolygons.push(primitivePolygonIndices.value);
-  }
-
-  const concatenatedPositions = new Float64Array(concatTypedArrays(polygons).buffer);
-  const polygonIndices = polygons.map((p) => p.length / dimension).map(cumulativeSum(0));
-  polygonIndices.unshift(0);
-
-  // Combine primitivePolygonIndices from each individual polygon
-  const primitivePolygonIndices = [0];
-  for (const primitivePolygon of primitivePolygons) {
-    primitivePolygonIndices.push(
-      ...primitivePolygon
-        .filter((x: number) => x > 0)
-        .map((x: number) => x + primitivePolygonIndices[primitivePolygonIndices.length - 1])
-    );
-  }
-
-  return {
-    type: 'Polygon',
-    positions: {value: concatenatedPositions, size: dimension},
-    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1},
-    primitivePolygonIndices: {value: new Uint32Array(primitivePolygonIndices), size: 1}
-  };
-}
-
-// TODO: remove copy; import from typed-array-utils
-// modules/math/src/geometry/typed-arrays/typed-array-utils.js
-function concatTypedArrays(arrays: TypedArray[]): TypedArray {
-  let byteLength = 0;
-  for (let i = 0; i < arrays.length; ++i) {
-    byteLength += arrays[i].byteLength;
-  }
-  const buffer = new Uint8Array(byteLength);
-
-  let byteOffset = 0;
-  for (let i = 0; i < arrays.length; ++i) {
-    const data = new Uint8Array(arrays[i].buffer);
-    byteLength = data.length;
-    for (let j = 0; j < byteLength; ++j) {
-      buffer[byteOffset++] = data[j];
-    }
-  }
-  return buffer;
 }

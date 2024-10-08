@@ -13,8 +13,8 @@ import type {
   MultiLineString,
   MultiPolygon
 } from '@loaders.gl/schema';
-import {BinaryReader} from '../utils/binary-reader';
-import {WKBGeometryType} from './parse-wkb-header';
+import {BinaryReader} from '../../../utils/binary-reader';
+import {WKBGeometryType} from './helpers/parse-wkb-header';
 
 /**
  * Check if an array buffer might be a TWKB array buffer
@@ -57,7 +57,8 @@ type TWKBHeader = {
   mPrecisionFactor: number;
 };
 
-export function parseTWKB(arrayBuffer: ArrayBuffer): Geometry {
+/** Converts a TWKB encoded buffer to a GeoJSON Geometry */
+export function convertTWKBToGeoJSON(arrayBuffer: ArrayBuffer): Geometry {
   const binaryReader = new BinaryReader(arrayBuffer);
 
   const context = parseTWKBHeader(binaryReader);

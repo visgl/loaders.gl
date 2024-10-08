@@ -3,18 +3,14 @@
 // Copyright (c) vis.gl contributors
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 
-import type {Feature, Geometry} from '@loaders.gl/schema';
+import type {Geometry} from '@loaders.gl/schema';
 
 /**
  * Stringifies a GeoJSON object into WKT
  * @param geojson
  * @returns string
  */
-export function encodeWKT(geometry: Geometry | Feature): string {
-  if (geometry.type === 'Feature') {
-    geometry = geometry.geometry;
-  }
-
+export function convertGeoJSONToWKT(geometry: Geometry): string {
   switch (geometry.type) {
     case 'Point':
       return `POINT ${wrapParens(pairWKT(geometry.coordinates))}`;
@@ -29,9 +25,11 @@ export function encodeWKT(geometry: Geometry | Feature): string {
     case 'MultiLineString':
       return `MULTILINESTRING ${wrapParens(ringsWKT(geometry.coordinates))}`;
     case 'GeometryCollection':
-      return `GEOMETRYCOLLECTION ${wrapParens(geometry.geometries.map(encodeWKT).join(', '))}`;
+      return `GEOMETRYCOLLECTION ${wrapParens(geometry.geometries.map(convertGeoJSONToWKT).join(', '))}`;
     default:
-      throw new Error('stringify requires a valid GeoJSON Feature or geometry object as input');
+      throw new Error(
+        'convertGeoJSONToWKT requires a valid GeoJSON Geometry (not Feature) as input'
+      );
   }
 }
 

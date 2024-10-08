@@ -18,25 +18,35 @@ export {flatGeojsonToBinary} from './lib/binary-features/flat-geojson-to-binary'
 export {geojsonToBinary} from './lib/binary-features/geojson-to-binary';
 export {geojsonToFlatGeojson} from './lib/binary-features/geojson-to-flat-geojson';
 export {binaryToGeojson, binaryToGeometry} from './lib/binary-features/binary-to-geojson';
-export {transformBinaryCoords, transformGeoJsonCoords} from './lib/binary-features/transform';
+export {transformBinaryCoords, transformGeoJsonCoords} from './lib/api/transform-coordinates';
 
 // WKT
 
-export {parseWKT, isWKT, WKT_MAGIC_STRINGS} from './lib/wkt/parse-wkt';
+// GEOMETRY ENCODING DETECTION
+export {isTWKB} from './lib/converters/geometry/wkt/convert-twkb-to-geojson';
+export {isWKB} from './lib/converters/geometry/wkt/helpers/parse-wkb-header';
+export {isWKT} from './lib/converters/geometry/wkt/convert-wkt-to-geojson';
 
-export {encodeWKT} from './lib/wkt/encode-wkt';
+export type {WKBHeader} from './lib/converters/geometry/wkt/helpers/parse-wkb-header';
+export {WKT_MAGIC_STRINGS} from './lib/converters/geometry/wkt/convert-wkt-to-geojson';
 
-export {isWKB} from './lib/wkt/parse-wkb-header';
-export {parseWKB} from './lib/wkt/parse-wkb';
-export {encodeWKB} from './lib/wkt/encode-wkb';
+// GEOMETRY CONVERSION
+// export {convertBinaryGeometryToGeoJSON} from './lib/converters/geometry/convert-binary-geometry-to-geojson';
 
-export {parseTWKB, isTWKB} from './lib/wkt/parse-twkb';
-export {encodeTWKB} from './lib/wkt/encode-twkb';
+export {convertWKTToGeoJSON} from './lib/converters/geometry/wkt/convert-wkt-to-geojson';
+export {convertWKBToGeoJSON} from './lib/converters/geometry/wkt/convert-wkb-to-geojson';
+export {convertTWKBToGeoJSON} from './lib/converters/geometry/wkt/convert-twkb-to-geojson';
+export {convertWKBToBinaryGeometry} from './lib/converters/geometry/wkt/convert-wkb-to-binary-geometry';
 
-export type {ParseWKTCRSOptions, WKTCRS} from './lib/wkt/parse-wkt-crs';
-export {parseWKTCRS} from './lib/wkt/parse-wkt-crs';
-export type {EncodeWKTCRSOptions} from './lib/wkt/encode-wkt-crs';
-export {encodeWKTCRS} from './lib/wkt/encode-wkt-crs';
+export {convertGeoJSONToWKT} from './lib/converters/geometry/wkt/convert-geojson-to-wkt';
+export {convertGeoJSONToWKB} from './lib/converters/geometry/wkt/convert-geojson-to-wkb';
+export {convertGeoJSONToTWKB} from './lib/converters/geometry/wkt/convert-geojson-to-twkb';
+
+// CRS
+export type {WKTCRS, ParseWKTCRSOptions} from './lib//wkt-crs/parse-wkt-crs';
+export {parseWKTCRS} from './lib//wkt-crs/parse-wkt-crs';
+export type {EncodeWKTCRSOptions} from './lib//wkt-crs/encode-wkt-crs';
+export {encodeWKTCRS} from './lib//wkt-crs/encode-wkt-crs';
 
 // Arrow Geometries
 export type {
@@ -56,5 +66,4 @@ export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';
 
 // EXPERIMENTAL APIs
 
-export type {WKBHeader} from './lib/wkt/parse-wkb-header';
 export {encodeHex, decodeHex} from './lib/utils/hex-transcoder';

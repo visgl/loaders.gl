@@ -4,7 +4,7 @@
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
-import {parseWKB, isWKB} from '@loaders.gl/gis';
+import {convertWKBToGeoJSON, convertWKBToBinaryGeometry, isWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 
 export type WKBLoaderOptions = LoaderOptions & {
@@ -32,7 +32,7 @@ export const WKBWorkerLoader = {
   tests: [isWKB],
   options: {
     wkb: {
-      shape: 'binary-geometry' // 'geojson-geometry'
+      shape: 'binary-geometry'
     }
   }
 } as const satisfies Loader<Geometry | BinaryGeometry, never, WKBLoaderOptions>;
@@ -45,3 +45,18 @@ export const WKBLoader = {
   parse: async (arrayBuffer: ArrayBuffer, options?) => parseWKB(arrayBuffer, options?.wkb),
   parseSync: (arrayBuffer: ArrayBuffer, options?) => parseWKB(arrayBuffer, options?.wkb)
 } as const satisfies LoaderWithParser<BinaryGeometry | Geometry, never, WKBLoaderOptions>;
+
+export function parseWKB(
+  arrayBuffer: ArrayBuffer,
+  options?: {shape?: 'geojson-geometry' | 'binary-geometry'}
+): BinaryGeometry | Geometry {
+  const shape = options?.shape || 'binary-geometry';
+  switch (shape) {
+    case 'binary-geometry':
+      return convertWKBToBinaryGeometry(arrayBuffer);
+    case 'geojson-geometry':
+      return convertWKBToGeoJSON(arrayBuffer);
+    default:
+      throw new Error(shape);
+  }
+}
