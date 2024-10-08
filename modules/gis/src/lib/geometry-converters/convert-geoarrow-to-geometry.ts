@@ -14,8 +14,9 @@ import type {
   Geometry,
   GeoArrowEncoding
 } from '@loaders.gl/schema';
-import {convertWKBToGeometry} from './wkt/convert-wkb-to-geojson';
-import {convertWKTToGeometry} from './wkt/convert-wkt-to-geojson';
+import {Log, log} from '@loaders.gl/loader-utils';
+import {convertWKBToGeometry} from './wkt/convert-wkb-to-geometry';
+import {convertWKTToGeometry} from './wkt/convert-wkt-to-geometry';
 
 /**
  * parse geometry from arrow data that is returned from processArrowData()
@@ -26,9 +27,10 @@ import {convertWKTToGeometry} from './wkt/convert-wkt-to-geojson';
  * @param encoding the geoarrow encoding of the geometry column
  * @returns Feature or null
  */
-export function convertGeoArrowGeometryToGeoJSON(
+export function convertGeoArrowGeometryToGeometry(
   arrowCellValue: any,
-  encoding?: GeoArrowEncoding
+  encoding?: GeoArrowEncoding,
+  logger: Log = log
 ): Geometry | null {
   // sanity
   encoding = encoding?.toLowerCase() as GeoArrowEncoding;
@@ -54,7 +56,8 @@ export function convertGeoArrowGeometryToGeoJSON(
     case 'geoarrow.wkt':
       return arrowWKTToGeometry(arrowCellValue);
     default: {
-      throw Error(`GeoArrow encoding not supported ${encoding}`);
+      logger.once(1, `GeoArrow encoding not supported ${encoding}`)();
+      return null;
     }
   }
 }

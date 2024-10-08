@@ -12,7 +12,7 @@ import type {
   Feature,
   GeoJsonProperties
 } from '@loaders.gl/schema';
-import {convertBinaryGeometryToGeometry} from '../geometry-converters/convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToGeometry} from '../geometry-converters/convert-binary-geometry-to-geometry';
 
 // Note: We do not handle GeometryCollection, define a limited Geometry type that always has coordinates.
 // type FeatureGeometry = Point | MultiPoint | LineString | MultiLineString | Polygon | MultiPolygon;

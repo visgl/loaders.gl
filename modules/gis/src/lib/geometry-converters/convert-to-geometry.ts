@@ -4,12 +4,12 @@
 
 import type {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 
-import {convertGeometryToWKB} from './wkt/convert-geojson-to-wkb';
-import {convertGeometryToWKT} from './wkt/convert-geojson-to-wkt';
+import {convertGeometryToWKB} from './wkt/convert-geometry-to-wkb';
+import {convertGeometryToWKT} from './wkt/convert-geometry-to-wkt';
 import {convertWKBToBinaryGeometry} from './wkt/convert-wkb-to-binary-geometry';
-import {convertWKTToGeometry} from './wkt/convert-wkt-to-geojson';
+import {convertWKTToGeometry} from './wkt/convert-wkt-to-geometry';
 
-import {convertBinaryGeometryToGeometry} from './convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToGeometry} from './convert-binary-geometry-to-geometry';
 
 export function convertToGeoJSON(geometry: ArrayBuffer | string): Geometry {
   if (geometry instanceof ArrayBuffer) {

@@ -60,6 +60,7 @@ export {
   document
 } from './lib/env-utils/globals';
 
+export {Log} from '@probe.gl/log';
 export {log} from './lib/log-utils/log';
 
 // Options and modules

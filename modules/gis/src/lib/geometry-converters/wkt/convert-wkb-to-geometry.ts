@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Geometry} from '@loaders.gl/schema';
-import {convertBinaryGeometryToGeometry} from '../convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToGeometry} from '../convert-binary-geometry-to-geometry';
 import {convertWKBToBinaryGeometry} from './convert-wkb-to-binary-geometry';
 
 export type convertWKBOptions = {

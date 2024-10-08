@@ -11,10 +11,10 @@ import {
 import {load} from '@loaders.gl/core';
 import type {FeatureCollection} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import {getGeometryColumnsFromSchema, convertGeoArrowGeometryToGeoJSON} from '@loaders.gl/gis';
+import {getGeometryColumnsFromSchema, convertGeoArrowGeometryToGeometry} from '@loaders.gl/gis';
 import {ArrowLoader} from '@loaders.gl/arrow';
 
-test('ArrowUtils#convertGeoArrowGeometryToGeoJSON', async (t) => {
+test('ArrowUtils#convertGeoArrowGeometryToGeometry', async (t) => {
   for (const testCase of GEOARROW_TEST_CASES) {
     await testParseFromArrow(t, testCase[0], testCase[1]);
   }
@@ -68,7 +68,7 @@ async function testParseFromArrow(
     const firstArrowGeometry = table.getChild('geometry')?.get(0);
 
     // parse arrow geometry to geojson feature
-    const firstGeometry = convertGeoArrowGeometryToGeoJSON(firstArrowGeometry, encoding);
+    const firstGeometry = convertGeoArrowGeometryToGeometry(firstArrowGeometry, encoding);
 
     // check if geometry in firstFeature is equal to the original geometry in expectedPointGeojson
     t.deepEqual(

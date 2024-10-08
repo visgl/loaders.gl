@@ -9,18 +9,12 @@ export type {GeoMetadata} from './lib/geoarrow/geoparquet-metadata';
 export {
   getGeoMetadata,
   setGeoMetadata,
-  unpackGeoMetadata
+  unpackGeoMetadata,
+  unpackJSONStringMetadata
 } from './lib/geoarrow/geoparquet-metadata';
-export {unpackJSONStringMetadata} from './lib/geoarrow/geoparquet-metadata';
 
 // Utilities
 export {transformBinaryCoords, transformGeoJsonCoords} from './lib/api/transform-coordinates';
-
-// Binary Geometries
-// export {flatGeojsonToBinary} from './lib/binary-features/flat-geojson-to-binary';
-// export {geojsonToBinary} from './lib/binary-features/geojson-to-binary';
-// export {geojsonToFlatGeojson} from './lib/binary-features/geojson-to-flat-geojson';
-// export {binaryToGeojson, binaryToGeometry} from './lib/binary-features/binary-to-geojson';
 
 // TABLE CONVERSION
 export {convertGeoArrowToTable} from './lib/table-converters/convert-geoarrow-table';
@@ -29,17 +23,17 @@ export {convertWKBTableToGeoJSON} from './lib/table-converters/convert-wkb-table
 // FEATURE COLLECTION CONVERSION
 export {
   convertFlatGeojsonToBinaryFeatureCollection,
-  // deprecated
+  /** @deprecated */
   convertFlatGeojsonToBinaryFeatureCollection as flatGeojsonToBinary
 } from './lib/feature-collection-converters/convert-flat-geojson-to-binary-features';
 export {
   convertGeojsonToBinaryFeatureCollection,
-  // deprecated
+  /** @deprecated */
   convertGeojsonToBinaryFeatureCollection as geojsonToBinary
 } from './lib/feature-collection-converters/convert-geojson-to-binary-features';
 export {
   convertGeojsonToFlatGeojson,
-  // deprecated
+  /** @deprecated */
   convertGeojsonToFlatGeojson as geojsonToFlatGeojson
 } from './lib/feature-collection-converters/convert-geojson-to-flat-geojson';
 export {
@@ -48,30 +42,39 @@ export {
 } from './lib/feature-collection-converters/convert-binary-features-to-geojson';
 
 // GEOMETRY ENCODING DETECTION
-export {isTWKB} from './lib/geometry-converters/wkt/convert-twkb-to-geojson';
+export {isTWKB} from './lib/geometry-converters/wkt/convert-twkb-to-geometry';
 export {isWKB} from './lib/geometry-converters/wkt/helpers/parse-wkb-header';
-export {isWKT} from './lib/geometry-converters/wkt/convert-wkt-to-geojson';
+export {isWKT} from './lib/geometry-converters/wkt/convert-wkt-to-geometry';
 
 export type {WKBHeader} from './lib/geometry-converters/wkt/helpers/parse-wkb-header';
-export {WKT_MAGIC_STRINGS} from './lib/geometry-converters/wkt/convert-wkt-to-geojson';
+export {WKT_MAGIC_STRINGS} from './lib/geometry-converters/wkt/convert-wkt-to-geometry';
 
 // GEOMETRY CONVERSION
-export {convertBinaryGeometryToGeometry} from './lib/geometry-converters/convert-binary-geometry-to-geojson';
+export {
+  convertBinaryGeometryToGeometry,
+  /** @deprecated */
+  convertBinaryGeometryToGeometry as binaryToGeometry
+} from './lib/geometry-converters/convert-binary-geometry-to-geometry';
 
-export {convertWKTToGeometry} from './lib/geometry-converters/wkt/convert-wkt-to-geojson';
-export {convertWKBToGeometry} from './lib/geometry-converters/wkt/convert-wkb-to-geojson';
+export {convertWKTToGeometry} from './lib/geometry-converters/wkt/convert-wkt-to-geometry';
+export {convertWKBToGeometry} from './lib/geometry-converters/wkt/convert-wkb-to-geometry';
 export {convertWKBToBinaryGeometry} from './lib/geometry-converters/wkt/convert-wkb-to-binary-geometry';
-export {convertTWKBToGeometry} from './lib/geometry-converters/wkt/convert-twkb-to-geojson';
+export {convertTWKBToGeometry} from './lib/geometry-converters/wkt/convert-twkb-to-geometry';
 
-export {convertGeometryToWKT} from './lib/geometry-converters/wkt/convert-geojson-to-wkt';
-export {convertGeometryToWKB} from './lib/geometry-converters/wkt/convert-geojson-to-wkb';
-export {convertGeometryToTWKB} from './lib/geometry-converters/wkt/convert-geojson-to-twkb';
+export {convertGeometryToWKT} from './lib/geometry-converters/wkt/convert-geometry-to-wkt';
+export {convertGeometryToWKB} from './lib/geometry-converters/wkt/convert-geometry-to-wkb';
+export {convertGeometryToTWKB} from './lib/geometry-converters/wkt/convert-geometry-to-twkb';
 
 // CRS
 export type {WKTCRS, ParseWKTCRSOptions} from './lib//wkt-crs/parse-wkt-crs';
 export {parseWKTCRS} from './lib//wkt-crs/parse-wkt-crs';
 export type {EncodeWKTCRSOptions} from './lib//wkt-crs/encode-wkt-crs';
 export {encodeWKTCRS} from './lib//wkt-crs/encode-wkt-crs';
+
+// GEOARROW
+export {convertGeoArrowGeometryToGeometry} from './lib/geometry-converters/convert-geoarrow-to-geometry';
+export {getGeometryColumnsFromSchema} from './lib/geoarrow/geoarrow-metadata';
+export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';
 
 // Arrow Geometries
 export type {
@@ -80,17 +83,12 @@ export type {
 } from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
 export {
   convertGeoArrowToBinaryFeatureCollection,
-  // deprecated
+  /** @deprecated */
   convertGeoArrowToBinaryFeatureCollection as getBinaryGeometriesFromArrow,
   getBinaryGeometryTemplate,
   getTriangleIndices,
   getMeanCentersFromBinaryGeometries
 } from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
-
-// GEOARROW
-export {convertGeoArrowGeometryToGeoJSON} from './lib/geometry-converters/convert-geoarrow-to-geojson';
-export {getGeometryColumnsFromSchema} from './lib/geoarrow/geoarrow-metadata';
-export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';
 
 // EXPERIMENTAL APIs
 
