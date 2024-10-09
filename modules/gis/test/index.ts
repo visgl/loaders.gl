@@ -25,6 +25,7 @@ import './geometry-converters/convert-geometry-to-wkt.spec';
 import './wkt-crs/parse-wkt-crs.spec';
 
 // geoarrow
+import './geoarrow/get-geoarrow-geometry-type-info.spec';
 import './geoarrow/convert-geoarrow-to-binary-geometry.spec';
 import './geoarrow/convert-geoarrow-to-geojson.spec';
 import './geoarrow/get-arrow-bounds.spec';
