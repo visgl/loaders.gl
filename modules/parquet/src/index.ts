@@ -7,21 +7,21 @@ export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
 // import {ArrowTable, ArrowTableBatch} from '@loaders.gl/arrow';
 
 export {
-  ParquetWorkerLoader,
-  ParquetLoader,
+  ParquetJSONWorkerLoader,
+  ParquetJSONLoader,
   GeoParquetWorkerLoader,
   GeoParquetLoader,
-  ParquetColumnarWorkerLoader,
-  ParquetColumnarLoader
-} from './parquet-loader';
+  ParquetJSONColumnarWorkerLoader,
+  ParquetJSONColumnarLoader
+} from './parquet-json-loader';
 
-export {ParquetWriter as _ParquetWriter} from './parquet-writer';
+export {ParquetJSONWriter as _ParquetJSONWriter} from './parquet-json-writer';
 
 // EXPERIMENTAL - expose Parquet WASM loaders/writer
 
-export type {ParquetWasmLoaderOptions} from './parquet-wasm-loader';
-export {ParquetWasmLoader, ParquetWasmWorkerLoader} from './parquet-wasm-loader';
-export {ParquetWasmWriter} from './parquet-wasm-writer';
+export type {ParquetLoaderOptions} from './parquet-loader';
+export {ParquetLoader, ParquetWorkerLoader} from './parquet-loader';
+export {ParquetWriter} from './parquet-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 

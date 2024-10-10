@@ -7,12 +7,12 @@ import type {ArrowTable} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 import {loadWasm} from '../utils/load-wasm';
 
-import type {ParquetWriterOptions} from '../../parquet-wasm-writer';
+import type {ParquetWriterOptions} from '../../parquet-writer';
 
 /**
  * Encode Arrow arrow.Table to Parquet buffer
  */
-export async function encode(
+export async function encodeParquetWasm(
   table: ArrowTable,
   options: ParquetWriterOptions
 ): Promise<ArrayBuffer> {
