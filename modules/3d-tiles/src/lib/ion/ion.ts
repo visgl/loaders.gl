@@ -23,12 +23,13 @@ export async function getIonTilesetMetadata(accessToken, assetId) {
 
   // Step 2: Query metdatadata for this asset.
   const ionAssetMetadata = await getIonAssetMetadata(accessToken, assetId);
-  const {type, url} = ionAssetMetadata;
+  const type = ionAssetMetadata.type;
+  const url = ionAssetMetadata.options?.url;
   assert(type === '3DTILES' && url);
 
   // Prepare a headers object for fetch
   ionAssetMetadata.headers = {
-    Authorization: `Bearer ${ionAssetMetadata.accessToken}`
+    Authorization: `Bearer ${accessToken}`
   };
   return ionAssetMetadata;
 }
