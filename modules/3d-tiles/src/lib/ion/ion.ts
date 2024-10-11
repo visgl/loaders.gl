@@ -24,7 +24,8 @@ export async function getIonTilesetMetadata(accessToken, assetId) {
   // Step 2: Query metdatadata for this asset.
   const ionAssetMetadata = await getIonAssetMetadata(accessToken, assetId);
   const type = ionAssetMetadata.type;
-  const url = ionAssetMetadata.options?.url;
+  // As of Oct 2024 ion service now returns the resource URL in an options object
+  const url = ionAssetMetadata.options?.url || ionAssetMetadata.url;
   assert(type === '3DTILES' && url);
 
   // Prepare a headers object for fetch
