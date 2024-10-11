@@ -29,7 +29,8 @@ export async function getIonTilesetMetadata(accessToken, assetId) {
 
   // Prepare a headers object for fetch
   ionAssetMetadata.headers = {
-    Authorization: `Bearer ${accessToken}`
+    // Use provided accessToken if a new token is not provided in the ion response
+    Authorization: `Bearer ${ionAssetMetadata.accessToken || accessToken}`
   };
   return ionAssetMetadata;
 }
