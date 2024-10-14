@@ -67,4 +67,5 @@ export {ArcGISImageServerSource as _ArcGISImageServerSource} from './services/ar
 // DEPRECATED: TODO - remove once deck.gl has been udpated
 export {ImageSource} from '@loaders.gl/loader-utils';
 export type {ImageType} from '@loaders.gl/images';
+export type {ImageSourceType} from './lib/deprecated/create-image-source';
 export {createImageSource} from './lib/deprecated/create-image-source';

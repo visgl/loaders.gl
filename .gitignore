@@ -28,6 +28,7 @@ package-lock.json
 !.yarn/versions
 
 tsconfig.tsbuildinfo
+tsconfig.build.tsbuildinfo
 
 .nyc_output/
 coverage/
