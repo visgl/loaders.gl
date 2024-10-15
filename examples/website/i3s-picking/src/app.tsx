@@ -22,6 +22,10 @@ export const EXAMPLES = {
   'New York': {
     name: 'New York',
     url: 'https://tiles.arcgis.com/tiles/P3ePLMYs2RVChkJx/arcgis/rest/services/Buildings_NewYork_17/SceneServer/layers/0'
+  },
+  'Montreal': {
+    name: 'Montreal',
+    url: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Montreal/SceneServer/layers/0'
   }
 };
 
