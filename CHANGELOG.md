@@ -2,6 +2,11 @@
 
 ## v4.3
 
+### v4.3.0-beta.3
+
+- Whats new updated (#3131)
+- fix(wms): createImageSource back-compatibility fix (#3132)
+
 ### v4.3.0-beta.2
 
 - fix(wms): Export deprecated type (#3130)
