@@ -8,7 +8,7 @@ import {WMSSource} from '../../services/ogc/wms-service';
 import {ArcGISImageServerSource} from '../../services/arcgis/arcgis-image-server';
 
 /** @deprecated */
-export type ImageSourceType = 'wms' | 'arcgis-image-server' | 'template';
+export type ImageServiceType = 'wms' | 'arcgis-image-server' | 'template';
 
 const SOURCES: Source[] = [WMSSource, ArcGISImageServerSource];
 
@@ -17,7 +17,8 @@ const SOURCES: Source[] = [WMSSource, ArcGISImageServerSource];
  */
 type CreateImageSourceProps = ImageSourceProps &
   WMSImageSourceProps & {
-    type?: ImageSourceType | 'auto';
+    url: string;
+    type?: ImageServiceType | 'auto';
   };
 
 /**
@@ -29,19 +30,15 @@ type CreateImageSourceProps = ImageSourceProps &
  *
  * @deprecated Use createDataSource from @loaders.gl/core
  */
-export function createImageSource(
-  url: string,
-  props: CreateImageSourceProps = {},
-  sources = SOURCES
-): ImageSource {
+export function createImageSource(props: CreateImageSourceProps, sources = SOURCES): ImageSource {
   const {type = 'auto'} = props;
   const source: Source | null =
-    type === 'auto' ? guessSourceType(url, sources) : getSourceOfType(type, sources);
+    type === 'auto' ? guessSourceType(props.url, sources) : getSourceOfType(type, sources);
 
   if (!source) {
     throw new Error('Not a valid image source type');
   }
-  return source.createDataSource(url, props) as unknown as ImageSource;
+  return source.createDataSource(props.url, props) as unknown as ImageSource;
 }
 
 /** Guess service type from URL */
