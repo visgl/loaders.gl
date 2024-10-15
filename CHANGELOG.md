@@ -2,6 +2,10 @@
 
 ## v4.3
 
+### v4.3.0-beta.2
+
+- fix(wms): Export deprecated type (#3130)
+
 ### v4.3.0-beta.1
 
 - chore(arrow): table conversion (#3108)
