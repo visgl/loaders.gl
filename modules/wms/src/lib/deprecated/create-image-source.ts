@@ -17,7 +17,7 @@ const SOURCES: Source[] = [WMSSource, ArcGISImageServerSource];
  */
 type CreateImageSourceProps = ImageSourceProps &
   WMSImageSourceProps & {
-    url: string,
+    url: string;
     type?: ImageServiceType | 'auto';
   };
 
@@ -30,10 +30,7 @@ type CreateImageSourceProps = ImageSourceProps &
  *
  * @deprecated Use createDataSource from @loaders.gl/core
  */
-export function createImageSource(
-  props: CreateImageSourceProps,
-  sources = SOURCES
-): ImageSource {
+export function createImageSource(props: CreateImageSourceProps, sources = SOURCES): ImageSource {
   const {type = 'auto'} = props;
   const source: Source | null =
     type === 'auto' ? guessSourceType(props.url, sources) : getSourceOfType(type, sources);
