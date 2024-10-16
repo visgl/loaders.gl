@@ -42,7 +42,7 @@
     "zarr": "^0.5.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0"
+    "@loaders.gl/core": "^4.3.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

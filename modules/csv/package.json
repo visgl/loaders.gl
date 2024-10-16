@@ -44,12 +44,12 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.3.0",
-    "@loaders.gl/schema": "4.3.0",
+    "@loaders.gl/loader-utils": "^4.3.0",
+    "@loaders.gl/schema": "^4.3.0",
     "d3-dsv": "^1.2.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0"
+    "@loaders.gl/core": "^4.3.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

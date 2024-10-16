@@ -57,16 +57,16 @@
     "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.3.0",
-    "@loaders.gl/loader-utils": "4.3.0",
-    "@loaders.gl/schema": "4.3.0",
-    "@loaders.gl/wkt": "4.3.0",
-    "@loaders.gl/worker-utils": "4.3.0",
+    "@loaders.gl/gis": "^4.3.0",
+    "@loaders.gl/loader-utils": "^4.3.0",
+    "@loaders.gl/schema": "^4.3.0",
+    "@loaders.gl/wkt": "^4.3.0",
+    "@loaders.gl/worker-utils": "^4.3.0",
     "@math.gl/polygon": "^4.1.0",
     "apache-arrow": ">= 15.0.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0"
+    "@loaders.gl/core": "^4.3.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

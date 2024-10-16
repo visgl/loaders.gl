@@ -44,7 +44,7 @@
     "@types/geojson": "^7946.0.7"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0"
+    "@loaders.gl/core": "^4.3.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

@@ -45,13 +45,13 @@
     "stream": false
   },
   "dependencies": {
-    "@loaders.gl/schema": "4.3.0",
-    "@loaders.gl/worker-utils": "4.3.0",
+    "@loaders.gl/schema": "^4.3.0",
+    "@loaders.gl/worker-utils": "^4.3.0",
     "@probe.gl/log": "^4.0.2",
     "@probe.gl/stats": "^4.0.2"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0"
+    "@loaders.gl/core": "^4.3.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }
