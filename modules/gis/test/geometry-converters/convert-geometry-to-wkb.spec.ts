@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/* eslint-disable no-continue */
+
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
