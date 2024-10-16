@@ -2,28 +2,34 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterWithEncoder} from '@loaders.gl/loader-utils';
-import {Table, TableBatch} from '@loaders.gl/schema';
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable} from '@loaders.gl/schema';
+import {encodeParquetWasm} from './lib/encoders/encode-parquet-wasm';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import {VERSION, PARQUET_WASM_URL} from './lib/constants';
 
-export type ParquetWriterOptions = {};
+export type ParquetWriterOptions = WriterOptions & {
+  parquet?: {
+    wasmUrl?: string;
+  };
+};
 
+/** Parquet WASM writer */
 export const ParquetWriter = {
   name: 'Apache Parquet',
-  id: 'parquet',
+  id: 'parquet-wasm',
   module: 'parquet',
   version: VERSION,
   extensions: ['parquet'],
   mimeTypes: ['application/octet-stream'],
   binary: true,
-  options: {},
-  encode: async (data, options) => encodeSync(data, options),
-  encodeSync
-} as const satisfies WriterWithEncoder<Table, TableBatch, ParquetWriterOptions>;
-
-function encodeSync(data, options?: ParquetWriterOptions) {
-  return new ArrayBuffer(0);
-}
+  options: {
+    parquet: {
+      wasmUrl: PARQUET_WASM_URL
+    }
+  },
+  encode(arrowTable: ArrowTable, options?: ParquetWriterOptions) {
+    options = {parquet: {...ParquetWriter.options.parquet, ...options?.parquet}, ...options};
+    return encodeParquetWasm(arrowTable, options);
+  }
+} as const satisfies WriterWithEncoder<ArrowTable, never, ParquetWriterOptions>;

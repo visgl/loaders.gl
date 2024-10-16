@@ -6,7 +6,7 @@ import {default as log} from '@probe.gl/log';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
 
-import type {ParquetLoaderOptions} from '../../parquet-loader';
+import type {ParquetJSONLoaderOptions} from '../../parquet-json-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
@@ -21,7 +21,7 @@ import {preloadCompressions} from '../../parquetjs/compression';
  */
 export async function parseParquetFile(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSONLoaderOptions
 ): Promise<ObjectRowTable> {
   installBufferPolyfill();
   await preloadCompressions(options);
@@ -67,7 +67,7 @@ export async function parseParquetFile(
  */
 export async function* parseParquetFileInBatches(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSONLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
   installBufferPolyfill();
   await preloadCompressions(options);

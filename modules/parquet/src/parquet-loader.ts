@@ -2,60 +2,37 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {
-  ObjectRowTable,
-  ObjectRowTableBatch,
-  GeoJSONTable,
-  GeoJSONTableBatch,
-  ColumnarTable,
-  ColumnarTableBatch
-} from '@loaders.gl/schema';
-import {BlobFile} from '@loaders.gl/loader-utils';
+import {ReadableFile, BlobFile} from '@loaders.gl/loader-utils';
 
-import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet';
-import {parseGeoParquetFile, parseGeoParquetFileInBatches} from './lib/parsers/parse-geoparquet';
 import {
-  parseParquetFileInColumns,
-  parseParquetFileInColumnarBatches
-} from './lib/parsers/parse-parquet-to-columns';
+  parseParquetFileWasm,
+  parseParquetFileInBatchesWasm
+} from './lib/parsers/parse-parquet-wasm';
+import {VERSION, PARQUET_WASM_URL} from './lib/constants';
 
-// Note: The Buffer polyfill is quite fragile
-// For some reason, just exporting directly fails with some bundlers
-// export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
-import {Buffer} from './polyfills/buffer/install-buffer-polyfill';
-export {Buffer};
-
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** Options for the parquet loader */
+/** Parquet WASM loader options */
 export type ParquetLoaderOptions = LoaderOptions & {
-  /** Options for the parquet loader */
   parquet?: {
-    /** Format of returned parsed data */
-    shape?: 'object-row-table' | 'geojson-table';
-    /** Restrict which columns that are parsed from the table. Can save significant memory. */
-    columnList?: string[] | string[][];
-    /** If true, binary values are not converted to strings */
-    preserveBinary?: boolean;
-    /**  @deprecated not used? Set to true to indicate that this is a geoparquet file. */
-    geoparquet?: boolean;
-    /** @deprecated URL to override loaders.gl/core parser system */
-    url?: string;
+    shape?: 'arrow-table';
+    limit?: number; // Provide a limit to the number of rows to be read.
+    offset?: number; // Provide an offset to skip over the given number of rows.
+    batchSize?: number; // The number of rows in each batch. If not provided, the upstream parquet default is 1024.
+    columns?: string[]; // The column names from the file to read.
+    rowGroups?: number[]; // Only read data from the provided row group indexes.
+    concurrency?: number; // The number of concurrent requests to make
+    wasmUrl?: string;
   };
 };
 
-/**
- * ParquetJS table loader
- */
+/** Parquet WASM table loader */
 export const ParquetWorkerLoader = {
-  dataType: null as unknown as ObjectRowTable,
-  batchType: null as unknown as ObjectRowTableBatch,
+  dataType: null as unknown as ArrowTable,
+  batchType: null as unknown as ArrowTableBatch,
 
   name: 'Apache Parquet',
-  id: 'parquet',
+  id: 'parquet-wasm',
   module: 'parquet',
   version: VERSION,
   worker: false,
@@ -66,101 +43,34 @@ export const ParquetWorkerLoader = {
   tests: ['PAR1', 'PARE'],
   options: {
     parquet: {
-      shape: 'object-row-table',
-      columnList: [],
-      geoparquet: true,
-      url: undefined,
-      preserveBinary: false
+      shape: 'arrow-table',
+      limit: undefined, // Provide a limit to the number of rows to be read.
+      offset: 0, // Provide an offset to skip over the given number of rows.
+      batchSize: undefined, // The number of rows in each batch. If not provided, the upstream parquet default is 1024.
+      columns: undefined, // The column names from the file to read.
+      rowGroups: undefined, // Only read data from the provided row group indexes.
+      concurrency: undefined, // The number of concurrent requests to make
+      wasmUrl: PARQUET_WASM_URL
     }
   }
-} as const satisfies Loader<ObjectRowTable, ObjectRowTableBatch, ParquetLoaderOptions>;
+} as const satisfies Loader<ArrowTable, ArrowTableBatch, ParquetLoaderOptions>;
 
-/** ParquetJS table loader */
+/** Parquet WASM table loader */
 export const ParquetLoader = {
   ...ParquetWorkerLoader,
 
-  dataType: null as unknown as ObjectRowTable | GeoJSONTable,
-  batchType: null as unknown as ObjectRowTableBatch | GeoJSONTableBatch,
+  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
+    const wasmOptions = {...ParquetLoader.options.parquet, ...options?.parquet};
+    return parseParquetFileWasm(new BlobFile(arrayBuffer), wasmOptions);
+  },
 
-  parse: (arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) =>
-    parseParquetFile(new BlobFile(arrayBuffer), options),
+  parseFile(file: ReadableFile, options?: ParquetLoaderOptions) {
+    const wasmOptions = {...ParquetLoader.options.parquet, ...options?.parquet};
+    return parseParquetFileWasm(file, wasmOptions);
+  },
 
-  parseFile: parseParquetFile,
-  parseFileInBatches: parseParquetFileInBatches
-} as const satisfies LoaderWithParser<
-  ObjectRowTable | GeoJSONTable,
-  ObjectRowTableBatch | GeoJSONTableBatch,
-  ParquetLoaderOptions
->;
-
-// Defeat tree shaking
-// @ts-ignore
-ParquetLoader.Buffer = Buffer;
-
-export const GeoParquetWorkerLoader = {
-  dataType: null as unknown as GeoJSONTable,
-  batchType: null as unknown as GeoJSONTableBatch,
-
-  name: 'Apache Parquet',
-  id: 'parquet',
-  module: 'parquet',
-  version: VERSION,
-  worker: true,
-  category: 'table',
-  extensions: ['parquet'],
-  mimeTypes: ['application/octet-stream'],
-  binary: true,
-  tests: ['PAR1', 'PARE'],
-  options: {
-    parquet: {
-      shape: 'geojson-table',
-      columnList: [],
-      geoparquet: true,
-      url: undefined,
-      preserveBinary: false
-    }
+  parseFileInBatches(file: ReadableFile, options?: ParquetLoaderOptions) {
+    const wasmOptions = {...ParquetLoader.options.parquet, ...options?.parquet};
+    return parseParquetFileInBatchesWasm(file, wasmOptions);
   }
-} as const satisfies Loader<GeoJSONTable, GeoJSONTableBatch, ParquetLoaderOptions>;
-
-/** ParquetJS table loader */
-export const GeoParquetLoader = {
-  ...GeoParquetWorkerLoader,
-
-  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return parseGeoParquetFile(new BlobFile(arrayBuffer), options);
-  },
-  parseFile: parseGeoParquetFile,
-  parseFileInBatches: parseGeoParquetFileInBatches
-} as const satisfies LoaderWithParser<
-  ObjectRowTable | GeoJSONTable,
-  ObjectRowTableBatch | GeoJSONTableBatch,
-  ParquetLoaderOptions
->;
-
-/** @deprecated Test to see if we can improve perf of parquetjs loader */
-export const ParquetColumnarWorkerLoader = {
-  dataType: null as any as ColumnarTable,
-  batchType: null as any as ColumnarTableBatch,
-
-  name: 'Apache Parquet',
-  id: 'parquet',
-  module: 'parquet',
-  version: VERSION,
-  worker: true,
-  category: 'table',
-  extensions: ['parquet'],
-  mimeTypes: ['application/octet-stream'],
-  binary: true,
-  tests: ['PAR1', 'PARE'],
-  options: ParquetLoader.options
-} as const satisfies Loader<ColumnarTable, ColumnarTableBatch, ParquetLoaderOptions>;
-
-/** @deprecated Test to see if we can improve perf of parquetjs loader */
-export const ParquetColumnarLoader = {
-  ...ParquetColumnarWorkerLoader,
-  parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return parseParquetFileInColumns(new BlobFile(arrayBuffer), options);
-  },
-  parseFile: parseParquetFileInColumns,
-  parseFileInBatches: parseParquetFileInColumnarBatches
-} as const satisfies LoaderWithParser<ColumnarTable, ColumnarTableBatch, ParquetLoaderOptions>;
+} as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, ParquetLoaderOptions>;
