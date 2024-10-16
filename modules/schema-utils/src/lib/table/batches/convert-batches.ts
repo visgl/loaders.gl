@@ -21,7 +21,7 @@ export function convertBatch(
   batch: TableBatch,
   shape: 'object-row-table' | 'array-row-table' | 'columnar-table' | 'arrow-table'
 ): TableBatch {
-  switch (batch.shape) {
+  switch (shape) {
     case 'object-row-table':
       return {...batch, ...convertTable(batch, 'object-row-table')};
     case 'array-row-table':

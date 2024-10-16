@@ -3,10 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrayRowTable, ObjectRowTable, TableBatch} from '@loaders.gl/schema';
+import type {Schema, ArrayRowTable, ObjectRowTable, TableBatch} from '@loaders.gl/schema';
 
 import {
   AsyncQueue,
+  deduceTableSchema,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
@@ -89,7 +90,7 @@ async function parseCSV(
   csvText: string,
   options?: CSVLoaderOptions
 ): Promise<ObjectRowTable | ArrayRowTable> {
-  // Apps can call the parse method directly, we so apply default options here
+  // Apps can call the parse method directly, so we apply default options here
   const csvOptions = {...CSVLoader.options.csv, ...options?.csv};
 
   const firstRow = readFirstRow(csvText);
@@ -115,20 +116,25 @@ async function parseCSV(
   const headerRow = result.meta.fields || generateHeader(csvOptions.columnPrefix, firstRow.length);
 
   const shape = csvOptions.shape || DEFAULT_CSV_SHAPE;
+  let table: ArrayRowTable | ObjectRowTable;
   switch (shape) {
     case 'object-row-table':
-      return {
+      table = {
         shape: 'object-row-table',
         data: rows.map((row) => (Array.isArray(row) ? convertToObjectRow(row, headerRow) : row))
       };
+      break;
     case 'array-row-table':
-      return {
+      table = {
         shape: 'array-row-table',
         data: rows.map((row) => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow)))
       };
+      break;
     default:
       throw new Error(shape);
   }
+  table.schema = deduceTableSchema(table!);
+  return table;
 }
 
 // TODO - support batch size 0 = no batching/single batch?
@@ -151,7 +157,7 @@ function parseCSVInBatches(
   let isFirstRow: boolean = true;
   let headerRow: string[] | null = null;
   let tableBatchBuilder: TableBatchBuilder | null = null;
-  let schema: ObjectSchema | null = null;
+  let schema: Schema | null = null;
 
   const config = {
     // dynamicTyping: true, // Convert numbers and boolean values in rows from strings,
@@ -199,7 +205,7 @@ function parseCSVInBatches(
         if (!headerRow) {
           headerRow = generateHeader(csvOptions.columnPrefix, row.length);
         }
-        schema = deduceSchema(row, headerRow);
+        schema = deduceCSVSchema(row, headerRow);
       }
 
       if (csvOptions.optimizeMemoryUsage) {
@@ -314,7 +320,29 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
   return headers;
 }
 
-function deduceSchema(row, headerRow): ObjectSchema {
+function deduceCSVSchema(row, headerRow): Schema {
+  const fields: Schema['fields'] = [];
+  for (let i = 0; i < row.length; i++) {
+    const columnName = (headerRow && headerRow[i]) || i;
+    const value = row[i];
+    switch (typeof value) {
+      case 'number':
+        fields.push({name: String(columnName), type: 'float64', nullable: true});
+        break;
+      case 'boolean':
+        fields.push({name: String(columnName), type: 'bool', nullable: true});
+        break;
+      case 'string':
+      default:
+        fields.push({name: String(columnName), type: 'utf8', nullable: true});
+      // We currently only handle numeric rows
+      // TODO we could offer a function to map strings to numbers?
+    }
+  }
+  return {fields, metadata: {'loaders.gl': 'CSVLoader'}};
+}
+
+function deduceObjectSchema(row, headerRow): ObjectSchema {
   const schema: ObjectSchema = headerRow ? {} : [];
   for (let i = 0; i < row.length; i++) {
     const columnName = (headerRow && headerRow[i]) || i;
