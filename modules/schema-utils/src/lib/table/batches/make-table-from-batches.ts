@@ -10,26 +10,7 @@ import type {
   ArrayRowTable,
   Feature
 } from '@loaders.gl/schema';
-import {getTableLength} from './table-accessors';
-
-/**
- * Returns an iterator that yields a single table as a sequence of batches.
- * @note Currently only a single batch is yielded.
- * @note All batches will have the same shape and schema as the original table.
- * @returns
- */
-export function* makeBatchesFromTable(table: Table): IterableIterator<TableBatch> {
-  yield makeBatchFromTable(table);
-}
-
-/**
- * Returns a table packaged as a single table batch
- * @note The batch will have the same shape and schema as the original table.
- * @returns `null` if no batches are yielded by the async iterator
- */
-export function makeBatchFromTable(table: Table): TableBatch {
-  return {...table, length: getTableLength(table), batchType: 'data'};
-}
+import {getTableLength} from '../tables/table-accessors';
 
 /**
  * Assembles all batches from an async iterator into a single table.

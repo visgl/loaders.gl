@@ -1,15 +1,18 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {CSVLoader} from '../src/csv-loader'; // from '@loaders.gl/csv';
+import {CSVArrowLoader} from '@loaders.gl/csv';
 import * as arrow from 'apache-arrow';
 
 // Small CSV Sample Files
 const CSV_NUMBERS_100_URL = '@loaders.gl/csv/test/data/numbers-100.csv';
 const CSV_NUMBERS_10000_URL = '@loaders.gl/csv/test/data/numbers-10000.csv';
 
-// TODO -restore
-test.skip('CSVLoader#loadInBatches(numbers-100.csv, arrow)', async (t) => {
-  const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVLoader, {
+test('CSVArrowLoader#loadInBatches(numbers-100.csv, arrow)', async (t) => {
+  const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
     csv: {
       shape: 'arrow-table'
     },
@@ -29,9 +32,8 @@ test.skip('CSVLoader#loadInBatches(numbers-100.csv, arrow)', async (t) => {
   t.end();
 });
 
-// TODO - restore
-test.skip('CSVLoader#loadInBatches(numbers-10000.csv, arrow)', async (t) => {
-  const iterator = await loadInBatches(CSV_NUMBERS_10000_URL, CSVLoader, {
+test('CSVArrowLoader#loadInBatches(numbers-10000.csv, arrow)', async (t) => {
+  const iterator = await loadInBatches(CSV_NUMBERS_10000_URL, CSVArrowLoader, {
     csv: {
       shape: 'arrow-table'
     },
