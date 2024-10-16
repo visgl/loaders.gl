@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, ColumnarTableBatch, ArrowTableBatch, TypedArray} from '@loaders.gl/schema';
+import {isTypedArray} from '@math.gl/types';
 import {getArrayTypeFromDataType} from '../../schema/data-type';
 import {TableBatchAggregator} from './table-batch-aggregator';
 type ColumnarTableBatchOptions = {};
@@ -79,13 +80,13 @@ export class ColumnarTableBatchAggregator implements TableBatchAggregator {
       } else if (Array.isArray(oldColumn)) {
         // Plain array, just increase its size
         oldColumn.length = this.allocated;
-      } else if (ArrayBuffer.isView(oldColumn)) {
+      } else if (isTypedArray(oldColumn)) {
+        const typedArray = new ArrayType(this.allocated) as TypedArray;
         // Copy the old data to the new array
-        const typedArray = new ArrayType(this.allocated);
-        if (ArrayBuffer.isView(typedArray)) {
-          typedArray.set(oldColumn);
-        }
+        typedArray.set(oldColumn);
         this.columns[field.name] = typedArray;
+      } else {
+        throw new Error('Invalid column type');
       }
     }
   }

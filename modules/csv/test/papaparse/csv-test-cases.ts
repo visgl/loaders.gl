@@ -1,12 +1,12 @@
-// This is a fork of papaparse under MIT License
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2015 Matthew Holt
+
+// This is a fork of papaparse v5.0.0-beta.0 under MIT license
 // https://github.com/mholt/PapaParse
 
-/* @license
-Papa Parse
-v5.0.0-beta.0
-https://github.com/mholt/PapaParse
-License: MIT
-*/
+import type {CSVParserConfig} from '../../src/papaparse/papaparse';
 
 /* eslint-disable camelcase, quotes, max-len, prefer-template, wrap-regex */
 
@@ -17,6 +17,16 @@ const RECORD_SEP = String.fromCharCode(30);
 const UNIT_SEP = String.fromCharCode(31);
 const FILES_ENABLED = false;
 const XHR_ENABLED = false;
+
+type Test = {
+  description: string;
+  input: any;
+  config: CSVParserConfig;
+  expected: {
+    data: any[];
+    errors: any[];
+  };
+};
 
 // Tests for the core parser using new Papa.Parser().parse() (CSV to JSON)
 export const CORE_PARSER_TESTS = [
@@ -995,7 +1005,7 @@ export const PARSE_TESTS = [
   {
     description: 'Dynamic typing by indices can be determined by function',
     input: '001,002,003',
-    config: {dynamicTyping: (field) => field % 2 === 0},
+    config: {dynamicTypingFunction: (field) => field % 2 === 0},
     expected: {
       data: [[1, '002', 3]],
       errors: []
@@ -1004,7 +1014,7 @@ export const PARSE_TESTS = [
   {
     description: 'Dynamic typing by headers can be determined by function',
     input: 'A_as_int,B,C_as_int\r\n001,002,003',
-    config: {header: true, dynamicTyping: (field) => /_as_int$/.test(field)},
+    config: {header: true, dynamicTypingFunction: (field) => /_as_int$/.test(field)},
     expected: {
       data: [{A_as_int: 1, B: '002', C_as_int: 3}],
       errors: []

@@ -10,7 +10,7 @@ import {PMTilesSource} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
-test.only('createDataSource', async (t) => {
+test('createDataSource', async (t) => {
   const dataSource = createDataSource(url, [PMTilesSource, TableTileSource, MVTSource], {
     pmtiles: {
       attributions: example.attributions,

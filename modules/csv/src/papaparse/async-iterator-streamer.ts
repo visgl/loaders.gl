@@ -1,11 +1,11 @@
-// @ts-nocheck
-// A custom papaparse `Streamer` for async iterators
-// Ideally this can be contributed back to papaparse
-// Or papaparse can expose Streamer API so we can extend without forking.
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2015 Matthew Holt
 
-/* eslint-disable no-invalid-this */
+// This is a fork of papaparse v5.0.0-beta.0 under MIT license
+// https://github.com/mholt/PapaParse
 
-// Note: papaparse is not an ES6 module
 import Papa from './papaparse';
 const {ChunkStreamer} = Papa;
 

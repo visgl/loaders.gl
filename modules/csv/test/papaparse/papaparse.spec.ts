@@ -1,12 +1,10 @@
-// This is a fork of papaparse under MIT License
-// https://github.com/mholt/PapaParse
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2015 Matthew Holt
 
-/* @license
-Papa Parse
-v5.0.0-beta.0
-https://github.com/mholt/PapaParse
-License: MIT
-*/
+// This is a fork of papaparse v5.0.0-beta.0 under MIT license
+// https://github.com/mholt/PapaParse
 
 /* eslint-disable quotes, no-var, prefer-template, curly */
 import test from 'tape-promise/tape';
