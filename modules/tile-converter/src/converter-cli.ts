@@ -395,6 +395,10 @@ function parseOptions(args: string[]): TileConversionOptions {
         case '--help':
           printHelp();
           break;
+        // we need this option for backward compatibility
+        // do nothing but don't throw the error
+        case '--slpk':
+          break;
         default:
           console.warn(`Unknown option ${arg}`);
           process.exit(0); // eslint-disable-line
