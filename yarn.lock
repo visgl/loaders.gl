@@ -5444,23 +5444,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/wms@npm:^4.2.0":
-  version: 4.3.0
-  resolution: "@loaders.gl/wms@npm:4.3.0"
-  dependencies:
-    "@loaders.gl/images": "npm:4.3.0"
-    "@loaders.gl/loader-utils": "npm:4.3.0"
-    "@loaders.gl/schema": "npm:4.3.0"
-    "@loaders.gl/xml": "npm:4.3.0"
-    "@turf/rewind": "npm:^5.1.5"
-    deep-strict-equal: "npm:^0.2.0"
-  peerDependencies:
-    "@loaders.gl/core": ^4.0.0
-  checksum: 10c0/133147e81a26a5f54ad8c962957e329a671d06d9421f7ea9be9954f4a90d2b66ae238866a6ebe1d7b0d95adfc59830f4ceb976c503196134b2db98769e09cf4c
-  languageName: node
-  linkType: hard
-
-"@loaders.gl/wms@workspace:modules/wms":
+"@loaders.gl/wms@npm:^4.4.0-alpha.0, @loaders.gl/wms@workspace:modules/wms":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/wms@workspace:modules/wms"
   dependencies:
@@ -5491,19 +5475,6 @@ __metadata:
     "@loaders.gl/core": 4.4.0-alpha.0
   languageName: unknown
   linkType: soft
-
-"@loaders.gl/xml@npm:4.3.0":
-  version: 4.3.0
-  resolution: "@loaders.gl/xml@npm:4.3.0"
-  dependencies:
-    "@loaders.gl/loader-utils": "npm:4.3.0"
-    "@loaders.gl/schema": "npm:4.3.0"
-    fast-xml-parser: "npm:^4.2.5"
-  peerDependencies:
-    "@loaders.gl/core": ^4.0.0
-  checksum: 10c0/0f08f4835504aebe7ba74fbe6dfe8dcace40c32245fea981c78549dd752a0cf85e24b2f275ca7be83108ed81bfb81115c3e113c5d6b740e8e04c1baf34b411eb
-  languageName: node
-  linkType: hard
 
 "@loaders.gl/xml@npm:4.4.0-alpha.0, @loaders.gl/xml@workspace:modules/xml":
   version: 0.0.0-use.local
@@ -26399,11 +26370,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A^5.6.0#optional!builtin<compat/typescript>":
   version: 5.6.3
-  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=8c6c40"
+  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=74658d"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/7c9d2e07c81226d60435939618c91ec2ff0b75fbfa106eec3430f0fcf93a584bc6c73176676f532d78c3594fe28a54b36eb40b3d75593071a7ec91301533ace7
+  checksum: 10c0/ac8307bb06bbfd08ae7137da740769b7d8c3ee5943188743bb622c621f8ad61d244767480f90fbd840277fbf152d8932aa20c33f867dea1bb5e79b187ca1a92f
   languageName: node
   linkType: hard
 

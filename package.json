@@ -78,7 +78,8 @@
     "@loaders.gl/ply": "^4.4.0-alpha.0",
     "@loaders.gl/schema": "^4.4.0-alpha.0",
     "@loaders.gl/schema-utils": "^4.4.0-alpha.0",
-    "@loaders.gl/textures": "^4.4.0-alpha.0"
+    "@loaders.gl/textures": "^4.4.0-alpha.0",
+    "@loaders.gl/wms": "^4.4.0-alpha.0"
   },
   "volta": {
     "node": "20.18.0",
