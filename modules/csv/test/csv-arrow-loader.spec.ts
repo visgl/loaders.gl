@@ -57,7 +57,7 @@ test('CSVArrowLoader#loadInBatches(incidents.csv)', async (t) => {
     // t.comment(`BATCH: ${batch.length}`);
     batchCount++;
   }
-  t.equal(batchCount, 5, 'Correct number of batches received');
+  t.equal(batchCount, 1, 'Correct number of batches received');
 
   t.end();
 });

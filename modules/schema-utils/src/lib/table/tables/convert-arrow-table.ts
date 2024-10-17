@@ -16,6 +16,7 @@ import type {
 import {convertTable} from './convert-table';
 import {convertArrowToSchema} from '../../schema/convert-arrow-schema';
 import {makeArrowRecordBatchIterator} from '../batches/make-arrow-batch-iterator';
+
 /**
  * * Convert a loaders.gl Table to an Apache Arrow Table
  * @param mesh
