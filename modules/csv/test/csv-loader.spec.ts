@@ -247,7 +247,6 @@ test('CSVLoader#loadInBatches(sample.csv, object-rows)', async (t) => {
       //   `BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`
       // );
       t.equal(batch.length, 2, 'Got correct batch size');
-      debugger
       t.deepEqual(batch.data[0], {column1: 'A', column2: 'B', column3: 1}, 'Got correct first row');
     }
     batchCount++;
