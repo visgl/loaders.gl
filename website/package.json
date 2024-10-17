@@ -70,8 +70,8 @@
   },
   "devDependencies": {
     "@cmfcmf/docusaurus-search-local": "~1.1.0",
-    "@docusaurus/module-type-aliases": "~3.3.2",
-    "@docusaurus/plugin-client-redirects": "~3.3.2",
+    "@docusaurus/module-type-aliases": "~3.4.0",
+    "@docusaurus/plugin-client-redirects": "~3.4.0",
     "@docusaurus/plugin-content-docs": "~3.3.2",
     "@docusaurus/tsconfig": "~3.3.2",
     "babel-plugin-styled-components": "~2.0.0",

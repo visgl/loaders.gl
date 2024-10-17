@@ -143,3 +143,10 @@ export type {
 //   FixedSizeList,
 //   Struct
 // } from './lib/table/arrow-api';
+
+
+// DEPRECATED
+
+// MESH CATEGORY
+
+export {getMeshSize, getMeshBoundingBox} from './deprecated/mesh-utils';

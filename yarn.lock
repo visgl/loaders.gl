@@ -18567,6 +18567,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"loadersgl-gallery@workspace:examples/gallery":
+  version: 0.0.0-use.local
+  resolution: "loadersgl-gallery@workspace:examples/gallery"
+  languageName: unknown
+  linkType: soft
+
 "locate-path@npm:^2.0.0":
   version: 2.0.0
   resolution: "locate-path@npm:2.0.0"
@@ -22640,8 +22646,8 @@ __metadata:
     "@deck.gl/mesh-layers": "npm:^9.0.33"
     "@deck.gl/react": "npm:^9.0.33"
     "@docusaurus/core": "npm:~3.3.2"
-    "@docusaurus/module-type-aliases": "npm:~3.3.2"
-    "@docusaurus/plugin-client-redirects": "npm:~3.3.2"
+    "@docusaurus/module-type-aliases": "npm:~3.4.0"
+    "@docusaurus/plugin-client-redirects": "npm:~3.4.0"
     "@docusaurus/plugin-content-docs": "npm:~3.3.2"
     "@docusaurus/preset-classic": "npm:~3.3.2"
     "@docusaurus/tsconfig": "npm:~3.3.2"
