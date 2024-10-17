@@ -22,7 +22,7 @@
   ],
   "workspaces": [
     "modules/*",
-    "examples",
+    "examples/*",
     "website"
   ],
   "scripts": {
