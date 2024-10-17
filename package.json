@@ -21,7 +21,9 @@
     "KML"
   ],
   "workspaces": [
-    "modules/*"
+    "modules/*",
+    "examples",
+    "website"
   ],
   "scripts": {
     "bootstrap": "ocular-bootstrap",
