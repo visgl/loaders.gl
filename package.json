@@ -70,6 +70,7 @@
     "@docusaurus/plugin-content-docs": "~3.3.2",
     "@docusaurus/tsconfig": "~3.3.2",
     "@loaders.gl/core": "^4.4.0-alpha.0",
+    "@loaders.gl/draco": "^4.4.0-alpha.0",
     "@loaders.gl/geopackage": "^4.4.0-alpha.0",
     "@loaders.gl/i3s": "^4.4.0-alpha.0",
     "@loaders.gl/las": "^4.4.0-alpha.0",

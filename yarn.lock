@@ -4827,21 +4827,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/draco@npm:4.3.0":
-  version: 4.3.0
-  resolution: "@loaders.gl/draco@npm:4.3.0"
-  dependencies:
-    "@loaders.gl/loader-utils": "npm:4.3.0"
-    "@loaders.gl/schema": "npm:4.3.0"
-    "@loaders.gl/worker-utils": "npm:4.3.0"
-    draco3d: "npm:1.5.7"
-  peerDependencies:
-    "@loaders.gl/core": ^4.0.0
-  checksum: 10c0/0a55f56066cf04c551362b590e9b0caef1b0ddee564ec1ccdaeb9edd6783249c64f42d4bb2afa72327793026106c55df86ef6f1cfaae4647a4e454e5b72c46c5
-  languageName: node
-  linkType: hard
-
-"@loaders.gl/draco@npm:4.4.0-alpha.0, @loaders.gl/draco@workspace:modules/draco":
+"@loaders.gl/draco@npm:^4.4.0-alpha.0, @loaders.gl/draco@workspace:modules/draco":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/draco@workspace:modules/draco"
   dependencies:
@@ -26370,11 +26356,11 @@ __metadata:
 
 "typescript@patch:typescript@npm%3A^5.6.0#optional!builtin<compat/typescript>":
   version: 5.6.3
-  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=74658d"
+  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=8c6c40"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/ac8307bb06bbfd08ae7137da740769b7d8c3ee5943188743bb622c621f8ad61d244767480f90fbd840277fbf152d8932aa20c33f867dea1bb5e79b187ca1a92f
+  checksum: 10c0/7c9d2e07c81226d60435939618c91ec2ff0b75fbfa106eec3430f0fcf93a584bc6c73176676f532d78c3594fe28a54b36eb40b3d75593071a7ec91301533ace7
   languageName: node
   linkType: hard
 
