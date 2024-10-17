@@ -5,6 +5,7 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Schema, ArrayRowTable, ObjectRowTable, TableBatch} from '@loaders.gl/schema';
 
+import {log} from '@loaders.gl/loader-utils';
 import {
   AsyncQueue,
   deduceTableSchema,
@@ -14,9 +15,6 @@ import {
 } from '@loaders.gl/schema-utils';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
-
-type ObjectField = {name: string; index: number; type: any};
-type ObjectSchema = {[key: string]: ObjectField} | ObjectField[];
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -320,7 +318,7 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
   return headers;
 }
 
-function deduceCSVSchema(row, headerRow, logger: Logger): Schema {
+function deduceCSVSchema(row, headerRow): Schema {
   const fields: Schema['fields'] = [];
   for (let i = 0; i < row.length; i++) {
     const columnName = (headerRow && headerRow[i]) || i;
@@ -336,7 +334,7 @@ function deduceCSVSchema(row, headerRow, logger: Logger): Schema {
         fields.push({name: String(columnName), type: 'utf8', nullable: true});
         break;
       default:
-        logger
+        log.warn(`CSV: Unknown column type: ${typeof value}`)();
         fields.push({name: String(columnName), type: 'utf8', nullable: true});
     }
   }
@@ -350,6 +348,9 @@ function deduceCSVSchema(row, headerRow, logger: Logger): Schema {
 }
 
 // TODO - remove
+// type ObjectField = {name: string; index: number; type: any};
+// type ObjectSchema = {[key: string]: ObjectField} | ObjectField[];
+
 // function deduceObjectSchema(row, headerRow): ObjectSchema {
 //   const schema: ObjectSchema = headerRow ? {} : [];
 //   for (let i = 0; i < row.length; i++) {
