@@ -320,7 +320,7 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
   return headers;
 }
 
-function deduceCSVSchema(row, headerRow): Schema {
+function deduceCSVSchema(row, headerRow, logger: Logger): Schema {
   const fields: Schema['fields'] = [];
   for (let i = 0; i < row.length; i++) {
     const columnName = (headerRow && headerRow[i]) || i;
@@ -333,32 +333,40 @@ function deduceCSVSchema(row, headerRow): Schema {
         fields.push({name: String(columnName), type: 'bool', nullable: true});
         break;
       case 'string':
-      default:
         fields.push({name: String(columnName), type: 'utf8', nullable: true});
-      // We currently only handle numeric rows
-      // TODO we could offer a function to map strings to numbers?
+        break;
+      default:
+        logger
+        fields.push({name: String(columnName), type: 'utf8', nullable: true});
     }
   }
-  return {fields, metadata: {'loaders.gl': 'CSVLoader'}};
+  return {
+    fields,
+    metadata: {
+      'loaders.gl#format': 'csv',
+      'loaders.gl#loader': 'CSVLoader'
+    }
+  };
 }
 
-function deduceObjectSchema(row, headerRow): ObjectSchema {
-  const schema: ObjectSchema = headerRow ? {} : [];
-  for (let i = 0; i < row.length; i++) {
-    const columnName = (headerRow && headerRow[i]) || i;
-    const value = row[i];
-    switch (typeof value) {
-      case 'number':
-      case 'boolean':
-        // TODO - booleans could be handled differently...
-        schema[columnName] = {name: String(columnName), index: i, type: Float32Array};
-        break;
-      case 'string':
-      default:
-        schema[columnName] = {name: String(columnName), index: i, type: Array};
-      // We currently only handle numeric rows
-      // TODO we could offer a function to map strings to numbers?
-    }
-  }
-  return schema;
-}
+// TODO - remove
+// function deduceObjectSchema(row, headerRow): ObjectSchema {
+//   const schema: ObjectSchema = headerRow ? {} : [];
+//   for (let i = 0; i < row.length; i++) {
+//     const columnName = (headerRow && headerRow[i]) || i;
+//     const value = row[i];
+//     switch (typeof value) {
+//       case 'number':
+//       case 'boolean':
+//         // TODO - booleans could be handled differently...
+//         schema[columnName] = {name: String(columnName), index: i, type: Float32Array};
+//         break;
+//       case 'string':
+//       default:
+//         schema[columnName] = {name: String(columnName), index: i, type: Array};
+//       // We currently only handle numeric rows
+//       // TODO we could offer a function to map strings to numbers?
+//     }
+//   }
+//   return schema;
+// }
