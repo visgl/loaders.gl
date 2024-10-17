@@ -153,12 +153,12 @@ const config = {
         docItemComponent: resolve('./src/components/example/doc-item-component.tsx')
       }
     ],
-    [
-      require.resolve('@cmfcmf/docusaurus-search-local'),
-      {
-        // Options here
-      }
-    ],
+    // [
+    //   require.resolve('@cmfcmf/docusaurus-search-local'),
+    //   {
+    //     // Options here
+    //   }
+    // ],
     [
       '@docusaurus/plugin-client-redirects',
       {

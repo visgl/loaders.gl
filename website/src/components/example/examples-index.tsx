@@ -1,9 +1,8 @@
 import React from 'react';
 // Note: this is internal API and may change in a future release
 // https://github.com/facebook/docusaurus/discussions/7457
-import {useDocsSidebar} from "@docusaurus/theme-common/internal";
 import useBaseUrl from '@docusaurus/useBaseUrl';
-
+import {useDocsSidebar} from '@docusaurus/plugin-content-docs/client';
 import {
   MainExamples,
   ExamplesGroup,
@@ -36,11 +35,12 @@ function renderCategory({label, items}, getThumbnail) {
 }
 
 export default function ExamplesIndex({getThumbnail}) {
-  const sidebar = useDocsSidebar();
-
+  const mainSidebar = useDocsSidebar();
+  console.log(mainSidebar)
+  const sidebar = mainSidebar.items[0];
   return <MainExamples>
     {sidebar.items.map(item => {
-      if (item.type === 'category') {
+      if (item.type === 'category' && item.items && item.label) {
         return renderCategory(item, getThumbnail);
       }
       return null;
