@@ -144,7 +144,6 @@ export type {
 //   Struct
 // } from './lib/table/arrow-api';
 
-
 // DEPRECATED
 
 // MESH CATEGORY
