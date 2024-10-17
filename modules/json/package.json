@@ -44,12 +44,12 @@
     "build-worker": "esbuild src/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.3.0",
-    "@loaders.gl/loader-utils": "4.3.0",
-    "@loaders.gl/schema": "4.3.0"
+    "@loaders.gl/gis": "^4.3.0",
+    "@loaders.gl/loader-utils": "^4.3.0",
+    "@loaders.gl/schema": "^4.3.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0"
+    "@loaders.gl/core": "^4.3.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }
