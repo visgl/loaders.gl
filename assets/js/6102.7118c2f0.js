@@ -1,0 +1,1 @@
+(self.webpackChunkproject_website=self.webpackChunkproject_website||[]).push([[6102],{86102:(e,s,a)=>{var p=a(96763);s.printMsg=function(){p.log("This is a message from the demo package")}}}]);
