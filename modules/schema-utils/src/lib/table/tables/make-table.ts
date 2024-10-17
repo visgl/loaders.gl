@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table, ArrayRowTable, ObjectRowTable, ColumnarTable} from '@loaders.gl/schema';
+import * as arrow from 'apache-arrow';
+import type {
+  Table,
+  ArrayRowTable,
+  ObjectRowTable,
+  ColumnarTable,
+  ArrowTable
+} from '@loaders.gl/schema';
 import {deduceTableSchema} from '../../schema/deduce-table-schema';
 
 /**
@@ -12,6 +19,8 @@ import {deduceTableSchema} from '../../schema/deduce-table-schema';
 export function makeTableFromData(data: unknown[][]): ArrayRowTable;
 export function makeTableFromData(data: {[column: string]: unknown}[]): ObjectRowTable;
 export function makeTableFromData(data: {[column: string]: ArrayLike<unknown>}): ColumnarTable;
+export function makeTableFromData(data: arrow.Table): ArrowTable;
+
 export function makeTableFromData(data: unknown): Table {
   let table: Table;
   switch (getTableShapeFromData(data)) {
@@ -24,6 +33,9 @@ export function makeTableFromData(data: unknown): Table {
     case 'columnar-table':
       table = {shape: 'columnar-table', data: data as {[column: string]: ArrayLike<unknown>}};
       break;
+    case 'arrow-table':
+      table = {shape: 'arrow-table', data: data as arrow.Table};
+      break;
     default:
       throw new Error('table');
   }
@@ -33,6 +45,10 @@ export function makeTableFromData(data: unknown): Table {
 
 /** Helper function to get shape of data */
 function getTableShapeFromData(data) {
+  if (data instanceof arrow.Table) {
+    return 'arrow-table';
+  }
+
   if (Array.isArray(data)) {
     if (data.length === 0) {
       throw new Error('cannot deduce type of empty table');

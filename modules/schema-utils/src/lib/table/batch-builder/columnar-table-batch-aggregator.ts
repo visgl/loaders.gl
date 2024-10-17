@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, ColumnarTableBatch, ArrowTableBatch} from '@loaders.gl/schema';
+import type {Schema, ColumnarTableBatch, ArrowTableBatch, TypedArray} from '@loaders.gl/schema';
+import {getArrayTypeFromDataType} from '../../schema/data-type';
 import {TableBatchAggregator} from './table-batch-aggregator';
-
 type ColumnarTableBatchOptions = {};
 
 const DEFAULT_ROW_COUNT = 100;
@@ -13,7 +13,7 @@ export class ColumnarTableBatchAggregator implements TableBatchAggregator {
   schema: Schema;
   length: number = 0;
   allocated: number = 0;
-  columns: {[columnName: string]: any[]} = {};
+  columns: Record<string, TypedArray | Array<any>> = {};
 
   constructor(schema: Schema, options: ColumnarTableBatchOptions) {
     this.schema = schema;
@@ -46,24 +46,11 @@ export class ColumnarTableBatchAggregator implements TableBatchAggregator {
 
   getBatch(): ColumnarTableBatch | ArrowTableBatch | null {
     this._pruneColumns();
-    const columns = Array.isArray(this.schema) ? this.columns : {};
-
-    // schema is an array if there're no headers
-    // object if there are headers
-    // columns should match schema format
-    if (!Array.isArray(this.schema)) {
-      for (const fieldName in this.schema) {
-        const field = this.schema[fieldName];
-        columns[field.name] = this.columns[field.index];
-      }
-    }
-
-    this.columns = {};
 
     const batch: ColumnarTableBatch = {
       shape: 'columnar-table',
       batchType: 'data',
-      data: columns,
+      data: this.columns,
       schema: this.schema,
       length: this.length
     };
@@ -82,23 +69,23 @@ export class ColumnarTableBatchAggregator implements TableBatchAggregator {
     this.allocated = this.allocated > 0 ? (this.allocated *= 2) : DEFAULT_ROW_COUNT;
     this.columns = {};
 
-    for (const fieldName in this.schema) {
-      const field = this.schema[fieldName];
-      const ArrayType = field.type || Float32Array;
-      const oldColumn = this.columns[field.index];
+    for (const field of this.schema.fields) {
+      const ArrayType = getArrayTypeFromDataType(field.type, field.nullable);
+      const oldColumn = this.columns[field.name];
 
-      if (oldColumn && ArrayBuffer.isView(oldColumn)) {
+      if (!oldColumn) {
+        // Create new
+        this.columns[field.name] = new ArrayType(this.allocated);
+      } else if (Array.isArray(oldColumn)) {
+        // Plain array, just increase its size
+        oldColumn.length = this.allocated;
+      } else if (ArrayBuffer.isView(oldColumn)) {
         // Copy the old data to the new array
         const typedArray = new ArrayType(this.allocated);
-        typedArray.set(oldColumn);
-        this.columns[field.index] = typedArray;
-      } else if (oldColumn) {
-        // Plain array
-        oldColumn.length = this.allocated;
-        this.columns[field.index] = oldColumn;
-      } else {
-        // Create new
-        this.columns[field.index] = new ArrayType(this.allocated);
+        if (ArrayBuffer.isView(typedArray)) {
+          typedArray.set(oldColumn);
+        }
+        this.columns[field.name] = typedArray;
       }
     }
   }

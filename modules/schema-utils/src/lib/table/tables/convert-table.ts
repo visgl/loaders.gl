@@ -17,6 +17,7 @@ import {
 } from './table-accessors';
 import {deduceTableSchema} from '../../schema/deduce-table-schema';
 import {makeColumnFromField} from './table-column';
+import {convertTableToArrow} from './convert-arrow-table';
 
 export function convertTable(table: Table, shape: 'object-row-table'): ObjectRowTable;
 export function convertTable(table: Table, shape: 'array-row-table'): ArrayRowTable;
@@ -35,32 +36,20 @@ export function convertTable(
 ) {
   switch (shape) {
     case 'object-row-table':
-      return makeObjectRowTable(table);
+      return convertToObjectRowTable(table);
     case 'array-row-table':
-      return makeArrayRowTable(table);
+      return convertToArrayRowTable(table);
     case 'columnar-table':
-      return makeColumnarTable(table);
+      return convertToColumnarTable(table);
     case 'arrow-table':
-      return makeArrowTable(table);
+      return convertToArrowTable(table);
     default:
       throw new Error(shape);
   }
 }
 
-/**
- * Convert a table to apache arrow format
- * @note this depends on the `@loaders.gl/arrow module being imported
- */
-export function makeArrowTable(table: Table): Table {
-  const _makeArrowTable = globalThis.__loaders?._makeArrowTable;
-  if (!_makeArrowTable) {
-    throw new Error('');
-  }
-  return _makeArrowTable(table);
-}
-
 /** Convert any simple table into columnar format */
-export function makeColumnarTable(table: Table): ColumnarTable {
+export function convertToColumnarTable(table: Table): ColumnarTable {
   // TODO - should schema really be optional?
   const schema = table.schema || deduceTableSchema(table);
   const fields = table.schema?.fields || [];
@@ -88,7 +77,7 @@ export function makeColumnarTable(table: Table): ColumnarTable {
 }
 
 /** Convert any table into array row format */
-export function makeArrayRowTable(table: Table): ArrayRowTable {
+export function convertToArrayRowTable(table: Table): ArrayRowTable {
   if (table.shape === 'array-row-table') {
     return table;
   }
@@ -105,7 +94,7 @@ export function makeArrayRowTable(table: Table): ArrayRowTable {
 }
 
 /** Convert any table into object row format */
-export function makeObjectRowTable(table: Table): ObjectRowTable {
+export function convertToObjectRowTable(table: Table): ObjectRowTable {
   if (table.shape === 'object-row-table') {
     return table;
   }
@@ -118,6 +107,19 @@ export function makeObjectRowTable(table: Table): ObjectRowTable {
     shape: 'object-row-table',
     schema: table.schema,
     data
+  };
+}
+
+/**
+ * Convert a table to apache arrow format
+ * @note this depends on the `@loaders.gl/arrow module being imported
+ */
+export function convertToArrowTable(table: Table): ArrowTable {
+  const arrowTable = convertTableToArrow(table);
+  return {
+    shape: 'arrow-table',
+    schema: table.schema,
+    data: arrowTable
   };
 }
 

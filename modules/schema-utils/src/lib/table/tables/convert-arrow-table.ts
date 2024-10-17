@@ -14,8 +14,8 @@ import type {
 } from '@loaders.gl/schema';
 
 import {convertTable} from './convert-table';
-import {convertArrowToSchema, convertSchemaToArrow} from '../../schema/convert-arrow-schema';
-import {getTableLength, getTableNumCols, getTableCellAt} from './table-accessors';
+import {convertArrowToSchema} from '../../schema/convert-arrow-schema';
+import {makeArrowRecordBatchIterator} from '../batches/make-arrow-batch-iterator';
 
 /**
  * * Convert a loaders.gl Table to an Apache Arrow Table
@@ -36,50 +36,9 @@ export function convertTableToArrow(table: Table, options?: {batchSize?: number}
     // fall through
 
     default:
-      const arrowBatchIterator = makeTableToArrowBatchesIterator(table, options);
+      const arrowBatchIterator = makeArrowRecordBatchIterator(table, options);
       return new arrow.Table(arrowBatchIterator);
   }
-}
-
-export function* makeTableToArrowBatchesIterator(
-  table: Table,
-  options?: {batchSize?: number}
-): IterableIterator<arrow.RecordBatch> {
-  const arrowSchema = convertSchemaToArrow(table.schema!);
-
-  const length = getTableLength(table);
-  const numColumns = getTableNumCols(table);
-  const batchSize = options?.batchSize || length;
-
-  const builders = arrowSchema?.fields.map((arrowField) => arrow.makeBuilder(arrowField));
-  const structField = new arrow.Struct(arrowSchema.fields);
-
-  let batchLength = 0;
-  for (let rowIndex = 0; rowIndex < length; rowIndex++) {
-    for (let columnIndex = 0; columnIndex < numColumns; ++columnIndex) {
-      const value = getTableCellAt(table, rowIndex, columnIndex);
-
-      const builder = builders[columnIndex];
-      builder.append(value);
-      batchLength++;
-
-      if (batchLength >= batchSize) {
-        const datas = builders.map((builder) => builder.flush());
-        const structData = new arrow.Data(structField, 0, batchLength, 0, undefined, datas);
-        yield new arrow.RecordBatch(arrowSchema, structData);
-        batchLength = 0;
-      }
-    }
-  }
-
-  if (batchLength > 0) {
-    const datas = builders.map((builder) => builder.flush());
-    const structData = new arrow.Data(structField, 0, batchLength, 0, undefined, datas);
-    yield new arrow.RecordBatch(arrowSchema, structData);
-    batchLength = 0;
-  }
-
-  builders.map((builder) => builder.finish());
 }
 
 /**
@@ -187,3 +146,53 @@ function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
     features
   };
 }
+
+// /**
+//  * Wrap an apache arrow table in a loaders.gl table wrapper.
+//  * From this additional conversions are available.
+//  * @param arrowTable
+//  * @returns
+//  */
+// function convertArrowToArrowTable(arrowTable: arrow.Table): ArrowTable {
+//   return {
+//     shape: 'arrow-table',
+//     schema: convertArrowToSchema(arrowTable.schema),
+//     data: arrowTable
+//   };
+// }
+
+// function convertArrowToArrayRowTable(arrowTable: arrow.Table): Table {
+//   const columnarTable = convertArrowToColumnarTable(arrowTable);
+//   return convertTable(columnarTable, 'array-row-table');
+// }
+
+// function convertArrowToObjectRowTable(arrowTable: arrow.Table): Table {
+//   const columnarTable = convertArrowToColumnarTable(arrowTable);
+//   return convertTable(columnarTable, 'object-row-table');
+// }
+
+// /**
+//  * Convert an Apache Arrow table to a ColumnarTable
+//  * @note Currently does not convert schema
+//  */
+// function convertArrowToColumnarTable(arrowTable: arrow.Table): ColumnarTable {
+//   // TODO - avoid calling `getColumn` on columns we are not interested in?
+//   // Add options object?
+
+//   const columns: ColumnarTable['data'] = {};
+
+//   for (const field of arrowTable.schema.fields) {
+//     // This (is intended to) coalesce all record batches into a single typed array
+//     const arrowColumn = arrowTable.getChild(field.name);
+//     const values = arrowColumn?.toArray();
+//     columns[field.name] = values;
+//   }
+
+//   const schema = convertArrowToSchema(arrowTable.schema);
+
+//   return {
+//     shape: 'columnar-table',
+//     schema,
+//     data: columns
+//   };
+// }

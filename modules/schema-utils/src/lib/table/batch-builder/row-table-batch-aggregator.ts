@@ -31,8 +31,8 @@ export class RowTableBatchAggregator implements TableBatchAggregator {
     // object if there are headers
     if (schema) {
       this._headers = [];
-      for (const key in schema) {
-        this._headers[schema[key].index] = schema[key].name;
+      for (let i = 0; i < schema.fields.length; i++) {
+        this._headers[i] = schema.fields[i].name;
       }
     }
   }
