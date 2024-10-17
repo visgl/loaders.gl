@@ -73,18 +73,19 @@ export class ColumnarTableBatchAggregator implements TableBatchAggregator {
       const ArrayType = getArrayTypeFromDataType(field.type, field.nullable);
       const oldColumn = this.columns[field.name];
 
-      if (oldColumn && ArrayBuffer.isView(oldColumn)) {
-        // Copy the old data to the new array
-        const typedArray = new ArrayType(this.allocated);
-        typedArray.set(oldColumn);
-        this.columns[field.name] = typedArray;
-      } else if (oldColumn) {
-        // Plain array
-        oldColumn.length = this.allocated;
-        this.columns[field.name] = oldColumn;
-      } else {
+      if (!oldColumn) {
         // Create new
         this.columns[field.name] = new ArrayType(this.allocated);
+      } else if (Array.isArray(oldColumn)) {
+        // Plain array, just increase its size
+        oldColumn.length = this.allocated;
+      } else if (ArrayBuffer.isView(oldColumn)) {
+        // Copy the old data to the new array
+        const typedArray = new ArrayType(this.allocated);
+        if (ArrayBuffer.isView(typedArray)) {
+          typedArray.set(oldColumn);
+        }
+        this.columns[field.name] = typedArray;
       }
     }
   }
