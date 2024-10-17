@@ -60,6 +60,7 @@
     "@loaders.gl/gis": "4.4.0-alpha.0",
     "@loaders.gl/loader-utils": "4.4.0-alpha.0",
     "@loaders.gl/schema": "4.4.0-alpha.0",
+    "@loaders.gl/schema-utils": "4.4.0-alpha.0",
     "@loaders.gl/wkt": "4.4.0-alpha.0",
     "@loaders.gl/worker-utils": "4.4.0-alpha.0",
     "@math.gl/polygon": "^4.1.0",

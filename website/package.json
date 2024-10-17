@@ -79,7 +79,16 @@
   },
   "resolutions": {
     "@mdx-js/react": "^3.0.1",
-    "@mdx-js/mdx": "^3.0.1"
+    "@mdx-js/mdx": "^3.0.1",
+    "@loaders.gl/core": "^4.4.0-alpha.0",
+    "@loaders.gl/geopackage": "^4.4.0-alpha.0",
+    "@loaders.gl/i3s": "^4.4.0-alpha.0",
+    "@loaders.gl/las": "^4.4.0-alpha.0",
+    "@loaders.gl/loader-utils": "^4.4.0-alpha.0",
+    "@loaders.gl/obj": "^4.4.0-alpha.0",
+    "@loaders.gl/ply": "^4.4.0-alpha.0",
+    "@loaders.gl/schema": "^4.4.0-alpha.0",
+    "@loaders.gl/schema-utils": "^4.4.0-alpha.0"
   },
   "browser": {
     "fs": false,

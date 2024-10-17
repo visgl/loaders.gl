@@ -90,6 +90,7 @@ const config = {
             '@loaders.gl/polyfills': resolve('../modules/polyfills/src'),
             '@loaders.gl/potree': resolve('../modules/potree/src'),
             '@loaders.gl/schema': resolve('../modules/schema/src'),
+            '@loaders.gl/schema-utils': resolve('../modules/schema-utils/src'),
             '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
             '@loaders.gl/stac': resolve('../modules/stac/src'),
             '@loaders.gl/terrain': resolve('../modules/terrain/src'),

@@ -59,6 +59,7 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0-alpha.0",
     "@loaders.gl/schema": "4.4.0-alpha.0",
+    "@loaders.gl/schema-utils": "4.4.0-alpha.0",
     "@loaders.gl/worker-utils": "4.4.0-alpha.0",
     "draco3d": "1.5.7"
   },
