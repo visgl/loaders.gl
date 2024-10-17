@@ -13,8 +13,8 @@
   "dependencies": {
     "@deck.gl/core": "^9.0.1",
     "@deck.gl-community/experimental": "^9.0.3",
-    "@loaders.gl/core": "^4.1.0",
-    "@loaders.gl/i3s": "^4.1.0",
+    "@loaders.gl/core": "4.4.0-alpha.0",
+    "@loaders.gl/i3s": "4.4.0-alpha.0",
     "@luma.gl/core": "^9.0.1",
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "maplibre-gl": "^3.6.2",

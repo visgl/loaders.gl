@@ -9,7 +9,8 @@
 import type {WorkerObject, WorkerOptions} from '../../types';
 import {assert} from '../env-utils/assert';
 import {isBrowser} from '../env-utils/globals';
-import {VERSION, NPM_TAG} from '../env-utils/version';
+import {VERSION} from '../env-utils/version';
+import {NPM_TAG} from '../npm-tag';
 
 /**
  * Gets worker object's name (for debugging in Chrome thread inspector window)

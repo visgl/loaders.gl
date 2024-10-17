@@ -2,14 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {NPM_TAG} from '../npm-tag';
+
 // Version constant cannot be imported, it needs to correspond to the build version of **this** module.
-
-/**
- * TODO - unpkg.com doesn't seem to have a `latest` specifier for alpha releases...
- * 'beta' on beta branch, 'latest' on prod branch
- */
-export const NPM_TAG = 'latest';
-
 declare let __VERSION__: string;
 
 function getVersion() {
