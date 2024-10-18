@@ -23,6 +23,7 @@ export const TWKBWriter = {
   module: 'wkt',
   version: VERSION,
   extensions: ['twkb'],
+  mimeTypes: ['application/text'],
   encode: async (geometry: Geometry, options?: TWKBWriterOptions) =>
     convertGeometryToTWKB(geometry, options?.twkb),
   encodeSync: (geometry: Geometry, options?: TWKBWriterOptions) =>

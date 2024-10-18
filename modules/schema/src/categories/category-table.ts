@@ -79,7 +79,7 @@ export type TableBatch =
   | ArrowTableBatch;
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type ArrayRowTableBatch = Batch & {
+export type ArrayRowTableBatch<MetadataT = unknown> = Batch<MetadataT> & {
   shape: 'array-row-table';
   schema?: Schema;
   schemaType?: 'explicit' | 'deduced';
@@ -88,7 +88,7 @@ export type ArrayRowTableBatch = Batch & {
 };
 
 /** Batch for a table organized as an array of rows, each row is an object mapping columns to values */
-export type ObjectRowTableBatch = Batch & {
+export type ObjectRowTableBatch<MetadataT = unknown> = Batch<MetadataT> & {
   shape: 'object-row-table';
   schema?: Schema;
   schemaType?: 'explicit' | 'deduced';
@@ -97,7 +97,7 @@ export type ObjectRowTableBatch = Batch & {
 };
 
 /** Batch for a table organized as an array of rows, each row is an array of values */
-export type GeoJSONTableBatch = Batch & {
+export type GeoJSONTableBatch<MetadataT = unknown> = Batch<MetadataT> & {
   shape: 'geojson-table';
   schema?: Schema;
   schemaType?: 'explicit' | 'deduced';
@@ -107,7 +107,7 @@ export type GeoJSONTableBatch = Batch & {
 };
 
 /** Batch for a table organized as a map of columns, each column is an array of value */
-export type ColumnarTableBatch = Batch & {
+export type ColumnarTableBatch<MetadataT = unknown> = Batch<MetadataT> & {
   shape: 'columnar-table';
   schemaType?: 'explicit' | 'deduced';
   schema?: Schema;
@@ -116,7 +116,7 @@ export type ColumnarTableBatch = Batch & {
 };
 
 /** Batch that wraps an Apache Arrow RecordBatch */
-export type ArrowTableBatch = Batch & {
+export type ArrowTableBatch<MetadataT = unknown> = Batch<MetadataT> & {
   shape: 'arrow-table';
   schemaType?: 'explicit' | 'deduced';
   schema?: Schema;

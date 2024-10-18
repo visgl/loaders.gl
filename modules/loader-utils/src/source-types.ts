@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {Format} from './format-types';
 import type {DataSource, DataSourceOptions} from './lib/sources/data-source';
 
 /**
@@ -15,7 +16,7 @@ export interface Source<
     unknown,
     DataSourceOptions
   >
-> {
+> extends Format {
   /** Type of source created by this service */
   dataSource?: DataSourceT;
   /** Type of options used when creating sources */

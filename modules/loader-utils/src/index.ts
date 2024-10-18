@@ -20,6 +20,10 @@ export type {
   FetchLike
 } from './types';
 
+// formats
+
+export type {Format} from './format-types';
+
 // loaders
 
 export type {

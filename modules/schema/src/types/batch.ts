@@ -12,9 +12,11 @@ type ApacheRecordBatch = unknown;
  * @see parseInBatches()
  * @see loadInBatches()
  */
-export type Batch = {
+export type Batch<MetadataT = unknown> = {
   /** A batch can contain metadata, data, or in case of unstructured data (JSON) */
   batchType: 'data' | 'metadata' | 'partial-result' | 'final-result';
+  /** Metadata for this batch if batchType === 'metadata' */
+  metadata?: MetadataT;
   /** A string identifying the shape of data in this batch (table, etc) */
   shape: string;
   /** Schema of the data in this batch */
