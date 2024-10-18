@@ -7,7 +7,7 @@ import type {
   ObjectRowTable,
   ObjectRowTableBatch,
   GeoJSONTable,
-  GeoJSONTableBatch,
+  GeoJSONTableBatch
   // ColumnarTable,
   // ColumnarTableBatch
 } from '@loaders.gl/schema';
@@ -22,7 +22,7 @@ import {
 //   parseParquetFileInColumns,
 //   parseParquetFileInColumnarBatches
 // } from './lib/parsers/parse-parquet-to-columns';
-import { ParquetFormat } from './parquet-format';
+import {ParquetFormat} from './parquet-format';
 
 // Note: The Buffer polyfill is quite fragile
 // For some reason, just exporting directly fails with some bundlers
@@ -54,7 +54,7 @@ export type ParquetJSONLoaderOptions = LoaderOptions & {
  */
 export const ParquetJSONWorkerLoader = {
   ...ParquetFormat,
-  
+
   dataType: null as unknown as ObjectRowTable,
   batchType: null as unknown as ObjectRowTableBatch,
 

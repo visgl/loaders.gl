@@ -12,7 +12,7 @@ export {
   ParquetJSONWorkerLoader,
   ParquetJSONLoader,
   GeoParquetWorkerLoader,
-  GeoParquetLoader,
+  GeoParquetLoader
   // ParquetJSONColumnarWorkerLoader,
   // ParquetJSONColumnarLoader
 } from './parquet-json-loader';
