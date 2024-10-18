@@ -27,7 +27,7 @@ const SHAPEFILE_JS_TEST_FILES = [
   'utf8-property'
 ];
 
-test.only('Shapefile Arrow DBF tests', async (t) => {
+test('Shapefile Arrow DBF tests', async (t) => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     const encoding = testFileName === 'latin1-property' ? 'latin1' : 'utf8';
     const options = {worker: false, dbf: {encoding}};
@@ -40,7 +40,6 @@ test.only('Shapefile Arrow DBF tests', async (t) => {
 
     const table = await parse(body, DBFArrowLoader, options);
 
-    debugger
     for (let i = 0; i < features.length; i++) {
       const row = table.data.get(i)!.toJSON();
       t.deepEqual(row, features[i].properties, testFileName);

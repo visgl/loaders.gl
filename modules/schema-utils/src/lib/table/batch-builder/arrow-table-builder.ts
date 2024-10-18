@@ -103,9 +103,9 @@ export class ArrowTableBuilder {
   _getArrowRecordBatch(): arrow.RecordBatch {
     const {arrowBuilders, arrowSchema} = this;
     const arrowDatas = arrowBuilders.map((builder) => builder.flush());
-
+    const length = arrowDatas[0].length;
     const structField = new arrow.Struct(arrowSchema.fields);
-    const arrowStructData = new arrow.Data(structField, 0, arrowDatas[0].length, 0, undefined, arrowDatas);
+    const arrowStructData = new arrow.Data(structField, 0, length, 0, undefined, arrowDatas);
     const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowStructData);
     return arrowRecordBatch;
   }
