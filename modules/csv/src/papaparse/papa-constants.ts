@@ -19,5 +19,5 @@ export const Papa = {
   // Configurable chunk sizes for local and remote files, respectively
   LocalChunkSize: 1024 * 1024 * 10, // 10 M,
   RemoteChunkSize: 1024 * 1024 * 5, // 5 M,
-  DefaultDelimiter: ',', // Used if not specified and detection fail,
+  DefaultDelimiter: ',' // Used if not specified and detection fail,
 };

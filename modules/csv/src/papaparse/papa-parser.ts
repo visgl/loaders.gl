@@ -6,6 +6,8 @@
 // This is a fork of papaparse v5.0.0-beta.0 under MIT license
 // https://github.com/mholt/PapaParse
 
+/* eslint-disable no-continue, max-depth */
+
 import {Papa} from './papa-constants';
 
 export type CSVParserConfig = {
@@ -77,6 +79,7 @@ export class ChunkStreamer {
     this._config = configCopy; // persist the copy to the caller
   }
 
+  // eslint-disable-next-line complexity, max-statements
   parseChunk(chunk, isFakeChunk?: boolean) {
     // First chunk pre-processing
     if (this.isFirstChunk && isFunction(this._config.beforeFirstChunk)) {
@@ -131,6 +134,7 @@ export class ChunkStreamer {
 
     // if (!finishedIncludingPreview && (!results || !results.meta.paused)) this._nextChunk();
 
+    // eslint-disable-next-line consistent-return
     return results;
   }
 
@@ -157,6 +161,7 @@ class StringStreamer extends ChunkStreamer {
     const chunk = size ? this.remaining.substr(0, size) : this.remaining;
     this.remaining = size ? this.remaining.substr(size) : '';
     this._finished = !this.remaining;
+    // eslint-disable-next-line consistent-return
     return this.parseChunk(chunk);
   }
 }
@@ -307,7 +312,7 @@ export class ParserHandle {
       this.addError(
         'Delimiter',
         'UndetectableDelimiter',
-        `Unable to auto-detect delimiting character; defaulted to '${  Papa.DefaultDelimiter  }'`
+        `Unable to auto-detect delimiting character; defaulted to '${Papa.DefaultDelimiter}'`
       );
       this._delimiterError = false;
     }
@@ -417,14 +422,14 @@ export class ParserHandle {
         this.addError(
           'FieldMismatch',
           'TooManyFields',
-          `Too many fields: expected ${  this._fields.length  } fields but parsed ${  j}`,
+          `Too many fields: expected ${this._fields.length} fields but parsed ${j}`,
           this._rowCounter + i
         );
       else if (j < this._fields.length)
         this.addError(
           'FieldMismatch',
           'TooFewFields',
-          `Too few fields: expected ${  this._fields.length  } fields but parsed ${  j}`,
+          `Too few fields: expected ${this._fields.length} fields but parsed ${j}`,
           this._rowCounter + i
         );
     }
@@ -432,16 +437,19 @@ export class ParserHandle {
     return row;
   }
 
+  // eslint-disable-next-line complexity, max-statements
   guessDelimiter(input, newline, skipEmptyLines, comments, delimitersToGuess) {
-    let bestDelim; let bestDelta; let fieldCountPrevRow;
+    let bestDelim;
+    let bestDelta;
+    let fieldCountPrevRow;
 
     delimitersToGuess = delimitersToGuess || [',', '\t', '|', ';', Papa.RECORD_SEP, Papa.UNIT_SEP];
 
     for (let i = 0; i < delimitersToGuess.length; i++) {
       const delim = delimitersToGuess[i];
       let avgFieldCount = 0;
-        let delta = 0;
-        let emptyLinesCount = 0;
+      let delta = 0;
+      let emptyLinesCount = 0;
       fieldCountPrevRow = undefined;
 
       const preview = new Parser({
@@ -497,7 +505,7 @@ export class ParserHandle {
 function guessLineEndings(input, quoteChar) {
   input = input.substr(0, 1024 * 1024); // max length 1 MB
   // Replace all the text inside quotes
-  const re = new RegExp(`${escapeRegExp(quoteChar)  }([^]*?)${  escapeRegExp(quoteChar)}`, 'gm');
+  const re = new RegExp(`${escapeRegExp(quoteChar)}([^]*?)${escapeRegExp(quoteChar)}`, 'gm');
   input = input.replace(re, '');
 
   const r = input.split('\r');
@@ -522,6 +530,7 @@ function escapeRegExp(string) {
 }
 
 /** The core parser implements speedy and correct CSV parsing */
+// eslint-disable-next-line complexity, max-statements
 export function Parser(config: CSVParserConfig = {}) {
   // Unpack the config object
   let delim = config.delimiter;
@@ -546,13 +555,11 @@ export function Parser(config: CSVParserConfig = {}) {
   if (typeof delim !== 'string' || Papa.BAD_DELIMITERS.indexOf(delim) > -1) delim = ',';
 
   // Comment character must be valid
-  if (comments === delim){
+  if (comments === delim) {
     throw new Error('Comment character same as delimiter');
-  }
-  else if (comments === true) {
+  } else if (comments === true) {
     comments = '#';
-  }
-  else if (typeof comments !== 'string' || Papa.BAD_DELIMITERS.indexOf(comments) > -1) {
+  } else if (typeof comments !== 'string' || Papa.BAD_DELIMITERS.indexOf(comments) > -1) {
     comments = false;
   }
 
@@ -564,6 +571,7 @@ export function Parser(config: CSVParserConfig = {}) {
   let aborted = false;
 
   // @ts-expect-error
+  // eslint-disable-next-line complexity, max-statements
   this.parse = function (input, baseIndex, ignoreLastRow) {
     // For some reason, in Chrome, this speeds things up (!?)
     if (typeof input !== 'string') throw new Error('Input must be a string');
@@ -571,18 +579,18 @@ export function Parser(config: CSVParserConfig = {}) {
     // We don't need to compute some of these every time parse() is called,
     // but having them in a more local scope seems to perform better
     const inputLen = input.length;
-      const delimLen = delim.length;
-      const newlineLen = newline.length;
-      // @ts-expect-error
-      const commentsLen = comments.length;
+    const delimLen = delim.length;
+    const newlineLen = newline.length;
+    // @ts-expect-error
+    const commentsLen = comments.length;
     const stepIsFunction = isFunction(step);
 
     // Establish starting state
     cursor = 0;
     let data: any[][] | Record<string, any> = [];
-      let errors: any[] = [];
-      let row: any[] | Record<string, any> = [];
-      let lastCursor: number = 0;
+    let errors: any[] = [];
+    let row: any[] | Record<string, any> = [];
+    let lastCursor: number = 0;
 
     if (!input) return returnable();
 

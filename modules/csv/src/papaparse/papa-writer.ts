@@ -32,6 +32,7 @@ export type CSVWriterConfig = {
   columns?: any;
 };
 
+// eslint-disable-next-line complexity, max-statements
 export function JsonToCsv(_input, _config: CSVWriterConfig = {}) {
   // Default configuration
 
@@ -68,8 +69,7 @@ export function JsonToCsv(_input, _config: CSVWriterConfig = {}) {
   if (Array.isArray(_input)) {
     if (!_input.length || Array.isArray(_input[0])) {
       return serialize(null, _input, _skipEmptyLines);
-    }
-    else if (typeof _input[0] === 'object') {
+    } else if (typeof _input[0] === 'object') {
       return serialize(_columns || Object.keys(_input[0]), _input, _skipEmptyLines);
     }
   } else if (typeof _input === 'object') {
@@ -97,6 +97,7 @@ export function JsonToCsv(_input, _config: CSVWriterConfig = {}) {
   // Default (any valid paths should return before this)
   throw new Error('Unable to serialize unrecognized input');
 
+  // eslint-disable-next-line complexity
   function unpackConfig() {
     if (typeof _config !== 'object') return;
 
@@ -112,7 +113,7 @@ export function JsonToCsv(_input, _config: CSVWriterConfig = {}) {
     if (typeof _config.quotes === 'boolean' || Array.isArray(_config.quotes))
       _quotes = _config.quotes;
 
-    if (typeof _config.skipEmptyLines === 'boolean' ||  _config.skipEmptyLines === 'greedy')
+    if (typeof _config.skipEmptyLines === 'boolean' || _config.skipEmptyLines === 'greedy')
       _skipEmptyLines = _config.skipEmptyLines;
 
     if (typeof _config.newline === 'string') _newline = _config.newline;
@@ -133,6 +134,7 @@ export function JsonToCsv(_input, _config: CSVWriterConfig = {}) {
   }
 
   /** The double for loop that iterates the data and writes out a CSV string including header row */
+  // eslint-disable-next-line complexity, max-statements
   function serialize(fields, data, skipEmptyLines) {
     let csv = '';
 
@@ -186,6 +188,7 @@ export function JsonToCsv(_input, _config: CSVWriterConfig = {}) {
   }
 
   /** Encloses a value around quotes if needed (makes a value safe for CSV insertion) */
+  // eslint-disable-next-line complexity
   function safe(str, col) {
     if (typeof str === 'undefined' || str === null) return '';
 

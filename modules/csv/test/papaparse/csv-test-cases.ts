@@ -20,16 +20,18 @@ const XHR_ENABLED = false;
 
 type Test = {
   description: string;
+  notes?: string;
   input: any;
-  config: CSVParserConfig;
+  config?: CSVParserConfig;
   expected: {
     data: any[];
     errors: any[];
   };
+  disabled?: boolean;
 };
 
 // Tests for the core parser using new Papa.Parser().parse() (CSV to JSON)
-export const CORE_PARSER_TESTS = [
+export const CORE_PARSER_TESTS: Test[] = [
   {
     description: 'One row',
     input: 'A,b,c',

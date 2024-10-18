@@ -30,5 +30,5 @@ export default {
 
   // Exposed for testing and development only
   Parser,
-  ParserHandle,
+  ParserHandle
 };
