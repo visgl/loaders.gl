@@ -12,7 +12,7 @@ import type {ParquetArrowWriterOptions} from '../../parquet-arrow-writer';
 /**
  * Encode Arrow arrow.Table to Parquet buffer
  */
-export async function encodeParquetWasm(
+export async function encodeArrowToParquet(
   table: ArrowTable,
   options: ParquetArrowWriterOptions
 ): Promise<ArrayBuffer> {

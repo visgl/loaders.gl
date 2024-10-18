@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {ParquetLoader, ParquetColumnarLoader} from '@loaders.gl/parquet';
 import {fetchFile, load} from '@loaders.gl/core';
 

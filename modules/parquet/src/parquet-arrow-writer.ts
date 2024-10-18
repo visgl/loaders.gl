@@ -4,7 +4,7 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
-import {encodeParquetWasm} from './lib/encoders/encode-parquet-wasm';
+import {encodeArrowToParquet} from './lib/encoders/encode-arrow-to-parquet';
 import {ParquetFormat} from './parquet-format';
 
 import {VERSION, PARQUET_WASM_URL} from './lib/constants';
@@ -28,6 +28,6 @@ export const ParquetArrowWriter = {
   },
   encode(arrowTable: ArrowTable, options?: ParquetArrowWriterOptions) {
     options = {parquet: {...ParquetArrowWriter.options.parquet, ...options?.parquet}, ...options};
-    return encodeParquetWasm(arrowTable, options);
+    return encodeArrowToParquet(arrowTable, options);
   }
 } as const satisfies WriterWithEncoder<ArrowTable, never, ParquetArrowWriterOptions>;
