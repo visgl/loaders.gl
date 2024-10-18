@@ -1,7 +1,50 @@
 # Roadmap
 
-loaders.gl is developed under open governance by multiple contributors working with their own priorities.
-While it is hard to predict what work will be completed and when, current development tracks and aspirations include:
+loaders.gl is developed under open governance by multiple contributors working with their own priorities. This page aims to give information about upcoming releases and directions.
+
+## v4.4 (in development)
+
+loaders.gl v4.4 will focus on cloud-native, binary data.
+A number of modules will expose "ArrowLoaders" will return binary data in the Apache Arrow and Apache GeoArrow formats.
+
+While no loader support has been removed, the flavor of the loaders.gl framework is changing.
+
+**Apache Arrow as a core format**
+
+- Many new loaders now return binary data in the Apache Arrow format.
+- This aligns with parallel efforts in companion libraries like deck.gl (as well as the ecosystem at large) to work with zero-copy, compact binary data instead of bloated, deserialized javascript data structures.
+- Binary columnar data brings in an order of magnitude better memory usage and improved load/processing performance on big datasets.
+- The Apache Arrow JS library is now a central dependency of loaders.gl.
+
+**Improved `DataSource` APIs**
+
+- The `Source` and `DataSource` APIs have matured and are now easier to work with.
+- Consule the upgrade guide for migration details.
+
+### Per-module changes
+
+- **`@loaders.gl/csv`**
+
+  - `CSVArrowLoader` - New CSV loader that returns Apache Arrow tables.
+
+- **`@loaders.gl/parquet`**
+
+  - `ParquetArrowLoader` now returns Apache Arrow tables and leverages the high-performance `parquet-wasm` library.
+  - The v4 Parquet loader is still available as `ParquetJSONLoader`
+
+- **`@loaders.gl/schema-utils`**
+
+  - New module for working with and converting Apache Arrow data.
+
+- **`@loaders.gl/gis`**
+  - Now provides support for working Apache GeoArrow data.
+
+### Upgrading to v4.4
+
+- The `Source` and `DataSource` APIs have matured leading to some minor breaking changes.
+- TBA...
+
+---
 
 ## v5.0
 
@@ -11,27 +54,7 @@ While it is hard to predict what work will be completed and when, current develo
 - More comprehensive support for `options.shape` to control the output format of loaders.
 - `ffmpeg` WASM integration for `@loaders.gl/video`
 
-## v4.x
+**Single output format per loader**
 
-- `TableTileSource` - tile adapter for WMS (support binary in/out)
-- `Tile3DSource` - tile source for 3D Tiles
-- Better examples, integrate examples into pages, improve drag and drop for testing.
-- Better schema support in all loaders
-- Option to return Apache Arrow from all loaders
-- user controlled logging
-- `BasisLoader` - WebGPU / luma v9 compatibility
-
-"Completionist tasks"
-
-- ArcGISImageServerSource
-- ArcGISFeatureServerSource
-- WFSSource
-- WMTSSource
-- ...
-
-## v4.0 ✅
-
-- EcmaScript module support ✅
-- More gLTF Extensions: `EXT_mesh_features` and `EXT_structural_metadata` for 1.1 3D Tiles attributes support ✅
-- More comprehensive support for `options.shape` to control the output format of loaders. ✅
-- Node v18 support. ✅
+- The `shape` option that was introduced in loaders.gl v3 to allow loaders to return different data formats is now deprecated and will be removed in many places.
+- Instead, applications can use utilities in the `@loaders.gl/schema-utils` and `@loaders.gl/gis` modules to convert for Apache Arrow and Apache GeoArrow to more traditional (but less efficient) JavaScript formats.
