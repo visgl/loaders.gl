@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf-to-arrow';
-import { DBFFormat } from './dbf-format';
+import {DBFFormat} from './dbf-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

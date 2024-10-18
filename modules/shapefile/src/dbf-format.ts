@@ -11,5 +11,5 @@ export const DBFFormat = {
   module: 'shapefile',
   category: 'table',
   extensions: ['dbf'],
-  mimeTypes: ['application/x-dbf'],
+  mimeTypes: ['application/x-dbf']
 } as const satisfies Format;
