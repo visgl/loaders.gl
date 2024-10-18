@@ -73,7 +73,7 @@ export {parseWKTCRS} from './lib//wkt-crs/parse-wkt-crs';
 export type {EncodeWKTCRSOptions} from './lib//wkt-crs/encode-wkt-crs';
 export {encodeWKTCRS} from './lib//wkt-crs/encode-wkt-crs';
 
-// Arrow Geometries
+// GEOARROW
 export type {
   BinaryDataFromGeoArrow,
   BinaryGeometriesFromArrowOptions
@@ -87,7 +87,6 @@ export {
   getMeanCentersFromBinaryGeometries
 } from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
 
-// GEOARROW
 export {convertGeoArrowGeometryToGeoJSON} from './lib/geometry-converters/convert-geoarrow-to-geojson';
 export {getGeometryColumnsFromSchema} from './lib/geoarrow/geoarrow-metadata';
 export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';

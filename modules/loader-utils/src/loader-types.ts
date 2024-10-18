@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  FetchLike,
-  TransformBatches /* , DataType, SyncDataType, BatchableDataType */
-} from './types';
+import type {Format} from './format-types';
+import {FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 
 // LOADERS
@@ -113,7 +111,7 @@ type PreloadOptions = {
 /**
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
-export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = {
+export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = Format & {
   /** The result type of this loader  */
   dataType?: DataT;
   /** The batched result type of this loader  */
@@ -123,6 +121,11 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = 
   options: LoaderOptionsT;
   /** Deprecated Options */
   deprecatedOptions?: Record<string, string | Record<string, string>>;
+  /** Version should be injected by build tools */
+  version: string;
+  /** A boolean, or a URL */
+  worker?: string | boolean;
+  // end Worker
 
   /** Human readable name */
   name: string;
@@ -130,19 +133,12 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = 
   id: string;
   /** module is used to generate worker threads, need to be the module directory name */
   module: string;
-  /** Version should be injected by build tools */
-  version: string;
-  /** A boolean, or a URL */
-  worker?: string | boolean;
-  // end Worker
-
   /** Which category does this loader belong to */
   category?: string;
   /** File extensions that are potential matches with this loader. */
   extensions: string[];
   /** MIMETypes that indicate a match with this loader. @note Some MIMETypes are generic and supported by many loaders */
   mimeTypes: string[];
-
   /** Is the input of this loader binary */
   binary?: boolean;
   /** Is the input of this loader text */

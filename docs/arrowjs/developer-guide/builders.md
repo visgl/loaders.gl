@@ -23,3 +23,29 @@ const utf8Vector = utf8Builder.finish().toVector();
 console.log(utf8Vector.toJSON());
 // > ["hello", null, "world", null]
 ```
+
+One way to build a table with multiple columns is to create an arrow `Struct` field type using the fields in the table's schema,
+and then create a `Data` object using that `Field` object and the data
+
+```ts
+function buildTable(arrowSchema: arrow.Schema, const data: any[][]) {
+  const arrowBuilders = this.arrowSchema.fields.map((field) => arrow.makeBuilder({type: field.type, [null]));
+
+  // Application data
+  const row = [column0value, column1Value, ...];
+
+  for (let i = 0; i < this.arrowBuilders.length; i++) {
+    arrowBuilders[i].append(row[i]);
+  }
+
+  const arrowDatas = arrowBuilders.map((builder) => builder.flush());
+  const structField = new arrow.Struct(arrowSchema.fields);
+  const arrowStructData = new arrow.Data(structField, 0, length, 0, undefined, arrowDatas);
+  const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowStructData);
+  const arrowTable = new arrow.Table([arrowRecordBatch])
+
+  arrowBuilders.forEach((builder) => builder.finish());
+
+  return arrowTable;
+}
+```

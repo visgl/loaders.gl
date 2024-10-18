@@ -20,6 +20,7 @@ export const WKTWriter = {
   module: 'wkt',
   version: VERSION,
   extensions: ['wkt'],
+  mimeTypes: ['application/wkt', 'text/plain'],
   text: true,
   encode: async (geometry: Geometry) => convertGeometryToWKTSync(geometry),
   encodeSync: convertGeometryToWKTSync,

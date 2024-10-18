@@ -77,3 +77,19 @@ type BuilderOptions<T extends DataType = any, TNull = any> {
 
 `makeBuilder()` returns `Builder` which is a base class for the various that Arrow JS builder subclasses that
 construct Arrow Vectors from JavaScript values.
+
+### append()
+
+### flush()
+
+```ts
+builder.flush(): Data
+```
+
+### finish()
+
+```ts
+builder.finish();
+```
+
+When the builder is no longer needed, the application should call `builder.finish()`.

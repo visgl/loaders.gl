@@ -29,6 +29,7 @@ export const WKBWriter = {
   module: 'wkt',
   version: VERSION,
   extensions: ['wkb'],
+  mimeTypes: ['application/wkb', 'application/octet-stream'],
   options: {
     wkb: {
       hasZ: false,
