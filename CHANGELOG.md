@@ -1,5 +1,11 @@
 # CHANGELOG for loaders.gl
 
+## v4.3.1
+
+- Returning --slpk for backward compatibility (#3138)
+- docs: Final 4.3 release docs (#3134)
+- chore: Update dependencies to ^4.3.0 (#3133)
+
 ## v4.3
 
 ### v4.3.0-beta.3
