@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 // This file is forked from https://github.com/feross/buffer under MIT license
-// The code has primarily been converted to TypeScript.
 
 /* !
  * The buffer module from node.js, for the browser.

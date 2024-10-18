@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {Test} from 'tape-promise/tape';
 
 const EPSILON_DEFAULT = 0.01;

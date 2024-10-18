@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable max-statements */
 /* eslint-disable complexity */
 import test from 'tape-promise/tape';
