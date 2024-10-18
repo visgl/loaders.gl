@@ -126,8 +126,9 @@ export {
 } from './lib/table/arrow-api/index';
 
 // EXPERIMENTAL APIs
+export {ArrowTableBuilder} from './lib/table/batch-builder/arrow-table-builder';
 
-// SCHEMA UTILS
+// Schema utils
 export {getTypeInfo} from './lib/table/arrow-api/get-type-info';
 
 export {default as AsyncQueue} from './lib/utils/async-queue';
