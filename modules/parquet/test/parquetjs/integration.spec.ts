@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase */
 import test, {Test} from 'tape-promise/tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';

@@ -4,7 +4,7 @@
 
 import type {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
-import type {ParquetLoaderOptions} from '../../parquet-loader';
+import type {ParquetJSONLoaderOptions} from '../../parquet-json-loader';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {ParquetRowGroup} from '../../parquetjs/schema/declare';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
@@ -14,11 +14,11 @@ import {installBufferPolyfill} from '../../polyfills/buffer/index';
 import {preloadCompressions} from '../../parquetjs/compression';
 
 /**
- * @deprecated
+ * @deprecated - Use parseParquetToArrow
  */
 export async function parseParquetFileInColumns(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSONLoaderOptions
 ): Promise<ColumnarTable> {
   installBufferPolyfill();
   await preloadCompressions(options);
@@ -38,7 +38,7 @@ export async function parseParquetFileInColumns(
  */
 export async function* parseParquetFileInColumnarBatches(
   file: ReadableFile,
-  options?: ParquetLoaderOptions
+  options?: ParquetJSONLoaderOptions
 ): AsyncIterable<ColumnarTableBatch> {
   installBufferPolyfill();
   await preloadCompressions(options);

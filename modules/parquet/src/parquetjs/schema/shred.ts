@@ -1,4 +1,8 @@
-// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
 
 import {ArrayType} from '@loaders.gl/schema';
 import {ParquetRowGroup, ParquetColumnChunk, ParquetField, ParquetRow} from './declare';

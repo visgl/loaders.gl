@@ -13,7 +13,7 @@ import * as arrow from 'apache-arrow';
 import {loadWasm} from '../utils/load-wasm';
 import {makeStreamIterator} from '../utils/make-stream-iterator';
 
-export async function parseParquetFileWasm(
+export async function parseParquetFileToArrow(
   file: ReadableFile,
   options?: parquetWasm.ReaderOptions & {wasmUrl: string}
 ): Promise<ArrowTable> {
@@ -40,7 +40,7 @@ export async function parseParquetFileWasm(
   };
 }
 
-export async function* parseParquetFileInBatchesWasm(
+export async function* parseParquetFileToArrowInBatches(
   file: ReadableFile,
   options: parquetWasm.ReaderOptions & {wasmUrl: string}
 ): AsyncIterable<ArrowTableBatch> {
