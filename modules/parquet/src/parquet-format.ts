@@ -10,5 +10,5 @@ export const ParquetFormat = {
   extensions: ['parquet'],
   mimeTypes: ['application/octet-stream'],
   binary: true,
-  tests: ['PAR1', 'PARE'],
+  tests: ['PAR1', 'PARE']
 } as const satisfies Partial<Format>;

@@ -14,7 +14,7 @@ import {installBufferPolyfill} from '../../polyfills/buffer/index';
 import {preloadCompressions} from '../../parquetjs/compression';
 
 /**
- * @deprecated
+ * @deprecated - Use parseParquetToArrow
  */
 export async function parseParquetFileInColumns(
   file: ReadableFile,
