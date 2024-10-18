@@ -39,7 +39,7 @@ jobs:
 
       - name: Build website
         run: |
-          cd website ; yarn install
+          cd website; yarn build
   
       - name: Coveralls
         uses: coverallsapp/github-action@master
