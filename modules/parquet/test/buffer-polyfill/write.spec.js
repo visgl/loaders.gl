@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 // This file is forked from https://github.com/feross/buffer under MIT license
+
 import test from 'tape-promise/tape';
 import {BufferPolyfill} from '@loaders.gl/parquet';
 // const isnan = require('is-nan')

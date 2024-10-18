@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 const PARQUET_FILES = [
   // Parquet seems to use LZ4 compression without header so we need to find a way to e.g. add a dummy header.
   {supportedJs: true, supportedWasm: false, title: 'lz4_raw_compressed', path: 'good/lz4_raw_compressed.parquet'},

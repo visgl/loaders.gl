@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable max-statements */
 import test from 'tape-promise/tape';
 import {ParquetSchema, convertParquetSchema} from '@loaders.gl/parquet';
