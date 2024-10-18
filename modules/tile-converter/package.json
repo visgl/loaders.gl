@@ -74,7 +74,7 @@
     "cors": "^2.8.5",
     "crypt": "^0.0.2",
     "debug": "~4.3.4",
-    "express": "~4.19.2",
+    "express": "~4.20.0",
     "inquirer": "^8.0.0",
     "json-map-transform": "^1.2.6",
     "jszip": "^3.5.0",
