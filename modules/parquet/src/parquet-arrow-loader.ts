@@ -7,9 +7,9 @@ import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-u
 import {ReadableFile, BlobFile} from '@loaders.gl/loader-utils';
 
 import {
-  parseParquetFileWasm,
-  parseParquetFileInBatchesWasm
-} from './lib/parsers/parse-parquet-wasm';
+  parseParquetFileToArrow,
+  parseParquetFileToArrowInBatches
+} from './lib/parsers/parse-parquet-to-arrow';
 import {VERSION, PARQUET_WASM_URL} from './lib/constants';
 
 /** Parquet WASM loader options */
@@ -59,16 +59,16 @@ export const ParquetArrowLoader = {
 
   parse(arrayBuffer: ArrayBuffer, options?: ParquetArrowLoaderOptions) {
     const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
-    return parseParquetFileWasm(new BlobFile(arrayBuffer), wasmOptions);
+    return parseParquetFileToArrow(new BlobFile(arrayBuffer), wasmOptions);
   },
 
   parseFile(file: ReadableFile, options?: ParquetArrowLoaderOptions) {
     const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
-    return parseParquetFileWasm(file, wasmOptions);
+    return parseParquetFileToArrow(file, wasmOptions);
   },
 
   parseFileInBatches(file: ReadableFile, options?: ParquetArrowLoaderOptions) {
     const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
-    return parseParquetFileInBatchesWasm(file, wasmOptions);
+    return parseParquetFileToArrowInBatches(file, wasmOptions);
   }
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, ParquetArrowLoaderOptions>;

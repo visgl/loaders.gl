@@ -12,12 +12,17 @@ export {
   ParquetJSONWorkerLoader,
   ParquetJSONLoader,
   GeoParquetWorkerLoader,
-  GeoParquetLoader
-  // ParquetJSONColumnarWorkerLoader,
-  // ParquetJSONColumnarLoader
+  GeoParquetLoader,
+  // deprecated
+  ParquetJSONWorkerLoader as ParquetWorkerLoader,
+  ParquetJSONLoader as ParquetLoader
 } from './parquet-json-loader';
 
-export {ParquetJSONWriter as _ParquetJSONWriter} from './parquet-json-writer';
+export {
+  ParquetJSONWriter as _ParquetJSONWriter,
+  // deprecated
+  ParquetJSONWriter as ParquetWriter
+} from './parquet-json-writer';
 
 // EXPERIMENTAL - expose Parquet WASM loaders/writer
 
