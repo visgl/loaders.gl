@@ -8,6 +8,7 @@ import Protobuf from 'pbf';
 import {Schema} from '@loaders.gl/schema';
 import type {MVTTile, MVTLayer} from './mvt-types';
 import * as MVT from './mvt-constants';
+import {readBoundingBoxFromPBF, loadFlatGeometryFromPBF} from './parse-geometry-from-pbf';
 
 export type MVTLayerData = {
   /** Layer being built */
@@ -35,7 +36,8 @@ const DEFAULT_LAYER = {
   columns: {},
   idColumn: [],
   geometryTypeColumn: [],
-  geometryColumn: []
+  geometryColumn: [],
+  boundingBoxColumn: []
 } as const satisfies MVTLayer;
 
 const DEFAULT_LAYER_DATA = {
@@ -108,6 +110,8 @@ export function parseLayer(pbf: Protobuf, end: number): MVTLayer {
 
     layerData.currentFeature = featureIndex;
     pbf.readFields(readFeatureFieldFromPBF, layerData, end);
+    readBoundingBoxesFromPDF(pbf, layerData);
+    readGeometriesFromPBF(pbf, layerData);
   }
 
   // Post processing
@@ -246,6 +250,24 @@ function parseColumnValues(pbf: Protobuf, layerData: MVTLayerData): void {
 
     layerData.layer.columns[columnName] ||= [];
     layerData.layer.columns[columnName].push(value);
+  }
+}
+
+// Geometry readers
+
+function readBoundingBoxesFromPDF(pbf: Protobuf, layerData: MVTLayerData): void {
+  for (let row = 0; row < layerData.geometryPositions.length; row++) {
+    pbf.pos = layerData.geometryPositions[row];
+    const boundingBox = readBoundingBoxFromPBF(pbf);
+    layerData.layer.boundingBoxColumn[row] = boundingBox;
+  }
+}
+
+function readGeometriesFromPBF(pbf: Protobuf, layerData: MVTLayerData): void {
+  for (let row = 0; row < layerData.geometryPositions.length; row++) {
+    pbf.pos = layerData.geometryPositions[row];
+    const flatGeometry = loadFlatGeometryFromPBF(pbf);
+    layerData.layer.geometryColumn[row] = flatGeometry;
   }
 }
 

@@ -42,7 +42,7 @@ const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/mvt/points_4-2-6.mvt';
 //   _workerType: 'test'
 // });
 
-test('Point MVT to local coordinates JSON', async (t) => {
+test.only('Point MVT to local coordinates JSON', async (t) => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -61,6 +61,7 @@ test('Point MVT to local coordinates JSON', async (t) => {
     ],
     'schema fields are correct'
   );
+  debugger
 
   //   {
   //     type: 'Feature',

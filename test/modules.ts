@@ -50,7 +50,6 @@ import '@loaders.gl/kml/test';
 import '@loaders.gl/shapefile/test';
 import '@loaders.gl/wkt/test';
 import '@loaders.gl/wms/test';
-
 import '@loaders.gl/mvt/test';
 
 // Range request archive style formats
