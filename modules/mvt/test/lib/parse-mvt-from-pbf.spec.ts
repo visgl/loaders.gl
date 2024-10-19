@@ -5,7 +5,7 @@
 // import type {BinaryFeatureCollection} from '@loaders.gl/schema';
 import test from 'tape-promise/tape';
 import {parseMVT} from '../../src/lib/pojo-parser/parse-mvt-from-pbf';
-import {setLoaderOptions, fetchFile} from '@loaders.gl/core';
+import {fetchFile} from '@loaders.gl/core';
 // import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
 
 const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/mvt/points_4-2-6.mvt';
@@ -46,7 +46,7 @@ test('Point MVT to local coordinates JSON', async (t) => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const tile = await parseMVT(mvtArrayBuffer);
+  const tile = parseMVT(mvtArrayBuffer);
 
   t.deepEqual(tile.layers.layer0.length, 1, 'layer0 has 1 feature');
   // t.deepEqual(tile.layers.layer0.idColumn[0], 1, 'idColumn is 1');

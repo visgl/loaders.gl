@@ -19,7 +19,7 @@ export type MVTLayerData = {
   values: (string | number | boolean | null)[];
   types: number[];
   columnTypes: number[];
-  columnNullable: boolean[],
+  columnNullable: boolean[];
   /** list of all feature start positions in the PBF - Temporary values used when building up the layer */
   featurePositions: number[];
   /** list of all geometry start positions in the PBF - Temporary values used when building up the layer */
@@ -61,6 +61,7 @@ export function parseMVTTile(pbf: Protobuf, end?: number): MVTTile {
   try {
     pbf.readFields(readTileFieldFromPBF, tile, end);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.warn(error);
   }
   return tile;
@@ -161,13 +162,12 @@ function parseValues(pbf: Protobuf): [string | number | boolean | null, MVT.Prop
   const end = pbf.readVarint() + pbf.pos;
 
   let value: string | number | boolean | null = null;
-  // @ts-expect-error
-  let type: MVT.PropertyType = 0;
+  // not a valid property type so we use it to detect multiple values
+  let type = -1 as MVT.PropertyType;
 
   // TODO - can we have multiple values?
   while (pbf.pos < end) {
-    // @ts-expect-error
-    if (type !== 0) {
+    if (type !== (-1 as MVT.PropertyType)) {
       throw new Error('MVT: Multiple values not supported');
     }
     type = pbf.readVarint() >> 3;
