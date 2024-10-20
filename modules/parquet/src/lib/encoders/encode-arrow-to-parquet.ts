@@ -7,14 +7,14 @@ import type {ArrowTable} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 import {loadWasm} from '../utils/load-wasm';
 
-import type {ParquetWriterOptions} from '../../parquet-wasm-writer';
+import type {ParquetArrowWriterOptions} from '../../parquet-arrow-writer';
 
 /**
  * Encode Arrow arrow.Table to Parquet buffer
  */
-export async function encode(
+export async function encodeArrowToParquet(
   table: ArrowTable,
-  options: ParquetWriterOptions
+  options: ParquetArrowWriterOptions
 ): Promise<ArrayBuffer> {
   const wasmUrl = options.parquet?.wasmUrl!;
   const wasm = await loadWasm(wasmUrl);

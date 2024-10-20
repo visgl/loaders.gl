@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // @ts-nocheck Bizarre array indexing
 /* eslint-disable max-statements */
 import test from 'tape-promise/tape';

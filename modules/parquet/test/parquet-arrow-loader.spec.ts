@@ -1,9 +1,13 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
 import {load, loadInBatches, encode, setLoaderOptions} from '@loaders.gl/core';
-import {ArrowTable} from '@loaders.gl/arrow';
-import {ParquetWasmLoader, ParquetWasmWriter} from '@loaders.gl/parquet';
+import type {ArrowTable} from '@loaders.gl/schema';
+import {ParquetArrowLoader, ParquetArrowWriter} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
 import {WASM_SUPPORTED_FILES} from './data/files';
 
@@ -13,16 +17,16 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('ParquetWASMLoader#loader objects', (t) => {
+test('ParquetArrowLoader#loader objects', (t) => {
   // Not sure why validateLoader calls parse? Raises an error about "Invalid Parquet file"
-  // validateLoader(t, ParquetWasmLoader, 'ParquetLoader');
-  // validateLoader(t, ParquetWasmWorkerLoader, 'ParquetWorkerLoader');
+  // validateLoader(t, ParquetArrowLoader, 'ParquetArrowLoader');
+  // validateLoader(t, ParquetWorkerLoader, 'ParquetWorkerLoader');
   t.end();
 });
 
-test('ParquetWASMLoader#Load Parquet file', async (t) => {
+test('ParquetArrowLoader#Load Parquet file', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  const table = await load(url, ParquetWasmLoader, {});
+  const table = await load(url, ParquetArrowLoader, {});
   const arrowTable = table.data;
   t.equal(arrowTable.numRows, 5);
   t.deepEqual(table.schema?.fields.map((f) => f.name), [
@@ -36,11 +40,11 @@ test('ParquetWASMLoader#Load Parquet file', async (t) => {
   t.end();
 });
 
-test('ParquetWasmLoader#load', async (t) => {
+test('ParquetArrowLoader#load', async (t) => {
   // t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
-    const table = await load(url, ParquetWasmLoader);
+    const table = await load(url, ParquetArrowLoader);
     const arrowTable = table.data;
     t.ok(arrowTable instanceof arrow.Table, `GOOD(${title})`);
   }
@@ -48,13 +52,13 @@ test('ParquetWasmLoader#load', async (t) => {
   t.end();
 });
 
-test('ParquetWasmWriter#writer/loader round trip', async (t) => {
+test('ParquetArrowWriter#writer/loader round trip', async (t) => {
   const table = createArrowTable();
 
-  const parquetBuffer = await encode(table, ParquetWasmWriter, {
+  const parquetBuffer = await encode(table, ParquetArrowWriter, {
     worker: false,
   });
-  const newTable = await load(parquetBuffer, ParquetWasmLoader, {
+  const newTable = await load(parquetBuffer, ParquetArrowLoader, {
     worker: false,
   });
 
@@ -63,11 +67,11 @@ test('ParquetWasmWriter#writer/loader round trip', async (t) => {
 });
 
 // TODO not implemented yet
-test.skip('ParquetWasmLoader#loadInBatches', async (t) => {
+test.skip('ParquetArrowLoader#loadInBatches', async (t) => {
   // t.comment('SUPPORTED FILES');
   for (const {title, path} of WASM_SUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/apache/${path}`;
-    const iterator = await loadInBatches(url, ParquetWasmLoader);
+    const iterator = await loadInBatches(url, ParquetArrowLoader);
     for await (const batch of iterator) {
       const recordBatch = batch.data;
       t.ok(recordBatch instanceof arrow.RecordBatch, `GOOD(${title})`);
