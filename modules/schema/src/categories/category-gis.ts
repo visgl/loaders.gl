@@ -37,30 +37,19 @@ export type {
 
 // BINARY FORMAT GEOMETRY
 export type {
-  BinaryAttribute,
   BinaryGeometryType,
+  BinaryFixedSizeList,
   BinaryGeometry,
   BinaryPointGeometry,
   BinaryLineGeometry,
-  BinaryPolygonGeometry,
+  BinaryPolygonGeometry
+} from '../geometry/binary-geometries';
+export type {
+  BinaryAttribute,
   BinaryProperties,
   BinaryFeatureCollection,
   BinaryFeature,
   BinaryPointFeature,
   BinaryLineFeature,
   BinaryPolygonFeature
-} from '../geometry/binary-geometries';
-
-/** Aggregate information for converting GeoJSON into other formats */
-export type GeojsonGeometryInfo = {
-  coordLength: number;
-  pointPositionsCount: number;
-  pointFeaturesCount: number;
-  linePositionsCount: number;
-  linePathsCount: number;
-  lineFeaturesCount: number;
-  polygonPositionsCount: number;
-  polygonObjectsCount: number;
-  polygonRingsCount: number;
-  polygonFeaturesCount: number;
-};
+} from '../geometry/binary-features';

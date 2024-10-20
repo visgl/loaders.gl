@@ -12,9 +12,9 @@ import type {
   FlatPoint,
   FlatLineString,
   FlatPolygon,
-  GeojsonGeometryInfo,
   TypedArray
 } from '@loaders.gl/schema';
+import {GeojsonGeometryInfo} from '../geometry-api/geometry-info';
 import {
   PropArrayConstructor,
   Lines,

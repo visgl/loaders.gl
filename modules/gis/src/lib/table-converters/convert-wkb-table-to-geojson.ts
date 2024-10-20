@@ -13,8 +13,8 @@ import type {
 import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema-utils';
 
 import {GeoColumnMetadata, getGeoMetadata} from '../geoarrow/geoparquet-metadata';
-import {convertWKBToGeometry} from '../geometry-converters/wkt/convert-wkb-to-geojson';
-import {convertWKTToGeometry} from '../geometry-converters/wkt/convert-wkt-to-geojson';
+import {convertWKBToGeometry} from '../geometry-converters/wkb/convert-wkb-to-geometry';
+import {convertWKTToGeometry} from '../geometry-converters/wkb/convert-wkt-to-geometry';
 
 /** TODO - move to loaders.gl/gis? */
 export function convertWKBTableToGeoJSON(

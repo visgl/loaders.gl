@@ -2,7 +2,7 @@
 // @ts-nocheck
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {geojsonToBinary, _extractGeometryInfo, _extractNumericPropTypes} from '@loaders.gl/gis';
+import {geojsonToBinary, getGeometryInfo, _extractNumericPropTypes} from '@loaders.gl/gis';
 
 // Sample GeoJSON data derived from examples in GeoJSON specification
 // https://tools.ietf.org/html/rfc7946#appendix-A
@@ -20,7 +20,7 @@ const GEOJSON_NO_PROPERTIES =
 test('gis#geojson-to-binary geometry info 2D features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
-  const geometryInfo = _extractGeometryInfo(features);
+  const geometryInfo = getGeometryInfo(features);
   const {
     pointPositionsCount,
     pointFeaturesCount,
@@ -50,7 +50,7 @@ test('gis#geojson-to-binary geometry info 2D features, no properties', async (t)
 test('gis#geojson-to-binary geometry info 3D features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
-  const geometryInfo = _extractGeometryInfo(features);
+  const geometryInfo = _getGeometryInfo(features);
   const {
     pointPositionsCount,
     pointFeaturesCount,
@@ -80,7 +80,7 @@ test('gis#geojson-to-binary geometry info 3D features, no properties', async (t)
 test('gis#geojson-to-binary geometry info mixed-dimension features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_MIXED);
   const {features} = await response.json();
-  const geometryInfo = _extractGeometryInfo(features);
+  const geometryInfo = _getGeometryInfo(features);
   const {
     pointPositionsCount,
     pointFeaturesCount,

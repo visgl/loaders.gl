@@ -14,9 +14,10 @@ import {
   concatenateBinaryPointGeometries,
   concatenateBinaryLineGeometries,
   concatenateBinaryPolygonGeometries
-} from '../../api/binary-geometry-utils';
-import {parseWKBHeader, WKBGeometryType} from './helpers/parse-wkb-header';
+} from '../../binary-geometry-api/concat-binary-geometry';
 import {concatTypedArrays} from '../../utils/concat-typed-arrays';
+import {WKBGeometryType} from './helpers/wkb-types';
+import {parseWKBHeader} from './helpers/parse-wkb-header';
 
 export function convertWKBToBinaryGeometry(arrayBuffer: ArrayBuffer): BinaryGeometry {
   const dataView = new DataView(arrayBuffer);

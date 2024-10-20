@@ -14,7 +14,7 @@ import type {
   MultiPolygon
 } from '@loaders.gl/schema';
 import {BinaryReader} from '../../utils/binary-reader';
-import {WKBGeometryType} from './helpers/parse-wkb-header';
+import {WKBGeometryType} from './helpers/wkb-types';
 
 /**
  * Check if an array buffer might be a TWKB array buffer

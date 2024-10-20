@@ -5,32 +5,14 @@
 // Reference: https://www.ogc.org/standards/sfa
 
 import type {
-  Feature,
-  Geometry,
-  Point,
-  MultiPoint,
-  LineString,
-  MultiLineString,
-  Polygon,
-  MultiPolygon,
-  GeometryCollection
+  FlatGeometry,
+  FlatPoint,
+  FlatLineString,
+  FlatPolygon
+  // FlatGeometryCollection
 } from '@loaders.gl/schema';
-
+import {WKBGeometryType} from './helpers/wkb-types';
 import {BinaryWriter} from '../../utils/binary-writer';
-
-/**
- * Integer code for geometry type
- * Reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
- */
-export enum WKB {
-  Point = 1,
-  LineString = 2,
-  Polygon = 3,
-  MultiPoint = 4,
-  MultiLineString = 5,
-  MultiPolygon = 6,
-  GeometryCollection = 7
-}
 
 /**
  * Options for encodeWKB
@@ -51,14 +33,10 @@ type WKBOptions = {
  * @param geojson A GeoJSON Feature or Geometry
  * @returns string
  */
-export function convertGeometryToWKB(
-  geometry: Geometry | Feature,
+export function convertFlatGeometryToWKB(
+  geometry: FlatGeometry,
   options: WKBOptions = {}
 ): ArrayBuffer {
-  if (geometry.type === 'Feature') {
-    geometry = geometry.geometry;
-  }
-
   switch (geometry.type) {
     case 'Point':
       return encodePoint(geometry.coordinates, options);
@@ -66,22 +44,13 @@ export function convertGeometryToWKB(
       return encodeLineString(geometry.coordinates, options);
     case 'Polygon':
       return encodePolygon(geometry.coordinates, options);
-    case 'MultiPoint':
-      return encodeMultiPoint(geometry, options);
-    case 'MultiPolygon':
-      return encodeMultiPolygon(geometry, options);
-    case 'MultiLineString':
-      return encodeMultiLineString(geometry, options);
-    case 'GeometryCollection':
-      return encodeGeometryCollection(geometry, options);
     default:
-      const exhaustiveCheck: never = geometry;
-      throw new Error(`Unhandled case: ${exhaustiveCheck}`);
+      throw new Error(`Invalid flat geometry: ${geometry.type}`);
   }
 }
 
 /** Calculate the binary size (in the WKB encoding) of a specific GeoJSON geometry */
-function getGeometrySize(geometry: Geometry, options: WKBOptions): number {
+function getFlatGeometrySize(geometry: FlatGeometry, options: WKBOptions): number {
   switch (geometry.type) {
     case 'Point':
       return getPointSize(options);
@@ -89,26 +58,26 @@ function getGeometrySize(geometry: Geometry, options: WKBOptions): number {
       return getLineStringSize(geometry.coordinates, options);
     case 'Polygon':
       return getPolygonSize(geometry.coordinates, options);
-    case 'MultiPoint':
-      return getMultiPointSize(geometry, options);
-    case 'MultiPolygon':
-      return getMultiPolygonSize(geometry, options);
-    case 'MultiLineString':
-      return getMultiLineStringSize(geometry, options);
-    case 'GeometryCollection':
-      return getGeometryCollectionSize(geometry, options);
+    // case 'MultiPoint':
+    //   return getMultiPointSize(geometry, options);
+    // case 'MultiPolygon':
+    //   return getMultiPolygonSize(geometry, options);
+    // case 'MultiLineString':
+    //   return getMultiLineStringSize(geometry, options);
+    // case 'GeometryCollection':
+    //   return getGeometryCollectionSize(geometry, options);
     default:
-      const exhaustiveCheck: never = geometry;
-      throw new Error(`Unhandled case: ${exhaustiveCheck}`);
+      throw new Error(`Invalid flat geometry: ${geometry.type}`);
   }
 }
 
 /** Encode Point geometry as WKB ArrayBuffer */
-function encodePoint(coordinates: Point['coordinates'], options: WKBOptions): ArrayBuffer {
+function encodePoint(point: FlatPoint, options: WKBOptions): ArrayBuffer {
+  const coordinates = point.data;
   const writer = new BinaryWriter(getPointSize(options));
 
   writer.writeInt8(1);
-  writeWkbType(writer, WKB.Point, options);
+  writeWkbType(writer, WKBGeometryType.Point, options);
 
   // I believe this special case is to handle writing Point(NaN, NaN) correctly
   if (typeof coordinates[0] === 'undefined' && typeof coordinates[1] === 'undefined') {
@@ -162,7 +131,7 @@ function encodeLineString(
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.LineString, options);
+  writeWkbType(writer, WKBGeometryType.LineString, options);
   writer.writeUInt32LE(coordinates.length);
 
   for (const coordinate of coordinates) {
@@ -185,7 +154,7 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.Polygon, options);
+  writeWkbType(writer, WKBGeometryType.Polygon, options);
   const [exteriorRing = [], ...interiorRings] = coordinates;
 
   if (exteriorRing.length > 0) {
@@ -235,7 +204,7 @@ function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiPoint, options);
+  writeWkbType(writer, WKBGeometryType.MultiPoint, options);
   writer.writeUInt32LE(points.length);
 
   for (const point of points) {
@@ -265,7 +234,7 @@ function encodeMultiLineString(multiLineString: MultiLineString, options: WKBOpt
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiLineString, options);
+  writeWkbType(writer, WKBGeometryType.MultiLineString, options);
   writer.writeUInt32LE(lineStrings.length);
 
   for (const lineString of lineStrings) {
@@ -295,7 +264,7 @@ function encodeMultiPolygon(multiPolygon: MultiPolygon, options: WKBOptions): Ar
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiPolygon, options);
+  writeWkbType(writer, WKBGeometryType.MultiPolygon, options);
   writer.writeUInt32LE(polygons.length);
 
   for (const polygon of polygons) {
@@ -325,7 +294,7 @@ function encodeGeometryCollection(
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.GeometryCollection, options);
+  writeWkbType(writer, WKBGeometryType.GeometryCollection, options);
   writer.writeUInt32LE(collection.geometries.length);
 
   for (const geometry of collection.geometries) {

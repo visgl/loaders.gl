@@ -2,7 +2,21 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Feature, GeojsonGeometryInfo} from '@loaders.gl/schema';
+import type {Feature} from '@loaders.gl/schema';
+
+/** Aggregate information for converting GeoJSON into other formats */
+export type GeojsonGeometryInfo = {
+  coordLength: number;
+  pointPositionsCount: number;
+  pointFeaturesCount: number;
+  linePositionsCount: number;
+  linePathsCount: number;
+  lineFeaturesCount: number;
+  polygonPositionsCount: number;
+  polygonObjectsCount: number;
+  polygonRingsCount: number;
+  polygonFeaturesCount: number;
+};
 
 /**
  *  Initial scan over GeoJSON features
@@ -10,7 +24,7 @@ import type {Feature, GeojsonGeometryInfo} from '@loaders.gl/schema';
  *  keeps track of the max coordinate dimensions
  */
 // eslint-disable-next-line complexity, max-statements
-export function extractGeometryInfo(features: Feature[]): GeojsonGeometryInfo {
+export function getGeometryInfo(features: Feature[]): GeojsonGeometryInfo {
   // Counts the number of _positions_, so [x, y, z] counts as one
   let pointPositionsCount = 0;
   let pointFeaturesCount = 0;

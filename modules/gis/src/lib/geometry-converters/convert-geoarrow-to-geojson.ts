@@ -14,8 +14,8 @@ import type {
   Geometry,
   GeoArrowEncoding
 } from '@loaders.gl/schema';
-import {convertWKBToGeometry} from './wkt/convert-wkb-to-geojson';
-import {convertWKTToGeometry} from './wkt/convert-wkt-to-geojson';
+import {convertWKBToGeometry} from './wkb/convert-wkb-to-geometry';
+import {convertWKTToGeometry} from './wkb/convert-wkt-to-geometry';
 
 /**
  * parse geometry from arrow data that is returned from processArrowData()

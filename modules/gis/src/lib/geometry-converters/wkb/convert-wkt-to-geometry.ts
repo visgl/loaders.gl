@@ -12,39 +12,12 @@ const numberRegexp = /[-+]?([0-9]*\.[0-9]+|[0-9]+)([eE][-+]?[0-9]+)?/;
 // Matches sequences like '100 100' or '100 100 100'.
 const tuples = new RegExp('^' + numberRegexp.source + '(\\s' + numberRegexp.source + '){1,}');
 
-export const WKT_MAGIC_STRINGS = [
-  'POINT(',
-  'LINESTRING(',
-  'POLYGON(',
-  'MULTIPOINT(',
-  'MULTILINESTRING(',
-  'MULTIPOLYGON(',
-  'GEOMETRYCOLLECTION('
-  // We only support this "geojson" subset of the OGC simple features standard
-];
-
 export type ParseWKTOptions = {
   wkt?: {
     /** Whether to add any CRS, if found, as undocumented CRS property on the return geometry */
     crs?: boolean;
   };
 };
-
-/** 
- * Check if a string is WKT.
- * @param input A potential WKT geometry string
- * @return `true` if input appears to be a WKT geometry string, `false` otherwise
-
- * @note We only support the "geojson" subset of the OGC simple features standard
- * @todo Does not handle leading spaces which appear to be permitted per the spec:
- * "A WKT string contains no white space outside of double quotes. 
- * However padding with white space to improve human readability is permitted; 
- * the examples of WKT that are included in this document have 
- * spaces and line feeds inserted to improve clarity. Any padding is stripped out or ignored by parsers."
- */
-export function isWKT(input: string): boolean {
-  return WKT_MAGIC_STRINGS.some((magicString) => input.startsWith(magicString));
-}
 
 /** State of parser, passed around between parser functions */
 type ParseWKTState = {
