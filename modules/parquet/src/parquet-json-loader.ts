@@ -92,7 +92,7 @@ export const ParquetJSONLoader = {
 
 // Defeat tree shaking
 // @ts-ignore
-ParquetLoader.Buffer = Buffer;
+ParquetJSONLoader.Buffer = Buffer;
 
 export const GeoParquetWorkerLoader = {
   ...ParquetFormat,

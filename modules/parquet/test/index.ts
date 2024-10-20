@@ -16,8 +16,8 @@ import './parquetjs/reader.spec';
 // import './parquetjs/integration.spec';
 
 // loader/writer
-import './parquet-loader.spec';
-import './parquet-writer.spec';
+import './parquet-arrow-loader.spec';
+import './parquet-arrow-writer.spec';
 
 import './parquet-json-loader.spec';
 import './geoparquet-loader.spec';
