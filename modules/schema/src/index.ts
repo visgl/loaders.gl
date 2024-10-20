@@ -74,8 +74,6 @@ export type {
   GeometryCollection
 } from './categories/category-gis';
 
-export type {GeojsonGeometryInfo} from './categories/category-gis';
-
 // GIS CATEGORY - FLAT GEOJSON
 export type {
   FlatFeature,

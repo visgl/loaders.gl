@@ -38,7 +38,6 @@ function transformBinaryGeometryPositions(binaryGeometry: BinaryGeometry, fn: Tr
 
 /**
  * Apply transformation to every coordinate of GeoJSON features
- *
  * @param  features Array of GeoJSON features
  * @param  fn       Function to call on each coordinate
  * @return          Transformed GeoJSON features

@@ -3,14 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // FLAT GEOJSON FORMAT GEOMETRY
-import type {Feature, Geometry, Point, LineString, Polygon} from 'geojson';
-
-/** Flat geometry type */
-export type FlatGeometryType = 'Point' | 'LineString' | 'Polygon';
-
-type RemoveCoordinatesField<Type> = {
-  [Property in keyof Type as Exclude<Property, 'coordinates'>]: Type[Property];
-};
+import type {Feature, Geometry} from 'geojson';
 
 /**
  * Generic flat geometry data storage type
@@ -43,21 +36,33 @@ export type FlatIndexedGeometry = {
   indices: number[];
 };
 
+/** Flat geometry type */
+export type FlatGeometryType = 'Point' | 'LineString' | 'Polygon';
+
+/** GeoJSON geometry with coordinate data flattened into `data` array and indexed by 2D `indices` */
+export type FlatGeometry = FlatPoint | FlatLineString | FlatPolygon;
+
 /** GeoJSON (Multi)Point geometry with coordinate data flattened into `data` array and indexed by `indices` */
-export type FlatPoint = RemoveCoordinatesField<Point> & FlatIndexedGeometry;
+export type FlatPoint = {
+  type: 'Point';
+  data: number[];
+  indices: number[];
+};
 
 /** GeoJSON (Multi)LineString geometry with coordinate data flattened into `data` array and indexed by `indices` */
-export type FlatLineString = RemoveCoordinatesField<LineString> & FlatIndexedGeometry;
+export type FlatLineString = {
+  type: 'LineString';
+  data: number[];
+  indices: number[];
+};
 
 /** GeoJSON (Multi)Polygon geometry with coordinate data flattened into `data` array and indexed by 2D `indices` */
-export type FlatPolygon = RemoveCoordinatesField<Polygon> & {
+export type FlatPolygon = {
+  type: 'Polygon';
   data: number[];
   indices: number[][];
   areas: number[][];
 };
-
-/** GeoJSON geometry with coordinate data flattened into `data` array and indexed by 2D `indices` */
-export type FlatGeometry = FlatPoint | FlatLineString | FlatPolygon;
 
 type FlattenGeometry<Type> = {
   [Property in keyof Type]: Type[Property] extends Geometry ? FlatGeometry : Type[Property];

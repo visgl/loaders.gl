@@ -15,36 +15,8 @@ import type {
   MultiPolygon,
   GeometryCollection
 } from '@loaders.gl/schema';
-
+import {WKBGeometryType, WKBOptions} from './helpers/wkb-types';
 import {BinaryWriter} from '../../utils/binary-writer';
-
-/**
- * Integer code for geometry type
- * Reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
- */
-export enum WKB {
-  Point = 1,
-  LineString = 2,
-  Polygon = 3,
-  MultiPoint = 4,
-  MultiLineString = 5,
-  MultiPolygon = 6,
-  GeometryCollection = 7
-}
-
-/**
- * Options for encodeWKB
- */
-type WKBOptions = {
-  /** Does the GeoJSON input have Z values? */
-  hasZ?: boolean;
-
-  /** Does the GeoJSON input have M values? */
-  hasM?: boolean;
-
-  /** Spatial reference for input GeoJSON */
-  srid?: any;
-};
 
 /**
  * Encodes a GeoJSON object into WKB
@@ -108,7 +80,7 @@ function encodePoint(coordinates: Point['coordinates'], options: WKBOptions): Ar
   const writer = new BinaryWriter(getPointSize(options));
 
   writer.writeInt8(1);
-  writeWkbType(writer, WKB.Point, options);
+  writeWkbType(writer, WKBGeometryType.Point, options);
 
   // I believe this special case is to handle writing Point(NaN, NaN) correctly
   if (typeof coordinates[0] === 'undefined' && typeof coordinates[1] === 'undefined') {
@@ -162,7 +134,7 @@ function encodeLineString(
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.LineString, options);
+  writeWkbType(writer, WKBGeometryType.LineString, options);
   writer.writeUInt32LE(coordinates.length);
 
   for (const coordinate of coordinates) {
@@ -185,7 +157,7 @@ function encodePolygon(coordinates: Polygon['coordinates'], options: WKBOptions)
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.Polygon, options);
+  writeWkbType(writer, WKBGeometryType.Polygon, options);
   const [exteriorRing = [], ...interiorRings] = coordinates;
 
   if (exteriorRing.length > 0) {
@@ -235,7 +207,7 @@ function encodeMultiPoint(multiPoint: MultiPoint, options: WKBOptions) {
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiPoint, options);
+  writeWkbType(writer, WKBGeometryType.MultiPoint, options);
   writer.writeUInt32LE(points.length);
 
   for (const point of points) {
@@ -265,7 +237,7 @@ function encodeMultiLineString(multiLineString: MultiLineString, options: WKBOpt
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiLineString, options);
+  writeWkbType(writer, WKBGeometryType.MultiLineString, options);
   writer.writeUInt32LE(lineStrings.length);
 
   for (const lineString of lineStrings) {
@@ -295,7 +267,7 @@ function encodeMultiPolygon(multiPolygon: MultiPolygon, options: WKBOptions): Ar
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.MultiPolygon, options);
+  writeWkbType(writer, WKBGeometryType.MultiPolygon, options);
   writer.writeUInt32LE(polygons.length);
 
   for (const polygon of polygons) {
@@ -325,7 +297,7 @@ function encodeGeometryCollection(
 
   writer.writeInt8(1);
 
-  writeWkbType(writer, WKB.GeometryCollection, options);
+  writeWkbType(writer, WKBGeometryType.GeometryCollection, options);
   writer.writeUInt32LE(collection.geometries.length);
 
   for (const geometry of collection.geometries) {

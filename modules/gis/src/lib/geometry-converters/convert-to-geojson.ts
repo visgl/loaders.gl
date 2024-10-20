@@ -4,10 +4,10 @@
 
 import type {Geometry, BinaryGeometry} from '@loaders.gl/schema';
 
-import {convertGeometryToWKB} from './wkt/convert-geojson-to-wkb';
-import {convertGeometryToWKT} from './wkt/convert-geojson-to-wkt';
-import {convertWKBToBinaryGeometry} from './wkt/convert-wkb-to-binary-geometry';
-import {convertWKTToGeometry} from './wkt/convert-wkt-to-geojson';
+import {convertGeometryToWKB} from './wkb/convert-geometry-to-wkb';
+import {convertGeometryToWKT} from './wkb/convert-geometry-to-wkt';
+import {convertWKBToBinaryGeometry} from './wkb/convert-wkb-to-binary-geometry';
+import {convertWKTToGeometry} from './wkb/convert-wkt-to-geometry';
 
 import {convertBinaryGeometryToGeometry} from './convert-binary-geometry-to-geojson';
 

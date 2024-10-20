@@ -2,42 +2,55 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-const EWKB_FLAG_Z = 0x80000000;
-const EWKB_FLAG_M = 0x40000000;
-const EWKB_FLAG_SRID = 0x20000000;
+import type {WKBGeometryType, WKBHeader} from './wkb-types';
+import {
+  EWKB_FLAG_Z,
+  EWKB_FLAG_M,
+  EWKB_FLAG_SRID,
+  MAX_SRID,
+  WKT_MAGIC_STRINGS,
+  WKT_MAGIC_BYTES
+} from './wkb-types';
 
-const MAX_SRID = 10000; // TBD: Assume no more than 10K SRIDs are defined
+/** 
+ * Check if a string is WKT.
+ * @param input A potential WKT geometry string
+ * @return `true` if input appears to be a WKT geometry string, `false` otherwise
 
-/**
- * Integer code for geometry types in WKB and related formats
- * Reference: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
+ * @note We only support the "geojson" subset of the OGC simple features standard
+ * @todo Does not handle leading spaces which appear to be permitted per the spec:
+ * "A WKT string contains no white space outside of double quotes. 
+ * However padding with white space to improve human readability is permitted; 
+ * the examples of WKT that are included in this document have 
+ * spaces and line feeds inserted to improve clarity. Any padding is stripped out or ignored by parsers."
  */
-export enum WKBGeometryType {
-  Point = 1,
-  LineString = 2,
-  Polygon = 3,
-  MultiPoint = 4,
-  MultiLineString = 5,
-  MultiPolygon = 6,
-  GeometryCollection = 7
+export function isWKT(input: string | ArrayBuffer): boolean {
+  return getWKTGeometryType(input) !== null;
 }
 
-/** Parsed WKB header */
-export type WKBHeader = {
-  /** WKB variant */
-  type: 'wkb' | 'ewkb' | 'iso-wkb' | 'twkb';
-  /** geometry type encoded in this WKB: point, line, polygon etc */
-  geometryType: 1 | 2 | 3 | 4 | 5 | 6 | 7;
-  /** Number of dimensions for coordinate data */
-  dimensions: 2 | 3 | 4;
-  /** Coordinate names, Z and M are controlled by flags */
-  coordinates: 'xy' | 'xyz' | 'xym' | 'xyzm';
-  srid?: number;
-  /** true if binary data is stored as little endian */
-  littleEndian: boolean;
-  /** Offset to start of geometry */
-  byteOffset: number;
-};
+/** 
+ * Get the geometry type of a WKT string.
+ * @param input A potential WKT geometry string
+ * @return `true` if input appears to be a WKT geometry string, `false` otherwise
+
+ * @note We only support the "geojson" subset of the OGC simple features standard
+ * @todo Does not handle leading spaces which appear to be permitted per the spec:
+ * "A WKT string contains no white space outside of double quotes. 
+ * However padding with white space to improve human readability is permitted; 
+ * the examples of WKT that are included in this document have 
+ * spaces and line feeds inserted to improve clarity. Any padding is stripped out or ignored by parsers."
+ */
+export function getWKTGeometryType(input: string | ArrayBuffer): WKBGeometryType | null {
+  if (typeof input === 'string') {
+    const index = WKT_MAGIC_STRINGS.findIndex((magicString) => input.startsWith(magicString));
+    return index >= 0 ? ((index + 1) as WKBGeometryType) : null;
+  }
+  const inputArray = new Uint8Array(input);
+  const index = WKT_MAGIC_BYTES.findIndex((magicBytes) =>
+    magicBytes.every((value, index) => value === inputArray[index])
+  );
+  return index >= 0 ? ((index + 1) as WKBGeometryType) : null;
+}
 
 /**
  * Check if an array buffer might be a TWKB array buffer
@@ -118,16 +131,22 @@ export function isWKB(arrayBuffer: ArrayBuffer): boolean {
  * @param target optionally supply a WKBHeader object to avoid creating a new object for every call
  * @returns a header object describing the WKB data
  */
-// eslint-disable-next-line max-statements
+// eslint-disable-next-line max-statements, complexity
 export function parseWKBHeader(dataView: DataView, target?: WKBHeader): WKBHeader {
   const wkbHeader: WKBHeader = Object.assign(target || {}, {
     type: 'wkb',
+    variant: 'wkb',
     geometryType: 1,
     dimensions: 2,
     coordinates: 'xy',
     littleEndian: true,
     byteOffset: 0
   } as WKBHeader);
+
+  if (isWKT(dataView.buffer)) {
+    // TODO - WKB header could include WKT type
+    throw new Error('WKB: Cannot parse WKT data');
+  }
 
   // Check endianness of data
   wkbHeader.littleEndian = dataView.getUint8(wkbHeader.byteOffset) === 1;
@@ -145,17 +164,17 @@ export function parseWKBHeader(dataView: DataView, target?: WKBHeader): WKBHeade
     case 0:
       break;
     case 1:
-      wkbHeader.type = 'iso-wkb';
+      wkbHeader.variant = 'iso-wkb';
       wkbHeader.dimensions = 3;
       wkbHeader.coordinates = 'xyz';
       break;
     case 2:
-      wkbHeader.type = 'iso-wkb';
+      wkbHeader.variant = 'iso-wkb';
       wkbHeader.dimensions = 3;
       wkbHeader.coordinates = 'xym';
       break;
     case 3:
-      wkbHeader.type = 'iso-wkb';
+      wkbHeader.variant = 'iso-wkb';
       wkbHeader.dimensions = 4;
       wkbHeader.coordinates = 'xyzm';
       break;
@@ -169,22 +188,22 @@ export function parseWKBHeader(dataView: DataView, target?: WKBHeader): WKBHeade
   const ewkbSRID = geometryCode & EWKB_FLAG_SRID;
 
   if (ewkbZ && ewkbM) {
-    wkbHeader.type = 'ewkb';
+    wkbHeader.variant = 'ewkb';
     wkbHeader.dimensions = 4;
     wkbHeader.coordinates = 'xyzm';
   } else if (ewkbZ) {
-    wkbHeader.type = 'ewkb';
+    wkbHeader.variant = 'ewkb';
     wkbHeader.dimensions = 3;
     wkbHeader.coordinates = 'xyz';
   } else if (ewkbM) {
-    wkbHeader.type = 'ewkb';
+    wkbHeader.variant = 'ewkb';
     wkbHeader.dimensions = 3;
     wkbHeader.coordinates = 'xym';
   }
 
   // If SRID present read four more bytes
   if (ewkbSRID) {
-    wkbHeader.type = 'ewkb';
+    wkbHeader.variant = 'ewkb';
     // 4-digit code representing dimension and type of geometry
     wkbHeader.srid = dataView.getUint32(wkbHeader.byteOffset, wkbHeader.littleEndian);
     wkbHeader.byteOffset += 4;

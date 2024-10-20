@@ -3,6 +3,8 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/cschwarz/wkx under MIT license, Copyright (c) 2013 Christian Schwarz
 
+import {TypedArray} from '@math.gl/types';
+
 const LE = true;
 const BE = false;
 
@@ -101,6 +103,13 @@ export class BinaryWriter {
     }
     this.writeUInt8(value & 0x7f);
     return length;
+  }
+
+  writeTypedArray(typedArray: TypedArray) {
+    this._ensureSize(typedArray.byteLength);
+    const tempArray = new Uint8Array(this.arrayBuffer);
+    tempArray.set(typedArray, this.byteOffset);
+    this.byteOffset += typedArray.byteLength;
   }
 
   /** Append another ArrayBuffer to this ArrayBuffer */
