@@ -50,7 +50,7 @@ test('gis#geojson-to-binary geometry info 2D features, no properties', async (t)
 test('gis#geojson-to-binary geometry info 3D features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
-  const geometryInfo = _getGeometryInfo(features);
+  const geometryInfo = getGeometryInfo(features);
   const {
     pointPositionsCount,
     pointFeaturesCount,
@@ -80,7 +80,7 @@ test('gis#geojson-to-binary geometry info 3D features, no properties', async (t)
 test('gis#geojson-to-binary geometry info mixed-dimension features, no properties', async (t) => {
   const response = await fetchFile(FEATURES_MIXED);
   const {features} = await response.json();
-  const geometryInfo = _getGeometryInfo(features);
+  const geometryInfo = getGeometryInfo(features);
   const {
     pointPositionsCount,
     pointFeaturesCount,
