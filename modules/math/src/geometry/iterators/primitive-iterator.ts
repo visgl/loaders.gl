@@ -1,6 +1,11 @@
 import {GL} from '../constants';
 import {getPrimitiveModeType} from '../primitives/modes';
-import {assert} from '@loaders.gl/loader-utils';
+
+function assert(condition: any, message?: string): void {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
 
 /**
  * Iteration info for making primitive iterator

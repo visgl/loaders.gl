@@ -4,6 +4,8 @@
 
 /* eslint-disable camelcase */
 
+import {Metadata, getMetadataKey, setMetadataKey} from './metadata-utils';
+
 /**
  * A geoarrow / geoparquet geo metadata object
  * (stored in stringified form in the top level metadata 'geo' key)
@@ -48,73 +50,82 @@ export type GeoParquetGeometryType =
 
 // GEO METADATA
 
-// type Metadata = Map<string, string> | Record<string, string>;
-
 /**
  * Reads the GeoMetadata object from the metadata
  * @note geoarrow / parquet schema is stringified into a single key-value pair in the parquet metadata
  */
-// export function getGeoMetadata(metadata: Metadata): GeoMetadata | null {
-//   const stringifiedMetadata = getMetadataEntry(metadata, 'geo');
-//   const geoMetadata = stringifiedMetadata && parseJSONStringMetadata(stringifiedMetadata);
-//   if (!geoMetadata) {
-//     return null;
-//   }
-
-//   for (const column of Object.values(geoMetadata.columns || {})) {
-//     if (column.encoding) {
-//       column.encoding = column.encoding.toLowerCase();
-//     }
-//   }
-//   return geoMetadata as GeoMetadata;
-// }
+export function getGeoMetadata(metadata: Metadata): GeoMetadata | null {
+  const stringifiedGeoMetadata = getMetadataKey(metadata, 'geo');
+  const geoMetadata = stringifiedGeoMetadata && parseJSONStringMetadata(stringifiedGeoMetadata);
+  if (!geoMetadata) {
+    return null;
+  }
+  for (const column of Object.values(geoMetadata.columns || {})) {
+    if (column.encoding) {
+      column.encoding = column.encoding.toLowerCase();
+    }
+  }
+  return geoMetadata as GeoMetadata;
+}
 
 /**
  * Stores a geoarrow / geoparquet geo metadata object in the schema
  * @note geoarrow / geoparquet geo metadata is a single stringified JSON field
  */
-// export function setGeoMetadata(metadata: Metadata, geoMetadata: GeoMetadata): void {
-//   const stringifiedGeoMetadata = JSON.stringify(geoMetadata);
-//   metadata.geo = stringifiedGeoMetadata;
-// }
+export function setGeoMetadata(metadata: Metadata, geoMetadata: GeoMetadata): void {
+  const stringifiedGeoMetadata = JSON.stringify(geoMetadata);
+  setMetadataKey(metadata, 'geo', stringifiedGeoMetadata);
+}
 
-// /**
-//  * Unpacks geo metadata into separate metadata fields (parses the long JSON string)
-//  * @note geoarrow / parquet schema is stringified into a single key-value pair in the parquet metadata
-//  */
-// export function unpackGeoMetadata(schema: Schema): void {
-//   const geoMetadata = getGeoMetadata(schema);
-//   if (!geoMetadata) {
-//     return;
-//   }
+/**
+ * Unpacks geo metadata into separate metadata fields (parses the long JSON string)
+ * @note geoarrow / parquet schema is stringified into a single key-value pair in the parquet metadata
+ */
+export function unpackGeoMetadata(metadata: Metadata): void {
+  const geoMetadata = getGeoMetadata(metadata);
+  if (!geoMetadata) {
+    return;
+  }
 
-//   // Store Parquet Schema Level Metadata
+  // Store Parquet Schema Level Metadata
 
-//   const {version, primary_column, columns} = geoMetadata;
-//   if (version) {
-//     schema.metadata['geo.version'] = version;
-//   }
+  const {version, primary_column, columns} = geoMetadata;
+  if (version) {
+    setMetadataKey(metadata, 'geo.version', version);
+  }
 
-//   if (primary_column) {
-//     schema.metadata['geo.primary_column'] = primary_column;
-//   }
+  if (primary_column) {
+    setMetadataKey(metadata, 'geo.primary_column', primary_column);
+  }
 
-//   // store column names as comma separated list
-//   schema.metadata['geo.columns'] = Object.keys(columns || {}).join('');
+  // store column names as comma separated list
+  setMetadataKey(metadata, 'geo.columns', Object.keys(columns || {}).join(''));
 
-//   for (const [columnName, columnMetadata] of Object.entries(columns || {})) {
-//     const field = schema.fields.find((field) => field.name === columnName);
-//     if (field) {
-//       if (field.name === primary_column) {
-//         setFieldMetadata(field, 'geo.primary_field', 'true');
-//       }
-//       unpackGeoFieldMetadata(field, columnMetadata);
-//     }
-//   }
-// }
+  // for (const [columnName, columnMetadata] of Object.entries(columns || {})) {
+  //   const field = schema.fields.find((field) => field.name === columnName);
+  //   if (field) {
+  //     if (field.name === primary_column) {
+  //       setFieldMetadata(field, 'geo.primary_field', 'true');
+  //     }
+  //     unpackGeoFieldMetadata(field, columnMetadata);
+  //   }
+  // }
+}
 
-// // eslint-disable-next-line complexity
-// function unpackGeoFieldMetadata(field: Field, columnMetadata): void {
+export function unpackJSONStringMetadata(metadata: Metadata, metadataKey: string): void {
+  const stringifiedGeoMetadata = getMetadataKey(metadata, 'geo');
+  const json = stringifiedGeoMetadata && parseJSONStringMetadata(stringifiedGeoMetadata);
+  for (const [key, value] of Object.entries(json || {})) {
+    setMetadataKey(
+      metadata,
+      `${metadataKey}.${key}`,
+      typeof value === 'string' ? value : JSON.stringify(value)
+    );
+  }
+}
+
+// eslint-disable-next-line complexity
+// function unpackGeoFieldMetadata(fieldMetadata: Metadata, columnMetadata): void {
 //   for (const [key, value] of Object.entries(columnMetadata || {})) {
 //     switch (key) {
 //       case 'geometry_types':
@@ -162,29 +173,23 @@ export type GeoParquetGeometryType =
 //   field.metadata[key] = value;
 // }
 
-// // HELPERS
+// HELPERS
 
-// function getMetadataEntry(metadata: Map<string, string> | Record<string, string>, key: string): string | null {
-//   return (metadata instanceof Map) ? metadata.get(key) || null : metadata[key] || null;
-// }
+/** Parse a key with stringified arrow metadata */
+export function parseJSONStringMetadata(
+  stringifiedMetadata: string
+): Record<string, unknown> | null {
+  if (!stringifiedMetadata) {
+    return null;
+  }
 
-// /** Parse a key with stringified arrow metadata */
-// export function parseJSONStringMetadata(stringifiedMetadata: string): Record<string, unknown> | null {
-//   try {
-//     const metadata = JSON.parse(stringifiedMetadata);
-//     if (!metadata || typeof metadata !== 'object') {
-//       return null;
-//     }
-//     return metadata;
-//   } catch {
-//     return null;
-//   }
-// }
-
-// export function unpackJSONStringMetadata(schema: Schema, metadataKey: string): void {
-//   const json = parseJSONStringMetadata(schema, metadataKey);
-//   for (const [key, value] of Object.entries(json || {})) {
-//     schema.metadata[`${metadataKey}.${key}`] =
-//       typeof value === 'string' ? value : JSON.stringify(value);
-//   }
-// }
+  try {
+    const metadata = JSON.parse(stringifiedMetadata);
+    if (!metadata || typeof metadata !== 'object') {
+      return null;
+    }
+    return metadata;
+  } catch {
+    return null;
+  }
+}

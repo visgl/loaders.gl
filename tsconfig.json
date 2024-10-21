@@ -33,6 +33,8 @@
       "@loaders.gl/polyfills/test": ["modules/polyfills/test"],
       "@loaders.gl/math": ["modules/math/src"],
       "@loaders.gl/math/test": ["modules/math/test"],
+      "@loaders.gl/geoarrow": ["modules/geoarrow/src"],
+      "@loaders.gl/geoarrow/test": ["modules/geoarrow/test"],
 
       "@loaders.gl/core": ["modules/core/src"],
       "@loaders.gl/core/lib/*": ["modules/core/src/lib/*"],

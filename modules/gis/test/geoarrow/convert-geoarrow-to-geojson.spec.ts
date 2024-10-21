@@ -11,7 +11,10 @@ import {
 import {load} from '@loaders.gl/core';
 import type {FeatureCollection} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import {getGeometryColumnsFromSchema, convertGeoArrowGeometryToGeoJSON} from '@loaders.gl/gis';
+import {
+  getGeometryColumnsFromSchemaMetadata,
+  convertGeoArrowGeometryToGeoJSON
+} from '@loaders.gl/gis';
 import {ArrowLoader} from '@loaders.gl/arrow';
 
 test('ArrowUtils#convertGeoArrowGeometryToGeoJSON', async (t) => {
@@ -53,7 +56,7 @@ async function testParseFromArrow(
     );
 
     const schema = convertArrowToSchema(table.schema);
-    const geometryColumns = getGeometryColumnsFromSchema(schema);
+    const geometryColumns = getGeometryColumnsFromSchemaMetadata(schema);
 
     // check 'geometry' is in geometryColumns (geometryColumns is a Map object)
     t.equal(Boolean(geometryColumns.geometry), true, 'geometryColumns has geometry column');

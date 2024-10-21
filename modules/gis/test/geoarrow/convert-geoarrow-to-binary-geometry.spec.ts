@@ -5,7 +5,7 @@
 import test, {Test} from 'tape-promise/tape';
 
 import {
-  getGeometryColumnsFromSchema,
+  getGeometryColumnsFromSchemaMetadata,
   getBinaryGeometryTemplate,
   convertGeoArrowToBinaryFeatureCollection
 } from '@loaders.gl/gis';
@@ -338,7 +338,7 @@ async function testGetBinaryGeometriesFromArrow(
     t.notEqual(geoColumn, null, 'geoColumn is not null');
 
     const schema = convertArrowToSchema(table.schema);
-    const geometryColumns = getGeometryColumnsFromSchema(schema);
+    const geometryColumns = getGeometryColumnsFromSchemaMetadata(schema);
     const encoding = geometryColumns.geometry.encoding;
 
     t.notEqual(encoding, undefined, 'encoding is not undefined');

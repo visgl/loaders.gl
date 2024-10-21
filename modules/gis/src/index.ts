@@ -6,12 +6,12 @@
 export {GEOPARQUET_METADATA_JSON_SCHEMA} from './lib/geoarrow/geoparquet-metadata-schema';
 
 export type {GeoMetadata} from './lib/geoarrow/geoparquet-metadata';
-export {
-  getGeoMetadata,
-  setGeoMetadata,
-  unpackGeoMetadata
-} from './lib/geoarrow/geoparquet-metadata';
-export {unpackJSONStringMetadata} from './lib/geoarrow/geoparquet-metadata';
+// export {
+//   getGeoMetadata,
+//   setGeoMetadata,
+//   unpackGeoMetadata
+// } from './lib/geoarrow/geoparquet-metadata';
+// export {unpackJSONStringMetadata} from './lib/geoarrow/geoparquet-metadata';
 
 //
 export type {GeojsonGeometryInfo} from './lib/geometry-api/geometry-info';
@@ -89,7 +89,7 @@ export {
 } from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
 
 export {convertGeoArrowGeometryToGeoJSON} from './lib/geometry-converters/convert-geoarrow-to-geojson';
-export {getGeometryColumnsFromSchema} from './lib/geoarrow/geoarrow-metadata';
+export {getGeometryColumnsFromSchemaMetadata} from './lib/geoarrow/geoarrow-metadata';
 export {updateBoundsFromGeoArrowSamples} from './lib/geoarrow/get-arrow-bounds';
 
 // EXPERIMENTAL APIs

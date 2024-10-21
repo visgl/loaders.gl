@@ -4876,6 +4876,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/geoarrow@npm:4.4.0-alpha.0, @loaders.gl/geoarrow@workspace:modules/geoarrow":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/geoarrow@workspace:modules/geoarrow"
+  dependencies:
+    "@math.gl/polygon": "npm:^4.1.0"
+    apache-arrow: "npm:>= 16.1.0"
+  peerDependencies:
+    "@loaders.gl/core": 4.4.0-alpha.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/geopackage@npm:^4.4.0-alpha.0, @loaders.gl/geopackage@workspace:modules/geopackage":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geopackage@workspace:modules/geopackage"
@@ -4925,6 +4936,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/gis@workspace:modules/gis"
   dependencies:
+    "@loaders.gl/geoarrow": "npm:4.4.0-alpha.0"
     "@loaders.gl/loader-utils": "npm:4.4.0-alpha.0"
     "@loaders.gl/schema": "npm:4.4.0-alpha.0"
     "@loaders.gl/schema-utils": "npm:4.4.0-alpha.0"
@@ -5090,8 +5102,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/math@workspace:modules/math"
   dependencies:
-    "@loaders.gl/images": "npm:4.4.0-alpha.0"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.0"
     "@math.gl/core": "npm:^4.1.0"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.0
@@ -5161,6 +5171,7 @@ __metadata:
     "@loaders.gl/arrow": "npm:4.4.0-alpha.0"
     "@loaders.gl/bson": "npm:4.4.0-alpha.0"
     "@loaders.gl/compression": "npm:4.4.0-alpha.0"
+    "@loaders.gl/geoarrow": "npm:4.4.0-alpha.0"
     "@loaders.gl/gis": "npm:4.4.0-alpha.0"
     "@loaders.gl/loader-utils": "npm:4.4.0-alpha.0"
     "@loaders.gl/schema": "npm:4.4.0-alpha.0"
