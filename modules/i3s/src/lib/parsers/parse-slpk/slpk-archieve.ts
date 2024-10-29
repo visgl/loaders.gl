@@ -10,31 +10,35 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
     extensions: ['3dSceneLayer.json.gz']
   },
   {
-    test: /^nodepages\/\d+$/,
+    test: /nodepages\/\d+$/,
     extensions: ['.json.gz']
   },
   {
-    test: /^nodes\/(\d+|root)$/,
+    test: /sublayers\/\d+$/,
+    extensions: ['/3dSceneLayer.json.gz']
+  },
+  {
+    test: /nodes\/(\d+|root)$/,
     extensions: ['/3dNodeIndexDocument.json.gz']
   },
   {
-    test: /^nodes\/\d+\/textures\/.+$/,
+    test: /nodes\/\d+\/textures\/.+$/,
     extensions: ['.jpg', '.png', '.bin.dds.gz', '.ktx', '.ktx2']
   },
   {
-    test: /^nodes\/\d+\/geometries\/\d+$/,
+    test: /nodes\/\d+\/geometries\/\d+$/,
     extensions: ['.bin.gz', '.draco.gz']
   },
   {
-    test: /^nodes\/\d+\/attributes\/f_\d+\/\d+$/,
+    test: /nodes\/\d+\/attributes\/f_\d+\/\d+$/,
     extensions: ['.bin.gz']
   },
   {
-    test: /^statistics\/f_\d+\/\d+$/,
+    test: /statistics\/f_\d+\/\d+$/,
     extensions: ['.json.gz']
   },
   {
-    test: /^nodes\/\d+\/shared$/,
+    test: /nodes\/\d+\/shared$/,
     extensions: ['/sharedResource.json.gz']
   }
 ];
