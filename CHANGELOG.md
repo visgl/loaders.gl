@@ -1,5 +1,9 @@
 # CHANGELOG for loaders.gl
 
+## v4.3.2
+
+- fix(i3s): fix for /sublayers paths (#3150)
+
 ## v4.3.1
 
 - Returning --slpk for backward compatibility (#3138)
