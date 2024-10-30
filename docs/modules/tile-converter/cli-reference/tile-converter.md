@@ -117,7 +117,7 @@ npx tile-converter --input-type 3DTILES --tileset ..... --metadata-class bridges
 
 ## Quiet mode
 
-Use `--quiet` option to avoid user prompts during conversion. In some cases, tile-converter stops and waits for an input from a user, for example, it can ask whether to resume conversion or start anew.
+Use `--quiet` option to avoid user prompts during conversion. In some cases, tile-converter stops and waits for an input from a user, for example, it can ask whether to resume conversion or start a new conversion.
 
 ```bash
 npx tile-converter ..... --quiet
