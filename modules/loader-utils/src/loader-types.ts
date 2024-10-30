@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  FetchLike,
-  TransformBatches /* , DataType, SyncDataType, BatchableDataType */
-} from './types';
+import type {Format} from './format-types';
+import {FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 
 // LOADERS
@@ -113,7 +111,7 @@ type PreloadOptions = {
 /**
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
-export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = {
+export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = Format & {
   /** The result type of this loader  */
   dataType?: DataT;
   /** The batched result type of this loader  */
@@ -123,6 +121,11 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = 
   options: LoaderOptionsT;
   /** Deprecated Options */
   deprecatedOptions?: Record<string, string | Record<string, string>>;
+  /** Version should be injected by build tools */
+  version: string;
+  /** A boolean, or a URL */
+  worker?: string | boolean;
+  // end Worker
 
   /** Human readable name */
   name: string;
@@ -130,19 +133,12 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = 
   id: string;
   /** module is used to generate worker threads, need to be the module directory name */
   module: string;
-  /** Version should be injected by build tools */
-  version: string;
-  /** A boolean, or a URL */
-  worker?: string | boolean;
-  // end Worker
-
   /** Which category does this loader belong to */
   category?: string;
   /** File extensions that are potential matches with this loader. */
   extensions: string[];
   /** MIMETypes that indicate a match with this loader. @note Some MIMETypes are generic and supported by many loaders */
   mimeTypes: string[];
-
   /** Is the input of this loader binary */
   binary?: boolean;
   /** Is the input of this loader text */
@@ -293,16 +289,25 @@ export type LoaderContext = {
 
 type Preload = (url: string, options?: PreloadOptions) => any;
 
-/** Typescript helper to extract options type from a generic loader type */
-export type LoaderOptionsType<T = Loader> = T extends Loader<any, any, infer Options>
-  ? Options
-  : never;
-/** Typescript helper to extract data type from a generic loader type */
-export type LoaderReturnType<T = Loader> = T extends Loader<infer Return, any, any>
-  ? Return
-  : never;
-/** Typescript helper to extract batch type from a generic loader type */
-export type LoaderBatchType<T = Loader> = T extends Loader<any, infer Batch, any> ? Batch : never;
+/** Typescript helper to extract options type from a loader type */
+export type LoaderOptionsType<T = Loader> =
+  T extends Loader<unknown, unknown, infer Options> ? Options : never;
+/** Typescript helper to extract data type from a loader type */
+export type LoaderReturnType<T = Loader> =
+  T extends Loader<infer Return, unknown, unknown> ? Return : never;
+/** Typescript helper to extract batch type from a loader type */
+export type LoaderBatchType<T = Loader> =
+  T extends Loader<unknown, infer Batch, unknown> ? Batch : never;
+
+/** Typescript helper to extract options type from an array of loader types */
+export type LoaderArrayOptionsType<LoadersT extends Loader[] = Loader[]> =
+  LoadersT[number]['options'];
+/** Typescript helper to extract data type from a loader type */
+export type LoaderArrayReturnType<LoadersT extends Loader[] = Loader[]> =
+  LoadersT[number]['dataType'];
+/** Typescript helper to extract batch type from a loader type */
+export type LoaderArrayBatchType<LoadersT extends Loader[] = Loader[]> =
+  LoadersT[number]['batchType'];
 
 /**
  * Parses `data` asynchronously using the supplied loader, parse function provided via the loader context

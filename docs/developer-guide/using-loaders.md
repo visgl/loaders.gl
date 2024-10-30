@@ -38,7 +38,6 @@ const pointCloud = await load(url, [PCDLoader, LASLoader]);
 
 Since v4.0, all loaders are typed, meaning that loaders.gl can infer types for returned data and loader options from the supplied loader
 
-
 Note that type inference only works when single loader is provided:
 
 ```typescript
@@ -73,10 +72,9 @@ switch (loader.id) {
 
 ### Registering Loaders
 
-Loaders can also be registered globally. To register a loader, use `registerLoaders()`. 
-Registered loaders will be included in loader selection if you call any form of 
+Loaders can also be registered globally. To register a loader, use `registerLoaders()`.
+Registered loaders will be included in loader selection if you call any form of
 `parse()` or `load()` that does not specify a single loader.
-
 
 ```typescript
 import {registerLoaders, load} from '@loaders.gl/core';

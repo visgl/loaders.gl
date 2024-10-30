@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {fetchFile, isBrowser} from '@loaders.gl/core';
-import {_BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';
+import {fetchFile, isBrowser, _BrowserFileSystem as BrowserFileSystem} from '@loaders.gl/core';
 
 export const IMAGE_URLS = [
   '@loaders.gl/images/test/data/img1-preview.png',

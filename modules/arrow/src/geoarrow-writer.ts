@@ -1,8 +1,8 @@
 // import type {} from '@loaders.gl/loader-utils';
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
-import {GeoJSONTable, BinaryGeometry} from '@loaders.gl/schema';
-import {encodeGeoArrowSync} from './lib/encode-geoarrow';
+import type {GeoJSONTable, BinaryGeometry} from '@loaders.gl/schema';
+import {encodeGeoArrowSync} from './lib/encoders/encode-geoarrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

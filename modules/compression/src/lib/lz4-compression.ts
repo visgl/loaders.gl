@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// Forked code
 // Copyright (c) 2012 Pierre Curto
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,8 +27,7 @@
 /* eslint-disable max-statements */
 
 // LZ4
-import {toArrayBuffer} from '@loaders.gl/loader-utils';
-import {registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
+import {toArrayBuffer, registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
 

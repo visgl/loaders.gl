@@ -12,15 +12,14 @@ As a relevant example, we may receive multiple small record batches in a socket 
 
 A Table’s columns are instances of `Column`, which is a container for one or more arrays of the same type.
 
-
 ## Usage
 
 `Table.new()` accepts an `Object` of `Columns` or `Vectors`, where the keys will be used as the field names for the `Schema`:
 
 ```typescript
 const i32s = Int32Vector.from([1, 2, 3]);
-const f32s = Float32Vector.from([.1, .2, .3]);
-const table = Table.new({ i32: i32s, f32: f32s });
+const f32s = Float32Vector.from([0.1, 0.2, 0.3]);
+const table = Table.new({i32: i32s, f32: f32s});
 assert(table.schema.fields[0].name === 'i32');
 ```
 
@@ -30,7 +29,7 @@ missing, the numeric index of each Vector will be used as the name:
 
 ```ts
 const i32s = Int32Vector.from([1, 2, 3]);
-const f32s = Float32Vector.from([.1, .2, .3]);
+const f32s = Float32Vector.from([0.1, 0.2, 0.3]);
 const table = Table.new([i32s, f32s], ['i32']);
 assert(table.schema.fields[0].name === 'i32');
 assert(table.schema.fields[1].name === '1');
@@ -40,7 +39,7 @@ If the supplied arguments are `Column` instances, `Table.new` will infer the `Sc
 
 ```ts
 const i32s = Column.new('i32', Int32Vector.from([1, 2, 3]));
-const f32s = Column.new('f32', Float32Vector.from([.1, .2, .3]));
+const f32s = Column.new('f32', Float32Vector.from([0.1, 0.2, 0.3]));
 const table = Table.new(i32s, f32s);
 assert(table.schema.fields[0].name === 'i32');
 assert(table.schema.fields[1].name === 'f32');
@@ -54,17 +53,15 @@ these additional bitmaps can be computed as:
 ```ts
 let additionalBytes = 0;
 for (let vec in shorter_vectors) {
- additionalBytes += (((longestLength - vec.length) + 63) & ~63) >> 3;
+  additionalBytes += ((longestLength - vec.length + 63) & ~63) >> 3;
 }
 ```
 
 For example, an additional null bitmap for one million null values would require `125,000` bytes (`((1e6 + 63) & ~63) >> 3`), or approx. `0.11MiB`
 
-
 ## Inheritance
 
 `Table` extends Chunked
-
 
 ## Static Methods
 
@@ -77,19 +74,24 @@ Creates an empty table
 Creates an empty table
 
 ### Table.from(source: RecordBatchReader): Table
+
 ### Table.from(source: `Promise<RecordBatchReader>`): `Promise<Table>`
+
 ### Table.from(source?: any) : Table
+
 ### Table.fromAsync(source: import('./ipc/reader').FromArgs): `Promise<Table>`
+
 ### Table.fromVectors(vectors: any[], names?: String[]) : Table
+
 ### Table.fromStruct(struct: Vector) : Table
 
-
 ### Table.new(columns: Object)
+
 ### Table.new(...columns)
+
 ### Table.new(vectors: Vector[], names: String[])
 
 Type safe constructors. Functionally equivalent to calling `new Table()` with the same arguments, however if using Typescript using the `new` method instead will ensure that types inferred from the arguments "flow through" into the return Table type.
-
 
 ## Members
 
@@ -97,23 +99,19 @@ Type safe constructors. Functionally equivalent to calling `new Table()` with th
 
 The `Schema` of this table.
 
-
 ### length : Number (readonly)
 
 The number of rows in this table.
 
 TBD: this does not consider filters
 
-
 ### chunks : RecordBatch[] \(readonly)
 
 The list of chunks in this table.
 
-
 ### numCols : Number (readonly)
 
 The number of columns in this table.
-
 
 ## Methods
 
@@ -130,7 +128,6 @@ The schema will be inferred from the record batches.
 ### constructor(schema: Schema, ...batches: RecordBatch[])
 
 ### constructor(...args: any[])
-
 
 Create a new `Table` from a collection of `Columns` or `Vectors`, with an optional list of names or `Fields`.
 
@@ -161,7 +158,6 @@ TBD
 Returns a `Uint8Array` that contains an encoding of all the data in the table.
 
 Note: Passing the returned data back into `Table.from()` creates a "deep clone" of the table.
-
 
 ### count(): number
 

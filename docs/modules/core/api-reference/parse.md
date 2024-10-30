@@ -89,4 +89,3 @@ Notes:
 | `AsyncIterator` | iterator that yields promises that resolve to binary (`ArrayBuffer`) chunks or string chunks. |
 
 Note that additional data types can be converted to `Response` objects and used with `parse`, e.g. with `new Response(new FormData(...))`. See browser documentation for the `Response` class for more details.
-

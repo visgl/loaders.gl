@@ -8,7 +8,7 @@ import {CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
 import {encodeTableAsText} from '@loaders.gl/core';
 
 import {Table} from '@loaders.gl/schema';
-import {makeTestTable, tableWithGeometryColumn} from '@loaders.gl/schema/test/shared-utils';
+import {makeTestTable, tableWithGeometryColumn} from '@loaders.gl/schema-utils/test/shared-utils';
 
 type TestCase = {
   name: string;

@@ -7,9 +7,10 @@ import type {
   LoaderOptions,
   LoaderContext,
   FetchLike,
-  BatchableDataType
+  BatchableDataType,
+  LoaderBatchType,
+  LoaderOptionsType
 } from '@loaders.gl/loader-utils';
-import type {LoaderBatchType, LoaderOptionsType} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 

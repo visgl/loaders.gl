@@ -53,7 +53,6 @@ To parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` 
 
 If no JSONPath is specified the loader will stream the first array it encounters in the JSON payload.
 
-
 ## Data Format
 
 Encoded batches are array buffers or strings
@@ -62,10 +61,10 @@ Encoded batches are array buffers or strings
 
 Supports table category options such as `batchType` and `batchSize`.
 
-| Option                 | From                                                                                  | Type       | Default                                                                                                                                          | Description                                                                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `json.table`           | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `boolean`  | `false`                                                                                                                                          | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
-| `json.jsonpaths`       | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `[]`                                                                                                                                             | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
+| Option           | From                                                                                  | Type       | Default | Description                                                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `json.table`     | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `boolean`  | `false` | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
+| `json.jsonpaths` | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `[]`    | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
 
 ## JSONPaths
 

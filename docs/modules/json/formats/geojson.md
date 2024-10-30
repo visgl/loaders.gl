@@ -13,4 +13,4 @@ Since GeoJSON geometries can be independently useful they are described on a [se
 
 | Format   | Support | Description                                   |
 | -------- | ------- | --------------------------------------------- |
-| TopoJSON | ❌       | A more compact version that encodes topology. |
+| TopoJSON | ❌      | A more compact version that encodes topology. |

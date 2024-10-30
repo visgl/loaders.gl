@@ -28,8 +28,8 @@ class TestCase {
 
   /**
    * Not a pure strict equal. Deep equal with additional checks per
-   * 
-   * @param {*} value 
+   *
+   * @param {*} value
    */
   toStrictEqual(value) {
     this.t.deepEquals(this.result, value);
@@ -63,7 +63,7 @@ export function describe(string: string, func: Function) {
 }
 
 export function it(message, testfunc) {
-  test(`${description}#${message}`, async t => {
+  test(`${description}#${message}`, async (t) => {
     currentTest = t;
     await testfunc();
     t.end();

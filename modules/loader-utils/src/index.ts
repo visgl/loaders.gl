@@ -20,6 +20,10 @@ export type {
   FetchLike
 } from './types';
 
+// formats
+
+export type {Format} from './format-types';
+
 // loaders
 
 export type {
@@ -29,14 +33,24 @@ export type {
   LoaderOptions,
   LoaderOptionsType,
   LoaderReturnType,
-  LoaderBatchType
+  LoaderBatchType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType,
+  LoaderArrayBatchType
 } from './loader-types';
 
 export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';
 
 // writers
 
-export type {Writer, WriterWithEncoder, WriterOptions, WriterOptionsType} from './writer-types';
+export type {
+  Writer,
+  WriterWithEncoder,
+  WriterOptions,
+  WriterOptionsType,
+  WriterDataType,
+  WriterBatchType
+} from './writer-types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
@@ -53,7 +67,10 @@ export {
 export {log} from './lib/log-utils/log';
 
 // Options and modules
-export {mergeLoaderOptions} from './lib/option-utils/merge-loader-options';
+export type {RequiredOptions} from './lib/option-utils/merge-options';
+export {mergeOptions, getRequiredOptions} from './lib/option-utils/merge-options';
+
+// Modules (external libraries)
 export {registerJSModules} from './lib/module-utils/js-module-utils';
 export {checkJSModule, getJSModule, getJSModuleOrNull} from './lib/module-utils/js-module-utils';
 
@@ -140,25 +157,25 @@ export {FileHandleFile} from './lib/file-provider/file-handle-file';
 export {DataViewFile} from './lib/file-provider/data-view-file';
 
 // EXPERIMENTAL: DATA SOURCES
-export type {Source} from './source-types';
+export type {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from './source-types';
 
-export type {DataSourceProps} from './lib/sources/data-source';
+export type {DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 
 export {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';
-export type {ImageSourceProps, ImageSourceMetadata} from './lib/sources/image-source';
+export type {ImageSourceMetadata} from './lib/sources/image-source';
 export type {GetImageParameters} from './lib/sources/image-source';
 
-export {VectorSource} from './lib/sources/vector-source';
-export type {VectorSourceProps, VectorSourceMetadata} from './lib/sources/vector-source';
+export type {VectorSource} from './lib/sources/vector-source';
+export type {VectorSourceMetadata} from './lib/sources/vector-source';
 export type {GetFeaturesParameters} from './lib/sources/vector-source';
 
-export type {TileSource, TileSourceProps} from './lib/sources/tile-source';
+export type {TileSource} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
 export type {GetTileDataParameters} from './lib/sources/tile-source';
 
 export type {ImageTileSource} from './lib/sources/image-tile-source';
 
-export type {VectorTileSource, VectorTileSourceProps} from './lib/sources/vector-tile-source';
+export type {VectorTileSource} from './lib/sources/vector-tile-source';
 export type {VectorTile} from './lib/sources/vector-tile-source';

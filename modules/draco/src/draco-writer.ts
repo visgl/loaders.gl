@@ -35,6 +35,7 @@ export const DracoWriter = {
   module: 'draco',
   version: VERSION,
   extensions: ['drc'],
+  mimeTypes: ['application/octet-stream'],
   options: {
     draco: DEFAULT_DRACO_WRITER_OPTIONS
   },

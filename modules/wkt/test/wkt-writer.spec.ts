@@ -28,22 +28,17 @@ test('WKTWriter', (t) => {
   // ];
 
   // fixtures.forEach((fix) => t.equal(fix, encodeSync(parse(fix, WKTLoader), WKTWriter), fix));
+  const geojsonFeature = {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'Point',
+      coordinates: [42, 20]
+    }
+  };
 
-  t.equal(
-    encodeTextSync(
-      {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'Point',
-          coordinates: [42, 20]
-        }
-      },
-      WKTWriter
-    ),
-    'POINT (42 20)',
-    'point equal'
-  );
+  const wkt = encodeTextSync(geojsonFeature.geometry, WKTWriter);
+  t.equal(wkt, 'POINT (42 20)', 'point equal');
 
   t.end();
 });

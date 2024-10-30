@@ -4,11 +4,12 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile, parseSync} from '@loaders.gl/core';
-import {TWKBLoader, isTWKB} from '@loaders.gl/wkt';
-import {parseTestCases} from './utils/parse-test-cases';
+import {isTWKB} from '@loaders.gl/gis';
+import {TWKBLoader} from '@loaders.gl/wkt';
+import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
-const WKB_2D_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdata2d.json';
-// const WKB_Z_TEST_CASES = '@loaders.gl/wkt/test/data/wkb-testdataZ.json';
+const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
+// const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
 
 test('TWKBLoader#2D', async (t) => {
   const response = await fetchFile(WKB_2D_TEST_CASES);

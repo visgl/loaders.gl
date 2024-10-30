@@ -1,6 +1,7 @@
 # Data Sources API
 
-Build a data source API that can encompass services such 
+Build a data source API that can encompass services such
+
 - loaded data
 - URLS
 - tile service
@@ -12,13 +13,11 @@ Build a data source API that can encompass services such
 ### Related
 
 - deck.gl has a semi-internal data source API.
-- 
-
-
+-
 
 ## Main problems
 
-### Refresh / Dirty state handling. 
+### Refresh / Dirty state handling.
 
 How does the application (typically deck.gl)) know when to redraw?
 
@@ -36,6 +35,3 @@ Typing is a bit messy when overriding child class definitions.
 ## Declarative usage
 
 Fully declarative usage requires a lifecycle management system, which seems too heavy.
-
-
-

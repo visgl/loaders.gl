@@ -31,6 +31,7 @@ export const CompressedTextureWriter = {
   version: VERSION,
 
   extensions: ['dds'],
+  mimeTypes: ['image/vnd-ms.dds', 'image/x-dds', 'application/octet-stream'],
 
   options: {
     texture: {

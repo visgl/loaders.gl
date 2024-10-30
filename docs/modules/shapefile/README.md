@@ -10,8 +10,8 @@ npm install @loaders.gl/shapefile
 
 ## Loaders and Writers
 
-| Loader                                                   |
-| -------------------------------------------------------- |
+| Loader                                                          |
+| --------------------------------------------------------------- |
 | [`SHPLoader`](/docs/modules/shapefile/api-reference/shp-loader) |
 
 ## Attribution

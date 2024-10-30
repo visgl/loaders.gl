@@ -47,22 +47,20 @@ const optionsAsGeoJson: GeoPackageLoaderOptions = {
   geopackage: {
     shape: 'geojson',
     table: 'feature_table',
-    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/',
+    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
   }
 };
 
 const geoJsonData: GeoJSONTable = await load(url, GeoPackageLoader, optionsAsGeoJson);
-
 ```
 
 ## Options
 
 | Option                | Type   | Default                                                  | Description                                                                                                            |
-| --------------------- | ------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| --------------------- | ------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------- |
 | `options.shape`       | String | `'tables'` \| '`geojson-table'`                          | Output format.                                                                                                         |
 | `options.table`       | String | N/A                                                      | name of table to load                                                                                                  | Output format. |
 | `geopackage.sqlJsCDN` | String | `'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackageLoader is called on a file. |
-
 
 ## Output
 

@@ -1,7 +1,7 @@
 # Overview
 
-The `@loaders.gl/geotiff` module provides support for the [GeoTIFF](/docs/modules/geotiff/formats/geotiff) format. 
-GeoTIFF images embedded georeferencing information within a multi-band image file. 
+The `@loaders.gl/geotiff` module provides support for the [GeoTIFF](/docs/modules/geotiff/formats/geotiff) format.
+GeoTIFF images embedded georeferencing information within a multi-band image file.
 
 ## Installation
 
@@ -11,10 +11,10 @@ npm install @loaders.gl/core @loaders.gl/geotiff
 
 ## Loaders and Writers
 
-| Loader                                                            |
-| ----------------------------------------------------------------- |
+| Loader                                                                |
+| --------------------------------------------------------------------- |
 | [`GeoTIFFLoader`](/docs/modules/geotiff/api-reference/geotiff-loader) |
-| [`GeoTIFFSource`](/docs/modules/geotiff/api-reference/geotiff-source)   |
+| [`GeoTIFFSource`](/docs/modules/geotiff/api-reference/geotiff-source) |
 
 ## Additional APIs
 

@@ -10,6 +10,7 @@
   "references": [
     {"path": "../loader-utils"},
     {"path": "../gis"},
-    {"path": "../schema"}
+    {"path": "../schema"},
+    {"path": "../schema-utils"}
   ]
 }

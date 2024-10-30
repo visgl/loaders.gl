@@ -7,7 +7,7 @@
 
 import Protobuf from 'pbf';
 import {VectorTileFeature} from './vector-tile-feature';
-import {GeojsonGeometryInfo} from '@loaders.gl/schema';
+import {GeojsonGeometryInfo} from '@loaders.gl/gis';
 
 export class VectorTileLayer {
   version: number;
@@ -112,18 +112,18 @@ function readValueMessage(pbf: Protobuf) {
       tag === 1
         ? pbf.readString()
         : tag === 2
-        ? pbf.readFloat()
-        : tag === 3
-        ? pbf.readDouble()
-        : tag === 4
-        ? pbf.readVarint64()
-        : tag === 5
-        ? pbf.readVarint()
-        : tag === 6
-        ? pbf.readSVarint()
-        : tag === 7
-        ? pbf.readBoolean()
-        : null;
+          ? pbf.readFloat()
+          : tag === 3
+            ? pbf.readDouble()
+            : tag === 4
+              ? pbf.readVarint64()
+              : tag === 5
+                ? pbf.readVarint()
+                : tag === 6
+                  ? pbf.readSVarint()
+                  : tag === 7
+                    ? pbf.readBoolean()
+                    : null;
   }
 
   return value;

@@ -5,15 +5,16 @@
 import type {Schema, Field, DataType} from '@loaders.gl/schema';
 import type {
   Source,
-  LoaderOptions,
+  DataSourceOptions,
+  TileSource,
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
-import type {TileSource} from '@loaders.gl/loader-utils';
-// import {getArrayTypeFromDataType} from '@loaders.gl/schema';
-import {DataSource, DataSourceProps, resolvePath} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/loader-utils';
 
 import {Copc, Hierarchy, Dimension, Getter} from 'copc';
+
+const VERSION = '1.0.0';
 
 type COPCMetadata = Record<string, unknown>;
 
@@ -29,10 +30,12 @@ type GetNodeParameters = {
   limit?: number;
 };
 
-const VERSION = '1.0.0';
+export type COPCSourceOptions = DataSourceOptions & {
+  copc?: {};
+};
 
 /**
- * Creates vector tile data sources for COPC urls or blobs
+ * Creates point cloud tile source for COPC urls or blobs
  */
 export const COPCSource = {
   name: 'COPC',
@@ -41,31 +44,27 @@ export const COPCSource = {
   version: VERSION,
   extensions: ['laz'],
   mimeTypes: ['application/octet-stream'],
-  options: {url: undefined!, copc: {}},
   type: 'copc',
   fromUrl: true,
   fromBlob: true,
 
-  testURL: (url: string) => url.endsWith('.pmtiles'),
-  createDataSource: (url: string | Blob, props: COPCTileSourceProps) =>
-    new COPCTileSource(url, props)
-} as const satisfies Source<COPCTileSource, COPCTileSourceProps>;
+  defaultOptions: {
+    copc: {}
+  },
 
-export type COPCTileSourceProps = DataSourceProps & {
-  attributions?: string[];
-  copc?: {
-    loadOptions?: LoaderOptions; // COPCLoaderOptions;
-    // TODO - add options here
-  };
-};
+  testURL: (url: string) => url.endsWith('.pmtiles'),
+  createDataSource: (url: string | Blob, options: COPCSourceOptions) =>
+    new COPCTileSource(url, options)
+} as const satisfies Source<COPCTileSource>;
 
 /**
  * A COPC data source
  * @note Can be either a raster or vector tile source depending on the contents of the COPC file.
  */
-export class COPCTileSource extends DataSource implements TileSource {
-  data: string | Blob;
-  props: COPCTileSourceProps;
+export class COPCTileSource
+  extends DataSource<string | Blob, COPCSourceOptions>
+  implements TileSource
+{
   mimeType: string | null = null;
   metadata: Promise<COPCMetadata>;
 
@@ -76,13 +75,11 @@ export class COPCTileSource extends DataSource implements TileSource {
   }>;
   protected _urlOrGetter: string | Getter;
 
-  constructor(data: string | Blob, props: COPCTileSourceProps) {
-    super(props);
-    this.props = props;
-    const url = typeof data === 'string' ? resolvePath(data) : '';
-    this.data = data;
-    this._urlOrGetter = url;
-    this._initPromise = this._initCopc(url);
+  constructor(data: string | Blob, options: COPCSourceOptions) {
+    super(data, options, COPCSource.defaultOptions);
+    // TODO - create a getter if a blob
+    this._urlOrGetter = this.url as any;
+    this._initPromise = this._initCopc(this.url);
     this.metadata = this.getMetadata();
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/schema",
-  "version": "4.3.0-alpha.7",
+  "version": "4.4.0-alpha.0",
   "description": "Table format APIs for JSON, CSV, etc...",
   "license": "MIT",
   "type": "module",
@@ -41,10 +41,11 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@types/geojson": "^7946.0.7"
+    "@types/geojson": "^7946.0.7",
+    "apache-arrow": ">= 15.0.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "^4.0.0"
+    "@loaders.gl/core": "4.4.0-alpha.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

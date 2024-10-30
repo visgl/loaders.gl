@@ -10,7 +10,7 @@ Experimental loader and writer for the Apache Parquet format.
 
 # Attribution
 
-- Based on a fork of https://github.com/ironSource/parquetjs and  https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.).
+- Based on a fork of https://github.com/ironSource/parquetjs and https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.).
 - Documentation was inspired by [parquet-go](https://github.com/xitongsys/parquet-go/blob/master/LICENSE) under Apache 2 license.
 
 # License

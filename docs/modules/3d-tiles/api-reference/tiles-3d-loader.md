@@ -57,20 +57,20 @@ const tilesetJson = await load(tilesetUrl, Tiles3DLoader, {'3d-tiles': {isTilese
 
 const tileset3d = new Tileset3D(tilesetJson, {
   throttleRequests: false,
-  onTileLoad: tile => console.log(tile)
+  onTileLoad: (tile) => console.log(tile)
 });
 
 const viewport = new WebMercatorViewport({
   width: 600,
   height: 400,
-  latitude: 40.7067584, 
-  longitude: -74.0115413, 
+  latitude: 40.7067584,
+  longitude: -74.0115413,
   zoom: 17
 });
 tileset3d.selectTiles(viewport);
 
 // visible tiles
-const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
+const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks
 

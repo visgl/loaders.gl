@@ -2,11 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Source} from '@loaders.gl/loader-utils';
-import type {ImageType, DataSourceProps} from '@loaders.gl/loader-utils';
-import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
-import type {GetTileParameters, GetTileDataParameters} from '@loaders.gl/loader-utils';
-import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
+import type {
+  Source,
+  ImageType,
+  DataSourceOptions,
+  ImageTileSource,
+  VectorTileSource,
+  GetTileParameters,
+  GetTileDataParameters
+} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
 import {
   MVTLoader,
@@ -16,31 +21,8 @@ import {
   TileJSONLoaderOptions
 } from '@loaders.gl/mvt';
 
-/** Creates an MVTTileSource */
-export const MVTSource = {
-  name: 'MVT',
-  id: 'mvt',
-  module: 'mvt',
-  version: '0.0.0',
-  extensions: ['mvt'],
-  mimeTypes: ['application/octet-stream'],
-  options: {
-    mvt: {
-      // TODO - add options here
-    }
-  },
-  type: 'mvt',
-  fromUrl: true,
-  fromBlob: false,
-
-  testURL: (url: string): boolean => true,
-  createDataSource(url: string, props: MVTTileSourceProps): MVTTileSource {
-    return new MVTTileSource(url, props);
-  }
-} as const satisfies Source<MVTTileSource, MVTTileSourceProps>;
-
 /** Properties for a Mapbox Vector Tile Source */
-export type MVTTileSourceProps = DataSourceProps & {
+export type MVTSourceOptions = DataSourceOptions & {
   mvt?: {
     // TODO - add options here
     /** if not supplied, loads tilejson.json, If null does not load metadata */
@@ -54,6 +36,30 @@ export type MVTTileSourceProps = DataSourceProps & {
   };
 };
 
+/** Creates an MVTTileSource */
+export const MVTSource = {
+  name: 'MVT',
+  id: 'mvt',
+  module: 'mvt',
+  version: '0.0.0',
+  extensions: ['mvt'],
+  mimeTypes: ['application/octet-stream'],
+  type: 'mvt',
+  fromUrl: true,
+  fromBlob: false,
+
+  defaultOptions: {
+    mvt: {
+      // TODO - add options here
+    }
+  },
+
+  testURL: (url: string): boolean => true,
+  createDataSource(url: string, options: MVTSourceOptions): MVTTileSource {
+    return new MVTTileSource(url, options);
+  }
+} as const satisfies Source<MVTTileSource>;
+
 /**
  * MVT data source for Mapbox Vector Tiles v1.
  */
@@ -61,23 +67,20 @@ export type MVTTileSourceProps = DataSourceProps & {
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
-export class MVTTileSource extends DataSource implements ImageTileSource, VectorTileSource {
-  readonly props: MVTTileSourceProps;
-  readonly url: string;
+export class MVTTileSource
+  extends DataSource<string, MVTSourceOptions>
+  implements ImageTileSource, VectorTileSource
+{
   readonly metadataUrl: string | null = null;
-  data: string;
   schema: 'tms' | 'xyz' | 'template' = 'tms';
   metadata: Promise<TileJSON | null>;
   extension: string;
   mimeType: string | null = null;
 
-  constructor(url: string, props: MVTTileSourceProps) {
-    super(props);
-    this.props = props;
-    this.url = resolvePath(url);
-    this.metadataUrl = props.mvt?.metadataUrl || `${this.url}/tilejson.json`;
-    this.extension = props.mvt?.extension || '.png';
-    this.data = this.url;
+  constructor(url: string, options: MVTSourceOptions) {
+    super(url, options, MVTSource.defaultOptions);
+    this.metadataUrl = options.mvt?.metadataUrl || `${this.url}/tilejson.json`;
+    this.extension = options.mvt?.extension || '.png';
 
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();
@@ -112,7 +115,7 @@ export class MVTTileSource extends DataSource implements ImageTileSource, Vector
     const metadata = TileJSONLoader.parseTextSync?.(tileJSON) || null;
 
     // TODO add metadata attributions
-    // metadata.attributions = [...this.props.attributions, ...(metadata.attributions || [])];
+    // metadata.attributions = [...this.options.attributions, ...(metadata.attributions || [])];
     // if (metadata?.mimeType) {
     //   this.mimeType = metadata?.tileMIMEType;
     // }

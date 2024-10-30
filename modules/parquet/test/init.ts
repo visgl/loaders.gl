@@ -1,5 +1,8 @@
-import {preloadCompressions} from '@loaders.gl/parquet';
-import {installBufferPolyfill} from '@loaders.gl/parquet';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {preloadCompressions,installBufferPolyfill} from '@loaders.gl/parquet';
 
 // Import big dependencies
 

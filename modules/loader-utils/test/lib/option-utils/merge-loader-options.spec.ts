@@ -1,12 +1,12 @@
 import test from 'tape-promise/tape';
 
-import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
+import {mergeOptions} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
 
 // NOTE: addAliases is not a public export, already used by test setup
 // import {_addAliases} from '@loaders.gl/loader-utils';
 
-test('mergeLoaderOptions', (t) => {
+test('mergeOptions', (t) => {
   const originalOptions: XMLLoaderOptions = {
     xml: {
       _fastXML: {
@@ -18,7 +18,7 @@ test('mergeLoaderOptions', (t) => {
   };
 
   // Set HTML parsing options
-  const mergedOptions = mergeLoaderOptions(originalOptions, {
+  const mergedOptions = mergeOptions(originalOptions, {
     xml: {
       _parser: 'fast-xml-parser',
       _fastXML: {
@@ -39,7 +39,7 @@ test('mergeLoaderOptions', (t) => {
     }
   };
 
-  t.deepEqual(mergedOptions, expectedOptions, 'mergeLoaderOptions() returns correct value');
+  t.deepEqual(mergedOptions, expectedOptions, 'mergeOptions() returns correct value');
 
   t.end();
 });

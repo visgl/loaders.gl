@@ -1,3 +1,9 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
+
 import {decodeValues as decodeRleValues} from './rle';
 
 export function decodeValues(type, cursor, count, opts) {

@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {FlatFeature, Feature, GeojsonGeometryInfo} from '@loaders.gl/schema';
-import type {GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
-import {flatGeojsonToBinary} from '@loaders.gl/gis';
+import type {FlatFeature, Feature, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
+import {flatGeojsonToBinary, GeojsonGeometryInfo} from '@loaders.gl/gis';
 import {log} from '@loaders.gl/loader-utils';
 import Protobuf from 'pbf';
 

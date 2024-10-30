@@ -11,8 +11,8 @@ import {setLoaderOptions, fetchFile, parseSync} from '@loaders.gl/core';
 
 import fuzzer from 'fuzzer';
 
-const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/wkt/test/data/geometrycollection.wkt';
-const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/wkt/test/data/geometrycollection.geojson';
+const GEOMETRYCOLLECTION_WKT_URL = '@loaders.gl/gis/test/data/wkt/geometrycollection.wkt';
+const GEOMETRYCOLLECTION_GEOJSON_URL = '@loaders.gl/gis/test/data/wkt/geometrycollection.geojson';
 
 setLoaderOptions({
   _workerType: 'test'

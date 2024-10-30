@@ -1,0 +1,24 @@
+{
+  "name": "loaders.gl-3d-tiles-with-cesium-example",
+  "version": "1.0.0",
+  "description": "Minimal example of using loaders.gl with Cesium.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "webpack-dev-server --progress --hot --open -d",
+    "start-local": "webpack-dev-server --env.local --env.esnext --progress --hot --open"
+  },
+  "dependencies": {
+    "@loaders.gl/3d-tiles": "4.4.0-alpha.0",
+    "@loaders.gl/core": "4.4.0-alpha.0",
+    "@math.gl/culling": "^4.1.0",
+    "@math.gl/core": "^4.1.0"
+  },
+  "devDependencies": {
+    "babel-plugin-inline-import": "^3.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "webpack": "^4.3.0",
+    "webpack-dev-server": "^3.1.1"
+  }
+}

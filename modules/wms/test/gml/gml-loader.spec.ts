@@ -11,7 +11,7 @@ import {GML_V3_TESTS} from '@loaders.gl/wms/test/data/gml/v3/tests';
 // import {validateLoader} from 'test/common/conformance';
 
 import {_GMLLoader as GMLLoader} from '@loaders.gl/wms';
-import {GeoJSON} from '@loaders.gl/schema';
+import type {GeoJSON} from '@loaders.gl/schema';
 import {parse} from '@loaders.gl/core';
 
 const VALID_TEST = {
@@ -52,7 +52,7 @@ test('GMLLoader#parse', async (t) => {
       const geojson = (await parse(xmlText, GMLLoader)) as GeoJSON;
 
       t.equal(typeof geojson, 'object', `Parsed ${fileName}`);
-      t.comment(JSON.stringify(geojson));
+      // t.comment(JSON.stringify(geojson));
     }
   }
 

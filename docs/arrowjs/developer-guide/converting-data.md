@@ -6,9 +6,9 @@ While keeping data in Arrow format allows for efficient data frame operations, t
 
 Many arrow classes support the following methods:
 
-* `toArray()` - Typically returns a typed array.
-* `toJSON()` - Arrow JS types can be converted to JSON.
-* `toString()` - Arrow JS types can be converted to strings.
+- `toArray()` - Typically returns a typed array.
+- `toJSON()` - Arrow JS types can be converted to JSON.
+- `toString()` - Arrow JS types can be converted to strings.
 
 ### Extracting Data by Row
 

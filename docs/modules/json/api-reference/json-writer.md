@@ -51,7 +51,6 @@ To parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` 
 
 If no JSONPath is specified the loader will stream the first array it encounters in the JSON payload.
 
-
 ## Data Format
 
 Encoded batches are array buffers or strings

@@ -6,19 +6,20 @@
 
 The `MVTSource` dynamically loads tiles, typically from big pre-tiled hierarchies on cloud storage.
 
-| Source                | Characteristic                                       |
-| --------------------- | ---------------------------------------------------- |
-| File Extension        | `.mvt` `.tilejson`                                   |
-| File Type             | Binary Archive                                       |
-| File Format           | [Mapbox Vector Tiles](/docs/modules/mvt/formats/mvt) |
-| Data Format           | GeoJSON                                              |
+| Source         | Characteristic                                       |
+| -------------- | ---------------------------------------------------- |
+| File Extension | `.mvt` `.tilejson`                                   |
+| File Type      | Binary Archive                                       |
+| File Format    | [Mapbox Vector Tiles](/docs/modules/mvt/formats/mvt) |
+| Data Format    | GeoJSON                                              |
 
 ## Usage
 
 ```typescript
+import {createDataSource} from '@loaders.gl/core';
 import {MVTSource} from '@loaders.gl/pmtiles';
 
-const source = new MVTSource({url});
+const source = createDataSource(url, [MVTSource]);
 const tile = await source.getTile(...);
 ```
 

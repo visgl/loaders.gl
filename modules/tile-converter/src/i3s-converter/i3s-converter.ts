@@ -82,6 +82,7 @@ import {composeHashFile, createZip} from '@loaders.gl/zip';
 import {ConversionDump, ConversionDumpOptions, DumpMetadata} from '../lib/utils/conversion-dump';
 import {PromptModule} from 'inquirer';
 
+// eslint-disable-next-line no-process-env
 const ION_DEFAULT_TOKEN = process.env?.IonToken;
 const HARDCODED_NODES_PER_PAGE = 64;
 const _3D_TILES = '3DTILES';

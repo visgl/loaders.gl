@@ -34,10 +34,17 @@ import {WKBWriter} from '@loaders.gl/wkt';
 import {encodeSync} from '@loaders.gl/core';
 
 const geometry = {
-  type: "Polygon",
-  coordinates: [[[1, 2], [3, 4], [5, 6], [1, 2]]]
-}
-const arrayBuffer = encodeSync(geometry, WKBWriter, {wkt: {hasZ: false, hasM: false}})
+  type: 'Polygon',
+  coordinates: [
+    [
+      [1, 2],
+      [3, 4],
+      [5, 6],
+      [1, 2]
+    ]
+  ]
+};
+const arrayBuffer = encodeSync(geometry, WKBWriter, {wkt: {hasZ: false, hasM: false}});
 ```
 
 ## Options

@@ -43,13 +43,13 @@ test('fetchFile() ignores url query params when loading file (NODE)', async (t) 
 test.skip('fetchFile() error handling (NODE)', async (t) => {
   if (!isBrowser) {
     let response = await fetchFile('non-existent-file');
-    t.comment(response.statusText);
+    // t.comment(response.statusText);
     t.ok(response.statusText.includes('ENOENT'), 'fetch statusText forwards node ENOENT error');
     t.notOk(response.ok, 'fetchFile fails cleanly on non-existent file');
     t.ok(response.arrayBuffer(), 'Response.arrayBuffer() does not throw');
 
     response = await fetchFile('.');
-    t.comment(response.statusText);
+    // t.comment(response.statusText);
     t.ok(response.statusText.includes('EISDIR'), 'fetch statusText forwards node error');
     t.notOk(response.ok, 'fetchFile fails cleanly on directory');
     t.ok(response.arrayBuffer(), 'Response.arrayBuffer() does not throw');

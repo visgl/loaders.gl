@@ -9,9 +9,9 @@ import {
   load,
   parse,
   parseSync,
-  parseInBatches
+  parseInBatches,
+  makeIterator
 } from '@loaders.gl/core';
-import {makeIterator} from '@loaders.gl/core';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';

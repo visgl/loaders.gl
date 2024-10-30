@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import {Feature} from '@loaders.gl/schema';
-import {Table, getTableRowAsObject} from '@loaders.gl/schema';
+import type {Feature, Table} from '@loaders.gl/schema';
+import {getTableRowAsObject} from '@loaders.gl/schema-utils';
 import {getRowPropertyObject} from './encode-utils';
 import {Utf8ArrayBufferEncoder} from './utf8-encoder';
 

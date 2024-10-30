@@ -4,35 +4,24 @@
 
 import {load} from '@loaders.gl/core';
 import {Mesh} from '@loaders.gl/schema';
-import {DataSource, DataSourceProps, LoaderOptions, resolvePath} from '@loaders.gl/loader-utils';
+import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
 import {PotreeMetadata} from '../types/potree-metadata';
 import {POTreeNode} from '../parsers/parse-potree-hierarchy-chunk';
 import {PotreeHierarchyChunkLoader} from '../potree-hierarchy-chunk-loader';
 import {PotreeLoader} from '../potree-loader';
 import {parseVersion} from '../utils/parse-version';
-
-export type PotreeNodesSourceProps = DataSourceProps & {
-  attributions?: string[];
-  potree?: {
-    loadOptions?: LoaderOptions; // PotreeLoaderOptions;
-    // TODO - add options here
-  };
-};
+import type {PotreeSourceOptions} from '../potree-source';
 
 /**
  * A Potree data source
- * @version 1.0 - https://github.com/potree/potree/blob/1.0RC/docs/file_format.md
- * @version 1.7 - https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
+ * @version 1.0 - @see https://github.com/potree/potree/blob/1.0RC/docs/file_format.md
+ * @version 1.7 - @see https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
  * @note Point cloud nodes tile source
  */
-export class PotreeNodesSource extends DataSource {
+export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   /** Dataset base URL */
   baseUrl: string = '';
-  /** Input data: string - dataset url, blob - single file data */
-  data: string | Blob;
-  /** Input props */
-  props: PotreeNodesSourceProps;
   /** Meta information from `cloud.js` */
   metadata: PotreeMetadata | null = null;
   /** Root node */
@@ -46,12 +35,10 @@ export class PotreeNodesSource extends DataSource {
    * @constructor
    * @param data  - if string - data set path url or path to `cloud.js` metadata file
    *              - if Blob - single file data
-   * @param props - data source properties
+   * @param options - data source properties
    */
-  constructor(data: string | Blob, props: PotreeNodesSourceProps) {
-    super(props);
-    this.props = props;
-    this.data = data;
+  constructor(data: string, options: PotreeSourceOptions) {
+    super(data, options);
     this.makeBaseUrl(this.data);
 
     this.initPromise = this.init();

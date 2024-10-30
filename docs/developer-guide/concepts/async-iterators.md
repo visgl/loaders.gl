@@ -1,6 +1,6 @@
 # AsyncIterators
 
-Streaming functionality in loaders.gl is built on the ES2018 `AsyncIterator` concept. 
+Streaming functionality in loaders.gl is built on the ES2018 `AsyncIterator` concept.
 This page gives some background on `AsyncIterator`.
 
 ## Availability
@@ -11,15 +11,16 @@ This page gives some background on `AsyncIterator`.
 
 There are multiple similar-sounding types supporting the type safe use of iterators which can be a source of confusion to users, so some information is provided here:
 
-| Type               | Async Type              | Type Parameters |
- Description                                                                                                                              |
+| Type | Async Type | Type Parameters |
+Description |
 | ------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `Iterator`         | `AsyncIterator`         | `<...>` | An iterator has `next()`, ... methods                                                                                                    |
-| `Iterable`         | `AsyncIterable`         | `<...>` | An iterable is a class that has a `[Symbol.iterator]` or `[Symbol.asyncIterator]` property that returns an `Iterator` or `AsyncIterator` |
-| `Generator`        | `AsyncGenerator`        | `<...>` | A generator is a function that takes some parameters and when called returns an `Iterator` or `AsyncIterator`                            |
-| `IterableIterator` | `AsyncIterableIterator` | `<...>` | It is convenient to define `Iterator`s that are also `Iterable`. Most built in container classes return this type.                       |
+| `Iterator` | `AsyncIterator` | `<...>` | An iterator has `next()`, ... methods |
+| `Iterable` | `AsyncIterable` | `<...>` | An iterable is a class that has a `[Symbol.iterator]` or `[Symbol.asyncIterator]` property that returns an `Iterator` or `AsyncIterator` |
+| `Generator` | `AsyncGenerator` | `<...>` | A generator is a function that takes some parameters and when called returns an `Iterator` or `AsyncIterator` |
+| `IterableIterator` | `AsyncIterableIterator` | `<...>` | It is convenient to define `Iterator`s that are also `Iterable`. Most built in container classes return this type. |
 
 An `IterableIterator` can
+
 - be used in a for..of loop
 - be spread into an array
 - be spread into a parameter list
@@ -27,19 +28,19 @@ An `IterableIterator` can
 
 ```typescript
 interface Iterable {
-    [Symbol.iterator]() : Iterator;
+  [Symbol.iterator](): Iterator;
 }
 interface Iterator {
-    next() : IteratorResult;
-    return?(value? : any) : IteratorResult;
+  next(): IteratorResult;
+  return?(value?: any): IteratorResult;
 }
 interface IteratorResult {
-    value: any;
-    done: boolean;
+  value: any;
+  done: boolean;
 }
 ```
 
-https://exploringjs.com/es6/ch_iteration.html#sec_implementing-iterables 
+https://exploringjs.com/es6/ch_iteration.html#sec_implementing-iterables
 
 ## Batched Parsing and Endcoding using AsyncIterators
 
@@ -66,7 +67,7 @@ for await (const buf of fs.createReadStream('foo.txt')) {
 
 ## Creating AsyncIterators
 
-Remember that any object in JavaScript that implements the `[Symbol.asyncIterator]()` method is an `AsyncIterable`. 
+Remember that any object in JavaScript that implements the `[Symbol.asyncIterator]()` method is an `AsyncIterable`.
 
 And the async **generator** syntax `async function *` can be used to generate new async iterators
 

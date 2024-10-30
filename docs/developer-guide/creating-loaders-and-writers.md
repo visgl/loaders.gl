@@ -36,7 +36,7 @@ In general, it is recommended that loaders are "standalone" and avoid importing 
 
 ## Creating Composite Loaders
 
-loaders.gl enables loaders to call other loaders (referred to as "sub-loaders" in this section). 
+loaders.gl enables loaders to call other loaders (referred to as "sub-loaders" in this section).
 This enables loaders for "composite formats" to be "composed" out of loaders for the primitive parts.
 For more information see [Composite Loaders](./composite-loaders).
 

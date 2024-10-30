@@ -4,17 +4,15 @@ A `Vector` is an Array-like data structure. Use `makeVector` and `vectorFromArra
 
 ### makeVector
 
-
-### vectorFromArray 
-
+### vectorFromArray
 
 ### Vector
 
 Also referred to as `BaseVector`. An abstract base class for vector types.
 
-* Can support a null map
-* ...
-* TBD
+- Can support a null map
+- ...
+- TBD
 
 ## Fields
 
@@ -29,7 +27,6 @@ The underlying Data instance for this Vector.
 ### `numChildren: number (readonly)`
 
 The number of logical Vector children. Only applicable if the DataType of the Vector is one of the nested types (List, FixedSizeList, Struct, or Map).
-
 
 ### `typeId: T['typeId']`
 
@@ -95,7 +92,6 @@ Returns a clone of the current Vector, using the supplied Data and optional chil
 
 Returns a `Chunked` vector that concatenates this Vector with the supplied other Vectors. Other Vectors must be the same type as this Vector.
 
-
 ### `slice(begin?: number, end?: number)`
 
 Returns a zero-copy slice of this Vector. The begin and end arguments are handled the same way as JS' `Array.prototype.slice`; they are clamped between 0 and `vector.length` and wrap around when negative, e.g. `slice(-1, 5)` or `slice(5, -1)`
@@ -107,7 +103,6 @@ vector.isValid(index: number): boolean
 ```
 
 Returns `true` the supplied index is valid in the underlying validity bitmap.
-
 
 ### `getChildAt()`
 

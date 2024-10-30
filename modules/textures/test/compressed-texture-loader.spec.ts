@@ -5,8 +5,7 @@
 import test from 'tape-promise/tape';
 
 import {CompressedTextureLoader} from '@loaders.gl/textures';
-import {load} from '@loaders.gl/core';
-import {setLoaderOptions} from '@loaders.gl/core';
+import {load, setLoaderOptions} from '@loaders.gl/core';
 
 const KTX_URL = '@loaders.gl/textures/test/data/test_etc1s.ktx2';
 const KTX2_URL = '@loaders.gl/textures/test/data/kodim23.ktx2';

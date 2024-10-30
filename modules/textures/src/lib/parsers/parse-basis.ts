@@ -84,7 +84,7 @@ const OutputFormat: Record<string, BasisOutputOptions> = {
  * @param options
  * @returns compressed texture data
  */
-export default async function parseBasis(data: ArrayBuffer, options): Promise<TextureLevel[][]> {
+export async function parseBasis(data: ArrayBuffer, options): Promise<TextureLevel[][]> {
   if (options.basis.containerFormat === 'auto') {
     if (isKTX(data)) {
       const fileConstructors = await loadBasisEncoderModule(options);

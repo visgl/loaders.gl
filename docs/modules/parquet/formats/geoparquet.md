@@ -29,8 +29,7 @@ GeoParquet file is a Parquet file that additionally follows these conventions:
 
 ## Data size limitation
 
-Parquet files might be large in size (multiple gigabytes). The capacity of GeoParquetLoader is limited by the memory limitations of your current platform. As an example a Chrome tab crashes when it reaches a certain platform dependent size. 
-	
+Parquet files might be large in size (multiple gigabytes). The capacity of GeoParquetLoader is limited by the memory limitations of your current platform. As an example a Chrome tab crashes when it reaches a certain platform dependent size.
 As "covering" metadata is not supported yet, it is not possible to make an efficient filtering of data. To prevent memory overflow it is possible to use the `limit` loader option that limits number of rows being parsed. In that case the loader will return first `limit` rows, omitting the rest of file.
 
 ## Alternatives

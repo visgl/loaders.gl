@@ -2,15 +2,22 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {DataType, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
-import {parseWithWorker, canParseWithWorker} from '@loaders.gl/loader-utils';
+import type {
+  Loader,
+  LoaderContext,
+  LoaderOptions,
+  DataType,
+  LoaderWithParser,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType
+} from '@loaders.gl/loader-utils';
+import {parseWithWorker, canParseWithWorker, mergeOptions} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {isResponse} from '../../javascript-utils/is-type';
 import {normalizeOptions} from '../loader-utils/option-utils';
-import {mergeLoaderOptions} from '@loaders.gl/loader-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
@@ -34,15 +41,19 @@ export async function parse<
 /**
  * Parses `data` asynchronously by matching one of the supplied loader
  */
-export async function parse(
+export async function parse<
+  LoaderArrayT extends Loader[],
+  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+>(
   data: DataType | Promise<DataType>,
-  loaders: Loader[],
-  options?: LoaderOptions,
+  loaders: LoaderArrayT,
+  options?: OptionsT,
   context?: LoaderContext
-): Promise<unknown>;
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
 
 /**
  * Parses data asynchronously by matching a pre-registered loader
+ * @deprecated Loader registration is deprecated, use parse(data, loaders, options) instead
  */
 export async function parse(
   data: DataType | Promise<DataType>,
@@ -113,7 +124,7 @@ async function parseWithLoader(
 ): Promise<unknown> {
   validateWorkerVersion(loader);
 
-  options = mergeLoaderOptions(loader.options, options);
+  options = mergeOptions(loader.options, options);
 
   if (isResponse(data)) {
     // Serialize to support passing the response to web worker

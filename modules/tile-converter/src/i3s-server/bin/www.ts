@@ -14,12 +14,14 @@ import {formErrorHandler, formListeningHandler, normalizePort} from '../utils/se
 // const __dirname = path.dirname(__filename);
 
 /** Get port from environment and store in Express. */
+// eslint-disable-next-line no-process-env
 const httpPort = normalizePort(process.env.PORT || '80');
 if (httpPort === false) {
   // eslint-disable-next-line no-console
   console.error('Incorrect HTTP port');
   process.exit(1); // eslint-disable-line no-process-exit
 }
+// eslint-disable-next-line no-process-env
 const httpsPort = normalizePort(process.env.HTTPS_PORT || '443');
 if (httpsPort === false) {
   // eslint-disable-next-line no-console

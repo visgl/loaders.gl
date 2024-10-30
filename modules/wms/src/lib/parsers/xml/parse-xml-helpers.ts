@@ -20,7 +20,7 @@ export function getXMLArray(xmlValue: any): any[] {
 export function getXMLStringArray(xmlValue: any): string[] {
   const xmlArray = getXMLArray(xmlValue);
   if (xmlArray.length > 0 && xmlArray.every((_) => typeof _ === 'string')) {
-    return xmlArray as string[];
+    return xmlArray;
   }
   // TODO - error handling?
   return [];

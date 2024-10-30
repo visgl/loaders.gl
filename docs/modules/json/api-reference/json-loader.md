@@ -5,7 +5,7 @@ Streaming loader for JSON encoded files.
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
 | File Extension | `.json`                                              |
-| Media Type     | `application/json`
+| Media Type     | `application/json`                                   |
 | File Type      | Text                                                 |
 | File Format    | [JSON](https://www.json.org/json-en.html)            |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |

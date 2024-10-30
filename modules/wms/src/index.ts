@@ -56,15 +56,14 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // OGC Services
 
-// export {CSWSource} from './services/ogc/csw-service';
-export {WMSSource, WMSImageSource} from './services/ogc/wms-service';
+// export {CSWSource} from './csw-source';
+export {WMSSource, WMSImageSource} from './wms-source';
 
 // ArcGIS SourceLoaders
 
-export {getArcGISServices as _getArcGISServices} from './services/arcgis/arcgis-server';
-export {ArcGISImageServerSource as _ArcGISImageServerSource} from './services/arcgis/arcgis-image-server';
+export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';
+export {ArcGISImageServerSource as _ArcGISImageServerSource} from './arcgis/arcgis-image-source';
 
-// DEPRECATED: TODO - remove once deck.gl has been udpated
 export {ImageSource} from '@loaders.gl/loader-utils';
 export type {ImageType} from '@loaders.gl/images';
 export {createImageSource} from './lib/deprecated/create-image-source';

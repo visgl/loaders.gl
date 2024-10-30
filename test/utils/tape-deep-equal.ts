@@ -2,9 +2,9 @@ import Test from 'tape';
 
 // Tape uses `deep-equal` module which throws exceptions, so replace...
 function tapeDeepEqual(a: any, b: any, msg: string, extra?: any) {
-  // @ts-ignore
-  const that = this; // eslint-disable-line no-invalid-this
-  that._assert(deepEqual(a, b), {
+  // @ts-ignore this has type "any"
+  // eslint-disable-next-line no-invalid-this
+  this._assert(deepEqual(a, b), {
     message: msg || 'should be equivalent',
     operator: 'deepEqual',
     actual: a,
@@ -13,7 +13,11 @@ function tapeDeepEqual(a: any, b: any, msg: string, extra?: any) {
   });
 }
 
-Test.prototype.deepEqual = Test.prototype.deepEquals = Test.prototype.isEquivalent = Test.prototype.same = tapeDeepEqual;
+Test.prototype.deepEqual =
+  Test.prototype.deepEquals =
+  Test.prototype.isEquivalent =
+  Test.prototype.same =
+    tapeDeepEqual;
 
 // Compare two objects, partial deep equal
 export function deepEqual(a: any, b: any): boolean {
@@ -21,7 +25,7 @@ export function deepEqual(a: any, b: any): boolean {
     return true;
   }
   // TODO - implement deep equal on view descriptors
-  return Object.keys(a).every(key => {
+  return Object.keys(a).every((key) => {
     if (Array.isArray(a[key]) && Array.isArray(b[key])) {
       return deepEqual(a[key], b[key]);
     }

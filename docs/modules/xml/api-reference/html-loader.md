@@ -21,8 +21,9 @@ The `HTMLLoader` parses HTML-encoded data.
 | Worker Thread Support | No                                                       |
 | Streaming Support     | No                                                       |
 
-> The `HTMLLoader` is only expected to be fit-for-purpose for a few limited use cases. 
-> It is not intended for full fidelity parsing or display of HTML files. It is designed for minimal ad-hoc use cases such as 
+> The `HTMLLoader` is only expected to be fit-for-purpose for a few limited use cases.
+> It is not intended for full fidelity parsing or display of HTML files. It is designed for minimal ad-hoc use cases such as
+>
 > - the extraction of an error string from an HTML formatted error response from a server
 > - or possibly to extract some valuable information (perhaps the URL to a geospatial service) from a server that doesn't provide more structured return formats (such as JSON or XML).
 

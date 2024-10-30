@@ -3,12 +3,18 @@
 // Copyright vis.gl contributors
 
 // This code is forked from https://github.com/mapbox/vector-tile-js under BSD 3-clause license.
-import {Feature} from '@loaders.gl/schema';
-import {FlatFeature, FlatIndexedGeometry, GeojsonGeometryInfo} from '@loaders.gl/schema';
+
+import type {Feature, FlatFeature, FlatIndexedGeometry} from '@loaders.gl/schema';
+import type {GeojsonGeometryInfo} from '@loaders.gl/gis';
 import Protobuf from 'pbf';
-import {classifyRings, classifyRingsFlat} from '../utils/geometry-utils';
-import {projectToLngLat, projectToLngLatFlat} from '../utils/geometry-utils';
-import {convertToLocalCoordinates, convertToLocalCoordinatesFlat} from '../utils/geometry-utils';
+import {
+  classifyRings,
+  classifyRingsFlat,
+  projectToLngLat,
+  projectToLngLatFlat,
+  convertToLocalCoordinates,
+  convertToLocalCoordinatesFlat
+} from '../utils/geometry-utils';
 
 export class VectorTileFeature {
   properties: {[x: string]: string | number | boolean | null};

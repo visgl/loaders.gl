@@ -21,7 +21,9 @@
     "KML"
   ],
   "workspaces": [
-    "modules/*"
+    "modules/*",
+    "examples",
+    "website"
   ],
   "scripts": {
     "bootstrap": "ocular-bootstrap",
@@ -47,9 +49,11 @@
     "@probe.gl/bench": "^4.0.2",
     "@probe.gl/test-utils": "^4.0.2",
     "@types/tape-promise": "^4.0.1",
-    "ocular-dev-tools": "2.0.0-alpha.31",
+    "ocular-dev-tools": "2.0.0-alpha.35",
     "pre-commit": "^1.2.2",
-    "pre-push": "^0.1.1"
+    "pre-push": "^0.1.1",
+    "puppeteer": "^23.4.0",
+    "tap-spec": "^5.0.0"
   },
   "pre-commit": "pre-commit",
   "pre-push": "pre-push",
@@ -58,11 +62,23 @@
     "apache-arrow version should be aligned with parquet-wasm version"
   ],
   "resolutions": {
-    "apache-arrow": "^15.0.0",
-    "typescript": "^5.3.0"
+    "apache-arrow": "^17.0.0",
+    "typescript": "^5.6.0",
+    "@loaders.gl/core": "^4.4.0-alpha.0",
+    "@loaders.gl/draco": "^4.4.0-alpha.0",
+    "@loaders.gl/geopackage": "^4.4.0-alpha.0",
+    "@loaders.gl/i3s": "^4.4.0-alpha.0",
+    "@loaders.gl/las": "^4.4.0-alpha.0",
+    "@loaders.gl/loader-utils": "^4.4.0-alpha.0",
+    "@loaders.gl/obj": "^4.4.0-alpha.0",
+    "@loaders.gl/ply": "^4.4.0-alpha.0",
+    "@loaders.gl/schema": "^4.4.0-alpha.0",
+    "@loaders.gl/schema-utils": "^4.4.0-alpha.0",
+    "@loaders.gl/textures": "^4.4.0-alpha.0",
+    "@loaders.gl/wms": "^4.4.0-alpha.0"
   },
   "volta": {
-    "node": "20.16.0",
+    "node": "20.18.0",
     "yarn": "4.4.1"
   }
 }

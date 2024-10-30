@@ -43,11 +43,12 @@ BinomialLCC supplies 2 wasm modules:
 
 The modules are forked in the loaders.gl repo story: `modules/textures/src/libs`. The transcoder supports only `.basis` extension whereas the encoder supports `.basis` and `.ktx2` extensions. So the encoder is used to decode `.ktx2` files.
 
-The libraries are loaded during runtime from URLs: 
-* https://unpkg.com/@loaders.gl/textures@{VERSION}/dist/libs/basis_transcoder.wasm
-* https://unpkg.com/@loaders.gl/textures@{VERSION}/dist/libs/basis_transcoder.js
-* https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm
-* https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js
+The libraries are loaded during runtime from URLs:
+
+- https://unpkg.com/@loaders.gl/textures@{VERSION}/dist/libs/basis_transcoder.wasm
+- https://unpkg.com/@loaders.gl/textures@{VERSION}/dist/libs/basis_transcoder.js
+- https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm
+- https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js
 
 ## Compressed Texture Formats
 

@@ -2,19 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataSourceProps} from './data-source';
-import {DataSource} from './data-source';
 // TODO - can we import from schema?
 import {ImageType} from './utils/image-type';
-
-export type ImageSourceProps = DataSourceProps;
+// TODO - remove (this breaks WMS layer)
 
 /**
  * ImageSource - data sources that allow images to be queried by (geospatial) extents
  */
-export abstract class ImageSource<
-  PropsT extends ImageSourceProps = ImageSourceProps
-> extends DataSource<PropsT> {
+export abstract class ImageSource {
   static type: string = 'template';
   static testURL = (url: string): boolean => false;
 

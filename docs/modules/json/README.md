@@ -17,8 +17,8 @@ npm install @loaders.gl/core @loaders.gl/json
 
 ## Loaders and Writers
 
-| Exports                                                               |
-| --------------------------------------------------------------------- |
+| Exports                                                                |
+| ---------------------------------------------------------------------- |
 | [`JSONLoader`](/docs/modules/json/api-reference/json-loader)           |
 | [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader)       |
 | [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader)     |
@@ -36,24 +36,24 @@ npm install @loaders.gl/core @loaders.gl/json
 The classic JSON format was designed for simplicity and is supported by standard libraries in many programming languages.
 
 Several [JSON Streaming Formats](https://en.wikipedia.org/wiki/JSON_streaming) (Wikipedia) have emerged, that typically
-place one JSON object on each line of a file. These are convenient to use when streaming data and are 
+place one JSON object on each line of a file. These are convenient to use when streaming data and are
 supported by via the `NDJSONLoader` and `NDGeoJSONLoader`.
 
-At the moment, auto-detection between streaming and classic JSON based on file contents 
-is not implemented, so two separate loaders are provided. 
-The two loaders look for different file extensions or MIME types as specified in the table below, 
+At the moment, auto-detection between streaming and classic JSON based on file contents
+is not implemented, so two separate loaders are provided.
+The two loaders look for different file extensions or MIME types as specified in the table below,
 allowing correct distinctions to be made in usage.
 
-| Format                                            | Extension    | MIME Media Type            | Support                                                      |
-| ------------------------------------------------- | ------------ | -------------------------- | ------------------------------------------------------------ | --- |
-| [JSON][format_json]                               | `.json`      | `application/json`         | `JSONLoader`                                               |
-| [NewLine Delimited JSON][format_ndjson]           | `.ndjson`    | `application/x-ndjson`     | `NDJSONLoader`                                             |
-| [JSON Lines][format_jsonlines]                    | `.jsonl`     | `application/x-ldjson`     | `NDJSONLoader`                                             |
+| Format                                            | Extension    | MIME Media Type            | Support                                                       |
+| ------------------------------------------------- | ------------ | -------------------------- | ------------------------------------------------------------- | --- |
+| [JSON][format_json]                               | `.json`      | `application/json`         | `JSONLoader`                                                  |
+| [NewLine Delimited JSON][format_ndjson]           | `.ndjson`    | `application/x-ndjson`     | `NDJSONLoader`                                                |
+| [JSON Lines][format_jsonlines]                    | `.jsonl`     | `application/x-ldjson`     | `NDJSONLoader`                                                |
 | [JSON Text Sequences][format_json_seq]            |              | `application/json-seq`     | `NDJSONLoader`. Partial records must not span multiple lines. |     |
-| [GeoJSON][format_geojson]                         | `.json`      | `application/geo+json`     | `JSONLoader`                                               |
-| [Newline Delimited GeoJSON][format_ndgeojson]     | `.ndgeojson` |                            | `NDJSONLoader`                                             |
-| [GeoJSON Lines][format_geojson]                   | `.geojsonl`  |                            | `NDJSONLoader`                                             |
-| [GeoJSON Text Sequences][format_geojson_text_seq] |              | `application/geo+json-seq` | `NDJSONLoader`                                             |
+| [GeoJSON][format_geojson]                         | `.json`      | `application/geo+json`     | `JSONLoader`                                                  |
+| [Newline Delimited GeoJSON][format_ndgeojson]     | `.ndgeojson` |                            | `NDJSONLoader`                                                |
+| [GeoJSON Lines][format_geojson]                   | `.geojsonl`  |                            | `NDJSONLoader`                                                |
+| [GeoJSON Text Sequences][format_geojson_text_seq] |              | `application/geo+json-seq` | `NDJSONLoader`                                                |
 
 [format_json]: https://www.json.org/json-en.html
 [format_ndjson]: http://ndjson.org/

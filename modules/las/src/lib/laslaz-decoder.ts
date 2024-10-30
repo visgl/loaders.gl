@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /*
   Modified from Uday Verma and Howard Butler's plasio
   https://github.com/verma/plasio/

@@ -6,19 +6,20 @@
 
 The `PMTilesSource` reads individual tiles from a PMTiles archive file.
 
-| Loader                | Characteristic                                   |
-| --------------------- | ------------------------------------------------ |
-| File Extension        | `.pmtiles`                                       |
-| File Type             | Binary Archive                                   |
-| File Format           | [PMTiles](/docs/modules/pmtiles/formats/pmtiles) |
-| Data Format           | Metadata                                         |
+| Loader         | Characteristic                                   |
+| -------------- | ------------------------------------------------ |
+| File Extension | `.pmtiles`                                       |
+| File Type      | Binary Archive                                   |
+| File Format    | [PMTiles](/docs/modules/pmtiles/formats/pmtiles) |
+| Data Format    | Metadata                                         |
 
 ## Usage
 
 ```typescript
+import {createDataSource} from '@loaders.gl/pmtiles';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 
-const source = new PMTilesSource({url});
+const source = createDataSource(url, [PMTilesSource]);
 const tile = await source.getTile(...);
 ```
 

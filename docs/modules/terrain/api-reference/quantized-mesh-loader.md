@@ -9,16 +9,16 @@ mesh][quantized_mesh] format.
 
 [quantized_mesh]: https://github.com/CesiumGS/quantized-mesh
 
-| Loader                | Characteristic                                |
-| --------------------- | --------------------------------------------- |
-| File Extension        | `.terrain`                                    |
-| File Type             | Binary                                        |
-| File Format           | Encoded mesh                                  |
+| Loader                | Characteristic                             |
+| --------------------- | ------------------------------------------ |
+| File Extension        | `.terrain`                                 |
+| File Type             | Binary                                     |
+| File Format           | Encoded mesh                               |
 | Data Format           | [Mesh](/docs/specifications/category-mesh) |
-| Supported APIs        | `load`, `parse`, `parseSync`                  |
-| Decoder Type          | Synchronous                                   |
-| Worker Thread Support | Yes                                           |
-| Streaming Support     | No                                            |
+| Supported APIs        | `load`, `parse`, `parseSync`               |
+| Decoder Type          | Synchronous                                |
+| Worker Thread Support | Yes                                        |
+| Streaming Support     | No                                         |
 
 ## Usage
 

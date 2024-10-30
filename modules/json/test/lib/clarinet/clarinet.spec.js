@@ -805,7 +805,7 @@ test('clarinet#generic', (t) => {
       // /\t|\n|\r| / means on whitespace
       // '' means on every char
       for (const sep in seps) {
-        t.comment('[' + key + '] should be able to parse -> ' + sep);
+        // t.comment('[' + key + '] should be able to parse -> ' + sep);
         generic(t, key, false, sep);
       }
     }
@@ -820,7 +820,7 @@ test('#pre-chunked', (t) => {
         continue;
       }
 
-      t.comment('[' + key + '] should be able to parse pre-chunked');
+      // t.comment('[' + key + '] should be able to parse pre-chunked');
       generic(t, key, true);
     }
   }

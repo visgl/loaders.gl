@@ -2,9 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {LoaderContext, SyncDataType} from '@loaders.gl/loader-utils';
-import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
+import type {
+  Loader,
+  LoaderWithParser,
+  LoaderOptions,
+  LoaderContext,
+  SyncDataType,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType
+} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -30,15 +38,19 @@ export function parseSync<
 /**
  * Parses `data` synchronously by matching one of the supplied loaders
  */
-export function parseSync(
+export function parseSync<
+  LoaderArrayT extends Loader[],
+  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+>(
   data: SyncDataType,
-  loaders: Loader[],
-  options?: LoaderOptions,
+  loaders: LoaderArrayT,
+  options?: OptionsT,
   context?: LoaderContext
-): unknown;
+): LoaderArrayReturnType<LoaderArrayT>;
 
 /**
  * Parses `data` synchronously by matching a pre=registered loader
+ * @deprecated Loader registration is deprecated, use parseSync(data, loaders, options) instead
  */
 export function parseSync(data: SyncDataType, options?: LoaderOptions): unknown;
 

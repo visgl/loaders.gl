@@ -28,6 +28,7 @@ export const KTX2BasisWriter = {
   version: VERSION,
 
   extensions: ['ktx2'],
+  mimeTypes: ['image/ktx2'],
   options: {
     ['ktx2-basis-writer']: {
       useSRGB: false,

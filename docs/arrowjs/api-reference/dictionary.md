@@ -7,6 +7,7 @@ A `Dictionary` stores index-to-value maps for dictionary encoded columns.
 ## Fields
 
 ### indices: `V<TKey>` readonly
+
 ### dictionary: `Vector<T>` readonly
 
 ## Static Methods

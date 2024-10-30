@@ -20,20 +20,23 @@
     // This must be specified if "paths" is.
     "baseUrl": ".",
     "paths": {
+      // Supoort modules
       "@loaders.gl/schema": ["modules/schema/src"],
       "@loaders.gl/schema/test": ["modules/schema/test"],
+      "@loaders.gl/schema-utils": ["modules/schema-utils/src"],
+      "@loaders.gl/schema-utils/test": ["modules/schema-utils/test"],
       "@loaders.gl/worker-utils": ["modules/worker-utils/src"],
       "@loaders.gl/worker-utils/test": ["modules/worker-utils/test"],
       "@loaders.gl/loader-utils": ["modules/loader-utils/src"],
       "@loaders.gl/loader-utils/test": ["modules/loader-utils/test"],
       "@loaders.gl/polyfills": ["modules/polyfills/src"],
       "@loaders.gl/polyfills/test": ["modules/polyfills/test"],
+      "@loaders.gl/math": ["modules/math/src"],
+      "@loaders.gl/math/test": ["modules/math/test"],
+
       "@loaders.gl/core": ["modules/core/src"],
       "@loaders.gl/core/lib/*": ["modules/core/src/lib/*"],
       "@loaders.gl/core/test": ["modules/core/test"],
-
-      "@loaders.gl/math": ["modules/math/src"],
-      "@loaders.gl/math/test": ["modules/math/test"],
 
       "@loaders.gl/compression": ["modules/compression/src"],
       "@loaders.gl/compression/test": ["modules/compression/test"],
@@ -123,7 +126,6 @@
     "coverage",
     "arrowjs",
     "website",
-    "website-gatsby",
-    "test"
+    "website-gatsby"
   ]
 }

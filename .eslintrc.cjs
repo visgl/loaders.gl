@@ -30,7 +30,9 @@ const config = getESLintConfig({
       'default-case': ['warn'],
       'no-eq-null': ['warn'],
       eqeqeq: ['warn'],
-      radix: 0
+      radix: 0,
+      'no-use-before-define': 0,
+      'no-shadow': ['warn']
       // 'accessor-pairs': ['error', {getWithoutSet: false, setWithoutGet: false}]
     },
 
@@ -50,7 +52,10 @@ const config = getESLintConfig({
           '@typescript-eslint/no-non-null-assertion': 0,
           '@typescript-eslint/no-non-null-asserted-optional-chain': 0,
           '@typescript-eslint/no-floating-promises': 0,
+
           // Gradually enable
+          'no-shadow': 0,
+          '@typescript-eslint/no-explicit-any': 0,
           '@typescript-eslint/ban-ts-comment': 0,
           '@typescript-eslint/ban-types': 0,
           '@typescript-eslint/no-unsafe-member-access': 0,

@@ -3,8 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {parseMIMEType, parseMIMETypeFromURL} from '@loaders.gl/core/lib/utils/mime-type-utils';
-import {compareMIMETypes} from '@loaders.gl/core/lib/utils/mime-type-utils';
+import {
+  parseMIMEType,
+  parseMIMETypeFromURL,
+  compareMIMETypes
+} from '@loaders.gl/core/lib/utils/mime-type-utils';
 
 const DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';

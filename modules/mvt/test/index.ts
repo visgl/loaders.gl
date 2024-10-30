@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import './lib/parse-mvt-from-pbf.spec';
+
 // geojson-vt
 import './lib/vector-tiler/clip-features.spec';
 import './lib/vector-tiler/simplify-path.spec';

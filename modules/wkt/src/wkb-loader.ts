@@ -3,15 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {BinaryGeometry, Geometry} from '@loaders.gl/schema';
-import {VERSION} from './lib/utils/version';
-import {parseWKB} from './lib/parse-wkb';
-import {isWKB} from './lib/parse-wkb-header';
+import type {Geometry} from '@loaders.gl/schema';
+import {convertWKBToGeometry, isWKB} from '@loaders.gl/gis';
+import {VERSION} from './lib/version';
 
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
-    /** 'geometry' is deprecated use 'geojson-geometry' */
-    shape: 'geojson-geometry' | 'binary-geometry' | 'geometry';
+    /** Shape is deprecated, only geojson is supported */
+    shape: 'geojson-geometry';
   };
 };
 
@@ -19,7 +18,7 @@ export type WKBLoaderOptions = LoaderOptions & {
  * Worker loader for WKB (Well-Known Binary)
  */
 export const WKBWorkerLoader = {
-  dataType: null as unknown as Geometry | BinaryGeometry,
+  dataType: null as unknown as Geometry,
   batchType: null as never,
   name: 'WKB',
   id: 'wkb',
@@ -33,16 +32,29 @@ export const WKBWorkerLoader = {
   tests: [isWKB],
   options: {
     wkb: {
-      shape: 'binary-geometry' // 'geojson-geometry'
+      shape: 'geojson-geometry'
     }
   }
-} as const satisfies Loader<Geometry | BinaryGeometry, never, WKBLoaderOptions>;
+} as const satisfies Loader<Geometry, never, WKBLoaderOptions>;
 
 /**
  * Loader for WKB (Well-Known Binary)
  */
 export const WKBLoader = {
   ...WKBWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer) => parseWKB(arrayBuffer),
-  parseSync: parseWKB
-} as const satisfies LoaderWithParser<BinaryGeometry | Geometry, never, WKBLoaderOptions>;
+  parse: async (arrayBuffer: ArrayBuffer, options?) => parseWKB(arrayBuffer, options?.wkb),
+  parseSync: (arrayBuffer: ArrayBuffer, options?) => parseWKB(arrayBuffer, options?.wkb)
+} as const satisfies LoaderWithParser<Geometry, never, WKBLoaderOptions>;
+
+export function parseWKB(
+  arrayBuffer: ArrayBuffer,
+  options?: {shape?: 'geojson-geometry'}
+): Geometry {
+  const shape = options?.shape || 'geojson-geometry';
+  switch (shape) {
+    case 'geojson-geometry':
+      return convertWKBToGeometry(arrayBuffer);
+    default:
+      throw new Error(shape);
+  }
+}

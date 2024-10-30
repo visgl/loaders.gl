@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileSystem, isBrowser} from '@loaders.gl/loader-utils';
-import {FileProviderInterface, isFileProvider} from '@loaders.gl/loader-utils';
-import {FileHandleFile} from '@loaders.gl/loader-utils';
+import {
+  FileSystem,
+  isBrowser,
+  FileProviderInterface,
+  isFileProvider,
+  FileHandleFile
+} from '@loaders.gl/loader-utils';
 import {ZipCDFileHeader, makeZipCDHeaderIterator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {DeflateCompression} from '@loaders.gl/compression';

@@ -2,6 +2,7 @@
 
 This page attempts to collect some of the relevant information about apache-arrow JS releases.
 Unfortunately for JavaScript users, Apache Arrow JS release notes are not very easy to find:
+
 - There are the [Apache Arrow release notes](https://arrow.apache.org/release/) where we can scan for issues with the `[JS]` tag.
 - But there are also [blog posts](https://arrow.apache.org/blog/) that can contain different/additional information in the `JavaScript notes` section.
 - And every minor release has its own page and blog, so users need to scan through a lot of docs to catch all changes.
@@ -9,13 +10,40 @@ Unfortunately for JavaScript users, Apache Arrow JS release notes are not very e
 
 :::caution
 Apache Arrow JS follows the versioning number scheme for the cross-language Apache Arrow repository releases,
-which results in frequent major release bumps, even though no significant or breaking JavaScript changes have been introduced. 
+which results in frequent major release bumps, even though no significant or breaking JavaScript changes have been introduced.
 
-This can be an inconvenience for JavaScript applications that rely on [semantic versioning](https://semver.org) 
-to restrict dependencies to compatible package. Therefore some extra attention around versions may be required, 
-especially if your app uses multiple JavaScript packages dependent on arrow. You may end up bundling two 
+This can be an inconvenience for JavaScript applications that rely on [semantic versioning](https://semver.org)
+to restrict dependencies to compatible package. Therefore some extra attention around versions may be required,
+especially if your app uses multiple JavaScript packages dependent on arrow. You may end up bundling two
 different arrow js versions or the build may break due to version requirement incompatibilities.
 :::
+
+## v17.0
+
+July 16, 2024
+
+- [Apache Arrow 16.0.0](https://arrow.apache.org/release/17.0.0.html)
+
+## v16.1
+
+May 14, 2024
+
+- GH-40407 - [JS] Fix string coercion in MapRowProxyHandler.ownKeys (#40408)
+- GH-39131 - [JS] Add at() for array like types (#40730)
+- GH-39482 - [JS] Refactor imports (#39483)
+- GH-40959 - [JS] Store Timestamps in 64 bits (#40960)
+- GH-40989 - [JS] Update dependencies (#40990)
+
+## v16.0
+
+April 20, 2024
+
+- [Apache Arrow 16.0.0](https://arrow.apache.org/release/16.0.0.html)
+- GH-40718 - [JS] Fix set visitor in vectors for js dates (#40725)
+- GH-40851 - [JS] Fix nullcount and make vectors created from typed arrays not nullable (#40852)
+- GH-40891 - [JS] Store Dates as TimestampMillisecond (#40892)
+- GH-41015 - [JS][Benchmarking] allow JS benchmarks to run more portably (#41031)
+- GH-40784 - [JS] Use bigIntToNumber (#40785)
 
 ## v15.0
 
@@ -34,8 +62,9 @@ Jan 21, 2024
 - GH-37983 - Allow nullable fields in table when constructed from vector with nulls
 
 Notes:
+
 - GH-39017 (Add typeId as attribute) is significant for loaders.gl as it enables arrow Schemas to be
-reconstructed after being serialized (e.g. when posted between worker threads). 
+  reconstructed after being serialized (e.g. when posted between worker threads).
 
 ## v14.0
 

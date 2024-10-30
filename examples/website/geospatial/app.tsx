@@ -35,7 +35,7 @@ installBufferPolyfill();
 export const INITIAL_MAP_STYLE =
   'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 
-const LOADERS: Loader[] = [
+const LOADERS = [
   GeoArrowLoader,
   GeoParquetLoader,
   FlatGeobufLoader,
@@ -44,7 +44,8 @@ const LOADERS: Loader[] = [
   KMLLoader,
   GPXLoader,
   TCXLoader
-];
+] as const;
+
 const LOADER_OPTIONS = {
   worker: false,
   limit: 1800000,
@@ -78,7 +79,7 @@ const LOADER_OPTIONS = {
   tcx: {
     shape: 'geojson-table'
   }
-};
+} as const;
 
 const VIEW_STATE = {
   height: 600,

@@ -3,10 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {VERSION} from './lib/utils/version';
-import {parseWKT} from './lib/parse-wkt';
-import {Geometry} from '@loaders.gl/schema';
-import {isWKT, WKT_MAGIC_STRINGS} from './lib/parse-wkt';
+import type {Geometry} from '@loaders.gl/schema';
+import {isWKT, WKT_MAGIC_STRINGS, convertWKTToGeometry} from '@loaders.gl/gis';
+import {VERSION} from './lib/version';
 
 export type WKTLoaderOptions = LoaderOptions & {
   /** Options for the WKTLoader */
@@ -51,6 +50,7 @@ export const WKTWorkerLoader = {
  */
 export const WKTLoader = {
   ...WKTWorkerLoader,
-  parse: async (arrayBuffer, options?) => parseWKT(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (string: string, options?) => parseWKT(string, options)
+  parse: async (arrayBuffer, options?) =>
+    convertWKTToGeometry(new TextDecoder().decode(arrayBuffer), options)!,
+  parseTextSync: (string: string, options?) => convertWKTToGeometry(string, options)!
 } as const satisfies LoaderWithParser<Geometry, never, WKTLoaderOptions>;

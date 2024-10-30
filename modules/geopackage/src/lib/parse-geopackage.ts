@@ -1,8 +1,15 @@
 /* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
 import {isBrowser} from '@loaders.gl/loader-utils';
-import {WKBLoader} from '@loaders.gl/wkt';
-import {Schema, Field, Geometry, DataType, Tables, GeoJSONTable, Feature} from '@loaders.gl/schema';
-import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import type {
+  Schema,
+  Field,
+  Geometry,
+  DataType,
+  Tables,
+  GeoJSONTable,
+  Feature
+} from '@loaders.gl/schema';
+import {convertWKBToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
 
@@ -391,12 +398,8 @@ function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
   // 2 byte magic, 1 byte version, 1 byte flags, 4 byte int32 srid
   const wkbOffset = 8 + envelopeLength;
 
-  // Loaders should not depend on `core` and the context passed to the main loader doesn't include a
-  // `parseSync` option, so instead we call parseSync directly on WKBLoader
-  const binaryGeometry = WKBLoader.parseSync?.(arrayBuffer.slice(wkbOffset));
-
-  // @ts-expect-error
-  return binaryToGeometry(binaryGeometry);
+  const wkbBytes = arrayBuffer.slice(wkbOffset);
+  return convertWKBToGeometry(wkbBytes);
 }
 
 /**

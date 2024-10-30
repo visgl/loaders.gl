@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
-import parseBasis from './lib/parsers/parse-basis';
+import {parseBasis} from './lib/parsers/parse-basis';
 
 /** Options for the CompressedTextureLoader */
 export type CompressedTextureLoaderOptions = {

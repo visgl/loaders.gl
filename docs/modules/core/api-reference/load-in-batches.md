@@ -46,7 +46,6 @@ for (const batchIterator of batchIterators) {
 }
 ```
 
-
 Loads data in batches from a stream, releasing each batch to the application while the stream is still being read.
 
 Parses data with the selected _loader object_. An array of `loaders` can be provided, in which case an attempt will be made to autodetect which loader is appropriate for the file (using url extension and header matching).
@@ -62,7 +61,7 @@ Returns:
 Notes:
 
 - The `loaders` parameter can also be ommitted, in which case any _loaders_ previously registered with [`registerLoaders`](/docs/modules/core/api-reference/register-loaders) will be used.
- 
+
 ## Options
 
 A loader object, that can contain a mix of options:

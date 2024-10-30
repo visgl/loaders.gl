@@ -2,24 +2,29 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
-import {canEncodeWithWorker, NodeFile, resolvePath} from '@loaders.gl/loader-utils';
+import type {
+  WriterOptions,
+  WriterWithEncoder,
+  WriterOptionsType,
+  WriterDataType,
+  WriterBatchType
+} from '@loaders.gl/loader-utils';
+import {canEncodeWithWorker, NodeFile, resolvePath, isBrowser} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
-import {isBrowser} from '@loaders.gl/loader-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {getLoaderOptions} from './loader-options';
 
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export async function encode(
-  data: unknown,
-  writer: WriterWithEncoder,
-  options?: WriterOptions
+export async function encode<WriterT extends WriterWithEncoder>(
+  data: WriterDataType<WriterT>,
+  writer: WriterT,
+  options_?: WriterOptionsType<WriterT>
 ): Promise<ArrayBuffer> {
   const globalOptions = getLoaderOptions() as WriterOptions;
   // const globalOptions: WriterOptions = {}; // getWriterOptions();
-  options = {...globalOptions, ...options};
+  const options = {...globalOptions, ...options_};
 
   // Handle the special case where we are invoking external command-line tools
   if (writer.encodeURLtoURL) {
@@ -38,10 +43,10 @@ export async function encode(
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSync(
-  data: unknown,
-  writer: WriterWithEncoder,
-  options?: WriterOptions
+export function encodeSync<WriterT extends WriterWithEncoder>(
+  data: WriterDataType<WriterT>,
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
 ): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
@@ -58,10 +63,10 @@ export function encodeSync(
  * It is not optimized for performance. Data maybe converted from text to binary and back.
  * @throws if the writer does not generate text output
  */
-export async function encodeText(
-  data: unknown,
-  writer: WriterWithEncoder,
-  options?: WriterOptions
+export async function encodeText<WriterT extends WriterWithEncoder>(
+  data: WriterDataType<WriterT>,
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
 ): Promise<string> {
   if (writer.encodeText) {
     return await writer.encodeText(data, options);
@@ -85,10 +90,10 @@ export async function encodeText(
  * It is not optimized for performance. Data maybe converted from text to binary and back.
  * @throws if the writer does not generate text output
  */
-export function encodeTextSync(
-  data: unknown,
-  writer: WriterWithEncoder,
-  options?: WriterOptions
+export function encodeTextSync<WriterT extends WriterWithEncoder>(
+  data: WriterDataType<WriterT>,
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
 ): string {
   if (writer.encodeTextSync) {
     return writer.encodeTextSync(data, options);
@@ -105,10 +110,10 @@ export function encodeTextSync(
 /**
  * Encode loaded data into a sequence (iterator) of binary ArrayBuffers using the specified Writer.
  */
-export function encodeInBatches(
-  data: unknown,
-  writer: WriterWithEncoder,
-  options?: WriterOptions
+export function encodeInBatches<WriterT extends WriterWithEncoder>(
+  data: WriterBatchType<WriterT>,
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);

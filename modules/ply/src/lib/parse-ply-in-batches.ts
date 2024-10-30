@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // PLY Loader, adapted from THREE.js (MIT license)
 //
 // Attributions per original THREE.js source file:
