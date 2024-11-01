@@ -4761,6 +4761,8 @@ __metadata:
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.0
   dependenciesMeta:
+    "@types/brotli":
+      optional: true
     brotli:
       optional: true
     lz4js:
