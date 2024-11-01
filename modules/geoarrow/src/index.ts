@@ -47,4 +47,6 @@ export {
   unpackJSONStringMetadata
 } from './metadata/geoparquet-metadata';
 
+export {getGeoArrowGeometryInfo} from './get-geoarrow-geometry-info';
+
 export {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
