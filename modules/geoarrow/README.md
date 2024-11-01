@@ -1,6 +1,6 @@
-# @loaders.gl/arrow
+# @loaders.gl/geoarrow
 
-This module contains a table loader for the Apache Arrow format.
+This module contains support for the Apache Arrow GeoArrow format.
 
 [loaders.gl](https://loaders.gl/docs) is a collection of loaders for big data visualizations.
 
