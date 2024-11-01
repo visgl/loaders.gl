@@ -55,7 +55,7 @@ export type {TextureLevel, GPUTextureFormat} from './categories/category-texture
 export type {ImageDataType, ImageType, ImageTypeEnum} from './categories/category-image';
 
 // GIS CATEGORY - GEOARROW
-export type {GeoArrowMetadata, GeoArrowEncoding} from './geometry/geoarrow-metadata';
+// export type {GeoArrowMetadata, GeoArrowEncoding} from './geometry/geoarrow-metadata';
 
 // GIS CATEGORY - GEOJSON
 export type {

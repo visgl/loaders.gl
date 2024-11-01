@@ -38,9 +38,13 @@ export {
 } from './geoarrow-functions';
 
 // GEOARROW / GEOPARQUET METADATA
+export {getGeometryColumnsFromSchema} from './metadata/geoarrow-metadata';
+
 export type {GeoColumnMetadata} from './metadata/geoparquet-metadata';
 export {
   getGeoMetadata,
   unpackGeoMetadata,
   unpackJSONStringMetadata
 } from './metadata/geoparquet-metadata';
+
+export {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';

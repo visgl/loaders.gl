@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Metadata, getMetadataKey} from './metadata-utils';
+import {Metadata, SchemaWithMetadata, getMetadataValue} from './metadata-utils';
 
 export type GeoArrowEncoding =
   | 'geoarrow.multipolygon'
@@ -46,16 +46,16 @@ export type GeoArrowMetadata = {
 /**
  * get geometry columns from arrow table
  */
-export function getGeometryColumnsFromSchemaMetadata(
-  metadata: Metadata
+export function getGeometryColumnsFromSchema(
+  schema: SchemaWithMetadata
 ): Record<string, GeoArrowMetadata> {
   const geometryColumns: Record<string, GeoArrowMetadata> = {};
-  // for (const field of schema.fields) {
-  //   const metadata = getGeometryMetadataForField(field);
-  //   if (metadata) {
-  //     geometryColumns[field.name] = metadata;
-  //   }
-  // }
+  for (const field of schema.fields || []) {
+    const metadata = getGeometryMetadataForField(field?.metadata || {});
+    if (metadata) {
+      geometryColumns[field.name] = metadata;
+    }
+  }
   return geometryColumns;
 }
 /**
@@ -68,7 +68,7 @@ export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMe
   let metadata: GeoArrowMetadata | null = null;
 
   // Check for GeoArrow column encoding
-  let geoEncoding = getMetadataKey(fieldMetadata, GEOARROW_ENCODING);
+  let geoEncoding = getMetadataValue(fieldMetadata, GEOARROW_ENCODING);
   if (geoEncoding) {
     geoEncoding = geoEncoding.toLowerCase();
     // at time of testing, ogr2ogr uses WKB/WKT for encoding.
@@ -88,7 +88,7 @@ export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMe
   }
 
   // Check for GeoArrow metadata
-  const columnMetadata = getMetadataKey(fieldMetadata, GEOARROW_METADATA);
+  const columnMetadata = getMetadataValue(fieldMetadata, GEOARROW_METADATA);
   if (columnMetadata) {
     try {
       metadata = JSON.parse(columnMetadata);

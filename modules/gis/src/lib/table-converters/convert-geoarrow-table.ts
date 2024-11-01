@@ -21,7 +21,7 @@ import {
   getTableNumCols,
   getTableCellAt
 } from '@loaders.gl/schema-utils';
-import {getGeometryColumnsFromSchemaMetadata} from '../geoarrow/geoarrow-metadata';
+import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 import {convertGeoArrowGeometryToGeoJSON} from '../geometry-converters/convert-geoarrow-to-geojson';
 
 /**
@@ -181,7 +181,7 @@ function convertArrowToColumnarTable(arrowTable: arrow.Table): ColumnarTable {
  */
 function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
   const schema = convertArrowToSchema(arrowTable.schema);
-  const geometryColumns = getGeometryColumnsFromSchemaMetadata(schema);
+  const geometryColumns = getGeometryColumnsFromSchema(schema);
 
   // get encoding from geometryColumns['geometry']
   const encoding = geometryColumns.geometry.encoding;

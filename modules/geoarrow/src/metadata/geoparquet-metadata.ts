@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 
-import {Metadata, getMetadataKey, setMetadataKey} from './metadata-utils';
+import {Metadata, getMetadataValue, setMetadataValue} from './metadata-utils';
 
 /**
  * A geoarrow / geoparquet geo metadata object
@@ -55,7 +55,7 @@ export type GeoParquetGeometryType =
  * @note geoarrow / parquet schema is stringified into a single key-value pair in the parquet metadata
  */
 export function getGeoMetadata(metadata: Metadata): GeoMetadata | null {
-  const stringifiedGeoMetadata = getMetadataKey(metadata, 'geo');
+  const stringifiedGeoMetadata = getMetadataValue(metadata, 'geo');
   const geoMetadata = stringifiedGeoMetadata && parseJSONStringMetadata(stringifiedGeoMetadata);
   if (!geoMetadata) {
     return null;
@@ -74,7 +74,7 @@ export function getGeoMetadata(metadata: Metadata): GeoMetadata | null {
  */
 export function setGeoMetadata(metadata: Metadata, geoMetadata: GeoMetadata): void {
   const stringifiedGeoMetadata = JSON.stringify(geoMetadata);
-  setMetadataKey(metadata, 'geo', stringifiedGeoMetadata);
+  setMetadataValue(metadata, 'geo', stringifiedGeoMetadata);
 }
 
 /**
@@ -91,15 +91,15 @@ export function unpackGeoMetadata(metadata: Metadata): void {
 
   const {version, primary_column, columns} = geoMetadata;
   if (version) {
-    setMetadataKey(metadata, 'geo.version', version);
+    setMetadataValue(metadata, 'geo.version', version);
   }
 
   if (primary_column) {
-    setMetadataKey(metadata, 'geo.primary_column', primary_column);
+    setMetadataValue(metadata, 'geo.primary_column', primary_column);
   }
 
   // store column names as comma separated list
-  setMetadataKey(metadata, 'geo.columns', Object.keys(columns || {}).join(''));
+  setMetadataValue(metadata, 'geo.columns', Object.keys(columns || {}).join(''));
 
   // for (const [columnName, columnMetadata] of Object.entries(columns || {})) {
   //   const field = schema.fields.find((field) => field.name === columnName);
@@ -113,10 +113,10 @@ export function unpackGeoMetadata(metadata: Metadata): void {
 }
 
 export function unpackJSONStringMetadata(metadata: Metadata, metadataKey: string): void {
-  const stringifiedGeoMetadata = getMetadataKey(metadata, 'geo');
+  const stringifiedGeoMetadata = getMetadataValue(metadata, 'geo');
   const json = stringifiedGeoMetadata && parseJSONStringMetadata(stringifiedGeoMetadata);
   for (const [key, value] of Object.entries(json || {})) {
-    setMetadataKey(
+    setMetadataValue(
       metadata,
       `${metadataKey}.${key}`,
       typeof value === 'string' ? value : JSON.stringify(value)

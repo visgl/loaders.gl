@@ -43,7 +43,7 @@ export type geoColumnInfo = {
 // import type {Schema, Field, GeoArrowMetadata, GeoArrowEncoding, Geometry} from '@loaders.gl/schema';
 // import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 // import * as arrow from 'apache-arrow';
-// import {getGeometryColumnsFromSchemaMetadata, getGeometryMetadataForField} from '../geoarrow/geoarrow-metadata';
+// import {getGeometryColumnsFromSchema, getGeometryMetadataForField} from '../geoarrow/geoarrow-metadata';
 // import { getGeoMetadata as getParquetMe} from './geoparquet-metadata';
 
 // /**
@@ -83,7 +83,7 @@ export type geoColumnInfo = {
 //  */
 // export function getGeoArrowInfo(arrowTable: arrow.Table): GeoArrowInfo {
 //  const schema = convertArrowToSchema(arrowTable.schema);
-//   const geometryColumns = getGeometryColumnsFromSchemaMetadata(schema);
+//   const geometryColumns = getGeometryColumnsFromSchema(schema);
 
 //   // get encoding from geometryColumns['geometry']
 //   const encoding = geometryColumns.geometry.encoding;
