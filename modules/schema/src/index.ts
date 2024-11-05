@@ -55,7 +55,7 @@ export type {TextureLevel, GPUTextureFormat} from './categories/category-texture
 export type {ImageDataType, ImageType, ImageTypeEnum} from './categories/category-image';
 
 // GIS CATEGORY - GEOARROW
-export type {GeoArrowMetadata, GeoArrowEncoding} from './geometry/geoarrow-metadata';
+// export type {GeoArrowMetadata, GeoArrowEncoding} from './geometry/geoarrow-metadata';
 
 // GIS CATEGORY - GEOJSON
 export type {
@@ -101,46 +101,6 @@ export type {
   BinaryLineFeature,
   BinaryPolygonFeature
 } from './categories/category-gis';
-
-// SCHEMA
-// export {
-//   Schema as ArrowLikeSchema,
-//   Field as ArrowLikeField,
-//   DataType as ArrowLikeDataType,
-//   Null,
-//   Binary,
-//   Bool,
-//   Int,
-//   Int8,
-//   Int16,
-//   Int32,
-//   Int64,
-//   Uint8,
-//   Uint16,
-//   Uint32,
-//   Uint64,
-//   Float,
-//   Float16,
-//   Float32,
-//   Float64,
-//   Utf8,
-//   Date,
-//   DateDay,
-//   DateMillisecond,
-//   Time,
-//   TimeMillisecond,
-//   TimeSecond,
-//   Timestamp,
-//   TimestampSecond,
-//   TimestampMillisecond,
-//   TimestampMicrosecond,
-//   TimestampNanosecond,
-//   Interval,
-//   IntervalDayTime,
-//   IntervalYearMonth,
-//   FixedSizeList,
-//   Struct
-// } from './lib/table/arrow-api';
 
 // DEPRECATED
 

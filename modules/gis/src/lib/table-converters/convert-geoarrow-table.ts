@@ -21,7 +21,7 @@ import {
   getTableNumCols,
   getTableCellAt
 } from '@loaders.gl/schema-utils';
-import {getGeometryColumnsFromSchema} from '../geoarrow/geoarrow-metadata';
+import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 import {convertGeoArrowGeometryToGeoJSON} from '../geometry-converters/convert-geoarrow-to-geojson';
 
 /**

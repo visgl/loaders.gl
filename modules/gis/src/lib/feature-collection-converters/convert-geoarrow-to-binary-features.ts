@@ -5,8 +5,8 @@
 import * as arrow from 'apache-arrow';
 import {earcut} from '@math.gl/polygon';
 import type {BinaryFeatureCollection} from '@loaders.gl/schema';
-import {GeoArrowEncoding} from '@loaders.gl/schema';
-import {updateBoundsFromGeoArrowSamples} from '../geoarrow/get-arrow-bounds';
+import type {GeoArrowEncoding} from '@loaders.gl/geoarrow';
+import {updateBoundsFromGeoArrowSamples} from '@loaders.gl/geoarrow';
 import {TypedArray} from '@loaders.gl/loader-utils';
 
 /**

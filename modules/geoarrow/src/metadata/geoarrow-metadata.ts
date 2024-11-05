@@ -2,7 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Field, GeoArrowMetadata, GeoArrowEncoding} from '@loaders.gl/schema';
+import {Metadata, SchemaWithMetadata, getMetadataValue} from './metadata-utils';
+
+export type GeoArrowEncoding =
+  | 'geoarrow.multipolygon'
+  | 'geoarrow.polygon'
+  | 'geoarrow.multilinestring'
+  | 'geoarrow.linestring'
+  | 'geoarrow.multipoint'
+  | 'geoarrow.point'
+  | 'geoarrow.wkb'
+  | 'geoarrow.wkt';
 
 /** Array containing all encodings */
 const GEOARROW_ENCODINGS = [
@@ -20,12 +30,28 @@ const GEOARROW_ENCODING = 'ARROW:extension:name';
 const GEOARROW_METADATA = 'ARROW:extension:metadata';
 
 /**
+ * Geospatial metadata for one column, extracted from Apache Arrow metadata
+ * @see https://github.com/geoarrow/geoarrow/blob/main/extension-types.md
+ */
+export type GeoArrowMetadata = {
+  /** Encoding of geometry in this column */
+  encoding?: GeoArrowEncoding;
+  /** CRS in [PROJJSON](https://proj.org/specifications/projjson.html). Omitted if producer has no information about CRS */
+  crs?: Record<string, unknown>;
+  /** Edges are either spherical or omitted */
+  edges?: 'spherical';
+  [key: string]: unknown;
+};
+
+/**
  * get geometry columns from arrow table
  */
-export function getGeometryColumnsFromSchema(schema: Schema): Record<string, GeoArrowMetadata> {
+export function getGeometryColumnsFromSchema(
+  schema: SchemaWithMetadata
+): Record<string, GeoArrowMetadata> {
   const geometryColumns: Record<string, GeoArrowMetadata> = {};
-  for (const field of schema.fields) {
-    const metadata = getGeometryMetadataForField(field);
+  for (const field of schema.fields || []) {
+    const metadata = getGeometryMetadataForField(field?.metadata || {});
     if (metadata) {
       geometryColumns[field.name] = metadata;
     }
@@ -38,11 +64,11 @@ export function getGeometryColumnsFromSchema(schema: Schema): Record<string, Geo
  * @returns
  * @see https://github.com/geoarrow/geoarrow/blob/d2f56704414d9ae71e8a5170a8671343ed15eefe/extension-types.md
  */
-export function getGeometryMetadataForField(field: Field): GeoArrowMetadata | null {
+export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMetadata | null {
   let metadata: GeoArrowMetadata | null = null;
 
   // Check for GeoArrow column encoding
-  let geoEncoding = field.metadata?.[GEOARROW_ENCODING];
+  let geoEncoding = getMetadataValue(fieldMetadata, GEOARROW_ENCODING);
   if (geoEncoding) {
     geoEncoding = geoEncoding.toLowerCase();
     // at time of testing, ogr2ogr uses WKB/WKT for encoding.
@@ -62,7 +88,7 @@ export function getGeometryMetadataForField(field: Field): GeoArrowMetadata | nu
   }
 
   // Check for GeoArrow metadata
-  const columnMetadata = field.metadata?.[GEOARROW_METADATA];
+  const columnMetadata = getMetadataValue(fieldMetadata, GEOARROW_METADATA);
   if (columnMetadata) {
     try {
       metadata = JSON.parse(columnMetadata);

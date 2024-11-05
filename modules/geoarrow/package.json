@@ -1,0 +1,63 @@
+{
+  "name": "@loaders.gl/geoarrow",
+  "version": "4.4.0-alpha.0",
+  "description": "GeoArrow columnar geometry encoding and decoding",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "loader",
+    "parser",
+    "writer",
+    "encoder",
+    "geoarrow",
+    "apache-arrow",
+    "arrow",
+    "binary columnar",
+    "cloud native",
+    "webgl",
+    "webgpu"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./exports/*": {
+      "types": "./dist/exports/*.d.ts",
+      "import": "./dist/exports/*.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "browser": {
+    "fs": false
+  },
+  "scripts": {
+    "pre-build": "",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+  },
+  "dependencies": {
+    "@math.gl/polygon": "^4.1.0",
+    "apache-arrow": ">= 16.1.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "4.4.0-alpha.0"
+  },
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
+}

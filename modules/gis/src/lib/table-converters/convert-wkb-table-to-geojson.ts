@@ -11,8 +11,7 @@ import type {
   Geometry
 } from '@loaders.gl/schema';
 import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema-utils';
-
-import {GeoColumnMetadata, getGeoMetadata} from '../geoarrow/geoparquet-metadata';
+import {GeoColumnMetadata, getGeoMetadata} from '@loaders.gl/geoarrow';
 import {convertWKBToGeometry} from '../geometry-converters/wkb/convert-wkb-to-geometry';
 import {convertWKTToGeometry} from '../geometry-converters/wkb/convert-wkt-to-geometry';
 
@@ -21,7 +20,7 @@ export function convertWKBTableToGeoJSON(
   table: ArrayRowTable | ObjectRowTable,
   schema: Schema
 ): GeoJSONTable {
-  const geoMetadata = getGeoMetadata(schema);
+  const geoMetadata = getGeoMetadata(schema.metadata);
   const primaryColumn = geoMetadata?.primary_column;
   if (!primaryColumn) {
     throw new Error('no geometry column');
