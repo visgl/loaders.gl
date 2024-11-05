@@ -77,8 +77,7 @@ export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 // MESH CATEGORY
 
 export {getMeshSize, getMeshBoundingBox} from './lib/mesh/mesh-utils';
-// Commented out due to https://github.com/visgl/deck.gl/issues/6906 and https://github.com/visgl/loaders.gl/issues/2177
-// export {convertMesh} from './category/mesh/convert-mesh';
+export {convertMesh} from './lib/mesh/convert-mesh';
 export {
   deduceMeshSchema,
   deduceMeshField,

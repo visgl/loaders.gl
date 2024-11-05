@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import {PCDMesh} from './lib/pcd-types';
+import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {PCDMesh} from './lib/pcd-types';
+import {parsePCD} from './lib/parse-pcd';
+import {PCDFormat} from './pcd-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -19,18 +21,22 @@ export type PCDLoaderOptions = LoaderOptions & {
 /**
  * Worker loader for PCD - Point Cloud Data
  */
-export const PCDLoader = {
+export const PCDWorkerLoader = {
+  ...PCDFormat,
   dataType: null as unknown as PCDMesh,
   batchType: null as never,
-
-  name: 'PCD (Point Cloud Data)',
-  id: 'pcd',
-  module: 'pcd',
   version: VERSION,
   worker: true,
-  extensions: ['pcd'],
-  mimeTypes: ['text/plain'],
   options: {
     pcd: {}
   }
 } as const satisfies Loader<PCDMesh, never, PCDLoaderOptions>;
+
+/**
+ * Loader for PCD - Point Cloud Data
+ */
+export const PCDLoader = {
+  ...PCDWorkerLoader,
+  parse: async (arrayBuffer) => parsePCD(arrayBuffer),
+  parseSync: parsePCD
+} as const satisfies LoaderWithParser<PCDMesh, never, LoaderOptions>;
