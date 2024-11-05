@@ -20,7 +20,7 @@ export type PMTilesLoaderOptions = LoaderOptions & {
  * @note For actual access to the tile data, use the PMTilesSource class.
  */
 export const PMTilesLoader = {
-  ...PMTilesFormat,  
+  ...PMTilesFormat,
   version: VERSION,
   options: {
     pmtiles: {}

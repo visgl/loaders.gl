@@ -17,6 +17,5 @@ export const ArrowFormat = {
     'application/octet-stream'
   ],
   binary: true,
-  tests: ['ARROW'],
+  tests: ['ARROW']
 } as const satisfies Format;
-  

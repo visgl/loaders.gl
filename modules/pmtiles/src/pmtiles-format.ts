@@ -13,5 +13,5 @@ export const PMTilesFormat = {
   module: 'pmtiles',
   extensions: ['pmtiles'],
   mimeTypes: ['application/octet-stream'],
-  tests: ['PMTiles'],
+  tests: ['PMTiles']
 } as const satisfies Format;

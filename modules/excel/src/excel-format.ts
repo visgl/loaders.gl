@@ -17,5 +17,5 @@ export const ExcelFormat = {
     'application/vnd.ms-excel'
   ],
   category: 'table',
-  binary: true,
+  binary: true
 } as const satisfies Format;

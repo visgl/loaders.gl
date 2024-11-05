@@ -20,6 +20,7 @@ import {
   TileJSON,
   TileJSONLoaderOptions
 } from '@loaders.gl/mvt';
+import {MVTFormat} from './mvt-format';
 
 /** Properties for a Mapbox Vector Tile Source */
 export type MVTSourceOptions = DataSourceOptions & {
@@ -38,12 +39,8 @@ export type MVTSourceOptions = DataSourceOptions & {
 
 /** Creates an MVTTileSource */
 export const MVTSource = {
-  name: 'MVT',
-  id: 'mvt',
-  module: 'mvt',
+  ...MVTFormat,
   version: '0.0.0',
-  extensions: ['mvt'],
-  mimeTypes: ['application/octet-stream'],
   type: 'mvt',
   fromUrl: true,
   fromBlob: false,
