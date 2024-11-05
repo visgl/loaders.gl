@@ -5,6 +5,7 @@
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 // import type {MVTOptions} from './lib/types';
 import {parseMVT} from './lib/parse-mvt';
+import {MVTFormat} from './mvt-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -37,23 +38,11 @@ export type MVTLoaderOptions = LoaderOptions & {
  * Worker loader for the Mapbox Vector Tile format
  */
 export const MVTWorkerLoader = {
+  ...MVTFormat,
   dataType: null as any,
   batchType: null as never,
-
-  name: 'Mapbox Vector Tile',
-  id: 'mvt',
-  module: 'mvt',
   version: VERSION,
-  // Note: ArcGIS uses '.pbf' extension and 'application/octet-stream'
-  extensions: ['mvt', 'pbf'],
-  mimeTypes: [
-    // https://www.iana.org/assignments/media-types/application/vnd.mapbox-vector-tile
-    'application/vnd.mapbox-vector-tile',
-    'application/x-protobuf'
-    // 'application/octet-stream'
-  ],
   worker: true,
-  category: 'geometry',
   options: {
     mvt: {
       shape: 'geojson',

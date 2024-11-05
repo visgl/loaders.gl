@@ -3,30 +3,27 @@
 // Copyright (c) vis.gl contributors
 
 import type {Mesh, ColumnarTable, ArrowTable} from '@loaders.gl/schema';
-// import {convertMeshToArrowTable} from './mesh-to-arrow-table';
+import {convertMeshToArrowTable} from './convert-mesh-to-arrow-table';
 
 type TargetShape = 'mesh' | 'columnar-table' | 'arrow-table';
+
+export function convertMesh(mesh: Mesh, shape: 'mesh'): Mesh;
+export function convertMesh(mesh: Mesh, shape: 'columnar-table'): ColumnarTable;
+export function convertMesh(mesh: Mesh, shape: 'arrow-table'): ArrowTable;
 
 /**
  * Convert a mesh to a specific shape
  */
-export function convertMesh(
-  mesh: Mesh,
-  shape: TargetShape,
-  options?: any
-): Mesh | ColumnarTable | ArrowTable {
+export function convertMesh(mesh: Mesh, shape: TargetShape): Mesh | ColumnarTable | ArrowTable {
   switch (shape || 'mesh') {
     case 'mesh':
       return mesh;
     case 'columnar-table':
       return convertMeshToColumnarTable(mesh);
-    // case 'arrow-table':
-    //   return {
-    //     shape: 'arrow-table',
-    //     data: convertMeshToArrowTable(mesh)
-    //   };
+    case 'arrow-table':
+      return convertMeshToArrowTable(mesh);
     default:
-      throw new Error(`Unsupported shape ${options?.shape}`);
+      throw new Error(`Unsupported shape ${shape}`);
   }
 }
 

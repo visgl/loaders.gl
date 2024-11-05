@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
@@ -24,6 +28,7 @@ test('PCDLoader#parse(text)', async (t) => {
 
   t.equal(Object.keys(data.schema.fields).length, 2, 'schema field count is correct');
   t.equal(data.schema.metadata.mode, '0', 'schema metadata is correct');
+  t.equal(data.schema.metadata.topology, 'point-list', 'schema metadata is correct');
   t.ok(data.schema.metadata.boundingBox, 'schema metadata is correct');
 
   const positionField = data.schema.fields.find((field) => field.name === 'POSITION');

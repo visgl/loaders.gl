@@ -14,6 +14,7 @@ import type {
 import {DataSource, DataSourceOptions, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
+import {PMTilesFormat} from './pmtiles-format';
 
 import * as pmtiles from 'pmtiles';
 const {PMTiles} = pmtiles;
@@ -35,12 +36,8 @@ export type PMTilesSourceOptions = DataSourceOptions & {
  * Creates vector tile data sources for PMTiles urls or blobs
  */
 export const PMTilesSource = {
-  name: 'PMTiles',
-  id: 'pmtiles',
-  module: 'pmtiles',
+  ...PMTilesFormat,
   version: VERSION,
-  extensions: ['pmtiles'],
-  mimeTypes: ['application/octet-stream'],
   type: 'pmtiles',
   fromUrl: true,
   fromBlob: true,

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // PCD Loader, adapted from THREE.js (MIT license)
 // Description: A loader for PCD ascii and binary files.
 // Limitations: Compressed binary files are not supported.
@@ -43,7 +47,7 @@ const LITTLE_ENDIAN: boolean = true;
  * @param data
  * @returns
  */
-export default function parsePCD(data: ArrayBufferLike): PCDMesh {
+export function parsePCD(data: ArrayBufferLike): PCDMesh {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
   const pcdHeader = parsePCDHeader(textData);
@@ -72,20 +76,21 @@ export default function parsePCD(data: ArrayBufferLike): PCDMesh {
 
   const header = getMeshHeader(pcdHeader, attributes);
 
-  const metadata = Object.fromEntries([
+  const schemaMetadata = Object.fromEntries([
+    ['topology', 'point-list'],
     ['mode', '0'],
     ['boundingBox', JSON.stringify(header.boundingBox)]
   ]);
 
-  const schema = getPCDSchema(pcdHeader, metadata);
+  const schema = getPCDSchema(pcdHeader, schemaMetadata);
 
   return {
     loader: 'pcd',
     loaderData: pcdHeader,
     header,
     schema,
-    mode: 0, // POINTS
     topology: 'point-list',
+    mode: 0, // POINTS (deprecated)
     attributes
   };
 }

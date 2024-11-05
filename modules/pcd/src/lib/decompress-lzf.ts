@@ -1,6 +1,10 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Forked from https://gitlab.com/taketwo/three-pcd-loader/blob/master/decompress-lzf.js
+
 /* eslint-disable */
 /**
- * from https://gitlab.com/taketwo/three-pcd-loader/blob/master/decompress-lzf.js
  * @param inData
  * @param outLength
  * @returns
