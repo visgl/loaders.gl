@@ -14,10 +14,7 @@ export function convertMesh(mesh: Mesh, shape: 'arrow-table'): ArrowTable;
 /**
  * Convert a mesh to a specific shape
  */
-export function convertMesh(
-  mesh: Mesh,
-  shape: TargetShape,
-): Mesh | ColumnarTable | ArrowTable {
+export function convertMesh(mesh: Mesh, shape: TargetShape): Mesh | ColumnarTable | ArrowTable {
   switch (shape || 'mesh') {
     case 'mesh':
       return mesh;

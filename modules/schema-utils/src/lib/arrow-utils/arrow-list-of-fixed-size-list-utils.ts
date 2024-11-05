@@ -7,24 +7,35 @@ import * as arrow from 'apache-arrow';
 import {getDataTypeFromArray} from '../schema/data-type';
 import {deserializeArrowType} from '../schema/convert-arrow-schema';
 
-export function isListFixedSizeList(vector: arrow.Vector): vector is arrow.Vector<arrow.FixedSizeList> {
+export function isListFixedSizeList(
+  vector: arrow.Vector
+): vector is arrow.Vector<arrow.FixedSizeList> {
   return vector.type instanceof arrow.FixedSizeList;
 }
 
 export function getListFixedSizeListSize(vector: arrow.Vector): number {
   return vector.type instanceof arrow.FixedSizeList ? vector.type.listSize : 1;
-} 
+}
 
 /** Get Arrow FixedSizeList vector from a typed array */
-export function getListFixedSizeListVector(indexes: Uint32Array, typedArray: TypedArray, stride: number): arrow.Vector<arrow.FixedSizeList> {
+export function getListFixedSizeListVector(
+  indexes: Uint32Array,
+  typedArray: TypedArray,
+  stride: number
+): arrow.Vector<arrow.FixedSizeList> {
   const data = getFixedSizeListData(typedArray, stride);
   return new arrow.Vector<arrow.FixedSizeList>([data]);
 }
 
 /** Get Arrow FixedSizeList vector from a typed array */
-export function getFixedSizeListData(typedArray: TypedArray, stride: number): arrow.Data<arrow.FixedSizeList> {
+export function getFixedSizeListData(
+  typedArray: TypedArray,
+  stride: number
+): arrow.Data<arrow.FixedSizeList> {
   const listType = getFixedSizeListType(typedArray, stride);
-  const data = new arrow.Data<arrow.FixedSizeList>(listType, 0, typedArray.length / stride, 0, [typedArray]);
+  const data = new arrow.Data<arrow.FixedSizeList>(listType, 0, typedArray.length / stride, 0, [
+    typedArray
+  ]);
   return data;
 }
 

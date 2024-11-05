@@ -23,7 +23,7 @@ test('PCDArrowLoader#loader conformance', (t) => {
 
 test('PCDArrowLoader#parse(text)', async (t) => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDArrowLoader);
-  
+
   // TODO - validate arrow mesh category data?
   // validateMeshCategoryData(t, arrowTable);
 

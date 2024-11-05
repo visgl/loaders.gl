@@ -18,7 +18,7 @@ import {deserializeArrowSchema} from '../schema/convert-arrow-schema';
 export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): ArrowTable {
   const {schema} = mesh;
   const arrowSchema = deserializeArrowSchema(schema);
-  
+
   const arrowDatas: arrow.Data[] = [];
   for (const attributeKey in mesh.attributes) {
     const attribute = mesh.attributes[attributeKey];
@@ -33,6 +33,6 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): ArrowTa
   const structData = new arrow.Data(structField, 0, length, 0, undefined, arrowDatas);
   const recordBatch = new arrow.RecordBatch(arrowSchema, structData);
   const table = new arrow.Table(arrowSchema, recordBatch);
-  
+
   return {shape: 'arrow-table', schema, data: table};
 }

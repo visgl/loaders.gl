@@ -78,6 +78,7 @@ export function parsePCD(data: ArrayBufferLike): PCDMesh {
 
   const schemaMetadata = Object.fromEntries([
     ['topology', 'point-list'],
+    ['mode', '0'],
     ['boundingBox', JSON.stringify(header.boundingBox)]
   ]);
 

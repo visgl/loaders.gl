@@ -12,7 +12,6 @@ import type {PCDHeader} from './pcd-types';
  * @returns Schema
  */
 export function getPCDSchema(PCDheader: PCDHeader, metadata: Record<string, string>): Schema {
-
   const fields: Field[] = [];
 
   for (const key of Object.keys(PCDheader.offset)) {
@@ -50,7 +49,7 @@ export function getPCDSchema(PCDheader: PCDHeader, metadata: Record<string, stri
         break;
 
       default:
-        // TODO - push fields
+      // TODO - push fields
     }
   }
 
