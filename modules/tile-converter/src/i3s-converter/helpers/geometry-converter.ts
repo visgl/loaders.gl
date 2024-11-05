@@ -524,7 +524,7 @@ function convertNode({
   const mesh = node.mesh;
 
   if (mesh) {
-    convertMesh({
+    convertMeshToTable({
       mesh,
       images,
       cartographicOrigin,
@@ -563,7 +563,7 @@ function convertNode({
  * @param matrix - transformation matrix - cumulative transformation matrix formed from all parent node matrices
  * @param featureTexture - feature texture key
  */
-function convertMesh({
+function convertMeshToTable({
   mesh,
   images,
   cartographicOrigin,

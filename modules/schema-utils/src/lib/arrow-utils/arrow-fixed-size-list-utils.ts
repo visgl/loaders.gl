@@ -30,9 +30,27 @@ export function getFixedSizeListData(
   stride: number
 ): arrow.Data<arrow.FixedSizeList> {
   const listType = getFixedSizeListType(typedArray, stride);
-  const data = new arrow.Data<arrow.FixedSizeList>(listType, 0, typedArray.length / stride, 0, [
-    typedArray
-  ]);
+  const nestedType = listType.children[0].type;
+  const buffers: Partial<Record<arrow.BufferType, any>> = {
+    // valueOffsets: undefined,
+    [arrow.BufferType.DATA]: typedArray // values
+    // nullBitmap: undefined,
+    // typeIds: undefined
+  };
+
+  // Note: The contiguous array of data is held by the nested "primitive type" column
+  const nestedData = new arrow.Data(nestedType, 0, typedArray.length, 0, buffers);
+
+  // Wrapped in a FixedSizeList column that provides a "strided" view of the data
+  const data = new arrow.Data<arrow.FixedSizeList>(
+    listType,
+    0,
+    typedArray.length / stride,
+    0,
+    undefined,
+    [nestedData]
+  );
+
   return data;
 }
 

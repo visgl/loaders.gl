@@ -77,7 +77,8 @@ export {ArrowLikeTable} from './lib/table/arrow-api/arrow-like-table';
 // MESH CATEGORY
 
 export {getMeshSize, getMeshBoundingBox} from './lib/mesh/mesh-utils';
-export {convertMesh} from './lib/mesh/convert-mesh';
+export {convertMeshToTable} from './lib/mesh/convert-mesh-to-table';
+export {convertTableToMesh} from './lib/mesh/convert-table-to-mesh';
 export {
   deduceMeshSchema,
   deduceMeshField,

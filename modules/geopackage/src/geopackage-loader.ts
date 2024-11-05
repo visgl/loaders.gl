@@ -5,6 +5,7 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {Tables, GeoJSONTable} from '@loaders.gl/schema';
 import {parseGeoPackage, DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
+import {GeoPackageFormat} from './geopackage-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -30,16 +31,12 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
 };
 
 export const GeoPackageLoader = {
+  ...GeoPackageFormat,
+
   dataType: null as unknown as GeoJSONTable | Tables<GeoJSONTable>,
   batchType: null as never,
 
-  id: 'geopackage',
-  name: 'GeoPackage',
-  module: 'geopackage',
   version: VERSION,
-  extensions: ['gpkg'],
-  mimeTypes: ['application/geopackage+sqlite3'],
-  category: 'geometry',
   parse: parseGeoPackage,
   options: {
     geopackage: {
