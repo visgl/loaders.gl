@@ -21,8 +21,7 @@ test('PCDArrowLoader#loader conformance', (t) => {
   t.end();
 });
 
-test.only('PCDArrowLoader#parse(text)', async (t) => {
-  debugger
+test('PCDArrowLoader#parse(text)', async (t) => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDArrowLoader);
 
   // TODO - validate arrow mesh category data?
