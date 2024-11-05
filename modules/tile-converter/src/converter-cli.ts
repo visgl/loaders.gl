@@ -176,7 +176,9 @@ function printHelp(): void {
   console.log(
     '--split-nodes [Prevent merging similar materials that could lead to incorrect visualization (I3S to 3DTiles conversion only)]'
   );
-  console.log('--slpk [(Deprecated since version 4.3.0) Whether the converter generates \*.slpk (Scene Layer Package) I3S output files. Note: For versions 4.3.0 and up \*.slpk is the default output without this option specified.]');
+  console.log(
+    '--slpk [(Deprecated since version 4.3.0) Whether the converter generates *.slpk (Scene Layer Package) I3S output files. Note: For versions 4.3.0 and up *.slpk is the default output without this option specified.]'
+  );
   console.log(
     '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
   );
