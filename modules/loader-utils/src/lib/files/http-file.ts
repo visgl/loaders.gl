@@ -30,8 +30,8 @@ export class HttpFile implements ReadableFile {
     };
   }
 
-  async read(offset: number | bigint, length: number): Promise<ArrayBuffer> {
-    const response = await this.fetchRange(offset, length);
+  async read(offset?: number | bigint, length?: number): Promise<ArrayBuffer> {
+    const response = await this.fetchRange(offset ?? 0, length ?? 0);
     const arrayBuffer = await response.arrayBuffer();
     return arrayBuffer;
   }
