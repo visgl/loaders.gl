@@ -26,10 +26,10 @@ type TileConversionOptions = {
   /** Output folder. This folder will be created by converter if doesn't exist. It is relative to the converter path.
    * Default: "data" folder */
   output: string;
-  /** 3DTile version.
+  /** 3DTiles version.
    * Default: version "1.1" */
   outputVersion?: string;
-  /** Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed */
+  /** Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduces memory usage but decelerates conversion speed */
   instantNodeWriting: boolean;
   /** Try to merge similar materials to be able to merge meshes into one node (I3S to 3DTiles conversion only) */
   mergeMaterials: boolean;
@@ -54,9 +54,9 @@ type TileConversionOptions = {
   validate: boolean;
   /** Maximal depth of the hierarchical tiles tree traversal, default: infinite */
   maxDepth?: number;
-  /** adds hash file to the slpk if there's no one */
+  /** Adds a hash file to an .slpk without hash */
   addHash: boolean;
-  /** Feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
+  /** Set feature metadata class from EXT_FEATURE_METADATA or EXT_STRUCTURAL_METADATA extensions  */
   metadataClass?: string;
   /** With this options the tileset content will be analyzed without conversion */
   analyze?: boolean;
@@ -171,17 +171,20 @@ function printHelp(): void {
   console.log('--name [Tileset name]');
   console.log('--output [Output folder, default: "data" folder]');
   console.log(
-    '--instant-node-writing [Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduce memory usage but decelerates conversion speed]'
+    '--instant-node-writing [Keep created 3DNodeIndexDocument files on disk instead of memory. This option reduces memory usage but decelerates conversion speed]'
   );
   console.log(
-    '--split-nodes [Prevent to merge similar materials that could lead to incorrect visualization (I3S to 3DTiles conversion only)]'
+    '--split-nodes [Prevent merging similar materials that could lead to incorrect visualization (I3S to 3DTiles conversion only)]'
+  );
+  console.log(
+    '--slpk [(Deprecated since version 4.3.0) Whether the converter generates *.slpk (Scene Layer Package) I3S output files. Note: For versions 4.3.0 and up *.slpk is the default output without this option specified.]'
   );
   console.log(
     '--tileset [tileset.json file (3DTiles) / http://..../SceneServer/layers/0 resource (I3S)]'
   );
   console.log('--input-type [tileset input type: I3S or 3DTILES]');
   console.log(
-    '--output-version [3dtile version: 1.0 or 1.1, default: 1.1]. This option supports only 1.0/1.1 values for 3DTiles output. I3S output version setting is not supported yet.'
+    '--output-version [3DTiles version: 1.0 or 1.1, default: 1.1]. This option supports only 1.0/1.1 values for 3DTiles output. I3S output version setting is not supported yet.'
   );
   console.log(
     '--egm [location of Earth Gravity Model *.pgm file to convert heights from ellipsoidal to gravity-related format or "None" to not use it. A model file can be loaded from GeographicLib https://geographiclib.sourceforge.io/html/geoid.html], default: "./deps/egm2008-5.zip"'
