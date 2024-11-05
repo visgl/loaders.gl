@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
 import {VERSION} from './lib/utils/version';
+import DracoParser from './lib/draco-parser';
+import {loadDracoDecoderModule} from './lib/draco-module-loader';
 
 export type DracoLoaderOptions = LoaderOptions & {
   draco?: DracoParseOptions & {
@@ -21,7 +23,7 @@ export type DracoLoaderOptions = LoaderOptions & {
 /**
  * Worker loader for Draco3D compressed geometries
  */
-export const DracoLoader = {
+export const DracoWorkerLoader = {
   dataType: null as unknown as DracoMesh,
   batchType: null as never,
   name: 'Draco',
@@ -43,3 +45,21 @@ export const DracoLoader = {
     }
   }
 } as const satisfies Loader<DracoMesh, never, DracoLoaderOptions>;
+
+/**
+ * Loader for Draco3D compressed geometries
+ */
+export const DracoLoader = {
+  ...DracoWorkerLoader,
+  parse
+} as const satisfies LoaderWithParser<DracoMesh, never, DracoLoaderOptions>;
+
+async function parse(arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions): Promise<DracoMesh> {
+  const {draco} = await loadDracoDecoderModule(options);
+  const dracoParser = new DracoParser(draco);
+  try {
+    return dracoParser.parseSync(arrayBuffer, options?.draco);
+  } finally {
+    dracoParser.destroy();
+  }
+}

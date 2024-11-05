@@ -2,8 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ObjectRowTable} from '@loaders.gl/schema';
+import {parseExcel} from './lib/parse-excel';
+import {ExcelFormat} from './excel-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -24,21 +26,12 @@ export type ExcelLoaderOptions = LoaderOptions & {
 /**
  * Worker Loader for Excel files
  */
-export const ExcelLoader = {
+export const ExcelWorkerLoader = {
+  ...ExcelFormat,
   dataType: null as unknown as ObjectRowTable,
   batchType: null as never,
-  name: 'Excel',
-  id: 'excel',
-  module: 'excel',
   version: VERSION,
   worker: true,
-  extensions: ['xls', 'xlsb', 'xlsm', 'xlsx'],
-  mimeTypes: [
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel'
-  ],
-  category: 'table',
-  binary: true,
   options: {
     excel: {
       shape: 'object-row-table',
@@ -46,3 +39,14 @@ export const ExcelLoader = {
     }
   }
 } as const satisfies Loader<ObjectRowTable, never, ExcelLoaderOptions>;
+
+/**
+ * Loader for Excel files
+ */
+export const ExcelLoader = {
+  ...ExcelWorkerLoader,
+  async parse(arrayBuffer: ArrayBuffer, options?: ExcelLoaderOptions): Promise<ObjectRowTable> {
+    const data = parseExcel(arrayBuffer, options);
+    return {shape: 'object-row-table', data};
+  }
+} as const satisfies LoaderWithParser<ObjectRowTable, never, ExcelLoaderOptions>;

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuildOptions} from './lib/draco-builder';
@@ -24,6 +28,22 @@ const DEFAULT_DRACO_WRITER_OPTIONS = {
   // quantization: { // Use draco defaults
   //   POSITION: 10
   // }
+};
+
+/**
+ * Browser worker doesn't work because of issue during "draco_encoder.js" loading.
+ * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
+ */
+export const DracoWriterWorker = {
+  id: 'draco-writer',
+  name: 'Draco compressed geometry writer',
+  module: 'draco',
+  version: VERSION,
+  worker: true,
+  options: {
+    draco: {},
+    source: null
+  }
 };
 
 /**
