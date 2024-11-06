@@ -30,7 +30,7 @@ export class BlobFile implements ReadableFile {
     };
   }
 
-  async read(start?: number | BigInt, length?: number): Promise<ArrayBuffer> {
+  async read(start?: number | bigint, length?: number): Promise<ArrayBuffer> {
     const arrayBuffer = await this.handle
       .slice(Number(start), Number(start) + Number(length))
       .arrayBuffer();

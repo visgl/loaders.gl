@@ -25,7 +25,7 @@ export class NodeFileFacade implements ReadableFile, WritableFile {
     throw new Error('Can\'t instantiate NodeFile. Make sure to import @loaders.gl/polyfills first.');
   }
   /** Read data */
-  async read(start?: number | bigint, offset?: number): Promise<ArrayBuffer> {
+  async read(start?: number | bigint, length?: number): Promise<ArrayBuffer> {
     throw NOT_IMPLEMENTED;
   }
   /** Write to file. The number of bytes written will be returned */
