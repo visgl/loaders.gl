@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
+import {validateLoader} from 'test/common/conformance';
 
 import {DracoArrowLoader} from '@loaders.gl/draco';
 import {setLoaderOptions, load} from '@loaders.gl/core';
@@ -48,12 +48,12 @@ test('DracoArrowLoader#parse custom attributes(mainthread)', async (t) => {
   });
   const {data} = table;
   t.equal(
-    data.getChild('CUSTOM_ATTRIBUTE_2')!.data[0].length,
+    data.getChild('CUSTOM_ATTRIBUTE_2')?.data[0].length,
     173210,
     'Custom (Intensity) attribute was found'
   );
   t.equal(
-    data.getChild('CUSTOM_ATTRIBUTE_3')!.data[0].length,
+    data.getChild('CUSTOM_ATTRIBUTE_3')?.data[0].length,
     173210,
     'Custom (Classification) attribute was found'
   );
@@ -67,9 +67,13 @@ test('DracoArrowLoader#parse custom attributes(mainthread)', async (t) => {
       }
     }
   });
-  t.equal(table.data.getChild('Intensity').data[0].length, 173210, 'Intensity attribute was found');
   t.equal(
-    table.data.getChild('Classification').data[0].length,
+    table.data.getChild('Intensity')?.data[0].length,
+    173210,
+    'Intensity attribute was found'
+  );
+  t.equal(
+    table.data.getChild('Classification')?.data[0].length,
     173210,
     'Classification attribute was found'
   );
