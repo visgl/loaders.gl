@@ -166,7 +166,6 @@ export default function App(props: AppProps = {}) {
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
 
       const pointData = getDeckBinaryDataFromArrowMesh(arrowTable.data);
-      debugger
 
       setState((state) => ({
         ...state,
@@ -238,7 +237,7 @@ function PointCloudStats(props: {vertexCount: number; loadTimeMs: number; loadSt
 
 function getViewState(state: AppState, arrowTable: ArrowTable, loaderData, attributes) {
   // metadata from LAZ file header
-  const [maxs, mins] =
+  const [mins, maxs] =
     loaderData?.header?.mins && loaderData?.header?.maxs
       ? [loaderData?.header?.mins, loaderData?.header?.maxs]
       : getBoundingBoxFromArrowPositions(arrowTable.data.getChild('POSITION'));

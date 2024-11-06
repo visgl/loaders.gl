@@ -101,3 +101,9 @@ export type {
   BinaryLineFeature,
   BinaryPolygonFeature
 } from './categories/category-gis';
+
+// DEPRECATED
+
+// MESH CATEGORY
+
+export {getMeshSize, getMeshBoundingBox} from './deprecated/mesh-utils';
