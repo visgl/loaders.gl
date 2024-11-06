@@ -68,6 +68,7 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): ArrowTa
   }
 
   const structField = new arrow.Struct(arrowSchema.fields);
+  const length = arrowDatas[0].length;
   const structData = new arrow.Data(structField, 0, length, 0, undefined, arrowDatas);
   const recordBatch = new arrow.RecordBatch(arrowSchema, structData);
   const table = new arrow.Table([recordBatch]);
