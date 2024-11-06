@@ -15,6 +15,7 @@ import {
 } from '@loaders.gl/schema-utils';
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
+import {CSVFormat} from './csv-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -47,16 +48,11 @@ export type CSVLoaderOptions = LoaderOptions & {
 };
 
 export const CSVLoader = {
+  ...CSVFormat,
+
   dataType: null as unknown as ObjectRowTable | ArrayRowTable,
   batchType: null as unknown as TableBatch,
-
-  id: 'csv',
-  module: 'csv',
-  name: 'CSV',
   version: VERSION,
-  extensions: ['csv', 'tsv', 'dsv'],
-  mimeTypes: ['text/csv', 'text/tab-separated-values', 'text/dsv'],
-  category: 'table',
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     parseCSV(new TextDecoder().decode(arrayBuffer), options),
   parseText: (text: string, options?: CSVLoaderOptions) => parseCSV(text, options),

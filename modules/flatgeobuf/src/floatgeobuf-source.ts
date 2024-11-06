@@ -11,6 +11,7 @@ import type {
 import {Source, DataSource, VectorSource} from '@loaders.gl/loader-utils';
 
 import {FlatGeobufLoader} from './flatgeobuf-loader';
+import {FlatGeobufFormat} from './flatgeobuf-format';
 
 export type FlatGeobuSourceOptions = DataSourceOptions & {
   flatgeobuf?: {};
@@ -22,12 +23,8 @@ export type FlatGeobuSourceOptions = DataSourceOptions & {
  * @ndeprecated This is a WIP, not fully implemented
  */
 export const FlatGeobufSource = {
-  name: 'FlatGeobuf',
-  id: 'flatgeobuf',
-  module: 'wms',
+  ...FlatGeobufFormat,
   version: '0.0.0',
-  extensions: [],
-  mimeTypes: [],
   type: 'flatgeobuf-server',
   fromUrl: true,
   fromBlob: false, // TODO check if supported by library?

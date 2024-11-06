@@ -7,7 +7,7 @@ export {VECTOR_TYPES} from './lib/types';
 
 // Arrow loader / Writer
 
-export {ArrowFormat} from './arrow-format';
+export {ArrowFormat} from './exports/arrow-format';
 
 export type {ArrowLoaderOptions} from './exports/arrow-loader';
 export {ArrowWorkerLoader} from './exports/arrow-loader';

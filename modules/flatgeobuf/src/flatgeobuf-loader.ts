@@ -9,6 +9,7 @@ import {
   parseFlatGeobufInBatches,
   ParseFlatGeobufOptions
 } from './lib/parse-flatgeobuf';
+import {FlatGeobufFormat} from './flatgeobuf-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -32,17 +33,12 @@ export type FlatGeobufLoaderOptions = LoaderOptions & {
 
 /** Load flatgeobuf on a worker */
 export const FlatGeobufWorkerLoader = {
+  ...FlatGeobufFormat,
+
   dataType: null as any,
   batchType: null as any,
-
-  id: 'flatgeobuf',
-  name: 'FlatGeobuf',
-  module: 'flatgeobuf',
   version: VERSION,
   worker: true,
-  extensions: ['fgb'],
-  mimeTypes: ['application/octet-stream'],
-  category: 'geometry',
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],
   options: {
     flatgeobuf: {

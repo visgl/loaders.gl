@@ -6,6 +6,7 @@
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import {encodeTableAsCSV} from './lib/encoders/encode-csv';
+import {CSVFormat} from './csv-format';
 
 export type CSVWriterOptions = WriterOptions & {
   csv?: {
@@ -14,12 +15,8 @@ export type CSVWriterOptions = WriterOptions & {
 };
 
 export const CSVWriter = {
-  id: 'csv',
+  ...CSVFormat,
   version: 'latest',
-  module: 'csv',
-  name: 'CSV',
-  extensions: ['csv'],
-  mimeTypes: ['text/csv'],
   options: {
     csv: {
       useDisplayNames: false

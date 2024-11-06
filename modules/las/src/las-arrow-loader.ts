@@ -6,7 +6,7 @@ import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 
 import {LASLoaderOptions, LASWorkerLoader} from './las-loader';
-import {convertMesh} from '@loaders.gl/schema-utils';
+import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import {parseLAS} from './lib/parse-las';
 
 /**
@@ -19,7 +19,7 @@ export const LASArrowLoader = {
   worker: false,
   parse: async (arrayBuffer: ArrayBuffer) => {
     const mesh = parseLAS(arrayBuffer);
-    const arrowTable = convertMesh(mesh, 'arrow-table');
+    const arrowTable = convertMeshToTable(mesh, 'arrow-table');
     return arrowTable;
   }
 } as const satisfies LoaderWithParser<ArrowTable, never, LASLoaderOptions>;
