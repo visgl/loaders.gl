@@ -8,5 +8,6 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../schema-utils"}
   ]
 }

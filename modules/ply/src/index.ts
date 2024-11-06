@@ -4,5 +4,7 @@
 
 // PLYLoader
 export {PLYFormat} from './ply-format';
+
 export type {PLYLoaderOptions} from './ply-loader';
 export {PLYWorkerLoader, PLYLoader} from './ply-loader';
+export {PLYArrowLoader} from './ply-arrow-loader';

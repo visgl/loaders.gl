@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// MESH CATEGORY
+
+export {getBoundingBoxFromArrowPositions} from './mesharrow/get-bounding-box';
+export {getDeckBinaryDataFromArrowMesh} from './mesharrow/get-deck-binary-data';
+
 // GIS CATEGORY - GEOARROW
 export type {GeoArrowMetadata, GeoArrowEncoding} from './metadata/geoarrow-metadata';
 
