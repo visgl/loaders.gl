@@ -22,7 +22,6 @@
   ],
   "workspaces": [
     "modules/*",
-    "examples/website/pointcloud",
     "examples",
     "website"
   ],
