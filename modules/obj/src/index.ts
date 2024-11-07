@@ -7,6 +7,7 @@
 export {OBJFormat} from './obj-format';
 export type {OBJLoaderOptions} from './obj-loader';
 export {OBJWorkerLoader, OBJLoader} from './obj-loader';
+export {OBJArrowLoader} from './obj-arrow-loader';
 
 // MTLLoader
 

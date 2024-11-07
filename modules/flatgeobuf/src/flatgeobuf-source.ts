@@ -13,7 +13,7 @@ import {Source, DataSource, VectorSource} from '@loaders.gl/loader-utils';
 import {FlatGeobufLoader} from './flatgeobuf-loader';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 
-export type FlatGeobuSourceOptions = DataSourceOptions & {
+export type FlatGeobufSourceOptions = DataSourceOptions & {
   flatgeobuf?: {};
 };
 
@@ -34,7 +34,7 @@ export const FlatGeobufSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
-  createDataSource: (url: string, options: FlatGeobuSourceOptions): FlatGeobufVectorSource =>
+  createDataSource: (url: string, options: FlatGeobufSourceOptions): FlatGeobufVectorSource =>
     new FlatGeobufVectorSource(url, options)
 } as const satisfies Source<FlatGeobufVectorSource>;
 
@@ -42,12 +42,12 @@ export const FlatGeobufSource = {
  * FlatGeobufVectorSource
  */
 export class FlatGeobufVectorSource
-  extends DataSource<string, FlatGeobuSourceOptions>
+  extends DataSource<string, FlatGeobufSourceOptions>
   implements VectorSource
 {
   protected formatSpecificMetadata: Promise<any> | null = null;
 
-  constructor(data: string, options: FlatGeobuSourceOptions) {
+  constructor(data: string, options: FlatGeobufSourceOptions) {
     super(data, options, FlatGeobufSource.defaultOptions);
     // this.formatSpecificMetadata = this._getFormatSpecificMetadata();
   }
