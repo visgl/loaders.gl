@@ -1,10 +1,6 @@
 # Storing Geospatial Features in Arrow
 
-# GeoArrow
-
-![arrow-logo](../images/apache-arrow-small.png)
-&emsp;
-![apache-logo](../../../images/logos/apache-logo.png)
+![arrow-logo](../images/logos/apache-arrow-small.png)
 
 - _[`@loaders.gl/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
 - [https://geoarrow.org/](https://geoarrow.org/)

@@ -1,5 +1,7 @@
 # General Tables
 
+![arrow-logo](../images/logos/apache-arrow-small.png)
+
 - _[`@loaders.gl/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
 - _[Apache Arrow](https://arrow.apache.org/)_ - A specification for large in-memory columnar data.
 - _[ArrowJS](/docs/arrowjs)_ - loaders.gl documentation on ArrowJS API.

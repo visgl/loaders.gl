@@ -28,7 +28,7 @@
         "arrowjs/usage-guide/geoarrow",
         "arrowjs/usage-guide/mesharrow"
       ]
-    }
+    },
     {
       "type": "category",
       "label": "Developer Guide",
