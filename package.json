@@ -22,7 +22,8 @@
   ],
   "workspaces": [
     "modules/*",
-    "examples/website/pointcloud"
+    "examples",
+    "website"
   ],
   "scripts": {
     "bootstrap": "ocular-bootstrap",
