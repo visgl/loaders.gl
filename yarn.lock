@@ -4340,6 +4340,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gltf-transform/core@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@gltf-transform/core@npm:4.1.0"
+  dependencies:
+    property-graph: "npm:^3.0.0"
+  checksum: 10c0/0e86b186881d6eb2317ac1b15108e02de16d9c407e0903982b6c68636a1abab07bf855126272aae49e2caae8aeeb59c278bffbb69af92ac3c6d90dfae8745d32
+  languageName: node
+  linkType: hard
+
 "@hapi/hoek@npm:^9.0.0, @hapi/hoek@npm:^9.3.0":
   version: 9.3.0
   resolution: "@hapi/hoek@npm:9.3.0"
@@ -4969,14 +4978,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/gltf@workspace:modules/gltf"
   dependencies:
+    "@gltf-transform/core": "npm:^4.1.0"
     "@loaders.gl/draco": "npm:4.4.0-alpha.0"
     "@loaders.gl/images": "npm:4.4.0-alpha.0"
     "@loaders.gl/loader-utils": "npm:4.4.0-alpha.0"
     "@loaders.gl/schema": "npm:4.4.0-alpha.0"
     "@loaders.gl/textures": "npm:4.4.0-alpha.0"
     "@math.gl/core": "npm:^4.1.0"
-  peerDependencies:
-    "@loaders.gl/core": 4.4.0-alpha.0
+    apache-arrow: "npm:>= 15.0.0"
   languageName: unknown
   linkType: soft
 
@@ -22793,6 +22802,13 @@ __metadata:
     object-assign: "npm:^4.1.1"
     react-is: "npm:^16.13.1"
   checksum: 10c0/59ece7ca2fb9838031d73a48d4becb9a7cc1ed10e610517c7d8f19a1e02fa47f7c27d557d8a5702bec3cfeccddc853579832b43f449e54635803f277b1c78077
+  languageName: node
+  linkType: hard
+
+"property-graph@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "property-graph@npm:3.0.0"
+  checksum: 10c0/689c5377535db079f506e8715761e83adeb7aa25b59de91518b45a22718c6f33edffea2c27bf3c12b484156ef457cead97cdbb163624e47641c8afda26c8f74d
   languageName: node
   linkType: hard
 
