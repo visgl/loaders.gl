@@ -15,6 +15,7 @@ import type {Mesh} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
 
 import {DracoArrowLoader} from '@loaders.gl/draco';
+import {GLBArrowLoader} from '@loaders.gl/gltf';
 import {LASArrowLoader} from '@loaders.gl/las';
 import {PLYArrowLoader} from '@loaders.gl/ply';
 import {PCDArrowLoader} from '@loaders.gl/pcd';
@@ -24,7 +25,7 @@ import {ExamplePanel, Example, MetadataViewer} from './components/example-panel'
 import {EXAMPLES} from './examples';
 
 // Additional format support can be added here, see
-const POINT_CLOUD_LOADERS = [DracoArrowLoader, LASArrowLoader, PLYArrowLoader, PCDArrowLoader, OBJArrowLoader];
+const POINT_CLOUD_LOADERS = [DracoArrowLoader, GLBArrowLoader, LASArrowLoader, PLYArrowLoader, PCDArrowLoader, OBJArrowLoader];
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -157,7 +158,8 @@ export default function App(props: AppProps = {}) {
 
     const {url} = example;
     try {
-      const arrowTable = await load(url, POINT_CLOUD_LOADERS);
+      let arrowTable = await load(url, POINT_CLOUD_LOADERS);
+      arrowTable = Array.isArray(arrowTable) ? arrowTable[0][0] : arrowTable; // TODO: Support transforms?
       const pointCloud = convertTableToMesh(arrowTable);
       const {schema, header, loaderData, attributes} = pointCloud;
 

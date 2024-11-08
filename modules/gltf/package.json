@@ -43,15 +43,17 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
+    "@gltf-transform/core": "^4.1.0",
+    "@gltf-transform/extensions": "^4.1.0",
+    "@gltf-transform/functions": "^4.1.0",
     "@loaders.gl/draco": "4.4.0-alpha.0",
     "@loaders.gl/images": "4.4.0-alpha.0",
     "@loaders.gl/loader-utils": "4.4.0-alpha.0",
     "@loaders.gl/schema": "4.4.0-alpha.0",
+    "@loaders.gl/schema-utils": "4.4.0-alpha.0",
     "@loaders.gl/textures": "4.4.0-alpha.0",
-    "@math.gl/core": "^4.1.0"
-  },
-  "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.0"
+    "@math.gl/core": "^4.1.0",
+    "apache-arrow": ">= 15.0.0"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

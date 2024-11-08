@@ -85,6 +85,7 @@ export {GLTFWriter} from './gltf-writer';
 
 // GLB Loader & Writer (for custom formats that want to leverage the GLB binary "envelope")
 export {GLBLoader} from './glb-loader';
+export {GLBArrowLoader} from './glb-arrow-loader';
 export {GLBWriter} from './glb-writer';
 
 // glTF Data Access Helper Class

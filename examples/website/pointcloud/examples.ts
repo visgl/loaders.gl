@@ -8,6 +8,17 @@ const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/mast
 const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 
 export const EXAMPLES: Record<string, Record<string, Example>> = {
+  GLTF: {
+    DragonGeom: {
+      type: 'glb',
+      url: `./DragonGeom.glb`
+    },
+    DamagedHelmet: {
+      type: 'glb',
+      url: `${LOADERS_URI}/modules/gltf/test/data/glb/DamagedHelmet.glb`
+    }
+  },
+
   PLY: {
     'Richmond Azaelias': {
       type: 'ply',
