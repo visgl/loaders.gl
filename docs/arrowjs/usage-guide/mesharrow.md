@@ -2,7 +2,6 @@
 
 ![arrow-logo](../images/logos/apache-arrow-small.png)
 
-
 "MeshArrow" is a set of conventions for storing binary GPU geometries
 (point clouds and meshes) in Apache Arrow tables.
 
