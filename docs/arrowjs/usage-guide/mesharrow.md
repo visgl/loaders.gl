@@ -13,26 +13,20 @@ A key realization is that each row can have all its vertices in a `POSITIONS` co
 
 ## Relationship to GeoArrow
 
-_Mesharrow_
+- *MeshArrow* focuses on storing GPU renderable 3D geometries (meshes), while GeoArrow focuses on storing simple 2D geospatial features (points, lines and polygons).
+- *MeshArrow* was inspired by GeoArrow, in terms of being a set of column type and metadata conventions for Apache Arrow, but is independent and can be used either separately or together with GeoArrow.
+- *Mesharrow* allows GPU renderable geometries to be generated from GeoArrow columns and stored in Apache Arrow table format, even appended as an additional "MeshArrow" column to the source GeoArrow table.
 
-- was inspired by GeoArrow, in terms of being a set of column type and metadata conventions for Apache Arrow.
-- In contrast to GeoArrow which focuses on storing simple 2D geospatial features, MeshArrow focuses on storing GPU renderable geometries (meshes).
-- is independent and can be used separately or together with GeoArrow.
+GeoArrow allows for simple 2D geometries  to be stored in binary columnar form in Apache Arrow (and Parquet) tables. However, the stored geometries are not GPU renderable (in particular, for polygon fills), and GeoArrow objects must often be transformed (e.g. through triangulation) into a form that can be rendered by GPUs, and the resulting format is often no longer stored in Arrow.
 
-- GeoArrow allows for simple 2D geometries (points, lines and polygons) to be stored in binary columnar form in Apache Arrow (and Parquet) tables.
-- However, the stored geometries are not GPU renderable (in particular, for polygon fills)
-- GeoArrow objects must often be transformed (e.g. through triangulation) into a form that can be rendered by GPUs, and the resulting format is often no longer stored in Arrow.
+## Relationship to GeoParquet ("MeshParquet"?)
 
-Mesharrow allows GeoArrow derived, renderable geometries to be stored in Apache Arrow format, even appended as an additional "MeshArrow" column to the source GeoArrow table.
-
-## Relationship to GeoParquet
-
-All the conventions defined by "MeshArrow" can be applied to Parquet tables, so feel free to store mesharrow data in Parquet and think of it as "MeshParquet".
-In contrast to GeoParquet/GeoArrow, MeshArrow is not a standard. Mesharrow is being defined as a set of conventions for the vis.gl frameworks (loaders.gl, luma.gl, deck.gl etc). If defacto standards similar to "mesharrow" were to emerge, expect vis.gl to adopt and favor those over MeshArrow.
+- All the conventions defined by "MeshArrow" can also be applied to Parquet tables, so storing *MeshArrow* formatted data (binary columns and metadata fields) in Parquet files is fully supported.
+- In contrast to GeoParquet/GeoArrow, MeshArrow is not a standard. Mesharrow is being defined as a set of conventions for the vis.gl frameworks (loaders.gl, luma.gl, deck.gl etc). If defacto standards similar to "MeshArrow" were to emerge, expect vis.gl to adopt and favor those over MeshArrow.
 
 ## Design Goals
 
-A key realization is that each row can have all its vertices in a `POSITIONS` column in a `List<FixedSizeList<3, double>>`.
+A key realization is that due to the sophisticated structure of the binary columnar type system in Apache Arrow, a mesh can be stored in a single Arrow Table row can have all its vertices in a `POSITIONS` column in a `List<FixedSizeList<3, double>>`.
 
 #### One mesh
 
@@ -43,9 +37,14 @@ A mesh typically is separated into of a number of primitives with different "mat
 - One-mesh-per-record-batch?
   - Record Batches - The Apache Arrow record batch structure can certainly be used to wrap each mesh in its own record batch. An advantage is that each RecordBatch has its own `Data` object so there is no need to concatenate all the array buffers from the different meshes being combined into a table.
 
+### Meshes that do not fit well into MeshArrow
+
+- Heavily indexed meshes, where mesh primitives share vertices via indices.
+
+
 ### Feature Ids
 
-Tracking feature ids in geometries is very important
+Tracking feature ids in geometries is very important. For instance, "picking" use cases allow users to interact with rendered meshes and it is important to be able to determine the logical feature id that a specific rendered pixel on the screen represents.
 
 | Id type       | Description                                                                                                         |
 | ------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -56,10 +55,6 @@ Tracking feature ids in geometries is very important
 
 The [`EXT_mesh_features`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features) glTF extension gives some details around advanced feature id specification.
 
-### Meshes that do not fit well into MeshArrow
-
-- Heavily indexed meshes, where mesh primitives share vertices via indices.
-
 #### Materials
 
 Full Handling of materials is outside the scope of this MeshArrow proposal. A material involved a bunch of settings that can be JSON encoded, however it also involves a number of a textures that typically need to be parsed into a browser specific object.
@@ -68,17 +63,7 @@ Binary data required to create images can be stored in a separate Apache Arrow t
 
 ---
 
-## Background
-
-### Vertexes
-
-This MeshArrow proposal currently only supports interleaved 3 component, 32 bit floating point vertexes.
-
-```ts
-type VertexArrowType = arrow.FixedSizeList<3, arrow.Float>;
-```
-
-### Attributes
+## Vertex Attributes
 
 A binary geometry suitable for GPU rendering typically has a number of "attributes", which are just binary columns, suitable as columns in an Apache Arrow table.
 
@@ -88,11 +73,33 @@ A binary geometry suitable for GPU rendering typically has a number of "attribut
 - `colors`
 - ...
 
+
+### Vertex Positions
+
+This MeshArrow proposal currently only supports interleaved 3 component, 32 bit floating point vertexes.
+
+```ts
+type ArrowVertexPosition = arrow.FixedSizeList<3, arrow.Float>;
+```
+
+### Vertex UVs
+
+This MeshArrow proposal currently only supports interleaved 2 component, 32 bit floating point vertexes.
+
+```ts
+type ArrowVertexUV = arrow.FixedSizeList<2, arrow.Float>;
+```
+
+
+
+
 ## Topologies
 
 A topology describes how vertexes are interpreted (how primitives are formed) during rendering.
 Topology is stored in mesharrow metadata for a column.
-All columns with attribute layout will need to be la
+WebGPU topologies are allowed (since like most WebGPU features they represent a widely supported subset of topologies).
+In addition it is generally recommended to use simple topologies (`triangle-list`, `line-list`, `point-list`)
+
 
 ## Column Conventions
 
