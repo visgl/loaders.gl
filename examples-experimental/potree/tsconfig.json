@@ -2,5 +2,9 @@
   "compilerOptions": {
     "jsx": "react-jsx"
   },
-  "include": ["./app.js"]
+  "include": ["./app.js"],
+  "baseUrl": "../..",
+  "paths": {
+    "@loaders.gl/potree": ["modules/potree/src"]
+  }
 }

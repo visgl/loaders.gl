@@ -1,5 +1,7 @@
 import {Vector3} from '@math.gl/core';
 import {DataSource} from '@loaders.gl/loader-utils';
+import {POTreeNode} from '@loaders.gl/potree';
+import {PotreeTraverser} from './potree-traverser';
 
 /** Deck.gl Viewport instance type.
  * We can't import it from Deck.gl to avoid circular reference */
@@ -19,24 +21,35 @@ export type Viewport = {
 };
 
 type PointcloudTilesetProps = {
-    /** Delay time before the tileset traversal. It prevents traversal requests spam.*/
-    debounceTime: number;
-  };
-  
-  const DEFAULT_PROPS: PointcloudTilesetProps = {
-    debounceTime: 0,
-  };
+  /** Delay time before the tileset traversal. It prevents traversal requests spam.*/
+  debounceTime: number;
+
+  onTileLoaded?: (node: POTreeNode) => void;
+};
+
+const DEFAULT_PROPS: PointcloudTilesetProps = {
+  debounceTime: 0
+};
 
 export class PointcloudTileset {
   private frameNumber: number = 0;
   private lastUpdatedVieports: Viewport[] | Viewport | null = null;
   private updatePromise: Promise<number> | null = null;
+  private _selectedNodes: POTreeNode[] = [];
+  private traverser: PotreeTraverser;
 
   public options: PointcloudTilesetProps;
 
-  constructor(public dataSource: DataSource, options?: Partial<PointcloudTilesetProps>) {
-    // PUBLIC MEMBERS
+  constructor(
+    public dataSource: DataSource,
+    options?: Partial<PointcloudTilesetProps>
+  ) {
     this.options = {...DEFAULT_PROPS, ...options};
+    this.traverser = new PotreeTraverser();
+
+    this.dataSource.init().then(() => {
+      this.traverser.root = this.dataSource.root;
+    });
   }
 
   get isReady() {
@@ -45,7 +58,7 @@ export class PointcloudTileset {
   }
 
   get tiles() {
-    return [];
+    return this._selectedNodes;
   }
 
   get isLoaded() {
@@ -61,12 +74,42 @@ export class PointcloudTileset {
     if (!this.updatePromise) {
       this.updatePromise = new Promise<number>((resolve) => {
         setTimeout(() => {
-          console.log("update viewport");
-          resolve(this.frameNumber++);
+          if (this.lastUpdatedVieports) {
+            this.doUpdate(this.lastUpdatedVieports);
+          }
+
+          resolve(this.frameNumber);
           this.updatePromise = null;
         }, this.options.debounceTime);
       });
     }
     return this.updatePromise;
+  }
+
+  doUpdate(viewports: Viewport[] | Viewport): void {
+    const preparedViewports = viewports instanceof Array ? viewports : [viewports];
+
+    this.frameNumber++;
+    this._selectedNodes = this.traverser.traverse(preparedViewports);
+    this.loadNodesContent(this.traverser.nodesToLoad);
+  }
+
+  loadNodesContent(nodes: POTreeNode[]) {
+    for (const node of nodes) {
+      this.loadNodeContent(node);
+    }
+  }
+
+  async loadNodeContent(node: POTreeNode) {
+    node.isContentLoading = true;
+    node.content = await this.dataSource.loadNodeContent(node.name);
+    this.onTileLoaded(node);
+    node.isContentLoading = false;
+  }
+
+  onTileLoaded(node: POTreeNode) {
+    if (this.options.onTileLoaded) {
+      this.options.onTileLoaded(node);
+    }
   }
 }

@@ -23,7 +23,7 @@ test('PotreeSource#loadNodeContent - should return null for unsupported source',
   const DS = PotreeSource;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
 
-  const existingNodeContent = await source.loadNodeContent([3, 6, 0]);
+  const existingNodeContent = await source.loadNodeContent('360');
   t.equals(existingNodeContent, null);
 
   t.end();
@@ -37,7 +37,7 @@ test('PotreeSource#loadNodeContent', async (t) => {
 
   t.ok(source.isSupported());
 
-  const existingNodeContent = await source.loadNodeContent([2, 4, 6]);
+  const existingNodeContent = await source.loadNodeContent('246');
   t.equals(existingNodeContent?.header?.vertexCount, 9933);
 
   t.end();

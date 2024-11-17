@@ -66,6 +66,8 @@ export type POTreeTileHeader = {
 
 /** Hierarchical potree node structure */
 export type POTreeNode = {
+  id: string;
+  type: 'pointcloud';
   /** Index data */
   header: POTreeTileHeader;
   /** Human readable name */
@@ -82,6 +84,14 @@ export type POTreeNode = {
   children: POTreeNode[];
   /** All children including unavailable */
   childrenByIndex: POTreeNode[];
+  /** Is tile selected for rendering */
+  selected: boolean;
+  /** Points content data */
+  content?: unknown;
+  /** Is content loading */
+  isContentLoading?: boolean;
+  /** Viewport Ids */
+  viewportIds: unknown[];
 };
 
 /**
@@ -178,6 +188,8 @@ function buildHierarchy(flatNodes: POTreeNode[], options: {spacing?: number} = {
     node.children = [];
     node.childrenByIndex = new Array(8).fill(null);
     node.spacing = (options?.spacing || 0) / Math.pow(2, level);
+    node.type = 'pointcloud';
+    node.id = node.name;
     // tileHeader.boundingVolume = Utils.createChildAABB(parentNode.boundingBox, index);
 
     if (parentNode) {
