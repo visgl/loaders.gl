@@ -47,7 +47,7 @@
     "@types/get-pixels": "^3.3.2"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.0"
+    "@loaders.gl/core": "4.4.0-alpha.1"
   },
   "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }
