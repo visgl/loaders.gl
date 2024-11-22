@@ -8,8 +8,8 @@
   MIT License
 */
 // laslaz.js - treat as compiled code
-import type {LASHeader} from './las-types';
-import {WasmLasZipDecompressor} from './libs/laz_rs_wasm';
+import type {LASHeader} from '../las-types';
+import {WasmLasZipDecompressor} from '../../libs/laz-rs-wasm/laz_rs_wasm';
 
 type LASPoint = {
   position: [number, number, number];
@@ -186,7 +186,8 @@ function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
 
   const colorPointFormats = new Set([2, 3, 5, 7, 8, 10]);
   o.hasColor = colorPointFormats.has(pointsFormatId);
-  return o as LASHeader;
+  // @ts-expect-error Caused when restoring lazperf
+  return o;
 }
 
 // LAS Loader

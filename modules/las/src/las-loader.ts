@@ -3,11 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 // LASER (LAS) FILE FORMAT
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LASMesh} from './lib/las-types';
 import {LASFormat} from './las-format';
-import {parseLAS} from './lib/parse-las';
-import initLazRsWasm from './lib/libs/laz_rs_wasm';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -45,14 +43,3 @@ export const LASWorkerLoader = {
     }
   }
 } as const satisfies Loader<LASMesh, never, LASLoaderOptions>;
-
-/**
- * Loader for the LAS (LASer) point cloud format
- */
-export const LASLoader = {
-  ...LASWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
-    await initLazRsWasm();
-    return parseLAS(arrayBuffer, {...options});
-  }
-} as const satisfies LoaderWithParser<LASMesh, never, LASLoaderOptions>;
