@@ -194,8 +194,8 @@ export default function App(props: AppProps = {}) {
  * @param props
  * @returns
  */
-function PointCloudStats(props: {vertexCount: number; loadTimeMs: number; loadStartMs: number, progress: number}) {
-  const {vertexCount, loadTimeMs, loadStartMs, progress} = props;
+function PointCloudStats(props: {vertexCount: number; loadTimeMs: number; loadStartMs: number}) {
+  const {vertexCount, loadTimeMs, loadStartMs} = props;
   let message;
   if (vertexCount >= 1e7) {
     message = `${(vertexCount / 1e6).toFixed(0)}M`;
@@ -213,7 +213,7 @@ function PointCloudStats(props: {vertexCount: number; loadTimeMs: number; loadSt
   if (loadTimeMs) {
     loadMessage = `Load time: ${(loadTimeMs / 1000).toFixed(1)}s`;
   } else if (loadStartMs) {
-    loadMessage = `Loading... Progress: ${progress}`;
+    loadMessage = 'Loading...';
   }
 
   return (

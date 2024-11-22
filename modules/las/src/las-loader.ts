@@ -7,7 +7,6 @@ import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-u
 import type {LASMesh} from './lib/las-types';
 import {LASFormat} from './las-format';
 import {parseLAS} from './lib/parse-las';
-// import { createLazPerf } from 'laz-perf';
 import initLazRsWasm from './lib/libs/laz_rs_wasm';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -23,7 +22,7 @@ export type LASLoaderOptions = LoaderOptions & {
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
-  onProgress?: (progress: number) => void;
+  onProgress?: Function;
 };
 
 /**
@@ -62,10 +61,6 @@ export const LASLoader = {
   ...LASWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
     await initLazRsWasm();
-    // const lazPerf = await createLazPerf();
     return parseLAS(arrayBuffer, {...options});
   }
-
-  // parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-  // parseLAS(arrayBuffer, options)
 } as const satisfies LoaderWithParser<LASMesh, never, LASLoaderOptions>;
