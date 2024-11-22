@@ -36,11 +36,18 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     'Indoor Scan 800K': {
       type: 'las',
       url: `${DECK_DATA_URI}/examples/point-cloud-laz/indoor.0.1.laz`
-    }
+    },
+    'LAS 1-4 example': {
+      type: 'las',
+      // TODO upload the file to deck data
+      url: 'https://pub-0e04e4fabfef402d8789a24f6a393790.r2.dev/SerpentMound_LAS14_ExtraDims.laz'
+
+    },
     // TODO need fix
     // 'Indoor Scan 8M': {
+    //   type: 'las',
     //   url: `${DECK_DATA_URI}/examples/point-cloud-laz/indoor.laz`
-    // }
+    // },
   },
 
   Draco: {

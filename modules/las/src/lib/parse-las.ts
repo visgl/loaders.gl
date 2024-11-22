@@ -132,7 +132,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
       progress: lasHeader.totalRead / lasHeader.totalToRead
     };
 
-    options?.onProgress?.(meshBatch);
+    options?.onProgress?.(meshBatch.progress);
   });
   /* eslint-enable max-statements */
 
