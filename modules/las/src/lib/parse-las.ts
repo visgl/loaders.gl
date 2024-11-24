@@ -73,7 +73,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
       const PositionsType = options.las?.fp64 ? Float64Array : Float32Array;
       positions = new PositionsType(total * 3);
       // laslaz-decoder.js `pointFormatReaders`
-      colors = lasHeader.pointsFormatId >= 2 ? new Uint8Array(total * 4) : null;
+      colors = lasHeader.hasColor ? new Uint8Array(total * 4) : null;
       intensities = new Uint16Array(total);
       classifications = new Uint8Array(total);
 
@@ -172,7 +172,7 @@ export function parseLASChunked(rawData: ArrayBuffer, skip: number, onParseData:
 
     /* eslint-disable no-constant-condition */
     while (true) {
-      const chunk: LASChunk = dataHandler.readData(1000 * 100, 0, skip);
+      const chunk: LASChunk = dataHandler.readData(1000 * 100, skip);
 
       totalRead += chunk.count;
 
