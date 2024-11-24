@@ -14,15 +14,13 @@ type LASChunk = {
   count: number;
   buffer: ArrayBuffer;
   hasMoreData: boolean;
-  versionAsString?: string;
-  isCompressed?: boolean;
 };
 
 /**
  * Parsing of .las file
  * @param arrayBuffer
  * @param options
- * @returns LASHeader
+ * @returns LASMesh
  */
 export function parseLAS(arrayBuffer: ArrayBuffer, options?: LASLoaderOptions): LASMesh {
   return parseLASMesh(arrayBuffer, options);
@@ -177,8 +175,6 @@ export function parseLASChunked(rawData: ArrayBuffer, skip: number, onParseData:
       totalRead += chunk.count;
 
       header.totalRead = totalRead;
-      header.versionAsString = chunk.versionAsString;
-      header.isCompressed = chunk.isCompressed;
 
       const unpacker = new Unpacker(chunk.buffer, chunk.count, header);
 

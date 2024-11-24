@@ -34,16 +34,8 @@ export const LASWorkerLoader = {
   dataType: null as unknown as LASMesh,
   batchType: null as never,
 
-  name: 'LAS',
-  id: 'las',
-  module: 'las',
   version: VERSION,
   worker: true,
-  extensions: ['las', 'laz'], // LAZ is the "compressed" flavor of LAS,
-  mimeTypes: ['application/octet-stream'], // TODO - text version?
-  text: true,
-  binary: true,
-  tests: ['LAS'],
   options: {
     las: {
       shape: 'mesh',

@@ -12,11 +12,11 @@ import type {LASHeader} from './las-types';
 import {WasmLasZipDecompressor} from './libs/laz_rs_wasm';
 
 type LASPoint = {
-  position: [number, number, number],
-  intensity: number,
-  classification: number,
-  color?: [number, number, number]
-}
+  position: [number, number, number];
+  intensity: number;
+  classification: number;
+  color?: [number, number, number];
+};
 
 type LASReader = (dv: DataView) => LASPoint;
 
@@ -113,7 +113,7 @@ const POINT_FORMAT_READERS: LASReaders = {
       classification: dv.getUint8(16),
       color: [dv.getUint16(30, true), dv.getUint16(32, true), dv.getUint16(34, true)]
     };
-  },
+  }
 };
 
 /**
@@ -163,12 +163,12 @@ function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
     pointsStructSize: readAs(arraybuffer, Uint16Array, 32 * 3 + 8 + 1),
     pointsCount: readAs(arraybuffer, Uint32Array, 32 * 3 + 11),
     versionAsString,
-    isCompressed,
+    isCompressed
   };
 
   let start = 32 * 3 + 35;
 
-  o.scale =  readAs(arraybuffer, Float64Array, start, 3);
+  o.scale = readAs(arraybuffer, Float64Array, start, 3);
   start += 24; // 8*3
   o.offset = readAs(arraybuffer, Float64Array, start, 3);
   start += 24;
@@ -178,14 +178,14 @@ function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
   o.maxs = [bounds[0], bounds[2], bounds[4]];
   o.mins = [bounds[1], bounds[3], bounds[5]];
 
-  start += 20 // 8*20
+  start += 20; // 8*20
 
   if (version === 14) {
-    o.pointsCount = Number(readAs(arraybuffer, BigUint64Array, start))
+    o.pointsCount = Number(readAs(arraybuffer, BigUint64Array, start));
   }
 
-  const colorPointFormats = new Set([2, 3, 5, 7, 8, 10])
-  o.hasColor = colorPointFormats.has(pointsFormatId)
+  const colorPointFormats = new Set([2, 3, 5, 7, 8, 10]);
+  o.hasColor = colorPointFormats.has(pointsFormatId);
   return o as LASHeader;
 }
 
@@ -392,20 +392,12 @@ class LASDecoder {
   decoder: (dv: DataView) => LASPoint;
   pointsCount: number;
   pointSize: number;
-  scale: [number, number, number];
-  offset?: [number, number, number];
-  mins?: number[];
-  maxs?: number[];
 
   constructor(buffer: ArrayBuffer, len: number, header: LASHeader) {
     this.arrayb = buffer;
     this.decoder = POINT_FORMAT_READERS[header.pointsFormatId];
     this.pointsCount = len;
     this.pointSize = header.pointsStructSize;
-    this.scale = header.scale;
-    this.offset = header.offset;
-    this.mins = header.mins;
-    this.maxs = header.maxs;
   }
 
   /**
@@ -531,3 +523,5 @@ export class LASFile {
   }
 }
 
+/* eslint no-use-before-define: 2 */
+// export const LASModuleWasLoaded = false;

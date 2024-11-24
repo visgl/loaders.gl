@@ -13,7 +13,7 @@ export const LASFormat = {
   module: 'las',
   extensions: ['las', 'laz'], // LAZ is the "compressed" flavor of LAS,
   mimeTypes: ['application/octet-stream'], // TODO - text version?
-  text: true,
+  text: false,
   binary: true,
-  tests: ['LAS']
+  tests: ['LASF']
 } as const satisfies Format;
