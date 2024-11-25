@@ -1,5 +1,66 @@
 # CHANGELOG for loaders.gl
 
+## v4.4
+
+### v4.3.0-alpha.2
+
+- Hofix to remove not existing version (#3163)
+
+### v4.3.0-alpha.1
+
+- fix(loader-utils): ReadableFile implementation to match the interface (#3157)
+- feat(geoarrow): Add support for Arrow meshes (#3159)
+- feat: Arrow loaders for Pointcloud / Mesh formats (#3158)
+- feat(pcd): PCDArrowLoader (#3156)
+- feat(geoarrow): New module for geoarrow processing (#3149)
+- chore(docs): Update tile-converter.md (#3084)
+- fix(i3s): Fix for statistics/summary
+- Make @types/brotli also optional (#3152)
+- fix(i3s): fix for /sublayers paths (#3150)
+- chore(i3s): Montreal example (#3089)
+- chore(gis): Clean up API and extract common helpers (#3147)
+- chore(parquet): Make parquet WASM loader into the primary loader (#3121)
+- feat(mvt): non-nested parser now extract geometry columns (#3146)
+- feat(mvt): Flatten MVT parser logic (#3145)
+- feat(shapefile): DBFArrowLoader (#3142)
+- feat(csv): papaparse cleanup (#3143)
+- feat(loader-utils): New Format type (#3141)
+- Returning --slpk for backward compatibility (#3138)
+- docs: Fix website, upgrade to docusaurus 3.5 (#3139)
+- feat(csv): CSVArrowLoader (#3135)
+- docs: Initial v4.4 docs (#3120)
+- chore: Change versions to 4.4.0-alpha.0 (#3136)
+- docs: Final 4.3 release docs (#3134)
+- Whats new updated (#3131)
+- fix(3d-tiles): getIonAssetMetadata struct changed (options.url) (#3128)
+- chore(gis): Move WKT/WKB parsing into gis module (#3126)
+- chore: draft potree example application (#3116)
+- chore(schema-utils): Consolidate arrow table handling in schema-utils (#3119)
+- chore(gis): Move geoarrow parsing to gis module (#3118)
+- chore(gis): Move WKT parsing into gis module (#3117)
+- chore(schema): Add arrow dependency to schema module (#3115)
+- feat(schema-utils): Separate out utils from the schema module (#3114)
+- chore: Bump to apache-arrow@17 (#3113)
+- feat(core): Improve typing and naming for DataSources (#3104)
+- chore: Reduce comments in test logs (#3109)
+- chore: Bump versions to 5.0.0-alpha.0 (#3111)
+- chore(arrow): table conversion (#3108)
+- chore(CSV): Convert parser to typescript (#3107)
+- fix(parquet): More robust Buffer polyfill export (#3105)
+- chore: eslint cleanup (#3103)
+- feat(core): Type inference for arrays of loader objects (#3102)
+- chore(deps): bump micromatch from 4.0.5 to 4.0.8 in /website (#3098)
+- chore: Update typescript and other dependencies (#3097)
+- fix(parquet): ParquetLoader worker: false (#3079)
+- chore: Bump to 4.3.0-beta (#3096)
+- chore: Add issue templates (#3095)
+- chore: prettier (#3094)
+- chore(deps): bump vite from 4.5.3 to 4.5.5 (#3091)
+- chore(deps): bump express from 4.19.2 to 4.21.0 in /website (#3087)
+- chore(deps): bump fast-xml-parser from 4.2.7 to 4.5.0 in /website (#3083)
+- chore(deps): bump webpack from 5.89.0 to 5.94.0 in /website (#3078)
+- chore(deps): bump micromatch in /test/apps/typescript-test (#3067)
+
 ## v4.3
 
 ### v4.3.0-beta.1
