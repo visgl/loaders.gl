@@ -4,19 +4,18 @@ import {Source} from '@loaders.gl/loader-utils';
 import {PointcloudTileset} from './pointcloud-tileset';
 import { PointCloudLayer } from '@deck.gl/layers';
 
-export type PotreeTile3DLayerProps = {
+export type PointTileSourceLayerProps = {
   source: Source;
 };
 
-export class PotreeTile3DLayer<
+export class PointTileSourceLayer<
   DataT = any,
   // eslint-disable-next-line @typescript-eslint/ban-types
   ExtraProps extends {} = {}
-> extends Tile3DLayer<DataT, Tile3DLayerProps & PotreeTile3DLayerProps & ExtraProps> {
+> extends Tile3DLayer<DataT, Tile3DLayerProps & PointTileSourceLayerProps & ExtraProps> {
   static layerName = 'PotreeTile3DLayer';
   static defaultProps = Tile3DLayer.defaultProps;
 
-  //@ts-expect-error
   updateState({props, oldProps, changeFlags}: UpdateParameters<this>): void {
     if (props.data && props.data !== oldProps.data) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises

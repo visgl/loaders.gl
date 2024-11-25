@@ -13,6 +13,9 @@ import {PotreeHierarchyChunkLoader} from '../potree-hierarchy-chunk-loader';
 import {PotreeLoader} from '../potree-loader';
 import {parseVersion} from '../utils/parse-version';
 import {Proj4Projection} from '@math.gl/proj4';
+import {LASMesh} from '@loaders.gl/las/src/lib/las-types';
+import {createProjection} from '../utils/projection-utils';
+import {getCartographicOriginFromBoundingBox} from '../utils/bounding-box-utils';
 
 // https://github.com/visgl/deck.gl/blob/9548f43cba2234a1f4877b6b17f6c88eb35b2e08/modules/core/src/lib/constants.js#L27
 // Describes the format of positions
@@ -42,6 +45,11 @@ export enum COORDINATE_SYSTEM {
   CARTESIAN = 0
 }
 
+export interface PotreeNodeMesh extends LASMesh {
+  cartographicOrigin: number[];
+  coordinateSystem: number;
+}
+
 /**
  * A Potree data source
  * @version 1.0 - @see https://github.com/potree/potree/blob/1.0RC/docs/file_format.md
@@ -57,6 +65,8 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   root: POTreeNode | null = null;
   /** Is data source ready to use after initial loading */
   isReady = false;
+  /** local CRS to WGS84 projection */
+  projection: Proj4Projection | null = null;
   /** The data set minimum bounding box */
   boundingBox?: PotreeBoundingBox;
 
@@ -82,6 +92,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       return;
     }
     this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
+    this.projection = createProjection(this.metadata?.projection);
     this.parseBoundingVolume();
 
     await this.loadHierarchy();
@@ -120,7 +131,6 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    * @param nodeName name of a node, string of numbers in range 0..7
    * @return node content geometry or null if the node doesn't exist
    */
-  // eslint-disable-next-line max-statements
   async loadNodeContent(nodeName: string): Promise<Mesh | null> {
     await this.initPromise;
 
@@ -130,45 +140,21 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
 
     const isAvailable = await this.isNodeAvailable(nodeName);
     if (isAvailable) {
-      const result = await load(
+      const result: PotreeNodeMesh = (await load(
         `${this.baseUrl}/${this.metadata?.octreeDir}/r/r${nodeName}.${this.getContentExtension()}`,
         LASLoader
-      );
+      )) as PotreeNodeMesh;
 
       if (result) {
-        let projection;
-        if (this.metadata?.projection) {
-          projection = new Proj4Projection({
-            from: this.metadata.projection,
-            to: 'WGS84'
-          });
-        }
-
-        result.cartographicOrigin = [0, 0, 0];
-        const tileBoundingBox = result.header?.boundingBox;
-        if (tileBoundingBox) {
-          const [minXOriginal, minYOriginal, minZ] = tileBoundingBox[0];
-          const [maxXOriginal, maxYOriginal, maxZ] = tileBoundingBox[1];
-          let minX = minXOriginal;
-          let minY = minYOriginal;
-          let maxX = maxXOriginal;
-          let maxY = maxYOriginal;
-          if (projection) {
-            [minX, minY] = projection.project([minX, minY]);
-            [maxX, maxY] = projection.project([maxX, maxY]);
-          }
-          result.cartographicOrigin = [
-            minX + (maxX - minX) / 2,
-            minY + (maxY - minY) / 2,
-            minZ + (maxZ - minZ) / 2
-          ];
-        }
-
+        result.cartographicOrigin = getCartographicOriginFromBoundingBox(
+          this.projection,
+          result.header?.boundingBox
+        );
         const position = result.attributes.POSITION.value as Float32Array;
         for (let i = 0; i < (result.header?.vertexCount ?? 0); i++) {
-          let vertex = position.slice(i * 3, i * 3 + 2);
-          if (projection) {
-            vertex = projection.project(Array.from(vertex));
+          let vertex: Float32Array | number[] = position.slice(i * 3, i * 3 + 2);
+          if (this.projection) {
+            vertex = this.projection.project(Array.from(vertex));
           }
 
           const offsets = [

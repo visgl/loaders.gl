@@ -1,7 +1,7 @@
 import {Vector3} from '@math.gl/core';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {POTreeNode} from '@loaders.gl/potree';
-import {PotreeTraverser} from './potree-traverser';
+import {PointTileSourceTraverser} from './point-tile-source-traverser';
 
 /** Deck.gl Viewport instance type.
  * We can't import it from Deck.gl to avoid circular reference */
@@ -36,16 +36,16 @@ export class PointcloudTileset {
   private lastUpdatedVieports: Viewport[] | Viewport | null = null;
   private updatePromise: Promise<number> | null = null;
   private _selectedNodes: POTreeNode[] = [];
-  private traverser: PotreeTraverser;
+  private traverser: PointTileSourceTraverser;
 
   public options: PointcloudTilesetProps;
 
   constructor(
-    public dataSource: DataSource,
+    public dataSource: DataSource<string, {}>,
     options?: Partial<PointcloudTilesetProps>
   ) {
     this.options = {...DEFAULT_PROPS, ...options};
-    this.traverser = new PotreeTraverser();
+    this.traverser = new PointTileSourceTraverser();
 
     this.dataSource.init().then(() => {
       this.traverser.root = this.dataSource.root;

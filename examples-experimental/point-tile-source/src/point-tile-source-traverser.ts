@@ -1,6 +1,6 @@
-import {POTreeNode} from "@loaders.gl/potree";
+import {type POTreeNode} from "@loaders.gl/potree";
 
-export class PotreeTraverser {
+export class PointTileSourceTraverser {
     root?: POTreeNode;
     nodesToLoad: POTreeNode[] = [];
 
