@@ -1,22 +1,21 @@
 import {Tile3DLayer, Tile3DLayerProps} from '@deck.gl/geo-layers';
-import {UpdateParameters} from '@deck.gl/core/typed';
-import {Viewport} from '@deck.gl/core';
+import {Viewport, UpdateParameters, COORDINATE_SYSTEM} from '@deck.gl/core';
 import {Source} from '@loaders.gl/loader-utils';
 import {PointcloudTileset} from './pointcloud-tileset';
+import { PointCloudLayer } from '@deck.gl/layers';
 
-export type PotreeTile3DLayerProps = {
+export type PointTileSourceLayerProps = {
   source: Source;
 };
 
-export class PotreeTile3DLayer<
+export class PointTileSourceLayer<
   DataT = any,
   // eslint-disable-next-line @typescript-eslint/ban-types
   ExtraProps extends {} = {}
-> extends Tile3DLayer<DataT, Tile3DLayerProps & PotreeTile3DLayerProps & ExtraProps> {
+> extends Tile3DLayer<DataT, Tile3DLayerProps & PointTileSourceLayerProps & ExtraProps> {
   static layerName = 'PotreeTile3DLayer';
   static defaultProps = Tile3DLayer.defaultProps;
 
-  //@ts-expect-error
   updateState({props, oldProps, changeFlags}: UpdateParameters<this>): void {
     if (props.data && props.data !== oldProps.data) {
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -75,5 +74,55 @@ export class PotreeTile3DLayer<
         this.setState({frameNumber});
       }
     });
+  }
+
+  private _makePointCloudLayer(
+    tileHeader: Tile3D,
+    oldLayer?: PointCloudLayer<DataT>
+  ): PointCloudLayer<DataT> | null {
+    const {
+      attributes,
+      pointCount,
+      constantRGBA,
+      cartographicOrigin,
+      modelMatrix,
+      coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS
+    } = tileHeader.content;
+    const {positions, normals, colors} = attributes;
+
+    if (!positions) {
+      return null;
+    }
+    const data = (oldLayer && oldLayer.props.data) || {
+      header: {
+        vertexCount: pointCount
+      },
+      attributes: {
+        POSITION: positions,
+        NORMAL: normals,
+        COLOR_0: colors
+      }
+    };
+
+    const {pointSize, getPointColor} = this.props;
+    const SubLayerClass = this.getSubLayerClass('pointcloud', PointCloudLayer);
+    return new SubLayerClass(
+      {
+        pointSize
+      },
+      this.getSubLayerProps({
+        id: 'pointcloud'
+      }),
+      {
+        id: `${this.id}-pointcloud-${tileHeader.id}`,
+        tile: tileHeader,
+        data,
+        coordinateSystem,
+        coordinateOrigin: cartographicOrigin,
+        modelMatrix,
+        getColor: constantRGBA || getPointColor,
+        _offset: 0
+      }
+    );
   }
 }

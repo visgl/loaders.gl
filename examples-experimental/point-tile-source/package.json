@@ -1,7 +1,7 @@
 {
   "private": true,
-  "name": "potree-example",
-  "description": "Potree visualization",
+  "name": "point-tile-source-example",
+  "description": "Point tile source visualization",
   "version": "0.0.1",
   "license": "MIT",
   "type": "module",

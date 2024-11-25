@@ -5265,6 +5265,7 @@ __metadata:
     "@loaders.gl/math": "npm:4.4.0-alpha.2"
     "@loaders.gl/schema": "npm:4.4.0-alpha.2"
     "@math.gl/core": "npm:^4.1.0"
+    "@math.gl/proj4": "npm:^4.1.0"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown

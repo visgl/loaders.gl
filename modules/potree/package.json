@@ -47,7 +47,8 @@
     "@loaders.gl/las": "4.4.0-alpha.2",
     "@loaders.gl/math": "4.4.0-alpha.2",
     "@loaders.gl/schema": "4.4.0-alpha.2",
-    "@math.gl/core": "^4.1.0"
+    "@math.gl/core": "^4.1.0",
+    "@math.gl/proj4": "^4.1.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "4.4.0-alpha.1"
