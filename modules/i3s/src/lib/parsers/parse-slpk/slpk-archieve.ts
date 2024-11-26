@@ -34,7 +34,7 @@ const PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
     extensions: ['.bin.gz']
   },
   {
-    test: /statistics\/f_\d+\/\d+$/,
+    test: /statistics\/(f_\d+\/\d+|summary)$/,
     extensions: ['.json.gz']
   },
   {
