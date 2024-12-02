@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 export function validateLoader(t, loader, name = '') {
   t.ok(typeof loader.id === 'string', `Loader ${name} loader.id is not defined`);
   t.ok(loader, `Loader ${name} defined`);
