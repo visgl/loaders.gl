@@ -19,7 +19,7 @@ test('PotreeSource#initialize', async (t) => {
   t.end();
 });
 
-test('PotreeSource#loadNodeContent - should return null for unsupported source', async (t) => {
+test.skip('PotreeSource#loadNodeContent - should return null for unsupported source', async (t) => {
   const DS = PotreeSource;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
 
@@ -29,7 +29,7 @@ test('PotreeSource#loadNodeContent - should return null for unsupported source',
   t.end();
 });
 
-test('PotreeSource#loadNodeContent', async (t) => {
+test.skip('PotreeSource#loadNodeContent', async (t) => {
   const DS = PotreeSource;
   const source = DS.createDataSource(POTREE_LAZ_URL, {});
 

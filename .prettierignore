@@ -27,7 +27,7 @@ examples/experimental/gltf-with-raw-webgl/
 
 modules/potree/test/data/**/cloud.js
 
-modules/las/src/lib/libs
+modules/las/src/libs
 
 modules/flatgeobuf/src/lib/binary-geometries.ts
 
