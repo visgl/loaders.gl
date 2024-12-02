@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {load} from '@loaders.gl/core';
 import {PLYLoader} from '@loaders.gl/ply';
 import {getModel, drawModelInViewport} from '../test-utils/get-model';
