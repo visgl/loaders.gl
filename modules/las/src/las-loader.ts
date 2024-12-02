@@ -7,6 +7,7 @@ import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-u
 import type {LASMesh} from './lib/las-types';
 import {LASFormat} from './las-format';
 import {parseLAS} from './lib/parse-las';
+import initLazRsWasm from './lib/libs/laz_rs_wasm';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -26,7 +27,6 @@ export type LASLoaderOptions = LoaderOptions & {
 
 /**
  * Loader for the LAS (LASer) point cloud format
- * @note Does not support LAS v1.4
  */
 export const LASWorkerLoader = {
   ...LASFormat,
@@ -34,16 +34,8 @@ export const LASWorkerLoader = {
   dataType: null as unknown as LASMesh,
   batchType: null as never,
 
-  name: 'LAS',
-  id: 'las',
-  module: 'las',
   version: VERSION,
   worker: true,
-  extensions: ['las', 'laz'], // LAZ is the "compressed" flavor of LAS,
-  mimeTypes: ['application/octet-stream'], // TODO - text version?
-  text: true,
-  binary: true,
-  tests: ['LAS'],
   options: {
     las: {
       shape: 'mesh',
@@ -56,12 +48,11 @@ export const LASWorkerLoader = {
 
 /**
  * Loader for the LAS (LASer) point cloud format
- * @note Does not support LAS v1.4
  */
 export const LASLoader = {
   ...LASWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    parseLAS(arrayBuffer, options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    parseLAS(arrayBuffer, options)
+  parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
+    await initLazRsWasm();
+    return parseLAS(arrayBuffer, {...options});
+  }
 } as const satisfies LoaderWithParser<LASMesh, never, LASLoaderOptions>;

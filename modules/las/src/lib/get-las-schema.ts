@@ -7,7 +7,7 @@ import {deduceMeshSchema} from '@loaders.gl/schema-utils';
 import type {LASHeader} from './las-types';
 
 /**
- * Gets schema from PLY header
+ * Gets schema from LAS header
  * @param lasHeader
  * @param metadata
  * @returns Schema

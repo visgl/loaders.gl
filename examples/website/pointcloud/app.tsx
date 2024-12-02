@@ -6,7 +6,7 @@ import React, {useState, useEffect} from 'react';
 import {render} from 'react-dom';
 
 import DeckGL from '@deck.gl/react';
-import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator} from '@deck.gl/core';
+import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator, OrbitViewState} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
 
 import {load} from '@loaders.gl/core';
@@ -25,7 +25,7 @@ import {EXAMPLES} from './examples';
 const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader];
 
 const INITIAL_VIEW_STATE = {
-  target: [0, 0, 0],
+  target: [0, 0, 0] as [number, number, number],
   rotationX: 0,
   rotationOrbit: 0,
   orbitAxis: 'Y',
@@ -46,7 +46,7 @@ type AppProps = {
   /** On tiles load */
   onTilesLoad?: Function;
   /** Any informational text to display in the overlay */
-  children?: React.Children;
+  children?: typeof React.Children;
 };
 
 /** Application state */
@@ -54,17 +54,21 @@ type AppState = {
   /** Currently active tile source */
   pointData: any;
   /** Metadata loaded from active tile source */
-  metadata: string;
+  metadata: string | null;
   /**Current view state */
-  viewState: Record<string, number>;
+  viewState: OrbitViewState;
+  /** Metadata loaded from active tile source */
+  selectedExample?: string;
+  loadTimeMs?: number;
+  loadStartMs?: number;
 };
 
 export default function App(props: AppProps = {}) {
   const [state, setState] = useState<AppState>({
     viewState: INITIAL_VIEW_STATE,
     pointData: null,
-    metadata: null
-    // TODO - handle errors
+    metadata: null,
+      // TODO - handle errors
     // error: null
   });
 
@@ -95,8 +99,8 @@ export default function App(props: AppProps = {}) {
         {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
         <PointCloudStats
           vertexCount={pointData?.length || 0}
-          loadTimeMs={state.loadTimeMs}
-          loadStartMs={state.loadStartMs}
+          loadTimeMs={state.loadTimeMs || 0}
+          loadStartMs={state.loadStartMs || 0}
         />
         <h3>Schema and Metadata</h3>
         <MetadataViewer metadata={state.metadata} />
@@ -128,7 +132,7 @@ export default function App(props: AppProps = {}) {
       ...state,
       viewState: {
         ...state.viewState,
-        rotationOrbit: state.viewState.rotationOrbit + 10,
+        rotationOrbit: (state.viewState.rotationOrbit || 0) + 10,
         transitionDuration: 600,
         transitionInterpolator,
         onTransitionEnd: rotateCamera
@@ -150,12 +154,14 @@ export default function App(props: AppProps = {}) {
       pointData: null,
       metadata: null,
       loadTimeMs: undefined,
-      loadStartMs: Date.now()
+      loadStartMs: Date.now(),
+      selectedExample: exampleName,
     }));
 
     const {url} = example;
     try {
-      const pointCloud = (await load(url, POINT_CLOUD_LOADERS)) as Mesh;
+      // TODO: remove worker: false, as it is used for local development
+      const pointCloud = (await load(url, POINT_CLOUD_LOADERS, {worker: false})) as Mesh;
       const {schema, header, loaderData, attributes} = pointCloud;
 
       const viewState = getViewState(state, loaderData, attributes);
@@ -164,7 +170,7 @@ export default function App(props: AppProps = {}) {
 
       setState((state) => ({
         ...state,
-        loadTimeMs: Date.now() - state.loadStartMs,
+        loadTimeMs: state.loadStartMs ? Date.now() - state.loadStartMs : undefined,
         loadStartMs: undefined,
         // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
         // in which case the vertex count is not correct for display as points
@@ -243,7 +249,7 @@ function getViewState(state: AppState, loaderData, attributes) {
   return {
     ...INITIAL_VIEW_STATE,
     ...viewState,
-    target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
+    target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2] as [number, number, number],
     zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
   };
 }

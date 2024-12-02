@@ -1,0 +1,31 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export function __wbg_wasmquickheader_free(a: number, b: number): void;
+export function __wbg_get_wasmquickheader_major(a: number): number;
+export function __wbg_set_wasmquickheader_major(a: number, b: number): void;
+export function __wbg_get_wasmquickheader_minor(a: number): number;
+export function __wbg_set_wasmquickheader_minor(a: number, b: number): void;
+export function __wbg_get_wasmquickheader_offset_to_points(a: number): number;
+export function __wbg_set_wasmquickheader_offset_to_points(a: number, b: number): void;
+export function __wbg_get_wasmquickheader_num_vlrs(a: number): number;
+export function __wbg_set_wasmquickheader_num_vlrs(a: number, b: number): void;
+export function __wbg_get_wasmquickheader_point_format_id(a: number): number;
+export function __wbg_set_wasmquickheader_point_format_id(a: number, b: number): void;
+export function __wbg_get_wasmquickheader_point_size(a: number): number;
+export function __wbg_set_wasmquickheader_point_size(a: number, b: number): void;
+export function __wbg_get_wasmquickheader_num_points(a: number): number;
+export function __wbg_set_wasmquickheader_num_points(a: number, b: number): void;
+export function __wbg_get_wasmquickheader_header_size(a: number): number;
+export function __wbg_set_wasmquickheader_header_size(a: number, b: number): void;
+export function __wbg_wasmlaszipdecompressor_free(a: number, b: number): void;
+export function __wbg_get_wasmlaszipdecompressor_header(a: number): number;
+export function __wbg_set_wasmlaszipdecompressor_header(a: number, b: number): void;
+export function wasmlaszipdecompressor_new(a: number): Array;
+export function wasmlaszipdecompressor_decompress_many(a: number, b: number, c: number, d: number): Array;
+export const __wbindgen_export_0: WebAssembly.Table;
+export function __externref_table_dealloc(a: number): void;
+export function __wbindgen_malloc(a: number, b: number): number;
+export function __wbindgen_free(a: number, b: number, c: number): void;
+export function __wbindgen_realloc(a: number, b: number, c: number, d: number): number;
+export function __wbindgen_start(): void;

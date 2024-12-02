@@ -9,13 +9,16 @@
 */
 // laslaz.js - treat as compiled code
 import type {LASHeader} from './las-types';
-import getModule from './libs/laz-perf';
+import {WasmLasZipDecompressor} from './libs/laz_rs_wasm';
 
-let Module: any = null;
-
-type LASReader = (dv: DataView) => {
-  [LASAttribute: string]: number | number[];
+type LASPoint = {
+  position: [number, number, number];
+  intensity: number;
+  classification: number;
+  color?: [number, number, number];
 };
+
+type LASReader = (dv: DataView) => LASPoint;
 
 type LASReaders = {
   [key: number]: LASReader;
@@ -57,6 +60,59 @@ const POINT_FORMAT_READERS: LASReaders = {
       classification: dv.getUint8(15),
       color: [dv.getUint16(28, true), dv.getUint16(30, true), dv.getUint16(32, true)]
     };
+  },
+  4: (dv) => {
+    return {
+      position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
+      intensity: dv.getUint16(12, true),
+      classification: dv.getUint8(15)
+    };
+  },
+  5: (dv) => {
+    return {
+      position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
+      intensity: dv.getUint16(12, true),
+      classification: dv.getUint8(15),
+      color: [dv.getUint16(28, true), dv.getUint16(30, true), dv.getUint16(32, true)]
+    };
+  },
+  6: (dv) => {
+    return {
+      position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
+      intensity: dv.getUint16(12, true),
+      classification: dv.getUint8(16)
+    };
+  },
+  7: (dv) => {
+    return {
+      position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
+      intensity: dv.getUint16(12, true),
+      classification: dv.getUint8(16),
+      color: [dv.getUint16(30, true), dv.getUint16(32, true), dv.getUint16(34, true)]
+    };
+  },
+  8: (dv) => {
+    return {
+      position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
+      intensity: dv.getUint16(12, true),
+      classification: dv.getUint8(16),
+      color: [dv.getUint16(30, true), dv.getUint16(32, true), dv.getUint16(34, true)]
+    };
+  },
+  9: (dv) => {
+    return {
+      position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
+      intensity: dv.getUint16(12, true),
+      classification: dv.getUint8(16)
+    };
+  },
+  10: (dv) => {
+    return {
+      position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
+      intensity: dv.getUint16(12, true),
+      classification: dv.getUint8(16),
+      color: [dv.getUint16(30, true), dv.getUint16(32, true), dv.getUint16(34, true)]
+    };
   }
 };
 
@@ -91,24 +147,45 @@ function readAs(buf: ArrayBuffer, Type: any = {}, offset: number, count?: number
  * @returns header as LASHeader
  */
 function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
-  let start = 32 * 3 + 35;
+  const ver = new Uint8Array(arraybuffer, 24, 2);
+  const version = ver[0] * 10 + ver[1];
+  const versionAsString = `${ver[0]}.${ver[1]}`;
 
+  const rawPointsFormatId = readAs(arraybuffer, Uint8Array, 32 * 3 + 8);
+  const bit7 = (rawPointsFormatId & 0x80) >> 7;
+  const bit6 = (rawPointsFormatId & 0x40) >> 6;
+
+  const isCompressed = bit7 === 1 || bit6 === 1;
+  const pointsFormatId = rawPointsFormatId & 0x3f;
   const o: Partial<LASHeader> = {
     pointsOffset: readAs(arraybuffer, Uint32Array, 32 * 3),
-    pointsFormatId: readAs(arraybuffer, Uint8Array, 32 * 3 + 8),
+    pointsFormatId,
     pointsStructSize: readAs(arraybuffer, Uint16Array, 32 * 3 + 8 + 1),
     pointsCount: readAs(arraybuffer, Uint32Array, 32 * 3 + 11),
-    scale: readAs(arraybuffer, Float64Array, start, 3)
+    versionAsString,
+    isCompressed
   };
+
+  let start = 32 * 3 + 35;
+
+  o.scale = readAs(arraybuffer, Float64Array, start, 3);
   start += 24; // 8*3
   o.offset = readAs(arraybuffer, Float64Array, start, 3);
   start += 24;
 
   const bounds = readAs(arraybuffer, Float64Array, start, 6);
-  start += 48; // 8*6;
+  start += 48; // 8*6
   o.maxs = [bounds[0], bounds[2], bounds[4]];
   o.mins = [bounds[1], bounds[3], bounds[5]];
 
+  start += 20; // 8*20
+
+  if (version === 14) {
+    o.pointsCount = Number(readAs(arraybuffer, BigUint64Array, start));
+  }
+
+  const colorPointFormats = new Set([2, 3, 5, 7, 8, 10]);
+  o.hasColor = colorPointFormats.has(pointsFormatId);
   return o as LASHeader;
 }
 
@@ -118,20 +195,7 @@ function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
 class LASLoader {
   arraybuffer: ArrayBuffer;
   readOffset: number = 0;
-  header: LASHeader = {
-    pointsOffset: 0,
-    pointsFormatId: 0,
-    pointsStructSize: 0,
-    pointsCount: 0,
-    scale: [0, 0, 0],
-    offset: [0, 0, 0],
-    maxs: [0],
-    mins: [0],
-    totalToRead: 0,
-    totalRead: 0,
-    versionAsString: '',
-    isCompressed: true
-  };
+  header: LASHeader | null = null;
 
   constructor(arraybuffer: ArrayBuffer) {
     this.arraybuffer = arraybuffer;
@@ -157,9 +221,9 @@ class LASLoader {
    * Reading data
    * @param count
    * @param skip
-   * @returns new ArrayBuffer, count, hasMoreData
+   * @returns LasData
    */
-  readData(count: number, skip: number) {
+  readData(count: number, skip: number): LASData {
     const {header, arraybuffer} = this;
     if (!header) {
       throw new Error('Cannot start reading data till a header request is issued');
@@ -222,16 +286,12 @@ class LASLoader {
  */
 class LAZLoader {
   arraybuffer: ArrayBuffer;
-  instance: any = null; // LASZip instance
+  readOffset: number = 0;
+  instance: WasmLasZipDecompressor | null = null;
   header: LASHeader | null = null;
 
   constructor(arraybuffer: ArrayBuffer) {
     this.arraybuffer = arraybuffer;
-
-    if (!Module) {
-      // Avoid executing laz-perf on import
-      Module = getModule();
-    }
   }
 
   /**
@@ -240,17 +300,8 @@ class LAZLoader {
    */
   open(): boolean {
     try {
-      const {arraybuffer} = this;
-      this.instance = new Module.LASZip();
-      const abInt = new Uint8Array(arraybuffer);
-      const buf = Module._malloc(arraybuffer.byteLength);
-
-      this.instance.arraybuffer = arraybuffer;
-      this.instance.buf = buf;
-      Module.HEAPU8.set(abInt, buf);
-      this.instance.open(buf, arraybuffer.byteLength);
-
-      this.instance.readOffset = 0;
+      const abInt = new Uint8Array(this.arraybuffer);
+      this.instance = new WasmLasZipDecompressor(abInt);
 
       return true;
     } catch (error) {
@@ -259,26 +310,21 @@ class LAZLoader {
   }
 
   getHeader(): LASHeader {
-    if (!this.instance) {
-      throw new Error('You need to open the file before trying to read header');
-    }
-
     try {
-      const header = parseLASHeader(this.instance.arraybuffer);
-      header.pointsFormatId &= 0x3f;
-      this.header = header;
-      return header;
+      this.header = parseLASHeader(this.arraybuffer);
+      return this.header;
     } catch (error) {
       throw new Error(`Failed to get header: ${(error as Error).message}`);
     }
   }
+
   /**
    * @param count
    * @param offset
    * @param skip
-   * @returns Data
+   * @returns LASData
    */
-  readData(count: number, offset: number, skip: number): LASData {
+  readData(count: number, skip: number): LASData {
     if (!this.instance) {
       throw new Error('You need to open the file before trying to read stuff');
     }
@@ -292,28 +338,27 @@ class LAZLoader {
     }
 
     try {
-      const pointsToRead = Math.min(count * skip, header.pointsCount - instance.readOffset);
+      const pointsToRead = Math.min(count * skip, header.pointsCount - this.readOffset);
       const bufferSize = Math.ceil(pointsToRead / skip);
       let pointsRead = 0;
 
-      const thisBuf = new Uint8Array(bufferSize * header.pointsStructSize);
-      const bufRead = Module._malloc(header.pointsStructSize);
+      const buf = new Uint8Array(bufferSize * header.pointsStructSize);
+
+      const bufRead = new Uint8Array(header.pointsStructSize);
       for (let i = 0; i < pointsToRead; i++) {
-        instance.getPoint(bufRead);
+        instance.decompress_many(bufRead);
 
         if (i % skip === 0) {
-          const a = new Uint8Array(Module.HEAPU8.buffer, bufRead, header.pointsStructSize);
-          thisBuf.set(a, pointsRead * header.pointsStructSize);
+          buf.set(bufRead, pointsRead * header.pointsStructSize);
           pointsRead++;
         }
 
-        instance.readOffset++;
+        this.readOffset++;
       }
-      Module._free(bufRead);
       return {
-        buffer: thisBuf.buffer,
+        buffer: buf.buffer,
         count: pointsRead,
-        hasMoreData: instance.readOffset < header.pointsCount
+        hasMoreData: this.readOffset < header.pointsCount
       };
     } catch (error) {
       throw new Error(`Failed to read data: ${(error as Error).message}`);
@@ -327,10 +372,11 @@ class LAZLoader {
   close(): boolean {
     try {
       if (this.instance !== null) {
-        Module._free(this.instance.buf);
-        this.instance.delete();
+        this.instance.free();
         this.instance = null;
       }
+      // @ts-ignore Possibly null
+      this.arraybuffer = null;
       return true;
     } catch (error) {
       throw new Error(`Failed to close file: ${(error as Error).message}`);
@@ -343,23 +389,15 @@ class LAZLoader {
  */
 class LASDecoder {
   arrayb: ArrayBuffer;
-  decoder: (dv: DataView) => {};
+  decoder: (dv: DataView) => LASPoint;
   pointsCount: number;
   pointSize: number;
-  scale: [number, number, number];
-  offset?: [number, number, number];
-  mins?: number[];
-  maxs?: number[];
 
   constructor(buffer: ArrayBuffer, len: number, header: LASHeader) {
     this.arrayb = buffer;
     this.decoder = POINT_FORMAT_READERS[header.pointsFormatId];
     this.pointsCount = len;
     this.pointSize = header.pointsStructSize;
-    this.scale = header.scale;
-    this.offset = header.offset;
-    this.mins = header.mins;
-    this.maxs = header.maxs;
   }
 
   /**
@@ -367,7 +405,7 @@ class LASDecoder {
    * @param index
    * @returns New object
    */
-  getPoint(index: number): {} {
+  getPoint(index: number): LASPoint {
     if (index < 0 || index >= this.pointsCount) {
       throw new Error('Point index out of range');
     }
@@ -392,22 +430,32 @@ export class LASFile {
   constructor(arraybuffer: ArrayBuffer) {
     this.arraybuffer = arraybuffer;
 
-    if (this.determineVersion() > 13) {
-      throw new Error('Only file versions <= 1.3 are supported at this time');
-    }
-
-    this.determineFormat();
-    if (POINT_FORMAT_READERS[this.formatId] === undefined) {
-      throw new Error('The point format ID is not supported');
-    }
+    this.validate();
 
     this.loader = this.isCompressed
       ? new LAZLoader(this.arraybuffer)
       : new LASLoader(this.arraybuffer);
   }
 
+  validate(): void {
+    const signature = readAs(this.arraybuffer, Uint8Array, 0, 4);
+    const check = String.fromCharCode(...signature);
+    if (check !== 'LASF') {
+      throw new Error('Invalid LAS file');
+    }
+
+    if (this.determineVersion() > 14) {
+      throw new Error('Only file versions <= 1.4 are supported');
+    }
+
+    this.determineFormat();
+    if (POINT_FORMAT_READERS[this.formatId] === undefined) {
+      throw new Error('The point format ID is not supported');
+    }
+  }
+
   /**
-   * Determines format in parameters of LASHeaer
+   * Determines format in parameters of LASHeader
    */
   determineFormat(): void {
     const formatId = readAs(this.arraybuffer, Uint8Array, 32 * 3 + 8);
@@ -427,7 +475,7 @@ export class LASFile {
    * @returns version
    */
   determineVersion(): number {
-    const ver = new Int8Array(this.arraybuffer, 24, 2);
+    const ver = new Uint8Array(this.arraybuffer, 24, 2);
     this.version = ver[0] * 10 + ver[1];
     this.versionAsString = `${ver[0]}.${ver[1]}`;
     return this.version;
@@ -454,10 +502,10 @@ export class LASFile {
    * @param count
    * @param start
    * @param skip
-   * @returns Data
+   * @returns LASData
    */
-  readData(count: number, start: number, skip: number): LASData {
-    return this.loader.readData(count, start, skip);
+  readData(count: number, skip: number): LASData {
+    return this.loader.readData(count, skip);
   }
 
   /**
@@ -475,6 +523,5 @@ export class LASFile {
   }
 }
 
-export const LASModuleWasLoaded = false;
-
 /* eslint no-use-before-define: 2 */
+// export const LASModuleWasLoaded = false;

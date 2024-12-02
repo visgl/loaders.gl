@@ -18,6 +18,7 @@ export type LASHeader = {
   mins?: number[];
   totalToRead: number;
   totalRead: number;
+  hasColor: boolean;
   versionAsString?: string;
   isCompressed?: boolean;
 };
