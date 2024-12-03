@@ -4,7 +4,7 @@
 
 // import type {BinaryFeatureCollection} from '@loaders.gl/schema';
 import test from 'tape-promise/tape';
-import {parseMVT} from '../../src/lib/pojo-parser/parse-mvt-from-pbf';
+import {parseMVT} from '../../src/lib/mvt-pbf/parse-mvt-from-pbf';
 import {fetchFile} from '@loaders.gl/core';
 // import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
 

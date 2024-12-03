@@ -14,8 +14,11 @@ import './lib/vector-tiler/simplify-path.spec';
 import './lib/utils/geometry-utils.spec';
 
 import './tilejson-loader.spec';
+
 import './mvt-loader.spec';
+import './mvt-writer.spec';
 import './mvt-source.spec';
+
 import './table-tile-source.spec';
 // import './table-tile-source-full.spec';
 // import './table-tile-source-multi-world.spec';

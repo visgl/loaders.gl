@@ -13,6 +13,10 @@ export type {TileJSON} from './lib/parse-tilejson';
 export {MVTLoader, MVTWorkerLoader} from './mvt-loader';
 export type {MVTLoaderOptions} from './mvt-loader';
 
+// MVTWriter
+
+export {MVTWriter} from './mvt-writer';
+
 // MVTSource
 
 export {MVTSource} from './mvt-source';
