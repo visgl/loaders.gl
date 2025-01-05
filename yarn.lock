@@ -5289,8 +5289,6 @@ __metadata:
   dependencies:
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 15.0.0"
-  peerDependencies:
-    "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
   linkType: soft
 

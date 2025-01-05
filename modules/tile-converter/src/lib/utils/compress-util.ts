@@ -22,6 +22,7 @@ export function compressFileWithGzip(pathFile: string): Promise<string> {
       console.log(`${compressedPathFile}: compression error!`); // eslint-disable-line no-undef,no-console
       reject(error);
     });
+    // @ts-ignore Seems typescript upgrade triggered this
     input.pipe(gzip).pipe(output);
   });
 }
