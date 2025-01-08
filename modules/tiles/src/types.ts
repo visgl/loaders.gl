@@ -1,5 +1,3 @@
-import {Vector3} from '@math.gl/core';
-
 export type BoundingRectangle = {
   width: number;
   height: number;
@@ -9,7 +7,7 @@ export type BoundingRectangle = {
  * We can't import it from Deck.gl to avoid circular reference */
 export type Viewport = {
   id: string;
-  cameraPosition: number[] | Vector3;
+  cameraPosition: [number,number,number] ;
   height: number;
   width: number;
   zoom: number;
@@ -17,9 +15,9 @@ export type Viewport = {
     unitsPerMeter: number[];
     metersPerUnit: number[];
   };
-  center: number[] | Vector3;
-  unprojectPosition: (position: number[] | Vector3) => [number, number, number];
-  project: (coorinates: number[] | Vector3) => number[];
+  center: [number,number,number] ;
+  unprojectPosition: (position: [number,number,number]) => [number, number, number];
+  project: (coordinates: [number,number,number] ) => [number,number,number];
 };
 
 /**
