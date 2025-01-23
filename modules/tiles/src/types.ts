@@ -1,3 +1,5 @@
+import {Vector3Like} from '@math.gl/core';
+
 export type BoundingRectangle = {
   width: number;
   height: number;
