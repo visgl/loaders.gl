@@ -7,7 +7,7 @@ export type BoundingRectangle = {
  * We can't import it from Deck.gl to avoid circular reference */
 export type Viewport = {
   id: string;
-  cameraPosition: [number,number,number] ;
+  cameraPosition: Vector3Like;
   height: number;
   width: number;
   zoom: number;
