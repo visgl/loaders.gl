@@ -1,4 +1,4 @@
-import {Vector3Like} from '@math.gl/core';
+import {NumberArray2, NumberArray3} from '@math.gl/core';
 
 export type BoundingRectangle = {
   width: number;
@@ -9,7 +9,7 @@ export type BoundingRectangle = {
  * We can't import it from Deck.gl to avoid circular reference */
 export type Viewport = {
   id: string;
-  cameraPosition: Vector3Like;
+  cameraPosition: NumberArray2 | NumberArray3;
   height: number;
   width: number;
   zoom: number;
@@ -18,8 +18,8 @@ export type Viewport = {
     metersPerUnit: number[];
   };
   center: Vector3Like;
-  unprojectPosition: (position: Vector3Like) => Vector3Like;
-  project: (coordinates: Vector3Like) => Vector3Like;
+  unprojectPosition: (position: NumberArray2 | NumberArray3) => NumberArray2 | NumberArray3;
+  project: (coordinates: NumberArray2 | NumberArray3) => NumberArray2 | NumberArray3;
 };
 
 /**
