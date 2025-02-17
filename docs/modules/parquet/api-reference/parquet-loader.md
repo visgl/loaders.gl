@@ -71,11 +71,8 @@ const data = await load(url, ParquetLoader, {modules: {
 
 ## Data Format
 
-For details see [parquet documentation](https://parquet.apache.org/docs/).
+For details see [Parquet documentation](https://parquet.apache.org/docs/).
 
 ## Options
 
 Supports table category options such as `batchType` and `batchSize`.
-
-| Option | From | Type | Default | Description |
-| ------ | ---- | ---- | ------- | ----------- |
