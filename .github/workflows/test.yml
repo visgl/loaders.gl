@@ -11,7 +11,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v4.1.1
@@ -27,8 +27,6 @@ jobs:
 
       - name: Run browser tests (generate coverage)
         run: |
-          export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-          export PUPPETEER_ARGS="--no-sandbox"
           yarn run test-cover
 
       - name: Run node tests
