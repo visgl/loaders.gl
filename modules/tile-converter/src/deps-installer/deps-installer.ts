@@ -102,9 +102,11 @@ export class DepsInstaller {
   }
 
   private async installFromNpm(module: string, name: string, extraPath: string = '') {
-    const fileResponse = await fetchFile(
-      `https://unpkg.com/@loaders.gl/${module}@${VERSION}/dist/${extraPath}/${name}`
-    );
+    let fileUri = `https://unpkg.com/@loaders.gl/${module}@${VERSION}/dist/${extraPath}/${name}`;
+    if (!extraPath) {
+      fileUri = `https://unpkg.com/@loaders.gl/${module}@${VERSION}/dist/${name}`;
+    }
+    const fileResponse = await fetchFile(fileUri);
 
     if (fileResponse.status < 200 || fileResponse.status >= 300) {
       throw new Error(`Failed to load resource ${name}`);
