@@ -54,7 +54,6 @@
     "@loaders.gl/worker-utils": "4.4.0-alpha.2",
     "@types/pako": "^1.0.1",
     "fflate": "0.7.4",
-    "lzo-wasm": "^0.0.4",
     "pako": "1.0.11",
     "snappyjs": "^0.6.1"
   },
