@@ -8,6 +8,8 @@ import type {LoaderOptions} from '@loaders.gl/loader-utils';
 export type SHPLoaderOptions = LoaderOptions & {
   shp?: {
     _maxDimensions?: number;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 
@@ -15,13 +17,16 @@ export type DBFLoaderOptions = LoaderOptions & {
   dbf?: {
     encoding?: string;
     shape?: 'rows' | 'table' | 'object-row-table';
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 
 export type ShapefileLoaderOptions = LoaderOptions &
-  SHPLoaderOptions & {
+  SHPLoaderOptions &
+  DBFLoaderOptions & {
     shapefile?: {
-      shape?: 'geojson-table';
+      shape?: 'geojson-table' | 'v3';
     };
     gis?: {
       reproject?: boolean;

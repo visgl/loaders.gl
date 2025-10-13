@@ -61,7 +61,10 @@ export async function* parseShapefileInBatches(
       DBFLoader,
       {
         ...options,
-        dbf: {encoding: cpg || 'latin1'}
+        dbf: {
+          ...options?.dbf,
+          encoding: cpg || 'latin1'
+        }
       },
       context!
     );
@@ -147,12 +150,15 @@ export async function parseShapefile(
 
   const dbfResponse = await context?.fetch(replaceExtension(context?.url!, 'dbf'));
   if (dbfResponse?.ok) {
-    propertyTable = await parseFromContext(
-      dbfResponse as any,
-      DBFLoader,
-      {dbf: {shape: 'object-row-table', encoding: cpg || 'latin1'}},
-      context!
-    );
+    const dbfOptions = {
+      ...options,
+      dbf: {
+        ...options?.dbf,
+        shape: 'object-row-table',
+        encoding: cpg || 'latin1'
+      }
+    };
+    propertyTable = await parseFromContext(dbfResponse as any, DBFLoader, dbfOptions, context!);
   }
 
   let features = joinProperties(geojsonGeometries, propertyTable?.data || []);
