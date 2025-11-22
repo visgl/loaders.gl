@@ -15,6 +15,8 @@ import {ReadableFile} from './lib/files/file';
  */
 export type LoaderOptions = Partial<{
   core: {
+    /** Base URI for resolving relative paths */
+    baseUri?: string;
     /** fetch options or a custom fetch function */
     fetch?: typeof fetch | FetchLike | RequestInit | null;
     /** Do not throw on errors */
@@ -72,8 +74,31 @@ export type LoaderOptions = Partial<{
   /** Any additional JS libraries */
   modules: Record<string, any>;
 
+  // Deprecated top-level aliases for core options
+  baseUri?: string;
+  fetch?: typeof fetch | FetchLike | RequestInit | null;
+  mimeType?: string;
+  fallbackMimeType?: string;
+  ignoreRegisteredLoaders?: boolean;
+  nothrow?: boolean;
+  log?: any;
+  useLocalLibraries?: boolean;
+  CDN?: string | null;
+  worker?: boolean;
+  maxConcurrency?: number;
+  maxMobileConcurrency?: number;
+  reuseWorkers?: boolean;
+  _nodeWorkers?: boolean;
+  _workerType?: string;
+  limit?: 0;
+  _limitMB?: 0;
+  batchSize?: number | 'auto';
+  batchDebounceMs?: number;
+  metadata?: boolean;
+  transforms?: TransformBatches[];
+
   // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
-  [loaderId: string]: Record<string, unknown>;
+  [loaderId: string]: unknown;
 }>;
 
 type PreloadOptions = {

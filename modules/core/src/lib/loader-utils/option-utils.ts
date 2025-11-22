@@ -245,12 +245,10 @@ function addUrlOptions(options: LoaderOptions, url?: string): void {
   if (!url) {
     return;
   }
-  // @ts-expect-error Deprecated top-level field
   const hasTopLevelBaseUri = options.baseUri !== undefined;
   const hasCoreBaseUri = options.core?.baseUri !== undefined;
   if (!hasTopLevelBaseUri && !hasCoreBaseUri) {
     options.core ||= {};
-    // @ts-expect-error TODO - remove
     options.core.baseUri = url;
   }
 }
