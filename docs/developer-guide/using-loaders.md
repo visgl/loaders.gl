@@ -131,6 +131,23 @@ An advantage of this design is that since the core functions can select a loader
 
 Loader options are merged with default options using a deep, two-level merge. Any object-valued key on the top level will be merged with the corresponding key value in the default options object.
 
+### Core options
+
+Options that apply to every loader (for instance `fetch`, `worker`, `nothrow`, batching controls, etc.) now live under an explicit `core` sub-object:
+
+```typescript
+load(url, Loader, {
+  core: {
+    fetch: customFetch,
+    worker: false,
+    nothrow: true
+  },
+  gltf: {...}
+});
+```
+
+The deprecated top-level forms (`options.fetch`, `options.worker`, `options.nothrow`, ...) are still supported for backwards compatibility and will continue to emit a warning so that applications can migrate at their own pace. The intent is to make the structure of loader options self-describing—`core` was chosen because these options are shared across all loaders, but alternatives such as `common`, `global`, or `shared` may also resonate depending on your application. Feedback on these names is welcome.
+
 ## Using Composite Loaders
 
 loaders.gl enables the creation of _composite loaders_ that call other loaders (referred to as "sub-loaders" in this section). This enables loaders for "composite formats" to be quickly composed out of loaders for the primitive parts.

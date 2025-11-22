@@ -7,6 +7,30 @@ import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 
+const CORE_LOADER_OPTION_KEYS = [
+  'baseUri',
+  'fetch',
+  'mimeType',
+  'fallbackMimeType',
+  'ignoreRegisteredLoaders',
+  'nothrow',
+  'log',
+  'useLocalLibraries',
+  'CDN',
+  'worker',
+  'maxConcurrency',
+  'maxMobileConcurrency',
+  'reuseWorkers',
+  '_nodeWorkers',
+  '_workerType',
+  'limit',
+  '_limitMB',
+  'batchSize',
+  'batchDebounceMs',
+  'metadata',
+  'transforms'
+] as const;
+
 /**
  * Global state for loaders.gl. Stored on `globalThis.loaders._state`
  */
@@ -40,7 +64,12 @@ export function getGlobalLoaderState(): GlobalLoaderState {
 export function getGlobalLoaderOptions(): LoaderOptions {
   const state = getGlobalLoaderState();
   // Ensure all default loader options from this library are mentioned
-  state.globalOptions = state.globalOptions || {...DEFAULT_LOADER_OPTIONS};
+  state.globalOptions = state.globalOptions || {
+    ...DEFAULT_LOADER_OPTIONS,
+    core: {...DEFAULT_LOADER_OPTIONS.core}
+  };
+  moveDeprecatedTopLevelOptionsToCore(state.globalOptions);
+  addDeprecatedTopLevelOptions(state.globalOptions);
   return state.globalOptions;
 }
 
@@ -162,8 +191,10 @@ function normalizeOptionsInternal(
   const loaderDefaultOptions = loader.options || {};
 
   const mergedOptions = {...loaderDefaultOptions};
-
-  addUrlOptions(mergedOptions, url);
+  if (loaderDefaultOptions.core) {
+    mergedOptions.core = {...loaderDefaultOptions.core};
+  }
+  moveDeprecatedTopLevelOptionsToCore(mergedOptions);
 
   // LOGGING: options.log can be set to `null` to defeat logging
   if (mergedOptions.core?.log === null) {
@@ -171,7 +202,13 @@ function normalizeOptionsInternal(
   }
 
   mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
-  mergeNestedFields(mergedOptions, options);
+
+  const userOptions = cloneLoaderOptions(options);
+  moveDeprecatedTopLevelOptionsToCore(userOptions);
+  mergeNestedFields(mergedOptions, userOptions);
+
+  addUrlOptions(mergedOptions, url);
+  addDeprecatedTopLevelOptions(mergedOptions);
 
   return mergedOptions;
 }
@@ -205,9 +242,50 @@ function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions)
  * TODO - should these be injected on context instead of options?
  */
 function addUrlOptions(options: LoaderOptions, url?: string): void {
-  if (url && !('baseUri' in options)) {
+  if (!url) {
+    return;
+  }
+  // @ts-expect-error Deprecated top-level field
+  const hasTopLevelBaseUri = options.baseUri !== undefined;
+  const hasCoreBaseUri = options.core?.baseUri !== undefined;
+  if (!hasTopLevelBaseUri && !hasCoreBaseUri) {
     options.core ||= {};
     // @ts-expect-error TODO - remove
     options.core.baseUri = url;
+  }
+}
+
+function cloneLoaderOptions(options: LoaderOptions): LoaderOptions {
+  const clonedOptions = {...options};
+  if (options.core) {
+    clonedOptions.core = {...options.core};
+  }
+  return clonedOptions;
+}
+
+function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
+  for (const key of CORE_LOADER_OPTION_KEYS) {
+    // @ts-expect-error LoaderOptions still accepts deprecated top-level fields
+    if (options[key] !== undefined) {
+      const coreOptions = (options.core = options.core || {});
+      const coreRecord = coreOptions as Record<string, unknown>;
+      if (!(key in coreRecord)) {
+        // @ts-expect-error Sync deprecated top-level field onto core options
+        coreRecord[key] = options[key];
+      }
+    }
+  }
+}
+
+function addDeprecatedTopLevelOptions(options: LoaderOptions): void {
+  const coreOptions = options.core as Record<string, unknown> | undefined;
+  if (!coreOptions) {
+    return;
+  }
+  for (const key of CORE_LOADER_OPTION_KEYS) {
+    if (coreOptions[key] !== undefined) {
+      // @ts-expect-error Sync core field back onto deprecated top-level field
+      options[key] = coreOptions[key];
+    }
   }
 }

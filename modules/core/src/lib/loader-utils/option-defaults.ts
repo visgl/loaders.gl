@@ -8,9 +8,12 @@ import {ConsoleLog} from './loggers';
 
 export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   core: {
+    baseUri: undefined,
     // baseUri
     fetch: null,
     mimeType: undefined,
+    fallbackMimeType: undefined,
+    ignoreRegisteredLoaders: undefined,
     nothrow: false,
     log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
     useLocalLibraries: false,
@@ -34,14 +37,17 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
 
 export const REMOVED_LOADER_OPTIONS = {
   // baseUri
+  baseUri: 'core.baseUri',
   fetch: 'core.fetch',
   mimeType: 'core.mimeType',
+  fallbackMimeType: 'core.fallbackMimeType',
+  ignoreRegisteredLoaders: 'core.ignoreRegisteredLoaders',
   nothrow: 'core.nothrow',
   log: 'core.log',
   useLocalLibraries: 'core.useLocalLibraries',
 
   CDN: 'core.CDN',
-  worker: 'core,worker',
+  worker: 'core.worker',
   maxConcurrency: 'core.maxConcurrency',
   maxMobileConcurrency: 'core.maxMobileConcurrency',
   reuseWorkers: 'core.reuseWorkers',
