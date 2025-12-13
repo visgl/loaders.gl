@@ -16,7 +16,7 @@ The `PMTilesSource` reads individual tiles from a PMTiles archive file.
 ## Usage
 
 ```typescript
-import {createDataSource} from '@loaders.gl/pmtiles';
+import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 
 const source = createDataSource(url, [PMTilesSource]);
