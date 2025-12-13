@@ -10,7 +10,7 @@
 **Deprecations**
 
 - `loaders.gl/core` - `registerLoaders()` is deprecated. Loader registration erases types and it is preferable that applications manage loader registration themselves if needed.
-- `loaders.gl/core` - Loader-wide options such as `fetch`, `worker`, `nothrow`, batching limits, etc. now live under `options.core`. The legacy top-level options continue to work (with warnings) for backwards compatibility. We're open to alternative names for this shared options object—`core`, `common`, `global`, or `shared` are all candidates—please let us know what terminology works best for your application.
+- `loaders.gl/core` - Loader-wide options such as `fetch`, `worker`, `nothrow`, batching limits, etc. now live under `options.core`. The legacy top-level options continue to work (with warnings) for backwards compatibility.
 
 **Recommendations**
 

@@ -106,6 +106,22 @@ export function normalizeOptions(
   return normalizeOptionsInternal(loader, options, url);
 }
 
+/**
+ * Returns a copy of the provided options with deprecated top-level core fields moved into `core`
+ * and removed from the top level. This keeps global options from leaking deprecated aliases into
+ * loader-specific option maps during normalization.
+ */
+export function normalizeLoaderOptions(options: LoaderOptions): LoaderOptions {
+  const normalized = cloneLoaderOptions(options);
+  moveDeprecatedTopLevelOptionsToCore(normalized);
+  for (const key of CORE_LOADER_OPTION_KEYS) {
+    if (normalized.core && normalized.core[key] !== undefined) {
+      delete (normalized as Record<string, unknown>)[key];
+    }
+  }
+  return normalized;
+}
+
 // VALIDATE OPTIONS
 
 /**
@@ -202,10 +218,9 @@ function normalizeOptionsInternal(
     mergedOptions.core = {...mergedOptions.core, log: new NullLog()};
   }
 
-  mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
+  mergeNestedFields(mergedOptions, normalizeLoaderOptions(getGlobalLoaderOptions()));
 
-  const userOptions = cloneLoaderOptions(options);
-  moveDeprecatedTopLevelOptionsToCore(userOptions);
+  const userOptions = normalizeLoaderOptions(options);
   mergeNestedFields(mergedOptions, userOptions);
 
   addUrlOptions(mergedOptions, url);

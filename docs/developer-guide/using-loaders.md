@@ -146,7 +146,7 @@ load(url, Loader, {
 });
 ```
 
-The deprecated top-level forms (`options.fetch`, `options.worker`, `options.nothrow`, ...) are still supported for backwards compatibility and will continue to emit a warning so that applications can migrate at their own pace. The intent is to make the structure of loader options self-describing—`core` was chosen because these options are shared across all loaders, but alternatives such as `common`, `global`, or `shared` may also resonate depending on your application. Feedback on these names is welcome.
+The deprecated top-level forms (`options.fetch`, `options.worker`, `options.nothrow`, ...) are still supported for backwards compatibility and will continue to emit a warning so that applications can migrate at their own pace. The intent is to make the structure of loader options self-describing by grouping cross-loader settings together under `core`.
 
 ## Using Composite Loaders
 

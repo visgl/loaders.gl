@@ -4,7 +4,11 @@
 
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {normalizeOptions} from '@loaders.gl/core/lib/loader-utils/option-utils';
+import {
+  getGlobalLoaderOptions,
+  normalizeOptions,
+  setGlobalOptions
+} from '@loaders.gl/core/lib/loader-utils/option-utils';
 
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {LASLoader} from '@loaders.gl/las';
@@ -67,5 +71,18 @@ test('normalizeOptions#normalizeOptions', (t) => {
     const options = normalizeOptions(tc.options, tc.loader, undefined, tc.url);
     tc.assert(t, options, tc.url);
   }
+  t.end();
+});
+
+test('normalizeOptions#movesGlobalCoreOptions', (t) => {
+  const originalGlobalOptions = getGlobalLoaderOptions();
+  const originalClone = {...originalGlobalOptions, core: {...originalGlobalOptions.core}};
+
+  setGlobalOptions({worker: false});
+  const normalized = normalizeOptions({}, LASLoader, undefined, undefined);
+  t.equal(normalized.core.worker, false, 'global worker option is present under core');
+  t.equal(normalized.worker, false, 'deprecated top-level alias is applied after normalization');
+
+  setGlobalOptions(originalClone);
   t.end();
 });
