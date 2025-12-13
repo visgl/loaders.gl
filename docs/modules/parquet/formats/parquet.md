@@ -25,15 +25,15 @@ Since Parquet is designed for read-write access, compression is applied per colu
 
 A wide range of compression codecs are supported. Internal parquet compression formats.
 
-| Type           | Read | Write |
+| Type           | Read | Write |                                                                         |
 | -------------- | ---- | ----- | ----------------------------------------------------------------------- |
-| `UNCOMPRESSED` | ✅   | ✅    |
-| `GZIP`         | ✅   | ✅    |
+| `UNCOMPRESSED` | ✅   | ✅    |                                                                         |
+| `GZIP`         | ✅   | ✅    |                                                                         |
 | `SNAPPY`       | ✅   | ✅    |                                                                         |
 | `BROTLI`       | ✅   | No    |                                                                         |
 | `LZO`          | ❌   | ❌    | There is currently no readily available browser-based LZO module for JS |
-| `LZ4`          | ✅   | ✅    |
-| `LZ4_RAW`      | ✅   | ✅    |
+| `LZ4`          | ✅   | ✅    |                                                                         |
+| `LZ4_RAW`      | ✅   | ✅    |                                                                         |
 | `ZSTD`         | ✅   | ✅    |                                                                         |
 
 ## Encoding
