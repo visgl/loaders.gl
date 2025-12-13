@@ -45,7 +45,7 @@ To load a specific table named `feature_table` in a geopackage file as GeoJSON:
 ```typescript
 const optionsAsGeoJson: GeoPackageLoaderOptions = {
   geopackage: {
-    shape: 'geojson',
+    shape: 'geojson-table',
     table: 'feature_table',
     sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
   }
