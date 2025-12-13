@@ -10,10 +10,7 @@ import fs from 'fs';
 
 function readFileWithDevFallback(filename: string): Buffer;
 function readFileWithDevFallback(filename: string, encoding: BufferEncoding): string;
-function readFileWithDevFallback(
-  filename: string,
-  encoding?: BufferEncoding
-): Buffer | string {
+function readFileWithDevFallback(filename: string, encoding?: BufferEncoding): Buffer | string {
   try {
     return fs.readFileSync(filename, encoding);
   } catch (error: any) {
