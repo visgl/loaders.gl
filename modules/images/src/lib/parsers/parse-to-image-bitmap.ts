@@ -2,8 +2,6 @@ import type {ImageLoaderOptions} from '../../image-loader';
 import {isSVG, getBlob} from './svg-utils';
 import {parseToImage} from './parse-to-image';
 
-const EMPTY_OBJECT = {};
-
 let imagebitmapOptionsSupported = true;
 
 /**
@@ -65,9 +63,16 @@ async function safeCreateImageBitmap(
   return await createImageBitmap(blob);
 }
 
-function isEmptyObject(object: Record<string, unknown> | null | undefined) {
-  for (const key in object || EMPTY_OBJECT) {
-    return false;
+function isEmptyObject(object: object | null | undefined) {
+  if (!object) {
+    return true;
   }
+
+  for (const key in object) {
+    if (Object.prototype.hasOwnProperty.call(object, key)) {
+      return false;
+    }
+  }
+
   return true;
 }
