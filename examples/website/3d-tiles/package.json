@@ -26,8 +26,8 @@
     "maplibre-gl": "^2.4.0",
     "marked": "^0.7.0",
     "prop-types": "^15.7.2",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-map-gl": "^7.0.0",
     "styled-components": "^4.2.0"
   },

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import React, {PureComponent} from 'react';
-import {render} from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 import styled from 'styled-components';
@@ -280,5 +280,5 @@ export default class App extends PureComponent {
 }
 
 export function renderToDOM(container) {
-  render(<App />, container);
+  createRoot(container).render(<App />);
 }

@@ -20,8 +20,8 @@
     "@esri/react-arcgis": "^5.2.0",
     "@loaders.gl/core": "4.4.0-alpha.1",
     "@loaders.gl/i3s": "4.4.0-alpha.1",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "typescript": "^5.3.0",
