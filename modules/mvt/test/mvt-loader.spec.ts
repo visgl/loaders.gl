@@ -30,9 +30,7 @@ const loadJSON = async (relativePath: string) => {
   return response.json();
 };
 
-const decodedPolygonsGeometry = await loadJSON(
-  './data/mvt-results/decoded_mvt_polygons_array.json'
-);
+const decodedPolygonsGeometry = await loadJSON('./data/mvt-results/decoded_mvt_polygons_array.json');
 
 // GeoJSON Results
 const decodedPointsGeoJSON = await loadJSON('./data/mvt-results/decoded_mvt_points.json');
