@@ -6,11 +6,22 @@
 import test from 'tape-promise/tape';
 import {classifyRingsFlat} from '@loaders.gl/mvt/lib/utils/geometry-utils';
 
-// Rings
-import ringsSingleRing from '@loaders.gl/mvt/test/data/rings/rings_single_ring.json' assert {type: 'json'};
-import ringsRingAndHole from '@loaders.gl/mvt/test/data/rings/rings_ring_and_hole.json' assert {type: 'json'};
-import ringsTwoRings from '@loaders.gl/mvt/test/data/rings/rings_two_rings.json' assert {type: 'json'};
-import ringsZeroSizeHole from '@loaders.gl/mvt/test/data/rings/rings_zero_size_hole.json' assert {type: 'json'};
+const loadJSON = async (relativePath: string) => {
+  const url = new URL(relativePath, import.meta.url);
+  if (url.protocol === 'file:' && typeof window === 'undefined') {
+    const {readFile} = await import('fs/promises');
+    return JSON.parse(await readFile(url, 'utf8'));
+  }
+  const response = await fetch(url);
+  return response.json();
+};
+
+const [ringsSingleRing, ringsRingAndHole, ringsTwoRings, ringsZeroSizeHole] = await Promise.all([
+  loadJSON('../../data/rings/rings_single_ring.json'),
+  loadJSON('../../data/rings/rings_ring_and_hole.json'),
+  loadJSON('../../data/rings/rings_two_rings.json'),
+  loadJSON('../../data/rings/rings_zero_size_hole.json')
+]);
 
 test('classifyRingsFlat#single ring', async (t) => {
   const geom = {...ringsSingleRing};

@@ -8,6 +8,23 @@ import Module from 'module';
 import path from 'path';
 import fs from 'fs';
 
+function readFileWithDevFallback(filename: string): Buffer;
+function readFileWithDevFallback(filename: string, encoding: BufferEncoding): string;
+function readFileWithDevFallback(
+  filename: string,
+  encoding?: BufferEncoding
+): Buffer | string {
+  try {
+    return fs.readFileSync(filename, encoding);
+  } catch (error: any) {
+    // In the source repo, native libs may live under `src/libs` before being copied to `dist/libs`.
+    if (error?.code === 'ENOENT' && filename.includes('/dist/libs/')) {
+      return fs.readFileSync(filename.replace('/dist/libs/', '/src/libs/'), encoding);
+    }
+    throw error;
+  }
+}
+
 /**
  * Load a file from local file system
  * @param filename
@@ -18,7 +35,7 @@ export async function readFileAsArrayBuffer(filename: string): Promise<ArrayBuff
     const response = await fetch(filename);
     return await response.arrayBuffer();
   }
-  const buffer = fs.readFileSync(filename);
+  const buffer = readFileWithDevFallback(filename);
   return buffer.buffer;
 }
 
@@ -32,7 +49,7 @@ export async function readFileAsText(filename: string): Promise<string> {
     const response = await fetch(filename);
     return await response.text();
   }
-  const text = fs.readFileSync(filename, 'utf8');
+  const text = readFileWithDevFallback(filename, 'utf8');
   return text;
 }
 
@@ -50,7 +67,7 @@ export async function requireFromFile(filename: string): Promise<any> {
   if (!filename.startsWith('/')) {
     filename = `${process.cwd()}/${filename}`;
   }
-  const code = fs.readFileSync(filename, 'utf8');
+  const code = readFileWithDevFallback(filename, 'utf8');
   return requireFromString(code);
 }
 
