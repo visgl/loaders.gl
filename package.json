@@ -4,6 +4,7 @@
   "license": "MIT",
   "type": "module",
   "private": true,
+  "packageManager": "yarn@4.4.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
@@ -25,6 +26,9 @@
     "examples",
     "website"
   ],
+  "engines": {
+    "node": ">=20.18.0"
+  },
   "scripts": {
     "bootstrap": "ocular-bootstrap",
     "postinstall": "echo postinstall",
@@ -76,9 +80,5 @@
     "@loaders.gl/schema-utils": "^4.4.0-alpha.1",
     "@loaders.gl/textures": "^4.4.0-alpha.1",
     "@loaders.gl/wms": "^4.4.0-alpha.1"
-  },
-  "volta": {
-    "node": "20.18.0",
-    "yarn": "4.4.1"
   }
 }

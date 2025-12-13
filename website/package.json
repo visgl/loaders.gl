@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Website for vis.gl project",
+  "packageManager": "yarn@4.4.1",
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
@@ -98,10 +99,6 @@
     "not dead"
   ],
   "engines": {
-    "node": ">=18.0"
-  },
-  "volta": {
-    "node": "20.16.0",
-    "yarn": "4.4.0"
+    "node": ">=20.18.0"
   }
 }
