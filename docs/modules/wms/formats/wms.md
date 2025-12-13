@@ -186,6 +186,7 @@ Version 1.3.0 of the WMS standard was released in January 2004
 
 - Use `CRS` instead of `SRS` parameter for 1.3.0
 - The order of parameters for BBOX (in v1.3.0 only) depends on whether the CRS definition has flipped axes. You will see this in the `GetCapabilities` request at 1.3.0 - the response should show the flipped axes.
+
   - `BBOX=xmin,ymin,xmax,ymax NON-FLIPPED`
   - `BBOX=ymin,xmin,ymax,xmax FLIPPED`
   - `EPSG:4326` needs to have flipped axes. `4326 1 WGS 84 Latitude North Longitude East`
