@@ -30,7 +30,10 @@ export async function parseToImageBitmap(
     blob = getBlob(arrayBuffer, url);
   }
 
-  const imagebitmapOptions = options && options.imagebitmap;
+  const imagebitmapOptions = (options && options.imagebitmap) as
+    | ImageBitmapOptions
+    | null
+    | undefined;
 
   return await safeCreateImageBitmap(blob, imagebitmapOptions);
 }
@@ -62,8 +65,7 @@ async function safeCreateImageBitmap(
   return await createImageBitmap(blob);
 }
 
-function isEmptyObject(object) {
-  // @ts-ignore
+function isEmptyObject(object: Record<string, unknown> | null | undefined) {
   for (const key in object || EMPTY_OBJECT) {
     return false;
   }

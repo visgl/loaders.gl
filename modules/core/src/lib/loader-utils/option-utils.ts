@@ -118,7 +118,8 @@ function validateOptions(options: LoaderOptions, loaders: Loader[]): void {
   validateOptionsObject(options, null, DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS, loaders);
   for (const loader of loaders) {
     // Get the scoped, loader specific options from the user supplied options
-    const idOptions: Record<string, unknown> = (options && options[loader.id]) || {};
+    const idOptions: Record<string, unknown> =
+      ((options && options[loader.id]) as Record<string, unknown>) || {};
 
     // Get scoped, loader specific default and deprecated options from the selected loader
     const loaderOptions = (loader.options && loader.options[loader.id]) || {};
@@ -263,13 +264,11 @@ function cloneLoaderOptions(options: LoaderOptions): LoaderOptions {
 
 function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
   for (const key of CORE_LOADER_OPTION_KEYS) {
-    // @ts-expect-error LoaderOptions still accepts deprecated top-level fields
-    if (options[key] !== undefined) {
+    if ((options as Record<string, unknown>)[key] !== undefined) {
       const coreOptions = (options.core = options.core || {});
       const coreRecord = coreOptions as Record<string, unknown>;
       if (!(key in coreRecord)) {
-        // @ts-expect-error Sync deprecated top-level field onto core options
-        coreRecord[key] = options[key];
+        coreRecord[key] = (options as Record<string, unknown>)[key];
       }
     }
   }
@@ -282,8 +281,7 @@ function addDeprecatedTopLevelOptions(options: LoaderOptions): void {
   }
   for (const key of CORE_LOADER_OPTION_KEYS) {
     if (coreOptions[key] !== undefined) {
-      // @ts-expect-error Sync core field back onto deprecated top-level field
-      options[key] = coreOptions[key];
+      (options as Record<string, unknown>)[key] = coreOptions[key];
     }
   }
 }
