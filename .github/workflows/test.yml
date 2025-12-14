@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    name: Tests (Node ${{ matrix.node-version }} - ${{ matrix.full && 'full suite' || 'node tests only' }})
+    name: Tests (Node ${{ matrix.node-version }} - ${{ matrix.scope }})
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     strategy:
@@ -17,10 +17,13 @@ jobs:
         include:
           - node-version: 24
             full: true
+            scope: 'full suite'
           - node-version: 22
             full: false
+            scope: 'build + node tests'
           - node-version: 20
             full: false
+            scope: 'build + node tests'
 
     steps:
       - name: Checkout code
@@ -38,13 +41,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build workers
-        run: yarn run build-workers
-
       - name: Build
-        if: matrix.full
         run: |
           yarn run build
+
+      - name: Build workers
+        run: yarn run build-workers
 
       - name: Run browser tests (generate coverage)
         if: matrix.full
