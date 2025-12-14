@@ -94,17 +94,10 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
     // } catch (error) {
     //   console.error(error);
     // }
-    const {requireFromFile} = globalThis.loaders || {};
     try {
+      const {requireFromFile} = globalThis.loaders || {};
       return await requireFromFile?.(libraryUrl);
-    } catch (error: any) {
-      // In the source repo, native libs may live under `src/libs` before being copied to `dist/libs`.
-      if (error?.code === 'ENOENT') {
-        const devFallbackUrl = libraryUrl.replace('/dist/libs/', '/src/libs/');
-        if (devFallbackUrl !== libraryUrl) {
-          return await requireFromFile?.(devFallbackUrl);
-        }
-      }
+    } catch (error) {
       console.error(error); // eslint-disable-line no-console
       return null;
     }
@@ -186,17 +179,7 @@ async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
     const response = await fetch(url);
     return await response.arrayBuffer();
   }
-  try {
-    return await readFileAsArrayBuffer(url);
-  } catch (error: any) {
-    if (error?.code === 'ENOENT') {
-      const devFallbackUrl = url.replace('/dist/libs/', '/src/libs/');
-      if (devFallbackUrl !== url) {
-        return await readFileAsArrayBuffer(devFallbackUrl);
-      }
-    }
-    throw error;
-  }
+  return await readFileAsArrayBuffer(url);
 }
 
 /**
@@ -210,15 +193,5 @@ async function loadAsText(url: string): Promise<string> {
     const response = await fetch(url);
     return await response.text();
   }
-  try {
-    return await readFileAsText(url);
-  } catch (error: any) {
-    if (error?.code === 'ENOENT') {
-      const devFallbackUrl = url.replace('/dist/libs/', '/src/libs/');
-      if (devFallbackUrl !== url) {
-        return await readFileAsText(devFallbackUrl);
-      }
-    }
-    throw error;
-  }
+  return await readFileAsText(url);
 }

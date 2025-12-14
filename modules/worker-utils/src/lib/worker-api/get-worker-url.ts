@@ -48,7 +48,6 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
   // @ts-ignore _workerType
   if (options._workerType === 'test') {
     if (isBrowser) {
-      // In CI/builds we bundle workers to `dist/<id>-worker.js`
       url = `modules/${worker.module}/dist/${workerFile}`;
     } else {
       // In the test environment the ts-node loader requires TypeScript code
