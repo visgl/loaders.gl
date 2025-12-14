@@ -23,10 +23,13 @@ export function serializeThrift(obj: any): Uint8Array {
   const output: Buffer[] = [];
 
   const transport = new TBufferedTransport(undefined, (buf?: Buffer) => {
-    if (!buf) {
+    const fallbackBuffers = (transport as any).outBuffers as Buffer[] | undefined;
+    const payload = buf ?? (fallbackBuffers?.length ? Buffer.concat(fallbackBuffers) : undefined);
+
+    if (!payload) {
       return;
     }
-    output.push(toBuffer(buf));
+    output.push(toBuffer(payload));
   });
 
   const protocol = new TCompactProtocol(transport);
