@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {BinaryGeometry} from '@loaders.gl/schema';
+import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {parseSHPHeader, SHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
@@ -86,12 +87,12 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): 
  * @returns
  */
 export async function* parseSHPInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: SHPLoaderOptions
 ): AsyncGenerator<BinaryGeometry | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
-  for await (const arrayBuffer of asyncIterator) {
+  for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.header) {
       headerReturned = true;

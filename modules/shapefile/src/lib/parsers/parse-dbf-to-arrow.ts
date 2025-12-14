@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, Field, ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {DBFLoaderOptions, DBFHeader, DBFField} from './types';
@@ -87,14 +88,14 @@ export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFLoaderOptions = {
  * @param options
  */
 export async function* parseDBFInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: DBFLoaderOptions = {}
 ): AsyncIterable<ArrowTableBatch> {
   const {encoding = 'latin1'} = options.dbf || {};
 
   const parser = new DBFParser({encoding});
   let headerReturned = false;
-  for await (const arrayBuffer of asyncIterator) {
+  for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.dbfHeader) {
       headerReturned = true;

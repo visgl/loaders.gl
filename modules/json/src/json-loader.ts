@@ -73,7 +73,7 @@ function parseTextSync(text: string, options?: JSONLoaderOptions) {
 }
 
 function parseInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: JSONLoaderOptions
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = {...options, json: {...JSONLoader.options.json, ...options?.json}};

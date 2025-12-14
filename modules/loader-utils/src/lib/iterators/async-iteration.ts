@@ -60,3 +60,30 @@ export async function concatenateStringsAsync(
   }
   return strings.join('');
 }
+
+/**
+ * Normalizes binary chunk iterators to yield `ArrayBuffer` instances.
+ * Accepts `ArrayBuffer`, `ArrayBufferView`, and `ArrayBufferLike` sources
+ * (e.g. `SharedArrayBuffer`) and returns a copied `ArrayBuffer` for each chunk.
+ */
+export async function* toArrayBufferIterator(
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+): AsyncIterable<ArrayBuffer> {
+  for await (const chunk of asyncIterator) {
+    if (chunk instanceof ArrayBuffer) {
+      yield chunk
+      continue
+    }
+
+    if (ArrayBuffer.isView(chunk)) {
+      const view = chunk
+      yield view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength)
+      continue
+    }
+
+    const view = new Uint8Array(chunk as ArrayBufferLike)
+    yield view.slice().buffer
+  }
+}
