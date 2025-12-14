@@ -4,6 +4,4 @@
 
 // Classic-worker entrypoint that lazily loads the ESM worker implementation.
 // This keeps `importScripts` available in the worker (used by library loading).
-(async () => {
-  await import(new URL('./workers/basis-worker.js', import.meta.url).toString());
-})();
+void import(new URL('./workers/basis-worker.js', import.meta.url).toString());
