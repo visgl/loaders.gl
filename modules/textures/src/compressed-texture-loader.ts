@@ -45,6 +45,7 @@ export const CompressedTextureWorkerLoader = {
     'application/octet-stream'
   ],
   binary: true,
+  tests: ['\u00abKTX 20', 'DDS ', 'PVR\u0003'],
   options: {
     'compressed-texture': {
       libraryPath: 'libs/',

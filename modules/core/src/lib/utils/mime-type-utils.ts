@@ -5,7 +5,7 @@
 // TODO - build/integrate proper MIME type parsing
 // https://mimesniff.spec.whatwg.org/
 
-const DATA_URL_PATTERN = /^data:([-\w.]+\/[-\w.+]+)(;|,)/;
+const DATA_URL_PATTERN = /^data:([-\w.]+\/[-\w.+]+)(;|,)/i;
 const MIME_TYPE_PATTERN = /^([-\w.]+\/[-\w.+]+)/;
 
 /**
