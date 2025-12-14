@@ -4,8 +4,12 @@
 
 import test from 'tape-promise/tape';
 
-import {fetchFile, isBrowser} from '@loaders.gl/core';
-import {BlobFile, NodeFile} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/core';
+import {
+  createReadableFileFromBuffer,
+  createReadableFileFromPath,
+  loadArrayBufferFromFile
+} from 'test/utils/readable-files';
 import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
 
 const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';
@@ -78,13 +82,22 @@ test('zip#ZipFileSystem - fetch should fail', async (t) => {
 });
 
 const getFileProvider = async (_fileName: string) => {
-  let fileProvider;
-  if (isBrowser) {
-    const fileResponse = await fetchFile(ZIP_FILE_PATH);
-    const file = await fileResponse.arrayBuffer();
-    fileProvider = new BlobFile(file);
-  } else {
-    fileProvider = new NodeFile(ZIP_FILE_PATH);
-  }
-  return fileProvider;
+  return await createReadableFileFromPath(ZIP_FILE_PATH);
 };
+
+test('zip#ZipFileSystem - buffer-backed readable file', async (t) => {
+  const arrayBuffer = await loadArrayBufferFromFile(ZIP_FILE_PATH);
+  const fileProvider = await createReadableFileFromBuffer(arrayBuffer);
+  const fileSystem = new ZipFileSystem(fileProvider);
+  const files = await fileSystem.readdir();
+  t.deepEqual(files, ['test-file.txt'], 'reads file listing from in-memory source');
+
+  const stats = await fileSystem.stat(files[0]);
+  t.equal(stats.uncompressedSize, 15n, 'stat resolves sizes via readable file');
+
+  const fileResponse = await fileSystem.fetch(files[0]);
+  t.equal(await fileResponse.text(), 'test file data\n', 'fetch returns correct contents');
+
+  await fileSystem.destroy();
+  t.end();
+});

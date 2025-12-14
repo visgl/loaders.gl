@@ -23,3 +23,4 @@ import './lib/parsers/helpers/parse-3d-tile-subtree.spec';
 import './tiles-3d-loader.spec';
 import './tile-3d-subtree-loader.spec';
 import './tiles-3d-archive-loaders.spec';
+import './tiles-3d-archive-readable-file.spec';
