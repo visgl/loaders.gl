@@ -14,11 +14,16 @@ const config = {
   url: 'https://loaders.gl',
   baseUrl: '/',
   onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
   favicon: '/favicon.png',
   organizationName: 'visgl', // Usually your GitHub org/user name.
   projectName: 'loaders.gl', // Usually your repo name.
   trailingSlash: false,
+
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    }
+  },
 
   presets: [
     [
