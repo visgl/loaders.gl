@@ -88,7 +88,9 @@ export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFLoaderOptions = {
  * @param options
  */
 export async function* parseDBFInBatches(
-  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: DBFLoaderOptions = {}
 ): AsyncIterable<ArrowTableBatch> {
   const {encoding = 'latin1'} = options.dbf || {};

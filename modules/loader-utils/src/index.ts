@@ -108,7 +108,11 @@ export {
   makeLineIterator,
   makeNumberedLineIterator
 } from './lib/iterators/text-iterators';
-export {forEach, concatenateArrayBuffersAsync, toArrayBufferIterator} from './lib/iterators/async-iteration';
+export {
+  forEach,
+  concatenateArrayBuffersAsync,
+  toArrayBufferIterator
+} from './lib/iterators/async-iteration';
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';

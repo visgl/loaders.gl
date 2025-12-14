@@ -16,7 +16,9 @@ export function parseArrowSync(arrayBuffer, options?: {shape?: Table['shape']}):
 }
 
 export function parseArrowInBatches(
-  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: ArrowLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   // Creates the appropriate arrow.RecordBatchReader subclasses from the input

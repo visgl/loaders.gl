@@ -133,7 +133,9 @@ async function parseCSV(
 
 // TODO - support batch size 0 = no batching/single batch?
 function parseCSVInBatches(
-  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: CSVLoaderOptions
 ): AsyncIterable<TableBatch> {
   // Papaparse does not support standard batch size handling

@@ -184,7 +184,9 @@ export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderO
   ) => DataT;
   /** Parse batches of data from an iterator (e.g. fetch stream), return an iterator that yield parsed batches. */
   parseInBatches?: (
-    iterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
+    iterator:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
     options?: LoaderOptionsT,
     context?: LoaderContext
   ) => AsyncIterable<BatchT>;

@@ -178,16 +178,18 @@ function isArrayBufferLike(value: unknown): value is ArrayBufferLike | ArrayBuff
 }
 
 function hasByteLength(value: unknown): value is {byteLength: number} {
-  return Boolean(value && typeof value === 'object' && 'byteLength' in (value as object));
+  return Boolean(value && typeof value === 'object' && 'byteLength' in value);
 }
 
-function ensureBufferSource(data: ArrayBufferLike | ArrayBufferView): ArrayBuffer | ArrayBufferView {
+function ensureBufferSource(
+  data: ArrayBufferLike | ArrayBufferView
+): ArrayBuffer | ArrayBufferView {
   if (ArrayBuffer.isView(data)) {
     return data;
   }
 
   // Create a view to support ArrayBufferLike sources such as SharedArrayBuffer
-  return new Uint8Array(data as ArrayBufferLike);
+  return new Uint8Array(data);
 }
 
 function toArrayBuffer(bufferSource: ArrayBuffer | ArrayBufferView): ArrayBuffer {

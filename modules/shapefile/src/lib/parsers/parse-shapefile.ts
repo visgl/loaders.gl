@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 // import type {Feature} from '@loaders.gl/gis';
-import {LoaderContext, parseInBatchesFromContext, parseFromContext, toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {
+  LoaderContext,
+  parseInBatchesFromContext,
+  parseFromContext,
+  toArrayBufferIterator
+} from '@loaders.gl/loader-utils';
 import {convertBinaryGeometryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import type {
   BinaryGeometry,

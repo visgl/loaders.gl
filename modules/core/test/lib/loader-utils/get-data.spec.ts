@@ -50,7 +50,11 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(ArrayBufferLike)', (t) 
   t.equals(stringResult, 'abcdef', 'decodes SharedArrayBuffer to string');
 
   const binaryResult = getArrayBufferOrStringFromDataSync(sharedArrayBuffer, BinaryLoader, {});
-  t.deepEquals(new Uint8Array(binaryResult as ArrayBuffer), view, 'copies SharedArrayBuffer to ArrayBuffer');
+  t.deepEquals(
+    new Uint8Array(binaryResult as ArrayBuffer),
+    view,
+    'copies SharedArrayBuffer to ArrayBuffer'
+  );
 
   t.end();
 });

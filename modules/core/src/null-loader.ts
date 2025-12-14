@@ -48,7 +48,7 @@ export const NullLoader = {
   parse: async (
     arrayBuffer: ArrayBufferLike | ArrayBufferView,
     options?: NullLoaderOptions,
-    context?: LoaderContext,
+    context?: LoaderContext
   ) => parseSync(arrayBuffer, options || {}, context),
   parseSync,
   parseInBatches: async function* generator(asyncIterator, options, context) {
@@ -69,7 +69,7 @@ export const NullLoader = {
 function parseSync(
   arrayBuffer: ArrayBufferLike | ArrayBufferView,
   options?: NullLoaderOptions,
-  context?: LoaderContext,
+  context?: LoaderContext
 ): null {
   return null;
 }

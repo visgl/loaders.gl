@@ -47,7 +47,9 @@ export type FetchLike = (url: string, options?: RequestInit) => Promise<Response
  * returns an async iterable of the same surface.
  */
 export type TransformBatches = (
-  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>
 ) => AsyncIterable<ArrayBufferLike | ArrayBufferView>;
 
 /** Types that can be synchronously parsed */

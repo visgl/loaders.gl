@@ -29,7 +29,9 @@ export function parseGeoArrowSync(
 /**
  */
 export function parseGeoArrowInBatches(
-  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>
 ): AsyncIterable<ArrowTableBatch | GeoJSONTableBatch> {
   // | BinaryGeometry
   return parseArrowInBatches(asyncIterator);

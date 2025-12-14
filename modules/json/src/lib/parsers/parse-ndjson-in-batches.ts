@@ -13,7 +13,9 @@ import {
 } from '@loaders.gl/loader-utils';
 
 export async function* parseNDJSONInBatches(
-  binaryAsyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
+  binaryAsyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: LoaderOptions
 ): AsyncIterable<TableBatch> {
   const textIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));

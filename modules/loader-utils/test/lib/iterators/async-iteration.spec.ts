@@ -111,7 +111,8 @@ test('async-iterator#parseNDJSONInBatches', async (t) => {
 });
 
 test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and views', async (t) => {
-  const sharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(4) : new ArrayBuffer(4);
+  const sharedArrayBuffer =
+    typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(4) : new ArrayBuffer(4);
   const sharedView = new Uint8Array(sharedArrayBuffer);
   sharedView.set([1, 2, 3, 4]);
 

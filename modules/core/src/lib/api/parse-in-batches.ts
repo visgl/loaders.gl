@@ -175,7 +175,9 @@ async function parseToOutputIterator(
 
 // Fallback: load atomically using `parse` concatenating input iterator into single chunk
 async function* parseChunkInBatches(
-  transformedIterator: Iterable<ArrayBufferLike | ArrayBufferView> | AsyncIterable<ArrayBufferLike | ArrayBufferView>,
+  transformedIterator:
+    | Iterable<ArrayBufferLike | ArrayBufferView>
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>,
   loader: Loader,
   options: LoaderOptions,
   context: LoaderContext
@@ -222,9 +224,13 @@ function convertDataToBatch(parsedData: unknown, loader: Loader): Batch {
  * @param options
  */
 async function applyInputTransforms(
-  inputIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
+  inputIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   transforms: TransformBatches[] = []
-): Promise<AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>> {
+): Promise<
+  AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
+> {
   let iteratorChain = inputIterator;
   for await (const transformBatches of transforms) {
     iteratorChain = transformBatches(iteratorChain);
