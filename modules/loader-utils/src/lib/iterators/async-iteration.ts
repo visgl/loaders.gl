@@ -12,8 +12,10 @@ export async function forEach<TValue>(iterator: AsyncIterator<TValue>, visitor: 
   while (true) {
     const {done, value} = await iterator.next();
     if (done) {
-      iterator.return();
-      return;
+      if (iterator.return) {
+        iterator.return()
+      }
+      return
     }
     const cancel = visitor(value);
     if (cancel) {
