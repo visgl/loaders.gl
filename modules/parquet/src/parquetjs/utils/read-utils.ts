@@ -34,7 +34,11 @@ export function serializeThrift(obj: any): Uint8Array {
 
   const protocol = new TCompactProtocol(transport);
   obj.write(protocol);
-  transport.flush();
+
+  const flushedBuffer = transport.flush();
+  if (!output.length && flushedBuffer) {
+    output.push(toBuffer(flushedBuffer));
+  }
 
   const combinedBuffer = Buffer.concat(output);
   return new Uint8Array(combinedBuffer.buffer, combinedBuffer.byteOffset, combinedBuffer.byteLength);
