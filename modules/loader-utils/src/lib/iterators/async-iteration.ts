@@ -37,11 +37,25 @@ export async function forEach(iterator, visitor) {
  */
 
 export async function concatenateArrayBuffersAsync(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>
 ): Promise<ArrayBuffer> {
   const arrayBuffers: ArrayBuffer[] = [];
   for await (const chunk of asyncIterator) {
-    arrayBuffers.push(chunk);
+    if (chunk instanceof ArrayBuffer) {
+      arrayBuffers.push(chunk);
+      continue;
+    }
+
+    if (ArrayBuffer.isView(chunk)) {
+      const view = chunk;
+      arrayBuffers.push(view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength));
+      continue;
+    }
+
+    const view = new Uint8Array(chunk as ArrayBufferLike);
+    arrayBuffers.push(view.slice().buffer);
   }
   return concatenateArrayBuffers(...arrayBuffers);
 }

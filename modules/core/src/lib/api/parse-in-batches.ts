@@ -13,7 +13,8 @@ import type {
   LoaderOptionsType,
   LoaderBatchType,
   LoaderArrayOptionsType,
-  LoaderArrayBatchType
+  LoaderArrayBatchType,
+  TransformBatches
 } from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -92,7 +93,7 @@ export async function parseInBatches(
 
   // Chooses a loader and normalizes it
   // Note - only uses URL and contentType for streams and iterator inputs
-  const loader = await selectLoader(data as ArrayBuffer, loaders, options);
+  const loader = await selectLoader(data, loaders, options);
   // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return [];
@@ -174,7 +175,7 @@ async function parseToOutputIterator(
 
 // Fallback: load atomically using `parse` concatenating input iterator into single chunk
 async function* parseChunkInBatches(
-  transformedIterator: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
+  transformedIterator: Iterable<ArrayBufferLike | ArrayBufferView> | AsyncIterable<ArrayBufferLike | ArrayBufferView>,
   loader: Loader,
   options: LoaderOptions,
   context: LoaderContext
@@ -215,19 +216,15 @@ function convertDataToBatch(parsedData: unknown, loader: Loader): Batch {
   return batch;
 }
 
-type TransformBatches = (
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-) => AsyncIterable<ArrayBuffer>;
-
 /**
  * Create an iterator chain with any transform iterators (crypto, decompression)
  * @param inputIterator
  * @param options
  */
 async function applyInputTransforms(
-  inputIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  inputIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>,
   transforms: TransformBatches[] = []
-): Promise<AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>> {
+): Promise<AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>> {
   let iteratorChain = inputIterator;
   for await (const transformBatches of transforms) {
     iteratorChain = transformBatches(iteratorChain);

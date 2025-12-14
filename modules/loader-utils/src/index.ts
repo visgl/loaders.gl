@@ -9,6 +9,7 @@ export type {
   DataType,
   SyncDataType,
   BatchableDataType,
+  TransformBatches,
   // numeric array types
   TypedArray,
   BigTypedArray,

@@ -28,7 +28,7 @@ const EXT_PATTERN = /\.([^.]+)$/;
  * @param context used internally, applications should not provide this parameter
  */
 export async function selectLoader(
-  data: Response | Blob | ArrayBuffer | string,
+  data: Response | Blob | ArrayBuffer | ArrayBufferView | string,
   loaders: Loader[] | Loader = [],
   options?: LoaderOptions,
   context?: LoaderContext
@@ -68,7 +68,7 @@ export async function selectLoader(
  * @param context used internally, applications should not provide this parameter
  */
 export function selectLoaderSync(
-  data: Response | Blob | ArrayBuffer | string,
+  data: Response | Blob | ArrayBuffer | ArrayBufferView | string,
   loaders: Loader[] | Loader = [],
   options?: LoaderOptions,
   context?: LoaderContext
@@ -112,7 +112,7 @@ export function selectLoaderSync(
 /** Implements loaders selection logic */
 // eslint-disable-next-line complexity
 function selectLoaderInternal(
-  data: Response | Blob | ArrayBuffer | string,
+  data: Response | Blob | ArrayBuffer | ArrayBufferView | string,
   loaders: Loader[],
   options?: LoaderOptions,
   context?: LoaderContext

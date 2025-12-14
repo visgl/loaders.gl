@@ -56,15 +56,15 @@ export function getArrayBufferOrStringFromDataSync(
       return textDecoder.decode(data);
     }
 
-    let arrayBuffer = data.buffer;
+    const arrayBuffer = data.buffer;
 
     // Since we are returning the underlying arrayBuffer, we must create a new copy
     // if this typed array / Buffer is a partial view into the ArryayBuffer
     // TODO - this is a potentially unnecessary copy
-    const byteLength = data.byteLength || data.length;
+    const byteLength = data.byteLength;
     if (data.byteOffset !== 0 || byteLength !== arrayBuffer.byteLength) {
       // console.warn(`loaders.gl copying arraybuffer of length ${byteLength}`);
-      arrayBuffer = arrayBuffer.slice(data.byteOffset, data.byteOffset + byteLength);
+      return arrayBuffer.slice(data.byteOffset, data.byteOffset + byteLength);
     }
     return arrayBuffer;
   }
@@ -110,7 +110,9 @@ export async function getArrayBufferOrStringFromData(
 export async function getAsyncIterableFromData(
   data: BatchableDataType,
   options: LoaderOptions
-): Promise<AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>> {
+): Promise<
+  AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
+> {
   if (isIterator(data)) {
     return data as AsyncIterable<ArrayBuffer>;
   }
@@ -131,7 +133,7 @@ export async function getAsyncIterableFromData(
   }
 
   if (isAsyncIterable(data)) {
-    return data as AsyncIterable<ArrayBuffer>;
+    return data as AsyncIterable<ArrayBufferLike | ArrayBufferView>;
   }
 
   return getIterableFromData(data);
@@ -156,7 +158,7 @@ function getIterableFromData(data) {
   // generate an iterator that emits a single chunk
   if (ArrayBuffer.isView(data)) {
     return (function* oneChunk() {
-      yield data.buffer;
+      yield data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
     })();
   }
 
