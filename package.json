@@ -4,6 +4,7 @@
   "license": "MIT",
   "type": "module",
   "private": true,
+  "packageManager": "yarn@4.10.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
@@ -25,13 +26,16 @@
     "examples",
     "website"
   ],
+  "engines": {
+    "node": ">=20.18.0"
+  },
   "scripts": {
     "bootstrap": "ocular-bootstrap",
     "postinstall": "echo postinstall",
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
     "clean": "ocular-clean",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
-    "build": "ocular-clean && ocular-build && lerna run pre-build",
+    "build": "ocular-clean && ocular-build && npx lerna run pre-build",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
     "publish-beta": "ocular-publish beta",
@@ -76,9 +80,5 @@
     "@loaders.gl/schema-utils": "^4.4.0-alpha.1",
     "@loaders.gl/textures": "^4.4.0-alpha.1",
     "@loaders.gl/wms": "^4.4.0-alpha.1"
-  },
-  "volta": {
-    "node": "20.18.0",
-    "yarn": "4.4.1"
   }
 }

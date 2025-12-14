@@ -5,7 +5,18 @@
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
 import {CRC32CHash, encodeNumber} from '@loaders.gl/crypto';
-import TEST_CASES from './crc32c-test-cases.json' assert {type: 'json'};
+
+const loadJSON = async (relativePath: string) => {
+  const url = new URL(relativePath, import.meta.url);
+  if (url.protocol === 'file:' && typeof window === 'undefined') {
+    const {readFile} = await import('fs/promises');
+    return JSON.parse(await readFile(url, 'utf8'));
+  }
+  const response = await fetch(url);
+  return response.json();
+};
+
+const TEST_CASES = await loadJSON('./crc32c-test-cases.json');
 
 test('crc32c#additional tests', async (t) => {
   for (const type in TEST_CASES) {
