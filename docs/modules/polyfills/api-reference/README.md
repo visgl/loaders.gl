@@ -32,6 +32,10 @@ The polyfills module installs the following capabilities.
 - Image parsing and encoding under Node.js
   |
 
+## ReadableFile utilities
+
+`@loaders.gl/loader-utils` exports `NodeFile` and `NodeFilesystem` wrappers that are installed by this polyfill package. They mirror the browser `HttpFile`/`BlobFile` implementations, exposing a consistent `ReadableFile` interface for local and remote assets without bundling Node built-ins directly into application code.
+
 ## Deprecated polyfills
 
 Before Node v18, `fetch` needed to be polyfilled. The `@loaders.gl/polyfills` module still conditionally installs a fetch polyfill on Node 16, but this is expected to be removed in next major release.

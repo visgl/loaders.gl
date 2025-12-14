@@ -239,6 +239,7 @@
         "label": "@loaders.gl/loader-utils",
         "items": [
           "modules/loader-utils/README",
+          "modules/loader-utils/api-reference/readable-file",
           "modules/loader-utils/api-reference/request-scheduler",
           "modules/loader-utils/api-reference/parse-with-context"
         ]
