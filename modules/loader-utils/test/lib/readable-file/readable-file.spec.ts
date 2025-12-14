@@ -1,7 +1,11 @@
 import test from 'tape-promise/tape';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {localHeaderSignature, getReadableFileSize, readRange} from '@loaders.gl/zip';
-import {createReadableFileFromBuffer, createReadableFileFromPath, createBrowserReadableFile} from 'test/utils/readable-files';
+import {
+  createReadableFileFromBuffer,
+  createReadableFileFromPath,
+  createBrowserReadableFile
+} from 'test/utils/readable-files';
 
 const SLPK_URL = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
 
@@ -39,10 +43,22 @@ test('ReadableFile#DataViewReadableFile supports slices', async (t) => {
   const readableFile = await createReadableFileFromBuffer(DATA_ARRAY.buffer);
 
   const midSection = await readRange(readableFile, 2n, 6n);
-  t.deepEqual(new Uint8Array(midSection), new Uint8Array(DATA_ARRAY.slice(2, 6)), 'reads arbitrary slice');
+  t.deepEqual(
+    new Uint8Array(midSection),
+    new Uint8Array(DATA_ARRAY.slice(2, 6)),
+    'reads arbitrary slice'
+  );
 
-  const trailing = await readRange(readableFile, BigInt(DATA_ARRAY.byteLength - 4), BigInt(DATA_ARRAY.byteLength));
-  t.deepEqual(new Uint8Array(trailing), new Uint8Array(DATA_ARRAY.slice(-4)), 'reads trailing bytes');
+  const trailing = await readRange(
+    readableFile,
+    BigInt(DATA_ARRAY.byteLength - 4),
+    BigInt(DATA_ARRAY.byteLength)
+  );
+  t.deepEqual(
+    new Uint8Array(trailing),
+    new Uint8Array(DATA_ARRAY.slice(-4)),
+    'reads trailing bytes'
+  );
 
   t.end();
 });

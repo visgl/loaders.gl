@@ -5,7 +5,11 @@
 import test from 'tape-promise/tape';
 
 import {isBrowser} from '@loaders.gl/core';
-import {createReadableFileFromBuffer, createReadableFileFromPath, loadArrayBufferFromFile} from 'test/utils/readable-files';
+import {
+  createReadableFileFromBuffer,
+  createReadableFileFromPath,
+  loadArrayBufferFromFile
+} from 'test/utils/readable-files';
 import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
 
 const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';

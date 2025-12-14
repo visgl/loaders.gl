@@ -15,7 +15,9 @@ export async function createReadableFileFromPath(path: string): Promise<Readable
   return new NodeFile(path);
 }
 
-export async function createReadableFileFromBuffer(arrayBuffer: ArrayBuffer): Promise<ReadableFile> {
+export async function createReadableFileFromBuffer(
+  arrayBuffer: ArrayBuffer
+): Promise<ReadableFile> {
   return new DataViewReadableFile(new DataView(arrayBuffer));
 }
 

@@ -12,7 +12,11 @@ test('parseSLPKArchive#ReadableFile - raw paths', async (t) => {
   t.ok(nodeDocument.byteLength > 0, 'retrieves decompressed root node document');
 
   const geometry = await archive.getFile('nodes/3/geometries/0.bin');
-  t.equal(geometry.byteLength, 32208, 'returns decompressed geometry payload without hash provider');
+  t.equal(
+    geometry.byteLength,
+    32208,
+    'returns decompressed geometry payload without hash provider'
+  );
 
   t.end();
 });
