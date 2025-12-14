@@ -78,7 +78,7 @@
     "babel-plugin-styled-components": "~2.0.0",
     "ts-node": "~10.9.1"
   },
-  "resolutions": {
+  "resolutions_disabled": {
     "@loaders.gl/core": "^4.4.0-alpha.1",
     "@loaders.gl/draco": "^4.4.0-alpha.1",
     "@loaders.gl/geopackage": "^4.4.0-alpha.1",
