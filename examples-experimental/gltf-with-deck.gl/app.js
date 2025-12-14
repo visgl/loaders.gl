@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import React, {PureComponent} from 'react';
-import {render} from 'react-dom';
+import {createRoot} from 'react-dom/client';
 import {StaticMap} from 'react-map-gl';
 import DeckGL from '@deck.gl/react';
 
@@ -89,7 +89,7 @@ export default class App extends PureComponent {
 
 // TODO - hook for integrating into web page
 export function renderToDOM(container) {
-  render(<App />, container);
+  createRoot(container).render(<App />);
 }
 
 renderToDOM(document.body.appendChild(document.createElement('div')));

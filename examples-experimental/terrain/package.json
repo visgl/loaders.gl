@@ -20,8 +20,8 @@
     "@loaders.gl/mvt": "4.4.0-alpha.1",
     "@loaders.gl/terrain": "4.4.0-alpha.1",
     "maplibre-gl": "^2.4.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "react-map-gl": "^7.0.0"
   },
   "devDependencies": {

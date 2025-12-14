@@ -11,8 +11,8 @@
   "dependencies": {
     "@probe.gl/bench": "^4.0.2",
     "@probe.gl/react-bench": "^4.0.2",
-    "react": "^16.3.0",
-    "react-dom": "^16.3.0"
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",

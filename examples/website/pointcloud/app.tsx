@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import React, {useState, useEffect} from 'react';
-import {render} from 'react-dom';
+import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
 import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator, OrbitViewState} from '@deck.gl/core';
@@ -295,5 +295,5 @@ function convertLoadersMeshToDeckPointCloudData(attributes) {
 }
 
 export function renderToDOM(container) {
-  render(<App />, container);
+  createRoot(container).render(<App />);
 }

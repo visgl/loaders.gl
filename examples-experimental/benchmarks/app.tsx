@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import React, {PureComponent} from 'react';
-import {render} from 'react-dom';
+import {createRoot} from 'react-dom/client';
 
 import {BenchResults} from '@probe.gl/react-bench';
 import {Bench} from '@probe.gl/bench';
@@ -86,5 +86,5 @@ export default class App extends PureComponent {
 }
 
 export function renderToDOM(container) {
-  render(<App />, container);
+  createRoot(container).render(<App />);
 }
