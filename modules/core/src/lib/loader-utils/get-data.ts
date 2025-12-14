@@ -65,9 +65,8 @@ export async function getArrayBufferOrStringFromData(
   loader: Loader,
   options: LoaderOptions
 ): Promise<ArrayBuffer | string> {
-  const isArrayBuffer = data instanceof ArrayBuffer || ArrayBuffer.isView(data);
-  if (typeof data === 'string' || isArrayBuffer) {
-    return getArrayBufferOrStringFromDataSync(data as string | ArrayBuffer, loader, options);
+  if (typeof data === 'string' || isArrayBufferLike(data)) {
+    return getArrayBufferOrStringFromDataSync(data as SyncDataType, loader, options);
   }
 
   // Blobs and files are FileReader compatible
@@ -197,8 +196,16 @@ function toArrayBuffer(bufferSource: ArrayBuffer | ArrayBufferView): ArrayBuffer
   }
 
   const {buffer, byteOffset, byteLength} = bufferSource;
-  if (byteOffset === 0 && byteLength === buffer.byteLength) {
-    return buffer;
-  }
-  return buffer.slice(byteOffset, byteOffset + byteLength);
+  return copyToArrayBuffer(buffer, byteOffset, byteLength);
+}
+
+function copyToArrayBuffer(
+  buffer: ArrayBufferLike,
+  byteOffset = 0,
+  byteLength = buffer.byteLength - byteOffset
+): ArrayBuffer {
+  const view = new Uint8Array(buffer, byteOffset, byteLength);
+  const copy = new Uint8Array(view.length);
+  copy.set(view);
+  return copy.buffer;
 }

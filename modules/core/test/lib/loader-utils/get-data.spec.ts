@@ -5,6 +5,7 @@
 import test from 'tape-promise/tape';
 import {
   getArrayBufferOrStringFromDataSync,
+  getArrayBufferOrStringFromData,
   getAsyncIterableFromData
 } from '@loaders.gl/core/lib/loader-utils/get-data';
 
@@ -130,6 +131,27 @@ test('parseWithLoader#getAsyncIterableFromData', async (t) => {
 
   // @ts-ignore
   t.rejects(async () => await getAsyncIterableFromData({}), 'object conversion to iterator fails');
+
+  t.end();
+});
+
+test('parseWithLoader#getArrayBufferOrStringFromData(SharedArrayBuffer iterables)', async (t) => {
+  if (typeof SharedArrayBuffer === 'undefined') {
+    t.comment('SharedArrayBuffer unavailable in environment');
+    t.end();
+    return;
+  }
+
+  const sharedArrayBuffer = new SharedArrayBuffer(10);
+  const uint16View = new Uint16Array(sharedArrayBuffer);
+  uint16View.set([0x4142, 0x4344, 0x4546, 0x4748, 0x494a]);
+
+  const iterator = (function* generate() {
+    yield uint16View.subarray(1, 4);
+  })();
+
+  const result = await getArrayBufferOrStringFromData(iterator, BinaryLoader, {});
+  t.deepEquals(new Uint16Array(result as ArrayBuffer), uint16View.subarray(1, 4));
 
   t.end();
 });

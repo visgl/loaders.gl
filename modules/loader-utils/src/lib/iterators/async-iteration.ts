@@ -1,4 +1,4 @@
-import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils';
+import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils'
 
 // GENERAL UTILITIES
 
@@ -10,16 +10,16 @@ import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils';
 export async function forEach<TValue>(iterator: AsyncIterator<TValue>, visitor: (value: TValue) => any) {
   // eslint-disable-next-line
   while (true) {
-    const {done, value} = await iterator.next();
+    const {done, value} = await iterator.next()
     if (done) {
       if (iterator.return) {
         iterator.return()
       }
       return
     }
-    const cancel = visitor(value);
+    const cancel = visitor(value)
     if (cancel) {
-      return;
+      return
     }
   }
 }
@@ -32,35 +32,23 @@ export async function forEach<TValue>(iterator: AsyncIterator<TValue>, visitor: 
 export async function concatenateArrayBuffersAsync(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-    | Iterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
 ): Promise<ArrayBuffer> {
-  const arrayBuffers: ArrayBuffer[] = [];
+  const arrayBuffers: ArrayBuffer[] = []
   for await (const chunk of asyncIterator) {
-    if (chunk instanceof ArrayBuffer) {
-      arrayBuffers.push(chunk);
-      continue;
-    }
-
-    if (ArrayBuffer.isView(chunk)) {
-      const view = chunk;
-      arrayBuffers.push(view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength));
-      continue;
-    }
-
-    const view = new Uint8Array(chunk as ArrayBufferLike);
-    arrayBuffers.push(view.slice().buffer);
+    arrayBuffers.push(copyToArrayBuffer(chunk))
   }
-  return concatenateArrayBuffers(...arrayBuffers);
+  return concatenateArrayBuffers(...arrayBuffers)
 }
 
 export async function concatenateStringsAsync(
-  asyncIterator: AsyncIterable<string> | Iterable<string>
+  asyncIterator: AsyncIterable<string> | Iterable<string>,
 ): Promise<string> {
-  const strings: string[] = [];
+  const strings: string[] = []
   for await (const chunk of asyncIterator) {
-    strings.push(chunk);
+    strings.push(chunk)
   }
-  return strings.join('');
+  return strings.join('')
 }
 
 /**
@@ -74,18 +62,32 @@ export async function* toArrayBufferIterator(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
 ): AsyncIterable<ArrayBuffer> {
   for await (const chunk of asyncIterator) {
-    if (chunk instanceof ArrayBuffer) {
-      yield chunk
-      continue
-    }
-
-    if (ArrayBuffer.isView(chunk)) {
-      const view = chunk
-      yield view.buffer.slice(view.byteOffset, view.byteOffset + view.byteLength)
-      continue
-    }
-
-    const view = new Uint8Array(chunk as ArrayBufferLike)
-    yield view.slice().buffer
+    yield copyToArrayBuffer(chunk)
   }
+}
+
+function copyToArrayBuffer(
+  chunk: ArrayBufferLike | ArrayBufferView | ArrayBuffer,
+): ArrayBuffer {
+  if (chunk instanceof ArrayBuffer) {
+    return chunk
+  }
+
+  if (ArrayBuffer.isView(chunk)) {
+    const {buffer, byteOffset, byteLength} = chunk
+    return copyFromBuffer(buffer, byteOffset, byteLength)
+  }
+
+  return copyFromBuffer(chunk as ArrayBufferLike)
+}
+
+function copyFromBuffer(
+  buffer: ArrayBufferLike,
+  byteOffset = 0,
+  byteLength = buffer.byteLength - byteOffset,
+): ArrayBuffer {
+  const view = new Uint8Array(buffer, byteOffset, byteLength)
+  const copy = new Uint8Array(view.length)
+  copy.set(view)
+  return copy.buffer
 }

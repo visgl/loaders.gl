@@ -126,3 +126,18 @@ test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and vi
   t.deepEquals(new Uint8Array(result), new Uint8Array([1, 2, 3, 4, 6, 7, 8]));
   t.end();
 });
+
+test('async-iterator#concatenateArrayBuffersAsync copies numeric views', async (t) => {
+  const floatView = new Float32Array([1.25, 2.5]);
+  const int16View = new Int16Array([0x1122, 0x3344]);
+
+  const result = await concatenateArrayBuffersAsync([floatView, int16View]);
+
+  const reconstructed = new Uint8Array(result);
+  const expected = new Uint8Array(new Uint8Array(floatView.buffer).length + int16View.byteLength);
+  expected.set(new Uint8Array(floatView.buffer));
+  expected.set(new Uint8Array(int16View.buffer), floatView.byteLength);
+
+  t.deepEquals(reconstructed, expected, 'copies view bytes instead of truncating values');
+  t.end();
+});
