@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileSystem, isBrowser, HttpFile, BlobFile, NodeFile} from '@loaders.gl/loader-utils';
+import {FileSystem, isBrowser, BlobFile, NodeFile} from '@loaders.gl/loader-utils';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ZipCDFileHeader, makeZipCDHeaderIterator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
@@ -41,7 +41,10 @@ export class ZipFileSystem implements FileSystem {
     // Try to open file in NodeJS
     if (typeof file === 'string') {
       this.fileName = file;
-      this.file = isBrowser ? new HttpFile(file) : new NodeFile(file);
+      if (isBrowser) {
+        throw new Error('ZipFileSystem cannot open file paths in browser environments');
+      }
+      this.file = new NodeFile(file);
     } else if (file instanceof Blob || file instanceof ArrayBuffer) {
       this.file = new BlobFile(file);
     } else if (file instanceof IndexedArchive) {
