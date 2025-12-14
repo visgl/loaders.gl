@@ -20,17 +20,18 @@ class UFramedTransport extends TFramedTransport {
  * Helper function that serializes a thrift object into a buffer
  */
 export function serializeThrift(obj: any): Uint8Array {
-  const output: Uint8Array[] = [];
+  const output: Buffer[] = [];
 
   const transport = new TBufferedTransport(undefined, (buf) => {
-    output.push(buf as Uint8Array);
+    output.push(toBuffer(buf));
   });
 
   const protocol = new TCompactProtocol(transport);
   obj.write(protocol);
   transport.flush();
 
-  return concatUint8Arrays(output);
+  const combinedBuffer = Buffer.concat(output);
+  return new Uint8Array(combinedBuffer.buffer, combinedBuffer.byteOffset, combinedBuffer.byteLength);
 }
 
 export function decodeThrift(obj: any, buffer: ArrayBuffer | Uint8Array, offset = 0) {
@@ -67,17 +68,6 @@ export function decodePageHeader(buffer: ArrayBuffer | Uint8Array, offset = 0) {
   const protocol = new TCompactProtocol(transport);
   const pageHeader = PageHeader.read(protocol);
   return {length: transport.readPos - offset, pageHeader};
-}
-
-function concatUint8Arrays(chunks: Uint8Array[]): Uint8Array {
-  const totalLength = chunks.reduce((length, chunk) => length + chunk.byteLength, 0);
-  const combined = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const chunk of chunks) {
-    combined.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return combined;
 }
 
 function toBuffer(data: ArrayBuffer | Uint8Array): Buffer {
