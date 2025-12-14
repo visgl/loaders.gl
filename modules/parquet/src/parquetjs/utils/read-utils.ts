@@ -22,7 +22,10 @@ class UFramedTransport extends TFramedTransport {
 export function serializeThrift(obj: any): Uint8Array {
   const output: Buffer[] = [];
 
-  const transport = new TBufferedTransport(undefined, (buf) => {
+  const transport = new TBufferedTransport(undefined, (buf?: Buffer) => {
+    if (!buf) {
+      return;
+    }
     output.push(toBuffer(buf));
   });
 
