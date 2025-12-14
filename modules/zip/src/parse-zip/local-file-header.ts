@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  FileProviderInterface,
-  compareArrayBuffers,
-  concatenateArrayBuffers
-} from '@loaders.gl/loader-utils';
+import {compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ZipSignature} from './search-from-the-end';
 import {createZip64Info, setFieldToNumber} from './zip64-info-generation';
+import {readDataView, readRange} from './readable-file-utils';
 
 /**
  * zip local file header info
@@ -47,9 +45,9 @@ export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
  */
 export const parseZipLocalFileHeader = async (
   headerOffset: bigint,
-  file: FileProviderInterface
+  file: ReadableFile
 ): Promise<ZipLocalFileHeader | null> => {
-  const mainHeader = new DataView(await file.slice(headerOffset, headerOffset + FILE_NAME_OFFSET));
+  const mainHeader = await readDataView(file, headerOffset, headerOffset + FILE_NAME_OFFSET);
 
   const magicBytes = mainHeader.buffer.slice(0, 4);
   if (!compareArrayBuffers(magicBytes, signature)) {
@@ -60,7 +58,8 @@ export const parseZipLocalFileHeader = async (
 
   const extraFieldLength = mainHeader.getUint16(EXTRA_FIELD_LENGTH_OFFSET, true);
 
-  const additionalHeader = await file.slice(
+  const additionalHeader = await readRange(
+    file,
     headerOffset + FILE_NAME_OFFSET,
     headerOffset + FILE_NAME_OFFSET + BigInt(fileNameLength + extraFieldLength)
   );

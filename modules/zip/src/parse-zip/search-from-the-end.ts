@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {FileProviderInterface} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
+import {getReadableFileSize, readRange} from './readable-file-utils';
 
 /** Description of zip signature type */
 export type ZipSignature = Uint8Array;
@@ -16,25 +17,22 @@ const buffLength = 1024;
  * @returns
  */
 export const searchFromTheEnd = async (
-  file: FileProviderInterface,
+  file: ReadableFile,
   target: ZipSignature
 ): Promise<bigint> => {
-  const searchWindow = [
-    await file.getUint8(file.length - 1n),
-    await file.getUint8(file.length - 2n),
-    await file.getUint8(file.length - 3n),
-    undefined
-  ];
+  const fileLength = await getReadableFileSize(file);
+  const lastBytes = new Uint8Array(await readRange(file, fileLength - 3n, fileLength + 1n));
+  const searchWindow = [lastBytes[3], lastBytes[2], lastBytes[1], undefined];
 
   let targetOffset = -1;
 
   // looking for the last record in the central directory
-  let point = file.length - 4n;
+  let point = fileLength - 4n;
   do {
     const prevPoint = point;
     point -= BigInt(buffLength);
     point = point >= 0n ? point : 0n;
-    const buff = new Uint8Array(await file.slice(point, prevPoint));
+    const buff = new Uint8Array(await readRange(file, point, prevPoint));
     for (let i = buff.length - 1; i > -1; i--) {
       searchWindow[3] = searchWindow[2];
       searchWindow[2] = searchWindow[1];

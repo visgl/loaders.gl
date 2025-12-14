@@ -149,13 +149,6 @@ export {NodeFileFacade as NodeFile} from './lib/files/node-file-facade';
 export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesystem';
 export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-filesystem-facade';
 
-// TODO - replace with ReadableFile
-export type {FileProviderInterface} from './lib/file-provider/file-provider-interface';
-export {isFileProvider} from './lib/file-provider/file-provider-interface';
-export {FileProvider} from './lib/file-provider/file-provider';
-export {FileHandleFile} from './lib/file-provider/file-handle-file';
-export {DataViewFile} from './lib/file-provider/data-view-file';
-
 // EXPERIMENTAL: DATA SOURCES
 export type {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from './source-types';
 

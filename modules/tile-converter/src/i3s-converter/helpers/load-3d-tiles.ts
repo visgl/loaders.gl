@@ -6,14 +6,16 @@ import type {
 } from '@loaders.gl/3d-tiles';
 import {Tiles3DArchive} from '@loaders.gl/3d-tiles';
 import {LoaderWithParser, load} from '@loaders.gl/core';
-import {FileHandleFile, FileProviderInterface} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
+import {HttpFile, NodeFile, isBrowser} from '@loaders.gl/loader-utils';
 import {
   CD_HEADER_SIGNATURE,
   ZipFileSystem,
   parseHashTable,
   parseZipCDFileHeader,
   parseZipLocalFileHeader,
-  searchFromTheEnd
+  searchFromTheEnd,
+  readRange
 } from '@loaders.gl/zip';
 
 /**
@@ -113,7 +115,7 @@ export async function loadFromArchive(
   }
   if (filename) {
     const tz3Path = `${tz3UrlParts[0]}.3tz`;
-    const fileProvider = new FileHandleFile(tz3Path);
+    const fileProvider = createReadableFile(tz3Path);
     const hashTable = await loadHashTable(fileProvider);
     const archive = new Tiles3DArchive(fileProvider, hashTable, tz3Path);
     const fileSystem = new ZipFileSystem(archive);
@@ -136,13 +138,20 @@ export function isNestedTileset(tile: Tiles3DTileJSONPostprocessed) {
   return tile?.type === 'json' || tile?.type === '3tz';
 }
 
+function createReadableFile(path: string): ReadableFile {
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return new HttpFile(path);
+  }
+  return isBrowser ? new HttpFile(path) : new NodeFile(path);
+}
+
 /**
  * Load hash file from 3TZ
  * @param fileProvider - binary reader of 3TZ
  * @returns hash table of the 3TZ file content or undefined if the hash file is not presented inside
  */
 async function loadHashTable(
-  fileProvider: FileProviderInterface
+  fileProvider: ReadableFile
 ): Promise<undefined | Record<string, bigint>> {
   let hashTable: undefined | Record<string, bigint>;
 
@@ -163,7 +172,8 @@ async function loadHashTable(
     }
 
     const fileDataOffset = localFileHeader.fileDataOffset;
-    const hashFile = await fileProvider.slice(
+    const hashFile = await readRange(
+      fileProvider,
       fileDataOffset,
       fileDataOffset + localFileHeader.compressedSize
     );

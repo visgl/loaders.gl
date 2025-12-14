@@ -2,15 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  DataViewFile,
-  FileProviderInterface,
-  compareArrayBuffers,
-  concatenateArrayBuffers
-} from '@loaders.gl/loader-utils';
+import {compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {parseEoCDRecord} from './end-of-central-directory';
 import {ZipSignature} from './search-from-the-end';
 import {createZip64Info, setFieldToNumber} from './zip64-info-generation';
+import {
+  DataViewReadableFile,
+  getReadableFileSize,
+  readDataView,
+  readRange
+} from './readable-file-utils';
 
 /**
  * zip central directory file header info
@@ -66,14 +68,13 @@ export const signature: ZipSignature = new Uint8Array([0x50, 0x4b, 0x01, 0x02]);
  */
 export const parseZipCDFileHeader = async (
   headerOffset: bigint,
-  file: FileProviderInterface
+  file: ReadableFile
 ): Promise<ZipCDFileHeader | null> => {
-  if (headerOffset >= file.length) {
+  const fileLength = await getReadableFileSize(file);
+  if (headerOffset >= fileLength) {
     return null;
   }
-  const mainHeader = new DataView(
-    await file.slice(headerOffset, headerOffset + CD_FILE_NAME_OFFSET)
-  );
+  const mainHeader = await readDataView(file, headerOffset, headerOffset + CD_FILE_NAME_OFFSET);
 
   const magicBytes = mainHeader.buffer.slice(0, 4);
   if (!compareArrayBuffers(magicBytes, signature.buffer)) {
@@ -86,7 +87,8 @@ export const parseZipCDFileHeader = async (
   const startDisk = BigInt(mainHeader.getUint16(CD_START_DISK_OFFSET, true));
   const fileNameLength = mainHeader.getUint16(CD_FILE_NAME_LENGTH_OFFSET, true);
 
-  const additionalHeader = await file.slice(
+  const additionalHeader = await readRange(
+    file,
     headerOffset + CD_FILE_NAME_OFFSET,
     headerOffset + CD_FILE_NAME_OFFSET + BigInt(fileNameLength + extraFieldLength)
   );
@@ -124,14 +126,14 @@ export const parseZipCDFileHeader = async (
 
 /**
  * Create iterator over files of zip archive
- * @param fileProvider - file provider that provider random access to the file
+ * @param fileProvider - readable file that provides random access to the file
  */
 export async function* makeZipCDHeaderIterator(
-  fileProvider: FileProviderInterface
+  fileProvider: ReadableFile
 ): AsyncIterable<ZipCDFileHeader> {
   const {cdStartOffset, cdByteSize} = await parseEoCDRecord(fileProvider);
-  const centralDirectory = new DataViewFile(
-    new DataView(await fileProvider.slice(cdStartOffset, cdStartOffset + cdByteSize))
+  const centralDirectory = new DataViewReadableFile(
+    new DataView(await readRange(fileProvider, cdStartOffset, cdStartOffset + cdByteSize))
   );
   let cdHeader = await parseZipCDFileHeader(0n, centralDirectory);
   while (cdHeader) {

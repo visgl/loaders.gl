@@ -1,4 +1,4 @@
-import {FileProviderInterface} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ZipFileSystem} from './zip-filesystem';
 
 /**
@@ -6,21 +6,21 @@ import {ZipFileSystem} from './zip-filesystem';
  * a hash file inside that allows to increase reading speed
  */
 export abstract class IndexedArchive {
-  public fileProvider: FileProviderInterface;
+  public file: ReadableFile;
   public fileName?: string;
 
   /**
    * Constructor
-   * @param fileProvider - instance of a binary data reader
+   * @param fileProvider - readable file instance for random access
    * @param hashTable - pre-loaded hashTable. If presented, getFile will skip reading the hash file
    * @param fileName - name of the archive. It is used to add to an URL of a loader context
    */
   constructor(
-    fileProvider: FileProviderInterface,
+    file: ReadableFile,
     hashTable?: Record<string, bigint>,
     fileName?: string
   ) {
-    this.fileProvider = fileProvider;
+    this.file = file;
     this.fileName = fileName;
   }
 
@@ -37,7 +37,7 @@ export abstract class IndexedArchive {
    * @returns
    */
   protected async getFileWithoutHash(filename: string): Promise<ArrayBuffer> {
-    const zipFS = new ZipFileSystem(this.fileProvider);
+    const zipFS = new ZipFileSystem(this.file);
     const response = await zipFS.fetch(filename);
     return await response.arrayBuffer();
   }

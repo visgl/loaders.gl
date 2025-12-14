@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  FileProviderInterface,
-  compareArrayBuffers,
-  concatenateArrayBuffers
-} from '@loaders.gl/loader-utils';
+import {compareArrayBuffers, concatenateArrayBuffers} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ZipSignature, searchFromTheEnd} from './search-from-the-end';
+import {readBigUint64, readUint16, readUint32, readRange} from './readable-file-utils';
 import {setFieldToNumber} from './zip64-info-generation';
 
 /**
@@ -68,30 +66,28 @@ const ZIP64_COMMENT_OFFSET = 56n;
  * @param file - FileProvider instance
  * @returns Info from the header
  */
-export const parseEoCDRecord = async (file: FileProviderInterface): Promise<ZipEoCDRecord> => {
+export const parseEoCDRecord = async (file: ReadableFile): Promise<ZipEoCDRecord> => {
   const zipEoCDOffset = await searchFromTheEnd(file, eoCDSignature);
 
-  let cdRecordsNumber = BigInt(await file.getUint16(zipEoCDOffset + CD_RECORDS_NUMBER_OFFSET));
-  let cdByteSize = BigInt(await file.getUint32(zipEoCDOffset + CD_CD_BYTE_SIZE_OFFSET));
-  let cdStartOffset = BigInt(await file.getUint32(zipEoCDOffset + CD_START_OFFSET_OFFSET));
+  let cdRecordsNumber = BigInt(await readUint16(file, zipEoCDOffset + CD_RECORDS_NUMBER_OFFSET));
+  let cdByteSize = BigInt(await readUint32(file, zipEoCDOffset + CD_CD_BYTE_SIZE_OFFSET));
+  let cdStartOffset = BigInt(await readUint32(file, zipEoCDOffset + CD_START_OFFSET_OFFSET));
 
   let zip64EoCDLocatorOffset = zipEoCDOffset - 20n;
   let zip64EoCDOffset = 0n;
 
-  const magicBytes = await file.slice(zip64EoCDLocatorOffset, zip64EoCDLocatorOffset + 4n);
+  const magicBytes = await readRange(file, zip64EoCDLocatorOffset, zip64EoCDLocatorOffset + 4n);
   if (compareArrayBuffers(magicBytes, zip64EoCDLocatorSignature)) {
-    zip64EoCDOffset = await file.getBigUint64(
-      zip64EoCDLocatorOffset + ZIP64_EOCD_START_OFFSET_OFFSET
-    );
+    zip64EoCDOffset = await readBigUint64(file, zip64EoCDLocatorOffset + ZIP64_EOCD_START_OFFSET_OFFSET);
 
-    const endOfCDMagicBytes = await file.slice(zip64EoCDOffset, zip64EoCDOffset + 4n);
+    const endOfCDMagicBytes = await readRange(file, zip64EoCDOffset, zip64EoCDOffset + 4n);
     if (!compareArrayBuffers(endOfCDMagicBytes, zip64EoCDSignature.buffer)) {
       throw new Error('zip64 EoCD not found');
     }
 
-    cdRecordsNumber = await file.getBigUint64(zip64EoCDOffset + ZIP64_CD_RECORDS_NUMBER_OFFSET);
-    cdByteSize = await file.getBigUint64(zip64EoCDOffset + ZIP64_CD_CD_BYTE_SIZE_OFFSET);
-    cdStartOffset = await file.getBigUint64(zip64EoCDOffset + ZIP64_CD_START_OFFSET_OFFSET);
+    cdRecordsNumber = await readBigUint64(file, zip64EoCDOffset + ZIP64_CD_RECORDS_NUMBER_OFFSET);
+    cdByteSize = await readBigUint64(file, zip64EoCDOffset + ZIP64_CD_CD_BYTE_SIZE_OFFSET);
+    cdStartOffset = await readBigUint64(file, zip64EoCDOffset + ZIP64_CD_START_OFFSET_OFFSET);
   } else {
     zip64EoCDLocatorOffset = 0n;
   }
