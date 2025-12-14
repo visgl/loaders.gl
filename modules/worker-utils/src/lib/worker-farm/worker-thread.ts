@@ -104,12 +104,7 @@ export default class WorkerThread {
    */
   _createBrowserWorker(): Worker {
     this._loadableURL = getLoadableWorkerURL({source: this.source, url: this.url});
-    // For local module workers we rely on native `type: 'module'` support.
-    // For remote workers, `getLoadableWorkerURL` returns a `blob:` wrapper that uses `importScripts`
-    // and must be loaded as a classic worker (default).
-    const worker = this._loadableURL.startsWith('blob:')
-      ? new Worker(this._loadableURL, {name: this.name})
-      : new Worker(this._loadableURL, {name: this.name, type: 'module'});
+    const worker = new Worker(this._loadableURL, {name: this.name});
 
     worker.onmessage = (event) => {
       if (!event.data) {
