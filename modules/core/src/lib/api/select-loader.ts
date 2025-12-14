@@ -124,6 +124,8 @@ function selectLoaderInternal(
 ) {
   const url = getResourceUrl(data);
   const type = getResourceMIMEType(data);
+  const mimeTypeOption = options?.mimeType || options?.core?.mimeType;
+  const fallbackMimeType = options?.fallbackMimeType || options?.core?.fallbackMimeType;
 
   const testUrl = stripQueryString(url) || context?.url;
 
@@ -131,9 +133,9 @@ function selectLoaderInternal(
   let reason: string = '';
 
   // if options.mimeType is supplied, it takes precedence
-  if (options?.core?.mimeType) {
-    loader = findLoaderByMIMEType(loaders, options?.core?.mimeType);
-    reason = `match forced by supplied MIME type ${options?.mimeType}`;
+  if (mimeTypeOption) {
+    loader = findLoaderByMIMEType(loaders, mimeTypeOption);
+    reason = `match forced by supplied MIME type ${mimeTypeOption}`;
   }
 
   // Look up loader by url
@@ -151,9 +153,9 @@ function selectLoaderInternal(
   reason = reason || (loader ? `matched initial data ${getFirstCharacters(data)}` : '');
 
   // Look up loader by fallback mime type
-  if (options?.core?.fallbackMimeType) {
-    loader = loader || findLoaderByMIMEType(loaders, options?.core?.fallbackMimeType);
-    reason = reason || (loader ? `matched fallback MIME type ${type}` : '');
+  if (fallbackMimeType) {
+    loader = loader || findLoaderByMIMEType(loaders, fallbackMimeType);
+    reason = reason || (loader ? `matched fallback MIME type ${fallbackMimeType}` : '');
   }
 
   if (reason) {
