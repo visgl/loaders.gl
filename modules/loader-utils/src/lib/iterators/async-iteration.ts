@@ -3,11 +3,15 @@ import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils'
 // GENERAL UTILITIES
 
 /**
- * Iterates over an {@link AsyncIterator}, invoking `visitor` for each yielded value without
- * rewinding the iterator when exiting early. This enables the caller to continue iterating
- * in another loop after `visitor` signals cancellation.
+ * Iterates over an {@link AsyncIterable} or {@link Iterable}, invoking `visitor` for each yielded
+ * value without rewinding the iterator when exiting early. This enables the caller to continue
+ * iterating in another loop after `visitor` signals cancellation.
  */
-export async function forEach<TValue>(iterator: AsyncIterator<TValue>, visitor: (value: TValue) => any) {
+export async function forEach<TValue>(
+  iterable: AsyncIterable<TValue> | Iterable<TValue> | AsyncIterator<TValue>,
+  visitor: (value: TValue) => any,
+) {
+  const iterator = toAsyncIterator(iterable)
   // eslint-disable-next-line
   while (true) {
     const {done, value} = await iterator.next()
@@ -90,4 +94,22 @@ function copyFromBuffer(
   const copy = new Uint8Array(view.length)
   copy.set(view)
   return copy.buffer
+}
+
+function toAsyncIterator<TValue>(
+  iterable: AsyncIterable<TValue> | Iterable<TValue> | AsyncIterator<TValue>,
+): AsyncIterator<TValue> {
+  if (typeof (iterable as AsyncIterable<TValue>)[Symbol.asyncIterator] === 'function') {
+    return (iterable as AsyncIterable<TValue>)[Symbol.asyncIterator]()
+  }
+
+  if (typeof (iterable as Iterable<TValue>)[Symbol.iterator] === 'function') {
+    const iterator = (iterable as Iterable<TValue>)[Symbol.iterator]()
+    return {
+      next: async () => iterator.next(),
+      return: iterator.return?.bind(iterator)
+    }
+  }
+
+  return iterable as AsyncIterator<TValue>
 }
