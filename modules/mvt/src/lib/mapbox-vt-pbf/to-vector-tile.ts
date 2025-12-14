@@ -132,12 +132,12 @@ function projectGeometryToTileSpace(geometry: Geometry, extent: number, tileInde
 }
 
 function projectPointToTile(point: number[], extent: number, tileIndex?: {x: number; y: number; z: number}) {
-  if (tileIndex) {
-    return projectLngLatToTile(point, tileIndex, extent);
-  }
-
   if (isNormalizedPoint(point)) {
     return [Math.round(point[0] * extent), Math.round(point[1] * extent)];
+  }
+
+  if (tileIndex && isLngLatPoint(point)) {
+    return projectLngLatToTile(point, tileIndex, extent);
   }
 
   return [Math.round(point[0]), Math.round(point[1])];
@@ -145,6 +145,10 @@ function projectPointToTile(point: number[], extent: number, tileIndex?: {x: num
 
 function isNormalizedPoint(point: number[]) {
   return Math.abs(point[0]) <= 1 && Math.abs(point[1]) <= 1;
+}
+
+function isLngLatPoint(point: number[]) {
+  return Math.abs(point[0]) <= 180 && Math.abs(point[1]) <= 90;
 }
 
 function projectLngLatToTile(point: number[], tileIndex: {x: number; y: number; z: number}, extent: number) {
