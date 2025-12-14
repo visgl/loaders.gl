@@ -19,6 +19,11 @@ export {
 } from './parse-zip/local-file-header';
 export {parseEoCDRecord} from './parse-zip/end-of-central-directory';
 export {searchFromTheEnd} from './parse-zip/search-from-the-end';
+export {
+  readRange,
+  getReadableFileSize,
+  DataViewReadableFile
+} from './parse-zip/readable-file-utils';
 export {addOneFile, createZip} from './parse-zip/zip-composition';
 
 // export type {HashElement} from './hash-file-utility';

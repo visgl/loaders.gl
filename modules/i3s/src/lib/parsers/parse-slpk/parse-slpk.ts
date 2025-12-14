@@ -1,22 +1,23 @@
-import {FileProviderInterface} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {
   parseZipCDFileHeader,
   CD_HEADER_SIGNATURE,
   parseZipLocalFileHeader,
   searchFromTheEnd,
   parseHashTable,
-  makeHashTableFromZipHeaders
+  makeHashTableFromZipHeaders,
+  readRange
 } from '@loaders.gl/zip';
 import {SLPKArchive} from './slpk-archieve';
 
 /**
  * Creates slpk file handler from raw file
- * @param fileProvider raw file data
+ * @param fileProvider raw readable file data
  * @param cb is called with information message during parsing
  * @returns slpk file handler
  */
 export async function parseSLPKArchive(
-  fileProvider: FileProviderInterface,
+  fileProvider: ReadableFile,
   cb?: (msg: string) => void,
   fileName?: string
 ): Promise<SLPKArchive> {
@@ -41,7 +42,8 @@ export async function parseSLPKArchive(
     }
 
     const fileDataOffset = localFileHeader.fileDataOffset;
-    const hashFile = await fileProvider.slice(
+    const hashFile = await readRange(
+      fileProvider,
       fileDataOffset,
       fileDataOffset + localFileHeader.compressedSize
     );

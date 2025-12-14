@@ -1,40 +1,21 @@
 import test from 'tape-promise/tape';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
-import {BlobFile, FileProvider} from '@loaders.gl/loader-utils';
+import {BlobFile} from '@loaders.gl/loader-utils';
+import {getReadableFileSize, readRange} from '@loaders.gl/zip';
 
-export const getSignature = () => new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
-
-const getProvider = () => {
-  return FileProvider.create(new BlobFile(DATA_ARRAY.buffer));
-};
-
-test('FileProvider#slice', async (t) => {
-  const provider = await getProvider();
-  const slice = await provider.slice(0, 4);
-  t.deepEqual(new Uint8Array(slice), getSignature());
+test('ReadableFile#getReadableFileSize', async (t) => {
+  const provider = new BlobFile(DATA_ARRAY.buffer);
+  const size = await getReadableFileSize(provider);
+  t.equal(size, BigInt(DATA_ARRAY.byteLength));
   t.end();
 });
 
-test('FileProvider#getUint8', async (t) => {
-  const provider = await getProvider();
-  t.equals(await provider.getUint8(0), 80);
-  t.end();
-});
-
-test('FileProvider#getUint16', async (t) => {
-  const provider = await getProvider();
-  t.equals(await provider.getUint16(0), 19280);
-  t.end();
-});
-
-test('FileProvider#getUint32', async (t) => {
-  const provider = await getProvider();
-  t.equals(await provider.getUint32(0), 67324752);
-  t.end();
-});
-
-test('FileProvider#getBigUint64', async (t) => {
-  const provider = await getProvider();
-  t.equals(await provider.getBigUint64(0), 563035920091984n);
+test('ReadableFile#read helpers', async (t) => {
+  const provider = new BlobFile(DATA_ARRAY.buffer);
+  t.deepEqual(
+    new Uint8Array(await readRange(provider, 0n, 4n)),
+    new Uint8Array(DATA_ARRAY.slice(0, 4))
+  );
+  t.equal(new DataView(await readRange(provider, 0n, 1n)).getUint8(0), DATA_ARRAY[0]);
   t.end();
 });

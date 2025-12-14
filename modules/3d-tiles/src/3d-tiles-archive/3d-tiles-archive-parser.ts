@@ -2,25 +2,26 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {FileProviderInterface} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {
   CD_HEADER_SIGNATURE,
   makeHashTableFromZipHeaders,
   parseHashTable,
   parseZipCDFileHeader,
   parseZipLocalFileHeader,
-  searchFromTheEnd
+  searchFromTheEnd,
+  readRange
 } from '@loaders.gl/zip';
 import {Tiles3DArchive} from './3d-tiles-archive-archive';
 
 /**
  * Creates 3tz file handler from raw file
- * @param fileProvider raw file data
+ * @param fileProvider raw readable file data
  * @param cb is called with information message during parsing
  * @returns 3tz file handler
  */
 export const parse3DTilesArchive = async (
-  fileProvider: FileProviderInterface,
+  fileProvider: ReadableFile,
   cb?: (msg: string) => void
 ): Promise<Tiles3DArchive> => {
   const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);
@@ -44,7 +45,8 @@ export const parse3DTilesArchive = async (
     }
 
     const fileDataOffset = localFileHeader.fileDataOffset;
-    const hashFile = await fileProvider.slice(
+    const hashFile = await readRange(
+      fileProvider,
       fileDataOffset,
       fileDataOffset + localFileHeader.compressedSize
     );

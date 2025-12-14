@@ -28,6 +28,15 @@ It is not clear if a counterpart to the `File` class will eventually be supporte
 
 > Note that reading local files in the browser has limitations. Actual file paths are obscured and files can only be created as a result of an interactive file selection or file drop action by the user.
 
+The preferred way to provide random-access data to loaders.gl is through `ReadableFile` implementations:
+
+- `HttpFile` reads from URLs and issues HTTP range requests when the server supports them.
+- `BlobFile` wraps browser `Blob` and `File` instances and exposes efficient slicing.
+- `NodeFile` provides safe, tree-shakeable access to local files under Node.js without importing `fs` in application code.
+- `DataViewReadableFile` adapts in-memory buffers (such as data returned by `fetch`) to the same interface.
+
+`ReadableFile` classes replace the deprecated `FileProvider` utilities; new code should use the `ReadableFile` wrappers exported from `@loaders.gl/loader-utils` (and `DataViewReadableFile` from `@loaders.gl/zip`) to keep loader interactions consistent across platforms.
+
 ## Saving data
 
 Saving data from a browser is either done by POST requests to a server, or via local downloads.

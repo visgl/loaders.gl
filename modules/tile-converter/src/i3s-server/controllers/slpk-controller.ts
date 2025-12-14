@@ -1,6 +1,6 @@
 import '@loaders.gl/polyfills';
 import {parseSLPKArchive, SLPKArchive} from '@loaders.gl/i3s';
-import {FileHandleFile} from '@loaders.gl/loader-utils';
+import {NodeFile} from '@loaders.gl/loader-utils';
 
 let slpkArchive: SLPKArchive;
 
@@ -10,7 +10,7 @@ let slpkArchive: SLPKArchive;
  */
 export async function loadArchive(fullLayerPath: string): Promise<void> {
   slpkArchive = await parseSLPKArchive(
-    new FileHandleFile(fullLayerPath),
+    new NodeFile(fullLayerPath),
     (msg) => console.log(msg) // eslint-disable-line no-console
   );
   // eslint-disable-next-line no-console

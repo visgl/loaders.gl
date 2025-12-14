@@ -5,7 +5,7 @@ import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 import {cleanUpPath} from '../utils/file-utils';
 import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 import {parseSLPKArchive} from '@loaders.gl/i3s';
-import {FileHandleFile} from '@loaders.gl/loader-utils';
+import {NodeFile} from '@loaders.gl/loader-utils';
 
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Batched/BatchedColors/tileset.json';
 const TILESET_WITH_TEXTURES =
@@ -105,7 +105,7 @@ test('tile-converter(i3s)#root node should not contain geometry and textures', a
       egmFilePath: PGM_FILE_PATH
     });
 
-    const archive = await parseSLPKArchive(new FileHandleFile('data/BatchedColors.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/BatchedColors.slpk'));
     const rootTileJson = new TextDecoder().decode(await archive.getFile('nodes/root', 'http'));
     const rootTile = JSON.parse(rootTileJson);
     t.notOk(rootTile.geometryData);
@@ -124,7 +124,7 @@ test('tile-converter(i3s)#should create sharedResources json file', async (t) =>
       tilesetName: 'BatchedTextured',
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/BatchedTextured.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/BatchedTextured.slpk'));
     const rootTileJson = new TextDecoder().decode(await archive.getFile('nodes/1/shared', 'http'));
     const sharedResources = JSON.parse(rootTileJson);
     t.ok(sharedResources.materialDefinitions);
@@ -160,7 +160,7 @@ test('tile-converter(i3s)#should generate KTX2 texture', async (t) => {
       generateTextures: true,
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/BatchedTextured.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/BatchedTextured.slpk'));
     const sharedResourcesJson = new TextDecoder().decode(await archive.getFile('', 'http'));
     const ktx2Texture = new TextDecoder().decode(
       await archive.getFile('nodes/1/textures/1', 'http')
@@ -189,7 +189,7 @@ test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provid
       generateTextures: false,
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/ktx2_only.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/ktx2_only.slpk'));
     const sharedResourcesJson = new TextDecoder().decode(await archive.getFile('', 'http'));
     const ktx2Texture = new TextDecoder().decode(
       await archive.getFile('nodes/1/textures/1', 'http')
@@ -229,7 +229,7 @@ test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided a
       generateTextures: true,
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/jpg_and_ktx2.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/jpg_and_ktx2.slpk'));
     const sharedResourcesJson = new TextDecoder().decode(await archive.getFile('', 'http'));
     const ktx2Texture = new TextDecoder().decode(
       await archive.getFile('nodes/1/textures/1', 'http')
@@ -252,7 +252,7 @@ test('tile-converter(i3s)#should create only unique materials', async (t) => {
       tilesetName: 'BatchedTextured',
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/BatchedTextured.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/BatchedTextured.slpk'));
     const layerJson = new TextDecoder().decode(await archive.getFile('', 'http'));
     const layer = JSON.parse(layerJson);
     t.ok(layer.materialDefinitions);
@@ -288,7 +288,7 @@ test('tile-converter(i3s)#layer json should contain fullExtent field', async (t)
       tilesetName: 'BatchedTextured',
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/BatchedTextured.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/BatchedTextured.slpk'));
     const layerJson = new TextDecoder().decode(await archive.getFile('', 'http'));
 
     const layer = JSON.parse(layerJson);
@@ -310,7 +310,7 @@ test('tile-converter(i3s)#proceed with failing content', async (t) => {
       tilesetName: 'FailingContent',
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/FailingContent.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/FailingContent.slpk'));
     const layerJson = new TextDecoder().decode(await archive.getFile('nodepages/0', 'http'));
     const nodePage = JSON.parse(layerJson);
     t.ok(nodePage.nodes[1].mesh);
@@ -333,7 +333,7 @@ test('tile-converter(i3s)#convert with --metadata-class option', async (t) => {
       egmFilePath: PGM_FILE_PATH,
       metadataClass: 'CDBMaterialsClass'
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/CDB_Yemen.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/CDB_Yemen.slpk'));
     const nodePageJson = new TextDecoder().decode(await archive.getFile('nodepages/0', 'http'));
     t.ok(nodePageJson);
   }
@@ -350,7 +350,7 @@ test('tile-converter(i3s)#convert 3tz arhive', async (t) => {
       tilesetName: '3tz-test',
       egmFilePath: PGM_FILE_PATH
     });
-    const archive = await parseSLPKArchive(new FileHandleFile('data/3tz-test.slpk'));
+    const archive = await parseSLPKArchive(new NodeFile('data/3tz-test.slpk'));
     const nodePageJson = new TextDecoder().decode(await archive.getFile('nodepages/0', 'http'));
     t.ok(nodePageJson);
   }

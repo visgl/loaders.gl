@@ -3,11 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import {MD5Hash} from '@loaders.gl/crypto';
-import {
-  FileProviderInterface,
-  concatenateArrayBuffers,
-  concatenateArrayBuffersFromArray
-} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers, concatenateArrayBuffersFromArray} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ZipCDFileHeader, makeZipCDHeaderIterator} from './parse-zip/cd-file-header';
 
 /**
@@ -38,11 +35,11 @@ function bufferToHex(buffer: ArrayBuffer, start: number, length: number): string
 
 /**
  * generates hash info from zip files "central directory"
- * @param fileProvider - provider of the archive
+ * @param fileProvider - readable archive source
  * @returns ready to use hash info
  */
 export async function makeHashTableFromZipHeaders(
-  fileProvider: FileProviderInterface
+  fileProvider: ReadableFile
 ): Promise<Record<string, bigint>> {
   const zipCDIterator = makeZipCDHeaderIterator(fileProvider);
   return getHashTable(zipCDIterator);

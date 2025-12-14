@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {DataViewFile} from '@loaders.gl/loader-utils';
+import {DataViewReadableFile} from '@loaders.gl/zip';
 import {parse3DTilesArchive as parse3DTilesArchiveFromProvider} from './3d-tiles-archive/3d-tiles-archive-parser';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -44,6 +44,8 @@ async function parse3DTilesArchive(
   data: ArrayBuffer,
   options: Tiles3DArchiveFileLoaderOptions = {}
 ): Promise<ArrayBuffer> {
-  const archive = await parse3DTilesArchiveFromProvider(new DataViewFile(new DataView(data)));
+  const archive = await parse3DTilesArchiveFromProvider(
+    new DataViewReadableFile(new DataView(data))
+  );
   return archive.getFile(options['3d-tiles-archive']?.path ?? '');
 }

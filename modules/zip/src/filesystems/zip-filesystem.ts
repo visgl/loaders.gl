@@ -2,17 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {
-  FileSystem,
-  isBrowser,
-  FileProviderInterface,
-  isFileProvider,
-  FileHandleFile
-} from '@loaders.gl/loader-utils';
+import {FileSystem, isBrowser, BlobFile, NodeFile} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {ZipCDFileHeader, makeZipCDHeaderIterator} from '../parse-zip/cd-file-header';
 import {parseZipLocalFileHeader} from '../parse-zip/local-file-header';
 import {DeflateCompression} from '@loaders.gl/compression';
 import {IndexedArchive} from './IndexedArchive';
+import {readRange} from '../parse-zip/readable-file-utils';
 
 export type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
 /** Handling different compression types in zip */
@@ -29,40 +25,41 @@ export const ZIP_COMPRESSION_HANDLERS: {[key: number]: CompressionHandler} = {
 
 /**
  * FileSystem adapter for a ZIP file
- * Holds FileProvider object that provides random access to archived files
+ * Holds a ReadableFile object that provides random access to archived files
  */
 export class ZipFileSystem implements FileSystem {
-  /** FileProvider instance promise */
-  public fileProvider: FileProviderInterface | null = null;
+  /** File instance */
+  public file: ReadableFile | null = null;
   public fileName?: string;
   public archive: IndexedArchive | null = null;
 
   /**
    * Constructor
-   * @param file - instance of FileProvider or file path string
+   * @param file - instance of ReadableFile or file path string
    */
-  constructor(file: FileProviderInterface | IndexedArchive | string) {
+  constructor(file: ReadableFile | IndexedArchive | string | Blob | ArrayBuffer) {
     // Try to open file in NodeJS
     if (typeof file === 'string') {
       this.fileName = file;
-      if (!isBrowser) {
-        this.fileProvider = new FileHandleFile(file);
-      } else {
-        throw new Error('Cannot open file for random access in a WEB browser');
+      if (isBrowser) {
+        throw new Error('ZipFileSystem cannot open file paths in browser environments');
       }
+      this.file = new NodeFile(file);
+    } else if (file instanceof Blob || file instanceof ArrayBuffer) {
+      this.file = new BlobFile(file);
     } else if (file instanceof IndexedArchive) {
-      this.fileProvider = file.fileProvider;
+      this.file = file.file;
       this.archive = file;
       this.fileName = file.fileName;
-    } else if (isFileProvider(file)) {
-      this.fileProvider = file;
+    } else {
+      this.file = file;
     }
   }
 
   /** Clean up resources */
   async destroy() {
-    if (this.fileProvider) {
-      await this.fileProvider.destroy();
+    if (this.file) {
+      await this.file.close();
     }
   }
 
@@ -71,11 +68,11 @@ export class ZipFileSystem implements FileSystem {
    * @returns array of file names
    */
   async readdir(): Promise<string[]> {
-    if (!this.fileProvider) {
+    if (!this.file) {
       throw new Error('No data detected in the zip archive');
     }
     const fileNames: string[] = [];
-    const zipCDIterator = makeZipCDHeaderIterator(this.fileProvider);
+    const zipCDIterator = makeZipCDHeaderIterator(this.file);
     for await (const cdHeader of zipCDIterator) {
       fileNames.push(cdHeader.fileName);
     }
@@ -106,13 +103,13 @@ export class ZipFileSystem implements FileSystem {
     if (this.archive) {
       uncompressedFile = await this.archive.getFile(filename, 'http');
     } else {
-      if (!this.fileProvider) {
+      if (!this.file) {
         throw new Error('No data detected in the zip archive');
       }
       const cdFileHeader = await this.getCDFileHeader(filename);
       const localFileHeader = await parseZipLocalFileHeader(
         cdFileHeader.localHeaderOffset,
-        this.fileProvider
+        this.file
       );
       if (!localFileHeader) {
         throw new Error('Local file header has not been found in the zip archive`');
@@ -124,7 +121,8 @@ export class ZipFileSystem implements FileSystem {
         throw Error('Only Deflation compression is supported');
       }
 
-      const compressedFile = await this.fileProvider.slice(
+      const compressedFile = await readRange(
+        this.file,
         localFileHeader.fileDataOffset,
         localFileHeader.fileDataOffset + localFileHeader.compressedSize
       );
@@ -145,10 +143,10 @@ export class ZipFileSystem implements FileSystem {
    * @returns central directory file header
    */
   private async getCDFileHeader(filename: string): Promise<ZipCDFileHeader> {
-    if (!this.fileProvider) {
+    if (!this.file) {
       throw new Error('No data detected in the zip archive');
     }
-    const zipCDIterator = makeZipCDHeaderIterator(this.fileProvider);
+    const zipCDIterator = makeZipCDHeaderIterator(this.file);
     let result: ZipCDFileHeader | null = null;
     for await (const cdHeader of zipCDIterator) {
       if (cdHeader.fileName === filename) {

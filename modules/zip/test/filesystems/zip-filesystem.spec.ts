@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 
 import {fetchFile, isBrowser} from '@loaders.gl/core';
-import {FileHandleFile, DataViewFile, FileProvider} from '@loaders.gl/loader-utils';
+import {BlobFile, NodeFile} from '@loaders.gl/loader-utils';
 import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
 
 const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';
@@ -77,14 +77,14 @@ test('zip#ZipFileSystem - fetch should fail', async (t) => {
   t.end();
 });
 
-const getFileProvider = async (fileName: string) => {
-  let fileProvider: FileProvider;
+const getFileProvider = async (_fileName: string) => {
+  let fileProvider;
   if (isBrowser) {
     const fileResponse = await fetchFile(ZIP_FILE_PATH);
     const file = await fileResponse.arrayBuffer();
-    fileProvider = new DataViewFile(new DataView(file));
+    fileProvider = new BlobFile(file);
   } else {
-    fileProvider = new FileHandleFile(ZIP_FILE_PATH);
+    fileProvider = new NodeFile(ZIP_FILE_PATH);
   }
   return fileProvider;
 };

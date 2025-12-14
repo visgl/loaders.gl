@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {FileProviderInterface} from '@loaders.gl/loader-utils';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
 import {MD5Hash} from '@loaders.gl/crypto';
 import {DeflateCompression, NoCompression} from '@loaders.gl/compression';
-import {IndexedArchive, parseZipLocalFileHeader} from '@loaders.gl/zip';
+import {IndexedArchive, parseZipLocalFileHeader, readRange} from '@loaders.gl/zip';
 
 type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
 
@@ -28,14 +28,10 @@ export class Tiles3DArchive extends IndexedArchive {
 
   /**
    * creates Tiles3DArchive handler
-   * @param fileProvider - FileProvider with the whole file
+   * @param fileProvider - readable file handle with the whole archive
    * @param hashTable - hash info
    */
-  constructor(
-    fileProvider: FileProviderInterface,
-    hashTable?: Record<string, bigint>,
-    fileName?: string
-  ) {
+  constructor(fileProvider: ReadableFile, hashTable?: Record<string, bigint>, fileName?: string) {
     super(fileProvider, hashTable, fileName);
     this.hashTable = hashTable;
   }
@@ -74,12 +70,13 @@ export class Tiles3DArchive extends IndexedArchive {
         return null;
       }
 
-      const localFileHeader = await parseZipLocalFileHeader(byteOffset, this.fileProvider);
+      const localFileHeader = await parseZipLocalFileHeader(byteOffset, this.file);
       if (!localFileHeader) {
         return null;
       }
 
-      const compressedFile = await this.fileProvider.slice(
+      const compressedFile = await readRange(
+        this.file,
         localFileHeader.fileDataOffset,
         localFileHeader.fileDataOffset + localFileHeader.compressedSize
       );

@@ -1,6 +1,6 @@
 import {MD5Hash} from '@loaders.gl/crypto';
-import {FileProviderInterface} from '@loaders.gl/loader-utils';
-import {IndexedArchive, parseZipLocalFileHeader} from '@loaders.gl/zip';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
+import {IndexedArchive, parseZipLocalFileHeader, readRange} from '@loaders.gl/zip';
 import {GZipCompression} from '@loaders.gl/compression';
 
 /** Description of real paths for different file types */
@@ -56,15 +56,11 @@ export class SLPKArchive extends IndexedArchive {
 
   /**
    * Constructor
-   * @param fileProvider - instance of a binary data reader
+   * @param fileProvider - readable file handle for random access
    * @param hashTable - pre-loaded hashTable. If presented, getFile will skip reading the hash file
    * @param fileName - name of the archive. It is used to add to an URL of a loader context
    */
-  constructor(
-    fileProvider: FileProviderInterface,
-    hashTable?: Record<string, bigint>,
-    fileName?: string
-  ) {
+  constructor(fileProvider: ReadableFile, hashTable?: Record<string, bigint>, fileName?: string) {
     super(fileProvider, hashTable, fileName);
     this.hashTable = hashTable;
   }
@@ -145,12 +141,13 @@ export class SLPKArchive extends IndexedArchive {
         return undefined;
       }
 
-      const localFileHeader = await parseZipLocalFileHeader(offset, this.fileProvider);
+      const localFileHeader = await parseZipLocalFileHeader(offset, this.file);
       if (!localFileHeader) {
         return undefined;
       }
 
-      compressedFile = await this.fileProvider.slice(
+      compressedFile = await readRange(
+        this.file,
         localFileHeader.fileDataOffset,
         localFileHeader.fileDataOffset + localFileHeader.compressedSize
       );

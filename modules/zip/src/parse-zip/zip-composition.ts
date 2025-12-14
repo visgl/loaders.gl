@@ -1,15 +1,10 @@
-import {
-  FileHandleFile,
-  concatenateArrayBuffers,
-  path,
-  NodeFilesystem,
-  NodeFile
-} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffers, path, NodeFilesystem, NodeFile} from '@loaders.gl/loader-utils';
 import {ZipEoCDRecord, generateEoCD, parseEoCDRecord, updateEoCD} from './end-of-central-directory';
 import {CRC32Hash} from '@loaders.gl/crypto';
 import {generateLocalHeader} from './local-file-header';
 import {generateCDHeader} from './cd-file-header';
 import {fetchFile} from '@loaders.gl/core';
+import {readRange} from './readable-file-utils';
 
 /**
  * cut off CD and EoCD records from zip file
@@ -17,11 +12,12 @@ import {fetchFile} from '@loaders.gl/core';
  * @returns tuple with three values: CD, EoCD record, EoCD information
  */
 async function cutTheTailOff(
-  provider: FileHandleFile
+  provider: NodeFile
 ): Promise<[ArrayBuffer, ArrayBuffer, ZipEoCDRecord]> {
   // define where the body ends
   const oldEoCDinfo = await parseEoCDRecord(provider);
   const oldCDStartOffset = oldEoCDinfo.cdStartOffset;
+  const providerSize = (await provider.stat()).bigsize;
 
   // define cd length
   const oldCDLength = Number(
@@ -31,7 +27,7 @@ async function cutTheTailOff(
   );
 
   // cut off everything except of archieve body
-  const zipEnding = await provider.slice(oldCDStartOffset, provider.length);
+  const zipEnding = await readRange(provider, oldCDStartOffset, providerSize);
   await provider.truncate(Number(oldCDStartOffset));
 
   // divide cd body and eocd record
@@ -84,39 +80,44 @@ async function generateFileHeaders(
  */
 export async function addOneFile(zipUrl: string, fileToAdd: ArrayBuffer, fileName: string) {
   // init file handler
-  const provider = new FileHandleFile(zipUrl, true);
+  const provider = new NodeFile(zipUrl, 'a+');
 
   const [oldCDBody, eocdBody, oldEoCDinfo] = await cutTheTailOff(provider);
 
+  let currentOffset = (await provider.stat()).bigsize;
+
   // remember the new file local header start offset
-  const newFileOffset = provider.length;
+  const newFileOffset = currentOffset;
 
   const [localPart, cdHeaderPart] = await generateFileHeaders(fileName, fileToAdd, newFileOffset);
 
   // write down the file local header
   await provider.append(localPart);
+  currentOffset += BigInt(localPart.byteLength);
 
   // add the file CD header to the CD
   const newCDBody = concatenateArrayBuffers(oldCDBody, cdHeaderPart);
 
   // remember the CD start offset
-  const newCDStartOffset = provider.length;
+  const newCDStartOffset = currentOffset;
 
   // write down new CD
   await provider.append(new Uint8Array(newCDBody));
+  currentOffset += BigInt(newCDBody.byteLength);
 
   // remember where eocd starts
-  const eocdOffset = provider.length;
+  const eocdOffset = currentOffset;
 
-  await provider.append(
-    updateEoCD(
-      eocdBody,
-      oldEoCDinfo.offsets,
-      newCDStartOffset,
-      eocdOffset,
-      oldEoCDinfo.cdRecordsNumber + 1n
-    )
+  const updatedEoCD = updateEoCD(
+    eocdBody,
+    oldEoCDinfo.offsets,
+    newCDStartOffset,
+    eocdOffset,
+    oldEoCDinfo.cdRecordsNumber + 1n
   );
+
+  await provider.append(updatedEoCD);
+  currentOffset += BigInt(updatedEoCD.byteLength);
 }
 
 /**
