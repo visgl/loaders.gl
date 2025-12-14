@@ -41,6 +41,11 @@ export type FetchLike = (url: string, options?: RequestInit) => Promise<Response
 
 // MISC TYPES
 
+/**
+ * Transformation callback used by batch parsers to reshape streamed binary chunks.
+ * Accepts iterables of `ArrayBuffer`, `ArrayBufferView`, or `ArrayBufferLike` values and
+ * returns an async iterable of the same surface.
+ */
 export type TransformBatches = (
   asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
 ) => AsyncIterable<ArrayBufferLike | ArrayBufferView>;

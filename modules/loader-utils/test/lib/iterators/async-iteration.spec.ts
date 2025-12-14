@@ -6,7 +6,8 @@ import {
   makeTextDecoderIterator,
   makeTextEncoderIterator,
   makeLineIterator,
-  makeNumberedLineIterator
+  makeNumberedLineIterator,
+  concatenateArrayBuffersAsync
 } from '@loaders.gl/loader-utils';
 
 import {NDJSONLoader} from '@loaders.gl/json';
@@ -107,4 +108,21 @@ test('async-iterator#parseNDJSONInBatches', async (t) => {
     t.equals(obj['flag'], Boolean(id % 2), 'flag field matches');
     id++;
   }
+});
+
+test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and views', async (t) => {
+  const sharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(4) : new ArrayBuffer(4);
+  const sharedView = new Uint8Array(sharedArrayBuffer);
+  sharedView.set([1, 2, 3, 4]);
+
+  const view = new Uint8Array([5, 6]);
+
+  const result = await concatenateArrayBuffersAsync([
+    sharedArrayBuffer,
+    view.subarray(1),
+    new DataView(new Uint8Array([7, 8]).buffer)
+  ]);
+
+  t.deepEquals(new Uint8Array(result), new Uint8Array([1, 2, 3, 4, 6, 7, 8]));
+  t.end();
 });

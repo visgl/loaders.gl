@@ -34,6 +34,26 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync', (t) => {
   t.end();
 });
 
+test('parseWithLoader#getArrayBufferOrStringFromDataSync(ArrayBufferLike)', (t) => {
+  if (typeof SharedArrayBuffer === 'undefined') {
+    t.comment('SharedArrayBuffer unavailable in environment');
+    t.end();
+    return;
+  }
+
+  const sharedArrayBuffer = new SharedArrayBuffer(6);
+  const view = new Uint8Array(sharedArrayBuffer);
+  view.set([97, 98, 99, 100, 101, 102]);
+
+  const stringResult = getArrayBufferOrStringFromDataSync(sharedArrayBuffer, JSONLoader, {});
+  t.equals(stringResult, 'abcdef', 'decodes SharedArrayBuffer to string');
+
+  const binaryResult = getArrayBufferOrStringFromDataSync(sharedArrayBuffer, BinaryLoader, {});
+  t.deepEquals(new Uint8Array(binaryResult as ArrayBuffer), view, 'copies SharedArrayBuffer to ArrayBuffer');
+
+  t.end();
+});
+
 test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays)', (t) => {
   const string = 'line 1\nline 2';
   const embeddedString = `}}}${string}{{{`;
@@ -96,10 +116,11 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays)', (t) 
 test('parseWithLoader#getAsyncIterableFromData', async (t) => {
   const TESTS = [
     new Float32Array([1, 2, 3]).buffer,
+    new DataView(new Uint8Array([1, 2, 3, 4]).buffer),
     (async function* generator() {
       yield new ArrayBuffer(0);
     })(),
-    new Set([new ArrayBuffer(0), new ArrayBuffer(0)]).values()
+    new Set([new Uint8Array([4, 5]).subarray(0, 1), new ArrayBuffer(0)]).values()
   ];
 
   for (const testCase of TESTS) {

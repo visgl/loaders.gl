@@ -3,18 +3,11 @@ import {concatenateArrayBuffers} from '../binary-utils/array-buffer-utils';
 // GENERAL UTILITIES
 
 /**
- * Iterate over async iterator, without resetting iterator if end is not reached
- * - forEach intentionally does not reset iterator if exiting loop prematurely
- *   so that iteration can continue in a second loop
- * - It is recommended to use a standard for-await as last loop to ensure
- *   iterator gets properly reset
- *
- * TODO - optimize using sync iteration if argument is an Iterable?
- *
- * @param iterator
- * @param visitor
+ * Iterates over an {@link AsyncIterator}, invoking `visitor` for each yielded value without
+ * rewinding the iterator when exiting early. This enables the caller to continue iterating
+ * in another loop after `visitor` signals cancellation.
  */
-export async function forEach(iterator, visitor) {
+export async function forEach<TValue>(iterator: AsyncIterator<TValue>, visitor: (value: TValue) => any) {
   // eslint-disable-next-line
   while (true) {
     const {done, value} = await iterator.next();
@@ -29,13 +22,11 @@ export async function forEach(iterator, visitor) {
   }
 }
 
-// Breaking big data into iterable chunks, concatenating iterable chunks into big data objects
-
 /**
- * Concatenates all data chunks yielded by an (async) iterator
- * This function can e.g. be used to enable atomic parsers to work on (async) iterator inputs
+ * Concatenates all binary chunks yielded by an async or sync iterator.
+ * Supports `ArrayBuffer`, typed array views, and `ArrayBufferLike` sources (e.g. `SharedArrayBuffer`).
+ * This allows atomic parsers to operate on iterator inputs by materializing them into a single buffer.
  */
-
 export async function concatenateArrayBuffersAsync(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
