@@ -63,7 +63,7 @@ const ZIP64_COMMENT_OFFSET = 56n;
 
 /**
  * Parses end of central directory record of zip file
- * @param file - FileProvider instance
+ * @param file - ReadableFile instance
  * @returns Info from the header
  */
 export const parseEoCDRecord = async (file: ReadableFile): Promise<ZipEoCDRecord> => {
