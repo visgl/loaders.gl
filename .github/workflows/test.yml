@@ -33,7 +33,7 @@ jobs:
 
       - name: Build
         run: |
-          yarn run bootstrap
+          yarn run build
 
       - name: Run browser tests (generate coverage)
         run: |
