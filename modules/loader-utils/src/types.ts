@@ -42,26 +42,27 @@ export type FetchLike = (url: string, options?: RequestInit) => Promise<Response
 // MISC TYPES
 
 export type TransformBatches = (
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
-) => AsyncIterable<ArrayBuffer>;
+  asyncIterator: AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
+) => AsyncIterable<ArrayBufferLike | ArrayBufferView>;
 
 /** Types that can be synchronously parsed */
-export type SyncDataType = string | ArrayBuffer; // TODO File | Blob can be read synchronously...
+export type SyncDataType = string | ArrayBufferLike | ArrayBufferView; // TODO File | Blob can be read synchronously...
 
 /** Types that can be parsed async */
 export type DataType =
   | string
-  | ArrayBuffer
+  | ArrayBufferLike
+  | ArrayBufferView
   | File
   | Blob
   | Response
   | ReadableStream
-  | Iterable<ArrayBuffer>
-  | AsyncIterable<ArrayBuffer>;
+  | Iterable<ArrayBufferLike | ArrayBufferView>
+  | AsyncIterable<ArrayBufferLike | ArrayBufferView>;
 
 /** Types that can be parsed in batches */
 export type BatchableDataType =
   | DataType
-  | Iterable<ArrayBuffer>
-  | AsyncIterable<ArrayBuffer>
-  | Promise<AsyncIterable<ArrayBuffer>>;
+  | Iterable<ArrayBufferLike | ArrayBufferView>
+  | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+  | Promise<AsyncIterable<ArrayBufferLike | ArrayBufferView>>;
