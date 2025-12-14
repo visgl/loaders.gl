@@ -31,11 +31,7 @@ export class Tiles3DArchive extends IndexedArchive {
    * @param fileProvider - readable file handle with the whole archive
    * @param hashTable - hash info
    */
-  constructor(
-    fileProvider: ReadableFile,
-    hashTable?: Record<string, bigint>,
-    fileName?: string
-  ) {
+  constructor(fileProvider: ReadableFile, hashTable?: Record<string, bigint>, fileName?: string) {
     super(fileProvider, hashTable, fileName);
     this.hashTable = hashTable;
   }

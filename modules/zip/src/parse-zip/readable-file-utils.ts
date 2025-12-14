@@ -61,10 +61,7 @@ export async function readUint32(file: ReadableFile, offset: number | bigint): P
   return dataView.getUint32(0, true);
 }
 
-export async function readBigUint64(
-  file: ReadableFile,
-  offset: number | bigint
-): Promise<bigint> {
+export async function readBigUint64(file: ReadableFile, offset: number | bigint): Promise<bigint> {
   const dataView = await readDataView(file, offset, toBigInt(offset) + 8n);
   return dataView.getBigUint64(0, true);
 }

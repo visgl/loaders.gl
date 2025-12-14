@@ -15,11 +15,7 @@ export abstract class IndexedArchive {
    * @param hashTable - pre-loaded hashTable. If presented, getFile will skip reading the hash file
    * @param fileName - name of the archive. It is used to add to an URL of a loader context
    */
-  constructor(
-    file: ReadableFile,
-    hashTable?: Record<string, bigint>,
-    fileName?: string
-  ) {
+  constructor(file: ReadableFile, hashTable?: Record<string, bigint>, fileName?: string) {
     this.file = file;
     this.fileName = fileName;
   }

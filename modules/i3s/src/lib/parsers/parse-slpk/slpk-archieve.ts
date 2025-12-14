@@ -60,11 +60,7 @@ export class SLPKArchive extends IndexedArchive {
    * @param hashTable - pre-loaded hashTable. If presented, getFile will skip reading the hash file
    * @param fileName - name of the archive. It is used to add to an URL of a loader context
    */
-  constructor(
-    fileProvider: ReadableFile,
-    hashTable?: Record<string, bigint>,
-    fileName?: string
-  ) {
+  constructor(fileProvider: ReadableFile, hashTable?: Record<string, bigint>, fileName?: string) {
     super(fileProvider, hashTable, fileName);
     this.hashTable = hashTable;
   }

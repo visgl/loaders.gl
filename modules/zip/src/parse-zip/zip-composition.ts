@@ -11,7 +11,9 @@ import {readRange} from './readable-file-utils';
  * @param provider zip file
  * @returns tuple with three values: CD, EoCD record, EoCD information
  */
-async function cutTheTailOff(provider: NodeFile): Promise<[ArrayBuffer, ArrayBuffer, ZipEoCDRecord]> {
+async function cutTheTailOff(
+  provider: NodeFile
+): Promise<[ArrayBuffer, ArrayBuffer, ZipEoCDRecord]> {
   // define where the body ends
   const oldEoCDinfo = await parseEoCDRecord(provider);
   const oldCDStartOffset = oldEoCDinfo.cdStartOffset;
