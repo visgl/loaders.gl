@@ -16,6 +16,7 @@ export type {MVTLoaderOptions} from './mvt-loader';
 // MVTWriter
 
 export {MVTWriter} from './mvt-writer';
+export type {MVTWriterOptions} from './lib/encode-mvt';
 
 // MVTSource
 

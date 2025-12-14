@@ -4,7 +4,7 @@
 
 import {WriterWithEncoder} from '@loaders.gl/loader-utils';
 import {MVTFormat} from './mvt-format';
-import {encodeMVT} from './lib/encode-mvt';
+import {encodeMVT, type MVTWriterOptions} from './lib/encode-mvt';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -16,13 +16,18 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export const MVTWriter = {
   ...MVTFormat,
   version: VERSION,
+  binary: true,
   options: {
-    image: {
-      mimeType: 'image/png',
-      jpegQuality: null
+    mvt: {
+      layerName: 'geojsonLayer',
+      version: 1,
+      extent: 4096
     }
   },
-  async encode(data, options) {
+  async encode(data, options?: MVTWriterOptions) {
+    return encodeMVT(data, options);
+  },
+  encodeSync(data, options?: MVTWriterOptions) {
     return encodeMVT(data, options);
   }
-} as const satisfies WriterWithEncoder;
+} as const satisfies WriterWithEncoder<any, never, MVTWriterOptions>;
