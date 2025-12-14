@@ -36,6 +36,7 @@
     "clean": "ocular-clean",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
     "build": "ocular-clean && ocular-build && npx lerna run pre-build",
+    "build-workers": "npx lerna run pre-build",
     "cover": "ocular-test cover",
     "lint": "ocular-lint",
     "publish-beta": "ocular-publish beta",

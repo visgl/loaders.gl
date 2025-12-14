@@ -9,11 +9,21 @@ on:
 
 jobs:
   test:
+    name: Tests (Node ${{ matrix.node-version }} - ${{ matrix.scope }})
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     strategy:
       matrix:
-        node-version: [20, 22, 24]
+        include:
+          - node-version: 24
+            full: true
+            scope: 'full suite'
+          - node-version: 22
+            full: false
+            scope: 'build + node tests'
+          - node-version: 20
+            full: false
+            scope: 'build + node tests'
 
     steps:
       - name: Checkout code
@@ -55,7 +65,11 @@ jobs:
         run: |
           yarn run build
 
+      - name: Build workers
+        run: yarn run build-workers
+
       - name: Run browser tests (generate coverage)
+        if: matrix.full
         run: |
           yarn run test-cover
 
@@ -64,10 +78,12 @@ jobs:
           yarn run test-node
 
       - name: Run lint
+        if: matrix.full
         run: |
           yarn run lint
 
       - name: Coveralls
+        if: matrix.full
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
