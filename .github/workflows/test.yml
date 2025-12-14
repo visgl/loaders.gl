@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Build workers
+        run: yarn run build-workers
+
       - name: Build
         if: matrix.full
         run: |
