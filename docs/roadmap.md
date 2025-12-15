@@ -19,7 +19,7 @@ While no loader support has been removed, the flavor of the loaders.gl framework
 **Improved `DataSource` APIs**
 
 - The `Source` and `DataSource` APIs have matured and are now easier to work with.
-- Consule the upgrade guide for migration details.
+- Consult the upgrade guide for migration details.
 
 ### Per-module changes
 
