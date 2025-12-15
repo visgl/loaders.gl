@@ -26,6 +26,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./i3s-content-worker.js": {
+      "import": "./dist/i3s-content-worker.js"
+    },
+    "./i3s-content-worker-node.js": {
+      "import": "./dist/i3s-content-worker-node.js"
     }
   },
   "sideEffects": false,

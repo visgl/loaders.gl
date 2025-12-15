@@ -26,6 +26,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./wkt-worker.js": {
+      "import": "./dist/wkt-worker.js"
     }
   },
   "sideEffects": false,
