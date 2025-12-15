@@ -90,7 +90,11 @@ export function normalizeGeojson(geojson) {
   return geojson;
 }
 
-function convertFeaturesToVectorTileFeatures(features, extent: number, tileIndex?: {x: number; y: number; z: number}) {
+function convertFeaturesToVectorTileFeatures(
+  features,
+  extent: number,
+  tileIndex?: {x: number; y: number; z: number}
+) {
   if (features.every(isVectorTileFeature)) {
     return features;
   }
@@ -98,7 +102,11 @@ function convertFeaturesToVectorTileFeatures(features, extent: number, tileIndex
   return features.map((feature) => convertFeatureToVectorTile(feature, extent, tileIndex));
 }
 
-function convertFeatureToVectorTile(feature, extent: number, tileIndex?: {x: number; y: number; z: number}) {
+function convertFeatureToVectorTile(
+  feature,
+  extent: number,
+  tileIndex?: {x: number; y: number; z: number}
+) {
   const geometry = feature.geometry as Geometry;
   const type = getVectorTileType(geometry.type);
 
@@ -110,28 +118,48 @@ function convertFeatureToVectorTile(feature, extent: number, tileIndex?: {x: num
   };
 }
 
-function projectGeometryToTileSpace(geometry: Geometry, extent: number, tileIndex?: {x: number; y: number; z: number}) {
+function projectGeometryToTileSpace(
+  geometry: Geometry,
+  extent: number,
+  tileIndex?: {x: number; y: number; z: number}
+) {
   switch (geometry.type) {
     case 'Point':
       return [projectPointToTile(geometry.coordinates as number[], extent, tileIndex)];
     case 'MultiPoint':
-      return geometry.coordinates.map((coord) => projectPointToTile(coord as number[], extent, tileIndex));
+      return geometry.coordinates.map((coord) =>
+        projectPointToTile(coord as number[], extent, tileIndex)
+      );
     case 'LineString':
-      return [geometry.coordinates.map((coord) => projectPointToTile(coord as number[], extent, tileIndex))];
+      return [
+        geometry.coordinates.map((coord) =>
+          projectPointToTile(coord as number[], extent, tileIndex)
+        )
+      ];
     case 'MultiLineString':
-      return geometry.coordinates.map((line) => line.map((coord) => projectPointToTile(coord as number[], extent, tileIndex)));
+      return geometry.coordinates.map((line) =>
+        line.map((coord) => projectPointToTile(coord as number[], extent, tileIndex))
+      );
     case 'Polygon':
-      return geometry.coordinates.map((ring) => ring.map((coord) => projectPointToTile(coord as number[], extent, tileIndex)));
+      return geometry.coordinates.map((ring) =>
+        ring.map((coord) => projectPointToTile(coord as number[], extent, tileIndex))
+      );
     case 'MultiPolygon':
       return geometry.coordinates.flatMap((polygon) =>
-        polygon.map((ring) => ring.map((coord) => projectPointToTile(coord as number[], extent, tileIndex)))
+        polygon.map((ring) =>
+          ring.map((coord) => projectPointToTile(coord as number[], extent, tileIndex))
+        )
       );
     default:
       throw new Error(`Unsupported geometry type: ${geometry.type}`);
   }
 }
 
-function projectPointToTile(point: number[], extent: number, tileIndex?: {x: number; y: number; z: number}) {
+function projectPointToTile(
+  point: number[],
+  extent: number,
+  tileIndex?: {x: number; y: number; z: number}
+) {
   if (isNormalizedPoint(point)) {
     return [Math.round(point[0] * extent), Math.round(point[1] * extent)];
   }
@@ -151,7 +179,11 @@ function isLngLatPoint(point: number[]) {
   return Math.abs(point[0]) <= 180 && Math.abs(point[1]) <= 90;
 }
 
-function projectLngLatToTile(point: number[], tileIndex: {x: number; y: number; z: number}, extent: number) {
+function projectLngLatToTile(
+  point: number[],
+  tileIndex: {x: number; y: number; z: number},
+  extent: number
+) {
   const [lng, lat] = point;
   const {x, y, z} = tileIndex;
   const size = extent * Math.pow(2, z);
@@ -160,7 +192,8 @@ function projectLngLatToTile(point: number[], tileIndex: {x: number; y: number; 
 
   const worldX = ((lng + 180) / 360) * size;
   const worldY =
-    ((180 - (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + ((lat * Math.PI) / 180) / 2))) * size) / 360;
+    ((180 - (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 180 / 2))) * size) /
+    360;
 
   return [Math.round(worldX - x0), Math.round(worldY - y0)];
 }

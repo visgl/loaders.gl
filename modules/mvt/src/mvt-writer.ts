@@ -12,6 +12,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /**
  * Writer for the Mapbox Vector Tile format
+ *
+ * Experimental: The API may change in minor/patch releases.
  */
 export const MVTWriter = {
   ...MVTFormat,
