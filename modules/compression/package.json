@@ -29,6 +29,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./compression-worker.js": {
+      "import": "./dist/compression-worker.js"
+    },
+    "./compression-worker-node.js": {
+      "import": "./dist/compression-worker-node.js"
     }
   },
   "sideEffects": false,

@@ -26,6 +26,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./shp-worker.js": {
+      "import": "./dist/shp-worker.js"
+    },
+    "./dbf-worker.js": {
+      "import": "./dist/dbf-worker.js"
     }
   },
   "sideEffects": false,

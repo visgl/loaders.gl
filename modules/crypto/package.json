@@ -30,6 +30,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./crypto-worker.js": {
+      "import": "./dist/crypto-worker.js"
+    },
+    "./crypto-worker-node.js": {
+      "import": "./dist/crypto-worker-node.js"
     }
   },
   "sideEffects": false,

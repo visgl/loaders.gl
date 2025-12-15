@@ -27,6 +27,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./pcd-worker.js": {
+      "import": "./dist/pcd-worker.js"
     }
   },
   "sideEffects": false,
