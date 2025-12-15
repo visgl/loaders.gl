@@ -34,15 +34,15 @@ const data = await load(url_to_csv_without_header, CSVLoader, {csv: {header: fal
 
 ## Options
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `csv.shape` | `'object-row-table' \| 'array-row-table'` | `object-row-table` | Output rows as objects keyed by column name or as arrays of values. |
-| `csv.optimizeMemoryUsage` | `boolean` | `false` | Optimize memory usage at the cost of additional parsing time. |
-| `csv.header` | `boolean \| 'auto'` | `auto` | If `true`, treat the first row as field names. If `false`, treat the first row as data. `'auto'` attempts to detect headers. |
-| `csv.columnPrefix` | `string` | `column` | Prefix used when generating column names for files without headers (for example, `column1`, `column2`, ...). |
-| `csv.quoteChar` | `string` | `"` | Character used to quote fields. |
-| `csv.escapeChar` | `string` | `"` | Character used to escape the quote character within a field. |
-| `csv.dynamicTyping` | `boolean` | `true` | Convert numeric and boolean values from strings to their native types. |
-| `csv.comments` | `boolean` | `false` | Skip lines that start with a comment indicator. |
-| `csv.skipEmptyLines` | `boolean \| 'greedy'` | `true` | Skip empty lines; `'greedy'` also skips lines that only contain whitespace. |
-| `csv.delimitersToGuess` | `string[]` | `[',', '\t', '\|', ';']` | Delimiters to try when no delimiter is specified. |
+| Option                    | Type                                      | Default                  | Description                                                                                                                  |
+| ------------------------- | ----------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `csv.shape`               | `'object-row-table' \| 'array-row-table'` | `object-row-table`       | Output rows as objects keyed by column name or as arrays of values.                                                          |
+| `csv.optimizeMemoryUsage` | `boolean`                                 | `false`                  | Optimize memory usage at the cost of additional parsing time.                                                                |
+| `csv.header`              | `boolean \| 'auto'`                       | `auto`                   | If `true`, treat the first row as field names. If `false`, treat the first row as data. `'auto'` attempts to detect headers. |
+| `csv.columnPrefix`        | `string`                                  | `column`                 | Prefix used when generating column names for files without headers (for example, `column1`, `column2`, ...).                 |
+| `csv.quoteChar`           | `string`                                  | `"`                      | Character used to quote fields.                                                                                              |
+| `csv.escapeChar`          | `string`                                  | `"`                      | Character used to escape the quote character within a field.                                                                 |
+| `csv.dynamicTyping`       | `boolean`                                 | `true`                   | Convert numeric and boolean values from strings to their native types.                                                       |
+| `csv.comments`            | `boolean`                                 | `false`                  | Skip lines that start with a comment indicator.                                                                              |
+| `csv.skipEmptyLines`      | `boolean \| 'greedy'`                     | `true`                   | Skip empty lines; `'greedy'` also skips lines that only contain whitespace.                                                  |
+| `csv.delimitersToGuess`   | `string[]`                                | `[',', '\t', '\|', ';']` | Delimiters to try when no delimiter is specified.                                                                            |
