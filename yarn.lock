@@ -6376,6 +6376,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@luma.gl/constants@npm:^9.0.0":
+  version: 9.2.5
+  resolution: "@luma.gl/constants@npm:9.2.5"
+  checksum: 10c0/f656fe32f72825f400782cbb1bb14359e7dd97ddbeed0e04b0b72949a1b4adc91b93f818a7e3270832d72b8616b5b3cf07540e3239cae0c9bd857d10b3b1d6c8
+  languageName: node
+  linkType: hard
+
 "@luma.gl/core@npm:^9.0.11, @luma.gl/core@npm:~9.0.27":
   version: 9.0.27
   resolution: "@luma.gl/core@npm:9.0.27"
@@ -10540,6 +10547,18 @@ __metadata:
     ocular-publish: scripts/publish.js
     ocular-test: scripts/test.js
   checksum: 10c0/c1d63c38e3a7de574586c19669e8f8b155387beff56843604750fa1d2daa162ed5206f196c91d4c24c05833da20ed2ed55964606a7c4bb0f451a622184800d46
+  languageName: node
+  linkType: hard
+
+"@vis.gl/ts-plugins@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "@vis.gl/ts-plugins@npm:1.0.1"
+  dependencies:
+    "@luma.gl/constants": "npm:^9.0.0"
+    minimatch: "npm:^3.0.0"
+    ts-patch: "npm:^3.1.2"
+    typescript: "npm:^5.2.2"
+  checksum: 10c0/f2301af6e54170f1a16bb93779069d87ba8cdc871b169a73143ccaff527bdf0b847f058bd8d865dfafe11db426c467ab8141784f0ff4b6f14cac82460b645b70
   languageName: node
   linkType: hard
 
@@ -19907,6 +19926,7 @@ __metadata:
     "@probe.gl/test-utils": "npm:^4.0.2"
     "@types/tape-promise": "npm:^4.0.1"
     "@vis.gl/dev-tools": "npm:^1.0.0"
+    "@vis.gl/ts-plugins": "npm:^1.0.0"
     pre-commit: "npm:^1.2.2"
     pre-push: "npm:^0.1.1"
     puppeteer: "npm:^23.4.0"
