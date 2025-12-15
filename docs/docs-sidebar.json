@@ -81,6 +81,7 @@
           "modules/gltf/api-reference/glb-writer",
           "modules/images/api-reference/image-writer",
           "modules/json/api-reference/geojson-writer",
+          "modules/mvt/api-reference/mvt-writer",
           "modules/textures/api-reference/compressed-texture-writer",
           "modules/textures/api-reference/ktx2-basis-texture-writer",
           "modules/wkt/api-reference/wkt-writer",
