@@ -54,5 +54,10 @@ export const PLYLoader = {
   parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply), // TODO - this may not detect text correctly?
   parseTextSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
   parseSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
-  parseInBatches: (arrayBuffer, options) => parsePLYInBatches(arrayBuffer, options?.ply)
+  parseInBatches: (
+    arrayBuffer:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options
+  ) => parsePLYInBatches(arrayBuffer, options?.ply)
 } as const satisfies LoaderWithParser<PLYMesh, any, PLYLoaderOptions>;
