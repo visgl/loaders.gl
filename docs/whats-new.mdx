@@ -6,14 +6,22 @@ Target Release Date: Q1 2026
 
 See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
-Highlights:
-- Light modernization of build tooling
-- Documentation: improvements
+**Highlights**
+- **Tooling** - CI optimizations
 - **TypeScript** Stricter types across code base, migrate to ArrayBufferLike
+- **Documentation** - Formatting cleanup, typos etc.
+
+**All modules**
+
+- Worker bundles now exported explicitly in each module's package.json `exports` section.
+
+**@loaders.gl/core**
+
+- Common `LoaderOptions` can now be provided in the `options.core.<...>` rather than on the top level. This allows common options to be type checked. 
 
 **@loaders.gl/mvt**
 
-- `MVTWriter` now projects GeoJSON using optional `tileIndex` metadata and supports roundtrips with `MVTLoader`.
+- `MVTWriter` - A new experimental writer that allows GeoJSON to be written in binary MVT tile format.
 
 ## v4.3
 
