@@ -198,6 +198,9 @@ function toArrayBuffer(bufferSource: ArrayBuffer | ArrayBufferView): ArrayBuffer
   }
 
   const {buffer, byteOffset, byteLength} = bufferSource;
+  if (buffer instanceof ArrayBuffer && byteOffset === 0 && byteLength === buffer.byteLength) {
+    return buffer;
+  }
   return copyToArrayBuffer(buffer, byteOffset, byteLength);
 }
 
