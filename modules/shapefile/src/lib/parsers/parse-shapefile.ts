@@ -3,7 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 // import type {Feature} from '@loaders.gl/gis';
-import {LoaderContext, parseInBatchesFromContext, parseFromContext} from '@loaders.gl/loader-utils';
+import {
+  LoaderContext,
+  parseInBatchesFromContext,
+  parseFromContext,
+  toArrayBufferIterator
+} from '@loaders.gl/loader-utils';
 import {convertBinaryGeometryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import type {
   BinaryGeometry,
@@ -34,7 +39,9 @@ interface ShapefileOutput {
  */
 // eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): AsyncIterable<ShapefileOutput> {
@@ -43,7 +50,7 @@ export async function* parseShapefileInBatches(
 
   // parse geometries
   const shapeIterable = await parseInBatchesFromContext(
-    asyncIterator,
+    toArrayBufferIterator(asyncIterator),
     SHPLoader,
     options,
     context!

@@ -45,8 +45,11 @@ export const NullLoader = {
   version: VERSION,
   mimeTypes: ['application/x.empty'],
   extensions: ['null'],
-  parse: async (arrayBuffer: ArrayBuffer, options?: NullLoaderOptions, context?: LoaderContext) =>
-    parseSync(arrayBuffer, options || {}, context),
+  parse: async (
+    arrayBuffer: ArrayBufferLike | ArrayBufferView,
+    options?: NullLoaderOptions,
+    context?: LoaderContext
+  ) => parseSync(arrayBuffer, options || {}, context),
   parseSync,
   parseInBatches: async function* generator(asyncIterator, options, context) {
     for await (const batch of asyncIterator) {
@@ -64,7 +67,7 @@ export const NullLoader = {
  * web worker. The `context` parameter is stripped using JSON.stringify & parse.
  */
 function parseSync(
-  arrayBuffer: ArrayBuffer,
+  arrayBuffer: ArrayBufferLike | ArrayBufferView,
   options?: NullLoaderOptions,
   context?: LoaderContext
 ): null {

@@ -6,6 +6,7 @@ import * as arrow from 'apache-arrow';
 import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
 import {ArrowLoaderOptions} from '../../exports/arrow-loader';
 import {convertArrowToTable} from '@loaders.gl/schema-utils';
+import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
 
 /** Parses arrow to a loaders.gl table. Defaults to `arrow-table` */
 export function parseArrowSync(arrayBuffer, options?: {shape?: Table['shape']}): Table {
@@ -15,7 +16,9 @@ export function parseArrowSync(arrayBuffer, options?: {shape?: Table['shape']}):
 }
 
 export function parseArrowInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: ArrowLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   // Creates the appropriate arrow.RecordBatchReader subclasses from the input
@@ -38,7 +41,7 @@ export function parseArrowInBatches(
 
   async function* makeArrowAsyncIterator(): AsyncIterator<ArrowTableBatch> {
     // @ts-ignore
-    const readers = arrow.RecordBatchReader.readAll(asyncIterator);
+    const readers = arrow.RecordBatchReader.readAll(toArrayBufferIterator(asyncIterator));
     for await (const reader of readers) {
       for await (const recordBatch of reader) {
         // use options.batchDebounceMs to add a delay between batches if needed (use case: incremental loading)

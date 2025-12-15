@@ -5,6 +5,7 @@
 import test from 'tape-promise/tape';
 import {
   getArrayBufferOrStringFromDataSync,
+  getArrayBufferOrStringFromData,
   getAsyncIterableFromData
 } from '@loaders.gl/core/lib/loader-utils/get-data';
 
@@ -30,6 +31,30 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync', (t) => {
   t.is(result, string, 'returns correct result');
 
   t.throws(() => getArrayBufferOrStringFromDataSync(string, BinaryLoader, {}));
+
+  t.end();
+});
+
+test('parseWithLoader#getArrayBufferOrStringFromDataSync(ArrayBufferLike)', (t) => {
+  if (typeof SharedArrayBuffer === 'undefined') {
+    t.comment('SharedArrayBuffer unavailable in environment');
+    t.end();
+    return;
+  }
+
+  const sharedArrayBuffer = new SharedArrayBuffer(6);
+  const view = new Uint8Array(sharedArrayBuffer);
+  view.set([97, 98, 99, 100, 101, 102]);
+
+  const stringResult = getArrayBufferOrStringFromDataSync(sharedArrayBuffer, JSONLoader, {});
+  t.equals(stringResult, 'abcdef', 'decodes SharedArrayBuffer to string');
+
+  const binaryResult = getArrayBufferOrStringFromDataSync(sharedArrayBuffer, BinaryLoader, {});
+  t.deepEquals(
+    new Uint8Array(binaryResult as ArrayBuffer),
+    view,
+    'copies SharedArrayBuffer to ArrayBuffer'
+  );
 
   t.end();
 });
@@ -96,10 +121,11 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays)', (t) 
 test('parseWithLoader#getAsyncIterableFromData', async (t) => {
   const TESTS = [
     new Float32Array([1, 2, 3]).buffer,
+    new DataView(new Uint8Array([1, 2, 3, 4]).buffer),
     (async function* generator() {
       yield new ArrayBuffer(0);
     })(),
-    new Set([new ArrayBuffer(0), new ArrayBuffer(0)]).values()
+    new Set([new Uint8Array([4, 5]).subarray(0, 1), new ArrayBuffer(0)]).values()
   ];
 
   for (const testCase of TESTS) {
@@ -109,6 +135,27 @@ test('parseWithLoader#getAsyncIterableFromData', async (t) => {
 
   // @ts-ignore
   t.rejects(async () => await getAsyncIterableFromData({}), 'object conversion to iterator fails');
+
+  t.end();
+});
+
+test('parseWithLoader#getArrayBufferOrStringFromData(SharedArrayBuffer iterables)', async (t) => {
+  if (typeof SharedArrayBuffer === 'undefined') {
+    t.comment('SharedArrayBuffer unavailable in environment');
+    t.end();
+    return;
+  }
+
+  const sharedArrayBuffer = new SharedArrayBuffer(10);
+  const uint16View = new Uint16Array(sharedArrayBuffer);
+  uint16View.set([0x4142, 0x4344, 0x4546, 0x4748, 0x494a]);
+
+  const iterator = (function* generate() {
+    yield uint16View.subarray(1, 4);
+  })();
+
+  const result = await getArrayBufferOrStringFromData(iterator, BinaryLoader, {});
+  t.deepEquals(new Uint16Array(result as ArrayBuffer), uint16View.subarray(1, 4));
 
   t.end();
 });
