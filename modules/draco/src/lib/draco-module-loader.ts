@@ -2,8 +2,7 @@
 // https://github.com/mrdoob/three.js/blob/398c4f39ebdb8b23eefd4a7a5ec49ec0c96c7462/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
-import {loadLibrary} from '@loaders.gl/worker-utils';
-import {isBrowser} from '@loaders.gl/worker-utils';
+import {isBrowser, loadLibrary} from '@loaders.gl/worker-utils';
 
 const DRACO_DECODER_VERSION = '1.5.6';
 const DRACO_ENCODER_VERSION = '1.4.1';

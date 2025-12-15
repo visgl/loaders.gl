@@ -5,6 +5,16 @@ const config = getESLintConfig({
   plugins: ['tree-shaking'],
 
   overrides: {
+    //   // To make import assertions work
+    //   parser: '@babel/eslint-parser',
+    //   parserOptions: {
+    //     project: ['./tsconfig.json'],
+    //     requireConfigFile: false,
+    //     babelOptions: {
+    //       plugins: ['@babel/plugin-syntax-import-assertions']
+    //     }
+    //   },
+
     env: {
       browser: true,
       es2022: true,
@@ -14,11 +24,6 @@ const config = getESLintConfig({
     parserOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module'
-      //     project: ['./tsconfig.json'],
-      //     requireConfigFile: false,
-      //     babelOptions: {
-      //       plugins: ['@babel/plugin-syntax-import-assertions']
-      //     }
     },
 
     rules: {
