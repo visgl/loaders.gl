@@ -11,7 +11,7 @@ import {
   selectLoader,
   _BrowserFileSystem as BrowserFileSystem
 } from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {ShapefileLoader, DBFLoader} from '@loaders.gl/shapefile';
 import {Proj4Projection} from '@math.gl/proj4';
 import {tapeEqualsEpsilon} from 'test/utils/tape-assertions';
 
@@ -110,6 +110,31 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async (t) => {
   t.end();
 });
 
+test('ShapefileLoader#load passes dbf options to DBFLoader#parse', async (t) => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const dbfWorkerUrl = 'custom.dbf.worker.js';
+  const originalParse = DBFLoader.parse;
+  let receivedOptions = null;
+
+  DBFLoader.parse = async (arrayBuffer, options) => {
+    receivedOptions = options;
+    return originalParse(arrayBuffer, options);
+  };
+
+  try {
+    await load(filename, ShapefileLoader, {dbf: {workerUrl: dbfWorkerUrl}});
+    t.equal(
+      receivedOptions?.dbf?.workerUrl,
+      dbfWorkerUrl,
+      'ShapefileLoader forwards dbf options'
+    );
+  } finally {
+    DBFLoader.parse = originalParse;
+  }
+
+  t.end();
+});
+
 test('ShapefileLoader#selectLoader (from arrayBuffer data)', async (t) => {
   // test file load (node) or URL load (browser)
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/boolean-property.shp`;
@@ -164,6 +189,36 @@ test('ShapefileLoader#loadInBatches(File)', async (t) => {
       data = batch;
     }
     await testShapefileData(t, testFileName, data);
+  }
+
+  t.end();
+});
+
+test('ShapefileLoader#loadInBatches passes dbf options to DBFLoader#parseInBatches', async (t) => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const dbfWorkerUrl = 'custom.dbf.worker.js';
+  const originalParseInBatches = DBFLoader.parseInBatches;
+  let receivedOptions = null;
+
+  DBFLoader.parseInBatches = (arrayBufferIterator, options) => {
+    receivedOptions = options;
+    return originalParseInBatches(arrayBufferIterator, options);
+  };
+
+  try {
+    const batches = await loadInBatches(filename, ShapefileLoader, {dbf: {workerUrl: dbfWorkerUrl}});
+    for await (const batch of batches) {
+      // exhaust iterator to ensure DBF parsing runs
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _ = batch;
+    }
+    t.equal(
+      receivedOptions?.dbf?.workerUrl,
+      dbfWorkerUrl,
+      'ShapefileLoader forwards dbf options in batches'
+    );
+  } finally {
+    DBFLoader.parseInBatches = originalParseInBatches;
   }
 
   t.end();
