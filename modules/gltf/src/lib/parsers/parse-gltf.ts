@@ -225,7 +225,7 @@ async function loadImage(
     [ImageLoader, BasisLoader],
     {
       ...options,
-      mimeType: image.mimeType,
+      core: {...options?.core, mimeType: image.mimeType},
       basis: options.basis || {format: selectSupportedBasisFormat()}
     },
     context

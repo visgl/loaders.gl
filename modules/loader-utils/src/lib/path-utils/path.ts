@@ -8,7 +8,7 @@ import {getCWD} from './get-cwd';
  */
 export function filename(url: string): string {
   const slashIndex = url ? url.lastIndexOf('/') : -1;
-  return slashIndex >= 0 ? url.substr(slashIndex + 1) : '';
+  return slashIndex >= 0 ? url.substr(slashIndex + 1) : url;
 }
 
 /**

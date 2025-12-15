@@ -6,6 +6,7 @@ import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-util
 import {compareArrayBuffers, path, log} from '@loaders.gl/loader-utils';
 import {TypedArray} from '@loaders.gl/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
+import {normalizeLoaderOptions} from '../loader-utils/option-utils';
 import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
 import {compareMIMETypes} from '../utils/mime-type-utils';
 import {getRegisteredLoaders} from './register-loaders';
@@ -37,11 +38,14 @@ export async function selectLoader(
     return null;
   }
 
+  const normalizedOptions = normalizeLoaderOptions(options || {});
+  normalizedOptions.core ||= {};
+
   // First make a sync attempt, disabling exceptions
   let loader = selectLoaderSync(
     data,
     loaders,
-    {...options, core: {...options?.core, nothrow: true}},
+    {...normalizedOptions, core: {...normalizedOptions.core, nothrow: true}},
     context
   );
   if (loader) {
@@ -52,11 +56,11 @@ export async function selectLoader(
   // to see if we can detect by initial content
   if (isBlob(data)) {
     data = await (data as Blob).slice(0, 10).arrayBuffer();
-    loader = selectLoaderSync(data, loaders, options, context);
+    loader = selectLoaderSync(data, loaders, normalizedOptions, context);
   }
 
   // no loader available
-  if (!loader && !options?.nothrow) {
+  if (!loader && !normalizedOptions.core.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
 
@@ -82,6 +86,9 @@ export function selectLoaderSync(
     return null;
   }
 
+  const normalizedOptions = normalizeLoaderOptions(options || {});
+  normalizedOptions.core ||= {};
+
   // eslint-disable-next-line complexity
   // if only a single loader was provided (not as array), force its use
   // TODO - Should this behavior be kept and documented?
@@ -97,17 +104,17 @@ export function selectLoaderSync(
     candidateLoaders = candidateLoaders.concat(loaders);
   }
   // Then fall back to registered loaders
-  if (!options?.ignoreRegisteredLoaders) {
+  if (!normalizedOptions.core.ignoreRegisteredLoaders) {
     candidateLoaders.push(...getRegisteredLoaders());
   }
 
   // TODO - remove support for legacy loaders
   normalizeLoaders(candidateLoaders);
 
-  const loader = selectLoaderInternal(data, candidateLoaders, options, context);
+  const loader = selectLoaderInternal(data, candidateLoaders, normalizedOptions, context);
 
   // no loader available
-  if (!loader && !options?.nothrow) {
+  if (!loader && !normalizedOptions.core.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
 
@@ -133,7 +140,7 @@ function selectLoaderInternal(
   // if options.mimeType is supplied, it takes precedence
   if (options?.core?.mimeType) {
     loader = findLoaderByMIMEType(loaders, options?.core?.mimeType);
-    reason = `match forced by supplied MIME type ${options?.mimeType}`;
+    reason = `match forced by supplied MIME type ${options?.core?.mimeType}`;
   }
 
   // Look up loader by url
