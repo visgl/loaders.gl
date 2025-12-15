@@ -65,7 +65,7 @@ export function getLibraryUrl(
   // Load from local files, not from CDN scripts in Node.js
   // TODO - needs to locate the modules directory when installed!
   if (!isBrowser) {
-    return `modules/${moduleName}/dist/libs/${libraryName}`;
+    return `modules/${moduleName}/src/libs/${libraryName}`;
   }
 
   // In browser, load from external scripts
