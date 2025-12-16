@@ -19,15 +19,16 @@ export function getFetchFunction(
   const globalOptions = getGlobalLoaderOptions();
 
   const loaderOptions = options || globalOptions;
+  const fetchOption = loaderOptions.fetch ?? loaderOptions.core?.fetch;
 
   // options.fetch can be a function
-  if (typeof loaderOptions.fetch === 'function') {
-    return loaderOptions.fetch;
+  if (typeof fetchOption === 'function') {
+    return fetchOption;
   }
 
   // options.fetch can be an options object
-  if (isObject(loaderOptions.fetch)) {
-    return (url) => fetchFile(url, loaderOptions.fetch as RequestInit);
+  if (isObject(fetchOption)) {
+    return (url) => fetchFile(url, fetchOption as RequestInit);
   }
 
   // else refer to context (from parent loader) if available

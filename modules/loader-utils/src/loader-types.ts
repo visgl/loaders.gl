@@ -11,8 +11,8 @@ import {ReadableFile} from './lib/files/file';
 /**
  * Core Loader Options
  */
-export type LoaderOptions = Partial<{
-  core: {
+export type StrictLoaderOptions = {
+  core?: {
     /** Base URI for resolving relative paths */
     baseUri?: string;
     /** fetch options or a custom fetch function */
@@ -70,34 +70,66 @@ export type LoaderOptions = Partial<{
   };
 
   /** Any additional JS libraries */
-  modules: Record<string, any>;
+  modules?: Record<string, unknown>;
+
+  // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
+  [loaderId: string]: Record<string, unknown> | undefined;
+};
+
+/**
+ * Core Loader Options
+ */
+export type LoaderOptions = {
+  core?: StrictLoaderOptions['core'];
+  modules?: StrictLoaderOptions['modules'];
 
   // Deprecated top-level aliases for core options
+  /** @deprecated Use options.core.baseUri */
   baseUri?: string;
+  /** @deprecated Use options.core.fetch */
   fetch?: typeof fetch | FetchLike | RequestInit | null;
+  /** @deprecated Use options.core.mimeType */
   mimeType?: string;
+  /** @deprecated Use options.core.fallbackMimeType */
   fallbackMimeType?: string;
+  /** @deprecated Use options.core.ignoreRegisteredLoaders */
   ignoreRegisteredLoaders?: boolean;
+  /** @deprecated Use options.core.nothrow */
   nothrow?: boolean;
+  /** @deprecated Use options.core.log */
   log?: any;
+  /** @deprecated Use options.core.useLocalLibraries */
   useLocalLibraries?: boolean;
+  /** @deprecated Use options.core.CDN */
   CDN?: string | null;
+  /** @deprecated Use options.core.worker */
   worker?: boolean;
+  /** @deprecated Use options.core.maxConcurrency */
   maxConcurrency?: number;
+  /** @deprecated Use options.core.maxMobileConcurrency */
   maxMobileConcurrency?: number;
+  /** @deprecated Use options.core.reuseWorkers */
   reuseWorkers?: boolean;
+  /** @deprecated Use options.core._nodeWorkers */
   _nodeWorkers?: boolean;
+  /** @deprecated Use options.core._workerType */
   _workerType?: string;
+  /** @deprecated Use options.core.limit */
   limit?: 0;
+  /** @deprecated Use options.core._limitMB */
   _limitMB?: 0;
+  /** @deprecated Use options.core.batchSize */
   batchSize?: number | 'auto';
+  /** @deprecated Use options.core.batchDebounceMs */
   batchDebounceMs?: number;
+  /** @deprecated Use options.core.metadata */
   metadata?: boolean;
+  /** @deprecated Use options.core.transforms */
   transforms?: TransformBatches[];
 
   // Accept other keys (loader options objects, e.g. `options.csv`, `options.json` ...)
   [loaderId: string]: unknown;
-}>;
+};
 
 type PreloadOptions = {
   [key: string]: unknown;
