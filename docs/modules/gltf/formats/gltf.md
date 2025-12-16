@@ -101,6 +101,12 @@ To support this use case, this extension adds offset, rotation, and scale proper
 
 [KHR_texture_transform](https://github.com/KhronosGroup/glTF/blob/de6db2d6f817586bce9965d320acf03935580b34/extensions/2.0/Khronos/KHR_texture_transform/README.md)
 
+Parsing support:
+
+- During load the `GLTFLoader` applies the transform to the texture coordinate data and rewrites the accessor to point at a freshly allocated buffer view.
+- Existing interleaved buffer views remain untouched so that attributes like positions and normals that share the original data continue to function correctly.
+- When the extension references a different `texCoord` index than the source attribute, the loader creates a new accessor and attribute entry for the transformed coordinates.
+
 ## Custom Extensions
 
 ### EXT_meshopt_compression

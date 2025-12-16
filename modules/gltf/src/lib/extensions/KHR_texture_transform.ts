@@ -7,7 +7,6 @@ import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {
   GLTFMeshPrimitive,
   GLTFAccessor,
-  GLTFBufferView,
   GLTFMaterialNormalTextureInfo,
   GLTFMaterialOcclusionTextureInfo,
   GLTFTextureInfo
@@ -199,7 +198,7 @@ function transformPrimitive(
         }
         // If texCoord the same, replace gltf structural data
         if (originalTexCoord === texCoord) {
-          updateGltf(accessor, bufferView, gltfData.buffers, result);
+          updateGltf(accessor, gltfData, result);
         } else {
           // If texCoord change, create new attribute
           createAttribute(texCoord, accessor, primitive, gltfData, result);
@@ -212,26 +211,31 @@ function transformPrimitive(
 /**
  * Update GLTF structural objects with new data as we create new `Float32Array` for `TEXCOORD_0`.
  * @param accessor accessor to change
- * @param bufferView bufferView to change
- * @param buffers binary buffers
+ * @param gltfData gltf json and buffers
  * @param newTexcoordArray typed array with data after transformation
  */
 function updateGltf(
   accessor: GLTFAccessor,
-  bufferView: GLTFBufferView,
-  buffers: {arrayBuffer: ArrayBuffer; byteOffset: number; byteLength: number}[],
+  gltfData: GLTFWithBuffers,
   newTexCoordArray: Float32Array
 ): void {
   accessor.componentType = 5126;
-  buffers.push({
+  accessor.byteOffset = 0;
+
+  gltfData.buffers.push({
     arrayBuffer: newTexCoordArray.buffer,
     byteOffset: 0,
     byteLength: newTexCoordArray.buffer.byteLength
   });
-  bufferView.buffer = buffers.length - 1;
-  bufferView.byteLength = newTexCoordArray.buffer.byteLength;
-  bufferView.byteOffset = 0;
-  delete bufferView.byteStride;
+
+  gltfData.json.bufferViews = gltfData.json.bufferViews || [];
+  gltfData.json.bufferViews.push({
+    buffer: gltfData.buffers.length - 1,
+    byteLength: newTexCoordArray.buffer.byteLength,
+    byteOffset: 0
+  });
+
+  accessor.bufferView = gltfData.json.bufferViews.length - 1;
 }
 
 /**
