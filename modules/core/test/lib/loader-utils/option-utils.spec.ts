@@ -26,8 +26,8 @@ const TEST_CASES = [
     options: {las: {skip: 10}, core: {worker: false}},
     assert: (t, options) => {
       t.equal(options.las.skip, 10);
-      t.equal(options.worker, false);
       t.equal(options.core.worker, false);
+      t.equal(options.worker, undefined);
     }
   },
   {
@@ -35,24 +35,24 @@ const TEST_CASES = [
     options: {las: {skip: 2}, worker: false},
     assert: (t, options) => {
       t.equal(options.las.skip, 2);
-      t.equal(options.worker, false);
       t.equal(options.core.worker, false);
+      t.equal(options.worker, undefined);
     }
   },
   {
     loader: LASLoader,
     options: {las: {skip: 5}, core: {worker: true}, worker: false},
     assert: (t, options) => {
-      t.equal(options.worker, true);
       t.equal(options.core.worker, true);
+      t.equal(options.worker, undefined);
     }
   },
   {
     loader: LASLoader,
     options: {fetch: () => Promise.resolve(null)},
     assert: (t, options) => {
-      t.equal(typeof options.fetch, 'function');
-      t.equal(options.fetch, options.core.fetch);
+      t.equal(typeof options.core.fetch, 'function');
+      t.equal(options.fetch, undefined);
     }
   },
   {
@@ -60,8 +60,8 @@ const TEST_CASES = [
     options: {},
     url: 'https://example.com/tileset.las',
     assert: (t, options, url) => {
-      t.equal(options.baseUri, url);
       t.equal(options.core.baseUri, url);
+      t.equal(options.baseUri, undefined);
     }
   }
 ];
@@ -81,7 +81,11 @@ test('normalizeOptions#movesGlobalCoreOptions', (t) => {
   setGlobalOptions({worker: false});
   const normalized = normalizeOptions({}, LASLoader, undefined, undefined);
   t.equal(normalized.core.worker, false, 'global worker option is present under core');
-  t.equal(normalized.worker, false, 'deprecated top-level alias is applied after normalization');
+  t.equal(
+    (normalized as any).worker,
+    undefined,
+    'deprecated top-level alias is removed after normalization'
+  );
 
   setGlobalOptions(originalClone);
   t.end();

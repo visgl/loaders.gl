@@ -101,17 +101,17 @@ export async function parse(
 
   // Normalize options
   // @ts-expect-error
-  options = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
+  const normalizedOptions = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
 
   // Get a context (if already present, will be unchanged)
   context = getLoaderContext(
     // @ts-expect-error
     {url, _parse: parse, loaders: candidateLoaders},
-    options,
+    normalizedOptions,
     context || null
   );
 
-  return await parseWithLoader(loader, data, options, context);
+  return await parseWithLoader(loader, data, normalizedOptions, context);
 }
 
 // TODO: support progress and abort

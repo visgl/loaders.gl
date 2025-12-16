@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Loader, LoaderOptions, registerJSModules} from '@loaders.gl/loader-utils';
+import {
+  Loader,
+  LoaderOptions,
+  StrictLoaderOptions,
+  registerJSModules
+} from '@loaders.gl/loader-utils';
 import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
@@ -98,12 +103,12 @@ export function normalizeOptions(
   loader: Loader,
   loaders?: Loader[],
   url?: string
-): LoaderOptions {
+): StrictLoaderOptions {
   loaders = loaders || [];
   loaders = Array.isArray(loaders) ? loaders : [loaders];
 
   validateOptions(options, loaders);
-  return normalizeOptionsInternal(loader, options, url);
+  return normalizeLoaderOptions(normalizeOptionsInternal(loader, options, url));
 }
 
 /**
@@ -111,7 +116,7 @@ export function normalizeOptions(
  * and removed from the top level. This keeps global options from leaking deprecated aliases into
  * loader-specific option maps during normalization.
  */
-export function normalizeLoaderOptions(options: LoaderOptions): LoaderOptions {
+export function normalizeLoaderOptions(options: LoaderOptions): StrictLoaderOptions {
   const normalized = cloneLoaderOptions(options);
   moveDeprecatedTopLevelOptionsToCore(normalized);
   for (const key of CORE_LOADER_OPTION_KEYS) {
@@ -119,7 +124,7 @@ export function normalizeLoaderOptions(options: LoaderOptions): LoaderOptions {
       delete (normalized as Record<string, unknown>)[key];
     }
   }
-  return normalized;
+  return normalized as StrictLoaderOptions;
 }
 
 // VALIDATE OPTIONS
@@ -282,9 +287,11 @@ function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
     if ((options as Record<string, unknown>)[key] !== undefined) {
       const coreOptions = (options.core = options.core || {});
       const coreRecord = coreOptions as Record<string, unknown>;
-      // Treat deprecated top-level core options as aliases, so they can override defaults
-      // already present in `options.core` and stay backwards compatible with older code.
-      coreRecord[key] = (options as Record<string, unknown>)[key];
+      // Treat deprecated top-level core options as aliases to `options.core`, but never override an explicitly
+      // provided `options.core` value.
+      if (coreRecord[key] === undefined) {
+        coreRecord[key] = (options as Record<string, unknown>)[key];
+      }
     }
   }
 }

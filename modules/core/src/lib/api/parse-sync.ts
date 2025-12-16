@@ -84,7 +84,11 @@ export function parseSync(
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, candidateLoaders as Loader[] | undefined);
+  const normalizedOptions = normalizeOptions(
+    options,
+    loader,
+    candidateLoaders as Loader[] | undefined
+  );
 
   // Extract a url for auto detection
   const url = getResourceUrl(data);
@@ -94,11 +98,11 @@ export function parseSync(
   };
   context = getLoaderContext(
     {url, _parseSync: parse, _parse: parse, loaders: loaders as Loader[]},
-    options,
+    normalizedOptions,
     context || null
   );
 
-  return parseWithLoaderSync(loader as LoaderWithParser, data, options, context);
+  return parseWithLoaderSync(loader as LoaderWithParser, data, normalizedOptions, context);
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator

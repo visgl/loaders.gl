@@ -99,14 +99,19 @@ export async function parseInBatches(
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, loaderArray, url);
+  const normalizedOptions = normalizeOptions(options, loader, loaderArray, url);
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
-    options,
+    normalizedOptions,
     context || null
   );
 
-  return await parseWithLoaderInBatches(loader as LoaderWithParser, data, options, context);
+  return await parseWithLoaderInBatches(
+    loader as LoaderWithParser,
+    data,
+    normalizedOptions,
+    context
+  );
 }
 
 /**
