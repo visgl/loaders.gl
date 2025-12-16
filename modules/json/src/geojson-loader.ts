@@ -103,7 +103,8 @@ function parseTextSync(
 function parseInBatches(asyncIterator, options): AsyncIterable<TableBatch> {
   // Apps can call the parse method directly, we so apply default options here
   options = {...GeoJSONLoader.options, ...options};
-  options.json = {...GeoJSONLoader.options.geojson, ...options.geojson};
+  options.json = {...GeoJSONLoader.options.json, ...options.json};
+  options.geojson = {...GeoJSONLoader.options.geojson, ...options.geojson};
 
   const geojsonIterator = parseJSONInBatches(asyncIterator, options);
 
