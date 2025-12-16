@@ -16,7 +16,7 @@ import type {
 import {parseWithWorker, canParseWithWorker, mergeOptions} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {isResponse} from '../../javascript-utils/is-type';
+import {isResponse} from '@loaders.gl/loader-utils';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
@@ -128,9 +128,8 @@ async function parseWithLoader(
 
   if (isResponse(data)) {
     // Serialize to support passing the response to web worker
-    const response = data as Response;
-    const {ok, redirected, status, statusText, type, url} = response;
-    const headers = Object.fromEntries(response.headers.entries());
+    const {ok, redirected, status, statusText, type, url} = data;
+    const headers = Object.fromEntries(data.headers.entries());
     // @ts-expect-error TODO - fix this
     context.response = {headers, ok, redirected, status, statusText, type, url};
   }

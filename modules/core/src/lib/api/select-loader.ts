@@ -9,7 +9,7 @@ import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
 import {compareMIMETypes} from '../utils/mime-type-utils';
 import {getRegisteredLoaders} from './register-loaders';
-import {isBlob} from '../../javascript-utils/is-type';
+import {isBlob} from '@loaders.gl/loader-utils';
 import {stripQueryString} from '../utils/url-utils';
 
 const EXT_PATTERN = /\.([^.]+)$/;
@@ -46,7 +46,7 @@ export async function selectLoader(
   // For Blobs and Files, try to asynchronously read a small initial slice and test again with that
   // to see if we can detect by initial content
   if (isBlob(data)) {
-    data = await (data as Blob).slice(0, 10).arrayBuffer();
+    data = await data.slice(0, 10).arrayBuffer();
     loader = selectLoaderSync(data, loaders, options, context);
   }
 

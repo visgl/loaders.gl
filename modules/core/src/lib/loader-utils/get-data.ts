@@ -18,7 +18,7 @@ import {
   isIterator,
   isBlob,
   isBuffer
-} from '../../javascript-utils/is-type';
+} from '@loaders.gl/loader-utils';
 import {makeIterator} from '../../iterators/make-iterator/make-iterator';
 import {checkResponse, makeResponse} from '../utils/response-utils';
 
@@ -40,7 +40,6 @@ export function getArrayBufferOrStringFromDataSync(
   }
 
   if (isBuffer(data)) {
-    // @ts-ignore
     data = data.buffer;
   }
 
@@ -75,9 +74,8 @@ export async function getArrayBufferOrStringFromData(
   }
 
   if (isResponse(data)) {
-    const response = data as Response;
-    await checkResponse(response);
-    return loader.binary ? await response.arrayBuffer() : await response.text();
+    await checkResponse(data);
+    return loader.binary ? await data.arrayBuffer() : await data.text();
   }
 
   if (isReadableStream(data)) {
@@ -109,13 +107,14 @@ export async function getAsyncIterableFromData(
   }
 
   if (isResponse(data)) {
-    const response = data as Response;
     // Note Since this function is not async, we currently can't load error message, just status
-    await checkResponse(response);
+    await checkResponse(data);
     // TODO - bug in polyfill, body can be a Promise under Node.js
     // eslint-disable-next-line @typescript-eslint/await-thenable
-    const body = await response.body;
-    // TODO - body can be null?
+    const body = await data.body;
+    if (!body) {
+      throw new Error(ERR_DATA);
+    }
     return makeIterator(body as ReadableStream<Uint8Array>, options as any);
   }
 
@@ -139,10 +138,16 @@ export async function getReadableStream(data: BatchableDataType): Promise<Readab
   }
   if (isResponse(data)) {
     // @ts-ignore
+    if (!data.body) {
+      throw new Error(ERR_DATA);
+    }
     return data.body;
   }
   const response = await makeResponse(data);
   // @ts-ignore
+  if (!response.body) {
+    throw new Error(ERR_DATA);
+  }
   return response.body;
 }
 

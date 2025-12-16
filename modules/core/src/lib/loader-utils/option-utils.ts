@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Loader, LoaderOptions, registerJSModules} from '@loaders.gl/loader-utils';
-import {isPureObject, isObject} from '../../javascript-utils/is-type';
+import {Loader, LoaderOptions, registerJSModules, isPureObject, isObject} from '@loaders.gl/loader-utils';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 

@@ -12,7 +12,7 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayReturnType
 } from '@loaders.gl/loader-utils';
-import {isBlob} from '../../javascript-utils/is-type';
+import {isBlob} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 
