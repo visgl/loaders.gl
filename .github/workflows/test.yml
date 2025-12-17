@@ -74,6 +74,8 @@ jobs:
           yarn run test-cover
 
       - name: Run node tests
+        env:
+          LOADERS_GL_SKIP_TILE_CONVERTER: true
         run: |
           yarn run test-node
 
@@ -132,3 +134,46 @@ jobs:
       - name: Build website
         run: |
           cd website; yarn build
+
+  tile-converter:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        node-version: [22]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Enable Corepack / Yarn 4
+        run: |
+          corepack enable
+          corepack prepare yarn@4.10.3 --activate
+          yarn -v
+
+      - name: Cache Yarn 4 artifacts
+        id: tile-converter-yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: tile-converter-yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            tile-converter-yarn-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build tile-converter bundle
+        run: yarn build-tile-converter
+
+      - name: Run tile-converter node tests
+        run: yarn test-tile-converter

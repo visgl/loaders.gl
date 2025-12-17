@@ -41,7 +41,7 @@
     {"path": "modules/shapefile"},
     {"path": "modules/terrain"},
     {"path": "modules/textures"},
-    {"path": "modules/tile-converter"},
+    {"path": "apps/tile-converter"},
     {"path": "modules/tiles"},
     {"path": "modules/video"},
     {"path": "modules/wkt"},
@@ -52,11 +52,12 @@
     {"path": "modules/zip"}
   ],
   "include": [
-    "modules/*/src"
+    "modules/*/src",
+    "apps/*/src"
   ],
   "exclude": [
     "modules/*/src/libs",
-    "modules/tile-converter",
+    "apps/*/src/libs",
     "modules/textures/src/libs/basis_encoder.js",
     "examples",
     "test",
@@ -65,6 +66,10 @@
     "modules/*/bin",
     "modules/*/wip",
     "modules/*/test",
-    "modules/*/dist"
+    "modules/*/dist",
+    "apps/*/wip",
+    "apps/*/bin",
+    "apps/*/test",
+    "apps/*/dist"
   ]
 }

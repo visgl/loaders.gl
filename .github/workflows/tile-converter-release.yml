@@ -1,0 +1,113 @@
+name: tile-converter-release
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'tile-converter-v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect tile-converter changes
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            tile-converter:
+              - 'apps/tile-converter/**'
+
+      - name: Skip when tile-converter is unchanged
+        if: ${{ github.ref_type != 'tag' && github.event_name == 'push' && steps.changes.outputs.tile-converter != 'true' }}
+        run: echo "Skipping release workflow because tile-converter files were not modified."
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+
+      - name: Enable Corepack / Yarn 4
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        run: |
+          corepack enable
+          corepack prepare yarn@4.10.3 --activate
+          yarn -v
+
+      - name: Cache Yarn 4 artifacts
+        id: release-yarn-cache
+        uses: actions/cache@v4
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: release-yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            release-yarn-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        run: yarn install --frozen-lockfile
+
+      - name: Build tile-converter bundle
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        run: yarn build-tile-converter
+
+      - name: Run tile-converter tests
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        run: yarn test-tile-converter
+
+      - name: Pack tile-converter npm artifact
+        env:
+          NPM_CONFIG_FUND: false
+          NPM_CONFIG_AUDIT: false
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        run: |
+          mkdir -p dist/artifacts
+          cd apps/tile-converter
+          npm pack --pack-destination ../../dist/artifacts
+
+      - name: Upload npm artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        with:
+          name: tile-converter-npm
+          path: dist/artifacts/*.tgz
+
+      - name: Publish to npm
+        if: ${{ startsWith(github.ref, 'refs/tags/tile-converter-') && secrets.NPM_TOKEN != '' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          cd apps/tile-converter
+          npm publish --access public
+
+      - name: Set Docker tags
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        run: |
+          echo "PACKAGE_VERSION=$(node -p \"require('./apps/tile-converter/package.json').version\")" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        if: ${{ github.ref_type == 'tag' || github.event_name == 'workflow_dispatch' || steps.changes.outputs.tile-converter == 'true' }}
+        run: |
+          docker build -t visgl/tile-converter:${PACKAGE_VERSION} -t visgl/tile-converter:latest -f apps/tile-converter/Dockerfile .
+
+      - name: Push Docker image
+        if: ${{ startsWith(github.ref, 'refs/tags/tile-converter-') && secrets.DOCKERHUB_USERNAME != '' && secrets.DOCKERHUB_TOKEN != '' }}
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+          docker push visgl/tile-converter:${PACKAGE_VERSION}
+          docker push visgl/tile-converter:latest

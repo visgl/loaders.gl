@@ -1,11 +1,8 @@
 import {readFileSync} from 'fs';
-import {createRequire} from 'module';
 
-const require = createRequire(import.meta.url);
-
-const packageInfo = JSON.parse(readFileSync('./lerna.json', 'utf-8'));
+const packageInfo = JSON.parse(readFileSync('./apps/tile-converter/package.json', 'utf-8'));
 // Note: This constant will be inlined by babel plugin during transpilation
-// But for node we read it from lerna.json
+// But for node we read it from the local package.json
 // @ts-ignore TS2339: Property does not exist on type 'Global'
 globalThis.__VERSION__ = packageInfo.version;
 
@@ -18,13 +15,6 @@ if (typeof process !== 'undefined') {
 // @ts-ignore TS2339: Property does not exist on type 'Global'
 globalThis.nodeVersion = nodeVersion;
 
+import '../init-tests';
 import '@loaders.gl/polyfills';
-
-import './modules';
-
-const shouldRunTileConverterTests = process.env.LOADERS_GL_SKIP_TILE_CONVERTER !== 'true';
-
-if (shouldRunTileConverterTests) {
-  // Tile converter
-  require('@loaders.gl/tile-converter/test');
-}
+import '@loaders.gl/tile-converter/test';

@@ -23,6 +23,7 @@
   ],
   "workspaces": [
     "modules/*",
+    "apps/*",
     "examples",
     "website"
   ],
@@ -46,6 +47,8 @@
     "test-cover": "ocular-test cover",
     "test-website": "cd website && yarn && yarn build && cd ..",
     "test-fast": "ocular-test fast",
+    "build-tile-converter": "yarn workspace @loaders.gl/tile-converter run pre-build",
+    "test-tile-converter": "ocular-test node --node-test-entry ./test/apps/tile-converter-node.ts",
     "pre-commit": "yarn lint",
     "pre-push": "yarn lint",
     "metrics": "./scripts/metrics.sh && ocular-metrics"

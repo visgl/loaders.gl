@@ -10,7 +10,7 @@ The "bundle script" is good options for fast and easy destribution of the conver
 1. Create bundle:
 
 ```yarn boostrap
-cd modules/tile-converter
+cd apps/tile-converter
 yarn build-converter-bundle
 ```
 

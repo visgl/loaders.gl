@@ -4,7 +4,8 @@
   "npmClient": "yarn",
   "exact": true,
   "packages": [
-    "modules/*"
+    "modules/*",
+    "!apps/tile-converter"
   ],
   "command": {
     "publish": {

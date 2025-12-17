@@ -6,6 +6,8 @@
 
 ![logo](./images/3d-tiles-small.png)
 
+The tile converter application lives under `apps/tile-converter` in the repository, alongside its Dockerfile and release automation ([tile-converter-release.yml](https://github.com/visgl/loaders.gl/blob/master/.github/workflows/tile-converter-release.yml)).
+
 ## Installation
 
 For CLI

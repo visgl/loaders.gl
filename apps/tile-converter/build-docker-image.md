@@ -1,5 +1,7 @@
 # Tile-converter create and push docker image
 
+The [tile-converter release workflow](https://github.com/visgl/loaders.gl/blob/master/.github/workflows/tile-converter-release.yml) builds the npm package and Docker image from `apps/tile-converter`. Use the manual steps below when you need to validate changes locally or publish custom tags.
+
 ## Create Docker image
 
 ### Go to the root project folder
@@ -11,7 +13,7 @@ cd loaders.gl
 ### Select branch to create docker image (x.x-release or some commit from master branch for alpha release)
 
 ```bash
-git chekout x.x-release
+git checkout x.x-release
 ```
 
 ### Build the project
@@ -20,11 +22,11 @@ git chekout x.x-release
 yarn bootstrap
 ```
 
-### Create docker images for latest and needed release (for aplha releases use node 14 in Dockerfile)
+### Create docker images for latest and needed release (for alpha releases use node 14 in Dockerfile)
 
 ```bash
-  sudo docker build -t visgl/tile-converter:latest -f modules/tile-converter/Dockerfile .
-  sudo docker build -t visgl/tile-converter:vX.X.X -f modules/tile-converter/Dockerfile .
+  sudo docker build -t visgl/tile-converter:latest -f apps/tile-converter/Dockerfile .
+  sudo docker build -t visgl/tile-converter:vX.X.X -f apps/tile-converter/Dockerfile .
 ```
 
 ### Docker Login (Dockerhub: [tile-converter](https://hub.docker.com/repository/docker/visgl/tile-converter/general))
@@ -59,4 +61,4 @@ docker run --rm -v /path/to/output_folder:/loaders-bundle/data -v /path/to/input
 - **--rm** Remove container after conversion
 - **-v** Create docker volume, linked to internal data folder
 - **visgl/tile-converter:version** Image name
-- Converter options (described here: modules/tile-converter/docs/cli-reference/tile-converter.md)
+- Converter options (described here: docs/modules/tile-converter/cli-reference/tile-converter.md)

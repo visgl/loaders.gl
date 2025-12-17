@@ -1035,7 +1035,7 @@ async function mergeMaterials(
     } catch (error) {
       // eslint-disable-next-line no-console
       console.log(
-        'Join images into a texture atlas has failed. Consider usage `--split-nodes` option. (See documentation https://loaders.gl/modules/tile-converter/docs/cli-reference/tile-converter)'
+        'Join images into a texture atlas has failed. Consider usage `--split-nodes` option. (See documentation https://loaders.gl/docs/modules/tile-converter/cli-reference/tile-converter)'
       );
       throw error;
     }

@@ -202,7 +202,7 @@ To build your own tile-converter docker image:
 
 ```bash
   yarn bootstrap
-  docker build -t [docker_image_name] -f modules/tile-converter/Dockerfile .
+  docker build -t [docker_image_name] -f apps/tile-converter/Dockerfile .
 ```
 
 - Push docker image to your docker hub
