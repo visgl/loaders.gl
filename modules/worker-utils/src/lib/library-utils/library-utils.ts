@@ -7,6 +7,12 @@ import {isBrowser, isWorker} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';
 
+export type LoadLibraryOptions<ModulesT extends Record<string, any> = Record<string, any>> = {
+  useLocalLibraries?: boolean;
+  CDN?: string | null;
+  modules?: ModulesT;
+};
+
 const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 
 /**
@@ -27,7 +33,7 @@ const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 export async function loadLibrary(
   libraryUrl: string,
   moduleName: string | null = null,
-  options: object = {},
+  options: LoadLibraryOptions = {},
   libraryName: string | null = null
 ): Promise<any> {
   if (moduleName) {
@@ -45,11 +51,21 @@ export async function loadLibrary(
 export function getLibraryUrl(
   library: string,
   moduleName?: string,
-  options: any = {},
+  options: LoadLibraryOptions = {},
   libraryName: string | null = null
 ): string {
+  throw new Error(moduleName || 'undefined');
+  // @ts-expect-error
+  if (options?.core) {
+    throw new Error('getLibraryUrl: expects resolved "LoaderOptions.core"');
+  }
+  const useLocalLibraries = options.useLocalLibraries;
+  const cdn = options.CDN;
+
   // Check if already a URL
-  if (!options.useLocalLibraries && library.startsWith('http')) {
+  // In Node.js we prefer local libraries even when the library URL is remote.
+  // In the browser, remote URLs are the default unless `useLocalLibraries` is set.
+  if (isBrowser && !useLocalLibraries && library.startsWith('http')) {
     return library;
   }
 
@@ -69,9 +85,9 @@ export function getLibraryUrl(
   }
 
   // In browser, load from external scripts
-  if (options.CDN) {
-    assert(options.CDN.startsWith('http'));
-    return `${options.CDN}/${moduleName}@${VERSION}/dist/libs/${libraryName}`;
+  if (cdn) {
+    assert(cdn.startsWith('http'));
+    return `${cdn}/${moduleName}@${VERSION}/dist/libs/${libraryName}`;
   }
 
   // TODO - loading inside workers requires paths relative to worker script location...
@@ -114,19 +130,6 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   return loadLibraryFromString(scriptSource, libraryUrl);
 }
 
-/*
-async function loadScriptFromFile(libraryUrl) {
-  const script = document.createElement('script');
-  script.src = libraryUrl;
-  return await new Promise((resolve, reject) => {
-    script.onload = data => {
-      resolve(data);
-    };
-    script.onerror = reject;
-  });
-}
-*/
-
 // TODO - Needs security audit...
 //  - Raw eval call
 //  - Potentially bypasses CORS
@@ -158,21 +161,6 @@ function loadLibraryFromString(scriptSource: string, id: string): null | any {
   return null;
 }
 
-// TODO - technique for module injection into worker, from THREE.DracoLoader...
-/*
-function combineWorkerWithLibrary(worker, jsContent) {
-  var fn = wWorker.toString();
-  var body = [
-    '// injected',
-    jsContent,
-    '',
-    '// worker',
-    fn.substring(fn.indexOf('{') + 1, fn.lastIndexOf('}'))
-  ].join('\n');
-  this.workerSourceURL = URL.createObjectURL(new Blob([body]));
-}
-*/
-
 async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
   const {readFileAsArrayBuffer} = globalThis.loaders || {};
   if (isBrowser || !readFileAsArrayBuffer || url.startsWith('http')) {
@@ -195,3 +183,31 @@ async function loadAsText(url: string): Promise<string> {
   }
   return await readFileAsText(url);
 }
+
+/*
+async function loadScriptFromFile(libraryUrl) {
+  const script = document.createElement('script');
+  script.src = libraryUrl;
+  return await new Promise((resolve, reject) => {
+    script.onload = data => {
+      resolve(data);
+    };
+    script.onerror = reject;
+  });
+}
+*/
+
+// TODO - technique for module injection into worker, from THREE.DracoLoader...
+/*
+function combineWorkerWithLibrary(worker, jsContent) {
+  var fn = wWorker.toString();
+  var body = [
+    '// injected',
+    jsContent,
+    '',
+    '// worker',
+    fn.substring(fn.indexOf('{') + 1, fn.lastIndexOf('}'))
+  ].join('\n');
+  this.workerSourceURL = URL.createObjectURL(new Blob([body]));
+}
+*/

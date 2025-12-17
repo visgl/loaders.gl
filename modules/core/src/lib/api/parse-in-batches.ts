@@ -7,6 +7,7 @@ import {isTable, makeBatchFromTable} from '@loaders.gl/schema-utils';
 import type {
   Loader,
   LoaderWithParser,
+  StrictLoaderOptions,
   LoaderOptions,
   LoaderContext,
   BatchableDataType,
@@ -120,13 +121,13 @@ export async function parseInBatches(
 async function parseWithLoaderInBatches(
   loader: LoaderWithParser,
   data: BatchableDataType,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
   const outputIterator = await parseToOutputIterator(loader, data, options, context);
 
   // Generate metadata batch if requested
-  if (!options.metadata) {
+  if (!options?.core?.metadata) {
     return outputIterator;
   }
 
@@ -160,7 +161,7 @@ async function parseWithLoaderInBatches(
 async function parseToOutputIterator(
   loader: LoaderWithParser,
   data: BatchableDataType,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
   // Get an iterator from the input
@@ -184,7 +185,7 @@ async function parseToOutputIterator(
 async function* parseChunkInBatches(
   transformedIterator: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer>,
   loader: Loader,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ): AsyncIterable<Batch> {
   const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);

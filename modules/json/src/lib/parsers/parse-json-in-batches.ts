@@ -18,7 +18,7 @@ export async function* parseJSONInBatches(
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const asyncIterator = makeTextDecoderIterator(binaryAsyncIterator);
 
-  const {metadata} = options;
+  const metadata = Boolean(options?.core?.metadata || (options as any)?.metadata);
   const {jsonpaths} = options.json || {};
 
   let isFirstChunk: boolean = true;

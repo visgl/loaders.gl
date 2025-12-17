@@ -66,16 +66,14 @@ export function getGlobalLoaderState(): GlobalLoaderState {
  * NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
  * @returns global loader options merged with default loader options
  */
-export function getGlobalLoaderOptions(): LoaderOptions {
+export function getGlobalLoaderOptions(): StrictLoaderOptions {
   const state = getGlobalLoaderState();
   // Ensure all default loader options from this library are mentioned
   state.globalOptions = state.globalOptions || {
     ...DEFAULT_LOADER_OPTIONS,
     core: {...DEFAULT_LOADER_OPTIONS.core}
   };
-  moveDeprecatedTopLevelOptionsToCore(state.globalOptions);
-  addDeprecatedTopLevelOptions(state.globalOptions);
-  return state.globalOptions;
+  return normalizeLoaderOptions(state.globalOptions);
 }
 
 /**
@@ -123,6 +121,9 @@ export function normalizeLoaderOptions(options: LoaderOptions): StrictLoaderOpti
     if (normalized.core && normalized.core[key] !== undefined) {
       delete (normalized as Record<string, unknown>)[key];
     }
+  }
+  if (normalized.core && normalized.core._workerType !== undefined) {
+    delete (normalized as any)._worker;
   }
   return normalized as StrictLoaderOptions;
 }
@@ -292,6 +293,15 @@ function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
       if (coreRecord[key] === undefined) {
         coreRecord[key] = (options as Record<string, unknown>)[key];
       }
+    }
+  }
+
+  // Support the older internal `_worker` alias (used by some tests and integrations) for `_workerType`.
+  const workerTypeAlias = (options as any)._worker;
+  if (workerTypeAlias !== undefined) {
+    options.core ||= {};
+    if (options.core._workerType === undefined) {
+      options.core._workerType = workerTypeAlias;
     }
   }
 }

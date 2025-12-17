@@ -114,6 +114,8 @@ export type LoaderOptions = {
   _nodeWorkers?: boolean;
   /** @deprecated Use options.core._workerType */
   _workerType?: string;
+  /** @deprecated Use options.core._workerType */
+  _worker?: string;
   /** @deprecated Use options.core.limit */
   limit?: 0;
   /** @deprecated Use options.core._limitMB */

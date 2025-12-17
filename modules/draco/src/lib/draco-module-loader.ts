@@ -2,7 +2,7 @@
 // https://github.com/mrdoob/three.js/blob/398c4f39ebdb8b23eefd4a7a5ec49ec0c96c7462/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
-import {loadLibrary} from '@loaders.gl/worker-utils';
+import {loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
 
 const DRACO_DECODER_VERSION = '1.5.6';
 const DRACO_ENCODER_VERSION = '1.4.1';
@@ -30,7 +30,7 @@ export const DRACO_EXTERNAL_LIBRARY_URLS = {
 let loadDecoderPromise;
 let loadEncoderPromise;
 
-export async function loadDracoDecoderModule(options) {
+export async function loadDracoDecoderModule(options: LoadLibraryOptions = {}) {
   const modules = options.modules || {};
 
   // Check if a bundled draco3d library has been supplied by application
@@ -61,7 +61,7 @@ export async function loadDracoEncoderModule(options) {
 }
 
 // DRACO DECODER LOADING
-
+/** @todo - type the options, they are inconsistent */
 async function loadDracoDecoder(options) {
   let DracoDecoderModule;
   let wasmBinary;
@@ -114,7 +114,7 @@ function initializeDracoDecoder(DracoDecoderModule, wasmBinary) {
 
 // ENCODER
 
-async function loadDracoEncoder(options) {
+async function loadDracoEncoder(options: LoadLibraryOptions) {
   let DracoEncoderModule = await loadLibrary(
     DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER],
     'draco',

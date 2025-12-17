@@ -53,6 +53,7 @@ export const REMOVED_LOADER_OPTIONS = {
   reuseWorkers: 'core.reuseWorkers',
   _nodeWorkers: 'core.nodeWorkers',
   _workerType: 'core._workerType',
+  _worker: 'core._workerType',
 
   limit: 'core.limit',
   _limitMB: 'core._limitMB',

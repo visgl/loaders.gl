@@ -46,7 +46,8 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
 
   // If URL is test, generate local loaders.gl url
   // @ts-ignore _workerType
-  if (options._workerType === 'test') {
+  const workerType = (options as any)._workerType || (options as any)?.core?._workerType;
+  if (workerType === 'test') {
     if (isBrowser) {
       url = `modules/${worker.module}/dist/${workerFile}`;
     } else {

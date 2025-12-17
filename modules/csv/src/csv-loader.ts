@@ -208,7 +208,7 @@ function parseCSVInBatches(
         row = JSON.parse(JSON.stringify(row));
       }
 
-      const shape = csvOptions.shape || DEFAULT_CSV_SHAPE;
+      const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
 
       // Add the row
       tableBatchBuilder =
@@ -218,7 +218,7 @@ function parseCSVInBatches(
           schema,
           {
             shape,
-            ...options
+            ...(options?.core || {})
           }
         );
 

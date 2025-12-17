@@ -19,11 +19,13 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
   }
 
   // Node workers are still experimental
-  if (!isBrowser && !options?._nodeWorkers) {
+  const nodeWorkers = options?._nodeWorkers ?? options?.core?._nodeWorkers;
+  if (!isBrowser && !nodeWorkers) {
     return false;
   }
 
-  return loader.worker && options?.worker;
+  const useWorkers = options?.worker ?? options?.core?.worker;
+  return Boolean(loader.worker && useWorkers);
 }
 
 /**
