@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
 import {VERSION} from './lib/utils/version';
 import DracoParser from './lib/draco-parser';
 import {loadDracoDecoderModule} from './lib/draco-module-loader';
 
-export type DracoLoaderOptions = LoaderOptions & {
+export type DracoLoaderOptions = StrictLoaderOptions & {
   draco?: DracoParseOptions & {
     /** @deprecated WASM decoding is faster but JS is more backwards compatible */
     decoderType?: 'wasm' | 'js';

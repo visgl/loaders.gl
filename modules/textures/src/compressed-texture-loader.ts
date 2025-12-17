@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
 import {parseBasis} from './lib/parsers/parse-basis';
 
 /** Options for the CompressedTextureLoader */
-export type CompressedTextureLoaderOptions = {
+export type CompressedTextureLoaderOptions = StrictLoaderOptions & {
   'compressed-texture'?: {
     /** @deprecated Specify path to libraries */
     libraryPath?: string;
@@ -59,14 +59,13 @@ export const CompressedTextureWorkerLoader = {
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
   parse: async (arrayBuffer: ArrayBuffer, options?: CompressedTextureLoaderOptions) => {
+    options = {...options};
     if (options?.['compressed-texture']?.useBasis) {
-      // @ts-expect-error TODO not allowed to modify inputs
       options.basis = {
         format: {
           alpha: 'BC3',
           noAlpha: 'BC1'
         },
-        // @ts-expect-error TODO not allowed to modify inputs
         ...options.basis,
         containerFormat: 'ktx2',
         module: 'encoder'

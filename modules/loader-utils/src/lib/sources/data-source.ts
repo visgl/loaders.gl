@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, Loader} from '../../loader-types';
+import type {Loader, StrictLoaderOptions} from '../../loader-types';
 import type {RequiredOptions} from '../option-utils/merge-options';
 import {mergeOptions} from '../option-utils/merge-options';
 import {resolvePath} from '../path-utils/file-aliases';
@@ -15,7 +15,7 @@ export type DataSourceOptions = Partial<{
     /** Any dataset attributions (in case underlying metadata does not include attributions) */
     attributions?: string[];
     /** LoaderOptions provide an option to override `fetch`. Will also be passed to any sub loaders */
-    loadOptions?: LoaderOptions;
+    loadOptions?: StrictLoaderOptions;
     /** Make additional loaders available to the data source */
     loaders?: Loader[];
   };
@@ -39,7 +39,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
   readonly url: string;
 
   /** The actual load options, if calling a loaders.gl loader */
-  loadOptions: LoaderOptions;
+  loadOptions: StrictLoaderOptions;
   /** A resolved fetch function extracted from loadOptions prop */
   fetch: (url: string, options?: RequestInit) => Promise<Response>;
   _needsRefresh: boolean = true;
@@ -93,7 +93,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
  * @param options
  * @param context
  */
-export function getFetchFunction(options?: LoaderOptions) {
+export function getFetchFunction(options?: StrictLoaderOptions) {
   const fetchFunction = options?.core?.fetch;
 
   // options.fetch can be a function

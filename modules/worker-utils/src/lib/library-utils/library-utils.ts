@@ -218,7 +218,6 @@ async function loadScriptFromFile(libraryUrl) {
 }
 */
 
-
 // TODO - technique for module injection into worker, from THREE.DracoLoader...
 /*
 function combineWorkerWithLibrary(worker, jsContent) {

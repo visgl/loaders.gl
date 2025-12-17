@@ -140,7 +140,7 @@ type PreloadOptions = {
 /**
  * A worker loader definition that can be used with `@loaders.gl/core` functions
  */
-export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = Format & {
+export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptions> = Format & {
   /** The result type of this loader  */
   dataType?: DataT;
   /** The batched result type of this loader  */
@@ -186,11 +186,11 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = 
  * A "bundled" loader definition that can be used with `@loaders.gl/core` functions
  * If a worker loader is supported it will also be supported.
  */
-export type LoaderWithParser<DataT = any, BatchT = any, LoaderOptionsT = LoaderOptions> = Loader<
-  DataT,
-  BatchT,
-  LoaderOptionsT
-> & {
+export type LoaderWithParser<
+  DataT = any,
+  BatchT = any,
+  LoaderOptionsT = StrictLoaderOptions
+> = Loader<DataT, BatchT, LoaderOptionsT> & {
   /** Perform actions before load. @deprecated Not officially supported. */
   preload?: Preload;
   /** Parse asynchronously and atomically from an arraybuffer */
@@ -345,7 +345,7 @@ export type LoaderArrayBatchType<LoadersT extends Loader[] = Loader[]> =
  */
 export async function parseFromContext<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends StrictLoaderOptions = LoaderOptionsType<LoaderT>
 >(
   data: ArrayBuffer,
   loader: LoaderT,
@@ -385,7 +385,7 @@ export async function parseFromContext(
  */
 export function parseSyncFromContext<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends StrictLoaderOptions = LoaderOptionsType<LoaderT>
 >(
   data: ArrayBuffer,
   loader: LoaderT,
@@ -403,7 +403,7 @@ export function parseSyncFromContext<
  */
 export async function parseInBatchesFromContext<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends StrictLoaderOptions = LoaderOptionsType<LoaderT>
 >(
   data: Iterable<ArrayBuffer> | AsyncIterable<ArrayBuffer> | Response,
   loader: LoaderT,

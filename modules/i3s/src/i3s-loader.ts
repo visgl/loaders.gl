@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {parse} from '@loaders.gl/core';
 import type {I3STilesetHeader} from './types';
 import {I3SContentLoader} from './i3s-content-loader';
@@ -21,7 +21,7 @@ const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
 const SLPK_HEX = '504b0304';
 const POINT_CLOUD = 'PointCloud';
 
-export type I3SLoaderOptions = LoaderOptions & {
+export type I3SLoaderOptions = StrictLoaderOptions & {
   i3s?: I3SParseOptions & {
     /** For I3SAttributeLoader */
     attributeName?: string;
@@ -46,20 +46,20 @@ export const I3SLoader = {
   extensions: ['bin'],
   options: {
     i3s: {
-      token: null,
+      token: undefined,
       isTileset: 'auto',
       isTileHeader: 'auto',
-      tile: null,
-      tileset: null,
-      _tileOptions: null,
-      _tilesetOptions: null,
+      tile: undefined,
+      tileset: undefined,
+      _tileOptions: undefined,
+      _tilesetOptions: undefined,
       useDracoGeometry: true,
       useCompressedTextures: true,
       decodeTextures: true,
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
     }
   }
-} as const satisfies LoaderWithParser<I3STilesetHeader, never, LoaderOptions>;
+} as const satisfies LoaderWithParser<I3STilesetHeader, never, I3SLoaderOptions>;
 
 async function parseI3S(data, options: I3SLoaderOptions = {}, context): Promise<I3STilesetHeader> {
   const url = context.url;

@@ -3,22 +3,22 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, ObjectRowTable} from '@loaders.gl/schema';
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 
-export type SHPLoaderOptions = LoaderOptions & {
+export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
   };
 };
 
-export type DBFLoaderOptions = LoaderOptions & {
+export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
     shape?: 'rows' | 'table' | 'object-row-table';
   };
 };
 
-export type ShapefileLoaderOptions = LoaderOptions &
+export type ShapefileLoaderOptions = StrictLoaderOptions &
   SHPLoaderOptions & {
     shapefile?: {
       shape?: 'geojson-table';

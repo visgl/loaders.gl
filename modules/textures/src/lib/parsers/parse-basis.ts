@@ -10,7 +10,7 @@ import {getSupportedGPUTextureFormats} from '../utils/texture-formats';
 import {isKTX} from './parse-ktx';
 
 // TODO - circular type import
-import type { BasisLoaderOptions } from '../../basis-loader';
+import type {BasisLoaderOptions} from '../../basis-loader';
 
 export type BasisFormat =
   | 'etc1'
@@ -130,7 +130,11 @@ export async function parseBasis(
  * @param options
  * @returns compressed texture data
  */
-function parseBasisFile(BasisFile, data: ArrayBuffer, options: BasisLoaderOptions): TextureLevel[][] {
+function parseBasisFile(
+  BasisFile,
+  data: ArrayBuffer,
+  options: BasisLoaderOptions
+): TextureLevel[][] {
   const basisFile = new BasisFile(new Uint8Array(data));
 
   try {
@@ -167,7 +171,12 @@ function parseBasisFile(BasisFile, data: ArrayBuffer, options: BasisLoaderOption
  * @param options
  * @returns compressed texture data
  */
-function transcodeImage(basisFile, imageIndex: number, levelIndex: number, options: BasisLoaderOptions): TextureLevel {
+function transcodeImage(
+  basisFile,
+  imageIndex: number,
+  levelIndex: number,
+  options: BasisLoaderOptions
+): TextureLevel {
   const width = basisFile.getImageWidth(imageIndex, levelIndex);
   const height = basisFile.getImageHeight(imageIndex, levelIndex);
 
@@ -233,7 +242,11 @@ function parseKTX2File(KTX2File, data: ArrayBuffer, options: BasisLoaderOptions)
  * @param options
  * @returns
  */
-function transcodeKTX2Image(ktx2File, levelIndex: number, options: BasisLoaderOptions): TextureLevel {
+function transcodeKTX2Image(
+  ktx2File,
+  levelIndex: number,
+  options: BasisLoaderOptions
+): TextureLevel {
   const {alphaFlag, height, width} = ktx2File.getImageLevelInfo(levelIndex, 0, 0);
 
   // Check options for output format etc

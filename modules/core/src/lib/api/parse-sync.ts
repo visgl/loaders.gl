@@ -11,7 +11,8 @@ import type {
   LoaderOptionsType,
   LoaderReturnType,
   LoaderArrayOptionsType,
-  LoaderArrayReturnType
+  LoaderArrayReturnType,
+  StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -84,11 +85,7 @@ export function parseSync(
   }
 
   // Normalize options
-  const normalizedOptions = normalizeOptions(
-    options,
-    loader,
-    candidateLoaders as Loader[] | undefined
-  );
+  const strictOptions = normalizeOptions(options, loader, candidateLoaders as Loader[] | undefined);
 
   // Extract a url for auto detection
   const url = getResourceUrl(data);
@@ -98,18 +95,18 @@ export function parseSync(
   };
   context = getLoaderContext(
     {url, _parseSync: parse, _parse: parse, loaders: loaders as Loader[]},
-    normalizedOptions,
+    strictOptions,
     context || null
   );
 
-  return parseWithLoaderSync(loader as LoaderWithParser, data, normalizedOptions, context);
+  return parseWithLoaderSync(loader as LoaderWithParser, data, strictOptions, context);
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
 function parseWithLoaderSync(
   loader: LoaderWithParser,
   data: SyncDataType,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ) {
   data = getArrayBufferOrStringFromDataSync(data, loader, options);

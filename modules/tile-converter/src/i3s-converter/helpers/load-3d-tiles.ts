@@ -119,14 +119,15 @@ export async function loadFromArchive(
     const hashTable = await loadHashTable(fileProvider);
     const archive = new Tiles3DArchive(fileProvider, hashTable, tz3Path);
     const fileSystem = new ZipFileSystem(archive);
-    const loadOptionsWithoutDeprecatedFetch = {...loadOptions} as Tiles3DLoaderOptions & {
-      fetch?: unknown;
-    };
-    delete loadOptionsWithoutDeprecatedFetch.fetch;
-    const content = await load(filename, loader, {
-      ...loadOptionsWithoutDeprecatedFetch,
-      core: {...loadOptions?.core, fetch: fileSystem.fetch.bind(fileSystem)}
-    });
+    // const loadOptionsWithoutDeprecatedFetch = {...loadOptions} as Tiles3DLoaderOptions & {
+    //   fetch?: unknown;
+    // };
+    // delete loadOptionsWithoutDeprecatedFetch.fetch;
+    // const mergedOptions = {
+    //   ...loadOptionsWithoutDeprecatedFetch,
+    //   core: {...loadOptions?.core, fetch: fileSystem.fetch.bind(fileSystem)}
+    // }
+    const content = await load(filename, loader, loadOptions);
     await fileSystem.destroy();
     return content;
   }

@@ -101,19 +101,14 @@ export async function parseInBatches(
   }
 
   // Normalize options
-  const normalizedOptions = normalizeOptions(options, loader, loaderArray, url);
+  const strictOptions = normalizeOptions(options, loader, loaderArray, url);
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
-    normalizedOptions,
+    strictOptions,
     context || null
   );
 
-  return await parseWithLoaderInBatches(
-    loader as LoaderWithParser,
-    data,
-    normalizedOptions,
-    context
-  );
+  return await parseWithLoaderInBatches(loader as LoaderWithParser, data, strictOptions, context);
 }
 
 /**
