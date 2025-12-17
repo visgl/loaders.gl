@@ -25,6 +25,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./lerc-worker.js": {
+      "import": "./dist/lerc-worker.js"
     }
   },
   "sideEffects": false,

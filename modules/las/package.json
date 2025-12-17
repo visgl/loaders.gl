@@ -28,6 +28,9 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./las-worker.js": {
+      "import": "./dist/las-worker.js"
     }
   },
   "sideEffects": false,

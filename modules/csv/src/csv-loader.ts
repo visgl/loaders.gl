@@ -5,7 +5,7 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Schema, ArrayRowTable, ObjectRowTable, TableBatch} from '@loaders.gl/schema';
 
-import {log} from '@loaders.gl/loader-utils';
+import {log, toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import {
   AsyncQueue,
   deduceTableSchema,
@@ -133,7 +133,9 @@ async function parseCSV(
 
 // TODO - support batch size 0 = no batching/single batch?
 function parseCSVInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: CSVLoaderOptions
 ): AsyncIterable<TableBatch> {
   // Papaparse does not support standard batch size handling
@@ -251,7 +253,7 @@ function parseCSVInBatches(
     }
   };
 
-  Papa.parse(asyncIterator, config, AsyncIteratorStreamer);
+  Papa.parse(toArrayBufferIterator(asyncIterator), config, AsyncIteratorStreamer);
 
   // TODO - Does it matter if we return asyncIterable or asyncIterator
   // return asyncQueue[Symbol.asyncIterator]();

@@ -1,21 +1,29 @@
-const {getESLintConfig} = require('ocular-dev-tools/configuration');
+const {getESLintConfig} = require('@vis.gl/dev-tools/configuration');
 
 // Make any changes to default config here
 const config = getESLintConfig({
+  plugins: ['tree-shaking'],
+
   overrides: {
-    // To make import assertions work
-    parser: '@babel/eslint-parser',
-    parserOptions: {
-      project: ['./tsconfig.json'],
-      requireConfigFile: false,
-      babelOptions: {
-        plugins: ['@babel/plugin-syntax-import-assertions']
-      }
-    },
+    //   // To make import assertions work
+    //   parser: '@babel/eslint-parser',
+    //   parserOptions: {
+    //     project: ['./tsconfig.json'],
+    //     requireConfigFile: false,
+    //     babelOptions: {
+    //       plugins: ['@babel/plugin-syntax-import-assertions']
+    //     }
+    //   },
+
     env: {
       browser: true,
-      es2020: true,
+      es2022: true,
       node: true
+    },
+
+    parserOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module'
     },
 
     rules: {
@@ -54,7 +62,7 @@ const config = getESLintConfig({
           '@typescript-eslint/no-floating-promises': 0,
 
           // Gradually enable
-          'no-shadow': 0,
+          '@typescript-eslint/no-shadow': 0,
           '@typescript-eslint/no-explicit-any': 0,
           '@typescript-eslint/ban-ts-comment': 0,
           '@typescript-eslint/ban-types': 0,

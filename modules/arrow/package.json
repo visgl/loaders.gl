@@ -36,6 +36,9 @@
     "./exports/*": {
       "types": "./dist/exports/*.d.ts",
       "import": "./dist/exports/*.js"
+    },
+    "./arrow-worker.js": {
+      "import": "./dist/arrow-worker.js"
     }
   },
   "sideEffects": false,

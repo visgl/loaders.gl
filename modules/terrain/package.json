@@ -30,6 +30,9 @@
     },
     "./terrain-worker.js": {
       "import": "./dist/terrain-worker.js"
+    },
+    "./quantized-mesh-worker.js": {
+      "import": "./dist/quantized-mesh-worker.js"
     }
   },
   "sideEffects": false,

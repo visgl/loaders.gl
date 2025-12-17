@@ -110,10 +110,21 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
     // } catch (error) {
     //   console.error(error);
     // }
+    const {requireFromFile} = globalThis.loaders || {};
     try {
-      const {requireFromFile} = globalThis.loaders || {};
-      return await requireFromFile?.(libraryUrl);
+      const result = await requireFromFile?.(libraryUrl);
+      if (result || !libraryUrl.includes('/dist/libs/')) {
+        return result;
+      }
+      return await requireFromFile?.(libraryUrl.replace('/dist/libs/', '/src/libs/'));
     } catch (error) {
+      if (libraryUrl.includes('/dist/libs/')) {
+        try {
+          return await requireFromFile?.(libraryUrl.replace('/dist/libs/', '/src/libs/'));
+        } catch {
+          // ignore
+        }
+      }
       console.error(error); // eslint-disable-line no-console
       return null;
     }
@@ -167,7 +178,14 @@ async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
     const response = await fetch(url);
     return await response.arrayBuffer();
   }
-  return await readFileAsArrayBuffer(url);
+  try {
+    return await readFileAsArrayBuffer(url);
+  } catch {
+    if (url.includes('/dist/libs/')) {
+      return await readFileAsArrayBuffer(url.replace('/dist/libs/', '/src/libs/'));
+    }
+    throw new Error(`Failed to load ArrayBuffer from ${url}`);
+  }
 }
 
 /**
@@ -181,7 +199,14 @@ async function loadAsText(url: string): Promise<string> {
     const response = await fetch(url);
     return await response.text();
   }
-  return await readFileAsText(url);
+  try {
+    return await readFileAsText(url);
+  } catch {
+    if (url.includes('/dist/libs/')) {
+      return await readFileAsText(url.replace('/dist/libs/', '/src/libs/'));
+    }
+    throw new Error(`Failed to load text from ${url}`);
+  }
 }
 
 /*

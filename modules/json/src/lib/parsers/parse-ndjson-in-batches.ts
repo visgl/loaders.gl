@@ -8,14 +8,17 @@ import {
   LoaderOptions,
   makeLineIterator,
   makeNumberedLineIterator,
-  makeTextDecoderIterator
+  makeTextDecoderIterator,
+  toArrayBufferIterator
 } from '@loaders.gl/loader-utils';
 
 export async function* parseNDJSONInBatches(
-  binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  binaryAsyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: LoaderOptions
 ): AsyncIterable<TableBatch> {
-  const textIterator = makeTextDecoderIterator(binaryAsyncIterator);
+  const textIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
   const lineIterator = makeLineIterator(textIterator);
   const numberedLineIterator = makeNumberedLineIterator(lineIterator);
 

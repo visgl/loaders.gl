@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, LoaderOptions, Loader} from '@loaders.gl/loader-utils';
+import type {LoaderContext, LoaderOptions, Loader, DataType} from '@loaders.gl/loader-utils';
 import {compareArrayBuffers, path, log} from '@loaders.gl/loader-utils';
 import {TypedArray} from '@loaders.gl/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
@@ -29,7 +29,7 @@ const EXT_PATTERN = /\.([^.]+)$/;
  * @param context used internally, applications should not provide this parameter
  */
 export async function selectLoader(
-  data: Response | Blob | ArrayBuffer | string,
+  data: DataType,
   loaders: Loader[] | Loader = [],
   options?: LoaderOptions,
   context?: LoaderContext
@@ -77,7 +77,7 @@ export async function selectLoader(
  * @param context used internally, applications should not provide this parameter
  */
 export function selectLoaderSync(
-  data: Response | Blob | ArrayBuffer | string,
+  data: DataType,
   loaders: Loader[] | Loader = [],
   options?: LoaderOptions,
   context?: LoaderContext
@@ -124,7 +124,7 @@ export function selectLoaderSync(
 /** Implements loaders selection logic */
 // eslint-disable-next-line complexity
 function selectLoaderInternal(
-  data: Response | Blob | ArrayBuffer | string,
+  data: DataType,
   loaders: Loader[],
   options?: LoaderOptions,
   context?: LoaderContext
@@ -183,7 +183,7 @@ function validHTTPResponse(data: unknown): boolean {
 }
 
 /** Generate a helpful message to help explain why loader selection failed. */
-function getNoValidLoaderMessage(data: string | ArrayBuffer | Response | Blob): string {
+function getNoValidLoaderMessage(data: DataType): string {
   const url = getResourceUrl(data);
   const type = getResourceMIMEType(data);
 
