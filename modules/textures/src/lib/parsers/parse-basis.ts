@@ -9,6 +9,9 @@ import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {getSupportedGPUTextureFormats} from '../utils/texture-formats';
 import {isKTX} from './parse-ktx';
 
+// TODO - circular type import
+import type { BasisLoaderOptions } from '../../basis-loader';
+
 export type BasisFormat =
   | 'etc1'
   | 'etc2'
@@ -78,24 +81,34 @@ const OutputFormat: Record<string, BasisOutputOptions> = {
   rgba4444: {basisFormat: 16, compressed: false}
 };
 
+export type ParseBasisOptions = {
+  format: 'auto' | BasisFormat | {alpha: BasisFormat; noAlpha: BasisFormat};
+  libraryPath?: string;
+  containerFormat: 'auto' | 'ktx2' | 'basis';
+  module: 'transcoder' | 'encoder';
+};
+
 /**
  * parse data with a Binomial Basis_Universal module
  * @param data
  * @param options
  * @returns compressed texture data
  */
-export async function parseBasis(data: ArrayBuffer, options): Promise<TextureLevel[][]> {
-  if (options.basis.containerFormat === 'auto') {
+export async function parseBasis(
+  data: ArrayBuffer,
+  options: BasisLoaderOptions = {}
+): Promise<TextureLevel[][]> {
+  if (!options.basis?.containerFormat || options.basis.containerFormat === 'auto') {
     if (isKTX(data)) {
-      const fileConstructors = await loadBasisEncoderModule(options);
+      const fileConstructors = await loadBasisEncoderModule(options?.core || {});
       return parseKTX2File(fileConstructors.KTX2File, data, options);
     }
-    const {BasisFile} = await loadBasisTranscoderModule(options);
+    const {BasisFile} = await loadBasisTranscoderModule(options?.core || {});
     return parseBasisFile(BasisFile, data, options);
   }
   switch (options.basis.module) {
     case 'encoder':
-      const fileConstructors = await loadBasisEncoderModule(options);
+      const fileConstructors = await loadBasisEncoderModule(options?.core || {});
       switch (options.basis.containerFormat) {
         case 'ktx2':
           return parseKTX2File(fileConstructors.KTX2File, data, options);
@@ -105,7 +118,7 @@ export async function parseBasis(data: ArrayBuffer, options): Promise<TextureLev
       }
     case 'transcoder':
     default:
-      const {BasisFile} = await loadBasisTranscoderModule(options);
+      const {BasisFile} = await loadBasisTranscoderModule(options.core || {});
       return parseBasisFile(BasisFile, data, options);
   }
 }
@@ -117,7 +130,7 @@ export async function parseBasis(data: ArrayBuffer, options): Promise<TextureLev
  * @param options
  * @returns compressed texture data
  */
-function parseBasisFile(BasisFile, data, options): TextureLevel[][] {
+function parseBasisFile(BasisFile, data: ArrayBuffer, options: BasisLoaderOptions): TextureLevel[][] {
   const basisFile = new BasisFile(new Uint8Array(data));
 
   try {
@@ -154,7 +167,7 @@ function parseBasisFile(BasisFile, data, options): TextureLevel[][] {
  * @param options
  * @returns compressed texture data
  */
-function transcodeImage(basisFile, imageIndex, levelIndex, options): TextureLevel {
+function transcodeImage(basisFile, imageIndex: number, levelIndex: number, options: BasisLoaderOptions): TextureLevel {
   const width = basisFile.getImageWidth(imageIndex, levelIndex);
   const height = basisFile.getImageHeight(imageIndex, levelIndex);
 
@@ -192,7 +205,7 @@ function transcodeImage(basisFile, imageIndex, levelIndex, options): TextureLeve
  * @param options
  * @returns compressed texture data
  */
-function parseKTX2File(KTX2File, data: ArrayBuffer, options): TextureLevel[][] {
+function parseKTX2File(KTX2File, data: ArrayBuffer, options: BasisLoaderOptions): TextureLevel[][] {
   const ktx2File = new KTX2File(new Uint8Array(data));
 
   try {
@@ -220,7 +233,7 @@ function parseKTX2File(KTX2File, data: ArrayBuffer, options): TextureLevel[][] {
  * @param options
  * @returns
  */
-function transcodeKTX2Image(ktx2File, levelIndex: number, options): TextureLevel {
+function transcodeKTX2Image(ktx2File, levelIndex: number, options: BasisLoaderOptions): TextureLevel {
   const {alphaFlag, height, width} = ktx2File.getImageLevelInfo(levelIndex, 0, 0);
 
   // Check options for output format etc
@@ -269,8 +282,9 @@ function transcodeKTX2Image(ktx2File, levelIndex: number, options): TextureLevel
  * @param hasAlpha
  * @returns BasisFormat data
  */
-function getBasisOptions(options, hasAlpha: boolean): BasisOutputOptions {
-  let format = options && options.basis && options.basis.format;
+function getBasisOptions(options: BasisLoaderOptions, hasAlpha: boolean): BasisOutputOptions {
+  // TODO - any
+  let format: any = options.basis?.format;
   if (format === 'auto') {
     format = selectSupportedBasisFormat();
   }

@@ -11,6 +11,8 @@ export type LoadLibraryOptions<ModulesT extends Record<string, any> = Record<str
   useLocalLibraries?: boolean;
   CDN?: string | null;
   modules?: ModulesT;
+  // Core must not be supplied
+  core?: never;
 };
 
 const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
@@ -54,18 +56,12 @@ export function getLibraryUrl(
   options: LoadLibraryOptions = {},
   libraryName: string | null = null
 ): string {
-  throw new Error(moduleName || 'undefined');
-  // @ts-expect-error
   if (options?.core) {
-    throw new Error('getLibraryUrl: expects resolved "LoaderOptions.core"');
+    throw new Error('loadLibrary: options.core must be pre-normalized');
   }
-  const useLocalLibraries = options.useLocalLibraries;
-  const cdn = options.CDN;
 
   // Check if already a URL
-  // In Node.js we prefer local libraries even when the library URL is remote.
-  // In the browser, remote URLs are the default unless `useLocalLibraries` is set.
-  if (isBrowser && !useLocalLibraries && library.startsWith('http')) {
+  if (!options.useLocalLibraries && library.startsWith('http')) {
     return library;
   }
 
@@ -85,9 +81,9 @@ export function getLibraryUrl(
   }
 
   // In browser, load from external scripts
-  if (cdn) {
-    assert(cdn.startsWith('http'));
-    return `${cdn}/${moduleName}@${VERSION}/dist/libs/${libraryName}`;
+  if (options.CDN) {
+    assert(options.CDN.startsWith('http'));
+    return `${options.CDN}/${moduleName}@${VERSION}/dist/libs/${libraryName}`;
   }
 
   // TODO - loading inside workers requires paths relative to worker script location...
@@ -221,6 +217,7 @@ async function loadScriptFromFile(libraryUrl) {
   });
 }
 */
+
 
 // TODO - technique for module injection into worker, from THREE.DracoLoader...
 /*

@@ -9,7 +9,7 @@ import {VERSION} from '../../../src/lib/env-utils/version';
 const DRACO_DECODER_URL =
   'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder.wasm';
 
-test.only('getLibraryUrl # should return URL', (t) => {
+test('getLibraryUrl # should return URL', (t) => {
   const result = getLibraryUrl(DRACO_DECODER_URL);
   t.equals(result, DRACO_DECODER_URL);
   t.end();

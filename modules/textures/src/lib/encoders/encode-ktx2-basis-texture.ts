@@ -4,6 +4,7 @@
 
 import type {ImageDataType} from '@loaders.gl/images';
 import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
+import {type BasisWriterOptions} from '../../basis-writer';
 
 /**
  * Encodes image to Basis Universal Supercompressed GPU Texture.
@@ -14,7 +15,7 @@ import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
  */
 export async function encodeKTX2BasisTexture(
   image: ImageDataType,
-  options: any = {}
+  options: BasisWriterOptions = {}
 ): Promise<ArrayBuffer> {
   // TODO remove default values after writer options will be normalized like it done in load module.
   const {
