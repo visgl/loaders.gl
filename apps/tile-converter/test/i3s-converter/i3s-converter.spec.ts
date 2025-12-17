@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {I3SConverter} from '@loaders.gl/tile-converter';
+import {default as I3SConverter} from '../../src/i3s-converter/i3s-converter';
 import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
 
 import {cleanUpPath} from '../utils/file-utils';

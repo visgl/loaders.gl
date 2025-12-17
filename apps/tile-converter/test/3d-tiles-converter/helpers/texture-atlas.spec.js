@@ -1,6 +1,5 @@
 import test from 'tape-promise/tape';
-// @ts-expect-error
-import {convertTextureAtlas} from '@loaders.gl/tile-converter/3d-tiles-converter/helpers/texture-atlas';
+import {convertTextureAtlas} from '../../../src/3d-tiles-converter/helpers/texture-atlas';
 
 test('tile-converter(3d-tiles)#convertTextureAtlas - should convert texture atlas', async (t) => {
   const UV = new Float32Array([0.12345, 0.54321]);

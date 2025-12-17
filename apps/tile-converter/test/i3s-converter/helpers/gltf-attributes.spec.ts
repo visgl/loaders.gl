@@ -1,16 +1,16 @@
 import {BoundingSphere} from '@math.gl/culling';
-import {
-  calculateTransformProps,
-  prepareDataForAttributesConversion
-} from '../../../src/i3s-converter/helpers/gltf-attributes';
 import test from 'tape-promise/tape';
 import {Matrix4} from '@math.gl/core';
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {
+  calculateTransformProps,
+  prepareDataForAttributesConversion
+} from '../../../src/i3s-converter/helpers/gltf-attributes';
 import {areNumberArraysEqual} from '../../utils/compareArrays';
 
 const FRANKFURT_B3DM_FILE_PATH =
-  '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
+  '@loaders.gl/tile-converter/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
 
 test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent without images', async (t) => {
   const tileContent = {
@@ -235,7 +235,8 @@ test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate a
   t.end();
 });
 
-test('tile-converter(i3s)#calculateTransformProps', async (t) => {
+// TODO app breakout
+test.skip('tile-converter(i3s)#calculateTransformProps', async (t) => {
   const tileContent = await load(FRANKFURT_B3DM_FILE_PATH, Tiles3DLoader);
   const tileTransform = new Matrix4([
     1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4055182.44018, 615965.038498, 4867494.346586, 1

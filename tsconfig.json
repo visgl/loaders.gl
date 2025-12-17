@@ -243,10 +243,10 @@
         "modules/tiles/test"
       ],
       "@loaders.gl/tile-converter": [
-        "modules/tile-converter/src"
+        "apps/tile-converter/src"
       ],
       "@loaders.gl/tile-converter/test": [
-        "modules/tile-converter/test"
+        "apps/tile-converter/test"
       ],
       "@loaders.gl/terrain": [
         "modules/terrain/src"
