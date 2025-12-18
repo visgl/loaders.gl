@@ -53,6 +53,7 @@ test('GLTFLoader#KHR_texture_transform preserves shared bufferView data', async 
   const originalInterleavedCopy = Array.from(interleavedVertexData);
   const gltfWithBuffers: GLTFWithBuffers = {
     json: {
+      extensionsUsed: ['KHR_texture_transform'],
       buffers: [{byteLength: interleavedVertexData.byteLength}],
       bufferViews: [
         {
