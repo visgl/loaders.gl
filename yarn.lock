@@ -5811,6 +5811,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/graphs@workspace:modules/graphs":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/graphs@workspace:modules/graphs"
+  peerDependencies:
+    "@loaders.gl/core": 4.4.0-alpha.1
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/i3s@npm:^4.4.0-alpha.1, @loaders.gl/i3s@workspace:modules/i3s":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/i3s@workspace:modules/i3s"
@@ -6253,6 +6261,14 @@ __metadata:
     "@math.gl/geospatial": "npm:^4.1.0"
     "@math.gl/web-mercator": "npm:^4.1.0"
     "@probe.gl/stats": "npm:^4.0.2"
+  peerDependencies:
+    "@loaders.gl/core": 4.4.0-alpha.1
+  languageName: unknown
+  linkType: soft
+
+"@loaders.gl/traces@workspace:modules/traces":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/traces@workspace:modules/traces"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
