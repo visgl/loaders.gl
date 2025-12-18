@@ -7,7 +7,7 @@ import {
   LoaderOptions,
   registerJSModules,
   isPureObject,
-  isObject
+  isObject,
   StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
 import {probeLog, NullLog} from './loggers';
