@@ -10,6 +10,8 @@ See the [v4.4 Roadmap](/docs/roadmap) for more details.
 - **Tooling** - @vis.gl/dev-tools@1.0, GitHub CI optimizations
 - **TypeScript** - Migrate API from `ArrayBuffer` to `ArrayBufferLike`
 - **Website** - docusaurus@3.9. Website search. 
+- Modernized build tooling
+- **TypeScript** Stricter types across code base, migrate to ArrayBufferLike
 
 **All modules**
 
@@ -17,11 +19,15 @@ See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
 **@loaders.gl/core**
 
-- Common `LoaderOptions` can now be provided in the `options.core.<...>` rather than on the top level. This allows common options to be type checked. 
+- [`LoaderOptions.core`](/docs/modules/core/api-reference/loader-options) - stronger type checks when options are supplied through the new `options.core` sub-option object.
 
 **@loaders.gl/mvt**
 
-- `MVTWriter` - A new experimental writer that allows GeoJSON to be written in binary MVT tile format.
+- [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer)  A new experimental writer that allows GeoJSON to be written in binary MVT tile format.
+
+**@loaders.gl/tile-converter**
+
+- `tile-converter` is now published as an "application", independently of loaders.gl modules.
 
 ## v4.3
 
