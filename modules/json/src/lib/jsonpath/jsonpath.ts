@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/* eslint-disable no-continue */
+
 /**
  * A parser for a minimal subset of the jsonpath standard
  * Full JSON path parsers for JS exist but are quite large (bundle size)
@@ -105,6 +107,7 @@ function parseJsonPath(path: JSONPath | string[] | string | null): string[] {
   return ['$'];
 }
 
+// eslint-disable-next-line complexity, max-statements
 function parseJsonPathString(pathString: string): string[] {
   const trimmedPath = pathString.trim();
   if (!trimmedPath.startsWith('$')) {
@@ -168,7 +171,10 @@ function parseJsonPathString(pathString: string): string[] {
   return segments;
 }
 
-function parseDotSegment(pathString: string, startIndex: number): {
+function parseDotSegment(
+  pathString: string,
+  startIndex: number
+): {
   value: string;
   nextIndex: number;
   isWildcard: boolean;
@@ -212,7 +218,7 @@ function parseBracketSegment(pathString: string, startIndex: number): BracketSeg
   }
 
   const firstCharacter = pathString[contentStartIndex];
-  if (firstCharacter === '\'' || firstCharacter === '"') {
+  if (firstCharacter === "'" || firstCharacter === '"') {
     const {value, nextIndex} = parseBracketProperty(pathString, contentStartIndex);
     return {type: 'property', value, nextIndex};
   }
@@ -261,7 +267,11 @@ function getUnsupportedBracketSelectorMessage(content: string): string | null {
   return null;
 }
 
-function parseBracketProperty(pathString: string, startIndex: number): {
+// eslint-disable-next-line complexity, max-statements
+function parseBracketProperty(
+  pathString: string,
+  startIndex: number
+): {
   value: string;
   nextIndex: number;
 } {
