@@ -17,7 +17,9 @@ globalThis.nodeVersion = nodeVersion;
 
 import '@loaders.gl/polyfills';
 
-import './modules';
+import './init-tests';
 
 // Tile converter
-import '@loaders.gl/tile-converter/test';
+import '../apps/tile-converter/test';
+
+import './modules';

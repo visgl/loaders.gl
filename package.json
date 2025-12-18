@@ -23,6 +23,7 @@
   ],
   "workspaces": [
     "modules/*",
+    "apps/*",
     "examples",
     "website"
   ],

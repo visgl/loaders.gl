@@ -100,7 +100,7 @@ const config = {
             '@loaders.gl/stac': resolve('../modules/stac/src'),
             '@loaders.gl/terrain': resolve('../modules/terrain/src'),
             '@loaders.gl/textures': resolve('../modules/textures/src'),
-            '@loaders.gl/tile-converter': resolve('../modules/tile/converter/src-'),
+            '@loaders.gl/tile-converter': resolve('../apps/tile/converter/src-'),
             '@loaders.gl/tiles': resolve('../modules/tiles/src'),
             '@loaders.gl/tiles-2d': resolve('../modules/tiles-2d/src'),
             '@loaders.gl/type-analyzer': resolve('../modules/type-analyzer/src'),

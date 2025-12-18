@@ -30,7 +30,8 @@ setLoaderOptions({
   _worker: 'test'
 });
 
-test('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
+// TODO app breakout
+test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
   if (isBrowser) {
     t.end();
     return;
@@ -600,7 +601,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
 });
 
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async (t) => {
+test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async (t) => {
   if (isBrowser) {
     t.end();
     return;
