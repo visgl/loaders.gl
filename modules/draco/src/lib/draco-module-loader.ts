@@ -45,7 +45,7 @@ export async function loadDracoDecoderModule(options: LoadLibraryOptions = {}) {
   return await loadDecoderPromise;
 }
 
-export async function loadDracoEncoderModule(options) {
+export async function loadDracoEncoderModule(options: LoadLibraryOptions) {
   const modules = options.modules || {};
 
   // Check if a bundled draco3d library has been supplied by application
@@ -74,10 +74,10 @@ function getLibraryExport(library: any, exportName: string): any {
 
 // DRACO DECODER LOADING
 /** @todo - type the options, they are inconsistent */
-async function loadDracoDecoder(options) {
+async function loadDracoDecoder(options: LoadLibraryOptions, type: 'wasm' | 'js' = 'wasm') {
   let DracoDecoderModule;
   let wasmBinary;
-  switch (options.draco && options.draco.decoderType) {
+  switch (type) {
     case 'js':
       DracoDecoderModule = await loadLibrary(
         DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER],

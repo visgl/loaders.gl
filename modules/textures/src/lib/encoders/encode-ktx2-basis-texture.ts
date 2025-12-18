@@ -24,7 +24,7 @@ export async function encodeKTX2BasisTexture(
     encodeUASTC = false,
     mipmaps = false
   } = options?.['ktx2-basis-writer'] || {};
-  const {BasisEncoder} = await loadBasisEncoderModule(options);
+  const {BasisEncoder} = await loadBasisEncoderModule(options.core || {});
   const basisEncoder = new BasisEncoder();
 
   try {

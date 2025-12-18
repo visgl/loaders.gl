@@ -8,18 +8,25 @@ import type {Format} from './format-types';
 
 /** Options for writers */
 export type WriterOptions = {
-  /** worker source. If is set will be used instead of loading worker from the Internet */
-  source?: string | null;
+  core?: {
+    /** worker source. If is set will be used instead of loading worker from the Internet */
+    source?: string | null;
 
-  // module loading
+    // module loading
 
-  /** Any additional JS libraries */
-  modules?: Record<string, any>;
-  /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
-  useLocalLibraries?: boolean;
+    /** Any additional JS libraries */
+    modules?: Record<string, any>;
+    /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
+    useLocalLibraries?: boolean;
+    /** Whether to use workers under Node.js (experimental) */
+    _nodeWorkers?: boolean;
+    /** Set to `false` to disable workers */
+    worker?: boolean;
+    log?: any;
+  };
 
   /** writer-specific options */
-  [writerId: string]: any;
+  [writerId: string]: Record<string, unknown> | undefined;
 };
 
 /**
