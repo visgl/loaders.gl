@@ -9,8 +9,7 @@ import type {
   Loader,
   LoaderOptions
 } from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync, isPromise} from '@loaders.gl/loader-utils';
-import {
+import {concatenateArrayBuffersAsync, isPromise,
   isResponse,
   isReadableStream,
   isAsyncIterable,
@@ -119,7 +118,7 @@ export async function getAsyncIterableFromData(
     if (!body) {
       throw new Error(ERR_DATA);
     }
-    return makeIterator(body as ReadableStream<Uint8Array>, options as any);
+    return makeIterator(body, options as any);
   }
 
   if (isBlob(data) || isReadableStream(data)) {

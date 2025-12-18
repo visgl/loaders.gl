@@ -8,6 +8,8 @@ import {Readable, PassThrough} from 'stream';
 import {
   isObject,
   isPureObject,
+  isArrayBuffer,
+  isArrayBufferLike,
   isPromise,
   isIterable,
   isAsyncIterable,
@@ -25,10 +27,36 @@ import {
 } from '@loaders.gl/loader-utils';
 
 test('is-type#object checks', (t) => {
+  class TestClass {}
   t.ok(isObject({}), 'object is object');
+  t.equal(isPureObject({}), true, 'object if pure');
+  t.equal(isPureObject([]), false, 'array is not pure');
+  t.equal(isPureObject(3), false, 'number is not pure');
+  t.equal(isPureObject(new TestClass()), false, 'class instance is not pure');
   t.notOk(isObject(null), 'null is not object');
   t.ok(isPureObject({foo: 'bar'}), 'plain object is pure');
   t.notOk(isPureObject(new (class Test {})()), 'class instance is not pure');
+  t.end();
+});
+
+test('is-type#array buffer checks', (t) => {
+  const arrayBuffer = new ArrayBuffer(8);
+  const uint8Array = new Uint8Array(arrayBuffer);
+
+  t.ok(isArrayBuffer(arrayBuffer), 'ArrayBuffer is ArrayBuffer');
+  t.notOk(isArrayBuffer(uint8Array), 'TypedArray is not ArrayBuffer');
+
+  t.ok(isArrayBufferLike(arrayBuffer), 'ArrayBuffer is ArrayBufferLike');
+  t.ok(isArrayBufferLike(uint8Array), 'TypedArray is ArrayBufferLike');
+  t.notOk(isArrayBufferLike({byteLength: 8}), 'Object with byteLength is not ArrayBufferLike');
+
+  if (typeof SharedArrayBuffer !== 'undefined') {
+    const sharedArrayBuffer = new SharedArrayBuffer(8);
+    t.ok(isArrayBufferLike(sharedArrayBuffer), 'SharedArrayBuffer is ArrayBufferLike');
+  } else {
+    t.pass('SharedArrayBuffer not available in environment');
+  }
+
   t.end();
 });
 
@@ -36,6 +64,43 @@ test('is-type#promise checks', (t) => {
   const promise = Promise.resolve('value');
   t.ok(isPromise(promise), 'promise is promise');
   t.notOk(isPromise({then: 'not a function'}), 'non-function then is not promise');
+  t.end();
+});
+
+test('isIterator', (t) => {
+  const TESTS = [
+    {
+      input: new Set().entries(),
+      output: true
+    },
+    {
+      input: [].entries(),
+      output: true
+    },
+    {
+      input: (function* generator() {
+        yield 1;
+      })(),
+      output: true
+    },
+    {
+      input: [],
+      output: false
+    },
+    {
+      input: null,
+      output: null
+    }
+  ];
+
+  for (const testCase of TESTS) {
+    t.is(
+      isIterator(testCase.input),
+      testCase.output,
+      `${testCase.output ? 'shoud' : 'should not'} be iterator`
+    );
+  }
+
   t.end();
 });
 

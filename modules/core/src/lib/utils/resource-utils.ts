@@ -78,11 +78,11 @@ export function getResourceMIMEType(resource: unknown): string {
   */
 export function getResourceContentLength(resource: unknown): number {
   if (isResponse(resource)) {
-    const response = resource as Response;
+    const response = resource;
     return response.headers['content-length'] || -1;
   }
   if (isBlob(resource)) {
-    const blob = resource as Blob;
+    const blob = resource;
     return blob.size;
   }
   if (typeof resource === 'string') {

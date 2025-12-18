@@ -33,11 +33,21 @@ export const isObject = (value: unknown): value is object =>
 
 /** Checks whether a value is a plain object (created by the Object constructor) */
 export const isPureObject = (value: unknown): value is Record<string, unknown> =>
-  isObject(value) && (value as object).constructor === {}.constructor;
+  isObject(value) && (value).constructor === {}.constructor;
+
+/** Checks whether a value is an ArrayBuffer */
+export const isArrayBuffer = (value: unknown): value is ArrayBuffer =>
+  typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer;
+
+/** Checks whether a value is ArrayBuffer-like */
+export const isArrayBufferLike = (value: unknown): value is ArrayBufferLike =>
+  isObject(value) &&
+  typeof (value as ArrayBufferLike).byteLength === 'number' &&
+  typeof (value as ArrayBufferLike).slice === 'function';
 
 /** Checks whether a value behaves like a promise */
 export const isPromise = (value: unknown): value is Promise<unknown> =>
-  isObject(value) && 'then' in (value as object) && isFunction((value as {then: unknown}).then);
+  isObject(value) && 'then' in (value) && isFunction((value as {then: unknown}).then);
 
 /** Checks whether a value implements the iterable protocol */
 export const isIterable = (value: unknown): value is Iterable<unknown> =>

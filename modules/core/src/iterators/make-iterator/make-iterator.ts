@@ -38,7 +38,7 @@ export function makeIterator(
     return makeArrayBufferIterator(data, options);
   }
   if (isBlob(data)) {
-    return makeBlobIterator(data as Blob, options);
+    return makeBlobIterator(data, options);
   }
   if (isReadableStream(data)) {
     return makeStreamIterator(data, options);

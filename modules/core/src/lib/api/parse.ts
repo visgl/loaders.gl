@@ -13,10 +13,9 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayReturnType
 } from '@loaders.gl/loader-utils';
-import {parseWithWorker, canParseWithWorker, mergeOptions} from '@loaders.gl/loader-utils';
+import {parseWithWorker, canParseWithWorker, mergeOptions,isResponse} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
-import {isResponse} from '@loaders.gl/loader-utils';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';

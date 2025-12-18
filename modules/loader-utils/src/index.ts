@@ -71,6 +71,8 @@ export type {ReadableStreamType} from './lib/javascript-utils/is-type';
 export {
   isObject,
   isPureObject,
+  isArrayBuffer,
+  isArrayBufferLike,
   isPromise,
   isIterable,
   isAsyncIterable,
