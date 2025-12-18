@@ -13,7 +13,12 @@ import type {
   LoaderArrayOptionsType,
   LoaderArrayReturnType
 } from '@loaders.gl/loader-utils';
-import {parseWithWorker, canParseWithWorker, mergeOptions,isResponse} from '@loaders.gl/loader-utils';
+import {
+  parseWithWorker,
+  canParseWithWorker,
+  mergeOptions,
+  isResponse
+} from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';

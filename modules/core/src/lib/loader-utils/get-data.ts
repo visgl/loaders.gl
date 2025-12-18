@@ -9,7 +9,9 @@ import type {
   Loader,
   LoaderOptions
 } from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync, isPromise,
+import {
+  concatenateArrayBuffersAsync,
+  isPromise,
   isResponse,
   isReadableStream,
   isAsyncIterable,
@@ -134,7 +136,7 @@ export async function getAsyncIterableFromData(
   }
 
   // @ts-expect-error TODO - fix type mess
-  return getIterableFromData(data)
+  return getIterableFromData(data);
 }
 
 /**

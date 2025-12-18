@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 import type {Readable} from 'stream';
 
 /** Minimal shape for Node.js Buffer-like values */
@@ -33,7 +35,7 @@ export const isObject = (value: unknown): value is object =>
 
 /** Checks whether a value is a plain object (created by the Object constructor) */
 export const isPureObject = (value: unknown): value is Record<string, unknown> =>
-  isObject(value) && (value).constructor === {}.constructor;
+  isObject(value) && value.constructor === {}.constructor;
 
 /** Checks whether a value is an ArrayBuffer */
 export const isArrayBuffer = (value: unknown): value is ArrayBuffer =>
@@ -47,7 +49,7 @@ export const isArrayBufferLike = (value: unknown): value is ArrayBufferLike =>
 
 /** Checks whether a value behaves like a promise */
 export const isPromise = (value: unknown): value is Promise<unknown> =>
-  isObject(value) && 'then' in (value) && isFunction((value as {then: unknown}).then);
+  isObject(value) && 'then' in value && isFunction((value as {then: unknown}).then);
 
 /** Checks whether a value implements the iterable protocol */
 export const isIterable = (value: unknown): value is Iterable<unknown> =>
