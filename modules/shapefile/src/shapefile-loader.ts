@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {StrictLoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Batch, GeoJSONTable} from '@loaders.gl/schema';
 import {SHP_MAGIC_NUMBER} from './shp-loader';
 import {parseShapefile, parseShapefileInBatches} from './lib/parsers/parse-shapefile';
@@ -11,7 +11,7 @@ import {parseShapefile, parseShapefileInBatches} from './lib/parsers/parse-shape
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type ShapefileLoaderOptions = LoaderOptions & {
+export type ShapefileLoaderOptions = StrictLoaderOptions & {
   shapefile?: {
     shape?: 'geojson-table' | 'v3';
     /** @deprecated Worker URLs must be specified with .dbf.workerUrl * .shp.workerUrl */

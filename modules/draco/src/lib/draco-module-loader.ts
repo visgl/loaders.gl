@@ -2,7 +2,7 @@
 // https://github.com/mrdoob/three.js/blob/398c4f39ebdb8b23eefd4a7a5ec49ec0c96c7462/examples/jsm/loaders/DRACOLoader.js
 // by Don McCurdy / https://www.donmccurdy.com / MIT license
 
-import {isBrowser, loadLibrary} from '@loaders.gl/worker-utils';
+import {isBrowser, loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
 
 const DRACO_DECODER_VERSION = '1.5.6';
 const DRACO_ENCODER_VERSION = '1.4.1';
@@ -30,7 +30,10 @@ export const DRACO_EXTERNAL_LIBRARY_URLS = {
 let loadDecoderPromise;
 let loadEncoderPromise;
 
-export async function loadDracoDecoderModule(options) {
+export async function loadDracoDecoderModule(
+  options: LoadLibraryOptions = {},
+  type: 'wasm' | 'js'
+) {
   const modules = options.modules || {};
 
   // Check if a bundled draco3d library has been supplied by application
@@ -40,12 +43,12 @@ export async function loadDracoDecoderModule(options) {
     });
   } else {
     // If not, dynamically load the WASM script from our CDN
-    loadDecoderPromise ||= loadDracoDecoder(options);
+    loadDecoderPromise ||= loadDracoDecoder(options, type);
   }
   return await loadDecoderPromise;
 }
 
-export async function loadDracoEncoderModule(options) {
+export async function loadDracoEncoderModule(options: LoadLibraryOptions) {
   const modules = options.modules || {};
 
   // Check if a bundled draco3d library has been supplied by application
@@ -73,11 +76,11 @@ function getLibraryExport(library: any, exportName: string): any {
 }
 
 // DRACO DECODER LOADING
-
-async function loadDracoDecoder(options) {
+/** @todo - type the options, they are inconsistent */
+async function loadDracoDecoder(options: LoadLibraryOptions, type: 'wasm' | 'js') {
   let DracoDecoderModule;
   let wasmBinary;
-  switch (options.draco && options.draco.decoderType) {
+  switch (type) {
     case 'js':
       DracoDecoderModule = await loadLibrary(
         DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.FALLBACK_DECODER],
@@ -157,7 +160,7 @@ function initializeDracoDecoder(DracoDecoderModule, wasmBinary) {
 
 // ENCODER
 
-async function loadDracoEncoder(options) {
+async function loadDracoEncoder(options: LoadLibraryOptions) {
   let DracoEncoderModule = await loadLibrary(
     DRACO_EXTERNAL_LIBRARY_URLS[DRACO_EXTERNAL_LIBRARIES.ENCODER],
     'draco',

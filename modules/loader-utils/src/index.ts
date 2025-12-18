@@ -31,6 +31,7 @@ export type {
   Loader,
   LoaderWithParser,
   LoaderContext,
+  StrictLoaderOptions,
   LoaderOptions,
   LoaderOptionsType,
   LoaderReturnType,

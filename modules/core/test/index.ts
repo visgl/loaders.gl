@@ -14,6 +14,7 @@ import './lib/utils/url-utils.spec';
 
 import './lib/loader-utils/loggers.spec';
 import './lib/loader-utils/option-utils.spec';
+import './lib/loader-utils/core-loader-options.spec';
 import './lib/loader-utils/normalize-loader.spec';
 import './lib/loader-utils/auto-parse.spec';
 import './lib/loader-utils/get-data.spec';

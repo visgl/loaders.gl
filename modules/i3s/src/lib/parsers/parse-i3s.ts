@@ -91,15 +91,18 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
     nodePagesTile = new I3SNodePagesTiles(tileset, url, options);
     root = await nodePagesTile.formTileFromNodePages(0);
   } else {
-    const parseOptions = options.i3s as I3SParseOptions;
+    const parseOptions =
+      (options.i3s && typeof options.i3s === 'object' ? options.i3s : {}) as I3SParseOptions;
     const rootNodeUrl = getUrlWithToken(`${url}/nodes/root`, parseOptions.token);
     // eslint-disable-next-line no-use-before-define
     root = await load(rootNodeUrl, I3SLoader, {
       ...options,
       i3s: {
-        // @ts-expect-error options is not properly typed
-        ...options.i3s,
-        loadContent: false, isTileHeader: true, isTileset: false}
+        ...parseOptions,
+        loadContent: false,
+        isTileHeader: true,
+        isTileset: false
+      }
     });
   }
 

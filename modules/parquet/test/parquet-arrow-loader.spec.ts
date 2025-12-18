@@ -59,7 +59,7 @@ test('ParquetArrowWriter#writer/loader round trip', async (t) => {
     worker: false,
   });
   const newTable = await load(parquetBuffer, ParquetArrowLoader, {
-    worker: false,
+   core: {worker: false},
   });
 
   t.deepEqual(table.data.schema, newTable.data.schema);

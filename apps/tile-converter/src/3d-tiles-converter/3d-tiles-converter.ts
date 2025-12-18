@@ -51,10 +51,12 @@ export default class Tiles3DConverter {
   workerSource: {[key: string]: string} = {};
   slpkFilesystem: ZipFileSystem | null = null;
   loaderOptions: I3SLoaderOptions = {
-    _nodeWorkers: true,
-    reuseWorkers: true,
-    // TODO: converter freezes in the end because of i3s-content-worker
-    worker: false,
+    core: {
+      _nodeWorkers: true,
+      reuseWorkers: true,
+      // TODO: converter freezes in the end because of i3s-content-worker
+      worker: false
+    },
     i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS, decodeTextures: false},
     // We need to load local fs workers because nodejs can't load workers from the Internet
     'i3s-content': {
@@ -451,9 +453,11 @@ export default class Tiles3DConverter {
       const inputUrl = attributeUrls[index];
       const attribute = attributeStorageInfo[index];
       const options = {
-        attributeName: attribute.name,
-        attributeType: this._getAttributeType(attribute)
-      };
+        i3s: {
+          attributeName: attribute.name,
+          attributeType: this._getAttributeType(attribute)
+        }
+      }; //  as const satisfies I3SLoaderOptions;
 
       promises.push(loadFromArchive(inputUrl, I3SAttributeLoader, options, this.slpkFilesystem));
     }

@@ -134,8 +134,10 @@ export default class WorkerThread {
       // Make sure relative URLs start with './'
       const absolute = this.url.includes(':/') || this.url.startsWith('/');
       const url = absolute ? this.url : `./${this.url}`;
+      const type = this.url.endsWith('.ts') || this.url.endsWith('.mjs') ? 'module' : 'commonjs';
       // console.log('Starting work from', url);
-      worker = new NodeWorker(url, {eval: false});
+      // @ts-expect-error TODO - looks like type argmument is missing in @types/node
+      worker = new NodeWorker(url, {eval: false, type});
     } else if (this.source) {
       worker = new NodeWorker(this.source, {eval: true});
     } else {

@@ -19,7 +19,7 @@ import type {Example} from './examples';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 
 import {Table, GeoJSON} from '@loaders.gl/schema';
-import {Loader, load /* registerLoaders */} from '@loaders.gl/core';
+import {Loader, load, LoaderOptions} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
 import {GeoParquetLoader, installBufferPolyfill, preloadCompressions} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
@@ -47,8 +47,10 @@ const LOADERS = [
 ] as const;
 
 const LOADER_OPTIONS = {
-  worker: false,
-  limit: 1800000,
+  core: {
+    worker: false,
+    limit: 1800000
+  },
   modules: {
     'zstd-codec': ZstdCodec
   },
@@ -79,7 +81,7 @@ const LOADER_OPTIONS = {
   tcx: {
     shape: 'geojson-table'
   }
-} as const;
+} as const satisfies LoaderOptions;
 
 const VIEW_STATE = {
   height: 600,

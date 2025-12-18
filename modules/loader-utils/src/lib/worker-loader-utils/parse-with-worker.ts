@@ -19,11 +19,13 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
   }
 
   // Node workers are still experimental
-  if (!isBrowser && !options?._nodeWorkers) {
+  const nodeWorkers = options?._nodeWorkers ?? options?.core?._nodeWorkers;
+  if (!isBrowser && !nodeWorkers) {
     return false;
   }
 
-  return loader.worker && options?.worker;
+  const useWorkers = options?.worker ?? options?.core?.worker;
+  return Boolean(loader.worker && useWorkers);
 }
 
 /**
@@ -40,7 +42,7 @@ export async function parseWithWorker(
   const name = loader.id; // TODO
   const url = getWorkerURL(loader, options);
 
-  const workerFarm = WorkerFarm.getWorkerFarm(options);
+  const workerFarm = WorkerFarm.getWorkerFarm(options?.core);
   const workerPool = workerFarm.getWorkerPool({name, url});
 
   // options.log object contains functions which cannot be transferred

@@ -135,9 +135,11 @@ export default class I3SConverter {
   refreshTokenTime: [number, number] = [0, 0];
   sourceTileset: Tiles3DTilesetJSONPostprocessed | null = null;
   loadOptions: Tiles3DLoaderOptions = {
-    _nodeWorkers: true,
-    reuseWorkers: true,
-    useLocalLibraries: true,
+    core: {
+      _nodeWorkers: true,
+      reuseWorkers: true,
+      useLocalLibraries: true
+    },
     basis: {
       format: 'rgba32',
       // We need to load local fs workers because nodejs can't load workers from the Internet
@@ -145,7 +147,6 @@ export default class I3SConverter {
     },
     // We need to load local fs workers because nodejs can't load workers from the Internet
     draco: {workerUrl: './modules/draco/dist/draco-worker-node.js'},
-    fetch: {},
     modules: {}
   };
   geoidHeightModel: Geoid | null = null;
@@ -266,7 +267,16 @@ export default class I3SConverter {
         tilesetUrl = preloadOptions.url;
       }
       if (preloadOptions.headers) {
-        this.loadOptions.fetch = {headers: preloadOptions.headers};
+        this.loadOptions.core ||= {};
+        const existingFetch = this.loadOptions.core.fetch;
+        if (typeof existingFetch === 'function') {
+          this.loadOptions.core.fetch = (url: string, requestInit?: RequestInit) =>
+            existingFetch(url, {...(requestInit || {}), headers: preloadOptions.headers});
+        } else {
+          const existingRequestInit =
+            existingFetch && typeof existingFetch === 'object' ? existingFetch : {};
+          this.loadOptions.core.fetch = {...existingRequestInit, headers: preloadOptions.headers};
+        }
       }
       this.sourceTileset = await loadFromArchive(tilesetUrl, this.Loader, this.loadOptions);
 
@@ -1570,10 +1580,16 @@ export default class I3SConverter {
 
     const preloadOptions = await this._fetchPreloadOptions();
     if (preloadOptions.headers) {
-      this.loadOptions.fetch = {
-        ...this.loadOptions.fetch,
-        headers: preloadOptions.headers
-      };
+      this.loadOptions.core ||= {};
+      const existingFetch = this.loadOptions.core.fetch;
+      if (typeof existingFetch === 'function') {
+        this.loadOptions.core.fetch = (url: string, requestInit?: RequestInit) =>
+          existingFetch(url, {...(requestInit || {}), headers: preloadOptions.headers});
+      } else {
+        const existingRequestInit =
+          existingFetch && typeof existingFetch === 'object' ? existingFetch : {};
+        this.loadOptions.core.fetch = {...existingRequestInit, headers: preloadOptions.headers};
+      }
       console.log('Authorization Bearer token has been updated'); // eslint-disable-line no-undef, no-console
     }
   }

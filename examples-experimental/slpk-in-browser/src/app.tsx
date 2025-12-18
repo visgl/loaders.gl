@@ -77,8 +77,10 @@ export default function App() {
     }
     const loadOptions = {
       i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS},
-      fetch: fileSystem.fetch.bind(fileSystem),
-      worker: false
+      core: {
+        fetch: fileSystem.fetch.bind(fileSystem),
+        worker: false
+      }
     };
     // @ts-expect-error
     const layers = new CustomTile3DLayer({
