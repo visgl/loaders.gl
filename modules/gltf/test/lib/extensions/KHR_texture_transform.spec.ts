@@ -32,23 +32,9 @@ test('GLTFLoader#KHR_texture_transform', async (t) => {
 test('GLTFLoader#KHR_texture_transform preserves shared bufferView data', async (t) => {
   const interleavedVertexData = new Float32Array([
     // Vertex 0
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-    0,
+    0, 0, 0, 0, 0, 1, 0, 0,
     // Vertex 1
-    1,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    0
+    1, 0, 0, 0, 0, 1, 1, 0
   ]);
   const originalInterleavedCopy = Array.from(interleavedVertexData);
   const gltfWithBuffers: GLTFWithBuffers = {
@@ -118,9 +104,7 @@ test('GLTFLoader#KHR_texture_transform preserves shared bufferView data', async 
   t.equals(texCoordAccessor?.bufferView, 1, 'Moves texcoord accessor to new bufferView');
   t.equals(texCoordAccessor?.byteOffset || 0, 0, 'Resets texcoord accessor byte offset');
 
-  const newTexCoordValues = Array.from(
-    new Float32Array(gltfWithBuffers.buffers[1].arrayBuffer)
-  );
+  const newTexCoordValues = Array.from(new Float32Array(gltfWithBuffers.buffers[1].arrayBuffer));
   t.deepEquals(
     newTexCoordValues,
     [0.1, 0.2, 2.1, 0.2],
