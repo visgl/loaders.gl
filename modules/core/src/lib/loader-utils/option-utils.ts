@@ -5,10 +5,11 @@
 import {
   Loader,
   LoaderOptions,
-  StrictLoaderOptions,
-  registerJSModules
+  registerJSModules,
+  isPureObject,
+  isObject,
+  StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
-import {isPureObject, isObject} from '../../javascript-utils/is-type';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
 

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderContext, LoaderOptions, FetchLike} from '@loaders.gl/loader-utils';
-import {isObject} from '../../javascript-utils/is-type';
+import {isObject} from '@loaders.gl/loader-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {getGlobalLoaderOptions} from './option-utils';
 

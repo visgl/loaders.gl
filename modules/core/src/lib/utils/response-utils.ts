@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isResponse} from '../../javascript-utils/is-type';
+import {isResponse} from '@loaders.gl/loader-utils';
 import {FetchError} from '../fetch/fetch-error';
 import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
 import {shortenUrlForDisplay} from './url-utils';
@@ -15,7 +15,7 @@ import {shortenUrlForDisplay} from './url-utils';
  */
 export async function makeResponse(resource: unknown): Promise<Response> {
   if (isResponse(resource)) {
-    return resource as Response;
+    return resource;
   }
 
   // Add content-length header if possible

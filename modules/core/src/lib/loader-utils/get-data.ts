@@ -9,8 +9,9 @@ import type {
   Loader,
   LoaderOptions
 } from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {
+  concatenateArrayBuffersAsync,
+  isPromise,
   isResponse,
   isReadableStream,
   isAsyncIterable,
@@ -18,7 +19,7 @@ import {
   isIterator,
   isBlob,
   isBuffer
-} from '../../javascript-utils/is-type';
+} from '@loaders.gl/loader-utils';
 import {makeIterator} from '../../iterators/make-iterator/make-iterator';
 import {checkResponse, makeResponse} from '../utils/response-utils';
 
@@ -40,7 +41,6 @@ export function getArrayBufferOrStringFromDataSync(
   }
 
   if (isBuffer(data)) {
-    // @ts-ignore
     data = data.buffer;
   }
 
@@ -75,9 +75,8 @@ export async function getArrayBufferOrStringFromData(
   }
 
   if (isResponse(data)) {
-    const response = data as Response;
-    await checkResponse(response);
-    return loader.binary ? await response.arrayBuffer() : await response.text();
+    await checkResponse(data);
+    return loader.binary ? await data.arrayBuffer() : await data.text();
   }
 
   if (isReadableStream(data)) {
@@ -104,19 +103,24 @@ export async function getAsyncIterableFromData(
 ): Promise<
   AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
 > {
+  if (isPromise(data)) {
+    data = await data;
+  }
+
   if (isIterator(data)) {
     return data as AsyncIterable<ArrayBuffer>;
   }
 
   if (isResponse(data)) {
-    const response = data as Response;
     // Note Since this function is not async, we currently can't load error message, just status
-    await checkResponse(response);
+    await checkResponse(data);
     // TODO - bug in polyfill, body can be a Promise under Node.js
     // eslint-disable-next-line @typescript-eslint/await-thenable
-    const body = await response.body;
-    // TODO - body can be null?
-    return makeIterator(body as ReadableStream<Uint8Array>, options as any);
+    const body = await data.body;
+    if (!body) {
+      throw new Error(ERR_DATA);
+    }
+    return makeIterator(body, options as any);
   }
 
   if (isBlob(data) || isReadableStream(data)) {
@@ -127,6 +131,11 @@ export async function getAsyncIterableFromData(
     return data as AsyncIterable<ArrayBufferLike | ArrayBufferView>;
   }
 
+  if (isIterable(data)) {
+    return data as Iterable<ArrayBufferLike | ArrayBufferView>;
+  }
+
+  // @ts-expect-error TODO - fix type mess
   return getIterableFromData(data);
 }
 
@@ -139,16 +148,22 @@ export async function getReadableStream(data: BatchableDataType): Promise<Readab
   }
   if (isResponse(data)) {
     // @ts-ignore
+    if (!data.body) {
+      throw new Error(ERR_DATA);
+    }
     return data.body;
   }
   const response = await makeResponse(data);
   // @ts-ignore
+  if (!response.body) {
+    throw new Error(ERR_DATA);
+  }
   return response.body;
 }
 
 // HELPERS
 
-function getIterableFromData(data) {
+function getIterableFromData(data: string | ArrayBuffer | SharedArrayBuffer | ArrayBufferView) {
   // generate an iterator that emits a single chunk
   if (ArrayBuffer.isView(data)) {
     return (function* oneChunk() {
