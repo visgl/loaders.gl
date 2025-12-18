@@ -13,7 +13,7 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 
 /** SHPLoader */
 export type SHPLoaderOptions = StrictLoaderOptions & {
-  dbf?: {
+  shp?: {
     _maxDimensions?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;

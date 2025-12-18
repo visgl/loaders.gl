@@ -12,6 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
+    shape?: 'rows' | 'table' | 'object-row-table';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
