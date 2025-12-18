@@ -9,7 +9,7 @@ import type {
   Loader,
   LoaderOptions
 } from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync, isPromise} from '@loaders.gl/loader-utils';
 import {
   isResponse,
   isReadableStream,
@@ -102,6 +102,10 @@ export async function getAsyncIterableFromData(
 ): Promise<
   AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
 > {
+  if (isPromise(data)) {
+    data = await data;
+  }
+
   if (isIterator(data)) {
     return data as AsyncIterable<ArrayBuffer>;
   }
@@ -126,7 +130,12 @@ export async function getAsyncIterableFromData(
     return data as AsyncIterable<ArrayBufferLike | ArrayBufferView>;
   }
 
-  return getIterableFromData(data);
+  if (isIterable(data)) {
+    return data as Iterable<ArrayBufferLike | ArrayBufferView>;
+  }
+
+  // @ts-expect-error TODO - fix type mess
+  return getIterableFromData(data)
 }
 
 /**
@@ -153,7 +162,7 @@ export async function getReadableStream(data: BatchableDataType): Promise<Readab
 
 // HELPERS
 
-function getIterableFromData(data) {
+function getIterableFromData(data: string | ArrayBuffer | SharedArrayBuffer | ArrayBufferView) {
   // generate an iterator that emits a single chunk
   if (ArrayBuffer.isView(data)) {
     return (function* oneChunk() {
