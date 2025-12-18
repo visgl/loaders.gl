@@ -16,7 +16,6 @@ import {resolveUrl} from '../gltf-utils/resolve-url';
 import {getTypedArrayForBufferView} from '../gltf-utils/get-typed-array';
 import {preprocessExtensions, decodeExtensions} from '../api/gltf-extensions';
 import {normalizeGLTFV1} from '../api/normalize-gltf-v1';
-import {normalizeLoaderOptions} from 'modules/core/dist/lib/loader-utils/option-utils';
 
 /**  */
 export type ParseGLTFOptions = ParseGLBOptions & {
@@ -220,7 +219,7 @@ async function loadImage(
 
   assert(arrayBuffer, 'glTF image has no data');
 
-  const strictOptions = normalizeLoaderOptions(options);
+  const strictOptions = options;
 
   const gltfOptions = {
     ...strictOptions,
