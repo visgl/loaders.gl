@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
-import {Tiles3DLoader} from '../../../../3d-tiles/src';
+import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
   GLTF_PRIMITIVE_MODES,
   analyzeTileContent,

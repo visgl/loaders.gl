@@ -13,10 +13,10 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers
 
-| Loader / Writer                                                          |
-| ------------------------------------------------------------------------ |
-| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader)                |
-| [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) (Experimental) |
+| Loader / Writer                                           |
+| --------------------------------------------------------- |
+| [`MVTLoader`](/docs/modules/mvt/api-reference/mvt-loader) |
+| [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) |
 
 ## Sources
 

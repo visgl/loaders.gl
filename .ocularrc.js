@@ -12,7 +12,7 @@ const config = {
   babel: false,
 
   lint: {
-    paths: ['modules', 'dev-docs', 'docs', 'test'], //, 'examples'],
+    paths: ['modules', 'apps', 'dev-docs', 'docs', 'test'], //, 'examples'],
     extensions: ['js', 'jsx', 'cjs', 'mjs', 'ts', 'tsx', 'md'] // , 'mdx'],
   },
 

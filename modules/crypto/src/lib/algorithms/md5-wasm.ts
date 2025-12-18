@@ -16,16 +16,16 @@
 //   -> A WebAssembly function for larger files
 //   -> A JavaScript function for the others
 //
-const atb = typeof atob === 'function' ? atob : typeof Buffer === 'function' ? nodeATOB : identity,
-  wasmB64 = atb(
+const BASE64_LOOKUP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+  wasmB64Bytes = decodeBase64Safely(
     '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'
   ),
-  wasm = WebAssembly && atb !== identity ? str2AB(wasmB64).buffer : false,
+  wasm = typeof WebAssembly !== 'undefined' && wasmB64Bytes ? wasmB64Bytes.buffer : false,
   crypt = makeCrypt(),
   biteSize = 240 * 16 * 16,
   bounder = Math.floor(biteSize * 16 * 1.066666667),
   upperLimit = 268435456 - 65536,
-  parmTypeErrStr = 'Parameter must be Buffer, ArrayBuffer or Uint8Array',
+  parmTypeErrStr = 'Parameter must be ArrayBuffer, ArrayBufferView or string',
   tooBigErrStr = 'Parameter exceeds max size of 255.9 Mbytes';
 
 if (!wasm) {
@@ -56,20 +56,10 @@ export default function md5WASM(data) {
 
   // Sift the incoming parameter and the environment
   // If we are good, set buff
-  if (true) {
-    if (data && typeof data === 'object') {
-      if (typeof Buffer === 'function' && data.constructor === Buffer) {
-        buff = data;
-      } else {
-        if (data.constructor === Uint8Array || data.constructor === ArrayBuffer) {
-          buff = data.constructor === ArrayBuffer ? new Uint8Array(data) : data;
-        } else {
-          getCatch(new TypeError(parmTypeErrStr));
-        }
-      }
-    } else {
-      getCatch(new TypeError(parmTypeErrStr));
-    }
+  buff = normalizeInput(data);
+
+  if (!buff) {
+    getCatch(new TypeError(parmTypeErrStr));
   }
 
   //  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -
@@ -491,24 +481,88 @@ function makeMD5JS() {
     return result;
   };
 }
-function str2AB(str) {
-  var l,
-    buff,
-    buffView,
-    i = -1;
-  l = str.length - 1;
-  buff = new ArrayBuffer(str.length);
-  buffView = new Uint8Array(buff);
-  while (l > i++) {
-    buffView[i] = str.charCodeAt(i);
+function decodeBase64Safely(str) {
+  try {
+    return decodeBase64ToUint8Array(str);
+  } catch (error) {
+    return null;
   }
-  return buffView;
 }
-function nodeATOB(str) {
-  return Buffer.from(str, 'base64').toString('binary');
+
+function decodeBase64ToUint8Array(base64) {
+  var sanitized = base64.replace(/-/g, '+').replace(/_/g, '/');
+
+  if (typeof atob === 'function') {
+    return binaryStringToUint8Array(atob(sanitized));
+  }
+
+  return decodeBase64WithoutAtob(sanitized);
 }
-function identity(x) {
-  return x;
+
+function decodeBase64WithoutAtob(base64) {
+  var paddingLength = base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0,
+    byteLength = (base64.length * 3) / 4 - paddingLength,
+    bytes = new Uint8Array(byteLength),
+    byteIndex = 0,
+    i = 0,
+    enc1,
+    enc2,
+    enc3,
+    enc4;
+
+  while (i < base64.length) {
+    enc1 = BASE64_LOOKUP.indexOf(base64.charAt(i++));
+    enc2 = BASE64_LOOKUP.indexOf(base64.charAt(i++));
+    enc3 = BASE64_LOOKUP.indexOf(base64.charAt(i++));
+    enc4 = BASE64_LOOKUP.indexOf(base64.charAt(i++));
+
+    if (enc1 < 0 || enc2 < 0 || enc3 < 0 || enc4 < 0) {
+      throw new TypeError('Invalid base64 input');
+    }
+
+    bytes[byteIndex++] = (enc1 << 2) | (enc2 >> 4);
+    if (enc3 < 64 && byteIndex < byteLength) {
+      bytes[byteIndex++] = ((enc2 & 15) << 4) | (enc3 >> 2);
+    }
+    if (enc4 < 64 && byteIndex < byteLength) {
+      bytes[byteIndex++] = ((enc3 & 3) << 6) | enc4;
+    }
+  }
+
+  return bytes;
+}
+
+function binaryStringToUint8Array(str) {
+  var length = str.length,
+    view = new Uint8Array(length),
+    i = 0;
+
+  while (i < length) {
+    view[i] = str.charCodeAt(i);
+    i++;
+  }
+
+  return view;
+}
+
+function normalizeInput(data) {
+  if (data instanceof Uint8Array) {
+    return data;
+  }
+
+  if (typeof ArrayBuffer !== 'undefined' && data instanceof ArrayBuffer) {
+    return new Uint8Array(data);
+  }
+
+  if (data && typeof data === 'object' && ArrayBuffer.isView(data)) {
+    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+  }
+
+  if (typeof data === 'string') {
+    return new TextEncoder().encode(data);
+  }
+
+  return null;
 }
 
 function makeCrypt() {

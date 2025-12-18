@@ -1,8 +1,9 @@
 // TODO testing external dataset can be flaky. We need to find a way to test I3S locally
 import test from 'tape-promise/tape';
-import {Tiles3DConverter} from '@loaders.gl/tile-converter';
 import {isBrowser, setLoaderOptions} from '@loaders.gl/core';
+// @ts-expect-error promises
 import {readdir} from 'fs/promises';
+import {default as Tiles3DConverter} from '../../src/3d-tiles-converter/3d-tiles-converter';
 import {BROWSER_ERROR_MESSAGE} from '../../src/constants';
 import {cleanUpPath} from '../utils/file-utils';
 

@@ -314,6 +314,11 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/graphs",
+        "items": ["modules/graphs/README"]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/i3s",
         "items": ["modules/i3s/README"]
       },
@@ -419,6 +424,11 @@
           "modules/textures/api-reference/load-image-array",
           "modules/textures/api-reference/load-image-cube"
         ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/traces",
+        "items": ["modules/traces/README"]
       },
       {
         "type": "category",
