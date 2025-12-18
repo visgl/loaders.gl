@@ -33,7 +33,9 @@ async function parseCSVToArrow(csvText: string, options?: CSVLoaderOptions): Pro
 }
 
 function parseCSVToArrowBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: CSVArrowLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   const tableIterator = CSVLoader.parseInBatches(asyncIterator, options);

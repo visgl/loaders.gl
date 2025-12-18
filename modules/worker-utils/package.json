@@ -24,6 +24,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./null-worker.js": {
+      "import": "./dist/null-worker.js"
+    },
+    "./null-worker-node.js": {
+      "import": "./dist/null-worker-node.js"
     }
   },
   "sideEffects": false,

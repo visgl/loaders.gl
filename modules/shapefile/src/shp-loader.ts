@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -12,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 
 /** SHPLoader */
-export type SHPLoaderOptions = LoaderOptions & {
+export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -50,7 +50,9 @@ export const SHPLoader: LoaderWithParser = {
   parse: async (arrayBuffer, options?) => parseSHP(arrayBuffer, options),
   parseSync: parseSHP,
   parseInBatches: (
-    arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    arrayBufferIterator:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
     options
   ) => parseSHPInBatches(arrayBufferIterator, options)
 };

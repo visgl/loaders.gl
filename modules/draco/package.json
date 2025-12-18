@@ -34,6 +34,18 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./draco-worker.js": {
+      "import": "./dist/draco-worker.js"
+    },
+    "./draco-worker-node.js": {
+      "import": "./dist/draco-worker-node.js"
+    },
+    "./draco-writer-worker.js": {
+      "import": "./dist/draco-writer-worker.js"
+    },
+    "./draco-writer-worker-node.js": {
+      "import": "./dist/draco-writer-worker-node.js"
     }
   },
   "sideEffects": false,

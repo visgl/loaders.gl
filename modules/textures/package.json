@@ -30,6 +30,27 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./basis-worker.js": {
+      "import": "./dist/basis-worker.js"
+    },
+    "./basis-worker-node.js": {
+      "import": "./dist/basis-worker-node.js"
+    },
+    "./npy-worker.js": {
+      "import": "./dist/npy-worker.js"
+    },
+    "./compressed-texture-worker.js": {
+      "import": "./dist/compressed-texture-worker.js"
+    },
+    "./crunch-worker.js": {
+      "import": "./dist/crunch-worker.js"
+    },
+    "./ktx2-basis-writer-worker.js": {
+      "import": "./dist/ktx2-basis-writer-worker.js"
+    },
+    "./ktx2-basis-writer-worker-node.js": {
+      "import": "./dist/ktx2-basis-writer-worker-node.js"
     }
   },
   "sideEffects": false,

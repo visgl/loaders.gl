@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
-import {JSONLoader} from '@loaders.gl/json';
+import {JSONLoader, _GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH = '@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json';
@@ -102,6 +102,22 @@ test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
   }
 
   t.equal(rowCount, 0, 'Correct number of row received');
+  t.end();
+});
+
+test('GeoJSONLoader#loadInBatches(jsonpaths)', async (t) => {
+  const iterator = await loadInBatches(GEOJSON_PATH, GeoJSONLoader, {
+    json: {jsonpaths: ['$.features']}
+  });
+
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    rowCount += batch.length;
+    // @ts-ignore
+    t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
+  }
+
+  t.equal(rowCount, 308, 'Correct number of row received');
   t.end();
 });
 

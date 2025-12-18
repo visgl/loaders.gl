@@ -978,10 +978,9 @@ export class Tileset3D {
   }
 
   _initializeI3STileset() {
-    // @ts-expect-error
-    if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
-      // @ts-ignore
-      this._queryParams.token = this.loadOptions.i3s.token as string;
+    const i3sOptions = this.loadOptions.i3s;
+    if (i3sOptions && typeof i3sOptions === 'object' && 'token' in i3sOptions) {
+      this._queryParams.token = (i3sOptions as Record<string, unknown>).token as string;
     }
   }
 }

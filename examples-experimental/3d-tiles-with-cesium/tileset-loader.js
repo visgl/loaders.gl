@@ -13,7 +13,7 @@ const tileMap = {}; // Map the contentUri -> tile so we can unload/set visibilit
 let viewer;
 
 // set up loaders
-setLoaderOptions({worker: false});
+setLoaderOptions({core: {worker: false}});
 
 export async function loadTileset({tilesetUrl, ionAssetId, ionAccessToken, viewerInstance}) {
   let fetchOptions = null;

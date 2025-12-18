@@ -1,15 +1,18 @@
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
 import type {ParseGLBOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
 import {parseGLBSync} from './lib/parsers/parse-glb';
 
 /** GLB loader options */
-export type GLBLoaderOptions = LoaderOptions & {
-  /** GLB Parser Options */
-  glb?: ParseGLBOptions;
-  /** GLB specific: byteOffset to start parsing from */
-  byteOffset?: number;
+export type GLBLoaderOptions = StrictLoaderOptions & {
+  glb?: {
+    /** GLB Parser Options */
+    glb?: ParseGLBOptions;
+    /** GLB specific: byteOffset to start parsing from */
+    byteOffset?: number;
+    strict?: boolean;
+  };
 };
 
 /**
@@ -40,8 +43,7 @@ async function parse(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): Prom
 }
 
 function parseSync(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): GLB {
-  const {byteOffset = 0} = options || {};
   const glb: GLB = {} as GLB;
-  parseGLBSync(glb, arrayBuffer, byteOffset, options?.glb);
+  parseGLBSync(glb, arrayBuffer, options?.glb?.byteOffset || 0, options?.glb);
   return glb;
 }

@@ -9,6 +9,7 @@ export type {
   DataType,
   SyncDataType,
   BatchableDataType,
+  TransformBatches,
   // numeric array types
   TypedArray,
   BigTypedArray,
@@ -30,6 +31,7 @@ export type {
   Loader,
   LoaderWithParser,
   LoaderContext,
+  StrictLoaderOptions,
   LoaderOptions,
   LoaderOptionsType,
   LoaderReturnType,
@@ -65,6 +67,27 @@ export {
 } from './lib/env-utils/globals';
 
 export {log} from './lib/log-utils/log';
+
+export type {ReadableStreamType} from './lib/javascript-utils/is-type';
+export {
+  isObject,
+  isPureObject,
+  isArrayBuffer,
+  isArrayBufferLike,
+  isPromise,
+  isIterable,
+  isAsyncIterable,
+  isIterator,
+  isResponse,
+  isFile,
+  isBlob,
+  isWritableDOMStream,
+  isReadableDOMStream,
+  isWritableNodeStream,
+  isReadableNodeStream,
+  isReadableStream,
+  isWritableStream
+} from './lib/javascript-utils/is-type';
 
 // Options and modules
 export type {RequiredOptions} from './lib/option-utils/merge-options';
@@ -107,7 +130,11 @@ export {
   makeLineIterator,
   makeNumberedLineIterator
 } from './lib/iterators/text-iterators';
-export {forEach, concatenateArrayBuffersAsync} from './lib/iterators/async-iteration';
+export {
+  forEach,
+  concatenateArrayBuffersAsync,
+  toArrayBufferIterator
+} from './lib/iterators/async-iteration';
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';

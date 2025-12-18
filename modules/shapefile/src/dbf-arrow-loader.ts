@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf-to-arrow';
 import {DBFFormat} from './dbf-format';
@@ -11,7 +11,7 @@ import {DBFFormat} from './dbf-format';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type DBFLoaderOptions = LoaderOptions & {
+export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -40,7 +40,12 @@ export const DBFArrowLoader = {
   ...DBFArrowWorkerLoader,
   parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
   parseSync: parseDBF,
-  parseInBatches(arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>, options) {
+  parseInBatches(
+    arrayBufferIterator:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options
+  ) {
     return parseDBFInBatches(arrayBufferIterator, options);
   }
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, DBFLoaderOptions>;

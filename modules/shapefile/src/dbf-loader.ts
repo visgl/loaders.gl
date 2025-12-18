@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export type DBFLoaderOptions = LoaderOptions & {
+export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
     shape?: 'rows' | 'table' | 'object-row-table';
@@ -45,7 +45,12 @@ export const DBFLoader: LoaderWithParser = {
   ...DBFWorkerLoader,
   parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
   parseSync: parseDBF,
-  parseInBatches(arrayBufferIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>, options) {
+  parseInBatches(
+    arrayBufferIterator:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options
+  ) {
     return parseDBFInBatches(arrayBufferIterator, options);
   }
 };

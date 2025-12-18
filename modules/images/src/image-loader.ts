@@ -1,4 +1,4 @@
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ImageType} from './types';
 // import type { ImageType } from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
@@ -17,12 +17,12 @@ const MIME_TYPES = [
   'image/svg+xml'
 ];
 
-export type ImageLoaderOptions = LoaderOptions & {
+export type ImageLoaderOptions = StrictLoaderOptions & {
   image?: {
     type?: 'auto' | 'data' | 'imagebitmap' | 'image';
     decode?: boolean;
+    imagebitmap?: ImageBitmapOptions;
   };
-  imagebitmap?: ImageBitmapOptions;
 };
 
 const DEFAULT_IMAGE_LOADER_OPTIONS: ImageLoaderOptions = {

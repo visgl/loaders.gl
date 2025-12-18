@@ -81,6 +81,7 @@
           "modules/gltf/api-reference/glb-writer",
           "modules/images/api-reference/image-writer",
           "modules/json/api-reference/geojson-writer",
+          "modules/mvt/api-reference/mvt-writer",
           "modules/textures/api-reference/compressed-texture-writer",
           "modules/textures/api-reference/ktx2-basis-texture-writer",
           "modules/wkt/api-reference/wkt-writer",
@@ -313,6 +314,11 @@
       },
       {
         "type": "category",
+        "label": "@loaders.gl/graphs",
+        "items": ["modules/graphs/README"]
+      },
+      {
+        "type": "category",
         "label": "@loaders.gl/i3s",
         "items": ["modules/i3s/README"]
       },
@@ -418,6 +424,11 @@
           "modules/textures/api-reference/load-image-array",
           "modules/textures/api-reference/load-image-cube"
         ]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/traces",
+        "items": ["modules/traces/README"]
       },
       {
         "type": "category",

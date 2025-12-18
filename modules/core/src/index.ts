@@ -94,4 +94,4 @@ export {
   isResponse,
   isReadableStream,
   isWritableStream
-} from './javascript-utils/is-type';
+} from '@loaders.gl/loader-utils';

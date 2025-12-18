@@ -6,26 +6,28 @@ import type {Schema, TableBatch} from '@loaders.gl/schema';
 import type {JSONLoaderOptions, MetadataBatch, JSONBatch} from '../../json-loader';
 
 import {TableBatchBuilder} from '@loaders.gl/schema-utils';
-import {assert, makeTextDecoderIterator} from '@loaders.gl/loader-utils';
+import {assert, makeTextDecoderIterator, toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import StreamingJSONParser from '../json-parser/streaming-json-parser';
 import JSONPath from '../jsonpath/jsonpath';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity
 export async function* parseJSONInBatches(
-  binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  binaryAsyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: JSONLoaderOptions
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
-  const asyncIterator = makeTextDecoderIterator(binaryAsyncIterator);
+  const asyncIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
 
-  const {metadata} = options;
+  const metadata = Boolean(options?.core?.metadata || (options as any)?.metadata);
   const {jsonpaths} = options.json || {};
 
   let isFirstChunk: boolean = true;
 
   // @ts-expect-error TODO fix Schema deduction
   const schema: Schema = null;
-  const tableBatchBuilder = new TableBatchBuilder(schema, options);
+  const tableBatchBuilder = new TableBatchBuilder(schema, options?.core);
 
   const parser = new StreamingJSONParser({jsonpaths});
 

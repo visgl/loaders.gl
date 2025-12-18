@@ -19,7 +19,7 @@ setLoaderOptions({_workerType: 'test'});
 
 test.skip('Load GeoParquet#airports.parquet', async (t) => {
   const table = await load(`${PARQUET_DIR}/airports.parquet`, ParquetJSONLoader, {
-    worker: false,
+    core: {worker: false},
     parquet: {
       shape: 'geojson-table',
       preserveBinary: true
@@ -36,7 +36,9 @@ test.skip('Load GeoParquet#airports.parquet', async (t) => {
 });
 
 test('Load GeoParquet file', async (t) => {
-  const table = await load(GEOPARQUET_EXAMPLE, ParquetJSONLoader, {worker: false});
+  const table = await load(GEOPARQUET_EXAMPLE, ParquetJSONLoader, {
+    core: {worker: false}
+  });
 
   t.equal(getTableLength(table), 5);
   t.deepEqual(
@@ -50,7 +52,9 @@ test.skip('GeoParquetJSONLoader#load', async (t) => {
   // t.comment('SUPPORTED FILES');
   for (const fileName of GEOPARQUET_FILES) {
     const url = `${PARQUET_DIR}/geoparquet/${fileName}`;
-    const data = await load(url, ParquetJSONLoader, {worker: false});
+    const data = await load(url, ParquetJSONLoader, {
+      core: {worker: false}
+    });
     t.ok(data, `GOOD(${fileName})`);
   }
 
@@ -60,8 +64,12 @@ test.skip('GeoParquetJSONLoader#load', async (t) => {
 test.skip('ParquetJSONWriterLoader round trip', async (t) => {
   const table = createArrowTable();
 
-  const parquetBuffer = await encode(table, ParquetJSONWriter, {worker: false});
-  const newTable = await load(parquetBuffer, ParquetJSONLoader, {worker: false});
+  const parquetBuffer = await encode(table, ParquetJSONWriter, {
+    core: {worker: false}
+});
+  const newTable = await load(parquetBuffer, ParquetJSONLoader, {
+    core: {worker: false}
+});
 
   t.deepEqual(table.schema, newTable.schema);
   t.end();

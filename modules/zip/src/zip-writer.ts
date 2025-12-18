@@ -59,7 +59,7 @@ async function encodeZipAsync(
       zipOptions.onUpdate
     );
   } catch (error) {
-    options.log.error(`Unable to encode zip archive: ${error}`);
+    options.core?.log?.error(`Unable to encode zip archive: ${error}`);
     throw error;
   }
 }

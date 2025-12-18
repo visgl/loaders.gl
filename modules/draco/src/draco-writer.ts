@@ -64,7 +64,7 @@ export const DracoWriter = {
 
 async function encode(data: DracoMesh, options: DracoWriterOptions = {}): Promise<ArrayBuffer> {
   // Dynamically load draco
-  const {draco} = await loadDracoEncoderModule(options);
+  const {draco} = await loadDracoEncoderModule(options.core || {});
   const dracoBuilder = new DRACOBuilder(draco);
 
   try {
