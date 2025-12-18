@@ -47,18 +47,18 @@ async function loadInParallel(url1, url2) {
 
 ## Disabling Worker Loaders
 
-Applications can use the `worker: false` option to disable worker loaders, for instance to simplify debugging of parsing issues:
+Applications can use the `core.worker: false` option to disable worker loaders, for instance to simplify debugging of parsing issues:
 
 ```typescript
 async function loadWithoutWorker(url1) {
-  const data = await load(url1, DracoLoader, {worker: false});
+  const data = await load(url1, DracoLoader, {core: {worker: false}});
 }
 ```
 
 ## Disabling Reuse of Workers
 
 Applications reuse already created workers by default. To avoid `enlarge memory arrays` error it is really necessary to disable it if you need to load multiple datasets in a sequence.
-This functionality can be disabled by `reuseWorkers: false` option:
+This functionality can be disabled by `core.reuseWorkers: false` option:
 
 ```typescript
 async function loadWithoutWorker(url1) {
@@ -103,7 +103,7 @@ A worker loader starts a separate thread with a javascript bundle that only cont
 
 ## Debugging Worker Loaders (Advanced)
 
-Debugging worker loaders is tricky. While it is always possible to specify `options.worker: false` which helps in many situations, there are cases where the worker loader itself must be debugged.
+Debugging worker loaders is tricky. While it is always possible to specify `options.core.worker: false` which helps in many situations, there are cases where the worker loader itself must be debugged.
 
 TBA - There is an ambition to provide better support for debugging worker loaders:
 

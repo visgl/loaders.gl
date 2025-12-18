@@ -40,7 +40,11 @@ export {validateWorkerVersion} from './lib/worker-api/validate-worker-version';
 export {getTransferList, getTransferListForWriter} from './lib/worker-utils/get-transfer-list';
 
 // LIBRARY UTILS
-export {getLibraryUrl, loadLibrary} from './lib/library-utils/library-utils';
+export {
+  getLibraryUrl,
+  loadLibrary,
+  type LoadLibraryOptions
+} from './lib/library-utils/library-utils';
 
 // PARSER UTILS
 export {default as AsyncQueue} from './lib/async-queue/async-queue';

@@ -37,7 +37,9 @@ test('ArrowLoader#loader conformance', (t) => {
 });
 
 test('ArrowLoader#parseSync(simple.arrow)', async (t) => {
-  const arrowTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {worker: false});
+  const arrowTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
+    core: {worker: false}
+  });
   // Check loader specific results
   t.equal(arrowTable.shape, 'columnar-table');
   if (arrowTable.shape === 'columnar-table') {
@@ -50,10 +52,8 @@ test('ArrowLoader#parseSync(simple.arrow)', async (t) => {
 
 test('ArrowLoader#parseSync(simple.arrow) type="object-row-table"', async (t) => {
   const rowFormatTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
-    worker: false,
-    arrow: {
-      shape: 'object-row-table'
-    }
+    core: {worker: false},
+    arrow: {shape: 'object-row-table'}
   });
   t.equal(rowFormatTable.shape, 'object-row-table');
   if (rowFormatTable.shape === 'object-row-table') {

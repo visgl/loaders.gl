@@ -28,7 +28,10 @@ test('LASLoader#loader conformance', (t) => {
 });
 
 test('LASLoader#parse(binary)', async (t) => {
-  const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {skip: 10}, worker: false});
+  const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {skip: 10},
+    core: {worker: false}
+  });
   validateMeshCategoryData(t, data);
 
   t.is(data.header?.vertexCount, data.loaderData.totalRead, 'Original header was found');
@@ -43,7 +46,7 @@ test('LASLoader#parse(binary)', async (t) => {
 test('LASLoader#options', async (t) => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {skip: 100, fp64: false},
-    worker: false
+    core: {worker: false}
   });
   t.ok(
     data.attributes.POSITION.value instanceof Float32Array,
@@ -52,7 +55,7 @@ test('LASLoader#options', async (t) => {
 
   const data64 = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {skip: 100, fp64: true},
-    worker: false
+    core: {worker: false}
   });
   t.ok(
     data64.attributes.POSITION.value instanceof Float64Array,
@@ -65,7 +68,7 @@ test('LASLoader#options', async (t) => {
 test('LASWorker#parse(binary) extra bytes', async (t) => {
   const data = await parse(fetchFile(LAS_EXTRABYTES_BINARY_URL), LASLoader, {
     las: {skip: 10},
-    worker: false
+    core: {worker: false}
   });
   validateMeshCategoryData(t, data);
 
@@ -112,7 +115,7 @@ test.skip('LASLoader#shape="columnar-table"', async (t) => {
 test.skip('LAS#shape="arrow-table"', async (t) => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'arrow-table', skip: 10},
-    worker: false
+    core:{ worker: false}
   });
   t.ok(result);
 

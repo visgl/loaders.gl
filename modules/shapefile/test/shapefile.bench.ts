@@ -19,7 +19,9 @@ export default async function shapefileLoaderBench(suite) {
     'parse(ShapefileLoader without worker)',
     {multiplier: 77, unit: 'MB'},
     async () => {
-      await load(arrayBuffer.slice(0), ShapefileLoader, {worker: false});
+      await load(arrayBuffer.slice(0), ShapefileLoader, {
+        core: {worker: false}
+      });
     }
   );
 }

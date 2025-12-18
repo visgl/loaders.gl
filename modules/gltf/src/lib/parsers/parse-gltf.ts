@@ -1,5 +1,5 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
-import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLB} from '../types/glb-types';
@@ -70,14 +70,14 @@ export async function parseGLTF(
  * @param byteOffset
  * @param options
  */
-function parseGLTFContainerSync(gltf, data, byteOffset, options) {
+function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptions) {
   // Initialize gltf container
-  if (options.uri) {
-    gltf.baseUri = options.uri;
+  if (options.core?.baseUri) {
+    gltf.baseUri = options.core?.baseUri;
   }
 
   // If data is binary and starting with magic bytes, assume binary JSON text, convert to string
-  if (data instanceof ArrayBuffer && !isGLB(data, byteOffset, options)) {
+  if (data instanceof ArrayBuffer && !isGLB(data, byteOffset, options.glb)) {
     const textDecoder = new TextDecoder();
     data = textDecoder.decode(data);
   }
@@ -219,15 +219,19 @@ async function loadImage(
 
   assert(arrayBuffer, 'glTF image has no data');
 
+  const strictOptions = options;
+
+  const gltfOptions = {
+    ...strictOptions,
+    core: {...strictOptions?.core, mimeType: image.mimeType},
+    basis: strictOptions.basis || {format: selectSupportedBasisFormat()}
+  } satisfies StrictLoaderOptions;
+
   // Call `parse`
   let parsedImage = (await parseFromContext(
     arrayBuffer,
     [ImageLoader, BasisLoader],
-    {
-      ...options,
-      mimeType: image.mimeType,
-      basis: options.basis || {format: selectSupportedBasisFormat()}
-    },
+    gltfOptions,
     context
   )) as ImageType | TextureLevel[][];
 

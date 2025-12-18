@@ -26,7 +26,7 @@ export async function* parseNDJSONInBatches(
   const shape = 'row-table';
   // @ts-ignore
   const tableBatchBuilder = new TableBatchBuilder(schema, {
-    ...options,
+    ...(options?.core || options),
     shape
   });
 

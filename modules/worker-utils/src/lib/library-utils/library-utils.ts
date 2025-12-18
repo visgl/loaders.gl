@@ -7,6 +7,14 @@ import {isBrowser, isWorker} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';
 
+export type LoadLibraryOptions<ModulesT extends Record<string, any> = Record<string, any>> = {
+  useLocalLibraries?: boolean;
+  CDN?: string | null;
+  modules?: ModulesT;
+  // Core must not be supplied
+  core?: never;
+};
+
 const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 
 /**
@@ -27,7 +35,7 @@ const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 export async function loadLibrary(
   libraryUrl: string,
   moduleName: string | null = null,
-  options: object = {},
+  options: LoadLibraryOptions = {},
   libraryName: string | null = null
 ): Promise<any> {
   if (moduleName) {
@@ -45,9 +53,13 @@ export async function loadLibrary(
 export function getLibraryUrl(
   library: string,
   moduleName?: string,
-  options: any = {},
+  options: LoadLibraryOptions = {},
   libraryName: string | null = null
 ): string {
+  if (options?.core) {
+    throw new Error('loadLibrary: options.core must be pre-normalized');
+  }
+
   // Check if already a URL
   if (!options.useLocalLibraries && library.startsWith('http')) {
     return library;
@@ -125,19 +137,6 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   return loadLibraryFromString(scriptSource, libraryUrl);
 }
 
-/*
-async function loadScriptFromFile(libraryUrl) {
-  const script = document.createElement('script');
-  script.src = libraryUrl;
-  return await new Promise((resolve, reject) => {
-    script.onload = data => {
-      resolve(data);
-    };
-    script.onerror = reject;
-  });
-}
-*/
-
 // TODO - Needs security audit...
 //  - Raw eval call
 //  - Potentially bypasses CORS
@@ -168,21 +167,6 @@ function loadLibraryFromString(scriptSource: string, id: string): null | any {
   document.body.appendChild(script);
   return null;
 }
-
-// TODO - technique for module injection into worker, from THREE.DracoLoader...
-/*
-function combineWorkerWithLibrary(worker, jsContent) {
-  var fn = wWorker.toString();
-  var body = [
-    '// injected',
-    jsContent,
-    '',
-    '// worker',
-    fn.substring(fn.indexOf('{') + 1, fn.lastIndexOf('}'))
-  ].join('\n');
-  this.workerSourceURL = URL.createObjectURL(new Blob([body]));
-}
-*/
 
 async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
   const {readFileAsArrayBuffer} = globalThis.loaders || {};
@@ -220,3 +204,31 @@ async function loadAsText(url: string): Promise<string> {
     throw new Error(`Failed to load text from ${url}`);
   }
 }
+
+/*
+async function loadScriptFromFile(libraryUrl) {
+  const script = document.createElement('script');
+  script.src = libraryUrl;
+  return await new Promise((resolve, reject) => {
+    script.onload = data => {
+      resolve(data);
+    };
+    script.onerror = reject;
+  });
+}
+*/
+
+// TODO - technique for module injection into worker, from THREE.DracoLoader...
+/*
+function combineWorkerWithLibrary(worker, jsContent) {
+  var fn = wWorker.toString();
+  var body = [
+    '// injected',
+    jsContent,
+    '',
+    '// worker',
+    fn.substring(fn.indexOf('{') + 1, fn.lastIndexOf('}'))
+  ].join('\n');
+  this.workerSourceURL = URL.createObjectURL(new Blob([body]));
+}
+*/

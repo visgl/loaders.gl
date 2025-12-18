@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 // / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
@@ -14,7 +14,7 @@ import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
 import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 
-export type Tiles3DLoaderOptions = LoaderOptions &
+export type Tiles3DLoaderOptions = StrictLoaderOptions &
   // GLTFLoaderOptions & - TODO not yet exported
   DracoLoaderOptions &
   ImageLoaderOptions & {

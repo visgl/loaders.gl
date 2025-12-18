@@ -23,7 +23,9 @@ test('PCDLoader#loader conformance', (t) => {
 });
 
 test('PCDLoader#parse(text)', async (t) => {
-  const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {worker: false});
+  const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
+    core: {worker: false}
+  });
   validateMeshCategoryData(t, data);
 
   t.equal(Object.keys(data.schema.fields).length, 2, 'schema field count is correct');
@@ -56,7 +58,9 @@ test('PCDLoader#parse(text)', async (t) => {
 });
 
 test('PCDLoader#parse(binary)', async (t) => {
-  const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {worker: false});
+  const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {
+    core: {worker: false}
+  });
   validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');

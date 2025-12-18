@@ -2,7 +2,7 @@ import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import {LoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
+import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
@@ -46,7 +46,7 @@ export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
   tileOptions: I3STileOptions,
   tilesetOptions: I3STilesetOptions,
-  options?: LoaderOptions,
+  options?: StrictLoaderOptions,
   context?: LoaderContext
 ): Promise<I3STileContent> {
   const content: I3STileContent = {

@@ -43,7 +43,10 @@ test('ParquetJSONLoader#loader objects', (t) => {
 
 test('ParquetJSONLoader#load alltypes_dictionary file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_dictionary.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -55,7 +58,10 @@ test('ParquetJSONLoader#load alltypes_dictionary file', async (t) => {
 
 test('ParquetJSONLoader#load alltypes_plain file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -67,7 +73,10 @@ test('ParquetJSONLoader#load alltypes_plain file', async (t) => {
 
 test('ParquetJSONLoader#load alltypes_plain_snappy file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.snappy.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -79,7 +88,10 @@ test('ParquetJSONLoader#load alltypes_plain_snappy file', async (t) => {
 
 test('ParquetJSONLoader#load binary file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/binary.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -91,7 +103,10 @@ test('ParquetJSONLoader#load binary file', async (t) => {
 
 test('ParquetJSONLoader#load binary file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/binary.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -103,7 +118,10 @@ test('ParquetJSONLoader#load binary file', async (t) => {
 
 test('ParquetJSONLoader#load dict file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/dict-page-offset-zero.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -115,7 +133,10 @@ test('ParquetJSONLoader#load dict file', async (t) => {
 
 test('ParquetJSONLoader#load list_columns file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/list_columns.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -128,7 +149,10 @@ test('ParquetJSONLoader#load list_columns file', async (t) => {
 // TODO fix malformed dictionary before adding deep equal test
 test('ParquetJSONLoader#load nation file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nation.dict-malformed.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.ok(table);
   t.equal(table.shape, 'object-row-table');
@@ -140,7 +164,10 @@ test('ParquetJSONLoader#load nation file', async (t) => {
 
 test('ParquetJSONLoader#load nested_lists file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nested_lists.snappy.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -152,7 +179,10 @@ test('ParquetJSONLoader#load nested_lists file', async (t) => {
 
 test('ParquetJSONLoader#load nested_maps file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nested_maps.snappy.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -164,7 +194,10 @@ test('ParquetJSONLoader#load nested_maps file', async (t) => {
 
 test('ParquetJSONLoader#load nonnullable file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nonnullable.impala.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -176,7 +209,10 @@ test('ParquetJSONLoader#load nonnullable file', async (t) => {
 
 test('ParquetJSONLoader#load nullable file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nullable.impala.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -188,7 +224,10 @@ test('ParquetJSONLoader#load nullable file', async (t) => {
 
 test('ParquetJSONLoader#load nulls file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/nulls.snappy.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -207,7 +246,10 @@ test('ParquetJSONLoader#decimal files', async (t) => {
     '@loaders.gl/parquet/test/data/apache/good/int64_decimal.parquet'
   ];
   for (const url of urls) {
-    const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+    const table = await load(url, ParquetJSONLoader, {
+      parquet: {url}, 
+      core: {worker: false}
+    });
     t.equal(table.shape, 'object-row-table');
     if (table.shape === 'object-row-table') {
       t.deepEqual(table.data, DECIMAL_EXPECTED);
@@ -219,7 +261,10 @@ test('ParquetJSONLoader#decimal files', async (t) => {
 
 test('ParquetJSONLoader#load repeated_no_annotation file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/repeated_no_annotation.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -231,7 +276,10 @@ test('ParquetJSONLoader#load repeated_no_annotation file', async (t) => {
 
 test('ParquetJSONLoader#load lz4_raw_compressed file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/lz4_raw_compressed.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
     t.equal(table.data.length, 4);
@@ -242,7 +290,10 @@ test('ParquetJSONLoader#load lz4_raw_compressed file', async (t) => {
 
 test('ParquetJSONLoader#load lz4_raw_compressed_larger file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/lz4_raw_compressed_larger.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -256,7 +307,10 @@ test('ParquetJSONLoader#load lz4_raw_compressed_larger file', async (t) => {
 
 test('ParquetJSONLoader#load non_hadoop_lz4_compressed file', async (t) => {
   const url = '@loaders.gl/parquet/test/data/apache/good/non_hadoop_lz4_compressed.parquet';
-  const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+  const table = await load(url, ParquetJSONLoader, {
+    parquet: {url}, 
+    core: {worker: false}
+  });
 
   t.equal(table.shape, 'object-row-table');
   if (table.shape === 'object-row-table') {
@@ -281,7 +335,10 @@ test('ParquetJSONLoader#load', async (t) => {
   for (const {title, path} of UNSUPPORTED_FILES) {
     const url = `${PARQUET_DIR}/${path}`;
     try {
-      const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+      const table = await load(url, ParquetJSONLoader, {
+        parquet: {url}, 
+        core: {worker: false}
+      });
       t.ok(table, `GOOD(${title})`);
     } catch (error) {
       // @ts-ignore TS2571
@@ -293,7 +350,10 @@ test('ParquetJSONLoader#load', async (t) => {
   for (const {title, path} of ENCRYPTED_FILES) {
     const url = `${PARQUET_DIR}/${path}`;
     try {
-      const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+      const table = await load(url, ParquetJSONLoader, {
+        parquet: {url}, 
+        core: {worker: false}
+      });
       t.ok(table, `GOOD(${title})`);
     } catch (error) {
       // @ts-ignore TS2571
@@ -305,7 +365,10 @@ test('ParquetJSONLoader#load', async (t) => {
   for (const {title, path} of BAD_FILES) {
     const url = `${PARQUET_DIR}/${path}`;
     try {
-      const table = await load(url, ParquetJSONLoader, {parquet: {url}, worker: false});
+      const table = await load(url, ParquetJSONLoader, {
+        parquet: {url}, 
+        core: {worker: false}
+      });
       t.ok(table, `GOOD(${title})`);
     } catch (error) {
       // @ts-ignore TS2571

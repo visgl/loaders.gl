@@ -11,7 +11,8 @@ import type {
   LoaderOptionsType,
   LoaderReturnType,
   LoaderArrayOptionsType,
-  LoaderArrayReturnType
+  LoaderArrayReturnType,
+  StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
 import {
   parseWithWorker,
@@ -104,18 +105,18 @@ export async function parse(
   }
 
   // Normalize options
-  // @ts-expect-error
-  options = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
+  // @ts-expect-error candidateLoaders
+  const strictOptions = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
 
   // Get a context (if already present, will be unchanged)
   context = getLoaderContext(
     // @ts-expect-error
     {url, _parse: parse, loaders: candidateLoaders},
-    options,
+    strictOptions,
     context || null
   );
 
-  return await parseWithLoader(loader, data, options, context);
+  return await parseWithLoader(loader, data, strictOptions, context);
 }
 
 // TODO: support progress and abort
@@ -123,7 +124,7 @@ export async function parse(
 async function parseWithLoader(
   loader: Loader,
   data,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<unknown> {
   validateWorkerVersion(loader);
