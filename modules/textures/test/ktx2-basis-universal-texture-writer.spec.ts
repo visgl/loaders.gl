@@ -12,7 +12,6 @@ const shannonPNG = '@loaders.gl/textures/test/data/shannon.png';
 const shannonJPG = '@loaders.gl/textures/test/data/shannon.jpg';
 
 test('KTX2BasisUniversalTextureWriter#Should encode PNG', async (t) => {
-  debugger
   const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
   const encodedData = await encode(image, KTX2BasisWriter);
   const transcodedImages = await load(encodedData, BasisLoader);

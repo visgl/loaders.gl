@@ -30,7 +30,10 @@ export const DRACO_EXTERNAL_LIBRARY_URLS = {
 let loadDecoderPromise;
 let loadEncoderPromise;
 
-export async function loadDracoDecoderModule(options: LoadLibraryOptions = {}) {
+export async function loadDracoDecoderModule(
+  options: LoadLibraryOptions = {},
+  type: 'wasm' | 'js'
+) {
   const modules = options.modules || {};
 
   // Check if a bundled draco3d library has been supplied by application
@@ -40,7 +43,7 @@ export async function loadDracoDecoderModule(options: LoadLibraryOptions = {}) {
     });
   } else {
     // If not, dynamically load the WASM script from our CDN
-    loadDecoderPromise ||= loadDracoDecoder(options);
+    loadDecoderPromise ||= loadDracoDecoder(options, type);
   }
   return await loadDecoderPromise;
 }
@@ -74,7 +77,7 @@ function getLibraryExport(library: any, exportName: string): any {
 
 // DRACO DECODER LOADING
 /** @todo - type the options, they are inconsistent */
-async function loadDracoDecoder(options: LoadLibraryOptions, type: 'wasm' | 'js' = 'wasm') {
+async function loadDracoDecoder(options: LoadLibraryOptions, type: 'wasm' | 'js') {
   let DracoDecoderModule;
   let wasmBinary;
   switch (type) {

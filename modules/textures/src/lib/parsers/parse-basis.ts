@@ -94,6 +94,7 @@ export type ParseBasisOptions = {
  * @param options
  * @returns compressed texture data
  */
+// eslint-disable-next-line complexity
 export async function parseBasis(
   data: ArrayBuffer,
   options: BasisLoaderOptions = {}
