@@ -78,7 +78,6 @@ export {
   isResponse,
   isFile,
   isBlob,
-  isBuffer,
   isWritableDOMStream,
   isReadableDOMStream,
   isWritableNodeStream,
