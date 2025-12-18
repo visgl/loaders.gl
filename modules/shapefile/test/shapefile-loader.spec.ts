@@ -123,11 +123,7 @@ test('ShapefileLoader#load passes dbf options to DBFLoader#parse', async (t) => 
 
   try {
     await load(filename, ShapefileLoader, {dbf: {workerUrl: dbfWorkerUrl}});
-    t.equal(
-      receivedOptions?.dbf?.workerUrl,
-      dbfWorkerUrl,
-      'ShapefileLoader forwards dbf options'
-    );
+    t.equal(receivedOptions?.dbf?.workerUrl, dbfWorkerUrl, 'ShapefileLoader forwards dbf options');
   } finally {
     DBFLoader.parse = originalParse;
   }
@@ -206,7 +202,9 @@ test('ShapefileLoader#loadInBatches passes dbf options to DBFLoader#parseInBatch
   };
 
   try {
-    const batches = await loadInBatches(filename, ShapefileLoader, {dbf: {workerUrl: dbfWorkerUrl}});
+    const batches = await loadInBatches(filename, ShapefileLoader, {
+      dbf: {workerUrl: dbfWorkerUrl}
+    });
     for await (const batch of batches) {
       // exhaust iterator to ensure DBF parsing runs
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
