@@ -252,6 +252,9 @@ function getUnsupportedBracketSelectorMessage(content: string): string | null {
   if (!content.length) {
     return 'JSONPath bracket selectors cannot be empty';
   }
+  if (content.startsWith('(')) {
+    return 'JSONPath script selectors are not supported';
+  }
   if (content.startsWith('?')) {
     return 'JSONPath filter selectors are not supported';
   }
@@ -260,9 +263,6 @@ function getUnsupportedBracketSelectorMessage(content: string): string | null {
   }
   if (content.startsWith('@') || content.includes('@.')) {
     return 'JSONPath current node selector (@) is not supported';
-  }
-  if (content.startsWith('(')) {
-    return 'JSONPath script selectors are not supported';
   }
   return null;
 }

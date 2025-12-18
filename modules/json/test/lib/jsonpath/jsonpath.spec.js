@@ -32,7 +32,7 @@ const INVALID_JSONPATHS = [
   {jsonpath: '$.items[@.price]', message: /JSONPath current node selector \(@\) is not supported/},
   {jsonpath: '$.items[(@.length-1)]', message: /JSONPath script selectors are not supported/},
   {
-    jsonpath: '$["unclosed"',
+    jsonpath: '$["unclosed',
     message: /JSONPath string in bracket property selector is unterminated/
   }
 ];
