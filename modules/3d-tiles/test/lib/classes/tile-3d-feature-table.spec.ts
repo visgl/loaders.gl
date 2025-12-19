@@ -13,11 +13,11 @@ test('Tile3DFeatureTable#loads from JSON', (t) => {
   });
   featureTable.featuresLength = 3;
   const all = featureTable.getGlobalProperty('TEST', GL.UNSIGNED_BYTE);
-  t.deepEquals(all, [0, 1, 2, 3, 4, 5]);
+  t.deepEquals(all, [0, 1, 2, 3, 4, 5], 'getGlobalProperty(TEST)');
   const feature = featureTable.getProperty('TEST', GL.UNSIGNED_BYTE, 2, 1, new Array(2));
-  t.deepEquals(feature, [2, 3]);
+  t.deepEquals(feature, [2, 3], 'getProperty(TEST)');
   const properties = featureTable.getPropertyArray('TEST', GL.UNSIGNED_BYTE, 2);
-  t.deepEquals(properties, [0, 1, 2, 3, 4, 5]);
+  t.deepEquals(properties, [0, 1, 2, 3, 4, 5], 'getPropertyArray(TEST)');
   t.end();
 });
 

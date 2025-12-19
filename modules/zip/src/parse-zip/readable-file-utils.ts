@@ -16,6 +16,13 @@ function toNumber(value: number | bigint): number {
   return numberValue;
 }
 
+function normalizeOffset(offset: number, size: number): number {
+  if (offset < 0) {
+    return Math.max(size + offset, 0);
+  }
+  return Math.min(offset, size);
+}
+
 /**
  * Read a byte range from a readable file.
  * @param file readable file handle
@@ -115,6 +122,13 @@ export class DataViewReadableFile implements ReadableFile {
   async read(start: number | bigint = 0, length?: number): Promise<ArrayBuffer> {
     const offset = toNumber(start);
     const end = length ? offset + length : this.size;
-    return copyToArrayBuffer(this.handle.buffer, offset, end - offset);
+    const normalizedStart = normalizeOffset(offset, this.size);
+    const normalizedEnd = normalizeOffset(end, this.size);
+    const clampedEnd = Math.max(normalizedEnd, normalizedStart);
+    const lengthToRead = clampedEnd - normalizedStart;
+    if (lengthToRead <= 0) {
+      return new ArrayBuffer(0);
+    }
+    return copyToArrayBuffer(this.handle.buffer, normalizedStart, lengthToRead);
   }
 }
