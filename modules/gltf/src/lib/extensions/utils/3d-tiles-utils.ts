@@ -14,6 +14,7 @@ import type {ImageType} from '@loaders.gl/images';
 import {GLTFScenegraph} from '../../api/gltf-scenegraph';
 import {getComponentTypeFromArray} from '../../gltf-utils/gltf-utils';
 import {getImageData} from '@loaders.gl/images';
+import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
 
 function emod(n: number): number {
   return ((n % 1) + 1) % 1;
@@ -140,7 +141,7 @@ export function convertRawBufferToMetadataArray(
     buffer = bufferArray.slice(offset, offset + byteLength).buffer;
     offset = 0;
   }
-  return new ArrayType(buffer, offset, length);
+  return new ArrayType(ensureArrayBuffer(buffer), offset, length);
 }
 
 /**

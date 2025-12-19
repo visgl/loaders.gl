@@ -39,7 +39,7 @@ export class DeflateCompression extends Compression {
       const buffer = this.options.deflate?.gzip
         ? await promisify1(zlib.gzip)(input)
         : await promisify1(zlib.deflate)(input);
-      return toArrayBuffer(buffer);
+      return toArrayBuffer(buffer as Buffer);
     }
     return this.compressSync(input);
   }
@@ -50,7 +50,7 @@ export class DeflateCompression extends Compression {
       const buffer = this.options.deflate?.gzip
         ? await promisify1(zlib.gunzip)(input)
         : await promisify1(zlib.inflate)(input);
-      return toArrayBuffer(buffer);
+      return toArrayBuffer(buffer as Buffer);
     }
     return this.decompressSync(input);
   }
@@ -64,7 +64,7 @@ export class DeflateCompression extends Compression {
     const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
     const deflate = this.options?.raw ? pako.deflateRaw : pako.deflate;
-    return deflate(inputArray, pakoOptions).buffer;
+    return toArrayBuffer(deflate(inputArray, pakoOptions).buffer);
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
@@ -76,7 +76,7 @@ export class DeflateCompression extends Compression {
     const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
     const inflate = this.options?.raw ? pako.inflateRaw : pako.inflate;
-    return inflate(inputArray, pakoOptions).buffer;
+    return toArrayBuffer(inflate(inputArray, pakoOptions).buffer);
   }
 
   async *compressBatches(

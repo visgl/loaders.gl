@@ -4,6 +4,7 @@
 
 import type {SerializeOptions} from 'bson';
 import * as BSON from 'bson';
+import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
 
 export type EncodeBSONOptions = SerializeOptions;
 
@@ -13,5 +14,5 @@ export function encodeBSONSync(
 ): ArrayBuffer {
   const uint8Array = BSON.serialize(value);
   // TODO - make sure the uint8array occupies the entire buffer.
-  return uint8Array.buffer;
+  return ensureArrayBuffer(uint8Array);
 }

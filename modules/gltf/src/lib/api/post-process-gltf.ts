@@ -39,6 +39,7 @@ import type {
 
 import {assert} from '../utils/assert';
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
+import {copyToArrayBuffer} from '@loaders.gl/loader-utils';
 
 // This is a post processor for loaded glTF files
 // The goal is to make the loaded data easier to use in WebGL applications
@@ -413,7 +414,7 @@ class GLTFPostProcessor {
       const {ArrayType, byteLength} = getAccessorArrayTypeAndLength(accessor, accessor.bufferView);
       const byteOffset =
         (accessor.bufferView.byteOffset || 0) + (accessor.byteOffset || 0) + buffer.byteOffset;
-      let cutBuffer = buffer.arrayBuffer.slice(byteOffset, byteOffset + byteLength);
+      let cutBuffer = copyToArrayBuffer(buffer.arrayBuffer, byteOffset, byteOffset + byteLength);
       if (accessor.bufferView.byteStride) {
         cutBuffer = this._getValueFromInterleavedBuffer(
           buffer,
@@ -445,7 +446,7 @@ class GLTFPostProcessor {
     byteStride: number,
     bytesPerElement: number,
     count: number
-  ): ArrayBufferLike {
+  ): ArrayBuffer {
     const result = new Uint8Array(count * bytesPerElement);
     for (let i = 0; i < count; i++) {
       const elementOffset = byteOffset + i * byteStride;

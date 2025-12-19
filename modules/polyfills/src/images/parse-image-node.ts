@@ -31,7 +31,7 @@ export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string)
 // if not, parseImage can be a sync function
 function getPixelsAsync(buffer: Buffer, mimeType: string): Promise<NDArray> {
   return new Promise<NDArray>((resolve) =>
-    getPixels(buffer, mimeType, (err, ndarray) => {
+    getPixels(buffer as any, mimeType, (err, ndarray) => {
       if (err) {
         throw err;
       }

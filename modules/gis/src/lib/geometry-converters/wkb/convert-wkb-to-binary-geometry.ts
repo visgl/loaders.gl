@@ -19,7 +19,7 @@ import {concatTypedArrays} from '../../utils/concat-typed-arrays';
 import {WKBGeometryType} from './helpers/wkb-types';
 import {parseWKBHeader} from './helpers/parse-wkb-header';
 
-export function convertWKBToBinaryGeometry(arrayBuffer: ArrayBuffer): BinaryGeometry {
+export function convertWKBToBinaryGeometry(arrayBuffer: ArrayBufferLike): BinaryGeometry {
   const dataView = new DataView(arrayBuffer);
 
   const wkbHeader = parseWKBHeader(dataView);

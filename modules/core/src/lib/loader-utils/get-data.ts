@@ -18,7 +18,10 @@ import {
   isIterable,
   isIterator,
   isBlob,
-  isBuffer
+  isBuffer,
+  isArrayBufferLike,
+  toArrayBuffer,
+  toArrayBufferView
 } from '@loaders.gl/loader-utils';
 import {makeIterator} from '../../iterators/make-iterator/make-iterator';
 import {checkResponse, makeResponse} from '../utils/response-utils';
@@ -45,7 +48,7 @@ export function getArrayBufferOrStringFromDataSync(
   }
 
   if (isArrayBufferLike(data)) {
-    const bufferSource = ensureBufferSource(data);
+    const bufferSource = toArrayBufferView(data);
     if (loader.text && !loader.binary) {
       const textDecoder = new TextDecoder('utf8');
       return textDecoder.decode(bufferSource);
@@ -173,7 +176,7 @@ function getIterableFromData(data: string | ArrayBuffer | SharedArrayBuffer | Ar
 
   if (isArrayBufferLike(data)) {
     return (function* oneChunk() {
-      yield toArrayBuffer(ensureBufferSource(data));
+      yield toArrayBuffer(data);
     })();
   }
 
@@ -186,46 +189,4 @@ function getIterableFromData(data: string | ArrayBuffer | SharedArrayBuffer | Ar
   }
 
   throw new Error(ERR_DATA);
-}
-
-function isArrayBufferLike(value: unknown): value is ArrayBufferLike | ArrayBufferView {
-  return value instanceof ArrayBuffer || ArrayBuffer.isView(value) || hasByteLength(value);
-}
-
-function hasByteLength(value: unknown): value is {byteLength: number} {
-  return Boolean(value && typeof value === 'object' && 'byteLength' in value);
-}
-
-function ensureBufferSource(
-  data: ArrayBufferLike | ArrayBufferView
-): ArrayBuffer | ArrayBufferView {
-  if (ArrayBuffer.isView(data)) {
-    return data;
-  }
-
-  // Create a view to support ArrayBufferLike sources such as SharedArrayBuffer
-  return new Uint8Array(data);
-}
-
-function toArrayBuffer(bufferSource: ArrayBuffer | ArrayBufferView): ArrayBuffer {
-  if (bufferSource instanceof ArrayBuffer) {
-    return bufferSource;
-  }
-
-  const {buffer, byteOffset, byteLength} = bufferSource;
-  if (buffer instanceof ArrayBuffer && byteOffset === 0 && byteLength === buffer.byteLength) {
-    return buffer;
-  }
-  return copyToArrayBuffer(buffer, byteOffset, byteLength);
-}
-
-function copyToArrayBuffer(
-  buffer: ArrayBufferLike,
-  byteOffset = 0,
-  byteLength = buffer.byteLength - byteOffset
-): ArrayBuffer {
-  const view = new Uint8Array(buffer, byteOffset, byteLength);
-  const copy = new Uint8Array(view.length);
-  copy.set(view);
-  return copy.buffer;
 }

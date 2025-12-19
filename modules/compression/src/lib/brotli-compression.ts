@@ -83,7 +83,7 @@ export class BrotliCompression extends Compression {
     const brotli = getJSModule<Brotli>('brotli', this.name);
     // @ts-ignore brotli types state that only Buffers are accepted...
     const outputArray = brotli.compress(inputArray, brotliOptions);
-    return outputArray.buffer;
+    return toArrayBuffer(outputArray.buffer);
   }
 
   async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
@@ -109,7 +109,7 @@ export class BrotliCompression extends Compression {
     if (brotli) {
       // @ts-ignore brotli types state that only Buffers are accepted...
       const outputArray = brotli.decompress(inputArray, brotliOptions);
-      return outputArray.buffer;
+      return toArrayBuffer(outputArray.buffer);
     }
     const outputArray = BrotliDecode(inputArray, undefined);
     return outputArray.buffer;

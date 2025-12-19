@@ -77,7 +77,7 @@ export const parseEoCDRecord = async (file: ReadableFile): Promise<ZipEoCDRecord
   let zip64EoCDOffset = 0n;
 
   const magicBytes = await readRange(file, zip64EoCDLocatorOffset, zip64EoCDLocatorOffset + 4n);
-  if (compareArrayBuffers(magicBytes, zip64EoCDLocatorSignature)) {
+  if (compareArrayBuffers(magicBytes, zip64EoCDLocatorSignature.buffer)) {
     zip64EoCDOffset = await readBigUint64(
       file,
       zip64EoCDLocatorOffset + ZIP64_EOCD_START_OFFSET_OFFSET

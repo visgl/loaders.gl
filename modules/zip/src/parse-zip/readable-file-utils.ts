@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile, Stat} from '@loaders.gl/loader-utils';
+import {copyToArrayBuffer, type ReadableFile, type Stat} from '@loaders.gl/loader-utils';
 
 function toBigInt(value: number | bigint): bigint {
   return typeof value === 'bigint' ? value : BigInt(value);
@@ -115,6 +115,6 @@ export class DataViewReadableFile implements ReadableFile {
   async read(start: number | bigint = 0, length?: number): Promise<ArrayBuffer> {
     const offset = toNumber(start);
     const end = length ? offset + length : this.size;
-    return this.handle.buffer.slice(offset, end);
+    return copyToArrayBuffer(this.handle.buffer, offset, end);
   }
 }

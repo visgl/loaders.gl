@@ -8,23 +8,32 @@ import Pbf from 'pbf';
 import type {MVTTile} from '../mvt-pbf/mvt-types';
 import {writeMVT} from '../mvt-pbf/write-mvt-to-pbf';
 import GeoJSONWrapper from './geojson-wrapper';
-import type {Geometry} from '@loaders.gl/schema';
+import type {GeoJSON, FeatureCollection, Geometry} from '@loaders.gl/schema';
+import {copyToArrayBuffer} from '@loaders.gl/loader-utils';
+
+export type FromGeojsonOptions = {
+  layerName?: string;
+  version?: number;
+  extent?: number;
+  tileIndex?: {x: number; y: number; z: number};
+};
 
 /**
  * Serialize a map of geojson layers
  * loaders.gl addition
  *
- * @param {object | object[]} geojson
- * @param {object} [options] - An object specifying the vector-tile specification version and extent that were used to create `layers`.
- * @param {number} [options.extent=4096] - Extent of the vector tile
- * @return {ArrayBuffer} uncompressed, pbf-serialized tile data
+ * @param geojson
+ * @param [options] - An object specifying the vector-tile specification version and extent that were used to create `layers`.
+ * @param [options.extent=4096] - Extent of the vector tile
+ * @return  uncompressed, pbf-serialized tile data
  */
-export function fromGeojson(geojson, options) {
+export function fromGeojson(geojson: FeatureCollection, options: FromGeojsonOptions): ArrayBuffer {
   options = options || {};
   geojson = normalizeGeojson(geojson);
   const extent = options.extent || 4096;
   const features = convertFeaturesToVectorTileFeatures(geojson.features, extent, options.tileIndex);
   const layer = new GeoJSONWrapper(features, {...options, extent});
+  // TODO - this is broken
   (layer as any).name = options.layerName || 'geojsonLayer';
   (layer as any).version = options.version || 1;
   (layer as any).extent = options.extent || 4096;
@@ -36,15 +45,15 @@ export function fromGeojson(geojson, options) {
 /**
  * Serialize a vector-tile-js-created tile to pbf
  *
- * @param {object} tile
- * @return {ArrayBuffer} uncompressed, pbf-serialized tile data
+ * @param tile
+ * @return  uncompressed, pbf-serialized tile data
  */
-export function fromVectorTileJs(tile: MVTTile) {
+export function fromVectorTileJs(tile: MVTTile): ArrayBuffer {
   const pbf = new Pbf();
   writeMVT(tile, pbf);
   const uint8Array = pbf.finish();
   // TODO - make sure no byteOffsets/byteLenghts are used?
-  return uint8Array.buffer.slice(
+  return copyToArrayBuffer(uint8Array.buffer,
     uint8Array.byteOffset,
     uint8Array.byteOffset + uint8Array.byteLength
   );
@@ -53,13 +62,13 @@ export function fromVectorTileJs(tile: MVTTile) {
 /**
  * Serialized a geojson-vt-created tile to pbf.
  *
- * @param {object} vtLayers - An object mapping layer names to geojson-vt-created vector tile objects
- * @param {object} [options] - An object specifying the vector-tile specification version and extent that were used to create `layers`.
- * @param {number} [options.version=1] - Version of vector-tile spec used
- * @param {number} [options.extent=4096] - Extent of the vector tile
- * @return {ArrayBuffer} uncompressed, pbf-serialized tile data
+ * @param vtLayers - An object mapping layer names to geojson-vt-created vector tile objects
+ * @param  [options] - An object specifying the vector-tile specification version and extent that were used to create `layers`.
+ * @param  [options.version=1] - Version of vector-tile spec used
+ * @param  [options.extent=4096] - Extent of the vector tile
+ * @return uncompressed, pbf-serialized tile data
  *
-export function fromGeojsonVt(vtLayers, options) {
+export function fromGeojsonVt(vtLayers, options): ArrayBuffer {
   options = options || {};
   const layers = {};
   for (const key in vtLayers) {
@@ -72,7 +81,7 @@ export function fromGeojsonVt(vtLayers, options) {
 }
 */
 
-export function normalizeGeojson(geojson) {
+export function normalizeGeojson(geojson: GeoJSON): FeatureCollection {
   // Array of features
   if (Array.isArray(geojson)) {
     return {
@@ -81,13 +90,13 @@ export function normalizeGeojson(geojson) {
     };
   }
   // A single feature
-  if (geojson.type !== 'FeatureCollection') {
+  if (geojson.type === 'Feature') {
     return {
       type: 'FeatureCollection',
       features: [geojson]
     };
   }
-  return geojson;
+  throw new Error('Invalid GeoJSON object');
 }
 
 function convertFeaturesToVectorTileFeatures(

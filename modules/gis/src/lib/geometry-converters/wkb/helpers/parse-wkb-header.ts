@@ -24,7 +24,7 @@ import {
  * the examples of WKT that are included in this document have 
  * spaces and line feeds inserted to improve clarity. Any padding is stripped out or ignored by parsers."
  */
-export function isWKT(input: string | ArrayBuffer): boolean {
+export function isWKT(input: string | ArrayBufferLike): boolean {
   return getWKTGeometryType(input) !== null;
 }
 
@@ -40,7 +40,7 @@ export function isWKT(input: string | ArrayBuffer): boolean {
  * the examples of WKT that are included in this document have 
  * spaces and line feeds inserted to improve clarity. Any padding is stripped out or ignored by parsers."
  */
-export function getWKTGeometryType(input: string | ArrayBuffer): WKBGeometryType | null {
+export function getWKTGeometryType(input: string | ArrayBufferLike): WKBGeometryType | null {
   if (typeof input === 'string') {
     const index = WKT_MAGIC_STRINGS.findIndex((magicString) => input.startsWith(magicString));
     return index >= 0 ? ((index + 1) as WKBGeometryType) : null;
@@ -57,7 +57,7 @@ export function getWKTGeometryType(input: string | ArrayBuffer): WKBGeometryType
  * @param arrayBuffer The array buffer to check
  * @returns false if this is definitely not a TWKB array buffer, true if it might be a TWKB array buffer
  */
-export function isTWKB(arrayBuffer: ArrayBuffer): boolean {
+export function isTWKB(arrayBuffer: ArrayBufferLike): boolean {
   const dataView = new DataView(arrayBuffer);
   const byteOffset = 0;
 
@@ -73,7 +73,7 @@ export function isTWKB(arrayBuffer: ArrayBuffer): boolean {
 }
 
 /** Sanity checks that first to 5-9 bytes could represent a supported WKB dialect header */
-export function isWKB(arrayBuffer: ArrayBuffer): boolean {
+export function isWKB(arrayBuffer: ArrayBufferLike): boolean {
   const dataView = new DataView(arrayBuffer);
   let byteOffset = 0;
 
