@@ -23,7 +23,7 @@ export async function* makeTextEncoderIterator(
 ): AsyncIterable<ArrayBuffer> {
   const textEncoder = new TextEncoder();
   for await (const text of textIterator) {
-    yield typeof text === 'string' ? textEncoder.encode(text) : text;
+    yield typeof text === 'string' ? textEncoder.encode(text).buffer : text;
   }
 }
 

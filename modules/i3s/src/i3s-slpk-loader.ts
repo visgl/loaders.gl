@@ -35,7 +35,12 @@ export const SLPKLoader = {
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
   extensions: ['slpk'],
-  options: {},
+  options: {
+    slpk: {
+      path: '',
+      pathMode: undefined
+    }
+  },
   parse: async (data: ArrayBuffer, options: SLPKLoaderOptions = {}): Promise<ArrayBuffer> => {
     const archive = await parseSLPKArchive(new DataViewReadableFile(new DataView(data)));
     return archive.getFile(options.slpk?.path ?? '', options.slpk?.pathMode);

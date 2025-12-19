@@ -151,7 +151,14 @@ export {JSONLoader} from './json-loader';
 // Node.js emulation (can be used in browser)
 
 // Avoid direct use of `Buffer` which pulls in 50KB polyfill
-export {isBuffer, toBuffer, toArrayBuffer} from './lib/binary-utils/memory-conversion-utils';
+export {
+  isBuffer,
+  toBuffer,
+  toArrayBuffer,
+  toArrayBufferView,
+  copyToArrayBuffer,
+  ensureArrayBuffer
+} from './lib/binary-utils/memory-conversion-utils';
 
 // Note.js wrappers (can be safely imported, but not used in browser)
 

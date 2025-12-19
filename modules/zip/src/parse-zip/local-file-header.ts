@@ -50,7 +50,7 @@ export const parseZipLocalFileHeader = async (
   const mainHeader = await readDataView(file, headerOffset, headerOffset + FILE_NAME_OFFSET);
 
   const magicBytes = mainHeader.buffer.slice(0, 4);
-  if (!compareArrayBuffers(magicBytes, signature)) {
+  if (!compareArrayBuffers(magicBytes, signature.buffer)) {
     return null;
   }
 

@@ -3,7 +3,14 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderContext, LoaderOptions, Loader, DataType} from '@loaders.gl/loader-utils';
-import {compareArrayBuffers, path, log, isBlob} from '@loaders.gl/loader-utils';
+import {
+  compareArrayBuffers,
+  path,
+  log,
+  isBlob,
+  ensureArrayBuffer,
+  isArrayBufferLike
+} from '@loaders.gl/loader-utils';
 import {TypedArray} from '@loaders.gl/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
 import {normalizeLoaderOptions} from '../loader-utils/option-utils';
@@ -275,23 +282,23 @@ function testDataAgainstText(data: string, loader: Loader): boolean {
   return tests.some((test) => data.startsWith(test as string));
 }
 
-function testDataAgainstBinary(data: ArrayBuffer, byteOffset: number, loader: Loader): boolean {
+function testDataAgainstBinary(data: ArrayBufferLike, byteOffset: number, loader: Loader): boolean {
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
   return tests.some((test) => testBinary(data, byteOffset, loader, test));
 }
 
 function testBinary(
-  data: ArrayBuffer,
+  data: ArrayBufferLike,
   byteOffset: number,
   loader: Loader,
   test?: ArrayBuffer | string | ((b: ArrayBuffer) => boolean)
 ): boolean {
-  if (test instanceof ArrayBuffer) {
+  if (isArrayBufferLike(test)) {
     return compareArrayBuffers(test, data, test.byteLength);
   }
   switch (typeof test) {
     case 'function':
-      return test(data);
+      return test(ensureArrayBuffer(data));
 
     case 'string':
       // Magic bytes check: If `test` is a string, check if binary data starts with that strings
@@ -316,7 +323,7 @@ function getFirstCharacters(data: string | ArrayBuffer | TypedArray, length: num
   return '';
 }
 
-function getMagicString(arrayBuffer: ArrayBuffer, byteOffset: number, length: number): string {
+function getMagicString(arrayBuffer: ArrayBufferLike, byteOffset: number, length: number): string {
   if (arrayBuffer.byteLength < byteOffset + length) {
     return '';
   }

@@ -9,7 +9,13 @@ import type {
   WriterDataType,
   WriterBatchType
 } from '@loaders.gl/loader-utils';
-import {canEncodeWithWorker, NodeFile, resolvePath, isBrowser} from '@loaders.gl/loader-utils';
+import {
+  canEncodeWithWorker,
+  NodeFile,
+  resolvePath,
+  isBrowser,
+  ensureArrayBuffer
+} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {getLoaderOptions} from './loader-options';
@@ -52,7 +58,7 @@ export function encodeSync<WriterT extends WriterWithEncoder>(
     return writer.encodeSync(data, options);
   }
   if (writer.encodeTextSync) {
-    return new TextEncoder().encode(writer.encodeTextSync(data, options));
+    return ensureArrayBuffer(new TextEncoder().encode(writer.encodeTextSync(data, options)));
   }
   throw new Error(`Writer ${writer.name} could not synchronously encode data`);
 }

@@ -9,7 +9,8 @@ import {
   registerJSModules,
   checkJSModule,
   getJSModule,
-  getJSModuleOrNull
+  getJSModuleOrNull,
+  ensureArrayBuffer
 } from '@loaders.gl/loader-utils';
 
 // import {ZstdCodec} from 'zstd-codec'; // https://bundlephobia.com/package/zstd-codec
@@ -71,9 +72,11 @@ export class ZstdCompression extends Compression {
     const simpleZstd = new zstd.Streaming();
     const inputArray = new Uint8Array(input);
 
-    const chunks: ArrayBuffer[] = [];
+    const chunks: Uint8Array[] = [];
     for (let i = 0; i <= inputArray.length; i += CHUNK_SIZE) {
-      chunks.push(inputArray.subarray(i, i + CHUNK_SIZE));
+      const chunkView = inputArray.subarray(i, i + CHUNK_SIZE);
+      const chunkArrayBuffer = ensureArrayBuffer(chunkView);
+      chunks.push(new Uint8Array(chunkArrayBuffer));
     }
 
     const decompressResult = await simpleZstd.decompressChunks(chunks);

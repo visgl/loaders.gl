@@ -106,14 +106,15 @@ export default class GLType {
    */
   static createTypedArray(
     glType: number,
-    buffer: TypedArray,
+    buffer: ArrayBuffer | ArrayBufferView,
     byteOffset: number = 0,
     length?: number
   ): TypedArray {
     if (length === undefined) {
       length = (buffer.byteLength - byteOffset) / GLType.getByteSize(glType);
     }
+    const arrayBuffer = buffer instanceof ArrayBuffer ? buffer : buffer.buffer;
     const ArrayType = GLType.getArrayType(glType);
-    return new ArrayType(buffer, byteOffset, length);
+    return new ArrayType(arrayBuffer as ArrayBuffer, byteOffset, length);
   }
 }

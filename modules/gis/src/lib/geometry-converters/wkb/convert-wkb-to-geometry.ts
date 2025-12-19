@@ -17,7 +17,7 @@ export type convertWKBOptions = {
   srid?: any;
 };
 
-export function convertWKBToGeometry(arrayBuffer: ArrayBuffer): Geometry {
+export function convertWKBToGeometry(arrayBuffer: ArrayBufferLike): Geometry {
   const binaryGeometry = convertWKBToBinaryGeometry(arrayBuffer);
   return convertBinaryGeometryToGeometry(binaryGeometry);
 }

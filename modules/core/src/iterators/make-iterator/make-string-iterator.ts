@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
 import type {IteratorOptions} from './make-iterator';
 
 const DEFAULT_CHUNK_SIZE = 256 * 1024;
@@ -27,6 +28,6 @@ export function* makeStringIterator(
     offset += chunkLength;
 
     // yield an ArrayBuffer chunk
-    yield textEncoder.encode(chunk);
+    yield ensureArrayBuffer(textEncoder.encode(chunk));
   }
 }

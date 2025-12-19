@@ -1,4 +1,10 @@
-import {concatenateArrayBuffers, path, NodeFilesystem, NodeFile} from '@loaders.gl/loader-utils';
+import {
+  concatenateArrayBuffers,
+  path,
+  NodeFilesystem,
+  NodeFile,
+  toArrayBuffer
+} from '@loaders.gl/loader-utils';
 import {ZipEoCDRecord, generateEoCD, parseEoCDRecord, updateEoCD} from './end-of-central-directory';
 import {CRC32Hash} from '@loaders.gl/crypto';
 import {generateLocalHeader} from './local-file-header';
@@ -174,7 +180,7 @@ async function addFile(
   fileList?.push({fileName: file.path, localHeaderOffset: size});
   const [localPart, cdHeaderPart] = await generateFileHeaders(file.path, file.file, size);
   await resFile.append(localPart);
-  cdArray.push(cdHeaderPart);
+  cdArray.push(toArrayBuffer(cdHeaderPart));
 }
 
 /**

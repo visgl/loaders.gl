@@ -103,7 +103,17 @@ export default class Tile3DFeatureTable {
     const cachedTypedArrays = this._cachedTypedArrays;
     let typedArray = cachedTypedArrays[propertyName];
     if (!typedArray) {
-      typedArray = GLType.createTypedArray(componentType, array);
+      if (ArrayBuffer.isView(array)) {
+        const byteOffset = array.byteOffset;
+        const byteLength = array.byteLength;
+        const elementCount = byteLength / GLType.getByteSize(componentType);
+        typedArray = GLType.createTypedArray(componentType, array.buffer, byteOffset, elementCount);
+      } else if (array instanceof ArrayBuffer) {
+        typedArray = GLType.createTypedArray(componentType, array);
+      } else {
+        const ArrayType = GLType.getArrayType(componentType);
+        typedArray = new ArrayType(array);
+      }
       cachedTypedArrays[propertyName] = typedArray;
     }
     return typedArray;

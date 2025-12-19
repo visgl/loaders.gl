@@ -1,4 +1,5 @@
 import {FileProviderInterface} from './file-provider-interface';
+import {copyToArrayBuffer} from '../binary-utils/memory-conversion-utils';
 
 /**
  * Checks if bigint can be converted to number and convert it if possible
@@ -64,7 +65,11 @@ export class DataViewFile implements FileProviderInterface {
    * @param endOffset The offset, in bytes, from the start of the file where to end reading the data.
    */
   async slice(startOffset: bigint, endOffset: bigint): Promise<ArrayBuffer> {
-    return this.file.buffer.slice(toNumber(startOffset), toNumber(endOffset));
+    return copyToArrayBuffer(
+      this.file.buffer,
+      toNumber(startOffset + BigInt(this.file.byteOffset)),
+      toNumber(endOffset - startOffset)
+    );
   }
 
   /** the length (in bytes) of the data. */

@@ -17,6 +17,7 @@ import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
 import {} from '../types/gltf-json-schema';
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
+import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
 
 /** Extension name */
 const KHR_TEXTURE_TRANSFORM = 'KHR_texture_transform';
@@ -230,7 +231,7 @@ function updateGltf(
   const shouldCreateNewBufferView = bufferViewReferenceCount > 1;
 
   gltfData.buffers.push({
-    arrayBuffer: newTexCoordArray.buffer,
+    arrayBuffer: ensureArrayBuffer(newTexCoordArray.buffer),
     byteOffset: 0,
     byteLength: newTexCoordArray.buffer.byteLength
   });
@@ -276,7 +277,7 @@ function createAttribute(
   newTexCoordArray: Float32Array
 ) {
   gltfData.buffers.push({
-    arrayBuffer: newTexCoordArray.buffer,
+    arrayBuffer: ensureArrayBuffer(newTexCoordArray.buffer),
     byteOffset: 0,
     byteLength: newTexCoordArray.buffer.byteLength
   });

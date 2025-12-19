@@ -7,8 +7,8 @@ import {TypedArray} from '../../types';
  * @param byteLength
  */
 export function compareArrayBuffers(
-  arrayBuffer1: ArrayBuffer,
-  arrayBuffer2: ArrayBuffer,
+  arrayBuffer1: ArrayBufferLike,
+  arrayBuffer2: ArrayBufferLike,
   byteLength?: number
 ): boolean {
   byteLength = byteLength || arrayBuffer1.byteLength;
@@ -97,7 +97,7 @@ export function concatenateTypedArrays<T>(...typedArrays: T[]): T {
  * @param byteLength
  */
 export function sliceArrayBuffer(
-  arrayBuffer: ArrayBuffer,
+  arrayBuffer: ArrayBufferLike,
   byteOffset: number,
   byteLength?: number
 ): ArrayBuffer {

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ReadableFile, Stat} from '@loaders.gl/loader-utils';
+import {copyToArrayBuffer, type ReadableFile, type Stat} from '@loaders.gl/loader-utils';
 
 function toBigInt(value: number | bigint): bigint {
   return typeof value === 'bigint' ? value : BigInt(value);
@@ -14,6 +14,13 @@ function toNumber(value: number | bigint): number {
     throw new Error('Offset is out of bounds');
   }
   return numberValue;
+}
+
+function normalizeOffset(offset: number, size: number): number {
+  if (offset < 0) {
+    return Math.max(size + offset, 0);
+  }
+  return Math.min(offset, size);
 }
 
 /**
@@ -115,6 +122,13 @@ export class DataViewReadableFile implements ReadableFile {
   async read(start: number | bigint = 0, length?: number): Promise<ArrayBuffer> {
     const offset = toNumber(start);
     const end = length ? offset + length : this.size;
-    return this.handle.buffer.slice(offset, end);
+    const normalizedStart = normalizeOffset(offset, this.size);
+    const normalizedEnd = normalizeOffset(end, this.size);
+    const clampedEnd = Math.max(normalizedEnd, normalizedStart);
+    const lengthToRead = clampedEnd - normalizedStart;
+    if (lengthToRead <= 0) {
+      return new ArrayBuffer(0);
+    }
+    return copyToArrayBuffer(this.handle.buffer, normalizedStart, lengthToRead);
   }
 }

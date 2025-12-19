@@ -41,6 +41,10 @@ export const isPureObject = (value: unknown): value is Record<string, unknown> =
 export const isArrayBuffer = (value: unknown): value is ArrayBuffer =>
   typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer;
 
+/** Checks whether a value is an ArrayBuffer */
+export const isSharedArrayBuffer = (value: unknown): value is SharedArrayBuffer =>
+  typeof SharedArrayBuffer !== 'undefined' && value instanceof SharedArrayBuffer;
+
 /** Checks whether a value is ArrayBuffer-like */
 export const isArrayBufferLike = (value: unknown): value is ArrayBufferLike =>
   isObject(value) &&

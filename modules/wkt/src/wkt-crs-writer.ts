@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import {
+  type WriterWithEncoder,
+  type WriterOptions,
+  ensureArrayBuffer
+} from '@loaders.gl/loader-utils';
 import type {WKTCRS, EncodeWKTCRSOptions} from '@loaders.gl/gis';
 import {encodeWKTCRS} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
@@ -30,8 +34,8 @@ export const WKTCRSWriter = {
     'wkt-crs': {}
   },
   encode: async (wktcrs, options) =>
-    new TextEncoder().encode(encodeWKTCRS(wktcrs, options?.['wkt-crs'])),
+    ensureArrayBuffer(new TextEncoder().encode(encodeWKTCRS(wktcrs, options?.['wkt-crs']))),
   encodeSync: (wktcrs, options) =>
-    new TextEncoder().encode(encodeWKTCRS(wktcrs, options?.['wkt-crs'])),
+    ensureArrayBuffer(new TextEncoder().encode(encodeWKTCRS(wktcrs, options?.['wkt-crs']))),
   encodeTextSync: (wktcrs, options) => encodeWKTCRS(wktcrs, options?.['wkt-crs'])
 } as const satisfies WriterWithEncoder<WKTCRS, never, WKTCRSWriterOptions>;

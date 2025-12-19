@@ -99,6 +99,7 @@ test('compression#atomic', async (t) => {
     for (const tc of TEST_CASES) {
       const {title} = tc;
       const {name} = compression;
+      t.comment(`Testing ${name}(${title})`);
       const compressedData = await compression.compress(tc.data);
       const compressedLength = tc.compression?.[compression.name]?.compressedLength;
       if (compressedLength) {
