@@ -126,7 +126,11 @@ test('PCDLoader#parse(binary with counted fields)', async (t) => {
   t.equal(data.loaderData.offset.x, 8, 'offset for x accounts for count values');
   t.equal(data.loaderData.offset.y, 12, 'offset for y accounts for count values');
   t.equal(data.loaderData.offset.z, 16, 'offset for z accounts for count values');
-  t.deepEqual(Array.from(data.attributes.POSITION.value), [1, 2, 3, 4, 5, 6], 'positions read correctly');
+  t.deepEqual(
+    Array.from(data.attributes.POSITION.value),
+    [1, 2, 3, 4, 5, 6],
+    'positions read correctly'
+  );
 
   t.end();
 });
