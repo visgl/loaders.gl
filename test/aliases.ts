@@ -40,7 +40,7 @@ function makeAliases() {
     '@loaders.gl/schema/test': resolve('./modules/schema/test'),
     '@loaders.gl/terrain/test': resolve('./modules/terrain/test'),
     '@loaders.gl/textures/test': resolve('./modules/textures/test'),
-    '@loaders.gl/tile-converter/test': resolve('./modules/tile-converter/test'),
+    '@loaders.gl/tile-converter/test': resolve('./apps/tile-converter/test'),
     '@loaders.gl/tiles/test': resolve('./modules/tiles/test'),
     '@loaders.gl/video/test': resolve('./modules/video/test'),
     '@loaders.gl/wkt/test': resolve('./modules/wkt/test'),

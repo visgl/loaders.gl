@@ -6,7 +6,7 @@ export function resolveUrl(url, options) {
   if (absolute) {
     return url;
   }
-  const baseUrl = options.baseUri || options.uri;
+  const baseUrl = options?.core?.baseUri || options.baseUri || options.uri;
   if (!baseUrl) {
     throw new Error(`'baseUri' must be provided to resolve relative url ${url}`);
   }

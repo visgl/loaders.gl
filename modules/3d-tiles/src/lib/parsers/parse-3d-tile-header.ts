@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {path} from '@loaders.gl/loader-utils';
 import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
 import {load} from '@loaders.gl/core';
@@ -130,7 +130,7 @@ export function normalizeTileData(
 export async function normalizeTileHeaders(
   tileset: Tiles3DTilesetJSON,
   basePath: string,
-  options: LoaderOptions
+  options: StrictLoaderOptions
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   let root: Tiles3DTileJSONPostprocessed | null = null;
 

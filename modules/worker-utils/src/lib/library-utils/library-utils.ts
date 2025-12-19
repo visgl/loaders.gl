@@ -7,6 +7,14 @@ import {isBrowser, isWorker} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';
 
+export type LoadLibraryOptions<ModulesT extends Record<string, any> = Record<string, any>> = {
+  useLocalLibraries?: boolean;
+  CDN?: string | null;
+  modules?: ModulesT;
+  // Core must not be supplied
+  core?: never;
+};
+
 const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 
 /**
@@ -27,7 +35,7 @@ const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
 export async function loadLibrary(
   libraryUrl: string,
   moduleName: string | null = null,
-  options: object = {},
+  options: LoadLibraryOptions = {},
   libraryName: string | null = null
 ): Promise<any> {
   if (moduleName) {
@@ -45,9 +53,13 @@ export async function loadLibrary(
 export function getLibraryUrl(
   library: string,
   moduleName?: string,
-  options: any = {},
+  options: LoadLibraryOptions = {},
   libraryName: string | null = null
 ): string {
+  if (options?.core) {
+    throw new Error('loadLibrary: options.core must be pre-normalized');
+  }
+
   // Check if already a URL
   if (!options.useLocalLibraries && library.startsWith('http')) {
     return library;
@@ -94,10 +106,21 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
     // } catch (error) {
     //   console.error(error);
     // }
+    const {requireFromFile} = globalThis.loaders || {};
     try {
-      const {requireFromFile} = globalThis.loaders || {};
-      return await requireFromFile?.(libraryUrl);
+      const result = await requireFromFile?.(libraryUrl);
+      if (result || !libraryUrl.includes('/dist/libs/')) {
+        return result;
+      }
+      return await requireFromFile?.(libraryUrl.replace('/dist/libs/', '/src/libs/'));
     } catch (error) {
+      if (libraryUrl.includes('/dist/libs/')) {
+        try {
+          return await requireFromFile?.(libraryUrl.replace('/dist/libs/', '/src/libs/'));
+        } catch {
+          // ignore
+        }
+      }
       console.error(error); // eslint-disable-line no-console
       return null;
     }
@@ -113,19 +136,6 @@ async function loadLibraryFromFile(libraryUrl: string): Promise<any> {
   const scriptSource = await loadAsText(libraryUrl);
   return loadLibraryFromString(scriptSource, libraryUrl);
 }
-
-/*
-async function loadScriptFromFile(libraryUrl) {
-  const script = document.createElement('script');
-  script.src = libraryUrl;
-  return await new Promise((resolve, reject) => {
-    script.onload = data => {
-      resolve(data);
-    };
-    script.onerror = reject;
-  });
-}
-*/
 
 // TODO - Needs security audit...
 //  - Raw eval call
@@ -158,6 +168,56 @@ function loadLibraryFromString(scriptSource: string, id: string): null | any {
   return null;
 }
 
+async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
+  const {readFileAsArrayBuffer} = globalThis.loaders || {};
+  if (isBrowser || !readFileAsArrayBuffer || url.startsWith('http')) {
+    const response = await fetch(url);
+    return await response.arrayBuffer();
+  }
+  try {
+    return await readFileAsArrayBuffer(url);
+  } catch {
+    if (url.includes('/dist/libs/')) {
+      return await readFileAsArrayBuffer(url.replace('/dist/libs/', '/src/libs/'));
+    }
+    throw new Error(`Failed to load ArrayBuffer from ${url}`);
+  }
+}
+
+/**
+ * Load a file from local file system
+ * @param filename
+ * @returns
+ */
+async function loadAsText(url: string): Promise<string> {
+  const {readFileAsText} = globalThis.loaders || {};
+  if (isBrowser || !readFileAsText || url.startsWith('http')) {
+    const response = await fetch(url);
+    return await response.text();
+  }
+  try {
+    return await readFileAsText(url);
+  } catch {
+    if (url.includes('/dist/libs/')) {
+      return await readFileAsText(url.replace('/dist/libs/', '/src/libs/'));
+    }
+    throw new Error(`Failed to load text from ${url}`);
+  }
+}
+
+/*
+async function loadScriptFromFile(libraryUrl) {
+  const script = document.createElement('script');
+  script.src = libraryUrl;
+  return await new Promise((resolve, reject) => {
+    script.onload = data => {
+      resolve(data);
+    };
+    script.onerror = reject;
+  });
+}
+*/
+
 // TODO - technique for module injection into worker, from THREE.DracoLoader...
 /*
 function combineWorkerWithLibrary(worker, jsContent) {
@@ -172,26 +232,3 @@ function combineWorkerWithLibrary(worker, jsContent) {
   this.workerSourceURL = URL.createObjectURL(new Blob([body]));
 }
 */
-
-async function loadAsArrayBuffer(url: string): Promise<ArrayBuffer> {
-  const {readFileAsArrayBuffer} = globalThis.loaders || {};
-  if (isBrowser || !readFileAsArrayBuffer || url.startsWith('http')) {
-    const response = await fetch(url);
-    return await response.arrayBuffer();
-  }
-  return await readFileAsArrayBuffer(url);
-}
-
-/**
- * Load a file from local file system
- * @param filename
- * @returns
- */
-async function loadAsText(url: string): Promise<string> {
-  const {readFileAsText} = globalThis.loaders || {};
-  if (isBrowser || !readFileAsText || url.startsWith('http')) {
-    const response = await fetch(url);
-    return await response.text();
-  }
-  return await readFileAsText(url);
-}

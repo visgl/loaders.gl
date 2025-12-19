@@ -57,7 +57,9 @@ setLoaderOptions({
 });
 
 test('FlatGeobufLoader#load', async (t) => {
-  const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {worker: false});
+  const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
+    core: {worker: false}
+  });
   t.equal(geojsonTable.features.length, 179);
   t.equal(geojsonTable.schema.fields.length, 2);
   t.deepEqual(geojsonTable.schema, FGB_METADATA);
@@ -66,7 +68,7 @@ test('FlatGeobufLoader#load', async (t) => {
 
 test('FlatGeobufLoader#loadInBatches', async (t) => {
   const iterator = await loadInBatches(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
-    worker: false
+    core: {worker: false}
   });
   t.ok(iterator);
 

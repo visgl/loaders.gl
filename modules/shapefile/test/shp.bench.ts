@@ -18,12 +18,18 @@ export default async function shpLoaderBench(suite) {
   suite.addAsync(
     'parse(SHPLoader without worker)',
     {multiplier: 77, unit: 'MB'},
-    async () => await parse(arrayBuffer, SHPLoader, {worker: false})
+    async () =>
+      await parse(arrayBuffer, SHPLoader, {
+        core: {worker: false}
+      })
   );
   suite.addAsync(
     'parseInBatches(SHPLoader without worker)',
     {multiplier: 77, unit: 'MB'},
-    async () => await parseInBatches(arrayBuffer, SHPLoader, {worker: false})
+    async () =>
+      await parseInBatches(arrayBuffer, SHPLoader, {
+        core: {worker: false}
+      })
   );
 
   // TODO: optionally test for equality of batched and atomic loaders

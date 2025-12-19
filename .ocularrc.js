@@ -12,14 +12,13 @@ const config = {
   babel: false,
 
   lint: {
-    paths: ['modules', 'dev-docs', 'docs', 'test'], //, 'examples'],
+    paths: ['modules', 'apps', 'dev-docs', 'docs', 'test'], //, 'examples'],
     extensions: ['js', 'jsx', 'cjs', 'mjs', 'ts', 'tsx', 'md'] // , 'mdx'],
-    // extensions: ['js', 'jsx', 'mjs', 'ts', 'tsx', 'md']
   },
 
-  typescript: {
-    project: 'tsconfig.build.json'
-  },
+  // typescript: {
+  //   project: 'tsconfig.build.json'
+  // },
 
   aliases: {
     // TEST

@@ -7,7 +7,7 @@ import * as node from '../node/buffer';
 /**
  * Check for Node.js `Buffer` (without triggering bundler to include Buffer polyfill on browser)
  */
-export function isBuffer(value: any): boolean {
+export function isBuffer(value: any): value is Buffer {
   return value && typeof value === 'object' && value.isBuffer;
 }
 

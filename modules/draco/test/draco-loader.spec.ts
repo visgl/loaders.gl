@@ -20,7 +20,9 @@ test('DracoLoader#loader conformance', (t) => {
 });
 
 test('DracoLoader#parse(mainthread)', async (t) => {
-  const data = await load(BUNNY_DRC_URL, DracoLoader, {worker: false});
+  const data = await load(BUNNY_DRC_URL, DracoLoader, {
+    core: {worker: false}
+  });
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
   t.ok(data.schema, 'Has arrow-like schema');
@@ -29,10 +31,8 @@ test('DracoLoader#parse(mainthread)', async (t) => {
 
 test('DracoLoader#draco3d npm package', async (t) => {
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
-    worker: false,
-    modules: {
-      draco3d
-    }
+    core: {worker: false},
+    modules: {draco3d}
   });
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -41,7 +41,7 @@ test('DracoLoader#draco3d npm package', async (t) => {
 
 test('DracoLoader#parse custom attributes(mainthread)', async (t) => {
   let data = await load(CESIUM_TILE_URL, DracoLoader, {
-    worker: false
+    core: {worker: false}
   });
   t.equal(
     data.attributes.CUSTOM_ATTRIBUTE_2.value.length,
@@ -55,7 +55,7 @@ test('DracoLoader#parse custom attributes(mainthread)', async (t) => {
   );
 
   data = await load(CESIUM_TILE_URL, DracoLoader, {
-    worker: false,
+    core: {worker: false},
     draco: {
       extraAttributes: {
         Intensity: 2,

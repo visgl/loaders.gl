@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {isResponse, isBlob} from '../../javascript-utils/is-type';
+import {isResponse, isBlob} from '@loaders.gl/loader-utils';
 import {parseMIMEType, parseMIMETypeFromURL} from './mime-type-utils';
 import {stripQueryString} from './url-utils';
 
@@ -22,16 +22,15 @@ export type Resource = Response | Blob | string;
 export function getResourceUrl(resource: unknown): string {
   // If resource is a `Response`, it contains the information directly as a field
   if (isResponse(resource)) {
-    const response = resource as Response;
-    return response.url;
+    return resource.url;
   }
 
   // If the resource is a Blob or a File (subclass of Blob)
   if (isBlob(resource)) {
-    const blob = resource as Blob;
     // File objects have a "name" property. Blob objects don't have any
     // url (name) information
-    return (blob as any).name || '';
+    const fileName = 'name' in resource ? (resource as File).name : '';
+    return fileName || '';
   }
 
   if (typeof resource === 'string') {
@@ -52,16 +51,14 @@ export function getResourceUrl(resource: unknown): string {
 export function getResourceMIMEType(resource: unknown): string {
   // If resource is a response, it contains the information directly
   if (isResponse(resource)) {
-    const response = resource as Response;
-    const contentTypeHeader = response.headers.get('content-type') || '';
-    const noQueryUrl = stripQueryString(response.url);
+    const contentTypeHeader = resource.headers.get('content-type') || '';
+    const noQueryUrl = stripQueryString(resource.url);
     return parseMIMEType(contentTypeHeader) || parseMIMETypeFromURL(noQueryUrl);
   }
 
   // If the resource is a Blob or a File (subclass of Blob)
   if (isBlob(resource)) {
-    const blob = resource as Blob;
-    return blob.type || '';
+    return resource.type || '';
   }
 
   if (typeof resource === 'string') {
@@ -81,11 +78,11 @@ export function getResourceMIMEType(resource: unknown): string {
   */
 export function getResourceContentLength(resource: unknown): number {
   if (isResponse(resource)) {
-    const response = resource as Response;
+    const response = resource;
     return response.headers['content-length'] || -1;
   }
   if (isBlob(resource)) {
-    const blob = resource as Blob;
+    const blob = resource;
     return blob.size;
   }
   if (typeof resource === 'string') {

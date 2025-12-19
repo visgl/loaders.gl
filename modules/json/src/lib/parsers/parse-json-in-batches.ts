@@ -20,14 +20,14 @@ export async function* parseJSONInBatches(
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const asyncIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
 
-  const {metadata} = options;
+  const metadata = Boolean(options?.core?.metadata || (options as any)?.metadata);
   const {jsonpaths} = options.json || {};
 
   let isFirstChunk: boolean = true;
 
   // @ts-expect-error TODO fix Schema deduction
   const schema: Schema = null;
-  const tableBatchBuilder = new TableBatchBuilder(schema, options);
+  const tableBatchBuilder = new TableBatchBuilder(schema, options?.core);
 
   const parser = new StreamingJSONParser({jsonpaths});
 

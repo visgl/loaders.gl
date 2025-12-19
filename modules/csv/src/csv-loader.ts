@@ -141,8 +141,8 @@ function parseCSVInBatches(
   // Papaparse does not support standard batch size handling
   // TODO - investigate papaparse chunks mode
   options = {...options};
-  if (options.batchSize === 'auto') {
-    options.batchSize = 4000;
+  if (options?.core?.batchSize === 'auto') {
+    options.core.batchSize = 4000;
   }
 
   // Apps can call the parse method directly, we so apply default options here
@@ -210,7 +210,7 @@ function parseCSVInBatches(
         row = JSON.parse(JSON.stringify(row));
       }
 
-      const shape = csvOptions.shape || DEFAULT_CSV_SHAPE;
+      const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
 
       // Add the row
       tableBatchBuilder =
@@ -220,7 +220,7 @@ function parseCSVInBatches(
           schema,
           {
             shape,
-            ...options
+            ...(options?.core || {})
           }
         );
 

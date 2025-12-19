@@ -3,25 +3,30 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, ObjectRowTable} from '@loaders.gl/schema';
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 
-export type SHPLoaderOptions = LoaderOptions & {
+export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 
-export type DBFLoaderOptions = LoaderOptions & {
+export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
     shape?: 'rows' | 'table' | 'object-row-table';
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
 };
 
-export type ShapefileLoaderOptions = LoaderOptions &
-  SHPLoaderOptions & {
+export type ShapefileLoaderOptions = StrictLoaderOptions &
+  SHPLoaderOptions &
+  DBFLoaderOptions & {
     shapefile?: {
-      shape?: 'geojson-table';
+      shape?: 'geojson-table' | 'v3';
     };
     gis?: {
       reproject?: boolean;

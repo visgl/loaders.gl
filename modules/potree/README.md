@@ -1,4 +1,4 @@
-# @loaders.gl/potree (Experimental)
+# @loaders.gl/potree
 
 This module contains loaders for the [potree](https://github.com/potree/potree) format.
 

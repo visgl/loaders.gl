@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {StrictLoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {Tiles3DLoader} from './tiles-3d-loader';
 import {getIonTilesetMetadata} from './lib/ion/ion';
 
@@ -41,4 +41,4 @@ export const CesiumIonLoader = {
       accessToken: null
     }
   }
-} as const satisfies LoaderWithParser<unknown, never, LoaderOptions>;
+} as const satisfies LoaderWithParser<unknown, never, StrictLoaderOptions>;

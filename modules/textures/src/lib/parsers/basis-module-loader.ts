@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {registerJSModules, getJSModuleOrNull} from '@loaders.gl/loader-utils';
-import {loadLibrary} from '@loaders.gl/worker-utils';
+import {loadLibrary, LoadLibraryOptions} from '@loaders.gl/worker-utils';
 
 export const BASIS_EXTERNAL_LIBRARIES = {
   /** Basis transcoder, javascript wrapper part */
@@ -23,7 +23,7 @@ let loadBasisTranscoderPromise;
  * @param options
  * @returns {BasisFile} promise
  */
-export async function loadBasisTranscoderModule(options) {
+export async function loadBasisTranscoderModule(options: LoadLibraryOptions) {
   registerJSModules(options.modules);
   const basis = getJSModuleOrNull('basis');
   if (basis) {
@@ -39,7 +39,7 @@ export async function loadBasisTranscoderModule(options) {
  * @param options
  * @returns {BasisFile} promise
  */
-async function loadBasisTranscoder(options) {
+async function loadBasisTranscoder(options: LoadLibraryOptions) {
   let BASIS = null;
   let wasmBinary = null;
 
@@ -84,7 +84,7 @@ let loadBasisEncoderPromise;
  * @param options
  * @returns {BasisFile, KTX2File} promise
  */
-export async function loadBasisEncoderModule(options) {
+export async function loadBasisEncoderModule(options: LoadLibraryOptions) {
   const modules = options.modules || {};
   if (modules.basisEncoder) {
     return modules.basisEncoder;
@@ -99,7 +99,7 @@ export async function loadBasisEncoderModule(options) {
  * @param options
  * @returns {BasisFile, KTX2File} promise
  */
-async function loadBasisEncoder(options) {
+async function loadBasisEncoder(options: LoadLibraryOptions) {
   let BASIS_ENCODER = null;
   let wasmBinary = null;
 

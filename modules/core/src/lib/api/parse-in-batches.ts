@@ -7,6 +7,7 @@ import {isTable, makeBatchFromTable} from '@loaders.gl/schema-utils';
 import type {
   Loader,
   LoaderWithParser,
+  StrictLoaderOptions,
   LoaderOptions,
   LoaderContext,
   BatchableDataType,
@@ -81,7 +82,7 @@ export async function parseInBatches(
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
-    options = loaders as LoaderOptions;
+    options = loaders as unknown as LoaderOptions;
     loaders = undefined;
   }
 
@@ -100,14 +101,14 @@ export async function parseInBatches(
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, loaderArray, url);
+  const strictOptions = normalizeOptions(options, loader, loaderArray, url);
   context = getLoaderContext(
     {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
-    options,
+    strictOptions,
     context || null
   );
 
-  return await parseWithLoaderInBatches(loader as LoaderWithParser, data, options, context);
+  return await parseWithLoaderInBatches(loader as LoaderWithParser, data, strictOptions, context);
 }
 
 /**
@@ -116,13 +117,13 @@ export async function parseInBatches(
 async function parseWithLoaderInBatches(
   loader: LoaderWithParser,
   data: BatchableDataType,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
   const outputIterator = await parseToOutputIterator(loader, data, options, context);
 
   // Generate metadata batch if requested
-  if (!options.metadata) {
+  if (!options?.core?.metadata) {
     return outputIterator;
   }
 
@@ -156,14 +157,17 @@ async function parseWithLoaderInBatches(
 async function parseToOutputIterator(
   loader: LoaderWithParser,
   data: BatchableDataType,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<AsyncIterable<unknown>> {
   // Get an iterator from the input
   const inputIterator = await getAsyncIterableFromData(data, options);
 
   // Apply any iterator transforms (options.transforms)
-  const transformedIterator = await applyInputTransforms(inputIterator, options?.transforms || []);
+  const transformedIterator = await applyInputTransforms(
+    inputIterator,
+    options?.core?.transforms || []
+  );
 
   // If loader supports parseInBatches, we are done
   if (loader.parseInBatches) {
@@ -179,7 +183,7 @@ async function* parseChunkInBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>,
   loader: Loader,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ): AsyncIterable<Batch> {
   const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);
@@ -188,7 +192,7 @@ async function* parseChunkInBatches(
     arrayBuffer,
     loader,
     // TODO - Hack: supply loaders MIME type to ensure we match it
-    {...options, mimeType: loader.mimeTypes[0]},
+    {...options, core: {...options?.core, mimeType: loader.mimeTypes[0]}},
     context
   );
 
