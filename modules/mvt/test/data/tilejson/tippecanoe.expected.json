@@ -12,10 +12,11 @@
   "minZoom": null,
   "layers": [
     {
+      "id": "input",
       "name": "input",
       "description": "",
-      "minZoom": 0,
-      "maxZoom": 6,
+      "minzoom": 0,
+      "maxzoom": 6,
       "dominantGeometry": "LineString",
       "fields": [
         {
@@ -210,8 +211,9 @@
       ],
       "schema": {
         "metadata": {
+          "id": "\"input\"",
           "name": "\"input\"",
-          "maxZoom": "6",
+          "maxzoom": "6",
           "dominantGeometry": "\"LineString\""
         },
         "fields": [
