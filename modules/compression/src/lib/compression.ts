@@ -7,18 +7,57 @@ import {concatenateArrayBuffersAsync, registerJSModules} from '@loaders.gl/loade
 
 /** Compression options */
 export type CompressionOptions = {
-  // operation: 'compress' | 'decompress';
-  modules?: {[moduleName: string]: any};
+  /**
+   * Compression quality (higher values better compression but exponentially slower)
+   * brotli goes from 1-11
+   * zlib goes from 1-9
+   * 5 or 6 is usually a good compromise
+   */
+  quality?: number;
+
+  /**
+   * Whether to use built-in Zlib on node.js for max performance (doesn't handle incremental compression)
+   * Currently only deflate, gzip and brotli are supported.
+   */
+  useZlib?: boolean;
+
+  /**
+   * Injection of npm modules - keeps large compression libraries out of standard bundle
+   */
+  modules?: CompressionModules;
+};
+
+/**
+ * Injection of npm modules - keeps large compression libraries out of standard bundle
+ */
+export type CompressionModules = {
+  brotli?: any;
+  lz4js?: any;
+  lzo?: any;
+  'zstd-codec'?: any;
 };
 
 /** Compression */
 export abstract class Compression {
-  abstract readonly name: string;
-  abstract readonly extensions: string[];
-  abstract readonly contentEncodings: string[];
-  abstract readonly isSupported: boolean;
+  /** Default compression level for gzip, brotli etc */
+  static DEFAULT_COMPRESSION_LEVEL = 5;
 
-  constructor(options?: CompressionOptions) {
+  /** Name of the compression */
+  abstract readonly name: string;
+  /** File extensions used for this */
+  abstract readonly extensions: string[];
+  /** Strings used for Content-Encoding headers in browser */
+  abstract readonly contentEncodings: string[];
+  /** Whether decompression is supported */
+  abstract readonly isSupported: boolean;
+  /** Whether compression is supported */
+  get isCompressionSupported(): boolean {
+    return this.isSupported;
+  }
+
+  static modules: CompressionModules = {};
+
+  constructor(options) {
     this.compressBatches = this.compressBatches.bind(this);
     this.decompressBatches = this.decompressBatches.bind(this);
   }

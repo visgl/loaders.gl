@@ -4,11 +4,13 @@
 
 import {createWorker} from '@loaders.gl/worker-utils';
 
+import type {Compression} from '../lib/compression';
+
 // Compressors
 import {NoCompression} from '../lib/no-compression';
 import {BrotliCompression} from '../lib/brotli-compression';
-import {DeflateCompression} from '../lib/deflate-compression';
-import {GZipCompression} from '../lib/gzip-compression';
+import {DeflateCompression} from '../lib/deflate-compression-pako';
+import {GZipCompression} from '../lib/gzip-compression-fflate';
 import {LZ4Compression} from '../lib/lz4-compression';
 // import {LZOCompression} from '../lib/lzo-compression';
 import {SnappyCompression} from '../lib/snappy-compression';
@@ -17,35 +19,37 @@ import {ZstdCompression} from '../lib/zstd-compression';
 // Import big dependencies
 
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
-// import brotliDecompress from 'brotli/decompress';
+import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
 // import lzo from 'lzo';
 // import {ZstdCodec} from 'zstd-codec';
 
+// globalThis.Worker = globalThis.Worker || {};
+// globalThis.Blob = globalThis.Blob || {};
+
 // Inject large dependencies through Compression constructor options
 const modules = {
   // brotli has problems with decompress in browsers
-  // brotli: {
-  //   decompress: brotliDecompress,
-  //   compress: () => {
-  //     throw new Error('brotli compress');
-  //   }
-  // },
+  brotli: {
+    decompress: brotliDecompress,
+    compress: () => {
+      throw new Error('brotli compress');
+    }
+  },
   lz4js
+  // 'zstd-codec': ZstdCodec,
   // lzo,
-  // 'zstd-codec': ZstdCodec
 };
 
-/** @type {Compression[]} */
-const COMPRESSIONS = [
+const COMPRESSIONS: Compression[] = [
   new NoCompression({modules}),
   new BrotliCompression({modules}),
   new DeflateCompression({modules}),
   new GZipCompression({modules}),
-  // new LZOCompression({modules}),
-  new LZ4Compression({modules}),
   new SnappyCompression({modules}),
+  new LZ4Compression({modules}),
   new ZstdCompression({modules})
+  // new LZOCompression({modules})
 ];
 
 createWorker(async (data, options = {}) => {

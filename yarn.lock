@@ -5580,9 +5580,10 @@ __metadata:
   dependencies:
     "@loaders.gl/loader-utils": "npm:4.4.0-alpha.2"
     "@loaders.gl/worker-utils": "npm:4.4.0-alpha.2"
-    "@types/brotli": "npm:^1.3.0"
     "@types/pako": "npm:^1.0.1"
-    brotli: "npm:^1.3.2"
+    brotli: "npm:^1.3.3"
+    brotli-compress: "npm:^1.3.3"
+    brotli-wasm: "npm:^1.3.1"
     fflate: "npm:0.7.4"
     lz4js: "npm:^0.2.0"
     lzo-wasm: "npm:^0.0.4"
@@ -5592,10 +5593,6 @@ __metadata:
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   dependenciesMeta:
-    "@types/brotli":
-      optional: true
-    brotli:
-      optional: true
     lz4js:
       optional: true
     zstd-codec:
@@ -9844,7 +9841,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^17.0.5":
+"@types/node@npm:^17.0.40, @types/node@npm:^17.0.5":
   version: 17.0.45
   resolution: "@types/node@npm:17.0.45"
   checksum: 10c0/0db377133d709b33a47892581a21a41cd7958f22723a3cc6c71d55ac018121382de42fbfc7970d5ae3e7819dbe5f40e1c6a5174aedf7e7964e9cb8fa72b580b0
@@ -12210,7 +12207,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"brotli@npm:^1.3.2":
+"brotli-compress@npm:^1.3.3":
+  version: 1.3.3
+  resolution: "brotli-compress@npm:1.3.3"
+  dependencies:
+    "@types/node": "npm:^17.0.40"
+    brotli-wasm: "npm:1.2.0"
+  checksum: 10c0/77f88a7fc6cb78935dec06496afeed9ab8c2ab85fe844da68006db5ab1af9f82d106987d9cd80fc375e838f66bd14e688d661eebadf3ab5e8ab8f1bf8921b286
+  languageName: node
+  linkType: hard
+
+"brotli-wasm@npm:1.2.0":
+  version: 1.2.0
+  resolution: "brotli-wasm@npm:1.2.0"
+  checksum: 10c0/cdfba80fe989db50c54e05931b825b318afe4d9a4453f8914a361c098769fa0c2b06170687405b08513ef1931561d1603141bdee15c9e25f546707ccfa0e568b
+  languageName: node
+  linkType: hard
+
+"brotli-wasm@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "brotli-wasm@npm:1.3.1"
+  checksum: 10c0/07c08a95bbf126eae31ddb3716e7557074928e8c5f4d25fb8bdc2c8651d0be63b952e70bb6d6ce182f5a284b15e33e3bdaa159ec480ee569a638e60fdebc8759
+  languageName: node
+  linkType: hard
+
+"brotli@npm:^1.3.2, brotli@npm:^1.3.3":
   version: 1.3.3
   resolution: "brotli@npm:1.3.3"
   dependencies:

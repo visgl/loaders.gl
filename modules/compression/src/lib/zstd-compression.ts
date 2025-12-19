@@ -26,14 +26,17 @@ export class ZstdCompression extends Compression {
   readonly name: string = 'zstd';
   readonly extensions = [];
   readonly contentEncodings = [];
-  readonly isSupported = true;
+  get isSupported() {
+    return zstd;
+  }
+
   readonly options: CompressionOptions;
 
   /**
    * zstd-codec is an injectable dependency due to big size
    * @param options
    */
-  constructor(options: CompressionOptions) {
+  constructor(options: CompressionOptions = {}) {
     super(options);
     this.options = options;
     registerJSModules(options?.modules);

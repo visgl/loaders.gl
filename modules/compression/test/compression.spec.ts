@@ -59,7 +59,8 @@ const TEST_CASES = [
         compressedLength: 10903
       },
       gzip: {
-        compressedLength: 10915
+        compressedLength: 10913 // fflate
+        // compressedLength: 10915 // pako
       },
       lz4: {
         compressedLength: 10422
@@ -141,7 +142,10 @@ test('compression#batched', async (t) => {
       let compressedBatches = compression.compressBatches(inputChunks);
       const compressedData = await concatenateArrayBuffersAsync(compressedBatches);
       if (name === 'gzip') {
-        t.equals(compressedData.byteLength, 29, `${name}(${title}) batches: length correct`); // Header overhead
+        // FFLATE
+        t.equals(compressedData.byteLength, 47, `${name}(${title}) batches: length correct`); // Header overhead
+        // PAKO
+        // t.equals(compressedData.byteLength, 29, `${name}(${title}) batches: length correct`); // Header overhead
       }
 
       // test chained iterators
@@ -163,6 +167,15 @@ test('compression#batched', async (t) => {
 
 // WORKER TESTS
 test('gzip#worker', async (t) => {
+  if (!isBrowser) {
+    t.comment('not testing worker under Node.js');
+    t.end();
+    return;
+  }
+
+  const COMPRESSED_LENGTH_EXPECTED = 12824; // fflate
+  // const COMPRESSED_LENGTH_EXPECTED = 12825; // pako
+
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -176,7 +189,7 @@ test('gzip#worker', async (t) => {
     }
   });
 
-  t.equal(compressedData.byteLength, 12825, 'Length correct');
+  t.equal(compressedData.byteLength, COMPRESSED_LENGTH_EXPECTED, 'Length correct');
 
   const decompressdData = await processOnWorker(CompressionWorker, compressedData, {
     compression: 'gzip',
@@ -200,6 +213,12 @@ test('gzip#worker', async (t) => {
 });
 
 test('lz4#worker', async (t) => {
+  if (!isBrowser) {
+    t.comment('not testing worker under Node.js');
+    t.end();
+    return;
+  }
+
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
