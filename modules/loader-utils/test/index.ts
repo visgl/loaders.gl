@@ -16,6 +16,7 @@ import './lib/path-utils/file-aliases.spec';
 import './lib/path-utils/path.spec';
 
 import './lib/request-utils/request-scheduler.spec';
+import './lib/request-utils/parse-content-type.spec';
 import './lib/javascript-utils/is-type.spec';
 
 // import './lib/files/node-file-facade.spec';
