@@ -38,7 +38,7 @@ test('TileJSONLoader#tippecanoe', async (t) => {
   const fields = metadata.layers?.[0]?.fields || [];
   const indexedFieldNames = fields.filter((field) => field.name.includes('|'));
   t.equal(indexedFieldNames.length, 0, 'Indexed tilestats attributes are skipped');
-  t.equal(metadata.layers?.[0]?.minZoom, 0, 'Vector layer minZoom is merged');
+  t.equal(metadata.layers?.[0]?.minzoom, 0, 'Vector layer minzoom is merged');
   t.equal(metadata.layers?.[0]?.dominantGeometry, 'LineString', 'Tilestats geometry is merged');
 
   const attributesField = fields.find((field) => field.name === 'rwdb_rr_id');
