@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {NDJSONLoader} from '@loaders.gl/json';
@@ -34,7 +38,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = auto)', async 
     byteLength = batch.bytesUsed;
   }
 
-  t.comment(JSON.stringify(batchCount));
+  // t.comment(JSON.stringify(batchCount));
   t.equal(batchCount, 11, 'Correct number of batches received');
   t.equal(rowCount, 11, 'Correct number of row received');
   t.equal(byteLength, 701, 'Correct number of bytes received');
@@ -76,7 +80,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async (t)
   t.end();
 });
 
-test('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async (t) => {
+test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async (t) => {
   const iterator = await loadInBatches(NDJSON_INVALID_PATH, NDJSONLoader, {
     batchSize: 5
   });

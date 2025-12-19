@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
@@ -8,8 +12,17 @@ import Tile3DFeatureTable from '../classes/tile-3d-feature-table';
 import {parse3DTileHeaderSync} from './helpers/parse-3d-tile-header';
 import {parse3DTileTablesHeaderSync, parse3DTileTablesSync} from './helpers/parse-3d-tile-tables';
 import {parse3DTileGLTFViewSync, extractGLTF, GLTF_FORMAT} from './helpers/parse-3d-tile-gltf-view';
+import {Tiles3DTileContent} from '../../types';
+import {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
+import {LoaderContext} from '@loaders.gl/loader-utils';
 
-export async function parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, options, context) {
+export async function parseBatchedModel3DTile(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options?: Tiles3DLoaderOptions,
+  context?: LoaderContext
+) {
   byteOffset = parseBatchedModel(tile, arrayBuffer, byteOffset, options, context);
   await extractGLTF(tile, GLTF_FORMAT.EMBEDDED, options, context);
 
@@ -21,7 +34,13 @@ export async function parseBatchedModel3DTile(tile, arrayBuffer, byteOffset, opt
   return byteOffset;
 }
 
-function parseBatchedModel(tile, arrayBuffer, byteOffset, options, context) {
+function parseBatchedModel(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options?: Tiles3DLoaderOptions,
+  context?: LoaderContext
+) {
   byteOffset = parse3DTileHeaderSync(tile, arrayBuffer, byteOffset);
 
   byteOffset = parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset);

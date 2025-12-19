@@ -4,8 +4,8 @@ The _mesh and pointcloud_ loader category is intended for simpler mesh and point
 
 ## Mesh/PointCloud Category Loaders
 
-| Loader                                                                            | Notes |
-| --------------------------------------------------------------------------------- | ----- |
+| Loader                                                                             | Notes |
+| ---------------------------------------------------------------------------------- | ----- |
 | [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)                    |       |
 | [`LASLoader`](/docs/modules/las/api-reference/las-loader)                          |       |
 | [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader)                          |       |

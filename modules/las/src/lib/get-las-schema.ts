@@ -1,8 +1,13 @@
-import {Schema, MeshAttributes, deduceMeshSchema} from '@loaders.gl/schema';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {Schema, MeshAttributes} from '@loaders.gl/schema';
+import {deduceMeshSchema} from '@loaders.gl/schema-utils';
 import type {LASHeader} from './las-types';
 
 /**
- * Gets schema from PLY header
+ * Gets schema from LAS header
  * @param lasHeader
  * @param metadata
  * @returns Schema

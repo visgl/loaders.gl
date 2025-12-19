@@ -1,4 +1,4 @@
-export default function parsePotreeBin(
+export function parsePotreeBin(
   arrayBuffer: ArrayBuffer,
   byteOffset: number,
   options: unknown,

@@ -14,6 +14,17 @@
 
 loaders.gl is extensively documented on the [loaders.gl](https://loaders.gl) website.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Build and test workflows
+
+- Run `yarn build-modules` to execute the existing ocular and lerna build flow for modules. The default `yarn build` command delegates to this script for backward compatibility.
+- Run `yarn test-modules` for the standard module test suite (also available through `yarn test`).
+- Run `yarn build-apps` to run the tile-converter app build (currently the only app in this repository).
+- Run `yarn test-apps` to exercise the tile-converter app test/build script when available.
+
 ## License
 
 loaders.gl is licensed under a permissive open source license, using an MIT umbrella license.

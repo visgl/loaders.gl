@@ -1,5 +1,5 @@
-import './lib/utils/async-queue.spec';
-import './lib/types/type-utils.spec';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-import './lib/table/table-utils.spec';
-import './lib/table/make-table.spec';
+// no tests for types

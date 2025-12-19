@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // This is a fork of papaparse under MIT License
 // https://github.com/mholt/PapaParse
 /* eslint-disable */

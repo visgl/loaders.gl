@@ -1,5 +1,10 @@
-import {Field, ObjectRowTable} from '@loaders.gl/schema';
-import BinaryChunkReader from '../streaming/binary-chunk-reader';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Field, ObjectRowTable} from '@loaders.gl/schema';
+import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {
   DBFLoaderOptions,
   DBFResult,
@@ -73,7 +78,7 @@ export function parseDBF(
   dbfParser.end();
 
   const {data, schema} = dbfParser.result;
-  const shape = options?.tables?.format || options?.dbf?.shape;
+  const shape = options?.dbf?.shape;
   switch (shape) {
     case 'object-row-table': {
       const table: ObjectRowTable = {
@@ -95,14 +100,16 @@ export function parseDBF(
  * @param options
  */
 export async function* parseDBFInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: DBFLoaderOptions = {}
 ): AsyncIterable<DBFHeader | DBFRowsOutput | DBFTableOutput> {
   const {encoding = 'latin1'} = options.dbf || {};
 
   const parser = new DBFParser({encoding});
   let headerReturned = false;
-  for await (const arrayBuffer of asyncIterator) {
+  for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.dbfHeader) {
       headerReturned = true;

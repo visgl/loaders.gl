@@ -1,5 +1,8 @@
-// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
-/* eslint-disable camelcase */
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
 // Forked from https://github.com/ironSource/parquetjs under MIT license
 
 import {
@@ -12,6 +15,7 @@ import {
   LZ4Compression,
   ZstdCompression
 } from '@loaders.gl/compression';
+import {registerJSModules} from '@loaders.gl/loader-utils';
 
 import {ParquetCompression} from './schema/declare';
 
@@ -72,9 +76,12 @@ export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression
  * Register compressions that have big external libraries
  * @param options.modules External library dependencies
  */
-export async function preloadCompressions(options?: {modules: {[key: string]: any}}) {
+export async function preloadCompressions(options?: {modules?: {[key: string]: any}}) {
+  registerJSModules(options?.modules);
   const compressions = Object.values(PARQUET_COMPRESSION_METHODS);
-  return await Promise.all(compressions.map((compression) => compression.preload()));
+  return await Promise.all(
+    compressions.map((compression) => compression.preload(options?.modules))
+  );
 }
 
 /**

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {S2Cell} from '../s2geometry/s2-geometry';
 import {getS2BoundaryFlatFromS2Cell} from './s2-to-boundary';
 import {getS2Cell} from '../s2geometry/s2-cell-utils';

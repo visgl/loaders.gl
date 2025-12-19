@@ -6,17 +6,17 @@
 
 Loader for compressed textures in the PVR file format
 
-| Loader         | Characteristic                                                                                                                                                                                                                  |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Loader         | Characteristic                                                                                                                                                                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | File Format    | [PVR](http://powervr-graphics.github.io/WebGL_SDK/WebGL_SDK/Documentation/Specifications/PVR%20File%20Format.Specification.pdf), [DDS](https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide), [KTX](https://github.com/KhronosGroup/KTX-Software/) |
-| File Extension | `.dds`, `.pvr`, `.ktx`, `.ktx2`                                                                                                                                                                                                 |
-| File Type      | Binary                                                                                                                                                                                                                          |
-| Data Format    | Array of compressed image data objects                                                                                                                                                                                          |
-| Supported APIs | `load`, `parse`                                                                                                                                                                                                                 |
+| File Extension | `.dds`, `.pvr`, `.ktx`, `.ktx2`                                                                                                                                                                                                                                                 |
+| File Type      | Binary                                                                                                                                                                                                                                                                          |
+| Data Format    | Array of compressed image data objects                                                                                                                                                                                                                                          |
+| Supported APIs | `load`, `parse`                                                                                                                                                                                                                                                                 |
 
 ## Usage
 
-```js
+```typescript
 import {CompressedTextureLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 
@@ -34,8 +34,8 @@ Returns an array of image data objects representing mip levels.
 
 ## Options
 
-| Option                        | Type    | Default | Description                                                                                |
-| ----------------------------- | ------- | ------- | ------------------------------------------------------------------------------------------ |
+| Option                        | Type    | Default | Description                                                                                 |
+| ----------------------------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
 | `compressed-texture.useBasis` | Boolean | `false` | Use [BasisLoader](/docs/modules/textures/api-reference/basis-loader) to decode KTX2 texture |
 
 ## Basis loader

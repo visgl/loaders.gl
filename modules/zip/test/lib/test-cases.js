@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // prettier-ignore
 export const IMAGE_DATA_ARRAY = new Uint8Array([
   137, 80, 78,  71,  13,  10,  26,  10,  0,   0,   0,   13,

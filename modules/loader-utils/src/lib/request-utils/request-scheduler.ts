@@ -12,6 +12,7 @@ export type RequestSchedulerProps = {
   id?: string;
   throttleRequests?: boolean;
   maxRequests?: number;
+  debounceTime?: number;
 };
 
 const STAT_QUEUED_REQUESTS = 'Queued Requests';
@@ -22,10 +23,15 @@ const STAT_ACTIVE_REQUESTS_EVER = 'Active Requests Ever';
 
 const DEFAULT_PROPS: Required<RequestSchedulerProps> = {
   id: 'request-scheduler',
-  // Specifies if the request scheduler should throttle incoming requests, mainly for comparative testing
+  /** Specifies if the request scheduler should throttle incoming requests, mainly for comparative testing. */
   throttleRequests: true,
-  // The maximum number of simultaneous active requests. Un-throttled requests do not observe this limit.
-  maxRequests: 6
+  /** The maximum number of simultaneous active requests. Un-throttled requests do not observe this limit. */
+  maxRequests: 6,
+  /**
+   * Specifies a debounce time, in milliseconds. All requests are queued, until no new requests have
+   * been added to the queue for this amount of time.
+   */
+  debounceTime: 0
 };
 
 /** Tracks one request */
@@ -48,7 +54,7 @@ export default class RequestScheduler {
   /** Tracks the number of active requests and prioritizes/cancels queued requests. */
   private requestQueue: Request[] = [];
   private requestMap: Map<Handle, Promise<RequestResult>> = new Map();
-  private deferredUpdate: any = null;
+  private updateTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(props: RequestSchedulerProps = {}) {
     this.props = {...DEFAULT_PROPS, ...props};
@@ -132,15 +138,18 @@ export default class RequestScheduler {
 
   /** We check requests asynchronously, to prevent multiple updates */
   _issueNewRequests(): void {
-    if (!this.deferredUpdate) {
-      this.deferredUpdate = setTimeout(() => this._issueNewRequestsAsync(), 0);
+    if (this.updateTimer !== null) {
+      clearTimeout(this.updateTimer);
     }
+    this.updateTimer = setTimeout(() => this._issueNewRequestsAsync(), this.props.debounceTime);
   }
 
   /** Refresh all requests  */
   _issueNewRequestsAsync() {
-    // TODO - shouldn't we clear the timeout?
-    this.deferredUpdate = null;
+    if (this.updateTimer !== null) {
+      clearTimeout(this.updateTimer);
+    }
+    this.updateTimer = null;
 
     const freeSlots = Math.max(this.props.maxRequests - this.activeRequestCount, 0);
 

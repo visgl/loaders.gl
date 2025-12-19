@@ -1,4 +1,8 @@
-import {preloadCompressions} from '@loaders.gl/parquet';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {preloadCompressions,installBufferPolyfill} from '@loaders.gl/parquet';
 
 // Import big dependencies
 
@@ -6,6 +10,8 @@ import {preloadCompressions} from '@loaders.gl/parquet';
 import brotliDecompress from 'brotli/decompress';
 // import lzo from 'lzo';
 
+
+installBufferPolyfill();
 
 // Inject large dependencies through Compression constructor options
 const modules = {

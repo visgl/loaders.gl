@@ -3,13 +3,13 @@
 ## WMTS
 
 - `get-capabilities-response.xml` OGC example data taken from
-http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response.xml
+  http://schemas.opengis.net/wmts/1.0/examples/wmtsGetCapabilities_response.xml
 
 OGC license: https://www.ogc.org/license
 
-## WMS 
+## WMS
 
-- get-capabilities `analyses.xml`, `dmsp.xml`, `forecasts.xml`, `obs.xml`, `wwa.xml` were copied from from https://github.com/w8r/wms-capabilities under  OpenLayers license:
+- get-capabilities `analyses.xml`, `dmsp.xml`, `forecasts.xml`, `obs.xml`, `wwa.xml` were copied from from https://github.com/w8r/wms-capabilities under OpenLayers license:
 
 ## OpenLayers license
 

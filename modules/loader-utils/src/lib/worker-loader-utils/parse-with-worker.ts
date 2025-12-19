@@ -2,10 +2,11 @@ import {
   WorkerJob,
   WorkerMessageType,
   WorkerMessagePayload,
-  isBrowser
+  isBrowser,
+  WorkerFarm,
+  getWorkerURL
 } from '@loaders.gl/worker-utils';
-import type {Loader, LoaderOptions, LoaderContext} from '../../types';
-import {WorkerFarm, getWorkerURL} from '@loaders.gl/worker-utils';
+import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
 
 /**
  * Determines if a loader can parse with worker
@@ -18,11 +19,13 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
   }
 
   // Node workers are still experimental
-  if (!isBrowser && !options?._nodeWorkers) {
+  const nodeWorkers = options?._nodeWorkers ?? options?.core?._nodeWorkers;
+  if (!isBrowser && !nodeWorkers) {
     return false;
   }
 
-  return loader.worker && options?.worker;
+  const useWorkers = options?.worker ?? options?.core?.worker;
+  return Boolean(loader.worker && useWorkers);
 }
 
 /**
@@ -34,12 +37,12 @@ export async function parseWithWorker(
   data: any,
   options?: LoaderOptions,
   context?: LoaderContext,
-  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<void>
+  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<unknown>
 ) {
   const name = loader.id; // TODO
   const url = getWorkerURL(loader, options);
 
-  const workerFarm = WorkerFarm.getWorkerFarm(options);
+  const workerFarm = WorkerFarm.getWorkerFarm(options?.core);
   const workerPool = workerFarm.getWorkerPool({name, url});
 
   // options.log object contains functions which cannot be transferred

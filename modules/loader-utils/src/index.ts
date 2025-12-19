@@ -1,31 +1,58 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // TYPES
+
 export type {
-  // loaders
-  Loader,
-  LoaderWithParser,
-  LoaderContext,
-  LoaderOptions,
-  LoaderOptionsType,
-  LoaderReturnType,
-  LoaderBatchType,
-  // writers
-  Writer,
-  WriterOptions,
-  WriterOptionsType,
   // misc
   DataType,
   SyncDataType,
   BatchableDataType,
-  IFileSystem,
-  IRandomAccessReadFileSystem,
+  TransformBatches,
   // numeric array types
   TypedArray,
   BigTypedArray,
   TypedArrayConstructor,
   BigTypedArrayConstructor,
   NumberArray,
-  NumericArray
+  NumericArray,
+  // fetch
+  FetchLike
 } from './types';
+
+// formats
+
+export type {Format} from './format-types';
+
+// loaders
+
+export type {
+  Loader,
+  LoaderWithParser,
+  LoaderContext,
+  StrictLoaderOptions,
+  LoaderOptions,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderBatchType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType,
+  LoaderArrayBatchType
+} from './loader-types';
+
+export {parseFromContext, parseSyncFromContext, parseInBatchesFromContext} from './loader-types';
+
+// writers
+
+export type {
+  Writer,
+  WriterWithEncoder,
+  WriterOptions,
+  WriterOptionsType,
+  WriterDataType,
+  WriterBatchType
+} from './writer-types';
 
 // GENERAL UTILS
 export {assert} from './lib/env-utils/assert';
@@ -39,7 +66,36 @@ export {
   document
 } from './lib/env-utils/globals';
 
-export {mergeLoaderOptions} from './lib/option-utils/merge-loader-options';
+export {log} from './lib/log-utils/log';
+
+export type {ReadableStreamType} from './lib/javascript-utils/is-type';
+export {
+  isObject,
+  isPureObject,
+  isArrayBuffer,
+  isArrayBufferLike,
+  isPromise,
+  isIterable,
+  isAsyncIterable,
+  isIterator,
+  isResponse,
+  isFile,
+  isBlob,
+  isWritableDOMStream,
+  isReadableDOMStream,
+  isWritableNodeStream,
+  isReadableNodeStream,
+  isReadableStream,
+  isWritableStream
+} from './lib/javascript-utils/is-type';
+
+// Options and modules
+export type {RequiredOptions} from './lib/option-utils/merge-options';
+export {mergeOptions, getRequiredOptions} from './lib/option-utils/merge-options';
+
+// Modules (external libraries)
+export {registerJSModules} from './lib/module-utils/js-module-utils';
+export {checkJSModule, getJSModule, getJSModuleOrNull} from './lib/module-utils/js-module-utils';
 
 // LOADERS.GL-SPECIFIC WORKER UTILS
 export {createLoaderWorker} from './lib/worker-loader-utils/create-loader-worker';
@@ -53,6 +109,7 @@ export {parseJSON} from './lib/parser-utils/parse-json';
 export {
   sliceArrayBuffer,
   concatenateArrayBuffers,
+  concatenateArrayBuffersFromArray,
   concatenateTypedArrays,
   compareArrayBuffers
 } from './lib/binary-utils/array-buffer-utils';
@@ -73,7 +130,11 @@ export {
   makeLineIterator,
   makeNumberedLineIterator
 } from './lib/iterators/text-iterators';
-export {forEach, concatenateArrayBuffersAsync} from './lib/iterators/async-iteration';
+export {
+  forEach,
+  concatenateArrayBuffersAsync,
+  toArrayBufferIterator
+} from './lib/iterators/async-iteration';
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
@@ -101,19 +162,40 @@ export {promisify1, promisify2} from './lib/node/promisify';
 import * as path from './lib/path-utils/path';
 export {path};
 
-// Use instead of importing 'fs' to avoid node dependencies`
-import * as fs from './lib/node/fs';
-export {fs};
-
 // Use instead of importing 'stream' to avoid node dependencies`
 import * as stream from './lib/node/stream';
 export {stream};
 
-// EXPERIMENTAL
-export type {ReadableFile} from './lib/filesystems/readable-file';
-export {makeReadableFile} from './lib/filesystems/readable-file';
+// EXPERIMENTAL: FILE SYSTEMS
 
-export type {WritableFile} from './lib/filesystems/writable-file';
-export {makeWritableFile} from './lib/filesystems/writable-file';
+export type {ReadableFile, WritableFile, Stat} from './lib/files/file';
+export {BlobFile} from './lib/files/blob-file';
+export {HttpFile} from './lib/files/http-file';
+export {NodeFileFacade as NodeFile} from './lib/files/node-file-facade';
 
-export {default as _NodeFileSystem} from './lib/filesystems/node-filesystem';
+export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesystem';
+export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-filesystem-facade';
+
+// EXPERIMENTAL: DATA SOURCES
+export type {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from './source-types';
+
+export type {DataSourceOptions} from './lib/sources/data-source';
+export {DataSource} from './lib/sources/data-source';
+
+export {ImageSource} from './lib/sources/image-source';
+export type {ImageType} from './lib/sources/utils/image-type';
+export type {ImageSourceMetadata} from './lib/sources/image-source';
+export type {GetImageParameters} from './lib/sources/image-source';
+
+export type {VectorSource} from './lib/sources/vector-source';
+export type {VectorSourceMetadata} from './lib/sources/vector-source';
+export type {GetFeaturesParameters} from './lib/sources/vector-source';
+
+export type {TileSource} from './lib/sources/tile-source';
+export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
+export type {GetTileDataParameters} from './lib/sources/tile-source';
+
+export type {ImageTileSource} from './lib/sources/image-tile-source';
+
+export type {VectorTileSource} from './lib/sources/vector-tile-source';
+export type {VectorTile} from './lib/sources/vector-tile-source';

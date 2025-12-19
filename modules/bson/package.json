@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/bson",
-  "version": "4.0.0-alpha.6",
+  "version": "4.4.0-alpha.2",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -11,18 +12,22 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "parser",
+    "BSON",
+    "Binary JSON",
     "table",
-    "JSON",
-    "Streaming JSON",
-    "JSON stream",
-    "JSON async iterator"
+    "loader",
+    "parser"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -30,15 +35,19 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.6",
-    "@loaders.gl/schema": "4.0.0-alpha.6",
+    "@loaders.gl/gis": "4.4.0-alpha.2",
+    "@loaders.gl/loader-utils": "4.4.0-alpha.2",
+    "@loaders.gl/schema": "4.4.0-alpha.2",
     "@types/bson": "4.2.0",
     "bson": "4.2.0"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "peerDependencies": {
+    "@loaders.gl/core": "4.4.0-alpha.1"
+  },
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

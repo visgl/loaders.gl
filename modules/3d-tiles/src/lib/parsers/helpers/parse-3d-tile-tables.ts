@@ -1,13 +1,23 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {getStringFromArrayBuffer} from './parse-utils';
+import {Tiles3DLoaderOptions} from '../../../tiles-3d-loader';
+import {Tiles3DTileContent} from '../../../types';
 
 const SIZEOF_UINT32 = 4;
 const DEPRECATION_WARNING = 'b3dm tile in legacy format.';
 
 // eslint-disable-next-line max-statements
-export function parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset) {
+export function parse3DTileTablesHeaderSync(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number
+) {
   const view = new DataView(arrayBuffer);
   let batchLength;
 
@@ -58,20 +68,30 @@ export function parse3DTileTablesHeaderSync(tile, arrayBuffer, byteOffset) {
   return byteOffset;
 }
 
-export function parse3DTileTablesSync(tile, arrayBuffer, byteOffset, options) {
+export function parse3DTileTablesSync(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options?: Tiles3DLoaderOptions
+) {
   byteOffset = parse3DTileFeatureTable(tile, arrayBuffer, byteOffset, options);
   byteOffset = parse3DTileBatchTable(tile, arrayBuffer, byteOffset, options);
   return byteOffset;
 }
 
-function parse3DTileFeatureTable(tile, arrayBuffer, byteOffset, options) {
-  const {featureTableJsonByteLength, featureTableBinaryByteLength, batchLength} = tile.header;
+function parse3DTileFeatureTable(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options?: Tiles3DLoaderOptions
+) {
+  const {featureTableJsonByteLength, featureTableBinaryByteLength, batchLength} = tile.header || {};
 
   tile.featureTableJson = {
     BATCH_LENGTH: batchLength || 0
   };
 
-  if (featureTableJsonByteLength > 0) {
+  if (featureTableJsonByteLength && featureTableJsonByteLength > 0) {
     const featureTableString = getStringFromArrayBuffer(
       arrayBuffer,
       byteOffset,
@@ -79,10 +99,10 @@ function parse3DTileFeatureTable(tile, arrayBuffer, byteOffset, options) {
     );
     tile.featureTableJson = JSON.parse(featureTableString);
   }
-  byteOffset += featureTableJsonByteLength;
+  byteOffset += featureTableJsonByteLength || 0;
 
   tile.featureTableBinary = new Uint8Array(arrayBuffer, byteOffset, featureTableBinaryByteLength);
-  byteOffset += featureTableBinaryByteLength;
+  byteOffset += featureTableBinaryByteLength || 0;
 
   /*
   const featureTable = parseFeatureTable(featureTableJson, featureTableBinary);
@@ -94,10 +114,15 @@ function parse3DTileFeatureTable(tile, arrayBuffer, byteOffset, options) {
   return byteOffset;
 }
 
-function parse3DTileBatchTable(tile, arrayBuffer, byteOffset, options) {
-  const {batchTableJsonByteLength, batchTableBinaryByteLength} = tile.header;
+function parse3DTileBatchTable(
+  tile: Tiles3DTileContent,
+  arrayBuffer: ArrayBuffer,
+  byteOffset: number,
+  options?: Tiles3DLoaderOptions
+) {
+  const {batchTableJsonByteLength, batchTableBinaryByteLength} = tile.header || {};
 
-  if (batchTableJsonByteLength > 0) {
+  if (batchTableJsonByteLength && batchTableJsonByteLength > 0) {
     const batchTableString = getStringFromArrayBuffer(
       arrayBuffer,
       byteOffset,
@@ -106,7 +131,7 @@ function parse3DTileBatchTable(tile, arrayBuffer, byteOffset, options) {
     tile.batchTableJson = JSON.parse(batchTableString);
     byteOffset += batchTableJsonByteLength;
 
-    if (batchTableBinaryByteLength > 0) {
+    if (batchTableBinaryByteLength && batchTableBinaryByteLength > 0) {
       // Has a batch table binary
       tile.batchTableBinary = new Uint8Array(arrayBuffer, byteOffset, batchTableBinaryByteLength);
       // Copy the batchTableBinary section and let the underlying ArrayBuffer be freed

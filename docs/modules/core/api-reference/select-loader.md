@@ -23,7 +23,7 @@ unless `options.ignoreRegisteredLoaders` is `true`.
 
 Select a loader from a list of provided loaders:
 
-```js
+```typescript
 import {selectLoaderSync} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
@@ -33,7 +33,7 @@ selectLoaderSync('filename.csv', [ArrowLoader, CSVLoader]); // => CSVLoader
 
 Select a loader from pre-registered loaders in the loader registry:
 
-```js
+```typescript
 import {registerLoaders, selectLoader} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';
 import {CSVLoader} from '@loaders.gl/csv';
@@ -45,7 +45,7 @@ await selectLoader('filename.csv'); // => CSVLoader
 
 Select a loader by specifying MIME type (using unregistered MIME types, see below)
 
-```js
+```typescript
 const data = new Blob([string], {type: 'application/x.csv'});
 await selectLoader(blob); // => CSVLoader
 ```
@@ -53,14 +53,14 @@ await selectLoader(blob); // => CSVLoader
 The async `selectLoader` function can identify loaders without extension and mimeType
 by content sniffing `Blob` and `File` objects (useful when user drags and drops files into your application).
 
-```js
+```typescript
 const data = new Blob(['DRACO...'] /* Binary Draco files start with these characters */]);
 await selectLoader(blob, DracoLoader); // => DracoLoader
 ```
 
 ## Functions
 
-### `selectLoader(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderWithParser[], options?: object, context?: object): Promise<boolean>`
+### `selectLoader(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderWithParser[], options?: object, context?: object): Promise<Loader>`
 
 Selects an appropriate loader for a file from a list of candidate loaders by examining the `data` parameter, looking at URL extension, mimeType ('Content-Type') and/or an initial data chunk.
 
@@ -85,7 +85,7 @@ Regarding the `loaders` parameter:
 - a `null` loader list will use the pre-registered list of loaders.
 - A supplied list of loaders will be searched for a matching loader.
 
-### `selectLoaderSync(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderWithParser[], options?: object, context?: object): boolean`
+### `selectLoaderSync(data: Response | ArrayBuffer | String | Blob, ..., loaders?: LoaderWithParser[], options?: object, context?: object): Loader`
 
 ## Supported Formats
 

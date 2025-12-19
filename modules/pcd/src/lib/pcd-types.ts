@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {Mesh} from '@loaders.gl/schema';
 
 type BoundingBox = [[number, number, number], [number, number, number]];

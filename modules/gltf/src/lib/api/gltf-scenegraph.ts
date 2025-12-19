@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {
@@ -19,11 +21,9 @@ import type {
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 import {padToNBytes, copyToArray} from '@loaders.gl/loader-utils';
 import {assert} from '../utils/assert';
-import {
-  getAccessorArrayTypeAndLength,
-  getAccessorTypeFromSize,
-  getComponentTypeFromArray
-} from '../gltf-utils/gltf-utils';
+import {getAccessorTypeFromSize, getComponentTypeFromArray} from '../gltf-utils/gltf-utils';
+
+import {getTypedArrayForAccessor as _getTypedArrayForAccessor} from '../gltf-utils/get-typed-array';
 
 type Extension = {[key: string]: any};
 
@@ -50,12 +50,13 @@ export class GLTFScenegraph {
   byteLength: number;
 
   // TODO - why is this not GLTFWithBuffers - what happens to images?
-  constructor(gltf?: {json: GLTF; buffers?: any[]}) {
+  constructor(gltf?: {json: GLTF; buffers?: any[]; images?: any[]}) {
     // Declare locally so
 
     this.gltf = {
       json: gltf?.json || makeDefaultGLTFJson(),
-      buffers: gltf?.buffers || []
+      buffers: gltf?.buffers || [],
+      images: gltf?.images || []
     };
     this.sourceBuffers = [];
     this.byteLength = 0;
@@ -79,9 +80,9 @@ export class GLTFScenegraph {
     return data;
   }
 
-  getExtraData(key: string): {[key: string]: unknown} {
+  getExtraData(key: string): unknown {
     // TODO - Data is already unpacked by GLBParser
-    const extras = this.json.extras || {};
+    const extras = (this.json.extras || {}) as Record<string, unknown>;
     return extras[key];
   }
 
@@ -167,16 +168,16 @@ export class GLTFScenegraph {
     return this.getObject('buffers', index) as GLTFBuffer;
   }
 
-  getObject(array: string, index: number | object): object {
+  getObject(array: string, index: number | object): Record<string, unknown> {
     // check if already resolved
     if (typeof index === 'object') {
-      return index;
+      return index as Record<string, unknown>;
     }
     const object = this.json[array] && (this.json[array] as {}[])[index];
     if (!object) {
       throw new Error(`glTF file error: Could not find ${array}[${index}]`); // eslint-disable-line
     }
-    return object;
+    return object as Record<string, unknown>;
   }
 
   /**
@@ -204,18 +205,8 @@ export class GLTFScenegraph {
    */
   getTypedArrayForAccessor(accessor: number | object): any {
     // @ts-ignore
-    accessor = this.getAccessor(accessor);
-    // @ts-ignore
-    const bufferView = this.getBufferView(accessor.bufferView);
-    const buffer = this.getBuffer(bufferView.buffer);
-    // @ts-ignore
-    const arrayBuffer = buffer.data;
-
-    // Create a new typed array as a view into the combined buffer
-    const {ArrayType, length} = getAccessorArrayTypeAndLength(accessor, bufferView);
-    // @ts-ignore
-    const byteOffset = bufferView.byteOffset + accessor.byteOffset;
-    return new ArrayType(arrayBuffer, byteOffset, length);
+    const gltfAccessor = this.getAccessor(accessor);
+    return _getTypedArrayForAccessor(this.gltf.json, this.gltf.buffers, gltfAccessor);
   }
 
   /** accepts accessor index or accessor object
@@ -461,7 +452,7 @@ export class GLTFScenegraph {
    * Add one untyped source buffer, create a matching glTF `bufferView`, and return its index
    * @param buffer
    */
-  addBufferView(buffer: any): number {
+  addBufferView(buffer: any, bufferIndex = 0, byteOffset = this.byteLength): number {
     const byteLength = buffer.byteLength;
     assert(Number.isFinite(byteLength));
 
@@ -470,9 +461,9 @@ export class GLTFScenegraph {
     this.sourceBuffers.push(buffer);
 
     const glTFBufferView = {
-      buffer: 0,
+      buffer: bufferIndex,
       // Write offset from the start of the binary body
-      byteOffset: this.byteLength,
+      byteOffset,
       byteLength
     };
 
@@ -566,9 +557,6 @@ export class GLTFScenegraph {
 
   /** Pack the binary chunk */
   createBinaryChunk(): void {
-    // Encoder expects this array undefined or empty
-    this.gltf.buffers = [];
-
     // Allocate total array
     const totalByteLength = this.byteLength;
     const arrayBuffer = new ArrayBuffer(totalByteLength);
@@ -592,6 +580,7 @@ export class GLTFScenegraph {
 
     // Put arrayBuffer to sourceBuffers for possible additional writing data in the chunk
     this.sourceBuffers = [arrayBuffer];
+    this.gltf.buffers = [{arrayBuffer, byteOffset: 0, byteLength: arrayBuffer.byteLength}];
   }
 
   // PRIVATE

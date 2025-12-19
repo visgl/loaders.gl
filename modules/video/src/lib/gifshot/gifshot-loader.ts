@@ -1,18 +1,24 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // @ts-nocheck
-import {loadLibrary} from '@loaders.gl/worker-utils';
+import {loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
+import {registerJSModules, getJSModule} from '@loaders.gl/loader-utils';
 
 let loadGifshotPromise;
 
-export async function loadGifshotModule(options = {}) {
-  const modules = options.modules || {};
-  if (modules.gifshot) {
-    return modules.gifshot;
+export async function loadGifshotModule(options: LoadLibraryOptions = {}) {
+  registerJSModules(options.modules);
+  const gifshot = getJSModule('gifshot');
+  if (gifshot) {
+    return gifshot;
   }
   loadGifshotPromise = loadGifshotPromise || loadGifshot(options);
   return await loadGifshotPromise;
 }
 
-async function loadGifshot(options) {
+async function loadGifshot(options: LoadLibraryOptions) {
   options.libraryPath = options.libraryPath || 'libs/';
   const gifshot = await loadLibrary('gifshot.js', 'gifshot', options);
 

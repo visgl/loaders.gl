@@ -14,7 +14,7 @@ The `PLYLoader` parses simple meshes in the Polygon File Format or the Stanford 
 
 ## Usage
 
-```js
+```typescript
 import {PLYLoader} from '@loaders.gl/ply';
 import {load} from '@loaders.gl/core';
 

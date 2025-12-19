@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // Forked from https://github.com/derhuerst/parse-gml-polygon/blob/master/index.js
 // under ISC license
@@ -28,6 +30,8 @@ import rewind from '@turf/rewind';
 function noTransform(...coords) {
   return coords;
 }
+
+export type {Geometry};
 
 export type ParseGMLOptions = {
   transformCoords?: Function;

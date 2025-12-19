@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
 import test from 'tape-promise/tape';
@@ -6,7 +8,7 @@ import {CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
 import {encodeTableAsText} from '@loaders.gl/core';
 
 import {Table} from '@loaders.gl/schema';
-import {makeTestTable, tableWithGeometryColumn} from '@loaders.gl/schema/test/shared-utils';
+import {makeTestTable, tableWithGeometryColumn} from '@loaders.gl/schema-utils/test/shared-utils';
 
 type TestCase = {
   name: string;
@@ -113,7 +115,7 @@ c,3`
   },
   {
     name: 'table with display names (explicit options)',
-    options: {useDisplayNames: true},
+    options: {csv: {useDisplayNames: true}},
     input: makeTestTable([
       [{name: 'id', type: 'utf8', metadata: {displayName: 'foo'}}, ['a', 'b', 'c']],
       [{name: 'val_uint', type: 'uint32', metadata: {displayName: 'bar'}}, [1, 2, 3]]
@@ -125,7 +127,7 @@ c,3`
   },
   {
     name: 'table with display names (explicit suppression)',
-    options: {useDisplayNames: false},
+    options: {csv: {useDisplayNames: false}},
     input: makeTestTable([
       [{name: 'id', type: 'utf8', metadata: {displayName: 'foo'}}, ['a', 'b', 'c']],
       [{name: 'val_uint', type: 'uint32', metadata: {displayName: 'bar'}}, [1, 2, 3]]

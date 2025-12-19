@@ -6,15 +6,15 @@ While keeping data in Arrow format allows for efficient data frame operations, t
 
 Many arrow classes support the following methods:
 
-* `toArray()` - Typically returns a typed array.
-* `toJSON()` - Arrow JS types can be converted to JSON.
-* `toString()` - Arrow JS types can be converted to strings.
+- `toArray()` - Typically returns a typed array.
+- `toJSON()` - Arrow JS types can be converted to JSON.
+- `toString()` - Arrow JS types can be converted to strings.
 
 ### Extracting Data by Row
 
 You can get a temporary object representing a row in a table.
 
-```js
+```typescript
 const row = table.get(0);
 ```
 
@@ -24,13 +24,13 @@ Note that the `row` does not retain the schema, so you'll either need to know th
 
 More efficient is to get a column.
 
-```js
+```typescript
 const column = table.getColumn('data');
 ```
 
 The column can be chunked, so to get a contiguous (typed) array, call
 
-```js
+```typescript
 const array = table.getColumn('columnName').toArray();
 ```
 

@@ -1,5 +1,9 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // Compression interface
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync, registerJSModules} from '@loaders.gl/loader-utils';
 
 /** Compression options */
 export type CompressionOptions = {
@@ -59,7 +63,8 @@ export abstract class Compression {
   }
 
   /** Preloads any dynamic libraries. May enable sync functions */
-  async preload(): Promise<void> {
+  async preload(modules: Record<string, any> = {}): Promise<void> {
+    registerJSModules(modules);
     return;
   }
 

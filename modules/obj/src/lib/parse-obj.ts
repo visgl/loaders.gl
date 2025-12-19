@@ -1,9 +1,9 @@
 import type {Mesh, MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema';
+import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import {parseOBJMeshes} from './parse-obj-meshes';
 import {getOBJSchema} from './get-obj-schema';
 
-export function parseOBJ(text, options): Mesh {
+export function parseOBJ(text: string, options?): Mesh {
   const {meshes} = parseOBJMeshes(text);
 
   // @ts-expect-error

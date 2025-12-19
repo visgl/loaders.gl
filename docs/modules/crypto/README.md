@@ -6,26 +6,42 @@
 
 The `@loaders.gl/crypto` module provides a selection of optional cryptographic hash plugins for loaders.gl.
 
-## Cryptographic Formats
+Terminology:
+
+- A **hash** is an
+
+## Cryptographic Algorithmgs
 
 MD5, SHA256 and many more, see [crypto-js](https://github.com/brix/crypto-js)
+
+## Encoding
+
+A hash algorithm takes input data and generates a digest. The digest is a number, usually containing a fixed number of bits.
+Since the number of bits involved is often large (e.g. SHA256 generates a 256 bit digest), digests are typically encoded as strings instead of numbers.
+
+The two most common string encodings of numbers are _hex_ and _base64_.
+Which one you want to use often depends on what you are planning to do with the digest.
+If you are calling an existing API (perhaps a cloud storage service)
+you will want to generate the encoding that matches or is required by that API.
+
+All hash functions in the `@loaders.gl/crypto` module take an `encoding` parameter that lets you specify the encoding.
 
 ## Cryptographic Hash API
 
 The API offers "transforms" that can calculate a cryptographic hash incrementally on data as it comes in on a stream.
 
-| Transforms                                                           | Sync | Description                       |
-| -------------------------------------------------------------------- | ---- | --------------------------------- |
-| [`CRC32Hash`](/docs/modules/crypto/api-reference/crc32-hash)          | Y    | Base64-encoded Cryptographic Hash |
-| [`CRC32CHash`](/docs/modules/crypto/api-reference/crc32c-hash)        | Y    | Base64-encoded Cryptographic Hash |
-| [`MD5Hash`](/docs/modules/crypto/api-reference/md5-hash)              | Y    | Base64-encoded Cryptographic Hash |
-| [`SHA256Hash`](/docs/modules/crypto/api-reference/sha256-hash)        | Y    | Base64-encoded Cryptographic Hash |
+| Transforms                                                     | Sync | Description                       |
+| -------------------------------------------------------------- | ---- | --------------------------------- |
+| [`CRC32Hash`](/docs/modules/crypto/api-reference/crc32-hash)   | Y    | Base64-encoded Cryptographic Hash |
+| [`CRC32CHash`](/docs/modules/crypto/api-reference/crc32c-hash) | Y    | Base64-encoded Cryptographic Hash |
+| [`MD5Hash`](/docs/modules/crypto/api-reference/md5-hash)       | Y    | Base64-encoded Cryptographic Hash |
+| [`SHA256Hash`](/docs/modules/crypto/api-reference/sha256-hash) | Y    | Base64-encoded Cryptographic Hash |
 
 ## Using Transforms
 
 The `@loaders.gl/crypto` libraries exports transform that can be used to incrementally calculate a cryptographic hash as data is being loaded and parsed:
 
-```js
+```typescript
 import {loadInBatches} from '@loaders.gl/core';
 import {CRC32Hash} from '@loaders.gl/crypto';
 

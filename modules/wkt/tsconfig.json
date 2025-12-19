@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.module.json",
+  "extends": "../../tsconfig.json",
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
@@ -9,6 +9,8 @@
   },
   "references": [
     {"path": "../loader-utils"},
-    {"path": "../schema"}
+    {"path": "../gis"},
+    {"path": "../schema"},
+    {"path": "../schema-utils"}
   ]
 }

@@ -1,4 +1,5 @@
-// loaders.gl, MIT license
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
@@ -51,6 +52,7 @@ export type Tileset3DProps = {
   loadTiles?: boolean;
   basePath?: string;
   maximumMemoryUsage?: number;
+  memoryCacheOverflow?: number;
   maximumTilesSelected?: number;
   debounceTime?: number;
 
@@ -64,6 +66,7 @@ export type Tileset3DProps = {
 
   // Traversal
   maximumScreenSpaceError?: number;
+  memoryAdjustedScreenSpaceError?: boolean;
   viewportTraversersMap?: any;
   updateTransforms?: boolean;
   viewDistanceScale?: number;
@@ -85,7 +88,10 @@ type Props = {
   throttleRequests: boolean;
   /** Number of simultaneous requsts, if throttleRequests is true */
   maxRequests: number;
+  /* Maximum amount of GPU memory (in MB) that may be used to cache tiles. */
   maximumMemoryUsage: number;
+  /* The maximum additional memory (in MB) to allow for cache headroom before adjusting the screen spacer error */
+  memoryCacheOverflow: number;
   /** Maximum number limit of tiles selected for show. 0 means no limit */
   maximumTilesSelected: number;
   /** Delay time before the tileset traversal. It prevents traversal requests spam.*/
@@ -100,6 +106,8 @@ type Props = {
   onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
   /** The maximum screen space error used to drive level of detail refinement. */
   maximumScreenSpaceError: number;
+  /** Whether to adjust the maximum screen space error to comply with the maximum memory limitation */
+  memoryAdjustedScreenSpaceError: boolean;
   viewportTraversersMap: Record<string, any> | null;
   attributions: string[];
   loadTiles: boolean;
@@ -120,7 +128,9 @@ const DEFAULT_PROPS: Props = {
   modelMatrix: new Matrix4(),
   throttleRequests: true,
   maxRequests: 64,
+  /** Default memory values optimized for viewing mesh-based 3D Tiles on both mobile and desktop devices */
   maximumMemoryUsage: 32,
+  memoryCacheOverflow: 1,
   maximumTilesSelected: 0,
   debounceTime: 0,
   onTileLoad: () => {},
@@ -130,6 +140,7 @@ const DEFAULT_PROPS: Props = {
   contentLoader: undefined,
   viewDistanceScale: 1.0,
   maximumScreenSpaceError: 8,
+  memoryAdjustedScreenSpaceError: false,
   loadTiles: true,
   updateTransforms: true,
   viewportTraversersMap: null,
@@ -150,6 +161,7 @@ const TILES_UNLOADED = 'Tiles Unloaded';
 const TILES_LOAD_FAILED = 'Failed Tile Loads';
 const POINTS_COUNT = 'Points/Vertices';
 const TILES_GPU_MEMORY = 'Tile Memory Use';
+const MAXIMUM_SSE = 'Maximum Screen Space Error';
 
 /**
  * The Tileset loading and rendering flow is as below,
@@ -189,7 +201,7 @@ export class Tileset3D {
   options: Props;
   loadOptions: LoaderOptions;
 
-  type: string;
+  type: TILESET_TYPE;
   tileset: TilesetJSON;
   loader: LoaderWithParser;
   url: string;
@@ -236,6 +248,17 @@ export class Tileset3D {
 
   /** The total amount of GPU memory in bytes used by the tileset. */
   gpuMemoryUsageInBytes: number = 0;
+
+  /**
+   * If loading the level of detail required by maximumScreenSpaceError
+   * results in the memory usage exceeding maximumMemoryUsage (GPU), level of detail refinement
+   * will instead use this (larger) adjusted screen space error to achieve the
+   * best possible visual quality within the available memory.
+   */
+  memoryAdjustedScreenSpaceError: number = 0.0;
+
+  private _cacheBytes: number = 0;
+  private _cacheOverflowBytes: number = 0;
 
   /** Update tracker. increase in each update cycle. */
   _frameNumber: number = 0;
@@ -299,6 +322,10 @@ export class Tileset3D {
       maxRequests: this.options.maxRequests
     });
 
+    this.memoryAdjustedScreenSpaceError = this.options.maximumScreenSpaceError;
+    this._cacheBytes = this.options.maximumMemoryUsage * 1024 * 1024;
+    this._cacheOverflowBytes = this.options.memoryCacheOverflow * 1024 * 1024;
+
     // METRICS
     // The total amount of GPU memory in bytes used by the tileset.
     this.stats = new Stats({id: this.url});
@@ -335,9 +362,9 @@ export class Tileset3D {
   }
 
   /** @deprecated */
-  setOptions(options: Tileset3DProps): void {
-    this.options = {...this.options, ...options};
-  }
+  // setOptions(options: Tileset3DProps): void {
+  //   this.options = {...this.options, ...options};
+  // }
 
   /**
    * Return a loadable tile url for a specific tile subpath
@@ -348,7 +375,12 @@ export class Tileset3D {
     if (isDataUrl) {
       return tilePath;
     }
-    return `${tilePath}${tilePath.includes('?') ? '&' : '?'}${this.queryParams}`;
+
+    let tileUrl = tilePath;
+    if (this.queryParams.length) {
+      tileUrl = `${tilePath}${tilePath.includes('?') ? '&' : '?'}${this.queryParams}`;
+    }
+    return tileUrl;
   }
 
   // TODO CESIUM specific
@@ -400,6 +432,16 @@ export class Tileset3D {
     return this.updatePromise;
   }
 
+  adjustScreenSpaceError(): void {
+    if (this.gpuMemoryUsageInBytes < this._cacheBytes) {
+      this.memoryAdjustedScreenSpaceError = Math.max(
+        this.memoryAdjustedScreenSpaceError / 1.02,
+        this.options.maximumScreenSpaceError
+      );
+    } else if (this.gpuMemoryUsageInBytes > this._cacheBytes + this._cacheOverflowBytes) {
+      this.memoryAdjustedScreenSpaceError *= 1.02;
+    }
+  }
   /**
    * Update visible tiles relying on a list of viewports
    * @param viewports viewports
@@ -564,6 +606,7 @@ export class Tileset3D {
     this.stats.get(TILES_IN_VIEW).count = this.selectedTiles.length;
     this.stats.get(TILES_RENDERABLE).count = tilesRenderable;
     this.stats.get(POINTS_COUNT).count = pointsRenderable;
+    this.stats.get(MAXIMUM_SSE).count = this.memoryAdjustedScreenSpaceError;
   }
 
   async _initializeTileSet(tilesetJson: TilesetJSON): Promise<void> {
@@ -599,10 +642,8 @@ export class Tileset3D {
         ymin + (ymax - ymin) / 2,
         zmin + (zmax - zmin) / 2
       );
-      this.cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(
-        this.cartographicCenter,
-        new Vector3()
-      );
+      this.cartesianCenter = new Vector3();
+      Ellipsoid.WGS84.cartographicToCartesian(this.cartographicCenter, this.cartesianCenter);
       this.zoom = getZoomFromFullExtent(fullExtent, this.cartographicCenter, this.cartesianCenter);
       return;
     }
@@ -611,10 +652,8 @@ export class Tileset3D {
     if (extent) {
       const [xmin, ymin, xmax, ymax] = extent;
       this.cartographicCenter = new Vector3(xmin + (xmax - xmin) / 2, ymin + (ymax - ymin) / 2, 0);
-      this.cartesianCenter = Ellipsoid.WGS84.cartographicToCartesian(
-        this.cartographicCenter,
-        new Vector3()
-      );
+      this.cartesianCenter = new Vector3();
+      Ellipsoid.WGS84.cartographicToCartesian(this.cartographicCenter, this.cartesianCenter);
       this.zoom = getZoomFromExtent(extent, this.cartographicCenter, this.cartesianCenter);
       return;
     }
@@ -645,7 +684,8 @@ export class Tileset3D {
 
     // cartographic coordinates are undefined at the center of the ellipsoid
     if (center[0] !== 0 || center[1] !== 0 || center[2] !== 0) {
-      this.cartographicCenter = Ellipsoid.WGS84.cartesianToCartographic(center, new Vector3());
+      this.cartographicCenter = new Vector3();
+      Ellipsoid.WGS84.cartesianToCartographic(center, this.cartographicCenter);
     } else {
       this.cartographicCenter = new Vector3(0, 0, -Ellipsoid.WGS84.radii[0]);
     }
@@ -664,6 +704,7 @@ export class Tileset3D {
     this.stats.get(TILES_LOAD_FAILED);
     this.stats.get(POINTS_COUNT);
     this.stats.get(TILES_GPU_MEMORY, 'memory');
+    this.stats.get(MAXIMUM_SSE);
   }
 
   // Installs the main tileset JSON file or a tileset JSON file referenced from a tile.
@@ -697,6 +738,7 @@ export class Tileset3D {
           if (childTile.contentUrl?.includes('?session=')) {
             const url = new URL(childTile.contentUrl);
             const session = url.searchParams.get('session');
+            // eslint-disable-next-line max-depth
             if (session) {
               this._queryParams.session = session;
             }
@@ -831,9 +873,15 @@ export class Tileset3D {
     this.stats.get(TILES_LOADED).incrementCount();
     this.stats.get(TILES_IN_MEMORY).incrementCount();
 
-    // Good enough? Just use the raw binary ArrayBuffer's byte length.
+    // TODO: Calculate GPU memory usage statistics for a tile.
     this.gpuMemoryUsageInBytes += tile.gpuMemoryUsageInBytes || 0;
+
     this.stats.get(TILES_GPU_MEMORY).count = this.gpuMemoryUsageInBytes;
+
+    // Adjust SSE based on cache limits
+    if (this.options.memoryAdjustedScreenSpaceError) {
+      this.adjustScreenSpaceError();
+    }
   }
 
   _unloadTile(tile) {
@@ -901,8 +949,12 @@ export class Tileset3D {
     if (!this.asset) {
       throw new Error('Tileset must have an asset property.');
     }
-    if (this.asset.version !== '0.0' && this.asset.version !== '1.0') {
-      throw new Error('The tileset must be 3D Tiles version 0.0 or 1.0.');
+    if (
+      this.asset.version !== '0.0' &&
+      this.asset.version !== '1.0' &&
+      this.asset.version !== '1.1'
+    ) {
+      throw new Error('The tileset must be 3D Tiles version either 0.0 or 1.0 or 1.1.');
     }
 
     // Note: `asset.tilesetVersion` is version of the tileset itself (not the version of the 3D TILES standard)
@@ -926,9 +978,9 @@ export class Tileset3D {
   }
 
   _initializeI3STileset() {
-    // @ts-expect-error
-    if (this.loadOptions.i3s && 'token' in this.loadOptions.i3s) {
-      this._queryParams.token = this.loadOptions.i3s.token as string;
+    const i3sOptions = this.loadOptions.i3s;
+    if (i3sOptions && typeof i3sOptions === 'object' && 'token' in i3sOptions) {
+      this._queryParams.token = (i3sOptions as Record<string, unknown>).token as string;
     }
   }
 }

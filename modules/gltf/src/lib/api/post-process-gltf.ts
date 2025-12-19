@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {ParseGLTFOptions} from '../parsers/parse-gltf';

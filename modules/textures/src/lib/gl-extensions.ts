@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable camelcase */
 export const GL_EXTENSIONS_CONSTANTS = {
   // WEBGL_compressed_texture_s3tc

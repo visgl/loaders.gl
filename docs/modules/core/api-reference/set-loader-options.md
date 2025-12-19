@@ -6,7 +6,7 @@ Set or get the supplied options onto the current global options object
 
 Bundling the entire `draco3d` library (instead of loading it on-demand from CDN):
 
-```js
+```typescript
 import draco from 'draco3d';
 import {setLoaderOptions} from '@loaders.gl/core';
 setLoaderOptions({

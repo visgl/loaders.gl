@@ -4,9 +4,9 @@ Some short examples
 
 ### Get a table from an Arrow file on disk (in IPC format)
 
-```js
-import { readFileSync } from 'fs';
-import { Table } from 'apache-arrow';
+```typescript
+import {readFileSync} from 'fs';
+import {Table} from 'apache-arrow';
 
 const arrow = readFileSync('simple.arrow');
 const table = Table.from([arrow]);
@@ -25,14 +25,13 @@ null, null, null
 
 ### Create a Table when the Arrow file is split across buffers
 
-```js
-import { readFileSync } from 'fs';
-import { Table } from 'apache-arrow';
+```typescript
+import {readFileSync} from 'fs';
+import {Table} from 'apache-arrow';
 
-const table = Table.from([
-    'latlong/schema.arrow',
-    'latlong/records.arrow'
-].map((file) => readFileSync(file)));
+const table = Table.from(
+  ['latlong/schema.arrow', 'latlong/records.arrow'].map((file) => readFileSync(file))
+);
 
 console.log(table.toString());
 
@@ -48,22 +47,19 @@ console.log(table.toString());
 
 ### Create a Table from JavaScript arrays
 
-```js
-import {
-  Table,
-  FloatVector,
-  DateVector
-} from 'apache-arrow';
+```typescript
+import {Table, FloatVector, DateVector} from 'apache-arrow';
 
 const LENGTH = 2000;
 
-const rainAmounts = Float32Array.from(
-  { length: LENGTH },
-  () => Number((Math.random() * 20).toFixed(1)));
+const rainAmounts = Float32Array.from({length: LENGTH}, () =>
+  Number((Math.random() * 20).toFixed(1))
+);
 
 const rainDates = Array.from(
-  { length: LENGTH },
-  (_, i) => new Date(Date.now() - 1000 * 60 * 60 * 24 * i));
+  {length: LENGTH},
+  (_, i) => new Date(Date.now() - 1000 * 60 * 60 * 24 * i)
+);
 
 const rainfall = Table.new(
   [FloatVector.from(rainAmounts), DateVector.from(rainDates)],
@@ -73,24 +69,20 @@ const rainfall = Table.new(
 
 ### Load data with `fetch`
 
-```js
-import { Table } from "apache-arrow";
+```typescript
+import {Table} from 'apache-arrow';
 
-const table = await Table.from(fetch(("/simple.arrow")));
+const table = await Table.from(fetch('/simple.arrow'));
 console.log(table.toString());
-
 ```
 
 ### Columns look like JS Arrays
 
-```js
-import { readFileSync } from 'fs';
-import { Table } from 'apache-arrow';
+```typescript
+import {readFileSync} from 'fs';
+import {Table} from 'apache-arrow';
 
-const table = Table.from([
-    'latlong/schema.arrow',
-    'latlong/records.arrow'
-].map(readFileSync));
+const table = Table.from(['latlong/schema.arrow', 'latlong/records.arrow'].map(readFileSync));
 
 const column = table.getColumn('origin_lat');
 
@@ -98,7 +90,7 @@ const column = table.getColumn('origin_lat');
 const typed = column.toArray();
 assert(typed instanceof Float32Array);
 
-for (let i = -1, n = column.length; ++i < n;) {
-    assert(column.get(i) === typed[i]);
+for (let i = -1, n = column.length; ++i < n; ) {
+  assert(column.get(i) === typed[i]);
 }
 ```

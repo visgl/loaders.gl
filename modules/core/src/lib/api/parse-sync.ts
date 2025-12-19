@@ -1,11 +1,19 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {
-  SyncDataType,
   Loader,
   LoaderWithParser,
+  LoaderOptions,
   LoaderContext,
-  LoaderOptions
+  SyncDataType,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType,
+  StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
-import {assert} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -13,21 +21,49 @@ import {getArrayBufferOrStringFromDataSync} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
 
+// OVERLOADS
+
+/**
+ * Parses `data` synchronously using the specified loader
+ */
+export function parseSync<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
+  data: SyncDataType,
+  loader: LoaderT,
+  options?: OptionsT,
+  context?: LoaderContext
+): LoaderReturnType<LoaderT>;
+
+/**
+ * Parses `data` synchronously by matching one of the supplied loaders
+ */
+export function parseSync<
+  LoaderArrayT extends Loader[],
+  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+>(
+  data: SyncDataType,
+  loaders: LoaderArrayT,
+  options?: OptionsT,
+  context?: LoaderContext
+): LoaderArrayReturnType<LoaderArrayT>;
+
+/**
+ * Parses `data` synchronously by matching a pre=registered loader
+ * @deprecated Loader registration is deprecated, use parseSync(data, loaders, options) instead
+ */
+export function parseSync(data: SyncDataType, options?: LoaderOptions): unknown;
+
 /**
  * Parses `data` synchronously using a specified loader
- * @param data
- * @param loaders
- * @param options
- * @param context
  */
 export function parseSync(
   data: SyncDataType,
   loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): any {
-  assert(!context || typeof context === 'object'); // parseSync no longer accepts final url
-
+): unknown {
   // Signature: parseSync(data, options)
   // Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
@@ -49,7 +85,7 @@ export function parseSync(
   }
 
   // Normalize options
-  options = normalizeOptions(options, loader, candidateLoaders);
+  const strictOptions = normalizeOptions(options, loader, candidateLoaders as Loader[] | undefined);
 
   // Extract a url for auto detection
   const url = getResourceUrl(data);
@@ -58,19 +94,19 @@ export function parseSync(
     throw new Error('parseSync called parse (which is async');
   };
   context = getLoaderContext(
-    {url, parseSync, parse, loaders: loaders as Loader[]},
-    options,
+    {url, _parseSync: parse, _parse: parse, loaders: loaders as Loader[]},
+    strictOptions,
     context || null
   );
 
-  return parseWithLoaderSync(loader as LoaderWithParser, data, options, context);
+  return parseWithLoaderSync(loader as LoaderWithParser, data, strictOptions, context);
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
 function parseWithLoaderSync(
   loader: LoaderWithParser,
   data: SyncDataType,
-  options: LoaderOptions,
+  options: StrictLoaderOptions,
   context: LoaderContext
 ) {
   data = getArrayBufferOrStringFromDataSync(data, loader, options);

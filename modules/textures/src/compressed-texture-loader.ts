@@ -1,26 +1,31 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
 import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
-import parseBasis from './lib/parsers/parse-basis';
+import {parseBasis} from './lib/parsers/parse-basis';
 
-export type TextureLoaderOptions = {
+/** Options for the CompressedTextureLoader */
+export type CompressedTextureLoaderOptions = StrictLoaderOptions & {
   'compressed-texture'?: {
+    /** @deprecated Specify path to libraries */
     libraryPath?: string;
+    /** Whether to use Basis decoding */
     useBasis?: boolean;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
   };
-};
-
-const DEFAULT_TEXTURE_LOADER_OPTIONS = {
-  'compressed-texture': {
-    libraryPath: 'libs/',
-    useBasis: false
-  }
 };
 
 /**
  * Worker Loader for KTX, DDS, and PVR texture container formats
  */
 export const CompressedTextureWorkerLoader = {
+  dataType: null as unknown as any,
+  batchType: null as never,
+
   name: 'Texture Containers',
   id: 'compressed-texture',
   module: 'textures',
@@ -40,16 +45,22 @@ export const CompressedTextureWorkerLoader = {
     'application/octet-stream'
   ],
   binary: true,
-  options: DEFAULT_TEXTURE_LOADER_OPTIONS
-};
+  options: {
+    'compressed-texture': {
+      libraryPath: 'libs/',
+      useBasis: false
+    }
+  }
+} as const satisfies Loader<any, never, CompressedTextureLoaderOptions>;
 
 /**
  * Loader for KTX, DDS, and PVR texture container formats
  */
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
-  parse: async (arrayBuffer, options) => {
-    if (options['compressed-texture'].useBasis) {
+  parse: async (arrayBuffer: ArrayBuffer, options?: CompressedTextureLoaderOptions) => {
+    options = {...options};
+    if (options?.['compressed-texture']?.useBasis) {
       options.basis = {
         format: {
           alpha: 'BC3',
@@ -59,12 +70,9 @@ export const CompressedTextureLoader = {
         containerFormat: 'ktx2',
         module: 'encoder'
       };
-      return (await parseBasis(arrayBuffer, options))[0];
+      const result = await parseBasis(arrayBuffer, options);
+      return result[0];
     }
     return parseCompressedTexture(arrayBuffer);
   }
-};
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckCompressedTextureWorkerLoader: Loader = CompressedTextureWorkerLoader;
-export const _TypecheckCompressedTextureLoader: LoaderWithParser = CompressedTextureLoader;
+} as const satisfies LoaderWithParser<any, never, CompressedTextureLoaderOptions>;

@@ -143,7 +143,13 @@ export class NetCDFReader {
 
     // throws if variable not found
     if (variable === undefined) {
-      throw new Error(`NetCDF: variable not found: ${variableName}`);
+      let errorOutput;
+      if (typeof variableName === 'string') {
+        errorOutput = variableName;
+      } else if (typeof variableName === 'object') {
+        errorOutput = JSON.stringify(variableName);
+      }
+      throw new Error(`NetCDF: variable not found: ${errorOutput}`);
     }
 
     // go to the offset position

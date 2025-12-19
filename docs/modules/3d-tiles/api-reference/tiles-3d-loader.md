@@ -11,7 +11,7 @@ Parses a [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles) tileset.
 | File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                   |
 | File Type             | Binary (with linked assets)                                                                                         |
 | File Format           | [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications)  |
-| Data Format           | [Data Formats](#data-formats)                                                                                       |
+| Data Format           | Data Formats (see below)                                                                                            |
 | Decoder Type          | Asynchronous                                                                                                        |
 | Worker Thread Support | No                                                                                                                  |
 | Streaming Support     | No \*                                                                                                               |
@@ -25,7 +25,7 @@ As a tileset contains multiple file formats, `Tiles3DLoader` is needed to be exp
 
 Load a tileset file.
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
@@ -34,7 +34,7 @@ const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 
 To decompress tiles containing Draco compressed glTF models or Draco compressed point clouds:
 
-```js
+```typescript
 import {load, registerLoaders} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 const tileUrl = 'https://assets.ion.cesium.com/43978/1.pnts';
@@ -43,7 +43,7 @@ const tile = await load(tileUrl, Tiles3DLoader, {decompress: true});
 
 Load a tileset and dynamically load/unload tiles based on viewport with helper class `Tileset3D` (`@loaders.gl/tiles`)
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -56,16 +56,28 @@ const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
 const tilesetJson = await load(tilesetUrl, Tiles3DLoader, {'3d-tiles': {isTileset: true}});
 
 const tileset3d = new Tileset3D(tilesetJson, {
-  onTileLoad: tile => console.log(tile)
+  throttleRequests: false,
+  onTileLoad: (tile) => console.log(tile)
 });
 
-const viewport = new WebMercatorViewport({latitude, longitude, zoom, ...});
-tileset3d.update(viewport);
+const viewport = new WebMercatorViewport({
+  width: 600,
+  height: 400,
+  latitude: 40.7067584,
+  longitude: -74.0115413,
+  zoom: 17
+});
+tileset3d.selectTiles(viewport);
 
 // visible tiles
-const visibleTiles = tileset3d.tiles.filter(tile => tile.selected);
+const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
 // Note that visibleTiles will likely not immediately include all tiles
 // tiles will keep loading and file `onTileLoad` callbacks
+
+// To fully load all tiles in a given view, repeatedly select tiles until the tileset is loaded
+while (!tileset3d.isLoaded()) {
+  await tileset3d.selectTiles(viewport);
+}
 ```
 
 ## Options
@@ -123,7 +135,7 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 | ----------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `id`              | `String`     | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                                                         |
 | `refine`          | `String`     | Refinement type of the tile, `ADD` or `REPLACE`                                                                                                                                                                                                                                                                     |
-| `type`            | `String`     | Type of the tile, one of `pointcloud` (`.pnts`), `scenegraph` (`.i3dm`, `.b3dm`, `.glb`, `.gltf`)                                                                                                                                                                                                                                    |
+| `type`            | `String`     | Type of the tile, one of `pointcloud` (`.pnts`), `scenegraph` (`.i3dm`, `.b3dm`, `.glb`, `.gltf`)                                                                                                                                                                                                                   |
 | `boundingVolume`  | `Object`     | A bounding volume in Cartesian coordinates that encloses a tile or its content. Exactly one box, region, or sphere property is required. ([`Reference`](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#bounding-volume))                                                               |
 | `lodMetricType`   | `String`     | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Used for deciding if this tile is sufficient given current viewport. Cesium use [`geometricError`](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/README.md#geometric-error). |
 | `lodMetricValue`  | `String`     | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                                                 |
@@ -134,13 +146,13 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 After content is loaded, the following fields are guaranteed. But different tiles may have different extra content fields.
 
-| Field                | Type          | Contents                                                                                                                                |
-| -------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `cartesianOrigin`    | `Number[3]`   | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                              |
-| `cartographicOrigin` | `Number[3]`   | "Origin" in lng/lat (center of tile's bounding volume)                                                                                  |
-| `modelMatrix`        | `Number[16]`  | Transforms tile geometry positions to fixed frame coordinates                                                                           |
+| Field                | Type          | Contents                                                                                                                             |
+| -------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `cartesianOrigin`    | `Number[3]`   | "Center" of tile geometry in WGS84 fixed frame coordinates                                                                           |
+| `cartographicOrigin` | `Number[3]`   | "Origin" in lng/lat (center of tile's bounding volume)                                                                               |
+| `modelMatrix`        | `Number[16]`  | Transforms tile geometry positions to fixed frame coordinates                                                                        |
 | `attributes`         | `Object`      | Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor) properties |
-| `featureIds`         | `Uint32Array` | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                      |
+| `featureIds`         | `Uint32Array` | An array of feature ids which specify which feature each vertex belongs to. Can be used for picking functionality.                   |
 
 `attributes` contains following fields
 

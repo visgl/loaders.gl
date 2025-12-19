@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {Readable} from 'stream';
 import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
 

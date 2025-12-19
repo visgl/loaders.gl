@@ -4,6 +4,8 @@
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v3.1" />
 </p>
 
+![ogc-logo](../../../images/logos/ogc-logo-60.png)
+
 Writer for the [Well-known binary][wkb] format for representation of geometry.
 
 [wkb]: https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry#Well-known_binary
@@ -18,17 +20,31 @@ Writer for the [Well-known binary][wkb] format for representation of geometry.
 | Encoder Type          | Synchronous                                   |
 | Worker Thread Support | Yes                                           |
 
+## Installation
+
+```bash
+npm install @loaders.gl/wkt
+npm install @loaders.gl/core
+```
+
 ## Usage
 
-```js
+```typescript
 import {WKBWriter} from '@loaders.gl/wkt';
 import {encodeSync} from '@loaders.gl/core';
 
 const geometry = {
-  type: "Polygon",
-  coordinates: [[[1, 2], [3, 4], [5, 6], [1, 2]]]
-}
-const arrayBuffer = encodeSync(geometry, WKBWriter, {wkt: {hasZ: false, hasM: false}})
+  type: 'Polygon',
+  coordinates: [
+    [
+      [1, 2],
+      [3, 4],
+      [5, 6],
+      [1, 2]
+    ]
+  ]
+};
+const arrayBuffer = encodeSync(geometry, WKBWriter, {wkt: {hasZ: false, hasM: false}});
 ```
 
 ## Options

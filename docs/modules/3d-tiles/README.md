@@ -2,8 +2,7 @@
 
 ![ogc-logo](../../images/logos/ogc-logo-60.png)
 &nbsp;
-![3dtiles-logo](./images/3d-tiles-logo-60.png) 
-
+![3dtiles-logo](./images/3d-tiles-logo-60.png)
 
 The `@loaders.gl/3d-tiles` module supports loading and traversing 3D Tiles.
 
@@ -35,7 +34,7 @@ To handle the complex dynamic tile selection and loading required to performantl
 
 Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {Tileset3D} from '@loaders.gl/tiles';
@@ -52,7 +51,7 @@ const tileset3d = new Tileset3D(tilesetJson, {
 tileset3d.update(viewport);
 
 // Viewport changes (pan zoom etc)
-tileset3d.update(viewport);
+tileset3d.selectTiles(viewport);
 
 // Visible tiles
 const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);

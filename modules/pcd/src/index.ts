@@ -1,17 +1,7 @@
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import parsePCDSync from './lib/parse-pcd';
-import {PCDLoader as PCDWorkerLoader} from './pcd-loader';
-import {PCDMesh} from './lib/pcd-types';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
 
-export {PCDWorkerLoader};
-
-/**
- * Loader for PCD - Point Cloud Data
- */
-export const PCDLoader: LoaderWithParser<PCDMesh, never, LoaderOptions> = {
-  ...PCDWorkerLoader,
-  parse: async (arrayBuffer) => parsePCDSync(arrayBuffer),
-  parseSync: parsePCDSync
-};
-
-export const _typecheckPCDLoader: LoaderWithParser = PCDLoader;
+export type {PCDLoaderOptions} from './pcd-loader';
+export {PCDWorkerLoader, PCDLoader} from './pcd-loader';
+export {PCDArrowLoader} from './pcd-arrow-loader';

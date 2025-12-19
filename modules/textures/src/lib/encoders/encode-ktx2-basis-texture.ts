@@ -1,5 +1,10 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {ImageDataType} from '@loaders.gl/images';
 import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
+import {type KTX2BasisWriterOptions} from '../../ktx2-basis-writer';
 
 /**
  * Encodes image to Basis Universal Supercompressed GPU Texture.
@@ -10,11 +15,16 @@ import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
  */
 export async function encodeKTX2BasisTexture(
   image: ImageDataType,
-  options: any = {}
+  options: KTX2BasisWriterOptions = {}
 ): Promise<ArrayBuffer> {
   // TODO remove default values after writer options will be normalized like it done in load module.
-  const {useSRGB = false, qualityLevel = 10, encodeUASTC = false, mipmaps = false} = options;
-  const {BasisEncoder} = await loadBasisEncoderModule(options);
+  const {
+    useSRGB = false,
+    qualityLevel = 10,
+    encodeUASTC = false,
+    mipmaps = false
+  } = options?.['ktx2-basis-writer'] || {};
+  const {BasisEncoder} = await loadBasisEncoderModule(options.core || {});
   const basisEncoder = new BasisEncoder();
 
   try {

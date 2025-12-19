@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/shapefile",
   "description": "Loader for the Shapefile Format",
-  "version": "4.0.0-alpha.6",
+  "version": "4.4.0-alpha.2",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -18,11 +19,23 @@
     "shp"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./shp-worker.js": {
+      "import": "./dist/shp-worker.js"
+    },
+    "./dbf-worker.js": {
+      "import": "./dist/dbf-worker.js"
+    }
+  },
   "sideEffects": false,
   "browser": {
-    "./src/lib/filesystems/node-filesystem.js": false,
     "fs": false
   },
   "files": [
@@ -31,16 +44,20 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker-shp && npm run build-worker-dbf && npm run build-bundle",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
+    "pre-build": "npm run build-worker-shp && npm run build-worker-dbf && npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker-shp": "esbuild src/workers/shp-worker.ts --bundle --outfile=dist/shp-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker-dbf": "esbuild src/workers/dbf-worker.ts --bundle --outfile=dist/dbf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.0.0-alpha.6",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.6",
-    "@loaders.gl/schema": "4.0.0-alpha.6",
-    "@math.gl/proj4": "^3.5.1"
+    "@loaders.gl/gis": "4.4.0-alpha.2",
+    "@loaders.gl/loader-utils": "4.4.0-alpha.2",
+    "@loaders.gl/schema": "4.4.0-alpha.2",
+    "@math.gl/proj4": "^4.1.0"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "peerDependencies": {
+    "@loaders.gl/core": "4.4.0-alpha.1"
+  },
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

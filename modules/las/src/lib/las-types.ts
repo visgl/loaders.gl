@@ -1,4 +1,8 @@
-import {Mesh} from '@loaders.gl/schema';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Mesh} from '@loaders.gl/schema';
 
 /**
  * Type for header of the .las file
@@ -14,6 +18,7 @@ export type LASHeader = {
   mins?: number[];
   totalToRead: number;
   totalRead: number;
+  hasColor: boolean;
   versionAsString?: string;
   isCompressed?: boolean;
 };

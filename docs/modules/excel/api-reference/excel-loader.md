@@ -12,7 +12,7 @@
 
 ## Usage
 
-```js
+```typescript
 import {ExcelLoader} from '@loaders.gl/excel';
 import {load} from '@loaders.gl/core';
 

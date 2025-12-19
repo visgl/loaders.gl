@@ -1,23 +1,29 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-// import type {LoaderWithParser, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
-import {makeReadableFile} from '@loaders.gl/loader-utils';
-import type {ParquetLoaderOptions} from '../../parquet-loader';
+import type {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
+import type {ReadableFile} from '@loaders.gl/loader-utils';
+import type {ParquetJSONLoaderOptions} from '../../parquet-json-loader';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {ParquetRowGroup} from '../../parquetjs/schema/declare';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
-import {convertParquetSchema} from '../arrow/convert-schema-from-parquet';
 import {materializeColumns} from '../../parquetjs/schema/shred';
-// import {convertParquetRowGroupToColumns} from '../arrow/convert-row-group-to-columns';
-import {unpackGeoMetadata} from '../geo/decode-geo-metadata';
+import {getSchemaFromParquetReader} from './get-parquet-schema';
+import {installBufferPolyfill} from '../../polyfills/buffer/index';
+import {preloadCompressions} from '../../parquetjs/compression';
 
-export async function parseParquetInColumns(
-  arrayBuffer: ArrayBuffer,
-  options?: ParquetLoaderOptions
+/**
+ * @deprecated - Use parseParquetToArrow
+ */
+export async function parseParquetFileInColumns(
+  file: ReadableFile,
+  options?: ParquetJSONLoaderOptions
 ): Promise<ColumnarTable> {
-  const blob = new Blob([arrayBuffer]);
-  for await (const batch of parseParquetFileInColumnarBatches(blob, options)) {
+  installBufferPolyfill();
+  await preloadCompressions(options);
+
+  for await (const batch of parseParquetFileInColumnarBatches(file, options)) {
     return {
       shape: 'columnar-table',
       schema: batch.schema,
@@ -27,25 +33,33 @@ export async function parseParquetInColumns(
   throw new Error('empty table');
 }
 
+/**
+ * @deprecated
+ */
 export async function* parseParquetFileInColumnarBatches(
-  blob: Blob,
-  options?: ParquetLoaderOptions
+  file: ReadableFile,
+  options?: ParquetJSONLoaderOptions
 ): AsyncIterable<ColumnarTableBatch> {
-  const file = makeReadableFile(blob);
+  installBufferPolyfill();
+  await preloadCompressions(options);
+
   const reader = new ParquetReader(file);
+
+  // Extract schema and geo metadata
+  const schema = await getSchemaFromParquetReader(reader);
+
   const parquetSchema = await reader.getSchema();
-  const parquetMetadata = await reader.getFileMetadata();
-  const schema = convertParquetSchema(parquetSchema, parquetMetadata);
-  unpackGeoMetadata(schema);
+
+  // Iterate over row batches
   const rowGroups = reader.rowGroupIterator(options?.parquet);
   for await (const rowGroup of rowGroups) {
-    yield convertRowGroupToTableBatch(parquetSchema, rowGroup, schema);
+    yield convertRowGroupToTableBatch(rowGroup, parquetSchema, schema);
   }
 }
 
 function convertRowGroupToTableBatch(
-  parquetSchema: ParquetSchema,
   rowGroup: ParquetRowGroup,
+  parquetSchema: ParquetSchema,
   schema: Schema
 ): ColumnarTableBatch {
   // const data = convertParquetRowGroupToColumns(schema, rowGroup);

@@ -2,19 +2,23 @@
 
 ![logo](../images/draco-small.png)
 
-The `DracoWriter` encodes a mesh or point cloud using [Draco](https://google.github.io/draco/) compression.
+The `DracoWriter` encodes a mesh or point cloud using [Draco](/docs/modules/draco/formats/draco) compression.
 
-| Loader         | Characteristic                               |
-| -------------- | -------------------------------------------- |
-| File Extension | `.drc`                                       |
-| File Type      | Binary                                       |
-| File Format    | [Draco](https://google.github.io/draco/)     |
+| Loader         | Characteristic                             |
+| -------------- | ------------------------------------------ |
+| File Format    | [Draco](/docs/modules/draco/formats/draco) |
 | Data Format    | [Mesh](/docs/specifications/category-mesh) |
-| Support API    | `encode`                                     |
+| File Extension | `.drc`                                     |
+| File Type      | Binary                                     |
+| Support API    | `encode`                                   |
+
+## Support
+
+See [Draco](/docs/modules/draco/formats/draco) docs.
 
 ## Usage
 
-```js
+```typescript
 import {DracoWriter} from '@loaders.gl/draco';
 import {encode} from '@loaders.gl/core';
 

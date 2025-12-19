@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 import {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {ObjectRowTable, ArrayRowTable, TableBatch} from '@loaders.gl/schema';
@@ -9,11 +11,10 @@ import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-export const NDJSONLoader: LoaderWithParser<
-  ObjectRowTable | ArrayRowTable,
-  TableBatch,
-  LoaderOptions
-> = {
+export const NDJSONLoader = {
+  dataType: null as unknown as ArrayRowTable | ObjectRowTable,
+  batchType: null as unknown as TableBatch,
+
   name: 'NDJSON',
   id: 'ndjson',
   module: 'json',
@@ -30,4 +31,4 @@ export const NDJSONLoader: LoaderWithParser<
   parseTextSync: parseNDJSONSync,
   parseInBatches: parseNDJSONInBatches,
   options: {}
-};
+} as const satisfies LoaderWithParser<ObjectRowTable | ArrayRowTable, TableBatch, LoaderOptions>;

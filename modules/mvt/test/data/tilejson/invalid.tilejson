@@ -1,0 +1,8 @@
+{
+    "name": "Invalid tiles",
+    "scheme": "xyz",
+    "tiles": [ "http://localhost:38923/tiles/{z}/{x}/{y}.png" ],
+    "minzoom": 0,
+    "maxzoom": 18,
+    "bounds": [ -180, -85, 180, 85 ]
+}

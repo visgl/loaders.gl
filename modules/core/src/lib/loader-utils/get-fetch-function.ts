@@ -1,7 +1,9 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-import type {LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import {isObject} from '../../javascript-utils/is-type';
+import type {LoaderContext, LoaderOptions, FetchLike} from '@loaders.gl/loader-utils';
+import {isObject} from '@loaders.gl/loader-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {getGlobalLoaderOptions} from './option-utils';
 
@@ -13,19 +15,20 @@ import {getGlobalLoaderOptions} from './option-utils';
 export function getFetchFunction(
   options?: LoaderOptions,
   context?: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>
-) {
+): FetchLike {
   const globalOptions = getGlobalLoaderOptions();
 
-  const fetchOptions = options || globalOptions;
+  const loaderOptions = options || globalOptions;
+  const fetchOption = loaderOptions.fetch ?? loaderOptions.core?.fetch;
 
   // options.fetch can be a function
-  if (typeof fetchOptions.fetch === 'function') {
-    return fetchOptions.fetch;
+  if (typeof fetchOption === 'function') {
+    return fetchOption;
   }
 
   // options.fetch can be an options object
-  if (isObject(fetchOptions.fetch)) {
-    return (url) => fetchFile(url, fetchOptions as RequestInit);
+  if (isObject(fetchOption)) {
+    return (url) => fetchFile(url, fetchOption as RequestInit);
   }
 
   // else refer to context (from parent loader) if available

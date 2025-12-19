@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {ZarrArray} from 'zarr';
 // eslint-disable-next-line import/no-unresolved
 import type {RawArray} from 'zarr/types/rawArray';

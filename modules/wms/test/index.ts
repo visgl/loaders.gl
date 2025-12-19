@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // CSW - Catalog Service for the Web
 
@@ -26,12 +28,7 @@ import './wfs/wfs-capabilities-loader.spec';
 
 import './gml/gml-loader.spec';
 
-// LERC - Limited Error Raster Compression
-
-// import './lerc/lerc-sanity.spec';
-// import './lerc/lerc-level2.spec';
-
 // Services
 
-import './services/wms-service.spec';
+import './wms/wms-source.spec';
 // import './services/arcgis-server.spec';

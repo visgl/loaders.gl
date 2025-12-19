@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // PLY Loader, adapted from THREE.js (MIT license)
 //
 // Attributions per original THREE.js source file:
@@ -21,7 +25,12 @@
 //   }
 // });
 
-import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/loader-utils';
+import {
+  makeLineIterator,
+  makeTextDecoderIterator,
+  forEach,
+  toArrayBufferIterator
+} from '@loaders.gl/loader-utils';
 import normalizePLY from './normalize-ply';
 import {PLYMesh, PLYHeader, PLYElement, PLYProperty, PLYAttributes} from './ply-types';
 
@@ -33,10 +42,12 @@ let currentElement: PLYElement;
  * @param options
  */
 export async function* parsePLYInBatches(
-  iterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  iterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: any
 ): AsyncIterable<PLYMesh> {
-  const lineIterator = makeLineIterator(makeTextDecoderIterator(iterator));
+  const lineIterator = makeLineIterator(makeTextDecoderIterator(toArrayBufferIterator(iterator)));
   const header = await parsePLYHeader(lineIterator, options);
 
   let attributes: PLYAttributes;

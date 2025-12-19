@@ -1,5 +1,7 @@
 import {assert} from '../utils/assert';
+
 import type {GLTFPostprocessed} from '../types/gltf-postprocessed-schema';
+import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
 
 /**
  * Memory needed to store texture and all mipmap levels 1 + 1/4 + 1/16 + 1/64 + ...
@@ -14,8 +16,6 @@ type TypedArrayConstructor =
   | Uint8ArrayConstructor
   | Int16ArrayConstructor
   | Uint16ArrayConstructor
-  | Int32ArrayConstructor
-  | Uint32ArrayConstructor
   | Int32ArrayConstructor
   | Uint32ArrayConstructor
   | Float32ArrayConstructor
@@ -82,7 +82,9 @@ export function getAccessorArrayTypeAndLength(accessor, bufferView) {
   const length = accessor.count * components;
   const byteLength = accessor.count * components * bytesPerComponent;
   assert(byteLength >= 0 && byteLength <= bufferView.byteLength);
-  return {ArrayType, length, byteLength};
+  const componentByteSize = BYTES[accessor.componentType];
+  const numberOfComponentsInElement = COMPONENTS[accessor.type];
+  return {ArrayType, length, byteLength, componentByteSize, numberOfComponentsInElement};
 }
 
 /**

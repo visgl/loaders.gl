@@ -56,7 +56,7 @@ As mentioned the actual compressed subimages are not parsed or modified by loade
 The following is a list of the most common compressed texture formats, which loaders.gl can properly tag:
 
 | Format                                                                 | aka                | Description                                     |
-| ---------------------------------------------------------------------- | ------------------ |
+| ---------------------------------------------------------------------- | ------------------ | ----------------------------------------------- |
 | [`S3TC`](https://en.wikipedia.org/wiki/S3_Texture_Compression)         | DXTn, DXTC, or BCn | S3 texture compression formats                  |
 | [`PVRTC`](https://en.wikipedia.org/wiki/PVRTC)                         |                    | PowerVR texture compression formats             |
 | [`ETC`](https://en.wikipedia.org/wiki/Ericsson_Texture_Compression)    | ETC1, ETC2, EAC    | Ericsoon texture compression formats            |
@@ -100,7 +100,7 @@ Data returned by any loaders.gl "image" category loader (including texture loade
 
 To use compressed textures in WebGL
 
-```js
+```typescript
 const texture = gl.createTexture();
 gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -143,7 +143,7 @@ Support for compressed textures is a work in progress in the [WebGPU standard](h
 
 At the time of writing, only S3 texture compression has been specified:
 
-```js
+```typescript
     // BC compressed formats usable if "texture-compression-bc" is both
     // supported by the device/user agent and enabled in requestDevice.
     "bc1-rgba-unorm",

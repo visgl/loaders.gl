@@ -1,8 +1,10 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-import {getMeshBoundingBox} from '@loaders.gl/schema';
+import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import Martini from '@mapbox/martini';
-import Delatin from './delatin';
+import Delatin from './delatin/index';
 import {addSkirt} from './helpers/skirt';
 
 export type TerrainOptions = {

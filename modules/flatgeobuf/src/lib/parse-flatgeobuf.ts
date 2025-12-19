@@ -1,30 +1,33 @@
-// @ts-nocheck
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {Proj4Projection} from '@math.gl/proj4';
 import {transformGeoJsonCoords} from '@loaders.gl/gis';
 
-import {deserialize as deserializeGeoJson} from 'flatgeobuf/lib/cjs/geojson';
-import {deserialize as deserializeGeneric} from 'flatgeobuf/lib/cjs/generic';
-import {parseProperties as parsePropertiesBinary} from 'flatgeobuf/lib/cjs/generic/feature';
+import type {GeoJSONTable, Table, Schema} from '@loaders.gl/schema';
 
-import {fromGeometry as binaryFromGeometry} from './binary-geometries';
-import {FlatGeobufLoaderOptions} from './types';
-import {GeoJSONRowTable, Feature} from '@loaders.gl/schema';
+import {fgbToBinaryGeometry} from './binary-geometries';
+import {getSchemaFromFGBHeader} from './get-schema-from-fgb-header';
 
-// TODO: reproject binary features
-function binaryFromFeature(feature, header) {
-  const geometry = feature.geometry();
+import * as fgb from '../flatgeobuf/3.27.2';
+import * as geojson from '../flatgeobuf/3.27.2/geojson';
+import * as generic from '../flatgeobuf/3.27.2/generic';
+import {parseProperties as parsePropertiesBinary} from '../flatgeobuf/3.27.2/generic/feature';
 
-  // FlatGeobuf files can only hold a single geometry type per file, otherwise
-  // GeometryType is GeometryCollection
-  // I believe geometry.type() is null (0) except when the geometry type isn't
-  // known in the header?
-  const geometryType = header.geometryType || geometry.type();
-  const parsedGeometry = binaryFromGeometry(geometry, geometryType);
-  parsedGeometry.properties = parsePropertiesBinary(feature, header.columns);
+const deserializeGeoJson = geojson.deserialize;
+const deserializeGeneric = generic.deserialize;
+// const parsePropertiesBinary = FlatgeobufFeature.parseProperties;
 
-  // TODO: wrap binary data either in points, lines, or polygons key
-  return parsedGeometry;
-}
+export type ParseFlatGeobufOptions = {
+  shape?: 'geojson-table' | 'columnar-table' | 'binary';
+  /** If supplied, only loads features within the bounding box */
+  boundingBox?: [[number, number], [number, number]];
+  /** Desired output CRS */
+  crs?: string;
+  /** Should geometries be reprojected to target CRS */
+  reproject?: boolean;
+};
 
 /*
  * Parse FlatGeobuf arrayBuffer and return GeoJSON.
@@ -32,69 +35,76 @@ function binaryFromFeature(feature, header) {
  * @param arrayBuffer  A FlatGeobuf arrayBuffer
  * @return A GeoJSON geometry object
  */
-export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options?: FlatGeobufLoaderOptions) {
-  const shape = options?.gis?.format || options?.flatgeobuf?.shape;
+export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options: ParseFlatGeobufOptions): Table {
+  const shape = options.shape;
 
   switch (shape) {
-    case 'geojson-row-table': {
-      const table: GeoJSONRowTable = {
-        shape: 'geojson-row-table',
-        data: parseFlatGeobufToGeoJSON(arrayBuffer, options)
-      };
-      return table;
+    case 'geojson-table': {
+      return parseFlatGeobufToGeoJSONTable(arrayBuffer, options);
     }
+
     case 'columnar-table': // binary + some JS arrays
-      return {shape: 'columnar-table', data: parseFlatGeobufToBinary(arrayBuffer, options)};
-    case 'geojson':
-      return parseFlatGeobufToGeoJSON(arrayBuffer, options);
+      const binary = parseFlatGeobufToBinary(arrayBuffer, options);
+      // @ts-expect-error
+      return {shape: 'columnar-table', data: binary};
+
     case 'binary':
+      // @ts-expect-error
       return parseFlatGeobufToBinary(arrayBuffer, options);
+
     default:
       throw new Error(shape);
   }
 }
 
-function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: FlatGeobufLoaderOptions) {
+function parseFlatGeobufToBinary(arrayBuffer: ArrayBuffer, options: ParseFlatGeobufOptions = {}) {
   // TODO: reproject binary features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
   const array = new Uint8Array(arrayBuffer);
-  return deserializeGeneric(array, binaryFromFeature);
+  // @ts-expect-error
+  return deserializeGeneric(array, fgbToBinaryGeometry);
 }
 
-function parseFlatGeobufToGeoJSON(
+function parseFlatGeobufToGeoJSONTable(
   arrayBuffer: ArrayBuffer,
-  options: FlatGeobufLoaderOptions
-): Feature[] {
+  options: ParseFlatGeobufOptions
+): GeoJSONTable {
   if (arrayBuffer.byteLength === 0) {
-    return [];
+    return {shape: 'geojson-table', type: 'FeatureCollection', features: []};
   }
 
-  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+  const {reproject = false, crs = 'WGS84'} = options;
 
   const arr = new Uint8Array(arrayBuffer);
 
-  let headerMeta;
-  const {features} = deserializeGeoJson(arr, false, (header) => {
-    headerMeta = header;
+  let fgbHeader: fgb.HeaderMeta | undefined;
+  let schema: Schema | undefined;
+
+  const rect = options.boundingBox && convertBoundingBox(options.boundingBox);
+
+  // @ts-expect-error this looks wrong
+  let {features} = deserializeGeoJson(arr, rect, (headerMeta) => {
+    fgbHeader = headerMeta;
+    schema = getSchemaFromFGBHeader(fgbHeader);
   });
 
-  const crs = headerMeta && headerMeta.crs;
+  const fromCRS = fgbHeader?.crs?.wkt;
   let projection;
-  if (reproject && crs) {
+  if (reproject && fromCRS) {
     // Constructing the projection may fail for some invalid WKT strings
     try {
-      projection = new Proj4Projection({from: crs.wkt, to: _targetCrs});
-    } catch (e) {
+      projection = new Proj4Projection({from: fromCRS, to: crs});
+    } catch (error) {
       // no op
     }
   }
 
   if (projection) {
-    return transformGeoJsonCoords(features, (coords) => projection.project(coords));
+    features = transformGeoJsonCoords(features, (coords) => projection.project(coords));
   }
 
-  return features;
+  return {shape: 'geojson-table', schema, type: 'FeatureCollection', features};
 }
 
 /*
@@ -104,38 +114,53 @@ function parseFlatGeobufToGeoJSON(
  * @return  A GeoJSON geometry object iterator
  */
 // eslint-disable-next-line complexity
-export function parseFlatGeobufInBatches(stream, options: FlatGeobufLoaderOptions) {
-  if (options && options.gis && options.gis.format === 'binary') {
-    return parseFlatGeobufInBatchesToBinary(stream, options);
+export function parseFlatGeobufInBatches(stream, options: ParseFlatGeobufOptions) {
+  const shape = options.shape;
+  switch (shape) {
+    case 'binary':
+      return parseFlatGeobufInBatchesToBinary(stream, options);
+    case 'geojson-table':
+      return parseFlatGeobufInBatchesToGeoJSON(stream, options);
+    default:
+      throw new Error(shape);
   }
-
-  return parseFlatGeobufInBatchesToGeoJSON(stream, options);
 }
 
-function parseFlatGeobufInBatchesToBinary(stream, options: FlatGeobufLoaderOptions) {
+function parseFlatGeobufInBatchesToBinary(stream, options: ParseFlatGeobufOptions) {
   // TODO: reproject binary streaming features
   // const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
 
-  const iterator = deserializeGeneric(stream, binaryFromFeature);
+  const rect = options.boundingBox && convertBoundingBox(options.boundingBox);
+
+  // @ts-expect-error
+  const iterator = deserializeGeneric(stream, binaryFromFeature, rect);
   return iterator;
 }
 
+/**
+ * @todo this does not return proper GeoJSONTable batches
+ * @param stream
+ * @param options
+ */
 // eslint-disable-next-line complexity
-async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: FlatGeobufLoaderOptions) {
-  const {reproject = false, _targetCrs = 'WGS84'} = (options && options.gis) || {};
+async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: ParseFlatGeobufOptions) {
+  const {reproject = false, crs = 'WGS84'} = options || {};
 
-  let headerMeta;
-  const iterator = deserializeGeoJson(stream, false, (header) => {
-    headerMeta = header;
+  let fgbHeader;
+  // let schema: Schema | undefined;
+  const iterator = deserializeGeoJson(stream, undefined, (headerMeta) => {
+    fgbHeader = headerMeta;
+    // schema = getSchemaFromFGBHeader(fgbHeader);
   });
 
   let projection;
   let firstRecord = true;
+  // @ts-expect-error this looks wrong
   for await (const feature of iterator) {
     if (firstRecord) {
-      const crs = headerMeta && headerMeta.crs;
-      if (reproject && crs) {
-        projection = new Proj4Projection({from: crs.wkt, to: _targetCrs});
+      const fromCRS = fgbHeader?.crs?.wkt;
+      if (reproject && fromCRS) {
+        projection = new Proj4Projection({from: fromCRS, to: crs});
       }
 
       firstRecord = false;
@@ -148,4 +173,32 @@ async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: FlatGeobufLoa
       yield feature;
     }
   }
+}
+
+// HELPERS
+
+function convertBoundingBox(boundingBox: [[number, number], [number, number]]): fgb.Rect {
+  return {
+    minX: boundingBox[0][0],
+    minY: boundingBox[0][1],
+    maxX: boundingBox[1][0],
+    maxY: boundingBox[1][1]
+  };
+}
+
+// TODO: reproject binary features
+function binaryFromFeature(feature: fgb.Feature, header: fgb.HeaderMeta) {
+  const geometry = feature.geometry();
+
+  // FlatGeobuf files can only hold a single geometry type per file, otherwise
+  // GeometryType is GeometryCollection
+  // I believe geometry.type() is null (0) except when the geometry type isn't
+  // known in the header?
+  const geometryType = header.geometryType || geometry?.type();
+  const parsedGeometry = fgbToBinaryGeometry(geometry, geometryType!);
+  // @ts-expect-error this looks wrong
+  parsedGeometry.properties = parsePropertiesBinary(feature, header.columns);
+
+  // TODO: wrap binary data either in points, lines, or polygons key
+  return parsedGeometry;
 }

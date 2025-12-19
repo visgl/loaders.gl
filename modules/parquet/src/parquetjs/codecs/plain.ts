@@ -1,4 +1,9 @@
-// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
+
 /* eslint-disable camelcase */
 import type {PrimitiveType} from '../schema/declare';
 import type {CursorBuffer, ParquetCodecOptions} from './declare';
@@ -200,6 +205,7 @@ function decodeValues_BYTE_ARRAY(cursor: CursorBuffer, count: number): Buffer[] 
   for (let i = 0; i < count; i++) {
     const len = cursor.buffer.readUInt32LE(cursor.offset);
     cursor.offset += 4;
+    // values.push(cursor.buffer.buffer.slice(cursor.offset, cursor.offset + len));
     values.push(cursor.buffer.slice(cursor.offset, cursor.offset + len));
     cursor.offset += len;
   }

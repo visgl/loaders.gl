@@ -1,6 +1,6 @@
 # Supported features
 
-The tile-converter is capable to convert 3D tiles data of formats [3DTiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both `3DTiles` and `I3S` are wide specifications included many internal formats and data types. The tile-converter doesn't cover all features described in those specifications. This sheet summarise compatibility of the tile-converter with different parts and features of `3DTiles` and `I3S`.
+The tile-converter is capable to convert 3D tiles data of formats [3DTiles](https://github.com/CesiumGS/3d-tiles/tree/main/specification) and [I3S](https://github.com/Esri/i3s-spec). Both `3DTiles` and `I3S` are wide specifications which include many internal formats and data types. The tile-converter doesn't cover all features described in those specifications. This sheet summarises the compatibility of the tile-converter with different parts and features of `3DTiles` and `I3S`.
 
 ## Layer types
 
@@ -18,12 +18,12 @@ The tile-converter is capable to convert 3D tiles data of formats [3DTiles](http
 
 ## Input data source types
 
-| Specification | Data source type         | Status        |
-| ------------- | ------------------------ | ------------- |
-| `I3S`         | SLPK                     | Not supported |
-| `I3S`         | HTTP REST service        | Supported     |
-| `3DTiles`     | Local file system folder | Supported     |
-| `3DTiles`     | Cesium ION URL           | Supported     |
+| Specification | Data source type         | Status                          |
+| ------------- | ------------------------ | ------------------------------- |
+| `I3S`         | SLPK                     | Supported as local HTTP service |
+| `I3S`         | HTTP REST service        | Supported                       |
+| `3DTiles`     | Local file system folder | Supported                       |
+| `3DTiles`     | Cesium ION URL           | Supported                       |
 
 ## Versions
 
@@ -46,9 +46,9 @@ Some 3DTiles vNext extensions are supported as input data.
 | `3DTiles`  | `3DTILES_implicit_tiling`    | Supported                |
 | `3DTiles`  | `3DTILES_bounding_volume_S2` | Supported                |
 | `3DTIles`  | `3DTILES_metadata`           | Not applicable for `I3S` |
-| `glTF`     | `EXT_mesh_features`          | In progress              |
-| `glTF`     | `EXT_feature_metadata`       | In progress              |
-| `glTF`     | `EXT_structural_metadata`    | In progress              |
+| `glTF`     | `EXT_mesh_features`          | Supported                |
+| `glTF`     | `EXT_feature_metadata`       | Supported                |
+| `glTF`     | `EXT_structural_metadata`    | Supported                |
 
 ## Internal data types
 
@@ -65,7 +65,7 @@ Some 3DTiles vNext extensions are supported as input data.
 
 ## Mesh topology types
 
-`I3S` specification supports only `TRIANGLE` mesh topoloty type.
+`I3S` specification supports only `TRIANGLE` mesh topology type.
 
 | Specification | Mesh type        | Status                  |
 | ------------- | ---------------- | ----------------------- |

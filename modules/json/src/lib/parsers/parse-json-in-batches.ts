@@ -1,31 +1,33 @@
-import type {TableBatch} from '@loaders.gl/schema';
-import type {JSONLoaderOptions} from '../../json-loader';
-import {TableBatchBuilder} from '@loaders.gl/schema';
-import {assert, makeTextDecoderIterator} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Schema, TableBatch} from '@loaders.gl/schema';
+import type {JSONLoaderOptions, MetadataBatch, JSONBatch} from '../../json-loader';
+
+import {TableBatchBuilder} from '@loaders.gl/schema-utils';
+import {assert, makeTextDecoderIterator, toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import StreamingJSONParser from '../json-parser/streaming-json-parser';
 import JSONPath from '../jsonpath/jsonpath';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity
 export async function* parseJSONInBatches(
-  binaryAsyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  binaryAsyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: JSONLoaderOptions
-): AsyncIterable<TableBatch> {
-  const asyncIterator = makeTextDecoderIterator(binaryAsyncIterator);
+): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
+  const asyncIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
 
-  const {metadata} = options;
+  const metadata = Boolean(options?.core?.metadata || (options as any)?.metadata);
   const {jsonpaths} = options.json || {};
 
   let isFirstChunk: boolean = true;
 
-  // TODO fix Schema deduction
-  const schema = null; // new Schema([]);
-  const shape = options?.json?.shape || 'row-table';
-  // @ts-ignore
-  const tableBatchBuilder = new TableBatchBuilder(schema, {
-    ...options,
-    shape
-  });
+  // @ts-expect-error TODO fix Schema deduction
+  const schema: Schema = null;
+  const tableBatchBuilder = new TableBatchBuilder(schema, options?.core);
 
   const parser = new StreamingJSONParser({jsonpaths});
 
@@ -38,7 +40,7 @@ export async function* parseJSONInBatches(
       if (metadata) {
         const initialBatch: TableBatch = {
           // Common fields
-          shape,
+          shape: options?.json?.shape || 'array-row-table',
           batchType: 'partial-result',
           data: [],
           length: 0,
@@ -78,11 +80,12 @@ export async function* parseJSONInBatches(
   }
 
   if (metadata) {
-    const finalBatch: TableBatch = {
-      shape,
+    const finalBatch: JSONBatch = {
+      shape: 'json',
       batchType: 'final-result',
       container: parser.getPartialResult(),
       jsonpath: parser.getStreamingJsonPathAsString(),
+      /** Data Just to avoid crashing? */
       data: [],
       length: 0
       // schema: null

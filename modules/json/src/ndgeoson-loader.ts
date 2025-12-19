@@ -1,11 +1,17 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
 import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
+import {ArrayRowTable, ObjectRowTable, Batch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Options for NDGeoJSONLoader */
 export type NDGeoJSONLoaderOptions = LoaderOptions & {
   geojson?: {
     shape?: 'object-row-table';
@@ -15,16 +21,11 @@ export type NDGeoJSONLoaderOptions = LoaderOptions & {
   };
 };
 
-const DEFAULT_NDGEOJSON_LOADER_OPTIONS = {
-  geojson: {
-    shape: 'object-row-table'
-  },
-  gis: {
-    format: 'geojson'
-  }
-};
-
+/** NDGeoJSONLoader */
 export const NDJSONLoader = {
+  dataType: null as unknown as ArrayRowTable | ObjectRowTable,
+  batchType: null as unknown as Batch,
+
   name: 'NDJSON',
   id: 'ndjson',
   module: 'json',
@@ -42,7 +43,16 @@ export const NDJSONLoader = {
   parse: async (arrayBuffer: ArrayBuffer) => parseNDJSONSync(new TextDecoder().decode(arrayBuffer)),
   parseTextSync: parseNDJSONSync,
   parseInBatches: parseNDJSONInBatches,
-  options: DEFAULT_NDGEOJSON_LOADER_OPTIONS
-};
-
-export const _typecheckNDJSONLoader: LoaderWithParser = NDJSONLoader;
+  options: {
+    geojson: {
+      shape: 'object-row-table'
+    },
+    gis: {
+      format: 'geojson'
+    }
+  }
+} as const satisfies LoaderWithParser<
+  ArrayRowTable | ObjectRowTable,
+  Batch,
+  NDGeoJSONLoaderOptions
+>;

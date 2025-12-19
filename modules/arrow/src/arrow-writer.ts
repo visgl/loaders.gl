@@ -1,7 +1,7 @@
 // import type {} from '@loaders.gl/loader-utils';
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
-import {ColumnarTable} from './lib/encode-arrow';
-import {encodeArrowSync} from './lib/encode-arrow';
+
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import {ColumnarTable, encodeArrowSync} from './lib/encoders/encode-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -12,7 +12,7 @@ type ArrowWriterOptions = WriterOptions & {
 };
 
 /** Apache Arrow writer */
-export const ArrowWriter: Writer<ColumnarTable, never, ArrowWriterOptions> = {
+export const ArrowWriter = {
   name: 'Apache Arrow',
   id: 'arrow',
   module: 'arrow',
@@ -23,9 +23,12 @@ export const ArrowWriter: Writer<ColumnarTable, never, ArrowWriterOptions> = {
     'application/vnd.apache.arrow.stream',
     'application/octet-stream'
   ],
-  encodeSync(data, options?) {
+  binary: true,
+  options: {},
+  encode: async function encodeArrow(data, options?): Promise<ArrayBuffer> {
     return encodeArrowSync(data);
   },
-  binary: true,
-  options: {}
-};
+  encodeSync(data, options?) {
+    return encodeArrowSync(data);
+  }
+} as const satisfies WriterWithEncoder<ColumnarTable, never, ArrowWriterOptions>;

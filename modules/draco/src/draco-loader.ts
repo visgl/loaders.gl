@@ -1,32 +1,31 @@
-// loaders.gl, MIT license
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
 import {VERSION} from './lib/utils/version';
+import DracoParser from './lib/draco-parser';
+import {loadDracoDecoderModule} from './lib/draco-module-loader';
 
-export type DracoLoaderOptions = LoaderOptions & {
+export type DracoLoaderOptions = StrictLoaderOptions & {
   draco?: DracoParseOptions & {
+    /** @deprecated WASM decoding is faster but JS is more backwards compatible */
     decoderType?: 'wasm' | 'js';
+    /** @deprecated Specify where to load the Draco decoder library */
     libraryPath?: string;
-    extraAttributes?;
-    attributeNameEntry?: string;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
-};
-
-const DEFAULT_DRACO_OPTIONS: DracoLoaderOptions = {
-  draco: {
-    decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
-    libraryPath: 'libs/',
-    extraAttributes: {},
-    attributeNameEntry: undefined
-  }
 };
 
 /**
  * Worker loader for Draco3D compressed geometries
  */
-export const DracoLoader: Loader<DracoMesh, never, DracoLoaderOptions> = {
+export const DracoWorkerLoader = {
+  dataType: null as unknown as DracoMesh,
+  batchType: null as never,
   name: 'Draco',
   id: 'draco',
   module: 'draco',
@@ -37,7 +36,33 @@ export const DracoLoader: Loader<DracoMesh, never, DracoLoaderOptions> = {
   mimeTypes: ['application/octet-stream'],
   binary: true,
   tests: ['DRACO'],
-  options: DEFAULT_DRACO_OPTIONS
-};
+  options: {
+    draco: {
+      decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
+      libraryPath: 'libs/',
+      extraAttributes: {},
+      attributeNameEntry: undefined
+    }
+  }
+} as const satisfies Loader<DracoMesh, never, DracoLoaderOptions>;
 
-export const _TypecheckDracoLoader: Loader = DracoLoader;
+/**
+ * Loader for Draco3D compressed geometries
+ */
+export const DracoLoader = {
+  ...DracoWorkerLoader,
+  parse
+} as const satisfies LoaderWithParser<DracoMesh, never, DracoLoaderOptions>;
+
+async function parse(arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions): Promise<DracoMesh> {
+  const {draco} = await loadDracoDecoderModule(
+    options?.core,
+    options?.draco?.decoderType || 'wasm'
+  );
+  const dracoParser = new DracoParser(draco);
+  try {
+    return dracoParser.parseSync(arrayBuffer, options?.draco);
+  } finally {
+    dracoParser.destroy();
+  }
+}

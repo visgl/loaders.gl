@@ -1,4 +1,4 @@
-# fetchProgress
+# fetchProgress 🚧
 
 > This function is still experimental
 
@@ -6,7 +6,7 @@ A function that tracks a fetch response object and calls `onProgress` callbacks.
 
 ## Usage
 
-```js
+```typescript
 import {_fetchProgress} from '@loaders.gl/core';
 
 function onProgress(percent, {loadedBytes, totalBytes}) {

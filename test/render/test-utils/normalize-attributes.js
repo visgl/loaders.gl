@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 const DEFAULT_COLOR = {constant: true, size: 4, value: new Float32Array([0, 0, 0, 255])};
 const DEFAULT_NORMAL = {constant: true, size: 3, value: new Float32Array([0, 0, 1])};
 const DEFAULT_TEX_COORDS = {constant: true, size: 2, value: new Float32Array([0, 0])};

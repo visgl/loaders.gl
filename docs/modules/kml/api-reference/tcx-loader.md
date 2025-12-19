@@ -6,28 +6,21 @@
 
 The `TCXLoader` parses [TCX files][tcx_wikipedia] into GeoJSON. From Wikipedia:
 
-> Training Center XML (TCX) is a data exchange format introduced in 2007 as part
-> of Garmin's Training Center product. The XML is similar to GPX since it
-> exchanges GPS tracks, but treats a track as an Activity rather than simply a
-> series of GPS points. TCX provides standards for transferring heart rate,
-> running cadence, bicycle cadence, calories in the detailed track. It also
-> provides summary data in the form of laps.
-
-| Loader                | Characteristic                             |
-| --------------------- | ------------------------------------------ |
-| File Extension        | `.tcx`                                     |
-| File Type             | Text                                       |
-| File Format           | [TCX][tcx_wikipedia]                       |
+| Loader                | Characteristic                           |
+| --------------------- | ---------------------------------------- |
+| File Extension        | `.tcx`                                   |
+| File Type             | Text                                     |
+| File Format           | [TCX][tcx_wikipedia]                     |
 | Data Format           | [GIS](/docs/specifications/category-gis) |
-| Decoder Type          | Synchronous                                |
-| Worker Thread Support | No                                         |
-| Streaming Support     | No                                         |
+| Decoder Type          | Synchronous                              |
+| Worker Thread Support | No                                       |
+| Streaming Support     | No                                       |
 
 [tcx_wikipedia]: https://en.wikipedia.org/wiki/Training_Center_XML
 
 ## Usage
 
-```js
+```typescript
 import {TCXLoader} from '@loaders.gl/kml';
 import {load} from '@loaders.gl/core';
 

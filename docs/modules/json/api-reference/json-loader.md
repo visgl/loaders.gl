@@ -5,7 +5,7 @@ Streaming loader for JSON encoded files.
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
 | File Extension | `.json`                                              |
-| Media Type     | `application/json`
+| Media Type     | `application/json`                                   |
 | File Type      | Text                                                 |
 | File Format    | [JSON](https://www.json.org/json-en.html)            |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
@@ -15,7 +15,7 @@ Streaming loader for JSON encoded files.
 
 For simple usage, you can load and parse a JSON file atomically:
 
-```js
+```typescript
 import {JSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 
@@ -25,7 +25,7 @@ const data = await load(url, JSONLoader, {json: options});
 For larger files, JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
 To parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` to stream the `features` array.
 
-```js
+```typescript
 import {JSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 
@@ -48,7 +48,7 @@ When batch parsing an embedded JSON array as a table, it is possible to get acce
 
 The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result` respectively.
 
-```js
+```typescript
 import {JSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 
@@ -71,6 +71,16 @@ for await (const batch of batches) {
   }
 }
 ```
+
+### Streaming semantics and avoiding truncated arrays
+
+- `JSONLoader` streams rows from a single JSON array. Every `batch.data` entry in a `data` batch is a complete row that the streaming parser has fully parsed before it is emitted.
+- If `{metadata: true}` is set, the loader also yields `partial-result` and `final-result` batches that intentionally exclude the streamed array from `batch.container`. These batches describe only the surrounding container object; the streamed rows remain in the `data` batches.
+
+To avoid confusion when inspecting batches:
+
+1. Consume `batch.data` only when `batch.batchType === 'data'`; metadata batches will appear “incomplete” by design because they omit the streamed array.
+2. If you need the full root object after streaming, enable `{metadata: true}` and merge the streamed `data` rows back into the container object instead of relying on the metadata batches alone.
 
 ## Data Format
 
@@ -100,12 +110,9 @@ Supports table category options such as `batchType` and `batchSize`.
 
 ## JSONPaths
 
-A minimal subset of the JSONPath syntax is supported, to specify which array in a JSON object should be streamed as batchs.
+The loader implements a focused subset of the [IETF JSONPath specification (RFC 9535)](https://www.rfc-editor.org/rfc/rfc9535). See the [JSONPath support table](../jsonpath.md) for the full list of supported and unsupported features.
 
-`$.component1.component2.component3`
-
-- No support for wildcards, brackets etc. Only paths starting with `$` (JSON root) are supported.
-- Regardless of the paths provided, only arrays will be streamed.
+JSONPaths are used only to identify which array should be streamed, so selectors such as `$.features[*]` and `$.features[:]` are normalized to `$.features`. Descendant operators, element indexes, filters, and unions are not supported. Regardless of the paths provided, only arrays will be streamed.
 
 ## Attribution
 

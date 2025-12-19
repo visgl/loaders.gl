@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT and Apache-2.0
+// Copyright vis.gl contributors
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
@@ -5,11 +9,12 @@ import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {Tile3DSubtreeLoader} from '@loaders.gl/3d-tiles';
 
-const FULL_SUBTREE_FILE_URL = '@loaders.gl/3d-tiles/test/data/FullQuadtree/subtrees/0/0/0.subtree';
+const FULL_SUBTREE_FILE_URL =
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/FullQuadtree/subtrees/0/0/0.subtree';
 const INTERNAL_BINARY_SUBTREE_FILE_URL =
-  '@loaders.gl/3d-tiles/test/data/BasicExample/subtrees/0/0/0.subtree';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/BasicExample/subtrees/0/0/0.subtree';
 const INTERNAL_BINARY_SPARSE_SUBTREE_FILE_URL =
-  '@loaders.gl/3d-tiles/test/data/SparseOctree/subtrees/0/0/0/0.subtree';
+  '@loaders.gl/3d-tiles/test/data/CesiumJS/SparseOctree/subtrees/0/0/0/0.subtree';
 
 test('Tile3DSubtreeLoader#Should load quadtree subtree with constant availability', async (t) => {
   const EXPECTED = {
@@ -48,17 +53,33 @@ test('Tile3DSubtreeLoader#Should load quadtree subtree with expicitBitstream', a
 
 test('Tile3DSubtreeLoader#Should load octree subtree with expicitBitstream', async (t) => {
   const EXPECTED = {
-    buffers: [{byteLength: 9}],
+    buffers: [{byteLength: 96}],
     bufferViews: [
-      {buffer: 0, byteOffset: 0, byteLength: 1},
-      {buffer: 0, byteOffset: 1, byteLength: 8}
+      {buffer: 0, byteOffset: 0, byteLength: 10},
+      {buffer: 0, byteOffset: 16, byteLength: 10},
+      {buffer: 0, byteOffset: 32, byteLength: 64}
     ],
-    tileAvailability: {bufferView: 0, explicitBitstream: new Uint8Array([3])},
-    childSubtreeAvailability: {
-      bufferView: 1,
-      explicitBitstream: new Uint8Array([2, 0, 0, 0, 0, 0, 0, 0])
+    tileAvailability: {
+      bitstream: 0,
+      availableCount: 14,
+      explicitBitstream: new Uint8Array([31, 1, 2, 3, 3, 1, 0, 0, 2, 1])
     },
-    contentAvailability: {bufferView: 0, explicitBitstream: new Uint8Array([3])}
+    contentAvailability: [
+      {
+        bitstream: 1,
+        availableCount: 3,
+        explicitBitstream: new Uint8Array([2, 0, 2, 1, 0, 0, 0, 0, 0, 0])
+      }
+    ],
+    childSubtreeAvailability: {
+      bitstream: 2,
+      availableCount: 12,
+      explicitBitstream: new Uint8Array([
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 129, 0, 0, 0, 0, 0, 0, 129, 129, 0, 0, 0, 0,
+        0, 0, 129, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 129, 0,
+        0, 0, 0, 0, 0, 129
+      ])
+    }
   };
 
   const availabilitySubtree = await load(

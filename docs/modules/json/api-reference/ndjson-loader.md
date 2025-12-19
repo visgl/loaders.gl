@@ -2,15 +2,14 @@
 
 Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL).
 
-
-| Loader         | Characteristic                                       |
-| -------------- | ---------------------------------------------------- |
-| File Extension | `.ndjson`, `.jsonl`, `.ldjson`                       |
+| Loader         | Characteristic                                                         |
+| -------------- | ---------------------------------------------------------------------- |
+| File Extension | `.ndjson`, `.jsonl`, `.ldjson`                                         |
 | Media Type     | `application/x-ndjson`, `application/x-ldjson`, `application/json-seq` |
-| File Type      | Text                                                 |
-| File Format    | [NDJSON][format_ndjson], [LDJSON][format_], [][format_] |
-| Data Format    | [Classic Table](/docs/specifications/category-table) |
-| Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
+| File Type      | Text                                                                   |
+| File Format    | [NDJSON][format_ndjson], [LDJSON][format_], [][format_]                |
+| Data Format    | [Classic Table](/docs/specifications/category-table)                   |
+| Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`                         |
 
 [format_ndjson]: http://ndjson.org/
 [format_ldjson]: http://ndjson.org/
@@ -18,7 +17,7 @@ Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL)
 
 ## Usage
 
-```js
+```typescript
 import {NDJSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 
@@ -27,7 +26,7 @@ const data = await load(url, NDJSONLoader, {ndjson: options});
 
 The NDJSONLoader supports streaming NDJSON parsing, in which case it will yield "batches" of rows, where each row is a parsed line from the NDJSON stream.
 
-```js
+```typescript
 import {NDJSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 

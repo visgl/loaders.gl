@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.module.json",
+  "extends": "../../tsconfig.json",
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
@@ -11,6 +11,7 @@
     {"path": "../draco"},
     {"path": "../images"},
     {"path": "../loader-utils"},
-    {"path": "../textures"}
+    {"path": "../textures"},
+    {"path": "../math"}
   ]
 }

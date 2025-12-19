@@ -40,7 +40,7 @@ The GLTF Loader returns an object with a `json` field containing the glTF Sceneg
 
 Optionally, the loaded gltf can be "post processed", which lightly annotates and transforms the loaded JSON structure to make it easier to use. Refer to [postProcessGLTF](post-process-gltf) for details.
 
-In addition, certain glTF extensions, in particular Draco mesh encoding, can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations. See [glTF Extensions](gltf-extensions) for more information.
+In addition, certain glTF extensions, in particular Draco mesh encoding, can be fully or partially processed during loading. When possible (and extension processing is enabled), such extensions will be resolved/decompressed and replaced with standards conformant representations.
 
 Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) has significant limitations. When parsed asynchronously (using `await parse()` or `await load()`), the following additional capabilities are enabled:
 
@@ -58,10 +58,9 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 | `gltf.decompressMeshes` | Boolean | `true`  | Decompress Draco compressed meshes (if DracoLoader available).             |
 | `gltf.normalize`        | Boolean | `false` | Optional, best-effort attempt at converting glTF v1 files to glTF2 format. |
 
-
 ## Working with GLTF data
 
-The job of `GLTFLoader` is to open the glTF container file(s) and extract the glTF JSON, together with any associated binary chunks and images. 
+The job of `GLTFLoader` is to open the glTF container file(s) and extract the glTF JSON, together with any associated binary chunks and images.
 
 If you already have access to libraries or code that process standard glTF JSON directly, this format may be appropriate. However, in this 'storage optimized" form, traversing the loaded glTF scene graph tends to required verbose and repetitive code with lots of checks and guards.
 
@@ -78,7 +77,7 @@ The data format returned by the `GLTFLoader` is the unmodified glTF JSON extract
 
 The standard glTF JSON structure will be available in the `json` field.
 
-```json
+```typescripton
 {
   json: {
     scenes: [...],
@@ -91,8 +90,7 @@ The standard glTF JSON structure will be available in the `json` field.
 
 However, the objects inside these arrays will have been pre-processed to simplify usage. For details on changes and extra fields added to the various glTF objects, see [post processing](post-process-gltf).
 
-
-```json
+```typescripton
 {
   // The base URI used to load this glTF, if any. For resolving relative uris to linked resources.
   baseUri: String,
@@ -127,4 +125,3 @@ However, the objects inside these arrays will have been pre-processed to simplif
 | `buffers[\*].byteOffset`  | `Number`      | `null`  | offset of buffer (embedded in larger binary block)               |
 | `buffers[\*].byteLength`  | `ArrayBuffer` | `null`  | length of buffer (embedded in larger binary block)               |
 | `_glb`?                   | `Object`      | N/A     | The output of the GLBLoader if the parsed file was GLB formatted |
-

@@ -1,0 +1,52 @@
+{
+  "name": "@loaders.gl/lerc",
+  "version": "4.4.0-alpha.2",
+  "description": "Framework-independent loader for LERC (Limited Error Raster Compression) files",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "parser",
+    "LERC"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./lerc-worker.js": {
+      "import": "./dist/lerc-worker.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "echo disabled",
+    "pre-build-2": "echo npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js --external:url --external:fs --external:path",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js --external:url --external:fs --external:path",
+    "build-worker": "esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\" --external:url --external:fs --external:path"
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "4.4.0-alpha.2",
+    "@loaders.gl/schema": "4.4.0-alpha.2",
+    "lerc": "^4.0.4"
+  },
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
+}

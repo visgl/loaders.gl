@@ -1,22 +1,17 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
-import {Table, makeRowIterator} from '@loaders.gl/schema';
-
-type RowArray = unknown[];
-type RowObject = {[key: string]: unknown};
-type TableJSON = RowArray[] | RowObject[];
-
-export type JSONWriterOptions = {
-  shape?: 'object-row-table' | 'array-row-table';
-  wrapper?: (table: TableJSON) => unknown;
-};
+import type {Table} from '@loaders.gl/schema';
+import {makeRowIterator} from '@loaders.gl/schema-utils';
+import type {JSONWriterOptions} from '../../json-writer';
 
 /**
  * Encode a table as a JSON string
  */
-export function encodeTableAsJSON(table: Table, options: JSONWriterOptions = {}): string {
-  const shape = options.shape || 'object-row-table';
+export function encodeTableAsJSON(table: Table, options?: JSONWriterOptions): string {
+  const shape = options?.json?.shape || 'object-row-table';
 
   const strings: string[] = [];
   const rowIterator = makeRowIterator(table, shape);

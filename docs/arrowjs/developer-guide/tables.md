@@ -1,14 +1,14 @@
 # Working with Tables
 
 References:
-* Much of the text in this section is adapted from Brian Hulette's [Using Apache Arrow JS with Large Datasets](https://observablehq.com/@theneuralbit/using-apache-arrow-js-with-large-datasets)
 
+- Much of the text in this section is adapted from Brian Hulette's [Using Apache Arrow JS with Large Datasets](https://observablehq.com/@theneuralbit/using-apache-arrow-js-with-large-datasets)
 
 ## Loading Arrow Data
 
 Applications often start with loading some Arrow formatted data. The Arrow API provides several ways to do this, but in many cases, the simplest approach is to use `Table.from()`.
 
-```js
+```typescript
 import {Table} from 'apache-arrow';
 const response = await fetch(dataUrl);
 const arrayBuffer = await response.arrayBuffer();
@@ -17,18 +17,18 @@ const dataTable = arrow.Table.from(new Uint8Array(arrayBuffer));
 
 ## Getting Records Count
 
-```js
+```typescript
 const count = table.count();
 ```
 
 ### Getting Arrow Schema Metadata
 
-```js
-const fieldNames = table.schema.fields.map(f => f.name);
+```typescript
+const fieldNames = table.schema.fields.map((f) => f.name);
 // Array(3) ["Latitude", "Longitude", "Date"]
 ```
 
-```js
+```typescript
 const fieldTypes = tables.schema.fields.map(f => f.type)
 // Array(3) [Float, Float, Timestamp]
 
@@ -38,18 +38,18 @@ const fieldTypeNames = ...;
 
 ### Accessing Arrow Table Row Data
 
-```js
-const firstRow = tables.get(0) // 1st row data
-const lastRow = tables.get(rowCount-1)
+```typescript
+const firstRow = tables.get(0); // 1st row data
+const lastRow = tables.get(rowCount - 1);
 ```
 
 ## Record toJSON and toArray
 
 It is easy to converting Rows to JSON/Arrays/Strings:
 
-```js
-toJSON = Array(3) [41.890751259, -87.71617311899999, Int32Array(2)]
-toArray = Array(3) [41.933659084, -87.72369064600001, Int32Array(2)]
+```typescript
+toJSON = Array(3)[(41.890751259, -87.71617311899999, Int32Array(2))];
+toArray = Array(3)[(41.933659084, -87.72369064600001, Int32Array(2))];
 ```
 
 Similar conversion methods are avaiable on many Arrow classes.
@@ -66,11 +66,11 @@ range = ƒ(start, end, step)
 
 ### Iterating over Rows and Cells
 
-```js
+```typescript
 for (let row of dataFrame) {
   for (let cell of row) {
-    if ( Array.isArray(cell) ) {
-      td = '[' + cell.map((value) => value == null ? 'null' : value).join(', ') + ']';
+    if (Array.isArray(cell)) {
+      td = '[' + cell.map((value) => (value == null ? 'null' : value)).join(', ') + ']';
     } else if (fields[k] === 'Date') {
       td = toDate(cell); // convert Apache arrow Timestamp to Date
     } else {
@@ -81,17 +81,15 @@ for (let row of dataFrame) {
 }
 ```
 
-
 ### Converting Dates
 
 Apache Arrow Timestamp is a 64-bit int of milliseconds since the epoch, represented as two 32-bit ints in JS to preserve precision. The fist number is the "low" int and the second number is the "high" int.
 
-```js
+```typescript
 function toDate(timestamp) {
-  return new Date((timestamp[1] * Math.pow(2, 32) + timestamp[0])/1000);
+  return new Date((timestamp[1] * Math.pow(2, 32) + timestamp[0]) / 1000);
 }
 ```
-
 
 ### Column Data Vectors
 
@@ -105,27 +103,29 @@ timestamps = Array(10) [2017-01-01, 2017-01-01, 2017-01-01, 2017-01-01, 2017-01-
 
 ### Filtering Timestamped Data
 
-```js
+```typescript
 function filterByDate(startDate, endDate) {
-  const dateFilter = arrow.predicate.custom(i => {
-  	const arrowDate = table.getColumn('Date').get(i);
-    const date = toDate(arrowDate);
-    return date >= startDate && date <= endDate;
-  }, b => 1);
+  const dateFilter = arrow.predicate.custom(
+    (i) => {
+      const arrowDate = table.getColumn('Date').get(i);
+      const date = toDate(arrowDate);
+      return date >= startDate && date <= endDate;
+    },
+    (b) => 1
+  );
 
   const getDate;
   const results = [];
-  table.filter(dateFilter)
-    .scan(
-      index => {
-        results.push({
-          'date': toDate(getDate(index))
-        });
-      },
-      batch => {
-        getDate = arrow.predicate.col('Date').bind(batch);
-      }
-    );
+  table.filter(dateFilter).scan(
+    (index) => {
+      results.push({
+        date: toDate(getDate(index))
+      });
+    },
+    (batch) => {
+      getDate = arrow.predicate.col('Date').bind(batch);
+    }
+  );
 
   return results;
 }

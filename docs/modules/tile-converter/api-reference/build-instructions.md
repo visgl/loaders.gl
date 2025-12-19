@@ -27,7 +27,7 @@ yarn bootstrap
 npx tile-converter --install-dependencies
 ```
 
-You can use custom Earth Gravity Model using `--egm` option.
+You can use custom Earth Gravity Model or disable it using `--egm` option.
 
 5. [Convert some tileset](/docs/modules/tile-converter/cli-reference/tile-converter)
    Examples:

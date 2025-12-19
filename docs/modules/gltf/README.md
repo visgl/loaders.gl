@@ -23,7 +23,7 @@ To simplify traversing and building glTF data objects, the [`GLTFScenegraph`](/d
 
 A glTF data object can also be built programmatically using the GLTFScenegraph's "fluent API":
 
-```js
+```typescript
 import {encode} from '@loaders.gl/gltf';
 import {GLTFScenegraph, GLTFWriter} from '@loaders.gl/gltf';
 const gltfScenegraph = new GLTFScenegraph()
@@ -49,13 +49,13 @@ To allow for this (and also to generally improve the glTF code structure), the `
 
 ## glTF Extension Support
 
-Certain glTF extensions are fully or partially supported by the glTF classes. For details on which extensions are supported, see [glTF Extensions](/docs/modules/gltf/api-reference/gltf-extensions).
+Certain glTF extensions are fully or partially supported by the glTF classes. For details on which extensions are supported, see [glTF Extensions](/docs/modules/gltf/formats/gltf#gltf-extensions).
 
 ## Draco Mesh and Point Cloud Compression
 
 Draco encoding and decoding is supported by the `GLTFBuilder` and `GLTFParser` classes but requires the DracoWriter and DracoLoader dependencies to be "injected" by the application.
 
-```js
+```typescript
 import {GLTFBuilder} from '@loaders.gl/gltf';
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 

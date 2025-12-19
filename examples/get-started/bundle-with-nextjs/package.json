@@ -4,25 +4,26 @@
   "description": "Minimal working example of using loaders.gl with Next.js.",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "dependencies": {
-    "@deck.gl/geo-layers": "^8.9.7",
-    "@deck.gl/layers": "^8.9.7",
-    "@deck.gl/react": "^8.9.7",
-    "@loaders.gl/core": "4.0.0-alpha.6",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.6",
+    "@deck.gl/geo-layers": "^8.9.28",
+    "@deck.gl/layers": "^8.9.28",
+    "@deck.gl/react": "^8.9.28",
+    "@loaders.gl/core": "4.4.0-alpha.1",
+    "@loaders.gl/worker-utils": "4.4.0-alpha.1",
     "@next/font": "13.1.6",
     "@types/node": "18.11.18",
-    "@types/react": "18.0.27",
-    "@types/react-dom": "18.0.10",
-    "deck.gl": "^8.8.23",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "deck.gl": "^8.8.23"
   }, 
   "devDependencies": {
     "eslint": "8.33.0",
     "eslint-config-next": "13.1.6",
-    "next": "13.1.6",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "next": "14.2.15",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "sass": "^1.58.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.3.0"
   }
 }

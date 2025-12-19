@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {WorkerObject} from '../../types';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';

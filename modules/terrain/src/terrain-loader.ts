@@ -1,18 +1,30 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {Loader} from '@loaders.gl/loader-utils';
+import type {Mesh} from '@loaders.gl/schema';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
-import {TerrainOptions} from './lib/parse-terrain';
-import {Mesh} from '@loaders.gl/schema';
+import type {TerrainOptions} from './lib/parse-terrain';
 
+/** TerrainLoader options */
 export type TerrainLoaderOptions = ImageLoaderOptions & {
-  terrain?: TerrainOptions;
+  /** TerrainLoader options */
+  terrain?: TerrainOptions & {
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
 };
 
 /**
  * Worker loader for image encoded terrain
  */
-export const TerrainLoader: Loader<Mesh, never, TerrainLoaderOptions> = {
+export const TerrainLoader = {
+  dataType: null as unknown as Mesh,
+  batchType: null as never,
+
   name: 'Terrain',
   id: 'terrain',
   module: 'terrain',
@@ -34,4 +46,4 @@ export const TerrainLoader: Loader<Mesh, never, TerrainLoaderOptions> = {
       skirtHeight: undefined
     }
   }
-};
+} as const satisfies Loader<Mesh, never, TerrainLoaderOptions>;

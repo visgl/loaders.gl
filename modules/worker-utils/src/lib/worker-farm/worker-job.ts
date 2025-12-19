@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
 import WorkerThread from './worker-thread';
 import {assert} from '../env-utils/assert';

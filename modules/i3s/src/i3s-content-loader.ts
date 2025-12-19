@@ -1,16 +1,24 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {LoaderWithParser, LoaderContext} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import {parseI3STileContent} from './lib/parsers/parse-i3s-tile-content';
-import {I3STileOptions, I3STilesetOptions} from './types';
+import {I3STileContent, I3STileOptions, I3STilesetOptions} from './types';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'beta';
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 /**
  * Loader for I3S - Indexed 3D Scene Layer
  */
-export const I3SContentLoader: LoaderWithParser = {
+export const I3SContentLoader = {
+  dataType: null as unknown as I3STileContent | null,
+  batchType: null as never,
+
   name: 'I3S Content (Indexed Scene Layers)',
   id: 'i3s-content',
   module: 'i3s',
@@ -22,7 +30,7 @@ export const I3SContentLoader: LoaderWithParser = {
   options: {
     'i3s-content': {}
   }
-};
+} as const satisfies LoaderWithParser<I3STileContent | null, never, I3SLoaderOptions>;
 
 async function parse(data, options?: I3SLoaderOptions, context?: LoaderContext) {
   const {tile, _tileOptions, tileset, _tilesetOptions} = options?.i3s || {};

@@ -1,12 +1,18 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+// DEFLATE
 import {isBrowser} from '@loaders.gl/loader-utils';
 import {DeflateCompressionZlib, DeflateCompressionZlibOptions} from './deflate-compression-zlib';
 import {Compression} from './compression';
 import {getPakoError} from './utils/pako-utils';
-import pako from 'pako';
+import pako from 'pako'; // https://bundlephobia.com/package/pako
 
 export type DeflateCompressionOptions = DeflateCompressionZlibOptions & {
   deflate?: pako.InflateOptions & pako.DeflateOptions;
+  /** creates raw data, without wrapper (header and adler32 crc). */
+  raw?: boolean;
 };
 
 /**
@@ -44,13 +50,15 @@ export class DeflateCompression extends Compression {
   compressSync(input: ArrayBuffer): ArrayBuffer {
     const pakoOptions: pako.DeflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
-    return pako.deflate(inputArray, pakoOptions).buffer;
+    const deflate = this.options?.raw ? pako.deflateRaw : pako.deflate;
+    return deflate(inputArray, pakoOptions).buffer;
   }
 
   decompressSync(input: ArrayBuffer): ArrayBuffer {
     const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
     const inputArray = new Uint8Array(input);
-    return pako.inflate(inputArray, pakoOptions).buffer;
+    const inflate = this.options?.raw ? pako.inflateRaw : pako.inflate;
+    return inflate(inputArray, pakoOptions).buffer;
   }
 
   async *compressBatches(

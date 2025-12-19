@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // import type {TextureLevel} from '@loaders.gl/schema';
 import {TypedArray} from '@math.gl/types';
 // import {TypedArrayConstructor} from "@math.gl/types";
@@ -8,8 +12,6 @@ type TypedArrayConstructor =
   | typeof Uint8Array
   | typeof Int16Array
   | typeof Uint16Array
-  | typeof Int32Array
-  | typeof Uint32Array
   | typeof Int32Array
   | typeof Uint32Array
   | typeof Float32Array

@@ -1,4 +1,7 @@
-// Hash
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 
 type HashOptions = {
@@ -21,10 +24,11 @@ export abstract class Hash {
     return;
   }
 
-  abstract hash(arrayBuffer: ArrayBuffer): Promise<string>;
+  abstract hash(arrayBuffer: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string>;
 
   async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     const arrayBuffers: ArrayBuffer[] = [];
     for await (const arrayBuffer of asyncIterator) {
@@ -32,7 +36,7 @@ export abstract class Hash {
       yield arrayBuffer;
     }
     const output = await this.concatenate(arrayBuffers);
-    const hash = await this.hash(output);
+    const hash = await this.hash(output, encoding);
     this.options.crypto?.onEnd?.({hash});
   }
 

@@ -1,20 +1,33 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {default as parsePotreeHierarchyChunk} from './parsers/parse-potree-hierarchy-chunk';
+import type {POTreeLoaderOptions} from './potree-loader';
+import type {POTreeNode} from './parsers/parse-potree-hierarchy-chunk';
+import {parsePotreeHierarchyChunk} from './parsers/parse-potree-hierarchy-chunk';
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Potree hierarchy chunk loader */
-// @ts-ignore
-export const PotreeHierarchyChunkLoader: LoaderWithParser = {
-  id: 'potree',
+export const PotreeHierarchyChunkLoader = {
+  dataType: null as unknown as POTreeNode,
+  batchType: null as never,
+
   name: 'potree Hierarchy Chunk',
+  id: 'potree-hrc',
+  module: 'potree',
+  version: VERSION,
   extensions: ['hrc'],
   mimeTypes: ['application/octet-stream'],
   // binary potree files have no header bytes, no content test function possible
   // test: ['...'],
-  parse: async (arrayBuffer, options) => await parseSync(arrayBuffer),
-  parseSync,
+  parse: async (arrayBuffer, options) => parsePotreeHierarchyChunk(arrayBuffer),
+  parseSync: (arrayBuffer, options) => parsePotreeHierarchyChunk(arrayBuffer),
+  options: {
+    potree: {}
+  },
   binary: true
-};
-
-function parseSync(arrayBuffer) {
-  return parsePotreeHierarchyChunk(arrayBuffer);
-}
+} as const satisfies LoaderWithParser<POTreeNode, never, POTreeLoaderOptions>;

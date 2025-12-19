@@ -1,11 +1,17 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc
 
 /* global TextEncoder, TextDecoder */
-import {concatenateArrayBuffers, Writer, WriterOptionsType} from '@loaders.gl/loader-utils';
-import {Table} from '@loaders.gl/schema';
+import {
+  concatenateArrayBuffers,
+  WriterOptionsType,
+  WriterWithEncoder
+} from '@loaders.gl/loader-utils';
+import type {Table} from '@loaders.gl/schema';
 
-export async function encodeTable<WriterT extends Writer = Writer>(
+export async function encodeTable<WriterT extends WriterWithEncoder = WriterWithEncoder>(
   data: Table,
   writer: WriterT,
   options?: WriterOptionsType<WriterT>
@@ -35,7 +41,7 @@ export async function encodeTable<WriterT extends Writer = Writer>(
   throw new Error('Writer could not encode data');
 }
 
-export async function encodeTableAsText<WriterT extends Writer = Writer>(
+export async function encodeTableAsText<WriterT extends WriterWithEncoder = WriterWithEncoder>(
   data: Table,
   writer: WriterT,
   options?: WriterOptionsType<WriterT>
@@ -44,14 +50,14 @@ export async function encodeTableAsText<WriterT extends Writer = Writer>(
     return await writer.encodeText(data, options);
   }
 
-  if (writer.text && (writer.encode || writer.encodeInBatches)) {
+  if (writer.text) {
     const arrayBuffer = await encodeTable(data, writer, options);
     return new TextDecoder().decode(arrayBuffer);
   }
-  throw new Error('Writer could not encode data as text');
+  throw new Error(`Writer ${writer.name} could not encode data as text`);
 }
 
-export function encodeTableInBatches<WriterT extends Writer = Writer>(
+export function encodeTableInBatches<WriterT extends WriterWithEncoder = WriterWithEncoder>(
   data: Table,
   writer: WriterT,
   options?: WriterOptionsType<WriterT>
@@ -65,7 +71,7 @@ export function encodeTableInBatches<WriterT extends Writer = Writer>(
   throw new Error('Writer could not encode data in batches');
 }
 
-function getIterator(data) {
-  const dataIterator = [{table: data, start: 0, end: data.length}];
+function getIterator(data: any): Iterable<{start: number; end: number}> {
+  const dataIterator = [{...data, start: 0, end: data.length}];
   return dataIterator;
 }

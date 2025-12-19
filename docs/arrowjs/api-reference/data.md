@@ -2,7 +2,6 @@
 
 > This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
 
-
 Untyped storage backing for `Vector`.
 
 Can be thought of as array of `ArrayBuffer` instances.
@@ -37,7 +36,6 @@ readonly buffers: `Buffers<T>`;
 
 readonly nullCount: Number;
 
-
 ## Static Methods
 
 Convenience methods for creating Data instances for each of the Arrow Vector types.
@@ -68,19 +66,19 @@ Convenience methods for creating Data instances for each of the Arrow Vector typ
 
 ### `Data.Utf8<T extends Utf8>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, valueOffsets: ValueOffsetsBuffer, data: Uint8Array) : Data
 
-### `Data.List<T extends List>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, valueOffsets: ValueOffsetsBuffer, child: Data<T['valueType']> | Vector<T['valueType']>) : Data
+### `Data.List<T extends List>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, valueOffsets: ValueOffsetsBuffer, child: `Data<T['valueType']> | Vector<T['valueType']>`) : Data
 
 ### `Data.FixedSizeList<T extends FixedSizeList>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, child: Data | Vector) : Data
 
 ### `Data.Struct<T extends Struct>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, children: (Data | Vector)[]) : Data
 
-### `Data.Map<T extends Map_>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, children: (Data | Vector)[]) : Data
+### `Data.Map<T extends Map_>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, children: `(Data | Vector)[])` : Data
 
-### `Data.Union<T extends SparseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, children: (Data | Vector)[]) : Data
+### `Data.Union<T extends SparseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, children: `(Data | Vector)[])` : Data
 
-### `Data.Union<T extends DenseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, valueOffsets: ValueOffsetsBuffer, children: (Data | Vector)[]) : Data
+### `Data.Union<T extends DenseUnion>`(type: T, offset: Number, length: Number, nullCount: Number, nullBitmap: NullBuffer, typeIds: TypeIdsBuffer, valueOffsets: ValueOffsetsBuffer, children: `(Data | Vector)[])` : Data
+
 }
-
 
 ## Methods
 
@@ -89,5 +87,3 @@ Convenience methods for creating Data instances for each of the Arrow Vector typ
 ### clone(type: DataType, offset?: Number, length?: Number, nullCount?: Number, buffers?: `Buffers<R>`, childData?: (Data | Vector)[]) : Data;
 
 ### slice(offset: Number, length: Number) : Data
-
-

@@ -2,19 +2,19 @@
 
 Decodes a Zip Archive into a file map.
 
-| Loader         | Characteristic                                                   |
-| -------------- | ---------------------------------------------------------------- |
-| File Extension | `.zip`                                                           |
-| File Type      | Binary                                                           |
+| Loader         | Characteristic                               |
+| -------------- | -------------------------------------------- |
+| File Extension | `.zip`                                       |
+| File Type      | Binary                                       |
 | File Format    | [ZIP Archive](/docs/modules/zip/formats/zip) |
-| Data Format    | "File Map"                                                       |
-| Decoder Type   | Asynchronous                                                     |
-| Worker Thread  | No                                                               |
-| Streaming      | No                                                               |
+| Data Format    | "File Map"                                   |
+| Decoder Type   | Asynchronous                                 |
+| Worker Thread  | No                                           |
+| Streaming      | No                                           |
 
 ## Usage
 
-```js
+```typescript
 import {parse} from '@loaders.gl/core';
 import {ZipLoader} from '@loaders.gl/zip';
 

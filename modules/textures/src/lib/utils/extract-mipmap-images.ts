@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {TextureLevel} from '@loaders.gl/schema';
 
 export type CompressedTextureExtractOptions = {

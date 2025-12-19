@@ -1,4 +1,8 @@
-import type {Writer, WriterOptions} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
@@ -27,23 +31,40 @@ const DEFAULT_DRACO_WRITER_OPTIONS = {
 };
 
 /**
+ * Browser worker doesn't work because of issue during "draco_encoder.js" loading.
+ * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
+ */
+export const DracoWriterWorker = {
+  id: 'draco-writer',
+  name: 'Draco compressed geometry writer',
+  module: 'draco',
+  version: VERSION,
+  worker: true,
+  options: {
+    draco: {},
+    source: null
+  }
+};
+
+/**
  * Exporter for Draco3D compressed geometries
  */
-export const DracoWriter: Writer<DracoMesh, unknown, DracoWriterOptions> = {
+export const DracoWriter = {
   name: 'DRACO',
   id: 'draco',
   module: 'draco',
   version: VERSION,
   extensions: ['drc'],
-  encode,
+  mimeTypes: ['application/octet-stream'],
   options: {
     draco: DEFAULT_DRACO_WRITER_OPTIONS
-  }
-};
+  },
+  encode
+} as const satisfies WriterWithEncoder<DracoMesh, unknown, DracoWriterOptions>;
 
 async function encode(data: DracoMesh, options: DracoWriterOptions = {}): Promise<ArrayBuffer> {
   // Dynamically load draco
-  const {draco} = await loadDracoEncoderModule(options);
+  const {draco} = await loadDracoEncoderModule(options.core || {});
   const dracoBuilder = new DRACOBuilder(draco);
 
   try {

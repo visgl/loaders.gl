@@ -17,7 +17,7 @@ Note: applications that want to parse GLB-formatted glTF files would normally us
 
 ## Usage
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {GLBLoader} from '@loaders.gl/gltf';
 const gltf = await load(url, GLBLoader);
@@ -39,7 +39,7 @@ Remarks:
 
 Returns
 
-```json
+```typescripton
 {
   "header": {
     "byteLength": number,

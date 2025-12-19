@@ -1,8 +1,7 @@
 // loaders.gl, MIT license
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
-import {promisify2} from '@loaders.gl/loader-utils';
+import {isBrowser, toArrayBuffer, promisify2} from '@loaders.gl/loader-utils';
 import type {ZlibOptions} from 'zlib';
 import * as zlib from 'zlib';
 

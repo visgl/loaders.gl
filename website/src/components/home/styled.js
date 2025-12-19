@@ -49,10 +49,15 @@ export const ProjectName = styled.h1`
   font-size: 5em;
   line-height: 1;
   text-transform: uppercase;
+  text-shadow: 1px 1px 1px black, 0 0 1em white, 0 0 0.2em white;
   letter-spacing: 4px;
   font-weight: 700;
   margin: 0;
   margin-bottom: 16px;
+`;
+
+export const TagLine = styled.p`
+  text-shadow: 1px 1px 2px black, 0 0 1em white, 0 0 0.2em lightblue;
 `;
 
 export const GetStartedLink = styled.a`

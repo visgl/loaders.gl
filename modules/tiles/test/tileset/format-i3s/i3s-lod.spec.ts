@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
-import {TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
+import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
 import {getFrameState, Tile3D, Tileset3D, getLodStatus} from '@loaders.gl/tiles';
 import {
   getBigLodMetricTileHeader,
@@ -16,8 +16,8 @@ import {
   VIEWPORT_ZOOM_OUT_OPTS
 } from '../../data/viewport-opts-examples';
 
-test('I3S LOD#lodJudge - should return "DIG" if lodMetric is 0 or NaN', (t) => {
-  const tilesetHeader = TILESET_STUB();
+test('I3S LOD#lodJudge - should return "DIG" if lodMetric is 0 or NaN', async (t) => {
+  const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
   const viewport = new WebMercatorViewport(VIEWPORT_DEFAULT);
@@ -37,8 +37,8 @@ test('I3S LOD#lodJudge - should return "DIG" if lodMetric is 0 or NaN', (t) => {
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "DRAW" if tile size projected on the screen plane less then LOD metric value', (t) => {
-  const tilesetHeader = TILESET_STUB();
+test('I3S LOD#lodJudge - should return "DRAW" if tile size projected on the screen plane less then LOD metric value', async (t) => {
+  const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
   const viewport = new WebMercatorViewport(VIEWPORT_DEFAULT);
@@ -52,8 +52,8 @@ test('I3S LOD#lodJudge - should return "DRAW" if tile size projected on the scre
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "DIG" when zoom in', (t) => {
-  const tilesetHeader = TILESET_STUB();
+test('I3S LOD#lodJudge - should return "DIG" when zoom in', async (t) => {
+  const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
   const viewport = new WebMercatorViewport(VIEWPORT_ZOOM_OPTS);
@@ -67,8 +67,8 @@ test('I3S LOD#lodJudge - should return "DIG" when zoom in', (t) => {
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "DRAW" after rotation', (t) => {
-  const tilesetHeader = TILESET_STUB();
+test('I3S LOD#lodJudge - should return "DRAW" after rotation', async (t) => {
+  const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
   const viewport = new WebMercatorViewport(VIEWPORT_ROTATED_OPTS);
@@ -82,8 +82,8 @@ test('I3S LOD#lodJudge - should return "DRAW" after rotation', (t) => {
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "OUT" if projected size too small', (t) => {
-  const tilesetHeader = TILESET_STUB();
+test('I3S LOD#lodJudge - should return "OUT" if projected size too small', async (t) => {
+  const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
   const viewport = new WebMercatorViewport(VIEWPORT_ZOOM_OUT_OPTS);
@@ -97,8 +97,8 @@ test('I3S LOD#lodJudge - should return "OUT" if projected size too small', (t) =
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "DIG" in the large LOD metric value case', (t) => {
-  const tilesetHeader = TILESET_STUB();
+test('I3S LOD#lodJudge - should return "DIG" in the large LOD metric value case', async (t) => {
+  const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
   const viewport = new WebMercatorViewport(VIEWPORT_NEW_YORK_OPTS);

@@ -21,7 +21,7 @@ Note: Most applications will want to use the `ShapefileLoader` instead of this l
 
 ## Usage
 
-```js
+```typescript
 import {SHPLoader} from '@loaders.gl/shapefile';
 import {load} from '@loaders.gl/core';
 

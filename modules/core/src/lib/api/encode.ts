@@ -1,82 +1,60 @@
-import {Writer, WriterOptions, canEncodeWithWorker} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {
+  WriterOptions,
+  WriterWithEncoder,
+  WriterOptionsType,
+  WriterDataType,
+  WriterBatchType
+} from '@loaders.gl/loader-utils';
+import {canEncodeWithWorker, NodeFile, resolvePath, isBrowser} from '@loaders.gl/loader-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
-import {concatenateArrayBuffers, resolvePath} from '@loaders.gl/loader-utils';
-import {isBrowser} from '@loaders.gl/loader-utils';
-import {writeFile} from '../fetch/write-file';
 import {fetchFile} from '../fetch/fetch-file';
 import {getLoaderOptions} from './loader-options';
 
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export async function encode(
-  data: any,
-  writer: Writer,
-  options?: WriterOptions
+export async function encode<WriterT extends WriterWithEncoder>(
+  data: WriterDataType<WriterT>,
+  writer: WriterT,
+  options_?: WriterOptionsType<WriterT>
 ): Promise<ArrayBuffer> {
   const globalOptions = getLoaderOptions() as WriterOptions;
   // const globalOptions: WriterOptions = {}; // getWriterOptions();
-  options = {...globalOptions, ...options};
+  const options = {...globalOptions, ...options_};
+
+  // Handle the special case where we are invoking external command-line tools
+  if (writer.encodeURLtoURL) {
+    return encodeWithCommandLineTool(writer, data, options);
+  }
+
+  // Worker support
   if (canEncodeWithWorker(writer, options)) {
     return await processOnWorker(writer, data, options);
   }
 
   // TODO Merge default writer options with options argument like it is done in load module.
-  if (writer.encode) {
-    return await writer.encode(data, options);
-  }
-
-  if (writer.encodeSync) {
-    return writer.encodeSync(data, options);
-  }
-
-  if (writer.encodeText) {
-    return new TextEncoder().encode(await writer.encodeText(data, options));
-  }
-
-  if (writer.encodeInBatches) {
-    // Create an iterator representing the data
-    // TODO - Assumes this is a table
-    const batches = encodeInBatches(data, writer, options);
-
-    // Concatenate the output
-    const chunks: any[] = [];
-    for await (const batch of batches) {
-      chunks.push(batch);
-    }
-    // @ts-ignore
-    return concatenateArrayBuffers(...chunks);
-  }
-
-  if (!isBrowser && writer.encodeURLtoURL) {
-    // TODO - how to generate filenames with correct extensions?
-    const tmpInputFilename = getTemporaryFilename('input');
-    await writeFile(tmpInputFilename, data);
-
-    const tmpOutputFilename = getTemporaryFilename('output');
-
-    const outputFilename = await encodeURLtoURL(
-      tmpInputFilename,
-      tmpOutputFilename,
-      writer,
-      options
-    );
-
-    const response = await fetchFile(outputFilename);
-    return response.arrayBuffer();
-  }
-
-  throw new Error('Writer could not encode data');
+  return await writer.encode(data, options);
 }
 
 /**
  * Encode loaded data into a binary ArrayBuffer using the specified Writer.
  */
-export function encodeSync(data: any, writer: Writer, options?: WriterOptions): ArrayBuffer {
+export function encodeSync<WriterT extends WriterWithEncoder>(
+  data: WriterDataType<WriterT>,
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
+): ArrayBuffer {
   if (writer.encodeSync) {
     return writer.encodeSync(data, options);
   }
-  throw new Error('Writer could not synchronously encode data');
+  if (writer.encodeTextSync) {
+    return new TextEncoder().encode(writer.encodeTextSync(data, options));
+  }
+  throw new Error(`Writer ${writer.name} could not synchronously encode data`);
 }
 
 /**
@@ -85,30 +63,57 @@ export function encodeSync(data: any, writer: Writer, options?: WriterOptions): 
  * It is not optimized for performance. Data maybe converted from text to binary and back.
  * @throws if the writer does not generate text output
  */
-export async function encodeText(
-  data: any,
-  writer: Writer,
-  options?: WriterOptions
+export async function encodeText<WriterT extends WriterWithEncoder>(
+  data: WriterDataType<WriterT>,
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
 ): Promise<string> {
-  if (writer.text && writer.encodeText) {
+  if (writer.encodeText) {
     return await writer.encodeText(data, options);
   }
 
-  if (writer.text && (writer.encode || writer.encodeInBatches)) {
-    const arrayBuffer = await encode(data, writer, options);
+  if (writer.encodeTextSync) {
+    return writer.encodeTextSync(data, options);
+  }
+
+  if (writer.text) {
+    const arrayBuffer = await writer.encode(data, options);
     return new TextDecoder().decode(arrayBuffer);
   }
 
-  throw new Error('Writer could not encode data as text');
+  throw new Error(`Writer ${writer.name} could not encode data as text`);
+}
+
+/**
+ * Encode loaded data to text using the specified Writer
+ * @note This is a convenience function not intended for production use on large input data.
+ * It is not optimized for performance. Data maybe converted from text to binary and back.
+ * @throws if the writer does not generate text output
+ */
+export function encodeTextSync<WriterT extends WriterWithEncoder>(
+  data: WriterDataType<WriterT>,
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
+): string {
+  if (writer.encodeTextSync) {
+    return writer.encodeTextSync(data, options);
+  }
+
+  if (writer.text && writer.encodeSync) {
+    const arrayBuffer = encodeSync(data, writer, options);
+    return new TextDecoder().decode(arrayBuffer);
+  }
+
+  throw new Error(`Writer ${writer.name} could not encode data as text`);
 }
 
 /**
  * Encode loaded data into a sequence (iterator) of binary ArrayBuffers using the specified Writer.
  */
-export function encodeInBatches(
-  data: any,
-  writer: Writer,
-  options?: WriterOptions
+export function encodeInBatches<WriterT extends WriterWithEncoder>(
+  data: WriterBatchType<WriterT>,
+  writer: WriterT,
+  options?: WriterOptionsType<WriterT>
 ): AsyncIterable<ArrayBuffer> {
   if (writer.encodeInBatches) {
     const dataIterator = getIterator(data);
@@ -116,7 +121,24 @@ export function encodeInBatches(
     return writer.encodeInBatches(dataIterator, options);
   }
   // TODO -fall back to atomic encode?
-  throw new Error('Writer could not encode data in batches');
+  throw new Error(`Writer ${writer.name} could not encode in batches`);
+}
+
+/**
+ * Encode loaded data into a sequence (iterator) of binary ArrayBuffers using the specified Writer.
+ */
+export function encodeTextInBatches(
+  data: unknown,
+  writer: WriterWithEncoder,
+  options?: WriterOptions
+): AsyncIterable<ArrayBuffer> {
+  if (writer.encodeTextInBatches) {
+    const dataIterator = getIterator(data);
+    // @ts-expect-error
+    return writer.encodeTextInBatches(dataIterator, options);
+  }
+  // TODO -fall back to atomic encode?
+  throw new Error(`Writer ${writer.name} could not encode text in batches`);
 }
 
 /**
@@ -124,10 +146,10 @@ export function encodeInBatches(
  * @note Node.js only. This function enables using command-line converters as "writers".
  */
 export async function encodeURLtoURL(
-  inputUrl,
-  outputUrl,
-  writer: Writer,
-  options
+  inputUrl: string,
+  outputUrl: string,
+  writer: Omit<WriterWithEncoder, 'encode'>,
+  options?: WriterOptions
 ): Promise<string> {
   inputUrl = resolvePath(inputUrl);
   outputUrl = resolvePath(outputUrl);
@@ -138,11 +160,33 @@ export async function encodeURLtoURL(
   return outputFilename;
 }
 
+/** Helper function to encode via external tool (typically command line execution in Node.js) */
+async function encodeWithCommandLineTool(
+  writer: WriterWithEncoder,
+  data: unknown,
+  options: WriterOptions
+): Promise<ArrayBuffer> {
+  if (isBrowser) {
+    throw new Error(`Writer ${writer.name} not supported in browser`);
+  }
+  // TODO - how to generate filenames with correct extensions?
+  const tmpInputFilename = getTemporaryFilename('input');
+  const file = new NodeFile(tmpInputFilename, 'w');
+  await file.write(data as ArrayBuffer);
+
+  const tmpOutputFilename = getTemporaryFilename('output');
+
+  const outputFilename = await encodeURLtoURL(tmpInputFilename, tmpOutputFilename, writer, options);
+
+  const response = await fetchFile(outputFilename);
+  return response.arrayBuffer();
+}
+
 /**
  * @todo TODO - this is an unacceptable hack!!!
  */
-function getIterator(data) {
-  const dataIterator = [{table: data, start: 0, end: data.length}];
+function getIterator(data: any): Iterable<{table: any; start: number; end: number}> {
+  const dataIterator = [{...data, start: 0, end: data.length}];
   return dataIterator;
 }
 

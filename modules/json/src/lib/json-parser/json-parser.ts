@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // @ts-nocheck
 
 import ClarinetParser, {ClarinetParserOptions} from '../clarinet/clarinet';

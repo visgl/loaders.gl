@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {getTransferList, getTransferListForWriter} from '@loaders.gl/worker-utils';
 
@@ -124,7 +128,7 @@ test('getTransferListForWriter - Should handle hested options.', async (t) => {
       }
     },
     four: {
-      five: function test1() {}
+      five: () => {}
     },
     six: {
       deep: {

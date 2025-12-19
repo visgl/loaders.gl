@@ -1,0 +1,10 @@
+{
+    "name": "Geography Class",
+    "scheme": "tms",
+    "tiles": [ "http://a.tiles.mapbox.com/mapbox/1.0.0/geography-class/{z}/{x}/{y}.png" ],
+    "grids": [ "http://a.tiles.mapbox.com/mapbox/1.0.0/geography-class/{z}/{x}/{y}.grid.json" ],
+    "minzoom": 0,
+    "maxzoom": 8,
+    "bounds": [ -179.99992505544913, -85.05112231458043, 179.99992505544913, 85.05112231458043 ],
+    "center": [ 0, 0, 4 ]
+}

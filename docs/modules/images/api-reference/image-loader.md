@@ -14,7 +14,7 @@ An image loader that works under both Node.js (requires `@loaders.gl/polyfills`)
 
 ## Usage
 
-```js
+```typescript
 import '@loaders.gl/polyfills'; // only needed if using under Node
 import {ImageLoader} from '@loaders.gl/images';
 import {load} from '@loaders.gl/core';

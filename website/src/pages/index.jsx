@@ -3,9 +3,7 @@ import {Home} from '../components';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import styled from 'styled-components';
 import Layout from '@theme/Layout';
-// import HeroExample from '../examples/home-demo';
-// const HeroExample = ({children}) => <div>{children}</div>;
-import {HeroExample} from '../../../examples/website/i3s/src/app';
+import HeroExample from '../examples/home-demo';
 
 const FeatureImage = styled.div`
   position: absolute;

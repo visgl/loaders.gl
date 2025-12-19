@@ -9,9 +9,9 @@ import {
   load,
   parse,
   parseSync,
-  parseInBatches
+  parseInBatches,
+  makeIterator
 } from '@loaders.gl/core';
-import {makeIterator} from '@loaders.gl/core';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
@@ -50,7 +50,9 @@ test('PLYLoader#parse(binary)', async (t) => {
 });
 
 test('PLYLoader#parse(ascii)', async (t) => {
-  const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader, {worker: false});
+  const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader, {
+    core: {worker: false}
+  });
 
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');

@@ -2,8 +2,8 @@
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-- *[`loaders.gl/wms`](/docs/modules/wms)*
-- *[Wikpedia article](https://en.wikipedia.org/wiki/Geography_Markup_Language)*
+- _[`loaders.gl/wms`](/docs/modules/wms)_
+- _[Wikpedia article](https://en.wikipedia.org/wiki/Geography_Markup_Language)_
 
 The Geography Markup Language (GML) is an XML grammar defined by the Open Geospatial Consortium (OGC) to express geographical features.
 
@@ -11,7 +11,7 @@ GML serves as a modeling language for geographic systems as well as an open inte
 
 ## Limitations
 
-GML is a very ambitious format, with a large set of primitives and many ways to express similar geometries by composing different primitives. Parsing GML is generally considered challenging, even when the goal is only to support the "GeoJSON subset" of primitives.  Because of this, full support for GML is currently out of scope for loaders.gl.
+GML is a very ambitious format, with a large set of primitives and many ways to express similar geometries by composing different primitives. Parsing GML is generally considered challenging, even when the goal is only to support the "GeoJSON subset" of primitives. Because of this, full support for GML is currently out of scope for loaders.gl.
 
 The `GMLLoader` only supports parsing the standard geospatial subset of features (points, multipoints, lines, linestrings, polygons and multipolygons), on a "best effort" basis. Because of this, the `GMLLoader` is treated as a geospatial loader and can return GeoJSON style output.
 
@@ -31,7 +31,7 @@ The following example encodes the geometry of a feature (a building in this case
               491888.999999459,5458045.99963358 491904.999999458,5458044.99963358
               491908.999999462,5458064.99963358 491924.999999461,5458064.99963358
               491925.999999462,5458079.99963359 491977.999999466,5458120.9996336
-              491953.999999466,5458017.99963357 
+              491953.999999466,5458017.99963357
             </CData>
         </LineString>
     </Polygon>
@@ -51,10 +51,9 @@ Properties (in addition to the geometry the geometry) can also be added:
               491888.999999459,5458045.99963358 491904.999999458,5458044.99963358
               491908.999999462,5458064.99963358 491924.999999461,5458064.99963358
               491925.999999462,5458079.99963359 491977.999999466,5458120.9996336
-              491953.999999466,5458017.99963357 
+              491953.999999466,5458017.99963357
             </CData>
     </LineString>
   </Polygon>
 </Feature>
 ```
-

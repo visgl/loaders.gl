@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // NOTE - there is a copy of this function is both in core and loader-utils
 // core does not need all the utils in loader-utils, just this one.
 

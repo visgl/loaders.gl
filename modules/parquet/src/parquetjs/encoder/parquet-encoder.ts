@@ -1,7 +1,12 @@
-// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
+
 /* eslint-disable camelcase */
 import {stream} from '@loaders.gl/loader-utils';
-import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs';
+import {ParquetCodecOptions, PARQUET_CODECS} from '../codecs/index';
 import * as Compression from '../compression';
 import {
   ParquetRowGroup,
@@ -29,7 +34,7 @@ import {
   RowGroup,
   SchemaElement,
   Type
-} from '../parquet-thrift';
+} from '../parquet-thrift/index';
 import {osopen, oswrite, osclose} from '../utils/file-utils';
 import {getBitWidth, serializeThrift} from '../utils/read-utils';
 import Int64 from 'node-int64';
@@ -632,6 +637,7 @@ function encodeFooter(
 
   const metadataEncoded = serializeThrift(metadata);
   const footerEncoded = Buffer.alloc(metadataEncoded.length + 8);
+
   metadataEncoded.copy(footerEncoded);
   footerEncoded.writeUInt32LE(metadataEncoded.length, metadataEncoded.length);
   footerEncoded.write(PARQUET_MAGIC, metadataEncoded.length + 4);

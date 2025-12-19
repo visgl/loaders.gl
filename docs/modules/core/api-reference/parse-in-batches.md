@@ -6,11 +6,15 @@ Batched parsing is only supported by a subset of loaders. Check documentation of
 
 From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io) `parseInBatches` can be used with all loaders. Non-supporting loaders will wait until all data has arrived, and emit a single batch containing the parsed data for the entire input (effectively behave as if `parse` had been called).
 
+:::caution
+When calling parse from a loader to invoke a sub-loader, do not use this function. Use the `parseInBatchesWithContext` counterparts in `@loaders.gl/loader-utils``
+:::
+
 ## Usage
 
 Parse CSV in batches (emitting a batch of rows every time data arrives from the network):
 
-```js
+```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/obj';
 
@@ -22,7 +26,7 @@ for await (const batch of batchIterator) {
 
 Parse CSV in batches, requesting an initial metadata batch:
 
-```js
+```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/obj';
 

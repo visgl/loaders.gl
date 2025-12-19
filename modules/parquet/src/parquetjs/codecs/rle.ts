@@ -1,4 +1,8 @@
-// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
 
 import type {PrimitiveType} from '../schema/declare';
 import type {CursorBuffer, ParquetCodecOptions} from './declare';
@@ -63,6 +67,8 @@ export function encodeValues(
   }
 
   const envelope = Buffer.alloc(buf.length + 4);
+
+  // @ts-ignore buffer polyfill
   envelope.writeUInt32LE(buf.length, undefined);
   buf.copy(envelope, 4);
 
@@ -87,12 +93,18 @@ export function decodeValues(
   while (values.length < count) {
     const header = varint.decode(cursor.buffer, cursor.offset);
     cursor.offset += varint.encodingLength(header);
+    let decodedValues: number[];
     if (header & 1) {
       const count = (header >> 1) * 8;
-      values.push(...decodeRunBitpacked(cursor, count, opts));
+      decodedValues = decodeRunBitpacked(cursor, count, opts);
     } else {
       const count = header >> 1;
-      values.push(...decodeRunRepeated(cursor, count, opts));
+      decodedValues = decodeRunRepeated(cursor, count, opts);
+    }
+
+    // strange failure in docusaurus / webpack if we don't cast the type here
+    for (const value of decodedValues as any[]) {
+      values.push(value);
     }
   }
   values = values.slice(0, count);

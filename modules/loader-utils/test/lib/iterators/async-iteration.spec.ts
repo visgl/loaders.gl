@@ -6,12 +6,13 @@ import {
   makeTextDecoderIterator,
   makeTextEncoderIterator,
   makeLineIterator,
-  makeNumberedLineIterator
+  makeNumberedLineIterator,
+  concatenateArrayBuffersAsync
 } from '@loaders.gl/loader-utils';
 
 import {NDJSONLoader} from '@loaders.gl/json';
 
-const parseNDJSONInBatches = NDJSONLoader.parseInBatches!;
+const parseNDJSONInBatches = NDJSONLoader.parseInBatches;
 
 const setTimeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
@@ -98,6 +99,7 @@ test('async-iterator#makeNumberedLineIterator', async (t) => {
 test('async-iterator#parseNDJSONInBatches', async (t) => {
   let id = 0;
   for await (const batch of parseNDJSONInBatches(asyncNDJson())) {
+    // @ts-expect-error
     const obj = batch.data[0];
     t.equals(typeof obj, 'object', 'async iterator yields object');
     /* eslint-disable */
@@ -106,4 +108,37 @@ test('async-iterator#parseNDJSONInBatches', async (t) => {
     t.equals(obj['flag'], Boolean(id % 2), 'flag field matches');
     id++;
   }
+});
+
+test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and views', async (t) => {
+  const sharedArrayBuffer =
+    typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(4) : new ArrayBuffer(4);
+  const sharedView = new Uint8Array(sharedArrayBuffer);
+  sharedView.set([1, 2, 3, 4]);
+
+  const view = new Uint8Array([5, 6]);
+
+  const result = await concatenateArrayBuffersAsync([
+    sharedArrayBuffer,
+    view.subarray(1),
+    new DataView(new Uint8Array([7, 8]).buffer)
+  ]);
+
+  t.deepEquals(new Uint8Array(result), new Uint8Array([1, 2, 3, 4, 6, 7, 8]));
+  t.end();
+});
+
+test('async-iterator#concatenateArrayBuffersAsync copies numeric views', async (t) => {
+  const floatView = new Float32Array([1.25, 2.5]);
+  const int16View = new Int16Array([0x1122, 0x3344]);
+
+  const result = await concatenateArrayBuffersAsync([floatView, int16View]);
+
+  const reconstructed = new Uint8Array(result);
+  const expected = new Uint8Array(new Uint8Array(floatView.buffer).length + int16View.byteLength);
+  expected.set(new Uint8Array(floatView.buffer));
+  expected.set(new Uint8Array(int16View.buffer), floatView.byteLength);
+
+  t.deepEquals(reconstructed, expected, 'copies view bytes instead of truncating values');
+  t.end();
 });

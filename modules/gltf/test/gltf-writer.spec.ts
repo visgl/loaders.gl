@@ -1,8 +1,9 @@
+/* eslint-disable camelcase */
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateWriter} from 'test/common/conformance';
 
-import {parse, encodeSync, encode, isBrowser, load} from '@loaders.gl/core';
+import {parse, encodeSync, encode, load} from '@loaders.gl/core';
 import {GLTFLoader, GLTFWriter, GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
 import {ImageWriter} from '@loaders.gl/images';
 
@@ -56,6 +57,117 @@ test('GLTFWriter#encode', async (t) => {
   t.end();
 });
 
+const gltfWithExtension = {
+  json: {
+    asset: {version: '1'},
+    extensionsUsed: ['EXT_mesh_features'],
+    meshes: [
+      {
+        primitives: [
+          {
+            attributes: {},
+            extensions: {
+              EXT_mesh_features: {
+                featureIds: [
+                  {
+                    featureCount: 7,
+                    propertyTable: 8,
+                    data: [4, 4, 4, 3, 0, 1, 2]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+};
+
+const gltfJsonWithExtensionEncodedExpected = {
+  asset: {
+    version: '1'
+  },
+  extensionsUsed: ['EXT_mesh_features'],
+  meshes: [
+    {
+      primitives: [
+        {
+          attributes: {
+            _FEATURE_ID_0: 0
+          },
+          extensions: {
+            EXT_mesh_features: {
+              featureIds: [
+                {
+                  featureCount: 7,
+                  propertyTable: 8,
+                  attribute: 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  bufferViews: [
+    {
+      buffer: 0,
+      byteOffset: 0,
+      byteLength: 28
+    }
+  ],
+  accessors: [
+    {
+      bufferView: 0,
+      type: 'SCALAR',
+      componentType: 5125,
+      count: 7,
+      max: undefined,
+      min: undefined
+    }
+  ],
+  buffers: [
+    {
+      byteLength: 28
+    }
+  ]
+};
+
+const arrayBufferExpected = new Uint8Array([
+  103, 108, 84, 70, 2, 0, 0, 0, 200, 1, 0, 0, 144, 1, 0, 0, 74, 83, 79, 78, 123, 34, 97, 115, 115,
+  101, 116, 34, 58, 123, 34, 118, 101, 114, 115, 105, 111, 110, 34, 58, 34, 49, 34, 125, 44, 34,
+  101, 120, 116, 101, 110, 115, 105, 111, 110, 115, 85, 115, 101, 100, 34, 58, 91, 34, 69, 88, 84,
+  95, 109, 101, 115, 104, 95, 102, 101, 97, 116, 117, 114, 101, 115, 34, 93, 44, 34, 109, 101, 115,
+  104, 101, 115, 34, 58, 91, 123, 34, 112, 114, 105, 109, 105, 116, 105, 118, 101, 115, 34, 58, 91,
+  123, 34, 97, 116, 116, 114, 105, 98, 117, 116, 101, 115, 34, 58, 123, 34, 95, 70, 69, 65, 84, 85,
+  82, 69, 95, 73, 68, 95, 48, 34, 58, 48, 125, 44, 34, 101, 120, 116, 101, 110, 115, 105, 111, 110,
+  115, 34, 58, 123, 34, 69, 88, 84, 95, 109, 101, 115, 104, 95, 102, 101, 97, 116, 117, 114, 101,
+  115, 34, 58, 123, 34, 102, 101, 97, 116, 117, 114, 101, 73, 100, 115, 34, 58, 91, 123, 34, 102,
+  101, 97, 116, 117, 114, 101, 67, 111, 117, 110, 116, 34, 58, 55, 44, 34, 112, 114, 111, 112, 101,
+  114, 116, 121, 84, 97, 98, 108, 101, 34, 58, 56, 44, 34, 97, 116, 116, 114, 105, 98, 117, 116,
+  101, 34, 58, 48, 125, 93, 125, 125, 125, 93, 125, 93, 44, 34, 98, 117, 102, 102, 101, 114, 86,
+  105, 101, 119, 115, 34, 58, 91, 123, 34, 98, 117, 102, 102, 101, 114, 34, 58, 48, 44, 34, 98, 121,
+  116, 101, 79, 102, 102, 115, 101, 116, 34, 58, 48, 44, 34, 98, 121, 116, 101, 76, 101, 110, 103,
+  116, 104, 34, 58, 50, 56, 125, 93, 44, 34, 97, 99, 99, 101, 115, 115, 111, 114, 115, 34, 58, 91,
+  123, 34, 98, 117, 102, 102, 101, 114, 86, 105, 101, 119, 34, 58, 48, 44, 34, 116, 121, 112, 101,
+  34, 58, 34, 83, 67, 65, 76, 65, 82, 34, 44, 34, 99, 111, 109, 112, 111, 110, 101, 110, 116, 84,
+  121, 112, 101, 34, 58, 53, 49, 50, 53, 44, 34, 99, 111, 117, 110, 116, 34, 58, 55, 125, 93, 44,
+  34, 98, 117, 102, 102, 101, 114, 115, 34, 58, 91, 123, 34, 98, 121, 116, 101, 76, 101, 110, 103,
+  116, 104, 34, 58, 50, 56, 125, 93, 125, 32, 32, 28, 0, 0, 0, 66, 73, 78, 0, 4, 0, 0, 0, 4, 0, 0,
+  0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0
+]).buffer;
+
+test('GLTFWriter#encode with extensions', async (t) => {
+  const gltfBuilder = new GLTFScenegraph(gltfWithExtension);
+  const arrayBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
+  t.deepEqual(gltfBuilder.gltf.json, gltfJsonWithExtensionEncodedExpected);
+  t.deepEqual(arrayBuffer, arrayBufferExpected);
+
+  t.end();
+});
+
 test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder functions', async (t) => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
@@ -65,15 +177,20 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
   const nodeIndex = gltfBuilder.addNode({meshIndex});
   const sceneIndex = gltfBuilder.addScene({nodeIndices: [nodeIndex]});
   gltfBuilder.setDefaultScene(sceneIndex);
-  const imageBuffer = await encode(inputData.images[0].image, ImageWriter);
-  const imageIndex = gltfBuilder.addImage(imageBuffer, 'image/jpeg');
-  const textureIndex = gltfBuilder.addTexture({imageIndex});
-  const pbrMaterialInfo = {
-    pbrMetallicRoughness: {
-      baseColorTexture: textureIndex
-    }
-  };
-  gltfBuilder.addMaterial(pbrMaterialInfo);
+  if (inputData.images[0].bufferView?.data) {
+    const imageBuffer = new ArrayBuffer(inputData.images[0].bufferView.data.byteLength);
+    const imageBufferData = new Uint8Array(imageBuffer);
+    imageBufferData.set(inputData.images[0].bufferView.data);
+    const imageIndex = gltfBuilder.addImage(imageBuffer, 'image/jpeg');
+    const textureIndex = gltfBuilder.addTexture({imageIndex});
+    const pbrMaterialInfo = {
+      pbrMetallicRoughness: {
+        baseColorTexture: textureIndex
+      }
+    };
+    gltfBuilder.addMaterial(pbrMaterialInfo);
+  }
+
   gltfBuilder.createBinaryChunk();
 
   checkJson(t, gltfBuilder);
@@ -168,12 +285,8 @@ function checkJson(t, gltfBuilder) {
   t.equal(gltfBuilder.json.accessors.length, 2);
 
   t.ok(gltfBuilder.json.buffers[0]);
-  if (isBrowser) {
-    // TODO - something strange is going on here, we are getting variable lengths
-    // t.equal(gltfBuilder.json.buffers[0].byteLength, 879252);
-  } else {
-    t.equal(gltfBuilder.json.buffers[0].byteLength, 374108);
-  }
+
+  t.equal(gltfBuilder.json.buffers[0].byteLength, 383372);
 
   t.ok(gltfBuilder.json.bufferViews);
   t.equal(gltfBuilder.json.bufferViews.length, 3);

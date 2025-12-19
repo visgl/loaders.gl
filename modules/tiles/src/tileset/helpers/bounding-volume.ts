@@ -18,6 +18,10 @@ const scratchPoint = new Vector3();
 const scratchScale = new Vector3();
 const scratchNorthWest = new Vector3();
 const scratchSouthEast = new Vector3();
+const scratchCenter = new Vector3();
+const scratchXAxis = new Vector3();
+const scratchYAxis = new Vector3();
+const scratchZAxis = new Vector3();
 // const scratchRectangle = new Rectangle();
 // const scratchOrientedBoundingBox = new OrientedBoundingBox();
 // const scratchTransform = new Matrix4();
@@ -29,7 +33,7 @@ const scratchSouthEast = new Vector3();
  * @param [result] The object onto which to store the result.
  * @returns The modified result parameter or a new TileBoundingVolume instance if none was provided.
  */
-export function createBoundingVolume(boundingVolumeHeader, transform, result) {
+export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
   assert(boundingVolumeHeader, '3D Tile: boundingVolume must be defined');
 
   // boundingVolume schema:
@@ -38,28 +42,7 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result) {
     return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
-    // [west, south, east, north, minimum height, maximum height]
-    // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
-    // Heights are in meters above (or below) the WGS 84 ellipsoid.
-    const [west, south, east, north, minHeight, maxHeight] = boundingVolumeHeader.region;
-
-    const northWest = Ellipsoid.WGS84.cartographicToCartesian(
-      [degrees(west), degrees(north), minHeight],
-      scratchNorthWest
-    );
-    const southEast = Ellipsoid.WGS84.cartographicToCartesian(
-      [degrees(east), degrees(south), maxHeight],
-      scratchSouthEast
-    );
-    const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyScalar(0.5);
-    const radius = new Vector3().subVectors(northWest, southEast).len() / 2.0;
-
-    // TODO improve region boundingVolume
-    // for now, create a sphere as the boundingVolume instead of box
-    return createSphere(
-      [centerInCartesian[0], centerInCartesian[1], centerInCartesian[2], radius],
-      new Matrix4()
-    );
+    return createObbFromRegion(boundingVolumeHeader.region);
   }
 
   if (boundingVolumeHeader.sphere) {
@@ -106,7 +89,7 @@ export function getCartographicBounds(
   throw new Error('Unkown boundingVolume type');
 }
 
-function createBox(box, transform, result) {
+function createBox(box, transform, result?) {
   // https://math.gl/modules/culling/docs/api-reference/oriented-bounding-box
   // 1. A half-axes based representation.
   // box: An array of 12 numbers that define an oriented bounding box.
@@ -234,6 +217,52 @@ function createSphere(sphere, transform, result?) {
   }
 
   return new BoundingSphere(center, radius);
+}
+
+/**
+ * Create OrientedBoundingBox instance from region 3D tiles bounding volume
+ * @param region - region 3D tiles bounding volume
+ * @returns OrientedBoundingBox instance
+ */
+function createObbFromRegion(region: number[]): OrientedBoundingBox {
+  // [west, south, east, north, minimum height, maximum height]
+  // Latitudes and longitudes are in the WGS 84 datum as defined in EPSG 4979 and are in radians.
+  // Heights are in meters above (or below) the WGS 84 ellipsoid.
+  const [west, south, east, north, minHeight, maxHeight] = region;
+
+  const northWest = Ellipsoid.WGS84.cartographicToCartesian(
+    [degrees(west), degrees(north), minHeight],
+    scratchNorthWest
+  );
+  const southEast = Ellipsoid.WGS84.cartographicToCartesian(
+    [degrees(east), degrees(south), maxHeight],
+    scratchSouthEast
+  );
+  const centerInCartesian = new Vector3().addVectors(northWest, southEast).multiplyByScalar(0.5);
+  Ellipsoid.WGS84.cartesianToCartographic(centerInCartesian, scratchCenter);
+
+  Ellipsoid.WGS84.cartographicToCartesian(
+    [degrees(east), scratchCenter[1], scratchCenter[2]],
+    scratchXAxis
+  );
+  Ellipsoid.WGS84.cartographicToCartesian(
+    [scratchCenter[0], degrees(north), scratchCenter[2]],
+    scratchYAxis
+  );
+  Ellipsoid.WGS84.cartographicToCartesian(
+    [scratchCenter[0], scratchCenter[1], maxHeight],
+    scratchZAxis
+  );
+
+  return createBox(
+    [
+      ...centerInCartesian,
+      ...scratchXAxis.subtract(centerInCartesian),
+      ...scratchYAxis.subtract(centerInCartesian),
+      ...scratchZAxis.subtract(centerInCartesian)
+    ],
+    new Matrix4()
+  );
 }
 
 /**

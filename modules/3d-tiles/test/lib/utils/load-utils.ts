@@ -1,9 +1,13 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT AND Apache-2.0
+// Copyright vis.gl contributors
+
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {fetchFile, load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tileset3D, Tile3D} from '@loaders.gl/tiles';
+import {Tileset3D, type Tile3D} from '@loaders.gl/tiles';
 
 /**
  */

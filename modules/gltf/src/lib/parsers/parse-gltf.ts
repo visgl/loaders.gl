@@ -1,11 +1,12 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
-import type {LoaderContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLB} from '../types/glb-types';
 import type {ParseGLBOptions} from './parse-glb';
 
-import {parseJSON, sliceArrayBuffer} from '@loaders.gl/loader-utils';
+import type {ImageType, TextureLevel} from '@loaders.gl/schema';
+import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 
@@ -23,9 +24,8 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   loadBuffers?: boolean;
   decompressMeshes?: boolean;
   excludeExtensions?: string[];
-
   /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
-  postProcess?: false;
+  postProcess?: never;
 };
 
 /** Check if an array buffer appears to contain GLTF data */
@@ -47,23 +47,18 @@ export async function parseGLTF(
 
   preprocessExtensions(gltf, options, context);
 
-  const promises: Promise<any>[] = [];
-
   // Load linked buffers asynchronously and decodes base64 buffers in parallel
   if (options?.gltf?.loadBuffers && gltf.json.buffers) {
     await loadBuffers(gltf, options, context);
   }
 
+  // loadImages and decodeExtensions should not be running in parallel, because
+  // decodeExtensions uses data from images taken during the loadImages call.
   if (options?.gltf?.loadImages) {
-    const promise = loadImages(gltf, options, context);
-    promises.push(promise);
+    await loadImages(gltf, options, context);
   }
 
-  const promise = decodeExtensions(gltf, options, context);
-  promises.push(promise);
-
-  // Parallelize image loading and buffer loading/extension decoding
-  await Promise.all(promises);
+  await decodeExtensions(gltf, options, context);
 
   return gltf;
 }
@@ -75,14 +70,14 @@ export async function parseGLTF(
  * @param byteOffset
  * @param options
  */
-function parseGLTFContainerSync(gltf, data, byteOffset, options) {
+function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptions) {
   // Initialize gltf container
-  if (options.uri) {
-    gltf.baseUri = options.uri;
+  if (options.core?.baseUri) {
+    gltf.baseUri = options.core?.baseUri;
   }
 
   // If data is binary and starting with magic bytes, assume binary JSON text, convert to string
-  if (data instanceof ArrayBuffer && !isGLB(data, byteOffset, options)) {
+  if (data instanceof ArrayBuffer && !isGLB(data, byteOffset, options.glb)) {
     const textDecoder = new TextDecoder();
     data = textDecoder.decode(data);
   }
@@ -203,13 +198,14 @@ async function loadImage(
   options,
   context: LoaderContext
 ) {
-  const {fetch, parse} = context;
-
   let arrayBuffer;
 
   if (image.uri && !image.hasOwnProperty('bufferView')) {
     const uri = resolveUrl(image.uri, options);
+
+    const {fetch} = context;
     const response = await fetch(uri);
+
     arrayBuffer = await response.arrayBuffer();
     image.bufferView = {
       data: arrayBuffer
@@ -223,17 +219,26 @@ async function loadImage(
 
   assert(arrayBuffer, 'glTF image has no data');
 
+  const strictOptions = options;
+
+  const gltfOptions = {
+    ...strictOptions,
+    core: {...strictOptions?.core, mimeType: image.mimeType},
+    basis: strictOptions.basis || {format: selectSupportedBasisFormat()}
+  } satisfies StrictLoaderOptions;
+
   // Call `parse`
-  let parsedImage = await parse(
+  let parsedImage = (await parseFromContext(
     arrayBuffer,
     [ImageLoader, BasisLoader],
-    {mimeType: image.mimeType, basis: options.basis || {format: selectSupportedBasisFormat()}},
+    gltfOptions,
     context
-  );
+  )) as ImageType | TextureLevel[][];
 
   if (parsedImage && parsedImage[0]) {
     parsedImage = {
       compressed: true,
+      // @ts-expect-error
       mipmaps: false,
       width: parsedImage[0].width,
       height: parsedImage[0].height,
@@ -245,5 +250,6 @@ async function loadImage(
 
   // Store the loaded image
   gltf.images = gltf.images || [];
+  // @ts-expect-error TODO - sort out image typing asap
   gltf.images[index] = parsedImage;
 }

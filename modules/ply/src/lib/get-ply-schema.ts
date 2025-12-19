@@ -1,4 +1,9 @@
-import {Schema, MeshAttributes, deduceMeshSchema} from '@loaders.gl/schema';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Schema, MeshAttributes} from '@loaders.gl/schema';
+import {deduceMeshSchema} from '@loaders.gl/schema-utils';
 import type {PLYHeader} from './ply-types';
 
 /**

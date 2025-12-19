@@ -1,38 +1,20 @@
-// loaders.gl, MIT license
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {ArrowTable} from '@loaders.gl/schema';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
+import {parseArrowSync, parseArrowInBatches} from './lib/parsers/parse-arrow';
 
-export type ArrowLoaderOptions = LoaderOptions & {
-  arrow?: {
-    shape: 'arrow-table' | 'columnar-table' | 'row-table' | 'array-row-table' | 'object-row-table';
-  };
-};
+import type {ArrowLoaderOptions} from './exports/arrow-loader';
+import {ArrowWorkerLoader} from './exports/arrow-loader';
 
 /** ArrowJS table loader */
-export const ArrowLoader: Loader<ArrowTable, never, ArrowLoaderOptions> = {
-  name: 'Apache Arrow',
-  id: 'arrow',
-  module: 'arrow',
-  version: VERSION,
-  // worker: true,
-  category: 'table',
-  extensions: ['arrow', 'feather'],
-  mimeTypes: [
-    'application/vnd.apache.arrow.file',
-    'application/vnd.apache.arrow.stream',
-    'application/octet-stream'
-  ],
-  binary: true,
-  tests: ['ARROW'],
-  options: {
-    arrow: {
-      shape: 'columnar-table'
-    }
-  }
-};
-
-export const _typecheckArrowLoader: Loader = ArrowLoader;
+export const ArrowLoader = {
+  ...ArrowWorkerLoader,
+  parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
+    parseArrowSync(arraybuffer, options?.arrow),
+  parseSync: (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
+    parseArrowSync(arraybuffer, options?.arrow),
+  parseInBatches: parseArrowInBatches
+} as const satisfies LoaderWithParser<Table, ArrowTableBatch, ArrowLoaderOptions>;

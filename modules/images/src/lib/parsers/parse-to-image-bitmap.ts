@@ -1,8 +1,6 @@
 import type {ImageLoaderOptions} from '../../image-loader';
 import {isSVG, getBlob} from './svg-utils';
-import parseToImage from './parse-to-image';
-
-const EMPTY_OBJECT = {};
+import {parseToImage} from './parse-to-image';
 
 let imagebitmapOptionsSupported = true;
 
@@ -13,7 +11,7 @@ let imagebitmapOptionsSupported = true;
  *
  * TODO - createImageBitmap supports source rect (5 param overload), pass through?
  */
-export default async function parseToImageBitmap(
+export async function parseToImageBitmap(
   arrayBuffer: ArrayBuffer,
   options: ImageLoaderOptions,
   url?: string
@@ -30,7 +28,10 @@ export default async function parseToImageBitmap(
     blob = getBlob(arrayBuffer, url);
   }
 
-  const imagebitmapOptions = options && options.imagebitmap;
+  const imagebitmapOptions = (options && options.imagebitmap) as
+    | ImageBitmapOptions
+    | null
+    | undefined;
 
   return await safeCreateImageBitmap(blob, imagebitmapOptions);
 }
@@ -62,10 +63,16 @@ async function safeCreateImageBitmap(
   return await createImageBitmap(blob);
 }
 
-function isEmptyObject(object) {
-  // @ts-ignore
-  for (const key in object || EMPTY_OBJECT) {
-    return false;
+function isEmptyObject(object: object | null | undefined) {
+  if (!object) {
+    return true;
   }
+
+  for (const key in object) {
+    if (Object.prototype.hasOwnProperty.call(object, key)) {
+      return false;
+    }
+  }
+
   return true;
 }

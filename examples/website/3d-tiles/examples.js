@@ -1,3 +1,6 @@
+
+import {fetchFile} from '@loaders.gl/core';
+
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const ION_TOKEN =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3NjEwMjA4Ni00YmVkLTQyMjgtYjRmZS1lY2M3ZWFiMmFmNTYiLCJpZCI6MjYxMzMsImlhdCI6MTY3NTM2ODY4NX0.chGkGL6DkDNv5wYJQDMzWIvi9iDoVa27dgng_5ARDmo';
@@ -93,7 +96,7 @@ const SHOWCASE_EXAMPLES = {
 
 export async function loadExampleIndex() {
   // Load the index file that lists example tilesets (from the loaders.gl github repo)
-  const response = await fetch(EXAMPLE_INDEX_URL);
+  const response = await fetchFile(EXAMPLE_INDEX_URL);
   const testExamples = await response.json();
 
   // We don't yet support geometry and vector tiles, so remove those categories for now

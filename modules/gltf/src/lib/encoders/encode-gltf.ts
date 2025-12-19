@@ -1,4 +1,6 @@
 import {encodeGLBSync} from './encode-glb';
+import {GLTFWriterOptions} from '../../gltf-writer';
+import {GLTFWithBuffers} from '@loaders.gl/gltf';
 
 export type GLTFEncodeOptions = Record<string, any>;
 
@@ -19,16 +21,21 @@ export type GLTFEncodeOptions = Record<string, any>;
  * @param options
  * @returns
  */
-export function encodeGLTFSync(gltf, arrayBuffer, byteOffset, options) {
-  convertBuffersToBase64(gltf);
+export function encodeGLTFSync(
+  gltf: GLTFWithBuffers,
+  arrayBuffer: DataView | null,
+  byteOffset: number,
+  options: GLTFWriterOptions
+) {
+  validateGltf(gltf);
 
   // TODO: Copy buffers to binary
 
   return encodeGLBSync(gltf, arrayBuffer, byteOffset, options);
 }
 
-function convertBuffersToBase64(gltf, {firstBuffer = 0} = {}) {
-  if (gltf.buffers && gltf.buffers.length > firstBuffer) {
+function validateGltf(gltf) {
+  if (gltf.buffers && gltf.buffers.length > 1) {
     throw new Error('encodeGLTF: multiple buffers not yet implemented');
   }
 }

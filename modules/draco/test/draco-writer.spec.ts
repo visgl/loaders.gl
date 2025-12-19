@@ -3,7 +3,7 @@ import {validateWriter, validateMeshCategoryData} from 'test/common/conformance'
 
 import {DracoLoader, DracoWriterOptions, DracoWriter, DracoWriterWorker} from '@loaders.gl/draco';
 import {encode, fetchFile, parse} from '@loaders.gl/core';
-import {getMeshSize} from '@loaders.gl/schema';
+// import {getMeshSize} from '@loaders.gl/schema-utils';
 import draco3d from 'draco3d';
 import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
 import {cloneTypeArray} from './test-utils/copyTypedArray';
@@ -70,11 +70,12 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
-    const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+
+    // const meshSize = getMeshSize(mesh.attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -96,6 +97,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 /**
  * Cannot import draco_encoder module:
  * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
+ * [Error: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' failed to load.
  */
 test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
   if (!isBrowser) {
@@ -119,14 +121,15 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
       ...tc.options,
       _workerType: 'test'
     });
-    const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+
+    // const meshSize = getMeshSize(mesh.attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -165,15 +168,16 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
       // @ts-expect-error
       mesh.indices = cloneTypeArray(data.indices?.value);
     }
-    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await processOnWorker(DracoWriterWorker, mesh, {
       ...tc.options,
       _workerType: 'test'
     });
+
     // const compressedMesh = await encode(mesh, DracoWriter, tc.options);
-    const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+    // const meshSize = getMeshSize(mesh.attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -216,7 +220,6 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
-    const meshSize = getMeshSize(mesh.attributes);
 
     const compressedMesh = await encode(mesh, DracoWriter, {
       ...tc.options,
@@ -224,8 +227,10 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
         draco3d
       }
     });
-    const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+
+    // const meshSize = getMeshSize(mesh.attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -263,12 +268,11 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
 
   for (const tc of TEST_CASES) {
     const attributes = tc.options.draco?.pointcloud ? pointCloudAttributes : meshAttributes;
-    const meshSize = getMeshSize(attributes);
-
     const compressedMesh = await encode(attributes, DracoWriter, tc.options);
 
-    const ratio = meshSize / compressedMesh.byteLength;
-    t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
+    // const meshSize = getMeshSize(attributes);
+    // const ratio = meshSize / compressedMesh.byteLength;
+    // t.comment(`${tc.title} ${compressedMesh.byteLength} bytes, ratio ${ratio.toFixed(1)}`);
 
     if (!tc.options.pointcloud) {
       // Decode the mesh
@@ -363,7 +367,7 @@ test('DracoWriter#geometry metadata', async (t) => {
 
   // Decode the mesh
   const data2 = await parse(compressedMesh, DracoLoader, {
-    worker: false
+    core: {worker: false}
   });
   validateMeshCategoryData(t, data2);
 
@@ -426,7 +430,7 @@ test('DracoWriter#attributes metadata', async (t) => {
 
   // Decode the mesh
   const data2 = await parse(compressedMesh, DracoLoader, {
-    worker: false
+    core: {worker: false}
   });
   validateMeshCategoryData(t, data2);
   validatePositionMetadata(t, data2);
@@ -461,7 +465,7 @@ test('DracoWriter#metadata - should be able to define optional "name entry" for 
     }
   });
   const data2 = await parse(compressedMesh, DracoLoader, {
-    worker: false,
+    core: {worker: false},
     draco: {
       attributeNameEntry: 'custom-attribute-name'
     }

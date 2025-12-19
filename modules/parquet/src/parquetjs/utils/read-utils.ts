@@ -1,5 +1,16 @@
-import {TBufferedTransport, TCompactProtocol, TFramedTransport} from 'thrift';
-import {FileMetaData, PageHeader} from '../parquet-thrift';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
+
+import {
+  TBufferedTransport,
+  TCompactProtocol,
+  TFramedTransport,
+  FileMetaData,
+  PageHeader
+} from '../parquet-thrift/index';
 
 class UFramedTransport extends TFramedTransport {
   public readPos: number = 0;
@@ -12,7 +23,7 @@ export function serializeThrift(obj: any): Buffer {
   const output: Buffer[] = [];
 
   const transport = new TBufferedTransport(undefined, (buf) => {
-    output.push(buf as Buffer);
+    output.push(buf as unknown as Buffer);
   });
 
   const protocol = new TCompactProtocol(transport);

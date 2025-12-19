@@ -5,35 +5,130 @@ on:
   push:
     branches:
     - master
-    - dev
-    - release
   pull_request:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: Tests (Node ${{ matrix.node-version }} - ${{ matrix.scope }})
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
     strategy:
       matrix:
-        node-version: [16]
+        include:
+          - node-version: 24
+            full: true
+            scope: 'full suite'
+          - node-version: 22
+            full: false
+            scope: 'build + node tests'
+          - node-version: 20
+            full: false
+            scope: 'build + node tests'
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Bootstrap
+      - name: Enable Corepack / Yarn 4
         run: |
-          yarn bootstrap
+          corepack enable
+          corepack prepare yarn@4.10.3 --activate
+          yarn -v
 
-      - name: Run tests
+      - name: Cache Yarn 4 artifacts
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-cache-${{ runner.os }}-
+
+      - name: Print versions
         run: |
-          npm run test ci
+          node -v
+          yarn -v
+          node -p "process.versions"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: |
+          yarn run build
+
+      - name: Build workers
+        run: yarn run build-workers
+
+      - name: Run browser tests (generate coverage)
+        if: matrix.full
+        run: |
+          yarn run test-cover
+
+      - name: Run node tests
+        run: |
+          yarn run test-node
+
+      - name: Run lint
+        if: matrix.full
+        run: |
+          yarn run lint
 
       - name: Coveralls
-        if: matrix.node-version == 16
+        if: matrix.full
         uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  website-build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        node-version: [22]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Enable Corepack / Yarn 4
+        run: |
+          corepack enable
+          corepack prepare yarn@4.10.3 --activate
+          yarn -v
+
+      - name: Cache website Yarn artifacts
+        id: website-yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            website/.yarn/cache
+            website/.pnp.*
+            website/.yarn/install-state.gz
+          key: website-yarn-cache-${{ runner.os }}-${{ hashFiles('website/yarn.lock') }}
+          restore-keys: |
+            website-yarn-cache-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: |
+          yarn run build
+
+      - name: Build website
+        run: |
+          cd website; yarn build

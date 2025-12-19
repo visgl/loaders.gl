@@ -1,11 +1,26 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // import type {Feature} from '@loaders.gl/gis';
+import {
+  LoaderContext,
+  parseInBatchesFromContext,
+  parseFromContext,
+  toArrayBufferIterator
+} from '@loaders.gl/loader-utils';
+import {convertBinaryGeometryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import type {
+  BinaryGeometry,
+  Geometry,
+  ObjectRowTable,
+  ObjectRowTableBatch
+} from '@loaders.gl/schema';
+import {Proj4Projection} from '@math.gl/proj4';
+
 import type {SHXOutput} from './parse-shx';
 import type {SHPHeader} from './parse-shp-header';
-import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {ShapefileLoaderOptions} from './types';
-
-import {binaryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
-import {Proj4Projection} from '@math.gl/proj4';
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoader} from '../../shp-loader';
@@ -24,7 +39,9 @@ interface ShapefileOutput {
  */
 // eslint-disable-next-line max-statements, complexity
 export async function* parseShapefileInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): AsyncIterable<ShapefileOutput> {
@@ -32,52 +49,70 @@ export async function* parseShapefileInBatches(
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  // @ts-ignore context must be defined
-  const shapeIterable: any = await context.parseInBatches(asyncIterator, SHPLoader, options);
+  const shapeIterable = await parseInBatchesFromContext(
+    toArrayBufferIterator(asyncIterator),
+    SHPLoader,
+    options,
+    context!
+  );
+
+  const shapeIterator: AsyncIterator<any> =
+    shapeIterable[Symbol.asyncIterator]?.() || shapeIterable[Symbol.iterator]?.();
 
   // parse properties
-  let propertyIterable: any;
-  // @ts-ignore context must be defined
-  const dbfResponse = await context.fetch(replaceExtension(context?.url || '', 'dbf'));
-  if (dbfResponse.ok) {
-    // @ts-ignore context must be defined
-    propertyIterable = await context.parseInBatches(dbfResponse, DBFLoader, {
-      ...options,
-      dbf: {encoding: cpg || 'latin1'}
-    });
+  let propertyIterator: AsyncIterator<any> | null = null;
+  const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+  if (dbfResponse?.ok) {
+    const propertyIterable = await parseInBatchesFromContext(
+      dbfResponse,
+      DBFLoader,
+      {
+        ...options,
+        dbf: {
+          ...options?.dbf,
+          encoding: cpg || 'latin1'
+        }
+      },
+      context!
+    );
+    propertyIterator =
+      propertyIterable[Symbol.asyncIterator]?.() || propertyIterable[Symbol.iterator]();
   }
 
   // When `options.metadata` is `true`, there's an extra initial `metadata`
   // object before the iterator starts. zipBatchIterators expects to receive
   // batches of Array objects, and will fail with non-iterable batches, so it's
   // important to skip over the first batch.
-  let shapeHeader = (await shapeIterable.next()).value;
+  let shapeHeader = (await shapeIterator.next()).value;
   if (shapeHeader && shapeHeader.batchType === 'metadata') {
-    shapeHeader = (await shapeIterable.next()).value;
+    shapeHeader = (await shapeIterator.next()).value;
   }
 
   let dbfHeader: {batchType?: string} = {};
-  if (propertyIterable) {
-    dbfHeader = (await propertyIterable.next()).value;
+  if (propertyIterator) {
+    dbfHeader = (await propertyIterator.next()).value;
     if (dbfHeader && dbfHeader.batchType === 'metadata') {
-      dbfHeader = (await propertyIterable.next()).value;
+      dbfHeader = (await propertyIterator.next()).value;
     }
   }
 
-  let iterator: any;
-  if (propertyIterable) {
-    iterator = zipBatchIterators(shapeIterable, propertyIterable);
-  } else {
-    iterator = shapeIterable;
-  }
+  const zippedIterator: AsyncIterator<ObjectRowTableBatch> = propertyIterator
+    ? zipBatchIterators(shapeIterator, propertyIterator, 'object-row-table')
+    : shapeIterator;
 
-  for await (const item of iterator) {
+  const zippedBatchIterable: AsyncIterable<ObjectRowTableBatch> = {
+    [Symbol.asyncIterator]() {
+      return zippedIterator;
+    }
+  };
+
+  for await (const batch of zippedBatchIterable) {
     let geometries: any;
     let properties: any;
-    if (!propertyIterable) {
-      geometries = item;
+    if (!propertyIterator) {
+      geometries = batch;
     } else {
-      [geometries, properties] = item;
+      [geometries, properties] = batch.data;
     }
 
     const geojsonGeometries = parseGeometries(geometries);
@@ -113,33 +148,53 @@ export async function parseShapefile(
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  // @ts-ignore context must be defined
-  const {header, geometries} = await context.parse(arrayBuffer, SHPLoader, options); // {shp: shx}
+  const {header, geometries} = await parseFromContext(arrayBuffer, SHPLoader, options, context!); // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
-  let properties = [];
+  let propertyTable: ObjectRowTable | undefined;
 
-  // @ts-ignore context must be defined
-  const dbfResponse = await context.fetch(replaceExtension(context.url, 'dbf'));
-  if (dbfResponse.ok) {
-    // @ts-ignore context must be defined
-    properties = await context.parse(dbfResponse, DBFLoader, {dbf: {encoding: cpg || 'latin1'}});
+  const dbfResponse = await context?.fetch(replaceExtension(context?.url!, 'dbf'));
+  if (dbfResponse?.ok) {
+    const dbfOptions = {
+      ...options,
+      dbf: {
+        ...options?.dbf,
+        shape: 'object-row-table',
+        encoding: cpg || 'latin1'
+      }
+    };
+    propertyTable = await parseFromContext(dbfResponse as any, DBFLoader, dbfOptions, context!);
   }
 
-  let features = joinProperties(geojsonGeometries, properties);
+  let features = joinProperties(geojsonGeometries, propertyTable?.data || []);
   if (reproject) {
     features = reprojectFeatures(features, prj, _targetCrs);
   }
 
-  return {
-    encoding: cpg,
-    prj,
-    shx,
-    header,
-    data: features
-  };
+  switch (options?.shapefile?.shape) {
+    case 'geojson-table':
+      return {
+        // @ts-expect-error
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        encoding: cpg,
+        schema: propertyTable?.schema || {metadata: {}, fields: []},
+        prj,
+        shx,
+        header,
+        features
+      };
+    default:
+      return {
+        encoding: cpg,
+        prj,
+        shx,
+        header,
+        data: features
+      };
+  }
 }
 
 /**
@@ -148,10 +203,10 @@ export async function parseShapefile(
  * @param geometries
  * @returns geometries as an array
  */
-function parseGeometries(geometries: any[]): any[] {
+function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
   const geojsonGeometries: any[] = [];
   for (const geom of geometries) {
-    geojsonGeometries.push(binaryToGeometry(geom));
+    geojsonGeometries.push(convertBinaryGeometryToGeometry(geom));
   }
   return geojsonGeometries;
 }
@@ -163,7 +218,7 @@ function parseGeometries(geometries: any[]): any[] {
  * @param  properties [description]
  * @return [description]
  */
-function joinProperties(geometries: object[], properties: object[]): Feature[] {
+function joinProperties(geometries: Geometry[], properties: object[]): Feature[] {
   const features: Feature[] = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];
@@ -204,7 +259,7 @@ function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: 
  */
 // eslint-disable-next-line max-statements
 export async function loadShapefileSidecarFiles(
-  options?: object,
+  options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): Promise<{
   shx?: SHXOutput;

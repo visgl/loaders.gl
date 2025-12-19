@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import test from 'tape-promise/tape';
 
 import {normalizeTileData} from '../../../src/lib/parsers/parse-3d-tile-header';
@@ -40,10 +44,10 @@ const TESTS = [
 test('normalizeTileData#corectly resolves different styles of URLs', async (t) => {
   for (const [contentUri, basePath, resolvedUrl] of TESTS) {
     const tile = {content: {uri: contentUri}};
-    const options = {basePath};
-    const normalizedTile = normalizeTileData(tile, options);
+    // @ts-expect-error
+    const normalizedTile = normalizeTileData(tile, basePath);
 
-    t.equals(normalizedTile.contentUrl, resolvedUrl, 'url should be resolved correctly');
+    t.equals(normalizedTile?.contentUrl, resolvedUrl, 'url should be resolved correctly');
   }
 
   t.end();

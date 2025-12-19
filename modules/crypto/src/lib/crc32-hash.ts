@@ -1,7 +1,10 @@
-// CRC32
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {Hash} from './hash';
 import CRC32 from './algorithms/crc32';
-import {toHex, hexToBase64} from './utils/digest-utils';
+import {encodeNumber} from './utils/digest-utils';
 
 /**
  * Calculates CRC32 Cryptographic Hash
@@ -10,12 +13,10 @@ export class CRC32Hash extends Hash {
   readonly name = 'crc32';
 
   options;
-  private _hash: CRC32;
 
   constructor(options = {}) {
     super();
     this.options = {crypto: {}, ...options};
-    this._hash = new CRC32();
     this.hashBatches = this.hashBatches.bind(this);
   }
 
@@ -23,28 +24,27 @@ export class CRC32Hash extends Hash {
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  async hash(input: ArrayBuffer): Promise<string> {
-    return this.hashSync(input);
+  async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
+    return this.hashSync(input, encoding);
   }
 
-  hashSync(input: ArrayBuffer): string {
-    this._hash.update(input);
-    const hashValue = this._hash.finalize();
-    const hex = toHex(hashValue);
-    const hash = hexToBase64(hex);
-    return hash;
+  hashSync(input: ArrayBuffer, encoding: 'hex' | 'base64'): string {
+    const hash = new CRC32();
+    hash.update(input);
+    const digest = hash.finalize();
+    return encodeNumber(digest, encoding);
   }
 
   async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
+    const hash = new CRC32();
     for await (const chunk of asyncIterator) {
-      this._hash.update(chunk);
+      hash.update(chunk);
       yield chunk;
     }
-    const hashValue = this._hash.finalize();
-    const hex = toHex(hashValue);
-    const hash = hexToBase64(hex);
-    this.options.crypto?.onEnd?.({hash});
+    const digest = hash.finalize();
+    this.options.crypto?.onEnd?.({hash: encodeNumber(digest, encoding)});
   }
 }

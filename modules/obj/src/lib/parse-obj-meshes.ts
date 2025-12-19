@@ -343,7 +343,7 @@ export function parseOBJMeshes(text) {
       switch (data[0]) {
         case 'v':
           state.vertices.push(parseFloat(data[1]), parseFloat(data[2]), parseFloat(data[3]));
-          if (data.length === 8) {
+          if (data.length >= 7) {
             state.colors.push(parseFloat(data[4]), parseFloat(data[5]), parseFloat(data[6]));
           }
           break;

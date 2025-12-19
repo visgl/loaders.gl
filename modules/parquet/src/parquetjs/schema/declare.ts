@@ -1,4 +1,9 @@
-// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
+
 import Int64 from 'node-int64';
 import type {PageHeader} from '../parquet-thrift';
 
@@ -99,7 +104,7 @@ export interface ParquetField {
 }
 
 /** @todo better name, this is an internal type? */
-export interface ParquetOptions {
+export interface ParquetReaderContext {
   type: ParquetType;
   rLevelMax: number;
   dLevelMax: number;
@@ -107,6 +112,8 @@ export interface ParquetOptions {
   column: ParquetField;
   numValues?: Int64;
   dictionary?: ParquetDictionary;
+  /** If true, binary values are not converted to strings */
+  preserveBinary?: boolean;
 }
 
 export interface ParquetPageData {

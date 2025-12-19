@@ -1,4 +1,7 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /*
 Asynchronously maps a deep structure of values (e.g. objects and arrays of urls).
 

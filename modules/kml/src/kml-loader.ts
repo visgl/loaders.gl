@@ -1,6 +1,11 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {geojsonToBinary} from '@loaders.gl/gis';
-import {GeoJSONRowTable, FeatureCollection, ObjectRowTable} from '@loaders.gl/schema';
+// import {geojsonToBinary} from '@loaders.gl/gis';
+// import {GeoJSONTable} from '@loaders.gl/schema';
+import {FeatureCollection, GeoJSONTable, ObjectRowTable} from '@loaders.gl/schema';
 import {kml} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
 
@@ -10,13 +15,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMLLoaderOptions = LoaderOptions & {
   kml?: {
-    shape?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
-    /** @deprecated. Use options.kml.shape */
-    type?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
-  };
-  gis?: {
-    /** @deprecated. Use options.kml.shape */
-    format?: 'object-row-table' | 'geojson-row-table' | 'geojson' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'binary' | 'raw';
   };
 };
 
@@ -28,6 +27,9 @@ const KML_HEADER = `\
  * Loader for KML (Keyhole Markup Language)
  */
 export const KMLLoader = {
+  dataType: null as unknown as ObjectRowTable | GeoJSONTable,
+  batchType: null as never,
+
   name: 'KML (Keyhole Markup Language)',
   id: 'kml',
   module: 'kml',
@@ -40,42 +42,39 @@ export const KMLLoader = {
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    kml: {},
+    kml: {shape: 'geojson-table'},
     gis: {}
   }
-};
+} as const satisfies LoaderWithParser<ObjectRowTable | GeoJSONTable, never, KMLLoaderOptions>;
 
-function parseTextSync(text: string, options?: KMLLoaderOptions) {
+function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable | GeoJSONTable {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
   const geojson: FeatureCollection = kml(doc);
 
-  // backwards compatibility
-  const shape = options?.gis?.format || options?.kml?.type || options?.kml?.shape;
-  switch (shape) {
-    case 'object-row-table': {
+  const kmlOptions = {...KMLLoader.options.kml, ...options?.kml};
+
+  switch (kmlOptions.shape) {
+    case 'geojson-table': {
+      const table: GeoJSONTable = {
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        features: geojson.features
+      };
+      return table;
+    }
+    // case 'geojson':
+    //   return geojson;
+    // case 'binary':
+    //   return geojsonToBinary(geojson.features);
+    // case 'raw':
+    //   return doc;
+    case 'object-row-table':
       const table: ObjectRowTable = {
         shape: 'object-row-table',
         data: geojson.features
       };
       return table;
-    }
-    case 'geojson-row-table': {
-      const table: GeoJSONRowTable = {
-        shape: 'geojson-row-table',
-        data: geojson.features
-      };
-      return table;
-    }
-    case 'geojson':
-      return geojson;
-    case 'binary':
-      return geojsonToBinary(geojson.features);
-    case 'raw':
-      return doc;
     default:
-      // Default to geojson for backwards compatibility
-      return geojson;
+      throw new Error(kmlOptions.shape);
   }
 }
-
-export const _typecheckKMLLoader: LoaderWithParser = KMLLoader;

@@ -5,6 +5,7 @@ import {
   BannerContainer,
   HeroExampleContainer,
   ProjectName,
+  TagLine,
   GetStartedLink
 } from './styled';
 
@@ -18,7 +19,7 @@ export default function renderPage({HeroExample, children}) {
         <HeroExampleContainer>{HeroExample && <HeroExample />}</HeroExampleContainer>
         <BannerContainer>
           <ProjectName>{siteConfig.title}</ProjectName>
-          <p>{siteConfig.tagline}</p>
+          <TagLine>{siteConfig.tagline}</TagLine>
           <GetStartedLink href="./docs/developer-guide/get-started" >
             GET STARTED
           </GetStartedLink>

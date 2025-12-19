@@ -1,4 +1,6 @@
-// math.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
 
 import type {S2Cell} from './s2-geometry';
 import {getS2CellFromQuadKey, getS2QuadkeyFromCellId} from './s2-geometry';

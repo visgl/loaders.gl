@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // HELPER ENCODERS
 import {assert} from '@loaders.gl/loader-utils';
 

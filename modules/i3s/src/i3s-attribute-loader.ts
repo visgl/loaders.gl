@@ -1,5 +1,6 @@
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
+import type {I3SLoaderOptions} from './i3s-loader';
 import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {getUrlWithToken} from './lib/utils/url-utils';
@@ -13,7 +14,9 @@ const REJECTED_STATUS = 'rejected';
 /**
  * Loader for I3S attributes
  */
-export const I3SAttributeLoader: LoaderWithParser<I3STileAttributes, never, LoaderOptions> = {
+export const I3SAttributeLoader = {
+  dataType: null as unknown as I3STileAttributes,
+  batchType: null as never,
   name: 'I3S Attribute',
   id: 'i3s-attribute',
   module: 'i3s',
@@ -23,7 +26,7 @@ export const I3SAttributeLoader: LoaderWithParser<I3STileAttributes, never, Load
   extensions: ['bin'],
   options: {},
   binary: true
-};
+} as const satisfies LoaderWithParser<I3STileAttributes, never, I3SLoaderOptions>;
 
 
 // TODO - these seem to use the loader rather than being part of the loader. Move to different file...

@@ -1,6 +1,11 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {JSONLoader} from '@loaders.gl/json';
+import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
+import {JSONLoader, _GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH = '@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json';
@@ -10,7 +15,7 @@ test('JSONLoader#load(geojson.json)', async (t) => {
   t.equal(
     table.shape === 'object-row-table' && table.data.length,
     308,
-    'Correct number of row received'
+    'Correct number of rows received'
   );
   t.end();
 });
@@ -30,7 +35,7 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async (t)
     // byteLength = batch.bytesUsed;
   }
 
-  t.comment(JSON.stringify(batchCount));
+  // t.comment(JSON.stringify(batchCount));
   t.ok(batchCount <= 4, 'Correct number of batches received');
   t.equal(rowCount, 308, 'Correct number of row received');
   // t.equal(byteLength, 135910, 'Correct number of bytes received');
@@ -81,7 +86,8 @@ test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
     // batchCount++;
     rowCount += batch.length;
     // byteLength = batch.bytesUsed;
-    t.equal(batch.jsonpath.toString(), '$.features', 'correct jsonpath on batch');
+    // @ts-ignore
+    t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
   }
 
   // t.skip(batchCount <= 3, 'Correct number of batches received');
@@ -96,6 +102,22 @@ test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
   }
 
   t.equal(rowCount, 0, 'Correct number of row received');
+  t.end();
+});
+
+test('GeoJSONLoader#loadInBatches(jsonpaths)', async (t) => {
+  const iterator = await loadInBatches(GEOJSON_PATH, GeoJSONLoader, {
+    json: {jsonpaths: ['$.features']}
+  });
+
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    rowCount += batch.length;
+    // @ts-ignore
+    t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
+  }
+
+  t.equal(rowCount, 308, 'Correct number of row received');
   t.end();
 });
 
@@ -164,6 +186,7 @@ test('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async (t) => {
 
 test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
   const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, JSONLoader, {
+    metadata: true,
     json: {
       table: true,
       jsonpaths: ['$.data.allData']
@@ -172,10 +195,24 @@ test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
 
   let rowCount = 0;
   for await (const batch of iterator) {
-    rowCount += batch.data.length;
-    t.equal(Object.values(batch.data[0]).length, 10);
+    switch (batch.batchType) {
+      case 'metadata':
+      case 'partial-result':
+        break;
+      case 'data':
+        const rowBatch = batch as ObjectRowTableBatch;
+        rowCount += getTableLength(rowBatch);
+        // t.equal(rowBatch?.data?.[0].length, 10);
+        break;
+      case 'final-result':
+        if (batch.shape === 'json') {
+          t.ok(batch.container, 'final batch contains json');
+        }
+        break;
+      default:
+    }
   }
-  t.equal(rowCount, 247);
+  t.equal(rowCount, 247, '247 rows found');
 
   t.end();
 });

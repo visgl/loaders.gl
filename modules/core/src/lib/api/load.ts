@@ -1,8 +1,18 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-import type {DataType, Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {LoaderOptionsType, LoaderReturnType} from '@loaders.gl/loader-utils';
-import {isBlob} from '../../javascript-utils/is-type';
+import type {
+  DataType,
+  Loader,
+  LoaderContext,
+  LoaderOptions,
+  LoaderOptionsType,
+  LoaderReturnType,
+  LoaderArrayOptionsType,
+  LoaderArrayReturnType
+} from '@loaders.gl/loader-utils';
+import {isBlob} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 
@@ -18,41 +28,56 @@ import {parse} from './parse';
  * @param context
  */
 
-export async function load<LoaderT extends Loader>(
+export async function load<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
   url: string | DataType,
   loader: LoaderT,
-  options?: LoaderOptionsType<LoaderT>,
+  options?: OptionsT,
   context?: LoaderContext
 ): Promise<LoaderReturnType<LoaderT>>;
 
 export async function load<
-  LoaderT extends Loader, // eslint-disable-line  @typescript-eslint/no-unused-vars
-  LoaderOptionsT extends LoaderOptions = LoaderOptions
+  LoaderArrayT extends Loader[],
+  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
 >(
   url: string | DataType,
-  loaders: Loader[] | LoaderOptions,
-  options?: LoaderOptionsT,
+  loaders: LoaderArrayT,
+  options?: OptionsT,
   context?: LoaderContext
-): Promise<any>;
+): Promise<LoaderArrayReturnType<LoaderArrayT>>;
+
+/**
+ * Loads data asynchronously by matching a pre-registered loader
+ * @deprecated Loader registration is deprecated, use load(data, loaders, options) instead
+ */
+export async function load(
+  url: string | DataType,
+  loaders?: LoaderOptions,
+  context?: LoaderContext
+): Promise<unknown>;
+
+// export async function load(url: string | DataType, loaders: LoaderOptions): Promise<any>;
 
 // implementation signature
-export async function load<LoaderOptionsT extends LoaderOptions>(
+export async function load(
   url: string | DataType,
   loaders?: Loader[] | LoaderOptions,
-  options?: LoaderOptionsT,
+  options?: LoaderOptions | LoaderContext,
   context?: LoaderContext
-): Promise<any> {
+): Promise<unknown> {
   let resolvedLoaders: Loader | Loader[];
-  let resolvedOptions: LoaderOptionsT | undefined;
+  let resolvedOptions: LoaderOptions | undefined;
 
   // Signature: load(url, options)
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     resolvedLoaders = [];
-    resolvedOptions = loaders as LoaderOptionsT;
+    resolvedOptions = loaders as LoaderOptions;
     context = undefined; // context not supported in short signature
   } else {
     resolvedLoaders = loaders as Loader | Loader[];
-    resolvedOptions = options;
+    resolvedOptions = options as LoaderOptions;
   }
 
   // Select fetch function

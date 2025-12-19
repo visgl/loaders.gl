@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /** @typedef {import('@loaders.gl/compression').Compression} Compression */
 import test from 'tape-promise/tape';
 import {
@@ -162,7 +166,6 @@ test('compression#batched', async (t) => {
 });
 
 // WORKER TESTS
-
 test('gzip#worker', async (t) => {
   if (!isBrowser) {
     t.comment('not testing worker under Node.js');

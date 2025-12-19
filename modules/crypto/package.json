@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/crypto",
-  "version": "4.0.0-alpha.6",
+  "version": "4.4.0-alpha.2",
   "description": "Cryptographic/hashing plugins for loaders.gl",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -11,15 +12,32 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "3d",
-    "mesh",
-    "point cloud"
+    "crypto",
+    "hash",
+    "digest",
+    "encrypt",
+    "decrypt",
+    "crc32",
+    "crc32c",
+    "md5",
+    "sha256"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./crypto-worker.js": {
+      "import": "./dist/crypto-worker.js"
+    },
+    "./crypto-worker-node.js": {
+      "import": "./dist/crypto-worker-node.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -27,15 +45,15 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker && npm run build-worker-node",
-    "build-bundle": "esbuild src/bundle.ts --outfile=dist/dist.min.js --bundle --minify --sourcemap",
-    "build-worker": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker.js --target=esnext --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/worker.ts --outfile=dist/crypto-worker-node.js --platform=node --target=esnext,node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "esbuild src/workers/crypto-worker.ts --outfile=dist/crypto-worker.js --target=esnext --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/crypto-worker-node.ts --outfile=dist/crypto-worker-node.js --platform=node --target=esnext,node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "4.0.0-alpha.6",
-    "@loaders.gl/worker-utils": "4.0.0-alpha.6",
+    "@loaders.gl/loader-utils": "4.4.0-alpha.2",
+    "@loaders.gl/worker-utils": "4.4.0-alpha.2",
     "@types/crypto-js": "^4.0.2"
   },
   "devDependencies": {
@@ -45,5 +63,8 @@
     "crypto": false,
     "sse4_crc32": false
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "peerDependencies": {
+    "@loaders.gl/core": "4.4.0-alpha.1"
+  },
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

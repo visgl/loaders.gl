@@ -1,4 +1,8 @@
-import type {LoaderWithParser, LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
+import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 // / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
@@ -8,8 +12,9 @@ import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
 import {VERSION} from './lib/utils/version';
 import {parse3DTile} from './lib/parsers/parse-3d-tile';
 import {normalizeTileHeaders} from './lib/parsers/parse-3d-tile-header';
+import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
 
-export type Tiles3DLoaderOptions = LoaderOptions &
+export type Tiles3DLoaderOptions = StrictLoaderOptions &
   // GLTFLoaderOptions & - TODO not yet exported
   DracoLoaderOptions &
   ImageLoaderOptions & {
@@ -28,7 +33,9 @@ export type Tiles3DLoaderOptions = LoaderOptions &
 /**
  * Loader for 3D Tiles
  */
-export const Tiles3DLoader: LoaderWithParser = {
+export const Tiles3DLoader = {
+  dataType: null as any,
+  batchType: null as never,
   id: '3d-tiles',
   name: '3D Tiles',
   module: '3d-tiles',
@@ -45,10 +52,18 @@ export const Tiles3DLoader: LoaderWithParser = {
       assetGltfUpAxis: null
     }
   }
-};
+} as const satisfies LoaderWithParser<
+  Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed,
+  never,
+  Tiles3DLoaderOptions
+>;
 
 /** Parses a tileset or tile */
-async function parse(data, options: Tiles3DLoaderOptions = {}, context?: LoaderContext) {
+async function parse(
+  data,
+  options: Tiles3DLoaderOptions = {},
+  context?: LoaderContext
+): Promise<Tiles3DTileContent | Tiles3DTilesetJSONPostprocessed> {
   // auto detect file type
   const loaderOptions = options['3d-tiles'] || {};
   let isTileset;
@@ -58,9 +73,7 @@ async function parse(data, options: Tiles3DLoaderOptions = {}, context?: LoaderC
     isTileset = loaderOptions.isTileset;
   }
 
-  return (await isTileset)
-    ? parseTileset(data, options, context)
-    : parseTile(data, options, context);
+  return isTileset ? parseTileset(data, options, context) : parseTile(data, options, context);
 }
 
 /** Parse a tileset */
@@ -68,25 +81,25 @@ async function parseTileset(
   data: ArrayBuffer,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
-) {
-  const tilesetJson = JSON.parse(new TextDecoder().decode(data));
+): Promise<Tiles3DTilesetJSONPostprocessed> {
+  const tilesetJson: Tiles3DTilesetJSON = JSON.parse(new TextDecoder().decode(data));
 
-  // eslint-disable-next-line no-use-before-define
-  tilesetJson.loader = options?.loader || Tiles3DLoader;
-  tilesetJson.url = context?.url || '';
-  tilesetJson.queryString = context?.queryString || '';
-
-  // base path that non-absolute paths in tileset are relative to.
-  tilesetJson.basePath = getBaseUri(tilesetJson);
-  // TODO - check option types in normalizeTileHeaders
-  tilesetJson.root = await normalizeTileHeaders(tilesetJson, options || {});
-
-  tilesetJson.type = TILESET_TYPE.TILES3D;
-
-  tilesetJson.lodMetricType = LOD_METRIC_TYPE.GEOMETRIC_ERROR;
-  tilesetJson.lodMetricValue = tilesetJson.root?.lodMetricValue || 0;
-
-  return tilesetJson;
+  const tilesetUrl = context?.url || '';
+  const basePath = getBaseUri(tilesetUrl);
+  const normalizedRoot = await normalizeTileHeaders(tilesetJson, basePath, options || {});
+  const tilesetJsonPostprocessed: Tiles3DTilesetJSONPostprocessed = {
+    ...tilesetJson,
+    shape: 'tileset3d',
+    loader: Tiles3DLoader,
+    url: tilesetUrl,
+    queryString: context?.queryString || '',
+    basePath,
+    root: normalizedRoot || tilesetJson.root,
+    type: TILESET_TYPE.TILES3D,
+    lodMetricType: LOD_METRIC_TYPE.GEOMETRIC_ERROR,
+    lodMetricValue: tilesetJson.root?.geometricError || 0
+  };
+  return tilesetJsonPostprocessed;
 }
 
 /** Parse a tile */
@@ -94,18 +107,21 @@ async function parseTile(
   arrayBuffer: ArrayBuffer,
   options?: Tiles3DLoaderOptions,
   context?: LoaderContext
-) {
+): Promise<Tiles3DTileContent> {
   const tile = {
     content: {
+      shape: 'tile3d',
       featureIds: null
     }
   };
   const byteOffset = 0;
+  // @ts-expect-error
   await parse3DTile(arrayBuffer, byteOffset, options, context, tile.content);
+  // @ts-expect-error
   return tile.content;
 }
 
 /** Get base name */
-function getBaseUri(tileset) {
-  return path.dirname(tileset.url);
+function getBaseUri(tilesetUrl: string): string {
+  return path.dirname(tilesetUrl);
 }

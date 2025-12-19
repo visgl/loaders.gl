@@ -1,3 +1,3 @@
-import {Schema, Field, Float32Vector, Float32} from '@loaders.gl/schema';
+import {getTableLength} from '@loaders.gl/schema-utils';
 
-console.log(Schema, Field); // eslint-disable-line
+console.log(getTableLength); // eslint-disable-line

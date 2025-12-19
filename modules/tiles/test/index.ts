@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 import './utils/doubly-linked-list.spec';
 
@@ -8,6 +10,7 @@ import './tileset/tileset-traverser.spec';
 
 import './tileset/helpers/get-frame-state.spec';
 import './tileset/helpers/zoom.spec';
+import './tileset/helpers/bounding-volume.spec';
 
 // I3S Specific tests
 // TODO - deck.gl dependency

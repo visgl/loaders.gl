@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
 /* global TextDecoder */
@@ -6,7 +8,7 @@ import test from 'tape-promise/tape';
 
 import {_GeoJSONWriter} from '@loaders.gl/json';
 import {encodeTableAsText, encodeTableInBatches} from '@loaders.gl/core';
-import {tableWithNullGeometryColumn} from '@loaders.gl/schema/test/shared-utils';
+import {tableWithNullGeometryColumn} from '@loaders.gl/schema-utils/test/shared-utils';
 
 const EXPECTED_GEOJSON = `\
 {

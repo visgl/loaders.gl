@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.module.json",
+  "extends": "../../tsconfig.json",
   "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "compilerOptions": {
@@ -8,6 +8,9 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../core"},
+    {"path": "../las"},
+    {"path": "../schema"},
     {"path": "../math"}
   ]
 }

@@ -1,24 +1,26 @@
 # FlatGeobufLoader
 
+![flatgeobuf-logo](../images/flatgeobuf-logo.png)
+
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
   &nbsp;
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-Loader for the [FlatGeobuf](http://flatgeobuf.org/) format, a binary FlatBuffers-encoded format that defines geospatial geometries.
+Loader for the [FlatGeobuf](/docs/modules/flatgeobuf/formats/flatgeobuf) format, a binary FlatBuffers-encoded format that defines geospatial geometries.
 
 | Loader         | Characteristic                                                  |
 | -------------- | --------------------------------------------------------------- |
 | File Extension | `.fgb`,                                                         |
 | File Type      | Binary                                                          |
-| File Format    | [FlatGeobuf](http://flatgeobuf.org/)       |
+| File Format    | [FlatGeobuf](/docs/modules/flatgeobuf/formats/flatgeobuf)       |
 | Data Format    | [Geometry](/docs/specifications/category-gis)                   |
 | Supported APIs | `load`, `loadInBatches`, `parse`, `parseSync`, `parseInBatches` |
 
 ## Usage
 
-```js
+```typescript
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {load} from '@loaders.gl/core';
 
@@ -39,4 +41,4 @@ The parser will return an array of [GeoJSON `features`](https://tools.ietf.org/h
 
 ## Attribution
 
-The `FlatGeobufLoader` wraps the [`flatgeobuf`](https://github.com/bjornharrtell/flatgeobuf) NPM module under the ISC license.
+The `FlatGeobufLoader` wraps the [`flatgeobuf`](https://github.com/bjornharrtell/flatgeobuf) NPM module which is published under the ISC license.

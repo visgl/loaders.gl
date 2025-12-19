@@ -4,10 +4,10 @@ Streaming loader for GeoJSON encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
-| File Extension | `.geojson`                                              |
-| Media Type     | `application/geo+json` |
+| File Extension | `.geojson`                                           |
+| Media Type     | `application/geo+json`                               |
 | File Type      | Text                                                 |
-| File Format    | [GeoJSON][format_geojson]            |
+| File Format    | [GeoJSON][format_geojson]                            |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
 
@@ -17,7 +17,7 @@ Streaming loader for GeoJSON encoded files.
 
 For simple usage, you can load and parse a JSON file atomically:
 
-```js
+```typescript
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 
@@ -27,7 +27,7 @@ const data = await load(url, GeoJSONLoader, {json: options});
 For larger files, GeoJSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
 To parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` to stream the `features` array.
 
-```js
+```typescript
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 
@@ -50,7 +50,7 @@ When batch parsing an embedded JSON array as a table, it is possible to get acce
 
 The loader will yield an initial and a final batch with `batch.container` providing the container object and `batch.batchType` set to `partial-result` and `final-result` respectively.
 
-```js
+```typescript
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {loadInBatches} from '@loaders.gl/core';
 
@@ -102,12 +102,9 @@ Supports table category options such as `batchType` and `batchSize`.
 
 ## JSONPaths
 
-A minimal subset of the JSONPath syntax is supported, to specify which array in a JSON object should be streamed as batchs.
+The loader implements a focused subset of the [IETF JSONPath specification (RFC 9535)](https://www.rfc-editor.org/rfc/rfc9535). See the [JSONPath support table](../jsonpath.md) for the full list of supported and unsupported features.
 
-`$.component1.component2.component3`
-
-- No support for wildcards, brackets etc. Only paths starting with `$` (JSON root) are supported.
-- Regardless of the paths provided, only arrays will be streamed.
+JSONPaths are used only to identify which array should be streamed, so selectors such as `$.features[*]` and `$.features[:]` are normalized to `$.features`. Descendant operators, element indexes, filters, and unions are not supported. Regardless of the paths provided, only arrays will be streamed.
 
 ## Attribution
 

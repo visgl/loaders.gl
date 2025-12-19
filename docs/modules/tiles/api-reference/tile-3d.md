@@ -4,7 +4,7 @@
 
 ## Constructor
 
-```js
+```typescript
 new Tile3D(tileset, header, parentHeader);
 ```
 

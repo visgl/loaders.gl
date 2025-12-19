@@ -1,5 +1,5 @@
 import {JSONLoader, load} from '@loaders.gl/core';
-import type {ArcGisWebSceneData, OperationalLayer} from '../../types';
+import type {ArcGISWebSceneData, OperationalLayer} from '../../types';
 
 /**
  * WKID, or Well-Known ID, of the CRS. Specify either WKID or WKT of the CRS.
@@ -27,16 +27,32 @@ const NO_AVAILABLE_SUPPORTED_LAYERS_ERROR = 'NO_AVAILABLE_SUPPORTED_LAYERS_ERROR
 const NOT_SUPPORTED_CRS_ERROR = 'NOT_SUPPORTED_CRS_ERROR';
 
 /**
+ * Provides additional information in the exception Error object, e.g. unsupported layer types.
+ * @param message - message used in the Error object
+ * @param details - additional information that can be used to handle the exception.
+ * @example throw new LayerError(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR, unsupportedLayers);
+ */
+export class LayerError extends Error {
+  constructor(
+    message: string,
+    public details: unknown
+  ) {
+    super(message);
+    this.name = 'LayerError';
+  }
+}
+
+/**
  * Parses ArcGIS WebScene
  * @param data
  */
-export async function parseWebscene(data: ArrayBuffer): Promise<ArcGisWebSceneData> {
+export async function parseWebscene(data: ArrayBuffer): Promise<ArcGISWebSceneData> {
   const layer0 = JSON.parse(new TextDecoder().decode(data));
   const {operationalLayers} = layer0;
   const {layers, unsupportedLayers} = await parseOperationalLayers(operationalLayers, true);
 
   if (!layers.length) {
-    throw new Error(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR);
+    throw new LayerError(NO_AVAILABLE_SUPPORTED_LAYERS_ERROR, unsupportedLayers);
   }
 
   return {

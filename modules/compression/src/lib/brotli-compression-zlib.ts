@@ -1,9 +1,8 @@
 // BROTLI
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
-import {isBrowser, toArrayBuffer} from '@loaders.gl/loader-utils';
+import {isBrowser, toArrayBuffer, promisify1, promisify2} from '@loaders.gl/loader-utils';
 import zlib, {BrotliOptions} from 'zlib';
-import {promisify1, promisify2} from '@loaders.gl/loader-utils';
 
 export type BrotliCompressionZlibOptions = CompressionOptions & {
   brotliZlib?: BrotliOptions;

@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/excel",
-  "version": "4.0.0-alpha.6",
+  "version": "4.4.0-alpha.2",
   "description": "Framework-independent loader for Excel files",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -17,12 +18,22 @@
     "table",
     "Excel",
     "Sheets",
-    "Worksheets",
-    "Spreadsheets"
+    "Worksheet",
+    "Spreadsheet"
   ],
   "types": "dist/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./excel-worker.js": {
+      "import": "./dist/excel-worker.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -30,14 +41,18 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "esbuild src/bundle.ts --bundle --outfile=dist/dist.min.js",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.0.0-alpha.6",
-    "@loaders.gl/schema": "4.0.0-alpha.6",
-    "xlsx": "^0.17.0"
+    "@loaders.gl/loader-utils": "4.4.0-alpha.2",
+    "@loaders.gl/schema": "4.4.0-alpha.2",
+    "xlsx": "^0.18.5"
   },
-  "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"
+  "peerDependencies": {
+    "@loaders.gl/core": "4.4.0-alpha.1"
+  },
+  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
 }

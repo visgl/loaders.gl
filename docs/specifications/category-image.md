@@ -4,9 +4,9 @@ The image loader category documents a common data format, options, conventions a
 
 ## Image Category Loaders
 
-| Loader                                                                                  | Notes                                                 |
-| --------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)                         | Loads compressed images (PNG, JPG, etc)               |
+| Loader                                                                                      | Notes                                                 |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)                            | Loads compressed images (PNG, JPG, etc)               |
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | Parses compressed textures to image data mipmap array |
 | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Transpiles into supported compressed texture format   |
 
@@ -81,7 +81,7 @@ The image category support some generic options (specified using `options.image.
 
 ### About worker loading
 
-Worker loading is only supported for the `data` and `imagebitmap` formats. Since image worker loading is only available on some browsers (Chrome and Firefox), the `ImageLoader` dynamically determines if worker loading is available. Use `options.worker: false` to disable worker loading of images.
+Worker loading is only supported for the `data` and `imagebitmap` formats. Since image worker loading is only available on some browsers (Chrome and Firefox), the `ImageLoader` dynamically determines if worker loading is available. Use `options.core.worker: false` to disable worker loading of images.
 
 ## Image API
 

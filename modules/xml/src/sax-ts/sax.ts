@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // This file is forked from https://github.com/Maxim-Mazurok/sax-ts under ISC license,
 // which in turn is forked from https://github.com/isaacs/sax-js under ISC license

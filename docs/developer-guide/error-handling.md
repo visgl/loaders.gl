@@ -1,6 +1,6 @@
 # Handling Errors
 
-Applications that implement loading and saving of data typically wish to provide solid error handling. A number of error conditions can occur that are outside the applications control (missing files, unreadable files, incorrectly formatted files etc).Being able to catch these errors and surface meaningful error messages to the end user is important. 
+Applications that implement loading and saving of data typically wish to provide solid error handling. A number of error conditions can occur that are outside the applications control (missing files, unreadable files, incorrectly formatted files etc).Being able to catch these errors and surface meaningful error messages to the end user is important.
 
 Ideally the applications wants a simple and clean API for performing loading, and still have the confidence that errors are caught and meaningful messages are presented to the user.
 
@@ -18,11 +18,11 @@ loaders.gl can detect all of these error conditions and report the resulting err
 
 loaders.gl aims to produce concise, easy-to-understand error messages that can be presented directly to the end user.
 
-- When the `fetch` call fails, any exceptions are passed to the user, 
- - When a loader fails, it generates an error message. 
- - For server error responses, some basic information about the error is compiled into an error message (using e.g. `response.status`, `response.url` and occasionally `response.text`).
+- When the `fetch` call fails, any exceptions are passed to the user,
+- When a loader fails, it generates an error message.
+- For server error responses, some basic information about the error is compiled into an error message (using e.g. `response.status`, `response.url` and occasionally `response.text`).
 
-> Note that while servers often send some information about errors in `response.text()` when setting HTTP error codes, there are no universally accepted conventions for how servers format those error messages. Server error messages can be JSON or XML encoded for machine consumption, or generated in HTML or clear text format intended to be displayed directly to end user. Even when JSON or XML coded, 
+> Note that while servers often send some information about errors in `response.text()` when setting HTTP error codes, there are no universally accepted conventions for how servers format those error messages. Server error messages can be JSON or XML encoded for machine consumption, or generated in HTML or clear text format intended to be displayed directly to end user. Even when JSON or XML coded,
 
 loaders.gl makes a "best effort" attempt to extract some meaningful error message from server responses. If you know how your specific service formats errors and want to extract these in a way that you can present to the user, you may want to take control of the `fetch` calls and `Response` status checking, see below.
 

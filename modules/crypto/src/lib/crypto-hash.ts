@@ -1,16 +1,13 @@
-// This dependency is too big, application must provide it
-import type * as CryptoJSNamespace from 'crypto-js';
+import {getJSModule, registerJSModules} from '@loaders.gl/loader-utils';
 import {Hash} from './hash';
 
 type CryptoHashOptions = {
-  modules: {[moduleName: string]: any};
+  modules?: {[moduleName: string]: any};
   crypto: {
     algorithm: string;
     onEnd?: (result: {hash: string}) => any;
   };
 };
-
-let CryptoJS: typeof CryptoJSNamespace;
 
 /**
  * A transform that calculates Cryptographic Hash using Crypto JS library
@@ -20,12 +17,16 @@ export class CryptoHash extends Hash {
   readonly name;
 
   options: CryptoHashOptions;
+  /** Name of digest algorithm */
   private _algorithm;
-  private _hash;
+  /** CryptoJS algorithm */
+  private _algo;
 
   constructor(options: CryptoHashOptions) {
     super();
     this.options = options;
+    registerJSModules(options?.modules);
+
     this._algorithm = this.options?.crypto?.algorithm;
     if (!this._algorithm) {
       throw new Error(this.name);
@@ -34,47 +35,54 @@ export class CryptoHash extends Hash {
   }
 
   async preload(): Promise<void> {
-    if (!CryptoJS) {
-      CryptoJS = this.options?.modules?.CryptoJS;
-      if (!CryptoJS) {
-        throw new Error(this.name);
-      }
-    }
-    if (!this._hash) {
-      const algo = CryptoJS.algo[this._algorithm];
-      this._hash = algo.create();
-    }
-    if (!this._hash) {
-      throw new Error(this.name);
-    }
+    const CryptoJS = getJSModule('CryptoJS', this.name);
+    this._algo = CryptoJS.algo[this._algorithm];
   }
 
   /**
    * Atomic hash calculation
    * @returns base64 encoded hash
    */
-  async hash(input: ArrayBuffer): Promise<string> {
+  async hash(input: ArrayBuffer, encoding: 'hex' | 'base64'): Promise<string> {
     await this.preload();
+
+    const hash = this._algo.create();
+    if (!hash) {
+      throw new Error(this.name);
+    }
+
+    const CryptoJS = getJSModule('CryptoJS', this.name);
     // arrayBuffer is accepted, even though types and docs say no
     // https://stackoverflow.com/questions/25567468/how-to-decrypt-an-arraybuffer
-    // @ts-expect-error
     const typedWordArray = CryptoJS.lib.WordArray.create(input);
-    return this._hash.update(typedWordArray).finalize().toString(CryptoJS.enc.Base64);
+    // Map our encoding constant to Crypto library
+    const enc = encoding === 'base64' ? CryptoJS.enc.Base64 : CryptoJS.enc.Hex;
+    return hash.update(typedWordArray).finalize().toString(enc);
   }
 
   async *hashBatches(
-    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
+    asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
+    encoding: 'hex' | 'base64' = 'base64'
   ): AsyncIterable<ArrayBuffer> {
     await this.preload();
+    const CryptoJS = getJSModule('CryptoJS', this.name);
+
+    const hash = this._algo.create();
+    if (!hash) {
+      throw new Error(this.name);
+    }
+
     for await (const chunk of asyncIterator) {
       // arrayBuffer is accepted, even though types and docs say no
       // https://stackoverflow.com/questions/25567468/how-to-decrypt-an-arraybuffer
-      // @ts-expect-error
       const typedWordArray = CryptoJS.lib.WordArray.create(chunk);
-      this._hash.update(typedWordArray);
+      hash.update(typedWordArray);
       yield chunk;
     }
-    const hash = this._hash.finalize().toString(CryptoJS.enc.Base64);
-    this.options?.crypto?.onEnd?.({hash});
+
+    // Map our encoding constant to Crypto library
+    const enc = encoding === 'base64' ? CryptoJS.enc.Base64 : CryptoJS.enc.Hex;
+    const digest = hash.finalize().toString(enc);
+    this.options?.crypto?.onEnd?.({hash: digest});
   }
 }

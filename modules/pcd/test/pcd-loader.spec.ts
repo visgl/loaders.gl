@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
@@ -19,11 +23,14 @@ test('PCDLoader#loader conformance', (t) => {
 });
 
 test('PCDLoader#parse(text)', async (t) => {
-  const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {worker: false});
+  const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
+    core: {worker: false}
+  });
   validateMeshCategoryData(t, data);
 
   t.equal(Object.keys(data.schema.fields).length, 2, 'schema field count is correct');
   t.equal(data.schema.metadata.mode, '0', 'schema metadata is correct');
+  t.equal(data.schema.metadata.topology, 'point-list', 'schema metadata is correct');
   t.ok(data.schema.metadata.boundingBox, 'schema metadata is correct');
 
   const positionField = data.schema.fields.find((field) => field.name === 'POSITION');
@@ -51,7 +58,9 @@ test('PCDLoader#parse(text)', async (t) => {
 });
 
 test('PCDLoader#parse(binary)', async (t) => {
-  const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {worker: false});
+  const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {
+    core: {worker: false}
+  });
   validateMeshCategoryData(t, data);
 
   t.equal(data.mode, 0, 'mode is POINTS (0)');

@@ -9,7 +9,7 @@ Parse [3D tile](https://github.com/AnalyticalGraphicsInc/3d-tiles) fetched from 
 
 Load a tileset file from Cesium ion server.
 
-```js
+```typescript
 import {load} from '@loaders.gl/core';
 import {CesiumIonLoader} from '@loaders.gl/3d-tiles';
 import {WebMercatorViewport} from '@deck.gl/core';
@@ -31,7 +31,7 @@ const tilesetJson = await load(tilesetUrl, CesiumIonLoader, {
 });
 
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
-tileset3d.update(viewport);
+tileset3d.selectTiles(viewport);
 
 // visible tiles
 const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
@@ -43,10 +43,10 @@ const visibleTiles = tileset3d.tiles.filter((tile) => tile.selected);
 
 Inherit all the options from `Tiles3DLoader`.
 
-| Option                     | Type           | Default | Description                                                                                                                                                           |
-| -------------------------- | -------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `['cesium-ion'].isTileset` | Bool or `auto` | `auto`  | Whether to load a `Tileset` file. If `auto`, will infer based on url extension.                                                                                       |
-| `['cesium-ion'].headers`   | Object         | `null`  | Used to load data from server                                                                                                                                         |
+| Option                     | Type           | Default | Description                                                                                                                                                                                                               |
+| -------------------------- | -------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `['cesium-ion'].isTileset` | Bool or `auto` | `auto`  | Whether to load a `Tileset` file. If `auto`, will infer based on url extension.                                                                                                                                           |
+| `['cesium-ion'].headers`   | Object         | `null`  | Used to load data from server                                                                                                                                                                                             |
 | `['cesium-ion'].tileset`   | `Object`       | `null`  | `Tileset` object loaded by `Tiles3DLoader` or follow the data format specified in [Tileset Object](/docs/modules/3d-tiles/api-reference/tiles-3d-loader#tileset-object). It is required when loading i3s geometry content |
 | `['cesium-ion'].tile`      | `Object`       | `null`  | `Tile` object loaded by `Tiles3DLoader` or follow the data format [Tile Object](/docs/modules/3d-tiles/api-reference/tiles-3d-loader#tile-object). It is required when loading i3s geometry content                       |
 

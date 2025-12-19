@@ -13,7 +13,7 @@ export type GLTFWithBuffers = {
   images?: GLTFExternalImage[];
 };
 
-type GLTFExternalBuffer = {
+export type GLTFExternalBuffer = {
   arrayBuffer: ArrayBuffer;
   byteOffset: number;
   byteLength: number;
@@ -28,6 +28,10 @@ type GLTFExternalImage =
       height: number;
       data: Uint8Array;
     };
+
+export type FeatureTableJson = {
+  [key: string]: any[];
+};
 
 export type {
   GLTF,
@@ -48,9 +52,7 @@ export type {
   GLTF_KHR_draco_mesh_compression,
   GLTF_KHR_texture_basisu,
   GLTF_EXT_meshopt_compression,
-  GLTF_EXT_texture_webp,
-  GLTF_EXT_feature_metadata,
-  GLTF_EXT_mesh_features
+  GLTF_EXT_texture_webp
 } from './gltf-json-schema';
 
 export type {

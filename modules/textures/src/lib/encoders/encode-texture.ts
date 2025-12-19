@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {ChildProcessProxy} from '@loaders.gl/worker-utils';
 import {CompressedTextureWriterOptions} from '../../compressed-texture-writer';
 

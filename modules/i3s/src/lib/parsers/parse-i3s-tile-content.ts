@@ -2,7 +2,7 @@ import type {TypedArray} from '@loaders.gl/schema';
 import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
-import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
@@ -23,7 +23,6 @@ import {getUrlWithToken} from '../utils/url-utils';
 
 import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} from './constants';
 import {I3SLoaderOptions} from '../../i3s-loader';
-import {customizeColors} from '../utils/customizeColors';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
@@ -47,7 +46,7 @@ export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
   tileOptions: I3STileOptions,
   tilesetOptions: I3STilesetOptions,
-  options?: LoaderOptions,
+  options?: StrictLoaderOptions,
   context?: LoaderContext
 ): Promise<I3STileContent> {
   const content: I3STileContent = {
@@ -65,38 +64,36 @@ export async function parseI3STileContent(
     // @ts-expect-error options is not properly typed
     const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
     const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-    const response = await fetch(url, options?.fetch as RequestInit);
+    const fetchFunc = context?.fetch || fetch;
+    const response = await fetchFunc(url); // options?.fetch
     const arrayBuffer = await response.arrayBuffer();
 
     // @ts-expect-error options is not properly typed
     if (options?.i3s.decodeTextures) {
+      // TODO - replace with switch
       if (loader === ImageLoader) {
         const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
         try {
-          // @ts-ignore context must be defined
           // Image constructor is not supported in worker thread.
           // Do parsing image data on the main thread by using context to avoid worker issues.
-          content.texture = await context.parse(arrayBuffer, options);
+          const texture: any = await parseFromContext(arrayBuffer, [], options, context!);
+          content.texture = texture;
         } catch (e) {
           // context object is different between worker and node.js conversion script.
           // To prevent error we parse data in ordinary way if it is not parsed by using context.
-          // @ts-expect-error
-          content.texture = await parse(arrayBuffer, loader, options);
+          const texture: any = await parse(arrayBuffer, loader, options, context);
+          content.texture = texture;
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        let texture = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
+        let texture: any = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
         if (loader === BasisLoader) {
-          // @ts-expect-error
           texture = texture[0];
         }
         content.texture = {
           compressed: true,
           mipmaps: false,
-          // @ts-expect-error
           width: texture[0].width,
-          // @ts-expect-error
           height: texture[0].height,
-          // @ts-expect-error
           data: texture
         };
       }
@@ -198,6 +195,7 @@ async function parseI3SNodeGeometry(
 
   if (
     !options?.i3s?.coordinateSystem ||
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
   ) {
     const enuMatrix = parsePositions(attributes.position, tileOptions);
@@ -207,14 +205,6 @@ async function parseI3SNodeGeometry(
     content.modelMatrix = getModelMatrix(attributes.position);
     content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
   }
-
-  attributes.color = await customizeColors(
-    attributes.color,
-    attributes.id,
-    tileOptions,
-    tilesetOptions,
-    options
-  );
 
   content.attributes = {
     positions: attributes.position,
@@ -302,11 +292,11 @@ function parseHeaders(arrayBuffer: ArrayBuffer, options: I3STilesetOptions) {
   for (const {property, type} of options.store.defaultGeometrySchema.header) {
     const TypedArrayTypeHeader = getConstructorForDataFormat(type);
     switch (property) {
-      case HeaderAttributeProperty.vertexCount:
+      case HeaderAttributeProperty.vertexCount.toString():
         vertexCount = new TypedArrayTypeHeader(arrayBuffer, 0, 4)[0];
         byteOffset += sizeOf(type);
         break;
-      case HeaderAttributeProperty.featureCount:
+      case HeaderAttributeProperty.featureCount.toString():
         featureCount = new TypedArrayTypeHeader(arrayBuffer, 4, 4)[0];
         byteOffset += sizeOf(type);
         break;

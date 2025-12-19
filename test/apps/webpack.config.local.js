@@ -86,12 +86,16 @@ const LOCAL_DEVELOPMENT_CONFIG = {
         loader: 'babel-loader',
         exclude: [/node_modules/],
         options: {
-          presets: ['@babel/preset-typescript', [
-            '@babel/preset-env',
-            {
-              exclude: [/transform-async-to-generator/, /transform-regenerator/]
-            }
-          ], '@babel/preset-react']
+          presets: [
+            '@babel/preset-typescript',
+            [
+              '@babel/preset-env',
+              {
+                exclude: [/transform-async-to-generator/, /transform-regenerator/]
+              }
+            ],
+            '@babel/preset-react'
+          ]
         }
       },
       {
@@ -105,7 +109,9 @@ const LOCAL_DEVELOPMENT_CONFIG = {
               {
                 exclude: [/transform-async-to-generator/, /transform-regenerator/]
               }
-            ], '@babel/preset-react']
+            ],
+            '@babel/preset-react'
+          ]
         }
       },
       {

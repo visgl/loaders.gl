@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 
 const VULKAN_TO_WEBGL_FORMAT_MAP: Record<number, number> = {

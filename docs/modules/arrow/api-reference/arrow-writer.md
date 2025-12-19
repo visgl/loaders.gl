@@ -18,7 +18,7 @@ The `ArrowWriter` encodes a set of arrays into an ArrayBuffer of Apach Arrow col
 
 ## Usage
 
-```js
+```typescript
 import {encodeSync} from '@loaders.gl/core';
 import {ArrowWriter, VECTOR_TYPES} from '@loaders.gl/arrow';
 

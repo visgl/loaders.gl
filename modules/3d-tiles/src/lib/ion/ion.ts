@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 // Minimal support to load tilsets from the Cesium ION services
 
 import {fetchFile} from '@loaders.gl/core';
@@ -19,12 +23,15 @@ export async function getIonTilesetMetadata(accessToken, assetId) {
 
   // Step 2: Query metdatadata for this asset.
   const ionAssetMetadata = await getIonAssetMetadata(accessToken, assetId);
-  const {type, url} = ionAssetMetadata;
+  const type = ionAssetMetadata.type;
+  // As of Oct 2024 ion service now returns the resource URL in an options object
+  const url = ionAssetMetadata.options?.url || ionAssetMetadata.url;
   assert(type === '3DTILES' && url);
 
   // Prepare a headers object for fetch
   ionAssetMetadata.headers = {
-    Authorization: `Bearer ${ionAssetMetadata.accessToken}`
+    // Use provided accessToken if a new token is not provided in the ion response
+    Authorization: `Bearer ${ionAssetMetadata.accessToken || accessToken}`
   };
   return ionAssetMetadata;
 }
@@ -34,7 +41,7 @@ export async function getIonAssets(accessToken) {
   assert(accessToken);
   const url = CESIUM_ION_URL;
   const headers = {Authorization: `Bearer ${accessToken}`};
-  const response = await fetchFile(url, {fetch: {headers}});
+  const response = await fetchFile(url, {headers});
   if (!response.ok) {
     throw new Error(response.statusText);
   }
@@ -49,7 +56,7 @@ export async function getIonAssetMetadata(accessToken, assetId) {
   const url = `${CESIUM_ION_URL}/${assetId}`;
   // https://cesium.com/docs/rest-api/#operation/getAsset
   // Retrieves metadata information about a specific asset.
-  let response = await fetchFile(`${url}`, {fetch: {headers}});
+  let response = await fetchFile(`${url}`, {headers});
   if (!response.ok) {
     throw new Error(response.statusText);
   }
@@ -57,7 +64,7 @@ export async function getIonAssetMetadata(accessToken, assetId) {
 
   // https://cesium.com/docs/rest-api/#operation/getAssetEndpoint
   // Retrieves information and credentials that allow you to access the tiled asset data for visualization and analysis.
-  response = await fetchFile(`${url}/endpoint`, {fetch: {headers}});
+  response = await fetchFile(`${url}/endpoint`, {headers});
   if (!response.ok) {
     throw new Error(response.statusText);
   }

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright vis.gl contributors
+
 import {GLType} from '@loaders.gl/math'; // '@math.gl/geometry';
 import {assert} from '@loaders.gl/loader-utils';
 

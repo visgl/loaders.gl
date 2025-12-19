@@ -1,11 +1,13 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 // Copyright 2022 Foursquare Labs, Inc.
 
 import test from 'tape-promise/tape';
 
 import {JSONWriter} from '@loaders.gl/json';
 import {encodeTableAsText} from '@loaders.gl/core';
-import {emptyTable, tableWithData} from '@loaders.gl/schema/test/shared-utils';
+import {emptyTable, tableWithData} from '@loaders.gl/schema-utils/test/shared-utils';
 
 test('JSONWriter#encodeTableAsText - empty table', async (t) => {
   const encodedText = await encodeTableAsText(emptyTable, JSONWriter);
@@ -27,7 +29,7 @@ test('JSONWriter#encodeTableAsText - data table, row objects', async (t) => {
 
 test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async (t) => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
-    shape: 'object-row-table'
+    json: {shape: 'object-row-table'}
   });
   t.equal(
     encodedText,
@@ -40,7 +42,7 @@ test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async 
 
 test('JSONWriter#encodeTableAsText - data table, row arrays', async (t) => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
-    shape: 'array-row-table'
+    json: {shape: 'array-row-table'}
   });
   t.equal(
     encodedText,
@@ -53,8 +55,7 @@ test('JSONWriter#encodeTableAsText - data table, row arrays', async (t) => {
 
 test.skip('JSONWriter#encodeTableAsText - data table, wrapper', async (t) => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
-    wrapper: (table) => ({wrapped: true, table}),
-    shape: 'array-row-table'
+    json: {shape: 'array-row-table', wrapper: (table) => ({wrapped: true, table})}
   });
   t.equal(
     encodedText,

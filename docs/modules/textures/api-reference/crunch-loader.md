@@ -16,7 +16,7 @@ Loader for compressed textures in the Crunch file format
 
 ## Usage
 
-```js
+```typescript
 import {CrunchWorkerLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 

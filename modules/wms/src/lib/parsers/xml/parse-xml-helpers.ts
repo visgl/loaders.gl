@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 /** A single element of an array is not represented as an array in XML */
 export function getXMLArray(xmlValue: any): any[] {
@@ -18,7 +20,7 @@ export function getXMLArray(xmlValue: any): any[] {
 export function getXMLStringArray(xmlValue: any): string[] {
   const xmlArray = getXMLArray(xmlValue);
   if (xmlArray.length > 0 && xmlArray.every((_) => typeof _ === 'string')) {
-    return xmlArray as string[];
+    return xmlArray;
   }
   // TODO - error handling?
   return [];

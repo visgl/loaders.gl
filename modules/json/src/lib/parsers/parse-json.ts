@@ -1,6 +1,9 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {RowTable} from '@loaders.gl/schema';
-import {makeTableFromData} from '@loaders.gl/schema';
+import {makeTableFromData} from '@loaders.gl/schema-utils';
 import type {JSONLoaderOptions} from '../../json-loader';
 
 export function parseJSONSync(jsonText: string, options: JSONLoaderOptions): RowTable {

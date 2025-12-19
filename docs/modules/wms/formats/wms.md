@@ -2,16 +2,15 @@
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-- *[`@loaders.gl/wms`](/docs/modules/wms)*
-- *[Wikipedia article](https://en.wikipedia.org/wiki/Web_Map_Service)*
-- *[OGC Specification](https://raw.githubusercontent.com/visgl/deck.gl-data/master/specifications/wms/06-042_OpenGIS_Web_Map_Service_WMS_Implementation_Specification.pdf) (PDF)*
+- _[`@loaders.gl/wms`](/docs/modules/wms)_
+- _[Wikipedia article](https://en.wikipedia.org/wiki/Web_Map_Service)_
+- _[OGC Specification](https://raw.githubusercontent.com/visgl/deck.gl-data/master/specifications/wms/06-042_OpenGIS_Web_Map_Service_WMS_Implementation_Specification.pdf) (PDF)_
 
 WMS (Web Map Service) is a protocol for serving geo-referenced **map images** over the internet. WMS was standardized in 1999 by the OGC (Open Geospatial Consortium).
 
-
 ## Characteristics
 
-WMS is not a single file format but rather a protocol, specifying a set of requests that the server should implement. Some WMS protocol requests return binary images, and some return metadata formatted as XML text responses. 
+WMS is not a single file format but rather a protocol, specifying a set of requests that the server should implement. Some WMS protocol requests return binary images, and some return metadata formatted as XML text responses.
 
 WMS responses are typically XML encoded have a fairly detailed structure and some significant differences between versions exist, making it somewhat non-trivial to parse. Therefore when working with WMS it is typically useful to have access to well-tested parsers for each XML response type.
 
@@ -21,13 +20,13 @@ WMS responses are typically XML encoded have a fairly detailed structure and som
 
 A WMS server usually serves the map in a bitmap format, e.g. PNG, GIF, JPEG. In addition, vector graphics can be included, such as points, lines, curves and text, expressed in SVG or WebCGM format. The MIME types of the `GetMap` request can be inspected in the response to the `GetCapabilities` request.
 
-Rendering parameters can be supported by the WMS service. Perhaps the most significant one is the `transparent` parameter that renders transparent pixels where there is no data, allowing the generated map images to be overlaid with other 
+Rendering parameters can be supported by the WMS service. Perhaps the most significant one is the `transparent` parameter that renders transparent pixels where there is no data, allowing the generated map images to be overlaid with other
 
 ## Capabilities
 
 ## WMS Capabilities
 
-The `GetCapabilities` request returns metadata about the WMS service. 
+The `GetCapabilities` request returns metadata about the WMS service.
 
 | XML Tag               | JSON Field           | JavaScript Type | Description                                                                                  |
 | --------------------- | -------------------- | --------------- | -------------------------------------------------------------------------------------------- |
@@ -100,9 +99,10 @@ A WMS layer can support one or more additional data dimensions, such as `time`, 
 | `<Extent>`         | `extent`          | `string`  | Text content indicating available values for dimension                                        |
 
 Remarks:
-- The above tables are not intended to be an exhaustive description of OGC WMS Capabilities XML. 
+
+- The above tables are not intended to be an exhaustive description of OGC WMS Capabilities XML.
 - Some XML tags have additional nested tags or properties not described here, please refer directly to the OGC WMS standard if such details matter.
-- The "JSON Field" in the tables below is not part of the OGC WMS standard. It describes the JSON representation that the loaders.gl `WMSCapabilitiesLoader` outputs, and the type field represents JSON types. 
+- The "JSON Field" in the tables below is not part of the OGC WMS standard. It describes the JSON representation that the loaders.gl `WMSCapabilitiesLoader` outputs, and the type field represents JSON types.
 - The JSON representation is simpler, but similar to, the source XML. (camelCase instead of PascalCase etc).
 
 ### Map Layers
@@ -111,17 +111,18 @@ A WMS service defines a number of **layers** representing data that can be rende
 
 The `GetCapabilities` request returns a list of valid layers and metadata about them such as their name and description, which `crs` or coordinate reference systems they support, their bounding box, any sub layers etc.
 
-Also note that WMS layers are organized in a hierarchy. 
+Also note that WMS layers are organized in a hierarchy.
+
 - Only named layers (with `name` property) are renderable.
 - A named parent layer will render all renderable sublayers.
 - Sublayers inherit properties from the parent layers (refer to table above to see exactly which properties are inherited).
 - Layer intheritance is often used to reduce the size of the `GetCapabilities` XML response payload, as verbose information about bounding boxes, supported CRS etc can be specified once on a parent layer.
 
-Without any apriori knowledge about a WMS server, the GetCapabilities request is the only way to discover valid layer names. Not that on the `GetCapabilities` request is sometimes slow (order of tens of seconds), meaning that it can take some time to auto-discover a valid layer name and then request a map with that layer. The `GetMap` request is often significantly faster than `GetCapabilities`. 
+Without any apriori knowledge about a WMS server, the GetCapabilities request is the only way to discover valid layer names. Not that on the `GetCapabilities` request is sometimes slow (order of tens of seconds), meaning that it can take some time to auto-discover a valid layer name and then request a map with that layer. The `GetMap` request is often significantly faster than `GetCapabilities`.
 
 ## Dimensions
 
-WMS capability data may indicate that some layers support additional dimensions, typically time. 
+WMS capability data may indicate that some layers support additional dimensions, typically time.
 
 - An optional dimension that can be queried using the `dim_<name>=...`, `time=...`, `elevation=...` parameters.
 - Note that layers that have at least one dimension without `default` value.
@@ -129,22 +130,22 @@ WMS capability data may indicate that some layers support additional dimensions,
 
 ```typescript
 export type WMSDimension = {
-  name: string; /** name of dimension, becomes a valid parameter key for this layer */
-  units: string; /** Textual units for this dimensional axis */
-  unitSymbol?: string; /** Unit symbol for this dimensional axis */
-  defaultValue?: string; /** Default value if no value is supplied. If dimension lacks defaultValue, requests fail if no value is supplied */
-  multipleValues?: boolean; /** Can multiple values of the dimension be requested? */
-  nearestValue?: boolean; /* Will nearest values will be substituted when out of range, if false exact values are required */
-  current?: boolean; /** A special value "current" is supported, typically for time dimension */
-  extent: string; /** Text content indicating available values for dimension */
+  name: string /** name of dimension, becomes a valid parameter key for this layer */;
+  units: string /** Textual units for this dimensional axis */;
+  unitSymbol?: string /** Unit symbol for this dimensional axis */;
+  defaultValue?: string /** Default value if no value is supplied. If dimension lacks defaultValue, requests fail if no value is supplied */;
+  multipleValues?: boolean /** Can multiple values of the dimension be requested? */;
+  nearestValue?: boolean /* Will nearest values will be substituted when out of range, if false exact values are required */;
+  current?: boolean /** A special value "current" is supported, typically for time dimension */;
+  extent: string /** Text content indicating available values for dimension */;
 };
 ```
 
-Note that some layers have a default value for the extra dimensions, meaning that they can be queried without specifying that dimension. 
+Note that some layers have a default value for the extra dimensions, meaning that they can be queried without specifying that dimension.
 
-With the exception of `time` and `elevation`, the request parameter name is constructed by concatenating the prefix “dim_” with the sample dimension Name (the value of the name attribute of the corresponding `<Dimension>` and `<Extent>` elements in the Capabilities XML). The resulting “dim_name” is case-insensitive. 
+With the exception of `time` and `elevation`, the request parameter name is constructed by concatenating the prefix “dim\_” with the sample dimension Name (the value of the name attribute of the corresponding `<Dimension>` and `<Extent>` elements in the Capabilities XML). The resulting “dim_name” is case-insensitive.
 
-The use of the “dim_” prefix is to avoid clashes between server-defined dimension names and current or future OGC Web Service specifications. (Time and Elevation, being predefined, do not use the prefix.)
+The use of the “dim\_” prefix is to avoid clashes between server-defined dimension names and current or future OGC Web Service specifications. (Time and Elevation, being predefined, do not use the prefix.)
 
 - single value: for example: …&elevation=500&…
 - multiple values: for example: …&dim_text_dimension=first,second&…
@@ -153,7 +154,7 @@ The use of the “dim_” prefix is to avoid clashes between server-defined dime
 
 ## WMS Requests
 
-The WMS standard specifies protocol defined as a number of "request types" that a standards-compliant WMS server should support. 
+The WMS standard specifies protocol defined as a number of "request types" that a standards-compliant WMS server should support.
 
 | **WMS Request**    | **loaders.gl support**                         | **Description**                                                                                                                                                                                                        |
 | ------------------ | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -165,8 +166,9 @@ The WMS standard specifies protocol defined as a number of "request types" that 
 | Exceptions         | `WMSErrorLoader`                               | Parses an XML encoded WMS error response from any malformed request.                                                                                                                                                   |
 
 Remarks:
+
 - Information about which request types are supported is available in the response to `GetCapabilities` request.
-- Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server. 
+- Note that only the `GetCapabilities` and `GetMap` request types are are required to be supported by a WMS server.
 
 [capabilities_loader]: /docs/modules/wms/api-reference/wms-capabilities-loader
 [feature_info_loader]: /docs/modules/wms/api-reference/wms-feature-info-loader
@@ -174,11 +176,9 @@ Remarks:
 
 ## Coordinate Reference Systems
 
-
-
 ## WMS Protocol Versions
 
-Several revisions of the WMS standard have been published by the OGC. It is notable that there are some breaking, non-backwards compatible changes. Taking care of these differences on behalf of the application is normally goal of libraries that provide WMS support. 
+Several revisions of the WMS standard have been published by the OGC. It is notable that there are some breaking, non-backwards compatible changes. Taking care of these differences on behalf of the application is normally goal of libraries that provide WMS support.
 
 #### v1.3.0
 
@@ -186,12 +186,13 @@ Version 1.3.0 of the WMS standard was released in January 2004
 
 - Use `CRS` instead of `SRS` parameter for 1.3.0
 - The order of parameters for BBOX (in v1.3.0 only) depends on whether the CRS definition has flipped axes. You will see this in the `GetCapabilities` request at 1.3.0 - the response should show the flipped axes.
-  + `BBOX=xmin,ymin,xmax,ymax NON-FLIPPED`
-  + `BBOX=ymin,xmin,ymax,xmax FLIPPED`
-  + `EPSG:4326` needs to have flipped axes. `4326 1 WGS 84 Latitude North Longitude East`
 
-- `EPSG:4326` is wrongly defined in v1.1.1 as having long/lat coordinate axes. In WMS 1.3.0 the correct axes lat/long are used. 
-- `CRS:84` was introduced with the publication of the WMS 1.3.0 specification, to overcome the breaking change of `EPSG:4326` in WMS 1.1.1 
+  - `BBOX=xmin,ymin,xmax,ymax NON-FLIPPED`
+  - `BBOX=ymin,xmin,ymax,xmax FLIPPED`
+  - `EPSG:4326` needs to have flipped axes. `4326 1 WGS 84 Latitude North Longitude East`
+
+- `EPSG:4326` is wrongly defined in v1.1.1 as having long/lat coordinate axes. In WMS 1.3.0 the correct axes lat/long are used.
+- `CRS:84` was introduced with the publication of the WMS 1.3.0 specification, to overcome the breaking change of `EPSG:4326` in WMS 1.1.1
 - `CRS:84` is defined by OGC as having the same datum as `EPSG:4326` (that is the World Geodetic System 1984 datum ~ `EPSG::6326`) but axis order of long/lat.
 
 The above information is mainly based on the following [stackexchange](https://gis.stackexchange.com/questions/23347/getmap-wms-1-1-1-vs-1-3-0) notes.
@@ -211,10 +212,9 @@ Released in June 2001
 
 #### v1.0.0
 
-Released in April 2000. 
+Released in April 2000.
 
 > Not tested / not officially supported.
-
 
 ## Servers
 
@@ -226,13 +226,12 @@ GeoServer is a major open source server with support for serving WMS images.
 
 A specific server implementation often supports additional vendor specific parameters, e.g [GeoServer](https://docs.geoserver.org/2.22.x/en/user/services/wms/vendor.html#wms-vendor-parameters)
 
-
 ## Example Services
 
 There are a number of public services
 
- | Name                                                                                                                                       | Service URL                                                      | Description                                                                                                                                                                                                   |
- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
- | [OpenStreetMap WMS](https://www.terrestris.de/en/openstreetmap-wms/)                                                                       | https://ows.terrestris.de/osm/service                            | OpenStreetMap rendered, updated weekly, covering the entire globe. [Copyright OpenStreetMap](https://www.openstreetmap.org/copyright).                                                                        |
- | [NOAA Composite Reflectivity WMS](https://opengeo.ncep.noaa.gov/geoserver/www/index.html)                                                  | https://opengeo.ncep.noaa.gov/geoserver/conus/conus_cref_qcd/ows | Radar precipitation data covering the contiguous US. Quality Controlled 1km x 1km CONUS Radar Composite Reflectivity. This data is provided Multi-Radar-Multi-Sensor (MRMS) algorithm.                        |
- | [NASA Global Imagery Browse Services for EOSDIS](https://www.earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/gibs/) | https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi        | Over 1,000 NASA satellite imagery products, covering every part of the world. Most imagery is updated daily—available within a few hours after satellite observation, and some products span almost 30 years. |
+| Name                                                                                                                                       | Service URL                                                      | Description                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [OpenStreetMap WMS](https://www.terrestris.de/en/openstreetmap-wms/)                                                                       | https://ows.terrestris.de/osm/service                            | OpenStreetMap rendered, updated weekly, covering the entire globe. [Copyright OpenStreetMap](https://www.openstreetmap.org/copyright).                                                                        |
+| [NOAA Composite Reflectivity WMS](https://opengeo.ncep.noaa.gov/geoserver/www/index.html)                                                  | https://opengeo.ncep.noaa.gov/geoserver/conus/conus_cref_qcd/ows | Radar precipitation data covering the contiguous US. Quality Controlled 1km x 1km CONUS Radar Composite Reflectivity. This data is provided Multi-Radar-Multi-Sensor (MRMS) algorithm.                        |
+| [NASA Global Imagery Browse Services for EOSDIS](https://www.earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/gibs/) | https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi        | Over 1,000 NASA satellite imagery products, covering every part of the world. Most imagery is updated daily—available within a few hours after satellite observation, and some products span almost 30 years. |

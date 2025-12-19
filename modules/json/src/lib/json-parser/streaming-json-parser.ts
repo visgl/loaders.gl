@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {default as JSONParser} from './json-parser';
 import JSONPath from '../jsonpath/jsonpath';
 

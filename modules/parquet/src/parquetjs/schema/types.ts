@@ -1,4 +1,9 @@
-// Forked from https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.)
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+// Copyright (c) 2017 ironSource Ltd.
+// Forked from https://github.com/kbajalc/parquets under MIT license
+
 /* eslint-disable camelcase */
 import {BSONLoader, BSONWriter} from '@loaders.gl/bson';
 import {OriginalType, ParquetField, ParquetType, PrimitiveType} from './declare';
@@ -340,7 +345,8 @@ function fromPrimitive_JSON(value: any): unknown {
 }
 
 function toPrimitive_BSON(value: any): Buffer {
-  const arrayBuffer = BSONWriter.encodeSync?.(value) as ArrayBuffer;
+  // @ts-ignore
+  const arrayBuffer: ArrayBuffer = BSONWriter.encodeSync?.(value);
   return Buffer.from(arrayBuffer);
 }
 
@@ -350,6 +356,7 @@ function fromPrimitive_BSON(value: any) {
 
 function toPrimitive_TIME_MILLIS(value: any) {
   const v = parseInt(value, 10);
+  // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
   if (v < 0 || v > 0xffffffffffffffff || isNaN(v)) {
     throw new Error(`invalid value for TIME_MILLIS: ${value}`);
   }

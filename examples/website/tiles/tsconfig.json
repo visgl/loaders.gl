@@ -1,0 +1,7 @@
+{
+  "include": [".", "../../../modules/*/src"],
+  "compilerOptions": {
+    "root": ["."],
+    "jsx": "react-jsx"
+  }
+}

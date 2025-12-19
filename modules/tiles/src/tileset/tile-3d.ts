@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
@@ -56,7 +58,7 @@ export class Tile3D {
   url: string;
   parent: Tile3D;
   /* Specifies the type of refine that is used when traversing this tile for rendering. */
-  refine: number;
+  refine: TILE_REFINEMENT;
   type: string;
   contentUrl: string;
   /** Different refinement algorithms used by I3S and 3D tiles */
@@ -102,7 +104,7 @@ export class Tile3D {
   private _expireDate: any = null;
   private _expiredContent: any = null;
 
-  private _boundingBox?: CartographicBounds;
+  private _boundingBox?: CartographicBounds = undefined;
 
   /** updated every frame for tree traversal and rendering optimizations: */
   public _distanceToCamera: number = 0;
@@ -377,14 +379,15 @@ export class Tile3D {
       const contentUrl = this.tileset.getTileUrl(this.contentUrl);
       // The content can be a binary tile ot a JSON tileset
       const loader = this.tileset.loader;
+      const tilesetLoaderOptions =
+        (this.tileset.loadOptions[loader.id] as Record<string, unknown>) || {};
       const options = {
         ...this.tileset.loadOptions,
         [loader.id]: {
-          // @ts-expect-error
-          ...this.tileset.loadOptions[loader.id],
+          ...tilesetLoaderOptions,
           isTileset: this.type === 'json',
           ...this._getLoaderSpecificOptions(loader.id)
-        }
+        } // TODO add typecheck - as const satisfies ...
       };
 
       this.content = await load(contentUrl, loader, options);

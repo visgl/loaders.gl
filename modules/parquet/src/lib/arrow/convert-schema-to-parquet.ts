@@ -1,4 +1,6 @@
-// loaders.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // import type {ParquetSchema} from '../../parquetjs/schema/schema';
 import type {

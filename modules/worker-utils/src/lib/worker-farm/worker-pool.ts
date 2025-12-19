@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
 import {isMobile, isBrowser} from '../env-utils/globals';
 import WorkerThread from './worker-thread';
@@ -154,6 +158,9 @@ export default class WorkerPool {
       // Wait for the app to signal that the job is complete, then return worker to queue
       try {
         await job.result;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(`Worker exception: ${error}`);
       } finally {
         this.returnWorkerToQueue(workerThread);
       }

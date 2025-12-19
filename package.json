@@ -2,7 +2,9 @@
   "name": "loaders.gl",
   "description": "Framework-independent loaders for visualization, 3D graphics and geospatial formats",
   "license": "MIT",
+  "type": "module",
   "private": true,
+  "packageManager": "yarn@4.10.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
@@ -20,57 +22,70 @@
     "KML"
   ],
   "workspaces": [
-    "modules/*"
+    "modules/*",
+    "apps/*",
+    "examples",
+    "website"
   ],
+  "engines": {
+    "node": ">=20.18.0"
+  },
   "scripts": {
-    "bootstrap": "yarn install-fast && ocular-bootstrap",
-    "install-fast": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true yarn",
+    "bootstrap": "ocular-bootstrap",
+    "postinstall": "echo postinstall",
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
-    "clean": "ocular-clean && npm run tsclean",
-    "build": "npm run clean && npm run tsbuild && ocular-build --dist es5,esm && lerna run pre-build",
-    "build-workers": "lerna run pre-build",
+    "clean": "ocular-clean",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
-    "tsbuild": "tsc -b tsconfig.build.json && scripts/add-js-to-imports.sh",
+    "build": "yarn build-modules",
+    "build-modules": "ocular-clean && ocular-build && npx lerna run pre-build",
+    "build-apps": "node ./scripts/run-app-commands.mjs build",
+    "build-workers": "npx lerna run pre-build",
     "cover": "ocular-test cover",
-    "lint": "tsc && ocular-lint",
-    "bump": "ocular-bump",
-    "publish": "ocular-publish",
-    "test": "ocular-test",
-    "metrics": "./scripts/metrics.sh && ocular-metrics",
-    "version": "yarn build",
+    "lint": "ocular-lint",
+    "publish-beta": "ocular-publish beta",
+    "publish-prod": "ocular-publish prod",
+    "test": "yarn test-modules",
+    "test-modules": "ocular-test",
+    "test-apps": "node ./scripts/run-app-commands.mjs test",
+    "test-node": "ocular-test node",
+    "test-cover": "ocular-test cover",
+    "test-website": "cd website && yarn && yarn build && cd ..",
+    "test-fast": "ocular-test fast",
     "pre-commit": "yarn lint",
-    "pre-push": "yarn lint"
+    "pre-push": "yarn lint",
+    "metrics": "./scripts/metrics.sh && ocular-metrics"
   },
   "devDependencies": {
-    "@babel/plugin-transform-runtime": "^7.14.5",
     "@probe.gl/bench": "^4.0.2",
     "@probe.gl/test-utils": "^4.0.2",
     "@types/tape-promise": "^4.0.1",
-    "base64-inline-loader": "^1.1.1",
-    "base64-loader": "^1.0.0",
-    "coveralls": "^3.0.3",
-    "esbuild": "^0.13.13",
-    "ocular-dev-tools": "1.0.0-alpha.7",
+    "@vis.gl/dev-tools": "^1.0.0",
+    "@vis.gl/ts-plugins": "^1.0.0",
     "pre-commit": "^1.2.2",
     "pre-push": "^0.1.1",
-    "ts-node": "^10.4.0"
+    "puppeteer": "^23.4.0",
+    "tap-spec": "^5.0.0"
   },
   "pre-commit": "pre-commit",
   "pre-push": "pre-push",
-  "dependencies": {},
   "resolutions_notes": [
-    "Something triggers double luma.gl versions after deck.gl 8.9 upgrade",
-    "Note: tape 4.12 and higher no longer compares 0 and -0 equally...",
-    "Note: newer prettier breaks on typescript import type"
+    "Ensure we use recent typescript",
+    "apache-arrow version should be aligned with parquet-wasm version"
   ],
   "resolutions": {
-    "@luma.gl/core": "8.5.20",
-    "tape": "4.11.0",
-    "prettier": "2.3.1",
-    "typescript": "^5.0.4"
-  },
-  "volta": {
-    "node": "16.19.1",
-    "yarn": "1.22.19"
+    "apache-arrow": "^17.0.0",
+    "typescript": "^5.6.0",
+    "@loaders.gl/core": "^4.4.0-alpha.1",
+    "@loaders.gl/draco": "^4.4.0-alpha.1",
+    "@loaders.gl/geopackage": "^4.4.0-alpha.1",
+    "@loaders.gl/i3s": "^4.4.0-alpha.1",
+    "@loaders.gl/las": "^4.4.0-alpha.1",
+    "@loaders.gl/loader-utils": "^4.4.0-alpha.1",
+    "@loaders.gl/obj": "^4.4.0-alpha.1",
+    "@loaders.gl/ply": "^4.4.0-alpha.1",
+    "@loaders.gl/schema": "^4.4.0-alpha.1",
+    "@loaders.gl/schema-utils": "^4.4.0-alpha.1",
+    "@loaders.gl/textures": "^4.4.0-alpha.1",
+    "@loaders.gl/wms": "^4.4.0-alpha.1"
   }
 }

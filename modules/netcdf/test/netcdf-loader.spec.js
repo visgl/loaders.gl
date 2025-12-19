@@ -14,7 +14,7 @@ describe('NetCDFLoader', () => {
   // });
 
   it('read header information', async () => {
-    const result = await load(`${DATA_PATH}/madis-sao.nc`, [NetCDFLoader]);
+    const result = await load(`${DATA_PATH}/madis-sao.nc`, NetCDFLoader);
     expect(result.loaderData.version).toBe(1);
     expect(result.loaderData.recordDimension).toStrictEqual({
       length: 178,
@@ -90,7 +90,7 @@ describe('NetCDFLoader', () => {
   });
 
   it('read non-record variable', async () => {
-    const result = await load(`${DATA_PATH}/madis-sao.nc`, [NetCDFLoader], {
+    const result = await load(`${DATA_PATH}/madis-sao.nc`, NetCDFLoader, {
       netcdf: {loadData: true}
     });
 
@@ -98,7 +98,7 @@ describe('NetCDFLoader', () => {
   });
 
   it('read 2 dimensional variable', async () => {
-    const result = await load(`${DATA_PATH}/ichthyop.nc`, [NetCDFLoader], {
+    const result = await load(`${DATA_PATH}/ichthyop.nc`, NetCDFLoader, {
       netcdf: {loadData: true}
     });
     expect(result.data.time).toHaveLength(49);
@@ -109,7 +109,7 @@ describe('NetCDFLoader', () => {
   });
 
   it('read record variable with string', async () => {
-    const result = await load(`${DATA_PATH}/madis-sao.nc`, [NetCDFLoader], {
+    const result = await load(`${DATA_PATH}/madis-sao.nc`, NetCDFLoader, {
       netcdf: {loadData: true}
     });
 
@@ -119,7 +119,7 @@ describe('NetCDFLoader', () => {
   });
 
   it('read non-record variable with object', async () => {
-    const result = await load(`${DATA_PATH}/madis-sao.nc`, [NetCDFLoader], {
+    const result = await load(`${DATA_PATH}/madis-sao.nc`, NetCDFLoader, {
       netcdf: {loadData: true}
     });
 
@@ -134,7 +134,7 @@ describe('NetCDFLoader', () => {
   });
 
   it('read 64 bit offset file', async () => {
-    const result = await load(`${DATA_PATH}/model1_md2.nc`, [NetCDFLoader], {
+    const result = await load(`${DATA_PATH}/model1_md2.nc`, NetCDFLoader, {
       netcdf: {loadData: true}
     });
     expect(result.loaderData.version).toBe(2);
@@ -143,7 +143,7 @@ describe('NetCDFLoader', () => {
   });
 
   it('read agilent hplc file file', async () => {
-    const result = await load(`${DATA_PATH}/agilent_hplc.cdf`, [NetCDFLoader], {
+    const result = await load(`${DATA_PATH}/agilent_hplc.cdf`, NetCDFLoader, {
       netcdf: {loadData: true}
     });
 

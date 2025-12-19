@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // NO COMPRESSION
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';

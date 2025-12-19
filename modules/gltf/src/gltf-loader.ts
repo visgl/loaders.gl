@@ -1,4 +1,4 @@
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import {VERSION} from './lib/utils/version';
 import type {ImageLoaderOptions} from '@loaders.gl/images';
@@ -11,7 +11,7 @@ import {parseGLTF} from './lib/parsers/parse-gltf';
 /**
  * GLTF loader options
  */
-export type GLTFLoaderOptions = LoaderOptions &
+export type GLTFLoaderOptions = StrictLoaderOptions &
   ImageLoaderOptions &
   TextureLoaderOptions &
   GLBLoaderOptions &
@@ -22,7 +22,9 @@ export type GLTFLoaderOptions = LoaderOptions &
 /**
  * GLTF loader
  */
-export const GLTFLoader: LoaderWithParser<GLTFWithBuffers, never, GLBLoaderOptions> = {
+export const GLTFLoader = {
+  dataType: null as unknown as GLTFWithBuffers,
+  batchType: null as never,
   name: 'glTF',
   id: 'gltf',
   module: 'gltf',
@@ -41,22 +43,9 @@ export const GLTFLoader: LoaderWithParser<GLTFWithBuffers, never, GLBLoaderOptio
       loadBuffers: true, // Fetch any linked .BIN buffers, decode base64
       loadImages: true, // Create image objects
       decompressMeshes: true // Decompress Draco encoded meshes
-    },
-
-    // common?
-    log: console // eslint-disable-line
-  },
-  deprecatedOptions: {
-    fetchImages: 'gltf.loadImages',
-    createImages: 'gltf.loadImages',
-    decompress: 'gltf.decompressMeshes',
-    postProcess: 'gltf.postProcess',
-    gltf: {
-      decompress: 'gltf.decompressMeshes',
-      postProcess: 'removed in v4'
     }
   }
-};
+} as const satisfies LoaderWithParser<GLTFWithBuffers, never, GLTFLoaderOptions>;
 
 export async function parse(
   arrayBuffer,
@@ -64,11 +53,10 @@ export async function parse(
   context
 ): Promise<GLTFWithBuffers> {
   // Apps can call the parse method directly, we so apply default options here
-  options = {...GLTFLoader.options, ...options};
-  // @ts-ignore
-  options.gltf = {...GLTFLoader.options.gltf, ...options.gltf};
+  const mergedOptions = {...GLTFLoader.options, ...options};
+  mergedOptions.gltf = {...GLTFLoader.options.gltf, ...mergedOptions.gltf};
 
-  const {byteOffset = 0} = options;
+  const byteOffset = options?.glb?.byteOffset || 0;
   const gltf = {};
-  return await parseGLTF(gltf as GLTFWithBuffers, arrayBuffer, byteOffset, options, context);
+  return await parseGLTF(gltf as GLTFWithBuffers, arrayBuffer, byteOffset, mergedOptions, context);
 }

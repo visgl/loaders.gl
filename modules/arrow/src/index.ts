@@ -1,34 +1,36 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {ArrowLoaderOptions} from './arrow-loader';
-import {ArrowLoader as ArrowWorkerLoader} from './arrow-loader';
-import parseSync from './lib/parse-arrow-sync';
-import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
-
-import {TableBatchBuilder} from '@loaders.gl/schema';
-import ArrowTableBatchAggregator from './lib/arrow-table-batch';
-
-// Make the ArrowBatch type available
-TableBatchBuilder.ArrowBatch = ArrowTableBatchAggregator;
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // Types
-export {VECTOR_TYPES} from './types';
+export {VECTOR_TYPES} from './lib/types';
 
-// Arrow writer
+// Arrow loader / Writer
+
+export {ArrowFormat} from './exports/arrow-format';
+
+export type {ArrowLoaderOptions} from './exports/arrow-loader';
+export {ArrowWorkerLoader} from './exports/arrow-loader';
+export {ArrowLoader} from './arrow-loader';
 
 export {ArrowWriter} from './arrow-writer';
 
-// Arrow loader
+// Geoarrow loader
+export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
+export {GeoArrowLoader} from './geoarrow-loader';
 
-export type {ArrowLoaderOptions};
-export {ArrowWorkerLoader};
+// EXPERIMENTAL
 
-/** ArrowJS table loader */
-export const ArrowLoader: LoaderWithParser = {
-  ...ArrowWorkerLoader,
-  parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
-    parseSync(arraybuffer, options),
-  parseSync,
-  parseInBatches: parseArrowInBatches
-};
+// Arrow Utils
+// getGeometryColumnsFromArrowTable,
+// getGeoArrowEncoding
 
-export const _typecheckArrowLoader: LoaderWithParser = ArrowLoader;
+// EXPERIMENTAL WORKER
+export {hardClone} from './workers/hard-clone';
+
+export type {ParseGeoArrowInput, ParseGeoArrowResult} from './triangulate-on-worker';
+export {
+  TriangulationWorker,
+  triangulateOnWorker,
+  parseGeoArrowOnWorker
+} from './triangulate-on-worker';

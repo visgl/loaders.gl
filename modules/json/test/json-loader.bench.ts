@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {JSONLoader} from '@loaders.gl/json';
 import {load, loadInBatches} from '@loaders.gl/core';
 
@@ -15,7 +19,9 @@ export default async function jsonLoaderBench(suite) {
     // const asyncIterator = await parseInBatches(STRING, JSONLoader);
     const data: unknown[] = [];
     for await (const batch of asyncIterator) {
-      data.push(...batch.data);
+      if (batch.shape === 'object-row-table') {
+        data.push(...batch.data);
+      }
     }
   });
 

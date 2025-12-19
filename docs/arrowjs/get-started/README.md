@@ -10,11 +10,10 @@ npm install apache-arrow
 yarn add apache-arrow
 ```
 
-
 ## Importing Arrow JS
 
 You should now be able to import arrow into your projects
 
-```js
+```typescript
 import {Table} from 'apache-arrow';
 ```

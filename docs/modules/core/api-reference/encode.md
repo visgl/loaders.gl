@@ -1,8 +1,10 @@
 # encode
 
-## Functions
+Encodes data using the provided _writer_.
 
-### encode(fileData : ArrayBuffer | String, writer : Object | Array [, options : Object [, url : String]]) : Promise.Any
+```typescript
+encode(fileData: ArrayBuffer | string, writer: Writer, options: WriterOptions, url?: string): Promise<unknown>
+```
 
 Encodes data asynchronously using the provided writer.
 
@@ -13,7 +15,9 @@ Encodes data asynchronously using the provided writer.
 
 - `options.log`=`console` Any object with methods `log`, `info`, `warn` and `error`. By default set to `console`. Setting log to `null` will turn off logging.
 
-### encodeSync(fileData : ArrayBuffer | String, writer : Object | Array, [, options : Object [, url : String]]) : any
+```typescript
+encodeSync(fileData: ArrayBuffer | string, writer: Writer, options?: WriterOptions,  rl?: string): unknown
+```
 
 Encodes data synchronously using the provided writer, if possible. If not, returns `null`, in which case asynchronous loading is required.
 

@@ -13,7 +13,7 @@ The format is reported using MIME types strings. Supported binary formats and th
 
 ## Usage
 
-```js
+```typescript
 const response = await fetchFile(imageUrl);
 const arrayBuffer = await response.arrayBuffer();
 
@@ -33,7 +33,7 @@ Parameters:
 
 Returns a metadata object describing the image. Returns `null` if the binary data does not represent a known binary image format.
 
-```js
+```typescript
 {
   mimeType: string;
   width: number;

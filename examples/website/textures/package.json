@@ -1,25 +1,27 @@
 {
-  "name": "loaders.gl-example-textures-tester",
   "private": true,
-  "version": "3.3.0",
+  "name": "loaders.gl-example-textures-tester",
+  "version": "4.2.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview"
   },
   "dependencies": {
-    "@loaders.gl/core": "4.0.0-alpha.6",
-    "@loaders.gl/images": "4.0.0-alpha.6",
-    "@loaders.gl/textures": "4.0.0-alpha.6",
-    "@luma.gl/core": "^8.5.4",
-    "prop-types": "^15.7.2",
-    "react": "^16.3.0",
-    "react-dom": "^16.3.0",
+    "@loaders.gl/core": "4.4.0-alpha.1",
+    "@loaders.gl/images": "4.4.0-alpha.1",
+    "@loaders.gl/textures": "4.4.0-alpha.1",
+    "@luma.gl/core": "^9.0.7",
+    "@luma.gl/engine": "^9.0.7",
+    "@luma.gl/webgl": "^9.0.7",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
     "styled-components": "^4.2.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.4",
-    "vite": "^2.7.1"
+    "typescript": "^5.4.3",
+    "vite": "^7.2.7"
   }
 }

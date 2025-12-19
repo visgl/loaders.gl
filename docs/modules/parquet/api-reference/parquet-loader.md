@@ -10,7 +10,7 @@ Streaming loader for Apache Parquet encoded files.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
-| File Format    | [Parquet](/docs/modules/parquet/formats/parquet)      |
+| File Format    | [Parquet](/docs/modules/parquet/formats/parquet)     |
 | Data Format    | [Classic Table](/docs/specifications/category-table) |
 | File Extension | `.parquet`,                                          |
 | MIME Type      | N/A (`application/octet-stream`)                     |
@@ -21,6 +21,8 @@ Please refer to the `parquet` format page for information on
 which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.
 
 ## Usage
+
+Load a Parquet file as a table.
 
 ```typescript
 import {ParquetLoader} from '@loaders.gl/parquet';
@@ -48,6 +50,25 @@ for await (const batch of batches) {
 }
 ```
 
+## Compressions
+
+Some compressions are big and need to be imported explicitly by the application
+and passed to the `ParquetLoader`
+
+```typescript
+import {ParquetLoader} from '@loaders.gl/parquet';
+import {load} from '@loaders.gl/core';
+
+import {ZstdCodec} from 'zstd-codec';
+import lz4js from 'lz4js';
+
+const data = await load(url, ParquetLoader, {modules: {
+  'zstd-codec': ZstdCodec,
+  'lz4js': lz4js,
+  // brotli - only needed for compression
+});
+```
+
 ## Data Format
 
 For details see [parquet documentation](https://parquet.apache.org/docs/).
@@ -56,6 +77,5 @@ For details see [parquet documentation](https://parquet.apache.org/docs/).
 
 Supports table category options such as `batchType` and `batchSize`.
 
-| Option                 | From                                                                                  | Type       | Default                                                                                                                                          | Description                                                                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-
+| Option | From | Type | Default | Description |
+| ------ | ---- | ---- | ------- | ----------- |

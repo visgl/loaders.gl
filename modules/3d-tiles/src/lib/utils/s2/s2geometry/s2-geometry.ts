@@ -1,4 +1,7 @@
-// math.gl, MIT license
+// loaders.gl
+// SPDX-License-Identifier: MIT AND ISC
+// Copyright vis.gl contributors
+
 /*
 Adapted from s2-geometry under ISC License (ISC)
 Copyright (c) 2012-2016, Jon Atkins <github@jonatkins.com>
