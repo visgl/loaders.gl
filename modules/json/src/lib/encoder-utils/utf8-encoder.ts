@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 
-import {ensureArrayBuffer} from "@loaders.gl/loader-utils";
+import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
 
 /* global TextEncoder */
 export class Utf8ArrayBufferEncoder {

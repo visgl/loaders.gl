@@ -53,7 +53,8 @@ export function fromVectorTileJs(tile: MVTTile): ArrayBuffer {
   writeMVT(tile, pbf);
   const uint8Array = pbf.finish();
   // TODO - make sure no byteOffsets/byteLenghts are used?
-  return copyToArrayBuffer(uint8Array.buffer,
+  return copyToArrayBuffer(
+    uint8Array.buffer,
     uint8Array.byteOffset,
     uint8Array.byteOffset + uint8Array.byteLength
   );

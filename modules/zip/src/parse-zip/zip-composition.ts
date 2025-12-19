@@ -1,4 +1,10 @@
-import {concatenateArrayBuffers, path, NodeFilesystem, NodeFile, toArrayBuffer} from '@loaders.gl/loader-utils';
+import {
+  concatenateArrayBuffers,
+  path,
+  NodeFilesystem,
+  NodeFile,
+  toArrayBuffer
+} from '@loaders.gl/loader-utils';
 import {ZipEoCDRecord, generateEoCD, parseEoCDRecord, updateEoCD} from './end-of-central-directory';
 import {CRC32Hash} from '@loaders.gl/crypto';
 import {generateLocalHeader} from './local-file-header';

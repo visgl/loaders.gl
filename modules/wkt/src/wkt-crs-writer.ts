@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {type WriterWithEncoder, type WriterOptions, ensureArrayBuffer} from '@loaders.gl/loader-utils';
+import {
+  type WriterWithEncoder,
+  type WriterOptions,
+  ensureArrayBuffer
+} from '@loaders.gl/loader-utils';
 import type {WKTCRS, EncodeWKTCRSOptions} from '@loaders.gl/gis';
 import {encodeWKTCRS} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
