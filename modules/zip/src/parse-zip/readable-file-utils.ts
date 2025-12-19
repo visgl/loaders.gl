@@ -115,6 +115,6 @@ export class DataViewReadableFile implements ReadableFile {
   async read(start: number | bigint = 0, length?: number): Promise<ArrayBuffer> {
     const offset = toNumber(start);
     const end = length ? offset + length : this.size;
-    return copyToArrayBuffer(this.handle.buffer, offset, end);
+    return copyToArrayBuffer(this.handle.buffer, offset, end - offset);
   }
 }

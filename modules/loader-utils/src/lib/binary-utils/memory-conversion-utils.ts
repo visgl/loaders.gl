@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {isSharedArrayBuffer} from '../javascript-utils/is-type';
 import * as node from '../node/buffer';
 
 /**
@@ -34,7 +35,7 @@ export function toArrayBuffer(
     return data;
   }
 
-  if (data instanceof SharedArrayBuffer) {
+  if (isSharedArrayBuffer(data)) {
     return copyToArrayBuffer(data);
   }
 
@@ -68,7 +69,7 @@ export function ensureArrayBuffer(bufferSource: ArrayBufferLike | ArrayBufferVie
     return bufferSource;
   }
 
-  if (bufferSource instanceof SharedArrayBuffer) {
+  if (isSharedArrayBuffer(bufferSource)) {
     return copyToArrayBuffer(bufferSource);
   }
 
