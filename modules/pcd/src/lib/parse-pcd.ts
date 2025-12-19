@@ -339,9 +339,9 @@ function parsePCDBinary(pcdHeader: PCDHeader, data: ArrayBufferLike): HeaderAttr
     }
 
     if (offset.rgb !== undefined) {
-      color.push(dataview.getUint8(row + offset.rgb + 2) / 255.0);
-      color.push(dataview.getUint8(row + offset.rgb + 1) / 255.0);
-      color.push(dataview.getUint8(row + offset.rgb + 0) / 255.0);
+      color.push(dataview.getUint8(row + offset.rgb + 0));
+      color.push(dataview.getUint8(row + offset.rgb + 1));
+      color.push(dataview.getUint8(row + offset.rgb + 2));
     }
 
     if (offset.normal_x !== undefined) {
@@ -403,13 +403,13 @@ function parsePCDBinaryCompressed(pcdHeader: PCDHeader, data: ArrayBufferLike): 
 
     if (offset.rgb !== undefined) {
       color.push(
-        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 2) / 255.0
+        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 0) / 255.0
       );
       color.push(
         dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 1) / 255.0
       );
       color.push(
-        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 0) / 255.0
+        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 2) / 255.0
       );
     }
 
