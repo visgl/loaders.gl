@@ -4,7 +4,7 @@
 
 **@loaders.gl/compression**
 
-- `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library. 
+- `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
 
 ## Upgrading to v4.3
 
