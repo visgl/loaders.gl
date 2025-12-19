@@ -168,7 +168,7 @@ function transformPrimitive(
   if (Number.isFinite(texCoordAccessor)) {
     // Get accessor of the `TEXCOORD_0` attribute
     const accessor = gltfData.json.accessors?.[texCoordAccessor];
-    if (accessor && accessor.bufferView) {
+    if (accessor && accessor.bufferView !== undefined) {
       // Get `bufferView` of the `accessor`
       const bufferView = gltfData.json.bufferViews?.[accessor.bufferView];
       if (bufferView) {
@@ -198,7 +198,7 @@ function transformPrimitive(
         }
         // If texCoord the same, replace gltf structural data
         if (originalTexCoord === texCoord) {
-          updateGltf(accessor, gltfData, result);
+          updateGltf(accessor, gltfData, result, accessor.bufferView);
         } else {
           // If texCoord change, create new attribute
           createAttribute(texCoord, accessor, primitive, gltfData, result);
@@ -217,25 +217,46 @@ function transformPrimitive(
 function updateGltf(
   accessor: GLTFAccessor,
   gltfData: GLTFWithBuffers,
-  newTexCoordArray: Float32Array
+  newTexCoordArray: Float32Array,
+  originalBufferViewIndex: number
 ): void {
   accessor.componentType = 5126;
   accessor.byteOffset = 0;
+
+  const accessors = gltfData.json.accessors || [];
+  const bufferViewReferenceCount = accessors.reduce((count, currentAccessor) => {
+    return currentAccessor.bufferView === originalBufferViewIndex ? count + 1 : count;
+  }, 0);
+  const shouldCreateNewBufferView = bufferViewReferenceCount > 1;
 
   gltfData.buffers.push({
     arrayBuffer: newTexCoordArray.buffer,
     byteOffset: 0,
     byteLength: newTexCoordArray.buffer.byteLength
   });
+  const newBufferIndex = gltfData.buffers.length - 1;
 
   gltfData.json.bufferViews = gltfData.json.bufferViews || [];
-  gltfData.json.bufferViews.push({
-    buffer: gltfData.buffers.length - 1,
-    byteLength: newTexCoordArray.buffer.byteLength,
-    byteOffset: 0
-  });
+  if (shouldCreateNewBufferView) {
+    gltfData.json.bufferViews.push({
+      buffer: newBufferIndex,
+      byteLength: newTexCoordArray.buffer.byteLength,
+      byteOffset: 0
+    });
+    accessor.bufferView = gltfData.json.bufferViews.length - 1;
+    return;
+  }
 
-  accessor.bufferView = gltfData.json.bufferViews.length - 1;
+  const bufferView = gltfData.json.bufferViews[originalBufferViewIndex];
+  if (!bufferView) {
+    return;
+  }
+  bufferView.buffer = newBufferIndex;
+  bufferView.byteOffset = 0;
+  bufferView.byteLength = newTexCoordArray.buffer.byteLength;
+  if (bufferView.byteStride !== undefined) {
+    delete (bufferView as {byteStride?: number}).byteStride;
+  }
 }
 
 /**
@@ -259,10 +280,8 @@ function createAttribute(
     byteOffset: 0,
     byteLength: newTexCoordArray.buffer.byteLength
   });
+  gltfData.json.bufferViews = gltfData.json.bufferViews || [];
   const bufferViews = gltfData.json.bufferViews;
-  if (!bufferViews) {
-    return;
-  }
   bufferViews.push({
     buffer: gltfData.buffers.length - 1,
     byteLength: newTexCoordArray.buffer.byteLength,

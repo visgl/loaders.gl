@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+/* eslint-disable max-len, camel-case */
 import test from 'tape-promise/tape';
 
 import {parse, fetchFile} from '@loaders.gl/core';
@@ -39,6 +39,7 @@ test('GLTFLoader#KHR_texture_transform preserves shared bufferView data', async 
   const originalInterleavedCopy = Array.from(interleavedVertexData);
   const gltfWithBuffers: GLTFWithBuffers = {
     json: {
+      asset: {version: '2.0'},
       extensionsUsed: ['KHR_texture_transform'],
       buffers: [{byteLength: interleavedVertexData.byteLength}],
       bufferViews: [
@@ -105,9 +106,13 @@ test('GLTFLoader#KHR_texture_transform preserves shared bufferView data', async 
   t.equals(texCoordAccessor?.byteOffset || 0, 0, 'Resets texcoord accessor byte offset');
 
   const newTexCoordValues = Array.from(new Float32Array(gltfWithBuffers.buffers[1].arrayBuffer));
-  t.deepEquals(
-    newTexCoordValues,
-    [0.1, 0.2, 2.1, 0.2],
+  const expectedTexCoordValues = [0.1, 0.2, 2.1, 0.2];
+  const areTexCoordValuesWithinTolerance = expectedTexCoordValues.every((expectedValue, index) => {
+    const actualValue = newTexCoordValues[index];
+    return Number.isFinite(actualValue) && Math.abs(actualValue - expectedValue) < 1e-6;
+  });
+  t.ok(
+    areTexCoordValuesWithinTolerance,
     'Applies texture transform to texcoords in isolated buffer'
   );
 
