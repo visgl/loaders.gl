@@ -21,17 +21,21 @@ See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
 - [`LoaderOptions.core`](/docs/modules/core/api-reference/loader-options) - stronger type checks when options are supplied through the new `options.core` sub-option object.
 
+**@loaders.gl/compression**
+
+- `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
+
 **@loaders.gl/mvt**
 
 - [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer)  A new experimental writer that allows GeoJSON to be written in binary MVT tile format.
 
-**@loaders.gl/tile-converter**
-
-- `tile-converter` is now published as an "application", independently of loaders.gl modules.
-
 **@loaders.gl/shapefile**
 
 - `ShapefileLoader` - Forwards `dbf` loader options (such as `workerUrl`) when loading sidecar files.
+
+**@loaders.gl/tile-converter**
+
+- `tile-converter` is now published as an "application", independently of loaders.gl modules.
 
 ## v4.3
 

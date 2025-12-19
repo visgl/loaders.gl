@@ -1,5 +1,11 @@
 # Upgrade Guide
 
+## Upgrading to v4.4
+
+**@loaders.gl/compression**
+
+- `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
+
 ## Upgrading to v4.3
 
 **Minor Breaking Changes**

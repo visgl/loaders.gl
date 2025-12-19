@@ -11,7 +11,6 @@ import {
   ZstdCompression,
   SnappyCompression,
   BrotliCompression,
-  LZOCompression,
   CompressionWorker
 } from '@loaders.gl/compression';
 import {getData} from './utils/test-utils';
@@ -19,7 +18,6 @@ import {getData} from './utils/test-utils';
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
 import lz4js from 'lz4js';
-import lzo from 'lzo';
 import {ZstdCodec} from 'zstd-codec';
 
 // Inject large dependencies through Compression constructor options
@@ -32,7 +30,6 @@ const modules = {
     }
   },
   lz4js,
-  lzo,
   'zstd-codec': ZstdCodec
 };
 
