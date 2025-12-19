@@ -6,7 +6,7 @@ import test from 'test/utils/vitest-tape';
 import {isBrowser} from '@loaders.gl/core';
 
 import {TILESETS} from './data/tilesets';
-import {MVTSourceLoader} from '@loaders.gl/mvt';
+import {MVTSourceLoader, MVTTileSource} from '@loaders.gl/mvt';
 import {isURLTemplate, getURLFromTemplate} from '../src/mvt-source-loader';
 
 test('MVTSourceLoader#urls', async t => {
@@ -85,6 +85,84 @@ test('getURLFromTemplate', t => {
   // t.is(getURLFromTemplate([], 1, 2, 0), null, 'empty array');
   t.end();
 });
+
+test('MVTTileSource#getTileData returns null for text/html responses', async t => {
+  const reportedErrors: Error[] = [];
+  const source = makeContentTypeSource('text/html; charset=utf-8', '<html></html>', true, error =>
+    reportedErrors.push(error)
+  );
+
+  const tileData = await source.getTileData({index: {x: 0, y: 0, z: 0}});
+  await source.metadata;
+  t.equal(tileData, null, 'returns null for non-MVT response before parsing');
+  t.ok(
+    reportedErrors.some(error => error.message.includes('Unexpected tile content type text/html')),
+    'reports ignored text through the source error callback'
+  );
+  t.end();
+});
+
+test('MVTTileSource#getTile filters textual errors without rejecting custom binary types', async t => {
+  const textualContentTypes = [
+    'application/json',
+    'application/problem+json',
+    'application/xml',
+    'application/problem+xml'
+  ];
+  for (const contentType of textualContentTypes) {
+    const source = makeContentTypeSource(contentType, '{}', true);
+    const tile = await source.getTile({x: 0, y: 0, z: 0, layers: []});
+    await source.metadata;
+    t.equal(tile, null, `rejects ${contentType}`);
+  }
+
+  const binarySource = makeContentTypeSource(
+    'application/vnd.example.vector-tile',
+    new Uint8Array([1, 2, 3]),
+    true
+  );
+  const binaryTile = await binarySource.getTile({x: 0, y: 0, z: 0, layers: []});
+  await binarySource.metadata;
+  t.deepEqual(Array.from(new Uint8Array(binaryTile!)), [1, 2, 3], 'accepts custom binary types');
+
+  const emptySource = makeContentTypeSource(null, null, false, undefined, 204);
+  const emptyTile = await emptySource.getTile({x: 0, y: 0, z: 0, layers: []});
+  await emptySource.metadata;
+  t.equal(emptyTile?.byteLength, 0, 'returns a 204 empty tile as an empty ArrayBuffer');
+
+  const permissiveSource = makeContentTypeSource('text/plain', 'mislabeled tile');
+  const permissiveTile = await permissiveSource.getTile({x: 0, y: 0, z: 0, layers: []});
+  await permissiveSource.metadata;
+  t.ok(permissiveTile, 'allows textual content types by default');
+  t.end();
+});
+
+/** Creates an MVT source whose tile request returns a controlled content type and payload. */
+function makeContentTypeSource(
+  contentType: string | null,
+  payload: BodyInit | null,
+  ignoreTextResponses = false,
+  onError?: (error: Error) => void,
+  status = 200
+): MVTTileSource {
+  return new MVTTileSource('https://example.com/{z}/{x}/{y}.pbf', {
+    mvt: {ignoreTextResponses},
+    core: {
+      onError,
+      loadOptions: {
+        core: {
+          fetch: async url =>
+            String(url).endsWith('tilejson.json')
+              ? new Response(null, {status: 404})
+              : new Response(payload, {
+                  status,
+                  headers: contentType ? {'content-type': contentType} : undefined
+                })
+        }
+      }
+    }
+  });
+}
 
 // TBA - TILE LOADING TESTS
 

@@ -145,6 +145,7 @@ export {
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
+export {parseContentType} from './lib/request-utils/parse-content-type';
 export {
   RangeRequestScheduler,
   createRangeStats,
