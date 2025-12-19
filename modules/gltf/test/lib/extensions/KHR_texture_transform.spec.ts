@@ -1,4 +1,4 @@
-/* eslint-disable max-len, camel-case */
+/* eslint-disable max-len, camelcase */
 import test from 'tape-promise/tape';
 
 import {parse, fetchFile} from '@loaders.gl/core';
