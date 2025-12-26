@@ -19,27 +19,33 @@ class UFramedTransport extends TFramedTransport {
 /**
  * Helper function that serializes a thrift object into a buffer
  */
-export function serializeThrift(obj: any): Buffer {
+export function serializeThrift(obj: any): Uint8Array {
   const output: Buffer[] = [];
 
-  const transport = new TBufferedTransport(undefined, (buf) => {
-    output.push(buf as unknown as Buffer);
+  const transport = new TBufferedTransport(undefined, (buf?: Buffer) => {
+    const fallbackBuffers = (transport as any).outBuffers as Buffer[] | undefined;
+    const payload = buf ?? (fallbackBuffers?.length ? Buffer.concat(fallbackBuffers) : undefined);
+
+    if (!payload) {
+      return;
+    }
+    output.push(toBuffer(payload));
   });
 
   const protocol = new TCompactProtocol(transport);
   obj.write(protocol);
-  transport.flush();
 
-  return Buffer.concat(output);
-}
-
-export function decodeThrift(obj: any, buf: Buffer, offset?: number) {
-  if (!offset) {
-    // tslint:disable-next-line:no-parameter-reassignment
-    offset = 0;
+  const flushedBuffer = transport.flush();
+  if (!output.length && flushedBuffer) {
+    output.push(toBuffer(flushedBuffer));
   }
 
-  const transport = new UFramedTransport(buf);
+  const combinedBuffer = Buffer.concat(output);
+  return new Uint8Array(combinedBuffer.buffer, combinedBuffer.byteOffset, combinedBuffer.byteLength);
+}
+
+export function decodeThrift(obj: any, buffer: ArrayBuffer | Uint8Array, offset = 0) {
+  const transport = new UFramedTransport(toBuffer(buffer));
   transport.readPos = offset;
   const protocol = new TCompactProtocol(transport);
   obj.read(protocol);
@@ -58,30 +64,30 @@ export function getThriftEnum(klass: any, value: number | string): string {
   throw new Error('Invalid ENUM value');
 }
 
-export function decodeFileMetadata(buf: Buffer, offset?: number) {
-  if (!offset) {
-    // tslint:disable-next-line:no-parameter-reassignment
-    offset = 0;
-  }
-
-  const transport = new UFramedTransport(buf);
+export function decodeFileMetadata(buffer: ArrayBuffer | Uint8Array, offset = 0) {
+  const transport = new UFramedTransport(toBuffer(buffer));
   transport.readPos = offset;
   const protocol = new TCompactProtocol(transport);
   const metadata = FileMetaData.read(protocol);
   return {length: transport.readPos - offset, metadata};
 }
 
-export function decodePageHeader(buf: Buffer, offset?: number) {
-  if (!offset) {
-    // tslint:disable-next-line:no-parameter-reassignment
-    offset = 0;
-  }
-
-  const transport = new UFramedTransport(buf);
+export function decodePageHeader(buffer: ArrayBuffer | Uint8Array, offset = 0) {
+  const transport = new UFramedTransport(toBuffer(buffer));
   transport.readPos = offset;
   const protocol = new TCompactProtocol(transport);
   const pageHeader = PageHeader.read(protocol);
   return {length: transport.readPos - offset, pageHeader};
+}
+
+function toBuffer(data: ArrayBuffer | Uint8Array): Buffer {
+  if (Buffer.isBuffer(data)) {
+    return data;
+  }
+  if (data instanceof ArrayBuffer) {
+    return Buffer.from(data);
+  }
+  return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
 }
 
 /**

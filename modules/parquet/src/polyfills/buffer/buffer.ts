@@ -52,6 +52,10 @@ type BufferEncoding = string;
 export class Buffer extends Uint8Array {
   static poolSize = 8192; // not used by this implementation
 
+  static byteLength(string, encoding?) {
+    return byteLength(string, encoding)
+  }
+
   // length: number; inherited
 
   get parent() {
