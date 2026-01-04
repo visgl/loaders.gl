@@ -5,7 +5,7 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 
-import {PCDLoaderOptions, PCDWorkerLoader} from './pcd-loader';
+import {PCDLoaderOptions, PCDWorkerLoader, normalizePCDLoaderOptions} from './pcd-loader';
 import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import {parsePCD} from './lib/parse-pcd';
 
@@ -17,8 +17,9 @@ export const PCDArrowLoader = {
   dataType: null as unknown as ArrowTable,
   batchType: null as never,
   worker: false,
-  parse: async (arrayBuffer: ArrayBuffer) => {
-    const mesh = parsePCD(arrayBuffer);
+  parse: async (arrayBuffer: ArrayBuffer, options?: PCDLoaderOptions) => {
+    const normalizedOptions = normalizePCDLoaderOptions(options);
+    const mesh = parsePCD(arrayBuffer, normalizedOptions);
     const arrowTable = convertMeshToTable(mesh, 'arrow-table');
     return arrowTable;
   }

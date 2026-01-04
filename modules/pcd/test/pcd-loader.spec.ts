@@ -53,6 +53,30 @@ test('PCDLoader#parse(text)', async (t) => {
 
   t.equal(data.attributes.POSITION.value.length, 639, 'POSITION attribute was found');
   t.equal(data.attributes.COLOR_0.value.length, 639, 'COLOR attribute was found');
+  t.ok(data.attributes.COLOR_0.value instanceof Uint8Array, 'COLOR attribute is Uint8Array');
+
+  t.end();
+});
+
+test('PCDLoader#parse(text, normalizeColors)', async (t) => {
+  const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
+    core: {worker: false},
+    mesh: {normalizeColors: true}
+  });
+  validateMeshCategoryData(t, data);
+
+  const colorValues = data.attributes.COLOR_0.value as Float32Array;
+  t.ok(colorValues instanceof Float32Array, 'COLOR attribute is Float32Array');
+
+  let hasOutOfRangeColorValue = false;
+  for (const colorValue of colorValues) {
+    if (colorValue < 0 || colorValue > 1) {
+      hasOutOfRangeColorValue = true;
+      break;
+    }
+  }
+
+  t.notOk(hasOutOfRangeColorValue, 'COLOR attribute is normalized');
 
   t.end();
 });

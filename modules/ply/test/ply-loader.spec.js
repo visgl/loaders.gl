@@ -38,6 +38,35 @@ test('PLYLoader#parse(textFile)', async (t) => {
 
   validateMeshCategoryData(t, data);
   validateTextPLY(t, data);
+  if (data.attributes.COLOR_0) {
+    t.ok(data.attributes.COLOR_0.value instanceof Uint8Array, 'COLOR attribute is Uint8Array');
+  }
+  t.end();
+});
+
+test('PLYLoader#parse(textFile, normalizeColors)', async (t) => {
+  const data = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {
+    mesh: {normalizeColors: true}
+  });
+
+  validateMeshCategoryData(t, data);
+  validateTextPLY(t, data);
+  if (!data.attributes.COLOR_0) {
+    t.comment('COLOR_0 attribute not present in test data');
+    t.end();
+    return;
+  }
+
+  const colorValues = data.attributes.COLOR_0.value;
+  t.ok(colorValues instanceof Float32Array, 'COLOR attribute is Float32Array');
+  let hasOutOfRangeColorValue = false;
+  for (const colorValue of colorValues) {
+    if (colorValue < 0 || colorValue > 1) {
+      hasOutOfRangeColorValue = true;
+      break;
+    }
+  }
+  t.notOk(hasOutOfRangeColorValue, 'COLOR attribute is normalized');
   t.end();
 });
 

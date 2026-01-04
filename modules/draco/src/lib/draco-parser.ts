@@ -25,7 +25,7 @@ import type {
   DracoOctahedronTransform
 } from './draco-types';
 
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {getMeshBoundingBox, normalizeMeshColors} from '@loaders.gl/schema-utils';
 import {getDracoSchema} from './utils/get-draco-schema';
 
 /** Options to control draco parsing */
@@ -40,6 +40,8 @@ export type DracoParseOptions = {
   quantizedAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
   /** Skip transforms specific octahedron encoded  attributes */
   octahedronAttributes?: ('POSITION' | 'NORMAL' | 'COLOR' | 'TEX_COORD' | 'GENERIC')[];
+  /** Normalize color attributes to 0-1 floats */
+  normalizeColors?: boolean;
 };
 
 // @ts-ignore
@@ -134,6 +136,9 @@ export default class DracoParser {
       const loaderData = this._getDracoLoaderData(dracoGeometry, geometry_type, options);
 
       const geometry = this._getMeshData(dracoGeometry, loaderData, options);
+      geometry.attributes = normalizeMeshColors(geometry.attributes, {
+        normalizeColors: options.normalizeColors
+      });
 
       const boundingBox = getMeshBoundingBox(geometry.attributes);
 

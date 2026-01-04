@@ -1,6 +1,6 @@
 // Mesh category utilities
 // TODO - move to mesh category module, or to math.gl/geometry module
-import {MeshAttributes} from '@loaders.gl/schema';
+import {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
 import {TypedArray} from '../../types/types';
 
 type TypedArrays = {[key: string]: TypedArray};
@@ -61,4 +61,49 @@ export function getMeshBoundingBox(attributes: MeshAttributes): BoundingBox {
     [minX, minY, minZ],
     [maxX, maxY, maxZ]
   ];
+}
+
+type MeshColorNormalizationOptions = {
+  normalizeColors?: boolean;
+};
+
+export function normalizeMeshColors(
+  attributes: MeshAttributes,
+  options: MeshColorNormalizationOptions = {}
+): MeshAttributes {
+  if (!options.normalizeColors) {
+    return attributes;
+  }
+
+  const colorAttribute = attributes.COLOR_0;
+  if (!colorAttribute) {
+    return attributes;
+  }
+
+  if (colorAttribute.value instanceof Float32Array) {
+    return attributes;
+  }
+
+  const normalizedColors = normalizeColorAttribute(colorAttribute);
+  return {
+    ...attributes,
+    COLOR_0: normalizedColors
+  };
+}
+
+function normalizeColorAttribute(attribute: MeshAttribute): MeshAttribute {
+  if (!(attribute.value instanceof Uint8Array || attribute.value instanceof Uint16Array)) {
+    return attribute;
+  }
+
+  const maxColorValue = attribute.value instanceof Uint8Array ? 255 : 65535;
+  const normalizedValues = new Float32Array(attribute.value.length);
+  for (let i = 0; i < attribute.value.length; i++) {
+    normalizedValues[i] = attribute.value[i] / maxColorValue;
+  }
+
+  return {
+    ...attribute,
+    value: normalizedValues
+  };
 }

@@ -61,7 +61,10 @@ async function parse(arrayBuffer: ArrayBuffer, options?: DracoLoaderOptions): Pr
   );
   const dracoParser = new DracoParser(draco);
   try {
-    return dracoParser.parseSync(arrayBuffer, options?.draco);
+    return dracoParser.parseSync(arrayBuffer, {
+      ...options?.draco,
+      normalizeColors: options?.mesh?.normalizeColors
+    });
   } finally {
     dracoParser.destroy();
   }

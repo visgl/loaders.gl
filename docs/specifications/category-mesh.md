@@ -69,6 +69,8 @@ Primitive modes are aligned with [OpenGL/glTF primitive types](https://github.co
 | `count`          | Yes   | `Number`            | The number of elements/vertices in the attribute data.                                                                                             |
 | `originalName`   | No    | `String` (Optional) | If this was a named attribute in the original file, the original name (before substitution with glTF attribute names) will be made available here. |
 
+When a loader provides vertex colors via the `COLOR_0` attribute, the returned `value` array type depends on whether color normalization is requested. By default, mesh loaders return `Uint8Array` color values in the `0-255` range. When `options.mesh.normalizeColors` is set to `true`, mesh loaders return `Float32Array` values normalized to the `0-1` range.
+
 ### glTF Attribute Name Mapping
 
 To help applications manage attribute name differences between various formats, mesh loaders map known attribute names to [glTF 2.0 standard attribute names](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#geometry) a best-effort basis.

@@ -36,6 +36,7 @@ import normalizePLY from './normalize-ply';
 
 export type ParsePLYOptions = {
   propertyNameMapping?: Record<string, string>;
+  normalizeColors?: boolean;
 };
 
 /**
@@ -56,7 +57,7 @@ export function parsePLY(data: ArrayBuffer | string, options: ParsePLYOptions = 
     attributes = parseASCII(data, header);
   }
 
-  return normalizePLY(header, attributes);
+  return normalizePLY(header, attributes, options);
 }
 
 /**

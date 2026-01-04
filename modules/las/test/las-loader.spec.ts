@@ -65,6 +65,32 @@ test('LASLoader#options', async (t) => {
   t.end();
 });
 
+test('LASLoader#normalizeColors', async (t) => {
+  const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {skip: 10},
+    mesh: {normalizeColors: true},
+    core: {worker: false}
+  });
+
+  if (!data.attributes.COLOR_0) {
+    t.comment('COLOR_0 attribute not present in test data');
+    t.end();
+    return;
+  }
+
+  const colorValues = data.attributes.COLOR_0.value as Float32Array;
+  t.ok(colorValues instanceof Float32Array, 'COLOR attribute is Float32Array');
+  let hasOutOfRangeColorValue = false;
+  for (const colorValue of colorValues) {
+    if (colorValue < 0 || colorValue > 1) {
+      hasOutOfRangeColorValue = true;
+      break;
+    }
+  }
+  t.notOk(hasOutOfRangeColorValue, 'COLOR attribute is normalized');
+  t.end();
+});
+
 test('LASWorker#parse(binary) extra bytes', async (t) => {
   const data = await parse(fetchFile(LAS_EXTRABYTES_BINARY_URL), LASLoader, {
     las: {skip: 10},

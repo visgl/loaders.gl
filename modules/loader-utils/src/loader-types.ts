@@ -82,6 +82,9 @@ export type StrictLoaderOptions = {
 export type LoaderOptions = {
   core?: StrictLoaderOptions['core'];
   modules?: StrictLoaderOptions['modules'];
+  mesh?: {
+    normalizeColors?: boolean;
+  };
 
   // Deprecated top-level aliases for core options
   /** @deprecated Use options.core.baseUri */

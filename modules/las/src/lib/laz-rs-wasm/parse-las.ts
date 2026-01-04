@@ -6,7 +6,7 @@
 // import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../../las-loader';
 import type {LASMesh, LASHeader} from '../las-types';
-import {getMeshBoundingBox /* , convertMeshToTable */} from '@loaders.gl/schema-utils';
+import {getMeshBoundingBox, normalizeMeshColors /* , convertMeshToTable */} from '@loaders.gl/schema-utils';
 import {getLASSchema} from '../get-las-schema';
 import {LASFile} from './laslaz-decoder';
 
@@ -138,6 +138,10 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
     vertexCount: originalHeader.totalToRead,
     boundingBox: getMeshBoundingBox(lasMesh?.attributes || {})
   };
+
+  lasMesh.attributes = normalizeMeshColors(lasMesh.attributes, {
+    normalizeColors: options.mesh?.normalizeColors
+  });
 
   if (lasMesh) {
     lasMesh.schema = getLASSchema(lasMesh.loaderData, lasMesh.attributes);

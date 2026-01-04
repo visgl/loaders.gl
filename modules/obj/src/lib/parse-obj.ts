@@ -1,5 +1,5 @@
 import type {Mesh, MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {getMeshBoundingBox, normalizeMeshColors} from '@loaders.gl/schema-utils';
 import {parseOBJMeshes} from './parse-obj-meshes';
 import {getOBJSchema} from './get-obj-schema';
 
@@ -9,7 +9,10 @@ export function parseOBJ(text: string, options?): Mesh {
   // @ts-expect-error
   const vertexCount = meshes.reduce((s, mesh) => s + mesh.header.vertexCount, 0);
   // TODO - render objects separately
-  const attributes = mergeAttributes(meshes, vertexCount);
+  let attributes = mergeAttributes(meshes, vertexCount);
+  attributes = normalizeMeshColors(attributes, {
+    normalizeColors: options?.mesh?.normalizeColors
+  });
 
   const header = {
     vertexCount,

@@ -11,10 +11,14 @@
 // @author Mugen87 / https://github.com/Mugen87
 
 import {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {getMeshBoundingBox, normalizeMeshColors} from '@loaders.gl/schema-utils';
 import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
 import type {PCDHeader, PCDMesh} from './pcd-types';
+
+export type ParsePCDOptions = {
+  normalizeColors: boolean;
+};
 
 type MeshHeader = {
   vertexCount: number;
@@ -47,7 +51,7 @@ const LITTLE_ENDIAN: boolean = true;
  * @param data
  * @returns
  */
-export function parsePCD(data: ArrayBufferLike): PCDMesh {
+export function parsePCD(data: ArrayBufferLike, options: ParsePCDOptions): PCDMesh {
   // parse header (always ascii format)
   const textData = new TextDecoder().decode(data);
   const pcdHeader = parsePCDHeader(textData);
@@ -73,6 +77,9 @@ export function parsePCD(data: ArrayBufferLike): PCDMesh {
   }
 
   attributes = getMeshAttributes(attributes);
+  attributes = normalizeMeshColors(attributes, {
+    normalizeColors: options.normalizeColors
+  });
 
   const header = getMeshHeader(pcdHeader, attributes);
 
@@ -339,9 +346,9 @@ function parsePCDBinary(pcdHeader: PCDHeader, data: ArrayBufferLike): HeaderAttr
     }
 
     if (offset.rgb !== undefined) {
-      color.push(dataview.getUint8(row + offset.rgb + 2) / 255.0);
-      color.push(dataview.getUint8(row + offset.rgb + 1) / 255.0);
-      color.push(dataview.getUint8(row + offset.rgb + 0) / 255.0);
+      color.push(dataview.getUint8(row + offset.rgb + 2));
+      color.push(dataview.getUint8(row + offset.rgb + 1));
+      color.push(dataview.getUint8(row + offset.rgb + 0));
     }
 
     if (offset.normal_x !== undefined) {
@@ -402,15 +409,9 @@ function parsePCDBinaryCompressed(pcdHeader: PCDHeader, data: ArrayBufferLike): 
     }
 
     if (offset.rgb !== undefined) {
-      color.push(
-        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 2) / 255.0
-      );
-      color.push(
-        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 1) / 255.0
-      );
-      color.push(
-        dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 0) / 255.0
-      );
+      color.push(dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 2));
+      color.push(dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 1));
+      color.push(dataview.getUint8(pcdHeader.points * offset.rgb + pcdHeader.size[3] * i + 0));
     }
 
     if (offset.normal_x !== undefined) {

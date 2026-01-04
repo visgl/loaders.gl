@@ -3,9 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import type {MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {getMeshBoundingBox, normalizeMeshColors} from '@loaders.gl/schema-utils';
 import type {PLYMesh, PLYHeader, PLYAttributes, MeshHeader} from './ply-types';
 import {getPLYSchema} from './get-ply-schema';
+import type {ParsePLYOptions} from './parse-ply';
 
 /**
  * @param header
@@ -15,9 +16,10 @@ import {getPLYSchema} from './get-ply-schema';
 export default function normalizePLY(
   plyHeader: MeshHeader & PLYHeader,
   plyAttributes: PLYAttributes,
-  options?: {}
+  options?: ParsePLYOptions
 ): PLYMesh {
-  const attributes = getMeshAttributes(plyAttributes);
+  let attributes = getMeshAttributes(plyAttributes);
+  attributes = normalizeMeshColors(attributes, {normalizeColors: options?.normalizeColors});
   const boundingBox = getMeshBoundingBox(attributes);
   const vertexCount = plyAttributes.indices.length || plyAttributes.vertices.length / 3;
 

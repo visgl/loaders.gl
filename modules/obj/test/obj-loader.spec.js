@@ -108,6 +108,24 @@ test('OBJLoader#parseText - object with vertex colors', async (t) => {
   t.end();
 });
 
+test('OBJLoader#parseText - object with normalized colors', async (t) => {
+  const data = await load(OBJ_VERTEX_COLOR_URL, OBJLoader, {
+    mesh: {normalizeColors: true}
+  });
+  validateMeshCategoryData(t, data);
+
+  t.ok(data.attributes.COLOR_0.value instanceof Float32Array, 'COLOR attribute is Float32Array');
+  let hasOutOfRangeColorValue = false;
+  for (const colorValue of data.attributes.COLOR_0.value) {
+    if (colorValue < 0 || colorValue > 1) {
+      hasOutOfRangeColorValue = true;
+      break;
+    }
+  }
+  t.notOk(hasOutOfRangeColorValue, 'COLOR attribute is normalized');
+  t.end();
+});
+
 test('OBJWorkerLoader#parse(text)', async (t) => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');

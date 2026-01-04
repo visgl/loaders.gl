@@ -25,3 +25,4 @@ const data = await load(url, PLYLoader, options);
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `mesh.normalizeColors` | `boolean` | `false` | Normalize color values to 0-1 floats instead of 0-255 integers. |

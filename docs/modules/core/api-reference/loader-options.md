@@ -37,6 +37,7 @@ Top level options are interpreted by the core API and apply to all loaders.
 | `options.<loader-id>.workerUrl` | `string`               | per-loader | If the corresponding loader can parse on a worker, the url to the worker script can be controller with this option.                                                                                               |
 | `options.modules`               | `object`               | -          | Supply bundled modules (like draco3d) instead of loading from CDN.                                                                                                                                                |
 | `options.CDN` (🚧 experimental) | `string`               | -          | Controls certain script loading from CDN. `true` loads from `unpkg.com/@loaders.gl`. `false` load from local urls. `string` alternate CDN url.                                                                    |
+| `options.mesh.normalizeColors` | `boolean`              | `false`    | Normalize mesh color attributes to 0-1 floats instead of 0-255 integers when loaders provide `COLOR_0`.                                                                                                         |
 
 ## Batched parsing options
 

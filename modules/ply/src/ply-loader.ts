@@ -51,13 +51,29 @@ export const PLYWorkerLoader = {
 export const PLYLoader = {
   ...PLYWorkerLoader,
   // Note: parsePLY supports both text and binary
-  parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply), // TODO - this may not detect text correctly?
-  parseTextSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
-  parseSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
+  parse: async (arrayBuffer, options) =>
+    parsePLY(arrayBuffer, {
+      ...options?.ply,
+      normalizeColors: options?.mesh?.normalizeColors
+    }), // TODO - this may not detect text correctly?
+  parseTextSync: (arrayBuffer, options) =>
+    parsePLY(arrayBuffer, {
+      ...options?.ply,
+      normalizeColors: options?.mesh?.normalizeColors
+    }),
+  parseSync: (arrayBuffer, options) =>
+    parsePLY(arrayBuffer, {
+      ...options?.ply,
+      normalizeColors: options?.mesh?.normalizeColors
+    }),
   parseInBatches: (
     arrayBuffer:
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options
-  ) => parsePLYInBatches(arrayBuffer, options?.ply)
+  ) =>
+    parsePLYInBatches(arrayBuffer, {
+      ...options?.ply,
+      normalizeColors: options?.mesh?.normalizeColors
+    })
 } as const satisfies LoaderWithParser<PLYMesh, any, PLYLoaderOptions>;
