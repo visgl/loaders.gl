@@ -33,11 +33,11 @@ export async function fetchNode(url: string, options?: RequestInit): Promise<Res
   // Automatically decompress gzipped files with .gz extension
   if (url.endsWith('.gz')) {
     // url = url.slice(0, -3);
-    responseHeaders['content-encoding'] = 'gzip';
+    responseHeaders.set('content-encoding', 'gzip');
   }
   if (url.endsWith('.br')) {
     // url = url.slice(0, -3);
-    responseHeaders['content-encoding'] = 'br';
+    responseHeaders.set('content-encoding', 'br');
   }
 
   try {
