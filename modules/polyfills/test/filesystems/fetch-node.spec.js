@@ -45,20 +45,17 @@ test('polyfills#fetchNode() error handling (NODE)', async (t) => {
   t.end();
 });
 
-// TODO v4.0 restore this test
-test.skip('polyfills#fetchNode() able to decompress .gz extension (NODE)', async (t) => {
+test('polyfills#fetchNode() able to decompress .gz extension (NODE)', async (t) => {
   if (!isBrowser) {
-    let response = await fetchNode(TEXT_URL);
-    t.ok(response.ok, response.statusText);
-    let data = await response.text();
-    t.equal(data, '123456', 'fetchNode polyfill correctly read text file');
+    const textResponse = await fetchNode(TEXT_URL);
+    t.ok(textResponse.ok, textResponse.statusText);
+    const textData = await textResponse.text();
+    t.equal(textData, '123456', 'fetchNode polyfill correctly read text file');
 
-    if (!isBrowser) {
-      response = await fetchNode(TEXT_URL_GZIPPED);
-      t.ok(response.ok, response.statusText);
-      data = await response.text();
-      t.equal(data, '123456', 'fetchNode polyfill correctly decompressed gzipped ".gz" file');
-    }
+    const gzippedResponse = await fetchNode(TEXT_URL_GZIPPED);
+    t.ok(gzippedResponse.ok, gzippedResponse.statusText);
+    const gzippedData = await gzippedResponse.text();
+    t.equal(gzippedData, textData, 'fetchNode polyfill correctly decompressed gzipped ".gz" file');
   }
   t.end();
 });
