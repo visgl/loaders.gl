@@ -2,9 +2,13 @@
 
 ## v4.4
 
+### v4.4.0-alpha.5
+
+- Make `@loaders.gl/zarr` and `@loaders.gl/geoarrow` libraries private
+
 ### v4.4.0-alpha.4
 
-- Make graph and traces libraries private
+- Make `@loaders.gl/graph` and `@loaders.gl/traces` libraries private
 
 ### v4.4.0-alpha.3
 

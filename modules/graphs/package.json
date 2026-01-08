@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/graphs",
-  "version": "4.4.0-alpha.4",
+  "version": "4.4.0-alpha.5",
   "description": "Graph format parsers for DOT, GraphML, and related formats",
   "license": "MIT",
   "type": "module",
