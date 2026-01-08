@@ -136,7 +136,7 @@ export async function parseImplicitTiles(params: {
   } = implicitOptions;
   const tile = {children: [], lodMetricValue: 0, contentUrl: ''};
 
-  if (!maximumLevel) {
+  if (maximumLevel === undefined) {
     log.once(
       `Missing 'maximumLevel' or 'availableLevels' property. The subtree ${contentUrlTemplate} won't be loaded...`
     );
