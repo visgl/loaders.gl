@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.0-alpha.4
+
+- Make graph and traces libraries private
+
 ### v4.4.0-alpha.3
 
 - Enable fetchNode gzip decompression test (#3267)

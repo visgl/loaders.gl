@@ -1,12 +1,10 @@
 {
   "name": "@loaders.gl/graphs",
-  "version": "4.4.0-alpha.3",
+  "version": "4.4.0-alpha.4",
   "description": "Graph format parsers for DOT, GraphML, and related formats",
   "license": "MIT",
   "type": "module",
-  "publishConfig": {
-    "access": "public"
-  },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
@@ -39,5 +37,6 @@
   },
   "peerDependencies": {
     "@loaders.gl/core": "4.4.0-alpha.1"
-  }
+  },
+  "gitHead": "f1a6da2c65e4ea06b59c61d1884819b6be577fe3"
 }

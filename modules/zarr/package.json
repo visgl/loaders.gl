@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/zarr",
-  "version": "4.4.0-alpha.3",
+  "version": "4.4.0-alpha.4",
   "description": "Framework-independent loaders for Zarr",
   "license": "MIT",
   "type": "module",
@@ -44,5 +44,5 @@
   "peerDependencies": {
     "@loaders.gl/core": "4.4.0-alpha.1"
   },
-  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
+  "gitHead": "f1a6da2c65e4ea06b59c61d1884819b6be577fe3"
 }
