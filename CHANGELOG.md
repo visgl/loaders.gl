@@ -2,11 +2,65 @@
 
 ## v4.4
 
-### v4.3.0-alpha.2
+### v4.4.0-alpha.3
+
+- Enable fetchNode gzip decompression test (#3267)
+- feat: Upgrade to handle ArrayBufferLike (#3271)
+- fix/pcd sizesum calc Jclaessens97  (#3270)
+- Merge branch 'weldonji-remove-lzo-wasm-dependency'
+- chore(wkb): Re-enable TWKB/WKB geometry tests (#3268)
+- fix(gltf): KHR_texture_transform - Avoid overwriting shared texcoord buffer views (#3255)
+- docs: v4.4 updates (#3265)
+- Merge branch 'rddesmond-dbf-sidecar-options'
+- feat(loader-utils): Export is-type helpers (#3258)
+- feat: LoaderOptions.core - improved loader type safety (#3112)
+- chore: Separate app build and tests tile-converter (#3264)
+- feat(json): JSONPath improvements, error messages (#3259)
+- feat: Add traces and graphs module scaffolds (#3253)
+- chore(deps): bump @babel/runtime from 7.25.7 to 7.28.4 (#3263)
+- chore(tile-converter): Move tile-converter from modules/ to apps/ (#3261)
+- docs(json) Clarify JSONLoader streaming semantics (#3257)
+- chore(crypto)  make md5 wasm decoder Buffer independent (#3256)
+- fix(json): GeoJSON batch option merging (#3254)
+- chore: Upgrade to @vis.gl/dev-tools@1.0 (#3252)
+- docs(csv): CSVLoader options documentation (#3248)
+- Fix(terrain): quantized mesh skirt height docs (#3249)
+- docs(core): registerLoaders deprecation notice (#3250)
+- chore: Add worker bundles to package exports (#3251)
+- feat(mvt): Experimental MVTWriter  (#3164)
+- chore: Migrate to ArrayBufferLike (#3235)
+- Move shapefile whats-new note to v4.4 (#3246)
+- docs: Fix typos and table formatting (#3226)
+- Add ReadableFile coverage for archives (#3241)
+- docs: upgrade docusaurus to 3.9.2 (#3240)
+- chore: Standardize on ReadableFile (#3237)
+- Handle child process module lazily (#3230)
+- chore: Adjust CI matrix to run full suite only on Node 24 (#3234)
+- chore: Add Yarn cache to test workflows (#3233)
+- chore: Split out website-build job in CI (#3232)
+- chore: Run CI on node 24,22,20 (#3231)
+- chore: bump vite to 7.2.7 (#3228)
+- Upgrade example apps to React 19.2.3 (#3229)
+- chore: Move loaders.gl from volta to corepack (#3227)
+- Update parquet.md (#3183)
+- Fixes typo in PMTiles API Reference doc (#3216)
+- Update options shape (#3214)
+- Pass options to DBF sidecar loader
+- Remove lzo-wasm dependency and references
+- chore: Fix CI (#3177)
+- chore(deps-dev): bump next in /examples/get-started/bundle-with-nextjs (#3175)
+- chore(deps): bump nanoid from 3.3.7 to 3.3.8 (#3173)
+- chore(deps): bump cross-spawn in /test/apps/typescript-test (#3166)
+- feat(las): Enable both laz-perf and laz-rs-wasm for comparison and benchmarking. (#3168)
+- feat(las): Use laz-rs-wasm to support laz 1.4 (#3165)
+- chore(test): Add license headers (#3169)
+- feat(potree): render all nodes (#3162)
+
+### v4.4.0-alpha.2
 
 - Hofix to remove not existing version (#3163)
 
-### v4.3.0-alpha.1
+### v4.4.0-alpha.1
 
 - fix(loader-utils): ReadableFile implementation to match the interface (#3157)
 - feat(geoarrow): Add support for Arrow meshes (#3159)
@@ -62,6 +116,8 @@
 - chore(deps): bump micromatch in /test/apps/typescript-test (#3067)
 
 ## v4.3
+
+See `4.3-release` branch for additional CHANGELOGS
 
 ### v4.3.0-beta.1
 
