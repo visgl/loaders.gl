@@ -6,8 +6,9 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 
 import {TILESETS} from './data/tilesets';
-import {MVTSource} from '@loaders.gl/mvt';
+import {MVTLoader, MVTSource} from '@loaders.gl/mvt';
 import {isURLTemplate, getURLFromTemplate} from '../src/mvt-source';
+import {MVTTileSource} from '../src/mvt-source';
 
 test('MVTSource#urls', async (t) => {
   if (!isBrowser) {
@@ -83,6 +84,36 @@ test('getURLFromTemplate', (t) => {
   );
   // t.is(getURLFromTemplate(null, 1, 2, 0), null, 'invalid template');
   // t.is(getURLFromTemplate([], 1, 2, 0), null, 'empty array');
+  t.end();
+});
+
+test('MVTTileSource#getTileData returns null for text/html responses', async (t) => {
+  let didCallParse = false;
+  const originalParse = MVTLoader.parse;
+  MVTLoader.parse = async () => {
+    didCallParse = true;
+    return {};
+  };
+
+  const source = new MVTTileSource('https://example.com/{z}/{x}/{y}.pbf', {
+    core: {
+      loadOptions: {
+        fetch: async () =>
+          new Response('<html></html>', {
+            status: 200,
+            headers: {'content-type': 'text/html'}
+          })
+      }
+    }
+  });
+
+  try {
+    const tileData = await source.getTileData({index: {x: 0, y: 0, z: 0}});
+    t.equal(tileData, null, 'returns null for non-MVT response');
+    t.equal(didCallParse, false, 'does not invoke MVTLoader.parse');
+  } finally {
+    MVTLoader.parse = originalParse;
+  }
   t.end();
 });
 
