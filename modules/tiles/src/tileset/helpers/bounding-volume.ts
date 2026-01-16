@@ -42,7 +42,10 @@ export function createBoundingVolume(boundingVolumeHeader, transform, result?) {
     return createBox(boundingVolumeHeader.box, transform, result);
   }
   if (boundingVolumeHeader.region) {
-    return createObbFromRegion(boundingVolumeHeader.region);
+    const obb = new OrientedBoundingBox();
+    obb.fromRegion(boundingVolumeHeader.region);
+
+    return obb;
   }
 
   if (boundingVolumeHeader.sphere) {
