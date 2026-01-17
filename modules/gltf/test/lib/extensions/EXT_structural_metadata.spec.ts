@@ -329,3 +329,108 @@ test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async (t) => 
   }
   t.end();
 });
+
+test('gltf#EXT_structural_metadata - Should decode variable-length string arrays', async (t) => {
+  // 2 features with variable-length string arrays
+  // Feature 0: ["hello", "world"] (2 strings)
+  // Feature 1: ["foo"] (1 string)
+  //
+  // Binary layout:
+  // - values: "helloworldfoo" (13 bytes)
+  // - stringOffsets (UINT8): [0, 5, 10, 13] (4 bytes)
+  // - arrayOffsets (UINT8): [0, 2, 3] (3 bytes)
+
+  const binaryBufferData = [
+    // values: "helloworldfoo" (offset 0, length 13)
+    104,
+    101,
+    108,
+    108,
+    111, // "hello"
+    119,
+    111,
+    114,
+    108,
+    100, // "world"
+    102,
+    111,
+    111, // "foo"
+    // stringOffsets (offset 13, length 4): [0, 5, 10, 13]
+    0,
+    5,
+    10,
+    13,
+    // arrayOffsets (offset 17, length 3): [0, 2, 3]
+    0,
+    2,
+    3
+  ];
+
+  const GLTF_WITH_STRING_ARRAY = {
+    buffers: [
+      {
+        arrayBuffer: new Uint8Array(binaryBufferData).buffer,
+        byteOffset: 0,
+        byteLength: 20
+      }
+    ],
+    json: {
+      extensionsUsed: ['EXT_structural_metadata'],
+      buffers: [{byteLength: 20}],
+      bufferViews: [
+        {buffer: 0, byteOffset: 0, byteLength: 13}, // values
+        {buffer: 0, byteOffset: 13, byteLength: 4}, // stringOffsets
+        {buffer: 0, byteOffset: 17, byteLength: 3} // arrayOffsets
+      ],
+      extensions: {
+        EXT_structural_metadata: {
+          schema: {
+            id: 'schema',
+            classes: {
+              TestClass: {
+                properties: {
+                  tags: {
+                    type: 'STRING',
+                    array: true
+                    // no "count" means variable-length
+                  }
+                }
+              }
+            }
+          },
+          propertyTables: [
+            {
+              name: 'TestTable',
+              class: 'TestClass',
+              count: 2,
+              properties: {
+                tags: {
+                  values: 0,
+                  stringOffsets: 1,
+                  stringOffsetType: 'UINT8',
+                  arrayOffsets: 2,
+                  arrayOffsetType: 'UINT8'
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  };
+
+  const options = {gltf: {loadImages: true, loadBuffers: true}};
+  await decodeExtensions(GLTF_WITH_STRING_ARRAY, options);
+
+  const ext = GLTF_WITH_STRING_ARRAY.json.extensions
+    .EXT_structural_metadata as GLTF_EXT_structural_metadata_GLTF;
+  const tagsData = ext.propertyTables?.[0].properties?.tags.data;
+
+  // Verify variable-length string arrays are correctly decoded
+  t.deepEqual(
+    tagsData,
+    [['hello', 'world'], ['foo']],
+    'Variable-length string arrays decoded correctly'
+  );
+  t.end();
+});
