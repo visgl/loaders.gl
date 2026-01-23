@@ -1,5 +1,5 @@
 // @ts-ignore
-const {getBabelConfig} = require('ocular-dev-tools/configuration');
+const {getBabelConfig} = require('@vis.gl/dev-tools/configuration');
 
 const config = getBabelConfig({
   react: true,
