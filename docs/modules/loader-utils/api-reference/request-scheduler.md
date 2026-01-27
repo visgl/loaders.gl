@@ -71,7 +71,7 @@ Parameters:
 
 Note: The `id` property cannot be updated after construction as it's tied to the stats tracker.
 
-This is useful when you need to dynamically adjust throttling behavior, for example during a transition when otherwise many tile requests would be issued. 
+This is useful when you need to dynamically adjust throttling behavior, for example during a transition when otherwise many tile requests would be issued.
 
 ## About Request Priorities
 
