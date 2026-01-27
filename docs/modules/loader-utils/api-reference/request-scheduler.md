@@ -59,6 +59,20 @@ Returns a promise that
 - resolves to `null` if the request has been cancelled (by the callback return < 0).
   In this case the application should not issue the request.
 
+### `setProps(props: object): void`
+
+Updates scheduler properties without recreating the instance. This preserves active and queued requests.
+
+Parameters:
+
+- `throttleRequests`?: boolean — Whether to throttle requests
+- `maxRequests`?: number — Maximum concurrent requests
+- `debounceTime`?: number — Debounce time in milliseconds
+
+Note: The `id` property cannot be updated after construction as it's tied to the stats tracker.
+
+This is useful when you need to dynamically adjust throttling behavior, for example during a transition when otherwise many tile requests would be issued. 
+
 ## About Request Priorities
 
 The `getPriority` callback controls priority of requests and also cancellation of outstanding requests.

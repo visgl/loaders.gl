@@ -102,3 +102,167 @@ test('RequestScheduler#debounce', async (t) => {
 
   t.end();
 });
+
+test('RequestScheduler#setProps - update maxRequests', async (t) => {
+  const scheduler = new RequestScheduler({maxRequests: 2});
+
+  // Schedule 3 requests with maxRequests = 2
+  const request1 = scheduler.scheduleRequest({id: 1});
+  const request2 = scheduler.scheduleRequest({id: 2});
+  const request3 = scheduler.scheduleRequest({id: 3});
+
+  await sleep(0);
+
+  t.is(scheduler.activeRequestCount, 2, 'issues 2 requests initially');
+
+  // Increase maxRequests to 3
+  scheduler.setProps({maxRequests: 3});
+
+  const token1 = await request1;
+  const token2 = await request2;
+
+  if (token1 && token2) {
+    token1.done();
+    token2.done();
+  } else {
+    t.fail('should issue first 2 requests');
+  }
+
+  await sleep(0);
+
+  t.is(scheduler.activeRequestCount, 1, 'issues 3rd request after maxRequests increased');
+
+  const token3 = await request3;
+  if (token3) {
+    token3.done();
+  } else {
+    t.fail('should issue 3rd request');
+  }
+
+  t.end();
+});
+
+test('RequestScheduler#setProps - update debounceTime', async (t) => {
+  const scheduler = new RequestScheduler({debounceTime: 0, maxRequests: 1});
+
+  const request1 = scheduler.scheduleRequest({id: 1});
+
+  await sleep(0);
+
+  t.is(scheduler.activeRequestCount, 1, 'issues request immediately with debounceTime: 0');
+
+  const token1 = await request1;
+  if (token1) {
+    token1.done();
+  }
+
+  // Update debounceTime to 10ms
+  scheduler.setProps({debounceTime: 10});
+
+  const request2 = scheduler.scheduleRequest({id: 2});
+
+  await sleep(0);
+
+  t.is(scheduler.activeRequestCount, 0, 'delays request with debounceTime: 10');
+
+  await sleep(20);
+
+  t.is(scheduler.activeRequestCount, 1, 'issues request after debounce delay');
+
+  const token2 = await request2;
+  if (token2) {
+    token2.done();
+  }
+
+  t.end();
+});
+
+test('RequestScheduler#setProps - update throttleRequests', async (t) => {
+  const scheduler = new RequestScheduler({throttleRequests: true, maxRequests: 1});
+
+  const request1 = scheduler.scheduleRequest({id: 1});
+  const request2 = scheduler.scheduleRequest({id: 2});
+
+  await sleep(0);
+
+  t.is(scheduler.activeRequestCount, 1, 'throttles with throttleRequests: true');
+
+  const token1 = await request1;
+  if (token1) {
+    token1.done();
+  }
+
+  // Disable throttling
+  scheduler.setProps({throttleRequests: false});
+
+  const request3 = scheduler.scheduleRequest({id: 3});
+  const token3 = await request3;
+
+  t.ok(token3, 'issues request immediately with throttleRequests: false');
+  t.is(scheduler.activeRequestCount, 0, 'unthrottled requests are not tracked');
+
+  if (token3) {
+    token3.done();
+  }
+
+  await sleep(0);
+
+  const token2 = await request2;
+  if (token2) {
+    token2.done();
+  }
+
+  t.end();
+});
+
+test('RequestScheduler#setProps - preserves active requests', async (t) => {
+  const scheduler = new RequestScheduler({maxRequests: 2});
+
+  const request1 = scheduler.scheduleRequest({id: 1});
+  const request2 = scheduler.scheduleRequest({id: 2});
+
+  await sleep(0);
+
+  t.is(scheduler.activeRequestCount, 2, 'issues 2 requests');
+
+  // Reduce maxRequests while requests are active
+  scheduler.setProps({maxRequests: 1});
+
+  t.is(scheduler.activeRequestCount, 2, 'preserves active requests after setProps');
+
+  const token1 = await request1;
+  const token2 = await request2;
+
+  if (token1 && token2) {
+    token1.done();
+    token2.done();
+  } else {
+    t.fail('should preserve active requests');
+  }
+
+  t.is(scheduler.activeRequestCount, 0, 'completes all active requests');
+
+  // New requests should respect new maxRequests
+  const request3 = scheduler.scheduleRequest({id: 3});
+  const request4 = scheduler.scheduleRequest({id: 4});
+
+  await sleep(0);
+
+  t.is(scheduler.activeRequestCount, 1, 'new requests respect updated maxRequests');
+
+  const token3 = await request3;
+  if (token3) {
+    token3.done();
+  }
+
+  await sleep(0);
+
+  t.is(scheduler.activeRequestCount, 1, 'issues queued request after slot frees');
+
+  const token4 = await request4;
+  if (token4) {
+    token4.done();
+  }
+
+  t.end();
+});
