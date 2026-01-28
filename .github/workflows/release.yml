@@ -6,14 +6,42 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
+  check_branch:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.permitted.outputs.result }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch remote branches
+        run: |
+          git fetch origin --depth=1
+
+      - name: Check if on permitted branch
+        id: permitted
+        run: |
+          result=
+          if git branch -a --contains $GITHUB_SHA | grep -q 'remotes/origin/master$'; then
+            result=true
+          elif git branch -a --contains $GITHUB_SHA | grep -q 'remotes/origin/.*-release$'; then
+            result=true
+          fi
+          echo "result=${result}" >> "$GITHUB_OUTPUT"
+
   publish:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    needs: check_branch
+    permissions:
+      contents: write
+
+    if: ${{ github.repository_owner == 'visgl' && needs.check_branch.outputs.should_build }}
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -22,9 +50,8 @@ jobs:
       - name: Setup Node (with Corepack)
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          registry-url: 'https://registry.npmjs.org'
-          always-auth: true
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
 
       - name: Enable Corepack / Yarn
         run: |
@@ -41,8 +68,11 @@ jobs:
       - name: Build workers
         run: yarn build-workers
 
-      - name: Publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: yarn publish-prod
+      - name: Run tests from transpiled code
+        run: npx ocular-test dist
+
+      - name: Login to NPM
+        run: npm config set "//registry.npmjs.org/:_authToken=${NPM_TOKEN}"
+
+      - name: Publish to NPM
+        run: npx ocular-publish from-git
