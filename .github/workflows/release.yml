@@ -51,13 +51,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'yarn'
 
       - name: Enable Corepack / Yarn
         run: |
           corepack enable
           corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
           yarn -v
+
+      - name: Cache Yarn 4 artifacts
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-cache-${{ runner.os }}-
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
