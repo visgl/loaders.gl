@@ -2,6 +2,8 @@
 
 ## v4.4
 
+### v4.4.0-alpha.7
+
 ### v4.4.0-alpha.6
 
 - feat(loader-utils): RequestScheduler.setProps (#3280)
