@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.0-alpha.6
+
+- feat(loader-utils): RequestScheduler.setProps (#3280)
+
 ### v4.4.0-alpha.5
 
 - Make `@loaders.gl/zarr` and `@loaders.gl/geoarrow` libraries private

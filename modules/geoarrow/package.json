@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geoarrow",
-  "version": "4.4.0-alpha.5",
+  "version": "4.4.0-alpha.6",
   "description": "GeoArrow columnar geometry encoding and decoding",
   "license": "MIT",
   "type": "module",
