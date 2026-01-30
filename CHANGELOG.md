@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.0-alpha.12
+
+- fix(las): Explicitly copy wasm files for npm (#3288)
+
 ### v4.4.0-alpha.11
 
 - chore(las): package WASM using copy-libs (#3287)
