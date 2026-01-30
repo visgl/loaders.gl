@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.0-alpha.11
+
+- chore(las): package WASM using copy-libs (#3287)
+
 ### v4.4.0-alpha.10
 
 - chore: mark geoarrow package as public (gis dependency) (#3286)
