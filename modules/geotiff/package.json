@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0-alpha.12",
-    "fast-xml-parser": "^4.2.5",
+    "fast-xml-parser": "^5.3.4",
     "geotiff": "^2.1.0"
   },
   "peerDependencies": {
