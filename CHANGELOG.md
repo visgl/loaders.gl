@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.0-alpha.10
+
+- chore: mark geoarrow package as public (gis dependency) (#3286)
+
 ### v4.4.0-alpha.9
 
 ### v4.4.0-alpha.8
