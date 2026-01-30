@@ -4,7 +4,9 @@
   "description": "GeoArrow columnar geometry encoding and decoding",
   "license": "MIT",
   "type": "module",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/visgl/loaders.gl"
