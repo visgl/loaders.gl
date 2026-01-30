@@ -46,8 +46,8 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
-    "copy-libs": "cp -rf ./src/libs ./dist/libs",
+    "pre-build": "npm run copy-wasm-files && npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
+    "copy-wasm-files": "cp src/libs/laz-rs-wasm/*.wasm* dist/libs/laz-rs-wasm/",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/las-worker.ts --bundle --outfile=dist/las-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
