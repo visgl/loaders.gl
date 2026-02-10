@@ -353,6 +353,6 @@ export class TilesetTraverser {
         }
       }
     }
-    return allDescendantsLoaded;
+    return root.hasEmptyContent || allDescendantsLoaded;
   }
 }

@@ -574,7 +574,7 @@ export class Tileset3D {
   _loadTiles(): void {
     // Sort requests by priority before making any requests.
     // This makes it less likely this requests will be cancelled after being issued.
-    // requestedTiles.sort((a, b) => a._priority - b._priority);
+    this._requestedTiles.sort((a, b) => a._priority - b._priority);
     for (const tile of this._requestedTiles) {
       if (tile.contentUnloaded) {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
