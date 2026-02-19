@@ -2,6 +2,11 @@
 
 ## v4.4
 
+### v4.4.0-alpha.13
+
+- chore(deps): bump fast-xml-parser from 4.5.0 to 5.3.6 (#3295)
+- fix(tiles): Refine empty tiles (#3293)
+
 ### v4.4.0-alpha.12
 
 - fix(las): Explicitly copy wasm files for npm (#3288)
