@@ -91,21 +91,13 @@ function readAs(buf: ArrayBuffer, Type: any = {}, offset: number, count?: number
  * @returns header as LASHeader
  */
 function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
-  const rawPointsFormatId = readAs(arraybuffer, Uint8Array, 32 * 3 + 8);
-  const bit7 = (rawPointsFormatId & 0x80) >> 7;
-  const bit6 = (rawPointsFormatId & 0x40) >> 6;
-
-  const isCompressed = bit7 === 1 || bit6 === 1;
-  const pointsFormatId = rawPointsFormatId & 0x3f;
-
   let start = 32 * 3 + 35;
 
   const o: Partial<LASHeader> = {
     pointsOffset: readAs(arraybuffer, Uint32Array, 32 * 3),
-    pointsFormatId,
+    pointsFormatId: readAs(arraybuffer, Uint8Array, 32 * 3 + 8),
     pointsStructSize: readAs(arraybuffer, Uint16Array, 32 * 3 + 8 + 1),
     pointsCount: readAs(arraybuffer, Uint32Array, 32 * 3 + 11),
-    isCompressed,
     scale: readAs(arraybuffer, Float64Array, start, 3)
   };
   start += 24; // 8*3
@@ -118,7 +110,7 @@ function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
   o.mins = [bounds[1], bounds[3], bounds[5]];
 
   const colorPointFormats = new Set([2, 3]);
-  o.hasColor = colorPointFormats.has(pointsFormatId);
+  o.hasColor = colorPointFormats.has(o.pointsFormatId! & 0x3f);
 
   return o as LASHeader;
 }
