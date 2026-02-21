@@ -170,7 +170,6 @@ export function parseLASChunked(rawData: ArrayBuffer, skip: number, onParseData:
 
     /* eslint-disable no-constant-condition */
     while (true) {
-      // @ts-ignore TODO - fix this, looks like we are not passing the right params?
       const chunk: LASChunk = dataHandler.readData(1000 * 100, skip);
 
       totalRead += chunk.count;

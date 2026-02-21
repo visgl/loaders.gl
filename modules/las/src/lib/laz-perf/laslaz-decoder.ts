@@ -109,6 +109,9 @@ function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
   o.maxs = [bounds[0], bounds[2], bounds[4]];
   o.mins = [bounds[1], bounds[3], bounds[5]];
 
+  const colorPointFormats = new Set([2, 3]);
+  o.hasColor = colorPointFormats.has(o.pointsFormatId! & 0x3f);
+
   return o as LASHeader;
 }
 
@@ -275,11 +278,10 @@ class LAZLoader {
   }
   /**
    * @param count
-   * @param offset
    * @param skip
    * @returns Data
    */
-  readData(count: number, offset: number, skip: number): LASData {
+  readData(count: number, skip: number): LASData {
     if (!this.instance) {
       throw new Error('You need to open the file before trying to read stuff');
     }
@@ -453,12 +455,11 @@ export class LASFile {
 
   /**
    * @param count
-   * @param start
    * @param skip
    * @returns Data
    */
-  readData(count: number, start: number, skip: number): LASData {
-    return this.loader.readData(count, start, skip);
+  readData(count: number, skip: number): LASData {
+    return this.loader.readData(count, skip);
   }
 
   /**
