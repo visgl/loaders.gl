@@ -18,7 +18,6 @@ A subset of modules that import the Apache Arrow JS library:
 - `@loaders.gl/schema`
 - `@loaders.gl/schema-utils`
 
-
 ### Apache Arrow JS versions
 
 Currently, all loaders.gl modules that use Apache Arrow are designed to work with:
@@ -28,7 +27,6 @@ Currently, all loaders.gl modules that use Apache Arrow are designed to work wit
 These semver specifications are designed to deduplicate: if the application specifies an `apache-arrow` version that satisfies the version condition, all the loaders.gl modules should be linked with that library. This allows applications to control which Arrow version they want to have installed by adding a specific version to their own package.json `dependencies` section.
 
 Note that future loaders.gl versions may drop support for older versions if compatibility issues require it.
-
 
 With a clean install (`rm -rf node_modules package-lock.json yarn.lock` and reinstall), the latest version of `apache-arrow` is automatically installed.
 
