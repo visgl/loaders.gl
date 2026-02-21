@@ -12,21 +12,26 @@ jobs:
     name: Tests (Node ${{ matrix.node-version }} - ${{ matrix.scope }})
     runs-on: ubuntu-22.04
     timeout-minutes: 15
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
         include:
           - node-version: 26
             full: false
             scope: 'build + node tests'
+            experimental: true
           - node-version: 24
             full: true
             scope: 'full suite'
+            experimental: false
           - node-version: 22
             full: false
             scope: 'build + node tests'
+            experimental: false
           - node-version: 20
             full: false
             scope: 'build + node tests'
+            experimental: false
 
     steps:
       - name: Checkout code
