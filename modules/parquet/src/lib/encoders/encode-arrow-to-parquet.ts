@@ -29,10 +29,12 @@ export async function encodeArrowToParquet(
   try {
     const parquetBytes = wasm.writeParquet(wasmTable, wasmProperties);
     // const parquetBytes = wasm.writeParquet(wasmTable, wasmProperties);
-    return parquetBytes.buffer.slice(
+    const bytes = new Uint8Array(
+      parquetBytes.buffer,
       parquetBytes.byteOffset,
-      parquetBytes.byteLength + parquetBytes.byteOffset
+      parquetBytes.byteLength
     );
+    return bytes.slice().buffer;
   } finally {
     // wasmTable.free();
     // wasmProperties.free();

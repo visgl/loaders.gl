@@ -170,6 +170,7 @@
         "label": "Advanced Topics",
         "items": [
           "developer-guide/dependencies",
+          "developer-guide/apache-arrow",
           "developer-guide/creating-loaders-and-writers",
           "developer-guide/composite-loaders",
           "developer-guide/error-handling",

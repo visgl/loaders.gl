@@ -89,14 +89,13 @@
     "zstd-codec": "^0.1"
   },
   "devDependencies": {
-    "@types/node": "^10.14.15",
     "@types/node-int64": "^0.4.29",
     "@types/thrift": "^0.10.8",
     "@types/varint": "^5.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "4.4.0-alpha.1",
-    "apache-arrow": ">= 16.1.0"
+    "apache-arrow": ">= 17.0.0"
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

@@ -38,7 +38,7 @@ export function encodeTableAsCSV(
   }
 
   // We represent missing values as '', leaving the option for the app to explicity represent 'null'.
-  const stringsOnly = formattedData.map(row => row.map(value => value === null ? '' : value));
+  const stringsOnly = formattedData.map((row) => row.map((value) => (value === null ? '' : value)));
 
   return csvFormatRows(stringsOnly);
 }

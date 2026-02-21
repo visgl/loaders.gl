@@ -728,7 +728,7 @@ export default class I3SConverter {
       this.layersHasTexture ||
       Boolean(
         ('texture' in resources && resources.texture) ||
-          ('texelCountHint' in resources && resources.texelCountHint)
+        ('texelCountHint' in resources && resources.texelCountHint)
       );
 
     if (this.generateBoundingVolumes && resources.boundingVolumes) {
@@ -1017,7 +1017,7 @@ export default class I3SConverter {
           definition: this.findOrCreateGeometryDefinition(
             Boolean(
               ('texture' in resources && resources.texture) ||
-                ('texelCountHint' in resources && resources.texelCountHint)
+              ('texelCountHint' in resources && resources.texelCountHint)
             ),
             hasUvRegions
           ),

@@ -87,9 +87,9 @@ export const isBlob = (value: unknown): value is Blob =>
 export const isBuffer = (value: unknown): value is NodeBufferLike =>
   Boolean(
     value &&
-      typeof value === 'object' &&
-      (value as Partial<NodeBufferLike>).isBuffer &&
-      'buffer' in (value as NodeBufferLike)
+    typeof value === 'object' &&
+    (value as Partial<NodeBufferLike>).isBuffer &&
+    'buffer' in (value as NodeBufferLike)
   );
 
 /** Checks whether a value looks like a DOM WritableStream */

@@ -113,7 +113,7 @@ export default class GLType {
     if (length === undefined) {
       length = (buffer.byteLength - byteOffset) / GLType.getByteSize(glType);
     }
-    const arrayBuffer = buffer instanceof ArrayBuffer || buffer instanceof SharedArrayBuffer ? buffer : buffer.buffer;
+    const arrayBuffer = ArrayBuffer.isView(buffer) ? buffer.buffer : buffer;
     const ArrayType = GLType.getArrayType(glType);
     return new ArrayType(arrayBuffer as ArrayBuffer, byteOffset, length);
   }
