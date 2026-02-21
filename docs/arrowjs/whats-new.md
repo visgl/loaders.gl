@@ -16,7 +16,6 @@ This can be an inconvenience for JavaScript applications that rely on [semantic 
 to restrict dependencies to compatible package. Therefore some extra attention around versions may be required,
 especially if your app uses multiple JavaScript packages dependent on arrow. You may end up bundling two
 different arrow js versions or the build may break due to version requirement incompatibilities.
-For loaders.gl’s concrete dependency and dedup strategy, see [Apache Arrow versioning](/docs/developer-guide/apache-arrow).
 :::
 
 ## v17.0

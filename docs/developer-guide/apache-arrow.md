@@ -47,8 +47,40 @@ yarn add apache-arrow @loaders.gl/core @loaders.gl/arrow
 
 ### Troubleshooting
 
-If you encounter version conflicts or duplicate packages in a large app graph:
+If you suspect version conflicts or duplicate apache-arrow versions in your application:
 
-- verify `apache-arrow` is a top-level dependency in your app (e.g. `yarn why apache-arrow`)
-- prefer a clean reinstall after lockfile cleanup
-- align dependent packages to the same major/minor family of Arrow where possible
+- Add `apache-arrow` as an explicitly top-level dependency in your app
+- Try a clean reinstall after lockfile cleanup
+- Align dependent packages to the same major/minor family of Arrow where possible
+
+Most package managers have a way to check a dependency:
+
+```bash
+$ yarn why apache-arrow
+├─ @loaders.gl/arrow@workspace:modules/arrow [c7e01]
+│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+│
+├─ @loaders.gl/arrow@workspace:modules/arrow
+│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+│
+├─ @loaders.gl/geoarrow@workspace:modules/geoarrow [49c26]
+│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+│
+├─ @loaders.gl/geoarrow@workspace:modules/geoarrow [eeaaa]
+│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+│
+├─ @loaders.gl/geoarrow@workspace:modules/geoarrow
+│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+│
+├─ @loaders.gl/schema-utils@workspace:modules/schema-utils [3820d]
+│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+│
+├─ @loaders.gl/schema-utils@workspace:modules/schema-utils [b9e22]
+│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+│
+├─ @loaders.gl/schema-utils@workspace:modules/schema-utils
+│  └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+│
+└─ @loaders.gl/schema@workspace:modules/schema
+   └─ apache-arrow@npm:21.1.0 (via npm:^21.0.0)
+```
