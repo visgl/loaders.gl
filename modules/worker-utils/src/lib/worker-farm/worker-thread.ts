@@ -136,7 +136,7 @@ export default class WorkerThread {
       const url = absolute ? this.url : `./${this.url}`;
       const type = this.url.endsWith('.ts') || this.url.endsWith('.mjs') ? 'module' : 'commonjs';
       // console.log('Starting work from', url);
-      // @ts-expect-error TODO - looks like type argmument is missing in @types/node
+      // @ts-expect-error type is not known
       worker = new NodeWorker(url, {eval: false, type});
     } else if (this.source) {
       worker = new NodeWorker(this.source, {eval: true});
@@ -148,8 +148,7 @@ export default class WorkerThread {
       this.onMessage(data);
     });
     worker.on('error', (error) => {
-      // console.error('error', error);
-      this.onError(error);
+      this.onError(error as Error);
     });
     worker.on('exit', (code) => {
       // console.error('exit', code);

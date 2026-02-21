@@ -7,23 +7,21 @@ Target Release Date: Q1 2026
 See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
 **Highlights**
-- **Tooling** - @vis.gl/dev-tools@1.0, GitHub CI optimizations
-- **TypeScript** - Migrate API from `ArrayBuffer` to `ArrayBufferLike`
+- **TypeScript** - TypeScript v5.9, stricter typings, `ArrayBuffer` -> `ArrayBufferLike` codebase migration.
 - **Website** - docusaurus@3.9. Website search. 
-- Modernized build tooling
-- **TypeScript** Stricter types across code base, migrate to ArrayBufferLike
+- **Tooling** - Bump to @vis.gl/dev-tools@1.0, GitHub CI optimizations, migrate from volta to corepack
 
 **All modules**
 
-- Bundled workers now exported explicitly in each module's package.json `exports` section.
+- Pre-bundled workers now exported explicitly in each module's package.json `exports` section.
 
 **@loaders.gl/core**
 
-- [`LoaderOptions.core`](/docs/modules/core/api-reference/loader-options) - stronger type checks when options are supplied through the new `options.core` sub-option object.
+- [`LoaderOptions.core`](/docs/modules/core/api-reference/loader-options) - stronger type checks when options are supplied through the new `options.core` option sub-object.
 
 **@loaders.gl/compression**
 
-- `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
+- `LZOCompression` was removed due to lack of maintenance and licensing concerns with the underlying `lzo-wasm` library.
 
 **@loaders.gl/mvt**
 
@@ -31,11 +29,16 @@ See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
 **@loaders.gl/shapefile**
 
-- `ShapefileLoader` - Forwards `dbf` loader options (such as `workerUrl`) when loading sidecar files.
+- `ShapefileLoader` -  Now forwards `dbf` loader options (such as `workerUrl`) when loading sidecar files.
+
+**@loaders.gl/arrow**
+
+- Support for `apache-arrow@21`
+- A new documentation page about [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
 
 **@loaders.gl/tile-converter**
 
-- `tile-converter` is now published as an "application", independently of loaders.gl modules.
+- `tile-converter` is now broken out into separate "application" and can be versioned and published independently.
 
 ## v4.3
 
@@ -43,7 +46,7 @@ Release Date: October 16, 2024
 
 A minor release that includes:
 
-- **TypeScript** - Typecript v5.6.
+- **TypeScript** - TypeScript v5.6.
 - **Node.js** - Node.js v20 is now the primary supported Node.js version.
 - **Loader/Writer APIs** - Improved type inference for loader / writer options and return types.
 - **[`DataSource`](/docs/developer-guide/using-sources) API** Multi-step data loadingi mprovements. 

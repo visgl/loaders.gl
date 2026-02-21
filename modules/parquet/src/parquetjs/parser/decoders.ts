@@ -440,7 +440,7 @@ async function decodeDictionaryPage(
     );
 
     dictCursor = {
-      buffer: valuesBuf,
+      buffer: valuesBuf as unknown as Buffer<ArrayBuffer>,
       offset: 0,
       size: valuesBuf.length
     };
@@ -475,7 +475,7 @@ function preserveBinary(d: any): ArrayBuffer | ArrayBufferView | string {
   }
   // Convert to ArrayBuffer
   if (Buffer.isBuffer(d)) {
-    return d.buffer.slice(d.byteOffset, d.byteLength);
+    return new Uint8Array(d.buffer, d.byteOffset, d.byteLength).slice().buffer;
   }
   return d.toString();
 }
