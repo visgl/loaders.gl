@@ -175,14 +175,18 @@ function validateOptionsObject(
     if (!(key in defaultOptions) && !isBaseUriOption && !isWorkerUrlOption) {
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
-        probeLog.warn(
-          `${loaderName} loader option \'${prefix}${key}\' no longer supported, use \'${deprecatedOptions[key]}\'`
-        )();
+        if (probeLog.level > 0) {
+          probeLog.warn(
+            `${loaderName} loader option \'${prefix}${key}\' no longer supported, use \'${deprecatedOptions[key]}\'`
+          )();
+        }
       } else if (!isSubOptions) {
-        const suggestion = findSimilarOption(key, loaders);
-        probeLog.warn(
-          `${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`
-        )();
+        if (probeLog.level > 0) {
+          const suggestion = findSimilarOption(key, loaders);
+          probeLog.warn(
+            `${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`
+          )();
+        }
       }
     }
   }

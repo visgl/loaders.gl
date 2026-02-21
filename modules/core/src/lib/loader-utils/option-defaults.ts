@@ -66,17 +66,18 @@ export const REMOVED_LOADER_OPTIONS = {
   throws: 'nothrow',
   dataType: '(no longer used)',
   uri: 'baseUri',
+
   // Warn if fetch options are used on toplevel
-  method: 'fetch.method',
-  headers: 'fetch.headers',
-  body: 'fetch.body',
-  mode: 'fetch.mode',
-  credentials: 'fetch.credentials',
-  cache: 'fetch.cache',
-  redirect: 'fetch.redirect',
-  referrer: 'fetch.referrer',
-  referrerPolicy: 'fetch.referrerPolicy',
-  integrity: 'fetch.integrity',
-  keepalive: 'fetch.keepalive',
-  signal: 'fetch.signal'
+  method: 'core.fetch.method',
+  headers: 'core.fetch.headers',
+  body: 'core.fetch.body',
+  mode: 'core.fetch.mode',
+  credentials: 'core.fetch.credentials',
+  cache: 'core.fetch.cache',
+  redirect: 'core.fetch.redirect',
+  referrer: 'core.fetch.referrer',
+  referrerPolicy: 'core.fetch.referrerPolicy',
+  integrity: 'core.fetch.integrity',
+  keepalive: 'core.fetch.keepalive',
+  signal: 'core.fetch.signal'
 };
