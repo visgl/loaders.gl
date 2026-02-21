@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@types/geojson": "^7946.0.7",
-    "apache-arrow": ">= 15.0.0"
+    "apache-arrow": ">= 17.0.0"
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

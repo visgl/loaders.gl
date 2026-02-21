@@ -96,7 +96,7 @@
   },
   "peerDependencies": {
     "@loaders.gl/core": "4.4.0-alpha.1",
-    "apache-arrow": ">= 16.1.0"
+    "apache-arrow": ">= 17.0.0"
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }
