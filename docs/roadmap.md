@@ -24,16 +24,13 @@ While no loader support has been removed, the flavor of the loaders.gl framework
 ### Per-module changes
 
 - **`@loaders.gl/csv`**
-
   - `CSVArrowLoader` - New CSV loader that returns Apache Arrow tables.
 
 - **`@loaders.gl/parquet`**
-
   - `ParquetArrowLoader` now returns Apache Arrow tables and leverages the high-performance `parquet-wasm` library.
   - The v4 Parquet loader is still available as `ParquetJSONLoader`
 
 - **`@loaders.gl/schema-utils`**
-
   - New module for working with and converting Apache Arrow data.
 
 - **`@loaders.gl/gis`**
