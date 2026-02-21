@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - node-version: 26
+          - node-version: 26.x
             full: false
             scope: 'build + node tests'
             experimental: true
