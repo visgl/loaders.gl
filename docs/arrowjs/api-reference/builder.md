@@ -1,95 +1,132 @@
 # Builders
 
-The `makeBuilder()` function creates a `Builder` instance that is set up to build
-a columnar vector of the supplied `DataType`.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
-A `Builder` is responsible for writing arbitrary JavaScript values
-to ArrayBuffers and/or child Builders according to the Arrow specification
-or each DataType, creating or resizing the underlying ArrayBuffers as necessary.
+The `Builder` APIs are the primary API for incremental vector construction.
 
-The `Builder` for each Arrow `DataType` handles converting and appending
-values for a given `DataType`.
-
-Once created, `Builder` instances support both appending values to the end
-of the `Builder`, and random-access writes to specific indices
-`builder.append(value)` is a convenience method for
-builder.set(builder.length, value)`). Appending or setting values beyond the
-uilder's current length may cause the builder to grow its underlying buffers
-r child Builders (if applicable) to accommodate the new values.
-
-After enough values have been written to a `Builder`, `builder.flush()`
-ill commit the values to the underlying ArrayBuffers (or child Builders). The
-nternal Builder state will be reset, and an instance of `Data<T>` is returned.
-lternatively, `builder.toVector()` will flush the `Builder` and return
-n instance of `Vector<T>` instead.
-
-When there are no more values to write, use `builder.finish()` to
-inalize the `Builder`. This does not reset the internal state, so it is
-ecessary to call `builder.flush()` or `toVector()` one last time
-f there are still values queued to be flushed.
-
-Note: calling `builder.finish()` is required when using a `DictionaryBuilder`,
-ecause this is when it flushes the values that have been enqueued in its internal
-ictionary's `Builder`, and creates the `dictionaryVector` for the `Dictionary` `DataType`.
-
-## Usage
-
-Creating a utf8 array
+`makeBuilder()` inspects a `DataType` and returns a concrete builder instance.
 
 ```ts
-import {Builder, Utf8} from 'apache-arrow';
+import {makeBuilder, Builder, Int32, Utf8} from 'apache-arrow';
 
-const utf8Builder = makeBuilder({
-  type: new Utf8(),
+const builder = makeBuilder({
+  type: new Int32(),
   nullValues: [null, 'n/a']
 });
 
-utf8Builder.append('hello').append('n/a').append('world').append(null);
+builder.append(1).append(null).append(3);
+const vector = builder.toVector();
+```
 
-const utf8Vector = utf8Builder.finish().toVector();
+## Usage
 
-console.log(utf8Vector.toJSON());
-// > ["hello", null, "world", null]
+```ts
+import {makeBuilder, Int32} from 'apache-arrow';
+
+const ids = makeBuilder({type: new Int32()});
+ids.append(1).append(2).append(3);
+const idVector = ids.toVector();
+```
+
+```ts
+import {makeBuilder, Utf8} from 'apache-arrow';
+
+const words = makeBuilder({type: new Utf8(), nullValues: ['N/A']});
+for (const token of ['a', null, 'N/A']) {
+  words.append(token);
+}
+const text = words.finish().toVector();
 ```
 
 ## makeBuilder
 
-```ts
-function makeBuilder(options: BuilderOptions): Builder;
-```
+`makeBuilder(options: BuilderOptions): Builder`
+
+Creates a concrete `Builder` instance from a shared options object.
 
 ```ts
-type BuilderOptions<T extends DataType = any, TNull = any> {
-    type: T;
-    nullValues?: TNull[] | ReadonlyArray<TNull> | null;
-    children?: { [key: string]: BuilderOptions } | BuilderOptions[];
-}
+type BuilderOptions<T extends DataType = any, TNull = any> = {
+  type: T;
+  nullValues?: TNull[] | ReadonlyArray<TNull> | null;
+  children?: {[key: string]: BuilderOptions} | BuilderOptions[];
+};
+
+makeBuilder({
+  type: new Utf8(),
+  nullValues: [null, 'N/A']
+});
 ```
 
-- `type` - the data type of the column. This can be an arbitrarily nested data type with children (`List`, `Struct` etc).
-- `nullValues?` - The javascript values which will be considered null-values.
-- `children?` - `BuilderOptions` for any nested columns.
+- `options.type` — Target `DataType` for all values this builder will emit.
+- `options.nullValues` — Optional sentinel values treated as null (`null` by default).
+- `options.children` — Nested builder options for complex types (`List`, `Struct`, `Map`, `Union`).
 
-- `type T` - The `DataType` of this `Builder`.
-- `type TNull` - The type(s) of values which will be considered null-value sentinels.
+## Builder methods
 
-## Builder
+### Static helpers
 
-`makeBuilder()` returns `Builder` which is a base class for the various that Arrow JS builder subclasses that
-construct Arrow Vectors from JavaScript values.
+- `Builder.throughNode(options: BuilderDuplexOptions<T, TNull>): Duplex`
+  - Creates a Node.js transform that accepts incoming values and yields serialized vectors.
+- `Builder.throughDOM(options: BuilderTransformOptions<T, TNull>): BuilderTransform`
+  - Creates a WHATWG `TransformStream` that buffers input values into vector chunks.
 
-### append()
+## Constructor
 
-### flush()
+`new Builder<T extends DataType = any, TNull = any>(options: BuilderOptions<T, TNull>)`
 
-```ts
-builder.flush(): Data
-```
+Creates an appropriately typed builder implementation.
 
-### finish()
+### Instance methods
 
-```ts
-builder.finish();
-```
+- `append(value: T['TValue'] | TNull): this` — Appends one value; equivalent to `set(length, value)` and returns the builder.
+- `set(index: number, value: T['TValue'] | TNull): this` — Writes a value (or null sentinel) at `index`.
+- `setValue(index: number, value: T['TValue']): void` — Writes a raw value at `index` without null-equivalence conversion.
+- `isValid(value: T['TValue'] | TNull): boolean` — Returns whether the value is not a configured null sentinel.
+- `setValid(index: number, valid: boolean): boolean` — Sets the validity bit at `index`; returns previous null-state.
+- `getChildAt<R extends DataType = any>(index: number): Builder<R> | null` — Returns a child builder by child index, or `null` if absent.
+- `addChild(child: Builder, name?: string): void` — Attaches a nested child builder; optional name is used for keyed types.
+- `flush(): Data<T>` — Materializes queued rows into one `Data<T>` chunk and resets pending state.
+- `finish(): this` — Finalizes pending dictionary/index state and returns the builder.
+- `clear(): this` — Empties buffered values and resets length to zero.
+- `toVector(): Vector<T>` — Flushes and returns a `Vector<T>` for the current data.
+- `reset` is not public; create a new builder to reinitialize
 
-When the builder is no longer needed, the application should call `builder.finish()`.
+### Builder properties
+
+- `type: T` — The `DataType` that defines valid value encoding for this builder.
+- `length: number` — Count of values currently queued for flush.
+- `ArrayType` — Runtime JS typed array constructor for this builder's values.
+- `finished: boolean` — `true` after builder finalization via `finish()`.
+- `stride: number` — Number of physical values required for one logical value.
+- `children: Builder[]` — Nested builders for complex types (`Struct`, `List`, `Map`, `Union`).
+- `nullValues?: TNull[] | ReadonlyArray<TNull> | null` — Sentinel list treated as null values.
+- `nullCount: number` — Number of null values in buffered input.
+- `numChildren: number` — Number of nested child builders.
+- `byteLength: number` — Total bytes currently used by materialized buffered values.
+- `reservedLength: number` — Current value-slot capacity before growth.
+- `reservedByteLength: number` — Reserved bytes for value buffers.
+- `valueOffsets: T['TOffsetArray'] | null` — Offset buffer for variable-width values.
+- `values: T['TArray'] | null` — Backing value buffer.
+- `nullBitmap: Uint8Array | null` — Packed validity bitmap for queued values.
+
+### Concrete builder classes
+
+- `BoolBuilder`, `NullBuilder`, `DateBuilder`, `DateDayBuilder`, `DateMillisecondBuilder`
+- `DecimalBuilder`
+- `DictionaryBuilder`
+- `FixedSizeBinaryBuilder`, `FixedSizeListBuilder`
+- `FloatBuilder`, `Float16Builder`, `Float32Builder`, `Float64Builder`
+- `IntBuilder`, `Int8Builder`, `Int16Builder`, `Int32Builder`, `Int64Builder`, `Uint8Builder`, `Uint16Builder`, `Uint32Builder`, `Uint64Builder`
+- `TimeBuilder`, `TimeSecondBuilder`, `TimeMillisecondBuilder`, `TimeMicrosecondBuilder`, `TimeNanosecondBuilder`
+- `TimestampBuilder`, `TimestampSecondBuilder`, `TimestampMillisecondBuilder`, `TimestampMicrosecondBuilder`, `TimestampNanosecondBuilder`
+- `IntervalBuilder`, `IntervalDayTimeBuilder`, `IntervalYearMonthBuilder`
+- `DurationBuilder`, `DurationSecondBuilder`, `DurationMillisecondBuilder`, `DurationMicrosecondBuilder`, `DurationNanosecondBuilder`
+- `Utf8Builder`, `LargeUtf8Builder`
+- `BinaryBuilder`, `LargeBinaryBuilder`
+- `ListBuilder`, `MapBuilder`
+- `StructBuilder`
+- `UnionBuilder`, `SparseUnionBuilder`, `DenseUnionBuilder`
+
+For factory helpers used by builders, see `makeBuilder`, `builderThroughIterable`, and `builderThroughAsyncIterable` in the Arrow exports.

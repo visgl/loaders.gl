@@ -24,6 +24,7 @@
       "type": "category",
       "label": "Developer Guide",
       "items": [
+        "arrowjs/developer-guide/introduction",
         "arrowjs/developer-guide/data-types",
         "arrowjs/developer-guide/schemas",
         "arrowjs/developer-guide/tables",
@@ -40,6 +41,7 @@
       "label": "API Reference",
       "items": [
         "arrowjs/api-reference/README",
+        "arrowjs/api-reference/builder",
         "arrowjs/api-reference/data",
         "arrowjs/api-reference/dictionary",
         "arrowjs/api-reference/field",
@@ -50,7 +52,10 @@
         "arrowjs/api-reference/schema",
         "arrowjs/api-reference/table",
         "arrowjs/api-reference/types",
+        "arrowjs/api-reference/vector-chunked",
         "arrowjs/api-reference/vector",
+        "arrowjs/api-reference/struct-vector",
+        "arrowjs/api-reference/vector-column",
         "arrowjs/api-reference/vectors"
       ]
     }
