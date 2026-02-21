@@ -4411,7 +4411,7 @@ __metadata:
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geospatial": "npm:^4.1.0"
-    "@probe.gl/log": "npm:^4.0.4"
+    "@probe.gl/log": "npm:^4.1.1"
     long: "npm:^5.2.1"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -4549,7 +4549,7 @@ __metadata:
     "@loaders.gl/schema": "npm:4.4.0-alpha.13"
     "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
     "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
-    "@probe.gl/log": "npm:^4.0.2"
+    "@probe.gl/log": "npm:^4.1.1"
   languageName: unknown
   linkType: soft
 
@@ -4845,8 +4845,8 @@ __metadata:
   dependencies:
     "@loaders.gl/schema": "npm:4.4.0-alpha.13"
     "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
-    "@probe.gl/log": "npm:^4.0.2"
-    "@probe.gl/stats": "npm:^4.0.2"
+    "@probe.gl/log": "npm:^4.1.1"
+    "@probe.gl/stats": "npm:^4.1.1"
   languageName: unknown
   linkType: soft
 
@@ -4882,7 +4882,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
     "@loaders.gl/schema": "npm:4.4.0-alpha.13"
     "@math.gl/polygon": "npm:^4.1.0"
-    "@probe.gl/stats": "npm:^4.0.0"
+    "@probe.gl/stats": "npm:^4.1.1"
     "@types/pbf": "npm:^3.0.2"
     pbf: "npm:^3.2.1"
   peerDependencies:
@@ -4941,7 +4941,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
     "@loaders.gl/schema": "npm:4.4.0-alpha.13"
     "@loaders.gl/wkt": "npm:4.4.0-alpha.13"
-    "@probe.gl/log": "npm:^4.0.9"
+    "@probe.gl/log": "npm:^4.1.1"
     "@types/node-int64": "npm:^0.4.29"
     "@types/thrift": "npm:^0.10.8"
     "@types/varint": "npm:^5.0.0"
@@ -5185,7 +5185,7 @@ __metadata:
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geospatial": "npm:^4.1.0"
     "@math.gl/web-mercator": "npm:^4.1.0"
-    "@probe.gl/stats": "npm:^4.0.2"
+    "@probe.gl/stats": "npm:^4.1.1"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
@@ -6462,7 +6462,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@probe.gl/bench@npm:^4.0.2":
+"@probe.gl/bench@npm:^4.0.2, @probe.gl/bench@npm:^4.1.1":
   version: 4.1.1
   resolution: "@probe.gl/bench@npm:4.1.1"
   dependencies:
@@ -6478,7 +6478,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@probe.gl/log@npm:4.1.1, @probe.gl/log@npm:^4.0.2, @probe.gl/log@npm:^4.0.4, @probe.gl/log@npm:^4.0.8, @probe.gl/log@npm:^4.0.9, @probe.gl/log@npm:^4.1.1":
+"@probe.gl/log@npm:4.1.1, @probe.gl/log@npm:^4.0.4, @probe.gl/log@npm:^4.0.8, @probe.gl/log@npm:^4.1.1":
   version: 4.1.1
   resolution: "@probe.gl/log@npm:4.1.1"
   dependencies:
@@ -6518,7 +6518,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@probe.gl/test-utils@npm:^4.0.2, @probe.gl/test-utils@npm:^4.0.6":
+"@probe.gl/test-utils@npm:^4.0.6, @probe.gl/test-utils@npm:^4.1.1":
   version: 4.1.1
   resolution: "@probe.gl/test-utils@npm:4.1.1"
   dependencies:
@@ -19387,8 +19387,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "loaders.gl@workspace:."
   dependencies:
-    "@probe.gl/bench": "npm:^4.0.2"
-    "@probe.gl/test-utils": "npm:^4.0.2"
+    "@probe.gl/bench": "npm:^4.1.1"
+    "@probe.gl/test-utils": "npm:^4.1.1"
     "@types/node": "npm:^25.3.0"
     "@types/tape-promise": "npm:^4.0.1"
     "@vis.gl/dev-tools": "npm:^1.0.0"
