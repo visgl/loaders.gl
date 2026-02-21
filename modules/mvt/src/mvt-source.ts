@@ -9,7 +9,8 @@ import type {
   ImageTileSource,
   VectorTileSource,
   GetTileParameters,
-  GetTileDataParameters
+  GetTileDataParameters,
+  parseContentType
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
@@ -130,6 +131,22 @@ export class MVTTileSource
     const response = await this.fetch(tileUrl);
     if (!response.ok) {
       return null;
+    }
+    const contentType = parseContentType(response.headers.get('content-type'));
+    if (contentType) {
+      const isMvtContentType = MVTFormat.mimeTypes.includes(contentType);
+      const isImageContentType = contentType.startsWith('image/');
+      const isOctetStreamContentType = contentType === 'application/octet-stream';
+      const isKnownNonMvtType =
+        contentType.startsWith('text/') ||
+        contentType === 'application/json' ||
+        contentType === 'application/xml';
+      if (
+        isKnownNonMvtType ||
+        (!isMvtContentType && !isImageContentType && !isOctetStreamContentType)
+      ) {
+        return null;
+      }
     }
     const arrayBuffer = await response.arrayBuffer();
     return arrayBuffer;
