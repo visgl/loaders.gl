@@ -73,7 +73,7 @@
     "apache-arrow version should be aligned with parquet-wasm version"
   ],
   "resolutions": {
-    "apache-arrow": "^17.0.0",
+    "apache-arrow": "^21.0.0",
     "typescript": "^5.6.0",
     "@loaders.gl/core": "^4.4.0-alpha.1",
     "@loaders.gl/draco": "^4.4.0-alpha.1",

@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@math.gl/polygon": "^4.1.0",
-    "apache-arrow": ">= 16.1.0"
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "4.4.0-alpha.1"
