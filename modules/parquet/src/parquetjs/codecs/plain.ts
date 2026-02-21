@@ -69,7 +69,7 @@ function encodeValues_BOOLEAN(values: boolean[]): Buffer {
   buf.fill(0);
   for (let i = 0; i < values.length; i++) {
     if (values[i]) {
-      buf[Math.floor(i / 8)] |= 1 << i % 8;
+      buf[Math.floor(i / 8)] |= 1 << (i % 8);
     }
   }
   return buf;
@@ -79,7 +79,7 @@ function decodeValues_BOOLEAN(cursor: CursorBuffer, count: number): boolean[] {
   const values: boolean[] = [];
   for (let i = 0; i < count; i++) {
     const b = cursor.buffer[cursor.offset + Math.floor(i / 8)];
-    values.push((b & (1 << i % 8)) > 0);
+    values.push((b & (1 << (i % 8))) > 0);
   }
   cursor.offset += Math.ceil(count / 8);
   return values;

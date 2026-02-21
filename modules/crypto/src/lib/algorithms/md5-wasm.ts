@@ -152,7 +152,7 @@ function makeMD5WA() {
       len;
 
     len = bytesToWordsNewer(message, memView);
-    memView[l >>> 5] |= 0x80 << l % 32;
+    memView[l >>> 5] |= 0x80 << (l % 32);
     memView[(((l + 64) >>> 9) << 4) + 14] = l;
     len = (((l + 64) >>> 9) << 4) + 15;
     m = memView;
@@ -366,7 +366,7 @@ function makeMD5JS() {
     }
 
     // Padding
-    m[l >>> 5] |= 0x80 << l % 32;
+    m[l >>> 5] |= 0x80 << (l % 32);
     m[(((l + 64) >>> 9) << 4) + 14] = l;
 
     for (var i = 0; i < m.length; i += 16) {

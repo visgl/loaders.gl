@@ -376,7 +376,7 @@ async function encodeDataPage(
   page: Buffer;
 }> {
   /* encode repetition and definition levels */
-  let rLevelsBuf = Buffer.alloc(0);
+  let rLevelsBuf: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   if (column.rLevelMax > 0) {
     rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
       bitWidth: getBitWidth(column.rLevelMax)
@@ -384,7 +384,7 @@ async function encodeDataPage(
     });
   }
 
-  let dLevelsBuf = Buffer.alloc(0);
+  let dLevelsBuf: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   if (column.dLevelMax > 0) {
     dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
       bitWidth: getBitWidth(column.dLevelMax)
@@ -445,7 +445,7 @@ async function encodeDataPageV2(
   const compressedBuf = await Compression.deflate(column.compression!, valuesBuf);
 
   /* encode repetition and definition levels */
-  let rLevelsBuf = Buffer.alloc(0);
+  let rLevelsBuf: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   if (column.rLevelMax > 0) {
     rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
       bitWidth: getBitWidth(column.rLevelMax),
@@ -453,7 +453,7 @@ async function encodeDataPageV2(
     });
   }
 
-  let dLevelsBuf = Buffer.alloc(0);
+  let dLevelsBuf: Buffer<ArrayBufferLike> = Buffer.alloc(0);
   if (column.dLevelMax > 0) {
     dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
       bitWidth: getBitWidth(column.dLevelMax),

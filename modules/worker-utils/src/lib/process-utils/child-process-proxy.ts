@@ -92,13 +92,18 @@ export default class ChildProcessProxy {
         });
 
         console.log(`Spawning ${props.command} ${props.arguments.join(' ')}`);
-        const childProcess = childProcessModule.spawn(props.command, args, props.spawn);
+        const spawnOptions: SpawnOptions = props.spawn || {};
+        const childProcess: NodeChildProcess = childProcessModule.spawn(
+          props.command,
+          args,
+          spawnOptions
+        );
         this.childProcess = childProcess;
 
-        childProcess.stdout.on('data', (data) => {
+        childProcess.stdout?.on('data', (data) => {
           console.log(data.toString());
         });
-        childProcess.stderr.on('data', (data) => {
+        childProcess.stderr?.on('data', (data) => {
           console.log(`Child process wrote to stderr: "${data}".`);
           if (!props.ignoreStderr) {
             this._clearTimeout();

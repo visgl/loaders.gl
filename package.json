@@ -58,6 +58,7 @@
   "devDependencies": {
     "@probe.gl/bench": "^4.0.2",
     "@probe.gl/test-utils": "^4.0.2",
+    "@types/node": "^25.3.0",
     "@types/tape-promise": "^4.0.1",
     "@vis.gl/dev-tools": "^1.0.0",
     "@vis.gl/ts-plugins": "^1.0.0",

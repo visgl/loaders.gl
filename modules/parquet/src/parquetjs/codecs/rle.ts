@@ -131,8 +131,8 @@ function decodeRunBitpacked(
   // tslint:disable-next-line:prefer-array-literal
   const values = new Array(count).fill(0);
   for (let b = 0; b < bitWidth * count; b++) {
-    if (cursor.buffer[cursor.offset + Math.floor(b / 8)] & (1 << b % 8)) {
-      values[Math.floor(b / bitWidth)] |= 1 << b % bitWidth;
+    if (cursor.buffer[cursor.offset + Math.floor(b / 8)] & (1 << (b % 8))) {
+      values[Math.floor(b / bitWidth)] |= 1 << (b % bitWidth);
     }
   }
 
@@ -170,8 +170,8 @@ function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Buffer
 
   const buf = Buffer.alloc(Math.ceil(bitWidth * (values.length / 8)));
   for (let b = 0; b < bitWidth * values.length; b++) {
-    if ((values[Math.floor(b / bitWidth)] & (1 << b % bitWidth)) > 0) {
-      buf[Math.floor(b / 8)] |= 1 << b % 8;
+    if ((values[Math.floor(b / bitWidth)] & (1 << (b % bitWidth))) > 0) {
+      buf[Math.floor(b / 8)] |= 1 << (b % 8);
     }
   }
 
