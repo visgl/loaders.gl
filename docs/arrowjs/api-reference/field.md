@@ -1,6 +1,8 @@
 # Field
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
 The combination of a field name and data type, with optional metadata. Fields are used to describe the individual constituents of a nested DataType or a Schema.
 

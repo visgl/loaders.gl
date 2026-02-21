@@ -18,11 +18,19 @@ especially if your app uses multiple JavaScript packages dependent on arrow. You
 different arrow js versions or the build may break due to version requirement incompatibilities.
 :::
 
+## v21.0
+
+- [Apache Arrow 21.0.0](https://arrow.apache.org/release/21.0.0.html)
+- Apache Arrow JS: No standalone JavaScript-only notes are called out in the upstream list; check the linked release notes for implementation details.
+
 ## v17.0
 
 July 16, 2024
 
-- [Apache Arrow 16.0.0](https://arrow.apache.org/release/17.0.0.html)
+- [Apache Arrow 17.0.0](https://arrow.apache.org/release/17.0.0.html)
+
+If your application uses `@loaders.gl/arrow`, this is the most recent API baseline and is aligned with the
+`apache-arrow` v21.x migration guide in `/docs/arrowjs/upgrade-guide`.
 
 ## v16.1
 

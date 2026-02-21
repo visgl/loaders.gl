@@ -2,7 +2,7 @@
 
 ## About RecordBatches
 
-Arrow tables are typically split into record batches, allowing them to be incrementally loaded or written, and naturally the Arrow API provides classes to facilite this reading.
+Arrow tables are typically split into record batches, allowing them to be incrementally loaded or written, and naturally the Arrow API provides classes to facilitate this reading.
 
 ## Reading Arrow Data
 
@@ -46,7 +46,7 @@ Note: this code also works if there is only one table in the data source, in whi
 
 # Writing Arrow Data
 
-The `RecordStreamWriter` class allows you to write Arrow `Table` and `RecordBatch` instances to a data source.
+The `RecordBatchStreamWriter` class allows you to write Arrow `Table` and `RecordBatch` instances to a data source.
 
 ## Using Transform Streams
 

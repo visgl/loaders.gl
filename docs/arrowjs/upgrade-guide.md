@@ -1,10 +1,28 @@
 # Upgrade Guide
 
-Unfortunately for JavaScript users, Apache Arrow JS does not publish detailed ugrade guides notes beyond the common [Apache Arrow release notes](https://arrow.apache.org/release/).
+Unfortunately for JavaScript users, Apache Arrow JS does not publish detailed upgrade notes beyond the common [Apache Arrow release notes](https://arrow.apache.org/release/).
 
 Also Apache Arrow JS follows a common cross-language versioning number scheme which leads to frequent major release bumps, that confusingly do not contain any significant JavaScript changes (sometimes a major version bump has no JavaScript changes at all).
 
 The biggest changes were made in Apache Arrow JS Version 9.0 (based on feedback from loaders.gl users).
+
+## Upgrading to v21.0
+
+- No significant Apache Arrow JS-only breaking API changes were documented for this release stream.
+- If you are upgrading from v17 or older, prioritize:
+  - Stream entry points: ensure `RecordBatchReader`/`RecordBatchStreamWriter` usage follows `apache-arrow` 21.x APIs.
+  - Schema/data construction: avoid deprecated helper patterns and use `Table`, `Schema`, and vector classes directly.
+  - Browser/Node bundling: validate stream polyfills, async iteration, and package manager deduping to prevent mixed Arrow runtime versions.
+
+## Upgrading to v17.0
+
+- No breaking Apache Arrow JS-only API changes were documented for this release stream.
+
+For loaders.gl users moving from older versions, verify the following common changes:
+
+- `RecordBatchWriter` factory usage and stream writer entry points (`RecordBatchStreamWriter`, `RecordBatchFileWriter`) are now the normal writer constructors.
+- APIs that depended on deprecated concepts (`DataFrame`, `Column`, `FilteredDataFrame`, predicate helpers) should be migrated to Arrow-native table/vector workflows.
+- Confirm your environment-specific bundling for browser/Node stream support, especially if you ship custom Node/browser stream polyfills.
 
 ## Upgrading to v16.0
 

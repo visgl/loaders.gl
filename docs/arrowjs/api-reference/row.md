@@ -1,6 +1,8 @@
 # Row
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
 A `Row` is an Object that retrieves each value at a certain index across a collection of child Vectors. Rows are returned from the `get()` function of the nested `StructVector` and `MapVector`, as well as `RecordBatch` and `Table`.
 

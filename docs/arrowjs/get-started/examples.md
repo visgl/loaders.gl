@@ -72,8 +72,12 @@ const rainfall = Table.new(
 ```typescript
 import {Table} from 'apache-arrow';
 
-const table = await Table.from(fetch('/simple.arrow'));
-console.log(table.toString());
+const tableFromResponse = await Table.from(fetch('/simple.arrow'));
+// or, if you prefer explicit conversion:
+const response = await fetch('/simple.arrow');
+const tableFromArrayBuffer = Table.from(await response.arrayBuffer());
+console.log(tableFromResponse.toString());
+console.log(tableFromArrayBuffer.toString());
 ```
 
 ### Columns look like JS Arrays

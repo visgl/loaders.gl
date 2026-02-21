@@ -1,8 +1,10 @@
 # Column
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
-An immutable column data structure consisting of a field (type metadata) and a chunked data array.
+Legacy name for a chunked column-like vector. In modern Arrow JS, prefer `Vector`/`Chunked` for most table column usage.
 
 ## Usage
 

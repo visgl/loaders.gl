@@ -1,10 +1,10 @@
 # Apache Arrow JavaScript API Reference
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
 ## Class List
-
-> TODO - This is a class list from the C++ docs, it has only been partially updated to match JS API
 
 | Class                  | Summary                                                                                           |
 | ---------------------- | ------------------------------------------------------------------------------------------------- |
@@ -14,7 +14,7 @@
 | `BooleanArray`         | Concrete Array class for boolean data                                                             |
 | `Buffer`               | Object containing a pointer to a piece of contiguous memory with a particular size                |
 | `ChunkedArray`         | A data structure managing a list of primitive Arrow arrays logically as one large array           |
-| `Column`               | An immutable column data structure consisting of a field (type metadata) and a chunked data array |
+| `Column`               | Removed from the modern public API. Use `Vector`/`Chunked` instead for column-like collections. |
 | `Decimal128`           | Represents a signed 128-bit integer in two's complement                                           |
 | `Decimal128Array`      | Concrete Array class for 128-bit decimal data                                                     |
 | `DictionaryArray`      | Concrete Array class for dictionary data                                                          |

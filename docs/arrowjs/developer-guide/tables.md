@@ -12,7 +12,7 @@ Applications often start with loading some Arrow formatted data. The Arrow API p
 import {Table} from 'apache-arrow';
 const response = await fetch(dataUrl);
 const arrayBuffer = await response.arrayBuffer();
-const dataTable = arrow.Table.from(new Uint8Array(arrayBuffer));
+const table = arrow.Table.from(new Uint8Array(arrayBuffer));
 ```
 
 ## Getting Records Count
@@ -29,65 +29,71 @@ const fieldNames = table.schema.fields.map((f) => f.name);
 ```
 
 ```typescript
-const fieldTypes = tables.schema.fields.map(f => f.type)
+const fieldTypes = table.schema.fields.map((field) => field.type);
 // Array(3) [Float, Float, Timestamp]
 
-const fieldTypeNames = ...;
+const fieldTypeNames = fieldTypes.map((type) => type.toString());
 // Array(3) ["Float64", "Float64", "Timestamp<MICROSECOND>"]
 ```
 
 ### Accessing Arrow Table Row Data
 
 ```typescript
-const firstRow = tables.get(0); // 1st row data
-const lastRow = tables.get(rowCount - 1);
+const firstRow = table.get(0); // 1st row data
+const lastRow = table.get(table.length - 1);
 ```
 
 ## Record toJSON and toArray
 
-It is easy to converting Rows to JSON/Arrays/Strings:
+Convert rows to JSON/Arrays:
 
 ```typescript
-toJSON = Array(3)[(41.890751259, -87.71617311899999, Int32Array(2))];
-toArray = Array(3)[(41.933659084, -87.72369064600001, Int32Array(2))];
+const rowJson = table.get(0).toJSON();
+const rowArray = table.get(0).toArray();
 ```
 
-Similar conversion methods are avaiable on many Arrow classes.
+Similar conversion methods are available on many Arrow classes:
 
-tables.get(0).toJSON()
+table.get(0).toJSON();
 
 ## Slicing Arrow Data
 
-every10KRow = Array(17) [Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3), Array(3)]
+```typescript
+const every10KRows = Array.from({length: 17}, () => table.get(0).toArray());
+```
 
-Our custom arrow data range stepper for sampling data:
-
-range = ƒ(start, end, step)
+You can build custom row range utilities as needed for sampling.
 
 ### Iterating over Rows and Cells
 
 ```typescript
-for (let row of dataFrame) {
-  for (let cell of row) {
+let cellIndex = 0;
+for (let rowIndex = 0; rowIndex < table.length; rowIndex++) {
+  const row = table.get(rowIndex).toJSON();
+  cellIndex = 0;
+  for (const cell of Object.values(row)) {
     if (Array.isArray(cell)) {
-      td = '[' + cell.map((value) => (value == null ? 'null' : value)).join(', ') + ']';
-    } else if (fields[k] === 'Date') {
-      td = toDate(cell); // convert Apache arrow Timestamp to Date
+      const td = '[' + cell.map((value) => (value == null ? 'null' : value)).join(', ') + ']';
+      console.log(td);
+    } else if (Object.keys(row)[cellIndex] === 'Date') {
+      const td = toDate(cell); // convert Apache arrow Timestamp to Date
+      console.log(td);
     } else {
-      td = cell.toString();
+      const td = cell.toString();
+      console.log(td);
     }
-    k++;
+    cellIndex += 1;
   }
 }
 ```
 
 ### Converting Dates
 
-Apache Arrow Timestamp is a 64-bit int of milliseconds since the epoch, represented as two 32-bit ints in JS to preserve precision. The fist number is the "low" int and the second number is the "high" int.
+Apache Arrow Timestamp is a 64-bit integer, represented as two 32-bit integers in JS to preserve precision. The first number is the "low" int and the second number is the "high" int.
 
 ```typescript
 function toDate(timestamp) {
-  return new Date((timestamp[1] * Math.pow(2, 32) + timestamp[0]) / 1000);
+  return new Date(timestamp[1] * Math.pow(2, 32) + timestamp[0]);
 }
 ```
 
@@ -95,40 +101,30 @@ function toDate(timestamp) {
 
 Apache Arrow stores columns in typed arrays and vectors:
 
-Typed vectors have convinience methods to convert Int32 arrays data to JS values you can work with.
+Typed vectors have convenience methods to convert typed array data to JavaScript values.
 
 For example, to get timestamps in milliseconds:
 
-timestamps = Array(10) [2017-01-01, 2017-01-01, 2017-01-01, 2017-01-01, 2017-01-01, 2017-01-01, 2017-01-01, 2017-01-01, 2017-01-01, 2017-01-01]
+```typescript
+const timestamps = table.getColumn('Date').toArray();
+```
 
 ### Filtering Timestamped Data
 
 ```typescript
 function filterByDate(startDate, endDate) {
-  const dateFilter = arrow.predicate.custom(
-    (i) => {
-      const arrowDate = table.getColumn('Date').get(i);
-      const date = toDate(arrowDate);
-      return date >= startDate && date <= endDate;
-    },
-    (b) => 1
-  );
-
-  const getDate;
   const results = [];
-  table.filter(dateFilter).scan(
-    (index) => {
-      results.push({
-        date: toDate(getDate(index))
-      });
-    },
-    (batch) => {
-      getDate = arrow.predicate.col('Date').bind(batch);
+  const dateColumn = table.getColumn('Date').toArray();
+
+  for (let i = 0; i < table.length; i++) {
+    const value = toDate(dateColumn[i]);
+    if (value >= startDate && value <= endDate) {
+      results.push({date: value});
     }
-  );
+  }
 
   return results;
 }
 ```
 
-Our custom filter by date method uses custom arrow table predicate filter and scan methods to generate JS friendly data you can map or graph:
+Our custom filter by date method now returns matching rows as JS objects you can map or graph.

@@ -28,24 +28,20 @@ One way to build a table with multiple columns is to create an arrow `Struct` fi
 and then create a `Data` object using that `Field` object and the data
 
 ```ts
-function buildTable(arrowSchema: arrow.Schema, const data: any[][]) {
-  const arrowBuilders = this.arrowSchema.fields.map((field) => arrow.makeBuilder({type: field.type, [null]));
+function buildTable(arrowSchema: arrow.Schema, rows: any[][]) {
+  const arrowBuilders = arrowSchema.fields.map((field) =>
+    arrow.makeBuilder({type: field.type, nullValues: [null]})
+  );
 
-  // Application data
-  const row = [column0value, column1Value, ...];
-
-  for (let i = 0; i < this.arrowBuilders.length; i++) {
-    arrowBuilders[i].append(row[i]);
+  for (const row of rows) {
+    for (let i = 0; i < arrowBuilders.length; i++) {
+      arrowBuilders[i].append(row[i]);
+    }
   }
 
-  const arrowDatas = arrowBuilders.map((builder) => builder.flush());
-  const structField = new arrow.Struct(arrowSchema.fields);
-  const arrowStructData = new arrow.Data(structField, 0, length, 0, undefined, arrowDatas);
-  const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowStructData);
-  const arrowTable = new arrow.Table([arrowRecordBatch])
-
-  arrowBuilders.forEach((builder) => builder.finish());
-
-  return arrowTable;
+  const vectors = arrowBuilders.map((builder) => builder.finish().toVector());
+  return arrow.Table.new(
+    Object.fromEntries(vectors.map((vector, index) => [arrowSchema.fields[index].name, vector]))
+  );
 }
 ```

@@ -13,31 +13,31 @@ values for a given `DataType`.
 Once created, `Builder` instances support both appending values to the end
 of the `Builder`, and random-access writes to specific indices
 `builder.append(value)` is a convenience method for
-builder.set(builder.length, value)`). Appending or setting values beyond the
-uilder's current length may cause the builder to grow its underlying buffers
-r child Builders (if applicable) to accommodate the new values.
+`builder.set(builder.length, value)`). Appending or setting values beyond the
+Builder's current length may cause the builder to grow its underlying buffers
+and child Builders (if applicable) to accommodate the new values.
 
 After enough values have been written to a `Builder`, `builder.flush()`
-ill commit the values to the underlying ArrayBuffers (or child Builders). The
-nternal Builder state will be reset, and an instance of `Data<T>` is returned.
-lternatively, `builder.toVector()` will flush the `Builder` and return
-n instance of `Vector<T>` instead.
+will commit the values to the underlying ArrayBuffers (or child Builders). The
+internal Builder state will be reset, and an instance of `Data<T>` is returned.
+Alternatively, `builder.toVector()` will flush the `Builder` and return
+an instance of `Vector<T>` instead.
 
 When there are no more values to write, use `builder.finish()` to
-inalize the `Builder`. This does not reset the internal state, so it is
-ecessary to call `builder.flush()` or `toVector()` one last time
-f there are still values queued to be flushed.
+finalize the `Builder`. This does not reset the internal state, so it is
+necessary to call `builder.flush()` or `toVector()` one last time
+if there are still values queued to be flushed.
 
 Note: calling `builder.finish()` is required when using a `DictionaryBuilder`,
-ecause this is when it flushes the values that have been enqueued in its internal
-ictionary's `Builder`, and creates the `dictionaryVector` for the `Dictionary` `DataType`.
+because this is when it flushes the values that have been enqueued in its internal
+dictionary `Builder`, and creates the `dictionaryVector` for the `Dictionary` `DataType`.
 
 ## Usage
 
 Creating a utf8 array
 
 ```ts
-import {Builder, Utf8} from 'apache-arrow';
+import {Builder, Utf8, makeBuilder} from 'apache-arrow';
 
 const utf8Builder = makeBuilder({
   type: new Utf8(),

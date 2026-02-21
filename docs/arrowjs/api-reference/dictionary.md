@@ -1,6 +1,8 @@
 # Dictionary
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
 A `Dictionary` stores index-to-value maps for dictionary encoded columns.
 

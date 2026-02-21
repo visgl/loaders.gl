@@ -1,6 +1,8 @@
 # Table
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
 Logical table as sequence of chunked arrays
 
@@ -10,11 +12,11 @@ The JavaScript `Table` class is not part of the Apache Arrow specification as su
 
 As a relevant example, we may receive multiple small record batches in a socket stream, then need to concatenate them into contiguous memory for use in NumPy or pandas. The Table object makes this efficient without requiring additional memory copying.
 
-A Table’s columns are instances of `Column`, which is a container for one or more arrays of the same type.
+A Table’s columns are exposed as `Vector`/`Chunked` collections depending on whether columns are contiguous.
 
 ## Usage
 
-`Table.new()` accepts an `Object` of `Columns` or `Vectors`, where the keys will be used as the field names for the `Schema`:
+`Table.new()` accepts an object of `Vectors`, where the keys become field names for the `Schema`:
 
 ```typescript
 const i32s = Int32Vector.from([1, 2, 3]);
@@ -35,18 +37,21 @@ assert(table.schema.fields[0].name === 'i32');
 assert(table.schema.fields[1].name === '1');
 ```
 
-If the supplied arguments are `Column` instances, `Table.new` will infer the `Schema` from the `Column`s:
+If the supplied arguments are `Vector` instances, `Table.new` will infer the `Schema` from the vectors:
 
 ```ts
-const i32s = Column.new('i32', Int32Vector.from([1, 2, 3]));
-const f32s = Column.new('f32', Float32Vector.from([0.1, 0.2, 0.3]));
-const table = Table.new(i32s, f32s);
+const i32s = Int32Vector.from([1, 2, 3]);
+const f32s = Float32Vector.from([0.1, 0.2, 0.3]);
+const table = Table.new({
+  i32: i32s,
+  f32: f32s
+});
 assert(table.schema.fields[0].name === 'i32');
 assert(table.schema.fields[1].name === 'f32');
 ```
 
-If the supplied Vector or Column lengths are unequal, `Table.new` will
-extend the lengths of the shorter Columns, allocating additional bytes
+If the supplied vector lengths are unequal, `Table.new` will
+extend the shorter vectors with nulls as needed, allocating additional bytes
 to represent the additional null slots. The memory required to allocate
 these additional bitmaps can be computed as:
 
@@ -129,7 +134,7 @@ The schema will be inferred from the record batches.
 
 ### constructor(...args: any[])
 
-Create a new `Table` from a collection of `Columns` or `Vectors`, with an optional list of names or `Fields`.
+Create a new `Table` from a collection of `Vectors`, with an optional list of names or `Fields`.
 
 TBD
 
@@ -137,11 +142,11 @@ TBD
 
 Returns a new copy of this table.
 
-### getColumnAt(index: number): Column | null
+### getColumnAt(index: number): Vector | null
 
 Gets a column by index.
 
-### getColumn(name: String): Column | null
+### getColumn(name: String): Vector | null
 
 Gets a column by name
 
@@ -149,7 +154,7 @@ Gets a column by name
 
 Returns the index of the column with name `name`.
 
-### getChildAt(index: number): Column | null
+### getChildAt(index: number): Vector | null
 
 TBD
 
