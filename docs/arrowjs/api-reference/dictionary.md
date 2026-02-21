@@ -4,28 +4,41 @@
 This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
 :::
 
-A `Dictionary` stores index-to-value maps for dictionary encoded columns.
+A `Dictionary` `DataType` that describes dictionary-encoded values (index + dictionary lookup table).
 
-## Fields
+## Usage
 
-### indices: `V<TKey>` readonly
+```ts
+import {Dictionary, Utf8, Int32} from 'apache-arrow';
 
-### dictionary: `Vector<T>` readonly
+const type = new Dictionary(new Utf8(), new Int32());
+console.log(type.isOrdered, type.id);
+```
 
-## Static Methods
+```ts
+import {Dictionary, Utf8, Int32} from 'apache-arrow';
 
-### Dictionary.from(values: Vector, indices: TKey, keys: `ArrayLike<number>` | TKey['TArray']) : Dictionary
+const type = new Dictionary(new Utf8(), new Int32());
+console.log(type.toString());
+```
+
+## Members
+
+- `id: bigint | number | null` — Dictionary type identifier used in message metadata.
+- `indices: TKey` — Integer index key type (`Int8`, `Int16`, `Int32`, `Uint8`, `Uint16`, `Uint32`).
+- `dictionary: T` — Logical value type of the dictionary payload.
+- `isOrdered: boolean` — Whether dictionary index values are order-preserving.
+- `children: Field[]` — Nested field descriptors (inherited from `DataType`).
+- `valueType: T` — Alias for `dictionary`.
+- `ArrayType: T['ArrayType']` — Value array constructor for dictionary index type.
+- `typeId: Type.Dictionary` — Data type enum value for this type.
+
+## Constructor
+
+### `constructor(dictionary: T, indices: TKey, id?: bigint | number | null, isOrdered?: boolean | null)`
+
+Construct a dictionary type with explicit dictionary values and index type.
 
 ## Methods
 
-### constructor(data: Data)
-
-### reverseLookup(value: T): number
-
-### getKey(idx: number): TKey['TValue'] | null
-
-### getValue(key: number): T['TValue'] | null
-
-### setKey(idx: number, key: TKey['TValue'] | null): void
-
-### setValue(key: number, value: T['TValue'] | null): void
+- `toString(): string` — Returns canonical `"Dictionary<...>"` representation.

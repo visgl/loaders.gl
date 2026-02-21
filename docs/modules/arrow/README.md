@@ -26,7 +26,8 @@ npm install @loaders.gl/core @loaders.gl/arrow
 
 ## Additional APIs
 
-Arrow provides a rich JavaScript API for working with Arrow formatted data. Please refer to the [`ArrowJS` API documentation](/docs/arrowjs).
+Arrow provides a rich JavaScript API for working with Arrow formatted data.
+Start with the [`ArrowJS API Reference`](/docs/arrowjs/api-reference).
 
 ## Attributions
 

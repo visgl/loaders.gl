@@ -1,15 +1,13 @@
 # Building columns and tables
 
-Many JavaScript application may only need to be able to load and iterate of the data in existing Apache Arrow files creating outside of JavaScript.
+Many JavaScript applications only need to load and iterate over data in existing Arrow files.
 
-However a JS application may also want to create its own Arrow tables from scratch.
+Complex applications may also need to create their own Arrow tables.
 
-For this situation, Apache Arrow JS provides the `makeBuilder()` function that returns `Builder` instances that can be used to build columns of specific data types.
-
-However, creating arrow-compatible binary data columns for complex, potentially nullable data types can be quite tricky.
+For this, Apache Arrow JS provides `makeBuilder()` to produce type-specific `Builder` instances.
 
 ```ts
-import {Builder, Utf8} from 'apache-arrow';
+import {makeBuilder, makeTable, Field, Struct, Utf8} from 'apache-arrow';
 
 const utf8Builder = makeBuilder({
   type: new Utf8(),
@@ -24,13 +22,12 @@ console.log(utf8Vector.toJSON());
 // > ["hello", null, "world", null]
 ```
 
-One way to build a table with multiple columns is to create an arrow `Struct` field type using the fields in the table's schema,
-and then create a `Data` object using that `Field` object and the data
+### Building a table from row arrays
 
 ```ts
-function buildTable(arrowSchema: arrow.Schema, rows: any[][]) {
-  const arrowBuilders = arrowSchema.fields.map((field) =>
-    arrow.makeBuilder({type: field.type, nullValues: [null]})
+function buildTable(arrowSchema: any, rows: any[][]) {
+  const arrowBuilders = arrowSchema.fields.map((field: any) =>
+    makeBuilder({type: field.type, nullValues: [null]})
   );
 
   for (const row of rows) {
@@ -39,9 +36,11 @@ function buildTable(arrowSchema: arrow.Schema, rows: any[][]) {
     }
   }
 
-  const vectors = arrowBuilders.map((builder) => builder.finish().toVector());
-  return arrow.Table.new(
-    Object.fromEntries(vectors.map((vector, index) => [arrowSchema.fields[index].name, vector]))
+  const vectors = arrowBuilders.map((builder: any) => builder.finish().toVector());
+  return makeTable(
+    Object.fromEntries(
+      vectors.map((vector: any, index: number) => [arrowSchema.fields[index].name, vector])
+    )
   );
 }
 ```

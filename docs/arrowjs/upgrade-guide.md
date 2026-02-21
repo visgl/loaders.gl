@@ -2,55 +2,57 @@
 
 Unfortunately for JavaScript users, Apache Arrow JS does not publish detailed upgrade notes beyond the common [Apache Arrow release notes](https://arrow.apache.org/release/).
 
-Also Apache Arrow JS follows a common cross-language versioning number scheme which leads to frequent major release bumps, that confusingly do not contain any significant JavaScript changes (sometimes a major version bump has no JavaScript changes at all).
+Also Apache Arrow JS follows a cross-language versioning scheme. Major version bumps can be frequent and may not always correspond to user-facing JavaScript changes.
 
-The biggest changes were made in Apache Arrow JS Version 9.0 (based on feedback from loaders.gl users).
+The biggest Arrow JS changes affecting APIs were introduced in v9.0 (based on feedback from loaders.gl users).
 
 ## Upgrading to v21.0
 
-- No significant Apache Arrow JS-only breaking API changes were documented for this release stream.
-- If you are upgrading from v17 or older, prioritize:
-  - Stream entry points: ensure `RecordBatchReader`/`RecordBatchStreamWriter` usage follows `apache-arrow` 21.x APIs.
-  - Schema/data construction: avoid deprecated helper patterns and use `Table`, `Schema`, and vector classes directly.
-  - Browser/Node bundling: validate stream polyfills, async iteration, and package manager deduping to prevent mixed Arrow runtime versions.
+- No broadly breaking Arrow JS-only API changes were documented for this stream in the release notes.
+- If you are upgrading from v15-v17, focus on:
+  - Ensure `apache-arrow` is resolved to one version in your app (avoid dual installs).
+  - Prefer `makeTable`, `tableFromArrays`, `tableFromIPC`, `makeBuilder`, and stream readers/writers over older class-specific factories.
+  - Replace legacy column references (`getColumn`) with `getChild`/`getChildAt` and avoid removed `DataFrame`/`FilteredDataFrame` APIs.
+
+For loaders.gl users, prefer a single `apache-arrow` major line across browser and node environments to avoid stream and schema incompatibilities.
 
 ## Upgrading to v17.0
 
-- No breaking Apache Arrow JS-only API changes were documented for this release stream.
+- No major breaking Arrow JS-only API changes were documented for this stream.
 
 For loaders.gl users moving from older versions, verify the following common changes:
 
-- `RecordBatchWriter` factory usage and stream writer entry points (`RecordBatchStreamWriter`, `RecordBatchFileWriter`) are now the normal writer constructors.
+- `RecordBatchWriter` factory usage and stream writer entry points (`RecordBatchStreamWriter`, `RecordBatchFileWriter`) are the normal writer constructors.
 - APIs that depended on deprecated concepts (`DataFrame`, `Column`, `FilteredDataFrame`, predicate helpers) should be migrated to Arrow-native table/vector workflows.
-- Confirm your environment-specific bundling for browser/Node stream support, especially if you ship custom Node/browser stream polyfills.
+- Confirm environment-specific bundling for browser/Node stream support, especially if you ship custom stream polyfills.
 
 ## Upgrading to v16.0
 
-- No significant changes in Apache Arrow JS
+- No significant changes in Apache Arrow JS.
 
 ## Upgrading to v15.0
 
-- No significant changes in Apache Arrow JS
+- No significant changes in Apache Arrow JS.
 
 ## Upgrading to v14.0
 
-- No significant changes in Apache Arrow JS
+- No significant changes in Apache Arrow JS.
 
 ## Upgrading to v13.0
 
-- Under the hood, Apache Arrow JS removed "big int" fallback handling (big ints are now supported by all current browsers and Node.js versions).
+- Apache Arrow JS removed the BigInt compatibility workaround.
 
 ## Upgrading to v12.0
 
-- Bug found: Can break table reads in rare cases, e.g when dicts have big int keys.
+- Bug found: can break table reads in rare cases when dictionaries have bigint keys.
 
 ## Upgrading to v11.0
 
-- No significant changes in Apache Arrow JS
+- No significant changes in Apache Arrow JS.
 
 ## Upgrading to v10.0
 
-- No significant changes in Apache Arrow JS
+- No significant changes in Apache Arrow JS.
 
 ## Upgrading to v7.0 / v8.0 / v9.0
 
@@ -58,38 +60,38 @@ For loaders.gl users moving from older versions, verify the following common cha
 
 These releases made a series of breaking changes to Apache Arrow JS to transform it into a lean, tree-shakeable "core" library.
 
-The good news is that Apache Arrow v9.0 resolves a big concern around the size of the ArrowJS library. The size issue was creating resistance against full-scale Arrow JS adoption in some code bases. For instance, in loaders.gl, even trivial usage of the loaders.gl `ArrowLoader` would lead to ~250KB of Apache Arrow dependencies being bundled before v9.0.
+The downside is that upgrading through Arrow JS v7.0-v9.0 tends to require care since documentation is sparse.
 
-The downside is that upgrading through Arrow JS v7.0-v9.0 tends to require a big effort for most older applications. This is made more difficult since Apache Arrow does not have good release notes. The following are observations from upgrading applications:
+The following are high-level observations from migrating applications:
 
 **Removed core classes**
 
-| Removed Feature | Alternative    | Comment                                                                           |
-| --------------- | -------------- | --------------------------------------------------------------------------------- |
-| `Column` class  | `Vector` class | The `Vector` class now supports chunking, removing the need for a `Column` class. |
+| Removed Feature | Alternative    | Comment                                                                      |
+| --------------- | -------------- | ---------------------------------------------------------------------------- |
+| `Column` class  | `Vector` class | `Vector` supports chunking, removing the need for a separate `Column` class. |
 
 **Removed static constructors**
 
-| Removed Feature                 | Alternative             | Comment                                                                           |
-| ------------------------------- | ----------------------- | --------------------------------------------------------------------------------- |
-| `Data` static factory methods   | `makeData()` function   | Referencing the Data class doesn't automatically pull in static constructor code. |
+| Removed Feature                 | Alternative             | Comment                                                 |
+| ------------------------------- | ----------------------- | ------------------------------------------------------- |
+| `Data` static factory methods   | `makeData()` function   | Static constructors were replaced with factory helpers. |
 | `Column` static factory methods | `makeVector()` function |
 | `Table` static factory methods  | `makeTable()` function  |
 | `Schema` static factory methods | `makeSchema()` function |
 
-**DataFrame removal** - A number of pre-9.0 features didn’t really fit into Arrow core functionality. These features were really a library on top of Arrow, and in the trade-off of keeping the Arrow JS core lean, they were removed.
+**DataFrame removal** — the API removed a number of higher-level conveniences built outside Arrow core. These are now expected to be composed by user code.
 
-| Removed Feature     | Alternative | Comment   |
-| ------------------- | ----------- | --------- |
-| `DataFrame`         | N/A         | See below |
-| `FilteredDataFrame` | N/A         | See below |
-| Predicates          | N/A         | See below |
-| `Table.filter`      | N/A         | See below |
+| Removed Feature     | Alternative | Comment                            |
+| ------------------- | ----------- | ---------------------------------- |
+| `DataFrame`         | N/A         | See above                          |
+| `FilteredDataFrame` | N/A         | See above                          |
+| Predicates          | N/A         | Implement app-level filter helpers |
+| `Table.filter`      | N/A         | Implement app-level filter helpers |
 
-While there are no alternatives for the removed features inside Apache Arrow JS v9.0+, applications can implement similar logic on top of Arrow JS. There are also high-quality independent libraries such as [Arquero](https://github.com/uwdata/arquero) that provide support for filtering and processing of Arrow JS tables.
+For filtering and data-frame style operations, libraries like [Arquero](https://github.com/uwdata/arquero) are common alternatives.
 
-Finally, in case it is helpful, changes made to loaders.gl can be found in this [PR](https://github.com/visgl/loaders.gl/pull/1931/files)
+If you need loader-specific migration notes, also check: [PR 1931](https://github.com/visgl/loaders.gl/pull/1931/files)
 
 ## Upgrading to v6.0 and earlier
 
-Unfortunately we don't have any notes for these releases.
+Unfortunately we don't have notes for these releases.

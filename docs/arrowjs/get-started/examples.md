@@ -6,10 +6,10 @@ Some short examples
 
 ```typescript
 import {readFileSync} from 'fs';
-import {Table} from 'apache-arrow';
+import {tableFromIPC} from 'apache-arrow';
 
 const arrow = readFileSync('simple.arrow');
-const table = Table.from([arrow]);
+const table = tableFromIPC([arrow]);
 
 console.log(table.toString());
 
@@ -27,9 +27,9 @@ null, null, null
 
 ```typescript
 import {readFileSync} from 'fs';
-import {Table} from 'apache-arrow';
+import {tableFromIPC} from 'apache-arrow';
 
-const table = Table.from(
+const table = tableFromIPC(
   ['latlong/schema.arrow', 'latlong/records.arrow'].map((file) => readFileSync(file))
 );
 
@@ -48,7 +48,7 @@ console.log(table.toString());
 ### Create a Table from JavaScript arrays
 
 ```typescript
-import {Table, FloatVector, DateVector} from 'apache-arrow';
+import {tableFromArrays} from 'apache-arrow';
 
 const LENGTH = 2000;
 
@@ -56,26 +56,23 @@ const rainAmounts = Float32Array.from({length: LENGTH}, () =>
   Number((Math.random() * 20).toFixed(1))
 );
 
-const rainDates = Array.from(
-  {length: LENGTH},
-  (_, i) => new Date(Date.now() - 1000 * 60 * 60 * 24 * i)
-);
+const durations = Int32Array.from({length: LENGTH}, (_, i) => i + 1);
 
-const rainfall = Table.new(
-  [FloatVector.from(rainAmounts), DateVector.from(rainDates)],
-  ['precipitation', 'date']
-);
+const rainfall = tableFromArrays({
+  precipitation: rainAmounts,
+  duration: durations
+});
 ```
 
 ### Load data with `fetch`
 
 ```typescript
-import {Table} from 'apache-arrow';
+import {tableFromIPC} from 'apache-arrow';
 
-const tableFromResponse = await Table.from(fetch('/simple.arrow'));
-// or, if you prefer explicit conversion:
+const tableFromResponse = await tableFromIPC(fetch('/simple.arrow'));
 const response = await fetch('/simple.arrow');
-const tableFromArrayBuffer = Table.from(await response.arrayBuffer());
+const tableFromArrayBuffer = await tableFromIPC(await response.arrayBuffer());
+
 console.log(tableFromResponse.toString());
 console.log(tableFromArrayBuffer.toString());
 ```
@@ -84,17 +81,19 @@ console.log(tableFromArrayBuffer.toString());
 
 ```typescript
 import {readFileSync} from 'fs';
-import {Table} from 'apache-arrow';
+import {tableFromIPC} from 'apache-arrow';
 
-const table = Table.from(['latlong/schema.arrow', 'latlong/records.arrow'].map(readFileSync));
+const table = tableFromIPC(['latlong/schema.arrow', 'latlong/records.arrow'].map(readFileSync));
 
-const column = table.getColumn('origin_lat');
+const column = table.getChild('origin_lat');
 
-// Copy the data into a TypedArray
-const typed = column.toArray();
-assert(typed instanceof Float32Array);
+if (column) {
+  // Copy the data into a typed array.
+  const typed = column.toArray();
+  assert(typed instanceof Float32Array);
 
-for (let i = -1, n = column.length; ++i < n; ) {
-  assert(column.get(i) === typed[i]);
+  for (let i = -1, n = column.length; ++i < n; ) {
+    assert(column.get(i) === typed[i]);
+  }
 }
 ```
