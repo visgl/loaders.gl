@@ -58,7 +58,9 @@ test('ZipWriter creates parent directory entries for nested files', async (t) =>
     },
     ZipWriter
   );
-  const zipWithoutDirectoryEntries = await new JSZip().loadAsync(arrayBufferWithoutDirectoryEntries);
+  const zipWithoutDirectoryEntries = await new JSZip().loadAsync(
+    arrayBufferWithoutDirectoryEntries
+  );
   const directoryEntriesWithoutOption = Object.keys(zipWithoutDirectoryEntries.files)
     .filter((fileName) => zipWithoutDirectoryEntries.files[fileName].dir)
     .sort();
@@ -102,9 +104,9 @@ test('ZipWriter preserves explicit slash directory keys even when parent directo
   );
 
   const zipWithoutDirectoryEntries = await new JSZip().loadAsync(arrayBuffer);
-  const directoryEntries = Object.keys(zipWithoutDirectoryEntries.files).filter(
-    (fileName) => zipWithoutDirectoryEntries.files[fileName].dir
-  ).sort();
+  const directoryEntries = Object.keys(zipWithoutDirectoryEntries.files)
+    .filter((fileName) => zipWithoutDirectoryEntries.files[fileName].dir)
+    .sort();
 
   t.deepEqual(
     directoryEntries,
