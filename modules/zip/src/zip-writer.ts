@@ -58,11 +58,11 @@ async function encodeZipAsync(
 
     // jszip supports both arraybuffer and string data (the main loaders.gl types)
     // https://stuk.github.io/jszip/documentation/api_zipobject/async.html
-    jsZip.file(
-      subFileName,
-      isDirectoryEntry ? null : subFileData,
-      isDirectoryEntry ? {...options?.jszip, dir: true} : options?.jszip || {}
-    );
+    if (isDirectoryEntry) {
+      jsZip.file(subFileName, null, {...options?.jszip, dir: true});
+    } else {
+      jsZip.file(subFileName, subFileData, options?.jszip || {});
+    }
   }
 
   const jszipOptions: JSZipGeneratorOptions = {...ZipWriter.options?.jszip, ...options.jszip};
