@@ -2,6 +2,15 @@
 
 ## v4.4
 
+### v4.4.0-alpha.14
+
+- fix(parquet): Types to fix parquet module build (#3305)
+- fix(las): Pass correct params in LAZLoader.readData (#3297)
+- chore: bump probe.gl (#3298)
+- chore: TypeScript 5.9, @types/node 25, yarn lock refresh (#3301)
+- fix(loader-utils): Avoid option warnings unless log level is increased (#3299)
+- feat(arrow): Support Apache Arrow JS v21 (#3302)
+
 ### v4.4.0-alpha.13
 
 - chore(deps): bump fast-xml-parser from 4.5.0 to 5.3.6 (#3295)

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/geotiff",
-  "version": "4.4.0-alpha.13",
+  "version": "4.4.0-alpha.14",
   "description": "Framework-independent loaders for tiff and geotiff",
   "license": "MIT",
   "type": "module",
@@ -46,7 +46,7 @@
     "geotiff": "ilan-gold/geotiff.js#ilan-gold/viv_094"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.4.0-alpha.13",
+    "@loaders.gl/loader-utils": "4.4.0-alpha.14",
     "fast-xml-parser": "^5.3.6",
     "geotiff": "^2.1.0"
   },

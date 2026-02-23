@@ -4395,19 +4395,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/3d-tiles@npm:4.4.0-alpha.13, @loaders.gl/3d-tiles@workspace:modules/3d-tiles":
+"@loaders.gl/3d-tiles@npm:4.4.0-alpha.14, @loaders.gl/3d-tiles@workspace:modules/3d-tiles":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/3d-tiles@workspace:modules/3d-tiles"
   dependencies:
-    "@loaders.gl/compression": "npm:4.4.0-alpha.13"
-    "@loaders.gl/crypto": "npm:4.4.0-alpha.13"
-    "@loaders.gl/draco": "npm:4.4.0-alpha.13"
-    "@loaders.gl/gltf": "npm:4.4.0-alpha.13"
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/math": "npm:4.4.0-alpha.13"
-    "@loaders.gl/tiles": "npm:4.4.0-alpha.13"
-    "@loaders.gl/zip": "npm:4.4.0-alpha.13"
+    "@loaders.gl/compression": "npm:4.4.0-alpha.14"
+    "@loaders.gl/crypto": "npm:4.4.0-alpha.14"
+    "@loaders.gl/draco": "npm:4.4.0-alpha.14"
+    "@loaders.gl/gltf": "npm:4.4.0-alpha.14"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/math": "npm:4.4.0-alpha.14"
+    "@loaders.gl/tiles": "npm:4.4.0-alpha.14"
+    "@loaders.gl/zip": "npm:4.4.0-alpha.14"
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geospatial": "npm:^4.1.0"
@@ -4442,16 +4442,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/arrow@npm:4.4.0-alpha.13, @loaders.gl/arrow@workspace:modules/arrow":
+"@loaders.gl/arrow@npm:4.4.0-alpha.14, @loaders.gl/arrow@workspace:modules/arrow":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/arrow@workspace:modules/arrow"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/wkt": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/wkt": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
     "@math.gl/polygon": "npm:^4.1.0"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
@@ -4459,13 +4459,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/bson@npm:4.4.0-alpha.13, @loaders.gl/bson@workspace:modules/bson":
+"@loaders.gl/bson@npm:4.4.0-alpha.14, @loaders.gl/bson@workspace:modules/bson":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/bson@workspace:modules/bson"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     "@types/bson": "npm:4.2.0"
     bson: "npm:4.2.0"
   peerDependencies:
@@ -4501,12 +4501,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/compression@npm:4.4.0-alpha.13, @loaders.gl/compression@workspace:modules/compression":
+"@loaders.gl/compression@npm:4.4.0-alpha.14, @loaders.gl/compression@workspace:modules/compression":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/compression@workspace:modules/compression"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
     "@types/brotli": "npm:^1.3.0"
     "@types/pako": "npm:^1.0.1"
     brotli: "npm:^1.3.2"
@@ -4533,10 +4533,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/copc@workspace:modules/copc"
   dependencies:
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/mvt": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/mvt": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     copc: "npm:0.0.6"
   languageName: unknown
   linkType: soft
@@ -4545,10 +4545,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/core@workspace:modules/core"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
     "@probe.gl/log": "npm:^4.1.1"
   languageName: unknown
   linkType: soft
@@ -4566,12 +4566,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/crypto@npm:4.4.0-alpha.13, @loaders.gl/crypto@workspace:modules/crypto":
+"@loaders.gl/crypto@npm:4.4.0-alpha.14, @loaders.gl/crypto@workspace:modules/crypto":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/crypto@workspace:modules/crypto"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
     "@types/crypto-js": "npm:^4.0.2"
     crypto-js: "npm:^3.0.0 || ^4.0.0"
   peerDependencies:
@@ -4583,8 +4583,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/csv@workspace:modules/csv"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     d3-dsv: "npm:^1.2.0"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -4595,10 +4595,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/draco@workspace:modules/draco"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
     "@types/draco3d": "npm:^1.4.9"
     draco3d: "npm:1.5.7"
   peerDependencies:
@@ -4610,8 +4610,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/excel@workspace:modules/excel"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     xlsx: "npm:^0.18.5"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -4622,9 +4622,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/flatgeobuf@workspace:modules/flatgeobuf"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     "@math.gl/proj4": "npm:^4.1.0"
     flatgeobuf: "npm:3.27.2"
     stream-buffers: "npm:3.0.2"
@@ -4633,7 +4633,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/geoarrow@npm:4.4.0-alpha.13, @loaders.gl/geoarrow@workspace:modules/geoarrow":
+"@loaders.gl/geoarrow@npm:4.4.0-alpha.14, @loaders.gl/geoarrow@workspace:modules/geoarrow":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geoarrow@workspace:modules/geoarrow"
   dependencies:
@@ -4648,10 +4648,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geopackage@workspace:modules/geopackage"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/wkt": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/wkt": "npm:4.4.0-alpha.14"
     "@math.gl/proj4": "npm:^4.1.0"
     "@types/sql.js": "npm:^1.4.5"
     fs: "npm:^0.0.1-security"
@@ -4666,7 +4666,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geotiff@workspace:modules/geotiff"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
     fast-xml-parser: "npm:^5.3.6"
     geotiff: "npm:^2.1.0"
   peerDependencies:
@@ -4689,14 +4689,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/gis@npm:4.4.0-alpha.13, @loaders.gl/gis@workspace:modules/gis":
+"@loaders.gl/gis@npm:4.4.0-alpha.14, @loaders.gl/gis@workspace:modules/gis":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/gis@workspace:modules/gis"
   dependencies:
-    "@loaders.gl/geoarrow": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/geoarrow": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
     "@mapbox/vector-tile": "npm:^1.3.1"
     "@math.gl/polygon": "npm:^4.1.0"
     "@math.gl/proj4": "npm:^4.1.0"
@@ -4722,15 +4722,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/gltf@npm:4.4.0-alpha.13, @loaders.gl/gltf@workspace:modules/gltf":
+"@loaders.gl/gltf@npm:4.4.0-alpha.14, @loaders.gl/gltf@workspace:modules/gltf":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/gltf@workspace:modules/gltf"
   dependencies:
-    "@loaders.gl/draco": "npm:4.4.0-alpha.13"
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/textures": "npm:4.4.0-alpha.13"
+    "@loaders.gl/draco": "npm:4.4.0-alpha.14"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/textures": "npm:4.4.0-alpha.14"
     "@math.gl/core": "npm:^4.1.0"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -4749,16 +4749,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/i3s@workspace:modules/i3s"
   dependencies:
-    "@loaders.gl/compression": "npm:4.4.0-alpha.13"
-    "@loaders.gl/crypto": "npm:4.4.0-alpha.13"
-    "@loaders.gl/draco": "npm:4.4.0-alpha.13"
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/math": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/textures": "npm:4.4.0-alpha.13"
-    "@loaders.gl/tiles": "npm:4.4.0-alpha.13"
-    "@loaders.gl/zip": "npm:4.4.0-alpha.13"
+    "@loaders.gl/compression": "npm:4.4.0-alpha.14"
+    "@loaders.gl/crypto": "npm:4.4.0-alpha.14"
+    "@loaders.gl/draco": "npm:4.4.0-alpha.14"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/math": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/textures": "npm:4.4.0-alpha.14"
+    "@loaders.gl/tiles": "npm:4.4.0-alpha.14"
+    "@loaders.gl/zip": "npm:4.4.0-alpha.14"
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geospatial": "npm:^4.1.0"
@@ -4778,11 +4778,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/images@npm:4.4.0-alpha.13, @loaders.gl/images@workspace:modules/images":
+"@loaders.gl/images@npm:4.4.0-alpha.14, @loaders.gl/images@workspace:modules/images":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/images@workspace:modules/images"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
     "@types/get-pixels": "npm:^3.3.2"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -4793,10 +4793,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/json@workspace:modules/json"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
@@ -4806,9 +4806,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/kml@workspace:modules/kml"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     "@tmcw/togeojson": "npm:^4.5.0"
     "@xmldom/xmldom": "npm:^0.7.13"
   peerDependencies:
@@ -4820,9 +4820,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/las@workspace:modules/las"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
     laz-perf: "npm:^0.0.6"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -4833,8 +4833,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/lerc@workspace:modules/lerc"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     lerc: "npm:^4.0.4"
   languageName: unknown
   linkType: soft
@@ -4843,8 +4843,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/loader-utils@workspace:modules/loader-utils"
   dependencies:
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
     "@probe.gl/log": "npm:^4.1.1"
     "@probe.gl/stats": "npm:^4.1.1"
   languageName: unknown
@@ -4863,7 +4863,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/math@npm:4.4.0-alpha.13, @loaders.gl/math@workspace:modules/math":
+"@loaders.gl/math@npm:4.4.0-alpha.14, @loaders.gl/math@workspace:modules/math":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/math@workspace:modules/math"
   dependencies:
@@ -4873,14 +4873,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/mvt@npm:4.4.0-alpha.13, @loaders.gl/mvt@workspace:modules/mvt":
+"@loaders.gl/mvt@npm:4.4.0-alpha.14, @loaders.gl/mvt@workspace:modules/mvt":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/mvt@workspace:modules/mvt"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     "@math.gl/polygon": "npm:^4.1.0"
     "@probe.gl/stats": "npm:^4.1.1"
     "@types/pbf": "npm:^3.0.2"
@@ -4911,7 +4911,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/netcdf@workspace:modules/netcdf"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
@@ -4921,9 +4921,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/obj@workspace:modules/obj"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
@@ -4933,14 +4933,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/parquet@workspace:modules/parquet"
   dependencies:
-    "@loaders.gl/arrow": "npm:4.4.0-alpha.13"
-    "@loaders.gl/bson": "npm:4.4.0-alpha.13"
-    "@loaders.gl/compression": "npm:4.4.0-alpha.13"
-    "@loaders.gl/geoarrow": "npm:4.4.0-alpha.13"
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/wkt": "npm:4.4.0-alpha.13"
+    "@loaders.gl/arrow": "npm:4.4.0-alpha.14"
+    "@loaders.gl/bson": "npm:4.4.0-alpha.14"
+    "@loaders.gl/compression": "npm:4.4.0-alpha.14"
+    "@loaders.gl/geoarrow": "npm:4.4.0-alpha.14"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/wkt": "npm:4.4.0-alpha.14"
     "@probe.gl/log": "npm:^4.1.1"
     "@types/node-int64": "npm:^0.4.29"
     "@types/thrift": "npm:^0.10.8"
@@ -4970,9 +4970,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/pcd@workspace:modules/pcd"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
@@ -4982,9 +4982,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/ply@workspace:modules/ply"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema-utils": "npm:4.4.0-alpha.14"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
@@ -4994,22 +4994,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/pmtiles@workspace:modules/pmtiles"
   dependencies:
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/mvt": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/mvt": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     pmtiles: "npm:^3.0.4"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/polyfills@npm:4.4.0-alpha.13, @loaders.gl/polyfills@workspace:modules/polyfills":
+"@loaders.gl/polyfills@npm:4.4.0-alpha.14, @loaders.gl/polyfills@workspace:modules/polyfills":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/polyfills@workspace:modules/polyfills"
   dependencies:
-    "@loaders.gl/crypto": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/crypto": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
     buffer: "npm:^6.0.3"
     get-pixels: "npm:^3.3.3"
     ndarray: "npm:^1.0.19"
@@ -5026,9 +5026,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/potree@workspace:modules/potree"
   dependencies:
-    "@loaders.gl/las": "npm:4.4.0-alpha.13"
-    "@loaders.gl/math": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/las": "npm:4.4.0-alpha.14"
+    "@loaders.gl/math": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/proj4": "npm:^4.1.0"
   peerDependencies:
@@ -5040,7 +5040,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/schema-utils@workspace:modules/schema-utils"
   dependencies:
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     "@types/geojson": "npm:^7946.0.7"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
@@ -5061,9 +5061,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/shapefile@workspace:modules/shapefile"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     "@math.gl/proj4": "npm:^4.1.0"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -5088,9 +5088,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/terrain@workspace:modules/terrain"
   dependencies:
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     "@mapbox/martini": "npm:^0.2.0"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -5101,10 +5101,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/textures@workspace:modules/textures"
   dependencies:
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
     "@math.gl/types": "npm:^4.1.0"
     ktx-parse: "npm:^0.7.0"
     texture-compressor: "npm:^1.0.2"
@@ -5117,20 +5117,20 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tile-converter@workspace:apps/tile-converter"
   dependencies:
-    "@loaders.gl/3d-tiles": "npm:4.4.0-alpha.13"
-    "@loaders.gl/compression": "npm:4.4.0-alpha.13"
-    "@loaders.gl/crypto": "npm:4.4.0-alpha.13"
-    "@loaders.gl/draco": "npm:4.4.0-alpha.13"
-    "@loaders.gl/gltf": "npm:4.4.0-alpha.13"
-    "@loaders.gl/i3s": "npm:4.4.0-alpha.13"
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/math": "npm:4.4.0-alpha.13"
-    "@loaders.gl/polyfills": "npm:4.4.0-alpha.13"
-    "@loaders.gl/textures": "npm:4.4.0-alpha.13"
-    "@loaders.gl/tiles": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/zip": "npm:4.4.0-alpha.13"
+    "@loaders.gl/3d-tiles": "npm:4.4.0-alpha.14"
+    "@loaders.gl/compression": "npm:4.4.0-alpha.14"
+    "@loaders.gl/crypto": "npm:4.4.0-alpha.14"
+    "@loaders.gl/draco": "npm:4.4.0-alpha.14"
+    "@loaders.gl/gltf": "npm:4.4.0-alpha.14"
+    "@loaders.gl/i3s": "npm:4.4.0-alpha.14"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/math": "npm:4.4.0-alpha.14"
+    "@loaders.gl/polyfills": "npm:4.4.0-alpha.14"
+    "@loaders.gl/textures": "npm:4.4.0-alpha.14"
+    "@loaders.gl/tiles": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/zip": "npm:4.4.0-alpha.14"
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geoid": "npm:^4.1.0"
@@ -5174,13 +5174,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/tiles@npm:4.4.0-alpha.13, @loaders.gl/tiles@workspace:modules/tiles":
+"@loaders.gl/tiles@npm:4.4.0-alpha.14, @loaders.gl/tiles@workspace:modules/tiles":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/tiles@workspace:modules/tiles"
   dependencies:
     "@deck.gl/core": "npm:^9.0.33"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/math": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/math": "npm:4.4.0-alpha.14"
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geospatial": "npm:^4.1.0"
@@ -5203,21 +5203,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/video@workspace:modules/video"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/worker-utils": "npm:4.4.0-alpha.14"
     gifshot: "npm:^0.4.5"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/wkt@npm:4.4.0-alpha.13, @loaders.gl/wkt@workspace:modules/wkt":
+"@loaders.gl/wkt@npm:4.4.0-alpha.14, @loaders.gl/wkt@workspace:modules/wkt":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/wkt@workspace:modules/wkt"
   dependencies:
-    "@loaders.gl/gis": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/gis": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     fuzzer: "npm:^0.2.1"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -5228,10 +5228,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/wms@workspace:modules/wms"
   dependencies:
-    "@loaders.gl/images": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
-    "@loaders.gl/xml": "npm:4.4.0-alpha.13"
+    "@loaders.gl/images": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
+    "@loaders.gl/xml": "npm:4.4.0-alpha.14"
     "@turf/rewind": "npm:^5.1.5"
     deep-strict-equal: "npm:^0.2.0"
   peerDependencies:
@@ -5248,7 +5248,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/worker-utils@npm:4.4.0-alpha.13, @loaders.gl/worker-utils@workspace:modules/worker-utils":
+"@loaders.gl/worker-utils@npm:4.4.0-alpha.14, @loaders.gl/worker-utils@workspace:modules/worker-utils":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/worker-utils@workspace:modules/worker-utils"
   peerDependencies:
@@ -5256,12 +5256,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/xml@npm:4.4.0-alpha.13, @loaders.gl/xml@workspace:modules/xml":
+"@loaders.gl/xml@npm:4.4.0-alpha.14, @loaders.gl/xml@workspace:modules/xml":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/xml@workspace:modules/xml"
   dependencies:
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
-    "@loaders.gl/schema": "npm:4.4.0-alpha.13"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
+    "@loaders.gl/schema": "npm:4.4.0-alpha.14"
     fast-xml-parser: "npm:^5.3.6"
   peerDependencies:
     "@loaders.gl/core": 4.4.0-alpha.1
@@ -5293,13 +5293,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@loaders.gl/zip@npm:4.4.0-alpha.13, @loaders.gl/zip@workspace:modules/zip":
+"@loaders.gl/zip@npm:4.4.0-alpha.14, @loaders.gl/zip@workspace:modules/zip":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/zip@workspace:modules/zip"
   dependencies:
-    "@loaders.gl/compression": "npm:4.4.0-alpha.13"
-    "@loaders.gl/crypto": "npm:4.4.0-alpha.13"
-    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.13"
+    "@loaders.gl/compression": "npm:4.4.0-alpha.14"
+    "@loaders.gl/crypto": "npm:4.4.0-alpha.14"
+    "@loaders.gl/loader-utils": "npm:4.4.0-alpha.14"
     jszip: "npm:^3.1.5"
     md5: "npm:^2.3.0"
   peerDependencies:
