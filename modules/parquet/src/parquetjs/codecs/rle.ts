@@ -40,7 +40,7 @@ export function encodeValues(
     if (repeats === 0 && run.length % 8 === 0 && values[i] === values[i + 1]) {
       // If we have any data in runs we need to encode them
       if (run.length) {
-        buf = Buffer.concat([buf, encodeRunBitpacked(run, opts)]);
+        buf = Buffer.concat([buf, encodeRunBitpacked(run, opts)] as Uint8Array[]);
         run = [];
       }
       repeats = 1;
@@ -49,7 +49,7 @@ export function encodeValues(
     } else {
       // If values changes we need to post any previous repeated values
       if (repeats) {
-        buf = Buffer.concat([buf, encodeRunRepeated(values[i - 1], repeats, opts)]);
+        buf = Buffer.concat([buf, encodeRunRepeated(values[i - 1], repeats, opts)] as Uint8Array[]);
         repeats = 0;
       }
       run.push(values[i]);
@@ -57,9 +57,12 @@ export function encodeValues(
   }
 
   if (repeats) {
-    buf = Buffer.concat([buf, encodeRunRepeated(values[values.length - 1], repeats, opts)]);
+    buf = Buffer.concat([
+      buf,
+      encodeRunRepeated(values[values.length - 1], repeats, opts)
+    ] as Uint8Array[]);
   } else if (run.length) {
-    buf = Buffer.concat([buf, encodeRunBitpacked(run, opts)]);
+    buf = Buffer.concat([buf, encodeRunBitpacked(run, opts)] as Uint8Array[]);
   }
 
   if (opts.disableEnvelope) {
@@ -70,7 +73,7 @@ export function encodeValues(
 
   // @ts-ignore buffer polyfill
   envelope.writeUInt32LE(buf.length, undefined);
-  buf.copy(envelope, 4);
+  buf.copy(envelope as Uint8Array, 4);
 
   return envelope;
 }
@@ -175,7 +178,10 @@ function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Buffer
     }
   }
 
-  return Buffer.concat([Buffer.from(varint.encode(((values.length / 8) << 1) | 1)), buf]);
+  return Buffer.concat([
+    Buffer.from(varint.encode(((values.length / 8) << 1) | 1)),
+    buf
+  ] as Uint8Array[]);
 }
 
 function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptions): Buffer {
@@ -190,5 +196,5 @@ function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptio
     value >> 8; //  TODO - this looks wrong
   }
 
-  return Buffer.concat([Buffer.from(varint.encode(count << 1)), buf]);
+  return Buffer.concat([Buffer.from(varint.encode(count << 1)), buf] as Uint8Array[]);
 }
