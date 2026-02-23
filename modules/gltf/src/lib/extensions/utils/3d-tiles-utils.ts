@@ -169,7 +169,7 @@ export function getPrimitiveTextureData(
     texture.texCoord is a number-suffix (like 1) for an attribute like "TEXCOORD_1" in meshes.primitives
     The value of "TEXCOORD_1" is an accessor that is used to get coordinates.
     These coordinates are being used to get data from the image.
-    
+
     Default for texture.texCoord is 0
     @see https://github.com/CesiumGS/glTF/blob/3d-tiles-next/specification/2.0/schema/textureInfo.schema.json
   */
@@ -296,7 +296,7 @@ function getImageValueByCoordinates(
     According to the EXT_mesh_features extension specification:
       The channels array contains non-negative integer values corresponding to channels of the source texture that the feature ID consists of.
       Channels of an RGBA texture are numbered 0–3 respectively.
-    Function getImageValueByCoordinates is used to process both extensions. 
+    Function getImageValueByCoordinates is used to process both extensions.
     So, there should be possible to get the element of CHANNELS_MAP by either index (0, 1, 2, 3) or key (r, g, b, a).
     */
     const map = typeof c === 'number' ? Object.values(CHANNELS_MAP)[c] : CHANNELS_MAP[c];
@@ -406,14 +406,36 @@ export function getPropertyDataString(
   arrayOffsets: TypedArray | null,
   stringOffsets: TypedArray | null
 ): string[] | string[][] {
+  const textDecoder = new TextDecoder('utf8');
+
+  // Variable-length string array (arrayOffsets + stringOffsets)
+  // See: https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#strings
   if (arrayOffsets) {
-    // TODO: implement it as soon as we have the corresponding tileset
-    throw new Error('Not implemented - arrayOffsets for strings is specified');
+    if (!stringOffsets) {
+      throw new Error('stringOffsets is required for variable-length string arrays');
+    }
+
+    const result: string[][] = [];
+    for (let featureId = 0; featureId < numberOfElements; featureId++) {
+      const startStringIndex = arrayOffsets[featureId];
+      const endStringIndex = arrayOffsets[featureId + 1];
+      const strings: string[] = [];
+
+      for (let i = startStringIndex; i < endStringIndex; i++) {
+        const startByte = stringOffsets[i];
+        const endByte = stringOffsets[i + 1];
+        const stringData = valuesDataBytes.subarray(startByte, endByte);
+        strings.push(textDecoder.decode(stringData));
+      }
+
+      result.push(strings);
+    }
+    return result;
   }
 
+  // Simple strings (stringOffsets only)
   if (stringOffsets) {
     const stringsArray: string[] = [];
-    const textDecoder = new TextDecoder('utf8');
 
     let stringOffset = 0;
     for (let index = 0; index < numberOfElements; index++) {
