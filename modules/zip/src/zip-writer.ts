@@ -11,6 +11,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type ZipWriterOptions = WriterOptions & {
   zip?: {
     onUpdate?: (metadata: {percent: number}) => void;
+    /** When enabled, parent directory entries are created for nested file keys. */
+    createDirectoryEntries?: boolean;
   };
   /** Passthrough options to jszip */
   jszip?: JSZipGeneratorOptions;
@@ -29,7 +31,8 @@ export const ZipWriter = {
   mimeTypes: ['application/zip'],
   options: {
     zip: {
-      onUpdate: () => {}
+      onUpdate: () => {},
+      createDirectoryEntries: false
     },
     jszip: {}
   },
@@ -41,16 +44,27 @@ async function encodeZipAsync(
   options: ZipWriterOptions = {}
 ): Promise<ArrayBuffer> {
   const jsZip = new JSZip();
+  const directoryEntries = new Set<string>();
+  const zipOptions = {...ZipWriter.options.zip, ...options?.zip};
+
   // add files to the zip
   for (const subFileName in fileMap) {
     const subFileData = fileMap[subFileName];
+    const isDirectoryEntry = subFileName.endsWith('/');
+
+    if (isDirectoryEntry || zipOptions.createDirectoryEntries) {
+      addParentDirectoryEntries(jsZip, subFileName, options, directoryEntries);
+    }
 
     // jszip supports both arraybuffer and string data (the main loaders.gl types)
     // https://stuk.github.io/jszip/documentation/api_zipobject/async.html
-    jsZip.file(subFileName, subFileData, options?.jszip || {});
+    if (isDirectoryEntry) {
+      jsZip.file(subFileName, null, {...options?.jszip, dir: true});
+    } else {
+      jsZip.file(subFileName, subFileData, options?.jszip || {});
+    }
   }
 
-  const zipOptions = {...ZipWriter.options.zip, ...options?.zip};
   const jszipOptions: JSZipGeneratorOptions = {...ZipWriter.options?.jszip, ...options.jszip};
 
   try {
@@ -61,5 +75,30 @@ async function encodeZipAsync(
   } catch (error) {
     options.core?.log?.error(`Unable to encode zip archive: ${error}`);
     throw error;
+  }
+}
+
+function addParentDirectoryEntries(
+  jsZip: JSZip,
+  subFileName: string,
+  options: ZipWriterOptions,
+  directoryEntries: Set<string>
+): void {
+  const subPathParts = subFileName.split('/').filter((part) => part.length > 0);
+  const subPathPartCount = subFileName.endsWith('/')
+    ? subPathParts.length
+    : subPathParts.length - 1;
+
+  let parentDirectoryPath = '';
+
+  for (let index = 0; index < subPathPartCount; index++) {
+    parentDirectoryPath = `${parentDirectoryPath}${subPathParts[index]}/`;
+
+    if (directoryEntries.has(parentDirectoryPath)) {
+      continue;
+    }
+
+    jsZip.file(parentDirectoryPath, null, {...options?.jszip, dir: true});
+    directoryEntries.add(parentDirectoryPath);
   }
 }
