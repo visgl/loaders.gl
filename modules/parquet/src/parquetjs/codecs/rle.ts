@@ -57,7 +57,10 @@ export function encodeValues(
   }
 
   if (repeats) {
-    buf = Buffer.concat([buf, encodeRunRepeated(values[values.length - 1], repeats, opts)] as Uint8Array[]);
+    buf = Buffer.concat([
+      buf,
+      encodeRunRepeated(values[values.length - 1], repeats, opts)
+    ] as Uint8Array[]);
   } else if (run.length) {
     buf = Buffer.concat([buf, encodeRunBitpacked(run, opts)] as Uint8Array[]);
   }
@@ -175,7 +178,10 @@ function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Buffer
     }
   }
 
-  return Buffer.concat([Buffer.from(varint.encode(((values.length / 8) << 1) | 1)), buf] as Uint8Array[]);
+  return Buffer.concat([
+    Buffer.from(varint.encode(((values.length / 8) << 1) | 1)),
+    buf
+  ] as Uint8Array[]);
 }
 
 function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptions): Buffer {
