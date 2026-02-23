@@ -440,7 +440,7 @@ async function decodeDictionaryPage(
     );
 
     dictCursor = {
-      buffer: valuesBuf as unknown as Buffer<ArrayBuffer>,
+      buffer: valuesBuf as unknown as Buffer,
       offset: 0,
       size: valuesBuf.length
     };
