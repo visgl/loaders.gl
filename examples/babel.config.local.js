@@ -1,5 +1,5 @@
 /* eslint-disable */
-const {getBabelConfig} = require('ocular-dev-tools');
+const {getBabelConfig} = require('@vis.gl/dev-tools/configuration');
 
 module.exports = (api) => {
   const config = getBabelConfig(api);
