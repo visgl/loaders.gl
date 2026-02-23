@@ -424,7 +424,7 @@ async function decodeDictionaryPage(
 ): Promise<(string | ArrayBuffer)[]> {
   const cursorEnd = cursor.offset + pageHeader.compressed_page_size;
 
-  let dictCursor = {
+  let dictCursor: CursorBuffer = {
     offset: 0,
     buffer: cursor.buffer.slice(cursor.offset, cursorEnd),
     size: cursorEnd - cursor.offset
@@ -440,7 +440,7 @@ async function decodeDictionaryPage(
     );
 
     dictCursor = {
-      buffer: valuesBuf as unknown as Buffer,
+      buffer: valuesBuf,
       offset: 0,
       size: valuesBuf.length
     };
