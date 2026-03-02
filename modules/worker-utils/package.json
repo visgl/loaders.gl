@@ -34,6 +34,7 @@
   ],
   "browser": {
     "./dist/esm/lib/process-utils/child-process-proxy.js": false,
+    "./dist/lib/process-utils/child-process-proxy.js": false,
     "./dist/lib/node/require-utils.node.js": false,
     "./dist/lib/node/worker_threads.js": "./dist/lib/node/worker_threads-browser.js",
     "./src/lib/node/require-utils.node.ts": false,
