@@ -562,36 +562,33 @@ export class Tileset3D {
     // Transition hold: keep recently-deselected tiles visible until all their
     // replacements have been drawn by the renderer (e.g. deck.gl).
     // Without this, there are single-frame flashes during REPLACE refinement transitions.
-    {
-      const selectedIds = new Set(this.selectedTiles.map((t) => t.id));
-      const hasUndrawnTiles = this.selectedTiles.some((t) => !t.tileDrawn);
+    const selectedIds = new Set(this.selectedTiles.map((t) => t.id));
+    const hasUndrawnTiles = this.selectedTiles.some((t) => !t.tileDrawn);
 
-      for (const tileId of selectedIds) {
-        this._heldTiles.add(tileId);
-      }
+    for (const tileId of selectedIds) {
+      this._heldTiles.add(tileId);
+    }
 
-      // Keep recently-deselected tiles visible while new tiles haven't drawn yet
-      let heldBackCount = 0;
-      for (const tileId of this._heldTiles) {
-        if (!selectedIds.has(tileId)) {
-          const tile = this._tiles[tileId];
-          if (tile && tile.contentAvailable && hasUndrawnTiles) {
-            // Update _selectedFrame to keep tile visible
-            tile._selectedFrame = this._frameNumber;
-            this.selectedTiles.push(tile);
-            heldBackCount++;
-          } else {
-            this._heldTiles.delete(tileId);
-          }
+    // Keep recently-deselected tiles visible while new tiles haven't drawn yet
+    let heldBackCount = 0;
+    for (const tileId of this._heldTiles) {
+      if (!selectedIds.has(tileId)) {
+        const tile = this._tiles[tileId];
+        if (tile && tile.contentAvailable && hasUndrawnTiles) {
+          tile._selectedFrame = this._frameNumber;
+          this.selectedTiles.push(tile);
+          heldBackCount++;
+        } else {
+          this._heldTiles.delete(tileId);
         }
       }
-      if (heldBackCount > 0) {
-        // Schedule another update so that once all replacement tiles
-        // have drawn, the held tiles get released
-        setTimeout(() => {
-          this.selectTiles();
-        }, 0);
-      }
+    }
+    if (heldBackCount > 0) {
+      // Schedule another update so that once all replacement tiles
+      // have drawn, the held tiles get released
+      setTimeout(() => {
+        this.selectTiles();
+      }, 0);
     }
 
     for (const tile of this.selectedTiles) {
