@@ -131,6 +131,14 @@ export class Tile3D {
   _lodJudge: any = null; // TODO i3s specific, needs to remove
 
   /**
+   * Indicates whether the tile has been drawn by the renderer.
+   * Defaults to true for backwards compatibility — renderers that support
+   * transition hold (e.g. deck.gl 9.3+) should set this to false on tile load,
+   * then back to true after first draw to avoid flashes (see deck.gl #7914).
+   */
+  tileDrawn: boolean = true;
+
+  /**
    * @constructs
    * Create a Tile3D instance
    * @param tileset - Tileset3D instance
@@ -426,6 +434,7 @@ export class Tile3D {
     }
     this.header.content = null;
     this.contentState = TILE_CONTENT_STATE.UNLOADED;
+    this.tileDrawn = true;
     return true;
   }
 
