@@ -565,16 +565,19 @@ export class Tileset3D {
     const selectedIds = new Set(this.selectedTiles.map((t) => t.id));
     const hasUndrawnTiles = this.selectedTiles.some((t) => !t.tileDrawn);
 
-    for (const tileId of selectedIds) {
-      this._heldTiles.add(tileId);
-    }
-
     // Keep recently-deselected tiles visible while new tiles haven't drawn yet
     let heldBackCount = 0;
-    for (const tileId of this._heldTiles) {
-      if (!selectedIds.has(tileId)) {
+    if (hasUndrawnTiles) {
+      for (const tileId of selectedIds) {
+        this._heldTiles.add(tileId);
+      }
+      for (const tileId of this._heldTiles) {
+        // Skip tiles that are already selected
+        if (selectedIds.has(tileId)) continue; // eslint-disable-line no-continue
+
+        // Keep tiles previously drawn selected
         const tile = this._tiles[tileId];
-        if (tile && tile.contentAvailable && hasUndrawnTiles) {
+        if (tile && tile.contentAvailable) {
           tile._selectedFrame = this._frameNumber;
           this.selectedTiles.push(tile);
           heldBackCount++;
@@ -582,7 +585,11 @@ export class Tileset3D {
           this._heldTiles.delete(tileId);
         }
       }
+    } else {
+      // Store current selected ids for next frame
+      this._heldTiles = selectedIds;
     }
+
     if (heldBackCount > 0) {
       // Schedule another update so that once all replacement tiles
       // have drawn, the held tiles get released
