@@ -77,6 +77,7 @@ export type Tileset3DProps = {
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
   contentLoader?: (tile: Tile3D) => Promise<void>;
   onTraversalComplete?: (selectedTiles: Tile3D[]) => Tile3D[];
+  onUpdate?: () => void;
 };
 
 type Props = {
@@ -104,6 +105,8 @@ type Props = {
   onTileError: (tile: Tile3D, message: string, url: string) => void;
   /** Callback. Allows post-process selectedTiles right after traversal. */
   onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
+  /** Callback. Called when the set of selected tiles changes. */
+  onUpdate: () => void;
   /** The maximum screen space error used to drive level of detail refinement. */
   maximumScreenSpaceError: number;
   /** Whether to adjust the maximum screen space error to comply with the maximum memory limitation */
@@ -137,6 +140,7 @@ const DEFAULT_PROPS: Props = {
   onTileUnload: () => {},
   onTileError: () => {},
   onTraversalComplete: (selectedTiles: Tile3D[]) => selectedTiles,
+  onUpdate: () => {},
   contentLoader: undefined,
   viewDistanceScale: 1.0,
   maximumScreenSpaceError: 8,
@@ -283,6 +287,9 @@ export class Tileset3D {
   _traverser: TilesetTraverser;
   _cache = new TilesetCache();
   _requestScheduler: RequestScheduler;
+
+  /** Tile IDs held visible during transitions until replacements have drawn */
+  private _heldTiles: Set<string> = new Set();
 
   // Promise tracking
   private updatePromise: Promise<number> | null = null;
@@ -538,6 +545,7 @@ export class Tileset3D {
    * Update tiles relying on data from all traversers
    */
   _updateTiles(): void {
+    const previousSelectedTiles = this.selectedTiles;
     this.selectedTiles = [];
     this._requestedTiles = [];
     this._emptyTiles = [];
@@ -551,6 +559,45 @@ export class Tileset3D {
 
     this.selectedTiles = this.options.onTraversalComplete(this.selectedTiles);
 
+    // Transition hold: keep recently-deselected tiles visible until all their
+    // replacements have been drawn by the renderer (e.g. deck.gl).
+    // Without this, there are single-frame flashes during REPLACE refinement transitions.
+    const selectedIds = new Set(this.selectedTiles.map((t) => t.id));
+    const hasUndrawnTiles = this.selectedTiles.some((t) => !t.tileDrawn);
+
+    // Keep recently-deselected tiles visible while new tiles haven't drawn yet
+    let heldBackCount = 0;
+    if (hasUndrawnTiles) {
+      for (const tileId of selectedIds) {
+        this._heldTiles.add(tileId);
+      }
+      for (const tileId of this._heldTiles) {
+        // Skip tiles that are already selected
+        if (selectedIds.has(tileId)) continue; // eslint-disable-line no-continue
+
+        // Keep tiles previously drawn selected
+        const tile = this._tiles[tileId];
+        if (tile && tile.contentAvailable) {
+          tile._selectedFrame = this._frameNumber;
+          this.selectedTiles.push(tile);
+          heldBackCount++;
+        } else {
+          this._heldTiles.delete(tileId);
+        }
+      }
+    } else {
+      // Store current selected ids for next frame
+      this._heldTiles = selectedIds;
+    }
+
+    if (heldBackCount > 0) {
+      // Schedule another update so that once all replacement tiles
+      // have drawn, the held tiles get released
+      setTimeout(() => {
+        this.selectTiles();
+      }, 0);
+    }
+
     for (const tile of this.selectedTiles) {
       this._tiles[tile.id] = tile;
     }
@@ -558,6 +605,10 @@ export class Tileset3D {
     this._loadTiles();
     this._unloadTiles();
     this._updateStats();
+
+    if (this._tilesChanged(previousSelectedTiles, this.selectedTiles)) {
+      this.options.onUpdate();
+    }
   }
 
   _tilesChanged(oldSelectedTiles: Tile3D[], selectedTiles: Tile3D[]): boolean {

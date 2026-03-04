@@ -447,6 +447,122 @@ test('Tileset3D#should detect ktx2 texture', async (t) => {
   t.end();
 });
 
+test('Tileset3D#transition hold keeps tiles visible until replacements draw', async (t) => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  let onUpdateCount = 0;
+  const tileset = new Tileset3D(tilesetJson, {
+    onUpdate: () => {
+      onUpdateCount++;
+    }
+  });
+  await tileset.tilesetInitializationPromise;
+
+  const root = tileset.root as Tile3D;
+  t.ok(root, 'root tile exists');
+  t.ok(root.children.length > 0, 'root has children');
+
+  // Load root content so contentAvailable becomes true
+  // @ts-ignore
+  root._visible = true;
+  await root.loadContent();
+  t.ok(root.contentAvailable, 'root content is available after loading');
+
+  const childA = root.children[0];
+  const childB = root.children[1];
+
+  // --- Frame 1: root is selected, all tiles drawn ---
+  tileset._frameNumber = 1;
+  // @ts-ignore - frameStateData is private
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [root], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  onUpdateCount = 0;
+  tileset._updateTiles();
+
+  t.equals(tileset.selectedTiles.length, 1, 'frame 1: only root selected');
+  t.equals(tileset.selectedTiles[0].id, root.id, 'frame 1: selected tile is root');
+  t.ok(onUpdateCount > 0, 'frame 1: onUpdate called');
+
+  // --- Frame 2: children selected instead of root (REPLACE transition) ---
+  // Simulate renderer opt-in: children haven't drawn yet
+  childA.tileDrawn = false;
+  childB.tileDrawn = false;
+  tileset._frameNumber = 2;
+  // @ts-ignore
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [childA, childB], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  tileset._updateTiles();
+
+  // Root should be held back because children haven't drawn
+  const selectedIdsF2 = tileset.selectedTiles.map((tile) => tile.id);
+  t.ok(selectedIdsF2.includes(root.id), 'frame 2: root is held back');
+  t.ok(selectedIdsF2.includes(childA.id), 'frame 2: childA is selected');
+  t.ok(selectedIdsF2.includes(childB.id), 'frame 2: childB is selected');
+  t.equals(tileset.selectedTiles.length, 3, 'frame 2: 3 tiles (2 children + held root)');
+
+  // --- Frame 3: children have drawn, root should be released ---
+  childA.tileDrawn = true;
+  childB.tileDrawn = true;
+  tileset._frameNumber = 3;
+  // @ts-ignore
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [childA, childB], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  tileset._updateTiles();
+
+  const selectedIdsF3 = tileset.selectedTiles.map((tile) => tile.id);
+  t.equals(tileset.selectedTiles.length, 2, 'frame 3: only children selected, root released');
+  t.ok(!selectedIdsF3.includes(root.id), 'frame 3: root no longer held');
+
+  t.end();
+});
+
+test('Tileset3D#transition hold is a no-op when tileDrawn defaults to true', async (t) => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const tileset = new Tileset3D(tilesetJson);
+  await tileset.tilesetInitializationPromise;
+
+  const root = tileset.root as Tile3D;
+  // @ts-ignore
+  root._visible = true;
+  await root.loadContent();
+
+  const childA = root.children[0];
+  const childB = root.children[1];
+
+  // All tiles have tileDrawn=true (the default), so transition hold should never activate
+  t.equals(childA.tileDrawn, true, 'childA tileDrawn defaults to true');
+  t.equals(childB.tileDrawn, true, 'childB tileDrawn defaults to true');
+
+  // Frame 1: root selected
+  tileset._frameNumber = 1;
+  // @ts-ignore
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [root], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  tileset._updateTiles();
+
+  // Frame 2: children selected instead — but since tileDrawn is true, no hold needed
+  tileset._frameNumber = 2;
+  // @ts-ignore
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [childA, childB], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  tileset._updateTiles();
+
+  t.equals(tileset.selectedTiles.length, 2, 'no tiles held back when tileDrawn defaults to true');
+  const selectedIds = tileset.selectedTiles.map((tile) => tile.id);
+  t.ok(!selectedIds.includes(root.id), 'root not held when all tiles already drawn');
+
+  t.end();
+});
+
 /*
 test('Tileset3D#does not render during morph', t => {
   const tileset = await loadTileset(scene, TILESET_URL);

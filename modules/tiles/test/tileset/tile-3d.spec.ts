@@ -301,6 +301,20 @@ test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume
   t.end();
 });
 
+test('Tile3D#tileDrawn defaults to true', (t) => {
+  // @ts-ignore
+  const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
+  t.equals(tile.tileDrawn, true, 'tileDrawn defaults to true for backwards compatibility');
+
+  tile.tileDrawn = false;
+  t.equals(tile.tileDrawn, false, 'tileDrawn can be set to false');
+
+  tile.unloadContent();
+  t.equals(tile.tileDrawn, true, 'tileDrawn resets to true after unloadContent');
+
+  t.end();
+});
+
 // TODO failing test
 test.skip('Tile3D#screenSpaceError is calculated correctly', (t) => {
   const tileset = {
