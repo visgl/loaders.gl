@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.0-alpha.15
+
+- Fix(tiles): Remove rendering flicker by holding refined tile (#3311)
+
 ### v4.4.0-alpha.14
 
 - fix(parquet): Types to fix parquet module build (#3305)
