@@ -25,6 +25,10 @@ const config = {
     test: testDir
   },
 
+  nodeAliases: {
+    '@maplibre/mlt': join(packageRoot, 'modules/mlt/dist/mlt-decoder.cjs')
+  },
+
   coverage: {
     test: 'browser'
   },
