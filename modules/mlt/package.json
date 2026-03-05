@@ -35,7 +35,7 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=cjs --outfile=dist/mlt-decoder.cjs"
+    "pre-build": "esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=cjs --outfile=src/libs/mlt-decoder.cjs"
   },
   "dependencies": {
     "@loaders.gl/gis": "4.4.0-alpha.15",

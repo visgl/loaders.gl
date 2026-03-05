@@ -26,7 +26,7 @@ const config = {
   },
 
   nodeAliases: {
-    '@maplibre/mlt': join(packageRoot, 'modules/mlt/dist/mlt-decoder.cjs')
+    '@maplibre/mlt': join(packageRoot, 'modules/mlt/src/libs/mlt-decoder.cjs')
   },
 
   coverage: {
