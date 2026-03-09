@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.0-alpha.16
+
+- fix(tiles): Extract rootNode.matrix into cartesianModelMatrix (#3314)
+
 ### v4.4.0-alpha.15
 
 - Fix(tiles): Remove rendering flicker by holding refined tile (#3311)
