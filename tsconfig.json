@@ -179,6 +179,12 @@
       "@loaders.gl/lerc/test": [
         "modules/lerc/test"
       ],
+      "@loaders.gl/mlt": [
+        "modules/mlt/src"
+      ],
+      "@loaders.gl/mlt/test": [
+        "modules/mlt/test"
+      ],
       "@loaders.gl/mvt": [
         "modules/mvt/src"
       ],
