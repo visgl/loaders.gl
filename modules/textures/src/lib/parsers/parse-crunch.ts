@@ -26,7 +26,10 @@ const CRN_FORMAT = {
 };
 
 /** Mapping of Crunch formats to DXT formats. */
-const DXT_FORMAT_MAP: Record<number, {pixelFormat: GLTextureFormat; sizeFunction: (width: number, height: number) => number}> = {
+const DXT_FORMAT_MAP: Record<
+  number,
+  {pixelFormat: GLTextureFormat; sizeFunction: (width: number, height: number) => number}
+> = {
   [CRN_FORMAT.cCRNFmtDXT1]: {
     pixelFormat: GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
     sizeFunction: getDxt1LevelSize

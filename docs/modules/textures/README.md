@@ -35,17 +35,17 @@ The compressed texture loaders in this module return `TextureLevel` objects from
 
 A `TextureLevel` describes one mip level of one texture image.
 
-| Field        | Type              | Description                                        |
-| ------------ | ----------------- | -------------------------------------------------- |
-| `compressed` | `boolean`         | Whether the mip level data is GPU-compressed.      |
-| `shape`      | `'texture-level'` | Shape tag for normalized texture-level payloads.   |
-| `format`     | `number`          | WebGL internal format enum for the decoded level.  |
-| `textureFormat`  | `TextureFormat`   | WebGPU / luma.gl style format string for the data. |
-| `data`       | `Uint8Array`      | The bytes for this mip level.                      |
-| `width`      | `number`          | Width of this mip level.                           |
-| `height`     | `number`          | Height of this mip level.                          |
-| `levelSize`  | `number`          | Size in bytes for this mip level, when available.  |
-| `hasAlpha`   | `boolean`         | Whether the transcoded texture contains alpha.     |
+| Field           | Type              | Description                                        |
+| --------------- | ----------------- | -------------------------------------------------- |
+| `compressed`    | `boolean`         | Whether the mip level data is GPU-compressed.      |
+| `shape`         | `'texture-level'` | Shape tag for normalized texture-level payloads.   |
+| `format`        | `number`          | WebGL internal format enum for the decoded level.  |
+| `textureFormat` | `TextureFormat`   | WebGPU / luma.gl style format string for the data. |
+| `data`          | `Uint8Array`      | The bytes for this mip level.                      |
+| `width`         | `number`          | Width of this mip level.                           |
+| `height`        | `number`          | Height of this mip level.                          |
+| `levelSize`     | `number`          | Size in bytes for this mip level, when available.  |
+| `hasAlpha`      | `boolean`         | Whether the transcoded texture contains alpha.     |
 
 `BasisLoader` returns `TextureLevel[][]`, preserving all images in a `.basis` or `.ktx2` asset.
 
