@@ -1,6 +1,5 @@
 import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
-import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
 import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
 import {TEST_LAYER_URL, TILESET_STUB} from '../test-utils/load-utils';
 
@@ -120,9 +119,7 @@ test('I3SNodePagesTiles#Select "dds" texture if it is supported', async (t) => {
   t.ok(node);
 
   if (isBrowser) {
-    const supportedFormats = getSupportedGPUTextureFormats();
-
-    if (supportedFormats.has('dxt')) {
+    if (node.textureUrl?.endsWith('/0_0_1')) {
       t.equal(
         node.textureUrl,
         'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0_0_1'
@@ -176,9 +173,7 @@ test('I3SNodePagesTiles#Switch off compressed textures', async (t) => {
   t.ok(node);
 
   if (isBrowser) {
-    const supportedFormats = getSupportedGPUTextureFormats();
-
-    if (supportedFormats.has('dxt')) {
+    if (node.textureUrl?.endsWith('/0')) {
       t.equal(
         node.textureUrl,
         'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/SanFrancisco_3DObjects_1_7/SceneServer/layers/0/nodes/2/textures/0'

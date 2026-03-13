@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {GLTextureFormat, TextureLevel} from '@loaders.gl/schema';
+import {log} from '@loaders.gl/loader-utils';
 import {read} from 'ktx-parse';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 import {mapVkFormatToWebGL} from '../utils/ktx-format-helper';
@@ -40,7 +41,16 @@ export function parseKTX(arrayBuffer: ArrayBuffer): TextureLevel[] {
   const mipMapLevels = Math.max(1, ktx.levels.length);
   const width = ktx.pixelWidth;
   const height = ktx.pixelHeight;
-  const internalFormat = mapVkFormatToWebGL(ktx.vkFormat);
+  const internalFormat: GLTextureFormat | undefined = mapVkFormatToWebGL(ktx.vkFormat);
+
+  if (internalFormat === undefined) {
+    // TODO: Basis-backed and otherwise unknown-format KTX2 files should preserve the
+    // legacy CompressedTextureLoader behavior for now. Do not fail here or add implicit
+    // transcoding in this parser path; just return levels without `format` metadata.
+    log.warn(
+      `KTX2 container vkFormat ${ktx.vkFormat} does not map to a known WebGL format; returning texture levels without format metadata.`
+    )();
+  }
 
   return extractMipmapImages(ktx.levels, {
     mipMapLevels,
