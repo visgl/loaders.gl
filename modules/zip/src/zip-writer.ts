@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
-import JSZip, {JSZipGeneratorOptions} from 'jszip';
+import JSZip, {JSZipFileOptions, JSZipGeneratorOptions} from 'jszip';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -12,10 +12,10 @@ export type ZipWriterOptions = WriterOptions & {
   zip?: {
     onUpdate?: (metadata: {percent: number}) => void;
     /** When enabled, parent directory entries are created for nested file keys. */
-    createDirectoryEntries?: boolean;
+    createFolders?: boolean;
   };
-  /** Passthrough options to jszip */
-  jszip?: JSZipGeneratorOptions;
+  /** Passthrough options to jszip. Note that jszip maybe replaced in future versions of loaders.gl */
+  jszip?: JSZipGeneratorOptions & JSZipFileOptions;
 };
 
 /**
@@ -32,7 +32,7 @@ export const ZipWriter = {
   options: {
     zip: {
       onUpdate: () => {},
-      createDirectoryEntries: false
+      createFolders: false
     },
     jszip: {}
   },
@@ -46,30 +46,35 @@ async function encodeZipAsync(
   const jsZip = new JSZip();
   const directoryEntries = new Set<string>();
   const zipOptions = {...ZipWriter.options.zip, ...options?.zip};
+  const jszipOptions = {...ZipWriter.options?.jszip, ...options.jszip};
+  const jszipFileOptions: JSZipFileOptions = {
+    createFolders: false,
+    ...jszipOptions
+  };
 
   // add files to the zip
   for (const subFileName in fileMap) {
     const subFileData = fileMap[subFileName];
     const isDirectoryEntry = subFileName.endsWith('/');
 
-    if (isDirectoryEntry || zipOptions.createDirectoryEntries) {
+    if (isDirectoryEntry || zipOptions.createFolders) {
       addParentDirectoryEntries(jsZip, subFileName, options, directoryEntries);
     }
 
     // jszip supports both arraybuffer and string data (the main loaders.gl types)
     // https://stuk.github.io/jszip/documentation/api_zipobject/async.html
     if (isDirectoryEntry) {
-      jsZip.file(subFileName, null, {...options?.jszip, dir: true});
+      jsZip.file(subFileName, null, {...jszipFileOptions, dir: true});
     } else {
-      jsZip.file(subFileName, subFileData, options?.jszip || {});
+      jsZip.file(subFileName, subFileData, jszipFileOptions);
     }
   }
 
-  const jszipOptions: JSZipGeneratorOptions = {...ZipWriter.options?.jszip, ...options.jszip};
+  const jszipGeneratorOptions: JSZipGeneratorOptions = jszipOptions;
 
   try {
     return await jsZip.generateAsync(
-      {...jszipOptions, type: 'arraybuffer'}, // generate an arraybuffer
+      {...jszipGeneratorOptions, type: 'arraybuffer'}, // generate an arraybuffer
       zipOptions.onUpdate
     );
   } catch (error) {
@@ -98,7 +103,11 @@ function addParentDirectoryEntries(
       continue;
     }
 
-    jsZip.file(parentDirectoryPath, null, {...options?.jszip, dir: true});
+    jsZip.file(parentDirectoryPath, null, {
+      createFolders: false,
+      ...options?.jszip,
+      dir: true
+    });
     directoryEntries.add(parentDirectoryPath);
   }
 }

@@ -9,9 +9,9 @@ For documentation please visit the [website](https://loaders.gl).
 ## ZipWriter options
 
 - `options.zip.onUpdate` (`(metadata: {percent: number}) => void`)
-  - Forwarded to `JSZip.generateAsync` for progress updates.
-- `options.zip.createDirectoryEntries` (`boolean`, default: `false`)
-  - When true, directory entries are created for all parent paths in nested file keys (for example, `folder/sub/file.txt` creates `folder/` and `folder/sub/` entries).
-  - Directory keys that already end with `/` are always written as directory entries regardless of this option.
+  - Receives progress updates while the archive is generated.
+- `options.zip.createFolders` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> (`boolean`, default: `false`)
+  - Creates parent directory entries for nested file keys such as `folder/sub/file.txt`.
+  - Directory keys that already end with `/` are written as directory entries whether or not this option is enabled.
 - `options.jszip`
-  - Passed through to JSZip for archive generation.
+  - Passes JSZip file and archive generation options through to the underlying writer.

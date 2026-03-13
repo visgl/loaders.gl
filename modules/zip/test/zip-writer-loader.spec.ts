@@ -73,7 +73,7 @@ test('ZipWriter creates parent directory entries for nested files', async (t) =>
       'folder1/folder2/file2.txt': 'nested file 2'
     },
     ZipWriter,
-    {zip: {createDirectoryEntries: true}}
+    {zip: {createFolders: true}}
   );
   const fileMap = await parse(arrayBuffer, ZipLoader);
   const zipWithDirectoryEntries = await new JSZip().loadAsync(arrayBuffer);
@@ -144,7 +144,7 @@ test('ZipWriter emits generated directory entries when explicitly enabled', asyn
       'images/avatars/user-2.txt': '2'
     },
     ZipWriter,
-    {zip: {createDirectoryEntries: true}}
+    {zip: {createFolders: true}}
   );
 
   const zip = await new JSZip().loadAsync(arrayBuffer);
