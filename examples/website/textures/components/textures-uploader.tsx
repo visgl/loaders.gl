@@ -3,7 +3,10 @@
 // Copyright (c) vis.gl contributors
 
 import React from 'react';
+// @ts-ignore Missing local type package in this standalone example.
 import styled from 'styled-components';
+import {Device} from '@luma.gl/core';
+import {Model} from '@luma.gl/engine';
 import {CompressedTexture} from './compressed-texture';
 
 const Container = styled.div`
@@ -28,17 +31,20 @@ const ImageContainer = styled.div`
 `;
 
 type TextureUploaderProps = {
-  canvas: object;
-  model: object;
+  canvas: HTMLCanvasElement;
+  device: Device;
+  model: Model;
 };
 
-export class TextureUploader extends React.PureComponent<TextureUploaderProps> {
-  static defaultProps = {
-    canvas: null,
-    model: null
-  };
+type TextureUploaderState = {
+  uploadedImage: File | null;
+};
 
-  constructor(props) {
+export class TextureUploader extends React.PureComponent<
+  TextureUploaderProps,
+  TextureUploaderState
+> {
+  constructor(props: TextureUploaderProps) {
     super(props);
 
     this.state = {
@@ -49,7 +55,7 @@ export class TextureUploader extends React.PureComponent<TextureUploaderProps> {
     this.handleCleanTexture = this.handleCleanTexture.bind(this);
   }
 
-  handleLoadFile(event) {
+  handleLoadFile(event: React.DragEvent<HTMLDivElement>) {
     const file = event.dataTransfer.files[0];
     this.setState({uploadedImage: file});
     event.preventDefault();
@@ -61,7 +67,7 @@ export class TextureUploader extends React.PureComponent<TextureUploaderProps> {
 
   render() {
     const {canvas, device, model} = this.props;
-    const {uploadedImage, files} = this.state;
+    const {uploadedImage} = this.state;
 
     return (
       <div>
@@ -69,16 +75,21 @@ export class TextureUploader extends React.PureComponent<TextureUploaderProps> {
           <Container>
             <TextureFrame
               onDrop={this.handleLoadFile}
-              onDragOver={(event) => event.preventDefault()}
+              onDragOver={(event: React.DragEvent<HTMLDivElement>) => event.preventDefault()}
             >
               Drag&Drop texture
             </TextureFrame>
-            <input style={{display: 'none'}} type="file" id="fileInput" files={files} />
+            <input style={{display: 'none'}} type="file" id="fileInput" />
           </Container>
         )}
         <ImageContainer>
           {uploadedImage && (
-            <CompressedTexture image={uploadedImage} canvas={canvas} device={device} model={model} />
+            <CompressedTexture
+              image={uploadedImage}
+              canvas={canvas}
+              device={device}
+              model={model}
+            />
           )}
           {uploadedImage && <button onClick={this.handleCleanTexture}>Clean</button>}
         </ImageContainer>

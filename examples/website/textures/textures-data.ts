@@ -8,8 +8,8 @@ export type TextureFormatsInfo = {
   availability?: string;
   link?: string;
   codeSample?: string;
-  images: {format: string; src: string}[];
-}
+  images: {format: string; src: string; useBasis?: boolean}[];
+};
 
 export const IMAGES_DATA: TextureFormatsInfo[] = [
   {
@@ -51,9 +51,7 @@ export const IMAGES_DATA: TextureFormatsInfo[] = [
   {
     formatName: 'KTX2',
     codeSample: 'load(url, CompressedTextureLoader)',
-    images: [
-      {format: 'KTX2', src: 'kodim23.ktx2', useBasis: true}
-    ]
+    images: [{format: 'KTX2', src: 'kodim23.ktx2', useBasis: true}]
   },
   {
     formatName: 'DDS: S3 Texture Compression (WEBGL_compressed_texture_s3tc)',
