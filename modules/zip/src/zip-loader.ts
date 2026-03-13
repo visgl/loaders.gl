@@ -39,6 +39,10 @@ async function parseZipAsync(data: any, options = {}): Promise<FileMap> {
 
     // start to load each file in this zip
     zip.forEach((relativePath, zipEntry) => {
+      if (zipEntry.dir) {
+        return;
+      }
+
       const subFilename = zipEntry.name;
 
       const promise = loadZipEntry(jsZip, subFilename, options).then((arrayBufferOrError) => {

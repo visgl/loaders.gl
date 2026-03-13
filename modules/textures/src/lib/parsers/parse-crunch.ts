@@ -2,12 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {GLTextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {loadCrunchModule} from './crunch-module-loader';
-import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {assert} from '@loaders.gl/loader-utils';
 import {getDxt1LevelSize, getDxtXLevelSize} from './parse-dds';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
+import {
+  GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+  GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
+  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+} from '../gl-extensions';
 
 // Taken from crnlib.h
 const CRN_FORMAT = {
@@ -22,17 +26,20 @@ const CRN_FORMAT = {
 };
 
 /** Mapping of Crunch formats to DXT formats. */
-const DXT_FORMAT_MAP = {
+const DXT_FORMAT_MAP: Record<
+  number,
+  {pixelFormat: GLTextureFormat; sizeFunction: (width: number, height: number) => number}
+> = {
   [CRN_FORMAT.cCRNFmtDXT1]: {
-    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
+    pixelFormat: GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
     sizeFunction: getDxt1LevelSize
   },
   [CRN_FORMAT.cCRNFmtDXT3]: {
-    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT3_EXT,
+    pixelFormat: GL_COMPRESSED_RGBA_S3TC_DXT3_EXT,
     sizeFunction: getDxtXLevelSize
   },
   [CRN_FORMAT.cCRNFmtDXT5]: {
-    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    pixelFormat: GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
     sizeFunction: getDxtXLevelSize
   }
 };

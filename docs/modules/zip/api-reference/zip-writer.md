@@ -18,19 +18,32 @@ Encodes a filemap into a Zip Archive. Returns an `ArrayBuffer` that is a valid Z
 import {encode, writeFile} from '@loaders.gl/core';
 import {ZipWriter} from '@loaders.gl/zip';
 
-const FILEMAP = {
+const FILE_MAP = {
   filename1: arrayBuffer1,
-  'directory/filename2': ...
+  'directory/filename2': arrayBuffer2,
+  'directory/nested/': ''
 };
 
-const arrayBuffer = await encode(FILE_MAP, ZipWriter)
+const arrayBuffer = await encode(FILE_MAP, ZipWriter);
 writeFile(zipFileName, arrayBuffer);
 ```
 
 ## File Format
 
-The file map is an object with keys representing file names or relative paths in the zip file, and values being the contents of each sub file (either `ArrayBuffer` or `String`).
+The file map is an object with keys representing file names or relative paths in the zip file, and values being the contents of each subfile (either `ArrayBuffer` or `String`).
+
+- Nested keys such as `folder/file.txt` are written as file paths inside the archive.
+- Keys ending with `/` are written as directory entries.
+- Parent directory entries can also be emitted for nested file keys.
 
 ## Options
 
-Options are forwarded to [JSZip.generateAsync](https://stuk.github.io/jszip/documentation/api_jszip/generate_async.html), however type is always set to `arraybuffer` to ensure compatibility with writer driver functions in `@loaders.gl/core`.
+Archive output always uses `type: 'arraybuffer'`.
+
+| Option              | From                                                                                                          | Type                                    | Default    | Description                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| `zip.onUpdate`      |                                                                                                               | `(metadata: {percent: number}) => void` | `() => {}` | Receives progress updates while the archive is generated.                                             |
+| `zip.createFolders` | [![Website shields.io](https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square)](http://shields.io) | `boolean`                               | `false`    | Creates parent directory entries for nested file keys such as `folder/sub/file.txt`.                  |
+| `jszip`             |                                                                                                               | `object`                                | `{}`       | Passes JSZip file and archive generation options through to the underlying writer as an escape hatch. |
+
+Explicit slash-suffixed keys are written as directory entries whether or not `zip.createFolders` is enabled.

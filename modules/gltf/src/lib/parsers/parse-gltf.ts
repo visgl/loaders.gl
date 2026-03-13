@@ -8,7 +8,7 @@ import type {ParseGLBOptions} from './parse-glb';
 import type {ImageType, TextureLevel} from '@loaders.gl/schema';
 import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageLoader} from '@loaders.gl/images';
-import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
+import {BasisLoader} from '@loaders.gl/textures';
 
 import {assert} from '../utils/assert';
 import {isGLB, parseGLBSync} from './parse-glb';
@@ -223,8 +223,7 @@ async function loadImage(
 
   const gltfOptions = {
     ...strictOptions,
-    core: {...strictOptions?.core, mimeType: image.mimeType},
-    basis: strictOptions.basis || {format: selectSupportedBasisFormat()}
+    core: {...strictOptions?.core, mimeType: image.mimeType}
   } satisfies StrictLoaderOptions;
 
   // Call `parse`

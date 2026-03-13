@@ -2,11 +2,28 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/* eslint-disable camelcase */
 /* eslint-disable indent */
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {GLTextureFormat, TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {loadBasisEncoderModule, loadBasisTranscoderModule} from './basis-module-loader';
-import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
-import {getSupportedGPUTextureFormats} from '../utils/texture-formats';
+import {
+  GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
+  GL_COMPRESSED_RED_RGTC1_EXT,
+  GL_COMPRESSED_RGB_ATC_WEBGL,
+  GL_COMPRESSED_RGB_ETC1_WEBGL,
+  GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+  GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+  GL_COMPRESSED_RGBA8_ETC2_EAC,
+  GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
+  GL_COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL,
+  GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
+  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+  GL_RGB565,
+  GL_RGBA4,
+  GL_RGBA8
+} from '../gl-extensions';
+import {detectSupportedTextureFormats} from '../utils/detect-supported-texture-formats';
 import {isKTX} from './parse-ktx';
 
 // TODO - circular type import
@@ -34,58 +51,125 @@ export type BasisFormat =
 type BasisOutputOptions = {
   basisFormat: number;
   compressed: boolean;
-  format?: number;
+  format?: GLTextureFormat;
+  textureFormat?: TextureFormat;
 };
 
-const OutputFormat: Record<string, BasisOutputOptions> = {
+export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOptions> = {
   etc1: {
     basisFormat: 0,
     compressed: true,
-    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_ETC1_WEBGL
+    format: GL_COMPRESSED_RGB_ETC1_WEBGL,
+    textureFormat: 'etc1-rbg-unorm-webgl'
   },
-  etc2: {basisFormat: 1, compressed: true},
+  etc2: {
+    basisFormat: 1,
+    compressed: true,
+    format: GL_COMPRESSED_RGBA8_ETC2_EAC,
+    textureFormat: 'etc2-rgba8unorm'
+  },
   bc1: {
     basisFormat: 2,
     compressed: true,
-    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT
+    format: GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+    textureFormat: 'bc1-rgb-unorm-webgl'
   },
   bc3: {
     basisFormat: 3,
     compressed: true,
-    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT
+    format: GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    textureFormat: 'bc3-rgba-unorm'
   },
-  bc4: {basisFormat: 4, compressed: true},
-  bc5: {basisFormat: 5, compressed: true},
-  'bc7-m6-opaque-only': {basisFormat: 6, compressed: true},
-  'bc7-m5': {basisFormat: 7, compressed: true},
+  bc4: {
+    basisFormat: 4,
+    compressed: true,
+    format: GL_COMPRESSED_RED_RGTC1_EXT,
+    textureFormat: 'bc4-r-unorm'
+  },
+  bc5: {
+    basisFormat: 5,
+    compressed: true,
+    format: GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
+    textureFormat: 'bc5-rg-unorm'
+  },
+  'bc7-m6-opaque-only': {
+    basisFormat: 6,
+    compressed: true,
+    format: GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
+    textureFormat: 'bc7-rgba-unorm'
+  },
+  'bc7-m5': {
+    basisFormat: 7,
+    compressed: true,
+    format: GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,
+    textureFormat: 'bc7-rgba-unorm'
+  },
   'pvrtc1-4-rgb': {
     basisFormat: 8,
     compressed: true,
-    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_PVRTC_4BPPV1_IMG
+    format: GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+    textureFormat: 'pvrtc-rgb4unorm-webgl'
   },
   'pvrtc1-4-rgba': {
     basisFormat: 9,
     compressed: true,
-    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG
+    format: GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+    textureFormat: 'pvrtc-rgba4unorm-webgl'
   },
   'astc-4x4': {
     basisFormat: 10,
     compressed: true,
-    format: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_4X4_KHR
+    format: GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
+    textureFormat: 'astc-4x4-unorm'
   },
-  'atc-rgb': {basisFormat: 11, compressed: true},
-  'atc-rgba-interpolated-alpha': {basisFormat: 12, compressed: true},
-  rgba32: {basisFormat: 13, compressed: false},
-  rgb565: {basisFormat: 14, compressed: false},
-  bgr565: {basisFormat: 15, compressed: false},
-  rgba4444: {basisFormat: 16, compressed: false}
+  'atc-rgb': {
+    basisFormat: 11,
+    compressed: true,
+    format: GL_COMPRESSED_RGB_ATC_WEBGL,
+    textureFormat: 'atc-rgb-unorm-webgl'
+  },
+  'atc-rgba-interpolated-alpha': {
+    basisFormat: 12,
+    compressed: true,
+    format: GL_COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL,
+    textureFormat: 'atc-rgbai-unorm-webgl'
+  },
+  rgba32: {
+    basisFormat: 13,
+    compressed: false,
+    format: GL_RGBA8,
+    textureFormat: 'rgba8unorm'
+  },
+  rgb565: {
+    basisFormat: 14,
+    compressed: false,
+    format: GL_RGB565,
+    textureFormat: 'rgb565unorm-webgl'
+  },
+  bgr565: {
+    basisFormat: 15,
+    compressed: false,
+    format: GL_RGB565,
+    textureFormat: 'rgb565unorm-webgl'
+  },
+  rgba4444: {
+    basisFormat: 16,
+    compressed: false,
+    format: GL_RGBA4,
+    textureFormat: 'rgba4unorm-webgl'
+  }
 };
+
+export const BASIS_FORMATS = Object.freeze(
+  Object.keys(BASIS_FORMAT_TO_OUTPUT_OPTIONS) as BasisFormat[]
+);
 
 export type ParseBasisOptions = {
   format: 'auto' | BasisFormat | {alpha: BasisFormat; noAlpha: BasisFormat};
   libraryPath?: string;
   containerFormat: 'auto' | 'ktx2' | 'basis';
   module: 'transcoder' | 'encoder';
+  supportedTextureFormats?: TextureFormat[];
 };
 
 /**
@@ -185,7 +269,7 @@ function transcodeImage(
   const hasAlpha = basisFile.getHasAlpha(/* imageIndex, levelIndex */);
 
   // Check options for output format etc
-  const {compressed, format, basisFormat} = getBasisOptions(options, hasAlpha);
+  const {compressed, format, basisFormat, textureFormat} = getBasisOptions(options, hasAlpha);
 
   const decodedSize = basisFile.getImageTranscodedSizeInBytes(imageIndex, levelIndex, basisFormat);
   const decodedData = new Uint8Array(decodedSize);
@@ -196,11 +280,13 @@ function transcodeImage(
 
   return {
     // standard loaders.gl image category payload
+    shape: 'texture-level',
     width,
     height,
     data: decodedData,
     compressed,
-    format,
+    ...(format !== undefined ? {format} : {}),
+    ...(textureFormat !== undefined ? {textureFormat} : {}),
 
     // Additional fields
     // Add levelSize field.
@@ -251,7 +337,7 @@ function transcodeKTX2Image(
   const {alphaFlag, height, width} = ktx2File.getImageLevelInfo(levelIndex, 0, 0);
 
   // Check options for output format etc
-  const {compressed, format, basisFormat} = getBasisOptions(options, alphaFlag);
+  const {compressed, format, basisFormat, textureFormat} = getBasisOptions(options, alphaFlag);
 
   const decodedSize = ktx2File.getImageTranscodedSizeInBytes(
     levelIndex,
@@ -278,15 +364,17 @@ function transcodeKTX2Image(
 
   return {
     // standard loaders.gl image category payload
+    shape: 'texture-level',
     width,
     height,
     data: decodedData,
     compressed,
+    ...(format !== undefined ? {format} : {}),
+    ...(textureFormat !== undefined ? {textureFormat} : {}),
 
     // Additional fields
     levelSize: decodedSize,
-    hasAlpha: alphaFlag,
-    format
+    hasAlpha: alphaFlag
   };
 }
 
@@ -297,16 +385,21 @@ function transcodeKTX2Image(
  * @returns BasisFormat data
  */
 function getBasisOptions(options: BasisLoaderOptions, hasAlpha: boolean): BasisOutputOptions {
-  // TODO - any
-  let format: any = options.basis?.format;
+  let format = options.basis?.format || 'auto';
   if (format === 'auto') {
-    format = selectSupportedBasisFormat();
+    format = options.basis?.supportedTextureFormats
+      ? selectSupportedBasisFormat(options.basis.supportedTextureFormats)
+      : selectSupportedBasisFormat();
   }
   if (typeof format === 'object') {
     format = hasAlpha ? format.alpha : format.noAlpha;
   }
-  format = format.toLowerCase();
-  return OutputFormat[format];
+  const normalizedFormat = format.toLowerCase() as BasisFormat;
+  const basisOutputOptions = BASIS_FORMAT_TO_OUTPUT_OPTIONS[normalizedFormat];
+  if (!basisOutputOptions) {
+    throw new Error(`Unknown Basis format ${format}`);
+  }
+  return basisOutputOptions;
 }
 
 /**
@@ -318,24 +411,165 @@ export function selectSupportedBasisFormat():
   | {
       alpha: BasisFormat;
       noAlpha: BasisFormat;
-    } {
-  const supportedFormats = getSupportedGPUTextureFormats();
-  if (supportedFormats.has('astc')) {
+    };
+export function selectSupportedBasisFormat(supportedTextureFormats?: Iterable<TextureFormat>):
+  | BasisFormat
+  | {
+      alpha: BasisFormat;
+      noAlpha: BasisFormat;
+    };
+export function selectSupportedBasisFormat(
+  supportedTextureFormats: Iterable<TextureFormat> = detectSupportedTextureFormats()
+): BasisFormat | {alpha: BasisFormat; noAlpha: BasisFormat} {
+  const textureFormats = new Set(supportedTextureFormats);
+
+  if (hasSupportedTextureFormat(textureFormats, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
     return 'astc-4x4';
-  } else if (supportedFormats.has('dxt')) {
+  } else if (hasSupportedTextureFormat(textureFormats, ['bc7-rgba-unorm', 'bc7-rgba-unorm-srgb'])) {
+    return {
+      alpha: 'bc7-m5',
+      noAlpha: 'bc7-m6-opaque-only'
+    };
+  } else if (
+    hasSupportedTextureFormat(textureFormats, [
+      'bc1-rgb-unorm-webgl',
+      'bc1-rgb-unorm-srgb-webgl',
+      'bc1-rgba-unorm',
+      'bc1-rgba-unorm-srgb',
+      'bc2-rgba-unorm',
+      'bc2-rgba-unorm-srgb',
+      'bc3-rgba-unorm',
+      'bc3-rgba-unorm-srgb'
+    ])
+  ) {
     return {
       alpha: 'bc3',
       noAlpha: 'bc1'
     };
-  } else if (supportedFormats.has('pvrtc')) {
+  } else if (
+    hasSupportedTextureFormat(textureFormats, [
+      'pvrtc-rgb4unorm-webgl',
+      'pvrtc-rgba4unorm-webgl',
+      'pvrtc-rbg2unorm-webgl',
+      'pvrtc-rgba2unorm-webgl'
+    ])
+  ) {
     return {
       alpha: 'pvrtc1-4-rgba',
       noAlpha: 'pvrtc1-4-rgb'
     };
-  } else if (supportedFormats.has('etc1')) {
-    return 'etc1';
-  } else if (supportedFormats.has('etc2')) {
+  } else if (
+    hasSupportedTextureFormat(textureFormats, [
+      'etc2-rgb8unorm',
+      'etc2-rgb8unorm-srgb',
+      'etc2-rgb8a1unorm',
+      'etc2-rgb8a1unorm-srgb',
+      'etc2-rgba8unorm',
+      'etc2-rgba8unorm-srgb',
+      'eac-r11unorm',
+      'eac-r11snorm',
+      'eac-rg11unorm',
+      'eac-rg11snorm'
+    ])
+  ) {
     return 'etc2';
+  } else if (textureFormats.has('etc1-rbg-unorm-webgl')) {
+    return 'etc1';
+  } else if (
+    hasSupportedTextureFormat(textureFormats, [
+      'atc-rgb-unorm-webgl',
+      'atc-rgba-unorm-webgl',
+      'atc-rgbai-unorm-webgl'
+    ])
+  ) {
+    return {
+      alpha: 'atc-rgba-interpolated-alpha',
+      noAlpha: 'atc-rgb'
+    };
   }
   return 'rgb565';
+}
+
+export function getSupportedBasisFormats(
+  supportedTextureFormats: Iterable<TextureFormat> = detectSupportedTextureFormats()
+): BasisFormat[] {
+  const textureFormats = new Set(supportedTextureFormats);
+  const basisFormats: BasisFormat[] = [];
+
+  if (hasSupportedTextureFormat(textureFormats, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
+    basisFormats.push('astc-4x4');
+  }
+  if (
+    hasSupportedTextureFormat(textureFormats, [
+      'bc1-rgb-unorm-webgl',
+      'bc1-rgb-unorm-srgb-webgl',
+      'bc1-rgba-unorm',
+      'bc1-rgba-unorm-srgb',
+      'bc2-rgba-unorm',
+      'bc2-rgba-unorm-srgb',
+      'bc3-rgba-unorm',
+      'bc3-rgba-unorm-srgb'
+    ])
+  ) {
+    basisFormats.push('bc1', 'bc3');
+  }
+  if (hasSupportedTextureFormat(textureFormats, ['bc4-r-unorm', 'bc4-r-snorm'])) {
+    basisFormats.push('bc4');
+  }
+  if (hasSupportedTextureFormat(textureFormats, ['bc5-rg-unorm', 'bc5-rg-snorm'])) {
+    basisFormats.push('bc5');
+  }
+  if (hasSupportedTextureFormat(textureFormats, ['bc7-rgba-unorm', 'bc7-rgba-unorm-srgb'])) {
+    basisFormats.push('bc7-m5', 'bc7-m6-opaque-only');
+  }
+  if (
+    hasSupportedTextureFormat(textureFormats, [
+      'pvrtc-rgb4unorm-webgl',
+      'pvrtc-rgba4unorm-webgl',
+      'pvrtc-rbg2unorm-webgl',
+      'pvrtc-rgba2unorm-webgl'
+    ])
+  ) {
+    basisFormats.push('pvrtc1-4-rgb', 'pvrtc1-4-rgba');
+  }
+  if (
+    hasSupportedTextureFormat(textureFormats, [
+      'etc2-rgb8unorm',
+      'etc2-rgb8unorm-srgb',
+      'etc2-rgb8a1unorm',
+      'etc2-rgb8a1unorm-srgb',
+      'etc2-rgba8unorm',
+      'etc2-rgba8unorm-srgb',
+      'eac-r11unorm',
+      'eac-r11snorm',
+      'eac-rg11unorm',
+      'eac-rg11snorm'
+    ])
+  ) {
+    basisFormats.push('etc2');
+  }
+  if (textureFormats.has('etc1-rbg-unorm-webgl')) {
+    basisFormats.push('etc1');
+  }
+  if (
+    hasSupportedTextureFormat(textureFormats, [
+      'atc-rgb-unorm-webgl',
+      'atc-rgba-unorm-webgl',
+      'atc-rgbai-unorm-webgl'
+    ])
+  ) {
+    basisFormats.push('atc-rgb', 'atc-rgba-interpolated-alpha');
+  }
+
+  basisFormats.push('rgba32', 'rgb565', 'bgr565', 'rgba4444');
+  return basisFormats;
+}
+
+function hasSupportedTextureFormat(
+  supportedTextureFormats: Set<TextureFormat>,
+  candidateTextureFormats: TextureFormat[]
+): boolean {
+  return candidateTextureFormats.some((textureFormat) =>
+    supportedTextureFormats.has(textureFormat)
+  );
 }
