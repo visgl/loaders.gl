@@ -35,7 +35,9 @@
   ],
   "browser": {
     "./dist/index.js": "./dist/index.browser.js",
+    "./dist/load-library/require-utils.node.js": false,
     "./src/index.ts": "./src/index.browser.ts",
+    "./src/load-library/require-utils.node.ts": false,
     "fs": false,
     "path": false
   },
