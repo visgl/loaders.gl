@@ -4,15 +4,11 @@
 
 import type {Feature, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
 import {geojsonToBinary} from '@loaders.gl/gis';
-// eslint-disable-next-line import/default
-import mltPkg from '@maplibre/mlt';
+import {decodeTile} from '@maplibre/mlt';
 import type {Feature as MLTFeature} from '@maplibre/mlt';
 
 import type {MLTLoaderOptions} from '../mlt-loader';
 import {MLT_DEFAULT_OPTIONS} from '../mlt-loader';
-
-// @maplibre/mlt is an ESM package; in Node.js CJS interop contexts, use default import + destructure
-const {decodeTile} = mltPkg;
 
 type MLTOptions = Required<MLTLoaderOptions>['mlt'];
 
