@@ -194,7 +194,7 @@ function encodeValues_BYTE_ARRAY(values: Buffer[]): Buffer {
   let buf_pos = 0;
   for (let i = 0; i < values.length; i++) {
     buf.writeUInt32LE(values[i].length, buf_pos);
-    values[i].copy(buf, buf_pos + 4);
+    values[i].copy(buf as Uint8Array, buf_pos + 4);
     buf_pos += 4 + values[i].length;
   }
   return buf;
@@ -222,7 +222,7 @@ function encodeValues_FIXED_LEN_BYTE_ARRAY(values: Buffer[], opts: ParquetCodecO
       throw new Error(`invalid value for FIXED_LEN_BYTE_ARRAY: ${values[i]}`);
     }
   }
-  return Buffer.concat(values);
+  return Buffer.concat(values as Uint8Array[]);
 }
 
 function decodeValues_FIXED_LEN_BYTE_ARRAY(

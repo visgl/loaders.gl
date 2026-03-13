@@ -30,7 +30,7 @@ export function serializeThrift(obj: any): Buffer {
   obj.write(protocol);
   transport.flush();
 
-  return Buffer.concat(output);
+  return Buffer.concat(output as Uint8Array[]);
 }
 
 export function decodeThrift(obj: any, buf: Buffer, offset?: number) {

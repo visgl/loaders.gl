@@ -376,7 +376,7 @@ async function encodeDataPage(
   page: Buffer;
 }> {
   /* encode repetition and definition levels */
-  let rLevelsBuf: Buffer<ArrayBufferLike> = Buffer.alloc(0);
+  let rLevelsBuf: Buffer = Buffer.alloc(0);
   if (column.rLevelMax > 0) {
     rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
       bitWidth: getBitWidth(column.rLevelMax)
@@ -384,7 +384,7 @@ async function encodeDataPage(
     });
   }
 
-  let dLevelsBuf: Buffer<ArrayBufferLike> = Buffer.alloc(0);
+  let dLevelsBuf: Buffer = Buffer.alloc(0);
   if (column.dLevelMax > 0) {
     dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
       bitWidth: getBitWidth(column.dLevelMax)
@@ -398,7 +398,7 @@ async function encodeDataPage(
     bitWidth: column.typeLength
   });
 
-  const dataBuf = Buffer.concat([rLevelsBuf, dLevelsBuf, valuesBuf]);
+  const dataBuf = Buffer.concat([rLevelsBuf, dLevelsBuf, valuesBuf] as Uint8Array[]);
 
   // compression = column.compression === 'UNCOMPRESSED' ? (compression || 'UNCOMPRESSED') : column.compression;
   const compressedBuf = await Compression.deflate(column.compression!, dataBuf);
@@ -418,7 +418,7 @@ async function encodeDataPage(
 
   /* concat page header, repetition and definition levels and values */
   const headerBuf = serializeThrift(header);
-  const page = Buffer.concat([headerBuf, compressedBuf]);
+  const page = Buffer.concat([headerBuf, compressedBuf] as Uint8Array[]);
 
   return {header, headerSize: headerBuf.length, page};
 }
@@ -445,7 +445,7 @@ async function encodeDataPageV2(
   const compressedBuf = await Compression.deflate(column.compression!, valuesBuf);
 
   /* encode repetition and definition levels */
-  let rLevelsBuf: Buffer<ArrayBufferLike> = Buffer.alloc(0);
+  let rLevelsBuf: Buffer = Buffer.alloc(0);
   if (column.rLevelMax > 0) {
     rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
       bitWidth: getBitWidth(column.rLevelMax),
@@ -453,7 +453,7 @@ async function encodeDataPageV2(
     });
   }
 
-  let dLevelsBuf: Buffer<ArrayBufferLike> = Buffer.alloc(0);
+  let dLevelsBuf: Buffer = Buffer.alloc(0);
   if (column.dLevelMax > 0) {
     dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
       bitWidth: getBitWidth(column.dLevelMax),
@@ -479,7 +479,7 @@ async function encodeDataPageV2(
 
   /* concat page header, repetition and definition levels and values */
   const headerBuf = serializeThrift(header);
-  const page = Buffer.concat([headerBuf, rLevelsBuf, dLevelsBuf, compressedBuf]);
+  const page = Buffer.concat([headerBuf, rLevelsBuf, dLevelsBuf, compressedBuf] as Uint8Array[]);
   return {header, headerSize: headerBuf.length, page};
 }
 
@@ -536,7 +536,7 @@ async function encodeColumnChunk(
 
   /* concat metadata header and data pages */
   const metadataOffset = baseOffset + pageBuf.length;
-  const body = Buffer.concat([pageBuf, serializeThrift(metadata)]);
+  const body = Buffer.concat([pageBuf, serializeThrift(metadata)] as Uint8Array[]);
   return {body, metadata, metadataOffset};
 }
 
@@ -573,7 +573,7 @@ async function encodeRowGroup(
     metadata.columns.push(cchunk);
     metadata.total_byte_size = new Int64(Number(metadata.total_byte_size) + cchunkData.body.length);
 
-    body = Buffer.concat([body, cchunkData.body]);
+    body = Buffer.concat([body, cchunkData.body] as Uint8Array[]);
   }
 
   return {body, metadata};
@@ -638,7 +638,7 @@ function encodeFooter(
   const metadataEncoded = serializeThrift(metadata);
   const footerEncoded = Buffer.alloc(metadataEncoded.length + 8);
 
-  metadataEncoded.copy(footerEncoded);
+  metadataEncoded.copy(footerEncoded as Uint8Array);
   footerEncoded.writeUInt32LE(metadataEncoded.length, metadataEncoded.length);
   footerEncoded.write(PARQUET_MAGIC, metadataEncoded.length + 4);
   return footerEncoded;
