@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {GLTextureFormat, TextureLevel} from '@loaders.gl/schema';
+import {getTextureFormatFromWebGLFormat} from './texture-format-map';
 
 export type CompressedTextureExtractOptions = {
   mipMapLevels: number;
   width: number;
   height: number;
   sizeFunction: Function;
-  internalFormat: number;
+  internalFormat?: GLTextureFormat;
 };
 
 /**
@@ -27,6 +28,8 @@ export function extractMipmapImages(
   options: CompressedTextureExtractOptions
 ): TextureLevel[] {
   const images = new Array(options.mipMapLevels);
+  const format = options.internalFormat;
+  const textureFormat = format === undefined ? undefined : getTextureFormatFromWebGLFormat(format);
 
   let levelWidth = options.width;
   let levelHeight = options.height;
@@ -38,14 +41,22 @@ export function extractMipmapImages(
     // @ts-expect-error
     const levelData = getLevelData(data, i, offset, levelSize);
 
-    images[i] = {
+    const image: TextureLevel = {
+      shape: 'texture-level',
       compressed: true,
-      format: options.internalFormat,
       data: levelData,
       width: levelWidth,
       height: levelHeight,
       levelSize
     };
+
+    if (format !== undefined) {
+      image.format = format;
+    }
+    if (textureFormat) {
+      image.textureFormat = textureFormat;
+    }
+    images[i] = image;
 
     levelWidth = Math.max(1, levelWidth >> 1);
     levelHeight = Math.max(1, levelHeight >> 1);
