@@ -425,9 +425,7 @@ export function selectSupportedBasisFormat(
 
   if (hasSupportedTextureFormat(textureFormats, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
     return 'astc-4x4';
-  } else if (
-    hasSupportedTextureFormat(textureFormats, ['bc7-rgba-unorm', 'bc7-rgba-unorm-srgb'])
-  ) {
+  } else if (hasSupportedTextureFormat(textureFormats, ['bc7-rgba-unorm', 'bc7-rgba-unorm-srgb'])) {
     return {
       alpha: 'bc7-m5',
       noAlpha: 'bc7-m6-opaque-only'
