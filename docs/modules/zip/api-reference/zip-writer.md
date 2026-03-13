@@ -40,10 +40,10 @@ The file map is an object with keys representing file names or relative paths in
 
 Archive output always uses `type: 'arraybuffer'`.
 
-| Option                      | From                                                                                  | Type                                   | Default   | Description                                                                                         |
-| --------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- | --------- | --------------------------------------------------------------------------------------------------- |
-| `zip.onUpdate`              |                                                                                       | `(metadata: {percent: number}) => void` | `() => {}` | Receives progress updates while the archive is generated.                                            |
-| `zip.createFolders`         | [![Website shields.io](https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square)](http://shields.io) | `boolean`                              | `false`   | Creates parent directory entries for nested file keys such as `folder/sub/file.txt`.                |
-| `jszip`                     |                                                                                       | `object`                               | `{}`      | Passes JSZip file and archive generation options through to the underlying writer as an escape hatch. |
+| Option              | From                                                                                                          | Type                                    | Default    | Description                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------- |
+| `zip.onUpdate`      |                                                                                                               | `(metadata: {percent: number}) => void` | `() => {}` | Receives progress updates while the archive is generated.                                             |
+| `zip.createFolders` | [![Website shields.io](https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square)](http://shields.io) | `boolean`                               | `false`    | Creates parent directory entries for nested file keys such as `folder/sub/file.txt`.                  |
+| `jszip`             |                                                                                                               | `object`                                | `{}`       | Passes JSZip file and archive generation options through to the underlying writer as an escape hatch. |
 
 Explicit slash-suffixed keys are written as directory entries whether or not `zip.createFolders` is enabled.
