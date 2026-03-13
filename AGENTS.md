@@ -23,3 +23,4 @@
 ## Notes
 
 - Avoid importing node specific files unless in specific functions that are intentionally designed to handle both cases. For instance, `fetchFile` handles both browser and Node.js, so importing `fs` is almost never required.
+- Keep the upgrade guide focused on deleted or deprecated functionality. New feature documentation belongs in the module docs and release notes instead.

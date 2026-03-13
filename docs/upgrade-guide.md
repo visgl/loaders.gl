@@ -6,10 +6,6 @@
 
 - `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
 
-**@loaders.gl/zip**
-
-- `ZipWriter` uses `options.zip.createFolders` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> for parent directory entries in nested archive paths. If you were using `options.zip.createDirectoryEntries`, rename it to `options.zip.createFolders` and pass `{zip: {createFolders: true}}` when encoding.
-
 ## Upgrading to v4.3
 
 **Minor Breaking Changes**
