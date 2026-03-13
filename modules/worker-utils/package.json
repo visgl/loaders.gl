@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "4.4.0-alpha.16",
+  "version": "4.4.0-alpha.17",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "type": "module",
@@ -39,8 +39,8 @@
     "README.md"
   ],
   "browser": {
-    "./dist/lib/process-utils/child-process-proxy.js": "./dist/lib/process-utils/child-process-proxy.browser.js",
     "./dist/lib/node/worker_threads.js": "./dist/lib/node/worker_threads-browser.js",
+    "./dist/lib/process-utils/child-process-proxy.js": "./dist/lib/process-utils/child-process-proxy.browser.js",
     "./src/lib/node/worker_threads.ts": "./src/lib/node/worker_threads-browser.ts",
     "./src/lib/process-utils/child-process-proxy.ts": "./src/lib/process-utils/child-process-proxy.browser.ts",
     "child_process": false,

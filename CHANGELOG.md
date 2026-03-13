@@ -2,6 +2,13 @@
 
 ## v4.4
 
+### v4.4.0-alpha.17 
+
+- chore: update package.json "browser" fields (#3318)
+- fix(zip): Handle directories better (#3304)
+- feat(textures): Add WebGPU textureFormat field (#3317)
+- chore: Update dev tools config imports (#3279)
+
 ### v4.4.0-alpha.16
 
 - fix(tiles): Extract rootNode.matrix into cartesianModelMatrix (#3314)
