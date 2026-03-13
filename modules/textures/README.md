@@ -14,9 +14,9 @@ This module contains loaders for compressed textures and [basis universal textur
 
 Each returned `TextureLevel` now exposes:
 
-- `shape`: always `'texture-level'`.
-- `format`: the corresponding WebGL internal format number.
-- `textureFormat`: the corresponding luma.gl / WebGPU-style texture format string.
+- `shape`: always `'texture-level'`. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- `format`: the corresponding WebGL internal format number. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- `textureFormat`: the corresponding luma.gl / WebGPU-style texture format string. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 
 ```ts
 import {load} from '@loaders.gl/core';

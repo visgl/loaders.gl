@@ -426,6 +426,13 @@ export function selectSupportedBasisFormat(
   if (hasSupportedTextureFormat(textureFormats, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
     return 'astc-4x4';
   } else if (
+    hasSupportedTextureFormat(textureFormats, ['bc7-rgba-unorm', 'bc7-rgba-unorm-srgb'])
+  ) {
+    return {
+      alpha: 'bc7-m5',
+      noAlpha: 'bc7-m6-opaque-only'
+    };
+  } else if (
     hasSupportedTextureFormat(textureFormats, [
       'bc1-rgb-unorm-webgl',
       'bc1-rgb-unorm-srgb-webgl',
@@ -434,15 +441,7 @@ export function selectSupportedBasisFormat(
       'bc2-rgba-unorm',
       'bc2-rgba-unorm-srgb',
       'bc3-rgba-unorm',
-      'bc3-rgba-unorm-srgb',
-      'bc4-r-unorm',
-      'bc4-r-snorm',
-      'bc5-rg-unorm',
-      'bc5-rg-snorm',
-      'bc6h-rgb-ufloat',
-      'bc6h-rgb-float',
-      'bc7-rgba-unorm',
-      'bc7-rgba-unorm-srgb'
+      'bc3-rgba-unorm-srgb'
     ])
   ) {
     return {
@@ -511,18 +510,19 @@ export function getSupportedBasisFormats(
       'bc2-rgba-unorm',
       'bc2-rgba-unorm-srgb',
       'bc3-rgba-unorm',
-      'bc3-rgba-unorm-srgb',
-      'bc4-r-unorm',
-      'bc4-r-snorm',
-      'bc5-rg-unorm',
-      'bc5-rg-snorm',
-      'bc6h-rgb-ufloat',
-      'bc6h-rgb-float',
-      'bc7-rgba-unorm',
-      'bc7-rgba-unorm-srgb'
+      'bc3-rgba-unorm-srgb'
     ])
   ) {
-    basisFormats.push('bc1', 'bc3', 'bc4', 'bc5', 'bc7-m5', 'bc7-m6-opaque-only');
+    basisFormats.push('bc1', 'bc3');
+  }
+  if (hasSupportedTextureFormat(textureFormats, ['bc4-r-unorm', 'bc4-r-snorm'])) {
+    basisFormats.push('bc4');
+  }
+  if (hasSupportedTextureFormat(textureFormats, ['bc5-rg-unorm', 'bc5-rg-snorm'])) {
+    basisFormats.push('bc5');
+  }
+  if (hasSupportedTextureFormat(textureFormats, ['bc7-rgba-unorm', 'bc7-rgba-unorm-srgb'])) {
+    basisFormats.push('bc7-m5', 'bc7-m6-opaque-only');
   }
   if (
     hasSupportedTextureFormat(textureFormats, [

@@ -38,9 +38,9 @@ A `TextureLevel` describes one mip level of one texture image.
 | Field           | Type              | Description                                        |
 | --------------- | ----------------- | -------------------------------------------------- |
 | `compressed`    | `boolean`         | Whether the mip level data is GPU-compressed.      |
-| `shape`         | `'texture-level'` | Shape tag for normalized texture-level payloads.   |
-| `format`        | `number`          | WebGL internal format enum for the decoded level.  |
-| `textureFormat` | `TextureFormat`   | WebGPU / luma.gl style format string for the data. |
+| `shape`         | `'texture-level'` | Shape tag for normalized texture-level payloads. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
+| `format`        | `number`          | WebGL internal format enum for the decoded level. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
+| `textureFormat` | `TextureFormat`   | WebGPU / luma.gl style format string for the data. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
 | `data`          | `Uint8Array`      | The bytes for this mip level.                      |
 | `width`         | `number`          | Width of this mip level.                           |
 | `height`        | `number`          | Height of this mip level.                          |

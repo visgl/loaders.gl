@@ -41,9 +41,9 @@ for (const imageLevels of miplevels) {
 
 Each decoded mip level is returned as a `TextureLevel` with:
 
-- `shape`: `'texture-level'`
-- `format`: the WebGL internal format enum
-- `textureFormat`: the WebGPU texture format string corresponding to the format of the data in this texture level
+- `shape`: `'texture-level'` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- `format`: the WebGL internal format enum <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- `textureFormat`: the WebGPU texture format string corresponding to the format of the data in this texture level <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 
 When `basis.format` is `'auto'`, pass `basis.supportedTextureFormats` to select from a known set of target formats. If omitted, `BasisLoader` falls back to internal runtime capability detection.
 

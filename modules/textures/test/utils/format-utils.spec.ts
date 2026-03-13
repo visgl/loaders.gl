@@ -47,9 +47,19 @@ test('selectSupportedBasisFormat', (t) => {
     'ASTC texture formats select ASTC format'
   );
   t.deepEqual(
+    selectSupportedBasisFormat(['bc7-rgba-unorm']),
+    {alpha: 'bc7-m5', noAlpha: 'bc7-m6-opaque-only'},
+    'BC7 texture formats select BC7 formats'
+  );
+  t.deepEqual(
     selectSupportedBasisFormat(['bc3-rgba-unorm']),
     {alpha: 'bc3', noAlpha: 'bc1'},
     'BC texture formats select BC formats'
+  );
+  t.equal(
+    selectSupportedBasisFormat(['bc5-rg-unorm']),
+    'rgb565',
+    'RGTC-only texture formats do not infer BC1/BC3 support'
   );
   t.equal(
     selectSupportedBasisFormat(['etc2-rgba8unorm']),
@@ -63,10 +73,12 @@ test('selectSupportedBasisFormat', (t) => {
 test('getSupportedBasisFormats', (t) => {
   const supportedBasisFormats = getSupportedBasisFormats([
     'bc3-rgba-unorm',
+    'bc7-rgba-unorm',
     'etc2-rgba8unorm'
   ] as TextureFormat[]);
 
   t.ok(supportedBasisFormats.includes('bc3'), 'BC formats are reported');
+  t.ok(supportedBasisFormats.includes('bc7-m5'), 'BC7 formats are reported');
   t.ok(supportedBasisFormats.includes('etc2'), 'ETC2 formats are reported');
   t.ok(supportedBasisFormats.includes('rgb565'), 'fallback CPU format is always reported');
   t.end();

@@ -6,6 +6,7 @@
 
 - `TextureLevel` now exposes `shape`, `format`, and `textureFormat`. Use `format` for WebGL APIs and `textureFormat` for WebGPU-style or luma.gl APIs.
 - `BasisLoader` uses `basis.supportedTextureFormats` to control `'auto'` basis format selection, and can accept explicit `basis.format` targets.
+- `@loaders.gl/textures` no longer exports `selectSupportedBasisFormat` or `getSupportedGPUTextureFormats`. Pass `basis.supportedTextureFormats` to `BasisLoader` instead of using exported auto-detection helpers.
 
 **@loaders.gl/compression**
 

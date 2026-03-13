@@ -32,10 +32,10 @@ Returns `TextureLevel[]`, one entry per mip level.
 
 Each level includes:
 
-- `shape: 'texture-level'`
+- `shape: 'texture-level'` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 - `compressed`
-- `format`
-- `textureFormat`
+- `format` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- `textureFormat` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 - `width`
 - `height`
 - `data`
