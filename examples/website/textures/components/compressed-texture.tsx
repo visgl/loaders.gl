@@ -17,6 +17,26 @@ import {ImageLoader, ImageType} from '@loaders.gl/images';
 import {Device, Texture} from '@luma.gl/core';
 import {Model} from '@luma.gl/engine';
 
+const TEXTURE_LIBRARY_MODULES = {
+  'basis_transcoder.js': new URL(
+    '../../../../modules/textures/src/libs/basis_transcoder.js',
+    import.meta.url
+  ).toString(),
+  'basis_transcoder.wasm': new URL(
+    '../../../../modules/textures/src/libs/basis_transcoder.wasm',
+    import.meta.url
+  ).toString(),
+  'basis_encoder.js': new URL(
+    '../../../../modules/textures/src/libs/basis_encoder.js',
+    import.meta.url
+  ).toString(),
+  'basis_encoder.wasm': new URL(
+    '../../../../modules/textures/src/libs/basis_encoder.wasm',
+    import.meta.url
+  ).toString(),
+  'crunch.js': new URL('../../../../modules/textures/src/libs/crunch.js', import.meta.url).toString()
+}
+
 const {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
   COMPRESSED_RGBA_S3TC_DXT1_EXT,
@@ -438,6 +458,7 @@ export class CompressedTexture extends React.PureComponent<
 
   getLoadOptions() {
     return {
+      modules: TEXTURE_LIBRARY_MODULES,
       basis: {
         format: selectSupportedBasisFormat()
       }

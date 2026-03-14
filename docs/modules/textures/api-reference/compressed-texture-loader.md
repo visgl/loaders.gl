@@ -50,3 +50,11 @@ Each level includes:
 ## Basis loader
 
 Use [BasisLoader](/docs/modules/textures/api-reference/basis-loader) for KTX2 assets that need Basis transcoding.
+
+## Module Overrides
+
+When `compressed-texture.useBasis` is `true`, `CompressedTextureLoader` uses the Basis encoder runtime through `options.modules`.
+
+- `modules.basisEncoder`: supply a preloaded Basis encoder module that resolves to `{BasisFile, KTX2File, BasisEncoder}`.
+- `'basis_encoder.js'`: override the URL used for the Basis encoder JavaScript wrapper.
+- `'basis_encoder.wasm'`: override the URL used for the Basis encoder WebAssembly binary.

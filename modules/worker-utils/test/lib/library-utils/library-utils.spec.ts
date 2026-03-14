@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {getLibraryUrl, isBrowser} from '@loaders.gl/worker-utils';
+import {extractLoadLibraryOptions, getLibraryUrl, isBrowser} from '@loaders.gl/worker-utils';
 import {VERSION} from '../../../src/lib/env-utils/version';
 
 const DRACO_DECODER_URL =
@@ -39,6 +39,42 @@ test('getLibraryUrl # should get url from modules option', (t) => {
   });
   t.equals(result, 'https://c.d.n/draco_decoder.wasm');
 
+  t.end();
+});
+
+test('extractLoadLibraryOptions # flattens core options and preserves modules', (t) => {
+  const modules = {
+    'draco_decoder.wasm': 'https://c.d.n/draco_decoder.wasm'
+  };
+  const result = extractLoadLibraryOptions({
+    core: {
+      CDN: 'https://c.d.n',
+      useLocalLibraries: true
+    },
+    modules
+  });
+
+  t.deepEquals(result, {
+    CDN: 'https://c.d.n',
+    useLocalLibraries: true,
+    modules
+  });
+  t.end();
+});
+
+test('extractLoadLibraryOptions # extracts modules from core when top-level modules are absent', (t) => {
+  const modules = {
+    draco3d: {createDecoderModule: () => null}
+  };
+  const result = extractLoadLibraryOptions({
+    core: {
+      modules
+    }
+  });
+
+  t.deepEquals(result, {
+    modules
+  });
   t.end();
 });
 

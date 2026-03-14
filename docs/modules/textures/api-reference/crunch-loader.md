@@ -46,3 +46,10 @@ Each level includes:
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | N/A    |      |         |             |
+
+## Module Overrides
+
+Use `options.modules` to override the Crunch runtime used by `CrunchWorkerLoader`.
+
+- `modules.crunch`: supply a preloaded Crunch decoder factory.
+- `'crunch.js'`: override the URL used for the Crunch decoder script.

@@ -5,6 +5,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable indent */
 import type {GLTextureFormat, TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import {loadBasisEncoderModule, loadBasisTranscoderModule} from './basis-module-loader';
 import {
   GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
@@ -166,7 +167,6 @@ export const BASIS_FORMATS = Object.freeze(
 
 export type ParseBasisOptions = {
   format: 'auto' | BasisFormat | {alpha: BasisFormat; noAlpha: BasisFormat};
-  libraryPath?: string;
   containerFormat: 'auto' | 'ktx2' | 'basis';
   module: 'transcoder' | 'encoder';
   supportedTextureFormats?: TextureFormat[];
@@ -183,17 +183,19 @@ export async function parseBasis(
   data: ArrayBuffer,
   options: BasisLoaderOptions = {}
 ): Promise<TextureLevel[][]> {
+  const loadLibraryOptions = extractLoadLibraryOptions(options);
+
   if (!options.basis?.containerFormat || options.basis.containerFormat === 'auto') {
     if (isKTX(data)) {
-      const fileConstructors = await loadBasisEncoderModule(options?.core || {});
+      const fileConstructors = await loadBasisEncoderModule(loadLibraryOptions);
       return parseKTX2File(fileConstructors.KTX2File, data, options);
     }
-    const {BasisFile} = await loadBasisTranscoderModule(options?.core || {});
+    const {BasisFile} = await loadBasisTranscoderModule(loadLibraryOptions);
     return parseBasisFile(BasisFile, data, options);
   }
   switch (options.basis.module) {
     case 'encoder':
-      const fileConstructors = await loadBasisEncoderModule(options?.core || {});
+      const fileConstructors = await loadBasisEncoderModule(loadLibraryOptions);
       switch (options.basis.containerFormat) {
         case 'ktx2':
           return parseKTX2File(fileConstructors.KTX2File, data, options);
@@ -203,7 +205,7 @@ export async function parseBasis(
       }
     case 'transcoder':
     default:
-      const {BasisFile} = await loadBasisTranscoderModule(options.core || {});
+      const {BasisFile} = await loadBasisTranscoderModule(loadLibraryOptions);
       return parseBasisFile(BasisFile, data, options);
   }
 }

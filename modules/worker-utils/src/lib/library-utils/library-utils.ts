@@ -15,7 +15,32 @@ export type LoadLibraryOptions<ModulesT extends Record<string, any> = Record<str
   core?: never;
 };
 
+type ExtractableLoadLibraryOptions<ModulesT extends Record<string, any> = Record<string, any>> = {
+  useLocalLibraries?: boolean;
+  CDN?: string | null;
+  modules?: ModulesT;
+  core?: {
+    useLocalLibraries?: boolean;
+    CDN?: string | null;
+    modules?: ModulesT;
+  } | null;
+};
+
 const loadLibraryPromises: Record<string, Promise<any>> = {}; // promises
+
+export function extractLoadLibraryOptions<
+  ModulesT extends Record<string, any> = Record<string, any>
+>(options: ExtractableLoadLibraryOptions<ModulesT> = {}): LoadLibraryOptions<ModulesT> {
+  const useLocalLibraries = options.useLocalLibraries ?? options.core?.useLocalLibraries;
+  const CDN = options.CDN ?? options.core?.CDN;
+  const modules = options.modules ?? options.core?.modules;
+
+  return {
+    ...(useLocalLibraries !== undefined ? {useLocalLibraries} : {}),
+    ...(CDN !== undefined ? {CDN} : {}),
+    ...(modules !== undefined ? {modules} : {})
+  };
+}
 
 /**
  * Dynamically loads a library ("module")

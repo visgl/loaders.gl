@@ -57,3 +57,57 @@ test('CompressedTextureLoader#PVR', async (t) => {
   t.equals(texture[0].textureFormat, 'etc1-rbg-unorm-webgl', 'PVR texture format is set');
   t.end();
 });
+
+test('CompressedTextureLoader#uses injected encoder modules for KTX2 Basis textures', async (t) => {
+  class FakeKTX2File {
+    constructor(data: Uint8Array) {
+      t.equals(data.byteLength, 4, 'forwards the provided payload to the injected KTX2File');
+    }
+
+    startTranscoding() {
+      return true;
+    }
+
+    getLevels() {
+      return 1;
+    }
+
+    getImageLevelInfo() {
+      return {
+        alphaFlag: false,
+        height: 2,
+        width: 2
+      };
+    }
+
+    getImageTranscodedSizeInBytes() {
+      return 8;
+    }
+
+    transcodeImage(decodedData: Uint8Array) {
+      decodedData.set([1, 2, 3, 4, 5, 6, 7, 8]);
+      return true;
+    }
+
+    close() {}
+
+    delete() {}
+  }
+
+  const texture = await load(new Uint8Array([1, 2, 3, 4]).buffer, CompressedTextureLoader, {
+    'compressed-texture': {useBasis: true},
+    modules: {
+      basisEncoder: {KTX2File: FakeKTX2File}
+    }
+  });
+
+  t.equals(texture[0].width, 2, 'uses the injected KTX2File implementation');
+  t.equals(texture[0].height, 2, 'returns the injected texture height');
+  t.equals(texture[0].data.byteLength, 8, 'returns the injected transcoded payload size');
+  t.equals(
+    texture[0].format,
+    GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+    'preserves the selected output format'
+  );
+  t.end();
+});
