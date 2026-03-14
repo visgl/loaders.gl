@@ -27930,9 +27930,9 @@ __metadata:
   linkType: hard
 
 "undici@npm:^7.19.0":
-  version: 7.22.0
-  resolution: "undici@npm:7.22.0"
-  checksum: 10c0/09777c06f3f18f761f03e3a4c9c04fd9fcca8ad02ccea43602ee4adf73fcba082806f1afb637f6ea714ef6279c5323c25b16d435814c63db720f63bfc20d316b
+  version: 7.24.2
+  resolution: "undici@npm:7.24.2"
+  checksum: 10c0/04a0d10f021f2fa88121bd8f90d8013064ae954af255402f4d41dec7fdada8d47aa6f42d7c6e25394057c7e56f2a6e1a400ba08f701b13cf11eaf342e674f184
   languageName: node
   linkType: hard
 
