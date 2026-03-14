@@ -5,6 +5,7 @@
 import type {GLTextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {loadCrunchModule} from './crunch-module-loader';
 import {assert} from '@loaders.gl/loader-utils';
+import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import {getDxt1LevelSize, getDxtXLevelSize} from './parse-dds';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 import {
@@ -54,7 +55,7 @@ let dst: number;
  * @returns Promise of Array of the texture levels
  */
 export async function parseCrunch(data, options: any): Promise<TextureLevel[]> {
-  const crunchModule = await loadCrunchModule(options);
+  const crunchModule = await loadCrunchModule(extractLoadLibraryOptions(options));
 
   // Copy the contents of the arrayBuffer into emscriptens heap.
   const srcSize = data.byteLength;

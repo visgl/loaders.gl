@@ -12,6 +12,7 @@ Encodes data asynchronously using the provided writer.
 - `writer` - can be a single writer or an array of writers.
 - `options` - optional, options for the writer (see documentation of the specific writer).
 - `url` - optional, assists in the autoselection of a writer if multiple writers are supplied to `writer`.
+- `options.modules` - optional, top-level module overrides for writers that dynamically load external JS/WASM runtimes.
 
 - `options.log`=`console` Any object with methods `log`, `info`, `warn` and `error`. By default set to `console`. Setting log to `null` will turn off logging.
 
@@ -25,3 +26,4 @@ Encodes data synchronously using the provided writer, if possible. If not, retur
 - `writer` - can be a single writer or an array of writers.
 - `options` - optional, options for the writer (see documentation of the specific writer).
 - `url` - optional, assists in the autoselection of a writer if multiple writers are supplied to `writer`.
+- `options.modules` - optional, top-level module overrides for writers that dynamically load external JS/WASM runtimes.

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
@@ -64,7 +65,7 @@ export const DracoWriter = {
 
 async function encode(data: DracoMesh, options: DracoWriterOptions = {}): Promise<ArrayBuffer> {
   // Dynamically load draco
-  const {draco} = await loadDracoEncoderModule(options.core || {});
+  const {draco} = await loadDracoEncoderModule(extractLoadLibraryOptions(options));
   const dracoBuilder = new DRACOBuilder(draco);
 
   try {

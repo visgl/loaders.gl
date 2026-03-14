@@ -49,3 +49,12 @@ const data = await load(url, DracoLoader, options);
 ## Dependencies
 
 Draco libraries by default are loaded from CDN, but can be bundled and injected. See [modules/draco/docs] for details.
+
+## Module Overrides
+
+Use `options.modules` to override the Draco decoder runtime used by `DracoLoader`.
+
+- `modules.draco3d`: supply the bundled `draco3d` package. `DracoLoader` uses `createDecoderModule()` from this object.
+- `'draco_wasm_wrapper.js'`: override the URL used for the Draco WASM decoder wrapper.
+- `'draco_decoder.wasm'`: override the URL used for the Draco WASM decoder binary.
+- `'draco_decoder.js'`: override the URL used for the Draco JavaScript fallback decoder.

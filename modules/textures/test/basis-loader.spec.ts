@@ -180,6 +180,69 @@ test('BasisLoader#auto-select a decoder format', async (t) => {
   t.end();
 });
 
+test('BasisLoader#uses injected transcoder modules', async (t) => {
+  class FakeBasisFile {
+    constructor(data: Uint8Array) {
+      t.equals(data.byteLength, 4, 'forwards the provided payload to the injected BasisFile')
+    }
+
+    startTranscoding() {
+      return true
+    }
+
+    getNumImages() {
+      return 1
+    }
+
+    getNumLevels() {
+      return 1
+    }
+
+    getImageWidth() {
+      return 2
+    }
+
+    getImageHeight() {
+      return 2
+    }
+
+    getHasAlpha() {
+      return false
+    }
+
+    getImageTranscodedSizeInBytes() {
+      return 8
+    }
+
+    transcodeImage(decodedData: Uint8Array) {
+      decodedData.set([1, 2, 3, 4, 5, 6, 7, 8])
+      return true
+    }
+
+    close() {}
+
+    delete() {}
+  }
+
+  const images = await load(new Uint8Array([1, 2, 3, 4]).buffer, BasisLoader, {
+    core: {worker: false},
+    basis: {
+      format: 'rgb565',
+      containerFormat: 'basis'
+    },
+    modules: {
+      basis: {BasisFile: FakeBasisFile}
+    }
+  })
+
+  const image = images[0][0]
+
+  t.equals(image.width, 2, 'uses the injected BasisFile implementation')
+  t.equals(image.height, 2, 'returns the injected texture height')
+  t.equals(image.data.byteLength, 8, 'returns the injected transcoded payload size')
+  t.end()
+})
+
 
 // test('BasisLoader#formats', async t => {
 //   for (const testCase of TEST_CASES) {

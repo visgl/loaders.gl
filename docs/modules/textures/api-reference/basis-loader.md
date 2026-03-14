@@ -86,3 +86,14 @@ The `BasisLoader` can transpile into the following compressed (and uncompressed)
 | `rgb565`                      |             |
 | `bgr565`                      |             |
 | `rgba4444`                    |             |
+
+## Module Overrides
+
+Use `options.modules` to override the Basis runtime used by `BasisLoader`.
+
+- `modules.basis`: supply a preloaded Basis transcoder module that resolves to `{BasisFile}`.
+- `modules.basisEncoder`: supply a preloaded Basis encoder module that resolves to `{BasisFile, KTX2File, BasisEncoder}`.
+- `'basis_transcoder.js'`: override the URL used for the Basis transcoder JavaScript wrapper.
+- `'basis_transcoder.wasm'`: override the URL used for the Basis transcoder WebAssembly binary.
+- `'basis_encoder.js'`: override the URL used for the Basis encoder JavaScript wrapper.
+- `'basis_encoder.wasm'`: override the URL used for the Basis encoder WebAssembly binary.

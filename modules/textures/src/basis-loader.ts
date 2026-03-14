@@ -32,8 +32,6 @@ export type BasisLoaderOptions = LoaderOptions & {
     format?: BasisTargetFormat;
     /** What module to use for transcoding? */
     module?: 'transcoder' | 'encoder';
-    /** @deprecated specify path of basis library */
-    libraryPath?: string;
   };
 };
 
@@ -56,7 +54,6 @@ export const BasisWorkerLoader = {
   options: {
     basis: {
       format: 'auto',
-      libraryPath: 'libs/',
       containerFormat: 'auto',
       module: 'transcoder'
     }

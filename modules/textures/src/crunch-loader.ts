@@ -10,8 +10,6 @@ import {VERSION} from './lib/utils/version';
 export type CrunchLoaderOptions = LoaderOptions & {
   /** CrunchLoader options */
   crunch?: {
-    /** @deprecated Specify where to load the Crunch decoder library */
-    libraryPath?: string;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -34,8 +32,6 @@ export const CrunchLoader = {
   mimeTypes: ['image/crn', 'image/x-crn', 'application/octet-stream'],
   binary: true,
   options: {
-    crunch: {
-      libraryPath: 'libs/'
-    }
+    crunch: {}
   }
 } as const satisfies Loader<TextureLevel[], never, CrunchLoaderOptions>;
