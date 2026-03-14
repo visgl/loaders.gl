@@ -8,7 +8,7 @@ import React, {PureComponent} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import {luma, Device} from '@luma.gl/core';
-import {WebGLDevice} from '@luma.gl/webgl';
+import {webgl2Adapter} from '@luma.gl/webgl';
 import {Model} from '@luma.gl/engine';
 
 import {IMAGES_DATA, TextureFormatsInfo} from './textures-data';
@@ -37,14 +37,16 @@ export default class App extends React.PureComponent<AppProps, AppState> {
   }
 
   async componentDidMount() {
-    luma.registerDevices([WebGLDevice]);
-
     // eslint-disable-next-line no-undef
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
 
-    const device = await luma.createDevice({canvas, type: 'webgl'});
+    const device = await luma.createDevice({
+      adapters: [webgl2Adapter],
+      createCanvasContext: {canvas},
+      type: 'webgl'
+    });
     const model = createModel(device);
     // eslint-disable-next-line react/no-did-mount-set-state
     this.setState({canvas, device, model});
@@ -53,7 +55,7 @@ export default class App extends React.PureComponent<AppProps, AppState> {
   render() {
     const {device, canvas, model} = this.state;
     if (!device) {
-      return <div />
+      return <div />;
     }
     return (
       <div style={{margin: 30}}>
@@ -125,7 +127,7 @@ function TexturesDescription(props: {imagesData: TextureFormatsInfo}) {
 }
 
 function TexturesList(props: {
-  device: Device,
+  device: Device;
   canvas: HTMLCanvasElement;
   model: Model;
   images: TextureFormatsInfo['images'];
