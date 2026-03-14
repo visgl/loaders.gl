@@ -22,7 +22,6 @@ type ExtractableLoadLibraryOptions<ModulesT extends Record<string, any> = Record
   core?: {
     useLocalLibraries?: boolean;
     CDN?: string | null;
-    modules?: ModulesT;
   } | null;
 };
 
@@ -33,7 +32,7 @@ export function extractLoadLibraryOptions<
 >(options: ExtractableLoadLibraryOptions<ModulesT> = {}): LoadLibraryOptions<ModulesT> {
   const useLocalLibraries = options.useLocalLibraries ?? options.core?.useLocalLibraries;
   const CDN = options.CDN ?? options.core?.CDN;
-  const modules = options.modules ?? options.core?.modules;
+  const modules = options.modules;
 
   return {
     ...(useLocalLibraries !== undefined ? {useLocalLibraries} : {}),

@@ -37,3 +37,10 @@ const data = encode(url, DracoWriter, options);
 ## Dependencies
 
 Draco libraries by default are loaded from CDN, but can be bundled and injected. See [modules/draco/docs] for details.
+
+## Module Overrides
+
+Use `options.modules` to override the Draco encoder runtime used by `DracoWriter`.
+
+- `modules.draco3d`: supply the bundled `draco3d` package. `DracoWriter` uses `createEncoderModule()` from this object.
+- `'draco_encoder.js'`: override the URL used for the Draco encoder runtime.

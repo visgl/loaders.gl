@@ -62,22 +62,6 @@ test('extractLoadLibraryOptions # flattens core options and preserves modules', 
   t.end();
 });
 
-test('extractLoadLibraryOptions # extracts modules from core when top-level modules are absent', (t) => {
-  const modules = {
-    draco3d: {createDecoderModule: () => null}
-  };
-  const result = extractLoadLibraryOptions({
-    core: {
-      modules
-    }
-  });
-
-  t.deepEquals(result, {
-    modules
-  });
-  t.end();
-});
-
 test('loadLibrary', (t) => {
   // loadLibrary({});
   t.end();
