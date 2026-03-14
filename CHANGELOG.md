@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.0-alpha.18
+
+- chore: Clean up library load options (#3320)
+
 ### v4.4.0-alpha.17 
 
 - chore: update package.json "browser" fields (#3318)
