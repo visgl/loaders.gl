@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-The `@loaders.gl/textures` module contains loaders for compressed textures. More specifically it contains loaders and writers for compressed texture **container** formats, including KTX, DDS and PVR. It also supports supercompressed Basis textures.
+The `@loaders.gl/textures` module contains loaders for compressed textures. More specifically it contains loaders and writers for compressed texture **container** formats, including KTX, DDS and PVR. It also supports supercompressed Basis textures and decoded Radiance HDR images.
 
 Note that a texture is more complex than an image. A texture typically has many subimages. A texture can represent a single logical image but can also be a texture cube, a texture array etc representing many logical images. In addition, each "image" typically has many mipmap levels.
 
@@ -25,6 +25,7 @@ npm install @loaders.gl/core
 | ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Basis Universal textures as `TextureLevel[][]`  |
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]` |
+| [`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader)                              | Radiance `.hdr` textures as `TextureLevel[]`    |
 | [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`           |
 
 ## Return Types
@@ -41,7 +42,7 @@ A `TextureLevel` describes one mip level of one texture image.
 | `shape`         | `'texture-level'` | Shape tag for normalized texture-level payloads. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />   |
 | `format`        | `number`          | WebGL internal format enum for the decoded level. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />  |
 | `textureFormat` | `TextureFormat`   | WebGPU / luma.gl style format string for the data. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
-| `data`          | `Uint8Array`      | The bytes for this mip level.                                                                                                                      |
+| `data`          | `TypedArray`      | The payload for this mip level. Compressed texture loaders return `Uint8Array`; `HDRLoader` returns `Float32Array`.                                |
 | `width`         | `number`          | Width of this mip level.                                                                                                                           |
 | `height`        | `number`          | Height of this mip level.                                                                                                                          |
 | `levelSize`     | `number`          | Size in bytes for this mip level, when available.                                                                                                  |
@@ -51,9 +52,13 @@ A `TextureLevel` describes one mip level of one texture image.
 
 `CompressedTextureLoader` returns `TextureLevel[]`.
 
+`HDRLoader` returns `TextureLevel[]` with a single decoded `rgba32float` level.
+
 `CrunchWorkerLoader` returns `TextureLevel[]`.
 
 See [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) and [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) for loader-specific options and return shapes.
+
+The `loadImageTexture*` helpers still route through `@loaders.gl/images` and are unchanged in this first HDR release.
 
 ## Texture APIs
 

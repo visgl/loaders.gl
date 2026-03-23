@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ImageType} from './category-image';
+import type {TypedArray} from '../types/types';
 
 /**
  * These represent the main compressed texture formats
@@ -144,6 +145,7 @@ export type GLTextureFormat =
   | 0x8057
   | 0x8058
   | 0x8d62
+  | 0x8814
   | 0x83f0
   | 0x83f1
   | 0x83f2
@@ -221,8 +223,8 @@ export type TextureLevel = {
   width: number;
   /** Height in texels */
   height: number;
-  /** Byte array */
-  data: Uint8Array;
+  /** Byte array or float pixel data */
+  data: TypedArray;
   levelSize?: number;
   hasAlpha?: boolean;
 };
