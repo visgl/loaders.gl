@@ -19,6 +19,15 @@ npm install @loaders.gl/textures
 npm install @loaders.gl/core
 ```
 
+## Formats
+
+The `@loaders.gl/textures` module handles the following formats:
+
+| Format                                                                      | Description                                             |
+| --------------------------------------------------------------------------- | ------------------------------------------------------- |
+| [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures) | GPU texture container formats such as KTX, DDS, and PVR |
+| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files |
+
 ## API
 
 | Loader                                                                                      | Description                                     |

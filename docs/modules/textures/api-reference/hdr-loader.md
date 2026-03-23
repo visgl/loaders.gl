@@ -6,6 +6,8 @@
 
 Loader for Radiance RGBE `.hdr` textures.
 
+See also: [`Radiance HDR`](/docs/modules/textures/formats/hdr)
+
 | Loader         | Characteristic               |
 | -------------- | ---------------------------- |
 | File Format    | Radiance HDR / RGBE          |
@@ -51,6 +53,7 @@ The returned level includes:
 
 ## Notes
 
+- File format background: [`Radiance HDR`](/docs/modules/textures/formats/hdr)
 - `HDRLoader` decodes standard 2D Radiance RGBE files only.
 - The alpha channel is synthesized as `1.0` for every pixel.
 - `loadImageTexture`, `loadImageTextureArray`, and `loadImageTextureCube` remain based on `@loaders.gl/images` in this release.
