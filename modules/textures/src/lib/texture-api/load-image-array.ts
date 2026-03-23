@@ -2,21 +2,27 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ImageLoader} from '@loaders.gl/images';
-import type {GetUrl} from './texture-api-types';
+import {loadCompositeImageUrlTree, normalizeCompositeImageOptions} from '../composite-image/parse-composite-image'
+import type {GetUrl, TextureLoaderOptions} from './texture-api-types';
 import {getImageUrls} from './load-image';
-import {deepLoad} from './deep-load';
 
+/**
+ * @deprecated Use `load(url, ImageTextureArrayLoader)` for manifest-driven loading.
+ */
 export async function loadImageTextureArray(
   count: number,
   getUrl: GetUrl,
-  options = {}
+  options: TextureLoaderOptions = {}
 ): Promise<any> {
   const imageUrls = await getImageArrayUrls(count, getUrl, options);
-  return await deepLoad(imageUrls, ImageLoader.parse, options);
+  return await loadCompositeImageUrlTree(imageUrls, normalizeCompositeImageOptions(options))
 }
 
-export async function getImageArrayUrls(count: number, getUrl: GetUrl, options = {}): Promise<any> {
+export async function getImageArrayUrls(
+  count: number,
+  getUrl: GetUrl,
+  options: TextureLoaderOptions = {}
+): Promise<any> {
   const promises: Promise<any>[] = [];
   for (let index = 0; index < count; index++) {
     const promise = getImageUrls(getUrl, options, {index});

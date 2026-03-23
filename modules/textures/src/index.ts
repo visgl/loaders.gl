@@ -20,6 +20,21 @@ export {CrunchLoader} from './crunch-loader';
 export type {NPYLoaderOptions} from './npy-loader';
 export {NPYLoader, NPYWorkerLoader} from './npy-loader';
 
+export type {ImageTextureLoaderOptions, ImageTextureManifest} from './image-texture-loader';
+export {ImageTextureLoader} from './image-texture-loader';
+
+export type {ImageTextureArrayLoaderOptions, ImageTextureArrayManifest} from './image-texture-array-loader';
+export {ImageTextureArrayLoader} from './image-texture-array-loader';
+
+export type {ImageTextureCubeLoaderOptions, ImageTextureCubeManifest} from './image-texture-cube-loader';
+export {ImageTextureCubeLoader} from './image-texture-cube-loader';
+
+export type {
+  ImageTextureCubeArrayLoaderOptions,
+  ImageTextureCubeArrayManifest
+} from './image-texture-cube-array-loader';
+export {ImageTextureCubeArrayLoader} from './image-texture-cube-array-loader';
+
 // Module constants
 export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';
 export {CRUNCH_EXTERNAL_LIBRARIES} from './lib/parsers/crunch-module-loader';
