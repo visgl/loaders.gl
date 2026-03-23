@@ -20,7 +20,7 @@ const TEST_CASES = [
   {
     url: '@loaders.gl/textures/test/data/shannon-pvrtc-2bpp-rgb.pvr',
     format: GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG,
-    textureFormat: 'pvrtc-rbg2unorm-webgl'
+    textureFormat: 'pvrtc-rgb2unorm-webgl'
   },
   {
     url: '@loaders.gl/textures/test/data/shannon-pvrtc-2bpp-rgba.pvr',

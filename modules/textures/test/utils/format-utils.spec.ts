@@ -66,6 +66,11 @@ test('selectSupportedBasisFormat', (t) => {
     'etc2',
     'ETC2 texture formats select ETC2 format'
   );
+  t.deepEqual(
+    selectSupportedBasisFormat(['pvrtc-rbg2unorm-webgl']),
+    {alpha: 'pvrtc1-4-rgba', noAlpha: 'pvrtc1-4-rgb'},
+    'legacy PVRTC aliases still select the canonical Basis formats'
+  );
   t.equal(selectSupportedBasisFormat([]), 'rgb565', 'fallback selects RGB565');
   t.end();
 });

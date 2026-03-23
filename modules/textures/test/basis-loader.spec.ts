@@ -16,6 +16,7 @@ import {
   GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
   GL_RGB565
 } from '../src/lib/gl-extensions';
+import {withBasisTranscodingLock} from '../src/lib/parsers/parse-basis';
 
 const BASIS_TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
 const KTX2_BASIS_TEST_URL = '@loaders.gl/textures/test/data/kodim23.ktx2';
@@ -241,6 +242,33 @@ test('BasisLoader#uses injected transcoder modules', async (t) => {
   t.equals(image.height, 2, 'returns the injected texture height')
   t.equals(image.data.byteLength, 8, 'returns the injected transcoded payload size')
   t.end()
+})
+
+test('BasisLoader#serializes Basis transcoding work', async (t) => {
+  const events: string[] = [];
+  let activeTranscodes = 0;
+
+  const runTranscode = async (label: string, delayMs: number) =>
+    await withBasisTranscodingLock(async () => {
+      events.push(`${label}:start`);
+      activeTranscodes++;
+      t.equals(activeTranscodes, 1, `${label} runs with exclusive access`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      activeTranscodes--;
+      events.push(`${label}:end`);
+      return label;
+    });
+
+  const [first, second] = await Promise.all([runTranscode('first', 20), runTranscode('second', 0)]);
+
+  t.equals(first, 'first', 'first transcode resolves');
+  t.equals(second, 'second', 'second transcode resolves');
+  t.deepEqual(
+    events,
+    ['first:start', 'first:end', 'second:start', 'second:end'],
+    'concurrent requests are serialized'
+  );
+  t.end();
 })
 
 

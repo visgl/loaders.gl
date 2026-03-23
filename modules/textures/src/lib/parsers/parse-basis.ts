@@ -56,6 +56,12 @@ type BasisOutputOptions = {
   textureFormat?: TextureFormat;
 };
 
+let basisTranscodingLock: Promise<void> = Promise.resolve();
+
+const TEXTURE_FORMAT_ALIASES = {
+  'pvrtc-rbg2unorm-webgl': 'pvrtc-rgb2unorm-webgl'
+} as const satisfies Partial<Record<TextureFormat, TextureFormat>>;
+
 export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOptions> = {
   etc1: {
     basisFormat: 0,
@@ -172,6 +178,23 @@ export type ParseBasisOptions = {
   supportedTextureFormats?: TextureFormat[];
 };
 
+export async function withBasisTranscodingLock<T>(transcode: () => Promise<T> | T): Promise<T> {
+  const previousLock = basisTranscodingLock;
+  let releaseLock!: () => void;
+
+  basisTranscodingLock = new Promise((resolve) => {
+    releaseLock = resolve;
+  });
+
+  await previousLock;
+
+  try {
+    return await transcode();
+  } finally {
+    releaseLock();
+  }
+}
+
 /**
  * parse data with a Binomial Basis_Universal module
  * @param data
@@ -185,29 +208,31 @@ export async function parseBasis(
 ): Promise<TextureLevel[][]> {
   const loadLibraryOptions = extractLoadLibraryOptions(options);
 
-  if (!options.basis?.containerFormat || options.basis.containerFormat === 'auto') {
-    if (isKTX(data)) {
-      const fileConstructors = await loadBasisEncoderModule(loadLibraryOptions);
-      return parseKTX2File(fileConstructors.KTX2File, data, options);
-    }
-    const {BasisFile} = await loadBasisTranscoderModule(loadLibraryOptions);
-    return parseBasisFile(BasisFile, data, options);
-  }
-  switch (options.basis.module) {
-    case 'encoder':
-      const fileConstructors = await loadBasisEncoderModule(loadLibraryOptions);
-      switch (options.basis.containerFormat) {
-        case 'ktx2':
-          return parseKTX2File(fileConstructors.KTX2File, data, options);
-        case 'basis':
-        default:
-          return parseBasisFile(fileConstructors.BasisFile, data, options);
+  return await withBasisTranscodingLock(async () => {
+    if (!options.basis?.containerFormat || options.basis.containerFormat === 'auto') {
+      if (isKTX(data)) {
+        const fileConstructors = await loadBasisEncoderModule(loadLibraryOptions);
+        return parseKTX2File(fileConstructors.KTX2File, data, options);
       }
-    case 'transcoder':
-    default:
       const {BasisFile} = await loadBasisTranscoderModule(loadLibraryOptions);
       return parseBasisFile(BasisFile, data, options);
-  }
+    }
+    switch (options.basis.module) {
+      case 'encoder':
+        const fileConstructors = await loadBasisEncoderModule(loadLibraryOptions);
+        switch (options.basis.containerFormat) {
+          case 'ktx2':
+            return parseKTX2File(fileConstructors.KTX2File, data, options);
+          case 'basis':
+          default:
+            return parseBasisFile(fileConstructors.BasisFile, data, options);
+        }
+      case 'transcoder':
+      default:
+        const {BasisFile} = await loadBasisTranscoderModule(loadLibraryOptions);
+        return parseBasisFile(BasisFile, data, options);
+    }
+  });
 }
 
 /**
@@ -423,7 +448,7 @@ export function selectSupportedBasisFormat(supportedTextureFormats?: Iterable<Te
 export function selectSupportedBasisFormat(
   supportedTextureFormats: Iterable<TextureFormat> = detectSupportedTextureFormats()
 ): BasisFormat | {alpha: BasisFormat; noAlpha: BasisFormat} {
-  const textureFormats = new Set(supportedTextureFormats);
+  const textureFormats = normalizeTextureFormats(supportedTextureFormats);
 
   if (hasSupportedTextureFormat(textureFormats, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
     return 'astc-4x4';
@@ -452,7 +477,7 @@ export function selectSupportedBasisFormat(
     hasSupportedTextureFormat(textureFormats, [
       'pvrtc-rgb4unorm-webgl',
       'pvrtc-rgba4unorm-webgl',
-      'pvrtc-rbg2unorm-webgl',
+      'pvrtc-rgb2unorm-webgl',
       'pvrtc-rgba2unorm-webgl'
     ])
   ) {
@@ -495,7 +520,7 @@ export function selectSupportedBasisFormat(
 export function getSupportedBasisFormats(
   supportedTextureFormats: Iterable<TextureFormat> = detectSupportedTextureFormats()
 ): BasisFormat[] {
-  const textureFormats = new Set(supportedTextureFormats);
+  const textureFormats = normalizeTextureFormats(supportedTextureFormats);
   const basisFormats: BasisFormat[] = [];
 
   if (hasSupportedTextureFormat(textureFormats, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
@@ -528,7 +553,7 @@ export function getSupportedBasisFormats(
     hasSupportedTextureFormat(textureFormats, [
       'pvrtc-rgb4unorm-webgl',
       'pvrtc-rgba4unorm-webgl',
-      'pvrtc-rbg2unorm-webgl',
+      'pvrtc-rgb2unorm-webgl',
       'pvrtc-rgba2unorm-webgl'
     ])
   ) {
@@ -574,4 +599,16 @@ function hasSupportedTextureFormat(
   return candidateTextureFormats.some((textureFormat) =>
     supportedTextureFormats.has(textureFormat)
   );
+}
+
+function normalizeTextureFormats(
+  supportedTextureFormats: Iterable<TextureFormat>
+): Set<TextureFormat> {
+  const textureFormats = new Set<TextureFormat>();
+
+  for (const textureFormat of supportedTextureFormats) {
+    textureFormats.add(TEXTURE_FORMAT_ALIASES[textureFormat] || textureFormat);
+  }
+
+  return textureFormats;
 }

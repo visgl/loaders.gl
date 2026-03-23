@@ -78,6 +78,8 @@ export type TextureFormatCompressed =
   | 'bc1-rgb-unorm-srgb-webgl'
   | 'pvrtc-rgb4unorm-webgl'
   | 'pvrtc-rgba4unorm-webgl'
+  | 'pvrtc-rgb2unorm-webgl'
+  /** @deprecated Use `pvrtc-rgb2unorm-webgl` */
   | 'pvrtc-rbg2unorm-webgl'
   | 'pvrtc-rgba2unorm-webgl'
   | 'etc1-rbg-unorm-webgl'

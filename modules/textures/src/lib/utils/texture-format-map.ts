@@ -118,7 +118,7 @@ const WEBGL_TO_TEXTURE_FORMAT: Record<number, TextureFormat> = {
   [GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR]: 'astc-12x12-unorm-srgb',
   [GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG]: 'pvrtc-rgb4unorm-webgl',
   [GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG]: 'pvrtc-rgba4unorm-webgl',
-  [GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG]: 'pvrtc-rbg2unorm-webgl',
+  [GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG]: 'pvrtc-rgb2unorm-webgl',
   [GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG]: 'pvrtc-rgba2unorm-webgl',
   [GL_COMPRESSED_RGB_ETC1_WEBGL]: 'etc1-rbg-unorm-webgl',
   [GL_COMPRESSED_RGB_ATC_WEBGL]: 'atc-rgb-unorm-webgl',
