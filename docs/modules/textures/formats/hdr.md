@@ -1,13 +1,13 @@
 # Radiance HDR
 
 - _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
-- _[`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader)_ - loads Radiance RGBE `.hdr` files as `Texture`
+- _[`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)_ - loads Radiance RGBE `.hdr` files as `Texture`
 
 Radiance HDR is a classic high-dynamic-range raster image format commonly used for lighting environments, skyboxes, reflections, and tone-mapping test images in graphics pipelines.
 
 ## Origin And History
 
-The format was defined by Greg Ward as part of the Radiance lighting simulation and rendering system. In Greg Ward's later retrospective on HDR encodings, he notes that work on Radiance began in 1985 at Lawrence Berkeley National Laboratory and that the system needed an image format that could preserve photometric values rather than quantizing everything down to conventional 24-bit display RGB.
+The format was defined by Greg Ward as part of the Radiance lighting simulation and rendering system. Radiance development began in the mid-1980s at Lawrence Berkeley National Laboratory, and the system required an image format that could preserve photometric values rather than quantizing everything down to conventional 24-bit display RGB.
 
 That led to the RGBE representation used by Radiance picture files:
 
@@ -15,16 +15,16 @@ That led to the RGBE representation used by Radiance picture files:
 - one shared 8-bit exponent
 - compact storage compared to full 96-bit float RGB
 
-Ward later described this encoding in _Graphics Gems II_ ("Real Pixels", 1991), and the format shipped as part of the freely available Radiance system. In practice, this is the historical reason `.hdr` and `.pic` files show up so often in rendering, lighting, and image-based-lighting workflows.
+The RGBE encoding was later documented in _Graphics Gems II_ ("Real Pixels", 1991), and the format shipped as part of the freely available Radiance system. This is the main historical reason `.hdr` and `.pic` files became common in rendering, lighting, and image-based-lighting workflows.
 
 ## Format Revisions
 
 Radiance's own documentation notes an important format change between Radiance release 1.4 and release 2.0:
 
-- release 1.4 and earlier used an older, simpler run-length encoding
-- the newer format switched to per-component scanline RLE
-- older files remained readable
-- newer files became the standard form produced by Radiance tools
+| Revision Range           | Encoding Style                   | Compatibility Notes                                       |
+| ------------------------ | -------------------------------- | --------------------------------------------------------- |
+| Radiance 1.4 and earlier | Older flat or simpler RLE layout | Older files remained readable after later format changes. |
+| Radiance 2.0 and later   | Per-component scanline RGBE RLE  | Became the standard form produced by Radiance tools.      |
 
 This is why modern loaders usually target the `FORMAT=32-bit_rle_rgbe` form and support the older flat/non-RLE fallback only for compatibility.
 
@@ -59,7 +59,7 @@ The pixel payload is usually stored as RGBE:
 - `R`, `G`, `B` are mantissas
 - `E` is a shared exponent for the pixel
 
-`HDRLoader` decodes that representation into linear floating-point RGBA data with alpha synthesized to `1.0`.
+`RadianceHDRLoader` decodes that representation into linear floating-point RGBA data with alpha synthesized to `1.0`.
 
 The file is typically recognizable by:
 
@@ -69,23 +69,23 @@ The file is typically recognizable by:
 
 ## loaders.gl Support
 
-Use [`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader) to load standard 2D Radiance RGBE `.hdr` textures.
+Use [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader) to load standard 2D Radiance RGBE `.hdr` textures.
 
 | Format Feature                     | loaders.gl Support | Notes                                                                               |
 | ---------------------------------- | ------------------ | ----------------------------------------------------------------------------------- |
-| Standard 2D Radiance `.hdr` images | Yes                | Returned as a `Texture` with `shape: 'texture'` and `type: '2d'`.                   |
-| Radiance RGBE pixel decoding       | Yes                | Decoded to linear floating-point RGBA data.                                         |
-| Standard Radiance scanline RLE     | Yes                | Supports `FORMAT=32-bit_rle_rgbe`.                                                  |
-| Older flat / non-RLE pixel data    | Yes                | Supported as a compatibility fallback.                                              |
-| Float output                       | Yes                | Exposed as `Float32Array`.                                                          |
-| Cube map helpers                   | No                 | Applications must assemble cube textures separately.                                |
-| Environment-map preprocessing      | No                 | No PMREM, convolution, or other lighting preprocessing utilities are included.      |
-| Half-float output                  | No                 | Output is currently `Float32Array` only.                                            |
-| Non-Radiance HDR container formats | No                 | This loader targets Radiance RGBE `.hdr` files, not EXR or other HDR image formats. |
+| Standard 2D Radiance `.hdr` images | ✅                 | Returned as a `Texture` with `shape: 'texture'` and `type: '2d'`.                   |
+| Radiance RGBE pixel decoding       | ✅                 | Decoded to linear floating-point RGBA data.                                         |
+| Standard Radiance scanline RLE     | ✅                 | Supports `FORMAT=32-bit_rle_rgbe`.                                                  |
+| Older flat / non-RLE pixel data    | ✅                 | Supported as a compatibility fallback.                                              |
+| Float output                       | ✅                 | Exposed as `Float32Array`.                                                          |
+| Cube map helpers                   | ❌                 | Applications must assemble cube textures separately.                                |
+| Environment-map preprocessing      | ❌                 | No PMREM, convolution, or other lighting preprocessing utilities are included.      |
+| Half-float output                  | ❌                 | Output is currently `Float32Array` only.                                            |
+| Non-Radiance HDR container formats | ❌                 | This loader targets Radiance RGBE `.hdr` files, not EXR or other HDR image formats. |
 
 ## Related Pages
 
-- [`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader)
+- [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)
 - [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures)
 
 ## References

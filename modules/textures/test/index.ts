@@ -9,7 +9,7 @@ import './texture-api/load-image.spec';
 
 import './basis-loader.spec';
 import './crunch-loader.spec';
-import './hdr-loader.spec';
+import './radiance-hdr-loader.spec';
 import './ktx2-basis-universal-texture-writer.spec';
 import './compressed-texture-loader.spec';
 import './compressed-texture-writer.spec';

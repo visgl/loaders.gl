@@ -17,8 +17,9 @@ export {CompressedTextureLoader, CompressedTextureWorkerLoader} from './compress
 export type {CrunchLoaderOptions} from './crunch-loader';
 export {CrunchLoader} from './crunch-loader';
 
-export type {HDRLoaderOptions} from './hdr-loader';
-export {HDRLoader} from './hdr-loader';
+export type {RadianceHDRLoaderOptions} from './radiance-hdr-loader';
+export type {RadianceHDRMetadata} from './lib/parsers/parse-hdr';
+export {RadianceHDRLoader} from './radiance-hdr-loader';
 
 export type {NPYLoaderOptions} from './npy-loader';
 export {NPYLoader, NPYWorkerLoader} from './npy-loader';

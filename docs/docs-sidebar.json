@@ -59,7 +59,7 @@
           "modules/textures/api-reference/basis-loader",
           "modules/textures/api-reference/compressed-texture-loader",
           "modules/textures/api-reference/crunch-loader",
-          "modules/textures/api-reference/hdr-loader",
+          "modules/textures/api-reference/radiance-hdr-loader",
           "modules/textures/api-reference/npy-loader",
           "modules/video/api-reference/video-loader",
           "modules/wkt/api-reference/wkt-loader",
@@ -428,7 +428,7 @@
         "label": "@loaders.gl/textures",
         "items": [
           "modules/textures/README",
-          "modules/textures/api-reference/hdr-loader",
+          "modules/textures/api-reference/radiance-hdr-loader",
           "modules/textures/api-reference/load-image",
           "modules/textures/api-reference/load-image-array",
           "modules/textures/api-reference/load-image-cube"

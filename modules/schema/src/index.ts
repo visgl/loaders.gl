@@ -50,6 +50,7 @@ export type {
 
 // TEXTURES
 export type {
+  TextureMetadata,
   Texture,
   Texture1D,
   Texture2D,

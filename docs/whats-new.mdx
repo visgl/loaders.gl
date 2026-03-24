@@ -45,7 +45,7 @@ See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
 - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields.
 - `BasisLoader` now accepts `basis.supportedTextureFormats` to guide `'auto'` format selection with an explicit list of supported target formats.
-- [`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader) adds support for Radiance RGBE `.hdr` textures and returns decoded `rgba32float` texture levels.
+- [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader) adds support for Radiance RGBE `.hdr` textures and returns a `Texture` with a decoded `rgba32float` level.
 
 ## v4.3
 

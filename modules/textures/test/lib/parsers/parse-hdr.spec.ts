@@ -25,6 +25,35 @@ test('parseHDR#parses Radiance RLE data', (t) => {
   t.end();
 });
 
+test('parseHDR#parses application-facing metadata', (t) => {
+  const texture = parseHDR(
+    createFlatHDRBuffer('#?RADIANCE', [
+      'EXPOSURE=2',
+      'GAMMA=1.8',
+      'COLORCORR=1 0.5 2',
+      'PIXASPECT=1.5',
+      'PRIMARIES=0.64 0.33 0.29 0.6 0.15 0.06 0.333 0.333',
+      'SOFTWARE=unit-test',
+      'VIEW=-vtv 0 0 1 0 1 0 45 45'
+    ])
+  );
+
+  t.deepEqual(
+    texture.metadata,
+    {
+      exposure: 2,
+      gamma: 1.8,
+      colorCorrection: [1, 0.5, 2],
+      pixelAspectRatio: 1.5,
+      primaries: [0.64, 0.33, 0.29, 0.6, 0.15, 0.06, 0.333, 0.333],
+      software: 'unit-test',
+      view: '-vtv 0 0 1 0 1 0 45 45'
+    },
+    'returns application-facing metadata'
+  );
+  t.end();
+});
+
 test('parseHDR#parses RGBE flat data', (t) => {
   const texture = parseHDR(createFlatHDRBuffer('#?RGBE'));
   const data = texture.data[0].data as Float32Array;
@@ -111,8 +140,17 @@ function createRLEHDRBuffer(magicHeader: '#?RADIANCE' | '#?RGBE'): ArrayBuffer {
   return joinBuffers(new Uint8Array(header), row1, row2);
 }
 
-function createFlatHDRBuffer(magicHeader: '#?RADIANCE' | '#?RGBE'): ArrayBuffer {
-  const header = createHeaderBuffer([magicHeader, 'FORMAT=32-bit_rle_rgbe', '', '-Y 1 +X 2']);
+function createFlatHDRBuffer(
+  magicHeader: '#?RADIANCE' | '#?RGBE',
+  metadataLines: string[] = []
+): ArrayBuffer {
+  const header = createHeaderBuffer([
+    magicHeader,
+    ...metadataLines,
+    'FORMAT=32-bit_rle_rgbe',
+    '',
+    '-Y 1 +X 2'
+  ]);
   const pixels = new Uint8Array([128, 64, 32, 129, 0, 0, 0, 0]);
 
   return joinBuffers(new Uint8Array(header), pixels);

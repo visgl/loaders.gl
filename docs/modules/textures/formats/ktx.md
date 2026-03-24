@@ -19,23 +19,20 @@ KTX containers are designed for texture data rather than conventional images:
 
 ## KTX vs KTX2
 
-| Format Feature                        | KTX     | KTX2          |
-| ------------------------------------- | ------- | ------------- |
-| Khronos texture container             | Yes     | Yes           |
-| Multiple mip levels                   | Yes     | Yes           |
-| Array / cube / volume texture layouts | Yes     | Yes           |
-| Modern metadata and extensibility     | Limited | Improved      |
-| Basis Universal payloads              | No      | Commonly used |
+| Format | Status            | Notes                                                                                           |
+| ------ | ----------------- | ----------------------------------------------------------------------------------------------- |
+| KTX2   | Newer revision    | Common in modern realtime pipelines, including use as a container for Basis Universal payloads. |
+| KTX    | Original revision | Still a Khronos texture container, but less flexible than KTX2 for newer workflows.             |
 
 ## loaders.gl Support
 
 | Format Feature         | loaders.gl Support | Notes                                                                                                                 |
 | ---------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| KTX container parsing  | Yes                | Supported by [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader).             |
-| KTX2 container parsing | Yes                | Supported by [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader).             |
-| KTX2 Basis transcoding | Yes                | Use [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) when the KTX2 payload needs Basis transcoding. |
-| Mip level extraction   | Yes                | Returned as `TextureLevel[]` or `TextureLevel[][]` depending on loader.                                               |
-| GPU format tagging     | Yes                | loaders.gl maps known container formats to WebGL and canonical texture format identifiers.                            |
+| KTX container parsing  | ✅                 | Supported by [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader).             |
+| KTX2 container parsing | ✅                 | Supported by [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader).             |
+| KTX2 Basis transcoding | ✅                 | Use [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) when the KTX2 payload needs Basis transcoding. |
+| Mip level extraction   | ✅                 | Returned as `TextureLevel[]` or `TextureLevel[][]` depending on loader.                                               |
+| GPU format tagging     | ✅                 | loaders.gl maps known container formats to WebGL and canonical texture format identifiers.                            |
 
 ## Related Pages
 

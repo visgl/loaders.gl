@@ -39,7 +39,7 @@ The `@loaders.gl/textures` module handles the following formats:
 | ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Basis Universal textures as `TextureLevel[][]`  |
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]` |
-| [`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader)                              | Radiance `.hdr` textures as `Texture`           |
+| [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture`           |
 | [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`           |
 
 ## Return Types
@@ -56,7 +56,7 @@ A `TextureLevel` describes one mip level of one texture image.
 | `shape`         | `'texture-level'` | Shape tag for normalized texture-level payloads. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />   |
 | `format`        | `number`          | WebGL internal format enum for the decoded level. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />  |
 | `textureFormat` | `TextureFormat`   | WebGPU / luma.gl style format string for the data. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
-| `data`          | `TypedArray`      | The payload for this mip level. Compressed texture loaders return `Uint8Array`; `HDRLoader` returns `Float32Array`.                                |
+| `data`          | `TypedArray`      | The payload for this mip level. Compressed texture loaders return `Uint8Array`; `RadianceHDRLoader` returns `Float32Array`.                        |
 | `width`         | `number`          | Width of this mip level.                                                                                                                           |
 | `height`        | `number`          | Height of this mip level.                                                                                                                          |
 | `levelSize`     | `number`          | Size in bytes for this mip level, when available.                                                                                                  |
@@ -66,7 +66,7 @@ A `TextureLevel` describes one mip level of one texture image.
 
 `CompressedTextureLoader` returns `TextureLevel[]`.
 
-`HDRLoader` returns a `Texture` with `shape: 'texture'`, `type: '2d'`, and one decoded `rgba32float` level in `data`.
+`RadianceHDRLoader` returns a `Texture` with `shape: 'texture'`, `type: '2d'`, one decoded `rgba32float` level in `data`, and optional application-facing metadata.
 
 `CrunchWorkerLoader` returns `TextureLevel[]`.
 

@@ -138,95 +138,98 @@ export type TextureFormatCompressed =
   | 'astc-12x12-unorm'
   | 'astc-12x12-unorm-srgb';
 
+/** Application-facing metadata attached to texture payloads. */
+export type TextureMetadata = Record<string, unknown>;
+
 /** Return type of `texture` category loaders. */
-export type Texture =
-  | Texture1D
-  | Texture2D
-  | Texture3D
-  | TextureCube
-  | Texture2DArray
-  | TextureCubeArray;
+export type Texture<MetadataT extends TextureMetadata = TextureMetadata> =
+  | Texture1D<MetadataT>
+  | Texture2D<MetadataT>
+  | Texture3D<MetadataT>
+  | TextureCube<MetadataT>
+  | Texture2DArray<MetadataT>
+  | TextureCubeArray<MetadataT>;
 
 /** One-dimensional texture with mip levels. */
-export type Texture1D = {
+export type Texture1D<MetadataT extends TextureMetadata = TextureMetadata> = {
   /** loaders.gl shape tag identifying texture payloads. */
   shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
   /** Texture dimensionality. */
   type: '1d';
   /** Canonical loaders.gl texture format for the texture payload. */
   format: TextureFormat;
-  /** Numeric API-specific format constant, currently used for WebGL/OpenGL upload paths. */
-  glFormat?: number;
   /** Mip levels that make up the texture. */
   data: TextureLevel[];
 };
 
 /** Two-dimensional texture with mip levels. */
-export type Texture2D = {
+export type Texture2D<MetadataT extends TextureMetadata = TextureMetadata> = {
   /** loaders.gl shape tag identifying texture payloads. */
   shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
   /** Texture dimensionality. */
   type: '2d';
   /** Canonical loaders.gl texture format for the texture payload. */
   format: TextureFormat;
-  /** Numeric API-specific format constant, currently used for WebGL/OpenGL upload paths. */
-  glFormat?: number;
   /** Mip levels that make up the texture. */
   data: TextureLevel[];
 };
 
 /** Three-dimensional texture with mip levels for each depth slice. */
-export type Texture3D = {
+export type Texture3D<MetadataT extends TextureMetadata = TextureMetadata> = {
   /** loaders.gl shape tag identifying texture payloads. */
   shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
   /** Texture dimensionality. */
   type: '3d';
   /** Canonical loaders.gl texture format for the texture payload. */
   format: TextureFormat;
-  /** Numeric API-specific format constant, currently used for WebGL/OpenGL upload paths. */
-  glFormat?: number;
   /** Mip levels grouped by depth slice. */
   data: TextureLevel[][];
 };
 
 /** Cube texture with mip levels for each face. */
-export type TextureCube = {
+export type TextureCube<MetadataT extends TextureMetadata = TextureMetadata> = {
   /** loaders.gl shape tag identifying texture payloads. */
   shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
   /** Texture dimensionality. */
   type: 'cube';
   /** Canonical loaders.gl texture format for the texture payload. */
   format: TextureFormat;
-  /** Numeric API-specific format constant, currently used for WebGL/OpenGL upload paths. */
-  glFormat?: number;
   /** Mip levels grouped by cube face. */
   data: TextureLevel[][];
 };
 
 /** Array of two-dimensional textures with mip levels for each layer. */
-export type Texture2DArray = {
+export type Texture2DArray<MetadataT extends TextureMetadata = TextureMetadata> = {
   /** loaders.gl shape tag identifying texture payloads. */
   shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
   /** Texture dimensionality. */
   type: '2d-array';
   /** Canonical loaders.gl texture format for the texture payload. */
   format: TextureFormat;
-  /** Numeric API-specific format constant, currently used for WebGL/OpenGL upload paths. */
-  glFormat?: number;
   /** Mip levels grouped by array layer. */
   data: TextureLevel[][];
 };
 
 /** Array of cube textures with mip levels for each face in each layer. */
-export type TextureCubeArray = {
+export type TextureCubeArray<MetadataT extends TextureMetadata = TextureMetadata> = {
   /** loaders.gl shape tag identifying texture payloads. */
   shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
   /** Texture dimensionality. */
   type: 'cube-array';
   /** Canonical loaders.gl texture format for the texture payload. */
   format: TextureFormat;
-  /** Numeric API-specific format constant, currently used for WebGL/OpenGL upload paths. */
-  glFormat?: number;
   /** Mip levels grouped by cube-array layer and face. */
   data: TextureLevel[][];
 };
