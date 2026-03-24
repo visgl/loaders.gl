@@ -24,20 +24,20 @@ export {RadianceHDRLoader} from './radiance-hdr-loader';
 export type {NPYLoaderOptions} from './npy-loader';
 export {NPYLoader, NPYWorkerLoader} from './npy-loader';
 
-export type {ImageTextureLoaderOptions, ImageTextureManifest} from './image-texture-loader';
-export {ImageTextureLoader} from './image-texture-loader';
+export type {TextureManifestLoaderOptions, TextureManifest} from './texture-loader';
+export {TextureLoader} from './texture-loader';
 
-export type {ImageTextureArrayLoaderOptions, ImageTextureArrayManifest} from './image-texture-array-loader';
-export {ImageTextureArrayLoader} from './image-texture-array-loader';
+export type {TextureArrayLoaderOptions, TextureArrayManifest} from './texture-array-loader';
+export {TextureArrayLoader} from './texture-array-loader';
 
-export type {ImageTextureCubeLoaderOptions, ImageTextureCubeManifest} from './image-texture-cube-loader';
-export {ImageTextureCubeLoader} from './image-texture-cube-loader';
+export type {TextureCubeLoaderOptions, TextureCubeManifest} from './texture-cube-loader';
+export {TextureCubeLoader} from './texture-cube-loader';
 
 export type {
-  ImageTextureCubeArrayLoaderOptions,
-  ImageTextureCubeArrayManifest
-} from './image-texture-cube-array-loader';
-export {ImageTextureCubeArrayLoader} from './image-texture-cube-array-loader';
+  TextureCubeArrayLoaderOptions,
+  TextureCubeArrayManifest
+} from './texture-cube-array-loader';
+export {TextureCubeArrayLoader} from './texture-cube-array-loader';
 
 // Module constants
 export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';

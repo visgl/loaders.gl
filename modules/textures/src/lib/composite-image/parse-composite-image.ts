@@ -5,7 +5,7 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils'
 import {parseFromContext, path, resolvePath} from '@loaders.gl/loader-utils'
 import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/schema'
-import {ImageLoader, getImageData, getImageSize, isImage, type ImageType} from '@loaders.gl/images'
+import {ImageLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images'
 import {asyncDeepMap} from '../texture-api/async-deep-map'
 import type {TextureLoaderOptions} from '../texture-api/texture-api-types'
 import {
@@ -94,8 +94,9 @@ export async function loadCompositeImageManifest(
   options: TextureLoaderOptions = {},
   context?: LoaderContext
 ): Promise<Texture> {
-  const urlTree = await getCompositeImageUrlTree(manifest, options, context)
-  const imageData = await loadCompositeImageUrlTree(urlTree, options, context)
+  const normalizedOptions = normalizeCompositeImageManifestOptions(options)
+  const urlTree = await getCompositeImageUrlTree(manifest, normalizedOptions, context)
+  const imageData = await loadCompositeImageUrlTree(urlTree, normalizedOptions, context)
   return convertCompositeImageToTexture(manifest.shape, imageData)
 }
 
@@ -486,6 +487,22 @@ function getCompositeImageSubloaderOptions(
   }
 }
 
+function normalizeCompositeImageManifestOptions(
+  options: TextureLoaderOptions
+): TextureLoaderOptions {
+  if (options.image?.type || typeof ImageBitmap === 'undefined') {
+    return options
+  }
+
+  return {
+    ...options,
+    image: {
+      ...options.image,
+      type: 'imagebitmap'
+    }
+  }
+}
+
 function getCompositeImageMemberContext(
   resolvedUrl: string,
   response: Response,
@@ -554,7 +571,7 @@ function convertCompositeImageToTexture(
     }
 
     default:
-      throw new Error(`Unsupported composite image shape ${shape satisfies never}`)
+      throw new Error(`Unsupported composite image shape ${shape}`)
   }
 }
 
@@ -599,13 +616,14 @@ function normalizeCompositeImageMember(imageData: any): TextureLevel[] {
 }
 
 function getTextureLevelFromImage(image: ImageType): TextureLevel {
-  const imageData = getImageData(image)
+  const {width, height} = getImageSize(image)
   return {
     shape: 'texture-level',
     compressed: false,
-    width: imageData.width,
-    height: imageData.height,
-    data: imageData.data,
+    width,
+    height,
+    imageBitmap: typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap ? image : undefined,
+    data: new Uint8Array(0),
     textureFormat: 'rgba8unorm'
   }
 }

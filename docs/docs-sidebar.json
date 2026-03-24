@@ -429,10 +429,10 @@
         "items": [
           "modules/textures/README",
           "modules/textures/api-reference/radiance-hdr-loader",
-          "modules/textures/api-reference/image-texture-loader",
-          "modules/textures/api-reference/image-texture-array-loader",
-          "modules/textures/api-reference/image-texture-cube-loader",
-          "modules/textures/api-reference/image-texture-cube-array-loader"
+          "modules/textures/api-reference/texture-loader",
+          "modules/textures/api-reference/texture-array-loader",
+          "modules/textures/api-reference/texture-cube-loader",
+          "modules/textures/api-reference/texture-cube-array-loader"
         ]
       },
       {

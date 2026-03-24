@@ -41,4 +41,3 @@ with `python create_npy_test_data.py`.
 - `simple-rle.hdr` is a handcrafted Radiance HDR fixture created in-repo for parser and loader tests.
 - `venice_sunset_256.hdr` is downsampled from [Poly Haven - Venice Sunset](https://polyhaven.com/a/venice_sunset) and used under the [Poly Haven CC0 license](https://polyhaven.com/license).
 - `royal_esplanade_256.hdr` is downsampled from [Poly Haven - Royal Esplanade](https://polyhaven.com/a/royal_esplanade) and used under the [Poly Haven CC0 license](https://polyhaven.com/license).
-- `papermill.hdr` is copied from [KhronosGroup/glTF-Sample-Environments](https://github.com/KhronosGroup/glTF-Sample-Environments). The upstream environment repo attributes `papermill` to the [HDR Labs sIBL archive](http://www.hdrlabs.com/sibl/archive/). This repo vendors the file for test use under that upstream provenance.

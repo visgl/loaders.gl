@@ -11,9 +11,9 @@
 
 | Deprecated helper | Replacement |
 | ----------------- | ----------- |
-| `loadImageTexture()` | `load(url, ImageTextureLoader)` |
-| `loadImageTextureArray()` | `load(url, ImageTextureArrayLoader)` |
-| `loadImageTextureCube()` | `load(url, ImageTextureCubeLoader)` |
+| `loadImageTexture()` | `load(url, TextureLoader)` |
+| `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
+| `loadImageTextureCube()` | `load(url, TextureCubeLoader)` |
 
 **@loaders.gl/draco**
 

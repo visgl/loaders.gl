@@ -41,10 +41,10 @@ The `@loaders.gl/textures` module handles the following formats:
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]` |
 | [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture`           |
 | [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`           |
-| [`ImageTextureLoader`](/docs/modules/textures/api-reference/image-texture-loader)           | Manifest-driven single image or mip chain       |
-| [`ImageTextureArrayLoader`](/docs/modules/textures/api-reference/image-texture-array-loader) | Manifest-driven texture arrays                  |
-| [`ImageTextureCubeLoader`](/docs/modules/textures/api-reference/image-texture-cube-loader)  | Manifest-driven cubemaps                        |
-| [`ImageTextureCubeArrayLoader`](/docs/modules/textures/api-reference/image-texture-cube-array-loader) | Manifest-driven cube arrays                     |
+| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)           | Manifest-driven single image or mip chain       |
+| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) | Manifest-driven texture arrays                  |
+| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)  | Manifest-driven cubemaps                        |
+| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) | Manifest-driven cube arrays                     |
 
 ## Return Types
 
@@ -80,13 +80,14 @@ See [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) and [`Com
 
 The textures module also includes manifest-driven loaders for composite image textures:
 
-- [`ImageTextureLoader`](/docs/modules/textures/api-reference/image-texture-loader) for a single image or mip chain
-- [`ImageTextureArrayLoader`](/docs/modules/textures/api-reference/image-texture-array-loader) for texture arrays, including mipmapped layers
-- [`ImageTextureCubeLoader`](/docs/modules/textures/api-reference/image-texture-cube-loader) for cubemaps, including mipmapped faces
-- [`ImageTextureCubeArrayLoader`](/docs/modules/textures/api-reference/image-texture-cube-array-loader) for cube arrays
+- [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader) for a single image or mip chain
+- [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) for texture arrays, including mipmapped layers
+- [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader) for cubemaps, including mipmapped faces
+- [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays
 
 These loaders resolve relative member URLs against the manifest URL, or against `options.core.baseUrl` when parsing an in-memory manifest.
 Member assets are parsed with `ImageLoader` by default, and additional loaders passed to top-level `load()` are also available for manifest members.
+They return schema `Texture` objects rather than raw image trees.
 
 ## Attributions
 

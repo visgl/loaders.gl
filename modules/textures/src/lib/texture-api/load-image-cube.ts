@@ -37,7 +37,7 @@ export async function getImageCubeUrls(getUrl: GetUrl, options: TextureLoaderOpt
 // Returns an object with six key-value pairs containing the images (or image mip arrays)
 // for each cube face
 /**
- * @deprecated Use `load(url, ImageTextureCubeLoader)` for manifest-driven loading.
+ * @deprecated Use `load(url, TextureCubeLoader)` for manifest-driven loading.
  */
 export async function loadImageTextureCube(
   getUrl: GetUrl,

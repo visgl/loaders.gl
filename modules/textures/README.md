@@ -55,20 +55,21 @@ console.log(images[0][0].textureFormat);
 
 The `textures` module also exports JSON manifest loaders for image-based composite textures:
 
-- `ImageTextureLoader` for a single image or mip chain
-- `ImageTextureArrayLoader` for texture arrays
-- `ImageTextureCubeLoader` for cubemaps
-- `ImageTextureCubeArrayLoader` for cube arrays
+- `TextureLoader` for a single image or mip chain
+- `TextureArrayLoader` for texture arrays
+- `TextureCubeLoader` for cubemaps
+- `TextureCubeArrayLoader` for cube arrays
 
 Each manifest includes a `shape` discriminator and resolves relative member URLs against the manifest URL.
 Member assets are parsed with `ImageLoader` by default, and additional loaders passed to top-level `load()` are also available for manifest members.
+These loaders return schema `Texture` objects rather than raw image trees.
 
 ```ts
 import {load} from '@loaders.gl/core';
-import {BasisLoader, CompressedTextureLoader, ImageTextureCubeLoader} from '@loaders.gl/textures';
+import {BasisLoader, CompressedTextureLoader, TextureCubeLoader} from '@loaders.gl/textures';
 
 const imageCube = await load('environment.image-texture-cube.json', [
-  ImageTextureCubeLoader,
+  TextureCubeLoader,
   CompressedTextureLoader,
   BasisLoader
 ]);

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils'
+import type {ImageLoaderOptions} from '@loaders.gl/images'
 
 export type {ImageType} from '@loaders.gl/images';
 
@@ -22,7 +23,7 @@ export type TextureLoaderOptions = LoaderOptions & {
   }
   /** @deprecated Legacy helper alias kept for loadImageTexture* compatibility */
   baseUrl?: string
-  image?: {
+  image?: NonNullable<ImageLoaderOptions['image']> & {
     mipLevels?: number | 'auto'
   }
 }

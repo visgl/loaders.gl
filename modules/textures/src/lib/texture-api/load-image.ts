@@ -13,7 +13,7 @@ import type {GetUrl, TextureLoaderOptions, UrlOptions} from './texture-api-types
 import {generateUrl} from './generate-url';
 
 /**
- * @deprecated Use `load(url, ImageTextureLoader)` for manifest-driven loading.
+ * @deprecated Use `load(url, TextureLoader)` for manifest-driven loading.
  */
 export async function loadImageTexture(
   getUrl: string | GetUrl,

@@ -7,7 +7,7 @@ import type {GetUrl, TextureLoaderOptions} from './texture-api-types';
 import {getImageUrls} from './load-image';
 
 /**
- * @deprecated Use `load(url, ImageTextureArrayLoader)` for manifest-driven loading.
+ * @deprecated Use `load(url, TextureArrayLoader)` for manifest-driven loading.
  */
 export async function loadImageTextureArray(
   count: number,
