@@ -3,7 +3,7 @@ import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
@@ -72,17 +72,22 @@ export async function parseI3STileContent(
     if (options?.i3s.decodeTextures) {
       // TODO - replace with switch
       if (loader === ImageLoader) {
-        const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
+        const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
         try {
           // Image constructor is not supported in worker thread.
           // Do parsing image data on the main thread by using context to avoid worker issues.
-          const texture: any = await parseFromContext(arrayBuffer, [], options, context!);
-          content.texture = texture;
+          const parsedTexture: any = await parseFromContext(
+            arrayBuffer,
+            ImageLoader,
+            imageLoaderOptions,
+            context!
+          );
+          content.texture = getImageData(parsedTexture);
         } catch (e) {
           // context object is different between worker and node.js conversion script.
           // To prevent error we parse data in ordinary way if it is not parsed by using context.
-          const texture: any = await parse(arrayBuffer, loader, options, context);
-          content.texture = texture;
+          const parsedTexture: any = await parse(arrayBuffer, loader, imageLoaderOptions, context);
+          content.texture = getImageData(parsedTexture);
         }
       } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
         let texture: any = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);

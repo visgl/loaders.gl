@@ -19,7 +19,7 @@ type ParseImageNode = (arrayBuffer: ArrayBuffer, mimeType: string) => Promise<ND
 // Use polyfills if installed to parsed image using get-pixels
 export async function parseToNodeImage(
   arrayBuffer: ArrayBuffer,
-  options: ImageLoaderOptions
+  _options: ImageLoaderOptions
 ): Promise<ImageDataType> {
   const {mimeType} = getBinaryImageMetadata(arrayBuffer) || {};
 

@@ -1,8 +1,8 @@
 # Image Utilities
 
-A small set of image utility functions functions intended to help write image handling code that works across platforms.
+A small set of image utility functions intended to help write image handling code that works across platforms.
 
-Background: The image returned by the [`ImageLoader`](/docs/modules/images/api-reference/image-loader) depends on the environment, i.e. whether the application is running in a new or old browser, or under Node.js.
+Background: The image returned by the [`ImageLoader`](/docs/modules/images/api-reference/image-loader) depends on the environment, i.e. whether the application is running in a browser or under Node.js.
 
 ## Usage
 
@@ -71,7 +71,7 @@ Returns `true` if `image` is one of the types that `@loaders.gl/images` can retu
 getImageType(image : any): 'imagebitmap' | 'image' | 'data'
 ```
 
-Returns the type of an image. Can be used when loading images with the default setting of `options.type: 'auto'` to discover what type was actually returned.
+Returns the type of an image.
 
 - `image`: An image returned by an image category loader, such as `ImageLoader`
 
@@ -89,7 +89,7 @@ The following image types are distinguished
 | --------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `'data'`        | A simple JavaScript object with `data`, `width`, `height` etc. fields.. | Useful when additional manipulation of the image data is desired. Always used in Node.js since `ImageBitmap` and `Image` types are not available. |
 | `'imagebitmap'` | [`ImageBitmap`][image_bitmap]                                           | The preferred new HTML5 image class that is optimized for fast rendering (avialble in modern browsers only)                                       |
-| `'image'`       | [`Image`][image] (aka `HTMLImageElement`)                               | Fallback, supported in all browsers (but less performant and flexible than ImageBitmap)                                                           |
+| `'image'`       | [`Image`][image] (aka `HTMLImageElement`)                               | Supported by helper APIs for compatibility, but no longer returned by `ImageLoader`                                                               |
 
 [image_bitmap]: https://developer.mozilla.org/en-US/docs/Web/API/ImageBitmap
 [image]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image

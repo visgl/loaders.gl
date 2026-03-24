@@ -23,11 +23,10 @@ let imagesPromise: Promise<ImageType[]> | null = null;
 async function loadImages(): Promise<ImageType[]> {
   imagesPromise =
     imagesPromise ||
-    Promise.all(
-      IMAGE_TYPES.filter(isImageTypeSupported).map((type) =>
-        load(IMAGE_URL, ImageLoader, {image: {type}})
-      )
-    );
+    Promise.all([
+      load(IMAGE_URL, ImageLoader),
+      load(IMAGE_URL, ImageLoader, {image: {type: 'imagebitmap'}})
+    ]);
   return await imagesPromise;
 }
 

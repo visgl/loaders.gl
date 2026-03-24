@@ -17,25 +17,22 @@ const MIME_TYPES = [
   'image/svg+xml'
 ];
 
+type ImageBitmapLoaderOptions = ImageBitmapOptions & Record<string, unknown>;
+
 export type ImageLoaderOptions = StrictLoaderOptions & {
   image?: {
-    type?: 'auto' | 'data' | 'imagebitmap' | 'image';
-    decode?: boolean;
-    imagebitmap?: ImageBitmapOptions;
+    type?: 'imagebitmap';
   };
+  imagebitmap?: ImageBitmapLoaderOptions;
 };
 
 const DEFAULT_IMAGE_LOADER_OPTIONS: ImageLoaderOptions = {
-  image: {
-    type: 'auto',
-    decode: true // if format is HTML
-  }
+  image: {}
   // imagebitmap: {} - passes (platform dependent) parameters to ImageBitmap constructor
 };
 
 /**
- * Loads a platform-specific image type
- * Note: This type can be used as input data to WebGL texture creation
+ * Loads browser images as `ImageBitmap` and Node.js images as raw image data.
  */
 export const ImageLoader = {
   dataType: null as unknown as ImageType,

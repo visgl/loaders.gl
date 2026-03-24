@@ -1,4 +1,5 @@
 import type {Matrix4, Quaternion, Vector3} from '@math.gl/core';
+import type {ImageDataType} from '@loaders.gl/images';
 import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from './lib/helpers/i3s-nodepages-tiles';
@@ -206,6 +207,8 @@ export type I3STileContent = {
 
 export type TileContentTexture =
   | ArrayBuffer
+  | ImageDataType
+  | ImageData
   | {
       compressed: boolean;
       mipmaps: boolean;

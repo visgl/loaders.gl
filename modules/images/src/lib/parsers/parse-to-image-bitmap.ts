@@ -16,24 +16,23 @@ export async function parseToImageBitmap(
   options: ImageLoaderOptions,
   url?: string
 ): Promise<ImageBitmap> {
-  let blob;
+  let imageBitmapSource: Blob | HTMLImageElement;
 
   // Cannot parse SVG directly to ImageBitmap, parse to Image first
   if (isSVG(url)) {
     // Note: this only works on main thread
-    const image = await parseToImage(arrayBuffer, options, url);
-    blob = image;
+    imageBitmapSource = await parseToImage(arrayBuffer, url);
   } else {
     // Create blob from the array buffer
-    blob = getBlob(arrayBuffer, url);
+    imageBitmapSource = getBlob(arrayBuffer, url);
   }
 
-  const imagebitmapOptions = (options && options.imagebitmap) as
+  const imageBitmapOptions = (options && options.imagebitmap) as
     | ImageBitmapOptions
     | null
     | undefined;
 
-  return await safeCreateImageBitmap(blob, imagebitmapOptions);
+  return await safeCreateImageBitmap(imageBitmapSource, imageBitmapOptions);
 }
 
 /**
@@ -43,24 +42,24 @@ export async function parseToImageBitmap(
  * Avoid supplying if not provided or supported, remember if not supported
  */
 async function safeCreateImageBitmap(
-  blob: Blob,
-  imagebitmapOptions: ImageBitmapOptions | null = null
+  imageBitmapSource: Blob | HTMLImageElement,
+  imageBitmapOptions: ImageBitmapOptions | null = null
 ): Promise<ImageBitmap> {
-  if (isEmptyObject(imagebitmapOptions) || !imagebitmapOptionsSupported) {
-    imagebitmapOptions = null;
+  if (isEmptyObject(imageBitmapOptions) || !imagebitmapOptionsSupported) {
+    imageBitmapOptions = null;
   }
 
-  if (imagebitmapOptions) {
+  if (imageBitmapOptions) {
     try {
       // @ts-ignore Options
-      return await createImageBitmap(blob, imagebitmapOptions);
+      return await createImageBitmap(imageBitmapSource, imageBitmapOptions);
     } catch (error) {
       console.warn(error); // eslint-disable-line
       imagebitmapOptionsSupported = false;
     }
   }
 
-  return await createImageBitmap(blob);
+  return await createImageBitmap(imageBitmapSource);
 }
 
 function isEmptyObject(object: object | null | undefined) {

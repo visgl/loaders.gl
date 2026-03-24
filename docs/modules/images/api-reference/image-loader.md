@@ -1,13 +1,13 @@
 # ImageLoader
 
-An image loader that works under both Node.js (requires `@loaders.gl/polyfills`) and the browser.
+An image loader that returns `ImageBitmap` in supported browsers and raw image data under Node.js (requires `@loaders.gl/polyfills`).
 
 | Loader         | Characteristic                                                            |
 | -------------- | ------------------------------------------------------------------------- |
 | File Extension | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.avif`, `.bmp`, `.ico`, `.svg` |
 | File Type      | Binary                                                                    |
 | File Format    | PNG, JPEG, GIF, WEBP, AVIF, BMP, SVG                                      |
-| Data Format    | `ImageBitmap`, `Image` or "image data"                                    |
+| Data Format    | `ImageBitmap` in browsers, "image data" in Node.js                        |
 | Supported APIs | `load`, `parse`                                                           |
 | Worker Thread  | No (but may run on separate native thread in browsers)                    |
 | Streaming      | No                                                                        |
@@ -24,22 +24,22 @@ const image = await load(url, ImageLoader, options);
 
 ## Data Format
 
-The `ImageLoader` parses binary encoded images (such as JPEG or PNG images) into one of three different in-memory representations:
+The `ImageLoader` parses binary encoded images (such as JPEG or PNG images) into:
 
-- `ImageBitmap` (`type: 'imagebitmap`) - Optimized image class on modern browsers.
-- `Image` (`type: 'image`) - Works on all browsers, less performant.
-- An "image data object" (`type: 'data'`) - An `ImageData` like object that can holds the raw bytes to the image and works in both browsers and Node.js
+- `ImageBitmap` in browsers with `createImageBitmap` support.
+- An "image data object" under Node.js via `@loaders.gl/polyfills`.
+
+If browser code needs raw pixels, load with `ImageLoader` and then call `getImageData(image)`.
 
 ## Options
 
-| Option         | Type    | Default  | Description                                                                                                                                                                    |
-| -------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `image.type`   | String  | `'auto'` | Set to `imagebitmap`, `image` or `data` to explicitly control type of returned image. `auto` selects the most efficient supported format (`imagebitmap` on Chrome and Firefix) |
-| `image.decode` | boolean | `true`   | Applies to `image` type images only, ensures image is fully decoded before loading promise resolves.                                                                           |
+| Option       | Type     | Default | Description                                                                            |
+| ------------ | -------- | ------- | -------------------------------------------------------------------------------------- |
+| `image.type` | `string` | unset   | Optional compatibility alias. Only `imagebitmap` is accepted. Legacy values now throw. |
 
 ### ImageBitmap Options
 
-In addition, for `imagebitmap` type images, it is possible to pass through options to [`createImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap) to control image extraction, via the separate `options.imagebitmap` object. However, for portability it may be best to avoid relying on these options for now, since some browsers do not support `ImageBitmap` options (and some browsers do not support `ImageBitmap`s at all).
+Pass through options to [`createImageBitmap`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/createImageBitmap) with the top-level `options.imagebitmap` object.
 
 | Option                             | Type   | Default     | Description                                                                                                                   |
 | ---------------------------------- | ------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -54,5 +54,6 @@ Portability note: The exact set of `imagebitmap` options supported may depend on
 
 ## Remarks
 
-- While generic, the `ImageLoader` is designed with WebGL applications in mind, ensuring that loaded image data can be used to create a `WebGLTexture` both in the browser and in headless gl under Node.js
+- In browsers without `ImageBitmap` support, `ImageLoader` throws instead of falling back to `HTMLImageElement`.
+- While generic, the `ImageLoader` is designed with WebGL applications in mind, ensuring that loaded image data can be used to create a `WebGLTexture` both in the browser and in headless gl under Node.js.
 - Node.js support requires import `@loaders.gl/polyfills` before installing this module.

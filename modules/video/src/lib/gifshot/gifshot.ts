@@ -110,6 +110,12 @@ var utils = {
   isElement: function isElement(elem) {
     return elem && elem.nodeType === 1;
   },
+  isImageBitmap: function isImageBitmap(image) {
+    return typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap;
+  },
+  isDrawable: function isDrawable(image) {
+    return utils.isElement(image) || utils.isImageBitmap(image);
+  },
   isString: function isString(value) {
     return typeof value === 'string' || Object.prototype.toString.call(value) === '[object String]';
   },
@@ -1654,7 +1660,7 @@ function existingImages() {
     // if (image.src) {
     //     currentImage = currentImage.src;
     // }
-    if (utils.isElement(currentImage)) {
+    if (utils.isDrawable(currentImage)) {
       if (options.crossOrigin) {
         currentImage.crossOrigin = options.crossOrigin;
       }

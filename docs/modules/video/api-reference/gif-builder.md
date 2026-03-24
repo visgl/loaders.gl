@@ -25,15 +25,9 @@ import {ImageLoader} from '@loaders.gl/images';
 import {GIFBuilder} from '@loaders.gl/video';
 
 const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
-gifBuilder.add(
-  await load('http://i.imgur.com/2OO33vX.jpg', ImageLoader, {images: {type: 'image'}})
-);
-gifBuilder.add(
-  await load('http://i.imgur.com/qOwVaSN.png', ImageLoader, {images: {type: 'image'}})
-);
-gifBuilder.add(
-  await load('http://i.imgur.com/Vo5mFZJ.gif', ImageLoader, {images: {type: 'image'}})
-);
+gifBuilder.add(await load('http://i.imgur.com/2OO33vX.jpg', ImageLoader));
+gifBuilder.add(await load('http://i.imgur.com/qOwVaSN.png', ImageLoader));
+gifBuilder.add(await load('http://i.imgur.com/Vo5mFZJ.gif', ImageLoader));
 gifBuilder.build();
 ```
 
@@ -77,9 +71,9 @@ Creates a new `GIFBuilder` instance.
 
 `options` See the Options section below.
 
-### add(file: Image | string | object)
+### add(file: ImageBitmap | Image | string | object)
 
-- **images** -- `Image` objects can be added.(Note: `ImageBitmap` is not currently supported).
+- **images** -- `ImageBitmap` and `Image` objects can be added.
 
 Experimentally, tha following types can currently be added (may be removed in upcoming release)
 

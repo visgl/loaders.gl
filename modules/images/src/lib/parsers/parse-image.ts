@@ -1,66 +1,43 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {assert} from '@loaders.gl/loader-utils';
+import {isBrowser} from '@loaders.gl/loader-utils';
 import type {ImageType} from '../../types';
 import type {ImageLoaderOptions} from '../../image-loader';
-import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
-import {getImageData} from '../category-api/parsed-image-api';
-import {parseToImage} from './parse-to-image';
 import {parseToImageBitmap} from './parse-to-image-bitmap';
 import {parseToNodeImage} from './parse-to-node-image';
 
-// Parse to platform defined image type (data on node, ImageBitmap or HTMLImage on browser)
-// eslint-disable-next-line complexity
+const INVALID_IMAGE_TYPE_ERROR =
+  "@loaders.gl/images: ImageLoader only accepts options.image.type='imagebitmap'. Remove legacy image/data/auto values and call getImageData(image) if you need raw pixels.";
+const UNSUPPORTED_IMAGE_BITMAP_ERROR =
+  '@loaders.gl/images: ImageLoader requires browser ImageBitmap support. Use a browser with createImageBitmap support or load images under Node.js with @loaders.gl/polyfills.';
+
+/**
+ * Parses images into `ImageBitmap` in browsers and raw image data in Node.js.
+ */
 export async function parseImage(
   arrayBuffer: ArrayBuffer,
   options?: ImageLoaderOptions,
   context?: LoaderContext
 ): Promise<ImageType> {
   options = options || {};
-  const imageOptions = options.image || {};
+  validateImageTypeOption(options);
 
-  // The user can request a specific output format via `options.image.type`
-  const imageType = imageOptions.type || 'auto';
-
-  const {url} = context || {};
-
-  // Note: For options.image.type === `data`, we may still need to load as `image` or `imagebitmap`
-  const loadType = getLoadableImageType(imageType);
-
-  let image;
-  switch (loadType) {
-    case 'imagebitmap':
-      image = await parseToImageBitmap(arrayBuffer, options, url);
-      break;
-    case 'image':
-      image = await parseToImage(arrayBuffer, options, url);
-      break;
-    case 'data':
-      // Node.js loads imagedata directly
-      image = await parseToNodeImage(arrayBuffer, options);
-      break;
-    default:
-      assert(false);
+  if (!isBrowser) {
+    return await parseToNodeImage(arrayBuffer, options);
   }
 
-  // Browser: if options.image.type === 'data', we can now extract data from the loaded image
-  if (imageType === 'data') {
-    image = getImageData(image);
+  if (typeof ImageBitmap === 'undefined' || typeof createImageBitmap !== 'function') {
+    throw new Error(UNSUPPORTED_IMAGE_BITMAP_ERROR);
   }
 
-  return image;
+  return await parseToImageBitmap(arrayBuffer, options, context?.url);
 }
 
-// Get a loadable image type from image type
-function getLoadableImageType(type) {
-  switch (type) {
-    case 'auto':
-    case 'data':
-      // Browser: For image data we need still need to load using an image format
-      // Node: the default image type is `data`.
-      return getDefaultImageType();
-    default:
-      // Throw an error if not supported
-      isImageTypeSupported(type);
-      return type;
+/**
+ * Rejects legacy browser output modes now that `ImageLoader` is bitmap-only.
+ */
+function validateImageTypeOption(options: ImageLoaderOptions): void {
+  const imageType = options.image?.type;
+  if (imageType && imageType !== 'imagebitmap') {
+    throw new Error(INVALID_IMAGE_TYPE_ERROR);
   }
 }

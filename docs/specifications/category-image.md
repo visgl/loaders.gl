@@ -36,11 +36,11 @@ const image = await load('image.jpeg');
 
 ## Image Types
 
-Images can be loaded as image data or as opaque image objects (`Image` or `ImageBitmap`), and the image _type_ option can be used to control the type of image object produced by the `ImageLoader`.
+Images can be loaded as image data or as opaque image objects (`Image` or `ImageBitmap`).
 
 A loaded image can always be returned as an _image data_ object (an object containing a `Uint8Array` with the pixel data, and metadata like `width` and `height`, and in Node.js images are always loaded as image data objects).
 
-In the browser, the `ImageLoader` uses the browser's native image loading functionality, and if direct access to the image data is not required, it is more efficient to load data into an opaque image object. The `ImageLoader` prefers `ImageBitmap` when supported, falling back to `Image` (aka `HTMLImageElement`) on older browsers.
+In the browser, `ImageLoader` returns `ImageBitmap`. In browsers without `ImageBitmap` support it throws instead of falling back to `Image` (aka `HTMLImageElement`).
 
 Note that _type_ is independent of the _format_ of the image (see below).
 
@@ -54,7 +54,7 @@ Note that _type_ is independent of the _format_ of the image (see below).
 
 Image data objects are images loaded as data, represented by an object that contains a typed array with the pixel data, size, and possibly additional metadata `{width: Number, height: Number, data: Uint8Array, ...}`
 
-To get an image data object from a loaded `Image` or `ImageBitmap`, call `getImageData(image)`. To load an image data object directly, set the `image.type: 'data'` option when loading the image.
+To get an image data object from a loaded `Image` or `ImageBitmap`, call `getImageData(image)`.
 
 ### Image Formats
 
@@ -72,10 +72,9 @@ Applications that use e.g. the `CompressedTextureLoader` and/or the `BasisLoader
 
 The image category support some generic options (specified using `options.image.<option-name>`), that are applicable to all (or most) image loaders.
 
-| Option                 | Default  | Type    | Availability   | Description                                   |
-| ---------------------- | -------- | ------- | -------------- | --------------------------------------------- |
-| `options.image.type`   | `'auto'` | string  | See table      | One of `auto`, `data`, `imagebitmap`, `image` |
-| `options.image.decode` | `true`   | boolean | No: Edge, IE11 | Wait for HTMLImages to be fully decoded.      |
+| Option               | Default | Type   | Availability  | Description                                                   |
+| -------------------- | ------- | ------ | ------------- | ------------------------------------------------------------- |
+| `options.image.type` | unset   | string | `ImageLoader` | Optional compatibility alias. Only `imagebitmap` is accepted. |
 
 ## Notes
 
@@ -97,6 +96,7 @@ The image category also provides a few utilities:
 Image data objects return by image category loaders have the same fields (`width`, `height`, `data`) as the browser's built-in `ImageData` class, but are not actual instances of `ImageData`. However, should you need it, it is easy to create an `ImageData` instance from an image data object:
 
 ```typescript
-const data = load(url, ImageLoader, {image: {type: 'data'}});
+const image = await load(url, ImageLoader);
+const data = getImageData(image);
 const imageData = new ImageData(data.data, data.width, data.height);
 ```

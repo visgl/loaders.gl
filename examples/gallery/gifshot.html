@@ -27,7 +27,7 @@
     ];
 
     const images = await Promise.all(
-      IMAGE_URLS.map(url => load(url, ImageLoader, {image: {type: 'image'}}))
+      IMAGE_URLS.map(url => load(url, ImageLoader))
     );
 
     const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});

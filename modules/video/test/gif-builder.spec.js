@@ -39,9 +39,7 @@ test('GIFBuilder#load(Image)', async (t) => {
     return;
   }
 
-  const IMAGES = await Promise.all(
-    IMAGE_URLS.map((url) => load(url, ImageLoader, {image: {type: 'image'}}))
-  );
+  const IMAGES = await Promise.all(IMAGE_URLS.map((url) => load(url, ImageLoader)));
 
   const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
 

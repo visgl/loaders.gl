@@ -22,11 +22,12 @@
 ```typescript
 import '@loaders.gl/polyfill'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
+import {ImageLoader, getImageData} from '@loaders.gl/images';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 
 const shannonPNG = 'shannon.png';
 
-const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
+const image = getImageData(await load(shannonPNG, ImageLoader));
 const encodedData = await encode(image, KTX2BasisUniversalTextureWriter);
 ```
 

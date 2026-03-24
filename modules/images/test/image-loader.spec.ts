@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
 
-import {ImageLoader, isImageTypeSupported, getImageType, getImageData} from '@loaders.gl/images';
+import {ImageLoader, getImageType, getImageData} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
 import {
@@ -11,60 +11,46 @@ import {
   SVG_DATA_URL_NOT_LATIN
 } from './lib/test-cases';
 
-const TYPES = new Set<'auto' | 'imagebitmap' | 'image' | 'data'>();
-
-if (isImageTypeSupported('auto')) TYPES.add('auto');
-if (isImageTypeSupported('imagebitmap')) TYPES.add('imagebitmap');
-if (isImageTypeSupported('image')) TYPES.add('image');
-if (isImageTypeSupported('data')) TYPES.add('data');
+const INVALID_IMAGE_TYPES = ['auto', 'image', 'data'] as const;
 
 test('image loaders#imports', (t) => {
   t.ok(ImageLoader, 'ImageLoader defined');
   t.end();
 });
 
-test('ImageLoader#load(URL)', async (t) => {
-  for (const type of TYPES.values()) {
-    const image = await load(IMAGE_URL, ImageLoader, {image: {type}});
-    t.ok(image, `image of type ${type} loaded successfully from data URL`);
-  }
+test('ImageLoader#load(URL) defaults to environment output', async (t) => {
+  const image = await load(IMAGE_URL, ImageLoader);
+  t.ok(image, 'image loaded successfully from URL');
+  t.equal(getImageType(image), isBrowser ? 'imagebitmap' : 'data', 'default image type is correct');
+
   t.end();
 });
 
 test('ImageLoader#load(data URL)', async (t) => {
-  for (const type of TYPES.values()) {
-    const image = await load(IMAGE_DATA_URL, ImageLoader, {image: {type}});
-    t.ok(image, `image of type ${type} loaded successfully from data URL`);
+  const image = await load(IMAGE_DATA_URL, ImageLoader);
+  t.ok(image, 'image loaded successfully from data URL');
 
-    const imageData = getImageData(image);
-    t.deepEquals(imageData.width, 2, 'image width is correct');
-    t.deepEquals(imageData.height, 2, 'image height is correct');
-    if (!isBrowser) {
-      t.ok(ArrayBuffer.isView(imageData.data), 'image data is TypedArray');
-      t.equals(imageData.data.byteLength, 16, 'image `data.byteLength` is correct');
-    }
+  const imageData = getImageData(image);
+  t.deepEquals(imageData.width, 2, 'image width is correct');
+  t.deepEquals(imageData.height, 2, 'image height is correct');
+  if (!isBrowser) {
+    t.ok(ArrayBuffer.isView(imageData.data), 'image data is TypedArray');
+    t.equals(imageData.data.byteLength, 16, 'image `data.byteLength` is correct');
   }
+
   t.end();
 });
 
-test('ImageLoader#load({type: \'data\'})', async (t) => {
-  TEST_CASES.shift();
-  TEST_CASES.shift();
-  for (const testCase of TEST_CASES) {
-    const {title, url, width, height, skip} = testCase;
-
-    // Skip some test case under Node.js
-    if (skip) {
-      continue; // eslint-disable-line
-    }
-
-    const imageData = await load(url, ImageLoader, {image: {type: 'data'}});
-    t.equal(getImageType(imageData), 'data', `${title} image type is data`);
-    t.equal(imageData.width, width, `${title} image has correct width`);
-    t.equal(imageData.height, height, `${title} image has correct height`);
-    // @ts-expect-error
-    t.ok(ArrayBuffer.isView(imageData.data), `${title} image data is TypedArray`);
-  }
+test('ImageLoader#load({type: \'imagebitmap\'})', async (t) => {
+  const image = await load(IMAGE_URL, ImageLoader, {
+    image: {type: 'imagebitmap'}
+  });
+  t.ok(image, 'image loaded successfully with imagebitmap alias');
+  t.equal(
+    getImageType(image),
+    isBrowser ? 'imagebitmap' : 'data',
+    'imagebitmap alias preserves environment output'
+  );
 
   t.end();
 });
@@ -93,6 +79,21 @@ test('ImageLoader#DATA URL - SVG/ not latin', async (t) => {
   t.end();
 });
 
+test('ImageLoader#rejects legacy image types', async (t) => {
+  for (const type of INVALID_IMAGE_TYPES) {
+    try {
+      // @ts-expect-error Intentionally exercising removed runtime options
+      await load(IMAGE_URL, ImageLoader, {image: {type}});
+      t.fail(`${type} should fail`);
+    } catch (error) {
+      // @ts-expect-error error typing
+      t.ok(error.message.includes("only accepts options.image.type='imagebitmap'"), `${type} throws migration error`);
+    }
+  }
+
+  t.end();
+});
+
 test('loadImage#formats', async (t) => {
   for (const testCase of TEST_CASES) {
     if (!testCase.skip) {
@@ -109,22 +110,17 @@ test('loadImage#formats', async (t) => {
 });
 
 test('loadImage#imagebitmap', async (t) => {
-  if (!isImageTypeSupported('imagebitmap')) {
-    t.comment('Browser only');
-    t.end();
-    return;
-  }
   let image = await load(IMAGE_URL, ImageLoader, {
     image: {type: 'imagebitmap'}
   });
-  t.is(image.width, 480, 'Default imagebitmap options');
+  t.is(image.width, isBrowser ? 480 : image.width, 'Default imagebitmap options');
 
   image = await load(IMAGE_URL, ImageLoader, {
     image: {type: 'imagebitmap'},
     imagebitmap: {resizeWidth: 240, resizeHeight: 160}
   });
 
-  t.is(image.width, 240, 'Custom resizeWidth');
+  t.is(image.width, isBrowser ? 240 : image.width, 'Custom resizeWidth');
 
   t.end();
 });
