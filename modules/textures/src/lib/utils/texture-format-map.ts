@@ -6,6 +6,7 @@
 import type {TextureFormat} from '@loaders.gl/schema';
 import type {GLTextureFormat} from '../gl-types';
 import {
+  GL_RGBA32F,
   GL_COMPRESSED_R11_EAC,
   GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
   GL_COMPRESSED_RED_RGTC1_EXT,
@@ -67,6 +68,7 @@ import {
 } from '../gl-extensions';
 
 const WEBGL_TO_TEXTURE_FORMAT: Record<number, TextureFormat> = {
+  [GL_RGBA32F]: 'rgba32float',
   [GL_COMPRESSED_RGB_S3TC_DXT1_EXT]: 'bc1-rgb-unorm-ext',
   [GL_COMPRESSED_SRGB_S3TC_DXT1_EXT]: 'bc1-rgb-unorm-srgb-ext',
   [GL_COMPRESSED_RGBA_S3TC_DXT1_EXT]: 'bc1-rgba-unorm',

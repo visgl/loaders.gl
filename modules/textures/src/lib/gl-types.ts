@@ -64,6 +64,7 @@ import type {
   GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT,
   GL_COMPRESSED_SRGB_S3TC_DXT1_EXT,
   GL_RGB565,
+  GL_RGBA32F,
   GL_RGBA4,
   GL_RGBA8
 } from './gl-extensions';
@@ -130,5 +131,6 @@ export type GLTextureFormat =
   | typeof GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
   | typeof GL_COMPRESSED_SRGB_S3TC_DXT1_EXT
   | typeof GL_RGB565
+  | typeof GL_RGBA32F
   | typeof GL_RGBA4
   | typeof GL_RGBA8;
