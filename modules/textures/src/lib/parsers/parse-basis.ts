@@ -58,16 +58,12 @@ type BasisOutputOptions = {
 
 let basisTranscodingLock: Promise<void> = Promise.resolve();
 
-const TEXTURE_FORMAT_ALIASES = {
-  'pvrtc-rbg2unorm-webgl': 'pvrtc-rgb2unorm-webgl'
-} as const satisfies Partial<Record<TextureFormat, TextureFormat>>;
-
 export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOptions> = {
   etc1: {
     basisFormat: 0,
     compressed: true,
     format: GL_COMPRESSED_RGB_ETC1_WEBGL,
-    textureFormat: 'etc1-rbg-unorm-webgl'
+    textureFormat: 'etc1-rbg-unorm-ext'
   },
   etc2: {
     basisFormat: 1,
@@ -79,7 +75,7 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 2,
     compressed: true,
     format: GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-    textureFormat: 'bc1-rgb-unorm-webgl'
+    textureFormat: 'bc1-rgb-unorm-ext'
   },
   bc3: {
     basisFormat: 3,
@@ -115,13 +111,13 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 8,
     compressed: true,
     format: GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-    textureFormat: 'pvrtc-rgb4unorm-webgl'
+    textureFormat: 'pvrtc-rgb4unorm-ext'
   },
   'pvrtc1-4-rgba': {
     basisFormat: 9,
     compressed: true,
     format: GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-    textureFormat: 'pvrtc-rgba4unorm-webgl'
+    textureFormat: 'pvrtc-rgba4unorm-ext'
   },
   'astc-4x4': {
     basisFormat: 10,
@@ -133,13 +129,13 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 11,
     compressed: true,
     format: GL_COMPRESSED_RGB_ATC_WEBGL,
-    textureFormat: 'atc-rgb-unorm-webgl'
+    textureFormat: 'atc-rgb-unorm-ext'
   },
   'atc-rgba-interpolated-alpha': {
     basisFormat: 12,
     compressed: true,
     format: GL_COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL,
-    textureFormat: 'atc-rgbai-unorm-webgl'
+    textureFormat: 'atc-rgbai-unorm-ext'
   },
   rgba32: {
     basisFormat: 13,
@@ -151,19 +147,19 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 14,
     compressed: false,
     format: GL_RGB565,
-    textureFormat: 'rgb565unorm-webgl'
+    textureFormat: 'rgb565unorm-ext'
   },
   bgr565: {
     basisFormat: 15,
     compressed: false,
     format: GL_RGB565,
-    textureFormat: 'rgb565unorm-webgl'
+    textureFormat: 'rgb565unorm-ext'
   },
   rgba4444: {
     basisFormat: 16,
     compressed: false,
     format: GL_RGBA4,
-    textureFormat: 'rgba4unorm-webgl'
+    textureFormat: 'rgba4unorm-ext'
   }
 };
 
@@ -448,7 +444,7 @@ export function selectSupportedBasisFormat(supportedTextureFormats?: Iterable<Te
 export function selectSupportedBasisFormat(
   supportedTextureFormats: Iterable<TextureFormat> = detectSupportedTextureFormats()
 ): BasisFormat | {alpha: BasisFormat; noAlpha: BasisFormat} {
-  const textureFormats = normalizeTextureFormats(supportedTextureFormats);
+  const textureFormats = new Set(supportedTextureFormats);
 
   if (hasSupportedTextureFormat(textureFormats, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
     return 'astc-4x4';
@@ -459,8 +455,8 @@ export function selectSupportedBasisFormat(
     };
   } else if (
     hasSupportedTextureFormat(textureFormats, [
-      'bc1-rgb-unorm-webgl',
-      'bc1-rgb-unorm-srgb-webgl',
+      'bc1-rgb-unorm-ext',
+      'bc1-rgb-unorm-srgb-ext',
       'bc1-rgba-unorm',
       'bc1-rgba-unorm-srgb',
       'bc2-rgba-unorm',
@@ -475,10 +471,10 @@ export function selectSupportedBasisFormat(
     };
   } else if (
     hasSupportedTextureFormat(textureFormats, [
-      'pvrtc-rgb4unorm-webgl',
-      'pvrtc-rgba4unorm-webgl',
-      'pvrtc-rgb2unorm-webgl',
-      'pvrtc-rgba2unorm-webgl'
+      'pvrtc-rgb4unorm-ext',
+      'pvrtc-rgba4unorm-ext',
+      'pvrtc-rgb2unorm-ext',
+      'pvrtc-rgba2unorm-ext'
     ])
   ) {
     return {
@@ -500,13 +496,13 @@ export function selectSupportedBasisFormat(
     ])
   ) {
     return 'etc2';
-  } else if (textureFormats.has('etc1-rbg-unorm-webgl')) {
+  } else if (textureFormats.has('etc1-rbg-unorm-ext')) {
     return 'etc1';
   } else if (
     hasSupportedTextureFormat(textureFormats, [
-      'atc-rgb-unorm-webgl',
-      'atc-rgba-unorm-webgl',
-      'atc-rgbai-unorm-webgl'
+      'atc-rgb-unorm-ext',
+      'atc-rgba-unorm-ext',
+      'atc-rgbai-unorm-ext'
     ])
   ) {
     return {
@@ -520,7 +516,7 @@ export function selectSupportedBasisFormat(
 export function getSupportedBasisFormats(
   supportedTextureFormats: Iterable<TextureFormat> = detectSupportedTextureFormats()
 ): BasisFormat[] {
-  const textureFormats = normalizeTextureFormats(supportedTextureFormats);
+  const textureFormats = new Set(supportedTextureFormats);
   const basisFormats: BasisFormat[] = [];
 
   if (hasSupportedTextureFormat(textureFormats, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
@@ -528,8 +524,8 @@ export function getSupportedBasisFormats(
   }
   if (
     hasSupportedTextureFormat(textureFormats, [
-      'bc1-rgb-unorm-webgl',
-      'bc1-rgb-unorm-srgb-webgl',
+      'bc1-rgb-unorm-ext',
+      'bc1-rgb-unorm-srgb-ext',
       'bc1-rgba-unorm',
       'bc1-rgba-unorm-srgb',
       'bc2-rgba-unorm',
@@ -551,10 +547,10 @@ export function getSupportedBasisFormats(
   }
   if (
     hasSupportedTextureFormat(textureFormats, [
-      'pvrtc-rgb4unorm-webgl',
-      'pvrtc-rgba4unorm-webgl',
-      'pvrtc-rgb2unorm-webgl',
-      'pvrtc-rgba2unorm-webgl'
+      'pvrtc-rgb4unorm-ext',
+      'pvrtc-rgba4unorm-ext',
+      'pvrtc-rgb2unorm-ext',
+      'pvrtc-rgba2unorm-ext'
     ])
   ) {
     basisFormats.push('pvrtc1-4-rgb', 'pvrtc1-4-rgba');
@@ -575,14 +571,14 @@ export function getSupportedBasisFormats(
   ) {
     basisFormats.push('etc2');
   }
-  if (textureFormats.has('etc1-rbg-unorm-webgl')) {
+  if (textureFormats.has('etc1-rbg-unorm-ext')) {
     basisFormats.push('etc1');
   }
   if (
     hasSupportedTextureFormat(textureFormats, [
-      'atc-rgb-unorm-webgl',
-      'atc-rgba-unorm-webgl',
-      'atc-rgbai-unorm-webgl'
+      'atc-rgb-unorm-ext',
+      'atc-rgba-unorm-ext',
+      'atc-rgbai-unorm-ext'
     ])
   ) {
     basisFormats.push('atc-rgb', 'atc-rgba-interpolated-alpha');
@@ -599,16 +595,4 @@ function hasSupportedTextureFormat(
   return candidateTextureFormats.some((textureFormat) =>
     supportedTextureFormats.has(textureFormat)
   );
-}
-
-function normalizeTextureFormats(
-  supportedTextureFormats: Iterable<TextureFormat>
-): Set<TextureFormat> {
-  const textureFormats = new Set<TextureFormat>();
-
-  for (const textureFormat of supportedTextureFormats) {
-    textureFormats.add(TEXTURE_FORMAT_ALIASES[textureFormat] || textureFormat);
-  }
-
-  return textureFormats;
 }

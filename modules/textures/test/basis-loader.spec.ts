@@ -49,7 +49,7 @@ test('BasisLoader#load(URL, worker: false)', async (t) => {
   } else {
     t.equals(image.compressed, false, 'image is compressed');
     t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
-    t.equals(image.textureFormat, 'rgb565unorm-webgl', 'image `textureFormat` is correct');
+    t.equals(image.textureFormat, 'rgb565unorm-ext', 'image `textureFormat` is correct');
   }
 
   t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
@@ -67,7 +67,7 @@ test('BasisLoader#load(URL, worker: true)', async (t) => {
   t.equals(image.width, 768, 'image width is correct');
   t.equals(image.height, 512, 'image height is correct');
   t.equals(image.compressed, false, 'image height is correct');
-  t.equals(image.textureFormat, 'rgb565unorm-webgl', 'image `textureFormat` is correct');
+  t.equals(image.textureFormat, 'rgb565unorm-ext', 'image `textureFormat` is correct');
 
   t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
   t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
