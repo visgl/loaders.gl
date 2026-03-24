@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {Texture, TextureLevel} from '@loaders.gl/schema';
 import {GL_RGBA32F} from '../gl-extensions';
 
 const HDR_MAGIC_HEADERS = ['#?RADIANCE', '#?RGBE'];
@@ -28,7 +28,7 @@ export function isHDR(arrayBuffer: ArrayBuffer): boolean {
   return firstLine ? HDR_MAGIC_HEADERS.includes(firstLine) : false;
 }
 
-export function parseHDR(arrayBuffer: ArrayBuffer): TextureLevel[] {
+export function parseHDR(arrayBuffer: ArrayBuffer): Texture {
   const state: HeaderState = {
     data: new Uint8Array(arrayBuffer),
     offset: 0
@@ -36,19 +36,24 @@ export function parseHDR(arrayBuffer: ArrayBuffer): TextureLevel[] {
   const {width, height} = readHeader(state);
   const rgbeData = readPixels(state, width, height);
   const data = convertRGBEToFloat(rgbeData);
+  const level: TextureLevel = {
+    shape: 'texture-level',
+    compressed: false,
+    width,
+    height,
+    data,
+    levelSize: data.byteLength,
+    format: GL_RGBA32F,
+    textureFormat: 'rgba32float'
+  };
 
-  return [
-    {
-      shape: 'texture-level',
-      compressed: false,
-      width,
-      height,
-      data,
-      levelSize: data.byteLength,
-      format: GL_RGBA32F,
-      textureFormat: 'rgba32float'
-    }
-  ];
+  return {
+    shape: 'texture',
+    type: '2d',
+    format: 'rgba32float',
+    glFormat: GL_RGBA32F,
+    data: [level]
+  };
 }
 
 function readHeader(state: HeaderState): HDRHeader {

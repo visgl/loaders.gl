@@ -21,10 +21,14 @@ test('HDRLoader#imports', (t) => {
 });
 
 test('HDRLoader#load(URL)', async (t) => {
-  const textureLevels = await load(HDR_URL, HDRLoader);
-  const level = textureLevels[0];
+  const texture = await load(HDR_URL, HDRLoader);
+  const level = texture.data[0];
 
-  t.equal(textureLevels.length, 1, 'returns a single texture level');
+  t.equal(texture.shape, 'texture', 'returns a texture payload');
+  t.equal(texture.type, '2d', 'texture type is correct');
+  t.equal(texture.format, 'rgba32float', 'texture format is correct');
+  t.equal(texture.glFormat, GL_RGBA32F, 'top-level WebGL format is correct');
+  t.equal(texture.data.length, 1, 'returns a single texture level');
   t.equal(level.shape, 'texture-level', 'level shape is correct');
   t.equal(level.width, 8, 'width is correct');
   t.equal(level.height, 2, 'height is correct');
@@ -57,11 +61,15 @@ test('HDRLoader#load(URL)', async (t) => {
 });
 
 test('HDRLoader#load(Poly Haven URL)', async (t) => {
-  const textureLevels = await load(POLY_HAVEN_HDR_URL, HDRLoader);
-  const level = textureLevels[0];
+  const texture = await load(POLY_HAVEN_HDR_URL, HDRLoader);
+  const level = texture.data[0];
   const data = level.data as Float32Array;
 
-  t.equal(textureLevels.length, 1, 'returns a single texture level');
+  t.equal(texture.shape, 'texture', 'returns a texture payload');
+  t.equal(texture.type, '2d', 'poly haven texture type is correct');
+  t.equal(texture.format, 'rgba32float', 'poly haven top-level format is correct');
+  t.equal(texture.glFormat, GL_RGBA32F, 'poly haven top-level WebGL format is correct');
+  t.equal(texture.data.length, 1, 'returns a single texture level');
   t.equal(level.width, 256, 'poly haven width is correct');
   t.equal(level.height, 128, 'poly haven height is correct');
   t.equal(level.textureFormat, 'rgba32float', 'poly haven texture format is correct');

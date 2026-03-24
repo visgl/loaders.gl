@@ -1,7 +1,7 @@
 # Radiance HDR
 
 - _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
-- _[`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader)_ - loads Radiance RGBE `.hdr` files as `TextureLevel[]`
+- _[`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader)_ - loads Radiance RGBE `.hdr` files as `Texture`
 
 Radiance HDR is a classic high-dynamic-range raster image format commonly used for lighting environments, skyboxes, reflections, and tone-mapping test images in graphics pipelines.
 
@@ -47,7 +47,7 @@ Current scope:
 - standard 2D Radiance `.hdr` images
 - old flat pixel data and standard Radiance RLE scanlines
 - decoded `Float32Array` output
-- returned as a single `TextureLevel[]` entry with `textureFormat: 'rgba32float'`
+- returned as a `Texture` of type `'2d'` with a single decoded level in `data`
 
 Not included in this first release:
 

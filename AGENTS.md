@@ -17,6 +17,7 @@
 - TypeScript strict mode
 - Single quotes, no semicolons
 - Never abbreviate variables, always type out the full name in camelCase (variables, functions, fields), PascalCase (types), CAPITAL_CASE (constant)
+- Add TSDoc to all new classes, functions, methods, fields.
 - Prefer verbNoun structure for function and method names.
 - We end JavaScript statements with semicolons. Do not remove semicolons.
 

@@ -13,7 +13,7 @@ See also: [`Radiance HDR`](/docs/modules/textures/formats/hdr)
 | File Format    | Radiance HDR / RGBE          |
 | File Extension | `.hdr`                       |
 | File Type      | Binary                       |
-| Data Format    | `TextureLevel[]`             |
+| Data Format    | `Texture`                    |
 | Supported APIs | `load`, `parse`, `parseSync` |
 
 ## Usage
@@ -23,16 +23,25 @@ import {HDRLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 
 const textureLevels = await load(url, HDRLoader);
-const level = textureLevels[0];
+const texture = await load(url, HDRLoader);
+const level = texture.data[0];
 
-console.log(level.width, level.height);
-console.log(level.format, level.textureFormat);
+console.log(texture.type, level.width, level.height);
+console.log(texture.format, texture.glFormat);
 console.log(level.data instanceof Float32Array);
 ```
 
 ## Data Format
 
-Returns `TextureLevel[]` with one decoded level.
+Returns a `Texture` with `shape: 'texture'`, `type: '2d'`, and one decoded level in `data`.
+
+The returned texture includes:
+
+- `shape: 'texture'`
+- `type: '2d'`
+- `format: 'rgba32float'`
+- `glFormat: GL_RGBA32F`
+- `data: TextureLevel[]`
 
 The returned level includes:
 

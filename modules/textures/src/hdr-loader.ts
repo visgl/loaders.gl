@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {Texture} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
 import {isHDR, parseHDR} from './lib/parsers/parse-hdr';
 
@@ -12,7 +12,7 @@ export type HDRLoaderOptions = StrictLoaderOptions & {
 };
 
 export const HDRLoader = {
-  dataType: null as unknown as TextureLevel[],
+  dataType: null as unknown as Texture,
   batchType: null as never,
 
   name: 'Radiance HDR',
@@ -28,4 +28,4 @@ export const HDRLoader = {
   },
   parseSync: parseHDR,
   parse: async (arrayBuffer: ArrayBuffer) => parseHDR(arrayBuffer)
-} as const satisfies LoaderWithParser<TextureLevel[], never, HDRLoaderOptions>;
+} as const satisfies LoaderWithParser<Texture, never, HDRLoaderOptions>;

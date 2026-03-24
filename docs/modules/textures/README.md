@@ -34,7 +34,7 @@ The `@loaders.gl/textures` module handles the following formats:
 | ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
 | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Basis Universal textures as `TextureLevel[][]`  |
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]` |
-| [`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader)                              | Radiance `.hdr` textures as `TextureLevel[]`    |
+| [`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader)                              | Radiance `.hdr` textures as `Texture`           |
 | [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`           |
 
 ## Return Types
@@ -61,7 +61,7 @@ A `TextureLevel` describes one mip level of one texture image.
 
 `CompressedTextureLoader` returns `TextureLevel[]`.
 
-`HDRLoader` returns `TextureLevel[]` with a single decoded `rgba32float` level.
+`HDRLoader` returns a `Texture` with `shape: 'texture'`, `type: '2d'`, and one decoded `rgba32float` level in `data`.
 
 `CrunchWorkerLoader` returns `TextureLevel[]`.
 
