@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import type {GLTextureFormat} from '@loaders.gl/schema';
+import type {GLTextureFormat, TextureFormat} from '@loaders.gl/schema';
 import {
   GL_COMPRESSED_R11_EAC,
   GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
@@ -58,6 +58,7 @@ import {
   GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT,
   GL_COMPRESSED_SRGB_S3TC_DXT1_EXT
 } from '../gl-extensions';
+import {getTextureFormatFromWebGLFormat} from './texture-format-map';
 
 const VULKAN_TO_WEBGL_FORMAT_MAP: Record<number, GLTextureFormat> = {
   131: GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -137,4 +138,8 @@ const VULKAN_TO_WEBGL_FORMAT_MAP: Record<number, GLTextureFormat> = {
  */
 export function mapVkFormatToWebGL(vkFormat: number): GLTextureFormat | undefined {
   return VULKAN_TO_WEBGL_FORMAT_MAP[vkFormat];
+}
+
+export function mapVkFormatToTextureFormat(vkFormat: number): TextureFormat | undefined {
+  return getTextureFormatFromWebGLFormat(mapVkFormatToWebGL(vkFormat));
 }

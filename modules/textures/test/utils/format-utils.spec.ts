@@ -14,6 +14,11 @@ import {
   detectSupportedGPUTextureFormats,
   detectSupportedTextureFormats
 } from '../../src/lib/utils/detect-supported-texture-formats';
+import {
+  getTextureFormatFromWebGLFormat,
+  getWebGLFormatFromTextureFormat
+} from '../../src/lib/utils/texture-format-map';
+import {GL_COMPRESSED_RGB_S3TC_DXT1_EXT} from '../../src/lib/gl-extensions';
 
 test('detectSupportedGPUTextureFormats', (t) => {
   if (isBrowser) {
@@ -86,5 +91,19 @@ test('getSupportedBasisFormats', (t) => {
   t.ok(supportedBasisFormats.includes('bc7-m5'), 'BC7 formats are reported');
   t.ok(supportedBasisFormats.includes('etc2'), 'ETC2 formats are reported');
   t.ok(supportedBasisFormats.includes('rgb565'), 'fallback CPU format is always reported');
+  t.end();
+});
+
+test('texture format maps are reversible for known WebGL extension formats', (t) => {
+  t.equal(
+    getTextureFormatFromWebGLFormat(GL_COMPRESSED_RGB_S3TC_DXT1_EXT),
+    'bc1-rgb-unorm-ext',
+    'maps known WebGL compressed formats to canonical texture format strings'
+  );
+  t.equal(
+    getWebGLFormatFromTextureFormat('bc1-rgb-unorm-ext'),
+    GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+    'maps canonical texture format strings back to WebGL format constants'
+  );
   t.end();
 });
