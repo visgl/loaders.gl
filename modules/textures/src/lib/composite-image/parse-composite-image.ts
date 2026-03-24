@@ -4,7 +4,8 @@
 
 import type {LoaderContext} from '@loaders.gl/loader-utils'
 import {parseFromContext, path, resolvePath} from '@loaders.gl/loader-utils'
-import {ImageLoader, getImageSize} from '@loaders.gl/images'
+import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/schema'
+import {ImageLoader, getImageData, getImageSize, isImage, type ImageType} from '@loaders.gl/images'
 import {asyncDeepMap} from '../texture-api/async-deep-map'
 import type {TextureLoaderOptions} from '../texture-api/texture-api-types'
 import {
@@ -92,9 +93,10 @@ export async function loadCompositeImageManifest(
   manifest: CompositeImageManifest,
   options: TextureLoaderOptions = {},
   context?: LoaderContext
-): Promise<any> {
+): Promise<Texture> {
   const urlTree = await getCompositeImageUrlTree(manifest, options, context)
-  return await loadCompositeImageUrlTree(urlTree, options, context)
+  const imageData = await loadCompositeImageUrlTree(urlTree, options, context)
+  return convertCompositeImageToTexture(manifest.shape, imageData)
 }
 
 export async function loadCompositeImageUrlTree(
@@ -500,6 +502,131 @@ function getCompositeImageMemberContext(
     baseUrl: path.dirname(urlWithoutQueryString),
     queryString
   }
+}
+
+function convertCompositeImageToTexture(
+  shape: CompositeImageManifest['shape'],
+  imageData: any
+): Texture {
+  switch (shape) {
+    case 'image-texture': {
+      const data = normalizeCompositeImageMember(imageData)
+      return {
+        shape: 'texture',
+        type: '2d',
+        format: getCompositeTextureFormat(data),
+        data
+      }
+    }
+
+    case 'image-texture-array': {
+      const data = imageData.map((layer) => normalizeCompositeImageMember(layer))
+      return {
+        shape: 'texture',
+        type: '2d-array',
+        format: getCompositeTextureFormat(data[0]),
+        data
+      }
+    }
+
+    case 'image-texture-cube': {
+      const data = IMAGE_TEXTURE_CUBE_FACES.map(({face}) =>
+        normalizeCompositeImageMember(imageData[face])
+      )
+      return {
+        shape: 'texture',
+        type: 'cube',
+        format: getCompositeTextureFormat(data[0]),
+        data
+      }
+    }
+
+    case 'image-texture-cube-array': {
+      const data = imageData.map((layer) =>
+        IMAGE_TEXTURE_CUBE_FACES.map(({face}) => normalizeCompositeImageMember(layer[face]))
+      )
+      return {
+        shape: 'texture',
+        type: 'cube-array',
+        format: getCompositeTextureFormat(data[0][0]),
+        data
+      }
+    }
+
+    default:
+      throw new Error(`Unsupported composite image shape ${shape satisfies never}`)
+  }
+}
+
+function normalizeCompositeImageMember(imageData: any): TextureLevel[] {
+  if (Array.isArray(imageData)) {
+    if (imageData.length === 0) {
+      throw new Error('Composite image members must not be empty')
+    }
+
+    if (imageData.every(isTextureLevel)) {
+      return imageData
+    }
+
+    if (imageData.every(isImage)) {
+      return imageData.map((image) => getTextureLevelFromImage(image))
+    }
+
+    if (imageData.every((entry) => Array.isArray(entry) && entry.every(isTextureLevel))) {
+      if (imageData.length !== 1) {
+        throw new Error('Composite image members must resolve to a single image or mip chain')
+      }
+      return imageData[0]
+    }
+  }
+
+  if (isTexture(imageData)) {
+    if (imageData.type !== '2d') {
+      throw new Error(`Composite image members must resolve to 2d textures, got ${imageData.type}`)
+    }
+    return imageData.data
+  }
+
+  if (isTextureLevel(imageData)) {
+    return [imageData]
+  }
+
+  if (isImage(imageData)) {
+    return [getTextureLevelFromImage(imageData)]
+  }
+
+  throw new Error('Composite image members must resolve to an image, mip chain, or texture')
+}
+
+function getTextureLevelFromImage(image: ImageType): TextureLevel {
+  const imageData = getImageData(image)
+  return {
+    shape: 'texture-level',
+    compressed: false,
+    width: imageData.width,
+    height: imageData.height,
+    data: imageData.data,
+    textureFormat: 'rgba8unorm'
+  }
+}
+
+function getCompositeTextureFormat(textureLevels: TextureLevel[]): TextureFormat {
+  return textureLevels[0]?.textureFormat || 'rgba8unorm'
+}
+
+function isTextureLevel(textureLevel: unknown): textureLevel is TextureLevel {
+  return Boolean(
+    textureLevel &&
+      typeof textureLevel === 'object' &&
+      'shape' in textureLevel &&
+      textureLevel.shape === 'texture-level'
+  )
+}
+
+function isTexture(texture: unknown): texture is Texture {
+  return Boolean(
+    texture && typeof texture === 'object' && 'shape' in texture && texture.shape === 'texture'
+  )
 }
 
 function isAbsoluteCompositeImageUrl(url: string): boolean {

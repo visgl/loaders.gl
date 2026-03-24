@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GLTextureFormat, TextureLevel} from '@loaders.gl/schema';
-import {getTextureFormatFromWebGLFormat} from './texture-format-map';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {GLTextureFormat} from '../gl-types';
+import {
+  getTextureFormatFromWebGLFormat,
+  getWebGLFormatFromTextureFormat
+} from './texture-format-map';
 
 export type CompressedTextureExtractOptions = {
   mipMapLevels: number;
@@ -11,6 +15,8 @@ export type CompressedTextureExtractOptions = {
   height: number;
   sizeFunction: Function;
   internalFormat?: GLTextureFormat;
+  /** Canonical loaders.gl texture format for the mip levels being extracted. */
+  textureFormat?: TextureFormat;
 };
 
 /**
@@ -21,6 +27,7 @@ export type CompressedTextureExtractOptions = {
  * @param options.height - height of 0 - level
  * @param options.sizeFunction - format-related function to calculate level size in bytes
  * @param options.internalFormat - WebGL compatible format code
+ * @param options.textureFormat - canonical loaders.gl texture format
  * @returns Array of the texture levels
  */
 export function extractMipmapImages(
@@ -28,8 +35,9 @@ export function extractMipmapImages(
   options: CompressedTextureExtractOptions
 ): TextureLevel[] {
   const images = new Array(options.mipMapLevels);
-  const format = options.internalFormat;
-  const textureFormat = format === undefined ? undefined : getTextureFormatFromWebGLFormat(format);
+  const textureFormat =
+    options.textureFormat || getTextureFormatFromWebGLFormat(options.internalFormat);
+  const format = options.internalFormat || getWebGLFormatFromTextureFormat(options.textureFormat);
 
   let levelWidth = options.width;
   let levelHeight = options.height;

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils'
-import type {ImageType} from '@loaders.gl/images'
+import type {Texture} from '@loaders.gl/schema'
 import type {TextureLoaderOptions} from './lib/texture-api/texture-api-types'
 import {VERSION} from './lib/utils/version'
 import {
@@ -16,7 +16,7 @@ export type ImageTextureLoaderOptions = TextureLoaderOptions
 export type {ImageTextureManifest}
 
 export const ImageTextureLoader = {
-  dataType: null as unknown as ImageType | ImageType[],
+  dataType: null as unknown as Texture,
   batchType: null as never,
   id: 'image-texture',
   name: 'Image Texture',
@@ -47,4 +47,4 @@ export const ImageTextureLoader = {
     context?: LoaderContext
   ) =>
     await parseCompositeImageManifest(text, 'image-texture', options, context)
-} as const satisfies LoaderWithParser<ImageType | ImageType[], never, ImageTextureLoaderOptions>
+} as const satisfies LoaderWithParser<Texture, never, ImageTextureLoaderOptions>

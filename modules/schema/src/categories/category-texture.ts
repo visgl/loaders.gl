@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ImageType} from './category-image';
+import type {TypedArray} from '../types/types';
 
 /**
  * These represent the main compressed texture formats
@@ -23,12 +24,12 @@ export type TextureFormat = TextureFormatColorUncompressed | TextureFormatCompre
 export type TextureFormatColorUncompressed =
   | 'r8unorm'
   | 'rg8unorm'
-  | 'rgb8unorm-webgl'
+  | 'rgb8unorm-ext'
   | 'rgba8unorm'
   | 'rgba8unorm-srgb'
   | 'r8snorm'
   | 'rg8snorm'
-  | 'rgb8snorm-webgl'
+  | 'rgb8snorm-ext'
   | 'rgba8snorm'
   | 'r8uint'
   | 'rg8uint'
@@ -40,11 +41,11 @@ export type TextureFormatColorUncompressed =
   | 'bgra8unorm-srgb'
   | 'r16unorm'
   | 'rg16unorm'
-  | 'rgb16unorm-webgl'
+  | 'rgb16unorm-ext'
   | 'rgba16unorm'
   | 'r16snorm'
   | 'rg16snorm'
-  | 'rgb16snorm-webgl'
+  | 'rgb16snorm-ext'
   | 'rgba16snorm'
   | 'r16uint'
   | 'rg16uint'
@@ -63,27 +64,27 @@ export type TextureFormatColorUncompressed =
   | 'rgba32sint'
   | 'r32float'
   | 'rg32float'
-  | 'rgb32float-webgl'
+  | 'rgb32float-ext'
   | 'rgba32float'
-  | 'rgba4unorm-webgl'
-  | 'rgb565unorm-webgl'
-  | 'rgb5a1unorm-webgl'
+  | 'rgba4unorm-ext'
+  | 'rgb565unorm-ext'
+  | 'rgb5a1unorm-ext'
   | 'rgb9e5ufloat'
   | 'rg11b10ufloat'
   | 'rgb10a2unorm'
   | 'rgb10a2uint';
 
 export type TextureFormatCompressed =
-  | 'bc1-rgb-unorm-webgl'
-  | 'bc1-rgb-unorm-srgb-webgl'
-  | 'pvrtc-rgb4unorm-webgl'
-  | 'pvrtc-rgba4unorm-webgl'
-  | 'pvrtc-rbg2unorm-webgl'
-  | 'pvrtc-rgba2unorm-webgl'
-  | 'etc1-rbg-unorm-webgl'
-  | 'atc-rgb-unorm-webgl'
-  | 'atc-rgba-unorm-webgl'
-  | 'atc-rgbai-unorm-webgl'
+  | 'bc1-rgb-unorm-ext'
+  | 'bc1-rgb-unorm-srgb-ext'
+  | 'pvrtc-rgb4unorm-ext'
+  | 'pvrtc-rgba4unorm-ext'
+  | 'pvrtc-rgb2unorm-ext'
+  | 'pvrtc-rgba2unorm-ext'
+  | 'etc1-rbg-unorm-ext'
+  | 'atc-rgb-unorm-ext'
+  | 'atc-rgba-unorm-ext'
+  | 'atc-rgbai-unorm-ext'
   | 'bc1-rgba-unorm'
   | 'bc1-rgba-unorm-srgb'
   | 'bc2-rgba-unorm'
@@ -137,92 +138,118 @@ export type TextureFormatCompressed =
   | 'astc-12x12-unorm'
   | 'astc-12x12-unorm-srgb';
 
-export type GLTextureFormat =
-  | 0x1907
-  | 0x1908
-  | 0x8056
-  | 0x8057
-  | 0x8058
-  | 0x8d62
-  | 0x83f0
-  | 0x83f1
-  | 0x83f2
-  | 0x83f3
-  | 0x9270
-  | 0x9271
-  | 0x9272
-  | 0x9273
-  | 0x9274
-  | 0x9275
-  | 0x9276
-  | 0x9277
-  | 0x9278
-  | 0x9279
-  | 0x8c00
-  | 0x8c01
-  | 0x8c02
-  | 0x8c03
-  | 0x8d64
-  | 0x8c92
-  | 0x8c93
-  | 0x87ee
-  | 0x8dbb
-  | 0x8dbc
-  | 0x8dbd
-  | 0x8dbe
-  | 0x8e8c
-  | 0x8e8d
-  | 0x8e8e
-  | 0x8e8f
-  | 0x8c4c
-  | 0x8c4d
-  | 0x8c4e
-  | 0x8c4f
-  | 0x93b0
-  | 0x93b1
-  | 0x93b2
-  | 0x93b3
-  | 0x93b4
-  | 0x93b5
-  | 0x93b6
-  | 0x93b7
-  | 0x93b8
-  | 0x93b9
-  | 0x93ba
-  | 0x93bb
-  | 0x93bc
-  | 0x93bd
-  | 0x93d0
-  | 0x93d1
-  | 0x93d2
-  | 0x93d3
-  | 0x93d4
-  | 0x93d5
-  | 0x93d6
-  | 0x93d7
-  | 0x93d8
-  | 0x93d9
-  | 0x93da
-  | 0x93db
-  | 0x93dc
-  | 0x93dd;
+/** Application-facing metadata attached to texture payloads. */
+export type TextureMetadata = Record<string, unknown>;
+
+/** Return type of `texture` category loaders. */
+export type Texture<MetadataT extends TextureMetadata = TextureMetadata> =
+  | Texture1D<MetadataT>
+  | Texture2D<MetadataT>
+  | Texture3D<MetadataT>
+  | TextureCube<MetadataT>
+  | Texture2DArray<MetadataT>
+  | TextureCubeArray<MetadataT>;
+
+/** One-dimensional texture with mip levels. */
+export type Texture1D<MetadataT extends TextureMetadata = TextureMetadata> = {
+  /** loaders.gl shape tag identifying texture payloads. */
+  shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
+  /** Texture dimensionality. */
+  type: '1d';
+  /** Canonical loaders.gl texture format for the texture payload. */
+  format: TextureFormat;
+  /** Mip levels that make up the texture. */
+  data: TextureLevel[];
+};
+
+/** Two-dimensional texture with mip levels. */
+export type Texture2D<MetadataT extends TextureMetadata = TextureMetadata> = {
+  /** loaders.gl shape tag identifying texture payloads. */
+  shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
+  /** Texture dimensionality. */
+  type: '2d';
+  /** Canonical loaders.gl texture format for the texture payload. */
+  format: TextureFormat;
+  /** Mip levels that make up the texture. */
+  data: TextureLevel[];
+};
+
+/** Three-dimensional texture with mip levels for each depth slice. */
+export type Texture3D<MetadataT extends TextureMetadata = TextureMetadata> = {
+  /** loaders.gl shape tag identifying texture payloads. */
+  shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
+  /** Texture dimensionality. */
+  type: '3d';
+  /** Canonical loaders.gl texture format for the texture payload. */
+  format: TextureFormat;
+  /** Mip levels grouped by depth slice. */
+  data: TextureLevel[][];
+};
+
+/** Cube texture with mip levels for each face. */
+export type TextureCube<MetadataT extends TextureMetadata = TextureMetadata> = {
+  /** loaders.gl shape tag identifying texture payloads. */
+  shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
+  /** Texture dimensionality. */
+  type: 'cube';
+  /** Canonical loaders.gl texture format for the texture payload. */
+  format: TextureFormat;
+  /** Mip levels grouped by cube face. */
+  data: TextureLevel[][];
+};
+
+/** Array of two-dimensional textures with mip levels for each layer. */
+export type Texture2DArray<MetadataT extends TextureMetadata = TextureMetadata> = {
+  /** loaders.gl shape tag identifying texture payloads. */
+  shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
+  /** Texture dimensionality. */
+  type: '2d-array';
+  /** Canonical loaders.gl texture format for the texture payload. */
+  format: TextureFormat;
+  /** Mip levels grouped by array layer. */
+  data: TextureLevel[][];
+};
+
+/** Array of cube textures with mip levels for each face in each layer. */
+export type TextureCubeArray<MetadataT extends TextureMetadata = TextureMetadata> = {
+  /** loaders.gl shape tag identifying texture payloads. */
+  shape: 'texture';
+  /** Application-facing format metadata, when provided by the loader. */
+  metadata?: MetadataT;
+  /** Texture dimensionality. */
+  type: 'cube-array';
+  /** Canonical loaders.gl texture format for the texture payload. */
+  format: TextureFormat;
+  /** Mip levels grouped by cube-array layer and face. */
+  data: TextureLevel[][][];
+};
 
 /** A TextureLevel holds data for one texture mip level */
 export type TextureLevel = {
-  /** Shape tag identifying texture level payloads */
+  /** loaders.gl shape tag identifying texture level payloads */
   shape: 'texture-level';
   /** WebGPU texture format corresponding the format of the data in this TextureLevel */
   textureFormat?: TextureFormat;
-  /** WebGL texture format constant corresponding the format of the data in this TextureLevel */
-  format?: GLTextureFormat;
+  /** Numeric API-specific format constant, currently used for WebGL/OpenGL upload paths */
+  format?: number;
   /** Whether the texture is compressed */
   compressed: boolean;
   /** Width in texels */
   width: number;
   /** Height in texels */
   height: number;
-  /** Byte array */
-  data: Uint8Array;
+  /** Byte array or float pixel data */
+  data: TypedArray;
   levelSize?: number;
   hasAlpha?: boolean;
 };

@@ -2,7 +2,7 @@
 
 [loaders.gl](https://loaders.gl/docs) is a collection of framework-independent 3D and geospatial parsers and encoders.
 
-This module contains loaders for compressed textures and [basis universal textures](https://github.com/BinomialLLC/basis_universal).
+This module contains loaders for compressed textures, Radiance HDR textures, and [basis universal textures](https://github.com/BinomialLLC/basis_universal).
 
 ## Texture Levels
 
@@ -12,11 +12,14 @@ This module contains loaders for compressed textures and [basis universal textur
 
 `CrunchLoader` returns `TextureLevel[]` for Crunch mip chains.
 
+`RadianceHDRLoader` returns a `Texture` with `shape: 'texture'`, `type: '2d'`, and one decoded `rgba32float` level for Radiance `.hdr` images.
+
 Each returned `TextureLevel` now exposes:
 
 - `shape`: always `'texture-level'`. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 - `format`: the corresponding WebGL internal format number. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 - `textureFormat`: the corresponding luma.gl / WebGPU-style texture format string. <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- `data`: a typed array containing the mip level payload. Compressed textures expose byte data, while `RadianceHDRLoader` exposes `Float32Array`.
 
 ```ts
 import {load} from '@loaders.gl/core';

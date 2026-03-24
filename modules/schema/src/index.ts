@@ -50,10 +50,17 @@ export type {
 
 // TEXTURES
 export type {
+  TextureMetadata,
+  Texture,
+  Texture1D,
+  Texture2D,
+  Texture3D,
+  TextureCube,
+  Texture2DArray,
+  TextureCubeArray,
   TextureLevel,
   GPUTextureFormat,
-  TextureFormat,
-  GLTextureFormat
+  TextureFormat
 } from './categories/category-texture';
 
 // IMAGES

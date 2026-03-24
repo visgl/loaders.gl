@@ -4,7 +4,9 @@
 
 /* eslint-disable camelcase */
 import type {TextureFormat} from '@loaders.gl/schema';
+import type {GLTextureFormat} from '../gl-types';
 import {
+  GL_RGBA32F,
   GL_COMPRESSED_R11_EAC,
   GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
   GL_COMPRESSED_RED_RGTC1_EXT,
@@ -66,8 +68,9 @@ import {
 } from '../gl-extensions';
 
 const WEBGL_TO_TEXTURE_FORMAT: Record<number, TextureFormat> = {
-  [GL_COMPRESSED_RGB_S3TC_DXT1_EXT]: 'bc1-rgb-unorm-webgl',
-  [GL_COMPRESSED_SRGB_S3TC_DXT1_EXT]: 'bc1-rgb-unorm-srgb-webgl',
+  [GL_RGBA32F]: 'rgba32float',
+  [GL_COMPRESSED_RGB_S3TC_DXT1_EXT]: 'bc1-rgb-unorm-ext',
+  [GL_COMPRESSED_SRGB_S3TC_DXT1_EXT]: 'bc1-rgb-unorm-srgb-ext',
   [GL_COMPRESSED_RGBA_S3TC_DXT1_EXT]: 'bc1-rgba-unorm',
   [GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT]: 'bc1-rgba-unorm-srgb',
   [GL_COMPRESSED_RGBA_S3TC_DXT3_EXT]: 'bc2-rgba-unorm',
@@ -116,20 +119,44 @@ const WEBGL_TO_TEXTURE_FORMAT: Record<number, TextureFormat> = {
   [GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR]: 'astc-12x10-unorm-srgb',
   [GL_COMPRESSED_RGBA_ASTC_12x12_KHR]: 'astc-12x12-unorm',
   [GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR]: 'astc-12x12-unorm-srgb',
-  [GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG]: 'pvrtc-rgb4unorm-webgl',
-  [GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG]: 'pvrtc-rgba4unorm-webgl',
-  [GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG]: 'pvrtc-rbg2unorm-webgl',
-  [GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG]: 'pvrtc-rgba2unorm-webgl',
-  [GL_COMPRESSED_RGB_ETC1_WEBGL]: 'etc1-rbg-unorm-webgl',
-  [GL_COMPRESSED_RGB_ATC_WEBGL]: 'atc-rgb-unorm-webgl',
-  [GL_COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL]: 'atc-rgba-unorm-webgl',
-  [GL_COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL]: 'atc-rgbai-unorm-webgl'
+  [GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG]: 'pvrtc-rgb4unorm-ext',
+  [GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG]: 'pvrtc-rgba4unorm-ext',
+  [GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG]: 'pvrtc-rgb2unorm-ext',
+  [GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG]: 'pvrtc-rgba2unorm-ext',
+  [GL_COMPRESSED_RGB_ETC1_WEBGL]: 'etc1-rbg-unorm-ext',
+  [GL_COMPRESSED_RGB_ATC_WEBGL]: 'atc-rgb-unorm-ext',
+  [GL_COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL]: 'atc-rgba-unorm-ext',
+  [GL_COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL]: 'atc-rgbai-unorm-ext'
 };
 
-export function getTextureFormatFromWebGLFormat(format?: number): TextureFormat | undefined {
+const TEXTURE_FORMAT_TO_WEBGL = Object.fromEntries(
+  Object.entries(WEBGL_TO_TEXTURE_FORMAT).map(([format, textureFormat]) => [
+    textureFormat,
+    Number(format)
+  ])
+) as Partial<Record<TextureFormat, GLTextureFormat>>;
+
+export function getTextureFormatFromWebGLFormat(
+  format?: GLTextureFormat
+): TextureFormat | undefined {
   if (format === undefined) {
     return undefined;
   }
 
   return WEBGL_TO_TEXTURE_FORMAT[format];
+}
+
+/**
+ * Returns the WebGL/OpenGL compressed texture constant for a canonical loaders.gl texture format.
+ * @param textureFormat - Canonical texture format string.
+ * @returns Matching WebGL/OpenGL constant, if known.
+ */
+export function getWebGLFormatFromTextureFormat(
+  textureFormat?: TextureFormat
+): GLTextureFormat | undefined {
+  if (textureFormat === undefined) {
+    return undefined;
+  }
+
+  return TEXTURE_FORMAT_TO_WEBGL[textureFormat];
 }
