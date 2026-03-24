@@ -155,7 +155,7 @@ function readPixels(state: HeaderState, header: HDRHeader): Uint8Array {
 
   const scanlineWidth = (data[state.offset + 2] << 8) | data[state.offset + 3];
   if (scanlineWidth !== scanlineLength) {
-    throw new Error('HDRLoader: wrong scanline width');
+    return reorderPixels(readFlatPixels(state, flatByteLength), header);
   }
 
   const pixels = new Uint8Array(flatByteLength);

@@ -61,6 +61,19 @@ test('parseHDR#rejects bad scanline data', (t) => {
   t.end();
 });
 
+test('parseHDR#falls back to flat decode on false RLE probe', (t) => {
+  const texture = parseHDR(createFlatFalseRLEProbeHDRBuffer());
+  const data = texture.data[0].data as Float32Array;
+
+  t.equal(texture.data[0].width, 8, 'width is parsed for flat scanlines');
+  t.equal(texture.data[0].height, 1, 'height is parsed for flat scanlines');
+  t.ok(Math.abs(data[0] - 4 / 255) < 1e-6, 'first pixel red is decoded from flat data');
+  t.ok(Math.abs(data[1] - 4 / 255) < 1e-6, 'first pixel green is decoded from flat data');
+  t.ok(Math.abs(data[2] - 14 / 255) < 1e-6, 'first pixel blue is decoded from flat data');
+  t.equal(data[3], 1, 'first pixel alpha is synthesized');
+  t.end();
+});
+
 test('parseHDR#accepts flipped Radiance resolution strings', (t) => {
   const texture = parseHDR(createOrientedFlatHDRBuffer('+Y 2 +X 2'));
   const data = texture.data[0].data as Float32Array;
@@ -120,6 +133,16 @@ function createOrientedFlatHDRBuffer(resolution: string): ArrayBuffer {
   }
 
   const pixels = new Uint8Array(redChannelValues.flatMap((red) => [red, 0, 0, 128]));
+
+  return joinBuffers(new Uint8Array(header), pixels);
+}
+
+function createFlatFalseRLEProbeHDRBuffer(): ArrayBuffer {
+  const header = createHeaderBuffer(['#?RADIANCE', 'FORMAT=32-bit_rle_rgbe', '', '-Y 1 +X 8']);
+  const pixels = new Uint8Array([
+    2, 2, 7, 129, 1, 0, 0, 128, 2, 0, 0, 128, 3, 0, 0, 128, 4, 0, 0, 128, 5, 0, 0, 128, 6, 0, 0,
+    128, 7, 0, 0, 128
+  ]);
 
   return joinBuffers(new Uint8Array(header), pixels);
 }
