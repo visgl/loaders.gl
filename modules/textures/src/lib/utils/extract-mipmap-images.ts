@@ -15,6 +15,7 @@ export type CompressedTextureExtractOptions = {
   height: number;
   sizeFunction: Function;
   internalFormat?: GLTextureFormat;
+  /** Canonical loaders.gl texture format for the mip levels being extracted. */
   textureFormat?: TextureFormat;
 };
 

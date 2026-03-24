@@ -175,6 +175,12 @@ export type ParseBasisOptions = {
   supportedTextureFormats?: TextureFormat[];
 };
 
+/**
+ * Serializes access to the Basis transcoder so concurrent callers do not enter the non-reentrant
+ * decoder path at the same time.
+ * @param transcode - Transcode operation to run with exclusive access.
+ * @returns The transcode result.
+ */
 export async function withBasisTranscodingLock<T>(transcode: () => Promise<T> | T): Promise<T> {
   const previousLock = basisTranscodingLock;
   let releaseLock!: () => void;

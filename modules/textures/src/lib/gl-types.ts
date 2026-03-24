@@ -68,6 +68,7 @@ import type {
   GL_RGBA8
 } from './gl-extensions';
 
+/** WebGL/OpenGL texture format constants used internally by the textures module. */
 export type GLTextureFormat =
   | typeof GL_COMPRESSED_R11_EAC
   | typeof GL_COMPRESSED_RED_GREEN_RGTC2_EXT

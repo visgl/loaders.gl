@@ -141,6 +141,11 @@ export function mapVkFormatToWebGL(vkFormat: number): GLTextureFormat | undefine
   return VULKAN_TO_WEBGL_FORMAT_MAP[vkFormat];
 }
 
+/**
+ * Returns the canonical loaders.gl texture format corresponding to a Vulkan `vkFormat` value.
+ * @param vkFormat - Vulkan format constant from the KTX container.
+ * @returns Canonical texture format string, if known.
+ */
 export function mapVkFormatToTextureFormat(vkFormat: number): TextureFormat | undefined {
   return getTextureFormatFromWebGLFormat(mapVkFormatToWebGL(vkFormat));
 }

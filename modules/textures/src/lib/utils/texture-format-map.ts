@@ -144,6 +144,11 @@ export function getTextureFormatFromWebGLFormat(
   return WEBGL_TO_TEXTURE_FORMAT[format];
 }
 
+/**
+ * Returns the WebGL/OpenGL compressed texture constant for a canonical loaders.gl texture format.
+ * @param textureFormat - Canonical texture format string.
+ * @returns Matching WebGL/OpenGL constant, if known.
+ */
 export function getWebGLFormatFromTextureFormat(
   textureFormat?: TextureFormat
 ): GLTextureFormat | undefined {
