@@ -2,68 +2,68 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext} from '@loaders.gl/loader-utils'
-import {parseFromContext, path, resolvePath} from '@loaders.gl/loader-utils'
-import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/schema'
-import {ImageLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images'
-import {asyncDeepMap} from '../texture-api/async-deep-map'
-import type {TextureLoaderOptions} from '../texture-api/texture-api-types'
+import type {LoaderContext} from '@loaders.gl/loader-utils';
+import {parseFromContext, path, resolvePath} from '@loaders.gl/loader-utils';
+import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import {ImageLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images';
+import {asyncDeepMap} from '../texture-api/async-deep-map';
+import type {TextureLoaderOptions} from '../texture-api/texture-api-types';
 import {
   IMAGE_TEXTURE_CUBE_FACES,
   type ImageCubeTexture,
   type ImageTextureCubeDirectionAlias,
   type ImageTextureCubeFace
-} from './image-texture-cube'
+} from './image-texture-cube';
 
 export type ImageTextureTemplateSource = {
-  mipLevels: number | 'auto'
-  template: string
-}
+  mipLevels: number | 'auto';
+  template: string;
+};
 
-export type ImageTextureSource = string | string[] | ImageTextureTemplateSource
+export type ImageTextureSource = string | string[] | ImageTextureTemplateSource;
 
 export type ImageTextureManifest = {
-  shape: 'image-texture'
-  image?: string
-  mipLevels?: number | 'auto'
-  template?: string
-  mipmaps?: string[]
-}
+  shape: 'image-texture';
+  image?: string;
+  mipLevels?: number | 'auto';
+  template?: string;
+  mipmaps?: string[];
+};
 
 export type ImageTextureArrayManifest = {
-  shape: 'image-texture-array'
-  layers: ImageTextureSource[]
-}
+  shape: 'image-texture-array';
+  layers: ImageTextureSource[];
+};
 
 export type ImageTextureCubeFaces = Partial<
   Record<ImageTextureCubeFace | ImageTextureCubeDirectionAlias, ImageTextureSource>
->
+>;
 
 export type ImageTextureCubeManifest = {
-  shape: 'image-texture-cube'
-  faces: ImageTextureCubeFaces
-}
+  shape: 'image-texture-cube';
+  faces: ImageTextureCubeFaces;
+};
 
 export type ImageTextureCubeArrayLayer = {
-  faces: ImageTextureCubeFaces
-}
+  faces: ImageTextureCubeFaces;
+};
 
 export type ImageTextureCubeArrayManifest = {
-  shape: 'image-texture-cube-array'
-  layers: ImageTextureCubeArrayLayer[]
-}
+  shape: 'image-texture-cube-array';
+  layers: ImageTextureCubeArrayLayer[];
+};
 
 export type CompositeImageManifest =
   | ImageTextureManifest
   | ImageTextureArrayManifest
   | ImageTextureCubeManifest
-  | ImageTextureCubeArrayManifest
+  | ImageTextureCubeArrayManifest;
 
 export type CompositeImageUrlTree =
   | ImageTextureSource
   | ImageTextureSource[]
   | ImageCubeTexture
-  | ImageCubeTexture[]
+  | ImageCubeTexture[];
 
 export async function parseCompositeImageManifest(
   text: string,
@@ -71,11 +71,11 @@ export async function parseCompositeImageManifest(
   options: TextureLoaderOptions = {},
   context?: LoaderContext
 ): Promise<any> {
-  const manifest = parseCompositeImageManifestJSON(text)
+  const manifest = parseCompositeImageManifestJSON(text);
   if (manifest.shape !== expectedShape) {
-    throw new Error(`Expected ${expectedShape} manifest, got ${manifest.shape}`)
+    throw new Error(`Expected ${expectedShape} manifest, got ${manifest.shape}`);
   }
-  return await loadCompositeImageManifest(manifest, options, context)
+  return await loadCompositeImageManifest(manifest, options, context);
 }
 
 export function testCompositeImageManifestShape(
@@ -83,9 +83,9 @@ export function testCompositeImageManifestShape(
   shape: CompositeImageManifest['shape']
 ): boolean {
   try {
-    return parseCompositeImageManifestJSON(text).shape === shape
+    return parseCompositeImageManifestJSON(text).shape === shape;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -94,10 +94,10 @@ export async function loadCompositeImageManifest(
   options: TextureLoaderOptions = {},
   context?: LoaderContext
 ): Promise<Texture> {
-  const normalizedOptions = normalizeCompositeImageManifestOptions(options)
-  const urlTree = await getCompositeImageUrlTree(manifest, normalizedOptions, context)
-  const imageData = await loadCompositeImageUrlTree(urlTree, normalizedOptions, context)
-  return convertCompositeImageToTexture(manifest.shape, imageData)
+  const normalizedOptions = normalizeCompositeImageManifestOptions(options);
+  const urlTree = await getCompositeImageUrlTree(manifest, normalizedOptions, context);
+  const imageData = await loadCompositeImageUrlTree(urlTree, normalizedOptions, context);
+  return convertCompositeImageToTexture(manifest.shape, imageData);
 }
 
 export async function loadCompositeImageUrlTree(
@@ -105,10 +105,11 @@ export async function loadCompositeImageUrlTree(
   options: TextureLoaderOptions = {},
   context?: LoaderContext
 ): Promise<any> {
-  const normalizedOptions = normalizeCompositeImageOptions(options)
-  return await asyncDeepMap(urlTree, async (url: string) =>
-    await loadCompositeImageMember(url, normalizedOptions, context)
-  )
+  const normalizedOptions = normalizeCompositeImageOptions(options);
+  return await asyncDeepMap(
+    urlTree,
+    async (url: string) => await loadCompositeImageMember(url, normalizedOptions, context)
+  );
 }
 
 export async function loadCompositeImageMember(
@@ -116,17 +117,22 @@ export async function loadCompositeImageMember(
   options: TextureLoaderOptions = {},
   context?: LoaderContext
 ): Promise<any> {
-  const resolvedUrl = resolveCompositeImageUrl(url, options, context)
-  const fetch = getCompositeImageFetch(options, context)
-  const response = await fetch(resolvedUrl)
-  const subloaderOptions = getCompositeImageSubloaderOptions(options)
+  const resolvedUrl = resolveCompositeImageUrl(url, options, context);
+  const fetch = getCompositeImageFetch(options, context);
+  const response = await fetch(resolvedUrl);
+  const subloaderOptions = getCompositeImageSubloaderOptions(options);
   if (context) {
-    const childContext = getCompositeImageMemberContext(resolvedUrl, response, context)
-    return await parseFromContext(response as any, [ImageLoader], subloaderOptions as any, childContext)
+    const childContext = getCompositeImageMemberContext(resolvedUrl, response, context);
+    return await parseFromContext(
+      response as any,
+      [ImageLoader],
+      subloaderOptions as any,
+      childContext
+    );
   }
 
-  const arrayBuffer = await response.arrayBuffer()
-  return await ImageLoader.parse(arrayBuffer, subloaderOptions as any)
+  const arrayBuffer = await response.arrayBuffer();
+  return await ImageLoader.parse(arrayBuffer, subloaderOptions as any);
 }
 
 export async function getCompositeImageUrlTree(
@@ -136,34 +142,34 @@ export async function getCompositeImageUrlTree(
 ): Promise<CompositeImageUrlTree> {
   switch (manifest.shape) {
     case 'image-texture':
-      return await getImageTextureSource(manifest, options, context)
+      return await getImageTextureSource(manifest, options, context);
 
     case 'image-texture-array':
       if (!Array.isArray(manifest.layers) || manifest.layers.length === 0) {
-        throw new Error('image-texture-array manifest must define one or more layers')
+        throw new Error('image-texture-array manifest must define one or more layers');
       }
       return await Promise.all(
         manifest.layers.map(
           async (layer, index) =>
             await getNormalizedImageTextureSource(layer, options, context, {index})
         )
-      )
+      );
 
     case 'image-texture-cube':
-      return await getImageTextureCubeUrls(manifest, options, context)
+      return await getImageTextureCubeUrls(manifest, options, context);
 
     case 'image-texture-cube-array':
       if (!Array.isArray(manifest.layers) || manifest.layers.length === 0) {
-        throw new Error('image-texture-cube-array manifest must define one or more layers')
+        throw new Error('image-texture-cube-array manifest must define one or more layers');
       }
       return await Promise.all(
         manifest.layers.map(
           async (layer, index) => await getImageTextureCubeUrls(layer, options, context, {index})
         )
-      )
+      );
 
     default:
-      throw new Error('Unsupported composite image manifest')
+      throw new Error('Unsupported composite image manifest');
   }
 }
 
@@ -171,12 +177,12 @@ export function normalizeCompositeImageOptions(
   options: TextureLoaderOptions = {}
 ): TextureLoaderOptions {
   if (options.core?.baseUrl) {
-    return options
+    return options;
   }
 
-  const fallbackBaseUrl = options.baseUrl
+  const fallbackBaseUrl = options.baseUrl;
   if (!fallbackBaseUrl) {
-    return options
+    return options;
   }
 
   return {
@@ -185,7 +191,7 @@ export function normalizeCompositeImageOptions(
       ...options.core,
       baseUrl: fallbackBaseUrl
     }
-  }
+  };
 }
 
 export function resolveCompositeImageUrl(
@@ -193,24 +199,28 @@ export function resolveCompositeImageUrl(
   options: TextureLoaderOptions = {},
   context?: LoaderContext
 ): string {
+  const resolvedUrl = resolvePath(url);
   if (isAbsoluteCompositeImageUrl(url)) {
-    return resolvePath(url)
+    return resolvedUrl;
   }
 
-  const baseUrl = getCompositeImageBaseUrl(options, context)
+  const baseUrl = getCompositeImageBaseUrl(options, context);
   if (!baseUrl) {
-    throw new Error(`Unable to resolve relative image URL ${url} without a base URL`)
+    if (resolvedUrl !== url || url.startsWith('@')) {
+      return resolvedUrl;
+    }
+    throw new Error(`Unable to resolve relative image URL ${url} without a base URL`);
   }
 
-  return resolvePath(path.join(baseUrl, url))
+  return resolvePath(path.join(baseUrl, url));
 }
 
 function parseCompositeImageManifestJSON(text: string): CompositeImageManifest {
-  const manifest = JSON.parse(text) as CompositeImageManifest
+  const manifest = JSON.parse(text) as CompositeImageManifest;
   if (!manifest?.shape) {
-    throw new Error('Composite image manifest must contain a shape field')
+    throw new Error('Composite image manifest must contain a shape field');
   }
-  return manifest
+  return manifest;
 }
 
 async function getImageTextureSource(
@@ -219,16 +229,16 @@ async function getImageTextureSource(
   context?: LoaderContext
 ): Promise<ImageTextureSource> {
   if ((manifest.image || manifest.mipmaps) && manifest.template) {
-    throw new Error('image-texture manifest must define image, mipmaps, or template source')
+    throw new Error('image-texture manifest must define image, mipmaps, or template source');
   }
   if (manifest.image && manifest.mipmaps) {
-    throw new Error('image-texture manifest must define image, mipmaps, or template source')
+    throw new Error('image-texture manifest must define image, mipmaps, or template source');
   }
   if (manifest.image) {
-    return manifest.image
+    return manifest.image;
   }
   if (manifest.mipmaps?.length) {
-    return manifest.mipmaps
+    return manifest.mipmaps;
   }
   if (manifest.template) {
     return await expandImageTextureSource(
@@ -236,9 +246,9 @@ async function getImageTextureSource(
       options,
       context,
       {}
-    )
+    );
   }
-  throw new Error('image-texture manifest must define image, mipmaps, or template source')
+  throw new Error('image-texture manifest must define image, mipmaps, or template source');
 }
 
 async function getImageTextureCubeUrls(
@@ -247,12 +257,12 @@ async function getImageTextureCubeUrls(
   context?: LoaderContext,
   templateOptions: TemplateOptions = {}
 ): Promise<ImageCubeTexture> {
-  const urls: ImageCubeTexture = {}
+  const urls: ImageCubeTexture = {};
 
   for (const {face, name, direction, axis, sign} of IMAGE_TEXTURE_CUBE_FACES) {
-    const source = manifest.faces?.[name] || manifest.faces?.[direction]
+    const source = manifest.faces?.[name] || manifest.faces?.[direction];
     if (!source) {
-      throw new Error(`image-texture-cube manifest is missing ${name} face`)
+      throw new Error(`image-texture-cube manifest is missing ${name} face`);
     }
     urls[face] = await getNormalizedImageTextureSource(source, options, context, {
       ...templateOptions,
@@ -260,10 +270,10 @@ async function getImageTextureCubeUrls(
       direction,
       axis,
       sign
-    })
+    });
   }
 
-  return urls
+  return urls;
 }
 
 async function getNormalizedImageTextureSource(
@@ -273,15 +283,15 @@ async function getNormalizedImageTextureSource(
   templateOptions: TemplateOptions
 ): Promise<ImageTextureSource> {
   if (typeof source === 'string') {
-    return source
+    return source;
   }
   if (Array.isArray(source) && source.length > 0) {
-    return source
+    return source;
   }
   if (isImageTextureTemplateSource(source)) {
-    return await expandImageTextureSource(source, options, context, templateOptions)
+    return await expandImageTextureSource(source, options, context, templateOptions);
   }
-  throw new Error('Composite image source entries must be strings or non-empty mip arrays')
+  throw new Error('Composite image source entries must be strings or non-empty mip arrays');
 }
 
 async function expandImageTextureSource(
@@ -293,17 +303,17 @@ async function expandImageTextureSource(
   const mipLevels =
     source.mipLevels === 'auto'
       ? await getAutoMipLevels(source.template, options, context, templateOptions)
-      : source.mipLevels
+      : source.mipLevels;
 
   if (!Number.isFinite(mipLevels) || mipLevels <= 0) {
-    throw new Error(`Invalid mipLevels value ${source.mipLevels}`)
+    throw new Error(`Invalid mipLevels value ${source.mipLevels}`);
   }
 
-  const urls: string[] = []
+  const urls: string[] = [];
   for (let lod = 0; lod < mipLevels; lod++) {
-    urls.push(expandTemplate(source.template, {...templateOptions, lod}))
+    urls.push(expandTemplate(source.template, {...templateOptions, lod}));
   }
-  return urls
+  return urls;
 }
 
 async function getAutoMipLevels(
@@ -313,88 +323,92 @@ async function getAutoMipLevels(
   templateOptions: TemplateOptions
 ): Promise<number> {
   if (!template.includes('{lod}')) {
-    throw new Error('Template sources with mipLevels: auto must include a {lod} placeholder')
+    throw new Error('Template sources with mipLevels: auto must include a {lod} placeholder');
   }
 
-  const level0Url = expandTemplate(template, {...templateOptions, lod: 0})
-  const image = await loadCompositeImageMember(level0Url, normalizeCompositeImageOptions(options), context)
-  const {width, height} = getImageSize(image)
-  return 1 + Math.floor(Math.log2(Math.max(width, height)))
+  const level0Url = expandTemplate(template, {...templateOptions, lod: 0});
+  const image = await loadCompositeImageMember(
+    level0Url,
+    normalizeCompositeImageOptions(options),
+    context
+  );
+  const {width, height} = getImageSize(image);
+  return 1 + Math.floor(Math.log2(Math.max(width, height)));
 }
 
 type TemplateOptions = {
-  lod?: number
-  index?: number
-  face?: string
-  direction?: string
-  axis?: string
-  sign?: string
-}
+  lod?: number;
+  index?: number;
+  face?: string;
+  direction?: string;
+  axis?: string;
+  sign?: string;
+};
 
 function expandTemplate(template: string, templateOptions: TemplateOptions): string {
-  let expanded = ''
+  let expanded = '';
 
   for (let index = 0; index < template.length; index++) {
-    const character = template[index]
+    const character = template[index];
 
     if (character === '\\') {
-      const nextCharacter = template[index + 1]
+      const nextCharacter = template[index + 1];
       if (nextCharacter === '{' || nextCharacter === '}' || nextCharacter === '\\') {
-        expanded += nextCharacter
-        index++
-        continue
+        expanded += nextCharacter;
+        index++;
+        continue;
       }
-      throw new Error(`Invalid escape sequence \\${nextCharacter || ''} in template ${template}`)
+      throw new Error(`Invalid escape sequence \\${nextCharacter || ''} in template ${template}`);
     }
 
     if (character === '}') {
-      throw new Error(`Unexpected } in template ${template}`)
+      throw new Error(`Unexpected } in template ${template}`);
     }
 
     if (character !== '{') {
-      expanded += character
-      continue
+      expanded += character;
+      continue;
     }
 
-    const closingBraceIndex = findClosingBraceIndex(template, index + 1)
+    const closingBraceIndex = findClosingBraceIndex(template, index + 1);
     if (closingBraceIndex < 0) {
-      throw new Error(`Unterminated placeholder in template ${template}`)
+      throw new Error(`Unterminated placeholder in template ${template}`);
     }
 
-    const placeholder = template.slice(index + 1, closingBraceIndex)
+    const placeholder = template.slice(index + 1, closingBraceIndex);
     if (!/^[a-z][a-zA-Z0-9]*$/.test(placeholder)) {
-      throw new Error(`Invalid placeholder {${placeholder}} in template ${template}`)
+      throw new Error(`Invalid placeholder {${placeholder}} in template ${template}`);
     }
 
-    const value = getTemplateValue(placeholder, templateOptions)
+    const value = getTemplateValue(placeholder, templateOptions);
     if (value === undefined) {
       throw new Error(
         `Template ${template} uses unsupported placeholder {${placeholder}} for this source`
-      )
+      );
     }
 
-    expanded += String(value)
-    index = closingBraceIndex
+    expanded += String(value);
+    index = closingBraceIndex;
   }
 
-  return expanded
+  return expanded;
 }
 
 function findClosingBraceIndex(template: string, startIndex: number): number {
   for (let index = startIndex; index < template.length; index++) {
-    const character = template[index]
+    const character = template[index];
     if (character === '\\') {
-      index++
-      continue
+      index++;
+      continue;
     }
     if (character === '{') {
-      throw new Error(`Nested placeholders are not supported in template ${template}`)
+      throw new Error(`Nested placeholders are not supported in template ${template}`);
     }
     if (character === '}') {
-      return index
+      return index;
     }
   }
-  return -1
+  return -1;
 }
 
 function getTemplateValue(
@@ -403,24 +417,26 @@ function getTemplateValue(
 ): string | number | undefined {
   switch (placeholder) {
     case 'lod':
-      return templateOptions.lod
+      return templateOptions.lod;
     case 'index':
-      return templateOptions.index
+      return templateOptions.index;
     case 'face':
-      return templateOptions.face
+      return templateOptions.face;
     case 'direction':
-      return templateOptions.direction
+      return templateOptions.direction;
     case 'axis':
-      return templateOptions.axis
+      return templateOptions.axis;
     case 'sign':
-      return templateOptions.sign
+      return templateOptions.sign;
     default:
-      return undefined
+      return undefined;
   }
 }
 
-function isImageTextureTemplateSource(source: ImageTextureSource): source is ImageTextureTemplateSource {
-  return typeof source === 'object' && source !== null && !Array.isArray(source)
+function isImageTextureTemplateSource(
+  source: ImageTextureSource
+): source is ImageTextureTemplateSource {
+  return typeof source === 'object' && source !== null && !Array.isArray(source);
 }
 
 function getCompositeImageBaseUrl(
@@ -428,70 +444,78 @@ function getCompositeImageBaseUrl(
   context?: LoaderContext
 ): string | null {
   if (context?.baseUrl) {
-    return context.baseUrl
+    return context.baseUrl;
   }
 
   if (context?.url) {
-    return path.dirname(context.url)
+    return path.dirname(context.url);
   }
 
-  const baseUrl = options.core?.baseUrl || options.baseUrl
-  if (!baseUrl) {
-    return null
+  if (options.baseUrl) {
+    return stripTrailingSlash(options.baseUrl);
   }
 
-  return getDirectoryUrl(baseUrl)
+  if (options.core?.baseUrl) {
+    return getSourceUrlDirectory(options.core.baseUrl);
+  }
+
+  return null;
 }
 
-function getDirectoryUrl(baseUrl: string): string {
+function stripTrailingSlash(baseUrl: string): string {
   if (baseUrl.endsWith('/')) {
-    return baseUrl.slice(0, -1)
+    return baseUrl.slice(0, -1);
   }
 
-  return path.filename(baseUrl).includes('.') ? path.dirname(baseUrl) : baseUrl
+  return baseUrl;
+}
+
+function getSourceUrlDirectory(baseUrl: string): string {
+  return stripTrailingSlash(path.dirname(baseUrl));
 }
 
 function getCompositeImageFetch(
   options: TextureLoaderOptions,
   context?: LoaderContext
 ): typeof fetch {
-  const fetchOption = options.fetch ?? options.core?.fetch
+  const fetchOption = options.fetch ?? options.core?.fetch;
 
   if (context?.fetch) {
-    return context.fetch as typeof fetch
+    return context.fetch as typeof fetch;
   }
 
   if (typeof fetchOption === 'function') {
-    return fetchOption as typeof fetch
+    return fetchOption as typeof fetch;
   }
 
   if (fetchOption && typeof fetchOption === 'object') {
-    return (url) => fetch(url, fetchOption as RequestInit)
+    return (url) => fetch(url, fetchOption);
   }
 
-  return fetch
+  return fetch;
 }
 
-function getCompositeImageSubloaderOptions(
-  options: TextureLoaderOptions
-): TextureLoaderOptions {
-  const {baseUrl, core, ...rest} = options
+function getCompositeImageSubloaderOptions(options: TextureLoaderOptions): TextureLoaderOptions {
+  const core = options.core;
+  const rest = {...options};
+  delete rest.baseUrl;
   if (!core?.baseUrl) {
-    return rest
+    return rest;
   }
 
-  const {baseUrl: _ignoredBaseUrl, ...restCore} = core
+  const restCore = {...core};
+  delete restCore.baseUrl;
   return {
     ...rest,
     core: restCore
-  }
+  };
 }
 
 function normalizeCompositeImageManifestOptions(
   options: TextureLoaderOptions
 ): TextureLoaderOptions {
   if (options.image?.type || typeof ImageBitmap === 'undefined') {
-    return options
+    return options;
   }
 
   return {
@@ -500,7 +524,7 @@ function normalizeCompositeImageManifestOptions(
       ...options.image,
       type: 'imagebitmap'
     }
-  }
+  };
 }
 
 function getCompositeImageMemberContext(
@@ -508,8 +532,8 @@ function getCompositeImageMemberContext(
   response: Response,
   context: LoaderContext
 ): LoaderContext {
-  const url = response.url || resolvedUrl
-  const [urlWithoutQueryString, queryString = ''] = url.split('?')
+  const url = response.url || resolvedUrl;
+  const [urlWithoutQueryString, queryString = ''] = url.split('?');
 
   return {
     ...context,
@@ -518,7 +542,7 @@ function getCompositeImageMemberContext(
     filename: path.filename(urlWithoutQueryString),
     baseUrl: path.dirname(urlWithoutQueryString),
     queryString
-  }
+  };
 }
 
 function convertCompositeImageToTexture(
@@ -527,124 +551,125 @@ function convertCompositeImageToTexture(
 ): Texture {
   switch (shape) {
     case 'image-texture': {
-      const data = normalizeCompositeImageMember(imageData)
+      const data = normalizeCompositeImageMember(imageData);
       return {
         shape: 'texture',
         type: '2d',
         format: getCompositeTextureFormat(data),
         data
-      }
+      };
     }
 
     case 'image-texture-array': {
-      const data = imageData.map((layer) => normalizeCompositeImageMember(layer))
+      const data = imageData.map((layer) => normalizeCompositeImageMember(layer));
       return {
         shape: 'texture',
         type: '2d-array',
         format: getCompositeTextureFormat(data[0]),
         data
-      }
+      };
     }
 
     case 'image-texture-cube': {
       const data = IMAGE_TEXTURE_CUBE_FACES.map(({face}) =>
         normalizeCompositeImageMember(imageData[face])
-      )
+      );
       return {
         shape: 'texture',
         type: 'cube',
         format: getCompositeTextureFormat(data[0]),
         data
-      }
+      };
     }
 
     case 'image-texture-cube-array': {
       const data = imageData.map((layer) =>
         IMAGE_TEXTURE_CUBE_FACES.map(({face}) => normalizeCompositeImageMember(layer[face]))
-      )
+      );
       return {
         shape: 'texture',
         type: 'cube-array',
         format: getCompositeTextureFormat(data[0][0]),
         data
-      }
+      };
     }
 
     default:
-      throw new Error(`Unsupported composite image shape ${shape}`)
+      throw new Error(`Unsupported composite image shape ${shape}`);
   }
 }
 
 function normalizeCompositeImageMember(imageData: any): TextureLevel[] {
   if (Array.isArray(imageData)) {
     if (imageData.length === 0) {
-      throw new Error('Composite image members must not be empty')
+      throw new Error('Composite image members must not be empty');
     }
 
     if (imageData.every(isTextureLevel)) {
-      return imageData
+      return imageData;
     }
 
     if (imageData.every(isImage)) {
-      return imageData.map((image) => getTextureLevelFromImage(image))
+      return imageData.map((image) => getTextureLevelFromImage(image));
     }
 
     if (imageData.every((entry) => Array.isArray(entry) && entry.every(isTextureLevel))) {
       if (imageData.length !== 1) {
-        throw new Error('Composite image members must resolve to a single image or mip chain')
+        throw new Error('Composite image members must resolve to a single image or mip chain');
       }
-      return imageData[0]
+      return imageData[0];
     }
   }
 
   if (isTexture(imageData)) {
     if (imageData.type !== '2d') {
-      throw new Error(`Composite image members must resolve to 2d textures, got ${imageData.type}`)
+      throw new Error(`Composite image members must resolve to 2d textures, got ${imageData.type}`);
     }
-    return imageData.data
+    return imageData.data;
   }
 
   if (isTextureLevel(imageData)) {
-    return [imageData]
+    return [imageData];
   }
 
   if (isImage(imageData)) {
-    return [getTextureLevelFromImage(imageData)]
+    return [getTextureLevelFromImage(imageData)];
   }
 
-  throw new Error('Composite image members must resolve to an image, mip chain, or texture')
+  throw new Error('Composite image members must resolve to an image, mip chain, or texture');
 }
 
 function getTextureLevelFromImage(image: ImageType): TextureLevel {
-  const {width, height} = getImageSize(image)
+  const {width, height} = getImageSize(image);
   return {
     shape: 'texture-level',
     compressed: false,
     width,
     height,
-    imageBitmap: typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap ? image : undefined,
+    imageBitmap:
+      typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap ? image : undefined,
     data: new Uint8Array(0),
     textureFormat: 'rgba8unorm'
-  }
+  };
 }
 
 function getCompositeTextureFormat(textureLevels: TextureLevel[]): TextureFormat {
-  return textureLevels[0]?.textureFormat || 'rgba8unorm'
+  return textureLevels[0]?.textureFormat || 'rgba8unorm';
 }
 
 function isTextureLevel(textureLevel: unknown): textureLevel is TextureLevel {
   return Boolean(
     textureLevel &&
-      typeof textureLevel === 'object' &&
-      'shape' in textureLevel &&
-      textureLevel.shape === 'texture-level'
-  )
+    typeof textureLevel === 'object' &&
+    'shape' in textureLevel &&
+    textureLevel.shape === 'texture-level'
+  );
 }
 
 function isTexture(texture: unknown): texture is Texture {
   return Boolean(
     texture && typeof texture === 'object' && 'shape' in texture && texture.shape === 'texture'
-  )
+  );
 }
 
 function isAbsoluteCompositeImageUrl(url: string): boolean {
@@ -655,5 +680,5 @@ function isAbsoluteCompositeImageUrl(url: string): boolean {
     url.startsWith('http:') ||
     url.startsWith('https:') ||
     url.startsWith('/')
-  )
+  );
 }

@@ -5,11 +5,11 @@
 import {
   loadCompositeImageUrlTree,
   normalizeCompositeImageOptions
-} from '../composite-image/parse-composite-image'
+} from '../composite-image/parse-composite-image';
 import {
   IMAGE_TEXTURE_CUBE_FACES,
   type ImageCubeTexture
-} from '../composite-image/image-texture-cube'
+} from '../composite-image/image-texture-cube';
 import type {GetUrl, TextureLoaderOptions} from './texture-api-types';
 import {getImageUrls} from './load-image';
 
@@ -24,7 +24,7 @@ export async function getImageCubeUrls(getUrl: GetUrl, options: TextureLoaderOpt
   for (let i = 0; i < IMAGE_TEXTURE_CUBE_FACES.length; ++i) {
     const face = IMAGE_TEXTURE_CUBE_FACES[index];
     const promise = getImageUrls(getUrl, options, {...face, index: index++}).then((url) => {
-      urls[face.face] = url
+      urls[face.face] = url;
     });
     promises.push(promise);
   }
@@ -47,5 +47,5 @@ export async function loadImageTextureCube(
   return (await loadCompositeImageUrlTree(
     urls,
     normalizeCompositeImageOptions(options)
-  )) as ImageCubeTexture
+  )) as ImageCubeTexture;
 }

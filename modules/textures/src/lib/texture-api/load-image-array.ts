@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {loadCompositeImageUrlTree, normalizeCompositeImageOptions} from '../composite-image/parse-composite-image'
+import {
+  loadCompositeImageUrlTree,
+  normalizeCompositeImageOptions
+} from '../composite-image/parse-composite-image';
 import type {GetUrl, TextureLoaderOptions} from './texture-api-types';
 import {getImageUrls} from './load-image';
 
@@ -15,7 +18,7 @@ export async function loadImageTextureArray(
   options: TextureLoaderOptions = {}
 ): Promise<any> {
   const imageUrls = await getImageArrayUrls(count, getUrl, options);
-  return await loadCompositeImageUrlTree(imageUrls, normalizeCompositeImageOptions(options))
+  return await loadCompositeImageUrlTree(imageUrls, normalizeCompositeImageOptions(options));
 }
 
 export async function getImageArrayUrls(

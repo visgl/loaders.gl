@@ -6,13 +6,13 @@
 
 A loader for image-based composite textures described by a JSON manifest.
 
-| Loader         | Characteristic                  |
-| -------------- | ------------------------------- |
-| File Format    | JSON manifest                   |
-| File Extension | `.json`                         |
-| File Type      | Text                            |
+| Loader         | Characteristic                                              |
+| -------------- | ----------------------------------------------------------- |
+| File Format    | JSON manifest                                               |
+| File Extension | `.json`                                                     |
+| File Type      | Text                                                        |
 | Data Format    | [`Texture`](/docs/modules/textures/README#texture-category) |
-| Supported APIs | `load`, `parse`                 |
+| Supported APIs | `load`, `parse`                                             |
 
 ## Usage
 
@@ -73,9 +73,9 @@ Use `\\{` and `\\}` to include literal braces in filenames.
 
 ## Options
 
-| Option           | Type     | Default | Description                                                                 |
-| ---------------- | -------- | ------- | --------------------------------------------------------------------------- |
-| `core.baseUrl`   | `string` | -       | Base URL used to resolve relative member paths when parsing an in-memory manifest. |
+| Option         | Type     | Default | Description                                                                        |
+| -------------- | -------- | ------- | ---------------------------------------------------------------------------------- |
+| `core.baseUrl` | `string` | -       | Base URL used to resolve relative member paths when parsing an in-memory manifest. |
 
 ## Output
 

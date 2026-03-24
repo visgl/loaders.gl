@@ -8,7 +8,7 @@ import {
   loadCompositeImageMember,
   loadCompositeImageUrlTree,
   normalizeCompositeImageOptions
-} from '../composite-image/parse-composite-image'
+} from '../composite-image/parse-composite-image';
 import type {GetUrl, TextureLoaderOptions, UrlOptions} from './texture-api-types';
 import {generateUrl} from './generate-url';
 
@@ -20,7 +20,7 @@ export async function loadImageTexture(
   options: TextureLoaderOptions = {}
 ): Promise<any> {
   const imageUrls = await getImageUrls(getUrl, options);
-  return await loadCompositeImageUrlTree(imageUrls, normalizeCompositeImageOptions(options))
+  return await loadCompositeImageUrlTree(imageUrls, normalizeCompositeImageOptions(options));
 }
 
 export async function getImageUrls(
@@ -41,12 +41,12 @@ async function getMipmappedImageUrls(
   urlOptions: UrlOptions
 ): Promise<string[]> {
   const urls: string[] = [];
-  const normalizedOptions = normalizeCompositeImageOptions(options)
+  const normalizedOptions = normalizeCompositeImageOptions(options);
 
   // If no mip levels supplied, we need to load the level 0 image and calculate based on size
   if (mipLevels === 'auto') {
     const url = generateUrl(getUrl, options, {...urlOptions, lod: 0});
-    const image = await loadCompositeImageMember(url, normalizedOptions)
+    const image = await loadCompositeImageMember(url, normalizedOptions);
 
     const {width, height} = getImageSize(image);
     mipLevels = getMipLevels({width, height});

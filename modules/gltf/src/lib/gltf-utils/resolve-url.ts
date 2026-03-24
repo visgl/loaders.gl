@@ -8,9 +8,22 @@ export function resolveUrl(url: string, options?: StrictLoaderOptions, context?:
   if (absolute) {
     return url;
   }
-  const baseUrl = context?.baseUrl || options?.core?.baseUrl;
+  const baseUrl = context?.baseUrl || getResolveBaseUrl(options?.core?.baseUrl);
   if (!baseUrl) {
     throw new Error(`'baseUrl' must be provided to resolve relative url ${url}`);
   }
   return baseUrl.endsWith('/') ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
+}
+
+function getResolveBaseUrl(baseUrl?: string): string | undefined {
+  if (!baseUrl) {
+    return undefined;
+  }
+
+  if (baseUrl.endsWith('/')) {
+    return baseUrl;
+  }
+
+  const slashIndex = baseUrl.lastIndexOf('/');
+  return slashIndex >= 0 ? baseUrl.slice(0, slashIndex + 1) : '';
 }

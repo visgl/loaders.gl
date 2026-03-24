@@ -41,10 +41,10 @@ The `@loaders.gl/textures` module handles the following formats:
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]` |
 | [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture`           |
 | [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`           |
-| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)           | Manifest-driven single image or mip chain       |
-| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) | Manifest-driven texture arrays                  |
-| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)  | Manifest-driven cubemaps                        |
-| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) | Manifest-driven cube arrays                     |
+| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain       |
+| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays                  |
+| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps                        |
+| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Manifest-driven cube arrays                     |
 
 ## Return Types
 

@@ -10,5 +10,5 @@ export function generateUrl(
   options: UrlOptions,
   urlOptions: Record<string, any>
 ): string {
-  return typeof getUrl === 'function' ? getUrl({...options, ...urlOptions}) : getUrl
+  return typeof getUrl === 'function' ? getUrl({...options, ...urlOptions}) : getUrl;
 }

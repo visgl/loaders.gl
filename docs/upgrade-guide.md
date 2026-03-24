@@ -9,11 +9,11 @@
 - `@loaders.gl/textures` no longer exports `selectSupportedBasisFormat` or `getSupportedGPUTextureFormats`. Pass `basis.supportedTextureFormats` to `BasisLoader` instead of using exported auto-detection helpers.
 - `BasisLoader`, `CrunchLoader`, and `CompressedTextureLoader` no longer support `libraryPath`. Supply runtime libraries through `options.modules` instead.
 
-| Deprecated helper | Replacement |
-| ----------------- | ----------- |
-| `loadImageTexture()` | `load(url, TextureLoader)` |
+| Deprecated helper         | Replacement                     |
+| ------------------------- | ------------------------------- |
+| `loadImageTexture()`      | `load(url, TextureLoader)`      |
 | `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
-| `loadImageTextureCube()` | `load(url, TextureCubeLoader)` |
+| `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
 
 **@loaders.gl/draco**
 
