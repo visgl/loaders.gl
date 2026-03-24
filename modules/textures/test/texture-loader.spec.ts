@@ -79,9 +79,13 @@ test('TextureCubeLoader#load manifest', async (t) => {
 
 test('TextureLoader#parse with core.baseUrl', async (t) => {
   const requestedUrls: string[] = [];
+  const memberUrl = '@loaders.gl/images/test/data/ibl/brdfLUT.png';
   const fetch = async (url: string): Promise<Response> => {
     requestedUrls.push(url);
-    return await fetchFile(url);
+    if (url !== memberUrl) {
+      throw new Error(`Unexpected URL ${url}`);
+    }
+    return await fetchFile(memberUrl);
   };
 
   const manifestText = JSON.stringify({
@@ -99,7 +103,7 @@ test('TextureLoader#parse with core.baseUrl', async (t) => {
   t.equal(texture.type, '2d', 'resolves relative member URLs against core.baseUrl');
   t.deepEqual(
     requestedUrls,
-    ['@loaders.gl/images/test/data/ibl/brdfLUT.png'],
+    [memberUrl],
     'normalizes aliased relative member URLs against core.baseUrl'
   );
   checkImageTextureLevel(t, texture.data[0], 'level 0');
@@ -138,6 +142,15 @@ test('TextureLoader#parse with extensionless core.baseUrl', async (t) => {
 });
 
 test('TextureLoader#template with auto mipLevels', async (t) => {
+  const requestedUrls: string[] = [];
+  const fetch = async (url: string): Promise<Response> => {
+    requestedUrls.push(url);
+    if (!url.startsWith('@loaders.gl/images/test/data/ibl/papermill/specular/specular_back_')) {
+      throw new Error(`Unexpected URL ${url}`);
+    }
+    return await fetchFile(url);
+  };
+
   const manifestText = JSON.stringify({
     shape: 'image-texture',
     mipLevels: 'auto',
@@ -145,7 +158,7 @@ test('TextureLoader#template with auto mipLevels', async (t) => {
   });
 
   const texture = await parse(manifestText, TextureLoader, {
-    fetch: fetchFile,
+    fetch,
     core: {
       baseUrl: IMAGE_TEXTURE_MIPMAP_MANIFEST_URL
     }
@@ -153,6 +166,10 @@ test('TextureLoader#template with auto mipLevels', async (t) => {
 
   t.equal(texture.type, '2d', 'returns a 2d texture');
   t.equal(texture.data.length, 10, 'template source expands the auto mip chain');
+  t.ok(
+    requestedUrls.includes('@loaders.gl/images/test/data/ibl/papermill/specular/specular_back_0.jpg'),
+    'template source normalizes aliased relative member URLs'
+  );
   texture.data.forEach((textureLevel, index) =>
     checkImageTextureLevel(t, textureLevel, `level ${index}`)
   );
