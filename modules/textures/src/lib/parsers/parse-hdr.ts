@@ -37,8 +37,9 @@ export function parseHDR(arrayBuffer: ArrayBuffer): Texture {
     data: new Uint8Array(arrayBuffer),
     offset: 0
   };
-  const {width, height} = readHeader(state);
-  const rgbeData = readPixels(state, readHeaderFromData(width, height, state, arrayBuffer));
+  const header = readHeader(state);
+  const {width, height} = header;
+  const rgbeData = readPixels(state, header);
   const data = convertRGBEToFloat(rgbeData);
   const level: TextureLevel = {
     shape: 'texture-level',
@@ -170,7 +171,7 @@ function readPixels(state: HeaderState, header: HDRHeader): Uint8Array {
     const blue = data[state.offset++];
     const exponent = data[state.offset++];
 
-    if (red !== 2 || green !== 2 || ((blue << 8) | exponent) !== width) {
+    if (red !== 2 || green !== 2 || ((blue << 8) | exponent) !== scanlineLength) {
       throw new Error('HDRLoader: bad rgbe scanline format');
     }
 

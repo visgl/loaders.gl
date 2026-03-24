@@ -22,13 +22,13 @@ Basis data may appear as:
 
 ## loaders.gl Support
 
-| Format Feature | loaders.gl Support | Notes |
-| --- | --- | --- |
-| Raw `.basis` input | Yes | Supported by [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader). |
-| Basis payloads in KTX2 | Yes | Supported by [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader). |
-| Runtime transcoding | Yes | Transcodes into compressed or fallback uncompressed target formats. |
-| Automatic format selection | Yes | `basis.format: 'auto'` and `basis.supportedTextureFormats` help select a target format. |
-| Preservation of multiple images / mip levels | Yes | Returned as `TextureLevel[][]`. |
+| Format Feature                               | loaders.gl Support | Notes                                                                                   |
+| -------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------- |
+| Raw `.basis` input                           | Yes                | Supported by [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader).        |
+| Basis payloads in KTX2                       | Yes                | Supported by [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader).        |
+| Runtime transcoding                          | Yes                | Transcodes into compressed or fallback uncompressed target formats.                     |
+| Automatic format selection                   | Yes                | `basis.format: 'auto'` and `basis.supportedTextureFormats` help select a target format. |
+| Preservation of multiple images / mip levels | Yes                | Returned as `TextureLevel[][]`.                                                         |
 
 ## Related Pages
 

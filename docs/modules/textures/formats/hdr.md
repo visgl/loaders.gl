@@ -71,17 +71,17 @@ The file is typically recognizable by:
 
 Use [`HDRLoader`](/docs/modules/textures/api-reference/hdr-loader) to load standard 2D Radiance RGBE `.hdr` textures.
 
-| Format Feature | loaders.gl Support | Notes |
-| --- | --- | --- |
-| Standard 2D Radiance `.hdr` images | Yes | Returned as a `Texture` with `shape: 'texture'` and `type: '2d'`. |
-| Radiance RGBE pixel decoding | Yes | Decoded to linear floating-point RGBA data. |
-| Standard Radiance scanline RLE | Yes | Supports `FORMAT=32-bit_rle_rgbe`. |
-| Older flat / non-RLE pixel data | Yes | Supported as a compatibility fallback. |
-| Float output | Yes | Exposed as `Float32Array`. |
-| Cube map helpers | No | Applications must assemble cube textures separately. |
-| Environment-map preprocessing | No | No PMREM, convolution, or other lighting preprocessing utilities are included. |
-| Half-float output | No | Output is currently `Float32Array` only. |
-| Non-Radiance HDR container formats | No | This loader targets Radiance RGBE `.hdr` files, not EXR or other HDR image formats. |
+| Format Feature                     | loaders.gl Support | Notes                                                                               |
+| ---------------------------------- | ------------------ | ----------------------------------------------------------------------------------- |
+| Standard 2D Radiance `.hdr` images | Yes                | Returned as a `Texture` with `shape: 'texture'` and `type: '2d'`.                   |
+| Radiance RGBE pixel decoding       | Yes                | Decoded to linear floating-point RGBA data.                                         |
+| Standard Radiance scanline RLE     | Yes                | Supports `FORMAT=32-bit_rle_rgbe`.                                                  |
+| Older flat / non-RLE pixel data    | Yes                | Supported as a compatibility fallback.                                              |
+| Float output                       | Yes                | Exposed as `Float32Array`.                                                          |
+| Cube map helpers                   | No                 | Applications must assemble cube textures separately.                                |
+| Environment-map preprocessing      | No                 | No PMREM, convolution, or other lighting preprocessing utilities are included.      |
+| Half-float output                  | No                 | Output is currently `Float32Array` only.                                            |
+| Non-Radiance HDR container formats | No                 | This loader targets Radiance RGBE `.hdr` files, not EXR or other HDR image formats. |
 
 ## Related Pages
 

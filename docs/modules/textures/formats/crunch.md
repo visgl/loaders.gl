@@ -17,12 +17,12 @@ Crunch is commonly used when a pipeline wants:
 
 ## loaders.gl Support
 
-| Format Feature | loaders.gl Support | Notes |
-| --- | --- | --- |
-| `.crn` parsing | Yes | Supported by [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader). |
-| Mip level extraction | Yes | Returned as `TextureLevel[]`. |
-| GPU texture metadata tagging | Yes | loaders.gl reports recognized texture format metadata on decoded levels. |
-| Worker-based loading | Yes | Exposed through the Crunch worker loader path. |
+| Format Feature               | loaders.gl Support | Notes                                                                                    |
+| ---------------------------- | ------------------ | ---------------------------------------------------------------------------------------- |
+| `.crn` parsing               | Yes                | Supported by [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader). |
+| Mip level extraction         | Yes                | Returned as `TextureLevel[]`.                                                            |
+| GPU texture metadata tagging | Yes                | loaders.gl reports recognized texture format metadata on decoded levels.                 |
+| Worker-based loading         | Yes                | Exposed through the Crunch worker loader path.                                           |
 
 ## Related Pages
 

@@ -17,12 +17,12 @@ PVR is commonly encountered in:
 
 ## loaders.gl Support
 
-| Format Feature | loaders.gl Support | Notes |
-| --- | --- | --- |
-| PVR container parsing | Yes | Supported by [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader). |
-| Mip level extraction | Yes | Returned as `TextureLevel[]`. |
-| PVRTC and related format tagging | Yes | loaders.gl maps recognized formats to canonical texture format identifiers. |
-| Direct GPU upload workflows | Yes | Output is designed for GPU upload by consuming frameworks and applications. |
+| Format Feature                   | loaders.gl Support | Notes                                                                                                     |
+| -------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
+| PVR container parsing            | Yes                | Supported by [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader). |
+| Mip level extraction             | Yes                | Returned as `TextureLevel[]`.                                                                             |
+| PVRTC and related format tagging | Yes                | loaders.gl maps recognized formats to canonical texture format identifiers.                               |
+| Direct GPU upload workflows      | Yes                | Output is designed for GPU upload by consuming frameworks and applications.                               |
 
 ## Related Pages
 

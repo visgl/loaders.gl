@@ -17,12 +17,12 @@ DDS is often used for:
 
 ## loaders.gl Support
 
-| Format Feature | loaders.gl Support | Notes |
-| --- | --- | --- |
-| DDS container parsing | Yes | Supported by [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader). |
-| Mip level extraction | Yes | Returned as `TextureLevel[]`. |
-| Common compressed texture formats | Yes | loaders.gl maps known DDS texture formats to canonical texture format identifiers. |
-| Direct GPU upload workflows | Yes | Output is designed for GPU upload by consuming frameworks and applications. |
+| Format Feature                    | loaders.gl Support | Notes                                                                                                     |
+| --------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
+| DDS container parsing             | Yes                | Supported by [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader). |
+| Mip level extraction              | Yes                | Returned as `TextureLevel[]`.                                                                             |
+| Common compressed texture formats | Yes                | loaders.gl maps known DDS texture formats to canonical texture format identifiers.                        |
+| Direct GPU upload workflows       | Yes                | Output is designed for GPU upload by consuming frameworks and applications.                               |
 
 ## Related Pages
 

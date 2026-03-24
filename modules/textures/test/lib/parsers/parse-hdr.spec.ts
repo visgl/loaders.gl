@@ -8,11 +8,13 @@ import {GL_RGBA32F} from '../../../src/lib/gl-extensions';
 import {isHDR, parseHDR} from '../../../src/lib/parsers/parse-hdr';
 
 test('parseHDR#parses Radiance RLE data', (t) => {
-  const textureLevels = parseHDR(createRLEHDRBuffer('#?RADIANCE'));
-  const level = textureLevels[0];
+  const texture = parseHDR(createRLEHDRBuffer('#?RADIANCE'));
+  const level = texture.data[0];
   const data = level.data as Float32Array;
 
-  t.equal(textureLevels.length, 1, 'returns a single texture level');
+  t.equal(texture.shape, 'texture', 'returns a texture payload');
+  t.equal(texture.type, '2d', 'returns a 2d texture');
+  t.equal(texture.data.length, 1, 'returns a single texture level');
   t.equal(level.width, 8, 'width is parsed');
   t.equal(level.height, 2, 'height is parsed');
   t.equal(level.textureFormat, 'rgba32float', 'texture format is set');
@@ -24,11 +26,11 @@ test('parseHDR#parses Radiance RLE data', (t) => {
 });
 
 test('parseHDR#parses RGBE flat data', (t) => {
-  const textureLevels = parseHDR(createFlatHDRBuffer('#?RGBE'));
-  const data = textureLevels[0].data as Float32Array;
+  const texture = parseHDR(createFlatHDRBuffer('#?RGBE'));
+  const data = texture.data[0].data as Float32Array;
 
-  t.equal(textureLevels[0].width, 2, 'width is parsed');
-  t.equal(textureLevels[0].height, 1, 'height is parsed');
+  t.equal(texture.data[0].width, 2, 'width is parsed');
+  t.equal(texture.data[0].height, 1, 'height is parsed');
   t.ok(Math.abs(data[0] - 128 * (2 / 255)) < 1e-6, 'flat red channel is decoded');
   t.ok(Math.abs(data[1] - 64 * (2 / 255)) < 1e-6, 'flat green channel is decoded');
   t.ok(Math.abs(data[2] - 32 * (2 / 255)) < 1e-6, 'flat blue channel is decoded');
@@ -59,6 +61,35 @@ test('parseHDR#rejects bad scanline data', (t) => {
   t.end();
 });
 
+test('parseHDR#accepts flipped Radiance resolution strings', (t) => {
+  const texture = parseHDR(createOrientedFlatHDRBuffer('+Y 2 +X 2'));
+  const data = texture.data[0].data as Float32Array;
+
+  t.equal(texture.data[0].width, 2, 'width is parsed for +Y +X');
+  t.equal(texture.data[0].height, 2, 'height is parsed for +Y +X');
+  t.ok(Math.abs(data[0] - 1) < 1e-6, 'top-left pixel is normalized into standard order');
+  t.ok(Math.abs(data[4] - 254 / 255) < 1e-6, 'top-right pixel is normalized into standard order');
+  t.ok(Math.abs(data[8] - 253 / 255) < 1e-6, 'bottom-left pixel is normalized into standard order');
+  t.ok(
+    Math.abs(data[12] - 252 / 255) < 1e-6,
+    'bottom-right pixel is normalized into standard order'
+  );
+  t.end();
+});
+
+test('parseHDR#accepts rotated Radiance resolution strings', (t) => {
+  const texture = parseHDR(createOrientedFlatHDRBuffer('+X 2 -Y 2'));
+  const data = texture.data[0].data as Float32Array;
+
+  t.equal(texture.data[0].width, 2, 'width is parsed for +X -Y');
+  t.equal(texture.data[0].height, 2, 'height is parsed for +X -Y');
+  t.ok(Math.abs(data[0] - 1) < 1e-6, 'top-left pixel is normalized after rotation');
+  t.ok(Math.abs(data[4] - 254 / 255) < 1e-6, 'top-right pixel is normalized after rotation');
+  t.ok(Math.abs(data[8] - 253 / 255) < 1e-6, 'bottom-left pixel is normalized after rotation');
+  t.ok(Math.abs(data[12] - 252 / 255) < 1e-6, 'bottom-right pixel is normalized after rotation');
+  t.end();
+});
+
 function createRLEHDRBuffer(magicHeader: '#?RADIANCE' | '#?RGBE'): ArrayBuffer {
   const header = createHeaderBuffer([magicHeader, 'FORMAT=32-bit_rle_rgbe', '', '-Y 2 +X 8']);
   const row1 = new Uint8Array([2, 2, 0, 8, 136, 255, 136, 0, 136, 0, 136, 129]);
@@ -70,6 +101,25 @@ function createRLEHDRBuffer(magicHeader: '#?RADIANCE' | '#?RGBE'): ArrayBuffer {
 function createFlatHDRBuffer(magicHeader: '#?RADIANCE' | '#?RGBE'): ArrayBuffer {
   const header = createHeaderBuffer([magicHeader, 'FORMAT=32-bit_rle_rgbe', '', '-Y 1 +X 2']);
   const pixels = new Uint8Array([128, 64, 32, 129, 0, 0, 0, 0]);
+
+  return joinBuffers(new Uint8Array(header), pixels);
+}
+
+function createOrientedFlatHDRBuffer(resolution: string): ArrayBuffer {
+  const header = createHeaderBuffer(['#?RADIANCE', 'FORMAT=32-bit_rle_rgbe', '', resolution]);
+  let redChannelValues: number[];
+  switch (resolution) {
+    case '+Y 2 +X 2':
+      redChannelValues = [253, 252, 255, 254];
+      break;
+    case '+X 2 -Y 2':
+      redChannelValues = [255, 253, 254, 252];
+      break;
+    default:
+      throw new Error(`Unhandled test resolution: ${resolution}`);
+  }
+
+  const pixels = new Uint8Array(redChannelValues.flatMap((red) => [red, 0, 0, 128]));
 
   return joinBuffers(new Uint8Array(header), pixels);
 }

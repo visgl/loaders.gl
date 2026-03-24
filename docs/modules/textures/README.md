@@ -23,15 +23,15 @@ npm install @loaders.gl/core
 
 The `@loaders.gl/textures` module handles the following formats:
 
-| Format                                                                      | Description                                                  |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures) | Overview of GPU texture container and compression formats    |
-| [`KTX / KTX2`](/docs/modules/textures/formats/ktx)                          | Khronos texture container formats for mipmapped textures     |
-| [`DDS`](/docs/modules/textures/formats/dds)                                 | Microsoft DirectDraw Surface texture container               |
-| [`PVR`](/docs/modules/textures/formats/pvr)                                 | PowerVR texture container format                             |
-| [`Basis Universal`](/docs/modules/textures/formats/basis)                   | Supercompressed texture format for runtime transcoding       |
+| Format                                                                      | Description                                                   |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures) | Overview of GPU texture container and compression formats     |
+| [`KTX / KTX2`](/docs/modules/textures/formats/ktx)                          | Khronos texture container formats for mipmapped textures      |
+| [`DDS`](/docs/modules/textures/formats/dds)                                 | Microsoft DirectDraw Surface texture container                |
+| [`PVR`](/docs/modules/textures/formats/pvr)                                 | PowerVR texture container format                              |
+| [`Basis Universal`](/docs/modules/textures/formats/basis)                   | Supercompressed texture format for runtime transcoding        |
 | [`Crunch`](/docs/modules/textures/formats/crunch)                           | Lossy compressed texture distribution format for GPU textures |
-| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files      |
+| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files       |
 
 ## API
 
