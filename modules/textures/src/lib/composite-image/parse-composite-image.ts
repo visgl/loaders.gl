@@ -212,7 +212,7 @@ export function resolveCompositeImageUrl(
     throw new Error(`Unable to resolve relative image URL ${url} without a base URL`);
   }
 
-  return resolvePath(path.join(baseUrl, url));
+  return resolvePath(joinCompositeImageUrl(baseUrl, url));
 }
 
 function parseCompositeImageManifestJSON(text: string): CompositeImageManifest {
@@ -472,6 +472,25 @@ function stripTrailingSlash(baseUrl: string): string {
 
 function getSourceUrlDirectory(baseUrl: string): string {
   return stripTrailingSlash(path.dirname(baseUrl));
+}
+
+function joinCompositeImageUrl(baseUrl: string, url: string): string {
+  if (isRequestLikeUrl(baseUrl)) {
+    return new URL(url, `${stripTrailingSlash(baseUrl)}/`).toString();
+  }
+
+  const normalizedBaseUrl = baseUrl.startsWith('/') ? baseUrl : `/${baseUrl}`;
+  const normalizedUrl = path.resolve(normalizedBaseUrl, url);
+  return baseUrl.startsWith('/') ? normalizedUrl : normalizedUrl.slice(1);
+}
+
+function isRequestLikeUrl(url: string): boolean {
+  return (
+    url.startsWith('http:') ||
+    url.startsWith('https:') ||
+    url.startsWith('file:') ||
+    url.startsWith('blob:')
+  );
 }
 
 function getCompositeImageFetch(

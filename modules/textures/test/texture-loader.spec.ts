@@ -78,19 +78,30 @@ test('TextureCubeLoader#load manifest', async (t) => {
 });
 
 test('TextureLoader#parse with core.baseUrl', async (t) => {
+  const requestedUrls: string[] = [];
+  const fetch = async (url: string): Promise<Response> => {
+    requestedUrls.push(url);
+    return await fetchFile(url);
+  };
+
   const manifestText = JSON.stringify({
     shape: 'image-texture',
     image: '../../../../images/test/data/ibl/brdfLUT.png'
   });
 
   const texture = await parse(manifestText, TextureLoader, {
-    fetch: fetchFile,
+    fetch,
     core: {
       baseUrl: IMAGE_TEXTURE_MANIFEST_URL
     }
   });
 
   t.equal(texture.type, '2d', 'resolves relative member URLs against core.baseUrl');
+  t.deepEqual(
+    requestedUrls,
+    ['@loaders.gl/images/test/data/ibl/brdfLUT.png'],
+    'normalizes aliased relative member URLs against core.baseUrl'
+  );
   checkImageTextureLevel(t, texture.data[0], 'level 0');
   t.end();
 });
