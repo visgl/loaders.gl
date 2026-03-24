@@ -137,84 +137,14 @@ export type TextureFormatCompressed =
   | 'astc-12x12-unorm'
   | 'astc-12x12-unorm-srgb';
 
-export type GLTextureFormat =
-  | 0x1907
-  | 0x1908
-  | 0x8056
-  | 0x8057
-  | 0x8058
-  | 0x8d62
-  | 0x83f0
-  | 0x83f1
-  | 0x83f2
-  | 0x83f3
-  | 0x9270
-  | 0x9271
-  | 0x9272
-  | 0x9273
-  | 0x9274
-  | 0x9275
-  | 0x9276
-  | 0x9277
-  | 0x9278
-  | 0x9279
-  | 0x8c00
-  | 0x8c01
-  | 0x8c02
-  | 0x8c03
-  | 0x8d64
-  | 0x8c92
-  | 0x8c93
-  | 0x87ee
-  | 0x8dbb
-  | 0x8dbc
-  | 0x8dbd
-  | 0x8dbe
-  | 0x8e8c
-  | 0x8e8d
-  | 0x8e8e
-  | 0x8e8f
-  | 0x8c4c
-  | 0x8c4d
-  | 0x8c4e
-  | 0x8c4f
-  | 0x93b0
-  | 0x93b1
-  | 0x93b2
-  | 0x93b3
-  | 0x93b4
-  | 0x93b5
-  | 0x93b6
-  | 0x93b7
-  | 0x93b8
-  | 0x93b9
-  | 0x93ba
-  | 0x93bb
-  | 0x93bc
-  | 0x93bd
-  | 0x93d0
-  | 0x93d1
-  | 0x93d2
-  | 0x93d3
-  | 0x93d4
-  | 0x93d5
-  | 0x93d6
-  | 0x93d7
-  | 0x93d8
-  | 0x93d9
-  | 0x93da
-  | 0x93db
-  | 0x93dc
-  | 0x93dd;
-
 /** A TextureLevel holds data for one texture mip level */
 export type TextureLevel = {
   /** Shape tag identifying texture level payloads */
   shape: 'texture-level';
   /** WebGPU texture format corresponding the format of the data in this TextureLevel */
   textureFormat?: TextureFormat;
-  /** WebGL texture format constant corresponding the format of the data in this TextureLevel */
-  format?: GLTextureFormat;
+  /** Numeric API-specific format constant, currently used for WebGL/OpenGL upload paths */
+  format?: number;
   /** Whether the texture is compressed */
   compressed: boolean;
   /** Width in texels */

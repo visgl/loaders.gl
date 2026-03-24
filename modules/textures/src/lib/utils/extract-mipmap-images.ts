@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GLTextureFormat, TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {
   getTextureFormatFromWebGLFormat,
   getWebGLFormatFromTextureFormat
@@ -13,7 +13,7 @@ export type CompressedTextureExtractOptions = {
   width: number;
   height: number;
   sizeFunction: Function;
-  internalFormat?: GLTextureFormat;
+  internalFormat?: number;
   textureFormat?: TextureFormat;
 };
 

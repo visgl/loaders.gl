@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 /* eslint-disable indent */
-import type {GLTextureFormat, TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import {loadBasisEncoderModule, loadBasisTranscoderModule} from './basis-module-loader';
 import {
@@ -52,7 +52,7 @@ export type BasisFormat =
 type BasisOutputOptions = {
   basisFormat: number;
   compressed: boolean;
-  format?: GLTextureFormat;
+  format?: number;
   textureFormat?: TextureFormat;
 };
 

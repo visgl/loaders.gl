@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 /* eslint-disable camelcase */
-import type {GLTextureFormat, TextureFormat} from '@loaders.gl/schema';
+import type {TextureFormat} from '@loaders.gl/schema';
 import {
   GL_COMPRESSED_R11_EAC,
   GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
@@ -131,7 +131,7 @@ const TEXTURE_FORMAT_TO_WEBGL = Object.fromEntries(
     textureFormat,
     Number(format)
   ])
-) as Partial<Record<TextureFormat, GLTextureFormat>>;
+) as Partial<Record<TextureFormat, number>>;
 
 export function getTextureFormatFromWebGLFormat(format?: number): TextureFormat | undefined {
   if (format === undefined) {
@@ -141,9 +141,7 @@ export function getTextureFormatFromWebGLFormat(format?: number): TextureFormat 
   return WEBGL_TO_TEXTURE_FORMAT[format];
 }
 
-export function getWebGLFormatFromTextureFormat(
-  textureFormat?: TextureFormat
-): GLTextureFormat | undefined {
+export function getWebGLFormatFromTextureFormat(textureFormat?: TextureFormat): number | undefined {
   if (textureFormat === undefined) {
     return undefined;
   }
