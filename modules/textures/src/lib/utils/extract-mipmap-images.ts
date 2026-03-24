@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {GLTextureFormat} from '../gl-types';
 import {
   getTextureFormatFromWebGLFormat,
   getWebGLFormatFromTextureFormat
@@ -13,7 +14,7 @@ export type CompressedTextureExtractOptions = {
   width: number;
   height: number;
   sizeFunction: Function;
-  internalFormat?: number;
+  internalFormat?: GLTextureFormat;
   textureFormat?: TextureFormat;
 };
 

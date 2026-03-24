@@ -4,6 +4,7 @@
 
 /* eslint-disable camelcase */
 import type {TextureFormat} from '@loaders.gl/schema';
+import type {GLTextureFormat} from '../gl-types';
 import {
   GL_COMPRESSED_R11_EAC,
   GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
@@ -131,9 +132,11 @@ const TEXTURE_FORMAT_TO_WEBGL = Object.fromEntries(
     textureFormat,
     Number(format)
   ])
-) as Partial<Record<TextureFormat, number>>;
+) as Partial<Record<TextureFormat, GLTextureFormat>>;
 
-export function getTextureFormatFromWebGLFormat(format?: number): TextureFormat | undefined {
+export function getTextureFormatFromWebGLFormat(
+  format?: GLTextureFormat
+): TextureFormat | undefined {
   if (format === undefined) {
     return undefined;
   }
@@ -141,7 +144,9 @@ export function getTextureFormatFromWebGLFormat(format?: number): TextureFormat 
   return WEBGL_TO_TEXTURE_FORMAT[format];
 }
 
-export function getWebGLFormatFromTextureFormat(textureFormat?: TextureFormat): number | undefined {
+export function getWebGLFormatFromTextureFormat(
+  textureFormat?: TextureFormat
+): GLTextureFormat | undefined {
   if (textureFormat === undefined) {
     return undefined;
   }

@@ -7,6 +7,7 @@
 import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import {loadBasisEncoderModule, loadBasisTranscoderModule} from './basis-module-loader';
+import type {GLTextureFormat} from '../gl-types';
 import {
   GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
   GL_COMPRESSED_RED_RGTC1_EXT,
@@ -52,7 +53,7 @@ export type BasisFormat =
 type BasisOutputOptions = {
   basisFormat: number;
   compressed: boolean;
-  format?: number;
+  format?: GLTextureFormat;
   textureFormat?: TextureFormat;
 };
 

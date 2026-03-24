@@ -4,6 +4,7 @@
 
 /* eslint-disable camelcase */
 import type {TextureFormat} from '@loaders.gl/schema';
+import type {GLTextureFormat} from '../gl-types';
 import {
   GL_COMPRESSED_R11_EAC,
   GL_COMPRESSED_RED_GREEN_RGTC2_EXT,
@@ -60,7 +61,7 @@ import {
 } from '../gl-extensions';
 import {getTextureFormatFromWebGLFormat} from './texture-format-map';
 
-const VULKAN_TO_WEBGL_FORMAT_MAP: Record<number, number> = {
+const VULKAN_TO_WEBGL_FORMAT_MAP: Record<number, GLTextureFormat> = {
   131: GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
   132: GL_COMPRESSED_SRGB_S3TC_DXT1_EXT,
   133: GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,
@@ -136,7 +137,7 @@ const VULKAN_TO_WEBGL_FORMAT_MAP: Record<number, number> = {
  * @param vkFormat
  * @returns WebGL / OpenGL constant
  */
-export function mapVkFormatToWebGL(vkFormat: number): number | undefined {
+export function mapVkFormatToWebGL(vkFormat: number): GLTextureFormat | undefined {
   return VULKAN_TO_WEBGL_FORMAT_MAP[vkFormat];
 }
 
