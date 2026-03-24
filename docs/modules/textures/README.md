@@ -23,10 +23,15 @@ npm install @loaders.gl/core
 
 The `@loaders.gl/textures` module handles the following formats:
 
-| Format                                                                      | Description                                             |
-| --------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures) | GPU texture container formats such as KTX, DDS, and PVR |
-| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files |
+| Format                                                                      | Description                                                  |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures) | Overview of GPU texture container and compression formats    |
+| [`KTX / KTX2`](/docs/modules/textures/formats/ktx)                          | Khronos texture container formats for mipmapped textures     |
+| [`DDS`](/docs/modules/textures/formats/dds)                                 | Microsoft DirectDraw Surface texture container               |
+| [`PVR`](/docs/modules/textures/formats/pvr)                                 | PowerVR texture container format                             |
+| [`Basis Universal`](/docs/modules/textures/formats/basis)                   | Supercompressed texture format for runtime transcoding       |
+| [`Crunch`](/docs/modules/textures/formats/crunch)                           | Lossy compressed texture distribution format for GPU textures |
+| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files      |
 
 ## API
 
@@ -66,8 +71,6 @@ A `TextureLevel` describes one mip level of one texture image.
 `CrunchWorkerLoader` returns `TextureLevel[]`.
 
 See [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) and [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) for loader-specific options and return shapes.
-
-The `loadImageTexture*` helpers still route through `@loaders.gl/images` and are unchanged in this first HDR release.
 
 ## Texture APIs
 

@@ -16,6 +16,10 @@ type HeaderState = {
 type HDRHeader = {
   width: number;
   height: number;
+  majorAxis: 'X' | 'Y';
+  majorSign: 1 | -1;
+  minorAxis: 'X' | 'Y';
+  minorSign: 1 | -1;
 };
 
 export function isHDR(arrayBuffer: ArrayBuffer): boolean {
@@ -34,7 +38,7 @@ export function parseHDR(arrayBuffer: ArrayBuffer): Texture {
     offset: 0
   };
   const {width, height} = readHeader(state);
-  const rgbeData = readPixels(state, width, height);
+  const rgbeData = readPixels(state, readHeaderFromData(width, height, state, arrayBuffer));
   const data = convertRGBEToFloat(rgbeData);
   const level: TextureLevel = {
     shape: 'texture-level',
@@ -100,26 +104,40 @@ function readHeader(state: HeaderState): HDRHeader {
 }
 
 function parseDimensions(line: string): HDRHeader | null {
-  const match = line.match(/^-Y\s+(\d+)\s+\+X\s+(\d+)$/);
+  const match = line.match(/^([+-])([YX])\s+(\d+)\s+([+-])([YX])\s+(\d+)$/);
   if (!match) {
     return null;
   }
 
-  const height = Number(match[1]);
-  const width = Number(match[2]);
+  const majorSign = match[1] === '+' ? 1 : -1;
+  const majorAxis = match[2] as 'X' | 'Y';
+  const majorLength = Number(match[3]);
+  const minorSign = match[4] === '+' ? 1 : -1;
+  const minorAxis = match[5] as 'X' | 'Y';
+  const minorLength = Number(match[6]);
+
+  if (majorAxis === minorAxis) {
+    throw new Error('HDRLoader: invalid image dimensions');
+  }
+
+  const width = majorAxis === 'X' ? majorLength : minorLength;
+  const height = majorAxis === 'Y' ? majorLength : minorLength;
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
     throw new Error('HDRLoader: invalid image dimensions');
   }
 
-  return {width, height};
+  return {width, height, majorAxis, majorSign, minorAxis, minorSign};
 }
 
-function readPixels(state: HeaderState, width: number, height: number): Uint8Array {
+function readPixels(state: HeaderState, header: HDRHeader): Uint8Array {
+  const {width, height} = header;
   const pixelCount = width * height;
   const flatByteLength = pixelCount * 4;
+  const scanlineLength = header.minorAxis === 'X' ? width : height;
+  const scanlineCount = header.majorAxis === 'Y' ? height : width;
 
-  if (width < 8 || width > 0x7fff) {
-    return readFlatPixels(state, flatByteLength);
+  if (scanlineLength < 8 || scanlineLength > 0x7fff) {
+    return reorderPixels(readFlatPixels(state, flatByteLength), header);
   }
 
   if (state.offset + 4 > state.data.length) {
@@ -131,19 +149,18 @@ function readPixels(state: HeaderState, width: number, height: number): Uint8Arr
     data[state.offset] === 2 && data[state.offset + 1] === 2 && !(data[state.offset + 2] & 0x80);
 
   if (!isRunLengthEncoded) {
-    return readFlatPixels(state, flatByteLength);
+    return reorderPixels(readFlatPixels(state, flatByteLength), header);
   }
 
   const scanlineWidth = (data[state.offset + 2] << 8) | data[state.offset + 3];
-  if (scanlineWidth !== width) {
+  if (scanlineWidth !== scanlineLength) {
     throw new Error('HDRLoader: wrong scanline width');
   }
 
   const pixels = new Uint8Array(flatByteLength);
-  const scanlineBuffer = new Uint8Array(width * 4);
-  let outputOffset = 0;
+  const scanlineBuffer = new Uint8Array(scanlineLength * 4);
 
-  for (let scanlineIndex = 0; scanlineIndex < height; scanlineIndex++) {
+  for (let scanlineIndex = 0; scanlineIndex < scanlineCount; scanlineIndex++) {
     if (state.offset + 4 > data.length) {
       throw new Error('HDRLoader: unexpected end of file');
     }
@@ -158,8 +175,8 @@ function readPixels(state: HeaderState, width: number, height: number): Uint8Arr
     }
 
     for (let channelIndex = 0; channelIndex < 4; channelIndex++) {
-      const channelOffset = channelIndex * width;
-      const channelEnd = channelOffset + width;
+      const channelOffset = channelIndex * scanlineLength;
+      const channelEnd = channelOffset + scanlineLength;
       let pixelOffset = channelOffset;
 
       while (pixelOffset < channelEnd) {
@@ -191,15 +208,56 @@ function readPixels(state: HeaderState, width: number, height: number): Uint8Arr
       }
     }
 
-    for (let pixelIndex = 0; pixelIndex < width; pixelIndex++) {
-      pixels[outputOffset++] = scanlineBuffer[pixelIndex];
-      pixels[outputOffset++] = scanlineBuffer[pixelIndex + width];
-      pixels[outputOffset++] = scanlineBuffer[pixelIndex + width * 2];
-      pixels[outputOffset++] = scanlineBuffer[pixelIndex + width * 3];
+    for (let pixelIndex = 0; pixelIndex < scanlineLength; pixelIndex++) {
+      const outputOffset = getOutputOffset(header, scanlineIndex, pixelIndex);
+      pixels[outputOffset] = scanlineBuffer[pixelIndex];
+      pixels[outputOffset + 1] = scanlineBuffer[pixelIndex + scanlineLength];
+      pixels[outputOffset + 2] = scanlineBuffer[pixelIndex + scanlineLength * 2];
+      pixels[outputOffset + 3] = scanlineBuffer[pixelIndex + scanlineLength * 3];
     }
   }
 
   return pixels;
+}
+
+function reorderPixels(data: Uint8Array, header: HDRHeader): Uint8Array {
+  const pixels = new Uint8Array(data.length);
+  const scanlineLength = header.minorAxis === 'X' ? header.width : header.height;
+  const scanlineCount = header.majorAxis === 'Y' ? header.height : header.width;
+
+  for (let scanlineIndex = 0; scanlineIndex < scanlineCount; scanlineIndex++) {
+    for (let pixelIndex = 0; pixelIndex < scanlineLength; pixelIndex++) {
+      const sourceOffset = (scanlineIndex * scanlineLength + pixelIndex) * 4;
+      const outputOffset = getOutputOffset(header, scanlineIndex, pixelIndex);
+      pixels[outputOffset] = data[sourceOffset];
+      pixels[outputOffset + 1] = data[sourceOffset + 1];
+      pixels[outputOffset + 2] = data[sourceOffset + 2];
+      pixels[outputOffset + 3] = data[sourceOffset + 3];
+    }
+  }
+
+  return pixels;
+}
+
+function getOutputOffset(header: HDRHeader, scanlineIndex: number, pixelIndex: number): number {
+  const majorCoordinate = getCoordinate(
+    header.majorAxis === 'X' ? header.width : header.height,
+    header.majorSign,
+    scanlineIndex
+  );
+  const minorCoordinate = getCoordinate(
+    header.minorAxis === 'X' ? header.width : header.height,
+    header.minorSign,
+    pixelIndex
+  );
+  const x = header.majorAxis === 'X' ? majorCoordinate : minorCoordinate;
+  const y = header.majorAxis === 'Y' ? majorCoordinate : minorCoordinate;
+
+  return ((header.height - 1 - y) * header.width + x) * 4;
+}
+
+function getCoordinate(length: number, sign: 1 | -1, index: number): number {
+  return sign === 1 ? index : length - 1 - index;
 }
 
 function readFlatPixels(state: HeaderState, byteLength: number): Uint8Array {

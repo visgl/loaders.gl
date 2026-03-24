@@ -22,7 +22,6 @@ See also: [`Radiance HDR`](/docs/modules/textures/formats/hdr)
 import {HDRLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 
-const textureLevels = await load(url, HDRLoader);
 const texture = await load(url, HDRLoader);
 const level = texture.data[0];
 
@@ -65,4 +64,3 @@ The returned level includes:
 - File format background: [`Radiance HDR`](/docs/modules/textures/formats/hdr)
 - `HDRLoader` decodes standard 2D Radiance RGBE files only.
 - The alpha channel is synthesized as `1.0` for every pixel.
-- `loadImageTexture`, `loadImageTextureArray`, and `loadImageTextureCube` remain based on `@loaders.gl/images` in this release.
