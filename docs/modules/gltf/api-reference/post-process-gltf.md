@@ -99,7 +99,7 @@ Remarks:
 ## Images
 
 - `image.image` - Populated from the supplied `gltf.images` array. This array is populated by the `GLTFLoader` via `options.loadImages: true`):
-- `image.uri` - If loaded image in the `images` array is not available, uses `gltf.baseUri` or `options.baseUri` is available, to resolve a relative URI and replaces this value.
+- `image.uri` - If the loaded image in the `images` array is not available, uses `gltf.baseUri` to resolve a relative URI and replaces this value.
 
 ### Materials
 

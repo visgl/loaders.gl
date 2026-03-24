@@ -17,6 +17,7 @@ import './lib/path-utils/path.spec';
 
 import './lib/request-utils/request-scheduler.spec';
 import './lib/javascript-utils/is-type.spec';
+import './lib/sources/data-source.spec';
 
 // import './lib/files/node-file-facade.spec';
 // import './lib/filesystems/node-filesystem-facade.spec';

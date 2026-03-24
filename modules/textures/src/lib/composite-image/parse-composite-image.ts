@@ -447,10 +447,6 @@ function getCompositeImageBaseUrl(
     return context.baseUrl;
   }
 
-  if (context?.url) {
-    return path.dirname(context.url);
-  }
-
   if (options.baseUrl) {
     return stripTrailingSlash(options.baseUrl);
   }

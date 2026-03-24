@@ -273,9 +273,8 @@ function addUrlOptions(options: LoaderOptions, url?: string): void {
   if (!url) {
     return;
   }
-  const hasTopLevelBaseUri = options.baseUri !== undefined;
   const hasCoreBaseUrl = options.core?.baseUrl !== undefined;
-  if (!hasTopLevelBaseUri && !hasCoreBaseUrl) {
+  if (!hasCoreBaseUrl) {
     options.core ||= {};
     options.core.baseUrl = path.dirname(stripQueryString(url));
   }
