@@ -379,7 +379,16 @@ function parseMetadataLine(metadata: RadianceHDRMetadata, line: string): void {
   if (line.startsWith('PRIMARIES=')) {
     const values = parseNumberList(line.slice('PRIMARIES='.length), 8);
     if (values) {
-      metadata.primaries = values as [number, number, number, number, number, number, number, number];
+      metadata.primaries = values as [
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number,
+        number
+      ];
     }
     return;
   }

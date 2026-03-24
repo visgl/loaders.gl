@@ -29,4 +29,8 @@ export const RadianceHDRLoader = {
   },
   parseSync: parseHDR,
   parse: async (arrayBuffer: ArrayBuffer) => parseHDR(arrayBuffer)
-} as const satisfies LoaderWithParser<Texture<RadianceHDRMetadata>, never, RadianceHDRLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  Texture<RadianceHDRMetadata>,
+  never,
+  RadianceHDRLoaderOptions
+>;
