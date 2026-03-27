@@ -180,7 +180,7 @@ function buildHierarchy(flatNodes: POTreeNode[], options: {spacing?: number} = {
     const index = parseInt(name.charAt(name.length - 1), 10);
     const parentName = name.substring(0, name.length - 1);
     const parentNode = nodes[parentName];
-    const level = name.length - 1;
+    const level = name.length;
     // assert(parentNode && level >= 0);
 
     node.level = level;

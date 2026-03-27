@@ -13,9 +13,9 @@
     "@loaders.gl/core": "4.4.0-alpha.1",
     "@loaders.gl/images": "4.4.0-alpha.1",
     "@loaders.gl/textures": "4.4.0-alpha.1",
-    "@luma.gl/core": "^9.0.7",
-    "@luma.gl/engine": "^9.0.7",
-    "@luma.gl/webgl": "^9.0.7",
+    "@luma.gl/core": "^9.2.6",
+    "@luma.gl/engine": "^9.2.6",
+    "@luma.gl/webgl": "^9.2.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "styled-components": "^4.2.0"

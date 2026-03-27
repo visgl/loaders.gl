@@ -25,6 +25,22 @@ const tileset = new Tileset3D(potree);
 const tilesToRender = tileset.traverse(frameData);
 ```
 
+Potree can also be used through the `DataSource` path with the lightweight point-cloud manager:
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {PointCloudTileset} from '@loaders.gl/tiles';
+import {PotreeSource} from '@loaders.gl/potree';
+
+const dataSource = createDataSource(POTREE_URL, [PotreeSource], {
+  core: {type: 'potree'},
+  potree: {}
+});
+
+const tileset = new PointCloudTileset(dataSource);
+await tileset.selectTiles(viewport);
+```
+
 ## API
 
 This modules provides the following exports:

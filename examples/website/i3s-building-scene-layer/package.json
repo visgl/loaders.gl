@@ -11,13 +11,13 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl-community/experimental": "^9.0.3",
+    "@deck.gl-community/experimental": "^9.2.8",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loaders.gl/core": "4.4.0-alpha.1",
     "@loaders.gl/i3s": "4.4.0-alpha.1",
-    "@luma.gl/core": "^9.0.1",
+    "@luma.gl/core": "^9.2.6",
     "deck.gl": "^9.0.1",
     "mapbox-gl": "npm:empty-npm-package@^1.0.0",
     "maplibre-gl": "^3.6.2",

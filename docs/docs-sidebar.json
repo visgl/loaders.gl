@@ -408,6 +408,7 @@
         "label": "@loaders.gl/tiles",
         "items": [
           "modules/tiles/README",
+          "modules/tiles/api-reference/point-cloud-tileset",
           "modules/tiles/api-reference/tileset-3d",
           "modules/tiles/api-reference/tile-3d"
         ]

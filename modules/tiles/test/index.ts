@@ -11,6 +11,7 @@ import './tileset/tileset-traverser.spec';
 import './tileset/helpers/get-frame-state.spec';
 import './tileset/helpers/zoom.spec';
 import './tileset/helpers/bounding-volume.spec';
+import './point-cloud/point-cloud-tileset.spec';
 
 // I3S Specific tests
 // TODO - deck.gl dependency

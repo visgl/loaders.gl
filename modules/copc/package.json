@@ -45,6 +45,7 @@
     "@loaders.gl/loader-utils": "4.4.0-alpha.18",
     "@loaders.gl/mvt": "4.4.0-alpha.18",
     "@loaders.gl/schema": "4.4.0-alpha.18",
+    "@math.gl/proj4": "^4.1.0",
     "copc": "0.0.6"
   },
   "gitHead": "c95a4ff72512668a93d9041ce8636bac09333fd5"

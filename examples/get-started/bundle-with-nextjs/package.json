@@ -6,9 +6,9 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@deck.gl/geo-layers": "^8.9.28",
-    "@deck.gl/layers": "^8.9.28",
-    "@deck.gl/react": "^8.9.28",
+    "@deck.gl/geo-layers": "^9.2.11",
+    "@deck.gl/layers": "^9.2.11",
+    "@deck.gl/react": "^9.2.11",
     "@loaders.gl/core": "4.4.0-alpha.1",
     "@loaders.gl/worker-utils": "4.4.0-alpha.1",
     "@next/font": "13.1.6",

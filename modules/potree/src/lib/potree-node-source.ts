@@ -69,6 +69,8 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   projection: Proj4Projection | null = null;
   /** The data set minimum bounding box */
   boundingBox?: PotreeBoundingBox;
+  /** Tile lookup by normalized tile id */
+  nodeById: Map<string, POTreeNode> = new Map();
 
   private initPromise: Promise<void> | null = null;
 
@@ -80,13 +82,13 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    */
   constructor(data: string, options: PotreeSourceOptions) {
     super(data, options);
-    this.makeBaseUrl(this.data);
+    this.makeBaseUrl(data);
 
-    this.initPromise = this.init();
+    this.initPromise = this.initialize();
   }
 
   /** Initial data source loading */
-  async init() {
+  async initialize() {
     if (this.initPromise) {
       await this.initPromise;
       return;
@@ -97,6 +99,13 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
 
     await this.loadHierarchy();
     this.isReady = true;
+  }
+
+  /**
+   * Backwards-compatible alias for existing callers.
+   */
+  async init() {
+    await this.initialize();
   }
 
   /** Is data set supported */
@@ -140,10 +149,13 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
 
     const isAvailable = await this.isNodeAvailable(nodeName);
     if (isAvailable) {
-      const result: PotreeNodeMesh = (await load(
+      const result = (await load(
         `${this.baseUrl}/${this.metadata?.octreeDir}/r/r${nodeName}.${this.getContentExtension()}`,
         LASLoader
-      )) as PotreeNodeMesh;
+      )) as PotreeNodeMesh & {
+        header?: {boundingBox?: PotreeBoundingBox; vertexCount?: number};
+        attributes: Record<string, any>;
+      };
 
       if (result) {
         result.cartographicOrigin = getCartographicOriginFromBoundingBox(
@@ -173,6 +185,73 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       }
     }
     return null;
+  }
+
+  /**
+   * Load normalized point cloud tile content.
+   */
+  async loadTileContent(tile: {id: string}): Promise<Mesh | null> {
+    const nodeName = this.getNodeName(tile.id);
+    return await this.loadNodeContent(nodeName);
+  }
+
+  /**
+   * Return the normalized root tile header.
+   */
+  async getRootTile(): Promise<{
+    id: string;
+    level: number;
+    pointCount: number;
+    geometricError: number;
+    boundingVolume: {
+      cartographicBounds: [number[], number[]];
+      center: number[];
+      radius: number;
+    };
+  }> {
+    await this.initPromise;
+
+    if (!this.root) {
+      throw new Error('Potree root hierarchy is not initialized');
+    }
+
+    return this.getTileHeader(this.root);
+  }
+
+  /**
+   * Return normalized child tile headers.
+   */
+  async getChildren(tile: {id: string}) {
+    await this.initPromise;
+
+    const node = this.nodeById.get(tile.id);
+    if (!node) {
+      return [];
+    }
+
+    return node.children.map((child) => this.getTileHeader(child));
+  }
+
+  /**
+   * Return normalized view metadata for the tileset.
+   */
+  getViewState(): {
+    boundingVolume?: {
+      cartographicBounds: [number[], number[]];
+      center: number[];
+      radius: number;
+    };
+    cartographicCenter?: number[];
+  } {
+    if (!this.boundingBox) {
+      return {};
+    }
+
+    const boundingVolume = this.getBoundingVolumeForNodeId('r');
+    return {
+      boundingVolume,
+      cartographicCenter: boundingVolume.center
+    };
   }
 
   /**
@@ -213,6 +292,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
       PotreeHierarchyChunkLoader
     );
+    this.indexNodes();
   }
 
   /**
@@ -222,7 +302,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   private makeBaseUrl(data: string | Blob): void {
     this.baseUrl = typeof data === 'string' ? resolvePath(data) : '';
     if (this.baseUrl.endsWith('cloud.js')) {
-      this.baseUrl = this.baseUrl.substring(0, -8);
+      this.baseUrl = this.baseUrl.slice(0, -8);
     }
     if (this.baseUrl.endsWith('/')) {
       this.baseUrl = this.baseUrl.substring(0, -1);
@@ -253,5 +333,114 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
     } else {
       this.boundingBox = this.metadata?.tightBoundingBox;
     }
+  }
+
+  private getTileHeader(node: POTreeNode): {
+    id: string;
+    level: number;
+    pointCount: number;
+    geometricError: number;
+    boundingVolume: {
+      cartographicBounds: [number[], number[]];
+      center: number[];
+      radius: number;
+    };
+  } {
+    return {
+      id: this.getTileId(node),
+      level: node.level,
+      pointCount: node.pointCount,
+      geometricError: (this.metadata?.spacing || 0) / Math.pow(2, node.level),
+      boundingVolume: this.getBoundingVolumeForNodeId(this.getTileId(node))
+    };
+  }
+
+  private getTileId(node: POTreeNode): string {
+    return node.name ? `r${node.name}` : 'r';
+  }
+
+  private getNodeName(tileId: string): string {
+    return tileId === 'r' ? '' : tileId.slice(1);
+  }
+
+  private indexNodes(): void {
+    this.nodeById.clear();
+    if (!this.root) {
+      return;
+    }
+
+    const stack: POTreeNode[] = [this.root];
+    while (stack.length) {
+      const node = stack.pop();
+      if (node) {
+        this.nodeById.set(this.getTileId(node), node);
+        for (const child of node.children) {
+          stack.push(child);
+        }
+      }
+    }
+  }
+
+  private getBoundingVolumeForNodeId(tileId: string): {
+    cartographicBounds: [number[], number[]];
+    center: number[];
+    radius: number;
+  } {
+    const bounds = this.getNodeBounds(tileId);
+    const center = [
+      (bounds.lx + bounds.ux) / 2,
+      (bounds.ly + bounds.uy) / 2,
+      (bounds.lz + bounds.uz) / 2
+    ];
+    const radius = Math.sqrt(
+      Math.pow(bounds.ux - center[0], 2) +
+        Math.pow(bounds.uy - center[1], 2) +
+        Math.pow(bounds.uz - center[2], 2)
+    );
+
+    return {
+      cartographicBounds: [
+        [bounds.lx, bounds.ly, bounds.lz],
+        [bounds.ux, bounds.uy, bounds.uz]
+      ] as [number[], number[]],
+      center,
+      radius
+    };
+  }
+
+  private getNodeBounds(tileId: string): PotreeBoundingBox {
+    if (!this.boundingBox) {
+      throw new Error('Potree bounding box is not initialized');
+    }
+
+    const nodeName = this.getNodeName(tileId);
+    const bounds = {...this.boundingBox};
+
+    for (const char of nodeName) {
+      const index = Number(char);
+      const middleX = (bounds.lx + bounds.ux) / 2;
+      const middleY = (bounds.ly + bounds.uy) / 2;
+      const middleZ = (bounds.lz + bounds.uz) / 2;
+
+      if (index & 0b0100) {
+        bounds.lx = middleX;
+      } else {
+        bounds.ux = middleX;
+      }
+
+      if (index & 0b0010) {
+        bounds.ly = middleY;
+      } else {
+        bounds.uy = middleY;
+      }
+
+      if (index & 0b0001) {
+        bounds.lz = middleZ;
+      } else {
+        bounds.uz = middleZ;
+      }
+    }
+
+    return bounds;
   }
 }

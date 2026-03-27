@@ -5,6 +5,17 @@
 export type {Tileset3DProps} from './tileset/tileset-3d';
 export {Tileset3D} from './tileset/tileset-3d';
 export {Tile3D} from './tileset/tile-3d';
+export type {
+  PointCloudAttribute,
+  PointCloudBoundingVolume,
+  PointCloudTileContent,
+  PointCloudTileHeader,
+  PointCloudTilesetSource,
+  PointCloudTilesetViewState
+} from './point-cloud/types';
+export type {PointCloudTilesetOptions} from './point-cloud/point-cloud-tileset';
+export {PointCloudTile} from './point-cloud/point-cloud-tile';
+export {PointCloudTileset} from './point-cloud/point-cloud-tileset';
 
 export {TilesetTraverser} from './tileset/tileset-traverser';
 export {TilesetCache} from './tileset/tileset-cache';

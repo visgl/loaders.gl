@@ -71,11 +71,21 @@
   "pre-push": "pre-push",
   "resolutions_notes": [
     "Ensure we use recent typescript",
-    "apache-arrow version should be aligned with parquet-wasm version"
+    "apache-arrow version should be aligned with parquet-wasm version",
+    "Keep deck.gl and luma.gl packages on a single published version across examples and website"
   ],
   "resolutions": {
     "apache-arrow": "^21.0.0",
     "typescript": "^5.6.0",
+    "@deck.gl-community/experimental": "^9.2.8",
+    "@deck.gl/arcgis": "^9.2.11",
+    "@deck.gl/core": "^9.2.11",
+    "@deck.gl/extensions": "^9.2.11",
+    "@deck.gl/geo-layers": "^9.2.11",
+    "@deck.gl/layers": "^9.2.11",
+    "@deck.gl/mesh-layers": "^9.2.11",
+    "@deck.gl/react": "^9.2.11",
+    "@deck.gl/widgets": "^9.2.11",
     "@loaders.gl/core": "^4.4.0-alpha.1",
     "@loaders.gl/draco": "^4.4.0-alpha.1",
     "@loaders.gl/geopackage": "^4.4.0-alpha.1",
@@ -87,6 +97,12 @@
     "@loaders.gl/schema": "^4.4.0-alpha.1",
     "@loaders.gl/schema-utils": "^4.4.0-alpha.1",
     "@loaders.gl/textures": "^4.4.0-alpha.1",
-    "@loaders.gl/wms": "^4.4.0-alpha.1"
+    "@loaders.gl/wms": "^4.4.0-alpha.1",
+    "@luma.gl/constants": "^9.2.6",
+    "@luma.gl/core": "^9.2.6",
+    "@luma.gl/engine": "^9.2.6",
+    "@luma.gl/gltf": "^9.2.6",
+    "@luma.gl/shadertools": "^9.2.6",
+    "@luma.gl/webgl": "^9.2.6"
   }
 }
