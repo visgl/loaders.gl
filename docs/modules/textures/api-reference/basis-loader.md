@@ -11,7 +11,7 @@ A loader for Basis Universal "supercompressed" GPU textures. Extracts supercompr
 | File Format    | [Basis Universal](https://github.com/BinomialLLC/basis_universal) |
 | File Extension | `.basis`, `.ktx2`                                                 |
 | File Type      | Binary                                                            |
-| Data Format    | Array of compressed image data objects                            |
+| Data Format    | `TextureLevel[][]`                                                |
 | Supported APIs | `load`, `parse`                                                   |
 
 ## Usage
@@ -21,18 +21,31 @@ import {BasisLoader} from '@loaders.gl/textures';
 import {load} from '@loaders.gl/core';
 
 const miplevels = await load(url, BasisLoader, options);
-for (const compressedImage of miplevels) {
-  ...
+for (const imageLevels of miplevels) {
+  for (const level of imageLevels) {
+    console.log(level.format, level.textureFormat);
+  }
 }
 ```
 
 ## Options
 
-| Option                  | Type   | Default        | Description                                                                                                                                                                                           |
-| ----------------------- | ------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `basis.format`          | String | `'auto'`       | Set to one of the supported compressed texture formats.                                                                                                                                               |
-| `basis.containerFormat` | String | `'auto'`       | BasisLoader can decode KTX2 container. `ktx2` - decode data as KTX2 container with basis texture in it, `basis` - decode data as unwrapped basis texture, `auto` - detect KTX2 format by magic string |
-| `basis.module`          | String | `'transcoder'` | Possible values: `transcoder` or `encoder`. Selects wasm module to decode the texture. `transcoder` is smaller but supports only `BasisFile`. `encoder` supports `BasisFile` and `KTX2File`.          |
+| Option                          | Type                                                                                                                                                                                                                                                                        | Default        | Description                                                                                                                   |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `basis.format`                  | `'auto' \| 'etc1' \| 'etc2' \| 'bc1' \| 'bc3' \| 'bc4' \| 'bc5' \| 'bc7-m6-opaque-only' \| 'bc7-m5' \| 'pvrtc1-4-rgb' \| 'pvrtc1-4-rgba' \| 'astc-4x4' \| 'atc-rgb' \| 'atc-rgba-interpolated-alpha' \| 'rgba32' \| 'rgb565' \| 'bgr565' \| 'rgba4444' \| {alpha, noAlpha}` | `'auto'`       | Select the transcode target format, or provide separate alpha and non-alpha targets using the same set of format names.       |
+| `basis.supportedTextureFormats` | `TextureFormat[]`                                                                                                                                                                                                                                                           | auto-detect    | A list of compressed texture formats that the basis transcoder can select from when transcoding.                              |
+| `basis.containerFormat`         | `'auto' \| 'ktx2' \| 'basis'`                                                                                                                                                                                                                                               | `'auto'`       | Select whether the input should be interpreted as a KTX2 container, a raw Basis file, or auto-detected from the data.         |
+| `basis.module`                  | `'transcoder' \| 'encoder'`                                                                                                                                                                                                                                                 | `'transcoder'` | Select the wasm module used for decoding. `transcoder` supports `.basis`, while `encoder` supports both `.basis` and `.ktx2`. |
+
+## Output
+
+Each decoded mip level is returned as a `TextureLevel` with:
+
+- `shape`: `'texture-level'` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- `format`: the WebGL internal format enum <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- `textureFormat`: the WebGPU texture format string corresponding to the format of the data in this texture level <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+
+When `basis.format` is `'auto'`, pass `basis.supportedTextureFormats` to select from a known set of target formats. If omitted, `BasisLoader` falls back to internal runtime capability detection.
 
 ## Wasm modules
 
@@ -73,3 +86,14 @@ The `BasisLoader` can transpile into the following compressed (and uncompressed)
 | `rgb565`                      |             |
 | `bgr565`                      |             |
 | `rgba4444`                    |             |
+
+## Module Overrides
+
+Use `options.modules` to override the Basis runtime used by `BasisLoader`.
+
+- `modules.basis`: supply a preloaded Basis transcoder module that resolves to `{BasisFile}`.
+- `modules.basisEncoder`: supply a preloaded Basis encoder module that resolves to `{BasisFile, KTX2File, BasisEncoder}`.
+- `'basis_transcoder.js'`: override the URL used for the Basis transcoder JavaScript wrapper.
+- `'basis_transcoder.wasm'`: override the URL used for the Basis transcoder WebAssembly binary.
+- `'basis_encoder.js'`: override the URL used for the Basis encoder JavaScript wrapper.
+- `'basis_encoder.wasm'`: override the URL used for the Basis encoder WebAssembly binary.

@@ -3,3 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 import './mlt-loader.spec';
+import './mlt-source.spec';

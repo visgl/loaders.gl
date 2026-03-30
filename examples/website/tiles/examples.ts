@@ -55,6 +55,13 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       tileSize: [512,512]
     }
   },
+  MLT: {
+    'Plain MLT Tiles': {
+      sourceType: 'mlt',
+      data: 'https://demotiles.maplibre.org/tiles-mlt/plain',
+      viewState: {...VIEW_STATE, longitude: 15, latitude: 25, zoom: 1.8}
+    }
+  },
   GeoJSON: {
     // Vancouver: {
     //   sourceType: 'geojson',

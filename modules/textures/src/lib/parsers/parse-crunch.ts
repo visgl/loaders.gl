@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {loadCrunchModule} from './crunch-module-loader';
-import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {assert} from '@loaders.gl/loader-utils';
+import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import {getDxt1LevelSize, getDxtXLevelSize} from './parse-dds';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
@@ -22,17 +22,20 @@ const CRN_FORMAT = {
 };
 
 /** Mapping of Crunch formats to DXT formats. */
-const DXT_FORMAT_MAP = {
+const DXT_FORMAT_MAP: Record<
+  number,
+  {textureFormat: TextureFormat; sizeFunction: (width: number, height: number) => number}
+> = {
   [CRN_FORMAT.cCRNFmtDXT1]: {
-    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
+    textureFormat: 'bc1-rgb-unorm-ext',
     sizeFunction: getDxt1LevelSize
   },
   [CRN_FORMAT.cCRNFmtDXT3]: {
-    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT3_EXT,
+    textureFormat: 'bc2-rgba-unorm',
     sizeFunction: getDxtXLevelSize
   },
   [CRN_FORMAT.cCRNFmtDXT5]: {
-    pixelFormat: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    textureFormat: 'bc3-rgba-unorm',
     sizeFunction: getDxtXLevelSize
   }
 };
@@ -47,7 +50,7 @@ let dst: number;
  * @returns Promise of Array of the texture levels
  */
 export async function parseCrunch(data, options: any): Promise<TextureLevel[]> {
-  const crunchModule = await loadCrunchModule(options);
+  const crunchModule = await loadCrunchModule(extractLoadLibraryOptions(options));
 
   // Copy the contents of the arrayBuffer into emscriptens heap.
   const srcSize = data.byteLength;
@@ -95,7 +98,7 @@ export async function parseCrunch(data, options: any): Promise<TextureLevel[]> {
     width,
     height,
     sizeFunction,
-    internalFormat: DXT_FORMAT_MAP[format].pixelFormat
+    textureFormat: DXT_FORMAT_MAP[format].textureFormat
   });
 }
 

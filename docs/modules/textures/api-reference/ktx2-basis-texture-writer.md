@@ -49,3 +49,11 @@ The writer applies BinomialLCC basis universal encoder. The libraries are loaded
 
 - https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm
 - https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js
+
+## Module Overrides
+
+Use `options.modules` to override the Basis encoder runtime used by `KTX2BasisUniversalTextureWriter`.
+
+- `modules.basisEncoder`: supply a preloaded Basis encoder module that resolves to `{BasisFile, KTX2File, BasisEncoder}`.
+- `'basis_encoder.js'`: override the URL used for the Basis encoder JavaScript wrapper.
+- `'basis_encoder.wasm'`: override the URL used for the Basis encoder WebAssembly binary.

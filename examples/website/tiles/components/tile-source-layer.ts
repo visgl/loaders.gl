@@ -247,6 +247,7 @@ function renderSubLayers(
 
   switch (tileSource.mimeType) {
     case 'application/vnd.mapbox-vector-tile':
+    case 'application/vnd.maplibre-tile':
       layers.push(
         new GeoJsonLayer({
           id: `${props.id}-geojson`,

@@ -35,7 +35,7 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=cjs --outfile=src/libs/mlt-decoder.cjs"
+    "pre-build": "esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=cjs --outfile=src/libs/mlt-decoder.cjs && node -e \"const fs=require('fs'); const file='src/libs/mlt-decoder.cjs'; const header='// SPDX-License-Identifier: MIT\\n// Generated from @maplibre/mlt (MIT) for loaders.gl browser bundling.\\n// Source: https://github.com/maplibre/mlt\\n\\n'; const body=fs.readFileSync(file,'utf8'); if (!body.startsWith('// SPDX-License-Identifier: MIT')) { fs.writeFileSync(file, header + body); }\""
   },
   "dependencies": {
     "@loaders.gl/gis": "4.4.0-alpha.15",

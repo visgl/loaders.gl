@@ -14,8 +14,6 @@ export type WriterOptions = {
 
     // module loading
 
-    /** Any additional JS libraries */
-    modules?: Record<string, any>;
     /** Force to load WASM libraries from local file system in NodeJS or from loaders.gl CDN in a web browser */
     useLocalLibraries?: boolean;
     /** Whether to use workers under Node.js (experimental) */
@@ -24,6 +22,9 @@ export type WriterOptions = {
     worker?: boolean;
     log?: any;
   };
+
+  /** Any additional JS libraries */
+  modules?: Record<string, any>;
 
   /** writer-specific options */
   [writerId: string]: Record<string, unknown> | undefined;

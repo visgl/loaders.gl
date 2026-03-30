@@ -4,23 +4,52 @@
 
 import type {Feature, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
 import {geojsonToBinary} from '@loaders.gl/gis';
-import {decodeTile} from '@maplibre/mlt';
 import type {Feature as MLTFeature} from '@maplibre/mlt';
+import * as maplibreMLT from '@maplibre/mlt';
 
 import type {MLTLoaderOptions} from '../mlt-loader';
 import {MLT_DEFAULT_OPTIONS} from '../mlt-loader';
 
-type MLTOptions = Required<MLTLoaderOptions>['mlt'];
+type DecodeTile = (tile: Uint8Array) => any;
 
-/** Geometry type constants matching @maplibre/mlt GEOMETRY_TYPE enum */
-const GEOMETRY_TYPE = {
-  POINT: 0,
-  LINESTRING: 1,
-  POLYGON: 2,
-  MULTIPOINT: 3,
-  MULTILINESTRING: 4,
-  MULTIPOLYGON: 5
-} as const;
+const decodeTile = (() => {
+  const mltModule = maplibreMLT as unknown as {
+    decodeTile?: DecodeTile;
+    default?: {decodeTile?: DecodeTile};
+  };
+  const decodedTile = mltModule.decodeTile ?? mltModule.default?.decodeTile;
+  if (!decodedTile) {
+    throw new Error('MLT Loader: decodeTile export missing from @maplibre/mlt');
+  }
+  return decodedTile;
+})();
+
+type MLTOptions = Required<MLTLoaderOptions>['mlt'];
+const GEOMETRY_TYPE = ((): Record<string, number> => {
+  const mltModule = maplibreMLT as unknown as {
+    GEOMETRY_TYPE?: {[name: string]: number};
+    default?: {GEOMETRY_TYPE?: {[name: string]: number}};
+  };
+  return (
+    mltModule.GEOMETRY_TYPE ||
+    mltModule.default?.GEOMETRY_TYPE || {
+      POINT: 0,
+      LINESTRING: 1,
+      POLYGON: 2,
+      MULTIPOINT: 3,
+      MULTILINESTRING: 4,
+      MULTIPOLYGON: 5
+    }
+  );
+})();
+
+type MLTFeatureTable = {
+  name?: string;
+  extent?: number;
+  getFeatures?: () => MLTFeature[];
+  features?: MLTFeature[];
+  [Symbol.iterator]?: () => IterableIterator<MLTFeature>;
+};
 
 /**
  * Parse an MLT ArrayBuffer and return GeoJSON or binary data.
@@ -35,7 +64,7 @@ export function parseMLT(
 ): Feature[] | GeoJSONTable | BinaryFeatureCollection {
   const mltOptions = checkOptions(options);
 
-  const shape = options?.mlt?.shape;
+  const shape = mltOptions.shape;
   switch (shape) {
     case 'geojson-table': {
       const table: GeoJSONTable = {
@@ -67,30 +96,82 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MLTOptions): 
   }
 
   const tile = new Uint8Array(arrayBuffer);
-  const featureTables = decodeTile(tile);
+  const featureTables = getFeatureTables(decodeTile(tile));
 
   const features: Feature[] = [];
 
   const selectedLayers =
     options.layers && options.layers.length > 0
       ? options.layers
-      : featureTables.map((ft) => ft.name);
+      : (featureTables.map((ft) => ft.name).filter(Boolean) as string[]);
 
   for (const featureTable of featureTables) {
-    if (selectedLayers.includes(featureTable.name)) {
-      const layerName = featureTable.name;
-      const extent = featureTable.extent;
+    const layerName = featureTable.name;
+    if (!layerName || !selectedLayers.includes(layerName)) {
+      continue;
+    }
 
-      for (const mltFeature of featureTable) {
-        const geoJSONFeature = convertFeatureToGeoJSON(mltFeature, options, layerName, extent);
-        if (geoJSONFeature) {
-          features.push(geoJSONFeature);
-        }
+    const extent = featureTable.extent ?? 4096;
+    for (const mltFeature of getTableFeatures(featureTable)) {
+      const geoJSONFeature = convertFeatureToGeoJSON(mltFeature, options, layerName, extent);
+      if (geoJSONFeature) {
+        features.push(geoJSONFeature);
       }
     }
   }
 
   return features;
+}
+
+function getFeatureTables(decodedTile: unknown): MLTFeatureTable[] {
+  if (Array.isArray(decodedTile)) {
+    return decodedTile.filter((candidate): candidate is MLTFeatureTable =>
+      isFeatureTable(candidate)
+    );
+  }
+
+  if (!decodedTile || typeof decodedTile !== 'object') {
+    return [];
+  }
+
+  return Object.values(decodedTile).filter((candidate): candidate is MLTFeatureTable =>
+    isFeatureTable(candidate)
+  );
+}
+
+function isFeatureTable(candidate: unknown): candidate is MLTFeatureTable {
+  if (!candidate || typeof candidate !== 'object') {
+    return false;
+  }
+  return (
+    typeof (candidate as MLTFeatureTable).name === 'string' &&
+    (typeof (candidate as MLTFeatureTable).getFeatures === 'function' ||
+      Array.isArray((candidate as MLTFeatureTable).features) ||
+      typeof (candidate as MLTFeatureTable)[Symbol.iterator] === 'function')
+  );
+}
+
+function getTableFeatures(featureTable: MLTFeatureTable): MLTFeature[] {
+  if (typeof featureTable.getFeatures === 'function') {
+    const features = featureTable.getFeatures();
+    if (Array.isArray(features)) {
+      return features;
+    }
+  }
+
+  if (Array.isArray(featureTable.features)) {
+    return featureTable.features;
+  }
+
+  if (typeof featureTable[Symbol.iterator] === 'function') {
+    const iterableFeatures = featureTable[Symbol.iterator]?.();
+    if (!iterableFeatures) {
+      return [];
+    }
+    return Array.isArray(iterableFeatures) ? iterableFeatures : Array.from(iterableFeatures);
+  }
+
+  return [];
 }
 
 /**
@@ -149,7 +230,11 @@ function convertGeometryToGeoJSON(
   switch (type as number) {
     case GEOMETRY_TYPE.POINT: {
       // coordinates: [[Point]]
-      const point = coordinates[0][0];
+      const ring = coordinates?.[0];
+      const point = ring?.[0];
+      if (!point || typeof point.x !== 'number' || typeof point.y !== 'number') {
+        return null;
+      }
       return {
         type: 'Point',
         coordinates: projectPoint(point.x, point.y, options, extent)
@@ -225,7 +310,7 @@ function projectPoint(x: number, y: number, options: MLTOptions, extent: number)
  * Validate loader options
  */
 function checkOptions(options?: MLTLoaderOptions): MLTOptions {
-  const mltOptions = options?.mlt ?? MLT_DEFAULT_OPTIONS;
+  const mltOptions = {...MLT_DEFAULT_OPTIONS, ...(options?.mlt ?? {})} as MLTOptions;
 
   if (mltOptions.coordinates === 'wgs84' && !mltOptions.tileIndex) {
     throw new Error('MLT Loader: WGS84 coordinates require a tileIndex option');

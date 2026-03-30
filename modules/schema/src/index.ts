@@ -49,7 +49,19 @@ export type {
 } from './categories/category-mesh';
 
 // TEXTURES
-export type {TextureLevel, GPUTextureFormat} from './categories/category-texture';
+export type {
+  TextureMetadata,
+  Texture,
+  Texture1D,
+  Texture2D,
+  Texture3D,
+  TextureCube,
+  Texture2DArray,
+  TextureCubeArray,
+  TextureLevel,
+  GPUTextureFormat,
+  TextureFormat
+} from './categories/category-texture';
 
 // IMAGES
 export type {ImageDataType, ImageType, ImageTypeEnum} from './categories/category-image';

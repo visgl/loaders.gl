@@ -2,11 +2,21 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+/* eslint-disable camelcase */
 import test from 'tape-promise/tape';
 
 import {BasisLoader} from '@loaders.gl/textures';
 import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
-import {GL_EXTENSIONS_CONSTANTS} from '../src/lib/gl-extensions';
+import {
+  GL_COMPRESSED_RGB_ETC1_WEBGL,
+  GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+  GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+  GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
+  GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+  GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+  GL_RGB565
+} from '../src/lib/gl-extensions';
+import {withBasisTranscodingLock} from '../src/lib/parsers/parse-basis';
 
 const BASIS_TEST_URL = '@loaders.gl/textures/test/data/alpha3.basis';
 const KTX2_BASIS_TEST_URL = '@loaders.gl/textures/test/data/kodim23.ktx2';
@@ -30,6 +40,7 @@ test('BasisLoader#load(URL, worker: false)', async (t) => {
 
   t.ok(image, 'image loaded successfully from URL');
 
+  t.equals(image.shape, 'texture-level', 'image shape is correct');
   t.equals(image.width, 768, 'image width is correct');
   t.equals(image.height, 512, 'image height is correct');
   if (isBrowser) {
@@ -38,6 +49,7 @@ test('BasisLoader#load(URL, worker: false)', async (t) => {
   } else {
     t.equals(image.compressed, false, 'image is compressed');
     t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
+    t.equals(image.textureFormat, 'rgb565unorm-ext', 'image `textureFormat` is correct');
   }
 
   t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
@@ -55,6 +67,7 @@ test('BasisLoader#load(URL, worker: true)', async (t) => {
   t.equals(image.width, 768, 'image width is correct');
   t.equals(image.height, 512, 'image height is correct');
   t.equals(image.compressed, false, 'image height is correct');
+  t.equals(image.textureFormat, 'rgb565unorm-ext', 'image `textureFormat` is correct');
 
   t.ok(ArrayBuffer.isView(image.data), 'image data is `ArrayBuffer`');
   t.equals(image.data.byteLength, 786432, 'image `data.byteLength` is correct');
@@ -75,18 +88,22 @@ test('BasisLoader#auto-select a target format', async (t) => {
     t.ok(
       typeof image.format === 'number' &&
         [
-          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_4X4_KHR,
-          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
-          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
-          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-          GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_ETC1_WEBGL
+          GL_COMPRESSED_RGBA_ASTC_4x4_KHR,
+          GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
+          GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+          GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
+          GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
+          GL_COMPRESSED_RGB_ETC1_WEBGL
         ].includes(image.format),
       'Browser supports one of GPU textures formats'
     );
     t.ok(image.compressed, 'Basis transcodes to compressed texture');
   } else {
-    t.notOk(image.format, 'Basis transcodes to RGB565 in NodeJS');
+    t.equals(
+      image.format,
+      GL_RGB565,
+      'Basis transcodes to RGB565 in NodeJS'
+    );
     t.notOk(image.compressed, "Basis can't transcode to compressed texture in NodeJS");
   }
 
@@ -109,11 +126,32 @@ test('BasisLoader#transcode to explicit format', async (t) => {
 
   t.equals(
     image.format,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
     'The texture was transcoded to DXT fromat'
   );
+  t.equals(image.textureFormat, 'bc3-rgba-unorm', 'The texture exposes the WebGPU format');
   t.ok(image.compressed, 'Basis transcodes to compressed texture');
 
+  t.end();
+});
+
+test('BasisLoader#auto-selects format from supportedTextureFormats', async (t) => {
+  const images = await load(BASIS_TEST_URL, BasisLoader, {
+    core: {worker: false},
+    basis: {
+      format: 'auto',
+      supportedTextureFormats: ['bc3-rgba-unorm']
+    }
+  });
+
+  const image = images[0][0];
+
+  t.equals(
+    image.format,
+    GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+    'BasisLoader selects the matching WebGL format'
+  );
+  t.equals(image.textureFormat, 'bc3-rgba-unorm', 'BasisLoader sets the selected texture format');
   t.end();
 });
 
@@ -142,6 +180,97 @@ test('BasisLoader#auto-select a decoder format', async (t) => {
 
   t.end();
 });
+
+test('BasisLoader#uses injected transcoder modules', async (t) => {
+  class FakeBasisFile {
+    constructor(data: Uint8Array) {
+      t.equals(data.byteLength, 4, 'forwards the provided payload to the injected BasisFile')
+    }
+
+    startTranscoding() {
+      return true
+    }
+
+    getNumImages() {
+      return 1
+    }
+
+    getNumLevels() {
+      return 1
+    }
+
+    getImageWidth() {
+      return 2
+    }
+
+    getImageHeight() {
+      return 2
+    }
+
+    getHasAlpha() {
+      return false
+    }
+
+    getImageTranscodedSizeInBytes() {
+      return 8
+    }
+
+    transcodeImage(decodedData: Uint8Array) {
+      decodedData.set([1, 2, 3, 4, 5, 6, 7, 8])
+      return true
+    }
+
+    close() {}
+
+    delete() {}
+  }
+
+  const images = await load(new Uint8Array([1, 2, 3, 4]).buffer, BasisLoader, {
+    core: {worker: false},
+    basis: {
+      format: 'rgb565',
+      containerFormat: 'basis'
+    },
+    modules: {
+      basis: {BasisFile: FakeBasisFile}
+    }
+  })
+
+  const image = images[0][0]
+
+  t.equals(image.width, 2, 'uses the injected BasisFile implementation')
+  t.equals(image.height, 2, 'returns the injected texture height')
+  t.equals(image.data.byteLength, 8, 'returns the injected transcoded payload size')
+  t.end()
+})
+
+test('BasisLoader#serializes Basis transcoding work', async (t) => {
+  const events: string[] = [];
+  let activeTranscodes = 0;
+
+  const runTranscode = async (label: string, delayMs: number) =>
+    await withBasisTranscodingLock(async () => {
+      events.push(`${label}:start`);
+      activeTranscodes++;
+      t.equals(activeTranscodes, 1, `${label} runs with exclusive access`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      activeTranscodes--;
+      events.push(`${label}:end`);
+      return label;
+    });
+
+  const [first, second] = await Promise.all([runTranscode('first', 20), runTranscode('second', 0)]);
+
+  t.equals(first, 'first', 'first transcode resolves');
+  t.equals(second, 'second', 'second transcode resolves');
+  t.deepEqual(
+    events,
+    ['first:start', 'first:end', 'second:start', 'second:end'],
+    'concurrent requests are serialized'
+  );
+  t.end();
+})
+
 
 // test('BasisLoader#formats', async t => {
 //   for (const testCase of TEST_CASES) {

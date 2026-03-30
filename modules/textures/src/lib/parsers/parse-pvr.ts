@@ -6,8 +6,7 @@
 // Forked from PicoGL: https://github.com/tsherif/picogl.js/blob/master/examples/utils/utils.js
 // Copyright (c) 2017 Tarek Sherif, The MIT License (MIT)
 
-import type {TextureLevel} from '@loaders.gl/schema';
-import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
 const PVR_CONSTANTS: Record<string, number> = {
@@ -24,76 +23,34 @@ const PVR_CONSTANTS: Record<string, number> = {
   METADATA_SIZE_INDEX: 12
 };
 
-const PVR_PIXEL_FORMATS: Record<number, number[]> = {
-  0: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_PVRTC_2BPPV1_IMG],
-  1: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_PVRTC_2BPPV1_IMG],
-  2: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_PVRTC_4BPPV1_IMG],
-  3: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG],
-  6: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_ETC1_WEBGL],
-  7: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT],
-  9: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT3_EXT],
-  11: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT],
-  22: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB8_ETC2],
-  23: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA8_ETC2_EAC],
-  24: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2],
-  25: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_R11_EAC],
-  26: [GL_EXTENSIONS_CONSTANTS.COMPRESSED_RG11_EAC],
-  27: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_4X4_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_4X4_KHR
-  ],
-  28: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_5X4_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_5X4_KHR
-  ],
-  29: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_5X5_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_5X5_KHR
-  ],
-  30: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_6X5_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_6X5_KHR
-  ],
-  31: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_6X6_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_6X6_KHR
-  ],
-  32: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_8X5_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_8X5_KHR
-  ],
-  33: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_8X6_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_8X6_KHR
-  ],
-  34: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_8X8_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_8X8_KHR
-  ],
-  35: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_10X5_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_10X5_KHR
-  ],
-  36: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_10X6_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_10X6_KHR
-  ],
-  37: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_10X8_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_10X8_KHR
-  ],
-  38: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_10X10_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_10X10_KHR
-  ],
-  39: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_12X10_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_12X10_KHR
-  ],
-  40: [
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ASTC_12X12_KHR,
-    GL_EXTENSIONS_CONSTANTS.COMPRESSED_SRGB8_ALPHA8_ASTC_12X12_KHR
-  ]
+const PVR_TEXTURE_FORMATS: Record<number, TextureFormat[]> = {
+  0: ['pvrtc-rgb2unorm-ext'],
+  1: ['pvrtc-rgba2unorm-ext'],
+  2: ['pvrtc-rgb4unorm-ext'],
+  3: ['pvrtc-rgba4unorm-ext'],
+  6: ['etc1-rbg-unorm-ext'],
+  7: ['bc1-rgb-unorm-ext'],
+  9: ['bc2-rgba-unorm'],
+  11: ['bc3-rgba-unorm'],
+  22: ['etc2-rgb8unorm'],
+  23: ['etc2-rgba8unorm'],
+  24: ['etc2-rgb8a1unorm'],
+  25: ['eac-r11unorm'],
+  26: ['eac-rg11unorm'],
+  27: ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'],
+  28: ['astc-5x4-unorm', 'astc-5x4-unorm-srgb'],
+  29: ['astc-5x5-unorm', 'astc-5x5-unorm-srgb'],
+  30: ['astc-6x5-unorm', 'astc-6x5-unorm-srgb'],
+  31: ['astc-6x6-unorm', 'astc-6x6-unorm-srgb'],
+  32: ['astc-8x5-unorm', 'astc-8x5-unorm-srgb'],
+  33: ['astc-8x6-unorm', 'astc-8x6-unorm-srgb'],
+  34: ['astc-8x8-unorm', 'astc-8x8-unorm-srgb'],
+  35: ['astc-10x5-unorm', 'astc-10x5-unorm-srgb'],
+  36: ['astc-10x6-unorm', 'astc-10x6-unorm-srgb'],
+  37: ['astc-10x8-unorm', 'astc-10x8-unorm-srgb'],
+  38: ['astc-10x10-unorm', 'astc-10x10-unorm-srgb'],
+  39: ['astc-12x10-unorm', 'astc-12x10-unorm-srgb'],
+  40: ['astc-12x12-unorm', 'astc-12x12-unorm-srgb']
 };
 
 const PVR_SIZE_FUNCTIONS: Record<number, (width: number, height: number) => number> = {
@@ -149,8 +106,9 @@ export function parsePVR(data: ArrayBuffer): TextureLevel[] {
 
   const pvrFormat = header[PVR_CONSTANTS.PIXEL_FORMAT_INDEX];
   const colourSpace = header[PVR_CONSTANTS.COLOUR_SPACE_INDEX];
-  const pixelFormats = PVR_PIXEL_FORMATS[pvrFormat] || [];
-  const internalFormat = pixelFormats.length > 1 && colourSpace ? pixelFormats[1] : pixelFormats[0];
+  const textureFormats = PVR_TEXTURE_FORMATS[pvrFormat] || [];
+  const textureFormat =
+    textureFormats.length > 1 && colourSpace ? textureFormats[1] : textureFormats[0];
 
   const sizeFunction = PVR_SIZE_FUNCTIONS[pvrFormat];
 
@@ -168,7 +126,7 @@ export function parsePVR(data: ArrayBuffer): TextureLevel[] {
     width,
     height,
     sizeFunction,
-    internalFormat
+    textureFormat
   });
 }
 

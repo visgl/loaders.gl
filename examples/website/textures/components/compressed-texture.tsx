@@ -10,14 +10,32 @@ import {
   BasisLoader,
   CompressedTextureLoader,
   CrunchWorkerLoader,
-  GL_EXTENSIONS_CONSTANTS,
-  getSupportedGPUTextureFormats,
-  selectSupportedBasisFormat
+  GL_EXTENSIONS_CONSTANTS
 } from '@loaders.gl/textures';
 import {ImageLoader, ImageType} from '@loaders.gl/images';
 
 import {Device, Texture} from '@luma.gl/core';
 import {Model} from '@luma.gl/engine';
+
+const TEXTURE_LIBRARY_MODULES = {
+  'basis_transcoder.js': new URL(
+    '../../../../modules/textures/src/libs/basis_transcoder.js',
+    import.meta.url
+  ).toString(),
+  'basis_transcoder.wasm': new URL(
+    '../../../../modules/textures/src/libs/basis_transcoder.wasm',
+    import.meta.url
+  ).toString(),
+  'basis_encoder.js': new URL(
+    '../../../../modules/textures/src/libs/basis_encoder.js',
+    import.meta.url
+  ).toString(),
+  'basis_encoder.wasm': new URL(
+    '../../../../modules/textures/src/libs/basis_encoder.wasm',
+    import.meta.url
+  ).toString(),
+  'crunch.js': new URL('../../../../modules/textures/src/libs/crunch.js', import.meta.url).toString()
+}
 
 const {
   COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -79,6 +97,214 @@ const {
   COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT,
   COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
 } = GL_EXTENSIONS_CONSTANTS;
+
+const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
+const BROWSER_GPU_EXTENSIONS: Record<string, string[]> = {
+  WEBGL_compressed_texture_s3tc: ['dxt'],
+  WEBGL_compressed_texture_s3tc_srgb: ['dxt-srgb'],
+  WEBGL_compressed_texture_pvrtc: ['pvrtc'],
+  WEBGL_compressed_texture_atc: ['atc'],
+  WEBGL_compressed_texture_astc: ['astc'],
+  EXT_texture_compression_rgtc: ['rgtc'],
+  EXT_texture_compression_bptc: ['bc6h', 'bc7'],
+  WEBGL_compressed_texture_etc1: ['etc1'],
+  WEBGL_compressed_texture_etc: ['etc2']
+};
+
+const BROWSER_TEXTURE_FORMATS: Record<string, string[]> = {
+  dxt: ['bc1-rgb-unorm-webgl', 'bc1-rgba-unorm', 'bc2-rgba-unorm', 'bc3-rgba-unorm'],
+  'dxt-srgb': [
+    'bc1-rgb-unorm-srgb-webgl',
+    'bc1-rgba-unorm-srgb',
+    'bc2-rgba-unorm-srgb',
+    'bc3-rgba-unorm-srgb'
+  ],
+  etc1: ['etc1-rbg-unorm-webgl'],
+  etc2: [
+    'etc2-rgb8unorm',
+    'etc2-rgb8unorm-srgb',
+    'etc2-rgb8a1unorm',
+    'etc2-rgb8a1unorm-srgb',
+    'etc2-rgba8unorm',
+    'etc2-rgba8unorm-srgb',
+    'eac-r11unorm',
+    'eac-r11snorm',
+    'eac-rg11unorm',
+    'eac-rg11snorm'
+  ],
+  pvrtc: [
+    'pvrtc-rgb4unorm-webgl',
+    'pvrtc-rgba4unorm-webgl',
+    'pvrtc-rbg2unorm-webgl',
+    'pvrtc-rgba2unorm-webgl'
+  ],
+  atc: ['atc-rgb-unorm-webgl', 'atc-rgba-unorm-webgl', 'atc-rgbai-unorm-webgl'],
+  bc6h: ['bc6h-rgb-ufloat', 'bc6h-rgb-float'],
+  bc7: ['bc7-rgba-unorm', 'bc7-rgba-unorm-srgb'],
+  astc: [
+    'astc-4x4-unorm',
+    'astc-4x4-unorm-srgb',
+    'astc-5x4-unorm',
+    'astc-5x4-unorm-srgb',
+    'astc-5x5-unorm',
+    'astc-5x5-unorm-srgb',
+    'astc-6x5-unorm',
+    'astc-6x5-unorm-srgb',
+    'astc-6x6-unorm',
+    'astc-6x6-unorm-srgb',
+    'astc-8x5-unorm',
+    'astc-8x5-unorm-srgb',
+    'astc-8x6-unorm',
+    'astc-8x6-unorm-srgb',
+    'astc-8x8-unorm',
+    'astc-8x8-unorm-srgb',
+    'astc-10x5-unorm',
+    'astc-10x5-unorm-srgb',
+    'astc-10x6-unorm',
+    'astc-10x6-unorm-srgb',
+    'astc-10x8-unorm',
+    'astc-10x8-unorm-srgb',
+    'astc-10x10-unorm',
+    'astc-10x10-unorm-srgb',
+    'astc-12x10-unorm',
+    'astc-12x10-unorm-srgb',
+    'astc-12x12-unorm',
+    'astc-12x12-unorm-srgb'
+  ],
+  rgtc: ['bc4-r-unorm', 'bc4-r-snorm', 'bc5-rg-unorm', 'bc5-rg-snorm']
+};
+
+function detectSupportedTextureFormats(gl?: WebGLRenderingContext): Set<string> {
+  const textureFormats = new Set<string>();
+  try {
+    const canvas = document.createElement('canvas');
+    gl = gl || canvas.getContext('webgl');
+  } catch (error) {
+    gl = null;
+  }
+
+  if (!gl) {
+    return textureFormats;
+  }
+
+  for (const prefix of BROWSER_PREFIXES) {
+    for (const extensionName of Object.keys(BROWSER_GPU_EXTENSIONS)) {
+      if (gl.getExtension(`${prefix}${extensionName}`)) {
+        const gpuTextureFormats = BROWSER_GPU_EXTENSIONS[extensionName];
+        for (const textureGroup of gpuTextureFormats) {
+          const textureFormatsForGroup = BROWSER_TEXTURE_FORMATS[textureGroup];
+          textureFormatsForGroup.forEach((textureFormat) => textureFormats.add(textureFormat));
+        }
+      }
+    }
+  }
+
+  return textureFormats;
+}
+
+function detectSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Set<string> {
+  const supportedTextureFormats = detectSupportedTextureFormats(gl);
+  const formats = new Set<string>();
+
+  for (const textureFormatGroup of Object.keys(BROWSER_TEXTURE_FORMATS)) {
+    const groupFormats = BROWSER_TEXTURE_FORMATS[textureFormatGroup];
+    if (groupFormats.some((format) => supportedTextureFormats.has(format))) {
+      formats.add(textureFormatGroup);
+    }
+  }
+
+  return formats;
+}
+
+function getSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Set<string> {
+  return detectSupportedGPUTextureFormats(gl);
+}
+
+function selectSupportedBasisFormat(
+  supportedTextureFormats: Iterable<string> = detectSupportedTextureFormats()
+): string | {alpha: string; noAlpha: string} {
+  const textureFormatSet = new Set(supportedTextureFormats);
+  if (hasSupportedTextureFormat(textureFormatSet, ['astc-4x4-unorm', 'astc-4x4-unorm-srgb'])) {
+    return 'astc-4x4';
+  }
+  if (
+    hasSupportedTextureFormat(textureFormatSet, [
+      'bc1-rgb-unorm-webgl',
+      'bc1-rgb-unorm-srgb-webgl',
+      'bc1-rgba-unorm',
+      'bc1-rgba-unorm-srgb',
+      'bc2-rgba-unorm',
+      'bc2-rgba-unorm-srgb',
+      'bc3-rgba-unorm',
+      'bc3-rgba-unorm-srgb',
+      'bc4-r-unorm',
+      'bc4-r-snorm',
+      'bc5-rg-unorm',
+      'bc5-rg-snorm',
+      'bc6h-rgb-ufloat',
+      'bc6h-rgb-float',
+      'bc7-rgba-unorm',
+      'bc7-rgba-unorm-srgb'
+    ])
+  ) {
+    return {
+      alpha: 'bc3',
+      noAlpha: 'bc1'
+    };
+  }
+  if (
+    hasSupportedTextureFormat(textureFormatSet, [
+      'pvrtc-rgb4unorm-webgl',
+      'pvrtc-rgba4unorm-webgl',
+      'pvrtc-rbg2unorm-webgl',
+      'pvrtc-rgba2unorm-webgl'
+    ])
+  ) {
+    return {
+      alpha: 'pvrtc1-4-rgba',
+      noAlpha: 'pvrtc1-4-rgb'
+    };
+  }
+  if (
+    hasSupportedTextureFormat(textureFormatSet, [
+      'etc2-rgb8unorm',
+      'etc2-rgb8unorm-srgb',
+      'etc2-rgb8a1unorm',
+      'etc2-rgb8a1unorm-srgb',
+      'etc2-rgba8unorm',
+      'etc2-rgba8unorm-srgb',
+      'eac-r11unorm',
+      'eac-r11snorm',
+      'eac-rg11unorm',
+      'eac-rg11snorm'
+    ])
+  ) {
+    return 'etc2';
+  }
+  if (textureFormatSet.has('etc1-rbg-unorm-webgl')) {
+    return 'etc1';
+  }
+  if (
+    hasSupportedTextureFormat(textureFormatSet, [
+      'atc-rgb-unorm-webgl',
+      'atc-rgba-unorm-webgl',
+      'atc-rgbai-unorm-webgl'
+    ])
+  ) {
+    return {
+      alpha: 'atc-rgba-interpolated-alpha',
+      noAlpha: 'atc-rgb'
+    };
+  }
+  return 'rgb565';
+}
+
+function hasSupportedTextureFormat(
+  textureFormatSet: Set<string>,
+  candidateFormats: string[]
+): boolean {
+  return candidateFormats.some((textureFormat) => textureFormatSet.has(textureFormat));
+}
 
 const TEXTURES_BASE_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/textures/test/data/';
@@ -175,24 +401,27 @@ type CompressedTextureProps = {
   canvas: HTMLCanvasElement;
   image: ImageType;
   model: Model;
-}
+};
 
 type CompressedTextureState = {
-  loadOptions: LoaderOptions,
+  loadOptions: LoaderOptions;
   textureError: Error | null;
   showStats: boolean;
   stats: any[];
   dataUrl: string | null;
-}
+};
 
-export class CompressedTexture extends React.PureComponent<CompressedTextureProps, CompressedTextureState> {
+export class CompressedTexture extends React.PureComponent<
+  CompressedTextureProps,
+  CompressedTextureState
+> {
   static defaultProps = {
     device: null,
     canvas: null,
     image: null,
     model: null
   };
-  
+
   constructor(props: CompressedTextureProps) {
     super(props);
 
@@ -229,6 +458,7 @@ export class CompressedTexture extends React.PureComponent<CompressedTextureProp
 
   getLoadOptions() {
     return {
+      modules: TEXTURE_LIBRARY_MODULES,
       basis: {
         format: selectSupportedBasisFormat()
       }
@@ -312,7 +542,7 @@ export class CompressedTexture extends React.PureComponent<CompressedTextureProp
     const texture = device.createTexture({
       data: images,
       compressed: true,
-      mipmaps: false,
+      mipmaps: false
       // parameters: {
       //   [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
       //   [gl.TEXTURE_MIN_FILTER]: images.length > 1 ? gl.LINEAR_MIPMAP_NEAREST : gl.LINEAR,
@@ -330,7 +560,7 @@ export class CompressedTexture extends React.PureComponent<CompressedTextureProp
       width: 1,
       height: 1,
       data: brownColor,
-      mipmaps: true,
+      mipmaps: true
       // parameters: {
       //   [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
       //   [gl.TEXTURE_MIN_FILTER]: gl.LINEAR,
@@ -340,7 +570,7 @@ export class CompressedTexture extends React.PureComponent<CompressedTextureProp
     });
 
     const renderPass = device.beginRenderPass();
-    model.setBindings({uTexture: emptyTexture})
+    model.setBindings({uTexture: emptyTexture});
     model.draw(renderPass);
     renderPass.end();
 
@@ -350,7 +580,7 @@ export class CompressedTexture extends React.PureComponent<CompressedTextureProp
 
   renderImageTexture(device: Device, model: Model, image: any) {
     const texture = device.createTexture({
-      data: image,
+      data: image
       // parameters: {
       //   [gl.TEXTURE_MAG_FILTER]: gl.LINEAR,
       //   [gl.TEXTURE_MIN_FILTER]: gl.LINEAR,
@@ -360,7 +590,7 @@ export class CompressedTexture extends React.PureComponent<CompressedTextureProp
     });
 
     const renderPass = device.beginRenderPass();
-    model.setBindings({uTexture: texture})
+    model.setBindings({uTexture: texture});
     model.draw(renderPass);
     renderPass.end();
 
@@ -392,7 +622,7 @@ export class CompressedTexture extends React.PureComponent<CompressedTextureProp
     const texture = this.createCompressedTexture(device, images);
 
     const renderPass = device.beginRenderPass();
-    model.setBindings({uTexture: texture})
+    model.setBindings({uTexture: texture});
     model.draw(renderPass);
     renderPass.end();
 

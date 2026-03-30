@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: MIT
+// Generated from @maplibre/mlt (MIT) for loaders.gl browser bundling.
+// Source: https://github.com/maplibre/mlt
+
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;

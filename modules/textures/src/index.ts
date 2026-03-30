@@ -5,7 +5,7 @@
 import {VERSION} from './lib/utils/version';
 
 // Types
-export type {GPUTextureFormat} from '@loaders.gl/schema';
+export type {GPUTextureFormat, TextureFormat} from '@loaders.gl/schema';
 
 // Loaders
 export type {BasisLoaderOptions} from './basis-loader';
@@ -16,6 +16,10 @@ export {CompressedTextureLoader, CompressedTextureWorkerLoader} from './compress
 
 export type {CrunchLoaderOptions} from './crunch-loader';
 export {CrunchLoader} from './crunch-loader';
+
+export type {RadianceHDRLoaderOptions} from './radiance-hdr-loader';
+export type {RadianceHDRMetadata} from './lib/parsers/parse-hdr';
+export {RadianceHDRLoader} from './radiance-hdr-loader';
 
 export type {NPYLoaderOptions} from './npy-loader';
 export {NPYLoader, NPYWorkerLoader} from './npy-loader';
@@ -49,9 +53,7 @@ export {loadImageTextureArray} from './lib/texture-api/load-image-array';
 export {loadImageTextureCube} from './lib/texture-api/load-image-cube';
 
 // Utilities
-export {GL_EXTENSIONS_CONSTANTS} from './lib/gl-extensions';
-export {selectSupportedBasisFormat} from './lib/parsers/parse-basis';
-export {getSupportedGPUTextureFormats} from './lib/utils/texture-formats';
+export * from './lib/gl-extensions';
 
 // DEPRECATED
 // @deprecated

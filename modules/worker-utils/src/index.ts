@@ -41,6 +41,7 @@ export {getTransferList, getTransferListForWriter} from './lib/worker-utils/get-
 
 // LIBRARY UTILS
 export {
+  extractLoadLibraryOptions,
   getLibraryUrl,
   loadLibrary,
   type LoadLibraryOptions

@@ -10,8 +10,6 @@ import {parseBasis} from './lib/parsers/parse-basis';
 /** Options for the CompressedTextureLoader */
 export type CompressedTextureLoaderOptions = StrictLoaderOptions & {
   'compressed-texture'?: {
-    /** @deprecated Specify path to libraries */
-    libraryPath?: string;
     /** Whether to use Basis decoding */
     useBasis?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -47,7 +45,6 @@ export const CompressedTextureWorkerLoader = {
   binary: true,
   options: {
     'compressed-texture': {
-      libraryPath: 'libs/',
       useBasis: false
     }
   }

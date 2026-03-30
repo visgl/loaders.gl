@@ -36,6 +36,12 @@ const featuresWgs84 = await parse(arrayBuffer, MLTLoader, {
 | --------------------------------------------------------- |
 | [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) |
 
+## Sources
+
+| Source                                                    |
+| --------------------------------------------------------- |
+| [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source) |
+
 ## About MLT
 
 The MapLibre Tile format is a column-oriented vector tile format that offers:

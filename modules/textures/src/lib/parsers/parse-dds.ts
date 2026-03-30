@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TextureLevel} from '@loaders.gl/schema';
+import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {assert} from '@loaders.gl/loader-utils';
-import {GL_EXTENSIONS_CONSTANTS} from '../gl-extensions';
 import {extractMipmapImages} from '../utils/extract-mipmap-images';
 
 const DDS_CONSTANTS = {
@@ -22,13 +21,13 @@ const DDS_CONSTANTS = {
   DDPF_FOURCC: 0x4
 };
 
-const DDS_PIXEL_FORMATS: Record<string, number> = {
-  DXT1: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_S3TC_DXT1_EXT,
-  DXT3: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT3_EXT,
-  DXT5: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_S3TC_DXT5_EXT,
-  'ATC ': GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGB_ATC_WEBGL,
-  ATCA: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL,
-  ATCI: GL_EXTENSIONS_CONSTANTS.COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL
+const DDS_TEXTURE_FORMATS: Record<string, TextureFormat> = {
+  DXT1: 'bc1-rgb-unorm-ext',
+  DXT3: 'bc2-rgba-unorm',
+  DXT5: 'bc3-rgba-unorm',
+  'ATC ': 'atc-rgb-unorm-ext',
+  ATCA: 'atc-rgba-unorm-ext',
+  ATCI: 'atc-rgbai-unorm-ext'
 };
 
 const getATCLevelSize = getDxt1LevelSize;
@@ -68,9 +67,9 @@ export function parseDDS(data: ArrayBuffer): TextureLevel[] {
     'DDS: Unsupported format, must contain a FourCC code'
   );
   const fourCC = int32ToFourCC(pixelFormatNumber);
-  const internalFormat = DDS_PIXEL_FORMATS[fourCC];
+  const textureFormat = DDS_TEXTURE_FORMATS[fourCC];
   const sizeFunction = DDS_SIZE_FUNCTIONS[fourCC];
-  assert(internalFormat && sizeFunction, `DDS: Unknown pixel format ${pixelFormatNumber}`);
+  assert(textureFormat && sizeFunction, `DDS: Unknown pixel format ${pixelFormatNumber}`);
 
   let mipMapLevels = 1;
   if (header[DDS_CONSTANTS.HEADER_FLAGS_INDEX] & DDS_CONSTANTS.DDSD_MIPMAPCOUNT) {
@@ -86,7 +85,7 @@ export function parseDDS(data: ArrayBuffer): TextureLevel[] {
     width,
     height,
     sizeFunction,
-    internalFormat
+    textureFormat
   });
 }
 

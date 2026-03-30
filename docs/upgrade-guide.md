@@ -2,6 +2,17 @@
 
 ## Upgrading to v4.4
 
+**@loaders.gl/textures**
+
+- `TextureLevel` now exposes `shape`, `format`, and `textureFormat`. Use `format` for WebGL APIs and `textureFormat` for WebGPU-style or luma.gl APIs.
+- `BasisLoader` uses `basis.supportedTextureFormats` to control `'auto'` basis format selection, and can accept explicit `basis.format` targets.
+- `@loaders.gl/textures` no longer exports `selectSupportedBasisFormat` or `getSupportedGPUTextureFormats`. Pass `basis.supportedTextureFormats` to `BasisLoader` instead of using exported auto-detection helpers.
+- `BasisLoader`, `CrunchLoader`, and `CompressedTextureLoader` no longer support `libraryPath`. Supply runtime libraries through `options.modules` instead.
+
+**@loaders.gl/draco**
+
+- `DracoLoader` no longer supports `draco.libraryPath`. Supply `modules: {draco3d}` instead of configuring decoder library paths manually.
+
 **@loaders.gl/compression**
 
 - `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
