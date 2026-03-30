@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/mlt",
   "description": "Loader for MapLibre Tile (MLT) format",
-  "version": "4.4.0-alpha.15",
+  "version": "4.4.0-alpha.19",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
