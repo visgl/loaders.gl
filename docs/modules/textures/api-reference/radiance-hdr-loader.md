@@ -8,13 +8,13 @@ Loader for Radiance RGBE `.hdr` textures.
 
 See also: [`Radiance HDR`](/docs/modules/textures/formats/hdr)
 
-| Loader         | Characteristic               |
-| -------------- | ---------------------------- |
-| File Format    | Radiance HDR / RGBE          |
-| File Extension | `.hdr`                       |
-| File Type      | Binary                       |
-| Data Format    | `Texture`                    |
-| Supported APIs | `load`, `parse`, `parseSync` |
+| Loader         | Characteristic                                              |
+| -------------- | ----------------------------------------------------------- |
+| File Format    | Radiance HDR / RGBE                                         |
+| File Extension | `.hdr`                                                      |
+| File Type      | Binary                                                      |
+| Data Format    | [`Texture`](/docs/modules/textures/README#texture-category) |
+| Supported APIs | `load`, `parse`, `parseSync`                                |
 
 ## Usage
 

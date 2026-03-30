@@ -72,8 +72,8 @@ export async function parseGLTF(
  */
 function parseGLTFContainerSync(gltf, data, byteOffset, options: GLTFLoaderOptions) {
   // Initialize gltf container
-  if (options.core?.baseUri) {
-    gltf.baseUri = options.core?.baseUri;
+  if (options.core?.baseUrl) {
+    gltf.baseUri = options.core?.baseUrl;
   }
 
   // If data is binary and starting with magic bytes, assume binary JSON text, convert to string
@@ -134,7 +134,7 @@ async function loadBuffers(gltf: GLTFWithBuffers, options, context: LoaderContex
       const {fetch} = context;
       assert(fetch);
 
-      const uri = resolveUrl(buffer.uri, options);
+      const uri = resolveUrl(buffer.uri, options, context);
       const response = await context?.fetch?.(uri);
       const arrayBuffer = await response?.arrayBuffer?.();
 
@@ -201,7 +201,7 @@ async function loadImage(
   let arrayBuffer;
 
   if (image.uri && !image.hasOwnProperty('bufferView')) {
-    const uri = resolveUrl(image.uri, options);
+    const uri = resolveUrl(image.uri, options, context);
 
     const {fetch} = context;
     const response = await fetch(uri);

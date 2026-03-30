@@ -47,6 +47,19 @@ export async function selectLoader(
   const normalizedOptions = normalizeLoaderOptions(options || {});
   normalizedOptions.core ||= {};
 
+  if (data instanceof Response && mayContainText(data)) {
+    const text = await data.clone().text();
+    const textLoader = selectLoaderSync(
+      text,
+      loaders,
+      {...normalizedOptions, core: {...normalizedOptions.core, nothrow: true}},
+      context
+    );
+    if (textLoader) {
+      return textLoader;
+    }
+  }
+
   // First make a sync attempt, disabling exceptions
   let loader = selectLoaderSync(
     data,
@@ -65,12 +78,25 @@ export async function selectLoader(
     loader = selectLoaderSync(data, loaders, normalizedOptions, context);
   }
 
+  if (!loader && data instanceof Response && mayContainText(data)) {
+    const text = await data.clone().text();
+    loader = selectLoaderSync(text, loaders, normalizedOptions, context);
+  }
+
   // no loader available
   if (!loader && !normalizedOptions.core.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
 
   return loader;
+}
+
+function mayContainText(response: Response): boolean {
+  const mimeType = getResourceMIMEType(response);
+  return Boolean(
+    mimeType &&
+    (mimeType.startsWith('text/') || mimeType === 'application/json' || mimeType.endsWith('+json'))
+  );
 }
 
 /**

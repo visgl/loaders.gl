@@ -44,3 +44,25 @@ The `parse*WithContext()` functions exported by `@loaders.gl/loader-utils` are t
 ## LoaderContext
 
 When a loader is being called (i.e. one of its `parse*()` functions is being called), a `LoaderContext` object is supplied.
+
+## Base URL Handling
+
+Composite loaders should resolve relative sub-resources from `context.baseUrl`.
+
+- `load(url, loader)` derives the effective base URL from the top-level resource URL and stores it on `context.baseUrl`
+- subloader and associated-resource resolution should prefer `context.baseUrl`
+- `options.core.baseUrl` is only a fallback for entrypoints that do not have a source URL, such as `parse(text, loader, options)`
+- once a loader has a context, it should not keep forwarding `core.baseUrl` into subloader options; child loads should resolve from their own context instead
+
+This keeps base URL state in one place and avoids passing ad hoc base values between composite loaders.
+
+## Forwarding Loader Lists
+
+When a composite loader parses sub-resources, it should preserve the top-level loader list so callers can provide additional member loaders.
+
+- prefer calling subloaders with an array such as `[ImageLoader]`, not a single forced loader
+- preserve `context.loaders` so caller-supplied loaders can participate in selection
+- when possible, parse the fetched `Response` rather than a detached `ArrayBuffer`, so subloader selection can still use the member URL and MIME type
+- if a child resource has its own URL, update the child context so downstream loaders see the correct `context.url` and `context.baseUrl`
+
+This pattern lets a composite loader provide a default member loader while still allowing applications to extend subresource handling.

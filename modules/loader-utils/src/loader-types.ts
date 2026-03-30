@@ -13,8 +13,8 @@ import {ReadableFile} from './lib/files/file';
  */
 export type StrictLoaderOptions = {
   core?: {
-    /** Base URI for resolving relative paths */
-    baseUri?: string;
+    /** Base URL for resolving relative paths */
+    baseUrl?: string;
     /** fetch options or a custom fetch function */
     fetch?: typeof fetch | FetchLike | RequestInit | null;
     /** Do not throw on errors */
@@ -84,7 +84,7 @@ export type LoaderOptions = {
   modules?: StrictLoaderOptions['modules'];
 
   // Deprecated top-level aliases for core options
-  /** @deprecated Use options.core.baseUri */
+  /** @deprecated Use options.core.baseUrl */
   baseUri?: string;
   /** @deprecated Use options.core.fetch */
   fetch?: typeof fetch | FetchLike | RequestInit | null;

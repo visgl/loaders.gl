@@ -15,6 +15,7 @@ import type {
 import {isBlob} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
+import {normalizeLoaderOptions} from '../loader-utils/option-utils';
 
 import {parse} from './parse';
 
@@ -95,6 +96,19 @@ export async function load(
     // The fetch response object will contain blob.name
     // @ts-expect-error TODO - This may not work for overridden fetch functions
     data = await fetch(url);
+  }
+
+  if (typeof url === 'string') {
+    const normalizedOptions = normalizeLoaderOptions(resolvedOptions || {});
+    if (!normalizedOptions.core?.baseUrl) {
+      resolvedOptions = {
+        ...resolvedOptions,
+        core: {
+          ...resolvedOptions?.core,
+          baseUrl: url
+        }
+      };
+    }
   }
 
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`

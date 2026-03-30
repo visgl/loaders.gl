@@ -231,7 +231,7 @@ export type TextureCubeArray<MetadataT extends TextureMetadata = TextureMetadata
   /** Canonical loaders.gl texture format for the texture payload. */
   format: TextureFormat;
   /** Mip levels grouped by cube-array layer and face. */
-  data: TextureLevel[][];
+  data: TextureLevel[][][];
 };
 
 /** A TextureLevel holds data for one texture mip level */
@@ -248,7 +248,9 @@ export type TextureLevel = {
   width: number;
   /** Height in texels */
   height: number;
-  /** Byte array or float pixel data */
+  /** Optional bitmap handle for image-backed texture levels */
+  imageBitmap?: ImageBitmap;
+  /** Byte array or float pixel data. Will be a dummy length 0 array if imageBitmap is provided */
   data: TypedArray;
   levelSize?: number;
   hasAlpha?: boolean;

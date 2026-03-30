@@ -58,7 +58,7 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
     }
     this.data = data;
     this.url = typeof data === 'string' ? resolvePath(data) : '';
-    this.loadOptions = {...this.options.core?.loadOptions};
+    this.loadOptions = normalizeDirectLoaderOptions(this.options.core?.loadOptions);
     this.fetch = getFetchFunction(this.loadOptions);
   }
 
@@ -109,4 +109,25 @@ export function getFetchFunction(options?: StrictLoaderOptions) {
 
   // else return the global fetch function
   return (url) => fetch(url);
+}
+
+function normalizeDirectLoaderOptions(options?: StrictLoaderOptions): StrictLoaderOptions {
+  const loadOptions = {...options};
+  if (options?.core) {
+    loadOptions.core = {...options.core};
+  }
+
+  const topLevelBaseUri = typeof loadOptions.baseUri === 'string' ? loadOptions.baseUri : undefined;
+  const topLevelBaseUrl = typeof loadOptions.baseUrl === 'string' ? loadOptions.baseUrl : undefined;
+
+  if (topLevelBaseUri !== undefined || topLevelBaseUrl !== undefined) {
+    loadOptions.core ||= {};
+    if (loadOptions.core.baseUrl === undefined) {
+      loadOptions.core.baseUrl = topLevelBaseUrl ?? topLevelBaseUri;
+    }
+    delete loadOptions.baseUri;
+    delete loadOptions.baseUrl;
+  }
+
+  return loadOptions;
 }

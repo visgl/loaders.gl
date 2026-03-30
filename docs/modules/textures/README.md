@@ -41,6 +41,10 @@ The `@loaders.gl/textures` module handles the following formats:
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]` |
 | [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture`           |
 | [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`           |
+| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain       |
+| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays                  |
+| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps                        |
+| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Manifest-driven cube arrays                     |
 
 ## Return Types
 
@@ -72,19 +76,18 @@ A `TextureLevel` describes one mip level of one texture image.
 
 See [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) and [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) for loader-specific options and return shapes.
 
-## Texture APIs
+## Composite Image Loaders
 
-The textures API offers functions to load "composite" images for WebGL textures, cube textures and image mip levels.
+The textures module also includes manifest-driven loaders for composite image textures:
 
-These functions take a `getUrl` parameter that enables the app to supply the url for each "sub-image", and return a single promise enabling applications to for instance load all the faces of a cube texture, with one image for each mip level for each face in a single async operation.
+- [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader) for a single image or mip chain
+- [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) for texture arrays, including mipmapped layers
+- [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader) for cubemaps, including mipmapped faces
+- [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays
 
-| Function                                                                  | Description                                                                                                           |
-| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| [`loadImage`](/docs/modules/textures/api-reference/load-image)            | Load a single image                                                                                                   |
-| [`loadImageArray`](/docs/modules/textures/api-reference/load-image-array) | Load an array of images, e.g. for a `Texture2DArray` or `Texture3D`                                                   |
-| [`loadImageCube`](/docs/modules/textures/api-reference/load-image-cube)   | Load a map of 6 images for the faces of a cube map, or a map of 6 arrays of images for the mip levels of the 6 faces. |
-
-As with all loaders.gl functions, while these functions are intended for use in WebGL applications, they do not call any WebGL functions, and do not actually create any WebGL textures..
+These loaders resolve relative member URLs against the manifest URL, or against `options.core.baseUrl` when parsing an in-memory manifest.
+Member assets are parsed with `ImageLoader` by default, and additional loaders passed to top-level `load()` are also available for manifest members.
+They return schema `Texture` objects rather than raw image trees.
 
 ## Attributions
 

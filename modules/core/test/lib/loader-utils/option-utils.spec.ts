@@ -60,7 +60,7 @@ const TEST_CASES = [
     options: {},
     url: 'https://example.com/tileset.las',
     assert: (t, options, url) => {
-      t.equal(options.core.baseUri, url);
+      t.equal(options.core.baseUrl, 'https://example.com');
       t.equal(options.baseUri, undefined);
     }
   }
