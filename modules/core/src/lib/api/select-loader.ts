@@ -47,6 +47,19 @@ export async function selectLoader(
   const normalizedOptions = normalizeLoaderOptions(options || {});
   normalizedOptions.core ||= {};
 
+  if (data instanceof Response && mayContainText(data)) {
+    const text = await data.clone().text();
+    const textLoader = selectLoaderSync(
+      text,
+      loaders,
+      {...normalizedOptions, core: {...normalizedOptions.core, nothrow: true}},
+      context
+    );
+    if (textLoader) {
+      return textLoader;
+    }
+  }
+
   // First make a sync attempt, disabling exceptions
   let loader = selectLoaderSync(
     data,
