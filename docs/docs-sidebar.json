@@ -47,6 +47,8 @@
           "modules/kml/api-reference/kml-loader",
           "modules/kml/api-reference/tcx-loader",
           "modules/las/api-reference/las-loader",
+          "modules/mlt/api-reference/mlt-loader",
+          "modules/mlt/api-reference/mlt-source",
           "modules/mvt/api-reference/mvt-loader",
           "modules/mvt/api-reference/tilejson-loader",
           "modules/obj/api-reference/obj-loader",
@@ -100,6 +102,7 @@
           "modules/pmtiles/api-reference/pmtiles-source",
           "modules/mvt/api-reference/mvt-source",
           "modules/mvt/api-reference/table-tile-source",
+          "modules/mlt/api-reference/mlt-source",
           "modules/wms/api-reference/csw-source",
           "modules/wms/api-reference/wms-source"
         ]
@@ -129,6 +132,7 @@
       "modules/kml/formats/gpx",
       "modules/kml/formats/tcx",
       "modules/las/formats/las",
+      "modules/mlt/formats/mlt",
       "modules/mvt/formats/mvt",
       "modules/mvt/formats/tilejson",
       "modules/parquet/formats/parquet",
@@ -363,6 +367,11 @@
         "type": "category",
         "label": "@loaders.gl/mvt",
         "items": ["modules/mvt/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/mlt",
+        "items": ["modules/mlt/README"]
       },
       {
         "type": "category",

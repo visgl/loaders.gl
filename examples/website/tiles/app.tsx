@@ -11,6 +11,7 @@ import type {VectorTileSource, ImageTileSource} from '@loaders.gl/loader-utils';
 import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
+import {MLTSource} from '@loaders.gl/mlt';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
 // D\deck.gl + layers
@@ -163,7 +164,7 @@ function createTileSource(example: Example): VectorTileSource | ImageTileSource 
   const url = example.data;
   return createDataSource(
     url,
-    [PMTilesSource, TableTileSource, MVTSource],
+    [PMTilesSource, TableTileSource, MVTSource, MLTSource],
     {
       core: {
         attributions: example.attributions,
@@ -178,7 +179,8 @@ function createTileSource(example: Example): VectorTileSource | ImageTileSource 
       table: {
         generateId: true,
       },
-      mvt: {}
+      mvt: {},
+      mlt: {}
     }
   );
 }

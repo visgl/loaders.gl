@@ -42,7 +42,7 @@ const DropDown = styled.select`
 `;
 
 export type Example = {
-  sourceType: 'mvt' | 'pmtiles' | 'table';
+  sourceType: 'mvt' | 'pmtiles' | 'table' | 'mlt';
   data: string;
   attributions?: string[];
   viewState?: Record<string, unknown>;
