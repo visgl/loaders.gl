@@ -22,12 +22,12 @@ const DDS_CONSTANTS = {
 };
 
 const DDS_TEXTURE_FORMATS: Record<string, TextureFormat> = {
-  DXT1: 'bc1-rgb-unorm-ext',
+  DXT1: 'bc1-rgb-unorm-webgl',
   DXT3: 'bc2-rgba-unorm',
   DXT5: 'bc3-rgba-unorm',
-  'ATC ': 'atc-rgb-unorm-ext',
-  ATCA: 'atc-rgba-unorm-ext',
-  ATCI: 'atc-rgbai-unorm-ext'
+  'ATC ': 'atc-rgb-unorm-webgl',
+  ATCA: 'atc-rgba-unorm-webgl',
+  ATCI: 'atc-rgbai-unorm-webgl'
 };
 
 const getATCLevelSize = getDxt1LevelSize;

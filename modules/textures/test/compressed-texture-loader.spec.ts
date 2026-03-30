@@ -38,7 +38,7 @@ test('CompressedTextureLoader#KTX2 with BasisLoader', async (t) => {
   });
   t.ok(texture, 'KTX2 container loaded OK');
   t.equals(texture[0].format, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, 'KTX2 WebGL format is set');
-  t.equals(texture[0].textureFormat, 'bc1-rgb-unorm-ext', 'KTX2 texture format is set');
+  t.equals(texture[0].textureFormat, 'bc1-rgb-unorm-webgl', 'KTX2 texture format is set');
   t.end();
 });
 
@@ -54,7 +54,7 @@ test('CompressedTextureLoader#PVR', async (t) => {
   const texture = await load(PVR_URL, CompressedTextureLoader);
   t.ok(texture, 'PVR container loaded OK');
   t.equals(texture[0].format, GL_COMPRESSED_RGB_ETC1_WEBGL, 'PVR WebGL format is set');
-  t.equals(texture[0].textureFormat, 'etc1-rbg-unorm-ext', 'PVR texture format is set');
+  t.equals(texture[0].textureFormat, 'etc1-rbg-unorm-webgl', 'PVR texture format is set');
   t.end();
 });
 

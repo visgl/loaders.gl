@@ -64,7 +64,7 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 0,
     compressed: true,
     format: GL_COMPRESSED_RGB_ETC1_WEBGL,
-    textureFormat: 'etc1-rbg-unorm-ext'
+    textureFormat: 'etc1-rbg-unorm-webgl'
   },
   etc2: {
     basisFormat: 1,
@@ -76,7 +76,7 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 2,
     compressed: true,
     format: GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-    textureFormat: 'bc1-rgb-unorm-ext'
+    textureFormat: 'bc1-rgb-unorm-webgl'
   },
   bc3: {
     basisFormat: 3,
@@ -112,13 +112,13 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 8,
     compressed: true,
     format: GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-    textureFormat: 'pvrtc-rgb4unorm-ext'
+    textureFormat: 'pvrtc-rgb4unorm-webgl'
   },
   'pvrtc1-4-rgba': {
     basisFormat: 9,
     compressed: true,
     format: GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-    textureFormat: 'pvrtc-rgba4unorm-ext'
+    textureFormat: 'pvrtc-rgba4unorm-webgl'
   },
   'astc-4x4': {
     basisFormat: 10,
@@ -130,13 +130,13 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 11,
     compressed: true,
     format: GL_COMPRESSED_RGB_ATC_WEBGL,
-    textureFormat: 'atc-rgb-unorm-ext'
+    textureFormat: 'atc-rgb-unorm-webgl'
   },
   'atc-rgba-interpolated-alpha': {
     basisFormat: 12,
     compressed: true,
     format: GL_COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL,
-    textureFormat: 'atc-rgbai-unorm-ext'
+    textureFormat: 'atc-rgbai-unorm-webgl'
   },
   rgba32: {
     basisFormat: 13,
@@ -148,19 +148,19 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 14,
     compressed: false,
     format: GL_RGB565,
-    textureFormat: 'rgb565unorm-ext'
+    textureFormat: 'rgb565unorm-webgl'
   },
   bgr565: {
     basisFormat: 15,
     compressed: false,
     format: GL_RGB565,
-    textureFormat: 'rgb565unorm-ext'
+    textureFormat: 'rgb565unorm-webgl'
   },
   rgba4444: {
     basisFormat: 16,
     compressed: false,
     format: GL_RGBA4,
-    textureFormat: 'rgba4unorm-ext'
+    textureFormat: 'rgba4unorm-webgl'
   }
 };
 
@@ -462,8 +462,8 @@ export function selectSupportedBasisFormat(
     };
   } else if (
     hasSupportedTextureFormat(textureFormats, [
-      'bc1-rgb-unorm-ext',
-      'bc1-rgb-unorm-srgb-ext',
+      'bc1-rgb-unorm-webgl',
+      'bc1-rgb-unorm-srgb-webgl',
       'bc1-rgba-unorm',
       'bc1-rgba-unorm-srgb',
       'bc2-rgba-unorm',
@@ -478,10 +478,10 @@ export function selectSupportedBasisFormat(
     };
   } else if (
     hasSupportedTextureFormat(textureFormats, [
-      'pvrtc-rgb4unorm-ext',
-      'pvrtc-rgba4unorm-ext',
-      'pvrtc-rgb2unorm-ext',
-      'pvrtc-rgba2unorm-ext'
+      'pvrtc-rgb4unorm-webgl',
+      'pvrtc-rgba4unorm-webgl',
+      'pvrtc-rgb2unorm-webgl',
+      'pvrtc-rgba2unorm-webgl'
     ])
   ) {
     return {
@@ -503,13 +503,13 @@ export function selectSupportedBasisFormat(
     ])
   ) {
     return 'etc2';
-  } else if (textureFormats.has('etc1-rbg-unorm-ext')) {
+  } else if (textureFormats.has('etc1-rbg-unorm-webgl')) {
     return 'etc1';
   } else if (
     hasSupportedTextureFormat(textureFormats, [
-      'atc-rgb-unorm-ext',
-      'atc-rgba-unorm-ext',
-      'atc-rgbai-unorm-ext'
+      'atc-rgb-unorm-webgl',
+      'atc-rgba-unorm-webgl',
+      'atc-rgbai-unorm-webgl'
     ])
   ) {
     return {
@@ -531,8 +531,8 @@ export function getSupportedBasisFormats(
   }
   if (
     hasSupportedTextureFormat(textureFormats, [
-      'bc1-rgb-unorm-ext',
-      'bc1-rgb-unorm-srgb-ext',
+      'bc1-rgb-unorm-webgl',
+      'bc1-rgb-unorm-srgb-webgl',
       'bc1-rgba-unorm',
       'bc1-rgba-unorm-srgb',
       'bc2-rgba-unorm',
@@ -554,10 +554,10 @@ export function getSupportedBasisFormats(
   }
   if (
     hasSupportedTextureFormat(textureFormats, [
-      'pvrtc-rgb4unorm-ext',
-      'pvrtc-rgba4unorm-ext',
-      'pvrtc-rgb2unorm-ext',
-      'pvrtc-rgba2unorm-ext'
+      'pvrtc-rgb4unorm-webgl',
+      'pvrtc-rgba4unorm-webgl',
+      'pvrtc-rgb2unorm-webgl',
+      'pvrtc-rgba2unorm-webgl'
     ])
   ) {
     basisFormats.push('pvrtc1-4-rgb', 'pvrtc1-4-rgba');
@@ -578,14 +578,14 @@ export function getSupportedBasisFormats(
   ) {
     basisFormats.push('etc2');
   }
-  if (textureFormats.has('etc1-rbg-unorm-ext')) {
+  if (textureFormats.has('etc1-rbg-unorm-webgl')) {
     basisFormats.push('etc1');
   }
   if (
     hasSupportedTextureFormat(textureFormats, [
-      'atc-rgb-unorm-ext',
-      'atc-rgba-unorm-ext',
-      'atc-rgbai-unorm-ext'
+      'atc-rgb-unorm-webgl',
+      'atc-rgba-unorm-webgl',
+      'atc-rgbai-unorm-webgl'
     ])
   ) {
     basisFormats.push('atc-rgb', 'atc-rgba-interpolated-alpha');

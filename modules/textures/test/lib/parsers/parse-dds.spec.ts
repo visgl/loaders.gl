@@ -19,7 +19,7 @@ const TEST_CASES = [
   {
     url: '@loaders.gl/textures/test/data/shannon-dxt1.dds',
     format: GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
-    textureFormat: 'bc1-rgb-unorm-ext'
+    textureFormat: 'bc1-rgb-unorm-webgl'
   },
   {
     url: '@loaders.gl/textures/test/data/shannon-dxt3.dds',
@@ -34,17 +34,17 @@ const TEST_CASES = [
   {
     url: '@loaders.gl/textures/test/data/shannon-atc-rgb.dds',
     format: GL_COMPRESSED_RGB_ATC_WEBGL,
-    textureFormat: 'atc-rgb-unorm-ext'
+    textureFormat: 'atc-rgb-unorm-webgl'
   },
   {
     url: '@loaders.gl/textures/test/data/shannon-atc-rgba-explicit.dds',
     format: GL_COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL,
-    textureFormat: 'atc-rgba-unorm-ext'
+    textureFormat: 'atc-rgba-unorm-webgl'
   },
   {
     url: '@loaders.gl/textures/test/data/shannon-atc-rgba-interpolated.dds',
     format: GL_COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL,
-    textureFormat: 'atc-rgbai-unorm-ext'
+    textureFormat: 'atc-rgbai-unorm-webgl'
   }
 ];
 
