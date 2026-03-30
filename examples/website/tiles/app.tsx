@@ -164,9 +164,10 @@ function createTileSource(example: Example): VectorTileSource | ImageTileSource 
   const url = example.data;
   return createDataSource(
     url,
-    [PMTilesSource, TableTileSource, MVTSource, MLTSource],
+    [PMTilesSource, TableTileSource, MLTSource, MVTSource],
     {
       core: {
+        type: example.sourceType,
         attributions: example.attributions,
         loaders: [GeoJSONLoader],
         // Make the Schema more presentable by limiting the number of values per column the field metadata

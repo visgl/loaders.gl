@@ -20,36 +20,44 @@ See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
 - [`LoaderOptions.core`](/docs/modules/core/api-reference/loader-options) - stronger type checks when options are supplied through the new `options.core` option sub-object.
 
-**@loaders.gl/compression**
-
-- `LZOCompression` was removed due to lack of maintenance and licensing concerns with the underlying `lzo-wasm` library.
-
-**@loaders.gl/mvt**
-
-- [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) A new experimental writer that allows GeoJSON to be written in binary MVT tile format.
-
-**@loaders.gl/mlt**
-
-- [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader), [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source), and [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) documentation were added, including a new [MLT website example](/examples/tiles/mlt).
-
-**@loaders.gl/shapefile**
-
-- `ShapefileLoader` - Now forwards `dbf` loader options (such as `workerUrl`) when loading sidecar files.
-
 **@loaders.gl/arrow**
 
 - Support for `apache-arrow@21`
 - A new documentation page about [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
 
-**@loaders.gl/tile-converter**
+**@loaders.gl/compression**
 
-- `tile-converter` is now broken out into separate "application" and can be versioned and published independently.
+- `LZOCompression` was removed due to lack of maintenance and licensing concerns with the underlying `lzo-wasm` library.
+
+**@loaders.gl/mlt**
+
+- **Maplibre Tile Format Support**
+  - [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader)
+  - [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source)
+  - [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format documentation 
+  - [MLT website example](/examples/tiles/mlt).
+
+**@loaders.gl/mvt**
+
+- [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) A new experimental writer that allows GeoJSON to be written in binary MVT tile format.
+
+**@loaders.gl/shapefile**
+
+- `ShapefileLoader` - Now forwards `dbf` loader options (such as `workerUrl`) when loading sidecar files.
 
 **@loaders.gl/textures**
 
 - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields.
 - `BasisLoader` now accepts `basis.supportedTextureFormats` to guide `'auto'` format selection with an explicit list of supported target formats.
 - [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader) adds support for Radiance RGBE `.hdr` textures and returns a `Texture` with a decoded `rgba32float` level.
+
+**@loaders.gl/zip**
+
+- `ZipWriter` - Can now create directory entries to match file names.
+
+**@loaders.gl/tile-converter**
+
+- `tile-converter` is now broken out into a separate "application" and will be be versioned and published independently.
 
 ## v4.3
 

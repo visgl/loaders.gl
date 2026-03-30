@@ -9,7 +9,7 @@
  Create as many sidebars as you want.
  */
 export const sidebars = {
-  examplesSidebar: [
+  Examples: [
     {
       type: 'doc',
       label: 'Overview',
@@ -33,7 +33,7 @@ export const sidebars = {
     {
       type: 'category',
       label: 'Geospatial Tile Formats',
-      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/wms', 'tiles/mlt']
+      items: ['tiles/mvt', 'tiles/mlt', 'tiles/wms', 'tiles/table-tiler', 'tiles/mlt-source', 'tiles/pmtiles']
     },
     {
       type: 'category',

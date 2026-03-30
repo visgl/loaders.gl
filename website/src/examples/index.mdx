@@ -6,9 +6,5 @@ import {ExamplesIndex} from '../components';
 Check the [loader catalog](/docs/modules/arrow/api-reference/arrow-loader) to see if the format you need is available.*
 
 <ExamplesIndex
-  getThumbnail={item =>
-    item.docId === 'tiles/mlt'
-      ? '/images/tiles-mlt.jpg'
-      : `/images/${item.href || item.label.toLowerCase()}.jpg`
-  }
+  getThumbnail={item => `/images/examples/${item.docId}.jpg`}
 />
