@@ -64,7 +64,7 @@ export const BASIS_FORMAT_TO_OUTPUT_OPTIONS: Record<BasisFormat, BasisOutputOpti
     basisFormat: 0,
     compressed: true,
     format: GL_COMPRESSED_RGB_ETC1_WEBGL,
-    textureFormat: 'etc1-rbg-unorm-webgl'
+    textureFormat: 'etc1-rgb-unorm-webgl'
   },
   etc2: {
     basisFormat: 1,
@@ -503,7 +503,7 @@ export function selectSupportedBasisFormat(
     ])
   ) {
     return 'etc2';
-  } else if (textureFormats.has('etc1-rbg-unorm-webgl')) {
+  } else if (textureFormats.has('etc1-rgb-unorm-webgl')) {
     return 'etc1';
   } else if (
     hasSupportedTextureFormat(textureFormats, [
@@ -578,7 +578,7 @@ export function getSupportedBasisFormats(
   ) {
     basisFormats.push('etc2');
   }
-  if (textureFormats.has('etc1-rbg-unorm-webgl')) {
+  if (textureFormats.has('etc1-rgb-unorm-webgl')) {
     basisFormats.push('etc1');
   }
   if (

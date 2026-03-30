@@ -72,7 +72,7 @@ test('selectSupportedBasisFormat', (t) => {
     'ETC2 texture formats select ETC2 format'
   );
   t.equal(
-    selectSupportedBasisFormat(['etc1-rbg-unorm-webgl']),
+    selectSupportedBasisFormat(['etc1-rgb-unorm-webgl']),
     'etc1',
     'ETC1 extension texture formats select ETC1 format'
   );

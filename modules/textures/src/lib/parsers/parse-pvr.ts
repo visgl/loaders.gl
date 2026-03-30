@@ -28,7 +28,7 @@ const PVR_TEXTURE_FORMATS: Record<number, TextureFormat[]> = {
   1: ['pvrtc-rgba2unorm-webgl'],
   2: ['pvrtc-rgb4unorm-webgl'],
   3: ['pvrtc-rgba4unorm-webgl'],
-  6: ['etc1-rbg-unorm-webgl'],
+  6: ['etc1-rgb-unorm-webgl'],
   7: ['bc1-rgb-unorm-webgl'],
   9: ['bc2-rgba-unorm'],
   11: ['bc3-rgba-unorm'],

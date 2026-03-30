@@ -27,7 +27,7 @@ const WEBGL_TEXTURE_FORMATS: {[key: string]: TextureFormat[]} = {
     'bc7-rgba-unorm',
     'bc7-rgba-unorm-srgb'
   ],
-  WEBGL_compressed_texture_etc1: ['etc1-rbg-unorm-webgl'],
+  WEBGL_compressed_texture_etc1: ['etc1-rgb-unorm-webgl'],
   WEBGL_compressed_texture_etc: [
     'etc2-rgb8unorm',
     'etc2-rgb8unorm-srgb',
@@ -88,7 +88,7 @@ const GPU_TEXTURE_FORMATS: {[key in GPUTextureFormat]: TextureFormat[]} = {
     'bc2-rgba-unorm-srgb',
     'bc3-rgba-unorm-srgb'
   ],
-  etc1: ['etc1-rbg-unorm-webgl'],
+  etc1: ['etc1-rgb-unorm-webgl'],
   etc2: [
     'etc2-rgb8unorm',
     'etc2-rgb8unorm-srgb',

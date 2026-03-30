@@ -54,7 +54,7 @@ test('CompressedTextureLoader#PVR', async (t) => {
   const texture = await load(PVR_URL, CompressedTextureLoader);
   t.ok(texture, 'PVR container loaded OK');
   t.equals(texture[0].format, GL_COMPRESSED_RGB_ETC1_WEBGL, 'PVR WebGL format is set');
-  t.equals(texture[0].textureFormat, 'etc1-rbg-unorm-webgl', 'PVR texture format is set');
+  t.equals(texture[0].textureFormat, 'etc1-rgb-unorm-webgl', 'PVR texture format is set');
   t.end();
 });
 
