@@ -46,7 +46,11 @@ const WEBGL_TEXTURE_FORMATS: {[key: string]: TextureFormat[]} = {
     'pvrtc-rgb2unorm-webgl',
     'pvrtc-rgba2unorm-webgl'
   ],
-  WEBGL_compressed_texture_atc: ['atc-rgb-unorm-webgl', 'atc-rgba-unorm-webgl', 'atc-rgbai-unorm-webgl'],
+  WEBGL_compressed_texture_atc: [
+    'atc-rgb-unorm-webgl',
+    'atc-rgba-unorm-webgl',
+    'atc-rgbai-unorm-webgl'
+  ],
   WEBGL_compressed_texture_astc: [
     'astc-4x4-unorm',
     'astc-4x4-unorm-srgb',
