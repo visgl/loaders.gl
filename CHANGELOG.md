@@ -2,6 +2,11 @@
 
 ## v4.4
 
+
+### v4.4.0
+
+- Official publish
+
 ### v4.4.0-alpha.19
 
 - [Feat] Add @loaders.gl/mlt — MapLibre Tile format support (#3315)
