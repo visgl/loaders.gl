@@ -40,11 +40,11 @@ see the documentation for each loader for details:
 
 ## Batched parsing options
 
-| Option                       | Type      | Default | Description                                                                                                                                 |
-| ---------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options.metadata`           | `boolean` | `false` | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded.                                  |
+| Option                       | Type      | Default | Description                                                                                                                                            |
+| ---------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `options.metadata`           | `boolean` | `false` | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded.                                              |
 | `options.batches.chunkSize?` | `number`  | N/A     | When set, "atomic" inputs (like `ArrayBuffer` or `string`) are chunked, enabling batched parsing. No effect if input is already an iterator or stream. |
-| `options.transforms`         | `*[]`     | `[]`    | An array with transform functions that can be applied to the input data before parsing.                                                     |
+| `options.transforms`         | `*[]`     | `[]`    | An array with transform functions that can be applied to the input data before parsing.                                                                |
 
 Notes:
 
