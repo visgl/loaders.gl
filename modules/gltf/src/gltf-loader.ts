@@ -1,7 +1,7 @@
 import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
 import {VERSION} from './lib/utils/version';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import type {TextureLoaderOptions} from '@loaders.gl/textures';
 import type {ParseGLTFOptions} from './lib/parsers/parse-gltf';
 import type {GLTFWithBuffers} from './lib/types/gltf-types';
@@ -12,7 +12,7 @@ import {parseGLTF} from './lib/parsers/parse-gltf';
  * GLTF loader options
  */
 export type GLTFLoaderOptions = StrictLoaderOptions &
-  ImageLoaderOptions &
+  ImageBitmapLoaderOptions &
   TextureLoaderOptions &
   GLBLoaderOptions &
   DracoLoaderOptions & {

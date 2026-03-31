@@ -8,7 +8,7 @@
 import test from 'tape-promise/tape';
 import {parse, encodeSync, fetchFile} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader} from '@loaders.gl/images';
 import {loadRootTileFromTileset, loadRootTile} from '../utils/load-utils';
 
 const EPSILON = 1e-12;
@@ -165,7 +165,7 @@ test('batched model tile#with a mix of opaque and translucent features', async (
 // TODO this should be a render test
 test('batched model tile#with textures', async (t) => {
   const tileData = await loadRootTileFromTileset(t, TEXTURED_URL);
-  const tile = await parse(tileData, [Tiles3DLoader, ImageLoader]);
+  const tile = await parse(tileData, [Tiles3DLoader, ImageBitmapLoader]);
   t.ok(tile, 'loaded tile with a mix of opaque and translucent features');
   t.end();
 });

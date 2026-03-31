@@ -25,12 +25,12 @@ registerLoaders(ImageBitmapLoader);
 const image = await load('image.jpeg');
 ```
 
-However since each image loader is quite small (in terms of code size and bundle size impact), most applications will just install all image loaders in one go:
+Since the preferred bitmap loader already supports the standard raster formats, most applications can just register `ImageBitmapLoader` once:
 
 ```typescript
 import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
-import {ImageLoaders} from '@loaders.gl/images';
-import {registerLoader, load} from '@loaders.gl/core';
+import {ImageBitmapLoader} from '@loaders.gl/images';
+import {registerLoaders, load} from '@loaders.gl/core';
 registerLoaders(ImageBitmapLoader);
 const image = await load('image.jpeg');
 ```
@@ -45,11 +45,11 @@ A loaded image can always be converted to an _image data_ object (an object cont
 
 Note that _type_ is independent of the _format_ of the image (see below).
 
-| Image Type    | Class                                                                | Availability         | Workers      | Description                                                                                                       |
-| ------------- | -------------------------------------------------------------------- | -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | No           | Compatible with headless gl and still supported by helper APIs.                                                   |
-| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | Browser only | The preferred image type returned by `ImageLoader`; Node.js uses a minimal polyfill, browsers use the native API. |
-| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | No           | The traditional HTML/JavaScript class used for image loading into DOM trees. WebGL compatible.                    |
+| Image Type    | Class                                                                | Availability         | Workers      | Description                                                                                                             |
+| ------------- | -------------------------------------------------------------------- | -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | No           | Compatible with headless gl and still supported by helper APIs.                                                         |
+| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | Browser only | The preferred image type returned by `ImageBitmapLoader`; Node.js uses a minimal polyfill, browsers use the native API. |
+| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | No           | The traditional HTML/JavaScript class used for image loading into DOM trees. WebGL compatible.                          |
 
 ## Image Data
 
@@ -67,7 +67,7 @@ Some loaders may add additional fields to the image data structure to describe t
 
 Compressed images are always returned as image data objects. They will have an additional field, `compressed: true`, indicating that the typed array in the `data` field contains compressed pixels and is not directly indexable.
 
-Applications that use e.g. the `CompressedTextureLoader` and/or the `BasisLoader` together with the `ImageLoader` can check this flag before attempting to access the image data.
+Applications that use e.g. the `CompressedTextureLoader` and/or the `BasisLoader` together with image category loaders can check this flag before attempting to access the image data.
 
 ## Options
 
@@ -81,7 +81,7 @@ The image category support some generic options (specified using `options.image.
 
 ### About worker loading
 
-Worker loading is only supported for the `data` and `imagebitmap` formats. Since image worker loading is only available on some browsers (Chrome and Firefox), the `ImageLoader` dynamically determines if worker loading is available. Use `options.core.worker: false` to disable worker loading of images.
+Worker loading is primarily tied to `ImageBitmap` support in the current runtime. Deprecated `ImageLoader` may still use compatibility fallbacks, while `ImageBitmapLoader` always targets bitmap output. Use `options.core.worker: false` to disable worker loading of images.
 
 ## Image API
 
@@ -97,7 +97,7 @@ The image category also provides a few utilities:
 Image data objects return by image category loaders have the same fields (`width`, `height`, `data`) as the browser's built-in `ImageData` class, but are not actual instances of `ImageData`. However, should you need it, it is easy to create an `ImageData` instance from an image data object:
 
 ```typescript
-const image = await load(url, ImageLoader);
+const image = await load(url, ImageBitmapLoader);
 const data = getImageData(image);
 const imageData = new ImageData(data.data, data.width, data.height);
 ```

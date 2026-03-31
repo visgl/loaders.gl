@@ -1,6 +1,6 @@
 import type {ImageType, ImageTypeEnum, ImageDataType} from '../../types';
 
-type GetImageDataNode = (image: unknown) => ImageDataType | ImageData;
+type GetImageBitmapDataNode = (image: unknown) => ImageDataType | ImageData;
 type IsImageBitmapNode = (image: unknown) => boolean;
 
 export function isImage(image: ImageType): boolean {
@@ -54,12 +54,13 @@ function isNodeImageBitmap(image: ImageType): boolean {
 }
 
 function getNodeImageData(image: ImageType): ImageDataType | ImageData {
-  const getImageDataNode: GetImageDataNode | undefined = globalThis.loaders?.getImageDataNode;
-  if (!getImageDataNode) {
+  const getImageBitmapDataNode: GetImageBitmapDataNode | undefined =
+    globalThis.loaders?.getImageBitmapDataNode;
+  if (!getImageBitmapDataNode) {
     throw new Error('getImageData');
   }
 
-  return getImageDataNode(image);
+  return getImageBitmapDataNode(image);
 }
 
 function getBrowserImageData(image: ImageType): ImageData | ImageDataType {

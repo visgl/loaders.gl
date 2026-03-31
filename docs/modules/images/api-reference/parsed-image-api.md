@@ -6,7 +6,7 @@ Background: The image returned by [`ImageBitmapLoader`](/docs/modules/images/api
 
 ## Usage
 
-E.g., the `getImageData` method enables the application to get width, height and pixel data from an image returned by the `ImageLoader` in a platform independent way:
+E.g., the `getImageData` method enables the application to get width, height and pixel data from an image returned by an image category loader in a platform independent way:
 
 ```typescript
 import {ImageBitmapLoader, getImageSize, getImageData} from `@loaders.gl/images`;
@@ -61,7 +61,7 @@ Returns `true` if `mimeType` is one of the MIME types that `@loaders.gl/images` 
 isImage(image : any): boolean
 ```
 
-- `image`: An image returned by an image category loader, such as `ImageLoader`
+- `image`: An image returned by an image category loader, such as `ImageBitmapLoader` or deprecated `ImageLoader`
 
 Returns `true` if `image` is one of the types that `@loaders.gl/images` can return.
 
@@ -73,7 +73,7 @@ getImageType(image : any): 'imagebitmap' | 'image' | 'data'
 
 Returns the type of an image.
 
-- `image`: An image returned by an image category loader, such as `ImageLoader`
+- `image`: An image returned by an image category loader, such as `ImageBitmapLoader` or deprecated `ImageLoader`
 
 Returns
 
@@ -100,7 +100,7 @@ The following image types are distinguished
 getImageData(image : any): Object
 ```
 
-- `image`: An image returned by an image category loader, such as `ImageLoader`
+- `image`: An image returned by an image category loader, such as `ImageBitmapLoader` or deprecated `ImageLoader`
 
 Returns and image data object with the following fields
 

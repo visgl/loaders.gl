@@ -12,7 +12,7 @@ import type {
 import {DataSource, ImageSource, mergeOptions} from '@loaders.gl/loader-utils';
 
 import type {ImageType} from '@loaders.gl/images';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader} from '@loaders.gl/images';
 
 import type {WMSCapabilities} from './wms-capabilities-loader';
 import type {WMSFeatureInfo} from './wip/wms-feature-info-loader';
@@ -289,7 +289,7 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {
-      return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+      return await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions);
     } catch {
       throw this._parseError(arrayBuffer);
     }
@@ -341,7 +341,7 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {
-      return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+      return await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions);
     } catch {
       throw this._parseError(arrayBuffer);
     }

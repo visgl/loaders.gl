@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader} from '@loaders.gl/images';
 import type {GetUrl, UrlOptions} from './texture-api-types';
 import {getImageUrls} from './load-image';
 import {deepLoad} from './deep-load';
@@ -61,5 +61,5 @@ export async function loadImageTextureCube(
   options = {}
 ): Promise<ImageCubeTexture> {
   const urls = await getImageCubeUrls(getUrl, options);
-  return (await deepLoad(urls, ImageLoader.parse, options)) as ImageCubeTexture;
+  return (await deepLoad(urls, ImageBitmapLoader.parse, options)) as ImageCubeTexture;
 }

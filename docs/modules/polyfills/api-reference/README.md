@@ -30,7 +30,22 @@ The polyfills module installs the following capabilities.
 - Node Stream support
 - Node library loading
 - Image parsing and encoding under Node.js
-  |
+- A minimal global `ImageBitmap` polyfill plus a global `getImageBitmapData(image)` helper under Node.js
+
+## ImageBitmap Polyfill
+
+When `@loaders.gl/polyfills` is imported under Node.js, it installs:
+
+- `globalThis.ImageBitmap` as a lightweight wrapper around decoded image pixels
+- `globalThis.getImageBitmapData(image)` to unwrap that bitmap back to `{data, width, height}`
+
+This polyfill is intentionally limited:
+
+- it is designed to support [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) and parsed-image helpers
+- it does not install `createImageBitmap()`
+- it does not attempt to emulate full browser canvas/image interoperability
+
+The Node image decoder support remains limited to the formats supported by the existing loaders.gl image polyfills.
 
 ## ReadableFile utilities
 

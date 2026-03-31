@@ -12,7 +12,7 @@ import type {
   ImageType
 } from '@loaders.gl/loader-utils';
 import {DataSource, DataSourceOptions, resolvePath} from '@loaders.gl/loader-utils';
-import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
+import {ImageBitmapLoader, ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
 import {PMTilesFormat} from './pmtiles-format';
 
@@ -27,7 +27,7 @@ const VERSION = '1.0.0';
 
 export type PMTilesSourceOptions = DataSourceOptions & {
   core?: DataSourceOptions['core'] & {
-    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
   };
   pmtiles?: {};
 };
@@ -128,7 +128,7 @@ export class PMTilesTileSource
 
   async getImageTile(tileParams: GetTileParameters): Promise<ImageType | null> {
     const arrayBuffer = await this.getTile(tileParams);
-    return arrayBuffer ? await ImageLoader.parse(arrayBuffer, this.loadOptions) : null;
+    return arrayBuffer ? await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions) : null;
   }
 
   // VectorTileSource interface implementation

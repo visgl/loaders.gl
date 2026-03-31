@@ -3,7 +3,7 @@ import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
-import {ImageLoader, getImageData} from '@loaders.gl/images';
+import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
@@ -36,7 +36,7 @@ function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 
     case 'jpg':
     case 'png':
     default:
-      return ImageLoader;
+      return ImageBitmapLoader;
   }
 }
 
@@ -71,14 +71,13 @@ export async function parseI3STileContent(
     // @ts-expect-error options is not properly typed
     if (options?.i3s.decodeTextures) {
       // TODO - replace with switch
-      if (loader === ImageLoader) {
+      if (loader === ImageBitmapLoader) {
         const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
         try {
-          // Image constructor is not supported in worker thread.
-          // Do parsing image data on the main thread by using context to avoid worker issues.
+          // Route image decoding through the main-thread context when available.
           const parsedTexture: any = await parseFromContext(
             arrayBuffer,
-            ImageLoader,
+            ImageBitmapLoader,
             imageLoaderOptions,
             context!
           );

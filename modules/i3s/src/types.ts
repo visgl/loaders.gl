@@ -122,7 +122,7 @@ export type I3SMinimalNodeData = {
   materialDefinition?: I3SMaterialDefinition;
   /** Texture format per I3S spec */
   textureFormat: I3STextureFormat;
-  /** Loader options for texture loader. The loader might be `CompressedTextureLoader` for `dds`, BasisLoader for `ktx2` or ImageLoader for `jpg`and `png` */
+  /** Loader options for texture loader. The loader might be `CompressedTextureLoader` for `dds`, BasisLoader for `ktx2` or `ImageBitmapLoader` for `jpg` and `png`. */
   textureLoaderOptions?: {[key: string]: any};
   /** Child Nodes references  */
   children: NodeReference[];

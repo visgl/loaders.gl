@@ -12,7 +12,7 @@ import {
   CrunchWorkerLoader,
   GL_EXTENSIONS_CONSTANTS
 } from '@loaders.gl/textures';
-import {ImageLoader, ImageType} from '@loaders.gl/images';
+import {ImageBitmapLoader, ImageType} from '@loaders.gl/images';
 
 import {Device, Texture} from '@luma.gl/core';
 import {Model} from '@luma.gl/engine';
@@ -348,7 +348,7 @@ const TextureInfo = styled.ul`
   font-size: 14px;
 `;
 
-registerLoaders([BasisLoader, CompressedTextureLoader, ImageLoader]);
+registerLoaders([BasisLoader, CompressedTextureLoader, ImageBitmapLoader]);
 
 // TEXTURE SHADERS
 
@@ -482,7 +482,7 @@ export class CompressedTexture extends React.PureComponent<
         CompressedTextureLoader,
         CrunchWorkerLoader,
         BasisLoader,
-        ImageLoader
+        ImageBitmapLoader
       ]);
 
       const result = loader && (await load(arrayBuffer, loader, options));
@@ -495,7 +495,7 @@ export class CompressedTexture extends React.PureComponent<
           this.renderEmptyTexture(device, model);
           this.renderCompressedTexture(device, model, result, loader.name, src);
           break;
-        case 'image':
+        case 'imagebitmap':
           this.renderEmptyTexture(device, model);
           this.renderImageTexture(device, model, result);
           break;

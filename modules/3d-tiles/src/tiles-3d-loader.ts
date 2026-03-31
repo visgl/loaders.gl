@@ -5,7 +5,7 @@
 import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 // / import type { GLTFLoaderOptions } from '@loaders.gl/gltf';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 
 import {path} from '@loaders.gl/loader-utils';
 import {TILESET_TYPE, LOD_METRIC_TYPE} from '@loaders.gl/tiles';
@@ -17,7 +17,7 @@ import {Tiles3DTilesetJSON, Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed}
 export type Tiles3DLoaderOptions = StrictLoaderOptions &
   // GLTFLoaderOptions & - TODO not yet exported
   DracoLoaderOptions &
-  ImageLoaderOptions & {
+  ImageBitmapLoaderOptions & {
     '3d-tiles'?: {
       /** Whether to parse any embedded glTF binaries (or extract memory for independent glTF parsing) */
       loadGLTF?: boolean;

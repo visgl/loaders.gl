@@ -14,7 +14,7 @@ npm install @loaders.gl/core
 | Loader                                                                        | Description                         |
 | ----------------------------------------------------------------------------- | ----------------------------------- |
 | [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) | Preferred pure `ImageBitmap` loader |
-| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)              |                                     |
+| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)              | Deprecated compatibility loader     |
 | [`ImageWriter`](/docs/modules/images/api-reference/image-writer)              |                                     |
 
 ### Parsed Image API

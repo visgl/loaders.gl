@@ -7,7 +7,7 @@ import type {ParseGLBOptions} from './parse-glb';
 
 import type {ImageType, TextureLevel} from '@loaders.gl/schema';
 import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader} from '@loaders.gl/images';
 import {BasisLoader} from '@loaders.gl/textures';
 
 import {assert} from '../utils/assert';
@@ -229,7 +229,7 @@ async function loadImage(
   // Call `parse`
   let parsedImage = (await parseFromContext(
     arrayBuffer,
-    [ImageLoader, BasisLoader],
+    [ImageBitmapLoader, BasisLoader],
     gltfOptions,
     context
   )) as ImageType | TextureLevel[][];
@@ -244,8 +244,8 @@ async function loadImage(
       data: parsedImage[0]
     };
   }
-  // TODO making sure ImageLoader is overridable by using array of loaders
-  // const parsedImage = await parse(arrayBuffer, [ImageLoader]);
+  // TODO making sure ImageBitmapLoader is overridable by using array of loaders
+  // const parsedImage = await parse(arrayBuffer, [ImageBitmapLoader]);
 
   // Store the loaded image
   gltf.images = gltf.images || [];

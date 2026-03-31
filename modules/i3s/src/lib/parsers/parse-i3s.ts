@@ -41,7 +41,7 @@ export function normalizeTileData(tile : Node3DIndexDocument, context: LoaderCon
     url,
     contentUrl,
     textureUrl,
-    textureFormat: 'jpg', // `jpg` format will cause `ImageLoader` usage that will be able to handle `png` as well
+    textureFormat: 'jpg', // `jpg` format selects bitmap image loading that can also handle `png`
     attributeUrls,
     isDracoGeometry: false
   });

@@ -16,14 +16,13 @@ The `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Map
 ## Usage
 
 ```typescript
-import {ImageLoader} from '@loaders.gl/images';
 import {TerrainLoader} from '@loaders.gl/terrain';
-import {load, registerLoaders} from '@loaders.gl/core';
-
-registerLoaders(ImageLoader);
+import {load} from '@loaders.gl/core';
 
 const data = await load(url, TerrainLoader, options);
 ```
+
+`TerrainLoader` internally decodes heightmap images with [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) and then converts them with `getImageData(image)`.
 
 ## Options
 

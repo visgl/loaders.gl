@@ -64,10 +64,10 @@ test('ImageBitmapLoader#node ImageBitmap data is globally accessible', async (t)
 
   const image = await load(IMAGE_URL, ImageBitmapLoader);
   // @ts-expect-error Node polyfill installs a global helper
-  const imageData = globalThis.getImageData(image);
-  t.equal(imageData.width, 480, 'global getImageData returns width');
-  t.equal(imageData.height, 320, 'global getImageData returns height');
-  t.ok(ArrayBuffer.isView(imageData.data), 'global getImageData returns pixels');
+  const imageData = globalThis.getImageBitmapData(image);
+  t.equal(imageData.width, 480, 'global getImageBitmapData returns width');
+  t.equal(imageData.height, 320, 'global getImageBitmapData returns height');
+  t.ok(ArrayBuffer.isView(imageData.data), 'global getImageBitmapData returns pixels');
 
   t.end();
 });

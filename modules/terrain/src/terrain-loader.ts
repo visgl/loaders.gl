@@ -4,13 +4,13 @@
 
 import type {Loader} from '@loaders.gl/loader-utils';
 import type {Mesh} from '@loaders.gl/schema';
-import type {ImageLoaderOptions} from '@loaders.gl/images';
+import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
 import type {TerrainOptions} from './lib/parse-terrain';
 
 /** TerrainLoader options */
-export type TerrainLoaderOptions = ImageLoaderOptions & {
+export type TerrainLoaderOptions = ImageBitmapLoaderOptions & {
   /** TerrainLoader options */
   terrain?: TerrainOptions & {
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */

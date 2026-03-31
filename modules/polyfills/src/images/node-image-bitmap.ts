@@ -6,7 +6,8 @@ type NodeImageData = {
 
 /**
  * Minimal Node.js `ImageBitmap` polyfill backed by decoded pixel data.
- * This is intentionally limited to the functionality needed by `ImageLoader`.
+ * This is intentionally limited to the functionality needed by `ImageBitmapLoader`
+ * and `getImageBitmapData()`.
  */
 export class NodeImageBitmap {
   /** Width of the decoded bitmap in pixels. */
@@ -60,9 +61,9 @@ export function isNodeImageBitmap(image: unknown): image is NodeImageBitmap {
 /**
  * Returns decoded image data from a Node.js `ImageBitmap`.
  */
-export function getImageDataNode(image: unknown): NodeImageData {
+export function getImageBitmapDataNode(image: unknown): NodeImageData {
   if (!isNodeImageBitmap(image)) {
-    throw new Error('getImageData');
+    throw new Error('getImageBitmapData');
   }
 
   return image._getImageData();

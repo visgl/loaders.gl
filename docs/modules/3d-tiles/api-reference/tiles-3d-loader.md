@@ -6,16 +6,16 @@
 
 Parses a [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles) tileset.
 
-| Loader                | Characteristic                                                                                                      |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                   |
-| File Type             | Binary (with linked assets)                                                                                         |
-| File Format           | [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications)  |
-| Data Format           | Data Formats (see below)                                                                                            |
-| Decoder Type          | Asynchronous                                                                                                        |
-| Worker Thread Support | No                                                                                                                  |
-| Streaming Support     | No \*                                                                                                               |
-| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageLoader` (.`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
+| Loader                | Characteristic                                                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| File Extensions       | `.b3dm`,`.i3dm`, `.pnts`, `.cmpt`                                                                                        |
+| File Type             | Binary (with linked assets)                                                                                              |
+| File Format           | [3D Tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification#tile-format-specifications)       |
+| Data Format           | Data Formats (see below)                                                                                                 |
+| Decoder Type          | Asynchronous                                                                                                             |
+| Worker Thread Support | No                                                                                                                       |
+| Streaming Support     | No \*                                                                                                                    |
+| Subloaders            | `DracoLoader` (`.pnts`), `GLTFLoader` (`.b3dm`, `.i3dm`), `ImageBitmapLoader` (`.jpg`, `.png`), `TextureLoader` (`.ktx`) |
 
 \* Streaming is not supported for individual tiles, however tilesets are streamed by loading only the tiles needed for the specified viewports.
 
@@ -101,7 +101,7 @@ For i3dm and b3dm tiles:
 | ------------------- | ------- | ------- | ------------------------------------- |
 | `3d-tiles.loadGLTF` | Boolean | `true`  | Fetch and parse any linked glTF files |
 
-If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader) via the `options.gltf` sub options.
+If `options['3d-tiles'].loadGLTF` is `true`, GLTF loading can be controlled by providing [`GLTFLoader` options](/docs/modules/gltf/api-reference/gltf-loader) via the `options.gltf` sub options. Standard linked raster images are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
 
 ## Notes about Tile Types
 

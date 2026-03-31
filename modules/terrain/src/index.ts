@@ -4,7 +4,7 @@
 
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {parseFromContext} from '@loaders.gl/loader-utils';
-import {ImageLoader, getImageData} from '@loaders.gl/images';
+import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {parseQuantizedMesh} from './lib/parse-quantized-mesh';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
 
@@ -32,7 +32,7 @@ export async function parseTerrain(
     ...options,
     core: {...options?.core, mimeType: 'application/x.image'}
   };
-  const image = await parseFromContext(arrayBuffer, ImageLoader, loadImageOptions, context!);
+  const image = await parseFromContext(arrayBuffer, ImageBitmapLoader, loadImageOptions, context!);
   const imageData = getImageData(image);
   const terrainImage = {
     width: imageData.width,

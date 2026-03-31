@@ -10,8 +10,8 @@ import {TerrainLoader, TerrainWorkerLoader} from '@loaders.gl/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 
 // Should be possible to remove this
-import {ImageLoader} from '@loaders.gl/images';
-registerLoaders([ImageLoader]);
+import {ImageBitmapLoader} from '@loaders.gl/images';
+registerLoaders([ImageBitmapLoader]);
 
 const MAPBOX_TERRAIN_PNG_URL = '@loaders.gl/terrain/test/data/mapbox.png';
 const TERRARIUM_TERRAIN_PNG_URL = '@loaders.gl/terrain/test/data/terrarium.png';

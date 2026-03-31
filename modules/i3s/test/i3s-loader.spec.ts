@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
-import {isBrowser, load} from '@loaders.gl/core';
+import {load} from '@loaders.gl/core';
+import {getImageData} from '@loaders.gl/images';
 import {loadI3STileContent} from './test-utils/load-utils';
 import {I3SLoader} from '@loaders.gl/i3s';
 
@@ -21,13 +22,10 @@ test('I3SLoader#Load tile content', async (t) => {
   t.equal(content.attributes.texCoords.value.length, 51276);
   t.notOk(content.texture);
   t.ok(content.material);
-  // ImageLoader returns different things on browser and Node
   const texture = content.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
-  if (isBrowser) {
-    t.ok(texture);
-  } else {
-    t.equal(texture.data.byteLength, 131072);
-  }
+  const textureData = getImageData(texture);
+  t.ok(texture);
+  t.equal(textureData.data.byteLength, 131072);
   t.end();
 });
 

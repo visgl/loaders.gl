@@ -5,7 +5,7 @@ import {validateLoader} from 'test/common/conformance';
 import {registerLoaders, load, parseSync, fetchFile} from '@loaders.gl/core';
 import {GLTFLoader, postProcessGLTF} from '@loaders.gl/gltf';
 import {DracoLoader} from '@loaders.gl/draco';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader} from '@loaders.gl/images';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLTF_JSON_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.gltf';
@@ -57,11 +57,11 @@ test('GLTFLoader#load(3d tile GLB)', async (t) => {
   const result = await load(GLB_TILE_URL, [GLTFLoader, DracoLoader]);
   t.ok(result, 'Test that GLB from 3D tile parses');
 
-  const result2 = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageLoader]);
+  const result2 = await load(GLB_TILE_WITH_DRACO_URL, [GLTFLoader, DracoLoader, ImageBitmapLoader]);
   t.ok(result2, 'Parses Draco GLB with supplied DracoLoader');
 
   // TODO - prone to flakiness since we have async unregisterLoaders calls
-  registerLoaders([DracoLoader, ImageLoader]);
+  registerLoaders([DracoLoader, ImageBitmapLoader]);
 
   const gltf2 = await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader);
   t.ok(gltf2, 'Parses Draco GLB with default registered DracoLoader');
