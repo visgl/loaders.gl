@@ -98,8 +98,7 @@
     "@loaders.gl/textures": "^4.4.0",
     "@loaders.gl/tiles": "^4.4.0",
     "@loaders.gl/worker-utils": "^4.4.0",
-    "@loaders.gl/wms": "^4.4.0"
-    ,
+    "@loaders.gl/wms": "^4.4.0",
     "@loaders.gl/zip": "^4.4.0"
   }
 }
