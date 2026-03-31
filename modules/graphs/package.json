@@ -36,7 +36,7 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/graphs\""
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.1"
+    "@loaders.gl/core": "~4.4.0"
   },
   "gitHead": "f1a6da2c65e4ea06b59c61d1884819b6be577fe3"
 }

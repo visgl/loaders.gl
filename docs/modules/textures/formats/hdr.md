@@ -1,5 +1,9 @@
 # Radiance HDR
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+</p>
+
 - _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
 - _[`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)_ - loads Radiance RGBE `.hdr` files as `Texture`
 

@@ -1,16 +1,17 @@
 # What's New
 
-## v4.4 (in development)
+## v4.4
 
-Target Release Date: Q1 2026
-
-See the [v4.4 Roadmap](/docs/roadmap) for more details.
+Release Date: March 31, 2026
 
 **Highlights**
 
-- **TypeScript** - TypeScript v5.9, stricter typings, `ArrayBuffer` -> `ArrayBufferLike` codebase migration.
-- **Website** - docusaurus@3.9. Website search.
-- **Tooling** - Bump to @vis.gl/dev-tools@1.0, GitHub CI optimizations, migrate from volta to corepack
+- **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
+- **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader).
+- **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
+- **@loaders.gl/mvt** - New experimental [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
+
+**Minor Features**
 
 **All modules**
 
@@ -24,32 +25,23 @@ See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
 - `LZOCompression` was removed due to lack of maintenance and licensing concerns with the underlying `lzo-wasm` library.
 
-**@loaders.gl/mvt**
-
-- [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) A new experimental writer that allows GeoJSON to be written in binary MVT tile format.
-
-**@loaders.gl/mlt**
-
-- [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader), [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source), and [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) documentation were added, including a new [MLT website example](/examples/tiles/mlt).
-
 **@loaders.gl/shapefile**
 
 - `ShapefileLoader` - Now forwards `dbf` loader options (such as `workerUrl`) when loading sidecar files.
 
-**@loaders.gl/arrow**
+**@loaders.gl/zip**
 
-- Support for `apache-arrow@21`
-- A new documentation page about [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
+- `ZipWriter` adds `options.zip.createFolders` to emit parent directory entries for nested file keys.
 
 **@loaders.gl/tile-converter**
 
 - `tile-converter` is now broken out into separate "application" and can be versioned and published independently.
 
-**@loaders.gl/textures**
+**Internal Changes**
 
-- Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields.
-- `BasisLoader` now accepts `basis.supportedTextureFormats` to guide `'auto'` format selection with an explicit list of supported target formats.
-- [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader) adds support for Radiance RGBE `.hdr` textures and returns a `Texture` with a decoded `rgba32float` level.
+- **TypeScript** - TypeScript v5.9, stricter typings, `ArrayBuffer` -> `ArrayBufferLike` codebase migration.
+- **Website** - docusaurus@3.9. Website search.
+- **Tooling** - Bump to @vis.gl/dev-tools@1.0, GitHub CI optimizations, migrate from volta to corepack
 
 ## v4.3
 
@@ -234,7 +226,7 @@ A major release that brings:
 
 **@loaders.gl/arrow**
 
-- Now uses latest [`apache-arrow` v13](/docs/arrowjs/whats-new#v130).
+- Now uses latest [`apache-arrow` v21](/docs/arrowjs/whats-new#v210).
 
 **@loaders.gl/draco**
 

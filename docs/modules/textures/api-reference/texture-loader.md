@@ -6,13 +6,13 @@
 
 A loader for image-based composite textures described by a JSON manifest.
 
-| Loader         | Characteristic                                              |
-| -------------- | ----------------------------------------------------------- |
-| File Format    | JSON manifest                                               |
-| File Extension | `.json`                                                     |
-| File Type      | Text                                                        |
-| Data Format    | [`Texture`](/docs/modules/textures/README#texture-category) |
-| Supported APIs | `load`, `parse`                                             |
+| Loader         | Characteristic                                       |
+| -------------- | ---------------------------------------------------- |
+| File Format    | JSON manifest                                        |
+| File Extension | `.json`                                              |
+| File Type      | Text                                                 |
+| Data Format    | [`Texture`](/docs/modules/textures#texture-category) |
+| Supported APIs | `load`, `parse`                                      |
 
 ## Usage
 
