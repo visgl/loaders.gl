@@ -8,4 +8,4 @@
  * @note Change between 'beta' and 'latest' depending on whether publishing alpha or prod releases
  * @todo - unpkg.com doesn't seem to have a `latest` specifier for alpha releases...
  */
-export const NPM_TAG = 'beta';
+export const NPM_TAG = 'latest';

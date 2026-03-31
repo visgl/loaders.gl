@@ -23,28 +23,28 @@ npm install @loaders.gl/core
 
 The `@loaders.gl/textures` module handles the following formats:
 
-| Format                                                                      | Description                                                   |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures) | Overview of GPU texture container and compression formats     |
-| [`KTX / KTX2`](/docs/modules/textures/formats/ktx)                          | Khronos texture container formats for mipmapped textures      |
-| [`DDS`](/docs/modules/textures/formats/dds)                                 | Microsoft DirectDraw Surface texture container                |
-| [`PVR`](/docs/modules/textures/formats/pvr)                                 | PowerVR texture container format                              |
-| [`Basis Universal`](/docs/modules/textures/formats/basis)                   | Supercompressed texture format for runtime transcoding        |
-| [`Crunch`](/docs/modules/textures/formats/crunch)                           | Lossy compressed texture distribution format for GPU textures |
-| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files       |
+| Format                                                                      | Description                                                                                                                                             |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`Compressed Textures`](/docs/modules/textures/formats/compressed-textures) | Overview of GPU texture container and compression formats                                                                                               |
+| [`KTX / KTX2`](/docs/modules/textures/formats/ktx)                          | Khronos texture container formats for mipmapped textures                                                                                                |
+| [`DDS`](/docs/modules/textures/formats/dds)                                 | Microsoft DirectDraw Surface texture container                                                                                                          |
+| [`PVR`](/docs/modules/textures/formats/pvr)                                 | PowerVR texture container format                                                                                                                        |
+| [`Basis Universal`](/docs/modules/textures/formats/basis)                   | Supercompressed texture format for runtime transcoding                                                                                                  |
+| [`Crunch`](/docs/modules/textures/formats/crunch)                           | Lossy compressed texture distribution format for GPU textures                                                                                           |
+| [`Radiance HDR`](/docs/modules/textures/formats/hdr)                        | High-dynamic-range RGBE textures stored in `.hdr` files <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
 
 ## API
 
-| Loader                                                                                      | Description                                     |
-| ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Basis Universal textures as `TextureLevel[][]`  |
-| [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]` |
-| [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture`           |
-| [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`           |
-| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain       |
-| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays                  |
-| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps                        |
-| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Manifest-driven cube arrays                     |
+| Loader                                                                                      | Description                                                                                                                               |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Basis Universal textures as `TextureLevel[][]`                                                                                            |
+| [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]`                                                                                           |
+| [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />     |
+| [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`                                                                                                     |
+| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
+| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />            |
+| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />                  |
+| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Manifest-driven cube arrays <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />               |
 
 ## Return Types
 
@@ -80,10 +80,10 @@ See [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) and [`Com
 
 The textures module also includes manifest-driven loaders for composite image textures:
 
-- [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader) for a single image or mip chain
-- [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) for texture arrays, including mipmapped layers
-- [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader) for cubemaps, including mipmapped faces
-- [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays
+- [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader) for a single image or mip chain <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) for texture arrays, including mipmapped layers <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader) for cubemaps, including mipmapped faces <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 
 These loaders resolve relative member URLs against the manifest URL, or against `options.core.baseUrl` when parsing an in-memory manifest.
 Member assets are parsed with `ImageLoader` by default, and additional loaders passed to top-level `load()` are also available for manifest members.
