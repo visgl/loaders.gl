@@ -2,6 +2,9 @@
 
 ## v4.4
 
+### v4.4.1
+
+- Fix peerDependencies specifiers
 
 ### v4.4.0
 
