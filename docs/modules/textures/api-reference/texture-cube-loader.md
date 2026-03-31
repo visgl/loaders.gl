@@ -11,7 +11,7 @@ A loader for cubemaps described by a JSON manifest.
 | File Format    | JSON manifest                                               |
 | File Extension | `.json`                                                     |
 | File Type      | Text                                                        |
-| Data Format    | [`Texture`](/docs/modules/textures/README#texture-category) |
+| Data Format    | [`Texture`](/docs/modules/textures#texture-category) |
 | Supported APIs | `load`, `parse`                                             |
 
 ## Usage
