@@ -2,22 +2,6 @@
 
 APIs in `@loaders.gl/core` takes an `options?: LoaderOptions` parameter. The options are documented on this page.
 
-## Loader specific options
-
-The options object can contain loader specific options. The options for each loader are supplied in a sub object,
-see the documentation for each loader for details:
-
-```typescript
-{
-  csv: {
-    shape: 'row-object-table'
-  },
-  json: {
-    shape: 'row-object-table'
-  }
-}
-```
-
 ## Top-level options
 
 Top level options are interpreted by the core API and apply to all loaders.
@@ -38,13 +22,29 @@ Top level options are interpreted by the core API and apply to all loaders.
 | `options.modules`               | `object`               | -          | Supply bundled JS/WASM runtime modules or URL overrides. See the [dependency guide](/docs/developer-guide/dependencies) and individual loader or writer docs for supported keys.                                  |
 | `options.CDN` (🚧 experimental) | `string`               | -          | Controls certain script loading from CDN. `true` loads from `unpkg.com/@loaders.gl`. `false` load from local urls. `string` alternate CDN url.                                                                    |
 
+## Loader specific options
+
+The options object can contain loader specific options. The options for each loader are supplied in a sub object,
+see the documentation for each loader for details:
+
+```typescript
+{
+  csv: {
+    shape: 'row-object-table'
+  },
+  json: {
+    shape: 'row-object-table'
+  }
+}
+```
+
 ## Batched parsing options
 
-| Option                       | Type      | Default | Description                                                                                               |
-| ---------------------------- | --------- | ------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| `options.metadata`           | `boolean` | `false` | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded. |
-| `options.batches.chunkSize?` | `number`  | N/A     | When set, "atomic" inputs (like `ArrayBuffer` or `string`) are chunked, enabling batched parsing.         | No effect if input is already an iterator or stream. |
-| `options.transforms`         | `*[]`     | `[]`    | An array with transform functions that can be applied to the input data before parsing.                   |
+| Option                       | Type      | Default | Description                                                                                                                                 |
+| ---------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `options.metadata`           | `boolean` | `false` | An initial batch with `batchType: 'metadata'` will be added with information about the data being loaded.                                  |
+| `options.batches.chunkSize?` | `number`  | N/A     | When set, "atomic" inputs (like `ArrayBuffer` or `string`) are chunked, enabling batched parsing. No effect if input is already an iterator or stream. |
+| `options.transforms`         | `*[]`     | `[]`    | An array with transform functions that can be applied to the input data before parsing.                                                     |
 
 Notes:
 

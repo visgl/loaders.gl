@@ -1,5 +1,9 @@
 # @loaders.gl/mlt
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+</p>
+
 Support for loading [MapLibre Tile](/docs/modules/mlt/formats/mlt) vector tiles.
 
 ## Installation
