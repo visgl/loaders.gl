@@ -1,6 +1,9 @@
-import type {ImageLoaderOptions} from '../../image-loader';
 import {isSVG, getBlob} from './svg-utils';
 import {parseToImage} from './parse-to-image';
+
+type ImageBitmapParseOptions = {
+  imagebitmap?: ImageBitmapOptions & Record<string, unknown>;
+};
 
 let imagebitmapOptionsSupported = true;
 
@@ -13,7 +16,7 @@ let imagebitmapOptionsSupported = true;
  */
 export async function parseToImageBitmap(
   arrayBuffer: ArrayBuffer,
-  options: ImageLoaderOptions,
+  options: ImageBitmapParseOptions,
   url?: string
 ): Promise<ImageBitmap> {
   let imageBitmapSource: Blob | HTMLImageElement;
@@ -21,7 +24,7 @@ export async function parseToImageBitmap(
   // Cannot parse SVG directly to ImageBitmap, parse to Image first
   if (isSVG(url)) {
     // Note: this only works on main thread
-    imageBitmapSource = await parseToImage(arrayBuffer, url);
+    imageBitmapSource = await parseToImage(arrayBuffer, options, url);
   } else {
     // Create blob from the array buffer
     imageBitmapSource = getBlob(arrayBuffer, url);

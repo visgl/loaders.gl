@@ -6,7 +6,8 @@ The image loader category documents a common data format, options, conventions a
 
 | Loader                                                                                      | Notes                                                 |
 | ------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)                            | Loads compressed images (PNG, JPG, etc)               |
+| [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader)               | Loads compressed images as `ImageBitmap`              |
+| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)                            | Deprecated compatibility image loader                 |
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | Parses compressed textures to image data mipmap array |
 | [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)                          | Transpiles into supported compressed texture format   |
 
@@ -18,9 +19,9 @@ Individual loaders for specific image formats can be imported for `@loaders.gl/i
 
 ```typescript
 import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader} from '@loaders.gl/images';
 import {registerLoaders, load} from '@loaders.gl/core';
-registerLoaders(ImageLoader);
+registerLoaders(ImageBitmapLoader);
 const image = await load('image.jpeg');
 ```
 
@@ -30,7 +31,7 @@ However since each image loader is quite small (in terms of code size and bundle
 import '@loaders.gl/polyfills'; // Only required if loading images under Node.js
 import {ImageLoaders} from '@loaders.gl/images';
 import {registerLoader, load} from '@loaders.gl/core';
-registerLoaders(ImageLoader);
+registerLoaders(ImageBitmapLoader);
 const image = await load('image.jpeg');
 ```
 
@@ -38,17 +39,17 @@ const image = await load('image.jpeg');
 
 Images can be loaded as image data or as opaque image objects (`Image` or `ImageBitmap`).
 
-A loaded image can always be returned as an _image data_ object (an object containing a `Uint8Array` with the pixel data, and metadata like `width` and `height`, and in Node.js images are always loaded as image data objects).
+A loaded image can always be converted to an _image data_ object (an object containing a `Uint8Array` with the pixel data, and metadata like `width` and `height`).
 
-In the browser, `ImageLoader` returns `ImageBitmap`. In browsers without `ImageBitmap` support it throws instead of falling back to `Image` (aka `HTMLImageElement`).
+`ImageBitmapLoader` returns `ImageBitmap` in browsers. Under Node.js with `@loaders.gl/polyfills`, `ImageBitmapLoader` returns a minimal `ImageBitmap` polyfill backed by decoded image data. Deprecated `ImageLoader` preserves older compatibility return types and options.
 
 Note that _type_ is independent of the _format_ of the image (see below).
 
-| Image Type    | Class                                                                | Availability         | Workers                | Description                                                                                                           |
-| ------------- | -------------------------------------------------------------------- | -------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | No                     | Compatible with headless gl.                                                                                          |
-| `imagebitmap` | `ImageBitmap`                                                        | Chrome/Firefox       | Yes: **transferrable** | A newer JavaScript class designed for efficient loading of images, optimized for use in worker threads and with WebGL |
-| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | No                     | The traditional HTML/JavaScript class used for image loading into DOM trees. WebGL compatible.                        |
+| Image Type    | Class                                                                | Availability         | Workers      | Description                                                                                                       |
+| ------------- | -------------------------------------------------------------------- | -------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `data`        | Object with `{width: Number, height: Number, data: Uint8Array, ...}` | Node.js and browsers | No           | Compatible with headless gl and still supported by helper APIs.                                                   |
+| `imagebitmap` | `ImageBitmap`                                                        | Browser, Node.js     | Browser only | The preferred image type returned by `ImageLoader`; Node.js uses a minimal polyfill, browsers use the native API. |
+| `image`       | `Image` (aka `HTMLImageElement`)                                     | All browsers         | No           | The traditional HTML/JavaScript class used for image loading into DOM trees. WebGL compatible.                    |
 
 ## Image Data
 

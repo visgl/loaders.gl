@@ -8,6 +8,7 @@ import {atob, btoa} from './buffer/btoa.node';
 
 import {encodeImageNode} from './images/encode-image-node';
 import {parseImageNode, NODE_FORMAT_SUPPORT} from './images/parse-image-node';
+import {NodeImageBitmap, getImageDataNode, isNodeImageBitmap} from './images/node-image-bitmap';
 
 // FILESYSTEM POLYFILLS
 import {NodeFile} from './filesystems/node-file';
@@ -84,6 +85,16 @@ if (!('btoa' in globalThis) && btoa) {
 globalThis.loaders.encodeImageNode = encodeImageNode;
 globalThis.loaders.parseImageNode = parseImageNode;
 globalThis.loaders.imageFormatsNode = NODE_FORMAT_SUPPORT;
+globalThis.loaders.getImageDataNode = getImageDataNode;
+globalThis.loaders.isImageBitmapNode = isNodeImageBitmap;
+
+if (!globalThis.ImageBitmap) {
+  (globalThis as any).ImageBitmap = NodeImageBitmap;
+}
+
+if (!('getImageData' in globalThis)) {
+  (globalThis as any).getImageData = getImageDataNode;
+}
 
 // Deprecated, remove after republish
 globalThis._parseImageNode = parseImageNode;

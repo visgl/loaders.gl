@@ -11,16 +11,17 @@ npm install @loaders.gl/core
 
 ## API
 
-| Loader                                                           | Description |
-| ---------------------------------------------------------------- | ----------- |
-| [`ImageLoader`](/docs/modules/images/api-reference/image-loader) |             |
-| [`ImageWriter`](/docs/modules/images/api-reference/image-writer) |             |
+| Loader                                                                        | Description                         |
+| ----------------------------------------------------------------------------- | ----------------------------------- |
+| [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) | Preferred pure `ImageBitmap` loader |
+| [`ImageLoader`](/docs/modules/images/api-reference/image-loader)              |                                     |
+| [`ImageWriter`](/docs/modules/images/api-reference/image-writer)              |                                     |
 
 ### Parsed Image API
 
 ### Binary Image API
 
-A set of functions that can extract information from "unparsed" binary memory representation of certain image formats. These functions are intended to be called on raw `ArrayBuffer` data, before the `ImageLoader` parses it and converts it to a parsed image type.
+A set of functions that can extract information from "unparsed" binary memory representation of certain image formats. These functions are intended to be called on raw `ArrayBuffer` data, before an image loader parses it and converts it to a parsed image type.
 
 These functions are used internally to autodetect if image loader can be used to parse a certain `ArrayBuffer`, but are also available to applications.
 
@@ -32,7 +33,7 @@ These functions are used internally to autodetect if image loader can be used to
 
 ### Parsed Image API
 
-A set of functions to work with parsed images returned by the `ImageLoader`.
+A set of functions to work with parsed images returned by `ImageBitmapLoader`, deprecated `ImageLoader`, and other image-category APIs.
 
 | Function                                        | Description                                                                                  |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -46,8 +47,8 @@ A set of functions to work with parsed images returned by the `ImageLoader`.
 
 The parsed image APIs support multiple image representations.
 
-- `ImageBitmap` - The browser return type of `ImageLoader`.
-- `Image` (aka `HTMLImageElement`) - Still supported by helper APIs such as `getImageData`, but no longer returned by `ImageLoader`.
-- `data` - Raw binary memory representing the image pixels. This is the Node.js return type of `ImageLoader`, and can also be produced from browser images with `getImageData(image)`.
+- `ImageBitmap` - The preferred return type of `ImageBitmapLoader`.
+- `Image` (aka `HTMLImageElement`) - Still supported by helper APIs such as `getImageData`, and remains available through deprecated `ImageLoader`.
+- `data` - Raw binary memory representing the image pixels. This remains supported by helper APIs and can be produced from images with `getImageData(image)`.
 
-See [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for more details on options etc.
+Prefer [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) for new code. See deprecated [`ImageLoader`](/docs/modules/images/api-reference/image-loader) for compatibility behavior and legacy options.

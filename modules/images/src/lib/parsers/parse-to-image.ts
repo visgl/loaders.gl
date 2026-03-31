@@ -1,8 +1,16 @@
+type HTMLImageLoadOptions = {
+  image?: {
+    decode?: boolean;
+  };
+  imagebitmap?: ImageBitmapOptions & Record<string, unknown>;
+};
+
 import {getBlobOrSVGDataUrl} from './svg-utils';
 
 // Parses html image from array buffer
 export async function parseToImage(
   arrayBuffer: ArrayBuffer,
+  options?: HTMLImageLoadOptions,
   url?: string
 ): Promise<HTMLImageElement> {
   // Note: image parsing requires conversion to Blob (for createObjectURL).
@@ -13,7 +21,7 @@ export async function parseToImage(
   const URL = self.URL || self.webkitURL;
   const objectUrl = typeof blobOrDataUrl !== 'string' && URL.createObjectURL(blobOrDataUrl);
   try {
-    return await loadToImage(objectUrl || (blobOrDataUrl as string));
+    return await loadToImage(objectUrl || (blobOrDataUrl as string), options);
   } finally {
     if (objectUrl) {
       URL.revokeObjectURL(objectUrl);
@@ -21,8 +29,14 @@ export async function parseToImage(
   }
 }
 
-async function loadToImage(url: string): Promise<HTMLImageElement> {
+async function loadToImage(url: string, options?: HTMLImageLoadOptions): Promise<HTMLImageElement> {
   const image = new Image();
+  image.src = url;
+
+  if (options?.image?.decode && image.decode) {
+    await image.decode();
+    return image;
+  }
 
   // Create a promise that tracks onload/onerror callbacks
   return await new Promise((resolve, reject) => {
@@ -35,6 +49,5 @@ async function loadToImage(url: string): Promise<HTMLImageElement> {
     } catch (error) {
       reject(error);
     }
-    image.src = url;
   });
 }

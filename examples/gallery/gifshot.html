@@ -11,7 +11,7 @@
 <script src="https://unpkg.com/@loaders.gl/video@3.3.1/dist/dist.min.js"></script>
 
 <script>
-  const {load, GIFBuilder, ImageLoader} = loaders;
+  const {load, GIFBuilder, ImageBitmapLoader} = loaders;
 
   const elStatus = document.getElementById('status');
   const elProgress = document.getElementById('progress');
@@ -27,7 +27,7 @@
     ];
 
     const images = await Promise.all(
-      IMAGE_URLS.map(url => load(url, ImageLoader))
+      IMAGE_URLS.map(url => load(url, ImageBitmapLoader))
     );
 
     const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});

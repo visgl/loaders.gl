@@ -297,7 +297,8 @@ The experimental ImageLoaders for individual formats introduced in 2.0 have been
 `@loaders.gl/images`
 
 - `getImageData(image)` now returns an object with `{data, width, height}` instead of just the `data` array. This small breaking change ensures that the concept of _image data_ is consistent across the API.
-- `ImageLoader`: browser loading is now `ImageBitmap`-only. If browser code needs raw pixels, load with `ImageLoader` and call `getImageData(image)`.
+- `ImageBitmapLoader`: reintroduced in v4.4 as the preferred pure `ImageBitmap` loader.
+- `ImageLoader`: deprecated in v4.4 and retained as the broad compatibility loader. If application code needs raw pixels from either loader, load the image and call `getImageData(image)`.
 
 **`@loaders.gl/3d-tiles`**
 
@@ -327,8 +328,8 @@ Some general changes:
 
 | Removal             | Replacement                                     |
 | ------------------- | ----------------------------------------------- |
-| `ImageHTMLLoader`   | `ImageLoader`                                   |
-| `ImageBitmapLoader` | `ImageLoader`                                   |
+| `ImageHTMLLoader`   | Deprecated `ImageLoader`                        |
+| `ImageBitmapLoader` | `ImageBitmapLoader` (reintroduced in v4.4)      |
 | `decodeImage`       | `parse(arrayBuffer, ImageLoader)`               |
 | `isImage`           | `isBinaryImage`                                 |
 | `getImageMIMEType`  | `getBinaryImageMIMEType`                        |

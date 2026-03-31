@@ -1,6 +1,11 @@
 import test from 'tape-promise/tape';
 import {encode, parse} from '@loaders.gl/core';
-import {ImageWriter, ImageLoader, getBinaryImageMetadata, getImageData} from '@loaders.gl/images';
+import {
+  ImageWriter,
+  ImageBitmapLoader,
+  getBinaryImageMetadata,
+  getImageData
+} from '@loaders.gl/images';
 
 const IMAGE = {
   width: 2,
@@ -24,7 +29,7 @@ test('ImageWriter#write-and-read-image', async (t) => {
     t.equal(metadata.mimeType, 'image/jpeg', 'encoded image mimeType is correct');
   }
 
-  let image = getImageData(await parse(arrayBuffer, ImageLoader));
+  let image = getImageData(await parse(arrayBuffer, ImageBitmapLoader));
   t.deepEqual(image.width, IMAGE.width, 'encoded and parsed image widths are same');
   t.deepEqual(image.height, IMAGE.height, 'encoded and parsed image heights are same');
   // NOTE - encoded and decoded data are expected to be equal due to lossy jpeg compression
@@ -40,7 +45,7 @@ test('ImageWriter#write-and-read-image', async (t) => {
     t.equal(metadata.mimeType, 'image/png', 'encoded image mimeType is correct');
   }
 
-  image = getImageData(await parse(arrayBuffer, ImageLoader));
+  image = getImageData(await parse(arrayBuffer, ImageBitmapLoader));
   t.deepEqual(image.width, IMAGE.width, 'encoded and parsed image widths are same');
   t.deepEqual(image.height, IMAGE.height, 'encoded and parsed image heightsare same');
   t.deepEqual(image.data, IMAGE.data, 'encoded and parsed image data are same');

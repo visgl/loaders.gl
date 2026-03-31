@@ -1,43 +1,71 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
-import {isBrowser} from '@loaders.gl/loader-utils';
+import {assert, isBrowser} from '@loaders.gl/loader-utils';
 import type {ImageType} from '../../types';
 import type {ImageLoaderOptions} from '../../image-loader';
+import {isImageTypeSupported, getDefaultImageType} from '../category-api/image-type';
+import {getImageData} from '../category-api/parsed-image-api';
+import {parseToImage} from './parse-to-image';
 import {parseToImageBitmap} from './parse-to-image-bitmap';
 import {parseToNodeImage} from './parse-to-node-image';
 
-const INVALID_IMAGE_TYPE_ERROR =
-  "@loaders.gl/images: ImageLoader only accepts options.image.type='imagebitmap'. Remove legacy image/data/auto values and call getImageData(image) if you need raw pixels.";
-const UNSUPPORTED_IMAGE_BITMAP_ERROR =
-  '@loaders.gl/images: ImageLoader requires browser ImageBitmap support. Use a browser with createImageBitmap support or load images under Node.js with @loaders.gl/polyfills.';
-
 /**
- * Parses images into `ImageBitmap` in browsers and raw image data in Node.js.
+ * Parses images into a compatibility image type based on `options.image.type`.
  */
+// eslint-disable-next-line complexity
 export async function parseImage(
   arrayBuffer: ArrayBuffer,
   options?: ImageLoaderOptions,
   context?: LoaderContext
 ): Promise<ImageType> {
   options = options || {};
-  validateImageTypeOption(options);
+  const imageOptions = options.image || {};
+  const imageType = imageOptions.type || 'auto';
+  const {url} = context || {};
+  const hasNodeImageParser = Boolean(globalThis.loaders?.parseImageNode);
+  const loadType = getLoadableImageType(imageType, hasNodeImageParser);
 
-  if (!isBrowser) {
-    return await parseToNodeImage(arrayBuffer, options);
+  let image;
+  switch (loadType) {
+    case 'imagebitmap':
+      image =
+        !isBrowser || hasNodeImageParser
+          ? await parseToNodeImage(arrayBuffer, options)
+          : await parseToImageBitmap(arrayBuffer, options, url);
+      break;
+
+    case 'image':
+      image = await parseToImage(arrayBuffer, options, url);
+      break;
+
+    case 'data':
+      image = await parseToNodeImage(arrayBuffer, options);
+      break;
+
+    default:
+      assert(false);
   }
 
-  if (typeof ImageBitmap === 'undefined' || typeof createImageBitmap !== 'function') {
-    throw new Error(UNSUPPORTED_IMAGE_BITMAP_ERROR);
+  if (imageType === 'data') {
+    image = getImageData(image);
   }
 
-  return await parseToImageBitmap(arrayBuffer, options, context?.url);
+  return image;
 }
 
 /**
- * Rejects legacy browser output modes now that `ImageLoader` is bitmap-only.
+ * Gets a loadable image type from the requested output type.
  */
-function validateImageTypeOption(options: ImageLoaderOptions): void {
-  const imageType = options.image?.type;
-  if (imageType && imageType !== 'imagebitmap') {
-    throw new Error(INVALID_IMAGE_TYPE_ERROR);
+function getLoadableImageType(
+  type: string,
+  hasNodeImageParser = false
+): 'imagebitmap' | 'image' | 'data' {
+  switch (type) {
+    case 'auto':
+    case 'data':
+      return isBrowser && !hasNodeImageParser ? getDefaultImageType() : 'data';
+
+    default:
+      isImageTypeSupported(type);
+      return type as 'imagebitmap' | 'image' | 'data';
   }
 }

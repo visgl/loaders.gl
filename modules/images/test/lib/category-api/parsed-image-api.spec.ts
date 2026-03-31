@@ -2,6 +2,7 @@ import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
 import {
   ImageLoader,
+  ImageBitmapLoader,
   ImageType,
   // PARSED IMAGE API
   getDefaultImageType,
@@ -24,8 +25,8 @@ async function loadImages(): Promise<ImageType[]> {
   imagesPromise =
     imagesPromise ||
     Promise.all([
-      load(IMAGE_URL, ImageLoader),
-      load(IMAGE_URL, ImageLoader, {image: {type: 'imagebitmap'}})
+      load(IMAGE_URL, ImageBitmapLoader),
+      load(IMAGE_URL, ImageLoader, {image: {type: 'data'}})
     ]);
   return await imagesPromise;
 }
@@ -43,6 +44,9 @@ test('Image Category#Parsed Image API imports', (t) => {
 test('Image Category#getDefaultImageType', async (t) => {
   const imageType = getDefaultImageType();
   t.ok(IMAGE_TYPES.includes(imageType), 'Returns an expected image type');
+  if (globalThis.loaders?.parseImageNode) {
+    t.equals(imageType, 'imagebitmap', 'Node polyfills prefer imagebitmap');
+  }
   t.end();
 });
 
@@ -71,9 +75,8 @@ test('Image Category#isImage', async (t) => {
 
 test('Image Category#getImageType', async (t) => {
   const IMAGES = await loadImages();
-  for (const image of IMAGES) {
-    t.ok(IMAGE_TYPES.includes(getImageType(image)), 'returns a valid image type');
-  }
+  t.equals(getImageType(IMAGES[0]), 'imagebitmap', 'returns bitmap type');
+  t.equals(getImageType(IMAGES[1]), 'data', 'returns data type');
   // @ts-ignore
   t.throws(() => getImageType('not an image'));
   t.end();

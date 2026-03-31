@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 
 import {load, isBrowser} from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader} from '@loaders.gl/images';
 import {GIFBuilder} from '@loaders.gl/video';
 
 const IMAGE_URLS = [
@@ -39,7 +39,7 @@ test('GIFBuilder#load(Image)', async (t) => {
     return;
   }
 
-  const IMAGES = await Promise.all(IMAGE_URLS.map((url) => load(url, ImageLoader)));
+  const IMAGES = await Promise.all(IMAGE_URLS.map((url) => load(url, ImageBitmapLoader)));
 
   const gifBuilder = new GIFBuilder({source: 'images', width: 400, height: 400});
 
