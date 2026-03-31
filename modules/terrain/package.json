@@ -43,8 +43,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle && npm run build-bundle-dev",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-bundle": "node ../../scripts/bundle-with-version.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/bundle-with-version.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/terrain-worker.ts --bundle --outfile=dist/terrain-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker2": "esbuild src/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },

@@ -60,8 +60,8 @@
   "scripts": {
     "pre-build": "npm run copy-libs && npm run build-bundle && npm run build-bundle-dev && npm run build-workers",
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-bundle": "node ../../scripts/bundle-with-version.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/bundle-with-version.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-workers": "yarn build-loader-worker && yarn build-loader-worker-node && yarn build-writer-worker && yarn build-writer-worker-node",
     "build-loader-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-loader-worker-node": "esbuild src/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",

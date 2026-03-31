@@ -37,8 +37,8 @@
   ],
   "scripts": {
     "pre-build": "npm run build-bundle && npm run build-bundle-dev",
-    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
-    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+    "build-bundle": "node ../../scripts/bundle-with-version.mjs ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "node ../../scripts/bundle-with-version.mjs ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",
