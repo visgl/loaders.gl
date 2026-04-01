@@ -45,7 +45,7 @@
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
     "@tmcw/togeojson": "^4.5.0",
-    "@xmldom/xmldom": "^0.7.13"
+    "@xmldom/xmldom": "^0.8.12"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~4.4.0"
