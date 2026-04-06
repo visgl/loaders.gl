@@ -22,8 +22,22 @@ export {GeoArrowLoader} from './geoarrow-loader';
 // EXPERIMENTAL
 
 // Arrow Utils
-// getGeometryColumnsFromArrowTable,
-// getGeoArrowEncoding
+export {
+  IndexedArrowVector,
+  IndexedArrowTable,
+  MappedArrowTable,
+  validateArrowTableSchema,
+  renameArrowColumns,
+  type IndexedArrowTableComparator,
+  type IndexedArrowTableFindPredicate,
+  type IndexedArrowTablePredicate,
+  type IndexedArrowTableRow,
+  type MappedArrowTableComparator,
+  type MappedArrowTablePredicate,
+  type ValidateArrowTableSchemaOptions,
+  type ArrowFieldNameMap,
+  type RenamedArrowColumns
+} from './lib/utils';
 
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';
