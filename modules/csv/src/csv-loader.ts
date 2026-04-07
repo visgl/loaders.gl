@@ -176,10 +176,15 @@ function parseCSVInBatches(
     step(results) {
       let row = results.data;
 
-      if (csvOptions.skipEmptyLines) {
+      if (csvOptions.skipEmptyLines === 'greedy') {
         // Manually reject lines that are empty
         const collapsedRow = row.flat().join('').trim();
         if (collapsedRow === '') {
+          return;
+        }
+      } else if (csvOptions.skipEmptyLines === true) {
+        row = normalizePapaStreamingRow(row);
+        if (row.length === 1 && row[0] === null) {
           return;
         }
       }
@@ -211,6 +216,9 @@ function parseCSVInBatches(
       }
 
       const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+      if (shape === 'object-row-table' && headerRow && row.length > headerRow.length) {
+        row = convertToPapaObjectRow(row, headerRow);
+      }
 
       // Add the row
       tableBatchBuilder =
@@ -314,6 +322,22 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
     headers.push(`${columnPrefix}${i + 1}`);
   }
   return headers;
+}
+
+function normalizePapaStreamingRow(row: unknown[]): unknown[] {
+  return row.map((value) => (Array.isArray(value) && value.length === 0 ? null : value));
+}
+
+function convertToPapaObjectRow(
+  row: unknown[],
+  headerRow: string[]
+): {[columnName: string]: unknown} {
+  const objectRow = convertToObjectRow(row, headerRow);
+  const parsedExtra = row.slice(headerRow.length);
+  if (parsedExtra.length > 0) {
+    objectRow.__parsed_extra = parsedExtra;
+  }
+  return objectRow;
 }
 
 function deduceCSVSchema(row, headerRow): Schema {

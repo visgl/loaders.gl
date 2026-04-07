@@ -15,6 +15,8 @@ export {ArrowLoader} from './arrow-loader';
 
 export {ArrowWriter} from './arrow-writer';
 
+export {tightenArrowTableSchemaNullability} from './lib/tighten-arrow-table-schema-nullability';
+
 // Geoarrow loader
 export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
 export {GeoArrowLoader} from './geoarrow-loader';

@@ -11,11 +11,13 @@ npm install @loaders.gl/core @loaders.gl/csv
 
 ## Loaders and Writers
 
-| Loader                                                          |
-| --------------------------------------------------------------- |
-| [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader)       |
-| [`CSVWorkerLoader`](/docs/modules/csv/api-reference/csv-loader) |
-| [`CSVWriter`](/docs/modules/csv/api-reference/csv-loader)       |
+| API                                                             | Description                                    |
+| --------------------------------------------------------------- | ---------------------------------------------- |
+| [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader)       | Loads CSV and TSV data as loaders.gl tables.   |
+| [`CSVWorkerLoader`](/docs/modules/csv/api-reference/csv-loader) | Worker-enabled CSV loader.                     |
+| [`CSVArrowLoader`](/docs/modules/csv/api-reference/csv-loader)  | Loads CSV and TSV data as Apache Arrow tables. |
+| [`CSVWriter`](/docs/modules/csv/api-reference/csv-writer)       | Writes loaders.gl tables as CSV text.          |
+| [`CSVArrowWriter`](/docs/modules/csv/api-reference/csv-writer)  | Writes Apache Arrow tables as CSV text.        |
 
 ## Additional APIs
 

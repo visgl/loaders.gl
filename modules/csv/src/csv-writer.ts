@@ -8,12 +8,15 @@ import type {Table, TableBatch} from '@loaders.gl/schema';
 import {encodeTableAsCSV} from './lib/encoders/encode-csv';
 import {CSVFormat} from './csv-format';
 
+/** Options for encoding loaders.gl tables as CSV text. */
 export type CSVWriterOptions = WriterOptions & {
   csv?: {
+    /** Use field metadata display names as CSV column names when available. */
     useDisplayNames?: boolean;
   };
 };
 
+/** CSV writer for loaders.gl tables. */
 export const CSVWriter = {
   ...CSVFormat,
   version: 'latest',

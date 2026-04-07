@@ -4520,7 +4520,12 @@ __metadata:
   dependencies:
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
+    "@types/papaparse": "npm:^5"
+    apache-arrow: "npm:>= 17.0.0"
+    csv-parser: "npm:^3.2.0"
     d3-dsv: "npm:^1.2.0"
+    papaparse: "npm:^5.5.3"
+    udsv: "npm:^0.7.3"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -8978,6 +8983,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/papaparse@npm:^5":
+  version: 5.5.2
+  resolution: "@types/papaparse@npm:5.5.2"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/27b097b6f8f204b20ade1f2cbf4798eb38caa5fbfa3180fd0faa5e3f9aea371c1786ae180d56f3287556463eefe3100c953e316ea6ee99d7ae1d04111cfc9e50
+  languageName: node
+  linkType: hard
+
 "@types/pbf@npm:*, @types/pbf@npm:^3.0.2":
   version: 3.0.5
   resolution: "@types/pbf@npm:3.0.5"
@@ -13086,6 +13100,15 @@ __metadata:
   version: 3.2.3
   resolution: "csstype@npm:3.2.3"
   checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
+  languageName: node
+  linkType: hard
+
+"csv-parser@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "csv-parser@npm:3.2.0"
+  bin:
+    csv-parser: bin/csv-parser
+  checksum: 10c0/650769916607dae9679187803c71ef70d3b724cfb18e4adff187167b282faf18ac7c14a318c4ea6e92ae3483d3ed4b8d92ff213e77979e3049a5c0029034ac65
   languageName: node
   linkType: hard
 
@@ -22226,6 +22249,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"papaparse@npm:^5.5.3":
+  version: 5.5.3
+  resolution: "papaparse@npm:5.5.3"
+  checksum: 10c0/623aae6a35703308fd5a39d616fb3837231ebc70697346355ea508154d3f24df75b6554b736afc1924192205518a5db14e75f5e1cf35d154326050a37cdd9447
+  languageName: node
+  linkType: hard
+
 "param-case@npm:^3.0.4":
   version: 3.0.4
   resolution: "param-case@npm:3.0.4"
@@ -27712,6 +27742,13 @@ __metadata:
   version: 7.3.0
   resolution: "typical@npm:7.3.0"
   checksum: 10c0/bee697a88e1dd0447bc1cf7f6e875eaa2b0fb2cccb338b7b261e315f7df84a66402864bfc326d6b3117c50475afd1d49eda03d846a6299ad25f211035bfab3b1
+  languageName: node
+  linkType: hard
+
+"udsv@npm:^0.7.3":
+  version: 0.7.3
+  resolution: "udsv@npm:0.7.3"
+  checksum: 10c0/295eca4e0742c08ebd36e495a1f6dadac1f905ce20d0ee2c064e857a082d40203e110abffc043e16a29184f8021736e0ef91a0a0dd317759e4494eb55f5e467b
   languageName: node
   linkType: hard
 

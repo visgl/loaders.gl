@@ -1,5 +1,16 @@
 # What's New
 
+## v4.5
+
+Release Date: TBD
+
+**Highlights**
+
+- **@loaders.gl/csv** - `CSVArrowLoader` is now the unified public Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
+- **@loaders.gl/csv** - `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
+- **@loaders.gl/csv** - New `CSVArrowWriter` writes Apache Arrow tables to CSV text.
+- **@loaders.gl/csv** - CSV benchmarks now separate typed and untyped comparisons and include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse.
+
 ## v4.4
 
 Release Date: March 31, 2026

@@ -25,6 +25,8 @@ _addAliases(ALIASES);
 
 // add benchmarks
 export async function addModuleBenchmarksToSuite(suite) {
+  await csvBench(suite);
+
   await coreBench(suite);
 
   await parquetBench(suite);
@@ -40,7 +42,6 @@ export async function addModuleBenchmarksToSuite(suite) {
   await cryptoBench(suite);
 
   await dracoBench(suite);
-  await csvBench(suite);
   await excelBench(suite);
 
   // await i3sLoaderBench(suite);

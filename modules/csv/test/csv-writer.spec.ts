@@ -4,10 +4,11 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 import test from 'tape-promise/tape';
-import {CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
+import {CSVArrowLoader, CSVArrowWriter, CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
 import {encodeTableAsText} from '@loaders.gl/core';
 
 import {Table} from '@loaders.gl/schema';
+import {convertTable} from '@loaders.gl/schema-utils';
 import {makeTestTable, tableWithGeometryColumn} from '@loaders.gl/schema-utils/test/shared-utils';
 
 type TestCase = {
@@ -142,6 +143,24 @@ c,3`
 test('CSVWriter ', async (t) => {
   for (const {name, input, options, expected} of cases) {
     const output = await encodeTableAsText(input, CSVWriter, options);
+    t.equal(output, expected, name);
+  }
+
+  t.end();
+});
+
+test('CSVArrowWriter ', async (t) => {
+  for (const {name, input, options, expected} of cases) {
+    const arrowInput =
+      expected === ''
+        ? convertTable(input, 'arrow-table')
+        : await CSVArrowLoader.parseText(expected, {
+            csv: {
+              header: true,
+              dynamicTyping: false
+            }
+          });
+    const output = await encodeTableAsText(arrowInput, CSVArrowWriter, options);
     t.equal(output, expected, name);
   }
 

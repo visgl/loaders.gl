@@ -10,7 +10,7 @@ const PARQUET_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const GEO_PARQUET_URL = '@loaders.gl/parquet/test/data/geoparquet/airports.parquet';
 
 export async function parquetBench(suite) {
-  suite.group('ParquetLoader');
+  suite = suite.group('ParquetLoader');
 
   let response = await fetchFile(PARQUET_URL);
   const arrayBuffer = await response.arrayBuffer();
@@ -24,26 +24,52 @@ export async function parquetBench(suite) {
     });
   });
 
-  // let i = 0;
-  suite.addAsync('load(ParquetArrowLoader) - Parquet load', {multiplier: 40000, unit: 'rows'}, async () => {
-    // const j = i++;
-    // console.time(`load-${j}`);
-    await load(arrayBuffer, ParquetArrowLoader, {worker: false});
-    // console.timeEnd(`load-${j}`);
-  });
+  let supportsParquetArrowLoad = true;
+  try {
+    await load(arrayBuffer.slice(0), ParquetArrowLoader, {worker: false});
+  } catch {
+    supportsParquetArrowLoad = false;
+  }
 
-  suite.addAsync('load(ParquetArrowLoader) - GeoParquet load', {multiplier: 40000, unit: 'rows'}, async () => {
-    await load(geoArrayBuffer, ParquetArrowLoader, {
+  if (supportsParquetArrowLoad) {
+    // let i = 0;
+    suite.addAsync(
+      'load(ParquetArrowLoader) - Parquet load',
+      {multiplier: 40000, unit: 'rows'},
+      async () => {
+        // const j = i++;
+        // console.time(`load-${j}`);
+        await load(arrayBuffer, ParquetArrowLoader, {worker: false});
+        // console.timeEnd(`load-${j}`);
+      }
+    );
+  }
+
+  let supportsGeoParquetArrowLoad = true;
+  try {
+    await load(geoArrayBuffer.slice(0), ParquetArrowLoader, {
       core: {worker: false}
     });
-    // console.timeEnd(`load-${j}`);
-  });
+  } catch {
+    supportsGeoParquetArrowLoad = false;
+  }
+
+  if (supportsGeoParquetArrowLoad) {
+    suite.addAsync(
+      'load(ParquetArrowLoader) - GeoParquet load',
+      {multiplier: 40000, unit: 'rows'},
+      async () => {
+        await load(geoArrayBuffer, ParquetArrowLoader, {
+          core: {worker: false}
+        });
+        // console.timeEnd(`load-${j}`);
+      }
+    );
+  }
 
   // suite.addAsync('load(ParquetColumnarLoader) - GeoParquet load', {multiplier: 40000, unit: 'rows'}, async () => {
   //   await load(geoArrayBuffer, ParquetColumnarLoader, {
   //     core: {worker: false}
   //   });
   // });
-
-  suite.groupEnd();
 }
