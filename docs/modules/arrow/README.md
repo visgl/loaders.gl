@@ -28,8 +28,17 @@ See [Using with Apache Arrow](/docs/developer-guide/apache-arrow) for practical 
 
 ## Additional APIs
 
-Arrow provides a rich JavaScript API for working with Arrow formatted data.
-Start with the [`ArrowJS API Reference`](/docs/arrowjs/api-reference).
+`@loaders.gl/arrow` also provides utilities for working with Apache Arrow JS tables after loading
+or when integrating Arrow-backed data sources.
+
+| Utility                                                                          | Description                                                            |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`IndexedArrowTable`](/docs/modules/arrow/api-reference/indexed-arrow-table)     | Readonly indexed table and vector views that avoid copying column data |
+| [`MappedArrowTable`](/docs/modules/arrow/api-reference/mapped-arrow-table)       | String-keyed row lookup view layered on top of an indexed Arrow table  |
+| [`Arrow Schema Utilities`](/docs/modules/arrow/api-reference/arrow-schema-utils) | Runtime schema validation and column-renaming helpers                  |
+
+For the underlying Apache Arrow JS classes, start with the
+[`ArrowJS API Reference`](/docs/arrowjs/api-reference).
 
 ## Attributions
 

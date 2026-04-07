@@ -265,7 +265,12 @@
       {
         "type": "category",
         "label": "@loaders.gl/arrow",
-        "items": ["modules/arrow/README"]
+        "items": [
+          "modules/arrow/README",
+          "modules/arrow/api-reference/indexed-arrow-table",
+          "modules/arrow/api-reference/mapped-arrow-table",
+          "modules/arrow/api-reference/arrow-schema-utils"
+        ]
       },
       {
         "type": "category",

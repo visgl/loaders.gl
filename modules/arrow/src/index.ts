@@ -22,8 +22,28 @@ export {GeoArrowLoader} from './geoarrow-loader';
 // EXPERIMENTAL
 
 // Arrow Utils
-// getGeometryColumnsFromArrowTable,
-// getGeoArrowEncoding
+export {IndexedArrowVector} from './lib/utils/indexed-arrow-vector';
+export {
+  IndexedArrowTable,
+  type IndexedArrowTableComparator,
+  type IndexedArrowTableFindPredicate,
+  type IndexedArrowTablePredicate,
+  type IndexedArrowTableRow
+} from './lib/utils/indexed-arrow-table';
+export {
+  MappedArrowTable,
+  type MappedArrowTableComparator,
+  type MappedArrowTablePredicate
+} from './lib/utils/mapped-arrow-table';
+export {
+  validateArrowTableSchema,
+  type ValidateArrowTableSchemaOptions
+} from './lib/utils/arrow-schema-utils';
+export {
+  renameArrowColumns,
+  type ArrowFieldNameMap,
+  type RenamedArrowColumns
+} from './lib/utils/rename-arrow-columns';
 
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';
