@@ -1,0 +1,277 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+/** Result of a lexicographic byte-range comparison. */
+export type UTF8Comparison = -1 | 0 | 1;
+
+/**
+ * Compares two UTF-8 encoded byte ranges without materializing JavaScript strings.
+ *
+ * @param bytes1 - First UTF-8 byte buffer.
+ * @param firstByte1 - Inclusive start byte offset in the first buffer.
+ * @param endByte1 - Exclusive end byte offset in the first buffer.
+ * @param bytes2 - Second UTF-8 byte buffer.
+ * @param firstByte2 - Inclusive start byte offset in the second buffer.
+ * @param endByte2 - Exclusive end byte offset in the second buffer.
+ * @returns Lexicographic unsigned-byte comparison result.
+ */
+// The byte-range comparator intentionally mirrors Arrow `values` + offset-buffer usage.
+// eslint-disable-next-line max-params
+export function compareUTF8(
+  bytes1: Uint8Array,
+  firstByte1: number,
+  endByte1: number,
+  bytes2: Uint8Array,
+  firstByte2: number,
+  endByte2: number
+): UTF8Comparison {
+  checkByteRange(bytes1, firstByte1, endByte1);
+  checkByteRange(bytes2, firstByte2, endByte2);
+
+  const byteLength1 = endByte1 - firstByte1;
+  const byteLength2 = endByte2 - firstByte2;
+  const sharedByteLength = Math.min(byteLength1, byteLength2);
+
+  for (let byteIndex = 0; byteIndex < sharedByteLength; byteIndex++) {
+    const byte1 = bytes1[firstByte1 + byteIndex];
+    const byte2 = bytes2[firstByte2 + byteIndex];
+    if (byte1 < byte2) {
+      return -1;
+    }
+    if (byte1 > byte2) {
+      return 1;
+    }
+  }
+
+  if (byteLength1 < byteLength2) {
+    return -1;
+  }
+  if (byteLength1 > byteLength2) {
+    return 1;
+  }
+  return 0;
+}
+
+/**
+ * Parses a UTF-8 encoded ASCII number without materializing a JavaScript string.
+ *
+ * Supports decimal numbers with optional sign, fractional component, exponent, and surrounding
+ * ASCII whitespace. Returns `undefined` when the range is not a strict decimal number.
+ *
+ * @param bytes - UTF-8 byte buffer.
+ * @param firstByte - Inclusive start byte offset.
+ * @param endByte - Exclusive end byte offset.
+ * @returns Parsed number, or `undefined` when parsing fails.
+ */
+// The parser is intentionally implemented inline to avoid string materialization while validating grammar.
+// eslint-disable-next-line max-statements, complexity
+export function parseUTF8Number(
+  bytes: Uint8Array,
+  firstByte: number,
+  endByte: number
+): number | undefined {
+  checkByteRange(bytes, firstByte, endByte);
+
+  const trimmedRange = trimASCIIWhitespace(bytes, firstByte, endByte);
+  let start = trimmedRange.start;
+  const end = trimmedRange.end;
+  if (start >= end) {
+    return undefined;
+  }
+
+  let sign = 1;
+  const signByte = bytes[start];
+  if (signByte === 0x2d || signByte === 0x2b) {
+    sign = signByte === 0x2d ? -1 : 1;
+    start++;
+  }
+
+  let value = 0;
+  let digitCount = 0;
+  while (start < end && isDigit(bytes[start])) {
+    value = value * 10 + bytes[start] - 0x30;
+    start++;
+    digitCount++;
+  }
+
+  if (start < end && bytes[start] === 0x2e) {
+    start++;
+    let fractionScale = 1;
+    while (start < end && isDigit(bytes[start])) {
+      fractionScale /= 10;
+      value += (bytes[start] - 0x30) * fractionScale;
+      start++;
+      digitCount++;
+    }
+  }
+
+  if (digitCount === 0) {
+    return undefined;
+  }
+
+  let exponent = 0;
+  let exponentSign = 1;
+  if (start < end && (bytes[start] === 0x65 || bytes[start] === 0x45)) {
+    start++;
+    if (start < end && (bytes[start] === 0x2d || bytes[start] === 0x2b)) {
+      exponentSign = bytes[start] === 0x2d ? -1 : 1;
+      start++;
+    }
+
+    let exponentDigitCount = 0;
+    while (start < end && isDigit(bytes[start])) {
+      exponent = exponent * 10 + bytes[start] - 0x30;
+      start++;
+      exponentDigitCount++;
+    }
+
+    if (exponentDigitCount === 0) {
+      return undefined;
+    }
+  }
+
+  if (start !== end) {
+    return undefined;
+  }
+
+  return sign * value * Math.pow(10, exponentSign * exponent);
+}
+
+/**
+ * Parses a UTF-8 encoded ASCII integer into a bigint without materializing a JavaScript string.
+ *
+ * Supports optional sign and surrounding ASCII whitespace. Returns `undefined` when the range is
+ * not a strict base-10 integer.
+ *
+ * @param bytes - UTF-8 byte buffer.
+ * @param firstByte - Inclusive start byte offset.
+ * @param endByte - Exclusive end byte offset.
+ * @returns Parsed bigint, or `undefined` when parsing fails.
+ */
+export function parseUTF8BigInt(
+  bytes: Uint8Array,
+  firstByte: number,
+  endByte: number
+): bigint | undefined {
+  checkByteRange(bytes, firstByte, endByte);
+
+  const trimmedRange = trimASCIIWhitespace(bytes, firstByte, endByte);
+  let start = trimmedRange.start;
+  const end = trimmedRange.end;
+  if (start >= end) {
+    return undefined;
+  }
+
+  let sign = 1n;
+  const signByte = bytes[start];
+  if (signByte === 0x2d || signByte === 0x2b) {
+    sign = signByte === 0x2d ? -1n : 1n;
+    start++;
+  }
+
+  if (start >= end) {
+    return undefined;
+  }
+
+  let value = 0n;
+  while (start < end) {
+    const byte = bytes[start];
+    if (!isDigit(byte)) {
+      return undefined;
+    }
+    value = value * 10n + BigInt(byte - 0x30);
+    start++;
+  }
+
+  return sign * value;
+}
+
+/**
+ * Parses a UTF-8 encoded ASCII boolean without materializing a JavaScript string.
+ *
+ * Supports `true` and `false`, matched case-insensitively, with surrounding ASCII whitespace.
+ *
+ * @param bytes - UTF-8 byte buffer.
+ * @param firstByte - Inclusive start byte offset.
+ * @param endByte - Exclusive end byte offset.
+ * @returns Parsed boolean, or `undefined` when parsing fails.
+ */
+// eslint-disable-next-line complexity
+export function parseUTF8Boolean(
+  bytes: Uint8Array,
+  firstByte: number,
+  endByte: number
+): boolean | undefined {
+  checkByteRange(bytes, firstByte, endByte);
+
+  const {start, end} = trimASCIIWhitespace(bytes, firstByte, endByte);
+  const byteLength = end - start;
+
+  if (
+    byteLength === 4 &&
+    equalsLowercaseASCII(bytes[start], 0x74) &&
+    equalsLowercaseASCII(bytes[start + 1], 0x72) &&
+    equalsLowercaseASCII(bytes[start + 2], 0x75) &&
+    equalsLowercaseASCII(bytes[start + 3], 0x65)
+  ) {
+    return true;
+  }
+
+  if (
+    byteLength === 5 &&
+    equalsLowercaseASCII(bytes[start], 0x66) &&
+    equalsLowercaseASCII(bytes[start + 1], 0x61) &&
+    equalsLowercaseASCII(bytes[start + 2], 0x6c) &&
+    equalsLowercaseASCII(bytes[start + 3], 0x73) &&
+    equalsLowercaseASCII(bytes[start + 4], 0x65)
+  ) {
+    return false;
+  }
+
+  return undefined;
+}
+
+function checkByteRange(bytes: Uint8Array, firstByte: number, endByte: number): void {
+  if (
+    !Number.isInteger(firstByte) ||
+    !Number.isInteger(endByte) ||
+    firstByte < 0 ||
+    endByte < firstByte ||
+    endByte > bytes.length
+  ) {
+    throw new RangeError(
+      `Invalid UTF-8 byte range [${firstByte}, ${endByte}) for byte length ${bytes.length}.`
+    );
+  }
+}
+
+function trimASCIIWhitespace(
+  bytes: Uint8Array,
+  firstByte: number,
+  endByte: number
+): {start: number; end: number} {
+  let start = firstByte;
+  let end = endByte;
+
+  while (start < end && isASCIIWhitespace(bytes[start])) {
+    start++;
+  }
+  while (end > start && isASCIIWhitespace(bytes[end - 1])) {
+    end--;
+  }
+
+  return {start, end};
+}
+
+function isDigit(byte: number): boolean {
+  return byte >= 0x30 && byte <= 0x39;
+}
+
+function isASCIIWhitespace(byte: number): boolean {
+  return byte === 0x20 || (byte >= 0x09 && byte <= 0x0d);
+}
+
+function equalsLowercaseASCII(byte: number, lowercaseByte: number): boolean {
+  return byte === lowercaseByte || byte + 0x20 === lowercaseByte;
+}
