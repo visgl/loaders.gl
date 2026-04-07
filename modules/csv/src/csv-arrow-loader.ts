@@ -2,42 +2,54 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {convertTable, convertBatches} from '@loaders.gl/schema-utils';
 
-import type {CSVLoaderOptions} from './csv-loader';
-import {CSVLoader} from './csv-loader';
+import type {CSVTypedArrowLoaderOptions} from './csv-typed-arrow-loader';
+import {CSVTypedArrowLoader} from './csv-typed-arrow-loader';
 
-export type CSVArrowLoaderOptions = LoaderOptions & {
-  csv?: Omit<CSVLoaderOptions['csv'], 'shape'>;
-};
+/** Options for parsing CSV input into Apache Arrow tables. */
+export type CSVArrowLoaderOptions = CSVTypedArrowLoaderOptions;
 
+/**
+ * CSV loader that returns Apache Arrow tables.
+ *
+ * The default `csv.dynamicTyping: false` path emits Arrow Utf8 columns and uses
+ * the byte-oriented parser when the supplied options are supported. Set
+ * `csv.dynamicTyping: true` to opt into typed Arrow columns.
+ */
 export const CSVArrowLoader = {
-  ...CSVLoader,
+  ...CSVTypedArrowLoader,
 
-  dataType: null as unknown as ArrowTable,
-  batchType: null as unknown as ArrowTableBatch,
+  options: {
+    ...CSVTypedArrowLoader.options,
+    csv: {
+      ...CSVTypedArrowLoader.options.csv,
+      dynamicTyping: false
+    }
+  },
 
-  parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
-    parseCSVToArrow(new TextDecoder().decode(arrayBuffer), options),
-  parseText: (text: string, options?: CSVLoaderOptions) => parseCSVToArrow(text, options),
-  parseInBatches: parseCSVToArrowBatches
+  parse: async (arrayBuffer: ArrayBuffer, options?: CSVArrowLoaderOptions) =>
+    CSVTypedArrowLoader.parse(arrayBuffer, createCSVArrowLoaderOptions(options)),
+
+  parseText: (text: string, options?: CSVArrowLoaderOptions) =>
+    CSVTypedArrowLoader.parseText(text, createCSVArrowLoaderOptions(options)),
+
+  parseInBatches: (
+    asyncIterator:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options?: CSVArrowLoaderOptions
+  ) => CSVTypedArrowLoader.parseInBatches(asyncIterator, createCSVArrowLoaderOptions(options))
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, CSVArrowLoaderOptions>;
 
-async function parseCSVToArrow(csvText: string, options?: CSVLoaderOptions): Promise<ArrowTable> {
-  // Apps can call the parse method directly, we so apply default options here
-  // const csvOptions = {...CSVArrowLoader.options.csv, ...options?.csv};
-  const table = await CSVLoader.parseText(csvText, options);
-  return convertTable(table, 'arrow-table');
-}
-
-function parseCSVToArrowBatches(
-  asyncIterator:
-    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-    | Iterable<ArrayBufferLike | ArrayBufferView>,
-  options?: CSVArrowLoaderOptions
-): AsyncIterable<ArrowTableBatch> {
-  const tableIterator = CSVLoader.parseInBatches(asyncIterator, options);
-  return convertBatches(tableIterator, 'arrow-table');
+/** Applies CSVArrowLoader defaults before delegating to internal Arrow CSV parsing helpers. */
+function createCSVArrowLoaderOptions(options?: CSVArrowLoaderOptions): CSVArrowLoaderOptions {
+  return {
+    ...options,
+    csv: {
+      ...CSVArrowLoader.options.csv,
+      ...options?.csv
+    }
+  };
 }

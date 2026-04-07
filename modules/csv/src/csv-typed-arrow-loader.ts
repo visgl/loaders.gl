@@ -8,13 +8,23 @@ import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 
 import type {CSVLoaderOptions} from './csv-loader';
 import {CSVLoader} from './csv-loader';
-import {CSVRawArrowLoader} from './csv-raw-arrow-loader';
-import type {CSVRawArrowLoaderOptions} from './csv-raw-arrow-loader';
+import {
+  parseRawArrowCSVInBatches,
+  parseRawArrowCSVTable,
+  parseRawArrowCSVText
+} from './csv-raw-arrow-loader';
+import type {CSVRawArrowParseOptions} from './csv-raw-arrow-loader';
 
+/** CSV options accepted by the internal typed Arrow parser. */
 type CSVTypedArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape'>;
 
+/** Cell value after Papa-style dynamic typing has been applied. */
 type DynamicColumnValue = string | number | boolean | Date | null;
+
+/** Arrow data types inferred by the typed Arrow conversion pass. */
 type TypedColumnDataType = 'utf8' | 'float64' | 'bool' | 'date-millisecond';
+
+/** Result of converting a raw Utf8 Arrow table to typed Arrow columns. */
 type TypedArrowConversionResult = {
   typedArrowTable: ArrowTable;
   typedColumnDataTypes: TypedColumnDataType[];
@@ -24,10 +34,12 @@ const FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
 const ISO_DATE =
   /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
 
+/** Options for the internal typed Arrow CSV loader. */
 export type CSVTypedArrowLoaderOptions = LoaderOptions & {
   csv?: CSVTypedArrowOptions;
 };
 
+/** Internal CSV loader that preserves the previous typed Arrow implementation. */
 export const CSVTypedArrowLoader = {
   ...CSVLoader,
 
@@ -43,7 +55,7 @@ export const CSVTypedArrowLoader = {
   },
 
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVTypedArrowLoaderOptions) =>
-    parseCSVToTypedArrow(new TextDecoder().decode(arrayBuffer), options),
+    parseCSVArrayBufferToTypedArrow(arrayBuffer, options),
 
   parseText: (text: string, options?: CSVTypedArrowLoaderOptions) =>
     parseCSVToTypedArrow(text, options),
@@ -51,14 +63,15 @@ export const CSVTypedArrowLoader = {
   parseInBatches: parseCSVToTypedArrowBatches
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, CSVTypedArrowLoaderOptions>;
 
-async function parseCSVToTypedArrow(
-  csvText: string,
+/** Parses ArrayBuffer CSV input and optionally converts Utf8 Arrow columns to typed columns. */
+async function parseCSVArrayBufferToTypedArrow(
+  arrayBuffer: ArrayBuffer,
   options?: CSVTypedArrowLoaderOptions
 ): Promise<ArrowTable> {
   const typedArrowCSVOptions = createTypedArrowCSVOptions(options);
   const rawArrowCSVOptions = createRawArrowCSVOptions(options);
 
-  const rawArrowTable = await CSVRawArrowLoader.parseText(csvText, rawArrowCSVOptions);
+  const rawArrowTable = await parseRawArrowCSVTable(arrayBuffer, rawArrowCSVOptions);
 
   if (!shouldApplyDynamicTyping(typedArrowCSVOptions)) {
     return rawArrowTable;
@@ -67,6 +80,24 @@ async function parseCSVToTypedArrow(
   return convertRawArrowTableToTypedArrowTable(rawArrowTable).typedArrowTable;
 }
 
+/** Parses string CSV input and optionally converts Utf8 Arrow columns to typed columns. */
+async function parseCSVToTypedArrow(
+  csvText: string,
+  options?: CSVTypedArrowLoaderOptions
+): Promise<ArrowTable> {
+  const typedArrowCSVOptions = createTypedArrowCSVOptions(options);
+  const rawArrowCSVOptions = createRawArrowCSVOptions(options);
+
+  const rawArrowTable = await parseRawArrowCSVText(csvText, rawArrowCSVOptions);
+
+  if (!shouldApplyDynamicTyping(typedArrowCSVOptions)) {
+    return rawArrowTable;
+  }
+
+  return convertRawArrowTableToTypedArrowTable(rawArrowTable).typedArrowTable;
+}
+
+/** Parses batch CSV input and optionally converts Utf8 Arrow batches to typed batches. */
 function parseCSVToTypedArrowBatches(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
@@ -76,11 +107,12 @@ function parseCSVToTypedArrowBatches(
   const typedArrowCSVOptions = createTypedArrowCSVOptions(options);
   const rawArrowCSVOptions = createRawArrowCSVOptions(options);
 
-  const rawArrowBatchIterator = CSVRawArrowLoader.parseInBatches(asyncIterator, rawArrowCSVOptions);
+  const rawArrowBatchIterator = parseRawArrowCSVInBatches(asyncIterator, rawArrowCSVOptions);
 
   return makeTypedArrowBatchIterator(rawArrowBatchIterator, typedArrowCSVOptions);
 }
 
+/** Converts an async iterator of raw Utf8 Arrow batches to typed Arrow batches. */
 async function* makeTypedArrowBatchIterator(
   rawArrowBatchIterator: AsyncIterable<ArrowTableBatch>,
   typedArrowCSVOptions: CSVTypedArrowOptions
@@ -116,6 +148,7 @@ async function* makeTypedArrowBatchIterator(
   }
 }
 
+/** Merges caller options with typed Arrow CSV defaults. */
 function createTypedArrowCSVOptions(options?: CSVTypedArrowLoaderOptions): CSVTypedArrowOptions {
   return {
     ...CSVTypedArrowLoader.options.csv,
@@ -123,7 +156,8 @@ function createTypedArrowCSVOptions(options?: CSVTypedArrowLoaderOptions): CSVTy
   };
 }
 
-function createRawArrowCSVOptions(options?: CSVTypedArrowLoaderOptions): CSVRawArrowLoaderOptions {
+/** Creates raw Arrow options by stripping the typed conversion flag. */
+function createRawArrowCSVOptions(options?: CSVTypedArrowLoaderOptions): CSVRawArrowParseOptions {
   const typedArrowCSVOptions = createTypedArrowCSVOptions(options);
   const {dynamicTyping, ...rawArrowCSVOptions} = typedArrowCSVOptions;
   void dynamicTyping;
@@ -134,10 +168,12 @@ function createRawArrowCSVOptions(options?: CSVTypedArrowLoaderOptions): CSVRawA
   };
 }
 
+/** Returns whether typed Arrow conversion should be applied. */
 function shouldApplyDynamicTyping(typedArrowCSVOptions: CSVTypedArrowOptions): boolean {
   return typedArrowCSVOptions.dynamicTyping !== false;
 }
 
+/** Converts an Arrow table of Utf8 columns to inferred typed Arrow columns. */
 function convertRawArrowTableToTypedArrowTable(
   rawArrowTable: ArrowTable,
   options?: {frozenColumnDataTypes?: TypedColumnDataType[] | null}
@@ -154,7 +190,7 @@ function convertRawArrowTableToTypedArrowTable(
           metadata: {
             ...rawArrowTable.schema?.metadata,
             'loaders.gl#format': 'csv',
-            'loaders.gl#loader': 'CSVTypedArrowLoader'
+            'loaders.gl#loader': 'CSVArrowLoader'
           }
         },
         data: rawArrowTable.data
@@ -191,7 +227,9 @@ function convertRawArrowTableToTypedArrowTable(
     });
 
     typedColumnDataTypes.push(typedColumnDataType);
-    typedColumnValues.push(convertDynamicValuesToTypedColumnValues(dynamicValues, typedColumnDataType));
+    typedColumnValues.push(
+      convertDynamicValuesToTypedColumnValues(dynamicValues, typedColumnDataType)
+    );
   }
 
   const typedSchema: Schema = {
@@ -199,7 +237,7 @@ function convertRawArrowTableToTypedArrowTable(
     metadata: {
       ...rawArrowTable.schema?.metadata,
       'loaders.gl#format': 'csv',
-      'loaders.gl#loader': 'CSVTypedArrowLoader'
+      'loaders.gl#loader': 'CSVArrowLoader'
     }
   };
 
@@ -215,6 +253,7 @@ function convertRawArrowTableToTypedArrowTable(
   };
 }
 
+/** Converts an Arrow cell value to a nullable string value. */
 function readRawArrowStringValue(rawArrowValue: unknown): string | null {
   if (rawArrowValue === null || rawArrowValue === undefined) {
     return null;
@@ -223,6 +262,7 @@ function readRawArrowStringValue(rawArrowValue: unknown): string | null {
   return String(rawArrowValue);
 }
 
+/** Applies Papa-compatible dynamic typing to one nullable CSV string value. */
 function parseValueWithDynamicTyping(rawStringValue: string | null): DynamicColumnValue {
   if (rawStringValue === null) {
     return null;
@@ -251,6 +291,7 @@ function parseValueWithDynamicTyping(rawStringValue: string | null): DynamicColu
   return rawStringValue;
 }
 
+/** Deduces the narrowest supported Arrow type for one column. */
 function deduceTypedColumnDataType(dynamicValues: DynamicColumnValue[]): TypedColumnDataType {
   let inferredColumnDataType: TypedColumnDataType | null = null;
 
@@ -278,7 +319,10 @@ function deduceTypedColumnDataType(dynamicValues: DynamicColumnValue[]): TypedCo
   return inferredColumnDataType ?? 'utf8';
 }
 
-function getTypedColumnDataType(dynamicValue: Exclude<DynamicColumnValue, null>): TypedColumnDataType {
+/** Returns the typed Arrow column type for a non-null dynamically typed value. */
+function getTypedColumnDataType(
+  dynamicValue: Exclude<DynamicColumnValue, null>
+): TypedColumnDataType {
   if (typeof dynamicValue === 'boolean') {
     return 'bool';
   }
@@ -294,6 +338,7 @@ function getTypedColumnDataType(dynamicValue: Exclude<DynamicColumnValue, null>)
   return 'utf8';
 }
 
+/** Coerces dynamically typed values to values compatible with the selected Arrow type. */
 function convertDynamicValuesToTypedColumnValues(
   dynamicValues: DynamicColumnValue[],
   typedColumnDataType: TypedColumnDataType
@@ -313,6 +358,8 @@ function convertDynamicValuesToTypedColumnValues(
       );
     case 'utf8':
     default:
-      return dynamicValues.map((dynamicValue) => (dynamicValue === null ? null : String(dynamicValue)));
+      return dynamicValues.map((dynamicValue) =>
+        dynamicValue === null ? null : String(dynamicValue)
+      );
   }
 }

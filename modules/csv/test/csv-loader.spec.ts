@@ -6,6 +6,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
+import {CSV2Loader} from '../src/csv2-loader';
 import {CSVLoader} from '../src/csv-loader';
 import {getTableLength} from '@loaders.gl/schema-utils';
 
@@ -22,6 +23,44 @@ const TSV_BRAZIL = '@loaders.gl/csv/test/data/tsv/brazil.tsv';
 
 test('CSVLoader#loader conformance', (t) => {
   validateLoader(t, CSVLoader, 'CSVLoader');
+  t.end();
+});
+
+test('CSV2Loader#loader conformance', (t) => {
+  validateLoader(t, CSV2Loader, 'CSV2Loader');
+  t.end();
+});
+
+test('CSV2Loader#load', async (t) => {
+  const objectRowTable = await load(CSV_SAMPLE_URL, CSV2Loader, {
+    csv: {shape: 'object-row-table', header: false}
+  });
+  t.assert(objectRowTable.shape === 'object-row-table', 'Got correct object-row table shape');
+  if (objectRowTable.shape === 'object-row-table') {
+    t.deepEqual(
+      objectRowTable.data,
+      [
+        {column1: 'A', column2: 'B', column3: 1},
+        {column1: 'X', column2: 'Y', column3: 2}
+      ],
+      'Got correct object-row content'
+    );
+  }
+
+  const arrayRowTable = await load(CSV_SAMPLE_URL, CSV2Loader, {
+    csv: {shape: 'array-row-table', header: false}
+  });
+  t.assert(arrayRowTable.shape === 'array-row-table', 'Got correct array-row table shape');
+  if (arrayRowTable.shape === 'array-row-table') {
+    t.deepEqual(
+      arrayRowTable.data,
+      [
+        ['A', 'B', 1],
+        ['X', 'Y', 2]
+      ],
+      'Got correct array-row content'
+    );
+  }
   t.end();
 });
 
@@ -453,6 +492,32 @@ test('CSVLoader#loadInBatches(csv with quotes)', async (t) => {
     },
     'Got correct first row (csv with quotes)'
   );
+  t.end();
+});
+
+test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', async (t) => {
+  const csvText = 'city\nZürich\n東京\n';
+  const csvBytes = new TextEncoder().encode(csvText);
+  const splitIndex = csvBytes.indexOf(0xc3) + 1;
+
+  const iterator = CSVLoader.parseInBatches(
+    [csvBytes.subarray(0, splitIndex), csvBytes.subarray(splitIndex)],
+    {
+      csv: {
+        header: true,
+        shape: 'object-row-table'
+      }
+    }
+  );
+
+  const rows: unknown[] = [];
+  for await (const batch of iterator) {
+    if (batch.shape === 'object-row-table') {
+      rows.push(...batch.data);
+    }
+  }
+
+  t.deepEqual(rows, [{city: 'Zürich'}, {city: '東京'}], 'preserves split UTF-8 characters');
   t.end();
 });
 
