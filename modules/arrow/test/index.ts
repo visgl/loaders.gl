@@ -6,3 +6,4 @@ import './arrow-loader.spec';
 import './arrow-writer.spec';
 
 import './triangulate-on-worker.spec';
+import './tighten-arrow-table-schema-nullability.spec';

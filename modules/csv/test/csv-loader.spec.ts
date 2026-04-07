@@ -64,6 +64,65 @@ test('CSV2Loader#load', async (t) => {
   t.end();
 });
 
+test('CSV2Loader#load matches CSVLoader output across fixture cases', async (t) => {
+  const cases: Array<{
+    name: string;
+    url: string;
+    options?: Parameters<typeof load>[2];
+  }> = [
+    {
+      name: 'sample object rows without header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'object-row-table', header: false}}
+    },
+    {
+      name: 'sample array rows without header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'array-row-table', header: false}}
+    },
+    {
+      name: 'sample object rows with header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'object-row-table', header: true}}
+    },
+    {
+      name: 'duplicate headers',
+      url: CSV_SAMPLE_URL_DUPLICATE_COLS,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'skip empty lines',
+      url: CSV_SAMPLE_URL_EMPTY_LINES,
+      options: {csv: {shape: 'object-row-table', skipEmptyLines: true}}
+    },
+    {
+      name: 'quoted csv',
+      url: CSV_INCIDENTS_URL_QUOTES,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'no header with custom prefix',
+      url: CSV_NO_HEADER_URL,
+      options: {csv: {shape: 'object-row-table', header: false, columnPrefix: 'column_'}}
+    },
+    {
+      name: 'tsv',
+      url: TSV_BRAZIL,
+      options: {csv: {shape: 'object-row-table'}}
+    }
+  ];
+
+  for (const {name, url, options} of cases) {
+    const csvLoaderTable = await load(url, CSVLoader, options);
+    const csv2LoaderTable = await load(url, CSV2Loader, options);
+
+    t.equal(csv2LoaderTable.shape, csvLoaderTable.shape, `${name}: shape matches`);
+    t.deepEqual(csv2LoaderTable.data, csvLoaderTable.data, `${name}: data matches`);
+  }
+
+  t.end();
+});
+
 test('CSVLoader#load(states.csv)', async (t) => {
   const table = await load(CSV_STATES_URL, CSVLoader);
   t.equal(getTableLength(table), 110);
@@ -437,9 +496,9 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
   );
 });
 
-test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
+test('CSVLoader#loadInBatches(skipEmptyLines greedy)', async (t) => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL_EMPTY_LINES, CSVLoader, {
-    csv: {shape: 'object-row-table', skipEmptyLines: true}
+    csv: {shape: 'object-row-table', skipEmptyLines: 'greedy'}
   });
 
   const rows: unknown[] = [];
@@ -520,6 +579,63 @@ test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', 
   t.deepEqual(rows, [{city: 'Zürich'}, {city: '東京'}], 'preserves split UTF-8 characters');
   t.end();
 });
+
+test('CSV2Loader#loadInBatches matches CSVLoader output across streaming cases', async (t) => {
+  const cases: Array<{
+    name: string;
+    url: string;
+    options?: Parameters<typeof loadInBatches>[2];
+  }> = [
+    {
+      name: 'sample object rows',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'sample array rows without header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'array-row-table', header: false}}
+    },
+    {
+      name: 'duplicate headers',
+      url: CSV_SAMPLE_URL_DUPLICATE_COLS,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'skip empty lines',
+      url: CSV_SAMPLE_URL_EMPTY_LINES,
+      options: {csv: {shape: 'object-row-table', skipEmptyLines: true}}
+    },
+    {
+      name: 'quoted csv',
+      url: CSV_INCIDENTS_URL_QUOTES,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'no header with custom prefix',
+      url: CSV_NO_HEADER_URL,
+      options: {csv: {shape: 'object-row-table', header: false, columnPrefix: 'column_'}}
+    }
+  ];
+
+  for (const {name, url, options} of cases) {
+    const csvLoaderRows = await collectBatchRows(await loadInBatches(url, CSVLoader, options));
+    const csv2LoaderRows = await collectBatchRows(await loadInBatches(url, CSV2Loader, options));
+    t.deepEqual(csv2LoaderRows, csvLoaderRows, `${name}: batched rows match`);
+  }
+
+  t.end();
+});
+
+async function collectBatchRows(asyncIterable): Promise<unknown[]> {
+  const rows: unknown[] = [];
+  for await (const batch of asyncIterable) {
+    if (batch.shape === 'object-row-table' || batch.shape === 'array-row-table') {
+      rows.push(...batch.data);
+    }
+  }
+  return rows;
+}
 
 function validateColumn(column, length, type) {
   if (column.length !== length) {

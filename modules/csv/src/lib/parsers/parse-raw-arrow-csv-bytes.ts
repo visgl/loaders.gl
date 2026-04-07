@@ -13,6 +13,7 @@ type CSVByteParserOptions = {
   quote: number;
   columnPrefix: string;
   header: boolean | 'auto';
+  dynamicTyping: boolean;
   skipEmptyLines: boolean | 'greedy';
 };
 
@@ -32,6 +33,10 @@ const CARRIAGE_RETURN = 13;
 const LINE_FEED = 10;
 const SPACE = 32;
 const TAB = 9;
+
+const FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
+const ISO_DATE =
+  /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
 
 const textDecoder = new TextDecoder();
 
@@ -90,6 +95,7 @@ function getCSVByteParserOptions(
     quote: quoteChar.charCodeAt(0),
     columnPrefix: csvOptions.columnPrefix || 'column',
     header: csvOptions.header ?? false,
+    dynamicTyping: Boolean(csvOptions.dynamicTyping),
     skipEmptyLines: csvOptions.skipEmptyLines || false
   };
 }
@@ -376,7 +382,8 @@ class RawArrowCSVByteParser {
     }
 
     if (this.isFirstDataRow && !this.headerRow) {
-      const isHeader = this.options.header === 'auto' ? true : Boolean(this.options.header);
+      const isHeader =
+        this.options.header === 'auto' ? this.isHeaderRow(rowFields) : Boolean(this.options.header);
       if (isHeader) {
         this.headerRow = [];
         for (let fieldIndex = 0; fieldIndex < rowFields.count; fieldIndex++) {
@@ -477,6 +484,10 @@ class RawArrowCSVByteParser {
   }
 
   private isEmptyRow(rowFields: CSVByteRowBuilder): boolean {
+    if (this.options.skipEmptyLines === true) {
+      return this.isStrictEmptyRow(rowFields);
+    }
+
     for (let fieldIndex = 0; fieldIndex < rowFields.count; fieldIndex++) {
       const data = rowFields.fieldData[fieldIndex];
       if (data) {
@@ -490,6 +501,24 @@ class RawArrowCSVByteParser {
       }
     }
     return true;
+  }
+
+  private isStrictEmptyRow(rowFields: CSVByteRowBuilder): boolean {
+    if (rowFields.count !== 1) {
+      return false;
+    }
+
+    const data = rowFields.fieldData[0];
+    return data ? data.length === 0 : rowFields.starts[0] === rowFields.ends[0];
+  }
+
+  private isHeaderRow(rowFields: CSVByteRowBuilder): boolean {
+    for (let fieldIndex = 0; fieldIndex < rowFields.count; fieldIndex++) {
+      if (!isHeaderValue(this.decodeField(rowFields, fieldIndex), this.options.dynamicTyping)) {
+        return false;
+      }
+    }
+    return rowFields.count > 0;
   }
 }
 
@@ -609,6 +638,9 @@ class RawArrowQuotedDirectCSVByteParser {
             ? tokenIndex + 2
             : tokenIndex + 1;
         fieldStart = byteIndex;
+        if (byteIndex >= bytes.length) {
+          break;
+        }
         continue;
       }
 
@@ -1133,6 +1165,26 @@ function isEmptyByteRange(bytes: Uint8Array, start: number, end: number): boolea
       return false;
     }
   }
+  return true;
+}
+
+/** Returns whether a first-row value should be treated as a Papa-style header cell. */
+function isHeaderValue(value: string, dynamicTyping: boolean): boolean {
+  if (!dynamicTyping) {
+    return true;
+  }
+
+  const trimmedValue = value.trim();
+  if (
+    trimmedValue === '' ||
+    trimmedValue === 'true' ||
+    trimmedValue === 'false' ||
+    FLOAT.test(trimmedValue) ||
+    ISO_DATE.test(trimmedValue)
+  ) {
+    return false;
+  }
+
   return true;
 }
 

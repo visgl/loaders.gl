@@ -25,7 +25,8 @@ export const CSVArrowLoader = {
     ...CSVTypedArrowLoader.options,
     csv: {
       ...CSVTypedArrowLoader.options.csv,
-      dynamicTyping: false
+      dynamicTyping: false,
+      skipEmptyLines: false
     }
   },
 
@@ -45,11 +46,16 @@ export const CSVArrowLoader = {
 
 /** Applies CSVArrowLoader defaults before delegating to internal Arrow CSV parsing helpers. */
 function createCSVArrowLoaderOptions(options?: CSVArrowLoaderOptions): CSVArrowLoaderOptions {
+  const skipEmptyLinesIsExplicit =
+    (options?.csv && Object.prototype.hasOwnProperty.call(options.csv, 'skipEmptyLinesIsExplicit')
+      ? Boolean(options.csv.skipEmptyLinesIsExplicit)
+      : undefined) ?? Boolean(options?.csv && options.csv.skipEmptyLines === true);
   return {
     ...options,
     csv: {
       ...CSVArrowLoader.options.csv,
-      ...options?.csv
+      ...options?.csv,
+      skipEmptyLinesIsExplicit
     }
   };
 }

@@ -5,6 +5,7 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import * as arrow from 'apache-arrow';
 
 import type {CSVLoaderOptions} from './csv-loader';
 import {CSVLoader} from './csv-loader';
@@ -16,7 +17,10 @@ import {
 import type {CSVRawArrowParseOptions} from './csv-raw-arrow-loader';
 
 /** CSV options accepted by the internal typed Arrow parser. */
-type CSVTypedArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape'>;
+type CSVTypedArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape'> & {
+  /** @internal Whether the caller explicitly supplied `skipEmptyLines`. */
+  skipEmptyLinesIsExplicit?: boolean;
+};
 
 /** Cell value after Papa-style dynamic typing has been applied. */
 type DynamicColumnValue = string | number | boolean | Date | null;
@@ -160,11 +164,13 @@ function createTypedArrowCSVOptions(options?: CSVTypedArrowLoaderOptions): CSVTy
 function createRawArrowCSVOptions(options?: CSVTypedArrowLoaderOptions): CSVRawArrowParseOptions {
   const typedArrowCSVOptions = createTypedArrowCSVOptions(options);
   const {dynamicTyping, ...rawArrowCSVOptions} = typedArrowCSVOptions;
-  void dynamicTyping;
 
   return {
     ...options,
-    csv: rawArrowCSVOptions
+    csv: {
+      ...rawArrowCSVOptions,
+      dynamicTyping
+    }
   };
 }
 
@@ -200,12 +206,29 @@ function convertRawArrowTableToTypedArrowTable(
   }
 
   const typedSchemaFields: Schema['fields'] = [];
-  const typedColumnValues: DynamicColumnValue[][] = [];
+  const typedColumnValues: unknown[][] = [];
   const typedColumnDataTypes: TypedColumnDataType[] = [];
 
   for (let columnIndex = 0; columnIndex < rawArrowSchemaFields.length; columnIndex++) {
     const rawArrowSchemaField = rawArrowSchemaFields[columnIndex];
     const rawArrowColumn = rawArrowTable.data.getChildAt(columnIndex);
+
+    if (rawArrowSchemaField.type instanceof arrow.List) {
+      typedSchemaFields.push(
+        rawArrowTable.schema?.fields[columnIndex] || {
+          name: rawArrowSchemaField.name,
+          type: 'utf8',
+          nullable: true
+        }
+      );
+      typedColumnDataTypes.push('utf8');
+      typedColumnValues.push(
+        rawArrowColumn
+          ? readRawArrowListValues(rawArrowColumn, rowCount)
+          : new Array(rowCount).fill(null)
+      );
+      continue;
+    }
 
     const rawStringValues: (string | null)[] = [];
     for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
@@ -251,6 +274,18 @@ function convertRawArrowTableToTypedArrowTable(
     typedArrowTable: typedArrowTableBuilder.finishTable(),
     typedColumnDataTypes
   };
+}
+
+/** Reads an Arrow list column back to nullable JS arrays for table rebuilding. */
+function readRawArrowListValues(rawArrowColumn: arrow.Vector, rowCount: number): unknown[] {
+  const values: unknown[] = [];
+  for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+    const rawArrowValue = rawArrowColumn.get(rowIndex);
+    values.push(
+      rawArrowValue === null || rawArrowValue === undefined ? null : Array.from(rawArrowValue)
+    );
+  }
+  return values;
 }
 
 /** Converts an Arrow cell value to a nullable string value. */

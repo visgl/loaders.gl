@@ -10,6 +10,7 @@ import type {
   ObjectRowTable,
   TableBatch
 } from '@loaders.gl/schema';
+import * as arrow from 'apache-arrow';
 
 import type {CSVArrowLoaderOptions} from './csv-arrow-loader';
 import {CSVArrowLoader} from './csv-arrow-loader';
@@ -91,7 +92,11 @@ function createCSVArrowOptions(options?: CSVLoaderOptions): CSVArrowLoaderOption
   delete (arrowCSVOptions as {shape?: CSV2Shape}).shape;
   return {
     ...options,
-    csv: arrowCSVOptions
+    csv: {
+      ...arrowCSVOptions,
+      skipEmptyLinesIsExplicit:
+        options?.csv && Object.prototype.hasOwnProperty.call(options.csv, 'skipEmptyLines')
+    }
   };
 }
 
@@ -117,7 +122,7 @@ function convertCSVArrowTableToArrayRowTable(arrowTable: ArrowTable): ArrayRowTa
   for (let rowIndex = 0; rowIndex < arrowData.numRows; rowIndex++) {
     const row = new Array<unknown>(columnCount);
     for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
-      row[columnIndex] = columns[columnIndex]?.get(rowIndex);
+      row[columnIndex] = getCSVArrowCellValue(columns[columnIndex]?.get(rowIndex));
     }
     rows[rowIndex] = row;
   }
@@ -139,7 +144,11 @@ function convertCSVArrowTableToObjectRowTable(arrowTable: ArrowTable): ObjectRow
   for (let rowIndex = 0; rowIndex < arrowData.numRows; rowIndex++) {
     const row: {[key: string]: unknown} = {};
     for (let columnIndex = 0; columnIndex < fields.length; columnIndex++) {
-      row[fields[columnIndex].name] = columns[columnIndex]?.get(rowIndex);
+      const cellValue = getCSVArrowCellValue(columns[columnIndex]?.get(rowIndex));
+      if (cellValue === null && fields[columnIndex].type instanceof arrow.List) {
+        continue;
+      }
+      row[fields[columnIndex].name] = cellValue;
     }
     rows[rowIndex] = row;
   }
@@ -158,4 +167,12 @@ function getArrowColumns(arrowTable: ArrowTable): Array<CSVArrowColumn | null> {
     columns[columnIndex] = arrowTable.data.getChildAt(columnIndex) || null;
   }
   return columns;
+}
+
+/** Materializes nested Arrow vector cell values into plain JS arrays. */
+function getCSVArrowCellValue(value: unknown): unknown {
+  if (value && typeof value === 'object' && Symbol.iterator in value) {
+    return Array.from(value as Iterable<unknown>);
+  }
+  return value;
 }

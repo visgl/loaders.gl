@@ -4,14 +4,19 @@
 
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {CSVArrowLoader} from '@loaders.gl/csv';
+import {CSVArrowLoader, CSVLoader} from '@loaders.gl/csv';
 import * as arrow from 'apache-arrow';
-import type {ArrowTableBatch} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 
 // Small CSV Sample Files
 const CSV_NUMBERS_100_URL = '@loaders.gl/csv/test/data/numbers-100.csv';
 const CSV_NUMBERS_10000_URL = '@loaders.gl/csv/test/data/numbers-10000.csv';
 const CSV_INCIDENTS_URL_QUOTES = '@loaders.gl/csv/test/data/sf_incidents-small.csv';
+const CSV_SAMPLE_URL = '@loaders.gl/csv/test/data/sample.csv';
+const CSV_SAMPLE_URL_DUPLICATE_COLS = '@loaders.gl/csv/test/data/sample-duplicate-cols.csv';
+const CSV_SAMPLE_URL_EMPTY_LINES = '@loaders.gl/csv/test/data/sample-empty-line.csv';
+const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
+const TSV_BRAZIL = '@loaders.gl/csv/test/data/tsv/brazil.tsv';
 
 test('CSVArrowLoader#loadInBatches(numbers-100.csv)', async (t) => {
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
@@ -81,6 +86,176 @@ test('CSVArrowLoader#load(numbers-100.csv)', async (t) => {
   t.end();
 });
 
+test('CSVArrowLoader#load matches CSVLoader output across fixture cases', async (t) => {
+  const cases: Array<{
+    name: string;
+    url: string;
+    shape: 'array-row-table' | 'object-row-table';
+    options: {
+      csv: {
+        header?: boolean | 'auto';
+        dynamicTyping: boolean;
+        shape?: 'array-row-table' | 'object-row-table';
+        skipEmptyLines?: boolean | 'greedy';
+        columnPrefix?: string;
+      };
+    };
+  }> = [
+    {
+      name: 'sample array rows without header',
+      url: CSV_SAMPLE_URL,
+      shape: 'array-row-table',
+      options: {csv: {shape: 'array-row-table', header: false, dynamicTyping: true}}
+    },
+    {
+      name: 'sample object rows without header',
+      url: CSV_SAMPLE_URL,
+      shape: 'object-row-table',
+      options: {csv: {shape: 'object-row-table', header: false, dynamicTyping: true}}
+    },
+    {
+      name: 'sample object rows with header',
+      url: CSV_SAMPLE_URL,
+      shape: 'object-row-table',
+      options: {csv: {shape: 'object-row-table', header: true, dynamicTyping: true}}
+    },
+    {
+      name: 'sample object rows without dynamic typing',
+      url: CSV_SAMPLE_URL,
+      shape: 'object-row-table',
+      options: {
+        csv: {shape: 'object-row-table', header: false, dynamicTyping: false}
+      }
+    },
+    {
+      name: 'duplicate headers',
+      url: CSV_SAMPLE_URL_DUPLICATE_COLS,
+      shape: 'object-row-table',
+      options: {csv: {shape: 'object-row-table', header: 'auto', dynamicTyping: true}}
+    },
+    {
+      name: 'skip empty lines',
+      url: CSV_SAMPLE_URL_EMPTY_LINES,
+      shape: 'object-row-table',
+      options: {
+        csv: {
+          shape: 'object-row-table',
+          header: 'auto',
+          dynamicTyping: true,
+          skipEmptyLines: true
+        }
+      }
+    },
+    {
+      name: 'quoted csv',
+      url: CSV_INCIDENTS_URL_QUOTES,
+      shape: 'object-row-table',
+      options: {csv: {shape: 'object-row-table', header: true, dynamicTyping: true}}
+    },
+    {
+      name: 'no header with custom prefix',
+      url: CSV_NO_HEADER_URL,
+      shape: 'object-row-table',
+      options: {
+        csv: {
+          shape: 'object-row-table',
+          header: false,
+          dynamicTyping: true,
+          columnPrefix: 'column_'
+        }
+      }
+    },
+    {
+      name: 'tsv',
+      url: TSV_BRAZIL,
+      shape: 'object-row-table',
+      options: {csv: {shape: 'object-row-table', header: 'auto', dynamicTyping: true}}
+    },
+    {
+      name: 'numeric csv without dynamic typing',
+      url: CSV_NUMBERS_100_URL,
+      shape: 'object-row-table',
+      options: {csv: {shape: 'object-row-table', header: true, dynamicTyping: false}}
+    }
+  ];
+
+  for (const {name, url, shape, options} of cases) {
+    const csvLoaderTable = await load(url, CSVLoader, options);
+    const {shape: csvShape, ...arrowOptions} = options.csv;
+    t.equal(csvShape, shape, `${name}: uses expected CSVLoader row shape`);
+    const arrowTable = await load(url, CSVArrowLoader, {
+      csv: arrowOptions
+    });
+    const arrowRows = materializeArrowTableRows(arrowTable, shape);
+
+    t.deepEqual(arrowRows, csvLoaderTable.data, `${name}: CSVArrowLoader matches CSVLoader`);
+  }
+
+  t.end();
+});
+
+test('CSVArrowLoader#parseInBatches matches CSVLoader output across fixture cases', async (t) => {
+  const cases: Array<{
+    name: string;
+    url: string;
+    options: {
+      csv: {
+        header?: boolean | 'auto';
+        dynamicTyping: boolean;
+        shape: 'array-row-table' | 'object-row-table';
+        skipEmptyLines?: boolean | 'greedy';
+        columnPrefix?: string;
+      };
+    };
+  }> = [
+    {
+      name: 'sample array rows without header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'array-row-table', header: false, dynamicTyping: true}}
+    },
+    {
+      name: 'sample object rows without header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'object-row-table', header: false, dynamicTyping: true}}
+    },
+    {
+      name: 'duplicate headers',
+      url: CSV_SAMPLE_URL_DUPLICATE_COLS,
+      options: {csv: {shape: 'object-row-table', header: 'auto', dynamicTyping: true}}
+    },
+    {
+      name: 'skip empty lines',
+      url: CSV_SAMPLE_URL_EMPTY_LINES,
+      options: {
+        csv: {
+          shape: 'object-row-table',
+          header: 'auto',
+          dynamicTyping: true,
+          skipEmptyLines: true
+        }
+      }
+    },
+    {
+      name: 'quoted csv',
+      url: CSV_INCIDENTS_URL_QUOTES,
+      options: {csv: {shape: 'object-row-table', header: true, dynamicTyping: true}}
+    },
+    {
+      name: 'numeric csv without dynamic typing',
+      url: CSV_NUMBERS_100_URL,
+      options: {csv: {shape: 'object-row-table', header: true, dynamicTyping: false}}
+    }
+  ];
+
+  for (const {name, url, options} of cases) {
+    const csvLoaderRows = await collectCSVLoaderBatchRows(url, options);
+    const arrowRows = await collectCSVArrowLoaderBatchRows(url, options);
+    t.deepEqual(arrowRows, csvLoaderRows, `${name}: CSVArrowLoader batches match CSVLoader`);
+  }
+
+  t.end();
+});
+
 test('CSVArrowLoader#parse handles raw UTF-8 and quoted fields without string tokenization', async (t) => {
   const csvText = 'name,note\nÅsa,mañana\nBob,"x,y"\n"Eve","hello\nthere"\n"Dan","b""c"\n';
   const csvBuffer = new TextEncoder().encode(csvText);
@@ -102,6 +277,103 @@ test('CSVArrowLoader#parse handles raw UTF-8 and quoted fields without string to
   t.end();
 });
 
+async function collectCSVLoaderBatchRows(
+  url: string,
+  options: {
+    csv: {
+      shape: 'array-row-table' | 'object-row-table';
+      header?: boolean | 'auto';
+      dynamicTyping: boolean;
+      skipEmptyLines?: boolean | 'greedy';
+      columnPrefix?: string;
+    };
+  }
+): Promise<unknown[]> {
+  const rows: unknown[] = [];
+  const iterator = await loadInBatches(url, CSVLoader, options);
+  for await (const batch of iterator) {
+    if (batch.shape === 'array-row-table' || batch.shape === 'object-row-table') {
+      rows.push(...batch.data);
+    }
+  }
+  return rows;
+}
+
+async function collectCSVArrowLoaderBatchRows(
+  url: string,
+  options: {
+    csv: {
+      shape: 'array-row-table' | 'object-row-table';
+      header?: boolean | 'auto';
+      dynamicTyping: boolean;
+      skipEmptyLines?: boolean | 'greedy';
+      columnPrefix?: string;
+    };
+  }
+): Promise<unknown[]> {
+  const rows: unknown[] = [];
+  const {shape, ...arrowCSVOptions} = options.csv;
+  const iterator = await loadInBatches(url, CSVArrowLoader, {
+    csv: arrowCSVOptions
+  });
+  for await (const batch of iterator) {
+    rows.push(
+      ...materializeArrowTableRows(
+        {shape: 'arrow-table', schema: batch.schema, data: batch.data},
+        shape
+      )
+    );
+  }
+  return rows;
+}
+
+function materializeArrowTableRows(
+  arrowTable: ArrowTable,
+  shape: 'array-row-table' | 'object-row-table'
+): unknown[] {
+  return shape === 'array-row-table'
+    ? materializeArrowTableArrayRows(arrowTable)
+    : materializeArrowTableObjectRows(arrowTable);
+}
+
+function materializeArrowTableArrayRows(arrowTable: ArrowTable): unknown[][] {
+  const rows: unknown[][] = [];
+  for (let rowIndex = 0; rowIndex < arrowTable.data.numRows; rowIndex++) {
+    const row: unknown[] = [];
+    for (let columnIndex = 0; columnIndex < arrowTable.data.numCols; columnIndex++) {
+      row.push(materializeArrowCellValue(arrowTable.data.getChildAt(columnIndex)?.get(rowIndex)));
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+function materializeArrowTableObjectRows(arrowTable: ArrowTable): Array<Record<string, unknown>> {
+  const rows: Array<Record<string, unknown>> = [];
+  const fields = arrowTable.data.schema.fields;
+  for (let rowIndex = 0; rowIndex < arrowTable.data.numRows; rowIndex++) {
+    const row: Record<string, unknown> = {};
+    for (let columnIndex = 0; columnIndex < fields.length; columnIndex++) {
+      const cellValue = materializeArrowCellValue(
+        arrowTable.data.getChildAt(columnIndex)?.get(rowIndex)
+      );
+      if (cellValue === null && fields[columnIndex].type instanceof arrow.List) {
+        continue;
+      }
+      row[fields[columnIndex].name] = cellValue;
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+function materializeArrowCellValue(value: unknown): unknown {
+  if (value && typeof value === 'object' && Symbol.iterator in value) {
+    return Array.from(value as Iterable<unknown>);
+  }
+  return value;
+}
+
 test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing cells', async (t) => {
   const csvText = 'a\ta\n1\t2\n3\n';
   const csvBuffer = new TextEncoder().encode(csvText);
@@ -121,6 +393,50 @@ test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing
   t.equal(table.data.getChild('a.1')?.get(0), '2', 'reads second tab-delimited column');
   t.equal(table.data.getChild('a')?.get(1), '3', 'reads rows with missing trailing cells');
   t.equal(table.data.getChild('a.1')?.get(1), null, 'marks missing trailing cells as null');
+
+  t.end();
+});
+
+test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra cells', async (t) => {
+  const noExtraText = 'A,B,C\nx,1,some text\ny,2,other text\n\n';
+  const noExtraBuffer = new TextEncoder().encode(noExtraText);
+  const noExtraTable = await CSVArrowLoader.parse(noExtraBuffer.buffer, {
+    csv: {
+      header: true,
+      skipEmptyLines: true
+    }
+  });
+
+  t.notOk(
+    noExtraTable.data.getChild('__parsed_extra'),
+    'does not add __parsed_extra when rows do not have extra cells'
+  );
+
+  const extraText = 'A,B,C\nx,1,some text\n,,,\ny,2,other text\n';
+  const extraBuffer = new TextEncoder().encode(extraText);
+  const extraTable = await CSVArrowLoader.parse(extraBuffer.buffer, {
+    csv: {
+      header: true,
+      skipEmptyLines: true
+    }
+  });
+
+  t.ok(
+    extraTable.data.getChild('__parsed_extra'),
+    'adds __parsed_extra for Papa-compatible header rows with extra cells'
+  );
+
+  const headerlessExtraTable = await CSVArrowLoader.parse(extraBuffer.buffer, {
+    csv: {
+      header: false,
+      skipEmptyLines: true
+    }
+  });
+
+  t.notOk(
+    headerlessExtraTable.data.getChild('__parsed_extra'),
+    'does not add __parsed_extra when header object semantics are not requested'
+  );
 
   t.end();
 });
