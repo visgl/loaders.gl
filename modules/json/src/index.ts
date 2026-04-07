@@ -5,6 +5,8 @@
 export type {JSONLoaderOptions} from './json-loader';
 export {JSONLoader} from './json-loader';
 export {NDJSONLoader} from './ndjson-loader';
+export type {NDJSONArrowLoaderOptions} from './ndjson-arrow-loader';
+export {NDJSONArrowLoader} from './ndjson-arrow-loader';
 
 export type {JSONWriterOptions} from './json-writer';
 export {JSONWriter} from './json-writer';
