@@ -259,7 +259,7 @@ function extractLayer(xmlLayer: any): WMSLayer {
 
   // WMS 1.3.0 changes SRS to CRS
   const crs = xmlLayer?.CRS || xmlLayer?.SRS;
-  if (crs && Array.isArray(crs) && crs.every((_) => typeof _ === 'string')) {
+  if (crs && Array.isArray(crs) && crs.every(_ => typeof _ === 'string')) {
     layer.crs = crs;
   }
 
@@ -285,7 +285,7 @@ function extractLayer(xmlLayer: any): WMSLayer {
 
   // Extract dimensions
   const xmlDimensions = getXMLArray(xmlLayer?.Dimension);
-  const dimensions = xmlDimensions.map((xml) => extractDimension(xml));
+  const dimensions = xmlDimensions.map(xml => extractDimension(xml));
   if (dimensions.length) {
     layer.dimensions = dimensions;
   }
@@ -348,7 +348,7 @@ function extractLatLonBoundingBox(xmlBoundingBox: any): [[number, number], [numb
 /** Loosely defined geospatial bounding box in unspecified CRS for quick content searches */
 function extractWMSBoundingBoxes(xmlBoundingBoxes: any): WMSBoundingBox[] {
   const xmlBoxes = getXMLArray(xmlBoundingBoxes);
-  return xmlBoxes.map((xmlBox) => extractWMSBoundingBox(xmlBox));
+  return xmlBoxes.map(xmlBox => extractWMSBoundingBox(xmlBox));
 }
 
 /** Loosely defined geospatial bounding box in unspecified CRS for quick content searches */

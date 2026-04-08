@@ -13,12 +13,12 @@ import {TILEJSONS} from './data/tilejson/tilejson';
 const TIPPECANOE_TILEJSON = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.tilejson';
 // const TIPPECANOE_EXPECTED = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.expected.json';
 
-test('TileJSONLoader#loader conformance', (t) => {
+test('TileJSONLoader#loader conformance', t => {
   validateLoader(t, TileJSONLoader, 'TileJSONLoader');
   t.end();
 });
 
-test('TileJSONLoader#load', async (t) => {
+test('TileJSONLoader#load', async t => {
   for (const tileJSON of TILEJSONS) {
     const metadata = await load(tileJSON.url, TileJSONLoader);
     t.ok(metadata.layers);
@@ -29,7 +29,7 @@ test('TileJSONLoader#load', async (t) => {
   t.end();
 });
 
-test('TileJSONLoader#tippecanoe', async (t) => {
+test('TileJSONLoader#tippecanoe', async t => {
   // let metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
   // const expected = await load(TIPPECANOE_EXPECTED, JSONLoader);
   // t.deepEqual(metadata, expected, 'Tippecanoe TileJSON loaded correctly');

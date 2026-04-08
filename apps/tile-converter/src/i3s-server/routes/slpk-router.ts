@@ -28,7 +28,7 @@ router.get('*', (req, res, next) => {
       try {
         const json = JSON.parse(textDecoder.decode(file));
         res.send(json);
-      } catch (e) {
+      } catch (_e) {
         res.send(Buffer.from(file));
       }
     } else {

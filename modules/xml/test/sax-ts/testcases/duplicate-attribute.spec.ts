@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#duplicate-attribute', (t) => {
+test('SAXParser#duplicate-attribute', t => {
   testSax(t, {
     xml: '<span id="hello" id="there"></span>',
     expect: [

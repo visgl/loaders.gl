@@ -18,7 +18,7 @@ export function uncapitalize(str: string): string {
  */
 export function uncapitalizeKeys(object: any): any {
   if (Array.isArray(object)) {
-    return object.map((element) => uncapitalizeKeys(element));
+    return object.map(element => uncapitalizeKeys(element));
   }
 
   if (object && typeof object === 'object') {

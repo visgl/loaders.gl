@@ -23,7 +23,7 @@ export const JSONLoader = {
   category: 'json',
   text: true,
   parseTextSync,
-  parse: async (arrayBuffer) => parseTextSync(new TextDecoder().decode(arrayBuffer)),
+  parse: async arrayBuffer => parseTextSync(new TextDecoder().decode(arrayBuffer)),
   options: {}
 } as const satisfies LoaderWithParser<Table, TableBatch, JSONLoaderOptions>;
 

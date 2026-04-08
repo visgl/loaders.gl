@@ -15,12 +15,12 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('RadianceHDRLoader#imports', (t) => {
+test('RadianceHDRLoader#imports', t => {
   t.ok(RadianceHDRLoader, 'RadianceHDRLoader defined');
   t.end();
 });
 
-test('RadianceHDRLoader#load(URL)', async (t) => {
+test('RadianceHDRLoader#load(URL)', async t => {
   const texture = await load(HDR_URL, RadianceHDRLoader);
   const level = texture.data[0];
 
@@ -59,7 +59,7 @@ test('RadianceHDRLoader#load(URL)', async (t) => {
   t.end();
 });
 
-test('RadianceHDRLoader#load(Poly Haven URL)', async (t) => {
+test('RadianceHDRLoader#load(Poly Haven URL)', async t => {
   const texture = await load(POLY_HAVEN_HDR_URL, RadianceHDRLoader);
   const level = texture.data[0];
   const data = level.data as Float32Array;
@@ -74,7 +74,7 @@ test('RadianceHDRLoader#load(Poly Haven URL)', async (t) => {
   t.equal(level.format, GL_RGBA32F, 'poly haven WebGL format is correct');
   t.ok(level.data instanceof Float32Array, 'poly haven data is float32');
   t.ok(
-    data.some((value) => value > 1),
+    data.some(value => value > 1),
     'poly haven data keeps HDR intensity'
   );
 

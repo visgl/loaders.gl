@@ -90,7 +90,7 @@ export function convertGeoArrowToBinaryFeatureCollection(
   let globalFeatureIdOffset = options?.chunkOffset || 0;
   const binaryGeometries: BinaryFeatureCollection[] = [];
 
-  chunks.forEach((chunk) => {
+  chunks.forEach(chunk => {
     const {featureIds, flatCoordinateArray, nDim, geomOffset, triangles} =
       getBinaryGeometriesFromChunk(chunk, geoEncoding, options);
 
@@ -107,7 +107,7 @@ export function convertGeoArrowToBinaryFeatureCollection(
       },
       featureIds: {value: featureIds, size: 1},
       // eslint-disable-next-line no-loop-func
-      properties: [...Array(chunk.length).keys()].map((i) => ({
+      properties: [...Array(chunk.length).keys()].map(i => ({
         index: i + globalFeatureIdOffset
       }))
     };
@@ -205,7 +205,7 @@ export function getMeanCentersFromBinaryGeometries(
         binaryGeometryType,
         primitivePolygonIndices
       );
-      meanCenters.forEach((center) => {
+      meanCenters.forEach(center => {
         globalMeanCenters.push(center);
       });
     }
@@ -336,7 +336,7 @@ export function getTriangleIndices(
       trianglesUint32[i] = triangles[i];
     }
     return trianglesUint32;
-  } catch (error) {
+  } catch (_error) {
     // if earcut fails, return null
     return null;
   }
@@ -359,7 +359,7 @@ function getBinaryPolygonsFromChunk(
   const polygonData = isMultiPolygon ? chunk.children[0] : chunk;
   const polygonOffset = polygonData.valueOffsets;
   const partData = isMultiPolygon
-    ? chunk.valueOffsets.map((i) => polygonOffset.at(i) || i)
+    ? chunk.valueOffsets.map(i => polygonOffset.at(i) || i)
     : chunk.valueOffsets;
   const ringData = polygonData.children[0];
   const pointData = ringData.children[0];

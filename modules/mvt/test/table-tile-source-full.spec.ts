@@ -56,7 +56,7 @@ const TEST_CASES = [
   }
 ];
 
-test('GeoJSONVT#full tiling test', async (t) => {
+test('GeoJSONVT#full tiling test', async t => {
   for (const tc of TEST_CASES) {
     const {inputFile, expectedFile, options} = tc;
     const parsedGeojson = await getJSON(inputFile);
@@ -73,19 +73,19 @@ test('GeoJSONVT#full tiling test', async (t) => {
   t.end();
 });
 
-test('GeoJSONVT#throws on invalid GeoJSON', async (t) => {
+test('GeoJSONVT#throws on invalid GeoJSON', async t => {
   t.throws(() => {
     genTiles({type: 'Pologon'});
   });
   t.end();
 });
 
-test('GeoJSONVT#empty geojson', async (t) => {
+test('GeoJSONVT#empty geojson', async t => {
   t.same({}, await genTiles(await getJSON('empty.json')));
   t.end();
 });
 
-test('GeoJSONVT#null geometry', async (t) => {
+test('GeoJSONVT#null geometry', async t => {
   // should ignore features with null geometry
   t.same({}, await genTiles(await getJSON('feature-null-geometry.json')));
   t.end();

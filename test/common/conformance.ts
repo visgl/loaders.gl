@@ -21,7 +21,7 @@ export function validateLoader(t, loader, name = '') {
   } else {
     t.equal(typeof loader.parse, 'function', `Loader ${name} has 'parse' function`);
     // Call parse just to ensure it returns a promise
-    const promise = loader.parse(new ArrayBuffer(0), {}).catch((_) => {});
+    const promise = loader.parse(new ArrayBuffer(0), {}).catch(_ => {});
     t.ok(promise.then, `Loader ${name} is async (returns a promise)`);
   }
 }
@@ -47,7 +47,7 @@ export function validateMeshCategoryData(t, data) {
   t.ok(
     data.header.boundingBox &&
       data.header.boundingBox.length === 2 &&
-      data.header.boundingBox.every((p) => p.length === 3 && p.every(Number.isFinite)),
+      data.header.boundingBox.every(p => p.length === 3 && p.every(Number.isFinite)),
     'data header has boundingBox'
   );
 
@@ -94,7 +94,7 @@ function validateAttribute(attributeName, attribute) {
   if (!ArrayBuffer.isView(attribute.value)) {
     return `${attributeName} value is not typed array`;
   }
-  if (attribute.value.slice(0, 10).some((x) => !Number.isFinite(x))) {
+  if (attribute.value.slice(0, 10).some(x => !Number.isFinite(x))) {
     return `${attributeName} contains invalid value`;
   }
   if (!Number.isFinite(attribute.size)) {

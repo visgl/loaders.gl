@@ -87,19 +87,19 @@ export class GLTFScenegraph {
   }
 
   hasExtension(extensionName: string): boolean {
-    const isUsedExtension = this.getUsedExtensions().find((name) => name === extensionName);
-    const isRequiredExtension = this.getRequiredExtensions().find((name) => name === extensionName);
+    const isUsedExtension = this.getUsedExtensions().find(name => name === extensionName);
+    const isRequiredExtension = this.getRequiredExtensions().find(name => name === extensionName);
     return typeof isUsedExtension === 'string' || typeof isRequiredExtension === 'string';
   }
 
   getExtension<T = Extension>(extensionName: string): T | null {
-    const isExtension = this.getUsedExtensions().find((name) => name === extensionName);
+    const isExtension = this.getUsedExtensions().find(name => name === extensionName);
     const extensions = this.json.extensions || {};
     return isExtension ? (extensions[extensionName] as T) : null;
   }
 
   getRequiredExtension<T = Extension>(extensionName: string): T | null {
-    const isRequired = this.getRequiredExtensions().find((name) => name === extensionName);
+    const isRequired = this.getRequiredExtensions().find(name => name === extensionName);
     return isRequired ? this.getExtension(extensionName) : null;
   }
 
@@ -300,7 +300,7 @@ export class GLTFScenegraph {
    */
   registerUsedExtension(extensionName: string): void {
     this.json.extensionsUsed = this.json.extensionsUsed || [];
-    if (!this.json.extensionsUsed.find((ext) => ext === extensionName)) {
+    if (!this.json.extensionsUsed.find(ext => ext === extensionName)) {
       this.json.extensionsUsed.push(extensionName);
     }
   }
@@ -311,7 +311,7 @@ export class GLTFScenegraph {
   registerRequiredExtension(extensionName: string): void {
     this.registerUsedExtension(extensionName);
     this.json.extensionsRequired = this.json.extensionsRequired || [];
-    if (!this.json.extensionsRequired.find((ext) => ext === extensionName)) {
+    if (!this.json.extensionsRequired.find(ext => ext === extensionName)) {
       this.json.extensionsRequired.push(extensionName);
     }
   }

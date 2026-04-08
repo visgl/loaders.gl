@@ -4,7 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {convertWKBToBinaryGeometry, convertWKBToBinaryGeometry, isWKB} from '@loaders.gl/gis';
+import {convertWKBToBinaryGeometry, isWKB} from '@loaders.gl/gis';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
@@ -16,7 +16,7 @@ function normalizeTypedArrays(value: unknown): unknown {
   }
 
   if (Array.isArray(value)) {
-    return value.map((entry) => normalizeTypedArrays(entry));
+    return value.map(entry => normalizeTypedArrays(entry));
   }
 
   if (value && typeof value === 'object') {
@@ -30,7 +30,7 @@ function normalizeTypedArrays(value: unknown): unknown {
   return value;
 }
 
-test('convertWKBToBinaryGeometry#2D', async (t) => {
+test('convertWKBToBinaryGeometry#2D', async t => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -54,7 +54,7 @@ test('convertWKBToBinaryGeometry#2D', async (t) => {
   t.end();
 });
 
-test('convertWKBToBinaryGeometry#Z', async (t) => {
+test('convertWKBToBinaryGeometry#Z', async t => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 

@@ -12,7 +12,7 @@ const ZIPCODES_XLSX_PATH = '@loaders.gl/excel/test/data/zipcodes.xlsx';
 const ZIPCODES_XLSB_PATH = '@loaders.gl/excel/test/data/zipcodes.xlsb';
 const ZIPCODES_CSV_PATH = '@loaders.gl/excel/test/data/zipcodes.csv';
 
-test('ExcelLoader#load(ZIPCODES)', async (t) => {
+test('ExcelLoader#load(ZIPCODES)', async t => {
   const csvTable = (await load(ZIPCODES_CSV_PATH, CSVLoader, {
     csv: {shape: 'object-row-table'}
   })) as ObjectRowTable;
@@ -28,7 +28,7 @@ test('ExcelLoader#load(ZIPCODES)', async (t) => {
   t.end();
 });
 
-test('ExcelLoader#loadInBatches (on worker)', async (t) => {
+test('ExcelLoader#loadInBatches (on worker)', async t => {
   // This masquerades an atomic loader as batches
   const batches = (await loadInBatches(
     ZIPCODES_XLSX_PATH,

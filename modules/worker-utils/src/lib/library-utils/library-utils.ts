@@ -185,7 +185,7 @@ function loadLibraryFromString(scriptSource: string, id: string): null | any {
   // most browsers like a separate text node but some throw an error. The second method covers those.
   try {
     script.appendChild(document.createTextNode(scriptSource));
-  } catch (e) {
+  } catch (_e) {
     script.text = scriptSource;
   }
   document.body.appendChild(script);

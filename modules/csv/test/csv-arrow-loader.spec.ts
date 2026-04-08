@@ -18,7 +18,7 @@ const CSV_SAMPLE_URL_EMPTY_LINES = '@loaders.gl/csv/test/data/sample-empty-line.
 const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
 const TSV_BRAZIL = '@loaders.gl/csv/test/data/tsv/brazil.tsv';
 
-test('CSVArrowLoader#loadInBatches(numbers-100.csv)', async (t) => {
+test('CSVArrowLoader#loadInBatches(numbers-100.csv)', async t => {
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
     batchSize: 40
   });
@@ -36,7 +36,7 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv)', async (t) => {
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(numbers-10000.csv)', async (t) => {
+test('CSVArrowLoader#loadInBatches(numbers-10000.csv)', async t => {
   const iterator = await loadInBatches(CSV_NUMBERS_10000_URL, CSVArrowLoader, {
     batchSize: 2000
   });
@@ -53,7 +53,7 @@ test('CSVArrowLoader#loadInBatches(numbers-10000.csv)', async (t) => {
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(incidents.csv)', async (t) => {
+test('CSVArrowLoader#loadInBatches(incidents.csv)', async t => {
   const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVArrowLoader);
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
@@ -68,7 +68,7 @@ test('CSVArrowLoader#loadInBatches(incidents.csv)', async (t) => {
   t.end();
 });
 
-test('CSVArrowLoader#load(numbers-100.csv)', async (t) => {
+test('CSVArrowLoader#load(numbers-100.csv)', async t => {
   const table = await load(CSV_NUMBERS_100_URL, CSVArrowLoader);
 
   t.ok(table.data instanceof arrow.Table, 'returns arrow table');
@@ -77,16 +77,16 @@ test('CSVArrowLoader#load(numbers-100.csv)', async (t) => {
   const zipColumn = table.data.getChildAt(1);
   t.equal(zipColumn?.get(0), '09857', 'retains leading zeroes by parsing as strings');
 
-  const fieldTypeNames = table.data.schema.fields.map((field) => field.type.toString());
+  const fieldTypeNames = table.data.schema.fields.map(field => field.type.toString());
   t.ok(
-    fieldTypeNames.every((typeName) => typeName === 'Utf8'),
+    fieldTypeNames.every(typeName => typeName === 'Utf8'),
     'all columns are Utf8'
   );
 
   t.end();
 });
 
-test('CSVArrowLoader#load matches CSVLoader output across fixture cases', async (t) => {
+test('CSVArrowLoader#load matches CSVLoader output across fixture cases', async t => {
   const cases: Array<{
     name: string;
     url: string;
@@ -194,7 +194,7 @@ test('CSVArrowLoader#load matches CSVLoader output across fixture cases', async 
   t.end();
 });
 
-test('CSVArrowLoader#parseInBatches matches CSVLoader output across fixture cases', async (t) => {
+test('CSVArrowLoader#parseInBatches matches CSVLoader output across fixture cases', async t => {
   const cases: Array<{
     name: string;
     url: string;
@@ -256,7 +256,7 @@ test('CSVArrowLoader#parseInBatches matches CSVLoader output across fixture case
   t.end();
 });
 
-test('CSVArrowLoader#parse handles raw UTF-8 and quoted fields without string tokenization', async (t) => {
+test('CSVArrowLoader#parse handles raw UTF-8 and quoted fields without string tokenization', async t => {
   const csvText = 'name,note\nÅsa,mañana\nBob,"x,y"\n"Eve","hello\nthere"\n"Dan","b""c"\n';
   const csvBuffer = new TextEncoder().encode(csvText);
 
@@ -374,7 +374,7 @@ function materializeArrowCellValue(value: unknown): unknown {
   return value;
 }
 
-test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing cells', async (t) => {
+test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing cells', async t => {
   const csvText = 'a\ta\n1\t2\n3\n';
   const csvBuffer = new TextEncoder().encode(csvText);
 
@@ -385,7 +385,7 @@ test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing
   });
 
   t.deepEqual(
-    table.data.schema.fields.map((field) => field.name),
+    table.data.schema.fields.map(field => field.name),
     ['a', 'a.1'],
     'deduplicates header names'
   );
@@ -397,7 +397,7 @@ test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing
   t.end();
 });
 
-test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra cells', async (t) => {
+test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra cells', async t => {
   const noExtraText = 'A,B,C\nx,1,some text\ny,2,other text\n\n';
   const noExtraBuffer = new TextEncoder().encode(noExtraText);
   const noExtraTable = await CSVArrowLoader.parse(noExtraBuffer.buffer, {
@@ -441,7 +441,7 @@ test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra ce
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(numbers-100.csv, utf8 columns)', async (t) => {
+test('CSVArrowLoader#loadInBatches(numbers-100.csv, utf8 columns)', async t => {
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
     batchSize: 40
   });
@@ -449,9 +449,9 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv, utf8 columns)', async (t) =>
   let rowCount = 0;
   for await (const batch of iterator) {
     t.ok(batch.data instanceof arrow.Table, 'returns arrow table batch');
-    const fieldTypeNames = batch.data.schema.fields.map((field) => field.type.toString());
+    const fieldTypeNames = batch.data.schema.fields.map(field => field.type.toString());
     t.ok(
-      fieldTypeNames.every((typeName) => typeName === 'Utf8'),
+      fieldTypeNames.every(typeName => typeName === 'Utf8'),
       'all batch columns are Utf8'
     );
 
@@ -463,7 +463,7 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv, utf8 columns)', async (t) =>
   t.end();
 });
 
-test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping true)', async (t) => {
+test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping true)', async t => {
   const table = await load(CSV_NUMBERS_100_URL, CSVArrowLoader, {
     csv: {
       dynamicTyping: true
@@ -476,16 +476,16 @@ test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping true)', async (t) => {
   const zipColumn = table.data.getChildAt(1);
   t.equal(zipColumn?.get(0), 9857, 'applies dynamic typing by default');
 
-  const fieldTypeNames = table.data.schema.fields.map((field) => field.type.toString());
+  const fieldTypeNames = table.data.schema.fields.map(field => field.type.toString());
   t.ok(
-    fieldTypeNames.every((typeName) => typeName === 'Float64'),
+    fieldTypeNames.every(typeName => typeName === 'Float64'),
     'numeric columns are typed'
   );
 
   t.end();
 });
 
-test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping false)', async (t) => {
+test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping false)', async t => {
   const table = await load(CSV_NUMBERS_100_URL, CSVArrowLoader, {
     csv: {
       dynamicTyping: false
@@ -498,16 +498,16 @@ test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping false)', async (t) => {
   const zipColumn = table.data.getChildAt(1);
   t.equal(zipColumn?.get(0), '09857', 'keeps strings when dynamic typing is disabled');
 
-  const fieldTypeNames = table.data.schema.fields.map((field) => field.type.toString());
+  const fieldTypeNames = table.data.schema.fields.map(field => field.type.toString());
   t.ok(
-    fieldTypeNames.every((typeName) => typeName === 'Utf8'),
+    fieldTypeNames.every(typeName => typeName === 'Utf8'),
     'all columns are Utf8'
   );
 
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async (t) => {
+test('CSVArrowLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async t => {
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
     batchSize: 40,
     csv: {
@@ -518,9 +518,9 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async 
   let rowCount = 0;
   for await (const batch of iterator) {
     t.ok(batch.data instanceof arrow.Table, 'returns arrow table batch');
-    const fieldTypeNames = batch.data.schema.fields.map((field) => field.type.toString());
+    const fieldTypeNames = batch.data.schema.fields.map(field => field.type.toString());
     t.ok(
-      fieldTypeNames.every((typeName) => typeName === 'Float64'),
+      fieldTypeNames.every(typeName => typeName === 'Float64'),
       'all batch columns are typed'
     );
 
@@ -532,7 +532,7 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async 
   t.end();
 });
 
-test('CSVArrowLoader#parseInBatches freezes schema after first typed batch', async (t) => {
+test('CSVArrowLoader#parseInBatches freezes schema after first typed batch', async t => {
   const csvText = 'value\n1\nfoo\n';
   const csvBuffer = new TextEncoder().encode(csvText);
 

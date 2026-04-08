@@ -426,7 +426,7 @@ export function replaceContentUrlTemplate(
   z: number
 ): string {
   const mapUrl = generateMapUrl({level, x, y, z});
-  return templateUrl.replace(/{level}|{x}|{y}|{z}/gi, (matched) => mapUrl[matched]);
+  return templateUrl.replace(/{level}|{x}|{y}|{z}/gi, matched => mapUrl[matched]);
 }
 
 /**

@@ -44,7 +44,7 @@ export type DracoParseOptions = {
 
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const GEOMETRY_TYPE = {
+const _GEOMETRY_TYPE = {
   TRIANGULAR_MESH: 0,
   POINT_CLOUD: 1
 };
@@ -527,7 +527,7 @@ export default class DracoParser {
   ): DracoQuantizationTransform | null {
     const {quantizedAttributes = []} = options;
     const attribute_type = dracoAttribute.attribute_type();
-    const skip = quantizedAttributes.map((type) => this.decoder[type]).includes(attribute_type);
+    const skip = quantizedAttributes.map(type => this.decoder[type]).includes(attribute_type);
     if (skip) {
       const transform = new this.draco.AttributeQuantizationTransform();
       try {
@@ -535,7 +535,7 @@ export default class DracoParser {
           return {
             quantization_bits: transform.quantization_bits(),
             range: transform.range(),
-            min_values: new Float32Array([1, 2, 3]).map((i) => transform.min_value(i))
+            min_values: new Float32Array([1, 2, 3]).map(i => transform.min_value(i))
           };
         }
       } finally {
@@ -552,7 +552,7 @@ export default class DracoParser {
     const {octahedronAttributes = []} = options;
     const attribute_type = dracoAttribute.attribute_type();
     const octahedron = octahedronAttributes
-      .map((type) => this.decoder[type])
+      .map(type => this.decoder[type])
       .includes(attribute_type);
     if (octahedron) {
       const transform = new this.draco.AttributeQuantizationTransform();

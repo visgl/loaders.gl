@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 import {GL_RGBA32F} from '../../../src/lib/gl-extensions';
 import {isHDR, parseHDR} from '../../../src/lib/parsers/parse-hdr';
 
-test('parseHDR#parses Radiance RLE data', (t) => {
+test('parseHDR#parses Radiance RLE data', t => {
   const texture = parseHDR(createRLEHDRBuffer('#?RADIANCE'));
   const level = texture.data[0];
   const data = level.data as Float32Array;
@@ -25,7 +25,7 @@ test('parseHDR#parses Radiance RLE data', (t) => {
   t.end();
 });
 
-test('parseHDR#parses application-facing metadata', (t) => {
+test('parseHDR#parses application-facing metadata', t => {
   const texture = parseHDR(
     createFlatHDRBuffer('#?RADIANCE', [
       'EXPOSURE=2',
@@ -54,7 +54,7 @@ test('parseHDR#parses application-facing metadata', (t) => {
   t.end();
 });
 
-test('parseHDR#parses RGBE flat data', (t) => {
+test('parseHDR#parses RGBE flat data', t => {
   const texture = parseHDR(createFlatHDRBuffer('#?RGBE'));
   const data = texture.data[0].data as Float32Array;
 
@@ -68,20 +68,20 @@ test('parseHDR#parses RGBE flat data', (t) => {
   t.end();
 });
 
-test('parseHDR#detects valid headers', (t) => {
+test('parseHDR#detects valid headers', t => {
   t.ok(isHDR(createRLEHDRBuffer('#?RADIANCE')), 'detects RADIANCE magic header');
   t.ok(isHDR(createFlatHDRBuffer('#?RGBE')), 'detects RGBE magic header');
   t.notOk(isHDR(asArrayBuffer(Uint8Array.from([0, 1, 2, 3]))), 'rejects non-HDR payloads');
   t.end();
 });
 
-test('parseHDR#rejects missing format specifier', (t) => {
+test('parseHDR#rejects missing format specifier', t => {
   const buffer = createHeaderBuffer(['#?RADIANCE', '', '-Y 1 +X 1']);
   t.throws(() => parseHDR(buffer), /missing format specifier/, 'requires format specifier');
   t.end();
 });
 
-test('parseHDR#rejects bad scanline data', (t) => {
+test('parseHDR#rejects bad scanline data', t => {
   const bytes = new Uint8Array(createRLEHDRBuffer('#?RADIANCE'));
   bytes[bytes.length - 2] = 0;
   const buffer = asArrayBuffer(bytes);
@@ -90,7 +90,7 @@ test('parseHDR#rejects bad scanline data', (t) => {
   t.end();
 });
 
-test('parseHDR#falls back to flat decode on false RLE probe', (t) => {
+test('parseHDR#falls back to flat decode on false RLE probe', t => {
   const texture = parseHDR(createFlatFalseRLEProbeHDRBuffer());
   const data = texture.data[0].data as Float32Array;
 
@@ -103,7 +103,7 @@ test('parseHDR#falls back to flat decode on false RLE probe', (t) => {
   t.end();
 });
 
-test('parseHDR#accepts flipped Radiance resolution strings', (t) => {
+test('parseHDR#accepts flipped Radiance resolution strings', t => {
   const texture = parseHDR(createOrientedFlatHDRBuffer('+Y 2 +X 2'));
   const data = texture.data[0].data as Float32Array;
 
@@ -119,7 +119,7 @@ test('parseHDR#accepts flipped Radiance resolution strings', (t) => {
   t.end();
 });
 
-test('parseHDR#accepts rotated Radiance resolution strings', (t) => {
+test('parseHDR#accepts rotated Radiance resolution strings', t => {
   const texture = parseHDR(createOrientedFlatHDRBuffer('+X 2 -Y 2'));
   const data = texture.data[0].data as Float32Array;
 
@@ -170,7 +170,7 @@ function createOrientedFlatHDRBuffer(resolution: string): ArrayBuffer {
       throw new Error(`Unhandled test resolution: ${resolution}`);
   }
 
-  const pixels = new Uint8Array(redChannelValues.flatMap((red) => [red, 0, 0, 128]));
+  const pixels = new Uint8Array(redChannelValues.flatMap(red => [red, 0, 0, 128]));
 
   return joinBuffers(new Uint8Array(header), pixels);
 }

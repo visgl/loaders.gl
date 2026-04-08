@@ -9,13 +9,13 @@ import {VERSION} from '../../../src/lib/env-utils/version';
 const DRACO_DECODER_URL =
   'https://www.gstatic.com/draco/versioned/decoders/1.5.6/draco_decoder.wasm';
 
-test('getLibraryUrl # should return URL', (t) => {
+test('getLibraryUrl # should return URL', t => {
   const result = getLibraryUrl(DRACO_DECODER_URL);
   t.equals(result, DRACO_DECODER_URL);
   t.end();
 });
 
-test('getLibraryUrl # should not return URL', (t) => {
+test('getLibraryUrl # should not return URL', t => {
   const result = getLibraryUrl(
     DRACO_DECODER_URL,
     'draco',
@@ -31,7 +31,7 @@ test('getLibraryUrl # should not return URL', (t) => {
   t.end();
 });
 
-test('getLibraryUrl # should get url from modules option', (t) => {
+test('getLibraryUrl # should get url from modules option', t => {
   const result = getLibraryUrl('draco_decoder.wasm', 'draco', {
     modules: {
       'draco_decoder.wasm': 'https://c.d.n/draco_decoder.wasm'
@@ -42,7 +42,7 @@ test('getLibraryUrl # should get url from modules option', (t) => {
   t.end();
 });
 
-test('extractLoadLibraryOptions # flattens core options and preserves modules', (t) => {
+test('extractLoadLibraryOptions # flattens core options and preserves modules', t => {
   const modules = {
     'draco_decoder.wasm': 'https://c.d.n/draco_decoder.wasm'
   };
@@ -62,7 +62,7 @@ test('extractLoadLibraryOptions # flattens core options and preserves modules', 
   t.end();
 });
 
-test('loadLibrary', (t) => {
+test('loadLibrary', t => {
   // loadLibrary({});
   t.end();
 });

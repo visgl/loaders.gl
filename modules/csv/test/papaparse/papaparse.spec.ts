@@ -29,7 +29,7 @@ const CUSTOM_TESTS = [
     run(callback) {
       Papa.parse(new File(['A,b,c\nd,E,f\nG,h,i'], 'sample.csv'), {
         chunkSize: 3,
-        complete: (response) => callback(response.data)
+        complete: response => callback(response.data)
       });
     }
   },
@@ -519,7 +519,7 @@ const CUSTOM_TESTS = [
   }
 ];
 
-test('papaparse#Core Parser Tests', (t) => {
+test('papaparse#Core Parser Tests', t => {
   for (const testCase of CORE_PARSER_TESTS) {
     if (!testCase.disabled) {
       // @ts-ignore
@@ -535,7 +535,7 @@ test('papaparse#Core Parser Tests', (t) => {
   t.end();
 });
 
-test('papaparse#Parse Tests', (t) => {
+test('papaparse#Parse Tests', t => {
   for (const testCase of PARSE_TESTS) {
     if (!testCase.disabled) {
       const actual = Papa.parse(testCase.input, testCase.config);
@@ -554,7 +554,7 @@ test('papaparse#Parse Tests', (t) => {
   t.end();
 });
 
-test('Parse Async Tests', (t) => {
+test('Parse Async Tests', t => {
   for (const testCase of PARSE_ASYNC_TESTS) {
     if (!testCase.disabled) {
       const config: any = testCase.config;
@@ -579,7 +579,7 @@ test('Parse Async Tests', (t) => {
   }
 });
 
-test('papaparse#Custom Tests', (t) => {
+test('papaparse#Custom Tests', t => {
   for (const testCase of CUSTOM_TESTS) {
     if (!testCase.disabled) {
       testCase.run(function (actual) {

@@ -504,7 +504,7 @@ function getCompositeImageFetch(
   }
 
   if (fetchOption && typeof fetchOption === 'object') {
-    return (url) => fetch(url, fetchOption);
+    return url => fetch(url, fetchOption);
   }
 
   return fetch;
@@ -576,7 +576,7 @@ function convertCompositeImageToTexture(
     }
 
     case 'image-texture-array': {
-      const data = imageData.map((layer) => normalizeCompositeImageMember(layer));
+      const data = imageData.map(layer => normalizeCompositeImageMember(layer));
       return {
         shape: 'texture',
         type: '2d-array',
@@ -598,7 +598,7 @@ function convertCompositeImageToTexture(
     }
 
     case 'image-texture-cube-array': {
-      const data = imageData.map((layer) =>
+      const data = imageData.map(layer =>
         IMAGE_TEXTURE_CUBE_FACES.map(({face}) => normalizeCompositeImageMember(layer[face]))
       );
       return {
@@ -625,10 +625,10 @@ function normalizeCompositeImageMember(imageData: any): TextureLevel[] {
     }
 
     if (imageData.every(isImage)) {
-      return imageData.map((image) => getTextureLevelFromImage(image));
+      return imageData.map(image => getTextureLevelFromImage(image));
     }
 
-    if (imageData.every((entry) => Array.isArray(entry) && entry.every(isTextureLevel))) {
+    if (imageData.every(entry => Array.isArray(entry) && entry.every(isTextureLevel))) {
       if (imageData.length !== 1) {
         throw new Error('Composite image members must resolve to a single image or mip chain');
       }
@@ -675,9 +675,9 @@ function getCompositeTextureFormat(textureLevels: TextureLevel[]): TextureFormat
 function isTextureLevel(textureLevel: unknown): textureLevel is TextureLevel {
   return Boolean(
     textureLevel &&
-    typeof textureLevel === 'object' &&
-    'shape' in textureLevel &&
-    textureLevel.shape === 'texture-level'
+      typeof textureLevel === 'object' &&
+      'shape' in textureLevel &&
+      textureLevel.shape === 'texture-level'
   );
 }
 

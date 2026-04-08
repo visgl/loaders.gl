@@ -14,7 +14,7 @@ const WKB_2D_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d-nan.
 const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
 const WKB_Z_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ-nan.json';
 
-test('convertGeometryToWKB#2D', async (t) => {
+test('convertGeometryToWKB#2D', async t => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -27,7 +27,7 @@ test('convertGeometryToWKB#2D', async (t) => {
   t.end();
 });
 
-test('convertGeometryToWKB#2D NaN', async (t) => {
+test('convertGeometryToWKB#2D NaN', async t => {
   const response = await fetchFile(WKB_2D_NAN_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -40,7 +40,7 @@ test('convertGeometryToWKB#2D NaN', async (t) => {
   t.end();
 });
 
-test('convertGeometryToWKB#Z', async (t) => {
+test('convertGeometryToWKB#Z', async t => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -57,7 +57,7 @@ test('convertGeometryToWKB#Z', async (t) => {
   t.end();
 });
 
-test('convertGeometryToWKB#Z NaN', async (t) => {
+test('convertGeometryToWKB#Z NaN', async t => {
   const response = await fetchFile(WKB_Z_NAN_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 

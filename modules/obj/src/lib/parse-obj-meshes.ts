@@ -403,7 +403,8 @@ export function parseOBJMeshes(text) {
       const pointData = lineData.split(' ');
 
       state.addPointGeometry(pointData);
-    } else if ((result = OBJECT_RE.exec(line)) !== null) {
+    } else if (OBJECT_RE.test(line)) {
+      result = OBJECT_RE.exec(line) || [];
       // o object_name
       // or
       // g group_name

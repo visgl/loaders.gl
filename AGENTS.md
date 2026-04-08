@@ -10,7 +10,7 @@
 
 - Run tests: `yarn test node`
 - Format code: `yarn lint fix`
-- Always run `yarn lint fix` after making changes to ensure that prettier formatting is maintained.
+- Always run `yarn lint fix` after making changes to ensure that Biome formatting is maintained.
 
 ## Code style
 

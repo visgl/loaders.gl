@@ -8,7 +8,7 @@ import {JSONLoader} from '@loaders.gl/json';
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
 
-test('load#Node stream - NODE ONLY', async (t) => {
+test('load#Node stream - NODE ONLY', async t => {
   if (isBrowser) {
     t.comment('Skipping load(Node stream) tests in Node.js');
     t.end();

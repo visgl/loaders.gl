@@ -111,7 +111,7 @@ function tightenLoadersSchemaFieldNullability(field: Field, nullable: boolean): 
 /** Returns a new Arrow table with the supplied schema while reusing existing column buffers. */
 function makeArrowTableWithSchema(arrowTable: arrow.Table, arrowSchema: arrow.Schema): arrow.Table {
   const recordBatches = arrowTable.batches.map(
-    (recordBatch) => new arrow.RecordBatch(arrowSchema, recordBatch.data)
+    recordBatch => new arrow.RecordBatch(arrowSchema, recordBatch.data)
   );
   return new arrow.Table(arrowSchema, recordBatches);
 }

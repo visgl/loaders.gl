@@ -89,7 +89,7 @@ iExpect.push([
 ]);
 iExpect.push(['closetag', 'a']);
 
-test('SAXParser#xml-internal-entities', (t) => {
+test('SAXParser#xml-internal-entities', t => {
   const parser = testSax(t, {
     expect: iExpect,
     saxOptions: {

@@ -14,7 +14,7 @@ export function makeNodeStream<ArrayBuffer>(
   options?: ReadableOptions
 ): ReadableType {
   // @ts-ignore AsyncGenerator
-  // prettier-ignore
+  // biome-ignore format: preserve intentional fixture layout
   const iterator = source[Symbol.asyncIterator]
     ? // @ts-ignore AsyncGenerator
     source[Symbol.asyncIterator]()
@@ -59,7 +59,11 @@ class AsyncIterableReadable extends Readable {
     const bm = this._bytesMode;
     let r: IteratorResult<ArrayBuffer> | null = null;
     // while (this.readable && !(r = await it.next(bm ? size : null)).done) {
-    while (this.readable && !(r = await it.next()).done) {
+    while (this.readable) {
+      r = await it.next();
+      if (r.done) {
+        break;
+      }
       if (size !== null) {
         size -= bm && ArrayBuffer.isView(r.value) ? r.value.byteLength : 1;
       }

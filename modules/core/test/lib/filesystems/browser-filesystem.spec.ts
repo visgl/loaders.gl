@@ -12,7 +12,7 @@ export const IMAGE_URLS = [
   '@loaders.gl/images/test/data/img1-preview.bmp'
 ];
 
-test('BrowserFileSystem#fetch', async (t) => {
+test('BrowserFileSystem#fetch', async t => {
   if (isBrowser) {
     const fileList = await loadImagesAsFiles();
     const fileSystem = new BrowserFileSystem(fileList);
@@ -32,7 +32,7 @@ test('BrowserFileSystem#fetch', async (t) => {
 
 // HELPER
 
-const readFile = (url) => fetchFile(url).then((response) => response.arrayBuffer());
+const readFile = url => fetchFile(url).then(response => response.arrayBuffer());
 
 let imagesPromise: Promise<File[]> | null = null;
 
@@ -42,7 +42,7 @@ let imagesPromise: Promise<File[]> | null = null;
 async function loadImagesAsFiles() {
   if (!imagesPromise) {
     imagesPromise = Promise.all(
-      IMAGE_URLS.map((url) => readFile(url).then((data) => new File([data], url)))
+      IMAGE_URLS.map(url => readFile(url).then(data => new File([data], url)))
     );
   }
   return await imagesPromise;

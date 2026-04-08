@@ -18,7 +18,7 @@ const D3CSVLoaderUntyped = {
   extensions: ['csv'],
   testText: null,
   text: true,
-  parseTextSync: (text) => csvParse(text)
+  parseTextSync: text => csvParse(text)
 };
 
 const D3TSVLoaderUntyped = {
@@ -26,7 +26,7 @@ const D3TSVLoaderUntyped = {
   extensions: ['tsv'],
   testText: null,
   text: true,
-  parseTextSync: (text) => tsvParse(text)
+  parseTextSync: text => tsvParse(text)
 };
 
 const D3CSVLoaderTyped = {
@@ -34,7 +34,7 @@ const D3CSVLoaderTyped = {
   extensions: ['csv'],
   testText: null,
   text: true,
-  parseTextSync: (text) => csvParse(text, autoType)
+  parseTextSync: text => csvParse(text, autoType)
 };
 
 const D3TSVLoaderTyped = {
@@ -42,7 +42,7 @@ const D3TSVLoaderTyped = {
   extensions: ['tsv'],
   testText: null,
   text: true,
-  parseTextSync: (text) => tsvParse(text, autoType)
+  parseTextSync: text => tsvParse(text, autoType)
 };
 
 const ROW_COUNT = 2000;
@@ -201,7 +201,7 @@ function parseWithCSVParser(text: string, isTSV: boolean): Promise<any[]> {
     const rows: any[] = [];
     Readable.from([text])
       .pipe(csvParser({separator: isTSV ? '\t' : ','}))
-      .on('data', (row) => rows.push(row))
+      .on('data', row => rows.push(row))
       .on('error', reject)
       .on('end', () => resolve(rows));
   });
@@ -378,10 +378,10 @@ function addWriterBenchmarks(bench, scenario: BenchmarkScenario, dynamicTyping: 
 
 function addDiagnosticBenchmarks(bench, scenarios: BenchmarkScenario[]) {
   const diagnosticScenarios = [
-    scenarios.find((scenario) => scenario.name === 'unquoted fast-mode'),
-    scenarios.find((scenario) => scenario.name === 'quoted'),
-    scenarios.find((scenario) => scenario.name === 'wide rows'),
-    scenarios.find((scenario) => scenario.name === 'utf8 non-ascii')
+    scenarios.find(scenario => scenario.name === 'unquoted fast-mode'),
+    scenarios.find(scenario => scenario.name === 'quoted'),
+    scenarios.find(scenario => scenario.name === 'wide rows'),
+    scenarios.find(scenario => scenario.name === 'utf8 non-ascii')
   ].filter(Boolean) as BenchmarkScenario[];
 
   let diagnosticBench = bench.group('CSV Diagnostics');
@@ -391,8 +391,7 @@ function addDiagnosticBenchmarks(bench, scenarios: BenchmarkScenario[]) {
     diagnosticBench = addCSVLoaderOptionBenchmarks(diagnosticBench, scenario);
   }
 
-  const streamingScenario =
-    scenarios.find((scenario) => scenario.name === 'fixture') || scenarios[0];
+  const streamingScenario = scenarios.find(scenario => scenario.name === 'fixture') || scenarios[0];
   diagnosticBench = addStreamingChunkSizeBenchmarks(diagnosticBench, streamingScenario);
 
   return bench;
@@ -421,7 +420,7 @@ function addTokenizerBenchmarks(bench, scenario: BenchmarkScenario) {
     `Tokenizer ${scenario.name}#split rows+cells`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => {
-      return scenario.text.split('\n').map((row) => row.split(parserConfig.delimiter));
+      return scenario.text.split('\n').map(row => row.split(parserConfig.delimiter));
     }
   );
 

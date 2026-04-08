@@ -298,7 +298,8 @@ function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
 
   for (const key of CORE_LOADER_OPTION_KEYS) {
     if ((options as Record<string, unknown>)[key] !== undefined) {
-      const coreOptions = (options.core = options.core || {});
+      options.core ||= {};
+      const coreOptions = options.core;
       const coreRecord = coreOptions as Record<string, unknown>;
       // Treat deprecated top-level core options as aliases to `options.core`, but never override an explicitly
       // provided `options.core` value.

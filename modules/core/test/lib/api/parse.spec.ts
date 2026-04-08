@@ -15,7 +15,7 @@ import {isBrowser} from '@loaders.gl/core';
 //   parseTextSync: JSON.parse
 // };
 
-test('parse#Blob (text)', async (t) => {
+test('parse#Blob (text)', async t => {
   if (!isBrowser) {
     t.comment('Skipping parse(Blob) tests in Node.js');
     t.end();
@@ -34,7 +34,7 @@ test('parse#Blob (text)', async (t) => {
   t.end();
 });
 
-test('parse#Blob (binary)', async (t) => {
+test('parse#Blob (binary)', async t => {
   if (!isBrowser) {
     t.comment('Skipping parse(Blob) tests in Node.js');
     t.end();
@@ -45,7 +45,7 @@ test('parse#Blob (binary)', async (t) => {
   t.end();
 });
 
-test('parse#Blob (streaming parser)', async (t) => {
+test('parse#Blob (streaming parser)', async t => {
   if (!isBrowser) {
     t.comment('Skipping fetchFile in Node.js');
     t.end();

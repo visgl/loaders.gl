@@ -30,7 +30,7 @@ export async function parseImageNode(arrayBuffer: ArrayBuffer, mimeType: string)
 // TODO - check if getPixels callback is asynchronous if provided with buffer input
 // if not, parseImage can be a sync function
 function getPixelsAsync(buffer: Buffer, mimeType: string): Promise<NDArray> {
-  return new Promise<NDArray>((resolve) =>
+  return new Promise<NDArray>(resolve =>
     getPixels(buffer as any, mimeType, (err, ndarray) => {
       if (err) {
         throw err;

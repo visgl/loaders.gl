@@ -1125,10 +1125,10 @@ function createRawArrowTable(
   }
 
   const arrowFields = headerRow.map(
-    (columnName) => new arrow.Field(columnName, new arrow.Utf8(), true)
+    columnName => new arrow.Field(columnName, new arrow.Utf8(), true)
   );
   const arrowSchema = new arrow.Schema(arrowFields);
-  const arrowDatas = columnBuilders.map((columnBuilder) => columnBuilder.finishData());
+  const arrowDatas = columnBuilders.map(columnBuilder => columnBuilder.finishData());
   const arrowRecordBatch = new arrow.RecordBatch(
     arrowSchema,
     arrow.makeData({
@@ -1191,7 +1191,7 @@ function isHeaderValue(value: string, dynamicTyping: boolean): boolean {
 /** Creates a transformer that appends suffixes to repeated column names. */
 function createDuplicateColumnTransformer(): (column: string) => string {
   const observedColumns = new Set<string>();
-  return (columnName) => {
+  return columnName => {
     let currentColumnName = columnName;
     let duplicateCounter = 1;
     while (observedColumns.has(currentColumnName)) {
@@ -1215,7 +1215,7 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
 /** Creates a loaders.gl schema with nullable Utf8 fields. */
 function createUtf8Schema(headerRow: string[]): Schema {
   return {
-    fields: headerRow.map((columnName) => ({name: columnName, type: 'utf8', nullable: true})),
+    fields: headerRow.map(columnName => ({name: columnName, type: 'utf8', nullable: true})),
     metadata: {
       'loaders.gl#format': 'csv',
       'loaders.gl#loader': 'CSVArrowLoader'

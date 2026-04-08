@@ -11,7 +11,7 @@ import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
 const shannonPNG = '@loaders.gl/textures/test/data/shannon.png';
 const shannonJPG = '@loaders.gl/textures/test/data/shannon.jpg';
 
-test('KTX2BasisUniversalTextureWriter#Should encode PNG', async (t) => {
+test('KTX2BasisUniversalTextureWriter#Should encode PNG', async t => {
   const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
   const encodedData = await encode(image, KTX2BasisWriter);
   const transcodedImages = await load(encodedData, BasisLoader);
@@ -25,7 +25,7 @@ test('KTX2BasisUniversalTextureWriter#Should encode PNG', async (t) => {
   t.end();
 });
 
-test('KTX2BasisUniversalTextureWriter # Worker # Should encode PNG', async (t) => {
+test('KTX2BasisUniversalTextureWriter # Worker # Should encode PNG', async t => {
   const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
   const encodedData = await processOnWorker(KTX2BasisWriterWorker, image, {
     _workerType: 'test'
@@ -46,7 +46,7 @@ test('KTX2BasisUniversalTextureWriter # Worker # Should encode PNG', async (t) =
   t.end();
 });
 
-test('KTX2BasisUniversalTextureWriter#Should encode JPG', async (t) => {
+test('KTX2BasisUniversalTextureWriter#Should encode JPG', async t => {
   const image = await load(shannonJPG, ImageLoader, {image: {type: 'data'}});
   const encodedData = await encode(image, KTX2BasisWriter);
   const transcodedImages = await load(encodedData, BasisLoader);

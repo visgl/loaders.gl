@@ -11,7 +11,7 @@ import {GLTFPrimitiveModeString} from '../../../src/i3s-converter/types';
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/test/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
 
-test('tile-converter(i3s)#analyzeTileContent', async (t) => {
+test('tile-converter(i3s)#analyzeTileContent', async t => {
   const tileContentNoArrayBuffer = await load(FRANKFURT_B3DM_FILE_PATH, Tiles3DLoader);
   const noArrayBufferResult = await analyzeTileContent(tileContentNoArrayBuffer);
   t.deepEqual(Array.from(noArrayBufferResult.meshTopologyTypes), []);
@@ -24,7 +24,7 @@ test('tile-converter(i3s)#analyzeTileContent', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#mergePreprocessData', async (t) => {
+test('tile-converter(i3s)#mergePreprocessData', async t => {
   const targetMeshTypeSet = new Set<GLTFPrimitiveModeString>();
   targetMeshTypeSet.add(GLTF_PRIMITIVE_MODES[0]);
   const targetMetadataClassesSet = new Set<string>();

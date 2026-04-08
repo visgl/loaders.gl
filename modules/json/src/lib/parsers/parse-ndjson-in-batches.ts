@@ -39,7 +39,7 @@ export async function* parseNDJSONInBatches(
       if (batch) {
         yield batch;
       }
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`NDJSONLoader: failed to parse JSON on line ${counter}`);
     }
   }

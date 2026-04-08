@@ -89,7 +89,7 @@ function addParentDirectoryEntries(
   options: ZipWriterOptions,
   directoryEntries: Set<string>
 ): void {
-  const subPathParts = subFileName.split('/').filter((part) => part.length > 0);
+  const subPathParts = subFileName.split('/').filter(part => part.length > 0);
   const subPathPartCount = subFileName.endsWith('/')
     ? subPathParts.length
     : subPathParts.length - 1;

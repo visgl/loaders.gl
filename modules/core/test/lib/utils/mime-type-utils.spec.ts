@@ -12,14 +12,14 @@ import {
 const DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';
 
-test('compareMIMETypes', (t) => {
+test('compareMIMETypes', t => {
   t.equal(compareMIMETypes('image/png', 'image/jpeg'), false);
   t.equal(compareMIMETypes('image/png', 'image/png'), true);
   t.equal(compareMIMETypes('image/png', 'image/PNG'), true);
   t.end();
 });
 
-test('parseMIMEType', (t) => {
+test('parseMIMEType', t => {
   t.equal(parseMIMEType('image/png;'), 'image/png');
   t.equal(parseMIMEType('image/png'), 'image/png');
   t.equal(parseMIMEType('application/octet-stream;'), 'application/octet-stream');
@@ -29,7 +29,7 @@ test('parseMIMEType', (t) => {
   t.end();
 });
 
-test('parseMIMETypeFromURL', (t) => {
+test('parseMIMETypeFromURL', t => {
   t.equal(parseMIMETypeFromURL(DATA_URL), 'image/png');
   t.end();
 });

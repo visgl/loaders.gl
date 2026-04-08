@@ -207,7 +207,7 @@ function fromPrimitive_BOOLEAN(value: any): boolean {
 
 function toPrimitive_FLOAT(value: any): number {
   const v = parseFloat(value);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for FLOAT: ${value}`);
   }
   return v;
@@ -215,7 +215,7 @@ function toPrimitive_FLOAT(value: any): number {
 
 function toPrimitive_DOUBLE(value: any): number {
   const v = parseFloat(value);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for DOUBLE: ${value}`);
   }
   return v;
@@ -223,7 +223,7 @@ function toPrimitive_DOUBLE(value: any): number {
 
 function toPrimitive_INT8(value: any) {
   const v = parseInt(value, 10);
-  if (v < -0x80 || v > 0x7f || isNaN(v)) {
+  if (v < -0x80 || v > 0x7f || Number.isNaN(v)) {
     throw new Error(`invalid value for INT8: ${value}`);
   }
 
@@ -232,7 +232,7 @@ function toPrimitive_INT8(value: any) {
 
 function toPrimitive_UINT8(value: any) {
   const v = parseInt(value, 10);
-  if (v < 0 || v > 0xff || isNaN(v)) {
+  if (v < 0 || v > 0xff || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT8: ${value}`);
   }
 
@@ -241,7 +241,7 @@ function toPrimitive_UINT8(value: any) {
 
 function toPrimitive_INT16(value: any) {
   const v = parseInt(value, 10);
-  if (v < -0x8000 || v > 0x7fff || isNaN(v)) {
+  if (v < -0x8000 || v > 0x7fff || Number.isNaN(v)) {
     throw new Error(`invalid value for INT16: ${value}`);
   }
 
@@ -250,7 +250,7 @@ function toPrimitive_INT16(value: any) {
 
 function toPrimitive_UINT16(value: any) {
   const v = parseInt(value, 10);
-  if (v < 0 || v > 0xffff || isNaN(v)) {
+  if (v < 0 || v > 0xffff || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT16: ${value}`);
   }
 
@@ -259,7 +259,7 @@ function toPrimitive_UINT16(value: any) {
 
 function toPrimitive_INT32(value: any) {
   const v = parseInt(value, 10);
-  if (v < -0x80000000 || v > 0x7fffffff || isNaN(v)) {
+  if (v < -0x80000000 || v > 0x7fffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for INT32: ${value}`);
   }
 
@@ -269,7 +269,7 @@ function toPrimitive_INT32(value: any) {
 function decimalToPrimitive_INT32(value: number, field: ParquetField): number {
   const primitiveValue = value * 10 ** (field.scale || 0);
   const v = Math.round(((primitiveValue * 10 ** -field.presision!) % 1) * 10 ** field.presision!);
-  if (v < -0x80000000 || v > 0x7fffffff || isNaN(v)) {
+  if (v < -0x80000000 || v > 0x7fffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for INT32: ${value}`);
   }
   return v;
@@ -277,7 +277,7 @@ function decimalToPrimitive_INT32(value: number, field: ParquetField): number {
 
 function toPrimitive_UINT32(value: any): number {
   const v = parseInt(value, 10);
-  if (v < 0 || v > 0xffffffffffff || isNaN(v)) {
+  if (v < 0 || v > 0xffffffffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT32: ${value}`);
   }
   return v;
@@ -285,7 +285,7 @@ function toPrimitive_UINT32(value: any): number {
 
 function toPrimitive_INT64(value: any): number {
   const v = parseInt(value, 10);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for INT64: ${value}`);
   }
   return v;
@@ -294,7 +294,7 @@ function toPrimitive_INT64(value: any): number {
 function decimalToPrimitive_INT64(value: number, field: ParquetField) {
   const primitiveValue = value * 10 ** (field.scale || 0);
   const v = Math.round(((primitiveValue * 10 ** -field.presision!) % 1) * 10 ** field.presision!);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for INT64: ${value}`);
   }
 
@@ -303,7 +303,7 @@ function decimalToPrimitive_INT64(value: number, field: ParquetField) {
 
 function toPrimitive_UINT64(value: any) {
   const v = parseInt(value, 10);
-  if (v < 0 || isNaN(v)) {
+  if (v < 0 || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT64: ${value}`);
   }
 
@@ -312,7 +312,7 @@ function toPrimitive_UINT64(value: any) {
 
 function toPrimitive_INT96(value: any) {
   const v = parseInt(value, 10);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for INT96: ${value}`);
   }
 
@@ -357,7 +357,7 @@ function fromPrimitive_BSON(value: any) {
 function toPrimitive_TIME_MILLIS(value: any) {
   const v = parseInt(value, 10);
   // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-  if (v < 0 || v > 0xffffffffffffffff || isNaN(v)) {
+  if (v < 0 || v > 0xffffffffffffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for TIME_MILLIS: ${value}`);
   }
 
@@ -366,7 +366,7 @@ function toPrimitive_TIME_MILLIS(value: any) {
 
 function toPrimitive_TIME_MICROS(value: any): number {
   const v = parseInt(value, 10);
-  if (v < 0 || isNaN(v)) {
+  if (v < 0 || Number.isNaN(v)) {
     throw new Error(`invalid value for TIME_MICROS: ${value}`);
   }
   return v;
@@ -383,7 +383,7 @@ function toPrimitive_DATE(value: any): number {
   /* convert from integer */
   {
     const v = parseInt(value, 10);
-    if (v < 0 || isNaN(v)) {
+    if (v < 0 || Number.isNaN(v)) {
       throw new Error(`invalid value for DATE: ${value}`);
     }
 
@@ -404,7 +404,7 @@ function toPrimitive_TIMESTAMP_MILLIS(value: any): number {
   /* convert from integer */
   {
     const v = parseInt(value, 10);
-    if (v < 0 || isNaN(v)) {
+    if (v < 0 || Number.isNaN(v)) {
       throw new Error(`invalid value for TIMESTAMP_MILLIS: ${value}`);
     }
 
@@ -425,7 +425,7 @@ function toPrimitive_TIMESTAMP_MICROS(value: any) {
   /* convert from integer */
   {
     const v = parseInt(value, 10);
-    if (v < 0 || isNaN(v)) {
+    if (v < 0 || Number.isNaN(v)) {
       throw new Error(`invalid value for TIMESTAMP_MICROS: ${value}`);
     }
 

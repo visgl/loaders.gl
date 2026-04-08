@@ -18,7 +18,7 @@ const loadJSON = async (relativePath: string) => {
 
 const TEST_CASES = await loadJSON('./crc32c-test-cases.json');
 
-test('crc32c#additional tests', async (t) => {
+test('crc32c#additional tests', async t => {
   for (const type in TEST_CASES) {
     const set = TEST_CASES[type];
 

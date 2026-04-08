@@ -103,7 +103,7 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MLTOptions): 
   const selectedLayers =
     options.layers && options.layers.length > 0
       ? options.layers
-      : (featureTables.map((ft) => ft.name).filter(Boolean) as string[]);
+      : (featureTables.map(ft => ft.name).filter(Boolean) as string[]);
 
   for (const featureTable of featureTables) {
     const layerName = featureTable.name;
@@ -251,25 +251,21 @@ function convertGeometryToGeoJSON(
       // coordinates: [[p1, p2, ...]]
       return {
         type: 'LineString',
-        coordinates: coordinates[0].map((p) => projectPoint(p.x, p.y, options, extent))
+        coordinates: coordinates[0].map(p => projectPoint(p.x, p.y, options, extent))
       };
     }
     case GEOMETRY_TYPE.MULTILINESTRING: {
       // coordinates: [[p1, p2, ...], [p1, p2, ...], ...]
       return {
         type: 'MultiLineString',
-        coordinates: coordinates.map((ring) =>
-          ring.map((p) => projectPoint(p.x, p.y, options, extent))
-        )
+        coordinates: coordinates.map(ring => ring.map(p => projectPoint(p.x, p.y, options, extent)))
       };
     }
     case GEOMETRY_TYPE.POLYGON: {
       // coordinates: [[outer_ring_points], [hole_ring_points], ...]
       return {
         type: 'Polygon',
-        coordinates: coordinates.map((ring) =>
-          ring.map((p) => projectPoint(p.x, p.y, options, extent))
-        )
+        coordinates: coordinates.map(ring => ring.map(p => projectPoint(p.x, p.y, options, extent)))
       };
     }
     case GEOMETRY_TYPE.MULTIPOLYGON: {
@@ -277,8 +273,8 @@ function convertGeometryToGeoJSON(
       // Treat each ring as its own polygon (simplified representation)
       return {
         type: 'MultiPolygon',
-        coordinates: coordinates.map((ring) => [
-          ring.map((p) => projectPoint(p.x, p.y, options, extent))
+        coordinates: coordinates.map(ring => [
+          ring.map(p => projectPoint(p.x, p.y, options, extent))
         ])
       };
     }

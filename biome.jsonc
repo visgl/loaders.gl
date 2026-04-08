@@ -1,0 +1,111 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
+  "extends": ["./dev-modules/devtools-extensions/biome/base.jsonc"],
+  "files": {
+    "includes": [
+      "modules/**/*.js",
+      "modules/**/*.jsx",
+      "modules/**/*.ts",
+      "modules/**/*.tsx",
+      "apps/**/*.js",
+      "apps/**/*.jsx",
+      "apps/**/*.ts",
+      "apps/**/*.tsx",
+      "dev-docs/**/*.js",
+      "dev-docs/**/*.jsx",
+      "dev-docs/**/*.ts",
+      "dev-docs/**/*.tsx",
+      "docs/**/*.js",
+      "docs/**/*.jsx",
+      "docs/**/*.ts",
+      "docs/**/*.tsx",
+      "test/**/*.js",
+      "test/**/*.jsx",
+      "test/**/*.ts",
+      "test/**/*.tsx",
+      "!**/*.min.js",
+      "!**/*.minified.js",
+      "!**/dist/**",
+      "!**/wip/**",
+      "!**/.cache/**",
+      "!**/public/**",
+      "!**/src/libs/**",
+      "!test/apps/**",
+      "!modules/core/src/iterators/make-stream/make-node-stream.ts",
+      "!modules/loader-utils/src/lib/files/node-file-facade.ts",
+      "!modules/loader-utils/src/lib/filesystems/node-filesystem-facade.ts",
+      "!modules/3d-tiles/test/lib/classes/tile-3d-batch-table-hierarchy.spec.ts",
+      "!modules/bson/src/bson-writer.ts",
+      "!modules/bson/src/index.ts",
+      "!modules/bson/src/lib/encoders/encode-bson.ts",
+      "!modules/bson/src/lib/parsers/parse-bson.ts",
+      "!modules/bson/test/data/js-bson/corrupt.ts",
+      "!modules/parquet/src/polyfills/buffer/buffer.ts",
+      "!modules/parquet/test/**",
+      "!modules/flatgeobuf/src/flatgeobuf*",
+      "!modules/flatgeobuf/src/lib/binary-geometries.ts",
+      "!modules/potree/test/data/**/cloud.js",
+      "!modules/tiles/src/bundle.ts",
+      "!modules/zarr/**",
+      "!modules/i3s/src/i3s-attribute-loader.ts",
+      "!modules/i3s/src/lib/parsers/parse-i3s.ts",
+      "!modules/images/src/lib/category-api/image-type.ts",
+      "!modules/images/test/image-loader.spec.ts",
+      "!modules/obj/src/lib/get-obj-schema.ts",
+      "!modules/mvt/src/lib/geojson-tiler/tile.ts",
+      "!modules/textures/test/basis-loader.spec.ts",
+      "!modules/xml/test/sax-ts/testcases/attribute-name.spec.ts",
+      "!modules/xml/test/sax-ts/testcases/opentagstart.spec.ts",
+      "!modules/xml/test/sax-ts/testcases/script-close-better.spec.ts",
+      "!modules/xml/test/sax-ts/testcases/script.spec.ts",
+      "!modules/xml/test/sax-ts/testcases/xmlns-unbound.spec.ts",
+      "!modules/xml/test/sax-ts/testcases/xmlns-xml-default-ns.spec.ts",
+      "!modules/xml/test/sax-ts/testcases/xmlns-xml-default-prefix-attribute.spec.ts",
+      "!modules/xml/test/sax-ts/testcases/xmlns-xml-default-redefine.spec.ts",
+      "!modules/wms/src/lib/data-sources/ogc/csw-service.ts",
+      "!modules/wms/src/lib/parsers/gml/parse-gml.ts",
+      "!modules/wms/src/lib/wip/**",
+      "!modules/wms/src/wms-layer-description-loader.ts",
+      "!modules/wms/test/data/wms/errors.ts",
+      "!modules/wms/test/wms/wms-error-loader.spec.ts",
+      "!modules/wms/test/wms-feature-info-loader.spec.ts",
+      "!modules/wms/test/wms/wms-feature-info-loader.spec.ts",
+      "!modules/wms/test/wmts/wmts-capabilities-loader.spec.ts",
+      "!modules/wms/test/wfs/wfs-capabilities-loader.spec.ts"
+    ]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "bracketSpacing": false
+  },
+  "javascript": {
+    "formatter": {
+      "arrowParentheses": "asNeeded",
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "none",
+      "bracketSpacing": false
+    }
+  },
+  "linter": {
+    "rules": {
+      "recommended": false,
+      "correctness": {
+        "noUnusedImports": "warn",
+        "noUnusedVariables": "warn",
+        "noUnreachable": "error"
+      },
+      "suspicious": {
+        "noAssignInExpressions": "error",
+        "noAsyncPromiseExecutor": "error",
+        "noDebugger": "error",
+        "noDoubleEquals": "error",
+        "noGlobalIsNan": "error",
+        "noRedeclare": "error"
+      }
+    }
+  }
+}

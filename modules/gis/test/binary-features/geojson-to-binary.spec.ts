@@ -17,7 +17,7 @@ const FEATURES_MIXED = '@loaders.gl/gis/test/data/binary-features/mixed_features
 const GEOJSON_NO_PROPERTIES =
   '@loaders.gl/gis/test/data/binary-features/geojson_no_properties.json';
 
-test('gis#geojson-to-binary geometry info 2D features, no properties', async (t) => {
+test('gis#geojson-to-binary geometry info 2D features, no properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const geometryInfo = getGeometryInfo(features);
@@ -47,7 +47,7 @@ test('gis#geojson-to-binary geometry info 2D features, no properties', async (t)
   t.end();
 });
 
-test('gis#geojson-to-binary geometry info 3D features, no properties', async (t) => {
+test('gis#geojson-to-binary geometry info 3D features, no properties', async t => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
   const geometryInfo = getGeometryInfo(features);
@@ -77,7 +77,7 @@ test('gis#geojson-to-binary geometry info 3D features, no properties', async (t)
   t.end();
 });
 
-test('gis#geojson-to-binary geometry info mixed-dimension features, no properties', async (t) => {
+test('gis#geojson-to-binary geometry info mixed-dimension features, no properties', async t => {
   const response = await fetchFile(FEATURES_MIXED);
   const {features} = await response.json();
   const geometryInfo = getGeometryInfo(features);
@@ -121,7 +121,7 @@ test('gis#geojson-to-binary geometry info mixed-dimension features, no propertie
   t.end();
 });
 
-test('gis#geojson-to-binary numericPropTypes 2D features, no properties', async (t) => {
+test('gis#geojson-to-binary numericPropTypes 2D features, no properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const numericPropTypes = _extractNumericPropTypes(features);
@@ -129,7 +129,7 @@ test('gis#geojson-to-binary numericPropTypes 2D features, no properties', async 
   t.end();
 });
 
-test('gis#geojson-to-binary properties', async (t) => {
+test('gis#geojson-to-binary properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
 
@@ -204,7 +204,7 @@ test('gis#geojson-to-binary properties', async (t) => {
   };
   t.deepEquals(numericPropTypes, expectedNumericPropTypes);
   const expectedNumericPropKeys = Object.keys(expectedNumericPropTypes).filter(
-    (k) => expectedNumericPropTypes[k] !== Array
+    k => expectedNumericPropTypes[k] !== Array
   );
 
   const {points, lines, polygons} = geojsonToBinary(features);
@@ -259,7 +259,7 @@ test('gis#geojson-to-binary properties', async (t) => {
   t.end();
 });
 
-test('gis#geojson-to-binary 2D features, no properties', async (t) => {
+test('gis#geojson-to-binary 2D features, no properties', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const {points, lines, polygons} = geojsonToBinary(features);
@@ -290,10 +290,10 @@ test('gis#geojson-to-binary 2D features, no properties', async (t) => {
   t.deepEqual(lines.globalFeatureIds.value, [2, 2, 3, 3, 3, 3]);
 
   // Polygon value equality
-  const polygonFeatures = features.filter((f) =>
+  const polygonFeatures = features.filter(f =>
     ['Polygon', 'MultiPolygon'].includes(f.geometry.type)
   );
-  const expectedPolygonPositions = flatten(polygonFeatures.map((f) => f.geometry.coordinates));
+  const expectedPolygonPositions = flatten(polygonFeatures.map(f => f.geometry.coordinates));
 
   t.deepEqual(polygons.polygonIndices.value, [0, 5, 15, 20, 30]);
   t.deepEqual(polygons.primitivePolygonIndices.value, [0, 5, 10, 15, 20, 25, 30]);
@@ -305,7 +305,7 @@ test('gis#geojson-to-binary 2D features, no properties', async (t) => {
   t.end();
 });
 
-test('gis#geojson-to-binary 3D features', async (t) => {
+test('gis#geojson-to-binary 3D features', async t => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
   const {points, lines, polygons} = geojsonToBinary(features);
@@ -331,19 +331,19 @@ test('gis#geojson-to-binary 3D features', async (t) => {
   t.deepEqual(points.globalFeatureIds.value, [0, 1, 1]);
 
   // LineString value equality
-  const lineFeatures = features.filter((f) =>
+  const lineFeatures = features.filter(f =>
     ['LineString', 'MultiLineString'].includes(f.geometry.type)
   );
-  const expectedLinePositions = flatten(lineFeatures.map((f) => f.geometry.coordinates));
+  const expectedLinePositions = flatten(lineFeatures.map(f => f.geometry.coordinates));
   t.deepEqual(lines.pathIndices.value, [0, 2, 4, 6]);
   t.deepEqual(lines.positions.value, Float32Array.from(expectedLinePositions));
   t.deepEqual(lines.globalFeatureIds.value, [2, 2, 3, 3, 3, 3]);
 
   // Polygon value equality
-  const polygonFeatures = features.filter((f) =>
+  const polygonFeatures = features.filter(f =>
     ['Polygon', 'MultiPolygon'].includes(f.geometry.type)
   );
-  const expectedPolygonPositions = flatten(polygonFeatures.map((f) => f.geometry.coordinates));
+  const expectedPolygonPositions = flatten(polygonFeatures.map(f => f.geometry.coordinates));
   t.deepEqual(polygons.polygonIndices.value, [0, 5, 15, 20, 30]);
   t.deepEqual(polygons.primitivePolygonIndices.value, [0, 5, 10, 15, 20, 25, 30]);
   t.deepEqual(polygons.positions.value, Float32Array.from(expectedPolygonPositions));
@@ -351,7 +351,7 @@ test('gis#geojson-to-binary 3D features', async (t) => {
 });
 
 // eslint-disable-next-line complexity
-test('gis#geojson-to-binary position, featureId data types', async (t) => {
+test('gis#geojson-to-binary position, featureId data types', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
 
@@ -381,7 +381,7 @@ test('gis#geojson-to-binary position, featureId data types', async (t) => {
   t.end();
 });
 
-test('gis#geojson-to-binary with empty properties', async (t) => {
+test('gis#geojson-to-binary with empty properties', async t => {
   const response = await fetchFile(GEOJSON_NO_PROPERTIES);
   const {features} = await response.json();
   const {points, lines, polygons} = geojsonToBinary(features);
@@ -392,7 +392,7 @@ test('gis#geojson-to-binary with empty properties', async (t) => {
   t.end();
 });
 
-test('gis#geojson-to-binary triangulation', async (t) => {
+test('gis#geojson-to-binary triangulation', async t => {
   const response = await fetchFile(GEOJSON_NO_PROPERTIES);
   const {features} = await response.json();
   const binary = geojsonToBinary(features);

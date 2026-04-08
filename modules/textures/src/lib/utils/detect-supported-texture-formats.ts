@@ -187,7 +187,7 @@ export function detectSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Se
     for (const gpuTextureFormat in GPU_TEXTURE_FORMATS) {
       const textureFormatsForGroup = GPU_TEXTURE_FORMATS[gpuTextureFormat as GPUTextureFormat];
       if (
-        textureFormatsForGroup.some((textureFormat) => supportedTextureFormats.has(textureFormat))
+        textureFormatsForGroup.some(textureFormat => supportedTextureFormats.has(textureFormat))
       ) {
         formats.add(gpuTextureFormat as GPUTextureFormat);
       }
@@ -204,7 +204,7 @@ function getWebGLContext() {
   try {
     const canvas = document.createElement('canvas');
     return canvas.getContext('webgl');
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

@@ -57,7 +57,7 @@ const TEST_CASES: TestCase[] = [
   }
 ];
 
-test('table accessors', async (t) => {
+test('table accessors', async t => {
   for (const tc of TEST_CASES) {
     t.equal(isTable(tc.table), tc.isTable, `isTable() correct: ${tc.name}`);
     if (isTable(tc.table)) {

@@ -27,7 +27,7 @@ const NEW_FIELD = 'new_field';
 const ITEM_COUNT_FIELD = 'item_count';
 const SOURCE_FLAG_FIELD = 'source_flag';
 
-test('ArrowUtils#IndexedArrowVector exposes indexed vector values', (t) => {
+test('ArrowUtils#IndexedArrowVector exposes indexed vector values', t => {
   const vector = arrow.vectorFromArray(['zero', 'one', 'two'], new arrow.Utf8());
   const typedIndexes = Int32Array.from([2, 0, 2]);
   const indexedVector = new IndexedArrowVector(vector, typedIndexes);
@@ -53,7 +53,7 @@ test('ArrowUtils#IndexedArrowVector exposes indexed vector values', (t) => {
   t.end();
 });
 
-test('ArrowUtils#IndexedArrowTable normalizes indexes and resolves rows and columns', (t) => {
+test('ArrowUtils#IndexedArrowTable normalizes indexes and resolves rows and columns', t => {
   const table = createTestTable();
   const indexedTable = new IndexedArrowTable(table, [2, 0, 1]);
 
@@ -80,7 +80,7 @@ test('ArrowUtils#IndexedArrowTable normalizes indexes and resolves rows and colu
   t.end();
 });
 
-test('ArrowUtils#IndexedArrowTable validates and adopts indexes', (t) => {
+test('ArrowUtils#IndexedArrowTable validates and adopts indexes', t => {
   const table = createTestTable();
 
   const passthroughTable = new IndexedArrowTable(table);
@@ -95,7 +95,7 @@ test('ArrowUtils#IndexedArrowTable validates and adopts indexes', (t) => {
   t.end();
 });
 
-test('ArrowUtils#IndexedArrowTable supports temporary rows and array-like transforms', (t) => {
+test('ArrowUtils#IndexedArrowTable supports temporary rows and array-like transforms', t => {
   const table = createTestTable();
   const indexedTable = new IndexedArrowTable(table);
 
@@ -117,19 +117,19 @@ test('ArrowUtils#IndexedArrowTable supports temporary rows and array-like transf
 
   t.deepEqual(Array.from(filteredTable.indexes), [0, 2], 'filters rows by indexed column value');
   t.deepEqual(Array.from(sortedTable.indexes), [2, 0], 'sorts visible rows');
-  t.equal(indexedTable.find((row) => row?.name === 'alpha')?.score, 10, 'finds matching row');
+  t.equal(indexedTable.find(row => row?.name === 'alpha')?.score, 10, 'finds matching row');
   t.equal(
-    indexedTable.findIndex((row) => row?.active === false),
+    indexedTable.findIndex(row => row?.active === false),
     1,
     'finds matching row index'
   );
   t.equal(
-    indexedTable.find((row) => row?.name === 'missing'),
+    indexedTable.find(row => row?.name === 'missing'),
     undefined,
     'find returns undefined'
   );
   t.equal(
-    indexedTable.findIndex((row) => row?.name === 'missing'),
+    indexedTable.findIndex(row => row?.name === 'missing'),
     -1,
     'findIndex returns -1'
   );
@@ -137,14 +137,14 @@ test('ArrowUtils#IndexedArrowTable supports temporary rows and array-like transf
     indexedTable
       .slice(1)
       .toArray()
-      .map((row) => row?.name),
+      .map(row => row?.name),
     ['beta', 'gamma'],
     'slices and materializes visible rows'
   );
   t.end();
 });
 
-test('ArrowUtils#IndexedArrowTable concatenates and materializes indexed views', (t) => {
+test('ArrowUtils#IndexedArrowTable concatenates and materializes indexed views', t => {
   const leftTable = createTestTable();
   const rightTable = createTestTableFromRows([
     {
@@ -170,7 +170,7 @@ test('ArrowUtils#IndexedArrowTable concatenates and materializes indexed views',
   t.equal(concatenated.table.numRows, 5, 'concatenates backing tables');
   t.deepEqual(Array.from(concatenated.indexes), [2, 0, 4, 3], 'preserves visible row indexes');
   t.deepEqual(
-    Array.from(concatenated, (row) => row?.name),
+    Array.from(concatenated, row => row?.name),
     ['gamma', 'alpha', 'epsilon', 'delta'],
     'iterates concatenated rows'
   );
@@ -185,21 +185,21 @@ test('ArrowUtils#IndexedArrowTable concatenates and materializes indexed views',
     'offsets same-table concat indexes'
   );
   t.deepEqual(
-    Array.from(sameTableConcatenated, (row) => row?.name),
+    Array.from(sameTableConcatenated, row => row?.name),
     ['gamma', 'alpha', 'beta'],
     'keeps same-table concat row access'
   );
 
   const emptyConcatenated = new IndexedArrowTable(leftTable, [1]).concat();
   t.deepEqual(
-    Array.from(emptyConcatenated, (row) => row?.name),
+    Array.from(emptyConcatenated, row => row?.name),
     ['beta'],
     'supports empty concat'
   );
 
   const materializedTable = new IndexedArrowTable(leftTable, [2, 0, 2]).materializeArrowTable();
   t.deepEqual(
-    Array.from(materializedTable, (row) => row.name),
+    Array.from(materializedTable, row => row.name),
     ['gamma', 'alpha', 'gamma'],
     'materializes indexed row order and duplicate indexes'
   );
@@ -244,7 +244,7 @@ test('ArrowUtils#IndexedArrowTable concatenates and materializes indexed views',
   t.end();
 });
 
-test('ArrowUtils#IndexedArrowTable concatenates filtered and sliced indexed views', (t) => {
+test('ArrowUtils#IndexedArrowTable concatenates filtered and sliced indexed views', t => {
   const leftView = new IndexedArrowTable(createTestTable()).filter(
     (table, rowIndex) => table.getValue(rowIndex, 'active') ?? false
   );
@@ -287,7 +287,7 @@ test('ArrowUtils#IndexedArrowTable concatenates filtered and sliced indexed view
   t.end();
 });
 
-test('ArrowUtils#MappedArrowTable supports keyed lookup and mapped transforms', (t) => {
+test('ArrowUtils#MappedArrowTable supports keyed lookup and mapped transforms', t => {
   const leftTable = createTestTableFromRows([
     {
       name: 'alpha-dup',
@@ -359,7 +359,7 @@ test('ArrowUtils#MappedArrowTable supports keyed lookup and mapped transforms', 
   t.equal(sliced.getByKey('dup')?.name, 'beta-dup', 'keeps sliced keyed lookup');
   t.deepEqual(filtered.rowKeys, ['dup', 'dup'], 'preserves duplicate mapped keys through filter');
   t.deepEqual(
-    Array.from(filtered, (row) => row?.name),
+    Array.from(filtered, row => row?.name),
     ['alpha-dup', 'beta-dup'],
     'keeps filtered row order'
   );
@@ -374,7 +374,7 @@ test('ArrowUtils#MappedArrowTable supports keyed lookup and mapped transforms', 
   t.end();
 });
 
-test('ArrowUtils#MappedArrowTable inherits indexed table materialization', (t) => {
+test('ArrowUtils#MappedArrowTable inherits indexed table materialization', t => {
   const table = createTestTable();
   const mappedTable = new MappedArrowTable(
     table,
@@ -387,7 +387,7 @@ test('ArrowUtils#MappedArrowTable inherits indexed table materialization', (t) =
   const materializedTable = mappedTable.materializeArrowTable();
 
   t.deepEqual(
-    Array.from(materializedTable, (row) => row.name),
+    Array.from(materializedTable, row => row.name),
     ['gamma', 'alpha'],
     'materializes mapped row order'
   );
@@ -399,7 +399,7 @@ test('ArrowUtils#MappedArrowTable inherits indexed table materialization', (t) =
   t.end();
 });
 
-test('ArrowUtils#validateArrowTableSchema validates expected Arrow schema fields', (t) => {
+test('ArrowUtils#validateArrowTableSchema validates expected Arrow schema fields', t => {
   const expectedSchema = new arrow.Schema([
     new arrow.Field(RECORD_ID_FIELD, new arrow.Utf8(), false),
     new arrow.Field(DISPLAY_NAME_FIELD, new arrow.Utf8(), true)
@@ -476,7 +476,7 @@ test('ArrowUtils#validateArrowTableSchema validates expected Arrow schema fields
   t.end();
 });
 
-test('ArrowUtils#renameArrowColumns renames selected fields', (t) => {
+test('ArrowUtils#renameArrowColumns renames selected fields', t => {
   const sourceSchema = new arrow.Schema([
     new arrow.Field(RECORD_ID_FIELD, new arrow.Utf8(), false),
     new arrow.Field(ITEM_COUNT_FIELD, new arrow.Float64(), true),
@@ -499,7 +499,7 @@ test('ArrowUtils#renameArrowColumns renames selected fields', (t) => {
   const row = renamedTable.get(0);
 
   t.deepEqual(
-    renamedTable.schema.fields.map((field) => field.name),
+    renamedTable.schema.fields.map(field => field.name),
     ['recordId', 'itemCount', SOURCE_FLAG_FIELD],
     'renames mapped columns and preserves untouched columns'
   );
@@ -601,23 +601,23 @@ function createTestTableFromRows(
     ]),
     {
       name: arrow.vectorFromArray(
-        rows.map((row) => row.name),
+        rows.map(row => row.name),
         new arrow.Utf8()
       ),
       score: arrow.vectorFromArray(
-        rows.map((row) => row.score),
+        rows.map(row => row.score),
         new arrow.Float64()
       ),
       active: arrow.vectorFromArray(
-        rows.map((row) => row.active),
+        rows.map(row => row.active),
         new arrow.Bool()
       ),
       payload: arrow.vectorFromArray(
-        rows.map((row) => row.payload),
+        rows.map(row => row.payload),
         new arrow.Binary()
       ),
       group: arrow.vectorFromArray(
-        rows.map((row) => row.group),
+        rows.map(row => row.group),
         new arrow.Utf8()
       )
     }

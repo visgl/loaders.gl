@@ -1,0 +1,15 @@
+{
+  "name": "@loaders.gl/devtools-extensions",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "lint": "node ./biome/lint.mjs"
+  },
+  "dependencies": {
+    "@biomejs/biome": "^2.4.8"
+  }
+}

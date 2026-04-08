@@ -172,7 +172,7 @@ function parseState(
 
           result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
           const schema = {
-            fields: result.dbfFields.map((dbfField) => makeField(dbfField)),
+            fields: result.dbfFields.map(dbfField => makeField(dbfField)),
             metadata: {}
           } as const satisfies Schema;
           result.tableBuilder = new ArrowTableBuilder(schema);
@@ -344,7 +344,7 @@ function parseBoolean(value: string): boolean | null {
  */
 function parseNumber(text: string): number | null {
   const number = parseFloat(text);
-  return isNaN(number) ? null : number;
+  return Number.isNaN(number) ? null : number;
 }
 
 /**

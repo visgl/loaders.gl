@@ -109,7 +109,7 @@ function convertFeaturesToVectorTileFeatures(
     return features;
   }
 
-  return features.map((feature) => convertFeatureToVectorTile(feature, extent, tileIndex));
+  return features.map(feature => convertFeatureToVectorTile(feature, extent, tileIndex));
 }
 
 function convertFeatureToVectorTile(
@@ -137,27 +137,25 @@ function projectGeometryToTileSpace(
     case 'Point':
       return [projectPointToTile(geometry.coordinates as number[], extent, tileIndex)];
     case 'MultiPoint':
-      return geometry.coordinates.map((coord) =>
+      return geometry.coordinates.map(coord =>
         projectPointToTile(coord as number[], extent, tileIndex)
       );
     case 'LineString':
       return [
-        geometry.coordinates.map((coord) =>
-          projectPointToTile(coord as number[], extent, tileIndex)
-        )
+        geometry.coordinates.map(coord => projectPointToTile(coord as number[], extent, tileIndex))
       ];
     case 'MultiLineString':
-      return geometry.coordinates.map((line) =>
-        line.map((coord) => projectPointToTile(coord as number[], extent, tileIndex))
+      return geometry.coordinates.map(line =>
+        line.map(coord => projectPointToTile(coord as number[], extent, tileIndex))
       );
     case 'Polygon':
-      return geometry.coordinates.map((ring) =>
-        ring.map((coord) => projectPointToTile(coord as number[], extent, tileIndex))
+      return geometry.coordinates.map(ring =>
+        ring.map(coord => projectPointToTile(coord as number[], extent, tileIndex))
       );
     case 'MultiPolygon':
-      return geometry.coordinates.flatMap((polygon) =>
-        polygon.map((ring) =>
-          ring.map((coord) => projectPointToTile(coord as number[], extent, tileIndex))
+      return geometry.coordinates.flatMap(polygon =>
+        polygon.map(ring =>
+          ring.map(coord => projectPointToTile(coord as number[], extent, tileIndex))
         )
       );
     default:

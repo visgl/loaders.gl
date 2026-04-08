@@ -229,11 +229,11 @@ function parsePCDHeader(data: string): PCDHeader {
   }
 
   if (pcdHeader.size !== null) {
-    pcdHeader.size = pcdHeader.size[1].split(' ').map((x) => parseInt(x, 10));
+    pcdHeader.size = pcdHeader.size[1].split(' ').map(x => parseInt(x, 10));
   }
 
   if (pcdHeader.count !== null) {
-    pcdHeader.count = pcdHeader.count[1].split(' ').map((x) => parseInt(x, 10));
+    pcdHeader.count = pcdHeader.count[1].split(' ').map(x => parseInt(x, 10));
   } else {
     pcdHeader.count = [];
     if (pcdHeader.fields !== null) {

@@ -15,7 +15,7 @@ type FeatureCollectionTestCase = {
   binary: BinaryFeatureCollection;
 };
 
-test('binary-to-geojson feature collections', async (t) => {
+test('binary-to-geojson feature collections', async t => {
   const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
   const json = (await response.json()) as Record<string, FeatureCollectionTestCase>;
 
@@ -33,7 +33,7 @@ test('binary-to-geojson feature collections', async (t) => {
   t.end();
 });
 
-test('binary-to-geojson geometries', (t) => {
+test('binary-to-geojson geometries', t => {
   for (const testCase of GEOMETRY_TEST_CASES) {
     const binaryData = testCase.binary;
     t.deepEqual(convertBinaryGeometryToGeometry(binaryData), testCase.geoJSON);
@@ -43,7 +43,7 @@ test('binary-to-geojson geometries', (t) => {
   t.end();
 });
 
-test('binary-to-geojson !isHeterogeneousType', async (t) => {
+test('binary-to-geojson !isHeterogeneousType', async t => {
   const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
   const json = await response.json();
   // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
@@ -56,7 +56,7 @@ test('binary-to-geojson !isHeterogeneousType', async (t) => {
   t.end();
 });
 
-test('binary-to-geojson from empty binary object returns empty features array', (t) => {
+test('binary-to-geojson from empty binary object returns empty features array', t => {
   const geojson = binaryToGeojson(EMPTY_BINARY_DATA);
   t.ok(Array.isArray(geojson));
   // @ts-ignore binaryToGeojson typings are too loose
@@ -65,7 +65,7 @@ test('binary-to-geojson from empty binary object returns empty features array', 
   t.end();
 });
 
-test('binary-to-geojson getSingleFeature', async (t) => {
+test('binary-to-geojson getSingleFeature', async t => {
   const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
   const json = await response.json();
   const TEST_CASES = parseTestCases(json);
@@ -84,7 +84,7 @@ test('binary-to-geojson getSingleFeature', async (t) => {
   t.end();
 });
 
-test('binary-to-geojson getSingleFeature fail', async (t) => {
+test('binary-to-geojson getSingleFeature fail', async t => {
   const response = await fetchFile(FEATURE_COLLECTION_TEST_CASES);
   const json = await response.json();
   const testCase = parseTestCases(json).point;

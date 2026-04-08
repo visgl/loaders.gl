@@ -236,7 +236,7 @@ function convertRawArrowTableToTypedArrowTable(
       rawStringValues.push(readRawArrowStringValue(rawArrowValue));
     }
 
-    const dynamicValues = rawStringValues.map((rawStringValue) =>
+    const dynamicValues = rawStringValues.map(rawStringValue =>
       parseValueWithDynamicTyping(rawStringValue)
     );
 
@@ -266,7 +266,7 @@ function convertRawArrowTableToTypedArrowTable(
 
   const typedArrowTableBuilder = new ArrowTableBuilder(typedSchema);
   for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-    const rowValues = typedColumnValues.map((typedColumnValue) => typedColumnValue[rowIndex]);
+    const rowValues = typedColumnValues.map(typedColumnValue => typedColumnValue[rowIndex]);
     typedArrowTableBuilder.addArrayRow(rowValues);
   }
 
@@ -380,20 +380,20 @@ function convertDynamicValuesToTypedColumnValues(
 ): DynamicColumnValue[] {
   switch (typedColumnDataType) {
     case 'bool':
-      return dynamicValues.map((dynamicValue) =>
+      return dynamicValues.map(dynamicValue =>
         typeof dynamicValue === 'boolean' ? dynamicValue : null
       );
     case 'float64':
-      return dynamicValues.map((dynamicValue) =>
+      return dynamicValues.map(dynamicValue =>
         typeof dynamicValue === 'number' ? dynamicValue : null
       );
     case 'date-millisecond':
-      return dynamicValues.map((dynamicValue) =>
+      return dynamicValues.map(dynamicValue =>
         dynamicValue instanceof Date ? dynamicValue : null
       );
     case 'utf8':
     default:
-      return dynamicValues.map((dynamicValue) =>
+      return dynamicValues.map(dynamicValue =>
         dynamicValue === null ? null : String(dynamicValue)
       );
   }

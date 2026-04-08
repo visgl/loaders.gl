@@ -77,7 +77,7 @@ export function loadInBatches(
   }
 
   // Multiple URLs / files
-  const promises = files.map((file) =>
+  const promises = files.map(file =>
     loadOneFileInBatches(file, loadersArray!, options || {}, fetch)
   );
 

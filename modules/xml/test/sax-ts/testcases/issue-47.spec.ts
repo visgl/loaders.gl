@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
 // https://github.com/isaacs/sax-js/issues/47
-test('SAXParser#issue-47', (t) => {
+test('SAXParser#issue-47', t => {
   testSax(t, {
     xml: '<a href="query.svc?x=1&y=2&z=3"/>',
     expect: [

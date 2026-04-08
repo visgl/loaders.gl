@@ -77,9 +77,9 @@ export async function createHTTPRequestReadStream(
   return await new Promise((resolve, reject) => {
     const requestOptions = getRequestOptions(url, options);
     const req = url.startsWith('https:')
-      ? https.request(requestOptions, (res) => resolve(res))
-      : http.request(requestOptions, (res) => resolve(res));
-    req.on('error', (error) => reject(error));
+      ? https.request(requestOptions, res => resolve(res))
+      : http.request(requestOptions, res => resolve(res));
+    req.on('error', error => reject(error));
     req.end();
   });
 }

@@ -14,7 +14,7 @@ export function concatenateBinaryPointGeometries(
   binaryPointGeometries: BinaryPointGeometry[],
   dimension: number
 ): BinaryPointGeometry {
-  const positions: TypedArray[] = binaryPointGeometries.map((geometry) => geometry.positions.value);
+  const positions: TypedArray[] = binaryPointGeometries.map(geometry => geometry.positions.value);
   const concatenatedPositions = new Float64Array(concatTypedArrays(positions).buffer);
 
   return {
@@ -27,9 +27,9 @@ export function concatenateBinaryLineGeometries(
   binaryLineGeometries: BinaryLineGeometry[],
   dimension: number
 ): BinaryLineGeometry {
-  const lines: TypedArray[] = binaryLineGeometries.map((geometry) => geometry.positions.value);
+  const lines: TypedArray[] = binaryLineGeometries.map(geometry => geometry.positions.value);
   const concatenatedPositions = new Float64Array(concatTypedArrays(lines).buffer);
-  const pathIndices = lines.map((line) => line.length / dimension).map(cumulativeSum(0));
+  const pathIndices = lines.map(line => line.length / dimension).map(cumulativeSum(0));
   pathIndices.unshift(0);
 
   return {
@@ -53,7 +53,7 @@ export function concatenateBinaryPolygonGeometries(
   }
 
   const concatenatedPositions = new Float64Array(concatTypedArrays(polygons).buffer);
-  const polygonIndices = polygons.map((p) => p.length / dimension).map(cumulativeSum(0));
+  const polygonIndices = polygons.map(p => p.length / dimension).map(cumulativeSum(0));
   polygonIndices.unshift(0);
 
   // Combine primitivePolygonIndices from each individual polygon

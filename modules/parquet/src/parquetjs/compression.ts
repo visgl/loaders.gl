@@ -79,9 +79,7 @@ export const PARQUET_COMPRESSION_METHODS: Record<ParquetCompression, Compression
 export async function preloadCompressions(options?: {modules?: {[key: string]: any}}) {
   registerJSModules(options?.modules);
   const compressions = Object.values(PARQUET_COMPRESSION_METHODS);
-  return await Promise.all(
-    compressions.map((compression) => compression.preload(options?.modules))
-  );
+  return await Promise.all(compressions.map(compression => compression.preload(options?.modules)));
 }
 
 /**

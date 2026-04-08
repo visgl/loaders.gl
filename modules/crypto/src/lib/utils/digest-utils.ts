@@ -52,7 +52,7 @@ function convertHexToBase64(hexstring: string): string {
     hexstring = `0${hexstring}`;
   }
   const matches = hexstring.match(/\w{2}/g) || [];
-  const string = matches.map((a) => String.fromCharCode(parseInt(a, 16))).join('');
+  const string = matches.map(a => String.fromCharCode(parseInt(a, 16))).join('');
   // TODO - define how to handle failures
   return asciiToBase64(string) || '';
 }
@@ -62,7 +62,7 @@ function convertHexToBase64(hexstring: string): string {
  */
 function convertBase64ToHex(base64String: string): string {
   return [...base64ToAscii(base64String)]
-    .map((c) => c.charCodeAt(0).toString(16).padStart(2, '0'))
+    .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
     .join('');
 }
 

@@ -11,7 +11,7 @@ const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 
 const LOADERS = [OBJLoader, KMLLoader];
 
-test('parseSync#autoParse', async (t) => {
+test('parseSync#autoParse', async t => {
   const data = await load(KML_URL, LOADERS);
   t.ok(data);
   t.end();

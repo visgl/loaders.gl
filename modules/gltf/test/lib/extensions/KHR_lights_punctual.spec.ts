@@ -51,7 +51,7 @@ const TEST_CASES = [
   }
 ];
 
-test('gltf#KHR_lights_punctuals', async (t) => {
+test('gltf#KHR_lights_punctuals', async t => {
   for (const testCase of TEST_CASES) {
     await decodeExtensions(testCase.input);
     // Modifies input

@@ -182,9 +182,11 @@ export class IndexedArrowTable<T extends arrow.TypeMap> {
       return null;
     }
 
-    const temporaryRow =
-      this.temporaryRow ??
-      ((this.temporaryRow = Object.create(null) as IndexedArrowTableRow<T>), this.temporaryRow);
+    let temporaryRow = this.temporaryRow;
+    if (!temporaryRow) {
+      temporaryRow = Object.create(null) as IndexedArrowTableRow<T>;
+      this.temporaryRow = temporaryRow;
+    }
     const mutableTemporaryRow = temporaryRow as Record<keyof T & string, unknown>;
 
     for (const field of this.schema.fields) {
@@ -296,7 +298,7 @@ export class IndexedArrowTable<T extends arrow.TypeMap> {
 
     return new IndexedArrowTable(
       this.table,
-      rowIndexes.map((rowIndex) => this.indexes[rowIndex])
+      rowIndexes.map(rowIndex => this.indexes[rowIndex])
     );
   }
 
@@ -318,7 +320,7 @@ export class IndexedArrowTable<T extends arrow.TypeMap> {
       }
     }
 
-    const concatenatedTable = this.table.concat(...others.map((sourceTable) => sourceTable.table));
+    const concatenatedTable = this.table.concat(...others.map(sourceTable => sourceTable.table));
     const concatenatedIndexes = new Int32Array(
       sourceTables.reduce((count, sourceTable) => count + sourceTable.numRows, 0)
     );
@@ -371,7 +373,7 @@ export class IndexedArrowTable<T extends arrow.TypeMap> {
    */
   materializeArrowTable(): arrow.Table<T> {
     const materializedColumns = Object.fromEntries(
-      this.schema.fields.map((field) => {
+      this.schema.fields.map(field => {
         const columnName = field.name as keyof T & string;
         const childView = this.getChild(columnName);
         if (!childView) {

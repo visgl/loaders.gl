@@ -9,7 +9,7 @@ import {tightenArrowTableSchemaNullability} from '@loaders.gl/arrow';
 
 import type {ArrowTable} from '@loaders.gl/schema';
 
-test('tightenArrowTableSchemaNullability#tightens nullable fields without nulls', async (t) => {
+test('tightenArrowTableSchemaNullability#tightens nullable fields without nulls', async t => {
   const table = makeTestArrowTable({
     values: ['a', 'b', 'c'],
     nullable: true
@@ -24,7 +24,7 @@ test('tightenArrowTableSchemaNullability#tightens nullable fields without nulls'
   t.end();
 });
 
-test('tightenArrowTableSchemaNullability#keeps nullable fields with nulls', async (t) => {
+test('tightenArrowTableSchemaNullability#keeps nullable fields with nulls', async t => {
   const table = makeTestArrowTable({
     values: ['a', null, 'c'],
     nullable: true
@@ -38,7 +38,7 @@ test('tightenArrowTableSchemaNullability#keeps nullable fields with nulls', asyn
   t.end();
 });
 
-test('tightenArrowTableSchemaNullability#keeps non-nullable fields unchanged', async (t) => {
+test('tightenArrowTableSchemaNullability#keeps non-nullable fields unchanged', async t => {
   const table = makeTestArrowTable({
     values: ['a', 'b', 'c'],
     nullable: false

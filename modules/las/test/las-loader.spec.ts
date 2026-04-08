@@ -21,13 +21,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('LASLoader#loader conformance', (t) => {
+test('LASLoader#loader conformance', t => {
   validateLoader(t, LASLoader, 'LASLoader');
   validateLoader(t, LASWorkerLoader, 'LASWorkerLoader');
   t.end();
 });
 
-test('LASLoader#parse(binary)', async (t) => {
+test('LASLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {skip: 10},
     core: {worker: false}
@@ -43,7 +43,7 @@ test('LASLoader#parse(binary)', async (t) => {
   t.end();
 });
 
-test('LASLoader#options', async (t) => {
+test('LASLoader#options', async t => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {skip: 100, fp64: false},
     core: {worker: false}
@@ -65,7 +65,7 @@ test('LASLoader#options', async (t) => {
   t.end();
 });
 
-test('LASWorker#parse(binary) extra bytes', async (t) => {
+test('LASWorker#parse(binary) extra bytes', async t => {
   const data = await parse(fetchFile(LAS_EXTRABYTES_BINARY_URL), LASLoader, {
     las: {skip: 10},
     core: {worker: false}
@@ -81,7 +81,7 @@ test('LASWorker#parse(binary) extra bytes', async (t) => {
   t.end();
 });
 
-test('LASWorkerLoader#load(worker)', async (t) => {
+test('LASWorkerLoader#load(worker)', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
@@ -95,14 +95,14 @@ test('LASWorkerLoader#load(worker)', async (t) => {
   t.end();
 });
 
-test('LASLoader#shape="mesh"', async (t) => {
+test('LASLoader#shape="mesh"', async t => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
   validateMeshCategoryData(t, result);
   t.end();
 });
 
 // Related code was commented due to breaking pointcloud example on the website
-test.skip('LASLoader#shape="columnar-table"', async (t) => {
+test.skip('LASLoader#shape="columnar-table"', async t => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'columnar-table'}
   });

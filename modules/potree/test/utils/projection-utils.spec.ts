@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {createProjection} from '../../src/utils/projection-utils';
 import {areNumberArraysEqual} from './compareArrays';
 
-test('projection-utils#createProjection', async (t) => {
+test('projection-utils#createProjection', async t => {
   t.equals(createProjection(), null);
 
   const projection = createProjection(

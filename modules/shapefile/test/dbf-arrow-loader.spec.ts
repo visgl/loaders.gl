@@ -27,7 +27,7 @@ const SHAPEFILE_JS_TEST_FILES = [
   'utf8-property'
 ];
 
-test('Shapefile Arrow DBF tests', async (t) => {
+test('Shapefile Arrow DBF tests', async t => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     const encoding = testFileName === 'latin1-property' ? 'latin1' : 'utf8';
     const options = {worker: false, dbf: {encoding}};

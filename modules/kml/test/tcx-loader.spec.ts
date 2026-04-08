@@ -11,12 +11,12 @@ import type {GeoJSONTable} from '@loaders.gl/schema';
 
 const TCX_URL = '@loaders.gl/kml/test/data/tcx/tcx_sample';
 
-test('TCXLoader#loader conformance', (t) => {
+test('TCXLoader#loader conformance', t => {
   validateLoader(t, TCXLoader, 'TCXLoader');
   t.end();
 });
 
-test.skip('TCXLoader#parse', async (t) => {
+test.skip('TCXLoader#parse', async t => {
   const table = (await load(`${TCX_URL}.tcx`, TCXLoader, {
     gis: {format: 'geojson'}
   })) as GeoJSONTable;
@@ -32,7 +32,7 @@ test.skip('TCXLoader#parse', async (t) => {
   t.end();
 });
 
-test('TCXLoader#parseInBatches', async (t) => {
+test('TCXLoader#parseInBatches', async t => {
   const iterator = await loadInBatches(`${TCX_URL}.tcx`, TCXLoader, {gis: {format: 'geojson'}});
   let data: any;
   for await (const batch of iterator) {

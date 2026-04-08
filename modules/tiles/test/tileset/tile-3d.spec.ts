@@ -120,7 +120,7 @@ const MOCK_TILESET = {
 //   return Matrix4.pack(transformMatrix, new Array(16));
 // }
 
-test('Tile3D#destroys', (t) => {
+test('Tile3D#destroys', t => {
   // @ts-ignore
   const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
   t.equals(tile.isDestroyed(), false);
@@ -129,7 +129,7 @@ test('Tile3D#destroys', (t) => {
   t.end();
 });
 
-test('Tile3D#throws if boundingVolume is undefined', (t) => {
+test('Tile3D#throws if boundingVolume is undefined', t => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
 
   delete tileWithoutBoundingVolume.boundingVolume;
@@ -138,7 +138,7 @@ test('Tile3D#throws if boundingVolume is undefined', (t) => {
   t.end();
 });
 
-test('Tile3D#throws if boundingVolume does not contain a sphere, region, or box', (t) => {
+test('Tile3D#throws if boundingVolume does not contain a sphere, region, or box', t => {
   const tileWithoutBoundingVolume = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
 
   delete tileWithoutBoundingVolume.boundingVolume.sphere;
@@ -147,7 +147,7 @@ test('Tile3D#throws if boundingVolume does not contain a sphere, region, or box'
   t.end();
 });
 
-test('Tile3D#geometric error is undefined', (t) => {
+test('Tile3D#geometric error is undefined', t => {
   // spyOn(Tile3D, '_deprecationWarning');
 
   const lodMetricValueMissing = clone(TILE_HEADER_WITH_BOUNDING_SPHERE, true);
@@ -169,7 +169,7 @@ test('Tile3D#geometric error is undefined', (t) => {
   t.end();
 });
 
-test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume', (t) => {
+test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume', t => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -202,7 +202,7 @@ test('Tile3D#viewerRequestVolume is camera inside the MBS viewer request volume'
   t.end();
 });
 
-test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume', (t) => {
+test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume', t => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -235,7 +235,7 @@ test('Tile3D#viewerRequestVolume is camera outside the MBS viewer request volume
   t.end();
 });
 
-test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume', (t) => {
+test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume', t => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -268,7 +268,7 @@ test('Tile3D#viewerRequestVolume is camera inside the OBB viewer request volume'
   t.end();
 });
 
-test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume', (t) => {
+test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume', t => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -301,7 +301,7 @@ test('Tile3D#viewerRequestVolume is camera outside the OBB viewer request volume
   t.end();
 });
 
-test('Tile3D#tileDrawn defaults to true', (t) => {
+test('Tile3D#tileDrawn defaults to true', t => {
   // @ts-ignore
   const tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_SPHERE);
   t.equals(tile.tileDrawn, true, 'tileDrawn defaults to true for backwards compatibility');
@@ -316,7 +316,7 @@ test('Tile3D#tileDrawn defaults to true', (t) => {
 });
 
 // TODO failing test
-test.skip('Tile3D#screenSpaceError is calculated correctly', (t) => {
+test.skip('Tile3D#screenSpaceError is calculated correctly', t => {
   const tileset = {
     ...MOCK_TILESET,
     type: 'TILES3D',
@@ -350,7 +350,7 @@ test.skip('Tile3D#screenSpaceError is calculated correctly', (t) => {
   t.end();
 });
 
-test('Tile3D#cartographic bounding box', (t) => {
+test('Tile3D#cartographic bounding box', t => {
   // @ts-ignore
   let tile = new Tile3D(MOCK_TILESET, TILE_HEADER_WITH_BOUNDING_BOX);
   t.ok(tile.boundingBox, 'Calculated for bounding box');

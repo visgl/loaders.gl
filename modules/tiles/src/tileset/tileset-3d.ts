@@ -426,7 +426,7 @@ export class Tileset3D {
       this.lastUpdatedVieports = viewports;
     }
     if (!this.updatePromise) {
-      this.updatePromise = new Promise<number>((resolve) => {
+      this.updatePromise = new Promise<number>(resolve => {
         setTimeout(() => {
           if (this.lastUpdatedVieports) {
             this.doUpdate(this.lastUpdatedVieports);
@@ -562,8 +562,8 @@ export class Tileset3D {
     // Transition hold: keep recently-deselected tiles visible until all their
     // replacements have been drawn by the renderer (e.g. deck.gl).
     // Without this, there are single-frame flashes during REPLACE refinement transitions.
-    const selectedIds = new Set(this.selectedTiles.map((t) => t.id));
-    const hasUndrawnTiles = this.selectedTiles.some((t) => !t.tileDrawn);
+    const selectedIds = new Set(this.selectedTiles.map(t => t.id));
+    const hasUndrawnTiles = this.selectedTiles.some(t => !t.tileDrawn);
 
     // Keep recently-deselected tiles visible while new tiles haven't drawn yet
     let heldBackCount = 0;
@@ -615,10 +615,10 @@ export class Tileset3D {
     if (oldSelectedTiles.length !== selectedTiles.length) {
       return true;
     }
-    const set1 = new Set(oldSelectedTiles.map((t) => t.id));
-    const set2 = new Set(selectedTiles.map((t) => t.id));
-    let changed = oldSelectedTiles.filter((x) => !set2.has(x.id)).length > 0;
-    changed = changed || selectedTiles.filter((x) => !set1.has(x.id)).length > 0;
+    const set1 = new Set(oldSelectedTiles.map(t => t.id));
+    const set2 = new Set(selectedTiles.map(t => t.id));
+    let changed = oldSelectedTiles.filter(x => !set2.has(x.id)).length > 0;
+    changed = changed || selectedTiles.filter(x => !set1.has(x.id)).length > 0;
     return changed;
   }
 
@@ -917,7 +917,7 @@ export class Tileset3D {
   }
 
   _addTileToCache(tile: Tile3D) {
-    this._cache.add(this, tile, (tileset) => tileset._updateCacheStats(tile));
+    this._cache.add(this, tile, tileset => tileset._updateCacheStats(tile));
   }
 
   _updateCacheStats(tile) {

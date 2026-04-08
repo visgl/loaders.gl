@@ -5,12 +5,12 @@
 import test from 'tape-promise/tape';
 import {setLoaderOptions, getLoaderOptions} from '@loaders.gl/core';
 
-test('setLoaderOptions', (t) => {
+test('setLoaderOptions', t => {
   setLoaderOptions({});
   t.end();
 });
 
-test('getLoaderOptions', (t) => {
+test('getLoaderOptions', t => {
   const options1 = getLoaderOptions();
   t.notOk(options1.customOption);
   setLoaderOptions({

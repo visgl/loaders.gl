@@ -99,7 +99,7 @@ async function parseCSV(
     header: parseWithHeader,
     download: false, // We handle loading, no need for papaparse to do it for us
     transformHeader: parseWithHeader ? duplicateColumnTransformer() : undefined,
-    error: (e) => {
+    error: e => {
       throw new Error(e);
     }
   };
@@ -115,13 +115,13 @@ async function parseCSV(
     case 'object-row-table':
       table = {
         shape: 'object-row-table',
-        data: rows.map((row) => (Array.isArray(row) ? convertToObjectRow(row, headerRow) : row))
+        data: rows.map(row => (Array.isArray(row) ? convertToObjectRow(row, headerRow) : row))
       };
       break;
     case 'array-row-table':
       table = {
         shape: 'array-row-table',
-        data: rows.map((row) => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow)))
+        data: rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow)))
       };
       break;
     default:
@@ -274,7 +274,7 @@ function parseCSVInBatches(
  * @returns true if the row looks like a header
  */
 function isHeaderRow(row: string[]): boolean {
-  return row && row.every((value) => typeof value === 'string');
+  return row && row.every(value => typeof value === 'string');
 }
 
 /**
@@ -298,7 +298,7 @@ function readFirstRow(csvText: string): any[] {
  */
 function duplicateColumnTransformer(): (column: string) => string {
   const observedColumns = new Set<string>();
-  return (col) => {
+  return col => {
     let colName = col;
     let counter = 1;
     while (observedColumns.has(colName)) {
@@ -325,7 +325,7 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
 }
 
 function normalizePapaStreamingRow(row: unknown[]): unknown[] {
-  return row.map((value) => (Array.isArray(value) && value.length === 0 ? null : value));
+  return row.map(value => (Array.isArray(value) && value.length === 0 ? null : value));
 }
 
 function convertToPapaObjectRow(

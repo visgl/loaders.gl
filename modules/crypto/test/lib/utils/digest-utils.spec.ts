@@ -17,7 +17,7 @@ const loadJSON = async (relativePath: string) => {
 
 const TEST_CASES = await loadJSON('../crc32c-test-cases.json');
 
-test('encodeHexToBase64#crc32 test cases', (t) => {
+test('encodeHexToBase64#crc32 test cases', t => {
   for (const type in TEST_CASES) {
     const set = TEST_CASES[type];
 
@@ -33,12 +33,12 @@ test('encodeHexToBase64#crc32 test cases', (t) => {
   t.end();
 });
 
-test('encodeHexToBase64', (t) => {
+test('encodeHexToBase64', t => {
   t.equal(encodeHex('f85d741', 'base64'), 'D4XXQQ==', 'encode zero leading hex correctly');
   t.end();
 });
 
-test('encodeBase64ToHex', (t) => {
+test('encodeBase64ToHex', t => {
   t.equal(encodeBase64('D4XXQQ==', 'hex'), '0f85d741');
   t.end();
 });

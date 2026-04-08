@@ -6,7 +6,7 @@ import type {XMLLoaderOptions} from '@loaders.gl/xml';
 // NOTE: addAliases is not a public export, already used by test setup
 // import {_addAliases} from '@loaders.gl/loader-utils';
 
-test('mergeOptions', (t) => {
+test('mergeOptions', t => {
   const originalOptions: XMLLoaderOptions = {
     xml: {
       _fastXML: {

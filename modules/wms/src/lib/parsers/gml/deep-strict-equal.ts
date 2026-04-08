@@ -57,7 +57,7 @@ export function deepStrictEqual(actual: unknown, expected: unknown, strict?: boo
     (expected === null || typeof expected !== 'object')
   ) {
     // eslint-disable-next-line eqeqeq
-    return strict ? actual === expected : actual == expected;
+    return strict ? actual === expected : actual === expected;
 
     // 7.5 For all other Object pairs, including Array objects, equivalence is
     // determined by having the same number of owned properties (as verified
@@ -78,7 +78,7 @@ function isPrimitive(arg) {
 
 function isArguments(object) {
   // eslint-disable-next-line eqeqeq
-  return Object.prototype.toString.call(object) == '[object Arguments]';
+  return Object.prototype.toString.call(object) === '[object Arguments]';
 }
 
 // eslint-disable-next-line complexity

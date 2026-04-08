@@ -18,7 +18,7 @@ export function convertSchemaToArrow(schema: Schema): arrow.Schema {
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
 export function serializeArrowSchema(arrowSchema: arrow.Schema): Schema {
   return {
-    fields: arrowSchema.fields.map((arrowField) => serializeArrowField(arrowField)),
+    fields: arrowSchema.fields.map(arrowField => serializeArrowField(arrowField)),
     metadata: serializeArrowMetadata(arrowSchema.metadata)
   };
 }
@@ -26,7 +26,7 @@ export function serializeArrowSchema(arrowSchema: arrow.Schema): Schema {
 /** Convert a serialized Schema (plain data) to an Apache Arrow Schema (class instance) */
 export function deserializeArrowSchema(schema: Schema): arrow.Schema {
   return new arrow.Schema(
-    schema.fields.map((field) => deserializeArrowField(field)),
+    schema.fields.map(field => deserializeArrowField(field)),
     deserializeArrowMetadata(schema.metadata)
   );
 }
@@ -189,7 +189,7 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       return {
         type: 'map',
         keysSorted: mapType.keysSorted,
-        children: mapType.children.map((arrowField) => serializeArrowField(arrowField))
+        children: mapType.children.map(arrowField => serializeArrowField(arrowField))
       };
     case arrow.List:
       const listType = arrowType as arrow.List;
@@ -209,7 +209,7 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       const structType = arrowType as arrow.Struct;
       return {
         type: 'struct',
-        children: structType.children.map((arrowField) => serializeArrowField(arrowField))
+        children: structType.children.map(arrowField => serializeArrowField(arrowField))
       };
     default:
       throw new Error(`arrow type not supported: ${arrowType.constructor.name}`);
@@ -224,7 +224,7 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
       case 'decimal':
         return new arrow.Decimal(dataType.precision, dataType.scale, dataType.bitWidth);
       case 'map':
-        let children = dataType.children.map((arrowField) => deserializeArrowField(arrowField));
+        let children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
         return new arrow.Map_(children as any, dataType.keysSorted);
       case 'list':
         const field = deserializeArrowField(dataType.children[0]);
@@ -233,7 +233,7 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
         const child = deserializeArrowField(dataType.children[0]);
         return new arrow.FixedSizeList(dataType.listSize, child);
       case 'struct':
-        children = dataType.children.map((arrowField) => deserializeArrowField(arrowField));
+        children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
         return new arrow.Struct(children);
       default:
         throw new Error('array type not supported');

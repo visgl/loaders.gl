@@ -92,7 +92,7 @@ export const GEOMETRY_TEST_CASES: GeometryTestCase[] = [
   {
     binary: {
       positions: {
-        // prettier-ignore
+        // biome-ignore format: preserve intentional fixture layout
         value: new Float32Array([
           100, 0, 110, 0, 110, 10, 100, 10, 100, 0, 108, 8, 108, 2, 102, 2, 102,
           8, 108, 8
@@ -126,7 +126,7 @@ export const GEOMETRY_TEST_CASES: GeometryTestCase[] = [
   {
     binary: {
       positions: {
-        // prettier-ignore
+        // biome-ignore format: preserve intentional fixture layout
         value: new Float32Array([
           102, 20, 103, 20, 103, 30, 102, 30, 102, 20, 100, 0, 110, 0, 110, 10,
           100, 10, 100, 0, 108, 8, 108, 2, 102, 2, 102, 8, 108, 8
