@@ -109,6 +109,7 @@ test('loadDraco# Pass options to draco loader properly', async t => {
       t.deepEqual(resultOptions, resultObject);
       t.equal(resultOptions?.['3d-tiles'], undefined);
       t.end();
+      return {attributes: {}};
     }
   } as LoaderContext;
 
