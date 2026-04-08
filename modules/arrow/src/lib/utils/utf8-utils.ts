@@ -15,6 +15,7 @@ export type UTF8Comparison = -1 | 0 | 1;
  * @param firstByte2 - Inclusive start byte offset in the second buffer.
  * @param endByte2 - Exclusive end byte offset in the second buffer.
  * @returns Lexicographic unsigned-byte comparison result.
+ * @throws RangeError if either byte range is invalid for its buffer.
  */
 // The byte-range comparator intentionally mirrors Arrow `values` + offset-buffer usage.
 // eslint-disable-next-line max-params
@@ -63,6 +64,7 @@ export function compareUTF8(
  * @param firstByte - Inclusive start byte offset.
  * @param endByte - Exclusive end byte offset.
  * @returns Parsed number, or `undefined` when parsing fails.
+ * @throws RangeError if the byte range is invalid for the buffer.
  */
 // The parser is intentionally implemented inline to avoid string materialization while validating grammar.
 // eslint-disable-next-line max-statements, complexity
@@ -148,6 +150,7 @@ export function parseUTF8Number(
  * @param firstByte - Inclusive start byte offset.
  * @param endByte - Exclusive end byte offset.
  * @returns Parsed bigint, or `undefined` when parsing fails.
+ * @throws RangeError if the byte range is invalid for the buffer.
  */
 export function parseUTF8BigInt(
   bytes: Uint8Array,
@@ -196,6 +199,7 @@ export function parseUTF8BigInt(
  * @param firstByte - Inclusive start byte offset.
  * @param endByte - Exclusive end byte offset.
  * @returns Parsed boolean, or `undefined` when parsing fails.
+ * @throws RangeError if the byte range is invalid for the buffer.
  */
 // eslint-disable-next-line complexity
 export function parseUTF8Boolean(
@@ -232,6 +236,14 @@ export function parseUTF8Boolean(
   return undefined;
 }
 
+/**
+ * Validates that a byte range is inside one UTF-8 byte buffer.
+ *
+ * @param bytes - Byte buffer that owns the range.
+ * @param firstByte - Inclusive start byte offset.
+ * @param endByte - Exclusive end byte offset.
+ * @throws RangeError if the byte range is invalid for the buffer.
+ */
 function checkByteRange(bytes: Uint8Array, firstByte: number, endByte: number): void {
   if (
     !Number.isInteger(firstByte) ||
@@ -246,6 +258,14 @@ function checkByteRange(bytes: Uint8Array, firstByte: number, endByte: number): 
   }
 }
 
+/**
+ * Removes ASCII whitespace from the front and back of a byte range.
+ *
+ * @param bytes - Byte buffer that owns the range.
+ * @param firstByte - Inclusive start byte offset.
+ * @param endByte - Exclusive end byte offset.
+ * @returns Trimmed inclusive start and exclusive end byte offsets.
+ */
 function trimASCIIWhitespace(
   bytes: Uint8Array,
   firstByte: number,
@@ -264,20 +284,46 @@ function trimASCIIWhitespace(
   return {start, end};
 }
 
+/**
+ * Checks whether a byte is an ASCII decimal digit.
+ *
+ * @param byte - Byte to check.
+ * @returns `true` when the byte is in the range `0` through `9`.
+ */
 function isDigit(byte: number): boolean {
   return byte >= 0x30 && byte <= 0x39;
 }
 
+/**
+ * Applies a base-10 decimal scale to a parsed numeric mantissa.
+ *
+ * @param value - Parsed numeric mantissa.
+ * @param decimalScale - Signed base-10 exponent to apply.
+ * @returns Scaled numeric value.
+ */
 function applyDecimalScale(value: number, decimalScale: number): number {
   return decimalScale >= 0
     ? value * Math.pow(10, decimalScale)
     : value / Math.pow(10, -decimalScale);
 }
 
+/**
+ * Checks whether a byte is ASCII whitespace.
+ *
+ * @param byte - Byte to check.
+ * @returns `true` for space, tab, line feed, vertical tab, form feed, or carriage return.
+ */
 function isASCIIWhitespace(byte: number): boolean {
   return byte === 0x20 || (byte >= 0x09 && byte <= 0x0d);
 }
 
+/**
+ * Case-insensitively compares one ASCII byte with an expected lowercase byte.
+ *
+ * @param byte - Byte to compare.
+ * @param lowercaseByte - Expected lowercase ASCII byte.
+ * @returns `true` when `byte` matches the lowercase byte or its uppercase pair.
+ */
 function equalsLowercaseASCII(byte: number, lowercaseByte: number): boolean {
   return byte === lowercaseByte || byte + 0x20 === lowercaseByte;
 }

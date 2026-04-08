@@ -36,6 +36,7 @@ or when integrating Arrow-backed data sources.
 | [`IndexedArrowTable`](/docs/modules/arrow/api-reference/indexed-arrow-table)     | Readonly indexed table and vector views that avoid copying column data |
 | [`MappedArrowTable`](/docs/modules/arrow/api-reference/mapped-arrow-table)       | String-keyed row lookup view layered on top of an indexed Arrow table  |
 | [`Arrow Schema Utilities`](/docs/modules/arrow/api-reference/arrow-schema-utils) | Runtime schema validation and column-renaming helpers                  |
+| [`UTF-8 Utilities`](/docs/modules/arrow/api-reference/utf8-utils)                | Compare and parse Arrow UTF-8 byte ranges without decoding strings     |
 
 For the underlying Apache Arrow JS classes, start with the
 [`ArrowJS API Reference`](/docs/arrowjs/api-reference).

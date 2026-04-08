@@ -272,7 +272,8 @@
           "modules/arrow/README",
           "modules/arrow/api-reference/indexed-arrow-table",
           "modules/arrow/api-reference/mapped-arrow-table",
-          "modules/arrow/api-reference/arrow-schema-utils"
+          "modules/arrow/api-reference/arrow-schema-utils",
+          "modules/arrow/api-reference/utf8-utils"
         ]
       },
       {
