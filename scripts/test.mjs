@@ -161,8 +161,8 @@ function resolveNodeEntry(ocularNodeConfig, entryKey) {
  */
 async function runPlaywrightBrowserTest(testMode, options) {
   const viteMode = getViteMode(testMode);
-  const headless = /\bheadless\b/.test(testMode);
   const collectCoverage = testMode === 'cover';
+  const headless = collectCoverage || /\bheadless\b/.test(testMode);
   const title = `${viteMode === 'bench' ? 'Bench' : 'Browser'} Test`;
   let failures = 0;
   let browser = null;
