@@ -10,7 +10,10 @@ const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
 const CESIUM_TILE_URL = '@loaders.gl/draco/test/data/cesium-tile.drc';
 
 setLoaderOptions({
-  _workerType: 'test'
+  _workerType: 'test',
+  core: {
+    useLocalLibraries: true
+  }
 });
 
 test('DracoArrowLoader#loader conformance', t => {
@@ -19,9 +22,6 @@ test('DracoArrowLoader#loader conformance', t => {
 });
 
 test('DracoArrowLoader#parse(mainthread)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
-    return;
-  }
   const table = await load(BUNNY_DRC_URL, DracoArrowLoader, {worker: false});
   // validateMeshCategoryData(t, data);
   const {data} = table;
@@ -33,7 +33,7 @@ test('DracoArrowLoader#parse(mainthread)', async t => {
 });
 
 test('DracoArrowLoader#draco3d npm package', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+  if (skipBrowserDraco3DNpmPackageTest(t)) {
     return;
   }
   const table = await load(BUNNY_DRC_URL, DracoArrowLoader, {
@@ -49,9 +49,6 @@ test('DracoArrowLoader#draco3d npm package', async t => {
 });
 
 test('DracoArrowLoader#parse custom attributes(mainthread)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
-    return;
-  }
   let table = await load(CESIUM_TILE_URL, DracoArrowLoader, {
     worker: false
   });
@@ -91,11 +88,11 @@ test('DracoArrowLoader#parse custom attributes(mainthread)', async t => {
 });
 
 /**
- * Skips Draco Arrow tests that depend on direct WASM module initialization in browser runs.
+ * Skips Draco Arrow tests that depend on the Node-only draco3d npm package entrypoint in browser runs.
  */
-function skipBrowserDracoWasmTest(t) {
+function skipBrowserDraco3DNpmPackageTest(t) {
   if (isBrowser) {
-    t.comment('Skipping Draco WASM main-thread test in browser');
+    t.comment('Skipping Draco npm package test in browser');
     t.end();
     return true;
   }

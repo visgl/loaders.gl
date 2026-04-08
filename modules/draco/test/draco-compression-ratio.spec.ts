@@ -1,20 +1,20 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {fetchFile, parse, encode} from '@loaders.gl/core';
+import {fetchFile, parse, encode, setLoaderOptions} from '@loaders.gl/core';
 // import {getMeshSize} from '@loaders.gl/schema-utils';
 import {DracoWriter, DracoLoader} from '@loaders.gl/draco';
 import {validateMeshCategoryData} from 'test/common/conformance';
-import {isBrowser} from '@loaders.gl/worker-utils';
 
 const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';
 
-test('DracoWriter#compressRawBuffers', async t => {
-  if (isBrowser) {
-    t.comment('Skipping Draco WASM writer test in browser');
-    t.end();
-    return;
+setLoaderOptions({
+  core: {
+    useLocalLibraries: true
   }
+});
+
+test('DracoWriter#compressRawBuffers', async t => {
   const POSITIONS = await fetchFile(POSITIONS_URL).then(response => response.arrayBuffer());
   const COLORS = await fetchFile(COLORS_URL).then(response => response.arrayBuffer());
 

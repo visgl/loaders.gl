@@ -4,7 +4,7 @@
 
 import {isBrowser, loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
 
-const DRACO_DECODER_VERSION = '1.5.6';
+const DRACO_DECODER_VERSION = '1.5.7';
 const DRACO_ENCODER_VERSION = '1.4.1';
 
 const STATIC_DECODER_URL = `https://www.gstatic.com/draco/versioned/decoders/${DRACO_DECODER_VERSION}`;
