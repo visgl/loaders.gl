@@ -46,6 +46,13 @@ export {
   type ArrowFieldNameMap,
   type RenamedArrowColumns
 } from './lib/utils/rename-arrow-columns';
+export {
+  compareUTF8,
+  parseUTF8BigInt,
+  parseUTF8Boolean,
+  parseUTF8Number,
+  type UTF8Comparison
+} from './lib/utils/utf8-utils';
 
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';
