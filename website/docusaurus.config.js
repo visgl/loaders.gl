@@ -76,6 +76,7 @@ const config = {
             '@loaders.gl/flatgeobuf': resolve('../modules/flatgeobuf/src'),
             '@loaders.gl/geopackage': resolve('../modules/geopackage/src'),
             '@loaders.gl/geotiff': resolve('../modules/geotiff/src'),
+            '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
             '@loaders.gl/gis': resolve('../modules/gis/src'),
             '@loaders.gl/gltf': resolve('../modules/gltf/src'),
             '@loaders.gl/i3s': resolve('../modules/i3s/src'),

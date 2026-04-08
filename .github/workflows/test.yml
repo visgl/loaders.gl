@@ -167,10 +167,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build
-        run: |
-          yarn run build
-
       - name: Build website
         run: |
           cd website; yarn build
