@@ -7,6 +7,7 @@ import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core
 import {NDJSONArrowLoader, NDJSONLoader} from '@loaders.gl/json';
 
 const NDJSON_PATH = '@loaders.gl/json/test/data/ndjson.ndjson';
+const NDJSON_EMPTY_OBJECTS_PATH = '@loaders.gl/json/test/data/ndjson-empty-objects.ndjson';
 const NDJSON_INVALID_PATH = '@loaders.gl/json/test/data/ndjson-invalid.ndjson';
 
 test('NDJSONLoader#load(ndjson.ndjson)', async (t) => {
@@ -167,5 +168,52 @@ test('NDJSONArrowLoader#loadInBatches(ndjson.ndjson, batchSize = 5)', async (t) 
 
   t.equal(batchCount, classicBatches.length, 'batch count matches NDJSONLoader');
   t.equal(rowCount, 11, 'Correct number of row received');
+  t.end();
+});
+
+test('NDJSONArrowLoader#load(ndjson-empty-objects.ndjson)', async (t) => {
+  const classicTable = await load(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader);
+  const table = await load(NDJSON_EMPTY_OBJECTS_PATH, NDJSONArrowLoader);
+
+  t.equal(table.shape, 'arrow-table', 'Correct table type received');
+  t.equal(table.data.numCols, 0, 'Correct number of columns received');
+  t.equal(table.data.numRows, classicTable.data.length, 'row count matches NDJSONLoader');
+  t.end();
+});
+
+test('NDJSONArrowLoader#loadInBatches(ndjson-empty-objects.ndjson, batchSize = 2)', async (t) => {
+  const classicIterator = await loadInBatches(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader, {
+    batchSize: 2
+  });
+  const classicBatches: any[] = [];
+  for await (const batch of classicIterator) {
+    classicBatches.push(batch);
+  }
+
+  const iterator = await loadInBatches(NDJSON_EMPTY_OBJECTS_PATH, NDJSONArrowLoader, {
+    batchSize: 2
+  });
+
+  let batchCount = 0;
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    const classicBatch = classicBatches[batchCount];
+    t.equal(batch.shape, 'arrow-table', `Got correct batch type for batch ${batchCount}`);
+    t.equal(batch.data.numCols, 0, `Got correct column count for batch ${batchCount}`);
+    t.equal(
+      batch.data.numRows,
+      classicBatch.length,
+      `batch ${batchCount} row count matches NDJSONLoader`
+    );
+    rowCount += batch.data.numRows;
+    batchCount++;
+  }
+
+  t.equal(batchCount, classicBatches.length, 'batch count matches NDJSONLoader');
+  t.equal(
+    rowCount,
+    classicBatches.reduce((sum, batch) => sum + batch.length, 0),
+    'row count matches'
+  );
   t.end();
 });

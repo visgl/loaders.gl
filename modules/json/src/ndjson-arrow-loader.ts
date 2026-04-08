@@ -14,6 +14,7 @@ import type {
   TableBatch
 } from '@loaders.gl/schema';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import * as arrow from 'apache-arrow';
 import {NDJSONLoader} from './ndjson-loader';
 import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
 import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
@@ -91,6 +92,10 @@ async function* makeNDJSONArrowBatchIterator(
  */
 function convertRowTableToArrowTable(table: ObjectRowTable | ArrayRowTable): ArrowTable {
   const schema = deducePrimitiveAwareSchema(table);
+  if (schema.fields.length === 0) {
+    return makeEmptyFieldArrowTable(schema, table.data.length);
+  }
+
   const arrowTableBuilder = new ArrowTableBuilder(schema);
 
   switch (table.shape) {
@@ -109,6 +114,29 @@ function convertRowTableToArrowTable(table: ObjectRowTable | ArrayRowTable): Arr
   }
 
   return arrowTableBuilder.finishTable();
+}
+
+/**
+ * Creates an Arrow table for rows without fields.
+ *
+ * Apache Arrow JS normalizes empty-field record batches to zero rows, so this
+ * preserves the row count on the empty struct data before wrapping it in a table.
+ *
+ * @param schema - Empty loaders.gl schema inferred from the row table.
+ * @param rowCount - Number of parsed rows in the row table.
+ * @returns An Arrow table with zero columns and the original row count.
+ */
+function makeEmptyFieldArrowTable(schema: Schema, rowCount: number): ArrowTable {
+  const arrowSchema = new arrow.Schema([]);
+  const arrowData = new arrow.Data(new arrow.Struct([]), 0, rowCount, 0, undefined, []);
+  const arrowRecordBatch = new arrow.RecordBatch(arrowSchema, arrowData);
+  Object.defineProperty(arrowRecordBatch, 'data', {value: arrowData});
+
+  return {
+    shape: 'arrow-table',
+    schema,
+    data: new arrow.Table([arrowRecordBatch])
+  };
 }
 
 /**
