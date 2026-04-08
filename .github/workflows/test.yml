@@ -68,7 +68,7 @@ jobs:
       - name: Build workers
         run: yarn run build-workers
 
-      - name: Run browser tests (generate coverage)
+      - name: Run node and browser tests (generate coverage)
         if: matrix.full
         run: |
           yarn run test-cover

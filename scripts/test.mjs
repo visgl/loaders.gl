@@ -18,6 +18,7 @@ const COVERAGE_TEMP_DIRECTORY = './coverage/tmp';
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, '..');
+const localhostPattern = /^http:\/\/localhost:\d+\//;
 const devToolsViteConfig = resolve(
   repositoryRoot,
   'node_modules/@vis.gl/dev-tools/dist/configuration/vite.config.js'
@@ -30,6 +31,8 @@ if (!mode) {
   printUsage();
 } else if (mode === 'full') {
   process.exitCode = await runFullTest({keepBrowserOpen});
+} else if (mode === 'cover') {
+  process.exitCode = await runCoverageTest({keepBrowserOpen});
 } else if (!isBrowserTestMode(mode)) {
   process.exitCode = await runNodeTestMode(mode, args);
 } else {
@@ -52,7 +55,7 @@ Modes:
   browser-headless Run browser tests in a headless browser
   bench            Run node benchmarks
   bench-browser    Run browser benchmarks in a headed browser
-  cover            Run browser tests and generate coverage
+  cover            Run node and browser tests and generate merged coverage
   dist             Run node and browser tests against transpiled code
 
 Options:
@@ -67,10 +70,7 @@ Options:
  */
 function isBrowserTestMode(testMode) {
   return (
-    testMode === 'cover' ||
-    testMode === 'browser' ||
-    testMode === 'browser-headless' ||
-    /\bbrowser\b/.test(testMode)
+    testMode === 'cover' || testMode === 'browser' || testMode === 'browser-headless' || /\bbrowser\b/.test(testMode)
   );
 }
 
@@ -85,6 +85,20 @@ async function runFullTest(options) {
     return nodeExitCode;
   }
   return await runPlaywrightBrowserTest('browser-headless', options);
+}
+
+/**
+ * Runs Node.js and browser tests and combines their raw c8 coverage into one report.
+ * @param {{keepBrowserOpen: boolean}} options Browser test runner options.
+ * @returns {Promise<number>} Process exit code.
+ */
+async function runCoverageTest(options) {
+  clearCoverage();
+  const nodeExitCode = await runNodeTest('test', 'src', {coverage: true});
+  if (nodeExitCode) {
+    return nodeExitCode;
+  }
+  return await runPlaywrightBrowserTest('cover', {...options, clearCoverage: false});
 }
 
 /**
@@ -120,9 +134,10 @@ async function runNodeTestMode(testMode, testArgs) {
  * Runs a Node.js test entry with ocular aliases registered.
  * @param {string} entryKey Ocular entry key.
  * @param {'src' | 'dist'} aliasMode Alias mode to use for module resolution.
+ * @param {{coverage?: boolean}} options Node test runner options.
  * @returns {Promise<number>} Process exit code.
  */
-async function runNodeTest(entryKey, aliasMode) {
+async function runNodeTest(entryKey, aliasMode, options = {}) {
   const ocularNodeConfig = await getOcularConfig({aliasMode, root: repositoryRoot});
   const entry = resolveNodeEntry(ocularNodeConfig, entryKey);
   writeFileSync(resolve(ocularNodeConfig.ocularPath, '.alias.json'), JSON.stringify(ocularNodeConfig.aliases));
@@ -135,6 +150,10 @@ async function runNodeTest(entryKey, aliasMode) {
         entry
       ]
     : ['-r', `${ocularNodeConfig.ocularPath}/dist/helpers/cjs-register.cjs`, entry];
+
+  if (options.coverage) {
+    return await runProcess('npx', ['c8', '--reporter=none', process.execPath, ...nodeArgs]);
+  }
 
   return await runProcess(process.execPath, nodeArgs);
 }
@@ -156,7 +175,7 @@ function resolveNodeEntry(ocularNodeConfig, entryKey) {
 /**
  * Runs a Vite-backed browser test page in Playwright.
  * @param {string} testMode Browser test mode from the command line.
- * @param {{keepBrowserOpen: boolean}} options Browser test runner options.
+ * @param {{keepBrowserOpen: boolean, clearCoverage?: boolean}} options Browser test runner options.
  * @returns {Promise<number>} Process exit code.
  */
 async function runPlaywrightBrowserTest(testMode, options) {
@@ -225,8 +244,10 @@ async function runPlaywrightBrowserTest(testMode, options) {
     await registerBrowserCallbacks(page, headless, resolveTestComplete, () => failures++);
 
     if (collectCoverage) {
-      clearCoverage();
-      await page.coverage.startJSCoverage({includeRawScriptCoverage: true});
+      if (options.clearCoverage !== false) {
+        clearCoverage();
+      }
+      await page.coverage.startJSCoverage();
       coverageStarted = true;
     }
 
@@ -292,19 +313,23 @@ function writeCoverage(coverage) {
   const outputFile = `${COVERAGE_TEMP_DIRECTORY}/coverage-${Date.now()}`;
   let index = 0;
   for (const coverageEntry of coverage) {
-    const rawCoverage = coverageEntry.rawScriptCoverage;
+    const rawCoverage = coverageEntry.rawScriptCoverage || coverageEntry;
     if (!rawCoverage?.url) {
       continue;
     }
-    const filePath = rawCoverage.url.replace(/^http:\/\/localhost:\d+\//, '');
+    const filePath = getCoverageFilePath(rawCoverage.url);
+    if (!filePath) {
+      continue;
+    }
     if (filePath.match(/(^|\/)(node_modules|test|@vite)\//)) {
       continue;
     }
 
-    const fileUrl = `file://${resolve(filePath)}`;
+    const fileUrl = `file://${filePath.startsWith('/') ? filePath : resolve(filePath)}`;
     rawCoverage.url = fileUrl;
     const sourcemapCache = {};
-    const [generatedSource, sourcemapDataUrl] = coverageEntry.text.split(/\/\/# sourceMappingURL=/);
+    const source = coverageEntry.text || coverageEntry.source || '';
+    const [generatedSource, sourcemapDataUrl] = source.split(/\/\/# sourceMappingURL=/);
     if (sourcemapDataUrl) {
       sourcemapCache[fileUrl] = {
         lineLengths: generatedSource.split('\n').map(line => line.length),
@@ -320,6 +345,30 @@ function writeCoverage(coverage) {
       'utf8'
     );
   }
+}
+
+/**
+ * Converts Vite-served script URLs to local file paths for c8.
+ * @param {string} scriptUrl Browser script URL.
+ * @returns {string | null} Local file path or null when the URL should be ignored.
+ */
+function getCoverageFilePath(scriptUrl) {
+  let filePath = scriptUrl.replace(localhostPattern, '');
+  filePath = filePath.split('?')[0];
+
+  if (filePath.startsWith('@fs/')) {
+    return filePath.slice(3);
+  }
+
+  if (filePath.startsWith('/@fs/')) {
+    return filePath.slice(4);
+  }
+
+  if (filePath.startsWith('@id/') || filePath.startsWith('/@id/')) {
+    return null;
+  }
+
+  return filePath;
 }
 
 /**
