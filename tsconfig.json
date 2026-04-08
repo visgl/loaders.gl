@@ -95,6 +95,12 @@
       "@loaders.gl/arrow/test": [
         "modules/arrow/test"
       ],
+      "@loaders.gl/bson": [
+        "modules/bson/src"
+      ],
+      "@loaders.gl/bson/test": [
+        "modules/bson/test"
+      ],
       "@loaders.gl/csv": [
         "modules/csv/src"
       ],
