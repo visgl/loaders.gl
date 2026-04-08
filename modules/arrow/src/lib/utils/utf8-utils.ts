@@ -89,6 +89,7 @@ export function parseUTF8Number(
 
   let value = 0;
   let digitCount = 0;
+  let fractionDigitCount = 0;
   while (start < end && isDigit(bytes[start])) {
     value = value * 10 + bytes[start] - 0x30;
     start++;
@@ -97,12 +98,11 @@ export function parseUTF8Number(
 
   if (start < end && bytes[start] === 0x2e) {
     start++;
-    let fractionScale = 1;
     while (start < end && isDigit(bytes[start])) {
-      fractionScale /= 10;
-      value += (bytes[start] - 0x30) * fractionScale;
+      value = value * 10 + bytes[start] - 0x30;
       start++;
       digitCount++;
+      fractionDigitCount++;
     }
   }
 
@@ -135,7 +135,7 @@ export function parseUTF8Number(
     return undefined;
   }
 
-  return sign * value * Math.pow(10, exponentSign * exponent);
+  return sign * applyDecimalScale(value, exponentSign * exponent - fractionDigitCount);
 }
 
 /**
@@ -266,6 +266,12 @@ function trimASCIIWhitespace(
 
 function isDigit(byte: number): boolean {
   return byte >= 0x30 && byte <= 0x39;
+}
+
+function applyDecimalScale(value: number, decimalScale: number): number {
+  return decimalScale >= 0
+    ? value * Math.pow(10, decimalScale)
+    : value / Math.pow(10, -decimalScale);
 }
 
 function isASCIIWhitespace(byte: number): boolean {
