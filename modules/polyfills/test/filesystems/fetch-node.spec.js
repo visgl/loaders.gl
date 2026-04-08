@@ -8,7 +8,7 @@ const PLY_CUBE_ATT_URL = `${GITHUB_MASTER}ply/test/data/cube_att.ply`;
 const TEXT_URL = `@loaders.gl/polyfills/test/data/data.txt`;
 const TEXT_URL_GZIPPED = `@loaders.gl/polyfills/test/data/data.txt.gz`;
 
-test('polyfills#fetchNode() (NODE)', async (t) => {
+test('polyfills#fetchNode() (NODE)', async t => {
   if (!isBrowser) {
     const response = await fetchNode(PLY_CUBE_ATT_URL);
     t.ok(response.headers, 'fetchNode polyfill successfully returned headers under Node.js');
@@ -18,7 +18,7 @@ test('polyfills#fetchNode() (NODE)', async (t) => {
   t.end();
 });
 
-test('polyfills#fetchNode() ignores url query params when loading file (NODE)', async (t) => {
+test('polyfills#fetchNode() ignores url query params when loading file (NODE)', async t => {
   if (!isBrowser) {
     const response = await fetchNode(`${PLY_CUBE_ATT_URL}?v=1.2.3`);
     const data = await response.text();
@@ -28,7 +28,7 @@ test('polyfills#fetchNode() ignores url query params when loading file (NODE)', 
   t.end();
 });
 
-test('polyfills#fetchNode() error handling (NODE)', async (t) => {
+test('polyfills#fetchNode() error handling (NODE)', async t => {
   if (!isBrowser) {
     let response = await fetchNode('non-existent-file');
     t.comment(response.statusText);
@@ -45,7 +45,7 @@ test('polyfills#fetchNode() error handling (NODE)', async (t) => {
   t.end();
 });
 
-test('polyfills#fetchNode() able to decompress .gz extension (NODE)', async (t) => {
+test('polyfills#fetchNode() able to decompress .gz extension (NODE)', async t => {
   if (!isBrowser) {
     const textResponse = await fetchNode(TEXT_URL);
     t.ok(textResponse.ok, textResponse.statusText);

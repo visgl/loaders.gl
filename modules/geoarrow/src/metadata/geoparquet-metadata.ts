@@ -139,7 +139,7 @@ export function unpackJSONStringMetadata(metadata: Metadata, metadataKey: string
 //         for (const [crsKey, crsValue] of Object.entries(value || {})) {
 //           switch (crsKey) {
 //             case 'id':
-//               // prettier-ignore
+//               // biome-ignore format: preserve intentional fixture layout
 //               const crsId =
 //                 typeof crsValue === 'object'
 //                   ? // @ts-ignore

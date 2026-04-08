@@ -6,9 +6,9 @@ import test from 'tape-promise/tape';
 import type {Feature} from '@loaders.gl/schema';
 
 import {MLTLoader, MLTSource} from '@loaders.gl/mlt';
-import {getURLFromTemplate, isURLTemplate} from '../src/mlt-source';
+import {getURLFromTemplate} from '../src/mlt-source';
 
-test('MLTSource#testURL', (t) => {
+test('MLTSource#testURL', t => {
   t.true(MLTSource.testURL('https://server/{z}/{x}/{y}.mlt'));
   t.true(MLTSource.testURL('https://server/{z}/{x}/{-y}.mlt'));
   t.true(MLTSource.testURL('https://server/tiles-mlt/plain'));
@@ -16,7 +16,7 @@ test('MLTSource#testURL', (t) => {
   t.end();
 });
 
-test('MLTSource#getURLFromTemplate', (t) => {
+test('MLTSource#getURLFromTemplate', t => {
   t.is(
     getURLFromTemplate('https://server/{z}/{x}/{y}', 1, 2, 3, '.mlt'),
     'https://server/3/1/2.mlt'
@@ -37,7 +37,7 @@ test('MLTSource#getURLFromTemplate', (t) => {
   t.end();
 });
 
-test('MLTTileSource#getTileURL', (t) => {
+test('MLTTileSource#getTileURL', t => {
   const tmsSource = MLTSource.createDataSource('https://example.com/tiles', {});
   t.equal(tmsSource.getTileURL(1, 2, 3), 'https://example.com/tiles/3/1/2.mlt');
 
@@ -55,7 +55,7 @@ test('MLTTileSource#getTileURL', (t) => {
   t.end();
 });
 
-test('MLTTileSource#getTileData returns Feature[] by default', async (t) => {
+test('MLTTileSource#getTileData returns Feature[] by default', async t => {
   const feature = {
     type: 'Feature',
     geometry: {type: 'Point', coordinates: [0, 0]},
@@ -88,7 +88,7 @@ test('MLTTileSource#getTileData returns Feature[] by default', async (t) => {
   t.end();
 });
 
-test('MLTTileSource#supports table shape by converting to Feature[]', async (t) => {
+test('MLTTileSource#supports table shape by converting to Feature[]', async t => {
   const feature = {
     type: 'Feature',
     geometry: {type: 'Point', coordinates: [1, 2]},

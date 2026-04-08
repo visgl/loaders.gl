@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 
 import {_ArcGISImageServerSource as ArcGISImageServerSource} from '@loaders.gl/wms';
 
-test('ArcGISImageService#test cases', async (t) => {
+test('ArcGISImageService#test cases', async t => {
   t.ok(ArcGISImageServerSource);
   t.end();
 });

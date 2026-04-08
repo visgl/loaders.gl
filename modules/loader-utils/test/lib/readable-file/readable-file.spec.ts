@@ -9,7 +9,7 @@ import {
 
 const SLPK_URL = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
 
-test('ReadableFile#BlobFile range reads and stat', async (t) => {
+test('ReadableFile#BlobFile range reads and stat', async t => {
   const readableFile = createBrowserReadableFile(DATA_ARRAY.buffer);
 
   const size = await getReadableFileSize(readableFile);
@@ -26,7 +26,7 @@ test('ReadableFile#BlobFile range reads and stat', async (t) => {
 
 // Node-like coverage only executes when NodeFile is available
 if (!globalThis.window) {
-  test('ReadableFile#NodeFile range reads and stat', async (t) => {
+  test('ReadableFile#NodeFile range reads and stat', async t => {
     const readableFile = await createReadableFileFromPath(SLPK_URL);
     const stat = await readableFile.stat();
     t.ok(stat.size > 0, 'stat returns a size');
@@ -39,7 +39,7 @@ if (!globalThis.window) {
   });
 }
 
-test('ReadableFile#DataViewReadableFile supports slices', async (t) => {
+test('ReadableFile#DataViewReadableFile supports slices', async t => {
   const readableFile = await createReadableFileFromBuffer(DATA_ARRAY.buffer);
 
   const midSection = await readRange(readableFile, 2n, 6n);

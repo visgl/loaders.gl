@@ -46,7 +46,7 @@ export function parseXMLSync(text: string, options?: ParseXMLOptions): any {
 
     // Let's application specify keys that are always arrays
     isArray: (name: string, jpath: string, isLeafNode: boolean, isAttribute: boolean) => {
-      const array = Boolean(options?.arrayPaths?.some((path) => jpath === path));
+      const array = Boolean(options?.arrayPaths?.some(path => jpath === path));
       return array;
     },
 

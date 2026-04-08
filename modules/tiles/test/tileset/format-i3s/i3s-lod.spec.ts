@@ -16,7 +16,7 @@ import {
   VIEWPORT_ZOOM_OUT_OPTS
 } from '../../data/viewport-opts-examples';
 
-test('I3S LOD#lodJudge - should return "DIG" if lodMetric is 0 or NaN', async (t) => {
+test('I3S LOD#lodJudge - should return "DIG" if lodMetric is 0 or NaN', async t => {
   const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
@@ -37,7 +37,7 @@ test('I3S LOD#lodJudge - should return "DIG" if lodMetric is 0 or NaN', async (t
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "DRAW" if tile size projected on the screen plane less then LOD metric value', async (t) => {
+test('I3S LOD#lodJudge - should return "DRAW" if tile size projected on the screen plane less then LOD metric value', async t => {
   const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
@@ -52,7 +52,7 @@ test('I3S LOD#lodJudge - should return "DRAW" if tile size projected on the scre
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "DIG" when zoom in', async (t) => {
+test('I3S LOD#lodJudge - should return "DIG" when zoom in', async t => {
   const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
@@ -67,7 +67,7 @@ test('I3S LOD#lodJudge - should return "DIG" when zoom in', async (t) => {
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "DRAW" after rotation', async (t) => {
+test('I3S LOD#lodJudge - should return "DRAW" after rotation', async t => {
   const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
@@ -82,7 +82,7 @@ test('I3S LOD#lodJudge - should return "DRAW" after rotation', async (t) => {
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "OUT" if projected size too small', async (t) => {
+test('I3S LOD#lodJudge - should return "OUT" if projected size too small', async t => {
   const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);
@@ -97,7 +97,7 @@ test('I3S LOD#lodJudge - should return "OUT" if projected size too small', async
   t.end();
 });
 
-test('I3S LOD#lodJudge - should return "DIG" in the large LOD metric value case', async (t) => {
+test('I3S LOD#lodJudge - should return "DIG" in the large LOD metric value case', async t => {
   const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
   const tileset = new Tileset3D(tilesetHeader);

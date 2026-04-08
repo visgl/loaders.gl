@@ -6,7 +6,7 @@ import test from 'tape-promise/tape';
 import {Tile3DFeatureTable} from '@loaders.gl/3d-tiles';
 import {GL} from '@loaders.gl/math'; // '@math.gl/geometry';
 
-test('Tile3DFeatureTable#loads from JSON', (t) => {
+test('Tile3DFeatureTable#loads from JSON', t => {
   // @ts-expect-error
   const featureTable = new Tile3DFeatureTable({
     TEST: [0, 1, 2, 3, 4, 5]
@@ -21,7 +21,7 @@ test('Tile3DFeatureTable#loads from JSON', (t) => {
   t.end();
 });
 
-test('Tile3DFeatureTable#loads from binary', (t) => {
+test('Tile3DFeatureTable#loads from binary', t => {
   const featureTable = new Tile3DFeatureTable(
     {
       TEST: {

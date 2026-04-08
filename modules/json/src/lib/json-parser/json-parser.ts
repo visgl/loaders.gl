@@ -25,14 +25,14 @@ export default class JSONParser {
         this.currentState.container.length = 0;
       },
 
-      onopenobject: (name) => {
+      onopenobject: name => {
         this._openObject({});
         if (typeof name !== 'undefined') {
           this.parser.emit('onkey', name);
         }
       },
 
-      onkey: (name) => {
+      onkey: name => {
         this.jsonpath.set(name);
         this.currentState.key = name;
       },
@@ -49,11 +49,11 @@ export default class JSONParser {
         this._closeArray();
       },
 
-      onvalue: (value) => {
+      onvalue: value => {
         this._pushOrSet(value);
       },
 
-      onerror: (error) => {
+      onerror: error => {
         throw error;
       },
 

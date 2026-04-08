@@ -4,13 +4,13 @@ import {SLPKLoader} from '../src';
 
 const SLPKUrl = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
 
-test('SLPKLoader#slpk load', async (t) => {
+test('SLPKLoader#slpk load', async t => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {slpk: {path: 'nodepages/0.json'}});
   t.deepEqual(uncompressedFile.byteLength, 16153, 'SLPK nodepage has the correct length');
   t.end();
 });
 
-test('SLPKLoader#slpk load error', async (t) => {
+test('SLPKLoader#slpk load error', async t => {
   try {
     await load(SLPKUrl, SLPKLoader, {slpk: {path: 'nodepages/5.json'}});
     t.fail('error should be thrown');
@@ -20,7 +20,7 @@ test('SLPKLoader#slpk load error', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#slpk load http nodepage', async (t) => {
+test('SLPKLoader#slpk load http nodepage', async t => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodepages/0',
@@ -31,13 +31,13 @@ test('SLPKLoader#slpk load http nodepage', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#slpk load http layer', async (t) => {
+test('SLPKLoader#slpk load http layer', async t => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {slpk: {path: '', pathMode: 'http'}});
   t.deepEqual(uncompressedFile.byteLength, 4780);
   t.end();
 });
 
-test('SLPKLoader#slpk load http node', async (t) => {
+test('SLPKLoader#slpk load http node', async t => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodes/0',
@@ -48,7 +48,7 @@ test('SLPKLoader#slpk load http node', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#slpk load http geometry', async (t) => {
+test('SLPKLoader#slpk load http geometry', async t => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodes/0/geometries/0',
@@ -59,7 +59,7 @@ test('SLPKLoader#slpk load http geometry', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#slpk load http attributes', async (t) => {
+test('SLPKLoader#slpk load http attributes', async t => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodes/2/attributes/f_2/0',
@@ -70,7 +70,7 @@ test('SLPKLoader#slpk load http attributes', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#slpk load http statistics', async (t) => {
+test('SLPKLoader#slpk load http statistics', async t => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'statistics/f_3/0',
@@ -81,7 +81,7 @@ test('SLPKLoader#slpk load http statistics', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#slpk load http shared', async (t) => {
+test('SLPKLoader#slpk load http shared', async t => {
   const uncompressedFile = await load(SLPKUrl, SLPKLoader, {
     slpk: {
       path: 'nodes/2/shared',

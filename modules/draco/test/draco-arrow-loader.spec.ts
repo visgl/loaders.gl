@@ -13,12 +13,12 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('DracoArrowLoader#loader conformance', (t) => {
+test('DracoArrowLoader#loader conformance', t => {
   validateLoader(t, DracoArrowLoader, 'DracoArrowLoader');
   t.end();
 });
 
-test('DracoArrowLoader#parse(mainthread)', async (t) => {
+test('DracoArrowLoader#parse(mainthread)', async t => {
   const table = await load(BUNNY_DRC_URL, DracoArrowLoader, {worker: false});
   // validateMeshCategoryData(t, data);
   const {data} = table;
@@ -29,7 +29,7 @@ test('DracoArrowLoader#parse(mainthread)', async (t) => {
   t.end();
 });
 
-test('DracoArrowLoader#draco3d npm package', async (t) => {
+test('DracoArrowLoader#draco3d npm package', async t => {
   const table = await load(BUNNY_DRC_URL, DracoArrowLoader, {
     worker: false,
     modules: {
@@ -42,7 +42,7 @@ test('DracoArrowLoader#draco3d npm package', async (t) => {
   t.end();
 });
 
-test('DracoArrowLoader#parse custom attributes(mainthread)', async (t) => {
+test('DracoArrowLoader#parse custom attributes(mainthread)', async t => {
   let table = await load(CESIUM_TILE_URL, DracoArrowLoader, {
     worker: false
   });

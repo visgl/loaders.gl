@@ -6,12 +6,12 @@ export async function cleanUpPath(testPath) {
   if (!isBrowser) {
     try {
       await fs.rm(testPath, {recursive: true});
-    } catch (e) {
+    } catch (_e) {
       // Do nothing
     }
     try {
       await fs.unlink(`${testPath}.slpk`);
-    } catch (e) {
+    } catch (_e) {
       // Do nothing
     }
   }
@@ -21,7 +21,7 @@ export async function isFileExists(filePath) {
   let result = true;
   try {
     await fs.access(filePath, constants.R_OK);
-  } catch (e) {
+  } catch (_e) {
     result = false;
   }
   return result;

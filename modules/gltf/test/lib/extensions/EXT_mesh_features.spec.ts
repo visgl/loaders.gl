@@ -172,7 +172,7 @@ const getGltfWithExtension = () => ({
   }
 });
 
-test('gltf#EXT_mesh_features - Should decode', async (t) => {
+test('gltf#EXT_mesh_features - Should decode', async t => {
   const options = {gltf: {loadImages: true, loadBuffers: true}};
   const gltf = getGltfWithExtension();
   gltf.buffers[0].arrayBuffer = new Uint8Array(binaryBufferDataAlligned).buffer;
@@ -210,7 +210,7 @@ const PRIMITIVE_EXPECTED = {
   }
 };
 
-test('gltf#EXT_mesh_features - Should encode featureIDs', (t) => {
+test('gltf#EXT_mesh_features - Should encode featureIDs', t => {
   const gltf = getGltfWithExtension();
   gltf.buffers[0].arrayBuffer = new Uint8Array(binaryBufferDataAlligned).buffer;
 
@@ -282,7 +282,7 @@ const BUFFER_ROUNDTRIP_EXPECTED = new Uint8Array(
   binaryBufferData.concat([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0])
 ).buffer;
 
-test('gltf#EXT_mesh_features - Roundtrip encode/decode', async (t) => {
+test('gltf#EXT_mesh_features - Roundtrip encode/decode', async t => {
   const options = {gltf: {loadImages: true, loadBuffers: true}};
   const gltf = getGltfWithExtension();
   gltf.buffers[0].arrayBuffer = new Uint8Array(binaryBufferDataAlligned).buffer;

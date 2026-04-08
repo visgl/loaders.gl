@@ -180,8 +180,8 @@ async function parseRawArrowCSVTextWithPapa(
   const listType = new arrow.List(new arrow.Field('item', new arrow.Utf8(), true));
 
   for (const columnName of columnNames) {
-    const columnValues = rows.map((row) => row[columnName]);
-    const hasListValues = columnValues.some((value) => Array.isArray(value));
+    const columnValues = rows.map(row => row[columnName]);
+    const hasListValues = columnValues.some(value => Array.isArray(value));
     columns[columnName] = hasListValues
       ? arrow.vectorFromArray(columnValues.map(getRawArrowListValue), listType)
       : arrow.vectorFromArray(columnValues.map(getRawArrowStringValue), new arrow.Utf8());
@@ -203,11 +203,11 @@ function getPapaCompatibleColumnNames(
     includeParsedExtra: boolean;
   }
 ): string[] {
-  const columnNames = fields.map((field) => field.name);
+  const columnNames = fields.map(field => field.name);
 
   if (
     options.includeParsedExtra &&
-    rows.some((row) => Array.isArray(row.__parsed_extra)) &&
+    rows.some(row => Array.isArray(row.__parsed_extra)) &&
     !columnNames.includes('__parsed_extra')
   ) {
     columnNames.push('__parsed_extra');
@@ -400,7 +400,7 @@ function shouldUsePapaCompatibleSkipEmptyLines(csvOptions: CSVRawArrowOptions): 
 
 /** Returns whether a Papa-parsed first row looks like a header row. */
 function isHeaderRow(row: string[], dynamicTyping: boolean): boolean {
-  return row && row.every((value) => isHeaderValue(value, dynamicTyping));
+  return row && row.every(value => isHeaderValue(value, dynamicTyping));
 }
 
 /** Returns whether a first-row value should be treated as a Papa-style header cell. */
@@ -422,7 +422,7 @@ function isHeaderValue(value: string, dynamicTyping: boolean): boolean {
 /** Creates a transformer that appends suffixes to repeated column names. */
 function createDuplicateColumnTransformer(): (column: string) => string {
   const observedColumns = new Set<string>();
-  return (columnName) => {
+  return columnName => {
     let currentColumnName = columnName;
     let duplicateCounter = 1;
     while (observedColumns.has(currentColumnName)) {
@@ -446,7 +446,7 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
 /** Creates a loaders.gl schema with nullable Utf8 fields. */
 function createUtf8Schema(headerRow: string[]): Schema {
   return {
-    fields: headerRow.map((columnName) => ({name: columnName, type: 'utf8', nullable: true})),
+    fields: headerRow.map(columnName => ({name: columnName, type: 'utf8', nullable: true})),
     metadata: {
       'loaders.gl#format': 'csv',
       'loaders.gl#loader': 'CSVArrowLoader'

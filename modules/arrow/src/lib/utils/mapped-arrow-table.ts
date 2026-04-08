@@ -246,7 +246,7 @@ function getSortedMappedEntries<T extends arrow.TypeMap>(
   const rowIndexes = Array.from({length: table.numRows}, (_, rowIndex) => rowIndex);
   rowIndexes.sort((leftRowIndex, rightRowIndex) => compare(table, leftRowIndex, rightRowIndex));
 
-  return rowIndexes.map((rowIndex) => [table.rowKeys[rowIndex], table.indexes[rowIndex]] as const);
+  return rowIndexes.map(rowIndex => [table.rowKeys[rowIndex], table.indexes[rowIndex]] as const);
 }
 
 /**

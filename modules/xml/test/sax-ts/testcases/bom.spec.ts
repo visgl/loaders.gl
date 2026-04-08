@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
 // BOM at the very beginning of the stream should be ignored
-test('SAXParser#bom', (t) => {
+test('SAXParser#bom', t => {
   testSax(t, {
     xml: '\uFEFF<P></P>',
     expect: [

@@ -16,7 +16,7 @@ export class ArrowLikeSchema {
     // checkNames(fields);
     // For kepler fields, create arrow compatible `Fields` that have kepler fields as `metadata`
     this.fields = fields.map(
-      (field) => new ArrowLikeField(field.name, field.type, field.nullable, field.metadata)
+      field => new ArrowLikeField(field.name, field.type, field.nullable, field.metadata)
     );
     this.metadata =
       metadata instanceof Map ? metadata : new Map<string, string>(Object.entries(metadata));
@@ -44,13 +44,13 @@ export class ArrowLikeSchema {
     for (const name of columnNames) {
       nameMap[name] = true;
     }
-    const selectedFields = this.fields.filter((field) => nameMap[field.name]);
+    const selectedFields = this.fields.filter(field => nameMap[field.name]);
     return new ArrowLikeSchema(selectedFields, this.metadata);
   }
 
   selectAt(...columnIndices: number[]): ArrowLikeSchema {
     // Ensure column indices reference valid fields
-    const selectedFields = columnIndices.map((index) => this.fields[index]).filter(Boolean);
+    const selectedFields = columnIndices.map(index => this.fields[index]).filter(Boolean);
     return new ArrowLikeSchema(selectedFields, this.metadata);
   }
 

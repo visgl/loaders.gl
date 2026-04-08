@@ -17,7 +17,7 @@ const MONTREAL_TILE_CONTENT =
 const MONTREAL_CONTENT_LOADER_OPTIONS =
   '@loaders.gl/i3s/test/data/Montreal_3DObjects_subset_1_v17_ktx2/i3s-content-loader-options.json';
 
-test('ParseI3sTileContent#should parse tile content', async (t) => {
+test('ParseI3sTileContent#should parse tile content', async t => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -43,7 +43,7 @@ test('ParseI3sTileContent#should parse tile content', async (t) => {
   t.end();
 });
 
-test('ParseI3sTileContent#should load "dds" texture if it is supported', async (t) => {
+test('ParseI3sTileContent#should load "dds" texture if it is supported', async t => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -71,7 +71,7 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async (
   t.end();
 });
 
-test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async (t) => {
+test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async t => {
   const response = await fetchFile(MONTREAL_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(MONTREAL_CONTENT_LOADER_OPTIONS);
@@ -86,7 +86,7 @@ test('ParseI3sTileContent#should decode "ktx2" texture with basis loader', async
   t.end();
 });
 
-test('ParseI3sTileContent#should make PBR material', async (t) => {
+test('ParseI3sTileContent#should make PBR material', async t => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -126,7 +126,7 @@ test('ParseI3sTileContent#should make PBR material', async (t) => {
   t.end();
 });
 
-test('ParseI3sTileContent#should have featureIds', async (t) => {
+test('ParseI3sTileContent#should have featureIds', async t => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -145,7 +145,7 @@ test('ParseI3sTileContent#should have featureIds', async (t) => {
   t.end();
 });
 
-test('ParseI3sTileContent#should generate mbs from obb', async (t) => {
+test('ParseI3sTileContent#should generate mbs from obb', async t => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -155,7 +155,7 @@ test('ParseI3sTileContent#should generate mbs from obb', async (t) => {
   t.end();
 });
 
-test('ParseI3sTileContent#should not decode the texture image if "decodeTextures" === false', async (t) => {
+test('ParseI3sTileContent#should not decode the texture image if "decodeTextures" === false', async t => {
   const tileset = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(tileset, TEST_LAYER_URL, {});
   const tile = await i3SNodePagesTiles.formTileFromNodePages(1);
@@ -200,7 +200,7 @@ test('ParseI3sTileContent#should not decode the texture image if "decodeTextures
   t.end();
 });
 
-test('ParseI3sTileContent#should colorize by attribute', async (t) => {
+test('ParseI3sTileContent#should colorize by attribute', async t => {
   const response = await fetchFile(NEW_YORK_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);
@@ -227,7 +227,7 @@ test('ParseI3sTileContent#should colorize by attribute', async (t) => {
   t.end();
 });
 
-test('ParseI3sTileContent#should colorize by attribute using mutiplying colors', async (t) => {
+test('ParseI3sTileContent#should colorize by attribute using mutiplying colors', async t => {
   const response = await fetchFile(NEW_YORK_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);

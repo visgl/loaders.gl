@@ -4,7 +4,7 @@ import {createReadableFileFromBuffer, loadArrayBufferFromFile} from 'test/utils/
 
 const TEST_URL = '@loaders.gl/3d-tiles/test/data/test.3tz';
 
-test('parse3DTilesArchive#ReadableFile - file extraction', async (t) => {
+test('parse3DTilesArchive#ReadableFile - file extraction', async t => {
   const arrayBuffer = await loadArrayBufferFromFile(TEST_URL);
   const archive = await parse3DTilesArchive(await createReadableFileFromBuffer(arrayBuffer));
 

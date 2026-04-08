@@ -47,12 +47,12 @@ async function loadBunny() {
   return await parse(arrayBuffer, DracoLoader);
 }
 
-test('DracoWriter#loader conformance', (t) => {
+test('DracoWriter#loader conformance', t => {
   validateWriter(t, DracoWriter, 'DracoWriter');
   t.end();
 });
 
-test('DracoWriter#encode(bunny.drc)', async (t) => {
+test('DracoWriter#encode(bunny.drc)', async t => {
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -99,7 +99,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
  * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
  * [Error: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' failed to load.
  */
-test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
+test.skip('DracoWriter#Worker$encode(bunny.drc)', async t => {
   if (!isBrowser) {
     t.end();
     return;
@@ -148,7 +148,7 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
+test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -202,7 +202,7 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
+test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -253,7 +253,7 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#encode(bunny.drc)', async (t) => {
+test('DracoWriter#encode(bunny.drc)', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -291,7 +291,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async (t) => {
+test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -333,7 +333,7 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
   t.end();
 });
 
-test('DracoWriter#geometry metadata', async (t) => {
+test('DracoWriter#geometry metadata', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -393,7 +393,7 @@ test('DracoWriter#geometry metadata', async (t) => {
   t.end();
 });
 
-test('DracoWriter#attributes metadata', async (t) => {
+test('DracoWriter#attributes metadata', async t => {
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -448,7 +448,7 @@ test('DracoWriter#attributes metadata', async (t) => {
   t.end();
 });
 
-test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async (t) => {
+test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async t => {
   const data = await loadBunny();
   const attributes = {
     POSITION: data.attributes.POSITION.value,

@@ -46,7 +46,7 @@ export function parseArrowInBatches(
       for await (const recordBatch of reader) {
         // use options.batchDebounceMs to add a delay between batches if needed (use case: incremental loading)
         if (options?.arrow?.batchDebounceMs !== undefined && options?.arrow?.batchDebounceMs > 0) {
-          await new Promise((resolve) => setTimeout(resolve, options.arrow?.batchDebounceMs || 0));
+          await new Promise(resolve => setTimeout(resolve, options.arrow?.batchDebounceMs || 0));
         }
         const arrowTabledBatch: ArrowTableBatch = {
           shape: 'arrow-table',

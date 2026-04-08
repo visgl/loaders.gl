@@ -12,7 +12,7 @@ import {areNumberArraysEqual} from '../../utils/compareArrays';
 const FRANKFURT_B3DM_FILE_PATH =
   '@loaders.gl/tile-converter/data/Frankfurt/L5/OF/474_5548_-1_lv5_group_0.osgb_3.b3dm';
 
-test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent without images', async (t) => {
+test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent without images', async t => {
   const tileContent = {
     gltf: {
       materials: [{id: 'one', alphaMode: 'OPAQUE'}],
@@ -103,7 +103,7 @@ test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate a
   t.end();
 });
 
-test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent with images', async (t) => {
+test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate attributes object from tileContent with images', async t => {
   const tileContent = {
     gltf: {
       materials: [{id: 'one', alphaMode: 'OPAQUE'}],
@@ -236,7 +236,7 @@ test('tile-converter(i3s)#prepareDataForAttributesConversion - Should generate a
 });
 
 // TODO app breakout
-test.skip('tile-converter(i3s)#calculateTransformProps', async (t) => {
+test.skip('tile-converter(i3s)#calculateTransformProps', async t => {
   const tileContent = await load(FRANKFURT_B3DM_FILE_PATH, Tiles3DLoader);
   const tileTransform = new Matrix4([
     1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4055182.44018, 615965.038498, 4867494.346586, 1

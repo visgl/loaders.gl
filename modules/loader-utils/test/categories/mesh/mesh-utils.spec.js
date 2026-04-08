@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
 
-test('getMeshBoundingBox', (t) => {
+test('getMeshBoundingBox', t => {
   // @ts-ignore
   t.is(getMeshBoundingBox(null), null, 'does not crash with invalid input');
   t.is(getMeshBoundingBox({}), null, 'does not crash with invalid input');

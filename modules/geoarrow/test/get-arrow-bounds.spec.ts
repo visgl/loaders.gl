@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 import {updateBoundsFromGeoArrowSamples} from '@loaders.gl/geoarrow';
 
 // fix a bug that map bounds are not updated correctly from arrow samples
-test('ArrowUtils#updateBoundsFromGeoArrowSamples', (t) => {
+test('ArrowUtils#updateBoundsFromGeoArrowSamples', t => {
   const testCases = [
     {
       coords: [0, 0, 1, 1, 2, 2],
@@ -35,7 +35,7 @@ test('ArrowUtils#updateBoundsFromGeoArrowSamples', (t) => {
     }
   ];
 
-  testCases.forEach((testCase) => {
+  testCases.forEach(testCase => {
     const initBound: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
 
     const updatedBound = updateBoundsFromGeoArrowSamples(

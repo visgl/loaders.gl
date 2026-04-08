@@ -15,13 +15,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('QuantizedMeshLoader#loader objects', async (t) => {
+test('QuantizedMeshLoader#loader objects', async t => {
   validateLoader(t, QuantizedMeshLoader, 'QuantizedMeshLoader');
   validateLoader(t, QuantizedMeshWorkerLoader, 'QuantizedMeshWorkerLoader');
   t.end();
 });
 
-test('QuantizedMeshLoader#parse tile-with-extensions', async (t) => {
+test('QuantizedMeshLoader#parse tile-with-extensions', async t => {
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader);
   validateMeshCategoryData(t, data); // TODO: should there be a validateMeshCategoryData?
 
@@ -39,7 +39,7 @@ test('QuantizedMeshLoader#parse tile-with-extensions', async (t) => {
   t.end();
 });
 
-test('QuantizedMeshLoader#add skirt to tile-with-extensions', async (t) => {
+test('QuantizedMeshLoader#add skirt to tile-with-extensions', async t => {
   const options = {'quantized-mesh': {skirtHeight: 50}};
   const data = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, options);
   t.equal(data.indices.value.length, 1329 * 3, 'indices was found');
@@ -48,7 +48,7 @@ test('QuantizedMeshLoader#add skirt to tile-with-extensions', async (t) => {
   t.end();
 });
 
-test('QuantizedMeshWorkerLoader#tile-with-extensions', async (t) => {
+test('QuantizedMeshWorkerLoader#tile-with-extensions', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

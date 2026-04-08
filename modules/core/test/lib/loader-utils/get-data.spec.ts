@@ -17,7 +17,7 @@ const BinaryLoader = {
   binary: true
 };
 
-test('parseWithLoader#getArrayBufferOrStringFromDataSync', (t) => {
+test('parseWithLoader#getArrayBufferOrStringFromDataSync', t => {
   const string = 'line 1\nline 2';
   const buffer = new TextEncoder().encode(string);
 
@@ -35,7 +35,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync', (t) => {
   t.end();
 });
 
-test('parseWithLoader#getArrayBufferOrStringFromDataSync(ArrayBufferLike)', (t) => {
+test('parseWithLoader#getArrayBufferOrStringFromDataSync(ArrayBufferLike)', t => {
   if (typeof SharedArrayBuffer === 'undefined') {
     t.comment('SharedArrayBuffer unavailable in environment');
     t.end();
@@ -59,7 +59,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(ArrayBufferLike)', (t) 
   t.end();
 });
 
-test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays)', (t) => {
+test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays)', t => {
   const string = 'line 1\nline 2';
   const embeddedString = `}}}${string}{{{`;
 
@@ -118,7 +118,7 @@ test('parseWithLoader#getArrayBufferOrStringFromDataSync(embedded arrays)', (t) 
 //   t.end();
 // });
 
-test('parseWithLoader#getAsyncIterableFromData', async (t) => {
+test('parseWithLoader#getAsyncIterableFromData', async t => {
   const TESTS = [
     new Float32Array([1, 2, 3]).buffer,
     new DataView(new Uint8Array([1, 2, 3, 4]).buffer),
@@ -139,7 +139,7 @@ test('parseWithLoader#getAsyncIterableFromData', async (t) => {
   t.end();
 });
 
-test('parseWithLoader#getArrayBufferOrStringFromData(SharedArrayBuffer iterables)', async (t) => {
+test('parseWithLoader#getArrayBufferOrStringFromData(SharedArrayBuffer iterables)', async t => {
   if (typeof SharedArrayBuffer === 'undefined') {
     t.comment('SharedArrayBuffer unavailable in environment');
     t.end();

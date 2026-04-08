@@ -9,11 +9,11 @@ const inputData = {
   }
 };
 
-test('tile-converter(i3s)#json transform - should fill input data into the template', async (t) => {
+test('tile-converter(i3s)#json transform - should fill input data into the template', async t => {
   const template = {
     b: {
       path: 'b',
-      transform: (val) => `${val.ba} - ${val.bb}`
+      transform: val => `${val.ba} - ${val.bb}`
     }
   };
   const result = transform(inputData, template);
@@ -23,11 +23,11 @@ test('tile-converter(i3s)#json transform - should fill input data into the templ
   t.end();
 });
 
-test('tile-converter(i3s)#json transform - should fill the result object with the default value in absense of a corresponding value', async (t) => {
+test('tile-converter(i3s)#json transform - should fill the result object with the default value in absense of a corresponding value', async t => {
   const template = {
     b: {
       path: 'b',
-      transform: (val) => `${val.ba} - ${val.bb}`
+      transform: val => `${val.ba} - ${val.bb}`
     },
     d: {
       path: 'd',

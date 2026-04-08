@@ -16,12 +16,12 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('PCDArrowLoader#loader conformance', (t) => {
+test('PCDArrowLoader#loader conformance', t => {
   validateLoader(t, PCDArrowLoader, 'PCDArrowLoader');
   t.end();
 });
 
-test('PCDArrowLoader#parse(text)', async (t) => {
+test('PCDArrowLoader#parse(text)', async t => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDArrowLoader);
 
   // TODO - validate arrow mesh category data?
@@ -34,14 +34,14 @@ test('PCDArrowLoader#parse(text)', async (t) => {
 
   t.equal(data.numRows, 639 / 3, 'table has 213 points');
 
-  const positionField = arrowTable.schema?.fields.find((field) => field.name === 'POSITION');
+  const positionField = arrowTable.schema?.fields.find(field => field.name === 'POSITION');
   // @ts-expect-error
   t.equal(positionField?.type?.listSize, 3, 'position column size correct');
   // @ts-expect-error
   t.equal(positionField?.type?.children[0]?.type, 'float32', 'position column type correct');
   // t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
 
-  const colorField = arrowTable.schema?.fields.find((field) => field.name === 'COLOR_0');
+  const colorField = arrowTable.schema?.fields.find(field => field.name === 'COLOR_0');
   // @ts-expect-error
   t.equal(colorField?.type?.listSize, 3, 'color column size correct');
   // @ts-expect-error

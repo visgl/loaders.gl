@@ -23,7 +23,7 @@ export function encodeValues(
     case 'INT32':
     case 'INT64':
       // tslint:disable-next-line:no-parameter-reassignment
-      values = values.map((x) => parseInt(x, 10));
+      values = values.map(x => parseInt(x, 10));
       break;
 
     default:

@@ -79,7 +79,7 @@ function getOperation(operation: string): 'compress' | 'decompress' {
 }
 
 function getCompression(name: string) {
-  const Compression = COMPRESSIONS.find((compression_) => name === compression_.name);
+  const Compression = COMPRESSIONS.find(compression_ => name === compression_.name);
   if (!Compression) {
     throw new Error(`@loaders.gl/compression: Unsupported compression ${name}`);
   }

@@ -7,7 +7,7 @@ import draco3d from 'draco3d';
 
 import {loadDracoDecoderModule, loadDracoEncoderModule} from '../src/lib/draco-module-loader';
 
-test('draco-module-loader#uses injected decoder module', async (t) => {
+test('draco-module-loader#uses injected decoder module', async t => {
   const module = await loadDracoDecoderModule(
     {
       modules: {
@@ -21,7 +21,7 @@ test('draco-module-loader#uses injected decoder module', async (t) => {
   t.end();
 });
 
-test('draco-module-loader#uses injected encoder module', async (t) => {
+test('draco-module-loader#uses injected encoder module', async t => {
   const module = await loadDracoEncoderModule({
     modules: {
       draco3d

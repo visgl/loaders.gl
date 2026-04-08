@@ -13,13 +13,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('DracoLoader#loader conformance', (t) => {
+test('DracoLoader#loader conformance', t => {
   validateLoader(t, DracoLoader, 'DracoLoader');
   validateLoader(t, DracoWorkerLoader, 'DracoWorkerLoader');
   t.end();
 });
 
-test('DracoLoader#parse(mainthread)', async (t) => {
+test('DracoLoader#parse(mainthread)', async t => {
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
     core: {worker: false}
   });
@@ -29,7 +29,7 @@ test('DracoLoader#parse(mainthread)', async (t) => {
   t.end();
 });
 
-test('DracoLoader#draco3d npm package', async (t) => {
+test('DracoLoader#draco3d npm package', async t => {
   const data = await load(BUNNY_DRC_URL, DracoLoader, {
     core: {worker: false},
     modules: {draco3d}
@@ -39,7 +39,7 @@ test('DracoLoader#draco3d npm package', async (t) => {
   t.end();
 });
 
-test('DracoLoader#parse custom attributes(mainthread)', async (t) => {
+test('DracoLoader#parse custom attributes(mainthread)', async t => {
   let data = await load(CESIUM_TILE_URL, DracoLoader, {
     core: {worker: false}
   });
@@ -73,7 +73,7 @@ test('DracoLoader#parse custom attributes(mainthread)', async (t) => {
   t.end();
 });
 
-test('DracoWorkerLoader#parse', async (t) => {
+test('DracoWorkerLoader#parse', async t => {
   const data = await load(BUNNY_DRC_URL, DracoWorkerLoader, {_nodeWorkers: true});
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');

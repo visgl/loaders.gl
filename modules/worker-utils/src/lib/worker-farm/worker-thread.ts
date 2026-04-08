@@ -45,7 +45,7 @@ export default class WorkerThread {
     this.source = source;
     this.url = url;
     this.onMessage = NOOP;
-    this.onError = (error) => console.log(error); // eslint-disable-line
+    this.onError = error => console.log(error); // eslint-disable-line
 
     this.worker = isBrowser ? this._createBrowserWorker() : this._createNodeWorker();
   }
@@ -106,7 +106,7 @@ export default class WorkerThread {
     this._loadableURL = getLoadableWorkerURL({source: this.source, url: this.url});
     const worker = new Worker(this._loadableURL, {name: this.name});
 
-    worker.onmessage = (event) => {
+    worker.onmessage = event => {
       if (!event.data) {
         this.onError(new Error('No data received'));
       } else {
@@ -119,7 +119,7 @@ export default class WorkerThread {
       this.terminated = true;
     };
     // TODO - not clear when this would be called, for now just log in case it happens
-    worker.onmessageerror = (event) => console.error(event); // eslint-disable-line
+    worker.onmessageerror = event => console.error(event); // eslint-disable-line
 
     return worker;
   }
@@ -143,14 +143,14 @@ export default class WorkerThread {
     } else {
       throw new Error('no worker');
     }
-    worker.on('message', (data) => {
+    worker.on('message', data => {
       // console.error('message', data);
       this.onMessage(data);
     });
-    worker.on('error', (error) => {
+    worker.on('error', error => {
       this.onError(error as Error);
     });
-    worker.on('exit', (code) => {
+    worker.on('exit', _code => {
       // console.error('exit', code);
     });
     return worker;

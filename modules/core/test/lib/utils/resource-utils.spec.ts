@@ -13,7 +13,7 @@ import {
 const DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';
 
-test('getResourceUrl', (t) => {
+test('getResourceUrl', t => {
   const blob = new Blob(['abc'], {type: 'application/text'});
   const file = new File(['abc'], 'filename.csv', {type: 'text/csv'});
   const response = new Response(new Blob(['abc']), {
@@ -35,7 +35,7 @@ test('getResourceUrl', (t) => {
   t.end();
 });
 
-test('getResourceMIMEType', (t) => {
+test('getResourceMIMEType', t => {
   const blob = new Blob(['abc'], {type: 'application/text'});
   const file = new File(['abc'], 'filename.csv', {type: 'text/csv'});
   const response = new Response(new Blob(['abc']), {
@@ -57,7 +57,7 @@ test('getResourceMIMEType', (t) => {
   t.end();
 });
 
-test('getResourceContentLength', (t) => {
+test('getResourceContentLength', t => {
   t.equal(getResourceContentLength(new ArrayBuffer(3)), 3);
   t.equal(getResourceContentLength('abc'), 3);
 

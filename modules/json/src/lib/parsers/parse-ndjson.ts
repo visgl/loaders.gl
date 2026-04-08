@@ -10,7 +10,7 @@ export function parseNDJSONSync(ndjsonText: string): ArrayRowTable | ObjectRowTa
   const parsedLines = lines.map((line, counter) => {
     try {
       return JSON.parse(line);
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`NDJSONLoader: failed to parse JSON on line ${counter + 1}`);
     }
   });

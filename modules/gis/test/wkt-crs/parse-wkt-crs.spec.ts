@@ -7,11 +7,11 @@ import test from 'tape-promise/tape';
 import {parseSync, encodeTextSync} from '@loaders.gl/core';
 import {WKTCRSLoader, WKTCRSWriter} from '@loaders.gl/wkt';
 
-const roundtrip = (wkt) => encodeTextSync(parseSync(wkt, WKTCRSLoader, {raw: true}), WKTCRSWriter);
+const roundtrip = wkt => encodeTextSync(parseSync(wkt, WKTCRSLoader, {raw: true}), WKTCRSWriter);
 
-const condense = (wkt) => wkt.trim().replace(/(?<=[,\[\]])[ \n]+/g, '');
+const condense = wkt => wkt.trim().replace(/(?<=[,\[\]])[ \n]+/g, '');
 
-test('parseWKTCRS#NAD27 / UTM zone 16N', (t) => {
+test('parseWKTCRS#NAD27 / UTM zone 16N', t => {
   const wkt =
     'PROJCS["NAD27 / UTM zone 16N",GEOGCS["NAD27",DATUM["North_American_Datum_1927",SPHEROID["Clarke 1866",6378206.4,294.9786982139006,AUTHORITY["EPSG","7008"]],AUTHORITY["EPSG","6267"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4267"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-87],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","26716"]]';
   const data = parseSync(wkt, WKTCRSLoader, {raw: false, debug: false});
@@ -28,7 +28,7 @@ test('parseWKTCRS#NAD27 / UTM zone 16N', (t) => {
   t.end();
 });
 
-test('parseWKTCRS#wikipedia example', (t) => {
+test('parseWKTCRS#wikipedia example', t => {
   const wkt = `GEODCRS["WGS 84",
   DATUM["World Geodetic System 1984",
     ELLIPSOID["WGS 84", 6378137, 298.257223563, LENGTHUNIT["metre", 1]]],
@@ -45,7 +45,7 @@ test('parseWKTCRS#wikipedia example', (t) => {
   t.end();
 });
 
-test.skip('parseWKTCRS#wikipedia raw', (t) => {
+test.skip('parseWKTCRS#wikipedia raw', t => {
   const wkt = `GEODCRS["WGS 84",
   DATUM["World Geodetic System 1984",
     ELLIPSOID["WGS 84", 6378137, 298.257223563, LENGTHUNIT["metre", 1]]],
@@ -62,7 +62,7 @@ test.skip('parseWKTCRS#wikipedia raw', (t) => {
   t.end();
 });
 
-test('parseWKTCRS#wikipedia concat', (t) => {
+test('parseWKTCRS#wikipedia concat', t => {
   const wkt = `
     CONCAT_MT[
       PARAM_MT["Mercator_2SP",
@@ -86,7 +86,7 @@ test('parseWKTCRS#wikipedia concat', (t) => {
   t.end();
 });
 
-test.skip('parseWKTCRS#wikipedia datum shift', (t) => {
+test.skip('parseWKTCRS#wikipedia datum shift', t => {
   const wkt = `
   COORDINATEOPERATION["AGD84 to GDA94 Auslig 5m",
   SOURCECRS["…full CRS definition required here but omitted for brevity…"],
@@ -110,7 +110,7 @@ test.skip('parseWKTCRS#wikipedia datum shift', (t) => {
   t.end();
 });
 
-test('parseWKTCRS#proj4js example', (t) => {
+test('parseWKTCRS#proj4js example', t => {
   const wkt =
     'PROJCS["NAD83 / Massachusetts Mainland",GEOGCS["NAD83",DATUM["North_American_Datum_1983",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],AUTHORITY["EPSG","6269"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4269"]],UNIT["metre",1,AUTHORITY["EPSG","9001"]],PROJECTION["Lambert_Conformal_Conic_2SP"],PARAMETER["standard_parallel_1",42.68333333333333],PARAMETER["standard_parallel_2",41.71666666666667],PARAMETER["latitude_of_origin",41],PARAMETER["central_meridian",-71.5],PARAMETER["false_easting",200000],PARAMETER["false_northing",750000],AUTHORITY["EPSG","26986"],AXIS["X",EAST],AXIS["Y",NORTH]]';
   const data = parseSync(wkt, WKTCRSLoader);
@@ -118,14 +118,14 @@ test('parseWKTCRS#proj4js example', (t) => {
   t.end();
 });
 
-test('parseWKTCRS#parse attribute that ends in number (TOWGS84)', (t) => {
+test('parseWKTCRS#parse attribute that ends in number (TOWGS84)', t => {
   const wkt =
     ' GEOGCS["SAD69",DATUM["South_American_Datum_1969",SPHEROID["GRS 1967 Modified",6378160,298.25,AUTHORITY["EPSG","7050"]],TOWGS84[-57,1,-41,0,0,0,0],AUTHORITY["EPSG","6618"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4618"]]';
   t.deepEqual(roundtrip(wkt), condense(wkt));
   t.end();
 });
 
-test.skip('parseWKTCRS#another parse bug', (t) => {
+test.skip('parseWKTCRS#another parse bug', t => {
   const wkt =
     'PROJCS["ETRS89 / TM35FIN(E,N)",GEOGCS["ETRS89",DATUM["European_Terrestrial_Reference_System_1989",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY["EPSG","6258"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4258"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",27],PARAMETER["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","3067"]]';
   const data = parseSync(wkt, WKTCRSLoader, {debug: false});
@@ -168,7 +168,7 @@ test.skip('parseWKTCRS#another parse bug', (t) => {
 //  t.end();
 // });
 
-test.skip('parseWKTCRS#sort parameters', (t) => {
+test.skip('parseWKTCRS#sort parameters', t => {
   const wkt =
     'PROJCS["WGS_1984_Antarctic_Polar_Stereographic",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Stereographic_South_Pole"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",0.0],PARAMETER["Standard_Parallel_1",-71.0],UNIT["Meter",1.0]]';
   const data = parseSync(wkt, WKTCRSLoader, {debug: false, raw: true, sort: true});
@@ -186,7 +186,7 @@ test.skip('parseWKTCRS#sort parameters', (t) => {
 //   t.end();
 // });
 
-test.skip('parseWKTCRS#sort params', (t) => {
+test.skip('parseWKTCRS#sort params', t => {
   const wkt =
     'PARAMETERS[PARAMETER["latitude_of_origin",0],PARAMETER["central_meridian",-87],PARAMETER["scale_factor",0.9996]]';
   let data = parseSync(wkt, WKTCRSLoader, {debug: false, raw: true});
@@ -208,7 +208,7 @@ test.skip('parseWKTCRS#sort params', (t) => {
   t.end();
 });
 
-test('parseWKTCRS#parse inner parens', (t) => {
+test('parseWKTCRS#parse inner parens', t => {
   const wkt =
     'GEOGCS["GRS 1980(IUGG, 1980)",DATUM["unknown",SPHEROID["GRS80",6378137,298.257222101]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433],AUTHORITY["epsg","7686"]]';
   const data = parseSync(wkt, WKTCRSLoader, {debug: false, raw: true});
@@ -216,21 +216,21 @@ test('parseWKTCRS#parse inner parens', (t) => {
   t.end();
 });
 
-test.skip('WKTCRSWriter#authority', (t) => {
+test.skip('WKTCRSWriter#authority', t => {
   const authority = ['AUTHORITY', 'EPSG', '9122'];
   const unparsed = encodeTextSync(authority, WKTCRSWriter);
   t.deepEqual(unparsed, {data: 'AUTHORITY["EPSG","9122"]'});
   t.end();
 });
 
-test.skip('WKTCRSWriter#PRIMEM', (t) => {
+test.skip('WKTCRSWriter#PRIMEM', t => {
   const authority = ['PRIMEM', 'Greenwich', 0, ['AUTHORITY', 'EPSG', '8901']];
   const unparsed = encodeTextSync(authority, WKTCRSWriter);
   t.deepEqual(unparsed, {data: 'PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]]'});
   t.end();
 });
 
-test.skip('WKTCRSWriter#DATUM', (t) => {
+test.skip('WKTCRSWriter#DATUM', t => {
   const datum = [
     'DATUM',
     'North_American_Datum_1927',
@@ -244,7 +244,7 @@ test.skip('WKTCRSWriter#DATUM', (t) => {
   t.end();
 });
 
-test.skip('WKTCRSWriter#GEOGCS', (t) => {
+test.skip('WKTCRSWriter#GEOGCS', t => {
   const data = [
     'GEOGCS',
     'NAD27',

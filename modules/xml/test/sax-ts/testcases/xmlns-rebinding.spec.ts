@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#xmlns-rebinding', (t) => {
+test('SAXParser#xmlns-rebinding', t => {
   testSax(t, {
     xml:
       '<root xmlns:x="x1" xmlns:y="y1" x:a="x1" y:a="y1">' +

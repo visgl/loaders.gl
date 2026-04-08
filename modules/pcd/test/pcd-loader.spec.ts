@@ -59,13 +59,13 @@ function createBinaryArrayBufferWithCountedField(): ArrayBuffer {
   return pcdArrayBuffer;
 }
 
-test('PCDLoader#loader conformance', (t) => {
+test('PCDLoader#loader conformance', t => {
   validateLoader(t, PCDLoader, 'PCDLoader');
   validateLoader(t, PCDWorkerLoader, 'PCDWorkerLoader');
   t.end();
 });
 
-test('PCDLoader#parse(text)', async (t) => {
+test('PCDLoader#parse(text)', async t => {
   const data = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
     core: {worker: false}
   });
@@ -76,14 +76,14 @@ test('PCDLoader#parse(text)', async (t) => {
   t.equal(data.schema.metadata.topology, 'point-list', 'schema metadata is correct');
   t.ok(data.schema.metadata.boundingBox, 'schema metadata is correct');
 
-  const positionField = data.schema.fields.find((field) => field.name === 'POSITION');
+  const positionField = data.schema.fields.find(field => field.name === 'POSITION');
   // @ts-expect-error
   t.equal(positionField?.type?.listSize, 3, 'schema size correct');
   // @ts-expect-error
   t.equal(positionField?.type?.children[0]?.type, 'float32', 'schema type correct');
   // t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
 
-  const colorField = data.schema.fields.find((field) => field.name === 'COLOR_0');
+  const colorField = data.schema.fields.find(field => field.name === 'COLOR_0');
   // @ts-expect-error
   t.equal(colorField?.type?.listSize, 3, 'schema size correct');
   // @ts-expect-error
@@ -100,7 +100,7 @@ test('PCDLoader#parse(text)', async (t) => {
   t.end();
 });
 
-test('PCDLoader#parse(binary)', async (t) => {
+test('PCDLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {
     core: {worker: false}
   });
@@ -115,7 +115,7 @@ test('PCDLoader#parse(binary)', async (t) => {
   t.end();
 });
 
-test('PCDLoader#parse(binary with counted fields)', async (t) => {
+test('PCDLoader#parse(binary with counted fields)', async t => {
   const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
   const data = await parse(binaryArrayBuffer, PCDLoader, {
     core: {worker: false}
@@ -135,7 +135,7 @@ test('PCDLoader#parse(binary with counted fields)', async (t) => {
   t.end();
 });
 
-test('PCDWorkerLoader#parse(binary)', async (t) => {
+test('PCDWorkerLoader#parse(binary)', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

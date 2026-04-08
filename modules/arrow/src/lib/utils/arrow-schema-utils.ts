@@ -18,7 +18,7 @@ export type ValidateArrowTableSchemaOptions = {
  * Formats an Arrow field list for validation error messages.
  */
 function formatSchemaFieldNames(fields: arrow.Field[]): string {
-  return fields.map((field) => field.name).join(', ');
+  return fields.map(field => field.name).join(', ');
 }
 
 /**
@@ -94,15 +94,15 @@ function getFieldCountValidationError(
     return null;
   }
 
-  const expectedFieldNames = expectedFields.map((field) => field.name);
-  const actualFieldNames = actualFields.map((field) => field.name);
+  const expectedFieldNames = expectedFields.map(field => field.name);
+  const actualFieldNames = actualFields.map(field => field.name);
   const actualFieldNameSet = new Set(actualFieldNames);
   const expectedFieldNameSet = new Set(expectedFieldNames);
   const missingFieldNames = expectedFieldNames.filter(
-    (fieldName) => !actualFieldNameSet.has(fieldName)
+    fieldName => !actualFieldNameSet.has(fieldName)
   );
   const unexpectedFieldNames = actualFieldNames.filter(
-    (fieldName) => !expectedFieldNameSet.has(fieldName)
+    fieldName => !expectedFieldNameSet.has(fieldName)
   );
 
   return (

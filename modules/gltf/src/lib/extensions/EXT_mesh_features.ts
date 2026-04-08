@@ -209,7 +209,7 @@ function createAccessorKey(attributes: {[k: string]: number}) {
   // Search for all "_FEATURE_ID_n" attribures in the primitive provided if any.
   // If there are some, e.g. "_FEATURE_ID_0", "_FEATURE_ID_1",
   // we will add a new one with the name "_FEATURE_ID_2"
-  const attrs = Object.keys(attributes).filter((item) => item.indexOf(prefix) === 0);
+  const attrs = Object.keys(attributes).filter(item => item.indexOf(prefix) === 0);
   let max = -1;
   for (const a of attrs) {
     const n = Number(a.substring(prefix.length));

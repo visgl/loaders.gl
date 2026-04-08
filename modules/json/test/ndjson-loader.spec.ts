@@ -9,13 +9,13 @@ import {NDJSONLoader} from '@loaders.gl/json';
 const NDJSON_PATH = '@loaders.gl/json/test/data/ndjson.ndjson';
 const NDJSON_INVALID_PATH = '@loaders.gl/json/test/data/ndjson-invalid.ndjson';
 
-test('NDJSONLoader#load(ndjson.ndjson)', async (t) => {
+test('NDJSONLoader#load(ndjson.ndjson)', async t => {
   const table = await load(NDJSON_PATH, NDJSONLoader);
   t.equal(table.data.length, 11, 'Correct number of rows received');
   t.end();
 });
 
-test('NDJSONLoader#load(ndjson-invalid.ndjson)', async (t) => {
+test('NDJSONLoader#load(ndjson-invalid.ndjson)', async t => {
   await t.rejects(
     () => load(NDJSON_INVALID_PATH, NDJSONLoader),
     /failed to parse JSON on line 9/,
@@ -24,7 +24,7 @@ test('NDJSONLoader#load(ndjson-invalid.ndjson)', async (t) => {
   t.end();
 });
 
-test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = auto)', async (t) => {
+test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = auto)', async t => {
   const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader);
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
@@ -45,7 +45,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = auto)', async 
   t.end();
 });
 
-test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async (t) => {
+test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async t => {
   const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
     batchSize: 5
   });
@@ -80,7 +80,7 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async (t)
   t.end();
 });
 
-test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async (t) => {
+test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async t => {
   const iterator = await loadInBatches(NDJSON_INVALID_PATH, NDJSONLoader, {
     batchSize: 5
   });

@@ -39,7 +39,7 @@ export const TEST_CASES = [
   }
 ];
 
-test('Image Category#isImageFormatSupported', (t) => {
+test('Image Category#isImageFormatSupported', t => {
   for (const tc of TEST_CASES) {
     const isSupported = isImageFormatSupported(tc.mimeType);
     t.equal(isSupported, tc.supported, `${tc.mimeType} support ${isSupported}`);
@@ -47,7 +47,7 @@ test('Image Category#isImageFormatSupported', (t) => {
   t.end();
 });
 
-test('Image Category#getSupportedImageFormats', async (t) => {
+test('Image Category#getSupportedImageFormats', async t => {
   const supportedImageFormats = await getSupportedImageFormats();
   for (const tc of TEST_CASES) {
     const isSupported = supportedImageFormats.has(tc.mimeType);

@@ -6,11 +6,11 @@ import {LoaderContext} from '@loaders.gl/loader-utils';
 
 const context = (): LoaderContext => ({
   fetch,
-  _parse: async (arrayBuffer) => arrayBuffer,
+  _parse: async arrayBuffer => arrayBuffer,
   baseUrl: 'fake/url'
 });
 
-test('loadExplicitBitstream extracts a single buffer to an explicit bitstream', async (t) => {
+test('loadExplicitBitstream extracts a single buffer to an explicit bitstream', async t => {
   const tileAvailability: Availability = {bitstream: 0};
   const subtree: Subtree = {
     buffers: [
@@ -39,7 +39,7 @@ test('loadExplicitBitstream extracts a single buffer to an explicit bitstream', 
   t.deepEqual(tileAvailability.explicitBitstream, new Uint8Array([255]));
 });
 
-test('loadExplicitBitstream extracts multiple buffers to explicit bitstreams', async (t) => {
+test('loadExplicitBitstream extracts multiple buffers to explicit bitstreams', async t => {
   const tileAvailability: Availability = {bitstream: 0};
   const contentAvailability: Availability = {bitstream: 1};
   const subtree: Subtree = {

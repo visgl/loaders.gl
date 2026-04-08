@@ -16,7 +16,7 @@ export class ArrowTableBuilder {
   constructor(schema: Schema) {
     this.schema = schema;
     this.arrowSchema = convertSchemaToArrow(schema);
-    this.arrowBuilders = this.arrowSchema.fields.map((field) =>
+    this.arrowBuilders = this.arrowSchema.fields.map(field =>
       arrow.makeBuilder({type: field.type, nullValues: [null]})
     );
     this.length = 0;
@@ -75,7 +75,7 @@ export class ArrowTableBuilder {
   /** Get a last batch if any data is left */
   finishBatch(): ArrowTableBatch | null {
     const arrowRecordBatch = this._getArrowRecordBatch();
-    this.arrowBuilders.forEach((builder) => builder.finish());
+    this.arrowBuilders.forEach(builder => builder.finish());
     if (arrowRecordBatch.numCols === 0) {
       return null;
     }
@@ -91,7 +91,7 @@ export class ArrowTableBuilder {
   /** Return a table with all the accumulated data */
   finishTable(): ArrowTable {
     const arrowRecordBatch = this._getArrowRecordBatch();
-    this.arrowBuilders.forEach((builder) => builder.finish());
+    this.arrowBuilders.forEach(builder => builder.finish());
     return {
       shape: 'arrow-table',
       schema: this.schema,
@@ -102,7 +102,7 @@ export class ArrowTableBuilder {
   /** Extract a record batch flushing the currently accumulated data in the builders */
   _getArrowRecordBatch(): arrow.RecordBatch {
     const {arrowBuilders, arrowSchema} = this;
-    const arrowDatas = arrowBuilders.map((builder) => builder.flush());
+    const arrowDatas = arrowBuilders.map(builder => builder.flush());
     const length = arrowDatas[0].length;
     const structField = new arrow.Struct(arrowSchema.fields);
     const arrowStructData = new arrow.Data(structField, 0, length, 0, undefined, arrowDatas);

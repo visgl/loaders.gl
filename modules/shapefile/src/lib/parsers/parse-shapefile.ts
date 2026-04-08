@@ -248,7 +248,7 @@ function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: 
   }
 
   const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
-  return transformGeoJsonCoords(features, (coord) => projection.project(coord));
+  return transformGeoJsonCoords(features, coord => projection.project(coord));
 }
 
 /**

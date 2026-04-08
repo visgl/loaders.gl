@@ -13,7 +13,7 @@ import {createPoolProxy, createOffsetsProxy} from '../src/tiff/lib/proxies';
  * rollup-plugin-web-worker-loader relies on `atob` which isn't in Node.
  * This is a shim for "Pool" for testing the proxies.
  */
-// prettier-ignore
+// biome-ignore format: preserve intentional fixture layout
 const pool = /** @type {import('../src/tiff/lib/Pool').default}} */ ({
   async decode(fileDirectory, buffer) {
     const decoder = getDecoder(fileDirectory);

@@ -23,7 +23,7 @@ export async function getImageCubeUrls(getUrl: GetUrl, options: TextureLoaderOpt
   let index = 0;
   for (let i = 0; i < IMAGE_TEXTURE_CUBE_FACES.length; ++i) {
     const face = IMAGE_TEXTURE_CUBE_FACES[index];
-    const promise = getImageUrls(getUrl, options, {...face, index: index++}).then((url) => {
+    const promise = getImageUrls(getUrl, options, {...face, index: index++}).then(url => {
       urls[face.face] = url;
     });
     promises.push(promise);

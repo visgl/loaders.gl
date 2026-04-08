@@ -62,7 +62,7 @@ const INDICES_STUB = {
   size: 1
 };
 
-test('DracoLoader#getDracoSchema', (t) => {
+test('DracoLoader#getDracoSchema', t => {
   const schema = getDracoSchema(ATTRIBUTES_STUB, LOADER_DATA_STUB, INDICES_STUB);
   t.ok(schema, 'Makes schema from attributes');
   t.equals(Object.keys(schema.metadata).length, 2, 'Metadata size');

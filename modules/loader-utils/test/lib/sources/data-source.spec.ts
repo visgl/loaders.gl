@@ -9,7 +9,7 @@ import {DataSource} from '../../../src';
 
 class TestDataSource extends DataSource<string, DataSourceOptions> {}
 
-test('DataSource#normalizes legacy loadOptions base URL aliases', (t) => {
+test('DataSource#normalizes legacy loadOptions base URL aliases', t => {
   const source = new TestDataSource('https://example.com/data', {
     core: {
       loadOptions: {

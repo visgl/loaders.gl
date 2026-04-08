@@ -23,7 +23,7 @@ const [ringsSingleRing, ringsRingAndHole, ringsTwoRings, ringsZeroSizeHole] = aw
   loadJSON('../../data/rings/rings_zero_size_hole.json')
 ]);
 
-test('classifyRingsFlat#single ring', async (t) => {
+test('classifyRingsFlat#single ring', async t => {
   const geom = {...ringsSingleRing};
   const classified = classifyRingsFlat(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539]]);
@@ -31,7 +31,7 @@ test('classifyRingsFlat#single ring', async (t) => {
   t.end();
 });
 
-test('classifyRingsFlat#ring and hole', async (t) => {
+test('classifyRingsFlat#ring and hole', async t => {
   const geom = {...ringsRingAndHole};
   const classified = classifyRingsFlat(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539, 0.001363515853881836]]);
@@ -39,7 +39,7 @@ test('classifyRingsFlat#ring and hole', async (t) => {
   t.end();
 });
 
-test('classifyRingsFlat#two rings', async (t) => {
+test('classifyRingsFlat#two rings', async t => {
   const geom = {...ringsTwoRings};
   const classified = classifyRingsFlat(geom);
   t.deepEqual(classified.areas, [[-0.02624368667602539], [-0.001363515853881836]]);
@@ -47,7 +47,7 @@ test('classifyRingsFlat#two rings', async (t) => {
   t.end();
 });
 
-test('classifyRingsFlat#zero sized hole', async (t) => {
+test('classifyRingsFlat#zero sized hole', async t => {
   // In addition to checking the result,
   // verify that the data array is shortened
   const geom = {...ringsZeroSizeHole};

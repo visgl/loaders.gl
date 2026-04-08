@@ -177,7 +177,7 @@ function parseState(
 
           result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
           result.schema = {
-            fields: result.dbfFields.map((dbfField) => makeField(dbfField)),
+            fields: result.dbfFields.map(dbfField => makeField(dbfField)),
             metadata: {}
           };
 
@@ -360,7 +360,7 @@ function parseBoolean(value: string): boolean | null {
  */
 function parseNumber(text: string): number | null {
   const number = parseFloat(text);
-  return isNaN(number) ? null : number;
+  return Number.isNaN(number) ? null : number;
 }
 
 /**

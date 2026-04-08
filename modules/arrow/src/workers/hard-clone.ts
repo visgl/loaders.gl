@@ -42,7 +42,7 @@ export function hardClone<T extends arrow.DataType>(
 ): arrow.Data<T> | arrow.Vector<T> {
   // Check if `data` is an arrow.Vector
   if ('data' in data) {
-    return new arrow.Vector(data.data.map((data) => hardClone(data, force)));
+    return new arrow.Vector(data.data.map(data => hardClone(data, force)));
   }
 
   // Clone each of the children, recursively
@@ -95,7 +95,7 @@ export function hardClone<T extends arrow.DataType>(
 export function isShared<T extends arrow.DataType>(data: arrow.Data<T> | arrow.Vector<T>): boolean {
   // Loop over arrow.Vector
   if ('data' in data) {
-    return data.data.some((data) => isShared(data));
+    return data.data.some(data => isShared(data));
   }
 
   // Check child data

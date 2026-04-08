@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
 // non-strict: no error
-test('SAXParser#attribute-no-space', (t) => {
+test('SAXParser#attribute-no-space', t => {
   testSax(t, {
     xml: '<root attr1="first"attr2="second"/>',
     expect: [

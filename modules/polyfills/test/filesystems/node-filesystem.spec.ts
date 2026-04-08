@@ -8,7 +8,7 @@ import {NodeFilesystem} from '@loaders.gl/loader-utils';
 import {isBrowser} from '@loaders.gl/core';
 
 if (!isBrowser) {
-  test('NodeFileSystem#import', (t) => {
+  test('NodeFileSystem#import', t => {
     if (!NodeFilesystem) {
       t.comment('NodeFileSystem not defined');
       t.end();

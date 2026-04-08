@@ -126,15 +126,15 @@ export class COPCTileSource
     // console.log('Dimensions:', view.dimensions);
 
     const schema = await this.getSchema();
-    const columnNames = schema.fields.map((field) => field.name);
-    const columnGetters = columnNames.map((name) => view.getter(name));
+    const columnNames = schema.fields.map(field => field.name);
+    const columnGetters = columnNames.map(name => view.getter(name));
 
     // const offset = parameters.offset || 0;
     // const limit = Math.min(parameters.limit ?? view.pointCount, view.pointCount - offset);
     // const ArrayType = getArrayTypeFromDataType(limit);
 
     function getXyzi(index: number): number[] {
-      return columnGetters.map((get) => get(index));
+      return columnGetters.map(get => get(index));
     }
     const point = getXyzi(0);
     // console.log('Point:', point);

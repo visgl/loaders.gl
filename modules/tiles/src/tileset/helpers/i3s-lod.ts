@@ -25,7 +25,7 @@ const cartesianToEnuMatrix = new Matrix4();
  * @returns 
  */
 export function getLodStatus(tile: Tile3D, frameState: FrameState): 'DIG' | 'OUT' | 'DRAW' {
-  if (tile.lodMetricValue === 0 || isNaN(tile.lodMetricValue)) {
+  if (tile.lodMetricValue === 0 || Number.isNaN(tile.lodMetricValue)) {
     return 'DIG';
   }
   const screenSize = 2 * getProjectedRadius(tile, frameState);

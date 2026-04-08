@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
 // default to uppercase
-test('SAXParser#case', (t) => {
+test('SAXParser#case', t => {
   testSax(t, {
     xml: '<span class="test" hello="world"></span>',
     expect: [

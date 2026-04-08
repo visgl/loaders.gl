@@ -152,7 +152,7 @@ const VIEWPORTS = [
   })
 ];
 
-test('Tileset3D#one viewport traversal', async (t) => {
+test('Tileset3D#one viewport traversal', async t => {
   t.plan(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
@@ -175,7 +175,7 @@ test('Tileset3D#one viewport traversal', async (t) => {
   }, 100);
 });
 
-test('Tileset3D#onTraversalComplete', async (t) => {
+test('Tileset3D#onTraversalComplete', async t => {
   t.plan(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[1];
@@ -185,8 +185,8 @@ test('Tileset3D#onTraversalComplete', async (t) => {
       tileset.update(viewport);
       tileLoadCounter++;
     },
-    onTraversalComplete: (selectedTiles) => {
-      return selectedTiles.filter((tile) => tile.depth === 1);
+    onTraversalComplete: selectedTiles => {
+      return selectedTiles.filter(tile => tile.depth === 1);
     }
   });
   tileset.update(viewport);
@@ -201,7 +201,7 @@ test('Tileset3D#onTraversalComplete', async (t) => {
   }, 100);
 });
 
-test('Tileset3D#two viewports traversal', async (t) => {
+test('Tileset3D#two viewports traversal', async t => {
   t.plan(3);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
@@ -220,19 +220,13 @@ test('Tileset3D#two viewports traversal', async (t) => {
       clearInterval(setIntervalId);
       tileset.update(viewports);
       t.equals(tileset.selectedTiles.length, 6);
-      t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view0')).length,
-        1
-      );
-      t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
-        5
-      );
+      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 1);
+      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
     }
   }, 100);
 });
 
-test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async (t) => {
+test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async t => {
   t.plan(3);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
@@ -256,19 +250,13 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
       clearInterval(setIntervalId);
       tileset.update(viewports);
       t.equals(tileset.selectedTiles.length, 5);
-      t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view0')).length,
-        5
-      );
-      t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
-        5
-      );
+      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 5);
+      t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
     }
   }, 100);
 });
 
-test('Tileset3D#loadTiles option', async (t) => {
+test('Tileset3D#loadTiles option', async t => {
   t.plan(2);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];

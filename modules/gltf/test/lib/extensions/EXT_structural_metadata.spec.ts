@@ -8,7 +8,7 @@ import {
   GLTF_EXT_structural_metadata_GLTF
 } from '@loaders.gl/gltf';
 
-test('gltf#EXT_structural_metadata - Should decode', async (t) => {
+test('gltf#EXT_structural_metadata - Should decode', async t => {
   const binaryBufferData = [
     0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 33, 223, 70, 43, 39,
     58, 199, 113, 55, 81, 71, 94, 21, 60, 71, 154, 68, 219, 198, 113, 55, 81, 199, 183, 210, 225,
@@ -284,7 +284,7 @@ const EXPECTED_GLTF_JSON_WITH_EXTENSION = {
   ]
 };
 
-test('gltf#EXT_structural_metadata - Should encode', async (t) => {
+test('gltf#EXT_structural_metadata - Should encode', async t => {
   const scenegraph = new GLTFScenegraph();
   const tableIndex = createExtStructuralMetadata(scenegraph, ATTRIBUTES);
   const gltfBin = encodeExtensions(scenegraph.gltf, {});
@@ -301,7 +301,7 @@ test('gltf#EXT_structural_metadata - Should encode', async (t) => {
   t.end();
 });
 
-test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async (t) => {
+test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async t => {
   const scenegraph = new GLTFScenegraph();
   createExtStructuralMetadata(scenegraph, ATTRIBUTES);
   const gltfBin = encodeExtensions(scenegraph.gltf, {});

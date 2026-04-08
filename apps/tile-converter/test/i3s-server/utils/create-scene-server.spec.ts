@@ -3,7 +3,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {SceneLayer3D} from '@loaders.gl/i3s';
 import {createSceneServer} from '../../../src/i3s-server/utils/create-scene-server';
 
-test('tile-converter(i3s-server)#createSceneServer', async (t) => {
+test('tile-converter(i3s-server)#createSceneServer', async t => {
   if (isBrowser) {
     t.end();
     return;

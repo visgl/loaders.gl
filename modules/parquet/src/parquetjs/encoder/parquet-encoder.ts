@@ -82,7 +82,7 @@ export interface ParquetEncoderOptions {
  * are written.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export class ParquetEncoder<T> {
+export class ParquetEncoder<_T> {
   /**
    * Convenience method to create a new buffered parquet writer that writes to
    * the specified file

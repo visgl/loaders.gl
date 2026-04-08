@@ -52,7 +52,7 @@ function resolveTechniques(
   const {programs = [], shaders = [], techniques = []} = techniquesExtension;
   const textDecoder = new TextDecoder();
 
-  shaders.forEach((shader) => {
+  shaders.forEach(shader => {
     if (Number.isFinite(shader.bufferView)) {
       shader.code = textDecoder.decode(
         gltfScenegraph.getTypedArrayForBufferView(shader.bufferView)
@@ -63,12 +63,12 @@ function resolveTechniques(
     }
   });
 
-  programs.forEach((program) => {
+  programs.forEach(program => {
     program.fragmentShader = shaders[program.fragmentShader];
     program.vertexShader = shaders[program.vertexShader];
   });
 
-  techniques.forEach((technique) => {
+  techniques.forEach(technique => {
     technique.program = programs[technique.program];
   });
 
@@ -79,14 +79,14 @@ function resolveValues(technique, gltfScenegraph) {
   const values = Object.assign({}, technique.values);
 
   // merge values from uniforms
-  Object.keys(technique.uniforms || {}).forEach((uniform) => {
+  Object.keys(technique.uniforms || {}).forEach(uniform => {
     if (technique.uniforms[uniform].value && !(uniform in values)) {
       values[uniform] = technique.uniforms[uniform].value;
     }
   });
 
   // resolve textures
-  Object.keys(values).forEach((uniform) => {
+  Object.keys(values).forEach(uniform => {
     if (typeof values[uniform] === 'object' && values[uniform].index !== undefined) {
       // Assume this is a texture
       // TODO: find if there are any other types that can be referenced

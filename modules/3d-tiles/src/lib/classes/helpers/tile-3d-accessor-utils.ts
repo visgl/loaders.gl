@@ -16,7 +16,7 @@ const COMPONENTS_PER_ATTRIBUTE = {
 };
 
 // TODO - could just return typed array views...
-// prettier-ignore
+// biome-ignore format: preserve intentional fixture layout
 const UNPACKER = {
   SCALAR: (values, i) => values[i],
   VEC2: (values, i) => [values[2 * i + 0], values[2 * i + 1]],

@@ -7,7 +7,7 @@ import {HexWKBLoader} from '@loaders.gl/wkt';
 
 const isHexWKB = HexWKBLoader.testText;
 
-test('datasetUtils.isHexWKB', (t) => {
+test('datasetUtils.isHexWKB', t => {
   t.notOk(isHexWKB(''), 'empty string is not a valid hex wkb');
 
   // @ts-ignore null is not a string

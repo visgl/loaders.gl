@@ -15,7 +15,7 @@ import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 import {convertGeoArrowGeometryToGeoJSON} from '@loaders.gl/gis';
 import {ArrowLoader} from '@loaders.gl/arrow';
 
-test('ArrowUtils#convertGeoArrowGeometryToGeoJSON', async (t) => {
+test('ArrowUtils#convertGeoArrowGeometryToGeoJSON', async t => {
   for (const testCase of GEOARROW_TEST_CASES) {
     await testParseFromArrow(t, testCase[0], testCase[1]);
   }
@@ -47,7 +47,7 @@ async function testParseFromArrow(
     t.equal(table.numCols, colNames.length, `arrow table has ${colNames.length} columns`);
 
     // check fields exist in arrow table schema
-    table.schema.fields.map((field) =>
+    table.schema.fields.map(field =>
       t.equal(colNames.includes(field.name), true, `arrow table has ${field.name} column`)
     );
 

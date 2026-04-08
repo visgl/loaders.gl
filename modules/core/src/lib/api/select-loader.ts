@@ -95,7 +95,9 @@ function mayContainText(response: Response): boolean {
   const mimeType = getResourceMIMEType(response);
   return Boolean(
     mimeType &&
-    (mimeType.startsWith('text/') || mimeType === 'application/json' || mimeType.endsWith('+json'))
+      (mimeType.startsWith('text/') ||
+        mimeType === 'application/json' ||
+        mimeType.endsWith('+json'))
   );
 }
 
@@ -260,7 +262,7 @@ function findLoaderByExtension(loaders: Loader[], extension: string): Loader | n
 
 function findLoaderByMIMEType(loaders: Loader[], mimeType: string): Loader | null {
   for (const loader of loaders) {
-    if (loader.mimeTypes?.some((mimeType1) => compareMIMETypes(mimeType, mimeType1))) {
+    if (loader.mimeTypes?.some(mimeType1 => compareMIMETypes(mimeType, mimeType1))) {
       return loader;
     }
 
@@ -305,12 +307,12 @@ function testDataAgainstText(data: string, loader: Loader): boolean {
   }
 
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some((test) => data.startsWith(test as string));
+  return tests.some(test => data.startsWith(test as string));
 }
 
 function testDataAgainstBinary(data: ArrayBufferLike, byteOffset: number, loader: Loader): boolean {
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some((test) => testBinary(data, byteOffset, loader, test));
+  return tests.some(test => testBinary(data, byteOffset, loader, test));
 }
 
 function testBinary(
