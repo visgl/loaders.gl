@@ -16,8 +16,13 @@
     "**/bundle.+(js|ts)",
     "**/*.worker.+(js|ts)",
     "**/text-encoding.js",
+    "**/text-encoder.ts",
     "**/encoding.js",
     "**/laz-perf.js",
+    "**/gifshot.ts",
+    "**/md5-wasm.ts",
+    "**/brotli/decode.ts",
+    "**/parquet-thrift/**",
     "**3d-tiles/src/styles/**",
     "**/src/flatgeobuf/**",
     "modules/worker-utils/src/lib/process-utils/child-process-proxy.ts"

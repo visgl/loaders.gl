@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {validateWriter, validateMeshCategoryData} from 'test/common/conformance';
 
 import {DracoLoader, DracoWriterOptions, DracoWriter, DracoWriterWorker} from '@loaders.gl/draco';
-import {encode, fetchFile, parse} from '@loaders.gl/core';
+import {encode, fetchFile, parse, setLoaderOptions} from '@loaders.gl/core';
 // import {getMeshSize} from '@loaders.gl/schema-utils';
 import draco3d from 'draco3d';
 import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
@@ -40,6 +40,12 @@ const TEST_CASES: TestCase[] = [
 
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
 
+setLoaderOptions({
+  core: {
+    useLocalLibraries: true
+  }
+});
+
 async function loadBunny() {
   const response = await fetchFile(BUNNY_DRC_URL);
   const arrayBuffer = await response.arrayBuffer();
@@ -53,9 +59,6 @@ test('DracoWriter#loader conformance', t => {
 });
 
 test('DracoWriter#encode(bunny.drc)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
-    return;
-  }
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -70,11 +73,13 @@ test('DracoWriter#encode(bunny.drc)', async t => {
       POSITION: data.attributes.POSITION.value
     }
   };
+  const compressedMeshes = new Map<string, ArrayBuffer>();
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
+    compressedMeshes.set(tc.title, compressedMesh);
 
     // const meshSize = getMeshSize(mesh.attributes);
     // const ratio = meshSize / compressedMesh.byteLength;
@@ -93,6 +98,15 @@ test('DracoWriter#encode(bunny.drc)', async t => {
       );
     }
   }
+
+  const sequentialMesh = compressedMeshes.get('Encoding Draco Mesh: SEQUENTIAL');
+  const edgebreakerMesh = compressedMeshes.get('Encoding Draco Mesh: EDGEBREAKER');
+  t.ok(sequentialMesh, 'Sequential mesh encoded');
+  t.ok(edgebreakerMesh, 'Edgebreaker mesh encoded');
+  t.ok(
+    sequentialMesh && edgebreakerMesh && edgebreakerMesh.byteLength < sequentialMesh.byteLength,
+    `Edgebreaker mesh encoding (${edgebreakerMesh?.byteLength}) is smaller than sequential mesh encoding (${sequentialMesh?.byteLength})`
+  );
 
   t.end();
 });
@@ -206,7 +220,7 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async t => {
 });
 
 test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
+  if (skipBrowserDraco3DNpmPackageTest(t)) {
     return;
   }
   const data = await loadBunny();
@@ -260,9 +274,6 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
 });
 
 test('DracoWriter#encode(bunny.drc)', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
-    return;
-  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -301,9 +312,6 @@ test('DracoWriter#encode(bunny.drc)', async t => {
 });
 
 test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
-    return;
-  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -346,9 +354,6 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
 });
 
 test('DracoWriter#geometry metadata', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
-    return;
-  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -409,9 +414,6 @@ test('DracoWriter#geometry metadata', async t => {
 });
 
 test('DracoWriter#attributes metadata', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
-    return;
-  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -467,9 +469,6 @@ test('DracoWriter#attributes metadata', async t => {
 });
 
 test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async t => {
-  if (skipBrowserDracoWasmTest(t)) {
-    return;
-  }
   const data = await loadBunny();
   const attributes = {
     POSITION: data.attributes.POSITION.value,
@@ -534,11 +533,11 @@ function validatePositionMetadata(t, data) {
 }
 
 /**
- * Skips Draco writer tests that depend on direct WASM module initialization in browser runs.
+ * Skips Draco writer tests that depend on the Node-only draco3d npm package entrypoint in browser runs.
  */
-function skipBrowserDracoWasmTest(t) {
+function skipBrowserDraco3DNpmPackageTest(t) {
   if (isBrowser) {
-    t.comment('Skipping Draco WASM writer test in browser');
+    t.comment('Skipping Draco npm package test in browser');
     t.end();
     return true;
   }
