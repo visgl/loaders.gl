@@ -105,7 +105,7 @@ test('DracoWriter#encode(bunny.drc)', async t => {
   t.ok(edgebreakerMesh, 'Edgebreaker mesh encoded');
   t.ok(
     sequentialMesh && edgebreakerMesh && edgebreakerMesh.byteLength < sequentialMesh.byteLength,
-    'Edgebreaker mesh encoding is smaller than sequential mesh encoding'
+    `Edgebreaker mesh encoding (${edgebreakerMesh?.byteLength}) is smaller than sequential mesh encoding (${sequentialMesh?.byteLength})`
   );
 
   t.end();
