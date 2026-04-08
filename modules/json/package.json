@@ -50,7 +50,8 @@
     "@loaders.gl/gis": "4.4.0",
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
-    "@loaders.gl/schema-utils": "4.4.0"
+    "@loaders.gl/schema-utils": "4.4.0",
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~4.4.0"

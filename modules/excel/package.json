@@ -49,6 +49,8 @@
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
+    "apache-arrow": ">= 17.0.0",
     "xlsx": "^0.18.5"
   },
   "peerDependencies": {

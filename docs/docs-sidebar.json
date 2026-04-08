@@ -32,6 +32,8 @@
           "modules/bson/api-reference/bson-loader",
           "modules/csv/api-reference/csv-loader",
           "modules/draco/api-reference/draco-loader",
+          "modules/excel/api-reference/excel-loader",
+          "modules/excel/api-reference/excel-arrow-loader",
           "modules/flatgeobuf/api-reference/flatgeobuf-loader",
           "modules/geopackage/api-reference/geopackage-loader",
           "modules/geotiff/api-reference/geotiff-loader",
@@ -41,6 +43,7 @@
           "modules/images/api-reference/image-loader",
           "modules/json/api-reference/json-loader",
           "modules/json/api-reference/ndjson-loader",
+          "modules/json/api-reference/ndjson-arrow-loader",
           "modules/json/api-reference/geojson-loader",
           "modules/json/api-reference/ndgeojson-loader",
           "modules/kml/api-reference/gpx-loader",
@@ -314,6 +317,11 @@
         "type": "category",
         "label": "@loaders.gl/draco",
         "items": ["modules/draco/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/excel",
+        "items": ["modules/excel/README"]
       },
       {
         "type": "category",
