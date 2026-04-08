@@ -40,7 +40,7 @@
     "build": "yarn build-modules",
     "build-modules": "ocular-clean && ocular-build && npx lerna run pre-build",
     "build-apps": "node ./scripts/run-app-commands.mjs build",
-    "build-workers": "npx lerna run pre-build",
+    "build-workers": "node ./scripts/build-workers.mjs",
     "cover": "yarn test-cover",
     "lint": "yarn workspace @loaders.gl/devtools-extensions lint",
     "publish-beta": "ocular-publish version-only-beta",
