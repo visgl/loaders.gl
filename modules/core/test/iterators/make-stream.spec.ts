@@ -7,10 +7,10 @@ import test from 'tape-promise/tape';
 import {isBrowser, makeStream, makeIterator} from '@loaders.gl/core';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 
-test('asyncIteratorToStream#fetch from asyncIteratorStream', async (t) => {
+test('asyncIteratorToStream#fetch from asyncIteratorStream', async t => {
   // TODO - fix for Node.js
   if (isBrowser) {
-    const data = [1, 2, 3].map((value) => new Uint8Array([value]).buffer);
+    const data = [1, 2, 3].map(value => new Uint8Array([value]).buffer);
     const concatenatedData = concatenateArrayBuffers(...data);
 
     const stream = makeStream(data);
@@ -23,8 +23,8 @@ test('asyncIteratorToStream#fetch from asyncIteratorStream', async (t) => {
   t.end();
 });
 
-test('asyncIteratorToStream#makeIterator(iteratorToStream())', async (t) => {
-  const data = [1, 2, 3].map((value) => new Uint8Array([value]).buffer);
+test('asyncIteratorToStream#makeIterator(iteratorToStream())', async t => {
+  const data = [1, 2, 3].map(value => new Uint8Array([value]).buffer);
   const concatenatedData = concatenateArrayBuffers(...data);
 
   const stream = makeStream(data);
@@ -36,8 +36,8 @@ test('asyncIteratorToStream#makeIterator(iteratorToStream())', async (t) => {
   t.end();
 });
 
-test('asyncIteratorToStream#read stream using DOM/Node APIs', async (t) => {
-  const data = [1, 2, 3].map((value) => new Uint8Array([value]).buffer);
+test('asyncIteratorToStream#read stream using DOM/Node APIs', async t => {
+  const data = [1, 2, 3].map(value => new Uint8Array([value]).buffer);
   const concatenatedData = concatenateArrayBuffers(...data);
 
   const stream = makeStream(data);
@@ -57,9 +57,9 @@ async function readStream(stream): Promise<ArrayBuffer> {
 
 /** Read chunks from a node style stream */
 async function readNodeStream(stream): Promise<ArrayBuffer> {
-  return await new Promise<ArrayBuffer>((resolve) => {
+  return await new Promise<ArrayBuffer>(resolve => {
     const chunks: ArrayBuffer[] = [];
-    stream.on('data', (chunk) => {
+    stream.on('data', chunk => {
       chunks.push(chunk.buffer);
     });
     stream.on('end', () => {

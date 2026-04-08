@@ -69,7 +69,7 @@ export function renameArrowColumns<
   const validatedTable = validateArrowTableSchema(table, sourceSchema, {
     schemaName: 'source Arrow schema before column rename'
   });
-  const targetFieldsByName = new Map(targetSchema.fields.map((field) => [field.name, field]));
+  const targetFieldsByName = new Map(targetSchema.fields.map(field => [field.name, field]));
   const resultFields: arrow.Field[] = [];
   const resultColumns: Record<string, arrow.Vector> = {};
 

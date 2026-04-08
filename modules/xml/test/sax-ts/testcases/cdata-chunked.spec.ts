@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#cdata-chunked', (t) => {
+test('SAXParser#cdata-chunked', t => {
   testSax(t, {
     expect: [
       ['opentagstart', {name: 'R', attributes: {}}],

@@ -76,7 +76,7 @@ export async function decodeDataPages(
     // of 'PLAIN' encoding because all values are already in place
     if (dictionary.length && valueEncoding !== 'PLAIN') {
       // eslint-disable-next-line no-loop-func
-      page.values = page.values.map((value) => dictionary[value]);
+      page.values = page.values.map(value => dictionary[value]);
     }
 
     for (let index = 0; index < page.rlevels.length; index++) {
@@ -462,9 +462,9 @@ async function decodeDictionaryPage(
   // Makes it look a little easier
   let values: any[];
   if (context?.preserveBinary) {
-    values = decodedDictionaryValues.map((d) => preserveBinary(d));
+    values = decodedDictionaryValues.map(d => preserveBinary(d));
   } else {
-    values = decodedDictionaryValues.map((d) => d.toString());
+    values = decodedDictionaryValues.map(d => d.toString());
   }
   return values;
 }

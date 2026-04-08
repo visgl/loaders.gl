@@ -86,7 +86,7 @@ export async function parseGeoPackage(
   const tables = listVectorTables(db);
   const projections = getProjections(db);
 
-  const selectedTable = tables.find((table) => table.table_name === options?.geopackage?.table);
+  const selectedTable = tables.find(table => table.table_name === options?.geopackage?.table);
   const tableName = selectedTable ? selectedTable.table_name : tables[0].table_name;
 
   const shape = options?.geopackage?.shape;
@@ -133,7 +133,7 @@ async function loadDatabase(arrayBuffer: ArrayBuffer, sqlJsCDN: string | null): 
   let SQL: SqlJsStatic;
   if (sqlJsCDN) {
     SQL = await initSqlJs({
-      locateFile: (file) => `${sqlJsCDN}${file}`
+      locateFile: file => `${sqlJsCDN}${file}`
     });
   } else {
     SQL = await initSqlJs();
@@ -314,7 +314,7 @@ function constructGeoJsonFeature(
 
 // @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function getGeopackageVersion(db: Database): string | null {
+function _getGeopackageVersion(db: Database): string | null {
   const textDecoder = new TextDecoder();
 
   // Read application id from SQLite metadata

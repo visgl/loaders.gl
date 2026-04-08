@@ -793,12 +793,12 @@ function generic(t, key, prechunked, sep) {
         }
       };
     });
-    doc_chunks.forEach((chunk) => parser.write(chunk));
+    doc_chunks.forEach(chunk => parser.write(chunk));
     parser.end();
   };
 }
 
-test('clarinet#generic', (t) => {
+test('clarinet#generic', t => {
   for (const key in docs) {
     if (docs.hasOwnProperty(key)) {
       // undefined means no split
@@ -813,7 +813,7 @@ test('clarinet#generic', (t) => {
   t.end();
 });
 
-test('#pre-chunked', (t) => {
+test('#pre-chunked', t => {
   for (const key in docs) {
     if (docs.hasOwnProperty(key)) {
       if (!docs[key].chunks) {

@@ -84,7 +84,7 @@ function parseFlatGeobufToGeoJSONTable(
   const rect = options.boundingBox && convertBoundingBox(options.boundingBox);
 
   // @ts-expect-error this looks wrong
-  let {features} = deserializeGeoJson(arr, rect, (headerMeta) => {
+  let {features} = deserializeGeoJson(arr, rect, headerMeta => {
     fgbHeader = headerMeta;
     schema = getSchemaFromFGBHeader(fgbHeader);
   });
@@ -95,13 +95,13 @@ function parseFlatGeobufToGeoJSONTable(
     // Constructing the projection may fail for some invalid WKT strings
     try {
       projection = new Proj4Projection({from: fromCRS, to: crs});
-    } catch (error) {
+    } catch (_error) {
       // no op
     }
   }
 
   if (projection) {
-    features = transformGeoJsonCoords(features, (coords) => projection.project(coords));
+    features = transformGeoJsonCoords(features, coords => projection.project(coords));
   }
 
   return {shape: 'geojson-table', schema, type: 'FeatureCollection', features};
@@ -148,7 +148,7 @@ async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: ParseFlatGeob
 
   let fgbHeader;
   // let schema: Schema | undefined;
-  const iterator = deserializeGeoJson(stream, undefined, (headerMeta) => {
+  const iterator = deserializeGeoJson(stream, undefined, headerMeta => {
     fgbHeader = headerMeta;
     // schema = getSchemaFromFGBHeader(fgbHeader);
   });
@@ -168,7 +168,7 @@ async function* parseFlatGeobufInBatchesToGeoJSON(stream, options: ParseFlatGeob
 
     if (reproject && projection) {
       // eslint-disable-next-line
-      yield transformGeoJsonCoords([feature], (coords) => projection.project(coords));
+      yield transformGeoJsonCoords([feature], coords => projection.project(coords));
     } else {
       yield feature;
     }

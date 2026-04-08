@@ -1,15 +1,15 @@
 import {RequestScheduler} from '@loaders.gl/loader-utils';
 import test from 'tape-promise/tape';
 
-const sleep = (t: number) => new Promise((resolve) => setTimeout(resolve, t));
+const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
 
-test('RequestScheduler#constructor', (t) => {
+test('RequestScheduler#constructor', t => {
   const requestScheduler = new RequestScheduler();
   t.ok(requestScheduler);
   t.end();
 });
 
-test('RequestScheduler#scheduleRequest', async (t) => {
+test('RequestScheduler#scheduleRequest', async t => {
   const requestScheduler = new RequestScheduler({maxRequests: 1});
   t.ok(requestScheduler);
 
@@ -38,7 +38,7 @@ test('RequestScheduler#scheduleRequest', async (t) => {
   };
 
   const result = await Promise.all([
-    requestScheduler.scheduleRequest({id: 3}).then(async (reqToken) => {
+    requestScheduler.scheduleRequest({id: 3}).then(async reqToken => {
       if (!reqToken) {
         t.fail('should issue request');
         return;
@@ -58,7 +58,7 @@ test('RequestScheduler#scheduleRequest', async (t) => {
   t.end();
 });
 
-test('RequestScheduler#debounce', async (t) => {
+test('RequestScheduler#debounce', async t => {
   const scheduler = new RequestScheduler({debounceTime: 0, maxRequests: 1});
   const schedulerDebounced = new RequestScheduler({debounceTime: 10, maxRequests: 1});
 
@@ -103,7 +103,7 @@ test('RequestScheduler#debounce', async (t) => {
   t.end();
 });
 
-test('RequestScheduler#setProps - update maxRequests', async (t) => {
+test('RequestScheduler#setProps - update maxRequests', async t => {
   const scheduler = new RequestScheduler({maxRequests: 2});
 
   // Schedule 3 requests with maxRequests = 2
@@ -142,7 +142,7 @@ test('RequestScheduler#setProps - update maxRequests', async (t) => {
   t.end();
 });
 
-test('RequestScheduler#setProps - update debounceTime', async (t) => {
+test('RequestScheduler#setProps - update debounceTime', async t => {
   const scheduler = new RequestScheduler({debounceTime: 0, maxRequests: 1});
 
   const request1 = scheduler.scheduleRequest({id: 1});
@@ -177,7 +177,7 @@ test('RequestScheduler#setProps - update debounceTime', async (t) => {
   t.end();
 });
 
-test('RequestScheduler#setProps - update throttleRequests', async (t) => {
+test('RequestScheduler#setProps - update throttleRequests', async t => {
   const scheduler = new RequestScheduler({throttleRequests: true, maxRequests: 1});
 
   const request1 = scheduler.scheduleRequest({id: 1});
@@ -215,7 +215,7 @@ test('RequestScheduler#setProps - update throttleRequests', async (t) => {
   t.end();
 });
 
-test('RequestScheduler#setProps - preserves active requests', async (t) => {
+test('RequestScheduler#setProps - preserves active requests', async t => {
   const scheduler = new RequestScheduler({maxRequests: 2});
 
   const request1 = scheduler.scheduleRequest({id: 1});

@@ -15,7 +15,6 @@ import type {GLTFLoaderOptions} from '../../gltf-loader';
 
 import {getAccessorArrayTypeAndLength} from '../gltf-utils/gltf-utils';
 import {BYTES, COMPONENTS} from '../gltf-utils/gltf-constants';
-import {} from '../types/gltf-json-schema';
 import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {ensureArrayBuffer} from '@loaders.gl/loader-utils';
 

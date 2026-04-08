@@ -10,7 +10,7 @@ import {loadGeoTiff} from '@loaders.gl/geotiff';
 
 const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/multi-channel.ome.tif');
 
-test('Creates correct TiffPixelSource for OME-TIFF.', async (t) => {
+test('Creates correct TiffPixelSource for OME-TIFF.', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -26,7 +26,7 @@ test('Creates correct TiffPixelSource for OME-TIFF.', async (t) => {
   t.end();
 });
 
-test('Get raster data.', async (t) => {
+test('Get raster data.', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -52,7 +52,7 @@ test('Get raster data.', async (t) => {
   t.end();
 });
 
-test('Correct OME-XML.', async (t) => {
+test('Correct OME-XML.', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -60,7 +60,7 @@ test('Correct OME-XML.', async (t) => {
   const tiff = await fromFile(TIFF_URL);
   const {metadata} = await loadGeoTiff(tiff);
   const {Name, Pixels} = metadata;
-  // prettier-ignore
+  // biome-ignore format: preserve intentional fixture layout
   t.equal(Name, 'multi-channel.ome.tif', 'Name should be \'multi-channel.ome.tif\'.');
   // @ts-ignore
   t.equal(Pixels.SizeC, 3, 'Should have three channels.');

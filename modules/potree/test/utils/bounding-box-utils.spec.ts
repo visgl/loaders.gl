@@ -3,7 +3,7 @@ import {getCartographicOriginFromBoundingBox} from '../../src/utils/bounding-box
 import {createProjection} from '../../src/utils/projection-utils';
 import {areNumberArraysEqual} from './compareArrays';
 
-test('bounding-box-utils#getCartographicOriginFromBoundingBox', async (t) => {
+test('bounding-box-utils#getCartographicOriginFromBoundingBox', async t => {
   t.deepEquals(getCartographicOriginFromBoundingBox(null), [0, 0, 0]);
 
   t.deepEquals(

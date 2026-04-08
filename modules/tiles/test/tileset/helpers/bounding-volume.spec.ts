@@ -4,7 +4,7 @@ import {Matrix4} from '@math.gl/core';
 import {OrientedBoundingBox} from '@math.gl/culling';
 import {areNumberArraysEqual} from '../../test-utils/compareArrays';
 
-test('Tiles bounding-volume#createBoundingVolume - should convert region to obb', (t) => {
+test('Tiles bounding-volume#createBoundingVolume - should convert region to obb', t => {
   const result = createBoundingVolume(
     {
       region: [
@@ -21,7 +21,7 @@ test('Tiles bounding-volume#createBoundingVolume - should convert region to obb'
   t.ok(
     areNumberArraysEqual(
       result.halfAxes,
-      // prettier-ignore
+      // biome-ignore format: preserve intentional fixture layout
       [
         -38691.151309899986, 37690.50114047807, -2.3283064365386963e-10, 
         -9209.347353689373, -9371.872726273723, 53695.496290528914, 

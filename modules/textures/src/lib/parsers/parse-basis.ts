@@ -185,7 +185,7 @@ export async function withBasisTranscodingLock<T>(transcode: () => Promise<T> | 
   const previousLock = basisTranscodingLock;
   let releaseLock!: () => void;
 
-  basisTranscodingLock = new Promise((resolve) => {
+  basisTranscodingLock = new Promise(resolve => {
     releaseLock = resolve;
   });
 
@@ -599,7 +599,5 @@ function hasSupportedTextureFormat(
   supportedTextureFormats: Set<TextureFormat>,
   candidateTextureFormats: TextureFormat[]
 ): boolean {
-  return candidateTextureFormats.some((textureFormat) =>
-    supportedTextureFormats.has(textureFormat)
-  );
+  return candidateTextureFormats.some(textureFormat => supportedTextureFormats.has(textureFormat));
 }

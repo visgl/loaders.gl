@@ -55,7 +55,7 @@ async function mapObject(
 
   for (const key in object) {
     const url = object[key];
-    const promise = mapSubtree(url, func, options).then((value) => {
+    const promise = mapSubtree(url, func, options).then(value => {
       values[key] = value;
     });
     promises.push(promise);
@@ -67,6 +67,6 @@ async function mapObject(
 }
 
 async function mapArray(urlArray: string[], func: Func, options = {}): Promise<any[]> {
-  const promises = urlArray.map((url) => mapSubtree(url, func, options));
+  const promises = urlArray.map(url => mapSubtree(url, func, options));
   return await Promise.all(promises);
 }

@@ -36,7 +36,7 @@ async function loadServiceDirectory(
   const services = extractServices(directory, serviceUrl);
 
   const folders = (directory.folders || []) as string[];
-  const promises = folders.map((folder) =>
+  const promises = folders.map(folder =>
     loadServiceDirectory(`${serverUrl}`, fetch, [...path, folder])
   );
 

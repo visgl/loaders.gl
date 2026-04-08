@@ -38,7 +38,7 @@ export async function loadDracoDecoderModule(
 
   // Check if a bundled draco3d library has been supplied by application
   if (modules.draco3d) {
-    loadDecoderPromise ||= modules.draco3d.createDecoderModule({}).then((draco) => {
+    loadDecoderPromise ||= modules.draco3d.createDecoderModule({}).then(draco => {
       return {draco};
     });
   } else {
@@ -53,7 +53,7 @@ export async function loadDracoEncoderModule(options: LoadLibraryOptions) {
 
   // Check if a bundled draco3d library has been supplied by application
   if (modules.draco3d) {
-    loadEncoderPromise ||= modules.draco3d.createEncoderModule({}).then((draco) => {
+    loadEncoderPromise ||= modules.draco3d.createEncoderModule({}).then(draco => {
       return {draco};
     });
   } else {
@@ -150,10 +150,10 @@ function initializeDracoDecoder(DracoDecoderModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     DracoDecoderModule({
       ...options,
-      onModuleLoaded: (draco) => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
+      onModuleLoaded: draco => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
     });
   });
 }
@@ -188,9 +188,9 @@ async function loadDracoEncoder(options: LoadLibraryOptions) {
     throw new Error('DracoEncoderModule could not be loaded');
   }
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     DracoEncoderModule({
-      onModuleLoaded: (draco) => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
+      onModuleLoaded: draco => resolve({draco}) // Module is Promise-like. Wrap in object to avoid loop.
     });
   });
 }

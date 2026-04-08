@@ -16,7 +16,7 @@ import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {GEOARROW_POINT_FILE} from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
 
 // WORKER TESTS
-test('TriangulationWorker#plumbing', async (t) => {
+test('TriangulationWorker#plumbing', async t => {
   const sourceData = {
     operation: 'test',
     data: new ArrayBuffer(100)
@@ -48,7 +48,7 @@ test('TriangulationWorker#plumbing', async (t) => {
   t.end();
 });
 
-test.skip('triangulateOnWorker', async (t) => {
+test.skip('triangulateOnWorker', async t => {
   t.ok(triangulateOnWorker, 'triangulateOnWorker imported ok');
   /*
   const triangulatedData = await triangulateOnWorker(
@@ -78,7 +78,7 @@ test.skip('triangulateOnWorker', async (t) => {
   t.end();
 });
 
-test('parseGeoArrowOnWorker', async (t) => {
+test('parseGeoArrowOnWorker', async t => {
   const arrowFile = await fetchFile(GEOARROW_POINT_FILE);
   const arrowContent = await arrowFile.arrayBuffer();
   const arrowTable = arrow.tableFromIPC(arrowContent);

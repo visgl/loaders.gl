@@ -58,7 +58,7 @@ export function* makeTableToArrowBatchesIterator(
   const numColumns = getTableNumCols(table);
   const batchSize = options?.batchSize || length;
 
-  const builders = arrowSchema?.fields.map((arrowField) => arrow.makeBuilder(arrowField));
+  const builders = arrowSchema?.fields.map(arrowField => arrow.makeBuilder(arrowField));
   const structField = new arrow.Struct(arrowSchema.fields);
 
   let batchLength = 0;
@@ -71,7 +71,7 @@ export function* makeTableToArrowBatchesIterator(
       batchLength++;
 
       if (batchLength >= batchSize) {
-        const datas = builders.map((builder) => builder.flush());
+        const datas = builders.map(builder => builder.flush());
         const structData = new arrow.Data(structField, 0, batchLength, 0, undefined, datas);
         yield new arrow.RecordBatch(arrowSchema, structData);
         batchLength = 0;
@@ -80,13 +80,13 @@ export function* makeTableToArrowBatchesIterator(
   }
 
   if (batchLength > 0) {
-    const datas = builders.map((builder) => builder.flush());
+    const datas = builders.map(builder => builder.flush());
     const structData = new arrow.Data(structField, 0, batchLength, 0, undefined, datas);
     yield new arrow.RecordBatch(arrowSchema, structData);
     batchLength = 0;
   }
 
-  builders.map((builder) => builder.finish());
+  builders.map(builder => builder.finish());
 }
 
 /**
@@ -190,9 +190,9 @@ function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
 
   // Remove geometry columns
   const propertyColumnNames = arrowTable.schema.fields
-    .map((field) => field.name)
+    .map(field => field.name)
     // TODO - this deletes all geometry columns
-    .filter((name) => !(name in geometryColumns));
+    .filter(name => !(name in geometryColumns));
   const propertiesTable = arrowTable.select(propertyColumnNames);
 
   const arrowGeometryColumn = arrowTable.getChild('geometry');

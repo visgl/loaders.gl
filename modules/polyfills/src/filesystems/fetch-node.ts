@@ -7,10 +7,10 @@ import {Readable} from 'stream';
 import {resolvePath} from '@loaders.gl/loader-utils';
 import {decompressReadStream} from './stream-utils.node';
 
-const isBoolean = (x) => typeof x === 'boolean';
-const isFunction = (x) => typeof x === 'function';
-const isObject = (x) => x !== null && typeof x === 'object';
-const isReadableNodeStream = (x) =>
+const isBoolean = x => typeof x === 'boolean';
+const isFunction = x => typeof x === 'function';
+const isObject = x => x !== null && typeof x === 'object';
+const isReadableNodeStream = x =>
   isObject(x) && isFunction(x.read) && isFunction(x.pipe) && isBoolean(x.readable);
 
 /**
@@ -46,7 +46,7 @@ export async function fetchNode(url: string, options?: RequestInit): Promise<Res
       // @ts-ignore
       const stream = fs.createReadStream(noqueryUrl, {encoding: null});
       stream.once('readable', () => resolve(stream));
-      stream.on('error', (error) => reject(error));
+      stream.on('error', error => reject(error));
     });
 
     let bodyStream: Readable = body;

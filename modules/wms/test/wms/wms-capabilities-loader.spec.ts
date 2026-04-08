@@ -16,7 +16,7 @@ const WMS_WWA_URL = '@loaders.gl/wms/test/data/wms/get-capabilities/wwa.xml';
 
 const WMS_ADHOC_URL = '@loaders.gl/wms/test/data/wms/get-capabilities/?.xml';
 
-test('WMSCapabilitiesLoader#forecasts.xml', async (t) => {
+test('WMSCapabilitiesLoader#forecasts.xml', async t => {
   const capabilities = await load(WMS_FORECASTS_URL, WMSCapabilitiesLoader);
 
   t.equal(typeof capabilities, 'object', 'parsed');
@@ -26,7 +26,7 @@ test('WMSCapabilitiesLoader#forecasts.xml', async (t) => {
   t.end();
 });
 
-test('WMSCapabilitiesLoader#obs.xml', async (t) => {
+test('WMSCapabilitiesLoader#obs.xml', async t => {
   const capabilities = await load(WMS_OBS_URL, WMSCapabilitiesLoader);
 
   t.equal(typeof capabilities, 'object', 'parsed');
@@ -35,7 +35,7 @@ test('WMSCapabilitiesLoader#obs.xml', async (t) => {
   t.end();
 });
 
-test('WMSCapabilitiesLoader#wwa.xml', async (t) => {
+test('WMSCapabilitiesLoader#wwa.xml', async t => {
   const capabilities = await load(WMS_WWA_URL, WMSCapabilitiesLoader);
 
   t.equal(typeof capabilities, 'object', 'parsed');
@@ -45,7 +45,7 @@ test('WMSCapabilitiesLoader#wwa.xml', async (t) => {
   t.end();
 });
 
-test('WMSCapabilitiesLoader#analyses.xml', async (t) => {
+test('WMSCapabilitiesLoader#analyses.xml', async t => {
   const capabilities = await load(WMS_ANALYSES_URL, WMSCapabilitiesLoader);
 
   t.equal(typeof capabilities, 'object', 'parsed');
@@ -55,7 +55,7 @@ test('WMSCapabilitiesLoader#analyses.xml', async (t) => {
   t.end();
 });
 
-test('WMSCapabilitiesLoader#dmsp.xml', async (t) => {
+test('WMSCapabilitiesLoader#dmsp.xml', async t => {
   const capabilities = await load(WMS_DMSP_URL, WMSCapabilitiesLoader);
 
   t.equal(typeof capabilities, 'object', 'parsed');
@@ -70,7 +70,7 @@ test('WMSCapabilitiesLoader#dmsp.xml', async (t) => {
 });
 
 // For adhoc testing (non-committed XML files or direct from server)
-test.skip('WMSCapabilitiesLoader#ad-hoc-test', async (t) => {
+test.skip('WMSCapabilitiesLoader#ad-hoc-test', async t => {
   const capabilities = await load(WMS_ADHOC_URL, WMSCapabilitiesLoader);
 
   t.equal(typeof capabilities, 'object', 'parsed');

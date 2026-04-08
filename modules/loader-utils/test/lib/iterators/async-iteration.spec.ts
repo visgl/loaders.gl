@@ -14,7 +14,7 @@ import {NDJSONLoader} from '@loaders.gl/json';
 
 const parseNDJSONInBatches = NDJSONLoader.parseInBatches;
 
-const setTimeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
+const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
 
 async function* asyncNumbers() {
   let number = 0;
@@ -51,17 +51,17 @@ function asyncNDJson() {
   return makeTextEncoderIterator(asyncJsons());
 }
 
-test('async-iterator#forEach', async (t) => {
+test('async-iterator#forEach', async t => {
   t.plan(3);
 
   let iterations = 0;
-  forEach(asyncNumbers(), (number) => {
+  forEach(asyncNumbers(), number => {
     iterations++;
     t.is(number, iterations, `async iterating over ${number}`);
   });
 });
 
-test('async-iterator#makeTextDecoderIterator', async (t) => {
+test('async-iterator#makeTextDecoderIterator', async t => {
   t.plan(6);
 
   for await (const text of asyncTexts()) {
@@ -75,7 +75,7 @@ test('async-iterator#makeTextDecoderIterator', async (t) => {
   }
 });
 
-test('async-iterator#makeLineIterator', async (t) => {
+test('async-iterator#makeLineIterator', async t => {
   t.plan(4);
 
   let iterations = 0;
@@ -85,7 +85,7 @@ test('async-iterator#makeLineIterator', async (t) => {
   }
 });
 
-test('async-iterator#makeNumberedLineIterator', async (t) => {
+test('async-iterator#makeNumberedLineIterator', async t => {
   t.plan(8);
 
   let iterations = 0;
@@ -96,7 +96,7 @@ test('async-iterator#makeNumberedLineIterator', async (t) => {
   }
 });
 
-test('async-iterator#parseNDJSONInBatches', async (t) => {
+test('async-iterator#parseNDJSONInBatches', async t => {
   let id = 0;
   for await (const batch of parseNDJSONInBatches(asyncNDJson())) {
     // @ts-expect-error
@@ -110,7 +110,7 @@ test('async-iterator#parseNDJSONInBatches', async (t) => {
   }
 });
 
-test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and views', async (t) => {
+test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and views', async t => {
   const sharedArrayBuffer =
     typeof SharedArrayBuffer !== 'undefined' ? new SharedArrayBuffer(4) : new ArrayBuffer(4);
   const sharedView = new Uint8Array(sharedArrayBuffer);
@@ -128,7 +128,7 @@ test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and vi
   t.end();
 });
 
-test('async-iterator#concatenateArrayBuffersAsync copies numeric views', async (t) => {
+test('async-iterator#concatenateArrayBuffersAsync copies numeric views', async t => {
   const floatView = new Float32Array([1.25, 2.5]);
   const int16View = new Int16Array([0x1122, 0x3344]);
 

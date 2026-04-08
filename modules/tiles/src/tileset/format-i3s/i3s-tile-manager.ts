@@ -33,7 +33,7 @@ export class I3STileManager {
       // Register pending request for the frameNumber
       this.pendingTilesRegister.register(id, frameNumber);
       request()
-        .then((data) => {
+        .then(data => {
           this._statusMap[key].status = STATUS.COMPLETED;
           const {
             frameNumber: actualFrameNumber,
@@ -43,7 +43,7 @@ export class I3STileManager {
           this.pendingTilesRegister.deregister(id, actualFrameNumber);
           this._statusMap[key].callback(data, frameState);
         })
-        .catch((error) => {
+        .catch(error => {
           this._statusMap[key].status = STATUS.ERROR;
           const {
             frameNumber: actualFrameNumber,

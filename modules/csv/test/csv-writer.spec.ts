@@ -140,7 +140,7 @@ c,3`
   }
 ];
 
-test('CSVWriter ', async (t) => {
+test('CSVWriter ', async t => {
   for (const {name, input, options, expected} of cases) {
     const output = await encodeTableAsText(input, CSVWriter, options);
     t.equal(output, expected, name);
@@ -149,7 +149,7 @@ test('CSVWriter ', async (t) => {
   t.end();
 });
 
-test('CSVArrowWriter ', async (t) => {
+test('CSVArrowWriter ', async t => {
   for (const {name, input, options, expected} of cases) {
     const arrowInput =
       expected === ''

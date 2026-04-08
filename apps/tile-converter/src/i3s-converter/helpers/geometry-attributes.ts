@@ -211,7 +211,7 @@ function unifyObjectsByFeatureId(
     attributes: GroupedByFeatureIdAttributes[];
   }[] = [];
   for (const data of sortedData) {
-    const existingObject = groupedMetadata.find((obj) => obj.featureId === data.featureId);
+    const existingObject = groupedMetadata.find(obj => obj.featureId === data.featureId);
     if (existingObject) {
       existingObject.attributes.push(data);
     } else {

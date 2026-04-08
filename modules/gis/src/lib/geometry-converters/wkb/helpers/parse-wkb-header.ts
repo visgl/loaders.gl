@@ -42,11 +42,11 @@ export function isWKT(input: string | ArrayBufferLike): boolean {
  */
 export function getWKTGeometryType(input: string | ArrayBufferLike): WKBGeometryType | null {
   if (typeof input === 'string') {
-    const index = WKT_MAGIC_STRINGS.findIndex((magicString) => input.startsWith(magicString));
+    const index = WKT_MAGIC_STRINGS.findIndex(magicString => input.startsWith(magicString));
     return index >= 0 ? ((index + 1) as WKBGeometryType) : null;
   }
   const inputArray = new Uint8Array(input);
-  const index = WKT_MAGIC_BYTES.findIndex((magicBytes) =>
+  const index = WKT_MAGIC_BYTES.findIndex(magicBytes =>
     magicBytes.every((value, index) => value === inputArray[index])
   );
   return index >= 0 ? ((index + 1) as WKBGeometryType) : null;

@@ -7,7 +7,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {NullWorker} from '@loaders.gl/worker-utils';
 import {getWorkerURL} from '../../../src/lib/worker-api/get-worker-url';
 
-test('getWorkerURL', (t) => {
+test('getWorkerURL', t => {
   // TODO(ib): version injection issue in babel register
   // t.equals(
   //   getWorkerURL(NullWorker, {}),

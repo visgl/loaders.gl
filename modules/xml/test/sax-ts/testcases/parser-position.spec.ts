@@ -8,19 +8,19 @@ import {SAXParser} from '@loaders.gl/xml';
 
 function testPosition(t, chunks, expectedEvents) {
   const parser = new SAXParser();
-  expectedEvents.forEach((expectation) => {
+  expectedEvents.forEach(expectation => {
     parser[`on${expectation[0]}`] = function () {
       for (const prop in expectation[1]) {
         t.equal(parser[prop], expectation[1][prop]);
       }
     };
   });
-  chunks.forEach((chunk) => {
+  chunks.forEach(chunk => {
     parser.write(chunk);
   });
 }
 
-test('SAXParser#parser-position', (t) => {
+test('SAXParser#parser-position', t => {
   testPosition(
     t,
     ['<div>abcdefgh</div>'],

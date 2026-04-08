@@ -16,7 +16,7 @@ async function* calculateByteLengthInBaches(asyncIterator, options) {
   options?.onEnd({byteLength});
 }
 
-test('byteLengthTransform', async (t) => {
+test('byteLengthTransform', async t => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -28,7 +28,7 @@ test('byteLengthTransform', async (t) => {
 
   // @ts-ignore
   const transformIterator = calculateByteLengthInBaches(inputChunks, {
-    onEnd: (result) => {
+    onEnd: result => {
       byteLength = result.byteLength;
       callCount++;
     }
@@ -65,14 +65,14 @@ function compareArrayBuffers(a, b) {
 }
 
 // Tests that iterator input and non-streaming loader does not crash
-test('byteLengthTransform#non-streaming', async (t) => {
+test('byteLengthTransform#non-streaming', async t => {
   // Run a streaming digest on all test cases.
   let hash;
 
   // @ts-ignore
   const crc32 = new CRC32CHash({
     crypto: {
-      onEnd: (result) => {
+      onEnd: result => {
         hash = result.hash;
       }
     }

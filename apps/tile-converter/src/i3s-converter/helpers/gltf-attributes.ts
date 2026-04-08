@@ -25,7 +25,7 @@ export function prepareDataForAttributesConversion(
     [];
 
   const images =
-    tileContent.gltf?.images?.map((imageObject) => {
+    tileContent.gltf?.images?.map(imageObject => {
       // Need data only for uncompressed images because we can't get batchIds from compressed textures.
       if (imageObject?.image?.compressed) {
         return null;
@@ -141,7 +141,7 @@ function prepareNodes(nodes: GLTFNodePostprocessed[]): void {
         ...node,
         mesh: {
           ...node.mesh,
-          primitives: node.mesh?.primitives.map((primitive) => ({
+          primitives: node.mesh?.primitives.map(primitive => ({
             ...primitive,
             indices: {value: primitive?.indices?.value},
             attributes: getB3DMAttributesWithoutBufferView(primitive.attributes),

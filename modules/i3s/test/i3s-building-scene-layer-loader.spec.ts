@@ -15,7 +15,7 @@ const BUILDING_SCENE_SUBLAYER_0_EXPECTED = {
 const I3S_TILE_CONTENT =
   '@loaders.gl/i3s/test/data/BuildingSceneLayer/BuildingSceneLayerTileset.json';
 
-test('ParseI3sTileContent#should parse tile content', async (t) => {
+test('ParseI3sTileContent#should parse tile content', async t => {
   const buildingSceneLayerStructure = await load(I3S_TILE_CONTENT, I3SBuildingSceneLayerLoader);
 
   t.ok(buildingSceneLayerStructure);

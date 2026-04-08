@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#buffer-overrun', (t) => {
+test('SAXParser#buffer-overrun', t => {
   testSax(t, {
     saxOptions: {
       MAX_BUFFER_LENGTH: 5

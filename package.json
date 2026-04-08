@@ -24,6 +24,7 @@
   "workspaces": [
     "modules/*",
     "apps/*",
+    "dev-modules/*",
     "examples",
     "website"
   ],
@@ -41,7 +42,7 @@
     "build-apps": "node ./scripts/run-app-commands.mjs build",
     "build-workers": "npx lerna run pre-build",
     "cover": "ocular-test cover",
-    "lint": "ocular-lint",
+    "lint": "yarn workspace @loaders.gl/devtools-extensions lint",
     "publish-beta": "ocular-publish version-only-beta",
     "publish-prod": "ocular-publish version-only-prod",
     "test": "yarn test-modules",

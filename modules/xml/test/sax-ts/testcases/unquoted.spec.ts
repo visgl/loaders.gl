@@ -8,7 +8,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#unquoted', (t) => {
+test('SAXParser#unquoted', t => {
   testSax(t, {
     xml: '<span class=test hello=world></span>',
     expect: [

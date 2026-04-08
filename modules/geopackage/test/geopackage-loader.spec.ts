@@ -6,7 +6,7 @@ import {GeoPackageLoader} from '@loaders.gl/geopackage';
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_GEOJSON = '@loaders.gl/geopackage/test/data/rivers_small.geojson';
 
-test('GeoPackageLoader#load file as tables', async (t) => {
+test('GeoPackageLoader#load file as tables', async t => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {
       shape: 'tables'
@@ -32,7 +32,7 @@ test('GeoPackageLoader#load file as tables', async (t) => {
   t.end();
 });
 
-test('GeoPackageLoader#load file and reproject to WGS84', async (t) => {
+test('GeoPackageLoader#load file and reproject to WGS84', async t => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'tables'},
     gis: {reproject: true, _targetCrs: 'WGS84'}
@@ -46,7 +46,7 @@ test('GeoPackageLoader#load file and reproject to WGS84', async (t) => {
     t.equal(tableName, 'FEATURESriversds', 'loaded correct table name');
     t.ok(
       // @ts-expect-error ignore geometry collection
-      table.features[0].geometry.coordinates.every((coord) =>
+      table.features[0].geometry.coordinates.every(coord =>
         insideBbox(coord, [-180, -90, 180, 90])
       ),
       'All coordinates in WGS84 lon-lat bounding box'

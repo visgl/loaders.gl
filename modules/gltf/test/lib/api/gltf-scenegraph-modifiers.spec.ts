@@ -6,7 +6,7 @@ import {GLTFLoader, GLTFScenegraph, postProcessGLTF} from '@loaders.gl/gltf';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 
-// prettier-ignore
+// biome-ignore format: preserve intentional fixture layout
 const PNG1x1 = new Uint8Array([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00,
   0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
@@ -15,13 +15,13 @@ const PNG1x1 = new Uint8Array([
   0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0a
 ]);
 
-test('GLTFScenegraph#ctor', (t) => {
+test('GLTFScenegraph#ctor', t => {
   const gltfScenegraph = new GLTFScenegraph();
   t.ok(gltfScenegraph);
   t.end();
 });
 
-test('GLTFScenegraph#addImage', (t) => {
+test('GLTFScenegraph#addImage', t => {
   // Smallest valid png
   const gltfScenegraph = new GLTFScenegraph();
 
@@ -42,7 +42,7 @@ test('GLTFScenegraph#addImage', (t) => {
   t.end();
 });
 
-test('GLTFScenegraph#Should be able to write custom attribute', async (t) => {
+test('GLTFScenegraph#Should be able to write custom attribute', async t => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
 
@@ -59,7 +59,7 @@ test('GLTFScenegraph#Should be able to write custom attribute', async (t) => {
   t.end();
 });
 
-test('GLTFScenegraph#Should calculate min and max arrays for accessor', async (t) => {
+test('GLTFScenegraph#Should calculate min and max arrays for accessor', async t => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
 
@@ -86,7 +86,7 @@ test('GLTFScenegraph#Should calculate min and max arrays for accessor', async (t
   t.end();
 });
 
-test('GLTFScenegraph#Nodes should store `matrix` transformation data', async (t) => {
+test('GLTFScenegraph#Nodes should store `matrix` transformation data', async t => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
 

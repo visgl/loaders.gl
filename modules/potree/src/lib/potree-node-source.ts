@@ -182,7 +182,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    */
   async isNodeAvailable(nodeName: string): Promise<boolean> {
     if (this.metadata?.hierarchy) {
-      return this.metadata.hierarchy.findIndex((item) => item[0] === `r${nodeName}`) !== -1;
+      return this.metadata.hierarchy.findIndex(item => item[0] === `r${nodeName}`) !== -1;
     }
 
     if (!this.root) {
@@ -193,7 +193,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
     let result = true;
     for (const char of nodeName) {
       const newName = `${name}${char}`;
-      const node = currentParent.children.find((child) => child.name === newName);
+      const node = currentParent.children.find(child => child.name === newName);
       if (node) {
         currentParent = node;
         name = newName;

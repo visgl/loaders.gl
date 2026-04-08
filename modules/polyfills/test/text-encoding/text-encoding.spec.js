@@ -3,12 +3,12 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 
 if (!isBrowser) {
-  test('TextEncoder', (t) => {
+  test('TextEncoder', t => {
     t.ok(new TextEncoder(), 'TextEncoder successfully instantiated (available or polyfilled)');
     t.end();
   });
 
-  test('TextDecoder', async (t) => {
+  test('TextDecoder', async t => {
     t.ok(new TextDecoder(), 'TextDecoder successfully instantiated (available or polyfilled)');
 
     const buffer = Buffer.from('México', 'latin1');

@@ -37,7 +37,7 @@ const TEST_CASES = [
   }
 ];
 
-test('getTransferList', (t) => {
+test('getTransferList', t => {
   for (const testCase of TEST_CASES) {
     t.deepEqual(getTransferList(testCase.input), testCase.output, testCase.title);
   }
@@ -55,7 +55,7 @@ test('getTransferList', (t) => {
   t.end();
 });
 
-test('getTransferListForWriter - Should return empty object if object is null', async (t) => {
+test('getTransferListForWriter - Should return empty object if object is null', async t => {
   const options = null;
 
   const transferableData = getTransferListForWriter(options);
@@ -66,7 +66,7 @@ test('getTransferListForWriter - Should return empty object if object is null', 
   t.end();
 });
 
-test('getTransferListForWriter - Should return empty object if object is function', async (t) => {
+test('getTransferListForWriter - Should return empty object if object is function', async t => {
   const options = {
     func: () => {}
   };
@@ -79,7 +79,7 @@ test('getTransferListForWriter - Should return empty object if object is functio
   t.end();
 });
 
-test('getTransferListForWriter - Should return empty object if object is RegExp', async (t) => {
+test('getTransferListForWriter - Should return empty object if object is RegExp', async t => {
   const options = {
     reg: /ab+c/i,
     regWithConstructor: new RegExp(/ab+c/, 'i')
@@ -93,7 +93,7 @@ test('getTransferListForWriter - Should return empty object if object is RegExp'
   t.end();
 });
 
-test('getTransferListForWriter - Should return new object', async (t) => {
+test('getTransferListForWriter - Should return new object', async t => {
   const options = {test: {test1: 'test1'}};
 
   const transferableData = getTransferListForWriter(options);
@@ -107,7 +107,7 @@ test('getTransferListForWriter - Should return new object', async (t) => {
   t.end();
 });
 
-test('getTransferListForWriter - Should keep typedArray as it is', async (t) => {
+test('getTransferListForWriter - Should keep typedArray as it is', async t => {
   const options = {
     typedOption: new Uint32Array([1, 2, 3, 4, 5])
   };
@@ -120,7 +120,7 @@ test('getTransferListForWriter - Should keep typedArray as it is', async (t) => 
   t.end();
 });
 
-test('getTransferListForWriter - Should handle hested options.', async (t) => {
+test('getTransferListForWriter - Should handle hested options.', async t => {
   const options = {
     one: {
       two: {

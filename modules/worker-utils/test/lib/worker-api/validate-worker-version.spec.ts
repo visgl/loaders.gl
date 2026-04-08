@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 import {validateWorkerVersion} from '../../../src/lib/worker-api/validate-worker-version';
 
-test('validateWorkerVersion', (t) => {
+test('validateWorkerVersion', t => {
   t.doesNotThrow(
     // @ts-ignore
     () => validateWorkerVersion({version: '1.9.0'}, null),

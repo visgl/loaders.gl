@@ -99,7 +99,6 @@ function convertFeature(
           features.push(createProtoFeature(id, 'LineString', geometry, geojson.properties));
         }
         return;
-        convertLines(coords, geometry, tolerance, false);
       }
       break;
 

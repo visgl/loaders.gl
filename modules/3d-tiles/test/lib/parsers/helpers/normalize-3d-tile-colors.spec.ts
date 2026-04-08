@@ -49,8 +49,8 @@ const TEST_CASES: {tile: Tiles3DTileContent; colors; batchTable; expected; messa
   // }
 ];
 
-test('normalize3DTileColorAttribute', (t) => {
-  TEST_CASES.forEach((testCase) =>
+test('normalize3DTileColorAttribute', t => {
+  TEST_CASES.forEach(testCase =>
     t.deepEqual(
       normalize3DTileColorAttribute(testCase.tile, testCase.colors),
       testCase.expected,

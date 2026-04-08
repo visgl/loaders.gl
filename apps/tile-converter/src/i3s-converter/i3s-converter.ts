@@ -382,7 +382,7 @@ export default class I3SConverter {
         ...this.loadOptions,
         '3d-tiles': {...this.loadOptions['3d-tiles'], loadGLTF: false}
       });
-    } catch (error) {
+    } catch (_error) {
       // eslint-disable-next-line no-console
       console.log(
         `[warning]: Failed to load ${sourceTile.contentUrl}. An I3S tile with empty content will be added to the output tileset`
@@ -462,7 +462,7 @@ export default class I3SConverter {
       : tilesetPath;
     try {
       await removeDir(removePath);
-    } catch (e) {
+    } catch (_e) {
       // do nothing
     }
 
@@ -532,7 +532,7 @@ export default class I3SConverter {
     this.layers0!.materialDefinitions = this.materialDefinitions;
     // @ts-ignore
     this.layers0.geometryDefinitions = transform(
-      this.geometryConfigs.map((config) => ({
+      this.geometryConfigs.map(config => ({
         geometryConfig: {...config, draco: this.options.draco}
       })),
       geometryDefinitionTemlate()
@@ -540,9 +540,7 @@ export default class I3SConverter {
 
     if (this.layersHasTexture === false) {
       this.layers0!.store.defaultGeometrySchema.ordering =
-        this.layers0!.store.defaultGeometrySchema.ordering.filter(
-          (attribute) => attribute !== 'uv0'
-        );
+        this.layers0!.store.defaultGeometrySchema.ordering.filter(attribute => attribute !== 'uv0');
     }
 
     await this._writeLayers0();
@@ -614,14 +612,14 @@ export default class I3SConverter {
     const slpkTilesetPath = join(tilesetPath, 'SceneServer', 'layers', '0');
     const slpkFileName = `${tilesetPath}.slpk`;
 
-    await createZip(slpkTilesetPath, slpkFileName, async (fileList) => ({
+    await createZip(slpkTilesetPath, slpkFileName, async fileList => ({
       path: '@specialIndexFileHASH128@',
       file: await composeHashFile(fileList)
     }));
 
     try {
       await removeDir(tilesetPath);
-    } catch (e) {
+    } catch (_e) {
       // do nothing
     }
   }
@@ -728,7 +726,7 @@ export default class I3SConverter {
       this.layersHasTexture ||
       Boolean(
         ('texture' in resources && resources.texture) ||
-        ('texelCountHint' in resources && resources.texelCountHint)
+          ('texelCountHint' in resources && resources.texelCountHint)
       );
 
     if (this.generateBoundingVolumes && resources.boundingVolumes) {
@@ -737,7 +735,7 @@ export default class I3SConverter {
 
     const lodSelection = convertGeometricErrorToScreenThreshold(sourceTile, boundingVolumes);
     const maxScreenThresholdSQ = lodSelection.find(
-      (val) => val.metricType === 'maxScreenThresholdSQ'
+      val => val.metricType === 'maxScreenThresholdSQ'
     ) || {maxError: 0};
 
     if (isDumped) {
@@ -837,7 +835,7 @@ export default class I3SConverter {
     let tileContent: Tiles3DTileContent | null = null;
     try {
       tileContent = await loadTile3DContent(this.sourceTileset, sourceTile, this.loadOptions);
-    } catch (error) {
+    } catch (_error) {
       // eslint-disable-next-line no-console
       console.log(`[warning]: Failed to load ${sourceTile.contentUrl}`);
     }
@@ -1017,7 +1015,7 @@ export default class I3SConverter {
           definition: this.findOrCreateGeometryDefinition(
             Boolean(
               ('texture' in resources && resources.texture) ||
-              ('texelCountHint' in resources && resources.texelCountHint)
+                ('texelCountHint' in resources && resources.texelCountHint)
             ),
             hasUvRegions
           ),

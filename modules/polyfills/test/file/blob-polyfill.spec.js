@@ -4,21 +4,21 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 
 if (!isBrowser) {
-  test('test basic', async (t) => {
+  test('test basic', async t => {
     t.isEqual(typeof Blob, 'function');
   });
 
-  test('test jsdom', async (t) => {
+  test('test jsdom', async t => {
     const blob = new Blob(['TEST']);
     t.isEqual(blob.size, 4, 'Initial blob should have a size of 4');
   });
 
-  test('should encode a blob with proper size when given two strings as arguments', async (t) => {
+  test('should encode a blob with proper size when given two strings as arguments', async t => {
     const blob = new Blob(['hi', 'hello']);
     t.isEqual(blob.size, 7);
   });
 
-  test('should encode arraybuffers with right content', async (t) => {
+  test('should encode arraybuffers with right content', async t => {
     const bytes = new Uint8Array(5);
     for (let i = 0; i < 5; i++) bytes[i] = i;
     const blob = new Blob([bytes.buffer]);
@@ -29,7 +29,7 @@ if (!isBrowser) {
     }
   });
 
-  test('should encode typed arrays with right content', async (t) => {
+  test('should encode typed arrays with right content', async t => {
     const bytes = new Uint8Array(5);
     for (let i = 0; i < 5; i++) bytes[i] = i;
     const blob = new Blob([bytes]);
@@ -42,7 +42,7 @@ if (!isBrowser) {
     }
   });
 
-  test('should encode sliced typed arrays with right content', async (t) => {
+  test('should encode sliced typed arrays with right content', async t => {
     const bytes = new Uint8Array(5);
     for (let i = 0; i < 5; i++) bytes[i] = i;
     const blob = new Blob([bytes.subarray(2)]);
@@ -54,7 +54,7 @@ if (!isBrowser) {
     }
   });
 
-  test('should encode with blobs', async (t) => {
+  test('should encode with blobs', async t => {
     const bytes = new Uint8Array(5);
     for (let i = 0; i < 5; i++) bytes[i] = i;
     const blob = new Blob([new Blob([bytes.buffer])]);
@@ -65,7 +65,7 @@ if (!isBrowser) {
     }
   });
 
-  test('should enode mixed contents to right size', async (t) => {
+  test('should enode mixed contents to right size', async t => {
     const bytes = new Uint8Array(5);
     for (let i = 0; i < 5; i++) {
       bytes[i] = i;
@@ -74,37 +74,37 @@ if (!isBrowser) {
     t.isEqual(blob.size, 10);
   });
 
-  test('should accept mime type', async (t) => {
+  test('should accept mime type', async t => {
     const blob = new Blob(['hi', 'hello'], {type: 'text/html'});
     t.isEqual(blob.type, 'text/html');
   });
 
-  test('should be an instance of constructor', async (t) => {
+  test('should be an instance of constructor', async t => {
     const blob = new Blob(['hi']);
     t.ok(blob instanceof Blob);
   });
 
-  test('from text', async (t) => {
+  test('from text', async t => {
     const blob = new Blob(['hello']);
     t.isEqual(blob.size, 5, 'is right size');
     t.isEqual(blob.type, '', 'type is empty');
     t.isEqual(await blob.text(), 'hello', 'reads as text');
     t.isEquivalent(new Uint8Array(await blob.arrayBuffer()), [
-      ...'hello'.split('').map((char) => char.charCodeAt(0))
+      ...'hello'.split('').map(char => char.charCodeAt(0))
     ]);
   });
 
-  test('from text with type', async (t) => {
+  test('from text with type', async t => {
     const blob = new Blob(['hello'], {type: 'text/markdown'});
     t.isEqual(blob.size, 5, 'is right size');
     t.isEqual(blob.type, 'text/markdown', 'type is set');
     t.isEqual(await blob.text(), 'hello', 'reads as text');
     t.isEquivalent(new Uint8Array(await blob.arrayBuffer()), [
-      ...'hello'.split('').map((char) => char.charCodeAt(0))
+      ...'hello'.split('').map(char => char.charCodeAt(0))
     ]);
   });
 
-  test('empty blob', async (t) => {
+  test('empty blob', async t => {
     const blob = new Blob([]);
     t.isEqual(blob.size, 0, 'size is 0');
     t.isEqual(blob.type, '', 'type is empty');
@@ -112,7 +112,7 @@ if (!isBrowser) {
     t.isEquivalent(await blob.arrayBuffer(), new ArrayBuffer(0), 'returns empty buffer');
   });
 
-  test('no args', async (t) => {
+  test('no args', async t => {
     const blob = new Blob();
     t.isEqual(blob.size, 0, 'size is 0');
     t.isEqual(blob.type, '', 'type is empty');
@@ -120,7 +120,7 @@ if (!isBrowser) {
     t.isEquivalent(await blob.arrayBuffer(), new ArrayBuffer(0), 'returns empty buffer');
   });
 
-  test('all emtpy args', async (t) => {
+  test('all emtpy args', async t => {
     const blob = new Blob(['', new Blob(), '', new Uint8Array(0), new ArrayBuffer(0)]);
     t.isEqual(blob.size, 0, 'size is 0');
     t.isEqual(blob.type, '', 'type is empty');
@@ -128,7 +128,7 @@ if (!isBrowser) {
     t.isEquivalent(await blob.arrayBuffer(), new ArrayBuffer(0), 'returns empty buffer');
   });
 
-  test('combined blob', async (t) => {
+  test('combined blob', async t => {
     const uint8 = new Uint8Array([1, 2, 3]);
     const uint16 = new Uint16Array([8, 190]);
     const float32 = new Float32Array([5.4, 9, 1.5]);
@@ -158,7 +158,7 @@ if (!isBrowser) {
     t.isEqual('world', await blob.slice(-5).text());
   });
 
-  test('emoji', async (t) => {
+  test('emoji', async t => {
     const emojis = `👍🤷🎉😤`;
     const blob = new Blob([emojis]);
     const nestle = new Blob([new Blob([blob, blob])]);

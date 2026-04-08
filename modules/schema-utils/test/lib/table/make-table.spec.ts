@@ -27,13 +27,13 @@ import {
   // NON_HADOOP_LZ4_COMPRESSED_PLAIN_TABLE
 } from '../../data/table/tables';
 
-test.skip('makeTableFromData', async (t) => {
+test.skip('makeTableFromData', async t => {
   const table = makeTableFromData(ALL_TYPES_PLAIN_PLAIN_TABLE);
   t.equal(table.data.length, 8);
   t.end();
 });
 
-test('makeTableFromData', async (t) => {
+test('makeTableFromData', async t => {
   for (const tc of TABLES) {
     const table = makeTableFromData(tc.table);
     t.equal(table.data.length, tc.length, tc.name);

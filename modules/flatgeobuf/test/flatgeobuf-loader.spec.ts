@@ -56,7 +56,7 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('FlatGeobufLoader#load', async (t) => {
+test('FlatGeobufLoader#load', async t => {
   const geojsonTable = await load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false}
   });
@@ -66,7 +66,7 @@ test('FlatGeobufLoader#load', async (t) => {
   t.end();
 });
 
-test('FlatGeobufLoader#loadInBatches', async (t) => {
+test('FlatGeobufLoader#loadInBatches', async t => {
   const iterator = await loadInBatches(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
     core: {worker: false}
   });

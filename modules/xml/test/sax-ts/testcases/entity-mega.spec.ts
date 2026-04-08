@@ -15,7 +15,7 @@ for (const i in SAXParser.ENTITIES) {
 }
 xml += '</r>';
 
-test('SAXParser#entity-mega', (t) => {
+test('SAXParser#entity-mega', t => {
   testSax(t, {
     xml,
     expect: [

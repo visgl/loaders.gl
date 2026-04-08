@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#not-string', (t) => {
+test('SAXParser#not-string', t => {
   testSax(t, {
     xml: new Buffer('<x>y</x>'),
     expect: [

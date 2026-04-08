@@ -12,35 +12,35 @@ const DIR = path?.dirname?.(import.meta.url)?.replace('file://', '') || '.';
 const MODULE_URL = `${DIR}/fixture/module.js`;
 const SUBMODULE_URL = `${DIR}/fixture/submodule.js`;
 
-test('polyfills#require-utils', (tt) => {
+test('polyfills#require-utils', tt => {
   if (isBrowser) {
     tt.end();
     return;
   }
 
-  test.skip('polyfills#requireFromFile#', (t) => {
+  test.skip('polyfills#requireFromFile#', t => {
     t.ok(requireFromFile(MODULE_URL), 'Require from file worked');
     t.ok(requireFromFile(SUBMODULE_URL), 'Require from file worked');
     t.end();
   });
 
-  test('polyfills#requireFromString#should accept only string as code', (t) => {
+  test('polyfills#requireFromString#should accept only string as code', t => {
     // @ts-expect-error
     t.throws(() => requireFromString(), /code must be a string, not undefined/);
     t.end();
   });
 
-  test('polyfills#requireFromString#should require from string', (t) => {
+  test('polyfills#requireFromString#should require from string', t => {
     t.equal(requireFromString('module.exports = 1;'), 1);
     t.end();
   });
 
-  test('polyfills#requireFromString#should accept filename', (t) => {
+  test('polyfills#requireFromString#should accept filename', t => {
     t.throws(() => requireFromString('module.exports = ', 'bug.js'), /bug\.js|Unexpected/);
     t.end();
   });
 
-  test.skip('polyfills#requireFromString#should work with relative require in file', (t) => {
+  test.skip('polyfills#requireFromString#should work with relative require in file', t => {
     const code = fs.readFileSync(MODULE_URL, 'utf8');
     const result = requireFromString(code, MODULE_URL);
 
@@ -50,7 +50,7 @@ test('polyfills#require-utils', (tt) => {
     t.end();
   });
 
-  test.skip('polyfills#requireFromString#should have appended and preppended paths', (t) => {
+  test.skip('polyfills#requireFromString#should have appended and preppended paths', t => {
     const code = fs.readFileSync(SUBMODULE_URL, 'utf8');
     const result = requireFromString(code, SUBMODULE_URL, {
       appendPaths: ['append'],
@@ -64,7 +64,7 @@ test('polyfills#require-utils', (tt) => {
   });
 
   // TODO
-  test.skip('requireFromString#should have meaningful error message', (t) => {
+  test.skip('requireFromString#should have meaningful error message', t => {
     try {
       requireFromString('throw new Error("Boom!");');
     } catch (error) {
@@ -81,7 +81,7 @@ test('polyfills#require-utils', (tt) => {
     t.end();
   });
 
-  test.skip('polyfills#requireFromString#should cleanup parent.children', (t) => {
+  test.skip('polyfills#requireFromString#should cleanup parent.children', t => {
     const code = fs.readFileSync(SUBMODULE_URL, 'utf8');
     const result = requireFromString(code, SUBMODULE_URL);
 

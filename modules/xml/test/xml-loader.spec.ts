@@ -10,7 +10,7 @@ import {load} from '@loaders.gl/core';
 
 const FORECASTS_URL = '@loaders.gl/xml/test/data/forecasts.xml';
 
-test('XMLLoader#forecasts.xml', async (t) => {
+test('XMLLoader#forecasts.xml', async t => {
   const json = await load(FORECASTS_URL, XMLLoader);
 
   t.ok(json, 'got result');

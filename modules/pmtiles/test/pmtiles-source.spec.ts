@@ -8,7 +8,7 @@ import {isBrowser, fetchFile} from '@loaders.gl/core';
 import {PMTILESETS} from './data/tilesets';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 
-test('PMTilesSource#urls', async (t) => {
+test('PMTilesSource#urls', async t => {
   if (!isBrowser) {
     t.comment('PMTilesSource currently only supported in browser');
     t.end();
@@ -24,7 +24,7 @@ test('PMTilesSource#urls', async (t) => {
   t.end();
 });
 
-test('PMTilesSource#Blobs', async (t) => {
+test('PMTilesSource#Blobs', async t => {
   if (!isBrowser) {
     t.comment('PMTilesSource currently only supported in browser');
     t.end();

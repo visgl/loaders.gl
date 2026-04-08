@@ -10,7 +10,7 @@ import {
   setGlobalOptions
 } from '@loaders.gl/core/lib/loader-utils/option-utils';
 
-test('coreOptions#deprecatedTopLevelMovesIntoCore', (t) => {
+test('coreOptions#deprecatedTopLevelMovesIntoCore', t => {
   const originalGlobalOptions = getGlobalLoaderOptions();
   const originalClone = {...originalGlobalOptions, core: {...originalGlobalOptions.core}};
 

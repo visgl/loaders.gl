@@ -27,7 +27,7 @@ export function parseWKTCRS(wkt: string, options?: ParseWKTCRSOptions): WKTCRS {
 
   // move all keywords into first array item slot
   // from PARAM[12345, 67890] to ["PARAM", 12345, 67890]
-  wkt = wkt.replace(/[A-Z][A-Z\d_]+\[/gi, (match) => `["${match.substr(0, match.length - 1)}",`);
+  wkt = wkt.replace(/[A-Z][A-Z\d_]+\[/gi, match => `["${match.substr(0, match.length - 1)}",`);
 
   // wrap variables in strings
   // from [...,NORTH] to [...,"NORTH"]
@@ -98,14 +98,14 @@ export function parseWKTCRS(wkt: string, options?: ParseWKTCRSOptions): WKTCRS {
 }
 
 function sort(data: string[], options?: {keywords?: string[]}) {
-  const keys = Object.keys(data).filter((k) => !/\d+/.test(k));
+  const keys = Object.keys(data).filter(k => !/\d+/.test(k));
 
   const keywords: string[] = options?.keywords || [];
   if (!options?.keywords) {
     // try to find multiples
     const counts = {};
     if (Array.isArray(data)) {
-      data.forEach((it) => {
+      data.forEach(it => {
         if (Array.isArray(it) && it.length >= 2 && typeof it[1] === 'string') {
           const k = it[0];
           if (!counts[k]) counts[k] = 0;
@@ -118,11 +118,11 @@ function sort(data: string[], options?: {keywords?: string[]}) {
     }
   }
 
-  keys.forEach((key) => {
+  keys.forEach(key => {
     data[key] = sort(data[key]);
   });
 
-  keywords.forEach((key) => {
+  keywords.forEach(key => {
     const indices: number[] = [];
     const params: string[] = [];
 

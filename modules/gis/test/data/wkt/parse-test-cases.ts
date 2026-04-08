@@ -88,7 +88,7 @@ export default function hexStringToArrayBuffer(hexString: string): ArrayBuffer {
   const pairs = hexString.match(/[\dA-F]{2}/gi);
 
   // convert the octets to integers
-  const integers = pairs ? pairs.map((s) => parseInt(s, 16)) : [];
+  const integers = pairs ? pairs.map(s => parseInt(s, 16)) : [];
   return new Uint8Array(integers).buffer;
 }
 

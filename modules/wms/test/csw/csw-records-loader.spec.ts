@@ -54,7 +54,7 @@ const CSW_RESPONSE_2_0_2 =
   '</csw:BriefRecord>' +
   '</csw:SearchResults>' +
   '</csw:GetRecordsResponse>';
-test('CSWGetRecordsLoader', async (t) => {
+test('CSWGetRecordsLoader', async t => {
   const cswRecords = await parse(CSW_RESPONSE_2_0_2, CSWRecordsLoader);
   // t.comment(JSON.stringify(cswRecords));
 

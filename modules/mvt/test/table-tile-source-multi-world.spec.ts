@@ -33,7 +33,7 @@ function makeGeoJSONTable(feature: Feature): GeoJSONTable {
   };
 }
 
-test('GeoJSONVT#handle point only in the rightside world', async (t) => {
+test('GeoJSONVT#handle point only in the rightside world', async t => {
   try {
     const source = new TableTileSource(makeGeoJSONTable(rightPoint));
     await source.ready;
@@ -46,7 +46,7 @@ test('GeoJSONVT#handle point only in the rightside world', async (t) => {
   t.end();
 });
 
-test('GeoJSONVT#handle point only in the leftside world', async (t) => {
+test('GeoJSONVT#handle point only in the leftside world', async t => {
   try {
     const source = new TableTileSource(makeGeoJSONTable(leftPoint));
     t.equal(source.tiles[0].features[0].geometry[0], 0);
@@ -57,7 +57,7 @@ test('GeoJSONVT#handle point only in the leftside world', async (t) => {
   t.end();
 });
 
-test('GeoJSONVT#handle points in the leftside world and the rightside world', async (t) => {
+test('GeoJSONVT#handle points in the leftside world and the rightside world', async t => {
   try {
     const source = new TableTileSource({
       shape: 'geojson-table',

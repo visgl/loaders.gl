@@ -8,7 +8,7 @@ import type {GeoArrowMetadata} from '@loaders.gl/geoarrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 
 // fix a bug that map bounds are not updated correctly from arrow samples
-test('geoarrow#getGeometryColumnsFromSchema', (t) => {
+test('geoarrow#getGeometryColumnsFromSchema', t => {
   const testCases: {schema: string; columns: Record<string, GeoArrowMetadata>}[] = [
     {
       schema: '',

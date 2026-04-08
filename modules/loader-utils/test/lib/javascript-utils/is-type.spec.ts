@@ -26,7 +26,7 @@ import {
   isWritableStream
 } from '@loaders.gl/loader-utils';
 
-test('is-type#object checks', (t) => {
+test('is-type#object checks', t => {
   class TestClass {}
   t.ok(isObject({}), 'object is object');
   t.equal(isPureObject({}), true, 'object if pure');
@@ -39,7 +39,7 @@ test('is-type#object checks', (t) => {
   t.end();
 });
 
-test('is-type#array buffer checks', (t) => {
+test('is-type#array buffer checks', t => {
   const arrayBuffer = new ArrayBuffer(8);
   const uint8Array = new Uint8Array(arrayBuffer);
 
@@ -60,14 +60,14 @@ test('is-type#array buffer checks', (t) => {
   t.end();
 });
 
-test('is-type#promise checks', (t) => {
+test('is-type#promise checks', t => {
   const promise = Promise.resolve('value');
   t.ok(isPromise(promise), 'promise is promise');
   t.notOk(isPromise({then: 'not a function'}), 'non-function then is not promise');
   t.end();
 });
 
-test.skip('isIterator', (t) => {
+test.skip('isIterator', t => {
   const TESTS = [
     {
       input: new Set().entries(),
@@ -104,7 +104,7 @@ test.skip('isIterator', (t) => {
   t.end();
 });
 
-test('is-type#iterable checks', (t) => {
+test('is-type#iterable checks', t => {
   const array = [1, 2, 3];
   const asyncIterable = {
     async *[Symbol.asyncIterator]() {
@@ -118,7 +118,7 @@ test('is-type#iterable checks', (t) => {
   t.end();
 });
 
-test('is-type#response checks', (t) => {
+test('is-type#response checks', t => {
   const mockResponse = {
     arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
     text: () => Promise.resolve(''),
@@ -129,7 +129,7 @@ test('is-type#response checks', (t) => {
   t.end();
 });
 
-test('is-type#file/blob checks', (t) => {
+test('is-type#file/blob checks', t => {
   if (typeof File !== 'undefined') {
     const file = new File(['abc'], 'test.txt');
     t.ok(isFile(file), 'File instance is file');
@@ -147,14 +147,14 @@ test('is-type#file/blob checks', (t) => {
   t.end();
 });
 
-test('is-type#buffer check', (t) => {
+test('is-type#buffer check', t => {
   const mockBuffer = {isBuffer: true, buffer: new ArrayBuffer(8)};
   t.ok(isBuffer(mockBuffer), 'mock buffer passes buffer guard');
   t.notOk(isBuffer({buffer: new ArrayBuffer(8)}), 'missing isBuffer flag fails');
   t.end();
 });
 
-test('is-type#readable streams', (t) => {
+test('is-type#readable streams', t => {
   const nodeReadable = Readable.from(['hello']);
   const passThrough = new PassThrough();
   passThrough.write('hi');
@@ -180,7 +180,7 @@ test('is-type#readable streams', (t) => {
   t.end();
 });
 
-test('is-type#writable streams', (t) => {
+test('is-type#writable streams', t => {
   const writableMock = {
     end: () => {},
     write: () => {},

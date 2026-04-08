@@ -9,7 +9,7 @@ import {GeoTIFFLoader} from '@loaders.gl/geotiff';
 
 const TIFF_URL = '@loaders.gl/geotiff/test/data/gfw-azores.tif';
 
-test('GeoTIFFLoader.', async (t) => {
+test('GeoTIFFLoader.', async t => {
   const geoimage = await load(TIFF_URL, GeoTIFFLoader);
   t.ok(geoimage, 'GeoTIFFLoader returned a result');
 

@@ -66,7 +66,7 @@ const TEST_CASES = [
   }
 ];
 
-test('normalizeOptions#normalizeOptions', (t) => {
+test('normalizeOptions#normalizeOptions', t => {
   for (const tc of TEST_CASES) {
     const options = normalizeOptions(tc.options, tc.loader, undefined, tc.url);
     tc.assert(t, options, tc.url);
@@ -74,7 +74,7 @@ test('normalizeOptions#normalizeOptions', (t) => {
   t.end();
 });
 
-test('normalizeOptions#movesGlobalCoreOptions', (t) => {
+test('normalizeOptions#movesGlobalCoreOptions', t => {
   const originalGlobalOptions = getGlobalLoaderOptions();
   const originalClone = {...originalGlobalOptions, core: {...originalGlobalOptions.core}};
 

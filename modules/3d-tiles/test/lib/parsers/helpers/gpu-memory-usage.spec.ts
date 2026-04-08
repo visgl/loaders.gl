@@ -10,7 +10,7 @@ import {GLTFLoader, _getMemoryUsageGLTF, postProcessGLTF} from '@loaders.gl/gltf
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 
 const GLB_URL = '@loaders.gl/3d-tiles/test/data/143.glb';
-test('3D Tiles#getMemoryUsageGLTF', async (t) => {
+test('3D Tiles#getMemoryUsageGLTF', async t => {
   const gltfWithBuffers = await load(GLB_URL, GLTFLoader);
   const data = postProcessGLTF(gltfWithBuffers);
   t.ok(data, 'GLTFLoader returned parsed data');
@@ -36,7 +36,7 @@ const TEST_CASES = [
   }
 ];
 
-test('3D Tiles#computes tile GPU memory usage', async (t) => {
+test('3D Tiles#computes tile GPU memory usage', async t => {
   for (const {url, type, gpuMemoryUsageInBytes} of TEST_CASES) {
     const tilesetJson = await load(url, Tiles3DLoader);
     const tileset = new Tileset3D(tilesetJson);

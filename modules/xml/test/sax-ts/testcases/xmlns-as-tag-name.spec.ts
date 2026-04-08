@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#xmlns-as-tag-name', (t) => {
+test('SAXParser#xmlns-as-tag-name', t => {
   testSax(t, {
     xml: '<xmlns/>',
     expect: [

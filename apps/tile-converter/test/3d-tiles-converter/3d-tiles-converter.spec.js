@@ -32,7 +32,7 @@ setLoaderOptions({
 //   t.end();
 // });
 
-test('tile-converter(3d-tiles)#should return error in browser environment', async (t) => {
+test('tile-converter(3d-tiles)#should return error in browser environment', async t => {
   if (isBrowser) {
     const converter = new Tiles3DConverter();
     const tilesetJson = await converter.convert({
@@ -47,7 +47,7 @@ test('tile-converter(3d-tiles)#should return error in browser environment', asyn
   t.end();
 });
 
-test('tile-converter(3d-tiles)#converts SLPK file', async (t) => {
+test('tile-converter(3d-tiles)#converts SLPK file', async t => {
   if (!isBrowser) {
     const converter = new Tiles3DConverter();
     await converter.convert({

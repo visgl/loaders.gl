@@ -208,7 +208,7 @@ export class ParserHandle {
 
     if (isFunction(_config.step)) {
       const userStep = _config.step;
-      _config.step = (results) => {
+      _config.step = results => {
         this._results = results;
 
         if (this.needsHeaderRow()) {
@@ -344,7 +344,7 @@ export class ParserHandle {
   fillHeaderFields() {
     if (!this._results) return;
 
-    const addHeder = (header) => {
+    const addHeder = header => {
       if (isFunction(this._config.transformHeader)) header = this._config.transformHeader(header);
       this._fields.push(header);
     };

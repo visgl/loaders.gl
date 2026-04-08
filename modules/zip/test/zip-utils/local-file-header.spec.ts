@@ -8,7 +8,7 @@ import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {DataViewReadableFile} from '../../src/parse-zip/readable-file-utils';
 import {generateLocalHeader, parseZipLocalFileHeader} from '../../src/parse-zip/local-file-header';
 
-test('SLPKLoader#local file header parse', async (t) => {
+test('SLPKLoader#local file header parse', async t => {
   const localFileHeader = await parseZipLocalFileHeader(
     0n,
     new DataViewReadableFile(new DataView(DATA_ARRAY.buffer))
@@ -18,7 +18,7 @@ test('SLPKLoader#local file header parse', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#central directory file header generation', async (t) => {
+test('SLPKLoader#central directory file header generation', async t => {
   const header = generateLocalHeader({
     crc32: 0,
     fileName: '@specialIndexFileHASH128@1',

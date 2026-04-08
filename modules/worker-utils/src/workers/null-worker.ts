@@ -4,7 +4,7 @@
 
 import {createWorker} from '../lib/worker-api/create-worker';
 
-createWorker(async (data) => {
+createWorker(async data => {
   // @ts-ignore
   return data;
 });

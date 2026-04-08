@@ -18,7 +18,7 @@ export function detectGeometryColumnIndex(table: Table): number {
   // TODO - look for hints in schema metadata
 
   // look for a column named geometry
-  const geometryIndex = table.schema?.fields.findIndex((field) => field.name === 'geometry') ?? -1;
+  const geometryIndex = table.schema?.fields.findIndex(field => field.name === 'geometry') ?? -1;
   if (geometryIndex > -1) {
     return geometryIndex;
   }

@@ -82,9 +82,7 @@ export class ParquetReader {
   /** Iterate over the raw row groups */
   async *rowGroupIterator(props?: ParquetIterationProps) {
     // Ensure strings are nested in arrays
-    const columnList: string[][] = (props?.columnList || []).map((x) =>
-      Array.isArray(x) ? x : [x]
-    );
+    const columnList: string[][] = (props?.columnList || []).map(x => (Array.isArray(x) ? x : [x]));
 
     const metadata = await this.getFileMetadata();
     const schema = await this.getSchema();

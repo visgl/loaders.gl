@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#smlns-unbound-element', (t) => {
+test('SAXParser#smlns-unbound-element', t => {
   testSax(t, {
     saxOptions: {
       strict: true,

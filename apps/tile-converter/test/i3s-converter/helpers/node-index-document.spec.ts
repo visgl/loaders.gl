@@ -16,7 +16,7 @@ const getConverter = ({slpk, instantNodeWriting} = {slpk: false, instantNodeWrit
   return converter;
 };
 
-test('tile-converter(i3s)#NodeIndexDocument', async (t) => {
+test('tile-converter(i3s)#NodeIndexDocument', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -24,7 +24,7 @@ test('tile-converter(i3s)#NodeIndexDocument', async (t) => {
 
   t.test(
     'tile-converter(i3s)#NodeIndexDocument - Should create an instance of NodeIndexDocument class',
-    async (st) => {
+    async st => {
       const node = new NodeIndexDocument(0, getConverter());
       st.ok(node instanceof NodeIndexDocument);
       st.equal(node.inPageId, 0);
@@ -33,7 +33,7 @@ test('tile-converter(i3s)#NodeIndexDocument', async (t) => {
     }
   );
 
-  t.test('tile-converter(i3s)#NodeIndexDocument - Should create root node', async (st) => {
+  t.test('tile-converter(i3s)#NodeIndexDocument - Should create root node', async st => {
     const node = await NodeIndexDocument.createRootNode(
       {
         obb: {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]},
@@ -47,7 +47,7 @@ test('tile-converter(i3s)#NodeIndexDocument', async (t) => {
     st.end();
   });
 
-  t.test('tile-converter(i3s)#NodeIndexDocument - Should create root node', async (st) => {
+  t.test('tile-converter(i3s)#NodeIndexDocument - Should create root node', async st => {
     const obb = {center: [1, 1, 1], halfSize: [2, 3, 4], quaternion: [4, 3, 2, 1]};
     const parentNode = await NodeIndexDocument.createRootNode(
       {obb, mbs: [1, 2, 3, 4]},

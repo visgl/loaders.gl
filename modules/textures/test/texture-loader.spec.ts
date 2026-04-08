@@ -33,7 +33,7 @@ function checkImageTextureLevel(t, textureLevel, message: string) {
   }
 }
 
-test('TextureLoader#load manifest', async (t) => {
+test('TextureLoader#load manifest', async t => {
   const texture = await load(IMAGE_TEXTURE_MANIFEST_URL, TextureLoader);
   t.equal(texture.shape, 'texture', 'returns a texture');
   t.equal(texture.type, '2d', 'returns a 2d texture');
@@ -42,7 +42,7 @@ test('TextureLoader#load manifest', async (t) => {
   t.end();
 });
 
-test('TextureLoader#load mipmaps manifest', async (t) => {
+test('TextureLoader#load mipmaps manifest', async t => {
   const texture = await load(IMAGE_TEXTURE_MIPMAP_MANIFEST_URL, TextureLoader);
   t.equal(texture.shape, 'texture', 'returns a texture');
   t.equal(texture.type, '2d', 'returns a 2d texture');
@@ -53,7 +53,7 @@ test('TextureLoader#load mipmaps manifest', async (t) => {
   t.end();
 });
 
-test('TextureArrayLoader#load manifest', async (t) => {
+test('TextureArrayLoader#load manifest', async t => {
   const texture = await load(IMAGE_TEXTURE_ARRAY_MANIFEST_URL, TextureArrayLoader);
   t.equal(texture.shape, 'texture', 'returns a texture');
   t.equal(texture.type, '2d-array', 'returns a 2d array texture');
@@ -65,7 +65,7 @@ test('TextureArrayLoader#load manifest', async (t) => {
   t.end();
 });
 
-test('TextureCubeLoader#load manifest', async (t) => {
+test('TextureCubeLoader#load manifest', async t => {
   const texture = await load(IMAGE_TEXTURE_CUBE_MANIFEST_URL, TextureCubeLoader);
   t.equal(texture.shape, 'texture', 'returns a texture');
   t.equal(texture.type, 'cube', 'returns a cube texture');
@@ -77,7 +77,7 @@ test('TextureCubeLoader#load manifest', async (t) => {
   t.end();
 });
 
-test('TextureLoader#parse with core.baseUrl', async (t) => {
+test('TextureLoader#parse with core.baseUrl', async t => {
   const requestedUrls: string[] = [];
   const memberUrl = '@loaders.gl/images/test/data/ibl/brdfLUT.png';
   const fetch = async (url: string): Promise<Response> => {
@@ -109,7 +109,7 @@ test('TextureLoader#parse with core.baseUrl', async (t) => {
   t.end();
 });
 
-test('TextureLoader#parse with extensionless core.baseUrl', async (t) => {
+test('TextureLoader#parse with extensionless core.baseUrl', async t => {
   const requestedUrls: string[] = [];
   const fetch = async (url: string): Promise<Response> => {
     requestedUrls.push(url);
@@ -140,7 +140,7 @@ test('TextureLoader#parse with extensionless core.baseUrl', async (t) => {
   t.end();
 });
 
-test('TextureLoader#template with auto mipLevels', async (t) => {
+test('TextureLoader#template with auto mipLevels', async t => {
   const requestedUrls: string[] = [];
   const specularImagePattern =
     /images\/test\/data\/ibl\/papermill\/specular\/specular_back_(\d+)\.jpg$/;
@@ -171,7 +171,7 @@ test('TextureLoader#template with auto mipLevels', async (t) => {
   t.equal(texture.type, '2d', 'returns a 2d texture');
   t.equal(texture.data.length, 10, 'template source expands the auto mip chain');
   t.ok(
-    requestedUrls.some((url) =>
+    requestedUrls.some(url =>
       url.endsWith('images/test/data/ibl/papermill/specular/specular_back_0.jpg')
     ),
     'template source resolves aliased relative member URLs'
@@ -182,7 +182,7 @@ test('TextureLoader#template with auto mipLevels', async (t) => {
   t.end();
 });
 
-test('TextureLoader#template supports escaped braces', async (t) => {
+test('TextureLoader#template supports escaped braces', async t => {
   const requestedUrls: string[] = [];
   const fetch = async (url: string): Promise<Response> => {
     requestedUrls.push(url);
@@ -213,7 +213,7 @@ test('TextureLoader#template supports escaped braces', async (t) => {
   t.end();
 });
 
-test('TextureLoader#template reports invalid placeholders', async (t) => {
+test('TextureLoader#template reports invalid placeholders', async t => {
   await t.rejects(
     parse(
       JSON.stringify({
@@ -235,7 +235,7 @@ test('TextureLoader#template reports invalid placeholders', async (t) => {
   t.end();
 });
 
-test('TextureArrayLoader#template supports index placeholder', async (t) => {
+test('TextureArrayLoader#template supports index placeholder', async t => {
   const requestedUrls: string[] = [];
   const fetch = async (url: string): Promise<Response> => {
     requestedUrls.push(url);
@@ -272,7 +272,7 @@ test('TextureArrayLoader#template supports index placeholder', async (t) => {
   t.end();
 });
 
-test('TextureLoader#uses the top-level fetch function for members', async (t) => {
+test('TextureLoader#uses the top-level fetch function for members', async t => {
   const requestedUrls: string[] = [];
   const manifestUrl = 'https://example.com/image-texture.json';
   const memberUrl = 'https://example.com/member.png';
@@ -300,7 +300,7 @@ test('TextureLoader#uses the top-level fetch function for members', async (t) =>
   t.end();
 });
 
-test('TextureLoader#uses top-level loaders for members', async (t) => {
+test('TextureLoader#uses top-level loaders for members', async t => {
   const manifestUrl = 'https://example.com/image-texture.json';
   const memberUrl = 'https://example.com/member.foo';
   const CustomMemberLoader = {
@@ -347,7 +347,7 @@ test('TextureLoader#uses top-level loaders for members', async (t) => {
   t.end();
 });
 
-test('TextureCubeLoader#template supports cube placeholders', async (t) => {
+test('TextureCubeLoader#template supports cube placeholders', async t => {
   const requestedUrls: string[] = [];
   const fetch = async (url: string): Promise<Response> => {
     requestedUrls.push(url);
@@ -392,7 +392,7 @@ test('TextureCubeLoader#template supports cube placeholders', async (t) => {
   t.end();
 });
 
-test('TextureCubeArrayLoader#template supports layer index and face placeholders', async (t) => {
+test('TextureCubeArrayLoader#template supports layer index and face placeholders', async t => {
   const requestedUrls: string[] = [];
   const fetch = async (url: string): Promise<Response> => {
     requestedUrls.push(url);
@@ -443,7 +443,7 @@ test('TextureCubeArrayLoader#template supports layer index and face placeholders
   t.end();
 });
 
-test('Texture loaders#select by shape', async (t) => {
+test('Texture loaders#select by shape', async t => {
   const loader = await selectLoader(
     JSON.stringify({
       shape: 'image-texture-array',
@@ -456,7 +456,7 @@ test('Texture loaders#select by shape', async (t) => {
   t.end();
 });
 
-test('Texture loaders#load selects by shape for JSON responses', async (t) => {
+test('Texture loaders#load selects by shape for JSON responses', async t => {
   const manifestUrl = 'https://example.com/texture-manifest';
   const memberUrl = 'https://example.com/member.png';
 
