@@ -70,11 +70,13 @@ test('DracoWriter#encode(bunny.drc)', async t => {
       POSITION: data.attributes.POSITION.value
     }
   };
+  const compressedMeshByteLengths = new Map<string, number>();
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
+    compressedMeshByteLengths.set(tc.title, compressedMesh.byteLength);
 
     // const meshSize = getMeshSize(mesh.attributes);
     // const ratio = meshSize / compressedMesh.byteLength;
@@ -93,6 +95,19 @@ test('DracoWriter#encode(bunny.drc)', async t => {
       );
     }
   }
+
+  const sequentialMeshByteLength = compressedMeshByteLengths.get('Encoding Draco Mesh: SEQUENTIAL');
+  const edgebreakerMeshByteLength = compressedMeshByteLengths.get(
+    'Encoding Draco Mesh: EDGEBREAKER'
+  );
+  t.ok(sequentialMeshByteLength, 'Sequential mesh encoded');
+  t.ok(edgebreakerMeshByteLength, 'Edgebreaker mesh encoded');
+  t.ok(
+    sequentialMeshByteLength &&
+      edgebreakerMeshByteLength &&
+      edgebreakerMeshByteLength < sequentialMeshByteLength,
+    `Edgebreaker mesh encoding (${edgebreakerMeshByteLength}) is smaller than sequential mesh encoding (${sequentialMeshByteLength})`
+  );
 
   t.end();
 });
