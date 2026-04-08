@@ -56,5 +56,5 @@ if (typeof window !== 'undefined') {
     return originalFetch(input, init);
   };
 
-  testGlobalThis.Buffer ||= (await import('@loaders.gl/parquet')).Buffer;
+  testGlobalThis.Buffer ||= (await import('@loaders.gl/parquet/buffer')).Buffer;
 }

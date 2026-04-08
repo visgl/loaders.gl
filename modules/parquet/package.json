@@ -31,6 +31,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./buffer": {
+      "types": "./dist/buffer.d.ts",
+      "import": "./dist/buffer.js"
+    },
     "./parquet-worker.js": {
       "import": "./dist/parquet-worker.js"
     }
