@@ -72,7 +72,7 @@ test('Tiles3DLoader#Tileset file', async t => {
 
 test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async t => {
   const response = await fetchFile(TILE_B3DM_WITH_DRACO_URL);
-  const tile = await parse(response, [Tiles3DLoader, DracoLoader]);
+  const tile = await parse(response, [Tiles3DLoader, DracoLoader], {worker: false});
   t.ok(tile);
   // @ts-expect-error type Tiles3DLoader
   t.ok(tile.gltf);

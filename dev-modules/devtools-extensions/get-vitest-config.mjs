@@ -24,8 +24,11 @@ export async function getVitestConfig(options = {}) {
   const testTimeout = vitestConfig.testTimeout || 60_000;
   const softwareGpu = Boolean(vitestConfig.softwareGpu);
   const tsconfigAliases = getTsconfigAliases(tsconfigProjects);
+  const repositoryRoot = process.cwd();
   const testAliases = [
     ...tsconfigAliases,
+    {find: /^@loaders\.gl\/bson$/, replacement: path.resolve(repositoryRoot, 'modules/bson/src')},
+    {find: /^@loaders\.gl\/bson\/test$/, replacement: path.resolve(repositoryRoot, 'modules/bson/test')},
     {find: /^tape$/, replacement: TAPE_TEST_UTILS_PATH},
     {find: /^tape-promise\/tape$/, replacement: TAPE_TEST_UTILS_PATH}
   ];
@@ -104,7 +107,8 @@ export async function getVitestConfig(options = {}) {
       ],
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'lcov']
+        reporter: ['text', 'lcov'],
+        exclude: ['**/*.json', ...(vitestConfig.coverage?.exclude || [])]
       }
     }
   });
