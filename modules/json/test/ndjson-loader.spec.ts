@@ -99,7 +99,7 @@ test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async t => {
   t.end();
 });
 
-test('NDJSONArrowLoader#load(ndjson.ndjson)', async (t) => {
+test('NDJSONArrowLoader#load(ndjson.ndjson)', async t => {
   const classicTable = await load(NDJSON_PATH, NDJSONLoader);
   const table = await load(NDJSON_PATH, NDJSONArrowLoader);
   t.equal(table.shape, 'arrow-table', 'Correct table type received');
@@ -118,7 +118,7 @@ test('NDJSONArrowLoader#load(ndjson.ndjson)', async (t) => {
   t.end();
 });
 
-test('NDJSONArrowLoader#load(ndjson-invalid.ndjson)', async (t) => {
+test('NDJSONArrowLoader#load(ndjson-invalid.ndjson)', async t => {
   await t.rejects(
     () => load(NDJSON_INVALID_PATH, NDJSONArrowLoader),
     /failed to parse JSON on line 9/,
@@ -127,7 +127,7 @@ test('NDJSONArrowLoader#load(ndjson-invalid.ndjson)', async (t) => {
   t.end();
 });
 
-test('NDJSONArrowLoader#loadInBatches(ndjson.ndjson, batchSize = 5)', async (t) => {
+test('NDJSONArrowLoader#loadInBatches(ndjson.ndjson, batchSize = 5)', async t => {
   const classicIterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
     batchSize: 5
   });
@@ -171,7 +171,7 @@ test('NDJSONArrowLoader#loadInBatches(ndjson.ndjson, batchSize = 5)', async (t) 
   t.end();
 });
 
-test('NDJSONArrowLoader#load(ndjson-empty-objects.ndjson)', async (t) => {
+test('NDJSONArrowLoader#load(ndjson-empty-objects.ndjson)', async t => {
   const classicTable = await load(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader);
   const table = await load(NDJSON_EMPTY_OBJECTS_PATH, NDJSONArrowLoader);
 
@@ -181,7 +181,7 @@ test('NDJSONArrowLoader#load(ndjson-empty-objects.ndjson)', async (t) => {
   t.end();
 });
 
-test('NDJSONArrowLoader#loadInBatches(ndjson-empty-objects.ndjson, batchSize = 2)', async (t) => {
+test('NDJSONArrowLoader#loadInBatches(ndjson-empty-objects.ndjson, batchSize = 2)', async t => {
   const classicIterator = await loadInBatches(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader, {
     batchSize: 2
   });
