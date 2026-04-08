@@ -158,9 +158,9 @@ export default class WorkerPool {
       // Wait for the app to signal that the job is complete, then return worker to queue
       try {
         await job.result;
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`Worker exception: ${error}`);
+      } catch {
+        // The job result promise carries worker errors back to the caller; do not duplicate-log
+        // handled rejections here.
       } finally {
         this.returnWorkerToQueue(workerThread);
       }

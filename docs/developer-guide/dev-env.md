@@ -18,7 +18,8 @@ yarn bootstrap
 - `yarn lint fix`: Fix Biome lint and formatting errors
 - `yarn test node`: Quick test run under Node.js
 - `yarn test browser`: Test run under browser, good for interactive debugging
-- `yarn test`: Run lint, node test, browser tests (in headless mode)
+- `yarn test`: List available test modes
+- `yarn test full`: Run node tests and browser tests in headless mode
 
 ## Environment Setup
 

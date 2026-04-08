@@ -9,6 +9,7 @@ import {
   load,
   loadInBatches,
   selectLoader,
+  isBrowser,
   _BrowserFileSystem as BrowserFileSystem
 } from '@loaders.gl/core';
 import {ShapefileLoader, DBFLoader} from '@loaders.gl/shapefile';
@@ -111,6 +112,11 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async t => {
 });
 
 test('ShapefileLoader#load passes dbf options to DBFLoader#parse', async t => {
+  if (isBrowser) {
+    t.comment('Skipping DBFLoader.parse option forwarding test in browser');
+    t.end();
+    return;
+  }
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
   const dbfWorkerUrl = 'custom.dbf.worker.js';
   const originalParse = DBFLoader.parse;

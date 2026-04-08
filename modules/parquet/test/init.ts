@@ -8,6 +8,7 @@ import {preloadCompressions,installBufferPolyfill} from '@loaders.gl/parquet';
 
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
+import {ZstdCodec} from 'zstd-codec';
 // import lzo from 'lzo';
 
 
@@ -23,6 +24,7 @@ const modules = {
     }
   },
   // lzo,
+  'zstd-codec': ZstdCodec
 };
 
 // Start loading compression modules in the background to minimize 

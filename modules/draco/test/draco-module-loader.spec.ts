@@ -4,10 +4,16 @@
 
 import test from 'tape-promise/tape';
 import draco3d from 'draco3d';
+import {isBrowser} from '@loaders.gl/worker-utils';
 
 import {loadDracoDecoderModule, loadDracoEncoderModule} from '../src/lib/draco-module-loader';
 
 test('draco-module-loader#uses injected decoder module', async t => {
+  if (isBrowser) {
+    t.comment('Skipping Draco WASM module test in browser');
+    t.end();
+    return;
+  }
   const module = await loadDracoDecoderModule(
     {
       modules: {
@@ -22,6 +28,11 @@ test('draco-module-loader#uses injected decoder module', async t => {
 });
 
 test('draco-module-loader#uses injected encoder module', async t => {
+  if (isBrowser) {
+    t.comment('Skipping Draco WASM module test in browser');
+    t.end();
+    return;
+  }
   const module = await loadDracoEncoderModule({
     modules: {
       draco3d
