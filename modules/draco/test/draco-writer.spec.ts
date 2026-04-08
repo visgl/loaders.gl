@@ -53,6 +53,9 @@ test('DracoWriter#loader conformance', t => {
 });
 
 test('DracoWriter#encode(bunny.drc)', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -203,6 +206,9 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async t => {
 });
 
 test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -254,6 +260,9 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
 });
 
 test('DracoWriter#encode(bunny.drc)', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -292,6 +301,9 @@ test('DracoWriter#encode(bunny.drc)', async t => {
 });
 
 test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -334,6 +346,9 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
 });
 
 test('DracoWriter#geometry metadata', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -394,6 +409,9 @@ test('DracoWriter#geometry metadata', async t => {
 });
 
 test('DracoWriter#attributes metadata', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -449,6 +467,9 @@ test('DracoWriter#attributes metadata', async t => {
 });
 
 test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   const attributes = {
     POSITION: data.attributes.POSITION.value,
@@ -510,4 +531,16 @@ function validatePositionMetadata(t, data) {
     data.loaderData.attributes[POSITION].metadata['optional-entry-int-array'].intArray,
     [0, 1, 2, -3000, 31987, 77]
   );
+}
+
+/**
+ * Skips Draco writer tests that depend on direct WASM module initialization in browser runs.
+ */
+function skipBrowserDracoWasmTest(t) {
+  if (isBrowser) {
+    t.comment('Skipping Draco WASM writer test in browser');
+    t.end();
+    return true;
+  }
+  return false;
 }

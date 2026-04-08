@@ -43,7 +43,7 @@ test('ExcelLoader#loadInBatches (on worker)', async t => {
   t.end();
 });
 
-test('ExcelArrowLoader#load(ZIPCODES)', async (t) => {
+test('ExcelArrowLoader#load(ZIPCODES)', async t => {
   const csvTable = (await load(ZIPCODES_CSV_PATH, CSVLoader, {
     csv: {shape: 'object-row-table'}
   })) as ObjectRowTable;
@@ -77,7 +77,7 @@ test('ExcelArrowLoader#load(ZIPCODES)', async (t) => {
   t.end();
 });
 
-test('ExcelArrowLoader#loadInBatches', async (t) => {
+test('ExcelArrowLoader#loadInBatches', async t => {
   const classicBatches = (await loadInBatches(
     ZIPCODES_XLSX_PATH,
     ExcelLoader

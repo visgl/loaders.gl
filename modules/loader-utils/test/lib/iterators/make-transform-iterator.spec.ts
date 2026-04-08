@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {SHPLoader} from '@loaders.gl/shapefile';
 import {CRC32CHash} from '@loaders.gl/crypto';
 
 const SHAPEFILE_URL = '@loaders.gl/shapefile/test/data/shapefile-js/boolean-property.shp';
@@ -82,7 +82,7 @@ test('byteLengthTransform#non-streaming', async t => {
   let iterator = makeIterator(response);
   iterator = crc32.hashBatches(iterator, 'base64');
 
-  const batchIterator = await parseInBatches(iterator, ShapefileLoader);
+  const batchIterator = await parseInBatches(iterator, SHPLoader);
   for await (const batch of batchIterator) {
     t.ok(batch, 'streaming hash is correct');
   }

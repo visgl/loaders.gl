@@ -61,6 +61,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Install Playwright browsers
+        if: matrix.full
+        run: yarn playwright install --with-deps chromium
+
       - name: Build
         run: |
           yarn run build

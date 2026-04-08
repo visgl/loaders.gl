@@ -3,7 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {Readable, PassThrough} from 'stream';
 
 import {
   isObject,
@@ -154,15 +153,20 @@ test('is-type#buffer check', t => {
   t.end();
 });
 
-test('is-type#readable streams', t => {
-  const nodeReadable = Readable.from(['hello']);
-  const passThrough = new PassThrough();
-  passThrough.write('hi');
-  passThrough.end();
+test('is-type#readable streams', async t => {
+  if (globalThis.process?.versions?.node) {
+    const {Readable, PassThrough} = await import('stream');
+    const nodeReadable = Readable.from(['hello']);
+    const passThrough = new PassThrough();
+    passThrough.write('hi');
+    passThrough.end();
 
-  t.ok(isReadableNodeStream(nodeReadable), 'Node readable stream detected');
-  t.ok(isReadableNodeStream(passThrough), 'PassThrough is readable');
-  t.ok(isReadableStream(nodeReadable), 'Node readable satisfies readable stream');
+    t.ok(isReadableNodeStream(nodeReadable), 'Node readable stream detected');
+    t.ok(isReadableNodeStream(passThrough), 'PassThrough is readable');
+    t.ok(isReadableStream(nodeReadable), 'Node readable satisfies readable stream');
+  } else {
+    t.pass('Node streams not available in environment');
+  }
 
   if (typeof ReadableStream !== 'undefined') {
     const readableStream = new ReadableStream({

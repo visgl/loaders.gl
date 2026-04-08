@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 
 import {CompressedTextureLoader} from '@loaders.gl/textures';
-import {load, setLoaderOptions} from '@loaders.gl/core';
+import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {
   GL_COMPRESSED_RGB_ETC1_WEBGL,
   GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -59,6 +59,11 @@ test('CompressedTextureLoader#PVR', async t => {
 });
 
 test('CompressedTextureLoader#uses injected encoder modules for KTX2 Basis textures', async t => {
+  if (isBrowser) {
+    t.comment('Skipping injected KTX2 Basis transcoder test in browser');
+    t.end();
+    return;
+  }
   class FakeKTX2File {
     constructor(data: Uint8Array) {
       t.equals(data.byteLength, 4, 'forwards the provided payload to the injected KTX2File');

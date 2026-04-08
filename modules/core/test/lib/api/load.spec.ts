@@ -62,7 +62,7 @@ test('load#auto detect loader', t => {
   // @ts-ignore TS2345: Argument of type not assignable
   registerLoaders(TEST_LOADER);
   // @ts-ignore TODO remove this ts-ignore
-  load('package.json', {JSON: {option: true}});
+  load(isBrowser ? '/package.json' : 'package.json', {JSON: {option: true}});
 });
 
 function checkResponse(t, response) {
