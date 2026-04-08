@@ -99,11 +99,6 @@ export default class App extends PureComponent {
     this._tilesetStatsWidget = new StatsWidget(null, {container});
 
     this._loadExampleIndex();
-
-    // Check if a tileset is specified in the query params
-    if (this._selectTilesetFromQueryParams()) {
-      return;
-    }
   }
 
   // load the index file that lists example tilesets
@@ -115,6 +110,11 @@ export default class App extends PureComponent {
     const {category, name} = this.state;
     const selectedExample = examplesByCategory[category].examples[name];
     this.setState({selectedExample});
+    
+    // Check if a tileset is specified in the query params
+    if (this._selectTilesetFromQueryParams()) {
+      return;
+    }
   }
 
   // Check URL query params and select the "custom example" if appropriate
