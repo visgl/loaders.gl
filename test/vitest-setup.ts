@@ -24,6 +24,13 @@ const [{default: aliases}, {_addAliases}] = await Promise.all([
 _addAliases(aliases);
 
 if (typeof window !== 'undefined') {
+  Object.defineProperty(globalThis, 'global', {
+    configurable: true,
+    enumerable: false,
+    writable: true,
+    value: globalThis
+  });
+
   const setupUrl = new URL(import.meta.url);
   const rootPath = setupUrl.pathname.replace(/\/test\/vitest-setup\.ts$/, '');
   const originalFetch = testGlobalThis.fetch.bind(globalThis);
