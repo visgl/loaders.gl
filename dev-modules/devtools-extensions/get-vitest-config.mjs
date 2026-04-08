@@ -24,6 +24,7 @@ export async function getVitestConfig(options = {}) {
   const testTimeout = vitestConfig.testTimeout || 60_000;
   const softwareGpu = Boolean(vitestConfig.softwareGpu);
   const tsconfigAliases = getTsconfigAliases(tsconfigProjects);
+  const c8CoverageConfig = loadC8CoverageConfig();
   const repositoryRoot = process.cwd();
   const testAliases = [
     ...tsconfigAliases,
@@ -108,10 +109,30 @@ export async function getVitestConfig(options = {}) {
       coverage: {
         provider: 'v8',
         reporter: ['text', 'lcov'],
-        exclude: ['**/*.json', ...(vitestConfig.coverage?.exclude || [])]
+        all: false,
+        include: c8CoverageConfig.include,
+        exclude: [...c8CoverageConfig.exclude, '**/*.json', ...(vitestConfig.coverage?.exclude || [])],
+        excludeAfterRemap: true
       }
     }
   });
+}
+
+/**
+ * Loads the legacy c8 coverage include/exclude globs for Vitest coverage.
+ * @returns {{include: string[] | undefined, exclude: string[]}} Coverage include and exclude globs.
+ */
+function loadC8CoverageConfig() {
+  const configPath = path.resolve('.nycrc');
+  if (!fs.existsSync(configPath)) {
+    return {include: undefined, exclude: []};
+  }
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  return {
+    include: config.include,
+    exclude: config.exclude || []
+  };
 }
 
 function getTsconfigAliases(tsconfigProjects) {
