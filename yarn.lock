@@ -5058,6 +5058,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/potree@workspace:modules/potree"
   dependencies:
+    "@loaders.gl/compression": "npm:4.4.0"
     "@loaders.gl/las": "npm:4.4.0"
     "@loaders.gl/math": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"

@@ -34,6 +34,7 @@ import type {ImageTileSource, VectorTileSource} from '@loaders.gl/loader-utils';
 /** TODO - Internal helper layer: MVTLayer doesn't allow override if tileSource.getTileData? */
 type MVTSourceLayerProps = Omit<MVTLayerProps, 'data'> & {
   data: VectorTileSource;
+  onTileError?: (error: unknown, tileParameters?: unknown) => void;
 };
 
 /** TODO - Internal helper layer: MVTLayer doesn't allow override if tileSource.getTileData? */
@@ -64,10 +65,15 @@ class MVTSourceLayer extends MVTLayer {
     }
   }
 
-  async getTileData(parameters: any): Promise<Feature[] | BinaryFeatureCollection> {
-    const vectorTileSource = this.state.vectorTileSource;
-    const tile = await vectorTileSource.getTileData(parameters);
-    return tile;
+  async getTileData(parameters: any): Promise<Feature[] | BinaryFeatureCollection | null> {
+    try {
+      const vectorTileSource = this.state.vectorTileSource;
+      const tile = await vectorTileSource.getTileData(parameters);
+      return tile;
+    } catch (error) {
+      this.props.onTileError?.(error, parameters);
+      return null;
+    }
   }
 
  renderSubLayers(
@@ -88,6 +94,8 @@ export type TileSourceLayerProps = Omit<TileLayerProps, 'data'> & {
   uniquePropertyId?: string;
   /** The currently highlighted unique property id */
   highlightedFeatureId?: string;
+  /** Called when a tile payload cannot be fetched or parsed. */
+  onTileError?: (error: unknown, tileParameters?: unknown) => void;
 };
 
 /**
@@ -150,7 +158,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
   /** Best rendering of vector tiles is through MVTLayer. However local coordinate support is needed */
   renderMVTLayer() {
     // TODO - use tilesource from props or state???
-    const {tileSource, showTileBorders, metadata, onTilesLoad} = this.props;
+    const {tileSource, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
     const minZoom = metadata?.minZoom || 0;
     const maxZoom = metadata?.maxZoom || 30;
 
@@ -170,6 +178,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
         autoHighlight: true,
 
         onViewportLoad: onTilesLoad,
+        onTileError,
 
         minZoom,
         maxZoom,
@@ -186,7 +195,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
 
   /** TileLayer configured to render both image tiles and vector tiles */
   renderTileLayer() {
-    const {tileSource, showTileBorders, metadata, onTilesLoad} = this.props;
+    const {tileSource, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
     const minZoom = metadata?.minZoom || 0;
     const maxZoom = metadata?.maxZoom || 30;
 
@@ -196,7 +205,14 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
         // TODO - not sufficient, we need better mechanism
         id: String(tileSource.url),
         // TODO - should we upstream tile source support into the TileLayer?
-        getTileData: tileSource.getTileData,
+        getTileData: async (parameters) => {
+          try {
+            return await tileSource.getTileData(parameters);
+          } catch (error) {
+            onTileError?.(error, parameters);
+            return null;
+          }
+        },
         // Assume the pmtiles file support HTTP/2, so we aren't limited by the browser to a certain number per domain.
         maxRequests: 20,
 

@@ -62,13 +62,13 @@ and run the server in a separate terminal:
 git clone https://github.com/visgl/loaders.gl.git
 cd loaders.gl
 yarn install
-yarn serve-range --root ./examples/range-data --port 9000
+yarn serve-range --root ./modules/pmtiles/test/data/pmtiles-v3 --port 9000
 ```
 
 Then configure the website example with URLs below that server root:
 
 ```ts
-const localPmtilesUrl = 'http://127.0.0.1:9000/example.pmtiles';
+const localPmtilesUrl = 'http://127.0.0.1:9000/stamen_toner(raster)CC-BY+ODbL_z3.pmtiles';
 const localCogUrl = 'http://127.0.0.1:9000/example-cog.tif';
 ```
 

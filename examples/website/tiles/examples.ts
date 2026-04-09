@@ -56,7 +56,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
     },
     'Local Range Server': {
       sourceType: 'pmtiles',
-      data: 'http://127.0.0.1:9000/example.pmtiles',
+      data: 'http://127.0.0.1:9000/stamen_toner(raster)CC-BY+ODbL_z3.pmtiles',
       localRangeServer: true,
       viewState: {...VIEW_STATE}
     }
