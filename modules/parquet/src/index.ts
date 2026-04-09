@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
-
 // import {ArrowTable, ArrowTableBatch} from '@loaders.gl/arrow';
 
 export {ParquetFormat} from './parquet-format';

@@ -94,7 +94,7 @@ export function decodeValues(
 
   let values: number[] = [];
   while (values.length < count) {
-    const header = varint.decode(cursor.buffer, cursor.offset);
+    const header = varint.decode(cursor.buffer as unknown as Buffer, cursor.offset);
     cursor.offset += varint.encodingLength(header);
     let decodedValues: number[];
     if (header & 1) {

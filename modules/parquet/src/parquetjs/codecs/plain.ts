@@ -8,6 +8,14 @@
 import type {PrimitiveType} from '../schema/declare';
 import type {CursorBuffer, ParquetCodecOptions} from './declare';
 import INT53 from 'int53';
+import {
+  copyUint8Array,
+  readDoubleLE,
+  readFloatLE,
+  readInt32LE,
+  readInt64LE,
+  readUInt32LE
+} from '../utils/binary-utils';
 
 export function encodeValues(
   type: PrimitiveType,
@@ -96,7 +104,7 @@ function encodeValues_INT32(values: number[]): Buffer {
 function decodeValues_INT32(cursor: CursorBuffer, count: number): number[] {
   const values: number[] = [];
   for (let i = 0; i < count; i++) {
-    values.push(cursor.buffer.readInt32LE(cursor.offset));
+    values.push(readInt32LE(cursor.buffer, cursor.offset));
     cursor.offset += 4;
   }
   return values;
@@ -113,7 +121,7 @@ function encodeValues_INT64(values: number[]): Buffer {
 function decodeValues_INT64(cursor: CursorBuffer, count: number): number[] {
   const values: number[] = [];
   for (let i = 0; i < count; i++) {
-    values.push(INT53.readInt64LE(cursor.buffer, cursor.offset));
+    values.push(readInt64LE(cursor.buffer, cursor.offset));
     cursor.offset += 8;
   }
   return values;
@@ -136,8 +144,8 @@ function encodeValues_INT96(values: number[]): Buffer {
 function decodeValues_INT96(cursor: CursorBuffer, count: number): number[] {
   const values: number[] = [];
   for (let i = 0; i < count; i++) {
-    const low = INT53.readInt64LE(cursor.buffer, cursor.offset);
-    const high = cursor.buffer.readUInt32LE(cursor.offset + 8);
+    const low = readInt64LE(cursor.buffer, cursor.offset);
+    const high = readUInt32LE(cursor.buffer, cursor.offset + 8);
     if (high === 0xffffffff) {
       values.push(~-low + 1); // truncate to 64 actual precision
     } else {
@@ -159,7 +167,7 @@ function encodeValues_FLOAT(values: number[]): Buffer {
 function decodeValues_FLOAT(cursor: CursorBuffer, count: number): number[] {
   const values: number[] = [];
   for (let i = 0; i < count; i++) {
-    values.push(cursor.buffer.readFloatLE(cursor.offset));
+    values.push(readFloatLE(cursor.buffer, cursor.offset));
     cursor.offset += 4;
   }
   return values;
@@ -176,7 +184,7 @@ function encodeValues_DOUBLE(values: number[]): Buffer {
 function decodeValues_DOUBLE(cursor: CursorBuffer, count: number): number[] {
   const values: number[] = [];
   for (let i = 0; i < count; i++) {
-    values.push(cursor.buffer.readDoubleLE(cursor.offset));
+    values.push(readDoubleLE(cursor.buffer, cursor.offset));
     cursor.offset += 8;
   }
   return values;
@@ -200,13 +208,12 @@ function encodeValues_BYTE_ARRAY(values: Buffer[]): Buffer {
   return buf;
 }
 
-function decodeValues_BYTE_ARRAY(cursor: CursorBuffer, count: number): Buffer[] {
-  const values: Buffer[] = [];
+function decodeValues_BYTE_ARRAY(cursor: CursorBuffer, count: number): Uint8Array[] {
+  const values: Uint8Array[] = [];
   for (let i = 0; i < count; i++) {
-    const len = cursor.buffer.readUInt32LE(cursor.offset);
+    const len = readUInt32LE(cursor.buffer, cursor.offset);
     cursor.offset += 4;
-    // values.push(cursor.buffer.buffer.slice(cursor.offset, cursor.offset + len));
-    values.push(cursor.buffer.slice(cursor.offset, cursor.offset + len));
+    values.push(copyUint8Array(cursor.buffer.subarray(cursor.offset, cursor.offset + len)));
     cursor.offset += len;
   }
   return values;
@@ -229,13 +236,15 @@ function decodeValues_FIXED_LEN_BYTE_ARRAY(
   cursor: CursorBuffer,
   count: number,
   opts: ParquetCodecOptions
-): Buffer[] {
-  const values: Buffer[] = [];
+): Uint8Array[] {
+  const values: Uint8Array[] = [];
   if (!opts.typeLength) {
     throw new Error('missing option: typeLength (required for FIXED_LEN_BYTE_ARRAY)');
   }
   for (let i = 0; i < count; i++) {
-    values.push(cursor.buffer.slice(cursor.offset, cursor.offset + opts.typeLength));
+    values.push(
+      copyUint8Array(cursor.buffer.subarray(cursor.offset, cursor.offset + opts.typeLength))
+    );
     cursor.offset += opts.typeLength;
   }
   return values;
