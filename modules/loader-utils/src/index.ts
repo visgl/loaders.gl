@@ -141,6 +141,8 @@ export {default as RequestScheduler} from './lib/request-utils/request-scheduler
 export {TileRangeRequestScheduler} from './lib/request-utils/tile-range-request-scheduler';
 export type {
   TileRangeRequest,
+  TileRangeRequestEvent,
+  TileRangeRequestTransportResult,
   TileRangeRequestSchedulerProps
 } from './lib/request-utils/tile-range-request-scheduler';
 

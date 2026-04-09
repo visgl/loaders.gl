@@ -4,7 +4,8 @@
 
 import {
   TileRangeRequestScheduler,
-  type TileRangeRequestSchedulerProps
+  type TileRangeRequestSchedulerProps,
+  type TileRangeRequestTransportResult
 } from '@loaders.gl/loader-utils';
 import type {Source, RangeResponse} from 'pmtiles';
 
@@ -61,7 +62,7 @@ export class RangeRequestSource implements Source {
     offset: number,
     length: number,
     signal?: AbortSignal
-  ): Promise<ArrayBuffer> {
+  ): Promise<TileRangeRequestTransportResult> {
     const abortContext = createAbortableFetchContext(signal);
 
     try {

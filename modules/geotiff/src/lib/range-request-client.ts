@@ -4,7 +4,8 @@
 
 import {
   TileRangeRequestScheduler,
-  type TileRangeRequestSchedulerProps
+  type TileRangeRequestSchedulerProps,
+  type TileRangeRequestTransportResult
 } from '@loaders.gl/loader-utils';
 
 /** Options for the GeoTIFF range-request client. */
@@ -52,7 +53,7 @@ export class RangeRequestClient {
     offset: number,
     length: number,
     signal?: AbortSignal
-  ): Promise<ArrayBuffer> {
+  ): Promise<TileRangeRequestTransportResult> {
     const abortContext = createAbortableFetchContext(signal);
 
     try {

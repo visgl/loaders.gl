@@ -4,7 +4,8 @@
 
 import {
   TileRangeRequestScheduler,
-  type TileRangeRequestSchedulerProps
+  type TileRangeRequestSchedulerProps,
+  type TileRangeRequestTransportResult
 } from '@loaders.gl/loader-utils';
 
 /** Options for the Potree 2 binary range reader. */
@@ -54,7 +55,7 @@ export class PotreeRangeReader {
     offset: number,
     length: number,
     signal?: AbortSignal
-  ): Promise<ArrayBuffer> {
+  ): Promise<TileRangeRequestTransportResult> {
     const abortContext = createAbortableFetchContext(signal);
 
     try {

@@ -4,7 +4,8 @@
 
 import {
   TileRangeRequestScheduler,
-  type TileRangeRequestSchedulerProps
+  type TileRangeRequestSchedulerProps,
+  type TileRangeRequestTransportResult
 } from '@loaders.gl/loader-utils';
 import type {Getter} from 'copc';
 
@@ -57,7 +58,7 @@ async function fetchRange(
   length: number,
   fetchFunction: (url: string, options?: RequestInit) => Promise<Response>,
   signal?: AbortSignal
-): Promise<ArrayBuffer> {
+): Promise<TileRangeRequestTransportResult> {
   const abortContext = createAbortableFetchContext(signal);
 
   try {
