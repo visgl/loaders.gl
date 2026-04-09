@@ -35,6 +35,7 @@
     "bootstrap": "ocular-bootstrap",
     "postinstall": "echo postinstall",
     "start": "echo 'Please see loaders.gl website for how to run examples' && open https://loaders.gl/docs",
+    "serve-range": "node ./dev-modules/devtools-extensions/range-server.mjs",
     "clean": "ocular-clean",
     "tsclean": "find . -name tsconfig.tsbuildinfo -exec rm {} \\;",
     "build": "yarn build-modules",

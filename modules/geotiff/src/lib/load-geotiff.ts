@@ -80,7 +80,7 @@ export async function loadGeoTiff(
 
   const firstImage = await tiff.getImage(0);
 
-  if (isOmeTiff(firstImage)) {
+  if (await isOmeTiff(firstImage)) {
     return loadOmeTiff(tiff, firstImage);
   }
 

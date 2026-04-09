@@ -44,6 +44,7 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
+    "@loaders.gl/compression": "4.4.0",
     "@loaders.gl/las": "4.4.0",
     "@loaders.gl/math": "4.4.0",
     "@loaders.gl/schema": "4.4.0",

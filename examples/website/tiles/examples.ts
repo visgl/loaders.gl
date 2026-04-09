@@ -53,6 +53,12 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       sourceType: 'pmtiles',
       data:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles",
       tileSize: [512,512]
+    },
+    'Local Range Server': {
+      sourceType: 'pmtiles',
+      data: 'http://127.0.0.1:9000/example.pmtiles',
+      localRangeServer: true,
+      viewState: {...VIEW_STATE}
     }
   },
   MLT: {

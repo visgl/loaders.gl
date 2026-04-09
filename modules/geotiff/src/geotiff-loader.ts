@@ -88,6 +88,7 @@ async function parseGeoTIFF(
   // TODO: Add support for worker pools here.
   // TODO: Add support for more image formats.
   const rgbData = await image.readRGB({
+    interleave: true,
     enableAlpha: options?.geotiff?.enableAlpha
   });
 
@@ -99,7 +100,7 @@ async function parseGeoTIFF(
 
   // Get geo data
   const bounds = image.getBoundingBox();
-  const metadata = image.getGeoKeys();
+  const metadata = image.getGeoKeys() || {};
 
   // ProjectedCSTypeGeoKey is the only key we support for now, we assume it is an EPSG code
   let crs: string | undefined;

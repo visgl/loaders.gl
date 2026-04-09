@@ -103,6 +103,10 @@
         "label": "Sources",
         "items": [
           "modules/pmtiles/api-reference/pmtiles-source",
+          "modules/geotiff/api-reference/geotiff-source",
+          "modules/geotiff/api-reference/ome-tiff-source",
+          "modules/copc/api-reference/copc-source",
+          "modules/potree/api-reference/potree-source",
           "modules/mvt/api-reference/mvt-source",
           "modules/mvt/api-reference/table-tile-source",
           "modules/mlt/api-reference/mlt-source",
@@ -173,6 +177,8 @@
           "developer-guide/using-loaders",
           "developer-guide/using-writers",
           "developer-guide/using-sources",
+          "developer-guide/multi-range-loading",
+          "developer-guide/byte-range-source-formats",
           "developer-guide/loader-categories",
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",
@@ -257,6 +263,7 @@
           "modules/loader-utils/README",
           "modules/loader-utils/api-reference/readable-file",
           "modules/loader-utils/api-reference/request-scheduler",
+          "modules/loader-utils/api-reference/tile-range-request-scheduler",
           "modules/loader-utils/api-reference/parse-with-context"
         ]
       },

@@ -47,6 +47,7 @@ export type Example = {
   attributions?: string[];
   viewState?: Record<string, unknown>;
   tileSize?: number[];
+  localRangeServer?: boolean;
 };
 
 export type ExamplePanelProps = React.PropsWithChildren<{

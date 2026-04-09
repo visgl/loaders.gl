@@ -138,6 +138,11 @@ export {
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
+export {TileRangeRequestScheduler} from './lib/request-utils/tile-range-request-scheduler';
+export type {
+  TileRangeRequest,
+  TileRangeRequestSchedulerProps
+} from './lib/request-utils/tile-range-request-scheduler';
 
 // PATH HELPERS
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
@@ -200,7 +205,8 @@ export type {GetFeaturesParameters} from './lib/sources/vector-source';
 
 export type {TileSource} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
-export type {GetTileDataParameters} from './lib/sources/tile-source';
+export type {GetTileDataBatchResult, GetTileDataParameters} from './lib/sources/tile-source';
+export {getTileDataBatch} from './lib/sources/tile-source-utils';
 
 export type {ImageTileSource} from './lib/sources/image-tile-source';
 

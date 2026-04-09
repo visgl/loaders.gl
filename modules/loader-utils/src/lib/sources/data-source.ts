@@ -104,11 +104,11 @@ export function getFetchFunction(options?: StrictLoaderOptions) {
   // options.fetch can be an options object, use global fetch with those options
   const fetchOptions = options?.fetch;
   if (fetchOptions && typeof fetchOptions !== 'function') {
-    return url => fetch(url, fetchOptions);
+    return (url, requestOptions) => fetch(url, {...fetchOptions, ...requestOptions});
   }
 
   // else return the global fetch function
-  return url => fetch(url);
+  return (url, requestOptions) => fetch(url, requestOptions);
 }
 
 function normalizeDirectLoaderOptions(options?: StrictLoaderOptions): StrictLoaderOptions {

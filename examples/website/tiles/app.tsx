@@ -3,11 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 // React
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
 // loaders.gl sources and loaders
-import type {VectorTileSource, ImageTileSource} from '@loaders.gl/loader-utils';
+import type {
+  VectorTileSource,
+  ImageTileSource,
+  TileRangeRequestEvent
+} from '@loaders.gl/loader-utils';
 import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
@@ -54,7 +58,25 @@ type AppState = {
   viewState: Record<string, number>;
 };
 
+type RangeStats = {
+  logicalRanges: number;
+  rangeBatches: number;
+  transportRanges: number;
+  completedTransportRanges: number;
+  coalescedRanges: number;
+  requestedBytes: number;
+  transportBytes: number;
+  responseBytes: number;
+  overfetchBytes: number;
+  failedTransportRanges: number;
+  abortedLogicalRanges: number;
+  fullResponseFallbacks: number;
+};
+
 export default function App(props: AppProps = {}) {
+  const rangeStatsRef = useRef<RangeStats>(createEmptyRangeStats());
+  const [rangeStats, setRangeStats] = useState<RangeStats>(rangeStatsRef.current);
+  const [currentExample, setCurrentExample] = useState<Example | null>(null);
   const [state, setState] = useState<AppState>({
     tileSource: null,
     metadata: null,
@@ -89,6 +111,8 @@ export default function App(props: AppProps = {}) {
         onExampleChange={onExampleChange}
       >
         <MetadataViewer metadata={metadata} />
+        <RangeStatsViewer rangeStats={rangeStats} />
+        <LocalRangeServerNote example={currentExample} />
         {props.children}
         {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
         <pre style={{textAlign: 'center', margin: 0}}>
@@ -119,7 +143,11 @@ export default function App(props: AppProps = {}) {
 
     const url = example.data;
     try {
-      let tileSource = createTileSource(example);
+      rangeStatsRef.current = createEmptyRangeStats();
+      setRangeStats(rangeStatsRef.current);
+      setCurrentExample(example);
+
+      let tileSource = createTileSource(example, onTileRangeRequest);
 
       setState((state) => ({
         ...state,
@@ -143,6 +171,15 @@ export default function App(props: AppProps = {}) {
       setState((state) => ({...state, error: `Could not load ${exampleName}: ${error.message}`}));
     }
   }
+
+  function onTileRangeRequest(event: TileRangeRequestEvent): void {
+    const rangeStats = updateRangeStats(rangeStatsRef.current, event);
+    rangeStatsRef.current = rangeStats;
+
+    if (event.type === 'batch' || event.type === 'response' || event.type === 'error' || event.type === 'abort') {
+      setRangeStats(rangeStats);
+    }
+  }
 }
 
 function getTooltip(info) {
@@ -160,7 +197,10 @@ export function renderToDOM(container: HTMLElement) {
 // Helpers
 
 /** Create a source from the example url */
-function createTileSource(example: Example): VectorTileSource | ImageTileSource {
+function createTileSource(
+  example: Example,
+  onTileRangeRequest: (event: TileRangeRequestEvent) => void
+): VectorTileSource | ImageTileSource {
   const url = example.data;
   return createDataSource(
     url,
@@ -176,6 +216,10 @@ function createTileSource(example: Example): VectorTileSource | ImageTileSource 
       },
       pmtiles: {
       },
+      tileRangeRequest: {
+        batchDelayMs: 50,
+        onEvent: onTileRangeRequest
+      },
       table: {
         generateId: true,
       },
@@ -183,6 +227,105 @@ function createTileSource(example: Example): VectorTileSource | ImageTileSource 
       mlt: {}
     }
   );
+}
+
+function createEmptyRangeStats(): RangeStats {
+  return {
+    logicalRanges: 0,
+    rangeBatches: 0,
+    transportRanges: 0,
+    completedTransportRanges: 0,
+    coalescedRanges: 0,
+    requestedBytes: 0,
+    transportBytes: 0,
+    responseBytes: 0,
+    overfetchBytes: 0,
+    failedTransportRanges: 0,
+    abortedLogicalRanges: 0,
+    fullResponseFallbacks: 0
+  };
+}
+
+function updateRangeStats(rangeStats: RangeStats, event: TileRangeRequestEvent): RangeStats {
+  const nextRangeStats = {...rangeStats};
+  switch (event.type) {
+    case 'queued':
+      nextRangeStats.logicalRanges += event.logicalRequestCount || 0;
+      nextRangeStats.requestedBytes += event.logicalBytes || 0;
+      break;
+    case 'batch':
+      nextRangeStats.rangeBatches++;
+      nextRangeStats.transportRanges += event.transportRequestCount || 0;
+      nextRangeStats.transportBytes += event.transportBytes || 0;
+      nextRangeStats.overfetchBytes += event.overfetchBytes || 0;
+      nextRangeStats.coalescedRanges += Math.max(
+        (event.logicalRequestCount || 0) - (event.transportRequestCount || 0),
+        0
+      );
+      break;
+    case 'response':
+      nextRangeStats.completedTransportRanges++;
+      nextRangeStats.responseBytes += event.responseBytes || 0;
+      if (event.fullResponse) {
+        nextRangeStats.fullResponseFallbacks++;
+      }
+      break;
+    case 'error':
+      nextRangeStats.failedTransportRanges++;
+      break;
+    case 'abort':
+      nextRangeStats.abortedLogicalRanges += event.logicalRequestCount || 1;
+      break;
+    default:
+  }
+  return nextRangeStats;
+}
+
+function RangeStatsViewer({rangeStats}: {rangeStats: RangeStats}) {
+  if (rangeStats.logicalRanges === 0) {
+    return null;
+  }
+
+  return (
+    <div style={{lineHeight: 1.4, marginBottom: 8}}>
+      <b>Range transport</b>
+      <div>
+        logical {rangeStats.logicalRanges} → HTTP {rangeStats.completedTransportRanges}/
+        {rangeStats.transportRanges}; coalesced {rangeStats.coalescedRanges}
+      </div>
+      <div>
+        requested {formatBytes(rangeStats.requestedBytes)}; transport {formatBytes(rangeStats.responseBytes)};
+        overfetch {formatBytes(rangeStats.overfetchBytes)}
+      </div>
+      <div>
+        failed {rangeStats.failedTransportRanges}; aborted {rangeStats.abortedLogicalRanges}; full-file fallbacks{' '}
+        {rangeStats.fullResponseFallbacks}
+      </div>
+    </div>
+  );
+}
+
+function LocalRangeServerNote({example}: {example: Example | null}) {
+  if (!example?.localRangeServer) {
+    return null;
+  }
+
+  return (
+    <div style={{lineHeight: 1.4, marginBottom: 8}}>
+      Put <code>example.pmtiles</code> under a local data directory, then run:
+      <pre style={{whiteSpace: 'pre-wrap'}}>yarn serve-range --root ./examples/range-data --port 9000</pre>
+    </div>
+  );
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KiB`;
+  }
+  return `${(bytes / 1024 / 1024).toFixed(1)} MiB`;
 }
 
 /**
