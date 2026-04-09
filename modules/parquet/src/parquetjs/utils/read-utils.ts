@@ -4,30 +4,18 @@
 // Copyright (c) 2017 ironSource Ltd.
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
-import {
-  TBufferedTransport,
-  TCompactProtocol,
-  FileMetaData,
-  PageHeader
-} from '../parquet-thrift/index';
+import {FileMetaData, PageHeader} from '../parquet-thrift/index';
 import {Uint8ArrayCompactProtocol} from './uint8-array-compact-protocol';
+import {Uint8ArrayCompactProtocolWriter} from './uint8-array-compact-protocol-writer';
 import {Uint8ArrayTransport} from './uint8-array-transport';
 
 /**
  * Helper function that serializes a thrift object into a buffer
  */
-export function serializeThrift(obj: any): Buffer {
-  const output: Buffer[] = [];
-
-  const transport = new TBufferedTransport(undefined, buf => {
-    output.push(buf as unknown as Buffer);
-  });
-
-  const protocol = new TCompactProtocol(transport);
-  obj.write(protocol);
-  transport.flush();
-
-  return Buffer.concat(output as Uint8Array[]);
+export function serializeThrift(obj: any): Uint8Array {
+  const protocol = new Uint8ArrayCompactProtocolWriter();
+  obj.write(protocol as any);
+  return protocol.getBytes();
 }
 
 export function decodeThrift(obj: any, buf: Uint8Array, offset?: number) {

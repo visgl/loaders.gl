@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 const TEXT_DECODER = new TextDecoder();
+const TEXT_ENCODER = new TextEncoder();
 
 /** Returns bytes as an exact Uint8Array view. */
 export function toUint8Array(binary: ArrayBuffer | ArrayBufferView): Uint8Array {
@@ -33,7 +34,7 @@ export function decodeUtf8(binary: Uint8Array): string {
 
 /** Encode text as UTF-8 bytes. */
 export function encodeUtf8(text: string): Uint8Array {
-  return new TextEncoder().encode(text);
+  return TEXT_ENCODER.encode(text);
 }
 
 /** Decode an ASCII/UTF-8 range from bytes. */
@@ -72,4 +73,55 @@ export function readFloatLE(binary: Uint8Array, offset: number): number {
 /** Read little-endian 64-bit float. */
 export function readDoubleLE(binary: Uint8Array, offset: number): number {
   return getDataView(binary).getFloat64(offset, true);
+}
+
+/** Concatenate bytes into one exact Uint8Array. */
+export function concatUint8Arrays(chunks: Uint8Array[]): Uint8Array {
+  let byteLength = 0;
+  for (const chunk of chunks) {
+    byteLength += chunk.length;
+  }
+
+  const result = new Uint8Array(byteLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+
+/** Write signed little-endian 16-bit integer. */
+export function writeInt16LE(binary: Uint8Array, value: number, offset: number): void {
+  getDataView(binary).setInt16(offset, value, true);
+}
+
+/** Write unsigned little-endian 16-bit integer. */
+export function writeUInt16LE(binary: Uint8Array, value: number, offset: number): void {
+  getDataView(binary).setUint16(offset, value, true);
+}
+
+/** Write signed little-endian 32-bit integer. */
+export function writeInt32LE(binary: Uint8Array, value: number, offset: number): void {
+  getDataView(binary).setInt32(offset, value, true);
+}
+
+/** Write unsigned little-endian 32-bit integer. */
+export function writeUInt32LE(binary: Uint8Array, value: number, offset: number): void {
+  getDataView(binary).setUint32(offset, value, true);
+}
+
+/** Write signed little-endian 64-bit integer. */
+export function writeInt64LE(binary: Uint8Array, value: number | bigint, offset: number): void {
+  getDataView(binary).setBigInt64(offset, BigInt(value), true);
+}
+
+/** Write little-endian 32-bit float. */
+export function writeFloatLE(binary: Uint8Array, value: number, offset: number): void {
+  getDataView(binary).setFloat32(offset, value, true);
+}
+
+/** Write little-endian 64-bit float. */
+export function writeDoubleLE(binary: Uint8Array, value: number, offset: number): void {
+  getDataView(binary).setFloat64(offset, value, true);
 }

@@ -6,7 +6,7 @@
 
 const TEXT_ENCODER = new TextEncoder();
 
-const RAW_NUMERIC_TEXT_FIELDS = new Set(['date_string_col', 'string_col']);
+const RAW_TEXT_FIELDS = new Set(['c1', 'date_string_col', 'string_col']);
 
 function bytes(values: number[]): Uint8Array {
   return new Uint8Array(values);
@@ -22,10 +22,10 @@ function isNumericString(value: string): boolean {
 
 function toTypedParquetFixture(value: unknown, key?: string): unknown {
   if (typeof value === 'string') {
-    if (RAW_NUMERIC_TEXT_FIELDS.has(key || '')) {
+    if (RAW_TEXT_FIELDS.has(key || '')) {
       return utf8Bytes(value);
     }
-    return isNumericString(value) ? Number(value) : utf8Bytes(value);
+    return isNumericString(value) ? Number(value) : value;
   }
 
   if (Array.isArray(value)) {
@@ -324,7 +324,7 @@ export const NESTED_MAPS_EXPECTED = typedParquetRows([
     {
       key_value: [
         {
-          key: utf8Bytes('a'),
+          key: 'a',
           value: {
             key_value: [
               { key: '1', value: true },
@@ -342,7 +342,7 @@ export const NESTED_MAPS_EXPECTED = typedParquetRows([
     {
       key_value: [
         {
-          key: utf8Bytes('b'),
+          key: 'b',
           value: {
             key_value: [
               { key: '1', value: true }
@@ -357,7 +357,7 @@ export const NESTED_MAPS_EXPECTED = typedParquetRows([
   {
     a: {
       key_value: [
-        {key: utf8Bytes('c')}
+        {key: 'c'}
       ]
     },
     b: '1',
@@ -367,7 +367,7 @@ export const NESTED_MAPS_EXPECTED = typedParquetRows([
     a: {
       key_value: [
         {
-          key: utf8Bytes('d'), value: {}
+          key: 'd', value: {}
         }
       ]
     },
@@ -379,7 +379,7 @@ export const NESTED_MAPS_EXPECTED = typedParquetRows([
     {
       key_value: [
         {
-          key: utf8Bytes('e'),
+          key: 'e',
           value: {
             key_value: [
               { key: '1', value: true }
@@ -395,7 +395,7 @@ export const NESTED_MAPS_EXPECTED = typedParquetRows([
     a: {
       key_value: [
         {
-          key: utf8Bytes('f'),
+          key: 'f',
           value: {
             key_value: [
               { key: '3', value: true },
@@ -416,11 +416,11 @@ export const NO_NULLABLE_EXPECTED = typedParquetRows([
     ID: 8,
     Int_Array: { list: [{ element: -1 }] },
     int_array_array: { list: [{ element: { list: [{ element: -1 }, { element: -2 }] } }, { element: {} }] },
-    Int_Map: {map: [{key: utf8Bytes('k1'), value: -1}]},
+    Int_Map: {map: [{key: 'k1', value: -1}]},
     int_map_array: {
       list: [
         { element: {} },
-        {element: {map: [{key: utf8Bytes('k1'), value: 1}]}},
+        {element: {map: [{key: 'k1', value: 1}]}},
         { element: {} },
         { element: {} }
       ]
@@ -435,7 +435,7 @@ export const NO_NULLABLE_EXPECTED = typedParquetRows([
               element: {
                 list: [
                   {
-                    element: {e: -1, f: utf8Bytes('nonnullable')}
+                    element: {e: -1, f: 'nonnullable'}
                   }]
               }
             }]
@@ -643,11 +643,11 @@ export const DECIMAL_EXPECTED = [
 ];
 
 export const LZ4_RAW_COMPRESSED_LARGER_FIRST_EXPECTED = {
-  a: utf8Bytes('c7ce6bef-d5b0-4863-b199-8ea8c7fb117b')
+  a: 'c7ce6bef-d5b0-4863-b199-8ea8c7fb117b'
 };
 
 export const LZ4_RAW_COMPRESSED_LARGER_LAST_EXPECTED = {
-  a: utf8Bytes('85440778-460a-41ac-aa2e-ac3ee41696bf')
+  a: '85440778-460a-41ac-aa2e-ac3ee41696bf'
 };
 
 export const LZ4_RAW_COMPRESSED_EXPECTED = [

@@ -19,7 +19,7 @@ export interface WriteStreamOptions {
   start?: number;
 }
 
-export function oswrite(os: stream.Writable, buf: Buffer): Promise<void> {
+export function oswrite(os: stream.Writable, buf: Uint8Array): Promise<void> {
   return new Promise((resolve, reject) => {
     os.write(buf, err => {
       if (err) {

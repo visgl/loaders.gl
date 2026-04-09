@@ -10,8 +10,10 @@ import {BlobFile} from '@loaders.gl/loader-utils';
 import {PARQUET_CODECS} from '../src/parquetjs/codecs/index';
 import {decodeFileMetadata, decodePageHeader} from '../src/parquetjs/utils/read-utils';
 import {ParquetReader} from '../src/parquetjs/parser/parquet-reader';
+import {ParquetEncoder} from '../src/parquetjs/encoder/parquet-encoder';
 import {ParquetSchema} from '../src/parquetjs/schema/schema';
 import {materializeRows} from '../src/parquetjs/schema/shred';
+import {concatUint8Arrays} from '../src/parquetjs/utils/binary-utils';
 
 const PARQUET_DIR = new URL('./data/', import.meta.url);
 const TEXT_DECODER = new TextDecoder();
@@ -20,18 +22,22 @@ type MutableGlobalThis = typeof globalThis & {
   Buffer?: typeof Buffer;
 };
 
+/** Copy bytes into an ArrayBuffer that has no hidden prefix or suffix bytes. */
 function toExactArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return bytes.slice().buffer;
 }
 
+/** Read a parquet fixture into Uint8Array to avoid Node Buffer parser inputs. */
 async function readTestBytes(path: string): Promise<Uint8Array> {
   return new Uint8Array(await readFile(new URL(path, PARQUET_DIR)));
 }
 
+/** Read a little-endian unsigned 32-bit value from any Uint8Array view. */
 function readUInt32LE(bytes: Uint8Array, offset: number): number {
   return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(offset, true);
 }
 
+/** Extract the thrift metadata footer byte range from a complete parquet file. */
 function decodeMetadataBytes(parquetBytes: Uint8Array): Uint8Array {
   const trailerOffset = parquetBytes.length - 8;
   const metadataSize = readUInt32LE(parquetBytes, trailerOffset);
@@ -39,6 +45,7 @@ function decodeMetadataBytes(parquetBytes: Uint8Array): Uint8Array {
   return parquetBytes.subarray(metadataOffset, trailerOffset);
 }
 
+/** Temporarily remove global Buffer while exercising browser-compatible parquet paths. */
 async function withoutGlobalBuffer<T>(callback: () => Promise<T>): Promise<T> {
   const testGlobalThis = globalThis as MutableGlobalThis;
   const originalBuffer = testGlobalThis.Buffer;
@@ -49,6 +56,38 @@ async function withoutGlobalBuffer<T>(callback: () => Promise<T>): Promise<T> {
   } finally {
     testGlobalThis.Buffer = originalBuffer;
   }
+}
+
+/** Write rows to an in-memory stream and return the complete parquet envelope. */
+async function writeParquetBytes(schema: ParquetSchema, rows: any[]): Promise<Uint8Array> {
+  const chunks: Uint8Array[] = [];
+  const outputStream = {
+    write(chunk: Uint8Array, callback: (error?: Error) => void) {
+      chunks.push(chunk.slice());
+      callback();
+    },
+    close(callback: (error?: Error) => void) {
+      callback();
+    }
+  };
+
+  const encoder = await ParquetEncoder.openStream(schema, outputStream as any);
+  for (const row of rows) {
+    await encoder.appendRow(row);
+  }
+  await encoder.close();
+  return concatUint8Arrays(chunks);
+}
+
+/** Read every row from an in-memory parquet envelope. */
+async function readParquetRows(parquetBytes: Uint8Array): Promise<any[]> {
+  const reader = new ParquetReader(new BlobFile(toExactArrayBuffer(parquetBytes)));
+  const rows: any[] = [];
+  for await (const row of reader.rowIterator()) {
+    rows.push(row);
+  }
+  reader.close();
+  return rows;
 }
 
 test('Parquet thrift metadata decodes from Uint8Array and Uint8Array subarray', async t => {
@@ -95,6 +134,115 @@ test('Parquet PLAIN codec decodes primitive values from Uint8Array', t => {
   t.deepEqual(PARQUET_CODECS.PLAIN.decodeValues('INT32', int32Cursor, 1, {}), [42]);
   t.deepEqual(PARQUET_CODECS.PLAIN.decodeValues('FLOAT', floatCursor, 1, {}), [23.5]);
   t.deepEqual(PARQUET_CODECS.PLAIN.decodeValues('DOUBLE', doubleCursor, 1, {}), [123.25]);
+  t.end();
+});
+
+test('Parquet PLAIN codec encodes primitive values into Uint8Array without Buffer', async t => {
+  await withoutGlobalBuffer(async () => {
+    const int32Bytes = PARQUET_CODECS.PLAIN.encodeValues('INT32', [42], {});
+    const floatBytes = PARQUET_CODECS.PLAIN.encodeValues('FLOAT', [23.5], {});
+    const doubleBytes = PARQUET_CODECS.PLAIN.encodeValues('DOUBLE', [123.25], {});
+    const byteArrayBytes = PARQUET_CODECS.PLAIN.encodeValues(
+      'BYTE_ARRAY',
+      [new Uint8Array([102, 111, 111])],
+      {}
+    );
+
+    t.ok(int32Bytes instanceof Uint8Array, 'encoded INT32 is Uint8Array');
+    t.deepEqual(PARQUET_CODECS.PLAIN.decodeValues('INT32', {buffer: int32Bytes, offset: 0}, 1, {}), [
+      42
+    ]);
+    t.deepEqual(PARQUET_CODECS.PLAIN.decodeValues('FLOAT', {buffer: floatBytes, offset: 0}, 1, {}), [
+      23.5
+    ]);
+    t.deepEqual(
+      PARQUET_CODECS.PLAIN.decodeValues('DOUBLE', {buffer: doubleBytes, offset: 0}, 1, {}),
+      [123.25]
+    );
+    t.deepEqual(Array.from(byteArrayBytes), [3, 0, 0, 0, 102, 111, 111]);
+  });
+  t.end();
+});
+
+test('Parquet RLE codec encodes and decodes without Buffer', async t => {
+  await withoutGlobalBuffer(async () => {
+    const encoded = PARQUET_CODECS.RLE.encodeValues(
+      'INT32',
+      [1, 1, 1, 1, 2, 3, 4, 5, 5, 5],
+      {bitWidth: 3}
+    );
+    t.ok(encoded instanceof Uint8Array, 'encoded RLE is Uint8Array');
+    t.deepEqual(
+      PARQUET_CODECS.RLE.decodeValues('INT32', {buffer: encoded, offset: 0}, 10, {bitWidth: 3}),
+      [1, 1, 1, 1, 2, 3, 4, 5, 5, 5],
+      'decoded RLE round-trip'
+    );
+  });
+  t.end();
+});
+
+test('ParquetEncoder writes readable parquet without global Buffer', async t => {
+  await withoutGlobalBuffer(async () => {
+    const schema = new ParquetSchema({
+      name: {type: 'UTF8'},
+      count: {type: 'INT32'},
+      price: {type: 'DOUBLE'},
+      raw: {type: 'BYTE_ARRAY'},
+      fixed: {type: 'FIXED_LEN_BYTE_ARRAY', typeLength: 3},
+      metadata: {type: 'JSON'},
+      interval: {type: 'INTERVAL'}
+    });
+
+    const parquetBytes = await writeParquetBytes(schema, [
+      {
+        name: 'apple',
+        count: 7,
+        price: 2.5,
+        raw: new Uint8Array([1, 2, 3]),
+        fixed: new Uint8Array([4, 5, 6]),
+        metadata: {ripe: true},
+        interval: {months: 1, days: 2, milliseconds: 3}
+      }
+    ]);
+    const rows = await readParquetRows(parquetBytes);
+
+    t.equal(rows[0].name, 'apple', 'UTF8 writer value round-trips as string');
+    t.equal(rows[0].count, 7, 'INT32 writer value round-trips as number');
+    t.equal(rows[0].price, 2.5, 'DOUBLE writer value round-trips as number');
+    t.deepEqual(Array.from(rows[0].raw), [1, 2, 3], 'raw BYTE_ARRAY writer value round-trips');
+    t.deepEqual(
+      Array.from(rows[0].fixed),
+      [4, 5, 6],
+      'FIXED_LEN_BYTE_ARRAY writer value round-trips'
+    );
+    t.deepEqual(rows[0].metadata, {ripe: true}, 'JSON writer value round-trips as object');
+    t.deepEqual(
+      rows[0].interval,
+      {months: 1, days: 2, milliseconds: 3},
+      'INTERVAL writer value round-trips'
+    );
+  });
+  t.end();
+});
+
+test('ParquetEncoder writes compressed readable parquet without global Buffer', async t => {
+  await withoutGlobalBuffer(async () => {
+    const schema = new ParquetSchema({
+      name: {type: 'UTF8'},
+      count: {type: 'INT32'}
+    }).compress('GZIP');
+
+    const parquetBytes = await writeParquetBytes(schema, [
+      {name: 'apple', count: 7},
+      {name: 'orange', count: 9}
+    ]);
+    const rows = await readParquetRows(parquetBytes);
+
+    t.deepEqual(rows, [
+      {name: 'apple', count: 7},
+      {name: 'orange', count: 9}
+    ]);
+  });
   t.end();
 });
 

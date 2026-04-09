@@ -23,6 +23,11 @@
 
 - `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
 
+**@loaders.gl/parquet**
+
+- `@loaders.gl/parquet/buffer`, `BufferPolyfill`, and `installBufferPolyfill()` were removed. The JavaScript Parquet parser and writer now use `Uint8Array` internally instead of installing a global `Buffer`.
+- `ParquetLoader` and the experimental parquetjs APIs now return unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` values as `Uint8Array` instead of `Buffer`. Logical values such as `UTF8` and `JSON` are still decoded to JavaScript strings/objects according to the Parquet schema.
+
 ## Upgrading to v4.3
 
 **Minor Breaking Changes**

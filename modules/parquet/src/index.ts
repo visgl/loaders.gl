@@ -40,6 +40,3 @@ export {
   convertParquetSchema,
   convertParquetSchema as convertParquetToArrowSchema
 } from './lib/arrow/convert-schema-from-parquet';
-
-// Experimental
-export {BufferPolyfill, installBufferPolyfill} from './polyfills/buffer/index';
