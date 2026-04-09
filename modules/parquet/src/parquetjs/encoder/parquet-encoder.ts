@@ -37,12 +37,14 @@ import {
 } from '../parquet-thrift/index';
 import {osopen, oswrite, osclose} from '../utils/file-utils';
 import {getBitWidth, serializeThrift} from '../utils/read-utils';
-import Int64 from 'node-int64';
+import {concatUint8Arrays, encodeUtf8, writeUInt32LE} from '../utils/binary-utils';
+import {CompactInt64} from '../utils/uint8-array-compact-protocol';
 
 /**
  * Parquet File Magic String
  */
 const PARQUET_MAGIC = 'PAR1';
+const PARQUET_MAGIC_BYTES = encodeUtf8(PARQUET_MAGIC);
 
 /**
  * Parquet File Format Version
@@ -126,8 +128,7 @@ export class ParquetEncoder<_T> {
   ) {
     this.schema = schema;
     this.envelopeWriter = envelopeWriter;
-    // @ts-ignore Row buffer typings...
-    this.rowBuffer = {};
+    this.rowBuffer = schema.rowGroup();
     this.rowGroupSize = opts.rowGroupSize || PARQUET_DEFAULT_ROW_GROUP_SIZE;
     this.closed = false;
     this.userMetadata = {};
@@ -156,8 +157,8 @@ export class ParquetEncoder<_T> {
     }
     Shred.shredRecord(this.schema, row, this.rowBuffer);
     if (this.rowBuffer.rowCount >= this.rowGroupSize) {
-      // @ts-ignore
-      this.rowBuffer = {};
+      await this.envelopeWriter.writeRowGroup(this.rowBuffer);
+      this.rowBuffer = this.schema.rowGroup();
     }
   }
 
@@ -175,8 +176,8 @@ export class ParquetEncoder<_T> {
     this.closed = true;
 
     if (this.rowBuffer.rowCount > 0 || this.rowBuffer.rowCount >= this.rowGroupSize) {
-      // @ts-ignore
-      this.rowBuffer = {};
+      await this.envelopeWriter.writeRowGroup(this.rowBuffer);
+      this.rowBuffer = this.schema.rowGroup();
     }
 
     await this.envelopeWriter.writeFooter(this.userMetadata);
@@ -236,7 +237,7 @@ export class ParquetEnvelopeWriter {
   }
 
   public schema: ParquetSchema;
-  public write: (buf: Buffer) => Promise<void>;
+  public write: (buf: Uint8Array) => Promise<void>;
   public close: () => Promise<void>;
   public offset: number;
   public rowCount: number;
@@ -246,7 +247,7 @@ export class ParquetEnvelopeWriter {
 
   constructor(
     schema: ParquetSchema,
-    writeFn: (buf: Buffer) => Promise<void>,
+    writeFn: (buf: Uint8Array) => Promise<void>,
     closeFn: () => Promise<void>,
     fileOffset: number,
     opts: ParquetEncoderOptions
@@ -261,7 +262,7 @@ export class ParquetEnvelopeWriter {
     this.useDataPageV2 = 'useDataPageV2' in opts ? Boolean(opts.useDataPageV2) : false;
   }
 
-  writeSection(buf: Buffer): Promise<void> {
+  writeSection(buf: Uint8Array): Promise<void> {
     this.offset += buf.length;
     return this.write(buf);
   }
@@ -270,7 +271,7 @@ export class ParquetEnvelopeWriter {
    * Encode the parquet file header
    */
   writeHeader(): Promise<void> {
-    return this.writeSection(Buffer.from(PARQUET_MAGIC));
+    return this.writeSection(PARQUET_MAGIC_BYTES);
   }
 
   /**
@@ -373,10 +374,10 @@ async function encodeDataPage(
 ): Promise<{
   header: PageHeader;
   headerSize: number;
-  page: Buffer;
+  page: Uint8Array;
 }> {
   /* encode repetition and definition levels */
-  let rLevelsBuf: Buffer = Buffer.alloc(0);
+  let rLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.rLevelMax > 0) {
     rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
       bitWidth: getBitWidth(column.rLevelMax)
@@ -384,7 +385,7 @@ async function encodeDataPage(
     });
   }
 
-  let dLevelsBuf: Buffer = Buffer.alloc(0);
+  let dLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.dLevelMax > 0) {
     dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
       bitWidth: getBitWidth(column.dLevelMax)
@@ -398,7 +399,7 @@ async function encodeDataPage(
     bitWidth: column.typeLength
   });
 
-  const dataBuf = Buffer.concat([rLevelsBuf, dLevelsBuf, valuesBuf] as Uint8Array[]);
+  const dataBuf = concatUint8Arrays([rLevelsBuf, dLevelsBuf, valuesBuf]);
 
   // compression = column.compression === 'UNCOMPRESSED' ? (compression || 'UNCOMPRESSED') : column.compression;
   const compressedBuf = await Compression.deflate(column.compression!, dataBuf);
@@ -418,7 +419,7 @@ async function encodeDataPage(
 
   /* concat page header, repetition and definition levels and values */
   const headerBuf = serializeThrift(header);
-  const page = Buffer.concat([headerBuf, compressedBuf] as Uint8Array[]);
+  const page = concatUint8Arrays([headerBuf, compressedBuf]);
 
   return {header, headerSize: headerBuf.length, page};
 }
@@ -433,7 +434,7 @@ async function encodeDataPageV2(
 ): Promise<{
   header: PageHeader;
   headerSize: number;
-  page: Buffer;
+  page: Uint8Array;
 }> {
   /* encode values */
   const valuesBuf = encodeValues(column.primitiveType!, column.encoding!, data.values, {
@@ -445,7 +446,7 @@ async function encodeDataPageV2(
   const compressedBuf = await Compression.deflate(column.compression!, valuesBuf);
 
   /* encode repetition and definition levels */
-  let rLevelsBuf: Buffer = Buffer.alloc(0);
+  let rLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.rLevelMax > 0) {
     rLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.rlevels, {
       bitWidth: getBitWidth(column.rLevelMax),
@@ -453,7 +454,7 @@ async function encodeDataPageV2(
     });
   }
 
-  let dLevelsBuf: Buffer = Buffer.alloc(0);
+  let dLevelsBuf: Uint8Array = new Uint8Array(0);
   if (column.dLevelMax > 0) {
     dLevelsBuf = encodeValues(PARQUET_RDLVL_TYPE, PARQUET_RDLVL_ENCODING, data.dlevels, {
       bitWidth: getBitWidth(column.dLevelMax),
@@ -479,7 +480,7 @@ async function encodeDataPageV2(
 
   /* concat page header, repetition and definition levels and values */
   const headerBuf = serializeThrift(header);
-  const page = Buffer.concat([headerBuf, rLevelsBuf, dLevelsBuf, compressedBuf] as Uint8Array[]);
+  const page = concatUint8Arrays([headerBuf, rLevelsBuf, dLevelsBuf, compressedBuf]);
   return {header, headerSize: headerBuf.length, page};
 }
 
@@ -492,15 +493,15 @@ async function encodeColumnChunk(
   offset: number,
   opts: ParquetEncoderOptions
 ): Promise<{
-  body: Buffer;
+  body: Uint8Array;
   metadata: ColumnMetaData;
   metadataOffset: number;
 }> {
   const data = buffer.columnData[column.path.join()];
   const baseOffset = (opts.baseOffset || 0) + offset;
   /* encode data page(s) */
-  // const pages: Buffer[] = [];
-  let pageBuf: Buffer;
+  // const pages: Uint8Array[] = [];
+  let pageBuf: Uint8Array;
   // tslint:disable-next-line:variable-name
   let total_uncompressed_size = 0;
   // tslint:disable-next-line:variable-name
@@ -515,17 +516,17 @@ async function encodeColumnChunk(
     total_compressed_size += result.header.compressed_page_size + result.headerSize;
   }
 
-  // const pagesBuf = Buffer.concat(pages);
+  // const pagesBuf = concatUint8Arrays(pages);
   // const compression = column.compression === 'UNCOMPRESSED' ? (opts.compression || 'UNCOMPRESSED') : column.compression;
 
   /* prepare metadata header */
   const metadata = new ColumnMetaData({
     path_in_schema: column.path,
-    num_values: data.count,
-    data_page_offset: baseOffset,
+    num_values: int64(data.count),
+    data_page_offset: int64(baseOffset),
     encodings: [],
-    total_uncompressed_size, //  : pagesBuf.length,
-    total_compressed_size,
+    total_uncompressed_size: int64(total_uncompressed_size), //  : pagesBuf.length,
+    total_compressed_size: int64(total_compressed_size),
     type: Type[column.primitiveType!],
     codec: CompressionCodec[column.compression!]
   });
@@ -536,7 +537,7 @@ async function encodeColumnChunk(
 
   /* concat metadata header and data pages */
   const metadataOffset = baseOffset + pageBuf.length;
-  const body = Buffer.concat([pageBuf, serializeThrift(metadata)] as Uint8Array[]);
+  const body = concatUint8Arrays([pageBuf, serializeThrift(metadata)]);
   return {body, metadata, metadataOffset};
 }
 
@@ -548,16 +549,16 @@ async function encodeRowGroup(
   data: ParquetRowGroup,
   opts: ParquetEncoderOptions
 ): Promise<{
-  body: Buffer;
+  body: Uint8Array;
   metadata: RowGroup;
 }> {
   const metadata = new RowGroup({
-    num_rows: data.rowCount,
+    num_rows: int64(data.rowCount),
     columns: [],
-    total_byte_size: 0
+    total_byte_size: int64(0)
   });
 
-  let body = Buffer.alloc(0);
+  let body: Uint8Array = new Uint8Array(0);
   for (const field of schema.fieldList) {
     if (field.isNested) {
       continue; // eslint-disable-line no-continue
@@ -566,14 +567,14 @@ async function encodeRowGroup(
     const cchunkData = await encodeColumnChunk(field, data, body.length, opts);
 
     const cchunk = new ColumnChunk({
-      file_offset: cchunkData.metadataOffset,
+      file_offset: int64(cchunkData.metadataOffset),
       meta_data: cchunkData.metadata
     });
 
     metadata.columns.push(cchunk);
-    metadata.total_byte_size = new Int64(Number(metadata.total_byte_size) + cchunkData.body.length);
+    metadata.total_byte_size = int64(Number(metadata.total_byte_size) + cchunkData.body.length);
 
-    body = Buffer.concat([body, cchunkData.body] as Uint8Array[]);
+    body = concatUint8Arrays([body, cchunkData.body]);
   }
 
   return {body, metadata};
@@ -587,11 +588,11 @@ function encodeFooter(
   rowCount: number,
   rowGroups: RowGroup[],
   userMetadata: Record<string, string>
-): Buffer {
+): Uint8Array {
   const metadata = new FileMetaData({
     version: PARQUET_VERSION,
     created_by: 'parquets',
-    num_rows: rowCount,
+    num_rows: int64(rowCount),
     row_groups: rowGroups,
     schema: [],
     key_value_metadata: []
@@ -636,10 +637,15 @@ function encodeFooter(
   }
 
   const metadataEncoded = serializeThrift(metadata);
-  const footerEncoded = Buffer.alloc(metadataEncoded.length + 8);
+  const footerEncoded = new Uint8Array(metadataEncoded.length + 8);
 
-  metadataEncoded.copy(footerEncoded as Uint8Array);
-  footerEncoded.writeUInt32LE(metadataEncoded.length, metadataEncoded.length);
-  footerEncoded.write(PARQUET_MAGIC, metadataEncoded.length + 4);
+  footerEncoded.set(metadataEncoded);
+  writeUInt32LE(footerEncoded, metadataEncoded.length, metadataEncoded.length);
+  footerEncoded.set(PARQUET_MAGIC_BYTES, metadataEncoded.length + 4);
   return footerEncoded;
+}
+
+/** Wrap a writer metadata number in the thrift int64 compatibility object. */
+function int64(value: number): any {
+  return new CompactInt64(BigInt(value));
 }

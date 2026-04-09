@@ -12,6 +12,15 @@
 - Format code: `yarn lint fix`
 - Always run `yarn lint fix` after making changes to ensure that Biome formatting is maintained.
 
+## Ready for merge
+
+- Add or update TSDoc for every new class, function, method, and field.
+- Update docs when behavior, public API, examples, or migration guidance changed.
+- Run build: `yarn build`
+- Run tests: `yarn test`
+- Format code: `yarn lint fix`
+- Provide a copyable markdown PR description, compared to `master`, that starts with goals of the PR and then lists actual changes.
+
 ## Code style
 
 - TypeScript strict mode

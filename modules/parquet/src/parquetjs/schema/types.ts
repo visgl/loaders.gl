@@ -7,6 +7,14 @@
 /* eslint-disable camelcase */
 import {BSONLoader, BSONWriter} from '@loaders.gl/bson';
 import {OriginalType, ParquetField, ParquetType, PrimitiveType} from './declare';
+import {
+  decodeUtf8,
+  encodeUtf8,
+  readUInt32LE,
+  toArrayBuffer,
+  toUint8Array,
+  writeUInt32LE
+} from '../utils/binary-utils';
 
 export interface ParquetTypeKit {
   primitiveType: PrimitiveType;
@@ -319,39 +327,39 @@ function toPrimitive_INT96(value: any) {
   return v;
 }
 
-function toPrimitive_BYTE_ARRAY(value: any): Buffer {
-  return Buffer.from(value);
+function toPrimitive_BYTE_ARRAY(value: any): Uint8Array {
+  return typeof value === 'string' ? encodeUtf8(value) : toUint8Array(value);
 }
 
-function decimalToPrimitive_BYTE_ARRAY(value: any): Buffer {
+function decimalToPrimitive_BYTE_ARRAY(value: any): Uint8Array {
   // TBD
-  return Buffer.from(value);
+  return typeof value === 'string' ? encodeUtf8(value) : toUint8Array(value);
 }
 
-function toPrimitive_UTF8(value: any): Buffer {
-  return Buffer.from(value, 'utf8');
+function toPrimitive_UTF8(value: any): Uint8Array {
+  return encodeUtf8(String(value));
 }
 
 function fromPrimitive_UTF8(value: any): string {
-  return value.toString();
+  return decodeUtf8(toUint8Array(value));
 }
 
-function toPrimitive_JSON(value: any): Buffer {
-  return Buffer.from(JSON.stringify(value));
+function toPrimitive_JSON(value: any): Uint8Array {
+  return encodeUtf8(JSON.stringify(value));
 }
 
 function fromPrimitive_JSON(value: any): unknown {
-  return JSON.parse(value);
+  return JSON.parse(decodeUtf8(toUint8Array(value)));
 }
 
-function toPrimitive_BSON(value: any): Buffer {
+function toPrimitive_BSON(value: any): Uint8Array {
   // @ts-ignore
   const arrayBuffer: ArrayBuffer = BSONWriter.encodeSync?.(value);
-  return Buffer.from(arrayBuffer);
+  return toUint8Array(arrayBuffer);
 }
 
 function fromPrimitive_BSON(value: any) {
-  return BSONLoader.parseSync?.(value);
+  return BSONLoader.parseSync?.(toArrayBuffer(value));
 }
 
 function toPrimitive_TIME_MILLIS(value: any) {
@@ -444,19 +452,19 @@ function toPrimitive_INTERVAL(value: any) {
     );
   }
 
-  const buf = Buffer.alloc(12);
+  const buf = new Uint8Array(12);
 
-  buf.writeUInt32LE(value.months, 0);
-  buf.writeUInt32LE(value.days, 4);
-  buf.writeUInt32LE(value.milliseconds, 8);
+  writeUInt32LE(buf, value.months, 0);
+  writeUInt32LE(buf, value.days, 4);
+  writeUInt32LE(buf, value.milliseconds, 8);
   return buf;
 }
 
 function fromPrimitive_INTERVAL(value: any) {
-  const buf = Buffer.from(value);
-  const months = buf.readUInt32LE(0);
-  const days = buf.readUInt32LE(4);
-  const millis = buf.readUInt32LE(8);
+  const bytes = toUint8Array(value);
+  const months = readUInt32LE(bytes, 0);
+  const days = readUInt32LE(bytes, 4);
+  const millis = readUInt32LE(bytes, 8);
 
   return {months, days, milliseconds: millis};
 }

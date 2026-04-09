@@ -40,7 +40,6 @@
       "!modules/bson/src/lib/encoders/encode-bson.ts",
       "!modules/bson/src/lib/parsers/parse-bson.ts",
       "!modules/bson/test/data/js-bson/corrupt.ts",
-      "!modules/parquet/src/polyfills/buffer/buffer.ts",
       "!modules/parquet/test/**",
       "!modules/flatgeobuf/src/flatgeobuf*",
       "!modules/flatgeobuf/src/lib/binary-geometries.ts",

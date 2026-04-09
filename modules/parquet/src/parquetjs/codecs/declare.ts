@@ -7,7 +7,7 @@
 import {PrimitiveType} from '../schema/declare';
 
 export interface CursorBuffer {
-  buffer: Buffer;
+  buffer: Uint8Array;
   offset: number;
   size?: number;
 }
@@ -19,7 +19,7 @@ export interface ParquetCodecOptions {
 }
 
 export interface ParquetCodecKit {
-  encodeValues(type: PrimitiveType, values: any[], opts?: ParquetCodecOptions): Buffer;
+  encodeValues(type: PrimitiveType, values: any[], opts?: ParquetCodecOptions): Uint8Array;
   decodeValues(
     type: PrimitiveType,
     cursor: CursorBuffer,

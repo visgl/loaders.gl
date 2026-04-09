@@ -35,7 +35,7 @@ import {decodePageHeader, getThriftEnum, getBitWidth} from '../utils/read-utils'
  * @returns parquet data page data
  */
 export async function decodeDataPages(
-  buffer: Buffer,
+  buffer: Uint8Array,
   context: ParquetReaderContext
 ): Promise<ParquetColumnChunk> {
   const cursor: CursorBuffer = {
@@ -187,7 +187,7 @@ export function decodeSchema(
       const type = getThriftEnum(Type, schemaElement.type!);
       let logicalType = type;
 
-      if (schemaElement.converted_type) {
+      if (schemaElement.converted_type !== undefined && schemaElement.converted_type !== null) {
         logicalType = getThriftEnum(ConvertedType, schemaElement.converted_type);
       }
 
@@ -435,7 +435,7 @@ async function decodeDictionaryPage(
   if (context.compression !== 'UNCOMPRESSED') {
     const valuesBuf = await decompress(
       context.compression,
-      dictCursor.buffer.slice(dictCursor.offset, cursorEnd),
+      dictCursor.buffer.subarray(dictCursor.offset),
       pageHeader.uncompressed_page_size
     );
 
@@ -459,23 +459,5 @@ async function decodeDictionaryPage(
     context as ParquetCodecOptions
   );
 
-  // Makes it look a little easier
-  let values: any[];
-  if (context?.preserveBinary) {
-    values = decodedDictionaryValues.map(d => preserveBinary(d));
-  } else {
-    values = decodedDictionaryValues.map(d => d.toString());
-  }
-  return values;
-}
-
-function preserveBinary(d: any): ArrayBuffer | ArrayBufferView | string {
-  if (ArrayBuffer.isView(d)) {
-    return d;
-  }
-  // Convert to ArrayBuffer
-  if (Buffer.isBuffer(d)) {
-    return new Uint8Array(d.buffer, d.byteOffset, d.byteLength).slice().buffer;
-  }
-  return d.toString();
+  return decodedDictionaryValues;
 }

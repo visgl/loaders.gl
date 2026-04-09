@@ -4978,15 +4978,12 @@ __metadata:
     "@types/thrift": "npm:^0.10.8"
     "@types/varint": "npm:^5.0.0"
     async-mutex: "npm:^0.2.2"
-    base64-js: "npm:^1.3.1"
     brotli: "npm:^1.3.2"
-    ieee754: "npm:^1.2.1"
-    int53: "npm:^0.2.4"
     isomorphic-ws: "npm:^5.0.0"
     lz4js: "npm:^0.2.0"
     node-int64: "npm:^0.4.0"
     object-stream: "npm:0.0.1"
-    parquet-wasm: "npm:^0.6.1"
+    parquet-wasm: "npm:0.7.1"
     snappyjs: "npm:^0.6.0"
     thrift: "npm:^0.19.0"
     util: "npm:^0.12.5"
@@ -17868,13 +17865,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"int53@npm:^0.2.4":
-  version: 0.2.4
-  resolution: "int53@npm:0.2.4"
-  checksum: 10c0/7942bc3cee8aa6ed143b5169bcc2518c7d8d7e67601e3a982e853efb6a67420e863b90ff4d2edf0f4cfe6bd259b16d91690067986f8b2d4f8026c70d369b401a
-  languageName: node
-  linkType: hard
-
 "interactjs@npm:^1.10.27":
   version: 1.10.27
   resolution: "interactjs@npm:1.10.27"
@@ -22645,10 +22635,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parquet-wasm@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "parquet-wasm@npm:0.6.1"
-  checksum: 10c0/dcade4b006ff86edca711dacf3c71997b4a86985384fc183119f73d5dae1d0c94d3e7fa5b48845845df5db97d3eb445d6c137f3459a5d9a66a3b9b3bc0474497
+"parquet-wasm@npm:0.7.1":
+  version: 0.7.1
+  resolution: "parquet-wasm@npm:0.7.1"
+  checksum: 10c0/05bf2450455bc1a43acfbe0195f5e4e9ca4569af2ec5a2edf301e41f2c63b9551e1ae25ad2e89e7a12ddd1984a7c771f1d3609a6d01989103e795f44fd10d5af
   languageName: node
   linkType: hard
 
