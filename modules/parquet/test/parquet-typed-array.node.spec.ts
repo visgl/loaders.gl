@@ -172,6 +172,11 @@ test('ParquetReader and ParquetJSONLoader parse without global Buffer', async t 
     const snappyTable = await ParquetJSONLoader.parse(toExactArrayBuffer(snappyBytes), {
       core: {worker: false}
     });
+    t.equal(snappyTable.data[0].id, 6, 'compressed physical INT32 materializes as number');
+    t.ok(
+      snappyTable.data[0].date_string_col instanceof Uint8Array,
+      'compressed raw date_string_col BYTE_ARRAY is bytes'
+    );
     t.ok(snappyTable.data[0].string_col instanceof Uint8Array, 'compressed raw BYTE_ARRAY is bytes');
   });
 
