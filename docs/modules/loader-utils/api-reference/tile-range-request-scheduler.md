@@ -1,7 +1,7 @@
 # TileRangeRequestScheduler
 
 `TileRangeRequestScheduler` is a low-level utility for coalescing nearby byte-range requests.
-It is used by byte-range Sources such as PMTiles, GeoTIFF, COPC, and Potree.
+It is used by `PMTilesSource` and can be reused by other byte-range-addressable Sources.
 
 ```typescript
 import {TileRangeRequestScheduler} from '@loaders.gl/loader-utils';
@@ -55,4 +55,3 @@ Starts the current queue immediately.
 
 Applications usually do not call this directly. It is useful in tests or in a source that knows
 no more sibling tile requests will arrive in the current frame.
-

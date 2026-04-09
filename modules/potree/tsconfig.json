@@ -9,7 +9,6 @@
   },
   "references": [
     {"path": "../core"},
-    {"path": "../compression"},
     {"path": "../las"},
     {"path": "../schema"},
     {"path": "../math"}

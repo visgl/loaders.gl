@@ -72,8 +72,8 @@ export function getOmeSubIFDIndexer(tiff: GeoTIFF, rootMeta: OMEXML): OmeTiffInd
       return baseImage;
     }
 
-    const subIfds = await baseImage.fileDirectory.loadValue('SubIFDs');
-    if (!subIfds) {
+    const {SubIFDs} = baseImage.fileDirectory;
+    if (!SubIFDs) {
       throw Error('Indexing Error: OME-TIFF is missing SubIFDs.');
     }
 
@@ -81,15 +81,18 @@ export function getOmeSubIFDIndexer(tiff: GeoTIFF, rootMeta: OMEXML): OmeTiffInd
     const key = `${sel.t}-${sel.c}-${sel.z}-${pyramidLevel}`;
     if (!ifdCache.has(key)) {
       // Only create a new request if we don't have the key.
-      const subIfdOffset = subIfds[pyramidLevel - 1];
-      ifdCache.set(key, tiff.parser.parseFileDirectoryAt(subIfdOffset));
+      const subIfdOffset = SubIFDs[pyramidLevel - 1];
+      ifdCache.set(key, tiff.parseFileDirectoryAt(subIfdOffset));
     }
     const ifd = await ifdCache.get(key);
 
     // Create a new image object manually from IFD
     // https://github.com/geotiffjs/geotiff.js/blob/8ef472f41b51d18074aece2300b6a8ad91a21ae1/src/geotiff.js#L447-L453
     return new (baseImage.constructor as any)(
-      ifd,
+      ifd.fileDirectory,
+      ifd.geoKeyDirectory,
+      // @ts-expect-error
+      tiff.dataView,
       tiff.littleEndian,
       tiff.cache,
       tiff.source

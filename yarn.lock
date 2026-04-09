@@ -4758,7 +4758,7 @@ __metadata:
   dependencies:
     "@loaders.gl/loader-utils": "npm:4.4.0"
     fast-xml-parser: "npm:^5.3.6"
-    geotiff: "npm:^3.0.5"
+    geotiff: "npm:^2.1.0"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -5058,7 +5058,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/potree@workspace:modules/potree"
   dependencies:
-    "@loaders.gl/compression": "npm:4.4.0"
     "@loaders.gl/las": "npm:4.4.0"
     "@loaders.gl/math": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
@@ -6419,7 +6418,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@petamoriken/float16@npm:^3.9.3":
+"@petamoriken/float16@npm:^3.4.7":
   version: 3.9.3
   resolution: "@petamoriken/float16@npm:3.9.3"
   checksum: 10c0/de0a1a0224862cba16e6b614e6a5dd557c545c3f0372db21f61d7bcce7595fa63a28d10512c908acfbe177d209a39cea406f190159936f5891b3c095d460fdc2
@@ -16493,19 +16492,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"geotiff@npm:^3.0.5":
-  version: 3.0.5
-  resolution: "geotiff@npm:3.0.5"
+"geotiff@npm:^2.1.0":
+  version: 2.1.3
+  resolution: "geotiff@npm:2.1.3"
   dependencies:
-    "@petamoriken/float16": "npm:^3.9.3"
+    "@petamoriken/float16": "npm:^3.4.7"
     lerc: "npm:^3.0.0"
     pako: "npm:^2.0.4"
     parse-headers: "npm:^2.0.2"
     quick-lru: "npm:^6.1.1"
-    web-worker: "npm:^1.5.0"
-    xml-utils: "npm:^1.10.2"
-    zstddec: "npm:^0.2.0"
-  checksum: 10c0/f3bcfdacc80d032b1edc7f5f35e6b00baf87b715f441edf96c2aac02f682e9a4f2af7f7fe60471687eaa8505ecf6f74465186e96ff9fae703f839c73aa7f25d0
+    web-worker: "npm:^1.2.0"
+    xml-utils: "npm:^1.0.2"
+    zstddec: "npm:^0.1.0"
+  checksum: 10c0/565dde39ab2a58c16c6756bcf58e7e417f22de9faa73da6cf68f17ec24e2f9b3e020bedce96e7bcbb52188fb3b13f198ca29ee32007e6c887476f0f049e4859a
   languageName: node
   linkType: hard
 
@@ -28935,7 +28934,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-worker@npm:^1.5.0":
+"web-worker@npm:^1.2.0":
   version: 1.5.0
   resolution: "web-worker@npm:1.5.0"
   checksum: 10c0/d42744757422803c73ca64fa51e1ce994354ace4b8438b3f740425a05afeb8df12dd5dadbf6b0839a08dbda56c470d7943c0383854c4fb1ae40ab874eb10427a
@@ -29562,7 +29561,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-utils@npm:^1.10.2":
+"xml-utils@npm:^1.0.2":
   version: 1.10.2
   resolution: "xml-utils@npm:1.10.2"
   checksum: 10c0/53e98971e9bca58f382806bbb3a83cba3798e823a7c43a0dcfd5588df0085af288ad20701277d7eda1049cbf99a4563763cbcd1be692ad91dd4074bf11fa2a90
@@ -29748,10 +29747,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zstddec@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "zstddec@npm:0.2.0"
-  checksum: 10c0/58d0facb7171dfdab6b7cc1e2e3dcd23f4e3e4318fe0bbc5a293925f231b8f7932c82e2930867f4174fd4ccd443ee18b80cc240464bfd2519a82e92c7dc46b4a
+"zstddec@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "zstddec@npm:0.1.0"
+  checksum: 10c0/13601cc53211af491cf3a28a49239405e44129c7aba6a0211401d7bf79ee96b4679016a4d3c5e9c01f753e6da806eb40550f12c469580548b695b146a6d8fe1a
   languageName: node
   linkType: hard
 

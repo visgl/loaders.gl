@@ -8,13 +8,11 @@ import type {
   DataSourceOptions,
   TileSource,
   GetTileParameters,
-  GetTileDataParameters,
-  TileRangeRequestSchedulerProps
+  GetTileDataParameters
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
 import {Copc, Hierarchy, Dimension, Getter} from 'copc';
-import {createRangeRequestGetter} from './lib/range-request-getter';
 
 const VERSION = '1.0.0';
 
@@ -32,14 +30,8 @@ type GetNodeParameters = {
   limit?: number;
 };
 
-/** Options for COPC point-cloud sources. */
 export type COPCSourceOptions = DataSourceOptions & {
-  /** COPC-specific options reserved for future point-cloud decode controls. */
   copc?: {};
-  tileRangeRequest?: TileRangeRequestSchedulerProps & {
-    /** Reserved concurrency hint for range-request transports. */
-    maxConcurrentRequests?: number;
-  };
 };
 
 /**
@@ -57,17 +49,10 @@ export const COPCSource = {
   fromBlob: true,
 
   defaultOptions: {
-    copc: {},
-    tileRangeRequest: {
-      batchDelayMs: 50,
-      maxGapBytes: 65536,
-      rangeExpansionBytes: 65536,
-      maxMergedBytes: 8388608,
-      maxConcurrentRequests: 6
-    }
+    copc: {}
   },
 
-  testURL: (url: string) => url.endsWith('.laz') || url.endsWith('.copc.laz'),
+  testURL: (url: string) => url.endsWith('.pmtiles'),
   createDataSource: (url: string | Blob, options: COPCSourceOptions) =>
     new COPCTileSource(url, options)
 } as const satisfies Source<COPCTileSource>;
@@ -80,38 +65,24 @@ export class COPCTileSource
   extends DataSource<string | Blob, COPCSourceOptions>
   implements TileSource
 {
-  /** Best-effort MIME type of the source. */
   mimeType: string | null = null;
-  /** Promise that resolves to COPC metadata. */
   metadata: Promise<COPCMetadata>;
 
-  /** Promise that resolves once the COPC header and root hierarchy are opened. */
   protected _initPromise: Promise<{
     copc: Copc;
     hierarchy: Hierarchy.Subtree;
     rootNode: Hierarchy.Node;
   }>;
-  /** COPC getter used by the `copc` package. */
   protected _urlOrGetter: string | Getter;
-  private pendingNodeRequests: PendingNodeRequest[] = [];
-  private nodeBatchTimer: ReturnType<typeof setTimeout> | null = null;
 
-  /** Creates a COPC tile source from a URL or Blob. */
-  constructor(data: string | Blob, options: COPCSourceOptions = {}) {
+  constructor(data: string | Blob, options: COPCSourceOptions) {
     super(data, options, COPCSource.defaultOptions);
-    this._urlOrGetter =
-      typeof data === 'string'
-        ? createRangeRequestGetter(this.url, {
-            ...options.tileRangeRequest,
-            batchDelayMs: 0,
-            fetch: this.fetch
-          })
-        : createRangeRequestGetter(data);
+    // TODO - create a getter if a blob
+    this._urlOrGetter = this.url as any;
     this._initPromise = this._initCopc(this.url);
     this.metadata = this.getMetadata();
   }
 
-  /** Returns a schema derived from point dimensions in the root node. */
   async getSchema(): Promise<Schema> {
     const {copc, rootNode} = await this._initPromise;
     const view = await Copc.loadPointDataView(this._urlOrGetter, copc, rootNode);
@@ -127,7 +98,6 @@ export class COPCTileSource
     return {fields, metadata: {}};
   }
 
-  /** Returns format-specific metadata from the opened COPC file. */
   async getMetadata(): Promise<COPCMetadata> {
     const {copc} = await this._initPromise;
     const metadata: COPCMetadata = {
@@ -136,40 +106,16 @@ export class COPCTileSource
     return metadata;
   }
 
-  /** Maps a z/x/y tile request to the current COPC node API. */
   async getTile(tileParams: GetTileParameters): Promise<number[] | null> {
     const nodeIndex = {x: tileParams.x, y: tileParams.y, z: tileParams.z, d: 0};
     return this.getPoints({nodeIndex});
   }
 
-  /** Schedules multiple tile requests without awaiting them sequentially. */
-  getTileBatch(tileParams: readonly GetTileParameters[]): readonly Promise<number[] | null>[] {
-    return tileParams.map(tileParam => this.getTile(tileParam));
-  }
-
-  /** deck.gl-compatible tile-data wrapper. */
   async getTileData(parameters: GetTileDataParameters): Promise<unknown | null> {
-    const {x, y, z} = parameters.index;
-    return await this.getTile({x, y, z});
+    throw new Error('Not implemented');
   }
 
-  /** Schedules multiple tile-data requests without awaiting them sequentially. */
-  getTileDataBatch(
-    parameters: readonly GetTileDataParameters[]
-  ): readonly Promise<unknown | null>[] {
-    return parameters.map(parameter => this.getTileData(parameter));
-  }
-
-  /** Returns the first point sampled from a COPC hierarchy node. */
   async getPoints(parameters: GetNodeParameters) {
-    if (this.url) {
-      return await this.getPointsBatched(parameters);
-    }
-    return await this.getPointsNow(parameters);
-  }
-
-  /** Loads a point sample immediately, without the tile-level batch delay. */
-  private async getPointsNow(parameters: GetNodeParameters): Promise<number[] | null> {
     const {copc} = await this._initPromise;
     const node = await this.getNode(parameters);
     const view = node && (await Copc.loadPointDataView(this._urlOrGetter, copc, node));
@@ -187,7 +133,6 @@ export class COPCTileSource
     // const limit = Math.min(parameters.limit ?? view.pointCount, view.pointCount - offset);
     // const ArrayType = getArrayTypeFromDataType(limit);
 
-    /** Returns all loaded dimension values for one point. */
     function getXyzi(index: number): number[] {
       return columnGetters.map(get => get(index));
     }
@@ -196,7 +141,6 @@ export class COPCTileSource
     return point;
   }
 
-  /** Looks up a hierarchy node by COPC node index. */
   async getNode(parameters: GetNodeParameters): Promise<Hierarchy.Node | undefined> {
     const {hierarchy} = await this._initPromise;
     const {x, y, z, d} = parameters.nodeIndex;
@@ -205,7 +149,6 @@ export class COPCTileSource
     return node;
   }
 
-  /** Opens the COPC file and root hierarchy page. */
   async _initCopc(url: string) {
     const copc = await Copc.create(this._urlOrGetter);
     const hierarchy = await Copc.loadHierarchyPage(this._urlOrGetter, copc.info.rootHierarchyPage);
@@ -214,38 +157,6 @@ export class COPCTileSource
       throw new Error(`Failed to load COPC hierarchy root node ${url}`);
     }
     return {copc, hierarchy, rootNode};
-  }
-
-  /** Enqueues one point-node request so nearby requests can share merged range reads. */
-  private getPointsBatched(parameters: GetNodeParameters): Promise<number[] | null> {
-    return new Promise((resolve, reject) => {
-      this.pendingNodeRequests.push({parameters, resolve, reject});
-      this.scheduleNodeBatch();
-    });
-  }
-
-  /** Schedules the next point-node batch flush. */
-  private scheduleNodeBatch(): void {
-    if (this.nodeBatchTimer) {
-      return;
-    }
-
-    const batchDelayMs = this.options.tileRangeRequest?.batchDelayMs ?? 50;
-    this.nodeBatchTimer = setTimeout(() => this.flushNodeBatch(), batchDelayMs);
-  }
-
-  /** Starts all point-node requests queued during the tile-level batch delay. */
-  private flushNodeBatch(): void {
-    if (this.nodeBatchTimer) {
-      clearTimeout(this.nodeBatchTimer);
-      this.nodeBatchTimer = null;
-    }
-
-    const pendingNodeRequests = this.pendingNodeRequests;
-    this.pendingNodeRequests = [];
-    for (const request of pendingNodeRequests) {
-      this.getPointsNow(request.parameters).then(request.resolve, request.reject);
-    }
   }
 
   /*
@@ -276,13 +187,6 @@ export class COPCTileSource
   */
 }
 
-type PendingNodeRequest = {
-  parameters: GetNodeParameters;
-  resolve: (point: number[] | null) => void;
-  reject: (error: unknown) => void;
-};
-
-/** Converts a COPC dimension descriptor into a loaders.gl schema data type. */
 function getDataTypeFromDimension(dimension: Dimension): DataType {
   const {type, size} = dimension;
   switch (type) {

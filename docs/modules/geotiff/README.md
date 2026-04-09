@@ -15,7 +15,6 @@ npm install @loaders.gl/core @loaders.gl/geotiff
 | --------------------------------------------------------------------- |
 | [`GeoTIFFLoader`](/docs/modules/geotiff/api-reference/geotiff-loader) |
 | [`GeoTIFFSource`](/docs/modules/geotiff/api-reference/geotiff-source) |
-| [`OMETiffSource`](/docs/modules/geotiff/api-reference/ome-tiff-source) |
 
 ## Additional APIs
 

@@ -103,10 +103,6 @@
         "label": "Sources",
         "items": [
           "modules/pmtiles/api-reference/pmtiles-source",
-          "modules/geotiff/api-reference/geotiff-source",
-          "modules/geotiff/api-reference/ome-tiff-source",
-          "modules/copc/api-reference/copc-source",
-          "modules/potree/api-reference/potree-source",
           "modules/mvt/api-reference/mvt-source",
           "modules/mvt/api-reference/table-tile-source",
           "modules/mlt/api-reference/mlt-source",
@@ -178,7 +174,6 @@
           "developer-guide/using-writers",
           "developer-guide/using-sources",
           "developer-guide/multi-range-loading",
-          "developer-guide/byte-range-source-formats",
           "developer-guide/loader-categories",
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",

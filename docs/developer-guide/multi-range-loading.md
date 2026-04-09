@@ -1,9 +1,11 @@
 # Multi-Range Loading
 
-Some source formats store many tiles, point-cloud nodes, or image blocks inside one large
-object. Loading each tile with an independent HTTP request can waste round trips; loading the
-entire object can waste bandwidth. loaders.gl Sources can use scheduled byte-range loading to
-take the middle path.
+Some tile formats store many tiles inside one large object. Loading each tile with an
+independent HTTP request can waste round trips; loading the entire object can waste bandwidth.
+loaders.gl Sources can use scheduled byte-range loading to take the middle path.
+
+PMTiles URL sources use this path by default. The lower-level scheduler is available in
+`@loaders.gl/loader-utils` for future byte-range Sources.
 
 ## How It Works
 
@@ -17,16 +19,16 @@ The scheduler:
 - expands a request by up to `tileRangeRequest.rangeExpansionBytes` to include a nearby read
 - rejects a merge that would exceed `tileRangeRequest.maxMergedBytes`
 - issues the merged HTTP `Range` request
-- slices the merged response back into one promise per original tile, node, or image block
+- slices the merged response back into one promise per original tile
 
-This is automatic for supported URL Sources. Callers can keep using `getTile()`,
-`getTileData()`, `getImage()`, `getPoints()`, or `loadNodeContent()`.
+This is automatic for PMTiles URL Sources. Callers can keep using `getTile()` or
+`getTileData()`.
 
 ## Options
 
 | Option                                  | Default   | Meaning |
 | --------------------------------------- | --------- | ------- |
-| `tileRangeRequest.batchDelayMs`         | `50`      | Time to wait for sibling tile/node/image requests before starting transport. |
+| `tileRangeRequest.batchDelayMs`         | `50`      | Time to wait for sibling tile requests before starting transport. |
 | `tileRangeRequest.rangeExpansionBytes`  | `65536`   | Maximum byte gap to over-fetch when expanding one range to include the next close range. |
 | `tileRangeRequest.maxGapBytes`          | `65536`   | Compatibility alias for `rangeExpansionBytes`. |
 | `tileRangeRequest.maxMergedBytes`       | `8388608` | Maximum byte length of one merged range request. |
@@ -50,10 +52,9 @@ production transport chooses single, expanded ranges.
 
 ## Local Range Server
 
-Website examples that need local PMTiles, COG, OME-TIFF, COPC, or Potree 2 data can point at
-a companion loaders.gl range server. The server serves a directory with CORS, regular `200`
-responses, single `206` byte-range responses, and multipart `206` responses for
-comma-separated `Range` headers.
+Website examples that need local PMTiles data can point at a companion loaders.gl range
+server. The server serves a directory with CORS, regular `200` responses, single `206`
+byte-range responses, and multipart `206` responses for comma-separated `Range` headers.
 
 Ask example users to clone loaders.gl, install dependencies, choose a local data directory,
 and run the server in a separate terminal:
@@ -69,7 +70,6 @@ Then configure the website example with URLs below that server root:
 
 ```ts
 const localPmtilesUrl = 'http://127.0.0.1:9000/stamen_toner(raster)CC-BY+ODbL_z3.pmtiles';
-const localCogUrl = 'http://127.0.0.1:9000/example-cog.tif';
 ```
 
 Do not ask users to import these large archives into the website bundle. Fetch them by URL so
@@ -111,7 +111,7 @@ fallbacks.
 URL range transports send an abortable `fetch()` request with a `Range` header and expect a
 `206 Partial Content` response. If the server responds with `200 OK`, the transport aborts the
 fetch immediately, cancels the response body, and rejects the range request instead of reading
-a whole PMTiles, GeoTIFF, COPC, or Potree object into memory.
+a whole PMTiles archive into memory.
 
 ## Blob And In-Memory Sources
 

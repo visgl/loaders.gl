@@ -16,30 +16,9 @@ import {Proj4Projection} from '@math.gl/proj4';
 import {LASMesh} from '@loaders.gl/las/src/lib/las-types';
 import {createProjection} from '../utils/projection-utils';
 import {getCartographicOriginFromBoundingBox} from '../utils/bounding-box-utils';
-import {
-  createPotree2Root,
-  isPotree2Metadata,
-  parsePotree2HierarchyChunk,
-  parsePotree2NodeContent,
-  type Potree2Metadata,
-  type Potree2Node
-} from './potree2-loader';
-import {PotreeRangeReader} from './range-request-client';
-
-const POTREE_SOURCE_DEFAULT_OPTIONS = {
-  potree: {},
-  tileRangeRequest: {
-    batchDelayMs: 50,
-    maxGapBytes: 65536,
-    rangeExpansionBytes: 65536,
-    maxMergedBytes: 8388608,
-    maxConcurrentRequests: 6
-  }
-};
 
 // https://github.com/visgl/deck.gl/blob/9548f43cba2234a1f4877b6b17f6c88eb35b2e08/modules/core/src/lib/constants.js#L27
 // Describes the format of positions
-/** deck.gl coordinate-system constants used in returned Potree meshes. */
 export enum COORDINATE_SYSTEM {
   /**
    * `LNGLAT` if rendering into a geospatial viewport, `CARTESIAN` otherwise
@@ -66,11 +45,8 @@ export enum COORDINATE_SYSTEM {
   CARTESIAN = 0
 }
 
-/** Mesh type returned by legacy Potree LAS/LAZ node loading. */
 export interface PotreeNodeMesh extends LASMesh {
-  /** Origin used when positions are returned as offsets. */
   cartographicOrigin: number[];
-  /** deck.gl coordinate system identifier. */
   coordinateSystem: number;
 }
 
@@ -95,18 +71,6 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   boundingBox?: PotreeBoundingBox;
 
   private initPromise: Promise<void> | null = null;
-  /** Metadata parsed from `metadata.json` for PotreeConverter 2.x datasets. */
-  private potree2Metadata: Potree2Metadata | null = null;
-  /** Root node of the PotreeConverter 2.x hierarchy tree. */
-  private potree2Root: Potree2Node | null = null;
-  /** PotreeConverter 2.x hierarchy nodes that have been loaded so far. */
-  private potree2Nodes = new Map<string, Potree2Node>();
-  /** Range reader for `hierarchy.bin` and `octree.bin`. */
-  private rangeReader: PotreeRangeReader | null = null;
-  /** Node content requests waiting for the tile-level batch delay. */
-  private pendingNodeContentRequests: PendingNodeContentRequest[] = [];
-  /** Timer for the tile-level node-content batch. */
-  private nodeContentBatchTimer: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * @constructor
@@ -115,7 +79,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    * @param options - data source properties
    */
   constructor(data: string, options: PotreeSourceOptions) {
-    super(data, options, POTREE_SOURCE_DEFAULT_OPTIONS);
+    super(data, options);
     this.makeBaseUrl(this.data);
 
     this.initPromise = this.init();
@@ -127,20 +91,16 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       await this.initPromise;
       return;
     }
-    const loadedPotree2 = await this.tryInitPotree2();
-    if (!loadedPotree2) {
-      await this.initPotree1();
-    }
+    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
+    this.projection = createProjection(this.metadata?.projection);
+    this.parseBoundingVolume();
 
+    await this.loadHierarchy();
     this.isReady = true;
   }
 
   /** Is data set supported */
   isSupported(): boolean {
-    if (this.potree2Metadata) {
-      return this.isReady;
-    }
-
     const {minor, major} = parseVersion(this.metadata?.version ?? '');
     return (
       this.isReady &&
@@ -174,10 +134,6 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   async loadNodeContent(nodeName: string): Promise<Mesh | null> {
     await this.initPromise;
 
-    if (this.potree2Metadata) {
-      return await this.loadPotree2NodeContentBatched(getPotree2NodeName(nodeName));
-    }
-
     if (!this.isSupported()) {
       return null;
     }
@@ -186,8 +142,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
     if (isAvailable) {
       const result: PotreeNodeMesh = (await load(
         `${this.baseUrl}/${this.metadata?.octreeDir}/r/r${nodeName}.${this.getContentExtension()}`,
-        LASLoader,
-        this.loadOptions
+        LASLoader
       )) as PotreeNodeMesh;
 
       if (result) {
@@ -256,150 +211,8 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   private async loadHierarchy(): Promise<void> {
     this.root = await load(
       `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
-      PotreeHierarchyChunkLoader,
-      this.loadOptions
+      PotreeHierarchyChunkLoader
     );
-  }
-
-  /** Loads legacy Potree 1.x metadata and hierarchy. */
-  private async initPotree1(): Promise<void> {
-    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader, this.loadOptions);
-    this.projection = createProjection(this.metadata?.projection);
-    this.parseBoundingVolume();
-
-    await this.loadHierarchy();
-  }
-
-  /** Attempts to load PotreeConverter 2.x metadata and the first hierarchy chunk. */
-  private async tryInitPotree2(): Promise<boolean> {
-    const metadataUrl = `${this.baseUrl}/metadata.json`;
-
-    try {
-      const response = await this.fetch(metadataUrl);
-      if (!response.ok) {
-        return false;
-      }
-
-      const metadata = await response.json();
-      if (!isPotree2Metadata(metadata)) {
-        return false;
-      }
-
-      this.potree2Metadata = metadata;
-      this.projection = createProjection(metadata.projection);
-      this.boundingBox = getPotree2BoundingBox(metadata);
-      this.rangeReader = new PotreeRangeReader(this.baseUrl, {
-        ...this.options.tileRangeRequest,
-        batchDelayMs: 0,
-        fetch: this.fetch
-      });
-      this.potree2Root = createPotree2Root(metadata);
-      this.potree2Nodes.set(this.potree2Root.name, this.potree2Root);
-
-      await this.loadPotree2HierarchyChunk(this.potree2Root);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  /** Resolves a Potree 2 node name, loading proxy hierarchy chunks on demand. */
-  private async getPotree2Node(nodeName: string): Promise<Potree2Node | null> {
-    if (!this.potree2Root) {
-      return null;
-    }
-
-    let currentNode: Potree2Node = this.potree2Root;
-    if (currentNode.nodeType === 2) {
-      await this.loadPotree2HierarchyChunk(currentNode);
-    }
-
-    for (const childIndexCharacter of nodeName.slice(1)) {
-      if (currentNode.nodeType === 2) {
-        await this.loadPotree2HierarchyChunk(currentNode);
-      }
-
-      const childIndex = Number(childIndexCharacter);
-      currentNode = currentNode.children[childIndex]!;
-      if (!currentNode) {
-        return null;
-      }
-    }
-
-    if (currentNode.nodeType === 2) {
-      await this.loadPotree2HierarchyChunk(currentNode);
-    }
-
-    return currentNode;
-  }
-
-  /** Enqueues one Potree 2 point-node load so sibling requests can be range-batched. */
-  private async loadPotree2NodeContentBatched(nodeName: string): Promise<Mesh | null> {
-    const promise = new Promise<Mesh | null>((resolve, reject) => {
-      this.pendingNodeContentRequests.push({nodeName, resolve, reject});
-    });
-
-    this.scheduleNodeContentBatch();
-    return await promise;
-  }
-
-  /** Schedules the next node-content batch flush. */
-  private scheduleNodeContentBatch(): void {
-    if (this.nodeContentBatchTimer) {
-      return;
-    }
-
-    const batchDelayMs = this.options.tileRangeRequest?.batchDelayMs ?? 50;
-    this.nodeContentBatchTimer = setTimeout(() => this.flushNodeContentBatch(), batchDelayMs);
-  }
-
-  /** Starts all point-node loads that were queued during the batch delay. */
-  private flushNodeContentBatch(): void {
-    if (this.nodeContentBatchTimer) {
-      clearTimeout(this.nodeContentBatchTimer);
-      this.nodeContentBatchTimer = null;
-    }
-
-    const requests = this.pendingNodeContentRequests;
-    this.pendingNodeContentRequests = [];
-
-    for (const request of requests) {
-      this.loadPotree2NodeContentNow(request.nodeName).then(request.resolve, request.reject);
-    }
-  }
-
-  /** Loads and decodes one Potree 2 point node without the tile-level batch delay. */
-  private async loadPotree2NodeContentNow(nodeName: string): Promise<Mesh | null> {
-    if (!this.potree2Metadata || !this.rangeReader) {
-      return null;
-    }
-
-    const node = await this.getPotree2Node(nodeName);
-    if (!node || node.byteSize <= 0) {
-      return null;
-    }
-
-    const arrayBuffer = await this.rangeReader.readFileRange(
-      'octree.bin',
-      node.byteOffset,
-      node.byteSize
-    );
-
-    return await parsePotree2NodeContent(arrayBuffer, node, this.potree2Metadata, this.projection);
-  }
-
-  /** Loads one Potree 2 hierarchy chunk and attaches it to the local node tree. */
-  private async loadPotree2HierarchyChunk(node: Potree2Node): Promise<void> {
-    if (!this.rangeReader || node.hierarchyByteSize <= 0) {
-      return;
-    }
-
-    const arrayBuffer = await this.rangeReader.readFileRange(
-      'hierarchy.bin',
-      node.hierarchyByteOffset,
-      node.hierarchyByteSize
-    );
-    parsePotree2HierarchyChunk(node, arrayBuffer, this.potree2Nodes);
   }
 
   /**
@@ -408,11 +221,8 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    */
   private makeBaseUrl(data: string | Blob): void {
     this.baseUrl = typeof data === 'string' ? resolvePath(data) : '';
-    if (this.baseUrl.endsWith('/cloud.js')) {
-      this.baseUrl = this.baseUrl.slice(0, -'/cloud.js'.length);
-    }
-    if (this.baseUrl.endsWith('/metadata.json')) {
-      this.baseUrl = this.baseUrl.slice(0, -'/metadata.json'.length);
+    if (this.baseUrl.endsWith('cloud.js')) {
+      this.baseUrl = this.baseUrl.substring(0, -8);
     }
     if (this.baseUrl.endsWith('/')) {
       this.baseUrl = this.baseUrl.substring(0, -1);
@@ -444,28 +254,4 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       this.boundingBox = this.metadata?.tightBoundingBox;
     }
   }
-}
-
-type PendingNodeContentRequest = {
-  nodeName: string;
-  resolve: (mesh: Mesh | null) => void;
-  reject: (error: unknown) => void;
-};
-
-/** Normalizes caller node names to the Potree 2 hierarchy name convention. */
-function getPotree2NodeName(nodeName: string): string {
-  return nodeName.startsWith('r') ? nodeName : `r${nodeName}`;
-}
-
-/** Converts Potree 2 metadata bounding boxes into the legacy Source bounding-box type. */
-function getPotree2BoundingBox(metadata: Potree2Metadata): PotreeBoundingBox {
-  const boundingBox = metadata.tightBoundingBox || metadata.boundingBox;
-  return {
-    lx: boundingBox.min[0],
-    ly: boundingBox.min[1],
-    lz: boundingBox.min[2],
-    ux: boundingBox.max[0],
-    uy: boundingBox.max[1],
-    uz: boundingBox.max[2]
-  };
 }

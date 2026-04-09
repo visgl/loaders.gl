@@ -10,15 +10,16 @@ import {getOmePixelSourceMeta} from './ome-utils';
 import {fromString} from './omexml';
 import type {OmeTiffSelection} from './ome-indexers';
 
-export const isOmeTiff = async (img: GeoTIFFImage): Promise<boolean> =>
-  String((await img.fileDirectory.loadValue('ImageDescription')) || '').includes('<OME');
+export const isOmeTiff = (img: GeoTIFFImage) => img.fileDirectory.ImageDescription.includes('<OME');
 
 export async function loadOmeTiff(tiff: GeoTIFF, firstImage: GeoTIFFImage) {
   // Get first image from tiff and inspect OME-XML metadata
-  const imageDescription = String(await firstImage.fileDirectory.loadValue('ImageDescription'));
-  const subIfds = await firstImage.fileDirectory.loadValue('SubIFDs');
-  const photometricInterpretation = firstImage.fileDirectory.getValue('PhotometricInterpretation');
-  const omexml = fromString(imageDescription);
+  const {
+    ImageDescription,
+    SubIFDs,
+    PhotometricInterpretation: photometricInterpretation
+  } = firstImage.fileDirectory;
+  const omexml = fromString(ImageDescription);
 
   /*
    * Image pyramids are stored differently between versions of Bioformats.
@@ -27,9 +28,9 @@ export async function loadOmeTiff(tiff: GeoTIFF, firstImage: GeoTIFFImage) {
   let levels: number;
   let pyramidIndexer: OmeTiffIndexer;
 
-  if (subIfds) {
+  if (SubIFDs) {
     // Image is >= Bioformats 6.0 and resolutions are stored using SubIFDs.
-    levels = subIfds.length + 1;
+    levels = SubIFDs.length + 1;
     pyramidIndexer = getOmeSubIFDIndexer(tiff, omexml);
   } else {
     // Image is legacy format; resolutions are stored as separate images.

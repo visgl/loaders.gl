@@ -104,11 +104,27 @@ export function getFetchFunction(options?: StrictLoaderOptions) {
   // options.fetch can be an options object, use global fetch with those options
   const fetchOptions = options?.fetch;
   if (fetchOptions && typeof fetchOptions !== 'function') {
-    return (url, requestOptions) => fetch(url, {...fetchOptions, ...requestOptions});
+    return (url, requestOptions) => fetch(url, mergeFetchOptions(fetchOptions, requestOptions));
   }
 
   // else return the global fetch function
   return (url, requestOptions) => fetch(url, requestOptions);
+}
+
+function mergeFetchOptions(fetchOptions: RequestInit, requestOptions?: RequestInit): RequestInit {
+  const mergedOptions: RequestInit = {...fetchOptions, ...requestOptions};
+  if (fetchOptions.headers || requestOptions?.headers) {
+    mergedOptions.headers = mergeHeaders(fetchOptions.headers, requestOptions?.headers);
+  }
+  return mergedOptions;
+}
+
+function mergeHeaders(defaultHeaders?: HeadersInit, requestHeaders?: HeadersInit): Headers {
+  const headers = new Headers(defaultHeaders);
+  if (requestHeaders) {
+    new Headers(requestHeaders).forEach((value, key) => headers.set(key, value));
+  }
+  return headers;
 }
 
 function normalizeDirectLoaderOptions(options?: StrictLoaderOptions): StrictLoaderOptions {
