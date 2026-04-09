@@ -10,7 +10,6 @@ import {ParquetRowGroup} from '../../parquetjs/schema/declare';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumns} from '../../parquetjs/schema/shred';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
-import {installBufferPolyfill} from '../../polyfills/buffer/index';
 import {preloadCompressions} from '../../parquetjs/compression';
 
 /**
@@ -20,7 +19,6 @@ export async function parseParquetFileInColumns(
   file: ReadableFile,
   options?: ParquetJSONLoaderOptions
 ): Promise<ColumnarTable> {
-  installBufferPolyfill();
   await preloadCompressions(options);
 
   for await (const batch of parseParquetFileInColumnarBatches(file, options)) {
@@ -40,7 +38,6 @@ export async function* parseParquetFileInColumnarBatches(
   file: ReadableFile,
   options?: ParquetJSONLoaderOptions
 ): AsyncIterable<ColumnarTableBatch> {
-  installBufferPolyfill();
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file);

@@ -7,6 +7,7 @@
 /* eslint-disable camelcase */
 import {BSONLoader, BSONWriter} from '@loaders.gl/bson';
 import {OriginalType, ParquetField, ParquetType, PrimitiveType} from './declare';
+import {decodeUtf8, readUInt32LE, toArrayBuffer, toUint8Array} from '../utils/binary-utils';
 
 export interface ParquetTypeKit {
   primitiveType: PrimitiveType;
@@ -333,7 +334,7 @@ function toPrimitive_UTF8(value: any): Buffer {
 }
 
 function fromPrimitive_UTF8(value: any): string {
-  return value.toString();
+  return decodeUtf8(toUint8Array(value));
 }
 
 function toPrimitive_JSON(value: any): Buffer {
@@ -341,7 +342,7 @@ function toPrimitive_JSON(value: any): Buffer {
 }
 
 function fromPrimitive_JSON(value: any): unknown {
-  return JSON.parse(value);
+  return JSON.parse(decodeUtf8(toUint8Array(value)));
 }
 
 function toPrimitive_BSON(value: any): Buffer {
@@ -351,7 +352,7 @@ function toPrimitive_BSON(value: any): Buffer {
 }
 
 function fromPrimitive_BSON(value: any) {
-  return BSONLoader.parseSync?.(value);
+  return BSONLoader.parseSync?.(toArrayBuffer(value));
 }
 
 function toPrimitive_TIME_MILLIS(value: any) {
@@ -453,10 +454,10 @@ function toPrimitive_INTERVAL(value: any) {
 }
 
 function fromPrimitive_INTERVAL(value: any) {
-  const buf = Buffer.from(value);
-  const months = buf.readUInt32LE(0);
-  const days = buf.readUInt32LE(4);
-  const millis = buf.readUInt32LE(8);
+  const bytes = toUint8Array(value);
+  const months = readUInt32LE(bytes, 0);
+  const days = readUInt32LE(bytes, 4);
+  const millis = readUInt32LE(bytes, 8);
 
   return {months, days, milliseconds: millis};
 }

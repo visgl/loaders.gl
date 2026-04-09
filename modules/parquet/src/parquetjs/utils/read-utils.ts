@@ -7,14 +7,11 @@
 import {
   TBufferedTransport,
   TCompactProtocol,
-  TFramedTransport,
   FileMetaData,
   PageHeader
 } from '../parquet-thrift/index';
-
-class UFramedTransport extends TFramedTransport {
-  public readPos: number = 0;
-}
+import {Uint8ArrayCompactProtocol} from './uint8-array-compact-protocol';
+import {Uint8ArrayTransport} from './uint8-array-transport';
 
 /**
  * Helper function that serializes a thrift object into a buffer
@@ -33,15 +30,15 @@ export function serializeThrift(obj: any): Buffer {
   return Buffer.concat(output as Uint8Array[]);
 }
 
-export function decodeThrift(obj: any, buf: Buffer, offset?: number) {
+export function decodeThrift(obj: any, buf: Uint8Array, offset?: number) {
   if (!offset) {
     // tslint:disable-next-line:no-parameter-reassignment
     offset = 0;
   }
 
-  const transport = new UFramedTransport(buf);
+  const transport = new Uint8ArrayTransport(buf);
   transport.readPos = offset;
-  const protocol = new TCompactProtocol(transport);
+  const protocol = new Uint8ArrayCompactProtocol(transport);
   obj.read(protocol);
   return transport.readPos - offset;
 }
@@ -58,29 +55,29 @@ export function getThriftEnum(klass: any, value: number | string): string {
   throw new Error('Invalid ENUM value');
 }
 
-export function decodeFileMetadata(buf: Buffer, offset?: number) {
+export function decodeFileMetadata(buf: Uint8Array, offset?: number) {
   if (!offset) {
     // tslint:disable-next-line:no-parameter-reassignment
     offset = 0;
   }
 
-  const transport = new UFramedTransport(buf);
+  const transport = new Uint8ArrayTransport(buf);
   transport.readPos = offset;
-  const protocol = new TCompactProtocol(transport);
-  const metadata = FileMetaData.read(protocol);
+  const protocol = new Uint8ArrayCompactProtocol(transport);
+  const metadata = FileMetaData.read(protocol as any);
   return {length: transport.readPos - offset, metadata};
 }
 
-export function decodePageHeader(buf: Buffer, offset?: number) {
+export function decodePageHeader(buf: Uint8Array, offset?: number) {
   if (!offset) {
     // tslint:disable-next-line:no-parameter-reassignment
     offset = 0;
   }
 
-  const transport = new UFramedTransport(buf);
+  const transport = new Uint8ArrayTransport(buf);
   transport.readPos = offset;
-  const protocol = new TCompactProtocol(transport);
-  const pageHeader = PageHeader.read(protocol);
+  const protocol = new Uint8ArrayCompactProtocol(transport);
+  const pageHeader = PageHeader.read(protocol as any);
   return {length: transport.readPos - offset, pageHeader};
 }
 

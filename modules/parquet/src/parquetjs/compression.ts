@@ -18,20 +18,7 @@ import {
 import {registerJSModules} from '@loaders.gl/loader-utils';
 
 import {ParquetCompression} from './schema/declare';
-
-/** We can't use loaders-util buffer handling since we are dependent on buffers even in the browser */
-function toBuffer(arrayBuffer: ArrayBuffer): Buffer {
-  return Buffer.from(arrayBuffer);
-}
-
-function toArrayBuffer(buffer: Buffer): ArrayBuffer {
-  // TODO - per docs we should just be able to call buffer.buffer, but there are issues
-  if (Buffer.isBuffer(buffer)) {
-    const typedArray = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.length);
-    return typedArray.slice().buffer;
-  }
-  return buffer;
-}
+import {toArrayBuffer, toUint8Array} from './utils/binary-utils';
 
 // TODO switch to worker compression to avoid bundling...
 
@@ -92,7 +79,7 @@ export async function deflate(method: ParquetCompression, value: Buffer): Promis
   }
   const inputArrayBuffer = toArrayBuffer(value);
   const compressedArrayBuffer = await compression.compress(inputArrayBuffer);
-  return toBuffer(compressedArrayBuffer);
+  return Buffer.from(compressedArrayBuffer);
 }
 
 /**
@@ -100,16 +87,16 @@ export async function deflate(method: ParquetCompression, value: Buffer): Promis
  */
 export async function decompress(
   method: ParquetCompression,
-  value: Buffer,
+  value: Uint8Array,
   size: number
-): Promise<Buffer> {
+): Promise<Uint8Array> {
   const compression = PARQUET_COMPRESSION_METHODS[method];
   if (!compression) {
     throw new Error(`parquet: invalid compression method: ${method}`);
   }
   const inputArrayBuffer = toArrayBuffer(value);
   const compressedArrayBuffer = await compression.decompress(inputArrayBuffer, size);
-  return toBuffer(compressedArrayBuffer);
+  return toUint8Array(compressedArrayBuffer);
 }
 
 /*

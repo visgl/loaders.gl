@@ -7,7 +7,7 @@
 import {PrimitiveType} from '../schema/declare';
 
 export interface CursorBuffer {
-  buffer: Buffer;
+  buffer: Uint8Array;
   offset: number;
   size?: number;
 }
