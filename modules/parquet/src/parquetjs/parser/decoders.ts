@@ -187,7 +187,7 @@ export function decodeSchema(
       const type = getThriftEnum(Type, schemaElement.type!);
       let logicalType = type;
 
-      if (schemaElement.converted_type) {
+      if (schemaElement.converted_type !== undefined && schemaElement.converted_type !== null) {
         logicalType = getThriftEnum(ConvertedType, schemaElement.converted_type);
       }
 

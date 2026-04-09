@@ -2,7 +2,6 @@ import {version} from '../lerna.json';
 
 const testGlobalThis = globalThis as typeof globalThis & {
   __VERSION__: string;
-  Buffer?: typeof Buffer;
   fetch: typeof fetch;
   nodeVersion?: number;
 };
@@ -55,6 +54,4 @@ if (typeof window !== 'undefined') {
 
     return originalFetch(input, init);
   };
-
-  testGlobalThis.Buffer ||= (await import('@loaders.gl/parquet/buffer')).Buffer;
 }

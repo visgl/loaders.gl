@@ -19,7 +19,7 @@ export interface ParquetCodecOptions {
 }
 
 export interface ParquetCodecKit {
-  encodeValues(type: PrimitiveType, values: any[], opts?: ParquetCodecOptions): Buffer;
+  encodeValues(type: PrimitiveType, values: any[], opts?: ParquetCodecOptions): Uint8Array;
   decodeValues(
     type: PrimitiveType,
     cursor: CursorBuffer,

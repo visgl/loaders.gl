@@ -6,6 +6,7 @@
 
 import type {PrimitiveType} from '../schema/declare';
 import type {CursorBuffer, ParquetCodecOptions} from './declare';
+import {concatUint8Arrays, writeUInt32LE} from '../utils/binary-utils';
 import varint from 'varint';
 
 // eslint-disable-next-line max-statements, complexity
@@ -13,7 +14,7 @@ export function encodeValues(
   type: PrimitiveType,
   values: any[],
   opts: ParquetCodecOptions
-): Buffer {
+): Uint8Array {
   if (!('bitWidth' in opts)) {
     throw new Error('bitWidth is required');
   }
@@ -30,7 +31,7 @@ export function encodeValues(
       throw new Error(`unsupported type: ${type}`);
   }
 
-  let buf = Buffer.alloc(0);
+  const buffers: Uint8Array[] = [];
   let run: any[] = [];
   let repeats = 0;
 
@@ -40,7 +41,7 @@ export function encodeValues(
     if (repeats === 0 && run.length % 8 === 0 && values[i] === values[i + 1]) {
       // If we have any data in runs we need to encode them
       if (run.length) {
-        buf = Buffer.concat([buf, encodeRunBitpacked(run, opts)] as Uint8Array[]);
+        buffers.push(encodeRunBitpacked(run, opts));
         run = [];
       }
       repeats = 1;
@@ -49,7 +50,7 @@ export function encodeValues(
     } else {
       // If values changes we need to post any previous repeated values
       if (repeats) {
-        buf = Buffer.concat([buf, encodeRunRepeated(values[i - 1], repeats, opts)] as Uint8Array[]);
+        buffers.push(encodeRunRepeated(values[i - 1], repeats, opts));
         repeats = 0;
       }
       run.push(values[i]);
@@ -57,23 +58,19 @@ export function encodeValues(
   }
 
   if (repeats) {
-    buf = Buffer.concat([
-      buf,
-      encodeRunRepeated(values[values.length - 1], repeats, opts)
-    ] as Uint8Array[]);
+    buffers.push(encodeRunRepeated(values[values.length - 1], repeats, opts));
   } else if (run.length) {
-    buf = Buffer.concat([buf, encodeRunBitpacked(run, opts)] as Uint8Array[]);
+    buffers.push(encodeRunBitpacked(run, opts));
   }
 
+  const buf = concatUint8Arrays(buffers);
   if (opts.disableEnvelope) {
     return buf;
   }
 
-  const envelope = Buffer.alloc(buf.length + 4);
-
-  // @ts-ignore buffer polyfill
-  envelope.writeUInt32LE(buf.length, undefined);
-  buf.copy(envelope as Uint8Array, 4);
+  const envelope = new Uint8Array(buf.length + 4);
+  writeUInt32LE(envelope, buf.length, 0);
+  envelope.set(buf, 4);
 
   return envelope;
 }
@@ -94,7 +91,7 @@ export function decodeValues(
 
   let values: number[] = [];
   while (values.length < count) {
-    const header = varint.decode(cursor.buffer as unknown as Buffer, cursor.offset);
+    const header = varint.decode(cursor.buffer as any, cursor.offset);
     cursor.offset += varint.encodingLength(header);
     let decodedValues: number[];
     if (header & 1) {
@@ -163,7 +160,7 @@ function decodeRunRepeated(
   return new Array(count).fill(value);
 }
 
-function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Buffer {
+function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Uint8Array {
   // @ts-ignore
   const bitWidth: number = opts.bitWidth;
 
@@ -171,30 +168,27 @@ function encodeRunBitpacked(values: number[], opts: ParquetCodecOptions): Buffer
     values.push(0);
   }
 
-  const buf = Buffer.alloc(Math.ceil(bitWidth * (values.length / 8)));
+  const buf = new Uint8Array(Math.ceil(bitWidth * (values.length / 8)));
   for (let b = 0; b < bitWidth * values.length; b++) {
     if ((values[Math.floor(b / bitWidth)] & (1 << (b % bitWidth))) > 0) {
       buf[Math.floor(b / 8)] |= 1 << (b % 8);
     }
   }
 
-  return Buffer.concat([
-    Buffer.from(varint.encode(((values.length / 8) << 1) | 1)),
-    buf
-  ] as Uint8Array[]);
+  return concatUint8Arrays([Uint8Array.from(varint.encode(((values.length / 8) << 1) | 1)), buf]);
 }
 
-function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptions): Buffer {
+function encodeRunRepeated(value: number, count: number, opts: ParquetCodecOptions): Uint8Array {
   // @ts-ignore
   const bitWidth: number = opts.bitWidth;
 
-  const buf = Buffer.alloc(Math.ceil(bitWidth / 8));
+  const buf = new Uint8Array(Math.ceil(bitWidth / 8));
 
   for (let i = 0; i < buf.length; i++) {
-    buf.writeUInt8(value & 0xff, i);
+    buf[i] = value & 0xff;
     // eslint-disable-next-line
     value >> 8; //  TODO - this looks wrong
   }
 
-  return Buffer.concat([Buffer.from(varint.encode(count << 1)), buf] as Uint8Array[]);
+  return concatUint8Arrays([Uint8Array.from(varint.encode(count << 1)), buf]);
 }

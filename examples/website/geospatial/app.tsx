@@ -21,7 +21,7 @@ import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load, LoaderOptions} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
-import {GeoParquetLoader, installBufferPolyfill, preloadCompressions} from '@loaders.gl/parquet';
+import {GeoParquetLoader, preloadCompressions} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
@@ -29,8 +29,6 @@ import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
-
-installBufferPolyfill();
 
 export const INITIAL_MAP_STYLE =
   'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';

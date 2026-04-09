@@ -72,14 +72,14 @@ export async function preloadCompressions(options?: {modules?: {[key: string]: a
 /**
  * Deflate a value using compression method `method`
  */
-export async function deflate(method: ParquetCompression, value: Buffer): Promise<Buffer> {
+export async function deflate(method: ParquetCompression, value: Uint8Array): Promise<Uint8Array> {
   const compression = PARQUET_COMPRESSION_METHODS[method];
   if (!compression) {
     throw new Error(`parquet: invalid compression method: ${method}`);
   }
   const inputArrayBuffer = toArrayBuffer(value);
   const compressedArrayBuffer = await compression.compress(inputArrayBuffer);
-  return Buffer.from(compressedArrayBuffer);
+  return toUint8Array(compressedArrayBuffer);
 }
 
 /**
@@ -98,95 +98,3 @@ export async function decompress(
   const compressedArrayBuffer = await compression.decompress(inputArrayBuffer, size);
   return toUint8Array(compressedArrayBuffer);
 }
-
-/*
- * Inflate a value using compression method `method`
- */
-export function inflate(method: ParquetCompression, value: Buffer, size: number): Buffer {
-  if (!(method in PARQUET_COMPRESSION_METHODS)) {
-    throw new Error(`invalid compression method: ${method}`);
-  }
-  // @ts-ignore
-  return PARQUET_COMPRESSION_METHODS[method].inflate(value, size);
-}
-
-/*
-function deflate_identity(value: Buffer): Buffer {
-  return value;
-}
-
-function deflate_gzip(value: Buffer): Buffer {
-  return zlib.gzipSync(value);
-}
-
-function deflate_snappy(value: Buffer): Buffer {
-  return snappyjs.compress(value);
-}
-
-function deflate_lzo(value: Buffer): Buffer {
-  lzo = lzo || Util.load('lzo');
-  return lzo.compress(value);
-}
-
-function deflate_brotli(value: Buffer): Buffer {
-  brotli = brotli || Util.load('brotli');
-  const result = brotli.compress(value, {
-    mode: 0,
-    quality: 8,
-    lgwin: 22
-  });
-  return result ? Buffer.from(result) : Buffer.alloc(0);
-}
-
-function deflate_lz4(value: Buffer): Buffer {
-  lz4js = lz4js || Util.load('lz4js');
-  try {
-    // let result = Buffer.alloc(lz4js.encodeBound(value.length));
-    // const compressedSize = lz4.encodeBlock(value, result);
-    // // remove unnecessary bytes
-    // result = result.slice(0, compressedSize);
-    // return result;
-    return Buffer.from(lz4js.compress(value));
-  } catch (err) {
-    throw err;
-  }
-}
-function inflate_identity(value: Buffer): Buffer {
-  return value;
-}
-
-function inflate_gzip(value: Buffer): Buffer {
-  return zlib.gunzipSync(value);
-}
-
-function inflate_snappy(value: Buffer): Buffer {
-  return snappyjs.uncompress(value);
-}
-
-function inflate_lzo(value: Buffer, size: number): Buffer {
-  lzo = lzo || Util.load('lzo');
-  return lzo.decompress(value, size);
-}
-
-function inflate_lz4(value: Buffer, size: number): Buffer {
-  lz4js = lz4js || Util.load('lz4js');
-  try {
-    // let result = Buffer.alloc(size);
-    // const uncompressedSize = lz4js.decodeBlock(value, result);
-    // // remove unnecessary bytes
-    // result = result.slice(0, uncompressedSize);
-    // return result;
-    return Buffer.from(lz4js.decompress(value, size));
-  } catch (err) {
-    throw err;
-  }
-}
-
-function inflate_brotli(value: Buffer): Buffer {
-  brotli = brotli || Util.load('brotli');
-  if (!value.length) {
-    return Buffer.alloc(0);
-  }
-  return Buffer.from(brotli.decompress(value));
-}
-*/

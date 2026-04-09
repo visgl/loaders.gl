@@ -8,6 +8,16 @@ import test from 'tape-promise/tape';
 import {ParquetSchema} from '@loaders.gl/parquet';
 import {ParquetRowGroup, shredRecord, materializeRows} from '@loaders.gl/parquet/parquetjs/schema/shred';
 
+const TEXT_DECODER = new TextDecoder();
+
+function bytes(values: number[]): Uint8Array {
+  return new Uint8Array(values);
+}
+
+function decodeValues(values: Uint8Array[]): string[] {
+  return values.map(value => TEXT_DECODER.decode(value));
+}
+
 test('ParquetShredder#should shred a single simple record', assert => {
   const schema = new ParquetSchema({
     name: { type: 'UTF8' },
@@ -26,7 +36,7 @@ test('ParquetShredder#should shred a single simple record', assert => {
   assert.equal(buf.rowCount, 1);
   assert.deepEqual(colData.name.dlevels, [0]);
   assert.deepEqual(colData.name.rlevels, [0]);
-  assert.deepEqual(colData.name.values.map((x) => x.toString()), ['apple']);
+  assert.deepEqual(decodeValues(colData.name.values), ['apple']);
   assert.deepEqual(colData.quantity.dlevels, [0]);
   assert.deepEqual(colData.quantity.rlevels, [0]);
   assert.deepEqual(colData.quantity.values, [10]);
@@ -66,7 +76,7 @@ test('ParquetShredder#should shred a list of simple records', assert => {
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData.name.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.name.rlevels, [0, 0, 0]);
-  assert.deepEqual(colData.name.values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
+  assert.deepEqual(decodeValues(colData.name.values), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData.quantity.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.quantity.rlevels, [0, 0, 0]);
   assert.deepEqual(colData.quantity.values, [10, 20, 15]);
@@ -99,7 +109,7 @@ test('ParquetShredder#should shred a list of simple records with optional scalar
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData.name.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.name.rlevels, [0, 0, 0]);
-  assert.deepEqual(colData.name.values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
+  assert.deepEqual(decodeValues(colData.name.values), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData.quantity.dlevels, [1, 0, 1]);
   assert.deepEqual(colData.quantity.rlevels, [0, 0, 0]);
   assert.deepEqual(colData.quantity.values, [10, 15]);
@@ -134,11 +144,11 @@ test('ParquetShredder#should shred a list of simple records with repeated scalar
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData.name.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.name.rlevels, [0, 0, 0]);
-  assert.deepEqual(colData.name.values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
+  assert.deepEqual(decodeValues(colData.name.values), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData.name.count, 3);
   assert.deepEqual(colData.colours.dlevels, [1, 1, 1, 1]);
   assert.deepEqual(colData.colours.rlevels, [0, 1, 0, 0]);
-  assert.deepEqual(colData.colours.values.map((x) => x.toString()), ['red', 'green', 'orange', 'yellow']);
+  assert.deepEqual(decodeValues(colData.colours.values), ['red', 'green', 'orange', 'yellow']);
   assert.deepEqual(colData.colours.count, 4);
   assert.deepEqual(colData.price.dlevels, [0, 0, 0]);
   assert.deepEqual(colData.price.rlevels, [0, 0, 0]);
@@ -172,13 +182,13 @@ test('ParquetShredder#should shred a nested record without repetition modifiers'
   assert.equal(buf.rowCount, 2);
   assert.deepEqual(colData[['name']].dlevels, [0, 0]);
   assert.deepEqual(colData[['name']].rlevels, [0, 0]);
-  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ['apple', 'banana']);
+  assert.deepEqual(decodeValues(colData[['name']].values), ['apple', 'banana']);
   assert.deepEqual(colData[['stock', 'quantity']].dlevels, [0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10, 20]);
   assert.deepEqual(colData[['stock', 'warehouse']].dlevels, [0, 0]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B']);
+  assert.deepEqual(decodeValues(colData[['stock', 'warehouse']].values), ['A', 'B']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 42.0]);
@@ -212,7 +222,7 @@ test('ParquetShredder#should shred a nested record with optional fields', assert
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B']);
+  assert.deepEqual(decodeValues(colData[['stock', 'warehouse']].values), ['A', 'B']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 42.0]);
@@ -247,13 +257,13 @@ test('ParquetShredder#should shred a nested record with nested optional fields',
   const colData = buf.columnData;
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData[['name']].dlevels, [0, 0, 0]);
-  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
+  assert.deepEqual(decodeValues(colData[['name']].values), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData[['stock', 'quantity']].dlevels, [2, 0, 1]);
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10]);
   assert.deepEqual(colData[['stock', 'warehouse']].dlevels, [1, 0, 1]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B']);
+  assert.deepEqual(decodeValues(colData[['stock', 'warehouse']].values), ['A', 'B']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 17.0, 42.0]);
@@ -286,13 +296,13 @@ test('ParquetShredder#should shred a nested record with repeated fields', assert
   const colData = buf.columnData;
   assert.equal(buf.rowCount, 3);
   assert.deepEqual(colData[['name']].dlevels, [0, 0, 0]);
-  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ['apple', 'orange', 'banana']);
+  assert.deepEqual(decodeValues(colData[['name']].values), ['apple', 'orange', 'banana']);
   assert.deepEqual(colData[['stock', 'quantity']].dlevels, [1, 1, 1, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 0, 1, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10, 50, 75]);
   assert.deepEqual(colData[['stock', 'warehouse']].dlevels, [0, 0, 0]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B', 'C']);
+  assert.deepEqual(decodeValues(colData[['stock', 'warehouse']].values), ['A', 'B', 'C']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 17.0, 42.0]);
@@ -331,13 +341,13 @@ test('ParquetShredder#should shred a nested record with nested repeated fields',
   assert.equal(buf.rowCount, 4);
   assert.deepEqual(colData[['name']].dlevels, [0, 0, 0, 0]);
   assert.deepEqual(colData[['name']].rlevels, [0, 0, 0, 0]);
-  assert.deepEqual(colData[['name']].values.map((x) => x.toString()), ['apple', 'orange', 'kiwi', 'banana']);
+  assert.deepEqual(decodeValues(colData[['name']].values), ['apple', 'orange', 'kiwi', 'banana']);
   assert.deepEqual(colData[['stock', 'quantity']].dlevels, [2, 2, 2, 2, 0, 1]);
   assert.deepEqual(colData[['stock', 'quantity']].rlevels, [0, 1, 0, 2, 0, 0]);
   assert.deepEqual(colData[['stock', 'quantity']].values, [10, 20, 50, 75]);
   assert.deepEqual(colData[['stock', 'warehouse']].dlevels, [1, 1, 1, 0, 1]);
   assert.deepEqual(colData[['stock', 'warehouse']].rlevels, [0, 1, 0, 0, 0]);
-  assert.deepEqual(colData[['stock', 'warehouse']].values.map((x) => x.toString()), ['A', 'B', 'X', 'C']);
+  assert.deepEqual(decodeValues(colData[['stock', 'warehouse']].values), ['A', 'B', 'X', 'C']);
   assert.deepEqual(colData[['price']].dlevels, [0, 0, 0, 0]);
   assert.deepEqual(colData[['price']].rlevels, [0, 0, 0, 0]);
   assert.deepEqual(colData[['price']].values, [23.5, 17.0, 99.0, 42.0]);
@@ -360,10 +370,10 @@ test('ParquetShredder#should materialize a nested record with scalar repeated fi
     dlevels: [0, 0, 0, 0],
     rlevels: [0, 0, 0, 0],
     values:[
-      new Buffer([97, 112, 112, 108, 101]),
-      new Buffer([111, 114, 97, 110, 103, 101]),
-      new Buffer([107, 105, 119, 105]),
-      new Buffer([98, 97, 110, 97, 110, 97])
+      bytes([97, 112, 112, 108, 101]),
+      bytes([111, 114, 97, 110, 103, 101]),
+      bytes([107, 105, 119, 105]),
+      bytes([98, 97, 110, 97, 110, 97])
     ],
     count:4
   };
@@ -420,10 +430,10 @@ test('ParquetShredder#should materialize a nested record with nested repeated fi
     dlevels: [0, 0, 0, 0],
     rlevels: [0, 0, 0, 0],
     values:[
-      new Buffer([97, 112, 112, 108, 101]),
-      new Buffer([111, 114, 97, 110, 103, 101]),
-      new Buffer([107, 105, 119, 105]),
-      new Buffer([98, 97, 110, 97, 110, 97])
+      bytes([97, 112, 112, 108, 101]),
+      bytes([111, 114, 97, 110, 103, 101]),
+      bytes([107, 105, 119, 105]),
+      bytes([98, 97, 110, 97, 110, 97])
     ],
     count:4
   };
@@ -439,10 +449,10 @@ test('ParquetShredder#should materialize a nested record with nested repeated fi
     dlevels: [1, 1, 1, 0, 1],
     rlevels: [0, 1, 0, 0, 0],
     values: [
-      new Buffer([65]),
-      new Buffer([66]),
-      new Buffer([88]),
-      new Buffer([67])
+      bytes([65]),
+      bytes([66]),
+      bytes([88]),
+      bytes([67])
     ],
     count: 5
   };
@@ -503,7 +513,7 @@ test('ParquetShredder#should materialize a static nested record with blank optio
     dlevels: [0],
     rlevels: [0],
     values: [
-      new Buffer([97, 112, 112, 108, 101])
+      bytes([97, 112, 112, 108, 101])
     ],
     count: 1
   };

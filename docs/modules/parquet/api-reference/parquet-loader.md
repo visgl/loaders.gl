@@ -73,6 +73,11 @@ const data = await load(url, ParquetLoader, {modules: {
 
 For details see [parquet documentation](https://parquet.apache.org/docs/).
 
+Unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` columns are returned as
+`Uint8Array` values. Logical byte-backed columns are decoded according to the schema,
+for example `UTF8` values are returned as JavaScript strings and `JSON` values are
+returned as parsed JavaScript values.
+
 ## Options
 
 Supports table category options such as `batchType` and `batchSize`.
