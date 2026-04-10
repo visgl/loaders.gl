@@ -9,7 +9,8 @@ import type {
   GetTileParameters,
   GetTileDataParameters,
   ImageTileSource,
-  ImageType
+  ImageType,
+  RangeRequestSchedulerProps
 } from '@loaders.gl/loader-utils';
 import {DataSource, DataSourceOptions, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
@@ -22,14 +23,24 @@ const {PMTiles} = pmtiles;
 import type {PMTilesMetadata} from './lib/parse-pmtiles';
 import {parsePMTilesHeader} from './lib/parse-pmtiles';
 import {BlobSource} from './lib/blob-source';
+import {RangeRequestSource} from './lib/range-request-source';
 
 const VERSION = '1.0.0';
+
+/** Range request options for PMTiles URL sources. */
+export type PMTilesRangeRequestOptions = RangeRequestSchedulerProps & {
+  /** Reserved concurrency hint for range-request transports. */
+  maxConcurrentRequests?: number;
+};
 
 export type PMTilesSourceOptions = DataSourceOptions & {
   core?: DataSourceOptions['core'] & {
     loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
   };
   pmtiles?: {};
+  rangeRequests?: PMTilesRangeRequestOptions;
+  /** @deprecated Use `rangeRequests`. */
+  tileRangeRequest?: PMTilesRangeRequestOptions;
 };
 
 /**
@@ -62,11 +73,20 @@ export class PMTilesTileSource
   mimeType: string | null = null;
   pmtiles: pmtiles.PMTiles;
   metadata: Promise<PMTilesMetadata>;
+  private pendingTileRequests: PendingTileRequest[] = [];
+  private tileBatchTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(data: string | Blob, options: PMTilesSourceOptions) {
     super(data, options, PMTilesSource.defaultOptions);
+    const rangeRequestOptions = options.rangeRequests || options.tileRangeRequest;
     const urlOrBlob =
-      typeof data === 'string' ? resolvePath(data) : new BlobSource(data, 'pmtiles');
+      typeof data === 'string'
+        ? new RangeRequestSource(resolvePath(data), {
+            ...rangeRequestOptions,
+            batchDelayMs: 0,
+            fetch: this.fetch
+          })
+        : new BlobSource(data, 'pmtiles');
     this.pmtiles = new PMTiles(urlOrBlob);
     this.getTileData = this.getTileData.bind(this);
     this.metadata = this.getMetadata();
@@ -101,7 +121,7 @@ export class PMTilesTileSource
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
     const {x, y, z} = tileParams;
-    const rangeResponse = await this.pmtiles.getZxy(z, x, y);
+    const rangeResponse = await this.getZxyBatched(z, x, y);
     const arrayBuffer = rangeResponse?.data;
     if (!arrayBuffer) {
       // console.error('No arrayBuffer', tileParams);
@@ -122,6 +142,14 @@ export class PMTilesTileSource
       default:
         return await this.getImageTile({x, y, z, layers: []});
     }
+  }
+
+  getTileBatch(tileParams: readonly GetTileParameters[]): readonly Promise<ArrayBuffer | null>[] {
+    return tileParams.map(tileParam => this.getTile(tileParam));
+  }
+
+  getTileDataBatch(tileParams: readonly GetTileDataParameters[]): readonly Promise<any>[] {
+    return tileParams.map(tileParam => this.getTileData(tileParam));
   }
 
   // ImageTileSource interface implementation
@@ -147,4 +175,55 @@ export class PMTilesTileSource
 
     return arrayBuffer ? await MVTLoader.parse(arrayBuffer, loadOptions) : null;
   }
+
+  private getZxyBatched(
+    z: number,
+    x: number,
+    y: number,
+    signal?: AbortSignal
+  ): Promise<pmtiles.RangeResponse | undefined> {
+    if (this.data instanceof Blob) {
+      return this.pmtiles.getZxy(z, x, y, signal);
+    }
+
+    return new Promise((resolve, reject) => {
+      this.pendingTileRequests.push({z, x, y, signal, resolve, reject});
+      this.scheduleTileBatch();
+    });
+  }
+
+  private scheduleTileBatch(): void {
+    if (this.tileBatchTimer) {
+      return;
+    }
+
+    const batchDelayMs =
+      this.options.rangeRequests?.batchDelayMs ?? this.options.tileRangeRequest?.batchDelayMs ?? 50;
+    this.tileBatchTimer = setTimeout(() => this.flushTileBatch(), batchDelayMs);
+  }
+
+  private flushTileBatch(): void {
+    if (this.tileBatchTimer) {
+      clearTimeout(this.tileBatchTimer);
+      this.tileBatchTimer = null;
+    }
+
+    const pendingTileRequests = this.pendingTileRequests;
+    this.pendingTileRequests = [];
+
+    for (const tileRequest of pendingTileRequests) {
+      this.pmtiles
+        .getZxy(tileRequest.z, tileRequest.x, tileRequest.y, tileRequest.signal)
+        .then(tileRequest.resolve, tileRequest.reject);
+    }
+  }
 }
+
+type PendingTileRequest = {
+  z: number;
+  x: number;
+  y: number;
+  signal?: AbortSignal;
+  resolve: (response: pmtiles.RangeResponse | undefined) => void;
+  reject: (error: unknown) => void;
+};

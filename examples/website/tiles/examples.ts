@@ -49,10 +49,39 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       attributions: ["© Land Information New Zealand"],
       viewState: {...VIEW_STATE}
     },
+    'Overture Places': {
+      sourceType: 'pmtiles',
+      data: 'https://overturemaps-tiles-us-west-2-beta.s3.amazonaws.com/2025-04-23/places.pmtiles',
+      attributions: ['© Overture Maps Foundation'],
+      viewState: {...VIEW_STATE}
+    },
+    'Protomaps v4': {
+      sourceType: 'pmtiles',
+      data: 'https://demo-bucket.protomaps.com/v4.pmtiles',
+      attributions: ['© Protomaps', '© OpenStreetMap contributors'],
+      viewState: {...VIEW_STATE}
+    },
+    'Flowers': {
+      sourceType: 'pmtiles',
+      data: 'https://air.mtn.tw/flowers.pmtiles',
+      viewState: {...VIEW_STATE, longitude: 121, latitude: 24, zoom: 7}
+    },
+    Tilezen: {
+      sourceType: 'pmtiles',
+      data: 'https://r2-public.protomaps.com/protomaps-sample-datasets/tilezen.pmtiles',
+      attributions: ['© Tilezen', '© OpenStreetMap contributors'],
+      viewState: {...VIEW_STATE}
+    },
     'Terrarium': {
       sourceType: 'pmtiles',
-      data:"https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles",
+      data: 'https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles',
       tileSize: [512,512]
+    },
+    'Local Multi-Range/Multipart Server': {
+      sourceType: 'pmtiles',
+      data: 'http://127.0.0.1:9000/stamen_toner(raster)CC-BY+ODbL_z3.pmtiles',
+      localRangeServer: true,
+      viewState: {...VIEW_STATE}
     }
   },
   MLT: {

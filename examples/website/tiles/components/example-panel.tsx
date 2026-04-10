@@ -41,12 +41,15 @@ const DropDown = styled.select`
   margin-bottom: 6px;
 `;
 
+const APP_SOURCE_URL = 'https://github.com/visgl/loaders.gl/tree/master/examples/website/tiles';
+
 export type Example = {
   sourceType: 'mvt' | 'pmtiles' | 'table' | 'mlt';
   data: string;
   attributions?: string[];
   viewState?: Record<string, unknown>;
   tileSize?: number[];
+  localRangeServer?: boolean;
 };
 
 export type ExamplePanelProps = React.PropsWithChildren<{
@@ -138,6 +141,7 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
   return (
     <Container>
       <ExampleHeader {...state} />
+      <ExampleSourceLink />
       <ExampleDropDown
         examples={state.examples}
         categoryName={state.categoryName}
@@ -150,6 +154,16 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
     </Container>
   );
 };
+
+function ExampleSourceLink() {
+  return (
+    <div style={{lineHeight: 1.4, marginBottom: 8}}>
+      <a href={APP_SOURCE_URL} rel="noreferrer" target="_blank">
+        View source
+      </a>
+    </div>
+  );
+}
 
 // METADATA VIEWER
 

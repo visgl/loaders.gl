@@ -8,7 +8,11 @@ import Demo from 'examples/website/tiles/app';
     <small>
       Uses [**`MVTLoader`**](/docs/modules/mvt/api-reference/mvt-loader) for Mapbox Vector Tiles files.
       and [**`ImageLoader`**](/docs/modules/images/api-reference/image-loader) for image tiles (JPEG, PNG etc).
+      The demo overlay shows logical byte ranges, coalesced HTTP range requests, failed range
+      requests, and full-file fallbacks. To serve the checked-in PMTiles fixture through the
+      local range server, clone loaders.gl and run
+      `yarn serve-range --root ./modules/pmtiles/test/data/pmtiles-v3 --port 9000`, then choose
+      the local range server entry.
     </small>
   </Demo>
 </div>
-

@@ -50,7 +50,7 @@
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/mvt": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
-    "pmtiles": "^3.0.4"
+    "pmtiles": "^4.4.1"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~4.4.0"

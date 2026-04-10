@@ -9,6 +9,7 @@ import ts from 'typescript';
 
 import {getPlaywrightLaunchOptions} from './get-playwright-launch-options.mjs';
 import {loadOcularConfig} from './load-ocular-config.mjs';
+import {createRangeServerMiddleware} from './range-server.mjs';
 
 const require = createRequire(import.meta.url);
 const VITEST_INTERNAL_BROWSER_PATH = require.resolve('vitest/internal/browser');
@@ -45,6 +46,7 @@ export async function getVitestConfig(options = {}) {
     });
 
   return defineConfig({
+    plugins: [serveRangeRequestsPlugin(repositoryRoot)],
     resolve: {
       alias: [
         ...testAliases,
@@ -116,6 +118,60 @@ export async function getVitestConfig(options = {}) {
       }
     }
   });
+}
+
+/**
+ * Serves local fixture files with HTTP byte-range support for browser tests.
+ * Vite's static middleware can answer these files with 200 responses, but range-oriented loaders need 206.
+ */
+function serveRangeRequestsPlugin(repositoryRoot) {
+  const serveRangeRequest = createRangeServerMiddleware({
+    rootDirectory: repositoryRoot,
+    corsOrigin: '*',
+    fallthrough: true,
+    resolveFilePath: resolveViteRangeRequestFilePath
+  });
+
+  return {
+    name: 'loaders-gl-test-range-requests',
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        const rangeHeader = request.headers.range;
+        if (!rangeHeader || (request.method !== 'GET' && request.method !== 'HEAD')) {
+          next();
+          return;
+        }
+
+        serveRangeRequest(request, response, next);
+      });
+    }
+  };
+}
+
+/**
+ * Resolves a Vite browser-test URL to a repository-local file path.
+ */
+function resolveViteRangeRequestFilePath(url, repositoryRoot) {
+  if (!url) {
+    return null;
+  }
+
+  const pathname = decodeURIComponent(url.split('?')[0]);
+  const filePath = pathname.startsWith('/@fs/')
+    ? pathname.slice('/@fs/'.length)
+    : path.join(repositoryRoot, pathname);
+
+  const resolvedFilePath = path.resolve(filePath);
+  const resolvedRepositoryRoot = path.resolve(repositoryRoot);
+  return isFilePathInside(resolvedFilePath, resolvedRepositoryRoot) ? resolvedFilePath : null;
+}
+
+/**
+ * Returns true when a resolved path is inside a resolved parent directory.
+ */
+function isFilePathInside(filePath, parentDirectory) {
+  const relativePath = path.relative(parentDirectory, filePath);
+  return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
 }
 
 /**

@@ -5027,7 +5027,7 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/mvt": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
-    pmtiles: "npm:^3.0.4"
+    pmtiles: "npm:^4.4.1"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -9121,15 +9121,6 @@ __metadata:
   version: 0.16.8
   resolution: "@types/katex@npm:0.16.8"
   checksum: 10c0/0661609353f4f5e62bd2dc78da99e842761c6474b19f2268b195bbe9dbf20e6f766a31155d79eec2e7c3eff4e7eba4b30f4f519e9c6a11c75bb45e257a2ddb69
-  languageName: node
-  linkType: hard
-
-"@types/leaflet@npm:^1.9.8":
-  version: 1.9.21
-  resolution: "@types/leaflet@npm:1.9.21"
-  dependencies:
-    "@types/geojson": "npm:*"
-  checksum: 10c0/96a86bdeff7bf56104242e97536f39005a53dd857853aa0c5de127ce2c72f3f36638f2a5b8d23e2e825a2bfe32113be731ab26634a3143413b891299c29621ce
   languageName: node
   linkType: hard
 
@@ -15973,7 +15964,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fflate@npm:^0.8.0":
+"fflate@npm:^0.8.2":
   version: 0.8.2
   resolution: "fflate@npm:0.8.2"
   checksum: 10c0/03448d630c0a583abea594835a9fdb2aaf7d67787055a761515bf4ed862913cfd693b4c4ffd5c3f3b355a70cf1e19033e9ae5aedcca103188aaff91b8bd6e293
@@ -23152,13 +23143,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pmtiles@npm:^3.0.4":
-  version: 3.2.1
-  resolution: "pmtiles@npm:3.2.1"
+"pmtiles@npm:^4.4.1":
+  version: 4.4.1
+  resolution: "pmtiles@npm:4.4.1"
   dependencies:
-    "@types/leaflet": "npm:^1.9.8"
-    fflate: "npm:^0.8.0"
-  checksum: 10c0/645612bb23837808345581dde9cee89c2987b0556c26ac0b661dffeef42c53ceb888bb5be8817ef3fd40623b96dc6036808773529ee5f6694ddbb38af4bc5bcb
+    fflate: "npm:^0.8.2"
+  checksum: 10c0/39a14d9ce64230ddf3586d1c402375c42c5234095915a649fb14800a95155953f13315974f181faf53e6a3e0c55d86003e281482f5e10c56565018b065ba457e
   languageName: node
   linkType: hard
 

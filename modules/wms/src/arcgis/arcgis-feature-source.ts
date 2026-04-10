@@ -2,41 +2,60 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, GeoJSONTable} from '@loaders.gl/schema';
+import type {DataType, Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
   DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters,
-  VectorSource,
-  LoaderWithParser
+  VectorSource
 } from '@loaders.gl/loader-utils';
-import {Source, DataSource} from '@loaders.gl/loader-utils';
+import type {Source} from '@loaders.gl/loader-utils';
+import {DataSource} from '@loaders.gl/loader-utils';
 
-const TEST_SERVICE =
-  'https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0';
-const TEST_QUERY =
-  // eslint-disable-next-line no-template-curly-in-string
-  'query?returnGeometry=true&where=1%3D1&outSR=4326&outFields=*&inSR=4326&geometry=${-90}%2C+${30}%2C+${-70}%2C+${50}&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&geometryPrecision=6&resultType=tile&f=geojson';
-
-// @ts-nocheck
-// type FetchLike = (url: string, options?: RequestInit) => Promise<Response>;
-
-export type ArcGISImageServiceQueryOptions = {
-  returnGeometry: boolean;
-  where: '1%3D1';
-  outSR: 4326;
-  outFields: string | '*';
-  inSR: 4326;
-  geometry: `${-90}%2C+${30}%2C+${-70}%2C+${50}`;
-  geometryType: 'esriGeometryEnvelope'; // TODO - look up valid values in Esri docs
-  spatialRel: 'esriSpatialRelIntersects'; // TODO - look up valid values in Esri docs
-  geometryPrecision: number; // TODO - look up valid values in Esri docs
-  resultType: 'tile'; // TODO - look up valid values in Esri docs
-  f?: 'geojson'; // TODO - look up valid values in Esri docs
+/** Parameters for ArcGIS FeatureServer query requests. */
+export type ArcGISFeatureServiceQueryOptions = {
+  /** Include feature geometries in the response. */
+  returnGeometry?: boolean;
+  /** SQL where clause. */
+  where?: string;
+  /** Output spatial reference. */
+  outSR?: string | number;
+  /** Output fields. */
+  outFields?: string | string[];
+  /** Input spatial reference for supplied geometry. */
+  inSR?: string | number;
+  /** Filter geometry as an ArcGIS REST geometry string. */
+  geometry?: string;
+  /** Filter geometry type. */
+  geometryType?:
+    | 'esriGeometryEnvelope'
+    | 'esriGeometryPoint'
+    | 'esriGeometryPolyline'
+    | 'esriGeometryPolygon';
+  /** Spatial relationship for geometry filters. */
+  spatialRel?:
+    | 'esriSpatialRelIntersects'
+    | 'esriSpatialRelContains'
+    | 'esriSpatialRelCrosses'
+    | 'esriSpatialRelEnvelopeIntersects'
+    | 'esriSpatialRelIndexIntersects'
+    | 'esriSpatialRelOverlaps'
+    | 'esriSpatialRelTouches'
+    | 'esriSpatialRelWithin';
+  /** Geometry precision. */
+  geometryPrecision?: number;
+  /** Query result type. */
+  resultType?: 'none' | 'standard' | 'tile';
+  /** ArcGIS response format. */
+  f?: 'geojson' | 'json' | 'pjson';
 };
 
-export type ArcGIFeatureServerSourceOptions = DataSourceOptions & {
-  'arcgis-feature-server'?: {};
+/** Options for the ArcGIS FeatureServer source. */
+export type ArcGISFeatureServerSourceOptions = DataSourceOptions & {
+  'arcgis-feature-server'?: {
+    /** Default ArcGIS query request parameters. */
+    queryParameters?: Partial<ArcGISFeatureServiceQueryOptions>;
+  };
 };
 
 /**
@@ -59,36 +78,39 @@ export const ArcGISFeatureServerSource = {
     'arcgis-feature-server': {}
   },
 
-  testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
-  createDataSource: (url: string, options: ArcGIFeatureServerSourceOptions): ArcGISVectorSource =>
+  testURL: (url: string): boolean => url.toLowerCase().includes('featureserver'),
+  createDataSource: (url: string, options: ArcGISFeatureServerSourceOptions): ArcGISVectorSource =>
     new ArcGISVectorSource(url, options)
 } as const satisfies Source<ArcGISVectorSource>;
 
 /**
- * ArcGIS ImageServer
+ * ArcGIS FeatureServer
  * Note - exports a big API, that could be exposed here if there is a use case
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
  */
 export class ArcGISVectorSource
-  extends DataSource<string, ArcGIFeatureServerSourceOptions>
+  extends DataSource<string, ArcGISFeatureServerSourceOptions>
   implements VectorSource
 {
-  protected formatSpecificMetadata: Promise<any>;
+  /** Cached ArcGIS FeatureServer metadata request. */
+  protected formatSpecificMetadata: Promise<any> | null = null;
 
-  constructor(url: string, options: ArcGIFeatureServerSourceOptions) {
+  constructor(url: string, options: ArcGISFeatureServerSourceOptions) {
     super(url, options, ArcGISFeatureServerSource.defaultOptions);
-    this.formatSpecificMetadata = this._getFormatSpecificMetadata();
   }
 
-  /** TODO - not yet clear if we can find schema information in the FeatureServer metadata or if we need to request a feature */
+  /** Returns a schema inferred from ArcGIS FeatureServer metadata fields. */
   async getSchema(): Promise<Schema> {
-    await this.getMetadata({formatSpecificMetadata: true});
-    return {metadata: {}, fields: []};
+    const metadata = await this.getFormatSpecificMetadata();
+    return parseArcGISFeatureServerSchema(metadata);
   }
 
-  async getMetadata(options: {formatSpecificMetadata}): Promise<VectorSourceMetadata> {
+  /** Returns normalized VectorSource metadata. */
+  async getMetadata(
+    options: {formatSpecificMetadata?: boolean} = {}
+  ): Promise<VectorSourceMetadata> {
     // Wait for raw metadata to load
-    const formatSpecificMetadata = await this.formatSpecificMetadata;
+    const formatSpecificMetadata = await this.getFormatSpecificMetadata();
 
     const metadata = parseArcGISFeatureServerMetadata(formatSpecificMetadata);
 
@@ -99,141 +121,80 @@ export class ArcGISVectorSource
     return metadata;
   }
 
+  /** Requests features from the ArcGIS FeatureServer query endpoint. */
   async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
-    const url = `${TEST_SERVICE}/${TEST_QUERY}`;
+    const url = this.getFeaturesURL(parameters);
     const response = await this.fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    // TODO - hack - done to avoid pulling in selectLoader from core
-    const loader = this.options.core?.loaders?.[0] as LoaderWithParser;
-    const table = loader?.parse(arrayBuffer);
-    return table;
+    await this.checkResponse(response);
+    return parseGeoJSONTable(await response.json());
   }
 
-  // ImageServer endpoints
-
+  /** Requests the raw ArcGIS FeatureServer metadata document. */
   protected async _getFormatSpecificMetadata() {
     // PJSON is formatted by a bit slower than JSON
-    const url = `${TEST_SERVICE}/f=pjson`;
+    const url = this.metadataURL();
     const response = await this.fetch(url);
+    await this.checkResponse(response);
     return await response.json();
   }
-}
 
-/*
-  getArcGISOptions({
-    boundingBox: [min: [x: number, y: number], max: [x: number, y: number]]
-  }) {
-    return {
+  /** Loads and caches the raw ArcGIS FeatureServer metadata. */
+  protected async getFormatSpecificMetadata(): Promise<any> {
+    this.formatSpecificMetadata ||= this._getFormatSpecificMetadata();
+    return await this.formatSpecificMetadata;
+  }
+
+  /** Builds a metadata URL for the ArcGIS FeatureServer endpoint. */
+  metadataURL(options?: {parameters?: Record<string, unknown>}): string {
+    return this.getUrl('', {f: 'pjson', ...options?.parameters});
+  }
+
+  /** Builds a query URL from generic vector source parameters. */
+  getFeaturesURL(parameters: GetFeaturesParameters): string {
+    const defaultParameters = this.options['arcgis-feature-server']?.queryParameters || {};
+    const queryParameters: ArcGISFeatureServiceQueryOptions = {
       returnGeometry: true,
       where: '1=1',
       outFields: '*',
-      inSR: 432,
-      geometry: '${-90}%2C+${30}%2C+${-70}%2C+${50}',
-      geometryType: 'esriGeometryEnvelope',
-      spatialRel: 'esriSpatialRelIntersects',
-      geometryPrecision: 6,
-      resultType: 'tile',
-      f: 'geojson'
+      outSR: parameters.crs || 4326,
+      inSR: parameters.crs || 4326,
+      f: 'geojson',
+      ...defaultParameters
     };
-  }
-  */
 
-/** 
-   * Form a URL to an ESRI ImageServer
-   // https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&bboxSR=4326&size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image`,
-   *
-  exportImage(options: {
-    boundingBox: [number, number, number, number];
-    boundingBoxSR?: string;
-    width: number;
-    height: number;
-    imageSR?: string;
-    time?: never;
-    format?: 'jpgpng';
-    pixelType?: 'U8';
-    noData?: never;
-    noDataInterpretation?: 'esriNoDataMatchAny';
-    interpolation?: '+RSP_NearestNeighbor';
-    compression?: never;
-    compressionQuality?: never;
-    bandIds?: never;
-    mosaicRule?: never;
-    renderingRule?: never;
-    f?: 'image';
-  }): Promise<ImageType> {
-    // See WMSService.getMap()
-    throw new Error('not implemented');
+    if (parameters.boundingBox) {
+      queryParameters.geometry = [
+        parameters.boundingBox[0][0],
+        parameters.boundingBox[0][1],
+        parameters.boundingBox[1][0],
+        parameters.boundingBox[1][1]
+      ].join(',');
+      queryParameters.geometryType = 'esriGeometryEnvelope';
+      queryParameters.spatialRel ||= 'esriSpatialRelIntersects';
+    }
+
+    return this.getUrl('query', queryParameters);
   }
 
-  // URL creators
-
-  metadataURL(options: {parameters?: Record<string, unknown>}): string {
-    return `${this.options.url}?f=pjson`;
-  }
-
-  /** 
-   * Form a URL to an ESRI ImageServer
-   // https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?
-   //   bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&bboxSR=4326&
-   //   size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&
-   //   noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&
-   //   compressionQuality=&bandIds=&mosaicRule=&renderingRule=&
-   //   f=image
-   *
-  exportImageURL(options: {
-    bbox: [number, number, number, number];
-    boxSR?: string;
-    width: number;
-    height: number;
-    imageSR?: string;
-    time?: never;
-    format?: 'jpgpng';
-    pixelType?: 'U8';
-    noData?: never;
-    noDataInterpretation?: 'esriNoDataMatchAny';
-    interpolation?: '+RSP_NearestNeighbor';
-    compression?: never;
-    compressionQuality?: never;
-    bandIds?: never;
-    mosaicRule?: never;
-    renderingRule?: never;
-    f?: 'image';
-  }): string {
-    const bbox = `bbox=${options.bbox[0]},${options.bbox[1]},${options.bbox[2]},${options.bbox[3]}`;
-    const size = `size=${options.width},${options.height}`;
-    const arcgisOptions = {...options, bbox, size};
-    // @ts-expect-error
-    delete arcgisOptions.width;
-    // @ts-expect-error
-    delete arcgisOptions.height;
-    return this.getUrl('exportImage', arcgisOptions);
-  }
-
-  // INTERNAL METHODS
-
-  /**
-   * @note protected, since perhaps getWMSUrl may need to be overridden to handle certain backends?
-   * @note if override is common, maybe add a callback prop?
-   * 
+  /** Builds an ArcGIS FeatureServer URL. */
   protected getUrl(
     path: string,
     options: Record<string, unknown>,
     extra?: Record<string, unknown>
   ): string {
-    let url = `${this.options.url}/${path}`;
-    let first = true;
-    for (const [key, value] of Object.entries(options)) {
-      url += first ? '?' : '&';
-      first = false;
-      if (Array.isArray(value)) {
-        url += `${key.toUpperCase()}=${value.join(',')}`;
-      } else {
-        url += `${key.toUpperCase()}=${value ? String(value) : ''}`;
-      }
-    }
-    return url;
+    const baseUrl = path ? `${this.url}/${path}` : this.url;
+    return `${baseUrl}?${encodeArcGISParameters({...options, ...extra})}`;
   }
-*/
+
+  /** Checks an ArcGIS FeatureServer response. */
+  protected async checkResponse(response: Response): Promise<void> {
+    if (!response.ok) {
+      throw new Error(
+        response.statusText || `ArcGIS FeatureServer request failed: ${response.status}`
+      );
+    }
+  }
+}
 
 function parseArcGISFeatureServerMetadata(json: any): VectorSourceMetadata {
   const layers: VectorSourceMetadata['layers'] = [];
@@ -256,247 +217,59 @@ function parseArcGISFeatureServerMetadata(json: any): VectorSourceMetadata {
   };
 }
 
-// const DEFAULT_QUERY_OPTIONS: Required<ArcGISImageServiceQueryOptions>  = {
-//   returnGeometry:true,
-//   where: '1%3D1',
-//   outSR: 4326,
-//   outFields: '*',
-//   inSR: 4326,
-//   geometry: `${-90}%2C+${30}%2C+${-70}%2C+${50}`,
-//   geometryType: 'esriGeometryEnvelope',
-//   spatialRel: 'esriSpatialRelIntersects',
-//   geometryPrecision: 6,
-//   resultType: 'tile',
-//   f: 'geojson'
-// };
+/** Builds a schema from ArcGIS FeatureServer metadata fields. */
+function parseArcGISFeatureServerSchema(json: any): Schema {
+  const fields = Array.isArray(json.fields)
+    ? json.fields.map((field: any) => ({
+        name: field.name,
+        type: getSchemaTypeFromArcGISFieldType(field.type),
+        nullable: field.nullable
+      }))
+    : [];
 
-// export type ArcGISFeatureServiceProps = ArcGISImageServiceQueryOptions & {
-//   url: string;
-//   loadOptions?: LoaderOptions;
-//   fetch?: typeof fetch | FetchLike;
-// };
+  return {metadata: {}, fields};
+}
 
-// export class ArcGISFeatureService {
-//   url: string;
-//   loadOptions: LoaderOptions;
-//   fetch: typeof fetch | FetchLike;
+/** Maps common ArcGIS field types to loaders.gl schema type strings. */
+function getSchemaTypeFromArcGISFieldType(type: string): DataType {
+  switch (type) {
+    case 'esriFieldTypeDouble':
+      return 'float64';
+    case 'esriFieldTypeSingle':
+      return 'float32';
+    case 'esriFieldTypeInteger':
+    case 'esriFieldTypeSmallInteger':
+    case 'esriFieldTypeOID':
+      return 'int32';
+    case 'esriFieldTypeDate':
+      return 'timestamp-millisecond';
+    default:
+      return 'utf8';
+  }
+}
 
-//   constructor(options: ArcGISFeatureServiceProps) {
-//     this.url = options.url;
-//     this.loadOptions = options.loadOptions || {};
-//     this.fetch = options.fetch || fetch;
-//   }
+/** Encodes ArcGIS REST query parameters. */
+function encodeArcGISParameters(parameters: Record<string, unknown>): string {
+  const searchParameters = new URLSearchParams();
+  for (const [key, value] of Object.entries(parameters)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    const encodedValue = Array.isArray(value) ? value.join(',') : String(value);
+    searchParameters.set(key, encodedValue);
+  }
+  return searchParameters.toString();
+}
 
-//   // URL creators
+/** Parses a GeoJSON FeatureCollection into the loaders.gl GeoJSON table shape. */
+function parseGeoJSONTable(json: any): GeoJSONTable {
+  if (json?.type === 'FeatureCollection' && Array.isArray(json.features)) {
+    return {
+      shape: 'geojson-table',
+      type: 'FeatureCollection',
+      features: json.features
+    };
+  }
 
-//   metadataURL(options: {parameters?: Record<string, unknown>}): string {
-//     return this.getUrl({...options});
-//   }
-
-//   /**
-//    * Form a URL to an ESRI FeatureServer
-// // https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0/query?
-// //   returnGeometry=true&where=1%3D1&outSR=4326&outFields=*&inSR=4326&geometry=${-90}%2C+${30}%2C+${-70}%2C+${50}&
-// //   geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects&geometryPrecision=6&resultType=tile&f=geojson`
-//    */
-//   exportImageURL(options: {
-//     boundingBox: [number, number, number, number];
-//     boundingBoxSR?: string;
-//     width: number;
-//     height: number;
-//     imageSR?: string;
-//     time?: never;
-//     f?: 'geojson';
-//     resultType?: 'tile';
-//     noData?: never;
-//     noDataInterpretation?: 'esriNoDataMatchAny';
-//     interpolation?: '+RSP_NearestNeighbor';
-//     compression?: never
-//     compressionQuality?: never;
-//     bandIds?: never;
-//     mosaicRule?: never;
-//     renderingRule?: never;
-//     f?: 'image';
-//   }): string {
-//     const {boundingBox} = options;
-//     // const bbox = `bbox=${boundingBox[0]},${boundingBox[1]},${boundingBox[2]},${boundingBox[3]}`;
-//     // const size = `size=${width},${height}`
-//     return this.getUrl({path: 'exportImage', });
-//   }
-// }
-
-/** Sample metadata
- * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
- */
-//     "currentVersion": 11.1,
-//     "serviceDescription": "Birds",
-//     "hasVersionedData": false,
-//     "supportsDisconnectedEditing: false,
-//     "supportsDatumTransformation": true,
-//     "supportsReturnDeleteResults": true,
-//     "supportsRelationshipsResource": true,
-//     "syncEnabled": false,
-//     "supportedExportFormats": "sqlite,filegdb,shapefile,csv,geojson",
-//     "hasStaticData": false,
-//     "maxRecordCount": 1000,
-//     "supportedQueryFormats": "JSON",
-//     "capabilities": "Query,Create,Delete,Update,Uploads,Editing,Extract,ChangeTracking,Sync",
-//     "description": "",
-//     "copyrightText": "",
-//     "userTypeExtensions: [
-//       "utilityNetwork"
-//     ],
-//     "advancedEditingCapabilities": {
-//       "supportsSplit": true,
-//       "supportsReturnServiceEditsInSourceSR": true
-//     },
-//     "spatialReference": {
-//       "wkid": 4326,
-//       "latestWkid": 4326
-//     },
-//     "initialExtent": {
-//       "xmin": -118.016756138237,
-//       "ymin": 32.8933824408207,
-//       "xmax": -116.532738278622,
-//       "ymax": 34.3261469363675,
-//       "spatialReference": {
-//         "wkid": 4326,
-//         "latestWkid": 4326
-//       }
-//     },
-//     "fullExtent": {
-//       "xmin": -117.855689264791,
-//       "ymin": 32.5702577626442,
-//       "xmax": -116.87086222794,
-//       "ymax": 34.1460567673275,
-//       "spatialReference": {
-//         "wkid": 4326,
-//         "latestWkid": 4326
-//       }
-//     },
-//     "allowGeometryUpdates": true,
-//     "units": "esriDecimalDegrees",
-//     "syncEnabled": true,
-//     "validationSystemLayers": {
-//       "validationPointErrorlayerId": 1,
-//       "validationLineErrorlayerId": 2,
-//       "validationPolygonErrorlayerId": 3,
-//       "validationObjectErrortableId": 5
-//     },
-//     "extractChangesCapabilities": {
-//       "supportsReturnIdsOnly": true,
-//       "supportsReturnExtentOnly": false,
-//       "supportsReturnAttachments": false,
-//       "supportsLayerQueries": false,
-//       "supportsSpatialFilter": false,
-//       "supportsReturnFeature": false,
-//       "supportsReturnHasGeometryUpdates": true
-//     },
-//     "syncCapabilities": {
-//       "supportsASync": true,
-//       "supportsRegisteringExistingData": true,
-//       "supportsSyncDirectionControl": true,
-//       "supportsPerLayerSync": true,
-//       "supportsPerReplicaSync": false,
-//       "supportsRollbackOnFailure": false,
-//       "supportedSyncDataOptions": 3
-//       "supportsQueryWithDatumTransformation": true,
-//     },
-//     "editorTrackingInfo": {
-//       "enableEditorTracking": false,
-//       "enableOwnershipAccessControl": false,
-//       "allowOthersToUpdate": true,
-//       "allowOthersToDelete": false
-//     },
-//     "layers": [
-//       {
-//         "id": 0,
-//         "name": "Sitings",
-//         "parentLayerId": -1,
-//         "defaultVisibility": true,
-//         "subLayerIds": null,
-//         "minScale": 0,
-//         "maxScale": 0,
-//         "geometryType": "esriGeometryPoint"
-//       },
-//       {
-//         "id": 1,
-//         "name": "NestingGrounds",
-//         "parentLayerId": -1,
-//         "defaultVisibility": true,
-//         "subLayerIds": null,
-//         "minScale": 0,
-//         "maxScale": 0,
-//         "geometryType": "esriGeometryPolygon"
-//       },
-//       {
-//         "id": 2,
-//         "name": "LandCover",
-//         "parentLayerId": -1,
-//         "defaultVisibility": true,
-//         "subLayerIds": null,
-//         "minScale": 0,
-//         "maxScale": 0,
-//         "geometryType": "esriGeometryPolygon"
-//       }
-//     ],
-//     "tables": [],
-//     "relationships": [
-//      {
-//       "id": 0,
-//       "name": "relationship_1"
-//      }
-//     ],
-//     "datumTransformations": [
-//       {
-//         "geoTransforms": [
-//           {
-//             "wkid": 15931,
-//             "latestWkid": 15931,
-//             "transformForward": false,
-//             "name": NAD_1983_NSRS2007_To_WGS_1984_1"
-//           }
-//         ]
-//       },
-//       {
-//         "geoTransforms": [
-//           {
-//             "wkid": 15931,
-//             "latestWkid": 15931,
-//             "transformForward": true,
-//             "name": NAD_1983_NSRS2007_to_WGS_1984_1"
-//           }
-//         ]
-//       }
-//     ],
-//     "isIndoorsService": true,
-//     "isLocationTrackingService": true,
-//     "isLocationTrackingView": true
-//   }
-//   The following is a portion of a JSON response example for a spatial reference, VCS, tolerance, resolution properties, and high model info:
-
-//   ...
-//    "spatialReference": {
-//     "wkid": 102100,
-//     "latestWkid": 3857,
-//     "vcsWkid": 115700,
-//     "latestVcsWkid": 115700,
-//     "xyTolerance": 0.001,
-//     "zTolerance": 0.001,
-//     "mTolerance": 0.001,
-//     "falseX": -20037700,
-//     "falseY": -30241100,
-//     "xyUnits": 1.4892314192838538E8,
-//     "falseZ": -100000,
-//     "zUnits": 10000,
-//     "falseM": -100000,
-//     "mUnits": 10000
-//    },
-//    "heightModelInfo": {
-//     "heightModel": "ellipsoidal",
-//     "vertCRS": "WGS_1984",
-//     "heightUnit": "meter"
-//    },
-//   ...
-//   // TODO - normalize metadata
-// }
+  throw new Error('ArcGIS FeatureServer query did not return a GeoJSON FeatureCollection');
+}

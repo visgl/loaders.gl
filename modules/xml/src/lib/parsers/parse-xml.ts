@@ -15,7 +15,8 @@ export type ParseXMLOptions = {
   textNodeName?: string;
   arrayPaths?: string[];
 
-  _parser?: 'fast-xml-parser' | 'internal';
+  /** Selects the XML parser implementation. */
+  _parser?: 'fast-xml-parser' | 'sax' | 'internal';
   /** @deprecated Experimental, passes options to fast-xml-parser, IF it is being used */
   _fastXML?: _FastParseXMLOptions;
   /** @deprecated Experimental, passes options to the SAX XML parser, IF it is being used. */
@@ -27,7 +28,7 @@ export type _FastParseXMLOptions = Partial<X2jOptions>;
 
 export function parseXMLSync(text: string, options?: ParseXMLOptions): any {
   const xml =
-    options?._parser === 'internal'
+    options?._parser === 'internal' || options?._parser === 'sax'
       ? parseXMLInternal(text, options)
       : parseXMLSyncFast(text, options);
 

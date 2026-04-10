@@ -17,8 +17,14 @@ export interface TileSource {
   getMetadata(): Promise<TileSourceMetadata>;
   /** Flat parameters */
   getTile(parameters: GetTileParameters): Promise<unknown | null>;
+  /** Flat parameters, batched */
+  getTileBatch?(parameters: readonly GetTileParameters[]): readonly Promise<unknown | null>[];
   /** deck.gl compatibility: TileLayer and MTVLayer */
   getTileData(parameters: GetTileDataParameters): Promise<unknown | null>;
+  /** deck.gl compatibility: batched tile data */
+  getTileDataBatch?(
+    parameters: readonly GetTileDataParameters[]
+  ): readonly Promise<unknown | null>[];
 }
 
 // HELPER TYPES
@@ -100,6 +106,8 @@ export type GetTileDataParameters = {
   signal?: AbortSignal;
   userData?: Record<string, any>;
 };
+
+export type GetTileDataBatchResult<T = unknown> = readonly Promise<T | null>[];
 
 /** deck.gl compatibility: bounding box */
 export type TileBoundingBox = NonGeoBoundingBox | GeoBoundingBox;

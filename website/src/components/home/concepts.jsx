@@ -199,8 +199,9 @@ const sourceTabs = [
     sources: ['PMTilesSource', 'MVTSource', 'MLTSource', 'TableTileSource'],
     dataSource: 'VectorTileDataSource',
     methods: ['getMetadata()', 'getTile()'],
-    data: 'Vector tile data',
-    loadingManager: 'TileLayer / MVTLayer',
+    outputCategory: 'VectorTileTables',
+    outputDetail: 'Tables<ArrowTable>',
+    loadingManager: 'Tileset2D',
     deckLayers: ['MVTLayer', 'GeoJsonLayer']
   },
   {
@@ -209,8 +210,9 @@ const sourceTabs = [
     sources: ['PMTilesSource', 'MVTSource'],
     dataSource: 'ImageTileDataSource',
     methods: ['getMetadata()', 'getImageTile()'],
-    data: 'Image tile data',
-    loadingManager: 'TileLayer',
+    outputCategory: 'ImageTile',
+    outputDetail: 'ImageType',
+    loadingManager: 'Tileset2D',
     deckLayers: ['BitmapLayer']
   },
   {
@@ -219,8 +221,9 @@ const sourceTabs = [
     sources: ['WMSSource'],
     dataSource: 'ImageDataSource',
     methods: ['getMetadata()', 'getImage()'],
-    data: 'Map image',
-    loadingManager: 'WMSLayer',
+    outputCategory: 'MapImage',
+    outputDetail: 'ImageType',
+    loadingManager: 'Image2D',
     deckLayers: ['BitmapLayer']
   },
   {
@@ -229,7 +232,8 @@ const sourceTabs = [
     sources: ['COPCSource'],
     dataSource: 'TileDataSource',
     methods: ['getMetadata()', 'getTile()'],
-    data: 'Point tile data',
+    outputCategory: 'PointTile',
+    outputDetail: 'Point cloud tile',
     loadingManager: 'Tileset3D',
     deckLayers: ['PointCloudLayer']
   }
@@ -347,6 +351,19 @@ const sourceDocumentationLinks = {
   TableTileSource: '/docs/modules/mvt/api-reference/table-tile-source',
   WMSSource: '/docs/modules/wms/api-reference/wms-source'
 };
+
+const deckLayerDocumentationLinks = {
+  BitmapLayer: 'https://deck.gl/docs/api-reference/layers/bitmap-layer',
+  GeoJsonLayer: 'https://deck.gl/docs/api-reference/layers/geojson-layer',
+  MVTLayer: 'https://deck.gl/docs/api-reference/geo-layers/mvt-layer',
+  PointCloudLayer: 'https://deck.gl/docs/api-reference/layers/point-cloud-layer'
+};
+
+const streamingLoaders = ['CSVLoader', 'JSONLoader', 'GeoJSONLoader', 'ParquetLoader'];
+
+const streamingProcessingBlocks = ['loadInBatches()', 'parseInBatches()', 'transforms', 'batchSize'];
+
+const streamingOutputs = ['Table batches', 'GeoJSON batches', 'Arrow batches'];
 
 const ConceptsSection = styled.section`
   background:
@@ -561,6 +578,14 @@ const SourceFlow = styled(Flow)`
   grid-template-columns: 1fr;
 `;
 
+const StreamingFlow = styled(Flow)`
+  grid-template-columns: minmax(180px, 1fr) auto minmax(210px, 0.9fr) auto minmax(170px, 0.8fr);
+
+  @media screen and (max-width: 840px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
 const CompactFlow = styled(Flow)`
   grid-template-columns: 1fr;
   padding-top: 14px;
@@ -607,6 +632,15 @@ const SourceInstruction = styled.p`
   margin: 0;
   text-align: center;
   text-transform: uppercase;
+`;
+
+const SourceBox = styled.div`
+  background: var(--ifm-color-white);
+  border: 1px solid var(--ifm-color-gray-400);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
 `;
 
 const LoaderGrid = styled.div`
@@ -1011,22 +1045,24 @@ export default function Concepts() {
                       </TabButton>
                     ))}
                   </TabList>
-                  <SourceInstruction>Sources</SourceInstruction>
-                  <SourceGrid>
-                    {selectedSourceTab.sources.map((source) => (
-                      <LinkedCompactNode
-                        key={source}
-                        href={sourceDocumentationLinks[source]}
-                        $compactText={source.length > 20}
-                      >
-                        <span>{source}</span>
-                        <NodeMeta>
-                          <SourceTag>{sourceTags[source]}</SourceTag>
-                          <LinkMark aria-hidden="true">↗</LinkMark>
-                        </NodeMeta>
-                      </LinkedCompactNode>
-                    ))}
-                  </SourceGrid>
+                  <SourceBox>
+                    <SourceInstruction>Sources</SourceInstruction>
+                    <SourceGrid>
+                      {selectedSourceTab.sources.map((source) => (
+                        <LinkedCompactNode
+                          key={source}
+                          href={sourceDocumentationLinks[source]}
+                          $compactText={source.length > 20}
+                        >
+                          <span>{source}</span>
+                          <NodeMeta>
+                            <SourceTag>{sourceTags[source]}</SourceTag>
+                            <LinkMark aria-hidden="true">↗</LinkMark>
+                          </NodeMeta>
+                        </LinkedCompactNode>
+                      ))}
+                    </SourceGrid>
+                  </SourceBox>
                 </SourceStage>
                 <VerticalConnector $label="Create a Data Source" />
                 <DataSourceNode $background="rgba(53, 173, 107, 0.12)" $border="rgba(53, 173, 107, 0.55)">
@@ -1044,7 +1080,8 @@ export default function Concepts() {
                 </DataSourceNode>
                 <StageLabel>Loaded data</StageLabel>
                 <CategoryNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">
-                  {selectedSourceTab.data}
+                  <span>{selectedSourceTab.outputCategory}</span>
+                  <TinyLabel>{selectedSourceTab.outputDetail}</TinyLabel>
                 </CategoryNode>
                 <StageLabel>Manage loading</StageLabel>
                 <CategoryNode $background="rgba(255, 196, 57, 0.2)" $border="rgba(184, 122, 0, 0.42)">
@@ -1054,7 +1091,10 @@ export default function Concepts() {
                 <CategoryNode $background="rgba(255, 196, 57, 0.16)" $border="rgba(184, 122, 0, 0.36)">
                   <MethodGrid>
                     {selectedSourceTab.deckLayers.map((layer) => (
-                      <CompactNode key={layer}>{layer}</CompactNode>
+                      <LinkedCompactNode key={layer} href={deckLayerDocumentationLinks[layer]}>
+                        <span>{layer}</span>
+                        <LinkMark aria-hidden="true">↗</LinkMark>
+                      </LinkedCompactNode>
                     ))}
                   </MethodGrid>
                 </CategoryNode>
@@ -1109,6 +1149,59 @@ export default function Concepts() {
               </SplitPanel>
             </Diagram>
           </Panel>
+
+          <WidePanel>
+            <PanelHeader>
+              <PanelLabel>Streaming loaders</PanelLabel>
+              <PanelTitle>Stream data in batches.</PanelTitle>
+              <PanelText>
+                Batched loaders let applications process results as bytes arrive, without holding a
+                large file in one string or ArrayBuffer.
+              </PanelText>
+            </PanelHeader>
+            <Diagram>
+              <StreamingFlow>
+                <ConceptColumn>
+                  <StageLabel>Streaming loaders</StageLabel>
+                  <LoaderGrid>
+                    {streamingLoaders.map((loader) => (
+                      <LinkedNode key={loader} href={loaderDocumentationLinks[loader]}>
+                        <span>{loader}</span>
+                        <LinkMark aria-hidden="true">↗</LinkMark>
+                      </LinkedNode>
+                    ))}
+                  </LoaderGrid>
+                </ConceptColumn>
+                <Connector />
+                <ConceptColumn>
+                  <StageLabel>Incremental processing</StageLabel>
+                  <DataSourceNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">
+                    <span>Process while loading</span>
+                    <MethodGrid>
+                      {streamingProcessingBlocks.map((block) => (
+                        <CompactNode key={block}>{block}</CompactNode>
+                      ))}
+                    </MethodGrid>
+                  </DataSourceNode>
+                </ConceptColumn>
+                <Connector />
+                <ConceptColumn>
+                  <StageLabel>Batches</StageLabel>
+                  <Stack>
+                    {streamingOutputs.map((output) => (
+                      <CategoryNode
+                        key={output}
+                        $background="rgba(53, 173, 107, 0.12)"
+                        $border="rgba(53, 173, 107, 0.55)"
+                      >
+                        {output}
+                      </CategoryNode>
+                    ))}
+                  </Stack>
+                </ConceptColumn>
+              </StreamingFlow>
+            </Diagram>
+          </WidePanel>
         </PanelGrid>
       </Content>
     </ConceptsSection>
