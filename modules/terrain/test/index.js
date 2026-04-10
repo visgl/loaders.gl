@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import './quantized-mesh-loader.spec';
+import './quantized-mesh-writer.spec';
 import './terrain-arrow-loader.spec';
 import './terrain-loader.spec';
 

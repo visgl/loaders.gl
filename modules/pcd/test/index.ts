@@ -4,3 +4,4 @@
 
 import './pcd-loader.spec';
 import './pcd-arrow-loader.spec';
+import './pcd-writer.spec';

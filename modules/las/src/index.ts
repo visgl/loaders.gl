@@ -8,6 +8,8 @@ export {LASFormat} from './las-format';
 
 export type {LASLoaderOptions} from './las-loader';
 export {LASWorkerLoader} from './las-loader';
+export type {LASWriterOptions} from './las-writer';
+export {LASWriter} from './las-writer';
 
 // Export the laz-perf based loader as default LASLoader until we have done more testing
 export {LAZPerfLoader as LASLoader} from './lazperf-loader';

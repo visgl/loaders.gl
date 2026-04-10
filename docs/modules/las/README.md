@@ -13,12 +13,13 @@ For more detail, see the discussion in [Github Issues](https://github.com/visgl/
 npm install @loaders.gl/core @loaders.gl/las
 ```
 
-## Loaders
+## Loaders and Writers
 
-| Loader                                                        | Description                                  |
+| Loader or Writer                                              | Description                                  |
 | ------------------------------------------------------------- | -------------------------------------------- |
 | [`LASArrowLoader`](/docs/modules/las/api-reference/las-loader) | Loads LAS/LAZ point clouds as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
 | [`LASLoader`](/docs/modules/las/api-reference/las-loader)      | Loads LAS/LAZ point clouds as Mesh objects.      |
+| [`LASWriter`](/docs/modules/las/api-reference/las-writer)      | Writes Mesh or Mesh Arrow table point clouds as uncompressed LAS data. |
 
 ## Attribution
 

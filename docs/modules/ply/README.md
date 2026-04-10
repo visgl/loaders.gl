@@ -8,12 +8,13 @@ The `@loaders.gl/ply` module handles the the [Polygon file format](/docs/modules
 npm install @loaders.gl/core @loaders.gl/ply
 ```
 
-## Loaders
+## Loaders and Writers
 
-| Loader                                                        | Description                       |
+| Loader or Writer                                              | Description                       |
 | ------------------------------------------------------------- | --------------------------------- |
 | [`PLYArrowLoader`](/docs/modules/ply/api-reference/ply-loader) | Loads PLY meshes as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
 | [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader)      | Loads PLY meshes as Mesh objects.      |
+| [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer)      | Writes Mesh or Mesh Arrow table data as ASCII PLY text. |
 
 ## Attribution
 
