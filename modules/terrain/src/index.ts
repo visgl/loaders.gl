@@ -14,6 +14,8 @@ import {
   QuantizedMeshLoader as QuantizedMeshWorkerLoader,
   QuantizedMeshLoaderOptions
 } from './quantized-mesh-loader';
+export type {QuantizedMeshWriterOptions} from './quantized-mesh-writer';
+export {QuantizedMeshWriter} from './quantized-mesh-writer';
 
 // TerrainLoader
 

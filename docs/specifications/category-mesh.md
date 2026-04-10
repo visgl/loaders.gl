@@ -21,6 +21,19 @@ The _mesh and pointcloud_ loader category is intended for simpler mesh and point
 | [`QuantizedMeshLoader`](/docs/modules/terrain/api-reference/quantized-mesh-loader)               | Legacy Mesh object        |
 | [`TerrainLoader`](/docs/modules/terrain/api-reference/terrain-loader)                            | Legacy Mesh object        |
 
+## Mesh/PointCloud Category Writers
+
+Mesh category writers accept Mesh Arrow tables and legacy Mesh objects. Legacy Mesh input is converted to a Mesh Arrow table before encoding, so each writer keeps one normalized encode path.
+
+| Writer                                                                                     | Notes                                  |
+| ------------------------------------------------------------------------------------------ | -------------------------------------- |
+| [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer)                             | Writes Draco meshes and point clouds   |
+| [`LASWriter`](/docs/modules/las/api-reference/las-writer)                                   | Writes uncompressed LAS point clouds   |
+| [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer)                                   | Writes OBJ mesh text                   |
+| [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer)                                   | Writes ASCII PCD point clouds          |
+| [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer)                                   | Writes ASCII PLY meshes                |
+| [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer)          | Writes quantized mesh terrain          |
+
 ## Data Format
 
 A single mesh is typically defined by a set of attributes, such as `positions`, `colors`, `normals` etc, as well as a draw mode.
