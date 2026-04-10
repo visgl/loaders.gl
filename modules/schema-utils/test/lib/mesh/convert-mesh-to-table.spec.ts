@@ -8,6 +8,7 @@ import * as arrow from 'apache-arrow';
 import type {Mesh} from '@loaders.gl/schema';
 import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh, deduceMeshSchema} from '@loaders.gl/schema-utils';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
 
 test('meshArrowSchema', t => {
   t.equal(meshArrowSchema.fields.length, 1, 'mesh schema has one predefined field');
@@ -40,6 +41,7 @@ test('convertMeshToTable#unindexed mesh Arrow table round trip', t => {
   const table = convertMeshToTable(mesh, 'arrow-table');
 
   t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'Mesh Arrow table'});
   t.deepEqual(
     table.data.schema.fields.map(field => field.name),
     ['POSITION', 'NORMAL'],
@@ -62,6 +64,9 @@ test('convertMeshToTable#unindexed mesh Arrow table round trip', t => {
 test('convertMeshToTable#indexed mesh Arrow table round trip', t => {
   const mesh = makeMesh(new Uint16Array([0, 1, 2]));
   const table = convertMeshToTable(mesh, 'arrow-table');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'IndexedMesh Arrow table'
+  });
 
   t.deepEqual(
     table.data.schema.fields.map(field => field.name),

@@ -8,6 +8,8 @@ import {validateLoader} from 'test/common/conformance';
 
 import {PLYArrowLoader} from '@loaders.gl/ply';
 import {fetchFile, parse} from '@loaders.gl/core';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {indexedMeshArrowSchema} from '@loaders.gl/schema';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 
@@ -20,6 +22,9 @@ test('PLYArrowLoader#parse indexed cube', async t => {
   const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYArrowLoader);
 
   t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'PLYArrowLoader IndexedMesh table'
+  });
   t.deepEqual(
     table.data.schema.fields.map(field => field.name),
     ['POSITION', 'indices', 'NORMAL'],

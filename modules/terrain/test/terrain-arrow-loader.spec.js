@@ -9,6 +9,8 @@ import {validateLoader} from 'test/common/conformance';
 import {TerrainArrowLoader, QuantizedMeshArrowLoader} from '@loaders.gl/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {indexedMeshArrowSchema} from '@loaders.gl/schema';
 
 registerLoaders([ImageLoader]);
 
@@ -41,6 +43,9 @@ test('TerrainArrowLoader#parse terrarium martini', async t => {
   });
 
   t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'TerrainArrowLoader IndexedMesh table'
+  });
   t.equal(table.data.numRows, 5696, 'table has one row per vertex');
   t.ok(table.data.getChild('POSITION'), 'POSITION column was found');
   t.ok(table.data.getChild('TEXCOORD_0'), 'TEXCOORD_0 column was found');
@@ -56,6 +61,9 @@ test('QuantizedMeshArrowLoader#parse tile-with-extensions', async t => {
   const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshArrowLoader);
 
   t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'QuantizedMeshArrowLoader IndexedMesh table'
+  });
   t.equal(table.data.numRows, 627, 'table has one row per vertex');
   t.ok(table.data.getChild('POSITION'), 'POSITION column was found');
   t.ok(table.data.getChild('TEXCOORD_0'), 'TEXCOORD_0 column was found');
