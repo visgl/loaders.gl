@@ -10,7 +10,7 @@ import type {
   GetTileDataParameters,
   ImageTileSource,
   ImageType,
-  TileRangeRequestSchedulerProps
+  RangeRequestSchedulerProps
 } from '@loaders.gl/loader-utils';
 import {DataSource, DataSourceOptions, resolvePath} from '@loaders.gl/loader-utils';
 import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
@@ -27,15 +27,20 @@ import {RangeRequestSource} from './lib/range-request-source';
 
 const VERSION = '1.0.0';
 
+/** Range request options for PMTiles URL sources. */
+export type PMTilesRangeRequestOptions = RangeRequestSchedulerProps & {
+  /** Reserved concurrency hint for range-request transports. */
+  maxConcurrentRequests?: number;
+};
+
 export type PMTilesSourceOptions = DataSourceOptions & {
   core?: DataSourceOptions['core'] & {
     loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
   };
   pmtiles?: {};
-  tileRangeRequest?: TileRangeRequestSchedulerProps & {
-    /** Reserved concurrency hint for range-request transports. */
-    maxConcurrentRequests?: number;
-  };
+  rangeRequests?: PMTilesRangeRequestOptions;
+  /** @deprecated Use `rangeRequests`. */
+  tileRangeRequest?: PMTilesRangeRequestOptions;
 };
 
 /**
@@ -73,10 +78,11 @@ export class PMTilesTileSource
 
   constructor(data: string | Blob, options: PMTilesSourceOptions) {
     super(data, options, PMTilesSource.defaultOptions);
+    const rangeRequestOptions = options.rangeRequests || options.tileRangeRequest;
     const urlOrBlob =
       typeof data === 'string'
         ? new RangeRequestSource(resolvePath(data), {
-            ...options.tileRangeRequest,
+            ...rangeRequestOptions,
             batchDelayMs: 0,
             fetch: this.fetch
           })
@@ -191,7 +197,8 @@ export class PMTilesTileSource
       return;
     }
 
-    const batchDelayMs = this.options.tileRangeRequest?.batchDelayMs ?? 50;
+    const batchDelayMs =
+      this.options.rangeRequests?.batchDelayMs ?? this.options.tileRangeRequest?.batchDelayMs ?? 50;
     this.tileBatchTimer = setTimeout(() => this.flushTileBatch(), batchDelayMs);
   }
 

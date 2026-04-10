@@ -77,7 +77,7 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       data: 'https://r2-public.protomaps.com/protomaps-sample-datasets/terrarium_z9.pmtiles',
       tileSize: [512,512]
     },
-    'Local Range Server': {
+    'Local Multi-Range/Multipart Server': {
       sourceType: 'pmtiles',
       data: 'http://127.0.0.1:9000/stamen_toner(raster)CC-BY+ODbL_z3.pmtiles',
       localRangeServer: true,

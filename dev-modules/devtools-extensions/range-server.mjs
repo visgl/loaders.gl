@@ -46,13 +46,15 @@ async function main() {
  * Creates an HTTP server that can serve regular responses, single ranges, and multipart ranges.
  */
 export function createRangeServer(options) {
-  const rootDirectory = path.resolve(options.rootDirectory);
-  const corsOrigin = options.corsOrigin || '*';
+  const serveRangeRequest = createRangeServerMiddleware({
+    rootDirectory: options.rootDirectory,
+    corsOrigin: options.corsOrigin
+  });
 
   return http.createServer((request, response) => {
-    void handleRangeServerRequest(request, response, rootDirectory, corsOrigin).catch(error => {
+    serveRangeRequest(request, response, error => {
       if (!response.headersSent) {
-        writeCorsHeaders(response, corsOrigin);
+        writeCorsHeaders(response, options.corsOrigin || '*');
         response.writeHead(500, {'Content-Type': 'text/plain; charset=utf-8'});
       }
       response.end(`${error.message}\n`);
@@ -61,51 +63,114 @@ export function createRangeServer(options) {
 }
 
 /**
+ * Creates middleware that serves files with regular, single-range, and multipart-range responses.
+ *
+ * Set `fallthrough` when mounting this inside another development server so unmatched requests can
+ * continue to that server's normal static-file handling.
+ */
+export function createRangeServerMiddleware(options) {
+  const rootDirectory = path.resolve(options.rootDirectory);
+  const corsOrigin = options.corsOrigin || '*';
+  const fallthrough = Boolean(options.fallthrough);
+  const resolveFilePath = options.resolveFilePath || getRequestFilePath;
+
+  return (request, response, next = undefined) => {
+    void handleRangeServerRequest(request, response, {
+      corsOrigin,
+      fallthrough,
+      resolveFilePath,
+      rootDirectory
+    })
+      .then(handled => {
+        if (!handled && next) {
+          next();
+        }
+      })
+      .catch(error => {
+        if (next) {
+          next(error);
+          return;
+        }
+
+        if (!response.headersSent) {
+          writeCorsHeaders(response, corsOrigin);
+          response.writeHead(500, {'Content-Type': 'text/plain; charset=utf-8'});
+        }
+        response.end(`${error.message}\n`);
+      });
+  };
+}
+
+/**
  * Handles one HTTP request against the range-data server.
  */
-async function handleRangeServerRequest(request, response, rootDirectory, corsOrigin) {
-  writeCorsHeaders(response, corsOrigin);
+async function handleRangeServerRequest(
+  request,
+  response,
+  {rootDirectory, corsOrigin, fallthrough, resolveFilePath}
+) {
+  if (fallthrough && request.method === 'OPTIONS') {
+    return false;
+  }
 
   if (request.method === 'OPTIONS') {
+    writeCorsHeaders(response, corsOrigin);
     response.writeHead(204);
     response.end();
-    return;
+    return true;
   }
 
   if (request.method !== 'GET' && request.method !== 'HEAD') {
+    if (fallthrough) {
+      return false;
+    }
+    writeCorsHeaders(response, corsOrigin);
     response.writeHead(405, {
       Allow: 'GET, HEAD, OPTIONS',
       'Content-Type': 'text/plain; charset=utf-8'
     });
     response.end('Method Not Allowed\n');
-    return;
+    return true;
   }
 
-  const filePath = getRequestFilePath(request.url, rootDirectory);
+  const filePath = resolveFilePath(request.url, rootDirectory);
   if (!filePath) {
+    if (fallthrough) {
+      return false;
+    }
+    writeCorsHeaders(response, corsOrigin);
     response.writeHead(403, {'Content-Type': 'text/plain; charset=utf-8'});
     response.end('Forbidden\n');
-    return;
+    return true;
   }
 
   const fileStat = await fs.promises.stat(filePath).catch(() => null);
   if (!fileStat?.isFile()) {
+    if (fallthrough) {
+      return false;
+    }
+    writeCorsHeaders(response, corsOrigin);
     response.writeHead(404, {'Content-Type': 'text/plain; charset=utf-8'});
     response.end('Not Found\n');
-    return;
+    return true;
   }
+
+  writeCorsHeaders(response, corsOrigin);
 
   const rangeHeader = request.headers.range;
   if (!rangeHeader) {
+    if (fallthrough) {
+      return false;
+    }
     serveFullResponse(request, response, filePath, fileStat.size);
-    return;
+    return true;
   }
 
   const ranges = parseRangeHeader(rangeHeader, fileStat.size);
   if (!ranges) {
     response.writeHead(400, {'Content-Type': 'text/plain; charset=utf-8'});
     response.end('Malformed Range header\n');
-    return;
+    return true;
   }
 
   if (ranges.length === 0) {
@@ -114,15 +179,16 @@ async function handleRangeServerRequest(request, response, rootDirectory, corsOr
       'Content-Range': `bytes */${fileStat.size}`
     });
     response.end();
-    return;
+    return true;
   }
 
   if (ranges.length === 1) {
     serveSingleByteRange(request, response, filePath, ranges[0], fileStat.size);
-    return;
+    return true;
   }
 
   await serveMultipartByteRanges(request, response, filePath, ranges, fileStat.size);
+  return true;
 }
 
 /**

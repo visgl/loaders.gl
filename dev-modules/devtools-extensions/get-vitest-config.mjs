@@ -9,6 +9,7 @@ import ts from 'typescript';
 
 import {getPlaywrightLaunchOptions} from './get-playwright-launch-options.mjs';
 import {loadOcularConfig} from './load-ocular-config.mjs';
+import {createRangeServerMiddleware} from './range-server.mjs';
 
 const require = createRequire(import.meta.url);
 const VITEST_INTERNAL_BROWSER_PATH = require.resolve('vitest/internal/browser');
@@ -124,6 +125,13 @@ export async function getVitestConfig(options = {}) {
  * Vite's static middleware can answer these files with 200 responses, but range-oriented loaders need 206.
  */
 function serveRangeRequestsPlugin(repositoryRoot) {
+  const serveRangeRequest = createRangeServerMiddleware({
+    rootDirectory: repositoryRoot,
+    corsOrigin: '*',
+    fallthrough: true,
+    resolveFilePath: resolveViteRangeRequestFilePath
+  });
+
   return {
     name: 'loaders-gl-test-range-requests',
     configureServer(server) {
@@ -134,111 +142,16 @@ function serveRangeRequestsPlugin(repositoryRoot) {
           return;
         }
 
-        const filePath = getRangeRequestFilePath(request.url, repositoryRoot);
-        if (!filePath) {
-          next();
-          return;
-        }
-
-        const fileStat = getRangeRequestFileStat(filePath, repositoryRoot);
-        if (!fileStat) {
-          next();
-          return;
-        }
-
-        const ranges = parseRangeHeader(rangeHeader, fileStat.size);
-        if (!ranges) {
-          next();
-          return;
-        }
-        if (ranges.length === 0) {
-          response.writeHead(416, {'Content-Range': `bytes */${fileStat.size}`});
-          response.end();
-          return;
-        }
-
-        if (ranges.length === 1) {
-          serveSingleByteRange(request, response, next, filePath, ranges[0], fileStat.size);
-          return;
-        }
-
-        serveMultipartByteRanges(request, response, next, filePath, ranges, fileStat.size);
+        serveRangeRequest(request, response, next);
       });
     }
   };
 }
 
 /**
- * Serves one normalized byte range from a file.
- */
-function serveSingleByteRange(request, response, next, filePath, range, fileSize) {
-  response.writeHead(206, {
-    'Accept-Ranges': 'bytes',
-    'Content-Length': String(range.end - range.start + 1),
-    'Content-Range': `bytes ${range.start}-${range.end}/${fileSize}`
-  });
-
-  if (request.method === 'HEAD') {
-    response.end();
-    return;
-  }
-
-  const fileStream = fs.createReadStream(filePath, range);
-  fileStream.on('error', next);
-  fileStream.pipe(response);
-}
-
-/**
- * Serves normalized byte ranges with a multipart/byteranges response body.
- */
-function serveMultipartByteRanges(request, response, next, filePath, ranges, fileSize) {
-  const boundary = `loaders-gl-vitest-${Date.now().toString(36)}`;
-  response.writeHead(206, {
-    'Accept-Ranges': 'bytes',
-    'Content-Type': `multipart/byteranges; boundary=${boundary}`
-  });
-
-  if (request.method === 'HEAD') {
-    response.end();
-    return;
-  }
-
-  void writeMultipartByteRanges(response, filePath, ranges, fileSize, boundary).catch(next);
-}
-
-/**
- * Writes a multipart/byteranges response sequentially so the fixture file is streamed, not buffered.
- */
-async function writeMultipartByteRanges(response, filePath, ranges, fileSize, boundary) {
-  for (const range of ranges) {
-    response.write(
-      `--${boundary}\r\n` +
-        'Content-Type: application/octet-stream\r\n' +
-        `Content-Range: bytes ${range.start}-${range.end}/${fileSize}\r\n\r\n`
-    );
-    await writeFileRange(response, filePath, range);
-    response.write('\r\n');
-  }
-
-  response.end(`--${boundary}--\r\n`);
-}
-
-/**
- * Pipes one file range to an HTTP response without ending the response.
- */
-function writeFileRange(response, filePath, range) {
-  return new Promise((resolve, reject) => {
-    const fileStream = fs.createReadStream(filePath, range);
-    fileStream.on('error', reject);
-    fileStream.on('end', resolve);
-    fileStream.pipe(response, {end: false});
-  });
-}
-
-/**
  * Resolves a Vite browser-test URL to a repository-local file path.
  */
-function getRangeRequestFilePath(url, repositoryRoot) {
+function resolveViteRangeRequestFilePath(url, repositoryRoot) {
   if (!url) {
     return null;
   }
@@ -251,61 +164,6 @@ function getRangeRequestFilePath(url, repositoryRoot) {
   const resolvedFilePath = path.resolve(filePath);
   const resolvedRepositoryRoot = path.resolve(repositoryRoot);
   return isFilePathInside(resolvedFilePath, resolvedRepositoryRoot) ? resolvedFilePath : null;
-}
-
-/**
- * Returns stat information for an existing regular file.
- */
-function getRangeRequestFileStat(filePath) {
-  try {
-    const fileStat = fs.statSync(filePath);
-    return fileStat.isFile() ? fileStat : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Parses an HTTP byte-range header into satisfiable inclusive ranges.
- */
-function parseRangeHeader(rangeHeader, fileSize) {
-  if (!rangeHeader.startsWith('bytes=')) {
-    return null;
-  }
-
-  const ranges = [];
-  for (const rangeText of rangeHeader.slice('bytes='.length).split(',')) {
-    const range = parseRangeText(rangeText.trim(), fileSize);
-    if (range) {
-      ranges.push(range);
-    }
-  }
-  return ranges;
-}
-
-/**
- * Parses one byte-range-set value.
- */
-function parseRangeText(rangeText, fileSize) {
-  const match = /^(\d*)-(\d*)$/.exec(rangeText);
-  if (!match) {
-    return null;
-  }
-
-  if (!match[1]) {
-    const suffixLength = Number(match[2]);
-    if (!suffixLength) {
-      return null;
-    }
-    return {
-      start: Math.max(fileSize - suffixLength, 0),
-      end: fileSize - 1
-    };
-  }
-
-  const start = Number(match[1]);
-  const end = Math.min(match[2] ? Number(match[2]) : fileSize - 1, fileSize - 1);
-  return start < fileSize && end >= start ? {start, end} : null;
 }
 
 /**

@@ -2,6 +2,8 @@
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
+  <img src="https://img.shields.io/badge/range_requests-From_v5.0-blue.svg?style=flat-square" alt="range requests from v5.0" />
+  <img src="https://img.shields.io/badge/range_requests-experimental-yellow.svg?style=flat-square" alt="range requests experimental" />
 </p>
 
 The `PMTilesSource` reads individual tiles from a PMTiles archive file.
@@ -28,7 +30,7 @@ const tile = await source.getTile(...);
 ### Batched tile reads
 
 `getTile()` and `getTileData()` automatically participate in delayed range batching.
-Requests made during the same `tileRangeRequest.batchDelayMs` window are started together;
+Requests made during the same `rangeRequests.batchDelayMs` window are started together;
 tile-content byte ranges that are close together are fetched as one merged HTTP `Range`
 request and then sliced back into per-tile results.
 
@@ -38,20 +40,23 @@ Applications that already know the complete tile set can also call the explicit 
 const tilePromises = source.getTileDataBatch?.([tileA, tileB, tileC]);
 ```
 
-See the [multi-range loading guide](../../../developer-guide/multi-range-loading.md) for the
+See the [using range requests guide](../../../developer-guide/using-range-requests.md) for the
 shared scheduler model and option tradeoffs.
+
+Use `createRangeStats()` and `getRangeStats()` from `@loaders.gl/loader-utils` when you need
+typed aggregate counters for PMTiles range transport diagnostics.
 
 ## Options
 
 | Option                                | Type      | Default | Description                                                                 |
 | ------------------------------------- | --------- | ------- | --------------------------------------------------------------------------- |
-| `tileRangeRequest.batchDelayMs`       | `number`  | `50`    | Time to wait for sibling tile requests before starting PMTiles tile lookup.  |
-| `tileRangeRequest.rangeExpansionBytes` | `number` | `65536` | Maximum byte gap to over-fetch when expanding one HTTP range to include nearby tile content. |
-| `tileRangeRequest.maxGapBytes`        | `number`  | `65536` | Compatibility alias for `rangeExpansionBytes`.                              |
-| `tileRangeRequest.maxMergedBytes`     | `number`  | `8388608` | Maximum size of one merged byte-range request.                             |
-| `tileRangeRequest.maxConcurrentRequests` | `number` | `6`  | Reserved concurrency hint for range-request transports.                     |
-| `tileRangeRequest.stats`              | `Stats`   | none     | Optional probe.gl Stats object that receives range batching counters.       |
-| `tileRangeRequest.onEvent`            | `function` | none    | Optional diagnostics callback for queued, batched, completed, failed, and aborted range requests. |
+| `rangeRequests.batchDelayMs`       | `number`  | `50`    | Time to wait for sibling tile requests before starting PMTiles tile lookup.  |
+| `rangeRequests.rangeExpansionBytes` | `number` | `65536` | Maximum byte gap to over-fetch when expanding one HTTP range to include nearby tile content. |
+| `rangeRequests.maxGapBytes`        | `number`  | `65536` | Compatibility alias for `rangeExpansionBytes`.                              |
+| `rangeRequests.maxMergedBytes`     | `number`  | `8388608` | Maximum size of one merged byte-range request.                             |
+| `rangeRequests.maxConcurrentRequests` | `number` | `6`  | Reserved concurrency hint for range-request transports.                     |
+| `rangeRequests.stats`              | `Stats`   | none     | Optional probe.gl Stats object that receives range batching counters.       |
+| `rangeRequests.onEvent`            | `function` | none    | Optional diagnostics callback for queued, batched, completed, failed, and aborted range requests. |
 
 ## Notes
 

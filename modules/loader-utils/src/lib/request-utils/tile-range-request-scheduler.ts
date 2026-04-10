@@ -4,8 +4,36 @@
 
 import {Stats} from '@probe.gl/stats';
 
+/** Typed snapshot of the byte-range scheduler counters stored in a probe.gl `Stats` object. */
+export type RangeStats = {
+  /** Number of caller-requested byte ranges. */
+  logicalRanges: number;
+  /** Number of queue flushes that produced at least one transport request. */
+  rangeBatches: number;
+  /** Number of merged byte ranges requested from the transport. */
+  transportRanges: number;
+  /** Number of merged byte ranges that completed successfully. */
+  completedTransportRanges: number;
+  /** Number of logical ranges eliminated by coalescing. */
+  coalescedRanges: number;
+  /** Number of bytes requested by callers before coalescing. */
+  requestedBytes: number;
+  /** Number of bytes requested from the transport after coalescing and expansion. */
+  transportBytes: number;
+  /** Number of bytes read from transport responses. */
+  responseBytes: number;
+  /** Number of transport-requested bytes that were not part of logical caller requests. */
+  overfetchBytes: number;
+  /** Number of transport ranges that failed. */
+  failedTransportRanges: number;
+  /** Number of logical byte ranges aborted before completion. */
+  abortedLogicalRanges: number;
+  /** Number of transport responses that returned a full-object fallback. */
+  fullResponseFallbacks: number;
+};
+
 /** Options for the byte-range request scheduler. */
-export type TileRangeRequestSchedulerProps = {
+export type RangeRequestSchedulerProps = {
   /** Time to wait for sibling range requests before issuing HTTP requests. */
   batchDelayMs?: number;
   /** Maximum byte gap that can be over-fetched when merging two adjacent requests. */
@@ -17,10 +45,11 @@ export type TileRangeRequestSchedulerProps = {
   /** Optional probe.gl Stats object that receives range batching counters. */
   stats?: Stats;
   /** Optional event callback for range batching diagnostics. */
-  onEvent?: (event: TileRangeRequestEvent) => void;
+  onEvent?: (event: RangeRequestEvent) => void;
 };
 
-export type TileRangeRequest = {
+/** One logical byte-range request handled by `RangeRequestScheduler.scheduleRequest()`. */
+export type RangeRequest = {
   /** Stable identifier for the remote byte-range-addressable resource. */
   sourceId: string;
   /** Start byte offset. */
@@ -34,11 +63,29 @@ export type TileRangeRequest = {
     offset: number,
     length: number,
     signal?: AbortSignal
-  ) => Promise<ArrayBuffer | TileRangeRequestTransportResult>;
+  ) => Promise<ArrayBuffer | RangeRequestTransportResult>;
+};
+
+/** HTTP byte-range request handled by `RangeRequestScheduler.fetch()`. */
+export type RangeFetchRequest = {
+  /** URL of the remote byte-range-addressable resource. */
+  url: string;
+  /** Optional stable identifier for the remote resource; defaults to `url`. */
+  sourceId?: string;
+  /** Start byte offset. */
+  offset: number;
+  /** Number of bytes to read. */
+  length: number;
+  /** Optional caller abort signal. */
+  signal?: AbortSignal;
+  /** Optional fetch implementation for tests or host environments. */
+  fetch?: (url: string, options?: RequestInit) => Promise<Response>;
+  /** Optional fetch options merged into the transport request. */
+  fetchOptions?: RequestInit;
 };
 
 /** Transport result plus diagnostics for one merged byte-range request. */
-export type TileRangeRequestTransportResult = {
+export type RangeRequestTransportResult = {
   /** Bytes returned by the transport. */
   arrayBuffer: ArrayBuffer;
   /** HTTP status code or transport-specific equivalent. */
@@ -50,7 +97,7 @@ export type TileRangeRequestTransportResult = {
 };
 
 /** Diagnostic event emitted by the byte-range request scheduler. */
-export type TileRangeRequestEvent = {
+export type RangeRequestEvent = {
   /** Event type. */
   type: 'queued' | 'batch' | 'request' | 'response' | 'error' | 'abort';
   /** Stable identifier for the remote byte-range-addressable resource. */
@@ -79,7 +126,22 @@ export type TileRangeRequestEvent = {
   error?: unknown;
 };
 
-type PendingRequest = TileRangeRequest & {
+/** @deprecated Use `RangeRequestSchedulerProps`. */
+export type TileRangeRequestSchedulerProps = RangeRequestSchedulerProps;
+
+/** @deprecated Use `RangeRequest`. */
+export type TileRangeRequest = RangeRequest;
+
+/** @deprecated Use `RangeFetchRequest`. */
+export type TileRangeFetchRequest = RangeFetchRequest;
+
+/** @deprecated Use `RangeRequestTransportResult`. */
+export type TileRangeRequestTransportResult = RangeRequestTransportResult;
+
+/** @deprecated Use `RangeRequestEvent`. */
+export type TileRangeRequestEvent = RangeRequestEvent;
+
+type PendingRequest = RangeRequest & {
   resolve: (arrayBuffer: ArrayBuffer) => void;
   reject: (error: unknown) => void;
 };
@@ -88,16 +150,32 @@ type MergedRequest = {
   sourceId: string;
   offset: number;
   endOffset: number;
-  fetchRange: TileRangeRequest['fetchRange'];
+  fetchRange: RangeRequest['fetchRange'];
   requests: PendingRequest[];
 };
 
-const DEFAULT_PROPS: Required<TileRangeRequestSchedulerProps> = {
+/** probe.gl `Stats` counter names used for typed range scheduler snapshots. */
+const RANGE_STATS_KEYS: Record<keyof RangeStats, string> = {
+  logicalRanges: 'Logical Range Requests',
+  rangeBatches: 'Range Request Batches',
+  transportRanges: 'Transport Ranges Created',
+  completedTransportRanges: 'Range Transport Requests Completed',
+  coalescedRanges: 'Coalesced Logical Ranges',
+  requestedBytes: 'Logical Range Request Bytes',
+  transportBytes: 'Range Transport Bytes Requested',
+  responseBytes: 'Range Response Bytes',
+  overfetchBytes: 'Range Overfetch Bytes',
+  failedTransportRanges: 'Range Transport Requests Failed',
+  abortedLogicalRanges: 'Aborted Logical Range Requests',
+  fullResponseFallbacks: 'Full Response Fallbacks'
+};
+
+const DEFAULT_PROPS: Required<RangeRequestSchedulerProps> = {
   batchDelayMs: 50,
   maxGapBytes: 65536,
   rangeExpansionBytes: 65536,
   maxMergedBytes: 8388608,
-  stats: new Stats({id: 'tile-range-request-scheduler-default'}),
+  stats: createRangeStats('range-request-scheduler-default'),
   onEvent: () => {}
 };
 
@@ -105,19 +183,19 @@ const DEFAULT_PROPS: Required<TileRangeRequestSchedulerProps> = {
  * Coalesces nearby byte range requests and carves the merged response back
  * into the originally requested byte ranges.
  */
-export class TileRangeRequestScheduler {
+export class RangeRequestScheduler {
   /** Runtime scheduler configuration with defaults filled in. */
-  readonly props: Required<Omit<TileRangeRequestSchedulerProps, 'stats' | 'onEvent'>>;
+  readonly props: Required<Omit<RangeRequestSchedulerProps, 'stats' | 'onEvent'>>;
   /** Runtime counters for range batching and transport behavior. */
   readonly stats: Stats;
   /** Optional event callback for range batching diagnostics. */
-  readonly onEvent?: (event: TileRangeRequestEvent) => void;
+  readonly onEvent?: (event: RangeRequestEvent) => void;
 
   private pendingRequests: PendingRequest[] = [];
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Creates a scheduler for one group of byte-range-addressable resources. */
-  constructor(props: TileRangeRequestSchedulerProps = {}) {
+  constructor(props: RangeRequestSchedulerProps = {}) {
     const rangeExpansionBytes =
       props.rangeExpansionBytes ?? props.maxGapBytes ?? DEFAULT_PROPS.rangeExpansionBytes;
     this.props = {
@@ -126,7 +204,7 @@ export class TileRangeRequestScheduler {
       rangeExpansionBytes,
       maxMergedBytes: props.maxMergedBytes ?? DEFAULT_PROPS.maxMergedBytes
     };
-    this.stats = props.stats || new Stats({id: 'tile-range-request-scheduler'});
+    this.stats = props.stats || createRangeStats('range-request-scheduler');
     this.onEvent = props.onEvent;
     initializeStats(this.stats);
   }
@@ -134,7 +212,7 @@ export class TileRangeRequestScheduler {
   /**
    * Enqueues one byte range request and resolves with the exact requested byte slice.
    */
-  scheduleRequest(request: TileRangeRequest): Promise<ArrayBuffer> {
+  scheduleRequest(request: RangeRequest): Promise<ArrayBuffer> {
     if (request.length < 0) {
       return Promise.reject(new Error('Byte range length cannot be negative'));
     }
@@ -158,6 +236,28 @@ export class TileRangeRequestScheduler {
 
     this.scheduleFlush();
     return promise;
+  }
+
+  /**
+   * Enqueues one HTTP byte-range request and resolves with the exact requested byte slice.
+   */
+  fetch(request: RangeFetchRequest): Promise<ArrayBuffer> {
+    const fetchFunction = request.fetch || globalThis.fetch;
+    return this.scheduleRequest({
+      sourceId: request.sourceId || request.url,
+      offset: request.offset,
+      length: request.length,
+      signal: request.signal,
+      fetchRange: (offset, length, signal) =>
+        fetchHttpRange({
+          url: request.url,
+          offset,
+          length,
+          signal,
+          fetch: fetchFunction,
+          fetchOptions: request.fetchOptions
+        })
+    });
   }
 
   /** Immediately starts loading the currently queued requests. */
@@ -322,7 +422,7 @@ export class TileRangeRequestScheduler {
   }
 
   /** Emits one event to Stats and to the optional callback. */
-  private trackEvent(event: TileRangeRequestEvent): void {
+  private trackEvent(event: RangeRequestEvent): void {
     trackStatsEvent(this.stats, event);
     this.onEvent?.(event);
   }
@@ -345,49 +445,129 @@ export class TileRangeRequestScheduler {
   }
 }
 
+/** @deprecated Use `RangeRequestScheduler`. */
+export {RangeRequestScheduler as TileRangeRequestScheduler};
+
 /**
  * Tracks range batching events in a probe.gl Stats object.
  */
-export function trackStatsEvent(stats: Stats, event: TileRangeRequestEvent): void {
+export function trackStatsEvent(stats: Stats, event: RangeRequestEvent): void {
   switch (event.type) {
     case 'queued':
-      stats.get('Logical Range Requests', 'count').incrementCount();
-      stats.get('Logical Range Request Bytes', 'count').addCount(event.logicalBytes || 0);
+      stats.get(RANGE_STATS_KEYS.logicalRanges, 'count').incrementCount();
+      stats.get(RANGE_STATS_KEYS.requestedBytes, 'count').addCount(event.logicalBytes || 0);
       break;
     case 'batch':
-      stats.get('Range Request Batches', 'count').incrementCount();
+      stats.get(RANGE_STATS_KEYS.rangeBatches, 'count').incrementCount();
       stats.get('Logical Ranges Batched', 'count').addCount(event.logicalRequestCount || 0);
-      stats.get('Transport Ranges Created', 'count').addCount(event.transportRequestCount || 0);
       stats
-        .get('Coalesced Logical Ranges', 'count')
+        .get(RANGE_STATS_KEYS.transportRanges, 'count')
+        .addCount(event.transportRequestCount || 0);
+      stats
+        .get(RANGE_STATS_KEYS.coalescedRanges, 'count')
         .addCount(
           Math.max((event.logicalRequestCount || 0) - (event.transportRequestCount || 0), 0)
         );
-      stats.get('Range Transport Bytes Requested', 'count').addCount(event.transportBytes || 0);
-      stats.get('Range Overfetch Bytes', 'count').addCount(event.overfetchBytes || 0);
+      stats.get(RANGE_STATS_KEYS.transportBytes, 'count').addCount(event.transportBytes || 0);
+      stats.get(RANGE_STATS_KEYS.overfetchBytes, 'count').addCount(event.overfetchBytes || 0);
       break;
     case 'response':
-      stats.get('Range Transport Requests Completed', 'count').incrementCount();
-      stats.get('Range Response Bytes', 'count').addCount(event.responseBytes || 0);
+      stats.get(RANGE_STATS_KEYS.completedTransportRanges, 'count').incrementCount();
+      stats.get(RANGE_STATS_KEYS.responseBytes, 'count').addCount(event.responseBytes || 0);
       if (event.fullResponse) {
-        stats.get('Full Response Fallbacks', 'count').incrementCount();
+        stats.get(RANGE_STATS_KEYS.fullResponseFallbacks, 'count').incrementCount();
       }
       break;
     case 'error':
-      stats.get('Range Transport Requests Failed', 'count').incrementCount();
+      stats.get(RANGE_STATS_KEYS.failedTransportRanges, 'count').incrementCount();
       break;
     case 'abort':
-      stats.get('Aborted Logical Range Requests', 'count').incrementCount();
+      stats.get(RANGE_STATS_KEYS.abortedLogicalRanges, 'count').incrementCount();
       break;
     default:
+  }
+}
+
+/** Creates a probe.gl `Stats` object initialized with byte-range scheduler counters. */
+export function createRangeStats(id = 'range-request-scheduler'): Stats {
+  const stats = new Stats({id});
+  initializeStats(stats);
+  return stats;
+}
+
+/** Reads byte-range scheduler counters from a probe.gl `Stats` object. */
+export function getRangeStats(stats: Stats): RangeStats {
+  return {
+    logicalRanges: stats.get(RANGE_STATS_KEYS.logicalRanges).count,
+    rangeBatches: stats.get(RANGE_STATS_KEYS.rangeBatches).count,
+    transportRanges: stats.get(RANGE_STATS_KEYS.transportRanges).count,
+    completedTransportRanges: stats.get(RANGE_STATS_KEYS.completedTransportRanges).count,
+    coalescedRanges: stats.get(RANGE_STATS_KEYS.coalescedRanges).count,
+    requestedBytes: stats.get(RANGE_STATS_KEYS.requestedBytes).count,
+    transportBytes: stats.get(RANGE_STATS_KEYS.transportBytes).count,
+    responseBytes: stats.get(RANGE_STATS_KEYS.responseBytes).count,
+    overfetchBytes: stats.get(RANGE_STATS_KEYS.overfetchBytes).count,
+    failedTransportRanges: stats.get(RANGE_STATS_KEYS.failedTransportRanges).count,
+    abortedLogicalRanges: stats.get(RANGE_STATS_KEYS.abortedLogicalRanges).count,
+    fullResponseFallbacks: stats.get(RANGE_STATS_KEYS.fullResponseFallbacks).count
+  };
+}
+
+/** Issues one HTTP range request and parses range-related status/header behavior. */
+export async function fetchHttpRange(
+  request: Required<Pick<RangeFetchRequest, 'url' | 'fetch'>> &
+    Pick<RangeFetchRequest, 'offset' | 'length' | 'signal' | 'fetchOptions'>
+): Promise<RangeRequestTransportResult> {
+  const abortContext = createAbortableFetchContext(request.signal);
+
+  try {
+    let response = await request.fetch(
+      request.url,
+      createRangeFetchOptions(
+        request.fetchOptions,
+        request.offset,
+        request.length,
+        abortContext.signal
+      )
+    );
+
+    if (response.status === 416 && request.offset === 0) {
+      const actualLength = parseUnsatisfiedContentRange(response.headers.get('Content-Range'));
+      if (!actualLength) {
+        throw new Error('Missing content-length on 416 response');
+      }
+      response = await request.fetch(
+        request.url,
+        createRangeFetchOptions(request.fetchOptions, 0, actualLength, abortContext.signal)
+      );
+    }
+
+    if (response.status === 200) {
+      abortContext.abort();
+      await cancelIgnoredRangeResponse(response);
+      throw new Error('Byte-range request failed: server returned 200 instead of 206');
+    }
+
+    if (response.status !== 206 && !response.ok) {
+      throw new Error(`Bad response code: ${response.status}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return {
+      arrayBuffer,
+      status: response.status,
+      transportBytes: arrayBuffer.byteLength
+    };
+  } finally {
+    abortContext.removeAbortListener();
   }
 }
 
 /** Returns true when a new request can be folded into an existing merged request. */
 function canMergeRequests(
   mergedRequest: MergedRequest,
-  request: TileRangeRequest,
-  props: Required<Omit<TileRangeRequestSchedulerProps, 'stats' | 'onEvent'>>
+  request: RangeRequest,
+  props: Required<Omit<RangeRequestSchedulerProps, 'stats' | 'onEvent'>>
 ): boolean {
   if (mergedRequest.sourceId !== request.sourceId) {
     return false;
@@ -402,19 +582,19 @@ function canMergeRequests(
 
 /** Initializes the Stats keys used by the range scheduler. */
 function initializeStats(stats: Stats): void {
-  stats.get('Logical Range Requests', 'count');
-  stats.get('Logical Range Request Bytes', 'count');
-  stats.get('Range Request Batches', 'count');
+  stats.get(RANGE_STATS_KEYS.logicalRanges, 'count');
+  stats.get(RANGE_STATS_KEYS.requestedBytes, 'count');
+  stats.get(RANGE_STATS_KEYS.rangeBatches, 'count');
   stats.get('Logical Ranges Batched', 'count');
-  stats.get('Transport Ranges Created', 'count');
-  stats.get('Coalesced Logical Ranges', 'count');
-  stats.get('Range Transport Bytes Requested', 'count');
-  stats.get('Range Transport Requests Completed', 'count');
-  stats.get('Range Response Bytes', 'count');
-  stats.get('Range Overfetch Bytes', 'count');
-  stats.get('Full Response Fallbacks', 'count');
-  stats.get('Range Transport Requests Failed', 'count');
-  stats.get('Aborted Logical Range Requests', 'count');
+  stats.get(RANGE_STATS_KEYS.transportRanges, 'count');
+  stats.get(RANGE_STATS_KEYS.coalescedRanges, 'count');
+  stats.get(RANGE_STATS_KEYS.transportBytes, 'count');
+  stats.get(RANGE_STATS_KEYS.completedTransportRanges, 'count');
+  stats.get(RANGE_STATS_KEYS.responseBytes, 'count');
+  stats.get(RANGE_STATS_KEYS.overfetchBytes, 'count');
+  stats.get(RANGE_STATS_KEYS.fullResponseFallbacks, 'count');
+  stats.get(RANGE_STATS_KEYS.failedTransportRanges, 'count');
+  stats.get(RANGE_STATS_KEYS.abortedLogicalRanges, 'count');
 }
 
 /** Returns the sum of the caller-requested byte lengths. */
@@ -424,7 +604,69 @@ function getLogicalRequestBytes(requests: {length: number}[]): number {
 
 /** Normalizes legacy ArrayBuffer fetch results and diagnostic transport results. */
 function normalizeTransportResult(
-  result: ArrayBuffer | TileRangeRequestTransportResult
-): TileRangeRequestTransportResult {
+  result: ArrayBuffer | RangeRequestTransportResult
+): RangeRequestTransportResult {
   return result instanceof ArrayBuffer ? {arrayBuffer: result} : result;
+}
+
+/** Creates fetch options for one HTTP byte-range request while preserving caller headers. */
+function createRangeFetchOptions(
+  fetchOptions: RequestInit | undefined,
+  offset: number,
+  length: number,
+  signal: AbortSignal
+): RequestInit {
+  return {
+    ...fetchOptions,
+    signal,
+    headers: {
+      ...getHeadersObject(fetchOptions?.headers),
+      Range: `bytes=${offset}-${offset + length - 1}`
+    }
+  };
+}
+
+/** Copies supported HeadersInit values into a plain object so Range can be merged in. */
+function getHeadersObject(headers?: HeadersInit): Record<string, string> {
+  if (!headers) {
+    return {};
+  }
+  if (headers instanceof Headers) {
+    return Object.fromEntries(headers.entries());
+  }
+  if (Array.isArray(headers)) {
+    return Object.fromEntries(headers);
+  }
+  return headers;
+}
+
+/** Parses a `Content-Range: bytes *\/<length>` header from an unsatisfied range response. */
+function parseUnsatisfiedContentRange(contentRange: string | null): number | null {
+  const match = contentRange?.match(/^bytes \*\/(\d+)$/);
+  return match ? Number(match[1]) : null;
+}
+
+/** Creates an inner abort controller that follows an optional parent signal and can cancel one fetch. */
+function createAbortableFetchContext(parentSignal?: AbortSignal): {
+  signal: AbortSignal;
+  abort: () => void;
+  removeAbortListener: () => void;
+} {
+  const abortController = new AbortController();
+  const abortListener = () => abortController.abort();
+  if (parentSignal?.aborted) {
+    abortController.abort();
+  } else {
+    parentSignal?.addEventListener('abort', abortListener, {once: true});
+  }
+  return {
+    signal: abortController.signal,
+    abort: () => abortController.abort(),
+    removeAbortListener: () => parentSignal?.removeEventListener('abort', abortListener)
+  };
+}
+
+/** Cancels a response body when a server ignores a `Range` header and starts sending the whole archive. */
+async function cancelIgnoredRangeResponse(response: Response): Promise<void> {
+  await response.body?.cancel().catch(() => {});
 }

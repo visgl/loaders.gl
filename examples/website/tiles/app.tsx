@@ -8,10 +8,12 @@ import {createRoot} from 'react-dom/client';
 
 // loaders.gl sources and loaders
 import type {
+  RangeStats,
   VectorTileSource,
   ImageTileSource,
-  TileRangeRequestEvent
+  RangeRequestEvent
 } from '@loaders.gl/loader-utils';
+import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
 import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
@@ -62,24 +64,11 @@ type AppState = {
   error: string | null;
 };
 
-type RangeStats = {
-  logicalRanges: number;
-  rangeBatches: number;
-  transportRanges: number;
-  completedTransportRanges: number;
-  coalescedRanges: number;
-  requestedBytes: number;
-  transportBytes: number;
-  responseBytes: number;
-  overfetchBytes: number;
-  failedTransportRanges: number;
-  abortedLogicalRanges: number;
-  fullResponseFallbacks: number;
-};
-
 export default function App(props: AppProps = {}) {
-  const rangeStatsRef = useRef<RangeStats>(createEmptyRangeStats());
-  const [rangeStats, setRangeStats] = useState<RangeStats>(rangeStatsRef.current);
+  const rangeStatsObjectRef = useRef(createRangeStats('pmtiles-example-range-transport'));
+  const [rangeStats, setRangeStats] = useState<RangeStats>(
+    getRangeStats(rangeStatsObjectRef.current)
+  );
   const [currentExample, setCurrentExample] = useState<Example | null>(null);
   const [state, setState] = useState<AppState>({
     tileSource: null,
@@ -150,11 +139,15 @@ export default function App(props: AppProps = {}) {
 
     const url = example.data;
     try {
-      rangeStatsRef.current = createEmptyRangeStats();
-      setRangeStats(rangeStatsRef.current);
+      rangeStatsObjectRef.current = createRangeStats('pmtiles-example-range-transport');
+      setRangeStats(getRangeStats(rangeStatsObjectRef.current));
       setCurrentExample(example);
 
-      let tileSource = createTileSource(example, onTileRangeRequest);
+      let tileSource = createTileSource(
+        example,
+        rangeStatsObjectRef.current,
+        onTileRangeRequest
+      );
 
       setState((state) => ({
         ...state,
@@ -196,12 +189,14 @@ export default function App(props: AppProps = {}) {
     }));
   }
 
-  function onTileRangeRequest(event: TileRangeRequestEvent): void {
-    const rangeStats = updateRangeStats(rangeStatsRef.current, event);
-    rangeStatsRef.current = rangeStats;
-
-    if (event.type === 'batch' || event.type === 'response' || event.type === 'error' || event.type === 'abort') {
-      setRangeStats(rangeStats);
+  function onTileRangeRequest(event: RangeRequestEvent): void {
+    if (
+      event.type === 'batch' ||
+      event.type === 'response' ||
+      event.type === 'error' ||
+      event.type === 'abort'
+    ) {
+      setRangeStats(getRangeStats(rangeStatsObjectRef.current));
     }
   }
 }
@@ -254,7 +249,8 @@ export function renderToDOM(container: HTMLElement) {
 /** Create a source from the example url */
 function createTileSource(
   example: Example,
-  onTileRangeRequest: (event: TileRangeRequestEvent) => void
+  rangeStatsObject: ReturnType<typeof createRangeStats>,
+  onTileRangeRequest: (event: RangeRequestEvent) => void
 ): VectorTileSource | ImageTileSource {
   const url = example.data;
   return createDataSource(
@@ -271,8 +267,9 @@ function createTileSource(
       },
       pmtiles: {
       },
-      tileRangeRequest: {
+      rangeRequests: {
         batchDelayMs: 50,
+        stats: rangeStatsObject,
         onEvent: onTileRangeRequest
       },
       table: {
@@ -282,58 +279,6 @@ function createTileSource(
       mlt: {}
     }
   );
-}
-
-function createEmptyRangeStats(): RangeStats {
-  return {
-    logicalRanges: 0,
-    rangeBatches: 0,
-    transportRanges: 0,
-    completedTransportRanges: 0,
-    coalescedRanges: 0,
-    requestedBytes: 0,
-    transportBytes: 0,
-    responseBytes: 0,
-    overfetchBytes: 0,
-    failedTransportRanges: 0,
-    abortedLogicalRanges: 0,
-    fullResponseFallbacks: 0
-  };
-}
-
-function updateRangeStats(rangeStats: RangeStats, event: TileRangeRequestEvent): RangeStats {
-  const nextRangeStats = {...rangeStats};
-  switch (event.type) {
-    case 'queued':
-      nextRangeStats.logicalRanges += event.logicalRequestCount || 0;
-      nextRangeStats.requestedBytes += event.logicalBytes || 0;
-      break;
-    case 'batch':
-      nextRangeStats.rangeBatches++;
-      nextRangeStats.transportRanges += event.transportRequestCount || 0;
-      nextRangeStats.transportBytes += event.transportBytes || 0;
-      nextRangeStats.overfetchBytes += event.overfetchBytes || 0;
-      nextRangeStats.coalescedRanges += Math.max(
-        (event.logicalRequestCount || 0) - (event.transportRequestCount || 0),
-        0
-      );
-      break;
-    case 'response':
-      nextRangeStats.completedTransportRanges++;
-      nextRangeStats.responseBytes += event.responseBytes || 0;
-      if (event.fullResponse) {
-        nextRangeStats.fullResponseFallbacks++;
-      }
-      break;
-    case 'error':
-      nextRangeStats.failedTransportRanges++;
-      break;
-    case 'abort':
-      nextRangeStats.abortedLogicalRanges += event.logicalRequestCount || 1;
-      break;
-    default:
-  }
-  return nextRangeStats;
 }
 
 function RangeStatsViewer({rangeStats}: {rangeStats: RangeStats}) {
@@ -350,8 +295,10 @@ function RangeStatsViewer({rangeStats}: {rangeStats: RangeStats}) {
             label="Ranges"
             value={`${rangeStats.logicalRanges} logical → ${rangeStats.completedTransportRanges}/${rangeStats.transportRanges} HTTP`}
           />
+          <RangeStatsRow label="Batches" value={rangeStats.rangeBatches} />
           <RangeStatsRow label="Coalesced" value={rangeStats.coalescedRanges} />
           <RangeStatsRow label="Requested" value={formatBytes(rangeStats.requestedBytes)} />
+          <RangeStatsRow label="Transport" value={formatBytes(rangeStats.transportBytes)} />
           <RangeStatsRow label="Received" value={formatBytes(rangeStats.responseBytes)} />
           <RangeStatsRow label="Overfetch" value={formatBytes(rangeStats.overfetchBytes)} />
           <RangeStatsRow label="Failures" value={rangeStats.failedTransportRanges} />

@@ -138,8 +138,21 @@ export {
 
 // REQUEST UTILS
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
-export {TileRangeRequestScheduler} from './lib/request-utils/tile-range-request-scheduler';
+export {
+  RangeRequestScheduler,
+  TileRangeRequestScheduler,
+  createRangeStats,
+  fetchHttpRange,
+  getRangeStats
+} from './lib/request-utils/tile-range-request-scheduler';
 export type {
+  RangeFetchRequest,
+  RangeRequest,
+  RangeRequestEvent,
+  RangeRequestSchedulerProps,
+  RangeRequestTransportResult,
+  RangeStats,
+  TileRangeFetchRequest,
   TileRangeRequest,
   TileRangeRequestEvent,
   TileRangeRequestTransportResult,
