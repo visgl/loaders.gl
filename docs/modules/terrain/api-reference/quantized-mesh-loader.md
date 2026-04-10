@@ -4,17 +4,19 @@
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
 </p>
 
-The `QuantizedMeshLoader` module reconstructs mesh surfaces from the [quantized
+The `QuantizedMeshArrowLoader` reconstructs mesh surfaces from the [quantized
 mesh][quantized_mesh] format.
 
 [quantized_mesh]: https://github.com/CesiumGS/quantized-mesh
+
+`QuantizedMeshLoader` parses the same quantized mesh format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
 | File Extension        | `.terrain`                                 |
 | File Type             | Binary                                     |
 | File Format           | Encoded mesh                               |
-| Data Format           | [Mesh](/docs/specifications/category-mesh) |
+| Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
 | Supported APIs        | `load`, `parse`, `parseSync`               |
 | Decoder Type          | Synchronous                                |
 | Worker Thread Support | Yes                                        |
@@ -23,7 +25,7 @@ mesh][quantized_mesh] format.
 ## Usage
 
 ```typescript
-import {QuantizedMeshLoader} from '@loaders.gl/terrain';
+import {QuantizedMeshArrowLoader, QuantizedMeshLoader} from '@loaders.gl/terrain';
 import {load} from '@loaders.gl/core';
 
 const options = {
@@ -31,6 +33,7 @@ const options = {
     bounds: [0, 0, 1, 1]
   }
 };
+const table = await load(url, QuantizedMeshArrowLoader, options);
 const data = await load(url, QuantizedMeshLoader, options);
 ```
 

@@ -8,6 +8,13 @@ The `@loaders.gl/ply` module handles the the [Polygon file format](/docs/modules
 npm install @loaders.gl/core @loaders.gl/ply
 ```
 
+## Loaders
+
+| Loader                                                        | Description                       |
+| ------------------------------------------------------------- | --------------------------------- |
+| [`PLYArrowLoader`](/docs/modules/ply/api-reference/ply-loader) | Loads PLY meshes as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader)      | Loads PLY meshes as Mesh objects.      |
+
 ## Attribution
 
 PLYLoader is a fork of the THREE.js PLYLoader under MIT License. The THREE.js source files contained the following attributions:

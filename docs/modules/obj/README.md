@@ -11,9 +11,10 @@ npm install @loaders.gl/core
 
 ## Loaders and Writers
 
-| Loader                                                    |
-| --------------------------------------------------------- |
-| [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader) |
+| Loader                                                         | Description                         |
+| -------------------------------------------------------------- | ----------------------------------- |
+| [`OBJArrowLoader`](/docs/modules/obj/api-reference/obj-loader) | Loads OBJ meshes as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader)      | Loads OBJ meshes as Mesh objects.   |
 
 ## Attribution
 

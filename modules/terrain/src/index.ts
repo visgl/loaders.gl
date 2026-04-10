@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {parseFromContext} from '@loaders.gl/loader-utils';
+import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import {parseQuantizedMesh} from './lib/parse-quantized-mesh';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
 
@@ -17,16 +19,37 @@ import {
 
 export {TerrainWorkerLoader};
 
+/**
+ * Loader for height-map terrain meshes.
+ */
 export const TerrainLoader = {
   ...TerrainWorkerLoader,
   parse: parseTerrain
-} as const satisfies LoaderWithParser<any, never, TerrainLoaderOptions>;
+} as const satisfies LoaderWithParser<Mesh, never, TerrainLoaderOptions>;
 
+/**
+ * Loader for height-map terrain meshes as Apache Arrow tables.
+ */
+export const TerrainArrowLoader = {
+  ...TerrainWorkerLoader,
+  dataType: null as unknown as MeshArrowTable,
+  batchType: null as never,
+  worker: false,
+  parse: parseTerrainArrow
+} as const satisfies LoaderWithParser<MeshArrowTable, never, TerrainLoaderOptions>;
+
+/**
+ * Parse a height-map terrain image as a mesh.
+ * @param arrayBuffer Encoded height-map image bytes.
+ * @param options Terrain loader options.
+ * @param context Loader context used to parse the image payload.
+ * @returns Terrain mesh reconstructed from the image.
+ */
 export async function parseTerrain(
   arrayBuffer: ArrayBuffer,
   options?: TerrainLoaderOptions,
   context?: LoaderContext
-) {
+): Promise<Mesh> {
   const loadImageOptions = {
     ...options,
     core: {...options?.core, mimeType: 'application/x.image'},
@@ -37,6 +60,16 @@ export async function parseTerrain(
   const terrainOptions = {...TerrainLoader.options.terrain, ...options?.terrain} as TerrainOptions;
   // @ts-expect-error TODO - fix typing
   return makeTerrainMeshFromImage(image, terrainOptions);
+}
+
+/** Parse a height-map terrain mesh as an Apache Arrow table. */
+async function parseTerrainArrow(
+  arrayBuffer: ArrayBuffer,
+  options?: TerrainLoaderOptions,
+  context?: LoaderContext
+): Promise<MeshArrowTable> {
+  const mesh = await parseTerrain(arrayBuffer, options, context);
+  return convertMeshToTable(mesh, 'arrow-table');
 }
 
 // QuantizedMeshLoader
@@ -51,4 +84,25 @@ export const QuantizedMeshLoader = {
   parseSync: (arrayBuffer, options) => parseQuantizedMesh(arrayBuffer, options?.['quantized-mesh']),
   parse: async (arrayBuffer, options) =>
     parseQuantizedMesh(arrayBuffer, options?.['quantized-mesh'])
-} as const satisfies LoaderWithParser<any, never, QuantizedMeshLoaderOptions>;
+} as const satisfies LoaderWithParser<Mesh, never, QuantizedMeshLoaderOptions>;
+
+/**
+ * Loader for quantized meshes as Apache Arrow tables.
+ */
+export const QuantizedMeshArrowLoader = {
+  ...QuantizedMeshWorkerLoader,
+  dataType: null as unknown as MeshArrowTable,
+  batchType: null as never,
+  worker: false,
+  parseSync: parseQuantizedMeshArrow,
+  parse: async (arrayBuffer, options) => parseQuantizedMeshArrow(arrayBuffer, options)
+} as const satisfies LoaderWithParser<MeshArrowTable, never, QuantizedMeshLoaderOptions>;
+
+/** Parse a quantized mesh as an Apache Arrow table. */
+function parseQuantizedMeshArrow(
+  arrayBuffer: ArrayBuffer,
+  options?: QuantizedMeshLoaderOptions
+): MeshArrowTable {
+  const mesh = parseQuantizedMesh(arrayBuffer, options?.['quantized-mesh']);
+  return convertMeshToTable(mesh, 'arrow-table');
+}

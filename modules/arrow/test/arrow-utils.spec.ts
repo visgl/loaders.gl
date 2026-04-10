@@ -473,6 +473,53 @@ test('ArrowUtils#validateArrowTableSchema validates expected Arrow schema fields
     /record_id: expected type/,
     'rejects fields with the wrong Arrow type id'
   );
+
+  const wrongNestedTypeTable = createArrowTable(
+    new arrow.Schema([
+      new arrow.Field(
+        RECORD_ID_FIELD,
+        new arrow.List(new arrow.Field('value', new arrow.Float32())),
+        false
+      ),
+      new arrow.Field(DISPLAY_NAME_FIELD, new arrow.Utf8(), true)
+    ]),
+    {
+      [RECORD_ID_FIELD]: arrow.vectorFromArray(
+        [[1]],
+        new arrow.List(new arrow.Field('value', new arrow.Float32()))
+      ),
+      [DISPLAY_NAME_FIELD]: arrow.vectorFromArray(['Example record'], new arrow.Utf8())
+    }
+  );
+  const nestedExpectedSchema = new arrow.Schema([
+    new arrow.Field(
+      RECORD_ID_FIELD,
+      new arrow.List(new arrow.Field('value', new arrow.Int32())),
+      false
+    ),
+    new arrow.Field(DISPLAY_NAME_FIELD, new arrow.Utf8(), true)
+  ]);
+  t.throws(
+    () => validateArrowTableSchema(wrongNestedTypeTable, nestedExpectedSchema),
+    /record_id: expected type List<Int32> .* got List<Float32>/,
+    'rejects fields with the wrong nested Arrow type'
+  );
+
+  const wrongNullabilityTable = createArrowTable(
+    new arrow.Schema([
+      new arrow.Field(RECORD_ID_FIELD, new arrow.Utf8(), true),
+      new arrow.Field(DISPLAY_NAME_FIELD, new arrow.Utf8(), true)
+    ]),
+    {
+      [RECORD_ID_FIELD]: arrow.vectorFromArray(['record-1'], new arrow.Utf8()),
+      [DISPLAY_NAME_FIELD]: arrow.vectorFromArray(['Example record'], new arrow.Utf8())
+    }
+  );
+  t.throws(
+    () => validateArrowTableSchema(wrongNullabilityTable, expectedSchema),
+    /record_id: expected nullable=false, got nullable=true/,
+    'rejects fields with wrong nullability'
+  );
   t.end();
 });
 

@@ -14,6 +14,15 @@ npm install @loaders.gl/terrain
 npm install @loaders.gl/core
 ```
 
+## Loaders
+
+| Loader                     | Description                                         |
+| -------------------------- | --------------------------------------------------- |
+| `TerrainArrowLoader`       | Loads height-map terrain as a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| `QuantizedMeshArrowLoader` | Loads quantized mesh terrain as a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| `TerrainLoader`            | Loads height-map terrain as a Mesh.                 |
+| `QuantizedMeshLoader`      | Loads quantized mesh terrain as a Mesh.             |
+
 ## Attribution
 
 The `QuantizedMeshLoader` is a fork of
