@@ -41,6 +41,8 @@ const transitionInterpolator = new LinearInterpolator(['rotationOrbit']);
 type AppProps = {
   /** Controls which examples are shown */
   format?: string;
+  /** Whether to show the example controls, metadata, and descriptive overlay. */
+  showChrome?: boolean;
   /** Show tile borders */
   showTileBorders?: boolean;
   /** On tiles load */
@@ -93,6 +95,7 @@ export default function App(props: AppProps = {}) {
       <ExamplePanel
         examples={EXAMPLES}
         format={props.format}
+        showChrome={props.showChrome}
         onExampleChange={onExampleChange}
       >
         {props.children}

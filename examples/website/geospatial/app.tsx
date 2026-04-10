@@ -25,6 +25,7 @@ import {GeoParquetLoader, preloadCompressions} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
+import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 // import {GeoPackageLoader} from '@loaders.gl/geopackage'; // GeoPackage depends on sql.js which has bundling issues in docusuarus.
 
 // Needed for ParquetLoader zstd support
@@ -41,7 +42,8 @@ const LOADERS = [
   ShapefileLoader,
   KMLLoader,
   GPXLoader,
-  TCXLoader
+  TCXLoader,
+  GeoJSONLoader
 ] as const;
 
 const LOADER_OPTIONS = {
@@ -104,6 +106,8 @@ export const INITIAL_VIEW_STATE = {
 type AppProps = {
   /** Controls which examples are shown */
   format?: string;
+  /** Whether to show the example controls, metadata, and descriptive overlay. */
+  showChrome?: boolean;
   /** Any informational text to display in the overlay */
   children?: React.Children;
 };
@@ -120,7 +124,7 @@ type AppState = {
 /**
  * A Geospatial table map viewer
  */
-export default function App(props: AppProps) {
+export default function App(props: AppProps = {}) {
   const [state, setState] = useState<AppState>({
     table: null,
     viewState: INITIAL_VIEW_STATE,
@@ -137,6 +141,7 @@ export default function App(props: AppProps) {
         initialCategoryName={INITIAL_LOADER_NAME}
         initialExampleName={INITIAL_EXAMPLE_NAME}
         format={props.format}
+        showChrome={props.showChrome}
         onExampleChange={onExampleChange}
       >
         {props.children}
