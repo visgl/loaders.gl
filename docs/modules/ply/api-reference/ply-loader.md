@@ -1,11 +1,13 @@
 # PLYLoader
 
-The `PLYLoader` parses simple meshes in the Polygon File Format or the Stanford Triangle Format.
+The `PLYArrowLoader` parses simple meshes in the Polygon File Format or the Stanford Triangle Format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+`PLYLoader` parses the same PLY format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
 | File Format           | [PLY](/docs/modules/ply/formats/ply)       |
-| Data Format           | [Mesh](/docs/specifications/category-mesh) |
+| Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
 | File Extension        | `.ply`                                     |
 | File Type             | Binary/Text                                |
 | Decoder Type          | Synchronous                                |
@@ -15,9 +17,10 @@ The `PLYLoader` parses simple meshes in the Polygon File Format or the Stanford 
 ## Usage
 
 ```typescript
-import {PLYLoader} from '@loaders.gl/ply';
+import {PLYArrowLoader, PLYLoader} from '@loaders.gl/ply';
 import {load} from '@loaders.gl/core';
 
+const table = await load(url, PLYArrowLoader, options);
 const data = await load(url, PLYLoader, options);
 ```
 

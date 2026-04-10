@@ -9,6 +9,13 @@ npm install @loaders.gl/pcd
 npm install @loaders.gl/core
 ```
 
+## Loaders
+
+| Loader                                                        | Description                                  |
+| ------------------------------------------------------------- | -------------------------------------------- |
+| [`PCDArrowLoader`](/docs/modules/pcd/api-reference/pcd-loader) | Loads PCD point clouds as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader)      | Loads PCD point clouds as Mesh objects.      |
+
 ## Attribution
 
 PCDLoader is a fork of the THREE.js PCDLoader under MIT License. The forked THREE.js source files contained the following attributions:
