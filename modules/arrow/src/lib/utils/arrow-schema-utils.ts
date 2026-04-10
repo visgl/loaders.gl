@@ -22,8 +22,8 @@ function formatSchemaFieldNames(fields: arrow.Field[]): string {
 }
 
 /**
- * Validates that an Arrow table matches an expected schema by field order, field name, and Arrow
- * type id.
+ * Validates that an Arrow table matches an expected schema by field order, field name, Arrow type,
+ * and field nullability.
  *
  * Extra trailing fields are accepted by default so clients can tolerate additive schema changes.
  * Set `rejectExtraFields` to require an exact field count.
@@ -66,13 +66,34 @@ export function validateArrowTableSchema<T extends arrow.TypeMap>(
       );
     }
     if (expected.type.typeId !== actual.type.typeId) {
+      throw new Error(getFieldTypeValidationError(expected, actual, schemaPrefix));
+    }
+    if (expected.type.toString() !== actual.type.toString()) {
+      throw new Error(getFieldTypeValidationError(expected, actual, schemaPrefix));
+    }
+    if (expected.nullable !== actual.nullable) {
       throw new Error(
-        `${schemaPrefix}${expected.name}: expected type ${expected.type.typeId}, got ${actual.type.typeId}`
+        `${schemaPrefix}${expected.name}: expected nullable=${expected.nullable}, got nullable=${actual.nullable}`
       );
     }
   }
 
   return table as arrow.Table<T>;
+}
+
+/**
+ * Builds a detailed field type validation error for an Arrow field mismatch.
+ */
+function getFieldTypeValidationError(
+  expectedField: arrow.Field,
+  actualField: arrow.Field,
+  schemaPrefix: string
+): string {
+  return (
+    `${schemaPrefix}${expectedField.name}: expected type ${expectedField.type.toString()} ` +
+    `(type id ${expectedField.type.typeId}), got ${actualField.type.toString()} ` +
+    `(type id ${actualField.type.typeId})`
+  );
 }
 
 /**

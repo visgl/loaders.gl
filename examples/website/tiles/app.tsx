@@ -40,6 +40,8 @@ const INITIAL_VIEW_STATE = {latitude: 47.65, longitude: 7, zoom: 2, maxZoom: 20}
 type AppProps = {
   /** Controls which examples are shown */
   format?: string;
+  /** Whether to hide the example controls, metadata, and descriptive overlay. */
+  hideChrome?: boolean;
   /** Show tile borders */
   showTileBorders?: boolean;
   /** On tiles load */
@@ -109,6 +111,7 @@ export default function App(props: AppProps = {}) {
         title="Tileset Metadata"
         examples={EXAMPLES}
         format={props.format}
+        hideChrome={props.hideChrome}
         initialCategoryName={INITIAL_CATEGORY_NAME}
         initialExampleName={INITIAL_EXAMPLE_NAME}
         onExampleChange={onExampleChange}
@@ -133,7 +136,7 @@ export default function App(props: AppProps = {}) {
         getTooltip={getTooltip}
       >
         <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
-        <Attributions attributions={metadata?.attributions} />
+        {!props.hideChrome && <Attributions attributions={metadata?.attributions} />}
       </DeckGL>
     </div>
   );

@@ -4,6 +4,8 @@ import {validateLoader} from 'test/common/conformance';
 
 import {DracoArrowLoader} from '@loaders.gl/draco';
 import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/schema';
 import draco3d from 'draco3d';
 
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
@@ -25,6 +27,7 @@ test('DracoArrowLoader#parse(mainthread)', async t => {
   const table = await load(BUNNY_DRC_URL, DracoArrowLoader, {worker: false});
   // validateMeshCategoryData(t, data);
   const {data} = table;
+  validateDracoMeshArrowTable(t, table);
   t.equal(data.numRows, 104502 / 3, 'number of rows is correct');
   const positions = data.getChild('POSITION')!;
   t.ok(positions, 'POSITION attribute was found');
@@ -44,6 +47,7 @@ test('DracoArrowLoader#draco3d npm package', async t => {
   });
   const {data} = table;
   // validateMeshCategoryData(t, data);
+  validateDracoMeshArrowTable(t, table);
   t.ok(data.getChild('POSITION'), 'POSITION attribute was found');
   t.end();
 });
@@ -55,6 +59,7 @@ test('DracoArrowLoader#parse custom attributes(mainthread)', async t => {
   let table = await load(CESIUM_TILE_URL, DracoArrowLoader, {
     worker: false
   });
+  validateDracoMeshArrowTable(t, table);
   const {data} = table;
   t.equal(
     data.getChild('CUSTOM_ATTRIBUTE_2')?.data[0].length,
@@ -76,6 +81,7 @@ test('DracoArrowLoader#parse custom attributes(mainthread)', async t => {
       }
     }
   });
+  validateDracoMeshArrowTable(t, table);
   t.equal(
     table.data.getChild('Intensity')?.data[0].length,
     173210,
@@ -100,4 +106,18 @@ function skipBrowserDracoWasmTest(t) {
     return true;
   }
   return false;
+}
+
+/**
+ * Validates a Draco Arrow mesh table against the shared Mesh or IndexedMesh Arrow schema.
+ */
+function validateDracoMeshArrowTable(t, table) {
+  const expectedSchema = table.data.getChild('indices') ? indexedMeshArrowSchema : meshArrowSchema;
+  t.doesNotThrow(
+    () =>
+      validateArrowTableSchema(table.data, expectedSchema, {
+        schemaName: 'DracoArrowLoader Mesh table'
+      }),
+    'Draco Arrow table matches the expected mesh Arrow schema'
+  );
 }

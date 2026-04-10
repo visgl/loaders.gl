@@ -244,7 +244,7 @@ const sourceTags = {
   MLTSource: 'Web Service',
   MVTSource: 'Cloud Archive',
   PMTilesSource: 'Cloud Archive',
-  TableTileSource: 'Computed',
+  TableTileSource: 'Generated',
   WMSSource: 'Web Service'
 };
 
@@ -1067,6 +1067,7 @@ export default function Concepts() {
                 <VerticalConnector $label="Create a Data Source" />
                 <DataSourceNode $background="rgba(53, 173, 107, 0.12)" $border="rgba(53, 173, 107, 0.55)">
                   <span>createDataSource()</span>
+                  <TinyLabel>{selectedSourceTab.dataSource}</TinyLabel>
                 </DataSourceNode>
                 <VerticalConnector $label="Incrementally Load Data" />
                 <DataSourceNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">

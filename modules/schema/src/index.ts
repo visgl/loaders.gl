@@ -42,11 +42,16 @@ export type {
 export type {
   MeshTable,
   MeshArrowTable,
+  MeshArrowColumns,
+  IndexedMeshArrowColumns,
+  MeshArrowTableData,
+  IndexedMeshArrowTableData,
   Mesh,
   MeshGeometry,
   MeshAttribute,
   MeshAttributes
 } from './categories/category-mesh';
+export {meshArrowSchema, indexedMeshArrowSchema} from './categories/category-mesh';
 
 // TEXTURES
 export type {

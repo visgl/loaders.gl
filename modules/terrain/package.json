@@ -52,6 +52,7 @@
     "@loaders.gl/images": "4.4.0",
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
     "@mapbox/martini": "^0.2.0"
   },
   "peerDependencies": {

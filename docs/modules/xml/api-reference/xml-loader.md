@@ -53,10 +53,12 @@ Unstructured, untyped data in the form a tree of JavaScrip objects representing 
 | ------------------ | --------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `uncapitalizeKeys` | `boolean` | `false` | XML tags are typically "PascalCase", JavaScript and JSON prefers "camelCase" fields. This setting uncapitalizes all keys in the parsed data (e.g. `ValueList` => `valueList`).        |
 | `removeNSPrefix`   | `boolean` | `false` | XML tags sometimes have namespace prefixes. These namespaces are inconvenient in JavaScript field names and can be stripped by setting this option (e.g. `ogc:Feature` -> `Feature`). |
+| `_parser`          | `string`  | `'fast-xml-parser'` | Experimental. Selects the XML parser implementation. Use `'internal'` to test the loaders.gl internal parser. |
 
 Remarks:
 
 - It is possible to pass options to the underlying parser, currently `fast-xml-parser`, however there are no guarantees that loaders.gl will continue to use this underlying parser or continue to support those options.
+- The internal parser is experimental and opt-in. It is intended to eventually replace the default parser, but the default parser remains `fast-xml-parser` until compatibility has been validated.
 
 ## Attributions
 

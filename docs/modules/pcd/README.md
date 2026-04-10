@@ -9,6 +9,14 @@ npm install @loaders.gl/pcd
 npm install @loaders.gl/core
 ```
 
+## Loaders and Writers
+
+| Loader or Writer                                              | Description                                  |
+| ------------------------------------------------------------- | -------------------------------------------- |
+| [`PCDArrowLoader`](/docs/modules/pcd/api-reference/pcd-loader) | Loads PCD point clouds as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader)      | Loads PCD point clouds as Mesh objects.      |
+| [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer)      | Writes Mesh or Mesh Arrow table point clouds as ASCII PCD text. |
+
 ## Attribution
 
 PCDLoader is a fork of the THREE.js PCDLoader under MIT License. The forked THREE.js source files contained the following attributions:

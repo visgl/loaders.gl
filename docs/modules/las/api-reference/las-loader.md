@@ -5,14 +5,16 @@ The `@loaders.gl/las` module only supports LAS/lAZ files up to LAS v1.3. It does
 For more detail, see the discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
 :::
 
-The `LASLoader` parses a point cloud in the LASER file format.
+The `LASArrowLoader` parses a point cloud in the LASER file format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+`LASLoader` parses the same LAS/LAZ format and returns the legacy [PointCloud](/docs/specifications/category-mesh) object.
 
 | Loader                | Characteristic                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | File Extension        | `.las`, `.laz`                                                                                                           |
 | File Type             | Binary                                                                                                                   |
 | File Format           | [LASER file format](https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities) |
-| Data Format           | [PointCloud](/docs/specifications/category-mesh)                                                                         |
+| Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [PointCloud](/docs/specifications/category-mesh) |
 | Decoder Type          | Synchronous                                                                                                              |
 | Worker Thread Support | Yes                                                                                                                      |
 | Streaming Support     | No                                                                                                                       |
@@ -20,9 +22,10 @@ The `LASLoader` parses a point cloud in the LASER file format.
 ## Usage
 
 ```typescript
-import {LASLoader} from '@loaders.gl/las';
+import {LASArrowLoader, LASLoader} from '@loaders.gl/las';
 import {load} from '@loaders.gl/core';
 
+const table = await load(url, LASArrowLoader, options);
 const data = await load(url, LASLoader, options);
 ```
 

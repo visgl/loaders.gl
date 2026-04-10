@@ -8,6 +8,8 @@ import {validateLoader} from 'test/common/conformance';
 
 import {PCDArrowLoader} from '@loaders.gl/pcd';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {meshArrowSchema} from '@loaders.gl/schema';
 
 const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
 // const PCD_BINARY_URL = '@loaders.gl/pcd/test/data/Zaghetto.pcd';
@@ -24,8 +26,9 @@ test('PCDArrowLoader#loader conformance', t => {
 test('PCDArrowLoader#parse(text)', async t => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDArrowLoader);
 
-  // TODO - validate arrow mesh category data?
-  // validateMeshCategoryData(t, arrowTable);
+  validateArrowTableSchema(arrowTable.data, meshArrowSchema, {
+    schemaName: 'PCDArrowLoader Mesh table'
+  });
 
   const {data} = arrowTable;
   t.equal(data.schema.fields.length, 2, 'schema field count is correct');

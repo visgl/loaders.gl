@@ -36,6 +36,7 @@ const config = {
         docs: {
           path: '../docs',
           sidebarPath: resolve('./src/docs-sidebar.js'),
+          docItemComponent: resolve('./src/components/docs/doc-item.tsx'),
           // Point to to the website directory in your repo.
           editUrl: 'https://github.com/visgl/loaders.gl/tree/master/website'
         },
