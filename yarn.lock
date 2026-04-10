@@ -4647,7 +4647,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/csv@workspace:modules/csv":
+"@loaders.gl/csv@npm:^4.4.0, @loaders.gl/csv@workspace:modules/csv":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/csv@workspace:modules/csv"
   dependencies:
@@ -24302,6 +24302,7 @@ __metadata:
     "@fortawesome/free-solid-svg-icons": "npm:^5.15.2"
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
     "@loaders.gl/core": "npm:^4.4.0"
+    "@loaders.gl/csv": "npm:^4.4.0"
     "@loaders.gl/geopackage": "npm:^4.4.0"
     "@loaders.gl/i3s": "npm:^4.4.0"
     "@loaders.gl/las": "npm:^4.4.0"
@@ -24322,6 +24323,7 @@ __metadata:
     "@turf/turf": "npm:^6.5.0"
     babel-plugin-styled-components: "npm:~2.0.0"
     d3-color: "npm:^3.1.0"
+    d3-dsv: "npm:^1.2.0"
     d3-request: "npm:^1.0.6"
     d3-scale: "npm:^3.2.1"
     docusaurus-mdx-checker: "npm:^3.0.0"
@@ -24330,6 +24332,7 @@ __metadata:
     mapbox-gl: "npm:empty-npm-package@1.0.0"
     maplibre-gl: "npm:^2.4.0"
     marked: "npm:^0.7.0"
+    papaparse: "npm:^5.5.3"
     prism-react-renderer: "npm:^2.3.1"
     react: "npm:^18.2.0"
     react-color: "npm:^2.19.3"
@@ -24338,6 +24341,7 @@ __metadata:
     sql.js: "npm:1.8.0"
     styled-components: "npm:^5.3.3"
     ts-node: "npm:~10.9.1"
+    udsv: "npm:^0.7.3"
     zstd-codec: "npm:^0.1.4"
   languageName: unknown
   linkType: soft

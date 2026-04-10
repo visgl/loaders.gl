@@ -1,3 +1,5 @@
+import BrowserOnly from '@docusaurus/BrowserOnly';
+
 # CSVLoader
 
 Streaming loader for comma-separated value and [delimiter-separated value](https://en.wikipedia.org/wiki/Delimiter-separated_values) encoded files.
@@ -86,3 +88,12 @@ For the default `csv.dynamicTyping: false` path, `CSVArrowLoader.parse(ArrayBuff
 | `csv.comments`          | `boolean`             | `false`                  | Skip lines that start with a comment indicator.                                                                              |
 | `csv.skipEmptyLines`    | `boolean \| 'greedy'` | `true`                   | Skip empty lines; `'greedy'` also skips lines that only contain whitespace.                                                  |
 | `csv.delimitersToGuess` | `string[]`            | `[',', '\t', '\|', ';']` | Delimiters to try when no delimiter is specified.                                                                            |
+
+## Live Benchmarks
+
+<BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
+  {() => {
+    const BenchmarksApp = require('@site/src/examples/benchmarks-app').default;
+    return <BenchmarksApp />;
+  }}
+</BrowserOnly>

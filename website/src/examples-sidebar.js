@@ -64,13 +64,13 @@ export const sidebars = {
         'textures',
         // 'gltf',
       ]
+    },
+    {
+      type: 'category',
+      label: 'Benchmarks',
+      items: [
+        'benchmarks',
+      ]
     }
-    // {
-    //   type: 'category',
-    //   label: 'Benchmarks',
-    //   items: [
-    //     'benchmarks',
-    //   ]
-    // }
   ]
 };
