@@ -76,7 +76,10 @@ function getAttributeTypedArray(attributeData: arrow.Vector, size: number): any 
   for (const data of attributeData.data) {
     const child = data.children[0];
     const sourceLength = data.length * size;
-    const source = child.values.subarray(0, sourceLength);
+    const sourceOffset = child.offset || data.offset * size;
+    // Arrow chunks can either slice child values eagerly or retain offsets into the source buffer.
+    const sourceStart = sourceOffset + sourceLength <= child.values.length ? sourceOffset : 0;
+    const source = child.values.subarray(sourceStart, sourceStart + sourceLength);
     typedArray.set(source, targetOffset);
     targetOffset += sourceLength;
   }

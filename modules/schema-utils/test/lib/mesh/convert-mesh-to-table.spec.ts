@@ -91,6 +91,46 @@ test('convertMeshToTable#indexed mesh Arrow table round trip', t => {
   t.end();
 });
 
+test('convertTableToMesh#honors FixedSizeList chunk offsets', t => {
+  const attributes = {
+    POSITION: {
+      value: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      size: 3
+    }
+  };
+  const mesh: Mesh = {
+    schema: deduceMeshSchema(attributes, {topology: 'point-list', mode: '0'}),
+    attributes,
+    topology: 'point-list',
+    mode: 0
+  };
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  const positionColumn = table.data.getChild('POSITION') as arrow.Vector<arrow.FixedSizeList>;
+  const positionData = positionColumn.data[0];
+  const offsetPositionData = new arrow.Data<arrow.FixedSizeList>(
+    positionData.type,
+    1,
+    2,
+    positionData.nullCount,
+    positionData,
+    positionData.children
+  );
+  const offsetTable = new arrow.Table(table.data.schema, {
+    POSITION: new arrow.Vector([offsetPositionData])
+  });
+
+  const roundTripMesh = convertTableToMesh({...table, data: offsetTable});
+
+  t.deepEqual(
+    Array.from(roundTripMesh.attributes.POSITION.value),
+    [1, 0, 0, 0, 1, 0],
+    'round trip uses the chunk offset when flattening values'
+  );
+  t.equal(roundTripMesh.attributes.POSITION.size, 3, 'round trip preserves position size');
+
+  t.end();
+});
+
 function makeMesh(indices?: Uint16Array): Mesh {
   const attributes = {
     POSITION: {
