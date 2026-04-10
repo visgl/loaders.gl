@@ -54,7 +54,12 @@ const StatsWidgetContainer = styled.div`
   }
 `;
 
-export default class App extends PureComponent {
+type AppProps = {
+  /** Whether to hide the example controls, statistics, and descriptive overlay. */
+  hideChrome?: boolean;
+};
+
+export default class App extends PureComponent<AppProps> {
   constructor(props) {
     super(props);
 
@@ -82,21 +87,23 @@ export default class App extends PureComponent {
   }
 
   componentDidMount() {
-    const container = this._statsWidgetContainer;
-    // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
-    // TODO - Revisit after upgrade luma to use most recent StatsWidget API
-    this._memWidget = new StatsWidget(luma.stats.get('Memory Usage'), {
-      framesPerUpdate: 1,
-      formatters: {
-        'GPU Memory': 'memory',
-        'Buffer Memory': 'memory',
-        'Renderbuffer Memory': 'memory',
-        'Texture Memory': 'memory'
-      },
-      container
-    });
+    if (!this.props.hideChrome) {
+      const container = this._statsWidgetContainer;
+      // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
+      // TODO - Revisit after upgrade luma to use most recent StatsWidget API
+      this._memWidget = new StatsWidget(luma.stats.get('Memory Usage'), {
+        framesPerUpdate: 1,
+        formatters: {
+          'GPU Memory': 'memory',
+          'Buffer Memory': 'memory',
+          'Renderbuffer Memory': 'memory',
+          'Texture Memory': 'memory'
+        },
+        container
+      });
 
-    this._tilesetStatsWidget = new StatsWidget(null, {container});
+      this._tilesetStatsWidget = new StatsWidget(null, {container});
+    }
 
     this._loadExampleIndex();
 
@@ -146,8 +153,8 @@ export default class App extends PureComponent {
 
   // Updates stats, called every frame
   _updateStatWidgets() {
-    this._memWidget.update();
-    this._tilesetStatsWidget.update();
+    this._memWidget?.update();
+    this._tilesetStatsWidget?.update();
   }
 
   // Called by ControlPanel when user selects a new example
@@ -163,7 +170,7 @@ export default class App extends PureComponent {
   // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
     this.setState({tileset});
-    this._tilesetStatsWidget.setStats(tileset.stats);
+    this._tilesetStatsWidget?.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
   }
 
@@ -263,8 +270,8 @@ export default class App extends PureComponent {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderStats()}
-        {this._renderControlPanel()}
+        {!this.props.hideChrome && this._renderStats()}
+        {!this.props.hideChrome && this._renderControlPanel()}
         <DeckGL
           layers={[tile3DLayer]}
           viewState={viewState}
