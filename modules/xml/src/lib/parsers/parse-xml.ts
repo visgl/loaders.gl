@@ -4,6 +4,7 @@
 
 import type {SAXParserOptions} from '../../sax-ts/sax';
 import {StreamingXMLParser} from './streaming-xml-parser';
+import {parseXMLInternal} from './parse-xml-internal';
 import {uncapitalizeKeys} from '../xml-utils/uncapitalize';
 import {XMLParser as FastXMLParser} from 'fast-xml-parser';
 import type {X2jOptions} from 'fast-xml-parser';
@@ -15,8 +16,8 @@ export type ParseXMLOptions = {
   textNodeName?: string;
   arrayPaths?: string[];
 
-  // NOTE: Only fast-xml-parser is implemented
-  _parser?: 'fast-xml-parser' | 'sax';
+  /** Selects the XML parser implementation. */
+  _parser?: 'fast-xml-parser' | 'sax' | 'internal';
   /** @deprecated Experimental, passes options to fast-xml-parser, IF it is being used */
   _fastXML?: _FastParseXMLOptions;
   /** @deprecated Experimental, passes options to the SAX XML parser, IF it is being used. */
@@ -27,6 +28,11 @@ export type ParseXMLOptions = {
 export type _FastParseXMLOptions = Partial<X2jOptions>;
 
 export function parseXMLSync(text: string, options?: ParseXMLOptions): any {
+  if (options?._parser === 'internal' || options?._parser === 'sax') {
+    const xml = parseXMLInternal(text, options);
+    return options?.uncapitalizeKeys ? uncapitalizeKeys(xml) : xml;
+  }
+
   if (options?._parser && options._parser !== 'fast-xml-parser') {
     throw new Error(options?._parser);
   }

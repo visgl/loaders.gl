@@ -8,11 +8,14 @@ const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
+const siteUrl = process.env.DOCUSAURUS_URL || 'https://loaders.gl';
+const baseUrl = process.env.DOCUSAURUS_BASE_URL || '/';
+
 const config = {
   title: 'loaders.gl',
   tagline: 'A collection of loaders modules for Geospatial and 3D visualization use cases',
-  url: 'https://loaders.gl',
-  baseUrl: '/',
+  url: siteUrl,
+  baseUrl,
   onBrokenLinks: 'warn',
   favicon: '/favicon.png',
   organizationName: 'visgl', // Usually your GitHub org/user name.
