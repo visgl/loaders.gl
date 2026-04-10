@@ -43,3 +43,24 @@ test('LASWriter#encode plain and Arrow mesh data', async t => {
   t.equal(arrowData.attributes.POSITION.value.length, 9, 'Arrow POSITION attribute roundtripped');
   t.end();
 });
+
+test('LASWriter#preserves normalized byte colors', async t => {
+  const colorAttributes = {
+    POSITION: attributes.POSITION,
+    COLOR_0: {value: new Uint8Array([128, 255, 0]), size: 3, normalized: true}
+  };
+  const colorMesh = {
+    attributes: colorAttributes,
+    topology: 'point-list' as const,
+    mode: 0,
+    schema: deduceMeshSchema(colorAttributes, {topology: 'point-list', mode: '0'})
+  };
+
+  const arrayBuffer = await encode(colorMesh, LASWriter);
+  const dataView = new DataView(arrayBuffer);
+
+  t.equal(dataView.getUint16(227 + 20, true), 32896, 'red channel preserves normalized byte value');
+  t.equal(dataView.getUint16(227 + 22, true), 65535, 'green channel preserves max byte value');
+  t.equal(dataView.getUint16(227 + 24, true), 0, 'blue channel preserves zero byte value');
+  t.end();
+});

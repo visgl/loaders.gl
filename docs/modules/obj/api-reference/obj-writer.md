@@ -1,5 +1,11 @@
 # OBJWriter
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/-EXPERIMENTAL-orange.svg?style=flat-square" alt="EXPERIMENTAL" />
+</p>
+
 The `OBJWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) data as Wavefront OBJ text.
 
 | Writer         | Characteristic                                                                                 |

@@ -200,8 +200,41 @@ function getLASColor(
   componentIndex: number
 ): number {
   const value = getComponent(attribute, vertexIndex, componentIndex);
-  const byteValue = attribute.normalized || value <= 1 ? value * 255 : value;
-  return Math.max(0, Math.min(65535, Math.round(byteValue * 257)));
+  if (attribute.normalized) {
+    return scaleNormalizedColor(attribute, value);
+  }
+
+  if (value <= 1) {
+    return clampUInt16(value * 65535);
+  }
+
+  if (value <= 255) {
+    return clampUInt16(value * 257);
+  }
+
+  return clampUInt16(value);
+}
+
+/** Return a normalized color component scaled to the LAS UInt16 color range. */
+function scaleNormalizedColor(attribute: MeshAttribute, value: number): number {
+  const componentMaximum = getComponentMaximum(attribute.value);
+  return clampUInt16((value / componentMaximum) * 65535);
+}
+
+/** Return the component maximum used by the color attribute's typed array. */
+function getComponentMaximum(values: MeshAttribute['value']): number {
+  if (values instanceof Uint8Array || values instanceof Uint8ClampedArray) {
+    return 255;
+  }
+  if (values instanceof Uint16Array) {
+    return 65535;
+  }
+  return 1;
+}
+
+/** Clamp a number to the LAS UInt16 range. */
+function clampUInt16(value: number): number {
+  return Math.max(0, Math.min(65535, Math.round(value)));
 }
 
 /** Compute a bounding box from position data. */

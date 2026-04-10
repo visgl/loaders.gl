@@ -1,15 +1,46 @@
 # What's New
 
-## v4.5
+## v5.0
 
-Release Date: TBD
+Release Date: 2026
 
 **Highlights**
 
-- **@loaders.gl/csv** - `CSVArrowLoader` is now the unified public Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
-- **@loaders.gl/csv** - `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
-- **@loaders.gl/csv** - New `CSVArrowWriter` writes Apache Arrow tables to CSV text.
-- **@loaders.gl/csv** - CSV benchmarks now separate typed and untyped comparisons and include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse.
+- **Documentation** - Interactive graphical docs explain loaders.gl concepts, loader pages have live previews.
+- **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables. 
+- **Benchmarks** - Now includes external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
+
+**Features**
+
+**@loaders.gl/draco**
+
+- [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer) now accepts plain `Mesh` data and Mesh Arrow tables in addition to existing Draco attribute-map input.
+
+**@loaders.gl/las** 
+
+- [`LASWriter`](/docs/modules/las/api-reference/las-writer) NEW -writes uncompressed LAS point cloud data.
+
+**@loaders.gl/obj**
+
+- [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer) NEW - writes Wavefront OBJ mesh data.
+
+**@loaders.gl/pcd**
+
+- [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer) NEW - writes ASCII Point Cloud Data (PCD).
+
+**@loaders.gl/ply**
+
+- [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
+
+**@loaders.gl/terrain**
+
+- [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) NEW - writes quantized mesh terrain data.
+
+**@loaders.gl/csv** 
+  
+- `CSVArrowLoader` NEW - is now the official Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
+- `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
+- `CSVArrowWriter` NEW writes Apache Arrow tables to CSV text.
 
 ## v4.4
 
@@ -22,7 +53,7 @@ Release Date: March 31, 2026
 - **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
 - **@loaders.gl/mvt** - New experimental [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
 
-**Minor Features**
+**Features**
 
 **All modules**
 

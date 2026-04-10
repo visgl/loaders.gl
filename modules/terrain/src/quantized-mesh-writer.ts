@@ -55,6 +55,7 @@ function encodeQuantizedMeshSync(
     boundingBox[1][1]
   ];
   const triangleIndices = getTriangleIndices(mesh, vertexCount);
+  const highWatermarkMesh = reorderMeshForHighWatermark(triangleIndices, vertexCount);
   const bytesPerIndex =
     vertexCount > 65536 ? Uint32Array.BYTES_PER_ELEMENT : Uint16Array.BYTES_PER_ELEMENT;
   const vertexDataLength =
@@ -75,9 +76,15 @@ function encodeQuantizedMeshSync(
     positionAttribute,
     vertexCount,
     boundingBox,
-    bounds
+    bounds,
+    sourceVertexIndices: highWatermarkMesh.sourceVertexIndices
   });
-  writeTriangleIndices(dataView, triangleDataOffset, triangleIndices, bytesPerIndex);
+  writeTriangleIndices(
+    dataView,
+    triangleDataOffset,
+    highWatermarkMesh.triangleIndices,
+    bytesPerIndex
+  );
   writeEmptyEdgeIndices(dataView, triangleDataOffset + triangleDataLength);
 
   return arrayBuffer;
@@ -140,6 +147,7 @@ function writeVertexData(
     vertexCount: number;
     boundingBox: [[number, number, number], [number, number, number]];
     bounds: [number, number, number, number];
+    sourceVertexIndices: number[];
   }
 ): void {
   const quantizedCoordinates = getQuantizedCoordinates(parameters);
@@ -156,6 +164,7 @@ function getQuantizedCoordinates(parameters: {
   vertexCount: number;
   boundingBox: [[number, number, number], [number, number, number]];
   bounds: [number, number, number, number];
+  sourceVertexIndices: number[];
 }): {u: Uint16Array; v: Uint16Array; height: Uint16Array} {
   const [minimumX, minimumY, maximumX, maximumY] = parameters.bounds;
   const heightMinimum = parameters.boundingBox[0][2];
@@ -165,18 +174,19 @@ function getQuantizedCoordinates(parameters: {
   const height = new Uint16Array(parameters.vertexCount);
 
   for (let vertexIndex = 0; vertexIndex < parameters.vertexCount; vertexIndex++) {
+    const sourceVertexIndex = parameters.sourceVertexIndices[vertexIndex];
     u[vertexIndex] = quantize(
-      getComponent(parameters.positionAttribute, vertexIndex, 0),
+      getComponent(parameters.positionAttribute, sourceVertexIndex, 0),
       minimumX,
       maximumX
     );
     v[vertexIndex] = quantize(
-      getComponent(parameters.positionAttribute, vertexIndex, 1),
+      getComponent(parameters.positionAttribute, sourceVertexIndex, 1),
       minimumY,
       maximumY
     );
     height[vertexIndex] = quantize(
-      getComponent(parameters.positionAttribute, vertexIndex, 2),
+      getComponent(parameters.positionAttribute, sourceVertexIndex, 2),
       heightMinimum,
       heightMaximum
     );
@@ -253,6 +263,38 @@ function getTriangleIndices(mesh: Mesh, vertexCount: number): number[] {
     triangleIndices.push(vertexIndex, vertexIndex + 1, vertexIndex + 2);
   }
   return triangleIndices;
+}
+
+/** Return vertices and indices reordered into first-reference order for high-watermark encoding. */
+function reorderMeshForHighWatermark(
+  triangleIndices: number[],
+  vertexCount: number
+): {triangleIndices: number[]; sourceVertexIndices: number[]} {
+  const remappedVertexIndices = new Map<number, number>();
+  const sourceVertexIndices: number[] = [];
+  const remappedTriangleIndices = triangleIndices.map(triangleIndex => {
+    if (!Number.isInteger(triangleIndex) || triangleIndex < 0 || triangleIndex >= vertexCount) {
+      throw new Error('QuantizedMeshWriter: triangle index is out of range');
+    }
+
+    const existingIndex = remappedVertexIndices.get(triangleIndex);
+    if (existingIndex !== undefined) {
+      return existingIndex;
+    }
+
+    const nextIndex = sourceVertexIndices.length;
+    remappedVertexIndices.set(triangleIndex, nextIndex);
+    sourceVertexIndices.push(triangleIndex);
+    return nextIndex;
+  });
+
+  for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
+    if (!remappedVertexIndices.has(vertexIndex)) {
+      sourceVertexIndices.push(vertexIndex);
+    }
+  }
+
+  return {triangleIndices: remappedTriangleIndices, sourceVertexIndices};
 }
 
 /** Return an aligned byte offset. */

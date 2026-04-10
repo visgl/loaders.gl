@@ -44,3 +44,18 @@ test('QuantizedMeshWriter#encode plain and Arrow mesh data', async t => {
   t.equal(arrowData.attributes.POSITION.value.length, 9, 'Arrow POSITION attribute roundtripped');
   t.end();
 });
+
+test('QuantizedMeshWriter#encodes non-sequential triangle indices', async t => {
+  const reorderedMesh = {
+    ...mesh,
+    indices: {value: new Uint32Array([0, 2, 1]), size: 1}
+  };
+  const options = {'quantized-mesh': {bounds: [0, 0, 1, 1]}};
+  const arrayBuffer = await encode(reorderedMesh, QuantizedMeshWriter, options);
+  const data = await parse(arrayBuffer, QuantizedMeshLoader, options);
+
+  validateMeshCategoryData(t, data);
+  t.equal(data.mode, 4, 'mode is TRIANGLES (4)');
+  t.equal(data.indices.value.length, 3, 'indices roundtripped');
+  t.end();
+});
