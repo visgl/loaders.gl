@@ -1,4 +1,4 @@
-# QuantizedMeshLoader
+# Quantized Mesh Loaders
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.2-blue.svg?style=flat-square" alt="From-v2.2" /> 
@@ -10,6 +10,11 @@ mesh][quantized_mesh] format.
 [quantized_mesh]: https://github.com/CesiumGS/quantized-mesh
 
 `QuantizedMeshLoader` parses the same quantized mesh format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+
+| Loader                      | Output             | Use when                           |
+| --------------------------- | ------------------ | ---------------------------------- |
+| `QuantizedMeshLoader`       | `Mesh`             | You want the legacy mesh object.   |
+| `QuantizedMeshArrowLoader`  | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |

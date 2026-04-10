@@ -1,8 +1,13 @@
-# PCDLoader
+# PCD Loaders
 
 The `PCDArrowLoader` loads point cloud data in the Point Cloud Data (PCD) format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
 `PCDLoader` parses the same PCD format and returns the legacy [PointCloud](/docs/specifications/category-mesh) object.
+
+| Loader           | Output             | Use when                                  |
+| ---------------- | ------------------ | ----------------------------------------- |
+| `PCDLoader`      | `PointCloud`       | You want the legacy point cloud object.   |
+| `PCDArrowLoader` | `Mesh Arrow table` | You want columnar point cloud attributes. |
 
 | Loader                | Characteristic                                     |
 | --------------------- | -------------------------------------------------- |
