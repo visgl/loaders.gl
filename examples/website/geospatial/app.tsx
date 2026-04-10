@@ -106,8 +106,8 @@ export const INITIAL_VIEW_STATE = {
 type AppProps = {
   /** Controls which examples are shown */
   format?: string;
-  /** Whether to show the example controls, metadata, and descriptive overlay. */
-  showChrome?: boolean;
+  /** Whether to hide the example controls, metadata, and descriptive overlay. */
+  hideChrome?: boolean;
   /** Any informational text to display in the overlay */
   children?: React.Children;
 };
@@ -141,7 +141,7 @@ export default function App(props: AppProps = {}) {
         initialCategoryName={INITIAL_LOADER_NAME}
         initialExampleName={INITIAL_EXAMPLE_NAME}
         format={props.format}
-        showChrome={props.showChrome}
+        hideChrome={props.hideChrome}
         onExampleChange={onExampleChange}
       >
         {props.children}

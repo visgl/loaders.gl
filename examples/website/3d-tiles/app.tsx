@@ -55,8 +55,8 @@ const StatsWidgetContainer = styled.div`
 `;
 
 type AppProps = {
-  /** Whether to show the example controls, statistics, and descriptive overlay. */
-  showChrome?: boolean;
+  /** Whether to hide the example controls, statistics, and descriptive overlay. */
+  hideChrome?: boolean;
 };
 
 export default class App extends PureComponent<AppProps> {
@@ -87,7 +87,7 @@ export default class App extends PureComponent<AppProps> {
   }
 
   componentDidMount() {
-    if (this.props.showChrome !== false) {
+    if (!this.props.hideChrome) {
       const container = this._statsWidgetContainer;
       // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
       // TODO - Revisit after upgrade luma to use most recent StatsWidget API
@@ -270,8 +270,8 @@ export default class App extends PureComponent<AppProps> {
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this.props.showChrome !== false && this._renderStats()}
-        {this.props.showChrome !== false && this._renderControlPanel()}
+        {!this.props.hideChrome && this._renderStats()}
+        {!this.props.hideChrome && this._renderControlPanel()}
         <DeckGL
           layers={[tile3DLayer]}
           viewState={viewState}

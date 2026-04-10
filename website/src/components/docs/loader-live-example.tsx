@@ -151,13 +151,13 @@ function LoaderLiveExampleContent({
 }) {
   switch (exampleConfig.kind) {
     case 'geospatial':
-      return <GeospatialExample format={exampleConfig.format} showChrome={false} />;
+      return <GeospatialExample format={exampleConfig.format} hideChrome={true} />;
     case 'pointcloud':
-      return <PointcloudExample format={exampleConfig.format} showChrome={false} />;
+      return <PointcloudExample format={exampleConfig.format} hideChrome={true} />;
     case 'tiles':
-      return <TilesExample format={exampleConfig.format} showChrome={false} />;
+      return <TilesExample format={exampleConfig.format} hideChrome={true} />;
     case '3d-tiles':
-      return <Tiles3DExample showChrome={false} />;
+      return <Tiles3DExample hideChrome={true} />;
     case 'table':
       return <TableExample config={exampleConfig.table} />;
     default:

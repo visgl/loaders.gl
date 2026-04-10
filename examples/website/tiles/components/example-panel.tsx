@@ -54,8 +54,8 @@ export type ExamplePanelProps = React.PropsWithChildren<{
   examples: Record<string, Record<string, Example>>;
   /** format of examples to show (filters out other formats if supplied) */
   format?: string;
-  /** Whether to show the example controls, metadata, and descriptive overlay. */
-  showChrome?: boolean;
+  /** Whether to hide the example controls, metadata, and descriptive overlay. */
+  hideChrome?: boolean;
   initialCategoryName?: string | null;
   initialExampleName?: string | null;
   onExampleChange: OnExampleChange;
@@ -92,7 +92,7 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
     droppedFile: null,
     exampleName: null,
     categoryName: null,
-    showChrome: true,
+    hideChrome: false,
     onExampleChange: () => {},
     ...props
   };
@@ -131,7 +131,7 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
     });
   }, [state.example]);
 
-  if (!props.showChrome) {
+  if (props.hideChrome) {
     return null;
   }
 
