@@ -3,25 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-// import {validateLoader} from 'test/common/conformance';
+import {readFile} from 'node:fs/promises';
 
 import {XMLLoader} from '@loaders.gl/xml';
-import {load} from '@loaders.gl/core';
 
-const FORECASTS_URL = '@loaders.gl/xml/test/data/forecasts.xml';
+const FORECASTS_URL = new URL('./data/forecasts.xml', import.meta.url);
 
-test('XMLLoader#forecasts.xml', async t => {
-  const json = await load(FORECASTS_URL, XMLLoader);
-
-  t.ok(json, 'got result');
-  t.equal(typeof json, 'object', 'parsed');
-  t.equal(json.WMT_MS_Capabilities.Capability.Layer.Layer[2].Name, 'world_rivers', 'contents');
-
-  t.end();
-});
-
-test('XMLLoader#internal parser#forecasts.xml', async t => {
-  const json = await load(FORECASTS_URL, XMLLoader, {xml: {_parser: 'internal'}});
+test('XMLLoader#internal parser#forecasts.xml (NODE)', async t => {
+  const text = await readFile(FORECASTS_URL, 'utf8');
+  const json = XMLLoader.parseTextSync?.(text, {xml: {_parser: 'internal'}});
 
   t.ok(json, 'got result');
   t.equal(typeof json, 'object', 'parsed');
@@ -30,11 +20,19 @@ test('XMLLoader#internal parser#forecasts.xml', async t => {
   t.end();
 });
 
-test('XMLLoader#internal parser#parity', t => {
+test('XMLLoader#internal parser#parity (NODE)', t => {
   const testCases = [
     {
       title: 'text-only node',
       xml: '<root><name>loaders.gl</name></root>'
+    },
+    {
+      title: 'numeric text-only node',
+      xml: '<root><distance>10</distance></root>'
+    },
+    {
+      title: 'boolean text-only node',
+      xml: '<root><enabled>true</enabled></root>'
     },
     {
       title: 'attributes',
