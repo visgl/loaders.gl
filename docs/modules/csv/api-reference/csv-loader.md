@@ -1,17 +1,26 @@
 import BrowserOnly from '@docusaurus/BrowserOnly';
 
-# CSVLoader
+# CSV Loaders
 
 Streaming loader for comma-separated value and [delimiter-separated value](https://en.wikipedia.org/wiki/Delimiter-separated_values) encoded files.
 
-| Loader         | Characteristic                                      |
+| Loader           | Output                                  | Use when                      |
+| ---------------- | --------------------------------------- | ----------------------------- |
+| `CSVLoader`      | `ObjectRowTable \| ArrayRowTable`       | You want JavaScript row data. |
+| `CSVArrowLoader` | `ArrowTable` with Apache Arrow columns. | You want columnar table data. |
+
+| Characteristic | Value                                               |
 | -------------- | --------------------------------------------------- |
 | File Format    | [CSV](/docs/modules/csv/formats/csv)                |
 | Data Format    | [Tables](/docs/specifications/category-table)       |
 | File Type      | Text                                                |
 | File Extension | `.csv`, `.tsv`, `.dsv`                              |
 | MIME Types     | `text/csv`, `text/tab-separated-values`, `text/dsv` |
-| Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`      |
+| Supported APIs | `load`, `parse`, `parseText`, `parseInBatches`      |
+
+## CSVLoader
+
+`CSVLoader` loads CSV and TSV data as loaders.gl row tables.
 
 ## Usage
 
@@ -30,8 +39,8 @@ A complication with the CSV format is that CSV files can come with or without an
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
-const data = await load(url_to_csv_with_header, CSVLoader, {csv: {header: true});
-const data = await load(url_to_csv_without_header, CSVLoader, {csv: {header: false});
+const data = await load(url_to_csv_with_header, CSVLoader, {csv: {header: true}});
+const data = await load(url_to_csv_without_header, CSVLoader, {csv: {header: false}});
 ```
 
 ## CSVLoader Options
@@ -51,16 +60,7 @@ const data = await load(url_to_csv_without_header, CSVLoader, {csv: {header: fal
 
 ## CSVArrowLoader
 
-`CSVArrowLoader` loads CSV and TSV data as Apache Arrow tables.
-
-| Loader         | Characteristic                                      |
-| -------------- | --------------------------------------------------- |
-| File Format    | [CSV](/docs/modules/csv/formats/csv)                |
-| Data Format    | [Arrow Tables](/docs/specifications/category-table) |
-| File Type      | Text                                                |
-| File Extension | `.csv`, `.tsv`, `.dsv`                              |
-| MIME Types     | `text/csv`, `text/tab-separated-values`, `text/dsv` |
-| Supported APIs | `load`, `parse`, `parseText`, `parseInBatches`      |
+`CSVArrowLoader` loads CSV and TSV data as loaders.gl `ArrowTable` objects that wrap Apache Arrow tables.
 
 By default, `CSVArrowLoader` emits Arrow `Utf8` columns and does not infer numeric, boolean, or date types. Set `csv.dynamicTyping: true` to opt into typed Arrow columns.
 

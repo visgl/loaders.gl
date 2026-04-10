@@ -1,8 +1,13 @@
-# OBJLoader
+# OBJ Loaders
 
 The `OBJArrowLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
 `OBJLoader` parses the same OBJ format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+
+| Loader           | Output             | Use when                           |
+| ---------------- | ------------------ | ---------------------------------- |
+| `OBJLoader`      | `Mesh`             | You want the legacy mesh object.   |
+| `OBJArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | Loader                | Characteristic                                                          |
 | --------------------- | ----------------------------------------------------------------------- |

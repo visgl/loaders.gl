@@ -1,4 +1,4 @@
-# LASLoader
+# LAS Loaders
 
 :::caution
 The `@loaders.gl/las` module only supports LAS/lAZ files up to LAS v1.3. It does not support LAS v1.4 files.
@@ -8,6 +8,11 @@ For more detail, see the discussion in [Github Issues](https://github.com/visgl/
 The `LASArrowLoader` parses a point cloud in the LASER file format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
 `LASLoader` parses the same LAS/LAZ format and returns the legacy [PointCloud](/docs/specifications/category-mesh) object.
+
+| Loader           | Output             | Use when                                  |
+| ---------------- | ------------------ | ----------------------------------------- |
+| `LASLoader`      | `PointCloud`       | You want the legacy point cloud object.   |
+| `LASArrowLoader` | `Mesh Arrow table` | You want columnar point cloud attributes. |
 
 | Loader                | Characteristic                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------ |

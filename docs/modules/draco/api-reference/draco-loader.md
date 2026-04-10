@@ -1,10 +1,15 @@
-# DracoLoader
+# Draco Loaders
 
 ![logo](../images/draco-small.png)
 
 The `DracoArrowLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
 `DracoLoader` parses the same Draco format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+
+| Loader             | Output             | Use when                            |
+| ------------------ | ------------------ | ----------------------------------- |
+| `DracoLoader`      | `Mesh`             | You want the legacy mesh object.    |
+| `DracoArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes.  |
 
 | Loader         | Characteristic                             |
 | -------------- | ------------------------------------------ |

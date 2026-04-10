@@ -1,19 +1,28 @@
-# NDJSONLoader
+# NDJSON Loaders
 
-Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL).
+Streaming loaders for NDJSON encoded files and related formats (LDJSON and JSONL).
 
-| Loader         | Characteristic                                                         |
-| -------------- | ---------------------------------------------------------------------- |
-| File Extension | `.ndjson`, `.jsonl`, `.ldjson`                                         |
-| Media Type     | `application/x-ndjson`, `application/x-ldjson`, `application/json-seq` |
-| File Type      | Text                                                                   |
-| File Format    | [NDJSON][format_ndjson], [LDJSON][format_], [][format_]                |
-| Data Format    | [Classic Table](/docs/specifications/category-table)                   |
-| Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`                         |
+| Loader              | Output                     | Use when                      |
+| ------------------- | -------------------------- | ----------------------------- |
+| `NDJSONLoader`      | `ObjectRowTable` batches   | You want JavaScript row data. |
+| `NDJSONArrowLoader` | `ArrowTable` batches       | You want columnar batch data. |
+
+| Characteristic | Value                                                                                  |
+| -------------- | -------------------------------------------------------------------------------------- |
+| File Extension | `.ndjson`, `.jsonl`, `.ldjson`                                                         |
+| Media Type     | `application/x-ndjson`, `application/x-ldjson`, `application/json-seq`                 |
+| File Type      | Text                                                                                   |
+| File Format    | [NDJSON][format_ndjson], [LDJSON][format_ldjson], [JSON Text Sequences][format_json_seq] |
+| Data Format    | [Tables](/docs/specifications/category-table)                                          |
+| Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`                                         |
 
 [format_ndjson]: http://ndjson.org/
-[format_ldjson]: http://ndjson.org/
-[format_jsonjson]: http://ndjson.org/
+[format_ldjson]: http://jsonlines.org/
+[format_json_seq]: https://datatracker.ietf.org/doc/html/rfc7464
+
+## NDJSONLoader
+
+`NDJSONLoader` loads NDJSON data as loaders.gl row tables.
 
 ## Usage
 
@@ -41,9 +50,39 @@ for await (const batch of batches) {
 }
 ```
 
+## NDJSONArrowLoader
+
+`NDJSONArrowLoader` loads NDJSON data as loaders.gl `ArrowTable` objects that wrap Apache Arrow tables.
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {NDJSONArrowLoader} from '@loaders.gl/json';
+
+const table = await load(url, NDJSONArrowLoader);
+
+const idColumn = table.data.getChild('id');
+const firstId = idColumn?.get(0);
+```
+
+`NDJSONArrowLoader` supports streaming NDJSON parsing. Each streamed batch is returned as an Apache Arrow table batch.
+
+```typescript
+import {loadInBatches} from '@loaders.gl/core';
+import {NDJSONArrowLoader} from '@loaders.gl/json';
+
+const batches = await loadInBatches('ndjson.ndjson', NDJSONArrowLoader, {
+  batchSize: 1000
+});
+
+for await (const batch of batches) {
+  // batch.data is an Apache Arrow Table
+  const rowCount = batch.data.numRows;
+}
+```
+
 ## Data Format
 
-Parsed batches are of the format.
+Parsed `NDJSONLoader` batches are of the format.
 
 ```ts
 {
