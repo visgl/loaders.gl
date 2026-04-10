@@ -6,6 +6,7 @@ import type {
   WorkerObject,
   WorkerOptions,
   WorkerContext,
+  WorkerJobContext,
   WorkerMessageType,
   WorkerMessagePayload
 } from '../../types';
@@ -43,7 +44,8 @@ export async function processOnWorker(
   worker: WorkerObject,
   data: any,
   options: ProcessOnWorkerOptions = {},
-  context: WorkerContext = {}
+  context: WorkerContext = {},
+  jobContext: WorkerJobContext = {}
 ): Promise<any> {
   const name = getWorkerName(worker);
 
@@ -64,7 +66,12 @@ export async function processOnWorker(
 
   // Kick off the processing in the worker
   const transferableOptions = getTransferListForWriter(options);
-  job.postMessage('process', {input: data, options: transferableOptions});
+  const transferableContext = getTransferListForWriter(jobContext);
+  job.postMessage('process', {
+    input: data,
+    options: transferableOptions,
+    context: transferableContext
+  });
 
   const result = await job.result;
   return result.result;
@@ -100,7 +107,7 @@ async function onMessage(
           job.postMessage('error', {id, error: 'Worker not set up to process on main thread'});
           return;
         }
-        const result = await context.process(input, options);
+        const result = await context.process(input, options, undefined, payload.context || {});
         job.postMessage('done', {id, result});
       } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown error';

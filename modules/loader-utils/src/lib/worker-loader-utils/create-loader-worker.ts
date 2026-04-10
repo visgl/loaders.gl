@@ -1,88 +1,98 @@
 /* eslint-disable no-restricted-globals */
-import type {LoaderWithParser, LoaderOptions, LoaderContext} from '../../loader-types';
-import {WorkerBody} from '@loaders.gl/worker-utils';
+import type {LoaderWithParser, LoaderOptions, LoaderContext, Loader} from '../../loader-types';
+import {createWorker} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
-
-let requestId = 0;
 
 /**
  * Set up a WebWorkerGlobalScope to talk with the main thread
  * @param loader
  */
 export async function createLoaderWorker(loader: LoaderWithParser) {
-  // Check that we are actually in a worker thread
-  if (!(await WorkerBody.inWorkerThread())) {
-    return;
-  }
+  await createWorker(
+    async (input: any, options: {[key: string]: any} = {}, workerContext, loaderContext = {}) => {
+      // validateLoaderVersion(loader, data.source.split('@')[1]);
 
-  WorkerBody.onmessage = async (type, payload) => {
-    switch (type) {
-      case 'process':
-        try {
-          // validateLoaderVersion(loader, data.source.split('@')[1]);
+      const result = await parseData({
+        loader,
+        arrayBuffer: input,
+        options,
+        context: {
+          ...loaderContext,
+          _parse: createParseOnMainThread(workerContext?.process)
+        } as LoaderContext
+      });
 
-          const {input, options = {}, context = {}} = payload;
-
-          const result = await parseData({
-            loader,
-            arrayBuffer: input,
-            options,
-            // @ts-expect-error fetch missing
-            context: {
-              ...context,
-              _parse: parseOnMainThread
-            }
-          });
-          WorkerBody.postMessage('done', {result});
-        } catch (error) {
-          const message = error instanceof Error ? error.message : '';
-          WorkerBody.postMessage('error', {error: message});
-        }
-        break;
-      default:
+      return result;
     }
+  );
+}
+
+/**
+ * Create a loader context parse callback that redirects subloader parsing to the main thread.
+ * @param processOnMainThread
+ */
+function createParseOnMainThread(
+  processOnMainThread?: (data: any, options?: LoaderOptions, context?: Record<string, any>) => any
+) {
+  return (
+    arrayBuffer: ArrayBuffer,
+    loaders?: Loader | Loader[] | LoaderOptions,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => {
+    if (!processOnMainThread) {
+      throw new Error('Worker not set up to parse on main thread');
+    }
+
+    const parseArguments = getMainThreadParseArguments(loaders, options, context);
+    return processOnMainThread(arrayBuffer, parseArguments.options, parseArguments.context);
   };
 }
 
-function parseOnMainThread(
-  arrayBuffer: ArrayBuffer,
-  loader: any,
+/**
+ * Extract parse options and context from the overloaded loader context parse signature.
+ * @param loaders
+ * @param options
+ * @param context
+ */
+function getMainThreadParseArguments(
+  loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const id = requestId++;
+): {options?: LoaderOptions; context?: Record<string, any>} {
+  if (Array.isArray(loaders) && loaders.length > 0) {
+    throw new Error('Worker nested parse cannot pass explicit loader arrays to the main thread');
+  }
+  if (loaders && !Array.isArray(loaders) && isLoaderObject(loaders)) {
+    throw new Error('Worker nested parse cannot pass explicit loaders to the main thread');
+  }
+  if (options) {
+    return {options, context: getSerializableLoaderContext(context)};
+  }
+  if (loaders && !Array.isArray(loaders)) {
+    return {options: loaders};
+  }
+  return {options: undefined, context: getSerializableLoaderContext(context)};
+}
 
-    /**
-     */
-    const onMessage = (type, payload) => {
-      if (payload.id !== id) {
-        // not ours
-        return;
-      }
+/**
+ * Checks whether a value is a loader object.
+ * @param value
+ */
+function isLoaderObject(value: Loader | LoaderOptions): value is Loader {
+  return 'id' in value && 'extensions' in value;
+}
 
-      switch (type) {
-        case 'done':
-          WorkerBody.removeEventListener(onMessage);
-          resolve(payload.result);
-          break;
-
-        case 'error':
-          WorkerBody.removeEventListener(onMessage);
-          reject(payload.error);
-          break;
-
-        default:
-        // ignore
-      }
-    };
-
-    WorkerBody.addEventListener(onMessage);
-
-    // Ask the main thread to decode data
-    const payload = {id, input: arrayBuffer, options};
-    WorkerBody.postMessage('process', payload);
-  });
+/**
+ * Create a serializable loader context for a main-thread parse request.
+ * @param context
+ */
+function getSerializableLoaderContext(context?: LoaderContext) {
+  if (!context) {
+    return undefined;
+  }
+  const {fetch, loaders, _parse, _parseSync, _parseInBatches, ...serializableContext} = context;
+  return JSON.parse(JSON.stringify(serializableContext));
 }
 
 // TODO - Support byteOffset and byteLength (enabling parsing of embedded binaries without copies)

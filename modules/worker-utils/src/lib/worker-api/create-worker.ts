@@ -6,6 +6,7 @@ import type {
   WorkerMessageType,
   WorkerMessagePayload,
   WorkerContext,
+  WorkerJobContext,
   Process,
   ProcessInBatches
 } from '../../types';
@@ -21,7 +22,7 @@ let options: {[key: string]: any};
 export type ProcessOnMainThread = (
   data: any,
   options?: {[key: string]: any},
-  context?: WorkerContext
+  jobContext?: WorkerJobContext
 ) => any;
 
 /**
@@ -47,7 +48,12 @@ export async function createWorker(
           if (!process) {
             throw new Error('Worker does not support atomic processing');
           }
-          const result = await process(payload.input, payload.options || {}, context);
+          const result = await process(
+            payload.input,
+            payload.options || {},
+            context,
+            payload.context || {}
+          );
           WorkerBody.postMessage('done', {result});
           break;
 
@@ -57,7 +63,12 @@ export async function createWorker(
           }
           inputBatches = new AsyncQueue<any>();
           options = payload.options || {};
-          const resultIterator = processInBatches(inputBatches, options, context);
+          const resultIterator = processInBatches(
+            inputBatches,
+            options,
+            context,
+            payload.context || {}
+          );
           for await (const batch of resultIterator) {
             WorkerBody.postMessage('output-batch', {result: batch});
           }
@@ -81,7 +92,7 @@ export async function createWorker(
   };
 }
 
-function processOnMainThread(arrayBuffer: ArrayBuffer, options = {}) {
+function processOnMainThread(arrayBuffer: ArrayBuffer, options = {}, jobContext = {}) {
   return new Promise((resolve, reject) => {
     const id = requestId++;
 
@@ -112,7 +123,7 @@ function processOnMainThread(arrayBuffer: ArrayBuffer, options = {}) {
     WorkerBody.addEventListener(onMessage);
 
     // Ask the main thread to decode data
-    const payload = {id, input: arrayBuffer, options};
+    const payload = {id, input: arrayBuffer, options, context: jobContext};
     WorkerBody.postMessage('process', payload);
   });
 }
