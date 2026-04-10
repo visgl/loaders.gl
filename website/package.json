@@ -36,6 +36,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loaders.gl/core": "^4.4.0",
+    "@loaders.gl/csv": "^4.4.0",
     "@loaders.gl/geopackage": "^4.4.0",
     "@loaders.gl/i3s": "^4.4.0",
     "@loaders.gl/las": "^4.4.0",
@@ -55,6 +56,7 @@
     "@probe.gl/stats-widget": "^4.0.2",
     "@turf/turf": "^6.5.0",
     "d3-color": "^3.1.0",
+    "d3-dsv": "^1.2.0",
     "d3-request": "^1.0.6",
     "d3-scale": "^3.2.1",
     "docusaurus-mdx-checker": "^3.0.0",
@@ -63,6 +65,7 @@
     "mapbox-gl": "npm:empty-npm-package@1.0.0",
     "maplibre-gl": "^2.4.0",
     "marked": "^0.7.0",
+    "papaparse": "^5.5.3",
     "prism-react-renderer": "^2.3.1",
     "react": "^18.2.0",
     "react-color": "^2.19.3",
@@ -70,6 +73,7 @@
     "react-map-gl": "^7.0.0",
     "sql.js": "1.8.0",
     "styled-components": "^5.3.3",
+    "udsv": "^0.7.3",
     "zstd-codec": "^0.1.4"
   },
   "devDependencies": {

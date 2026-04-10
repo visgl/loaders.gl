@@ -76,3 +76,258 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 #docusaurus_skipToContent_fallback > section > div.styled__Container-sc-exnbu5-1.styled__BannerContainer-sc-exnbu5-2.gMcHAv.fYMkHs > h1 {
   text-shadow: 0 0 5px #FFF, 0 0 5px #000;
 }
+
+.benchmark-page {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+}
+
+body:has(.benchmark-page) footer.theme-layout-footer {
+  display: none;
+}
+
+.benchmark-status-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.benchmark-status {
+  font-weight: 600;
+  margin: 0;
+}
+
+.benchmark-spinner {
+  animation: benchmark-spin 0.8s linear infinite;
+  border: 3px solid rgba(0, 0, 0, 0.15);
+  border-radius: 50%;
+  border-top-color: var(--ifm-color-primary);
+  display: inline-block;
+  height: 1.25rem;
+  width: 1.25rem;
+}
+
+.benchmark-restart-button {
+  background: var(--ifm-color-primary);
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+}
+
+.benchmark-restart-button:hover,
+.benchmark-restart-button:focus {
+  background: var(--ifm-color-primary-dark);
+  border-color: var(--ifm-color-primary-dark);
+}
+
+@keyframes benchmark-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.benchmark-error {
+  border: 1px solid var(--ifm-color-danger-dark);
+  border-radius: 4px;
+  color: var(--ifm-color-danger-dark);
+  padding: 0.75rem;
+  white-space: pre-wrap;
+}
+
+.benchmark-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 0.75rem;
+}
+
+.benchmark-legend-item {
+  border-radius: 4px;
+  color: #111;
+  display: inline-flex;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.35rem 0.5rem;
+}
+
+.benchmark-legend-red {
+  background: #ff2e00;
+}
+
+.benchmark-legend-orange {
+  background: #ffbf00;
+}
+
+.benchmark-legend-green {
+  background: #85cc00;
+}
+
+.benchmark-results {
+  max-height: min(72rem, calc(100vh - 10rem));
+  margin-bottom: 2rem;
+  overflow: auto;
+  padding-bottom: 1rem;
+}
+
+.benchmark-results > div > div > div:first-child {
+  display: none !important;
+}
+
+.benchmark-results .ReactTable {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  min-width: 720px;
+  position: relative;
+}
+
+.benchmark-results .ReactTable * {
+  box-sizing: border-box;
+}
+
+.benchmark-results .ReactTable .rt-table {
+  align-items: stretch;
+  border-collapse: collapse;
+  display: flex;
+  flex: auto 1;
+  flex-direction: column;
+  overflow: visible;
+  width: 100%;
+}
+
+.benchmark-results .ReactTable .rt-thead {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  user-select: none;
+}
+
+.benchmark-results .ReactTable .rt-thead.-header {
+  box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.15);
+}
+
+.benchmark-results .ReactTable .rt-thead .rt-tr {
+  text-align: center;
+}
+
+.benchmark-results .ReactTable .rt-thead .rt-th,
+.benchmark-results .ReactTable .rt-thead .rt-td {
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  line-height: normal;
+  padding: 5px;
+  position: relative;
+}
+
+.benchmark-results .ReactTable .rt-thead .rt-th:last-child,
+.benchmark-results .ReactTable .rt-thead .rt-td:last-child {
+  border-right: 0;
+}
+
+.benchmark-results .ReactTable .rt-tbody {
+  display: flex;
+  flex: 99999 1 auto;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.benchmark-results .ReactTable .rt-tbody .rt-tr-group {
+  border-bottom: solid 1px rgba(0, 0, 0, 0.05);
+}
+
+.benchmark-results .ReactTable .rt-tbody .rt-tr-group:last-child {
+  border-bottom: 0;
+}
+
+.benchmark-results .ReactTable .rt-tbody .rt-td {
+  border-right: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.benchmark-results .ReactTable .rt-tbody .rt-td:last-child {
+  border-right: 0;
+}
+
+.benchmark-results .ReactTable .rt-tr-group {
+  align-items: stretch;
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+.benchmark-results .ReactTable .rt-tr {
+  display: inline-flex;
+  flex: 1 0 auto;
+}
+
+.benchmark-results .ReactTable .rt-th,
+.benchmark-results .ReactTable .rt-td {
+  flex: 1 0 0;
+  overflow: hidden;
+  padding: 7px 5px;
+  text-overflow: ellipsis;
+  transition: 0.3s ease;
+  transition-property: width, min-width, padding, opacity;
+  white-space: nowrap;
+}
+
+.benchmark-results .ReactTable .rt-tr:has(.rt-td:first-child strong) .rt-td {
+  font-weight: 700;
+}
+
+.benchmark-results
+  .ReactTable
+  .rt-thead
+  .rt-th:nth-child(1)
+  .rt-resizable-header-content,
+.benchmark-results
+  .ReactTable
+  .rt-thead
+  .rt-th:nth-child(2)
+  .rt-resizable-header-content {
+  font-size: 0;
+}
+
+.benchmark-results
+  .ReactTable
+  .rt-thead
+  .rt-th:nth-child(1)
+  .rt-resizable-header-content::after {
+  content: 'Loader';
+  font-size: 1rem;
+}
+
+.benchmark-results
+  .ReactTable
+  .rt-thead
+  .rt-th:nth-child(2)
+  .rt-resizable-header-content::after {
+  content: 'rows/s';
+  font-size: 1rem;
+}
+
+.benchmark-results .ReactTable.-striped .rt-tr.-odd {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.benchmark-results .ReactTable.-highlight .rt-tbody .rt-tr:not(.-padRow):hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.benchmark-results .ReactTable .rt-noData {
+  background: rgba(255, 255, 255, 0.8);
+  color: rgba(0, 0, 0, 0.5);
+  display: block;
+  left: 50%;
+  padding: 20px;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
