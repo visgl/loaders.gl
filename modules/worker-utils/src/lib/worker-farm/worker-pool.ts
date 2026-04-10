@@ -1,5 +1,9 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
-import {isMobile} from '../env-utils/globals';
+import {isMobile, isBrowser} from '../env-utils/globals';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
 
@@ -53,6 +57,11 @@ export default class WorkerPool {
   private count = 0;
   private isDestroyed = false;
 
+  /** Checks if workers are supported on this platform */
+  static isSupported(): boolean {
+    return WorkerThread.isSupported();
+  }
+
   /**
    * @param processor - worker function
    * @param maxConcurrency - max count of workers
@@ -69,7 +78,7 @@ export default class WorkerPool {
    */
   destroy(): void {
     // Destroy idle workers, active Workers will be destroyed on completion
-    this.idleQueue.forEach((worker) => worker.destroy());
+    this.idleQueue.forEach(worker => worker.destroy());
     this.isDestroyed = true;
   }
 
@@ -99,12 +108,12 @@ export default class WorkerPool {
     onError: OnError = (job, error) => job.error(error)
   ): Promise<WorkerJob> {
     // Promise resolves when thread starts working on this job
-    const startPromise = new Promise<WorkerJob>((onStart) => {
+    const startPromise = new Promise<WorkerJob>(onStart => {
       // Promise resolves when thread completes or fails working on this job
       this.jobQueue.push({name, onMessage, onError, onStart});
       return this;
     });
-    this._startQueuedJob();
+    this._startQueuedJob(); // eslint-disable-line @typescript-eslint/no-floating-promises
     return await startPromise;
   }
 
@@ -140,8 +149,8 @@ export default class WorkerPool {
       const job = new WorkerJob(queuedJob.name, workerThread);
 
       // Set the worker thread's message handlers
-      workerThread.onMessage = (data) => queuedJob.onMessage(job, data.type, data.payload);
-      workerThread.onError = (error) => queuedJob.onError(job, error);
+      workerThread.onMessage = data => queuedJob.onMessage(job, data.type, data.payload);
+      workerThread.onError = error => queuedJob.onError(job, error);
 
       // Resolve the start promise so that the app can start sending messages to worker
       queuedJob.onStart(job);
@@ -149,6 +158,9 @@ export default class WorkerPool {
       // Wait for the app to signal that the job is complete, then return worker to queue
       try {
         await job.result;
+      } catch {
+        // The job result promise carries worker errors back to the caller; do not duplicate-log
+        // handled rejections here.
       } finally {
         this.returnWorkerToQueue(workerThread);
       }
@@ -165,7 +177,15 @@ export default class WorkerPool {
    */
   returnWorkerToQueue(worker: WorkerThread) {
     const shouldDestroyWorker =
-      this.isDestroyed || !this.reuseWorkers || this.count > this._getMaxConcurrency();
+      // Workers on Node.js prevent the process from exiting.
+      // Until we figure out how to close them before exit, we always destroy them
+      !isBrowser ||
+      // If the pool is destroyed, there is no reason to keep the worker around
+      this.isDestroyed ||
+      // If the app has disabled worker reuse, any completed workers should be destroyed
+      !this.reuseWorkers ||
+      // If concurrency has been lowered, this worker might be surplus to requirements
+      this.count > this._getMaxConcurrency();
 
     if (shouldDestroyWorker) {
       worker.destroy();
@@ -175,7 +195,7 @@ export default class WorkerPool {
     }
 
     if (!this.isDestroyed) {
-      this._startQueuedJob();
+      this._startQueuedJob(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
 

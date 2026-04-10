@@ -1,0 +1,164 @@
+{
+  "id": 0,
+  "layerType": "PointCloud",
+  "name": "name",
+  "alias": "alias",
+  "desc": "desc.lasd",
+  "copyrightText": "",
+  "capabilities": [
+    "View"
+  ],
+  "sourceHRef": "./sources",
+  "statsHRef": "./statistics",
+  "spatialReference": {
+    "wkid": 4326,
+    "latestWkid": 4326
+  },
+  "store": {
+    "id": "",
+    "profile": "PointCloud",
+    "version": "1.6",
+    "extent": [
+      -74.174434,
+      39.723427,
+      -74.065024,
+      39.818896
+    ],
+    "index": {
+      "nodeVersion": 1,
+      "nodePerIndexBlock": 64,
+      "href": "./nodepages",
+      "boundingVolumeType": "obb"
+    },
+    "attributeEncoding": "application/octet-stream+gzip",
+    "geometryEncoding": "application/octet-stream",
+    "defaultGeometrySchema": {
+      "geometryType": "points",
+      "header": [],
+      "topology": "PerAttributeArray",
+      "encoding": "lepcc-xyz",
+      "vertexAttributes": {
+        "position": {
+          "valueType": "Int32",
+          "valuesPerElement": 3
+        }
+      },
+      "ordering": [
+        "position"
+      ]
+    }
+  },
+  "fields": [
+    {
+      "name": "ELEVATION",
+      "type": "esriFieldTypeDouble",
+      "alias": "ELEVATION"
+    },
+    {
+      "name": "INTENSITY",
+      "type": "FieldTypeInteger",
+      "alias": "INTENSITY"
+    },
+    {
+      "name": "RGB",
+      "type": "esriFieldTypeInteger",
+      "alias": "RGB"
+    },
+    {
+      "name": "CLASS_CODE",
+      "type": "esriFieldTypeInteger",
+      "alias": "CLASS_CODE"
+    },
+    {
+      "name": "FLAGS",
+      "type": "esriFieldTypeInteger",
+      "alias": "FLAGS"
+    },
+    {
+      "name": "RETURNS",
+      "type": "esriFieldTypeInteger",
+      "alias": "RETURNS"
+    }
+  ],
+  "attributeStorageInfo": [
+    {
+      "key": "1",
+      "name": "ELEVATION",
+      "encoding": "embedded-elevation"
+    },
+    {
+      "key": "2",
+      "name": "INTENSITY",
+      "ordering": [
+        "attributeValues"
+      ],
+      "attributeValues": {
+        "valueType": "UInt16",
+        "valuesPerElement": 1
+      },
+      "encoding": "lepcc-intensity"
+    },
+    {
+      "key": "4",
+      "name": "RGB",
+      "ordering": [
+        "attributeValues"
+      ],
+      "attributeValues": {
+        "valueType": "UInt8",
+        "valuesPerElement": 3
+      },
+      "encoding": "lepcc-rgb"
+    },
+    {
+      "key": "8",
+      "name": "CLASS_CODE",
+      "ordering": [
+        "attributeValues"
+      ],
+      "attributeValues": {
+        "valueType": "UInt8",
+        "valuesPerElement": 1
+      }
+    },
+    {
+      "key": "16",
+      "name": "FLAGS",
+      "ordering": [
+        "attributeValues"
+      ],
+      "attributeValues": {
+        "valueType": "UInt8",
+        "valuesPerElement": 1
+      }
+    },
+    {
+      "key": "32",
+      "name": "RETURNS",
+      "ordering": [
+        "attributeValues"
+      ],
+      "attributeValues": {
+        "valueType": "UInt8",
+        "valuesPerElement": 1
+      }
+    }
+  ],
+  "drawingInfo": {
+    "renderer": {
+      "pointSizeAlgorithm": {
+        "type": "pointCloudSplatAlgorithm",
+        "scaleFactor": 1.0,
+        "minSize": 4.0
+      },
+      "pointsPerInch": 25.0,
+      "field": "RGB",
+      "fieldTransformType": "none",
+      "type": "pointCloudRGBRenderer"
+    }
+  },
+  "elevationInfo": {
+    "mode": "absoluteHeight",
+    "offset": 0.000000
+  }
+}

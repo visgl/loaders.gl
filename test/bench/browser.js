@@ -1,35 +1,27 @@
-// Copyright (c) 2015 - 2017 Uber Technologies, Inc.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
-import '@loaders.gl/polyfills';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 import {Bench} from '@probe.gl/bench';
 import {_addAliases} from '@loaders.gl/loader-utils';
 import ALIASES from '../aliases';
-import {addModuleBenchmarksToSuite} from './modules';
+
+const {Buffer} = await import('buffer');
+globalThis.Buffer = Buffer;
+const {addModuleBenchmarksToSuite} = await import('./modules');
 
 // Sets up aliases for file reader
 _addAliases(ALIASES);
 
 const suite = new Bench({
-  minIterations: 10
+  minIterations: 1
 });
 
-addModuleBenchmarksToSuite(suite).then(_ => suite.run());
+addModuleBenchmarksToSuite(suite)
+  .then(_ => suite.run())
+  .then(() => globalThis.browserTestDriver_finish?.())
+  .catch(error => {
+    console.error(error);
+    globalThis.browserTestDriver_fail?.();
+    globalThis.browserTestDriver_finish?.(error.message);
+  });

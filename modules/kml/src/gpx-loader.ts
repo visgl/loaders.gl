@@ -1,11 +1,27 @@
-import {geojsonToBinary} from '@loaders.gl/gis';
-import {gpx} from '@tmcw/togeojson';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {geojsonToBinary} from '@loaders.gl/gis';
+import type {
+  GeoJSONTable,
+  FeatureCollection,
+  ObjectRowTable,
+  BinaryFeatureCollection
+} from '@loaders.gl/schema';
+import {gpx} from '@tmcw/togeojson';
+import {DOMParser} from '@xmldom/xmldom';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+export type GPXLoaderOptions = LoaderOptions & {
+  gpx?: {
+    shape?: 'object-row-table' | 'geojson-table' | 'binary' | 'raw';
+  };
+};
 
 const GPX_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -14,7 +30,10 @@ const GPX_HEADER = `\
 /**
  * Loader for GPX (GPS exchange format)
  */
-export const GPXLoader: LoaderWithParser = {
+export const GPXLoader = {
+  dataType: null as unknown as ObjectRowTable | GeoJSONTable,
+  batchType: null as never,
+
   name: 'GPX (GPS exchange format)',
   id: 'gpx',
   module: 'kml',
@@ -23,30 +42,48 @@ export const GPXLoader: LoaderWithParser = {
   mimeTypes: ['application/gpx+xml'],
   text: true,
   tests: [GPX_HEADER],
-  parse: async (arrayBuffer, options) =>
+  parse: async (arrayBuffer, options?: GPXLoaderOptions) =>
     parseTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseTextSync,
   options: {
-    gpx: {},
-    gis: {format: 'geojson'}
+    gpx: {shape: 'geojson-table'},
+    gis: {}
   }
-};
+} as const satisfies LoaderWithParser<
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
+  never,
+  GPXLoaderOptions
+>;
 
-function parseTextSync(text: string, options: any = {}) {
-  options = options || {};
-  options.gis = options.gis || {};
-
+function parseTextSync(
+  text: string,
+  options?: GPXLoaderOptions
+): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson = gpx(doc);
+  const geojson: FeatureCollection = gpx(doc);
 
-  switch (options.gis.format) {
-    case 'geojson':
-      return geojson;
+  const gpxOptions = {...GPXLoader.options.gpx, ...options?.gpx};
+
+  switch (gpxOptions.shape) {
+    case 'object-row-table': {
+      const table: ObjectRowTable = {
+        shape: 'object-row-table',
+        data: geojson.features
+      };
+      return table;
+    }
+    case 'geojson-table': {
+      const table: GeoJSONTable = {
+        shape: 'geojson-table',
+        type: 'FeatureCollection',
+        features: geojson.features
+      };
+      return table;
+    }
     case 'binary':
       return geojsonToBinary(geojson.features);
-    case 'raw':
-      return doc;
+
     default:
-      throw new Error();
+      throw new Error(gpxOptions.shape);
   }
 }

@@ -1,11 +1,31 @@
-import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {VERSION} from './lib/utils/version';
-import parseWKT from './lib/parse-wkt';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Geometry} from '@loaders.gl/schema';
+import {isWKT, WKT_MAGIC_STRINGS, convertWKTToGeometry} from '@loaders.gl/gis';
+import {VERSION} from './lib/version';
+
+export type WKTLoaderOptions = LoaderOptions & {
+  /** Options for the WKTLoader */
+  wkt?: {
+    /** Shape of returned geometry */
+    shape?: 'geojson-geometry'; // 'binary-geometry'
+    /** Whether to add any CRS, if found, as undocumented CRS property on the returned geometry */
+    crs?: boolean;
+    /** Override the URL to the worker bundle (by default loads from unpkg.com) */
+    workerUrl?: string;
+  };
+};
 
 /**
- * Well-Known text loader
+ * Well-Known text worker loader
  */
-export const WKTWorkerLoader: Loader = {
+export const WKTWorkerLoader = {
+  dataType: null as unknown as Geometry,
+  batchType: null as never,
+
   name: 'WKT (Well-Known Text)',
   id: 'wkt',
   module: 'wkt',
@@ -15,16 +35,22 @@ export const WKTWorkerLoader: Loader = {
   mimeTypes: ['text/plain'],
   category: 'geometry',
   text: true,
+  tests: WKT_MAGIC_STRINGS,
+  testText: isWKT,
   options: {
-    wkt: {}
+    wkt: {
+      shape: 'geojson-geometry',
+      crs: true
+    }
   }
-};
+} as const satisfies Loader<Geometry, never, WKTLoaderOptions>;
 
 /**
  * Well-Known text loader
  */
-export const WKTLoader: LoaderWithParser = {
+export const WKTLoader = {
   ...WKTWorkerLoader,
-  parse: async (arrayBuffer) => parseWKT(new TextDecoder().decode(arrayBuffer)),
-  parseTextSync: parseWKT
-};
+  parse: async (arrayBuffer, options?) =>
+    convertWKTToGeometry(new TextDecoder().decode(arrayBuffer), options)!,
+  parseTextSync: (string: string, options?) => convertWKTToGeometry(string, options)!
+} as const satisfies LoaderWithParser<Geometry, never, WKTLoaderOptions>;

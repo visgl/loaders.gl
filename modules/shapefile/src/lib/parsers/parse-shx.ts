@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import {parseSHPHeader} from './parse-shp-header';
 
 export interface SHXOutput {
@@ -8,6 +12,10 @@ export interface SHXOutput {
 const SHX_HEADER_SIZE = 100;
 const BIG_ENDIAN = false;
 
+/**
+ * @param arrayBuffer
+ * @returns SHXOutput
+ */
 export function parseShx(arrayBuffer: ArrayBuffer): SHXOutput {
   // SHX header is identical to SHP Header
   const headerView = new DataView(arrayBuffer, 0, SHX_HEADER_SIZE);

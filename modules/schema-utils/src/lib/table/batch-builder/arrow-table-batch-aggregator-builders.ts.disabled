@@ -1,0 +1,190 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Schema, ColumnarTableBatch, ArrowTableBatch} from '@loaders.gl/schema';
+import {TableBatchAggregator} from './table-batch-aggregator';
+import {convertSchemaToArrow} from '../../schema/convert-arrow-schema';
+import * as arrow from 'apache-arrow';
+
+/** @note Should be part of @loaders.gl/schema - kept separate to avoid hard arrow dependency */
+export class ArrowTableBatchAggregator extends TableBatchAggregator {
+
+  constructor(schema: Schema, options) {
+    super(schema, options);
+    this.arrowSchema = null;
+  }
+
+  getBatch(): ArrowTableBatch | null {
+    const batch = super.getBatch();
+    if (batch) {
+      // Get the arrow schema
+      this.arrowSchema = this.arrowSchema || getArrowSchema(batch.schema);
+
+      // Get arrow format vectors
+      const arrowVectors = getArrowVectors(this.arrowSchema, batch.data);
+
+      // Create the record batch
+      const recordBatch = new arrow.RecordBatch(
+        this.arrowSchema,
+        arrow.makeData({
+          type: new arrow.Struct(this.arrowSchema.fields),
+          children: arrowVectors.map(({data}) => data[0])
+        })
+      );
+
+      return {
+        shape: 'arrow-table',
+        batchType: 'data',
+        data: new arrow.Table([recordBatch]),
+        length: batch.length
+      };
+    }
+
+    return null;
+  }
+}
+
+// Convert from a simple loaders.gl schema to an Arrow schema
+function getArrowSchema(schema): arrow.Schema {
+  const arrowFields: arrow.Field[] = [];
+  for (const key in schema) {
+    const field = schema[key];
+    if (field.type === Float32Array) {
+      // TODO - just store the original field as metadata?
+      const metadata = new Map(); // field;
+      // arrow: new arrow.Field(name, nullable, metadata)
+      const arrowField = new arrow.Field(field.name, new arrow.Float32(), field.nullable, metadata);
+      arrowFields.push(arrowField);
+    }
+  }
+  if (arrowFields.length === 0) {
+    throw new Error('No arrow convertible fields');
+  }
+
+  return new arrow.Schema(arrowFields);
+}
+
+// Convert from simple loaders.gl arrays to arrow vectors
+function getArrowVectors(arrowSchema, data): arrow.Vector[] {
+  const arrowVectors: any[] = [];
+  for (const field of arrowSchema.fields) {
+    const vector = data[field.name];
+    if (vector instanceof Float32Array) {
+      const arrowVector = arrow.makeVector(vector);
+      arrowVectors.push(arrowVector);
+    }
+  }
+  if (arrowSchema.fields.length !== arrowVectors.length) {
+    throw new Error('Some columns not arrow convertible');
+  }
+  return arrowVectors;
+}
+
+type ColumnarTableBatchOptions = {};
+
+const DEFAULT_ROW_COUNT = 100;
+
+export class ArrowBatchAggregator implements TableBatchAggregator {
+  schema: Schema;
+  length: number = 0;
+  allocated: number = 0;
+  columns: {[columnName: string]: any[]} = {};
+
+  arrowSchema: arrow.Schema | null;
+
+  constructor(schema: Schema, options: ColumnarTableBatchOptions) {
+    this.schema = schema;
+    this.arrowSchema = convertSchemaToArrow(schema);
+    this._reallocateColumns();
+  }
+
+  rowCount(): number {
+    return this.length;
+  }
+
+  addArrayRow(row: any[]) {
+    // If user keeps pushing rows beyond batch size, reallocate
+    this._reallocateColumns();
+    let i = 0;
+    // TODO what if no csv header, columns not populated?
+    for (const fieldName in this.columns) {
+      this.columns[fieldName][this.length] = row[i++];
+    }
+    this.length++;
+  }
+
+  addObjectRow(row: {[columnName: string]: any}): void {
+    // If user keeps pushing rows beyond batch size, reallocate
+    this._reallocateColumns();
+    for (const fieldName in row) {
+      this.columns[fieldName][this.length] = row[fieldName];
+    }
+    this.length++;
+  }
+
+  getBatch(): ColumnarTableBatch | ArrowTableBatch | null {
+    this._pruneColumns();
+    const columns = Array.isArray(this.schema) ? this.columns : {};
+
+    // schema is an array if there're no headers
+    // object if there are headers
+    // columns should match schema format
+    if (!Array.isArray(this.schema)) {
+      for (const fieldName in this.schema) {
+        const field = this.schema[fieldName];
+        columns[field.name] = this.columns[field.index];
+      }
+    }
+
+    this.columns = {};
+
+    const batch: ColumnarTableBatch = {
+      shape: 'columnar-table',
+      batchType: 'data',
+      data: columns,
+      schema: this.schema,
+      length: this.length
+    };
+
+    return batch;
+  }
+
+  // HELPERS
+
+  _reallocateColumns() {
+    if (this.length < this.allocated) {
+      return;
+    }
+
+    // @ts-ignore TODO
+    this.allocated = this.allocated > 0 ? (this.allocated *= 2) : DEFAULT_ROW_COUNT;
+    this.columns = {};
+
+    for (const fieldName in this.schema) {
+      const field = this.schema[fieldName];
+      const ArrayType = field.type || Float32Array;
+      const oldColumn = this.columns[field.index];
+
+      if (oldColumn && ArrayBuffer.isView(oldColumn)) {
+        // Copy the old data to the new array
+        const typedArray = new ArrayType(this.allocated);
+        typedArray.set(oldColumn);
+        this.columns[field.index] = typedArray;
+      } else if (oldColumn) {
+        // Plain array
+        oldColumn.length = this.allocated;
+        this.columns[field.index] = oldColumn;
+      } else {
+        // Create new
+        this.columns[field.index] = new ArrayType(this.allocated);
+      }
+    }
+  }
+
+  _pruneColumns() {
+    for (const [columnName, column] of Object.entries(this.columns)) {
+      this.columns[columnName] = column.slice(0, this.length);
+    }
+  }
+}

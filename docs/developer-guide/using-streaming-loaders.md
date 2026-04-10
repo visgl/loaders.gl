@@ -2,7 +2,7 @@
 
 A major feature of loaders.gl is the availability of a number of batched (or streaming) loaders.
 
-The advantages and characteristics of streaming are descriped in more detail in the [streaming](./concepts/streaming.md) concepts section, but the highlights are:
+The advantages and characteristics of streaming are descriped in more detail in the [streaming](./concepts/streaming) concepts section, but the highlights are:
 
 - Ability to parse large data sources that exceed browser memory limits (maximum allocation limits for a single `string` or `ArrayBuffer` etc tends to be less tha 1GB in most browsers).
 - While parsing is done on smaller chunks and does not freeze the main thread.
@@ -15,7 +15,7 @@ The loaders.gl streaming architecture is built around ES2018 async iterators rat
 
 Note: `Stream` input sources is still accepted by loaders.gl functions, however internally processing is done via async iterators and the output of a batched parsing operation is an async iterator that yields "batches" of parsed data.
 
-```js
+```typescript
 import {JSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 
@@ -24,7 +24,7 @@ const data = await load(url, JSONLoader, {json: options});
 
 The JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from the first array it encounters in the JSON. To e.g. parse a stream of GeoJSON:
 
-```js
+```typescript
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {load} from '@loaders.gl/core';
 
@@ -59,7 +59,7 @@ In addition, note that applications can easily wrap many data types in a `Respon
 
 Example of using a transform to calculate a cryptographic hash:
 
-```js
+```typescript
 import {loadInBatches} from '@loaders.gl/core';
 import {CRC32HashTransform} from '@loaders.gl/crypto';
 

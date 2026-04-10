@@ -1,7 +1,12 @@
-import type {WorkerJob, WorkerMessageType, WorkerMessagePayload} from '@loaders.gl/worker-utils';
-import type {Loader, LoaderOptions, LoaderContext} from '../../types';
-import {canProcessOnWorker, processOnWorker} from '@loaders.gl/worker-utils';
-import parseToNodeImage from '@loaders.gl/images/lib/parsers/parse-to-node-image';
+import {canProcessOnWorker, isBrowser, processOnWorker} from '@loaders.gl/worker-utils';
+import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
+
+type ParseOnMainThread = (
+  arrayBuffer: ArrayBuffer,
+  loaders?: Loader | Loader[] | LoaderOptions,
+  options?: LoaderOptions,
+  context?: LoaderContext
+) => Promise<unknown>;
 
 /**
  * Determines if a loader can parse with worker
@@ -9,11 +14,13 @@ import parseToNodeImage from '@loaders.gl/images/lib/parsers/parse-to-node-image
  * @param options
  */
 export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
-  if (canProcessOnWorker(loader, options)) {
+  const workerOptions = getWorkerOptions(options);
+  const nodeWorkers = workerOptions._nodeWorkers;
+  if (!isBrowser && !nodeWorkers) {
     return false;
   }
 
-  return loader.worker && options?.worker;
+  return Boolean(canProcessOnWorker(loader, workerOptions));
 }
 
 /**
@@ -22,9 +29,50 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
  */
 export async function parseWithWorker(
   loader: Loader,
-  data,
+  data: any,
   options?: LoaderOptions,
-  context?: LoaderContext
+  context?: LoaderContext,
+  parseOnMainThread?: ParseOnMainThread
 ) {
-  processOnWorker(loader, data, options, parseOnMainThread);
+  return await processOnWorker(
+    loader,
+    data,
+    getWorkerOptions(options),
+    {
+      process: async (input, processOptions, _workerContext, parseContext) => {
+        if (!parseOnMainThread) {
+          throw new Error('Worker not set up to parse on main thread');
+        }
+        const mainThreadContext = context
+          ? ({...context, ...(parseContext || {})} as LoaderContext)
+          : undefined;
+        return await parseOnMainThread(input, undefined, processOptions, mainThreadContext);
+      }
+    },
+    getSerializableLoaderContext(context)
+  );
+}
+
+/**
+ * Create worker options with deprecated top-level worker fields available to worker-utils.
+ * @param options
+ */
+function getWorkerOptions(options: LoaderOptions = {}) {
+  const serializedOptions = JSON.parse(JSON.stringify(options));
+  return {
+    ...serializedOptions.core,
+    ...serializedOptions
+  };
+}
+
+/**
+ * Create a serializable loader context for worker jobs.
+ * @param context
+ */
+function getSerializableLoaderContext(context?: LoaderContext) {
+  if (!context) {
+    return {};
+  }
+  const {fetch, loaders, _parse, _parseSync, _parseInBatches, ...serializableContext} = context;
+  return JSON.parse(JSON.stringify(serializableContext));
 }

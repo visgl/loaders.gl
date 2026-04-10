@@ -1,19 +1,27 @@
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
-import type {GLBParseOptions} from './lib/parsers/parse-glb';
+import type {ParseGLBOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
-import parseGLBSync from './lib/parsers/parse-glb';
+import {parseGLBSync} from './lib/parsers/parse-glb';
 
-export type GLBLoaderOptions = LoaderOptions & {
-  glb?: GLBParseOptions;
-  byteOffset?: number;
+/** GLB loader options */
+export type GLBLoaderOptions = StrictLoaderOptions & {
+  glb?: {
+    /** GLB Parser Options */
+    glb?: ParseGLBOptions;
+    /** GLB specific: byteOffset to start parsing from */
+    byteOffset?: number;
+    strict?: boolean;
+  };
 };
 
 /**
  * GLB Loader -
  * GLB is the binary container format for GLTF
  */
-export const GLBLoader: LoaderWithParser = {
+export const GLBLoader = {
+  dataType: null as unknown as GLB,
+  batchType: null as never,
   name: 'GLB',
   id: 'glb',
   module: 'gltf',
@@ -28,18 +36,14 @@ export const GLBLoader: LoaderWithParser = {
       strict: false // Enables deprecated XVIZ support (illegal CHUNK formats)
     }
   }
-};
+} as const satisfies LoaderWithParser<GLB, never, GLBLoaderOptions>;
 
 async function parse(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): Promise<GLB> {
   return parseSync(arrayBuffer, options);
 }
 
 function parseSync(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): GLB {
-  const {byteOffset = 0} = options || {};
   const glb: GLB = {} as GLB;
-  parseGLBSync(glb, arrayBuffer, byteOffset, options?.glb);
+  parseGLBSync(glb, arrayBuffer, options?.glb?.byteOffset || 0, options?.glb);
   return glb;
 }
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckGLBLoader: LoaderWithParser = GLBLoader;

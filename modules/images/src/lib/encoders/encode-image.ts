@@ -1,9 +1,9 @@
 // Image loading/saving for browser and Node.js
-import {global} from '../utils/globals';
+import {ImageDataType} from '../../types';
 import {getImageSize} from '../category-api/parsed-image-api';
 
 // @ts-ignore TS2339: Property does not exist on type
-const {_encodeImageNode} = global;
+const encodeImageNode = globalThis.loaders?.encodeImageNode;
 
 /**
  * Returns data bytes representing a compressed image in PNG or JPG format,
@@ -14,14 +14,14 @@ const {_encodeImageNode} = global;
  * param mimeType= - Whether to include a data URI header
  */
 export async function encodeImage(
-  image: any,
+  image: ImageDataType,
   options?: {[key: string]: any}
 ): Promise<ArrayBuffer> {
   options = options || {};
   options.image = options.image || ({} as {[key: string]: any});
 
-  return _encodeImageNode
-    ? _encodeImageNode(image, {type: options.image.mimeType})
+  return encodeImageNode
+    ? encodeImageNode(image, {type: options.image.mimeType})
     : encodeImageInBrowser(image, options);
 }
 
@@ -48,13 +48,13 @@ async function encodeImageInBrowser(image, options) {
   drawImageToCanvas(image, canvas);
 
   // The actual encoding is done asynchronously with `canvas.toBlob()`
-  const blob = await new Promise<Blob | null>((resolve) => {
+  const blob = await new Promise<Blob | null>(resolve => {
     // get it back as a Blob
     if (jpegQuality && qualityParamSupported) {
       try {
         canvas.toBlob(resolve, mimeType, jpegQuality);
         return;
-      } catch (error) {
+      } catch (_error) {
         qualityParamSupported = false;
       }
     }

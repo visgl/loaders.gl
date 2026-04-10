@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 export interface SHPHeader {
   /** SHP Magic number */
   magic: number;
@@ -25,6 +29,8 @@ const SHP_MAGIC_NUMBER = 0x0000270a;
 /**
  * Extract the binary header
  * Note: Also used by SHX
+ * @param headerView
+ * @returns SHPHeader
  */
 export function parseSHPHeader(headerView: DataView): SHPHeader {
   // Note: The SHP format switches endianness between fields!

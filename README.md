@@ -1,10 +1,29 @@
 # loaders.gl
 
+<p align="center">
+  <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" />
+  <img src="https://flat.badgen.net/badge/icon/Typed?icon=typescript&label&labelColor=blue&color=555555)" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" />
+  <img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" />
+  <br />
+</p>
+
 [loaders.gl](https://loaders.gl) is a framework in the [vis.gl](https://vis.gl) framework suite that provides a collection of framework-independent loaders focused on geospatial, 3D and big data visualization use cases.
 
 ## Documentation
 
 loaders.gl is extensively documented on the [loaders.gl](https://loaders.gl) website.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Build and test workflows
+
+- Run `yarn build-modules` to execute the existing ocular and lerna build flow for modules. The default `yarn build` command delegates to this script for backward compatibility.
+- Run `yarn test` to list available test modes, or `yarn test full` for the standard module test suite.
+- Run `yarn build-apps` to run the tile-converter app build (currently the only app in this repository).
+- Run `yarn test-apps` to exercise the tile-converter app test/build script when available.
 
 ## License
 

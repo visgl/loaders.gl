@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/loader-utils",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "description": "Framework-independent loaders for 3D graphics formats",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -17,9 +18,16 @@
     "mesh",
     "point cloud"
   ],
-  "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -27,19 +35,18 @@
     "README.md"
   ],
   "browser": {
-    "./src/lib/node/buffer-utils.node.js": false,
-    "./dist/es5/lib/node/buffer-utils.node.js": false,
-    "./dist/esm/lib/node/buffer-utils.node.js": false,
-    "./dist/es6/lib/node/buffer-utils.node.js": false,
-    "fs": false
-  },
-  "scripts": {
-    "pre-build-disabled": "npm run build-bundle",
-    "build-bundle": "webpack --config ../../scripts/webpack/bundle.js"
+    "./dist/lib/node/buffer.js": "./dist/lib/node/buffer.browser.js",
+    "./dist/lib/node/stream.js": "./dist/lib/node/stream.browser.js",
+    "./src/lib/node/buffer.ts": "./src/lib/node/buffer.browser.ts",
+    "./src/lib/node/stream.ts": "./src/lib/node/stream.browser.ts",
+    "fs": false,
+    "stream": false
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
-    "@loaders.gl/worker-utils": "3.0.0-beta.3",
-    "@probe.gl/stats": "^3.3.0"
-  }
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/worker-utils": "4.4.0",
+    "@probe.gl/log": "^4.1.1",
+    "@probe.gl/stats": "^4.1.1"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

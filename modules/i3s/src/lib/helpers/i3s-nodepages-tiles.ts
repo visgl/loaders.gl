@@ -1,54 +1,90 @@
 import {load} from '@loaders.gl/core';
-import {getSupportedGPUTextureFormats} from '@loaders.gl/textures';
-import {Tileset, NodePage} from '../../types';
 import {I3SNodePageLoader} from '../../i3s-node-page-loader';
 import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
 import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import {
+  LodSelection,
+  NodePage,
+  NodeInPage,
+  Obb,
+  MeshMaterial,
+  I3SMaterialDefinition,
+  I3STextureFormat,
+  MeshGeometry,
+  I3STileHeader,
+  SceneLayer3D
+} from '../../types';
+
+const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
+const WEBGL_EXTENSIONS: Record<string, string> = {
+  /* eslint-disable camelcase */
+  WEBGL_compressed_texture_s3tc: 'dxt',
+  WEBGL_compressed_texture_s3tc_srgb: 'dxt-srgb',
+  WEBGL_compressed_texture_etc1: 'etc1',
+  WEBGL_compressed_texture_etc: 'etc2',
+  WEBGL_compressed_texture_pvrtc: 'pvrtc',
+  WEBGL_compressed_texture_atc: 'atc',
+  WEBGL_compressed_texture_astc: 'astc',
+  EXT_texture_compression_rgtc: 'rgtc'
+  /* eslint-enable camelcase */
+};
 
 /**
  * class I3SNodePagesTiles - loads nodePages and form i3s tiles from them
  */
 export default class I3SNodePagesTiles {
-  tileset: Tileset;
-  nodePages: NodePage[];
+  tileset: SceneLayer3D;
+  nodePages: NodePage[] = [];
+  pendingNodePages: {promise: Promise<NodePage>; status: 'Pending' | 'Done'}[] = [];
   nodesPerPage: number;
-  options: {[key: string]: any};
-  lodSelectionMetricType: any;
-  textureDefinitionsSelectedFormats: any[];
+  options: LoaderOptions;
+  lodSelectionMetricType?: string;
+  textureDefinitionsSelectedFormats: ({format: I3STextureFormat; name: string} | null)[] = [];
+  nodesInNodePages: number;
+  url: string;
+  private textureLoaderOptions: {[key: string]: any} = {};
 
   /**
    * @constructs
    * Create a I3SNodePagesTiles instance.
    * @param tileset - i3s tileset header ('layers/0')
+   * @param url - tileset url
    * @param options - i3s loader options
    */
-  constructor(tileset: Tileset, options: object) {
+  constructor(tileset: SceneLayer3D, url: string = '', options: LoaderOptions) {
     this.tileset = {...tileset}; // spread the tileset to avoid circular reference
-    this.nodesPerPage = tileset.nodePages.nodesPerPage;
-    this.lodSelectionMetricType = tileset.nodePages.lodSelectionMetricType;
+    this.url = url;
+    this.nodesPerPage = tileset.nodePages?.nodesPerPage || 64;
+    this.lodSelectionMetricType = tileset.nodePages?.lodSelectionMetricType;
     this.options = options;
-    this.nodePages = [];
-    this.textureDefinitionsSelectedFormats = [];
+    this.nodesInNodePages = 0;
 
-    this._initSelectedFormatsForTextureDefinitions(tileset);
+    this.initSelectedFormatsForTextureDefinitions(tileset);
   }
 
   /**
    * Loads some nodePage and return a particular node from it
    * @param id - id of node through all node pages
    */
-  async getNodeById(id: number) {
+  async getNodeById(id: number): Promise<NodeInPage> {
     const pageIndex = Math.floor(id / this.nodesPerPage);
-    if (!this.nodePages[pageIndex]) {
+    if (!this.nodePages[pageIndex] && !this.pendingNodePages[pageIndex]) {
       const nodePageUrl = getUrlWithToken(
-        `${this.tileset.url}/nodepages/${pageIndex}`,
+        `${this.url}/nodepages/${pageIndex}`,
+        // @ts-expect-error this.options is not properly typed
         this.options.i3s?.token
       );
-      this.nodePages[pageIndex] = load(nodePageUrl, I3SNodePageLoader, this.options);
-      this.nodePages[pageIndex] = await this.nodePages[pageIndex];
+      this.pendingNodePages[pageIndex] = {
+        status: 'Pending',
+        promise: load(nodePageUrl, I3SNodePageLoader, this.options)
+      };
+      this.nodePages[pageIndex] = await this.pendingNodePages[pageIndex].promise;
+      this.nodesInNodePages += this.nodePages[pageIndex].nodes.length;
+      this.pendingNodePages[pageIndex].status = 'Done';
     }
-    if (this.nodePages[pageIndex] instanceof Promise) {
-      this.nodePages[pageIndex] = await this.nodePages[pageIndex];
+    if (this.pendingNodePages[pageIndex].status === 'Pending') {
+      this.nodePages[pageIndex] = await this.pendingNodePages[pageIndex].promise;
     }
     const nodeIndex = id % this.nodesPerPage;
     return this.nodePages[pageIndex].nodes[nodeIndex];
@@ -58,50 +94,58 @@ export default class I3SNodePagesTiles {
    * Forms tile header using node and tileset data
    * @param id - id of node through all node pages
    */
-  // eslint-disable-next-line complexity
-  async formTileFromNodePages(id: number) {
-    const node = await this.getNodeById(id);
-    const children: any[] = [];
+  // eslint-disable-next-line complexity, max-statements
+  async formTileFromNodePages(id: number): Promise<I3STileHeader> {
+    const node: NodeInPage = await this.getNodeById(id);
+    const children: {id: string; obb: Obb}[] = [];
+    const childNodesPromises: Promise<NodeInPage>[] = [];
     for (const child of node.children || []) {
-      const childNode = await this.getNodeById(child);
+      childNodesPromises.push(this.getNodeById(child));
+    }
+
+    const childNodes = await Promise.all(childNodesPromises);
+    for (const childNode of childNodes) {
       children.push({
-        id: child,
+        id: childNode.index.toString(),
         obb: childNode.obb
       });
     }
 
-    let contentUrl = null;
-    let textureUrl: string | null = null;
-    let materialDefinition = null;
-    let textureFormat = 'jpeg';
+    let contentUrl: string | undefined;
+    let textureUrl: string | undefined;
+    let materialDefinition: I3SMaterialDefinition | undefined;
+    let textureFormat: I3STextureFormat = 'jpg';
     let attributeUrls: string[] = [];
-    let isDracoGeometry = false;
+    let isDracoGeometry: boolean = false;
 
     if (node && node.mesh) {
       // Get geometry resource URL and type (compressed / non-compressed)
       const {url, isDracoGeometry: isDracoGeometryResult} = (node.mesh.geometry &&
-        this._getContentUrl(node.mesh.geometry)) || {url: null, isDracoGeometry: null};
+        this.getContentUrl(node.mesh.geometry)) || {isDracoGeometry: false};
       contentUrl = url;
       isDracoGeometry = isDracoGeometryResult;
 
-      const [textureData, nodeMaterialDefinition] = this._getInformationFromMaterial(
-        node.mesh.material
-      );
+      const {textureData, materialDefinition: nodeMaterialDefinition} =
+        this.getInformationFromMaterial(node.mesh.material);
       materialDefinition = nodeMaterialDefinition;
       textureFormat = textureData.format || textureFormat;
       if (textureData.name) {
-        textureUrl = `${this.tileset.url}/nodes/${node.mesh.material.resource}/textures/${textureData.name}`;
+        textureUrl = `${this.url}/nodes/${node.mesh.material.resource}/textures/${textureData.name}`;
       }
 
       if (this.tileset.attributeStorageInfo) {
-        attributeUrls = generateTilesetAttributeUrls(this.tileset, node.mesh.attribute.resource);
+        attributeUrls = generateTilesetAttributeUrls(
+          this.tileset,
+          this.url,
+          node.mesh.attribute.resource
+        );
       }
     }
 
-    const lodSelection = this._getLodSelection(node);
+    const lodSelection = this.getLodSelection(node);
 
     return normalizeTileNonUrlData({
-      id,
+      id: id.toString(),
       lodSelection,
       obb: node.obb,
       contentUrl,
@@ -109,6 +153,7 @@ export default class I3SNodePagesTiles {
       attributeUrls,
       materialDefinition,
       textureFormat,
+      textureLoaderOptions: this.textureLoaderOptions,
       children,
       isDracoGeometry
     });
@@ -116,25 +161,27 @@ export default class I3SNodePagesTiles {
 
   /**
    * Forms url and type of geometry resource by nodepage's data and `geometryDefinitions` in the tileset
-   * @param {Object} meshGeometryData - data about the node's mesh from the nodepage
-   * @returns {Object} -
+   * @param - data about the node's mesh from the nodepage
+   * @returns -
    *   {string} url - url to the geometry resource
    *   {boolean} isDracoGeometry - whether the geometry resource contain DRACO compressed geometry
    */
-  _getContentUrl(meshGeometryData) {
-    let result = {};
+  private getContentUrl(meshGeometryData: MeshGeometry) {
+    let result: {url: string; isDracoGeometry: boolean} | null = null;
+    // @ts-ignore
     const geometryDefinition = this.tileset.geometryDefinitions[meshGeometryData.definition];
     let geometryIndex = -1;
     // Try to find DRACO geometryDefinition of `useDracoGeometry` option is set
-    if (this.options.i3s && this.options.i3s.useDracoGeometry) {
+    const i3sOptions = this.options.i3s as Record<string, any> | undefined;
+    if (i3sOptions && typeof i3sOptions === 'object' && i3sOptions.useDracoGeometry) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
-        (buffer) => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
+        buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
       );
     }
     // If DRACO geometry is not applicable try to select non-compressed geometry
     if (geometryIndex === -1) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
-        (buffer) => !buffer.compressedAttributes
+        buffer => !buffer.compressedAttributes
       );
     }
     if (geometryIndex !== -1) {
@@ -142,7 +189,7 @@ export default class I3SNodePagesTiles {
         geometryDefinition.geometryBuffers[geometryIndex].compressedAttributes
       );
       result = {
-        url: `${this.tileset.url}/nodes/${meshGeometryData.resource}/geometries/${geometryIndex}`,
+        url: `${this.url}/nodes/${meshGeometryData.resource}/geometries/${geometryIndex}`,
         isDracoGeometry
       };
     }
@@ -151,21 +198,21 @@ export default class I3SNodePagesTiles {
 
   /**
    * Forms 1.6 compatible LOD selection object from a nodepage's node data
-   * @param {Object} node - a node from nodepage
-   * @returns {Object[]} - Array of object of following properties:
-   *   {string} metricType - the label of the LOD metric
-   *   {number} maxError - the value of the metric
+   * @param node - a node from nodepage
+   * @returns- Array of LodSelection
    */
-  _getLodSelection(node): object[] {
-    const lodSelection: object[] = [];
+  private getLodSelection(node: NodeInPage): LodSelection[] {
+    const lodSelection: LodSelection[] = [];
     if (this.lodSelectionMetricType === 'maxScreenThresholdSQ') {
       lodSelection.push({
         metricType: 'maxScreenThreshold',
+        // @ts-ignore
         maxError: Math.sqrt(node.lodThreshold / (Math.PI * 0.25))
       });
     }
     lodSelection.push({
       metricType: this.lodSelectionMetricType,
+      // @ts-ignore
       maxError: node.lodThreshold
     });
     return lodSelection;
@@ -173,50 +220,62 @@ export default class I3SNodePagesTiles {
 
   /**
    * Returns information about texture and material from `materialDefinitions`
-   * @param {Object} material - material data from nodepage
-   * @returns {Object[]} - Couple [textureData, materialDefinition]
+   * @param material - material data from nodepage
+   * @returns - Couple {textureData, materialDefinition}
    * {string} textureData.name - path name of the texture
    * {string} textureData.format - format of the texture
    * materialDefinition - PBR-like material definition from `materialDefinitions`
    */
-  _getInformationFromMaterial(material) {
-    const textureDataDefault = {name: null, format: null};
+  private getInformationFromMaterial(material: MeshMaterial) {
+    const informationFromMaterial: {
+      textureData: {name: string | null; format?: I3STextureFormat};
+      materialDefinition?: I3SMaterialDefinition;
+    } = {textureData: {name: null}};
+
     if (material) {
-      const materialDefinition = this.tileset.materialDefinitions[material.definition];
-      const textureSetDefinitionIndex =
-        materialDefinition &&
-        materialDefinition.pbrMetallicRoughness &&
-        materialDefinition.pbrMetallicRoughness.baseColorTexture &&
-        materialDefinition.pbrMetallicRoughness.baseColorTexture.textureSetDefinitionId;
-      if (textureSetDefinitionIndex || textureSetDefinitionIndex === 0) {
-        const textureData =
-          this.textureDefinitionsSelectedFormats[textureSetDefinitionIndex] || textureDataDefault;
-        return [textureData, materialDefinition];
+      const materialDefinition = this.tileset.materialDefinitions?.[material.definition];
+      if (materialDefinition) {
+        informationFromMaterial.materialDefinition = materialDefinition;
+        const textureSetDefinitionIndex =
+          materialDefinition?.pbrMetallicRoughness?.baseColorTexture?.textureSetDefinitionId;
+
+        if (typeof textureSetDefinitionIndex === 'number') {
+          informationFromMaterial.textureData =
+            this.textureDefinitionsSelectedFormats[textureSetDefinitionIndex] ||
+            informationFromMaterial.textureData;
+        }
       }
-      return [textureDataDefault, materialDefinition];
     }
-    return [textureDataDefault, null];
+    return informationFromMaterial;
   }
 
   /**
    * Sets preferable and supported format for each textureDefinition of the tileset
-   * @param {Object} tileset - I3S layer data
-   * @returns {void}
+   * @param tileset - I3S layer data
+   * @returns
    */
-  _initSelectedFormatsForTextureDefinitions(tileset) {
+  private initSelectedFormatsForTextureDefinitions(tileset: SceneLayer3D): void {
     this.textureDefinitionsSelectedFormats = [];
-    const possibleI3sFormats = this._getSupportedTextureFormats();
+    const possibleI3sFormats = this.getSupportedTextureFormats();
     const textureSetDefinitions = tileset.textureSetDefinitions || [];
     for (const textureSetDefinition of textureSetDefinitions) {
       const formats = (textureSetDefinition && textureSetDefinition.formats) || [];
-      let selectedFormat = null;
+      let selectedFormat: {name: string; format: I3STextureFormat} | null = null;
       for (const i3sFormat of possibleI3sFormats) {
-        const format = formats.find((value) => value.format === i3sFormat);
+        const format = formats.find(value => value.format === i3sFormat);
         if (format) {
           selectedFormat = format;
           break;
         }
       }
+      // For I3S 1.8 need to define basis target format to decode
+      if (selectedFormat && selectedFormat.format === 'ktx2') {
+        this.textureLoaderOptions.basis = {
+          containerFormat: 'ktx2',
+          module: 'encoder'
+        };
+      }
+
       this.textureDefinitionsSelectedFormats.push(selectedFormat);
     }
   }
@@ -225,9 +284,11 @@ export default class I3SNodePagesTiles {
    * Returns the array of supported texture format
    * @returns list of format strings
    */
-  _getSupportedTextureFormats(): string[] {
-    const formats: string[] = [];
-    if (!this.options.i3s || this.options.i3s.useCompressedTextures) {
+  private getSupportedTextureFormats(): I3STextureFormat[] {
+    const formats: I3STextureFormat[] = [];
+    const i3sOptions = this.options.i3s as Record<string, any> | undefined;
+    if (!i3sOptions || i3sOptions.useCompressedTextures) {
+      // I3S 1.7 selection
       const supportedCompressedFormats = getSupportedGPUTextureFormats();
       // List of possible in i3s formats:
       // https://github.com/Esri/i3s-spec/blob/master/docs/1.7/textureSetDefinitionFormat.cmn.md
@@ -237,10 +298,38 @@ export default class I3SNodePagesTiles {
       if (supportedCompressedFormats.has('dxt')) {
         formats.push('dds');
       }
+
+      // I3S 1.8 selection
+      // ktx2 wraps basis texture which at the edge case can be decoded as uncompressed image
+      formats.push('ktx2');
     }
 
     formats.push('jpg');
     formats.push('png');
     return formats;
+  }
+}
+
+function getSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Set<string> {
+  const formats = new Set<string>();
+  gl = gl || getWebGLContext() || undefined;
+
+  for (const prefix of BROWSER_PREFIXES) {
+    for (const extension in WEBGL_EXTENSIONS) {
+      if (gl && gl.getExtension(`${prefix}${extension}`)) {
+        formats.add(WEBGL_EXTENSIONS[extension]);
+      }
+    }
+  }
+
+  return formats;
+}
+
+function getWebGLContext() {
+  try {
+    const canvas = document.createElement('canvas');
+    return canvas.getContext('webgl');
+  } catch {
+    return null;
   }
 }

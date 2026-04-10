@@ -1,13 +1,24 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-import {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import {LoaderContext} from '@loaders.gl/loader-utils';
+
+export type NullLoaderOptions = LoaderOptions & {
+  null?: {};
+};
 
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullWorkerLoader: Loader = {
+export const NullWorkerLoader = {
+  dataType: null,
+  batchType: null as never,
   name: 'Null loader',
   id: 'null',
   module: 'core',
@@ -19,27 +30,46 @@ export const NullWorkerLoader: Loader = {
   options: {
     null: {}
   }
-};
+} as const satisfies Loader<null, never, NullLoaderOptions>;
 
 /**
  * Loads any data and returns null (or optionally passes through data unparsed)
  */
-export const NullLoader: LoaderWithParser = {
+export const NullLoader = {
+  dataType: null,
+  batchType: null,
+
   name: 'Null loader',
   id: 'null',
   module: 'core',
   version: VERSION,
   mimeTypes: ['application/x.empty'],
   extensions: ['null'],
-  parse: async (arrayBuffer) => arrayBuffer,
-  parseSync: (arrayBuffer) => arrayBuffer,
-  parseInBatches: async function* generator(asyncIterator) {
+  parse: async (
+    arrayBuffer: ArrayBufferLike | ArrayBufferView,
+    options?: NullLoaderOptions,
+    context?: LoaderContext
+  ) => parseSync(arrayBuffer, options || {}, context),
+  parseSync,
+  parseInBatches: async function* generator(asyncIterator, options, context) {
     for await (const batch of asyncIterator) {
-      yield batch;
+      yield parseSync(batch, options, context);
     }
   },
   tests: [() => false],
   options: {
     null: {}
   }
-};
+} as const satisfies LoaderWithParser<null, null, NullLoaderOptions>;
+
+/**
+ * Returns arguments passed to the parse API in a format that can be transferred to a
+ * web worker. The `context` parameter is stripped using JSON.stringify & parse.
+ */
+function parseSync(
+  arrayBuffer: ArrayBufferLike | ArrayBufferView,
+  options?: NullLoaderOptions,
+  context?: LoaderContext
+): null {
+  return null;
+}

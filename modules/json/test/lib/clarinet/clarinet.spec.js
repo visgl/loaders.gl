@@ -1,7 +1,20 @@
 /* eslint-disable */
 // @ts-nocheck
 import test from 'tape-promise/tape';
-import ClarinetParser, {EVENTS} from '@loaders.gl/json/lib/clarinet/clarinet';
+import ClarinetParser from '@loaders.gl/json/lib/clarinet/clarinet';
+
+export const EVENTS = [
+  'value',
+  'string',
+  'key',
+  'openobject',
+  'closeobject',
+  'openarray',
+  'closearray',
+  'error',
+  'end',
+  'ready'
+];
 
 const seps = [undefined, /\t|\n|\r/, ''];
 const docs = {
@@ -780,19 +793,19 @@ function generic(t, key, prechunked, sep) {
         }
       };
     });
-    doc_chunks.forEach((chunk) => parser.write(chunk));
+    doc_chunks.forEach(chunk => parser.write(chunk));
     parser.end();
   };
 }
 
-test('clarinet#generic', (t) => {
+test('clarinet#generic', t => {
   for (const key in docs) {
     if (docs.hasOwnProperty(key)) {
       // undefined means no split
       // /\t|\n|\r| / means on whitespace
       // '' means on every char
       for (const sep in seps) {
-        t.comment('[' + key + '] should be able to parse -> ' + sep);
+        // t.comment('[' + key + '] should be able to parse -> ' + sep);
         generic(t, key, false, sep);
       }
     }
@@ -800,14 +813,14 @@ test('clarinet#generic', (t) => {
   t.end();
 });
 
-test('#pre-chunked', (t) => {
+test('#pre-chunked', t => {
   for (const key in docs) {
     if (docs.hasOwnProperty(key)) {
       if (!docs[key].chunks) {
         continue;
       }
 
-      t.comment('[' + key + '] should be able to parse pre-chunked');
+      // t.comment('[' + key + '] should be able to parse pre-chunked');
       generic(t, key, true);
     }
   }

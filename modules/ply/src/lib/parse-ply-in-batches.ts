@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // PLY Loader, adapted from THREE.js (MIT license)
 //
 // Attributions per original THREE.js source file:
@@ -21,22 +25,32 @@
 //   }
 // });
 
-// @ts-nocheck
-
-import {makeLineIterator, makeTextDecoderIterator, forEach} from '@loaders.gl/core';
+import {
+  makeLineIterator,
+  makeTextDecoderIterator,
+  forEach,
+  toArrayBufferIterator
+} from '@loaders.gl/loader-utils';
 import normalizePLY from './normalize-ply';
+import {PLYMesh, PLYHeader, PLYElement, PLYProperty, PLYAttributes} from './ply-types';
 
-// PARSER
+let currentElement: PLYElement;
+
 /**
- *
+ * PARSER
  * @param iterator
  * @param options
  */
-export default async function* parsePLYInBatches(iterator, options = {}) {
-  const lineIterator = makeLineIterator(makeTextDecoderIterator(iterator));
-  const header = await parseHeader(lineIterator, options);
+export async function* parsePLYInBatches(
+  iterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options: any
+): AsyncIterable<PLYMesh> {
+  const lineIterator = makeLineIterator(makeTextDecoderIterator(toArrayBufferIterator(iterator)));
+  const header = await parsePLYHeader(lineIterator, options);
 
-  let attributes;
+  let attributes: PLYAttributes;
   switch (header.format) {
     case 'ascii':
       attributes = await parseASCII(lineIterator, header);
@@ -49,18 +63,25 @@ export default async function* parsePLYInBatches(iterator, options = {}) {
   yield normalizePLY(header, attributes, options);
 }
 
-async function parseHeader(lineIterator, options) {
-  const header = {
+/**
+ * Parses header
+ * @param lineIterator
+ * @param options
+ * @returns
+ */
+async function parsePLYHeader(
+  lineIterator: AsyncIterable<string> | Iterable<string>,
+  options: {[key: string]: any}
+): Promise<PLYHeader> {
+  const header: PLYHeader = {
     comments: [],
     elements: []
     // headerLength
   };
 
-  let currentElement;
-
   // Note: forEach does not reset iterator if exiting loop prematurely
   // so that iteration can continue in a second loop
-  await forEach(lineIterator, (line) => {
+  await forEach(lineIterator, (line: string) => {
     line = line.trim();
 
     // End of header
@@ -124,31 +145,33 @@ async function parseHeader(lineIterator, options) {
   return header;
 }
 
-function makePLYElementProperty(propertValues, propertyNameMapping) {
-  const property = {
-    type: propertValues[0]
-  };
-
-  if (property.type === 'list') {
-    property.name = propertValues[3];
-    property.countType = propertValues[1];
-    property.itemType = propertValues[2];
-  } else {
-    property.name = propertValues[1];
+function makePLYElementProperty(propertyValues: string[], propertyNameMapping: []): PLYProperty {
+  const type = propertyValues[0];
+  switch (type) {
+    case 'list':
+      return {
+        type,
+        name: propertyValues[3],
+        countType: propertyValues[1],
+        itemType: propertyValues[2]
+      };
+    default:
+      return {
+        type,
+        name: propertyValues[1]
+      };
   }
-
-  if (propertyNameMapping && property.name in propertyNameMapping) {
-    property.name = propertyNameMapping[property.name];
-  }
-
-  return property;
 }
 
 // ASCII PARSING
-
-async function parseASCII(lineIterator, header) {
+/**
+ * @param lineIterator
+ * @param header
+ * @returns
+ */
+async function parseASCII(lineIterator: AsyncIterable<string>, header: PLYHeader) {
   // PLY ascii format specification, as per http://en.wikipedia.org/wiki/PLY_(file_format)
-  const attributes = {
+  const attributes: PLYAttributes = {
     indices: [],
     vertices: [],
     normals: [],
@@ -168,7 +191,7 @@ async function parseASCII(lineIterator, header) {
         currentElementCount = 0;
       }
 
-      const element = parseASCIIElement(header.elements[currentElement].properties, line);
+      const element = parsePLYElement(header.elements[currentElement].properties, line);
       handleElement(attributes, header.elements[currentElement].name, element);
       currentElementCount++;
     }
@@ -176,9 +199,14 @@ async function parseASCII(lineIterator, header) {
 
   return attributes;
 }
-
+/**
+ * Parses ASCII number
+ * @param n
+ * @param type
+ * @returns ASCII number
+ */
 // eslint-disable-next-line complexity
-function parseASCIINumber(n, type) {
+function parseASCIINumber(n: string, type: string): number {
   switch (type) {
     case 'char':
     case 'uchar':
@@ -204,15 +232,20 @@ function parseASCIINumber(n, type) {
       throw new Error(type);
   }
 }
-
-function parseASCIIElement(properties, line) {
-  const values = line.split(/\s+/);
+/**
+ * Parses ASCII element
+ * @param properties
+ * @param line
+ * @returns element
+ */
+function parsePLYElement(properties: any[], line: string) {
+  const values: any = line.split(/\s+/);
 
   const element = {};
 
   for (let i = 0; i < properties.length; i++) {
     if (properties[i].type === 'list') {
-      const list = [];
+      const list: any = [];
       const n = parseASCIINumber(values.shift(), properties[i].countType);
 
       for (let j = 0; j < n; j++) {
@@ -227,10 +260,18 @@ function parseASCIIElement(properties, line) {
 
   return element;
 }
-
+/**
+ * @param buffer
+ * @param elementName
+ * @param element
+ */
 // HELPER FUNCTIONS
 // eslint-disable-next-line complexity
-function handleElement(buffer, elementName, element) {
+function handleElement(
+  buffer: {[index: string]: number[]},
+  elementName: string,
+  element: any = {}
+) {
   switch (elementName) {
     case 'vertex':
       buffer.vertices.push(element.x, element.y, element.z);

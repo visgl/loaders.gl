@@ -1,0 +1,478 @@
+{
+  "token": null,
+  "isTileset": false,
+  "isTileHeader": false,
+  "tile": null,
+  "tileset": null,
+  "_tileOptions": {
+    "attributeUrls": [
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_0/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_1/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_2/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_3/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_4/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_5/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_6/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_7/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_8/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_9/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_10/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_11/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_12/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_13/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_14/0",
+      "https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/i3s/test/data/Buildings_NewYork_17/SceneServer/layers/0/nodes/2465/attributes/f_15/0"
+    ],
+    "textureFormat": "jpg",
+    "textureLoaderOptions": {},
+    "materialDefinition": {
+      "doubleSided": true
+    },
+    "isDracoGeometry": true,
+    "mbs": [-73.83164429861608, 40.707500824524054, 61.58215877879411, 4027.21186189776]
+  },
+  "_tilesetOptions": {
+    "store": {
+      "id": "F3484E20-2E99-485C-B2CF-396D600F2921",
+      "profile": "meshpyramids",
+      "resourcePattern": ["3dNodeIndexDocument", "Attributes", "SharedResource", "Geometry"],
+      "rootNode": "./nodes/root",
+      "extent": [-74.25706268068984, 40.49830175323825, -73.69927418523119, 40.91509495258098],
+      "indexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+      "vertexCRS": "http://www.opengis.net/def/crs/EPSG/0/4326",
+      "normalReferenceFrame": "earth-centered",
+      "nidEncoding": "application/vnd.esri.i3s.json+gzip; version=1.6",
+      "featureEncoding": "application/vnd.esri.i3s.json+gzip; version=1.6",
+      "geometryEncoding": "application/octet-stream; version=1.6",
+      "attributeEncoding": "application/octet-stream; version=1.6",
+      "lodType": "MeshPyramid",
+      "lodModel": "node-switching",
+      "defaultGeometrySchema": {
+        "geometryType": "triangles",
+        "header": [
+          {
+            "property": "vertexCount",
+            "type": "UInt32"
+          },
+          {
+            "property": "featureCount",
+            "type": "UInt32"
+          }
+        ],
+        "topology": "PerAttributeArray",
+        "ordering": ["position", "normal", "uv0", "color"],
+        "vertexAttributes": {
+          "position": {
+            "valueType": "Float32",
+            "valuesPerElement": 3
+          },
+          "normal": {
+            "valueType": "Float32",
+            "valuesPerElement": 3
+          },
+          "uv0": {
+            "valueType": "Float32",
+            "valuesPerElement": 2
+          },
+          "color": {
+            "valueType": "UInt8",
+            "valuesPerElement": 4
+          }
+        },
+        "featureAttributeOrder": ["id", "faceRange"],
+        "featureAttributes": {
+          "id": {
+            "valueType": "UInt64",
+            "valuesPerElement": 1
+          },
+          "faceRange": {
+            "valueType": "UInt32",
+            "valuesPerElement": 2
+          }
+        }
+      },
+      "textureEncoding": ["image/jpeg", "image/vnd-ms.dds"],
+      "version": "1.7"
+    },
+    "attributeStorageInfo": [
+      {
+        "key": "f_0",
+        "name": "OBJECTID",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Oid32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_1",
+        "name": "BIN",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Int32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_2",
+        "name": "DOITT_ID",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Int32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_3",
+        "name": "SOURCE_ID",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Float64",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_4",
+        "name": "FID",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Int32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_5",
+        "name": "NAME",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "encoding": "UTF-8",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_6",
+        "name": "BBL",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "encoding": "UTF-8",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_7",
+        "name": "CNSTRCT_YR",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Int32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_8",
+        "name": "LSTMODDATE",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "encoding": "UTF-8",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_9",
+        "name": "LSTSTATYPE",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "encoding": "UTF-8",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_10",
+        "name": "HEIGHTROOF",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Float64",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_11",
+        "name": "FTRCODE",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Int32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_12",
+        "name": "SUBFTRCODE",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Int32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_13",
+        "name": "GROUNDELEV",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Int32",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_14",
+        "name": "NUM_FLOORS",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeValues"],
+        "attributeValues": {
+          "valueType": "Float64",
+          "valuesPerElement": 1
+        }
+      },
+      {
+        "key": "f_15",
+        "name": "BUILT_CODE",
+        "header": [
+          {
+            "property": "count",
+            "valueType": "UInt32"
+          },
+          {
+            "property": "attributeValuesByteCount",
+            "valueType": "UInt32"
+          }
+        ],
+        "ordering": ["attributeByteCounts", "attributeValues"],
+        "attributeByteCounts": {
+          "valueType": "UInt32",
+          "valuesPerElement": 1
+        },
+        "attributeValues": {
+          "valueType": "String",
+          "encoding": "UTF-8",
+          "valuesPerElement": 1
+        }
+      }
+    ],
+    "fields": [
+      {
+        "name": "OBJECTID",
+        "type": "esriFieldTypeOID",
+        "alias": "OBJECTID"
+      },
+      {
+        "name": "BIN",
+        "type": "esriFieldTypeInteger",
+        "alias": "BIN"
+      },
+      {
+        "name": "DOITT_ID",
+        "type": "esriFieldTypeInteger",
+        "alias": "DOITT_ID"
+      },
+      {
+        "name": "SOURCE_ID",
+        "type": "esriFieldTypeDouble",
+        "alias": "SOURCE_ID"
+      },
+      {
+        "name": "FID",
+        "type": "esriFieldTypeInteger",
+        "alias": "FID"
+      },
+      {
+        "name": "NAME",
+        "type": "esriFieldTypeString",
+        "alias": "NAME"
+      },
+      {
+        "name": "BBL",
+        "type": "esriFieldTypeString",
+        "alias": "BBL"
+      },
+      {
+        "name": "CNSTRCT_YR",
+        "type": "esriFieldTypeInteger",
+        "alias": "CNSTRCT_YR"
+      },
+      {
+        "name": "LSTMODDATE",
+        "type": "esriFieldTypeDate",
+        "alias": "LSTMODDATE"
+      },
+      {
+        "name": "LSTSTATYPE",
+        "type": "esriFieldTypeString",
+        "alias": "LSTSTATYPE"
+      },
+      {
+        "name": "HEIGHTROOF",
+        "type": "esriFieldTypeDouble",
+        "alias": "HEIGHTROOF"
+      },
+      {
+        "name": "FTRCODE",
+        "type": "esriFieldTypeInteger",
+        "alias": "FTRCODE"
+      },
+      {
+        "name": "SUBFTRCODE",
+        "type": "esriFieldTypeInteger",
+        "alias": "SUBFTRCODE"
+      },
+      {
+        "name": "GROUNDELEV",
+        "type": "esriFieldTypeInteger",
+        "alias": "GROUNDELEV"
+      },
+      {
+        "name": "NUM_FLOORS",
+        "type": "esriFieldTypeDouble",
+        "alias": "NUM_FLOORS"
+      },
+      {
+        "name": "BUILT_CODE",
+        "type": "esriFieldTypeString",
+        "alias": "BUILT_CODE"
+      }
+    ]
+  },
+  "useDracoGeometry": true,
+  "useCompressedTextures": true,
+  "decodeTextures": true,
+  "coordinateSystem": 3,
+  "colorsByAttribute": {
+    "attributeName": "HEIGHTROOF",
+    "minValue": 0,
+    "maxValue": 1400,
+    "minColor": [146, 146, 252, 255],
+    "maxColor": [44, 44, 175, 255]
+  }
+}

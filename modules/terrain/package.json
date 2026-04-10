@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/terrain",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "description": "Framework-independent loader for terrain raster formats",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -18,9 +19,22 @@
     "point cloud",
     "OBJ"
   ],
-  "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./terrain-worker.js": {
+      "import": "./dist/terrain-worker.js"
+    },
+    "./quantized-mesh-worker.js": {
+      "import": "./dist/quantized-mesh-worker.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -28,14 +42,21 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/terrain-worker.js --output ./dist/terrain-worker.js --config ../../scripts/webpack/worker.js",
-    "build-worker2": "webpack --entry ./src/workers/quantized-mesh-worker.js --output ./dist/quantized-mesh-worker.js --config ../../scripts/webpack/worker.js"
+    "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "esbuild src/workers/terrain-worker.ts --bundle --outfile=dist/terrain-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker2": "esbuild src/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
+    "@loaders.gl/images": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
     "@mapbox/martini": "^0.2.0"
-  }
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

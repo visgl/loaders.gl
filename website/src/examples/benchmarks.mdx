@@ -1,0 +1,10 @@
+# Benchmarks
+
+import BrowserOnly from '@docusaurus/BrowserOnly';
+
+<BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
+  {() => {
+    const BenchmarksApp = require('./benchmarks-app').default;
+    return <BenchmarksApp />;
+  }}
+</BrowserOnly>

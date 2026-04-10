@@ -1,8 +1,11 @@
-const DECK_DATA_URI = 'https://raw.githubusercontent.com/uber-common/deck.gl-data/master';
-const ION_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWMxMzcyYy0zZjJkLTQwODctODNlNi01MDRkZmMzMjIxOWIiLCJpZCI6OTYyMCwic2NvcGVzIjpbImFzbCIsImFzciIsImdjIl0sImlhdCI6MTU2Mjg2NjI3M30.1FNiClUyk00YH_nWfSGpiQAjR5V2OvREDq1PJ5QMjWQ';
 
-const DATA_URI = 'https://raw.githubusercontent.com/uber-web/loaders.gl/master';
+import {fetchFile} from '@loaders.gl/core';
+
+const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
+const ION_TOKEN =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3NjEwMjA4Ni00YmVkLTQyMjgtYjRmZS1lY2M3ZWFiMmFmNTYiLCJpZCI6MjYxMzMsImlhdCI6MTY3NTM2ODY4NX0.chGkGL6DkDNv5wYJQDMzWIvi9iDoVa27dgng_5ARDmo';
+
+const DATA_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
 export const INITIAL_EXAMPLE_CATEGORY = 'ion';
@@ -17,6 +20,11 @@ const SHOWCASE_EXAMPLES = {
         ionAccessToken: ION_TOKEN,
         maximumScreenSpaceError: 4
       },
+      'Melbourne (Photogrammetry)': {
+        ionAssetId: 69380,
+        ionAccessToken: ION_TOKEN,
+        maximumScreenSpaceError: 4
+      },
       'Montreal (PointCloud)': {
         ionAssetId: 28945,
         ionAccessToken: ION_TOKEN,
@@ -28,17 +36,18 @@ const SHOWCASE_EXAMPLES = {
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxN2NhMzkwYi0zNWM4LTRjNTYtYWE3Mi1jMDAxYzhlOGVmNTAiLCJpZCI6OTYxOSwic2NvcGVzIjpbImFzbCIsImFzciIsImFzdyIsImdjIl0sImlhdCI6MTU2MjE4MTMxM30.OkgVr6NaKYxabUMIGqPOYFe0V5JifXLVLfpae63x-tA',
         maximumScreenSpaceError: 4
       },
-      '555 Market (PointCloud)': {
-        ionAssetId: 55337,
-        ionAccessToken: ION_TOKEN,
-        maximumScreenSpaceError: 16
-      },
-      'Phillipines B3DM': {
+      // This tileset is not available on CesiumIon anymore
+      // '555 Market (PointCloud)': {
+      //   ionAssetId: 55337,
+      //   ionAccessToken: ION_TOKEN,
+      //   maximumScreenSpaceError: 16
+      // },
+      'Phillipines (B3DM)': {
         ionAssetId: 34014,
         ionAccessToken:
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MTQ0NTNiOC0wNzlmLTQ1ZGEtYjM3Yi05ZmJlY2FiMmRjYWMiLCJpZCI6MTMxNTEsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjI2OTQ3NTh9.tlqEVzzO25Itcla4jD17yywNFvAVM-aNVduzF6ss-1g'
       },
-      'Phillipines Point Cloud': {
+      'Phillipines (PointCloud)': {
         ionAssetId: 34013,
         ionAccessToken:
           'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0MTQ0NTNiOC0wNzlmLTQ1ZGEtYjM3Yi05ZmJlY2FiMmRjYWMiLCJpZCI6MTMxNTEsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NjI2OTQ3NTh9.tlqEVzzO25Itcla4jD17yywNFvAVM-aNVduzF6ss-1g'
@@ -60,20 +69,24 @@ const SHOWCASE_EXAMPLES = {
       }
     }
   },
-  vricon: {
-    name: 'VRICON Photogrammetry Samples',
-    examples: {
-      Cairo: {ionAssetId: 29328, ionAccessToken: ION_TOKEN},
-      Caracas: {ionAssetId: 29331, ionAccessToken: ION_TOKEN},
-      Damascus: {ionAssetId: 29332, ionAccessToken: ION_TOKEN},
-      Honolulu: {ionAssetId: 29333, ionAccessToken: ION_TOKEN},
-      'San Francisco': {ionAssetId: 29334, ionAccessToken: ION_TOKEN},
-      Tehran: {ionAssetId: 29335, ionAccessToken: ION_TOKEN}
-    }
-  },
+  // These tilesets are not available anymore due
+  // vricon: {
+  //   name: 'VRICON Photogrammetry Samples',
+  //   examples: {
+  //     Cairo: {ionAssetId: 29328, ionAccessToken: ION_TOKEN},
+  //     Caracas: {ionAssetId: 29331, ionAccessToken: ION_TOKEN},
+  //     Damascus: {ionAssetId: 29332, ionAccessToken: ION_TOKEN},
+  //     Honolulu: {ionAssetId: 29333, ionAccessToken: ION_TOKEN},
+  //     'San Francisco': {ionAssetId: 29334, ionAccessToken: ION_TOKEN},
+  //     Tehran: {ionAssetId: 29335, ionAccessToken: ION_TOKEN}
+  //   }
+  // },
   github: {
     name: 'Others',
     examples: {
+      '555 Market - Point Cloud (Github Pages)': {
+        tilesetUrl: `${DECK_DATA_URI}/3d-tiles/555Market/tileset.json`
+      },
       'Royal Exhibition Building (Github Pages)': {
         tilesetUrl: `${DECK_DATA_URI}/3d-tiles/RoyalExhibitionBuilding/tileset.json`
       }
@@ -83,7 +96,7 @@ const SHOWCASE_EXAMPLES = {
 
 export async function loadExampleIndex() {
   // Load the index file that lists example tilesets (from the loaders.gl github repo)
-  const response = await fetch(EXAMPLE_INDEX_URL);
+  const response = await fetchFile(EXAMPLE_INDEX_URL);
   const testExamples = await response.json();
 
   // We don't yet support geometry and vector tiles, so remove those categories for now

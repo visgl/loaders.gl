@@ -1,47 +1,18 @@
-import {Schema, Field, Bool, Utf8, Float64, TimestampMillisecond} from '@loaders.gl/schema';
-import BinaryChunkReader from '../streaming/binary-chunk-reader';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-type DBFRowsOutput = object[];
-
-interface DBFTableOutput {
-  schema;
-  rows: DBFRowsOutput;
-}
-
-type DBFHeader = {
-  // Last updated date
-  year: number;
-  month: number;
-  day: number;
-  // Number of records in data file
-  nRecords: number;
-  // Length of header in bytes
-  headerLength: number;
-  // Length of each record
-  recordLength: number;
-  // Not sure if this is usually set
-  languageDriver: number;
-};
-
-type DBFField = {
-  name: string;
-  dataType: string;
-  fieldLength: number;
-  decimal: number;
-};
-
-type DBFResult = {
-  data: {[key: string]: any}[];
-  schema?: Schema;
-  error?;
-  dbfHeader?: DBFHeader;
-  dbfFields?: DBFField[];
-  progress?: {
-    bytesUsed: number;
-    rowsTotal: number;
-    rows: number;
-  };
-};
+import type {Field, ObjectRowTable} from '@loaders.gl/schema';
+import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
+import {
+  DBFLoaderOptions,
+  DBFResult,
+  DBFTableOutput,
+  DBFHeader,
+  DBFRowsOutput,
+  DBFField
+} from './types';
 
 const LITTLE_ENDIAN = true;
 const DBF_HEADER_SIZE = 32;
@@ -62,11 +33,14 @@ class DBFParser {
     data: []
   };
 
-  constructor({encoding}) {
-    this.textDecoder = new TextDecoder(encoding);
+  constructor(options: {encoding: string}) {
+    this.textDecoder = new TextDecoder(options.encoding);
   }
 
-  write(arrayBuffer) {
+  /**
+   * @param arrayBuffer
+   */
+  write(arrayBuffer: ArrayBuffer): void {
     this.binaryReader.write(arrayBuffer);
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
@@ -77,7 +51,7 @@ class DBFParser {
     // - all rows available
   }
 
-  end() {
+  end(): void {
     this.binaryReader.end();
     this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
@@ -88,36 +62,54 @@ class DBFParser {
   }
 }
 
-export function parseDBF(arrayBuffer: ArrayBuffer, options): DBFRowsOutput | DBFTableOutput {
-  const loaderOptions = options.dbf || {};
-  const {encoding} = loaderOptions;
+/**
+ * @param arrayBuffer
+ * @param options
+ * @returns DBFTable or rows
+ */
+export function parseDBF(
+  arrayBuffer: ArrayBuffer,
+  options: DBFLoaderOptions = {}
+): DBFRowsOutput | DBFTableOutput | ObjectRowTable {
+  const {encoding = 'latin1'} = options.dbf || {};
 
   const dbfParser = new DBFParser({encoding});
   dbfParser.write(arrayBuffer);
   dbfParser.end();
 
   const {data, schema} = dbfParser.result;
-  switch (options.tables && options.tables.format) {
+  const shape = options?.dbf?.shape;
+  switch (shape) {
+    case 'object-row-table': {
+      const table: ObjectRowTable = {
+        shape: 'object-row-table',
+        schema,
+        data
+      };
+      return table;
+    }
     case 'table':
-      // TODO - parse columns
       return {schema, rows: data};
-
     case 'rows':
     default:
       return data;
   }
 }
-
+/**
+ * @param asyncIterator
+ * @param options
+ */
 export async function* parseDBFInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options: DBFLoaderOptions = {}
 ): AsyncIterable<DBFHeader | DBFRowsOutput | DBFTableOutput> {
-  const loaderOptions = options.dbf || {};
-  const {encoding} = loaderOptions;
+  const {encoding = 'latin1'} = options.dbf || {};
 
   const parser = new DBFParser({encoding});
   let headerReturned = false;
-  for await (const arrayBuffer of asyncIterator) {
+  for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.dbfHeader) {
       headerReturned = true;
@@ -134,10 +126,21 @@ export async function* parseDBFInBatches(
     yield parser.result.data;
   }
 }
-
-// https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
+/**
+ * https://www.dbase.com/Knowledgebase/INT/db7_file_fmt.htm
+ * @param state
+ * @param result
+ * @param binaryReader
+ * @param textDecoder
+ * @returns
+ */
 /* eslint-disable complexity, max-depth */
-function parseState(state, result: DBFResult, binaryReader, textDecoder) {
+function parseState(
+  state: STATE,
+  result: DBFResult,
+  binaryReader: BinaryChunkReader,
+  textDecoder: TextDecoder
+): STATE {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -148,7 +151,8 @@ function parseState(state, result: DBFResult, binaryReader, textDecoder) {
 
         case STATE.START:
           // Parse initial file header
-          const dataView = binaryReader.getDataView(DBF_HEADER_SIZE, 'DBF header');
+          // DBF Header
+          const dataView = binaryReader.getDataView(DBF_HEADER_SIZE);
           if (!dataView) {
             return state;
           }
@@ -165,15 +169,17 @@ function parseState(state, result: DBFResult, binaryReader, textDecoder) {
           // Parse DBF field descriptors (schema)
           const fieldDescriptorView = binaryReader.getDataView(
             // @ts-ignore
-            result.dbfHeader.headerLength - DBF_HEADER_SIZE,
-            'DBF field descriptors'
+            result.dbfHeader.headerLength - DBF_HEADER_SIZE
           );
           if (!fieldDescriptorView) {
             return state;
           }
 
           result.dbfFields = parseFieldDescriptors(fieldDescriptorView, textDecoder);
-          result.schema = new Schema(result.dbfFields.map((dbfField) => makeField(dbfField)));
+          result.schema = {
+            fields: result.dbfFields.map(dbfField => makeField(dbfField)),
+            metadata: {}
+          };
 
           state = STATE.FIELD_PROPERTIES;
 
@@ -235,9 +241,9 @@ function parseDBFHeader(headerView: DataView): DBFHeader {
 }
 
 /**
- * @param {DataView} view
+ * @param view
  */
-function parseFieldDescriptors(view, textDecoder): DBFField[] {
+function parseFieldDescriptors(view: DataView, textDecoder: TextDecoder): DBFField[] {
   // NOTE: this might overestimate the number of fields if the "Database
   // Container" container exists and is included in the headerLength
   const nFields = (view.byteLength - 1) / 32;
@@ -275,13 +281,18 @@ function parseRows(binaryReader, fields, nRecords, recordLength, textDecoder) {
  */
 
 /**
+ *
+ * @param view
+ * @param fields
+ * @param textDecoder
+ * @returns
  */
 function parseRow(
   view: DataView,
   fields: DBFField[],
   textDecoder: TextDecoder
 ): {[key: string]: any} {
-  const out = {};
+  const out: {[key: string]: string | number | boolean | null} = {};
   let offset = 0;
   for (const field of fields) {
     const text = textDecoder.decode(
@@ -294,8 +305,13 @@ function parseRow(
   return out;
 }
 
-// Should NaN be coerced to null?
-function parseField(text, dataType) {
+/**
+ * Should NaN be coerced to null?
+ * @param text
+ * @param dataType
+ * @returns Field depends on a type of the data
+ */
+function parseField(text: string, dataType: string): string | number | boolean | null {
   switch (dataType) {
     case 'B':
       return parseNumber(text);
@@ -316,8 +332,12 @@ function parseField(text, dataType) {
   }
 }
 
-/** Parse YYYYMMDD to date in milliseconds */
-function parseDate(str): number {
+/**
+ * Parse YYYYMMDD to date in milliseconds
+ * @param str YYYYMMDD
+ * @returns new Date as a number
+ */
+function parseDate(str: any): number {
   return Date.UTC(str.slice(0, 4), parseInt(str.slice(4, 6), 10) - 1, str.slice(6, 8));
 }
 
@@ -326,41 +346,55 @@ function parseDate(str): number {
  * any of Y, y, T, t coerce to true
  * any of N, n, F, f coerce to false
  * otherwise null
+ * @param value
+ * @returns boolean | null
  */
-function parseBoolean(value): boolean | null {
+function parseBoolean(value: string): boolean | null {
   return /^[nf]$/i.test(value) ? false : /^[yt]$/i.test(value) ? true : null;
 }
 
-// Return null instead of NaN
-function parseNumber(text): number | null {
+/**
+ * Return null instead of NaN
+ * @param text
+ * @returns number | null
+ */
+function parseNumber(text: string): number | null {
   const number = parseFloat(text);
-  return isNaN(number) ? null : number;
+  return Number.isNaN(number) ? null : number;
 }
 
-function parseCharacter(text): string | null {
+/**
+ *
+ * @param text
+ * @returns string | null
+ */
+function parseCharacter(text: string): string | null {
   return text.trim() || null;
 }
 
 /**
  * Create a standard Arrow-style `Field` from field descriptor.
  * TODO - use `fieldLength` and `decimal` to generate smaller types?
+ * @param param0
+ * @returns Field
  */
-function makeField({name, dataType, fieldLength, decimal}) {
+// eslint-disable
+function makeField({name, dataType, fieldLength, decimal}: DBFField): Field {
   switch (dataType) {
     case 'B':
-      return new Field(name, new Float64(), true);
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'C':
-      return new Field(name, new Utf8(), true);
+      return {name, type: 'utf8', nullable: true, metadata: {}};
     case 'F':
-      return new Field(name, new Float64(), true);
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'N':
-      return new Field(name, new Float64(), true);
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'O':
-      return new Field(name, new Float64(), true);
+      return {name, type: 'float64', nullable: true, metadata: {}};
     case 'D':
-      return new Field(name, new TimestampMillisecond(), true);
+      return {name, type: 'timestamp-millisecond', nullable: true, metadata: {}};
     case 'L':
-      return new Field(name, new Bool(), true);
+      return {name, type: 'bool', nullable: true, metadata: {}};
     default:
       throw new Error('Unsupported data type');
   }

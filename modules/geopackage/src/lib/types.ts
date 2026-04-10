@@ -21,8 +21,23 @@ export type SQLiteTypes =
   | 'TEXT'
   | 'BLOB'
   | 'DATE'
-  | 'DATETIME'
-  | 'GEOMETRY';
+  | 'DATETIME';
+
+/** Type names for geopackage geometries
+ *
+ * As defined in https://www.geopackage.org/spec130/index.html#table_column_data_types, geometries
+ * can be stored with any geometry name listed here:
+ * https://www.geopackage.org/spec130/index.html#geometry_types
+ */
+export type GeoPackageGeometryTypes =
+  | 'GEOMETRY'
+  | 'POINT'
+  | 'LINESTRING'
+  | 'POLYGON'
+  | 'MULTIPOINT'
+  | 'MULTILINESTRING'
+  | 'MULTIPOLYGON'
+  | 'GEOMETRYCOLLECTION';
 
 /**
  * https://www.geopackage.org/spec121/#spatial_ref_sys

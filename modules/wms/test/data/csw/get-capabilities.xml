@@ -1,0 +1,655 @@
+csw30:Capabilities xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:csw30="http://www.opengis.net/cat/csw/3.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dct="http://purl.org/dc/terms/" xmlns:fes20="http://www.opengis.net/fes/2.0" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gml="http://www.opengis.net/gml" xmlns:ows="http://www.opengis.net/ows" xmlns:ows11="http://www.opengis.net/ows/1.1" xmlns:ows20="http://www.opengis.net/ows/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:inspire_ds="http://inspire.ec.europa.eu/schemas/inspire_ds/1.0" xmlns:inspire_common="http://inspire.ec.europa.eu/schemas/common/1.0" version="3.0.0" updateSequence="1676768728" xsi:schemaLocation="http://www.opengis.net/cat/csw/3.0 http://schemas.opengis.net/cat/csw/3.0/cswGetCapabilities.xsd">
+<script/>
+<ows20:ServiceIdentification>
+  <ows20:Title>pycsw Geospatial Catalogue</ows20:Title>
+  <ows20:Abstract>pycsw is an OGC CSW server implementation written in Python</ows20:Abstract>
+  <ows20:Keywords>
+    <ows20:Keyword>catalogue</ows20:Keyword>
+    <ows20:Keyword>discovery</ows20:Keyword>
+    <ows20:Keyword>metadata</ows20:Keyword>
+    <ows20:Type codeSpace="ISOTC211/19115">theme</ows20:Type>
+  </ows20:Keywords>
+  <ows20:ServiceType codeSpace="OGC">CSW</ows20:ServiceType>
+  <ows20:ServiceTypeVersion>2.0.2</ows20:ServiceTypeVersion>
+  <ows20:ServiceTypeVersion>3.0.0</ows20:ServiceTypeVersion>
+  <ows20:Profile>http://www.opengis.net/cat/csw/apiso/1.0</ows20:Profile>
+  <ows20:Fees>None</ows20:Fees>
+  <ows20:AccessConstraints>None</ows20:AccessConstraints>
+</ows20:ServiceIdentification>
+<ows20:ServiceProvider>
+  <ows20:ProviderName>Environment Agency Austria</ows20:ProviderName>
+  <ows20:ProviderSite xlink:type="simple" xlink:href="http://umweltbundesamt.at/"/>
+  <ows20:ServiceContact>
+    <ows20:IndividualName>Lastname, Firstname</ows20:IndividualName>
+    <ows20:PositionName>Position Title</ows20:PositionName>
+    <ows20:ContactInfo>
+      <ows20:Phone>
+        <ows20:Voice>+xx-xxx-xxx-xxxx</ows20:Voice>
+        <ows20:Facsimile>+xx-xxx-xxx-xxxx</ows20:Facsimile>
+      </ows20:Phone>
+      <ows20:Address>
+        <ows20:DeliveryPoint>Mailing Address</ows20:DeliveryPoint>
+        <ows20:City>Vienna</ows20:City>
+        <ows20:AdministrativeArea>Vienna</ows20:AdministrativeArea>
+        <ows20:PostalCode>1090</ows20:PostalCode>
+        <ows20:Country>Austria</ows20:Country>
+        <ows20:ElectronicMailAddress>Email Address</ows20:ElectronicMailAddress>
+      </ows20:Address>
+      <ows20:OnlineResource xlink:type="simple" xlink:href="Contact URL"/>
+      <ows20:HoursOfService>Hours of Service</ows20:HoursOfService>
+      <ows20:ContactInstructions>During hours of service. Off on weekends.</ows20:ContactInstructions>
+    </ows20:ContactInfo>
+    <ows20:Role codeSpace="ISOTC211/19115">pointOfContact</ows20:Role>
+  </ows20:ServiceContact>
+</ows20:ServiceProvider>
+<ows20:OperationsMetadata>
+  <ows20:Operation name="GetCapabilities">
+    <ows20:DCP>
+      <ows20:HTTP>
+        <ows20:Get xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+        <ows20:Post xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+      </ows20:HTTP>
+    </ows20:DCP>
+    <ows20:Parameter name="acceptFormats">
+      <ows20:AllowedValues>
+        <ows20:Value>application/xml</ows20:Value>
+        <ows20:Value>text/xml</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Parameter name="acceptVersions">
+      <ows20:AllowedValues>
+        <ows20:Value>2.0.2</ows20:Value>
+        <ows20:Value>3.0.0</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Parameter name="sections">
+      <ows20:AllowedValues>
+        <ows20:Value>All</ows20:Value>
+        <ows20:Value>Filter_Capabilities</ows20:Value>
+        <ows20:Value>OperationsMetadata</ows20:Value>
+        <ows20:Value>ServiceIdentification</ows20:Value>
+        <ows20:Value>ServiceProvider</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+  </ows20:Operation>
+  <ows20:Operation name="GetDomain">
+    <ows20:DCP>
+      <ows20:HTTP>
+        <ows20:Get xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+        <ows20:Post xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+      </ows20:HTTP>
+    </ows20:DCP>
+    <ows20:Parameter name="ParameterName">
+      <ows20:AllowedValues>
+        <ows20:Value>GetCapabilities.acceptFormats</ows20:Value>
+        <ows20:Value>GetCapabilities.acceptVersions</ows20:Value>
+        <ows20:Value>GetCapabilities.sections</ows20:Value>
+        <ows20:Value>GetRecordById.ElementSetName</ows20:Value>
+        <ows20:Value>GetRecordById.outputFormat</ows20:Value>
+        <ows20:Value>GetRecordById.outputSchema</ows20:Value>
+        <ows20:Value>GetRecords.CONSTRAINTLANGUAGE</ows20:Value>
+        <ows20:Value>GetRecords.ElementSetName</ows20:Value>
+        <ows20:Value>GetRecords.outputFormat</ows20:Value>
+        <ows20:Value>GetRecords.outputSchema</ows20:Value>
+        <ows20:Value>GetRecords.typeNames</ows20:Value>
+        <ows20:Value>Harvest.ResourceType</ows20:Value>
+        <ows20:Value>Transaction.TransactionSchemas</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+  </ows20:Operation>
+  <ows20:Operation name="GetRecords">
+    <ows20:DCP>
+      <ows20:HTTP>
+        <ows20:Get xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+        <ows20:Post xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+      </ows20:HTTP>
+    </ows20:DCP>
+    <ows20:Parameter name="CONSTRAINTLANGUAGE">
+      <ows20:AllowedValues>
+        <ows20:Value>CQL_TEXT</ows20:Value>
+        <ows20:Value>FILTER</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Parameter name="ElementSetName">
+      <ows20:AllowedValues>
+        <ows20:Value>brief</ows20:Value>
+        <ows20:Value>full</ows20:Value>
+        <ows20:Value>summary</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Parameter name="outputFormat">
+      <ows20:AllowedValues>
+        <ows20:Value>application/atom+xml</ows20:Value>
+        <ows20:Value>application/json</ows20:Value>
+        <ows20:Value>application/xml</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Parameter name="outputSchema">
+      <ows20:AllowedValues>
+        <ows20:Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/</ows20:Value>
+        <ows20:Value>http://www.interlis.ch/INTERLIS2.3</ows20:Value>
+        <ows20:Value>http://www.isotc211.org/2005/gmd</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/3.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/csdgm</ows20:Value>
+        <ows20:Value>http://www.w3.org/2005/Atom</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Parameter name="typeNames">
+      <ows20:AllowedValues>
+        <ows20:Value>csw30:Record</ows20:Value>
+        <ows20:Value>csw:Record</ows20:Value>
+        <ows20:Value>gmd:MD_Metadata</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Constraint name="AdditionalQueryables">
+      <ows20:AllowedValues>
+        <ows20:Value>apiso:AccessConstraints</ows20:Value>
+        <ows20:Value>apiso:Classification</ows20:Value>
+        <ows20:Value>apiso:ConditionApplyingToAccessAndUse</ows20:Value>
+        <ows20:Value>apiso:Contributor</ows20:Value>
+        <ows20:Value>apiso:Creator</ows20:Value>
+        <ows20:Value>apiso:Degree</ows20:Value>
+        <ows20:Value>apiso:Lineage</ows20:Value>
+        <ows20:Value>apiso:OtherConstraints</ows20:Value>
+        <ows20:Value>apiso:Publisher</ows20:Value>
+        <ows20:Value>apiso:Relation</ows20:Value>
+        <ows20:Value>apiso:ResponsiblePartyRole</ows20:Value>
+        <ows20:Value>apiso:SpecificationDate</ows20:Value>
+        <ows20:Value>apiso:SpecificationDateType</ows20:Value>
+        <ows20:Value>apiso:SpecificationTitle</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Constraint>
+    <ows20:Constraint name="SupportedISOQueryables">
+      <ows20:AllowedValues>
+        <ows20:Value>apiso:Abstract</ows20:Value>
+        <ows20:Value>apiso:AlternateTitle</ows20:Value>
+        <ows20:Value>apiso:AnyText</ows20:Value>
+        <ows20:Value>apiso:BoundingBox</ows20:Value>
+        <ows20:Value>apiso:CRS</ows20:Value>
+        <ows20:Value>apiso:CouplingType</ows20:Value>
+        <ows20:Value>apiso:CreationDate</ows20:Value>
+        <ows20:Value>apiso:Denominator</ows20:Value>
+        <ows20:Value>apiso:DistanceUOM</ows20:Value>
+        <ows20:Value>apiso:DistanceValue</ows20:Value>
+        <ows20:Value>apiso:Format</ows20:Value>
+        <ows20:Value>apiso:GeographicDescriptionCode</ows20:Value>
+        <ows20:Value>apiso:HasSecurityConstraints</ows20:Value>
+        <ows20:Value>apiso:Identifier</ows20:Value>
+        <ows20:Value>apiso:KeywordType</ows20:Value>
+        <ows20:Value>apiso:Language</ows20:Value>
+        <ows20:Value>apiso:Modified</ows20:Value>
+        <ows20:Value>apiso:OperatesOn</ows20:Value>
+        <ows20:Value>apiso:OperatesOnIdentifier</ows20:Value>
+        <ows20:Value>apiso:OperatesOnName</ows20:Value>
+        <ows20:Value>apiso:Operation</ows20:Value>
+        <ows20:Value>apiso:OrganisationName</ows20:Value>
+        <ows20:Value>apiso:ParentIdentifier</ows20:Value>
+        <ows20:Value>apiso:PublicationDate</ows20:Value>
+        <ows20:Value>apiso:ResourceLanguage</ows20:Value>
+        <ows20:Value>apiso:RevisionDate</ows20:Value>
+        <ows20:Value>apiso:ServiceType</ows20:Value>
+        <ows20:Value>apiso:ServiceTypeVersion</ows20:Value>
+        <ows20:Value>apiso:Subject</ows20:Value>
+        <ows20:Value>apiso:TempExtent_begin</ows20:Value>
+        <ows20:Value>apiso:TempExtent_end</ows20:Value>
+        <ows20:Value>apiso:Title</ows20:Value>
+        <ows20:Value>apiso:TopicCategory</ows20:Value>
+        <ows20:Value>apiso:Type</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Constraint>
+    <ows20:Constraint name="MaxRecordDefault">
+      <ows20:AllowedValues>
+        <ows20:Value>20</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Constraint>
+    <ows20:Constraint name="OpenSearchDescriptionDocument">
+      <ows20:AllowedValues>
+        <ows20:Value>https://deims.org/pycsw/catalogue/csw?mode=opensearch&service=CSW&version=3.0.0&request=GetCapabilities</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Constraint>
+  </ows20:Operation>
+  <ows20:Operation name="GetRecordById">
+    <ows20:DCP>
+      <ows20:HTTP>
+        <ows20:Get xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+        <ows20:Post xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+      </ows20:HTTP>
+    </ows20:DCP>
+    <ows20:Parameter name="ElementSetName">
+      <ows20:AllowedValues>
+        <ows20:Value>brief</ows20:Value>
+        <ows20:Value>full</ows20:Value>
+        <ows20:Value>summary</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Parameter name="outputFormat">
+      <ows20:AllowedValues>
+        <ows20:Value>application/atom+xml</ows20:Value>
+        <ows20:Value>application/json</ows20:Value>
+        <ows20:Value>application/xml</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+    <ows20:Parameter name="outputSchema">
+      <ows20:AllowedValues>
+        <ows20:Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/</ows20:Value>
+        <ows20:Value>http://www.interlis.ch/INTERLIS2.3</ows20:Value>
+        <ows20:Value>http://www.isotc211.org/2005/gmd</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/3.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/csdgm</ows20:Value>
+        <ows20:Value>http://www.w3.org/2005/Atom</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+  </ows20:Operation>
+  <ows20:Operation name="GetRepositoryItem">
+    <ows20:DCP>
+      <ows20:HTTP>
+        <ows20:Get xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+      </ows20:HTTP>
+    </ows20:DCP>
+  </ows20:Operation>
+  <ows20:Operation name="Transaction">
+    <ows20:DCP>
+      <ows20:HTTP>
+        <ows20:Post xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+      </ows20:HTTP>
+    </ows20:DCP>
+    <ows20:Parameter name="TransactionSchemas">
+      <ows20:AllowedValues>
+        <ows20:Value>http://www.isotc211.org/2005/gmi</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/2.0.2</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/3.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/sos/1.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/sos/2.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wcs</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wfs</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wfs/2.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wms</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wmts/1.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wps/1.0.0</ows20:Value>
+        <ows20:Value>urn:geoss:waf</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+  </ows20:Operation>
+  <ows20:Operation name="Harvest">
+    <ows20:DCP>
+      <ows20:HTTP>
+        <ows20:Post xlink:type="simple" xlink:href="https://deims.org/pycsw/catalogue/csw"/>
+      </ows20:HTTP>
+    </ows20:DCP>
+    <ows20:Parameter name="ResourceType">
+      <ows20:AllowedValues>
+        <ows20:Value>http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/</ows20:Value>
+        <ows20:Value>http://www.interlis.ch/INTERLIS2.3</ows20:Value>
+        <ows20:Value>http://www.isotc211.org/2005/gmd</ows20:Value>
+        <ows20:Value>http://www.isotc211.org/2005/gmi</ows20:Value>
+        <ows20:Value>http://www.isotc211.org/schemas/2005/gmd/</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/2.0.2</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/3.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/cat/csw/csdgm</ows20:Value>
+        <ows20:Value>http://www.opengis.net/sos/1.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/sos/2.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wcs</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wfs</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wfs/2.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wms</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wmts/1.0</ows20:Value>
+        <ows20:Value>http://www.opengis.net/wps/1.0.0</ows20:Value>
+        <ows20:Value>http://www.w3.org/2005/Atom</ows20:Value>
+        <ows20:Value>urn:geoss:waf</ows20:Value>
+      </ows20:AllowedValues>
+    </ows20:Parameter>
+  </ows20:Operation>
+  <ows20:Parameter name="service">
+    <ows20:AllowedValues>
+      <ows20:Value>CSW</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Parameter>
+  <ows20:Parameter name="version">
+    <ows20:AllowedValues>
+      <ows20:Value>2.0.2</ows20:Value>
+      <ows20:Value>3.0.0</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Parameter>
+  <ows20:Constraint name="CoreQueryables">
+    <ows20:AllowedValues>
+      <ows20:Value>csw:AnyText</ows20:Value>
+      <ows20:Value>dc:contributor</ows20:Value>
+      <ows20:Value>dc:creator</ows20:Value>
+      <ows20:Value>dc:date</ows20:Value>
+      <ows20:Value>dc:format</ows20:Value>
+      <ows20:Value>dc:identifier</ows20:Value>
+      <ows20:Value>dc:language</ows20:Value>
+      <ows20:Value>dc:publisher</ows20:Value>
+      <ows20:Value>dc:relation</ows20:Value>
+      <ows20:Value>dc:rights</ows20:Value>
+      <ows20:Value>dc:source</ows20:Value>
+      <ows20:Value>dc:subject</ows20:Value>
+      <ows20:Value>dc:title</ows20:Value>
+      <ows20:Value>dc:type</ows20:Value>
+      <ows20:Value>dct:abstract</ows20:Value>
+      <ows20:Value>dct:alternative</ows20:Value>
+      <ows20:Value>dct:modified</ows20:Value>
+      <ows20:Value>dct:spatial</ows20:Value>
+      <ows20:Value>ows:BoundingBox</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="MaxRecordDefault">
+    <ows20:AllowedValues>
+      <ows20:Value>20</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="PostEncoding">
+    <ows20:AllowedValues>
+      <ows20:Value>SOAP</ows20:Value>
+      <ows20:Value>XML</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="XPathQueryables">
+    <ows20:AllowedValues>
+      <ows20:Value>allowed</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/CoreQueryables">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/CoreSortables">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/DefaultSortingAlgorithm">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Filter-CQL">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Filter-FES-KVP-Advanced">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Filter-FES-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetCapabilities-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetDomain-KVP">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetDomain-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetRecordById-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetRecords-Async-KVP">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetRecords-Async-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetRecords-Basic-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetRecords-Distributed-KVP">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/GetRecords-Distributed-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Harvest-Async-KVP">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Harvest-Async-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Harvest-Basic-KVP">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Harvest-Basic-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Harvest-Periodic-KVP">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Harvest-Periodic-XML">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/OpenSearch">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/SupportedGMLVersions">
+    <ows20:AllowedValues>
+      <ows20:Value>http://www.opengis.net/gml</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <ows20:Constraint name="http://www.opengis.net/spec/csw/3.0/conf/Transaction">
+    <ows20:AllowedValues>
+      <ows20:Value>TRUE</ows20:Value>
+    </ows20:AllowedValues>
+  </ows20:Constraint>
+  <inspire_ds:ExtendedCapabilities xsi:schemaLocation="http://inspire.ec.europa.eu/schemas/inspire_ds/1.0 http://inspire.ec.europa.eu/schemas/inspire_ds/1.0/inspire_ds.xsd">
+    <inspire_common:ResourceLocator>
+      <inspire_common:URL>https://deims.org/pycsw/catalogue/csw?service=CSW&version=2.0.2&request=GetCapabilities</inspire_common:URL>
+      <inspire_common:MediaType>application/xml</inspire_common:MediaType>
+    </inspire_common:ResourceLocator>
+    <inspire_common:ResourceType>service</inspire_common:ResourceType>
+    <inspire_common:TemporalReference>
+      <inspire_common:TemporalExtent>
+        <inspire_common:IntervalOfDates>
+          <inspire_common:StartingDate>YYYY-MM-DD</inspire_common:StartingDate>
+          <inspire_common:EndDate>YYYY-MM-DD</inspire_common:EndDate>
+        </inspire_common:IntervalOfDates>
+      </inspire_common:TemporalExtent>
+    </inspire_common:TemporalReference>
+    <inspire_common:Conformity>
+      <inspire_common:Specification xsi:type="inspire_common:citationInspireInteroperabilityRegulation_eng">
+        <inspire_common:Title>COMMISSION REGULATION (EU) No 1089/2010 of 23 November 2010 implementing Directive 2007/2/EC of the European Parliament and of the Council as regards interoperability of spatial data sets and services</inspire_common:Title>
+        <inspire_common:DateOfPublication>2010-12-08</inspire_common:DateOfPublication>
+        <inspire_common:URI>OJ:L:2010:323:0011:0102:EN:PDF</inspire_common:URI>
+        <inspire_common:ResourceLocator>
+          <inspire_common:URL>http://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2010:323:0011:0102:EN:PDF</inspire_common:URL>
+          <inspire_common:MediaType>application/pdf</inspire_common:MediaType>
+        </inspire_common:ResourceLocator>
+      </inspire_common:Specification>
+      <inspire_common:Degree>notEvaluated</inspire_common:Degree>
+    </inspire_common:Conformity>
+    <inspire_common:MetadataPointOfContact>
+      <inspire_common:OrganisationName>Organization Name</inspire_common:OrganisationName>
+      <inspire_common:EmailAddress>Email Address</inspire_common:EmailAddress>
+    </inspire_common:MetadataPointOfContact>
+    <inspire_common:MetadataDate>YYYY-MM-DD</inspire_common:MetadataDate>
+    <inspire_common:SpatialDataServiceType>discovery</inspire_common:SpatialDataServiceType>
+    <inspire_common:MandatoryKeyword xsi:type="inspire_common:classificationOfSpatialDataService">
+      <inspire_common:KeywordValue>infoCatalogueService</inspire_common:KeywordValue>
+    </inspire_common:MandatoryKeyword>
+    <inspire_common:Keyword xsi:type="inspire_common:inspireTheme_eng">
+      <inspire_common:OriginatingControlledVocabulary>
+        <inspire_common:Title>GEMET - INSPIRE themes</inspire_common:Title>
+        <inspire_common:DateOfPublication>2008-06-01</inspire_common:DateOfPublication>
+      </inspire_common:OriginatingControlledVocabulary>
+      <inspire_common:KeywordValue>Utility and governmental services</inspire_common:KeywordValue>
+    </inspire_common:Keyword>
+    <inspire_common:SupportedLanguages>
+      <inspire_common:DefaultLanguage>
+        <inspire_common:Language>eng</inspire_common:Language>
+      </inspire_common:DefaultLanguage>
+      <inspire_common:SupportedLanguage>
+        <inspire_common:Language>eng</inspire_common:Language>
+      </inspire_common:SupportedLanguage>
+      <inspire_common:SupportedLanguage>
+        <inspire_common:Language>gre</inspire_common:Language>
+      </inspire_common:SupportedLanguage>
+    </inspire_common:SupportedLanguages>
+    <inspire_common:ResponseLanguage>
+      <inspire_common:Language>eng</inspire_common:Language>
+    </inspire_common:ResponseLanguage>
+  </inspire_ds:ExtendedCapabilities>
+</ows20:OperationsMetadata>
+<ows20:Languages>
+  <ows20:Language>en</ows20:Language>
+</ows20:Languages>
+<fes20:Filter_Capabilities>
+  <fes20:Conformance>
+    <fes20:Constraint name="ImplementsQuery">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsAdHocQuery">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsFunctions">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsResourceld">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsMinStandardFilter">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsStandardFilter">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsMinSpatialFilter">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsSpatialFilter">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsMinTemporalFilter">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsTemporalFilter">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsVersionNav">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsSorting">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsExtendedOperators">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsMinimumXPath">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+    <fes20:Constraint name="ImplementsSchemaElementFunc">
+      <ows11:NoValues/>
+      <ows11:DefaultValue>TRUE</ows11:DefaultValue>
+    </fes20:Constraint>
+  </fes20:Conformance>
+  <fes20:Id_Capabilities>
+    <fes20:ResourceIdentifier name="csw30:id"/>
+  </fes20:Id_Capabilities>
+  <fes20:Scalar_Capabilities>
+    <fes20:LogicalOperators/>
+    <fes20:ComparisonOperators>
+      <fes20:ComparisonOperator name="PropertyIsBetween"/>
+      <fes20:ComparisonOperator name="PropertyIsEqualTo"/>
+      <fes20:ComparisonOperator name="PropertyIsGreaterThan"/>
+      <fes20:ComparisonOperator name="PropertyIsGreaterThanOrEqualTo"/>
+      <fes20:ComparisonOperator name="PropertyIsLessThan"/>
+      <fes20:ComparisonOperator name="PropertyIsLessThanOrEqualTo"/>
+      <fes20:ComparisonOperator name="PropertyIsLike"/>
+      <fes20:ComparisonOperator name="PropertyIsNotEqualTo"/>
+      <fes20:ComparisonOperator name="PropertyIsNull"/>
+    </fes20:ComparisonOperators>
+  </fes20:Scalar_Capabilities>
+  <fes20:Spatial_Capabilities>
+    <fes20:GeometryOperands>
+      <fes20:GeometryOperand name="gml:Point"/>
+      <fes20:GeometryOperand name="gml:LineString"/>
+      <fes20:GeometryOperand name="gml:Polygon"/>
+      <fes20:GeometryOperand name="gml:Envelope"/>
+    </fes20:GeometryOperands>
+    <fes20:SpatialOperators>
+      <fes20:SpatialOperator name="BBOX"/>
+      <fes20:SpatialOperator name="Beyond"/>
+      <fes20:SpatialOperator name="Contains"/>
+      <fes20:SpatialOperator name="Crosses"/>
+      <fes20:SpatialOperator name="Disjoint"/>
+      <fes20:SpatialOperator name="DWithin"/>
+      <fes20:SpatialOperator name="Equals"/>
+      <fes20:SpatialOperator name="Intersects"/>
+      <fes20:SpatialOperator name="Overlaps"/>
+      <fes20:SpatialOperator name="Touches"/>
+      <fes20:SpatialOperator name="Within"/>
+    </fes20:SpatialOperators>
+  </fes20:Spatial_Capabilities>
+  <fes20:Functions>
+    <fes20:Function name="length">
+      <fes20:Returns>xs:string</fes20:Returns>
+    </fes20:Function>
+    <fes20:Function name="lower">
+      <fes20:Returns>xs:string</fes20:Returns>
+    </fes20:Function>
+    <fes20:Function name="ltrim">
+      <fes20:Returns>xs:string</fes20:Returns>
+    </fes20:Function>
+    <fes20:Function name="rtrim">
+      <fes20:Returns>xs:string</fes20:Returns>
+    </fes20:Function>
+    <fes20:Function name="trim">
+      <fes20:Returns>xs:string</fes20:Returns>
+    </fes20:Function>
+    <fes20:Function name="upper">
+      <fes20:Returns>xs:string</fes20:Returns>
+    </fes20:Function>
+  </fes20:Functions>
+</fes20:Filter_Capabilities>
+</csw30:Capabilities>

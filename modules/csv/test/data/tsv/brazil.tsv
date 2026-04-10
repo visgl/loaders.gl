@@ -1,0 +1,11 @@
+name	name_translated	latitude	longitude	geocodes	address	locality	dma	region	postcode	country	admin_region	post_town	neighborhood	po_box	date_refreshed
+Kanzen Esquadrias de Alumínio		-22.92893	-47.102411	{"drop_off":{"longitude":-47.102375,"latitude":-22.928853},"road":{"longitude":-47.102411,"latitude":-22.92893},"main":{"longitude":-47.102411,"latitude":-22.92893}}	Avenida Paulo Provenza Sobrinho, 185	Campinas		SP	13060-365	br		Vila Perseu Leite de Barros			2019-09-25
+Consultório Dra Cristiane Corina Couto Maia		-3.746801	-38.503257	{"main":{"longitude":-38.503257,"latitude":-3.746801}}	Rua Tomás Acioli, 1595	Fortaleza		CE	60135-180	br		Joaquim Tavora			2019-08-30
+Cameron Comércio de Livros e Revistas Ltda		-30.024059	-51.201499	{"main":{"longitude":-51.201499,"latitude":-30.024059}}	Rua Olavo Barreto Viana, 36	Porto Alegre		RS	90570-070	br		Moinhos de Vento			2021-06-17
+Casas Pernambucanas		-23.024911	-45.58171	{"main":{"longitude":-45.58171,"latitude":-23.024911},"roof":{"longitude":-45.58171,"latitude":-23.024911}}	Avenida Charles Schnneider, 1700	Taubaté		SP	12040-000	br		Parque Senhor do Bonfim			2020-11-25
+Polícia Militar do Est de Minas Gerais - N Sra Fátima		-15.805418	-42.219566	{"drop_off":{"longitude":-42.219616,"latitude":-15.805541},"main":{"longitude":-42.219566,"latitude":-15.805418}}	Avenida Contorno, 1795	Taiobeiras		MG		br					2017-09-27
+Clinica Scarparo		-23.564196	-46.653557	{"drop_off":{"longitude":-46.653447,"latitude":-23.564062},"roof":{"longitude":-46.653557,"latitude":-23.564196},"main":{"longitude":-46.653557,"latitude":-23.564196}}	Avenida Paulista 1636 - 8°	São Paulo		SP	01311-200	br					2020-11-24
+Recreativa Krona		-26.150203	-48.907303	{"main":{"longitude":-48.907303,"latitude":-26.150203}}	Rodovia BR-101	Joinville		SC		br					2020-11-30
+Valim Agropecuária		-21.986657	-46.788188	{"main":{"longitude":-46.788188,"latitude":-21.986657}}	Rua Henrique C de Vasconcelos, 1370	São João da Boa Vista		SP	13876-100	br		Jardim São Nicolau			2020-04-27
+Tecno Drive FORD		-25.472029	-49.264734	{"main":{"longitude":-49.264734,"latitude":-25.472029},"roof":{"longitude":-49.264734,"latitude":-25.472029}}						br					2020-11-23
+Stúdio Fnunes Produções		-6.019455	-37.40735	{"main":{"longitude":-37.40735,"latitude":-6.019455}}						br					2020-11-25

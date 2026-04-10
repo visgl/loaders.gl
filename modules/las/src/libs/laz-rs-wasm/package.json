@@ -1,0 +1,19 @@
+{
+  "name": "laz-rs-wasm",
+  "type": "module",
+  "collaborators": [
+    "tmontaigu <thomas.montaigu@laposte.net>",
+    "Chris Lee <csl170000@utdallas.edu>"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "laz_rs_wasm_bg.wasm",
+    "laz_rs_wasm.js",
+    "laz_rs_wasm.d.ts"
+  ],
+  "main": "laz_rs_wasm.js",
+  "types": "laz_rs_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

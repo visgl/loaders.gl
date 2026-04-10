@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/excel",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "description": "Framework-independent loader for Excel files",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -17,12 +18,22 @@
     "table",
     "Excel",
     "Sheets",
-    "Worksheets",
-    "Spreadsheets"
+    "Worksheet",
+    "Spreadsheet"
   ],
-  "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./excel-worker.js": {
+      "import": "./dist/excel-worker.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -30,13 +41,20 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/excel-worker.ts --output ./dist/excel-worker.js --config ../../scripts/webpack/worker.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "esbuild src/workers/excel-worker.ts --bundle --outfile=dist/excel-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
-    "@loaders.gl/schema": "3.0.0-beta.3",
-    "xlsx": "^0.16.9"
-  }
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
+    "apache-arrow": ">= 17.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

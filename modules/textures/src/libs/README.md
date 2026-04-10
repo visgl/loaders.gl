@@ -1,6 +1,6 @@
-# Basis decoder
+# Basis transcoder/encoder
 
-Version 1.12
+Version 1.15
 
 [Website](https://github.com/BinomialLLC/basis_universal)
 

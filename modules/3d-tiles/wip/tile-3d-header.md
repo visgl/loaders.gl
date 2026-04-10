@@ -31,9 +31,9 @@ Get the bounding volume of the tile's contents. This defaults to the
 tile's bounding volume when the content's bounding volume is
 `undefined`.
 
-### boundingSphere : BoundingSphere
+### boundingBox : [number[], number[]]
 
-Get the bounding sphere derived from the tile's bounding volume.
+Get the bounding box in cartographic coordinates. Returns `[min, max]` in `[longitude, latitude, altitude]`.
 
 ### extras : any
 

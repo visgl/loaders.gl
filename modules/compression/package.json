@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/compression",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "description": "Decompression and compression plugins for loaders.gl",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -11,37 +12,70 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
-    "loader",
-    "3d",
-    "mesh",
-    "point cloud"
+    "compression",
+    "decompression",
+    "zip",
+    "gzip",
+    "deflate",
+    "lz4",
+    "zstd",
+    "brotli"
   ],
-  "types": "src/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./compression-worker.js": {
+      "import": "./dist/compression-worker.js"
+    },
+    "./compression-worker-node.js": {
+      "import": "./dist/compression-worker-node.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
     "dist",
     "README.md"
   ],
+  "browser": {
+    "lzo": false,
+    "util": false,
+    "zlib": false
+  },
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-workers",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-workers": "npm run build-zlib-worker && npm run build-lz4-worker && npm run build-zstd-worker",
-    "build-zlib-worker": "webpack --entry ./src/workers/zlib-worker.js --output ./dist/zlib-worker.js --env.dev --config ../../scripts/webpack/worker.js",
-    "build-lz4-worker": "webpack --entry ./src/workers/lz4-worker.js --output ./dist/lz4-worker.js --env.dev --config ../../scripts/webpack/worker.js",
-    "build-zstd-worker": "webpack --entry ./src/workers/zstd-worker.js --output ./dist/zstd-worker.js --env.dev --config ../../scripts/webpack/worker.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "esbuild src/workers/compression-worker.ts --outfile=dist/compression-worker.js --target=esnext --bundle --minify --sourcemap --external:{fs,path,crypto} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/compression-worker-node.ts --outfile=dist/compression-worker-node.js --platform=node --target=node16 --bundle --minify --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
-    "@loaders.gl/worker-utils": "3.0.0-beta.3",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/worker-utils": "4.4.0",
+    "@types/pako": "^1.0.1",
+    "fflate": "0.7.4",
+    "pako": "1.0.11",
+    "snappyjs": "^0.6.1"
+  },
+  "optionalDependencies": {
+    "@types/brotli": "^1.3.0",
+    "brotli": "^1.3.2",
     "lz4js": "^0.2.0",
-    "pako": "^1.0.11"
+    "zstd-codec": "^0.1"
   },
   "devDependencies": {
+    "brotli": "^1.3.2",
+    "lz4js": "^0.2.0",
     "zstd-codec": "^0.1"
-  }
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

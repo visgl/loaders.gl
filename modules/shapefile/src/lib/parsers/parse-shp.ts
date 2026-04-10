@@ -1,7 +1,13 @@
-import {BinaryGeometryData} from '@loaders.gl/gis';
-import BinaryChunkReader from '../streaming/binary-chunk-reader';
-import {parseSHPHeader} from './parse-shp-header';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {BinaryGeometry} from '@loaders.gl/schema';
+import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
+import {parseSHPHeader, SHPHeader} from './parse-shp-header';
 import {parseRecord} from './parse-shp-geometry';
+import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
 const BIG_ENDIAN = false;
@@ -19,24 +25,38 @@ const STATE = {
 };
 
 type SHPResult = {
-  geometries: [];
-  header?;
+  geometries: (BinaryGeometry | null)[];
+  header?: SHPHeader;
   error?: string;
+  progress: {
+    bytesUsed: number;
+    bytesTotal: number;
+    rows: number;
+  };
+  currentIndex: number;
 };
 
 class SHPParser {
-  options;
+  options?: SHPLoaderOptions = {};
   binaryReader = new BinaryChunkReader({maxRewindBytes: SHP_RECORD_HEADER_SIZE});
   state = STATE.EXPECTING_HEADER;
   result: SHPResult = {
-    geometries: []
+    geometries: [],
+    // Initialize with number values to make TS happy
+    // These are initialized for real in STATE.EXPECTING_HEADER
+    progress: {
+      bytesTotal: NaN,
+      bytesUsed: NaN,
+      rows: NaN
+    },
+    currentIndex: NaN
   };
 
-  constructor(options) {
+  constructor(options?: SHPLoaderOptions) {
     this.options = options;
   }
 
-  write(arrayBuffer) {
+  write(arrayBuffer: ArrayBuffer) {
     this.binaryReader.write(arrayBuffer);
     this.state = parseState(this.state, this.result, this.binaryReader, this.options);
   }
@@ -52,7 +72,7 @@ class SHPParser {
   }
 }
 
-export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeometryData[] {
+export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): BinaryGeometry[] {
   const shpParser = new SHPParser(options);
   shpParser.write(arrayBuffer);
   shpParser.end();
@@ -61,13 +81,20 @@ export function parseSHP(arrayBuffer: ArrayBuffer, options?: object): BinaryGeom
   return shpParser.result;
 }
 
+/**
+ * @param asyncIterator
+ * @param options
+ * @returns
+ */
 export async function* parseSHPInBatches(
-  asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>,
-  options?: object
-): AsyncIterable<BinaryGeometryData | object> {
+  asyncIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options?: SHPLoaderOptions
+): AsyncGenerator<BinaryGeometry | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
-  for await (const arrayBuffer of asyncIterator) {
+  for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.header) {
       headerReturned = true;
@@ -95,13 +122,18 @@ export async function* parseSHPInBatches(
  * `return` releases context so that more data can be written into the
  * BinaryChunkReader.
  *
- * @param  {Number} state Current state
- * @param  {Object} result  An object to hold result data
- * @param  {BinaryChunkReader} binaryReader
- * @return {Number} State at end of current parsing
+ * @param  state Current state
+ * @param  result An object to hold result data
+ * @param  binaryReader
+ * @return State at end of current parsing
  */
 /* eslint-disable complexity, max-depth */
-function parseState(state, result, binaryReader, options) {
+function parseState(
+  state: number,
+  result: SHPResult,
+  binaryReader: BinaryChunkReader,
+  options?: SHPLoaderOptions
+): number {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
@@ -130,7 +162,7 @@ function parseState(state, result, binaryReader, options) {
 
         case STATE.EXPECTING_RECORD:
           while (binaryReader.hasAvailableBytes(SHP_RECORD_HEADER_SIZE)) {
-            const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE);
+            const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE) as DataView;
             const recordHeader = {
               recordNumber: recordHeaderView.getInt32(0, BIG_ENDIAN),
               // 2 byte words; includes the four words of record header
@@ -146,7 +178,7 @@ function parseState(state, result, binaryReader, options) {
 
             const invalidRecord =
               recordHeader.byteLength < 4 ||
-              recordHeader.type !== result.header.type ||
+              recordHeader.type !== result.header?.type ||
               recordHeader.recordNumber !== result.currentIndex;
 
             // All records must have at least four bytes (for the record shape type)
@@ -161,7 +193,7 @@ function parseState(state, result, binaryReader, options) {
               // rewind 4 bytes before reading record
               binaryReader.rewind(4);
 
-              const recordView = binaryReader.getDataView(recordHeader.byteLength);
+              const recordView = binaryReader.getDataView(recordHeader.byteLength) as DataView;
               const geometry = parseRecord(recordView, options);
               result.geometries.push(geometry);
 

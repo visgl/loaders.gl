@@ -1,22 +1,20 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {LASLoaderOptions} from './las-loader';
-import {LASLoader as LASWorkerLoader} from './las-loader';
-import parseLAS from './lib/parse-las';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // LASLoader
 
-export type {LASLoaderOptions};
-export {LASWorkerLoader};
+export {LASFormat} from './las-format';
 
-/**
- * Loader for the LAS (LASer) point cloud format
- */
-export const LASLoader = {
-  ...LASWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    parseLAS(arrayBuffer, options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    parseLAS(arrayBuffer, options)
-};
+export type {LASLoaderOptions} from './las-loader';
+export {LASWorkerLoader} from './las-loader';
+export type {LASWriterOptions} from './las-writer';
+export {LASWriter} from './las-writer';
 
-export const _typecheckLoader: LoaderWithParser = LASLoader;
+// Export the laz-perf based loader as default LASLoader until we have done more testing
+export {LAZPerfLoader as LASLoader} from './lazperf-loader';
+export {LASArrowLoader} from './las-arrow-loader';
+
+// Implementation specific loaders, for bench marking and testing
+export {LAZPerfLoader} from './lazperf-loader';
+export {LAZRsLoader} from './laz-rs-loader';

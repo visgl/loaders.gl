@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/json",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "description": "Framework-independent loader for JSON and streaming JSON formats",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -20,9 +21,19 @@
     "JSON stream",
     "JSON async iterator"
   ],
-  "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./geojson-worker.js": {
+      "import": "./dist/geojson-worker.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -30,13 +41,20 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "webpack --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/geojson-worker.ts --output ./dist/geojson-worker.js --config ../../scripts/webpack/worker.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "esbuild src/workers/geojson-worker.ts --bundle --outfile=dist/geojson-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "3.0.0-beta.3",
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
-    "@loaders.gl/schema": "3.0.0-beta.3"
-  }
+    "@loaders.gl/gis": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
+    "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

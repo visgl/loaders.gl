@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // Purpose: include this in your module to avoids adding dependencies on
 // micro modules like 'global' and 'is-browser';
 

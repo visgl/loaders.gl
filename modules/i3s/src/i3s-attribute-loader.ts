@@ -1,5 +1,7 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {load} from '@loaders.gl/core';
+import type {I3SLoaderOptions} from './i3s-loader';
+import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 import {parseI3STileAttribute} from './lib/parsers/parse-i3s-attribute';
 import {getUrlWithToken} from './lib/utils/url-utils';
 
@@ -8,25 +10,26 @@ import {getUrlWithToken} from './lib/utils/url-utils';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 const EMPTY_VALUE = '';
 const REJECTED_STATUS = 'rejected';
+
 /**
  * Loader for I3S attributes
  */
-export const I3SAttributeLoader: LoaderWithParser = {
+export const I3SAttributeLoader = {
+  dataType: null as unknown as I3STileAttributes,
+  batchType: null as never,
   name: 'I3S Attribute',
   id: 'i3s-attribute',
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/binary'],
-  parse,
+  parse: async (arrayBuffer: ArrayBuffer, options?: LoaderOptions) => parseI3STileAttribute(arrayBuffer, options),
   extensions: ['bin'],
   options: {},
   binary: true
-};
+} as const satisfies LoaderWithParser<I3STileAttributes, never, I3SLoaderOptions>;
 
-async function parse(data, options) {
-  data = parseI3STileAttribute(data, options);
-  return data;
-}
+
+// TODO - these seem to use the loader rather than being part of the loader. Move to different file...
 
 /**
  * Load attributes based on feature id
@@ -37,9 +40,9 @@ async function parse(data, options) {
  */
 // eslint-disable-next-line complexity
 export async function loadFeatureAttributes(tile, featureId, options = {}) {
-  const {attributeStorageInfo, attributeUrls} = getAttributesData(tile);
+  const {attributeStorageInfo, attributeUrls, tilesetFields} = getAttributesData(tile);
 
-  if (!attributeStorageInfo || !attributeUrls || !featureId) {
+  if (!attributeStorageInfo || !attributeUrls || featureId < 0) {
     return null;
   }
 
@@ -66,15 +69,20 @@ export async function loadFeatureAttributes(tile, featureId, options = {}) {
     return null;
   }
 
-  return generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId);
+  return generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId, tilesetFields);
 }
 
+/**
+ * Gets attributes data from tile.
+ * @param tile 
+ * @returns 
+ */
 function getAttributesData(tile) {
-  const attributeStorageInfo =
-    tile && tile.tileset && tile.tileset.tileset && tile.tileset.tileset.attributeStorageInfo;
-  const attributeUrls = tile && tile.header && tile.header.attributeUrls;
+  const attributeStorageInfo = tile.tileset?.tileset?.attributeStorageInfo;
+  const attributeUrls = tile.header?.attributeUrls;
+  const tilesetFields = tile.tileset?.tileset?.fields || [];
 
-  return {attributeStorageInfo, attributeUrls};
+  return {attributeStorageInfo, attributeUrls, tilesetFields};
 }
 
 /**
@@ -82,7 +90,7 @@ function getAttributesData(tile) {
  * @param {Object} attribute
  * @returns {String}
  */
-function getAttributeValueType(attribute) {
+export function getAttributeValueType(attribute) {
   if (attribute.hasOwnProperty('objectIds')) {
     return 'Oid32';
   } else if (attribute.hasOwnProperty('attributeValues')) {
@@ -92,26 +100,38 @@ function getAttributeValueType(attribute) {
 }
 
 /**
+ * Find in attributeStorageInfo attribute name responsible for feature ids list.
+ * @param attributeStorageInfo 
+ * @returns Feature ids attribute name
+ */
+function getFeatureIdsAttributeName(attributeStorageInfo) {
+  const objectIdsAttribute = attributeStorageInfo.find(attribute => attribute.name.includes('OBJECTID'));
+
+  return objectIdsAttribute?.name;
+}
+
+/**
  * Generates mapping featureId to feature attributes
  * @param {Array} attributes
  * @param {Object} attributeStorageInfo
  * @param {number} featureId
  * @returns {Object}
  */
-function generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId) {
-  const objectIds = attributes.find((attribute) => attribute.value.OBJECTID);
+function generateAttributesByFeatureId(attributes, attributeStorageInfo, featureId, tilesetFields) {
+  const objectIdsAttributeName = getFeatureIdsAttributeName(attributeStorageInfo);
+  const objectIds = attributes.find((attribute) => attribute.value[objectIdsAttributeName]);
 
   if (!objectIds) {
     return null;
   }
 
-  const attributeIndex = objectIds.value.OBJECTID.indexOf(featureId);
+  const attributeIndex = objectIds.value[objectIdsAttributeName].indexOf(featureId);
 
   if (attributeIndex < 0) {
     return null;
   }
 
-  return getFeatureAttributesByIndex(attributes, attributeIndex, attributeStorageInfo);
+  return getFeatureAttributesByIndex(attributes, attributeIndex, attributeStorageInfo, tilesetFields);
 }
 
 /**
@@ -121,16 +141,29 @@ function generateAttributesByFeatureId(attributes, attributeStorageInfo, feature
  * @param {Object} attributeStorageInfo
  * @returns {Object}
  */
-function getFeatureAttributesByIndex(attributes, featureIdIndex, attributeStorageInfo) {
+function getFeatureAttributesByIndex(attributes, featureIdIndex, attributeStorageInfo, tilesetFields) {
   const attributesObject = {};
 
   for (let index = 0; index < attributeStorageInfo.length; index++) {
     const attributeName = attributeStorageInfo[index].name;
+    const codedValues = getAttributeCodedValues(attributeName, tilesetFields);
     const attribute = getAttributeByIndexAndAttributeName(attributes, index, attributeName);
-    attributesObject[attributeName] = formatAttributeValue(attribute, featureIdIndex);
+    attributesObject[attributeName] = formatAttributeValue(attribute, featureIdIndex, codedValues);
   }
 
   return attributesObject;
+}
+
+/**
+ * Get coded values list from tileset.
+ * @param attributeName 
+ * @param tilesetFields 
+ */
+function getAttributeCodedValues(attributeName, tilesetFields) {
+  const attributeField = tilesetFields
+    .find(field => field.name === attributeName || field.alias === attributeName);
+
+  return attributeField?.domain?.codedValues || [];
 }
 
 /**
@@ -155,12 +188,19 @@ function getAttributeByIndexAndAttributeName(attributes, index, attributesName) 
  * @param {Number} featureIdIndex
  * @returns {String}
  */
-function formatAttributeValue(attribute, featureIdIndex) {
-  return attribute && attribute[featureIdIndex]
-    ? attribute[featureIdIndex]
-      .toString()
+function formatAttributeValue(attribute, featureIdIndex, codedValues) {
+  let value = EMPTY_VALUE;
+
+  if (attribute && (featureIdIndex in attribute)) {
     // eslint-disable-next-line no-control-regex
-      .replace(/\u0000/g, '')
-      .trim()
-    : EMPTY_VALUE;
+    value = String(attribute[featureIdIndex]).replace(/\u0000|NaN/g, '').trim();
+  }
+
+  // Check if coded values are existed. If so we use them.
+  if (codedValues.length) {
+    const codeValue = codedValues.find(codedValue => codedValue.code === Number(value));
+    value = codeValue?.name || EMPTY_VALUE;
+  }
+
+  return value;
 }

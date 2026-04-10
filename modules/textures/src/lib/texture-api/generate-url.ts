@@ -1,19 +1,14 @@
-import {resolvePath, assert} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-// Generate a url by calling getUrl with mix of options, applying options.baseUrl
-export function generateUrl(getUrl, options, urlOptions) {
-  // Get url
-  let url = getUrl;
-  if (typeof getUrl === 'function') {
-    url = getUrl({...options, ...urlOptions});
-  }
-  assert(typeof url === 'string');
+import type {GetUrl, UrlOptions} from './texture-api-types';
 
-  // Apply options.baseUrl
-  const {baseUrl} = options;
-  if (baseUrl) {
-    url = baseUrl[baseUrl.length - 1] === '/' ? `${baseUrl}${url}` : `${baseUrl}/${url}`;
-  }
-
-  return resolvePath(url);
+// Generate a member url by calling getUrl with merged options.
+export function generateUrl(
+  getUrl: string | GetUrl,
+  options: UrlOptions,
+  urlOptions: Record<string, any>
+): string {
+  return typeof getUrl === 'function' ? getUrl({...options, ...urlOptions}) : getUrl;
 }

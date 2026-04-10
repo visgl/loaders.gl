@@ -1,20 +1,68 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {Batch} from '@loaders.gl/schema';
+import {isTable, makeBatchFromTable} from '@loaders.gl/schema-utils';
 import type {
-  BatchableDataType,
   Loader,
+  LoaderWithParser,
+  StrictLoaderOptions,
+  LoaderOptions,
   LoaderContext,
-  LoaderOptions
-} from '@loaders.gl/loader-utils/';
-import {assert} from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync, makeTransformIterator} from '@loaders.gl/loader-utils';
+  BatchableDataType,
+  LoaderOptionsType,
+  LoaderBatchType,
+  LoaderArrayOptionsType,
+  LoaderArrayBatchType,
+  TransformBatches
+} from '@loaders.gl/loader-utils';
+import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
-import {getLoaderContext} from '../loader-utils/context-utils';
-import {getAsyncIteratorFromData, getReadableStream} from '../loader-utils/get-data';
-import {getResourceUrlAndType} from '../utils/resource-utils';
+import {getLoaderContext} from '../loader-utils/loader-context';
+import {getAsyncIterableFromData} from '../loader-utils/get-data';
+import {getResourceUrl} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
 // Ensure `parse` is available in context if loader falls back to `parse`
 import {parse} from './parse';
+
+/**
+ * Parses `data` synchronously using a specified loader
+ */
+export async function parseInBatches<
+  LoaderT extends Loader,
+  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+>(
+  data: BatchableDataType,
+  loader: LoaderT,
+  options?: OptionsT,
+  context?: LoaderContext
+): Promise<AsyncIterable<LoaderBatchType<LoaderT>>>;
+
+/**
+ * Parses `data` using one of the supplied loaders
+ */
+export async function parseInBatches<
+  LoaderArrayT extends Loader[],
+  OptionsT extends LoaderOptions = LoaderArrayOptionsType<LoaderArrayT>
+>(
+  data: BatchableDataType,
+  loaders: LoaderArrayT,
+  options?: OptionsT,
+  context?: LoaderContext
+): Promise<LoaderArrayBatchType<LoaderArrayT>>;
+
+/**
+ * Parses `data` in batches by selecting a pre-registered loader
+ * @deprecated Loader registration is deprecated, use parseInBatches(data, loaders, options) instead
+ */
+// @ts-expect-error
+export async function parseInBatches(
+  data: BatchableDataType,
+  options?: LoaderOptions
+): Promise<AsyncIterable<unknown>>;
 
 /**
  * Parses `data` using a specified loader
@@ -25,16 +73,16 @@ import {parse} from './parse';
  */
 export async function parseInBatches(
   data: BatchableDataType,
-  loaders?: Loader | Loader[] | LoaderOptions,
-  options?: LoaderOptions,
+  loaders?: Loader | Loader[], // LoaderOptions
+  options?: LoaderOptions, // LoaderContext
   context?: LoaderContext
-): Promise<AsyncIterable<any>> {
-  assert(!context || typeof context === 'object'); // parseInBatches no longer accepts final url
+): Promise<AsyncIterable<unknown> | Iterable<unknown>> {
+  const loaderArray = Array.isArray(loaders) ? loaders : undefined;
 
   // Signature: parseInBatches(data, options, url) - Uses registered loaders
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
-    options = loaders as LoaderOptions;
+    options = loaders as unknown as LoaderOptions;
     loaders = undefined;
   }
 
@@ -42,48 +90,45 @@ export async function parseInBatches(
   options = options || {};
 
   // Extract a url for auto detection
-  const {url} = getResourceUrlAndType(data);
+  const url = getResourceUrl(data);
 
   // Chooses a loader and normalizes it
   // Note - only uses URL and contentType for streams and iterator inputs
-  const loader = await selectLoader(data as ArrayBuffer, loaders as Loader[], options);
+  const loader = await selectLoader(data, loaders, options);
   // Note: if options.nothrow was set, it is possible that no loader was found, if so just return null
   if (!loader) {
-    // @ts-ignore
-    return null;
+    return [];
   }
 
   // Normalize options
-  // @ts-ignore
-  options = normalizeOptions(options, loader, loaders, url);
-  // @ts-ignore
+  const strictOptions = normalizeOptions(options, loader, loaderArray, url);
   context = getLoaderContext(
-    // @ts-ignore
-    {url, parseInBatches, parse, loaders: loaders as Loader[]},
-    options,
-    context
+    {url, _parseInBatches: parseInBatches, _parse: parse, loaders: loaderArray},
+    strictOptions,
+    context || null
   );
 
-  return await parseWithLoaderInBatches(loader, data, options, context);
+  return await parseWithLoaderInBatches(loader as LoaderWithParser, data, strictOptions, context);
 }
 
 /**
  * Loader has been selected and context has been prepared, see if we need to emit a metadata batch
  */
 async function parseWithLoaderInBatches(
-  loader,
-  data,
-  options: LoaderOptions,
+  loader: LoaderWithParser,
+  data: BatchableDataType,
+  options: StrictLoaderOptions,
   context: LoaderContext
-) {
+): Promise<AsyncIterable<unknown>> {
   const outputIterator = await parseToOutputIterator(loader, data, options, context);
 
   // Generate metadata batch if requested
-  if (!options.metadata) {
+  if (!options?.core?.metadata) {
     return outputIterator;
   }
 
   const metadataBatch = {
+    shape: 'metadata',
     batchType: 'metadata',
     metadata: {
       _loader: loader,
@@ -94,7 +139,9 @@ async function parseWithLoaderInBatches(
     bytesUsed: 0
   };
 
-  async function* makeMetadataBatchIterator(iterator) {
+  async function* makeMetadataBatchIterator(
+    iterator: Iterable<unknown> | AsyncIterable<unknown>
+  ): AsyncIterable<unknown> {
     yield metadataBatch;
     yield* iterator;
   }
@@ -105,39 +152,74 @@ async function parseWithLoaderInBatches(
 /**
  * Prep work is done, now it is time to start parsing into an output operator
  * The approach depends on which parse function the loader exposes
- * `parseInBatches` (preferred), `parseStreamInBatches` (limited), `parse` (fallback)
+ * `parseInBatches` (preferred), `parse` (fallback)
  */
-async function parseToOutputIterator(loader, data, options, context) {
+async function parseToOutputIterator(
+  loader: LoaderWithParser,
+  data: BatchableDataType,
+  options: StrictLoaderOptions,
+  context: LoaderContext
+): Promise<AsyncIterable<unknown>> {
+  // Get an iterator from the input
+  const inputIterator = await getAsyncIterableFromData(data, options);
+
+  // Apply any iterator transforms (options.transforms)
+  const transformedIterator = await applyInputTransforms(
+    inputIterator,
+    options?.core?.transforms || []
+  );
+
+  // If loader supports parseInBatches, we are done
   if (loader.parseInBatches) {
-    const inputIterator = await getAsyncIteratorFromData(data);
-
-    const iteratorChain = await applyInputTransforms(inputIterator, options);
-
-    return await loader.parseInBatches(iteratorChain, options, context, loader);
+    return loader.parseInBatches(transformedIterator, options, context);
   }
 
-  if (loader.parseStreamInBatches) {
-    const stream = await getReadableStream(data);
-    if (stream) {
-      if (options.transforms) {
-        // eslint-disable-next-line
-        console.warn(
-          'options.transforms not implemented for loaders that use `parseStreamInBatches`'
-        );
-      }
-      return loader.parseStreamInBatches(stream, options, context);
-    }
-  }
+  return parseChunkInBatches(transformedIterator, loader, options, context);
+}
 
-  // Fallback: load atomically using `parse` concatenating input iterator into single chunk
-  async function* parseChunkInBatches() {
-    const inputIterator = await getAsyncIteratorFromData(data);
-    const arrayBuffer = await concatenateArrayBuffersAsync(inputIterator);
-    // yield a single batch, the output from loader.parse()
-    yield loader.parse(arrayBuffer, options, context, loader);
-  }
+// Fallback: load atomically using `parse` concatenating input iterator into single chunk
+async function* parseChunkInBatches(
+  transformedIterator:
+    | Iterable<ArrayBufferLike | ArrayBufferView>
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>,
+  loader: Loader,
+  options: StrictLoaderOptions,
+  context: LoaderContext
+): AsyncIterable<Batch> {
+  const arrayBuffer = await concatenateArrayBuffersAsync(transformedIterator);
+  // Call `parse` instead of `loader.parse` to ensure we can call workers etc.
+  const parsedData = await parse(
+    arrayBuffer,
+    loader,
+    // TODO - Hack: supply loaders MIME type to ensure we match it
+    {...options, core: {...options?.core, mimeType: loader.mimeTypes[0]}},
+    context
+  );
 
-  return await parseChunkInBatches();
+  // yield a single batch, the output from loader.parse() repackaged as a batch
+  const batch = convertDataToBatch(parsedData, loader);
+
+  yield batch;
+}
+
+/**
+ * Convert parsed data into a single batch
+ * @todo run through batch builder to apply options etc...
+ */
+function convertDataToBatch(parsedData: unknown, loader: Loader): Batch {
+  // biome-ignore format: preserve intentional fixture layout
+  const batch: Batch = isTable(parsedData)
+    ? makeBatchFromTable(parsedData)
+    : {
+      shape: 'unknown',
+      batchType: 'data',
+      data: parsedData,
+      length: Array.isArray(parsedData) ? parsedData.length : 1
+    };
+
+  batch.mimeType = loader.mimeTypes[0];
+
+  return batch;
 }
 
 /**
@@ -145,10 +227,17 @@ async function parseToOutputIterator(loader, data, options, context) {
  * @param inputIterator
  * @param options
  */
-async function applyInputTransforms(inputIterator, options) {
+async function applyInputTransforms(
+  inputIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  transforms: TransformBatches[] = []
+): Promise<
+  AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
+> {
   let iteratorChain = inputIterator;
-  for await (const Transform of options.transforms || []) {
-    iteratorChain = makeTransformIterator(iteratorChain, Transform, options);
+  for await (const transformBatches of transforms) {
+    iteratorChain = transformBatches(iteratorChain);
   }
   return iteratorChain;
 }

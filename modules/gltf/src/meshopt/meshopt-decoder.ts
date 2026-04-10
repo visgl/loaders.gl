@@ -57,7 +57,7 @@ export async function meshoptDecodeVertexBuffer(
   count: number,
   size: number,
   source: Uint8Array,
-  filter: string = 'NONE'
+  filter: string | number = 'NONE'
 ): Promise<void> {
   const instance = await loadWasmInstance();
   decode(
@@ -98,7 +98,7 @@ export async function meshoptDecodeGltfBuffer(
   size: number,
   source: Uint8Array,
   mode: string,
-  filter = 'NONE'
+  filter: string | number = 'NONE'
 ): Promise<void> {
   const instance = await loadWasmInstance();
   decode(
@@ -115,6 +115,7 @@ export async function meshoptDecodeGltfBuffer(
 let wasmPromise: Promise<WebAssembly.Instance>;
 
 async function loadWasmInstance(): Promise<WebAssembly.Instance> {
+  // eslint-disable-next-line
   if (!wasmPromise) {
     wasmPromise = loadWasmModule();
   }
@@ -148,6 +149,7 @@ function unpack(data) {
   return result.buffer.slice(0, write);
 }
 
+// eslint-disable-next-line max-params
 function decode(instance, fun, target, count, size, source, filter?) {
   const sbrk = instance.exports.sbrk;
   const count4 = (count + 3) & ~3; // pad for SIMD filter

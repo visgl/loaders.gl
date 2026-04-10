@@ -1,10 +1,14 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // This file is derived from the tar-js code base under MIT license
 // See https://github.com/beatgammit/tar-js/blob/master/LICENSE
 /*
  * tar-js
  * MIT (c) 2011 T. Jameson Little
  */
-
+/* eslint-disable */
 import * as utils from './utils';
 import type {TarStructure, TarData} from './types';
 /*

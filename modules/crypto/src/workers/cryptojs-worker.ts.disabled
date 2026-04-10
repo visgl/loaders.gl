@@ -1,0 +1,30 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {CryptoHashOptions} from '../lib/crypto-hash';
+import {createWorker} from '@loaders.gl/worker-utils';
+import {CryptoHash} from '../lib/crypto-hash';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import * as CryptoJS from 'crypto-js';
+
+// Assuming we can bundle as module
+export {CryptoHash};
+
+createWorker(async (data, options) => {
+  options = {
+    ...options,
+    modules: {CryptoJS}
+  };
+  // @ts-ignore
+  const {operation} = options;
+
+  switch (operation) {
+    case 'crc32':
+      return await new CryptoHash(options).hash(data);
+    case 'crc32c':
+      return await new CryptoHash(options).hash(data);
+    default:
+      throw new Error(`invalid option: ${operation}`);
+  }
+});

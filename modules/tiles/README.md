@@ -1,4 +1,4 @@
-# @loaders.gl/tiles (Experimental)
+# @loaders.gl/tiles
 
 This module contains the common components for tiles loaders, i.e. [3D tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles).
 

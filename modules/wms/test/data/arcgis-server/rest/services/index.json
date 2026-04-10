@@ -1,0 +1,256 @@
+{
+  "currentVersion": 10.91,
+  "folders": [
+   "AGP"
+  ],
+  "services": [
+   {
+    "name": "911CallsHotspot",
+    "type": "GPServer"
+   },
+   {
+    "name": "911CallsHotspot",
+    "type": "MapServer"
+   },
+   {
+    "name": "911CallsHotspotPro",
+    "type": "GPServer"
+   },
+   {
+    "name": "Census",
+    "type": "MapServer"
+   },
+   {
+    "name": "CharlotteLAS",
+    "type": "ImageServer"
+   },
+   {
+    "name": "CommercialDamageAssessment",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "CommercialDamageAssessment",
+    "type": "MapServer"
+   },
+   {
+    "name": "CommunityAddressing",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "CommunityAddressing",
+    "type": "MapServer"
+   },
+   {
+    "name": "DamageAssessment",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "DamageAssessment",
+    "type": "MapServer"
+   },
+   {
+    "name": "DamageAssessmentStatePlane",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "DamageAssessmentStatePlane",
+    "type": "MapServer"
+   },
+   {
+    "name": "Earthquakes_Since1970",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "Earthquakes_Since1970",
+    "type": "MapServer"
+   },
+   {
+    "name": "EmergencyFacilities",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "EmergencyFacilities",
+    "type": "MapServer"
+   },
+   {
+    "name": "GDBVersions",
+    "type": "GPServer"
+   },
+   {
+    "name": "Hurricanes",
+    "type": "MapServer"
+   },
+   {
+    "name": "Military",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "Military",
+    "type": "MapServer"
+   },
+   {
+    "name": "MontgomeryQuarters",
+    "type": "MapServer"
+   },
+   {
+    "name": "MtBaldy_BaseMap",
+    "type": "MapServer"
+   },
+   {
+    "name": "MultiDimensional_Sample",
+    "type": "MapServer"
+   },
+   {
+    "name": "NapervilleShelters",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "NapervilleShelters",
+    "type": "MapServer"
+   },
+   {
+    "name": "NLCDLandCover2001",
+    "type": "ImageServer"
+   },
+   {
+    "name": "Notes",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "Notes",
+    "type": "MapServer"
+   },
+   {
+    "name": "NYTimes_Covid19Cases_USCounties",
+    "type": "MapServer"
+   },
+   {
+    "name": "OilSandsProjectBoundaries",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "OilSandsProjectBoundaries",
+    "type": "MapServer"
+   },
+   {
+    "name": "OtherGeoprocessingServices",
+    "type": "GPServer"
+   },
+   {
+    "name": "PhoneIncidents",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "PhoneIncidents",
+    "type": "MapServer"
+   },
+   {
+    "name": "PoolPermits",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "PoolPermits",
+    "type": "MapServer"
+   },
+   {
+    "name": "Precipitation",
+    "type": "MapServer"
+   },
+   {
+    "name": "Recreation",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "Recreation",
+    "type": "MapServer"
+   },
+   {
+    "name": "RedlandsEmergencyVehicles",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "RedlandsEmergencyVehicles",
+    "type": "MapServer"
+   },
+   {
+    "name": "RiversAnnotation",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "RiversAnnotation",
+    "type": "MapServer"
+   },
+   {
+    "name": "SampleWorldCities",
+    "type": "MapServer"
+   },
+   {
+    "name": "ServiceRequest",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "ServiceRequest",
+    "type": "MapServer"
+   },
+   {
+    "name": "SF311",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "SF311",
+    "type": "MapServer"
+   },
+   {
+    "name": "Toronto",
+    "type": "ImageServer"
+   },
+   {
+    "name": "USA",
+    "type": "MapServer"
+   },
+   {
+    "name": "VerticalLines",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "VerticalLines",
+    "type": "MapServer"
+   },
+   {
+    "name": "Viewshed",
+    "type": "GPServer"
+   },
+   {
+    "name": "Water_Network_Base_Map",
+    "type": "MapServer"
+   },
+   {
+    "name": "Water_Network",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "Water_Network",
+    "type": "MapServer"
+   },
+   {
+    "name": "Wildfire",
+    "type": "FeatureServer"
+   },
+   {
+    "name": "Wildfire",
+    "type": "MapServer"
+   },
+   {
+    "name": "WindTurbines",
+    "type": "MapServer"
+   },
+   {
+    "name": "World_Street_Map",
+    "type": "MapServer"
+   },
+   {
+    "name": "WorldTimeZones",
+    "type": "MapServer"
+   }
+  ]
+ }

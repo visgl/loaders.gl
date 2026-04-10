@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/mvt",
   "description": "Loader for Mapbox Vector Tiles",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -17,9 +18,19 @@
     "MVT",
     "Mapbox Vector Tiles"
   ],
-  "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./mvt-worker.js": {
+      "import": "./dist/mvt-worker.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -27,17 +38,25 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle",
-    "build-worker": "webpack --entry ./src/workers/mvt-worker.js --output ./dist/mvt-worker.js --config ../../scripts/webpack/worker.js",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+    "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "esbuild src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/gis": "3.0.0-beta.3",
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
-    "@math.gl/polygon": "3.5.0-alpha.1",
+    "@loaders.gl/gis": "4.4.0",
+    "@loaders.gl/images": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@math.gl/polygon": "^4.1.0",
+    "@probe.gl/stats": "^4.1.1",
     "pbf": "^3.2.1"
   },
   "devDependencies": {
     "@types/pbf": "^3.0.2"
-  }
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

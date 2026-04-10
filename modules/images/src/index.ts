@@ -1,5 +1,6 @@
 // TYPES
 export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
+export type {ImageLoaderOptions} from './image-loader';
 
 // LOADERS AND WRITERS
 export {ImageLoader} from './image-loader';
@@ -20,5 +21,12 @@ export {
   getImageData
 } from './lib/category-api/parsed-image-api';
 
-// DEPRECATED - Remove in V3 (fix dependency in luma.gl)
-export {loadImage} from './lib/texture-api/load-image';
+// EXPERIMENTAL
+export {getSupportedImageFormats} from './lib/category-api/image-format';
+export {isImageFormatSupported} from './lib/category-api/image-format';
+
+// REMOVED
+/** @deprecated Temporary placeholder to prevent builds from breaking */
+export function loadImage() {
+  throw new Error('loadImage has moved to @loaders.gl/textures');
+}

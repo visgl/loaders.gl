@@ -1,0 +1,251 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import * as arrow from 'apache-arrow';
+import type {
+  GeoColumn,
+  GeoColumnData,
+  GeoColumnPointData,
+  GeoColumnLineData,
+  GeoColumnPolygonData
+} from './geo-column/geo-column';
+import {GeoArrowEncoding} from './metadata/geoarrow-metadata';
+
+export type GetGeoColumnOptions = {
+  /** option to specify which chunk to get binary geometries from, for progressive rendering */
+  chunkIndex?: number;
+  /** The offset (beginning index of rows) of input chunk. Used for reconstructing globalFeatureIds in web workers */
+  chunkOffset?: number;
+};
+
+/**
+ * get binary geometries from geoarrow column
+ *
+ * @param geoColumn the geoarrow column, e.g. arrowTable.getChildAt(geoColumnIndex)
+ * @param geoEncoding the geo encoding of the geoarrow column, e.g. getGeoArrowEncoding(arrowTable.schema, geoColumnName)
+ * @param options options for getting binary geometries {meanCenter: boolean}
+ * @returns BinaryDataFromGeoArrow
+ */
+export function getGeoColumnFromGeoArrowVector(
+  geoColumn: arrow.Vector,
+  geoEncoding: GeoArrowEncoding,
+  options?: GetGeoColumnOptions
+): GeoColumn {
+  const featureTypes = {
+    polygon: geoEncoding === 'geoarrow.multipolygon' || geoEncoding === 'geoarrow.polygon',
+    point: geoEncoding === 'geoarrow.multipoint' || geoEncoding === 'geoarrow.point',
+    line: geoEncoding === 'geoarrow.multilinestring' || geoEncoding === 'geoarrow.linestring'
+  };
+
+  const arrowDatas =
+    options?.chunkIndex !== undefined && options?.chunkIndex >= 0
+      ? [geoColumn.data[options?.chunkIndex]]
+      : geoColumn.data;
+
+  // const globalFeatureIdOffset = options?.chunkOffset || 0;
+
+  const data: GeoColumnData[] = [];
+
+  for (const arrowData of arrowDatas) {
+    // // const {featureIds, positions, dimension, geometryOffsets, triangles} =
+    // //   getBinaryGeometriesFromChunk(arrowData, geoEncoding, options);
+
+    // const globalFeatureIds = new Uint32Array(featureIds.length);
+    // for (let i = 0; i < featureIds.length; i++) {
+    //   globalFeatureIds[i] = featureIds[i] + globalFeatureIdOffset;
+    // }
+
+    const geoColumnData: GeoColumnData = {
+      shape: 'geo-column-data',
+      numRows: arrowData.length,
+      rowOffsets: new Uint32Array(0)
+    };
+
+    if (featureTypes.point) {
+      geoColumnData.points = getPointDataFromArrowData(arrowData, geoEncoding, options);
+    }
+
+    if (featureTypes.line) {
+      geoColumnData.lines = getLineDataFromArrowData(arrowData, geoEncoding, options);
+    }
+
+    if (featureTypes.polygon) {
+      geoColumnData.polygons = getPolygonDataFromArrowData(arrowData, geoEncoding, options);
+    }
+
+    data.push(geoColumnData);
+  }
+
+  return {
+    shape: 'geo-column',
+    data
+  };
+}
+
+/**
+ * get binary geometries from geoarrow column
+ * @param chunk one chunk/batch of geoarrow column
+ * @param geoEncoding geo encoding of the geoarrow column
+ * @param options options for getting binary geometries
+ * @returns BinaryGeometryContent
+ */
+export function getGeoColumnDataFromArrowData(
+  data: arrow.Data,
+  geoEncoding: GeoArrowEncoding,
+  options?: GetGeoColumnOptions
+): GeoColumnPolygonData | GeoColumnLineData | GeoColumnPointData {
+  switch (geoEncoding) {
+    case 'geoarrow.point':
+    case 'geoarrow.multipoint':
+      return getPointDataFromArrowData(data, geoEncoding);
+    case 'geoarrow.linestring':
+    case 'geoarrow.multilinestring':
+      return getLineDataFromArrowData(data, geoEncoding);
+    case 'geoarrow.polygon':
+    case 'geoarrow.multipolygon':
+      return getPolygonDataFromArrowData(data, geoEncoding, options);
+    default:
+      throw Error('invalid geoarrow encoding');
+  }
+}
+
+/**
+ * get binary points from geoarrow point column
+ * @param chunk one chunk/batch of geoarrow column
+ * @param geoEncoding  geo encoding of the geoarrow column
+ * @returns Flat geometry content
+ */
+function getPointDataFromArrowData(chunk: arrow.Data, geoEncoding: string): GeoColumnPointData {
+  const isMultiPoint = geoEncoding === 'geoarrow.multipoint';
+
+  const pointData = isMultiPoint ? chunk.children[0] : chunk;
+  const coordData = pointData.children[0];
+
+  const positionStride = pointData.stride as 2 | 3 | 4;
+  const positions = coordData.values;
+
+  const positionCount = positions.length / positionStride;
+
+  return {
+    shape: 'geo-column-data',
+    type: 'Point',
+
+    rowCount: chunk.length,
+    rowOffsets: chunk.valueOffsets,
+
+    positionCount,
+    positionStride,
+    positions
+  };
+}
+
+/**
+ * get binary lines from geoarrow line column
+ * @param chunk one chunk/batch of geoarrow column
+ * @param geoEncoding the geo encoding of the geoarrow column
+ * @returns Flat geometry content
+ */
+function getLineDataFromArrowData(
+  arrowData: arrow.Data,
+  geoEncoding: string,
+  options?: GetGeoColumnOptions
+): GeoColumnLineData {
+  const isMultiLineString = geoEncoding === 'geoarrow.multilinestring';
+
+  const lineData = isMultiLineString ? arrowData.children[0] : arrowData;
+  const pointData = lineData.children[0];
+  const coordData = pointData.children[0];
+
+  const dimension = pointData.stride as 2 | 3 | 4;
+  const geometryOffsets = lineData.valueOffsets;
+  const positions = coordData.values;
+
+  // geometryIndexes is not needed for line string
+  const geometryIndexes = new Uint16Array(0);
+
+  const rowCount = arrowData.length;
+  const vertexCount = positions.length / dimension;
+  const featureIds = new Uint32Array(positionCount);
+
+  return {
+    type: 'LineString',
+
+    rowCount: arrowData.length,
+    rowOffsets: geometryOffsets,
+
+    positionCount: positions.length / dimension,
+    positionStride: dimension,
+    positions
+  };
+}
+
+/**
+ * get binary polygons from geoarrow polygon column
+ * @param chunk one chunk of geoarrow polygon column
+ * @param geoEncoding the geo encoding of the geoarrow polygon column
+ * @param options options for getting binary geometries
+ * @returns BinaryGeometryContent
+ */
+function getPolygonDataFromArrowData(
+  chunk: arrow.Data,
+  geoEncoding: string,
+  options?: GetGeoColumnOptions
+): GeoColumnPolygonData {
+  const isMultiPolygon = geoEncoding === 'geoarrow.multipolygon';
+
+  const polygonData = isMultiPolygon ? chunk.children[0] : chunk;
+  const polygonOffset = polygonData.valueOffsets;
+  const partData = isMultiPolygon
+    ? chunk.valueOffsets.map((i) => polygonOffset.at(i) || i)
+    : chunk.valueOffsets;
+  const ringData = polygonData.children[0];
+  const pointData = ringData.children[0];
+  const coordData = pointData.children[0];
+  const dimension = pointData.stride;
+  const geometryOffsets = ringData.valueOffsets;
+  const positions = coordData.values;
+
+  const geometryIndexes = new Uint16Array(polygonOffset.length);
+  for (let i = 0; i < polygonOffset.length; i++) {
+    geometryIndexes[i] = geometryOffsets[polygonOffset[i]];
+  }
+
+  const positionCount = positions.length / dimension;
+  const featureIds = new Uint32Array(positionCount);
+  for (let i = 0; i < partData.length - 1; i++) {
+    const startIndex = geometryOffsets[partData[i]];
+    const endIndex = geometryOffsets[partData[i + 1]];
+    for (let j = startIndex; j < endIndex; j++) {
+      featureIds[j] = i;
+    }
+  }
+
+  return {
+    type: 'Polygon',
+    featureIds,
+    dimension,
+    positions,
+    geometryOffsets,
+    geometryIndexes
+  };
+}
+
+//   return {
+//     globalFeatureIds: {value: new Uint32Array(0), size: 1},
+//     positions: {value: new Float32Array(0), size: 2},
+//     properties: [],
+//     numericProps: {},
+//     featureIds: {value: new Uint32Array(0), size: 1}
+//     ...(featureTypes.polygon ? binaryContent : {}),
+//     polygonIndices: {
+//       // use geometryOffsets as polygonIndices same as primitivePolygonIndices since we are using earcut to get triangule indices
+//       value: featureTypes.polygon ? geometryOffsets : new Uint16Array(0),
+//       size: 1
+//     },
+//     primitivePolygonIndices: {
+//       value: featureTypes.polygon ? geometryOffsets : new Uint16Array(0),
+//       size: 1
+//     }
+//   }
+// }

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // NOTE - there is a copy of this function is both in core and loader-utils
 // core does not need all the utils in loader-utils, just this one.
 
@@ -40,7 +44,7 @@ export function getTransferList(
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Transferable
-function isTransferable(object) {
+function isTransferable(object: unknown) {
   if (!object) {
     return false;
   }
@@ -53,8 +57,37 @@ function isTransferable(object) {
   if (typeof ImageBitmap !== 'undefined' && object instanceof ImageBitmap) {
     return true;
   }
+  // @ts-ignore
   if (typeof OffscreenCanvas !== 'undefined' && object instanceof OffscreenCanvas) {
     return true;
   }
   return false;
+}
+
+/**
+ * Recursively drop non serializable values like functions and regexps.
+ * @param object
+ */
+export function getTransferListForWriter(object: object | null): object {
+  if (object === null) {
+    return {};
+  }
+  const clone = Object.assign({}, object);
+
+  Object.keys(clone).forEach(key => {
+    // Typed Arrays and Arrays are passed with no change
+    if (
+      typeof object[key] === 'object' &&
+      !ArrayBuffer.isView(object[key]) &&
+      !(object[key] instanceof Array)
+    ) {
+      clone[key] = getTransferListForWriter(object[key]);
+    } else if (typeof clone[key] === 'function' || clone[key] instanceof RegExp) {
+      clone[key] = {};
+    } else {
+      clone[key] = object[key];
+    }
+  });
+
+  return clone;
 }

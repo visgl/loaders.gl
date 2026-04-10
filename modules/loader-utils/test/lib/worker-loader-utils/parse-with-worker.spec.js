@@ -1,46 +1,45 @@
-import test from 'tape-catch';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import test from 'tape-promise/tape';
 import {WorkerPool} from '@loaders.gl/worker-utils';
-import {toArrayBuffer} from '@loaders.gl/loader-utils';
-import {parseWithWorker} from '@loaders.gl/loader-utils';
-import {registerLoaders, _unregisterLoaders} from '@loaders.gl/core/lib/api/register-loaders';
-import {NullWorkerLoader} from '@loaders.gl/core';
+import {toArrayBuffer, parseWithWorker} from '@loaders.gl/loader-utils';
+import {registerLoaders, _unregisterLoaders, NullWorkerLoader} from '@loaders.gl/core';
 
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
 
-const hasWorker = typeof Worker !== 'undefined';
-
-test('parseWithWorker', async (t) => {
-  if (!hasWorker) {
-    t.comment('Worker test is browser only');
+test('parseWithWorker', async t => {
+  if (!WorkerPool.isSupported()) {
+    t.comment('Workers not supported, skipping tests');
     t.end();
     return;
   }
 
+  const testResponse = new Response();
   const testData = [{chunk: 0}, {chunk: 1}, {chunk: 2}];
-  let parsedData = await parseWithWorker(NullWorkerLoader, testData, {
-    _workerType: 'test'
-  });
+  const testOptions = {
+    _workerType: 'test',
+    reuseWorkers: false,
+    custom: 'custom'
+  };
+  const testContext = {response: testResponse, fetch, _parse: async arrayBuffer => arrayBuffer};
+  const result = await parseWithWorker(NullWorkerLoader, testData, testOptions, testContext);
 
-  t.deepEquals(parsedData, testData, 'data parsed with relative worker url');
-
-  parsedData = await parseWithWorker(NullWorkerLoader, testData, {
-    _workerType: 'test'
-  });
-
-  t.deepEquals(parsedData, testData, 'data parsed with absolute worker url');
+  t.equal(result, null);
 
   t.end();
 });
 
-test.skip('createLoaderWorker', async (t) => {
-  if (!hasWorker) {
-    t.comment('Worker test is browser only');
+test.skip('createLoaderWorker', async t => {
+  if (!WorkerPool.isSupported()) {
+    t.comment('Workers not supported, skipping tests');
     t.end();
     return;
   }
 
-  const callback = (info) =>
+  const callback = info =>
     t.comment(`Processing with worker ${info.name}, queued jobs ${info.backlog}`);
 
   const workerPool = new WorkerPool({
@@ -53,7 +52,7 @@ test.skip('createLoaderWorker', async (t) => {
   const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
 
   const result = await Promise.all(
-    TEST_CASES.map(async (testData) => {
+    TEST_CASES.map(async testData => {
       const job = await workerPool.startJob('test');
       job.postMessage('process', {
         input: toArrayBuffer(JSON.stringify(testData))
@@ -73,9 +72,9 @@ test.skip('createLoaderWorker', async (t) => {
   t.end();
 });
 
-test.skip('createLoaderWorker#nested', async (t) => {
-  if (!hasWorker) {
-    t.comment('Worker test is browser only');
+test.skip('createLoaderWorker#nested', async t => {
+  if (!WorkerPool.isSupported()) {
+    t.comment('Workers not supported, skipping tests');
     t.end();
     return;
   }
@@ -88,10 +87,10 @@ test.skip('createLoaderWorker#nested', async (t) => {
   ];
 
   const result = await Promise.all(
-    TEST_CASES.map((testData) =>
+    TEST_CASES.map(testData =>
       parseWithWorker(
         NullWorkerLoader,
-        toArrayBuffer(testData.map((data) => JSON.stringify(data)).join('\n')),
+        toArrayBuffer(testData.map(data => JSON.stringify(data)).join('\n')),
         NullWorkerLoader.options
       )
     )

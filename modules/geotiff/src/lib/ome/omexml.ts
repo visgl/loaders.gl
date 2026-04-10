@@ -1,29 +1,33 @@
-import parser from 'fast-xml-parser';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {XMLParser} from 'fast-xml-parser';
 import {ensureArray, intToRgba} from '../utils/tiff-utils';
 
 // WARNING: Changes to the parser options _will_ effect the types in types/omexml.d.ts.
-const PARSER_OPTIONS = {
+const xmlParser = new XMLParser({
   // Nests attributes withtout prefix under 'attr' key for each node
   attributeNamePrefix: '',
-  attrNodeName: 'attr',
+  attributesGroupName: 'attr',
 
   // Parses numbers for both attributes and nodes
-  parseNodeValue: true,
+  parseTagValue: true,
   parseAttributeValue: true,
 
   // Forces attributes to be parsed
   ignoreAttributes: false
-};
+});
 
-const parse = (str: string): Root => parser.parse(str, PARSER_OPTIONS);
+const parse = (str: string): Root => xmlParser.parse(str);
 
 export function fromString(str: string) {
   const res = parse(str);
   if (!res.OME) {
     throw Error('Failed to parse OME-XML metadata.');
   }
-  return ensureArray(res.OME.Image).map((img) => {
-    const Channels = ensureArray(img.Pixels.Channel).map((c) => {
+  return ensureArray(res.OME.Image).map(img => {
+    const Channels = ensureArray(img.Pixels.Channel).map(c => {
       if ('Color' in c.attr) {
         return {...c.attr, Color: intToRgba(c.attr.Color)};
       }
@@ -45,7 +49,7 @@ export function fromString(str: string) {
         const {Pixels} = image;
 
         const sizes = (['X', 'Y', 'Z'] as const)
-          .map((name) => {
+          .map(name => {
             const size = Pixels[`PhysicalSize${name}` as const];
             const unit = Pixels[`PhysicalSize${name}Unit` as const];
             return size && unit ? `${size} ${unit}` : '-';

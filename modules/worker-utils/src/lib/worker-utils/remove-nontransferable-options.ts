@@ -1,31 +1,27 @@
-/**
- * Safely stringify JSON (drop non serializable values like functions and regexps)
- * @param value
- */
-export function removeNontransferableOptions(object: object): object {
-  // options.log object contains functions which cannot be transferred
-  // TODO - decide how to handle logging on workers
-  // TODO - warn if options stringification is long
-  return JSON.parse(stringifyJSON(object));
-}
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-function stringifyJSON(v) {
-  const cache = new Set();
-  return JSON.stringify(v, (key, value) => {
-    if (typeof value === 'object' && value !== null) {
-      if (cache.has(value)) {
-        // Circular reference found
-        try {
-          // If this value does not reference a parent it can be deduped
-          return JSON.parse(JSON.stringify(value));
-        } catch (err) {
-          // discard key if value cannot be deduped
-          return undefined;
-        }
-      }
-      // Store value in our set
-      cache.add(value);
+/**
+ * Recursively drop non serializable values like functions and regexps.
+ * @param object
+ */
+export function removeNontransferableOptions(object: object | null): object {
+  if (object === null) {
+    return {};
+  }
+  const clone = Object.assign({}, object);
+
+  Object.keys(clone).forEach(key => {
+    // Checking if it is an object and not a typed array.
+    if (typeof object[key] === 'object' && !ArrayBuffer.isView(object[key])) {
+      clone[key] = removeNontransferableOptions(object[key]);
+    } else if (typeof clone[key] === 'function' || clone[key] instanceof RegExp) {
+      clone[key] = {};
+    } else {
+      clone[key] = object[key];
     }
-    return value;
   });
+
+  return clone;
 }

@@ -8,12 +8,12 @@ The 3D Tiles category can represent the major tiled 3D formats:
 - [OGC i3s](https://www.opengeospatial.org/standards/i3s) standard
 - `potree` format.
 
-| Loader                                                                     | Notes |
-| -------------------------------------------------------------------------- | ----- |
-| [`Tiles3DLoader`](modules/3d-tiles/docs/api-reference/tiles-3d-loader)     |       |
-| [`CesiumIonLoader`](modules/3d-tiles/docs/api-reference/cesium-ion-loader) |       |
-| [`I3SLoader`](modules/i3s/docs/api-reference/i3s-loader)                   |       |
-| [`PotreeLoader`](modules/potree/docs/api-reference/potree-loader)          |       |
+| Loader                                                                      | Notes |
+| --------------------------------------------------------------------------- | ----- |
+| [`Tiles3DLoader`](/docs/modules/3d-tiles/api-reference/tiles-3d-loader)     |       |
+| [`CesiumIonLoader`](/docs/modules/3d-tiles/api-reference/cesium-ion-loader) |       |
+| [`I3SLoader`](/docs/modules/i3s/api-reference/i3s-loader)                   |       |
+| [`PotreeLoader`](/docs/modules/potree/api-reference/potree-loader)          |       |
 
 ## Concepts
 
@@ -75,20 +75,20 @@ The following fields are guaranteed. Additionally, the loaded tile object will c
 
 Tiles are often loaded in bulk, however they may be loaded in pages or
 
-| Field            | Type     | Contents                                                                                                                                                                                                                                                                                 |
-| ---------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `type`           | `string` | E.g. `mesh`.                                                                                                                                                                                                                                                                             |
-| `id`             | `string` | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                                              |
-| `refine`         | `string` | Refinement type of the tile `ADD` or `REPLACE`                                                                                                                                                                                                                                           |
-| `url`            | `string` | The url of this tile.                                                                                                                                                                                                                                                                    |
-| `contentUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                                    |
-| `featureUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                                    |
-| `textureUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                                    |
-| `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/format/Indexed%203d%20Scene%20Layer%20Format%20Specification.md) that encloses a tile or its content. Exactly one box, region, or sphere property is required. |
-| `lodMetricType`  | `string` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details.                |
-| `lodMetricValue` | `string` | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                                      |
-| `children`       | `Array`  | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.                             |
-| `content`        | `string` | The actual payload of the tile or the url point to the actual payload. If `option.loadContent` is enabled, content will be populated with the loaded value following the Tile Content section                                                                                            |
+| Field            | Type     | Contents                                                                                                                                                                                                                                                                  |
+| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`           | `string` | E.g. `mesh`.                                                                                                                                                                                                                                                              |
+| `id`             | `string` | Identifier of the tile, unique in a tileset                                                                                                                                                                                                                               |
+| `refine`         | `string` | Refinement type of the tile `ADD` or `REPLACE`                                                                                                                                                                                                                            |
+| `url`            | `string` | The url of this tile.                                                                                                                                                                                                                                                     |
+| `contentUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                     |
+| `featureUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                     |
+| `textureUrl`     | `string` | The url of this tile.                                                                                                                                                                                                                                                     |
+| `boundingVolume` | `Object` | A bounding volume in Cartesian coordinates converted from i3s node's [`mbs`](https://github.com/Esri/i3s-spec/blob/master/docs/1.6/mbs.cmn.) that encloses a tile or its content. Exactly one box, region, or sphere property is required.                                |
+| `lodMetricType`  | `string` | Level of Detail (LoD) metric type, which is used to decide if a tile is sufficient for current viewport. Only support `maxScreenThreshold` for now. Check I3S [lodSelection](https://github.com/Esri/i3s-spec/blob/master/docs/1.7/lodSelection.cmn.md) for more details. |
+| `lodMetricValue` | `string` | Level of Detail (LoD) metric value.                                                                                                                                                                                                                                       |
+| `children`       | `Array`  | An array of objects that define child tiles. Each child tile content is fully enclosed by its parent tile's bounding volume and, generally, has more details than parent. for leaf tiles, the length of this array is zero, and children may not be defined.              |
+| `content`        | `string` | The actual payload of the tile or the url point to the actual payload. If `option.loadContent` is enabled, content will be populated with the loaded value following the Tile Content section                                                                             |
 
 ### Tile Content
 
@@ -101,7 +101,7 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `modelMatrix`        | `Number[16]` | Transforms tile geometry positions to fixed frame coordinates                                             |
 | `vertexCount`        | `Number`     | Transforms tile geometry positions to fixed frame coordinates                                             |
 | `attributes`         | `Object`     | Binary typed arrays containing the geometry of the tile.                                                  |
-| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/modules/images/docs/api-reference/image-loader) |
+| `texture`            | `Object`     | Loaded texture by [`loaders.gl/image`](https://loaders.gl/docs/modules/images/api-reference/image-loader) |
 | `featureData`        | `Object`     | Loaded feature data for parsing the geometies (Will be deprecated in 2.x)                                 |
 
 `attributes` contains following fields
@@ -113,4 +113,4 @@ After content is loaded, the following fields are guaranteed. But different tile
 | `attributes.colors`    | `Object` | `{value, type, size, normalized}` |
 | `attributes.texCoords` | `Object` | `{value, type, size, normalized}` |
 
-Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/accessor.md) properties.
+Each attribute follows luma.gl [accessor](https://github.com/visgl/luma.gl/blob/master/docs/api-reference/webgl/README.md) properties.

@@ -1,19 +1,11 @@
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
-import {ExcelLoader as ExcelWorkerLoader, ExcelLoaderOptions} from './excel-loader';
-import {parseExcel} from './lib/parse-excel';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
 // Excel Loader
 
-export type {ExcelLoaderOptions};
-export {ExcelWorkerLoader};
-
-/**
- * Loader for Excel files
- */
-export const ExcelLoader = {
-  ...ExcelWorkerLoader,
-  parse: (arrayBuffer: ArrayBuffer, options?: ExcelLoaderOptions) =>
-    parseExcel(arrayBuffer, options)
-};
-
-export const _typecheckLoader: LoaderWithParser = ExcelLoader;
+export {ExcelFormat} from './excel-format';
+export type {ExcelLoaderOptions} from './excel-loader';
+export {ExcelLoader, ExcelWorkerLoader} from './excel-loader';
+export type {ExcelArrowLoaderOptions} from './excel-arrow-loader';
+export {ExcelArrowLoader} from './excel-arrow-loader';

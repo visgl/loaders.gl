@@ -1,11 +1,11 @@
-require('@babel/register')({
-  extensions: ['.js', '.jsx', '.ts', '.tsx']
-});
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-require('@loaders.gl/polyfills');
-const {Bench} = require('@probe.gl/bench');
+import '@loaders.gl/polyfills';
+import {Bench} from '@probe.gl/bench';
 
-const {addModuleBenchmarksToSuite} = require('./modules');
+import {addModuleBenchmarksToSuite} from './modules';
 
 const suite = new Bench({
   // Speed for CI testing

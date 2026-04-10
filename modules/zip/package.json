@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/zip",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "description": "Zip Archive Loader",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -16,9 +17,16 @@
     "archive",
     "ZIP"
   ],
-  "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -26,11 +34,19 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-beta.3",
-    "jszip": "^3.1.5"
-  }
+    "@loaders.gl/compression": "4.4.0",
+    "@loaders.gl/crypto": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "jszip": "^3.1.5",
+    "md5": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

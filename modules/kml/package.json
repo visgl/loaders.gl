@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/kml",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "description": "Framework-independent loader for the KML format",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -18,9 +19,16 @@
     "point cloud",
     "KML"
   ],
-  "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -28,14 +36,19 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-beta.3",
-    "@loaders.gl/gis": "3.0.0-beta.3",
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
-    "@loaders.gl/schema": "3.0.0-beta.3",
-    "@tmcw/togeojson": "^4.2.0"
-  }
+    "@loaders.gl/gis": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@tmcw/togeojson": "^4.5.0",
+    "@xmldom/xmldom": "^0.8.12"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

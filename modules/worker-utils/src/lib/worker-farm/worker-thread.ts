@@ -1,3 +1,9 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {NodeWorker, NodeWorkerType} from '../node/worker_threads';
+import {isBrowser} from '../env-utils/globals';
 import {assert} from '../env-utils/assert';
 import {getLoadableWorkerURL} from '../worker-utils/get-loadable-worker-url';
 import {getTransferList} from '../worker-utils/get-transfer-list';
@@ -18,14 +24,18 @@ export default class WorkerThread {
   readonly source: string | undefined;
   readonly url: string | undefined;
   terminated: boolean = false;
-  worker: Worker;
+  worker: Worker | NodeWorkerType;
   onMessage: (message: any) => void;
   onError: (error: Error) => void;
 
   private _loadableURL: string = '';
 
+  /** Checks if workers are supported on this platform */
   static isSupported(): boolean {
-    return typeof Worker !== 'undefined';
+    return (
+      (typeof Worker !== 'undefined' && isBrowser) ||
+      (typeof NodeWorker !== 'undefined' && !isBrowser)
+    );
   }
 
   constructor(props: WorkerThreadProps) {
@@ -35,9 +45,9 @@ export default class WorkerThread {
     this.source = source;
     this.url = url;
     this.onMessage = NOOP;
-    this.onError = (error) => console.log(error); // eslint-disable-line
+    this.onError = error => console.log(error); // eslint-disable-line
 
-    this.worker = this._createBrowserWorker();
+    this.worker = isBrowser ? this._createBrowserWorker() : this._createNodeWorker();
   }
 
   /**
@@ -47,8 +57,7 @@ export default class WorkerThread {
   destroy(): void {
     this.onMessage = NOOP;
     this.onError = NOOP;
-    // @ts-ignore
-    this.worker.terminate();
+    this.worker.terminate(); // eslint-disable-line @typescript-eslint/no-floating-promises
     this.terminated = true;
   }
 
@@ -71,14 +80,14 @@ export default class WorkerThread {
 
   /**
    * Generate a standard Error from an ErrorEvent
-   * @param {ErrorEvent} event
+   * @param event
    */
-  _getErrorFromErrorEvent(event) {
+  _getErrorFromErrorEvent(event: ErrorEvent): Error {
     // Note Error object does not have the expected fields if loading failed completely
     // https://developer.mozilla.org/en-US/docs/Web/API/Worker#Event_handlers
     // https://developer.mozilla.org/en-US/docs/Web/API/ErrorEvent
     let message = 'Failed to load ';
-    message += `worker ${this.name}. `;
+    message += `worker ${this.name} from ${this.url}. `;
     if (event.message) {
       message += `${event.message} in `;
     }
@@ -93,11 +102,11 @@ export default class WorkerThread {
   /**
    * Creates a worker thread on the browser
    */
-  _createBrowserWorker() {
+  _createBrowserWorker(): Worker {
     this._loadableURL = getLoadableWorkerURL({source: this.source, url: this.url});
     const worker = new Worker(this._loadableURL, {name: this.name});
 
-    worker.onmessage = (event) => {
+    worker.onmessage = event => {
       if (!event.data) {
         this.onError(new Error('No data received'));
       } else {
@@ -105,13 +114,45 @@ export default class WorkerThread {
       }
     };
     // This callback represents an uncaught exception in the worker thread
-    worker.onerror = (error) => {
+    worker.onerror = (error: ErrorEvent): void => {
       this.onError(this._getErrorFromErrorEvent(error));
       this.terminated = true;
     };
     // TODO - not clear when this would be called, for now just log in case it happens
-    worker.onmessageerror = (event) => console.error(event); // eslint-disable-line
+    worker.onmessageerror = event => console.error(event); // eslint-disable-line
 
+    return worker;
+  }
+
+  /**
+   * Creates a worker thread in node.js
+   * @todo https://nodejs.org/api/async_hooks.html#async-resource-worker-pool
+   */
+  _createNodeWorker(): NodeWorkerType {
+    let worker: NodeWorkerType;
+    if (this.url) {
+      // Make sure relative URLs start with './'
+      const absolute = this.url.includes(':/') || this.url.startsWith('/');
+      const url = absolute ? this.url : `./${this.url}`;
+      const type = this.url.endsWith('.ts') || this.url.endsWith('.mjs') ? 'module' : 'commonjs';
+      // console.log('Starting work from', url);
+      // @ts-expect-error type is not known
+      worker = new NodeWorker(url, {eval: false, type});
+    } else if (this.source) {
+      worker = new NodeWorker(this.source, {eval: true});
+    } else {
+      throw new Error('no worker');
+    }
+    worker.on('message', data => {
+      // console.error('message', data);
+      this.onMessage(data);
+    });
+    worker.on('error', error => {
+      this.onError(error as Error);
+    });
+    worker.on('exit', _code => {
+      // console.error('exit', code);
+    });
     return worker;
   }
 }

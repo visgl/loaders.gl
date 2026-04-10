@@ -1,5 +1,176 @@
 # Upgrade Guide
 
+## Upgrading to v4.4
+
+**@loaders.gl/textures**
+
+- `TextureLevel` now exposes `shape`, `format`, and `textureFormat`. Use `format` for WebGL APIs and `textureFormat` for WebGPU-style or luma.gl APIs.
+- `BasisLoader` uses `basis.supportedTextureFormats` to control `'auto'` basis format selection, and can accept explicit `basis.format` targets.
+- `@loaders.gl/textures` no longer exports `selectSupportedBasisFormat` or `getSupportedGPUTextureFormats`. Pass `basis.supportedTextureFormats` to `BasisLoader` instead of using exported auto-detection helpers.
+- `BasisLoader`, `CrunchLoader`, and `CompressedTextureLoader` no longer support `libraryPath`. Supply runtime libraries through `options.modules` instead.
+
+| Deprecated helper         | Replacement                     |
+| ------------------------- | ------------------------------- |
+| `loadImageTexture()`      | `load(url, TextureLoader)`      |
+| `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
+| `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
+
+**@loaders.gl/draco**
+
+- `DracoLoader` no longer supports `draco.libraryPath`. Supply `modules: {draco3d}` instead of configuring decoder library paths manually.
+
+**@loaders.gl/compression**
+
+- `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
+
+**@loaders.gl/parquet**
+
+- `@loaders.gl/parquet/buffer`, `BufferPolyfill`, and `installBufferPolyfill()` were removed. The JavaScript Parquet parser and writer now use `Uint8Array` internally instead of installing a global `Buffer`.
+- `ParquetLoader` and the experimental parquetjs APIs now return unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` values as `Uint8Array` instead of `Buffer`. Logical values such as `UTF8` and `JSON` are still decoded to JavaScript strings/objects according to the Parquet schema.
+
+## Upgrading to v4.3
+
+**Minor Breaking Changes**
+
+- `loaders.gl/core` - Improved loader type inference: `load()`, `parse()`, etc now infer correct option and return types even when an array of loaders is passed. This can lead to previously undetected type errors now being reported and breaking your build, requiring you to fix the errors.
+- `loaders.gl/core` - internal tile index in `Source` classes has changed from `tileIndex.zoom` to `tileIndex.z`. Should not impact most applications.
+- `@loaders.gl/loader-utils` - Deprecated `FileProvider` classes have been removed from the main entrypoint; use `HttpFile`, `BlobFile`, `NodeFile`, or `DataViewReadableFile` to provide `ReadableFile` access instead.
+- `@loaders.gl/zip`/`@loaders.gl/i3s` - Archive parsing helpers expect `ReadableFile` inputs rather than custom provider classes.
+
+**Deprecations**
+
+- `loaders.gl/core` - `registerLoaders()` is deprecated. Loader registration erases types and it is preferable that applications manage loader registration themselves if needed.
+- `loaders.gl/core` - Loader-wide options such as `fetch`, `worker`, `nothrow`, batching limits, etc. now live under `options.core`. The legacy top-level options continue to work (with warnings) for backwards compatibility.
+
+**Recommendations**
+
+- For improved type checks, make sure you do not erase types of arrays of Loader objects: Replace `const loaders: Loader[] = [CSVLoader, JSONLoader];` with `const loaders = [CSVLoader, JSONLoader] as const satisfies Loader[];` or `const loaders: Loader[] = [CSVLoader, JSONLoader] as const;`.
+
+## Additional changes in v4.2
+
+**@loaders.gl/mvt**
+
+**Deprecations**
+
+- `loaders.gl/mvt` - `options.gis.format` is deprecated. Use `options.mvt.shape` instead.
+
+## Upgrading to v4.2
+
+**Recommendations**
+
+- For improved type checks, it is now possible to add `dataType` and `batchType` fields to any custom loader objects.
+
+## Upgrading to v4.1
+
+**Breaking Changes**
+
+- `@loaders.gl/wkt`- `WKBLoader`/`TWKBLoader`/`HexWKBLoader` - The default `shape` is now `geojson-geometry` rather than `binary-geometry`. If you were relying on `binary-geometry`, just add a `shape: 'binary-geometry'` option, as in `load(..., WKBLoader, {wkb: {shape: 'binary-geometry}})`.
+
+**Deprecations**
+
+- `@loaders.gl/wkt`- The `geometry` shape is deprecated, and now called `geojson-geometry`.
+
+## Upgrading to v4.0
+
+**Node.js v18+**
+
+When using loaders.gl on Node.js your application should import the `@loaders.gl/polyfills` module before calling any loaders.gl functions.
+
+**Typed Loaders**
+
+Loaders now return typed data. This addition of types into previously untyped code can generate type errors in existing applications. These type errors can just be a result of the typescript compiler making sure your application knows what it is doing, but they can also mean that you have been making wrong or unsafe assumptions about what is being returned from the loader in question. We recommend you review the errors rather than just defeat them with comments as some may be valid and should be fixed in the application.
+
+**Shape of Returned Data**
+
+Some loaders can return multiple formats, often controlled with the loader options `shape` parameter. Note that many returned data types now also include a `shape` field which contains a string value that specifies the shape of the data. This goal is that this should result in a "discriminated union". Switching on the `returnedData.shape` field will then allow typescript to correctly determine which type of data was returned.
+
+**Apache Arrow JS**
+
+loaders.gl now imports `apache-arrow` v13 which is a major upgrade but Apache Arrow JS v9 introduces breaking changes (compared with Apache Arrow v4 which is used by loaders.gl v3.x\_).
+
+If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes.
+
+On the upside, the new Apache Arrow API is more modular and "tree shakeable" (meaning that only the Apache Arrow functionality your application is actually using is included in your application bundle).
+
+Since Apache Arrow JS does not yet come with upgrade notes, you can refer to the [loaders.gl Arrow documentation](/docs/arrowjs/upgrade-guide).
+
+**Table Schemas**
+
+If you are referencing table schemas returned by loaders, they will no longer be Apache Arrow schemas, but instead equivalent "serialized" lower-overhead loaders.gl schemas. You can recover Arrow schemas as follows
+
+```typescript
+import {deserializeArrowSchema} from '@loaders.gl/arrow';
+const table = load(url, ParquetLoader);
+const arrowSchema = deserializeArrowSchema(table.schema);
+```
+
+**Polyfills**
+
+If you were relying on `@loaders.gl/polyfills` module to install a global `fetch()` function under Node.js that supported fetching from local files, loaders.gl v4 uses the built-in fetch in Node.js v18+ (which doesn't support fetching from local files), so to fetch from local files, you now need to use `fetchFile()` instead.
+
+```typescript
+import {fetchFile} from '@loaders.gl/core';
+const response = await fetchFile('/path/to/local/file');
+...
+```
+
+Note that `fetchFile` is called by all core `load()` functions unless the fetch function is overridden through
+loader options.
+
+Details: The expectation is that loaders.gl v4.0+ will be used with Node.js version 18 and higher,
+which now provide a built-in browser-compatible `fetch()` function by default.
+This new built-in Node.js `fetch` function does not support reading from the file system,
+and loaders.gl v4.0 aligns with this practice.
+
+---
+
+Loader module changes, in order of estimated impact to applications:
+
+**@loaders.gl/images**
+
+- `loadImage()` has moved to `loaders.gl/textures`.
+
+**@loaders.gl/gltf**
+
+- `GLTFLoader` - no longer post processes data. Applications need to import and call the `postProcessGLTF` function after calling the loader to get the same result.
+
+**@loaders.gl/crypto**
+
+- All hashes now require an encoding parameter. To get previous behavior, just specify `.hash...(..., 'base64')`.
+
+**@loaders.gl/arrow**
+
+- Batches now contain a Table with a single `RecordBatch` (instead of just a `RecordBatch`).
+
+**@loaders.gl/geopackage**
+
+- `options.geopackage.shape` replaces all other format specification options, such as `options.gis.format`
+- `options.geopackage.shape: 'tables'` - The default data format returned is now `tables` which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.geopackage.shape: 'geojson-table'`.
+
+**@loaders.gl/kml**
+
+- `options.kml.shape` replaces all other mechanisms for specifying format of returned data (`.format` etc), and aligns with the `geojson-table` table shape as this is compatible with a GeoJSON `FeatureCollection`.
+- `options.gpx.shape` applies the same changes as `options.kml.shape`.
+- `options.tcx.shape` applies the same changes as `options.kml.shape`.
+
+## Upgrading to v3.4
+
+**@loaders.gl/wms**
+
+This module is still marked as experimental and had some breaking changes.
+
+- `WMSService` class
+  - The `srs` parameters has been renamed to `crs` in alignment with the most recent WMS 1.3.0 conventions.
+- `WMSCapabilities` type (returned by `WMSService` and `WMSCapabilitiesLoader`)
+  - `WMSCapabilities.layer` is now `WMSCapabilities.layers`
+  - `WMSCapabilities.boundingBox` is now `WMSCapabilities.geographicBoundingBox` (in generic lng/lats) and `WMSCapabilities.boundingBoxes` (array of bounding boxes in supported projections)
+
+## Upgrading to v3.2
+
+**@loaders.gl/geopackage**
+
+- The default data format returned is now `options.gis.format: 'tables'`, which returns the type `Tables<ObjectRowTable>`, where the `data` of each table is an array of GeoJSON features. (The `Tables` and `ObjectRowTable` types are exported from `@loaders.gl/schema`.) You can use `options.gis.format: 'geojson'` to return an object mapping table names to an array of GeoJSON features.
+
 ## Upgrading to v3.0
 
 **Platform Support Updates**
@@ -14,6 +185,19 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 **@loaders.gl/core**
 
 - Passing `fetch` options (such as `headers`) to `load()` and `parse()` etc. should now be done via the `options.fetch` options object (e.g. `options.fetch.headers`). Specifying `fetch` options on the root options object was deprecated in v2.3 and is no longer supported in v3.0.
+
+**@loaders.gl/compression**
+
+- The `Transform` API in v2.3 has been replaced with `Compression` classes that handle both compression and decompression. Please refer to the documentation.
+
+**@loaders.gl/crypto**
+
+- The `Transform` API in v2.3 has been replaced with `Hash` classes that handle both compression and decompression. Please refer to the documentation.
+
+**@loaders.gl/csv**
+
+- The format of parsed data (i.e. whether table rows are objects or arrays) is now controlled by `options.csv.shape` instead of being dynamically selected based on whether the CSV file has a header row. The default `shape` is now `object-row-table`. Default column names are generated if no header row is present. This is a breaking change when loading CSV files without header rows.
+- Duplicate column names will have a counter suffix added to ensure that they are unique. In rare cases this could be a breaking change.
 
 **@loaders.gl/gltf**
 
@@ -43,17 +227,6 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 
 - The `KMLLoader`, `GPXLoader`, and `TCXLoader` now require a value for `options.gis.format`. Previously, the lack of a value would return data in "raw" format, i.e. not normalized to GeoJSON. To return GeoJSON-formatted data, use `options.gis.format: 'geojson'`. Other options are `binary` and `raw`.
 - The `kml.normalize` option has been deprecated. When `options.gis.format` is `geojson`, coordinates will always be in longitude-latitude ordering.
-
-**@loaders.gl/compression**
-
-- Sync transforms no longer supported (this enables dynamic library loading).
-- Transform static members now named `run()` instead of `inflate()` and `deflate()`.
-- Zstandard transforms removed due to excessive bundle size impact. Use the new `ZstdWorker` object instead.
-
-**@loaders.gl/crypto**
-
-- Sync hashing no longer supported (this enables dynamic library loading).
-- Transform static members now named `run()` instead of `hash()`.
 
 **@loaders.gl/loader-utils**
 

@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import parseVideo from './lib/parsers/parse-video';
 
@@ -5,31 +9,25 @@ import parseVideo from './lib/parsers/parse-video';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const EXTENSIONS = ['mp4'];
-const MIME_TYPES = ['video/mp4'];
-
-// Loads a platform-specific image type that can be used as input data to WebGL textures
-
 export type VideoLoaderOptions = LoaderOptions & {
   video: {};
 };
 
-const DEFAULT_LOADER_OPTIONS: VideoLoaderOptions = {
-  video: {}
-};
-
+/**
+ * Loads a platform-specific image type that can be used as input data to WebGL textures
+ */
 export const VideoLoader = {
+  dataType: null as unknown as HTMLVideoElement,
+  batchType: null as never,
   name: 'Video',
   id: 'video',
   module: 'video',
   version: VERSION,
-  extensions: EXTENSIONS,
-  mimeTypes: MIME_TYPES,
-
-  parse: parseVideo,
-
+  extensions: ['mp4'],
+  mimeTypes: ['video/mp4'],
   // tests: arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer))),
-  options: DEFAULT_LOADER_OPTIONS
-};
-
-export const _typecheckVideoLoader: LoaderWithParser = VideoLoader;
+  options: {
+    video: {}
+  },
+  parse: parseVideo
+} as const satisfies LoaderWithParser<HTMLVideoElement, never, VideoLoaderOptions>;

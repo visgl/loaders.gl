@@ -1,28 +1,44 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /**
  * Worker Options
  */
 export type WorkerOptions = {
   // Worker farm options
-  CDN?: string;
+  CDN?: string | null;
   worker?: boolean;
   maxConcurrency?: number;
   maxMobileConcurrency?: number;
   reuseWorkers?: boolean;
   _workerType?: string;
+  workerUrl?: string;
   [key: string]: any; // TODO
 };
 
 export type WorkerContext = {
   process?: Process;
-  processInBatches?;
+  processInBatches?: ProcessInBatches;
 };
 
-export type Process = (data: any, options?: {[key: string]: any}, context?: WorkerContext) => any;
+/** Serializable context sent with a single worker job. */
+export type WorkerJobContext = {
+  [key: string]: any;
+};
+
+export type Process = (
+  data: any,
+  options?: {[key: string]: any},
+  context?: WorkerContext,
+  jobContext?: WorkerJobContext
+) => any;
 
 export type ProcessInBatches = (
   iterator: AsyncIterable<any> | Iterable<any>,
   options?: {[key: string]: any},
-  context?: WorkerContext
+  context?: WorkerContext,
+  jobContext?: WorkerJobContext
 ) => AsyncIterable<any>;
 
 /**
@@ -34,7 +50,7 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
-  options: object;
+  options: {[key: string]: any};
   deprecatedOptions?: object;
 
   process?: Process;
@@ -70,6 +86,7 @@ export type WorkerMessageType =
 export type WorkerMessagePayload = {
   id?: number;
   options?: {[key: string]: any};
+  context?: WorkerJobContext;
   input?: any; // Transferable;
   result?: any; // Transferable
   error?: string;

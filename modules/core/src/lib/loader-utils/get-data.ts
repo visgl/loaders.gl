@@ -1,74 +1,75 @@
-import type {DataType, SyncDataType, BatchableDataType} from '@loaders.gl/loader-utils';
-import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {
+  DataType,
+  SyncDataType,
+  BatchableDataType,
+  Loader,
+  LoaderOptions
+} from '@loaders.gl/loader-utils';
 import {
+  concatenateArrayBuffersAsync,
+  isPromise,
   isResponse,
   isReadableStream,
   isAsyncIterable,
   isIterable,
   isIterator,
   isBlob,
-  isBuffer
-} from '../../javascript-utils/is-type';
-import {makeIterator} from '../../iterator-utils/make-iterator/make-iterator';
+  isBuffer,
+  isArrayBufferLike,
+  toArrayBuffer,
+  toArrayBufferView
+} from '@loaders.gl/loader-utils';
+import {makeIterator} from '../../iterators/make-iterator/make-iterator';
 import {checkResponse, makeResponse} from '../utils/response-utils';
 
 const ERR_DATA = 'Cannot convert supplied data type';
 
+/**
+ * Returns an {@link ArrayBuffer} or string from the provided data synchronously.
+ * Supports `ArrayBuffer`, `ArrayBufferView`, and `ArrayBufferLike` (e.g. `SharedArrayBuffer`)
+ * while preserving typed array view offsets.
+ */
 // eslint-disable-next-line complexity
 export function getArrayBufferOrStringFromDataSync(
   data: SyncDataType,
-  loader
+  loader: Loader,
+  options: LoaderOptions
 ): ArrayBuffer | string {
   if (loader.text && typeof data === 'string') {
     return data;
   }
 
   if (isBuffer(data)) {
-    // @ts-ignore
     data = data.buffer;
   }
 
-  if (data instanceof ArrayBuffer) {
-    const arrayBuffer = data;
+  if (isArrayBufferLike(data)) {
+    const bufferSource = toArrayBufferView(data);
     if (loader.text && !loader.binary) {
       const textDecoder = new TextDecoder('utf8');
-      return textDecoder.decode(arrayBuffer);
+      return textDecoder.decode(bufferSource);
     }
-    return arrayBuffer;
-  }
-
-  // We may need to handle offsets
-  if (ArrayBuffer.isView(data)) {
-    // TextDecoder is invoked on typed arrays and will handle offsets
-    if (loader.text && !loader.binary) {
-      const textDecoder = new TextDecoder('utf8');
-      return textDecoder.decode(data);
-    }
-
-    let arrayBuffer = data.buffer;
-
-    // Since we are returning the underlying arrayBuffer, we must create a new copy
-    // if this typed array / Buffer is a partial view into the ArryayBuffer
-    // TODO - this is a potentially unnecessary copy
-    const byteLength = data.byteLength || data.length;
-    if (data.byteOffset !== 0 || byteLength !== arrayBuffer.byteLength) {
-      // console.warn(`loaders.gl copying arraybuffer of length ${byteLength}`);
-      arrayBuffer = arrayBuffer.slice(data.byteOffset, data.byteOffset + byteLength);
-    }
-    return arrayBuffer;
+    return toArrayBuffer(bufferSource);
   }
 
   throw new Error(ERR_DATA);
 }
 
-// Convert async iterator to a promise
+/**
+ * Resolves the provided data into an {@link ArrayBuffer} or string asynchronously.
+ * Accepts the full {@link DataType} surface including responses and async iterables.
+ */
 export async function getArrayBufferOrStringFromData(
   data: DataType,
-  loader
+  loader: Loader,
+  options: LoaderOptions
 ): Promise<ArrayBuffer | string> {
-  const isArrayBuffer = data instanceof ArrayBuffer || ArrayBuffer.isView(data);
-  if (typeof data === 'string' || isArrayBuffer) {
-    return getArrayBufferOrStringFromDataSync(data as string | ArrayBuffer, loader);
+  if (typeof data === 'string' || isArrayBufferLike(data)) {
+    return getArrayBufferOrStringFromDataSync(data as SyncDataType, loader, options);
   }
 
   // Blobs and files are FileReader compatible
@@ -77,76 +78,105 @@ export async function getArrayBufferOrStringFromData(
   }
 
   if (isResponse(data)) {
-    const response = data as Response;
-    await checkResponse(response);
-    return loader.binary ? await response.arrayBuffer() : await response.text();
+    await checkResponse(data);
+    return loader.binary ? await data.arrayBuffer() : await data.text();
   }
 
   if (isReadableStream(data)) {
-    data = makeIterator(data as ReadableStream);
+    // @ts-expect-error TS2559 options type
+    data = makeIterator(data as ReadableStream, options);
   }
 
   if (isIterable(data) || isAsyncIterable(data)) {
     // Assume arrayBuffer iterator - attempt to concatenate
-    return concatenateArrayBuffersAsync(data as AsyncIterable<ArrayBuffer>);
+    return concatenateArrayBuffersAsync(data as AsyncIterable<ArrayBufferLike>);
   }
 
   throw new Error(ERR_DATA);
 }
 
-export async function getAsyncIteratorFromData(
-  data: BatchableDataType
-): Promise<AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>> {
+/**
+ * Normalizes batchable inputs into async iterables for batch parsing flows.
+ * Supports synchronous iterables, async iterables, fetch responses, readable streams, and
+ * single binary chunks (including typed array views and `ArrayBufferLike` values).
+ */
+export async function getAsyncIterableFromData(
+  data: BatchableDataType,
+  options: LoaderOptions
+): Promise<
+  AsyncIterable<ArrayBufferLike | ArrayBufferView> | Iterable<ArrayBufferLike | ArrayBufferView>
+> {
+  if (isPromise(data)) {
+    data = await data;
+  }
+
   if (isIterator(data)) {
     return data as AsyncIterable<ArrayBuffer>;
   }
 
   if (isResponse(data)) {
-    const response = data as Response;
     // Note Since this function is not async, we currently can't load error message, just status
-    await checkResponse(response);
+    await checkResponse(data);
     // TODO - bug in polyfill, body can be a Promise under Node.js
-    // @ts-ignore
-    return makeIterator(response.body);
+    // eslint-disable-next-line @typescript-eslint/await-thenable
+    const body = await data.body;
+    if (!body) {
+      throw new Error(ERR_DATA);
+    }
+    return makeIterator(body, options as any);
   }
 
   if (isBlob(data) || isReadableStream(data)) {
-    return makeIterator(data as Blob | ReadableStream);
+    return makeIterator(data as Blob | ReadableStream, options as any);
   }
 
   if (isAsyncIterable(data)) {
-    return data[Symbol.asyncIterator]();
+    return data as AsyncIterable<ArrayBufferLike | ArrayBufferView>;
   }
 
-  return getIteratorFromData(data);
+  if (isIterable(data)) {
+    return data as Iterable<ArrayBufferLike | ArrayBufferView>;
+  }
+
+  // @ts-expect-error TODO - fix type mess
+  return getIterableFromData(data);
 }
 
+/**
+ * Returns a readable stream for streaming loader inputs when available.
+ */
 export async function getReadableStream(data: BatchableDataType): Promise<ReadableStream> {
   if (isReadableStream(data)) {
     return data as ReadableStream;
   }
   if (isResponse(data)) {
     // @ts-ignore
+    if (!data.body) {
+      throw new Error(ERR_DATA);
+    }
     return data.body;
   }
   const response = await makeResponse(data);
   // @ts-ignore
+  if (!response.body) {
+    throw new Error(ERR_DATA);
+  }
   return response.body;
 }
 
 // HELPERS
 
-function getIteratorFromData(data) {
+function getIterableFromData(data: string | ArrayBuffer | SharedArrayBuffer | ArrayBufferView) {
   // generate an iterator that emits a single chunk
   if (ArrayBuffer.isView(data)) {
     return (function* oneChunk() {
-      yield data.buffer;
+      yield toArrayBuffer(data);
     })();
   }
 
-  if (data instanceof ArrayBuffer) {
+  if (isArrayBufferLike(data)) {
     return (function* oneChunk() {
-      yield data;
+      yield toArrayBuffer(data);
     })();
   }
 

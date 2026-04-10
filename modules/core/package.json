@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/core",
-  "version": "3.0.0-beta.3",
-  "description": "Framework-independent loaders for 3D graphics formats",
+  "version": "4.4.0",
+  "description": "The core API for working with loaders.gl loaders and writers",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -11,26 +12,38 @@
     "url": "https://github.com/visgl/loaders.gl"
   },
   "keywords": [
-    "webgl",
     "loader",
+    "parser",
+    "writer",
+    "encoder",
+    "big data",
+    "table",
     "3d",
     "mesh",
-    "point cloud"
+    "point cloud",
+    "webgl",
+    "webgpu"
   ],
-  "types": "src/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./null-worker.js": {
+      "import": "./dist/null-worker.js"
+    },
+    "./null-worker-node.js": {
+      "import": "./dist/null-worker-node.js"
+    }
+  },
   "sideEffects": false,
   "browser": {
-    "./src/node/write-file.node.js": false,
-    "./src/node/read-file-sync.node.js": false,
-    "./dist/es5/node/write-file.node.js": false,
-    "./dist/esm/node/write-file.node.js": false,
-    "./dist/es6/node/write-file.node.js": false,
-    "./dist/es5/node/read-file-sync.node.js": false,
-    "./dist/esm/node/read-file-sync.node.js": false,
-    "./dist/es6/node/read-file-sync.node.js": false,
-    "fs": false
+    "fs": false,
+    "stream": false
   },
   "files": [
     "src",
@@ -38,13 +51,18 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/null-worker.ts --output ./dist/null-worker.js --config ../../scripts/webpack/worker.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@babel/runtime": "^7.3.1",
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
-    "@loaders.gl/worker-utils": "3.0.0-beta.3"
-  }
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
+    "@loaders.gl/worker-utils": "4.4.0",
+    "@probe.gl/log": "^4.1.1"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

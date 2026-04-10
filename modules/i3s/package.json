@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/i3s",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "description": "i3s .",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -17,9 +18,22 @@
     "tile",
     "mesh"
   ],
-  "types": "src/index.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./i3s-content-worker.js": {
+      "import": "./dist/i3s-content-worker.js"
+    },
+    "./i3s-content-worker-node.js": {
+      "import": "./dist/i3s-content-worker-node.js"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -27,21 +41,29 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-worker",
-    "build-bundle": "webpack --display=minimal --config ../../scripts/webpack/bundle.js",
-    "build-worker": "webpack --entry ./src/workers/i3s-content-worker.ts --output ./dist/i3s-content-worker.js --config ../../scripts/webpack/worker.js"
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
+    "build-worker": "esbuild src/workers/i3s-content-worker.ts --outfile=dist/i3s-content-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/core": "3.0.0-beta.3",
-    "@loaders.gl/draco": "3.0.0-beta.3",
-    "@loaders.gl/images": "3.0.0-beta.3",
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
-    "@loaders.gl/textures": "3.0.0-beta.3",
-    "@loaders.gl/tiles": "3.0.0-beta.3",
-    "@luma.gl/constants": "^8.3.0",
-    "@math.gl/core": "3.5.0-alpha.1",
-    "@math.gl/culling": "3.5.0-alpha.1",
-    "@math.gl/geospatial": "3.5.0-alpha.1",
-    "probe.gl": "^3.3.0"
-  }
+    "@loaders.gl/compression": "4.4.0",
+    "@loaders.gl/crypto": "4.4.0",
+    "@loaders.gl/draco": "4.4.0",
+    "@loaders.gl/images": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/math": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/textures": "4.4.0",
+    "@loaders.gl/tiles": "4.4.0",
+    "@loaders.gl/zip": "4.4.0",
+    "@math.gl/core": "^4.1.0",
+    "@math.gl/culling": "^4.1.0",
+    "@math.gl/geospatial": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

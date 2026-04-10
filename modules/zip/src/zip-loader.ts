@@ -1,24 +1,36 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import JSZip from 'jszip';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+type FileMap = Record<string, ArrayBuffer>;
+
 export const ZipLoader = {
+  dataType: null as unknown as FileMap,
+  batchType: null as unknown as never,
+
   id: 'zip',
+  module: 'zip',
   name: 'Zip Archive',
   version: VERSION,
   extensions: ['zip'],
   mimeTypes: ['application/zip'],
   category: 'archive',
   tests: ['PK'],
+  options: {},
   parse: parseZipAsync
-};
+} as const satisfies LoaderWithParser<FileMap, never, LoaderOptions>;
 
 // TODO - Could return a map of promises, perhaps as an option...
-async function parseZipAsync(data: any, options = {}) {
+async function parseZipAsync(data: any, options = {}): Promise<FileMap> {
   const promises: Promise<any>[] = [];
-  const fileMap = {};
+  const fileMap: Record<string, ArrayBuffer> = {};
 
   try {
     const jsZip = new JSZip();
@@ -27,9 +39,13 @@ async function parseZipAsync(data: any, options = {}) {
 
     // start to load each file in this zip
     zip.forEach((relativePath, zipEntry) => {
+      if (zipEntry.dir) {
+        return;
+      }
+
       const subFilename = zipEntry.name;
 
-      const promise = loadZipEntry(jsZip, subFilename, options).then((arrayBufferOrError) => {
+      const promise = loadZipEntry(jsZip, subFilename, options).then(arrayBufferOrError => {
         fileMap[relativePath] = arrayBufferOrError;
       });
 

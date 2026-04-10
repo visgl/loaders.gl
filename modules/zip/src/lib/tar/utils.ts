@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // This file is derived from the tar-js code base under MIT license
 // See https://github.com/beatgammit/tar-js/blob/master/LICENSE
 /*

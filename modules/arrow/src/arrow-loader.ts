@@ -1,42 +1,20 @@
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseSync from './lib/parse-arrow-sync';
-import {parseArrowInBatches} from './lib/parse-arrow-in-batches';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Table, ArrowTableBatch} from '@loaders.gl/schema';
+import {parseArrowSync, parseArrowInBatches} from './lib/parsers/parse-arrow';
 
-export type ArrowLoaderOptions = LoaderOptions & {
-  arrow?: {
-    type: 'arrow-table' | 'columnar-table' | 'row-table' | 'array-row-table' | 'object-row-table';
-  };
-};
-
-const DEFAULT_ARROW_LOADER_OPTIONS = {
-  arrow: {
-    type: 'columnar-table'
-  }
-};
+import type {ArrowLoaderOptions} from './exports/arrow-loader';
+import {ArrowWorkerLoader} from './exports/arrow-loader';
 
 /** ArrowJS table loader */
-export const ArrowWorkerLoader: Loader = {
-  name: 'Apache Arrow',
-  id: 'arrow',
-  module: 'arrow',
-  version: VERSION,
-  worker: true,
-  category: 'table',
-  extensions: ['arrow', 'feather'],
-  mimeTypes: ['application/octet-stream'],
-  binary: true,
-  tests: ['ARROW'],
-  options: DEFAULT_ARROW_LOADER_OPTIONS
-};
-
-/** ArrowJS table loader */
-export const ArrowLoader: LoaderWithParser = {
+export const ArrowLoader = {
   ...ArrowWorkerLoader,
-  parse: async (arraybuffer, options) => parseSync(arraybuffer, options),
-  parseSync,
+  parse: async (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
+    parseArrowSync(arraybuffer, options?.arrow),
+  parseSync: (arraybuffer: ArrayBuffer, options?: ArrowLoaderOptions) =>
+    parseArrowSync(arraybuffer, options?.arrow),
   parseInBatches: parseArrowInBatches
-};
+} as const satisfies LoaderWithParser<Table, ArrowTableBatch, ArrowLoaderOptions>;

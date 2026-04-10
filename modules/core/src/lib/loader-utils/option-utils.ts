@@ -1,61 +1,50 @@
-import type {Loader, LoaderContext, LoaderOptions} from '@loaders.gl/loader-utils';
-import {global} from '@loaders.gl/loader-utils';
-import {isPureObject, isObject} from '../../javascript-utils/is-type';
-import {fetchFile} from '../fetch/fetch-file';
-import {NullLog, ConsoleLog} from './loggers';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {
+  Loader,
+  LoaderOptions,
+  registerJSModules,
+  isPureObject,
+  isObject,
+  StrictLoaderOptions,
+  path
+} from '@loaders.gl/loader-utils';
+import {probeLog, NullLog} from './loggers';
+import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
+import {stripQueryString} from '../utils/url-utils';
+
+const CORE_LOADER_OPTION_KEYS = [
+  'baseUrl',
+  'fetch',
+  'mimeType',
+  'fallbackMimeType',
+  'ignoreRegisteredLoaders',
+  'nothrow',
+  'log',
+  'useLocalLibraries',
+  'CDN',
+  'worker',
+  'maxConcurrency',
+  'maxMobileConcurrency',
+  'reuseWorkers',
+  '_nodeWorkers',
+  '_workerType',
+  'limit',
+  '_limitMB',
+  'batchSize',
+  'batchDebounceMs',
+  'metadata',
+  'transforms'
+] as const;
 
 /**
- * Global state for loaders.gl. Stored on `global.loaders._state`
+ * Global state for loaders.gl. Stored on `globalThis.loaders._state`
  */
 type GlobalLoaderState = {
   loaderRegistry: Loader[];
-  globalOptions: {[key: string]: any};
-};
-
-const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
-  // baseUri
-  fetch: null,
-  log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
-
-  CDN: 'https://unpkg.com/@loaders.gl',
-  worker: true, // By default, use worker if provided by loader.
-  maxConcurrency: 3, // How many worker instances should be created for each loader.
-  maxMobileConcurrency: 1, // How many worker instances should be created for each loader on mobile devices.
-  reuseWorkers: true, // By default reuse workers,
-  _workerType: '', // 'test' to use locally generated workers
-
-  batchSize: 'auto',
-  metadata: false, // TODO - currently only implemented for parseInBatches, adds initial metadata batch,
-  transforms: [],
-
-  // EPERIMENTAL
-  // DEPRECATED
-  // baseUri: undefined
-
-  // TODO/ActionEngine - Move to i3s loader option defaults
-  // These are not common options for all loaders
-  // @ts-ignore
-  attributeName: null, // Used by i3s-attribute-loader to define attribute name.
-  // @ts-ignore
-  attributeType: null // Used by i3s-attribute-loader to define attribute type.
-};
-
-const REMOVED_LOADER_OPTIONS = {
-  dataType: '(no longer used)',
-  uri: 'baseUri',
-  // Warn if fetch options are used on top-level
-  method: 'fetch.method',
-  headers: 'fetch.headers',
-  body: 'fetch.body',
-  mode: 'fetch.mode',
-  credentials: 'fetch.credentials',
-  cache: 'fetch.cache',
-  redirect: 'fetch.redirect',
-  referrer: 'fetch.referrer',
-  referrerPolicy: 'fetch.referrerPolicy',
-  integrity: 'fetch.integrity',
-  keepalive: 'fetch.keepalive',
-  signal: 'fetch.signal'
+  globalOptions: LoaderOptions;
 };
 
 /**
@@ -64,81 +53,82 @@ const REMOVED_LOADER_OPTIONS = {
  */
 export function getGlobalLoaderState(): GlobalLoaderState {
   // @ts-ignore
-  global.loaders = global.loaders || {};
+  globalThis.loaders = globalThis.loaders || {};
   // @ts-ignore
-  const {loaders} = global;
+  const {loaders} = globalThis;
 
-  // Add _state object to keep separate from modules added to global.loaders
-  loaders._state = loaders._state || {};
+  // Add _state object to keep separate from modules added to globalThis.loaders
+  if (!loaders._state) {
+    loaders._state = {};
+  }
   return loaders._state;
 }
 
-// Store global loader options on the global object to increase chances of cross loaders-version interoperability
-// NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
-const getGlobalLoaderOptions = () => {
+/**
+ * Store global loader options on the global object to increase chances of cross loaders-version interoperability
+ * NOTE: This use case is not reliable but can help when testing new versions of loaders.gl with existing frameworks
+ * @returns global loader options merged with default loader options
+ */
+export function getGlobalLoaderOptions(): StrictLoaderOptions {
   const state = getGlobalLoaderState();
   // Ensure all default loader options from this library are mentioned
-  state.globalOptions = state.globalOptions || {...DEFAULT_LOADER_OPTIONS};
-  return state.globalOptions;
-};
+  state.globalOptions = state.globalOptions || {
+    ...DEFAULT_LOADER_OPTIONS,
+    core: {...DEFAULT_LOADER_OPTIONS.core}
+  };
+  return normalizeLoaderOptions(state.globalOptions);
+}
 
 /**
  * Set global loader options
  * @param options
  */
-export function setGlobalOptions(options: object): void {
+export function setGlobalOptions(options: LoaderOptions): void {
   const state = getGlobalLoaderState();
   const globalOptions = getGlobalLoaderOptions();
+  // @ts-expect-error First param looks incorrect
   state.globalOptions = normalizeOptionsInternal(globalOptions, options);
+  // Make sure any new modules are registered
+  registerJSModules(options.modules);
 }
 
 /**
- * Merges options with global opts and loader defaults, also injects baseUri
+ * Merges options with global opts and loader defaults, also injects baseUrl
  * @param options
  * @param loader
  * @param loaders
  * @param url
  */
 export function normalizeOptions(
-  options: object,
+  options: LoaderOptions,
   loader: Loader,
   loaders?: Loader[],
   url?: string
-): object {
+): StrictLoaderOptions {
   loaders = loaders || [];
   loaders = Array.isArray(loaders) ? loaders : [loaders];
 
   validateOptions(options, loaders);
-  return normalizeOptionsInternal(loader, options, url);
+  return normalizeLoaderOptions(normalizeOptionsInternal(loader, options, url));
 }
 
 /**
- * Gets the current fetch function from options and context
- * @param options
- * @param context
+ * Returns a copy of the provided options with deprecated top-level core fields moved into `core`
+ * and removed from the top level. This keeps global options from leaking deprecated aliases into
+ * loader-specific option maps during normalization.
  */
-export function getFetchFunction(options?: LoaderOptions, context?: LoaderContext) {
-  const globalOptions = getGlobalLoaderOptions();
-
-  const fetchOptions = options || globalOptions;
-
-  // options.fetch can be a function
-  if (typeof fetchOptions.fetch === 'function') {
-    return fetchOptions.fetch;
+export function normalizeLoaderOptions(options: LoaderOptions): StrictLoaderOptions {
+  const normalized = cloneLoaderOptions(options);
+  moveDeprecatedTopLevelOptionsToCore(normalized);
+  for (const key of CORE_LOADER_OPTION_KEYS) {
+    if (normalized.core && normalized.core[key] !== undefined) {
+      delete (normalized as Record<string, unknown>)[key];
+    }
   }
-
-  // options.fetch can be an options object
-  if (isObject(fetchOptions.fetch)) {
-    return (url) => fetchFile(url, fetchOptions);
+  if (normalized.core && normalized.core._workerType !== undefined) {
+    delete (normalized as any)._worker;
   }
-
-  // else refer to context (from parent loader) if available
-  if (context && context.fetch) {
-    return context.fetch;
-  }
-
-  // else return the default fetch function
-  return fetchFile;
+  return normalized as StrictLoaderOptions;
 }
 
 // VALIDATE OPTIONS
@@ -147,59 +137,64 @@ export function getFetchFunction(options?: LoaderOptions, context?: LoaderContex
  * Warn for unsupported options
  * @param options
  * @param loaders
- * @param log
  */
-function validateOptions(
-  options: LoaderOptions,
-  loaders,
-  // eslint-disable-next-line
-  log = console
-) {
+function validateOptions(options: LoaderOptions, loaders: Loader[]): void {
   // Check top level options
-  validateOptionsObject(
-    options,
-    null,
-    log,
-    DEFAULT_LOADER_OPTIONS,
-    REMOVED_LOADER_OPTIONS,
-    loaders
-  );
+  validateOptionsObject(options, null, DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS, loaders);
   for (const loader of loaders) {
     // Get the scoped, loader specific options from the user supplied options
-    const idOptions = (options && options[loader.id]) || {};
+    const idOptions: Record<string, unknown> =
+      ((options && options[loader.id]) as Record<string, unknown>) || {};
 
     // Get scoped, loader specific default and deprecated options from the selected loader
     const loaderOptions = (loader.options && loader.options[loader.id]) || {};
-    const deprecatedOptions = (loader.defaultOptions && loader.defaultOptions[loader.id]) || {};
+    const deprecatedOptions =
+      (loader.deprecatedOptions && loader.deprecatedOptions[loader.id]) || {};
 
     // Validate loader specific options
-    validateOptionsObject(idOptions, loader.id, log, loaderOptions, deprecatedOptions, loaders);
+    // @ts-ignore
+    validateOptionsObject(idOptions, loader.id, loaderOptions, deprecatedOptions, loaders);
   }
 }
 
-// eslint-disable-next-line max-params
-function validateOptionsObject(options, id, log, defaultOptions, deprecatedOptions, loaders) {
+// eslint-disable-next-line max-params, complexity
+function validateOptionsObject(
+  options: LoaderOptions,
+  id: string | null,
+  defaultOptions: Record<string, unknown>,
+  deprecatedOptions: Record<string, unknown>,
+  loaders: Loader[]
+): void {
   const loaderName = id || 'Top level';
   const prefix = id ? `${id}.` : '';
 
   for (const key in options) {
     // If top level option value is an object it could options for a loader, so ignore
     const isSubOptions = !id && isObject(options[key]);
-    if (!(key in defaultOptions) && !(key === 'baseUri' && !id)) {
+    const isBaseUriOption = key === 'baseUri' && !id;
+    const isWorkerUrlOption = key === 'workerUrl' && id;
+    // <loader>.workerUrl requires special handling as it is now auto-generated and no longer specified as a default option.
+    if (!(key in defaultOptions) && !isBaseUriOption && !isWorkerUrlOption) {
       // Issue deprecation warnings
       if (key in deprecatedOptions) {
-        log.warn(
-          `${loaderName} loader option \'${prefix}${key}\' no longer supported, use \'${deprecatedOptions[key]}\'`
-        );
+        if (probeLog.level > 0) {
+          probeLog.warn(
+            `${loaderName} loader option \'${prefix}${key}\' no longer supported, use \'${deprecatedOptions[key]}\'`
+          )();
+        }
       } else if (!isSubOptions) {
-        const suggestion = findSimilarOption(key, loaders);
-        log.warn(`${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`);
+        if (probeLog.level > 0) {
+          const suggestion = findSimilarOption(key, loaders);
+          probeLog.warn(
+            `${loaderName} loader option \'${prefix}${key}\' not recognized. ${suggestion}`
+          )();
+        }
       }
     }
   }
 }
 
-function findSimilarOption(optionKey, loaders) {
+function findSimilarOption(optionKey: string, loaders: Loader[]): string {
   const lowerCaseOptionKey = optionKey.toLowerCase();
   let bestSuggestion = '';
   for (const loader of loaders) {
@@ -218,26 +213,37 @@ function findSimilarOption(optionKey, loaders) {
   return bestSuggestion;
 }
 
-function normalizeOptionsInternal(loader, options, url?: string) {
+function normalizeOptionsInternal(
+  loader: Loader,
+  options: LoaderOptions,
+  url?: string
+): LoaderOptions {
   const loaderDefaultOptions = loader.options || {};
 
   const mergedOptions = {...loaderDefaultOptions};
-
-  addUrlOptions(mergedOptions, url);
+  if (loaderDefaultOptions.core) {
+    mergedOptions.core = {...loaderDefaultOptions.core};
+  }
+  moveDeprecatedTopLevelOptionsToCore(mergedOptions);
 
   // LOGGING: options.log can be set to `null` to defeat logging
-  if (mergedOptions.log === null) {
-    mergedOptions.log = new NullLog();
+  if (mergedOptions.core?.log === null) {
+    mergedOptions.core = {...mergedOptions.core, log: new NullLog()};
   }
 
-  mergeNestedFields(mergedOptions, getGlobalLoaderOptions());
-  mergeNestedFields(mergedOptions, options);
+  mergeNestedFields(mergedOptions, normalizeLoaderOptions(getGlobalLoaderOptions()));
+
+  const userOptions = normalizeLoaderOptions(options);
+  mergeNestedFields(mergedOptions, userOptions);
+
+  addUrlOptions(mergedOptions, url);
+  addDeprecatedTopLevelOptions(mergedOptions);
 
   return mergedOptions;
 }
 
 // Merge nested options objects
-function mergeNestedFields(mergedOptions, options) {
+function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions): void {
   for (const key in options) {
     // Check for nested options
     // object in options => either no key in defaultOptions or object in defaultOptions
@@ -245,8 +251,8 @@ function mergeNestedFields(mergedOptions, options) {
       const value = options[key];
       if (isPureObject(value) && isPureObject(mergedOptions[key])) {
         mergedOptions[key] = {
-          ...mergedOptions[key],
-          ...options[key]
+          ...(mergedOptions[key] as object),
+          ...(options[key] as object)
         };
       } else {
         mergedOptions[key] = options[key];
@@ -256,13 +262,71 @@ function mergeNestedFields(mergedOptions, options) {
   }
 }
 
-// Harvest information from the url
-// TODO - baseUri should be a directory, i.e. remove file component from baseUri
-// TODO - extract extension?
-// TODO - extract query parameters?
-// TODO - should these be injected on context instead of options?
-function addUrlOptions(options, url?: string) {
-  if (url && !('baseUri' in options)) {
-    options.baseUri = url;
+/**
+ * Harvest information from the url
+ * @deprecated This is mainly there to support loaders that still resolve from options
+ * TODO - extract extension?
+ * TODO - extract query parameters?
+ * TODO - should these be injected on context instead of options?
+ */
+function addUrlOptions(options: LoaderOptions, url?: string): void {
+  if (!url) {
+    return;
+  }
+  const hasCoreBaseUrl = options.core?.baseUrl !== undefined;
+  if (!hasCoreBaseUrl) {
+    options.core ||= {};
+    options.core.baseUrl = path.dirname(stripQueryString(url));
+  }
+}
+
+function cloneLoaderOptions(options: LoaderOptions): LoaderOptions {
+  const clonedOptions = {...options};
+  if (options.core) {
+    clonedOptions.core = {...options.core};
+  }
+  return clonedOptions;
+}
+
+function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
+  if (options.baseUri !== undefined) {
+    options.core ||= {};
+    if (options.core.baseUrl === undefined) {
+      options.core.baseUrl = options.baseUri;
+    }
+  }
+
+  for (const key of CORE_LOADER_OPTION_KEYS) {
+    if ((options as Record<string, unknown>)[key] !== undefined) {
+      options.core ||= {};
+      const coreOptions = options.core;
+      const coreRecord = coreOptions as Record<string, unknown>;
+      // Treat deprecated top-level core options as aliases to `options.core`, but never override an explicitly
+      // provided `options.core` value.
+      if (coreRecord[key] === undefined) {
+        coreRecord[key] = (options as Record<string, unknown>)[key];
+      }
+    }
+  }
+
+  // Support the older internal `_worker` alias (used by some tests and integrations) for `_workerType`.
+  const workerTypeAlias = (options as any)._worker;
+  if (workerTypeAlias !== undefined) {
+    options.core ||= {};
+    if (options.core._workerType === undefined) {
+      options.core._workerType = workerTypeAlias;
+    }
+  }
+}
+
+function addDeprecatedTopLevelOptions(options: LoaderOptions): void {
+  const coreOptions = options.core as Record<string, unknown> | undefined;
+  if (!coreOptions) {
+    return;
+  }
+  for (const key of CORE_LOADER_OPTION_KEYS) {
+    if (coreOptions[key] !== undefined) {
+      (options as Record<string, unknown>)[key] = coreOptions[key];
+    }
   }
 }

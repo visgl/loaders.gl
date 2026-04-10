@@ -1,0 +1,24 @@
+{
+  "asset" : {
+    "version" : "1.1"
+  },
+  "geometricError" : 1024.0,
+  "root" : {
+    "boundingVolume" : {
+      "box" : [ 0.5, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5 ]
+    },
+    "geometricError" : 32.0,
+    "refine" : "ADD",
+    "content" : {
+      "uri" : "content/{level}/{x}/{y}/{z}.glb"
+    },
+    "implicitTiling" : {
+      "subdivisionScheme" : "OCTREE",
+      "subtreeLevels" : 3,
+      "availableLevels" : 6,
+      "subtrees" : {
+        "uri" : "subtrees/{level}/{x}/{y}/{z}.subtree"
+      }
+    }
+  }
+}

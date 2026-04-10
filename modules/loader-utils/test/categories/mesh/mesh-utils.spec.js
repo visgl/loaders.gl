@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
-import {getMeshBoundingBox} from '@loaders.gl/loader-utils';
+import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
 
-test('getMeshBoundingBox', (t) => {
+test('getMeshBoundingBox', t => {
   // @ts-ignore
   t.is(getMeshBoundingBox(null), null, 'does not crash with invalid input');
   t.is(getMeshBoundingBox({}), null, 'does not crash with invalid input');
@@ -14,7 +14,7 @@ test('getMeshBoundingBox', (t) => {
 
   t.deepEqual(
     getMeshBoundingBox({
-      POSITION: {value: new Float32Array([-1, 1, 2, -3, 1, 4, -2, 1, 3])}
+      POSITION: {value: new Float32Array([-1, 1, 2, -3, 1, 4, -2, 1, 3]), size: 3}
     }),
     [
       [-3, 1, 2],
@@ -25,7 +25,7 @@ test('getMeshBoundingBox', (t) => {
 
   t.is(
     getMeshBoundingBox({
-      POSITION: {value: new Float32Array(0)}
+      POSITION: {value: new Float32Array(0), size: 3}
     }),
     null,
     'returns empty bounding box'

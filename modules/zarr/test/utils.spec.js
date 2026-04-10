@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
 
+// @ts-ignore
 import {isInterleaved, getIndexer} from '@loaders.gl/zarr/lib/utils';
 
 test('isInterleaved', (t) => {

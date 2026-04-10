@@ -1,8 +1,9 @@
 {
   "name": "@loaders.gl/gis",
   "description": "Helpers for GIS category data",
-  "version": "3.0.0-beta.3",
+  "version": "4.4.0",
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
@@ -14,9 +15,16 @@
     "geometry",
     "GeoJSON"
   ],
-  "types": "src/index.d.ts",
-  "main": "dist/es5/index.js",
-  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "sideEffects": false,
   "files": [
     "src",
@@ -24,11 +32,19 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/loader-utils": "3.0.0-beta.3",
+    "@loaders.gl/geoarrow": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
     "@mapbox/vector-tile": "^1.3.1",
+    "@math.gl/polygon": "^4.1.0",
     "pbf": "^3.2.1"
   },
   "devDependencies": {
-    "@math.gl/proj4": "3.5.0-alpha.1"
-  }
+    "@math.gl/proj4": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

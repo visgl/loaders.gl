@@ -8,13 +8,15 @@
     <img id="img" />
   </main>
 </body>
-<script src="https://unpkg.com/@loaders.gl/core@2.1.0/dist/dist.js"></script>
+<script src="https://unpkg.com/@loaders.gl/core@3.3.1/dist/dist.min.js"></script>
 <script>
-  // Surprisingly, it ooks like the dist script injects on global scope, in addition to `loaders.gl`
+  // Surprisingly, it looks like the dist script injects on global scope, in addition to `loaders.gl`
+
+  const {_fetchProgress} = loaders;
 
   const PROGRESS_IMAGE_URL = 'https://fetch-progress.anthum.com/30kbps/images/sunrise-baseline.jpg';
-  // 'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/images/test/progress/sunrise-baseline.jpg';
-  // 'https://raw.githubusercontent.com/uber-web/loaders.gl/master/modules/images/test/data/img1-preview.jpeg';
+  // 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/images/test/progress/sunrise-baseline.jpg';
+  // 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/images/test/data/img1-preview.jpeg';
 
   const elStatus = document.getElementById('status');
   const elProgress = document.getElementById('progress');
@@ -47,4 +49,4 @@
   unction progress(percent {loadedBytes, totalBytes}) {
   elProgress.innerHTML = Math.round(loadedBytes/totalBytes*100)+'%';
   */
- </script>
+</script>

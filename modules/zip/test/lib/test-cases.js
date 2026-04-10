@@ -1,4 +1,8 @@
-// prettier-ignore
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+// biome-ignore format: preserve intentional fixture layout
 export const IMAGE_DATA_ARRAY = new Uint8Array([
   137, 80, 78,  71,  13,  10,  26,  10,  0,   0,   0,   13,
   73,  72, 68,  82,  0,   0,   0,   2,   0,   0,   0,   2,

@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [
+    {"path": "../arrow"},
+    {"path": "../compression"},
+    {"path": "../geoarrow"},
+    {"path": "../loader-utils"},
+    {"path": "../schema"},
+    {"path": "../gis"},
+    {"path": "../wkt"}
+  ]
+}

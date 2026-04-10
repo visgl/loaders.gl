@@ -1,66 +1,68 @@
 /* eslint-disable camelcase */
+import type {GLTF, GLTFBufferView, GLTF_EXT_meshopt_compression} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
-import GLTFScenegraph from '../api/gltf-scenegraph';
-import {EXT_MESHOPT_COMPRESSION} from '../gltf-utils/gltf-constants';
-import {isMeshoptSupported, meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
+import {meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
-type GLTF_EXT_meshopt_compression = {
-  buffer: number;
-  byteOffset?: number;
-  byteLength: number;
-  byteStride: number;
-  count: number;
-  mode: 'ATTRIBUTES' | 'TRIANGLES' | 'INDICES';
-  filter?: 'NONE' | 'OCTAHEDRAL' | 'QUATERNION' | 'EXPONENTIAL';
-};
+// @ts-ignore
 // eslint-disable-next-line
-const DEFAULT_MESHOPT_OPTIONS = {
+const _DEFAULT_MESHOPT_OPTIONS = {
   byteOffset: 0,
   filter: 'NONE'
 };
 
-// Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
-export async function decode(gltfData, options: GLTFLoaderOptions) {
-  if (!options?.gltf?.decompressMeshes || !isMeshoptSupported()) {
+/** Extension name */
+const EXT_MESHOPT_COMPRESSION = 'EXT_meshopt_compression';
+
+export const name = EXT_MESHOPT_COMPRESSION;
+
+export async function decode(gltfData: {json: GLTF}, options: GLTFLoaderOptions) {
+  const scenegraph = new GLTFScenegraph(gltfData);
+
+  if (!options?.gltf?.decompressMeshes || !options.gltf?.loadBuffers) {
     return;
   }
 
   const promises: Promise<any>[] = [];
   for (const bufferViewIndex of gltfData.json.bufferViews || []) {
-    promises.push(decodeMeshoptBufferView(gltfData.json, bufferViewIndex));
+    promises.push(decodeMeshoptBufferView(scenegraph, bufferViewIndex));
   }
 
   // Decompress meshes in parallel
   await Promise.all(promises);
 
-  // We have now decompressed all primitives, so remove the top-level extensions
-  const scenegraph = new GLTFScenegraph(gltfData);
+  // We have now decompressed all primitives, so remove the top-level extension
   scenegraph.removeExtension(EXT_MESHOPT_COMPRESSION);
 }
 
 /** Decode one meshopt buffer view */
-async function decodeMeshoptBufferView(json, index: number): Promise<ArrayBuffer | null> {
-  const bufferView = json.bufferViews[index];
-
-  const meshoptExtension =
-    bufferView.extensions &&
-    (bufferView.extensions[EXT_MESHOPT_COMPRESSION] as GLTF_EXT_meshopt_compression);
+async function decodeMeshoptBufferView(
+  scenegraph: GLTFScenegraph,
+  bufferView: GLTFBufferView
+): Promise<void> {
+  const meshoptExtension = scenegraph.getObjectExtension<GLTF_EXT_meshopt_compression>(
+    bufferView,
+    EXT_MESHOPT_COMPRESSION
+  );
   if (meshoptExtension) {
-    const buffer = json.buffers[meshoptExtension.buffer];
-
     const {
       byteOffset = 0,
       byteLength = 0,
       byteStride,
       count,
       mode,
-      filter = 'NONE'
+      filter = 'NONE',
+      buffer: bufferIndex
     } = meshoptExtension;
-    const source = new Uint8Array(buffer, byteOffset, byteLength);
-    const result = new ArrayBuffer(count * byteStride);
-    await meshoptDecodeGltfBuffer(new Uint8Array(result), count, byteStride, source, mode, filter);
-    return result;
-  }
+    const buffer = scenegraph.gltf.buffers[bufferIndex];
 
-  return null;
+    const source = new Uint8Array(buffer.arrayBuffer, buffer.byteOffset + byteOffset, byteLength);
+    const result = new Uint8Array(
+      scenegraph.gltf.buffers[bufferView.buffer].arrayBuffer,
+      bufferView.byteOffset,
+      bufferView.byteLength
+    );
+    await meshoptDecodeGltfBuffer(result, count, byteStride, source, mode, filter);
+    scenegraph.removeObjectExtension(bufferView, EXT_MESHOPT_COMPRESSION);
+  }
 }

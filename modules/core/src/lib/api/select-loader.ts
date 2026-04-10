@@ -1,15 +1,23 @@
-import type {
-  LoaderWithParser,
-  LoaderContext,
-  LoaderOptions,
-  Loader
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {LoaderContext, LoaderOptions, Loader, DataType} from '@loaders.gl/loader-utils';
+import {
+  compareArrayBuffers,
+  path,
+  log,
+  isBlob,
+  ensureArrayBuffer,
+  isArrayBufferLike
 } from '@loaders.gl/loader-utils';
-import {compareArrayBuffers} from '@loaders.gl/loader-utils';
+import {TypedArray} from '@loaders.gl/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
-import {getResourceUrlAndType} from '../utils/resource-utils';
+import {normalizeLoaderOptions} from '../loader-utils/option-utils';
+import {getResourceUrl, getResourceMIMEType} from '../utils/resource-utils';
+import {compareMIMETypes} from '../utils/mime-type-utils';
 import {getRegisteredLoaders} from './register-loaders';
-import {readFileSlice} from '../../iterator-utils/make-iterator/blob-iterator';
-import {isBlob} from '../../javascript-utils/is-type';
+import {stripQueryString} from '../utils/url-utils';
 
 const EXT_PATTERN = /\.([^.]+)$/;
 
@@ -27,13 +35,38 @@ const EXT_PATTERN = /\.([^.]+)$/;
  * @param context used internally, applications should not provide this parameter
  */
 export async function selectLoader(
-  data: Response | Blob | ArrayBuffer | string,
+  data: DataType,
   loaders: Loader[] | Loader = [],
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<Loader | null> {
+  if (!validHTTPResponse(data)) {
+    return null;
+  }
+
+  const normalizedOptions = normalizeLoaderOptions(options || {});
+  normalizedOptions.core ||= {};
+
+  if (data instanceof Response && mayContainText(data)) {
+    const text = await data.clone().text();
+    const textLoader = selectLoaderSync(
+      text,
+      loaders,
+      {...normalizedOptions, core: {...normalizedOptions.core, nothrow: true}},
+      context
+    );
+    if (textLoader) {
+      return textLoader;
+    }
+  }
+
   // First make a sync attempt, disabling exceptions
-  let loader = selectLoaderSync(data, loaders, {...options, nothrow: true}, context);
+  let loader = selectLoaderSync(
+    data,
+    loaders,
+    {...normalizedOptions, core: {...normalizedOptions.core, nothrow: true}},
+    context
+  );
   if (loader) {
     return loader;
   }
@@ -41,16 +74,31 @@ export async function selectLoader(
   // For Blobs and Files, try to asynchronously read a small initial slice and test again with that
   // to see if we can detect by initial content
   if (isBlob(data)) {
-    data = await readFileSlice(data as Blob, 0, 10);
-    loader = selectLoaderSync(data, loaders, options, context);
+    data = await data.slice(0, 10).arrayBuffer();
+    loader = selectLoaderSync(data, loaders, normalizedOptions, context);
+  }
+
+  if (!loader && data instanceof Response && mayContainText(data)) {
+    const text = await data.clone().text();
+    loader = selectLoaderSync(text, loaders, normalizedOptions, context);
   }
 
   // no loader available
-  if (!loader && !options?.nothrow) {
+  if (!loader && !normalizedOptions.core.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
 
   return loader;
+}
+
+function mayContainText(response: Response): boolean {
+  const mimeType = getResourceMIMEType(response);
+  return Boolean(
+    mimeType &&
+      (mimeType.startsWith('text/') ||
+        mimeType === 'application/json' ||
+        mimeType.endsWith('+json'))
+  );
 }
 
 /**
@@ -63,48 +111,124 @@ export async function selectLoader(
  * @param context used internally, applications should not provide this parameter
  */
 export function selectLoaderSync(
-  data: Response | Blob | ArrayBuffer | string,
+  data: DataType,
   loaders: Loader[] | Loader = [],
   options?: LoaderOptions,
   context?: LoaderContext
 ): Loader | null {
+  if (!validHTTPResponse(data)) {
+    return null;
+  }
+
+  const normalizedOptions = normalizeLoaderOptions(options || {});
+  normalizedOptions.core ||= {};
+
   // eslint-disable-next-line complexity
   // if only a single loader was provided (not as array), force its use
   // TODO - Should this behavior be kept and documented?
   if (loaders && !Array.isArray(loaders)) {
+    // TODO - remove support for legacy loaders
     return normalizeLoader(loaders);
   }
 
-  // Add registered loaders
-  loaders = [...(loaders || []), ...getRegisteredLoaders()];
-  normalizeLoaders(loaders);
+  // Build list of candidate loaders that will be searched in order for a match
+  let candidateLoaders: Loader[] = [];
+  // First search supplied loaders
+  if (loaders) {
+    candidateLoaders = candidateLoaders.concat(loaders);
+  }
+  // Then fall back to registered loaders
+  if (!normalizedOptions.core.ignoreRegisteredLoaders) {
+    candidateLoaders.push(...getRegisteredLoaders());
+  }
 
-  const {url, type} = getResourceUrlAndType(data);
+  // TODO - remove support for legacy loaders
+  normalizeLoaders(candidateLoaders);
 
-  const testUrl = url || context?.url;
-  let loader = findLoaderByUrl(loaders, testUrl);
-  loader = loader || findLoaderByContentType(loaders, type);
-  // NOTE: Initial data is not always available (e.g. Response, stream, async iterator)
-  loader = loader || findLoaderByExamingInitialData(loaders, data);
+  const loader = selectLoaderInternal(data, candidateLoaders, normalizedOptions, context);
 
   // no loader available
-  if (!loader && !options?.nothrow) {
+  if (!loader && !normalizedOptions.core.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
 
   return loader;
 }
 
-function getNoValidLoaderMessage(data): string {
-  const {url, type} = getResourceUrlAndType(data);
+/** Implements loaders selection logic */
+// eslint-disable-next-line complexity
+function selectLoaderInternal(
+  data: DataType,
+  loaders: Loader[],
+  options?: LoaderOptions,
+  context?: LoaderContext
+) {
+  const url = getResourceUrl(data);
+  const type = getResourceMIMEType(data);
 
-  let message = 'No valid loader found';
-  if (data) {
-    message += ` data: "${getFirstCharacters(data)}", contentType: "${type}"`;
+  const testUrl = stripQueryString(url) || context?.url;
+
+  let loader: Loader | null = null;
+  let reason: string = '';
+
+  // if options.mimeType is supplied, it takes precedence
+  if (options?.core?.mimeType) {
+    loader = findLoaderByMIMEType(loaders, options?.core?.mimeType);
+    reason = `match forced by supplied MIME type ${options?.core?.mimeType}`;
   }
-  if (url) {
-    message += ` url: ${url}`;
+
+  // Look up loader by url
+  loader = loader || findLoaderByUrl(loaders, testUrl);
+  reason = reason || (loader ? `matched url ${testUrl}` : '');
+
+  // Look up loader by mime type
+  loader = loader || findLoaderByMIMEType(loaders, type);
+  reason = reason || (loader ? `matched MIME type ${type}` : '');
+
+  // Look for loader via initial bytes (Note: not always accessible (e.g. Response, stream, async iterator)
+  // @ts-ignore Blob | Response
+  loader = loader || findLoaderByInitialBytes(loaders, data);
+  // @ts-ignore Blob | Response
+  reason = reason || (loader ? `matched initial data ${getFirstCharacters(data)}` : '');
+
+  // Look up loader by fallback mime type
+  if (options?.core?.fallbackMimeType) {
+    loader = loader || findLoaderByMIMEType(loaders, options?.core?.fallbackMimeType);
+    reason = reason || (loader ? `matched fallback MIME type ${type}` : '');
   }
+
+  if (reason) {
+    log.log(1, `selectLoader selected ${loader?.name}: ${reason}.`);
+  }
+
+  return loader;
+}
+
+/** Check HTTP Response */
+function validHTTPResponse(data: unknown): boolean {
+  // HANDLE HTTP status
+  if (data instanceof Response) {
+    // 204 - NO CONTENT. This handles cases where e.g. a tile server responds with 204 for a missing tile
+    if (data.status === 204) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/** Generate a helpful message to help explain why loader selection failed. */
+function getNoValidLoaderMessage(data: DataType): string {
+  const url = getResourceUrl(data);
+  const type = getResourceMIMEType(data);
+
+  let message = 'No valid loader found (';
+  message += url ? `${path.filename(url)}, ` : 'no url provided, ';
+  message += `MIME type: ${type ? `"${type}"` : 'not provided'}, `;
+  // First characters are only accessible when called on data (string or arrayBuffer).
+  // @ts-ignore Blob | Response
+  const firstCharacters: string = data ? getFirstCharacters(data) : '';
+  message += firstCharacters ? ` first bytes: "${firstCharacters}"` : 'first bytes: not available';
+  message += ')';
   return message;
 }
 
@@ -136,22 +260,22 @@ function findLoaderByExtension(loaders: Loader[], extension: string): Loader | n
   return null;
 }
 
-function findLoaderByContentType(loaders, mimeType) {
+function findLoaderByMIMEType(loaders: Loader[], mimeType: string): Loader | null {
   for (const loader of loaders) {
-    if (loader.mimeTypes && loader.mimeTypes.includes(mimeType)) {
+    if (loader.mimeTypes?.some(mimeType1 => compareMIMETypes(mimeType, mimeType1))) {
       return loader;
     }
 
     // Support referring to loaders using the "unregistered tree"
     // https://en.wikipedia.org/wiki/Media_type#Unregistered_tree
-    if (mimeType === `application/x.${loader.id}`) {
+    if (compareMIMETypes(mimeType, `application/x.${loader.id}`)) {
       return loader;
     }
   }
   return null;
 }
 
-function findLoaderByExamingInitialData(loaders, data) {
+function findLoaderByInitialBytes(loaders: Loader[], data: string | ArrayBuffer): Loader | null {
   if (!data) {
     return null;
   }
@@ -177,27 +301,32 @@ function findLoaderByExamingInitialData(loaders, data) {
   return null;
 }
 
-function testDataAgainstText(data, loader) {
+function testDataAgainstText(data: string, loader: Loader): boolean {
   if (loader.testText) {
     return loader.testText(data);
   }
 
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some((test) => data.startsWith(test));
+  return tests.some(test => data.startsWith(test as string));
 }
 
-function testDataAgainstBinary(data, byteOffset, loader) {
+function testDataAgainstBinary(data: ArrayBufferLike, byteOffset: number, loader: Loader): boolean {
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some((test) => testBinary(data, byteOffset, loader, test));
+  return tests.some(test => testBinary(data, byteOffset, loader, test));
 }
 
-function testBinary(data, byteOffset, loader, test) {
-  if (test instanceof ArrayBuffer) {
+function testBinary(
+  data: ArrayBufferLike,
+  byteOffset: number,
+  loader: Loader,
+  test?: ArrayBuffer | string | ((b: ArrayBuffer) => boolean)
+): boolean {
+  if (isArrayBufferLike(test)) {
     return compareArrayBuffers(test, data, test.byteLength);
   }
   switch (typeof test) {
     case 'function':
-      return test(data, loader);
+      return test(ensureArrayBuffer(data));
 
     case 'string':
       // Magic bytes check: If `test` is a string, check if binary data starts with that strings
@@ -209,7 +338,7 @@ function testBinary(data, byteOffset, loader, test) {
   }
 }
 
-function getFirstCharacters(data, length = 5) {
+function getFirstCharacters(data: string | ArrayBuffer | TypedArray, length: number = 5) {
   if (typeof data === 'string') {
     return data.slice(0, length);
   } else if (ArrayBuffer.isView(data)) {
@@ -222,7 +351,7 @@ function getFirstCharacters(data, length = 5) {
   return '';
 }
 
-function getMagicString(arrayBuffer, byteOffset, length) {
+function getMagicString(arrayBuffer: ArrayBufferLike, byteOffset: number, length: number): string {
   if (arrayBuffer.byteLength < byteOffset + length) {
     return '';
   }

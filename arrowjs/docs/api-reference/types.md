@@ -1,4 +1,0 @@
-# Types
-
-Objects representing types.
-

@@ -1,28 +1,51 @@
 // https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_draco_mesh_compression
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
-
 /* eslint-disable camelcase */
-import type {GLTF, GLTFAccessor, GLTFMeshPrimitive} from '../types/gltf-types';
+
+import type {LoaderContext} from '@loaders.gl/loader-utils';
+import {sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
+
+import {DracoLoader, DracoLoaderOptions} from '@loaders.gl/draco';
+
+import type {
+  GLTF,
+  GLTFAccessor,
+  GLTFMeshPrimitive,
+  GLTF_KHR_draco_mesh_compression
+} from '../types/gltf-json-schema';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 
-import {DracoLoader} from '@loaders.gl/draco';
-import {DracoLoaderOptions, DracoMeshData} from '@loaders.gl/draco';
-import {sliceArrayBuffer} from '@loaders.gl/loader-utils';
-import {default as Scenegraph} from '../api/gltf-scenegraph';
-import {KHR_DRACO_MESH_COMPRESSION} from '../gltf-utils/gltf-constants';
+import {GLTFScenegraph} from '../api/gltf-scenegraph';
 import {getGLTFAccessors, getGLTFAccessor} from '../gltf-utils/gltf-attribute-utils';
 
-// Note: We have a "soft dependency" on DracoWriter to avoid bundling it when not needed
+const KHR_DRACO_MESH_COMPRESSION = 'KHR_draco_mesh_compression';
+
+/** Extension name */
+export const name = KHR_DRACO_MESH_COMPRESSION;
+
+export function preprocess(
+  gltfData: {json: GLTF},
+  options: GLTFLoaderOptions,
+  context: LoaderContext
+): void {
+  const scenegraph = new GLTFScenegraph(gltfData);
+  for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
+    if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
+      // TODO - Remove fallback accessors to make sure we don't load unnecessary buffers
+    }
+  }
+}
+
 export async function decode(
   gltfData: {json: GLTF},
   options: GLTFLoaderOptions,
-  context
+  context: LoaderContext
 ): Promise<void> {
   if (!options?.gltf?.decompressMeshes) {
     return;
   }
 
-  const scenegraph = new Scenegraph(gltfData);
+  const scenegraph = new GLTFScenegraph(gltfData);
   const promises: Promise<void>[] = [];
   for (const primitive of makeMeshPrimitiveIterator(scenegraph)) {
     if (scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION)) {
@@ -33,12 +56,12 @@ export async function decode(
   // Decompress meshes in parallel
   await Promise.all(promises);
 
-  // We have now decompressed all primitives, so remove the top-level extensions
+  // We have now decompressed all primitives, so remove the top-level extension
   scenegraph.removeExtension(KHR_DRACO_MESH_COMPRESSION);
 }
 
 export function encode(gltfData, options: GLTFLoaderOptions = {}): void {
-  const scenegraph = new Scenegraph(gltfData);
+  const scenegraph = new GLTFScenegraph(gltfData);
 
   for (const mesh of scenegraph.json.meshes || []) {
     // eslint-disable-next-line camelcase
@@ -58,12 +81,15 @@ export function encode(gltfData, options: GLTFLoaderOptions = {}): void {
 // TODO - Implement fallback behavior per KHR_DRACO_MESH_COMPRESSION spec
 
 async function decompressPrimitive(
-  scenegraph: Scenegraph,
+  scenegraph: GLTFScenegraph,
   primitive: GLTFMeshPrimitive,
   options: GLTFLoaderOptions,
-  context
+  context: LoaderContext
 ): Promise<void> {
-  const dracoExtension = scenegraph.getObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
+  const dracoExtension = scenegraph.getObjectExtension<GLTF_KHR_draco_mesh_compression>(
+    primitive,
+    KHR_DRACO_MESH_COMPRESSION
+  );
   if (!dracoExtension) {
     return;
   }
@@ -73,17 +99,11 @@ async function decompressPrimitive(
   // TODO - remove when `parse` is fixed to handle `byteOffset`s
   const bufferCopy = sliceArrayBuffer(buffer.buffer, buffer.byteOffset); // , buffer.byteLength);
 
-  const {parse} = context;
   const dracoOptions: DracoLoaderOptions = {...options};
 
   // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
-  const decodedData = (await parse(
-    bufferCopy,
-    DracoLoader,
-    dracoOptions,
-    context
-  )) as DracoMeshData;
+  const decodedData = await parseFromContext(bufferCopy, DracoLoader, dracoOptions, context);
 
   const decodedAttributes: {[key: string]: GLTFAccessor} = getGLTFAccessors(decodedData.attributes);
 
@@ -107,7 +127,7 @@ async function decompressPrimitive(
   }
 
   // Extension has been processed, delete it
-  // delete primitive.extensions[KHR_DRACO_MESH_COMPRESSION];
+  scenegraph.removeObjectExtension(primitive, KHR_DRACO_MESH_COMPRESSION);
 
   checkPrimitive(primitive);
 }
@@ -116,7 +136,7 @@ async function decompressPrimitive(
 
 // eslint-disable-next-line max-len
 // Only TRIANGLES: 0x0004 and TRIANGLE_STRIP: 0x0005 are supported
-function compressMesh(attributes, indices, mode: number = 4, options, context) {
+function compressMesh(attributes, indices, mode: number = 4, options, context: LoaderContext) {
   if (!options.DracoWriter) {
     throw new Error('options.gltf.DracoWriter not provided');
   }
@@ -129,8 +149,8 @@ function compressMesh(attributes, indices, mode: number = 4, options, context) {
   // compressed and uncompressed data, generators should create uncompressed
   // attributes and indices using data that has been decompressed from the Draco buffer,
   // rather than the original source data.
-  const {parseSync} = context;
-  const decodedData = parseSync({attributes});
+  // @ts-ignore TODO this needs to be fixed
+  const decodedData = context?.parseSync?.({attributes});
   const fauxAccessors = options._addFauxAttributes(decodedData.attributes);
 
   const bufferViewIndex = options.addBufferView(compressedData);

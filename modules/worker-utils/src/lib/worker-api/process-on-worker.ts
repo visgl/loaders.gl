@@ -1,16 +1,22 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {
   WorkerObject,
   WorkerOptions,
   WorkerContext,
+  WorkerJobContext,
   WorkerMessageType,
   WorkerMessagePayload
 } from '../../types';
 import type WorkerJob from '../worker-farm/worker-job';
 import WorkerFarm from '../worker-farm/worker-farm';
-import {removeNontransferableOptions} from '../worker-utils/remove-nontransferable-options';
 import {getWorkerURL, getWorkerName} from './get-worker-url';
+import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
 
-type ProcessOnWorkerOptions = WorkerOptions & {
+/** Options for worker processing */
+export type ProcessOnWorkerOptions = WorkerOptions & {
   jobName?: string;
   [key: string]: any;
 };
@@ -38,20 +44,34 @@ export async function processOnWorker(
   worker: WorkerObject,
   data: any,
   options: ProcessOnWorkerOptions = {},
-  context: WorkerContext = {}
+  context: WorkerContext = {},
+  jobContext: WorkerJobContext = {}
 ): Promise<any> {
   const name = getWorkerName(worker);
-  const url = getWorkerURL(worker, options);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
-  const workerPool = workerFarm.getWorkerPool({name, url});
+  const {source} = options;
+  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
+  if (!source) {
+    workerPoolProps.url = getWorkerURL(worker, options);
+  }
+  const workerPool = workerFarm.getWorkerPool(workerPoolProps);
 
   const jobName = options.jobName || worker.name;
-  const job = await workerPool.startJob(jobName, onMessage.bind(null, context));
+  const job = await workerPool.startJob(
+    jobName,
+    // eslint-disable-next-line
+    onMessage.bind(null, context)
+  );
 
   // Kick off the processing in the worker
-  const transferableOptions = removeNontransferableOptions(options);
-  job.postMessage('process', {input: data, options: transferableOptions});
+  const transferableOptions = getTransferListForWriter(options);
+  const transferableContext = getTransferListForWriter(jobContext);
+  job.postMessage('process', {
+    input: data,
+    options: transferableOptions,
+    context: transferableContext
+  });
 
   const result = await job.result;
   return result.result;
@@ -76,7 +96,7 @@ async function onMessage(
 
     case 'error':
       // Worker encountered an error
-      job.error(payload.error);
+      job.error(new Error(payload.error));
       break;
 
     case 'process':
@@ -87,7 +107,7 @@ async function onMessage(
           job.postMessage('error', {id, error: 'Worker not set up to process on main thread'});
           return;
         }
-        const result = await context.process(input, options);
+        const result = await context.process(input, options, undefined, payload.context || {});
         job.postMessage('done', {id, result});
       } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown error';

@@ -8,15 +8,19 @@ export function isSVG(url) {
   return url && (SVG_DATA_URL_PATTERN.test(url) || SVG_URL_PATTERN.test(url));
 }
 
-export function getBlobOrSVGDataUrl(arrayBuffer, url) {
+export function getBlobOrSVGDataUrl(arrayBuffer: ArrayBuffer, url?: string): Blob | string {
   if (isSVG(url)) {
     // Prepare a properly tagged data URL, and load using normal mechanism
     const textDecoder = new TextDecoder();
-    const xmlText = textDecoder.decode(arrayBuffer);
+    let xmlText = textDecoder.decode(arrayBuffer);
     // TODO Escape in browser to support e.g. Chinese characters
-    // if (typeof unescape === 'function' && typeof encodeURLComponent === 'function') {
-    //   xmlText = unescape(encodeURLComponent(xmlText));
-    // }
+    try {
+      if (typeof unescape === 'function' && typeof encodeURIComponent === 'function') {
+        xmlText = unescape(encodeURIComponent(xmlText));
+      }
+    } catch (error) {
+      throw new Error((error as Error).message);
+    }
     // base64 encoding is safer. utf-8 fails in some browsers
     const src = `data:image/svg+xml;base64,${btoa(xmlText)}`;
     return src;
@@ -24,7 +28,7 @@ export function getBlobOrSVGDataUrl(arrayBuffer, url) {
   return getBlob(arrayBuffer, url);
 }
 
-export function getBlob(arrayBuffer, url) {
+export function getBlob(arrayBuffer: ArrayBuffer, url?: string): Blob {
   if (isSVG(url)) {
     // https://bugs.chromium.org/p/chromium/issues/detail?id=606319
     // return new Blob([new Uint8Array(arrayBuffer)], {type: 'image/svg+xml'});

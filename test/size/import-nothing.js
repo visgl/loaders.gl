@@ -1,3 +1,3 @@
-import {parse} from '@loaders.gl/core';
+import {getTableLength} from '@loaders.gl/schema-utils';
 
-console.log(parse); // eslint-disable-line
+console.log(getTableLength); // eslint-disable-line

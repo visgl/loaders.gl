@@ -1,0 +1,348 @@
+// loaders.gl, MIT license
+
+/* eslint-disable camelcase */
+
+import type {ImageType} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
+
+import type {TileSourceMetadata, GetTileParameters} from '../sources/tile-source';
+import {TileSource} from '../sources/tile-source';
+import {ImageServiceProps, getFetchFunction, mergeImageServiceProps} from '../sources/tile-service';
+
+import type {WMTSCapabilities} from '../../wmts/wmts-types';
+import {WMTSCapabilitiesLoader} from '../../../wmts-capabilities-loader';
+// import {GMLLoader} from '../../../wip/wms-feature-info-loader';
+import {WMSErrorLoader as WMTSErrorLoader} from '../../../wms-error-loader';
+
+type WMTSCommonParameters = {
+  /** In case the endpoint supports multiple services */
+  service?: 'WMTS';
+  /** In case the endpoint supports multiple WMTS versions */
+  version?: '1.0.0' | '1.3.0';
+};
+
+export type WMTSGetCapabilitiesParameters = WMTSCommonParameters & {
+  /** Request type */
+  request?: 'GetCapabilities';
+};
+
+export type WMTSGetTileParameters = WMTSCommonParameters & {
+  /** Request type */
+  request?: 'GetTile';
+  /** requested format for the return image */
+  format?: 'image/png';
+  /** Styling */
+  style?: string;
+  /** Layer to render */
+  layer: string;
+  /** Tiling "Schema" (e.g. 'google_maps') */
+  tileMatrixSet: string;
+  /** Tile zoom level, named */
+  tileMatrix: string | number;
+  /** tile x coordinate */
+  tileCol: number;
+  /** tile y coordinate */
+  tileRow: number;
+};
+
+export type WMTSGetFeatureInfoParameters = WMTSCommonParameters & {
+  /** Request type */
+  request?: 'GetFeatureInfo';
+  /** Layer to render */
+  layer: string[];
+  /** Styling */
+  style?: string;
+
+  /** x coordinate for the feature info request */
+  x: number;
+  /** y coordinate for the feature info request */
+  y: number;
+  /** list of layer to query (could be different from rendered layer) */
+  query_layer: string[];
+  /** MIME type of returned feature info */
+  info_format?: 'text/plain' | 'application/vnd.ogc.gml';
+};
+
+export type WMTSDescribeLayerParameters = WMTSCommonParameters & {
+  /** Request type */
+  request?: 'DescribeLayer';
+};
+
+export type WMTSGetLegendGraphicParameters = WMTSCommonParameters & {
+  /** Request type */
+  request?: 'GetLegendGraphic';
+};
+
+type WMTSServiceProps = {
+  url: string;
+  attribution: string;
+  layer: string;
+  matrixSet: string;
+  style: string;
+  format: string;
+  requestFormat: string;
+};
+
+/**
+ * The WMTSService class provides
+ * - provides type safe methods to form URLs to a WMTS service
+ * - provides type safe methods to query and parse results (and errors) from a WMTS service
+ * - implements the ImageService interface
+ * @note Only the URL parameter conversion is supported. XML posts are not supported.
+ */
+export class WMTSService extends TileSource {
+  static type: 'wms' = 'wms';
+  static testURL = (url: string): boolean => url.toLowerCase().includes('wms');
+
+  props: Required<ImageServiceProps>;
+  fetch: (url: string, options?: RequestInit) => Promise<Response>;
+  capabilities: WMTSCapabilities | null = null;
+
+  /** A list of loaders used by the WMTSService methods */
+  readonly loaders = [
+    ImageLoader,
+    WMTSErrorLoader,
+    WMTSCapabilitiesLoader,
+    GMLLoader
+  ];
+
+  readonly requestEncoding = 'kvp';
+
+  /** Create a WMTSService */
+  constructor(props: ImageServiceProps) {
+    super();
+    this.props = mergeImageServiceProps(props);
+    this.fetch = getFetchFunction(this.props);
+    this.props.loadOptions = {
+      ...this.props.loadOptions,
+      // We want error responses to throw exceptions, the WMTSErrorLoader can do this
+      wms: {...this.props.loadOptions?.wms, throwOnError: true}
+    };
+  }
+
+  // TileSource implementation
+  getMetadata(): Promise<TileSourceMetadata> {
+    return this.getCapabilities();
+  }
+
+  getTile(parameters: GetTileParameters): Promise<ImageType> {
+    const wmtsParameters: WMTSGetTileParameters = {
+      layer: parameters.layer,
+      tileMatrix: String(parameters.zoom),
+      tileCol: parameters.x,
+      tileRow: parameters.y
+    };
+    return this.getTile_(wmtsParameters);
+  }
+
+  // WMTS Service API Stubs
+
+  /** Get Capabilities */
+  async getCapabilities(
+    wmtsParameters?: WMTSGetCapabilitiesParameters,
+    vendorParameters?: Record<string, unknown>
+  ): Promise<WMTSCapabilities> {
+    const url = this.getCapabilitiesURL(wmtsParameters, vendorParameters);
+    const response = await this.fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    this._checkResponse(response, arrayBuffer);
+    const capabilities = await WMTSCapabilitiesLoader.parse(arrayBuffer, this.props.loadOptions);
+    this.capabilities = capabilities;
+    return capabilities;
+  }
+
+  /** Get a map image */
+  async getTile_(
+    options: WMTSGetTileParameters,
+    vendorParameters?: Record<string, unknown>
+  ): Promise<ImageType> {
+    const url = this.getTileURL(options, vendorParameters);
+    const response = await this.fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    this._checkResponse(response, arrayBuffer);
+    try {
+      return await ImageLoader.parse(arrayBuffer, this.props.loadOptions);
+    } catch {
+      throw this._parseError(arrayBuffer);
+    }
+  }
+
+  /** Get Feature Info for a coordinate */
+  async getFeatureInfo(
+    options: WMTSGetFeatureInfoParameters,
+    vendorParameters?: Record<string, unknown>
+  ): Promise<WMTSFeatureInfo> {
+    const url = this.getFeatureInfoURL(options, vendorParameters);
+    const response = await this.fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    this._checkResponse(response, arrayBuffer);
+    return await GMLLoader.parse(arrayBuffer, this.props.loadOptions);
+  }
+
+  /** Get Feature Info for a coordinate */
+  async getFeatureInfoText(
+    options: WMTSGetFeatureInfoParameters,
+    vendorParameters?: Record<string, unknown>
+  ): Promise<string> {
+    options = {...options, info_format: 'text/plain'};
+    const url = this.getFeatureInfoURL(options, vendorParameters);
+    const response = await this.fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    this._checkResponse(response, arrayBuffer);
+    return new TextDecoder().decode(arrayBuffer);
+  }
+
+  /** Get an image with a semantic legend */
+  async getLegendGraphic(
+    options: WMTSGetLegendGraphicParameters,
+    vendorParameters?: Record<string, unknown>
+  ): Promise<ImageType> {
+    const url = this.getLegendGraphicURL(options, vendorParameters);
+    const response = await this.fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    this._checkResponse(response, arrayBuffer);
+    try {
+      return await ImageLoader.parse(arrayBuffer, this.props.loadOptions);
+    } catch {
+      throw this._parseError(arrayBuffer);
+    }
+  }
+
+  // Typed URL creators
+  // For applications that want full control of fetching and parsing
+
+  /** Generate a URL for the GetCapabilities request */
+  getCapabilitiesURL(
+    wmtsParameters?: WMTSGetCapabilitiesParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMTSGetCapabilitiesParameters> = {
+      service: 'WMTS',
+      version: '1.0.0',
+      request: 'GetCapabilities',
+      ...wmtsParameters,
+      ...vendorParameters
+    };
+    const url = `${this.props.url}/WMTSCapabilities.xml`;
+    return this._getWMTSUrl(options, vendorParameters);
+  }
+
+  /** Generate a URL for the GetTile request */
+  getTileURL(
+    wmtsParameters: WMTSGetTileParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMTSGetTileParameters> = {
+      service: 'WMTS',
+      version: '1.0.0',
+      request: 'GetTile',
+      style: undefined,
+      format: 'image/png',
+      // tileMatrixSet
+      // tileMatrix
+      // tileCol
+      // tileRow
+      ...wmtsParameters,
+      ...vendorParameters
+    };
+    const {version, layer = 'default', style = 'default', tileMatrixSet = 'default', tileMatrix, tileCol, tileRow} = options;
+    const extension = options.format.replace('image/', '');
+    const url = `${this.props.url}/tile/${version}/${layer}/${style}/${tileMatrixSet}/${tileMatrix}/${tileCol}/${tileRow}.${extension}`;
+    return this._getWMTSUrl(options, vendorParameters);
+  }
+
+  /** Generate a URL for the GetFeatureInfo request */
+  getFeatureInfoURL(
+    wmtsParameters: WMTSGetFeatureInfoParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMTSGetFeatureInfoParameters> = {
+      service: 'WMTS',
+      version: '1.0.0',
+      request: 'GetFeatureInfo',
+      // layer: [],
+      // bbox: [-77.87304, 40.78975, -77.85828, 40.80228],
+      // width: 1200,
+      // height: 900,
+      // x: undefined!,
+      // y: undefined!,
+      // query_layer: [],
+      // srs: 'EPSG:4326',
+      // format: 'image/png',
+      info_format: 'text/plain',
+      style: undefined!,
+      ...wmtsParameters,
+      ...vendorParameters
+    };
+    return this._getWMTSUrl(options, vendorParameters);
+  }
+
+  getLegendGraphicURL(
+    wmtsParameters: WMTSGetLegendGraphicParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const options: Required<WMTSGetLegendGraphicParameters> = {
+      service: 'WMTS',
+      version: '1.0.0',
+      request: 'GetLegendGraphic',
+      ...wmtsParameters,
+      ...vendorParameters
+    };
+    return this._getWMTSUrl(options, vendorParameters);
+  }
+
+  // INTERNAL METHODS
+
+  /**
+   * @note case _getWMTSUrl may need to be overridden to handle certain backends?
+   * */
+  protected _getWMTSUrl(
+    options: Record<string, unknown>,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    switch (this.requestEncoding) {
+      case 'kvp':
+        return this._getWMTSUrlKVP(options, vendorParameters);
+      // case 'REST':
+      // case 'SOAP':
+      default:
+        throw new Error(this.requestEncoding);
+    }
+  }
+
+    /**
+   * @note case _getWMTSUrl may need to be overridden to handle certain backends?
+   * */
+    protected _getWMTSUrlKVP(
+      options: Record<string, unknown>,
+      vendorParameters?: Record<string, unknown>
+    ): string {
+      let url = this.props.url;
+      let first = true;
+      for (const [key, value] of Object.entries(options)) {
+        url += first ? '?' : '&';
+        first = false;
+        if (Array.isArray(value)) {
+          url += `${key.toUpperCase()}=${value.join(',')}`;
+        } else {
+          url += `${key.toUpperCase()}=${value ? String(value) : ''}`;
+        }
+      }
+      return encodeURI(url);
+    }
+  
+  /** Checks for and parses a WMTS XML formatted ServiceError and throws an exception */
+  protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
+    const contentType = response.headers['content-type'];
+    if (!response.ok || WMTSErrorLoader.mimeTypes.includes(contentType)) {
+      const error = WMTSErrorLoader.parseSync(arrayBuffer, this.props.loadOptions);
+      throw new Error(error);
+    }
+  }
+
+  /** Error situation detected */
+  protected _parseError(arrayBuffer: ArrayBuffer): Error {
+    const error = WMTSErrorLoader.parseSync(arrayBuffer, this.props.loadOptions);
+    return new Error(error);
+  }
+}

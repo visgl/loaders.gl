@@ -1,6 +1,20 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 /* eslint-disable no-console */
-import {spawn, ChildProcess, SpawnOptionsWithoutStdio} from 'child_process';
 import {getAvailablePort} from './process-utils';
+
+type NodeChildProcess = import('child_process').ChildProcess;
+type SpawnOptions = import('child_process').SpawnOptions;
+
+async function getChildProcessModule(): Promise<typeof import('child_process')> {
+  if (typeof process === 'undefined' || !process.versions?.node) {
+    throw new Error('ChildProcessProxy is only available in Node.js environments');
+  }
+
+  return await import('child_process');
+}
 
 export type ChildProcessProxyProps = {
   command: string;
@@ -15,7 +29,9 @@ export type ChildProcessProxyProps = {
   /** wait: 0 - infinity */
   wait?: number;
   /** Options passed on to Node'.js `spawn` */
-  spawn?: SpawnOptionsWithoutStdio;
+  spawn?: SpawnOptions;
+  /** Should proceed if stderr stream recieved data */
+  ignoreStderr?: boolean;
   /** Callback when the  */
   onStart?: (proxy: ChildProcessProxy) => void;
   onSuccess?: (proxy: ChildProcessProxy) => void;
@@ -27,7 +43,7 @@ const DEFAULT_PROPS: ChildProcessProxyProps = {
   port: 5000,
   autoPort: true,
   wait: 2000,
-  onSuccess: (processProxy) => {
+  onSuccess: processProxy => {
     console.log(`Started ${processProxy.props.command}`);
   }
 };
@@ -39,9 +55,9 @@ const DEFAULT_PROPS: ChildProcessProxyProps = {
 export default class ChildProcessProxy {
   id: string;
   props: ChildProcessProxyProps = {...DEFAULT_PROPS};
-  private childProcess: ChildProcess | null = null;
+  private childProcess: NodeChildProcess | null = null;
   private port: number = 0;
-  private successTimer?;
+  private successTimer?: any; // NodeJS.Timeout;
 
   // constructor(props?: {id?: string});
   constructor({id = 'browser-driver'} = {}) {
@@ -52,6 +68,8 @@ export default class ChildProcessProxy {
   async start(props: ChildProcessProxyProps): Promise<object> {
     props = {...DEFAULT_PROPS, ...props};
     this.props = props;
+
+    const childProcessModule = await getChildProcessModule();
 
     const args = [...props.arguments];
 
@@ -74,24 +92,30 @@ export default class ChildProcessProxy {
         });
 
         console.log(`Spawning ${props.command} ${props.arguments.join(' ')}`);
-        const childProcess = spawn(props.command, args, props.spawn);
+        const spawnOptions: SpawnOptions = props.spawn || {};
+        const childProcess: NodeChildProcess = childProcessModule.spawn(
+          props.command,
+          args,
+          spawnOptions
+        );
         this.childProcess = childProcess;
 
-        childProcess.stdout.on('data', (data) => {
+        childProcess.stdout?.on('data', data => {
           console.log(data.toString());
         });
-        // TODO - add option regarding whether stderr should be treated as data
-        childProcess.stderr.on('data', (data) => {
+        childProcess.stderr?.on('data', data => {
           console.log(`Child process wrote to stderr: "${data}".`);
-          this._clearTimeout();
-          reject(new Error(data));
+          if (!props.ignoreStderr) {
+            this._clearTimeout();
+            reject(new Error(data));
+          }
         });
-        childProcess.on('error', (error) => {
+        childProcess.on('error', error => {
           console.log(`Child process errored with ${error}`);
           this._clearTimeout();
           reject(error);
         });
-        childProcess.on('close', (code) => {
+        childProcess.on('close', code => {
           console.log(`Child process exited with ${code}`);
           this.childProcess = null;
           this._clearTimeout();
@@ -118,7 +142,7 @@ export default class ChildProcessProxy {
       // eslint-disable-next-line no-process-exit
       process.exit(statusCode);
     } catch (error) {
-      console.error(error.message || error);
+      console.error((error as Error).message || error);
       // eslint-disable-next-line no-process-exit
       process.exit(1);
     }

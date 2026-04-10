@@ -1,16 +1,4 @@
-// GLTF 1.0 extensions
-export const KHR_BINARY_GLTF = 'KHR_binary_glTF';
-
-// GLTF 2.0 extensions
-export const KHR_DRACO_MESH_COMPRESSION = 'KHR_draco_mesh_compression';
-export const KHR_LIGHTS_PUNCTUAL = 'KHR_lights_punctual';
-export const KHR_MATERIALS_UNLIT = 'KHR_materials_unlit';
-export const KHR_TECHNIQUES_WEBGL = 'KHR_techniques_webgl';
-
-// External extensions
-export const EXT_MESHOPT_COMPRESSION = 'EXT_meshopt_compression';
-
-const COMPONENTS = {
+export const COMPONENTS = {
   SCALAR: 1,
   VEC2: 2,
   VEC3: 3,
@@ -20,7 +8,7 @@ const COMPONENTS = {
   MAT4: 16
 };
 
-const BYTES = {
+export const BYTES = {
   5120: 1, // BYTE
   5121: 1, // UNSIGNED_BYTE
   5122: 2, // SHORT

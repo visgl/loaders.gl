@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // From https://github.com/rauschma/async-iter-demo/tree/master/src under MIT license
 // http://2ality.com/2016/10/asynchronous-iteration.html
 

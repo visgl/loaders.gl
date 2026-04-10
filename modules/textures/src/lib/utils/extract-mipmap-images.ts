@@ -1,4 +1,23 @@
-import {CompressedTextureExtractOptions, TextureLevel} from '../../types';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import type {GLTextureFormat} from '../gl-types';
+import {
+  getTextureFormatFromWebGLFormat,
+  getWebGLFormatFromTextureFormat
+} from './texture-format-map';
+
+export type CompressedTextureExtractOptions = {
+  mipMapLevels: number;
+  width: number;
+  height: number;
+  sizeFunction: Function;
+  internalFormat?: GLTextureFormat;
+  /** Canonical loaders.gl texture format for the mip levels being extracted. */
+  textureFormat?: TextureFormat;
+};
 
 /**
  * Extract mipmap images from compressed texture buffer
@@ -8,30 +27,44 @@ import {CompressedTextureExtractOptions, TextureLevel} from '../../types';
  * @param options.height - height of 0 - level
  * @param options.sizeFunction - format-related function to calculate level size in bytes
  * @param options.internalFormat - WebGL compatible format code
+ * @param options.textureFormat - canonical loaders.gl texture format
  * @returns Array of the texture levels
  */
 export function extractMipmapImages(
-  data: Uint8Array | Array<Object>,
+  data: Uint8Array | object[],
   options: CompressedTextureExtractOptions
 ): TextureLevel[] {
   const images = new Array(options.mipMapLevels);
+  const textureFormat =
+    options.textureFormat || getTextureFormatFromWebGLFormat(options.internalFormat);
+  const format = options.internalFormat || getWebGLFormatFromTextureFormat(options.textureFormat);
 
   let levelWidth = options.width;
   let levelHeight = options.height;
   let offset = 0;
 
   for (let i = 0; i < options.mipMapLevels; ++i) {
+    // @ts-expect-error
     const levelSize = getLevelSize(options, levelWidth, levelHeight, data, i);
+    // @ts-expect-error
     const levelData = getLevelData(data, i, offset, levelSize);
 
-    images[i] = {
+    const image: TextureLevel = {
+      shape: 'texture-level',
       compressed: true,
-      format: options.internalFormat,
       data: levelData,
       width: levelWidth,
       height: levelHeight,
       levelSize
     };
+
+    if (format !== undefined) {
+      image.format = format;
+    }
+    if (textureFormat) {
+      image.textureFormat = textureFormat;
+    }
+    images[i] = image;
 
     levelWidth = Math.max(1, levelWidth >> 1);
     levelHeight = Math.max(1, levelHeight >> 1);
@@ -41,7 +74,12 @@ export function extractMipmapImages(
   return images;
 }
 
-function getLevelData(data, index, offset, levelSize) {
+function getLevelData(
+  data: Uint8Array,
+  index: number,
+  offset: number,
+  levelSize: number
+): Uint8Array {
   if (!Array.isArray(data)) {
     return new Uint8Array(data.buffer, data.byteOffset + offset, levelSize);
   }
@@ -49,7 +87,13 @@ function getLevelData(data, index, offset, levelSize) {
   return data[index].levelData;
 }
 
-function getLevelSize(options, levelWidth, levelHeight, data, index) {
+function getLevelSize(
+  options: CompressedTextureExtractOptions,
+  levelWidth: number,
+  levelHeight: number,
+  data: Uint8Array[] | object[],
+  index: number
+): number {
   if (!Array.isArray(data)) {
     return options.sizeFunction(levelWidth, levelHeight);
   }

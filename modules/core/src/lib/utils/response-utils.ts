@@ -1,5 +1,11 @@
-import {isResponse} from '../../javascript-utils/is-type';
-import {getResourceContentLength, getResourceUrlAndType} from './resource-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import {isResponse} from '@loaders.gl/loader-utils';
+import {FetchError} from '../fetch/fetch-error';
+import {getResourceContentLength, getResourceUrl, getResourceMIMEType} from './resource-utils';
+import {shortenUrlForDisplay} from './url-utils';
 
 /**
  * Returns a Response object
@@ -7,7 +13,7 @@ import {getResourceContentLength, getResourceUrlAndType} from './resource-utils'
  *
  * @param resource
  */
-export async function makeResponse(resource: any): Promise<Response> {
+export async function makeResponse(resource: unknown): Promise<Response> {
   if (isResponse(resource)) {
     return resource;
   }
@@ -22,7 +28,8 @@ export async function makeResponse(resource: any): Promise<Response> {
 
   // `new Response(File)` does not preserve content-type and URL
   // so we add them here
-  const {url, type} = getResourceUrlAndType(resource);
+  const url = getResourceUrl(resource);
+  const type = getResourceMIMEType(resource);
   if (type) {
     headers['content-type'] = type;
   }
@@ -41,7 +48,7 @@ export async function makeResponse(resource: any): Promise<Response> {
   }
 
   // Attempt to create a Response from the resource, adding headers and setting url
-  const response = new Response(resource, {headers});
+  const response = new Response(resource as any, {headers});
   // We can't control `Response.url` via constructor, use a property override to record URL.
   Object.defineProperty(response, 'url', {value: url});
   return response;
@@ -53,8 +60,8 @@ export async function makeResponse(resource: any): Promise<Response> {
  */
 export async function checkResponse(response: Response): Promise<void> {
   if (!response.ok) {
-    const message = await getResponseError(response);
-    throw new Error(message);
+    const error = await getResponseError(response);
+    throw error;
   }
 }
 
@@ -65,39 +72,49 @@ export async function checkResponse(response: Response): Promise<void> {
 export function checkResponseSync(response: Response): void {
   if (!response.ok) {
     let message = `${response.status} ${response.statusText}`;
-    message = message.length > 60 ? `${message.slice(60)}...` : message;
+    message = message.length > 60 ? `${message.slice(0, 60)}...` : message;
     throw new Error(message);
   }
 }
 
 // HELPERS
 
-async function getResponseError(response): Promise<string> {
-  let message = `Failed to fetch resource ${response.url} (${response.status}): `;
+async function getResponseError(response: Response): Promise<Error> {
+  const shortUrl = shortenUrlForDisplay(response.url);
+  let message = `Failed to fetch resource (${response.status}) ${response.statusText}: ${shortUrl}`;
+  message = message.length > 100 ? `${message.slice(0, 100)}...` : message;
+
+  const info = {
+    reason: response.statusText,
+    url: response.url,
+    response
+  };
+
+  // See if we got an error message in the body
   try {
     const contentType = response.headers.get('Content-Type');
-    let text = response.statusText;
-    if (contentType.includes('application/json')) {
-      text += ` ${await response.text()}`;
-    }
-    message += text;
-    message = message.length > 60 ? `${message.slice(60)}...` : message;
-  } catch (error) {
+    info.reason =
+      !response.bodyUsed && contentType?.includes('application/json')
+        ? await response.json()
+        : await response.text();
+  } catch (_error) {
     // eslint forbids return in a finally statement, so we just catch here
   }
-  return message;
+  return new FetchError(message, info);
 }
 
-async function getInitialDataUrl(resource): Promise<string | null> {
+async function getInitialDataUrl(
+  resource: string | Blob | ArrayBuffer | unknown
+): Promise<string | null> {
   const INITIAL_DATA_LENGTH = 5;
   if (typeof resource === 'string') {
     return `data:,${resource.slice(0, INITIAL_DATA_LENGTH)}`;
   }
   if (resource instanceof Blob) {
     const blobSlice = resource.slice(0, 5);
-    return await new Promise((resolve) => {
+    return await new Promise(resolve => {
       const reader = new FileReader();
-      reader.onload = (event) => resolve(event?.target?.result as string);
+      reader.onload = event => resolve(event?.target?.result as string);
       reader.readAsDataURL(blobSlice);
     });
   }
@@ -110,7 +127,7 @@ async function getInitialDataUrl(resource): Promise<string | null> {
 }
 
 // https://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
-function arrayBufferToBase64(buffer) {
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
   let binary = '';
   const bytes = new Uint8Array(buffer);
   for (let i = 0; i < bytes.byteLength; i++) {

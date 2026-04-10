@@ -1,18 +1,28 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 // probe.gl Log compatible loggers
+
+import {Log} from '@probe.gl/log';
+
+export const probeLog = new Log({id: 'loaders.gl'});
+
+type LogFunction = () => void;
 
 // Logs nothing
 export class NullLog {
-  log() {
-    return (_) => {};
+  log(): LogFunction {
+    return () => {};
   }
-  info() {
-    return (_) => {};
+  info(): LogFunction {
+    return () => {};
   }
-  warn() {
-    return (_) => {};
+  warn(): LogFunction {
+    return () => {};
   }
-  error() {
-    return (_) => {};
+  error(): LogFunction {
+    return () => {};
   }
 }
 
@@ -23,16 +33,16 @@ export class ConsoleLog {
   constructor() {
     this.console = console; // eslint-disable-line
   }
-  log(...args) {
+  log(...args: unknown[]): LogFunction {
     return this.console.log.bind(this.console, ...args);
   }
-  info(...args) {
+  info(...args: unknown[]): LogFunction {
     return this.console.info.bind(this.console, ...args);
   }
-  warn(...args) {
+  warn(...args: unknown[]): LogFunction {
     return this.console.warn.bind(this.console, ...args);
   }
-  error(...args) {
+  error(...args: unknown[]): LogFunction {
     return this.console.error.bind(this.console, ...args);
   }
 }

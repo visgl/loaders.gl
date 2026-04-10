@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {WorkerObject} from '../../types';
 import {assert} from '../env-utils/assert';
 import {VERSION} from '../env-utils/version';
@@ -31,8 +35,10 @@ export function validateWorkerVersion(
 
   return true;
 }
+
+// @ts-ignore
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function parseVersion(version) {
+function _parseVersion(version) {
   const parts = version.split('.').map(Number);
   return {major: parts[0], minor: parts[1]};
 }

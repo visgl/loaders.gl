@@ -1,6 +1,16 @@
-import type {Writer} from '@loaders.gl/loader-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
+import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
+import type {GLB} from './lib/types/glb-types';
+import type {GLBEncodeOptions} from './lib/encoders/encode-glb';
+import {encodeGLBSync} from './lib/encoders/encode-glb';
 import {VERSION} from './lib/utils/version';
-import encodeGLBSync from './lib/encoders/encode-glb';
+
+export type GLBWriterOptions = WriterOptions & {
+  glb?: GLBEncodeOptions;
+};
 
 /**
  * GLB exporter
@@ -15,16 +25,16 @@ export const GLBWriter = {
   extensions: ['glb'],
   mimeTypes: ['model/gltf-binary'],
   binary: true,
-
-  encodeSync,
-
   options: {
     glb: {}
-  }
-};
+  },
+
+  encode: async (glb, options: GLBWriterOptions = {}) => encodeSync(glb, options),
+  encodeSync
+} as const satisfies WriterWithEncoder<GLB, never, GLBWriterOptions>;
 
 function encodeSync(glb, options) {
-  const {byteOffset = 0} = options;
+  const {byteOffset = 0} = options ?? {};
 
   // Calculate length and allocate buffer
   const byteLength = encodeGLBSync(glb, null, byteOffset, options);
@@ -36,6 +46,3 @@ function encodeSync(glb, options) {
 
   return arrayBuffer;
 }
-
-// TYPE TESTS - TODO find a better way than exporting junk
-export const _TypecheckGLBLoader: Writer = GLBWriter;

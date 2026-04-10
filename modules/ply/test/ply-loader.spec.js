@@ -9,9 +9,9 @@ import {
   load,
   parse,
   parseSync,
-  parseInBatches
+  parseInBatches,
+  makeIterator
 } from '@loaders.gl/core';
-import {makeIterator} from '@loaders.gl/core';
 
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
@@ -27,13 +27,13 @@ function validateTextPLY(t, data) {
   t.equal(data.attributes.NORMAL.value.length, 72, 'NORMAL attribute was found');
 }
 
-test('PLYLoader#loader conformance', (t) => {
+test('PLYLoader#loader conformance', t => {
   validateLoader(t, PLYLoader, 'PLYLoader');
   validateLoader(t, PLYWorkerLoader, 'PLYWorkerLoader');
   t.end();
 });
 
-test('PLYLoader#parse(textFile)', async (t) => {
+test('PLYLoader#parse(textFile)', async t => {
   const data = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {});
 
   validateMeshCategoryData(t, data);
@@ -41,7 +41,7 @@ test('PLYLoader#parse(textFile)', async (t) => {
   t.end();
 });
 
-test('PLYLoader#parse(binary)', async (t) => {
+test('PLYLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(PLY_BUN_BINARY_URL), PLYLoader);
 
   validateMeshCategoryData(t, data);
@@ -49,24 +49,30 @@ test('PLYLoader#parse(binary)', async (t) => {
   t.end();
 });
 
-test('PLYLoader#parse(ascii)', async (t) => {
-  const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader);
+test('PLYLoader#parse(ascii)', async t => {
+  const data = await parse(fetchFile(PLY_BUN_ZIPPER_URL), PLYLoader, {
+    core: {worker: false}
+  });
 
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
+  t.equal(data.attributes.confidence.value.length, 35947, 'confidence attribute was found');
+  t.equal(data.attributes.intensity.value.length, 35947, 'intensity attribute was found');
   t.end();
 });
 
-test('PLYLoader#parseSync(binary)', async (t) => {
-  const arrayBuffer = await fetchFile(PLY_BUN_ZIPPER_URL).then((res) => res.arrayBuffer());
+test('PLYLoader#parseSync(binary)', async t => {
+  const arrayBuffer = await fetchFile(PLY_BUN_ZIPPER_URL).then(res => res.arrayBuffer());
   const data = parseSync(arrayBuffer, PLYLoader);
 
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
+  t.equal(data.attributes.confidence.value.length, 35947, 'confidence attribute was found');
+  t.equal(data.attributes.intensity.value.length, 35947, 'intensity attribute was found');
   t.end();
 });
 
-test('PLYLoader#parse(WORKER)', async (t) => {
+test('PLYLoader#parse(WORKER)', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
@@ -81,7 +87,7 @@ test('PLYLoader#parse(WORKER)', async (t) => {
 });
 
 // TODO - Update to use parseInBatches
-test('PLYLoader#parseInBatches(text)', async (t) => {
+test('PLYLoader#parseInBatches(text)', async t => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const batches = await parseInBatches(makeIterator(response), PLYLoader);
 

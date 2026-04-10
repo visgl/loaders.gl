@@ -1,4 +1,5 @@
-import {test} from 'tape-promise/tape';
+// @loaders.gl, MIT license
+import test from 'tape-promise/tape';
 import {loadZarr} from '@loaders.gl/zarr';
 import {resolvePath, isBrowser} from '@loaders.gl/core';
 
@@ -17,15 +18,11 @@ test('Creates correct ZarrPixelSource.', async (t) => {
     return;
   }
   t.plan(3);
-  try {
-    const {data} = await loadZarr(FIXTURE, {labels: LABELS});
-    t.equal(data.length, 2, 'Image should have two levels.');
-    const [base] = data;
-    t.deepEqual(base.labels, ['foo', 'bar', 'baz', 'y', 'x']);
-    t.deepEqual(base.shape, [1, 3, 1, 167, 439], 'shape should match dimensions.');
-  } catch (e) {
-    t.fail(e);
-  }
+  const {data} = await loadZarr(FIXTURE, {labels: LABELS});
+  t.equal(data.length, 2, 'Image should have two levels.');
+  const [base] = data;
+  t.deepEqual(base.labels, ['foo', 'bar', 'baz', 'y', 'x']);
+  t.deepEqual(base.shape, [1, 3, 1, 167, 439], 'shape should match dimensions.');
 });
 
 test('Creates correct OME ZarrPixelSource.', async (t) => {
@@ -34,15 +31,11 @@ test('Creates correct OME ZarrPixelSource.', async (t) => {
     return;
   }
   t.plan(3);
-  try {
-    const {data} = await loadZarr(OME_FIXTURE);
-    t.equal(data.length, 2, 'Image should have two levels.');
-    const [base] = data;
-    t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');
-    t.deepEqual(base.shape, [1, 3, 1, 167, 439], 'shape should match dimensions.');
-  } catch (e) {
-    t.fail(e);
-  }
+  const {data} = await loadZarr(OME_FIXTURE);
+  t.equal(data.length, 2, 'Image should have two levels.');
+  const [base] = data;
+  t.deepEqual(base.labels, ['t', 'c', 'z', 'y', 'x'], 'should have DimensionOrder "XYZCT".');
+  t.deepEqual(base.shape, [1, 3, 1, 167, 439], 'shape should match dimensions.');
 });
 
 test('Get raster data.', async (t) => {
@@ -51,26 +44,22 @@ test('Get raster data.', async (t) => {
     return;
   }
   t.plan(13);
+  const {data} = await loadZarr(FIXTURE, {labels: LABELS});
+  const [base] = data;
+
+  for (let i = 0; i < 3; i += 1) {
+    const selection = {bar: i, foo: 0, baz: 0};
+    const pixelData = await base.getRaster({selection});
+    t.equal(pixelData.width, 439);
+    t.equal(pixelData.height, 167);
+    t.equal(pixelData.data.length, 439 * 167);
+    t.equal(pixelData.data.constructor.name, 'Int8Array');
+  }
+
   try {
-    const {data} = await loadZarr(FIXTURE, {labels: LABELS});
-    const [base] = data;
-
-    for (let i = 0; i < 3; i += 1) {
-      const selection = {bar: i, foo: 0, baz: 0};
-      const pixelData = await base.getRaster({selection});
-      t.equal(pixelData.width, 439);
-      t.equal(pixelData.height, 167);
-      t.equal(pixelData.data.length, 439 * 167);
-      t.equal(pixelData.data.constructor.name, 'Int8Array');
-    }
-
-    try {
-      await base.getRaster({selection: {c: 3, z: 0, t: 0}});
-    } catch (e) {
-      t.ok(e instanceof Error, 'index should be out of bounds.');
-    }
+    await base.getRaster({selection: {c: 3, z: 0, t: 0}});
   } catch (e) {
-    t.fail(e);
+    t.ok(e instanceof Error, 'index should be out of bounds.');
   }
 });
 

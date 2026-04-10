@@ -12,11 +12,11 @@ If you consider opening a PR, here is some documentation to get you started:
 
 To contribute, you will likely want to clone the loaders.gl repository and start by making sure you can install, build and run tests.
 
-See the [developer guide](https://loaders.gl/docs/dev-env) on the loaders.gl website for more information on how to get your environment set up for loaders.gl development, including for Linux and Windows.
+See the [developer guide](https://loaders.gl/docs/developer-guide/dev-env) on the loaders.gl website for more information on how to get your environment set up for loaders.gl development, including for Linux and Windows.
 
 ## Community Governance
 
-vis.gl is part of the [Urban Computing Foundation](https://uc.foundation/). See the organization's [Technical Charter](https://github.com/visgl/tsc/blob/master/Technical%20Charter.md).
+vis.gl is part of the [OpenJS Foundation](https://openjsf.org/). See the organization's [Technical Charter](https://github.com/visgl/tsc/blob/master/Technical%20Charter.md).
 
 ### Technical Steering Committee
 
@@ -35,7 +35,3 @@ If you are interested in becoming a maintainer, read the [governance guidelines]
 
 The vis.gl TSC meets monthly and publishes meeting notes via a [mailing list](https://lists.uc.foundation/g/visgl).
 This mailing list can also be utilized to reach out to the TSC.
-
-## Code of Conduct
-
-Please be mindful of and adhere to the Linux Foundation's [Code of Conduct](https://lfprojects.org/policies/code-of-conduct/) when contributing to loaders.gl.

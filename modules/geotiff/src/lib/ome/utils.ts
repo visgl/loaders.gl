@@ -1,3 +1,7 @@
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
+
 import type {OMEXML} from '../ome/omexml';
 import type {Labels} from '../../types';
 
@@ -7,7 +11,8 @@ import type {Labels} from '../../types';
  * > getLabels(imgMeta.Pixels) === ['t', 'z', 'c', 'y', 'x']
  */
 
-type Sel<Dim extends string> = Dim extends `${infer Z}${infer X}${infer A}${infer B}${infer C}`
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Sel<Dim extends string> = Dim extends `${infer _Z}${infer _X}${infer A}${infer B}${infer C}`
   ? [C, B, A]
   : 'error';
 export function getLabels(dimOrder: OMEXML[0]['Pixels']['DimensionOrder']) {

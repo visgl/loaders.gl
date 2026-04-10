@@ -1,12 +1,19 @@
-import {ChildProcessProxy} from '@loaders.gl/worker-utils';
+// loaders.gl
+// SPDX-License-Identifier: MIT
+// Copyright (c) vis.gl contributors
 
-const MODULE_ROOT = `${__dirname}/../../..`;
+import {ChildProcessProxy} from '@loaders.gl/worker-utils';
+import {CompressedTextureWriterOptions} from '../../compressed-texture-writer';
 
 /*
  * @see https://github.com/TimvanScherpenzeel/texture-compressor
  */
-export async function encodeImageURLToCompressedTextureURL(inputUrl, outputUrl) {
-  // prettier-ignore
+export async function encodeImageURLToCompressedTextureURL(
+  inputUrl: string,
+  outputUrl: string,
+  options?: CompressedTextureWriterOptions
+): Promise<string> {
+  // biome-ignore format: preserve intentional fixture layout
   const args = [
     // Note: our actual executable is `npx`, so `texture-compressor` is an argument
     'texture-compressor',
@@ -20,9 +27,7 @@ export async function encodeImageURLToCompressedTextureURL(inputUrl, outputUrl) 
   await childProcess.start({
     command: 'npx',
     arguments: args,
-    spawn: {
-      cwd: MODULE_ROOT
-    }
+    spawn: options
   });
   return outputUrl;
 }

@@ -6,11 +6,13 @@
     <img id="img" />
   </main>
 </body>
-<script src="https://unpkg.com/@loaders.gl/core@2.2.0/dist/dist.js"></script>
-<script src="https://unpkg.com/@loaders.gl/images@2.2.0/dist/dist.js"></script>
-<script src="https://unpkg.com/@loaders.gl/video@2.2.0/dist/dist.js"></script>
+<script src="https://unpkg.com/@loaders.gl/core@3.3.1/dist/dist.min.js"></script>
+<script src="https://unpkg.com/@loaders.gl/images@3.3.1/dist/dist.min.js"></script>
+<script src="https://unpkg.com/@loaders.gl/video@3.3.1/dist/dist.min.js"></script>
 
 <script>
+  const {load, GIFBuilder, ImageLoader} = loaders;
+
   const elStatus = document.getElementById('status');
   const elProgress = document.getElementById('progress');
   const elImage = document.getElementById('img');

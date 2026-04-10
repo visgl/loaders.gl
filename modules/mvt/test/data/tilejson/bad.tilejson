@@ -1,0 +1,9 @@
+{
+    // Invalid JSON
+    "name": "World Bright",
+    "scheme": "tms",
+    "tiles": [ "http://a.tiles.mapbox.com/mapbox/1.0.0/world-bright/{z}/{x}/{y}.png" ],
+    "minzoom": 0,
+    "maxzoom": 11,
+    "bounds": [ -180, -85, 180, 85 ]
+}
