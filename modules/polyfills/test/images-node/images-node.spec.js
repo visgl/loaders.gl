@@ -2,6 +2,11 @@
 import test from 'tape-promise/tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 import {parseImageNode} from '../../src/images/parse-image-node';
+import {
+  getImageBitmapDataNode,
+  isNodeImageBitmap,
+  NodeImageBitmap
+} from '../../src/images/node-image-bitmap';
 
 const images = [
   ['@loaders.gl/images/test/data/img1-preview.png', 'image/png'],
@@ -23,6 +28,49 @@ if (!isBrowser) {
       'function',
       'parseImageNode successfully installed'
     );
+    t.equals(
+      typeof globalThis.loaders?.getImageBitmapDataNode,
+      'function',
+      'getImageBitmapDataNode installed'
+    );
+    t.equals(
+      typeof globalThis.loaders?.createImageBitmapNode,
+      'function',
+      'createImageBitmapNode installed'
+    );
+    t.equals(
+      typeof globalThis.loaders?.isImageBitmapNode,
+      'function',
+      'isImageBitmapNode installed'
+    );
+    t.equals(typeof globalThis.ImageBitmap, 'function', 'ImageBitmap installed');
+    t.equals(typeof globalThis.getImageBitmapData, 'function', 'getImageBitmapData installed');
+
+    t.end();
+  });
+
+  test('Node image polyfills - ImageBitmap wrapper', async t => {
+    const response = await fetchFile(images[0][0]);
+    const arrayBuffer = await response.arrayBuffer();
+    const imageData = await parseImageNode(arrayBuffer, images[0][1]);
+    const imageBitmap = new NodeImageBitmap(imageData);
+
+    t.ok(imageBitmap instanceof ImageBitmap, 'NodeImageBitmap installs as global ImageBitmap');
+    t.equals(isNodeImageBitmap(imageBitmap), true, 'isNodeImageBitmap recognizes bitmap');
+
+    const unwrappedImage = getImageBitmapDataNode(imageBitmap);
+    t.equals(unwrappedImage.width, imageData.width, 'width preserved');
+    t.equals(unwrappedImage.height, imageData.height, 'height preserved');
+    t.ok(unwrappedImage.data instanceof Uint8Array, 'data is Uint8Array');
+
+    t.deepEquals(
+      globalThis.getImageBitmapData(imageBitmap),
+      unwrappedImage,
+      'global getImageBitmapData unwraps bitmap'
+    );
+
+    imageBitmap.close();
+    t.throws(() => getImageBitmapDataNode(imageBitmap), 'closed bitmaps reject reads');
 
     t.end();
   });

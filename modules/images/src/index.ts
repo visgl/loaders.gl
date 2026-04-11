@@ -1,9 +1,11 @@
 // TYPES
 export type {ImageDataType, ImageType, ImageTypeEnum} from './types';
 export type {ImageLoaderOptions} from './image-loader';
+export type {ImageBitmapLoaderOptions} from './image-bitmap-loader';
 
 // LOADERS AND WRITERS
 export {ImageLoader} from './image-loader';
+export {ImageBitmapLoader} from './image-bitmap-loader';
 export {ImageWriter} from './image-writer';
 
 // IMAGE CATEGORY API

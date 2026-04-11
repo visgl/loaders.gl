@@ -3,7 +3,7 @@ import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
@@ -41,7 +41,7 @@ function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 
     case 'jpg':
     case 'png':
     default:
-      return ImageLoader;
+      return ImageBitmapLoader;
   }
 }
 
@@ -81,36 +81,40 @@ export async function parseI3STileContent(
       const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
       const fetchFunc = context?.fetch || fetch;
       const response = await fetchFunc(url); // options?.fetch
-
       if (!response.ok) {
         throw new Error(`Failed to load I3S texture: ${response.status} ${response.statusText}`);
       }
 
-      const arrayBuffer = await response.arrayBuffer();
+      const textureArrayBuffer = await response.arrayBuffer();
 
       // @ts-expect-error options is not properly typed
       if (options?.i3s.decodeTextures) {
         // TODO - replace with switch
-        if (loader === ImageLoader) {
+        if (loader === ImageBitmapLoader) {
+          const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
           try {
-            const texture: any = await parseFromContext(
-              arrayBuffer,
-              loader,
-              tileOptions.textureLoaderOptions,
+            const parsedTexture: any = await parseFromContext(
+              textureArrayBuffer,
+              ImageBitmapLoader,
+              imageLoaderOptions,
               context!
             );
-            content.texture = texture;
-          } catch (_e) {
-            const texture: any = await parse(
-              arrayBuffer,
+            content.texture = getImageData(parsedTexture);
+          } catch (_error) {
+            const parsedTexture: any = await parse(
+              textureArrayBuffer,
               loader,
-              tileOptions.textureLoaderOptions,
+              imageLoaderOptions,
               context
             );
-            content.texture = texture;
+            content.texture = getImageData(parsedTexture);
           }
         } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-          let texture: any = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
+          let texture: any = await load(
+            textureArrayBuffer,
+            loader,
+            tileOptions.textureLoaderOptions
+          );
           if (loader === BasisLoader) {
             texture = texture[0];
           }
@@ -123,7 +127,7 @@ export async function parseI3STileContent(
           };
         }
       } else {
-        content.texture = arrayBuffer;
+        content.texture = textureArrayBuffer;
       }
     } catch (error) {
       console.warn(error);

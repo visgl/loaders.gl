@@ -18,6 +18,6 @@ export type ImageDataType = {
 export type ImageType = ImageBitmap | ImageDataType | HTMLImageElement;
 
 /**
- * Image type string used to control or determine the type of images returned from ImageLoader
+ * Image type string used to control or determine the type of images returned from image category loaders
  */
 export type ImageTypeEnum = 'imagebitmap' | 'image' | 'data';

@@ -232,13 +232,13 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 - The binary image API has been consolidated in a single function `getBinaryImageMetadata()`:
 - A number of previously deprecated exports have been removed:
 
-| Export                                 | Replacement                                             |
-| -------------------------------------- | ------------------------------------------------------- |
-| `isBinaryImage(arrayBuffer)`           | `Boolean(getBinaryImageMetadata(arrayBuffer))`          |
-| `getBinaryImageMIMEType(arrayBuffer)`  | `getBinaryImageMetadata(arrayBuffer)?.mimeType`         |
-| `getBinaryImageSize(arrayBuffer)`      | `getBinaryImageMetadata(arrayBuffer)?.{width, height}`  |
-| `HTMLImageLoader`                      | Use `ImageLoader` with options `{image: type: 'image'}` |
-| `getDefaultImageType()`                | N/A                                                     |
+| Export                                 | Replacement                                                                 |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| `isBinaryImage(arrayBuffer)`           | `Boolean(getBinaryImageMetadata(arrayBuffer))`                              |
+| `getBinaryImageMIMEType(arrayBuffer)`  | `getBinaryImageMetadata(arrayBuffer)?.mimeType`                             |
+| `getBinaryImageSize(arrayBuffer)`      | `getBinaryImageMetadata(arrayBuffer)?.{width, height}`                      |
+| `HTMLImageLoader`                      | No direct replacement. `ImageLoader` now returns `ImageBitmap` in browsers. |
+| `getDefaultImageType()`                | N/A                                                                         |
 | `getSupportedImageType(imageType?)` NA |
 
 **@loaders.gl/kml**
@@ -326,7 +326,8 @@ The experimental ImageLoaders for individual formats introduced in 2.0 have been
 `@loaders.gl/images`
 
 - `getImageData(image)` now returns an object with `{data, width, height}` instead of just the `data` array. This small breaking change ensures that the concept of _image data_ is consistent across the API.
-- `ImageLoader`: `options.image.type`: The `html` and `ndarray` image types are now deprecated and replaced with `image` and `data` respectively.
+- `ImageBitmapLoader`: reintroduced in v4.4 as the preferred pure `ImageBitmap` loader.
+- `ImageLoader`: deprecated in v4.4 and retained as the broad compatibility loader. If application code needs raw pixels from either loader, load the image and call `getImageData(image)`.
 
 **`@loaders.gl/3d-tiles`**
 
@@ -354,15 +355,15 @@ Some general changes:
 
 ### `@loaders.gl/images`
 
-| Removal             | Replacement                                               |
-| ------------------- | --------------------------------------------------------- |
-| `ImageHTMLLoader`   | `ImageLoader` with `options.images.format: 'image'`       |
-| `ImageBitmapLoader` | `ImageLoader` with `options.images.format: 'imagebitmap'` |
-| `decodeImage`       | `parse(arrayBuffer, ImageLoader)`                         |
-| `isImage`           | `isBinaryImage`                                           |
-| `getImageMIMEType`  | `getBinaryImageMIMEType`                                  |
-| `getImageSize`      | `getBinaryImageSize`                                      |
-| `getImageMetadata`  | `getBinaryImageMIMEType` + `getBinaryImageSize`           |
+| Removal             | Replacement                                     |
+| ------------------- | ----------------------------------------------- |
+| `ImageHTMLLoader`   | Deprecated `ImageLoader`                        |
+| `ImageBitmapLoader` | `ImageBitmapLoader` (reintroduced in v4.4)      |
+| `decodeImage`       | `parse(arrayBuffer, ImageLoader)`               |
+| `isImage`           | `isBinaryImage`                                 |
+| `getImageMIMEType`  | `getBinaryImageMIMEType`                        |
+| `getImageSize`      | `getBinaryImageSize`                            |
+| `getImageMetadata`  | `getBinaryImageMIMEType` + `getBinaryImageSize` |
 
 ### Loader Objects
 
