@@ -1,5 +1,9 @@
 # Tiles3DSource
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+</p>
+
 The `Tiles3DSource` class implements [`Tileset3DSource`](/docs/modules/tiles/api-reference/tileset-3d-source) for datasets loaded with the [Tiles3DLoader](/docs/modules/3d-tiles/api-reference/tiles-3d-loader).
 
 ## Usage

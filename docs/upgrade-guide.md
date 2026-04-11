@@ -1,5 +1,21 @@
 # Upgrade Guide
 
+## Upgrading to v5.0
+
+These deprecations.removals are being considered for v5
+
+**@loaders.gl/core**
+
+- Top-level loader options are no longer supported
+
+**@loaders.gl/images**
+
+- ImageLoader now only returns ImageBitmap (never Image or data), with a polyfill under Node.js. There is a function to extract data from an ImageBitmap?
+
+**@loaders.gl/tiles**
+
+- `Tileset3D` now requires a `Tile3DSource` and can no longer be instantiated with a JSON payload.
+
 ## Upgrading to v4.4
 
 **@loaders.gl/textures**

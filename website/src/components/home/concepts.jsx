@@ -202,7 +202,7 @@ const sourceTabs = [
     outputCategory: 'VectorTileTables',
     outputDetail: 'Tables<ArrowTable>',
     loadingManager: 'Tileset2D',
-    deckLayers: ['MVTLayer', 'GeoJsonLayer']
+    deckLayers: ['Tile2DSourceLayer', 'MVTLayer', 'GeoJsonLayer']
   },
   {
     id: 'image-tile-source',
@@ -213,7 +213,7 @@ const sourceTabs = [
     outputCategory: 'ImageTile',
     outputDetail: 'ImageType',
     loadingManager: 'Tileset2D',
-    deckLayers: ['BitmapLayer']
+    deckLayers: ['Tile2DSourceLayer', 'BitmapLayer']
   },
   {
     id: 'image-source',
@@ -229,22 +229,24 @@ const sourceTabs = [
   {
     id: 'tile-source',
     label: '3D Tiles',
-    sources: ['COPCSource'],
+    sources: ['COPCSource', 'Tiles3DSource', 'I3SSource'],
     dataSource: 'TileDataSource',
     methods: ['getMetadata()', 'getTile()'],
     outputCategory: 'PointTile',
     outputDetail: 'Point cloud tile',
     loadingManager: 'Tileset3D',
-    deckLayers: ['PointCloudLayer']
+    deckLayers: ['Tile3DSourceLayer', 'PointCloudLayer', 'ScenegraphLayer']
   }
 ];
 
 const sourceTags = {
   COPCSource: 'Cloud Archive',
+  I3SSource: 'Tileset',
   MLTSource: 'Web Service',
   MVTSource: 'Cloud Archive',
   PMTilesSource: 'Cloud Archive',
   TableTileSource: 'Generated',
+  Tiles3DSource: 'Tileset',
   WMSSource: 'Web Service'
 };
 
@@ -345,18 +347,26 @@ const writerDocumentationLinks = {
 
 const sourceDocumentationLinks = {
   COPCSource: '/docs/modules/copc/api-reference/copc-source',
+  I3SSource: '/docs/modules/tiles/api-reference/i3s-source',
   MLTSource: '/docs/modules/mlt/api-reference/mlt-source',
   MVTSource: '/docs/modules/mvt/api-reference/mvt-source',
   PMTilesSource: '/docs/modules/pmtiles/api-reference/pmtiles-source',
   TableTileSource: '/docs/modules/mvt/api-reference/table-tile-source',
+  Tiles3DSource: '/docs/modules/tiles/api-reference/tiles-3d-source',
   WMSSource: '/docs/modules/wms/api-reference/wms-source'
+};
+
+const loadingManagerDocumentationLinks = {
+  Tileset2D: '/docs/modules/tiles/api-reference/tileset-2d',
+  Tileset3D: '/docs/modules/tiles/api-reference/tileset-3d'
 };
 
 const deckLayerDocumentationLinks = {
   BitmapLayer: 'https://deck.gl/docs/api-reference/layers/bitmap-layer',
   GeoJsonLayer: 'https://deck.gl/docs/api-reference/layers/geojson-layer',
   MVTLayer: 'https://deck.gl/docs/api-reference/geo-layers/mvt-layer',
-  PointCloudLayer: 'https://deck.gl/docs/api-reference/layers/point-cloud-layer'
+  PointCloudLayer: 'https://deck.gl/docs/api-reference/layers/point-cloud-layer',
+  ScenegraphLayer: 'https://deck.gl/docs/api-reference/mesh-layers/scenegraph-layer'
 };
 
 const streamingLoaders = ['CSVLoader', 'JSONLoader', 'GeoJSONLoader', 'ParquetLoader'];
@@ -614,7 +624,7 @@ const StageLabel = styled.p`
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
-  margin: 0;
+  margin: 8px 0 -2px;
   text-align: center;
   text-transform: uppercase;
 `;
@@ -629,7 +639,7 @@ const SourceInstruction = styled.p`
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
-  margin: 0;
+  margin: 6px 0 0;
   text-align: center;
   text-transform: uppercase;
 `;
@@ -770,8 +780,19 @@ const DataSourceNode = styled(CategoryNode)`
   justify-content: stretch;
 `;
 
+const CenteredDataSourceNode = styled(CategoryNode)`
+  justify-content: center;
+  text-align: center;
+`;
+
 const LabelOnlyNode = styled(CategoryNode)`
-  justify-content: flex-end;
+  justify-content: flex-start;
+`;
+
+const CenteredNodeContent = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
 `;
 
 const MethodGrid = styled.div`
@@ -781,6 +802,62 @@ const MethodGrid = styled.div`
 
   @media screen and (max-width: 420px) {
     grid-template-columns: 1fr;
+  }
+`;
+
+const LayerPreviewStack = styled.div`
+  display: grid;
+  gap: 8px;
+  width: 100%;
+`;
+
+const LayerPreviewNode = styled(CompactNode)`
+  max-width: min(100%, 560px);
+  width: fit-content;
+`;
+
+const LayerPreviewParentRow = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+`;
+
+const LayerPreviewConnectorRow = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+`;
+
+const LayerPreviewChildren = styled.div`
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  width: min(100%, 420px);
+
+  @media screen and (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const LayerPreviewChildrenRow = styled.div`
+  display: flex;
+  justify-content: center;
+  width: 100%;
+`;
+
+const LayerPreviewConnector = styled.div`
+  height: 10px;
+  position: relative;
+  width: 18px;
+
+  &::before {
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 10px solid var(--ifm-color-primary-darkest);
+    content: '';
+    display: block;
+    height: 0;
+    width: 0;
   }
 `;
 
@@ -853,7 +930,9 @@ const Connector = styled.div`
 `;
 
 const VerticalConnector = styled(Connector)`
-  min-height: 18px;
+  align-items: flex-end;
+  min-height: 28px;
+  padding-bottom: 2px;
 
   &::before {
     border: 0;
@@ -894,6 +973,11 @@ export default function Concepts() {
   const selectedCategory = categoryTabs.find((category) => category.id === selectedCategoryId);
   const selectedRepresentation = selectedCategory.representations[selectedRepresentationId];
   const selectedSourceTab = sourceTabs.find((sourceTab) => sourceTab.id === selectedSourceTabId);
+  const previewLayer =
+    selectedSourceTab.deckLayers.find((layer) => !deckLayerDocumentationLinks[layer]) || null;
+  const renderedDeckLayers = previewLayer
+    ? selectedSourceTab.deckLayers.filter((layer) => layer !== previewLayer)
+    : selectedSourceTab.deckLayers;
 
   return (
     <ConceptsSection>
@@ -1065,12 +1149,14 @@ export default function Concepts() {
                   </SourceBox>
                 </SourceStage>
                 <VerticalConnector $label="Create a Data Source" />
-                <DataSourceNode $background="rgba(53, 173, 107, 0.12)" $border="rgba(53, 173, 107, 0.55)">
+                <CenteredDataSourceNode
+                  $background="rgba(53, 173, 107, 0.12)"
+                  $border="rgba(53, 173, 107, 0.55)"
+                >
                   <span>createDataSource()</span>
-                  <TinyLabel>{selectedSourceTab.dataSource}</TinyLabel>
-                </DataSourceNode>
+                </CenteredDataSourceNode>
                 <VerticalConnector $label="Incrementally Load Data" />
-                <DataSourceNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">
+                <DataSourceNode $background="rgba(53, 173, 107, 0.1)" $border="rgba(53, 173, 107, 0.45)">
                   {selectedSourceTab.dataSource}
                   <MethodGrid>
                     {selectedSourceTab.methods.map((method) => (
@@ -1078,25 +1164,62 @@ export default function Concepts() {
                     ))}
                   </MethodGrid>
                 </DataSourceNode>
+                <StageLabel>Manage loading</StageLabel>
+                <CategoryNode $background="rgba(255, 196, 57, 0.2)" $border="rgba(184, 122, 0, 0.42)">
+                  <CenteredNodeContent>
+                    {loadingManagerDocumentationLinks[selectedSourceTab.loadingManager] ? (
+                      <LinkedCompactNode href={loadingManagerDocumentationLinks[selectedSourceTab.loadingManager]}>
+                        <span>{selectedSourceTab.loadingManager}</span>
+                        <LinkMark aria-hidden="true">↗</LinkMark>
+                      </LinkedCompactNode>
+                    ) : (
+                      selectedSourceTab.loadingManager
+                    )}
+                  </CenteredNodeContent>
+                </CategoryNode>
                 <StageLabel>Loaded data</StageLabel>
                 <CategoryNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">
                   <span>{selectedSourceTab.outputCategory}</span>
                   <TinyLabel>{selectedSourceTab.outputDetail}</TinyLabel>
                 </CategoryNode>
-                <StageLabel>Manage loading</StageLabel>
-                <CategoryNode $background="rgba(255, 196, 57, 0.2)" $border="rgba(184, 122, 0, 0.42)">
-                  {selectedSourceTab.loadingManager}
-                </CategoryNode>
                 <StageLabel>Render with deck.gl (optional)</StageLabel>
-                <CategoryNode $background="rgba(255, 196, 57, 0.16)" $border="rgba(184, 122, 0, 0.36)">
-                  <MethodGrid>
-                    {selectedSourceTab.deckLayers.map((layer) => (
-                      <LinkedCompactNode key={layer} href={deckLayerDocumentationLinks[layer]}>
-                        <span>{layer}</span>
-                        <LinkMark aria-hidden="true">↗</LinkMark>
-                      </LinkedCompactNode>
-                    ))}
-                  </MethodGrid>
+                <CategoryNode $background="rgba(0, 173, 230, 0.08)" $border="rgba(0, 173, 230, 0.32)">
+                  <CenteredNodeContent>
+                    {previewLayer ? (
+                      <LayerPreviewStack>
+                        <LayerPreviewParentRow>
+                          <LayerPreviewNode>
+                            <span>{previewLayer}</span>
+                            <NodeMeta>
+                              <SourceTag>Preview</SourceTag>
+                            </NodeMeta>
+                          </LayerPreviewNode>
+                        </LayerPreviewParentRow>
+                        <LayerPreviewConnectorRow>
+                          <LayerPreviewConnector />
+                        </LayerPreviewConnectorRow>
+                        <LayerPreviewChildrenRow>
+                          <LayerPreviewChildren>
+                            {renderedDeckLayers.map((layer) => (
+                              <LinkedCompactNode key={layer} href={deckLayerDocumentationLinks[layer]}>
+                                <span>{layer}</span>
+                                <LinkMark aria-hidden="true">↗</LinkMark>
+                              </LinkedCompactNode>
+                            ))}
+                          </LayerPreviewChildren>
+                        </LayerPreviewChildrenRow>
+                      </LayerPreviewStack>
+                    ) : (
+                      <MethodGrid>
+                        {renderedDeckLayers.map((layer) => (
+                          <LinkedCompactNode key={layer} href={deckLayerDocumentationLinks[layer]}>
+                            <span>{layer}</span>
+                            <LinkMark aria-hidden="true">↗</LinkMark>
+                          </LinkedCompactNode>
+                        ))}
+                      </MethodGrid>
+                    )}
+                  </CenteredNodeContent>
                 </CategoryNode>
               </SourceFlow>
             </Diagram>
@@ -1139,7 +1262,7 @@ export default function Concepts() {
                   </Stack>
                   <VerticalConnector $label="returns" />
                   <LabelOnlyNode $background="rgba(181, 79, 73, 0.1)" $border="rgba(181, 79, 73, 0.5)">
-                    <TinyLabel>Return</TinyLabel>
+                    <span>glTF data</span>
                   </LabelOnlyNode>
                 </CompactFlow>
                 <Note $color="#B54F49">
