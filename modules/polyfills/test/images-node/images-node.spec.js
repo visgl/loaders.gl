@@ -44,7 +44,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('Node image polyfills - ImageBitmap wrapper', async (t) => {
+  test('Node image polyfills - ImageBitmap wrapper', async t => {
     const response = await fetchFile(images[0][0]);
     const arrayBuffer = await response.arrayBuffer();
     const imageData = await parseImageNode(arrayBuffer, images[0][1]);

@@ -16,7 +16,12 @@ type NDArray = {
 type ParseImageNode = (arrayBuffer: ArrayBuffer, mimeType: string) => Promise<NDArray>;
 type ImageBitmapConstructor = new (imageData: ImageDataType) => ImageBitmap;
 
-// Use polyfills if installed to parse images under Node.js.
+/**
+ * Parses an encoded image under Node.js using the installed loaders.gl image polyfills.
+ * @param arrayBuffer - Encoded image bytes.
+ * @param _options - Reserved for future Node-specific bitmap options.
+ * @returns A Node.js `ImageBitmap` polyfill instance.
+ */
 export async function parseToNodeImage(
   arrayBuffer: ArrayBuffer,
   _options?: unknown

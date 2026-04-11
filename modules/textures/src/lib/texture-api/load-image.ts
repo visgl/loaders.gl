@@ -23,6 +23,13 @@ export async function loadImageTexture(
   return await loadCompositeImageUrlTree(imageUrls, normalizeCompositeImageOptions(options));
 }
 
+/**
+ * Resolves the image URL or mip chain URLs for a legacy texture helper request.
+ * @param getUrl - Static URL or URL template callback.
+ * @param options - Texture helper options.
+ * @param urlOptions - Variables forwarded to the URL template callback.
+ * @returns A single URL or array of mip level URLs.
+ */
 export async function getImageUrls(
   getUrl: string | GetUrl,
   options: TextureLoaderOptions,
@@ -66,7 +73,11 @@ async function getMipmappedImageUrls(
   return urls;
 }
 
-// Calculates number of mipmaps based on texture size (log2)
+/**
+ * Calculates the number of mip levels required for an image of the given size.
+ * @param size - Image dimensions in pixels.
+ * @returns Total number of mip levels including the base level.
+ */
 export function getMipLevels(size: {width: number; height: number}): number {
   return 1 + Math.floor(Math.log2(Math.max(size.width, size.height)));
 }

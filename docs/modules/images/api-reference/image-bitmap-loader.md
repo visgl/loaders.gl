@@ -1,7 +1,7 @@
 # ImageBitmapLoader
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 
 The preferred image loader for new code. `ImageBitmapLoader` returns `ImageBitmap` in supported browsers and under Node.js when `@loaders.gl/polyfills` is installed.

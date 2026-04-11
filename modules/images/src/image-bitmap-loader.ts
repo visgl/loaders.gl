@@ -15,10 +15,16 @@ const MIME_TYPES = [
   'image/svg+xml'
 ];
 
+/**
+ * Loader options for `ImageBitmapLoader`.
+ */
 export type ImageBitmapLoaderOptions = StrictLoaderOptions & {
+  /** Bitmap-oriented image loader options. */
   image?: {
+    /** Compatibility alias. `ImageBitmapLoader` only accepts `imagebitmap`. */
     type?: 'imagebitmap';
   };
+  /** Pass-through options for browser `createImageBitmap()` calls. */
   imagebitmap?: ImageBitmapOptions & Record<string, unknown>;
 };
 
@@ -40,6 +46,6 @@ export const ImageBitmapLoader = {
   mimeTypes: MIME_TYPES,
   extensions: EXTENSIONS,
   parse: parseImageBitmap,
-  tests: [(arrayBuffer) => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer)))],
+  tests: [arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer)))],
   options: DEFAULT_IMAGE_BITMAP_LOADER_OPTIONS
 } as const satisfies LoaderWithParser<ImageBitmap, never, ImageBitmapLoaderOptions>;

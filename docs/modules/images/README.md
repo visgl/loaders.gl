@@ -2,6 +2,8 @@
 
 The `@loaders.gl/images` module contains loader and writers for images that follow loaders.gl conventions and work under both node and browser.
 
+See [Image Loaders](/docs/specifications/category-image) for the shared category conventions.
+
 ## Installation
 
 ```bash

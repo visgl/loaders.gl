@@ -15,6 +15,7 @@
           "specifications/category-json",
           "specifications/category-table",
           "specifications/category-image",
+          "specifications/category-texture",
           "specifications/category-gis",
           "specifications/category-mesh",
           "specifications/category-scenegraph",
