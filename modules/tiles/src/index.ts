@@ -22,6 +22,41 @@ export {I3SSource} from './tileset-3d/format-i3s/i3s-source';
 export {TilesetTraverser} from './tileset-3d/common/tileset-traverser';
 export {TilesetCache} from './tileset-3d/common/tileset-cache';
 
+<<<<<<< Updated upstream
+=======
+export type {
+  Bounds,
+  GeoBoundingBox,
+  NonGeoBoundingBox,
+  TileBoundingBox,
+  TileIndex,
+  TileLoadProps,
+  ZRange
+} from './tileset-2d';
+export type {
+  Tileset2DAdapter,
+  Tileset2DTileContext,
+  Tileset2DTraversalContext
+} from './tileset-2d';
+export type {
+  RefinementStrategy,
+  RefinementStrategyFunction,
+  Tileset2DBaseProps,
+  Tileset2DProps,
+  Tile2DListener,
+  Tile2DLoadDataProps
+} from './tileset-2d';
+export {
+  SharedTile2DHeader,
+  Tileset2D,
+  STRATEGY_DEFAULT,
+  STRATEGY_NEVER,
+  STRATEGY_REPLACE
+} from './tileset-2d';
+export type {ImageSetBaseProps, ImageSetListener, ImageSetProps, ImageSetRequest} from './image-set';
+export {ImageSet} from './image-set';
+
+>>>>>>> Stashed changes
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 
