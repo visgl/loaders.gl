@@ -6,6 +6,7 @@ import './utils/doubly-linked-list.spec';
 
 import './tileset/tile-3d.spec';
 import './tileset/tileset-3d.spec';
+import './tileset/tileset-3d-source.spec';
 import './tileset/tileset-traverser.spec';
 
 import './tileset/helpers/get-frame-state.spec';

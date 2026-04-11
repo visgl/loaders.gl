@@ -98,6 +98,41 @@ test('Tileset2D#reloadAll keeps selected tiles and drops unused cached tiles', a
   t.ok(tileset.getTile(firstTile.index));
   t.ok(tileset.getTile(firstTile.index)?.needsReload);
   t.notOk(tileset.getTile(secondTile.index));
+  t.notOk(
+    tileset.tiles.some(tile => tile.id === secondTile.id),
+    'removed tiles no longer remain in the prepared tile list'
+  );
+
+  tileset.finalize();
+  t.end();
+});
+
+test('Tileset2D#setOptions recreates the request scheduler when throttling changes', t => {
+  const tileset = new Tileset2D({
+    adapter: TEST_ADAPTER,
+    getTileData: async () => null,
+    maxRequests: 4,
+    debounceTime: 0
+  });
+
+  const initialScheduler = (tileset as any)._requestScheduler;
+  tileset.setOptions({maxRequests: 2});
+  const updatedScheduler = (tileset as any)._requestScheduler;
+  t.notEqual(updatedScheduler, initialScheduler, 'scheduler recreated for maxRequests updates');
+
+  tileset.setOptions({tileSize: 512});
+  t.equal(
+    (tileset as any)._requestScheduler,
+    updatedScheduler,
+    'scheduler is reused when throttling options are unchanged'
+  );
+
+  tileset.setOptions({debounceTime: 10});
+  t.notEqual(
+    (tileset as any)._requestScheduler,
+    updatedScheduler,
+    'scheduler recreated for debounceTime updates'
+  );
 
   tileset.finalize();
   t.end();
