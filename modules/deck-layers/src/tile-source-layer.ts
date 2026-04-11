@@ -32,9 +32,6 @@ type TileSourceRuntime = TileSource & {
 
 /** Internal helper layer for routing tile fetches through a `VectorTileSource`. */
 class MVTSourceLayer extends MVTLayer<any> {
-  /** Internal state populated from the provided tile source. */
-  declare state: any;
-
   /** Sync the cached vector tile source whenever deck.gl reports a data change. */
   updateState(params: any): void {
     super.updateState(params);
@@ -51,7 +48,7 @@ class MVTSourceLayer extends MVTLayer<any> {
   /** Fetch tile payloads directly from the wrapped loaders.gl tile source. */
   async getTileData(parameters: GetTileDataParameters): Promise<any> {
     try {
-      const vectorTileSource = this.state.vectorTileSource as TileSourceRuntime | null;
+      const vectorTileSource = (this.state as any).vectorTileSource as TileSourceRuntime | null;
       return vectorTileSource ? await vectorTileSource.getTileData(parameters) : null;
     } catch (error) {
       this.props.onTileError?.(error, parameters);
@@ -103,11 +100,6 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
     ...TileLayer.defaultProps,
     layerMode: 'tile',
     showTileBorders: true
-  };
-
-  /** Cached source reference used by `renderLayers`. */
-  declare state: {
-    tileSource: TileSourceRuntime | null;
   };
 
   /** Initialize local state before props are first rendered. */
