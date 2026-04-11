@@ -71,6 +71,9 @@
       "@loaders.gl/core/test": [
         "modules/core/test"
       ],
+      "@loaders.gl/deck-layers": [
+        "modules/deck-layers/src"
+      ],
       "@loaders.gl/compression": [
         "modules/compression/src"
       ],

@@ -61,44 +61,58 @@ export async function parseI3STileContent(
   };
 
   if (tileOptions.textureUrl) {
-    // @ts-expect-error options is not properly typed
-    const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
-    const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-    const fetchFunc = context?.fetch || fetch;
-    const response = await fetchFunc(url); // options?.fetch
-    const arrayBuffer = await response.arrayBuffer();
+    try {
+      // @ts-expect-error options is not properly typed
+      const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
+      const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
+      const fetchFunc = context?.fetch || fetch;
+      const response = await fetchFunc(url); // options?.fetch
 
-    // @ts-expect-error options is not properly typed
-    if (options?.i3s.decodeTextures) {
-      // TODO - replace with switch
-      if (loader === ImageLoader) {
-        const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
-        try {
-          // Image constructor is not supported in worker thread.
-          // Do parsing image data on the main thread by using context to avoid worker issues.
-          const texture: any = await parseFromContext(arrayBuffer, [], options, context!);
-          content.texture = texture;
-        } catch (_e) {
-          // context object is different between worker and node.js conversion script.
-          // To prevent error we parse data in ordinary way if it is not parsed by using context.
-          const texture: any = await parse(arrayBuffer, loader, options, context);
-          content.texture = texture;
-        }
-      } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        let texture: any = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
-        if (loader === BasisLoader) {
-          texture = texture[0];
-        }
-        content.texture = {
-          compressed: true,
-          mipmaps: false,
-          width: texture[0].width,
-          height: texture[0].height,
-          data: texture
-        };
+      if (!response.ok) {
+        throw new Error(`Failed to load I3S texture: ${response.status} ${response.statusText}`);
       }
-    } else {
-      content.texture = arrayBuffer;
+
+      const arrayBuffer = await response.arrayBuffer();
+
+      // @ts-expect-error options is not properly typed
+      if (options?.i3s.decodeTextures) {
+        // TODO - replace with switch
+        if (loader === ImageLoader) {
+          try {
+            const texture: any = await parseFromContext(
+              arrayBuffer,
+              loader,
+              tileOptions.textureLoaderOptions,
+              context!
+            );
+            content.texture = texture;
+          } catch (_e) {
+            const texture: any = await parse(
+              arrayBuffer,
+              loader,
+              tileOptions.textureLoaderOptions,
+              context
+            );
+            content.texture = texture;
+          }
+        } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
+          let texture: any = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
+          if (loader === BasisLoader) {
+            texture = texture[0];
+          }
+          content.texture = {
+            compressed: true,
+            mipmaps: false,
+            width: texture[0].width,
+            height: texture[0].height,
+            data: texture
+          };
+        }
+      } else {
+        content.texture = null;
+      }
+    } catch (error) {
+      console.warn(error);
     }
   }
 
@@ -511,8 +525,8 @@ function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: T
     );
   }
 
-  if (texture) {
-    setMaterialTexture(pbrMaterial, texture);
+  if (isUsableTexture(texture)) {
+    setMaterialTexture(pbrMaterial, texture!);
   }
 
   return pbrMaterial;
@@ -561,6 +575,39 @@ function setMaterialTexture(material, image: TileContentTexture): void {
   } else if (material.occlusionTexture) {
     material.occlusionTexture = {...material.occlusionTexture, texture};
   }
+}
+
+function isUsableTexture(texture?: TileContentTexture): boolean {
+  if (!texture) {
+    return false;
+  }
+
+  if (texture instanceof ArrayBuffer) {
+    return false;
+  }
+
+  if (typeof ImageBitmap !== 'undefined' && texture instanceof ImageBitmap) {
+    return true;
+  }
+
+  if (typeof HTMLImageElement !== 'undefined' && texture instanceof HTMLImageElement) {
+    return true;
+  }
+
+  if (typeof texture === 'object' && 'compressed' in texture && texture.compressed) {
+    return Array.isArray(texture.data);
+  }
+
+  if (
+    typeof texture === 'object' &&
+    'data' in texture &&
+    'width' in texture &&
+    'height' in texture
+  ) {
+    return ArrayBuffer.isView(texture.data);
+  }
+
+  return false;
 }
 
 /**
