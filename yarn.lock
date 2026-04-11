@@ -4749,6 +4749,7 @@ __metadata:
     "@deck.gl-community/experimental": "npm:^9.1.0"
     "@deck.gl/core": "npm:^9.1.0"
     "@deck.gl/geo-layers": "npm:^9.1.0"
+    "@loaders.gl/core": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
     "@loaders.gl/tiles": "npm:4.4.0"
