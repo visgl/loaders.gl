@@ -30,7 +30,11 @@ export type TileSourceRuntime = TileSource & {
   url?: string;
 };
 
-/** Internal helper layer for routing tile fetches through a `VectorTileSource`. */
+/**
+ * Internal deck.gl MVT helper used by `TileSourceLayer`.
+ *
+ * This class is not part of the supported public API and is documented only through TSDoc.
+ */
 class MVTSourceLayer extends MVTLayer<any> {
   /** Sync the cached vector tile source whenever deck.gl reports a data change. */
   updateState(params: any): void {
@@ -85,10 +89,13 @@ export type TileSourceLayerProps = Omit<TileLayerProps, 'data'> & {
 };
 
 /**
- * A deck.gl layer that renders a loaders.gl tile source.
+ * Internal deck.gl layer that renders a loaders.gl tile source.
  *
  * It automatically switches between vector-tile and bitmap rendering paths and
  * can draw debug tile borders.
+ *
+ * This class is exported for internal repository use and examples, and is not documented
+ * beyond these TSDoc comments.
  */
 export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
   /** deck.gl layer name used in debugging output. */

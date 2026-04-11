@@ -6,6 +6,7 @@ import type {Loader, StrictLoaderOptions} from '../../loader-types';
 import type {RequiredOptions} from '../option-utils/merge-options';
 import {mergeOptions} from '../option-utils/merge-options';
 import {resolvePath} from '../path-utils/file-aliases';
+import {log} from '../log-utils/log';
 
 /** Common properties for all data sources */
 export type DataSourceOptions = Partial<{
@@ -18,6 +19,8 @@ export type DataSourceOptions = Partial<{
     loadOptions?: StrictLoaderOptions;
     /** Make additional loaders available to the data source */
     loaders?: Loader[];
+    /** Called when source-level initialization or metadata loading fails. */
+    onError?: (error: Error, source: DataSource<any, any>) => void;
   };
   [key: string]: Record<string, unknown>;
 }>;
@@ -29,7 +32,8 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
       type: 'auto',
       attributions: [],
       loadOptions: {},
-      loaders: []
+      loaders: [],
+      onError: undefined!
     }
   };
 
@@ -83,6 +87,18 @@ export abstract class DataSource<DataT, OptionsT extends DataSourceOptions> {
       this._needsRefresh = false;
     }
     return needsRefresh;
+  }
+
+  /** Reports a source-level failure through the configured callback or the shared logger. */
+  protected reportError(error: unknown, message: string): Error {
+    const normalizedError = normalizeError(error, message);
+    const callback = this.options.core?.onError;
+    if (callback) {
+      callback(normalizedError, this);
+    } else {
+      log.warn(`${this.constructor.name}: ${normalizedError.message}`)();
+    }
+    return normalizedError;
   }
 }
 
@@ -146,4 +162,15 @@ function normalizeDirectLoaderOptions(options?: StrictLoaderOptions): StrictLoad
   }
 
   return loadOptions;
+}
+
+/** Normalizes arbitrary thrown values to `Error` instances for source-level reporting. */
+function normalizeError(error: unknown, message: string): Error {
+  if (error instanceof Error) {
+    return error;
+  }
+  if (typeof error === 'string') {
+    return new Error(error);
+  }
+  return new Error(message);
 }

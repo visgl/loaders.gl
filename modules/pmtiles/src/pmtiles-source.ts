@@ -121,10 +121,19 @@ export class PMTilesTileSource
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
     const {x, y, z} = tileParams;
-    const rangeResponse = await this.getZxyBatched(z, x, y);
+    let rangeResponse;
+    try {
+      rangeResponse = await this.getZxyBatched(z, x, y, (tileParams as any).signal);
+    } catch (error) {
+      this.reportError(error, `Failed to fetch tile ${this.url} ${JSON.stringify(tileParams)}`);
+      return null;
+    }
     const arrayBuffer = rangeResponse?.data;
     if (!arrayBuffer) {
-      // console.error('No arrayBuffer', tileParams);
+      this.reportError(
+        new Error('Empty tile response'),
+        `Failed to fetch tile ${this.url} ${JSON.stringify(tileParams)}`
+      );
       return null;
     }
     return arrayBuffer;

@@ -49,7 +49,10 @@ type ResolvedSourceData =
   | null;
 
 /**
- * Generic layer that dispatches to the appropriate source-backed layer based on its input.
+ * Internal deck.gl dispatcher that selects the appropriate source-backed layer for an input.
+ *
+ * This class is exported for internal repository use and examples, and is not documented
+ * beyond these TSDoc comments.
  */
 export class SourceLayer<
   DataT = any,

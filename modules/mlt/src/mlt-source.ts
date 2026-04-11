@@ -95,7 +95,10 @@ export class MLTTileSource
     try {
       const response = await this.fetch(this.metadataUrl);
       if (!response.ok) {
-        console.error(response.statusText);
+        this.reportError(
+          new Error(`${response.status} ${response.statusText}`),
+          `Failed to fetch metadata from ${this.metadataUrl}`
+        );
         return {minZoom: 0, maxZoom: 30, attributions};
       }
 
@@ -118,7 +121,7 @@ export class MLTTileSource
         attributions: [...attributions, ...((metadataJson?.attributions as string[]) || [])]
       };
     } catch (error) {
-      console.error((error as Error).message);
+      this.reportError(error, `Failed to fetch metadata from ${this.metadataUrl}`);
       return {minZoom: 0, maxZoom: 30, attributions};
     }
   }
@@ -127,6 +130,10 @@ export class MLTTileSource
     const tileUrl = this.getTileURL(parameters.x, parameters.y, parameters.z);
     const response = await this.fetch(tileUrl);
     if (!response.ok) {
+      this.reportError(
+        new Error(`${response.status} ${response.statusText}`),
+        `Failed to fetch tile ${tileUrl} ${JSON.stringify(parameters)}`
+      );
       return null;
     }
     return response.arrayBuffer();

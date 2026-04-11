@@ -6,7 +6,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
 
-import {Tile3DLayer} from '@deck.gl/geo-layers';
+import {Tile3DSourceLayer} from '@loaders.gl/deck-layers';
 import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
 
 const INITIAL_VIEW_STATE = {
@@ -22,7 +22,7 @@ export default function App() {
 
   function renderLayers() {
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
-    const layers = new Tile3DLayer({
+    const layers = new Tile3DSourceLayer({
       data: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
       loader: I3SLoader,
       loadOptions

@@ -99,13 +99,14 @@ export class MVTTileSource
       // CORS errors are common when requesting an unavailable sub resource such as a metadata file or an unavailable tile)
       response = await this.fetch(this.metadataUrl);
     } catch (error: unknown) {
-      // eslint-disable-next-line no-console
-      console.error((error as TypeError).message);
+      this.reportError(error, `Failed to fetch metadata from ${this.metadataUrl}`);
       return null;
     }
     if (!response.ok) {
-      // eslint-disable-next-line no-console
-      console.error(response.statusText);
+      this.reportError(
+        new Error(`${response.status} ${response.statusText}`),
+        `Failed to fetch metadata from ${this.metadataUrl}`
+      );
       return null;
     }
     const tileJSON = await response.text();
@@ -129,6 +130,10 @@ export class MVTTileSource
     const tileUrl = this.getTileURL(x, y, z);
     const response = await this.fetch(tileUrl);
     if (!response.ok) {
+      this.reportError(
+        new Error(`${response.status} ${response.statusText}`),
+        `Failed to fetch tile ${tileUrl} ${JSON.stringify(parameters)}`
+      );
       return null;
     }
     const arrayBuffer = await response.arrayBuffer();
