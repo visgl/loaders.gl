@@ -2,55 +2,51 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {CompositeLayer} from '@deck.gl/core'
-import {MVTLayer, TileLayer, type TileLayerProps} from '@deck.gl/geo-layers'
-import {BitmapLayer, GeoJsonLayer, PathLayer} from '@deck.gl/layers'
+import {CompositeLayer} from '@deck.gl/core';
+import {MVTLayer, TileLayer, type TileLayerProps} from '@deck.gl/geo-layers';
+import {BitmapLayer, GeoJsonLayer, PathLayer} from '@deck.gl/layers';
 
-import type {
-  GetTileDataParameters,
-  TileSource,
-  TileSourceMetadata
-} from '@loaders.gl/loader-utils'
+import type {GetTileDataParameters, TileSource, TileSourceMetadata} from '@loaders.gl/loader-utils';
 
 type TileSourceRuntime = TileSource & {
-  localCoordinates?: boolean
-  mimeType: string | null
+  localCoordinates?: boolean;
+  mimeType: string | null;
   options: {
     table?: {
-      coordinates?: string
-    }
-  }
-  url?: string
-}
+      coordinates?: string;
+    };
+  };
+  url?: string;
+};
 
 /** Internal helper layer for routing tile fetches through a `VectorTileSource`. */
 class MVTSourceLayer extends MVTLayer<any> {
-  declare state: any
+  declare state: any;
 
   updateState(params: any): void {
-    super.updateState(params)
+    super.updateState(params);
 
-    const {props, changeFlags} = params
+    const {props, changeFlags} = params;
     if (changeFlags.dataChanged && props.data) {
       this.setState({
         vectorTileSource: props.data,
         binary: false
-      })
+      });
     }
   }
 
   async getTileData(parameters: GetTileDataParameters): Promise<any> {
     try {
-      const vectorTileSource = this.state.vectorTileSource as TileSourceRuntime | null
-      return vectorTileSource ? await vectorTileSource.getTileData(parameters) : null
+      const vectorTileSource = this.state.vectorTileSource as TileSourceRuntime | null;
+      return vectorTileSource ? await vectorTileSource.getTileData(parameters) : null;
     } catch (error) {
-      this.props.onTileError?.(error, parameters)
-      return null
+      this.props.onTileError?.(error, parameters);
+      return null;
     }
   }
 
   renderSubLayers(props: any) {
-    return super.renderSubLayers(props)
+    return super.renderSubLayers(props);
   }
 }
 
@@ -60,22 +56,22 @@ class MVTSourceLayer extends MVTLayer<any> {
  * This layer adapts loaders.gl `TileSource` instances for deck.gl rendering.
  */
 export type TileSourceLayerProps = Omit<TileLayerProps, 'data'> & {
-  data: TileSourceRuntime
+  data: TileSourceRuntime;
   /** A source of vector or image tiles. */
-  tileSource: TileSourceRuntime
+  tileSource: TileSourceRuntime;
   /** Optional tileset metadata used for zoom bounds and attribution. */
-  metadata?: TileSourceMetadata | null
+  metadata?: TileSourceMetadata | null;
   /** Show borders around tiles. Currently only works in tile mode. */
-  showTileBorders?: boolean
+  showTileBorders?: boolean;
   /** A unique id for each feature or row. Associates parts of a geometry across tiles. */
-  uniquePropertyId?: string
+  uniquePropertyId?: string;
   /** The currently highlighted unique property id. */
-  highlightedFeatureId?: string
+  highlightedFeatureId?: string;
   /** Called when a tile payload cannot be fetched or parsed. */
-  onTileError?: (error: unknown, tileParameters?: unknown) => void
+  onTileError?: (error: unknown, tileParameters?: unknown) => void;
   /** Called when deck.gl reports tiles loaded. */
-  onTilesLoad?: (...args: any[]) => void
-}
+  onTilesLoad?: (...args: any[]) => void;
+};
 
 /**
  * A deck.gl layer that renders a loaders.gl tile source.
@@ -84,62 +80,65 @@ export type TileSourceLayerProps = Omit<TileLayerProps, 'data'> & {
  * can draw debug tile borders.
  */
 export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
-  static layerName = 'TileSourceLayer'
+  static layerName = 'TileSourceLayer';
 
   static defaultProps = {
     ...TileLayer.defaultProps,
     layerMode: 'tile',
     showTileBorders: true
-  }
+  };
 
   declare state: {
-    tileSource: TileSourceRuntime | null
-  }
+    tileSource: TileSourceRuntime | null;
+  };
 
   initializeState(): void {
     this.setState({
       tileSource: null
-    })
+    });
   }
 
   updateState({props}: any): void {
     this.setState({
       tileSource: props.tileSource
-    })
+    });
   }
 
   renderLayers() {
-    const {tileSource} = this.state as {tileSource: TileSourceRuntime | null}
+    const {tileSource} = this.state as {tileSource: TileSourceRuntime | null};
 
     if (!tileSource) {
-      return null
+      return null;
     }
 
     if (this.sourceSupportsMVTLayer()) {
       // TODO - Currently only TileSource that supports CRS override is TableTileSource
-      tileSource.options.table = tileSource.options.table || {}
-      tileSource.options.table.coordinates = 'local'
-      return this.renderMVTLayer()
+      tileSource.options.table = tileSource.options.table || {};
+      tileSource.options.table.coordinates = 'local';
+      return this.renderMVTLayer();
     }
 
     // TODO - Currently only TileSource that supports CRS override is TableTileSource
-    tileSource.options.table = tileSource.options.table || {}
-    tileSource.options.table.coordinates = 'wgs84'
-    return this.renderTileLayer()
+    tileSource.options.table = tileSource.options.table || {};
+    tileSource.options.table.coordinates = 'wgs84';
+    return this.renderTileLayer();
   }
 
   /** Check if the current source supports MVT layer rendering with local coordinates. */
   sourceSupportsMVTLayer(): boolean {
-    const {tileSource} = this.props
-    return tileSource.mimeType === 'application/vnd.mapbox-vector-tile' && Boolean(tileSource.localCoordinates)
+    const {tileSource} = this.props;
+    return (
+      tileSource.mimeType === 'application/vnd.mapbox-vector-tile' &&
+      Boolean(tileSource.localCoordinates)
+    );
   }
 
   /** Render vector tiles through `MVTLayer` when local coordinate support is required. */
   renderMVTLayer() {
-    const {tileSource, showTileBorders, metadata, onTilesLoad, onTileError} = this.props
-    const minZoom = metadata?.minZoom || 0
-    const maxZoom = metadata?.maxZoom || 30
-    const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio()
+    const {tileSource, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
+    const minZoom = metadata?.minZoom || 0;
+    const maxZoom = metadata?.maxZoom || 30;
+    const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
       new MVTSourceLayer({
@@ -159,25 +158,25 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
         zoomOffset: devicePixelRatio === 1 ? -1 : 0,
         showTileBorders
       } as any)
-    ]
+    ];
   }
 
   /** Render image tiles and non-local vector tiles through `TileLayer`. */
   renderTileLayer() {
-    const {tileSource, showTileBorders, metadata, onTilesLoad, onTileError} = this.props
-    const minZoom = metadata?.minZoom || 0
-    const maxZoom = metadata?.maxZoom || 30
-    const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio()
+    const {tileSource, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
+    const minZoom = metadata?.minZoom || 0;
+    const maxZoom = metadata?.maxZoom || 30;
+    const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
       new TileLayer({
         id: String(tileSource.url),
         getTileData: async (parameters: GetTileDataParameters) => {
           try {
-            return await tileSource.getTileData(parameters)
+            return await tileSource.getTileData(parameters);
           } catch (error) {
-            onTileError?.(error, parameters)
-            return null
+            onTileError?.(error, parameters);
+            return null;
           }
         },
         maxRequests: 20,
@@ -192,7 +191,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
         tileSource: tileSource as any,
         showTileBorders
       } as any)
-    ]
+    ];
   }
 }
 
@@ -212,13 +211,13 @@ function renderSubLayers(props: any) {
       index: {z: zoom},
       bbox: {west, south, east, north}
     }
-  } = props
+  } = props;
 
-  const layers: any[] = []
-  const resolvedMinZoom = minZoom ?? 0
-  const resolvedMaxZoom = maxZoom ?? 30
+  const layers: any[] = [];
+  const resolvedMinZoom = minZoom ?? 0;
+  const resolvedMaxZoom = maxZoom ?? 30;
   const borderColor =
-    zoom <= resolvedMinZoom || zoom >= resolvedMaxZoom ? [255, 0, 0, 255] : [0, 0, 255, 255]
+    zoom <= resolvedMinZoom || zoom >= resolvedMaxZoom ? [255, 0, 0, 255] : [0, 0, 255, 255];
 
   switch (tileSource.mimeType) {
     case 'application/vnd.mapbox-vector-tile':
@@ -234,8 +233,8 @@ function renderSubLayers(props: any) {
           getFillColor: [100, 120, 140, 255],
           highlightColor: [0, 0, 200, 255]
         })
-      )
-      break
+      );
+      break;
 
     case 'image/png':
     case 'image/jpeg':
@@ -248,11 +247,11 @@ function renderSubLayers(props: any) {
           bounds: [west, south, east, north],
           pickable: true
         } as any)
-      )
-      break
+      );
+      break;
 
     default:
-      console.error('Unknown tile mimeType', tileSource?.mimeType)
+      console.error('Unknown tile mimeType', tileSource?.mimeType);
   }
 
   if (showTileBorders) {
@@ -268,12 +267,12 @@ function renderSubLayers(props: any) {
             [west, north]
           ]
         ],
-        getPath: (data) => data,
+        getPath: data => data,
         getColor: borderColor as any,
         widthMinPixels: 4
       })
-    )
+    );
   }
 
-  return layers
+  return layers;
 }
