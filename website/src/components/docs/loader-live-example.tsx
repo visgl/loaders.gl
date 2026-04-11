@@ -105,15 +105,15 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
   'modules/shapefile/api-reference/shapefile-loader': {kind: 'geospatial', format: 'Shapefile'}
 };
 
-const ExampleContainer = styled.div`
+const ExampleContainer = styled.div<{$kind: LoaderLiveExampleKind}>`
   position: relative;
-  height: 420px;
   margin: 0 0 2rem;
   overflow: hidden;
+  height: ${(props) => (props.$kind === 'table' ? 'auto' : '420px')};
 `;
 
-const LoadingContainer = styled.div`
-  height: 420px;
+const LoadingContainer = styled.div<{$kind: LoaderLiveExampleKind}>`
+  height: ${(props) => (props.$kind === 'table' ? '160px' : '420px')};
 `;
 
 /**
@@ -128,10 +128,10 @@ export function LoaderLiveExample() {
   }
 
   return (
-    <ExampleContainer data-loader-live-example>
-      <BrowserOnly fallback={<LoadingContainer />}>
+    <ExampleContainer data-loader-live-example $kind={exampleConfig.kind}>
+      <BrowserOnly fallback={<LoadingContainer $kind={exampleConfig.kind} />}>
         {() => (
-          <Suspense fallback={<LoadingContainer />}>
+          <Suspense fallback={<LoadingContainer $kind={exampleConfig.kind} />}>
             <LoaderLiveExampleContent exampleConfig={exampleConfig} />
           </Suspense>
         )}

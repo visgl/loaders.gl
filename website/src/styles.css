@@ -24,6 +24,31 @@
   --ifm-color-gray-900: #2B3848;
   --ifm-color-black: #19202C;
   --code-font-size: 95%;
+  --docs-table-background: rgba(255, 255, 255, 0.92);
+  --docs-table-shell-background: rgba(247, 250, 252, 0.92);
+  --docs-table-header-background: var(--ifm-color-gray-200);
+  --docs-table-border: var(--ifm-color-gray-400);
+  --docs-table-divider: rgba(43, 56, 72, 0.1);
+  --docs-table-shadow:
+    0 20px 44px rgba(43, 56, 72, 0.12),
+    0 6px 18px rgba(43, 56, 72, 0.08);
+  --docs-table-text: var(--ifm-color-gray-900);
+  --docs-table-link: var(--ifm-color-primary-darkest);
+  --docs-table-link-hover: var(--ifm-color-primary-dark);
+}
+
+html[data-theme='dark'] {
+  --docs-table-background: rgba(36, 46, 58, 0.92);
+  --docs-table-shell-background: rgba(29, 38, 49, 0.94);
+  --docs-table-header-background: rgba(72, 86, 104, 0.72);
+  --docs-table-border: rgba(158, 174, 192, 0.26);
+  --docs-table-divider: rgba(225, 232, 240, 0.12);
+  --docs-table-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.24);
+  --docs-table-text: rgba(255, 255, 255, 0.92);
+  --docs-table-link: #66d6ff;
+  --docs-table-link-hover: #8ae0ff;
 }
 main .container {
   position: relative;
@@ -32,6 +57,123 @@ main .container {
 .markdown {
   position: relative;
 }
+.markdown .docs-markdown-table {
+  margin: 1.75rem 0;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--docs-table-border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background: var(--docs-table-shell-background);
+  box-shadow: var(--docs-table-shadow);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.markdown .docs-markdown-table__table {
+  width: max-content;
+  min-width: min(100%, 40rem);
+  margin: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--docs-table-text);
+  border-radius: 8px;
+  background: var(--docs-table-background);
+  overflow: hidden;
+}
+
+.markdown .docs-markdown-table__table thead {
+  background: var(--docs-table-header-background);
+}
+
+.markdown .docs-markdown-table__table thead tr {
+  background: transparent;
+}
+
+.markdown .docs-markdown-table__table tbody tr,
+.markdown .docs-markdown-table__table tbody tr:nth-child(2n),
+.markdown .docs-markdown-table__table tbody tr:nth-child(2n + 1) {
+  background: transparent;
+}
+
+.markdown .docs-markdown-table__table th,
+.markdown .docs-markdown-table__table td {
+  padding: 0.8rem 0.95rem;
+  border: 0;
+  border-bottom: 1px solid var(--docs-table-divider);
+  vertical-align: top;
+}
+
+.markdown .docs-markdown-table__table tbody td,
+.markdown .docs-markdown-table__table tbody tr:nth-child(2n) td,
+.markdown .docs-markdown-table__table tbody tr:nth-child(2n + 1) td {
+  background: transparent;
+}
+
+.markdown .docs-markdown-table__table th {
+  font-size: 0.83rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.markdown .docs-markdown-table__table thead th[colspan] {
+  font-size: 1.66rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.markdown .docs-markdown-table__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.markdown .docs-markdown-table__table th + th,
+.markdown .docs-markdown-table__table td + td {
+  border-left: 1px solid var(--docs-table-divider);
+}
+
+.markdown .docs-markdown-table__table td code,
+.markdown .docs-markdown-table__table th code {
+  white-space: nowrap;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ifm-color-gray-800);
+  font-size: 1.02em;
+  font-weight: 700;
+}
+
+html[data-theme='dark'] .markdown .docs-markdown-table__table td code,
+html[data-theme='dark'] .markdown .docs-markdown-table__table th code {
+  color: rgba(226, 232, 240, 0.92);
+}
+
+.markdown .docs-markdown-table__table a {
+  color: var(--docs-table-link);
+  font-weight: 600;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.14em;
+}
+
+.markdown .docs-markdown-table__table a:hover,
+.markdown .docs-markdown-table__table a:focus {
+  color: var(--docs-table-link-hover);
+}
+
+@media (max-width: 996px) {
+  .markdown .docs-markdown-table {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .markdown .docs-markdown-table__table {
+    min-width: 40rem;
+  }
+}
+
 .menu__link {
   line-height: 1.5;
 }
