@@ -1,4 +1,23 @@
-# Overview
+<p align="right">
+  <a href="https://www.npmjs.com/package/@loaders.gl/tiles">
+    <img src="https://img.shields.io/npm/v/@loaders.gl/tiles.svg?style=flat-square&label=npm%20package" alt="npm package version" />
+  </a>
+  <a href="https://github.com/visgl/loaders.gl/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square" alt="MIT license" />
+  </a>
+  <a href="https://www.npmjs.com/package/@loaders.gl/tiles">
+    <img src="https://img.shields.io/npm/dm/@loaders.gl/tiles.svg?style=flat-square&label=downloads" alt="npm downloads" />
+  </a>
+  <a href="https://www.typescriptlang.org">
+    <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat-square" alt="TypeScript 6.0" />
+  </a>
+</p>
+
+<h1 align="center">Tiles | <a href="https://loaders.gl/docs/modules/tiles">Docs</a></h1>
+
+<h5 align="center">Source-backed 2D and 3D tileset loading for loaders.gl</h5>
+
+## Overview
 
 `@loaders/tiles` exposes handy classes `Tileset3D` and `Tile3D` which can understand the loaded data from tile loaders (`@loaders.gl/3d-tiles`, `@loaders.gl/i3s`, etc.), and provide useful functions for dynamically selecting tiles for rendering under a viewport.
 
