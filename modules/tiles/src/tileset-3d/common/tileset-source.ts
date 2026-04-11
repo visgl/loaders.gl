@@ -7,11 +7,11 @@ import type {Vector3} from '@math.gl/core';
 import type {TilesetTraverser, TilesetTraverserProps} from './tileset-traverser';
 import type {Tile3D} from './tile-3d';
 import type {Tileset3D} from './tileset-3d';
-import type {FrameState} from './helpers/frame-state';
-import type {TILESET_TYPE} from '../constants';
+import type {FrameState} from '../helpers/frame-state';
+import type {TILESET_TYPE} from '../../constants';
 
 /**
- * Parsed top-level tileset payload consumed by {@link Tileset3D} or a {@link TilesetSource}.
+ * Parsed top-level tileset payload consumed by {@link Tileset3D} or a {@link Tileset3DSource}.
  */
 export type TilesetJSON = any;
 
@@ -56,7 +56,7 @@ export type TilesetContentFormats = {
 };
 
 /**
- * Optional view-state metadata exposed by a {@link TilesetSource} after initialization.
+ * Optional view-state metadata exposed by a {@link Tileset3DSource} after initialization.
  */
 export type TilesetSourceViewState = {
   cartographicCenter?: Vector3 | null;
@@ -95,7 +95,7 @@ export type TilesetSourceMetadata = {
 /**
  * Format-specific adapter used by {@link Tileset3D} for initialization, loading, and metadata access.
  */
-export interface TilesetSource {
+export interface Tileset3DSource {
   /** Tileset format discriminator. */
   readonly type: TILESET_TYPE;
   /** Loader used for content and metadata requests. */
@@ -188,9 +188,11 @@ export interface TilesetSource {
 }
 
 /**
- * Type guard for distinguishing a source-backed constructor input from legacy tileset JSON.
+ * Type guard for distinguishing a source-backed constructor input from other runtime values.
+ * @param value Value to test.
+ * @returns `true` when the value implements the {@link Tileset3DSource} contract.
  */
-export function isTilesetSource(value: unknown): value is TilesetSource {
+export function isTileset3DSource(value: unknown): value is Tileset3DSource {
   return Boolean(
     value &&
       typeof value === 'object' &&

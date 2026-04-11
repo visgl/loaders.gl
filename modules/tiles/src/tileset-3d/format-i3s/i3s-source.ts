@@ -7,24 +7,24 @@ import {path} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {Tile3D} from '../tile-3d';
-import {Tile3D as Tile3DNode} from '../tile-3d';
+import type {Tile3D} from '../common/tile-3d';
+import {Tile3D as Tile3DNode} from '../common/tile-3d';
 import {I3STilesetTraverser} from './i3s-tileset-traverser';
-import type {Tileset3D} from '../tileset-3d';
+import type {Tileset3D} from '../common/tileset-3d';
 import type {FrameState} from '../helpers/frame-state';
 import type {
   TileContentLoadResult,
   TilesetContentFormats,
   TilesetJSON,
-  TilesetSource,
+  Tileset3DSource,
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
   TilesetSourceViewState
-} from '../tileset-source';
+} from '../common/tileset-source';
 import {getZoomFromExtent, getZoomFromFullExtent} from '../helpers/zoom';
 import {TILESET_TYPE} from '../../constants';
-import type {TilesetTraverser, TilesetTraverserProps} from '../tileset-traverser';
+import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-traverser';
 
 const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   draco: false,
@@ -34,9 +34,9 @@ const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
 };
 
 /**
- * {@link TilesetSource} implementation for I3S datasets.
+ * {@link Tileset3DSource} implementation for I3S datasets.
  */
-export class I3SSource implements TilesetSource {
+export class I3SSource implements Tileset3DSource {
   /** I3S format discriminator. */
   readonly type = TILESET_TYPE.I3S;
   /** Loader used for tile metadata and content requests. */
@@ -72,7 +72,7 @@ export class I3SSource implements TilesetSource {
     this.tileset = this.rootTileset;
     this.loader = request.loader;
     this.url = request.url;
-    this.basePath = request.basePath;
+    this.basePath = request.basePath || path.dirname(request.url);
     this.loadOptions = loadOptions;
   }
 
@@ -91,7 +91,10 @@ export class I3SSource implements TilesetSource {
 
     const i3sOptions = this.loadOptions.i3s;
     if (i3sOptions && typeof i3sOptions === 'object' && 'token' in i3sOptions) {
-      this.queryParams.token = (i3sOptions as Record<string, string>).token;
+      const token = (i3sOptions as Record<string, unknown>).token;
+      if (typeof token === 'string') {
+        this.queryParams.token = token;
+      }
     }
 
     this.metadata = {
@@ -195,10 +198,14 @@ export class I3SSource implements TilesetSource {
     }
 
     const nodeUrl = this.getTileUrl(`${this.url}/nodes/${childId}`);
+    const i3sLoaderOptions =
+      this.loadOptions.i3s && typeof this.loadOptions.i3s === 'object'
+        ? (this.loadOptions.i3s as Record<string, unknown>)
+        : {};
     const options = {
       ...this.loadOptions,
       i3s: {
-        ...this.loadOptions.i3s,
+        ...i3sLoaderOptions,
         isTileHeader: true
       }
     };
@@ -293,9 +300,16 @@ export class I3SSource implements TilesetSource {
 }
 
 function isTilesetRequest(input: TilesetSourceInput): input is TilesetSourceRequest {
-  return Boolean(input && typeof input === 'object' && 'url' in input && 'loader' in input && !('type' in input));
+  return Boolean(
+    input && typeof input === 'object' && 'url' in input && 'loader' in input && !('type' in input)
+  );
 }
 
+/**
+ * Normalizes constructor input into a URL request descriptor.
+ * @param input Constructor input for {@link I3SSource}.
+ * @returns A normalized request with a resolved base path.
+ */
 function normalizeI3SRequest(input: TilesetSourceInput): TilesetSourceRequest {
   if (isTilesetRequest(input)) {
     return {

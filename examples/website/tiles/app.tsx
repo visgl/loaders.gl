@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // React
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useMemo, useRef, useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 
 // loaders.gl sources and loaders
@@ -23,7 +23,7 @@ import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 // D\deck.gl + layers
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';
-import {TileSourceLayer} from './components/tile-source-layer';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 
 // Basemap
 import {Map} from 'react-map-gl';
@@ -34,6 +34,8 @@ import {Example, ExamplePanel, Attributions, MetadataViewer} from './components/
 import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './examples';
 // END CUT
+
+const TILE_SOURCE_FACTORIES = [PMTilesSource, TableTileSource, MVTSource, MLTSource] as const;
 
 /** Arbitrary initial view state */
 const INITIAL_VIEW_STATE = {latitude: 47.65, longitude: 7, zoom: 2, maxZoom: 20};
@@ -79,11 +81,39 @@ export default function App(props: AppProps = {}) {
   });
 
   const {tileSource, metadata} = state;
+  const sourceOptions = useMemo(
+    () =>
+      currentExample
+        ? {
+            core: {
+              attributions: currentExample.attributions,
+              loaders: [GeoJSONLoader],
+              loadOptions: {
+                tilejson: {maxValues: 10}
+              }
+            },
+            pmtiles: {},
+            rangeRequests: {
+              batchDelayMs: 50,
+              stats: rangeStatsObjectRef.current,
+              onEvent: onTileRangeRequest
+            },
+            table: {
+              generateId: true
+            },
+            mvt: {},
+            mlt: {}
+          }
+        : null,
+    [currentExample]
+  );
   const tileLayer =
-    tileSource &&
-    new TileSourceLayer({
-      data: tileSource,
-      tileSource,
+    currentExample &&
+    sourceOptions &&
+    new SourceLayer({
+      data: currentExample.data,
+      sources: TILE_SOURCE_FACTORIES,
+      sourceOptions,
       showTileBorders: true,
       // @ts-expect-error
       metadata,

@@ -88,6 +88,8 @@ Some loaders can return multiple formats, often controlled with the loader optio
 
 loaders.gl now imports `apache-arrow` v13 which is a major upgrade but Apache Arrow JS v9 introduces breaking changes (compared with Apache Arrow v4 which is used by loaders.gl v3.x\_).
 
+- `@loaders.gl/deck-layers` - `TileSourceLayer` now accepts the tile source only via `data`. The redundant `tileSource` prop has been removed.
+
 If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes.
 
 On the upside, the new Apache Arrow API is more modular and "tree shakeable" (meaning that only the Apache Arrow functionality your application is actually using is included in your application bundle).

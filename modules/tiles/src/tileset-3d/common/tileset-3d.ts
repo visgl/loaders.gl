@@ -9,20 +9,20 @@ import {Ellipsoid} from '@math.gl/geospatial';
 import {Stats} from '@probe.gl/stats';
 import {RequestScheduler, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {TilesetCache} from './tileset-cache';
-import {calculateTransformProps} from './helpers/transform-utils';
-import {FrameState, getFrameState, limitSelectedTiles} from './helpers/frame-state';
+import {calculateTransformProps} from '../helpers/transform-utils';
+import {FrameState, getFrameState, limitSelectedTiles} from '../helpers/frame-state';
 
-import type {GeospatialViewport, Viewport} from '../types';
+import type {GeospatialViewport, Viewport} from '../../types';
 import {Tile3D} from './tile-3d';
-import {TILESET_TYPE} from '../constants';
+import {TILESET_TYPE} from '../../constants';
 
 import {TilesetTraverser} from './tileset-traverser';
 import {
-  isTilesetSource,
+  isTileset3DSource,
   TileContentLoadResult,
   TilesetContentFormats,
   TilesetJSON,
-  TilesetSource,
+  Tileset3DSource,
   TilesetSourceMetadata
 } from './tileset-source';
 
@@ -55,7 +55,7 @@ export type Tileset3DProps = {
   onTileUnload?: (tile: Tile3D) => any;
   onTileError?: (tile: Tile3D, message: string, url: string) => any;
   /** Called when a format-specific source operation fails. */
-  onSourceError?: (error: Error, source: TilesetSource, tile?: Tile3D | null) => any;
+  onSourceError?: (error: Error, source: Tileset3DSource, tile?: Tile3D | null) => any;
   /** Called when tileset initialization fails before traversal can begin. */
   onTilesetError?: (error: Error, tileset: Tileset3D) => any;
   contentLoader?: (tile: Tile3D) => Promise<void>;
@@ -76,7 +76,7 @@ type Props = {
   onTileLoad: (tile: Tile3D) => void;
   onTileUnload: (tile: Tile3D) => void;
   onTileError: (tile: Tile3D, message: string, url: string) => void;
-  onSourceError: (error: Error, source: TilesetSource, tile?: Tile3D | null) => void;
+  onSourceError: (error: Error, source: Tileset3DSource, tile?: Tile3D | null) => void;
   onTilesetError: (error: Error, tileset: Tileset3D) => void;
   onTraversalComplete: (selectedTiles: Tile3D[]) => Tile3D[];
   onUpdate: () => void;
@@ -138,13 +138,13 @@ const MAXIMUM_SSE = 'Maximum Screen Space Error';
 /**
  * Shared runtime for tile traversal, selection, cache management, and request scheduling.
  *
- * Format-specific loading behavior is delegated to a {@link TilesetSource} implementation.
+ * Format-specific loading behavior is delegated to a {@link Tileset3DSource} implementation.
  */
 export class Tileset3D {
   options: Props;
   loadOptions: LoaderOptions;
   /** Source implementation responsible for format-specific initialization and loading. */
-  source: TilesetSource;
+  source: Tileset3DSource;
 
   type: TILESET_TYPE;
   tileset: TilesetJSON | null;
@@ -209,12 +209,12 @@ export class Tileset3D {
    * @param source Source-backed tileset implementation.
    * @param options Traversal and runtime options.
    */
-  constructor(source: TilesetSource, options?: Tileset3DProps) {
+  constructor(source: Tileset3DSource, options?: Tileset3DProps) {
     this.options = {...DEFAULT_PROPS, ...options};
     this.loadOptions = this.options.loadOptions || {};
 
-    if (!isTilesetSource(source)) {
-      throw new Error('Tileset3D requires a TilesetSource instance');
+    if (!isTileset3DSource(source)) {
+      throw new Error('Tileset3D requires a Tileset3DSource instance');
     }
     this.source = source;
 
@@ -299,7 +299,7 @@ export class Tileset3D {
       this.lastUpdatedVieports = viewports;
     }
     if (!this.updatePromise) {
-      this.updatePromise = new Promise<number>((resolve) => {
+      this.updatePromise = new Promise<number>(resolve => {
         setTimeout(() => {
           if (this.lastUpdatedVieports) {
             this.doUpdate(this.lastUpdatedVieports);
@@ -410,8 +410,8 @@ export class Tileset3D {
 
     this.selectedTiles = this.options.onTraversalComplete(this.selectedTiles);
 
-    const selectedIds = new Set(this.selectedTiles.map((tile) => tile.id));
-    const hasUndrawnTiles = this.selectedTiles.some((tile) => !tile.tileDrawn);
+    const selectedIds = new Set(this.selectedTiles.map(tile => tile.id));
+    const hasUndrawnTiles = this.selectedTiles.some(tile => !tile.tileDrawn);
 
     let heldBackCount = 0;
     if (hasUndrawnTiles) {
@@ -457,10 +457,10 @@ export class Tileset3D {
     if (oldSelectedTiles.length !== selectedTiles.length) {
       return true;
     }
-    const oldSet = new Set(oldSelectedTiles.map((tile) => tile.id));
-    const newSet = new Set(selectedTiles.map((tile) => tile.id));
-    let changed = oldSelectedTiles.some((tile) => !newSet.has(tile.id));
-    changed = changed || selectedTiles.some((tile) => !oldSet.has(tile.id));
+    const oldSet = new Set(oldSelectedTiles.map(tile => tile.id));
+    const newSet = new Set(selectedTiles.map(tile => tile.id));
+    let changed = oldSelectedTiles.some(tile => !newSet.has(tile.id));
+    changed = changed || selectedTiles.some(tile => !oldSet.has(tile.id));
     return changed;
   }
 
@@ -621,7 +621,7 @@ export class Tileset3D {
   }
 
   _addTileToCache(tile: Tile3D): void {
-    this._cache.add(this, tile, (tileset) => tileset._updateCacheStats(tile));
+    this._cache.add(this, tile, tileset => tileset._updateCacheStats(tile));
   }
 
   _updateCacheStats(tile: Tile3D): void {
@@ -712,11 +712,9 @@ export class Tileset3D {
     this.asset = viewState.asset || this.source.asset || {};
     this.properties = viewState.properties ?? this.source.properties;
     this.extras = viewState.extras ?? this.source.extras ?? null;
-    this.credits =
-      viewState.credits ||
+    this.credits = viewState.credits ||
       this.source.credits ||
-      this.credits ||
-      {attributions: this.options.attributions || []};
+      this.credits || {attributions: this.options.attributions || []};
     this.description = viewState.description || this.options.description || '';
     this.boundingVolume = viewState.boundingVolume || this.root?.boundingVolume || null;
     this.cartographicCenter = viewState.cartographicCenter || new Vector3();

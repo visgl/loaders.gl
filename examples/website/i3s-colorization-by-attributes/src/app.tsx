@@ -7,6 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
 import {ViewState, FlyToInterpolator} from '@deck.gl/core';
+import {SourceDataDrivenTile3DLayer} from '@loaders.gl/deck-layers';
 
 import {colorizeTile} from '@deck.gl-community/experimental';
 
@@ -15,7 +16,6 @@ import {Tileset3D} from '@loaders.gl/tiles';
 import {ControlPanel} from './components/control-panel';
 import {AttributeData, ColorsByAttribute} from './types';
 import {ColorizationPanel} from './components/colorization-panel';
-import {SourceDataDrivenTile3DLayer} from '../../i3s-common/source-data-driven-tile-3d-layer';
 import {
   COLORIZE_MODES,
   COLORS_BY_ATTRIBUTE,

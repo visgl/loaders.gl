@@ -11,6 +11,7 @@ import styled from 'styled-components';
 import {luma} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
@@ -19,7 +20,6 @@ import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import ControlPanel from './components/control-panel';
 import {loadExampleIndex, INITIAL_EXAMPLE_CATEGORY, INITIAL_EXAMPLE_NAME} from './examples';
 import {INITIAL_MAP_STYLE} from './constants';
-import SourceTile3DLayer from './source-tile-3d-layer';
 
 const TILESET_SERVER_URL = 'https://assets.ion.cesium.com';
 
@@ -270,7 +270,7 @@ export default class App extends PureComponent<AppProps> {
       loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
     }
 
-    return new SourceTile3DLayer({
+    return new SourceLayer({
       id: 'tile-3d-layer',
       data: dataUrl,
       loader: ionAssetId ? CesiumIonLoader : Tiles3DLoader,

@@ -23,4 +23,15 @@ Available source classes:
 
 `Tileset3D` now requires an explicit source instance. Root metadata loading and normalization happen inside the source implementation.
 
+The shared `Tileset3DSource` contract owns:
+
+- root metadata loading and normalization
+- runtime tile-header creation
+- tile content URL resolution
+- tile content fetching
+- format-specific view-state metadata
+- format-specific post-load bookkeeping
+
+`Tileset3D` remains responsible for traversal, culling, request scheduling, selection, and cache management.
+
 For broader documentation please visit the [website](https://loaders.gl).

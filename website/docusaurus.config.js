@@ -75,6 +75,7 @@ const config = {
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/csv': resolve('../modules/csv/src'),
+            '@loaders.gl/deck-layers': resolve('../modules/deck-layers/src'),
             '@loaders.gl/draco': resolve('../modules/draco/src'),
             '@loaders.gl/excel': resolve('../modules/excel/src'),
             '@loaders.gl/flatgeobuf': resolve('../modules/flatgeobuf/src'),

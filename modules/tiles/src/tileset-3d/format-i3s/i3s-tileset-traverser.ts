@@ -1,7 +1,7 @@
-import {TilesetTraverser} from '../tileset-traverser';
+import {TilesetTraverser} from '../common/tileset-traverser';
 
 import {getLodStatus} from '../helpers/i3s-lod';
-import {Tile3D} from '../tile-3d';
+import {Tile3D} from '../common/tile-3d';
 import {I3STileManager} from './i3s-tile-manager';
 import {FrameState} from '../helpers/frame-state';
 

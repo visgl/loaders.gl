@@ -7,23 +7,23 @@ import {path} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {Tile3D} from '../tile-3d';
+import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
-import type {Tileset3D} from '../tileset-3d';
+import type {Tileset3D} from '../common/tileset-3d';
 import type {
   TileContentLoadResult,
   TilesetContentFormats,
   TilesetJSON,
-  TilesetSource,
+  Tileset3DSource,
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
   TilesetSourceViewState
-} from '../tileset-source';
-import {Tile3D as Tile3DNode} from '../tile-3d';
+} from '../common/tileset-source';
+import {Tile3D as Tile3DNode} from '../common/tile-3d';
 import {getZoomFromBoundingVolume} from '../helpers/zoom';
 import {TILESET_TYPE} from '../../constants';
-import type {TilesetTraverser, TilesetTraverserProps} from '../tileset-traverser';
+import type {TilesetTraverser, TilesetTraverserProps} from '../common/tileset-traverser';
 
 const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   draco: false,
@@ -33,9 +33,9 @@ const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
 };
 
 /**
- * {@link TilesetSource} implementation for 3D Tiles datasets.
+ * {@link Tileset3DSource} implementation for 3D Tiles datasets.
  */
-export class Tiles3DSource implements TilesetSource {
+export class Tiles3DSource implements Tileset3DSource {
   /** 3D Tiles format discriminator. */
   readonly type = TILESET_TYPE.TILES3D;
   /** Loader used for tile content requests. */
@@ -77,7 +77,7 @@ export class Tiles3DSource implements TilesetSource {
     this.tileset = this.rootTileset;
     this.loader = request.loader;
     this.url = request.url;
-    this.basePath = request.basePath;
+    this.basePath = request.basePath || path.dirname(request.url);
     this.loadOptions = loadOptions;
   }
 
@@ -205,7 +205,8 @@ export class Tiles3DSource implements TilesetSource {
    */
   async loadTileContent(tile: Tile3D): Promise<TileContentLoadResult> {
     const contentUrl = this.getTileUrl(tile.contentUrl);
-    const tilesetLoaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
+    const tilesetLoaderOptions =
+      (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
     const options = {
       ...this.loadOptions,
       [this.loader.id]: {
@@ -236,8 +237,17 @@ export class Tiles3DSource implements TilesetSource {
       return tilePath;
     }
 
-    const queryParams = new URLSearchParams(this.queryParams).toString();
-    return `${tilePath}${tilePath.includes('?') ? '&' : '?'}${queryParams}`;
+    const [pathWithoutQuery, existingQuery = ''] = tilePath.split('?');
+    const mergedQueryParams = new URLSearchParams(existingQuery);
+
+    for (const [key, value] of Object.entries(this.queryParams)) {
+      if (!mergedQueryParams.has(key)) {
+        mergedQueryParams.set(key, value);
+      }
+    }
+
+    const queryParams = mergedQueryParams.toString();
+    return queryParams ? `${pathWithoutQuery}?${queryParams}` : pathWithoutQuery;
   }
 
   /**
@@ -303,9 +313,16 @@ export class Tiles3DSource implements TilesetSource {
 }
 
 function isTilesetRequest(input: TilesetSourceInput): input is TilesetSourceRequest {
-  return Boolean(input && typeof input === 'object' && 'url' in input && 'loader' in input && !('type' in input));
+  return Boolean(
+    input && typeof input === 'object' && 'url' in input && 'loader' in input && !('type' in input)
+  );
 }
 
+/**
+ * Normalizes constructor input into a URL request descriptor.
+ * @param input Constructor input for {@link Tiles3DSource}.
+ * @returns A normalized request with a resolved base path.
+ */
 function normalizeTiles3DRequest(input: TilesetSourceInput): TilesetSourceRequest {
   if (isTilesetRequest(input)) {
     return {

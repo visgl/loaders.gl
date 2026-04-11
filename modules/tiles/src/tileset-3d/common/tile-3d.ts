@@ -10,18 +10,18 @@ import {CullingVolume} from '@math.gl/culling';
 
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
-import type {DoublyLinkedListNode} from '../utils/doubly-linked-list-node';
-import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
+import type {DoublyLinkedListNode} from '../../utils/doubly-linked-list-node';
+import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../../constants';
 import type {TileContentLoadResult} from './tileset-source';
 
-import {FrameState} from './helpers/frame-state';
+import {FrameState} from '../helpers/frame-state';
 import {
   createBoundingVolume,
   getCartographicBounds,
   CartographicBounds
-} from './helpers/bounding-volume';
-import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
-import {getProjectedRadius} from './helpers/i3s-lod';
+} from '../helpers/bounding-volume';
+import {getTiles3DScreenSpaceError} from '../helpers/tiles-3d-lod';
+import {getProjectedRadius} from '../helpers/i3s-lod';
 import {TilesetTraverser} from './tileset-traverser';
 
 const scratchVector = new Vector3();
@@ -733,5 +733,4 @@ export class Tile3D {
 
     this._updateBoundingVolume(this.header);
   }
-
 }
