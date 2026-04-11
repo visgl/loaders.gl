@@ -26,6 +26,11 @@ import {I3SLoaderOptions} from '../../i3s-loader';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
+/**
+ * Select the loader used to decode the texture payload for an I3S node.
+ * @param textureFormat - Texture format declared by the tileset.
+ * @returns The loaders.gl texture loader that can decode the format.
+ */
 function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2') {
   switch (textureFormat) {
     case 'ktx-etc2':
@@ -42,6 +47,15 @@ function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
+/**
+ * Parse a single I3S node payload, including optional texture data and geometry.
+ * @param arrayBuffer - Raw node binary payload.
+ * @param tileOptions - Tile-level urls, material metadata, and coordinate settings.
+ * @param tilesetOptions - Shared schema information from the parent tileset.
+ * @param options - Loader options propagated from the top-level load call.
+ * @param context - Loader context used for fetch and parser resolution.
+ * @returns Parsed tile content ready for deck.gl rendering.
+ */
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
   tileOptions: I3STileOptions,
@@ -481,11 +495,11 @@ function getModelMatrix(positions: I3SMeshAttribute): Matrix4 {
 }
 
 /**
- * Makes a glTF-compatible PBR material from an I3S material definition
+ * Make a glTF-compatible PBR material from an I3S material definition.
  * @param materialDefinition - i3s material definition
  *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
- * @param texture - texture image
- * @returns {object}
+ * @param texture - Decoded texture data when one was fetched successfully.
+ * @returns Material definition normalized for glTF-style rendering.
  */
 function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: TileContentTexture) {
   let pbrMaterial;
@@ -546,10 +560,9 @@ function convertColorFormat(colorFactor: number[]): number[] {
 }
 
 /**
- * Set texture in PBR material
- * @param {object} material - i3s material definition
+ * Attach a decoded texture to the first compatible material slot.
+ * @param material - i3s material definition
  * @param image - texture image
- * @returns
  */
 function setMaterialTexture(material, image: TileContentTexture): void {
   const texture = {source: {image}};
@@ -577,6 +590,11 @@ function setMaterialTexture(material, image: TileContentTexture): void {
   }
 }
 
+/**
+ * Check whether a parsed texture can be handed to luma.gl safely.
+ * @param texture - Parsed texture candidate.
+ * @returns `true` when the texture payload has a shape supported by WebGL upload paths.
+ */
 function isUsableTexture(texture?: TileContentTexture): boolean {
   if (!texture) {
     return false;

@@ -8,21 +8,34 @@ import {BitmapLayer, GeoJsonLayer, PathLayer} from '@deck.gl/layers';
 
 import type {GetTileDataParameters, TileSource, TileSourceMetadata} from '@loaders.gl/loader-utils';
 
+/**
+ * Runtime shape used by the example layer adapter.
+ *
+ * Some tile source implementations add deck.gl-specific flags such as
+ * `localCoordinates`, MIME type metadata, and mutable table coordinate options.
+ */
 type TileSourceRuntime = TileSource & {
+  /** Indicates that vector tiles can be rendered in local coordinates. */
   localCoordinates?: boolean;
+  /** MIME type that identifies vector or image payload handling. */
   mimeType: string | null;
+  /** Mutable source options forwarded to loaders.gl tile fetches. */
   options: {
     table?: {
+      /** Coordinate mode requested for table-backed tiles. */
       coordinates?: string;
     };
   };
+  /** Source URL used for stable layer ids. */
   url?: string;
 };
 
 /** Internal helper layer for routing tile fetches through a `VectorTileSource`. */
 class MVTSourceLayer extends MVTLayer<any> {
+  /** Internal state populated from the provided tile source. */
   declare state: any;
 
+  /** Sync the cached vector tile source whenever deck.gl reports a data change. */
   updateState(params: any): void {
     super.updateState(params);
 
@@ -35,6 +48,7 @@ class MVTSourceLayer extends MVTLayer<any> {
     }
   }
 
+  /** Fetch tile payloads directly from the wrapped loaders.gl tile source. */
   async getTileData(parameters: GetTileDataParameters): Promise<any> {
     try {
       const vectorTileSource = this.state.vectorTileSource as TileSourceRuntime | null;
@@ -45,6 +59,7 @@ class MVTSourceLayer extends MVTLayer<any> {
     }
   }
 
+  /** Render standard `MVTLayer` sublayers after the custom fetch path resolves. */
   renderSubLayers(props: any) {
     return super.renderSubLayers(props);
   }
@@ -80,30 +95,36 @@ export type TileSourceLayerProps = Omit<TileLayerProps, 'data'> & {
  * can draw debug tile borders.
  */
 export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
+  /** deck.gl layer name used in debugging output. */
   static layerName = 'TileSourceLayer';
 
+  /** Default props shared by the vector and raster rendering paths. */
   static defaultProps = {
     ...TileLayer.defaultProps,
     layerMode: 'tile',
     showTileBorders: true
   };
 
+  /** Cached source reference used by `renderLayers`. */
   declare state: {
     tileSource: TileSourceRuntime | null;
   };
 
+  /** Initialize local state before props are first rendered. */
   initializeState(): void {
     this.setState({
       tileSource: null
     });
   }
 
+  /** Mirror the latest `tileSource` prop into layer state. */
   updateState({props}: any): void {
     this.setState({
       tileSource: props.tileSource
     });
   }
 
+  /** Render either the vector-tile or generic tile path for the current source. */
   renderLayers() {
     const {tileSource} = this.state as {tileSource: TileSourceRuntime | null};
 
@@ -200,6 +221,9 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
  *
  * Renders vector tiles with `GeoJsonLayer`, image tiles with `BitmapLayer`, and
  * optional debug tile borders with `PathLayer`.
+ *
+ * @param props - Tile sublayer props supplied by deck.gl.
+ * @returns A list of sublayers for the resolved tile payload.
  */
 function renderSubLayers(props: any) {
   const {
