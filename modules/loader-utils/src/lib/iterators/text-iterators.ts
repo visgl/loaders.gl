@@ -40,11 +40,13 @@ export async function* makeLineIterator(
   for await (const textChunk of textIterator) {
     previous += textChunk;
     let eolIndex;
-    while ((eolIndex = previous.indexOf('\n')) >= 0) {
+    eolIndex = previous.indexOf('\n');
+    while (eolIndex >= 0) {
       // line includes the EOL
       const line = previous.slice(0, eolIndex + 1);
       previous = previous.slice(eolIndex + 1);
       yield line;
+      eolIndex = previous.indexOf('\n');
     }
   }
 

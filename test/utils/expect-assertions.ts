@@ -1,4 +1,4 @@
-import test, {Test as TapeTest} from 'tape';
+import test, {Test as TapeTest} from '@loaders.gl/devtools-extensions/tape-test-utils';
 import {tapeEquals, tapeEqualsEpsilon} from './tape-assertions';
 
 /**
@@ -63,7 +63,7 @@ export function describe(string: string, func: Function) {
 }
 
 export function it(message, testfunc) {
-  test(`${description}#${message}`, async (t) => {
+  test(`${description}#${message}`, async t => {
     currentTest = t;
     await testfunc();
     t.end();

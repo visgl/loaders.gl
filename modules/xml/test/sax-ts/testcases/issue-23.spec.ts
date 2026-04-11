@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#issue-23', (t) => {
+test('SAXParser#issue-23', t => {
   testSax(t, {
     xml:
       '<compileClassesResponse>' +

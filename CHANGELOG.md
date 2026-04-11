@@ -2,6 +2,19 @@
 
 ## v4.4
 
+
+### v4.4.0
+
+- Official publish
+
+### v4.4.0-alpha.19
+
+- [Feat] Add @loaders.gl/mlt — MapLibre Tile format support (#3315)
+- feat(textures) Add composite texture loaders (#3328)
+- b388320bd chore(textures): Revert constant renames (#3337)
+- 5dd3a550c feat(textures): New HDR format loader (#3327)
+- dd6e393d7 fix(textures): Fix format strings, serialize basis transcoding. (#3329)
+
 ### v4.4.0-alpha.18
 
 - chore: Clean up library load options (#3320)

@@ -10,7 +10,7 @@ import {BSONLoader} from '@loaders.gl/bson';
 const TAGS_BSON_URL = '@loaders.gl/bson/test/data/js-bson/mongodump.airpair.tags.bson';
 const MINI_BSON_URL = '@loaders.gl/bson/test/data/js-bson/test.bson';
 
-test('BSONLoader#load(test.bson)', async (t) => {
+test('BSONLoader#load(test.bson)', async t => {
   const data = await load(MINI_BSON_URL, BSONLoader);
   // t.comment(JSON.stringify(data));
   t.ok(data, 'Data received');
@@ -18,7 +18,7 @@ test('BSONLoader#load(test.bson)', async (t) => {
 });
 
 // This seems to be a corrupt test file?
-test.skip('BSONLoader#load(mongodump.airpair.tags.bson)', async (t) => {
+test.skip('BSONLoader#load(mongodump.airpair.tags.bson)', async t => {
   const data = await load(TAGS_BSON_URL, BSONLoader);
   t.ok(data, 'data received');
   t.end();

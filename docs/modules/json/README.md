@@ -17,14 +17,15 @@ npm install @loaders.gl/core @loaders.gl/json
 
 ## Loaders and Writers
 
-| Exports                                                                |
-| ---------------------------------------------------------------------- |
-| [`JSONLoader`](/docs/modules/json/api-reference/json-loader)           |
-| [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader)       |
-| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader)     |
-| [`NDGeoJSONLoader`](/docs/modules/json/api-reference/ndgeojson-loader) |
-| [`JSONWriter`](/docs/modules/json/api-reference/json-writer)           |
-| [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer)     |
+| Exports                                                                     |
+| --------------------------------------------------------------------------- |
+| [`JSONLoader`](/docs/modules/json/api-reference/json-loader)                |
+| [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader#ndjsonloader) |
+| [`NDJSONArrowLoader`](/docs/modules/json/api-reference/ndjson-loader#ndjsonarrowloader) |
+| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader)          |
+| [`NDGeoJSONLoader`](/docs/modules/json/api-reference/ndgeojson-loader)      |
+| [`JSONWriter`](/docs/modules/json/api-reference/json-writer)                |
+| [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer)          |
 
 ## Additional APIs
 

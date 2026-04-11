@@ -18,20 +18,20 @@ const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
 
 const JSON_DATA = [{col1: 22, col2: 'abc'}];
 
-test('load#load', async (t) => {
+test('load#load', async t => {
   t.ok(load, 'load defined');
   // @ts-ignore TS2554: Expected 2-4 arguments, but got 1.
   await t.rejects(load('.'), 'load throws on undefined loaders');
   t.end();
 });
 
-test('load#with fetch options', async (t) => {
+test('load#with fetch options', async t => {
   t.ok(
     await load(JSON_URL, JSONLoader, {fetch: {headers: {'Content-Type': 'application/json'}}}),
     'load with fetch options work'
   );
 
-  const fetch = (url) => new Response('{"abc": 1}');
+  const fetch = _url => new Response('{"abc": 1}');
   t.deepEqual(
     // @ts-expect-error
     await load(JSON_URL, JSONLoader, {fetch}),
@@ -41,14 +41,14 @@ test('load#with fetch options', async (t) => {
   t.end();
 });
 
-test('load#load', async (t) => {
+test('load#load', async t => {
   t.ok(load, 'load defined');
   // @ts-ignore TS2554: Expected 2-4 arguments, but got 1.
   await t.rejects(load('.'), 'load throws on undefined loaders');
   t.end();
 });
 
-test('load#auto detect loader', (t) => {
+test('load#auto detect loader', t => {
   const TEST_LOADER = {
     name: 'JSON',
     extensions: ['json'],
@@ -62,7 +62,7 @@ test('load#auto detect loader', (t) => {
   // @ts-ignore TS2345: Argument of type not assignable
   registerLoaders(TEST_LOADER);
   // @ts-ignore TODO remove this ts-ignore
-  load('package.json', {JSON: {option: true}});
+  load(isBrowser ? '/package.json' : 'package.json', {JSON: {option: true}});
 });
 
 function checkResponse(t, response) {
@@ -72,7 +72,7 @@ function checkResponse(t, response) {
   t.equals(response.headers['content-length'], '4590', 'response content-length is correct');
 }
 
-test('load#load retrieve Response', async (t) => {
+test('load#load retrieve Response', async t => {
   const TEST_LOADER = {
     name: 'JSON',
     extensions: ['json'],
@@ -94,7 +94,7 @@ test('load#load retrieve Response', async (t) => {
   t.end();
 });
 
-test('load#load retrieve Response from worker - BROWSER ONLY', async (t) => {
+test('load#load retrieve Response from worker - BROWSER ONLY', async t => {
   if (!isBrowser) {
     t.comment('Workers not supported, skipping tests');
     t.end();
@@ -111,7 +111,7 @@ test('load#load retrieve Response from worker - BROWSER ONLY', async (t) => {
   t.end();
 });
 
-test('load#Blob(text) - BROWSER ONLY', async (t) => {
+test('load#Blob(text) - BROWSER ONLY', async t => {
   if (!isBrowser) {
     t.comment('Skipping load(Blob) tests in Node.js');
     t.end();
@@ -128,7 +128,7 @@ test('load#Blob(text) - BROWSER ONLY', async (t) => {
   t.end();
 });
 
-test('load#stream', async (t) => {
+test('load#stream', async t => {
   const response = await fetchFile(JSON_URL);
   const stream = response.body;
   // @ts-ignore

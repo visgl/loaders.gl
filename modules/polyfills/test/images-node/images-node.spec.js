@@ -15,7 +15,7 @@ const images = [
 ];
 
 if (!isBrowser) {
-  test('Node image polyfills', (t) => {
+  test('Node image polyfills', t => {
     // @ts-ignore
     t.equals(
       typeof globalThis.loaders?.encodeImageNode,
@@ -70,7 +70,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test.skip('Node image polyfills - should return Uint8Array data', async (t) => {
+  test.skip('Node image polyfills - should return Uint8Array data', async t => {
     for (const image of images) {
       const [imageUrl, mimeType] = image;
       const response = await fetchFile(imageUrl);

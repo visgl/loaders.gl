@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
-import {load, loadInBatches, encode, setLoaderOptions} from '@loaders.gl/core';
+import {load, loadInBatches, encode, fetchFile, setLoaderOptions} from '@loaders.gl/core';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {ParquetArrowLoader, ParquetArrowWriter} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
@@ -52,6 +52,26 @@ test('ParquetArrowLoader#load', async (t) => {
   t.end();
 });
 
+test('ParquetArrowLoader#parse applies reader options without passing wasmUrl upstream', async (t) => {
+  const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
+  const response = await fetchFile(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const table = await ParquetArrowLoader.parse(arrayBuffer, {
+    parquet: {
+      limit: 2
+    }
+  });
+
+  t.equal(table.data.numRows, 2, 'applies limit option');
+  t.deepEqual(
+    table.schema?.fields.map((field) => field.name),
+    ['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry'],
+    'keeps the file schema'
+  );
+
+  t.end();
+});
+
 test('ParquetArrowWriter#writer/loader round trip', async (t) => {
   const table = createArrowTable();
 
@@ -66,17 +86,30 @@ test('ParquetArrowWriter#writer/loader round trip', async (t) => {
   t.end();
 });
 
-// TODO not implemented yet
-test.skip('ParquetArrowLoader#loadInBatches', async (t) => {
-  // t.comment('SUPPORTED FILES');
-  for (const {title, path} of WASM_SUPPORTED_FILES) {
-    const url = `${PARQUET_DIR}/apache/${path}`;
-    const iterator = await loadInBatches(url, ParquetArrowLoader);
-    for await (const batch of iterator) {
-      const recordBatch = batch.data;
-      t.ok(recordBatch instanceof arrow.RecordBatch, `GOOD(${title})`);
+test('ParquetArrowLoader#loadInBatches', async (t) => {
+  const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
+  const iterator = await loadInBatches(url, ParquetArrowLoader, {
+    parquet: {
+      batchSize: 2,
+      limit: 5
     }
+  });
+
+  let batchCount = 0;
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    batchCount++;
+    rowCount += batch.length;
+    t.ok(batch.data instanceof arrow.Table, 'returns Arrow table batch');
+    t.deepEqual(
+      batch.schema.fields.map((field) => field.name),
+      ['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry'],
+      'batch schema matches file schema'
+    );
   }
+
+  t.ok(batchCount > 0, 'returns one or more batches');
+  t.equal(rowCount, 5, 'returns all requested rows');
 
   t.end();
 });

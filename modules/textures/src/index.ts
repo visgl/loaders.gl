@@ -24,6 +24,21 @@ export {RadianceHDRLoader} from './radiance-hdr-loader';
 export type {NPYLoaderOptions} from './npy-loader';
 export {NPYLoader, NPYWorkerLoader} from './npy-loader';
 
+export type {TextureManifestLoaderOptions, TextureManifest} from './texture-loader';
+export {TextureLoader} from './texture-loader';
+
+export type {TextureArrayLoaderOptions, TextureArrayManifest} from './texture-array-loader';
+export {TextureArrayLoader} from './texture-array-loader';
+
+export type {TextureCubeLoaderOptions, TextureCubeManifest} from './texture-cube-loader';
+export {TextureCubeLoader} from './texture-cube-loader';
+
+export type {
+  TextureCubeArrayLoaderOptions,
+  TextureCubeArrayManifest
+} from './texture-cube-array-loader';
+export {TextureCubeArrayLoader} from './texture-cube-array-loader';
+
 // Module constants
 export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';
 export {CRUNCH_EXTERNAL_LIBRARIES} from './lib/parsers/crunch-module-loader';

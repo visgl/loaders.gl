@@ -7,6 +7,14 @@
 /* eslint-disable camelcase */
 import {BSONLoader, BSONWriter} from '@loaders.gl/bson';
 import {OriginalType, ParquetField, ParquetType, PrimitiveType} from './declare';
+import {
+  decodeUtf8,
+  encodeUtf8,
+  readUInt32LE,
+  toArrayBuffer,
+  toUint8Array,
+  writeUInt32LE
+} from '../utils/binary-utils';
 
 export interface ParquetTypeKit {
   primitiveType: PrimitiveType;
@@ -207,7 +215,7 @@ function fromPrimitive_BOOLEAN(value: any): boolean {
 
 function toPrimitive_FLOAT(value: any): number {
   const v = parseFloat(value);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for FLOAT: ${value}`);
   }
   return v;
@@ -215,7 +223,7 @@ function toPrimitive_FLOAT(value: any): number {
 
 function toPrimitive_DOUBLE(value: any): number {
   const v = parseFloat(value);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for DOUBLE: ${value}`);
   }
   return v;
@@ -223,7 +231,7 @@ function toPrimitive_DOUBLE(value: any): number {
 
 function toPrimitive_INT8(value: any) {
   const v = parseInt(value, 10);
-  if (v < -0x80 || v > 0x7f || isNaN(v)) {
+  if (v < -0x80 || v > 0x7f || Number.isNaN(v)) {
     throw new Error(`invalid value for INT8: ${value}`);
   }
 
@@ -232,7 +240,7 @@ function toPrimitive_INT8(value: any) {
 
 function toPrimitive_UINT8(value: any) {
   const v = parseInt(value, 10);
-  if (v < 0 || v > 0xff || isNaN(v)) {
+  if (v < 0 || v > 0xff || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT8: ${value}`);
   }
 
@@ -241,7 +249,7 @@ function toPrimitive_UINT8(value: any) {
 
 function toPrimitive_INT16(value: any) {
   const v = parseInt(value, 10);
-  if (v < -0x8000 || v > 0x7fff || isNaN(v)) {
+  if (v < -0x8000 || v > 0x7fff || Number.isNaN(v)) {
     throw new Error(`invalid value for INT16: ${value}`);
   }
 
@@ -250,7 +258,7 @@ function toPrimitive_INT16(value: any) {
 
 function toPrimitive_UINT16(value: any) {
   const v = parseInt(value, 10);
-  if (v < 0 || v > 0xffff || isNaN(v)) {
+  if (v < 0 || v > 0xffff || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT16: ${value}`);
   }
 
@@ -259,7 +267,7 @@ function toPrimitive_UINT16(value: any) {
 
 function toPrimitive_INT32(value: any) {
   const v = parseInt(value, 10);
-  if (v < -0x80000000 || v > 0x7fffffff || isNaN(v)) {
+  if (v < -0x80000000 || v > 0x7fffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for INT32: ${value}`);
   }
 
@@ -269,7 +277,7 @@ function toPrimitive_INT32(value: any) {
 function decimalToPrimitive_INT32(value: number, field: ParquetField): number {
   const primitiveValue = value * 10 ** (field.scale || 0);
   const v = Math.round(((primitiveValue * 10 ** -field.presision!) % 1) * 10 ** field.presision!);
-  if (v < -0x80000000 || v > 0x7fffffff || isNaN(v)) {
+  if (v < -0x80000000 || v > 0x7fffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for INT32: ${value}`);
   }
   return v;
@@ -277,7 +285,7 @@ function decimalToPrimitive_INT32(value: number, field: ParquetField): number {
 
 function toPrimitive_UINT32(value: any): number {
   const v = parseInt(value, 10);
-  if (v < 0 || v > 0xffffffffffff || isNaN(v)) {
+  if (v < 0 || v > 0xffffffffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT32: ${value}`);
   }
   return v;
@@ -285,7 +293,7 @@ function toPrimitive_UINT32(value: any): number {
 
 function toPrimitive_INT64(value: any): number {
   const v = parseInt(value, 10);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for INT64: ${value}`);
   }
   return v;
@@ -294,7 +302,7 @@ function toPrimitive_INT64(value: any): number {
 function decimalToPrimitive_INT64(value: number, field: ParquetField) {
   const primitiveValue = value * 10 ** (field.scale || 0);
   const v = Math.round(((primitiveValue * 10 ** -field.presision!) % 1) * 10 ** field.presision!);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for INT64: ${value}`);
   }
 
@@ -303,7 +311,7 @@ function decimalToPrimitive_INT64(value: number, field: ParquetField) {
 
 function toPrimitive_UINT64(value: any) {
   const v = parseInt(value, 10);
-  if (v < 0 || isNaN(v)) {
+  if (v < 0 || Number.isNaN(v)) {
     throw new Error(`invalid value for UINT64: ${value}`);
   }
 
@@ -312,52 +320,52 @@ function toPrimitive_UINT64(value: any) {
 
 function toPrimitive_INT96(value: any) {
   const v = parseInt(value, 10);
-  if (isNaN(v)) {
+  if (Number.isNaN(v)) {
     throw new Error(`invalid value for INT96: ${value}`);
   }
 
   return v;
 }
 
-function toPrimitive_BYTE_ARRAY(value: any): Buffer {
-  return Buffer.from(value);
+function toPrimitive_BYTE_ARRAY(value: any): Uint8Array {
+  return typeof value === 'string' ? encodeUtf8(value) : toUint8Array(value);
 }
 
-function decimalToPrimitive_BYTE_ARRAY(value: any): Buffer {
+function decimalToPrimitive_BYTE_ARRAY(value: any): Uint8Array {
   // TBD
-  return Buffer.from(value);
+  return typeof value === 'string' ? encodeUtf8(value) : toUint8Array(value);
 }
 
-function toPrimitive_UTF8(value: any): Buffer {
-  return Buffer.from(value, 'utf8');
+function toPrimitive_UTF8(value: any): Uint8Array {
+  return encodeUtf8(String(value));
 }
 
 function fromPrimitive_UTF8(value: any): string {
-  return value.toString();
+  return decodeUtf8(toUint8Array(value));
 }
 
-function toPrimitive_JSON(value: any): Buffer {
-  return Buffer.from(JSON.stringify(value));
+function toPrimitive_JSON(value: any): Uint8Array {
+  return encodeUtf8(JSON.stringify(value));
 }
 
 function fromPrimitive_JSON(value: any): unknown {
-  return JSON.parse(value);
+  return JSON.parse(decodeUtf8(toUint8Array(value)));
 }
 
-function toPrimitive_BSON(value: any): Buffer {
+function toPrimitive_BSON(value: any): Uint8Array {
   // @ts-ignore
   const arrayBuffer: ArrayBuffer = BSONWriter.encodeSync?.(value);
-  return Buffer.from(arrayBuffer);
+  return toUint8Array(arrayBuffer);
 }
 
 function fromPrimitive_BSON(value: any) {
-  return BSONLoader.parseSync?.(value);
+  return BSONLoader.parseSync?.(toArrayBuffer(value));
 }
 
 function toPrimitive_TIME_MILLIS(value: any) {
   const v = parseInt(value, 10);
   // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-  if (v < 0 || v > 0xffffffffffffffff || isNaN(v)) {
+  if (v < 0 || v > 0xffffffffffffffff || Number.isNaN(v)) {
     throw new Error(`invalid value for TIME_MILLIS: ${value}`);
   }
 
@@ -366,7 +374,7 @@ function toPrimitive_TIME_MILLIS(value: any) {
 
 function toPrimitive_TIME_MICROS(value: any): number {
   const v = parseInt(value, 10);
-  if (v < 0 || isNaN(v)) {
+  if (v < 0 || Number.isNaN(v)) {
     throw new Error(`invalid value for TIME_MICROS: ${value}`);
   }
   return v;
@@ -383,7 +391,7 @@ function toPrimitive_DATE(value: any): number {
   /* convert from integer */
   {
     const v = parseInt(value, 10);
-    if (v < 0 || isNaN(v)) {
+    if (v < 0 || Number.isNaN(v)) {
       throw new Error(`invalid value for DATE: ${value}`);
     }
 
@@ -404,7 +412,7 @@ function toPrimitive_TIMESTAMP_MILLIS(value: any): number {
   /* convert from integer */
   {
     const v = parseInt(value, 10);
-    if (v < 0 || isNaN(v)) {
+    if (v < 0 || Number.isNaN(v)) {
       throw new Error(`invalid value for TIMESTAMP_MILLIS: ${value}`);
     }
 
@@ -425,7 +433,7 @@ function toPrimitive_TIMESTAMP_MICROS(value: any) {
   /* convert from integer */
   {
     const v = parseInt(value, 10);
-    if (v < 0 || isNaN(v)) {
+    if (v < 0 || Number.isNaN(v)) {
       throw new Error(`invalid value for TIMESTAMP_MICROS: ${value}`);
     }
 
@@ -444,19 +452,19 @@ function toPrimitive_INTERVAL(value: any) {
     );
   }
 
-  const buf = Buffer.alloc(12);
+  const buf = new Uint8Array(12);
 
-  buf.writeUInt32LE(value.months, 0);
-  buf.writeUInt32LE(value.days, 4);
-  buf.writeUInt32LE(value.milliseconds, 8);
+  writeUInt32LE(buf, value.months, 0);
+  writeUInt32LE(buf, value.days, 4);
+  writeUInt32LE(buf, value.milliseconds, 8);
   return buf;
 }
 
 function fromPrimitive_INTERVAL(value: any) {
-  const buf = Buffer.from(value);
-  const months = buf.readUInt32LE(0);
-  const days = buf.readUInt32LE(4);
-  const millis = buf.readUInt32LE(8);
+  const bytes = toUint8Array(value);
+  const months = readUInt32LE(bytes, 0);
+  const days = readUInt32LE(bytes, 4);
+  const millis = readUInt32LE(bytes, 8);
 
   return {months, days, milliseconds: millis};
 }

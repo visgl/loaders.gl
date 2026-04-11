@@ -13,7 +13,7 @@ import {
 } from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
-test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async (t) => {
+test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async t => {
   const text =
     '<WMS_DescribeLayerResponse version="1.1.1">' +
     '  <LayerDescription name="topp:states" wfs="http://geo.openplans.org:80/geoserver/wfs/WfsDispatcher?">' +

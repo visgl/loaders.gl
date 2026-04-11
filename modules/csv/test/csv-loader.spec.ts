@@ -6,6 +6,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
+import {CSV2Loader} from '../src/csv2-loader';
 import {CSVLoader} from '../src/csv-loader';
 import {getTableLength} from '@loaders.gl/schema-utils';
 
@@ -20,19 +21,116 @@ const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
 
 const TSV_BRAZIL = '@loaders.gl/csv/test/data/tsv/brazil.tsv';
 
-test('CSVLoader#loader conformance', (t) => {
+test('CSVLoader#loader conformance', t => {
   validateLoader(t, CSVLoader, 'CSVLoader');
   t.end();
 });
 
-test('CSVLoader#load(states.csv)', async (t) => {
+test('CSV2Loader#loader conformance', t => {
+  validateLoader(t, CSV2Loader, 'CSV2Loader');
+  t.end();
+});
+
+test('CSV2Loader#load', async t => {
+  const objectRowTable = await load(CSV_SAMPLE_URL, CSV2Loader, {
+    csv: {shape: 'object-row-table', header: false}
+  });
+  t.assert(objectRowTable.shape === 'object-row-table', 'Got correct object-row table shape');
+  if (objectRowTable.shape === 'object-row-table') {
+    t.deepEqual(
+      objectRowTable.data,
+      [
+        {column1: 'A', column2: 'B', column3: 1},
+        {column1: 'X', column2: 'Y', column3: 2}
+      ],
+      'Got correct object-row content'
+    );
+  }
+
+  const arrayRowTable = await load(CSV_SAMPLE_URL, CSV2Loader, {
+    csv: {shape: 'array-row-table', header: false}
+  });
+  t.assert(arrayRowTable.shape === 'array-row-table', 'Got correct array-row table shape');
+  if (arrayRowTable.shape === 'array-row-table') {
+    t.deepEqual(
+      arrayRowTable.data,
+      [
+        ['A', 'B', 1],
+        ['X', 'Y', 2]
+      ],
+      'Got correct array-row content'
+    );
+  }
+  t.end();
+});
+
+test('CSV2Loader#load matches CSVLoader output across fixture cases', async t => {
+  const cases: Array<{
+    name: string;
+    url: string;
+    options?: Parameters<typeof load>[2];
+  }> = [
+    {
+      name: 'sample object rows without header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'object-row-table', header: false}}
+    },
+    {
+      name: 'sample array rows without header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'array-row-table', header: false}}
+    },
+    {
+      name: 'sample object rows with header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'object-row-table', header: true}}
+    },
+    {
+      name: 'duplicate headers',
+      url: CSV_SAMPLE_URL_DUPLICATE_COLS,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'skip empty lines',
+      url: CSV_SAMPLE_URL_EMPTY_LINES,
+      options: {csv: {shape: 'object-row-table', skipEmptyLines: true}}
+    },
+    {
+      name: 'quoted csv',
+      url: CSV_INCIDENTS_URL_QUOTES,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'no header with custom prefix',
+      url: CSV_NO_HEADER_URL,
+      options: {csv: {shape: 'object-row-table', header: false, columnPrefix: 'column_'}}
+    },
+    {
+      name: 'tsv',
+      url: TSV_BRAZIL,
+      options: {csv: {shape: 'object-row-table'}}
+    }
+  ];
+
+  for (const {name, url, options} of cases) {
+    const csvLoaderTable = await load(url, CSVLoader, options);
+    const csv2LoaderTable = await load(url, CSV2Loader, options);
+
+    t.equal(csv2LoaderTable.shape, csvLoaderTable.shape, `${name}: shape matches`);
+    t.deepEqual(csv2LoaderTable.data, csvLoaderTable.data, `${name}: data matches`);
+  }
+
+  t.end();
+});
+
+test('CSVLoader#load(states.csv)', async t => {
   const table = await load(CSV_STATES_URL, CSVLoader);
   t.equal(getTableLength(table), 110);
   t.end();
 });
 
 // eslint-disable-next-line max-statements
-test('CSVLoader#load', async (t) => {
+test('CSVLoader#load', async t => {
   const table = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'object-row-table'}});
   t.assert(table.shape === 'object-row-table', 'Got correct table shape');
   if (table.shape === 'object-row-table') {
@@ -107,7 +205,7 @@ test('CSVLoader#load', async (t) => {
   t.end();
 });
 
-test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
+test('CSVLoader#load(sample.csv, duplicate column names)', async t => {
   const table = await load(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
@@ -146,7 +244,7 @@ test('CSVLoader#load(sample.csv, duplicate column names)', async (t) => {
 
 // TSV
 
-test('CSVLoader#load(brazil.tsv)', async (t) => {
+test('CSVLoader#load(brazil.tsv)', async t => {
   const table = await load(TSV_BRAZIL, CSVLoader);
   t.equal(getTableLength(table), 10);
   t.end();
@@ -154,7 +252,7 @@ test('CSVLoader#load(brazil.tsv)', async (t) => {
 
 // loadInBatches
 
-test('CSVLoader#loadInBatches(sample.csv, columns)', async (t) => {
+test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {
       shape: 'columnar-table'
@@ -180,7 +278,7 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async (t) => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
+test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async t => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     csv: {
@@ -216,7 +314,7 @@ test('CSVLoader#loadInBatches(sample-very-long.csv, columns)', async (t) => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample.csv, array-rows)', async (t) => {
+test('CSVLoader#loadInBatches(sample.csv, array-rows)', async t => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {shape: 'array-row-table'});
 
   let batchCount = 0;
@@ -234,7 +332,7 @@ test('CSVLoader#loadInBatches(sample.csv, array-rows)', async (t) => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample.csv, object-rows)', async (t) => {
+test('CSVLoader#loadInBatches(sample.csv, object-rows)', async t => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
@@ -256,7 +354,7 @@ test('CSVLoader#loadInBatches(sample.csv, object-rows)', async (t) => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
+test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async t => {
   let iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {
       shape: 'array-row-table',
@@ -295,7 +393,7 @@ test('CSVLoader#loadInBatches(sample.csv, arrays, header)', async (t) => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(no header, row format, prefix)', async (t) => {
+test('CSVLoader#loadInBatches(no header, row format, prefix)', async t => {
   const batchSize = 25;
   const iterator = await loadInBatches(CSV_NO_HEADER_URL, CSVLoader, {
     csv: {
@@ -318,7 +416,7 @@ test('CSVLoader#loadInBatches(no header, row format, prefix)', async (t) => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
+test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async t => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL, CSVLoader, {
     csv: {
       shape: 'columnar-table',
@@ -350,7 +448,7 @@ test('CSVLoader#loadInBatches(sample.csv, no dynamicTyping)', async (t) => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
+test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async t => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL_DUPLICATE_COLS, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
@@ -398,9 +496,9 @@ test('CSVLoader#loadInBatches(sample.csv, duplicate columns)', async (t) => {
   );
 });
 
-test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
+test('CSVLoader#loadInBatches(skipEmptyLines greedy)', async t => {
   const iterator = await loadInBatches(CSV_SAMPLE_URL_EMPTY_LINES, CSVLoader, {
-    csv: {shape: 'object-row-table', skipEmptyLines: true}
+    csv: {shape: 'object-row-table', skipEmptyLines: 'greedy'}
   });
 
   const rows: unknown[] = [];
@@ -424,7 +522,7 @@ test('CSVLoader#loadInBatches(skipEmptyLines)', async (t) => {
   t.end();
 });
 
-test('CSVLoader#loadInBatches(csv with quotes)', async (t) => {
+test('CSVLoader#loadInBatches(csv with quotes)', async t => {
   const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
     csv: {shape: 'object-row-table'}
   });
@@ -456,6 +554,89 @@ test('CSVLoader#loadInBatches(csv with quotes)', async (t) => {
   t.end();
 });
 
+test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', async t => {
+  const csvText = 'city\nZürich\n東京\n';
+  const csvBytes = new TextEncoder().encode(csvText);
+  const splitIndex = csvBytes.indexOf(0xc3) + 1;
+
+  const iterator = CSVLoader.parseInBatches(
+    [csvBytes.subarray(0, splitIndex), csvBytes.subarray(splitIndex)],
+    {
+      csv: {
+        header: true,
+        shape: 'object-row-table'
+      }
+    }
+  );
+
+  const rows: unknown[] = [];
+  for await (const batch of iterator) {
+    if (batch.shape === 'object-row-table') {
+      rows.push(...batch.data);
+    }
+  }
+
+  t.deepEqual(rows, [{city: 'Zürich'}, {city: '東京'}], 'preserves split UTF-8 characters');
+  t.end();
+});
+
+test('CSV2Loader#loadInBatches matches CSVLoader output across streaming cases', async t => {
+  const cases: Array<{
+    name: string;
+    url: string;
+    options?: Parameters<typeof loadInBatches>[2];
+  }> = [
+    {
+      name: 'sample object rows',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'sample array rows without header',
+      url: CSV_SAMPLE_URL,
+      options: {csv: {shape: 'array-row-table', header: false}}
+    },
+    {
+      name: 'duplicate headers',
+      url: CSV_SAMPLE_URL_DUPLICATE_COLS,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'skip empty lines',
+      url: CSV_SAMPLE_URL_EMPTY_LINES,
+      options: {csv: {shape: 'object-row-table', skipEmptyLines: true}}
+    },
+    {
+      name: 'quoted csv',
+      url: CSV_INCIDENTS_URL_QUOTES,
+      options: {csv: {shape: 'object-row-table'}}
+    },
+    {
+      name: 'no header with custom prefix',
+      url: CSV_NO_HEADER_URL,
+      options: {csv: {shape: 'object-row-table', header: false, columnPrefix: 'column_'}}
+    }
+  ];
+
+  for (const {name, url, options} of cases) {
+    const csvLoaderRows = await collectBatchRows(await loadInBatches(url, CSVLoader, options));
+    const csv2LoaderRows = await collectBatchRows(await loadInBatches(url, CSV2Loader, options));
+    t.deepEqual(csv2LoaderRows, csvLoaderRows, `${name}: batched rows match`);
+  }
+
+  t.end();
+});
+
+async function collectBatchRows(asyncIterable): Promise<unknown[]> {
+  const rows: unknown[] = [];
+  for await (const batch of asyncIterable) {
+    if (batch.shape === 'object-row-table' || batch.shape === 'array-row-table') {
+      rows.push(...batch.data);
+    }
+  }
+  return rows;
+}
+
 function validateColumn(column, length, type) {
   if (column.length !== length) {
     return `column length should be ${length}`;
@@ -463,11 +644,11 @@ function validateColumn(column, length, type) {
   let validator: Function | null = null;
   switch (type) {
     case 'string':
-      validator = (d) => typeof d === 'string';
+      validator = d => typeof d === 'string';
       break;
 
     case 'float':
-      validator = (d) => Number.isFinite(d);
+      validator = d => Number.isFinite(d);
       break;
 
     default:

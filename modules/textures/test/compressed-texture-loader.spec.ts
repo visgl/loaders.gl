@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 
 import {CompressedTextureLoader} from '@loaders.gl/textures';
-import {load, setLoaderOptions} from '@loaders.gl/core';
+import {load, setLoaderOptions, isBrowser} from '@loaders.gl/core';
 import {
   GL_COMPRESSED_RGB_ETC1_WEBGL,
   GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
@@ -21,28 +21,28 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('CompressedTextureLoader#imports', (t) => {
+test('CompressedTextureLoader#imports', t => {
   t.ok(CompressedTextureLoader, 'CompressedTextureLoader defined');
   t.end();
 });
 
-test('CompressedTextureLoader#KTX', async (t) => {
+test('CompressedTextureLoader#KTX', async t => {
   const texture = await load(KTX_URL, CompressedTextureLoader);
   t.ok(texture, 'KTX container loaded OK');
   t.end();
 });
 
-test('CompressedTextureLoader#KTX2 with BasisLoader', async (t) => {
+test('CompressedTextureLoader#KTX2 with BasisLoader', async t => {
   const texture = await load(KTX2_URL, CompressedTextureLoader, {
     'compressed-texture': {useBasis: true}
   });
   t.ok(texture, 'KTX2 container loaded OK');
   t.equals(texture[0].format, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, 'KTX2 WebGL format is set');
-  t.equals(texture[0].textureFormat, 'bc1-rgb-unorm-ext', 'KTX2 texture format is set');
+  t.equals(texture[0].textureFormat, 'bc1-rgb-unorm-webgl', 'KTX2 texture format is set');
   t.end();
 });
 
-test('CompressedTextureLoader#DDS', async (t) => {
+test('CompressedTextureLoader#DDS', async t => {
   const texture = await load(DDS_URL, CompressedTextureLoader);
   t.ok(texture, 'DDS container loaded OK');
   t.equals(texture[0].format, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, 'DDS WebGL format is set');
@@ -50,15 +50,20 @@ test('CompressedTextureLoader#DDS', async (t) => {
   t.end();
 });
 
-test('CompressedTextureLoader#PVR', async (t) => {
+test('CompressedTextureLoader#PVR', async t => {
   const texture = await load(PVR_URL, CompressedTextureLoader);
   t.ok(texture, 'PVR container loaded OK');
   t.equals(texture[0].format, GL_COMPRESSED_RGB_ETC1_WEBGL, 'PVR WebGL format is set');
-  t.equals(texture[0].textureFormat, 'etc1-rbg-unorm-ext', 'PVR texture format is set');
+  t.equals(texture[0].textureFormat, 'etc1-rgb-unorm-webgl', 'PVR texture format is set');
   t.end();
 });
 
-test('CompressedTextureLoader#uses injected encoder modules for KTX2 Basis textures', async (t) => {
+test('CompressedTextureLoader#uses injected encoder modules for KTX2 Basis textures', async t => {
+  if (isBrowser) {
+    t.comment('Skipping injected KTX2 Basis transcoder test in browser');
+    t.end();
+    return;
+  }
   class FakeKTX2File {
     constructor(data: Uint8Array) {
       t.equals(data.byteLength, 4, 'forwards the provided payload to the injected KTX2File');

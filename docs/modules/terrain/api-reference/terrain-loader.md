@@ -1,13 +1,20 @@
-# TerrainLoader
+# Terrain Loaders
 
-The `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values.
+The `TerrainArrowLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values, and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+`TerrainLoader` parses the same height map terrain formats and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+
+| Loader               | Output             | Use when                           |
+| -------------------- | ------------------ | ---------------------------------- |
+| `TerrainLoader`      | `Mesh`             | You want the legacy mesh object.   |
+| `TerrainArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
 | File Extension        | `.png`, `.pngraw`                          |
 | File Type             | Binary                                     |
 | File Format           | Encoded height map                         |
-| Data Format           | [Mesh](/docs/specifications/category-mesh) |
+| Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
 | Supported APIs        | `load`, `parse`                            |
 | Decoder Type          | Asynchronous                               |
 | Worker Thread Support | Yes                                        |
@@ -16,9 +23,10 @@ The `TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Map
 ## Usage
 
 ```typescript
-import {TerrainLoader} from '@loaders.gl/terrain';
+import {TerrainArrowLoader, TerrainLoader} from '@loaders.gl/terrain';
 import {load} from '@loaders.gl/core';
 
+const table = await load(url, TerrainArrowLoader, options);
 const data = await load(url, TerrainLoader, options);
 ```
 

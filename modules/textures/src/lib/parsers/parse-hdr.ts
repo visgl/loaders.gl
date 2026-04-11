@@ -412,9 +412,9 @@ function parseNumberList(text: string, count: number): number[] | null {
   const values = text
     .trim()
     .split(/\s+/)
-    .map((value) => Number(value));
+    .map(value => Number(value));
 
-  if (values.length !== count || values.some((value) => !Number.isFinite(value))) {
+  if (values.length !== count || values.some(value => !Number.isFinite(value))) {
     return null;
   }
 

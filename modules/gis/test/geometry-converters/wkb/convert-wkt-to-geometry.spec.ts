@@ -18,7 +18,7 @@ setLoaderOptions({
 });
 
 // eslint-disable-next-line max-statements
-test('parseWKT', async (t) => {
+test('parseWKT', async t => {
   let response = await fetchFile(GEOMETRYCOLLECTION_WKT_URL);
   const GEOMETRYCOLLECTION_WKT = await response.text();
 
@@ -489,7 +489,7 @@ test('parseWKT', async (t) => {
 //   t.end();
 // });
 
-test('parseWKT#fuzz', (t) => {
+test('parseWKT#fuzz', t => {
   fuzzer.seed(0);
   const inputs = [
     'MULTIPOLYGON (((30 20, 10 40, 45 40, 30 20)), ((15 5, 40 10, 10 20, 5 10, 15 5)))',

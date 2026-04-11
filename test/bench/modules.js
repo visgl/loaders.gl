@@ -23,8 +23,14 @@ import cryptoBench from '@loaders.gl/crypto/test/crypto.bench';
 
 _addAliases(ALIASES);
 
-// add benchmarks
+/**
+ * Adds module benchmarks that are compatible with the current runtime.
+ * @param {import('@probe.gl/bench').Bench} suite Benchmark suite.
+ * @returns {Promise<void>} Resolves after all compatible benchmarks have been added.
+ */
 export async function addModuleBenchmarksToSuite(suite) {
+  await csvBench(suite);
+
   await coreBench(suite);
 
   await parquetBench(suite);
@@ -40,7 +46,6 @@ export async function addModuleBenchmarksToSuite(suite) {
   await cryptoBench(suite);
 
   await dracoBench(suite);
-  await csvBench(suite);
   await excelBench(suite);
 
   // await i3sLoaderBench(suite);

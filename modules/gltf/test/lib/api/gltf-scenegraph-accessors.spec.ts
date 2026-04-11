@@ -11,13 +11,13 @@ const GLB_TILE_WITH_DRACO_URL = '@loaders.gl/gltf/test/data/3d-tiles/143.glb';
 const GLB_MESHOPT_GEOMETRY_URL = '@loaders.gl/gltf/test/data/meshopt/pirate.glb';
 const GLB_KTX2_GEOMETRY_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/VNext/agi-ktx2/0/0.glb';
 
-test('GLTFScenegraph#ctor', (t) => {
+test('GLTFScenegraph#ctor', t => {
   const gltfScenegraph = new GLTFScenegraph();
   t.ok(gltfScenegraph);
   t.end();
 });
 
-test('GLTFScenegraph#should detect meshopt content', async (t) => {
+test('GLTFScenegraph#should detect meshopt content', async t => {
   const gltf = await load(GLB_MESHOPT_GEOMETRY_URL, GLTFLoader, {
     gltf: {decompressMeshes: true}
   });
@@ -36,7 +36,7 @@ test('GLTFScenegraph#should detect meshopt content', async (t) => {
   t.end();
 });
 
-test('GLTFScenegraph#should detect meshopt and ktx2 content', async (t) => {
+test('GLTFScenegraph#should detect meshopt and ktx2 content', async t => {
   const gltf = await load(GLB_KTX2_GEOMETRY_URL, GLTFLoader, {
     gltf: {decompressMeshes: false}
   });
@@ -50,7 +50,7 @@ test('GLTFScenegraph#should detect meshopt and ktx2 content', async (t) => {
   t.end();
 });
 
-test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
+test('GLTFScenegraph#BufferView indices resolve correctly', async t => {
   const gltf = await load(GLB_TILE_WITH_DRACO_URL, GLTFLoader, {
     gltf: {decompressMeshes: true}
   });
@@ -80,7 +80,7 @@ test('GLTFScenegraph#BufferView indices resolve correctly', async (t) => {
   t.end();
 });
 
-test('GLTFScenegraph#Typed Arrays should be taken by Accessor', async (t) => {
+test('GLTFScenegraph#Typed Arrays should be taken by Accessor', async t => {
   const GLB_ACCESSOR_URL = '@loaders.gl/gltf/test/data/glb/DamagedHelmet.glb';
   const testDataSet = [
     {

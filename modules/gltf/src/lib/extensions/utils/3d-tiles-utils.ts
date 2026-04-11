@@ -232,7 +232,7 @@ export function primitivePropertyDataToAttributes(
   */
   const featureIndices: number[] = [];
   for (const texelData of propertyData) {
-    let index = featureTable.findIndex((item) => item === texelData);
+    let index = featureTable.findIndex(item => item === texelData);
     if (index === -1) {
       index = featureTable.push(texelData) - 1;
     }

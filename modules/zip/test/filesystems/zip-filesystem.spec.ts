@@ -14,7 +14,7 @@ import {ZipFileSystem} from '../../src/filesystems/zip-filesystem';
 
 const ZIP_FILE_PATH = '@loaders.gl/zip/test/data/test-store.zip';
 
-test('zip#ZipFileSystem - initialize from existing fileHandler', async (t) => {
+test('zip#ZipFileSystem - initialize from existing fileHandler', async t => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);
   const fileSystem = new ZipFileSystem(fileProvider);
   const files = await fileSystem.readdir();
@@ -24,7 +24,7 @@ test('zip#ZipFileSystem - initialize from existing fileHandler', async (t) => {
   t.end();
 });
 
-test('zip#ZipFileSystem - initialize with zip file path', async (t) => {
+test('zip#ZipFileSystem - initialize with zip file path', async t => {
   if (isBrowser) {
     t.throws(() => new ZipFileSystem(ZIP_FILE_PATH));
   } else {
@@ -37,7 +37,7 @@ test('zip#ZipFileSystem - initialize with zip file path', async (t) => {
   t.end();
 });
 
-test('zip#ZipFileSystem - get stat for the first file', async (t) => {
+test('zip#ZipFileSystem - get stat for the first file', async t => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);
   const fileSystem = new ZipFileSystem(fileProvider);
   const files = await fileSystem.readdir();
@@ -55,7 +55,7 @@ test('zip#ZipFileSystem - get stat for the first file', async (t) => {
   t.end();
 });
 
-test('zip#ZipFileSystem - get stat should fail', async (t) => {
+test('zip#ZipFileSystem - get stat should fail', async t => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);
   const fileSystem = new ZipFileSystem(fileProvider);
   t.rejects(() => fileSystem.stat('not-existing-file.xyz'));
@@ -63,7 +63,7 @@ test('zip#ZipFileSystem - get stat should fail', async (t) => {
   t.end();
 });
 
-test('zip#ZipFileSystem - fetch the file', async (t) => {
+test('zip#ZipFileSystem - fetch the file', async t => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);
   const fileSystem = new ZipFileSystem(fileProvider);
   const fileResponse = await fileSystem.fetch('test-file.txt');
@@ -73,7 +73,7 @@ test('zip#ZipFileSystem - fetch the file', async (t) => {
   t.end();
 });
 
-test('zip#ZipFileSystem - fetch should fail', async (t) => {
+test('zip#ZipFileSystem - fetch should fail', async t => {
   const fileProvider = await getFileProvider(ZIP_FILE_PATH);
   const fileSystem = new ZipFileSystem(fileProvider);
   t.rejects(() => fileSystem.fetch('not-existing-file.xyz'));
@@ -85,7 +85,7 @@ const getFileProvider = async (_fileName: string) => {
   return await createReadableFileFromPath(ZIP_FILE_PATH);
 };
 
-test('zip#ZipFileSystem - buffer-backed readable file', async (t) => {
+test('zip#ZipFileSystem - buffer-backed readable file', async t => {
   const arrayBuffer = await loadArrayBufferFromFile(ZIP_FILE_PATH);
   const fileProvider = await createReadableFileFromBuffer(arrayBuffer);
   const fileSystem = new ZipFileSystem(fileProvider);

@@ -256,7 +256,7 @@ class GLTFPostProcessor {
       ...scene,
       // @ts-ignore
       id: scene.id || `scene-${index}`,
-      nodes: (scene.nodes || []).map((node) => this.getNode(node))
+      nodes: (scene.nodes || []).map(node => this.getNode(node))
     };
   }
 
@@ -298,7 +298,7 @@ class GLTFPostProcessor {
   _resolveNodeChildren(node: GLTFNodePostprocessed): GLTFNodePostprocessed {
     if (node.children) {
       // @ts-expect-error node.children are numbers at this stage
-      node.children = node.children.map((child) => this.getNode(child));
+      node.children = node.children.map(child => this.getNode(child));
     }
     return node;
   }
@@ -323,7 +323,7 @@ class GLTFPostProcessor {
       primitives: []
     };
     if (gltfMesh.primitives) {
-      mesh.primitives = gltfMesh.primitives.map((gltfPrimitive) => {
+      mesh.primitives = gltfMesh.primitives.map(gltfPrimitive => {
         const primitive: GLTFMeshPrimitivePostprocessed = {
           ...gltfPrimitive,
           attributes: {},

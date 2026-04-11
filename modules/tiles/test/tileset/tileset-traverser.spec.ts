@@ -1,28 +1,21 @@
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
-import {load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
-import {TilesetTraverser} from '../../src/tileset/tileset-traverser';
-import {getFrameState} from '../../src/tileset/helpers/frame-state';
+import {TilesetTraverser} from '../../src/tileset-3d/common/tileset-traverser';
+import {getFrameState} from '../../src/tileset-3d/helpers/frame-state';
 
 // Parent tile with content and four child tiles with content
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';
 
-test('Tileset3D#traverser base class', async (t) => {
-  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  if (tilesetJson.shape !== 'tileset3d') {
-    t.fail('tileset');
-    t.end();
-    return;
-  }
-
-  // Create Tileset3D to have initialized Tile3Ds tree
-  const tileset = new Tileset3D(tilesetJson);
+test('Tileset3D#traverser base class', async t => {
+  const source = new Tiles3DSource({url: TILESET_URL, loader: Tiles3DLoader});
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
 
   const traverser = new TilesetTraverser({
-    basePath: tilesetJson.basePath,
+    basePath: tileset.basePath,
     onTraversalEnd: traversalEnd
   });
 

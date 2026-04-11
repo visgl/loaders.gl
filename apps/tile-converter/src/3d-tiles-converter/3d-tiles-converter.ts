@@ -177,7 +177,7 @@ export default class Tiles3DConverter {
     if (!this.conversionDump.restored) {
       try {
         await removeDir(this.tilesetPath);
-      } catch (e) {
+      } catch (_e) {
         // do nothing
       }
     }

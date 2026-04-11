@@ -12,15 +12,16 @@ npm install @loaders.gl/core @loaders.gl/draco
 
 ## Loaders and Writers
 
-| Loader                                                                |
-| --------------------------------------------------------------------- |
-| [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)       |
-| [`DracoWorkerLoader`](/docs/modules/draco/api-reference/draco-loader) |
-| [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer)       |
+| Loader                                                                | Description                                      |
+| --------------------------------------------------------------------- | ------------------------------------------------ |
+| [`DracoArrowLoader`](/docs/modules/draco/api-reference/draco-loader)  | Loads Draco meshes and point clouds as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)       | Loads Draco meshes and point clouds as Mesh objects. |
+| [`DracoWorkerLoader`](/docs/modules/draco/api-reference/draco-loader) | Loads Draco meshes and point clouds in a worker. |
+| [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer)       | Encodes Draco meshes and point clouds from Mesh or Mesh Arrow table data. |
 
 ## Additional APIs
 
-See point cloud / mesh category.
+See the [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) and point cloud / mesh category documentation.
 
 ## Dependencies
 

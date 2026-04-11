@@ -32,6 +32,7 @@
           "modules/bson/api-reference/bson-loader",
           "modules/csv/api-reference/csv-loader",
           "modules/draco/api-reference/draco-loader",
+          "modules/excel/api-reference/excel-loader",
           "modules/flatgeobuf/api-reference/flatgeobuf-loader",
           "modules/geopackage/api-reference/geopackage-loader",
           "modules/geotiff/api-reference/geotiff-loader",
@@ -47,6 +48,8 @@
           "modules/kml/api-reference/kml-loader",
           "modules/kml/api-reference/tcx-loader",
           "modules/las/api-reference/las-loader",
+          "modules/mlt/api-reference/mlt-loader",
+          "modules/mlt/api-reference/mlt-source",
           "modules/mvt/api-reference/mvt-loader",
           "modules/mvt/api-reference/tilejson-loader",
           "modules/obj/api-reference/obj-loader",
@@ -82,7 +85,12 @@
           "modules/gltf/api-reference/glb-writer",
           "modules/images/api-reference/image-writer",
           "modules/json/api-reference/geojson-writer",
+          "modules/las/api-reference/las-writer",
           "modules/mvt/api-reference/mvt-writer",
+          "modules/obj/api-reference/obj-writer",
+          "modules/pcd/api-reference/pcd-writer",
+          "modules/ply/api-reference/ply-writer",
+          "modules/terrain/api-reference/quantized-mesh-writer",
           "modules/textures/api-reference/compressed-texture-writer",
           "modules/textures/api-reference/ktx2-basis-texture-writer",
           "modules/wkt/api-reference/wkt-writer",
@@ -100,6 +108,7 @@
           "modules/pmtiles/api-reference/pmtiles-source",
           "modules/mvt/api-reference/mvt-source",
           "modules/mvt/api-reference/table-tile-source",
+          "modules/mlt/api-reference/mlt-source",
           "modules/wms/api-reference/csw-source",
           "modules/wms/api-reference/wms-source"
         ]
@@ -129,6 +138,7 @@
       "modules/kml/formats/gpx",
       "modules/kml/formats/tcx",
       "modules/las/formats/las",
+      "modules/mlt/formats/mlt",
       "modules/mvt/formats/mvt",
       "modules/mvt/formats/tilejson",
       "modules/parquet/formats/parquet",
@@ -166,6 +176,7 @@
           "developer-guide/using-loaders",
           "developer-guide/using-writers",
           "developer-guide/using-sources",
+          "developer-guide/using-range-requests",
           "developer-guide/loader-categories",
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",
@@ -250,6 +261,7 @@
           "modules/loader-utils/README",
           "modules/loader-utils/api-reference/readable-file",
           "modules/loader-utils/api-reference/request-scheduler",
+          "modules/loader-utils/api-reference/range-request-scheduler",
           "modules/loader-utils/api-reference/parse-with-context"
         ]
       },
@@ -261,7 +273,13 @@
       {
         "type": "category",
         "label": "@loaders.gl/arrow",
-        "items": ["modules/arrow/README"]
+        "items": [
+          "modules/arrow/README",
+          "modules/arrow/api-reference/indexed-arrow-table",
+          "modules/arrow/api-reference/mapped-arrow-table",
+          "modules/arrow/api-reference/arrow-schema-utils",
+          "modules/arrow/api-reference/utf8-utils"
+        ]
       },
       {
         "type": "category",
@@ -305,6 +323,11 @@
         "type": "category",
         "label": "@loaders.gl/draco",
         "items": ["modules/draco/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/excel",
+        "items": ["modules/excel/README"]
       },
       {
         "type": "category",
@@ -363,6 +386,11 @@
         "type": "category",
         "label": "@loaders.gl/mvt",
         "items": ["modules/mvt/README"]
+      },
+      {
+        "type": "category",
+        "label": "@loaders.gl/mlt",
+        "items": ["modules/mlt/README"]
       },
       {
         "type": "category",
@@ -429,9 +457,10 @@
         "items": [
           "modules/textures/README",
           "modules/textures/api-reference/radiance-hdr-loader",
-          "modules/textures/api-reference/load-image",
-          "modules/textures/api-reference/load-image-array",
-          "modules/textures/api-reference/load-image-cube"
+          "modules/textures/api-reference/texture-loader",
+          "modules/textures/api-reference/texture-array-loader",
+          "modules/textures/api-reference/texture-cube-loader",
+          "modules/textures/api-reference/texture-cube-array-loader"
         ]
       },
       {

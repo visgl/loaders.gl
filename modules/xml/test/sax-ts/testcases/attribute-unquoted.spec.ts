@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#attribute-unquoted', (t) => {
+test('SAXParser#attribute-unquoted', t => {
   testSax(t, {
     expect: [
       ['opentagstart', {name: 'ROOT', attributes: {}, ns: {}}],

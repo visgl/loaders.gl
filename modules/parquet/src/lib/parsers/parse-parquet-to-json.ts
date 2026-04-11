@@ -10,7 +10,6 @@ import type {ParquetJSONLoaderOptions} from '../../parquet-json-loader';
 import type {ParquetRow} from '../../parquetjs/schema/declare';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
-import {installBufferPolyfill} from '../../polyfills/buffer/index';
 import {preloadCompressions} from '../../parquetjs/compression';
 
 /**
@@ -23,7 +22,6 @@ export async function parseParquetFile(
   file: ReadableFile,
   options?: ParquetJSONLoaderOptions
 ): Promise<ObjectRowTable> {
-  installBufferPolyfill();
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {
@@ -70,7 +68,6 @@ export async function* parseParquetFileInBatches(
   file: ReadableFile,
   options?: ParquetJSONLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
-  installBufferPolyfill();
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file, {

@@ -32,7 +32,7 @@ import {
   // NON_HADOOP_LZ4_COMPRESSED_PLAIN_TABLE
 } from '../../data/table/tables';
 
-test.skip('makeTableFromBatches', async (t) => {
+test.skip('makeTableFromBatches', async t => {
   const tempTable = makeTableFromData(ALL_TYPES_PLAIN_PLAIN_TABLE);
   const batch = makeBatchFromTable(tempTable);
   const table = await makeTableFromBatches([batch]);
@@ -40,7 +40,7 @@ test.skip('makeTableFromBatches', async (t) => {
   t.end();
 });
 
-test('makeTableFromBatches', async (t) => {
+test('makeTableFromBatches', async t => {
   for (const tc of TABLES) {
     const tempTable = makeTableFromData(tc.table);
     const batch = makeBatchFromTable(tempTable);

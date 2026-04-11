@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ImageType} from '@loaders.gl/images';
+import {ImageLoader} from '@loaders.gl/images';
 import type {
   Source,
   DataSourceOptions,
@@ -11,10 +12,48 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {DataSource, ImageSource} from '@loaders.gl/loader-utils';
 
+/** Options for the ArcGIS ImageServer source. */
 export type ArcGISImageSourceProps = DataSourceOptions & {
   'arcgis-image-server'?: {
-    // TODO - add options here
+    /** Default ArcGIS exportImage request parameters. */
+    exportImageParameters?: Partial<ArcGISExportImageParameters>;
   };
+};
+
+/** Parameters for ArcGIS ImageServer exportImage requests. */
+export type ArcGISExportImageParameters = {
+  /** Bounding box of the requested image. */
+  bbox: [number, number, number, number];
+  /** Spatial reference of the supplied bbox. */
+  bboxSR?: string | number;
+  /** Pixel width of returned image. */
+  width: number;
+  /** Pixel height of returned image. */
+  height: number;
+  /** Spatial reference of the returned image. */
+  imageSR?: string | number;
+  /** Requested image format. */
+  format?: 'jpgpng' | 'png' | 'png8' | 'png24' | 'jpg' | 'bmp' | 'gif' | 'tiff' | 'png32';
+  /** Requested pixel type. */
+  pixelType?: 'U1' | 'U2' | 'U4' | 'U8' | 'S8' | 'U16' | 'S16' | 'U32' | 'S32' | 'F32' | 'F64';
+  /** NoData pixel value. */
+  noData?: string | number;
+  /** NoData interpretation mode. */
+  noDataInterpretation?: 'esriNoDataMatchAny' | 'esriNoDataMatchAll';
+  /** Resampling interpolation. */
+  interpolation?: string;
+  /** Compression type. */
+  compression?: string;
+  /** Compression quality. */
+  compressionQuality?: number;
+  /** Band ids to export. */
+  bandIds?: string | number[];
+  /** Mosaic rule JSON string or object. */
+  mosaicRule?: string | Record<string, unknown>;
+  /** Rendering rule JSON string or object. */
+  renderingRule?: string | Record<string, unknown>;
+  /** ArcGIS response format. */
+  f?: 'image' | 'json' | 'pjson';
 };
 
 export const ArcGISImageServerSource = {
@@ -34,9 +73,9 @@ export const ArcGISImageServerSource = {
     }
   },
 
-  testURL: (url: string): boolean => url.toLowerCase().includes('ImageServer'),
-  createDataSource: (url, props: ArcGISImageSourceProps): ArcGISImageSource =>
-    new ArcGISImageSource(url as string, props)
+  testURL: (url: string): boolean => url.toLowerCase().includes('imageserver'),
+  createDataSource: (url: string, props: ArcGISImageSourceProps): ArcGISImageSource =>
+    new ArcGISImageSource(url, props)
 } as const satisfies Source<ArcGISImageSource>;
 
 /**
@@ -52,130 +91,103 @@ export class ArcGISImageSource
     super(url, props, ArcGISImageServerSource.defaultOptions);
   }
 
-  // ImageSource (normalized endpoints)
-
+  /** Returns normalized ImageSource metadata. */
   async getMetadata(): Promise<ImageSourceMetadata> {
-    return (await this.metadata()) as ImageSourceMetadata;
-    // TODO - normalize metadata
+    return normalizeArcGISImageServerMetadata(await this.metadata());
   }
 
+  /** Requests an image from generic ImageSource parameters. */
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
-    throw new Error('not implemented');
-    // TODO - Map generic parameters to ArcGIS specific parameters
-    // return await this.exportImage(parameters);
+    const {boundingBox, bbox, width, height, crs, format} = parameters;
+    const imageParameters: ArcGISExportImageParameters = {
+      bbox: boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!,
+      bboxSR: crs || '4326',
+      imageSR: crs || '4326',
+      width,
+      height,
+      format: format === 'image/png' ? 'png' : undefined
+    };
+    return await this.exportImage(imageParameters);
   }
 
-  // ImageServer endpoints
-
+  /** Requests the ArcGIS ImageServer metadata document. */
   async metadata(): Promise<unknown> {
-    // We just need a JSON parsing...
-    // return this.getUrl({path: '', ...options});
-    throw new Error('not implemented');
+    const response = await this.fetch(this.metadataURL());
+    await this.checkResponse(response);
+    return await response.json();
   }
 
-  /** 
-   * Form a URL to an ESRI ImageServer
-   // https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&bboxSR=4326&size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image`,
-   */
-  exportImage(options: {
-    boundingBox: [number, number, number, number];
-    boundingBoxSR?: string;
-    width: number;
-    height: number;
-    imageSR?: string;
-    time?: never;
-    format?: 'jpgpng';
-    pixelType?: 'U8';
-    noData?: never;
-    noDataInterpretation?: 'esriNoDataMatchAny';
-    interpolation?: '+RSP_NearestNeighbor';
-    compression?: never;
-    compressionQuality?: never;
-    bandIds?: never;
-    mosaicRule?: never;
-    renderingRule?: never;
-    f?: 'image';
-  }): Promise<ImageType> {
-    // See WMSService.getMap()
-    throw new Error('not implemented');
+  /** Requests an exported image from the ArcGIS ImageServer endpoint. */
+  async exportImage(options: ArcGISExportImageParameters): Promise<ImageType> {
+    const response = await this.fetch(this.exportImageURL(options));
+    await this.checkResponse(response);
+    const arrayBuffer = await response.arrayBuffer();
+    return await ImageLoader.parse(arrayBuffer, this.loadOptions);
   }
 
-  // URL creators
-
-  metadataURL(options: {parameters?: Record<string, unknown>}): string {
-    return `${this.url}?f=pjson`;
+  /** Builds a metadata URL for the ArcGIS ImageServer endpoint. */
+  metadataURL(options?: {parameters?: Record<string, unknown>}): string {
+    return this.getUrl('', {f: 'pjson', ...options?.parameters});
   }
 
-  /** 
-   * Form a URL to an ESRI ImageServer
-   // https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?
-   //   bbox=${bounds[0]},${bounds[1]},${bounds[2]},${bounds[3]}&bboxSR=4326&
-   //   size=${width},${height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&
-   //   noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&
-   //   compressionQuality=&bandIds=&mosaicRule=&renderingRule=&
-   //   f=image
-   */
-  exportImageURL(options: {
-    bbox: [number, number, number, number];
-    boxSR?: string;
-    width: number;
-    height: number;
-    imageSR?: string;
-    time?: never;
-    format?: 'jpgpng';
-    pixelType?: 'U8';
-    noData?: never;
-    noDataInterpretation?: 'esriNoDataMatchAny';
-    interpolation?: '+RSP_NearestNeighbor';
-    compression?: never;
-    compressionQuality?: never;
-    bandIds?: never;
-    mosaicRule?: never;
-    renderingRule?: never;
-    f?: 'image';
-  }): string {
-    const bbox = `bbox=${options.bbox[0]},${options.bbox[1]},${options.bbox[2]},${options.bbox[3]}`;
-    const size = `size=${options.width},${options.height}`;
-    const arcgisOptions = {...options, bbox, size};
-    // @ts-expect-error
-    delete arcgisOptions.width;
-    // @ts-expect-error
-    delete arcgisOptions.height;
-    return this.getUrl('exportImage', arcgisOptions);
+  /** Builds an exportImage URL for the ArcGIS ImageServer endpoint. */
+  exportImageURL(options: ArcGISExportImageParameters): string {
+    const defaultParameters = this.options['arcgis-image-server']?.exportImageParameters || {};
+    const {width, height, ...parameters} = {...defaultParameters, ...options};
+    return this.getUrl('exportImage', {
+      ...parameters,
+      bbox: parameters.bbox,
+      size: [width, height],
+      f: parameters.f || 'image'
+    });
   }
 
-  // INTERNAL METHODS
-
-  /**
-   * @note protected, since perhaps getWMSUrl may need to be overridden to handle certain backends?
-   * @note if override is common, maybe add a callback prop?
-   * */
+  /** Builds an ArcGIS ImageServer URL. */
   protected getUrl(
     path: string,
     options: Record<string, unknown>,
     extra?: Record<string, unknown>
   ): string {
-    let url = `${this.url}/${path}`;
-    let first = true;
-    for (const [key, value] of Object.entries(options)) {
-      url += first ? '?' : '&';
-      first = false;
-      if (Array.isArray(value)) {
-        url += `${key.toUpperCase()}=${value.join(',')}`;
-      } else {
-        url += `${key.toUpperCase()}=${value ? String(value) : ''}`;
-      }
-    }
-    return url;
+    const baseUrl = path ? `${this.url}/${path}` : this.url;
+    return `${baseUrl}?${encodeArcGISParameters({...options, ...extra})}`;
   }
 
-  /** Checks for and parses a WMS XML formatted ServiceError and throws an exception */
-  protected async checkResponse(response: Response) {
+  /** Checks an ArcGIS ImageServer response. */
+  protected async checkResponse(response: Response): Promise<void> {
     if (!response.ok) {
-      // } || response.headers['content-type'] === WMSErrorLoader.mimeTypes[0]) {
-      // const arrayBuffer = await response.arrayBuffer();
-      // const error = await WMSErrorLoader.parse(arrayBuffer, this.loadOptions);
-      throw new Error('error');
+      throw new Error(
+        response.statusText || `ArcGIS ImageServer request failed: ${response.status}`
+      );
     }
   }
+}
+
+/** Encodes ArcGIS REST query parameters. */
+function encodeArcGISParameters(parameters: Record<string, unknown>): string {
+  const searchParameters = new URLSearchParams();
+  for (const [key, value] of Object.entries(parameters)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    const encodedValue = Array.isArray(value) ? value.join(',') : getArcGISParameterValue(value);
+    searchParameters.set(key, encodedValue);
+  }
+  return searchParameters.toString();
+}
+
+/** Converts an ArcGIS REST parameter value to a query string value. */
+function getArcGISParameterValue(value: unknown): string {
+  return typeof value === 'object' ? JSON.stringify(value) : String(value);
+}
+
+/** Normalizes ArcGIS ImageServer metadata to the generic ImageSource metadata shape. */
+function normalizeArcGISImageServerMetadata(metadata: unknown): ImageSourceMetadata {
+  const arcgisMetadata = metadata as any;
+  return {
+    name: arcgisMetadata.name || arcgisMetadata.serviceDescription || '',
+    title: arcgisMetadata.name || arcgisMetadata.serviceDescription || '',
+    abstract: arcgisMetadata.description || arcgisMetadata.serviceDescription || '',
+    keywords: Array.isArray(arcgisMetadata.keywords) ? arcgisMetadata.keywords : [],
+    layers: []
+  };
 }

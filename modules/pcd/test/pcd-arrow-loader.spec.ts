@@ -8,6 +8,8 @@ import {validateLoader} from 'test/common/conformance';
 
 import {PCDArrowLoader} from '@loaders.gl/pcd';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {meshArrowSchema} from '@loaders.gl/schema';
 
 const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
 // const PCD_BINARY_URL = '@loaders.gl/pcd/test/data/Zaghetto.pcd';
@@ -16,16 +18,17 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('PCDArrowLoader#loader conformance', (t) => {
+test('PCDArrowLoader#loader conformance', t => {
   validateLoader(t, PCDArrowLoader, 'PCDArrowLoader');
   t.end();
 });
 
-test('PCDArrowLoader#parse(text)', async (t) => {
+test('PCDArrowLoader#parse(text)', async t => {
   const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDArrowLoader);
 
-  // TODO - validate arrow mesh category data?
-  // validateMeshCategoryData(t, arrowTable);
+  validateArrowTableSchema(arrowTable.data, meshArrowSchema, {
+    schemaName: 'PCDArrowLoader Mesh table'
+  });
 
   const {data} = arrowTable;
   t.equal(data.schema.fields.length, 2, 'schema field count is correct');
@@ -34,14 +37,14 @@ test('PCDArrowLoader#parse(text)', async (t) => {
 
   t.equal(data.numRows, 639 / 3, 'table has 213 points');
 
-  const positionField = arrowTable.schema?.fields.find((field) => field.name === 'POSITION');
+  const positionField = arrowTable.schema?.fields.find(field => field.name === 'POSITION');
   // @ts-expect-error
   t.equal(positionField?.type?.listSize, 3, 'position column size correct');
   // @ts-expect-error
   t.equal(positionField?.type?.children[0]?.type, 'float32', 'position column type correct');
   // t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
 
-  const colorField = arrowTable.schema?.fields.find((field) => field.name === 'COLOR_0');
+  const colorField = arrowTable.schema?.fields.find(field => field.name === 'COLOR_0');
   // @ts-expect-error
   t.equal(colorField?.type?.listSize, 3, 'color column size correct');
   // @ts-expect-error

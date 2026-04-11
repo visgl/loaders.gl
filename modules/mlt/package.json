@@ -1,0 +1,50 @@
+{
+  "name": "@loaders.gl/mlt",
+  "description": "Loader for MapLibre Tile (MLT) format",
+  "version": "4.4.0",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "geometry",
+    "loader",
+    "parser",
+    "MLT",
+    "MapLibre Tile"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npx esbuild ../../node_modules/@maplibre/mlt/dist/index.js --bundle --format=cjs --outfile=src/libs/mlt-decoder.cjs && node -e \"const fs=require('fs'); const file='src/libs/mlt-decoder.cjs'; const header='// SPDX-License-Identifier: MIT\\n// Generated from @maplibre/mlt (MIT) for loaders.gl browser bundling.\\n// Source: https://github.com/maplibre/mlt\\n\\n'; const body=fs.readFileSync(file,'utf8'); if (!body.startsWith('// SPDX-License-Identifier: MIT')) { fs.writeFileSync(file, header + body); }\""
+  },
+  "dependencies": {
+    "@loaders.gl/gis": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@maplibre/mlt": "^1.1.6"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  },
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+}

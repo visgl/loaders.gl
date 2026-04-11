@@ -4,7 +4,7 @@ import {createReadableFileFromBuffer, loadArrayBufferFromFile} from 'test/utils/
 
 const SLPK_URL = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
 
-test('parseSLPKArchive#ReadableFile - raw paths', async (t) => {
+test('parseSLPKArchive#ReadableFile - raw paths', async t => {
   const arrayBuffer = await loadArrayBufferFromFile(SLPK_URL);
   const archive = await parseSLPKArchive(await createReadableFileFromBuffer(arrayBuffer));
 
@@ -21,7 +21,7 @@ test('parseSLPKArchive#ReadableFile - raw paths', async (t) => {
   t.end();
 });
 
-test('parseSLPKArchive#ReadableFile - http mode fallbacks', async (t) => {
+test('parseSLPKArchive#ReadableFile - http mode fallbacks', async t => {
   const arrayBuffer = await loadArrayBufferFromFile(SLPK_URL);
   const archive = await parseSLPKArchive(await createReadableFileFromBuffer(arrayBuffer));
 

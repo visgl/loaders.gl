@@ -45,7 +45,7 @@ async function parseZipAsync(data: any, options = {}): Promise<FileMap> {
 
       const subFilename = zipEntry.name;
 
-      const promise = loadZipEntry(jsZip, subFilename, options).then((arrayBufferOrError) => {
+      const promise = loadZipEntry(jsZip, subFilename, options).then(arrayBufferOrError => {
         fileMap[relativePath] = arrayBufferOrError;
       });
 

@@ -1,13 +1,20 @@
-# DracoLoader
+# Draco Loaders
 
 ![logo](../images/draco-small.png)
 
-The `DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression.
+The `DracoArrowLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+`DracoLoader` parses the same Draco format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+
+| Loader             | Output             | Use when                            |
+| ------------------ | ------------------ | ----------------------------------- |
+| `DracoLoader`      | `Mesh`             | You want the legacy mesh object.    |
+| `DracoArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes.  |
 
 | Loader         | Characteristic                             |
 | -------------- | ------------------------------------------ |
 | File Format    | [Draco](/docs/modules/draco/formats/draco) |
-| Data Format    | [Mesh](/docs/specifications/category-mesh) |
+| Data Format    | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
 | File Extension | `.drc`                                     |
 | File Type      | Binary                                     |
 | Supported APIs | `parse`                                    |
@@ -35,9 +42,10 @@ Metadata Support:
 ## Usage
 
 ```typescript
-import {DracoLoader} from '@loaders.gl/draco';
+import {DracoArrowLoader, DracoLoader} from '@loaders.gl/draco';
 import {load} from '@loaders.gl/core';
 
+const table = await load(url, DracoArrowLoader, options);
 const data = await load(url, DracoLoader, options);
 ```
 

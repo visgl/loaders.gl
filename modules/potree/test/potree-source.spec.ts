@@ -5,7 +5,7 @@ const POTREE_BIN_URL = '@loaders.gl/potree/test/data/lion_takanawa';
 const POTREE_LAZ_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted';
 
-test('PotreeSource#initialize', async (t) => {
+test('PotreeSource#initialize', async t => {
   const DS = PotreeSource;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
   t.notOk(source.isReady);
@@ -19,7 +19,7 @@ test('PotreeSource#initialize', async (t) => {
   t.end();
 });
 
-test.skip('PotreeSource#loadNodeContent - should return null for unsupported source', async (t) => {
+test.skip('PotreeSource#loadNodeContent - should return null for unsupported source', async t => {
   const DS = PotreeSource;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
 
@@ -29,7 +29,7 @@ test.skip('PotreeSource#loadNodeContent - should return null for unsupported sou
   t.end();
 });
 
-test.skip('PotreeSource#loadNodeContent', async (t) => {
+test.skip('PotreeSource#loadNodeContent', async t => {
   const DS = PotreeSource;
   const source = DS.createDataSource(POTREE_LAZ_URL, {});
 

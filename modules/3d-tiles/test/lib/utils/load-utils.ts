@@ -7,7 +7,7 @@
 
 import {fetchFile, load} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import type {Tile3D} from '@loaders.gl/tiles';
 
 /** @typedef {import('@loaders.gl/tiles').Tile3D} Tile3D */
@@ -19,7 +19,7 @@ export async function loadRootTile(t, tilesetUrl) {
   try {
     // Load tileset
     const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
-    const tileset = new Tileset3D(tilesetJson, tilesetUrl);
+    const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
 
     // Load root tile
     /** @type {Tile3D} */
@@ -37,7 +37,7 @@ export async function loadTileset(t, tilesetUrl) {
   try {
     // Load tileset
     const tileset = await load(tilesetUrl, Tiles3DLoader);
-    const tileset3d = new Tileset3D(tileset, tilesetUrl);
+    const tileset3d = new Tileset3D(new Tiles3DSource(tileset));
     return tileset3d;
   } catch (error) {
     t.fail(`Failed to load tile from ${tilesetUrl}: ${error}`);
@@ -49,7 +49,7 @@ export async function loadRootTileFromTileset(t, tilesetUrl) {
   try {
     // Load tileset
     const tileset = await load(tilesetUrl, Tiles3DLoader);
-    const tileset3d = new Tileset3D(tileset);
+    const tileset3d = new Tileset3D(new Tiles3DSource(tileset));
 
     // Load binary data for root tile
     // @ts-ignore root is possibly null

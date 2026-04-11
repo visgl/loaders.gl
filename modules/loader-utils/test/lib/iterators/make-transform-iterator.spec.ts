@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {concatenateArrayBuffers} from '@loaders.gl/loader-utils';
 import {fetchFile, parseInBatches, makeIterator} from '@loaders.gl/core';
-import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {SHPLoader} from '@loaders.gl/shapefile';
 import {CRC32CHash} from '@loaders.gl/crypto';
 
 const SHAPEFILE_URL = '@loaders.gl/shapefile/test/data/shapefile-js/boolean-property.shp';
@@ -16,7 +16,7 @@ async function* calculateByteLengthInBaches(asyncIterator, options) {
   options?.onEnd({byteLength});
 }
 
-test('byteLengthTransform', async (t) => {
+test('byteLengthTransform', async t => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -28,7 +28,7 @@ test('byteLengthTransform', async (t) => {
 
   // @ts-ignore
   const transformIterator = calculateByteLengthInBaches(inputChunks, {
-    onEnd: (result) => {
+    onEnd: result => {
       byteLength = result.byteLength;
       callCount++;
     }
@@ -65,14 +65,14 @@ function compareArrayBuffers(a, b) {
 }
 
 // Tests that iterator input and non-streaming loader does not crash
-test('byteLengthTransform#non-streaming', async (t) => {
+test('byteLengthTransform#non-streaming', async t => {
   // Run a streaming digest on all test cases.
   let hash;
 
   // @ts-ignore
   const crc32 = new CRC32CHash({
     crypto: {
-      onEnd: (result) => {
+      onEnd: result => {
         hash = result.hash;
       }
     }
@@ -82,7 +82,7 @@ test('byteLengthTransform#non-streaming', async (t) => {
   let iterator = makeIterator(response);
   iterator = crc32.hashBatches(iterator, 'base64');
 
-  const batchIterator = await parseInBatches(iterator, ShapefileLoader);
+  const batchIterator = await parseInBatches(iterator, SHPLoader);
   for await (const batch of batchIterator) {
     t.ok(batch, 'streaming hash is correct');
   }

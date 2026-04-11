@@ -44,7 +44,7 @@ export default async function mvtLoaderBench(suite) {
     });
     suite.addAsync(`${name} MVT -> binary`, options, async () => {
       // Conversion to binary directly
-      await parse(mvtArrayBuffer.slice(0), MVTLoader, {gis: {format: 'binary'}, worker: true});
+      await parse(mvtArrayBuffer.slice(0), MVTLoader, {mvt: {shape: 'binary'}, worker: true});
     });
   }
 }

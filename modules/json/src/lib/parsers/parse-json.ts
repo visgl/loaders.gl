@@ -14,7 +14,7 @@ export function parseJSONSync(jsonText: string, options: JSONLoaderOptions): Row
       return makeTableFromData(data);
     }
     return json;
-  } catch (error) {
+  } catch (_error) {
     throw new Error('JSONLoader: failed to parse JSON');
   }
 }

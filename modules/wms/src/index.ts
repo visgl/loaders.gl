@@ -62,6 +62,7 @@ export {WMSSource, WMSImageSource} from './wms-source';
 // ArcGIS SourceLoaders
 
 export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';
+export {ArcGISFeatureServerSource as _ArcGISFeatureServerSource} from './arcgis/arcgis-feature-source';
 export {ArcGISImageServerSource as _ArcGISImageServerSource} from './arcgis/arcgis-image-source';
 
 export {ImageSource} from '@loaders.gl/loader-utils';

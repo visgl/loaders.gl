@@ -4,7 +4,7 @@
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {load} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // import {loadTileset} from '../utils/load-utils';
 
@@ -152,12 +152,27 @@ const VIEWPORTS = [
   })
 ];
 
-test('Tileset3D#one viewport traversal', async (t) => {
+async function waitForCondition(
+  predicate: () => boolean,
+  timeoutMs: number,
+  intervalMs = 100
+): Promise<void> {
+  const startTime = Date.now();
+
+  while (!predicate()) {
+    if (Date.now() - startTime > timeoutMs) {
+      throw new Error(`Timed out after ${timeoutMs}ms`);
+    }
+    await new Promise(resolve => setTimeout(resolve, intervalMs));
+  }
+}
+
+test('Tileset3D#one viewport traversal', async t => {
   t.plan(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;
@@ -166,47 +181,39 @@ test('Tileset3D#one viewport traversal', async (t) => {
   tileset.update(viewport);
 
   t.timeoutAfter(1000);
-  const setIntervalId = setInterval(() => {
-    if (tileLoadCounter > 0) {
-      clearInterval(setIntervalId);
-      tileset.update(viewport);
-      t.equals(tileset.selectedTiles.length, 1);
-    }
-  }, 100);
+  await waitForCondition(() => tileLoadCounter > 0, 1000);
+  tileset.update(viewport);
+  t.equals(tileset.selectedTiles.length, 1);
 });
 
-test('Tileset3D#onTraversalComplete', async (t) => {
+test('Tileset3D#onTraversalComplete', async t => {
   t.plan(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[1];
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;
     },
-    onTraversalComplete: (selectedTiles) => {
-      return selectedTiles.filter((tile) => tile.depth === 1);
+    onTraversalComplete: selectedTiles => {
+      return selectedTiles.filter(tile => tile.depth === 1);
     }
   });
   tileset.update(viewport);
 
   t.timeoutAfter(1000);
-  const setIntervalId = setInterval(() => {
-    if (tileLoadCounter > 0) {
-      clearInterval(setIntervalId);
-      tileset.update(viewport);
-      t.equals(tileset.selectedTiles.length, 4);
-    }
-  }, 100);
+  await waitForCondition(() => tileLoadCounter > 0, 1000);
+  tileset.update(viewport);
+  t.equals(tileset.selectedTiles.length, 4);
 });
 
-test('Tileset3D#two viewports traversal', async (t) => {
+test('Tileset3D#two viewports traversal', async t => {
   t.plan(3);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewports);
       tileLoadCounter++;
@@ -215,29 +222,19 @@ test('Tileset3D#two viewports traversal', async (t) => {
   tileset.update(viewports);
 
   t.timeoutAfter(1000);
-  const setIntervalId = setInterval(() => {
-    if (tileLoadCounter > 2) {
-      clearInterval(setIntervalId);
-      tileset.update(viewports);
-      t.equals(tileset.selectedTiles.length, 6);
-      t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view0')).length,
-        1
-      );
-      t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
-        5
-      );
-    }
-  }, 100);
+  await waitForCondition(() => tileLoadCounter > 2, 1000);
+  tileset.update(viewports);
+  t.equals(tileset.selectedTiles.length, 6);
+  t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 1);
+  t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
 });
 
-test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async (t) => {
+test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for another viewport)', async t => {
   t.plan(3);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewports);
       tileLoadCounter++;
@@ -251,29 +248,19 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
 
   // TODO/ActionEngine - wait for onTraversalComplete or onTilesetLoad or similar
   t.timeoutAfter(1500);
-  const setIntervalId = setInterval(() => {
-    if (tileLoadCounter > 1) {
-      clearInterval(setIntervalId);
-      tileset.update(viewports);
-      t.equals(tileset.selectedTiles.length, 5);
-      t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view0')).length,
-        5
-      );
-      t.equals(
-        tileset.selectedTiles.filter((tile) => tile.viewportIds.includes('view1')).length,
-        5
-      );
-    }
-  }, 100);
+  await waitForCondition(() => tileLoadCounter > 1, 1500);
+  tileset.update(viewports);
+  t.equals(tileset.selectedTiles.length, 5);
+  t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view0')).length, 5);
+  t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
 });
 
-test('Tileset3D#loadTiles option', async (t) => {
+test('Tileset3D#loadTiles option', async t => {
   t.plan(2);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;

@@ -1,13 +1,20 @@
-# OBJLoader
+# OBJ Loaders
 
-The `OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format.
+The `OBJArrowLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+`OBJLoader` parses the same OBJ format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+
+| Loader           | Output             | Use when                           |
+| ---------------- | ------------------ | ---------------------------------- |
+| `OBJLoader`      | `Mesh`             | You want the legacy mesh object.   |
+| `OBJArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | Loader                | Characteristic                                                          |
 | --------------------- | ----------------------------------------------------------------------- |
 | File Extension        | `.obj`                                                                  |
 | File Type             | Text                                                                    |
 | File Format           | [Wavefront OBJ file](https://en.wikipedia.org/wiki/Wavefront_.obj_file) |
-| Data Format           | [Mesh](/docs/specifications/category-mesh)                              |
+| Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
 | Decoder Type          | Synchronous                                                             |
 | Worker Thread Support | Yes                                                                     |
 | Streaming Support     | No                                                                      |
@@ -15,9 +22,10 @@ The `OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format.
 ## Usage
 
 ```typescript
-import {OBJLoader} from '@loaders.gl/obj';
+import {OBJArrowLoader, OBJLoader} from '@loaders.gl/obj';
 import {load} from '@loaders.gl/core';
 
+const table = await load(url, OBJArrowLoader, options);
 const data = await load(url, OBJLoader, options);
 ```
 

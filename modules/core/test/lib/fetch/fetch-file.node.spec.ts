@@ -20,7 +20,7 @@ const TEXT_URL_WITH_REDIRECT =
 const REDIRECT_URL =
   'https://github.com/visgl/deck.gl-data/raw/master/3d-tiles/RoyalExhibitionBuilding/1/1.pnts';
 
-test('fetchFile() (NODE)', async (t) => {
+test('fetchFile() (NODE)', async t => {
   if (!isBrowser) {
     const response = await fetchFile(PLY_CUBE_ATT_URL);
     t.ok(response.headers, 'fetchFile successfully returned headers under Node.js');
@@ -30,7 +30,7 @@ test('fetchFile() (NODE)', async (t) => {
   t.end();
 });
 
-test('fetchFile() ignores url query params when loading file (NODE)', async (t) => {
+test('fetchFile() ignores url query params when loading file (NODE)', async t => {
   if (!isBrowser) {
     const response = await fetchFile(`${PLY_CUBE_ATT_URL}?v=1.2.3`);
     const data = await response.text();
@@ -40,7 +40,7 @@ test('fetchFile() ignores url query params when loading file (NODE)', async (t) 
   t.end();
 });
 
-test.skip('fetchFile() error handling (NODE)', async (t) => {
+test.skip('fetchFile() error handling (NODE)', async t => {
   if (!isBrowser) {
     let response = await fetchFile('non-existent-file');
     // t.comment(response.statusText);
@@ -57,7 +57,7 @@ test.skip('fetchFile() error handling (NODE)', async (t) => {
   t.end();
 });
 
-test('fetchFile() able to handle "Accept-Encoding: gzip" (NODE)', async (t) => {
+test('fetchFile() able to handle "Accept-Encoding: gzip" (NODE)', async t => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
@@ -73,7 +73,7 @@ test('fetchFile() able to handle "Accept-Encoding: gzip" (NODE)', async (t) => {
   t.end();
 });
 
-test('fetchFile() able to handle "Accept-Encoding: br" (NODE)', async (t) => {
+test('fetchFile() able to handle "Accept-Encoding: br" (NODE)', async t => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
@@ -88,7 +88,7 @@ test('fetchFile() able to handle "Accept-Encoding: br" (NODE)', async (t) => {
   t.end();
 });
 
-test('fetchFile() able to handle "Accept-Encoding: deflate"', async (t) => {
+test('fetchFile() able to handle "Accept-Encoding: deflate"', async t => {
   if (!isBrowser) {
     // Github will serve the desired compression
     const headers = {
@@ -103,7 +103,7 @@ test('fetchFile() able to handle "Accept-Encoding: deflate"', async (t) => {
   t.end();
 });
 
-test.skip('fetchFile() able to decompress .gz extension (NODE)', async (t) => {
+test.skip('fetchFile() able to decompress .gz extension (NODE)', async t => {
   let response = await fetchFile(TEXT_URL);
   t.ok(response.ok, response.statusText);
   let data = await response.text();
@@ -118,7 +118,7 @@ test.skip('fetchFile() able to decompress .gz extension (NODE)', async (t) => {
   t.end();
 });
 
-test('fetchFile() should follow redirect if `followRedirect` option is true', async (t) => {
+test('fetchFile() should follow redirect if `followRedirect` option is true', async t => {
   if (!isBrowser) {
     const defaultFetchResponse = await fetchFile(REDIRECT_URL);
     t.equal(defaultFetchResponse.status, 200);
@@ -138,7 +138,7 @@ test('fetchFile() should follow redirect if `followRedirect` option is true', as
 });
 
 // Started failing in Node 18 tests?
-test.skip('fetchFile() should follow redirect if header location doesn`t have protocol and origin', async (t) => {
+test.skip('fetchFile() should follow redirect if header location doesn`t have protocol and origin', async t => {
   if (!isBrowser) {
     const defaultFetchResponse = await fetchFile(TEXT_URL_WITH_REDIRECT);
     t.equal(defaultFetchResponse.status, 200);

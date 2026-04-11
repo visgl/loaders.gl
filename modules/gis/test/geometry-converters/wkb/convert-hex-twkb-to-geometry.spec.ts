@@ -17,7 +17,7 @@ function normalizeTypedArrays(value: unknown): unknown {
   }
 
   if (Array.isArray(value)) {
-    return value.map((entry) => normalizeTypedArrays(entry));
+    return value.map(entry => normalizeTypedArrays(entry));
   }
 
   if (value && typeof value === 'object') {
@@ -31,7 +31,7 @@ function normalizeTypedArrays(value: unknown): unknown {
   return value;
 }
 
-test('parseHexTWKB#2D', async (t) => {
+test('parseHexTWKB#2D', async t => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -62,7 +62,7 @@ test('parseHexTWKB#2D', async (t) => {
   t.end();
 });
 
-test('parseHexTWKB#Z', async (t) => {
+test('parseHexTWKB#Z', async t => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 

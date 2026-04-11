@@ -91,7 +91,7 @@ function getUTF8String(array: Uint8Array, start: number, end: number): string {
 }
 
 function stringToBytes(string: string): number[] {
-  return [...string].map((character) => character.charCodeAt(0));
+  return [...string].map(character => character.charCodeAt(0));
 }
 
 function checkString(buffer: ArrayLike<number>, header: string, offset: number = 0): boolean {

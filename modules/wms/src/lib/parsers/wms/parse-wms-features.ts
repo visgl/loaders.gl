@@ -26,7 +26,7 @@ export function parseWMSFeatureInfo(text: string, options): WMSFeatureInfo {
   const xmlFeatures = Array.isArray(xmlFeatureInfo) ? xmlFeatureInfo : [xmlFeatureInfo];
 
   return {
-    features: xmlFeatures.map((xmlFeature) => extractFeature(xmlFeature))
+    features: xmlFeatures.map(xmlFeature => extractFeature(xmlFeature))
   };
 }
 

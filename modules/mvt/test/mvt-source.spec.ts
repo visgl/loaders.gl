@@ -9,7 +9,7 @@ import {TILESETS} from './data/tilesets';
 import {MVTSource} from '@loaders.gl/mvt';
 import {isURLTemplate, getURLFromTemplate} from '../src/mvt-source';
 
-test('MVTSource#urls', async (t) => {
+test('MVTSource#urls', async t => {
   if (!isBrowser) {
     t.comment('MVTSource currently only supported in browser');
     t.end();
@@ -25,7 +25,7 @@ test('MVTSource#urls', async (t) => {
   t.end();
 });
 
-test('MVTSource#Blobs', async (t) => {
+test('MVTSource#Blobs', async t => {
   if (!isBrowser) {
     t.comment('MVTSource currently only supported in browser');
     t.end();
@@ -48,14 +48,14 @@ const TEST_TEMPLATE_ARRAY = [
   'https://server.com/ep2/{x}/{y}.png'
 ];
 
-test('isURLFromTemplate', (t) => {
+test('isURLFromTemplate', t => {
   t.true(isURLTemplate(TEST_TEMPLATE), 'single string template');
   t.true(isURLTemplate(TEST_TEMPLATE2), 'single string template with multiple occurance');
   // t.true(isURLTemplate(TEST_TEMPLATE_ARRAY), 'array of templates');
   t.end();
 });
 
-test('getURLFromTemplate', (t) => {
+test('getURLFromTemplate', t => {
   t.is(
     getURLFromTemplate(TEST_TEMPLATE, 1, 2, 0),
     'https://server.com/0/1/2.png',

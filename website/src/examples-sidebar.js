@@ -33,7 +33,7 @@ export const sidebars = {
     {
       type: 'category',
       label: 'Geospatial Tile Formats',
-      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/wms']
+      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/wms', 'tiles/mlt']
     },
     {
       type: 'category',
@@ -64,13 +64,13 @@ export const sidebars = {
         'textures',
         // 'gltf',
       ]
+    },
+    {
+      type: 'category',
+      label: 'Benchmarks',
+      items: [
+        'benchmarks',
+      ]
     }
-    // {
-    //   type: 'category',
-    //   label: 'Benchmarks',
-    //   items: [
-    //     'benchmarks',
-    //   ]
-    // }
   ]
 };

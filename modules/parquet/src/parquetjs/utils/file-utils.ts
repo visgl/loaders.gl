@@ -19,9 +19,9 @@ export interface WriteStreamOptions {
   start?: number;
 }
 
-export function oswrite(os: stream.Writable, buf: Buffer): Promise<void> {
+export function oswrite(os: stream.Writable, buf: Uint8Array): Promise<void> {
   return new Promise((resolve, reject) => {
-    os.write(buf, (err) => {
+    os.write(buf, err => {
       if (err) {
         reject(err);
       } else {
@@ -46,7 +46,7 @@ export function osclose(os: stream.Writable): Promise<void> {
 export function osopen(path: string, opts?: WriteStreamOptions): Promise<fs.WriteStream> {
   return new Promise((resolve, reject) => {
     const outputStream = fs.createWriteStream(path, opts as any);
-    outputStream.once('open', (fd) => resolve(outputStream));
-    outputStream.once('error', (err) => reject(err));
+    outputStream.once('open', _fd => resolve(outputStream));
+    outputStream.once('error', err => reject(err));
   });
 }

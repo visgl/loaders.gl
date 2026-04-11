@@ -2,7 +2,9 @@
 
 > The `Tileset3D` class is being generalized to handle more use cases. Since this may require modifying some APIs, this class should be considered experiemental.
 
-The `Tileset3D` class can be instantiated with tileset data formatted according to the [3D Tiles Category](/docs/specifications/category-3d-tiles), which is supported by the [Tiles3DLoader](/docs/modules/3d-tiles/api-reference/tiles-3d-loader).
+The `Tileset3D` class is the shared runtime for traversal, culling, selection, cache management, and request scheduling across source-backed 3D tilesets.
+
+It is constructed with a [`Tileset3DSource`](/docs/modules/tiles/api-reference/tileset-3d-source), such as [`Tiles3DSource`](/docs/modules/tiles/api-reference/tiles-3d-source) or [`I3SSource`](/docs/modules/tiles/api-reference/i3s-source).
 
 References
 
@@ -14,13 +16,12 @@ References
 Loading a tileset and instantiating a `Tileset3D` instance.
 
 ```typescript
-import {load} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
 const tilesetUrl = 'https://assets.ion.cesium.com/43978/tileset.json';
-const tilesetJson = await load(tilesetUrl, Tiles3DLoader);
-const tileset3d = new Tileset3D(tilesetJson, {
+const source = new Tiles3DSource({url: tilesetUrl, loader: Tiles3DLoader});
+const tileset3d = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 ```
@@ -28,15 +29,14 @@ const tileset3d = new Tileset3D(tilesetJson, {
 Loading a tileset and dynamically load/unload with viewport.
 
 ```typescript
-import {load} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles';
 import {I3SLoader} from '@loaders.gl/i3s';
+import {I3SSource, Tileset3D} from '@loaders.gl/tiles';
 import {WebMercatorViewport} from '@deck.gl/web-mercator';
 
 const tileseturl =
   'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0';
-const tilesetJson = await load(tilesetUrl, I3SLoader);
-const tileset3d = new Tileset3D(tilesetJson, {
+const source = new I3SSource({url: tilesetUrl, loader: I3SLoader});
+const tileset3d = new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 
@@ -51,7 +51,7 @@ import {Tileset3D} from '@loaders.gl/tiles';
 
 const viewport = new WebMercatorViewport({latitude, longitude, zoom});
 
-const tileset3d = new Tileset3D(tilesetJson, {
+const tileset3d = new Tileset3D(source, {
   onTileLoad: (tile) => tileset3d.update(viewport)
 });
 ```
@@ -59,14 +59,14 @@ const tileset3d = new Tileset3D(tilesetJson, {
 ## Constructor
 
 ```typescript
-new Tileset3D(tilesetJson, {
+new Tileset3D(source, {
   onTileLoad: (tile) => console.log(tile)
 });
 ```
 
 Parameters:
 
-- `json`: loaded tileset json object, should follow the format [tiles format](https://loaders.gl/docs/specifications/category-3d-tiles)
+- `source`: a [`Tileset3DSource`](/docs/modules/tiles/api-reference/tileset-3d-source) instance
 - `options`:
   - `options.ellipsoid`=`Ellipsoid.WGS84` (`Ellipsoid`) - The ellipsoid determining the size and shape of the globe.
   - `options.throttleRequests`=`true` (`Boolean`) - Determines whether or not to throttle tile fetching requests. Throttled requests are prioritized according to tile visibility.
@@ -87,6 +87,11 @@ Callbacks:
 - `onTraversalComplete` (`(selectedTiles : Tile3D[]) : Tile3D[]`) - callback post-process selectedTiles right after traversal.
 
 The `Tileset3D` allows callbacks (`onTileLoad`, `onTileUnload`) to be registered that notify the app when the set of tiles available for rendering has changed. This is important because tile loads complete asynchronously, after the `tileset3D.update(...)` call has returned.
+
+For format-specific source behavior, see:
+
+- [`Tiles3DSource`](/docs/modules/tiles/api-reference/tiles-3d-source)
+- [`I3SSource`](/docs/modules/tiles/api-reference/i3s-source)
 
 Cesium 3D tiles specific options:
 

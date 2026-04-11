@@ -78,7 +78,7 @@ export default class WorkerPool {
    */
   destroy(): void {
     // Destroy idle workers, active Workers will be destroyed on completion
-    this.idleQueue.forEach((worker) => worker.destroy());
+    this.idleQueue.forEach(worker => worker.destroy());
     this.isDestroyed = true;
   }
 
@@ -108,7 +108,7 @@ export default class WorkerPool {
     onError: OnError = (job, error) => job.error(error)
   ): Promise<WorkerJob> {
     // Promise resolves when thread starts working on this job
-    const startPromise = new Promise<WorkerJob>((onStart) => {
+    const startPromise = new Promise<WorkerJob>(onStart => {
       // Promise resolves when thread completes or fails working on this job
       this.jobQueue.push({name, onMessage, onError, onStart});
       return this;
@@ -149,8 +149,8 @@ export default class WorkerPool {
       const job = new WorkerJob(queuedJob.name, workerThread);
 
       // Set the worker thread's message handlers
-      workerThread.onMessage = (data) => queuedJob.onMessage(job, data.type, data.payload);
-      workerThread.onError = (error) => queuedJob.onError(job, error);
+      workerThread.onMessage = data => queuedJob.onMessage(job, data.type, data.payload);
+      workerThread.onError = error => queuedJob.onError(job, error);
 
       // Resolve the start promise so that the app can start sending messages to worker
       queuedJob.onStart(job);
@@ -158,9 +158,9 @@ export default class WorkerPool {
       // Wait for the app to signal that the job is complete, then return worker to queue
       try {
         await job.result;
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`Worker exception: ${error}`);
+      } catch {
+        // The job result promise carries worker errors back to the caller; do not duplicate-log
+        // handled rejections here.
       } finally {
         this.returnWorkerToQueue(workerThread);
       }

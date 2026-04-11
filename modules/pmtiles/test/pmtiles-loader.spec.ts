@@ -8,7 +8,7 @@ import {isBrowser, load} from '@loaders.gl/core';
 import {PMTILESETS_VECTOR} from './data/tilesets';
 import {_PMTilesLoader as PMTilesLoader} from '@loaders.gl/pmtiles';
 
-test('PMTilesLoader#schemas', async (t) => {
+test('PMTilesLoader#schemas', async t => {
   if (!isBrowser) {
     t.comment('PMTilesSource currently only supported in browser');
     t.end();

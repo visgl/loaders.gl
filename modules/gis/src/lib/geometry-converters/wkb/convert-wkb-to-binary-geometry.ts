@@ -132,7 +132,7 @@ function parsePolygon(
   if (concatenatedPositions.length > 0) {
     polygonIndices.push(concatenatedPositions.length / dimension);
   }
-  const primitivePolygonIndices = rings.map((l) => l.length / dimension).map(cumulativeSum(0));
+  const primitivePolygonIndices = rings.map(l => l.length / dimension).map(cumulativeSum(0));
   primitivePolygonIndices.unshift(0);
 
   return {

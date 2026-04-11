@@ -43,7 +43,7 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('Point MVT to local coordinates JSON', async (t) => {
+test('Point MVT to local coordinates JSON', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -68,7 +68,7 @@ test('Point MVT to local coordinates JSON', async (t) => {
   t.end();
 });
 
-test('Line MVT to local coordinates JSON', async (t) => {
+test('Line MVT to local coordinates JSON', async t => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -94,7 +94,7 @@ test('Line MVT to local coordinates JSON', async (t) => {
   t.end();
 });
 
-test('Polygon MVT to local coordinates JSON', async (t) => {
+test('Polygon MVT to local coordinates JSON', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -104,7 +104,7 @@ test('Polygon MVT to local coordinates JSON', async (t) => {
   t.end();
 });
 
-test('MVTLoader#Parse Point MVT', async (t) => {
+test('MVTLoader#Parse Point MVT', async t => {
   for (const binary of [true, false]) {
     const outputFormat = binary ? 'binary' : 'geojson';
     const response = await fetchFile(MVT_POINTS_DATA_URL);
@@ -113,6 +113,7 @@ test('MVTLoader#Parse Point MVT', async (t) => {
     const loaderOptions: MVTLoaderOptions = {
       mvt: {
         coordinates: 'wgs84',
+        shape: binary ? 'binary' : 'geojson',
         tileIndex: {
           x: 2,
           y: 6,
@@ -120,9 +121,6 @@ test('MVTLoader#Parse Point MVT', async (t) => {
         }
       }
     };
-    if (binary) {
-      loaderOptions.gis = {format: 'binary'};
-    }
 
     loaderOptions.worker = false;
     const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
@@ -138,7 +136,7 @@ test('MVTLoader#Parse Point MVT', async (t) => {
   t.end();
 });
 
-test('MVTLoader#Parse Lines MVT', async (t) => {
+test('MVTLoader#Parse Lines MVT', async t => {
   for (const binary of [true, false]) {
     const outputFormat = binary ? 'binary' : 'geojson';
 
@@ -148,6 +146,7 @@ test('MVTLoader#Parse Lines MVT', async (t) => {
     const loaderOptions: MVTLoaderOptions = {
       mvt: {
         coordinates: 'wgs84',
+        shape: binary ? 'binary' : 'geojson',
         tileIndex: {
           x: 2,
           y: 1,
@@ -155,9 +154,6 @@ test('MVTLoader#Parse Lines MVT', async (t) => {
         }
       }
     };
-    if (binary) {
-      loaderOptions.gis = {format: 'binary'};
-    }
 
     const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
     let expected = decodedLinesGeoJSON;
@@ -172,7 +168,7 @@ test('MVTLoader#Parse Lines MVT', async (t) => {
   t.end();
 });
 
-test('MVTLoader#Parse Polygons MVT', async (t) => {
+test('MVTLoader#Parse Polygons MVT', async t => {
   for (const binary of [true, false]) {
     const outputFormat = binary ? 'binary' : 'geojson';
 
@@ -182,6 +178,7 @@ test('MVTLoader#Parse Polygons MVT', async (t) => {
     const loaderOptions: MVTLoaderOptions = {
       mvt: {
         coordinates: 'wgs84',
+        shape: binary ? 'binary' : 'geojson',
         tileIndex: {
           x: 133,
           y: 325,
@@ -189,9 +186,6 @@ test('MVTLoader#Parse Polygons MVT', async (t) => {
         }
       }
     };
-    if (binary) {
-      loaderOptions.gis = {format: 'binary'};
-    }
 
     const geometry = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
     let expected = decodedPolygonsGeoJSON;
@@ -206,7 +200,7 @@ test('MVTLoader#Parse Polygons MVT', async (t) => {
   t.end();
 });
 
-test('Should raise an error when coordinates param is wgs84 and tileIndex is missing', async (t) => {
+test('Should raise an error when coordinates param is wgs84 and tileIndex is missing', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -219,7 +213,7 @@ test('Should raise an error when coordinates param is wgs84 and tileIndex is mis
   t.end();
 });
 
-test('Should add layer name to custom property', async (t) => {
+test('Should add layer name to custom property', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -233,7 +227,7 @@ test('Should add layer name to custom property', async (t) => {
   t.end();
 });
 
-test('Should return features from selected layers when layers property is provided', async (t) => {
+test('Should return features from selected layers when layers property is provided', async t => {
   const response = await fetchFile(MVT_MULTIPLE_LAYERS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -243,7 +237,7 @@ test('Should return features from selected layers when layers property is provid
 
   const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
   const anyFeatureFromAnotherLayer = geometryJSON.some(
-    (feature) => feature.properties.layerName !== 'layer1'
+    feature => feature.properties.layerName !== 'layer1'
   );
   t.false(anyFeatureFromAnotherLayer);
   t.equals(geometryJSON[0].properties.layerName, 'layer1');
@@ -251,11 +245,11 @@ test('Should return features from selected layers when layers property is provid
   t.end();
 });
 
-test('Polygon MVT to local coordinates binary', async (t) => {
+test('Polygon MVT to local coordinates binary', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
-  const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
+  const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
   t.ok(geometryBinary.byteLength > 0);
   delete geometryBinary.byteLength;
 
@@ -276,7 +270,7 @@ const TEST_FILES = [
   MVT_MULTIPLE_LAYERS_DATA_URL
 ];
 
-test('MVTLoader#Parse geojson-to-binary', async (t) => {
+test('MVTLoader#Parse geojson-to-binary', async t => {
   for (const filename of TEST_FILES) {
     const response = await fetchFile(filename);
     const mvtArrayBuffer = await response.arrayBuffer();
@@ -285,7 +279,7 @@ test('MVTLoader#Parse geojson-to-binary', async (t) => {
     // Pass a fresh response otherwise get CI testing errors
     const response2 = await fetchFile(filename);
     const mvtArrayBuffer2 = await response2.arrayBuffer();
-    const binary = await parse(mvtArrayBuffer2, MVTLoader, {gis: {format: 'binary'}});
+    const binary = await parse(mvtArrayBuffer2, MVTLoader, {mvt: {shape: 'binary'}});
     delete binary.byteLength;
 
     const expectedBinary = geojsonToBinary(geojson);
@@ -294,7 +288,7 @@ test('MVTLoader#Parse geojson-to-binary', async (t) => {
   t.end();
 });
 
-test('Features with top-level id', async (t) => {
+test('Features with top-level id', async t => {
   const response = await fetchFile(WITH_FEATURE_ID);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -312,9 +306,9 @@ test('Features with top-level id', async (t) => {
   t.end();
 });
 
-test('Empty MVT must return empty binary format', async (t) => {
+test('Empty MVT must return empty binary format', async t => {
   const emptyMVTArrayBuffer = new Uint8Array();
-  const geometryBinary = await parse(emptyMVTArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
+  const geometryBinary = await parse(emptyMVTArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
   t.ok(geometryBinary.points);
   t.ok(geometryBinary.lines);
   t.ok(geometryBinary.polygons);
@@ -325,11 +319,11 @@ test('Empty MVT must return empty binary format', async (t) => {
   t.end();
 });
 
-test('Triangulation is supported', async (t) => {
+test('Triangulation is supported', async t => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
   const geometry = await parse(mvtArrayBuffer, MVTLoader, {
-    gis: {format: 'binary'}
+    mvt: {shape: 'binary'}
   });
 
   // Closed polygon with 31 vertices (0===30)

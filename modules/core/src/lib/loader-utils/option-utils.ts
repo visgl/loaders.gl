@@ -8,13 +8,15 @@ import {
   registerJSModules,
   isPureObject,
   isObject,
-  StrictLoaderOptions
+  StrictLoaderOptions,
+  path
 } from '@loaders.gl/loader-utils';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
+import {stripQueryString} from '../utils/url-utils';
 
 const CORE_LOADER_OPTION_KEYS = [
-  'baseUri',
+  'baseUrl',
   'fetch',
   'mimeType',
   'fallbackMimeType',
@@ -91,7 +93,7 @@ export function setGlobalOptions(options: LoaderOptions): void {
 }
 
 /**
- * Merges options with global opts and loader defaults, also injects baseUri
+ * Merges options with global opts and loader defaults, also injects baseUrl
  * @param options
  * @param loader
  * @param loaders
@@ -262,8 +264,7 @@ function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions)
 
 /**
  * Harvest information from the url
- * @deprecated This is mainly there to support a hack in the GLTFLoader
- * TODO - baseUri should be a directory, i.e. remove file component from baseUri
+ * @deprecated This is mainly there to support loaders that still resolve from options
  * TODO - extract extension?
  * TODO - extract query parameters?
  * TODO - should these be injected on context instead of options?
@@ -272,11 +273,10 @@ function addUrlOptions(options: LoaderOptions, url?: string): void {
   if (!url) {
     return;
   }
-  const hasTopLevelBaseUri = options.baseUri !== undefined;
-  const hasCoreBaseUri = options.core?.baseUri !== undefined;
-  if (!hasTopLevelBaseUri && !hasCoreBaseUri) {
+  const hasCoreBaseUrl = options.core?.baseUrl !== undefined;
+  if (!hasCoreBaseUrl) {
     options.core ||= {};
-    options.core.baseUri = url;
+    options.core.baseUrl = path.dirname(stripQueryString(url));
   }
 }
 
@@ -289,9 +289,17 @@ function cloneLoaderOptions(options: LoaderOptions): LoaderOptions {
 }
 
 function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
+  if (options.baseUri !== undefined) {
+    options.core ||= {};
+    if (options.core.baseUrl === undefined) {
+      options.core.baseUrl = options.baseUri;
+    }
+  }
+
   for (const key of CORE_LOADER_OPTION_KEYS) {
     if ((options as Record<string, unknown>)[key] !== undefined) {
-      const coreOptions = (options.core = options.core || {});
+      options.core ||= {};
+      const coreOptions = options.core;
       const coreRecord = coreOptions as Record<string, unknown>;
       // Treat deprecated top-level core options as aliases to `options.core`, but never override an explicitly
       // provided `options.core` value.

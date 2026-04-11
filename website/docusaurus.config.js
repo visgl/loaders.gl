@@ -8,11 +8,14 @@ const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
+const siteUrl = process.env.DOCUSAURUS_URL || 'https://loaders.gl';
+const baseUrl = process.env.DOCUSAURUS_BASE_URL || '/';
+
 const config = {
   title: 'loaders.gl',
   tagline: 'A collection of loaders modules for Geospatial and 3D visualization use cases',
-  url: 'https://loaders.gl',
-  baseUrl: '/',
+  url: siteUrl,
+  baseUrl,
   onBrokenLinks: 'warn',
   favicon: '/favicon.png',
   organizationName: 'visgl', // Usually your GitHub org/user name.
@@ -33,6 +36,7 @@ const config = {
         docs: {
           path: '../docs',
           sidebarPath: resolve('./src/docs-sidebar.js'),
+          docItemComponent: resolve('./src/components/docs/doc-item.tsx'),
           // Point to to the website directory in your repo.
           editUrl: 'https://github.com/visgl/loaders.gl/tree/master/website'
         },
@@ -71,11 +75,13 @@ const config = {
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/csv': resolve('../modules/csv/src'),
+            '@loaders.gl/deck-layers': resolve('../modules/deck-layers/src'),
             '@loaders.gl/draco': resolve('../modules/draco/src'),
             '@loaders.gl/excel': resolve('../modules/excel/src'),
             '@loaders.gl/flatgeobuf': resolve('../modules/flatgeobuf/src'),
             '@loaders.gl/geopackage': resolve('../modules/geopackage/src'),
             '@loaders.gl/geotiff': resolve('../modules/geotiff/src'),
+            '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
             '@loaders.gl/gis': resolve('../modules/gis/src'),
             '@loaders.gl/gltf': resolve('../modules/gltf/src'),
             '@loaders.gl/i3s': resolve('../modules/i3s/src'),
@@ -85,6 +91,7 @@ const config = {
             '@loaders.gl/las': resolve('../modules/las/src'),
             '@loaders.gl/loader-utils': resolve('../modules/loader-utils/src'),
             '@loaders.gl/math': resolve('../modules/math/src'),
+            '@loaders.gl/mlt': resolve('../modules/mlt/src'),
             '@loaders.gl/mvt': resolve('../modules/mvt/src'),
             '@loaders.gl/netcdf': resolve('../modules/netcdf/src'),
             '@loaders.gl/obj': resolve('../modules/obj/src'),

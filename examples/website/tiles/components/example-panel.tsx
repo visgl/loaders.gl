@@ -41,12 +41,15 @@ const DropDown = styled.select`
   margin-bottom: 6px;
 `;
 
+const APP_SOURCE_URL = 'https://github.com/visgl/loaders.gl/tree/master/examples/website/tiles';
+
 export type Example = {
-  sourceType: 'mvt' | 'pmtiles' | 'table';
+  sourceType: 'mvt' | 'pmtiles' | 'table' | 'mlt';
   data: string;
   attributions?: string[];
   viewState?: Record<string, unknown>;
   tileSize?: number[];
+  localRangeServer?: boolean;
 };
 
 export type ExamplePanelProps = React.PropsWithChildren<{
@@ -54,6 +57,8 @@ export type ExamplePanelProps = React.PropsWithChildren<{
   examples: Record<string, Record<string, Example>>;
   /** format of examples to show (filters out other formats if supplied) */
   format?: string;
+  /** Whether to hide the example controls, metadata, and descriptive overlay. */
+  hideChrome?: boolean;
   initialCategoryName?: string | null;
   initialExampleName?: string | null;
   onExampleChange: OnExampleChange;
@@ -90,6 +95,7 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
     droppedFile: null,
     exampleName: null,
     categoryName: null,
+    hideChrome: false,
     onExampleChange: () => {},
     ...props
   };
@@ -128,9 +134,14 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
     });
   }, [state.example]);
 
+  if (props.hideChrome) {
+    return null;
+  }
+
   return (
     <Container>
       <ExampleHeader {...state} />
+      <ExampleSourceLink />
       <ExampleDropDown
         examples={state.examples}
         categoryName={state.categoryName}
@@ -143,6 +154,16 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
     </Container>
   );
 };
+
+function ExampleSourceLink() {
+  return (
+    <div style={{lineHeight: 1.4, marginBottom: 8}}>
+      <a href={APP_SOURCE_URL} rel="noreferrer" target="_blank">
+        View source
+      </a>
+    </div>
+  );
+}
 
 // METADATA VIEWER
 

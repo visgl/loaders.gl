@@ -3,3 +3,4 @@
 // Copyright (c) vis.gl contributors
 
 import './las-loader.spec';
+import './las-writer.spec';

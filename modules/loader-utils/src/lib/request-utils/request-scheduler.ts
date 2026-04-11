@@ -114,7 +114,7 @@ export default class RequestScheduler {
     }
 
     const request: Request = {handle, priority: 0, getPriority};
-    const promise = new Promise<RequestResult>((resolve) => {
+    const promise = new Promise<RequestResult>(resolve => {
       // @ts-ignore
       request.resolve = resolve;
       return request;

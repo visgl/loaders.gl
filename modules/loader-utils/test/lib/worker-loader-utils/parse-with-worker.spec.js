@@ -10,7 +10,7 @@ import {registerLoaders, _unregisterLoaders, NullWorkerLoader} from '@loaders.gl
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
 
-test('parseWithWorker', async (t) => {
+test('parseWithWorker', async t => {
   if (!WorkerPool.isSupported()) {
     t.comment('Workers not supported, skipping tests');
     t.end();
@@ -24,7 +24,7 @@ test('parseWithWorker', async (t) => {
     reuseWorkers: false,
     custom: 'custom'
   };
-  const testContext = {response: testResponse, fetch, _parse: async (arrayBuffer) => arrayBuffer};
+  const testContext = {response: testResponse, fetch, _parse: async arrayBuffer => arrayBuffer};
   const result = await parseWithWorker(NullWorkerLoader, testData, testOptions, testContext);
 
   t.equal(result, null);
@@ -32,14 +32,14 @@ test('parseWithWorker', async (t) => {
   t.end();
 });
 
-test.skip('createLoaderWorker', async (t) => {
+test.skip('createLoaderWorker', async t => {
   if (!WorkerPool.isSupported()) {
     t.comment('Workers not supported, skipping tests');
     t.end();
     return;
   }
 
-  const callback = (info) =>
+  const callback = info =>
     t.comment(`Processing with worker ${info.name}, queued jobs ${info.backlog}`);
 
   const workerPool = new WorkerPool({
@@ -52,7 +52,7 @@ test.skip('createLoaderWorker', async (t) => {
   const TEST_CASES = new Array(CHUNKS_TOTAL).fill(0).map((_, i) => ({chunk: i}));
 
   const result = await Promise.all(
-    TEST_CASES.map(async (testData) => {
+    TEST_CASES.map(async testData => {
       const job = await workerPool.startJob('test');
       job.postMessage('process', {
         input: toArrayBuffer(JSON.stringify(testData))
@@ -72,7 +72,7 @@ test.skip('createLoaderWorker', async (t) => {
   t.end();
 });
 
-test.skip('createLoaderWorker#nested', async (t) => {
+test.skip('createLoaderWorker#nested', async t => {
   if (!WorkerPool.isSupported()) {
     t.comment('Workers not supported, skipping tests');
     t.end();
@@ -87,10 +87,10 @@ test.skip('createLoaderWorker#nested', async (t) => {
   ];
 
   const result = await Promise.all(
-    TEST_CASES.map((testData) =>
+    TEST_CASES.map(testData =>
       parseWithWorker(
         NullWorkerLoader,
-        toArrayBuffer(testData.map((data) => JSON.stringify(data)).join('\n')),
+        toArrayBuffer(testData.map(data => JSON.stringify(data)).join('\n')),
         NullWorkerLoader.options
       )
     )

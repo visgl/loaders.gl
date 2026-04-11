@@ -8,7 +8,7 @@ const NEW_YORK_CONTENT_LOADER_OPTIONS =
   '@loaders.gl/i3s/test/data/Buildings_NewYork_17/i3s-content-loader-options.json';
 
 // TODO v4.0 restore this test
-test.skip('i3s-utils#customizeColors', async (t) => {
+test.skip('i3s-utils#customizeColors', async t => {
   const response = await fetchFile(NEW_YORK_TILE_CONTENT);
   const data = await response.arrayBuffer();
   const responseOptions = await fetchFile(NEW_YORK_CONTENT_LOADER_OPTIONS);

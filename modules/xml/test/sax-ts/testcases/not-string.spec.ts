@@ -6,9 +6,9 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#not-string', (t) => {
+test('SAXParser#not-string', t => {
   testSax(t, {
-    xml: new Buffer('<x>y</x>'),
+    xml: {toString: () => '<x>y</x>'},
     expect: [
       ['opentagstart', {name: 'x', attributes: {}}],
       ['opentag', {name: 'x', attributes: {}, isSelfClosing: false}],

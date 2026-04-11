@@ -175,13 +175,13 @@ export default class I3SNodePagesTiles {
     const i3sOptions = this.options.i3s as Record<string, any> | undefined;
     if (i3sOptions && typeof i3sOptions === 'object' && i3sOptions.useDracoGeometry) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
-        (buffer) => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
+        buffer => buffer.compressedAttributes && buffer.compressedAttributes.encoding === 'draco'
       );
     }
     // If DRACO geometry is not applicable try to select non-compressed geometry
     if (geometryIndex === -1) {
       geometryIndex = geometryDefinition.geometryBuffers.findIndex(
-        (buffer) => !buffer.compressedAttributes
+        buffer => !buffer.compressedAttributes
       );
     }
     if (geometryIndex !== -1) {
@@ -262,7 +262,7 @@ export default class I3SNodePagesTiles {
       const formats = (textureSetDefinition && textureSetDefinition.formats) || [];
       let selectedFormat: {name: string; format: I3STextureFormat} | null = null;
       for (const i3sFormat of possibleI3sFormats) {
-        const format = formats.find((value) => value.format === i3sFormat);
+        const format = formats.find(value => value.format === i3sFormat);
         if (format) {
           selectedFormat = format;
           break;

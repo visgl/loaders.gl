@@ -3,33 +3,33 @@ import {ConvertedAttributes, GeometryAttributes} from '../../../src/i3s-converte
 import {generateAttributes} from '../../../src/i3s-converter/helpers/geometry-attributes';
 import {areNumberArraysEqual} from '../../utils/compareArrays';
 
-test('tile-converter(i3s)#generateAttributes - Should re-arrange attributes by featureIds', async (t) => {
+test('tile-converter(i3s)#generateAttributes - Should re-arrange attributes by featureIds', async t => {
   const attributes: ConvertedAttributes = {
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     positions: new Float32Array([
       0, 1, 2, 3, 4, 5, 6, 7, 8, 
       0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
       -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8, -0.9
     ]),
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     normals: new Float32Array([
       0, 1, 2, 3, 4, 5, 6, 7, 8, 
       0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 
       -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8, -0.9
     ]),
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     texCoords: new Float32Array([
       0, 1, 2, 3, 4, 5,
       0.1, 0.2, 0.3, 0.4, 0.5, 0.6,
       -0.1, -0.2, -0.3, -0.4, -0.5, -0.6
     ]),
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     colors: new Uint8Array([
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
       100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
       201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212
     ]),
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     uvRegions: new Uint16Array(),
     featureIndices: [1, 1, 1, 120, 120, 120, 1, 1, 1],
     boundingVolumes: null,
@@ -37,25 +37,25 @@ test('tile-converter(i3s)#generateAttributes - Should re-arrange attributes by f
   };
 
   const expectedResult: GeometryAttributes = {
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     positions: new Float32Array([
       0, 1, 2, 3, 4, 5, 6, 7, 8, 
       -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8, -0.9,
       0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9
     ]),
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     normals: new Float32Array([
       0, 1, 2, 3, 4, 5, 6, 7, 8,
       -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8, -0.9,
       0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9
     ]),
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     texCoords: new Float32Array([
       0, 1, 2, 3, 4, 5,
       -0.1, -0.2, -0.3, -0.4, -0.5, -0.6,
       0.1, 0.2, 0.3, 0.4, 0.5, 0.6
     ]),
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     colors: new Uint8Array([
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
       201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212,

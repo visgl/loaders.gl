@@ -9,6 +9,12 @@
 - `@loaders.gl/textures` no longer exports `selectSupportedBasisFormat` or `getSupportedGPUTextureFormats`. Pass `basis.supportedTextureFormats` to `BasisLoader` instead of using exported auto-detection helpers.
 - `BasisLoader`, `CrunchLoader`, and `CompressedTextureLoader` no longer support `libraryPath`. Supply runtime libraries through `options.modules` instead.
 
+| Deprecated helper         | Replacement                     |
+| ------------------------- | ------------------------------- |
+| `loadImageTexture()`      | `load(url, TextureLoader)`      |
+| `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
+| `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
+
 **@loaders.gl/draco**
 
 - `DracoLoader` no longer supports `draco.libraryPath`. Supply `modules: {draco3d}` instead of configuring decoder library paths manually.
@@ -16,6 +22,11 @@
 **@loaders.gl/compression**
 
 - `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
+
+**@loaders.gl/parquet**
+
+- `@loaders.gl/parquet/buffer`, `BufferPolyfill`, and `installBufferPolyfill()` were removed. The JavaScript Parquet parser and writer now use `Uint8Array` internally instead of installing a global `Buffer`.
+- `ParquetLoader` and the experimental parquetjs APIs now return unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` values as `Uint8Array` instead of `Buffer`. Logical values such as `UTF8` and `JSON` are still decoded to JavaScript strings/objects according to the Parquet schema.
 
 ## Upgrading to v4.3
 
@@ -76,6 +87,8 @@ Some loaders can return multiple formats, often controlled with the loader optio
 **Apache Arrow JS**
 
 loaders.gl now imports `apache-arrow` v13 which is a major upgrade but Apache Arrow JS v9 introduces breaking changes (compared with Apache Arrow v4 which is used by loaders.gl v3.x\_).
+
+- `@loaders.gl/deck-layers` - `TileSourceLayer` now accepts the tile source only via `data`. The redundant `tileSource` prop has been removed.
 
 If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes.
 

@@ -9,7 +9,7 @@ import {getGeoArrowGeometryInfo} from '@loaders.gl/geoarrow';
 import {GeoArrowGeometryInfo} from '../src/get-geoarrow-geometry-info';
 
 // fix a bug that map bounds are not updated correctly from arrow samples
-test('geoarrow#getGeoArrowGeometryInfo', (t) => {
+test('geoarrow#getGeoArrowGeometryInfo', t => {
   const testCases: {field: arrow.Field; info: Partial<GeoArrowGeometryInfo>}[] = [
     // {
     //   field: new arrow.Field('point', new arrow.Float(arrow.Precision.DOUBLE)),

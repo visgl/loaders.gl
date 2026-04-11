@@ -14,12 +14,12 @@ async function getParentPort() {
   // const isNode = globalThis.process;
   // let parentPort;
   // try {
-  //   // prettier-ignore
+  //   // biome-ignore format: preserve intentional fixture layout
   //   eval('globalThis.parentPort = require(\'worker_threads\').parentPort'); // eslint-disable-line no-eval
   //   parentPort = globalThis.parentPort;
   // } catch {
   //   try {
-  //     // prettier-ignore
+  //     // biome-ignore format: preserve intentional fixture layout
   //     eval('globalThis.workerThreadsPromise = import(\'worker_threads\')'); // eslint-disable-line no-eval
   //     const workerThreads = await globalThis.workerThreadsPromise;
   //     parentPort = workerThreads.parentPort;
@@ -55,9 +55,9 @@ export default class WorkerBody {
       onMessage(type, payload);
     }
 
-    getParentPort().then((parentPort) => {
+    getParentPort().then(parentPort => {
       if (parentPort) {
-        parentPort.on('message', (message) => {
+        parentPort.on('message', message => {
           handleMessage(message);
         });
         // if (message == 'exit') { parentPort.unref(); }

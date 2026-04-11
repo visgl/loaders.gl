@@ -21,16 +21,15 @@ import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 import {Table, GeoJSON} from '@loaders.gl/schema';
 import {Loader, load, LoaderOptions} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
-import {GeoParquetLoader, installBufferPolyfill, preloadCompressions} from '@loaders.gl/parquet';
+import {GeoParquetLoader, preloadCompressions} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
+import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 // import {GeoPackageLoader} from '@loaders.gl/geopackage'; // GeoPackage depends on sql.js which has bundling issues in docusuarus.
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
-
-installBufferPolyfill();
 
 export const INITIAL_MAP_STYLE =
   'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
@@ -43,7 +42,8 @@ const LOADERS = [
   ShapefileLoader,
   KMLLoader,
   GPXLoader,
-  TCXLoader
+  TCXLoader,
+  GeoJSONLoader
 ] as const;
 
 const LOADER_OPTIONS = {
@@ -106,6 +106,8 @@ export const INITIAL_VIEW_STATE = {
 type AppProps = {
   /** Controls which examples are shown */
   format?: string;
+  /** Whether to hide the example controls, metadata, and descriptive overlay. */
+  hideChrome?: boolean;
   /** Any informational text to display in the overlay */
   children?: React.Children;
 };
@@ -122,7 +124,7 @@ type AppState = {
 /**
  * A Geospatial table map viewer
  */
-export default function App(props: AppProps) {
+export default function App(props: AppProps = {}) {
   const [state, setState] = useState<AppState>({
     table: null,
     viewState: INITIAL_VIEW_STATE,
@@ -139,6 +141,7 @@ export default function App(props: AppProps) {
         initialCategoryName={INITIAL_LOADER_NAME}
         initialExampleName={INITIAL_EXAMPLE_NAME}
         format={props.format}
+        hideChrome={props.hideChrome}
         onExampleChange={onExampleChange}
       >
         {props.children}

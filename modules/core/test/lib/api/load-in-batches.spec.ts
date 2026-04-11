@@ -13,7 +13,7 @@ const CSV_SAMPLE_VERY_LONG_URL = '@loaders.gl/csv/test/data/sample-very-long.csv
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
 const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 
-test('loadInBatches#FileList', async (t) => {
+test('loadInBatches#FileList', async t => {
   if (isBrowser) {
     const response = await fetchFile(OBJ_ASCII_URL);
     const blob = await response.blob();
@@ -31,7 +31,7 @@ test('loadInBatches#FileList', async (t) => {
   t.end();
 });
 
-test.skip('loadInBatches#non-batched loader (mesh)', async (t) => {
+test.skip('loadInBatches#non-batched loader (mesh)', async t => {
   // This masquerades an atomic loader as batches
   // const batches = await loadInBatches(OBJ_ASCII_URL, OBJLoader);
   // for await (const batch of batches) {
@@ -41,7 +41,7 @@ test.skip('loadInBatches#non-batched loader (mesh)', async (t) => {
   t.end();
 });
 
-test('loadInBatches#non-batched loader (gis)', async (t) => {
+test('loadInBatches#non-batched loader (gis)', async t => {
   const batches = (await loadInBatches(KML_URL, KMLLoader, {
     kml: {shape: 'object-row-table'}
   })) as AsyncIterableIterator<ObjectRowTableBatch>;
@@ -53,7 +53,7 @@ test('loadInBatches#non-batched loader (gis)', async (t) => {
   t.end();
 });
 
-test('loadInBatches(options.limit)', async (t) => {
+test('loadInBatches(options.limit)', async t => {
   // @ts-ignore
   const iterator = await loadInBatches(CSV_SAMPLE_VERY_LONG_URL, CSVLoader, {
     limit: 100

@@ -7,7 +7,7 @@ import {fetchFile} from '@loaders.gl/core';
 import {getBinaryImageMetadata} from '@loaders.gl/images';
 
 const readFile = (url: string): Promise<ArrayBuffer> =>
-  fetchFile(url).then((response) => response.arrayBuffer());
+  fetchFile(url).then(response => response.arrayBuffer());
 
 let imagesPromise: Promise<ArrayBuffer[]> | null = null;
 const imageMap: {[mimeType: string]: ArrayBuffer} = {};
@@ -17,19 +17,19 @@ export async function loadImages() {
     imagesPromise ||
     Promise.all([
       readFile('@loaders.gl/images/test/data/img1-preview.png').then(
-        (data) => (imageMap['image/png'] = data)
+        data => (imageMap['image/png'] = data)
       ),
       readFile('@loaders.gl/images/test/data/img1-preview.jpeg').then(
-        (data) => (imageMap['image/jpeg'] = data)
+        data => (imageMap['image/jpeg'] = data)
       ),
       readFile('@loaders.gl/images/test/data/img1-preview.gif').then(
-        (data) => (imageMap['image/gif'] = data)
+        data => (imageMap['image/gif'] = data)
       ),
       readFile('@loaders.gl/images/test/data/img1-preview.bmp').then(
-        (data) => (imageMap['image/bmp'] = data)
+        data => (imageMap['image/bmp'] = data)
       ),
       readFile('@loaders.gl/images/test/data/avif/hato.profile0.8bpc.yuv420.avif').then(
-        (data) => (imageMap['image/avif'] = data)
+        data => (imageMap['image/avif'] = data)
       )
     ]);
 
@@ -38,7 +38,7 @@ export async function loadImages() {
   return imageMap;
 }
 
-test('getBinaryImageMetadata#mimeType', async (t) => {
+test('getBinaryImageMetadata#mimeType', async t => {
   const images = await loadImages();
 
   for (const mimeType in images) {
@@ -48,7 +48,7 @@ test('getBinaryImageMetadata#mimeType', async (t) => {
   t.end();
 });
 
-test('getBinaryImageMetadata#size', async (t) => {
+test('getBinaryImageMetadata#size', async t => {
   const images = await loadImages();
   for (const imageType in images) {
     const dimensions = getBinaryImageMetadata(images[imageType]);
@@ -75,7 +75,7 @@ test('getBinaryImageMetadata#size', async (t) => {
 
 // Try to avoid false positives
 
-test('isBinaryImage#bmp detection edge case', (t) => {
+test('isBinaryImage#bmp detection edge case', t => {
   const arrayBuffer = new ArrayBuffer(4);
   const dataView = new DataView(arrayBuffer);
   const LITTLE_ENDIAN = true;
@@ -89,7 +89,7 @@ test('isBinaryImage#bmp detection edge case', (t) => {
   t.end();
 });
 
-test('isBinaryImage#jpeg detection edge case', async (t) => {
+test('isBinaryImage#jpeg detection edge case', async t => {
   const arrayBuffer = new ArrayBuffer(4);
   const dataView = new DataView(arrayBuffer);
   const LITTLE_ENDIAN = true;

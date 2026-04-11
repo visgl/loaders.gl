@@ -7,8 +7,9 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
 import {ViewState, FlyToInterpolator} from '@deck.gl/core';
+import {SourceDataDrivenTile3DLayer} from '@loaders.gl/deck-layers';
 
-import {DataDrivenTile3DLayer, colorizeTile} from '@deck.gl-community/experimental';
+import {colorizeTile} from '@deck.gl-community/experimental';
 
 import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
@@ -101,7 +102,7 @@ export default function App() {
 
   function renderLayers() {
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
-    const layers = new DataDrivenTile3DLayer({
+    const layers = new SourceDataDrivenTile3DLayer({
       data: EXAMPLES[tilesetSelected].url,
       loader: I3SLoader,
       onTilesetLoad: onTilesetLoadHandler,

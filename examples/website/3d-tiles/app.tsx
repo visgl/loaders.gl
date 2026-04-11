@@ -11,7 +11,7 @@ import styled from 'styled-components';
 import {luma} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import {StatsWidget} from '@probe.gl/stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
@@ -54,7 +54,24 @@ const StatsWidgetContainer = styled.div`
   }
 `;
 
-export default class App extends PureComponent {
+const ErrorContainer = styled.div`
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  max-width: 360px;
+  padding: 12px 16px;
+  background: rgba(32, 32, 32, 0.92);
+  color: #fff;
+  z-index: 100;
+  line-height: 1.4;
+`;
+
+type AppProps = {
+  /** Whether to hide the example controls, statistics, and descriptive overlay. */
+  hideChrome?: boolean;
+};
+
+export default class App extends PureComponent<AppProps> {
   constructor(props) {
     super(props);
 
@@ -64,6 +81,7 @@ export default class App extends PureComponent {
 
       // current tileset
       tileset: null,
+      error: null,
 
       // MAP STATE
       selectedMapStyle: INITIAL_MAP_STYLE,
@@ -79,24 +97,27 @@ export default class App extends PureComponent {
     this._deckRef = null;
     this._onTilesetLoad = this._onTilesetLoad.bind(this);
     this._onTilesetChange = this._onTilesetChange.bind(this);
+    this._onTilesetError = this._onTilesetError.bind(this);
   }
 
   componentDidMount() {
-    const container = this._statsWidgetContainer;
-    // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
-    // TODO - Revisit after upgrade luma to use most recent StatsWidget API
-    this._memWidget = new StatsWidget(luma.stats.get('Memory Usage'), {
-      framesPerUpdate: 1,
-      formatters: {
-        'GPU Memory': 'memory',
-        'Buffer Memory': 'memory',
-        'Renderbuffer Memory': 'memory',
-        'Texture Memory': 'memory'
-      },
-      container
-    });
+    if (!this.props.hideChrome) {
+      const container = this._statsWidgetContainer;
+      // TODO - This is noisy. Default formatters should already be pre-registered on the stats object
+      // TODO - Revisit after upgrade luma to use most recent StatsWidget API
+      this._memWidget = new StatsWidget(luma.stats.get('Memory Usage'), {
+        framesPerUpdate: 1,
+        formatters: {
+          'GPU Memory': 'memory',
+          'Buffer Memory': 'memory',
+          'Renderbuffer Memory': 'memory',
+          'Texture Memory': 'memory'
+        },
+        container
+      });
 
-    this._tilesetStatsWidget = new StatsWidget(null, {container});
+      this._tilesetStatsWidget = new StatsWidget(null, {container});
+    }
 
     this._loadExampleIndex();
 
@@ -146,13 +167,13 @@ export default class App extends PureComponent {
 
   // Updates stats, called every frame
   _updateStatWidgets() {
-    this._memWidget.update();
-    this._tilesetStatsWidget.update();
+    this._memWidget?.update();
+    this._tilesetStatsWidget?.update();
   }
 
   // Called by ControlPanel when user selects a new example
   _onSelectExample({example, category, name}) {
-    this.setState({selectedExample: example, category, name});
+    this.setState({selectedExample: example, category, name, error: null, tileset: null});
   }
 
   // Called by ControlPanel when user selects a new map style
@@ -162,8 +183,8 @@ export default class App extends PureComponent {
 
   // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
-    this.setState({tileset});
-    this._tilesetStatsWidget.setStats(tileset.stats);
+    this.setState({tileset, error: null});
+    this._tilesetStatsWidget?.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
   }
 
@@ -191,6 +212,11 @@ export default class App extends PureComponent {
   // Called by Tile3DLayer whenever an individual tile in the current tileset is load or unload
   _onTilesetChange(tileHeader) {
     this._updateStatWidgets();
+  }
+
+  _onTilesetError(error) {
+    const message = error instanceof Error ? error.message : String(error);
+    this.setState({error: message, tileset: null});
   }
 
   // Called by DeckGL when user interacts with the map
@@ -237,12 +263,14 @@ export default class App extends PureComponent {
 
     const {ionAssetId, ionAccessToken, maximumScreenSpaceError, tilesetUrl} = selectedExample;
     const dataUrl = ionAssetId ? `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json` : tilesetUrl;
-    const loadOptions = {'cesium-ion': {accessToken: ionAccessToken}};
+    const loadOptions = {
+      'cesium-ion': {accessToken: ionAccessToken, onError: this._onTilesetError}
+    };
     if (maximumScreenSpaceError) {
       loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
     }
 
-    return new Tile3DLayer({
+    return new SourceLayer({
       id: 'tile-3d-layer',
       data: dataUrl,
       loader: ionAssetId ? CesiumIonLoader : Tiles3DLoader,
@@ -257,14 +285,23 @@ export default class App extends PureComponent {
     });
   }
 
+  _renderError() {
+    const {error} = this.state;
+    if (!error) {
+      return null;
+    }
+
+    return <ErrorContainer>{error}</ErrorContainer>;
+  }
+
   render() {
     const {viewState, selectedMapStyle} = this.state;
     const tile3DLayer = this._renderTile3DLayer();
 
     return (
       <div style={{position: 'relative', height: '100%'}}>
-        {this._renderStats()}
-        {this._renderControlPanel()}
+        {!this.props.hideChrome && this._renderStats()}
+        {!this.props.hideChrome && this._renderControlPanel()}
         <DeckGL
           layers={[tile3DLayer]}
           viewState={viewState}
@@ -274,6 +311,7 @@ export default class App extends PureComponent {
         >
           <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
+        {this._renderError()}
       </div>
     );
   }

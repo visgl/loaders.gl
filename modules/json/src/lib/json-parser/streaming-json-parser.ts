@@ -32,7 +32,7 @@ export default class StreamingJSONParser extends JSONParser {
       },
 
       // Redefine onopenarray to inject value for top-level object
-      onopenobject: (name) => {
+      onopenobject: name => {
         if (!this.topLevelObject) {
           this.topLevelObject = {};
           this._openObject(this.topLevelObject);
@@ -45,7 +45,7 @@ export default class StreamingJSONParser extends JSONParser {
       }
     });
     const jsonpaths = options.jsonpaths || [];
-    this.jsonPaths = jsonpaths.map((jsonpath) => new JSONPath(jsonpath));
+    this.jsonPaths = jsonpaths.map(jsonpath => new JSONPath(jsonpath));
   }
 
   /**

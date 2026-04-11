@@ -307,7 +307,7 @@ const testCases = [
   [GEOARROW_MULTIPOLYGON_HOLE_FILE, expectedMultiPolygonHolesBinaryGeometry]
 ];
 
-test('ArrowUtils#convertGeoArrowToBinaryFeatureCollection', async (t) => {
+test('ArrowUtils#convertGeoArrowToBinaryFeatureCollection', async t => {
   for (const testCase of testCases) {
     await testGetBinaryGeometriesFromArrow(t, testCase[0], testCase[1]);
   }

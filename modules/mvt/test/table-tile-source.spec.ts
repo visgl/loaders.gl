@@ -27,7 +27,7 @@ const square = [
   }
 ];
 
-test('TableTileSource#getTile#us-states.json', async (t) => {
+test('TableTileSource#getTile#us-states.json', async t => {
   const geojson = await loadGeoJSONTable('us-states.json');
   const source = TableTileSource.createDataSource(geojson, {table: {coordinates: 'wgs84'}}); // , debug: 2});
   await source.ready;
@@ -62,7 +62,7 @@ test('TableTileSource#getTile#us-states.json', async (t) => {
   t.end();
 });
 
-test('TableTileSource#getTile#unbuffered tile left/right edges', async (t) => {
+test('TableTileSource#getTile#unbuffered tile left/right edges', async t => {
   const geojson = makeGeoJSONTable({
     type: 'LineString',
     coordinates: [
@@ -96,7 +96,7 @@ test('TableTileSource#getTile#unbuffered tile left/right edges', async (t) => {
   t.end();
 });
 
-test('TableTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
+test('TableTileSource#getTile#unbuffered tile top/bottom edges', async t => {
   const geojson = makeGeoJSONTable({
     type: 'LineString',
     coordinates: [
@@ -128,7 +128,7 @@ test('TableTileSource#getTile#unbuffered tile top/bottom edges', async (t) => {
   t.end();
 });
 
-test('TableTileSource#getTile#polygon clipping on the boundary', async (t) => {
+test('TableTileSource#getTile#polygon clipping on the boundary', async t => {
   const geojson = makeGeoJSONTable({
     type: 'Polygon',
     coordinates: [

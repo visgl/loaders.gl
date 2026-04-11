@@ -24,12 +24,6 @@ import {
 // } from './lib/parsers/parse-parquet-to-columns';
 import {ParquetFormat} from './parquet-format';
 
-// Note: The Buffer polyfill is quite fragile
-// For some reason, just exporting directly fails with some bundlers
-// export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
-import {Buffer} from './polyfills/buffer/install-buffer-polyfill';
-export {Buffer};
-
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -89,10 +83,6 @@ export const ParquetJSONLoader = {
   ObjectRowTableBatch,
   ParquetJSONLoaderOptions
 >;
-
-// Defeat tree shaking
-// @ts-ignore
-ParquetJSONLoader.Buffer = Buffer;
 
 export const GeoParquetWorkerLoader = {
   ...ParquetFormat,

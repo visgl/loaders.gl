@@ -10,7 +10,7 @@ const getSize = async (provider: NodeFile): Promise<bigint> => {
   return stat.bigsize;
 };
 
-test('NodeFile#open and read', async (t) => {
+test('NodeFile#open and read', async t => {
   if (!isBrowser) {
     const provider = new NodeFile(SLPK_URL);
     const arrayBuffer = await provider.read(4, 1);
@@ -21,7 +21,7 @@ test('NodeFile#open and read', async (t) => {
   t.end();
 });
 
-test('NodeFile#truncate and append', async (t) => {
+test('NodeFile#truncate and append', async t => {
   if (!isBrowser) {
     const provider = new NodeFile(SLPK_URL, 'a+');
     const initialSize = await getSize(provider);

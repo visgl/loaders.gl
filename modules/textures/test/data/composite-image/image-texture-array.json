@@ -1,0 +1,7 @@
+{
+  "shape": "image-texture-array",
+  "layers": [
+    "../../../../images/test/data/ibl/papermill/environment/environment_back_0.jpg",
+    "../../../../images/test/data/ibl/papermill/environment/environment_front_0.jpg"
+  ]
+}

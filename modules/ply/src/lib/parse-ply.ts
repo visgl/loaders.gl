@@ -151,8 +151,6 @@ function parseHeaderLines(
         break;
 
       default:
-        // eslint-disable-next-line
-        console.log('unhandled', lineType, lineValues);
     }
   }
 
@@ -298,11 +296,10 @@ function parseASCII(data: any, header: PLYHeader): PLYAttributes {
 
   const attributes = getPLYAttributes(header);
 
-  let result: RegExpExecArray | null;
-
   const patternBody = /end_header\s([\s\S]*)$/;
   let body = '';
-  if ((result = patternBody.exec(data)) !== null) {
+  const result = patternBody.exec(data);
+  if (result !== null) {
     body = result[1];
   }
 

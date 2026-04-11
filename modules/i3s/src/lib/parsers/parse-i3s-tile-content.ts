@@ -26,6 +26,11 @@ import {I3SLoaderOptions} from '../../i3s-loader';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
+/**
+ * Select the loader used to decode the texture payload for an I3S node.
+ * @param textureFormat - Texture format declared by the tileset.
+ * @returns The loaders.gl texture loader that can decode the format.
+ */
 function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2') {
   switch (textureFormat) {
     case 'ktx-etc2':
@@ -42,6 +47,15 @@ function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
+/**
+ * Parse a single I3S node payload, including optional texture data and geometry.
+ * @param arrayBuffer - Raw node binary payload.
+ * @param tileOptions - Tile-level urls, material metadata, and coordinate settings.
+ * @param tilesetOptions - Shared schema information from the parent tileset.
+ * @param options - Loader options propagated from the top-level load call.
+ * @param context - Loader context used for fetch and parser resolution.
+ * @returns Parsed tile content ready for deck.gl rendering.
+ */
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
   tileOptions: I3STileOptions,
@@ -61,48 +75,62 @@ export async function parseI3STileContent(
   };
 
   if (tileOptions.textureUrl) {
-    // @ts-expect-error options is not properly typed
-    const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
-    const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-    const fetchFunc = context?.fetch || fetch;
-    const response = await fetchFunc(url); // options?.fetch
-    const arrayBuffer = await response.arrayBuffer();
-
-    // @ts-expect-error options is not properly typed
-    if (options?.i3s.decodeTextures) {
-      // TODO - replace with switch
-      if (loader === ImageBitmapLoader) {
-        const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
-        try {
-          // Route image decoding through the main-thread context when available.
-          const parsedTexture: any = await parseFromContext(
-            arrayBuffer,
-            ImageBitmapLoader,
-            imageLoaderOptions,
-            context!
-          );
-          content.texture = getImageData(parsedTexture);
-        } catch (e) {
-          // context object is different between worker and node.js conversion script.
-          // To prevent error we parse data in ordinary way if it is not parsed by using context.
-          const parsedTexture: any = await parse(arrayBuffer, loader, imageLoaderOptions, context);
-          content.texture = getImageData(parsedTexture);
-        }
-      } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        let texture: any = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
-        if (loader === BasisLoader) {
-          texture = texture[0];
-        }
-        content.texture = {
-          compressed: true,
-          mipmaps: false,
-          width: texture[0].width,
-          height: texture[0].height,
-          data: texture
-        };
+    try {
+      // @ts-expect-error options is not properly typed
+      const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
+      const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
+      const fetchFunc = context?.fetch || fetch;
+      const response = await fetchFunc(url); // options?.fetch
+      if (!response.ok) {
+        throw new Error(`Failed to load I3S texture: ${response.status} ${response.statusText}`);
       }
-    } else {
-      content.texture = arrayBuffer;
+
+      const textureArrayBuffer = await response.arrayBuffer();
+
+      // @ts-expect-error options is not properly typed
+      if (options?.i3s.decodeTextures) {
+        // TODO - replace with switch
+        if (loader === ImageBitmapLoader) {
+          const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
+          try {
+            const parsedTexture: any = await parseFromContext(
+              textureArrayBuffer,
+              ImageBitmapLoader,
+              imageLoaderOptions,
+              context!
+            );
+            content.texture = getImageData(parsedTexture);
+          } catch (_error) {
+            const parsedTexture: any = await parse(
+              textureArrayBuffer,
+              loader,
+              imageLoaderOptions,
+              context
+            );
+            content.texture = getImageData(parsedTexture);
+          }
+        } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
+          let texture: any = await load(
+            textureArrayBuffer,
+            loader,
+            tileOptions.textureLoaderOptions
+          );
+          if (loader === BasisLoader) {
+            texture = texture[0];
+          }
+          content.texture = {
+            compressed: true,
+            mipmaps: false,
+            width: texture[0].width,
+            height: texture[0].height,
+            data: texture
+          };
+        }
+      } else {
+        content.texture = textureArrayBuffer;
+      }
+    } catch (error) {
+      console.warn(error);
     }
   }
 
@@ -471,11 +499,11 @@ function getModelMatrix(positions: I3SMeshAttribute): Matrix4 {
 }
 
 /**
- * Makes a glTF-compatible PBR material from an I3S material definition
+ * Make a glTF-compatible PBR material from an I3S material definition.
  * @param materialDefinition - i3s material definition
  *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
- * @param texture - texture image
- * @returns {object}
+ * @param texture - Decoded texture data when one was fetched successfully.
+ * @returns Material definition normalized for glTF-style rendering.
  */
 function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: TileContentTexture) {
   let pbrMaterial;
@@ -516,7 +544,7 @@ function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: T
   }
 
   if (texture) {
-    setMaterialTexture(pbrMaterial, texture);
+    setMaterialTexture(pbrMaterial, texture!);
   }
 
   return pbrMaterial;
@@ -536,10 +564,9 @@ function convertColorFormat(colorFactor: number[]): number[] {
 }
 
 /**
- * Set texture in PBR material
- * @param {object} material - i3s material definition
+ * Attach a decoded texture to the first compatible material slot.
+ * @param material - i3s material definition
  * @param image - texture image
- * @returns
  */
 function setMaterialTexture(material, image: TileContentTexture): void {
   const texture = {source: {image}};

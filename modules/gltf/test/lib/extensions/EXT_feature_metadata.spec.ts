@@ -4,7 +4,7 @@ import test from 'tape-promise/tape';
 // @ts-expect-error
 import {decodeExtensions} from '@loaders.gl/gltf/lib/api/gltf-extensions';
 
-test('gltf#EXT_feature_metadata - Should do nothing if no "EXT_feature_metadata" extension', async (t) => {
+test('gltf#EXT_feature_metadata - Should do nothing if no "EXT_feature_metadata" extension', async t => {
   const gltfWithFeatureTextures = {
     json: {
       extensionsUsed: ['EXT_feature_metadata'],
@@ -27,7 +27,7 @@ test('gltf#EXT_feature_metadata - Should do nothing if no "EXT_feature_metadata"
   t.end();
 });
 
-test('gltf#EXT_feature_metadata - Should handle String feature attributes', async (t) => {
+test('gltf#EXT_feature_metadata - Should handle String feature attributes', async t => {
   const GLTF_WITH_STRING_PROPERTIES = {
     buffers: [
       {
@@ -130,7 +130,7 @@ test('gltf#EXT_feature_metadata - Should handle String feature attributes', asyn
   t.end();
 });
 
-test('gltf#EXT_feature_metadata - Should handle number feature attributes', async (t) => {
+test('gltf#EXT_feature_metadata - Should handle number feature attributes', async t => {
   const binaryBufferData = [
     65, 76, 48, 49, 51, 65, 76, 48, 49, 51, 65, 76, 48, 49, 51, 65, 76, 48, 49, 51, 65, 76, 48, 49,
     51, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 10, 0, 0, 0, 15, 0, 0, 0, 20, 0, 0, 0, 25, 0,
@@ -280,7 +280,7 @@ test('gltf#EXT_feature_metadata - Should handle number feature attributes', asyn
   t.end();
 });
 
-test('gltf#EXT_feature_metadata - Should handle feature texture attributes', async (t) => {
+test('gltf#EXT_feature_metadata - Should handle feature texture attributes', async t => {
   const GLTF_WITH_TEXTURES = {
     buffers: [
       {
@@ -400,7 +400,7 @@ test('gltf#EXT_feature_metadata - Should handle feature texture attributes', asy
   t.end();
 });
 
-test('gltf#EXT_feature_metadata - Should handle arrays', async (t) => {
+test('gltf#EXT_feature_metadata - Should handle arrays', async t => {
   const binaryBufferData = [
     0, 0, 0, 125, 125, 125, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 100, 100, 0, 125, 63, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

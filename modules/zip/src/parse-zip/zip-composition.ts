@@ -236,6 +236,6 @@ export async function getAllFiles(
  * @returns joined path
  */
 function pathJoin(...paths: string[]): string {
-  const resPaths: string[] = paths.filter((val) => val.length);
+  const resPaths: string[] = paths.filter(val => val.length);
   return path.join(...resPaths);
 }

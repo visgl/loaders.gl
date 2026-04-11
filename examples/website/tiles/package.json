@@ -18,6 +18,8 @@
     "@deck.gl/mesh-layers": "^9.0.1",
     "@deck.gl/react": "^9.0.1",
     "@loaders.gl/core": "4.4.0-alpha.1",
+    "@loaders.gl/deck-layers": "file:../../../modules/deck-layers",
+    "@loaders.gl/mlt": "4.4.0-alpha.15",
     "@loaders.gl/loader-utils": "4.4.0-alpha.1",
     "@loaders.gl/mvt": "4.4.0-alpha.1",
     "@loaders.gl/pmtiles": "4.4.0-alpha.1",

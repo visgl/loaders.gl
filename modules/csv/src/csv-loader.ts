@@ -99,7 +99,7 @@ async function parseCSV(
     header: parseWithHeader,
     download: false, // We handle loading, no need for papaparse to do it for us
     transformHeader: parseWithHeader ? duplicateColumnTransformer() : undefined,
-    error: (e) => {
+    error: e => {
       throw new Error(e);
     }
   };
@@ -115,13 +115,13 @@ async function parseCSV(
     case 'object-row-table':
       table = {
         shape: 'object-row-table',
-        data: rows.map((row) => (Array.isArray(row) ? convertToObjectRow(row, headerRow) : row))
+        data: rows.map(row => (Array.isArray(row) ? convertToObjectRow(row, headerRow) : row))
       };
       break;
     case 'array-row-table':
       table = {
         shape: 'array-row-table',
-        data: rows.map((row) => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow)))
+        data: rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow)))
       };
       break;
     default:
@@ -176,10 +176,15 @@ function parseCSVInBatches(
     step(results) {
       let row = results.data;
 
-      if (csvOptions.skipEmptyLines) {
+      if (csvOptions.skipEmptyLines === 'greedy') {
         // Manually reject lines that are empty
         const collapsedRow = row.flat().join('').trim();
         if (collapsedRow === '') {
+          return;
+        }
+      } else if (csvOptions.skipEmptyLines === true) {
+        row = normalizePapaStreamingRow(row);
+        if (row.length === 1 && row[0] === null) {
           return;
         }
       }
@@ -211,6 +216,9 @@ function parseCSVInBatches(
       }
 
       const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+      if (shape === 'object-row-table' && headerRow && row.length > headerRow.length) {
+        row = convertToPapaObjectRow(row, headerRow);
+      }
 
       // Add the row
       tableBatchBuilder =
@@ -266,7 +274,7 @@ function parseCSVInBatches(
  * @returns true if the row looks like a header
  */
 function isHeaderRow(row: string[]): boolean {
-  return row && row.every((value) => typeof value === 'string');
+  return row && row.every(value => typeof value === 'string');
 }
 
 /**
@@ -290,7 +298,7 @@ function readFirstRow(csvText: string): any[] {
  */
 function duplicateColumnTransformer(): (column: string) => string {
   const observedColumns = new Set<string>();
-  return (col) => {
+  return col => {
     let colName = col;
     let counter = 1;
     while (observedColumns.has(colName)) {
@@ -314,6 +322,22 @@ function generateHeader(columnPrefix: string, count: number = 0): string[] {
     headers.push(`${columnPrefix}${i + 1}`);
   }
   return headers;
+}
+
+function normalizePapaStreamingRow(row: unknown[]): unknown[] {
+  return row.map(value => (Array.isArray(value) && value.length === 0 ? null : value));
+}
+
+function convertToPapaObjectRow(
+  row: unknown[],
+  headerRow: string[]
+): {[columnName: string]: unknown} {
+  const objectRow = convertToObjectRow(row, headerRow);
+  const parsedExtra = row.slice(headerRow.length);
+  if (parsedExtra.length > 0) {
+    objectRow.__parsed_extra = parsedExtra;
+  }
+  return objectRow;
 }
 
 function deduceCSVSchema(row, headerRow): Schema {

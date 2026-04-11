@@ -15,6 +15,8 @@ export {ArrowLoader} from './arrow-loader';
 
 export {ArrowWriter} from './arrow-writer';
 
+export {tightenArrowTableSchemaNullability} from './lib/tighten-arrow-table-schema-nullability';
+
 // Geoarrow loader
 export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
 export {GeoArrowLoader} from './geoarrow-loader';
@@ -22,8 +24,35 @@ export {GeoArrowLoader} from './geoarrow-loader';
 // EXPERIMENTAL
 
 // Arrow Utils
-// getGeometryColumnsFromArrowTable,
-// getGeoArrowEncoding
+export {IndexedArrowVector} from './lib/utils/indexed-arrow-vector';
+export {
+  IndexedArrowTable,
+  type IndexedArrowTableComparator,
+  type IndexedArrowTableFindPredicate,
+  type IndexedArrowTablePredicate,
+  type IndexedArrowTableRow
+} from './lib/utils/indexed-arrow-table';
+export {
+  MappedArrowTable,
+  type MappedArrowTableComparator,
+  type MappedArrowTablePredicate
+} from './lib/utils/mapped-arrow-table';
+export {
+  validateArrowTableSchema,
+  type ValidateArrowTableSchemaOptions
+} from './lib/utils/arrow-schema-utils';
+export {
+  renameArrowColumns,
+  type ArrowFieldNameMap,
+  type RenamedArrowColumns
+} from './lib/utils/rename-arrow-columns';
+export {
+  compareUTF8,
+  parseUTF8BigInt,
+  parseUTF8Boolean,
+  parseUTF8Number,
+  type UTF8Comparison
+} from './lib/utils/utf8-utils';
 
 // EXPERIMENTAL WORKER
 export {hardClone} from './workers/hard-clone';

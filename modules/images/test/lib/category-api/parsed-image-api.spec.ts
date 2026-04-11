@@ -26,12 +26,14 @@ async function loadImages(): Promise<ImageType[]> {
     imagesPromise ||
     Promise.all([
       load(IMAGE_URL, ImageBitmapLoader),
-      load(IMAGE_URL, ImageLoader, {image: {type: 'data'}})
+      ...IMAGE_TYPES.filter(type => type !== 'imagebitmap' && isImageTypeSupported(type)).map(
+        type => load(IMAGE_URL, ImageLoader, {image: {type}})
+      )
     ]);
   return await imagesPromise;
 }
 
-test('Image Category#Parsed Image API imports', (t) => {
+test('Image Category#Parsed Image API imports', t => {
   t.ok(getDefaultImageType, 'getDefaultImageType() is defined');
   t.ok(isImageTypeSupported, 'isImageTypeSupported() is defined');
   t.ok(isImage, 'isImage() is defined');
@@ -41,7 +43,7 @@ test('Image Category#Parsed Image API imports', (t) => {
   t.end();
 });
 
-test('Image Category#getDefaultImageType', async (t) => {
+test('Image Category#getDefaultImageType', async t => {
   const imageType = getDefaultImageType();
   t.ok(IMAGE_TYPES.includes(imageType), 'Returns an expected image type');
   if (globalThis.loaders?.parseImageNode) {
@@ -50,7 +52,7 @@ test('Image Category#getDefaultImageType', async (t) => {
   t.end();
 });
 
-test('Image Category#isImageTypeSupported', async (t) => {
+test('Image Category#isImageTypeSupported', async t => {
   for (const type of IMAGE_TYPES) {
     const supported = isImageTypeSupported(type);
     t.equals(
@@ -63,7 +65,7 @@ test('Image Category#isImageTypeSupported', async (t) => {
   t.end();
 });
 
-test('Image Category#isImage', async (t) => {
+test('Image Category#isImage', async t => {
   const IMAGES = await loadImages();
   for (const image of IMAGES) {
     t.equals(isImage(image), true, 'isImage recognizes image');
@@ -73,16 +75,20 @@ test('Image Category#isImage', async (t) => {
   t.end();
 });
 
-test('Image Category#getImageType', async (t) => {
+test('Image Category#getImageType', async t => {
   const IMAGES = await loadImages();
-  t.equals(getImageType(IMAGES[0]), 'imagebitmap', 'returns bitmap type');
-  t.equals(getImageType(IMAGES[1]), 'data', 'returns data type');
+  const imageTypes = IMAGES.map(getImageType);
+  t.ok(imageTypes.includes('imagebitmap'), 'returns bitmap type');
+  t.ok(imageTypes.includes('data'), 'returns data type');
+  if (isImageTypeSupported('image')) {
+    t.ok(imageTypes.includes('image'), 'returns image type when supported');
+  }
   // @ts-ignore
   t.throws(() => getImageType('not an image'));
   t.end();
 });
 
-test('Image Category#getImageSize', async (t) => {
+test('Image Category#getImageSize', async t => {
   const IMAGES = await loadImages();
   for (const image of IMAGES) {
     t.equals(typeof getImageSize(image), 'object', 'returns size object');
@@ -92,7 +98,7 @@ test('Image Category#getImageSize', async (t) => {
   t.end();
 });
 
-test('Image Category#getImageData', async (t) => {
+test('Image Category#getImageData', async t => {
   const IMAGES = await loadImages();
   for (const image of IMAGES) {
     t.equals(typeof getImageData(image), 'object', 'returns data');

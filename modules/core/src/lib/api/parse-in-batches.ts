@@ -207,7 +207,7 @@ async function* parseChunkInBatches(
  * @todo run through batch builder to apply options etc...
  */
 function convertDataToBatch(parsedData: unknown, loader: Loader): Batch {
-  // prettier-ignore
+  // biome-ignore format: preserve intentional fixture layout
   const batch: Batch = isTable(parsedData)
     ? makeBatchFromTable(parsedData)
     : {

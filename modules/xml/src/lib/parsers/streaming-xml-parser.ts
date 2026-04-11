@@ -35,7 +35,7 @@ export class StreamingXMLParser {
         }
       },
 
-      onkey: (name) => {
+      onkey: name => {
         this.currentState.key = name;
       },
 
@@ -51,11 +51,11 @@ export class StreamingXMLParser {
         this._closeArray();
       },
 
-      ontext: (value) => {
+      ontext: value => {
         this._pushOrSet(value);
       },
 
-      onerror: (error) => {
+      onerror: error => {
         throw error;
       },
 

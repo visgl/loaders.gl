@@ -1,16 +1,59 @@
 # What's New
 
-## v4.4 (in development)
+## v5.0
 
-Target Release Date: Q1 2026
-
-See the [v4.4 Roadmap](/docs/roadmap) for more details.
+Release Date: 2026
 
 **Highlights**
 
-- **TypeScript** - TypeScript v5.9, stricter typings, `ArrayBuffer` -> `ArrayBufferLike` codebase migration.
-- **Website** - docusaurus@3.9. Website search.
-- **Tooling** - Bump to @vis.gl/dev-tools@1.0, GitHub CI optimizations, migrate from volta to corepack
+- **Documentation** - Interactive graphical docs explain loaders.gl concepts, loader pages have live previews.
+- **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables. 
+- **Benchmarks** - Now includes external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
+
+**Features**
+
+**@loaders.gl/draco**
+
+- [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer) now accepts plain `Mesh` data and Mesh Arrow tables in addition to existing Draco attribute-map input.
+
+**@loaders.gl/las** 
+
+- [`LASWriter`](/docs/modules/las/api-reference/las-writer) NEW -writes uncompressed LAS point cloud data.
+
+**@loaders.gl/obj**
+
+- [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer) NEW - writes Wavefront OBJ mesh data.
+
+**@loaders.gl/pcd**
+
+- [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer) NEW - writes ASCII Point Cloud Data (PCD).
+
+**@loaders.gl/ply**
+
+- [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
+
+**@loaders.gl/terrain**
+
+- [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) NEW - writes quantized mesh terrain data.
+
+**@loaders.gl/csv** 
+  
+- `CSVArrowLoader` NEW - is now the official Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
+- `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
+- `CSVArrowWriter` NEW writes Apache Arrow tables to CSV text.
+
+## v4.4
+
+Release Date: March 31, 2026
+
+**Highlights**
+
+- **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
+- **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader).
+- **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
+- **@loaders.gl/mvt** - New experimental [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
+
+**Features**
 
 **All modules**
 
@@ -24,28 +67,23 @@ See the [v4.4 Roadmap](/docs/roadmap) for more details.
 
 - `LZOCompression` was removed due to lack of maintenance and licensing concerns with the underlying `lzo-wasm` library.
 
-**@loaders.gl/mvt**
-
-- [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) A new experimental writer that allows GeoJSON to be written in binary MVT tile format.
-
 **@loaders.gl/shapefile**
 
 - `ShapefileLoader` - Now forwards `dbf` loader options (such as `workerUrl`) when loading sidecar files.
 
-**@loaders.gl/arrow**
+**@loaders.gl/zip**
 
-- Support for `apache-arrow@21`
-- A new documentation page about [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
+- `ZipWriter` adds `options.zip.createFolders` to emit parent directory entries for nested file keys.
 
 **@loaders.gl/tile-converter**
 
 - `tile-converter` is now broken out into separate "application" and can be versioned and published independently.
 
-**@loaders.gl/textures**
+**Internal Changes**
 
-- Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields.
-- `BasisLoader` now accepts `basis.supportedTextureFormats` to guide `'auto'` format selection with an explicit list of supported target formats.
-- [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader) adds support for Radiance RGBE `.hdr` textures and returns a `Texture` with a decoded `rgba32float` level.
+- **TypeScript** - TypeScript v5.9, stricter typings, `ArrayBuffer` -> `ArrayBufferLike` codebase migration.
+- **Website** - docusaurus@3.9. Website search.
+- **Tooling** - Bump to @vis.gl/dev-tools@1.0, GitHub CI optimizations, migrate from volta to corepack
 
 ## v4.3
 
@@ -230,7 +268,7 @@ A major release that brings:
 
 **@loaders.gl/arrow**
 
-- Now uses latest [`apache-arrow` v13](/docs/arrowjs/whats-new#v130).
+- Now uses latest [`apache-arrow` v21](/docs/arrowjs/whats-new#v210).
 
 **@loaders.gl/draco**
 

@@ -31,7 +31,7 @@ const IMPLICIT_QUADTREE_TILESET_URL =
 
 function checkRegionBoundingBox(t, tile) {
   if (tile.children.length) {
-    return tile.children.forEach((childTile) => checkRegionBoundingBox(t, childTile));
+    return tile.children.forEach(childTile => checkRegionBoundingBox(t, childTile));
   }
 
   return t.ok(tile.boundingVolume.box) && t.equal(tile.boundingVolume.box.length, 12);
@@ -39,13 +39,13 @@ function checkRegionBoundingBox(t, tile) {
 
 function checkRegionBoundingVolumes(t, tile) {
   if (tile.children.length) {
-    return tile.children.forEach((childTile) => checkRegionBoundingVolumes(t, childTile));
+    return tile.children.forEach(childTile => checkRegionBoundingVolumes(t, childTile));
   }
 
   return t.ok(tile.boundingVolume.region) && t.equal(tile.boundingVolume.region.length, 6);
 }
 
-test('Tiles3DLoader#Tileset file', async (t) => {
+test('Tiles3DLoader#Tileset file', async t => {
   const response = await fetchFile(TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
   t.ok(tileset);
@@ -70,9 +70,9 @@ test('Tiles3DLoader#Tileset file', async (t) => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async (t) => {
+test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async t => {
   const response = await fetchFile(TILE_B3DM_WITH_DRACO_URL);
-  const tile = await parse(response, [Tiles3DLoader, DracoLoader]);
+  const tile = await parse(response, [Tiles3DLoader, DracoLoader], {worker: false});
   t.ok(tile);
   // @ts-expect-error type Tiles3DLoader
   t.ok(tile.gltf);
@@ -81,7 +81,7 @@ test('Tiles3DLoader#Tile with GLB w/ Draco bufferviews', async (t) => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile with actual b3dm file', async (t) => {
+test('Tiles3DLoader#Tile with actual b3dm file', async t => {
   const response = await fetchFile(ACTUAL_B3DM);
   const tile = await parse(response, Tiles3DLoader);
   t.ok(tile);
@@ -91,7 +91,7 @@ test('Tiles3DLoader#Tile with actual b3dm file', async (t) => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile with deprecated 1 b3dm file', async (t) => {
+test('Tiles3DLoader#Tile with deprecated 1 b3dm file', async t => {
   const response = await fetchFile(DEPRECATED_B3DM_1);
   const tile = await parse(response, Tiles3DLoader);
   t.ok(tile);
@@ -101,7 +101,7 @@ test('Tiles3DLoader#Tile with deprecated 1 b3dm file', async (t) => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async (t) => {
+test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async t => {
   const response = await fetchFile(DEPRECATED_B3DM_2);
   const tile = await parse(response, Tiles3DLoader);
   t.ok(tile);
@@ -111,7 +111,7 @@ test('Tiles3DLoader#Tile with deprecated 2 b3dm file', async (t) => {
   t.end();
 });
 
-test('Tiles3DLoader#loads json from base64 URL', async (t) => {
+test('Tiles3DLoader#loads json from base64 URL', async t => {
   // fetching base64 doesn't work in NodeJS
   if (!isBrowser) {
     t.end();
@@ -137,7 +137,7 @@ test('Tiles3DLoader#loads json from base64 URL', async (t) => {
   t.end();
 });
 
-test('Tiles3DLoader#Tile GLTF content extension', async (t) => {
+test('Tiles3DLoader#Tile GLTF content extension', async t => {
   const tileset = await load(GLTF_CONTENT_TILESET_URL, Tiles3DLoader);
   const glbTileContent = await load(tileset.root.children[0].contentUrl, Tiles3DLoader);
   t.equals(glbTileContent.type, 'glTF');
@@ -145,7 +145,7 @@ test('Tiles3DLoader#Tile GLTF content extension', async (t) => {
 });
 
 // eslint-disable-next-line max-statements
-test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subtrees', async (t) => {
+test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subtrees', async t => {
   const IMPLICIT_TILING_EXPECTED = {
     subdivisionScheme: 'OCTREE',
     subtreeLevels: 3,
@@ -219,7 +219,7 @@ test('Tiles3DLoader#Implicit Octree Tileset with bitstream availability and subt
 });
 
 // eslint-disable-next-line max-statements
-test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', async (t) => {
+test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', async t => {
   const ROOT_EXTENSION_EXPECTED = {
     '3DTILES_implicit_tiling': {
       subdivisionScheme: 'QUADTREE',
@@ -277,7 +277,7 @@ test('Tiles3DLoader#Implicit Quadtree Tileset with full content availability', a
   t.end();
 });
 
-test('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', async (t) => {
+test('Tiles3DLoader#Implicit Quadtree Tileset with bitstream availability', async t => {
   const response = await fetchFile(IMPLICIT_QUADTREE_TILESET_URL);
   const tileset = await parse(response, Tiles3DLoader);
 

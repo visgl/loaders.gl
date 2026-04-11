@@ -248,7 +248,7 @@ function reprojectFeatures(features: Feature[], sourceCrs?: string, targetCrs?: 
   }
 
   const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: targetCrs || 'WGS84'});
-  return transformGeoJsonCoords(features, (coord) => projection.project(coord));
+  return transformGeoJsonCoords(features, coord => projection.project(coord));
 }
 
 /**
@@ -279,18 +279,22 @@ export async function loadShapefileSidecarFiles(
   let prj: string | undefined;
 
   const shxResponse = await shxPromise;
-  if (shxResponse.ok) {
+  if (shxResponse.ok && !isHtmlFallbackResponse(shxResponse)) {
     const arrayBuffer = await shxResponse.arrayBuffer();
     shx = parseShx(arrayBuffer);
   }
 
   const cpgResponse = await cpgPromise;
-  if (cpgResponse.ok) {
-    cpg = await cpgResponse.text();
+  if (cpgResponse.ok && !isHtmlFallbackResponse(cpgResponse)) {
+    const encoding = await cpgResponse.text();
+    // Vite serves the test page for missing sidecar files; only accept plausible encoding labels.
+    if (/^[\w-]+$/.test(encoding.trim())) {
+      cpg = encoding;
+    }
   }
 
   const prjResponse = await prjPromise;
-  if (prjResponse.ok) {
+  if (prjResponse.ok && !isHtmlFallbackResponse(prjResponse)) {
     prj = await prjResponse.text();
   }
 
@@ -299,6 +303,10 @@ export async function loadShapefileSidecarFiles(
     cpg,
     prj
   };
+}
+
+function isHtmlFallbackResponse(response: Response): boolean {
+  return (response.headers.get('content-type') || '').includes('text/html');
 }
 
 /**

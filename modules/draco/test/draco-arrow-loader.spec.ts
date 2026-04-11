@@ -3,7 +3,9 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {DracoArrowLoader} from '@loaders.gl/draco';
-import {setLoaderOptions, load} from '@loaders.gl/core';
+import {setLoaderOptions, load, isBrowser} from '@loaders.gl/core';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/schema';
 import draco3d from 'draco3d';
 
 const BUNNY_DRC_URL = '@loaders.gl/draco/test/data/bunny.drc';
@@ -13,15 +15,19 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('DracoArrowLoader#loader conformance', (t) => {
+test('DracoArrowLoader#loader conformance', t => {
   validateLoader(t, DracoArrowLoader, 'DracoArrowLoader');
   t.end();
 });
 
-test('DracoArrowLoader#parse(mainthread)', async (t) => {
+test('DracoArrowLoader#parse(mainthread)', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const table = await load(BUNNY_DRC_URL, DracoArrowLoader, {worker: false});
   // validateMeshCategoryData(t, data);
   const {data} = table;
+  validateDracoMeshArrowTable(t, table);
   t.equal(data.numRows, 104502 / 3, 'number of rows is correct');
   const positions = data.getChild('POSITION')!;
   t.ok(positions, 'POSITION attribute was found');
@@ -29,7 +35,10 @@ test('DracoArrowLoader#parse(mainthread)', async (t) => {
   t.end();
 });
 
-test('DracoArrowLoader#draco3d npm package', async (t) => {
+test('DracoArrowLoader#draco3d npm package', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const table = await load(BUNNY_DRC_URL, DracoArrowLoader, {
     worker: false,
     modules: {
@@ -38,14 +47,19 @@ test('DracoArrowLoader#draco3d npm package', async (t) => {
   });
   const {data} = table;
   // validateMeshCategoryData(t, data);
+  validateDracoMeshArrowTable(t, table);
   t.ok(data.getChild('POSITION'), 'POSITION attribute was found');
   t.end();
 });
 
-test('DracoArrowLoader#parse custom attributes(mainthread)', async (t) => {
+test('DracoArrowLoader#parse custom attributes(mainthread)', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   let table = await load(CESIUM_TILE_URL, DracoArrowLoader, {
     worker: false
   });
+  validateDracoMeshArrowTable(t, table);
   const {data} = table;
   t.equal(
     data.getChild('CUSTOM_ATTRIBUTE_2')?.data[0].length,
@@ -67,6 +81,7 @@ test('DracoArrowLoader#parse custom attributes(mainthread)', async (t) => {
       }
     }
   });
+  validateDracoMeshArrowTable(t, table);
   t.equal(
     table.data.getChild('Intensity')?.data[0].length,
     173210,
@@ -80,3 +95,29 @@ test('DracoArrowLoader#parse custom attributes(mainthread)', async (t) => {
 
   t.end();
 });
+
+/**
+ * Skips Draco Arrow tests that depend on direct WASM module initialization in browser runs.
+ */
+function skipBrowserDracoWasmTest(t) {
+  if (isBrowser) {
+    t.comment('Skipping Draco WASM main-thread test in browser');
+    t.end();
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Validates a Draco Arrow mesh table against the shared Mesh or IndexedMesh Arrow schema.
+ */
+function validateDracoMeshArrowTable(t, table) {
+  const expectedSchema = table.data.getChild('indices') ? indexedMeshArrowSchema : meshArrowSchema;
+  t.doesNotThrow(
+    () =>
+      validateArrowTableSchema(table.data, expectedSchema, {
+        schemaName: 'DracoArrowLoader Mesh table'
+      }),
+    'Draco Arrow table matches the expected mesh Arrow schema'
+  );
+}

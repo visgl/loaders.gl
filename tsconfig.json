@@ -71,6 +71,9 @@
       "@loaders.gl/core/test": [
         "modules/core/test"
       ],
+      "@loaders.gl/deck-layers": [
+        "modules/deck-layers/src"
+      ],
       "@loaders.gl/compression": [
         "modules/compression/src"
       ],
@@ -178,6 +181,12 @@
       ],
       "@loaders.gl/lerc/test": [
         "modules/lerc/test"
+      ],
+      "@loaders.gl/mlt": [
+        "modules/mlt/src"
+      ],
+      "@loaders.gl/mlt/test": [
+        "modules/mlt/test"
       ],
       "@loaders.gl/mvt": [
         "modules/mvt/src"

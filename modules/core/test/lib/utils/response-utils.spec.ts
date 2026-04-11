@@ -10,14 +10,14 @@ import {
   checkResponseSync
 } from '@loaders.gl/core/lib/utils/response-utils';
 
-test('Response', async (t) => {
+test('Response', async t => {
   const response = new Response('abc');
   const text = await response.text();
   t.equal(text, 'abc');
   t.end();
 });
 
-test('makeResponse', async (t) => {
+test('makeResponse', async t => {
   const responseInput = new Response('abc');
   let response = await makeResponse(responseInput);
   t.equal(response, responseInput, 'makeResponse() returns response argument');
@@ -30,7 +30,7 @@ test('makeResponse', async (t) => {
   t.end();
 });
 
-test('makeResponse(File)', async (t) => {
+test('makeResponse(File)', async t => {
   const file = new File(['abc'], 'foo.txt', {
     type: 'text/plain'
   });
@@ -63,7 +63,7 @@ test('makeResponse(File)', async (t) => {
   t.end();
 });
 
-test('checkResponseSync', (t) => {
+test('checkResponseSync', t => {
   const response = new Response('{message: "server died"}', {status: 500});
   t.equal(response.ok, false, 'Check response.ok');
   t.throws(() => checkResponseSync(response), /500/, 'Check response throws');
@@ -71,7 +71,7 @@ test('checkResponseSync', (t) => {
   t.end();
 });
 
-test('checkResponse', async (t) => {
+test('checkResponse', async t => {
   const response = new Response('{message: "server died"}', {status: 500});
   Object.defineProperty(response, 'url', {
     value: 'https://some.url/not/even/very/long'
@@ -83,7 +83,7 @@ test('checkResponse', async (t) => {
   t.end();
 });
 
-test('checkResponse(body used)', async (t) => {
+test('checkResponse(body used)', async t => {
   const response = new Response('{message: "server died"}', {status: 500});
   await response.text();
   Object.defineProperty(response, 'url', {

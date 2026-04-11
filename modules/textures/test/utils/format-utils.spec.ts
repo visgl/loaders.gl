@@ -20,11 +20,11 @@ import {
 } from '../../src/lib/utils/texture-format-map';
 import {GL_COMPRESSED_RGB_S3TC_DXT1_EXT} from '../../src/lib/gl-extensions';
 
-test('detectSupportedGPUTextureFormats', (t) => {
+test('detectSupportedGPUTextureFormats', t => {
   if (isBrowser) {
     // Minimal test as this is WebGL dependent
     const formats = detectSupportedGPUTextureFormats();
-    formats.forEach((format) => t.ok(typeof format === 'string'));
+    formats.forEach(format => t.ok(typeof format === 'string'));
     t.end();
   } else {
     const formats = detectSupportedGPUTextureFormats();
@@ -33,10 +33,10 @@ test('detectSupportedGPUTextureFormats', (t) => {
   }
 });
 
-test('detectSupportedTextureFormats', (t) => {
+test('detectSupportedTextureFormats', t => {
   if (isBrowser) {
     const textureFormats = detectSupportedTextureFormats();
-    textureFormats.forEach((textureFormat) => t.ok(typeof textureFormat === 'string'));
+    textureFormats.forEach(textureFormat => t.ok(typeof textureFormat === 'string'));
     t.end();
   } else {
     const textureFormats = detectSupportedTextureFormats();
@@ -45,7 +45,7 @@ test('detectSupportedTextureFormats', (t) => {
   }
 });
 
-test('selectSupportedBasisFormat', (t) => {
+test('selectSupportedBasisFormat', t => {
   t.equal(
     selectSupportedBasisFormat(['astc-4x4-unorm']),
     'astc-4x4',
@@ -72,7 +72,7 @@ test('selectSupportedBasisFormat', (t) => {
     'ETC2 texture formats select ETC2 format'
   );
   t.equal(
-    selectSupportedBasisFormat(['etc1-rbg-unorm-ext']),
+    selectSupportedBasisFormat(['etc1-rgb-unorm-webgl']),
     'etc1',
     'ETC1 extension texture formats select ETC1 format'
   );
@@ -80,7 +80,7 @@ test('selectSupportedBasisFormat', (t) => {
   t.end();
 });
 
-test('getSupportedBasisFormats', (t) => {
+test('getSupportedBasisFormats', t => {
   const supportedBasisFormats = getSupportedBasisFormats([
     'bc3-rgba-unorm',
     'bc7-rgba-unorm',
@@ -94,14 +94,14 @@ test('getSupportedBasisFormats', (t) => {
   t.end();
 });
 
-test('texture format maps are reversible for known WebGL extension formats', (t) => {
+test('texture format maps are reversible for known WebGL extension formats', t => {
   t.equal(
     getTextureFormatFromWebGLFormat(GL_COMPRESSED_RGB_S3TC_DXT1_EXT),
-    'bc1-rgb-unorm-ext',
+    'bc1-rgb-unorm-webgl',
     'maps known WebGL compressed formats to canonical texture format strings'
   );
   t.equal(
-    getWebGLFormatFromTextureFormat('bc1-rgb-unorm-ext'),
+    getWebGLFormatFromTextureFormat('bc1-rgb-unorm-webgl'),
     GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
     'maps canonical texture format strings back to WebGL format constants'
   );

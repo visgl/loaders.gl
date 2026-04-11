@@ -6,7 +6,7 @@ import {isBrowser} from '@loaders.gl/core';
 if (!isBrowser) {
   // https://fetch.spec.whatwg.org/#headers-class
   // Run the tests both under browser and Node (ensures they conform to built-in)
-  test('constructor copies headers', (t) => {
+  test('constructor copies headers', t => {
     const original = new Headers();
     original.append('Accept', 'application/json');
     original.append('Accept', 'text/plain');
@@ -18,7 +18,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('constructor works with arrays', (t) => {
+  test('constructor works with arrays', t => {
     const array: [string, string][] = [
       ['Content-Type', 'text/xml'],
       ['Breaking-Bad', '<3']
@@ -30,7 +30,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('headers are case insensitive', (t) => {
+  test('headers are case insensitive', t => {
     const headers = new Headers({Accept: 'application/json'});
     t.equal(headers.get('ACCEPT'), 'application/json');
     t.equal(headers.get('Accept'), 'application/json');
@@ -38,7 +38,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('appends to existing', (t) => {
+  test('appends to existing', t => {
     const headers = new Headers({Accept: 'application/json'});
     t.notOk(headers.has('Content-Type'));
     headers.append('Content-Type', 'application/json');
@@ -47,34 +47,34 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('appends values to existing header name', (t) => {
+  test('appends values to existing header name', t => {
     const headers = new Headers({Accept: 'application/json'});
     headers.append('Accept', 'text/plain');
     t.equal(headers.get('Accept'), 'application/json, text/plain');
     t.end();
   });
 
-  test('sets header name and value', (t) => {
+  test('sets header name and value', t => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
     t.equal(headers.get('Content-Type'), 'application/json');
     t.end();
   });
 
-  test('returns null on no header found', (t) => {
+  test('returns null on no header found', t => {
     const headers = new Headers();
     t.equals(headers.get('Content-Type'), null);
     t.end();
   });
 
-  test('has headers that are set', (t) => {
+  test('has headers that are set', t => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
     t.ok(headers.has('Content-Type'));
     t.end();
   });
 
-  test('deletes headers', (t) => {
+  test('deletes headers', t => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
     t.ok(headers.has('Content-Type'));
@@ -84,7 +84,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('converts field name to string on set and get', (t) => {
+  test('converts field name to string on set and get', t => {
     const headers = new Headers();
     // @ts-ignore
     headers.set(1, 'application/json');
@@ -94,7 +94,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('converts field value to string on set and get', (t) => {
+  test('converts field value to string on set and get', t => {
     const headers = new Headers();
     // @ts-ignore
     headers.set('Content-Type', 1);
@@ -105,7 +105,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('throws TypeError on invalid character in field name', (t) => {
+  test('throws TypeError on invalid character in field name', t => {
     // @ts-ignore
     // t.throws(() => new Headers({'[Accept]': 'application/json'}), TypeError);
     // @ts-ignore
@@ -117,7 +117,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('is iterable with forEach', (t) => {
+  test('is iterable with forEach', t => {
     // featureDependent(!brokenFF)
     // featureDependent(test, !brokenFF);
     const headers = new Headers();
@@ -137,7 +137,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('forEach accepts second thisArg argument', (t) => {
+  test('forEach accepts second thisArg argument', t => {
     const headers = new Headers({Accept: 'application/json'});
     const thisArg = 42;
     // eslint-disable-next-line no-invalid-this
@@ -148,7 +148,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('is iterable with keys', (t) => {
+  test('is iterable with keys', t => {
     // featureDependent(!brokenFF)
     const headers = new Headers();
     headers.append('Accept', 'application/json');
@@ -162,7 +162,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('is iterable with values', (t) => {
+  test('is iterable with values', t => {
     // featureDependent(!brokenFF)
     const headers = new Headers();
     headers.append('Accept', 'application/json');
@@ -176,7 +176,7 @@ if (!isBrowser) {
     t.end();
   });
 
-  test('is iterable with entries', (t) => {
+  test('is iterable with entries', t => {
     // featureDependent(!brokenFF)
     const headers = new Headers();
     headers.append('Accept', 'application/json');
