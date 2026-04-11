@@ -65,7 +65,7 @@ function getNodeImageData(image: ImageType): ImageDataType | ImageData {
 
 function getBrowserImageData(image: ImageType): ImageData | ImageDataType {
   // Extract the image data from the image via a canvas
-  const canvas = document.createElement('canvas');
+  const canvas = createBrowserCanvas(image.width, image.height);
   // TODO - reuse the canvas?
   const context = canvas.getContext('2d');
   if (!context) {
@@ -79,6 +79,27 @@ function getBrowserImageData(image: ImageType): ImageData | ImageDataType {
   context.drawImage(image, 0, 0);
   // @ts-ignore
   return context.getImageData(0, 0, image.width, image.height);
+}
+
+/**
+ * Creates a browser-compatible canvas in either the window or worker runtime.
+ * @param width - Canvas width in pixels.
+ * @param height - Canvas height in pixels.
+ * @returns Canvas instance that supports a 2D drawing context.
+ */
+function createBrowserCanvas(width: number, height: number): HTMLCanvasElement | OffscreenCanvas {
+  if (typeof OffscreenCanvas !== 'undefined') {
+    return new OffscreenCanvas(width, height);
+  }
+
+  if (typeof document !== 'undefined') {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    return canvas;
+  }
+
+  throw new Error('getImageData');
 }
 
 // PRIVATE

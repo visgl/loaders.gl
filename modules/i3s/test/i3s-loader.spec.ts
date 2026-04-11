@@ -6,6 +6,9 @@ import {I3SLoader} from '@loaders.gl/i3s';
 
 test('I3SLoader#Load tile content', async t => {
   const content = await loadI3STileContent({
+    i3s: {
+      useCompressedTextures: false
+    },
     loadOptions: {
       core: {worker: false}
     }
