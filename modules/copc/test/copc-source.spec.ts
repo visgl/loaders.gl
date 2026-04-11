@@ -56,3 +56,19 @@ test('COPCSource#loads full point content for a tile', async (t) => {
   t.ok(content?.cartographicOrigin.length === 3, 'content includes a coordinate origin');
   t.end();
 });
+
+test('COPCSource#derives cartographic view metadata from the dataset', async (t) => {
+  const source = COPCSource.createDataSource(ellipsoidFilename, {});
+
+  const metadata = await source.getMetadata();
+  const viewState = source.getViewState();
+
+  t.ok(Array.isArray(metadata.viewState.cartographicCenter), 'metadata includes a cartographic center');
+  t.ok(metadata.viewState.zoom > 0, 'metadata includes an inferred zoom');
+  t.deepEqual(
+    metadata.viewState.cartographicCenter,
+    viewState.cartographicCenter,
+    'metadata view state matches the source view state'
+  );
+  t.end();
+});

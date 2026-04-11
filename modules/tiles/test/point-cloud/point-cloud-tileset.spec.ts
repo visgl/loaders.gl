@@ -176,8 +176,8 @@ test('PointCloudTileset#selectTiles updates tiles and load state', async (t) => 
   t.equal(tileset.tiles.length, 3, 'all discovered tiles are tracked');
   t.deepEqual(
     tileset.selectedTiles.map((tile) => tile.id).sort(),
-    ['left', 'right'],
-    'child tiles are selected after refinement'
+    ['left', 'right', 'root'],
+    'point-cloud traversal keeps parent and child tiles selected during refinement'
   );
   t.equal(tileset.isLoaded(), false, 'selected tiles are not loaded before content resolves');
 

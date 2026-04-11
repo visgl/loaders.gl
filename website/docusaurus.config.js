@@ -6,6 +6,7 @@ const {resolve} = require('path');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
+const LOADERS_GL_VERSION = require('../modules/core/package.json').version;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -68,12 +69,14 @@ const config = {
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
             '@loaders.gl/bson': resolve('../modules/bson/src'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
+            '@loaders.gl/copc': resolve('../modules/copc/src/index.ts'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/csv': resolve('../modules/csv/src'),
             '@loaders.gl/draco': resolve('../modules/draco/src'),
             '@loaders.gl/excel': resolve('../modules/excel/src'),
             '@loaders.gl/flatgeobuf': resolve('../modules/flatgeobuf/src'),
+            '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
             '@loaders.gl/geopackage': resolve('../modules/geopackage/src'),
             '@loaders.gl/geotiff': resolve('../modules/geotiff/src'),
             '@loaders.gl/gis': resolve('../modules/gis/src'),
@@ -93,7 +96,7 @@ const config = {
             '@loaders.gl/ply': resolve('../modules/ply/src'),
             '@loaders.gl/pmtiles': resolve('../modules/pmtiles/src'),
             '@loaders.gl/polyfills': resolve('../modules/polyfills/src'),
-            '@loaders.gl/potree': resolve('../modules/potree/src'),
+            '@loaders.gl/potree': resolve('../modules/potree/src/potree-source.ts'),
             '@loaders.gl/schema': resolve('../modules/schema/src'),
             '@loaders.gl/schema-utils': resolve('../modules/schema-utils/src'),
             '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
@@ -101,7 +104,7 @@ const config = {
             '@loaders.gl/terrain': resolve('../modules/terrain/src'),
             '@loaders.gl/textures': resolve('../modules/textures/src'),
             '@loaders.gl/tile-converter': resolve('../apps/tile/converter/src-'),
-            '@loaders.gl/tiles': resolve('../modules/tiles/src'),
+            '@loaders.gl/tiles': resolve('../modules/tiles/src/index.ts'),
             '@loaders.gl/tiles-2d': resolve('../modules/tiles-2d/src'),
             '@loaders.gl/type-analyzer': resolve('../modules/type-analyzer/src'),
             '@loaders.gl/video': resolve('../modules/video/src'),
@@ -111,6 +114,7 @@ const config = {
             '@loaders.gl/xml': resolve('../modules/xml/src'),
             '@loaders.gl/zarr': resolve('../modules/zarr/src'),
             '@loaders.gl/zip': resolve('../modules/zip/src'),
+            'laz-perf$': resolve('./src/utils/laz-perf-with-wasm.js'),
             'sql.js': resolve('../node_modules/sql.js/dist/sql-wasm.js'),
 
             // '@deck.gl/react': resolve()
@@ -128,6 +132,9 @@ const config = {
           }
         },
         plugins: [
+          new webpack.DefinePlugin({
+            __VERSION__: JSON.stringify(LOADERS_GL_VERSION)
+          }),
           // new webpack.EnvironmentPlugin(['MapboxAccessToken', 'GoogleMapsAPIKey', 'GoogleMapsMapId']),
           // These modules break server side bundling
           new webpack.IgnorePlugin({
@@ -141,6 +148,13 @@ const config = {
               test: /\.m?js/,
               resolve: {
                 fullySpecified: false
+              }
+            },
+            {
+              test: /laz-perf\.wasm$/,
+              type: 'asset/resource',
+              generator: {
+                filename: 'assets/wasm/[name][ext]'
               }
             }
           ]

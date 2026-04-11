@@ -49,6 +49,7 @@ export const sidebars = {
       type: 'category',
       label: 'Point Cloud Formats',
       items: [
+        'pointclouds/point-tile-source',
         'pointclouds/draco',
         'pointclouds/las',
         'pointclouds/pcd',

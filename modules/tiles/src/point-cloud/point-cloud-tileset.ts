@@ -1,4 +1,5 @@
 import {Vector3} from '@math.gl/core';
+import {BoundingSphere, CullingVolume, Plane} from '@math.gl/culling';
 import type {Viewport} from '../types';
 import {PointCloudTile} from './point-cloud-tile';
 import type {
@@ -10,6 +11,7 @@ import type {
 export type PointCloudTilesetOptions = {
   debounceTime?: number;
   maximumScreenSpaceError?: number;
+  pointBudget?: number;
   maxDepth?: number;
   onTileLoad?: (tile: PointCloudTile) => void;
   onTileError?: (tile: PointCloudTile, error: Error) => void;
@@ -21,7 +23,8 @@ type PointCloudTilesetProps = Required<PointCloudTilesetOptions>;
 
 const DEFAULT_PROPS: PointCloudTilesetProps = {
   debounceTime: 0,
-  maximumScreenSpaceError: 24,
+  maximumScreenSpaceError: 1,
+  pointBudget: 2_000_000,
   maxDepth: Number.POSITIVE_INFINITY,
   onTileLoad: () => {},
   onTileError: () => {},
@@ -30,6 +33,41 @@ const DEFAULT_PROPS: PointCloudTilesetProps = {
 };
 
 const VISIBILITY_MARGIN_PIXELS = 64;
+
+type TraversalCandidate = {
+  tile: PointCloudTile;
+  weight: number;
+};
+
+type ProjectedBounds = {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+};
+
+type ProjectedFootprint = {
+  x: number;
+  y: number;
+  radius: number;
+};
+
+type FrustumPlane = {
+  distance: number;
+  normal: number[] | Vector3;
+};
+
+type PointCloudViewport = Viewport & {
+  cameraPosition?: number[] | Vector3;
+  getFrustumPlanes?: () => Record<string, FrustumPlane>;
+  projectPosition?: (coordinates: number[] | Vector3) => number[];
+  projectionMatrix?: number[];
+};
+
+type TraversalContext = {
+  viewport: Viewport;
+  cullingVolume: CullingVolume | null;
+};
 
 /**
  * A minimal point-cloud-oriented tileset manager backed by a DataSource.
@@ -41,6 +79,7 @@ export class PointCloudTileset {
   cartographicCenter: Vector3 | null = null;
   zoom = 1;
   boundingVolume: PointCloudBoundingVolume | null = null;
+  visibleTilesCount = 0;
 
   private frameNumberValue = 0;
   private pendingCount = 0;
@@ -161,9 +200,18 @@ export class PointCloudTileset {
       : [this.lastUpdatedViewports];
 
     const selectedTilesById = new Map<string, PointCloudTile>();
+    const visibleTileIds = new Set<string>();
+    let selectedPointCount = 0;
     for (const viewport of preparedViewports) {
-      await this.traverseTile(this.root, viewport, selectedTilesById);
+      const traversalContext = this.getTraversalContext(viewport);
+      selectedPointCount = await this.traverseTiles(
+        traversalContext,
+        selectedTilesById,
+        selectedPointCount,
+        visibleTileIds
+      );
     }
+    this.visibleTilesCount = visibleTileIds.size;
 
     this.selectedTiles = this.options.onTraversalComplete(Array.from(selectedTilesById.values()));
 
@@ -177,78 +225,167 @@ export class PointCloudTileset {
     }
   }
 
-  private async traverseTile(
-    tile: PointCloudTile,
-    viewport: Viewport,
-    selectedTilesById: Map<string, PointCloudTile>
-  ): Promise<void> {
-    if (!this.isVisible(tile, viewport)) {
-      return;
+  /**
+   * Traverses visible tiles in descending projected-size order, similar to Potree's viewer update loop.
+   */
+  private async traverseTiles(
+    traversalContext: TraversalContext,
+    selectedTilesById: Map<string, PointCloudTile>,
+    initialSelectedPointCount: number,
+    visibleTileIds: Set<string>
+  ): Promise<number> {
+    if (!this.root) {
+      return initialSelectedPointCount;
     }
 
-    if (this.shouldRefine(tile, viewport)) {
-      const children = await this.getChildren(tile);
-      if (children.length) {
-        let selectedChild = false;
-        for (const child of children) {
-          await this.traverseTile(child, viewport, selectedTilesById);
-          if (selectedTilesById.has(child.id)) {
-            selectedChild = true;
-          }
+    let selectedPointCount = initialSelectedPointCount;
+    const traversalQueue: TraversalCandidate[] = [
+      {tile: this.root, weight: Number.POSITIVE_INFINITY}
+    ];
+
+    while (traversalQueue.length > 0) {
+      traversalQueue.sort((candidateA, candidateB) => candidateB.weight - candidateA.weight);
+      const candidate = traversalQueue.shift();
+      if (!candidate) {
+        break;
+      }
+
+      const {tile, weight} = candidate;
+      if (!this.isVisible(tile, traversalContext)) {
+        continue;
+      }
+      visibleTileIds.add(tile.id);
+
+      if (!selectedTilesById.has(tile.id) && tile.pointCount > 0) {
+        const exceedsPointBudget =
+          selectedPointCount > 0 && selectedPointCount + tile.pointCount > this.options.pointBudget;
+        if (exceedsPointBudget) {
+          break;
         }
 
-        if (selectedChild) {
-          return;
+        selectedTilesById.set(tile.id, tile);
+        selectedPointCount += tile.pointCount;
+      }
+
+      if (selectedTilesById.has(tile.id)) {
+        tile.setSelected(traversalContext.viewport.id);
+      }
+
+      if (!this.shouldRefine(tile, weight)) {
+        continue;
+      }
+
+      const visibleChildren = await this.getVisibleChildren(tile, traversalContext);
+      if (visibleChildren.length > 0) {
+        traversalQueue.push(...visibleChildren);
+      }
+    }
+
+    return selectedPointCount;
+  }
+
+  /**
+   * Whether a tile should refine to children based on its projected footprint.
+   */
+  private shouldRefine(tile: PointCloudTile, traversalWeight: number): boolean {
+    return (
+      tile.level < this.options.maxDepth &&
+      Number.isFinite(traversalWeight) &&
+      traversalWeight > this.options.maximumScreenSpaceError
+    );
+  }
+
+  /**
+   * Build per-viewport traversal state once per traversal pass.
+   */
+  private getTraversalContext(viewport: Viewport): TraversalContext {
+    return {
+      viewport,
+      cullingVolume: this.getCullingVolume(viewport as PointCloudViewport)
+    };
+  }
+
+  /**
+   * Check tile visibility against the viewport frustum when possible.
+   */
+  private isVisible(tile: PointCloudTile, traversalContext: TraversalContext): boolean {
+    if (traversalContext.cullingVolume) {
+      const boundingSphere = this.getCommonSpaceBoundingSphere(
+        tile.boundingVolume,
+        traversalContext.viewport as PointCloudViewport
+      );
+
+      if (boundingSphere) {
+        const isInsideFrustum =
+          traversalContext.cullingVolume.computeVisibilityWithPlaneMask(
+            boundingSphere,
+            CullingVolume.MASK_INDETERMINATE
+          ) !== CullingVolume.MASK_OUTSIDE;
+
+        if (isInsideFrustum) {
+          return true;
         }
       }
     }
 
-    tile.setSelected(viewport.id);
-    selectedTilesById.set(tile.id, tile);
-  }
-
-  private shouldRefine(tile: PointCloudTile, viewport: Viewport): boolean {
-    return (
-      tile.level < this.options.maxDepth &&
-      tile.geometricError > 0 &&
-      this.estimateScreenSpaceError(tile, viewport) > this.options.maximumScreenSpaceError
-    );
-  }
-
-  private isVisible(tile: PointCloudTile, viewport: Viewport): boolean {
-    const bounds = this.projectBounds(tile.boundingVolume, viewport);
-    if (!bounds) {
+    const footprint = this.getProjectedFootprint(tile.boundingVolume, traversalContext.viewport);
+    if (!footprint) {
       return false;
     }
 
     return !(
-      bounds.maxX < -VISIBILITY_MARGIN_PIXELS ||
-      bounds.minX > viewport.width + VISIBILITY_MARGIN_PIXELS ||
-      bounds.maxY < -VISIBILITY_MARGIN_PIXELS ||
-      bounds.minY > viewport.height + VISIBILITY_MARGIN_PIXELS
+      footprint.x + footprint.radius < -VISIBILITY_MARGIN_PIXELS ||
+      footprint.x - footprint.radius > traversalContext.viewport.width + VISIBILITY_MARGIN_PIXELS ||
+      footprint.y + footprint.radius < -VISIBILITY_MARGIN_PIXELS ||
+      footprint.y - footprint.radius > traversalContext.viewport.height + VISIBILITY_MARGIN_PIXELS
     );
   }
 
-  private estimateScreenSpaceError(tile: PointCloudTile, viewport: Viewport): number {
-    const bounds = this.projectBounds(tile.boundingVolume, viewport);
-    if (!bounds) {
+  /**
+   * Estimate traversal priority from projected geometric error in pixels.
+   */
+  private estimateTraversalWeight(tile: PointCloudTile, viewport: Viewport): number {
+    const pointCloudViewport = viewport as PointCloudViewport;
+    const projectPosition = pointCloudViewport.projectPosition?.bind(pointCloudViewport);
+    const cameraPosition = pointCloudViewport.cameraPosition;
+    if (!projectPosition || !cameraPosition) {
+      const footprint = this.getProjectedFootprint(tile.boundingVolume, viewport);
+      return footprint ? footprint.radius * 2 : 0;
+    }
+
+    let centerCommonSpace: number[];
+    try {
+      centerCommonSpace = projectPosition(tile.boundingVolume.center);
+    } catch {
       return 0;
     }
 
-    return Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY);
+    const distanceToCamera = Math.max(
+      1e-6,
+      Math.hypot(
+        centerCommonSpace[0] - cameraPosition[0],
+        centerCommonSpace[1] - cameraPosition[1],
+        (centerCommonSpace[2] || 0) - (cameraPosition[2] || 0)
+      )
+    );
+
+    const projectionScale = this.getProjectionScalePixels(pointCloudViewport);
+    const geometricErrorCommonSpace = this.getGeometricErrorInCommonSpace(
+      tile.geometricError,
+      pointCloudViewport
+    );
+
+    return (geometricErrorCommonSpace * projectionScale) / distanceToCamera;
   }
 
+  /**
+   * Project a tile AABB into screen space and return its 2D footprint.
+   */
   private projectBounds(
     boundingVolume: PointCloudBoundingVolume,
     viewport: Viewport
-  ): {minX: number; minY: number; maxX: number; maxY: number} | null {
-    const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
-    const corners = [
-      [minBounds[0], minBounds[1], minBounds[2] || 0],
-      [minBounds[0], maxBounds[1], minBounds[2] || 0],
-      [maxBounds[0], minBounds[1], maxBounds[2] || 0],
-      [maxBounds[0], maxBounds[1], maxBounds[2] || 0]
-    ];
+  ): ProjectedBounds | null {
+    const corners = this.getBoundingVolumeCorners(boundingVolume);
 
     let minX = Number.POSITIVE_INFINITY;
     let minY = Number.POSITIVE_INFINITY;
@@ -259,7 +396,7 @@ export class PointCloudTileset {
       for (const corner of corners) {
         const [x, y] = viewport.project(corner);
         if (!Number.isFinite(x) || !Number.isFinite(y)) {
-          return null;
+          continue;
         }
         minX = Math.min(minX, x);
         minY = Math.min(minY, y);
@@ -270,7 +407,79 @@ export class PointCloudTileset {
       return null;
     }
 
+    if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+      return null;
+    }
+
     return {minX, minY, maxX, maxY};
+  }
+
+  /**
+   * Project a tile to a screen-space center/radius footprint.
+   */
+  private getProjectedFootprint(
+    boundingVolume: PointCloudBoundingVolume,
+    viewport: Viewport
+  ): ProjectedFootprint | null {
+    let centerX = Number.NaN;
+    let centerY = Number.NaN;
+
+    try {
+      [centerX, centerY] = viewport.project(boundingVolume.center);
+    } catch {
+      return null;
+    }
+
+    if (!Number.isFinite(centerX) || !Number.isFinite(centerY)) {
+      return null;
+    }
+
+    const corners = this.getBoundingVolumeCorners(boundingVolume);
+    let projectedRadius = 0;
+
+    try {
+      for (const corner of corners) {
+        const [x, y] = viewport.project(corner);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          continue;
+        }
+
+        projectedRadius = Math.max(projectedRadius, Math.hypot(x - centerX, y - centerY));
+      }
+    } catch {
+      return null;
+    }
+
+    if (projectedRadius === 0) {
+      const fallbackBounds = this.projectBounds(boundingVolume, viewport);
+      if (fallbackBounds) {
+        projectedRadius =
+          Math.max(fallbackBounds.maxX - fallbackBounds.minX, fallbackBounds.maxY - fallbackBounds.minY) / 2;
+      }
+    }
+
+    return {x: centerX, y: centerY, radius: projectedRadius};
+  }
+
+  /**
+   * Returns visible children ordered by their projected importance.
+   */
+  private async getVisibleChildren(
+    tile: PointCloudTile,
+    traversalContext: TraversalContext
+  ): Promise<TraversalCandidate[]> {
+    if (tile.level >= this.options.maxDepth) {
+      return [];
+    }
+
+    const children = await this.getChildren(tile);
+
+    return children
+      .map((child) => ({
+        tile: child,
+        weight: this.estimateTraversalWeight(child, traversalContext.viewport)
+      }))
+      .filter((candidate) => this.isVisible(candidate.tile, traversalContext));
   }
 
   private async getChildren(tile: PointCloudTile): Promise<PointCloudTile[]> {
@@ -330,8 +539,10 @@ export class PointCloudTileset {
     try {
       const content = await this.dataSource.loadTileContent(tile.header);
       tile.content = content;
-      tile.contentAvailable = Boolean(content);
-      this.options.onTileLoad(tile);
+      tile.contentAvailable = true;
+      if (content) {
+        this.options.onTileLoad(tile);
+      }
     } catch (error) {
       tile.contentFailed = true;
       this.options.onTileError(tile, error as Error);
@@ -363,5 +574,133 @@ export class PointCloudTileset {
     }
 
     return true;
+  }
+
+  /**
+   * Convert a tile bounding box into its eight corners.
+   */
+  private getBoundingVolumeCorners(boundingVolume: PointCloudBoundingVolume): number[][] {
+    const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
+    return [
+      [minBounds[0], minBounds[1], minBounds[2] || 0],
+      [minBounds[0], minBounds[1], maxBounds[2] || 0],
+      [minBounds[0], maxBounds[1], minBounds[2] || 0],
+      [minBounds[0], maxBounds[1], maxBounds[2] || 0],
+      [maxBounds[0], minBounds[1], minBounds[2] || 0],
+      [maxBounds[0], minBounds[1], maxBounds[2] || 0],
+      [maxBounds[0], maxBounds[1], minBounds[2] || 0],
+      [maxBounds[0], maxBounds[1], maxBounds[2] || 0]
+    ];
+  }
+
+  /**
+   * Build a culling volume directly from the viewport frustum in common space.
+   */
+  private getCullingVolume(viewport: PointCloudViewport): CullingVolume | null {
+    const getFrustumPlanes = viewport.getFrustumPlanes?.bind(viewport);
+    if (!getFrustumPlanes) {
+      return null;
+    }
+
+    const frustumPlanes = getFrustumPlanes();
+    const directions = ['left', 'right', 'bottom', 'top', 'near', 'far'];
+    const planes: Plane[] = [];
+
+    for (const direction of directions) {
+      const plane = frustumPlanes[direction];
+      if (!plane) {
+        return null;
+      }
+
+      planes.push(new Plane(plane.normal, -plane.distance));
+    }
+
+    return new CullingVolume(planes);
+  }
+
+  /**
+   * Approximate a tile AABB by a common-space bounding sphere for frustum culling.
+   */
+  private getCommonSpaceBoundingSphere(
+    boundingVolume: PointCloudBoundingVolume,
+    viewport: PointCloudViewport
+  ): BoundingSphere | null {
+    const projectPosition = viewport.projectPosition?.bind(viewport);
+    if (!projectPosition) {
+      return null;
+    }
+
+    const corners = this.getBoundingVolumeCorners(boundingVolume);
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let minZ = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+    let maxZ = Number.NEGATIVE_INFINITY;
+
+    try {
+      for (const corner of corners) {
+        const [x, y, z = 0] = projectPosition(corner);
+        if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
+          continue;
+        }
+
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        minZ = Math.min(minZ, z);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+        maxZ = Math.max(maxZ, z);
+      }
+    } catch {
+      return null;
+    }
+
+    if (
+      !Number.isFinite(minX) ||
+      !Number.isFinite(minY) ||
+      !Number.isFinite(minZ) ||
+      !Number.isFinite(maxX) ||
+      !Number.isFinite(maxY) ||
+      !Number.isFinite(maxZ)
+    ) {
+      return null;
+    }
+
+    return new BoundingSphere().fromCornerPoints([minX, minY, minZ], [maxX, maxY, maxZ]);
+  }
+
+  /**
+   * Approximate the viewport projection scale in screen pixels.
+   */
+  private getProjectionScalePixels(viewport: PointCloudViewport): number {
+    const projectionMatrix = viewport.projectionMatrix;
+    if (projectionMatrix && Number.isFinite(projectionMatrix[5])) {
+      return Math.abs(projectionMatrix[5]) * viewport.height * 0.5;
+    }
+
+    return viewport.height;
+  }
+
+  /**
+   * Convert a geometric error in meters into common-space units for the active viewport.
+   */
+  private getGeometricErrorInCommonSpace(
+    geometricError: number,
+    viewport: PointCloudViewport
+  ): number {
+    const unitsPerMeter = viewport.distanceScales?.unitsPerMeter;
+    if (!unitsPerMeter) {
+      return geometricError;
+    }
+
+    const scale = Math.max(
+      Math.abs(unitsPerMeter[0] || 0),
+      Math.abs(unitsPerMeter[1] || 0),
+      Math.abs(unitsPerMeter[2] || 0),
+      1
+    );
+
+    return geometricError * scale;
   }
 }

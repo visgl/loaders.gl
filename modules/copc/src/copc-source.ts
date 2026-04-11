@@ -7,6 +7,7 @@ import type {
   Source,
   DataSourceOptions,
   TileSource,
+  TileSourceMetadata,
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
@@ -18,11 +19,23 @@ import {Copc, Hierarchy, Dimension, Getter, Bounds, Key} from 'copc';
 const VERSION = '1.0.0';
 const COORDINATE_SYSTEM = {
   CARTESIAN: 0,
-  METER_OFFSETS: 2,
   LNGLAT_OFFSETS: 3
 };
 
-type COPCMetadata = Record<string, unknown>;
+type COPCViewState = {
+  boundingVolume: {
+    cartographicBounds: [number[], number[]];
+    center: number[];
+    radius: number;
+  };
+  cartographicCenter: number[];
+  zoom: number;
+};
+
+type COPCMetadata = TileSourceMetadata & {
+  formatSpecificMetadata: Copc;
+  viewState: COPCViewState;
+};
 
 type GetNodeParameters = {
   nodeIndex: [depth: number, x: number, y: number, z: number];
@@ -32,7 +45,9 @@ type GetNodeParameters = {
 };
 
 export type COPCSourceOptions = DataSourceOptions & {
-  copc?: {};
+  copc?: {
+    sourceCoordinateSystem?: string;
+  };
 };
 
 /**
@@ -110,8 +125,16 @@ export class COPCTileSource
 
   async getMetadata(): Promise<COPCMetadata> {
     const {copc} = await this._initPromise;
+    const viewState = this.getInferredViewState();
+    const [minBounds, maxBounds] = viewState.boundingVolume.cartographicBounds;
     const metadata: COPCMetadata = {
-      formatSpecificMetadata: copc
+      format: 'copc',
+      boundingBox: [
+        [minBounds[0], minBounds[1]],
+        [maxBounds[0], maxBounds[1]]
+      ],
+      formatSpecificMetadata: copc,
+      viewState
     };
     return metadata;
   }
@@ -128,7 +151,13 @@ export class COPCTileSource
     };
   }> {
     const {rootNode} = await this._initPromise;
-    return this.getTileHeader('0-0-0-0', rootNode);
+    return {
+      id: '0-0-0-0',
+      level: 0,
+      pointCount: rootNode.pointCount,
+      geometricError: this.getGeometricError(0),
+      boundingVolume: this.getDataBoundingVolume()
+    };
   }
 
   async getChildren(tile: {id: string}): Promise<
@@ -168,19 +197,8 @@ export class COPCTileSource
     }[];
   }
 
-  getViewState(): {
-    boundingVolume: {
-      cartographicBounds: [number[], number[]];
-      center: number[];
-      radius: number;
-    };
-    cartographicCenter: number[];
-  } {
-    const boundingVolume = this.getBoundingVolume('0-0-0-0');
-    return {
-      boundingVolume,
-      cartographicCenter: boundingVolume.center
-    };
+  getViewState(): COPCViewState {
+    return this.getInferredViewState();
   }
 
   async getTile(tileParams: GetTileParameters): Promise<number[] | null> {
@@ -237,12 +255,13 @@ export class COPCTileSource
     const view = await Copc.loadPointDataView(this._urlOrGetter, copc, node);
     const pointCount = view.pointCount;
     const positions = new Float32Array(pointCount * 3);
-    const origin = this.getTileCenter(tile.id);
+    const nativeOrigin = this.getNativeTileCenter(tile.id);
+    const cartographicOrigin = this.projectPoint(nativeOrigin);
     const colors = this.createColorArray(view, pointCount);
 
-    this.populateTileAttributes(view, positions, colors, origin);
+    this.populateTileAttributes(view, positions, colors, nativeOrigin, cartographicOrigin);
 
-    return this.createTileContentResult(pointCount, positions, colors, origin);
+    return this.createTileContentResult(pointCount, positions, colors, cartographicOrigin);
   }
 
   async _initCopc(url: string) {
@@ -254,7 +273,7 @@ export class COPCTileSource
     }
     this._copc = copc;
     this._hierarchy = hierarchy;
-    this._projection = createProjection(copc.wkt);
+    this._projection = createProjection(copc.wkt || this.options.copc?.sourceCoordinateSystem);
     this.isReady = true;
     return {copc, hierarchy, rootNode};
   }
@@ -296,7 +315,8 @@ export class COPCTileSource
     view: Awaited<ReturnType<typeof Copc.loadPointDataView>>,
     positions: Float32Array,
     colors: Uint16Array | null,
-    origin: number[]
+    nativeOrigin: number[],
+    cartographicOrigin: number[]
   ): void {
     const getX = view.getter('X');
     const getY = view.getter('Y');
@@ -311,7 +331,8 @@ export class COPCTileSource
         positions,
         targetIndex,
         [getX(index), getY(index), getZ(index)],
-        origin
+        nativeOrigin,
+        cartographicOrigin
       );
       if (colors && getRed && getGreen && getBlue) {
         this.writeColorValues(colors, targetIndex, getRed(index), getGreen(index), getBlue(index));
@@ -323,12 +344,20 @@ export class COPCTileSource
     positions: Float32Array,
     targetIndex: number,
     nativePosition: [number, number, number],
-    origin: number[]
+    nativeOrigin: number[],
+    cartographicOrigin: number[]
   ): void {
-    const projectedPosition = this.projectPoint(nativePosition);
-    positions[targetIndex] = projectedPosition[0] - origin[0];
-    positions[targetIndex + 1] = projectedPosition[1] - origin[1];
-    positions[targetIndex + 2] = projectedPosition[2] - origin[2];
+    if (this._projection) {
+      const cartographicPosition = this.projectPoint(nativePosition);
+      positions[targetIndex] = cartographicPosition[0] - cartographicOrigin[0];
+      positions[targetIndex + 1] = cartographicPosition[1] - cartographicOrigin[1];
+      positions[targetIndex + 2] = nativePosition[2] - nativeOrigin[2];
+      return;
+    }
+
+    positions[targetIndex] = nativePosition[0] - nativeOrigin[0];
+    positions[targetIndex + 1] = nativePosition[1] - nativeOrigin[1];
+    positions[targetIndex + 2] = nativePosition[2] - nativeOrigin[2];
   }
 
   protected writeColorValues(
@@ -355,15 +384,13 @@ export class COPCTileSource
     return {
       attributes: {
         positions: positionsAttribute,
-        POSITION: positionsAttribute,
-        colors: colorsAttribute,
-        COLOR_0: colorsAttribute
+        colors: colorsAttribute
       },
       pointCount,
       cartographicOrigin: origin,
       coordinateSystem: this._projection
         ? COORDINATE_SYSTEM.LNGLAT_OFFSETS
-        : COORDINATE_SYSTEM.METER_OFFSETS
+        : COORDINATE_SYSTEM.CARTESIAN
     };
   }
 
@@ -456,24 +483,55 @@ export class COPCTileSource
     return this.getBoundingVolume(tileId).center;
   }
 
-  protected getCartographicBounds(tileId: string): [number[], number[]] {
-    const {copc} = this.unwrapState();
-    const nativeBounds = Bounds.stepTo(copc.info.cube, Key.parse(tileId));
-    const minPoint = this.projectPoint([nativeBounds[0], nativeBounds[1], nativeBounds[2]]);
-    const maxPoint = this.projectPoint([nativeBounds[3], nativeBounds[4], nativeBounds[5]]);
+  protected getInferredViewState(): COPCViewState {
+    const boundingVolume = this.getDataBoundingVolume();
+    return {
+      boundingVolume,
+      cartographicCenter: boundingVolume.center,
+      zoom: this.estimateZoom(boundingVolume)
+    };
+  }
 
-    return [
-      [
-        Math.min(minPoint[0], maxPoint[0]),
-        Math.min(minPoint[1], maxPoint[1]),
-        Math.min(minPoint[2], maxPoint[2])
-      ],
-      [
-        Math.max(minPoint[0], maxPoint[0]),
-        Math.max(minPoint[1], maxPoint[1]),
-        Math.max(minPoint[2], maxPoint[2])
-      ]
+  protected getDataBoundingVolume(): {
+    cartographicBounds: [number[], number[]];
+    center: number[];
+    radius: number;
+  } {
+    const {copc} = this.unwrapState();
+    const [minBounds, maxBounds] = this.projectBounds([
+      [copc.header.min[0], copc.header.min[1], copc.header.min[2] ?? 0],
+      [copc.header.max[0], copc.header.max[1], copc.header.max[2] ?? 0]
+    ]);
+
+    const center = [
+      (minBounds[0] + maxBounds[0]) / 2,
+      (minBounds[1] + maxBounds[1]) / 2,
+      (minBounds[2] + maxBounds[2]) / 2
     ];
+    const radius = Math.sqrt(
+      Math.pow(maxBounds[0] - center[0], 2) +
+        Math.pow(maxBounds[1] - center[1], 2) +
+        Math.pow(maxBounds[2] - center[2], 2)
+    );
+
+    return {
+      cartographicBounds: [minBounds, maxBounds],
+      center,
+      radius
+    };
+  }
+
+  protected getNativeTileCenter(tileId: string): number[] {
+    const [minBounds, maxBounds] = this.getNativeTileBounds(tileId);
+    return [
+      (minBounds[0] + maxBounds[0]) / 2,
+      (minBounds[1] + maxBounds[1]) / 2,
+      (minBounds[2] + maxBounds[2]) / 2
+    ];
+  }
+
+  protected getCartographicBounds(tileId: string): [number[], number[]] {
+    return this.projectBounds(this.getNativeTileBounds(tileId));
   }
 
   protected getGeometricError(depth: number): number {
@@ -481,13 +539,72 @@ export class COPCTileSource
     return copc.info.spacing / Math.pow(2, depth);
   }
 
+  protected estimateZoom(boundingVolume: {
+    cartographicBounds: [number[], number[]];
+  }): number {
+    const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
+    const longitudeSpan = Math.max(Math.abs(maxBounds[0] - minBounds[0]), 0.000001);
+    return Math.max(1, Math.round(Math.log2(360 / longitudeSpan)));
+  }
+
   protected projectPoint(point: number[]): number[] {
     if (!this._projection) {
       return [...point];
     }
 
-    const [x, y] = this._projection.project(point);
-    return [x, y, point[2]];
+    const projectedPoint = this._projection.project([...point]);
+    return [
+      projectedPoint[0],
+      projectedPoint[1],
+      projectedPoint[2] ?? point[2] ?? 0
+    ];
+  }
+
+  protected projectBounds(bounds: [number[], number[]]): [number[], number[]] {
+    const [minBounds, maxBounds] = bounds;
+    const corners = [
+      [minBounds[0], minBounds[1], minBounds[2] || 0],
+      [minBounds[0], minBounds[1], maxBounds[2] || 0],
+      [minBounds[0], maxBounds[1], minBounds[2] || 0],
+      [minBounds[0], maxBounds[1], maxBounds[2] || 0],
+      [maxBounds[0], minBounds[1], minBounds[2] || 0],
+      [maxBounds[0], minBounds[1], maxBounds[2] || 0],
+      [maxBounds[0], maxBounds[1], minBounds[2] || 0],
+      [maxBounds[0], maxBounds[1], maxBounds[2] || 0]
+    ].map((corner) => this.projectPoint(corner));
+
+    return [
+      [
+        Math.min(...corners.map((corner) => corner[0])),
+        Math.min(...corners.map((corner) => corner[1])),
+        Math.min(...corners.map((corner) => corner[2] ?? 0))
+      ],
+      [
+        Math.max(...corners.map((corner) => corner[0])),
+        Math.max(...corners.map((corner) => corner[1])),
+        Math.max(...corners.map((corner) => corner[2] ?? 0))
+      ]
+    ];
+  }
+
+  protected getNativeTileBounds(tileId: string): [number[], number[]] {
+    const {copc} = this.unwrapState();
+    const nativeBounds = Bounds.stepTo(copc.info.cube, Key.parse(tileId));
+    const dataMin = copc.header.min;
+    const dataMax = copc.header.max;
+
+    return [
+      [
+        Math.max(nativeBounds[0], dataMin[0]),
+        Math.max(nativeBounds[1], dataMin[1]),
+        Math.max(nativeBounds[2], dataMin[2] ?? nativeBounds[2])
+      ],
+      [
+        Math.min(nativeBounds[3], dataMax[0]),
+        Math.min(nativeBounds[4], dataMax[1]),
+        Math.min(nativeBounds[5], dataMax[2] ?? nativeBounds[5])
+      ]
+    ];
   }
 
   protected getChildKeys(tileId: string): string[] {
@@ -593,10 +710,18 @@ function createProjection(projectionData?: string): Proj4Projection | null {
 
   try {
     return new Proj4Projection({
-      from: projectionData,
+      from: normalizeProjectionDefinition(projectionData),
       to: 'WGS84'
     });
   } catch {
     return null;
   }
+}
+
+function normalizeProjectionDefinition(projectionData: string): string {
+  const horizontalWktMatch =
+    projectionData.match(/(PROJCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/) ||
+    projectionData.match(/(GEOGCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/);
+
+  return horizontalWktMatch?.[1] || projectionData;
 }

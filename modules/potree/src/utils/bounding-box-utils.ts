@@ -13,15 +13,32 @@ export const getCartographicOriginFromBoundingBox = (
   if (!boundingBox) {
     return [0, 0, 0];
   }
-  const [minXOriginal, minYOriginal, minZ] = boundingBox[0];
-  const [maxXOriginal, maxYOriginal, maxZ] = boundingBox[1];
-  let minX = minXOriginal;
-  let minY = minYOriginal;
-  let maxX = maxXOriginal;
-  let maxY = maxYOriginal;
+
+  const [nativeX, nativeY, nativeZ] = getNativeOriginFromBoundingBox(boundingBox);
+  let projectedX = nativeX;
+  let projectedY = nativeY;
   if (projection) {
-    [minX, minY] = projection.project([minX, minY]);
-    [maxX, maxY] = projection.project([maxX, maxY]);
+    [projectedX, projectedY] = projection.project([nativeX, nativeY]);
   }
-  return [minX + (maxX - minX) / 2, minY + (maxY - minY) / 2, minZ + (maxZ - minZ) / 2];
+  return [projectedX, projectedY, nativeZ];
+};
+
+/**
+ * Calculate native point-cloud origin from a bounding box.
+ * @param boundingBox - bounding box data in source coordinates
+ * @returns - origin in source coordinate space
+ */
+export const getNativeOriginFromBoundingBox = (
+  boundingBox?: [number[], number[]]
+): [number, number, number] => {
+  if (!boundingBox) {
+    return [0, 0, 0];
+  }
+
+  const [minBounds, maxBounds] = boundingBox;
+  return [
+    minBounds[0] + (maxBounds[0] - minBounds[0]) / 2,
+    minBounds[1] + (maxBounds[1] - minBounds[1]) / 2,
+    minBounds[2] + (maxBounds[2] - minBounds[2]) / 2
+  ];
 };

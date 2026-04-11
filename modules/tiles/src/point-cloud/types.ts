@@ -17,9 +17,6 @@ export type PointCloudTileContent = {
     positions: PointCloudAttribute;
     colors?: PointCloudAttribute;
     normals?: PointCloudAttribute;
-    POSITION?: PointCloudAttribute;
-    COLOR_0?: PointCloudAttribute;
-    NORMAL?: PointCloudAttribute;
   };
   pointCount: number;
   cartographicOrigin: number[];
@@ -65,6 +62,7 @@ export type PointCloudTilesetSource<
 > = DataSource<DataT, OptionsT> & {
   isReady: boolean;
   initialize(): Promise<void>;
+  getMetadata?(): Promise<unknown>;
   getRootTile(): Promise<PointCloudTileHeader>;
   getChildren(tile: PointCloudTileHeader): Promise<PointCloudTileHeader[]>;
   loadTileContent(tile: PointCloudTileHeader): Promise<PointCloudTileContent | null>;

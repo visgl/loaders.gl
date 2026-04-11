@@ -15,16 +15,29 @@ test('PotreeSource#initialize', async (t) => {
   t.ok(source.isReady);
   t.equal(source.metadata?.version, '1.7');
   t.equal(source.root?.header.childCount, 6);
-  t.notOk(source.isSupported());
+  t.ok(source.isSupported());
   t.end();
 });
 
-test.skip('PotreeSource#loadNodeContent - should return null for unsupported source', async (t) => {
+test('PotreeSource#loadNodeContent - loads binary point content', async (t) => {
   const DS = PotreeSource;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
 
-  const existingNodeContent = await source.loadNodeContent('360');
-  t.equals(existingNodeContent, null);
+  await source.initialize();
+
+  const nodeContent = await source.loadNodeContent('0');
+  t.ok(nodeContent, 'node content is returned');
+  t.equals(nodeContent?.header?.vertexCount, 4511, 'vertex count matches hierarchy');
+  t.equals(
+    nodeContent?.attributes.positions?.value.length,
+    4511 * 3,
+    'positions are decoded for every point'
+  );
+  t.equals(
+    nodeContent?.attributes.colors?.value.length,
+    4511 * 3,
+    'packed colors are decoded for every point'
+  );
 
   t.end();
 });
@@ -54,6 +67,22 @@ test('PotreeSource#exposes normalized tile headers and bounds', async (t) => {
     t.equal(childMaxBounds[2], (rootMinBounds[2] + rootMaxBounds[2]) / 2, 'child 0 splits z');
   }
 
+  t.end();
+});
+
+test('PotreeSource#derives cartographic view metadata from the dataset', async (t) => {
+  const source = PotreeSource.createDataSource(POTREE_LAZ_URL, {});
+
+  const metadata = await source.getMetadata();
+  const viewState = source.getViewState();
+
+  t.ok(Array.isArray(metadata.viewState.cartographicCenter), 'metadata includes a cartographic center');
+  t.ok((metadata.viewState.zoom || 0) > 0, 'metadata includes an inferred zoom');
+  t.deepEqual(
+    metadata.viewState.cartographicCenter,
+    viewState.cartographicCenter,
+    'metadata view state matches the source view state'
+  );
   t.end();
 });
 
