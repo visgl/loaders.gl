@@ -4664,6 +4664,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/deck-layers@workspace:modules/deck-layers":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/deck-layers@workspace:modules/deck-layers"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:4.4.0"
+    "@loaders.gl/schema": "npm:4.4.0"
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/devtools-extensions@workspace:*, @loaders.gl/devtools-extensions@workspace:dev-modules/devtools-extensions":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/devtools-extensions@workspace:dev-modules/devtools-extensions"

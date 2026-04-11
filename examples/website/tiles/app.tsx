@@ -23,7 +23,7 @@ import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 // D\deck.gl + layers
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';
-import {TileSourceLayer} from './components/tile-source-layer';
+import {TileSourceLayer} from '@loaders.gl/deck-layers';
 
 // Basemap
 import {Map} from 'react-map-gl';

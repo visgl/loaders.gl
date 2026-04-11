@@ -1,0 +1,41 @@
+{
+  "name": "@loaders.gl/deck-layers",
+  "version": "4.4.0",
+  "description": "Private internal deck.gl layers used by loaders.gl examples",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "deck.gl",
+    "layer",
+    "examples",
+    "loader"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "echo \"Nothing to build in @loaders.gl/deck-layers\""
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0"
+  }
+}
