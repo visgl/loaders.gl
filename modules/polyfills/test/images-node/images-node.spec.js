@@ -34,6 +34,11 @@ if (!isBrowser) {
       'getImageBitmapDataNode installed'
     );
     t.equals(
+      typeof globalThis.loaders?.createImageBitmapNode,
+      'function',
+      'createImageBitmapNode installed'
+    );
+    t.equals(
       typeof globalThis.loaders?.isImageBitmapNode,
       'function',
       'isImageBitmapNode installed'

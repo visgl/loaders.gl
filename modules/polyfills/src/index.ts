@@ -9,6 +9,7 @@ import {atob, btoa} from './buffer/btoa.node';
 import {encodeImageNode} from './images/encode-image-node';
 import {parseImageNode, NODE_FORMAT_SUPPORT} from './images/parse-image-node';
 import {
+  createImageBitmapNode,
   NodeImageBitmap,
   getImageBitmapDataNode,
   isNodeImageBitmap
@@ -89,6 +90,7 @@ if (!('btoa' in globalThis) && btoa) {
 globalThis.loaders.encodeImageNode = encodeImageNode;
 globalThis.loaders.parseImageNode = parseImageNode;
 globalThis.loaders.imageFormatsNode = NODE_FORMAT_SUPPORT;
+globalThis.loaders.createImageBitmapNode = createImageBitmapNode;
 globalThis.loaders.getImageBitmapDataNode = getImageBitmapDataNode;
 globalThis.loaders.isImageBitmapNode = isNodeImageBitmap;
 

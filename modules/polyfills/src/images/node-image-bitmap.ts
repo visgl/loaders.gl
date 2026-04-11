@@ -59,6 +59,13 @@ export function isNodeImageBitmap(image: unknown): image is NodeImageBitmap {
 }
 
 /**
+ * Wraps decoded Node.js image data in the loaders.gl `NodeImageBitmap` polyfill.
+ */
+export function createImageBitmapNode(imageData: NodeImageData): NodeImageBitmap {
+  return new NodeImageBitmap(imageData);
+}
+
+/**
  * Returns decoded image data from a Node.js `ImageBitmap`.
  */
 export function getImageBitmapDataNode(image: unknown): NodeImageData {
