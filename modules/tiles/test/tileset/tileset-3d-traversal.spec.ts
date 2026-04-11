@@ -4,7 +4,7 @@
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {load} from '@loaders.gl/core';
-import {Tileset3D} from '@loaders.gl/tiles';
+import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // import {loadTileset} from '../utils/load-utils';
 
@@ -157,7 +157,7 @@ test('Tileset3D#one viewport traversal', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;
@@ -180,7 +180,7 @@ test('Tileset3D#onTraversalComplete', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[1];
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;
@@ -206,7 +206,7 @@ test('Tileset3D#two viewports traversal', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewports);
       tileLoadCounter++;
@@ -231,7 +231,7 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewports);
       tileLoadCounter++;
@@ -261,7 +261,7 @@ test('Tileset3D#loadTiles option', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;

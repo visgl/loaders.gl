@@ -8,7 +8,6 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator} from '@deck.gl/core';
 
-import {DataDrivenTile3DLayer} from '@deck.gl-community/experimental';
 import {
   BuildingSceneSublayer,
   COORDINATE_SYSTEM,
@@ -20,6 +19,7 @@ import {Sublayer, buildSublayersTree} from './helpers/sublayers';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {BuildingExplorer} from './components/building-explorer';
 import {filterTile} from '@deck.gl-community/experimental';
+import {SourceDataDrivenTile3DLayer} from '../../i3s-common/source-data-driven-tile-3d-layer';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Turanga_Library/SceneServer/layers/0';
@@ -151,7 +151,7 @@ export default function App() {
       .filter((sublayer) => sublayer.visibility)
       .map(
         (sublayer) =>
-          new DataDrivenTile3DLayer({
+          new SourceDataDrivenTile3DLayer({
             id: `tile-layer-${sublayer.id}`,
             data: sublayer.url,
             loader: I3SLoader,

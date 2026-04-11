@@ -3,8 +3,9 @@
 
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
-import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
 // import {loadTileset} from '../utils/load-utils';
 
 // Parent tile with content and four child tiles with content
@@ -118,11 +119,27 @@ test('Tileset3D#throws with undefined url', t => {
   t.end();
 });
 
+test('Tileset3D#exports source-backed construction helpers', async t => {
+  const source = new Tiles3DSource({url: TILESET_URL, loader: Tiles3DLoader});
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  const i3sTilesetHeader = await getI3sTileHeader();
+  const i3sSource = new I3SSource(i3sTilesetHeader);
+
+  t.ok(Tiles3DSource);
+  t.ok(I3SSource);
+  t.ok(source);
+  t.ok(i3sSource);
+  t.equals(tileset.url.slice(-30), TILESET_URL.slice(-30));
+  t.equals(tileset.asset.version, '1.0');
+  t.end();
+});
+
 test('Tileset3D#url set up correctly given tileset JSON filepath', async t => {
   const path = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
-
-  const tilesetJson = await load(path, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({url: path, loader: Tiles3DLoader}));
+  await tileset.tilesetInitializationPromise;
   // NOTE: The url has been resolved (@loaders.gl/3d-tiles => localhost) so initial part is now different
   t.equals(tileset.url.slice(-30), path.slice(-30));
   t.end();
@@ -133,7 +150,7 @@ test('Tileset3D#url set up correctly given path with query string', async t => {
   const param = '?param1=1&param2=2';
   // TODO - params do not work with fetchFile...
   const tilesetJson = await load(path + param, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
   t.equals(
     tileset.url.replace(/.*3d-tiles/, ''),
     (path + param).replace(/.*3d-tiles/, ''),
@@ -174,7 +191,7 @@ test('Tileset3D#url set up correctly given path with query string', async t => {
 test('Tileset3D#getTileUrl should not ends with sign ? or &', async t => {
   const path = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json';
   const tilesetJson = await load(path, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
   const urlEnds = tileset.getTileUrl(tileset.url).slice(-1);
   t.equals('?&'.includes(urlEnds), false);
   t.end();
@@ -182,7 +199,7 @@ test('Tileset3D#getTileUrl should not ends with sign ? or &', async t => {
 
 test('Tileset3D#loads and initializes with tileset JSON file', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
 
   t.ok('asset' in tileset);
   t.equals(tileset.asset.version, '1.0');
@@ -203,7 +220,7 @@ test('Tileset3D#loads and initializes with tileset JSON file', async t => {
 
 test('Tileset3D#loads tileset with extras', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
   const extras = tileset.root?.extras;
 
   t.deepEquals(tileset.extras, {name: 'Sample Tileset'});
@@ -225,7 +242,7 @@ test('Tileset3D#loads tileset with extras', async t => {
 
 test('Tileset3D#gets root tile', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
 
   t.ok(tileset.root);
   t.end();
@@ -235,7 +252,7 @@ test('Tileset3D#handles global tilesets without error', async t => {
   const tilesetJson = await load(TILESET_GLOBAL_URL, Tiles3DLoader);
 
   try {
-    const tileset = new Tileset3D(tilesetJson);
+    const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
     await tileset.tilesetInitializationPromise;
 
     t.deepEqual(
@@ -251,7 +268,7 @@ test('Tileset3D#handles global tilesets without error', async t => {
 
 test('Tileset3D#hasExtension returns true if the tileset JSON file uses the specified extension', async t => {
   const tilesetJson = await load(TILESET_WITH_BATCH_TABLE_HIERARCHY_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
 
   t.equals(tileset.hasExtension('3DTILES_batch_table_hierarchy'), true);
   t.equals(tileset.hasExtension('3DTILES_nonexistant_extension'), false);
@@ -261,14 +278,14 @@ test('Tileset3D#hasExtension returns true if the tileset JSON file uses the spec
 test('Tileset3D#passes query parameters onto child requests', async t => {
   const queryString = '?a=123&b=abc';
   const tilesetJson = await load(TILESET_URL + queryString, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
   t.equals(tileset.queryParams, 'a=123&b=abc&v=1.2.3');
   t.end();
 });
 /*
 test('Tileset3D#passes version in query string to tiles', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson, TILESET_URL);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), TILESET_URL);
 
   t.equals(
     tileset.root.content._resource.url,
@@ -424,7 +441,7 @@ test('Tileset3D#handles failed tile processing', t => {
 
 test('Tileset3D#loads tiles in tileset', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
   // @ts-ignore
   tileset.root._visible = true;
   await tileset.root?.loadContent();
@@ -438,7 +455,7 @@ test('Tileset3D#loads tiles in tileset', async t => {
 
 test('Tileset3D#should detect ktx2 texture', async t => {
   const tilesetJson = await load(KTX2_TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
 
   const tile = tileset.root?.children?.[0] as Tile3D;
   await tileset._loadTile(tile);
@@ -450,7 +467,7 @@ test('Tileset3D#should detect ktx2 texture', async t => {
 test('Tileset3D#transition hold keeps tiles visible until replacements draw', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let onUpdateCount = 0;
-  const tileset = new Tileset3D(tilesetJson, {
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onUpdate: () => {
       onUpdateCount++;
     }
@@ -523,7 +540,7 @@ test('Tileset3D#transition hold keeps tiles visible until replacements draw', as
 
 test('Tileset3D#transition hold is a no-op when tileDrawn defaults to true', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
   await tileset.tilesetInitializationPromise;
 
   const root = tileset.root as Tile3D;

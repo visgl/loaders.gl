@@ -4,7 +4,19 @@
 
 export type {Tileset3DProps} from './tileset/tileset-3d';
 export {Tileset3D} from './tileset/tileset-3d';
+export type {
+  TileContentLoadResult,
+  TilesetContentFormats,
+  TilesetJSON,
+  TilesetSourceInput,
+  TilesetSourceMetadata,
+  TilesetSourceRequest,
+  TilesetSource,
+  TilesetSourceViewState
+} from './tileset/tileset-source';
 export {Tile3D} from './tileset/tile-3d';
+export {Tiles3DSource} from './tileset/format-3d-tiles/tiles-3d-source';
+export {I3SSource} from './tileset/format-i3s/i3s-source';
 
 export {TilesetTraverser} from './tileset/tileset-traverser';
 export {TilesetCache} from './tileset/tileset-cache';
