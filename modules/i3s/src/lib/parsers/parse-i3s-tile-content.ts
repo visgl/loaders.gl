@@ -123,7 +123,7 @@ export async function parseI3STileContent(
           };
         }
       } else {
-        content.texture = null;
+        content.texture = arrayBuffer;
       }
     } catch (error) {
       console.warn(error);
@@ -539,7 +539,7 @@ function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: T
     );
   }
 
-  if (isUsableTexture(texture)) {
+  if (texture) {
     setMaterialTexture(pbrMaterial, texture!);
   }
 
@@ -588,44 +588,6 @@ function setMaterialTexture(material, image: TileContentTexture): void {
   } else if (material.occlusionTexture) {
     material.occlusionTexture = {...material.occlusionTexture, texture};
   }
-}
-
-/**
- * Check whether a parsed texture can be handed to luma.gl safely.
- * @param texture - Parsed texture candidate.
- * @returns `true` when the texture payload has a shape supported by WebGL upload paths.
- */
-function isUsableTexture(texture?: TileContentTexture): boolean {
-  if (!texture) {
-    return false;
-  }
-
-  if (texture instanceof ArrayBuffer) {
-    return false;
-  }
-
-  if (typeof ImageBitmap !== 'undefined' && texture instanceof ImageBitmap) {
-    return true;
-  }
-
-  if (typeof HTMLImageElement !== 'undefined' && texture instanceof HTMLImageElement) {
-    return true;
-  }
-
-  if (typeof texture === 'object' && 'compressed' in texture && texture.compressed) {
-    return Array.isArray(texture.data);
-  }
-
-  if (
-    typeof texture === 'object' &&
-    'data' in texture &&
-    'width' in texture &&
-    'height' in texture
-  ) {
-    return ArrayBuffer.isView(texture.data);
-  }
-
-  return false;
 }
 
 /**
