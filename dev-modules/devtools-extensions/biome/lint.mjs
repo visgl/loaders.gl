@@ -7,7 +7,28 @@ const repoRoot = path.resolve(packageDirectory, '..', '..', '..');
 const biomeArguments = process.argv.slice(2);
 const mode = biomeArguments[0] === 'fix' ? 'fix' : 'check';
 const extraArguments = mode === 'fix' ? biomeArguments.slice(1) : biomeArguments;
-const targetPaths = ['modules', 'apps', 'dev-docs', 'docs', 'test'];
+const targetPaths = [
+  'modules/**/*.js',
+  'modules/**/*.jsx',
+  'modules/**/*.ts',
+  'modules/**/*.tsx',
+  'apps/**/*.js',
+  'apps/**/*.jsx',
+  'apps/**/*.ts',
+  'apps/**/*.tsx',
+  'dev-docs/**/*.js',
+  'dev-docs/**/*.jsx',
+  'dev-docs/**/*.ts',
+  'dev-docs/**/*.tsx',
+  'docs/**/*.js',
+  'docs/**/*.jsx',
+  'docs/**/*.ts',
+  'docs/**/*.tsx',
+  'test/**/*.js',
+  'test/**/*.jsx',
+  'test/**/*.ts',
+  'test/**/*.tsx'
+];
 const sharedArguments = [
   '--config-path=biome.jsonc',
   '--files-ignore-unknown=true',

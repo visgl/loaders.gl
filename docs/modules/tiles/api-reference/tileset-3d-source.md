@@ -1,5 +1,9 @@
 # Tileset3DSource
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+</p>
+
 The `Tileset3DSource` interface defines the format-specific contract consumed by [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d).
 
 `Tileset3D` owns traversal, culling, request scheduling, cache management, and selected-tile state. A `Tileset3DSource` owns the format-specific work required to make those runtime systems operate on a concrete dataset.

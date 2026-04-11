@@ -1,5 +1,9 @@
 # Tileset2D
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+</p>
+
 `Tileset2D` is the shared runtime for source-backed 2D tile loading in loaders.gl.
 
 It separates:

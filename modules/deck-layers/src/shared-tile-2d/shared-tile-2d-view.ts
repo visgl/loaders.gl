@@ -173,7 +173,10 @@ export class SharedTile2DView<DataT = any> {
     }
 
     if (typeof refinementStrategy === 'function') {
-      refinementStrategy(allTiles);
+      refinementStrategy(allTiles, (tile, isVisible) => {
+        const state = getTileState(this._state, tile);
+        state.isVisible = isVisible;
+      });
     } else {
       STRATEGIES[refinementStrategy](allTiles, this._state);
     }

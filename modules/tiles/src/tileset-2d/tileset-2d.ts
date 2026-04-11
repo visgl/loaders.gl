@@ -16,8 +16,16 @@ export const STRATEGY_REPLACE = 'no-overlap';
 /** Prefer the best currently available loaded ancestor or descendant tiles. */
 export const STRATEGY_DEFAULT = 'best-available';
 
-/** Function form of a refinement strategy. */
-export type RefinementStrategyFunction = (tiles: SharedTile2DHeader[]) => void;
+/**
+ * Function form of a refinement strategy.
+ *
+ * The callback receives the current cached tiles and a visibility setter that can be used
+ * to control placeholder visibility for individual tiles.
+ */
+export type RefinementStrategyFunction = (
+  tiles: SharedTile2DHeader[],
+  setVisible: (tile: SharedTile2DHeader, isVisible: boolean) => void
+) => void;
 
 /** Strategy controlling how parent and child placeholder tiles are displayed while content loads. */
 export type RefinementStrategy =
@@ -268,7 +276,19 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
   setOptions(opts: Partial<Tileset2DProps<DataT, ViewStateT>>): void {
     this._rememberExplicitOptions(opts);
     this._baseOpts = {...this._baseOpts, ...opts};
+    const previousMaxRequests = this.opts.maxRequests;
+    const previousDebounceTime = this.opts.debounceTime;
     this._applyResolvedOptions();
+    if (
+      previousMaxRequests !== this.opts.maxRequests ||
+      previousDebounceTime !== this.opts.debounceTime
+    ) {
+      this._requestScheduler = new RequestScheduler({
+        throttleRequests: this.opts.maxRequests > 0 || this.opts.debounceTime > 0,
+        maxRequests: this.opts.maxRequests,
+        debounceTime: this.opts.debounceTime
+      });
+    }
   }
 
   /** Aborts in-flight requests and clears the shared cache. */
@@ -293,6 +313,8 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
       const tile = this._cache.get(id);
       if (tile && !selectedTiles.has(tile)) {
         this._cache.delete(id);
+        this._handleTileUnload(tile);
+        this._dirty = true;
       } else if (tile) {
         tile.setNeedsReload();
       }
@@ -410,7 +432,7 @@ export class Tileset2D<DataT = any, ViewStateT = unknown> {
       this._touchTile(id, tile);
     }
 
-    if (tile && needsReload) {
+    if (tile && needsReload && create) {
       tile
         .loadData({
           getData: this.opts.getTileData,

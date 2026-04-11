@@ -1,5 +1,9 @@
 # I3SSource
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+</p>
+
 The `I3SSource` class implements [`Tileset3DSource`](/docs/modules/tiles/api-reference/tileset-3d-source) for datasets loaded with the [I3SLoader](/docs/modules/i3s/api-reference/i3s-loader).
 
 ## Usage

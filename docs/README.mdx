@@ -6,9 +6,10 @@
 <br />
 <br />
 
-This documentation describes loaders.gl **v4**. See our [**release notes**](/docs/whats-new) to learn what is new.
+This documentation describes loaders.gl **v5.0**. See our [**release notes**](/docs/whats-new) to learn what is new.
 
 Docs for older versions are available on github:
+**[v4.4](https://github.com/visgl/loaders.gl/blob/3.3-release/docs/README.md)**,
 **[v3.3](https://github.com/visgl/loaders.gl/blob/3.3-release/docs/README.md)**,
 **[v2.3](https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md)**,
 **[v1.3](https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md)**.
@@ -19,13 +20,12 @@ loaders.gl is a collection of open source loaders and writers for various file f
 primarily focused on supporting visualization and analytics of big data. 
 Tabular, geospatial, and 3D file formats are well covered. 
 
-Published as a suite of composable loader modules with consistent APIs and features, 
-offering advanced features such as worker thread and incremental parsing, 
-loaders.gl aims to be a trusted companion when you need to load data into your application.
+Published as a suite of composable loader modules with consistent APIs, 
+offering advanced features such as threaded and incremental parsing.
 
-While loaders.gl can be used with any JavaScript application or framework,
-[vis.gl frameworks](https://vis.gl/frameworks) such as [**deck.gl**](https://deck.gl) 
-come pre-integrated with loaders.gl.
+loaders.gl can be used with any JavaScript application or framework. In addition,
+other [vis.gl frameworks](https://vis.gl/frameworks) such as [**deck.gl**](https://deck.gl) 
+come are designed to integrate seamlessly loaders.gl.
 
 ## Loaders
 
@@ -102,11 +102,11 @@ loaders.gl supports both browsers and Node.js:
 
 **Multi-Asset Loading** - Formats like glTF, Shapefile, or mip mapped / cube textures can require dozens of separate loads to resolve all linked assets (external buffers, images etc). loaders.gl loads all linked assets before resolving the returned `Promise`.
 
-**Modern JavaScript** - loaders.gl is written in TypeScript 5.0 and standard ES2018, is packaged as ECMAScript modules, and the API emphasizes modern, portable JavaScript constructs, e.g. async iterators instead of streams, `ArrayBuffer` instead of `Buffer`, etc.
+**Modern JavaScript** - loaders.gl is written in TypeScript 6.0 and standard ES2018, is packaged as ECMAScript modules, and the API emphasizes modern, portable JavaScript constructs, e.g. async iterators instead of streams, `ArrayBuffer` instead of `Buffer`, etc.
 
 ## Licenses
 
-loaders.gl itself is MIT licensed, however various modules contain forked code under several permissive, compatible open source licenses, such as ISC, BSD and Apache licenses. Each loader module provides some license notes, so if the distinction matters to you, please check the documentation for each module and decide accordingly. We guarantee that loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
+loaders.gl itself is MIT licensed, however various modules contain forked code under several permissive, compatible open source licenses, such as ISC, BSD and Apache 2 licenses. Each loader module provides license notes, so if the distinction matters to you, please check the documentation for each module and decide accordingly. We guarantee that loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
 
 ## Credits and Attributions
 
@@ -116,9 +116,9 @@ While loaders.gl contains substantial amounts of original code, it also repackag
 
 Even so, we can make mistakes, and we may not have the full history of the code we are reusing. If you think that we have missed something, or that we could do better in regard to attribution, please let us know.
 
-## Primary maintainers
+## Organizational support
 
-Organizations that currently contribute most significantly to the development and maintenance of loaders.gl:
+Organizations that have contributed significantly to the development and maintenance of loaders.gl:
 
 <p style={{marginLeft: 30, marginRight: 'auto'}}>
   <a href="https://studio.foursquare.com">
@@ -128,6 +128,15 @@ Organizations that currently contribute most significantly to the development an
   <br />
   <a href="https://carto.com">
     <img height="80" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/carto.svg" />
+  </a>
+  <a href="https://actionengine.com">
+    Action Engine
+  </a>
+  <a href="https://esri.com">
+    Esri
+  </a>
+  <a href="https://esri.com">
+    Uber
   </a>
 </p>
 
