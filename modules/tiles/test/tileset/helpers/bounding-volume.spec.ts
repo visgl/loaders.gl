@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {createBoundingVolume} from '../../../src/tileset/helpers/bounding-volume';
+import {createBoundingVolume} from '../../../src/tileset-3d/helpers/bounding-volume';
 import {Matrix4} from '@math.gl/core';
 import {OrientedBoundingBox} from '@math.gl/culling';
 import {areNumberArraysEqual} from '../../test-utils/compareArrays';

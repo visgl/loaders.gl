@@ -1,4 +1,4 @@
-import {Tile3D} from '@loaders.gl/tiles';
+import type {Tile3D} from '../common/tile-3d';
 import {Vector3} from '@math.gl/core';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {Ellipsoid} from '@math.gl/geospatial';

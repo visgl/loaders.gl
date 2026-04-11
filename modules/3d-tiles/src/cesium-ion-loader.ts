@@ -9,14 +9,21 @@ import {getIonTilesetMetadata} from './lib/ion/ion';
 async function preload(url, options = {}) {
   options = options['cesium-ion'] || {};
   // @ts-ignore
-  const {accessToken} = options;
+  const {accessToken, onError} = options;
   // @ts-ignore
   let assetId = options.assetId;
   if (!Number.isFinite(assetId)) {
     const matched = url.match(/\/([0-9]+)\/tileset.json/);
     assetId = matched && matched[1];
   }
-  return getIonTilesetMetadata(accessToken, assetId);
+  try {
+    return await getIonTilesetMetadata(accessToken, assetId);
+  } catch (error) {
+    if (typeof onError === 'function') {
+      onError(error);
+    }
+    throw error;
+  }
 }
 
 /**
@@ -38,7 +45,8 @@ export const CesiumIonLoader = {
   options: {
     'cesium-ion': {
       ...Tiles3DLoader.options['3d-tiles'],
-      accessToken: null
+      accessToken: null,
+      onError: null
     }
   }
 } as const satisfies LoaderWithParser<unknown, never, StrictLoaderOptions>;

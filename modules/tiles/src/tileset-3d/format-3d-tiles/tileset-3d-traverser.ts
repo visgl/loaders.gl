@@ -6,7 +6,7 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import {TILE3D_OPTIMIZATION_HINT, TILE_REFINEMENT} from '../../constants';
-import {TilesetTraverser} from '../tileset-traverser';
+import {TilesetTraverser} from '../common/tileset-traverser';
 
 export class Tileset3DTraverser extends TilesetTraverser {
   compareDistanceToCamera(a, b) {

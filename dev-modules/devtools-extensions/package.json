@@ -18,6 +18,7 @@
     "test-node": "cd ../.. && vitest run --config vitest.config.ts --project node",
     "test-browser": "cd ../.. && vitest run --config vitest.config.ts --project browser",
     "test-headless": "cd ../.. && vitest run --config vitest.config.ts --project headless",
+    "playwright:install": "playwright install",
     "test-coverage": "cd ../.. && vitest run --config vitest.config.ts --coverage --project node --project headless"
   },
   "dependencies": {

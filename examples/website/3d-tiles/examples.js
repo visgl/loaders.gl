@@ -8,8 +8,8 @@ const ION_TOKEN =
 const DATA_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
-export const INITIAL_EXAMPLE_CATEGORY = 'ion';
-export const INITIAL_EXAMPLE_NAME = 'Melbourne (PointCloud)';
+export const INITIAL_EXAMPLE_CATEGORY = 'github';
+export const INITIAL_EXAMPLE_NAME = 'Royal Exhibition Building (Github Pages)';
 
 const SHOWCASE_EXAMPLES = {
   ion: {

@@ -7,7 +7,7 @@
 
 import type {Tileset3D} from './tileset-3d';
 import type {Tile3D} from './tile-3d';
-import {DoublyLinkedList} from '../utils/doubly-linked-list';
+import {DoublyLinkedList} from '../../utils/doubly-linked-list';
 
 /**
  * Stores tiles with content loaded.

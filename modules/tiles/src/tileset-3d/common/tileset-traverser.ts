@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {Tile3D} from './tile-3d';
-import {ManagedArray} from '../utils/managed-array';
-import {TILE_REFINEMENT} from '../constants';
-import {FrameState} from './helpers/frame-state';
+import {ManagedArray} from '../../utils/managed-array';
+import {TILE_REFINEMENT} from '../../constants';
+import {FrameState} from '../helpers/frame-state';
 
 export type TilesetTraverserProps = {
   loadSiblings?: boolean;

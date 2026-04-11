@@ -7,8 +7,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator} from '@deck.gl/core';
+import {SourceDataDrivenTile3DLayer} from '@loaders.gl/deck-layers';
 
-import {DataDrivenTile3DLayer} from '@deck.gl-community/experimental';
 import {
   BuildingSceneSublayer,
   COORDINATE_SYSTEM,
@@ -151,7 +151,7 @@ export default function App() {
       .filter((sublayer) => sublayer.visibility)
       .map(
         (sublayer) =>
-          new DataDrivenTile3DLayer({
+          new SourceDataDrivenTile3DLayer({
             id: `tile-layer-${sublayer.id}`,
             data: sublayer.url,
             loader: I3SLoader,

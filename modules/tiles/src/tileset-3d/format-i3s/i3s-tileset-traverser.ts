@@ -1,8 +1,7 @@
-import {load} from '@loaders.gl/core';
-import {TilesetTraverser} from '../tileset-traverser';
+import {TilesetTraverser} from '../common/tileset-traverser';
 
 import {getLodStatus} from '../helpers/i3s-lod';
-import {Tile3D} from '../tile-3d';
+import {Tile3D} from '../common/tile-3d';
 import {I3STileManager} from './i3s-tile-manager';
 import {FrameState} from '../helpers/frame-state';
 
@@ -32,20 +31,14 @@ export class I3STilesetTraverser extends TilesetTraverser {
     const children = tile.header.children || [];
     // children which are already fetched and constructed as Tile3D instances
     const childTiles = tile.children;
-    const tileset = tile.tileset;
-
     for (const child of children) {
       const extendedId = `${child.id}-${frameState.viewport.id}`;
       // if child tile is not fetched
       const childTile = childTiles && childTiles.find(t => t.id === extendedId);
       if (!childTile) {
-        let request = () => this._loadTile(child.id, tileset);
+        const request = () => this._loadTile(tile, child.id, frameState);
         const cachedRequest = this._tileManager.find(extendedId);
         if (!cachedRequest) {
-          // eslint-disable-next-line max-depth
-          if (tileset.tileset.nodePages) {
-            request = () => tileset.tileset.nodePagesTile.formTileFromNodePages(child.id);
-          }
           this._tileManager.add(
             request,
             extendedId,
@@ -64,19 +57,12 @@ export class I3STilesetTraverser extends TilesetTraverser {
     return false;
   }
 
-  async _loadTile(nodeId, tileset) {
-    const {loader} = tileset;
-    const nodeUrl = tileset.getTileUrl(`${tileset.url}/nodes/${nodeId}`);
-    // load metadata
-    const options = {
-      ...tileset.loadOptions,
-      i3s: {
-        ...tileset.loadOptions.i3s,
-        isTileHeader: true
-      }
-    };
+  async _loadTile(tile, nodeId, frameState) {
+    if (!tile.tileset.source.loadChildTileHeader) {
+      throw new Error('I3S source does not support child tile header loading');
+    }
 
-    return await load(nodeUrl, loader, options);
+    return await tile.tileset.source.loadChildTileHeader(tile, nodeId, frameState);
   }
 
   /**
@@ -88,6 +74,11 @@ export class I3STilesetTraverser extends TilesetTraverser {
    * @return {void}
    */
   _onTileLoad(header, tile, extendedId) {
+    if (header instanceof Error) {
+      tile.tileset._onSourceError(header, tile);
+      return;
+    }
+
     // after child tile is fetched
     const childTile = new Tile3D(tile.tileset, header, tile, extendedId);
     tile.children.push(childTile);

@@ -1,5 +1,5 @@
 import test from 'tape-promise/tape';
-import {I3SPendingTilesRegister} from '../../../src/tileset/format-i3s/i3s-pending-tiles-register';
+import {I3SPendingTilesRegister} from '../../../src/tileset-3d/format-i3s/i3s-pending-tiles-register';
 
 test('I3SPendingTilesRegister | one viewport', t => {
   const register = new I3SPendingTilesRegister();

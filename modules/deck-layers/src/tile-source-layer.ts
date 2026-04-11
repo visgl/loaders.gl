@@ -14,7 +14,7 @@ import type {GetTileDataParameters, TileSource, TileSourceMetadata} from '@loade
  * Some tile source implementations add deck.gl-specific flags such as
  * `localCoordinates`, MIME type metadata, and mutable table coordinate options.
  */
-type TileSourceRuntime = TileSource & {
+export type TileSourceRuntime = TileSource & {
   /** Indicates that vector tiles can be rendered in local coordinates. */
   localCoordinates?: boolean;
   /** MIME type that identifies vector or image payload handling. */
@@ -68,9 +68,8 @@ class MVTSourceLayer extends MVTLayer<any> {
  * This layer adapts loaders.gl `TileSource` instances for deck.gl rendering.
  */
 export type TileSourceLayerProps = Omit<TileLayerProps, 'data'> & {
-  data: TileSourceRuntime;
   /** A source of vector or image tiles. */
-  tileSource: TileSourceRuntime;
+  data: TileSourceRuntime;
   /** Optional tileset metadata used for zoom bounds and attribution. */
   metadata?: TileSourceMetadata | null;
   /** Show borders around tiles. Currently only works in tile mode. */
@@ -109,10 +108,10 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
     });
   }
 
-  /** Mirror the latest `tileSource` prop into layer state. */
+  /** Mirror the latest `data` prop into layer state. */
   updateState({props}: any): void {
     this.setState({
-      tileSource: props.tileSource
+      tileSource: props.data
     });
   }
 
@@ -139,24 +138,21 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
 
   /** Check if the current source supports MVT layer rendering with local coordinates. */
   sourceSupportsMVTLayer(): boolean {
-    const {tileSource} = this.props;
-    return (
-      tileSource.mimeType === 'application/vnd.mapbox-vector-tile' &&
-      Boolean(tileSource.localCoordinates)
-    );
+    const {data} = this.props;
+    return data.mimeType === 'application/vnd.mapbox-vector-tile' && Boolean(data.localCoordinates);
   }
 
   /** Render vector tiles through `MVTLayer` when local coordinate support is required. */
   renderMVTLayer() {
-    const {tileSource, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
+    const {data, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
     const minZoom = metadata?.minZoom || 0;
     const maxZoom = metadata?.maxZoom || 30;
     const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
       new MVTSourceLayer({
-        id: String(tileSource.url),
-        data: tileSource as any,
+        id: String(data.url),
+        data: data as any,
         getLineColor: [0, 0, 0],
         getLineWidth: 1,
         getFillColor: [100, 120, 140],
@@ -176,17 +172,17 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
 
   /** Render image tiles and non-local vector tiles through `TileLayer`. */
   renderTileLayer() {
-    const {tileSource, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
+    const {data, showTileBorders, metadata, onTilesLoad, onTileError} = this.props;
     const minZoom = metadata?.minZoom || 0;
     const maxZoom = metadata?.maxZoom || 30;
     const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
       new TileLayer({
-        id: String(tileSource.url),
+        id: String(data.url),
         getTileData: async (parameters: GetTileDataParameters) => {
           try {
-            return await tileSource.getTileData(parameters);
+            return await data.getTileData(parameters);
           } catch (error) {
             onTileError?.(error, parameters);
             return null;
@@ -201,7 +197,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
         tileSize: 256,
         zoomOffset: devicePixelRatio === 1 ? -1 : 0,
         renderSubLayers: renderSubLayers as any,
-        tileSource: tileSource as any,
+        tileSource: data as any,
         showTileBorders
       } as any)
     ];

@@ -8,22 +8,20 @@
 import {Vector3, Matrix4} from '@math.gl/core';
 import {CullingVolume} from '@math.gl/culling';
 
-import {load} from '@loaders.gl/core';
-
 // Note: circular dependency
 import type {Tileset3D} from './tileset-3d';
-import type {DoublyLinkedListNode} from '../utils/doubly-linked-list-node';
-import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../constants';
+import type {DoublyLinkedListNode} from '../../utils/doubly-linked-list-node';
+import {TILE_REFINEMENT, TILE_CONTENT_STATE, TILESET_TYPE} from '../../constants';
+import type {TileContentLoadResult} from './tileset-source';
 
-import {FrameState} from './helpers/frame-state';
+import {FrameState} from '../helpers/frame-state';
 import {
   createBoundingVolume,
   getCartographicBounds,
   CartographicBounds
-} from './helpers/bounding-volume';
-import {getTiles3DScreenSpaceError} from './helpers/tiles-3d-lod';
-import {getProjectedRadius} from './helpers/i3s-lod';
-import {get3dTilesOptions} from './helpers/3d-tiles-options';
+} from '../helpers/bounding-volume';
+import {getTiles3DScreenSpaceError} from '../helpers/tiles-3d-lod';
+import {getProjectedRadius} from '../helpers/i3s-lod';
 import {TilesetTraverser} from './tileset-traverser';
 
 const scratchVector = new Vector3();
@@ -62,7 +60,7 @@ export class Tile3D {
   type: string;
   contentUrl: string;
   /** Different refinement algorithms used by I3S and 3D tiles */
-  lodMetricType: 'geometricError' | 'maxScreenThreshold' = 'geometricError';
+  lodMetricType = 'geometricError';
   /** The error, in meters, introduced if this tile is rendered and its children are not. */
   lodMetricValue: number = 0;
 
@@ -355,13 +353,13 @@ export class Tile3D {
    * The request may not be made if the Request Scheduler can't prioritize it.
    */
   // eslint-disable-next-line max-statements, complexity
-  async loadContent(): Promise<boolean> {
+  async loadContent(): Promise<TileContentLoadResult> {
     if (this.hasEmptyContent) {
-      return false;
+      return {loaded: false};
     }
 
     if (this.content) {
-      return true;
+      return {loaded: true};
     }
 
     const expired = this.contentExpired;
@@ -380,40 +378,19 @@ export class Tile3D {
     if (!requestToken) {
       // cancelled
       this.contentState = TILE_CONTENT_STATE.UNLOADED;
-      return false;
+      return {loaded: false};
     }
 
     try {
-      const contentUrl = this.tileset.getTileUrl(this.contentUrl);
-      // The content can be a binary tile ot a JSON tileset
-      const loader = this.tileset.loader;
-      const tilesetLoaderOptions =
-        (this.tileset.loadOptions[loader.id] as Record<string, unknown>) || {};
-      const options = {
-        ...this.tileset.loadOptions,
-        [loader.id]: {
-          ...tilesetLoaderOptions,
-          isTileset: this.type === 'json',
-          ...this._getLoaderSpecificOptions(loader.id)
-        } // TODO add typecheck - as const satisfies ...
-      };
-
-      this.content = await load(contentUrl, loader, options);
+      const loadResult = await this.tileset.source.loadTileContent(this);
 
       if (this.tileset.options.contentLoader) {
         await this.tileset.options.contentLoader(this);
       }
 
-      if (this._isTileset()) {
-        // Add tile headers for the nested tilset's subtree
-        // Async update of the tree should be fine since there would never be edits to the same node
-        // TODO - we need to capture the child tileset's URL
-        this.tileset._initializeTileHeaders(this.content, this);
-      }
-
       this.contentState = TILE_CONTENT_STATE.READY;
       this._onContentLoaded();
-      return true;
+      return loadResult;
     } catch (error) {
       // Tile is unloaded before the content finishes loading
       this.contentState = TILE_CONTENT_STATE.FAILED;
@@ -755,34 +732,5 @@ export class Tile3D {
     this.computedTransform = computedTransform;
 
     this._updateBoundingVolume(this.header);
-  }
-
-  // Get options which are applicable only for the particular loader
-  _getLoaderSpecificOptions(loaderId) {
-    switch (loaderId) {
-      case 'i3s':
-        return {
-          ...this.tileset.options.i3s,
-          _tileOptions: {
-            attributeUrls: this.header.attributeUrls,
-            textureUrl: this.header.textureUrl,
-            textureFormat: this.header.textureFormat,
-            textureLoaderOptions: this.header.textureLoaderOptions,
-            materialDefinition: this.header.materialDefinition,
-            isDracoGeometry: this.header.isDracoGeometry,
-            mbs: this.header.mbs
-          },
-          _tilesetOptions: {
-            store: this.tileset.tileset.store,
-            attributeStorageInfo: this.tileset.tileset.attributeStorageInfo,
-            fields: this.tileset.tileset.fields
-          },
-          isTileHeader: false
-        };
-      case '3d-tiles':
-      case 'cesium-ion':
-      default:
-        return get3dTilesOptions(this.tileset.tileset);
-    }
   }
 }

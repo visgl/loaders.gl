@@ -1,5 +1,5 @@
 import {I3SLoader, I3STilesetHeader, SceneLayer3D} from '@loaders.gl/i3s';
-import {Tileset3D, Tile3D, TILESET_TYPE} from '@loaders.gl/tiles';
+import {I3SSource, Tile3D, Tileset3D, TILESET_TYPE} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from '../../src/lib/helpers/i3s-nodepages-tiles';
 
 export const TEST_LAYER_URL =
@@ -203,7 +203,11 @@ export async function loadI3STile(options = {}, _replaceWithKTX2Texture = false)
   const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, TEST_LAYER_URL, options);
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);
   const I3STilesetHeader = await getI3sTileHeader(options, _replaceWithKTX2Texture);
-  const tileset = new Tileset3D({...I3STilesetHeader, loader: I3SLoader}, options);
+  const sourceLoadOptions = {
+    ...((options as Record<string, any>).loadOptions || {}),
+    i3s: (options as Record<string, any>).i3s
+  };
+  const tileset = new Tileset3D(new I3SSource(I3STilesetHeader, sourceLoadOptions), options);
   const tile = new Tile3D(tileset, node1);
   await tileset._loadTile(tile);
   return tile;
