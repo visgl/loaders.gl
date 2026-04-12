@@ -13,6 +13,7 @@ import './lib/vector-tiler/simplify-path.spec';
 
 import './lib/utils/geometry-utils.spec';
 
+import './map-style-loader.spec';
 import './tilejson-loader.spec';
 
 import './mvt-loader.spec';
