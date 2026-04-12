@@ -67,7 +67,12 @@ export const GeoTIFFSource = {
     }
   },
 
-  testURL: (url: string): boolean => /\.(?:geotiff?|tiff?)(?:$|[?#])/i.test(url),
+  testURL: (url: string): boolean => {
+    if (/\.ome\.tiff?(?:$|[?#])/i.test(url)) {
+      return false;
+    }
+    return /\.(?:geotiff?|tiff?)(?:$|[?#])/i.test(url);
+  },
   createDataSource: (data: string | Blob, options: GeoTIFFSourceOptions): GeoTIFFRasterSource =>
     new GeoTIFFRasterSource(data, options)
 } as const satisfies Source<GeoTIFFRasterSource>;
@@ -117,6 +122,10 @@ export class GeoTIFFRasterSource
     const viewportBoundingBox = getRasterViewportBoundingBox(parameters.viewport);
     const viewportCrs = parameters.viewport.crs;
 
+    if (parameters.signal?.aborted) {
+      throw new Error('Request aborted');
+    }
+
     if (metadata.crs && viewportCrs && metadata.crs !== viewportCrs) {
       throw new Error(
         `GeoTIFFRasterSource does not support reprojection. Requested ${viewportCrs}, source ${metadata.crs}.`
@@ -127,15 +136,22 @@ export class GeoTIFFRasterSource
       throw new Error('GeoTIFFRasterSource requires source bounds to fulfill viewport requests.');
     }
 
+    const clippedBoundingBox = intersectBoundingBoxes(viewportBoundingBox, metadata.boundingBox);
+    if (!clippedBoundingBox) {
+      return createEmptyRaster(parameters, metadata);
+    }
+
+    const targetSize = getClippedTargetSize(viewportBoundingBox, clippedBoundingBox, parameters);
     const interleaved = parameters.interleaved ?? this.options.geotiff?.interleaved ?? false;
+    const fillValue = metadata.noData ?? undefined;
     const raster = (await tiff.readRasters({
-      bbox: flattenBoundingBox(viewportBoundingBox),
-      width: parameters.viewport.width,
-      height: parameters.viewport.height,
+      bbox: flattenBoundingBox(clippedBoundingBox),
+      width: targetSize.width,
+      height: targetSize.height,
       samples: parameters.bands,
       interleave: interleaved,
-      signal: parameters.signal,
-      resampleMethod: parameters.resampleMethod ?? this.options.geotiff?.resampleMethod
+      resampleMethod: parameters.resampleMethod ?? this.options.geotiff?.resampleMethod,
+      fillValue
     })) as unknown as GeoTIFFReadRasterResult;
 
     const data = normalizeRasterReadResult(raster, interleaved);
@@ -149,7 +165,7 @@ export class GeoTIFFRasterSource
       dtype: metadata.dtype,
       interleaved,
       noData: metadata.noData,
-      boundingBox: viewportBoundingBox,
+      boundingBox: clippedBoundingBox,
       crs: metadata.crs,
       metadata: metadata.metadata
     };
@@ -252,6 +268,114 @@ export class GeoTIFFRasterSource
 
 function flattenBoundingBox(boundingBox: RasterBoundingBox): [number, number, number, number] {
   return [...boundingBox[0], ...boundingBox[1]];
+}
+
+/** Computes the overlap between two source-coordinate bounding boxes. */
+function intersectBoundingBoxes(
+  leftBoundingBox: RasterBoundingBox,
+  rightBoundingBox: RasterBoundingBox
+): RasterBoundingBox | null {
+  const minX = Math.max(leftBoundingBox[0][0], rightBoundingBox[0][0]);
+  const minY = Math.max(leftBoundingBox[0][1], rightBoundingBox[0][1]);
+  const maxX = Math.min(leftBoundingBox[1][0], rightBoundingBox[1][0]);
+  const maxY = Math.min(leftBoundingBox[1][1], rightBoundingBox[1][1]);
+
+  if (maxX <= minX || maxY <= minY) {
+    return null;
+  }
+
+  return [
+    [minX, minY],
+    [maxX, maxY]
+  ];
+}
+
+/** Scales the output raster size to the portion of the viewport that intersects the source. */
+function getClippedTargetSize(
+  viewportBoundingBox: RasterBoundingBox,
+  clippedBoundingBox: RasterBoundingBox,
+  parameters: GetRasterParameters
+): {width: number; height: number} {
+  const viewportWidth = Math.abs(viewportBoundingBox[1][0] - viewportBoundingBox[0][0]);
+  const viewportHeight = Math.abs(viewportBoundingBox[1][1] - viewportBoundingBox[0][1]);
+  const clippedWidth = Math.abs(clippedBoundingBox[1][0] - clippedBoundingBox[0][0]);
+  const clippedHeight = Math.abs(clippedBoundingBox[1][1] - clippedBoundingBox[0][1]);
+
+  return {
+    width: Math.max(
+      1,
+      Math.min(
+        parameters.viewport.width,
+        Math.round((clippedWidth / Math.max(viewportWidth, Number.EPSILON)) * parameters.viewport.width)
+      )
+    ),
+    height: Math.max(
+      1,
+      Math.min(
+        parameters.viewport.height,
+        Math.round(
+          (clippedHeight / Math.max(viewportHeight, Number.EPSILON)) * parameters.viewport.height
+        )
+      )
+    )
+  };
+}
+
+/** Creates a no-data raster payload when the viewport does not overlap the dataset. */
+function createEmptyRaster(
+  parameters: GetRasterParameters,
+  metadata: RasterSourceMetadata
+): RasterData {
+  const length = parameters.viewport.width * parameters.viewport.height;
+  const bandCount = parameters.bands?.length ?? metadata.bandCount;
+  const interleaved = parameters.interleaved ?? false;
+  const noData = metadata.noData ?? 0;
+  const data = interleaved
+    ? createFilledTypedArray(metadata.dtype, length * bandCount, noData)
+    : bandCount === 1
+      ? createFilledTypedArray(metadata.dtype, length, noData)
+      : Array.from({length: bandCount}, () => createFilledTypedArray(metadata.dtype, length, noData));
+
+  return {
+    data,
+    width: parameters.viewport.width,
+    height: parameters.viewport.height,
+    bandCount,
+    dtype: metadata.dtype,
+    interleaved,
+    noData: metadata.noData,
+    boundingBox: getRasterViewportBoundingBox(parameters.viewport),
+    crs: metadata.crs,
+    metadata: metadata.metadata
+  };
+}
+
+/** Allocates a typed array for the requested raster channel type and fills it with one value. */
+function createFilledTypedArray(
+  dtype: RasterChannelDataType,
+  length: number,
+  fillValue: number
+): TypedArray {
+  switch (dtype) {
+    case 'uint8':
+      return new Uint8Array(length).fill(fillValue);
+    case 'uint16':
+      return new Uint16Array(length).fill(fillValue);
+    case 'uint32':
+      return new Uint32Array(length).fill(fillValue);
+    case 'int8':
+      return new Int8Array(length).fill(fillValue);
+    case 'int16':
+      return new Int16Array(length).fill(fillValue);
+    case 'int32':
+      return new Int32Array(length).fill(fillValue);
+    case 'float32':
+      return new Float32Array(length).fill(fillValue);
+    case 'float64':
+      return new Float64Array(length).fill(fillValue);
+    default:
+      return new Uint8Array(length).fill(fillValue);
+  }
 }
 
 function normalizeRasterReadResult(

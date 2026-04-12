@@ -62,7 +62,8 @@ export type {
   RasterSetBaseProps,
   RasterSetListener,
   RasterSetProps,
-  RasterSetRequest
+  RasterSetRequest,
+  RasterSetShouldRefetchArgs
 } from './raster-set';
 export {RasterSet} from './raster-set';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';

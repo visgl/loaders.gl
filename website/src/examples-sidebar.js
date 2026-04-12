@@ -32,6 +32,16 @@ export const sidebars = {
     },
     {
       type: 'category',
+      label: 'Geospatial Raster Formats',
+      items: ['geospatial/geotiff']
+    },
+    {
+      type: 'category',
+      label: 'Bioimaging Raster Formats',
+      items: ['bioimaging/ome-tiff']
+    },
+    {
+      type: 'category',
       label: 'Geospatial Tile Formats',
       items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
     },

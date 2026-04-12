@@ -18,18 +18,25 @@ import type {
   RangeStats,
   RasterSource,
   RasterSourceMetadata,
-  RasterViewport
+  RasterViewport,
+  GetRasterParameters,
+  RasterOverview
 } from '@loaders.gl/loader-utils';
-import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
+import {
+  createRangeStats,
+  getRangeStats,
+  getRasterViewportBoundingBox
+} from '@loaders.gl/loader-utils';
 import {GeoTIFFSource} from '@loaders.gl/geotiff';
+import type {RasterSetRequest} from '@loaders.gl/tiles';
 import {RasterSet} from '@loaders.gl/tiles';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 
-const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
-const DATA_URL = `${LOADERS_URL}/modules/geotiff/test/data/gfw-azores.tif`;
+const DATA_URL = '/gfw-azores.tif';
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
+const REFETCH_SHARPENING_THRESHOLD = 0.75;
 
 const INITIAL_VIEW_STATE: MapViewState = {
   longitude: -27.2,
@@ -81,7 +88,10 @@ export default function App(props: AppProps = {}) {
   }
 
   if (!rasterSetRef.current) {
-    rasterSetRef.current = RasterSet.fromRasterSource(sourceRef.current, {debounceTime: 150});
+    rasterSetRef.current = RasterSet.fromRasterSource(sourceRef.current, {
+      shouldRefetch: ({currentRequest, metadata, nextParameters}) =>
+        shouldRefetchGeoTIFFRaster({currentRequest, metadata, nextParameters})
+    });
   }
 
   const [viewState, setViewState] = useState<MapViewState>(INITIAL_VIEW_STATE);
@@ -97,6 +107,7 @@ export default function App(props: AppProps = {}) {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const showLoadingSpinner = loading || (!error && !rasterState.canvas);
 
   useEffect(() => {
     const rasterSet = rasterSetRef.current!;
@@ -106,7 +117,10 @@ export default function App(props: AppProps = {}) {
         setMetadata(nextMetadata);
         setError(null);
       },
-      onMetadataLoadError: nextError => setError(getErrorMessage(nextError)),
+      onMetadataLoadError: nextError => {
+        console.error('GeoTIFF example metadata load failed', nextError);
+        setError(getErrorMessage(nextError));
+      },
       onRasterLoad: ({parameters, raster}) => {
         const {canvas, stats} = renderRasterToCanvas(raster);
         setRasterState({
@@ -116,7 +130,10 @@ export default function App(props: AppProps = {}) {
         });
         setError(null);
       },
-      onRasterLoadError: (_requestId, nextError) => setError(getErrorMessage(nextError))
+      onRasterLoadError: (_requestId, nextError) => {
+        console.error('GeoTIFF example raster load failed', nextError);
+        setError(getErrorMessage(nextError));
+      }
     });
 
     void rasterSet.loadMetadata().catch(() => {});
@@ -160,10 +177,12 @@ export default function App(props: AppProps = {}) {
       metadata.crs
     );
 
-    rasterSetRef.current.requestRaster({
+    const parameters: GetRasterParameters = {
       viewport: rasterViewport,
-      resampleMethod: 'bilinear'
-    });
+      resampleMethod: 'nearest'
+    };
+
+    rasterSetRef.current.requestRaster(parameters);
   }, [metadata, viewState, viewportSize.height, viewportSize.width]);
 
   const layers = useMemo(() => {
@@ -197,7 +216,7 @@ export default function App(props: AppProps = {}) {
           mapStyle={MAP_STYLE}
         />
       </DeckGL>
-      {loading ? <LoadingSpinner /> : null}
+      {showLoadingSpinner ? <LoadingSpinner /> : null}
       {!props.hideChrome ? (
         <InfoPanel
           loading={loading}
@@ -233,6 +252,69 @@ export function renderToDOM(container = document.body) {
 }
 
 /**
+ * Uses current raster coverage and GeoTIFF metadata to avoid redundant viewport refetches.
+ */
+function shouldRefetchGeoTIFFRaster(args: {
+  currentRequest: RasterSetRequest | null;
+  metadata: RasterSourceMetadata | null;
+  nextParameters: GetRasterParameters;
+}): boolean {
+  const {currentRequest, metadata, nextParameters} = args;
+  if (!currentRequest || !metadata?.boundingBox) {
+    return true;
+  }
+
+  if (!hasMatchingRasterSelection(currentRequest.parameters, nextParameters)) {
+    return true;
+  }
+
+  const currentBoundingBox =
+    currentRequest.raster.boundingBox ||
+    currentRequest.parameters.viewport.bounds ||
+    getViewportBoundingBox(currentRequest.parameters);
+  const nextBoundingBox = getViewportBoundingBox(nextParameters);
+  const currentOverview = selectOverview(metadata, currentRequest.parameters);
+  const nextOverview = selectOverview(metadata, nextParameters);
+
+  if ((currentOverview?.index ?? 0) !== (nextOverview?.index ?? 0)) {
+    return true;
+  }
+
+  const nativeResolution = getOverviewResolution(metadata, nextOverview);
+  if (
+    !nativeResolution ||
+    !areBoundingBoxesEquivalent(
+      currentBoundingBox,
+      nextBoundingBox,
+      nativeResolution.x * 0.5,
+      nativeResolution.y * 0.5
+    )
+  ) {
+    return true;
+  }
+
+  const currentResolution = getViewportResolution(
+    currentBoundingBox,
+    currentRequest.raster.width,
+    currentRequest.raster.height
+  );
+  const nextResolution = getViewportResolution(
+    nextBoundingBox,
+    nextParameters.viewport.width,
+    nextParameters.viewport.height
+  );
+
+  if (!requiresSharperRaster(currentResolution, nextResolution)) {
+    return false;
+  }
+
+  return (
+    currentResolution.x > nativeResolution.x * 1.02 ||
+    currentResolution.y > nativeResolution.y * 1.02
+  );
+}
+
+/**
  * Converts the current deck view state into a loaders.gl raster viewport.
  */
 function createRasterViewport(
@@ -263,6 +345,163 @@ function createRasterViewport(
     unprojectPosition: (position: number[]) =>
       deckViewport.unprojectPosition(position as [number, number])
   };
+}
+
+/**
+ * Returns `true` when a new request changes band/layout selection.
+ */
+function hasMatchingRasterSelection(
+  currentParameters: GetRasterParameters,
+  nextParameters: GetRasterParameters
+): boolean {
+  return (
+    currentParameters.interleaved === nextParameters.interleaved &&
+    currentParameters.resampleMethod === nextParameters.resampleMethod &&
+    areBandsEqual(currentParameters.bands, nextParameters.bands)
+  );
+}
+
+/**
+ * Compares optional band selections.
+ */
+function areBandsEqual(leftBands?: number[], rightBands?: number[]): boolean {
+  if (!leftBands && !rightBands) {
+    return true;
+  }
+  if (!leftBands || !rightBands || leftBands.length !== rightBands.length) {
+    return false;
+  }
+  return leftBands.every((band, index) => band === rightBands[index]);
+}
+
+/**
+ * Resolves the requested viewport bounds.
+ */
+function getViewportBoundingBox(parameters: GetRasterParameters): RasterBoundingBox {
+  return getRasterViewportBoundingBox(parameters.viewport);
+}
+
+/**
+ * Returns `true` when both bounding boxes are equivalent within source-resolution tolerance.
+ */
+function areBoundingBoxesEquivalent(
+  leftBoundingBox: RasterBoundingBox,
+  rightBoundingBox: RasterBoundingBox,
+  toleranceX: number,
+  toleranceY: number
+): boolean {
+  return (
+    Math.abs(leftBoundingBox[0][0] - rightBoundingBox[0][0]) <= toleranceX &&
+    Math.abs(leftBoundingBox[0][1] - rightBoundingBox[0][1]) <= toleranceY &&
+    Math.abs(leftBoundingBox[1][0] - rightBoundingBox[1][0]) <= toleranceX &&
+    Math.abs(leftBoundingBox[1][1] - rightBoundingBox[1][1]) <= toleranceY
+  );
+}
+
+/**
+ * Computes viewport resolution in source units per output pixel.
+ */
+function getViewportResolution(
+  boundingBox: RasterBoundingBox,
+  width: number,
+  height: number
+): {x: number; y: number} {
+  return {
+    x: Math.abs(boundingBox[1][0] - boundingBox[0][0]) / Math.max(width, 1),
+    y: Math.abs(boundingBox[1][1] - boundingBox[0][1]) / Math.max(height, 1)
+  };
+}
+
+/**
+ * Selects the coarsest overview that still satisfies the requested viewport resolution.
+ */
+function selectOverview(
+  metadata: RasterSourceMetadata,
+  parameters: GetRasterParameters
+): RasterOverview | null {
+  const overviews = getAvailableOverviews(metadata);
+  if (!overviews.length) {
+    return null;
+  }
+
+  const requestedResolution = getViewportResolution(
+    getViewportBoundingBox(parameters),
+    parameters.viewport.width,
+    parameters.viewport.height
+  );
+
+  let selectedOverview = overviews[0];
+  let selectedScore = Number.NEGATIVE_INFINITY;
+
+  for (const overview of overviews) {
+    const resolution = getOverviewResolution(metadata, overview);
+    if (!resolution) {
+      continue;
+    }
+
+    const score = Math.max(resolution.x, resolution.y);
+    if (
+      resolution.x <= requestedResolution.x &&
+      resolution.y <= requestedResolution.y &&
+      score > selectedScore
+    ) {
+      selectedOverview = overview;
+      selectedScore = score;
+    }
+  }
+
+  return selectedOverview;
+}
+
+/**
+ * Lists overview metadata, falling back to the full-resolution image when needed.
+ */
+function getAvailableOverviews(metadata: RasterSourceMetadata): RasterOverview[] {
+  if (metadata.overviews?.length) {
+    return metadata.overviews;
+  }
+
+  return [
+    {
+      index: 0,
+      width: metadata.width,
+      height: metadata.height
+    }
+  ];
+}
+
+/**
+ * Computes overview resolution in source units per pixel.
+ */
+function getOverviewResolution(
+  metadata: RasterSourceMetadata,
+  overview: RasterOverview | null
+): {x: number; y: number} | null {
+  if (!overview || !metadata.boundingBox) {
+    return null;
+  }
+
+  if (overview.resolution) {
+    return {
+      x: Math.abs(overview.resolution[0]),
+      y: Math.abs(overview.resolution[1])
+    };
+  }
+
+  return getViewportResolution(metadata.boundingBox, overview.width, overview.height);
+}
+
+/**
+ * Returns `true` when the next request materially increases required sharpness.
+ */
+function requiresSharperRaster(
+  currentResolution: {x: number; y: number},
+  nextResolution: {x: number; y: number}
+): boolean {
+  return (
+    nextResolution.x < currentResolution.x * REFETCH_SHARPENING_THRESHOLD ||
+    nextResolution.y < currentResolution.y * REFETCH_SHARPENING_THRESHOLD
+  );
 }
 
 /**
@@ -607,9 +846,9 @@ function InfoPanel(props: {
         View: {viewState.longitude.toFixed(3)}, {viewState.latitude.toFixed(3)} at zoom{' '}
         {viewState.zoom.toFixed(2)}
       </div>
-      <RangeStatsViewer rangeStats={rangeStats} />
       {loading ? <div style={{marginBottom: 8}}>Loading raster…</div> : null}
       {error ? <div style={{marginBottom: 8, color: '#b00020'}}>{error}</div> : null}
+      <RangeStatsViewer rangeStats={rangeStats} />
       <pre
         style={{
           margin: 0,
@@ -634,8 +873,17 @@ function RangeStatsViewer({rangeStats}: {rangeStats: RangeStats}) {
   }
 
   return (
-    <div style={{lineHeight: 1.4, marginBottom: 8}}>
-      <b>Range transport</b>
+    <div
+      style={{
+        lineHeight: 1.4,
+        marginBottom: 8,
+        padding: '10px 12px',
+        borderRadius: 8,
+        background: 'rgba(246, 248, 252, 0.96)',
+        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.14)'
+      }}
+    >
+      <div style={{fontWeight: 600, marginBottom: 6}}>Range transport</div>
       <table style={{borderCollapse: 'collapse', width: '100%'}}>
         <tbody>
           <RangeStatsRow
@@ -660,10 +908,28 @@ function RangeStatsViewer({rangeStats}: {rangeStats: RangeStats}) {
 function RangeStatsRow({label, value}: {label: string; value: React.ReactNode}) {
   return (
     <tr>
-      <th style={{fontWeight: 400, paddingRight: 8, textAlign: 'left', whiteSpace: 'nowrap'}}>
+      <th
+        style={{
+          fontWeight: 400,
+          paddingRight: 8,
+          paddingTop: 2,
+          paddingBottom: 2,
+          textAlign: 'left',
+          whiteSpace: 'nowrap'
+        }}
+      >
         {label}
       </th>
-      <td style={{fontFamily: 'monospace', textAlign: 'right'}}>{value}</td>
+      <td
+        style={{
+          fontFamily: 'monospace',
+          textAlign: 'right',
+          paddingTop: 2,
+          paddingBottom: 2
+        }}
+      >
+        {value}
+      </td>
     </tr>
   );
 }

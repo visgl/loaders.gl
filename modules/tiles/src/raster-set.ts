@@ -19,6 +19,16 @@ export type RasterSetRequest<DataT = RasterData> = {
   raster: DataT;
 };
 
+/** Arguments supplied to {@link RasterSetBaseProps.shouldRefetch}. */
+export type RasterSetShouldRefetchArgs<DataT = RasterData> = {
+  /** Current accepted request retained by the raster manager, if any. */
+  currentRequest: RasterSetRequest<DataT> | null;
+  /** Source metadata resolved by {@link RasterSet.loadMetadata}, if available. */
+  metadata: RasterSourceMetadata | null;
+  /** Candidate raster request parameters under evaluation. */
+  nextParameters: GetRasterParameters;
+};
+
 /** Configuration shared by all {@link RasterSet} instances. */
 export type RasterSetBaseProps<DataT = RasterData> = {
   /** Callback used to load source metadata. */
@@ -27,6 +37,8 @@ export type RasterSetBaseProps<DataT = RasterData> = {
   getRaster: (parameters: GetRasterParameters) => Promise<DataT>;
   /** Debounce interval applied before issuing raster requests. */
   debounceTime?: number;
+  /** Optional policy callback that can skip redundant raster requests. */
+  shouldRefetch?: (args: RasterSetShouldRefetchArgs<DataT>) => boolean;
 };
 
 /** Options for creating a {@link RasterSet}. */
@@ -68,7 +80,8 @@ const DEFAULT_RASTERSET_PROPS: Required<Omit<RasterSetProps, 'rasterSource'>> = 
       bandCount: 0,
       dtype: 'uint8'
     }) as never,
-  debounceTime: 0
+  debounceTime: 0,
+  shouldRefetch: () => true
 };
 
 /** Shared raster request manager used by viewport-driven raster examples and layers. */
@@ -180,9 +193,12 @@ export class RasterSet<DataT = RasterData> {
 
   /** Debounces and issues a new raster request for the supplied parameters. */
   requestRaster(parameters: GetRasterParameters, debounceTime = this._opts.debounceTime): number {
+    if (!this.shouldRefetchRaster(parameters)) {
+      return this._currentRequest?.requestId ?? -1;
+    }
+
     const requestId = this._nextRequestId++;
     this._cancelScheduledRaster();
-    this._abortActiveRequest();
 
     if (debounceTime > 0) {
       this._timeoutId = setTimeout(() => {
@@ -194,6 +210,15 @@ export class RasterSet<DataT = RasterData> {
     }
 
     return requestId;
+  }
+
+  /** Returns `true` when the supplied parameters warrant a new raster fetch. */
+  shouldRefetchRaster(parameters: GetRasterParameters): boolean {
+    return this._opts.shouldRefetch({
+      currentRequest: this._currentRequest,
+      metadata: this.metadata,
+      nextParameters: parameters
+    });
   }
 
   /** Clears timers and listeners held by the manager. */
@@ -219,7 +244,11 @@ export class RasterSet<DataT = RasterData> {
       const abortController = new AbortController();
       this._abortController = abortController;
       const raster = await this._opts.getRaster({...parameters, signal: abortController.signal});
-      if (this._finalized || requestId <= this._lastAcceptedRequestId) {
+      if (
+        this._finalized ||
+        abortController.signal.aborted ||
+        requestId <= this._lastAcceptedRequestId
+      ) {
         return;
       }
 
@@ -269,7 +298,11 @@ export class RasterSet<DataT = RasterData> {
           }
           return DEFAULT_RASTERSET_PROPS.getRaster(parameters) as Promise<DataT>;
         }),
-      debounceTime: opts.debounceTime ?? DEFAULT_RASTERSET_PROPS.debounceTime
+      debounceTime: opts.debounceTime ?? DEFAULT_RASTERSET_PROPS.debounceTime,
+      shouldRefetch:
+        (opts.shouldRefetch as ((args: RasterSetShouldRefetchArgs<DataT>) => boolean) | undefined) ||
+        ((args: RasterSetShouldRefetchArgs<DataT>) =>
+          DEFAULT_RASTERSET_PROPS.shouldRefetch(args as RasterSetShouldRefetchArgs))
     };
   }
 

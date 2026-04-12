@@ -3,10 +3,16 @@ import {readFile} from 'node:fs/promises';
 import {expect, test} from 'vitest';
 import {createDataSource} from '@loaders.gl/core';
 import {resolvePath} from '@loaders.gl/core';
-import {GeoTIFFRasterSource, GeoTIFFSource} from '@loaders.gl/geotiff';
+import {
+  GeoTIFFRasterSource,
+  GeoTIFFSource,
+  OMETiffImageSource,
+  OMETiffSource
+} from '@loaders.gl/geotiff';
 import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/loader-utils';
 
 const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/gfw-azores.tif');
+const OME_TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/multi-channel.ome.tif');
 
 function createViewport(bounds: [[number, number], [number, number]], crs?: string) {
   const [[minX, minY], [maxX, maxY]] = bounds;
@@ -29,6 +35,11 @@ async function createFixtureBlob() {
   return new Blob([file]);
 }
 
+async function createOmeFixtureBlob() {
+  const file = await readFile(OME_TIFF_URL);
+  return new Blob([file]);
+}
+
 test('createDataSource selects GeoTIFFSource from URL', () => {
   const dataSource = createDataSource('https://example.com/dataset.tif', [GeoTIFFSource], {
     geotiff: {}
@@ -44,6 +55,25 @@ test('createDataSource selects GeoTIFFSource from explicit core.type', () => {
   });
 
   expect(dataSource).toBeInstanceOf(GeoTIFFRasterSource);
+});
+
+test('createDataSource selects OMETiffSource from URL ahead of GeoTIFFSource', () => {
+  const dataSource = createDataSource(
+    'https://example.com/multi-channel.ome.tif',
+    [GeoTIFFSource, OMETiffSource],
+    {geotiff: {}, ometiff: {}}
+  );
+
+  expect(dataSource).toBeInstanceOf(OMETiffImageSource);
+});
+
+test('createDataSource selects OMETiffSource from explicit core.type', () => {
+  const dataSource = createDataSource(new Blob([new Uint8Array([0])]), [OMETiffSource], {
+    core: {type: 'ometiff'},
+    ometiff: {}
+  });
+
+  expect(dataSource).toBeInstanceOf(OMETiffImageSource);
 });
 
 test('GeoTIFFRasterSource exposes normalized metadata', async () => {
@@ -75,6 +105,56 @@ test('GeoTIFFRasterSource#getRaster returns typed raster data for a viewport', a
   expect(raster.dtype).toBe('float32');
   expect(raster.data).toBeInstanceOf(Float32Array);
   expect((raster.data as Float32Array).length).toBe(64 * 32);
+});
+
+test('GeoTIFFRasterSource#getRaster clips oversized viewports to the source footprint', async () => {
+  const source = new GeoTIFFRasterSource(await createFixtureBlob(), {geotiff: {}});
+  const metadata = await source.getMetadata();
+  const raster = await source.getRaster({
+    viewport: createViewport(
+      [
+        [-60, 20],
+        [0, 55]
+      ],
+      metadata.crs
+    )
+  });
+
+  const values = raster.data as Float32Array;
+  expect(raster.boundingBox).toEqual(metadata.boundingBox);
+  expect(raster.width).toBeLessThan(64);
+  expect(raster.height).toBeLessThan(32);
+  expect(values.length).toBe(raster.width * raster.height);
+});
+
+test('OMETiffImageSource exposes normalized metadata', async () => {
+  const source = new OMETiffImageSource(await createOmeFixtureBlob(), {
+    core: {type: 'ometiff'},
+    ometiff: {}
+  });
+  const metadata = await source.getMetadata();
+
+  expect(metadata.name).toBe('multi-channel.ome.tif');
+  expect(metadata.bandCount).toBe(3);
+  expect(metadata.dtype).toBe('int8');
+  expect(metadata.sizeT).toBe(1);
+  expect(metadata.sizeZ).toBe(1);
+  expect(metadata.levels.length).toBe(1);
+  expect(metadata.labels).toContain('c');
+});
+
+test('OMETiffImageSource#getRaster returns multi-channel plane data', async () => {
+  const file = await readFile(OME_TIFF_URL);
+  const source = new OMETiffImageSource(new Blob([file]), {ometiff: {}});
+  const raster = await source.getRaster({channels: [0, 1, 2]});
+
+  expect(raster.width).toBe(439);
+  expect(raster.height).toBe(167);
+  expect(raster.bandCount).toBe(3);
+  expect(raster.dtype).toBe('int8');
+  expect(Array.isArray(raster.data)).toBe(true);
+  expect((raster.data as Int8Array[])[0]).toBeInstanceOf(Int8Array);
+  expect((raster.data as Int8Array[])[0].length).toBe(439 * 167);
 });
 
 test('GeoTIFFRasterSource rejects viewport CRS reprojection requests', async () => {
@@ -186,4 +266,64 @@ test('GeoTIFFRasterSource preserves rangeSchedulerProps object references', asyn
   await source.getMetadata();
 
   expect(rangeStats.get('Logical Range Requests').count).toBeGreaterThan(0);
+});
+
+test('GeoTIFFRasterSource ignores late aborts without poisoning subsequent raster requests', async () => {
+  const file = await readFile(TIFF_URL);
+  const mockFetch = async (_url: string, options?: RequestInit) => {
+    const headers = new Headers(options?.headers);
+    const rangeHeader = headers.get('Range');
+    const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
+
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    if (!match) {
+      return new Response(file, {status: 200});
+    }
+
+    const start = Number(match[1]);
+    const end = Math.min(Number(match[2]), file.byteLength - 1);
+
+    return new Response(file.subarray(start, end + 1), {
+      status: 206,
+      headers: {
+        'Content-Range': `bytes ${start}-${end}/${file.byteLength}`
+      }
+    });
+  };
+
+  const source = new GeoTIFFRasterSource('https://example.com/gfw-azores.tif', {
+    core: {
+      loadOptions: {
+        core: {
+          fetch: mockFetch as typeof fetch
+        }
+      }
+    },
+    geotiff: {
+      rangeSchedulerProps: {
+        batchDelayMs: 0,
+        stats: createRangeStats('geotiff-abort-recovery')
+      }
+    }
+  });
+  const metadata = await source.getMetadata();
+  const abortController = new AbortController();
+
+  const firstRequest = source
+    .getRaster({
+      viewport: createViewport(metadata.boundingBox!, metadata.crs),
+      signal: abortController.signal
+    })
+    .catch(error => error);
+
+  abortController.abort();
+
+  const secondRequest = source.getRaster({
+    viewport: createViewport(metadata.boundingBox!, metadata.crs)
+  });
+
+  const [, secondRaster] = await Promise.all([firstRequest, secondRequest]);
+
+  expect(secondRaster.data).toBeInstanceOf(Float32Array);
 });

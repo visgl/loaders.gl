@@ -220,3 +220,39 @@ test('RasterSet#emits loading state changes', async t => {
   rasterSet.finalize();
   t.end();
 });
+
+test('RasterSet#supports custom refetch policies', async t => {
+  const calls: number[] = [];
+  const rasterSet = new RasterSet({
+    shouldRefetch: ({currentRequest, nextParameters}) =>
+      !currentRequest || currentRequest.parameters.viewport.width !== nextParameters.viewport.width,
+    async getMetadata() {
+      return {width: 4, height: 2, bandCount: 1, dtype: 'uint8'};
+    },
+    async getRaster(parameters) {
+      calls.push(parameters.viewport.width);
+      return {
+        data: new Uint8Array(parameters.viewport.width * parameters.viewport.height),
+        width: parameters.viewport.width,
+        height: parameters.viewport.height,
+        bandCount: 1,
+        dtype: 'uint8'
+      } as any;
+    }
+  });
+
+  rasterSet.requestRaster({viewport: createViewport(2, 2)});
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  t.equal(rasterSet.shouldRefetchRaster({viewport: createViewport(2, 2)}), false);
+  rasterSet.requestRaster({viewport: createViewport(2, 2)});
+  rasterSet.requestRaster({viewport: createViewport(3, 2)});
+
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  t.deepEqual(calls, [2, 3]);
+  t.equal(rasterSet.currentRequest?.parameters.viewport.width, 3);
+
+  rasterSet.finalize();
+  t.end();
+});
