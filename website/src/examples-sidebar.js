@@ -33,7 +33,17 @@ export const sidebars = {
     {
       type: 'category',
       label: 'Geospatial Tile Formats',
-      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/wms', 'tiles/mlt']
+      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
+    },
+    {
+      type: 'category',
+      label: 'Image and Vector Services',
+      items: [
+        'tiles/wms',
+        'tiles/wfs',
+        'tiles/arcgis-image-server',
+        'tiles/arcgis-feature-server'
+      ]
     },
     {
       type: 'category',

@@ -190,11 +190,9 @@ test('Tileset3D#onTraversalComplete', async t => {
   t.plan(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[1];
-  let tileLoadCounter = 0;
   const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
     onTileLoad: () => {
       tileset.update(viewport);
-      tileLoadCounter++;
     },
     onTraversalComplete: selectedTiles => {
       return selectedTiles.filter(tile => tile.depth === 1);
@@ -202,8 +200,8 @@ test('Tileset3D#onTraversalComplete', async t => {
   });
   tileset.update(viewport);
 
-  t.timeoutAfter(1000);
-  await waitForCondition(() => tileLoadCounter > 0, 1000);
+  t.timeoutAfter(1500);
+  await waitForCondition(() => tileset.selectedTiles.length === 4, 1500);
   tileset.update(viewport);
   t.equals(tileset.selectedTiles.length, 4);
 });

@@ -3,9 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {readFile} from 'fs/promises';
 import {parse} from '@loaders.gl/core';
 import {validateLoader} from 'test/common/conformance';
+import inlineStyleText from './data/map-style/inline.style.json?raw';
 import {
   MapStyleLoader,
   resolveMapStyle,
@@ -34,8 +34,7 @@ test('MapStyleLoader#loader conformance', (t) => {
 });
 
 test('MapStyleLoader#parse inline style fixture', async (t) => {
-  const styleText = await readFile(INLINE_STYLE_URL, 'utf8');
-  const style = await parse(styleText, MapStyleLoader, {
+  const style = await parse(inlineStyleText, MapStyleLoader, {
     mapStyle: {baseUrl: INLINE_STYLE_URL.href}
   });
 
