@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {GeoTIFF as GeoTIFFDataset, GeoTIFFImage} from 'geotiff';
-import {fromBlob, fromUrl} from 'geotiff';
+import {fromBlob, fromCustomClient} from 'geotiff';
 
 import type {
   Source,
@@ -14,9 +14,14 @@ import type {
   GetRasterParameters,
   RasterData,
   RasterChannelDataType,
-  RasterBoundingBox
+  RasterBoundingBox,
+  RangeRequestSchedulerProps
 } from '@loaders.gl/loader-utils';
-import {DataSource, getRasterViewportBoundingBox} from '@loaders.gl/loader-utils';
+import {
+  DataSource,
+  getRasterViewportBoundingBox,
+  RangeRequestScheduler
+} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -33,6 +38,10 @@ export type GeoTIFFSourceOptions = DataSourceOptions & {
     interleaved?: boolean;
     /** Default resampling mode for viewport reads. */
     resampleMethod?: 'nearest' | 'bilinear';
+    /** Optional shared scheduler used for byte-range requests against remote GeoTIFFs. */
+    rangeScheduler?: RangeRequestScheduler;
+    /** Optional scheduler configuration used when creating a per-source byte-range scheduler. */
+    rangeSchedulerProps?: RangeRequestSchedulerProps;
   };
 };
 
@@ -82,9 +91,20 @@ export class GeoTIFFRasterSource
   implements RasterSource
 {
   private _initPromise: Promise<GeoTIFFInit> | null = null;
+  private _rangeScheduler: RangeRequestScheduler | null = null;
 
   constructor(data: string | Blob, options: GeoTIFFSourceOptions) {
     super(data, options, GeoTIFFSource.defaultOptions);
+
+    if (options.geotiff?.rangeSchedulerProps) {
+      this.options.geotiff ||= {};
+      this.options.geotiff.rangeSchedulerProps = options.geotiff.rangeSchedulerProps;
+    }
+
+    if (options.geotiff?.rangeScheduler) {
+      this.options.geotiff ||= {};
+      this.options.geotiff.rangeScheduler = options.geotiff.rangeScheduler;
+    }
   }
 
   async getMetadata(): Promise<RasterSourceMetadata> {
@@ -162,10 +182,37 @@ export class GeoTIFFRasterSource
 
   private async _openGeoTIFF(): Promise<GeoTIFFDataset> {
     if (typeof this.data === 'string') {
-      return await fromUrl(this.url, this.options.geotiff?.headers);
+      return await fromCustomClient(
+        new GeoTIFFRangeSchedulerClient({
+          url: this.url,
+          fetch: this.fetch,
+          sourceId: this.url,
+          headers: this.options.geotiff?.headers,
+          rangeScheduler: this._getRangeScheduler()
+        }) as never,
+        {
+          headers: this.options.geotiff?.headers,
+          maxRanges: 0
+        }
+      );
     }
 
     return await fromBlob(this.data);
+  }
+
+  private _getRangeScheduler(): RangeRequestScheduler {
+    if (this.options.geotiff?.rangeScheduler) {
+      return this.options.geotiff.rangeScheduler;
+    }
+
+    if (!this._rangeScheduler) {
+      this._rangeScheduler = new RangeRequestScheduler({
+        batchDelayMs: 0,
+        ...this.options.geotiff?.rangeSchedulerProps
+      });
+    }
+
+    return this._rangeScheduler;
   }
 
   private _getMetadata(referenceImage: GeoTIFFImage, images: GeoTIFFImage[]): RasterSourceMetadata {
@@ -323,4 +370,155 @@ function getImageDataType(image: GeoTIFFImage): RasterChannelDataType {
 
 function normalizeSampleValue(value: number | number[]): number {
   return Array.isArray(value) ? value[0] : value;
+}
+
+type GeoTIFFRangeSchedulerClientProps = {
+  url: string;
+  fetch: (url: string, options?: RequestInit) => Promise<Response>;
+  sourceId: string;
+  headers?: HeadersInit;
+  rangeScheduler: RangeRequestScheduler;
+};
+
+class GeoTIFFRangeSchedulerResponse {
+  private readonly arrayBuffer: ArrayBuffer;
+  private readonly headers: Headers;
+  readonly status: number;
+
+  constructor(arrayBuffer: ArrayBuffer, headers: Headers, status = 206) {
+    this.arrayBuffer = arrayBuffer;
+    this.headers = headers;
+    this.status = status;
+  }
+
+  get ok(): boolean {
+    return this.status >= 200 && this.status <= 299;
+  }
+
+  getHeader(name: string): string {
+    return this.headers.get(name) || '';
+  }
+
+  async getData(): Promise<ArrayBuffer> {
+    return this.arrayBuffer;
+  }
+}
+
+class GeoTIFFRangeSchedulerClient {
+  readonly url: string;
+
+  private readonly fetch: GeoTIFFRangeSchedulerClientProps['fetch'];
+  private readonly sourceId: string;
+  private readonly defaultHeaders?: HeadersInit;
+  private readonly rangeScheduler: RangeRequestScheduler;
+  private fileSize: number | null = null;
+
+  constructor(props: GeoTIFFRangeSchedulerClientProps) {
+    this.url = props.url;
+    this.fetch = props.fetch;
+    this.sourceId = props.sourceId;
+    this.defaultHeaders = props.headers;
+    this.rangeScheduler = props.rangeScheduler;
+  }
+
+  async request({
+    headers,
+    signal
+  }: {
+    headers?: HeadersInit;
+    signal?: AbortSignal;
+  } = {}): Promise<GeoTIFFRangeSchedulerResponse> {
+    const mergedHeaders = new Headers(this.defaultHeaders);
+    new Headers(headers).forEach((value, key) => mergedHeaders.set(key, value));
+
+    const rangeHeader = mergedHeaders.get('Range');
+    const {offset, length} = parseSingleRangeHeader(rangeHeader);
+    const requestHeaders = new Headers(mergedHeaders);
+    requestHeaders.delete('Range');
+
+    const arrayBuffer = await this.rangeScheduler.scheduleRequest({
+      sourceId: this.sourceId,
+      offset,
+      length,
+      signal,
+      fetchRange: async (transportOffset, transportLength, transportSignal) =>
+        await this._fetchRange(transportOffset, transportLength, requestHeaders, transportSignal)
+    });
+
+    const endOffset = offset + arrayBuffer.byteLength - 1;
+    const responseHeaders = new Headers({
+      'Content-Range': `bytes ${offset}-${endOffset}/${this.fileSize ?? endOffset + 1}`
+    });
+
+    return new GeoTIFFRangeSchedulerResponse(arrayBuffer, responseHeaders);
+  }
+
+  private async _fetchRange(
+    offset: number,
+    length: number,
+    headers: Headers,
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer> {
+    let response = await this.fetch(this.url, {
+      headers: createRangeRequestHeaders(headers, offset, length),
+      signal
+    });
+
+    if (response.status === 416 && offset === 0) {
+      const actualLength = parseUnsatisfiedContentRange(response.headers.get('Content-Range'));
+      if (!actualLength) {
+        throw new Error('Missing content-length on 416 response');
+      }
+      response = await this.fetch(this.url, {
+        headers: createRangeRequestHeaders(headers, 0, actualLength),
+        signal
+      });
+    }
+
+    if (response.status === 200) {
+      await response.body?.cancel().catch(() => {});
+      throw new Error('Byte-range request failed: server returned 200 instead of 206');
+    }
+
+    if (response.status !== 206 && !response.ok) {
+      throw new Error(`Bad response code: ${response.status}`);
+    }
+
+    const contentRange = response.headers.get('Content-Range');
+    if (contentRange) {
+      const total = parseContentRangeTotal(contentRange);
+      if (total !== null) {
+        this.fileSize = total;
+      }
+    }
+
+    return await response.arrayBuffer();
+  }
+}
+
+function createRangeRequestHeaders(headers: Headers, offset: number, length: number): Headers {
+  const requestHeaders = new Headers(headers);
+  requestHeaders.set('Range', `bytes=${offset}-${offset + length - 1}`);
+  return requestHeaders;
+}
+
+function parseSingleRangeHeader(rangeHeader: string | null): {offset: number; length: number} {
+  const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
+  if (!match) {
+    throw new Error(`GeoTIFF range request requires a single byte range. Received: ${rangeHeader}`);
+  }
+
+  const offset = Number(match[1]);
+  const exclusiveEndOffset = Number(match[2]);
+  return {offset, length: exclusiveEndOffset - offset};
+}
+
+function parseContentRangeTotal(contentRange: string): number | null {
+  const match = contentRange.match(/^bytes \d+-\d+\/(\d+)$/);
+  return match ? Number(match[1]) : null;
+}
+
+function parseUnsatisfiedContentRange(contentRange: string | null): number | null {
+  const match = contentRange?.match(/^bytes \*\/(\d+)$/);
+  return match ? Number(match[1]) : null;
 }

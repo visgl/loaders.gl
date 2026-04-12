@@ -216,6 +216,17 @@ const sourceTabs = [
     deckLayers: ['Tile2DSourceLayer', 'BitmapLayer']
   },
   {
+    id: 'vector-source',
+    label: 'Vector',
+    sources: ['VectorSource', 'WFSSource'],
+    dataSource: 'VectorDataSource',
+    methods: ['getMetadata()', 'getFeatures()'],
+    outputCategory: 'GeoJSONTable',
+    outputDetail: 'Features / binary geometry',
+    loadingManager: 'VectorSet',
+    deckLayers: ['GeoJsonLayer']
+  },
+  {
     id: 'image-source',
     label: 'Images',
     sources: ['WMSSource'],
@@ -223,18 +234,18 @@ const sourceTabs = [
     methods: ['getMetadata()', 'getImage()'],
     outputCategory: 'MapImage',
     outputDetail: 'ImageType',
-    loadingManager: 'Image2D',
+    loadingManager: 'ImageSet',
     deckLayers: ['BitmapLayer']
   },
   {
     id: 'raster-source',
     label: 'Raster',
-    sources: ['GeoTIFFSource'],
+    sources: ['RasterSource', 'GeoTIFFSource'],
     dataSource: 'RasterDataSource',
     methods: ['getMetadata()', 'getRaster()'],
     outputCategory: 'RasterData',
     outputDetail: 'Typed arrays / multiband textures',
-    loadingManager: 'Viewport2D',
+    loadingManager: 'RasterSet',
     deckLayers: ['BitmapLayer', 'Custom shaders']
   },
   {
@@ -257,8 +268,11 @@ const sourceTags = {
   MLTSource: 'Web Service',
   MVTSource: 'Cloud Archive',
   PMTilesSource: 'Cloud Archive',
+  RasterSource: 'Base Type',
   TableTileSource: 'Generated',
   Tiles3DSource: 'Tileset',
+  VectorSource: 'Base Type',
+  WFSSource: 'Web Service',
   WMSSource: 'Web Service'
 };
 
@@ -364,8 +378,11 @@ const sourceDocumentationLinks = {
   MLTSource: '/docs/modules/mlt/api-reference/mlt-source',
   MVTSource: '/docs/modules/mvt/api-reference/mvt-source',
   PMTilesSource: '/docs/modules/pmtiles/api-reference/pmtiles-source',
+  RasterSource: '/docs/developer-guide/using-sources',
   TableTileSource: '/docs/modules/mvt/api-reference/table-tile-source',
   Tiles3DSource: '/docs/modules/tiles/api-reference/tiles-3d-source',
+  VectorSource: '/docs/developer-guide/using-sources',
+  WFSSource: '/docs/modules/wms/api-reference/wfs-source',
   WMSSource: '/docs/modules/wms/api-reference/wms-source'
 };
 

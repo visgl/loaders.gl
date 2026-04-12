@@ -4,6 +4,7 @@ import {expect, test} from 'vitest';
 import {createDataSource} from '@loaders.gl/core';
 import {resolvePath} from '@loaders.gl/core';
 import {GeoTIFFRasterSource, GeoTIFFSource} from '@loaders.gl/geotiff';
+import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/loader-utils';
 
 const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/gfw-azores.tif');
 
@@ -85,4 +86,104 @@ test('GeoTIFFRasterSource rejects viewport CRS reprojection requests', async () 
       viewport: createViewport(metadata.boundingBox!, 'EPSG:3857')
     })
   ).rejects.toThrow(/does not support reprojection/i);
+});
+
+test('GeoTIFFRasterSource uses RangeRequestScheduler for remote byte-range reads', async () => {
+  const file = await readFile(TIFF_URL);
+  const schedulerEvents: string[] = [];
+  const rangeRequests: Array<{start: number; end: number}> = [];
+  const rangeScheduler = new RangeRequestScheduler({
+    batchDelayMs: 0,
+    onEvent: event => schedulerEvents.push(event.type)
+  });
+
+  const mockFetch = async (_url: string, options?: RequestInit) => {
+    const headers = new Headers(options?.headers);
+    const rangeHeader = headers.get('Range');
+    const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
+
+    if (!match) {
+      return new Response(file, {status: 200});
+    }
+
+    const start = Number(match[1]);
+    const end = Math.min(Number(match[2]), file.byteLength - 1);
+    rangeRequests.push({start, end});
+
+    return new Response(file.subarray(start, end + 1), {
+      status: 206,
+      headers: {
+        'Content-Range': `bytes ${start}-${end}/${file.byteLength}`
+      }
+    });
+  };
+
+  const source = new GeoTIFFRasterSource('https://example.com/gfw-azores.tif', {
+    core: {
+      loadOptions: {
+        core: {
+          fetch: mockFetch as typeof fetch
+        }
+      }
+    },
+    geotiff: {
+      rangeScheduler
+    }
+  });
+  const metadata = await source.getMetadata();
+  const raster = await source.getRaster({
+    viewport: createViewport(metadata.boundingBox!, metadata.crs)
+  });
+
+  expect(rangeRequests.length).toBeGreaterThan(0);
+  expect(rangeRequests.every(request => request.end - request.start + 1 < file.byteLength)).toBe(
+    true
+  );
+  expect(schedulerEvents).toContain('request');
+  expect(schedulerEvents).toContain('response');
+  expect(raster.data).toBeInstanceOf(Float32Array);
+});
+
+test('GeoTIFFRasterSource preserves rangeSchedulerProps object references', async () => {
+  const file = await readFile(TIFF_URL);
+  const rangeStats = createRangeStats('geotiff-range-scheduler-props');
+  const mockFetch = async (_url: string, options?: RequestInit) => {
+    const headers = new Headers(options?.headers);
+    const rangeHeader = headers.get('Range');
+    const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
+
+    if (!match) {
+      return new Response(file, {status: 200});
+    }
+
+    const start = Number(match[1]);
+    const end = Math.min(Number(match[2]), file.byteLength - 1);
+
+    return new Response(file.subarray(start, end + 1), {
+      status: 206,
+      headers: {
+        'Content-Range': `bytes ${start}-${end}/${file.byteLength}`
+      }
+    });
+  };
+
+  const source = new GeoTIFFRasterSource('https://example.com/gfw-azores.tif', {
+    core: {
+      loadOptions: {
+        core: {
+          fetch: mockFetch as typeof fetch
+        }
+      }
+    },
+    geotiff: {
+      rangeSchedulerProps: {
+        batchDelayMs: 0,
+        stats: rangeStats
+      }
+    }
+  });
+
+  await source.getMetadata();
+
+  expect(rangeStats.get('Logical Range Requests').count).toBeGreaterThan(0);
 });
