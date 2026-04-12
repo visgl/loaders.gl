@@ -2,50 +2,38 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 
 import {PMTILESETS} from './data/tilesets';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 
-test('PMTilesSource#urls', async t => {
-  if (!isBrowser) {
-    t.comment('PMTilesSource currently only supported in browser');
-    t.end();
-    return;
-  }
+test.skipIf(!isBrowser)('PMTilesSource#urls', async () => {
   for (const tilesetUrl of PMTILESETS) {
     const source = PMTilesSource.createDataSource(tilesetUrl, {url: tilesetUrl});
-    t.ok(source);
+    expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
-    t.ok(metadata);
+    expect(metadata).toBeTruthy();
     // console.error(JSON.stringify(metadata.tileJSON, null, 2));
   }
-  t.end();
 });
 
-test('PMTilesSource#Blobs', async t => {
-  if (!isBrowser) {
-    t.comment('PMTilesSource currently only supported in browser');
-    t.end();
-    return;
-  }
+test.skipIf(!isBrowser)('PMTilesSource#Blobs', async () => {
   for (const tilesetUrl of PMTILESETS) {
     const response = await fetchFile(tilesetUrl);
     const blob = await response.blob();
     const source = PMTilesSource.createDataSource(blob, {url: blob});
-    t.ok(source);
+    expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
-    t.ok(metadata);
+    expect(metadata).toBeTruthy();
     // console.error(JSON.stringify(metadata.tileJSON, null, 2));
   }
-  t.end();
 });
 
 // TBA - TILE LOADING TESTS
 
 /*
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 
 import {load} from '@loaders.gl/core';
@@ -55,15 +43,15 @@ import {PMTILESETS} from './data/tilesets';
 
 test('PMTilesLoader#loader conformance', (t) => {
   validateLoader(t, PMTilesLoader, 'PMTilesLoader');
-  t.end();
+  
 });
 
 test.skip('PMTilesLoader#load', async (t) => {
   for (const tilesetUrl of PMTILESETS) {
     const metadata = await load(tilesetUrl, PMTilesLoader);
-    t.ok(metadata);
+    expect(metadata).toBeTruthy();
   }
-  t.end();
+  
 });
 
 /*
@@ -145,7 +133,7 @@ test('cache getDirectory', async (t) => {
   t.strictEqual(directory[0].runLength, 1);
 
   for (const v of cache.cache.values()) {
-    t.ok(v.lastUsed > 0);
+    expect(v.lastUsed > 0).toBeTruthy();
   }
 });
 
@@ -216,16 +204,16 @@ test('cache pruning by byte size', async (t) => {
   cache.cache.set('2', {lastUsed: 2, data: Promise.resolve([])});
   cache.prune();
   t.strictEqual(cache.cache.size, 2);
-  t.ok(cache.cache.get('2'));
-  t.ok(cache.cache.get('1'));
-  t.ok(!cache.cache.get('0'));
+  expect(cache.cache.get('2')).toBeTruthy();
+  expect(cache.cache.get('1')).toBeTruthy();
+  expect(!cache.cache.get('0')).toBeTruthy();
 });
 
 test('pmtiles get metadata', async (t) => {
   const source = new TestFileSource('@loaders.gl/pmtiles/test/data/test_fixture_1.pmtiles', '1');
   const p = new PMTiles(source);
   const metadata = await p.getMetadata();
-  t.ok(metadata.name);
+  expect(metadata.name).toBeTruthy();
 });
 
 // echo '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,0],[0,0]]]}' | ./tippecanoe -zg -o test_fixture_2.pmtiles
@@ -234,9 +222,9 @@ test('pmtiles handle retries', async (t) => {
   source.etag = '1';
   const p = new PMTiles(source);
   const metadata = await p.getMetadata();
-  t.ok(metadata.name);
+  expect(metadata.name).toBeTruthy();
   source.etag = '2';
   source.replaceData('@loaders.gl/pmtiles/test/data/test_fixture_2.pmtiles');
-  t.ok(await p.getZxy(0, 0, 0));
+  expect(await p.getZxy(0, 0, 0)).toBeTruthy();
 });
 */

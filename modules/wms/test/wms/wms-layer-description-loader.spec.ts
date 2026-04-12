@@ -6,14 +6,14 @@
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {
   _WMSLayerDescriptionLoader as WMSLayerDescriptionLoader
   // _WMSLayerDescription as WMSLayerDescription
 } from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
-test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async t => {
+test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async () => {
   const text =
     '<WMS_DescribeLayerResponse version="1.1.1">' +
     '  <LayerDescription name="topp:states" wfs="http://geo.openplans.org:80/geoserver/wfs/WfsDispatcher?">' +
@@ -22,12 +22,12 @@ test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async t => {
     '</WMS_DescribeLayerResponse>';
 
   const description = await parse(text, WMSLayerDescriptionLoader);
-  t.ok(description);
+  expect(description).toBeTruthy();
 
   // const res = description.layers;
 
-  // t.equal(res.length, 1, 'Only one LayerDescription in data, so only one parsed');
-  // t.equal(res[0].owsType, 'WFS', 'Properly parses owsType as WFS');
+  // expect(res.length, 'Only one LayerDescription in data, so only one parsed').toBe(1);
+  // expect(res[0].owsType, 'Properly parses owsType as WFS').toBe('WFS');
 
   // t.equal(
   //   res[0].owsURL,
@@ -35,9 +35,9 @@ test.skip('WMSLayerDescriptionLoader#read_WMSDescribeLayer', async t => {
   //   'Properly parses owsURL'
   // );
 
-  // t.equal(res[0].typeName, 'topp:states', 'Properly parses typeName');
+  // expect(res[0].typeName, 'Properly parses typeName').toBe('topp:states');
 
-  // t.equal(res[0].layerName, 'topp:states', 'Properly parses name');
+  // expect(res[0].layerName, 'Properly parses name').toBe('topp:states');
 
-  t.end();
+  
 });

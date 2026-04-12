@@ -1,5 +1,5 @@
 // @ts-nocheck
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/loader-utils';
 import VectorTile from '@loaders.gl/mvt/lib/mapbox-vector-tile-js/vector-tile';
 import {fromGeojsonVt, fromVectorTileJs} from '@loaders.gl/mvt/lib/mapbox-vt-pbf/to-vector-tile';
@@ -18,13 +18,19 @@ const vtvalidate = {
 
 const eq = new GeoJsonEquality({precision: 1});
 
-test('geojson-vt', t => {
-  if (isBrowser) {
-    t.comment('Skipping as @mapbox/geojson-fixtures is only supported in Node.js');
-    t.end();
-    return;
-  }
+function validateTileAsync(buffer) {
+  return new Promise((resolve, reject) => {
+    vtvalidate.isValid(buffer, (error, invalid) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(invalid);
+    });
+  });
+}
 
+test.skipIf(isBrowser)('geojson-vt', async () => {
   const geometryTypes = [
     'polygon',
     'point',
@@ -41,90 +47,75 @@ test('geojson-vt', t => {
     };
   });
 
-  fixtures.forEach(function (fixture) {
-    t.comment(`Testing ${fixture.name}`);
+  for (const fixture of fixtures) {
     const tile = geojsonVt(fixture.data).getTile(0, 0, 0);
-    const buff = fromGeojsonVt({geojsonLayer: tile});
-    vtvalidate.isValid(buff, (err, invalid) => {
-      t.error(err);
+    const buffer = fromGeojsonVt({geojsonLayer: tile});
+    const invalid = await validateTileAsync(buffer);
 
-      t.ok(!invalid, invalid);
+    expect(!invalid, invalid).toBeTruthy();
 
-      // Compare roundtripped features with originals
-      const expected =
-        fixture.data.type === 'FeatureCollection' ? fixture.data.features : [fixture.data];
-      const layer = new VectorTile(new Pbf(buff)).layers.geojsonLayer;
-      t.equal(layer.length, expected.length, `${expected.length} features`);
-      for (let i = 0; i < layer.length; i++) {
-        const actual = layer.feature(i).toGeoJSON(0, 0, 0);
-        t.ok(eq.compare(actual, expected[i]), `feature ${i}`);
-      }
-      t.end();
-    });
-  });
-
-  t.end();
+    const expected = fixture.data.type === 'FeatureCollection' ? fixture.data.features : [fixture.data];
+    const layer = new VectorTile(new Pbf(buffer)).layers.geojsonLayer;
+    expect(layer.length, `${expected.length} features`).toBe(expected.length);
+    for (let index = 0; index < layer.length; index++) {
+      const actual = layer.feature(index).toGeoJSON(0, 0, 0);
+      expect(eq.compare(actual, expected[index]), `feature ${index}`).toBeTruthy();
+    }
+  }
 });
 
-test('vector-tile-js', t => {
+test('vector-tile-js', async () => {
   // See https://github.com/mapbox/mvt-fixtures/blob/master/FIXTURES.md for
   // fixture descriptions
+  const fixtures = [];
   mvtf.each(function (fixture) {
-    // skip invalid tiles
-    if (!fixture.validity.v2) return;
+    fixtures.push(fixture);
+  });
 
-    t.comment(`mvt-fixtures: ${fixture.id} ${fixture.description}`);
-    const original = new VectorTile(new Pbf(fixture.buffer));
+  for (const fixture of fixtures) {
+    if (!fixture.validity.v2) {
+      continue;
+    }
 
     if (fixture.id === '020') {
-      t.comment('Skipping test due to https://github.com/mapbox/vt-pbf/issues/30');
-      t.end();
-      return;
+      continue;
     }
 
     if (fixture.id === '049' || fixture.id === '050') {
-      t.comment('Skipping test due to https://github.com/mapbox/vt-pbf/issues/31');
-      t.end();
-      return;
+      continue;
     }
 
-    const buff = fromVectorTileJs(original);
-    const roundtripped = new VectorTile(new Pbf(buff));
+    const original = new VectorTile(new Pbf(fixture.buffer));
+    const buffer = fromVectorTileJs(original);
+    const roundtripped = new VectorTile(new Pbf(buffer));
+    let invalid = await validateTileAsync(buffer);
 
-    vtvalidate.isValid(buff, (err, invalid) => {
-      t.error(err);
+    if (invalid && invalid === 'ClosePath command count is not 1') {
+      continue;
+    }
 
-      if (invalid && invalid === 'ClosePath command count is not 1') {
-        t.comment('Skipping test due to https://github.com/mapbox/vt-pbf/issues/28');
-        t.end();
-        return;
+    // UNKOWN geometry type is valid in the spec, but vtvalidate considers
+    // it an error
+    if (fixture.id === '016' || fixture.id === '039') {
+      invalid = null;
+    }
+
+    expect(!invalid, invalid).toBeTruthy();
+
+    for (const name in original.layers) {
+      const originalLayer = original.layers[name];
+      expect(roundtripped.layers[name], `layer ${name}`).toBeTruthy();
+      const roundtrippedLayer = roundtripped.layers[name];
+      expect(roundtrippedLayer.length).toBe(originalLayer.length);
+      for (let index = 0; index < originalLayer.length; index++) {
+        const actual = roundtrippedLayer.feature(index);
+        const expected = originalLayer.feature(index);
+
+        expect(actual.id, 'id').toBe(expected.id);
+        expect(actual.type, 'type').toBe(expected.type);
+        expect(actual.properties, 'properties').toEqual(expected.properties);
+        expect(actual.loadGeometry(), 'geometry').toEqual(expected.loadGeometry());
       }
-
-      // UNKOWN geometry type is valid in the spec, but vtvalidate considers
-      // it an error
-      if (fixture.id === '016' || fixture.id === '039') {
-        invalid = null;
-      }
-
-      t.ok(!invalid, invalid);
-
-      // Compare roundtripped features with originals
-      for (const name in original.layers) {
-        const originalLayer = original.layers[name];
-        t.ok(roundtripped.layers[name], `layer ${name}`);
-        const roundtrippedLayer = roundtripped.layers[name];
-        t.equal(roundtrippedLayer.length, originalLayer.length);
-        for (let i = 0; i < originalLayer.length; i++) {
-          const actual = roundtrippedLayer.feature(i);
-          const expected = originalLayer.feature(i);
-
-          t.equal(actual.id, expected.id, 'id');
-          t.equal(actual.type, expected.type, 'type');
-          t.deepEqual(actual.properties, expected.properties, 'properties');
-          t.deepEqual(actual.loadGeometry(), expected.loadGeometry(), 'geometry');
-        }
-      }
-    });
-  });
-  t.end();
+    }
+  }
 });

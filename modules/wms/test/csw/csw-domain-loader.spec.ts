@@ -6,7 +6,7 @@
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
 
 import {CSWDomainLoader} from '@loaders.gl/wms';
@@ -28,27 +28,27 @@ const CSW_RESPONSE_2_0_2 =
   '</csw:ListOfValues>' +
   '</csw:DomainValues>' +
   '</csw:GetDomainResponse>';
-test('CSWGetDomainLoader', async t => {
+test('CSWGetDomainLoader', async () => {
   const domain = await parse(CSW_RESPONSE_2_0_2, CSWDomainLoader);
   // t.comment(JSON.stringify(domain));
 
   const domainValues = domain.domainValues;
   // test getRecordsResponse object
-  t.ok(domainValues, 'object contains domainValues property');
+  expect(domainValues, 'object contains domainValues property').toBeTruthy();
 
   // test DomainValues
-  t.equal(domainValues.length, 1, 'object contains 1 object in domainValues');
+  expect(domainValues.length, 'object contains 1 object in domainValues').toBe(1);
   const domainValue = domainValues[0];
-  t.equal(domainValue.type, 'csw:Record', 'check value for attribute type');
-  t.equal(domainValue.propertyName, 'type', 'check value for element propertyName');
-  t.ok(domainValue.values, 'object contains values property');
+  expect(domainValue.type, 'check value for attribute type').toBe('csw:Record');
+  expect(domainValue.propertyName, 'check value for element propertyName').toBe('type');
+  expect(domainValue.values, 'object contains values property').toBeTruthy();
 
   // test ListOfValues
-  t.equal(domainValue.values.length, 2, 'object contains 2 objects ' + 'in values');
+  expect(domainValue.values.length, 'object contains 2 objects ' + 'in values').toBe(2);
   const value = domainValue.values[0];
-  t.ok(value, 'object contains value property');
-  t.equal(value.my_attr, 'my_value', 'check value for attribute my_attr');
-  t.equal(value.value, 'dataset', 'check value for element Value');
+  expect(value, 'object contains value property').toBeTruthy();
+  expect(value.my_attr, 'check value for attribute my_attr').toBe('my_value');
+  expect(value.value, 'check value for element Value').toBe('dataset');
 
-  t.end();
+  
 });

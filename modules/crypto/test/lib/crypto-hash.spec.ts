@@ -4,7 +4,7 @@
 
 /** eslint-disable @typescript-eslint/unbound-method */
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {compareArrayBuffers, getBinaryData} from '../test-utils/test-utils';
 import {concatenateArrayBuffers, concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {fetchFile, loadInBatches} from '@loaders.gl/core';
@@ -24,9 +24,7 @@ test('CryptoHash#hash(CSV, against external hash)', async t => {
     data,
     'base64'
   );
-  t.equal(hash, CSV_MD5, 'repeated data MD5 hash is correct');
-
-  t.end();
+  expect(hash, 'repeated data MD5 hash is correct').toBe(CSV_MD5);
 });
 
 test('CryptoHash#iterator(CSV stream, against external hash)', async t => {
@@ -50,14 +48,12 @@ test('CryptoHash#iterator(CSV stream, against external hash)', async t => {
   for await (const batch of csvIterator) {
     csv = batch;
   }
-  t.ok(Array.isArray(csv?.data), 'parsing from wrapped iterator works');
+  expect(Array.isArray(csv?.data), 'parsing from wrapped iterator works').toBeTruthy();
 
-  t.equal(hash, CSV_MD5, 'streaming MD5 hash is correct');
-
-  t.end();
+  expect(hash, 'streaming MD5 hash is correct').toBe(CSV_MD5);
 });
 
-test('CryptoHash#hash(MD5 = default)', async t => {
+test('CryptoHash#hash(MD5 = default)', async () => {
   const {binaryData, repeatedData} = getBinaryData();
 
   const cryptoHash = new CryptoHash({
@@ -67,15 +63,13 @@ test('CryptoHash#hash(MD5 = default)', async t => {
 
   let hash = await cryptoHash.hash(binaryData, 'base64');
 
-  t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'binary data MD5 hash is correct');
+  expect(hash, 'binary data MD5 hash is correct').toBe('YnxTb+lyen1CsNkpmLv+qA==');
 
   hash = await cryptoHash.hash(repeatedData, 'base64');
-  t.equal(hash, '2d4uZUoLXXO/XWJGnrVl5Q==', 'repeated data MD5 hash is correct');
-
-  t.end();
+  expect(hash, 'repeated data MD5 hash is correct').toBe('2d4uZUoLXXO/XWJGnrVl5Q==');
 });
 
-test('CryptoHash#hashBatches(small chunks)', async t => {
+test('CryptoHash#hashBatches(small chunks)', async () => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -100,13 +94,11 @@ test('CryptoHash#hashBatches(small chunks)', async t => {
   const inputData = concatenateArrayBuffers(...inputChunks);
   const transformedData = await concatenateArrayBuffersAsync(hashIterator);
 
-  t.equal(hash, 'hZbBr1WxS3syARKUT8uFNg==', 'CryptoHash generated correct hash');
-  t.ok(compareArrayBuffers(inputData, transformedData), 'CryptoHash passed through data');
-
-  t.end();
+  expect(hash, 'CryptoHash generated correct hash').toBe('hZbBr1WxS3syARKUT8uFNg==');
+  expect(compareArrayBuffers(inputData, transformedData), 'CryptoHash passed through data').toBeTruthy();
 });
 
-test('CryptoHash#batches(100K)', async t => {
+test('CryptoHash#batches(100K)', async () => {
   const {binaryData} = getBinaryData();
 
   const inputChunks = [binaryData];
@@ -128,8 +120,6 @@ test('CryptoHash#batches(100K)', async t => {
   const inputData = concatenateArrayBuffers(...inputChunks);
   const transformedData = await concatenateArrayBuffersAsync(hashIterator);
 
-  t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'CryptoHash generated correct hash');
-  t.ok(compareArrayBuffers(inputData, transformedData), 'CryptoHash passed through data');
-
-  t.end();
+  expect(hash, 'CryptoHash generated correct hash').toBe('YnxTb+lyen1CsNkpmLv+qA==');
+  expect(compareArrayBuffers(inputData, transformedData), 'CryptoHash passed through data').toBeTruthy();
 });

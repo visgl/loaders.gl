@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile, parseSync} from '@loaders.gl/core';
 import {isTWKB} from '@loaders.gl/gis';
 import {TWKBLoader} from '@loaders.gl/wkt';
@@ -31,7 +31,7 @@ function normalizeTypedArrays(value: unknown): unknown {
   return value;
 }
 
-test('parseHexTWKB#2D', async t => {
+test('parseHexTWKB#2D', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -42,7 +42,7 @@ test('parseHexTWKB#2D', async t => {
 
     // Big endian
     if (testCase.twkb && testCase.binary) {
-      t.ok(isTWKB(testCase.twkb), 'isTWKB(2D)');
+      expect(isTWKB(testCase.twkb), 'isTWKB(2D)').toBeTruthy();
       const geometry = {...testCase.geoJSON};
       // TODO - Weird empty geometry case, is that coorrect per spec?
       if (
@@ -55,14 +55,12 @@ test('parseHexTWKB#2D', async t => {
         geometry.coordinates = [];
       }
       const parsedGeometry = parseSync(testCase.twkb, TWKBLoader);
-      t.deepEqual(normalizeTypedArrays(parsedGeometry), geometry);
+      expect(normalizeTypedArrays(parsedGeometry)).toEqual(geometry);
     }
   }
-
-  t.end();
 });
 
-test('parseHexTWKB#Z', async t => {
+test('parseHexTWKB#Z', async () => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -75,9 +73,7 @@ test('parseHexTWKB#Z', async t => {
       const parsedGeometry = parseSync(testCase.twkb, TWKBLoader, {
         wkb: {shape: 'geojson-geometry'}
       });
-      t.deepEqual(normalizeTypedArrays(parsedGeometry), testCase.geoJSON);
+      expect(normalizeTypedArrays(parsedGeometry)).toEqual(testCase.geoJSON);
     }
   }
-
-  t.end();
 });

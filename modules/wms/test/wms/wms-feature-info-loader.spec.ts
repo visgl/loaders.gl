@@ -6,17 +6,17 @@
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {_WMSFeatureInfoLoader as WMSFeatureInfoLoader} from '@loaders.gl/wms';
 import {parse} from '@loaders.gl/core';
 
-test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
+test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async () => {
   // read empty response
   let text =
     '<?xml version="1.0" encoding="UTF-8" ?>' + '<FeatureInfoResponse>' + '</FeatureInfoResponse>';
 
   let featureInfo = await parse(text, WMSFeatureInfoLoader);
-  t.equal(featureInfo.features.length, 0, 'Parsing empty FeatureInfoResponse response successful');
+  expect(featureInfo.features.length, 'Parsing empty FeatureInfoResponse response successful').toBe(0);
 
   // read 1 feature
   text =
@@ -26,13 +26,12 @@ test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
     '</FeatureInfoResponse>';
 
   featureInfo = await parse(text, WMSFeatureInfoLoader);
-  t.equal(featureInfo.features.length, 1, 'Parsed 1 feature in total');
+  expect(featureInfo.features.length, 'Parsed 1 feature in total').toBe(1);
 
-  t.equal(
+  expect(
     featureInfo.features[0].attributes.OBJECTID,
-    '1188',
     'Attribute OBJECTID contains the right value'
-  );
+  ).toBe('1188');
 
   // read multiple features
   text =
@@ -45,18 +44,15 @@ test('WMSFeatureInfoLoader#read_FeatureInfoResponse', async (t) => {
 
   featureInfo = await parse(text, WMSFeatureInfoLoader);
 
-  t.equal(featureInfo.features.length, 3, 'Parsed 3 features in total');
+  expect(featureInfo.features.length, 'Parsed 3 features in total').toBe(3);
 
-  t.equal(
+  expect(
     featureInfo.features[1].attributes.STATE_NAME,
-    'Wyoming',
     'Attribute STATE_NAME contains the right value'
-  );
-
-  t.end();
+  ).toBe('Wyoming');
 });
 
-test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
+test.skip('WMSFeatureInfoLoader#msGMLOutput', async () => {
   // function test_read_msGMLOutput(t) {
   // read empty response
   let text =
@@ -68,7 +64,7 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
     '</msGMLOutput>';
 
   let featureInfo = await parse(text, WMSFeatureInfoLoader);
-  t.equal(featureInfo.features.length, 0, 'Parsing empty msGMLOutput response succesfull');
+  expect(featureInfo.features.length, 'Parsing empty msGMLOutput response succesfull').toBe(0);
 
   // read 1 feature from 1 layer
   text =
@@ -98,22 +94,21 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
 
   featureInfo = await parse(text, WMSFeatureInfoLoader);
 
-  t.equal(featureInfo.features.length, 1, 'Parsed 1 feature in total');
+  expect(featureInfo.features.length, 'Parsed 1 feature in total').toBe(1);
 
-  t.equal(
+  expect(
     featureInfo.features[0].attributes.OBJECTID,
-    '109',
     'Attribute OBJECTID contains the right value'
-  );
+  ).toBe('109');
 
-  t.equal(featureInfo.features[0].type, 'AAA64', 'Parsed the layer name correctly');
+  expect(featureInfo.features[0].type, 'Parsed the layer name correctly').toBe('AAA64');
 
   const bounds = featureInfo.features[0].bounds;
-  t.ok(Array.isArray(bounds), 'feature given a bounds');
-  t.equal(bounds.left.toFixed(3), '107397.266', 'Bounds left parsed correctly');
-  t.equal(bounds.right.toFixed(3), '116568.188', 'Bounds right parsed correctly');
-  t.equal(bounds.bottom.toFixed(3), '460681.063', 'Bounds bottom parsed correctly');
-  t.equal(bounds.top.toFixed(3), '480609.250', 'Bounds top parsed correctly');
+  expect(Array.isArray(bounds), 'feature given a bounds').toBeTruthy();
+  expect(bounds.left.toFixed(3), 'Bounds left parsed correctly').toBe('107397.266');
+  expect(bounds.right.toFixed(3), 'Bounds right parsed correctly').toBe('116568.188');
+  expect(bounds.bottom.toFixed(3), 'Bounds bottom parsed correctly').toBe('460681.063');
+  expect(bounds.top.toFixed(3), 'Bounds top parsed correctly').toBe('480609.250');
 
   // read 2 features from 2 layers
   text =
@@ -167,13 +162,12 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
 
   featureInfo = await parse(text, WMSFeatureInfoLoader);
 
-  t.equal(featureInfo.features.length, 2, 'Parsed 2 features in total');
+  expect(featureInfo.features.length, 'Parsed 2 features in total').toBe(2);
 
-  t.equal(
+  expect(
     featureInfo.features[0].type === featureInfo.features[1].type,
-    false,
     'The layer name differs for the two features'
-  );
+  ).toBe(false);
 
   text =
     '<?xml version="1.0" encoding="ISO-8859-1"?>' +
@@ -210,10 +204,9 @@ test.skip('WMSFeatureInfoLoader#msGMLOutput', async (t) => {
   //   'Parsed geometry is of type multi line string'
   // );
 
-  t.end();
 });
 
-test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async (t) => {
+test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async () => {
   // function test_read_GMLFeatureInfoResponse(t) {
   // read Ionic response, see if parser falls back to GML format
   // url used:
@@ -254,17 +247,15 @@ test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async (t) => {
 
   let featureInfo = await parse(text, WMSFeatureInfoLoader);
 
-  t.equal(
+  expect(
     featureInfo.features.length,
-    1,
     'Parsing GML GetFeatureInfo response from Ionic succesfull'
-  );
+  ).toBe(1);
 
-  t.equal(
+  expect(
     featureInfo.features[0].attributes.TILE_NAME,
-    '126',
     'Attribute TILE_NAME contains the right value'
-  );
+  ).toBe('126');
 
   // read Geoserver response
   // taken from:
@@ -275,13 +266,10 @@ test.skip('WMSFeatureInfoLoader#Ionic/GeoServer', async (t) => {
 
   featureInfo = await parse(text, WMSFeatureInfoLoader);
 
-  t.equal(
+  expect(
     featureInfo.features.length,
-    1,
     'Parsing GML GetFeatureInfo response from Geoserver succesfull'
-  );
+  ).toBe(1);
 
-  t.equal(featureInfo.features[0].attributes.cat, '3', 'Attribute cat contains the right value');
-
-  t.end();
+  expect(featureInfo.features[0].attributes.cat, 'Attribute cat contains the right value').toBe('3');
 });

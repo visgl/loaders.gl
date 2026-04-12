@@ -2,43 +2,31 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 
 import {TILESETS} from './data/tilesets';
 import {MVTSource} from '@loaders.gl/mvt';
 import {isURLTemplate, getURLFromTemplate} from '../src/mvt-source';
 
-test('MVTSource#urls', async t => {
-  if (!isBrowser) {
-    t.comment('MVTSource currently only supported in browser');
-    t.end();
-    return;
-  }
+test.skipIf(!isBrowser)('MVTSource#urls', async () => {
   for (const tilesetUrl of TILESETS) {
     const source = new MVTSource({url: tilesetUrl});
-    t.ok(source);
+    expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
-    t.ok(metadata);
+    expect(metadata).toBeTruthy();
     // console.error(JSON.stringify(metadata.tileJSON, null, 2));
   }
-  t.end();
 });
 
-test('MVTSource#Blobs', async t => {
-  if (!isBrowser) {
-    t.comment('MVTSource currently only supported in browser');
-    t.end();
-    return;
-  }
+test.skipIf(!isBrowser)('MVTSource#Blobs', async () => {
   for (const tilesetUrl of TILESETS) {
     const source = new MVTSource({url: tilesetUrl});
-    t.ok(source);
+    expect(source).toBeTruthy();
     const metadata = await source.getMetadata();
-    t.ok(metadata);
+    expect(metadata).toBeTruthy();
     // console.error(JSON.stringify(metadata.tileJSON, null, 2));
   }
-  t.end();
 });
 
 const TEST_TEMPLATE = 'https://server.com/{z}/{x}/{y}.png';
@@ -48,48 +36,43 @@ const TEST_TEMPLATE_ARRAY = [
   'https://server.com/ep2/{x}/{y}.png'
 ];
 
-test('isURLFromTemplate', t => {
-  t.true(isURLTemplate(TEST_TEMPLATE), 'single string template');
-  t.true(isURLTemplate(TEST_TEMPLATE2), 'single string template with multiple occurance');
+test('isURLFromTemplate', () => {
+  expect(isURLTemplate(TEST_TEMPLATE), 'single string template').toBe(true);
+  expect(isURLTemplate(TEST_TEMPLATE2), 'single string template with multiple occurance').toBe(
+    true
+  );
   // t.true(isURLTemplate(TEST_TEMPLATE_ARRAY), 'array of templates');
-  t.end();
 });
 
-test('getURLFromTemplate', t => {
-  t.is(
+test('getURLFromTemplate', () => {
+  expect(
     getURLFromTemplate(TEST_TEMPLATE, 1, 2, 0),
-    'https://server.com/0/1/2.png',
     'single string template'
-  );
-  t.is(
+  ).toBe('https://server.com/0/1/2.png');
+  expect(
     getURLFromTemplate(TEST_TEMPLATE2, 1, 2, 0),
-    'https://server.com/0/1/2/1-2-0.png',
     'single string template with multiple occurance'
-  );
-  t.is(
+  ).toBe('https://server.com/0/1/2/1-2-0.png');
+  expect(
     getURLFromTemplate(TEST_TEMPLATE_ARRAY, 1, 2, 0, '1-2-0'),
-    'https://server.com/ep2/1/2.png',
     'array of templates'
-  );
-  t.is(
+  ).toBe('https://server.com/ep2/1/2.png');
+  expect(
     getURLFromTemplate(TEST_TEMPLATE_ARRAY, 2, 2, 0, '2-2-0'),
-    'https://server.com/ep1/2/2.png',
     'array of templates'
-  );
-  t.is(
+  ).toBe('https://server.com/ep1/2/2.png');
+  expect(
     getURLFromTemplate(TEST_TEMPLATE_ARRAY, 17, 11, 5, '17-11-5'),
-    'https://server.com/ep2/17/11.png',
     'array of templates'
-  );
+  ).toBe('https://server.com/ep2/17/11.png');
   // t.is(getURLFromTemplate(null, 1, 2, 0), null, 'invalid template');
   // t.is(getURLFromTemplate([], 1, 2, 0), null, 'empty array');
-  t.end();
 });
 
 // TBA - TILE LOADING TESTS
 
 /*
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 
 import {load} from '@loaders.gl/core';
@@ -99,15 +82,15 @@ import {PMTILESETS} from './data/tilesets';
 
 test('PMTilesLoader#loader conformance', (t) => {
   validateLoader(t, PMTilesLoader, 'PMTilesLoader');
-  t.end();
+  
 });
 
 test.skip('PMTilesLoader#load', async (t) => {
   for (const tilesetUrl of PMTILESETS) {
     const metadata = await load(tilesetUrl, PMTilesLoader);
-    t.ok(metadata);
+    expect(metadata).toBeTruthy();
   }
-  t.end();
+  
 });
 
 /*
@@ -189,7 +172,7 @@ test('cache getDirectory', async (t) => {
   t.strictEqual(directory[0].runLength, 1);
 
   for (const v of cache.cache.values()) {
-    t.ok(v.lastUsed > 0);
+    expect(v.lastUsed > 0).toBeTruthy();
   }
 });
 
@@ -260,16 +243,16 @@ test('cache pruning by byte size', async (t) => {
   cache.cache.set('2', {lastUsed: 2, data: Promise.resolve([])});
   cache.prune();
   t.strictEqual(cache.cache.size, 2);
-  t.ok(cache.cache.get('2'));
-  t.ok(cache.cache.get('1'));
-  t.ok(!cache.cache.get('0'));
+  expect(cache.cache.get('2')).toBeTruthy();
+  expect(cache.cache.get('1')).toBeTruthy();
+  expect(!cache.cache.get('0')).toBeTruthy();
 });
 
 test('pmtiles get metadata', async (t) => {
   const source = new TestFileSource('@loaders.gl/pmtiles/test/data/test_fixture_1.pmtiles', '1');
   const p = new PMTiles(source);
   const metadata = await p.getMetadata();
-  t.ok(metadata.name);
+  expect(metadata.name).toBeTruthy();
 });
 
 // echo '{"type":"Polygon","coordinates":[[[0,0],[0,1],[1,0],[0,0]]]}' | ./tippecanoe -zg -o test_fixture_2.pmtiles
@@ -278,9 +261,9 @@ test('pmtiles handle retries', async (t) => {
   source.etag = '1';
   const p = new PMTiles(source);
   const metadata = await p.getMetadata();
-  t.ok(metadata.name);
+  expect(metadata.name).toBeTruthy();
   source.etag = '2';
   source.replaceData('@loaders.gl/pmtiles/test/data/test_fixture_2.pmtiles');
-  t.ok(await p.getZxy(0, 0, 0));
+  expect(await p.getZxy(0, 0, 0)).toBeTruthy();
 });
 */

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
 
 import {WMSCapabilitiesLoader} from '@loaders.gl/wms';
@@ -16,66 +16,55 @@ const WMS_WWA_URL = '@loaders.gl/wms/test/data/wms/get-capabilities/wwa.xml';
 
 const WMS_ADHOC_URL = '@loaders.gl/wms/test/data/wms/get-capabilities/?.xml';
 
-test('WMSCapabilitiesLoader#forecasts.xml', async t => {
+test('WMSCapabilitiesLoader#forecasts.xml', async () => {
   const capabilities = await load(WMS_FORECASTS_URL, WMSCapabilitiesLoader);
 
-  t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.version, '1.1.1', 'version');
-  t.equal(capabilities.layers[0].layers?.[2]?.name, 'world_rivers', 'contents');
-
-  t.end();
+  expect(typeof capabilities, 'parsed').toBe('object');
+  expect(capabilities.version, 'version').toBe('1.1.1');
+  expect(capabilities.layers[0].layers?.[2]?.name, 'contents').toBe('world_rivers');
 });
 
-test('WMSCapabilitiesLoader#obs.xml', async t => {
+test('WMSCapabilitiesLoader#obs.xml', async () => {
   const capabilities = await load(WMS_OBS_URL, WMSCapabilitiesLoader);
 
-  t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.version, '1.1.1', 'version');
-  t.equal(capabilities.layers[0].layers?.[2]?.name, 'world_rivers', 'contents');
-  t.end();
+  expect(typeof capabilities, 'parsed').toBe('object');
+  expect(capabilities.version, 'version').toBe('1.1.1');
+  expect(capabilities.layers[0].layers?.[2]?.name, 'contents').toBe('world_rivers');
 });
 
-test('WMSCapabilitiesLoader#wwa.xml', async t => {
+test('WMSCapabilitiesLoader#wwa.xml', async () => {
   const capabilities = await load(WMS_WWA_URL, WMSCapabilitiesLoader);
 
-  t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.version, '1.1.1', 'version');
-  t.equal(capabilities.layers[0].layers?.[2]?.name, 'world_rivers', 'contents');
-
-  t.end();
+  expect(typeof capabilities, 'parsed').toBe('object');
+  expect(capabilities.version, 'version').toBe('1.1.1');
+  expect(capabilities.layers[0].layers?.[2]?.name, 'contents').toBe('world_rivers');
 });
 
-test('WMSCapabilitiesLoader#analyses.xml', async t => {
+test('WMSCapabilitiesLoader#analyses.xml', async () => {
   const capabilities = await load(WMS_ANALYSES_URL, WMSCapabilitiesLoader);
 
-  t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.version, '1.1.1', 'version');
-  t.equal(capabilities.layers[0].layers?.[2]?.name, 'world_countries_label', 'contents');
-
-  t.end();
+  expect(typeof capabilities, 'parsed').toBe('object');
+  expect(capabilities.version, 'version').toBe('1.1.1');
+  expect(capabilities.layers[0].layers?.[2]?.name, 'contents').toBe('world_countries_label');
 });
 
-test('WMSCapabilitiesLoader#dmsp.xml', async t => {
+test('WMSCapabilitiesLoader#dmsp.xml', async () => {
   const capabilities = await load(WMS_DMSP_URL, WMSCapabilitiesLoader);
 
-  t.equal(typeof capabilities, 'object', 'parsed');
+  expect(typeof capabilities, 'parsed').toBe('object');
 
-  t.equal(capabilities.version, '1.3.0', 'version');
-  t.equal(capabilities.layers[0].layers?.[2]?.name, 'eez', 'name');
-  t.strictEqual(capabilities.layers[0].layers?.[2]?.opaque, false, 'opaque');
-  t.strictEqual(capabilities.layers[0].layers?.[2]?.queryable, false, 'queryable');
-  t.strictEqual(capabilities.layers[0].layers?.[2]?.cascaded, false, 'cascaded');
-
-  t.end();
+  expect(capabilities.version, 'version').toBe('1.3.0');
+  expect(capabilities.layers[0].layers?.[2]?.name, 'name').toBe('eez');
+  expect(capabilities.layers[0].layers?.[2]?.opaque, 'opaque').toBe(false);
+  expect(capabilities.layers[0].layers?.[2]?.queryable, 'queryable').toBe(false);
+  expect(capabilities.layers[0].layers?.[2]?.cascaded, 'cascaded').toBe(false);
 });
 
 // For adhoc testing (non-committed XML files or direct from server)
-test.skip('WMSCapabilitiesLoader#ad-hoc-test', async t => {
+test.skip('WMSCapabilitiesLoader#ad-hoc-test', async () => {
   const capabilities = await load(WMS_ADHOC_URL, WMSCapabilitiesLoader);
 
-  t.equal(typeof capabilities, 'object', 'parsed');
-  t.equal(capabilities.version, '1.1.1', 'version');
-  t.equal(capabilities.layers[0].layers?.[2]?.name, 'eez', 'contents');
-
-  t.end();
+  expect(typeof capabilities, 'parsed').toBe('object');
+  expect(capabilities.version, 'version').toBe('1.1.1');
+  expect(capabilities.layers[0].layers?.[2]?.name, 'contents').toBe('eez');
 });

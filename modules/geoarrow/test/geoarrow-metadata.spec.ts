@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 
 import type {GeoArrowMetadata} from '@loaders.gl/geoarrow';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 
 // fix a bug that map bounds are not updated correctly from arrow samples
-test('geoarrow#getGeometryColumnsFromSchema', t => {
+test('geoarrow#getGeometryColumnsFromSchema', () => {
   const testCases: {schema: string; columns: Record<string, GeoArrowMetadata>}[] = [
     {
       schema: '',
@@ -18,8 +18,6 @@ test('geoarrow#getGeometryColumnsFromSchema', t => {
 
   for (const testCase of testCases) {
     const columns = getGeometryColumnsFromSchema(testCase.schema as any);
-    t.ok(columns);
+    expect(columns).toBeTruthy();
   }
-
-  t.end();
 });

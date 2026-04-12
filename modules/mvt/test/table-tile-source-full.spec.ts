@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {TableTileSource, TableTileSourceProps} from '@loaders.gl/mvt';
 
@@ -56,39 +56,33 @@ const TEST_CASES = [
   }
 ];
 
-test('GeoJSONVT#full tiling test', async t => {
+test('GeoJSONVT#full tiling test', async () => {
   for (const tc of TEST_CASES) {
     const {inputFile, expectedFile, options} = tc;
     const parsedGeojson = await getJSON(inputFile);
     const tiles = await genTiles(parsedGeojson, options);
 
     // fs.writeFileSync(path.join(__dirname, '/fixtures/' + expectedFile), JSON.stringify(tiles));
-    t.same(
+    expect(
       tiles,
-      await getJSON(expectedFile),
       `Tiling ${inputFile}: ${expectedFile.replace('-tiles.json', '')}`
-    );
+    ).toEqual(await getJSON(expectedFile));
   }
-
-  t.end();
 });
 
-test('GeoJSONVT#throws on invalid GeoJSON', async t => {
-  t.throws(() => {
+test('GeoJSONVT#throws on invalid GeoJSON', async () => {
+  expect(() => {
     genTiles({type: 'Pologon'});
-  });
-  t.end();
+  }).toThrow();
 });
 
-test('GeoJSONVT#empty geojson', async t => {
-  t.same({}, await genTiles(await getJSON('empty.json')));
-  t.end();
+test('GeoJSONVT#empty geojson', async () => {
+  expect(await genTiles(await getJSON('empty.json'))).toEqual({});
 });
 
-test('GeoJSONVT#null geometry', async t => {
+test('GeoJSONVT#null geometry', async () => {
   // should ignore features with null geometry
-  t.same({}, await genTiles(await getJSON('feature-null-geometry.json')));
-  t.end();
+  expect(await genTiles(await getJSON('feature-null-geometry.json'))).toEqual({});
 });
 
 // Helpers

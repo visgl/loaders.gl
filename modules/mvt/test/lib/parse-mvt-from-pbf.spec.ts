@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // import type {BinaryFeatureCollection} from '@loaders.gl/schema';
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {parseMVT} from '../../src/lib/mvt-pbf/parse-mvt-from-pbf';
 import {fetchFile} from '@loaders.gl/core';
 // import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
@@ -42,25 +42,24 @@ const MVT_POINTS_DATA_URL = '@loaders.gl/mvt/test/data/mvt/points_4-2-6.mvt';
 //   _workerType: 'test'
 // });
 
-test('Point MVT to local coordinates JSON', async t => {
+test('Point MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
   const tile = parseMVT(mvtArrayBuffer);
 
-  t.deepEqual(tile.layers.layer0.length, 1, 'layer0 has 1 feature');
-  // t.deepEqual(tile.layers.layer0.idColumn[0], 1, 'idColumn is 1');
-  t.deepEqual(tile.layers.layer0.geometryTypeColumn[0], 1, 'geometryTypeColumn is 1');
-  t.deepEqual(tile.layers.layer0.columns.cartodb_id[0], 3, 'cartodb_id is 3');
-  t.deepEqual(tile.layers.layer0.columns._cdb_feature_count[0], 1, '_cdb_feature_count is 1');
-  t.deepEqual(
+  expect(tile.layers.layer0.length, 'layer0 has 1 feature').toEqual(1);
+  // expect(tile.layers.layer0.idColumn[0], 'idColumn is 1').toEqual(1);
+  expect(tile.layers.layer0.geometryTypeColumn[0], 'geometryTypeColumn is 1').toEqual(1);
+  expect(tile.layers.layer0.columns.cartodb_id[0], 'cartodb_id is 3').toEqual(3);
+  expect(tile.layers.layer0.columns._cdb_feature_count[0], '_cdb_feature_count is 1').toEqual(1);
+  expect(
     tile.layers.layer0.schema.fields,
-    [
-      {name: 'cartodb_id', type: 'uint32', nullable: false},
-      {name: '_cdb_feature_count', type: 'uint32', nullable: false}
-    ],
     'schema fields are correct'
-  );
+  ).toEqual([
+    {name: 'cartodb_id', type: 'uint32', nullable: false},
+    {name: '_cdb_feature_count', type: 'uint32', nullable: false}
+  ]);
 
   //   {
   //     type: 'Feature',
@@ -78,7 +77,6 @@ test('Point MVT to local coordinates JSON', async t => {
   //   }
   // ]);
 
-  t.end();
 });
 
 // test('Line MVT to local coordinates JSON', async (t) => {
@@ -104,7 +102,7 @@ test('Point MVT to local coordinates JSON', async t => {
 //     }
 //   ]);
 
-//   t.end();
+//   
 // });
 
 // test('Polygon MVT to local coordinates JSON', async (t) => {
@@ -112,9 +110,9 @@ test('Point MVT to local coordinates JSON', async t => {
 //   const mvtArrayBuffer = await response.arrayBuffer();
 
 //   const geometryJSON = await parse(mvtArrayBuffer, MVTLoader);
-//   t.deepEqual(geometryJSON, decodedPolygonsGeometry);
+//   expect(geometryJSON).toEqual(decodedPolygonsGeometry);
 
-//   t.end();
+//   
 // });
 
 // test('MVTLoader#Parse Point MVT', async (t) => {
@@ -143,12 +141,12 @@ test('Point MVT to local coordinates JSON', async t => {
 //     if (binary) {
 //       // @ts-ignore
 //       expected = geojsonToBinary(expected);
-//       t.ok(geometry.byteLength > 0);
+//       expect(geometry.byteLength > 0).toBeTruthy();
 //       delete geometry.byteLength;
 //     }
-//     t.deepEqual(geometry, expected, `Parsed Point MVT as ${outputFormat}`);
+//     expect(geometry, `Parsed Point MVT as ${outputFormat}`).toEqual(expected);
 //   }
-//   t.end();
+//   
 // });
 
 // test('MVTLoader#Parse Lines MVT', async (t) => {
@@ -177,12 +175,12 @@ test('Point MVT to local coordinates JSON', async t => {
 //     if (binary) {
 //       // @ts-ignore
 //       expected = geojsonToBinary(expected);
-//       t.ok(geometry.byteLength > 0);
+//       expect(geometry.byteLength > 0).toBeTruthy();
 //       delete geometry.byteLength;
 //     }
-//     t.deepEqual(geometry, expected, `Parsed Lines MVT as ${outputFormat}`);
+//     expect(geometry, `Parsed Lines MVT as ${outputFormat}`).toEqual(expected);
 //   }
-//   t.end();
+//   
 // });
 
 // test('MVTLoader#Parse Polygons MVT', async (t) => {
@@ -211,12 +209,12 @@ test('Point MVT to local coordinates JSON', async t => {
 //     if (binary) {
 //       // @ts-ignore
 //       expected = geojsonToBinary(expected, {fixRingWinding: false});
-//       t.ok(geometry.byteLength > 0);
+//       expect(geometry.byteLength > 0).toBeTruthy();
 //       delete geometry.byteLength;
 //     }
-//     t.deepEqual(geometry, expected, `Parsed Polygons MVT as ${outputFormat}`);
+//     expect(geometry, `Parsed Polygons MVT as ${outputFormat}`).toEqual(expected);
 //   }
-//   t.end();
+//   
 // });
 
 // test('Should raise an error when coordinates param is wgs84 and tileIndex is missing', async (t) => {
@@ -227,9 +225,9 @@ test('Point MVT to local coordinates JSON', async t => {
 //     mvt: {coordinates: 'wgs84'}
 //   };
 
-//   t.throws(() => parseSync(mvtArrayBuffer, MVTLoader, loaderOptions));
+//   expect(() => parseSync(mvtArrayBuffer, MVTLoader, loaderOptions)).toThrow();
 
-//   t.end();
+//   
 // });
 
 // test('Should add layer name to custom property', async (t) => {
@@ -241,9 +239,9 @@ test('Point MVT to local coordinates JSON', async t => {
 //   };
 
 //   const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
-//   t.equals(geometryJSON[0].properties.layerSource, 'layer0');
+//   expect(geometryJSON[0].properties.layerSource).toBe('layer0');
 
-//   t.end();
+//   
 // });
 
 // test('Should return features from selected layers when layers property is provided', async (t) => {
@@ -259,9 +257,9 @@ test('Point MVT to local coordinates JSON', async t => {
 //     (feature) => feature.properties.layerName !== 'layer1'
 //   );
 //   t.false(anyFeatureFromAnotherLayer);
-//   t.equals(geometryJSON[0].properties.layerName, 'layer1');
+//   expect(geometryJSON[0].properties.layerName).toBe('layer1');
 
-//   t.end();
+//   
 // });
 
 // test('Polygon MVT to local coordinates binary', async (t) => {
@@ -269,13 +267,13 @@ test('Point MVT to local coordinates JSON', async t => {
 //   const mvtArrayBuffer = await response.arrayBuffer();
 
 //   const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
-//   t.ok(geometryBinary.byteLength > 0);
+//   expect(geometryBinary.byteLength > 0).toBeTruthy();
 //   delete geometryBinary.byteLength;
 
 //   // @ts-ignore deduced type of 'Feature' is string...
 //   const expectedBinary = geojsonToBinary(decodedPolygonsGeometry);
-//   t.deepEqual(geometryBinary, expectedBinary);
-//   t.end();
+//   expect(geometryBinary).toEqual(expectedBinary);
+//   
 // });
 
 // test('MVTLoader#Parse geojson-to-binary', async (t) => {
@@ -291,9 +289,9 @@ test('Point MVT to local coordinates JSON', async t => {
 //     delete binary.byteLength;
 
 //     const expectedBinary = geojsonToBinary(geojson);
-//     t.deepEqual(expectedBinary, binary);
+//     expect(expectedBinary).toEqual(binary);
 //   }
-//   t.end();
+//   
 // });
 
 // test('Features with top-level id', async (t) => {
@@ -301,30 +299,30 @@ test('Point MVT to local coordinates JSON', async t => {
 //   const mvtArrayBuffer = await response.arrayBuffer();
 
 //   const binary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
-//   t.ok(binary.points.fields.length, 'feature.id fields are preserved');
-//   t.ok(binary.lines.fields.length, 'feature.id fields are preserved');
-//   t.ok(binary.polygons.fields.length, 'feature.id fields are preserved');
+//   expect(binary.points.fields.length, 'feature.id fields are preserved').toBeTruthy();
+//   expect(binary.lines.fields.length, 'feature.id fields are preserved').toBeTruthy();
+//   expect(binary.polygons.fields.length, 'feature.id fields are preserved').toBeTruthy();
 
 //   const feature = binaryToGeojson(binary, {
 //     globalFeatureId: binary.points.globalFeatureIds.value[0]
 //   });
 //   // @ts-ignore
-//   t.ok(feature.id, 'feature.id is restored');
+//   expect(feature.id, 'feature.id is restored').toBeTruthy();
 
-//   t.end();
+//   
 // });
 
 // test('Empty MVT must return empty binary format', async (t) => {
 //   const emptyMVTArrayBuffer = new Uint8Array();
 //   const geometryBinary = await parse(emptyMVTArrayBuffer, MVTLoader, {gis: {format: 'binary'}});
-//   t.ok(geometryBinary.points);
-//   t.ok(geometryBinary.lines);
-//   t.ok(geometryBinary.polygons);
-//   t.ok(geometryBinary.points.positions.size === 2);
-//   t.ok(geometryBinary.lines.positions.size === 2);
-//   t.ok(geometryBinary.polygons.positions.size === 2);
+//   expect(geometryBinary.points).toBeTruthy();
+//   expect(geometryBinary.lines).toBeTruthy();
+//   expect(geometryBinary.polygons).toBeTruthy();
+//   expect(geometryBinary.points.positions.size === 2).toBeTruthy();
+//   expect(geometryBinary.lines.positions.size === 2).toBeTruthy();
+//   expect(geometryBinary.polygons.positions.size === 2).toBeTruthy();
 
-//   t.end();
+//   
 // });
 
 // test('Triangulation is supported', async (t) => {
@@ -335,17 +333,17 @@ test('Point MVT to local coordinates JSON', async t => {
 //   });
 
 //   // Closed polygon with 31 vertices (0===30)
-//   t.ok(geometry.polygons.positions);
-//   t.equals(geometry.polygons.positions.value.length, 62);
+//   expect(geometry.polygons.positions).toBeTruthy();
+//   expect(geometry.polygons.positions.value.length).toBe(62);
 
-//   t.ok(geometry.polygons.triangles);
-//   t.equals(geometry.polygons.triangles.value.length, 84);
+//   expect(geometry.polygons.triangles).toBeTruthy();
+//   expect(geometry.polygons.triangles.value.length).toBe(84);
 
 //   // Basic check that triangulation is valid
 //   const minI = Math.min(...geometry.polygons.triangles.value);
 //   const maxI = Math.max(...geometry.polygons.triangles.value);
-//   t.equals(minI, 0);
-//   t.equals(maxI, 29); // Don't expect to find 30 as closed polygon
+//   expect(minI).toBe(0);
+//   expect(maxI).toBe(29); // Don't expect to find 30 as closed polygon
 
-//   t.end();
+//   
 // });

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {convertWKBToBinaryGeometry, isWKB} from '@loaders.gl/gis';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
@@ -30,7 +30,7 @@ function normalizeTypedArrays(value: unknown): unknown {
   return value;
 }
 
-test('convertWKBToBinaryGeometry#2D', async t => {
+test('convertWKBToBinaryGeometry#2D', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -38,45 +38,41 @@ test('convertWKBToBinaryGeometry#2D', async t => {
   for (const [title, testCase] of Object.entries(TEST_CASES2)) {
     // Little endian
     if (testCase.wkb && testCase.binary) {
-      t.ok(isWKB(testCase.wkb), 'isWKB(2D)');
+      expect(isWKB(testCase.wkb), 'isWKB(2D)').toBeTruthy();
       const result = convertWKBToBinaryGeometry(testCase.wkb);
-      t.deepEqual(normalizeTypedArrays(result), normalizeTypedArrays(testCase.binary), title);
+      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
     }
 
     // Big endian
     if (testCase.wkbXdr && testCase.binary) {
-      t.ok(isWKB(testCase.wkbXdr), 'isWKB(2D)');
+      expect(isWKB(testCase.wkbXdr), 'isWKB(2D)').toBeTruthy();
       const result = convertWKBToBinaryGeometry(testCase.wkbXdr);
-      t.deepEqual(normalizeTypedArrays(result), normalizeTypedArrays(testCase.binary), title);
+      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
     }
   }
-
-  t.end();
 });
 
-test('convertWKBToBinaryGeometry#Z', async t => {
+test('convertWKBToBinaryGeometry#Z', async () => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
   for (const [title, testCase] of Object.entries(TEST_CASES)) {
     // Little endian
     if (testCase.wkb && testCase.binary) {
-      t.ok(isWKB(testCase.wkb), 'isWKB(Z)');
+      expect(isWKB(testCase.wkb), 'isWKB(Z)').toBeTruthy();
       const result = convertWKBToBinaryGeometry(testCase.wkb);
-      t.deepEqual(normalizeTypedArrays(result), normalizeTypedArrays(testCase.binary), title);
+      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
     }
 
     // Big endian
     if (testCase.wkbXdr && testCase.binary) {
-      t.ok(isWKB(testCase.wkbXdr), 'isWKB(Z)');
+      expect(isWKB(testCase.wkbXdr), 'isWKB(Z)').toBeTruthy();
       const result = convertWKBToBinaryGeometry(testCase.wkbXdr);
-      t.deepEqual(normalizeTypedArrays(result), normalizeTypedArrays(testCase.binary), title);
+      expect(normalizeTypedArrays(result), title).toEqual(normalizeTypedArrays(testCase.binary));
     }
 
     // if (testCase.wkbXdr && testCase.binary && testCase.geoJSON) {
     //   t.deepEqual(parseSync(testCase.wkbXdr, WKBLoader, {wkb: {shape: 'geometry'}}), testCase.geoJSON);
     // }
   }
-
-  t.end();
 });
