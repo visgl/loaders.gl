@@ -37,9 +37,11 @@ if (!isBrowser) {
     expect(typeof globalThis.getImageBitmapData, 'getImageBitmapData installed').toBe('function');
   });
   test('Node image polyfills - ImageBitmap wrapper', async () => {
-    const response = await fetchFile(images[0][0]);
-    const arrayBuffer = await response.arrayBuffer();
-    const imageData = await parseImageNode(arrayBuffer, images[0][1]);
+    const imageData = {
+      data: new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255]),
+      width: 2,
+      height: 1
+    };
     const imageBitmap = new NodeImageBitmap(imageData);
     expect(
       imageBitmap instanceof ImageBitmap,
