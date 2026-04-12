@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {expect as vitestExpect} from 'vitest';
+
 function getAssertions(assertions) {
   if (assertions) {
     return assertions;
   }
 
-  const expect = globalThis.expect;
+  const expect = globalThis.expect || vitestExpect;
   if (typeof expect !== 'function') {
     throw new Error('validateLoader requires tape assertions or a global expect');
   }
@@ -37,14 +39,8 @@ export function validateLoader(assertionsOrLoader, loaderOrName, name = '') {
   assertions.ok(typeof loader.id === 'string', `Loader ${resolvedName} loader.id is not defined`);
   assertions.ok(loader, `Loader ${resolvedName} defined`);
   assertions.equal(typeof loader.name, 'string', `Loader ${resolvedName} has a name`);
-  assertions.ok(
-    Array.isArray(loader.extensions),
-    `Loader ${resolvedName} has an extensions array`
-  );
-  assertions.ok(
-    Array.isArray(loader.mimeTypes),
-    `Loader ${resolvedName} has a mimeTypes array`
-  );
+  assertions.ok(Array.isArray(loader.extensions), `Loader ${resolvedName} has an extensions array`);
+  assertions.ok(Array.isArray(loader.mimeTypes), `Loader ${resolvedName} has a mimeTypes array`);
 
   const options = loader.options || {};
   assertions.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');

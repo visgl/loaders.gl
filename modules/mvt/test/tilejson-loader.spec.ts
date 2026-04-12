@@ -14,8 +14,7 @@ const TIPPECANOE_TILEJSON = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.tilej
 // const TIPPECANOE_EXPECTED = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.expected.json';
 
 test('TileJSONLoader#loader conformance', () => {
-  validateLoader(t, TileJSONLoader, 'TileJSONLoader');
-  
+  validateLoader(TileJSONLoader, 'TileJSONLoader');
 });
 
 test('TileJSONLoader#load', async () => {
@@ -26,7 +25,6 @@ test('TileJSONLoader#load', async () => {
     // expect(metadata).toEqual(parsedMetadata);
     // console.error(JSON.stringify(metadata, null, 2));
   }
-  
 });
 
 test('TileJSONLoader#tippecanoe', async () => {
@@ -38,7 +36,7 @@ test('TileJSONLoader#tippecanoe', async () => {
   expect(metadata.layers?.[0]?.fields?.[10]?.values?.length, '100 unique values').toBe(100);
 
   metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader, {tilejson: {maxValues: 10}});
-  expect(metadata.layers?.[0]?.fields?.[10]?.values?.length, 'maxValue clips unique values').toBe(10);
-
-  
+  expect(metadata.layers?.[0]?.fields?.[10]?.values?.length, 'maxValue clips unique values').toBe(
+    10
+  );
 });

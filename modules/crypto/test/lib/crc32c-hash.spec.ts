@@ -36,11 +36,10 @@ test('crc32c#additional tests', async () => {
     for (const tc of set.cases) {
       if (tc.expected && !tc.charset) {
         const hash = await new CRC32CHash().hash(tc.arrayBuffer, 'base64');
-        t.equals(
+        expect(
           hash,
-          tc.expected,
           `should digest "${tc.input.slice(0, 10)}..." correctly ${tc.expected} ${tc.want}`
-        );
+        ).toBe(tc.expected);
       }
     }
 
