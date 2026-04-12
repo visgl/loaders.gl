@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {expect} from 'vitest';
-
 function getAssertions(assertions) {
   if (assertions) {
     return assertions;
+  }
+
+  const expect = globalThis.expect;
+  if (typeof expect !== 'function') {
+    throw new Error('validateLoader requires tape assertions or a global expect');
   }
 
   return {

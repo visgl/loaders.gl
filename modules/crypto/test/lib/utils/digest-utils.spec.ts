@@ -33,9 +33,9 @@ test('encodeHexToBase64#crc32 test cases', () => {
 });
 
 test('encodeHexToBase64', () => {
-  expect(encodeHex('f85d741', 'D4XXQQ==', 'encode zero leading hex correctly').toBe('base64'));
+  expect(encodeHex('f85d741', 'base64'), 'encode zero leading hex correctly').toBe('D4XXQQ==');
 });
 
 test('encodeBase64ToHex', () => {
-  expect(encodeBase64('D4XXQQ==', '0f85d741').toBe('hex'));
+  expect(encodeBase64('D4XXQQ==', 'hex')).toBe('0f85d741');
 });
