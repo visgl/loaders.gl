@@ -71,6 +71,9 @@
       "@loaders.gl/core/test": [
         "modules/core/test"
       ],
+      "@loaders.gl/test-utils/vitest": [
+        "test/vitest-async-test-utils.ts"
+      ],
       "@loaders.gl/deck-layers": [
         "modules/deck-layers/src"
       ],

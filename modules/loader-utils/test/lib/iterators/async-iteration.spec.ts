@@ -7,83 +7,129 @@ import {
   makeNumberedLineIterator,
   concatenateArrayBuffersAsync
 } from '@loaders.gl/loader-utils';
+import {
+  advanceTimersAndFlush,
+  createDeferred,
+  withFakeTimers
+} from '@loaders.gl/test-utils/vitest';
 import {NDJSONLoader} from '@loaders.gl/json';
 const parseNDJSONInBatches = NDJSONLoader.parseInBatches;
-const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
+
+function waitForTimer(timeout: number): Promise<void> {
+  const deferred = createDeferred<void>();
+  setTimeout(() => deferred.resolve(), timeout);
+  return deferred.promise;
+}
+
 async function* asyncNumbers() {
   let number = 0;
   for (let i = 0; i < 3; i++) {
-    await setTimeoutPromise(10);
+    await waitForTimer(10);
     number += 1;
     yield number;
   }
 }
 async function* asyncTexts() {
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield 'line 1\nline';
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield ' 2\nline 3\n';
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield 'line 4';
 }
 function asyncArrayBuffers() {
   return makeTextEncoderIterator(asyncTexts());
 }
 async function* asyncJsons() {
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield '{"id":0,"field":"value0","flag":false}\n{"id":1,"fie';
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield 'ld":"value1","flag":true}\n{"id":2,"field":"value2","flag":false}\n';
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield '{"id":3,"field":"value3","flag":true}';
 }
 function asyncNDJson() {
   return makeTextEncoderIterator(asyncJsons());
 }
 test('async-iterator#forEach', async () => {
-  let iterations = 0;
-  await forEach(asyncNumbers(), number => {
-    iterations++;
-    expect(number, `async iterating over ${number}`).toBe(iterations);
+  await withFakeTimers(async () => {
+    let iterations = 0;
+    const iterationPromise = forEach(asyncNumbers(), number => {
+      iterations++;
+      expect(number, `async iterating over ${number}`).toBe(iterations);
+    });
+
+    await advanceTimersAndFlush(30);
+    await iterationPromise;
   });
 });
 test('async-iterator#makeTextDecoderIterator', async () => {
-  for await (const text of asyncTexts()) {
-    console.log(text);
-    expect(typeof text === 'string', 'async iterator yields string').toBeTruthy();
-  }
-  for await (const text of makeTextDecoderIterator(asyncArrayBuffers())) {
-    console.log(text);
-    expect(typeof text === 'string', 'async iterator yields string').toBeTruthy();
-  }
+  await withFakeTimers(async () => {
+    const textsPromise = (async () => {
+      for await (const text of asyncTexts()) {
+        expect(typeof text === 'string', 'async iterator yields string').toBeTruthy();
+      }
+    })();
+
+    const decodedTextsPromise = (async () => {
+      for await (const text of makeTextDecoderIterator(asyncArrayBuffers())) {
+        expect(typeof text === 'string', 'async iterator yields string').toBeTruthy();
+      }
+    })();
+
+    await advanceTimersAndFlush(60);
+    await textsPromise;
+    await decodedTextsPromise;
+  });
 });
 test('async-iterator#makeLineIterator', async () => {
-  let iterations = 0;
-  for await (const text of makeLineIterator(asyncTexts())) {
-    iterations++;
-    expect(text.trim(), 'yields single line').toBe(`line ${iterations}`);
-  }
+  await withFakeTimers(async () => {
+    let iterations = 0;
+    const iterationPromise = (async () => {
+      for await (const text of makeLineIterator(asyncTexts())) {
+        iterations++;
+        expect(text.trim(), 'yields single line').toBe(`line ${iterations}`);
+      }
+    })();
+
+    await advanceTimersAndFlush(30);
+    await iterationPromise;
+  });
 });
 test('async-iterator#makeNumberedLineIterator', async () => {
-  let iterations = 0;
-  for await (const result of makeNumberedLineIterator(makeLineIterator(asyncTexts()))) {
-    iterations++;
-    expect(result.line.trim(), 'line text').toBe(`line ${iterations}`);
-    expect(result.counter, 'line counter').toBe(iterations);
-  }
+  await withFakeTimers(async () => {
+    let iterations = 0;
+    const iterationPromise = (async () => {
+      for await (const result of makeNumberedLineIterator(makeLineIterator(asyncTexts()))) {
+        iterations++;
+        expect(result.line.trim(), 'line text').toBe(`line ${iterations}`);
+        expect(result.counter, 'line counter').toBe(iterations);
+      }
+    })();
+
+    await advanceTimersAndFlush(30);
+    await iterationPromise;
+  });
 });
 test('async-iterator#parseNDJSONInBatches', async () => {
-  let id = 0;
-  for await (const batch of parseNDJSONInBatches(asyncNDJson())) {
-    // @ts-expect-error
-    const obj = batch.data[0];
-    expect(typeof obj, 'async iterator yields object').toBe('object');
-    /* eslint-disable */
-    expect(obj['id'], 'id property matches').toBe(id);
-    expect(obj['field'], 'field property matches').toBe(`value${id}`);
-    expect(obj['flag'], 'flag field matches').toBe(Boolean(id % 2));
-    id++;
-  }
+  await withFakeTimers(async () => {
+    let id = 0;
+    const iterationPromise = (async () => {
+      for await (const batch of parseNDJSONInBatches(asyncNDJson())) {
+        // @ts-expect-error
+        const obj = batch.data[0];
+        expect(typeof obj, 'async iterator yields object').toBe('object');
+        /* eslint-disable */
+        expect(obj['id'], 'id property matches').toBe(id);
+        expect(obj['field'], 'field property matches').toBe(`value${id}`);
+        expect(obj['flag'], 'flag field matches').toBe(Boolean(id % 2));
+        id++;
+      }
+    })();
+
+    await advanceTimersAndFlush(30);
+    await iterationPromise;
+  });
 });
 test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and views', async () => {
   const sharedArrayBuffer =

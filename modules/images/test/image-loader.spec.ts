@@ -22,10 +22,6 @@ test('ImageBitmapLoader#load(URL) defaults to imagebitmap output', async () => {
   const image = await load(IMAGE_URL, ImageBitmapLoader);
   expect(image, 'image loaded successfully from URL').toBeTruthy();
   expect(getImageType(image), 'default image type is correct').toBe('imagebitmap');
-
-  if (!isBrowser) {
-    expect(image instanceof ImageBitmap, 'node polyfills return ImageBitmap').toBeTruthy();
-  }
 });
 
 test('ImageBitmapLoader#load(data URL)', async () => {
@@ -35,11 +31,18 @@ test('ImageBitmapLoader#load(data URL)', async () => {
   const imageData = getImageData(image);
   expect(imageData.width, 'image width is correct').toEqual(2);
   expect(imageData.height, 'image height is correct').toEqual(2);
+});
 
-  if (!isBrowser) {
-    expect(ArrayBuffer.isView(imageData.data), 'image data is TypedArray').toBeTruthy();
-    expect(imageData.data.byteLength, 'image `data.byteLength` is correct').toBe(16);
-  }
+test.runIf(!isBrowser)('ImageBitmapLoader#load(URL) returns Node ImageBitmap', async () => {
+  const image = await load(IMAGE_URL, ImageBitmapLoader);
+  expect(image instanceof ImageBitmap, 'node polyfills return ImageBitmap').toBeTruthy();
+});
+
+test.runIf(!isBrowser)('ImageBitmapLoader#load(data URL) returns Node pixel data', async () => {
+  const image = await load(IMAGE_DATA_URL, ImageBitmapLoader);
+  const imageData = getImageData(image);
+  expect(ArrayBuffer.isView(imageData.data), 'image data is TypedArray').toBeTruthy();
+  expect(imageData.data.byteLength, 'image `data.byteLength` is correct').toBe(16);
 });
 
 test('ImageBitmapLoader#load({type: \'imagebitmap\'})', async () => {

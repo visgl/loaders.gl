@@ -1,27 +1,42 @@
 import {expect, test} from 'vitest';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
 import {concatenateArrayBuffersAsync, makeTextEncoderIterator} from '@loaders.gl/loader-utils';
-const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
+import {
+  advanceTimersAndFlush,
+  createDeferred,
+  withFakeTimers
+} from '@loaders.gl/test-utils/vitest';
+
+function waitForTimer(timeout: number): Promise<void> {
+  const deferred = createDeferred<void>();
+  setTimeout(() => deferred.resolve(), timeout);
+  return deferred.promise;
+}
+
 async function* asyncTexts() {
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield 'line 1\nline';
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield ' 2\nline 3\n';
-  await setTimeoutPromise(10);
+  await waitForTimer(10);
   yield 'line 4';
 }
 function asyncArrayBuffers() {
   return makeTextEncoderIterator(asyncTexts());
 }
 test('concatenateArrayBuffersAsync', async () => {
-  const RESULT = 'line 1\nline 2\nline 3\nline 4';
-  // const text = await concatenateArrayBuffersAsync(asyncTexts());
-  // t.is(text, RESULT, 'returns concatenated string');
-  const arraybuffer = await concatenateArrayBuffersAsync(asyncArrayBuffers());
-  expect(arraybuffer instanceof ArrayBuffer, 'returns ArrayBuffer').toBeTruthy();
-  expect(arraybuffer, 'returns concatenated ArrayBuffer').toEqual(
-    new TextEncoder().encode(RESULT).buffer
-  );
+  await withFakeTimers(async () => {
+    const RESULT = 'line 1\nline 2\nline 3\nline 4';
+    const arrayBufferPromise = concatenateArrayBuffersAsync(asyncArrayBuffers());
+
+    await advanceTimersAndFlush(30);
+
+    const arraybuffer = await arrayBufferPromise;
+    expect(arraybuffer instanceof ArrayBuffer, 'returns ArrayBuffer').toBeTruthy();
+    expect(arraybuffer, 'returns concatenated ArrayBuffer').toEqual(
+      new TextEncoder().encode(RESULT).buffer
+    );
+  });
 });
 test('makeIterator#string', async () => {
   const bigString = '123456';
