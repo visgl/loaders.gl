@@ -48,6 +48,9 @@ export async function getVitestConfig(options = {}) {
 
   return defineConfig({
     plugins: [serveRangeRequestsPlugin(repositoryRoot)],
+    optimizeDeps: {
+      include: ['get-pixels']
+    },
     resolve: {
       alias: [
         ...testAliases,
