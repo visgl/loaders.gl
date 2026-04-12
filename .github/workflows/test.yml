@@ -68,9 +68,6 @@ jobs:
       - name: Build workers
         run: yarn run build-workers
 
-      - name: Run Vitest async guardrails
-        run: yarn run test-vitest-async-guardrails
-
       - name: Run node and browser tests (combine coverage)
         if: matrix.full
         run: |
@@ -164,6 +161,9 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+
+      - name: Run Vitest async guardrails
+        run: yarn run test-vitest-async-guardrails
 
       - name: Build
         run: yarn run build

@@ -78,15 +78,92 @@ if (violations.length > 0) {
  * @returns {string[]}
  */
 function listMigratedVitestFiles() {
-  const rgArguments = [
-    '-l',
-    "from ['\"]vitest['\"]",
-    ...MIGRATED_VITEST_DIRECTORIES,
-    "-g*spec*",
-    "-g*.test.*"
-  ];
-  const stdout = execFileSync('rg', rgArguments, {cwd: repositoryRoot, encoding: 'utf8'});
-  return stdout.split(/\r?\n/).filter(Boolean);
+  try {
+    const rgArguments = [
+      '-l',
+      "from ['\"]vitest['\"]",
+      ...MIGRATED_VITEST_DIRECTORIES,
+      '-g*spec*',
+      '-g*.test.*'
+    ];
+    const stdout = execFileSync('rg', rgArguments, {cwd: repositoryRoot, encoding: 'utf8'});
+    return stdout.split(/\r?\n/).filter(Boolean);
+  } catch (error) {
+    if (!isCommandMissingError(error)) {
+      throw error;
+    }
+
+    return listMigratedVitestFilesWithoutRipgrep();
+  }
+}
+
+/**
+ * Lists native Vitest test files without relying on ripgrep.
+ * @returns {string[]}
+ */
+function listMigratedVitestFilesWithoutRipgrep() {
+  const testFiles = [];
+
+  for (const directory of MIGRATED_VITEST_DIRECTORIES) {
+    const absoluteDirectory = path.resolve(repositoryRoot, directory);
+    if (!fs.existsSync(absoluteDirectory)) {
+      continue;
+    }
+
+    for (const absoluteFilePath of walkFiles(absoluteDirectory)) {
+      const relativeFilePath = path.relative(repositoryRoot, absoluteFilePath);
+      if (!isTestFilePath(relativeFilePath)) {
+        continue;
+      }
+
+      const sourceText = fs.readFileSync(absoluteFilePath, 'utf8');
+      if (!/from ['"]vitest['"]/.test(sourceText)) {
+        continue;
+      }
+
+      testFiles.push(relativeFilePath);
+    }
+  }
+
+  return testFiles;
+}
+
+/**
+ * Returns true when an exec error represents a missing command.
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+function isCommandMissingError(error) {
+  return Boolean(error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT');
+}
+
+/**
+ * Recursively yields file paths within one directory.
+ * @param {string} directory
+ * @returns {string[]}
+ */
+function walkFiles(directory) {
+  const filePaths = [];
+
+  for (const entry of fs.readdirSync(directory, {withFileTypes: true})) {
+    const entryPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      filePaths.push(...walkFiles(entryPath));
+    } else if (entry.isFile()) {
+      filePaths.push(entryPath);
+    }
+  }
+
+  return filePaths;
+}
+
+/**
+ * Returns true when a relative file path looks like a test file.
+ * @param {string} filePath
+ * @returns {boolean}
+ */
+function isTestFilePath(filePath) {
+  return filePath.includes('.spec.') || filePath.includes('.test.');
 }
 
 /**
