@@ -1,15 +1,8 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
-
+import {expect, test} from 'vitest';
 import type {DataSourceOptions} from '../../../src';
 import {DataSource} from '../../../src';
-
 class TestDataSource extends DataSource<string, DataSourceOptions> {}
-
-test('DataSource#normalizes legacy loadOptions base URL aliases', t => {
+test('DataSource#normalizes legacy loadOptions base URL aliases', () => {
   const source = new TestDataSource('https://example.com/data', {
     core: {
       loadOptions: {
@@ -17,14 +10,11 @@ test('DataSource#normalizes legacy loadOptions base URL aliases', t => {
       }
     }
   });
-
-  t.equal(
+  expect(
     source.loadOptions.core?.baseUrl,
-    'https://example.com/model.gltf',
     'top-level baseUri is normalized to core.baseUrl for direct parser calls'
-  );
-  t.equal(source.loadOptions.baseUri, undefined, 'deprecated baseUri alias is removed');
-
+  ).toBe('https://example.com/model.gltf');
+  expect(source.loadOptions.baseUri, 'deprecated baseUri alias is removed').toBe(undefined);
   const sourceWithBaseUrl = new TestDataSource('https://example.com/data', {
     core: {
       loadOptions: {
@@ -32,13 +22,11 @@ test('DataSource#normalizes legacy loadOptions base URL aliases', t => {
       }
     }
   });
-
-  t.equal(
+  expect(
     sourceWithBaseUrl.loadOptions.core?.baseUrl,
-    'https://example.com/textures',
     'top-level baseUrl is normalized to core.baseUrl for direct parser calls'
+  ).toBe('https://example.com/textures');
+  expect(sourceWithBaseUrl.loadOptions.baseUrl, 'top-level baseUrl alias is removed').toBe(
+    undefined
   );
-  t.equal(sourceWithBaseUrl.loadOptions.baseUrl, undefined, 'top-level baseUrl alias is removed');
-
-  t.end();
 });

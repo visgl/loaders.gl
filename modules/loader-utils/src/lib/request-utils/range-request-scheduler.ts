@@ -126,21 +126,6 @@ export type RangeRequestEvent = {
   error?: unknown;
 };
 
-/** @deprecated Use `RangeRequestSchedulerProps`. */
-export type TileRangeRequestSchedulerProps = RangeRequestSchedulerProps;
-
-/** @deprecated Use `RangeRequest`. */
-export type TileRangeRequest = RangeRequest;
-
-/** @deprecated Use `RangeFetchRequest`. */
-export type TileRangeFetchRequest = RangeFetchRequest;
-
-/** @deprecated Use `RangeRequestTransportResult`. */
-export type TileRangeRequestTransportResult = RangeRequestTransportResult;
-
-/** @deprecated Use `RangeRequestEvent`. */
-export type TileRangeRequestEvent = RangeRequestEvent;
-
 type PendingRequest = RangeRequest & {
   resolve: (arrayBuffer: ArrayBuffer) => void;
   reject: (error: unknown) => void;
@@ -444,9 +429,6 @@ export class RangeRequestScheduler {
     });
   }
 }
-
-/** @deprecated Use `RangeRequestScheduler`. */
-export {RangeRequestScheduler as TileRangeRequestScheduler};
 
 /**
  * Tracks range batching events in a probe.gl Stats object.

@@ -36,4 +36,4 @@ import './lib/init.spec';
 // EXPERIMENTAL
 
 import './lib/progress/fetch-progress.spec';
-import './lib/filesystems/browser-filesystem.spec';
+import './lib/filesystems/browser-filesystem.browser.spec';

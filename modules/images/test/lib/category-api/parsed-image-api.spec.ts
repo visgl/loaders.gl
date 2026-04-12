@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {
   ImageLoader,
@@ -12,15 +12,10 @@ import {
   getImageSize,
   getImageData
 } from '@loaders.gl/images';
-
 type ImageT = 'auto' | 'image' | 'imagebitmap' | 'data';
-
 const IMAGE_TYPES: ImageT[] = ['auto', 'image', 'imagebitmap', 'data'];
-
 const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
-
 let imagesPromise: Promise<ImageType[]> | null = null;
-
 async function loadImages(): Promise<ImageType[]> {
   imagesPromise =
     imagesPromise ||
@@ -32,78 +27,62 @@ async function loadImages(): Promise<ImageType[]> {
     ]);
   return await imagesPromise;
 }
-
-test('Image Category#Parsed Image API imports', t => {
-  t.ok(getDefaultImageType, 'getDefaultImageType() is defined');
-  t.ok(isImageTypeSupported, 'isImageTypeSupported() is defined');
-  t.ok(isImage, 'isImage() is defined');
-  t.ok(getImageType, 'getImageType() is defined');
-  t.ok(getImageSize, 'getImageSize() is defined');
-  t.ok(getImageData, 'getImageData() is defined');
-  t.end();
+test('Image Category#Parsed Image API imports', () => {
+  expect(getDefaultImageType, 'getDefaultImageType() is defined').toBeTruthy();
+  expect(isImageTypeSupported, 'isImageTypeSupported() is defined').toBeTruthy();
+  expect(isImage, 'isImage() is defined').toBeTruthy();
+  expect(getImageType, 'getImageType() is defined').toBeTruthy();
+  expect(getImageSize, 'getImageSize() is defined').toBeTruthy();
+  expect(getImageData, 'getImageData() is defined').toBeTruthy();
 });
-
-test('Image Category#getDefaultImageType', async t => {
+test('Image Category#getDefaultImageType', async () => {
   const imageType = getDefaultImageType();
-  t.ok(IMAGE_TYPES.includes(imageType), 'Returns an expected image type');
+  expect(IMAGE_TYPES.includes(imageType), 'Returns an expected image type').toBeTruthy();
   if (globalThis.loaders?.parseImageNode) {
-    t.equals(imageType, 'imagebitmap', 'Node polyfills prefer imagebitmap');
+    expect(imageType, 'Node polyfills prefer imagebitmap').toBe('imagebitmap');
   }
-  t.end();
 });
-
-test('Image Category#isImageTypeSupported', async t => {
+test('Image Category#isImageTypeSupported', async () => {
   for (const type of IMAGE_TYPES) {
     const supported = isImageTypeSupported(type);
-    t.equals(
-      typeof supported,
-      'boolean',
-      `isImageTypeSupported(${type}) returns boolean (${supported})`
+    expect(typeof supported, `isImageTypeSupported(${type}) returns boolean (${supported})`).toBe(
+      'boolean'
     );
   }
-  t.throws(() => isImageTypeSupported('unknown type'));
-  t.end();
+  expect(() => isImageTypeSupported('unknown type')).toThrow();
 });
-
-test('Image Category#isImage', async t => {
+test('Image Category#isImage', async () => {
   const IMAGES = await loadImages();
   for (const image of IMAGES) {
-    t.equals(isImage(image), true, 'isImage recognizes image');
+    expect(isImage(image), 'isImage recognizes image').toBe(true);
   }
   // @ts-ignore
-  t.equals(isImage('not an image'), false, 'isImage rejects non-image');
-  t.end();
+  expect(isImage('not an image'), 'isImage rejects non-image').toBe(false);
 });
-
-test('Image Category#getImageType', async t => {
+test('Image Category#getImageType', async () => {
   const IMAGES = await loadImages();
   const imageTypes = IMAGES.map(getImageType);
-  t.ok(imageTypes.includes('imagebitmap'), 'returns bitmap type');
-  t.ok(imageTypes.includes('data'), 'returns data type');
+  expect(imageTypes.includes('imagebitmap'), 'returns bitmap type').toBeTruthy();
+  expect(imageTypes.includes('data'), 'returns data type').toBeTruthy();
   if (isImageTypeSupported('image')) {
-    t.ok(imageTypes.includes('image'), 'returns image type when supported');
+    expect(imageTypes.includes('image'), 'returns image type when supported').toBeTruthy();
   }
   // @ts-ignore
-  t.throws(() => getImageType('not an image'));
-  t.end();
+  expect(() => getImageType('not an image')).toThrow();
 });
-
-test('Image Category#getImageSize', async t => {
+test('Image Category#getImageSize', async () => {
   const IMAGES = await loadImages();
   for (const image of IMAGES) {
-    t.equals(typeof getImageSize(image), 'object', 'returns size object');
+    expect(typeof getImageSize(image), 'returns size object').toBe('object');
   }
   // @ts-ignore
-  t.throws(() => getImageSize('unknown type'));
-  t.end();
+  expect(() => getImageSize('unknown type')).toThrow();
 });
-
-test('Image Category#getImageData', async t => {
+test('Image Category#getImageData', async () => {
   const IMAGES = await loadImages();
   for (const image of IMAGES) {
-    t.equals(typeof getImageData(image), 'object', 'returns data');
+    expect(typeof getImageData(image), 'returns data').toBe('object');
   }
   // @ts-ignore
-  t.throws(() => getImageData('not an image'));
-  t.end();
+  expect(() => getImageData('not an image')).toThrow();
 });

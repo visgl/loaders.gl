@@ -8,6 +8,8 @@ export type {Tile2DSourceLayerProps} from './tile-2d-source-layer';
 export {Tile2DSourceLayer} from './tile-2d-source-layer';
 export type {SourceLayerProps} from './source-layer';
 export {SourceLayer} from './source-layer';
+export type {ImageSourceLayerProps} from './image-source-layer';
+export {ImageSourceLayer} from './image-source-layer';
 export type {Tile3DSourceLayerProps} from './tile-3d-source-layer';
 export {Tile3DSourceLayer} from './tile-3d-source-layer';
 export {SourceDataDrivenTile3DLayer} from './data-driven-tile-3d-source-layer';

@@ -1,1 +1,0 @@
-import './image-loader.spec';
