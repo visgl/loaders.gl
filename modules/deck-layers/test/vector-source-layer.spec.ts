@@ -46,7 +46,12 @@ const TEST_VECTOR_SOURCE = {
 };
 
 function createLayer(
-  props: VectorSourceLayerProps = {id: 'test', data: TEST_VECTOR_SOURCE as any, layers: ['roads']}
+  props: VectorSourceLayerProps = {
+    id: 'test',
+    data: TEST_VECTOR_SOURCE as any,
+    layers: ['roads'],
+    debounceTime: 0
+  }
 ) {
   return new VectorSourceLayer(props as any) as any;
 }
@@ -77,7 +82,8 @@ test('VectorSet#keeps only the latest viewport request and skips identical reque
   const vectorSet = new VectorSet({
     vectorSource: vectorSource as any,
     layers: ['roads'],
-    crs: 'EPSG:4326'
+    crs: 'EPSG:4326',
+    debounceTime: 0
   });
 
   const firstViewport = createViewport([0, 1, 2, 3]);
@@ -117,7 +123,8 @@ test('VectorSet#emits loading state changes', async t => {
       }
     } as any,
     layers: ['roads'],
-    crs: 'EPSG:4326'
+    crs: 'EPSG:4326',
+    debounceTime: 0
   });
 
   vectorSet.subscribe({
@@ -165,6 +172,42 @@ test('VectorSet#debounces viewport requests', async t => {
   t.end();
 });
 
+test('VectorSet#resolves canceled debounced viewport updates', async t => {
+  const requestedParameters: any[] = [];
+  const vectorSet = new VectorSet({
+    vectorSource: {
+      async getMetadata() {
+        return {name: 'roads', keywords: [], layers: []};
+      },
+      async getSchema() {
+        return {metadata: {}, fields: []};
+      },
+      async getFeatures(parameters: any) {
+        requestedParameters.push(parameters);
+        return TABLE_A as any;
+      }
+    } as any,
+    layers: ['roads'],
+    crs: 'EPSG:4326',
+    debounceTime: 20
+  });
+
+  const firstPromise = vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
+  const secondPromise = vectorSet.updateViewport(createViewport([10, 11, 12, 13]) as any);
+
+  await Promise.race([
+    Promise.all([firstPromise, secondPromise]),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timed out')), 100))
+  ]);
+
+  t.equal(requestedParameters.length, 1, 'only the latest debounced request reaches the source');
+  t.deepEqual(requestedParameters[0].boundingBox, [
+    [10, 11],
+    [12, 13]
+  ]);
+  t.end();
+});
+
 test('VectorSourceLayer#fetches for initial and changed viewports and renders GeoJsonLayer', async t => {
   const requestedParameters: any[] = [];
   const loadedTables: any[] = [];
@@ -189,6 +232,7 @@ test('VectorSourceLayer#fetches for initial and changed viewports and renders Ge
     id: 'vector-layer',
     data: source as any,
     layers: ['roads'],
+    debounceTime: 0,
     onDataLoad: table => loadedTables.push(table),
     geoJsonLayerProps: {pickable: true}
   });
@@ -248,6 +292,7 @@ test('VectorSourceLayer#forwards request errors', async t => {
     id: 'vector-layer',
     data: source as any,
     layers: ['roads'],
+    debounceTime: 0,
     onError: error => errors.push(error)
   });
 

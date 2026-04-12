@@ -84,6 +84,7 @@ export class VectorSet {
   private lastRequestKey: string | null = null;
   private loadCounter = 0;
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
+  private pendingTimeoutResolve: (() => void) | null = null;
   private abortController: AbortController | null = null;
 
   /** Creates a new viewport-driven vector runtime for a source. */
@@ -163,8 +164,10 @@ export class VectorSet {
 
     if (this.debounceTime > 0) {
       await new Promise<void>(resolve => {
+        this.pendingTimeoutResolve = resolve;
         this.timeoutId = setTimeout(() => {
           this.timeoutId = null;
+          this.pendingTimeoutResolve = null;
           void this._loadFeatures(requestParameters, requestKey).finally(resolve);
         }, this.debounceTime);
       });
@@ -335,6 +338,8 @@ export class VectorSet {
       clearTimeout(this.timeoutId);
       this.timeoutId = null;
     }
+    this.pendingTimeoutResolve?.();
+    this.pendingTimeoutResolve = null;
   }
 
   /** Aborts the current in-flight vector request, if any. */
