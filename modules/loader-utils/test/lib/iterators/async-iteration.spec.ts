@@ -8,128 +8,96 @@ import {
   concatenateArrayBuffersAsync
 } from '@loaders.gl/loader-utils';
 import {
-  advanceTimersAndFlush,
-  createDeferred,
-  withFakeTimers
+  flushMicrotasks
 } from '@loaders.gl/test-utils/vitest';
 import {NDJSONLoader} from '@loaders.gl/json';
 const parseNDJSONInBatches = NDJSONLoader.parseInBatches;
 
-function waitForTimer(timeout: number): Promise<void> {
-  const deferred = createDeferred<void>();
-  setTimeout(() => deferred.resolve(), timeout);
-  return deferred.promise;
-}
-
 async function* asyncNumbers() {
   let number = 0;
   for (let i = 0; i < 3; i++) {
-    await waitForTimer(10);
+    await flushMicrotasks();
     number += 1;
     yield number;
   }
 }
 async function* asyncTexts() {
-  await waitForTimer(10);
+  await flushMicrotasks();
   yield 'line 1\nline';
-  await waitForTimer(10);
+  await flushMicrotasks();
   yield ' 2\nline 3\n';
-  await waitForTimer(10);
+  await flushMicrotasks();
   yield 'line 4';
 }
 function asyncArrayBuffers() {
   return makeTextEncoderIterator(asyncTexts());
 }
 async function* asyncJsons() {
-  await waitForTimer(10);
+  await flushMicrotasks();
   yield '{"id":0,"field":"value0","flag":false}\n{"id":1,"fie';
-  await waitForTimer(10);
+  await flushMicrotasks();
   yield 'ld":"value1","flag":true}\n{"id":2,"field":"value2","flag":false}\n';
-  await waitForTimer(10);
+  await flushMicrotasks();
   yield '{"id":3,"field":"value3","flag":true}';
 }
 function asyncNDJson() {
   return makeTextEncoderIterator(asyncJsons());
 }
 test('async-iterator#forEach', async () => {
-  await withFakeTimers(async () => {
-    let iterations = 0;
-    const iterationPromise = forEach(asyncNumbers(), number => {
-      iterations++;
-      expect(number, `async iterating over ${number}`).toBe(iterations);
-    });
-
-    await advanceTimersAndFlush(30);
-    await iterationPromise;
+  const numbers: number[] = [];
+  await forEach(asyncNumbers(), number => {
+    numbers.push(number);
   });
+  expect(numbers, 'iterates through async values in order').toEqual([1, 2, 3]);
 });
 test('async-iterator#makeTextDecoderIterator', async () => {
-  await withFakeTimers(async () => {
-    const textsPromise = (async () => {
-      for await (const text of asyncTexts()) {
-        expect(typeof text === 'string', 'async iterator yields string').toBeTruthy();
-      }
-    })();
+  const sourceTexts: string[] = [];
+  for await (const text of asyncTexts()) {
+    sourceTexts.push(text);
+  }
 
-    const decodedTextsPromise = (async () => {
-      for await (const text of makeTextDecoderIterator(asyncArrayBuffers())) {
-        expect(typeof text === 'string', 'async iterator yields string').toBeTruthy();
-      }
-    })();
+  const decodedTexts: string[] = [];
+  for await (const text of makeTextDecoderIterator(asyncArrayBuffers())) {
+    decodedTexts.push(text);
+  }
 
-    await advanceTimersAndFlush(60);
-    await textsPromise;
-    await decodedTextsPromise;
-  });
+  expect(sourceTexts, 'source iterator yields strings').toEqual(['line 1\nline', ' 2\nline 3\n', 'line 4']);
+  expect(decodedTexts, 'decoder preserves async text chunks').toEqual(sourceTexts);
 });
 test('async-iterator#makeLineIterator', async () => {
-  await withFakeTimers(async () => {
-    let iterations = 0;
-    const iterationPromise = (async () => {
-      for await (const text of makeLineIterator(asyncTexts())) {
-        iterations++;
-        expect(text.trim(), 'yields single line').toBe(`line ${iterations}`);
-      }
-    })();
+  const lines: string[] = [];
+  for await (const text of makeLineIterator(asyncTexts())) {
+    lines.push(text.trim());
+  }
 
-    await advanceTimersAndFlush(30);
-    await iterationPromise;
-  });
+  expect(lines, 'yields one line at a time').toEqual(['line 1', 'line 2', 'line 3', 'line 4']);
 });
 test('async-iterator#makeNumberedLineIterator', async () => {
-  await withFakeTimers(async () => {
-    let iterations = 0;
-    const iterationPromise = (async () => {
-      for await (const result of makeNumberedLineIterator(makeLineIterator(asyncTexts()))) {
-        iterations++;
-        expect(result.line.trim(), 'line text').toBe(`line ${iterations}`);
-        expect(result.counter, 'line counter').toBe(iterations);
-      }
-    })();
+  const numberedLines: {line: string; counter: number}[] = [];
+  for await (const result of makeNumberedLineIterator(makeLineIterator(asyncTexts()))) {
+    numberedLines.push({line: result.line.trim(), counter: result.counter});
+  }
 
-    await advanceTimersAndFlush(30);
-    await iterationPromise;
-  });
+  expect(numberedLines, 'tracks line numbers').toEqual([
+    {line: 'line 1', counter: 1},
+    {line: 'line 2', counter: 2},
+    {line: 'line 3', counter: 3},
+    {line: 'line 4', counter: 4}
+  ]);
 });
 test('async-iterator#parseNDJSONInBatches', async () => {
-  await withFakeTimers(async () => {
-    let id = 0;
-    const iterationPromise = (async () => {
-      for await (const batch of parseNDJSONInBatches(asyncNDJson())) {
-        // @ts-expect-error
-        const obj = batch.data[0];
-        expect(typeof obj, 'async iterator yields object').toBe('object');
-        /* eslint-disable */
-        expect(obj['id'], 'id property matches').toBe(id);
-        expect(obj['field'], 'field property matches').toBe(`value${id}`);
-        expect(obj['flag'], 'flag field matches').toBe(Boolean(id % 2));
-        id++;
-      }
-    })();
+  const objects: Array<{id: number; field: string; flag: boolean}> = [];
+  for await (const batch of parseNDJSONInBatches(asyncNDJson())) {
+    // @ts-expect-error
+    objects.push(batch.data[0]);
+  }
 
-    await advanceTimersAndFlush(30);
-    await iterationPromise;
-  });
+  expect(objects, 'parses NDJSON batches in order').toEqual([
+    {id: 0, field: 'value0', flag: false},
+    {id: 1, field: 'value1', flag: true},
+    {id: 2, field: 'value2', flag: false},
+    {id: 3, field: 'value3', flag: true}
+  ]);
 });
 test('async-iterator#concatenateArrayBuffersAsync accepts ArrayBufferLike and views', async () => {
   const sharedArrayBuffer =
