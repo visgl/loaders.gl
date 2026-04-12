@@ -1,24 +1,18 @@
-import test from 'tape-promise/tape';
-
+import {expect, test} from 'vitest';
 import {setPathPrefix, getPathPrefix, resolvePath} from '@loaders.gl/loader-utils';
-
 // NOTE: addAliases is not a public export, already used by test setup
 // import {_addAliases} from '@loaders.gl/loader-utils';
-
-test('file aliases#imports', t => {
-  t.ok(typeof setPathPrefix === 'function', 'setPathPrefix() defined');
-  t.ok(typeof getPathPrefix === 'function', 'getPathPrefix() defined');
-  t.ok(typeof resolvePath === 'function', 'resolvePath() defined');
-  t.end();
+test('file aliases#imports', () => {
+  expect(typeof setPathPrefix === 'function', 'setPathPrefix() defined').toBeTruthy();
+  expect(typeof getPathPrefix === 'function', 'getPathPrefix() defined').toBeTruthy();
+  expect(typeof resolvePath === 'function', 'resolvePath() defined').toBeTruthy();
 });
-
-test('file aliases#path prefix', t => {
-  t.equal(getPathPrefix(), '', 'getPathPrefix() return correct value');
+test('file aliases#path prefix', () => {
+  expect(getPathPrefix(), 'getPathPrefix() return correct value').toBe('');
   setPathPrefix('/tmp/');
-  t.equal(getPathPrefix(), '/tmp/', 'getPathPrefix() return correct value');
-  t.equal(resolvePath('geo.json'), '/tmp/geo.json');
+  expect(getPathPrefix(), 'getPathPrefix() return correct value').toBe('/tmp/');
+  expect(resolvePath('geo.json')).toBe('/tmp/geo.json');
   // Make sure to reset so we don't break other tests!
   setPathPrefix('');
-  t.equal(resolvePath('geo.json'), 'geo.json');
-  t.end();
+  expect(resolvePath('geo.json')).toBe('geo.json');
 });

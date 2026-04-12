@@ -1,4 +1,4 @@
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {DATA_ARRAY} from '@loaders.gl/i3s/test/data/test.zip';
 import {localHeaderSignature, getReadableFileSize, readRange} from '@loaders.gl/zip';
 import {
@@ -6,59 +6,40 @@ import {
   createReadableFileFromPath,
   createBrowserReadableFile
 } from 'test/utils/readable-files';
-
 const SLPK_URL = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
-
-test('ReadableFile#BlobFile range reads and stat', async t => {
+test('ReadableFile#BlobFile range reads and stat', async () => {
   const readableFile = createBrowserReadableFile(DATA_ARRAY.buffer);
-
   const size = await getReadableFileSize(readableFile);
-  t.equal(size, BigInt(DATA_ARRAY.byteLength), 'returns expected bigsize');
-
+  expect(size, 'returns expected bigsize').toBe(BigInt(DATA_ARRAY.byteLength));
   const prefix = await readRange(readableFile, 0n, 4n);
-  t.deepEqual(new Uint8Array(prefix), localHeaderSignature, 'reads the zip signature');
-
+  expect(new Uint8Array(prefix), 'reads the zip signature').toEqual(localHeaderSignature);
   const stat = await readableFile.stat();
-  t.equal(stat.size, DATA_ARRAY.byteLength, 'stat.size matches buffer length');
-  t.equal(stat.bigsize, BigInt(DATA_ARRAY.byteLength), 'stat.bigsize matches buffer length');
-  t.end();
+  expect(stat.size, 'stat.size matches buffer length').toBe(DATA_ARRAY.byteLength);
+  expect(stat.bigsize, 'stat.bigsize matches buffer length').toBe(BigInt(DATA_ARRAY.byteLength));
 });
-
 // Node-like coverage only executes when NodeFile is available
 if (!globalThis.window) {
-  test('ReadableFile#NodeFile range reads and stat', async t => {
+  test('ReadableFile#NodeFile range reads and stat', async () => {
     const readableFile = await createReadableFileFromPath(SLPK_URL);
     const stat = await readableFile.stat();
-    t.ok(stat.size > 0, 'stat returns a size');
-
+    expect(stat.size > 0, 'stat returns a size').toBeTruthy();
     const header = await readRange(readableFile, 0n, 4n);
-    t.deepEqual(new Uint8Array(header), localHeaderSignature, 'reads header bytes from disk');
-
+    expect(new Uint8Array(header), 'reads header bytes from disk').toEqual(localHeaderSignature);
     await readableFile.close?.();
-    t.end();
   });
 }
-
-test('ReadableFile#DataViewReadableFile supports slices', async t => {
+test('ReadableFile#DataViewReadableFile supports slices', async () => {
   const readableFile = await createReadableFileFromBuffer(DATA_ARRAY.buffer);
-
   const midSection = await readRange(readableFile, 2n, 6n);
-  t.deepEqual(
-    new Uint8Array(midSection),
-    new Uint8Array(DATA_ARRAY.slice(2, 6)),
-    'reads arbitrary slice'
+  expect(new Uint8Array(midSection), 'reads arbitrary slice').toEqual(
+    new Uint8Array(DATA_ARRAY.slice(2, 6))
   );
-
   const trailing = await readRange(
     readableFile,
     BigInt(DATA_ARRAY.byteLength - 4),
     BigInt(DATA_ARRAY.byteLength)
   );
-  t.deepEqual(
-    new Uint8Array(trailing),
-    new Uint8Array(DATA_ARRAY.slice(-4)),
-    'reads trailing bytes'
+  expect(new Uint8Array(trailing), 'reads trailing bytes').toEqual(
+    new Uint8Array(DATA_ARRAY.slice(-4))
   );
-
-  t.end();
 });

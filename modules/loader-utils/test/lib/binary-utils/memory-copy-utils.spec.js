@@ -1,29 +1,19 @@
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {padToNBytes, copyArrayBuffer, copyToArray} from '@loaders.gl/loader-utils';
-
-test('padToNBytes', t => {
-  t.ok(padToNBytes, 'padToNBytes defined');
-
-  t.equal(padToNBytes(15, 16), 16);
-  t.equal(padToNBytes(15, 8), 16);
-  t.equal(padToNBytes(157, 3), 157);
-
-  t.throws(() => padToNBytes(15, 0));
-  t.throws(() => padToNBytes(15, -5));
-  t.throws(() => padToNBytes(-10, 8));
-
+test('padToNBytes', () => {
+  expect(padToNBytes, 'padToNBytes defined').toBeTruthy();
+  expect(padToNBytes(15, 16)).toBe(16);
+  expect(padToNBytes(15, 8)).toBe(16);
+  expect(padToNBytes(157, 3)).toBe(157);
+  expect(() => padToNBytes(15, 0)).toThrow();
+  expect(() => padToNBytes(15, -5)).toThrow();
+  expect(() => padToNBytes(-10, 8)).toThrow();
   // The approach only works for even paddings
-  t.notEqual(padToNBytes(32, 3), 33);
-
-  t.end();
+  expect(padToNBytes(32, 3)).not.toBe(33);
 });
-
-test('toBuffer', t => {
-  t.ok(copyArrayBuffer, 'copyArrayBuffer defined');
-  t.end();
+test('toBuffer', () => {
+  expect(copyArrayBuffer, 'copyArrayBuffer defined').toBeTruthy();
 });
-
-test('copyToArray', t => {
-  t.ok(copyToArray, 'copyToArray defined');
-  t.end();
+test('copyToArray', () => {
+  expect(copyToArray, 'copyToArray defined').toBeTruthy();
 });

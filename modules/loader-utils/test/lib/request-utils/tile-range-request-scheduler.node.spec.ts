@@ -1,120 +1,107 @@
 import {RangeRequestScheduler, createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 
-const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
-
+const sleep = (milliseconds = 0) => new Promise(resolve => setTimeout(resolve, milliseconds));
 const BYTES = new Uint8Array(256).map((_, index) => index);
-
-test('RangeRequestScheduler#merges ranges within rangeExpansionBytes', async t => {
+test('RangeRequestScheduler#merges ranges within rangeExpansionBytes', async () => {
   const scheduler = new RangeRequestScheduler({batchDelayMs: 0, rangeExpansionBytes: 8});
-  const fetches: {offset: number; length: number}[] = [];
-
+  const fetches: {
+    offset: number;
+    length: number;
+  }[] = [];
   const fetchRange = async (offset: number, length: number) => {
     fetches.push({offset, length});
     return BYTES.buffer.slice(offset, offset + length);
   };
-
   const [firstTile, secondTile] = await Promise.all([
     scheduler.scheduleRequest({sourceId: 'source', offset: 10, length: 4, fetchRange}),
     scheduler.scheduleRequest({sourceId: 'source', offset: 16, length: 4, fetchRange})
   ]);
-
-  t.deepEqual(fetches, [{offset: 10, length: 10}], 'requests one merged range');
-  t.deepEqual(Array.from(new Uint8Array(firstTile)), [10, 11, 12, 13], 'returns first range');
-  t.deepEqual(Array.from(new Uint8Array(secondTile)), [16, 17, 18, 19], 'returns second range');
-
-  t.end();
+  expect(fetches, 'requests one merged range').toEqual([{offset: 10, length: 10}]);
+  expect(Array.from(new Uint8Array(firstTile)), 'returns first range').toEqual([10, 11, 12, 13]);
+  expect(Array.from(new Uint8Array(secondTile)), 'returns second range').toEqual([16, 17, 18, 19]);
 });
-
-test('RangeRequestScheduler#stats and events describe coalesced ranges', async t => {
+test('RangeRequestScheduler#stats and events describe coalesced ranges', async () => {
   const stats = createRangeStats('range-request-scheduler-test');
-  const events: {type: string; logicalRequestCount?: number; transportRequestCount?: number}[] = [];
+  const events: {
+    type: string;
+    logicalRequestCount?: number;
+    transportRequestCount?: number;
+  }[] = [];
   const scheduler = new RangeRequestScheduler({
     batchDelayMs: 0,
     rangeExpansionBytes: 8,
     stats,
     onEvent: event => events.push(event)
   });
-
   const fetchRange = async (offset: number, length: number) => ({
     arrayBuffer: BYTES.buffer.slice(offset, offset + length),
     status: 206,
     transportBytes: length
   });
-
   await Promise.all([
     scheduler.scheduleRequest({sourceId: 'source', offset: 10, length: 4, fetchRange}),
     scheduler.scheduleRequest({sourceId: 'source', offset: 16, length: 4, fetchRange})
   ]);
-
-  t.equal(stats.get('Logical Range Requests').count, 2, 'counts logical requests');
-  t.equal(stats.get('Range Request Batches').count, 1, 'counts batches');
-  t.equal(stats.get('Transport Ranges Created').count, 1, 'counts merged transport ranges');
-  t.equal(stats.get('Coalesced Logical Ranges').count, 1, 'counts coalesced logical ranges');
-  t.equal(
+  expect(stats.get('Logical Range Requests').count, 'counts logical requests').toBe(2);
+  expect(stats.get('Range Request Batches').count, 'counts batches').toBe(1);
+  expect(stats.get('Transport Ranges Created').count, 'counts merged transport ranges').toBe(1);
+  expect(stats.get('Coalesced Logical Ranges').count, 'counts coalesced logical ranges').toBe(1);
+  expect(
     stats.get('Range Transport Requests Completed').count,
-    1,
     'counts completed transport requests'
-  );
-  t.equal(stats.get('Range Overfetch Bytes').count, 2, 'counts over-fetched gap bytes');
-  t.deepEqual(
-    getRangeStats(stats),
-    {
-      logicalRanges: 2,
-      rangeBatches: 1,
-      transportRanges: 1,
-      completedTransportRanges: 1,
-      coalescedRanges: 1,
-      requestedBytes: 8,
-      transportBytes: 10,
-      responseBytes: 10,
-      overfetchBytes: 2,
-      failedTransportRanges: 0,
-      abortedLogicalRanges: 0,
-      fullResponseFallbacks: 0
-    },
-    'reads typed RangeStats from probe.gl Stats'
-  );
-
-  t.ok(
+  ).toBe(1);
+  expect(stats.get('Range Overfetch Bytes').count, 'counts over-fetched gap bytes').toBe(2);
+  expect(getRangeStats(stats), 'reads typed RangeStats from probe.gl Stats').toEqual({
+    logicalRanges: 2,
+    rangeBatches: 1,
+    transportRanges: 1,
+    completedTransportRanges: 1,
+    coalescedRanges: 1,
+    requestedBytes: 8,
+    transportBytes: 10,
+    responseBytes: 10,
+    overfetchBytes: 2,
+    failedTransportRanges: 0,
+    abortedLogicalRanges: 0,
+    fullResponseFallbacks: 0
+  });
+  expect(
     events.some(event => event.type === 'batch' && event.logicalRequestCount === 2),
     'emits batch event'
-  );
-  t.ok(
+  ).toBeTruthy();
+  expect(
     events.some(event => event.type === 'batch' && event.transportRequestCount === 1),
     'emits merged transport request count'
-  );
-  t.ok(
+  ).toBeTruthy();
+  expect(
     events.some(event => event.type === 'response'),
     'emits response event'
-  );
-
-  t.end();
+  ).toBeTruthy();
 });
-
-test('RangeRequestScheduler#accepts maxGapBytes as rangeExpansionBytes alias', async t => {
+test('RangeRequestScheduler#accepts maxGapBytes as rangeExpansionBytes alias', async () => {
   const scheduler = new RangeRequestScheduler({batchDelayMs: 0, maxGapBytes: 8});
-  const fetches: {offset: number; length: number}[] = [];
-
+  const fetches: {
+    offset: number;
+    length: number;
+  }[] = [];
   const fetchRange = async (offset: number, length: number) => {
     fetches.push({offset, length});
     return BYTES.buffer.slice(offset, offset + length);
   };
-
   await Promise.all([
     scheduler.scheduleRequest({sourceId: 'source', offset: 10, length: 4, fetchRange}),
     scheduler.scheduleRequest({sourceId: 'source', offset: 16, length: 4, fetchRange})
   ]);
-
-  t.deepEqual(fetches, [{offset: 10, length: 10}], 'uses legacy maxGapBytes value');
-
-  t.end();
+  expect(fetches, 'uses legacy maxGapBytes value').toEqual([{offset: 10, length: 10}]);
 });
-
-test('RangeRequestScheduler#fetch sends merged HTTP range and preserves headers', async t => {
+test('RangeRequestScheduler#fetch sends merged HTTP range and preserves headers', async () => {
   const scheduler = new RangeRequestScheduler({batchDelayMs: 0, rangeExpansionBytes: 8});
-  const fetches: {url: string; authorization: string | null; range: string | null}[] = [];
-
+  const fetches: {
+    url: string;
+    authorization: string | null;
+    range: string | null;
+  }[] = [];
   const fetchRange = async (url: string, options?: RequestInit) => {
     const headers = new Headers(options?.headers);
     fetches.push({
@@ -127,7 +114,6 @@ test('RangeRequestScheduler#fetch sends merged HTTP range and preserves headers'
       headers: {'Content-Range': 'bytes 10-19/256'}
     });
   };
-
   const [firstTile, secondTile] = await Promise.all([
     scheduler.fetch({
       url: 'https://example.com/archive.pmtiles',
@@ -144,25 +130,17 @@ test('RangeRequestScheduler#fetch sends merged HTTP range and preserves headers'
       fetchOptions: {headers: {Authorization: 'Bearer token'}}
     })
   ]);
-
-  t.deepEqual(
-    fetches,
-    [
-      {
-        url: 'https://example.com/archive.pmtiles',
-        authorization: 'Bearer token',
-        range: 'bytes=10-19'
-      }
-    ],
-    'requests one merged HTTP range and preserves caller headers'
-  );
-  t.deepEqual(Array.from(new Uint8Array(firstTile)), [10, 11, 12, 13], 'returns first range');
-  t.deepEqual(Array.from(new Uint8Array(secondTile)), [16, 17, 18, 19], 'returns second range');
-
-  t.end();
+  expect(fetches, 'requests one merged HTTP range and preserves caller headers').toEqual([
+    {
+      url: 'https://example.com/archive.pmtiles',
+      authorization: 'Bearer token',
+      range: 'bytes=10-19'
+    }
+  ]);
+  expect(Array.from(new Uint8Array(firstTile)), 'returns first range').toEqual([10, 11, 12, 13]);
+  expect(Array.from(new Uint8Array(secondTile)), 'returns second range').toEqual([16, 17, 18, 19]);
 });
-
-test('RangeRequestScheduler#fetch rejects ignored range responses', async t => {
+test('RangeRequestScheduler#fetch rejects ignored range responses', async () => {
   const scheduler = new RangeRequestScheduler({batchDelayMs: 0});
   const request = scheduler.fetch({
     url: 'https://example.com/archive.pmtiles',
@@ -170,69 +148,51 @@ test('RangeRequestScheduler#fetch rejects ignored range responses', async t => {
     length: 4,
     fetch: async () => new Response(BYTES.buffer, {status: 200})
   });
-
-  await t.rejects(request, /server returned 200 instead of 206/, 'rejects 200 full responses');
-  t.equal(
-    getRangeStats(scheduler.stats).failedTransportRanges,
-    1,
-    'counts the failed transport range'
+  await expect(request, 'rejects 200 full responses').rejects.toThrow(
+    /server returned 200 instead of 206/
   );
-
-  t.end();
+  expect(
+    getRangeStats(scheduler.stats).failedTransportRanges,
+    'counts the failed transport range'
+  ).toBe(1);
 });
-
-test('RangeRequestScheduler#keeps distant ranges separate', async t => {
+test('RangeRequestScheduler#keeps distant ranges separate', async () => {
   const scheduler = new RangeRequestScheduler({batchDelayMs: 0, rangeExpansionBytes: 8});
-  const fetches: {offset: number; length: number}[] = [];
-
+  const fetches: {
+    offset: number;
+    length: number;
+  }[] = [];
   const fetchRange = async (offset: number, length: number) => {
     fetches.push({offset, length});
     return BYTES.buffer.slice(offset, offset + length);
   };
-
   await Promise.all([
     scheduler.scheduleRequest({sourceId: 'source', offset: 10, length: 4, fetchRange}),
     scheduler.scheduleRequest({sourceId: 'source', offset: 100, length: 4, fetchRange})
   ]);
-
-  t.deepEqual(
-    fetches,
-    [
-      {offset: 10, length: 4},
-      {offset: 100, length: 4}
-    ],
-    'requests separate ranges'
-  );
-
-  t.end();
+  expect(fetches, 'requests separate ranges').toEqual([
+    {offset: 10, length: 4},
+    {offset: 100, length: 4}
+  ]);
 });
-
-test('RangeRequestScheduler#batchDelayMs delays fetch', async t => {
+test('RangeRequestScheduler#batchDelayMs delays fetch', async () => {
   const scheduler = new RangeRequestScheduler({batchDelayMs: 20});
   let fetchCount = 0;
-
   const fetchRange = async (offset: number, length: number) => {
     fetchCount++;
     return BYTES.buffer.slice(offset, offset + length);
   };
-
   const request = scheduler.scheduleRequest({sourceId: 'source', offset: 0, length: 1, fetchRange});
-
   await sleep(0);
-  t.is(fetchCount, 0, 'does not fetch immediately');
-
+  expect(fetchCount, 'does not fetch immediately').toBe(0);
   await request;
-  t.is(fetchCount, 1, 'fetches after delay');
-
-  t.end();
+  expect(fetchCount, 'fetches after delay').toBe(1);
 });
-
-test('RangeRequestScheduler#abort before flush rejects one child request', async t => {
+test('RangeRequestScheduler#abort before flush rejects one child request', async () => {
   const scheduler = new RangeRequestScheduler({batchDelayMs: 20});
   const abortController = new AbortController();
   const fetchRange = async (offset: number, length: number) =>
     BYTES.buffer.slice(offset, offset + length);
-
   const request = scheduler.scheduleRequest({
     sourceId: 'source',
     offset: 0,
@@ -240,9 +200,6 @@ test('RangeRequestScheduler#abort before flush rejects one child request', async
     signal: abortController.signal,
     fetchRange
   });
-
   abortController.abort();
-  await t.rejects(request, /aborted/i, 'rejects aborted request');
-
-  t.end();
+  await expect(request, 'rejects aborted request').rejects.toThrow(/aborted/i);
 });

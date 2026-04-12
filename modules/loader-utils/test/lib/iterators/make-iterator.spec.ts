@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile, makeIterator} from '@loaders.gl/core';
 import {concatenateArrayBuffersAsync, makeTextEncoderIterator} from '@loaders.gl/loader-utils';
-
 const setTimeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
-
 async function* asyncTexts() {
   await setTimeoutPromise(10);
   yield 'line 1\nline';
@@ -16,69 +10,45 @@ async function* asyncTexts() {
   await setTimeoutPromise(10);
   yield 'line 4';
 }
-
 function asyncArrayBuffers() {
   return makeTextEncoderIterator(asyncTexts());
 }
-
-test('concatenateArrayBuffersAsync', async t => {
+test('concatenateArrayBuffersAsync', async () => {
   const RESULT = 'line 1\nline 2\nline 3\nline 4';
-
   // const text = await concatenateArrayBuffersAsync(asyncTexts());
   // t.is(text, RESULT, 'returns concatenated string');
-
   const arraybuffer = await concatenateArrayBuffersAsync(asyncArrayBuffers());
-  t.ok(arraybuffer instanceof ArrayBuffer, 'returns ArrayBuffer');
-  t.deepEqual(
-    arraybuffer,
-    new TextEncoder().encode(RESULT).buffer,
-    'returns concatenated ArrayBuffer'
+  expect(arraybuffer instanceof ArrayBuffer, 'returns ArrayBuffer').toBeTruthy();
+  expect(arraybuffer, 'returns concatenated ArrayBuffer').toEqual(
+    new TextEncoder().encode(RESULT).buffer
   );
-
-  t.end();
 });
-
-test('makeIterator#string', async t => {
+test('makeIterator#string', async () => {
   const bigString = '123456';
   const results = ['12', '34', '56'];
-
   const iterator = makeIterator(bigString, {chunkSize: 2});
-
   for await (const chunk of iterator) {
-    t.equal(new TextDecoder().decode(chunk), results.shift());
+    expect(new TextDecoder().decode(chunk)).toBe(results.shift());
   }
-
-  t.end();
 });
-
-test('makeIterator#arrayBuffer', async t => {
+test('makeIterator#arrayBuffer', async () => {
   const bigString = new ArrayBuffer(6);
-
   const iterator = makeIterator(bigString, {chunkSize: 2});
-
   for await (const chunk of iterator) {
-    t.ok(chunk instanceof ArrayBuffer);
-    t.equal(chunk.byteLength, 2);
+    expect(chunk instanceof ArrayBuffer).toBeTruthy();
+    expect(chunk.byteLength).toBe(2);
   }
-
-  t.end();
 });
-
 const DATA_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
-
-test('makeIterator(fetch)#async iterate', async t => {
+test('makeIterator(fetch)#async iterate', async () => {
   const response = await fetchFile(DATA_URL);
   const stream = response.body;
-  t.ok(stream);
-
+  expect(stream).toBeTruthy();
   if (stream) {
     const asyncIterator = makeIterator(stream);
-    t.ok(asyncIterator);
-
+    expect(asyncIterator).toBeTruthy();
     for await (const arrayBuffer of asyncIterator) {
-      t.ok(arrayBuffer, `Got chunk from stream ${arrayBuffer.byteLength}`);
+      expect(arrayBuffer, `Got chunk from stream ${arrayBuffer.byteLength}`).toBeTruthy();
     }
   }
-
-  t.end();
 });

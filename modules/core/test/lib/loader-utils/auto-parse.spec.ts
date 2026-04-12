@@ -1,18 +1,10 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {load} from '@loaders.gl/core';
 import {OBJLoader} from '@loaders.gl/obj';
 import {KMLLoader} from '@loaders.gl/kml';
-
 const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
-
 const LOADERS = [OBJLoader, KMLLoader];
-
-test('parseSync#autoParse', async t => {
+test('parseSync#autoParse', async () => {
   const data = await load(KML_URL, LOADERS);
-  t.ok(data);
-  t.end();
+  expect(data).toBeTruthy();
 });

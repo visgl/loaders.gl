@@ -25,4 +25,4 @@ import './lib/sources/data-source.spec';
 
 import './lib/readable-file/readable-file.spec';
 
-import './lib/worker-loader-utils/parse-with-worker.spec';
+import './lib/worker-loader-utils/parse-with-worker.browser.spec';
