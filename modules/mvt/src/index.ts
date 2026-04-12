@@ -8,6 +8,19 @@ export {TileJSONLoader} from './tilejson-loader';
 export type {TileJSONLoaderOptions} from './tilejson-loader';
 export type {TileJSON} from './lib/parse-tilejson';
 
+// MapStyleLoader
+
+export {MapStyleLoader} from './map-style-loader';
+export {MapStyleSchema, ResolvedMapStyleSchema} from './map-style-schema';
+export {
+  resolveMapStyle,
+  type MapStyle,
+  type MapStyleLayer,
+  type MapStyleLoadOptions,
+  type MapStyleSource,
+  type ResolvedMapStyle
+} from './map-style';
+
 // MVTLoader
 
 export {MVTLoader, MVTWorkerLoader} from './mvt-loader';
