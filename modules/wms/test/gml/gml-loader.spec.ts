@@ -6,7 +6,7 @@
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {GML_V3_TESTS} from '@loaders.gl/wms/test/data/gml/v3/tests';
 // import {validateLoader} from 'test/common/conformance';
 
@@ -46,22 +46,21 @@ const VALID_TEST = {
   'v3/repeated-name.xml': true
 };
 
-test('GMLLoader#parse', async t => {
+test('GMLLoader#parse', async () => {
   for (const [fileName, xmlText] of Object.entries(GML_V3_TESTS)) {
     if (VALID_TEST[fileName]) {
       const geojson = (await parse(xmlText, GMLLoader)) as GeoJSON;
 
-      t.equal(typeof geojson, 'object', `Parsed ${fileName}`);
+      expect(typeof geojson, `Parsed ${fileName}`).toBe('object');
       // t.comment(JSON.stringify(geojson));
     }
   }
 
-  t.end();
+  
 });
 
 /*
 function test_boundedBy(t) {
-    t.plan(5);
     
     var doc = readXML("v3/topp-states-wfs.xml");
     var format = new OpenLayers.Format.GML.v3({
@@ -73,7 +72,7 @@ function test_boundedBy(t) {
     var features = format.read(doc.documentElement);
     var bounds = features[0].bounds;
 
-    t.ok(bounds instanceof OpenLayers.Bounds, "feature given a bounds");
+    expect(bounds instanceof OpenLayers.Bounds, "feature given a bounds").toBeTruthy();
     t.eq(bounds.left.toFixed(2), "-91.52", "bounds left correct");
     t.eq(bounds.bottom.toFixed(2), "36.99", "bounds bottom correct");
     t.eq(bounds.right.toFixed(2), "-87.51", "bounds right correct");
@@ -81,7 +80,6 @@ function test_boundedBy(t) {
 }
 
 function test_read(t) {
-    t.plan(8);
     var doc = readXML("v3/topp-states-wfs.xml");
     var format = new OpenLayers.Format.GML.v3({
         featureType: "states",
@@ -105,7 +103,6 @@ function test_read(t) {
 }
 
 function test_emptyAttribute(t) {
-    t.plan(4);
     var str =
         '<gml:featureMembers xmlns:gml="http://www.opengis.net/gml">' +
             '<topp:gnis_pop gml:id="gnis_pop.148604" xmlns:topp="http://www.openplans.org/topp">' +
@@ -139,7 +136,6 @@ function test_emptyAttribute(t) {
 
 function test_repeatedName(t) {
     // test that if an attribute name matches the featureType, all goes well
-    t.plan(2);
     var doc = readXML("v3/repeated-name.xml");
     var format = new OpenLayers.Format.GML.v3({
         featureType: "zoning",
@@ -156,7 +152,6 @@ function test_repeatedName(t) {
 }
 
 function test_write(t) {
-    t.plan(1);
     var doc = readXML("v3/topp-states-gml.xml");
     var format = new OpenLayers.Format.GML.v3({
         featureType: "states",

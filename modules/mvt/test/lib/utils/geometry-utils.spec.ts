@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // import type {BinaryFeatureCollection} from '@loaders.gl/schema';
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {classifyRingsFlat} from '@loaders.gl/mvt/lib/utils/geometry-utils';
 
 const loadJSON = async (relativePath: string) => {
@@ -23,38 +23,38 @@ const [ringsSingleRing, ringsRingAndHole, ringsTwoRings, ringsZeroSizeHole] = aw
   loadJSON('../../data/rings/rings_zero_size_hole.json')
 ]);
 
-test('classifyRingsFlat#single ring', async t => {
+test('classifyRingsFlat#single ring', async () => {
   const geom = {...ringsSingleRing};
   const classified = classifyRingsFlat(geom);
-  t.deepEqual(classified.areas, [[-0.02624368667602539]]);
-  t.deepEqual(classified.indices, [[0]]);
-  t.end();
+  expect(classified.areas).toEqual([[-0.02624368667602539]]);
+  expect(classified.indices).toEqual([[0]]);
+  
 });
 
-test('classifyRingsFlat#ring and hole', async t => {
+test('classifyRingsFlat#ring and hole', async () => {
   const geom = {...ringsRingAndHole};
   const classified = classifyRingsFlat(geom);
-  t.deepEqual(classified.areas, [[-0.02624368667602539, 0.001363515853881836]]);
-  t.deepEqual(classified.indices, [[0, 10]]);
-  t.end();
+  expect(classified.areas, 0.001363515853881836]]).toEqual([[-0.02624368667602539);
+  expect(classified.indices, 10]]).toEqual([[0);
+  
 });
 
-test('classifyRingsFlat#two rings', async t => {
+test('classifyRingsFlat#two rings', async () => {
   const geom = {...ringsTwoRings};
   const classified = classifyRingsFlat(geom);
-  t.deepEqual(classified.areas, [[-0.02624368667602539], [-0.001363515853881836]]);
-  t.deepEqual(classified.indices, [[0], [10]]);
-  t.end();
+  expect(classified.areas, [-0.001363515853881836]]).toEqual([[-0.02624368667602539]);
+  expect(classified.indices, [10]]).toEqual([[0]);
+  
 });
 
-test('classifyRingsFlat#zero sized hole', async t => {
+test('classifyRingsFlat#zero sized hole', async () => {
   // In addition to checking the result,
   // verify that the data array is shortened
   const geom = {...ringsZeroSizeHole};
-  t.equal(geom.data.length, 20);
+  expect(geom.data.length).toBe(20);
   const classified = classifyRingsFlat(geom);
-  t.deepEqual(classified.areas, [[-0.44582176208496094]]);
-  t.deepEqual(classified.indices, [[0]]);
-  t.equal(classified.data.length, 12);
-  t.end();
+  expect(classified.areas).toEqual([[-0.44582176208496094]]);
+  expect(classified.indices).toEqual([[0]]);
+  expect(classified.data.length).toBe(12);
+  
 });

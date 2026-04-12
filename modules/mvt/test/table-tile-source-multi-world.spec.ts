@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {TableTileSource} from '@loaders.gl/mvt';
 import type {GeoJSONTable, Feature} from '@loaders.gl/schema';
 
@@ -33,31 +33,31 @@ function makeGeoJSONTable(feature: Feature): GeoJSONTable {
   };
 }
 
-test('GeoJSONVT#handle point only in the rightside world', async t => {
+test('GeoJSONVT#handle point only in the rightside world', async () => {
   try {
     const source = new TableTileSource(makeGeoJSONTable(rightPoint));
     await source.ready;
 
-    t.equal(source.tiles[0].features[0].geometry[0], 1);
-    t.equal(source.tiles[0].features[0].geometry[1], 0.5);
+    expect(source.tiles[0].features[0].geometry[0]).toBe(1);
+    expect(source.tiles[0].features[0].geometry[1]).toBe(0.5);
   } catch (err) {
     t.ifError(err);
   }
-  t.end();
+  
 });
 
-test('GeoJSONVT#handle point only in the leftside world', async t => {
+test('GeoJSONVT#handle point only in the leftside world', async () => {
   try {
     const source = new TableTileSource(makeGeoJSONTable(leftPoint));
-    t.equal(source.tiles[0].features[0].geometry[0], 0);
-    t.equal(source.tiles[0].features[0].geometry[1], 0.5);
+    expect(source.tiles[0].features[0].geometry[0]).toBe(0);
+    expect(source.tiles[0].features[0].geometry[1]).toBe(0.5);
   } catch (err) {
     t.ifError(err);
   }
-  t.end();
+  
 });
 
-test('GeoJSONVT#handle points in the leftside world and the rightside world', async t => {
+test('GeoJSONVT#handle points in the leftside world and the rightside world', async () => {
   try {
     const source = new TableTileSource({
       shape: 'geojson-table',
@@ -65,13 +65,13 @@ test('GeoJSONVT#handle points in the leftside world and the rightside world', as
       features: [leftPoint, rightPoint]
     });
 
-    t.equal(source.tiles[0].features[0].geometry[0], 0);
-    t.equal(source.tiles[0].features[0].geometry[1], 0.5);
+    expect(source.tiles[0].features[0].geometry[0]).toBe(0);
+    expect(source.tiles[0].features[0].geometry[1]).toBe(0.5);
 
-    t.equal(source.tiles[0].features[1].geometry[0], 1);
-    t.equal(source.tiles[0].features[1].geometry[1], 0.5);
+    expect(source.tiles[0].features[1].geometry[0]).toBe(1);
+    expect(source.tiles[0].features[1].geometry[1]).toBe(0.5);
   } catch (err) {
     t.ifError(err);
   }
-  t.end();
+  
 });

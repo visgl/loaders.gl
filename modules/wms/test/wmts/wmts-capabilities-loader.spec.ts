@@ -9,7 +9,7 @@
 // See README.md in `./data` directory for full license text copy.
 /*
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
 
 import {_WMTSCapabilitiesLoader as WMTSCapabilitiesLoader, _WMTSCapabilities as WMTSCapabilities} from '@loaders.gl/wms';
@@ -24,9 +24,9 @@ test('WMTSCapabilitiesLoader#response.xml', async (t) => {
     WMTSCapabilitiesLoader
   )) as WMTSCapabilities;
 
-  t.equal(typeof capabilities, 'object', 'parsed');
+  expect(typeof capabilities, 'parsed').toBe('object');
 
-  t.end();
+  
 });
 
 test.skip('WMTSCapabilitiesLoader#response.xml#OWS', async (t) => {
@@ -55,7 +55,7 @@ test.skip('WMTSCapabilitiesLoader#response.xml#OWS', async (t) => {
 
   // ows:ServiceProvider
   const serviceProvider = capabilities.serviceProvider;
-  t.equal(serviceProvider.providerName, 'MiraMon', 'ows:ServiceProvider providerName is correct');
+  expect(serviceProvider.providerName, 'ows:ServiceProvider providerName is correct').toBe('MiraMon');
   t.equal(
     serviceProvider.providerSite.href,
     'http://www.creaf.uab.es/miramon',
@@ -125,7 +125,7 @@ test.skip('WMTSCapabilitiesLoader#response.xml#OWS', async (t) => {
   //   'ows:OperationsMetadata GetTile url is correct'
   // );
 
-  t.end();
+  
 });
 
 // eslint-disable-next-line max-statements
@@ -142,38 +142,38 @@ test.skip('WMTSCapabilitiesLoader#response.xml#layers', async (t) => {
   const contents = capabilities.contents;
 
   const numOfLayers = contents.layers.length;
-  t.equal(numOfLayers, 1, 'correct count of layers');
+  expect(numOfLayers, 'correct count of layers').toBe(1);
 
   const layer = contents.layers[0];
-  t.equal(layer.abstract, 'Coastline/shorelines (BA010)', 'layer abstract is correct');
-  t.equal(layer.identifier, 'coastlines', 'layer identifier is correct');
-  t.equal(layer.title, 'Coastlines', 'layer title is correct');
+  expect(layer.abstract, 'layer abstract is correct').toBe('Coastline/shorelines (BA010)');
+  expect(layer.identifier, 'layer identifier is correct').toBe('coastlines');
+  expect(layer.title, 'layer title is correct').toBe('Coastlines');
 
   const numOfFormats = layer.formats.length;
-  t.equal(numOfFormats, 2, 'correct count of formats');
-  t.equal(layer.formats[0], 'image/png', 'format image/png is correct');
-  t.equal(layer.formats[1], 'image/gif', 'format image/gif is correct');
+  expect(numOfFormats, 'correct count of formats').toBe(2);
+  expect(layer.formats[0], 'format image/png is correct').toBe('image/png');
+  expect(layer.formats[1], 'format image/gif is correct').toBe('image/gif');
 
   const numOfStyles = layer.styles.length;
-  t.equal(numOfStyles, 2, 'correct count of styles');
-  t.equal(layer.styles[0].identifier, 'DarkBlue', 'style 0 identifier is correct');
-  t.equal(layer.styles[0].isDefault, 'true', 'style 0 isDefault is correct');
-  t.equal(layer.styles[0].title, 'Dark Blue', 'style 0 title is correct');
-  t.equal(layer.styles[1].identifier, 'thickAndRed', 'style 1 identifier is correct');
-  t.ok(!layer.styles[1].isDefault, 'style 1 isDefault is correct');
-  t.equal(layer.styles[1].title, 'Thick And Red', 'style 1 title is correct');
-  // t.equal(layer.styles[1].abstract, "Specify this style if you want your maps to have thick red coastlines. ", "style 1 abstract is correct");
+  expect(numOfStyles, 'correct count of styles').toBe(2);
+  expect(layer.styles[0].identifier, 'style 0 identifier is correct').toBe('DarkBlue');
+  expect(layer.styles[0].isDefault, 'style 0 isDefault is correct').toBe('true');
+  expect(layer.styles[0].title, 'style 0 title is correct').toBe('Dark Blue');
+  expect(layer.styles[1].identifier, 'style 1 identifier is correct').toBe('thickAndRed');
+  expect(!layer.styles[1].isDefault, 'style 1 isDefault is correct').toBeTruthy();
+  expect(layer.styles[1].title, 'style 1 title is correct').toBe('Thick And Red');
+  // expect(layer.styles[1].abstract, "style 1 abstract is correct").toBe("Specify this style if you want your maps to have thick red coastlines. ");
 
-  t.equal(layer.tileMatrixSetLinks.length, 1, 'correct count of tileMatrixSetLinks');
-  t.equal(layer.tileMatrixSetLinks[0].tileMatrixSet, 'BigWorld', 'tileMatrixSet is correct');
+  expect(layer.tileMatrixSetLinks.length, 'correct count of tileMatrixSetLinks').toBe(1);
+  expect(layer.tileMatrixSetLinks[0].tileMatrixSet, 'tileMatrixSet is correct').toBe('BigWorld');
 
   const wgs84Bbox = layer.bounds;
-  t.equal(wgs84Bbox.left, -180.0, 'wgs84BoundingBox left is correct');
-  t.equal(wgs84Bbox.right, 180.0, 'wgs84BoundingBox right is correct');
-  t.equal(wgs84Bbox.bottom, -90.0, 'wgs84BoundingBox bottom is correct');
-  t.equal(wgs84Bbox.top, 90.0, 'wgs84BoundingBox top is correct');
+  expect(wgs84Bbox.left, 'wgs84BoundingBox left is correct').toBe(-180.0);
+  expect(wgs84Bbox.right, 'wgs84BoundingBox right is correct').toBe(180.0);
+  expect(wgs84Bbox.bottom, 'wgs84BoundingBox bottom is correct').toBe(-90.0);
+  expect(wgs84Bbox.top, 'wgs84BoundingBox top is correct').toBe(90.0);
 
-  t.end();
+  
 });
 
 // eslint-disable-next-line max-statements
@@ -184,44 +184,44 @@ test.skip('WMTSCapabilitiesLoader#response.xml#test_tileMatrixSets', async (t) =
   )) as WMTSCapabilities;
 
   const tileMatrixSets = capabilities.contents.tileMatrixSets;
-  t.ok(tileMatrixSets.BigWorld, 'tileMatrixSets \'BigWorld\' found');
+  expect(tileMatrixSets.BigWorld, 'tileMatrixSets \'BigWorld\' found').toBeTruthy();
   const bigWorld = tileMatrixSets.BigWorld;
-  t.equal(bigWorld.identifier, 'BigWorld', 'tileMatrixSets identifier is correct');
-  t.equal(bigWorld.matrixIds.length, 2, 'tileMatrix count is correct');
-  t.equal(bigWorld.matrixIds[0].identifier, '1e6', 'tileMatrix 0 identifier is correct');
-  t.equal(bigWorld.matrixIds[0].matrixHeight, 50000, 'tileMatrix 0 matrixHeight is correct');
-  t.equal(bigWorld.matrixIds[0].matrixWidth, 60000, 'tileMatrix 0 matrixWidth is correct');
+  expect(bigWorld.identifier, 'tileMatrixSets identifier is correct').toBe('BigWorld');
+  expect(bigWorld.matrixIds.length, 'tileMatrix count is correct').toBe(2);
+  expect(bigWorld.matrixIds[0].identifier, 'tileMatrix 0 identifier is correct').toBe('1e6');
+  expect(bigWorld.matrixIds[0].matrixHeight, 'tileMatrix 0 matrixHeight is correct').toBe(50000);
+  expect(bigWorld.matrixIds[0].matrixWidth, 'tileMatrix 0 matrixWidth is correct').toBe(60000);
   t.equal(
     bigWorld.matrixIds[0].scaleDenominator,
     1000000,
     'tileMatrix 0 scaleDenominator is correct'
   );
-  t.equal(bigWorld.matrixIds[0].tileWidth, 256, 'tileMatrix 0 tileWidth is correct');
-  t.equal(bigWorld.matrixIds[0].tileHeight, 256, 'tileMatrix 0 tileHeight is correct');
+  expect(bigWorld.matrixIds[0].tileWidth, 'tileMatrix 0 tileWidth is correct').toBe(256);
+  expect(bigWorld.matrixIds[0].tileHeight, 'tileMatrix 0 tileHeight is correct').toBe(256);
   t.equal(
     bigWorld.matrixIds[0].topLeftCorner.lon,
     -180,
     'tileMatrix 0 topLeftCorner.lon is correct'
   );
-  t.equal(bigWorld.matrixIds[0].topLeftCorner.lat, 84, 'tileMatrix 0 topLeftCorner.lat is correct');
+  expect(bigWorld.matrixIds[0].topLeftCorner.lat, 'tileMatrix 0 topLeftCorner.lat is correct').toBe(84);
 
-  t.equal(bigWorld.matrixIds[1].identifier, '2.5e6', 'tileMatrix 1 identifier is correct');
-  t.equal(bigWorld.matrixIds[1].matrixHeight, 7000, 'tileMatrix 1 matrixHeight is correct');
-  t.equal(bigWorld.matrixIds[1].matrixWidth, 9000, 'tileMatrix 1 matrixWidth is correct');
+  expect(bigWorld.matrixIds[1].identifier, 'tileMatrix 1 identifier is correct').toBe('2.5e6');
+  expect(bigWorld.matrixIds[1].matrixHeight, 'tileMatrix 1 matrixHeight is correct').toBe(7000);
+  expect(bigWorld.matrixIds[1].matrixWidth, 'tileMatrix 1 matrixWidth is correct').toBe(9000);
   t.equal(
     bigWorld.matrixIds[1].scaleDenominator,
     2500000,
     'tileMatrix 1 scaleDenominator is correct'
   );
-  t.equal(bigWorld.matrixIds[1].tileWidth, 256, 'tileMatrix 1 tileWidth is correct');
-  t.equal(bigWorld.matrixIds[1].tileHeight, 256, 'tileMatrix 1 tileHeight is correct');
+  expect(bigWorld.matrixIds[1].tileWidth, 'tileMatrix 1 tileWidth is correct').toBe(256);
+  expect(bigWorld.matrixIds[1].tileHeight, 'tileMatrix 1 tileHeight is correct').toBe(256);
   t.equal(
     bigWorld.matrixIds[1].topLeftCorner.lon,
     -180,
     'tileMatrix 1 topLeftCorner.lon is correct'
   );
-  t.equal(bigWorld.matrixIds[1].topLeftCorner.lat, 84, 'tileMatrix 1 topLeftCorner.lat is correct');
+  expect(bigWorld.matrixIds[1].topLeftCorner.lat, 'tileMatrix 1 topLeftCorner.lat is correct').toBe(84);
 
-  t.end();
+  
 });
 */

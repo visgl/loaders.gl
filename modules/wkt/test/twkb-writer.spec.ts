@@ -2,66 +2,58 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-/**
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile, encodeSync} from '@loaders.gl/core';
-import {WKBWriter} from '@loaders.gl/wkt';
+import {TWKBWriter} from '@loaders.gl/wkt';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
-const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkb-testdata2d.json';
-const WKB_2D_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkb-testdata2d-nan.json';
-const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkb-testdataZ.json';
-const WKB_Z_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkb-testdataZ-nan.json';
+const TWKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/twkb-testdata2d.json';
+const TWKB_2D_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkt/twkb-testdata2d-nan.json';
+const TWKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/twkb-testdataZ.json';
+const TWKB_Z_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkt/twkb-testdataZ-nan.json';
 
-test('TWKBWriter#2D', async (t) => {
-  const response = await fetchFile(WKB_2D_TEST_CASES);
-  const TEST_CASES = parseTestCases(await response.json());
+// These legacy writer cases were previously commented out. Keep them skipped during the
+// syntax migration so this change does not expand test surface area.
+test.skip('TWKBWriter#2D', async () => {
+  const response = await fetchFile(TWKB_2D_TEST_CASES);
+  const testCases = parseTestCases(await response.json());
 
-  for (const testCase of Object.values(TEST_CASES)) {
-    const {geoJSON, wkb} = testCase;
-    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: false, hasM: false}});
-    t.deepEqual(encoded, wkb);
+  for (const testCase of Object.values(testCases)) {
+    const {geoJSON, twkb} = testCase;
+    const encoded = encodeSync(geoJSON, TWKBWriter, {wkb: {hasZ: false, hasM: false}});
+    expect(encoded).toEqual(twkb);
   }
-
-  t.end();
 });
 
-test('TWKBWriter#2D NaN', async (t) => {
-  const response = await fetchFile(WKB_2D_NAN_TEST_CASES);
-  const TEST_CASES = parseTestCases(await response.json());
+test.skip('TWKBWriter#2D NaN', async () => {
+  const response = await fetchFile(TWKB_2D_NAN_TEST_CASES);
+  const testCases = parseTestCases(await response.json());
 
-  for (const testCase of Object.values(TEST_CASES)) {
-    const {geoJSON, wkb} = testCase;
-    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: false, hasM: false}});
-    t.deepEqual(encoded, wkb);
+  for (const testCase of Object.values(testCases)) {
+    const {geoJSON, twkb} = testCase;
+    const encoded = encodeSync(geoJSON, TWKBWriter, {wkb: {hasZ: false, hasM: false}});
+    expect(encoded).toEqual(twkb);
   }
-
-  t.end();
 });
 
-test('TWKBWriter#Z', async (t) => {
-  const response = await fetchFile(WKB_Z_TEST_CASES);
-  const TEST_CASES = parseTestCases(await response.json());
+test.skip('TWKBWriter#Z', async () => {
+  const response = await fetchFile(TWKB_Z_TEST_CASES);
+  const testCases = parseTestCases(await response.json());
 
-  for (const testCase of Object.values(TEST_CASES)) {
-    const {geoJSON, wkb} = testCase;
-    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: true, hasM: false}});
-    t.deepEqual(encoded, wkb);
+  for (const testCase of Object.values(testCases)) {
+    const {geoJSON, twkb} = testCase;
+    const encoded = encodeSync(geoJSON, TWKBWriter, {wkb: {hasZ: true, hasM: false}});
+    expect(encoded).toEqual(twkb);
   }
-
-  t.end();
 });
 
-test('TWKBWriter#Z NaN', async (t) => {
-  const response = await fetchFile(WKB_Z_NAN_TEST_CASES);
-  const TEST_CASES = parseTestCases(await response.json());
+test.skip('TWKBWriter#Z NaN', async () => {
+  const response = await fetchFile(TWKB_Z_NAN_TEST_CASES);
+  const testCases = parseTestCases(await response.json());
 
-  for (const testCase of Object.values(TEST_CASES)) {
-    const {geoJSON, wkb} = testCase;
-    const encoded = encodeSync(geoJSON, WKBWriter, {wkb: {hasZ: true, hasM: false}});
-    t.deepEqual(encoded, wkb);
+  for (const testCase of Object.values(testCases)) {
+    const {geoJSON, twkb} = testCase;
+    const encoded = encodeSync(geoJSON, TWKBWriter, {wkb: {hasZ: true, hasM: false}});
+    expect(encoded).toEqual(twkb);
   }
-
-  t.end();
 });
- */

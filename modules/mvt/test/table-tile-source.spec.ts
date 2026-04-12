@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {TableTileSource} from '@loaders.gl/mvt';
 import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
@@ -27,7 +27,7 @@ const square = [
   }
 ];
 
-test('TableTileSource#getTile#us-states.json', async t => {
+test('TableTileSource#getTile#us-states.json', async () => {
   const geojson = await loadGeoJSONTable('us-states.json');
   const source = TableTileSource.createDataSource(geojson, {table: {coordinates: 'wgs84'}}); // , debug: 2});
   await source.ready;
@@ -36,33 +36,33 @@ test('TableTileSource#getTile#us-states.json', async t => {
 
   let tile = source.getProtoTile({z: 7, x: 37, y: 48});
   const expected = await loadGeoJSONTable('us-states-z7-37-48.json');
-  t.same(tile?.protoFeatures, expected.features, 'z7-37-48');
+  expect(tile?.protoFeatures, 'z7-37-48').toEqual(expected.features);
 
   tile = source.getProtoTile({z: 9, x: 148, y: 192});
-  t.same(tile?.protoFeatures, square, 'z9-148-192 (clipped square)');
+  expect(tile?.protoFeatures, 'z9-148-192 (clipped square)').toEqual(square);
 
   // t.same(source.getProtoTile({z: 11, x: 592, y: 768})?.features, square, 'z11-592-768 (clipped square)');
 
   // Check non-existing tiles (no geometry in these tile indices => no tile generated)
 
   tile = source.getProtoTile({z: 11, x: 800, y: 400});
-  t.equal(tile, null, 'non-existing tile');
+  expect(tile, 'non-existing tile').toBe(null);
 
   tile = source.getProtoTile({z: -5, x: 123.25, y: 400.25});
-  t.equal(tile, null, 'invalid tile');
+  expect(tile, 'invalid tile').toBe(null);
 
   tile = source.getProtoTile({z: 25, x: 200, y: 200});
-  t.equal(tile, null, 'invalid tile');
+  expect(tile, 'invalid tile').toBe(null);
 
   // Check total number of tiles generated
 
   const total = source.stats.get('total').count;
-  t.equal(total, 37);
+  expect(total).toBe(37);
 
-  t.end();
+  
 });
 
-test('TableTileSource#getTile#unbuffered tile left/right edges', async t => {
+test('TableTileSource#getTile#unbuffered tile left/right edges', async () => {
   const geojson = makeGeoJSONTable({
     type: 'LineString',
     coordinates: [
@@ -79,9 +79,9 @@ test('TableTileSource#getTile#unbuffered tile left/right edges', async t => {
   await source.ready;
 
   let tile = source.getProtoTile({z: 2, x: 1, y: 1});
-  t.same(tile, null);
+  expect(tile).toBe(null);
   tile = source.getProtoTile({z: 2, x: 2, y: 1});
-  t.same(tile?.protoFeatures, [
+  expect(tile?.protoFeatures).toEqual([
     {
       geometry: [
         [
@@ -93,10 +93,9 @@ test('TableTileSource#getTile#unbuffered tile left/right edges', async t => {
       tags: null
     }
   ]);
-  t.end();
 });
 
-test('TableTileSource#getTile#unbuffered tile top/bottom edges', async t => {
+test('TableTileSource#getTile#unbuffered tile top/bottom edges', async () => {
   const geojson = makeGeoJSONTable({
     type: 'LineString',
     coordinates: [
@@ -112,7 +111,7 @@ test('TableTileSource#getTile#unbuffered tile top/bottom edges', async t => {
   });
   await source.ready;
 
-  t.same(source.getProtoTile({z: 2, x: 1, y: 0})?.protoFeatures, [
+  expect(source.getProtoTile({z: 2, x: 1, y: 0})?.protoFeatures).toEqual([
     {
       geometry: [
         [
@@ -124,11 +123,10 @@ test('TableTileSource#getTile#unbuffered tile top/bottom edges', async t => {
       tags: null
     }
   ]);
-  t.same(source.getProtoTile({z: 2, x: 1, y: 1})?.protoFeatures, []);
-  t.end();
+  expect(source.getProtoTile({z: 2, x: 1, y: 1})?.protoFeatures).toEqual([]);
 });
 
-test('TableTileSource#getTile#polygon clipping on the boundary', async t => {
+test('TableTileSource#getTile#polygon clipping on the boundary', async () => {
   const geojson = makeGeoJSONTable({
     type: 'Polygon',
     coordinates: [
@@ -149,7 +147,7 @@ test('TableTileSource#getTile#polygon clipping on the boundary', async t => {
   });
   await source.ready;
 
-  t.same(source.getProtoTile({z: 5, x: 19, y: 9})?.protoFeatures, [
+  expect(source.getProtoTile({z: 5, x: 19, y: 9})?.protoFeatures).toEqual([
     {
       geometry: [
         [
@@ -164,8 +162,6 @@ test('TableTileSource#getTile#polygon clipping on the boundary', async t => {
       tags: null
     }
   ]);
-
-  t.end();
 });
 
 // HELPERS

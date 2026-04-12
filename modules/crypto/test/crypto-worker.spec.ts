@@ -2,77 +2,72 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {CryptoWorker, CryptoJSWorker} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
 
-test('CryptoWorker', async t => {
+test('CryptoWorker', async () => {
   const {binaryData} = getBinaryData();
 
-  t.equal(binaryData.byteLength, 100000, 'Length correct');
+  expect(binaryData.byteLength, 'Length correct').toBe(100000);
 
   let hash = await processOnWorker(CryptoWorker, binaryData.slice(0), {
     operation: 'crc32',
     _workerType: 'test'
   });
 
-  t.equal(hash, 'khuskQ==', 'CRC32 Hash correct');
+  expect(hash, 'CRC32 Hash correct').toBe('khuskQ==');
 
   hash = await processOnWorker(CryptoWorker, binaryData.slice(0), {
     operation: 'crc32c',
     workerLocation: 'test'
   });
 
-  t.equal(hash, 'PDGE8A==', 'CRC32c Hash correct');
+  expect(hash, 'CRC32c Hash correct').toBe('PDGE8A==');
 
   hash = await processOnWorker(CryptoWorker, binaryData.slice(0), {
     operation: 'md5',
     _workerType: 'test'
   });
 
-  t.equal(hash, 'YnxTb+lyen1CsNkpmLv+qA==', 'MD5 Hash correct');
+  expect(hash, 'MD5 Hash correct').toBe('YnxTb+lyen1CsNkpmLv+qA==');
 
   // Destroy all workers in NodeJS
   if (!isBrowser) {
     const workerFarm = WorkerFarm.getWorkerFarm({});
     workerFarm.destroy();
   }
-
-  t.end();
 });
 
 // CryptoJSWorker is disabled
-test.skip('CryptoJSWorker', async t => {
+test.skip('CryptoJSWorker', async () => {
   if (!isBrowser) {
-    t.end();
     return;
   }
 
   const {binaryData} = getBinaryData();
 
-  t.equal(binaryData.byteLength, 100000, 'Length correct');
+  expect(binaryData.byteLength, 'Length correct').toBe(100000);
 
   let hash = await processOnWorker(CryptoJSWorker, binaryData.slice(0), {
     operation: 'crc32',
     _workerType: 'test'
   });
 
-  t.equal(hash, 'beRTbw==', 'CRC32 Hash correct');
+  expect(hash, 'CRC32 Hash correct').toBe('beRTbw==');
 
   hash = await processOnWorker(CryptoJSWorker, binaryData.slice(0), {
     operation: 'crc32c',
     _workerType: 'test'
   });
 
-  t.equal(hash, '==', 'CRC32c Hash correct');
+  expect(hash, 'CRC32c Hash correct').toBe('==');
 
   hash = await processOnWorker(CryptoJSWorker, binaryData.slice(0), {
     operation: 'md5',
     _workerType: 'test'
   });
 
-  t.equal(hash, '==', 'CRC32c Hash correct');
-
-  t.end();
+  expect(hash, 'CRC32c Hash correct').toBe('==');
 });

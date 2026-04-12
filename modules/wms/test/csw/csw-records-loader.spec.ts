@@ -6,7 +6,7 @@
 // under OpenLayers license (only used for test cases)
 // See README.md in `./data` directory for full license text copy.
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 // import {validateLoader} from 'test/common/conformance';
 
 import {CSWRecordsLoader} from '@loaders.gl/wms';
@@ -54,7 +54,7 @@ const CSW_RESPONSE_2_0_2 =
   '</csw:BriefRecord>' +
   '</csw:SearchResults>' +
   '</csw:GetRecordsResponse>';
-test('CSWGetRecordsLoader', async t => {
+test('CSWGetRecordsLoader', async () => {
   const cswRecords = await parse(CSW_RESPONSE_2_0_2, CSWRecordsLoader);
   // t.comment(JSON.stringify(cswRecords));
 
@@ -63,36 +63,32 @@ test('CSWGetRecordsLoader', async t => {
   const records = cswRecords.records;
 
   // test getRecordsResponse object
-  t.ok(searchStatus, 'object contains SearchStatus property');
-  t.ok(searchResults, 'object contains SearchResults property');
-  t.ok(records, 'object contains records property');
+  expect(searchStatus, 'object contains SearchStatus property').toBeTruthy();
+  expect(searchResults, 'object contains SearchResults property').toBeTruthy();
+  expect(records, 'object contains records property').toBeTruthy();
 
   // test SearchResults attributes
-  t.equal(
+  expect(
     searchResults.numberOfRecordsMatched,
-    10,
     'check value for SearchResults.numberOfRecordsMatched'
-  );
-  t.equal(
+  ).toBe(10);
+  expect(
     searchResults.numberOfRecordsReturned,
-    2,
     'check value for SearchResults.numberOfRecordsReturned'
-  );
-  t.equal(searchResults.elementSet, 'brief', 'check value for SearchResults.elementSet');
-  t.equal(searchResults.nextRecord, 3, 'check value for SearchResults.nextRecord');
+  ).toBe(2);
+  expect(searchResults.elementSet, 'check value for SearchResults.elementSet').toBe('brief');
+  expect(searchResults.nextRecord, 'check value for SearchResults.nextRecord').toBe(3);
 
   // test records
-  t.equal(records.length, 2, 'object contains 10 records');
+  expect(records.length, 'object contains 10 records').toBe(2);
   const testRecord = records[0];
-  // t.equal(testRecord.type, "BriefRecord", "check value for record.type");
-  t.equal(testRecord.title, 'Sample title', 'check value for record.title');
+  // expect(testRecord.type, "check value for record.type").toBe("BriefRecord");
+  expect(testRecord.title, 'check value for record.title').toBe('Sample title');
 
   // test bbox  TODO
-  // t.equal(testRecord.boundingBoxes.length, 2, "object contains 2 BoundingBoxes");
+  // expect(testRecord.boundingBoxes.length, "object contains 2 BoundingBoxes").toBe(2);
   // const bbox = testRecord.boundingBoxes[0];
-  // t.ok(bbox, "object contains BoundingBox properties");
-  // t.equal(bbox.crs, "::Lambert Azimuthal Projection", "check value for BoundingBox.crs");
-  // t.equal(bbox.value, [156, -3, 37, 83], "check value for record.BoundingBox");
-
-  t.end();
+  // expect(bbox, "object contains BoundingBox properties").toBeTruthy();
+  // expect(bbox.crs, "check value for BoundingBox.crs").toBe("::Lambert Azimuthal Projection");
+  // expect(bbox.value, -3, 37, 83], "check value for record.BoundingBox").toBe([156);
 });

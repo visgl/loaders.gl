@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 // import type {BinaryFeatureCollection} from '@loaders.gl/schema';
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {MVTLoader, MVTLoaderOptions} from '@loaders.gl/mvt';
 import {setLoaderOptions, fetchFile, parse, parseSync} from '@loaders.gl/core';
 import {geojsonToBinary, binaryToGeojson} from '@loaders.gl/gis';
@@ -43,12 +43,12 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('Point MVT to local coordinates JSON', async t => {
+test('Point MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
   const geometryJSON = await parse(mvtArrayBuffer, MVTLoader);
-  t.deepEqual(geometryJSON, [
+  expect(geometryJSON).toEqual([
     {
       type: 'Feature',
       geometry: {
@@ -64,16 +64,14 @@ test('Point MVT to local coordinates JSON', async t => {
       }
     }
   ]);
-
-  t.end();
 });
 
-test('Line MVT to local coordinates JSON', async t => {
+test('Line MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
   const geometryJSON = await parse(mvtArrayBuffer, MVTLoader);
-  t.deepEqual(geometryJSON, [
+  expect(geometryJSON).toEqual([
     {
       type: 'Feature',
       geometry: {
@@ -90,21 +88,17 @@ test('Line MVT to local coordinates JSON', async t => {
       }
     }
   ]);
-
-  t.end();
 });
 
-test('Polygon MVT to local coordinates JSON', async t => {
+test('Polygon MVT to local coordinates JSON', async () => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
   const geometryJSON = await parse(mvtArrayBuffer, MVTLoader);
-  t.deepEqual(geometryJSON, decodedPolygonsGeometry);
-
-  t.end();
+  expect(geometryJSON).toEqual(decodedPolygonsGeometry);
 });
 
-test('MVTLoader#Parse Point MVT', async t => {
+test('MVTLoader#Parse Point MVT', async () => {
   for (const binary of [true, false]) {
     const outputFormat = binary ? 'binary' : 'geojson';
     const response = await fetchFile(MVT_POINTS_DATA_URL);
@@ -128,15 +122,14 @@ test('MVTLoader#Parse Point MVT', async t => {
     if (binary) {
       // @ts-ignore
       expected = geojsonToBinary(expected);
-      t.ok(geometry.byteLength > 0);
+      expect(geometry.byteLength > 0).toBeTruthy();
       delete geometry.byteLength;
     }
-    t.deepEqual(geometry, expected, `Parsed Point MVT as ${outputFormat}`);
+    expect(geometry, `Parsed Point MVT as ${outputFormat}`).toEqual(expected);
   }
-  t.end();
 });
 
-test('MVTLoader#Parse Lines MVT', async t => {
+test('MVTLoader#Parse Lines MVT', async () => {
   for (const binary of [true, false]) {
     const outputFormat = binary ? 'binary' : 'geojson';
 
@@ -160,15 +153,14 @@ test('MVTLoader#Parse Lines MVT', async t => {
     if (binary) {
       // @ts-ignore
       expected = geojsonToBinary(expected);
-      t.ok(geometry.byteLength > 0);
+      expect(geometry.byteLength > 0).toBeTruthy();
       delete geometry.byteLength;
     }
-    t.deepEqual(geometry, expected, `Parsed Lines MVT as ${outputFormat}`);
+    expect(geometry, `Parsed Lines MVT as ${outputFormat}`).toEqual(expected);
   }
-  t.end();
 });
 
-test('MVTLoader#Parse Polygons MVT', async t => {
+test('MVTLoader#Parse Polygons MVT', async () => {
   for (const binary of [true, false]) {
     const outputFormat = binary ? 'binary' : 'geojson';
 
@@ -192,15 +184,14 @@ test('MVTLoader#Parse Polygons MVT', async t => {
     if (binary) {
       // @ts-ignore
       expected = geojsonToBinary(expected, {fixRingWinding: false});
-      t.ok(geometry.byteLength > 0);
+      expect(geometry.byteLength > 0).toBeTruthy();
       delete geometry.byteLength;
     }
-    t.deepEqual(geometry, expected, `Parsed Polygons MVT as ${outputFormat}`);
+    expect(geometry, `Parsed Polygons MVT as ${outputFormat}`).toEqual(expected);
   }
-  t.end();
 });
 
-test('Should raise an error when coordinates param is wgs84 and tileIndex is missing', async t => {
+test('Should raise an error when coordinates param is wgs84 and tileIndex is missing', async () => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -208,12 +199,10 @@ test('Should raise an error when coordinates param is wgs84 and tileIndex is mis
     mvt: {coordinates: 'wgs84'}
   };
 
-  t.throws(() => parseSync(mvtArrayBuffer, MVTLoader, loaderOptions));
-
-  t.end();
+  expect(() => parseSync(mvtArrayBuffer, MVTLoader, loaderOptions)).toThrow();
 });
 
-test('Should add layer name to custom property', async t => {
+test('Should add layer name to custom property', async () => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -222,12 +211,12 @@ test('Should add layer name to custom property', async t => {
   };
 
   const geometryJSON = await parse(mvtArrayBuffer, MVTLoader, loaderOptions);
-  t.equals(geometryJSON[0].properties.layerSource, 'layer0');
+  expect(geometryJSON[0].properties.layerSource).toBe('layer0');
 
-  t.end();
+  
 });
 
-test('Should return features from selected layers when layers property is provided', async t => {
+test('Should return features from selected layers when layers property is provided', async () => {
   const response = await fetchFile(MVT_MULTIPLE_LAYERS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
@@ -239,24 +228,21 @@ test('Should return features from selected layers when layers property is provid
   const anyFeatureFromAnotherLayer = geometryJSON.some(
     feature => feature.properties.layerName !== 'layer1'
   );
-  t.false(anyFeatureFromAnotherLayer);
-  t.equals(geometryJSON[0].properties.layerName, 'layer1');
-
-  t.end();
+  expect(anyFeatureFromAnotherLayer).toBe(false);
+  expect(geometryJSON[0].properties.layerName).toBe('layer1');
 });
 
-test('Polygon MVT to local coordinates binary', async t => {
+test('Polygon MVT to local coordinates binary', async () => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
 
   const geometryBinary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
-  t.ok(geometryBinary.byteLength > 0);
+  expect(geometryBinary.byteLength > 0).toBeTruthy();
   delete geometryBinary.byteLength;
 
   // @ts-ignore deduced type of 'Feature' is string...
   const expectedBinary = geojsonToBinary(decodedPolygonsGeometry);
-  t.deepEqual(geometryBinary, expectedBinary);
-  t.end();
+  expect(geometryBinary).toEqual(expectedBinary);
 });
 
 // Test to sanity check that old method of parsing binary
@@ -270,7 +256,7 @@ const TEST_FILES = [
   MVT_MULTIPLE_LAYERS_DATA_URL
 ];
 
-test('MVTLoader#Parse geojson-to-binary', async t => {
+test('MVTLoader#Parse geojson-to-binary', async () => {
   for (const filename of TEST_FILES) {
     const response = await fetchFile(filename);
     const mvtArrayBuffer = await response.arrayBuffer();
@@ -283,43 +269,38 @@ test('MVTLoader#Parse geojson-to-binary', async t => {
     delete binary.byteLength;
 
     const expectedBinary = geojsonToBinary(geojson);
-    t.deepEqual(expectedBinary, binary);
+    expect(expectedBinary).toEqual(binary);
   }
-  t.end();
 });
 
-test('Features with top-level id', async t => {
+test('Features with top-level id', async () => {
   const response = await fetchFile(WITH_FEATURE_ID);
   const mvtArrayBuffer = await response.arrayBuffer();
 
   const binary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
-  t.ok(binary.points.fields.length, 'feature.id fields are preserved');
-  t.ok(binary.lines.fields.length, 'feature.id fields are preserved');
-  t.ok(binary.polygons.fields.length, 'feature.id fields are preserved');
+  expect(binary.points.fields.length, 'feature.id fields are preserved').toBeTruthy();
+  expect(binary.lines.fields.length, 'feature.id fields are preserved').toBeTruthy();
+  expect(binary.polygons.fields.length, 'feature.id fields are preserved').toBeTruthy();
 
   const feature = binaryToGeojson(binary, {
     globalFeatureId: binary.points.globalFeatureIds.value[0]
   });
   // @ts-ignore
-  t.ok(feature.id, 'feature.id is restored');
-
-  t.end();
+  expect(feature.id, 'feature.id is restored').toBeTruthy();
 });
 
-test('Empty MVT must return empty binary format', async t => {
+test('Empty MVT must return empty binary format', async () => {
   const emptyMVTArrayBuffer = new Uint8Array();
   const geometryBinary = await parse(emptyMVTArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
-  t.ok(geometryBinary.points);
-  t.ok(geometryBinary.lines);
-  t.ok(geometryBinary.polygons);
-  t.ok(geometryBinary.points.positions.size === 2);
-  t.ok(geometryBinary.lines.positions.size === 2);
-  t.ok(geometryBinary.polygons.positions.size === 2);
-
-  t.end();
+  expect(geometryBinary.points).toBeTruthy();
+  expect(geometryBinary.lines).toBeTruthy();
+  expect(geometryBinary.polygons).toBeTruthy();
+  expect(geometryBinary.points.positions.size === 2).toBeTruthy();
+  expect(geometryBinary.lines.positions.size === 2).toBeTruthy();
+  expect(geometryBinary.polygons.positions.size === 2).toBeTruthy();
 });
 
-test('Triangulation is supported', async t => {
+test('Triangulation is supported', async () => {
   const response = await fetchFile(MVT_POLYGONS_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();
   const geometry = await parse(mvtArrayBuffer, MVTLoader, {
@@ -327,17 +308,15 @@ test('Triangulation is supported', async t => {
   });
 
   // Closed polygon with 31 vertices (0===30)
-  t.ok(geometry.polygons.positions);
-  t.equals(geometry.polygons.positions.value.length, 62);
+  expect(geometry.polygons.positions).toBeTruthy();
+  expect(geometry.polygons.positions.value.length).toBe(62);
 
-  t.ok(geometry.polygons.triangles);
-  t.equals(geometry.polygons.triangles.value.length, 84);
+  expect(geometry.polygons.triangles).toBeTruthy();
+  expect(geometry.polygons.triangles.value.length).toBe(84);
 
   // Basic check that triangulation is valid
   const minI = Math.min(...geometry.polygons.triangles.value);
   const maxI = Math.max(...geometry.polygons.triangles.value);
-  t.equals(minI, 0);
-  t.equals(maxI, 29); // Don't expect to find 30 as closed polygon
-
-  t.end();
+  expect(minI).toBe(0);
+  expect(maxI).toBe(29); // Don't expect to find 30 as closed polygon
 });

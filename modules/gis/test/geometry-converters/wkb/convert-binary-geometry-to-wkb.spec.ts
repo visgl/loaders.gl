@@ -4,7 +4,7 @@
 
 /* eslint-disable no-continue */
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 import {convertGeometryToWKB} from '@loaders.gl/gis';
@@ -14,33 +14,29 @@ const WKB_2D_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d-nan.
 const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
 const WKB_Z_NAN_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ-nan.json';
 
-test('convertGeometryToWKB#2D', async t => {
+test('convertGeometryToWKB#2D', async () => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
   for (const [title, testCase] of Object.entries(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
     const encoded = convertGeometryToWKB(geoJSON);
-    t.deepEqual(encoded, wkb, title);
+    expect(encoded, title).toEqual(wkb);
   }
-
-  t.end();
 });
 
-test('convertGeometryToWKB#2D NaN', async t => {
+test('convertGeometryToWKB#2D NaN', async () => {
   const response = await fetchFile(WKB_2D_NAN_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
   for (const [title, testCase] of Object.entries(TEST_CASES)) {
     const {geoJSON, wkb} = testCase;
     const encoded = convertGeometryToWKB(geoJSON);
-    t.deepEqual(encoded, wkb, title);
+    expect(encoded, title).toEqual(wkb);
   }
-
-  t.end();
 });
 
-test('convertGeometryToWKB#Z', async t => {
+test('convertGeometryToWKB#Z', async () => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -51,13 +47,11 @@ test('convertGeometryToWKB#Z', async t => {
       continue;
     }
     const encoded = convertGeometryToWKB(geoJSON, {wkb: {hasZ: true, hasM: false}});
-    t.deepEqual(encoded, wkb, title);
+    expect(encoded, title).toEqual(wkb);
   }
-
-  t.end();
 });
 
-test('convertGeometryToWKB#Z NaN', async t => {
+test('convertGeometryToWKB#Z NaN', async () => {
   const response = await fetchFile(WKB_Z_NAN_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -68,8 +62,6 @@ test('convertGeometryToWKB#Z NaN', async t => {
       continue;
     }
     const encoded = convertGeometryToWKB(geoJSON, {wkb: {hasZ: true, hasM: false}});
-    t.deepEqual(encoded, wkb, title);
+    expect(encoded, title).toEqual(wkb);
   }
-
-  t.end();
 });

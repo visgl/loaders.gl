@@ -2,27 +2,65 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export function validateLoader(t, loader, name = '') {
-  t.ok(typeof loader.id === 'string', `Loader ${name} loader.id is not defined`);
-  t.ok(loader, `Loader ${name} defined`);
-  t.equal(typeof loader.name, 'string', `Loader ${name} has a name`);
-  t.ok(Array.isArray(loader.extensions), `Loader ${name} has an extensions array`);
-  t.ok(Array.isArray(loader.mimeTypes), `Loader ${name} has a mimeTypes array`);
+import {expect} from 'vitest';
+
+function getAssertions(assertions) {
+  if (assertions) {
+    return assertions;
+  }
+
+  return {
+    ok(value, message) {
+      expect(value, message).toBeTruthy();
+    },
+    notOk(value, message) {
+      expect(value, message).toBeFalsy();
+    },
+    equal(actual, expected, message) {
+      expect(actual, message).toBe(expected);
+    },
+    equals(actual, expected, message) {
+      expect(actual, message).toBe(expected);
+    }
+  };
+}
+
+export function validateLoader(assertionsOrLoader, loaderOrName, name = '') {
+  const loader =
+    loaderOrName && typeof loaderOrName === 'object' ? loaderOrName : assertionsOrLoader;
+  const resolvedName = typeof loaderOrName === 'string' ? loaderOrName : name;
+  const assertions = getAssertions(loader === assertionsOrLoader ? null : assertionsOrLoader);
+
+  assertions.ok(typeof loader.id === 'string', `Loader ${resolvedName} loader.id is not defined`);
+  assertions.ok(loader, `Loader ${resolvedName} defined`);
+  assertions.equal(typeof loader.name, 'string', `Loader ${resolvedName} has a name`);
+  assertions.ok(
+    Array.isArray(loader.extensions),
+    `Loader ${resolvedName} has an extensions array`
+  );
+  assertions.ok(
+    Array.isArray(loader.mimeTypes),
+    `Loader ${resolvedName} has a mimeTypes array`
+  );
 
   const options = loader.options || {};
-  t.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');
-  if (name.includes('Worker')) {
-    t.ok('worker' in loader, `Loader ${name} loader.worker is not defined`);
+  assertions.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');
+  if (resolvedName.includes('Worker')) {
+    assertions.ok('worker' in loader, `Loader ${resolvedName} loader.worker is not defined`);
   }
 
   // const loaderOptions = options[loader.id] || {};
   if (!loader.parse) {
-    // t.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
+    // assertions.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
   } else {
-    t.equal(typeof loader.parse, 'function', `Loader ${name} has 'parse' function`);
+    assertions.equal(
+      typeof loader.parse,
+      'function',
+      `Loader ${resolvedName} has 'parse' function`
+    );
     // Call parse just to ensure it returns a promise
     const promise = loader.parse(new ArrayBuffer(0), {}).catch(_ => {});
-    t.ok(promise.then, `Loader ${name} is async (returns a promise)`);
+    assertions.ok(promise.then, `Loader ${resolvedName} is async (returns a promise)`);
   }
 }
 

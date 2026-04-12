@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 // @ts-ignore-error
 import {clipFeatures} from '@loaders.gl/mvt/lib/vector-tiler/features/clip-features';
 
@@ -15,7 +15,7 @@ const geom1 = [
 ];
 const geom2 = [0, 0, 0, 50, 0, 0, 50, 10, 0, 0, 10, 0];
 
-test('VectorTiler#clipFeatures#clips polylines', t => {
+test('VectorTiler#clipFeatures#clips polylines', () => {
   const clipped = clipFeatures(
     [
       {geometry: geom1, type: 'LineString', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},
@@ -61,12 +61,10 @@ test('VectorTiler#clipFeatures#clips polylines', t => {
     }
   ];
 
-  t.equal(JSON.stringify(clipped), JSON.stringify(expected));
-
-  t.end();
+  expect(clipped).toEqual(expected);
 });
 
-test('VectorTiler#clipFeatures#clips lines with line metrics on', t => {
+test('VectorTiler#clipFeatures#clips lines with line metrics on', () => {
   const geom = geom1.slice();
   // @ts-expect-error
   geom.size = 0;
@@ -92,24 +90,21 @@ test('VectorTiler#clipFeatures#clips lines with line metrics on', t => {
     {lineMetrics: true}
   );
 
-  t.same(
+  expect(
     clipped.map(f => [f.geometry.start, f.geometry.end]),
-    [
-      [10, 40],
-      [70, 130],
-      [160, 200],
-      [230, 245]
-    ]
-  );
-
-  t.end();
+  ).toEqual([
+    [10, 40],
+    [70, 130],
+    [160, 200],
+    [230, 245]
+  ]);
 });
 
 function closed(geometry) {
   return [geometry.concat(geometry.slice(0, 3))];
 }
 
-test('VectorTiler#clipFeatures#clips polygons', t => {
+test('VectorTiler#clipFeatures#clips polygons', () => {
   const clipped = clipFeatures(
     [
       {geometry: closed(geom1), type: 'Polygon', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},
@@ -152,12 +147,10 @@ test('VectorTiler#clipFeatures#clips polygons', t => {
     }
   ];
 
-  t.equal(JSON.stringify(clipped), JSON.stringify(expected));
-
-  t.end();
+  expect(clipped).toEqual(expected);
 });
 
-test('VectorTiler#clipFeatures#clips points', t => {
+test('VectorTiler#clipFeatures#clips points', () => {
   const clipped = clipFeatures(
     [
       {geometry: geom1, type: 'MultiPoint', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},
@@ -172,7 +165,7 @@ test('VectorTiler#clipFeatures#clips points', t => {
     {}
   );
 
-  t.same(clipped, [
+  expect(clipped).toEqual([
     {
       id: null,
       type: 'MultiPoint',
@@ -185,6 +178,4 @@ test('VectorTiler#clipFeatures#clips points', t => {
       maxY: 60
     }
   ]);
-
-  t.end();
 });

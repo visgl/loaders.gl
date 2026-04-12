@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {validateLoader} from 'test/common/conformance';
 
 import {load} from '@loaders.gl/core';
@@ -13,32 +13,32 @@ import {TILEJSONS} from './data/tilejson/tilejson';
 const TIPPECANOE_TILEJSON = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.tilejson';
 // const TIPPECANOE_EXPECTED = '@loaders.gl/mvt/test/data/tilejson/tippecanoe.expected.json';
 
-test('TileJSONLoader#loader conformance', t => {
+test('TileJSONLoader#loader conformance', () => {
   validateLoader(t, TileJSONLoader, 'TileJSONLoader');
-  t.end();
+  
 });
 
-test('TileJSONLoader#load', async t => {
+test('TileJSONLoader#load', async () => {
   for (const tileJSON of TILEJSONS) {
     const metadata = await load(tileJSON.url, TileJSONLoader);
-    t.ok(metadata.layers);
+    expect(metadata.layers).toBeTruthy();
     // TODO - actually check results, add tilejsons with fields
-    // t.deepEqual(metadata, parsedMetadata);
+    // expect(metadata).toEqual(parsedMetadata);
     // console.error(JSON.stringify(metadata, null, 2));
   }
-  t.end();
+  
 });
 
-test('TileJSONLoader#tippecanoe', async t => {
+test('TileJSONLoader#tippecanoe', async () => {
   // let metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
   // const expected = await load(TIPPECANOE_EXPECTED, JSONLoader);
-  // t.deepEqual(metadata, expected, 'Tippecanoe TileJSON loaded correctly');
+  // expect(metadata, 'Tippecanoe TileJSON loaded correctly').toEqual(expected);
 
   let metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader);
-  t.equal(metadata.layers?.[0]?.fields?.[10]?.values?.length, 100, '100 unique values');
+  expect(metadata.layers?.[0]?.fields?.[10]?.values?.length, '100 unique values').toBe(100);
 
   metadata = await load(TIPPECANOE_TILEJSON, TileJSONLoader, {tilejson: {maxValues: 10}});
-  t.equal(metadata.layers?.[0]?.fields?.[10]?.values?.length, 10, 'maxValue clips unique values');
+  expect(metadata.layers?.[0]?.fields?.[10]?.values?.length, 'maxValue clips unique values').toBe(10);
 
-  t.end();
+  
 });

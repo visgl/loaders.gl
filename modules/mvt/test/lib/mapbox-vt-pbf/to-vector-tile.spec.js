@@ -1,5 +1,5 @@
 // @ts-nocheck
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import Pbf from 'pbf';
 import VectorTile from '@loaders.gl/mvt/lib/mapbox-vector-tile-js/vector-tile';
@@ -9,7 +9,7 @@ import GeoJsonEquality from 'geojson-equality';
 
 const eq = new GeoJsonEquality({precision: 1});
 
-test('property encoding: JSON.stringify non-primitive values', t => {
+test('property encoding: JSON.stringify non-primitive values', () => {
   // Includes two properties with a common non-primitive value for
   // https://github.com/mapbox/vt-pbf/issues/9
   const orig = {
@@ -53,14 +53,13 @@ test('property encoding: JSON.stringify non-primitive values', t => {
 
   const first = layer.feature(0).properties;
   const second = layer.feature(1).properties;
-  t.same(first.c, '{"hello":"world"}');
-  t.same(first.d, '[1,2,3]');
-  t.same(second.c, '{"goodbye":"planet"}');
-  t.same(second.d, '{"hello":"world"}');
-  t.end();
+  expect(first.c).toBe('{"hello":"world"}');
+  expect(first.d).toBe('[1,2,3]');
+  expect(second.c).toBe('{"goodbye":"planet"}');
+  expect(second.d).toBe('{"hello":"world"}');
 });
 
-test('number encoding https://github.com/mapbox/vt-pbf/pull/11', t => {
+test('number encoding https://github.com/mapbox/vt-pbf/pull/11', () => {
   const orig = {
     type: 'Feature',
     properties: {
@@ -80,12 +79,12 @@ test('number encoding https://github.com/mapbox/vt-pbf/pull/11', t => {
   const layer = vt.layers.geojsonLayer;
 
   const properties = layer.feature(0).properties;
-  t.equal(properties.large_integer, 39953616224);
-  t.equal(properties.non_integer, 331.75415);
-  t.end();
+  expect(properties.large_integer).toBe(39953616224);
+  expect(properties.non_integer).toBe(331.75415);
+  
 });
 
-test('id encoding', t => {
+test('id encoding', () => {
   const orig = {
     type: 'FeatureCollection',
     features: [
@@ -123,13 +122,12 @@ test('id encoding', t => {
   const buff = fromGeojsonVt({geojsonLayer: tile});
   const vt = new VectorTile(new Pbf(buff));
   const layer = vt.layers.geojsonLayer;
-  t.same(layer.feature(0).id, 123);
-  t.notOk(layer.feature(1).id, 'Non-integer values should not be saved');
-  t.notOk(layer.feature(2).id);
-  t.end();
+  expect(layer.feature(0).id).toBe(123);
+  expect(layer.feature(1).id, 'Non-integer values should not be saved').toBeFalsy();
+  expect(layer.feature(2).id).toBeFalsy();
 });
 
-test('accept geojson-vt options https://github.com/mapbox/vt-pbf/pull/21', async t => {
+test('accept geojson-vt options https://github.com/mapbox/vt-pbf/pull/21', async () => {
   const RECTANGLE_URL = '@loaders.gl/mvt/test/data/mapbox-vt-pbf-fixtures/rectangle.geojson';
   const response = await fetchFile(RECTANGLE_URL);
   const orig = await response.json();
@@ -149,8 +147,8 @@ test('accept geojson-vt options https://github.com/mapbox/vt-pbf/pull/21', async
     features.push(feat);
   }
 
-  t.equal(layer.version, options.version, 'version should be equal');
-  t.equal(layer.extent, options.extent, 'extent should be equal');
+  expect(layer.version, 'version should be equal').toBe(options.version);
+  expect(layer.extent, 'extent should be equal').toBe(options.extent);
 
   orig.features.forEach(function (expected) {
     const actual = features.shift();
@@ -158,8 +156,6 @@ test('accept geojson-vt options https://github.com/mapbox/vt-pbf/pull/21', async
     // TODO - this was added in loaders fork to make tests pass, investigate why it is needed
     delete expected.id;
 
-    t.ok(eq.compare(actual, expected));
+    expect(eq.compare(actual, expected)).toBeTruthy();
   });
-
-  t.end();
 });

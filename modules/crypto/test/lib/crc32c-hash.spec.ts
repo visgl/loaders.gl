@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {fetchFile} from '@loaders.gl/core';
 import {CRC32CHash, encodeNumber} from '@loaders.gl/crypto';
 
@@ -18,7 +18,7 @@ const loadJSON = async (relativePath: string) => {
 
 const TEST_CASES = await loadJSON('./crc32c-test-cases.json');
 
-test('crc32c#additional tests', async t => {
+test('crc32c#additional tests', async () => {
   for (const type in TEST_CASES) {
     const set = TEST_CASES[type];
 
@@ -62,5 +62,4 @@ test('crc32c#additional tests', async t => {
     t.equals(hash, set.expected, `should digest all test chunks correctly`);
     */
   }
-  t.end();
 });

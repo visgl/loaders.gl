@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import * as arrow from 'apache-arrow';
 
 import {getGeoArrowGeometryInfo} from '@loaders.gl/geoarrow';
 import {GeoArrowGeometryInfo} from '../src/get-geoarrow-geometry-info';
 
 // fix a bug that map bounds are not updated correctly from arrow samples
-test('geoarrow#getGeoArrowGeometryInfo', t => {
+test('geoarrow#getGeoArrowGeometryInfo', () => {
   const testCases: {field: arrow.Field; info: Partial<GeoArrowGeometryInfo>}[] = [
     // {
     //   field: new arrow.Field('point', new arrow.Float(arrow.Precision.DOUBLE)),
@@ -45,8 +45,9 @@ test('geoarrow#getGeoArrowGeometryInfo', t => {
 
   for (const testCase of testCases) {
     const info = getGeoArrowGeometryInfo(testCase.field);
-    t.deepEqual(info?.compatibleEncodings, info?.compatibleEncodings, testCase.field.toString());
+    expect(info?.compatibleEncodings).toEqual(
+      info?.compatibleEncodings,
+      testCase.field.toString()
+    );
   }
-
-  t.end();
 });

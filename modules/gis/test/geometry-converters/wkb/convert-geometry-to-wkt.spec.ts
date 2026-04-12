@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 
 import {encodeTextSync} from '@loaders.gl/core';
 import {WKTWriter} from '@loaders.gl/wkt';
 
-test('encodeWKT', t => {
-  t.throws(
-    () => encodeTextSync({type: 'FeatureCollection'}, WKTWriter),
-    'does not accept featurecollections'
-  );
+test('encodeWKT', () => {
+  expect(() => encodeTextSync({type: 'FeatureCollection'}, WKTWriter), 'does not accept featurecollections').toThrow();
 
   // const fixtures = [
   //   'LINESTRING (30 10, 10 30, 40 40)',
@@ -39,7 +36,5 @@ test('encodeWKT', t => {
   };
   const wkt = encodeTextSync(geojsonFeature.geometry, WKTWriter);
 
-  t.equal(wkt, 'POINT (42 20)', 'point equal');
-
-  t.end();
+  expect(wkt, 'point equal').toBe('POINT (42 20)');
 });
