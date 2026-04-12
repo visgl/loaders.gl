@@ -21,6 +21,13 @@ export async function loadImageTextureArray(
   return await loadCompositeImageUrlTree(imageUrls, normalizeCompositeImageOptions(options));
 }
 
+/**
+ * Resolves all layer URLs for a legacy texture-array helper request.
+ * @param count - Number of array layers.
+ * @param getUrl - URL template callback.
+ * @param options - Texture helper options.
+ * @returns Resolved URLs for every layer.
+ */
 export async function getImageArrayUrls(
   count: number,
   getUrl: GetUrl,

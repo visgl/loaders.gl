@@ -19,7 +19,6 @@ import type {
   GetImageParameters,
   ImageSource,
   ImageSourceMetadata,
-  ImageType,
   Source
 } from '@loaders.gl/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
@@ -66,7 +65,7 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
   srs: 'auto',
   layers: {type: 'array', compare: true, value: []},
   sources: {type: 'array', compare: false, value: []},
-  sourceOptions: {type: 'object', compare: false, value: null},
+  sourceOptions: {type: 'object', compare: false, value: {}},
   onMetadataLoad: {type: 'function', value: () => {}},
   onMetadataLoadError: {
     type: 'function',
@@ -187,7 +186,7 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
         crs === 'EPSG:4326' ? COORDINATE_SYSTEM.LNGLAT : COORDINATE_SYSTEM.CARTESIAN,
       bounds,
       image
-    });
+    }) as unknown as Layer;
   }
 
   /** Forwards WMS feature info requests using the last accepted image request parameters. */

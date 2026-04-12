@@ -13,8 +13,12 @@ import {
 import type {GetUrl, TextureLoaderOptions} from './texture-api-types';
 import {getImageUrls} from './load-image';
 
-// Returns an object with six key-value pairs containing the urls (or url mip arrays)
-// for each cube face
+/**
+ * Resolves face URLs for a legacy cubemap helper request.
+ * @param getUrl - URL template callback.
+ * @param options - Texture helper options.
+ * @returns A map of cube-face constants to member URLs or mip chains.
+ */
 export async function getImageCubeUrls(getUrl: GetUrl, options: TextureLoaderOptions) {
   // Calculate URLs
   const urls: Record<number, string | string[]> = {};

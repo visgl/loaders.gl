@@ -23,7 +23,7 @@ import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 // D\deck.gl + layers
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';
-import {SourceLayer} from '@loaders.gl/deck-layers';
+import {Tile2DSourceLayer} from '@loaders.gl/deck-layers';
 
 // Basemap
 import {Map} from 'react-map-gl';
@@ -71,6 +71,7 @@ export default function App(props: AppProps = {}) {
   const [rangeStats, setRangeStats] = useState<RangeStats>(
     getRangeStats(rangeStatsObjectRef.current)
   );
+  const [hideBasemap, setHideBasemap] = useState(false);
   const [currentExample, setCurrentExample] = useState<Example | null>(null);
   const [state, setState] = useState<AppState>({
     tileSource: null,
@@ -86,6 +87,7 @@ export default function App(props: AppProps = {}) {
       currentExample
         ? {
             core: {
+              type: currentExample.sourceType,
               attributions: currentExample.attributions,
               loaders: [GeoJSONLoader],
               loadOptions: {
@@ -110,7 +112,7 @@ export default function App(props: AppProps = {}) {
   const tileLayer =
     currentExample &&
     sourceOptions &&
-    new SourceLayer({
+    new Tile2DSourceLayer({
       data: currentExample.data,
       sources: TILE_SOURCE_FACTORIES,
       sourceOptions,
@@ -131,8 +133,10 @@ export default function App(props: AppProps = {}) {
         examples={EXAMPLES}
         format={props.format}
         hideChrome={props.hideChrome}
+        hideBasemap={hideBasemap}
         initialCategoryName={INITIAL_CATEGORY_NAME}
         initialExampleName={INITIAL_EXAMPLE_NAME}
+        onHideBasemapChange={setHideBasemap}
         onExampleChange={onExampleChange}
       >
         <MetadataViewer metadata={metadata} />
@@ -150,11 +154,17 @@ export default function App(props: AppProps = {}) {
       <DeckGL
         layers={[tileLayer]}
         views={new MapView({repeat: true})}
-        initialViewState={state.viewState}
+        viewState={state.viewState}
         controller={true}
         getTooltip={getTooltip}
+        onViewStateChange={({viewState}) =>
+          setState((state) => ({
+            ...state,
+            viewState: viewState as Record<string, number>
+          }))
+        }
       >
-        <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
+        {!hideBasemap && <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />}
         {!props.hideChrome && <Attributions attributions={metadata?.attributions} />}
       </DeckGL>
     </div>
@@ -193,7 +203,7 @@ export default function App(props: AppProps = {}) {
 
         setState((state) => ({
           ...state,
-          initialViewState,
+          viewState: initialViewState,
           error: null,
           metadata: metadata ? JSON.stringify(metadata, null, 2) : ''
         }));
@@ -288,6 +298,7 @@ function createTileSource(
     [PMTilesSource, TableTileSource, MVTSource, MLTSource],
     {
       core: {
+        type: example.sourceType,
         attributions: example.attributions,
         loaders: [GeoJSONLoader],
         // Make the Schema more presentable by limiting the number of values per column the field metadata

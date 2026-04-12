@@ -228,11 +228,22 @@ export class ImageSet<DataT = ImageType> {
       ...DEFAULT_IMAGESET_PROPS,
       ...opts,
       imageSource,
-      getMetadata: opts.getMetadata || (() => imageSource?.getMetadata() || DEFAULT_IMAGESET_PROPS.getMetadata()),
+      getMetadata:
+        opts.getMetadata ||
+        (() => {
+          if (imageSource) {
+            return imageSource.getMetadata();
+          }
+          return DEFAULT_IMAGESET_PROPS.getMetadata();
+        }),
       getImage:
         opts.getImage ||
-        ((parameters: GetImageParameters) =>
-          imageSource?.getImage(parameters) as Promise<DataT> || DEFAULT_IMAGESET_PROPS.getImage()),
+        ((parameters: GetImageParameters) => {
+          if (imageSource) {
+            return imageSource.getImage(parameters) as Promise<DataT>;
+          }
+          return DEFAULT_IMAGESET_PROPS.getImage(parameters) as Promise<DataT>;
+        }),
       debounceTime: opts.debounceTime ?? DEFAULT_IMAGESET_PROPS.debounceTime
     };
   }

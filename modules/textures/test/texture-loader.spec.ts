@@ -4,6 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile, load, parse, selectLoader} from '@loaders.gl/core';
+import {getImageData, getImageType} from '@loaders.gl/images';
 import {
   TextureArrayLoader,
   TextureCubeArrayLoader,
@@ -30,6 +31,10 @@ function checkImageTextureLevel(t, textureLevel, message: string) {
   t.equal(textureLevel.textureFormat, 'rgba8unorm', `${message} has canonical texture format`);
   if (typeof ImageBitmap !== 'undefined') {
     t.ok(textureLevel.imageBitmap instanceof ImageBitmap, `${message} preserves the ImageBitmap`);
+    t.equal(getImageType(textureLevel.imageBitmap), 'imagebitmap', `${message} is a bitmap`);
+    const imageData = getImageData(textureLevel.imageBitmap);
+    t.equal(imageData.width, textureLevel.width, `${message} bitmap data preserves width`);
+    t.equal(imageData.height, textureLevel.height, `${message} bitmap data preserves height`);
   }
 }
 
@@ -49,6 +54,15 @@ test('TextureLoader#load mipmaps manifest', async t => {
   t.equal(texture.data.length, 3, 'loads all mip levels');
   texture.data.forEach((textureLevel, index) =>
     checkImageTextureLevel(t, textureLevel, `level ${index}`)
+  );
+  t.end();
+});
+
+test('TextureLoader#rejects deprecated image output modes', async t => {
+  await t.rejects(
+    load(IMAGE_TEXTURE_MANIFEST_URL, TextureLoader, {image: {type: 'data'}} as any),
+    /ImageBitmapLoader only accepts options\.image\.type='imagebitmap'/,
+    'manifest member parsing rejects deprecated image output modes'
   );
   t.end();
 });
@@ -437,6 +451,12 @@ test('TextureCubeArrayLoader#template supports layer index and face placeholders
   t.equal(texture.type, 'cube-array', 'cube array returns a cube-array texture');
   t.equal(texture.data.length, 2, 'cube array returns one cubemap per layer');
   t.equal(texture.data[0].length, 6, 'each layer contains six cube faces');
+  texture.data.forEach((layer, layerIndex) =>
+    layer.forEach((faceLevels, faceIndex) => {
+      t.equal(faceLevels.length, 1, `layer ${layerIndex} face ${faceIndex} has one mip level`);
+      checkImageTextureLevel(t, faceLevels[0], `layer ${layerIndex} face ${faceIndex} level 0`);
+    })
+  );
   t.equal(requestedUrls.length, 12, 'all cube array members are loaded');
   t.ok(requestedUrls.includes('https://example.com/cube-0-+X.png'), 'layer index 0 is expanded');
   t.ok(requestedUrls.includes('https://example.com/cube-1--Z.png'), 'layer index 1 is expanded');

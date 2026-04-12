@@ -8,7 +8,10 @@ import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {createSource} from './tile-3d-source-layer';
 
 /**
- * `DataDrivenTile3DLayer` adapter that constructs source-backed `Tileset3D` instances.
+ * Internal `DataDrivenTile3DLayer` adapter that constructs source-backed `Tileset3D` instances.
+ *
+ * This class is exported for internal repository use and examples, and is not documented
+ * beyond these TSDoc comments.
  */
 export class SourceDataDrivenTile3DLayer<
   DataT = any,

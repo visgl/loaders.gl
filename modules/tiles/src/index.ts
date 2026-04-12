@@ -22,8 +22,6 @@ export {I3SSource} from './tileset-3d/format-i3s/i3s-source';
 export {TilesetTraverser} from './tileset-3d/common/tileset-traverser';
 export {TilesetCache} from './tileset-3d/common/tileset-cache';
 
-<<<<<<< Updated upstream
-=======
 export type {
   Bounds,
   GeoBoundingBox,
@@ -55,8 +53,6 @@ export {
 } from './tileset-2d';
 export type {ImageSetBaseProps, ImageSetListener, ImageSetProps, ImageSetRequest} from './image-set';
 export {ImageSet} from './image-set';
-
->>>>>>> Stashed changes
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 

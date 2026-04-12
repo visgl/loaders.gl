@@ -35,3 +35,78 @@ The shared `Tileset3DSource` contract owns:
 `Tileset3D` remains responsible for traversal, culling, request scheduling, selection, and cache management.
 
 For broader documentation please visit the [website](https://loaders.gl).
+
+## Tileset2D
+
+`Tileset2D` is the shared cache and loading engine for source-backed 2D tile rendering.
+
+API reference: [`Tileset2D`](../../docs/modules/tiles/api-reference/tileset-2d.md)
+
+Its purpose is to separate:
+
+- shared tile content, request scheduling, and cache eviction
+- per-view selection and visibility state
+
+That lets multiple layers and views reuse the same tile cache without duplicating requests or
+overwriting each other's traversal state.
+
+### Installation
+
+```ts
+import {
+  Tileset2D,
+  type Tileset2DProps,
+  type TileLoadProps
+} from '@loaders.gl/tiles';
+```
+
+### Construct from `getTileData`
+
+```ts
+const tileset = new Tileset2D({
+  getTileData: async ({id, bbox}: TileLoadProps) => fetchTile(id, bbox),
+  maxZoom: 14,
+  maxCacheSize: 256
+});
+```
+
+### Construct from a loaders.gl `TileSource`
+
+```ts
+import type {TileSource} from '@loaders.gl/loader-utils';
+import {Tileset2D} from '@loaders.gl/tiles';
+
+const tileSource: TileSource = createTileSourceSomehow();
+const tileset = Tileset2D.fromTileSource(tileSource, {
+  maxCacheByteSize: 32 * 1024 * 1024
+});
+```
+
+When backed by a `TileSource`, the tileset reads metadata once and adopts:
+
+- `minZoom`
+- `maxZoom`
+- `boundingBox` mapped to `extent`
+
+Explicit options still override source metadata.
+
+### Key API
+
+- `tiles`: current contents of the shared tile cache
+- `selectedTiles` / `visibleTiles`: union views across all attached consumers
+- `loadingTiles` / `unloadedTiles`: current loading and unloaded cache subsets
+- `stats`: live `@probe.gl/stats` counters for cache size, selection, visibility, and consumers
+- `subscribe(listener)`: tile lifecycle, metadata update, and stats callbacks
+- `setOptions(opts)`: update runtime configuration
+- `reloadAll()`: mark retained tiles stale for reload
+- `finalize()`: abort requests and clear the cache
+
+The shared stats currently populate:
+
+- `Tiles In Cache`
+- `Cache Size`
+- `Visible Tiles`
+- `Selected Tiles`
+- `Loading Tiles`
+- `Unloaded Tiles`
+- `Consumers`

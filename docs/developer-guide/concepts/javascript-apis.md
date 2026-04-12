@@ -55,6 +55,8 @@ The `Blob` (and `File`) classes in the browser have some unique advantages. They
 
 ## Image APIs
 
-The preferred image platform API is the `ImageBitmap`. It is currently only supported on modern browsers, not in Node.js.
+The preferred image platform API is `ImageBitmap`.
 
-At this stage loaders.gl does not provide an ImageBitmap polyfill, and it is not clear if future versions of Node.js would support something similar natively.
+In browsers, loaders.gl uses the native `ImageBitmap` API when available. Under Node.js, importing `@loaders.gl/polyfills` installs a minimal `ImageBitmap` polyfill together with a global `getImageBitmapData(image)` helper so that `@loaders.gl/images` can keep using the same bitmap-oriented contract.
+
+This Node.js polyfill is intentionally limited. It is sufficient for loaders.gl image loading and `getImageBitmapData(image)`, but it does not provide a full browser-equivalent `createImageBitmap()` implementation.

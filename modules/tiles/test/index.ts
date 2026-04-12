@@ -6,11 +6,13 @@ import './utils/doubly-linked-list.spec';
 
 import './tileset/tile-3d.spec';
 import './tileset/tileset-3d.spec';
+import './tileset/tileset-3d-source.spec';
 import './tileset/tileset-traverser.spec';
 
 import './tileset/helpers/get-frame-state.spec';
 import './tileset/helpers/zoom.spec';
 import './tileset/helpers/bounding-volume.spec';
+import './tileset/tileset-2d.spec';
 
 // I3S Specific tests
 // TODO - deck.gl dependency

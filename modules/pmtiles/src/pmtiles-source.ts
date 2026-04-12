@@ -13,7 +13,7 @@ import type {
   RangeRequestSchedulerProps
 } from '@loaders.gl/loader-utils';
 import {DataSource, DataSourceOptions, resolvePath} from '@loaders.gl/loader-utils';
-import {ImageLoader, ImageLoaderOptions} from '@loaders.gl/images';
+import {ImageBitmapLoader, ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {MVTLoader, MVTLoaderOptions, TileJSONLoaderOptions} from '@loaders.gl/mvt';
 import {PMTilesFormat} from './pmtiles-format';
 
@@ -35,7 +35,7 @@ export type PMTilesRangeRequestOptions = RangeRequestSchedulerProps & {
 
 export type PMTilesSourceOptions = DataSourceOptions & {
   core?: DataSourceOptions['core'] & {
-    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
   };
   pmtiles?: {};
   rangeRequests?: PMTilesRangeRequestOptions;
@@ -121,10 +121,19 @@ export class PMTilesTileSource
 
   async getTile(tileParams: GetTileParameters): Promise<ArrayBuffer | null> {
     const {x, y, z} = tileParams;
-    const rangeResponse = await this.getZxyBatched(z, x, y);
+    let rangeResponse;
+    try {
+      rangeResponse = await this.getZxyBatched(z, x, y, (tileParams as any).signal);
+    } catch (error) {
+      this.reportError(error, `Failed to fetch tile ${this.url} ${JSON.stringify(tileParams)}`);
+      return null;
+    }
     const arrayBuffer = rangeResponse?.data;
     if (!arrayBuffer) {
-      // console.error('No arrayBuffer', tileParams);
+      this.reportError(
+        new Error('Empty tile response'),
+        `Failed to fetch tile ${this.url} ${JSON.stringify(tileParams)}`
+      );
       return null;
     }
     return arrayBuffer;
@@ -156,7 +165,7 @@ export class PMTilesTileSource
 
   async getImageTile(tileParams: GetTileParameters): Promise<ImageType | null> {
     const arrayBuffer = await this.getTile(tileParams);
-    return arrayBuffer ? await ImageLoader.parse(arrayBuffer, this.loadOptions) : null;
+    return arrayBuffer ? await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions) : null;
   }
 
   // VectorTileSource interface implementation

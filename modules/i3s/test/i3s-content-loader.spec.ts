@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
 import {fetchFile, isBrowser, parse} from '@loaders.gl/core';
+import {getImageData} from '@loaders.gl/images';
 // @ts-expect-error
 import I3SNodePagesTiles from '@loaders.gl/i3s/lib/helpers/i3s-nodepages-tiles';
 import {TEST_LAYER_URL, TILESET_STUB} from '@loaders.gl/i3s/test/test-utils/load-utils';
@@ -57,16 +58,13 @@ test('ParseI3sTileContent#should load "dds" texture if it is supported', async t
     }
   });
   const texture = content!.material.pbrMetallicRoughness.baseColorTexture.texture.source.image;
-  if (isBrowser) {
-    if (texture && typeof texture === 'object' && 'compressed' in texture) {
-      t.ok(texture.compressed);
-      t.ok(texture.data instanceof Array);
-    } else {
-      t.ok(texture instanceof ImageBitmap);
-    }
+  if (texture && typeof texture === 'object' && 'compressed' in texture) {
+    t.ok(texture.compressed);
+    t.ok(texture.data instanceof Array);
   } else {
-    t.ok(texture instanceof Object);
-    t.ok(texture.data instanceof Uint8Array);
+    const imageData = getImageData(texture);
+    t.ok(texture instanceof ImageBitmap);
+    t.ok(imageData.data instanceof Uint8Array || imageData.data instanceof Uint8ClampedArray);
   }
   t.end();
 });
@@ -108,20 +106,17 @@ test('ParseI3sTileContent#should make PBR material', async t => {
   const texture = material.pbrMetallicRoughness.baseColorTexture.texture;
   t.ok(texture);
   t.ok(texture.source);
-  if (isBrowser) {
-    if (
-      texture.source.image &&
-      typeof texture.source.image === 'object' &&
-      'compressed' in texture.source.image
-    ) {
-      t.ok(texture.source.image.compressed);
-      t.ok(texture.source.image.data instanceof Array);
-    } else {
-      t.ok(texture.source.image instanceof ImageBitmap);
-    }
+  if (
+    texture.source.image &&
+    typeof texture.source.image === 'object' &&
+    'compressed' in texture.source.image
+  ) {
+    t.ok(texture.source.image.compressed);
+    t.ok(texture.source.image.data instanceof Array);
   } else {
-    t.ok(texture.source.image instanceof Object);
-    t.ok(texture.source.image.data instanceof Uint8Array);
+    const imageData = getImageData(texture.source.image);
+    t.ok(texture.source.image instanceof ImageBitmap);
+    t.ok(imageData.data instanceof Uint8Array || imageData.data instanceof Uint8ClampedArray);
   }
   t.end();
 });

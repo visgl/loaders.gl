@@ -2,13 +2,29 @@
 
 <img src="https://badge.fury.io/js/%40loaders.gl%2Fcore.svg" /> &nbsp;
 <img src="https://img.shields.io/badge/License-MIT-green.svg" /> &nbsp;
-<img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" />  &nbsp; &nbsp; &nbsp;
+<img src="https://img.shields.io/npm/dm/@loaders.gl/core.svg" />  &nbsp;
+<img src="https://img.shields.io/badge/TypeScript-6.0-3178C6.svg?style=flat-square" alt="TypeScript 6.0" /> &nbsp;
 <br />
 <br />
 
-This documentation describes loaders.gl **v4**. See our [**release notes**](/docs/whats-new) to learn what is new.
+<center>
+  <a href="https://openvisualization.org">
+    <img
+      style={{height: 80}}
+      src="https://raw.github.com/visgl/deck.gl-data/master/images/logos/openjsf-color-textg.png"
+    />
+  </a>
+</center>
+<center>
+  <i>loaders.gl is an OpenJS Foundation / Linux Foundation project.</i>
+</center>
+
+&nbsp;
+
+This documentation describes loaders.gl **v5**. See our [**release notes**](/docs/whats-new) to learn what is new.
 
 Docs for older versions are available on github:
+**[v4.4](https://github.com/visgl/loaders.gl/blob/4.4-release/docs/README.md)**,
 **[v3.3](https://github.com/visgl/loaders.gl/blob/3.3-release/docs/README.md)**,
 **[v2.3](https://github.com/visgl/loaders.gl/blob/2.3-release/docs/README.md)**,
 **[v1.3](https://github.com/visgl/loaders.gl/blob/1.3-release/docs/README.md)**.
@@ -19,13 +35,12 @@ loaders.gl is a collection of open source loaders and writers for various file f
 primarily focused on supporting visualization and analytics of big data. 
 Tabular, geospatial, and 3D file formats are well covered. 
 
-Published as a suite of composable loader modules with consistent APIs and features, 
-offering advanced features such as worker thread and incremental parsing, 
-loaders.gl aims to be a trusted companion when you need to load data into your application.
+Published as a suite of composable loader modules with consistent APIs, 
+offering advanced features such as threaded and incremental parsing.
 
-While loaders.gl can be used with any JavaScript application or framework,
-[vis.gl frameworks](https://vis.gl/frameworks) such as [**deck.gl**](https://deck.gl) 
-come pre-integrated with loaders.gl.
+loaders.gl can be used with any JavaScript application or framework. In addition,
+other [vis.gl frameworks](https://vis.gl/frameworks) such as [**deck.gl**](https://deck.gl) 
+come are designed to integrate seamlessly loaders.gl.
 
 ## Loaders
 
@@ -35,7 +50,8 @@ loaders.gl provides a wide selection of loaders organized into categories:
 | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [Table Loaders](/docs/specifications/category-table)              | Streaming tabular loaders for [CSV](/docs/modules/csv/api-reference/csv-loader), [JSON](/docs/modules/json/api-reference/json-loader), [Arrow](/docs/modules/arrow/api-reference/arrow-loader) etc                                                                                                                                                                                                                                                                                      |
 | [Geospatial Loaders](/docs/specifications/category-gis)           | Loaders for geospatial formats such as [GeoJSON](/docs/modules/json/api-reference/geojson-loader) [KML](/docs/modules/kml/api-reference/kml-loader), [WKT/WKB](/docs/modules/wkt/api-reference/wkt-loader), [Mapbox Vector Tiles](/docs/modules/mvt/api-reference/mvt-loader) etc.                                                                                                                                                                                                   |
-| [Image Loaders](/docs/specifications/category-image)              | Loaders for [images](/docs/modules/images/api-reference/image-loader), [compressed textures](/docs/modules/textures/api-reference/compressed-texture-loader), [supercompressed textures (Basis)](/docs/modules/textures/api-reference/basis-loader), [composite image textures](/docs/modules/textures/api-reference/texture-cube-loader), [binary images](/docs/modules/images/api-reference/binary-image-api) and more. |
+| [Image Loaders](/docs/specifications/category-image)              | Loaders for [images](/docs/modules/images/api-reference/image-bitmap-loader) and image utilities such as the [parsed image API](/docs/modules/images/api-reference/parsed-image-api) and [binary image API](/docs/modules/images/api-reference/binary-image-api). |
+| [Texture Loaders](/docs/specifications/category-texture)          | Loaders for [compressed textures](/docs/modules/textures/api-reference/compressed-texture-loader), [Basis textures](/docs/modules/textures/api-reference/basis-loader), and manifest-driven [texture loaders](/docs/modules/textures/api-reference/texture-loader) for arrays, cubemaps, and mip chains. |
 | [Pointcloud and Mesh Loaders](/docs/specifications/category-mesh) | Loaders for point cloud and simple mesh formats such as [Draco](/docs/modules/draco/api-reference/draco-loader), [LAS](/docs/modules/las/api-reference/las-loader), [PCD](/docs/modules/pcd/api-reference/pcd-loader), [PLY](/docs/modules/ply/api-reference/ply-loader), [OBJ](/docs/modules/obj/api-reference/obj-loader), and [Terrain](/docs/modules/terrain/api-reference/terrain-loader).                                                                                            |
 | [Scenegraph Loaders](/docs/specifications/category-scenegraph)    | [glTF](/docs/modules/gltf/api-reference/gltf-loader) loader                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | [Tiled Data Loaders](/docs/specifications/category-3d-tiles)         | Loaders for 3D tile formats such as [3D Tiles](/docs/modules/3d-tiles/api-reference/tiles-3d-loader), [I3S](/docs/modules/i3s/api-reference/i3s-loader) and potree                                                                                                                                                                                                                                                                                                                             |
@@ -102,11 +118,11 @@ loaders.gl supports both browsers and Node.js:
 
 **Multi-Asset Loading** - Formats like glTF, Shapefile, or mip mapped / cube textures can require dozens of separate loads to resolve all linked assets (external buffers, images etc). loaders.gl loads all linked assets before resolving the returned `Promise`.
 
-**Modern JavaScript** - loaders.gl is written in TypeScript 5.0 and standard ES2018, is packaged as ECMAScript modules, and the API emphasizes modern, portable JavaScript constructs, e.g. async iterators instead of streams, `ArrayBuffer` instead of `Buffer`, etc.
+**Modern JavaScript** - loaders.gl is written in TypeScript 6.0 and standard ES2018, is packaged as ECMAScript modules, and the API emphasizes modern, portable JavaScript constructs, e.g. async iterators instead of streams, `ArrayBuffer` instead of `Buffer`, etc.
 
 ## Licenses
 
-loaders.gl itself is MIT licensed, however various modules contain forked code under several permissive, compatible open source licenses, such as ISC, BSD and Apache licenses. Each loader module provides some license notes, so if the distinction matters to you, please check the documentation for each module and decide accordingly. We guarantee that loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
+loaders.gl itself is MIT licensed, however various modules contain forked code under several permissive, compatible open source licenses, such as ISC, BSD and Apache 2 licenses. Each loader module provides license notes, so if the distinction matters to you, please check the documentation for each module and decide accordingly. We guarantee that loaders.gl will never include code with non-permissive, commercial or copy-left licenses.
 
 ## Credits and Attributions
 
@@ -116,18 +132,29 @@ While loaders.gl contains substantial amounts of original code, it also repackag
 
 Even so, we can make mistakes, and we may not have the full history of the code we are reusing. If you think that we have missed something, or that we could do better in regard to attribution, please let us know.
 
-## Primary maintainers
+## Organizational support
 
-Organizations that currently contribute most significantly to the development and maintenance of loaders.gl:
+Organizations that have contributed significantly to the development and maintenance of loaders.gl:
 
 <p style={{marginLeft: 30, marginRight: 'auto'}}>
   <a href="https://studio.foursquare.com">
     <img height="80" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/Foursquare.svg" />
   </a>
   <br />
-  <br />
   <a href="https://carto.com">
     <img height="80" src="https://raw.githubusercontent.com/visgl/deck.gl-data/master/images/logos/carto.svg" />
+  </a>
+  <br />
+  <a href="https://actionengine.com">
+    Action Engine
+  </a>
+  <br />
+  <a href="https://esri.com">
+    Esri
+  </a>
+  <br />
+  <a href="https://uber.com">
+    Uber
   </a>
 </p>
 

@@ -41,6 +41,14 @@ const DropDown = styled.select`
   margin-bottom: 6px;
 `;
 
+const ToggleRow = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+  margin-bottom: 8px;
+`;
+
 const APP_SOURCE_URL = 'https://github.com/visgl/loaders.gl/tree/master/examples/website/tiles';
 
 export type Example = {
@@ -61,6 +69,8 @@ export type ExamplePanelProps = React.PropsWithChildren<{
   hideChrome?: boolean;
   initialCategoryName?: string | null;
   initialExampleName?: string | null;
+  hideBasemap?: boolean;
+  onHideBasemapChange?: (value: boolean) => void;
   onExampleChange: OnExampleChange;
 }>;
 
@@ -150,6 +160,10 @@ export const ExamplePanel: React.FC<ExamplePanelProps> = (props: ExamplePanelPro
           setState((state) => ({...state, categoryName, exampleName, example}));
         }}
       />
+      <BasemapToggle
+        checked={Boolean(props.hideBasemap)}
+        onChange={(value) => props.onHideBasemapChange?.(value)}
+      />
       {props.children}
     </Container>
   );
@@ -162,6 +176,19 @@ function ExampleSourceLink() {
         View source
       </a>
     </div>
+  );
+}
+
+function BasemapToggle(props: {checked: boolean; onChange: (value: boolean) => void}) {
+  return (
+    <ToggleRow>
+      <input
+        checked={props.checked}
+        onChange={(event) => props.onChange(event.target.checked)}
+        type="checkbox"
+      />
+      <span>Hide basemap</span>
+    </ToggleRow>
   );
 }
 
