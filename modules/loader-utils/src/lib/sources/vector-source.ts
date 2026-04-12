@@ -67,4 +67,6 @@ export type GetFeaturesParameters = {
   crs?: string;
   /** @deprecated requested format for the return image */
   format?: 'geojson' | 'binary';
+  /** Abort signal for canceling in-flight requests. */
+  signal?: AbortSignal;
 };
