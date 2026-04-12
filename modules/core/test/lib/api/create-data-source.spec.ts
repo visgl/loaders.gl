@@ -1,16 +1,10 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
-
+import {expect, test} from 'vitest';
 // loaders.gl sources and loaders
 import {createDataSource, DataSource} from '@loaders.gl/core';
 import {PMTilesSource} from '@loaders.gl/pmtiles';
 import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
-
-test('createDataSource', async t => {
+test('createDataSource', async () => {
   const dataSource = createDataSource(url, [PMTilesSource, TableTileSource, MVTSource], {
     pmtiles: {
       attributions: example.attributions,
@@ -23,9 +17,6 @@ test('createDataSource', async t => {
     },
     mvt: {}
   });
-
-  t.deepEquals(values, [1, 2], 'parseInBatches returned data');
-  t.ok(dataSource instanceof DataSource, 'metadata batch was generated');
-
-  t.end();
+  expect(values, 'parseInBatches returned data').toEqual([1, 2]);
+  expect(dataSource instanceof DataSource, 'metadata batch was generated').toBeTruthy();
 });

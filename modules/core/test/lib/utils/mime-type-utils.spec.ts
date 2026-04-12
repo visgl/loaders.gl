@@ -1,35 +1,23 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {
   parseMIMEType,
   parseMIMETypeFromURL,
   compareMIMETypes
 } from '@loaders.gl/core/lib/utils/mime-type-utils';
-
 const DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAGUExURf///wAAAFXC034AAAAMSURBVAjXY3BgaAAAAUQAwetZAwkAAAAASUVORK5CYII=';
-
-test('compareMIMETypes', t => {
-  t.equal(compareMIMETypes('image/png', 'image/jpeg'), false);
-  t.equal(compareMIMETypes('image/png', 'image/png'), true);
-  t.equal(compareMIMETypes('image/png', 'image/PNG'), true);
-  t.end();
+test('compareMIMETypes', () => {
+  expect(compareMIMETypes('image/png', 'image/jpeg')).toBe(false);
+  expect(compareMIMETypes('image/png', 'image/png')).toBe(true);
+  expect(compareMIMETypes('image/png', 'image/PNG')).toBe(true);
 });
-
-test('parseMIMEType', t => {
-  t.equal(parseMIMEType('image/png;'), 'image/png');
-  t.equal(parseMIMEType('image/png'), 'image/png');
-  t.equal(parseMIMEType('application/octet-stream;'), 'application/octet-stream');
-  t.equal(parseMIMEType('text/csv;'), 'text/csv');
-  t.equal(parseMIMEType('application/zip;'), 'application/zip');
-
-  t.end();
+test('parseMIMEType', () => {
+  expect(parseMIMEType('image/png;')).toBe('image/png');
+  expect(parseMIMEType('image/png')).toBe('image/png');
+  expect(parseMIMEType('application/octet-stream;')).toBe('application/octet-stream');
+  expect(parseMIMEType('text/csv;')).toBe('text/csv');
+  expect(parseMIMEType('application/zip;')).toBe('application/zip');
 });
-
-test('parseMIMETypeFromURL', t => {
-  t.equal(parseMIMETypeFromURL(DATA_URL), 'image/png');
-  t.end();
+test('parseMIMETypeFromURL', () => {
+  expect(parseMIMETypeFromURL(DATA_URL)).toBe('image/png');
 });

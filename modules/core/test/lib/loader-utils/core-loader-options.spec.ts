@@ -1,19 +1,12 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
-
+import {expect, test} from 'vitest';
 import {
   getGlobalLoaderOptions,
   normalizeLoaderOptions,
   setGlobalOptions
 } from '@loaders.gl/core/lib/loader-utils/option-utils';
-
-test('coreOptions#deprecatedTopLevelMovesIntoCore', t => {
+test('coreOptions#deprecatedTopLevelMovesIntoCore', () => {
   const originalGlobalOptions = getGlobalLoaderOptions();
   const originalClone = {...originalGlobalOptions, core: {...originalGlobalOptions.core}};
-
   const normalizedOptions = normalizeLoaderOptions({
     worker: false,
     _nodeWorkers: true,
@@ -24,23 +17,19 @@ test('coreOptions#deprecatedTopLevelMovesIntoCore', t => {
     limit: 11,
     metadata: true
   });
-
-  t.equal(normalizedOptions.core.worker, false);
-  t.equal(normalizedOptions.core._nodeWorkers, true);
-  t.equal(normalizedOptions.core._workerType, 'test');
-  t.equal((normalizedOptions as any)._worker, undefined);
-  t.equal(normalizedOptions.core.batchSize, 7);
-  t.equal(normalizedOptions.core.batchDebounceMs, 3);
-  t.equal(normalizedOptions.core.limit, 11);
-  t.equal(normalizedOptions.core.metadata, true);
-  t.equal((normalizedOptions as any).worker, undefined);
-  t.equal((normalizedOptions as any).batchSize, undefined);
-
+  expect(normalizedOptions.core.worker).toBe(false);
+  expect(normalizedOptions.core._nodeWorkers).toBe(true);
+  expect(normalizedOptions.core._workerType).toBe('test');
+  expect((normalizedOptions as any)._worker).toBe(undefined);
+  expect(normalizedOptions.core.batchSize).toBe(7);
+  expect(normalizedOptions.core.batchDebounceMs).toBe(3);
+  expect(normalizedOptions.core.limit).toBe(11);
+  expect(normalizedOptions.core.metadata).toBe(true);
+  expect((normalizedOptions as any).worker).toBe(undefined);
+  expect((normalizedOptions as any).batchSize).toBe(undefined);
   setGlobalOptions({core: {worker: true}, worker: false});
   const globalOptions = getGlobalLoaderOptions();
-  t.equal(globalOptions.core.worker, true);
-  t.equal((globalOptions as any).worker, undefined);
-
+  expect(globalOptions.core.worker).toBe(true);
+  expect((globalOptions as any).worker).toBe(undefined);
   setGlobalOptions(originalClone);
-  t.end();
 });
