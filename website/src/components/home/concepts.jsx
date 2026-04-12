@@ -227,6 +227,17 @@ const sourceTabs = [
     deckLayers: ['BitmapLayer']
   },
   {
+    id: 'raster-source',
+    label: 'Raster',
+    sources: ['GeoTIFFSource'],
+    dataSource: 'RasterDataSource',
+    methods: ['getMetadata()', 'getRaster()'],
+    outputCategory: 'RasterData',
+    outputDetail: 'Typed arrays / multiband textures',
+    loadingManager: 'Viewport2D',
+    deckLayers: ['BitmapLayer', 'Custom shaders']
+  },
+  {
     id: 'tile-source',
     label: '3D Tiles',
     sources: ['COPCSource', 'Tiles3DSource', 'I3SSource'],
@@ -241,6 +252,7 @@ const sourceTabs = [
 
 const sourceTags = {
   COPCSource: 'Cloud Archive',
+  GeoTIFFSource: 'Cloud Archive',
   I3SSource: 'Tileset',
   MLTSource: 'Web Service',
   MVTSource: 'Cloud Archive',
@@ -347,6 +359,7 @@ const writerDocumentationLinks = {
 
 const sourceDocumentationLinks = {
   COPCSource: '/docs/modules/copc/api-reference/copc-source',
+  GeoTIFFSource: '/docs/modules/geotiff',
   I3SSource: '/docs/modules/tiles/api-reference/i3s-source',
   MLTSource: '/docs/modules/mlt/api-reference/mlt-source',
   MVTSource: '/docs/modules/mvt/api-reference/mvt-source',

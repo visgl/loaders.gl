@@ -6,14 +6,14 @@ import {getDims, getLabels} from './utils';
 import type {OMEXML, UnitsLength} from './omexml';
 
 export const DTYPE_LOOKUP = {
-  uint8: 'Uint8',
-  uint16: 'Uint16',
-  uint32: 'Uint32',
-  float: 'Float32',
-  double: 'Float64',
-  int8: 'Int8',
-  int16: 'Int16',
-  int32: 'Int32'
+  uint8: 'uint8',
+  uint16: 'uint16',
+  uint32: 'uint32',
+  float: 'float32',
+  double: 'float64',
+  int8: 'int8',
+  int16: 'int16',
+  int32: 'int32'
 } as const;
 
 export function getOmePixelSourceMeta({Pixels}: OMEXML[0]) {
