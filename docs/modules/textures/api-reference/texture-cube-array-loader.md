@@ -1,7 +1,7 @@
 # TextureCubeArrayLoader
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 
 A loader for texture cube arrays described by a JSON manifest.
@@ -26,7 +26,7 @@ const imageCubeArray = await load(
 );
 ```
 
-Member faces are parsed with `ImageLoader` by default. If you pass a loader array to `load()`, those additional loaders are also available for cube-array faces and mip levels.
+Member faces are parsed with `ImageBitmapLoader` by default, returning native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/polyfills` is present.
 
 ## Manifest
 

@@ -48,6 +48,9 @@ export async function getVitestConfig(options = {}) {
 
   return defineConfig({
     plugins: [serveRangeRequestsPlugin(repositoryRoot)],
+    optimizeDeps: {
+      include: ['get-pixels']
+    },
     resolve: {
       alias: [
         ...testAliases,
@@ -65,8 +68,19 @@ export async function getVitestConfig(options = {}) {
             environment: 'node',
             passWithNoTests: true,
             setupFiles,
-            include: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}'],
-            exclude: ['modules/**/*.browser.spec.{ts,js}', 'test/**/*.browser.spec.{ts,js}', ...sharedExcludePatterns],
+            include: [
+              'modules/core/test/**/*.spec.{ts,js}',
+              'modules/images/test/**/*.spec.{ts,js}',
+              'modules/loader-utils/test/**/*.spec.{ts,js}',
+              'modules/polyfills/test/**/*.spec.{ts,js}',
+              'modules/**/*.node.spec.{ts,js}',
+              'test/**/*.node.spec.{ts,js}'
+            ],
+            exclude: [
+              'modules/**/*.browser.spec.{ts,js}',
+              'test/**/*.browser.spec.{ts,js}',
+              ...sharedExcludePatterns
+            ],
             browser: {
               enabled: false
             }

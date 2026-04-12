@@ -12,7 +12,11 @@ import type {
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
-import {ImageLoader, ImageLoaderOptions, getBinaryImageMetadata} from '@loaders.gl/images';
+import {
+  ImageBitmapLoader,
+  ImageBitmapLoaderOptions,
+  getBinaryImageMetadata
+} from '@loaders.gl/images';
 import {
   MVTLoader,
   MVTLoaderOptions,
@@ -33,7 +37,7 @@ export type MVTSourceOptions = DataSourceOptions & {
     /** Additional attribution, adds to any attribution loaded from tileset metadata */
     attributions?: string[];
     /** Specify load options for all sub loaders */
-    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageLoaderOptions;
+    loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
   };
 };
 
@@ -172,7 +176,7 @@ export class MVTTileSource
   }
 
   protected async _parseImageTile(arrayBuffer: ArrayBuffer): Promise<ImageType> {
-    return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+    return await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions);
   }
 
   // VectorTileSource interface implementation

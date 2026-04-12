@@ -1,9 +1,4 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
-
+import {expect, test} from 'vitest';
 import {
   isObject,
   isPureObject,
@@ -24,49 +19,44 @@ import {
   isWritableNodeStream,
   isWritableStream
 } from '@loaders.gl/loader-utils';
-
-test('is-type#object checks', t => {
+test('is-type#object checks', () => {
   class TestClass {}
-  t.ok(isObject({}), 'object is object');
-  t.equal(isPureObject({}), true, 'object if pure');
-  t.equal(isPureObject([]), false, 'array is not pure');
-  t.equal(isPureObject(3), false, 'number is not pure');
-  t.equal(isPureObject(new TestClass()), false, 'class instance is not pure');
-  t.notOk(isObject(null), 'null is not object');
-  t.ok(isPureObject({foo: 'bar'}), 'plain object is pure');
-  t.notOk(isPureObject(new (class Test {})()), 'class instance is not pure');
-  t.end();
+  expect(isObject({}), 'object is object').toBeTruthy();
+  expect(isPureObject({}), 'object if pure').toBe(true);
+  expect(isPureObject([]), 'array is not pure').toBe(false);
+  expect(isPureObject(3), 'number is not pure').toBe(false);
+  expect(isPureObject(new TestClass()), 'class instance is not pure').toBe(false);
+  expect(isObject(null), 'null is not object').toBeFalsy();
+  expect(isPureObject({foo: 'bar'}), 'plain object is pure').toBeTruthy();
+  expect(isPureObject(new (class Test {})()), 'class instance is not pure').toBeFalsy();
 });
-
-test('is-type#array buffer checks', t => {
+test('is-type#array buffer checks', () => {
   const arrayBuffer = new ArrayBuffer(8);
   const uint8Array = new Uint8Array(arrayBuffer);
-
-  t.ok(isArrayBuffer(arrayBuffer), 'ArrayBuffer is ArrayBuffer');
-  t.notOk(isArrayBuffer(uint8Array), 'TypedArray is not ArrayBuffer');
-
-  t.ok(isArrayBufferLike(arrayBuffer), 'ArrayBuffer is ArrayBufferLike');
-  t.ok(isArrayBufferLike(uint8Array), 'TypedArray is ArrayBufferLike');
-  t.notOk(isArrayBufferLike({byteLength: 8}), 'Object with byteLength is not ArrayBufferLike');
-
+  expect(isArrayBuffer(arrayBuffer), 'ArrayBuffer is ArrayBuffer').toBeTruthy();
+  expect(isArrayBuffer(uint8Array), 'TypedArray is not ArrayBuffer').toBeFalsy();
+  expect(isArrayBufferLike(arrayBuffer), 'ArrayBuffer is ArrayBufferLike').toBeTruthy();
+  expect(isArrayBufferLike(uint8Array), 'TypedArray is ArrayBufferLike').toBeTruthy();
+  expect(
+    isArrayBufferLike({byteLength: 8}),
+    'Object with byteLength is not ArrayBufferLike'
+  ).toBeFalsy();
   if (typeof SharedArrayBuffer !== 'undefined') {
     const sharedArrayBuffer = new SharedArrayBuffer(8);
-    t.ok(isArrayBufferLike(sharedArrayBuffer), 'SharedArrayBuffer is ArrayBufferLike');
+    expect(
+      isArrayBufferLike(sharedArrayBuffer),
+      'SharedArrayBuffer is ArrayBufferLike'
+    ).toBeTruthy();
   } else {
-    t.pass('SharedArrayBuffer not available in environment');
+    expect(true, 'SharedArrayBuffer not available in environment').toBe(true);
   }
-
-  t.end();
 });
-
-test('is-type#promise checks', t => {
+test('is-type#promise checks', () => {
   const promise = Promise.resolve('value');
-  t.ok(isPromise(promise), 'promise is promise');
-  t.notOk(isPromise({then: 'not a function'}), 'non-function then is not promise');
-  t.end();
+  expect(isPromise(promise), 'promise is promise').toBeTruthy();
+  expect(isPromise({then: 'not a function'}), 'non-function then is not promise').toBeFalsy();
 });
-
-test.skip('isIterator', t => {
+test.skip('isIterator', () => {
   const TESTS = [
     {
       input: new Set().entries(),
@@ -91,83 +81,66 @@ test.skip('isIterator', t => {
       output: null
     }
   ];
-
   for (const testCase of TESTS) {
-    t.is(
+    expect(
       isIterator(testCase.input),
-      testCase.output,
       `${testCase.output ? 'shoud' : 'should not'} be iterator`
-    );
+    ).toBe(testCase.output);
   }
-
-  t.end();
 });
-
-test('is-type#iterable checks', t => {
+test('is-type#iterable checks', () => {
   const array = [1, 2, 3];
   const asyncIterable = {
     async *[Symbol.asyncIterator]() {
       yield 1;
     }
   };
-  t.ok(isIterable(array), 'array is iterable');
-  t.ok(isIterator(array.entries()), 'entries iterator is iterator');
-  t.ok(isAsyncIterable(asyncIterable), 'custom async iterable is async iterable');
-  t.notOk(isIterator(array), 'array is not iterator');
-  t.end();
+  expect(isIterable(array), 'array is iterable').toBeTruthy();
+  expect(isIterator(array.entries()), 'entries iterator is iterator').toBeTruthy();
+  expect(isAsyncIterable(asyncIterable), 'custom async iterable is async iterable').toBeTruthy();
+  expect(isIterator(array), 'array is not iterator').toBeFalsy();
 });
-
-test('is-type#response checks', t => {
+test('is-type#response checks', () => {
   const mockResponse = {
     arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
     text: () => Promise.resolve(''),
     json: () => Promise.resolve({})
   };
-  t.ok(isResponse(mockResponse), 'duck-typed response is response');
-  t.notOk(isResponse({}), 'plain object is not response');
-  t.end();
+  expect(isResponse(mockResponse), 'duck-typed response is response').toBeTruthy();
+  expect(isResponse({}), 'plain object is not response').toBeFalsy();
 });
-
-test('is-type#file/blob checks', t => {
+test('is-type#file/blob checks', () => {
   if (typeof File !== 'undefined') {
     const file = new File(['abc'], 'test.txt');
-    t.ok(isFile(file), 'File instance is file');
+    expect(isFile(file), 'File instance is file').toBeTruthy();
   } else {
-    t.pass('File not available in environment');
+    expect(true, 'File not available in environment').toBe(true);
   }
-
   if (typeof Blob !== 'undefined') {
     const blob = new Blob(['abc']);
-    t.ok(isBlob(blob), 'Blob instance is blob');
+    expect(isBlob(blob), 'Blob instance is blob').toBeTruthy();
   } else {
-    t.pass('Blob not available in environment');
+    expect(true, 'Blob not available in environment').toBe(true);
   }
-
-  t.end();
 });
-
-test('is-type#buffer check', t => {
+test('is-type#buffer check', () => {
   const mockBuffer = {isBuffer: true, buffer: new ArrayBuffer(8)};
-  t.ok(isBuffer(mockBuffer), 'mock buffer passes buffer guard');
-  t.notOk(isBuffer({buffer: new ArrayBuffer(8)}), 'missing isBuffer flag fails');
-  t.end();
+  expect(isBuffer(mockBuffer), 'mock buffer passes buffer guard').toBeTruthy();
+  expect(isBuffer({buffer: new ArrayBuffer(8)}), 'missing isBuffer flag fails').toBeFalsy();
 });
-
-test('is-type#readable streams', async t => {
+test('is-type#readable streams', async () => {
   if (globalThis.process?.versions?.node) {
     const {Readable, PassThrough} = await import('stream');
     const nodeReadable = Readable.from(['hello']);
     const passThrough = new PassThrough();
     passThrough.write('hi');
     passThrough.end();
-
-    t.ok(isReadableNodeStream(nodeReadable), 'Node readable stream detected');
-    t.ok(isReadableNodeStream(passThrough), 'PassThrough is readable');
-    t.ok(isReadableStream(nodeReadable), 'Node readable satisfies readable stream');
+    expect(isReadableNodeStream(nodeReadable), 'Node readable stream detected').toBeTruthy();
+    expect(isReadableNodeStream(passThrough), 'PassThrough is readable').toBeTruthy();
+    expect(isReadableStream(nodeReadable), 'Node readable satisfies readable stream').toBeTruthy();
   } else {
-    t.pass('Node streams not available in environment');
+    expect(true, 'Node streams not available in environment').toBe(true);
   }
-
   if (typeof ReadableStream !== 'undefined') {
     const readableStream = new ReadableStream({
       start(controller) {
@@ -175,34 +148,34 @@ test('is-type#readable streams', async t => {
         controller.close();
       }
     });
-    t.ok(isReadableDOMStream(readableStream), 'DOM ReadableStream detected');
-    t.ok(isReadableStream(readableStream), 'DOM ReadableStream satisfies readable stream');
+    expect(isReadableDOMStream(readableStream), 'DOM ReadableStream detected').toBeTruthy();
+    expect(
+      isReadableStream(readableStream),
+      'DOM ReadableStream satisfies readable stream'
+    ).toBeTruthy();
   } else {
-    t.pass('ReadableStream not available in environment');
+    expect(true, 'ReadableStream not available in environment').toBe(true);
   }
-
-  t.end();
 });
-
-test('is-type#writable streams', t => {
+test('is-type#writable streams', () => {
   const writableMock = {
     end: () => {},
     write: () => {},
     writable: true
   };
-  t.ok(isWritableNodeStream(writableMock), 'mock node writable detected');
-  t.ok(isWritableStream(writableMock), 'mock writable satisfies writable stream');
-
+  expect(isWritableNodeStream(writableMock), 'mock node writable detected').toBeTruthy();
+  expect(isWritableStream(writableMock), 'mock writable satisfies writable stream').toBeTruthy();
   if (typeof WritableStream !== 'undefined') {
     const writableStream = new WritableStream({
       write() {},
       close() {}
     });
-    t.ok(isWritableDOMStream(writableStream), 'DOM WritableStream detected');
-    t.ok(isWritableStream(writableStream), 'DOM WritableStream satisfies writable stream');
+    expect(isWritableDOMStream(writableStream), 'DOM WritableStream detected').toBeTruthy();
+    expect(
+      isWritableStream(writableStream),
+      'DOM WritableStream satisfies writable stream'
+    ).toBeTruthy();
   } else {
-    t.pass('WritableStream not available in environment');
+    expect(true, 'WritableStream not available in environment').toBe(true);
   }
-
-  t.end();
 });

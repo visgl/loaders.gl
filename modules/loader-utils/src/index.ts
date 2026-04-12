@@ -140,24 +140,18 @@ export {
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 export {
   RangeRequestScheduler,
-  TileRangeRequestScheduler,
   createRangeStats,
   fetchHttpRange,
   getRangeStats
-} from './lib/request-utils/tile-range-request-scheduler';
+} from './lib/request-utils/range-request-scheduler';
 export type {
   RangeFetchRequest,
   RangeRequest,
   RangeRequestEvent,
   RangeRequestSchedulerProps,
   RangeRequestTransportResult,
-  RangeStats,
-  TileRangeFetchRequest,
-  TileRangeRequest,
-  TileRangeRequestEvent,
-  TileRangeRequestTransportResult,
-  TileRangeRequestSchedulerProps
-} from './lib/request-utils/tile-range-request-scheduler';
+  RangeStats
+} from './lib/request-utils/range-request-scheduler';
 
 // PATH HELPERS
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';

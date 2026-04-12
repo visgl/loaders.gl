@@ -1,192 +1,151 @@
-// Based on https://github.com/github/fetch under MIT license
-
-import test from 'tape-promise/tape';
-import {isBrowser} from '@loaders.gl/core';
-
-if (!isBrowser) {
-  // https://fetch.spec.whatwg.org/#headers-class
-  // Run the tests both under browser and Node (ensures they conform to built-in)
-  test('constructor copies headers', t => {
+import {expect, test} from 'vitest';
+// https://fetch.spec.whatwg.org/#headers-class
+// Run the tests both under browser and Node (ensures they conform to built-in)
+test('constructor copies headers', () => {
     const original = new Headers();
     original.append('Accept', 'application/json');
     original.append('Accept', 'text/plain');
     original.append('Content-Type', 'text/html');
-
     const headers = new Headers(original);
-    t.equal(headers.get('Accept'), 'application/json, text/plain');
-    t.equal(headers.get('Content-type'), 'text/html');
-    t.end();
-  });
-
-  test('constructor works with arrays', t => {
+    expect(headers.get('Accept')).toBe('application/json, text/plain');
+    expect(headers.get('Content-type')).toBe('text/html');
+});
+test('constructor works with arrays', () => {
     const array: [string, string][] = [
       ['Content-Type', 'text/xml'],
       ['Breaking-Bad', '<3']
     ];
     const headers = new Headers(array);
-
-    t.equal(headers.get('Content-Type'), 'text/xml');
-    t.equal(headers.get('Breaking-Bad'), '<3');
-    t.end();
-  });
-
-  test('headers are case insensitive', t => {
+    expect(headers.get('Content-Type')).toBe('text/xml');
+    expect(headers.get('Breaking-Bad')).toBe('<3');
+});
+test('headers are case insensitive', () => {
     const headers = new Headers({Accept: 'application/json'});
-    t.equal(headers.get('ACCEPT'), 'application/json');
-    t.equal(headers.get('Accept'), 'application/json');
-    t.equal(headers.get('accept'), 'application/json');
-    t.end();
-  });
-
-  test('appends to existing', t => {
+    expect(headers.get('ACCEPT')).toBe('application/json');
+    expect(headers.get('Accept')).toBe('application/json');
+    expect(headers.get('accept')).toBe('application/json');
+});
+test('appends to existing', () => {
     const headers = new Headers({Accept: 'application/json'});
-    t.notOk(headers.has('Content-Type'));
+    expect(headers.has('Content-Type')).toBeFalsy();
     headers.append('Content-Type', 'application/json');
-    t.ok(headers.has('Content-Type'));
-    t.equal(headers.get('Content-Type'), 'application/json');
-    t.end();
-  });
-
-  test('appends values to existing header name', t => {
+    expect(headers.has('Content-Type')).toBeTruthy();
+    expect(headers.get('Content-Type')).toBe('application/json');
+});
+test('appends values to existing header name', () => {
     const headers = new Headers({Accept: 'application/json'});
     headers.append('Accept', 'text/plain');
-    t.equal(headers.get('Accept'), 'application/json, text/plain');
-    t.end();
-  });
-
-  test('sets header name and value', t => {
+    expect(headers.get('Accept')).toBe('application/json, text/plain');
+});
+test('sets header name and value', () => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
-    t.equal(headers.get('Content-Type'), 'application/json');
-    t.end();
-  });
-
-  test('returns null on no header found', t => {
+    expect(headers.get('Content-Type')).toBe('application/json');
+});
+test('returns null on no header found', () => {
     const headers = new Headers();
-    t.equals(headers.get('Content-Type'), null);
-    t.end();
-  });
-
-  test('has headers that are set', t => {
+    expect(headers.get('Content-Type')).toBe(null);
+});
+test('has headers that are set', () => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
-    t.ok(headers.has('Content-Type'));
-    t.end();
-  });
-
-  test('deletes headers', t => {
+    expect(headers.has('Content-Type')).toBeTruthy();
+});
+test('deletes headers', () => {
     const headers = new Headers();
     headers.set('Content-Type', 'application/json');
-    t.ok(headers.has('Content-Type'));
+    expect(headers.has('Content-Type')).toBeTruthy();
     headers.delete('Content-Type');
-    t.notOk(headers.has('Content-Type'));
-    t.equals(headers.get('Content-Type'), null);
-    t.end();
-  });
-
-  test('converts field name to string on set and get', t => {
+    expect(headers.has('Content-Type')).toBeFalsy();
+    expect(headers.get('Content-Type')).toBe(null);
+});
+test('converts field name to string on set and get', () => {
     const headers = new Headers();
     // @ts-ignore
     headers.set(1, 'application/json');
-    t.ok(headers.has('1'));
+    expect(headers.has('1')).toBeTruthy();
     // @ts-ignore
-    t.equal(headers.get(1), 'application/json');
-    t.end();
-  });
-
-  test('converts field value to string on set and get', t => {
+    expect(headers.get(1)).toBe('application/json');
+});
+test('converts field value to string on set and get', () => {
     const headers = new Headers();
     // @ts-ignore
     headers.set('Content-Type', 1);
     // @ts-ignore
     headers.set('X-CSRF-Token', undefined);
-    t.equal(headers.get('Content-Type'), '1');
-    t.equal(headers.get('X-CSRF-Token'), 'undefined');
-    t.end();
-  });
-
-  test('throws TypeError on invalid character in field name', t => {
+    expect(headers.get('Content-Type')).toBe('1');
+    expect(headers.get('X-CSRF-Token')).toBe('undefined');
+});
+test('throws TypeError on invalid character in field name', () => {
     // @ts-ignore
     // t.throws(() => new Headers({'[Accept]': 'application/json'}), TypeError);
     // @ts-ignore
     // t.throws(() => new Headers({'Accept:': 'application/json'}), TypeError);
     // @ts-ignore
-    t.throws(() => new Headers().set({field: 'value'}, 'application/json'), TypeError);
+    expect(() => new Headers().set({field: 'value'}, 'application/json')).toThrow(TypeError);
     // @ts-ignore
-    t.throws(() => new Headers({'': 'application/json'}), TypeError);
-    t.end();
-  });
-
-  test('is iterable with forEach', t => {
+    expect(() => new Headers({'': 'application/json'})).toThrow(TypeError);
+});
+test('is iterable with forEach', () => {
     // featureDependent(!brokenFF)
     // featureDependent(test, !brokenFF);
     const headers = new Headers();
     headers.append('Accept', 'application/json');
     headers.append('Accept', 'text/plain');
     headers.append('Content-Type', 'text/html');
-
-    const results: {value: string; key: string; object: Headers}[] = [];
+    const results: {
+      value: string;
+      key: string;
+      object: Headers;
+    }[] = [];
     headers.forEach((value, key, object) => results.push({value, key, object}));
-
-    t.equal(results.length, 2);
-    t.deepEqual(
-      {key: 'accept', value: 'application/json, text/plain', object: headers},
+    expect(results.length).toBe(2);
+    expect({key: 'accept', value: 'application/json, text/plain', object: headers}).toEqual(
       results[0]
     );
-    t.deepEqual({key: 'content-type', value: 'text/html', object: headers}, results[1]);
-    t.end();
-  });
-
-  test('forEach accepts second thisArg argument', t => {
+    expect({key: 'content-type', value: 'text/html', object: headers}).toEqual(results[1]);
+});
+test('forEach accepts second thisArg argument', () => {
     const headers = new Headers({Accept: 'application/json'});
     const thisArg = 42;
     // eslint-disable-next-line no-invalid-this
     headers.forEach(function () {
       // @ts-ignore
-      t.equal(this, thisArg);
+      expect(this).toBe(thisArg);
     }, thisArg);
-    t.end();
-  });
-
-  test('is iterable with keys', t => {
+});
+test('is iterable with keys', () => {
     // featureDependent(!brokenFF)
     const headers = new Headers();
     headers.append('Accept', 'application/json');
     headers.append('Accept', 'text/plain');
     headers.append('Content-Type', 'text/html');
-
     const iterator = headers.keys();
-    t.deepEqual({done: false, value: 'accept'}, iterator.next());
-    t.deepEqual({done: false, value: 'content-type'}, iterator.next());
-    t.deepEqual({done: true, value: undefined}, iterator.next());
-    t.end();
-  });
-
-  test('is iterable with values', t => {
+    expect({done: false, value: 'accept'}).toEqual(iterator.next());
+    expect({done: false, value: 'content-type'}).toEqual(iterator.next());
+    expect({done: true, value: undefined}).toEqual(iterator.next());
+});
+test('is iterable with values', () => {
     // featureDependent(!brokenFF)
     const headers = new Headers();
     headers.append('Accept', 'application/json');
     headers.append('Accept', 'text/plain');
     headers.append('Content-Type', 'text/html');
-
     const iterator = headers.values();
-    t.deepEqual({done: false, value: 'application/json, text/plain'}, iterator.next());
-    t.deepEqual({done: false, value: 'text/html'}, iterator.next());
-    t.deepEqual({done: true, value: undefined}, iterator.next());
-    t.end();
-  });
-
-  test('is iterable with entries', t => {
+    expect({done: false, value: 'application/json, text/plain'}).toEqual(iterator.next());
+    expect({done: false, value: 'text/html'}).toEqual(iterator.next());
+    expect({done: true, value: undefined}).toEqual(iterator.next());
+});
+test('is iterable with entries', () => {
     // featureDependent(!brokenFF)
     const headers = new Headers();
     headers.append('Accept', 'application/json');
     headers.append('Accept', 'text/plain');
     headers.append('Content-Type', 'text/html');
-
     const iterator = headers.entries();
-    t.deepEqual({done: false, value: ['accept', 'application/json, text/plain']}, iterator.next());
-    t.deepEqual({done: false, value: ['content-type', 'text/html']}, iterator.next());
-    t.deepEqual({done: true, value: undefined}, iterator.next());
-    t.end();
-  });
-}
+    expect({done: false, value: ['accept', 'application/json, text/plain']}).toEqual(
+      iterator.next()
+    );
+    expect({done: false, value: ['content-type', 'text/html']}).toEqual(iterator.next());
+    expect({done: true, value: undefined}).toEqual(iterator.next());
+});
