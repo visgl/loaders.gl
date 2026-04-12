@@ -133,3 +133,24 @@ test('ImageSourceLayer#keeps auto-SRS request shaping behavior', t => {
   ]);
   t.end();
 });
+
+test('ImageSourceLayer#passes debounceTime into ImageSet', t => {
+  const layer = createLayer({
+    id: 'test',
+    data: TEST_IMAGE_SOURCE as any,
+    debounceTime: 25
+  });
+
+  layer.state = {
+    resolvedData: null,
+    imageSet: null,
+    unsubscribeImageSetEvents: null
+  };
+
+  const imageSet = layer._getOrCreateImageSet(TEST_IMAGE_SOURCE as any, true);
+
+  t.equal(imageSet._opts.debounceTime, 25);
+
+  layer._releaseImageSet();
+  t.end();
+});

@@ -100,6 +100,37 @@ test('ArcGISImageSource#getImage maps generic parameters', async t => {
   t.end();
 });
 
+test('ArcGISImageSource#getImage normalizes EPSG-prefixed spatial references', async t => {
+  const source = ArcGISImageServerSource.createDataSource(IMAGE_SERVER_URL, {});
+  let exportImageParameters;
+  source.exportImage = async parameters => {
+    exportImageParameters = parameters;
+    return {} as never;
+  };
+
+  await source.getImage({
+    boundingBox: [
+      [1, 2],
+      [3, 4]
+    ],
+    width: 512,
+    height: 256,
+    crs: 'EPSG:3857',
+    format: 'image/png',
+    layers: []
+  });
+
+  t.deepEqual(exportImageParameters, {
+    bbox: [1, 2, 3, 4],
+    bboxSR: '3857',
+    imageSR: '3857',
+    width: 512,
+    height: 256,
+    format: 'png'
+  });
+  t.end();
+});
+
 test('ArcGISFeatureServerSource#testURL', t => {
   t.ok(ArcGISFeatureServerSource);
   t.ok(
@@ -141,6 +172,24 @@ test('ArcGISVectorSource#getFeaturesURL', t => {
   t.equal(featuresUrl.searchParams.get('geometryType'), 'esriGeometryEnvelope');
   t.equal(featuresUrl.searchParams.get('spatialRel'), 'esriSpatialRelIntersects');
   t.equal(featuresUrl.searchParams.get('f'), 'geojson');
+  t.end();
+});
+
+test('ArcGISVectorSource#getFeaturesURL normalizes EPSG-prefixed spatial references', t => {
+  const source = ArcGISFeatureServerSource.createDataSource(FEATURE_SERVER_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      boundingBox: [
+        [1, 2],
+        [3, 4]
+      ],
+      layers: [],
+      crs: 'EPSG:3857'
+    })
+  );
+
+  t.equal(featuresUrl.searchParams.get('outSR'), '3857');
+  t.equal(featuresUrl.searchParams.get('inSR'), '3857');
   t.end();
 });
 

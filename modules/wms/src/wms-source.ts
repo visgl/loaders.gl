@@ -251,12 +251,12 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
 
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
     // Replace the GetImage `boundingBox` parameter with the WMS flat `bbox` parameter.
-    const {boundingBox, bbox, ...rest} = parameters;
+    const {boundingBox, bbox, signal, ...rest} = parameters;
     const wmsParameters: WMSGetMapParameters = {
       bbox: boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!,
       ...rest
     };
-    return await this.getMap(wmsParameters);
+    return await this.getMap(wmsParameters, undefined, signal);
   }
 
   normalizeMetadata(capabilities: WMSCapabilities): ImageSourceMetadata {
@@ -282,10 +282,11 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
   /** Get a map image */
   async getMap(
     wmsParameters: WMSGetMapParameters,
-    vendorParameters?: Record<string, unknown>
+    vendorParameters?: Record<string, unknown>,
+    signal?: AbortSignal
   ): Promise<ImageType> {
     const url = this.getMapURL(wmsParameters, vendorParameters);
-    const response = await this.fetch(url);
+    const response = await this.fetch(url, signal ? {signal} : undefined);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {

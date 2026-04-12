@@ -4,15 +4,18 @@
 
 import React, {useState} from 'react';
 import {createRoot} from 'react-dom/client';
-// import {StaticMap} from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react';
-import {MapView, MapController} from '@deck.gl/core';
-import {_WMSLayer as WMSLayer} from '@deck.gl/geo-layers';
+import {MapController} from '@deck.gl/core';
 
-import type {ImageSource, ImageSourceMetadata} from '@loaders.gl/loader-utils';
+import {ImageSourceLayer, VectorSourceLayer} from '@loaders.gl/deck-layers';
 import {createDataSource} from '@loaders.gl/core';
-import {_ArcGISImageServerSource, WMSSource} from '@loaders.gl/wms';
+import {
+  _ArcGISFeatureServerSource,
+  _ArcGISImageServerSource,
+  WFSSource,
+  WMSSource
+} from '@loaders.gl/wms';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -49,61 +52,60 @@ type AppProps = {
   children?: React.Children;
 };
 
+const SOURCE_FACTORIES = [
+  WMSSource,
+  _ArcGISImageServerSource,
+  _ArcGISFeatureServerSource,
+  WFSSource
+];
+
+type SourceData = any;
+
 /** Application state */
 type AppState = {
-  /** Currently active tile source */
-  imageSource: ImageSource;
-  /** Metadata loaded from active tile source */
+  /** Currently selected example. */
+  example: Example | null;
+  /** Currently active source instance. */
+  source: SourceData | null;
+  /** Metadata loaded from the active source. */
   metadata: string;
-  /**Current view state */
+  /** Current view state. */
   viewState: Record<string, number>;
   loading: boolean;
   error: string | null;
-  featureInfo: any;
-  example: Example;
 };
 
 export default function App(props: AppProps = {}) {
   const [state, setState] = useState<AppState>({
-    imageSource: null,
+    example: null,
+    source: null,
     metadata: '',
     viewState: INITIAL_VIEW_STATE,
-    // TODO - handle errors
     loading: true,
-    error: null
+    error: null,
   });
 
-  const {imageSource, metadata} = state;
-  const wmsLayer = renderLayer(state.example);
+  const layers = renderLayer(state.example, state.source);
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
-        layers={wmsLayer}
+        layers={layers}
         viewState={state.viewState}
         onViewStateChange={onViewStateChange}
         onError={(error: Error) => setState((state) => ({...state, error: error.message}))}
+        getTooltip={getTooltip}
         controller={{type: MapController, maxPitch: 85}}
-        getTooltip={({object}) =>
-          state?.featureInfo && {
-            html: `<h2>Feature Info</h2><div>${state.featureInfo}</div>`,
-            style: {
-              color: '#EEE',
-              backgroundColor: '#000',
-              fontSize: '0.8em',
-              whiteSpace: 'pre-line'
-            }
-          }
-        }
       >
         <ExamplePanel
           examples={EXAMPLES}
+          format={props.format}
           initialCategoryName={INITIAL_CATEGORY_NAME}
           initialExampleName={INITIAL_EXAMPLE_NAME}
           onExampleChange={onExampleChange}
           loading={state.loading}
         >
-          <MetadataViewer metadata={metadata} />
+          <MetadataViewer metadata={state.metadata} />
           {state.error ? <div style={{color: 'red'}}>{state.error}</div> : ''}
           <LngLatZoomView viewState={state.viewState} />
         </ExamplePanel>
@@ -113,61 +115,104 @@ export default function App(props: AppProps = {}) {
   );
 
   function onViewStateChange({viewState}) {
-    setState((state) => ({...state, viewState}));
+    setState((state) => ({
+      ...state,
+      viewState
+    }));
   }
 
-  function onExampleChange({example}) {
-    const {viewState} = example;
-    const newViewState = {...state.viewState, ...viewState};
-
-    const imageSource = createDataSource<ImageSource>(
-      example.url,
-      [WMSSource, _ArcGISImageServerSource],
-      {type: 'wms'}
-    );
-
-    setState((state) => ({...state, example, viewState: newViewState, imageSource}));
-  }
-
-  function renderLayer(example: Example) {
-    if (!example) {
+  function getTooltip({object}) {
+    if (!object || !object.properties) {
       return null;
     }
 
-    // @ts-expect-error
-    const {url, type, layers, opacity = 1} = example;
+    const entries = Object.entries(object.properties).filter(
+      ([, value]) => value !== null && value !== ''
+    );
+    if (!entries.length) {
+      return null;
+    }
+
+    return {
+      text: entries
+        .slice(0, 5)
+        .map(([key, value]) => `${formatLabel(key)}: ${String(value)}`)
+        .join('\n')
+    };
+  }
+
+  async function onExampleChange({example}) {
+    const {viewState} = example;
+    const newViewState = {...state.viewState, ...viewState};
+    const source = createDataSource(example.url, SOURCE_FACTORIES, {
+      type: example.type
+    });
+
+    setState((state) => ({
+      ...state,
+      example,
+      source,
+      viewState: newViewState,
+      metadata: 'Loading metadata...',
+      loading: true,
+      error: null
+    }));
+
+    try {
+      const metadata = await source.getMetadata({formatSpecificMetadata: false});
+      const title = metadata?.title || metadata?.name || example.url;
+      globalThis.document.title = String(title);
+      setState((state) => ({
+        ...state,
+        metadata: JSON.stringify(metadata, null, 2)
+      }));
+    } catch (error) {
+      setState((state) => ({
+        ...state,
+        metadata: '',
+        error: `Could not load metadata: ${error instanceof Error ? error.message : String(error)}`
+      }));
+    }
+  }
+
+  function renderLayer(example: Example | null, source: SourceData | null) {
+    if (!example || !source) {
+      return null;
+    }
+
+    if (example.type === 'arcgis-feature-server' || example.type === 'wfs') {
+      return [
+        new VectorSourceLayer({
+          id: `${example.type}-${example.url}`,
+          data: source,
+          layers: example.layers || [],
+          onLoadingStateChange: isLoading =>
+            setState((state) => ({...state, loading: isLoading})),
+          onError: (error: Error) =>
+            setState((state) => ({...state, loading: false, error: error.message})),
+          geoJsonLayerProps: {
+            pickable: true,
+            autoHighlight: true,
+            ...example.layerProps
+          }
+        })
+      ];
+    }
 
     return [
-      new WMSLayer({
-        data: url, // new WMSSource({url: service, wmsParameters: {transparent: true}}),
-        serviceType: type,
-        layers,
-
-        pickable: true,
-        opacity,
-
-        onImageLoadStart: () => setState((state) => ({...state, loading: true})),
-        onImageLoad: () => setState((state) => ({...state, loading: false})),
-
-        onMetadataLoadStart: () =>
-          setState((state) => ({...state, metadata: 'Loading metadata...'})),
-        onMetadataLoad: (metadata: ImageSourceMetadata) => {
-          globalThis.document.title = metadata.title || 'WMS';
-          setState((state) => ({...state, metadata: JSON.stringify(metadata, null, 2)}));
-        },
-
-        // @ts-expect-error
-        onClick: async ({bitmap, layer}) => {
-          if (this.state.featureInfo) {
-            setState((state) => ({...state, featureInfo: null}));
-          } else if (bitmap) {
-            const x = bitmap.pixel[0];
-            const y = bitmap.pixel[1];
-            const featureInfo = await layer.getFeatureInfoText(x, y);
-            console.log('Click in imagery layer', x, y, featureInfo);
-            setState((state) => ({...state, featureInfo}));
-          }
-        }
+      new ImageSourceLayer({
+        id: `${example.type}-${example.url}`,
+        data: source,
+        layers: example.layers || [],
+        srs:
+          example.type === 'wms' || example.type === 'arcgis-image-server'
+            ? 'EPSG:4326'
+            : 'auto',
+        onLoadingStateChange: isLoading =>
+          setState((state) => ({...state, loading: isLoading})),
+        onImageLoadError: (_requestId: number, error: Error) =>
+          setState((state) => ({...state, loading: false, error: error.message})),
+        ...example.layerProps
       })
     ];
   }
@@ -188,6 +233,12 @@ function LngLatZoomView({viewState}) {
 
 export function renderToDOM(container = document.body) {
   createRoot(container).render(<App />);
+}
+
+function formatLabel(value: string): string {
+  return value
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 /*

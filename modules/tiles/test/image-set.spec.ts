@@ -133,3 +133,32 @@ test('ImageSet#debounces image requests', async t => {
   imageSet.finalize();
   t.end();
 });
+
+test('ImageSet#emits loading state changes', async t => {
+  let resolveImage;
+  const loadingStates: boolean[] = [];
+  const imageSet = new ImageSet({
+    async getMetadata() {
+      return {name: 'test', keywords: [], layers: []};
+    },
+    getImage() {
+      return new Promise(resolve => {
+        resolveImage = () => resolve({name: 'image'});
+      }) as Promise<any>;
+    }
+  });
+
+  imageSet.subscribe({
+    onLoadingStateChange: isLoading => loadingStates.push(isLoading)
+  });
+
+  imageSet.requestImage({layers: [], boundingBox: [[0, 0], [1, 1]], width: 1, height: 1});
+  await new Promise(resolve => setTimeout(resolve, 0));
+  resolveImage?.();
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  t.deepEqual(loadingStates, [true, false]);
+
+  imageSet.finalize();
+  t.end();
+});

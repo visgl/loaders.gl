@@ -124,7 +124,7 @@ export class ArcGISVectorSource
   /** Requests features from the ArcGIS FeatureServer query endpoint. */
   async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
     const url = this.getFeaturesURL(parameters);
-    const response = await this.fetch(url);
+    const response = await this.fetch(url, parameters.signal ? {signal: parameters.signal} : undefined);
     await this.checkResponse(response);
     return parseGeoJSONTable(await response.json());
   }
@@ -152,12 +152,13 @@ export class ArcGISVectorSource
   /** Builds a query URL from generic vector source parameters. */
   getFeaturesURL(parameters: GetFeaturesParameters): string {
     const defaultParameters = this.options['arcgis-feature-server']?.queryParameters || {};
+    const spatialReference = normalizeArcGISSpatialReference(parameters.crs) || 4326;
     const queryParameters: ArcGISFeatureServiceQueryOptions = {
       returnGeometry: true,
       where: '1=1',
       outFields: '*',
-      outSR: parameters.crs || 4326,
-      inSR: parameters.crs || 4326,
+      outSR: spatialReference,
+      inSR: spatialReference,
       f: 'geojson',
       ...defaultParameters
     };
@@ -215,6 +216,19 @@ function parseArcGISFeatureServerMetadata(json: any): VectorSourceMetadata {
     // crs: 'EPSG:4326',
     layers
   };
+}
+
+/** Normalizes EPSG-prefixed CRS strings to ArcGIS WKID values. */
+function normalizeArcGISSpatialReference(
+  spatialReference: string | number | undefined
+): string | number | undefined {
+  if (typeof spatialReference === 'string') {
+    const match = /^EPSG:(\d+)$/i.exec(spatialReference);
+    if (match) {
+      return match[1];
+    }
+  }
+  return spatialReference;
 }
 
 /** Builds a schema from ArcGIS FeatureServer metadata fields. */

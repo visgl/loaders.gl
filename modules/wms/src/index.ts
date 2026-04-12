@@ -58,6 +58,7 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // export {CSWSource} from './csw-source';
 export {WMSSource, WMSImageSource} from './wms-source';
+export {WFSSource, WFSVectorSource} from './wfs-source';
 
 // ArcGIS SourceLoaders
 

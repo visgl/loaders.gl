@@ -37,6 +37,8 @@ export type ImageSetProps<DataT = ImageType> = Partial<ImageSetBaseProps<DataT>>
 
 /** Subscription callbacks emitted by {@link ImageSet}. */
 export type ImageSetListener<DataT = ImageType> = {
+  /** Fired when metadata/image loading starts or stops. */
+  onLoadingStateChange?: (isLoading: boolean) => void;
   /** Fired when source metadata resolves successfully. */
   onMetadataLoad?: (metadata: ImageSourceMetadata) => void;
   /** Fired when metadata loading fails. */
@@ -69,6 +71,7 @@ export class ImageSet<DataT = ImageType> {
   private _nextRequestId = 0;
   private _loadCounter = 0;
   private _timeoutId: ReturnType<typeof setTimeout> | null = null;
+  private _abortController: AbortController | null = null;
   private _finalized = false;
 
   /** Creates an image manager from a source or direct callbacks. */
@@ -136,7 +139,7 @@ export class ImageSet<DataT = ImageType> {
 
   /** Loads metadata from the current image source or callbacks. */
   async loadMetadata(): Promise<ImageSourceMetadata> {
-    this._loadCounter++;
+    this._startLoading();
     try {
       const metadata = await this._opts.getMetadata();
       if (this._finalized) {
@@ -157,7 +160,7 @@ export class ImageSet<DataT = ImageType> {
       }
       throw normalizedError;
     } finally {
-      this._loadCounter--;
+      this._finishLoading();
     }
   }
 
@@ -165,6 +168,7 @@ export class ImageSet<DataT = ImageType> {
   requestImage(parameters: GetImageParameters, debounceTime = this._opts.debounceTime): number {
     const requestId = this._nextRequestId++;
     this._cancelScheduledImage();
+    this._abortActiveRequest();
 
     if (debounceTime > 0) {
       this._timeoutId = setTimeout(() => {
@@ -182,6 +186,7 @@ export class ImageSet<DataT = ImageType> {
   finalize(): void {
     this._finalized = true;
     this._cancelScheduledImage();
+    this._abortActiveRequest();
     this._listeners.clear();
   }
 
@@ -191,13 +196,15 @@ export class ImageSet<DataT = ImageType> {
       return;
     }
 
-    this._loadCounter++;
+    this._startLoading();
     for (const listener of this._listeners) {
       listener.onImageLoadStart?.(requestId, parameters);
     }
 
     try {
-      const image = await this._opts.getImage(parameters);
+      const abortController = new AbortController();
+      this._abortController = abortController;
+      const image = await this._opts.getImage({...parameters, signal: abortController.signal});
       if (this._finalized || requestId <= this._lastAcceptedRequestId) {
         return;
       }
@@ -210,6 +217,9 @@ export class ImageSet<DataT = ImageType> {
       }
       this._emitUpdate();
     } catch (error) {
+      if (isAbortError(error)) {
+        return;
+      }
       const normalizedError = normalizeImageSetError(error, 'Image request failed');
       if (!this._finalized) {
         for (const listener of this._listeners) {
@@ -217,7 +227,10 @@ export class ImageSet<DataT = ImageType> {
         }
       }
     } finally {
-      this._loadCounter--;
+      if (this._abortController?.signal === parameters.signal) {
+        this._abortController = null;
+      }
+      this._finishLoading();
     }
   }
 
@@ -255,6 +268,33 @@ export class ImageSet<DataT = ImageType> {
     }
   }
 
+  /** Increments the active load count and emits loading changes. */
+  private _startLoading(): void {
+    const wasLoading = this._loadCounter > 0;
+    this._loadCounter++;
+    if (!wasLoading) {
+      this._emitLoadingStateChange(true);
+      this._emitUpdate();
+    }
+  }
+
+  /** Decrements the active load count and emits loading changes. */
+  private _finishLoading(): void {
+    const wasLoading = this._loadCounter > 0;
+    this._loadCounter = Math.max(0, this._loadCounter - 1);
+    if (wasLoading && this._loadCounter === 0) {
+      this._emitLoadingStateChange(false);
+      this._emitUpdate();
+    }
+  }
+
+  /** Notifies listeners when the overall loading state changes. */
+  private _emitLoadingStateChange(isLoading: boolean): void {
+    for (const listener of this._listeners) {
+      listener.onLoadingStateChange?.(isLoading);
+    }
+  }
+
   /** Clears any pending debounced image request. */
   private _cancelScheduledImage(): void {
     if (this._timeoutId !== null) {
@@ -262,6 +302,16 @@ export class ImageSet<DataT = ImageType> {
       this._timeoutId = null;
     }
   }
+
+  /** Aborts the current in-flight image request, if any. */
+  private _abortActiveRequest(): void {
+    this._abortController?.abort();
+    this._abortController = null;
+  }
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
 }
 
 /** Normalizes arbitrary thrown values to `Error` instances for bookkeeping. */
