@@ -317,11 +317,12 @@ export class Tiles3DSource implements Tileset3DSource {
    * Loads data through injected core APIs so this module stays independent from `@loaders.gl/core`.
    */
   private async loadWithCoreApi(url: string, options: LoaderOptions): Promise<any> {
-    if (!this.coreApi) {
+    const coreApi = this.coreApi || globalThis.loaders?.coreApi;
+    if (!coreApi) {
       throw new Error('Tiles3DSource requires an injected coreApi to load tileset data');
     }
 
-    return await this.coreApi.load(url, this.loader, options);
+    return await coreApi.load(url, this.loader, options);
   }
 }
 

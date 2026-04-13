@@ -21,3 +21,7 @@ export const coreApi: CoreAPI = Object.freeze({
   load,
   loadInBatches
 });
+
+// Make the shared Core API discoverable to modules that must remain independent from `@loaders.gl/core`.
+globalThis.loaders ||= {};
+globalThis.loaders.coreApi = coreApi;
