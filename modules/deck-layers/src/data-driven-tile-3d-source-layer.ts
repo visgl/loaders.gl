@@ -17,6 +17,8 @@ export class SourceDataDrivenTile3DLayer<
   DataT = any,
   ExtraProps extends Record<string, unknown> = Record<string, unknown>
 > extends DataDrivenTile3DLayer<DataT, ExtraProps> {
+  static componentName = 'SourceDataDrivenTile3DLayer'
+
   /** Install source-backed loading hooks after the base layer initializes its state. */
   initializeState(): void {
     super.initializeState();
