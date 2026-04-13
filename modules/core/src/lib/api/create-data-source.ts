@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import type {CoreAPI, LoaderOptions, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from '@loaders.gl/loader-utils';
+import {fetchFile} from '../fetch/fetch-file';
+import {parse} from './parse';
+import {parseSync} from './parse-sync';
+import {parseInBatches} from './parse-in-batches';
+import {load} from './load';
+import {loadInBatches} from './load-in-batches';
 
 /**
  * Creates a source from a service
@@ -24,7 +31,74 @@ export function createDataSource<SourceArrayT extends Source[]>(
   if (!source) {
     throw new Error('Not a valid source type');
   }
-  return source.createDataSource(data, options);
+  return source.createDataSource(data, options, createCoreApi(options?.core?.loadOptions));
+}
+
+function createCoreApi(loadOptions?: StrictLoaderOptions): CoreAPI {
+  const sharedLoadOptions = normalizeCoreApiLoadOptions(loadOptions);
+  return {
+    fetchFile: (urlOrData, fetchOptions) =>
+      fetchFile(urlOrData, mergeFetchOptions(sharedLoadOptions, fetchOptions)),
+    parse: (data, loaders, options, context) =>
+      parse(data, loaders as any, mergeLoadOptions(sharedLoadOptions, options), context),
+    parseSync: (data, loaders, options, context) =>
+      parseSync(data, loaders as any, mergeLoadOptions(sharedLoadOptions, options), context),
+    parseInBatches: (data, loaders, options, context) =>
+      parseInBatches(data, loaders as any, mergeLoadOptions(sharedLoadOptions, options), context),
+    load: (data, loaders, nestedLoadOptions) =>
+      load(data, loaders as any, mergeLoadOptions(sharedLoadOptions, nestedLoadOptions)),
+    loadInBatches: (files, loaders, options, context) =>
+      loadInBatches(
+        files as any,
+        loaders as any,
+        mergeLoadOptions(sharedLoadOptions, options),
+        context
+      )
+  };
+}
+
+function normalizeCoreApiLoadOptions(loadOptions?: StrictLoaderOptions): StrictLoaderOptions {
+  return loadOptions ? mergeLoadOptions({}, loadOptions) : {};
+}
+
+function mergeLoadOptions(base: StrictLoaderOptions, nested?: LoaderOptions): StrictLoaderOptions {
+  if (!nested) {
+    return {
+      ...base,
+      core: base.core ? {...base.core} : undefined
+    } as StrictLoaderOptions;
+  }
+
+  const merged = {...base, ...nested} as StrictLoaderOptions;
+  if (base.core || nested.core) {
+    merged.core = {...base.core, ...nested.core};
+  }
+  return merged;
+}
+
+function mergeFetchOptions(
+  loadOptions: StrictLoaderOptions,
+  fetchOptions?: RequestInit
+): RequestInit | undefined {
+  const defaultFetchOptions =
+    loadOptions.core?.fetch && typeof loadOptions.core.fetch !== 'function'
+      ? loadOptions.core.fetch
+      : undefined;
+  if (!defaultFetchOptions) {
+    return fetchOptions;
+  }
+  if (!fetchOptions) {
+    return defaultFetchOptions;
+  }
+
+  const mergedOptions: RequestInit = {...defaultFetchOptions, ...fetchOptions};
+  if (defaultFetchOptions.headers || fetchOptions.headers) {
+    mergedOptions.headers = new Headers(defaultFetchOptions.headers);
+    new Headers(fetchOptions.headers).forEach((value, key) =>
+      (mergedOptions.headers as Headers).set(key, value)
+    );
+  }
+  return mergedOptions;
 }
 
 // TODO - use selectSource...

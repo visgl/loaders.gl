@@ -3,9 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {PotreeSourceOptions} from '../potree-source';
-import {load} from '@loaders.gl/core';
 import {Mesh} from '@loaders.gl/schema';
-import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
+import {CoreAPI, DataSource, LoaderWithParser, resolvePath} from '@loaders.gl/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {POTreeNode} from '../parsers/parse-potree-hierarchy-chunk';
@@ -78,8 +77,8 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    *              - if Blob - single file data
    * @param options - data source properties
    */
-  constructor(data: string, options: PotreeSourceOptions) {
-    super(data, options);
+  constructor(data: string, options: PotreeSourceOptions, coreApi?: CoreAPI) {
+    super(data, options, undefined, coreApi);
     this.makeBaseUrl(this.data);
 
     this.initPromise = this.init();
@@ -91,7 +90,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       await this.initPromise;
       return;
     }
-    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
+    this.metadata = await this.loadWithCoreApi(`${this.baseUrl}/cloud.js`, PotreeLoader);
     this.projection = createProjection(this.metadata?.projection);
     this.parseBoundingVolume();
 
@@ -140,7 +139,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
 
     const isAvailable = await this.isNodeAvailable(nodeName);
     if (isAvailable) {
-      const result: PotreeNodeMesh = (await load(
+      const result: PotreeNodeMesh = (await this.loadWithCoreApi(
         `${this.baseUrl}/${this.metadata?.octreeDir}/r/r${nodeName}.${this.getContentExtension()}`,
         LASLoader
       )) as PotreeNodeMesh;
@@ -209,10 +208,28 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    * Load data source hierarchy into tree of available nodes
    */
   private async loadHierarchy(): Promise<void> {
-    this.root = await load(
+    this.root = await this.loadWithCoreApi(
       `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
       PotreeHierarchyChunkLoader
     );
+  }
+
+  private async loadWithCoreApi<T>(url: string, loader: LoaderWithParser<T>): Promise<T> {
+    if (this.hasCoreApi) {
+      return (await this.coreApi.load(url, loader, this.loadOptions)) as T;
+    }
+
+    const response = await this.fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to load Potree resource: ${response.status} ${response.statusText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    if (!loader.parse) {
+      throw new Error(`Loader ${loader.id} does not support parse()`);
+    }
+
+    return await loader.parse(arrayBuffer, this.loadOptions);
   }
 
   /**

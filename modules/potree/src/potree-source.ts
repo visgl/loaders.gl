@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Source, DataSourceOptions} from '@loaders.gl/loader-utils';
+import {Source, CoreAPI, DataSourceOptions} from '@loaders.gl/loader-utils';
 import {PotreeNodesSource} from './lib/potree-node-source';
 
 const VERSION = '1.7';
@@ -30,6 +30,6 @@ export const PotreeSource = {
   },
 
   testURL: (url: string) => url.endsWith('.js'),
-  createDataSource: (url: string, options: PotreeSourceOptions) =>
-    new PotreeNodesSource(url, options) // , PotreeNodesSource.defaultOptions)
+  createDataSource: (url: string, options: PotreeSourceOptions, coreApi?: CoreAPI) =>
+    new PotreeNodesSource(url, options, coreApi) // , PotreeNodesSource.defaultOptions)
 } as const satisfies Source<PotreeNodesSource>;

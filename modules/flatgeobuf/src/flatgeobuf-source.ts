@@ -4,6 +4,7 @@
 
 import {Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
+  CoreAPI,
   DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters
@@ -34,8 +35,11 @@ export const FlatGeobufSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
-  createDataSource: (url: string, options: FlatGeobufSourceOptions): FlatGeobufVectorSource =>
-    new FlatGeobufVectorSource(url, options)
+  createDataSource: (
+    url: string,
+    options: FlatGeobufSourceOptions,
+    coreApi?: CoreAPI
+  ): FlatGeobufVectorSource => new FlatGeobufVectorSource(url, options, coreApi)
 } as const satisfies Source<FlatGeobufVectorSource>;
 
 /**
@@ -47,8 +51,8 @@ export class FlatGeobufVectorSource
 {
   protected formatSpecificMetadata: Promise<any> | null = null;
 
-  constructor(data: string, options: FlatGeobufSourceOptions) {
-    super(data, options, FlatGeobufSource.defaultOptions);
+  constructor(data: string, options: FlatGeobufSourceOptions, coreApi?: CoreAPI) {
+    super(data, options, FlatGeobufSource.defaultOptions, coreApi);
     // this.formatSpecificMetadata = this._getFormatSpecificMetadata();
   }
 

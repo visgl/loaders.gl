@@ -7,6 +7,7 @@ export type {
   Loader,
   LoaderWithParser,
   LoaderContext,
+  CoreAPI,
   LoaderOptions,
   Writer,
   WriterOptions,

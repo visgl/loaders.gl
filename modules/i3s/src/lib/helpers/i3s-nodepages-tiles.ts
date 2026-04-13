@@ -1,4 +1,3 @@
-import {load} from '@loaders.gl/core';
 import {I3SNodePageLoader} from '../../i3s-node-page-loader';
 import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
 import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
@@ -77,7 +76,7 @@ export default class I3SNodePagesTiles {
       );
       this.pendingNodePages[pageIndex] = {
         status: 'Pending',
-        promise: load(nodePageUrl, I3SNodePageLoader, this.options)
+        promise: loadNodePage(nodePageUrl, this.options)
       };
       this.nodePages[pageIndex] = await this.pendingNodePages[pageIndex].promise;
       this.nodesInNodePages += this.nodePages[pageIndex].nodes.length;
@@ -308,6 +307,16 @@ export default class I3SNodePagesTiles {
     formats.push('png');
     return formats;
   }
+}
+
+async function loadNodePage(url: string, options: LoaderOptions): Promise<NodePage> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load I3S node page: ${response.status} ${response.statusText}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return await I3SNodePageLoader.parse(arrayBuffer, options);
 }
 
 function getSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Set<string> {
