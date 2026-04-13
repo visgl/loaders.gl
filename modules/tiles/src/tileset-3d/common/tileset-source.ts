@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Vector3} from '@math.gl/core';
 import type {TilesetTraverser, TilesetTraverserProps} from './tileset-traverser';
 import type {Tile3D} from './tile-3d';
@@ -25,6 +25,8 @@ export type TilesetSourceRequest = {
   loader: LoaderWithParser;
   /** Optional base path override for relative resources. */
   basePath?: string;
+  /** Optional core API implementation used for nested source loading. */
+  coreApi?: CoreAPI;
 };
 
 /**
@@ -108,6 +110,8 @@ export interface Tileset3DSource {
   readonly tileset?: TilesetJSON | null;
   /** Loader options forwarded to metadata and content requests. */
   readonly loadOptions: LoaderOptions;
+  /** Core API used for source-managed loads, when injected by the caller. */
+  coreApi?: CoreAPI;
   /** Accumulated content-format flags for the tileset. */
   readonly contentFormats: TilesetContentFormats;
   /** Format-specific asset metadata, if any. */

@@ -1,4 +1,5 @@
 import test from 'tape-promise/tape';
+import {coreApi} from '@loaders.gl/core';
 
 import {loadExplicitBitstream} from '../../../../src/lib/parsers/helpers/parse-3d-tile-subtree';
 import {Subtree, Availability} from '../../../../src/types';
@@ -6,6 +7,7 @@ import {LoaderContext} from '@loaders.gl/loader-utils';
 
 const context = (): LoaderContext => ({
   fetch,
+  coreApi,
   _parse: async arrayBuffer => arrayBuffer,
   baseUrl: 'fake/url'
 });

@@ -141,7 +141,7 @@
         "rules": {
           "style": {
             "noRestrictedImports": {
-              "level": "warn",
+              "level": "error",
               "options": {
                 "paths": {
                   "@loaders.gl/core": "Published modules must not import @loaders.gl/core from src/**. Move shared helpers to a lower-level module or inject the dependency instead."

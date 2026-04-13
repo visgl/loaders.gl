@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {WorkerPool} from '@loaders.gl/worker-utils';
 import {toArrayBuffer, parseWithWorker} from '@loaders.gl/loader-utils';
-import {registerLoaders, _unregisterLoaders, NullWorkerLoader} from '@loaders.gl/core';
+import {registerLoaders, _unregisterLoaders, NullWorkerLoader, coreApi} from '@loaders.gl/core';
 const CHUNKS_TOTAL = 6;
 const MAX_CONCURRENCY = 3;
 test('parseWithWorker', async () => {
@@ -16,7 +16,12 @@ test('parseWithWorker', async () => {
     reuseWorkers: false,
     custom: 'custom'
   };
-  const testContext = {response: testResponse, fetch, _parse: async arrayBuffer => arrayBuffer};
+  const testContext = {
+    response: testResponse,
+    fetch,
+    coreApi,
+    _parse: async arrayBuffer => arrayBuffer
+  };
   const result = await parseWithWorker(NullWorkerLoader, testData, testOptions, testContext);
   expect(result).toBe(null);
 });
