@@ -4,16 +4,15 @@
 
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
 import {
-  I3SArchiveSource,
   I3SSource,
   isTileset3DSource,
-  Tiles3DArchiveSource,
   Tiles3DSource,
   Tileset3D,
   type Tileset3DProps,
   type Tileset3DSource
 } from '@loaders.gl/tiles';
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import {createSLPKArchiveResolver, createTiles3DArchiveResolver} from './archive-source-resolver';
 
 /**
  * Props for {@link Tile3DSourceLayer}.
@@ -127,15 +126,23 @@ export function createSource(
   url: string,
   loader: LoaderWithParser,
   loadOptions: LoaderOptions
-): Tiles3DSource | Tiles3DArchiveSource | I3SSource | I3SArchiveSource {
+): Tiles3DSource | I3SSource {
   const lowerCaseUrl = url.toLowerCase();
 
   if (loader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
-    return new I3SArchiveSource(url, loader, loadOptions);
+    const archiveConfig = createSLPKArchiveResolver(url);
+    return new I3SSource(
+      {url, loader: archiveConfig.loader, basePath: url, resolver: archiveConfig.resolver},
+      loadOptions
+    );
   }
 
   if (loader.id === '3tz' || lowerCaseUrl.endsWith('.3tz')) {
-    return new Tiles3DArchiveSource(url, loader, loadOptions);
+    const archiveConfig = createTiles3DArchiveResolver(url);
+    return new Tiles3DSource(
+      {url, loader: archiveConfig.loader, basePath: url, resolver: archiveConfig.resolver},
+      loadOptions
+    );
   }
 
   if (loader.id === 'i3s') {

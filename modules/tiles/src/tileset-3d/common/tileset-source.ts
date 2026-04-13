@@ -16,6 +16,30 @@ import type {TILESET_TYPE} from '../../constants';
 export type TilesetJSON = any;
 
 /**
+ * Resource-loading strategy used by source implementations to fetch and parse root metadata
+ * and tile resources.
+ */
+export type TilesetSourceResolver = {
+  /**
+   * Loads and parses the root metadata resource for a source.
+   */
+  loadRoot<DataT>(
+    url: string,
+    loader: LoaderWithParser<DataT>,
+    loadOptions: LoaderOptions
+  ): Promise<DataT>;
+
+  /**
+   * Loads and parses an arbitrary source-relative resource.
+   */
+  loadResource<DataT>(
+    url: string,
+    loader: LoaderWithParser<DataT>,
+    loadOptions: LoaderOptions
+  ): Promise<DataT>;
+};
+
+/**
  * URL-based source input used when a source is responsible for fetching root metadata.
  */
 export type TilesetSourceRequest = {
@@ -25,6 +49,8 @@ export type TilesetSourceRequest = {
   loader: LoaderWithParser;
   /** Optional base path override for relative resources. */
   basePath?: string;
+  /** Optional resource-loading strategy used for archive-backed datasets. */
+  resolver?: TilesetSourceResolver;
 };
 
 /**

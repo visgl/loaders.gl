@@ -11,15 +11,14 @@ export type {
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
+  TilesetSourceResolver,
   Tileset3DSource,
   TilesetSourceViewState
 } from './tileset-3d/common/tileset-source';
 export {isTileset3DSource} from './tileset-3d/common/tileset-source';
 export {Tile3D} from './tileset-3d/common/tile-3d';
 export {Tiles3DSource} from './tileset-3d/format-3d-tiles/tiles-3d-source';
-export {Tiles3DArchiveSource} from './tileset-3d/format-3d-tiles/tiles-3d-archive-source';
 export {I3SSource} from './tileset-3d/format-i3s/i3s-source';
-export {I3SArchiveSource} from './tileset-3d/format-i3s/i3s-archive-source';
 
 export {TilesetTraverser} from './tileset-3d/common/tileset-traverser';
 export {TilesetCache} from './tileset-3d/common/tileset-cache';

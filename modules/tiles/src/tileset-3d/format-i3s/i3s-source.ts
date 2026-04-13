@@ -20,6 +20,7 @@ import type {
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
+  TilesetSourceResolver,
   TilesetSourceViewState
 } from '../common/tileset-source';
 import {getZoomFromExtent, getZoomFromFullExtent} from '../helpers/zoom';
@@ -31,6 +32,11 @@ const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   meshopt: false,
   dds: false,
   ktx2: false
+};
+
+const DEFAULT_SOURCE_RESOLVER: TilesetSourceResolver = {
+  loadRoot: load,
+  loadResource: load
 };
 
 /**
@@ -59,6 +65,7 @@ export class I3SSource implements Tileset3DSource {
   metadata?: TilesetSourceMetadata;
 
   private readonly queryParams: Record<string, string> = {};
+  private readonly resolver: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
 
   /**
@@ -73,6 +80,7 @@ export class I3SSource implements Tileset3DSource {
     this.loader = request.loader;
     this.url = request.url;
     this.basePath = request.basePath || path.dirname(request.url);
+    this.resolver = request.resolver || DEFAULT_SOURCE_RESOLVER;
     this.loadOptions = loadOptions;
   }
 
@@ -81,7 +89,7 @@ export class I3SSource implements Tileset3DSource {
    */
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
-      this.rootTileset = await load(this.url, this.loader, this.loadOptions);
+      this.rootTileset = await this.resolver.loadRoot(this.url, this.loader, this.loadOptions);
     }
     this.tileset = this.rootTileset;
 
@@ -180,7 +188,7 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    tile.content = await load(contentUrl, this.loader, options);
+    tile.content = await this.resolver.loadResource(contentUrl, this.loader, options);
     return {loaded: true};
   }
 
@@ -210,7 +218,7 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    return await load(nodeUrl, this.loader, options);
+    return await this.resolver.loadResource(nodeUrl, this.loader, options);
   }
 
   /**

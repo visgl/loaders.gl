@@ -18,6 +18,7 @@ import type {
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
+  TilesetSourceResolver,
   TilesetSourceViewState
 } from '../common/tileset-source';
 import {Tile3D as Tile3DNode} from '../common/tile-3d';
@@ -30,6 +31,11 @@ const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   meshopt: false,
   dds: false,
   ktx2: false
+};
+
+const DEFAULT_SOURCE_RESOLVER: TilesetSourceResolver = {
+  loadRoot: load,
+  loadResource: load
 };
 
 /**
@@ -64,6 +70,7 @@ export class Tiles3DSource implements Tileset3DSource {
 
   private readonly queryParams: Record<string, string> = {};
   private readonly extensionsUsed: string[] = [];
+  private readonly resolver: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
 
   /**
@@ -78,6 +85,7 @@ export class Tiles3DSource implements Tileset3DSource {
     this.loader = request.loader;
     this.url = request.url;
     this.basePath = request.basePath || path.dirname(request.url);
+    this.resolver = request.resolver || DEFAULT_SOURCE_RESOLVER;
     this.loadOptions = loadOptions;
   }
 
@@ -87,7 +95,7 @@ export class Tiles3DSource implements Tileset3DSource {
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
       const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
-      this.rootTileset = await load(this.url, this.loader, {
+      this.rootTileset = await this.resolver.loadRoot(this.url, this.loader, {
         ...this.loadOptions,
         [this.loader.id]: {
           ...loaderOptions,
@@ -216,7 +224,7 @@ export class Tiles3DSource implements Tileset3DSource {
       }
     };
 
-    const content = await load(contentUrl, this.loader, options);
+    const content = await this.resolver.loadResource(contentUrl, this.loader, options);
     tile.content = content;
 
     return {
