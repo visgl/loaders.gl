@@ -8,9 +8,12 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../compression"},
     {"path": "../core"},
+    {"path": "../crypto"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
-    {"path": "../tiles"}
+    {"path": "../tiles"},
+    {"path": "../zip"}
   ]
 }

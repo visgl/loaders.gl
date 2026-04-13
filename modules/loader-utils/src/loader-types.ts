@@ -5,6 +5,7 @@
 import type {Format} from './format-types';
 import {FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
+import type {CoreAPI} from './lib/sources/data-source';
 
 // LOADERS
 
@@ -258,6 +259,8 @@ export type LoaderContext = {
 
   /** Provides access to any application overrides of fetch() */
   fetch: typeof fetch | FetchLike;
+  /** Provides access to the core parsing and loading API without importing `@loaders.gl/core`. */
+  coreApi: CoreAPI;
 
   /** TBD */
   response?: Response;

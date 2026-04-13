@@ -3,9 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import {fetchFile, parse} from '@loaders.gl/core';
+import {DeflateCompression, GZipCompression, NoCompression} from '@loaders.gl/compression';
+import {MD5Hash} from '@loaders.gl/crypto';
 import {BlobFile, HttpFile, path} from '@loaders.gl/loader-utils';
 import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
 import type {TilesetSourceResolver} from '@loaders.gl/tiles';
+import {
+  CD_HEADER_SIGNATURE,
+  IndexedArchive,
+  makeHashTableFromZipHeaders,
+  parseHashTable,
+  parseZipCDFileHeader,
+  parseZipLocalFileHeader,
+  readRange,
+  searchFromTheEnd
+} from '@loaders.gl/zip';
 
 type ArchiveSourceData = string | Blob;
 type ArchiveFileMode = 'http' | 'raw';
@@ -23,6 +35,20 @@ type ArchiveAccessor = {
 export function createTiles3DArchiveResolver(data: ArchiveSourceData): {
   loader: LoaderWithParser;
   resolver: TilesetSourceResolver;
+};
+export function createTiles3DArchiveResolver(
+  data: ArchiveSourceData,
+  parserLoader: LoaderWithParser
+): {
+  loader: LoaderWithParser;
+  resolver: TilesetSourceResolver;
+};
+export function createTiles3DArchiveResolver(
+  data: ArchiveSourceData,
+  parserLoader: LoaderWithParser = TILES_3D_RUNTIME_LOADER
+): {
+  loader: LoaderWithParser;
+  resolver: TilesetSourceResolver;
 } {
   const sourceUrl = getArchiveSourceUrl(data, 'tileset.3tz');
   let archivePromise: Promise<any> | undefined;
@@ -30,17 +56,14 @@ export function createTiles3DArchiveResolver(data: ArchiveSourceData): {
   const accessor: ArchiveAccessor = {
     sourceUrl,
     async loadFile(pathInArchive: string): Promise<ArrayBuffer> {
-      archivePromise ||= openArchiveReadableFile(data).then(async file => {
-        const {parse3DTilesArchive} = await load3DTilesModule();
-        return await parse3DTilesArchive(file);
-      });
+      archivePromise ||= openArchiveReadableFile(data).then(file => parse3DTilesArchive(file));
       const archive = await archivePromise;
       return await archive.getFile(pathInArchive);
     }
   };
 
   return {
-    loader: TILES_3D_RUNTIME_LOADER,
+    loader: parserLoader,
     resolver: createArchiveResolver(accessor, 'tileset.json', 'raw')
   };
 }
@@ -53,6 +76,20 @@ export function createTiles3DArchiveResolver(data: ArchiveSourceData): {
 export function createSLPKArchiveResolver(data: ArchiveSourceData): {
   loader: LoaderWithParser;
   resolver: TilesetSourceResolver;
+};
+export function createSLPKArchiveResolver(
+  data: ArchiveSourceData,
+  parserLoader: LoaderWithParser
+): {
+  loader: LoaderWithParser;
+  resolver: TilesetSourceResolver;
+};
+export function createSLPKArchiveResolver(
+  data: ArchiveSourceData,
+  parserLoader: LoaderWithParser = I3S_RUNTIME_LOADER
+): {
+  loader: LoaderWithParser;
+  resolver: TilesetSourceResolver;
 } {
   const sourceUrl = getArchiveSourceUrl(data, 'tileset.slpk');
   let archivePromise: Promise<any> | undefined;
@@ -60,17 +97,14 @@ export function createSLPKArchiveResolver(data: ArchiveSourceData): {
   const accessor: ArchiveAccessor = {
     sourceUrl,
     async loadFile(pathInArchive: string, mode: ArchiveFileMode = 'http'): Promise<ArrayBuffer> {
-      archivePromise ||= openArchiveReadableFile(data).then(async file => {
-        const {parseSLPKArchive} = await loadI3SModule();
-        return await parseSLPKArchive(file);
-      });
+      archivePromise ||= openArchiveReadableFile(data).then(file => parseSLPKArchive(file));
       const archive = await archivePromise;
       return await archive.getFile(pathInArchive, mode);
     }
   };
 
   return {
-    loader: I3S_RUNTIME_LOADER,
+    loader: parserLoader,
     resolver: createArchiveResolver(accessor, '', 'http')
   };
 }
@@ -83,9 +117,8 @@ const TILES_3D_RUNTIME_LOADER: LoaderWithParser = {
   extensions: ['json'],
   mimeTypes: ['application/json'],
   options: {},
-  parse: async (arrayBuffer, options, context) => {
-    const {Tiles3DLoader} = await load3DTilesModule();
-    return await Tiles3DLoader.parse(arrayBuffer, options, context);
+  parse: async () => {
+    throw new Error('Tiles3D archive URLs require a 3D Tiles loader');
   }
 };
 
@@ -97,9 +130,8 @@ const I3S_RUNTIME_LOADER: LoaderWithParser = {
   extensions: ['json'],
   mimeTypes: ['application/json'],
   options: {},
-  parse: async (arrayBuffer, options, context) => {
-    const {I3SLoader} = await loadI3SModule();
-    return await I3SLoader.parse(arrayBuffer, options, context);
+  parse: async () => {
+    throw new Error('SLPK archive URLs require an I3S loader');
   }
 };
 
@@ -219,12 +251,203 @@ function resolveArchivePath(request: string, baseUrl: string, archiveUrl: string
   return absoluteRequest.replace(/^\/+/, '');
 }
 
-async function load3DTilesModule(): Promise<any> {
-  const moduleName = '@loaders.gl/3d-tiles';
-  return await import(moduleName);
+async function parse3DTilesArchive(fileProvider: ReadableFile): Promise<Tiles3DArchiveAccessor> {
+  const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);
+  const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
+
+  let hashTable: Record<string, bigint>;
+  if (cdFileHeader?.fileName !== '@3dtilesIndex1@') {
+    hashTable = await makeHashTableFromZipHeaders(fileProvider);
+  } else {
+    const localFileHeader = await parseZipLocalFileHeader(
+      cdFileHeader.localHeaderOffset,
+      fileProvider
+    );
+    if (!localFileHeader) {
+      throw new Error('corrupted 3tz zip archive');
+    }
+
+    const hashFile = await readRange(
+      fileProvider,
+      localFileHeader.fileDataOffset,
+      localFileHeader.fileDataOffset + localFileHeader.compressedSize
+    );
+    hashTable = parseHashTable(hashFile);
+  }
+
+  return new Tiles3DArchiveAccessor(fileProvider, hashTable);
 }
 
-async function loadI3SModule(): Promise<any> {
-  const moduleName = '@loaders.gl/i3s';
-  return await import(moduleName);
+async function parseSLPKArchive(fileProvider: ReadableFile): Promise<SLPKArchiveAccessor> {
+  const hashCDOffset = await searchFromTheEnd(fileProvider, CD_HEADER_SIGNATURE);
+  const cdFileHeader = await parseZipCDFileHeader(hashCDOffset, fileProvider);
+
+  let hashTable: Record<string, bigint>;
+  if (cdFileHeader?.fileName !== '@specialIndexFileHASH128@') {
+    hashTable = await makeHashTableFromZipHeaders(fileProvider);
+  } else {
+    const localFileHeader = await parseZipLocalFileHeader(
+      cdFileHeader.localHeaderOffset,
+      fileProvider
+    );
+    if (!localFileHeader) {
+      throw new Error('corrupted SLPK');
+    }
+
+    const hashFile = await readRange(
+      fileProvider,
+      localFileHeader.fileDataOffset,
+      localFileHeader.fileDataOffset + localFileHeader.compressedSize
+    );
+    hashTable = parseHashTable(hashFile);
+  }
+
+  return new SLPKArchiveAccessor(fileProvider, hashTable);
+}
+
+class Tiles3DArchiveAccessor extends IndexedArchive {
+  private readonly hashTable?: Record<string, bigint>;
+
+  constructor(fileProvider: ReadableFile, hashTable?: Record<string, bigint>) {
+    super(fileProvider, hashTable);
+    this.hashTable = hashTable;
+  }
+
+  async getFile(pathInArchive: string): Promise<ArrayBuffer> {
+    let data = await this.getFileBytes(pathInArchive.toLowerCase());
+    if (!data) {
+      data = await this.getFileBytes(pathInArchive);
+    }
+    if (!data) {
+      throw new Error(`No such file in the archive: ${pathInArchive}`);
+    }
+
+    return data;
+  }
+
+  private async getFileBytes(pathInArchive: string): Promise<ArrayBuffer | null> {
+    if (this.hashTable) {
+      const nameHash = await new MD5Hash().hash(
+        new TextEncoder().encode(pathInArchive).buffer,
+        'hex'
+      );
+      const byteOffset = this.hashTable[nameHash];
+      if (byteOffset === undefined) {
+        return null;
+      }
+
+      const localFileHeader = await parseZipLocalFileHeader(byteOffset, this.file);
+      if (!localFileHeader) {
+        return null;
+      }
+
+      const compressedFile = await readRange(
+        this.file,
+        localFileHeader.fileDataOffset,
+        localFileHeader.fileDataOffset + localFileHeader.compressedSize
+      );
+
+      switch (localFileHeader.compressionMethod) {
+        case 0:
+          return await new NoCompression().decompress(compressedFile);
+        case 8:
+          return await new DeflateCompression({raw: true}).decompress(compressedFile);
+        default:
+          throw new Error('Only Deflation compression is supported');
+      }
+    }
+
+    return await this.getFileWithoutHash(pathInArchive);
+  }
+}
+
+const SLPK_PATH_DESCRIPTIONS: {test: RegExp; extensions: string[]}[] = [
+  {test: /^$/, extensions: ['3dSceneLayer.json.gz']},
+  {test: /nodepages\/\d+$/, extensions: ['.json.gz']},
+  {test: /sublayers\/\d+$/, extensions: ['/3dSceneLayer.json.gz']},
+  {test: /nodes\/(\d+|root)$/, extensions: ['/3dNodeIndexDocument.json.gz']},
+  {test: /nodes\/\d+\/textures\/.+$/, extensions: ['.jpg', '.png', '.bin.dds.gz', '.ktx', '.ktx2']},
+  {test: /nodes\/\d+\/geometries\/\d+$/, extensions: ['.bin.gz', '.draco.gz']},
+  {test: /nodes\/\d+\/attributes\/f_\d+\/\d+$/, extensions: ['.bin.gz']},
+  {test: /statistics\/(f_\d+\/\d+|summary)$/, extensions: ['.json.gz']},
+  {test: /nodes\/\d+\/shared$/, extensions: ['/sharedResource.json.gz']}
+];
+
+class SLPKArchiveAccessor extends IndexedArchive {
+  private readonly hashTable?: Record<string, bigint>;
+  private readonly textEncoder = new TextEncoder();
+  private readonly md5Hash = new MD5Hash();
+
+  constructor(fileProvider: ReadableFile, hashTable?: Record<string, bigint>) {
+    super(fileProvider, hashTable);
+    this.hashTable = hashTable;
+  }
+
+  async getFile(pathInArchive: string, mode: ArchiveFileMode = 'raw'): Promise<ArrayBuffer> {
+    if (mode === 'http') {
+      const extensions = SLPK_PATH_DESCRIPTIONS.find(item => item.test.test(pathInArchive))?.extensions;
+      if (extensions) {
+        for (const extension of extensions) {
+          const data = await this.getDataByPath(`${pathInArchive}${extension}`);
+          if (data) {
+            return data;
+          }
+        }
+      }
+    }
+
+    if (mode === 'raw') {
+      const compressedData = await this.getDataByPath(`${pathInArchive}.gz`);
+      if (compressedData) {
+        return compressedData;
+      }
+      const uncompressedData = await this.getFileBytes(pathInArchive);
+      if (uncompressedData) {
+        return uncompressedData;
+      }
+    }
+
+    throw new Error(`No such file in the archive: ${pathInArchive}`);
+  }
+
+  private async getDataByPath(pathInArchive: string): Promise<ArrayBuffer | undefined> {
+    let data = await this.getFileBytes(pathInArchive.toLowerCase());
+    if (!data) {
+      data = await this.getFileBytes(pathInArchive);
+    }
+    if (!data) {
+      return undefined;
+    }
+    if (/\.gz$/.test(pathInArchive)) {
+      return await new GZipCompression().decompress(data);
+    }
+    return data;
+  }
+
+  private async getFileBytes(pathInArchive: string): Promise<ArrayBuffer | undefined> {
+    if (this.hashTable) {
+      const nameHash = await this.md5Hash.hash(this.textEncoder.encode(pathInArchive).buffer, 'hex');
+      const offset = this.hashTable[nameHash];
+      if (offset === undefined) {
+        return undefined;
+      }
+
+      const localFileHeader = await parseZipLocalFileHeader(offset, this.file);
+      if (!localFileHeader) {
+        return undefined;
+      }
+
+      return await readRange(
+        this.file,
+        localFileHeader.fileDataOffset,
+        localFileHeader.fileDataOffset + localFileHeader.compressedSize
+      );
+    }
+
+    try {
+      return await this.getFileWithoutHash(pathInArchive);
+    } catch {
+      return undefined;
+    }
+  }
 }

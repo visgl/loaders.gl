@@ -5,6 +5,7 @@
 import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
+  CoreAPI,
   Source,
   DataSourceOptions,
   ImageSourceMetadata,
@@ -74,8 +75,11 @@ export const ArcGISImageServerSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('imageserver'),
-  createDataSource: (url: string, props: ArcGISImageSourceProps): ArcGISImageSource =>
-    new ArcGISImageSource(url, props)
+  createDataSource: (
+    url: string,
+    props: ArcGISImageSourceProps,
+    coreApi?: CoreAPI
+  ): ArcGISImageSource => new ArcGISImageSource(url, props, coreApi)
 } as const satisfies Source<ArcGISImageSource>;
 
 /**
@@ -87,8 +91,8 @@ export class ArcGISImageSource
   extends DataSource<string, ArcGISImageSourceProps>
   implements ImageSource
 {
-  constructor(url: string, props: ArcGISImageSourceProps) {
-    super(url, props, ArcGISImageServerSource.defaultOptions);
+  constructor(url: string, props: ArcGISImageSourceProps, coreApi?: CoreAPI) {
+    super(url, props, ArcGISImageServerSource.defaultOptions, coreApi);
   }
 
   /** Returns normalized ImageSource metadata. */

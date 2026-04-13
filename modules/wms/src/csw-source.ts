@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 
-import type {Source, DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, Source, DataSourceOptions} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
 import type {CSWCapabilities} from './csw-capabilities-loader';
@@ -76,8 +76,8 @@ export const CSWSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
-  createDataSource: (url: string, options: CSWSourceOptions): CSWCatalogSource =>
-    new CSWCatalogSource(url, options)
+  createDataSource: (url: string, options: CSWSourceOptions, coreApi?: CoreAPI): CSWCatalogSource =>
+    new CSWCatalogSource(url, options, coreApi)
 } as const satisfies Source<CSWCatalogSource>;
 
 /**
@@ -95,8 +95,8 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceOptions> {
   readonly loaders = [CSWErrorLoader, CSWCapabilitiesLoader];
 
   /** Create a CSWCatalogSource */
-  constructor(url: string, options: CSWSourceOptions) {
-    super(url, options, CSWSource.defaultOptions);
+  constructor(url: string, options: CSWSourceOptions, coreApi?: CoreAPI) {
+    super(url, options, CSWSource.defaultOptions, coreApi);
   }
 
   async getMetadata(): Promise<CSWCapabilities> {

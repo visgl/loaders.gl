@@ -11,6 +11,7 @@ import {
   type Tileset3DProps,
   type Tileset3DSource
 } from '@loaders.gl/tiles';
+import {coreApi} from '@loaders.gl/core';
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {createSLPKArchiveResolver, createTiles3DArchiveResolver} from './archive-source-resolver';
 
@@ -51,6 +52,7 @@ export class Tile3DSourceLayer<
    */
   private async loadSourceTileset(data: string | Tileset3DSource): Promise<void> {
     if (isTileset3DSource(data)) {
+      data.coreApi ||= coreApi;
       const tileset3d = new Tileset3D(data, {
         onTileLoad: (this as any)._onTileLoad.bind(this),
         onTileUnload: (this as any)._onTileUnload.bind(this),
@@ -96,7 +98,7 @@ export class Tile3DSourceLayer<
       Object.assign(options, preloadOptions);
     }
 
-    const source = createSource(actualTilesetUrl, loader, options.loadOptions);
+    const source = createSource(actualTilesetUrl, loader, options.loadOptions, coreApi);
     const tileset3d = new Tileset3D(source, {
       onTileLoad: (this as any)._onTileLoad.bind(this),
       onTileUnload: (this as any)._onTileUnload.bind(this),
@@ -125,29 +127,46 @@ export class Tile3DSourceLayer<
 export function createSource(
   url: string,
   loader: LoaderWithParser,
-  loadOptions: LoaderOptions
+  loadOptions: LoaderOptions,
+  injectedCoreApi = coreApi
 ): Tiles3DSource | I3SSource {
   const lowerCaseUrl = url.toLowerCase();
 
   if (loader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
-    const archiveConfig = createSLPKArchiveResolver(url);
+    const archiveConfig =
+      loader.id === 'slpk' ? createSLPKArchiveResolver(url) : createSLPKArchiveResolver(url, loader);
     return new I3SSource(
-      {url, loader: archiveConfig.loader, basePath: url, resolver: archiveConfig.resolver},
+      {
+        url,
+        loader: archiveConfig.loader,
+        basePath: url,
+        resolver: archiveConfig.resolver,
+        coreApi: injectedCoreApi
+      },
       loadOptions
     );
   }
 
   if (loader.id === '3tz' || lowerCaseUrl.endsWith('.3tz')) {
-    const archiveConfig = createTiles3DArchiveResolver(url);
+    const archiveConfig =
+      loader.id === '3tz'
+        ? createTiles3DArchiveResolver(url)
+        : createTiles3DArchiveResolver(url, loader);
     return new Tiles3DSource(
-      {url, loader: archiveConfig.loader, basePath: url, resolver: archiveConfig.resolver},
+      {
+        url,
+        loader: archiveConfig.loader,
+        basePath: url,
+        resolver: archiveConfig.resolver,
+        coreApi: injectedCoreApi
+      },
       loadOptions
     );
   }
 
   if (loader.id === 'i3s') {
-    return new I3SSource({url, loader}, loadOptions);
+    return new I3SSource({url, loader, coreApi: injectedCoreApi}, loadOptions);
   }
 
-  return new Tiles3DSource({url, loader}, loadOptions);
+  return new Tiles3DSource({url, loader, coreApi: injectedCoreApi}, loadOptions);
 }

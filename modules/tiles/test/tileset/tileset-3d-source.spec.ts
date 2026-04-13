@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
+import {coreApi} from '@loaders.gl/core';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {
@@ -51,7 +52,7 @@ test('Tiles3DSource initializes metadata and merges source query parameters', as
     queryString: 'session=abc123',
     extensionsUsed: ['KHR_texture_basisu']
   };
-  const source = new Tiles3DSource(tilesetJson);
+  const source = new Tiles3DSource({...tilesetJson, coreApi});
 
   await source.initialize();
 

@@ -4,6 +4,7 @@
 
 import type {Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
+  CoreAPI,
   DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters
@@ -50,8 +51,8 @@ export const WFSSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
-  createDataSource: (url: string, options: WFSourceOptions): WFSVectorSource =>
-    new WFSVectorSource(url, options)
+  createDataSource: (url: string, options: WFSourceOptions, coreApi?: CoreAPI): WFSVectorSource =>
+    new WFSVectorSource(url, options, coreApi)
 } as const satisfies Source<WFSVectorSource>;
 
 // PARAMETER TYPES FOR WFS SOURCE
@@ -219,8 +220,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
   capabilities: WFSCapabilities | null = null;
 
   /** Create a WFSVectorSource */
-  constructor(data: string, options: WFSourceOptions) {
-    super(data, options, WFSSource.defaultOptions);
+  constructor(data: string, options: WFSourceOptions, coreApi?: CoreAPI) {
+    super(data, options, WFSSource.defaultOptions, coreApi);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WFS URL more likely to make this class just work.

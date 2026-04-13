@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {load} from '@loaders.gl/core';
 import {path} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tile3D as Tile3DNode} from '../common/tile-3d';
 import {I3STilesetTraverser} from './i3s-tileset-traverser';
@@ -34,11 +33,6 @@ const EMPTY_CONTENT_FORMATS: TilesetContentFormats = {
   ktx2: false
 };
 
-const DEFAULT_SOURCE_RESOLVER: TilesetSourceResolver = {
-  loadRoot: load,
-  loadResource: load
-};
-
 /**
  * {@link Tileset3DSource} implementation for I3S datasets.
  */
@@ -55,6 +49,8 @@ export class I3SSource implements Tileset3DSource {
   tileset: TilesetJSON | null = null;
   /** Loader options forwarded to tile requests. */
   readonly loadOptions: LoaderOptions;
+  /** Core API used for metadata and tile-content loads when injected by the caller. */
+  coreApi?: CoreAPI;
   /** Aggregate content-format flags discovered during streaming. */
   readonly contentFormats: TilesetContentFormats = {...EMPTY_CONTENT_FORMATS};
 
@@ -65,7 +61,7 @@ export class I3SSource implements Tileset3DSource {
   metadata?: TilesetSourceMetadata;
 
   private readonly queryParams: Record<string, string> = {};
-  private readonly resolver: TilesetSourceResolver;
+  private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
 
   /**
@@ -80,7 +76,8 @@ export class I3SSource implements Tileset3DSource {
     this.loader = request.loader;
     this.url = request.url;
     this.basePath = request.basePath || path.dirname(request.url);
-    this.resolver = request.resolver || DEFAULT_SOURCE_RESOLVER;
+    this.resolver = request.resolver;
+    this.coreApi = request.coreApi;
     this.loadOptions = loadOptions;
   }
 
@@ -89,7 +86,7 @@ export class I3SSource implements Tileset3DSource {
    */
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
-      this.rootTileset = await this.resolver.loadRoot(this.url, this.loader, this.loadOptions);
+      this.rootTileset = await this.loadRootData(this.url, this.loadOptions);
     }
     this.tileset = this.rootTileset;
 
@@ -188,7 +185,7 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    tile.content = await this.resolver.loadResource(contentUrl, this.loader, options);
+    tile.content = await this.loadResourceData(contentUrl, options);
     return {loaded: true};
   }
 
@@ -218,7 +215,7 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    return await this.resolver.loadResource(nodeUrl, this.loader, options);
+    return await this.loadResourceData(nodeUrl, options);
   }
 
   /**
@@ -305,6 +302,39 @@ export class I3SSource implements Tileset3DSource {
     const metadata = this.getMetadata();
     return metadata.tileset?.nodePagesTile?.nodesInNodePages || null;
   }
+
+  /**
+   * Loads data through injected core APIs so this module stays independent from `@loaders.gl/core`.
+   */
+  private async loadWithCoreApi(url: string, options: LoaderOptions): Promise<any> {
+    if (!this.coreApi) {
+      throw new Error('I3SSource requires an injected coreApi to load tileset data');
+    }
+
+    return await this.coreApi.load(url, this.loader, options);
+  }
+
+  /**
+   * Loads data through an injected resolver when present, otherwise through the injected core API.
+   */
+  private async loadRootData(url: string, options: LoaderOptions): Promise<any> {
+    if (this.resolver) {
+      return await this.resolver.loadRoot(url, this.loader, options);
+    }
+
+    return await this.loadWithCoreApi(url, options);
+  }
+
+  /**
+   * Loads tile metadata or content through an injected resolver when present, otherwise through the injected core API.
+   */
+  private async loadResourceData(url: string, options: LoaderOptions): Promise<any> {
+    if (this.resolver) {
+      return await this.resolver.loadResource(url, this.loader, options);
+    }
+
+    return await this.loadWithCoreApi(url, options);
+  }
 }
 
 function isTilesetRequest(input: TilesetSourceInput): input is TilesetSourceRequest {
@@ -329,6 +359,8 @@ function normalizeI3SRequest(input: TilesetSourceInput): TilesetSourceRequest {
   return {
     url: input.url,
     loader: input.loader,
-    basePath: input.basePath || path.dirname(input.url)
+    basePath: input.basePath || path.dirname(input.url),
+    resolver: (input as TilesetSourceRequest).resolver,
+    coreApi: (input as TilesetSourceRequest).coreApi
   };
 }

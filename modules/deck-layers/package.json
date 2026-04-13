@@ -38,9 +38,12 @@
     "@deck.gl-community/experimental": "^9.1.0",
     "@deck.gl/core": "^9.1.0",
     "@deck.gl/geo-layers": "^9.1.0",
+    "@loaders.gl/compression": "4.4.0",
     "@loaders.gl/core": "4.4.0",
+    "@loaders.gl/crypto": "4.4.0",
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
-    "@loaders.gl/tiles": "4.4.0"
+    "@loaders.gl/tiles": "4.4.0",
+    "@loaders.gl/zip": "4.4.0"
   }
 }
