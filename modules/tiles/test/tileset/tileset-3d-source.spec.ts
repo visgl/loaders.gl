@@ -5,6 +5,7 @@
 import test from 'tape-promise/tape';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {coreApi} from '@loaders.gl/core';
 import {I3SSource, Tiles3DSource, isTileset3DSource, type TilesetJSON} from '@loaders.gl/tiles';
 
 test('isTileset3DSource recognizes explicit source implementations', t => {
@@ -45,7 +46,7 @@ test('Tiles3DSource initializes metadata and merges source query parameters', as
     queryString: 'session=abc123',
     extensionsUsed: ['KHR_texture_basisu']
   };
-  const source = new Tiles3DSource(tilesetJson);
+  const source = new Tiles3DSource({...tilesetJson, coreApi});
 
   await source.initialize();
 

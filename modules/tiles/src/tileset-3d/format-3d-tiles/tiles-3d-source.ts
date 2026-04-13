@@ -347,6 +347,7 @@ function normalizeTiles3DRequest(input: TilesetSourceInput): TilesetSourceReques
   return {
     url: input.url,
     loader: input.loader,
-    basePath: input.basePath || path.dirname(input.url)
+    basePath: input.basePath || path.dirname(input.url),
+    coreApi: (input as TilesetSourceRequest).coreApi
   };
 }
