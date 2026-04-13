@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 import {encodeTableAsText, fetchFile, parse} from '@loaders.gl/core';
+=======
+import {encodeTableAsText, fetchFile, parse, parseInBatches, preload} from '@loaders.gl/core';
+>>>>>>> Stashed changes
 import {CSVArrowLoader, CSVArrowWriter, CSVLoader, CSVWriter} from '@loaders.gl/csv';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable, Table} from '@loaders.gl/schema';
@@ -422,7 +426,15 @@ function csvDebugBench(bench, scenarios: BenchmarkScenario[]) {
   }
 
   const streamingScenario = scenarios.find(scenario => scenario.name === 'fixture') || scenarios[0];
+<<<<<<< Updated upstream
   diagnosticBench = addStreamingChunkSizeBenchmarks(diagnosticBench, streamingScenario);
+=======
+  diagnosticBench = addStreamingChunkSizeBenchmarks(
+    diagnosticBench,
+    streamingScenario,
+    csvLoaderWithParser
+  );
+>>>>>>> Stashed changes
 
   return bench;
 }
@@ -508,7 +520,15 @@ function addCSVLoaderOptionBenchmarks(bench, scenario: BenchmarkScenario) {
   return bench;
 }
 
+<<<<<<< Updated upstream
 function addStreamingChunkSizeBenchmarks(bench, scenario: BenchmarkScenario) {
+=======
+function addStreamingChunkSizeBenchmarks(
+  bench,
+  scenario: BenchmarkScenario,
+  csvLoaderWithParser: Loader
+) {
+>>>>>>> Stashed changes
   const options = {
     csv: {
       header: true as const,
@@ -524,7 +544,11 @@ function addStreamingChunkSizeBenchmarks(bench, scenario: BenchmarkScenario) {
       `Streaming ${scenario.name}#parseInBatches chunkSize=${chunkSize}`,
       {...BENCHMARK_OPTIONS, multiplier: scenario.byteLength, unit: 'bytes'},
       async () => {
+<<<<<<< Updated upstream
         return await consumeBatches(CSVLoader.parseInBatches(chunks, options));
+=======
+        return await consumeBatches(await parseInBatches(chunks, csvLoaderWithParser, options));
+>>>>>>> Stashed changes
       }
     );
   }
@@ -533,7 +557,13 @@ function addStreamingChunkSizeBenchmarks(bench, scenario: BenchmarkScenario) {
     `Streaming ${scenario.name}#parseInBatches chunkSize=whole`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.byteLength, unit: 'bytes'},
     async () => {
+<<<<<<< Updated upstream
       return await consumeBatches(CSVLoader.parseInBatches([scenario.arrayBuffer], options));
+=======
+      return await consumeBatches(
+        await parseInBatches([scenario.arrayBuffer], csvLoaderWithParser, options)
+      );
+>>>>>>> Stashed changes
     }
   );
 

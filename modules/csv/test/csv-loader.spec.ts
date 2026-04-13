@@ -5,8 +5,14 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
+<<<<<<< Updated upstream
 import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
 import {CSVLoader} from '../src/csv-loader';
+=======
+import {load, loadInBatches, isAsyncIterable, preload} from '@loaders.gl/core';
+import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
+import * as csv from '@loaders.gl/csv';
+>>>>>>> Stashed changes
 import {getTableLength} from '@loaders.gl/schema-utils';
 
 // Small CSV Sample Files
@@ -456,12 +462,21 @@ test('CSVLoader#loadInBatches(csv with quotes)', async t => {
   t.end();
 });
 
+<<<<<<< Updated upstream
 test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', async t => {
+=======
+test('CSVLoader preloaded parser preserves UTF-8 characters split across chunks', async t => {
+>>>>>>> Stashed changes
   const csvText = 'city\nZürich\n東京\n';
   const csvBytes = new TextEncoder().encode(csvText);
   const splitIndex = csvBytes.indexOf(0xc3) + 1;
+  const csvLoaderWithParser = await preload(CSVLoader);
 
+<<<<<<< Updated upstream
   const iterator = CSVLoader.parseInBatches(
+=======
+  const iterator = csvLoaderWithParser.parseInBatches?.(
+>>>>>>> Stashed changes
     [csvBytes.subarray(0, splitIndex), csvBytes.subarray(splitIndex)],
     {
       csv: {
@@ -482,6 +497,19 @@ test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', 
   t.end();
 });
 
+<<<<<<< Updated upstream
+=======
+test('CSVLoader preload returns a parser-bearing loader', async t => {
+  const csvLoaderWithParser = await preload(CSVLoader);
+  const csvTable = await csvLoaderWithParser.parseText?.('city,population\nParis,2148000', {
+    csv: {shape: 'object-row-table'}
+  });
+
+  t.equal(csvTable?.shape, 'object-row-table', 'preloaded CSVLoader parses text directly');
+  t.end();
+});
+
+>>>>>>> Stashed changes
 function validateColumn(column, length, type) {
   if (column.length !== length) {
     return `column length should be ${length}`;
