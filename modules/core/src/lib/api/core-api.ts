@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {_registerCoreApi, type CoreAPI} from '@loaders.gl/loader-utils';
+import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {parse} from './parse';
 import {parseSync} from './parse-sync';
@@ -21,4 +21,3 @@ export const coreApi: CoreAPI = Object.freeze({
   load,
   loadInBatches
 });
-_registerCoreApi(coreApi);

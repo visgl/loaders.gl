@@ -202,7 +202,6 @@ export type {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from './
 
 export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
-export {_getRegisteredCoreApi, _registerCoreApi} from './lib/sources/core-api-registry';
 
 export {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';

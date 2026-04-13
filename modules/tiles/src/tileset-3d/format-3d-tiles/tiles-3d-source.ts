@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {_getRegisteredCoreApi, path} from '@loaders.gl/loader-utils';
+import {path} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
 import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
@@ -317,12 +317,11 @@ export class Tiles3DSource implements Tileset3DSource {
    * Loads data through injected core APIs so this module stays independent from `@loaders.gl/core`.
    */
   private async loadWithCoreApi(url: string, options: LoaderOptions): Promise<any> {
-    const coreApi = this.coreApi || _getRegisteredCoreApi();
-    if (!coreApi) {
+    if (!this.coreApi) {
       throw new Error('Tiles3DSource requires an injected coreApi to load tileset data');
     }
 
-    return await coreApi.load(url, this.loader, options);
+    return await this.coreApi.load(url, this.loader, options);
   }
 }
 
