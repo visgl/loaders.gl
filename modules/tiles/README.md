@@ -19,9 +19,7 @@ const tileset = new Tileset3D(source, options);
 Available source classes:
 
 - `Tiles3DSource` for 3D Tiles datasets
-- `Tiles3DArchiveSource` for `.3tz` 3D Tiles archives
 - `I3SSource` for I3S datasets
-- `I3SArchiveSource` for `.slpk` I3S archives
 
 `Tileset3D` now requires an explicit source instance. Root metadata loading and normalization happen inside the source implementation.
 
