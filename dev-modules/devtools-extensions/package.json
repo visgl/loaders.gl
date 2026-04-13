@@ -5,6 +5,8 @@
   "version": "0.0.0",
   "exports": {
     ".": "./index.mjs",
+    "./bench-loader": "./bench-loader.mjs",
+    "./run-browser-benchmarks": "./run-browser-benchmarks.mjs",
     "./range-server": "./range-server.mjs",
     "./tape-test-utils": {
       "types": "./tape-test-utils.d.ts",

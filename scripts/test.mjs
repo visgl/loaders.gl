@@ -3,7 +3,7 @@
 import {spawn} from 'node:child_process';
 
 const args = process.argv.slice(2);
-const mode = args[0] || 'full';
+const mode = args[0];
 const passthroughArgs = args.slice(1);
 
 const VITEST_CONFIG = 'vitest.config.ts';
@@ -25,18 +25,39 @@ const modeArguments = {
   ]
 };
 
-if (mode === 'bench' || mode === 'bench-browser') {
-  console.error(
-    `The legacy ${mode} runner was not migrated to Vitest. Use the benchmark entrypoints directly.`
+if (mode === 'bench') {
+  const benchLoaderRegistration =
+    'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("@loaders.gl/devtools-extensions/bench-loader", pathToFileURL("./"));';
+  process.exitCode = await runProcess(
+    'node',
+    ['--import', benchLoaderRegistration, './test/bench/node.js', ...passthroughArgs]
   );
-  process.exit(1);
+  process.exit(process.exitCode ?? 1);
+}
+
+if (mode === 'bench-browser') {
+  process.exitCode = await runProcess('node', ['./scripts/run-browser-bench.mjs', ...passthroughArgs]);
+  process.exit(process.exitCode ?? 1);
+}
+
+if (mode === 'bench-headless') {
+  process.exitCode = await runProcess(
+    'node',
+    ['./scripts/run-browser-bench.mjs', '--headless', ...passthroughArgs]
+  );
+  process.exit(process.exitCode ?? 1);
+}
+
+if (!mode) {
+  printUsage();
+  process.exit(0);
 }
 
 const vitestArguments = modeArguments[mode];
 
 if (!vitestArguments) {
   printUsage();
-  process.exit(mode ? 1 : 0);
+  process.exit(1);
 }
 
 process.exitCode = await runProcess('vitest', [...vitestArguments, ...passthroughArgs]);
@@ -51,6 +72,9 @@ Usage:
   yarn test <mode> [options]
 
 Modes:
+  bench            Run the repo benchmark suite in Node.js
+  bench-browser    Run the repo benchmark suite in a headed browser
+  bench-headless   Run the repo benchmark suite in a headless browser
   full             Run Node-only tests, then browser tests in headless mode
   node             Run Node-only tests
   browser          Run browser tests in a headed browser

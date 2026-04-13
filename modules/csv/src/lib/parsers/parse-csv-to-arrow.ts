@@ -8,13 +8,13 @@ import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {AsyncQueue, ArrowTableBuilder, convertArrowToSchema} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
-import type {CSVLoaderOptions} from './csv-loader';
-import {CSVLoader} from './csv-loader';
-import Papa from './papaparse/papaparse';
-import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
-import {parseRawArrowCSVBytes} from './lib/parsers/parse-raw-arrow-csv-bytes';
+import type {CSVLoaderOptions} from '../../csv-loader';
+import {CSVLoader} from '../../csv-loader';
+import Papa from '../../papaparse/papaparse';
+import AsyncIteratorStreamer from '../../papaparse/async-iterator-streamer';
+import {parseRawArrowCSVBytes} from './parse-raw-arrow-csv-bytes';
 
-/** CSV options accepted by the internal raw Arrow parser. */
+/** CSV options accepted by the internal Arrow table parser. */
 export type CSVRawArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape' | 'header'> & {
   header?: boolean | 'auto';
   /** Used for Papa-style header auto-detection; raw Arrow columns remain Utf8. */
@@ -23,7 +23,7 @@ export type CSVRawArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'sha
   skipEmptyLinesIsExplicit?: boolean;
 };
 
-/** Loader options accepted by the internal raw Arrow parser. */
+/** Loader options accepted by the internal Arrow table parser. */
 export type CSVRawArrowParseOptions = LoaderOptions & {
   csv?: CSVRawArrowOptions;
 };
@@ -31,7 +31,7 @@ export type CSVRawArrowParseOptions = LoaderOptions & {
 /** Default batch size used when callers request automatic Arrow CSV batching. */
 const DEFAULT_BATCH_SIZE = 4000;
 
-/** Default CSV options for raw Arrow parsing. */
+/** Default CSV options for internal Arrow table parsing. */
 const DEFAULT_RAW_ARROW_CSV_OPTIONS: CSVRawArrowOptions = {
   ...CSVLoader.options.csv,
   header: false,
