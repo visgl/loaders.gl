@@ -18,6 +18,7 @@ import {convertBinaryGeometryToGeometry, convertGeometryToWKB, transformGeoJsonC
 import {Proj4Projection} from '@math.gl/proj4';
 import {SHP_MAGIC_NUMBER, SHPLoader} from './shp-loader';
 import {DBFArrowLoader} from './dbf-arrow-loader';
+import {DBFLoader} from './dbf-loader';
 import type {ShapefileLoaderOptions} from './shapefile-loader';
 import type {SHPHeader} from './lib/parsers/parse-shp-header';
 import {loadShapefileSidecarFiles, replaceExtension} from './lib/parsers/parse-shapefile';
@@ -132,32 +133,34 @@ async function* parseShapefileToArrowInBatches(
 
   const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
   if (dbfResponse?.ok) {
+    const dbfOptions = {
+      ...options,
+      dbf: {
+        ...options?.dbf,
+        shape: 'object-row-table' as const,
+        encoding: cpg || 'latin1'
+      }
+    };
+    const schemaResponse = 'clone' in dbfResponse ? dbfResponse.clone() : await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+    const propertyTable = await parseFromContext(schemaResponse as any, DBFLoader, dbfOptions, context!);
+    propertySchema = propertyTable?.schema || null;
+
     const propertyIterable = await parseInBatchesFromContext(
       dbfResponse,
-      DBFArrowLoader,
-      {
-        ...options,
-        dbf: {
-          ...options?.dbf,
-          encoding: cpg || 'latin1'
-        }
-      },
+      DBFLoader,
+      dbfOptions,
       context!
     );
     propertyIterator = getAsyncIterator(propertyIterable);
-
-    const firstPropertyBatch = await getNextNonMetadataValue(propertyIterator);
-    if (firstPropertyBatch) {
-      propertySchema = firstPropertyBatch.schema;
-    }
 
     const outputSchema = buildOutputSchema(propertySchema, [], header);
     const propertyQueue: Record<string, unknown>[] = [];
     const geometryQueue: Geometry[] = [];
     let yieldedDataBatch = false;
 
-    if (firstPropertyBatch?.data) {
-      propertyQueue.push(...getRowsFromArrowTable(firstPropertyBatch));
+    const firstPropertyBatch = await getNextPropertyBatch(propertyIterator);
+    if (firstPropertyBatch) {
+      propertyQueue.push(...firstPropertyBatch);
     }
 
     let shapeDone = false;
@@ -176,14 +179,14 @@ async function* parseShapefileToArrowInBatches(
         const propertyBatch = await propertyIterator.next();
         if (propertyBatch.done) {
           propertyDone = true;
-        } else if (propertyBatch.value?.batchType !== 'metadata') {
-          propertyQueue.push(...getRowsFromArrowTable(propertyBatch.value));
+        } else if (Array.isArray(propertyBatch.value)) {
+          propertyQueue.push(...propertyBatch.value);
         }
       }
 
-      const rowCount = propertyDone ? geometryQueue.length : Math.min(geometryQueue.length, propertyQueue.length);
+      const rowCount = Math.min(geometryQueue.length, propertyQueue.length);
       if (rowCount === 0) {
-        if (shapeDone && propertyDone) {
+        if ((shapeDone && geometryQueue.length === 0) || (propertyDone && propertyQueue.length === 0)) {
           break;
         }
         continue;
@@ -418,6 +421,21 @@ async function getNextNonMetadataValue(iterator: AsyncIterator<any>): Promise<an
       return null;
     }
     if (result.value?.batchType !== 'metadata') {
+      return result.value;
+    }
+  }
+}
+
+/** Reads the next DBF row batch, skipping header objects. */
+async function getNextPropertyBatch(
+  iterator: AsyncIterator<any>
+): Promise<Record<string, unknown>[] | null> {
+  while (true) {
+    const result = await iterator.next();
+    if (result.done) {
+      return null;
+    }
+    if (Array.isArray(result.value)) {
       return result.value;
     }
   }
