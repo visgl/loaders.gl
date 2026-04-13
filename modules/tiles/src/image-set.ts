@@ -78,7 +78,9 @@ export class ImageSet<DataT = ImageType> {
   constructor(opts: ImageSetProps<DataT>) {
     this._opts = this._normalizeOptions(opts);
     if (!this._opts.imageSource && (!opts.getImage || !opts.getMetadata)) {
-      throw new Error('ImageSet requires either `imageSource` or both `getImage` and `getMetadata`.');
+      throw new Error(
+        'ImageSet requires either `imageSource` or both `getImage` and `getMetadata`.'
+      );
     }
   }
 

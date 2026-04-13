@@ -67,7 +67,7 @@ export default async function csvBench(bench) {
     };
     const loaderBenchmarks = [
       {
-        name: "CSVArrowLoader#parse({header:true, dynamicTyping: false})",
+        name: 'CSVArrowLoader#parse({header:true, dynamicTyping: false})',
         loader: CSVArrowLoader,
         options: arrowOptions
       },
@@ -98,7 +98,7 @@ export default async function csvBench(bench) {
     };
     const loaderBenchmarks = [
       {
-        name: "CSVArrowLoader#parse({header:true, dynamicTyping: true})",
+        name: 'CSVArrowLoader#parse({header:true, dynamicTyping: true})',
         loader: CSVArrowLoader,
         options: arrowOptions
       },
@@ -406,7 +406,7 @@ function addWriterBenchmarks(bench, scenario: BenchmarkScenario, dynamicTyping: 
  * @param scenarios CSV benchmark scenarios.
  * @returns Benchmark suite with CSV debug diagnostics added.
  */
-function csvDebugBench(bench, scenarios: BenchmarkScenario[]) {
+export function csvDebugBench(bench, scenarios: BenchmarkScenario[]) {
   const diagnosticScenarios = [
     scenarios.find(scenario => scenario.name === 'unquoted fast-mode'),
     scenarios.find(scenario => scenario.name === 'quoted'),

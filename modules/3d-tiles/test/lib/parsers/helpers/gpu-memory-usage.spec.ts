@@ -4,7 +4,7 @@
 
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
-import {load} from '@loaders.gl/core';
+import {coreApi, load} from '@loaders.gl/core';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {GLTFLoader, _getMemoryUsageGLTF, postProcessGLTF} from '@loaders.gl/gltf';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -39,7 +39,7 @@ const TEST_CASES = [
 test('3D Tiles#computes tile GPU memory usage', async t => {
   for (const {url, type, gpuMemoryUsageInBytes} of TEST_CASES) {
     const tilesetJson = await load(url, Tiles3DLoader);
-    const tileset = new Tileset3D(new Tiles3DSource(tilesetJson));
+    const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
     // @ts-ignore
     tileset.root._visible = true;
     await tileset.root?.loadContent();

@@ -33,9 +33,7 @@ const TEST_SOURCE_FACTORY = {
   }
 };
 
-function createLayer(
-  props: ImageSourceLayerProps = {id: 'test', data: TEST_IMAGE_SOURCE as any}
-) {
+function createLayer(props: ImageSourceLayerProps = {id: 'test', data: TEST_IMAGE_SOURCE as any}) {
   return new ImageSourceLayer(props as any) as any;
 }
 
@@ -93,7 +91,10 @@ test('ImageSourceLayer#forwards feature info using the last request parameters',
         image: {} as any,
         parameters: {
           layers: ['visible'],
-          boundingBox: [[1, 2], [3, 4]],
+          boundingBox: [
+            [1, 2],
+            [3, 4]
+          ],
           width: 256,
           height: 128,
           crs: 'EPSG:4326'

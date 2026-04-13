@@ -3,7 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {parseFromContext, parseInBatchesFromContext, toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {
+  parseFromContext,
+  parseInBatchesFromContext,
+  toArrayBufferIterator
+} from '@loaders.gl/loader-utils';
 import type {
   ArrowTable,
   ArrowTableBatch,
@@ -14,7 +18,11 @@ import type {
   Feature
 } from '@loaders.gl/schema';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
-import {convertBinaryGeometryToGeometry, convertGeometryToWKB, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {
+  convertBinaryGeometryToGeometry,
+  convertGeometryToWKB,
+  transformGeoJsonCoords
+} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import {SHP_MAGIC_NUMBER, SHPLoader} from './shp-loader';
 import {DBFArrowLoader} from './dbf-arrow-loader';
@@ -96,12 +104,18 @@ async function parseShapefileToArrow(
     propertyRows = getRowsFromArrowTable(table);
   }
 
-  const schema = buildOutputSchema(propertySchema, features.map(feature => feature.geometry), header);
+  const schema = buildOutputSchema(
+    propertySchema,
+    features.map(feature => feature.geometry),
+    header
+  );
   const tableBuilder = new ArrowTableBuilder(schema);
 
   const rowCount = Math.max(features.length, propertyRows.length);
   for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-    tableBuilder.addObjectRow(makeArrowRow(propertyRows[rowIndex], features[rowIndex]?.geometry, header));
+    tableBuilder.addObjectRow(
+      makeArrowRow(propertyRows[rowIndex], features[rowIndex]?.geometry, header)
+    );
   }
 
   return tableBuilder.finishTable();
@@ -141,8 +155,16 @@ async function* parseShapefileToArrowInBatches(
         encoding: cpg || 'latin1'
       }
     };
-    const schemaResponse = 'clone' in dbfResponse ? dbfResponse.clone() : await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
-    const propertyTable = await parseFromContext(schemaResponse as any, DBFLoader, dbfOptions, context!);
+    const schemaResponse =
+      'clone' in dbfResponse
+        ? dbfResponse.clone()
+        : await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+    const propertyTable = await parseFromContext(
+      schemaResponse as any,
+      DBFLoader,
+      dbfOptions,
+      context!
+    );
     propertySchema = propertyTable?.schema || null;
 
     const propertyIterable = await parseInBatchesFromContext(
@@ -186,21 +208,28 @@ async function* parseShapefileToArrowInBatches(
 
       const rowCount = Math.min(geometryQueue.length, propertyQueue.length);
       if (rowCount === 0) {
-        if ((shapeDone && geometryQueue.length === 0) || (propertyDone && propertyQueue.length === 0)) {
+        if (
+          (shapeDone && geometryQueue.length === 0) ||
+          (propertyDone && propertyQueue.length === 0)
+        ) {
           break;
         }
         continue;
       }
 
       const features = maybeReprojectFeatures(
-        geometryQueue.splice(0, rowCount).map(geometry => ({type: 'Feature', geometry, properties: {}})),
+        geometryQueue
+          .splice(0, rowCount)
+          .map(geometry => ({type: 'Feature', geometry, properties: {}})),
         prj,
         options
       );
       const propertyRows = propertyQueue.splice(0, rowCount);
       const batchBuilder = new ArrowTableBuilder(outputSchema);
       for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-        batchBuilder.addObjectRow(makeArrowRow(propertyRows[rowIndex], features[rowIndex]?.geometry, header));
+        batchBuilder.addObjectRow(
+          makeArrowRow(propertyRows[rowIndex], features[rowIndex]?.geometry, header)
+        );
       }
       const batch = batchBuilder.finishBatch();
       if (batch) {
@@ -292,7 +321,9 @@ function makeArrowRow(
 ): Record<string, unknown> {
   return {
     ...(propertyRow || {}),
-    [GEOMETRY_COLUMN_NAME]: geometry ? new Uint8Array(convertGeometryToWKB(geometry, getWKBOptions(geometry, header))) : null
+    [GEOMETRY_COLUMN_NAME]: geometry
+      ? new Uint8Array(convertGeometryToWKB(geometry, getWKBOptions(geometry, header)))
+      : null
   };
 }
 

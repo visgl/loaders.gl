@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {coreApi} from '@loaders.gl/core';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 
 import {TilesetTraverser} from '../../src/tileset-3d/common/tileset-traverser';
@@ -10,7 +11,7 @@ import {getFrameState} from '../../src/tileset-3d/helpers/frame-state';
 const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/tileset.json';
 
 test('Tileset3D#traverser base class', async t => {
-  const source = new Tiles3DSource({url: TILESET_URL, loader: Tiles3DLoader});
+  const source = new Tiles3DSource({url: TILESET_URL, loader: Tiles3DLoader, coreApi});
   const tileset = new Tileset3D(source);
   await tileset.tilesetInitializationPromise;
 

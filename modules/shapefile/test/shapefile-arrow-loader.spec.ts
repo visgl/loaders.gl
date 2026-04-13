@@ -15,7 +15,14 @@ setLoaderOptions({
 });
 
 const SHAPEFILE_JS_DATA_FOLDER = '@loaders.gl/shapefile/test/data/shapefile-js';
-const TEST_FILES = ['points', 'polylines', 'polygons', 'mixed-properties', 'utf8-property', 'empty'];
+const TEST_FILES = [
+  'points',
+  'polylines',
+  'polygons',
+  'mixed-properties',
+  'utf8-property',
+  'empty'
+];
 
 test('ShapefileArrowLoader#loader conformance', t => {
   validateLoader(t, ShapefileArrowLoader, 'ShapefileArrowLoader');
@@ -27,7 +34,11 @@ test('ShapefileArrowLoader#load fixtures round-trip to GeoJSON', async t => {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const table = await load(filename, ShapefileArrowLoader);
     const geoMetadata = getGeoMetadata(table.schema.metadata);
-    t.equal(geoMetadata?.primary_column, 'geometry', `${testFileName}: geo metadata primary column`);
+    t.equal(
+      geoMetadata?.primary_column,
+      'geometry',
+      `${testFileName}: geo metadata primary column`
+    );
 
     const rows = getRowsFromArrowTable(table);
     const roundTripped = convertWKBTableToGeoJSON(
@@ -83,7 +94,11 @@ test('ShapefileArrowLoader#loadInBatches yields stable Arrow schema', async t =>
     );
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const expected = await response.json();
-    t.deepEqual(roundTripped.features, expected.features, `${testFileName}: batched features round-trip`);
+    t.deepEqual(
+      roundTripped.features,
+      expected.features,
+      `${testFileName}: batched features round-trip`
+    );
   }
 
   t.end();

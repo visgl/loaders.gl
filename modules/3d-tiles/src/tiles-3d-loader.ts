@@ -86,7 +86,7 @@ async function parseTileset(
 
   const tilesetUrl = context?.url || '';
   const basePath = getBaseUri(tilesetUrl);
-  const normalizedRoot = await normalizeTileHeaders(tilesetJson, basePath, options || {});
+  const normalizedRoot = await normalizeTileHeaders(tilesetJson, basePath, options || {}, context);
   const tilesetJsonPostprocessed: Tiles3DTilesetJSONPostprocessed = {
     ...tilesetJson,
     shape: 'tileset3d',

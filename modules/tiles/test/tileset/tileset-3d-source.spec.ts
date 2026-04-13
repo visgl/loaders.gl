@@ -5,12 +5,8 @@
 import test from 'tape-promise/tape';
 import {I3SLoader} from '@loaders.gl/i3s';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
-import {
-  I3SSource,
-  Tiles3DSource,
-  isTileset3DSource,
-  type TilesetJSON
-} from '@loaders.gl/tiles';
+import {coreApi} from '@loaders.gl/core';
+import {I3SSource, Tiles3DSource, isTileset3DSource, type TilesetJSON} from '@loaders.gl/tiles';
 
 test('isTileset3DSource recognizes explicit source implementations', t => {
   const tiles3DSource = new Tiles3DSource({
@@ -50,7 +46,7 @@ test('Tiles3DSource initializes metadata and merges source query parameters', as
     queryString: 'session=abc123',
     extensionsUsed: ['KHR_texture_basisu']
   };
-  const source = new Tiles3DSource(tilesetJson);
+  const source = new Tiles3DSource({...tilesetJson, coreApi});
 
   await source.initialize();
 
@@ -62,7 +58,10 @@ test('Tiles3DSource initializes metadata and merges source query parameters', as
     source.getTileUrl('https://example.com/root/tile.b3dm?existing=1'),
     'https://example.com/root/tile.b3dm?existing=1&session=abc123&v=42'
   );
-  t.equal(source.getTileUrl('data:application/octet-stream;base64,AA=='), 'data:application/octet-stream;base64,AA==');
+  t.equal(
+    source.getTileUrl('data:application/octet-stream;base64,AA=='),
+    'data:application/octet-stream;base64,AA=='
+  );
   t.end();
 });
 
@@ -84,7 +83,11 @@ test('I3SSource initializes promised roots and appends auth tokens to tile urls'
   await source.initialize();
 
   const metadata = source.getMetadata();
-  t.equal(metadata.tileset.root.id, 'root-node', 'promised roots are awaited during initialization');
+  t.equal(
+    metadata.tileset.root.id,
+    'root-node',
+    'promised roots are awaited during initialization'
+  );
   t.equal(
     source.getTileUrl('https://example.com/SceneServer/layers/0/nodes/1'),
     'https://example.com/SceneServer/layers/0/nodes/1?token=secret-token'

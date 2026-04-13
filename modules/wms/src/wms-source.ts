@@ -4,6 +4,7 @@
 
 /* eslint-disable camelcase */
 import type {
+  CoreAPI,
   Source,
   DataSourceOptions,
   ImageSourceMetadata,
@@ -56,7 +57,8 @@ export const WMSSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
-  createDataSource: (url, options: WMSSourceOptions) => new WMSImageSource(url as string, options)
+  createDataSource: (url, options: WMSSourceOptions, coreApi?: CoreAPI) =>
+    new WMSImageSource(url as string, options, coreApi)
 } as const satisfies Source<WMSImageSource>;
 
 // PARAMETER TYPES FOR WMS SOURCE
@@ -215,8 +217,8 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
   capabilities: WMSCapabilities | null = null;
 
   /** Create a WMSImageSource */
-  constructor(url: string, options: WMSSourceOptions) {
-    super(url, options, WMSSource.defaultOptions);
+  constructor(url: string, options: WMSSourceOptions, coreApi?: CoreAPI) {
+    super(url, options, WMSSource.defaultOptions, coreApi);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WMS URL more likely to make this class just work.

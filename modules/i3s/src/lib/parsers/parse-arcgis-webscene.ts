@@ -1,5 +1,5 @@
-import {JSONLoader, load} from '@loaders.gl/core';
 import type {ArcGISWebSceneData, OperationalLayer} from '../../types';
+import {resolvePath} from '@loaders.gl/loader-utils';
 
 /**
  * WKID, or Well-Known ID, of the CRS. Specify either WKID or WKT of the CRS.
@@ -105,8 +105,8 @@ async function parseOperationalLayers(
  */
 async function checkSupportedIndexCRS(layer: OperationalLayer) {
   try {
-    const layerJson = await load(layer.url, JSONLoader);
-    // @ts-expect-error
+    const response = await fetchWebSceneLayerMetadata(layer.url);
+    const layerJson = await response.json();
     const wkid = layerJson?.spatialReference?.wkid;
 
     if (wkid !== SUPPORTED_WKID) {
@@ -115,4 +115,22 @@ async function checkSupportedIndexCRS(layer: OperationalLayer) {
   } catch (error) {
     throw error;
   }
+}
+
+async function fetchWebSceneLayerMetadata(url: string): Promise<Response> {
+  const resolvedUrl = resolvePath(url);
+
+  if (
+    resolvedUrl.startsWith('http://') ||
+    resolvedUrl.startsWith('https://') ||
+    resolvedUrl.startsWith('data:')
+  ) {
+    return await fetch(resolvedUrl);
+  }
+
+  if (globalThis.loaders?.fetchNode) {
+    return await globalThis.loaders.fetchNode(resolvedUrl);
+  }
+
+  return await fetch(resolvedUrl);
 }
