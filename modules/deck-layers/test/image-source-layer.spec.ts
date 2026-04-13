@@ -174,6 +174,7 @@ test('ImageSourceLayer#reloads imagery when srs changes on a static viewport', t
   layer.state = {
     resolvedData: TEST_IMAGE_SOURCE,
     imageSet: {
+      loadMetadata: async () => {},
       setOptions: () => {},
       requestImage: (parameters: any) => requestedParameters.push(parameters)
     },
