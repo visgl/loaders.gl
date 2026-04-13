@@ -172,8 +172,8 @@ async function parseWithLoaderImplementation(
     return await loader.parseText(data, options, context);
   }
 
-  if (loader.parse && data instanceof ArrayBuffer) {
-    return await loader.parse(data, options, context);
+  if (loader.parse) {
+    return await loader.parse(data as ArrayBuffer, options, context);
   }
 
   // This should not happen, all sync loaders should also offer `parse` function

@@ -478,7 +478,7 @@ test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks af
   const splitIndex = csvBytes.indexOf(0xc3) + 1;
   const preloadedLoader = await preload(CSVLoader);
 
-  const iterator = parseInBatches(
+  const iterator = await parseInBatches(
     [csvBytes.subarray(0, splitIndex), csvBytes.subarray(splitIndex)],
     preloadedLoader,
     {

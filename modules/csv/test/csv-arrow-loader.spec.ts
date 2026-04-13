@@ -560,7 +560,7 @@ test('CSVArrowLoader#parseInBatches freezes schema after first typed batch', asy
   const csvBuffer = new TextEncoder().encode(csvText);
   const preloadedLoader = await preload(CSVArrowLoader);
 
-  const iterator = parseInBatches([csvBuffer], preloadedLoader, {
+  const iterator = await parseInBatches([csvBuffer], preloadedLoader, {
     core: {
       batchSize: 1
     },
