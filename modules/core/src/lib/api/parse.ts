@@ -172,7 +172,7 @@ async function parseWithLoaderImplementation(
     return await loader.parseText(data, options, context);
   }
 
-  if (loader.parse) {
+  if (loader.parse && data instanceof ArrayBuffer) {
     return await loader.parse(data, options, context);
   }
 

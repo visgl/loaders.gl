@@ -5,10 +5,16 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
+import {
+  load,
+  loadInBatches,
+  isAsyncIterable,
+  parse,
+  parseInBatches,
+  preload
+} from '@loaders.gl/core';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import * as csv from '@loaders.gl/csv';
-import {CSVLoaderWithParser} from '../src/csv-loader';
 import {getTableLength} from '@loaders.gl/schema-utils';
 
 // Small CSV Sample Files
@@ -466,13 +472,15 @@ test('CSVLoader#loadInBatches(csv with quotes)', async t => {
   t.end();
 });
 
-test('CSVLoaderWithParser#parseInBatches preserves UTF-8 characters split across chunks', async t => {
+test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks after preload', async t => {
   const csvText = 'city\nZürich\n東京\n';
   const csvBytes = new TextEncoder().encode(csvText);
   const splitIndex = csvBytes.indexOf(0xc3) + 1;
+  const preloadedLoader = await preload(CSVLoader);
 
-  const iterator = CSVLoaderWithParser.parseInBatches(
+  const iterator = parseInBatches(
     [csvBytes.subarray(0, splitIndex), csvBytes.subarray(splitIndex)],
+    preloadedLoader,
     {
       csv: {
         header: true,
@@ -493,11 +501,12 @@ test('CSVLoaderWithParser#parseInBatches preserves UTF-8 characters split across
 });
 
 test('CSV parser loaders are available through direct implementation imports', async t => {
-  const csvTable = await CSVLoaderWithParser.parseText('city,population\nParis,2148000', {
+  const preloadedLoader = await preload(CSVLoader);
+  const csvTable = await parse('city,population\nParis,2148000', preloadedLoader, {
     csv: {shape: 'object-row-table'}
   });
 
-  t.equal(csvTable.shape, 'object-row-table', 'CSVLoaderWithParser parses text directly');
+  t.equal(csvTable.shape, 'object-row-table', 'preloaded CSV loader parses text directly');
   t.end();
 });
 

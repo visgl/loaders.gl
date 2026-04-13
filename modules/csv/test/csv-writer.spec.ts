@@ -4,9 +4,8 @@
 // Copyright 2022 Foursquare Labs, Inc.
 
 import test from 'tape-promise/tape';
-import {CSVArrowWriter, CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
-import {CSVArrowLoaderWithParser} from '../src/csv-arrow-loader';
-import {encodeTableAsText} from '@loaders.gl/core';
+import {CSVArrowLoader, CSVArrowWriter, CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
+import {encodeTableAsText, parse, preload} from '@loaders.gl/core';
 
 import {Table} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
@@ -151,11 +150,12 @@ test('CSVWriter ', async t => {
 });
 
 test('CSVArrowWriter ', async t => {
+  const preloadedLoader = await preload(CSVArrowLoader);
   for (const {name, input, options, expected} of cases) {
     const arrowInput =
       expected === ''
         ? convertTable(input, 'arrow-table')
-        : await CSVArrowLoaderWithParser.parseText(expected, {
+        : await parse(expected, preloadedLoader, {
             csv: {
               header: true,
               dynamicTyping: false
