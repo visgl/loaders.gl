@@ -106,7 +106,6 @@ async function checkSupportedIndexCRS(layer: OperationalLayer) {
   try {
     const response = await fetch(layer.url);
     const layerJson = await response.json();
-    // @ts-expect-error
     const wkid = layerJson?.spatialReference?.wkid;
 
     if (wkid !== SUPPORTED_WKID) {
