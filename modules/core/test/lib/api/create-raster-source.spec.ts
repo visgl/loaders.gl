@@ -1,8 +1,6 @@
-import {readFile} from 'node:fs/promises';
-
 import {expect, test} from 'vitest';
 import {createDataSource} from '@loaders.gl/core';
-import {resolvePath} from '@loaders.gl/core';
+import {fetchFile, resolvePath} from '@loaders.gl/core';
 import {
   GeoTIFFRasterSource,
   GeoTIFFSource,
@@ -31,13 +29,18 @@ function createViewport(bounds: [[number, number], [number, number]], crs?: stri
 }
 
 async function createFixtureBlob() {
-  const file = await readFile(TIFF_URL);
+  const file = await readFixtureBytes(TIFF_URL);
   return new Blob([file]);
 }
 
 async function createOmeFixtureBlob() {
-  const file = await readFile(OME_TIFF_URL);
+  const file = await readFixtureBytes(OME_TIFF_URL);
   return new Blob([file]);
+}
+
+async function readFixtureBytes(url: string): Promise<Uint8Array> {
+  const response = await fetchFile(url);
+  return new Uint8Array(await response.arrayBuffer());
 }
 
 test('createDataSource selects GeoTIFFSource from URL', () => {
@@ -144,7 +147,7 @@ test('OMETiffImageSource exposes normalized metadata', async () => {
 });
 
 test('OMETiffImageSource#getRaster returns multi-channel plane data', async () => {
-  const file = await readFile(OME_TIFF_URL);
+  const file = await readFixtureBytes(OME_TIFF_URL);
   const source = new OMETiffImageSource(new Blob([file]), {ometiff: {}});
   const raster = await source.getRaster({channels: [0, 1, 2]});
 
@@ -169,7 +172,7 @@ test('GeoTIFFRasterSource rejects viewport CRS reprojection requests', async () 
 });
 
 test('GeoTIFFRasterSource uses RangeRequestScheduler for remote byte-range reads', async () => {
-  const file = await readFile(TIFF_URL);
+  const file = await readFixtureBytes(TIFF_URL);
   const schedulerEvents: string[] = [];
   const rangeRequests: Array<{start: number; end: number}> = [];
   const rangeScheduler = new RangeRequestScheduler({
@@ -225,7 +228,7 @@ test('GeoTIFFRasterSource uses RangeRequestScheduler for remote byte-range reads
 });
 
 test('GeoTIFFRasterSource preserves rangeSchedulerProps object references', async () => {
-  const file = await readFile(TIFF_URL);
+  const file = await readFixtureBytes(TIFF_URL);
   const rangeStats = createRangeStats('geotiff-range-scheduler-props');
   const mockFetch = async (_url: string, options?: RequestInit) => {
     const headers = new Headers(options?.headers);
@@ -269,7 +272,7 @@ test('GeoTIFFRasterSource preserves rangeSchedulerProps object references', asyn
 });
 
 test('GeoTIFFRasterSource ignores late aborts without poisoning subsequent raster requests', async () => {
-  const file = await readFile(TIFF_URL);
+  const file = await readFixtureBytes(TIFF_URL);
   const mockFetch = async (_url: string, options?: RequestInit) => {
     const headers = new Headers(options?.headers);
     const rangeHeader = headers.get('Range');

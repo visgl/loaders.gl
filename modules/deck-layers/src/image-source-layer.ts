@@ -159,7 +159,11 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       return;
     }
 
-    if (!deepEqual(props.layers, oldProps.layers, 1) || props.debounceTime !== oldProps.debounceTime) {
+    if (
+      !deepEqual(props.layers, oldProps.layers, 1) ||
+      props.debounceTime !== oldProps.debounceTime ||
+      props.srs !== oldProps.srs
+    ) {
       this.state.imageSet.setOptions({imageSource: this.state.resolvedData, debounceTime: props.debounceTime});
       this.loadImage(this.context.viewport, 0);
     } else if (changeFlags.viewportChanged) {
