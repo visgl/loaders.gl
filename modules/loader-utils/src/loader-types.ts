@@ -154,6 +154,11 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   version: string;
   /** A boolean, or a URL */
   worker?: string | boolean;
+  /**
+   * Optionally warm the loader before parse/load is invoked.
+   * Can be used to avoid a later delay and may return a parser-bearing loader that also supports `parseSync`.
+   */
+  preload?: Preload;
   // end Worker
 
   /** Human readable name */
@@ -191,8 +196,6 @@ export type LoaderWithParser<
   BatchT = any,
   LoaderOptionsT = StrictLoaderOptions
 > = Loader<DataT, BatchT, LoaderOptionsT> & {
-  /** Perform actions before load. @deprecated Not officially supported. */
-  preload?: Preload;
   /** Parse asynchronously and atomically from an arraybuffer */
   parse: (
     arrayBuffer: ArrayBuffer,
@@ -318,6 +321,10 @@ export type LoaderContext = {
 //   context?: LoaderContext
 // ) => AsyncIterable<any>;
 
+/**
+ * Optionally resolves a loader to a parser-bearing implementation before parsing begins.
+ * Can be used to avoid a later delay and may return a loader that supports `parseSync`.
+ */
 type Preload = (url: string, options?: PreloadOptions) => any;
 
 /** Typescript helper to extract options type from a loader type */

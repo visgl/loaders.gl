@@ -25,6 +25,7 @@ import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
+import {loadLoaderImplementation} from '../loader-utils/load-loader';
 import {getResourceUrl} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
@@ -141,11 +142,11 @@ async function parseWithLoader(
 
   data = await getArrayBufferOrStringFromData(data, loader, options);
 
-  const loaderWithParser = loader as LoaderWithParser;
+  const candidateLoaderWithParser = loader as LoaderWithParser;
 
   // First check for synchronous text parser, wrap results in promises
-  if (loaderWithParser.parseTextSync && typeof data === 'string') {
-    return loaderWithParser.parseTextSync(data, options, context);
+  if (candidateLoaderWithParser.parseTextSync && typeof data === 'string') {
+    return candidateLoaderWithParser.parseTextSync(data, options, context);
   }
 
   // If we have a workerUrl and the loader can parse the given options efficiently in a worker
@@ -153,17 +154,30 @@ async function parseWithLoader(
     return await parseWithWorker(loader, data, options, context, parse);
   }
 
+  const loaderWithParser = await loadLoaderImplementation(loader, options, context.url);
+  return await parseWithLoaderImplementation(loaderWithParser, data, options, context);
+}
+
+async function parseWithLoaderImplementation(
+  loader: LoaderWithParser,
+  data: string | ArrayBuffer,
+  options: StrictLoaderOptions,
+  context: LoaderContext
+): Promise<unknown> {
+  if (loader.parseTextSync && typeof data === 'string') {
+    return loader.parseTextSync(data, options, context);
+  }
   // Check for asynchronous parser
-  if (loaderWithParser.parseText && typeof data === 'string') {
-    return await loaderWithParser.parseText(data, options, context);
+  if (loader.parseText && typeof data === 'string') {
+    return await loader.parseText(data, options, context);
   }
 
-  if (loaderWithParser.parse) {
-    return await loaderWithParser.parse(data, options, context);
+  if (loader.parse) {
+    return await loader.parse(data, options, context);
   }
 
   // This should not happen, all sync loaders should also offer `parse` function
-  assert(!loaderWithParser.parseSync);
+  assert(!loader.parseSync);
 
   // TBD - If asynchronous parser not available, return null
   throw new Error(`${loader.id} loader - no parser found and worker is disabled`);

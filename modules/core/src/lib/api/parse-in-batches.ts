@@ -22,6 +22,7 @@ import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';
 import {getAsyncIterableFromData} from '../loader-utils/get-data';
+import {loadLoaderImplementation} from '../loader-utils/load-loader';
 import {getResourceUrl} from '../utils/resource-utils';
 import {selectLoader} from './select-loader';
 
@@ -108,13 +109,15 @@ export async function parseInBatches(
     context || null
   );
 
-  return await parseWithLoaderInBatches(loader as LoaderWithParser, data, strictOptions, context);
+  const loaderWithParser = await loadLoaderImplementation(loader, strictOptions, context.url);
+  return await parseWithLoaderInBatches(loader, loaderWithParser, data, strictOptions, context);
 }
 
 /**
  * Loader has been selected and context has been prepared, see if we need to emit a metadata batch
  */
 async function parseWithLoaderInBatches(
+  originalLoader: Loader,
   loader: LoaderWithParser,
   data: BatchableDataType,
   options: StrictLoaderOptions,
@@ -131,7 +134,7 @@ async function parseWithLoaderInBatches(
     shape: 'metadata',
     batchType: 'metadata',
     metadata: {
-      _loader: loader,
+      _loader: originalLoader,
       _context: context
     },
     // Populate with some default fields to avoid crashing
@@ -182,7 +185,7 @@ async function* parseChunkInBatches(
   transformedIterator:
     | Iterable<ArrayBufferLike | ArrayBufferView>
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>,
-  loader: Loader,
+  loader: LoaderWithParser,
   options: StrictLoaderOptions,
   context: LoaderContext
 ): AsyncIterable<Batch> {

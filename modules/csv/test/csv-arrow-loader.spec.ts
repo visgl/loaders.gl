@@ -4,7 +4,13 @@
 
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
-import {CSVArrowLoader, CSVLoader} from '@loaders.gl/csv';
+import {
+  CSVArrowLoader,
+  CSVArrowWorkerLoader,
+  CSVLoader
+} from '@loaders.gl/csv';
+import * as csv from '@loaders.gl/csv';
+import {CSVArrowLoaderWithParser} from '../src/csv-arrow-loader';
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 
@@ -83,6 +89,14 @@ test('CSVArrowLoader#load(numbers-100.csv)', async t => {
     'all columns are Utf8'
   );
 
+  t.end();
+});
+
+test('CSVArrow metadata loader exposes preload and deprecated WorkerLoader alias', t => {
+  t.equal(typeof CSVArrowLoader.preload, 'function', 'CSVArrowLoader exposes preload');
+  t.notOk('parse' in CSVArrowLoader, 'CSVArrowLoader does not expose parse');
+  t.equal(CSVArrowWorkerLoader, CSVArrowLoader, 'CSVArrowWorkerLoader aliases CSVArrowLoader');
+  t.notOk('CSVArrowLoaderWithParser' in csv, 'root package does not export CSVArrowLoaderWithParser');
   t.end();
 });
 
@@ -256,11 +270,11 @@ test('CSVArrowLoader#parseInBatches matches CSVLoader output across fixture case
   t.end();
 });
 
-test('CSVArrowLoader#parse handles raw UTF-8 and quoted fields without string tokenization', async t => {
+test('CSVArrowLoaderWithParser#parse handles raw UTF-8 and quoted fields without string tokenization', async t => {
   const csvText = 'name,note\nÅsa,mañana\nBob,"x,y"\n"Eve","hello\nthere"\n"Dan","b""c"\n';
   const csvBuffer = new TextEncoder().encode(csvText);
 
-  const table = await CSVArrowLoader.parse(csvBuffer.buffer, {
+  const table = await CSVArrowLoaderWithParser.parse(csvBuffer.buffer, {
     csv: {
       header: true
     }
@@ -374,11 +388,11 @@ function materializeArrowCellValue(value: unknown): unknown {
   return value;
 }
 
-test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing cells', async t => {
+test('CSVArrowLoaderWithParser#parse byte path handles TSV, duplicate headers, and missing cells', async t => {
   const csvText = 'a\ta\n1\t2\n3\n';
   const csvBuffer = new TextEncoder().encode(csvText);
 
-  const table = await CSVArrowLoader.parse(csvBuffer.buffer, {
+  const table = await CSVArrowLoaderWithParser.parse(csvBuffer.buffer, {
     csv: {
       header: true
     }
@@ -397,10 +411,10 @@ test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing
   t.end();
 });
 
-test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra cells', async t => {
+test('CSVArrowLoaderWithParser#parse only adds __parsed_extra for Papa-compatible extra cells', async t => {
   const noExtraText = 'A,B,C\nx,1,some text\ny,2,other text\n\n';
   const noExtraBuffer = new TextEncoder().encode(noExtraText);
-  const noExtraTable = await CSVArrowLoader.parse(noExtraBuffer.buffer, {
+  const noExtraTable = await CSVArrowLoaderWithParser.parse(noExtraBuffer.buffer, {
     csv: {
       header: true,
       skipEmptyLines: true
@@ -414,7 +428,7 @@ test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra ce
 
   const extraText = 'A,B,C\nx,1,some text\n,,,\ny,2,other text\n';
   const extraBuffer = new TextEncoder().encode(extraText);
-  const extraTable = await CSVArrowLoader.parse(extraBuffer.buffer, {
+  const extraTable = await CSVArrowLoaderWithParser.parse(extraBuffer.buffer, {
     csv: {
       header: true,
       skipEmptyLines: true
@@ -426,7 +440,7 @@ test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra ce
     'adds __parsed_extra for Papa-compatible header rows with extra cells'
   );
 
-  const headerlessExtraTable = await CSVArrowLoader.parse(extraBuffer.buffer, {
+  const headerlessExtraTable = await CSVArrowLoaderWithParser.parse(extraBuffer.buffer, {
     csv: {
       header: false,
       skipEmptyLines: true
@@ -532,11 +546,11 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async 
   t.end();
 });
 
-test('CSVArrowLoader#parseInBatches freezes schema after first typed batch', async t => {
+test('CSVArrowLoaderWithParser#parseInBatches freezes schema after first typed batch', async t => {
   const csvText = 'value\n1\nfoo\n';
   const csvBuffer = new TextEncoder().encode(csvText);
 
-  const iterator = CSVArrowLoader.parseInBatches([csvBuffer], {
+  const iterator = CSVArrowLoaderWithParser.parseInBatches([csvBuffer], {
     core: {
       batchSize: 1
     },

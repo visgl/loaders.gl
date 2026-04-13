@@ -8,8 +8,9 @@ import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {AsyncQueue, ArrowTableBuilder, convertArrowToSchema} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
-import type {CSVLoaderOptions} from '../../csv-loader';
-import {CSVLoader} from '../../csv-loader';
+import type {CSVLoaderOptions} from '../../csv-loader-options';
+import {CSV_LOADER_OPTIONS} from '../../csv-loader-options';
+import {CSVLoaderWithParser} from '../../csv-loader';
 import Papa from '../../papaparse/papaparse';
 import AsyncIteratorStreamer from '../../papaparse/async-iterator-streamer';
 import {parseRawArrowCSVBytes} from './parse-raw-arrow-csv-bytes';
@@ -33,7 +34,7 @@ const DEFAULT_BATCH_SIZE = 4000;
 
 /** Default CSV options for internal Arrow table parsing. */
 const DEFAULT_RAW_ARROW_CSV_OPTIONS: CSVRawArrowOptions = {
-  ...CSVLoader.options.csv,
+  ...CSV_LOADER_OPTIONS.csv,
   header: false,
   dynamicTyping: false
 };
@@ -164,7 +165,7 @@ async function parseRawArrowCSVTextWithPapa(
   options: CSVRawArrowParseOptions | undefined,
   csvOptions: CSVRawArrowOptions
 ): Promise<ArrowTable> {
-  const rowTable = await CSVLoader.parseText(csvText, {
+  const rowTable = await CSVLoaderWithParser.parseText(csvText, {
     ...options,
     csv: {
       ...options?.csv,

@@ -2,25 +2,26 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
-import type {CSVLoaderOptions} from './csv-loader';
-import {CSVLoader} from './csv-loader';
+import {CSVArrowLoader} from './csv-arrow-loader-types';
+import {
+  CSV_ARROW_LOADER_OPTIONS,
+  type CSVArrowLoaderOptions,
+  type CSVArrowOptions
+} from './csv-arrow-loader-options';
+import {
+  CSV_LOADER_VERSION
+} from './csv-loader-options';
 import {
   parseRawArrowCSVInBatches,
   parseRawArrowCSVTable,
   parseRawArrowCSVText
 } from './lib/parsers/parse-csv-to-arrow';
 import type {CSVRawArrowParseOptions} from './lib/parsers/parse-csv-to-arrow';
-
-/** CSV options accepted by the Arrow CSV loader. */
-type CSVArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape'> & {
-  /** @internal Whether the caller explicitly supplied `skipEmptyLines`. */
-  skipEmptyLinesIsExplicit?: boolean;
-};
 
 /** Cell value after Papa-style dynamic typing has been applied. */
 type DynamicColumnValue = string | number | boolean | Date | null;
@@ -38,24 +39,6 @@ const FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
 const ISO_DATE =
   /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
 
-/** Default CSV options for CSVArrowLoader. */
-const CSV_ARROW_DEFAULT_OPTIONS: CSVArrowOptions = {
-  optimizeMemoryUsage: CSVLoader.options.csv.optimizeMemoryUsage,
-  header: CSVLoader.options.csv.header,
-  columnPrefix: CSVLoader.options.csv.columnPrefix,
-  quoteChar: CSVLoader.options.csv.quoteChar,
-  escapeChar: CSVLoader.options.csv.escapeChar,
-  dynamicTyping: false,
-  comments: CSVLoader.options.csv.comments,
-  skipEmptyLines: false,
-  delimitersToGuess: CSVLoader.options.csv.delimitersToGuess
-};
-
-/** Options for parsing CSV input into Apache Arrow tables. */
-export type CSVArrowLoaderOptions = LoaderOptions & {
-  csv?: CSVArrowOptions;
-};
-
 /**
  * CSV loader that returns Apache Arrow tables.
  *
@@ -63,16 +46,14 @@ export type CSVArrowLoaderOptions = LoaderOptions & {
  * the byte-oriented parser when the supplied options are supported. Set
  * `csv.dynamicTyping: true` to opt into typed Arrow columns.
  */
-export const CSVArrowLoader = {
-  ...CSVLoader,
+export const CSVArrowLoaderWithParser = {
+  ...CSVArrowLoader,
 
   dataType: null as unknown as ArrowTable,
   batchType: null as unknown as ArrowTableBatch,
+  version: CSV_LOADER_VERSION,
 
-  options: {
-    ...CSVLoader.options,
-    csv: CSV_ARROW_DEFAULT_OPTIONS
-  },
+  options: CSV_ARROW_LOADER_OPTIONS,
 
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVArrowLoaderOptions) =>
     parseCSVArrayBufferToArrow(arrayBuffer, createCSVArrowLoaderOptions(options)),
@@ -98,7 +79,7 @@ function createCSVArrowLoaderOptions(options?: CSVArrowLoaderOptions): CSVArrowL
   return {
     ...options,
     csv: {
-      ...CSVArrowLoader.options.csv,
+      ...CSVArrowLoaderWithParser.options.csv,
       ...options?.csv,
       skipEmptyLinesIsExplicit
     }
@@ -193,7 +174,7 @@ async function* makeTypedArrowBatchIterator(
 /** Merges caller options with Arrow CSV defaults. */
 function createCSVArrowOptions(options?: CSVArrowLoaderOptions): CSVArrowOptions {
   return {
-    ...CSVArrowLoader.options.csv,
+    ...CSVArrowLoaderWithParser.options.csv,
     ...options?.csv
   };
 }

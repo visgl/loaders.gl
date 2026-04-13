@@ -6,7 +6,9 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
-import {CSVLoader} from '../src/csv-loader';
+import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
+import * as csv from '@loaders.gl/csv';
+import {CSVLoaderWithParser} from '../src/csv-loader';
 import {getTableLength} from '@loaders.gl/schema-utils';
 
 // Small CSV Sample Files
@@ -25,6 +27,14 @@ test('CSVLoader#loader conformance', t => {
   t.end();
 });
 
+test('CSV metadata loaders expose preload and deprecated WorkerLoader aliases', t => {
+  t.equal(typeof CSVLoader.preload, 'function', 'CSVLoader exposes preload');
+  t.notOk('parse' in CSVLoader, 'CSVLoader does not expose parse');
+  t.notOk('parseInBatches' in CSVLoader, 'CSVLoader does not expose parseInBatches');
+  t.equal(CSVWorkerLoader, CSVLoader, 'CSVWorkerLoader aliases CSVLoader');
+  t.notOk('CSVLoaderWithParser' in csv, 'root package does not export CSVLoaderWithParser');
+  t.end();
+});
 test('CSVLoader#load(states.csv)', async t => {
   const table = await load(CSV_STATES_URL, CSVLoader);
   t.equal(getTableLength(table), 110);
@@ -456,12 +466,12 @@ test('CSVLoader#loadInBatches(csv with quotes)', async t => {
   t.end();
 });
 
-test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', async t => {
+test('CSVLoaderWithParser#parseInBatches preserves UTF-8 characters split across chunks', async t => {
   const csvText = 'city\nZürich\n東京\n';
   const csvBytes = new TextEncoder().encode(csvText);
   const splitIndex = csvBytes.indexOf(0xc3) + 1;
 
-  const iterator = CSVLoader.parseInBatches(
+  const iterator = CSVLoaderWithParser.parseInBatches(
     [csvBytes.subarray(0, splitIndex), csvBytes.subarray(splitIndex)],
     {
       csv: {
@@ -479,6 +489,15 @@ test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', 
   }
 
   t.deepEqual(rows, [{city: 'Zürich'}, {city: '東京'}], 'preserves split UTF-8 characters');
+  t.end();
+});
+
+test('CSV parser loaders are available through direct implementation imports', async t => {
+  const csvTable = await CSVLoaderWithParser.parseText('city,population\nParis,2148000', {
+    csv: {shape: 'object-row-table'}
+  });
+
+  t.equal(csvTable.shape, 'object-row-table', 'CSVLoaderWithParser parses text directly');
   t.end();
 });
 

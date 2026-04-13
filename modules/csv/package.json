@@ -30,6 +30,22 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./csv-arrow-loader": {
+      "types": "./dist/csv-arrow-loader.d.ts",
+      "import": "./dist/csv-arrow-loader.js"
+    },
+    "./csv-arrow-writer": {
+      "types": "./dist/csv-arrow-writer.d.ts",
+      "import": "./dist/csv-arrow-writer.js"
+    },
+    "./csv-loader": {
+      "types": "./dist/csv-loader.d.ts",
+      "import": "./dist/csv-loader.js"
+    },
+    "./csv-writer": {
+      "types": "./dist/csv-writer.d.ts",
+      "import": "./dist/csv-writer.js"
     }
   },
   "sideEffects": false,

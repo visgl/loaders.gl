@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Schema, ArrayRowTable, ObjectRowTable, TableBatch} from '@loaders.gl/schema';
 
 import {log, toArrayBufferIterator} from '@loaders.gl/loader-utils';
@@ -16,76 +16,46 @@ import {
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 import {CSVFormat} from './csv-format';
+import {
+  CSV_LOADER_OPTIONS,
+  CSV_LOADER_VERSION,
+  DEFAULT_CSV_SHAPE,
+  type CSVLoaderOptions
+} from './csv-loader-options';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-const DEFAULT_CSV_SHAPE = 'object-row-table';
-
-export type CSVLoaderOptions = LoaderOptions & {
-  csv?: {
-    // loaders.gl options
-    shape?: 'array-row-table' | 'object-row-table';
-    /** optimizes memory usage but increases parsing time. */
-    optimizeMemoryUsage?: boolean;
-    columnPrefix?: string;
-    header?: 'auto';
-
-    // CSV options (papaparse)
-    // delimiter: auto
-    // newline: auto
-    quoteChar?: string;
-    escapeChar?: string;
-    // Convert numbers and boolean values in rows from strings
-    dynamicTyping?: boolean;
-    comments?: boolean;
-    skipEmptyLines?: boolean | 'greedy';
-    // transform: null?
-    delimitersToGuess?: string[];
-    // fastMode: auto
-  };
-};
-
-export const CSVLoader = {
+export const CSVLoaderWithParser = {
   ...CSVFormat,
 
   dataType: null as unknown as ObjectRowTable | ArrayRowTable,
   batchType: null as unknown as TableBatch,
-  version: VERSION,
+  version: CSV_LOADER_VERSION,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
-    parseCSV(new TextDecoder().decode(arrayBuffer), options),
-  parseText: (text: string, options?: CSVLoaderOptions) => parseCSV(text, options),
+    parseCSVText(new TextDecoder().decode(arrayBuffer), options),
+  parseSync: (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
+    parseCSVTextSync(new TextDecoder().decode(arrayBuffer), options),
+  parseText: (text: string, options?: CSVLoaderOptions) => parseCSVText(text, options),
+  parseTextSync: (text: string, options?: CSVLoaderOptions) => parseCSVTextSync(text, options),
   parseInBatches: parseCSVInBatches,
   // @ts-ignore
   // testText: null,
   options: {
-    csv: {
-      shape: DEFAULT_CSV_SHAPE, // 'object-row-table'
-      optimizeMemoryUsage: false,
-      // CSV options
-      header: 'auto',
-      columnPrefix: 'column',
-      // delimiter: auto
-      // newline: auto
-      quoteChar: '"',
-      escapeChar: '"',
-      dynamicTyping: true,
-      comments: false,
-      skipEmptyLines: true,
-      // transform: null?
-      delimitersToGuess: [',', '\t', '|', ';']
-      // fastMode: auto
-    }
+    ...CSV_LOADER_OPTIONS
   }
 } as const satisfies LoaderWithParser<ObjectRowTable | ArrayRowTable, TableBatch, CSVLoaderOptions>;
 
-async function parseCSV(
+async function parseCSVText(
   csvText: string,
   options?: CSVLoaderOptions
 ): Promise<ObjectRowTable | ArrayRowTable> {
+  return parseCSVTextSync(csvText, options);
+}
+
+function parseCSVTextSync(
+  csvText: string,
+  options?: CSVLoaderOptions
+): ObjectRowTable | ArrayRowTable {
   // Apps can call the parse method directly, so we apply default options here
-  const csvOptions = {...CSVLoader.options.csv, ...options?.csv};
+  const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
 
   const firstRow = readFirstRow(csvText);
   const header: boolean =
@@ -146,7 +116,7 @@ function parseCSVInBatches(
   }
 
   // Apps can call the parse method directly, we so apply default options here
-  const csvOptions = {...CSVLoader.options.csv, ...options?.csv};
+  const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
 
   const asyncQueue = new AsyncQueue<TableBatch>();
 

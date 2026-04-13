@@ -119,6 +119,12 @@ function parseWithLoaderSync(
     return loader.parseSync(data, options, context); // , loader);
   }
 
+  if (loader.preload) {
+    throw new Error(
+      `${loader.name} loader: 'parseSync' requires a parser-bearing loader. Import the loader implementation directly and use that loader instead. ${context.url || ''}`
+    );
+  }
+
   // TBD - If synchronous parser not available, return null
   throw new Error(
     `${loader.name} loader: 'parseSync' not supported by this loader, use 'parse' instead. ${
