@@ -50,8 +50,24 @@ test('ImageSet#accepts the latest completed request', async t => {
     }
   });
 
-  imageSet.requestImage({layers: [], boundingBox: [[0, 0], [1, 1]], width: 1, height: 1});
-  imageSet.requestImage({layers: [], boundingBox: [[0, 0], [1, 1]], width: 2, height: 2});
+  imageSet.requestImage({
+    layers: [],
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    width: 1,
+    height: 1
+  });
+  imageSet.requestImage({
+    layers: [],
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    width: 2,
+    height: 2
+  });
 
   resolveSecond?.();
   await new Promise(resolve => setTimeout(resolve, 0));
@@ -91,13 +107,29 @@ test('ImageSet#emits metadata and image errors', async t => {
   });
 
   await imageSet.loadMetadata().catch(() => {});
-  imageSet.requestImage({layers: [], boundingBox: [[0, 0], [1, 1]], width: 1, height: 1});
+  imageSet.requestImage({
+    layers: [],
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    width: 1,
+    height: 1
+  });
   await new Promise(resolve => setTimeout(resolve, 0));
 
   metadataFailed = false;
   imageFailed = false;
   await imageSet.loadMetadata();
-  imageSet.requestImage({layers: [], boundingBox: [[0, 0], [1, 1]], width: 2, height: 2});
+  imageSet.requestImage({
+    layers: [],
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    width: 2,
+    height: 2
+  });
   await new Promise(resolve => setTimeout(resolve, 0));
 
   t.deepEqual(metadataErrors, ['metadata boom']);
@@ -122,13 +154,66 @@ test('ImageSet#debounces image requests', async t => {
     }
   });
 
-  imageSet.requestImage({layers: [], boundingBox: [[0, 0], [1, 1]], width: 1, height: 1});
-  imageSet.requestImage({layers: [], boundingBox: [[0, 0], [1, 1]], width: 2, height: 2});
+  imageSet.requestImage({
+    layers: [],
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    width: 1,
+    height: 1
+  });
+  imageSet.requestImage({
+    layers: [],
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    width: 2,
+    height: 2
+  });
 
   await new Promise(resolve => setTimeout(resolve, 20));
 
   t.deepEqual(calls, [2]);
   t.equal((imageSet.image as any)?.width, 2);
+
+  imageSet.finalize();
+  t.end();
+});
+
+test('ImageSet#emits loading state changes', async t => {
+  let resolveImage;
+  const loadingStates: boolean[] = [];
+  const imageSet = new ImageSet({
+    async getMetadata() {
+      return {name: 'test', keywords: [], layers: []};
+    },
+    getImage() {
+      return new Promise(resolve => {
+        resolveImage = () => resolve({name: 'image'});
+      }) as Promise<any>;
+    }
+  });
+
+  imageSet.subscribe({
+    onLoadingStateChange: isLoading => loadingStates.push(isLoading)
+  });
+
+  imageSet.requestImage({
+    layers: [],
+    boundingBox: [
+      [0, 0],
+      [1, 1]
+    ],
+    width: 1,
+    height: 1
+  });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  resolveImage?.();
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  t.deepEqual(loadingStates, [true, false]);
 
   imageSet.finalize();
   t.end();

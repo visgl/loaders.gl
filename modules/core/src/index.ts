@@ -7,6 +7,7 @@ export type {
   Loader,
   LoaderWithParser,
   LoaderContext,
+  CoreAPI,
   LoaderOptions,
   Writer,
   WriterOptions,
@@ -37,6 +38,7 @@ export {selectLoader, selectLoaderSync} from './lib/api/select-loader';
 export {parse} from './lib/api/parse';
 export {parseSync} from './lib/api/parse-sync';
 export {parseInBatches} from './lib/api/parse-in-batches';
+export {coreApi} from './lib/api/core-api';
 
 export {load} from './lib/api/load';
 export {loadInBatches} from './lib/api/load-in-batches';

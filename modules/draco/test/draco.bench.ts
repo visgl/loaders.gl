@@ -1,5 +1,6 @@
 import {fetchFile, parse, encode} from '@loaders.gl/core';
-import {DracoLoader, DracoWriter, DracoWriterOptions} from '@loaders.gl/draco';
+import {DracoLoader, DracoWriter} from '@loaders.gl/draco';
+import type {DracoWriterOptions} from '@loaders.gl/draco';
 
 const POSITIONS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-positions.bin';
 const COLORS_URL = '@loaders.gl/draco/test/data/raw-attribute-buffers/lidar-colors.bin';

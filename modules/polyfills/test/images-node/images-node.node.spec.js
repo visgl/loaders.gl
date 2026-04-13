@@ -20,9 +20,10 @@ test('Node image polyfills', () => {
   expect(typeof globalThis.loaders?.parseImageNode, 'parseImageNode successfully installed').toBe(
     'function'
   );
-  expect(typeof globalThis.loaders?.getImageBitmapDataNode, 'getImageBitmapDataNode installed').toBe(
-    'function'
-  );
+  expect(
+    typeof globalThis.loaders?.getImageBitmapDataNode,
+    'getImageBitmapDataNode installed'
+  ).toBe('function');
   expect(typeof globalThis.loaders?.createImageBitmapNode, 'createImageBitmapNode installed').toBe(
     'function'
   );
@@ -39,15 +40,19 @@ test('Node image polyfills - ImageBitmap wrapper', async () => {
     height: 1
   };
   const imageBitmap = new NodeImageBitmap(imageData);
-  expect(imageBitmap instanceof ImageBitmap, 'NodeImageBitmap installs as global ImageBitmap').toBeTruthy();
+  expect(
+    imageBitmap instanceof ImageBitmap,
+    'NodeImageBitmap installs as global ImageBitmap'
+  ).toBeTruthy();
   expect(isNodeImageBitmap(imageBitmap), 'isNodeImageBitmap recognizes bitmap').toBe(true);
   const unwrappedImage = getImageBitmapDataNode(imageBitmap);
   expect(unwrappedImage.width, 'width preserved').toBe(imageData.width);
   expect(unwrappedImage.height, 'height preserved').toBe(imageData.height);
   expect(unwrappedImage.data instanceof Uint8Array, 'data is Uint8Array').toBeTruthy();
-  expect(globalThis.getImageBitmapData(imageBitmap), 'global getImageBitmapData unwraps bitmap').toEqual(
-    unwrappedImage
-  );
+  expect(
+    globalThis.getImageBitmapData(imageBitmap),
+    'global getImageBitmapData unwraps bitmap'
+  ).toEqual(unwrappedImage);
   imageBitmap.close();
   expect(() => getImageBitmapDataNode(imageBitmap), 'closed bitmaps reject reads').toThrow();
 });

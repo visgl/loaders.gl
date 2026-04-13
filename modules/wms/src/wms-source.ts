@@ -4,6 +4,7 @@
 
 /* eslint-disable camelcase */
 import type {
+  CoreAPI,
   Source,
   DataSourceOptions,
   ImageSourceMetadata,
@@ -56,7 +57,8 @@ export const WMSSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
-  createDataSource: (url, options: WMSSourceOptions) => new WMSImageSource(url as string, options)
+  createDataSource: (url, options: WMSSourceOptions, coreApi?: CoreAPI) =>
+    new WMSImageSource(url as string, options, coreApi)
 } as const satisfies Source<WMSImageSource>;
 
 // PARAMETER TYPES FOR WMS SOURCE
@@ -215,8 +217,8 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
   capabilities: WMSCapabilities | null = null;
 
   /** Create a WMSImageSource */
-  constructor(url: string, options: WMSSourceOptions) {
-    super(url, options, WMSSource.defaultOptions);
+  constructor(url: string, options: WMSSourceOptions, coreApi?: CoreAPI) {
+    super(url, options, WMSSource.defaultOptions, coreApi);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WMS URL more likely to make this class just work.
@@ -251,12 +253,12 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
 
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
     // Replace the GetImage `boundingBox` parameter with the WMS flat `bbox` parameter.
-    const {boundingBox, bbox, ...rest} = parameters;
+    const {boundingBox, bbox, signal, ...rest} = parameters;
     const wmsParameters: WMSGetMapParameters = {
       bbox: boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!,
       ...rest
     };
-    return await this.getMap(wmsParameters);
+    return await this.getMap(wmsParameters, undefined, signal);
   }
 
   normalizeMetadata(capabilities: WMSCapabilities): ImageSourceMetadata {
@@ -282,10 +284,11 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
   /** Get a map image */
   async getMap(
     wmsParameters: WMSGetMapParameters,
-    vendorParameters?: Record<string, unknown>
+    vendorParameters?: Record<string, unknown>,
+    signal?: AbortSignal
   ): Promise<ImageType> {
     const url = this.getMapURL(wmsParameters, vendorParameters);
-    const response = await this.fetch(url);
+    const response = await this.fetch(url, signal ? {signal} : undefined);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {

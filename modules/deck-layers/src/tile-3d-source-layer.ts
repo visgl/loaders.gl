@@ -11,6 +11,7 @@ import {
   type Tileset3DProps,
   type Tileset3DSource
 } from '@loaders.gl/tiles';
+import {coreApi} from '@loaders.gl/core';
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 
 /**
@@ -50,6 +51,7 @@ export class Tile3DSourceLayer<
    */
   private async loadSourceTileset(data: string | Tileset3DSource): Promise<void> {
     if (isTileset3DSource(data)) {
+      data.coreApi ||= coreApi;
       const tileset3d = new Tileset3D(data, {
         onTileLoad: (this as any)._onTileLoad.bind(this),
         onTileUnload: (this as any)._onTileUnload.bind(this),
@@ -95,7 +97,7 @@ export class Tile3DSourceLayer<
       Object.assign(options, preloadOptions);
     }
 
-    const source = createSource(actualTilesetUrl, loader, options.loadOptions);
+    const source = createSource(actualTilesetUrl, loader, options.loadOptions, coreApi);
     const tileset3d = new Tileset3D(source, {
       onTileLoad: (this as any)._onTileLoad.bind(this),
       onTileUnload: (this as any)._onTileUnload.bind(this),
@@ -124,11 +126,12 @@ export class Tile3DSourceLayer<
 export function createSource(
   url: string,
   loader: LoaderWithParser,
-  loadOptions: LoaderOptions
+  loadOptions: LoaderOptions,
+  injectedCoreApi = coreApi
 ): Tiles3DSource | I3SSource {
   if (loader.id === 'i3s' || loader.id === 'slpk') {
-    return new I3SSource({url, loader}, loadOptions);
+    return new I3SSource({url, loader, coreApi: injectedCoreApi}, loadOptions);
   }
 
-  return new Tiles3DSource({url, loader}, loadOptions);
+  return new Tiles3DSource({url, loader, coreApi: injectedCoreApi}, loadOptions);
 }

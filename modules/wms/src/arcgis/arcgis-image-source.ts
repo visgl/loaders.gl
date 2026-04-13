@@ -5,6 +5,7 @@
 import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
+  CoreAPI,
   Source,
   DataSourceOptions,
   ImageSourceMetadata,
@@ -74,8 +75,11 @@ export const ArcGISImageServerSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('imageserver'),
-  createDataSource: (url: string, props: ArcGISImageSourceProps): ArcGISImageSource =>
-    new ArcGISImageSource(url, props)
+  createDataSource: (
+    url: string,
+    props: ArcGISImageSourceProps,
+    coreApi?: CoreAPI
+  ): ArcGISImageSource => new ArcGISImageSource(url, props, coreApi)
 } as const satisfies Source<ArcGISImageSource>;
 
 /**
@@ -87,8 +91,8 @@ export class ArcGISImageSource
   extends DataSource<string, ArcGISImageSourceProps>
   implements ImageSource
 {
-  constructor(url: string, props: ArcGISImageSourceProps) {
-    super(url, props, ArcGISImageServerSource.defaultOptions);
+  constructor(url: string, props: ArcGISImageSourceProps, coreApi?: CoreAPI) {
+    super(url, props, ArcGISImageServerSource.defaultOptions, coreApi);
   }
 
   /** Returns normalized ImageSource metadata. */
@@ -98,16 +102,17 @@ export class ArcGISImageSource
 
   /** Requests an image from generic ImageSource parameters. */
   async getImage(parameters: GetImageParameters): Promise<ImageType> {
-    const {boundingBox, bbox, width, height, crs, format} = parameters;
+    const {boundingBox, bbox, width, height, crs, format, signal} = parameters;
+    const spatialReference = normalizeArcGISSpatialReference(crs) || '4326';
     const imageParameters: ArcGISExportImageParameters = {
       bbox: boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!,
-      bboxSR: crs || '4326',
-      imageSR: crs || '4326',
+      bboxSR: spatialReference,
+      imageSR: spatialReference,
       width,
       height,
       format: format === 'image/png' ? 'png' : undefined
     };
-    return await this.exportImage(imageParameters);
+    return await this.exportImage(imageParameters, signal);
   }
 
   /** Requests the ArcGIS ImageServer metadata document. */
@@ -118,8 +123,11 @@ export class ArcGISImageSource
   }
 
   /** Requests an exported image from the ArcGIS ImageServer endpoint. */
-  async exportImage(options: ArcGISExportImageParameters): Promise<ImageType> {
-    const response = await this.fetch(this.exportImageURL(options));
+  async exportImage(
+    options: ArcGISExportImageParameters,
+    signal?: AbortSignal
+  ): Promise<ImageType> {
+    const response = await this.fetch(this.exportImageURL(options), signal ? {signal} : undefined);
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
     return await ImageLoader.parse(arrayBuffer, this.loadOptions);
@@ -178,6 +186,19 @@ function encodeArcGISParameters(parameters: Record<string, unknown>): string {
 /** Converts an ArcGIS REST parameter value to a query string value. */
 function getArcGISParameterValue(value: unknown): string {
   return typeof value === 'object' ? JSON.stringify(value) : String(value);
+}
+
+/** Normalizes EPSG-prefixed CRS strings to ArcGIS WKID values. */
+function normalizeArcGISSpatialReference(
+  spatialReference: string | number | undefined
+): string | number | undefined {
+  if (typeof spatialReference === 'string') {
+    const match = /^EPSG:(\d+)$/i.exec(spatialReference);
+    if (match) {
+      return match[1];
+    }
+  }
+  return spatialReference;
 }
 
 /** Normalizes ArcGIS ImageServer metadata to the generic ImageSource metadata shape. */

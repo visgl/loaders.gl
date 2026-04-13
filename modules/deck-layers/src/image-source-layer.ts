@@ -36,6 +36,8 @@ export type ImageSourceLayerProps = CompositeLayerProps & {
   layers?: string[];
   /** Output CRS for the requested image. */
   srs?: 'EPSG:4326' | 'EPSG:3857' | 'auto';
+  /** Debounce interval applied before viewport image requests are issued. */
+  debounceTime?: number;
   /** Source factories used to auto-create image sources from URL/blob inputs. */
   sources?: Readonly<Source[]>;
   /** Options forwarded to `createDataSource` when `sources` are supplied. */
@@ -50,6 +52,8 @@ export type ImageSourceLayerProps = CompositeLayerProps & {
   onImageLoad?: (requestId: number) => void;
   /** Called when an image request fails. */
   onImageLoadError?: (requestId: number, error: Error) => void;
+  /** Called when metadata/image loading starts or stops. */
+  onLoadingStateChange?: (isLoading: boolean) => void;
 };
 
 type ImageSourceLayerState = {
@@ -63,6 +67,7 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
   data: '',
   serviceType: 'auto',
   srs: 'auto',
+  debounceTime: 200,
   layers: {type: 'array', compare: true, value: []},
   sources: {type: 'array', compare: false, value: []},
   sourceOptions: {type: 'object', compare: false, value: {}},
@@ -81,7 +86,8 @@ const defaultProps: DefaultProps<ImageSourceLayerProps> = {
       // eslint-disable-next-line no-console
       console.error(error, requestId);
     }
-  }
+  },
+  onLoadingStateChange: {type: 'function', value: () => {}}
 };
 
 /**
@@ -142,7 +148,10 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
         return;
       }
 
-      const imageSet = this._getOrCreateImageSet(resolvedData, resolvedData !== previousResolvedData);
+      const imageSet = this._getOrCreateImageSet(
+        resolvedData,
+        resolvedData !== previousResolvedData
+      );
       imageSet.setOptions({imageSource: resolvedData});
       void imageSet.loadMetadata().catch(() => {});
       this.loadImage(this.context.viewport, 0);
@@ -153,7 +162,14 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       return;
     }
 
-    if (!deepEqual(props.layers, oldProps.layers, 1)) {
+    if (
+      !deepEqual(props.layers, oldProps.layers, 1) ||
+      props.debounceTime !== oldProps.debounceTime
+    ) {
+      this.state.imageSet.setOptions({
+        imageSource: this.state.resolvedData,
+        debounceTime: props.debounceTime
+      });
       this.loadImage(this.context.viewport, 0);
     } else if (changeFlags.viewportChanged) {
       this.loadImage(this.context.viewport);
@@ -173,12 +189,12 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       image,
       parameters: {boundingBox, crs}
     } = currentRequest;
-    const bounds = [
-      boundingBox[0][0],
-      boundingBox[0][1],
-      boundingBox[1][0],
-      boundingBox[1][1]
-    ] as [number, number, number, number];
+    const bounds = [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]] as [
+      number,
+      number,
+      number,
+      number
+    ];
 
     return new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),
@@ -268,7 +284,9 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       this._releaseImageSet();
 
       const imageSet = ImageSet.fromImageSource(imageSource);
+      imageSet.setOptions({imageSource, debounceTime: this.props.debounceTime});
       const unsubscribeImageSetEvents = imageSet.subscribe({
+        onLoadingStateChange: isLoading => this.props.onLoadingStateChange?.(isLoading),
         onMetadataLoad: metadata => this.props.onMetadataLoad?.(metadata),
         onMetadataLoadError: error => this.props.onMetadataLoadError?.(error),
         onImageLoadStart: requestId => this.props.onImageLoadStart?.(requestId),

@@ -4,6 +4,7 @@
 
 import type {Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
+  CoreAPI,
   DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters
@@ -50,8 +51,8 @@ export const WFSSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
-  createDataSource: (url: string, options: WFSourceOptions): WFSVectorSource =>
-    new WFSVectorSource(url, options)
+  createDataSource: (url: string, options: WFSourceOptions, coreApi?: CoreAPI): WFSVectorSource =>
+    new WFSVectorSource(url, options, coreApi)
 } as const satisfies Source<WFSVectorSource>;
 
 // PARAMETER TYPES FOR WFS SOURCE
@@ -116,6 +117,22 @@ export type WFSGetMapParameters = {
   time?: string;
   /** If layer supports elevation dimension */
   elevation?: string;
+};
+
+/** Parameters for GetFeature. */
+export type WFSGetFeatureParameters = {
+  /** In case the endpoint supports multiple WFS versions. */
+  version?: '1.3.0' | '1.1.1';
+  /** Requested feature types. */
+  typeName?: string | string[];
+  /** Bounding box filter, optionally suffixed with the bbox CRS. */
+  bbox: [number, number, number, number] | [number, number, number, number, string];
+  /** Output CRS for returned features. */
+  crs?: string;
+  /** Output CRS for returned features. */
+  srsName?: string;
+  /** Requested output format. */
+  outputFormat?: 'application/json' | 'application/geo+json';
 };
 
 // /** GetMap parameters that are specific to the current view */
@@ -203,8 +220,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
   capabilities: WFSCapabilities | null = null;
 
   /** Create a WFSVectorSource */
-  constructor(data: string, options: WFSourceOptions) {
-    super(data, options, WFSSource.defaultOptions);
+  constructor(data: string, options: WFSourceOptions, coreApi?: CoreAPI) {
+    super(data, options, WFSSource.defaultOptions, coreApi);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WFS URL more likely to make this class just work.
@@ -222,13 +239,15 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
   }
 
   async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
-    // Replace the GetImage `boundingBox` parameter with the WFS flat `bbox` parameter.
-    // const {boundingBox, bbox, ...rest} = parameters;
-    // const wfsParameters: WFSGetMapParameters = {
-    //   bbox: boundingBox ? [...boundingBox[0], ...boundingBox[1]] : bbox!,
-    //   ...rest
-    // };
-    return {shape: 'geojson-table', type: 'FeatureCollection', features: []};
+    const url = this.getFeaturesURL(parameters);
+    const response = await this.fetch(
+      url,
+      parameters.signal ? {signal: parameters.signal} : undefined
+    );
+    const arrayBuffer = await response.arrayBuffer();
+    this._checkResponse(response, arrayBuffer);
+    const text = new TextDecoder().decode(arrayBuffer);
+    return parseGeoJSONTable(JSON.parse(text));
   }
 
   normalizeMetadata(capabilities: WFSCapabilities): VectorSourceMetadata {
@@ -328,9 +347,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     wfsParameters?: WFSGetCapabilitiesParameters,
     vendorParameters?: Record<string, unknown>
   ): string {
-    // @ts-expect-error
     const options: Required<WFSGetCapabilitiesParameters> = {
-      // version: this.wfsParameters.version,
+      version: wfsParameters?.version || this.options.wfs?.wfsParameters?.version || '1.3.0',
       ...wfsParameters
     };
     return this._getWFSUrl('GetCapabilities', options, vendorParameters);
@@ -358,6 +376,22 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
       ...wfsParameters
     };
     return this._getWFSUrl('GetMap', options, vendorParameters);
+  }
+
+  /** Generate a URL for the GetFeature request. */
+  getFeaturesURL(
+    parameters: GetFeaturesParameters | WFSGetFeatureParameters,
+    vendorParameters?: Record<string, unknown>
+  ): string {
+    const requestParameters = this._normalizeGetFeatureParameters(parameters);
+    const options: WFSGetFeatureParameters & {version: '1.3.0' | '1.1.1'} = {
+      version: requestParameters.version || '1.3.0',
+      typeName: requestParameters.typeName,
+      bbox: requestParameters.bbox,
+      srsName: requestParameters.srsName || requestParameters.crs || 'EPSG:4326',
+      outputFormat: requestParameters.outputFormat || 'application/json'
+    };
+    return this._getWFSUrl('GetFeature', options, vendorParameters);
   }
 
   /** Generate a URL for the GetFeatureInfo request */
@@ -510,6 +544,10 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
         }
         break;
 
+      case 'srsName':
+        key = 'srsName';
+        break;
+
       case 'x':
         // i is the parameter used in WFS 1.3
         // TODO - change parameter to `i` and convert to `x` if not 1.3
@@ -541,9 +579,9 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
   _flipBoundingBox(
     bboxValue: unknown,
     wfsParameters: WFSParameters
-  ): [number, number, number, number] | null {
+  ): [number, number, number, number] | [number, number, number, number, string] | null {
     // Sanity checks
-    if (!Array.isArray(bboxValue) || bboxValue.length !== 4) {
+    if (!Array.isArray(bboxValue) || (bboxValue.length !== 4 && bboxValue.length !== 5)) {
       return null;
     }
 
@@ -555,8 +593,16 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     // // Don't flip if we are substituting EPSG:4326 with CRS:84
     // !(this.substituteCRS84 && wfsParameters.crs === 'EPSG:4326');
 
-    const bbox = bboxValue as [number, number, number, number];
-    return flipCoordinates ? [bbox[1], bbox[0], bbox[3], bbox[2]] : bbox;
+    const bbox = bboxValue as
+      | [number, number, number, number]
+      | [number, number, number, number, string];
+    if (!flipCoordinates) {
+      return bbox;
+    }
+
+    return bbox.length === 5
+      ? [bbox[1], bbox[0], bbox[3], bbox[2], bbox[4]]
+      : [bbox[1], bbox[0], bbox[3], bbox[2]];
   }
 
   /** Fetches an array buffer and checks the response (boilerplate reduction) */
@@ -585,4 +631,42 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     const error = WMSErrorLoader.parseSync?.(arrayBuffer, this.loadOptions);
     return new Error(error);
   }
+
+  /** Maps generic viewport parameters onto WFS GetFeature parameters. */
+  private _normalizeGetFeatureParameters(
+    parameters: GetFeaturesParameters | WFSGetFeatureParameters
+  ): WFSGetFeatureParameters {
+    if ('boundingBox' in parameters) {
+      const crs = parameters.crs || 'EPSG:4326';
+      return {
+        version: this.options.wfs?.wfsParameters?.version || '1.3.0',
+        typeName: parameters.layers,
+        bbox: [
+          parameters.boundingBox[0][0],
+          parameters.boundingBox[0][1],
+          parameters.boundingBox[1][0],
+          parameters.boundingBox[1][1],
+          crs
+        ],
+        crs,
+        srsName: crs,
+        outputFormat: 'application/json'
+      };
+    }
+
+    return parameters;
+  }
+}
+
+/** Parses a GeoJSON FeatureCollection into the loaders.gl GeoJSON table shape. */
+function parseGeoJSONTable(json: any): GeoJSONTable {
+  if (json?.type === 'FeatureCollection' && Array.isArray(json.features)) {
+    return {
+      shape: 'geojson-table',
+      type: 'FeatureCollection',
+      features: json.features
+    };
+  }
+
+  throw new Error('WFS GetFeature did not return a GeoJSON FeatureCollection');
 }

@@ -14,7 +14,8 @@ import {getGlobalLoaderOptions} from './option-utils';
  */
 export function getFetchFunction(
   options?: LoaderOptions,
-  context?: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>
+  context?: Omit<LoaderContext, 'fetch' | 'coreApi'> &
+    Partial<Pick<LoaderContext, 'fetch' | 'coreApi'>>
 ): FetchLike {
   const globalOptions = getGlobalLoaderOptions();
 

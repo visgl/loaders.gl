@@ -13,8 +13,8 @@ import {
   parseRawArrowCSVInBatches,
   parseRawArrowCSVTable,
   parseRawArrowCSVText
-} from './csv-raw-arrow-loader';
-import type {CSVRawArrowParseOptions} from './csv-raw-arrow-loader';
+} from './lib/parsers/parse-csv-to-arrow';
+import type {CSVRawArrowParseOptions} from './lib/parsers/parse-csv-to-arrow';
 
 /** CSV options accepted by the Arrow CSV loader. */
 type CSVArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape'> & {

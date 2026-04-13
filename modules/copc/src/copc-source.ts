@@ -4,6 +4,7 @@
 
 import type {Schema, Field, DataType} from '@loaders.gl/schema';
 import type {
+  CoreAPI,
   Source,
   DataSourceOptions,
   TileSource,
@@ -53,8 +54,8 @@ export const COPCSource = {
   },
 
   testURL: (url: string) => url.endsWith('.pmtiles'),
-  createDataSource: (url: string | Blob, options: COPCSourceOptions) =>
-    new COPCTileSource(url, options)
+  createDataSource: (url: string | Blob, options: COPCSourceOptions, coreApi?: CoreAPI) =>
+    new COPCTileSource(url, options, coreApi)
 } as const satisfies Source<COPCTileSource>;
 
 /**
@@ -75,8 +76,8 @@ export class COPCTileSource
   }>;
   protected _urlOrGetter: string | Getter;
 
-  constructor(data: string | Blob, options: COPCSourceOptions) {
-    super(data, options, COPCSource.defaultOptions);
+  constructor(data: string | Blob, options: COPCSourceOptions, coreApi?: CoreAPI) {
+    super(data, options, COPCSource.defaultOptions, coreApi);
     // TODO - create a getter if a blob
     this._urlOrGetter = this.url as any;
     this._initPromise = this._initCopc(this.url);

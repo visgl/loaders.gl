@@ -35,11 +35,11 @@ export const MapStyleLoader = {
     mapStyle: {}
   },
   parse: async (
-    arrayBuffer: ArrayBuffer,
+    data: ArrayBuffer | ArrayBufferView | string,
     options?: MapStyleLoadOptions,
     context?: LoaderContext
   ) => {
-    const text = new TextDecoder().decode(arrayBuffer);
+    const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
     const style = JSON.parse(text) as MapStyle;
     const resolvedStyle = await resolveMapStyle(style, {
       ...options,

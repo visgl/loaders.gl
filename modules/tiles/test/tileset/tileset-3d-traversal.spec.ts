@@ -3,7 +3,7 @@
 
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
-import {load} from '@loaders.gl/core';
+import {coreApi, load} from '@loaders.gl/core';
 import {Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 // import {loadTileset} from '../utils/load-utils';
@@ -172,7 +172,7 @@ test('Tileset3D#one viewport traversal', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;
@@ -190,11 +190,9 @@ test('Tileset3D#onTraversalComplete', async t => {
   t.plan(1);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewport = VIEWPORTS[1];
-  let tileLoadCounter = 0;
-  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
     onTileLoad: () => {
       tileset.update(viewport);
-      tileLoadCounter++;
     },
     onTraversalComplete: selectedTiles => {
       return selectedTiles.filter(tile => tile.depth === 1);
@@ -202,8 +200,8 @@ test('Tileset3D#onTraversalComplete', async t => {
   });
   tileset.update(viewport);
 
-  t.timeoutAfter(1000);
-  await waitForCondition(() => tileLoadCounter > 0, 1000);
+  t.timeoutAfter(1500);
+  await waitForCondition(() => tileset.selectedTiles.length === 4, 1500);
   tileset.update(viewport);
   t.equals(tileset.selectedTiles.length, 4);
 });
@@ -213,7 +211,7 @@ test('Tileset3D#two viewports traversal', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
     onTileLoad: () => {
       tileset.update(viewports);
       tileLoadCounter++;
@@ -234,7 +232,7 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   const viewports = VIEWPORTS;
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
     onTileLoad: () => {
       tileset.update(viewports);
       tileLoadCounter++;
@@ -260,7 +258,7 @@ test('Tileset3D#loadTiles option', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
   let viewport = VIEWPORTS[0];
   let tileLoadCounter = 0;
-  const tileset = new Tileset3D(new Tiles3DSource(tilesetJson), {
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
     onTileLoad: () => {
       tileset.update(viewport);
       tileLoadCounter++;
