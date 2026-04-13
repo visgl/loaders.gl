@@ -42,6 +42,10 @@ Release Date: 2026
 - `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
 - `CSVArrowWriter` NEW writes Apache Arrow tables to CSV text.
 
+**@loaders.gl/shapefile**
+
+- [`ShapefileArrowLoader`](/docs/modules/shapefile/api-reference/shapefile-arrow-loader) NEW - loads Shapefiles into Arrow tables with DBF property columns and a WKB `geometry` column annotated with geospatial schema metadata.
+
 ## v4.4
 
 Release Date: March 31, 2026
