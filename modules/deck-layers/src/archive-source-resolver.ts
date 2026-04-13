@@ -385,7 +385,9 @@ class SLPKArchiveAccessor extends IndexedArchive {
 
   async getFile(pathInArchive: string, mode: ArchiveFileMode = 'raw'): Promise<ArrayBuffer> {
     if (mode === 'http') {
-      const extensions = SLPK_PATH_DESCRIPTIONS.find(item => item.test.test(pathInArchive))?.extensions;
+      const extensions = SLPK_PATH_DESCRIPTIONS.find(item =>
+        item.test.test(pathInArchive)
+      )?.extensions;
       if (extensions) {
         for (const extension of extensions) {
           const data = await this.getDataByPath(`${pathInArchive}${extension}`);
@@ -426,7 +428,10 @@ class SLPKArchiveAccessor extends IndexedArchive {
 
   private async getFileBytes(pathInArchive: string): Promise<ArrayBuffer | undefined> {
     if (this.hashTable) {
-      const nameHash = await this.md5Hash.hash(this.textEncoder.encode(pathInArchive).buffer, 'hex');
+      const nameHash = await this.md5Hash.hash(
+        this.textEncoder.encode(pathInArchive).buffer,
+        'hex'
+      );
       const offset = this.hashTable[nameHash];
       if (offset === undefined) {
         return undefined;

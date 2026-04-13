@@ -134,7 +134,9 @@ export function createSource(
 
   if (loader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
     const archiveConfig =
-      loader.id === 'slpk' ? createSLPKArchiveResolver(url) : createSLPKArchiveResolver(url, loader);
+      loader.id === 'slpk'
+        ? createSLPKArchiveResolver(url)
+        : createSLPKArchiveResolver(url, loader);
     return new I3SSource(
       {
         url,

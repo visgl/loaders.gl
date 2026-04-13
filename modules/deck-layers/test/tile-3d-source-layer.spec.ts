@@ -76,7 +76,10 @@ test('createSource#initializes Tileset3D from an slpk url', async t => {
 test('archive resolvers support blob-backed 3tz and slpk inputs', async t => {
   const tilesArchiveBuffer = await loadArrayBufferFromFile(TILES_ARCHIVE_URL);
   const slpkArchiveBuffer = await loadArrayBufferFromFile(SLPK_ARCHIVE_URL);
-  const tilesArchiveConfig = createTiles3DArchiveResolver(new Blob([tilesArchiveBuffer]), Tiles3DLoader);
+  const tilesArchiveConfig = createTiles3DArchiveResolver(
+    new Blob([tilesArchiveBuffer]),
+    Tiles3DLoader
+  );
   const slpkArchiveConfig = createSLPKArchiveResolver(new Blob([slpkArchiveBuffer]), I3SLoader);
 
   const tiles3DSource = new Tiles3DSource(
