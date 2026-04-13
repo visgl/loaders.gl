@@ -207,8 +207,6 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
   }
 }
 
-function isGeoJSONTable(
-  data: GeoJSONTable | BinaryFeatureCollection
-): data is GeoJSONTable {
+function isGeoJSONTable(data: GeoJSONTable | BinaryFeatureCollection): data is GeoJSONTable {
   return (data as GeoJSONTable).shape === 'geojson-table';
 }

@@ -3,9 +3,18 @@
 
 import test from 'tape-promise/tape';
 import {load} from '@loaders.gl/core';
-import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
+import {I3SLoader} from '@loaders.gl/i3s';
+import {
+  I3SArchiveSource,
+  I3SSource,
+  Tile3D,
+  Tiles3DArchiveSource,
+  Tiles3DSource,
+  Tileset3D
+} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
+import {loadArrayBufferFromFile} from 'test/utils/readable-files';
 // import {loadTileset} from '../utils/load-utils';
 
 // Parent tile with content and four child tiles with content
@@ -13,6 +22,8 @@ const TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/Tileset/ti
 const KTX2_TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/VNext/agi-ktx2/tileset.json';
 const TILESET_GLOBAL_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetGlobal/tileset.json';
+const TILES_ARCHIVE_URL = '@loaders.gl/3d-tiles/test/data/test.3tz';
+const SLPK_ARCHIVE_URL = '@loaders.gl/i3s/test/data/DA12_subset.slpk';
 
 /*
 // Parent tile with no content and four child tiles with content
@@ -128,11 +139,85 @@ test('Tileset3D#exports source-backed construction helpers', async t => {
   const i3sSource = new I3SSource(i3sTilesetHeader);
 
   t.ok(Tiles3DSource);
+  t.ok(Tiles3DArchiveSource);
   t.ok(I3SSource);
+  t.ok(I3SArchiveSource);
   t.ok(source);
   t.ok(i3sSource);
   t.equals(tileset.url.slice(-30), TILESET_URL.slice(-30));
   t.equals(tileset.asset.version, '1.0');
+  t.end();
+});
+
+test('Tileset3D#loads and initializes from a 3tz archive source', async t => {
+  const source = new Tiles3DArchiveSource(TILES_ARCHIVE_URL, Tiles3DLoader);
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  t.equal(tileset.type, source.type);
+  t.ok(tileset.root, 'root tile created from archive metadata');
+  t.equal(tileset.asset.version, '1.0', 'archive tileset metadata parsed');
+  t.end();
+});
+
+test('Tileset3D#loads 3tz archive sources from blobs', async t => {
+  const archiveBuffer = await loadArrayBufferFromFile(TILES_ARCHIVE_URL);
+  const source = new Tiles3DArchiveSource(new Blob([archiveBuffer]), Tiles3DLoader);
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  t.ok(tileset.root, 'blob-backed archive source initializes');
+  t.equal(tileset.asset.version, '1.0', 'blob-backed archive metadata parsed');
+  t.end();
+});
+
+test('Tileset3D#loads tile content from a 3tz archive source', async t => {
+  const source = new Tiles3DArchiveSource(TILES_ARCHIVE_URL, Tiles3DLoader);
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  // @ts-expect-error root tile exists for this fixture
+  const rootTile = tileset.root as Tile3D;
+  await tileset._loadTile(rootTile);
+
+  t.ok(rootTile.content, 'root tile content loaded from archive');
+  t.end();
+});
+
+test('Tileset3D#loads and initializes from an slpk archive source', async t => {
+  const source = new I3SArchiveSource(SLPK_ARCHIVE_URL, I3SLoader);
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  t.equal(tileset.type, source.type);
+  t.ok(tileset.root, 'root tile created from SLPK metadata');
+  t.equal(tileset.url, SLPK_ARCHIVE_URL, 'archive source preserves its input url');
+  t.end();
+});
+
+test('Tileset3D#loads slpk archive sources from blobs', async t => {
+  const archiveBuffer = await loadArrayBufferFromFile(SLPK_ARCHIVE_URL);
+  const source = new I3SArchiveSource(new Blob([archiveBuffer]), I3SLoader);
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  t.ok(tileset.root, 'blob-backed slpk source initializes');
+  t.ok(tileset.url.startsWith('memory://'), 'blob-backed slpk uses a virtual archive url');
+  t.end();
+});
+
+test('Tileset3D#loads child headers from an slpk archive source', async t => {
+  const source = new I3SArchiveSource(SLPK_ARCHIVE_URL, I3SLoader);
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
+
+  // @ts-expect-error root tile exists for this fixture
+  const rootTile = tileset.root as Tile3D;
+  const childId = '3';
+  const childHeader = await source.loadChildTileHeader?.(rootTile, childId, {} as any);
+
+  t.ok(childHeader, 'child header resolved from archive');
+  t.equal(childHeader.id, childId, 'resolved child header matches requested child id');
   t.end();
 });
 

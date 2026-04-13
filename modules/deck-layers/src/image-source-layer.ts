@@ -148,7 +148,10 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
         return;
       }
 
-      const imageSet = this._getOrCreateImageSet(resolvedData, resolvedData !== previousResolvedData);
+      const imageSet = this._getOrCreateImageSet(
+        resolvedData,
+        resolvedData !== previousResolvedData
+      );
       imageSet.setOptions({imageSource: resolvedData});
       void imageSet.loadMetadata().catch(() => {});
       this.loadImage(this.context.viewport, 0);
@@ -159,8 +162,14 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       return;
     }
 
-    if (!deepEqual(props.layers, oldProps.layers, 1) || props.debounceTime !== oldProps.debounceTime) {
-      this.state.imageSet.setOptions({imageSource: this.state.resolvedData, debounceTime: props.debounceTime});
+    if (
+      !deepEqual(props.layers, oldProps.layers, 1) ||
+      props.debounceTime !== oldProps.debounceTime
+    ) {
+      this.state.imageSet.setOptions({
+        imageSource: this.state.resolvedData,
+        debounceTime: props.debounceTime
+      });
       this.loadImage(this.context.viewport, 0);
     } else if (changeFlags.viewportChanged) {
       this.loadImage(this.context.viewport);
@@ -180,12 +189,12 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       image,
       parameters: {boundingBox, crs}
     } = currentRequest;
-    const bounds = [
-      boundingBox[0][0],
-      boundingBox[0][1],
-      boundingBox[1][0],
-      boundingBox[1][1]
-    ] as [number, number, number, number];
+    const bounds = [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]] as [
+      number,
+      number,
+      number,
+      number
+    ];
 
     return new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),

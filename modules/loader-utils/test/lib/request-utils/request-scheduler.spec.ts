@@ -48,7 +48,10 @@ test('RequestScheduler#scheduleRequest', async () => {
 
     const cancelledRequestPromise = requestScheduler.scheduleRequest({id: 2}, () => -1);
     await flushScheduler();
-    await expect(cancelledRequestPromise, 'cancels request with negative priority').resolves.toBeNull();
+    await expect(
+      cancelledRequestPromise,
+      'cancels request with negative priority'
+    ).resolves.toBeNull();
     expect(requestScheduler.activeRequestCount, 'active request count').toBe(0);
 
     let priority4 = 0;
@@ -83,9 +86,10 @@ test('RequestScheduler#debounce', async () => {
     expect(schedulerDebounced.activeRequestCount, 'delays debounced requests').toBe(0);
 
     await flushScheduler(10);
-    expect(schedulerDebounced.activeRequestCount, 'issues first debounced request after delay').toBe(
-      1
-    );
+    expect(
+      schedulerDebounced.activeRequestCount,
+      'issues first debounced request after delay'
+    ).toBe(1);
 
     const token1 = await expectIssuedRequest(request1, 'issues first request');
     const token2 = await expectIssuedRequest(request2, 'issues second request');
@@ -96,9 +100,10 @@ test('RequestScheduler#debounce', async () => {
     expect(schedulerDebounced.activeRequestCount, 'no active requests on scheduler #2').toBe(0);
 
     await flushScheduler(10);
-    expect(schedulerDebounced.activeRequestCount, 'issues final debounced request after delay').toBe(
-      1
-    );
+    expect(
+      schedulerDebounced.activeRequestCount,
+      'issues final debounced request after delay'
+    ).toBe(1);
     const token3 = await expectIssuedRequest(request3, 'issues final debounced request');
     token3.done();
   });
@@ -124,7 +129,10 @@ test('RequestScheduler#setProps - update maxRequests', async () => {
 
     await flushScheduler();
     expect(scheduler.activeRequestCount, 'issues 3rd request after maxRequests increased').toBe(1);
-    const token3 = await expectIssuedRequest(request3, 'issues 3rd request after maxRequests increased');
+    const token3 = await expectIssuedRequest(
+      request3,
+      'issues 3rd request after maxRequests increased'
+    );
     token3.done();
   });
 });

@@ -4,8 +4,10 @@
 
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
 import {
+  I3SArchiveSource,
   I3SSource,
   isTileset3DSource,
+  Tiles3DArchiveSource,
   Tiles3DSource,
   Tileset3D,
   type Tileset3DProps,
@@ -125,8 +127,18 @@ export function createSource(
   url: string,
   loader: LoaderWithParser,
   loadOptions: LoaderOptions
-): Tiles3DSource | I3SSource {
-  if (loader.id === 'i3s' || loader.id === 'slpk') {
+): Tiles3DSource | Tiles3DArchiveSource | I3SSource | I3SArchiveSource {
+  const lowerCaseUrl = url.toLowerCase();
+
+  if (loader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
+    return new I3SArchiveSource(url, loader, loadOptions);
+  }
+
+  if (loader.id === '3tz' || lowerCaseUrl.endsWith('.3tz')) {
+    return new Tiles3DArchiveSource(url, loader, loadOptions);
+  }
+
+  if (loader.id === 'i3s') {
     return new I3SSource({url, loader}, loadOptions);
   }
 

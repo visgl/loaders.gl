@@ -124,7 +124,10 @@ export class ArcGISVectorSource
   /** Requests features from the ArcGIS FeatureServer query endpoint. */
   async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
     const url = this.getFeaturesURL(parameters);
-    const response = await this.fetch(url, parameters.signal ? {signal: parameters.signal} : undefined);
+    const response = await this.fetch(
+      url,
+      parameters.signal ? {signal: parameters.signal} : undefined
+    );
     await this.checkResponse(response);
     return parseGeoJSONTable(await response.json());
   }

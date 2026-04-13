@@ -3,7 +3,6 @@
 // Copyright vis.gl contributors
 
 import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import {parse} from '@loaders.gl/core';
 import type {I3STilesetHeader} from './types';
 import {I3SContentLoader} from './i3s-content-loader';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
@@ -100,7 +99,7 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context): Promise<
 }
 
 async function parseTileContent(arrayBuffer, options: I3SLoaderOptions) {
-  return await parse(arrayBuffer, I3SContentLoader, options);
+  return await I3SContentLoader.parse(arrayBuffer, options);
 }
 
 async function parseTileset(data, options: I3SLoaderOptions, context) {

@@ -17,7 +17,9 @@ export type {
 export {isTileset3DSource} from './tileset-3d/common/tileset-source';
 export {Tile3D} from './tileset-3d/common/tile-3d';
 export {Tiles3DSource} from './tileset-3d/format-3d-tiles/tiles-3d-source';
+export {Tiles3DArchiveSource} from './tileset-3d/format-3d-tiles/tiles-3d-archive-source';
 export {I3SSource} from './tileset-3d/format-i3s/i3s-source';
+export {I3SArchiveSource} from './tileset-3d/format-i3s/i3s-archive-source';
 
 export {TilesetTraverser} from './tileset-3d/common/tileset-traverser';
 export {TilesetCache} from './tileset-3d/common/tileset-cache';
@@ -51,7 +53,12 @@ export {
   STRATEGY_NEVER,
   STRATEGY_REPLACE
 } from './tileset-2d';
-export type {ImageSetBaseProps, ImageSetListener, ImageSetProps, ImageSetRequest} from './image-set';
+export type {
+  ImageSetBaseProps,
+  ImageSetListener,
+  ImageSetProps,
+  ImageSetRequest
+} from './image-set';
 export {ImageSet} from './image-set';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';

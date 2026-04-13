@@ -4,7 +4,11 @@
 
 import type {Viewport} from '@deck.gl/core';
 import type {BinaryFeatureCollection, GeoJSONTable, Schema} from '@loaders.gl/schema';
-import type {GetFeaturesParameters, VectorSource, VectorSourceMetadata} from '@loaders.gl/loader-utils';
+import type {
+  GetFeaturesParameters,
+  VectorSource,
+  VectorSourceMetadata
+} from '@loaders.gl/loader-utils';
 
 /** Mutable fetch options consumed by {@link VectorSet}. */
 export type VectorSetOptions = {
@@ -96,7 +100,10 @@ export class VectorSet {
   }
 
   /** Creates a `VectorSet` from a vector source instance. */
-  static fromVectorSource(vectorSource: VectorSource, options: Omit<VectorSetOptions, 'vectorSource'>) {
+  static fromVectorSource(
+    vectorSource: VectorSource,
+    options: Omit<VectorSetOptions, 'vectorSource'>
+  ) {
     return new VectorSet({vectorSource, ...options});
   }
 
@@ -362,7 +369,9 @@ function getRequestKey(parameters: GetFeaturesParameters): string {
 
 function areLayerSelectionsEqual(left: string | string[], right: string | string[]): boolean {
   if (Array.isArray(left) && Array.isArray(right)) {
-    return left.length === right.length && left.every((layerName, index) => layerName === right[index]);
+    return (
+      left.length === right.length && left.every((layerName, index) => layerName === right[index])
+    );
   }
   return left === right;
 }

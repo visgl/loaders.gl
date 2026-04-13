@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
   "extends": ["./dev-modules/devtools-extensions/biome/base.jsonc"],
   "files": {
     "includes": [
@@ -106,5 +106,51 @@
         "noRedeclare": "error"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "modules/*/src/**/*.js",
+        "modules/*/src/**/*.jsx",
+        "modules/*/src/**/*.ts",
+        "modules/*/src/**/*.tsx",
+        "!modules/core/**",
+        "!modules/deck-layers/**",
+        "!modules/*/src/wip/**",
+        "!modules/*/src/libs/**",
+        "!modules/loader-utils/src/lib/files/node-file-facade.ts",
+        "!modules/loader-utils/src/lib/filesystems/node-filesystem-facade.ts",
+        "!modules/bson/src/bson-writer.ts",
+        "!modules/bson/src/index.ts",
+        "!modules/bson/src/lib/encoders/encode-bson.ts",
+        "!modules/bson/src/lib/parsers/parse-bson.ts",
+        "!modules/flatgeobuf/src/flatgeobuf*",
+        "!modules/flatgeobuf/src/lib/binary-geometries.ts",
+        "!modules/zarr/**",
+        "!modules/i3s/src/i3s-attribute-loader.ts",
+        "!modules/i3s/src/lib/parsers/parse-i3s.ts",
+        "!modules/images/src/lib/category-api/image-type.ts",
+        "!modules/obj/src/lib/get-obj-schema.ts",
+        "!modules/mvt/src/lib/geojson-tiler/tile.ts",
+        "!modules/wms/src/lib/data-sources/ogc/csw-service.ts",
+        "!modules/wms/src/lib/parsers/gml/parse-gml.ts",
+        "!modules/wms/src/lib/wip/**",
+        "!modules/wms/src/wms-layer-description-loader.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "warn",
+              "options": {
+                "paths": {
+                  "@loaders.gl/core": "Published modules must not import @loaders.gl/core from src/**. Move shared helpers to a lower-level module or inject the dependency instead."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

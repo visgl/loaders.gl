@@ -67,7 +67,7 @@ export default async function csvBench(bench) {
     };
     const loaderBenchmarks = [
       {
-        name: "CSVArrowLoader#parse({header:true, dynamicTyping: false})",
+        name: 'CSVArrowLoader#parse({header:true, dynamicTyping: false})',
         loader: CSVArrowLoader,
         options: arrowOptions
       },
@@ -98,7 +98,7 @@ export default async function csvBench(bench) {
     };
     const loaderBenchmarks = [
       {
-        name: "CSVArrowLoader#parse({header:true, dynamicTyping: true})",
+        name: 'CSVArrowLoader#parse({header:true, dynamicTyping: true})',
         loader: CSVArrowLoader,
         options: arrowOptions
       },

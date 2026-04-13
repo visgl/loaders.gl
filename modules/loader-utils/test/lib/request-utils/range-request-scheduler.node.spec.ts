@@ -30,9 +30,7 @@ test('RangeRequestScheduler#merges ranges within rangeExpansionBytes', async () 
 
     const [firstTile, secondTile] = await Promise.all([firstTilePromise, secondTilePromise]);
     expect(fetches, 'requests one merged range').toEqual([{offset: 10, length: 10}]);
-    expect(Array.from(new Uint8Array(firstTile)), 'returns first range').toEqual([
-      10, 11, 12, 13
-    ]);
+    expect(Array.from(new Uint8Array(firstTile)), 'returns first range').toEqual([10, 11, 12, 13]);
     expect(Array.from(new Uint8Array(secondTile)), 'returns second range').toEqual([
       16, 17, 18, 19
     ]);
@@ -104,7 +102,10 @@ test('RangeRequestScheduler#stats and events describe coalesced ranges', async (
       events.some(event => event.type === 'batch' && event.transportRequestCount === 1),
       'emits merged transport request count'
     ).toBeTruthy();
-    expect(events.some(event => event.type === 'response'), 'emits response event').toBeTruthy();
+    expect(
+      events.some(event => event.type === 'response'),
+      'emits response event'
+    ).toBeTruthy();
   });
 });
 test('RangeRequestScheduler#accepts maxGapBytes as rangeExpansionBytes alias', async () => {
@@ -183,9 +184,7 @@ test('RangeRequestScheduler#fetch sends merged HTTP range and preserves headers'
         range: 'bytes=10-19'
       }
     ]);
-    expect(Array.from(new Uint8Array(firstTile)), 'returns first range').toEqual([
-      10, 11, 12, 13
-    ]);
+    expect(Array.from(new Uint8Array(firstTile)), 'returns first range').toEqual([10, 11, 12, 13]);
     expect(Array.from(new Uint8Array(secondTile)), 'returns second range').toEqual([
       16, 17, 18, 19
     ]);

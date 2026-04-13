@@ -119,7 +119,10 @@ export class ArcGISImageSource
   }
 
   /** Requests an exported image from the ArcGIS ImageServer endpoint. */
-  async exportImage(options: ArcGISExportImageParameters, signal?: AbortSignal): Promise<ImageType> {
+  async exportImage(
+    options: ArcGISExportImageParameters,
+    signal?: AbortSignal
+  ): Promise<ImageType> {
     const response = await this.fetch(this.exportImageURL(options), signal ? {signal} : undefined);
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();

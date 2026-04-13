@@ -1,4 +1,3 @@
-import {JSONLoader, load} from '@loaders.gl/core';
 import type {ArcGISWebSceneData, OperationalLayer} from '../../types';
 
 /**
@@ -105,7 +104,8 @@ async function parseOperationalLayers(
  */
 async function checkSupportedIndexCRS(layer: OperationalLayer) {
   try {
-    const layerJson = await load(layer.url, JSONLoader);
+    const response = await fetch(layer.url);
+    const layerJson = await response.json();
     // @ts-expect-error
     const wkid = layerJson?.spatialReference?.wkid;
 

@@ -7,9 +7,7 @@ import {
   makeNumberedLineIterator,
   concatenateArrayBuffersAsync
 } from '@loaders.gl/loader-utils';
-import {
-  flushMicrotasks
-} from '@loaders.gl/test-utils/vitest';
+import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
 import {NDJSONLoader} from '@loaders.gl/json';
 const parseNDJSONInBatches = NDJSONLoader.parseInBatches;
 
@@ -61,7 +59,11 @@ test('async-iterator#makeTextDecoderIterator', async () => {
     decodedTexts.push(text);
   }
 
-  expect(sourceTexts, 'source iterator yields strings').toEqual(['line 1\nline', ' 2\nline 3\n', 'line 4']);
+  expect(sourceTexts, 'source iterator yields strings').toEqual([
+    'line 1\nline',
+    ' 2\nline 3\n',
+    'line 4'
+  ]);
   expect(decodedTexts, 'decoder preserves async text chunks').toEqual(sourceTexts);
 });
 test('async-iterator#makeLineIterator', async () => {

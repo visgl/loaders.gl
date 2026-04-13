@@ -223,7 +223,9 @@ test('VectorSourceLayer#fetches for initial and changed viewports and renders Ge
       return {
         shape: 'geojson-table',
         type: 'FeatureCollection',
-        features: [{type: 'Feature', geometry: null, properties: {requestCount: requestedParameters.length}}]
+        features: [
+          {type: 'Feature', geometry: null, properties: {requestCount: requestedParameters.length}}
+        ]
       };
     }
   };
