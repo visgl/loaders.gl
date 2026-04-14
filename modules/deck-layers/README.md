@@ -7,6 +7,7 @@ implementations across example applications in this repository.
 
 Current shared layers include:
 
+- `AnyLayer` for source-first dispatch across image, vector, 2D tile, and 3D tile source-backed URLs
 - `Tile2DSourceLayer` for source-backed 2D tiles rendered through `Tileset2D`
 - `SourceLayer` for dispatching between tile sources and source-backed 3D tilesets
 - `TileSourceLayer` for loaders.gl `TileSource` rendering through the `data` prop
