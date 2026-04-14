@@ -9,12 +9,12 @@
     "start": "webpack-dev-server --progress --hot --open"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.9.28",
-    "@deck.gl/extensions": "^8.9.28",
-    "@deck.gl/geo-layers": "^8.9.28",
-    "@deck.gl/react": "^8.9.28",
-    "@deck.gl/mesh-layers": "^8.9.28",
-    "@deck.gl/layers": "^8.9.28",
+    "@deck.gl/core": "^9.3.0",
+    "@deck.gl/extensions": "^9.3.0",
+    "@deck.gl/geo-layers": "^9.3.0",
+    "@deck.gl/react": "^9.3.0",
+    "@deck.gl/mesh-layers": "^9.3.0",
+    "@deck.gl/layers": "^9.3.0",
     "@loaders.gl/core": "4.4.0-alpha.1",
     "@loaders.gl/loader-utils": "4.4.0-alpha.1",
     "@loaders.gl/mvt": "4.4.0-alpha.1",
