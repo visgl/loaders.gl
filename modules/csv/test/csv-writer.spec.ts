@@ -5,7 +5,11 @@
 
 import test from 'tape-promise/tape';
 import {CSVArrowLoader, CSVArrowWriter, CSVWriterOptions, CSVWriter} from '@loaders.gl/csv';
+<<<<<<< Updated upstream
 import {encodeTableAsText} from '@loaders.gl/core';
+=======
+import {encodeTableAsText, preload} from '@loaders.gl/core';
+>>>>>>> Stashed changes
 
 import {Table} from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
@@ -150,11 +154,16 @@ test('CSVWriter ', async t => {
 });
 
 test('CSVArrowWriter ', async t => {
+  const csvArrowLoaderWithParser = await preload(CSVArrowLoader);
   for (const {name, input, options, expected} of cases) {
     const arrowInput =
       expected === ''
         ? convertTable(input, 'arrow-table')
+<<<<<<< Updated upstream
         : await CSVArrowLoader.parseText(expected, {
+=======
+        : await csvArrowLoaderWithParser.parseText?.(expected, {
+>>>>>>> Stashed changes
             csv: {
               header: true,
               dynamicTyping: false
