@@ -8,6 +8,7 @@ import {
   OMETiffSource
 } from '@loaders.gl/geotiff';
 import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/loader-utils';
+import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
 
 const TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/gfw-azores.tif');
 const OME_TIFF_URL = resolvePath('@loaders.gl/geotiff/test/data/multi-channel.ome.tif');
@@ -278,7 +279,7 @@ test('GeoTIFFRasterSource ignores late aborts without poisoning subsequent raste
     const rangeHeader = headers.get('Range');
     const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
 
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await flushMicrotasks();
 
     if (!match) {
       return new Response(file, {status: 200});
