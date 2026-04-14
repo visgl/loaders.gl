@@ -20,6 +20,7 @@ export type {
   FileSystem,
   RandomAccessFileSystem
 } from '@loaders.gl/loader-utils';
+export type {SourceLoader} from '@loaders.gl/loader-utils';
 
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';

@@ -1,10 +1,10 @@
-# MVTSource
+# MVTSourceLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
 </p>
 
-The `MVTSource` dynamically loads tiles, typically from big pre-tiled hierarchies on cloud storage.
+The `MVTSourceLoader` dynamically loads tiles, typically from big pre-tiled hierarchies on cloud storage.
 
 | Source         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
@@ -17,9 +17,9 @@ The `MVTSource` dynamically loads tiles, typically from big pre-tiled hierarchie
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {MVTSource} from '@loaders.gl/pmtiles';
+import {MVTSourceLoader} from '@loaders.gl/pmtiles';
 
-const source = createDataSource(url, [MVTSource]);
+const source = createDataSource(url, [MVTSourceLoader]);
 const tile = await source.getTile(...);
 ```
 

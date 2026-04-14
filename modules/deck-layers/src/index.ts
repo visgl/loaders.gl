@@ -16,4 +16,10 @@ export type {VectorSourceLayerProps} from './vector-source-layer';
 export {VectorSourceLayer} from './vector-source-layer';
 export type {Tile3DSourceLayerProps} from './tile-3d-source-layer';
 export {createSource, Tile3DSourceLayer} from './tile-3d-source-layer';
+export type {
+  ColorsByAttribute,
+  FiltersByAttribute,
+  DataDrivenTile3DLayerProps
+} from './data-driven-tile-3d-layer';
+export {DataDrivenTile3DLayer} from './data-driven-tile-3d-layer';
 export {SourceDataDrivenTile3DLayer} from './data-driven-tile-3d-source-layer';

@@ -15,9 +15,9 @@ import type {
 } from '@loaders.gl/loader-utils';
 import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
 import {createDataSource} from '@loaders.gl/core';
-import {PMTilesSource} from '@loaders.gl/pmtiles';
-import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
-import {MLTSource} from '@loaders.gl/mlt';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {MVTSourceLoader, TableTileSourceLoader} from '@loaders.gl/mvt';
+import {MLTSourceLoader} from '@loaders.gl/mlt';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
 // D\deck.gl + layers
@@ -35,7 +35,7 @@ import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples'
 import {INITIAL_MAP_STYLE} from './examples';
 // END CUT
 
-const TILE_SOURCE_FACTORIES = [PMTilesSource, TableTileSource, MVTSource, MLTSource] as const;
+const TILE_SOURCE_FACTORIES = [PMTilesSourceLoader, TableTileSourceLoader, MVTSourceLoader, MLTSourceLoader] as const;
 
 /** Arbitrary initial view state */
 const INITIAL_VIEW_STATE = {latitude: 47.65, longitude: 7, zoom: 2, maxZoom: 20};
@@ -295,7 +295,7 @@ function createTileSource(
   const url = example.data;
   return createDataSource(
     url,
-    [PMTilesSource, TableTileSource, MVTSource, MLTSource],
+    [PMTilesSourceLoader, TableTileSourceLoader, MVTSourceLoader, MLTSourceLoader],
     {
       core: {
         type: example.sourceType,

@@ -9,26 +9,32 @@ import type {
   VectorSourceMetadata,
   GetFeaturesParameters
 } from '@loaders.gl/loader-utils';
-import {Source, DataSource, VectorSource} from '@loaders.gl/loader-utils';
+import {SourceLoader, DataSource, VectorSource} from '@loaders.gl/loader-utils';
 
 import {FlatGeobufLoader} from './flatgeobuf-loader';
 import {FlatGeobufFormat} from './flatgeobuf-format';
 
-export type FlatGeobufSourceOptions = DataSourceOptions & {
+export type FlatGeobufSourceLoaderOptions = DataSourceOptions & {
   flatgeobuf?: {};
 };
 
 /**
- * FlatGeobufSource
+ * FlatGeobufSourceLoader
  * Incrementally load bounding boxes from a spatially indexed FlatGeobuf file
  * @ndeprecated This is a WIP, not fully implemented
  */
-export const FlatGeobufSource = {
+export const FlatGeobufSourceLoader = {
+  dataType: null as unknown as FlatGeobufVectorSource,
+  batchType: null as never,
   ...FlatGeobufFormat,
   version: '0.0.0',
   type: 'flatgeobuf-server',
   fromUrl: true,
   fromBlob: false, // TODO check if supported by library?
+
+  options: {
+    flatgeobuf: {}
+  },
 
   defaultOptions: {
     flatgeobuf: {}
@@ -37,22 +43,22 @@ export const FlatGeobufSource = {
   testURL: (url: string): boolean => url.toLowerCase().includes('FeatureServer'),
   createDataSource: (
     url: string,
-    options: FlatGeobufSourceOptions,
+    options: FlatGeobufSourceLoaderOptions,
     coreApi?: CoreAPI
   ): FlatGeobufVectorSource => new FlatGeobufVectorSource(url, options, coreApi)
-} as const satisfies Source<FlatGeobufVectorSource>;
+} as const satisfies SourceLoader<FlatGeobufVectorSource>;
 
 /**
  * FlatGeobufVectorSource
  */
 export class FlatGeobufVectorSource
-  extends DataSource<string, FlatGeobufSourceOptions>
+  extends DataSource<string, FlatGeobufSourceLoaderOptions>
   implements VectorSource
 {
   protected formatSpecificMetadata: Promise<any> | null = null;
 
-  constructor(data: string, options: FlatGeobufSourceOptions, coreApi?: CoreAPI) {
-    super(data, options, FlatGeobufSource.defaultOptions, coreApi);
+  constructor(data: string, options: FlatGeobufSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(data, options, FlatGeobufSourceLoader.defaultOptions, coreApi);
     // this.formatSpecificMetadata = this._getFormatSpecificMetadata();
   }
 

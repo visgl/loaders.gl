@@ -5,7 +5,7 @@
 import type {Schema} from '@loaders.gl/schema';
 import type {
   CoreAPI,
-  Source,
+  SourceLoader,
   VectorTileSource,
   GetTileParameters,
   GetTileDataParameters,
@@ -34,7 +34,7 @@ export type PMTilesRangeRequestOptions = RangeRequestSchedulerProps & {
   maxConcurrentRequests?: number;
 };
 
-export type PMTilesSourceOptions = DataSourceOptions & {
+export type PMTilesSourceLoaderOptions = DataSourceOptions & {
   core?: DataSourceOptions['core'] & {
     loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
   };
@@ -47,28 +47,34 @@ export type PMTilesSourceOptions = DataSourceOptions & {
 /**
  * Creates vector tile data sources for PMTiles urls or blobs
  */
-export const PMTilesSource = {
+export const PMTilesSourceLoader = {
+  dataType: null as unknown as PMTilesTileSource,
+  batchType: null as never,
   ...PMTilesFormat,
   version: VERSION,
   type: 'pmtiles',
   fromUrl: true,
   fromBlob: true,
 
+  options: {
+    pmtiles: {}
+  },
+
   defaultOptions: {
     pmtiles: {}
   },
 
   testURL: (url: string) => url.endsWith('.pmtiles'),
-  createDataSource: (url: string | Blob, options: PMTilesSourceOptions, coreApi?: CoreAPI) =>
+  createDataSource: (url: string | Blob, options: PMTilesSourceLoaderOptions, coreApi?: CoreAPI) =>
     new PMTilesTileSource(url, options, coreApi)
-} as const satisfies Source<PMTilesTileSource>;
+} as const satisfies SourceLoader<PMTilesTileSource>;
 
 /**
  * A PMTiles data source
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
 export class PMTilesTileSource
-  extends DataSource<string | Blob, PMTilesSourceOptions>
+  extends DataSource<string | Blob, PMTilesSourceLoaderOptions>
   implements ImageTileSource, VectorTileSource
 {
   mimeType: string | null = null;
@@ -77,8 +83,8 @@ export class PMTilesTileSource
   private pendingTileRequests: PendingTileRequest[] = [];
   private tileBatchTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(data: string | Blob, options: PMTilesSourceOptions, coreApi?: CoreAPI) {
-    super(data, options, PMTilesSource.defaultOptions, coreApi);
+  constructor(data: string | Blob, options: PMTilesSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(data, options, PMTilesSourceLoader.defaultOptions, coreApi);
     const rangeRequestOptions = options.rangeRequests || options.tileRangeRequest;
     const urlOrBlob =
       typeof data === 'string'

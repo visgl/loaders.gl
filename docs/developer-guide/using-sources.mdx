@@ -1,0 +1,115 @@
+import SourceLoaderGraphic from '@site/src/components/source-loader-graphic';
+
+# Using SourceLoaders
+
+loaders.gl provides a number of `SourceLoader` exports that support multi-step data loading. **SourceLoaders** are different from parser **loaders**:
+
+- loaders are designed for "one-shot" atomic or streaming loads of data
+- while a `SourceLoader` can be thought of as a multi-step or multi-resource loader, which is required for a number of data formats and access patterns.
+
+<SourceLoaderGraphic standalone />
+
+**SourceLoaders** encapsulate the following data access models:
+
+| Data Access Model           | Description                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| **\*web service**           | Interact with a web service that returns data assets for different regions etc. |
+| **cloud storage**           | Read static assets as-needed from large cloud-native file formats               |
+| **archive files**           | Read individual assets from a (very large) multi-asset archive files.           |
+| **dynamic data generation** | Generate data (tiles, images etc) dynamically based on application requests.    |
+
+## SourceLoader
+
+A `SourceLoader` provides general information about the supported resource format, and the capability to create a `DataSource` for that format.
+
+## DataSource
+
+A `DataSource` instance provides methods to query metadata and to query data for specific geospatial areas or views.
+
+A `DataSource` can (and sometimes must) expose a completely unique API. However a big advantage comes when a `DataSource` conforms to an existing `*Source` interface.
+
+This means that applications written against that interface can now support the new source without any changes to existing logic.
+
+| Source Interface   | Data access model                         | Examples                                                    |
+| ------------------ | ----------------------------------------- | ----------------------------------------------------------- |
+| `ImageSource`      | Loads image covering a region             | `WMSSourceLoader`, `_ArcGISImageServerSourceLoader`         |
+| `RasterSource`     | Loads typed raster samples for a viewport | `GeoTIFFSourceLoader`, `OMETiffSourceLoader`                |
+| `VectorSource`     | Load "features" in a region               | WFS (N/A), ArcGIS FeatureServer                             |
+| `ImageTileSource`  | Load image covering a specific tile index | WMTS (N/A)                                                  |
+| `VectorTileSource` | Load "features" in a specific tile index  | Mapbox Vector Tiles, `PMTilesSourceLoader`                  |
+
+## Metadata
+
+A `DataSource` instance provides methods to query metadata: `await dataSource.getMetadata()`.
+
+## Adapter Sources
+
+While most `SourceLoader` implementations provide an interface for interacting with a specific web service or cloud archive file format (e.g. `PMTilesSourceLoader`), it is also possible to create adapters:
+
+- that provide a `SourceLoader` interface to local data (`TableTileSourceLoader`)
+- that adapt one type of source to another (e.g. `ImageTileSource` calling an `ImageSource` to generate each tile).
+
+## Source auto-selection
+
+Just like the appropriate parser loader can be selected automatically from a list of `Loader` objects, `createDataSource()`, `selectSource()`, and `load()` can accept `SourceLoader` objects and attempt to select the correct one based on URL pattern matching, extensions, and root file bytes.
+
+## Creating new Sources
+
+Just like applications can create their own loaders, apps can also create (and potentially contribute) their own source loaders and use them with loaders.gl, as long as they follow the required interfaces (e.g, every runtime source instance must inherit from `DataSource`).
+
+## Raster sources
+
+`RasterSource` is a sibling abstraction to `ImageSource` and `TileSource`.
+
+Use it when a source needs to:
+
+- accept a viewport request instead of a tile index
+- return typed raster values rather than browser image objects
+- preserve band count, dtype, bounds, and CRS metadata for styling or texture upload
+
+`GeoTIFFSourceLoader` is the first built-in `RasterSource`. It accepts a `RasterViewport`, returns
+`RasterData`, and preserves native CRS metadata instead of reprojecting in v1.
+
+## Options
+
+Just like loaders, source loaders accept nested options, so that options for multiple source loaders can be specified:
+
+```ts
+import {createDataSource} from '@loaders.gl/core';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {MVTSourceLoader} from '@loaders.gl/mvt';
+
+const dataSource = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
+  core: {
+    // Any common options for createDataSource
+  },
+  pmtiles: {
+    // Options specific to PMTilesSourceLoader, used if the URL is determined to reference a PMTiles file.
+  },
+  mvt: {
+    // Options specific to MVTSourceLoader, used if the URL is determined to reference an MVT file hierarchy.
+  }
+});
+```
+
+A source loader can sometimes use one or more loaders internally to load sub resources. In this case, the application can pass options to those loaders using the `core.loadOptions` property.
+
+## Example
+
+An advanced source loader is `TableTileSourceLoader`, which lets you dynamically generate MVT tiles from a table.
+
+```typescript
+import {createDataSource} from '@loaders.gl/core';
+import {TableTileSourceLoader} from '@loaders.gl/mvt';
+import {GeoJSONLoader} from '@loaders.gl/json';
+
+// build an initial index of tiles.
+const tileSource = createDataSource(url, [TableTileSourceLoader], {
+  core: {
+    loaders: [GeoJSONLoader]
+  }
+});
+
+// request a particular tile
+const features = tileSource.getTile(z, x, y).features;
+```

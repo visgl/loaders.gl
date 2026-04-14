@@ -1,10 +1,10 @@
-# MLTSource
+# MLTSourceLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
 </p>
 
-The `MLTSource` dynamically loads MapLibre Tile (`.mlt`) data from URL based tile services.
+The `MLTSourceLoader` dynamically loads MapLibre Tile (`.mlt`) data from URL based tile services.
 
 | Source         | Characteristic                                 |
 | -------------- | ---------------------------------------------- |
@@ -17,9 +17,9 @@ The `MLTSource` dynamically loads MapLibre Tile (`.mlt`) data from URL based til
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {MLTSource} from '@loaders.gl/mlt';
+import {MLTSourceLoader} from '@loaders.gl/mlt';
 
-const source = createDataSource('https://example.com/tiles', [MLTSource]);
+const source = createDataSource('https://example.com/tiles', [MLTSourceLoader]);
 const features = await source.getTile({x: 0, y: 0, z: 0});
 ```
 
@@ -40,4 +40,4 @@ const features = await source.getTile({x: 0, y: 0, z: 0});
 
 ## Attribution
 
-`MLTSource` fetches URL-addressed MLT tiles and parses them via [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader), which uses the [@maplibre/mlt](https://github.com/maplibre/mlt) decoder implementation.
+`MLTSourceLoader` fetches URL-addressed MLT tiles and parses them via [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader), which uses the [@maplibre/mlt](https://github.com/maplibre/mlt) decoder implementation.

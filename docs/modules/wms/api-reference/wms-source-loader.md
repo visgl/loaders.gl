@@ -1,4 +1,4 @@
-# WMSSource
+# WMSSourceLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
@@ -6,18 +6,18 @@
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-The `WMSSource` class helps applications interact with a WMS service (discover its capabilities, request map images and information about geospatial features, etc).
+The `WMSSourceLoader` class helps applications interact with a WMS service (discover its capabilities, request map images and information about geospatial features, etc).
 
-The `WMSSource` provides a type safe API that forms valid WMS URLs and issues requests, handles WMS version differences and edge cases under the hood and parses results and errors into strongly typed JavaScript objects.
+The `WMSSourceLoader` provides a type safe API that forms valid WMS URLs and issues requests, handles WMS version differences and edge cases under the hood and parses results and errors into strongly typed JavaScript objects.
 
-The `WMSSource` implements the `ImageService` interface, allowing WMS services to be used as one interchangeable source of asynchronously generated map image data.
+The `WMSSourceLoader` implements the `ImageService` interface, allowing WMS services to be used as one interchangeable source of asynchronously generated map image data.
 
 ## Usage
 
-A `WMSSource` instance provides type safe methods to send requests to a WMS service and parse the responses:
+A `WMSSourceLoader` instance provides type safe methods to send requests to a WMS service and parse the responses:
 
 ```typescript
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSource], {
+const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader], {
   wmsParameters: {layers: ['oms']}
 });
 const mapImage = await wmsService.getMap({
@@ -31,7 +31,7 @@ const mapImage = await wmsService.getMap({
 Capabilities metadata can be queried:
 
 ```typescript
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSource]);
+const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader]);
 const capabilities = await wmsService.getCapabilities({});
 // Check capabilities
 ```
@@ -40,7 +40,7 @@ The WMS version as well as other default WMS parameters can be specified in the 
 
 ```typescript
 // Specify the older 1.1.1 version (1.3.0 is the default)
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSource], {
+const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader], {
   version: '1.1.1',
   layers: ['oms']
 });
@@ -55,7 +55,7 @@ Custom fetch options, such as HTTP headers, and loader-specific options can be s
 standard loaders.gl `loadOptions` argument, which is forwarded to all load and parse operations:
 
 ```typescript
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSource], {
+const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader], {
   core: {
     loadOptions: {
       fetch: {
@@ -75,10 +75,10 @@ const getMap = await wmsService.getMap({
 });
 ```
 
-For special use cases, is possible to use the `WMSSource` to just generate URLs, so that the application issue its own requests and parse responses.
+For special use cases, is possible to use the `WMSSourceLoader` to just generate URLs, so that the application issue its own requests and parse responses.
 
 ```typescript
-const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSource]);
+const wmsService = createDataSource(WMS_SERVICE_URL, [WMSSourceLoader]);
 const getMapUrl = await wmsService.getMapURL({
   width: 800,
   height: 600,
@@ -93,12 +93,12 @@ const response = await myCustomFetch(getMapURL);
 
 ### constructor()
 
-Creates a `WMSSource` instance. Not normally called by the application, use
+Creates a `WMSSourceLoader` instance. Not normally called by the application, use
 
 ```typescript
 export type WMSServiceProps = {
   url: string; // Base URL to the service
-  loadOptions?: LoaderOptions; // Any load options to the loaders.gl Loaders used by the WMSSource methods
+  loadOptions?: LoaderOptions; // Any load options to the loaders.gl Loaders used by the WMSSourceLoader methods
   substituteCRS84?: boolean; // In WMS 1.3.0, replaces EPSG:4326 with CRS:84 to ensure lng,lat axis order. Default true.
 
   wmsParameters: {
@@ -221,4 +221,4 @@ export type WMSGetLegendGraphicParameters = {};
 
 ## Limitations
 
-The `WMSSource` only supports WMS URL parameters generation and HTTP GET requests against a WMS server. The OGC WMS standard also allows WMS services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported.
+The `WMSSourceLoader` only supports WMS URL parameters generation and HTTP GET requests against a WMS server. The OGC WMS standard also allows WMS services to accept XML payloads with HTTP POST messages, however generation of such XML payloads is not supported.

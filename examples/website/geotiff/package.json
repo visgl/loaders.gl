@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "geotiff-source-example",
+  "name": "geotiff-source-loader-example",
   "description": "GeoTIFF raster source example.",
   "version": "0.0.0",
   "license": "MIT",

@@ -19,7 +19,7 @@ import type {
   GetImageParameters,
   ImageSource,
   ImageSourceMetadata,
-  Source
+  SourceLoader
 } from '@loaders.gl/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
@@ -39,7 +39,7 @@ export type ImageSourceLayerProps = CompositeLayerProps & {
   /** Debounce interval applied before viewport image requests are issued. */
   debounceTime?: number;
   /** Source factories used to auto-create image sources from URL/blob inputs. */
-  sources?: Readonly<Source[]>;
+  sources?: Readonly<SourceLoader[]>;
   /** Options forwarded to `createDataSource` when `sources` are supplied. */
   sourceOptions?: DataSourceOptions;
   /** Called when metadata resolves successfully. */

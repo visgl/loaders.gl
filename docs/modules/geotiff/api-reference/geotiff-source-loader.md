@@ -1,4 +1,4 @@
-# GeoTIFFSource
+# GeoTIFFSourceLoader
 
 :::caution
 Experimental
@@ -6,7 +6,7 @@ Experimental
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
-`GeoTIFFSource` creates a viewport-driven raster source for GeoTIFF and Cloud Optimized GeoTIFF
+`GeoTIFFSourceLoader` creates a viewport-driven raster source for GeoTIFF and Cloud Optimized GeoTIFF
 (COG) datasets.
 
 It accepts 2D viewport requests, loads the nearest source data for that view, and returns typed
@@ -16,9 +16,9 @@ CPU-side raster payloads that can be uploaded to textures or colorized client-si
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {GeoTIFFSource} from '@loaders.gl/geotiff';
+import {GeoTIFFSourceLoader} from '@loaders.gl/geotiff';
 
-const source = createDataSource('example.tif', [GeoTIFFSource], {
+const source = createDataSource('example.tif', [GeoTIFFSourceLoader], {
   core: {type: 'geotiff'},
   geotiff: {
     interleaved: false,
@@ -91,5 +91,5 @@ The returned `RasterData` contains:
 ## Notes
 
 - GeoTIFF overview selection is delegated to `geotiff.js` through `readRasters()`.
-- For remote COGs, `GeoTIFFSource` can share a `RangeRequestScheduler` with other sources to
+- For remote COGs, `GeoTIFFSourceLoader` can share a `RangeRequestScheduler` with other sources to
   coalesce overlapping byte-range requests.

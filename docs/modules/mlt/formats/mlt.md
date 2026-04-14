@@ -3,7 +3,7 @@
 - _[MapLibre Tile format](https://github.com/maplibre/mlt)_
 - _[@loaders.gl/mlt](/docs/modules/mlt)_
 - _[MLTLoader](/docs/modules/mlt/api-reference/mlt-loader)_
-- _[MLTSource](/docs/modules/mlt/api-reference/mlt-source)_
+- _[MLTSourceLoader](/docs/modules/mlt/api-reference/mlt-source-loader)_
 - _[MLT example](/examples/tiles/mlt)_
 
 A MapLibre Tile (MLT) file is a binary geospatial tile format used by vector tile services and tooling.

@@ -10,7 +10,7 @@ import type {
   GetFeaturesParameters,
   VectorSource
 } from '@loaders.gl/loader-utils';
-import type {Source} from '@loaders.gl/loader-utils';
+import type {SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
 /** Parameters for ArcGIS FeatureServer query requests. */
@@ -52,7 +52,7 @@ export type ArcGISFeatureServiceQueryOptions = {
 };
 
 /** Options for the ArcGIS FeatureServer source. */
-export type ArcGISFeatureServerSourceOptions = DataSourceOptions & {
+export type ArcGISFeatureServerSourceLoaderOptions = DataSourceOptions & {
   'arcgis-feature-server'?: {
     /** Default ArcGIS query request parameters. */
     queryParameters?: Partial<ArcGISFeatureServiceQueryOptions>;
@@ -63,7 +63,9 @@ export type ArcGISFeatureServerSourceOptions = DataSourceOptions & {
  * @ndeprecated This is a WIP, not fully implemented
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
  */
-export const ArcGISFeatureServerSource = {
+export const ArcGISFeatureServerSourceLoader = {
+  dataType: null as unknown as ArcGISVectorSource,
+  batchType: null as never,
   name: 'ArcGISFeatureServer',
   id: 'arcgis-feature-server',
   module: 'wms',
@@ -74,6 +76,11 @@ export const ArcGISFeatureServerSource = {
   fromUrl: true,
   fromBlob: false,
 
+  options: {
+    url: undefined!,
+    'arcgis-feature-server': {}
+  },
+
   defaultOptions: {
     url: undefined!,
     'arcgis-feature-server': {}
@@ -82,10 +89,10 @@ export const ArcGISFeatureServerSource = {
   testURL: (url: string): boolean => url.toLowerCase().includes('featureserver'),
   createDataSource: (
     url: string,
-    options: ArcGISFeatureServerSourceOptions,
+    options: ArcGISFeatureServerSourceLoaderOptions,
     coreApi?: CoreAPI
   ): ArcGISVectorSource => new ArcGISVectorSource(url, options, coreApi)
-} as const satisfies Source<ArcGISVectorSource>;
+} as const satisfies SourceLoader<ArcGISVectorSource>;
 
 /**
  * ArcGIS FeatureServer
@@ -93,14 +100,14 @@ export const ArcGISFeatureServerSource = {
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
  */
 export class ArcGISVectorSource
-  extends DataSource<string, ArcGISFeatureServerSourceOptions>
+  extends DataSource<string, ArcGISFeatureServerSourceLoaderOptions>
   implements VectorSource
 {
   /** Cached ArcGIS FeatureServer metadata request. */
   protected formatSpecificMetadata: Promise<any> | null = null;
 
-  constructor(url: string, options: ArcGISFeatureServerSourceOptions, coreApi?: CoreAPI) {
-    super(url, options, ArcGISFeatureServerSource.defaultOptions, coreApi);
+  constructor(url: string, options: ArcGISFeatureServerSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(url, options, ArcGISFeatureServerSourceLoader.defaultOptions, coreApi);
   }
 
   /** Returns a schema inferred from ArcGIS FeatureServer metadata fields. */

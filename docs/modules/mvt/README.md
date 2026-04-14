@@ -2,7 +2,7 @@
 
 The `@loaders.gl/mvt` module handles the [Mapbox Vector Tile](/docs/modules/mvt/formats/mvt) format, a protobuf-encoded format that defines geospatial geometries.
 
-The modules also provides a `TableTileSource` class that can serve up dynamic tiles from an in-memory `GeoJSON` file.
+The modules also provides a `TableTileSourceLoader` class that can serve up dynamic tiles from an in-memory `GeoJSON` file.
 
 ## Installation
 
@@ -32,8 +32,8 @@ npm install @loaders.gl/core
 
 | Component                                                              |
 | ---------------------------------------------------------------------- |
-| [`MVTSource`](/docs/modules/mvt/api-reference/mvt-source)              |
-| [`TableTileSource`](/docs/modules/mvt/api-reference/table-tile-source) |
+| [`MVTSourceLoader`](/docs/modules/mvt/api-reference/mvt-source-loader)              |
+| [`TableTileSourceLoader`](/docs/modules/mvt/api-reference/table-tile-source-loader) |
 
 ## Attribution
 

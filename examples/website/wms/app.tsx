@@ -11,10 +11,10 @@ import {MapController} from '@deck.gl/core';
 import {ImageSourceLayer, VectorSourceLayer} from '@loaders.gl/deck-layers';
 import {createDataSource} from '@loaders.gl/core';
 import {
-  _ArcGISFeatureServerSource,
-  _ArcGISImageServerSource,
-  WFSSource,
-  WMSSource
+  _ArcGISFeatureServerSourceLoader,
+  _ArcGISImageServerSourceLoader,
+  WFSSourceLoader,
+  WMSSourceLoader
 } from '@loaders.gl/wms';
 
 import {Map} from 'react-map-gl';
@@ -53,10 +53,10 @@ type AppProps = {
 };
 
 const SOURCE_FACTORIES = [
-  WMSSource,
-  _ArcGISImageServerSource,
-  _ArcGISFeatureServerSource,
-  WFSSource
+  WMSSourceLoader,
+  _ArcGISImageServerSourceLoader,
+  _ArcGISFeatureServerSourceLoader,
+  WFSSourceLoader
 ];
 
 type SourceData = any;
@@ -366,7 +366,7 @@ export default function App(props: AppProps = {}) {
 
 function createImageSource(example: Example) {
   const {url, format, layers, tileSize, tileFormat} = example;
-  return new WMSSource({
+  return new WMSSourceLoader({
     url,
     format,
     layers,
