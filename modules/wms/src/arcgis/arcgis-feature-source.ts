@@ -4,6 +4,7 @@
 
 import type {DataType, Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
+  CoreAPI,
   DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters,
@@ -79,8 +80,11 @@ export const ArcGISFeatureServerSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('featureserver'),
-  createDataSource: (url: string, options: ArcGISFeatureServerSourceOptions): ArcGISVectorSource =>
-    new ArcGISVectorSource(url, options)
+  createDataSource: (
+    url: string,
+    options: ArcGISFeatureServerSourceOptions,
+    coreApi?: CoreAPI
+  ): ArcGISVectorSource => new ArcGISVectorSource(url, options, coreApi)
 } as const satisfies Source<ArcGISVectorSource>;
 
 /**
@@ -95,8 +99,8 @@ export class ArcGISVectorSource
   /** Cached ArcGIS FeatureServer metadata request. */
   protected formatSpecificMetadata: Promise<any> | null = null;
 
-  constructor(url: string, options: ArcGISFeatureServerSourceOptions) {
-    super(url, options, ArcGISFeatureServerSource.defaultOptions);
+  constructor(url: string, options: ArcGISFeatureServerSourceOptions, coreApi?: CoreAPI) {
+    super(url, options, ArcGISFeatureServerSource.defaultOptions, coreApi);
   }
 
   /** Returns a schema inferred from ArcGIS FeatureServer metadata fields. */
@@ -124,7 +128,10 @@ export class ArcGISVectorSource
   /** Requests features from the ArcGIS FeatureServer query endpoint. */
   async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
     const url = this.getFeaturesURL(parameters);
-    const response = await this.fetch(url, parameters.signal ? {signal: parameters.signal} : undefined);
+    const response = await this.fetch(
+      url,
+      parameters.signal ? {signal: parameters.signal} : undefined
+    );
     await this.checkResponse(response);
     return parseGeoJSONTable(await response.json());
   }

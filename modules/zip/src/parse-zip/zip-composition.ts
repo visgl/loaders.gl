@@ -9,7 +9,6 @@ import {ZipEoCDRecord, generateEoCD, parseEoCDRecord, updateEoCD} from './end-of
 import {CRC32Hash} from '@loaders.gl/crypto';
 import {generateLocalHeader} from './local-file-header';
 import {generateCDHeader} from './cd-file-header';
-import {fetchFile} from '@loaders.gl/core';
 import {readRange} from './readable-file-utils';
 
 /**
@@ -194,7 +193,10 @@ export function getFileIterator(
   async function* iterable() {
     const fileList = await getAllFiles(inputPath);
     for (const filePath of fileList) {
-      const file = await (await fetchFile(path.join(inputPath, filePath))).arrayBuffer();
+      const provider = new NodeFile(path.join(inputPath, filePath), 'r');
+      const {bigsize} = await provider.stat();
+      const file = await provider.read(0, Number(bigsize));
+      await provider.close();
       yield {path: filePath, file};
     }
   }

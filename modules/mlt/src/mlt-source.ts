@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  CoreAPI,
   Source,
   VectorTileSource,
   GetTileParameters,
@@ -51,8 +52,8 @@ export const MLTSource = {
 
   testURL: (url: string): boolean =>
     url.endsWith('.mlt') || url.endsWith('/plain') || isURLTemplate(url),
-  createDataSource: (url: string, options: MLTSourceOptions): MLTTileSource =>
-    new MLTTileSource(url, options)
+  createDataSource: (url: string, options: MLTSourceOptions, coreApi?: CoreAPI): MLTTileSource =>
+    new MLTTileSource(url, options, coreApi)
 } as const satisfies Source<MLTTileSource>;
 
 /**
@@ -68,8 +69,8 @@ export class MLTTileSource
   extension: string;
   mimeType = 'application/vnd.maplibre-tile';
 
-  constructor(url: string, options: MLTSourceOptions) {
-    super(url, options, MLTSource.defaultOptions);
+  constructor(url: string, options: MLTSourceOptions, coreApi?: CoreAPI) {
+    super(url, options, MLTSource.defaultOptions, coreApi);
     this.metadataUrl = this.options.mlt?.metadataUrl || null;
     this.extension = this.options.mlt?.extension || '.mlt';
 

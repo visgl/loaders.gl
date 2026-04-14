@@ -4,6 +4,7 @@
 
 import type {Schema, GeoJSONTable} from '@loaders.gl/schema';
 import type {
+  CoreAPI,
   DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters
@@ -50,8 +51,8 @@ export const WFSSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
-  createDataSource: (url: string, options: WFSourceOptions): WFSVectorSource =>
-    new WFSVectorSource(url, options)
+  createDataSource: (url: string, options: WFSourceOptions, coreApi?: CoreAPI): WFSVectorSource =>
+    new WFSVectorSource(url, options, coreApi)
 } as const satisfies Source<WFSVectorSource>;
 
 // PARAMETER TYPES FOR WFS SOURCE
@@ -219,8 +220,8 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
   capabilities: WFSCapabilities | null = null;
 
   /** Create a WFSVectorSource */
-  constructor(data: string, options: WFSourceOptions) {
-    super(data, options, WFSSource.defaultOptions);
+  constructor(data: string, options: WFSourceOptions, coreApi?: CoreAPI) {
+    super(data, options, WFSSource.defaultOptions, coreApi);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WFS URL more likely to make this class just work.
@@ -239,7 +240,10 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 
   async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
     const url = this.getFeaturesURL(parameters);
-    const response = await this.fetch(url, parameters.signal ? {signal: parameters.signal} : undefined);
+    const response = await this.fetch(
+      url,
+      parameters.signal ? {signal: parameters.signal} : undefined
+    );
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     const text = new TextDecoder().decode(arrayBuffer);
@@ -589,7 +593,9 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     // // Don't flip if we are substituting EPSG:4326 with CRS:84
     // !(this.substituteCRS84 && wfsParameters.crs === 'EPSG:4326');
 
-    const bbox = bboxValue as [number, number, number, number] | [number, number, number, number, string];
+    const bbox = bboxValue as
+      | [number, number, number, number]
+      | [number, number, number, number, string];
     if (!flipCoordinates) {
       return bbox;
     }

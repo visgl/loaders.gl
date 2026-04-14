@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {load} from '@loaders.gl/core';
 import {path} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tile3D as Tile3DNode} from '../common/tile-3d';
 import {I3STilesetTraverser} from './i3s-tileset-traverser';
@@ -49,6 +48,8 @@ export class I3SSource implements Tileset3DSource {
   tileset: TilesetJSON | null = null;
   /** Loader options forwarded to tile requests. */
   readonly loadOptions: LoaderOptions;
+  /** Core API used for metadata and tile-content loads when injected by the caller. */
+  coreApi?: CoreAPI;
   /** Aggregate content-format flags discovered during streaming. */
   readonly contentFormats: TilesetContentFormats = {...EMPTY_CONTENT_FORMATS};
 
@@ -73,6 +74,7 @@ export class I3SSource implements Tileset3DSource {
     this.loader = request.loader;
     this.url = request.url;
     this.basePath = request.basePath || path.dirname(request.url);
+    this.coreApi = request.coreApi;
     this.loadOptions = loadOptions;
   }
 
@@ -81,7 +83,7 @@ export class I3SSource implements Tileset3DSource {
    */
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
-      this.rootTileset = await load(this.url, this.loader, this.loadOptions);
+      this.rootTileset = await this.loadWithCoreApi(this.url, this.loadOptions);
     }
     this.tileset = this.rootTileset;
 
@@ -180,7 +182,7 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    tile.content = await load(contentUrl, this.loader, options);
+    tile.content = await this.loadWithCoreApi(contentUrl, options);
     return {loaded: true};
   }
 
@@ -210,7 +212,18 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    return await load(nodeUrl, this.loader, options);
+    return await this.loadWithCoreApi(nodeUrl, options);
+  }
+
+  /**
+   * Loads data through injected core APIs so this module stays independent from `@loaders.gl/core`.
+   */
+  private async loadWithCoreApi(url: string, options: LoaderOptions): Promise<any> {
+    if (!this.coreApi) {
+      throw new Error('I3SSource requires an injected coreApi to load tileset data');
+    }
+
+    return await this.coreApi.load(url, this.loader, options);
   }
 
   /**
@@ -321,6 +334,7 @@ function normalizeI3SRequest(input: TilesetSourceInput): TilesetSourceRequest {
   return {
     url: input.url,
     loader: input.loader,
-    basePath: input.basePath || path.dirname(input.url)
+    basePath: input.basePath || path.dirname(input.url),
+    coreApi: (input as TilesetSourceRequest).coreApi
   };
 }

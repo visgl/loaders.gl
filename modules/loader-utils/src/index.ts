@@ -200,7 +200,7 @@ export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-fil
 // EXPERIMENTAL: DATA SOURCES
 export type {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from './source-types';
 
-export type {DataSourceOptions} from './lib/sources/data-source';
+export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 
 export {ImageSource} from './lib/sources/image-source';

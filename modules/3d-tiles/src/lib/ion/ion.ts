@@ -4,7 +4,6 @@
 
 // Minimal support to load tilsets from the Cesium ION services
 
-import {fetchFile} from '@loaders.gl/core';
 import {assert} from '@loaders.gl/loader-utils';
 
 const CESIUM_ION_URL = 'https://api.cesium.com/v1/assets';
@@ -41,7 +40,7 @@ export async function getIonAssets(accessToken) {
   assert(accessToken);
   const url = CESIUM_ION_URL;
   const headers = {Authorization: `Bearer ${accessToken}`};
-  const response = await fetchFile(url, {headers});
+  const response = await fetch(url, {headers});
   if (!response.ok) {
     throw new Error(response.statusText);
   }
@@ -56,7 +55,7 @@ export async function getIonAssetMetadata(accessToken, assetId) {
   const url = `${CESIUM_ION_URL}/${assetId}`;
   // https://cesium.com/docs/rest-api/#operation/getAsset
   // Retrieves metadata information about a specific asset.
-  let response = await fetchFile(`${url}`, {headers});
+  let response = await fetch(`${url}`, {headers});
   if (!response.ok) {
     throw new Error(response.statusText);
   }
@@ -64,7 +63,7 @@ export async function getIonAssetMetadata(accessToken, assetId) {
 
   // https://cesium.com/docs/rest-api/#operation/getAssetEndpoint
   // Retrieves information and credentials that allow you to access the tiled asset data for visualization and analysis.
-  response = await fetchFile(`${url}/endpoint`, {headers});
+  response = await fetch(`${url}/endpoint`, {headers});
   if (!response.ok) {
     throw new Error(response.statusText);
   }

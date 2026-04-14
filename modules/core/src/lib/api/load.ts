@@ -114,6 +114,6 @@ export async function load(
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
   // return await parse(data, loaders as Loader[], options);
   return Array.isArray(resolvedLoaders)
-    ? await parse(data, resolvedLoaders, resolvedOptions) // loader array overload
-    : await parse(data, resolvedLoaders, resolvedOptions); // single loader overload
+    ? await parse(data, resolvedLoaders, resolvedOptions, context) // loader array overload
+    : await parse(data, resolvedLoaders, resolvedOptions, context); // single loader overload
 }

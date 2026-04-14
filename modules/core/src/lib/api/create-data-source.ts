@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from '@loaders.gl/loader-utils';
+import {coreApi} from './core-api';
 
 /**
  * Creates a source from a service
@@ -24,7 +25,7 @@ export function createDataSource<SourceArrayT extends Source[]>(
   if (!source) {
     throw new Error('Not a valid source type');
   }
-  return source.createDataSource(data, options);
+  return source.createDataSource(data, options, coreApi);
 }
 
 // TODO - use selectSource...

@@ -15,25 +15,37 @@ const REDIRECT_URL =
 
 test('polyfills#fetch() (NODE)', async () => {
   const response = await fetch(PLY_CUBE_ATT_URL);
-  expect(response.headers, 'fetch polyfill successfully returned headers under Node.js').toBeTruthy();
+  expect(
+    response.headers,
+    'fetch polyfill successfully returned headers under Node.js'
+  ).toBeTruthy();
   const data = await response.arrayBuffer();
   expect(data, 'fetch polyfill successfully loaded data under Node.js').toBeTruthy();
 });
 test('polyfills#fetch() ignores url query params when loading file (NODE)', async () => {
   const response = await fetch(`${PLY_CUBE_ATT_URL}?v=1.2.3`);
   const data = await response.text();
-  expect(response.headers, 'fetch polyfill successfully returned headers under Node.js').toBeTruthy();
+  expect(
+    response.headers,
+    'fetch polyfill successfully returned headers under Node.js'
+  ).toBeTruthy();
   expect(data, 'fetch polyfill successfully loaded data under Node.js').toBeTruthy();
 });
 test.skip('polyfills#fetch() error handling (NODE)', async () => {
   let response = await fetch('non-existent-file');
   console.log(response.statusText);
-  expect(response.statusText.includes('ENOENT'), 'fetch statusText forwards node ENOENT error').toBeTruthy();
+  expect(
+    response.statusText.includes('ENOENT'),
+    'fetch statusText forwards node ENOENT error'
+  ).toBeTruthy();
   expect(response.ok, 'fetch polyfill fails cleanly on non-existent file').toBeFalsy();
   expect(response.arrayBuffer(), 'Response.arrayBuffer() does not throw').toBeTruthy();
   response = await fetch('.');
   console.log(response.statusText);
-  expect(response.statusText.includes('EISDIR'), 'fetch statusText forwards node error').toBeTruthy();
+  expect(
+    response.statusText.includes('EISDIR'),
+    'fetch statusText forwards node error'
+  ).toBeTruthy();
   expect(response.ok, 'fetch polyfill fails cleanly on directory').toBeFalsy();
   expect(response.arrayBuffer(), 'Response.arrayBuffer() does not throw').toBeTruthy();
 });
@@ -44,7 +56,10 @@ test('polyfills#fetch() able to handle "Accept-Encoding: gzip" (NODE)', async ()
   const response = await fetch(PLY_CUBE_ATT_URL, {headers});
   const data = await response.text();
   expect(data.length, 'fetch polyfill data size as expected').toBe(PLY_CUBE_ATT_SIZE);
-  expect(data, 'fetch polyfill successfully loaded data under Node.js with "gzip" encoding').toBeTruthy();
+  expect(
+    data,
+    'fetch polyfill successfully loaded data under Node.js with "gzip" encoding'
+  ).toBeTruthy();
 });
 test('polyfills#fetch() able to handle "Accept-Encoding: br" (NODE)', async () => {
   const headers = {
@@ -53,7 +68,10 @@ test('polyfills#fetch() able to handle "Accept-Encoding: br" (NODE)', async () =
   const response = await fetch(PLY_CUBE_ATT_URL, {headers});
   const data = await response.text();
   expect(data.length === PLY_CUBE_ATT_SIZE, 'fetch polyfill data size as expected').toBeTruthy();
-  expect(data, 'fetch polyfill successfully loaded data under Node.js with "br" encoding').toBeTruthy();
+  expect(
+    data,
+    'fetch polyfill successfully loaded data under Node.js with "br" encoding'
+  ).toBeTruthy();
 });
 test('polyfills#fetch() able to handle "Accept-Encoding: deflate"', async () => {
   const headers = {

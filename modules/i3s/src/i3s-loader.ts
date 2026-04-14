@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import {parse} from '@loaders.gl/core';
+import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
 import type {I3STilesetHeader} from './types';
 import {I3SContentLoader} from './i3s-content-loader';
 import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
@@ -93,14 +92,14 @@ async function parseI3S(data, options: I3SLoaderOptions = {}, context): Promise<
   } else if (isTileHeader) {
     data = await parseTile(data, context);
   } else {
-    data = await parseTileContent(data, options);
+    data = await parseTileContent(data, options, context);
   }
 
   return data;
 }
 
-async function parseTileContent(arrayBuffer, options: I3SLoaderOptions) {
-  return await parse(arrayBuffer, I3SContentLoader, options);
+async function parseTileContent(arrayBuffer, options: I3SLoaderOptions, context?: LoaderContext) {
+  return await I3SContentLoader.parse(arrayBuffer, options, context);
 }
 
 async function parseTileset(data, options: I3SLoaderOptions, context) {

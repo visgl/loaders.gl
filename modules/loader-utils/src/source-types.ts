@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Format} from './format-types';
-import type {DataSource, DataSourceOptions} from './lib/sources/data-source';
+import type {CoreAPI, DataSource, DataSourceOptions} from './lib/sources/data-source';
 
 /**
  * A `Source` contains metadata and a factory method for creating instances of a specific `DataSource`.
@@ -52,7 +52,11 @@ export interface Source<
   /** Test data */
   testData?: (data: Blob) => boolean;
   /** Create a source  */
-  createDataSource(data: string | Blob, options: Readonly<DataSourceT['optionsType']>): DataSourceT;
+  createDataSource(
+    data: string | Blob,
+    options: Readonly<DataSourceT['optionsType']>,
+    coreApi?: CoreAPI
+  ): DataSourceT;
 }
 
 // T extends Source<DataSource, any> ? DataSource : never;

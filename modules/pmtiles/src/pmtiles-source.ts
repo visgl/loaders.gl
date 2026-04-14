@@ -4,6 +4,7 @@
 
 import type {Schema} from '@loaders.gl/schema';
 import type {
+  CoreAPI,
   Source,
   VectorTileSource,
   GetTileParameters,
@@ -58,8 +59,8 @@ export const PMTilesSource = {
   },
 
   testURL: (url: string) => url.endsWith('.pmtiles'),
-  createDataSource: (url: string | Blob, options: PMTilesSourceOptions) =>
-    new PMTilesTileSource(url, options)
+  createDataSource: (url: string | Blob, options: PMTilesSourceOptions, coreApi?: CoreAPI) =>
+    new PMTilesTileSource(url, options, coreApi)
 } as const satisfies Source<PMTilesTileSource>;
 
 /**
@@ -76,8 +77,8 @@ export class PMTilesTileSource
   private pendingTileRequests: PendingTileRequest[] = [];
   private tileBatchTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(data: string | Blob, options: PMTilesSourceOptions) {
-    super(data, options, PMTilesSource.defaultOptions);
+  constructor(data: string | Blob, options: PMTilesSourceOptions, coreApi?: CoreAPI) {
+    super(data, options, PMTilesSource.defaultOptions, coreApi);
     const rangeRequestOptions = options.rangeRequests || options.tileRangeRequest;
     const urlOrBlob =
       typeof data === 'string'

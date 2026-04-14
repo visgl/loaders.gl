@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
 import {WebMercatorViewport} from '@deck.gl/core';
+import {coreApi} from '@loaders.gl/core';
 import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
 import {getFrameState, I3SSource, Tile3D, Tileset3D, getLodStatus} from '@loaders.gl/tiles';
 import {
@@ -19,7 +20,7 @@ import {
 async function createI3STileset(): Promise<Tileset3D> {
   const tilesetHeader = await getI3sTileHeader();
   tilesetHeader.root = ROOT_TILE_HEADER;
-  return new Tileset3D(new I3SSource(tilesetHeader));
+  return new Tileset3D(new I3SSource({...tilesetHeader, coreApi}));
 }
 
 test('I3S LOD#lodJudge - should return "DIG" if lodMetric is 0 or NaN', async t => {

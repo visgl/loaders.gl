@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-globals */
+import type {CoreAPI} from '../sources/data-source';
 import type {LoaderWithParser, LoaderOptions, LoaderContext} from '../../loader-types';
 import {WorkerBody} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
@@ -30,6 +31,7 @@ export async function createLoaderWorker(loader: LoaderWithParser) {
             // @ts-expect-error fetch missing
             context: {
               ...context,
+              coreApi: createWorkerCoreApi(),
               _parse: parseOnMainThread
             }
           });
@@ -41,6 +43,21 @@ export async function createLoaderWorker(loader: LoaderWithParser) {
         break;
       default:
     }
+  };
+}
+
+function createWorkerCoreApi(): CoreAPI {
+  const unavailable = (methodName: keyof CoreAPI) => () => {
+    throw new Error(`context.coreApi.${methodName} is unavailable inside worker loaders.`);
+  };
+
+  return {
+    fetchFile: async urlOrData => await fetch(urlOrData as RequestInfo | URL),
+    parseSync: unavailable('parseSync'),
+    parse: unavailable('parse'),
+    parseInBatches: unavailable('parseInBatches'),
+    load: unavailable('load'),
+    loadInBatches: unavailable('loadInBatches')
   };
 }
 
