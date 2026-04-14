@@ -140,6 +140,50 @@ test('VectorSet#emits loading state changes', async t => {
   t.end();
 });
 
+test('VectorSet#finishes superseded viewport loads', async t => {
+  const loadingStates: boolean[] = [];
+  const firstRequest = createDeferredPromise<any>();
+  const secondRequest = createDeferredPromise<any>();
+  let requestCount = 0;
+  const vectorSet = new VectorSet({
+    vectorSource: {
+      async getMetadata() {
+        return {name: 'roads', keywords: [], layers: []};
+      },
+      async getSchema() {
+        return {metadata: {}, fields: []};
+      },
+      async getFeatures() {
+        requestCount++;
+        return requestCount === 1 ? firstRequest.promise : secondRequest.promise;
+      }
+    } as any,
+    layers: ['roads'],
+    crs: 'EPSG:4326',
+    debounceTime: 0
+  });
+
+  vectorSet.subscribe({
+    onLoadingStateChange: isLoading => loadingStates.push(isLoading)
+  });
+
+  const firstPromise = vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
+  const secondPromise = vectorSet.updateViewport(createViewport([10, 11, 12, 13]) as any);
+
+  secondRequest.resolvePromise(TABLE_B as any);
+  await secondPromise;
+  firstRequest.resolvePromise(TABLE_A as any);
+  await firstPromise;
+
+  t.deepEqual(
+    loadingStates,
+    [true, false],
+    'clears loading after stale and current requests settle'
+  );
+  t.equal(vectorSet.isLoading, false, 'does not leave isLoading stuck after superseded requests');
+  t.end();
+});
+
 test('VectorSet#debounces viewport requests', async t => {
   const requestedParameters: any[] = [];
   const vectorSet = new VectorSet({

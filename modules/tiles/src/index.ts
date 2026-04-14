@@ -59,6 +59,14 @@ export type {
   ImageSetRequest
 } from './image-set';
 export {ImageSet} from './image-set';
+export type {
+  RasterSetBaseProps,
+  RasterSetListener,
+  RasterSetProps,
+  RasterSetRequest,
+  RasterSetShouldRefetchArgs
+} from './raster-set';
+export {RasterSet} from './raster-set';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 

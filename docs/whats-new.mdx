@@ -7,6 +7,7 @@ Release Date: 2026
 **Highlights**
 
 - **Documentation** - Interactive graphical docs explain loaders.gl concepts, loader pages have live previews.
+- **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSource`](/docs/modules/geotiff/api-reference/geotiff-source), [`OMETiffSource`](/docs/modules/geotiff/api-reference/ometiff-source), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF website examples.
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables. 
 - **Benchmarks** - Now includes external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
 
@@ -41,6 +42,19 @@ Release Date: 2026
 - `CSVArrowLoader` NEW - is now the official Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
 - `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
 - `CSVArrowWriter` NEW writes Apache Arrow tables to CSV text.
+
+**@loaders.gl/loader-utils**
+
+- `RasterSource`, `RasterData`, `RasterViewport`, and `GetRasterParameters` NEW - shared typed raster contracts for viewport-driven sources.
+
+**@loaders.gl/geotiff**
+
+- [`GeoTIFFSource`](/docs/modules/geotiff/api-reference/geotiff-source) NEW - viewport-driven GeoTIFF / COG source that returns typed raster payloads plus CRS and bounds metadata.
+- [`OMETiffSource`](/docs/modules/geotiff/api-reference/ometiff-source) NEW - non-geospatial OME-TIFF source for channel-aware 2D plane reads from image pyramids.
+
+**@loaders.gl/tiles**
+
+- `RasterSet` NEW - loading manager for `RasterSource` implementations with metadata caching, debounced viewport requests, and loading lifecycle callbacks.
 
 **@loaders.gl/shapefile**
 

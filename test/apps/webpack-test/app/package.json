@@ -3,8 +3,8 @@
     "build": "npx webpack"
   },
   "dependencies": {
-    "@luma.gl/gltf": "^9.0.7",
-    "@luma.gl/core": "^9.0.7"
+    "@luma.gl/gltf": "^9.3.2",
+    "@luma.gl/core": "^9.3.2"
   },
   "devDependencies": {
     "webpack": "^4.30.0",

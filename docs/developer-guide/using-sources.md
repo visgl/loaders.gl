@@ -5,7 +5,7 @@ loaders.gl provides a number of `Source` exports that support multi-step data lo
 - loaders are designed for "one-shot" atomic or streaming loads of data
 - while a `Source` can be thought of as a multi-step or multi-resource loader, which is required for a number of data formats and access patterns.
 
-**Sources** are designed encapsulates the following data access models:
+**Sources** encapsulate the following data access models:
 
 | Data Access Model           | Description                                                                     |
 | --------------------------- | ------------------------------------------------------------------------------- |
@@ -20,22 +20,23 @@ A `Source` object provides general information about the supported resource form
 
 ## DataSource
 
-A `DateSource` instance provides methods to query metadata, and to query data for specific geospatial areas.
+A `DataSource` instance provides methods to query metadata and to query data for specific geospatial areas or views.
 
-A `DataSource` can (and sometimes must) expose a completely unique API. However a big advantages comes when a `DataSource` conforms to an existing `*Source` interface.
+A `DataSource` can (and sometimes must) expose a completely unique API. However a big advantage comes when a `DataSource` conforms to an existing `*Source` interface.
 
 This means that applications written against that interface can now support the new source without any changes to existing logic.
 
 | Source Interface   | Data access model                         | Examples                                |
 | ------------------ | ----------------------------------------- | --------------------------------------- |
 | `ImageSource`      | Loads image covering a region             | `WMSSource`, `_ArcGISImageServerSource` |
+| `RasterSource`     | Loads typed raster samples for a viewport | `GeoTIFFSource`, `OMETiffSource`        |
 | `VectorSource`     | Load "features" in a region               | WFS (N/A), ArcGIS FeatureServer         |
 | `ImageTileSource`  | Load image covering a specific tile index | WMTS (N/A)                              |
 | `VectorTileSource` | Load "features" in a specific tile index  | Mapbox Vector Tiles, `PMTilesSource`    |
 
 ## Metadata
 
-A `DateSource` instance provides methods to query metadata: `await dataSource.getMetadata()`.
+A `DataSource` instance provides methods to query metadata: `await dataSource.getMetadata()`.
 
 ## Adapter Sources
 
@@ -50,7 +51,20 @@ Just like the appropriate loader can be selected automatically from a list of `L
 
 ## Creating new Sources
 
-Just like applications can create their own own loaders, apps can also create (and potentially contribute) their own sources and use them with loaders.gl, as long as they follow the required interfaces (e.g, every source instance must inherit from `DataSource`).
+Just like applications can create their own loaders, apps can also create (and potentially contribute) their own sources and use them with loaders.gl, as long as they follow the required interfaces (e.g, every source instance must inherit from `DataSource`).
+
+## Raster sources
+
+`RasterSource` is a sibling abstraction to `ImageSource` and `TileSource`.
+
+Use it when a source needs to:
+
+- accept a viewport request instead of a tile index
+- return typed raster values rather than browser image objects
+- preserve band count, dtype, bounds, and CRS metadata for styling or texture upload
+
+`GeoTIFFSource` is the first built-in `RasterSource`. It accepts a `RasterViewport`, returns
+`RasterData`, and preserves native CRS metadata instead of reprojecting in v1.
 
 ## Options
 

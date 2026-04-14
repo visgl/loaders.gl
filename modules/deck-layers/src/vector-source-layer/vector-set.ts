@@ -228,13 +228,13 @@ export class VectorSet {
   ): Promise<void> {
     this.lastRequestKey = requestKey;
     const requestSequenceNumber = ++this.requestSequenceNumber;
+    const abortController = new AbortController();
 
     this._startLoading();
     this.error = null;
     this.emitUpdate();
 
     try {
-      const abortController = new AbortController();
       this.abortController = abortController;
       const table = await this.vectorSource.getFeatures({
         ...requestParameters,
@@ -261,9 +261,10 @@ export class VectorSet {
       this.emitError(this.error);
       this.emitUpdate();
     } finally {
-      if (requestSequenceNumber === this.requestSequenceNumber) {
-        this._finishLoading();
+      if (this.abortController === abortController) {
+        this.abortController = null;
       }
+      this._finishLoading();
     }
   }
 
