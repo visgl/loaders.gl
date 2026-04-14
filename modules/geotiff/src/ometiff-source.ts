@@ -215,6 +215,7 @@ export class OMETiffImageSource extends DataSource<string | Blob, OMETiffSourceO
     };
   }
 
+  /** Returns the shared initialization promise for this source instance. */
   private _getInitPromise(): Promise<OMETiffInit> {
     if (!this._initPromise) {
       this._initPromise = this._initialize();
@@ -223,6 +224,7 @@ export class OMETiffImageSource extends DataSource<string | Blob, OMETiffSourceO
     return this._initPromise;
   }
 
+  /** Opens the OME-TIFF once and resolves its pixel sources and normalized metadata. */
   private async _initialize(): Promise<OMETiffInit> {
     const tiff = await this._openTiff();
     const firstImage = await tiff.getImage(0);
@@ -238,6 +240,7 @@ export class OMETiffImageSource extends DataSource<string | Blob, OMETiffSourceO
     };
   }
 
+  /** Opens the backing OME-TIFF from a URL or Blob input. */
   private async _openTiff(): Promise<GeoTIFFDataset> {
     if (typeof this.data === 'string') {
       return await fromUrl(this.url, this.options.ometiff?.headers as Record<string, unknown>);

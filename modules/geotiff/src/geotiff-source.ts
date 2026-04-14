@@ -98,6 +98,7 @@ export class GeoTIFFRasterSource
   private _initPromise: Promise<GeoTIFFInit> | null = null;
   private _rangeScheduler: RangeRequestScheduler | null = null;
 
+  /** Creates a viewport-driven raster source backed by a GeoTIFF URL or Blob. */
   constructor(data: string | Blob, options: GeoTIFFSourceOptions) {
     super(data, options, GeoTIFFSource.defaultOptions);
 
@@ -112,11 +113,19 @@ export class GeoTIFFRasterSource
     }
   }
 
+  /**
+   * Returns normalized GeoTIFF metadata without loading raster samples.
+   */
   async getMetadata(): Promise<RasterSourceMetadata> {
     const {metadata} = await this._getInitPromise();
     return metadata;
   }
 
+  /**
+   * Loads typed raster samples for the requested viewport.
+   *
+   * v1 requires the request CRS to match the source CRS and returns native-projection samples.
+   */
   async getRaster(parameters: GetRasterParameters): Promise<RasterData> {
     const {tiff, metadata} = await this._getInitPromise();
     const viewportBoundingBox = getRasterViewportBoundingBox(parameters.viewport);
@@ -171,6 +180,7 @@ export class GeoTIFFRasterSource
     };
   }
 
+  /** Opens the GeoTIFF once and resolves its overview images and normalized metadata. */
   private async _initialize(): Promise<GeoTIFFInit> {
     const tiff = await this._openGeoTIFF();
     const imageCount = await tiff.getImageCount();
@@ -188,6 +198,7 @@ export class GeoTIFFRasterSource
     return {tiff, images, metadata};
   }
 
+  /** Returns the shared initialization promise for this source instance. */
   private _getInitPromise(): Promise<GeoTIFFInit> {
     if (!this._initPromise) {
       this._initPromise = this._initialize();
@@ -196,6 +207,7 @@ export class GeoTIFFRasterSource
     return this._initPromise;
   }
 
+  /** Opens the underlying GeoTIFF using Blob reads or range-scheduled HTTP access. */
   private async _openGeoTIFF(): Promise<GeoTIFFDataset> {
     if (typeof this.data === 'string') {
       return await fromCustomClient(
@@ -216,6 +228,7 @@ export class GeoTIFFRasterSource
     return await fromBlob(this.data);
   }
 
+  /** Returns the configured shared scheduler or lazily creates a per-source scheduler. */
   private _getRangeScheduler(): RangeRequestScheduler {
     if (this.options.geotiff?.rangeScheduler) {
       return this.options.geotiff.rangeScheduler;
@@ -231,6 +244,7 @@ export class GeoTIFFRasterSource
     return this._rangeScheduler;
   }
 
+  /** Normalizes one GeoTIFF image hierarchy into public raster-source metadata. */
   private _getMetadata(referenceImage: GeoTIFFImage, images: GeoTIFFImage[]): RasterSourceMetadata {
     const boundingBox = getImageBoundingBox(referenceImage);
     const geoKeys = referenceImage.getGeoKeys?.() || undefined;
@@ -266,6 +280,7 @@ export class GeoTIFFRasterSource
   }
 }
 
+/** Flattens the internal tuple bounding box to GeoTIFF's `[minX, minY, maxX, maxY]` form. */
 function flattenBoundingBox(boundingBox: RasterBoundingBox): [number, number, number, number] {
   return [...boundingBox[0], ...boundingBox[1]];
 }
@@ -378,6 +393,7 @@ function createFilledTypedArray(
   }
 }
 
+/** Converts GeoTIFF `readRasters()` output into the public `RasterData.data` union shape. */
 function normalizeRasterReadResult(
   raster: GeoTIFFReadRasterResult,
   interleaved: boolean
@@ -393,6 +409,7 @@ function normalizeRasterReadResult(
   return [raster as unknown as TypedArray];
 }
 
+/** Resolves a human-readable dataset name from the source input when possible. */
 function getGeoTIFFName(data: string | Blob): string | undefined {
   if (typeof data !== 'string') {
     return undefined;
@@ -402,6 +419,7 @@ function getGeoTIFFName(data: string | Blob): string | undefined {
   return path.split('/').pop() || undefined;
 }
 
+/** Returns the source-coordinate bounds advertised by a GeoTIFF image. */
 function getImageBoundingBox(image: GeoTIFFImage): RasterBoundingBox | undefined {
   try {
     const [minX, minY, maxX, maxY] = image.getBoundingBox();
@@ -414,6 +432,7 @@ function getImageBoundingBox(image: GeoTIFFImage): RasterBoundingBox | undefined
   }
 }
 
+/** Estimates overview resolution relative to the full-resolution reference image. */
 function getImageResolution(
   image: GeoTIFFImage,
   referenceImage: GeoTIFFImage
@@ -426,6 +445,7 @@ function getImageResolution(
   }
 }
 
+/** Returns a normalized CRS string for the GeoTIFF image when one is available. */
 function getImageCRS(image: GeoTIFFImage): string | undefined {
   const geoKeys = image.getGeoKeys?.();
   const projectedCrs = geoKeys?.ProjectedCSTypeGeoKey;
@@ -441,6 +461,7 @@ function getImageCRS(image: GeoTIFFImage): string | undefined {
   return undefined;
 }
 
+/** Converts GeoTIFF sample-format metadata to a public raster channel data type. */
 function getImageDataType(image: GeoTIFFImage): RasterChannelDataType {
   const bitsPerSample = normalizeSampleValue(image.getBitsPerSample());
   const sampleFormat = normalizeSampleValue(image.getSampleFormat());
@@ -492,6 +513,7 @@ function getImageDataType(image: GeoTIFFImage): RasterChannelDataType {
   );
 }
 
+/** Normalizes single-value or per-sample TIFF metadata arrays to the first sample value. */
 function normalizeSampleValue(value: number | number[]): number {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -509,25 +531,30 @@ class GeoTIFFRangeSchedulerResponse {
   private readonly headers: Headers;
   readonly status: number;
 
+  /** Creates a geotiff.js-compatible range response wrapper. */
   constructor(arrayBuffer: ArrayBuffer, headers: Headers, status = 206) {
     this.arrayBuffer = arrayBuffer;
     this.headers = headers;
     this.status = status;
   }
 
+  /** Returns `true` for successful HTTP status codes. */
   get ok(): boolean {
     return this.status >= 200 && this.status <= 299;
   }
 
+  /** Returns one response header value. */
   getHeader(name: string): string {
     return this.headers.get(name) || '';
   }
 
+  /** Returns the downloaded byte payload. */
   async getData(): Promise<ArrayBuffer> {
     return this.arrayBuffer;
   }
 }
 
+/** Minimal geotiff.js client backed by loaders.gl fetch and range scheduling. */
 class GeoTIFFRangeSchedulerClient {
   readonly url: string;
 
@@ -537,6 +564,7 @@ class GeoTIFFRangeSchedulerClient {
   private readonly rangeScheduler: RangeRequestScheduler;
   private fileSize: number | null = null;
 
+  /** Creates a new range-scheduled GeoTIFF client. */
   constructor(props: GeoTIFFRangeSchedulerClientProps) {
     this.url = props.url;
     this.fetch = props.fetch;
@@ -545,6 +573,7 @@ class GeoTIFFRangeSchedulerClient {
     this.rangeScheduler = props.rangeScheduler;
   }
 
+  /** Executes one geotiff.js byte-range request through the shared scheduler. */
   async request({
     headers,
     signal
@@ -577,6 +606,7 @@ class GeoTIFFRangeSchedulerClient {
     return new GeoTIFFRangeSchedulerResponse(arrayBuffer, responseHeaders);
   }
 
+  /** Fetches one transport range from the remote GeoTIFF. */
   private async _fetchRange(
     offset: number,
     length: number,
@@ -620,12 +650,14 @@ class GeoTIFFRangeSchedulerClient {
   }
 }
 
+/** Creates the HTTP headers for one byte-range request. */
 function createRangeRequestHeaders(headers: Headers, offset: number, length: number): Headers {
   const requestHeaders = new Headers(headers);
   requestHeaders.set('Range', `bytes=${offset}-${offset + length - 1}`);
   return requestHeaders;
 }
 
+/** Parses one single-range `Range` header into offset and byte length. */
 function parseSingleRangeHeader(rangeHeader: string | null): {offset: number; length: number} {
   const match = rangeHeader?.match(/^bytes=(\d+)-(\d+)$/);
   if (!match) {
@@ -637,11 +669,13 @@ function parseSingleRangeHeader(rangeHeader: string | null): {offset: number; le
   return {offset, length: exclusiveEndOffset - offset};
 }
 
+/** Parses the total byte length from a `Content-Range` header. */
 function parseContentRangeTotal(contentRange: string): number | null {
   const match = contentRange.match(/^bytes \d+-\d+\/(\d+)$/);
   return match ? Number(match[1]) : null;
 }
 
+/** Parses the file length from a `416 Range Not Satisfiable` `Content-Range` header. */
 function parseUnsatisfiedContentRange(contentRange: string | null): number | null {
   const match = contentRange?.match(/^bytes \*\/(\d+)$/);
   return match ? Number(match[1]) : null;

@@ -153,6 +153,12 @@ const config = {
             resourceRegExp: /sql/
           }),
           new webpack.NormalModuleReplacementPlugin(/^web-worker$/, resolve('../node_modules/web-worker/src/browser/index.js')),
+          new webpack.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.includes('/modules/worker-utils/src')) {
+              resource.request = resolve('./src/shims/loadersgl-worker-version.js');
+            }
+          }),
           new webpack.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {
             const normalizedContext = resource.context?.replace(/\\/g, '/');
             if (normalizedContext?.endsWith('/node_modules/geotiff/dist-module/compression')) {

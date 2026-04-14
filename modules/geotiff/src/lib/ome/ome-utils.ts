@@ -5,6 +5,7 @@
 import {getDims, getLabels} from './utils';
 import type {OMEXML, UnitsLength} from './omexml';
 
+/** Maps OME pixel type names to loaders.gl raster channel data types. */
 export const DTYPE_LOOKUP = {
   uint8: 'uint8',
   uint16: 'uint16',
@@ -16,6 +17,9 @@ export const DTYPE_LOOKUP = {
   int32: 'int32'
 } as const;
 
+/**
+ * Extracts pixel-source labels, shape helpers, and physical-size metadata from one OME image.
+ */
 export function getOmePixelSourceMeta({Pixels}: OMEXML[0]) {
   // e.g. 'XYZCT' -> ['t', 'c', 'z', 'y', 'x']
   const labels = getLabels(Pixels.DimensionOrder);

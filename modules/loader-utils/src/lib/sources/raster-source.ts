@@ -147,10 +147,14 @@ export type RasterSourceMetadata = {
  * RasterSource - data sources that allow typed raster data to be queried by viewport.
  */
 export abstract class RasterSource {
+  /** Canonical source type identifier used during source selection. */
   static type: string = 'template';
+  /** URL matcher used during automatic source selection. */
   static testURL = (url: string): boolean => false;
 
+  /** Returns normalized dataset metadata without loading raster samples. */
   abstract getMetadata(): Promise<RasterSourceMetadata>;
+  /** Loads raster samples for the supplied viewport request. */
   abstract getRaster(parameters: GetRasterParameters): Promise<RasterData>;
 }
 

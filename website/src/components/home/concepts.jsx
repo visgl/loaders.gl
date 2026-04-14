@@ -999,7 +999,7 @@ const Note = styled.div`
 export default function Concepts() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryTabs[0].id);
   const [selectedRepresentationId, setSelectedRepresentationId] = useState(representationTabs[0].id);
-  const [selectedSourceTabId, setSelectedSourceTabId] = useState(sourceTabs[0].id);
+  const [selectedSourceTabId, setSelectedSourceTabId] = useState('raster-source');
   const selectedCategory = categoryTabs.find((category) => category.id === selectedCategoryId);
   const selectedRepresentation = selectedCategory.representations[selectedRepresentationId];
   const selectedSourceTab = sourceTabs.find((sourceTab) => sourceTab.id === selectedSourceTabId);
@@ -1139,7 +1139,8 @@ export default function Concepts() {
               <PanelLabel $color="#287A4B">Data sources</PanelLabel>
               <PanelTitle>Load incrementally from tiles or services.</PanelTitle>
               <PanelText>
-                Sources encapsulate incremental data loading from cloud archives and web services.
+                Sources encapsulate incremental loading for vector, raster, imagery, and 3D data
+                from cloud archives and web services.
               </PanelText>
             </PanelHeader>
             <Diagram>
