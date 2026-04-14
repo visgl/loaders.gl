@@ -55,6 +55,17 @@ test('MapStyleLoader#parse inline style fixture', async t => {
   t.end();
 });
 
+test('MapStyleLoader#parseText inline style fixture', async t => {
+  const style = await MapStyleLoader.parseText?.(inlineStyleText, {
+    mapStyle: {baseUrl: INLINE_STYLE_URL.href}
+  });
+
+  t.ok(style, 'parseText returns a resolved style');
+  t.equal(style?.version, 8, 'style version is preserved');
+  t.equal(style?.sources['inline-source']?.type, 'vector', 'source metadata is preserved');
+  t.end();
+});
+
 test('resolveMapStyle resolves relative tiles from baseUrl', async t => {
   const style: MapStyle = {
     version: 8,

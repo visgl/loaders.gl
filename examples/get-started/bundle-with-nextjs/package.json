@@ -6,16 +6,16 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
-    "@deck.gl/geo-layers": "^8.9.28",
-    "@deck.gl/layers": "^8.9.28",
-    "@deck.gl/react": "^8.9.28",
+    "@deck.gl/geo-layers": "^9.3.0",
+    "@deck.gl/layers": "^9.3.0",
+    "@deck.gl/react": "^9.3.0",
     "@loaders.gl/core": "4.4.0-alpha.1",
     "@loaders.gl/worker-utils": "4.4.0-alpha.1",
     "@next/font": "13.1.6",
     "@types/node": "18.11.18",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "deck.gl": "^8.8.23"
+    "deck.gl": "^9.3.0"
   }, 
   "devDependencies": {
     "eslint": "8.33.0",

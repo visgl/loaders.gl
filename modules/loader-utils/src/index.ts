@@ -221,3 +221,14 @@ export type {ImageTileSource} from './lib/sources/image-tile-source';
 
 export type {VectorTileSource} from './lib/sources/vector-tile-source';
 export type {VectorTile} from './lib/sources/vector-tile-source';
+
+export {RasterSource, getRasterViewportBoundingBox} from './lib/sources/raster-source';
+export type {
+  RasterChannelDataType,
+  RasterBoundingBox,
+  RasterViewport,
+  RasterData,
+  GetRasterParameters,
+  RasterOverview,
+  RasterSourceMetadata
+} from './lib/sources/raster-source';

@@ -164,7 +164,8 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
 
     if (
       !deepEqual(props.layers, oldProps.layers, 1) ||
-      props.debounceTime !== oldProps.debounceTime
+      props.debounceTime !== oldProps.debounceTime ||
+      props.srs !== oldProps.srs
     ) {
       this.state.imageSet.setOptions({
         imageSource: this.state.resolvedData,

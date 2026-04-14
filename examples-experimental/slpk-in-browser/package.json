@@ -11,12 +11,12 @@
     "serve": "vite preview"
   },
   "dependencies": {
-    "@deck.gl/core": "^8.9.28",
-    "@deck.gl/geo-layers": "^8.9.28",
-    "@deck.gl/react": "^8.9.28",
-    "@deck.gl/mesh-layers": "^8.9.28",
-    "@deck.gl/layers": "^8.9.28",
-    "@deck.gl/extensions": "^8.9.28",
+    "@deck.gl/core": "^9.3.0",
+    "@deck.gl/geo-layers": "^9.3.0",
+    "@deck.gl/react": "^9.3.0",
+    "@deck.gl/mesh-layers": "^9.3.0",
+    "@deck.gl/layers": "^9.3.0",
+    "@deck.gl/extensions": "^9.3.0",
     "mapbox-gl": "npm:empty-npm-package@^1.0.0",
     "maplibre-gl": "^3.6.2",
     "prop-types": "^15.7.2",
