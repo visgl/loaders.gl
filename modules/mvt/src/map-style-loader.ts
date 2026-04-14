@@ -34,17 +34,42 @@ export const MapStyleLoader = {
   options: {
     mapStyle: {}
   },
+  parseText: async (text: string, options?: MapStyleLoadOptions, context?: LoaderContext) => {
+    return await parseMapStyleText(text, options, context);
+  },
   parse: async (
     data: ArrayBuffer | ArrayBufferView | string,
     options?: MapStyleLoadOptions,
     context?: LoaderContext
   ) => {
-    const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
-    const style = JSON.parse(text) as MapStyle;
-    const resolvedStyle = await resolveMapStyle(style, {
-      ...options,
-      mapStyle: getMapStyleLoadOptions(options, context)
-    });
-    return ResolvedMapStyleSchema.parse(resolvedStyle);
+    return await parseMapStyleData(data, options, context);
   }
 } as const satisfies LoaderWithParser<ResolvedMapStyle, never, MapStyleLoadOptions>;
+
+/**
+ * Parses raw map-style loader input that may arrive as text or bytes.
+ */
+async function parseMapStyleData(
+  data: ArrayBuffer | ArrayBufferView | string,
+  options?: MapStyleLoadOptions,
+  context?: LoaderContext
+): Promise<ResolvedMapStyle> {
+  const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
+  return await parseMapStyleText(text, options, context);
+}
+
+/**
+ * Parses and resolves a MapLibre / Mapbox style JSON document from text.
+ */
+async function parseMapStyleText(
+  text: string,
+  options?: MapStyleLoadOptions,
+  context?: LoaderContext
+): Promise<ResolvedMapStyle> {
+  const style = JSON.parse(text) as MapStyle;
+  const resolvedStyle = await resolveMapStyle(style, {
+    ...options,
+    mapStyle: getMapStyleLoadOptions(options, context)
+  });
+  return ResolvedMapStyleSchema.parse(resolvedStyle);
+}

@@ -216,6 +216,17 @@ const sourceTabs = [
     deckLayers: ['Tile2DSourceLayer', 'BitmapLayer']
   },
   {
+    id: 'vector-source',
+    label: 'Vector',
+    sources: ['VectorSource', 'WFSSource'],
+    dataSource: 'VectorDataSource',
+    methods: ['getMetadata()', 'getFeatures()'],
+    outputCategory: 'GeoJSONTable',
+    outputDetail: 'Features / binary geometry',
+    loadingManager: 'VectorSet',
+    deckLayers: ['GeoJsonLayer']
+  },
+  {
     id: 'image-source',
     label: 'Images',
     sources: ['WMSSource'],
@@ -223,8 +234,19 @@ const sourceTabs = [
     methods: ['getMetadata()', 'getImage()'],
     outputCategory: 'MapImage',
     outputDetail: 'ImageType',
-    loadingManager: 'Image2D',
+    loadingManager: 'ImageSet',
     deckLayers: ['BitmapLayer']
+  },
+  {
+    id: 'raster-source',
+    label: 'Raster',
+    sources: ['RasterSource', 'GeoTIFFSource'],
+    dataSource: 'RasterDataSource',
+    methods: ['getMetadata()', 'getRaster()'],
+    outputCategory: 'RasterData',
+    outputDetail: 'Typed arrays / multiband textures',
+    loadingManager: 'RasterSet',
+    deckLayers: ['BitmapLayer', 'Custom shaders']
   },
   {
     id: 'tile-source',
@@ -241,12 +263,16 @@ const sourceTabs = [
 
 const sourceTags = {
   COPCSource: 'Cloud Archive',
+  GeoTIFFSource: 'Cloud Archive',
   I3SSource: 'Tileset',
   MLTSource: 'Web Service',
   MVTSource: 'Cloud Archive',
   PMTilesSource: 'Cloud Archive',
+  RasterSource: 'Base Type',
   TableTileSource: 'Generated',
   Tiles3DSource: 'Tileset',
+  VectorSource: 'Base Type',
+  WFSSource: 'Web Service',
   WMSSource: 'Web Service'
 };
 
@@ -347,12 +373,16 @@ const writerDocumentationLinks = {
 
 const sourceDocumentationLinks = {
   COPCSource: '/docs/modules/copc/api-reference/copc-source',
+  GeoTIFFSource: '/docs/modules/geotiff',
   I3SSource: '/docs/modules/tiles/api-reference/i3s-source',
   MLTSource: '/docs/modules/mlt/api-reference/mlt-source',
   MVTSource: '/docs/modules/mvt/api-reference/mvt-source',
   PMTilesSource: '/docs/modules/pmtiles/api-reference/pmtiles-source',
+  RasterSource: '/docs/developer-guide/using-sources',
   TableTileSource: '/docs/modules/mvt/api-reference/table-tile-source',
   Tiles3DSource: '/docs/modules/tiles/api-reference/tiles-3d-source',
+  VectorSource: '/docs/developer-guide/using-sources',
+  WFSSource: '/docs/modules/wms/api-reference/wfs-source',
   WMSSource: '/docs/modules/wms/api-reference/wms-source'
 };
 
@@ -969,7 +999,7 @@ const Note = styled.div`
 export default function Concepts() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryTabs[0].id);
   const [selectedRepresentationId, setSelectedRepresentationId] = useState(representationTabs[0].id);
-  const [selectedSourceTabId, setSelectedSourceTabId] = useState(sourceTabs[0].id);
+  const [selectedSourceTabId, setSelectedSourceTabId] = useState('raster-source');
   const selectedCategory = categoryTabs.find((category) => category.id === selectedCategoryId);
   const selectedRepresentation = selectedCategory.representations[selectedRepresentationId];
   const selectedSourceTab = sourceTabs.find((sourceTab) => sourceTab.id === selectedSourceTabId);
@@ -1109,7 +1139,8 @@ export default function Concepts() {
               <PanelLabel $color="#287A4B">Data sources</PanelLabel>
               <PanelTitle>Load incrementally from tiles or services.</PanelTitle>
               <PanelText>
-                Sources encapsulate incremental data loading from cloud archives and web services.
+                Sources encapsulate incremental loading for vector, raster, imagery, and 3D data
+                from cloud archives and web services.
               </PanelText>
             </PanelHeader>
             <Diagram>

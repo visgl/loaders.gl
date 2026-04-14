@@ -3,6 +3,7 @@
 
 const webpack = require('webpack');
 const {resolve} = require('path');
+const {version} = require('../package.json');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
@@ -67,6 +68,14 @@ const config = {
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
             examples: resolve('../examples'),
+            bufferutil: false,
+            'utf-8-validate': false,
+            'lerc$': resolve('./src/shims/lerc.js'),
+            'web-worker$': resolve('../node_modules/web-worker/src/browser/index.js'),
+            'web-worker/src/node/index.js$': resolve('../node_modules/web-worker/src/browser/index.js'),
+            'website-geotiff-basedecoder': resolve('../node_modules/geotiff/dist-module/compression/basedecoder.js'),
+            'website-geotiff-globals': resolve('../node_modules/geotiff/dist-module/globals.js'),
+            'website-lerc-es': resolve('../node_modules/lerc/LercDecode.es.js'),
 
             '@loaders.gl/3d-tiles': resolve('../modules/3d-tiles/src'),
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
@@ -135,10 +144,26 @@ const config = {
           }
         },
         plugins: [
+          new webpack.DefinePlugin({
+            __VERSION__: JSON.stringify(version)
+          }),
           // new webpack.EnvironmentPlugin(['MapboxAccessToken', 'GoogleMapsAPIKey', 'GoogleMapsMapId']),
           // These modules break server side bundling
           new webpack.IgnorePlugin({
             resourceRegExp: /sql/
+          }),
+          new webpack.NormalModuleReplacementPlugin(/^web-worker$/, resolve('../node_modules/web-worker/src/browser/index.js')),
+          new webpack.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.includes('/modules/worker-utils/src')) {
+              resource.request = resolve('./src/shims/loadersgl-worker-version.js');
+            }
+          }),
+          new webpack.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.endsWith('/node_modules/geotiff/dist-module/compression')) {
+              resource.request = resolve('./src/shims/geotiff-lerc-decoder.js');
+            }
           })
         ],
         module: {
