@@ -18,7 +18,7 @@ export class SourceDataDrivenTile3DLayer<
   ExtraProps extends Record<string, unknown> = Record<string, unknown>
 > extends DataDrivenTile3DLayer<DataT, ExtraProps> {
   /** deck.gl component name used for warnings, defaults, and diagnostics. */
-  static componentName = 'SourceDataDrivenTile3DLayer'
+  static componentName = 'SourceDataDrivenTile3DLayer';
 
   /** Install source-backed loading hooks after the base layer initializes its state. */
   initializeState(): void {

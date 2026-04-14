@@ -300,7 +300,9 @@ export class RasterSet<DataT = RasterData> {
         }),
       debounceTime: opts.debounceTime ?? DEFAULT_RASTERSET_PROPS.debounceTime,
       shouldRefetch:
-        (opts.shouldRefetch as ((args: RasterSetShouldRefetchArgs<DataT>) => boolean) | undefined) ||
+        (opts.shouldRefetch as
+          | ((args: RasterSetShouldRefetchArgs<DataT>) => boolean)
+          | undefined) ||
         ((args: RasterSetShouldRefetchArgs<DataT>) =>
           DEFAULT_RASTERSET_PROPS.shouldRefetch(args as RasterSetShouldRefetchArgs))
     };

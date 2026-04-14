@@ -321,7 +321,9 @@ function getClippedTargetSize(
       1,
       Math.min(
         parameters.viewport.width,
-        Math.round((clippedWidth / Math.max(viewportWidth, Number.EPSILON)) * parameters.viewport.width)
+        Math.round(
+          (clippedWidth / Math.max(viewportWidth, Number.EPSILON)) * parameters.viewport.width
+        )
       )
     ),
     height: Math.max(
@@ -349,7 +351,9 @@ function createEmptyRaster(
     ? createFilledTypedArray(metadata.dtype, length * bandCount, noData)
     : bandCount === 1
       ? createFilledTypedArray(metadata.dtype, length, noData)
-      : Array.from({length: bandCount}, () => createFilledTypedArray(metadata.dtype, length, noData));
+      : Array.from({length: bandCount}, () =>
+          createFilledTypedArray(metadata.dtype, length, noData)
+        );
 
   return {
     data,

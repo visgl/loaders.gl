@@ -175,7 +175,11 @@ test('VectorSet#finishes superseded viewport loads', async t => {
   firstRequest.resolvePromise(TABLE_A as any);
   await firstPromise;
 
-  t.deepEqual(loadingStates, [true, false], 'clears loading after stale and current requests settle');
+  t.deepEqual(
+    loadingStates,
+    [true, false],
+    'clears loading after stale and current requests settle'
+  );
   t.equal(vectorSet.isLoading, false, 'does not leave isLoading stuck after superseded requests');
   t.end();
 });

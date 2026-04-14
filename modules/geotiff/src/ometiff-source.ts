@@ -319,10 +319,7 @@ function normalizeChannelSelection(
 /**
  * Interleaves one typed array per channel into one upload-ready raster buffer.
  */
-function interleaveTypedArrays(
-  arrays: TypedArray[],
-  dtype: RasterChannelDataType
-): TypedArray {
+function interleaveTypedArrays(arrays: TypedArray[], dtype: RasterChannelDataType): TypedArray {
   if (arrays.length === 1) {
     return arrays[0];
   }
