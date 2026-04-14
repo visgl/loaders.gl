@@ -4793,10 +4793,13 @@ __metadata:
     "@deck.gl-community/experimental": "npm:^9.2.8"
     "@deck.gl/core": "npm:^9.3.0"
     "@deck.gl/geo-layers": "npm:^9.3.0"
+    "@loaders.gl/compression": "npm:4.4.0"
     "@loaders.gl/core": "npm:4.4.0"
+    "@loaders.gl/crypto": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
     "@loaders.gl/tiles": "npm:4.4.0"
+    "@loaders.gl/zip": "npm:4.4.0"
   languageName: unknown
   linkType: soft
 

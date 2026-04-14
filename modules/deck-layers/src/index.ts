@@ -15,5 +15,5 @@ export {ImageSourceLayer} from './image-source-layer';
 export type {VectorSourceLayerProps} from './vector-source-layer';
 export {VectorSourceLayer} from './vector-source-layer';
 export type {Tile3DSourceLayerProps} from './tile-3d-source-layer';
-export {Tile3DSourceLayer} from './tile-3d-source-layer';
+export {createSource, Tile3DSourceLayer} from './tile-3d-source-layer';
 export {SourceDataDrivenTile3DLayer} from './data-driven-tile-3d-source-layer';

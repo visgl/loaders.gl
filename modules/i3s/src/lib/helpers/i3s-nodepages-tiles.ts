@@ -310,7 +310,13 @@ export default class I3SNodePagesTiles {
 }
 
 async function loadNodePage(url: string, options: LoaderOptions): Promise<NodePage> {
-  const response = await fetch(url);
+  const fetchFunction =
+    typeof options.fetch === 'function'
+      ? options.fetch
+      : typeof options.core?.fetch === 'function'
+        ? options.core.fetch
+        : fetch;
+  const response = await fetchFunction(url);
   if (!response.ok) {
     throw new Error(`Failed to load I3S node page: ${response.status} ${response.statusText}`);
   }

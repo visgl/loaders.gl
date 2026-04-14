@@ -11,6 +11,7 @@ export type {
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
+  TilesetSourceResolver,
   Tileset3DSource,
   TilesetSourceViewState
 } from './tileset-3d/common/tileset-source';

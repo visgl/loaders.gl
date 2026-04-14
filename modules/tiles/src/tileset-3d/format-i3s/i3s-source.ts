@@ -19,6 +19,7 @@ import type {
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
+  TilesetSourceResolver,
   TilesetSourceViewState
 } from '../common/tileset-source';
 import {getZoomFromExtent, getZoomFromFullExtent} from '../helpers/zoom';
@@ -60,6 +61,7 @@ export class I3SSource implements Tileset3DSource {
   metadata?: TilesetSourceMetadata;
 
   private readonly queryParams: Record<string, string> = {};
+  private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
 
   /**
@@ -74,6 +76,7 @@ export class I3SSource implements Tileset3DSource {
     this.loader = request.loader;
     this.url = request.url;
     this.basePath = request.basePath || path.dirname(request.url);
+    this.resolver = request.resolver;
     this.coreApi = request.coreApi;
     this.loadOptions = loadOptions;
   }
@@ -83,7 +86,7 @@ export class I3SSource implements Tileset3DSource {
    */
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
-      this.rootTileset = await this.loadWithCoreApi(this.url, this.loadOptions);
+      this.rootTileset = await this.loadRootData(this.url, this.loadOptions);
     }
     this.tileset = this.rootTileset;
 
@@ -182,7 +185,7 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    tile.content = await this.loadWithCoreApi(contentUrl, options);
+    tile.content = await this.loadResourceData(contentUrl, options);
     return {loaded: true};
   }
 
@@ -212,18 +215,7 @@ export class I3SSource implements Tileset3DSource {
       }
     };
 
-    return await this.loadWithCoreApi(nodeUrl, options);
-  }
-
-  /**
-   * Loads data through injected core APIs so this module stays independent from `@loaders.gl/core`.
-   */
-  private async loadWithCoreApi(url: string, options: LoaderOptions): Promise<any> {
-    if (!this.coreApi) {
-      throw new Error('I3SSource requires an injected coreApi to load tileset data');
-    }
-
-    return await this.coreApi.load(url, this.loader, options);
+    return await this.loadResourceData(nodeUrl, options);
   }
 
   /**
@@ -310,6 +302,39 @@ export class I3SSource implements Tileset3DSource {
     const metadata = this.getMetadata();
     return metadata.tileset?.nodePagesTile?.nodesInNodePages || null;
   }
+
+  /**
+   * Loads data through injected core APIs so this module stays independent from `@loaders.gl/core`.
+   */
+  private async loadWithCoreApi(url: string, options: LoaderOptions): Promise<any> {
+    if (!this.coreApi) {
+      throw new Error('I3SSource requires an injected coreApi to load tileset data');
+    }
+
+    return await this.coreApi.load(url, this.loader, options);
+  }
+
+  /**
+   * Loads data through an injected resolver when present, otherwise through the injected core API.
+   */
+  private async loadRootData(url: string, options: LoaderOptions): Promise<any> {
+    if (this.resolver) {
+      return await this.resolver.loadRoot(url, this.loader, options);
+    }
+
+    return await this.loadWithCoreApi(url, options);
+  }
+
+  /**
+   * Loads tile metadata or content through an injected resolver when present, otherwise through the injected core API.
+   */
+  private async loadResourceData(url: string, options: LoaderOptions): Promise<any> {
+    if (this.resolver) {
+      return await this.resolver.loadResource(url, this.loader, options);
+    }
+
+    return await this.loadWithCoreApi(url, options);
+  }
 }
 
 function isTilesetRequest(input: TilesetSourceInput): input is TilesetSourceRequest {
@@ -335,6 +360,7 @@ function normalizeI3SRequest(input: TilesetSourceInput): TilesetSourceRequest {
     url: input.url,
     loader: input.loader,
     basePath: input.basePath || path.dirname(input.url),
+    resolver: (input as TilesetSourceRequest).resolver,
     coreApi: (input as TilesetSourceRequest).coreApi
   };
 }
