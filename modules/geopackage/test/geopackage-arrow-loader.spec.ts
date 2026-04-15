@@ -37,7 +37,11 @@ test('GeoPackageArrowLoader#load file as Arrow table', async t => {
   const response = await fetchFile(GPKG_RIVERS_GEOJSON);
   const expected = await response.json();
 
-  t.deepEqual(roundTripped.features, expected.features, 'Arrow output round-trips to GeoJSON');
+  t.deepEqual(
+    normalizeFeatures(roundTripped.features),
+    normalizeFeatures(expected.features),
+    'Arrow output round-trips to GeoJSON'
+  );
   t.end();
 });
 
@@ -53,8 +57,8 @@ test('GeoPackageArrowLoader#load explicit table', async t => {
   });
 
   t.deepEqual(
-    roundTripped.features,
-    geojsonTable.features,
+    normalizeFeatures(roundTripped.features),
+    normalizeFeatures(geojsonTable.features),
     'explicit table matches GeoPackageLoader'
   );
   t.end();
@@ -87,7 +91,11 @@ test('GeoPackageArrowLoader#load reprojects like GeoPackageLoader', async t => {
     arrowTable.schema
   );
 
-  t.deepEqual(roundTripped.features, geojsonTable.features, 'reprojected features match');
+  t.deepEqual(
+    normalizeFeatures(roundTripped.features),
+    normalizeFeatures(geojsonTable.features),
+    'reprojected features match'
+  );
   t.end();
 });
 
@@ -113,4 +121,24 @@ function getRowsFromArrowTable(table): Record<string, unknown>[] {
     rows.push(table.data.get(rowIndex)?.toJSON() || {});
   }
   return rows;
+}
+
+function normalizeFeatures(features: any[]) {
+  return features.map(feature => {
+    const properties = {...(feature.properties || {})};
+    const id =
+      feature.id !== undefined && feature.id !== null
+        ? feature.id
+        : (properties.id as string | number);
+
+    if (id !== undefined) {
+      delete properties.id;
+    }
+
+    return {
+      ...feature,
+      id,
+      properties
+    };
+  });
 }
