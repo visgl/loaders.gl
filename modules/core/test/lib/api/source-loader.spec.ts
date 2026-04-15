@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {createDataSource, load, parse} from '@loaders.gl/core';
+import {createDataSource, fetchFile, load, parse, resolvePath} from '@loaders.gl/core';
 import {
   MVTSourceLoader,
   MVTTileSource,
@@ -22,6 +22,15 @@ const GEOJSON_TABLE: GeoJSONTable = {
   ]
 };
 
+const PMTILES_FIXTURE_URL = resolvePath(
+  '@loaders.gl/pmtiles/test/data/pmtiles-v2/test_fixture_1.pmtiles'
+);
+
+async function createPmtilesFixtureBlob(): Promise<Blob> {
+  const response = await fetchFile(PMTILES_FIXTURE_URL);
+  return await response.blob();
+}
+
 test('createDataSource#createDataSource returns WMSImageSource for WMSSourceLoader', () => {
   const source = createDataSource('https://example.com/service=wms', [WMSSourceLoader], {});
   expect(source).toBeInstanceOf(WMSImageSource);
@@ -43,7 +52,7 @@ test('createDataSource#createDataSource returns MVTTileSource for MVTSourceLoade
 });
 
 test('load#load returns PMTilesTileSource for PMTilesSourceLoader', async () => {
-  const source = await load('https://example.com/tiles.pmtiles', PMTilesSourceLoader);
+  const source = await load(await createPmtilesFixtureBlob(), PMTilesSourceLoader);
   expect(source).toBeInstanceOf(PMTilesTileSource);
 });
 
