@@ -1,6 +1,7 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 import {setLoaderOptions, fetchFile, load} from '@loaders.gl/core';
+import {getTableRowAsObject} from '@loaders.gl/schema-utils';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
 import {GeoPackageArrowLoader, GeoPackageLoader} from '@loaders.gl/geopackage';
@@ -118,7 +119,7 @@ test('GeoPackageArrowLoader#load missing table errors clearly', async t => {
 function getRowsFromArrowTable(table): Record<string, unknown>[] {
   const rows: Record<string, unknown>[] = [];
   for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    rows.push(table.data.get(rowIndex)?.toJSON() || {});
+    rows.push(getTableRowAsObject(table, rowIndex, {}));
   }
   return rows;
 }

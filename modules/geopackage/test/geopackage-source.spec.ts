@@ -1,5 +1,6 @@
 import test from 'tape-promise/tape';
 import {createDataSource, fetchFile, setLoaderOptions} from '@loaders.gl/core';
+import {getTableRowAsObject} from '@loaders.gl/schema-utils';
 import {
   GeoPackageArrowLoader,
   GeoPackageDataSource,
@@ -85,7 +86,7 @@ async function createFixtureBlob(): Promise<Blob> {
 function getRows(table): Record<string, unknown>[] {
   const rows: Record<string, unknown>[] = [];
   for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
-    rows.push(table.data.get(rowIndex)?.toJSON() || {});
+    rows.push(getTableRowAsObject(table, rowIndex, {}));
   }
   return rows;
 }
