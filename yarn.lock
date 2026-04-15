@@ -3438,6 +3438,94 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@duckdb/duckdb-wasm@npm:^1.33.1-dev45.0":
+  version: 1.33.1-dev53.0
+  resolution: "@duckdb/duckdb-wasm@npm:1.33.1-dev53.0"
+  dependencies:
+    apache-arrow: "npm:^17.0.0"
+    qs: "npm:^6.14.1"
+  checksum: 10c0/8db57249f3994293d5d44c045cf9888cc954d94d45cb04f8716dbf2367658c42c290b13e63c36178af4ca0d9d4507338d505b43f0a7555f254dea6cb04b5af84
+  languageName: node
+  linkType: hard
+
+"@duckdb/node-api@npm:^1.5.2-r.1":
+  version: 1.5.2-r.1
+  resolution: "@duckdb/node-api@npm:1.5.2-r.1"
+  dependencies:
+    "@duckdb/node-bindings": "npm:1.5.2-r.1"
+  checksum: 10c0/130333a0543b9278493cd8f85eec903bd58fdfd71c2c13f0f574173d814bee716df13cab2f087b408f04131a844e224f566c588f583e3da393d9b783b1450888
+  languageName: node
+  linkType: hard
+
+"@duckdb/node-bindings-darwin-arm64@npm:1.5.2-r.1":
+  version: 1.5.2-r.1
+  resolution: "@duckdb/node-bindings-darwin-arm64@npm:1.5.2-r.1"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@duckdb/node-bindings-darwin-x64@npm:1.5.2-r.1":
+  version: 1.5.2-r.1
+  resolution: "@duckdb/node-bindings-darwin-x64@npm:1.5.2-r.1"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@duckdb/node-bindings-linux-arm64@npm:1.5.2-r.1":
+  version: 1.5.2-r.1
+  resolution: "@duckdb/node-bindings-linux-arm64@npm:1.5.2-r.1"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@duckdb/node-bindings-linux-x64@npm:1.5.2-r.1":
+  version: 1.5.2-r.1
+  resolution: "@duckdb/node-bindings-linux-x64@npm:1.5.2-r.1"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@duckdb/node-bindings-win32-arm64@npm:1.5.2-r.1":
+  version: 1.5.2-r.1
+  resolution: "@duckdb/node-bindings-win32-arm64@npm:1.5.2-r.1"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@duckdb/node-bindings-win32-x64@npm:1.5.2-r.1":
+  version: 1.5.2-r.1
+  resolution: "@duckdb/node-bindings-win32-x64@npm:1.5.2-r.1"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@duckdb/node-bindings@npm:1.5.2-r.1":
+  version: 1.5.2-r.1
+  resolution: "@duckdb/node-bindings@npm:1.5.2-r.1"
+  dependencies:
+    "@duckdb/node-bindings-darwin-arm64": "npm:1.5.2-r.1"
+    "@duckdb/node-bindings-darwin-x64": "npm:1.5.2-r.1"
+    "@duckdb/node-bindings-linux-arm64": "npm:1.5.2-r.1"
+    "@duckdb/node-bindings-linux-x64": "npm:1.5.2-r.1"
+    "@duckdb/node-bindings-win32-arm64": "npm:1.5.2-r.1"
+    "@duckdb/node-bindings-win32-x64": "npm:1.5.2-r.1"
+  dependenciesMeta:
+    "@duckdb/node-bindings-darwin-arm64":
+      optional: true
+    "@duckdb/node-bindings-darwin-x64":
+      optional: true
+    "@duckdb/node-bindings-linux-arm64":
+      optional: true
+    "@duckdb/node-bindings-linux-x64":
+      optional: true
+    "@duckdb/node-bindings-win32-arm64":
+      optional: true
+    "@duckdb/node-bindings-win32-x64":
+      optional: true
+  checksum: 10c0/abecbadd590d0a2d366640f1b04e0be205a577ca1119ecf3961d7f4229dd481ec80f36ef6d046b9ac7677762530911f0794a47e0a5c61465cf7bb0e11d1d0c04
+  languageName: node
+  linkType: hard
+
 "@emnapi/core@npm:1.9.1":
   version: 1.9.1
   resolution: "@emnapi/core@npm:1.9.1"
@@ -5235,6 +5323,21 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
     "@math.gl/proj4": "npm:^4.1.0"
+  peerDependencies:
+    "@loaders.gl/core": ~4.4.0
+  languageName: unknown
+  linkType: soft
+
+"@loaders.gl/sql@workspace:modules/sql":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/sql@workspace:modules/sql"
+  dependencies:
+    "@duckdb/duckdb-wasm": "npm:^1.33.1-dev45.0"
+    "@duckdb/node-api": "npm:^1.5.2-r.1"
+    "@loaders.gl/loader-utils": "npm:4.4.0"
+    "@loaders.gl/schema": "npm:4.4.0"
+    "@loaders.gl/schema-utils": "npm:4.4.0"
+    apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -24772,6 +24875,15 @@ __metadata:
   dependencies:
     side-channel: "npm:^1.1.0"
   checksum: 10c0/ff341078a78a991d8a48b4524d52949211447b4b1ad907f489cac0770cbc346a28e47304455c0320e5fb000f8762d64b03331e3b71865f663bf351bcba8cdb4b
+  languageName: node
+  linkType: hard
+
+"qs@npm:^6.14.1":
+  version: 6.15.1
+  resolution: "qs@npm:6.15.1"
+  dependencies:
+    side-channel: "npm:^1.1.0"
+  checksum: 10c0/19ee504f0ebff72598503e38cd6d9bd7b52a8ab62ae18b1e6bee3d4db58469bd65871ef1893a881bafb0f80ef2f9ab586e1f255cf25cc8d816c0f5a704721d97
   languageName: node
   linkType: hard
 
