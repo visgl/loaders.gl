@@ -1,37 +1,38 @@
-/* eslint-disable camelcase, @typescript-eslint/no-use-before-define */
+/* eslint-disable camelcase */
 import {isBrowser} from '@loaders.gl/loader-utils';
 import type {
-  Schema,
+  ArrowTable,
+  DataType,
+  Feature,
   Field,
   Geometry,
-  DataType,
-  Tables,
   GeoJSONTable,
-  Feature
+  Schema,
+  Tables
 } from '@loaders.gl/schema';
-import {convertWKBToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
+import {convertGeometryToWKB, convertWKBToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
-import initSqlJs, {SqlJsStatic, Database, Statement} from 'sql.js';
+import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
 import type {GeoPackageLoaderOptions} from '../geopackage-loader';
-import {
-  GeometryColumnsRow,
-  ContentsRow,
-  SpatialRefSysRow,
-  ProjectionMapping,
-  GeometryBitFlags,
-  DataColumnsRow,
+import type {
   DataColumnsMapping,
+  DataColumnsRow,
+  GeoPackageGeometryTypes,
+  GeoPackageVectorTableInfo,
+  GeometryBitFlags,
   PragmaTableInfoRow,
-  SQLiteTypes,
-  GeoPackageGeometryTypes
+  ProjectionMapping,
+  SpatialRefSysRow,
+  SQLiteTypes
 } from './types';
 
 const SQL_JS_VERSION = '1.8.0';
+const GEOMETRY_OUTPUT_COLUMN_NAME = 'geometry';
 
 /**
  * We pin to the same version as sql.js that we use.
- * As of March 2022, versions 1.6.0, 1.6.1, and 1.6.2 of sql.js appeared not to work.
  */
 export const DEFAULT_SQLJS_CDN = isBrowser
   ? `https://cdnjs.cloudflare.com/ajax/libs/sql.js/${SQL_JS_VERSION}/`
@@ -44,7 +45,6 @@ const ENVELOPE_BYTE_LENGTHS = {
   2: 48,
   3: 48,
   4: 64,
-  // values 5-7 are invalid and _should_ never show up
   5: 0,
   6: 0,
   7: 0
@@ -75,345 +75,352 @@ const SQL_TYPE_MAPPING: Record<SQLiteTypes | GeoPackageGeometryTypes, DataType> 
   GEOMETRYCOLLECTION: 'binary'
 };
 
+const DEFAULT_TABLE_MARKERS = new Set(['default', 'default table', 'main', 'primary']);
+
+/** Parses a GeoPackage into GeoJSON output using the existing GeoPackageLoader shapes. */
 export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
 ): Promise<GeoJSONTable | Tables<GeoJSONTable>> {
-  const {sqlJsCDN = DEFAULT_SQLJS_CDN} = options?.geopackage || {};
+  const database = await loadGeoPackageDatabase(
+    arrayBuffer,
+    options?.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
+  );
+  const vectorTables = listGeoPackageVectorTables(database);
+  const projections = getProjections(database);
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+  const shape = options?.geopackage?.shape || 'tables';
 
-  const db = await loadDatabase(arrayBuffer, sqlJsCDN);
-  const tables = listVectorTables(db);
-  const projections = getProjections(db);
-
-  const selectedTable = tables.find(table => table.table_name === options?.geopackage?.table);
-  const tableName = selectedTable ? selectedTable.table_name : tables[0].table_name;
-
-  const shape = options?.geopackage?.shape;
   switch (shape) {
-    case 'geojson-table':
-      return getVectorTable(db, tableName, projections, {
+    case 'geojson-table': {
+      const selectedTable = selectGeoPackageVectorTable(vectorTables, options?.geopackage?.table);
+      return getGeoPackageGeoJSONTable(database, selectedTable, projections, {
         reproject,
-        _targetCrs
+        targetCrs: _targetCrs
       });
+    }
 
-    case 'tables':
-      // Mapping from tableName to geojson feature collection
+    case 'tables': {
       const outputTables: Tables<GeoJSONTable> = {
         shape: 'tables',
         tables: []
       };
 
-      for (const table of tables) {
-        const {table_name: tableName} = table;
+      for (const vectorTable of vectorTables) {
         outputTables.tables.push({
-          name: tableName,
-          table: getVectorTable(db, tableName, projections, {
+          name: vectorTable.name,
+          table: getGeoPackageGeoJSONTable(database, vectorTable, projections, {
             reproject,
-            _targetCrs
+            targetCrs: _targetCrs
           })
         });
       }
 
       return outputTables;
+    }
 
     default:
-      throw new Error(shape);
+      throw new Error(`Unsupported GeoPackage output shape: ${shape}`);
   }
 }
 
-/**
- * Initialize SQL.js and create database
- *
- * @param arrayBuffer input bytes
- * @return SQL.js database object
- */
-async function loadDatabase(arrayBuffer: ArrayBuffer, sqlJsCDN: string | null): Promise<Database> {
-  // In Node, `locateFile` must not be passed
-  let SQL: SqlJsStatic;
+/** Parses one selected GeoPackage vector table into a WKB-backed Arrow table. */
+export async function parseGeoPackageToArrow(
+  arrayBuffer: ArrayBuffer,
+  options?: GeoPackageLoaderOptions
+): Promise<ArrowTable> {
+  const database = await loadGeoPackageDatabase(
+    arrayBuffer,
+    options?.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
+  );
+  const vectorTables = listGeoPackageVectorTables(database);
+  const selectedTable = selectGeoPackageVectorTable(vectorTables, options?.geopackage?.table);
+  const projections = getProjections(database);
+  const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
+
+  return getGeoPackageArrowTable(database, selectedTable, projections, {
+    reproject,
+    targetCrs: _targetCrs
+  });
+}
+
+/** Initialize SQL.js and create a GeoPackage database handle. */
+export async function loadGeoPackageDatabase(
+  arrayBuffer: ArrayBuffer,
+  sqlJsCDN: string | null
+): Promise<Database> {
+  let sql: SqlJsStatic;
   if (sqlJsCDN) {
-    SQL = await initSqlJs({
-      locateFile: file => `${sqlJsCDN}${file}`
+    sql = await initSqlJs({
+      locateFile: fileName => `${sqlJsCDN}${fileName}`
     });
   } else {
-    SQL = await initSqlJs();
-  }
-  return new SQL.Database(new Uint8Array(arrayBuffer));
-}
-
-/**
- * Find all vector tables in GeoPackage
- * This queries the `gpkg_contents` table to find a list of vector tables
- *
- * @param db GeoPackage to query
- * @return list of table references
- */
-function listVectorTables(db: Database): ContentsRow[] {
-  // The gpkg_contents table can have at least three categorical values for
-  // data_type.
-  // - 'features' refers to a vector geometry table
-  // (https://www.geopackage.org/spec121/#_contents_2)
-  // - 'tiles' refers to a raster table
-  // (https://www.geopackage.org/spec121/#_contents_3)
-  // - 'attributes' refers to a data table with no geometry
-  // (https://www.geopackage.org/spec121/#_contents_4).
-
-  // We hard code 'features' because for now we don't support raster data or pure attribute data
-  // eslint-disable-next-line quotes
-  const stmt = db.prepare("SELECT * FROM gpkg_contents WHERE data_type='features';");
-
-  const vectorTablesInfo: ContentsRow[] = [];
-  while (stmt.step()) {
-    const vectorTableInfo = stmt.getAsObject() as unknown as ContentsRow;
-    vectorTablesInfo.push(vectorTableInfo);
+    sql = await initSqlJs();
   }
 
-  return vectorTablesInfo;
+  return new sql.Database(new Uint8Array(arrayBuffer));
 }
 
-/**
- * Load geometries from vector table
- *
- * @param db GeoPackage object
- * @param tableName name of vector table to query
- * @param projections keys are srs_id values, values are WKT strings
- * @returns Array of GeoJSON Feature objects
- */
-function getVectorTable(
-  db: Database,
-  tableName: string,
-  projections: ProjectionMapping,
-  {reproject, _targetCrs}: {reproject: boolean; _targetCrs: string}
-): GeoJSONTable {
-  const dataColumns = getDataColumns(db, tableName);
-  const geomColumn = getGeometryColumn(db, tableName);
-  const featureIdColumn = getFeatureIdName(db, tableName);
+/** Reads vector table metadata by joining `gpkg_contents` and `gpkg_geometry_columns`. */
+export function listGeoPackageVectorTables(database: Database): GeoPackageVectorTableInfo[] {
+  const statement = database.prepare(`
+    SELECT
+      gpkg_contents.table_name,
+      gpkg_contents.identifier,
+      gpkg_contents.description,
+      gpkg_contents.last_change,
+      gpkg_contents.min_x,
+      gpkg_contents.min_y,
+      gpkg_contents.max_x,
+      gpkg_contents.max_y,
+      gpkg_contents.srs_id,
+      gpkg_geometry_columns.column_name,
+      gpkg_geometry_columns.geometry_type_name,
+      gpkg_geometry_columns.z,
+      gpkg_geometry_columns.m
+    FROM gpkg_contents
+    INNER JOIN gpkg_geometry_columns
+      ON gpkg_contents.table_name = gpkg_geometry_columns.table_name
+    WHERE gpkg_contents.data_type='features';
+  `);
 
-  // Get vector features from table
-  // Don't think it's possible to parameterize the table name in SQLite?
-  const {columns, values} = db.exec(`SELECT * FROM \`${tableName}\`;`)[0];
-
-  let projection;
-  if (reproject) {
-    const geomColumnProjStr = projections[geomColumn.srs_id];
-    projection = new Proj4Projection({
-      from: geomColumnProjStr,
-      to: _targetCrs
+  const vectorTables: GeoPackageVectorTableInfo[] = [];
+  while (statement.step()) {
+    const row = statement.getAsObject() as Record<string, unknown>;
+    const bounds = getGeoPackageBounds(row);
+    vectorTables.push({
+      name: String(row.table_name),
+      identifier: normalizeOptionalString(row.identifier),
+      description: normalizeOptionalString(row.description),
+      lastChange: String(row.last_change),
+      srsId: normalizeOptionalNumber(row.srs_id),
+      geometryColumnName: String(row.column_name),
+      geometryTypeName: String(row.geometry_type_name) as GeoPackageGeometryTypes,
+      z: Number(row.z) as 0 | 1 | 2,
+      m: Number(row.m) as 0 | 1 | 2,
+      bounds
     });
   }
 
-  const geojsonFeatures: Feature<Geometry | null>[] = [];
-  for (const row of values) {
-    const geojsonFeature = constructGeoJsonFeature(
-      columns,
-      row,
-      geomColumn,
-      // @ts-ignore
-      dataColumns,
-      featureIdColumn
-    );
-    geojsonFeatures.push(geojsonFeature);
+  return vectorTables;
+}
+
+/** Selects a vector table by explicit name, explicit preference marker, or first-table fallback. */
+export function selectGeoPackageVectorTable(
+  vectorTables: GeoPackageVectorTableInfo[],
+  tableName?: string
+): GeoPackageVectorTableInfo {
+  if (!vectorTables.length) {
+    throw new Error('GeoPackage contains no vector feature tables.');
   }
 
-  const schema = getSchema(db, tableName);
-  if (projection) {
-    return {
-      shape: 'geojson-table',
-      type: 'FeatureCollection',
-      // @ts-expect-error TODO - null geometries causing problems...
-      features: transformGeoJsonCoords(geojsonFeatures, projection.project),
-      schema
-    };
+  if (tableName) {
+    const selectedTable = vectorTables.find(vectorTable => vectorTable.name === tableName);
+    if (!selectedTable) {
+      throw new Error(`GeoPackage table not found: ${tableName}`);
+    }
+    return selectedTable;
   }
+
+  if (vectorTables.length === 1) {
+    return vectorTables[0];
+  }
+
+  const preferredTable = vectorTables.find(
+    vectorTable =>
+      isDefaultTableMarker(vectorTable.identifier) || isDefaultTableMarker(vectorTable.name)
+  );
+
+  return preferredTable || vectorTables[0];
+}
+
+/** Loads one vector table as a GeoJSON feature collection. */
+export function getGeoPackageGeoJSONTable(
+  database: Database,
+  vectorTable: GeoPackageVectorTableInfo,
+  projections: ProjectionMapping,
+  options: {reproject: boolean; targetCrs: string}
+): GeoJSONTable {
+  const dataColumns = getDataColumns(database, vectorTable.name);
+  const featureIdColumn = getFeatureIdName(database, vectorTable.name);
+  const queryResult = database.exec(`SELECT * FROM \`${vectorTable.name}\`;`)[0];
+  const columns = queryResult?.columns || [];
+  const values = queryResult?.values || [];
+  const projection = getProjection(vectorTable, projections, options);
+
+  const geojsonFeatures = values.map(row =>
+    constructGeoJsonFeature(columns, row, vectorTable, dataColumns, featureIdColumn, projection)
+  );
 
   return {
     shape: 'geojson-table',
-    schema,
+    schema: getSchema(database, vectorTable.name),
     type: 'FeatureCollection',
-    // @ts-expect-error TODO - null features
+    // @ts-expect-error TODO - null geometries causing problems...
     features: geojsonFeatures
   };
 }
 
-/**
- * Find all projections defined in GeoPackage
- * This queries the gpkg_spatial_ref_sys table
- * @param db GeoPackage object
- * @returns mapping from srid to WKT projection string
- */
-function getProjections(db: Database): ProjectionMapping {
-  // Query gpkg_spatial_ref_sys to get srid: srtext mappings
-  const stmt = db.prepare('SELECT * FROM gpkg_spatial_ref_sys;');
+/** Loads one vector table as an Arrow table with a WKB geometry column. */
+export function getGeoPackageArrowTable(
+  database: Database,
+  vectorTable: GeoPackageVectorTableInfo,
+  projections: ProjectionMapping,
+  options: {reproject: boolean; targetCrs: string}
+): ArrowTable {
+  const queryResult = database.exec(`SELECT * FROM \`${vectorTable.name}\`;`)[0];
+  const columns = queryResult?.columns || [];
+  const values = queryResult?.values || [];
+  const projection = getProjection(vectorTable, projections, options);
+  const schema = getArrowSchema(database, vectorTable);
+  const tableBuilder = new ArrowTableBuilder(schema);
 
+  for (const row of values) {
+    tableBuilder.addObjectRow(
+      constructArrowRow(columns, row, vectorTable.geometryColumnName, projection)
+    );
+  }
+
+  return tableBuilder.finishTable();
+}
+
+/** Find all projections defined in GeoPackage. */
+export function getProjections(database: Database): ProjectionMapping {
+  const statement = database.prepare('SELECT * FROM gpkg_spatial_ref_sys;');
   const projectionMapping: ProjectionMapping = {};
-  while (stmt.step()) {
-    const srsInfo = stmt.getAsObject() as unknown as SpatialRefSysRow;
-    const {srs_id, definition} = srsInfo;
-    projectionMapping[srs_id] = definition;
+
+  while (statement.step()) {
+    const projectionRow = statement.getAsObject() as unknown as SpatialRefSysRow;
+    projectionMapping[projectionRow.srs_id] = projectionRow.definition;
   }
 
   return projectionMapping;
 }
 
-/**
- * Construct single GeoJSON feature given row's data
- * @param columns array of ordered column identifiers
- * @param row array of ordered values representing row's data
- * @param geomColumn geometry column metadata
- * @param dataColumns mapping from table column names to property name
- * @returns GeoJSON Feature object
- */
 function constructGeoJsonFeature(
   columns: string[],
-  row: any[],
-  geomColumn: GeometryColumnsRow,
-  dataColumns: DataColumnsMapping,
-  featureIdColumn: string
+  row: unknown[],
+  vectorTable: GeoPackageVectorTableInfo,
+  dataColumns: DataColumnsMapping | null,
+  featureIdColumn: string | null,
+  projection: Proj4Projection | null
 ): Feature<Geometry | null> {
-  // Find feature id
-  const idIdx = columns.indexOf(featureIdColumn);
-  const id = row[idIdx];
+  const featureIdIndex = featureIdColumn ? columns.indexOf(featureIdColumn) : -1;
+  const geometryColumnIndex = columns.indexOf(vectorTable.geometryColumnName);
+  const rawGeometry = parseGeometry(row[geometryColumnIndex]);
+  const geometry = projection ? reprojectGeometry(rawGeometry, projection) : rawGeometry;
 
-  // Parse geometry columns to geojson
-  const geomColumnIdx = columns.indexOf(geomColumn.column_name);
-  const geometry = parseGeometry(row[geomColumnIdx].buffer);
-
-  const properties = {};
+  const properties: Record<string, unknown> = {};
   if (dataColumns) {
-    for (const [key, value] of Object.entries(dataColumns)) {
-      const idx = columns.indexOf(key);
-      // @ts-ignore TODO - Check what happens if null?
-      properties[value] = row[idx];
+    for (const [columnName, propertyName] of Object.entries(dataColumns)) {
+      const columnIndex = columns.indexOf(columnName);
+      const outputName = propertyName || columnName;
+      properties[outputName] = row[columnIndex];
     }
   } else {
-    // Put all columns except for the feature id and geometry in properties
-    for (let i = 0; i < columns.length; i++) {
-      if (i === idIdx || i === geomColumnIdx) {
-        // eslint-disable-next-line no-continue
+    for (let columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+      if (columnIndex === featureIdIndex || columnIndex === geometryColumnIndex) {
         continue;
       }
-
-      const columnName = columns[i];
-      properties[columnName] = row[i];
+      properties[columns[columnIndex]] = row[columnIndex];
     }
   }
 
   return {
-    id,
+    id:
+      featureIdIndex >= 0 &&
+      (typeof row[featureIdIndex] === 'string' || typeof row[featureIdIndex] === 'number')
+        ? row[featureIdIndex]
+        : undefined,
     type: 'Feature',
     geometry,
     properties
   };
 }
 
-/**
- * Get GeoPackage version from database
- * @param db database
- * @returns version string. One of '1.0', '1.1', '1.2'
- */
+function constructArrowRow(
+  columns: string[],
+  row: unknown[],
+  geometryColumnName: string,
+  projection: Proj4Projection | null
+): Record<string, unknown> {
+  const arrowRow: Record<string, unknown> = {};
 
-// @ts-ignore
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _getGeopackageVersion(db: Database): string | null {
-  const textDecoder = new TextDecoder();
+  for (let columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+    const columnName = columns[columnIndex];
+    const value = row[columnIndex];
 
-  // Read application id from SQLite metadata
-  const applicationIdQuery = db.exec('PRAGMA application_id;')[0];
-  const applicationId = applicationIdQuery.values[0][0];
-
-  // Convert 4-byte signed int32 application id to text
-  const buffer = new ArrayBuffer(4);
-  const view = new DataView(buffer);
-  view.setInt32(0, Number(applicationId));
-  const versionString = textDecoder.decode(buffer);
-
-  if (versionString === 'GP10') {
-    return '1.0';
-  }
-
-  if (versionString === 'GP11') {
-    return '1.1';
-  }
-
-  // If versionString is GPKG, then read user_version
-  const userVersionQuery = db.exec('PRAGMA user_version;')[0];
-  const userVersionInt = userVersionQuery.values[0][0];
-
-  if (userVersionInt && typeof userVersionInt === 'number' && userVersionInt < 10300) {
-    return '1.2';
-  }
-
-  return null;
-}
-
-/**
- * Find name of feature id column in table
- * The feature ID is the primary key of the table.
- * http://www.geopackage.org/spec121/#feature_user_tables
- *
- * @param db database
- * @param tableName name of table
- * @return name of feature id column
- */
-function getFeatureIdName(db: Database, tableName: string): string | null {
-  // Again, not possible to parameterize table name?
-  const stmt = db.prepare(`PRAGMA table_info(\`${tableName}\`)`);
-
-  while (stmt.step()) {
-    const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
-    const {name, pk} = pragmaTableInfo;
-    if (pk) {
-      return name;
+    if (columnName === geometryColumnName) {
+      const geometry = parseGeometry(value);
+      const projectedGeometry = projection ? reprojectGeometry(geometry, projection) : geometry;
+      arrowRow[GEOMETRY_OUTPUT_COLUMN_NAME] = projectedGeometry
+        ? new Uint8Array(convertGeometryToWKB(projectedGeometry))
+        : null;
+      continue;
     }
+
+    arrowRow[columnName] = value;
   }
 
-  // Is it guaranteed for there always to be at least one primary key column in the table?
-  return null;
+  return arrowRow;
+}
+
+function getProjection(
+  vectorTable: GeoPackageVectorTableInfo,
+  projections: ProjectionMapping,
+  options: {reproject: boolean; targetCrs: string}
+): Proj4Projection | null {
+  if (!options.reproject || vectorTable.srsId === undefined) {
+    return null;
+  }
+
+  const sourceProjection = projections[vectorTable.srsId];
+  if (!sourceProjection) {
+    return null;
+  }
+
+  return new Proj4Projection({
+    from: sourceProjection,
+    to: options.targetCrs
+  });
+}
+
+function reprojectGeometry(
+  geometry: Geometry | null,
+  projection: Proj4Projection
+): Geometry | null {
+  if (!geometry) {
+    return null;
+  }
+
+  const feature = {type: 'Feature', geometry, properties: {}} as Feature;
+  return transformGeoJsonCoords([feature], projection.project)[0].geometry;
 }
 
 /**
- * Parse geometry buffer
- * GeoPackage vector geometries are slightly extended past the WKB standard
- * See: https://www.geopackage.org/spec121/#gpb_format
- *
- * @param arrayBuffer geometry buffer
- * @return GeoJSON geometry (in original CRS)
+ * Parse geometry buffer.
+ * GeoPackage vector geometries are slightly extended past the WKB standard.
  */
-function parseGeometry(arrayBuffer: ArrayBuffer): Geometry | null {
+function parseGeometry(geometryValue: unknown): Geometry | null {
+  if (!geometryValue) {
+    return null;
+  }
+
+  const arrayBuffer = getArrayBufferFromValue(geometryValue);
   const view = new DataView(arrayBuffer);
   const {envelopeLength, emptyGeometry} = parseGeometryBitFlags(view.getUint8(3));
 
-  // A Feature object has a member with the name "geometry".  The value of the
-  // geometry member SHALL be either a Geometry object as defined above or, in
-  // the case that the Feature is unlocated, a JSON null value.
-  /** @see https://tools.ietf.org/html/rfc7946#section-3.2 */
   if (emptyGeometry) {
     return null;
   }
 
-  // Do I need to find the srid here? Is it necessarily the same for every
-  // geometry in a table?
-  // const srid = view.getInt32(4, littleEndian);
-
-  // 2 byte magic, 1 byte version, 1 byte flags, 4 byte int32 srid
   const wkbOffset = 8 + envelopeLength;
-
   const wkbBytes = arrayBuffer.slice(wkbOffset);
   return convertWKBToGeometry(wkbBytes);
 }
 
-/**
- * Parse geometry header flags
- * https://www.geopackage.org/spec121/#flags_layout
- *
- * @param byte uint8 number representing flags
- * @return object representing information from bit flags
- */
 function parseGeometryBitFlags(byte: number): GeometryBitFlags {
-  // Are header values little endian?
   const envelopeValue = (byte & 0b00001110) / 2;
-
-  // TODO: Not sure the best way to handle this. Throw an error if envelopeValue outside 0-7?
   const envelopeLength = ENVELOPE_BYTE_LENGTHS[envelopeValue] as number;
 
   return {
@@ -424,39 +431,23 @@ function parseGeometryBitFlags(byte: number): GeometryBitFlags {
   };
 }
 
-/**
- * Find geometry column in given vector table
- *
- * @param db GeoPackage object
- * @param tableName Name of vector table
- * @returns Array of geometry column definitions
- */
-function getGeometryColumn(db: Database, tableName: string): GeometryColumnsRow {
-  const stmt = db.prepare('SELECT * FROM gpkg_geometry_columns WHERE table_name=:tableName;');
-  stmt.bind({':tableName': tableName});
+function getFeatureIdName(database: Database, tableName: string): string | null {
+  const statement = database.prepare(`PRAGMA table_info(\`${tableName}\`)`);
 
-  // > Requirement 30
-  // > A feature table SHALL have only one geometry column.
-  // https://www.geopackage.org/spec121/#feature_user_tables
-  // So we should need one and only one step, given that we use the WHERE clause in the SQL query
-  // above
-  stmt.step();
-  const geometryColumn = stmt.getAsObject() as unknown as GeometryColumnsRow;
-  return geometryColumn;
+  while (statement.step()) {
+    const pragmaTableInfo = statement.getAsObject() as unknown as PragmaTableInfoRow;
+    if (pragmaTableInfo.pk) {
+      return pragmaTableInfo.name;
+    }
+  }
+
+  return null;
 }
 
-/**
- * Find property columns in given vector table
- * @param db GeoPackage object
- * @param tableName Name of vector table
- * @returns Mapping from table column names to property name
- */
-function getDataColumns(db: Database, tableName: string): DataColumnsMapping | null {
-  // gpkg_data_columns is not required to exist
-  // https://www.geopackage.org/spec121/#extension_schema
-  let stmt: Statement;
+function getDataColumns(database: Database, tableName: string): DataColumnsMapping | null {
+  let statement: Statement;
   try {
-    stmt = db.prepare('SELECT * FROM gpkg_data_columns WHERE table_name=:tableName;');
+    statement = database.prepare('SELECT * FROM gpkg_data_columns WHERE table_name=:tableName;');
   } catch (error) {
     if ((error as Error).message.includes('no such table')) {
       return null;
@@ -465,36 +456,137 @@ function getDataColumns(db: Database, tableName: string): DataColumnsMapping | n
     throw error;
   }
 
-  stmt.bind({':tableName': tableName});
+  statement.bind({':tableName': tableName});
 
-  // Convert DataColumnsRow object this to a key-value {column_name: name}
-  const result: DataColumnsMapping = {};
-  while (stmt.step()) {
-    const column = stmt.getAsObject() as unknown as DataColumnsRow;
-    const {column_name, name} = column;
-    result[column_name] = name || null;
+  const dataColumns: DataColumnsMapping = {};
+  while (statement.step()) {
+    const column = statement.getAsObject() as unknown as DataColumnsRow;
+    dataColumns[column.column_name] = column.name || null;
   }
 
-  return result;
+  return dataColumns;
 }
 
-/**
- * Get arrow schema
- * @param db GeoPackage object
- * @param tableName  table name
- * @returns Arrow-like Schema
- */
-function getSchema(db: Database, tableName: string): Schema {
-  const stmt = db.prepare(`PRAGMA table_info(\`${tableName}\`)`);
-
+function getSchema(database: Database, tableName: string): Schema {
+  const statement = database.prepare(`PRAGMA table_info(\`${tableName}\`)`);
   const fields: Field[] = [];
-  while (stmt.step()) {
-    const pragmaTableInfo = stmt.getAsObject() as unknown as PragmaTableInfoRow;
-    const {name, type: sqlType, notnull} = pragmaTableInfo;
-    const type = SQL_TYPE_MAPPING[sqlType];
-    const field = {name, type, nullable: !notnull};
-    fields.push(field);
+
+  while (statement.step()) {
+    const pragmaTableInfo = statement.getAsObject() as unknown as PragmaTableInfoRow;
+    fields.push({
+      name: pragmaTableInfo.name,
+      type: getSqliteFieldType(pragmaTableInfo.type),
+      nullable: !pragmaTableInfo.notnull
+    });
   }
 
   return {fields, metadata: {}};
+}
+
+function getArrowSchema(database: Database, vectorTable: GeoPackageVectorTableInfo): Schema {
+  const statement = database.prepare(`PRAGMA table_info(\`${vectorTable.name}\`)`);
+  const fields: Field[] = [];
+
+  while (statement.step()) {
+    const pragmaTableInfo = statement.getAsObject() as unknown as PragmaTableInfoRow;
+    if (pragmaTableInfo.name === vectorTable.geometryColumnName) {
+      continue;
+    }
+    fields.push({
+      name: pragmaTableInfo.name,
+      type: getSqliteFieldType(pragmaTableInfo.type),
+      nullable: !pragmaTableInfo.notnull
+    });
+  }
+
+  fields.push({
+    name: GEOMETRY_OUTPUT_COLUMN_NAME,
+    type: 'binary',
+    nullable: true,
+    metadata: {}
+  });
+
+  return {
+    fields,
+    metadata: {
+      geo: JSON.stringify({
+        version: '1.1.0',
+        primary_column: GEOMETRY_OUTPUT_COLUMN_NAME,
+        columns: {
+          [GEOMETRY_OUTPUT_COLUMN_NAME]: {
+            encoding: 'wkb',
+            geometry_types: [getGeoMetadataGeometryType(vectorTable)]
+          }
+        }
+      })
+    }
+  };
+}
+
+function getGeoMetadataGeometryType(vectorTable: GeoPackageVectorTableInfo): string {
+  const geometryTypeNameMap: Record<GeoPackageGeometryTypes, string> = {
+    GEOMETRY: 'Geometry',
+    POINT: 'Point',
+    LINESTRING: 'LineString',
+    POLYGON: 'Polygon',
+    MULTIPOINT: 'MultiPoint',
+    MULTILINESTRING: 'MultiLineString',
+    MULTIPOLYGON: 'MultiPolygon',
+    GEOMETRYCOLLECTION: 'GeometryCollection'
+  };
+
+  const geometryType = geometryTypeNameMap[vectorTable.geometryTypeName] || 'Geometry';
+  return vectorTable.z > 0 ? `${geometryType} Z` : geometryType;
+}
+
+function getSqliteFieldType(sqliteType: string | undefined): DataType {
+  const normalizedType = (sqliteType || 'TEXT').toUpperCase() as
+    | SQLiteTypes
+    | GeoPackageGeometryTypes;
+  return SQL_TYPE_MAPPING[normalizedType] || 'utf8';
+}
+
+function getGeoPackageBounds(row: Record<string, unknown>) {
+  const minX = normalizeOptionalNumber(row.min_x);
+  const minY = normalizeOptionalNumber(row.min_y);
+  const maxX = normalizeOptionalNumber(row.max_x);
+  const maxY = normalizeOptionalNumber(row.max_y);
+
+  if (minX === undefined || minY === undefined || maxX === undefined || maxY === undefined) {
+    return undefined;
+  }
+
+  return {minX, minY, maxX, maxY};
+}
+
+function isDefaultTableMarker(value?: string): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const normalizedValue = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+  return DEFAULT_TABLE_MARKERS.has(normalizedValue);
+}
+
+function getArrayBufferFromValue(value: unknown): ArrayBuffer {
+  if (value instanceof ArrayBuffer) {
+    return value;
+  }
+
+  if (ArrayBuffer.isView(value)) {
+    return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer;
+  }
+
+  throw new Error('Expected GeoPackage geometry column to contain binary data.');
+}
+
+function normalizeOptionalString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.length ? value : undefined;
+}
+
+function normalizeOptionalNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }

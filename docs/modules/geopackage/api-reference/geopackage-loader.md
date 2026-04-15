@@ -10,7 +10,7 @@
 The `GeoPackageLoader` depends on the [`sql.js`](https://github.com/sql-js/sql.js) npm module which has caused issues with certain JavaScript bundlers. It is recommended that you do your own tests before using the `GeoPackageLoader` in your project.
 :::
 
-GeoPackage loader
+GeoPackage GeoJSON loader
 
 | Loader                | Characteristic                                |
 | --------------------- | --------------------------------------------- |
@@ -24,7 +24,7 @@ GeoPackage loader
 
 ## Usage
 
-To load all tables in a geopackage file as GeoJSON:
+To load all tables in a GeoPackage file as GeoJSON:
 
 ```typescript
 import {GeoPackageLoader, GeoPackageLoaderOptions} from '@loaders.gl/geopackage';
@@ -40,7 +40,7 @@ const optionsAsTable: GeoPackageLoaderOptions = {
 const tablesData: Tables<GeoJSONTable> = await load(url, GeoPackageLoader, optionsAsTable);
 ```
 
-To load a specific table named `feature_table` in a geopackage file as GeoJSON:
+To load a specific table named `feature_table` in a GeoPackage file as GeoJSON:
 
 ```typescript
 const optionsAsGeoJson: GeoPackageLoaderOptions = {
@@ -54,17 +54,21 @@ const optionsAsGeoJson: GeoPackageLoaderOptions = {
 const geoJsonData: GeoJSONTable = await load(url, GeoPackageLoader, optionsAsGeoJson);
 ```
 
+To load one vector table as Arrow instead of GeoJSON, use [`GeoPackageArrowLoader`](/docs/modules/geopackage/api-reference/geopackage-arrow-loader).
+
+To inspect available tables first and then fetch a specific table, use [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source).
+
 ## Options
 
 | Option                | Type   | Default                                                  | Description                                                                                                            |
 | --------------------- | ------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------- |
 | `options.shape`       | String | `'tables'` \| '`geojson-table'`                          | Output format.                                                                                                         |
 | `options.table`       | String | N/A                                                      | name of table to load                                                                                                  | Output format. |
-| `geopackage.sqlJsCDN` | String | `'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackageLoader is called on a file. |
+| `geopackage.sqlJsCDN` | String | `'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackage loader is called on a file. |
 
 ## Output
 
-The `GeoPackageLoader` currently loads all features from all vector tables.
+The `GeoPackageLoader` currently loads GeoJSON features from GeoPackage vector tables.
 
 - If `options.gis.format` is `'tables'` (the default):
 
@@ -78,7 +82,6 @@ The `GeoPackageLoader` currently loads all features from all vector tables.
 
 - `options.geopackage.sqlJsCDN`: As of March 2022, SQL.js versions 1.6.0, 1.6.1, and 1.6.2 were tested as not working.
 
-## Future Work
+## Notes
 
-- Select a single vector layer/table to load. This could would fit well in the two-stage loader process, where the first stage reads metadata from the file (i.e. the list of available layers) and the second stage loads one or more tables.
-- Binary and GeoJSON output. Right now the output is GeoJSON-only, and is contained within an object mapping table names to geometry data. This is the same problem as we discussed previously for MVT, where with GeoPackage especially it's decently likely to only desire a portion of the layers contained in the file.
+- GeoPackage does not define a standard preferred-table field. When a single table is not explicitly requested, loaders.gl uses best-effort metadata heuristics and otherwise falls back to the first vector table in `gpkg_contents`.
