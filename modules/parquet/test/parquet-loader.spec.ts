@@ -7,7 +7,7 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {ParquetLoader, ParquetWorkerLoader} from '@loaders.gl/parquet';
+import {ParquetLoader} from '@loaders.gl/parquet';
 import {isBrowser, load, setLoaderOptions} from '@loaders.gl/core';
 
 import {SUPPORTED_FILES, UNSUPPORTED_FILES, ENCRYPTED_FILES, BAD_FILES} from './data/files';
@@ -37,7 +37,6 @@ setLoaderOptions({_workerType: 'test'});
 
 test('ParquetLoader#loader objects', (t) => {
   validateLoader(t, ParquetLoader, 'ParquetLoader');
-  validateLoader(t, ParquetWorkerLoader, 'ParquetWorkerLoader');
   t.end();
 });
 

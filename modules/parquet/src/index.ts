@@ -6,12 +6,7 @@
 
 export {ParquetFormat} from './parquet-format';
 
-export {
-  ParquetWorkerLoader,
-  ParquetLoader,
-  GeoParquetWorkerLoader,
-  GeoParquetLoader
-} from './parquet-loader';
+export {ParquetLoader, GeoParquetLoader} from './parquet-loader';
 
 export {ParquetWriter} from './parquet-writer';
 

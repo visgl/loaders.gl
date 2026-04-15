@@ -36,8 +36,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /** Options for the parquet loader */
 export type ParquetLoaderOptions = ParquetArrowLoaderOptions;
 
-/** Worker loader for Parquet tables converted to plain JS object rows. */
-export const ParquetWorkerLoader = {
+const ParquetBaseLoader = {
   ...ParquetFormat,
 
   dataType: null as unknown as ObjectRowTable,
@@ -58,11 +57,7 @@ export const ParquetWorkerLoader = {
 
 /** Parquet table loader that returns plain JS object rows via Arrow conversion. */
 export const ParquetLoader = {
-  ...ParquetWorkerLoader,
-
-  dataType: null as unknown as ObjectRowTable,
-  batchType: null as unknown as ObjectRowTableBatch,
-
+  ...ParquetBaseLoader,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
     return parseObjectRowTable(new BlobFile(arrayBuffer), options);
   },
@@ -87,7 +82,7 @@ export const ParquetLoader = {
   }
 } as const satisfies LoaderWithParser<ObjectRowTable, ObjectRowTableBatch, ParquetLoaderOptions>;
 
-export const GeoParquetWorkerLoader = {
+const GeoParquetBaseLoader = {
   ...ParquetFormat,
 
   dataType: null as unknown as GeoJSONTable,
@@ -96,7 +91,7 @@ export const GeoParquetWorkerLoader = {
   id: 'parquet',
   module: 'parquet',
   version: VERSION,
-  worker: true,
+  worker: false,
 
   options: {
     parquet: {
@@ -109,8 +104,7 @@ export const GeoParquetWorkerLoader = {
 
 /** GeoParquet table loader that returns GeoJSON tables via Arrow conversion. */
 export const GeoParquetLoader = {
-  ...GeoParquetWorkerLoader,
-
+  ...GeoParquetBaseLoader,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
     return parseGeoParquetFile(new BlobFile(arrayBuffer), getParquetOptions(options));
   },
@@ -174,7 +168,7 @@ function convertArrowTableToObjectRows(arrowTable: ArrowTable): ObjectRowTable {
 }
 
 function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions {
-  return normalizeParquetOptions(options, ParquetWorkerLoader.options.parquet);
+  return normalizeParquetOptions(options, ParquetBaseLoader.options.parquet);
 }
 
 function convertArrowBatchToObjectRows(batch: ArrowTableBatch): ObjectRowTableBatch {
