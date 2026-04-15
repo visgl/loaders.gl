@@ -15,9 +15,9 @@ The return value from `fetch` or `fetchFile` is a `Promise` that resolves to the
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {PMTilesSource} from '@loaders.gl/pmtiles';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 
-const source = await createDataSource(url, [PMTilesSource]);
+const source = await createDataSource(url, [PMTilesSourceLoader]);
 // Application code here
 ...
 ```
@@ -26,10 +26,10 @@ Automatic selection is performed with best-effort heuristics.
 
 ```typescript
 import {fetchFile, parseInBatches} from '@loaders.gl/core';
-import {PMTilesSource} from '@loaders.gl/pmtiles';
-import {MVTSource} from '@loaders.gl/mvt';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {MVTSourceLoader} from '@loaders.gl/mvt';
 
-const dataSource = await createDataSource(url, [PMTilesSource, MVTSource]);
+const dataSource = await createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader]);
 await dataSource.getMetadata(...);
 await dataSource.getTile(...);
 ```
@@ -39,17 +39,17 @@ await dataSource.getTile(...);
 ### createDataSource()
 
 ```ts
-createDataSource(data: unknown \*, sources: Source\[], options?: DataSourceOptions) : Promise\<DataSource\>
+createDataSource(data: unknown, sources: SourceLoader[], options?: DataSourceOptions) : DataSource
 ```
 
-Parses data asynchronously either using the provided source or sources, or using the pre-registered sources (see `register-sources`).
+Creates a runtime `DataSource` either using the provided source loader or source loaders.
 
 - `data`: The resource that the data source will load from. Note that the type of the data parameter is inferred from the supplied sources. Source may support urls, Blobs, or other types of input data.
-- `sources` - can be a single source or an array of sources. If single source is provided, will force to use it. If ommitted, will use the list of pre-registered sources (see `registerLoaders`)
+- `sources` - can be a single source loader or an array of source loaders. If a single source loader is provided, it will be used directly.
 - `options`
   Returns:
 
-- A valid data source or null.
+- A valid runtime data source.
 
 ## Options
 
@@ -64,18 +64,18 @@ Sources accept nested options, so that options for multiple sources can be speci
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {PMTileseSource} from '@loaders.gl/pmtiles';
-import {MVTSource} from '@loaders.gl/mvt`;
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {MVTSourceLoader} from '@loaders.gl/mvt';
 
-const dataSource = createDataSource(url, [PMTileSource, MVTSource], {
+const dataSource = createDataSource(url, [PMTilesSourceLoader, MVTSourceLoader], {
   core: {
     // Any common options for createDataSource
   }
   pmtiles: {
-    // Options specific to PMTilesSource, used if the URL is determined to reference a PMTiles file.
+    // Options specific to PMTilesSourceLoader, used if the URL is determined to reference a PMTiles file.
   },
   mvt: {
-    // Options specific to MVTSource, used if the URL is determined to reference an MVT file hierarchy.
+    // Options specific to MVTSourceLoader, used if the URL is determined to reference an MVT file hierarchy.
   }
 });
 ```

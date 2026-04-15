@@ -121,7 +121,7 @@ import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
 
 const stats = createRangeStats('pmtiles-range-transport');
 
-const source = createDataSource(url, [PMTilesSource], {
+const source = createDataSource(url, [PMTilesSourceLoader], {
   rangeRequests: {
     stats,
     onEvent: event => console.log(event.type, event)

@@ -4,7 +4,7 @@
 
 /* eslint-disable camelcase */
 
-import type {CoreAPI, Source, DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {CoreAPI, SourceLoader, DataSourceOptions} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 
 import type {CSWCapabilities} from './csw-capabilities-loader';
@@ -56,11 +56,13 @@ export type CSWGetDomainParameters = CSWCommonParameters & {
   // TBA
 };
 
-export type CSWSourceOptions = DataSourceOptions & {
+export type CSWSourceLoaderOptions = DataSourceOptions & {
   csw?: {};
 };
 
-export const CSWSource = {
+export const CSWSourceLoader = {
+  dataType: null as unknown as CSWCatalogSource,
+  batchType: null as never,
   name: 'CSW',
   id: 'csw',
   module: 'wms',
@@ -71,14 +73,21 @@ export const CSWSource = {
   fromUrl: true,
   fromBlob: false,
 
+  options: {
+    wfs: {}
+  },
+
   defaultOptions: {
     wfs: {}
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
-  createDataSource: (url: string, options: CSWSourceOptions, coreApi?: CoreAPI): CSWCatalogSource =>
-    new CSWCatalogSource(url, options, coreApi)
-} as const satisfies Source<CSWCatalogSource>;
+  createDataSource: (
+    url: string,
+    options: CSWSourceLoaderOptions,
+    coreApi?: CoreAPI
+  ): CSWCatalogSource => new CSWCatalogSource(url, options, coreApi)
+} as const satisfies SourceLoader<CSWCatalogSource>;
 
 /**
  * The CSWCatalogSource class
@@ -86,7 +95,7 @@ export const CSWSource = {
  * - provides type safe methods to query and parse results (and errors) from a CSW service
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class CSWCatalogSource extends DataSource<string, CSWSourceOptions> {
+export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions> {
   static readonly type = 'csw';
   static testURL = (url: string): boolean => url.toLowerCase().includes('csw');
 
@@ -95,8 +104,8 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceOptions> {
   readonly loaders = [CSWErrorLoader, CSWCapabilitiesLoader];
 
   /** Create a CSWCatalogSource */
-  constructor(url: string, options: CSWSourceOptions, coreApi?: CoreAPI) {
-    super(url, options, CSWSource.defaultOptions, coreApi);
+  constructor(url: string, options: CSWSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(url, options, CSWSourceLoader.defaultOptions, coreApi);
   }
 
   async getMetadata(): Promise<CSWCapabilities> {

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {
-  Source,
+  SourceLoader,
   ImageType,
   DataSourceOptions,
   ImageTileSource,
@@ -27,7 +27,7 @@ import {
 import {MVTFormat} from './mvt-format';
 
 /** Properties for a Mapbox Vector Tile Source */
-export type MVTSourceOptions = DataSourceOptions & {
+export type MVTSourceLoaderOptions = DataSourceOptions & {
   mvt?: {
     // TODO - add options here
     /** if not supplied, loads tilejson.json, If null does not load metadata */
@@ -42,12 +42,20 @@ export type MVTSourceOptions = DataSourceOptions & {
 };
 
 /** Creates an MVTTileSource */
-export const MVTSource = {
+export const MVTSourceLoader = {
+  dataType: null as unknown as MVTTileSource,
+  batchType: null as never,
   ...MVTFormat,
   version: '0.0.0',
   type: 'mvt',
   fromUrl: true,
   fromBlob: false,
+
+  options: {
+    mvt: {
+      // TODO - add options here
+    }
+  },
 
   defaultOptions: {
     mvt: {
@@ -56,10 +64,10 @@ export const MVTSource = {
   },
 
   testURL: (url: string): boolean => true,
-  createDataSource(url: string, options: MVTSourceOptions): MVTTileSource {
+  createDataSource(url: string, options: MVTSourceLoaderOptions): MVTTileSource {
     return new MVTTileSource(url, options);
   }
-} as const satisfies Source<MVTTileSource>;
+} as const satisfies SourceLoader<MVTTileSource>;
 
 /**
  * MVT data source for Mapbox Vector Tiles v1.
@@ -69,7 +77,7 @@ export const MVTSource = {
  * @note Can be either a raster or vector tile source depending on the contents of the PMTiles file.
  */
 export class MVTTileSource
-  extends DataSource<string, MVTSourceOptions>
+  extends DataSource<string, MVTSourceLoaderOptions>
   implements ImageTileSource, VectorTileSource
 {
   readonly metadataUrl: string | null = null;
@@ -78,8 +86,8 @@ export class MVTTileSource
   extension: string;
   mimeType: string | null = null;
 
-  constructor(url: string, options: MVTSourceOptions) {
-    super(url, options, MVTSource.defaultOptions);
+  constructor(url: string, options: MVTSourceLoaderOptions) {
+    super(url, options, MVTSourceLoader.defaultOptions);
     this.metadataUrl = options.mvt?.metadataUrl || `${this.url}/tilejson.json`;
     this.extension = options.mvt?.extension || '.png';
 

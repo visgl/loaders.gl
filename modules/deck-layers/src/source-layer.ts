@@ -8,7 +8,7 @@ import {createDataSource} from '@loaders.gl/core';
 import type {
   DataSource,
   DataSourceOptions,
-  Source,
+  SourceLoader,
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
 import {isTileset3DSource, type Tileset3DSource} from '@loaders.gl/tiles';
@@ -31,7 +31,7 @@ export type SourceLayerProps<DataT = unknown> = CompositeLayerProps &
     /** A tile source, tileset source, or URL/blob from which one can be created. */
     data: string | Blob | TileSourceRuntime | Tileset3DSource;
     /** Source factories used to auto-create tile sources from a URL/blob. */
-    sources?: Readonly<Source[]>;
+    sources?: Readonly<SourceLoader[]>;
     /** Options forwarded to `createDataSource` when `sources` are supplied. */
     sourceOptions?: DataSourceOptions;
     /** Optional metadata for `TileSourceLayer`. */

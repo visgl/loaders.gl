@@ -5,7 +5,7 @@
 import type {Schema, Field, DataType} from '@loaders.gl/schema';
 import type {
   CoreAPI,
-  Source,
+  SourceLoader,
   DataSourceOptions,
   TileSource,
   GetTileParameters,
@@ -31,14 +31,16 @@ type GetNodeParameters = {
   limit?: number;
 };
 
-export type COPCSourceOptions = DataSourceOptions & {
+export type COPCSourceLoaderOptions = DataSourceOptions & {
   copc?: {};
 };
 
 /**
  * Creates point cloud tile source for COPC urls or blobs
  */
-export const COPCSource = {
+export const COPCSourceLoader = {
+  dataType: null as unknown as COPCTileSource,
+  batchType: null as never,
   name: 'COPC',
   id: 'copc',
   module: 'copc',
@@ -49,21 +51,25 @@ export const COPCSource = {
   fromUrl: true,
   fromBlob: true,
 
+  options: {
+    copc: {}
+  },
+
   defaultOptions: {
     copc: {}
   },
 
   testURL: (url: string) => url.endsWith('.pmtiles'),
-  createDataSource: (url: string | Blob, options: COPCSourceOptions, coreApi?: CoreAPI) =>
+  createDataSource: (url: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) =>
     new COPCTileSource(url, options, coreApi)
-} as const satisfies Source<COPCTileSource>;
+} as const satisfies SourceLoader<COPCTileSource>;
 
 /**
  * A COPC data source
  * @note Can be either a raster or vector tile source depending on the contents of the COPC file.
  */
 export class COPCTileSource
-  extends DataSource<string | Blob, COPCSourceOptions>
+  extends DataSource<string | Blob, COPCSourceLoaderOptions>
   implements TileSource
 {
   mimeType: string | null = null;
@@ -76,8 +82,8 @@ export class COPCTileSource
   }>;
   protected _urlOrGetter: string | Getter;
 
-  constructor(data: string | Blob, options: COPCSourceOptions, coreApi?: CoreAPI) {
-    super(data, options, COPCSource.defaultOptions, coreApi);
+  constructor(data: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(data, options, COPCSourceLoader.defaultOptions, coreApi);
     // TODO - create a getter if a blob
     this._urlOrGetter = this.url as any;
     this._initPromise = this._initCopc(this.url);

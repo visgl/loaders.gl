@@ -6,7 +6,7 @@ import type {GeoTIFF as GeoTIFFDataset, GeoTIFFImage} from 'geotiff';
 import {fromBlob, fromCustomClient} from 'geotiff';
 
 import type {
-  Source,
+  SourceLoader,
   DataSourceOptions,
   TypedArray,
   RasterSource,
@@ -30,7 +30,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 /**
  * Options for creating a GeoTIFF raster source.
  */
-export type GeoTIFFSourceOptions = DataSourceOptions & {
+export type GeoTIFFSourceLoaderOptions = DataSourceOptions & {
   geotiff?: {
     /** Optional request headers forwarded to remote GeoTIFF fetches. */
     headers?: Record<string, string>;
@@ -48,8 +48,10 @@ export type GeoTIFFSourceOptions = DataSourceOptions & {
 /**
  * Source factory for viewport-driven GeoTIFF datasets.
  */
-export const GeoTIFFSource = {
-  name: 'GeoTIFFSource',
+export const GeoTIFFSourceLoader = {
+  dataType: null as unknown as GeoTIFFRasterSource,
+  batchType: null as never,
+  name: 'GeoTIFFSourceLoader',
   id: 'geotiff',
   module: 'geotiff',
   version: VERSION,
@@ -58,6 +60,14 @@ export const GeoTIFFSource = {
   type: 'geotiff',
   fromUrl: true,
   fromBlob: true,
+
+  options: {
+    geotiff: {
+      headers: undefined!,
+      interleaved: false,
+      resampleMethod: 'nearest'
+    }
+  },
 
   defaultOptions: {
     geotiff: {
@@ -73,9 +83,11 @@ export const GeoTIFFSource = {
     }
     return /\.(?:geotiff?|tiff?)(?:$|[?#])/i.test(url);
   },
-  createDataSource: (data: string | Blob, options: GeoTIFFSourceOptions): GeoTIFFRasterSource =>
-    new GeoTIFFRasterSource(data, options)
-} as const satisfies Source<GeoTIFFRasterSource>;
+  createDataSource: (
+    data: string | Blob,
+    options: GeoTIFFSourceLoaderOptions
+  ): GeoTIFFRasterSource => new GeoTIFFRasterSource(data, options)
+} as const satisfies SourceLoader<GeoTIFFRasterSource>;
 
 type GeoTIFFInit = {
   tiff: GeoTIFFDataset;
@@ -92,15 +104,15 @@ type GeoTIFFReadRasterResult = {width: number; height: number} & (
  * Viewport-driven raster source backed by a GeoTIFF dataset.
  */
 export class GeoTIFFRasterSource
-  extends DataSource<string | Blob, GeoTIFFSourceOptions>
+  extends DataSource<string | Blob, GeoTIFFSourceLoaderOptions>
   implements RasterSource
 {
   private _initPromise: Promise<GeoTIFFInit> | null = null;
   private _rangeScheduler: RangeRequestScheduler | null = null;
 
   /** Creates a viewport-driven raster source backed by a GeoTIFF URL or Blob. */
-  constructor(data: string | Blob, options: GeoTIFFSourceOptions) {
-    super(data, options, GeoTIFFSource.defaultOptions);
+  constructor(data: string | Blob, options: GeoTIFFSourceLoaderOptions) {
+    super(data, options, GeoTIFFSourceLoader.defaultOptions);
 
     if (options.geotiff?.rangeSchedulerProps) {
       this.options.geotiff ||= {};

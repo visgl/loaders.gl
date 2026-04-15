@@ -27,7 +27,7 @@ import {
   getRangeStats,
   getRasterViewportBoundingBox
 } from '@loaders.gl/loader-utils';
-import {GeoTIFFSource} from '@loaders.gl/geotiff';
+import {GeoTIFFSourceLoader} from '@loaders.gl/geotiff';
 import type {RasterSetRequest} from '@loaders.gl/tiles';
 import {RasterSet} from '@loaders.gl/tiles';
 
@@ -76,7 +76,7 @@ export default function App(props: AppProps = {}) {
   const rasterSetRef = useRef<RasterSet | null>(null);
 
   if (!sourceRef.current) {
-    sourceRef.current = createDataSource(DATA_URL, [GeoTIFFSource], {
+    sourceRef.current = createDataSource(DATA_URL, [GeoTIFFSourceLoader], {
       geotiff: {
         rangeSchedulerProps: {
           batchDelayMs: 50,

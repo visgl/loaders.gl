@@ -1,18 +1,18 @@
-# OMETiffSource
+# OMETiffSourceLoader
 
 :::caution
 Experimental
 :::
 
-`OMETiffSource` creates a non-geospatial source for OME-TIFF image pyramids.
+`OMETiffSourceLoader` creates a non-geospatial source for OME-TIFF image pyramids.
 
 ## Usage
 
 ```ts
 import {createDataSource} from '@loaders.gl/core';
-import {OMETiffSource} from '@loaders.gl/geotiff';
+import {OMETiffSourceLoader} from '@loaders.gl/geotiff';
 
-const source = createDataSource('multi-channel.ome.tif', [OMETiffSource], {
+const source = createDataSource('multi-channel.ome.tif', [OMETiffSourceLoader], {
   core: {type: 'ometiff'},
   ometiff: {}
 });
@@ -28,7 +28,7 @@ const raster = await source.getRaster({
 
 ## API
 
-### `getMetadata(): Promise<OMETiffSourceMetadata>`
+### `getMetadata(): Promise<OMETiffSourceLoaderMetadata>`
 
 Returns normalized OME image metadata for the first image in the file, including channel count,
 dtype, pyramid levels, and OME dimension sizes.

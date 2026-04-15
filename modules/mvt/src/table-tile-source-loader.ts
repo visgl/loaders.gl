@@ -4,13 +4,13 @@
 // Based on https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import type {
-  Source,
+  SourceLoader,
+  CoreAPI,
   DataSourceOptions,
   VectorTileSource,
   TileSourceMetadata,
   GetTileDataParameters,
-  GetTileParameters,
-  LoaderWithParser
+  GetTileParameters
 } from '@loaders.gl/loader-utils';
 import {DataSource, getRequiredOptions, log} from '@loaders.gl/loader-utils';
 import type {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
@@ -27,7 +27,7 @@ import {clipFeatures} from './lib/vector-tiler/features/clip-features'; // strip
 import {wrapFeatures} from './lib/vector-tiler/features/wrap-features'; // date line processing
 
 /** Options to configure tiling */
-export type TableTileSourceOptions = DataSourceOptions & {
+export type TableTileSourceLoaderOptions = DataSourceOptions & {
   table?: {
     coordinates?: 'local' | 'wgs84' | 'EPSG:4326';
     /** max zoom to preserve detail on */
@@ -54,7 +54,9 @@ export type TableTileSourceOptions = DataSourceOptions & {
 };
 
 /** Options to configure tiling */
-export const TableTileSource = {
+export const TableTileSourceLoader = {
+  dataType: null as unknown as TableVectorTileSource,
+  batchType: null as never,
   name: 'TableTiler',
   id: 'table-tiler',
   module: 'mvt',
@@ -62,8 +64,22 @@ export const TableTileSource = {
   extensions: ['mvt'],
   mimeTypes: ['application/octet-stream'],
   type: 'table',
-  fromUrl: false,
-  fromBlob: false,
+  fromUrl: true,
+  fromBlob: true,
+
+  options: {
+    table: {
+      coordinates: 'local',
+      promoteId: undefined!,
+      maxZoom: 14,
+      indexMaxZoom: 5,
+      maxPointsPerTile: 10000,
+      tolerance: 3,
+      extent: 4096,
+      buffer: 64,
+      generateId: undefined
+    }
+  },
 
   defaultOptions: {
     table: {
@@ -82,14 +98,13 @@ export const TableTileSource = {
   testURL: (url: string): boolean => url.endsWith('.geojson'),
   createDataSource(
     url: string | Blob | GeoJSONTable | Promise<GeoJSONTable>,
-    options: TableTileSourceOptions
+    options: TableTileSourceLoaderOptions,
+    coreApi?: CoreAPI
   ): TableVectorTileSource {
-    const needsLoading = typeof url === 'string' || url instanceof Blob;
-    const loader = options?.core?.loaders?.[0] as LoaderWithParser;
-    const tablePromise = needsLoading ? loadTable(url, loader) : url;
+    const tablePromise = isLoadableTableInput(url) ? url : loadTable(url, options, coreApi);
     return new TableVectorTileSource(tablePromise, options);
   }
-} as const satisfies Source<TableVectorTileSource>;
+} as const satisfies SourceLoader<TableVectorTileSource>;
 
 /**
  * Dynamically vector tiles a table (the table needs a geometry column)
@@ -107,25 +122,25 @@ export const TableTileSource = {
  * @todo - how does TileSourceLayer specify coordinates / decided which layer to render with
  */
 export class TableVectorTileSource
-  extends DataSource<GeoJSONTable | Promise<GeoJSONTable>, TableTileSourceOptions>
+  extends DataSource<GeoJSONTable | Promise<GeoJSONTable>, TableTileSourceLoaderOptions>
   implements VectorTileSource
 {
   /** Global stats for all DynamicVectorTileSources */
   static stats = new Stats({
-    id: 'table-tile-source-all',
+    id: 'table-tile-source-loader-all',
     stats: [new Stat('count', 'tiles'), new Stat('count', 'features')]
   });
 
   /** Stats for this TableVectorTileSource */
   stats = new Stats({
-    id: 'table-tile-source',
+    id: 'table-tile-source-loader',
     stats: [new Stat('tiles', 'count'), new Stat('features', 'count')]
   });
 
   /** MIME type of the tiles emitted by this tile source */
   readonly mimeType = 'application/vnd.mapbox-vector-tile';
   readonly localCoordinates = true;
-  readonly tableOptions: Required<Required<TableTileSourceOptions>['table']>;
+  readonly tableOptions: Required<Required<TableTileSourceLoaderOptions>['table']>;
 
   /* Schema of the data */
   schema: Schema | null = null;
@@ -140,8 +155,8 @@ export class TableVectorTileSource
   /** Metadata for the tile source (generated TileJSON/tilestats */
   metadata: Promise<unknown>;
 
-  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, options: TableTileSourceOptions) {
-    super(table, options, TableTileSource.defaultOptions);
+  constructor(table: GeoJSONTable | Promise<GeoJSONTable>, options: TableTileSourceLoaderOptions) {
+    super(table, options, TableTileSourceLoader.defaultOptions);
     this.tableOptions = getRequiredOptions(this.options).table;
     this.getTileData = this.getTileData.bind(this);
     this.ready = this.initializeTilesAsync(table);
@@ -150,7 +165,7 @@ export class TableVectorTileSource
 
   async initializeTilesAsync(tablePromise: GeoJSONTable | Promise<GeoJSONTable>): Promise<void> {
     const table = await tablePromise;
-    this.schema = deduceTableSchema(table);
+    this.schema = table.features.length > 0 ? deduceTableSchema(table) : {fields: [], metadata: {}};
     this.createRootTiles(table);
   }
 
@@ -464,15 +479,56 @@ function toID(z, x, y): number {
   return ((1 << z) * y + x) * 32 + z;
 }
 
-async function loadTable(url: string | Blob, loader: LoaderWithParser): Promise<GeoJSONTable> {
-  if (typeof url === 'string') {
-    const response = await fetch(url);
-    const data = await response.arrayBuffer();
-    return (await loader.parse(data)) as GeoJSONTable;
+/** Detects whether the supplied input is already a resolved table payload. */
+function isLoadableTableInput(
+  data: string | Blob | GeoJSONTable | Promise<GeoJSONTable>
+): data is GeoJSONTable | Promise<GeoJSONTable> {
+  return typeof data !== 'string' && !(data instanceof Blob);
+}
+
+/** Loads a GeoJSON table from URL/blob input through the injected core API. */
+async function loadTable(
+  url: string | Blob,
+  options: TableTileSourceLoaderOptions,
+  coreApi?: CoreAPI
+): Promise<GeoJSONTable> {
+  const loaders = options?.core?.loaders;
+  if (!coreApi?.load) {
+    throw new Error(
+      'TableTileSourceLoader requires an injected CoreAPI to load tables from URL or Blob inputs.'
+    );
   }
 
-  const data = await url.arrayBuffer();
-  return (await loader.parse(data)) as GeoJSONTable; //  options.loaders, options.loadOptions)
+  if (!loaders?.length) {
+    throw new Error(
+      'TableTileSourceLoader requires `options.core.loaders` when creating a source from URL or Blob inputs.'
+    );
+  }
+
+  const table = await coreApi.load(
+    url,
+    loaders.length === 1 ? loaders[0] : loaders,
+    options.core?.loadOptions
+  );
+  if (!isGeoJSONTable(table)) {
+    throw new Error(
+      'TableTileSourceLoader requires the configured parser loaders to return a GeoJSONTable.'
+    );
+  }
+
+  return table;
+}
+
+/** Checks whether a parser result matches the GeoJSONTable runtime shape. */
+function isGeoJSONTable(table: unknown): table is GeoJSONTable {
+  return Boolean(
+    table &&
+      typeof table === 'object' &&
+      'shape' in table &&
+      (table as GeoJSONTable).shape === 'geojson-table' &&
+      'features' in table &&
+      Array.isArray((table as GeoJSONTable).features)
+  );
 }
 
 /*

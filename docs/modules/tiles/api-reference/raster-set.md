@@ -14,9 +14,9 @@ and emits lifecycle callbacks that examples and layers can subscribe to.
 ```ts
 import {RasterSet} from '@loaders.gl/tiles';
 import {createDataSource} from '@loaders.gl/core';
-import {GeoTIFFSource} from '@loaders.gl/geotiff';
+import {GeoTIFFSourceLoader} from '@loaders.gl/geotiff';
 
-const rasterSource = createDataSource('example.tif', [GeoTIFFSource], {
+const rasterSource = createDataSource('example.tif', [GeoTIFFSourceLoader], {
   core: {type: 'geotiff'}
 });
 

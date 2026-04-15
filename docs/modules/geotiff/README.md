@@ -18,14 +18,14 @@ npm install @loaders.gl/core @loaders.gl/geotiff
 | Loader                                                                |
 | --------------------------------------------------------------------- |
 | [`GeoTIFFLoader`](/docs/modules/geotiff/api-reference/geotiff-loader) |
-| [`GeoTIFFSource`](/docs/modules/geotiff/api-reference/geotiff-source) |
-| [`OMETiffSource`](/docs/modules/geotiff/api-reference/ometiff-source) |
+| [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) |
+| [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) |
 
 ## Additional APIs
 
-- [`GeoTIFFSource`](/docs/modules/geotiff/api-reference/geotiff-source) returns `RasterData`
+- [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) returns `RasterData`
   payloads for viewport requests.
-- [`OMETiffSource`](/docs/modules/geotiff/api-reference/ometiff-source) returns typed OME-TIFF
+- [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) returns typed OME-TIFF
   planes for non-geospatial image pyramids.
 
 ## Attributions

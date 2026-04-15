@@ -13,7 +13,7 @@ import type {
   DataSourceOptions,
   ImageSource,
   Loader,
-  Source,
+  SourceLoader,
   TileSourceMetadata,
   VectorSource
 } from '@loaders.gl/loader-utils';
@@ -49,7 +49,7 @@ export type AnyLayerProps<DataT = unknown> = CompositeLayerProps &
     /** URL/blob input or a fully constructed source runtime. */
     data: AnyLayerData;
     /** Source factories used for source-first resolution. */
-    sources?: Readonly<Source[]>;
+    sources?: Readonly<SourceLoader[]>;
     /** Loaders used for 3D tiles fallback and injected into source construction. */
     loaders?: Loader[];
     /** Options forwarded to `createDataSource` when `sources` are supplied. */

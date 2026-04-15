@@ -6,7 +6,7 @@ import type {ImageType} from '@loaders.gl/images';
 import {ImageLoader} from '@loaders.gl/images';
 import type {
   CoreAPI,
-  Source,
+  SourceLoader,
   DataSourceOptions,
   ImageSourceMetadata,
   GetImageParameters
@@ -14,7 +14,7 @@ import type {
 import {DataSource, ImageSource} from '@loaders.gl/loader-utils';
 
 /** Options for the ArcGIS ImageServer source. */
-export type ArcGISImageSourceProps = DataSourceOptions & {
+export type ArcGISImageSourceLoaderProps = DataSourceOptions & {
   'arcgis-image-server'?: {
     /** Default ArcGIS exportImage request parameters. */
     exportImageParameters?: Partial<ArcGISExportImageParameters>;
@@ -57,7 +57,9 @@ export type ArcGISExportImageParameters = {
   f?: 'image' | 'json' | 'pjson';
 };
 
-export const ArcGISImageServerSource = {
+export const ArcGISImageServerSourceLoader = {
+  dataType: null as unknown as ArcGISImageSource,
+  batchType: null as never,
   name: 'ArcGISImageServer',
   id: 'arcgis-image-server',
   module: 'wms',
@@ -68,6 +70,12 @@ export const ArcGISImageServerSource = {
   fromUrl: true,
   fromBlob: false,
 
+  options: {
+    'arcgis-image-server': {
+      // TODO - add options here
+    }
+  },
+
   defaultOptions: {
     'arcgis-image-server': {
       // TODO - add options here
@@ -77,10 +85,10 @@ export const ArcGISImageServerSource = {
   testURL: (url: string): boolean => url.toLowerCase().includes('imageserver'),
   createDataSource: (
     url: string,
-    props: ArcGISImageSourceProps,
+    props: ArcGISImageSourceLoaderProps,
     coreApi?: CoreAPI
   ): ArcGISImageSource => new ArcGISImageSource(url, props, coreApi)
-} as const satisfies Source<ArcGISImageSource>;
+} as const satisfies SourceLoader<ArcGISImageSource>;
 
 /**
  * ArcGIS ImageServer
@@ -88,11 +96,11 @@ export const ArcGISImageServerSource = {
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/image-service.htm
  */
 export class ArcGISImageSource
-  extends DataSource<string, ArcGISImageSourceProps>
+  extends DataSource<string, ArcGISImageSourceLoaderProps>
   implements ImageSource
 {
-  constructor(url: string, props: ArcGISImageSourceProps, coreApi?: CoreAPI) {
-    super(url, props, ArcGISImageServerSource.defaultOptions, coreApi);
+  constructor(url: string, props: ArcGISImageSourceLoaderProps, coreApi?: CoreAPI) {
+    super(url, props, ArcGISImageServerSourceLoader.defaultOptions, coreApi);
   }
 
   /** Returns normalized ImageSource metadata. */

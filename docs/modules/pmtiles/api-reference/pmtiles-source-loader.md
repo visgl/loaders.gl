@@ -1,4 +1,4 @@
-# PMTilesSource
+# PMTilesSourceLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.0-blue.svg?style=flat-square" alt="From-v4.0" />
@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/range_requests-experimental-yellow.svg?style=flat-square" alt="range requests experimental" />
 </p>
 
-The `PMTilesSource` reads individual tiles from a PMTiles archive file.
+The `PMTilesSourceLoader` reads individual tiles from a PMTiles archive file.
 For remote URL archives, tile requests are queued briefly and nearby HTTP byte ranges are
 coalesced before the archive bytes are fetched.
 
@@ -21,9 +21,9 @@ coalesced before the archive bytes are fetched.
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {PMTilesSource} from '@loaders.gl/pmtiles';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 
-const source = createDataSource(url, [PMTilesSource]);
+const source = createDataSource(url, [PMTilesSourceLoader]);
 const tile = await source.getTile(...);
 ```
 

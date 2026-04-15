@@ -3,12 +3,12 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {WFSSource} from '@loaders.gl/wms';
+import {WFSSourceLoader} from '@loaders.gl/wms';
 
 const WFS_URL = 'https://example.com/geoserver/wfs';
 
-test('WFSSource#getFeaturesURL', t => {
-  const source = WFSSource.createDataSource(WFS_URL, {});
+test('WFSSourceLoader#getFeaturesURL', t => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       boundingBox: [
@@ -31,8 +31,8 @@ test('WFSSource#getFeaturesURL', t => {
   t.end();
 });
 
-test('WFSSource#getCapabilitiesURL defaults version', t => {
-  const source = WFSSource.createDataSource(WFS_URL, {});
+test('WFSSourceLoader#getCapabilitiesURL defaults version', t => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   const capabilitiesUrl = new URL(source.getCapabilitiesURL());
 
   t.equal(capabilitiesUrl.origin + capabilitiesUrl.pathname, WFS_URL, 'keeps the base WFS URL');
@@ -42,8 +42,8 @@ test('WFSSource#getCapabilitiesURL defaults version', t => {
   t.end();
 });
 
-test('WFSSource#getFeatures', async t => {
-  const source = WFSSource.createDataSource(WFS_URL, {});
+test('WFSSourceLoader#getFeatures', async t => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
     features: [

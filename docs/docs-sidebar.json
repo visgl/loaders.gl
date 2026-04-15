@@ -50,7 +50,7 @@
           "modules/kml/api-reference/tcx-loader",
           "modules/las/api-reference/las-loader",
           "modules/mlt/api-reference/mlt-loader",
-          "modules/mlt/api-reference/mlt-source",
+          "modules/mlt/api-reference/mlt-source-loader",
           "modules/mvt/api-reference/mvt-loader",
           "modules/mvt/api-reference/tilejson-loader",
           "modules/obj/api-reference/obj-loader",
@@ -106,12 +106,12 @@
         "type": "category",
         "label": "Sources",
         "items": [
-          "modules/pmtiles/api-reference/pmtiles-source",
-          "modules/mvt/api-reference/mvt-source",
-          "modules/mvt/api-reference/table-tile-source",
-          "modules/mlt/api-reference/mlt-source",
-          "modules/wms/api-reference/csw-source",
-          "modules/wms/api-reference/wms-source"
+          "modules/pmtiles/api-reference/pmtiles-source-loader",
+          "modules/mvt/api-reference/mvt-source-loader",
+          "modules/mvt/api-reference/table-tile-source-loader",
+          "modules/mlt/api-reference/mlt-source-loader",
+          "modules/wms/api-reference/csw-source-loader",
+          "modules/wms/api-reference/wms-source-loader"
         ]
       }
     ]

@@ -6,16 +6,16 @@ import test from 'tape-promise/tape';
 import {isBrowser, fetchFile} from '@loaders.gl/core';
 
 import {PMTILESETS} from './data/tilesets';
-import {PMTilesSource} from '@loaders.gl/pmtiles';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 
-test('PMTilesSource#urls', async t => {
+test('PMTilesSourceLoader#urls', async t => {
   if (!isBrowser) {
-    t.comment('PMTilesSource currently only supported in browser');
+    t.comment('PMTilesSourceLoader currently only supported in browser');
     t.end();
     return;
   }
   for (const tilesetUrl of PMTILESETS) {
-    const source = PMTilesSource.createDataSource(tilesetUrl, {url: tilesetUrl});
+    const source = PMTilesSourceLoader.createDataSource(tilesetUrl, {url: tilesetUrl});
     t.ok(source);
     const metadata = await source.getMetadata();
     t.ok(metadata);
@@ -24,16 +24,16 @@ test('PMTilesSource#urls', async t => {
   t.end();
 });
 
-test('PMTilesSource#Blobs', async t => {
+test('PMTilesSourceLoader#Blobs', async t => {
   if (!isBrowser) {
-    t.comment('PMTilesSource currently only supported in browser');
+    t.comment('PMTilesSourceLoader currently only supported in browser');
     t.end();
     return;
   }
   for (const tilesetUrl of PMTILESETS) {
     const response = await fetchFile(tilesetUrl);
     const blob = await response.blob();
-    const source = PMTilesSource.createDataSource(blob, {url: blob});
+    const source = PMTilesSourceLoader.createDataSource(blob, {url: blob});
     t.ok(source);
     const metadata = await source.getMetadata();
     t.ok(metadata);
