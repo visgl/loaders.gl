@@ -28,14 +28,14 @@ import type {
   SQLiteTypes
 } from './types';
 
-const SQL_JS_VERSION = '1.8.0';
+const SQL_JS_VERSION = '1.14.1';
 const GEOMETRY_OUTPUT_COLUMN_NAME = 'geometry';
 
 /**
  * We pin to the same version as sql.js that we use.
  */
 export const DEFAULT_SQLJS_CDN = isBrowser
-  ? `https://cdnjs.cloudflare.com/ajax/libs/sql.js/${SQL_JS_VERSION}/`
+  ? `https://cdn.jsdelivr.net/npm/sql.js@${SQL_JS_VERSION}/dist/`
   : null;
 
 // https://www.geopackage.org/spec121/#flags_layout

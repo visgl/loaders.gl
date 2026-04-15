@@ -4880,12 +4880,14 @@ __metadata:
     "@loaders.gl/gis": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
+    "@loaders.gl/schema-utils": "npm:4.4.0"
     "@loaders.gl/wkt": "npm:4.4.0"
     "@math.gl/proj4": "npm:^4.1.0"
     "@types/sql.js": "npm:^1.4.5"
+    apache-arrow: "npm:>= 17.0.0"
     fs: "npm:^0.0.1-security"
     path: "npm:^0.12.7"
-    sql.js: "npm:1.8.0"
+    sql.js: "npm:1.14.1"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -24567,7 +24569,7 @@ __metadata:
     react-color: "npm:^2.19.3"
     react-dom: "npm:^18.2.0"
     react-map-gl: "npm:^7.0.0"
-    sql.js: "npm:1.8.0"
+    sql.js: "npm:1.14.1"
     styled-components: "npm:^5.3.3"
     ts-node: "npm:~10.9.1"
     udsv: "npm:^0.7.3"
@@ -26941,10 +26943,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql.js@npm:1.8.0":
-  version: 1.8.0
-  resolution: "sql.js@npm:1.8.0"
-  checksum: 10c0/80dcc6a52f4f15aab5e403a08f34b9ab0097a2bb5f1a96cde6e6544681b6f397989f5f4c36ba2347d65b67cfe9b7683514b24cd552d681e67e132f7a818105ff
+"sql.js@npm:1.14.1":
+  version: 1.14.1
+  resolution: "sql.js@npm:1.14.1"
+  checksum: 10c0/3491b7642b8b6d89926e4cf1807c01697df7e3f7283b94aaebc026e6c38aaf9496065e9daf25de3109e51df835150d4f795f5249f22a1d3e6a3bb1f2e32c0710
   languageName: node
   linkType: hard
 

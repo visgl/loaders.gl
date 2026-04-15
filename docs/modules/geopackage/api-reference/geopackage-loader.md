@@ -34,7 +34,7 @@ import {Tables, ObjectRowTable, Feature} from '@loaders.gl/schema';
 const optionsAsTable: GeoPackageLoaderOptions = {
   geopackage: {
     shape: 'tables',
-    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
+    sqlJsCDN: 'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'
   }
 };
 const tablesData: Tables<GeoJSONTable> = await load(url, GeoPackageLoader, optionsAsTable);
@@ -47,7 +47,7 @@ const optionsAsGeoJson: GeoPackageLoaderOptions = {
   geopackage: {
     shape: 'geojson-table',
     table: 'feature_table',
-    sqlJsCDN: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.5.0/'
+    sqlJsCDN: 'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'
   }
 };
 
@@ -64,7 +64,7 @@ To inspect available tables first and then fetch a specific table, use [`GeoPack
 | --------------------- | ------ | -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------- |
 | `options.shape`       | String | `'tables'` \| '`geojson-table'`                          | Output format.                                                                                                         |
 | `options.table`       | String | N/A                                                      | name of table to load                                                                                                  | Output format. |
-| `geopackage.sqlJsCDN` | String | `'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackage loader is called on a file. |
+| `geopackage.sqlJsCDN` | String | `'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'` | CDN from which to load the SQL.js bundle. This is loaded asynchronously when the GeoPackage loader is called on a file. |
 
 ## Output
 
