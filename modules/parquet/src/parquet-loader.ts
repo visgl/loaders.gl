@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
+import {convertArrowToTable} from '@loaders.gl/schema-utils';
 import type {
   ObjectRowTable,
   ObjectRowTableBatch,
@@ -21,6 +22,7 @@ import {
   parseGeoParquetFile,
   parseGeoParquetFileInBatches
 } from './lib/parsers/parse-geoparquet-to-geojson';
+import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-json';
 // import {
 //   parseParquetFileInColumns,
 //   parseParquetFileInColumnarBatches
@@ -130,7 +132,12 @@ async function parseObjectRowTable(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions
 ): Promise<ObjectRowTable> {
-  const arrowTable = await ParquetArrowLoader.parseFile(file, getParquetOptions(options));
+  const parquetOptions = getParquetOptions(options);
+  if (parquetOptions.parquet?.implementation === 'js') {
+    return await parseParquetFile(file, parquetOptions);
+  }
+
+  const arrowTable = await ParquetArrowLoader.parseFile(file, parquetOptions);
   return convertArrowTableToObjectRows(arrowTable);
 }
 
@@ -138,10 +145,14 @@ async function* parseObjectRowTableInBatches(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
-  for await (const batch of ParquetArrowLoader.parseFileInBatches(
-    file,
-    getParquetOptions(options)
-  )) {
+  const parquetOptions = getParquetOptions(options);
+
+  if (parquetOptions.parquet?.implementation === 'js') {
+    yield* parseParquetFileInBatches(file, parquetOptions);
+    return;
+  }
+
+  for await (const batch of ParquetArrowLoader.parseFileInBatches(file, parquetOptions)) {
     const objectRowTable = convertArrowBatchToObjectRows(batch);
     yield {
       batchType: batch.batchType,
@@ -154,17 +165,7 @@ async function* parseObjectRowTableInBatches(
 }
 
 function convertArrowTableToObjectRows(arrowTable: ArrowTable): ObjectRowTable {
-  const data = new Array<Record<string, unknown>>(arrowTable.data.numRows);
-
-  for (let rowIndex = 0; rowIndex < arrowTable.data.numRows; rowIndex++) {
-    data[rowIndex] = arrowTable.data.get(rowIndex)?.toJSON() || {};
-  }
-
-  return {
-    shape: 'object-row-table',
-    schema: arrowTable.schema,
-    data
-  };
+  return convertArrowToTable(arrowTable.data, 'object-row-table') as ObjectRowTable;
 }
 
 function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions {
@@ -172,17 +173,13 @@ function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions
 }
 
 function convertArrowBatchToObjectRows(batch: ArrowTableBatch): ObjectRowTableBatch {
-  const data = new Array<Record<string, unknown>>(batch.data.numRows);
-
-  for (let rowIndex = 0; rowIndex < batch.data.numRows; rowIndex++) {
-    data[rowIndex] = batch.data.get(rowIndex)?.toJSON() || {};
-  }
+  const objectRowTable = convertArrowToTable(batch.data, 'object-row-table') as ObjectRowTable;
 
   return {
     batchType: batch.batchType,
-    shape: 'object-row-table',
-    schema: batch.schema,
-    data,
+    shape: objectRowTable.shape,
+    schema: objectRowTable.schema,
+    data: objectRowTable.data,
     length: batch.length
   };
 }

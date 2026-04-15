@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {ReadableFile} from '@loaders.gl/loader-utils';
-import type {ArrowTable, ArrowTableBatch, ObjectRowTable} from '@loaders.gl/schema';
-import * as arrow from 'apache-arrow';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {convertTable} from '@loaders.gl/schema-utils';
 
 import type {ParquetLoaderOptions} from '../../parquet-loader-options';
 import {parseParquetFile, parseParquetFileInBatches} from './parse-parquet-to-json';
@@ -14,11 +14,7 @@ export async function parseParquetFileToArrowWithJs(
   options?: ParquetLoaderOptions
 ): Promise<ArrowTable> {
   const objectRowTable = await parseParquetFile(file, options);
-  return {
-    shape: 'arrow-table',
-    schema: objectRowTable.schema,
-    data: arrow.tableFromJSON(objectRowTable.data)
-  };
+  return convertTable(objectRowTable, 'arrow-table');
 }
 
 export async function* parseParquetFileToArrowInBatchesWithJs(
@@ -26,13 +22,13 @@ export async function* parseParquetFileToArrowInBatchesWithJs(
   options?: ParquetLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   for await (const batch of parseParquetFileInBatches(file, options)) {
-    const arrowTable = arrow.tableFromJSON((batch as ObjectRowTable).data);
+    const arrowTable = convertTable(batch, 'arrow-table');
 
     yield {
       batchType: batch.batchType,
-      shape: 'arrow-table',
-      schema: batch.schema,
-      data: arrowTable,
+      shape: arrowTable.shape,
+      schema: arrowTable.schema,
+      data: arrowTable.data,
       length: batch.length
     };
   }

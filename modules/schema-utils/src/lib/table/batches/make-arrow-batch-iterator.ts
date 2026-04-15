@@ -43,7 +43,12 @@ export function* makeArrowRecordBatchIterator(
   const numColumns = getTableNumCols(table);
   const batchSize = options?.batchSize || length;
 
-  const builders = arrowSchema?.fields.map(arrowField => arrow.makeBuilder(arrowField));
+  const builders = arrowSchema?.fields.map(arrowField =>
+    arrow.makeBuilder({
+      type: arrowField.type,
+      nullValues: [null, undefined]
+    })
+  );
   const structField = new arrow.Struct(arrowSchema.fields);
 
   let batchLength = 0;
