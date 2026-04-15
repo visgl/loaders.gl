@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {ParquetJSONLoader} from '../parquet-json-loader';
+import {ParquetLoader} from '../parquet-loader';
 
-createLoaderWorker(ParquetJSONLoader);
+createLoaderWorker(ParquetLoader);

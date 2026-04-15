@@ -42,7 +42,7 @@ export async function parseParquetFileToArrow(
 
 export async function* parseParquetFileToArrowInBatches(
   file: ReadableFile,
-  options: ParquetWasmReaderOptions
+  options?: ParquetWasmReaderOptions
 ): AsyncIterable<ArrowTableBatch> {
   const wasmUrl = options?.wasmUrl;
   const readerOptions = getReaderOptions(options);

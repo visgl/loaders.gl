@@ -53,14 +53,15 @@ export function* makeArrowRecordBatchIterator(
 
       const builder = builders[columnIndex];
       builder.append(value);
-      batchLength++;
+    }
 
-      if (batchLength >= batchSize) {
-        const datas = builders.map(builder => builder.flush());
-        const structData = new arrow.Data(structField, 0, batchLength, 0, undefined, datas);
-        yield new arrow.RecordBatch(arrowSchema, structData);
-        batchLength = 0;
-      }
+    batchLength++;
+
+    if (batchLength >= batchSize) {
+      const datas = builders.map(builder => builder.flush());
+      const structData = new arrow.Data(structField, 0, batchLength, 0, undefined, datas);
+      yield new arrow.RecordBatch(arrowSchema, structData);
+      batchLength = 0;
     }
   }
 
