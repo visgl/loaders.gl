@@ -127,7 +127,7 @@ const config = {
             '@loaders.gl/xml': resolve('../modules/xml/src'),
             '@loaders.gl/zarr': resolve('../modules/zarr/src'),
             '@loaders.gl/zip': resolve('../modules/zip/src'),
-            'sql.js$': require.resolve('sql.js'),
+            'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 
             // '@deck.gl/react': resolve()
             // '@deck.gl/layers'
