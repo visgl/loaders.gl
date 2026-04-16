@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "name": "ome-zarr-source-example",
+  "description": "OME-Zarr source example.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@loaders.gl/core": "4.4.0-alpha.1",
+    "@loaders.gl/zarr": "4.4.0-alpha.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "vite": "^7.2.7"
+  }
+}
