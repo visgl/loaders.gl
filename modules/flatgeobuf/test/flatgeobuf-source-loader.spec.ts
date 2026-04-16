@@ -4,10 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {createDataSource, fetchFile, resolvePath} from '@loaders.gl/core';
-import {
-  FlatGeobufSourceLoader,
-  FlatGeobufVectorSource
-} from '@loaders.gl/flatgeobuf';
+import {FlatGeobufSourceLoader, FlatGeobufVectorSource} from '@loaders.gl/flatgeobuf';
 import {convertBinaryFeatureCollectionToGeojson, convertWKBTableToGeoJSON} from '@loaders.gl/gis';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
 
@@ -260,7 +257,9 @@ function normalizeFeatures(features: any[]) {
 }
 
 function getFeatureKeys(features: any[]) {
-  return normalizeFeatures(features).map(feature => `${feature.properties?.id || ''}|${feature.properties?.name || ''}`);
+  return normalizeFeatures(features).map(
+    feature => `${feature.properties?.id || ''}|${feature.properties?.name || ''}`
+  );
 }
 
 function normalizeGeometry(geometry: any) {
