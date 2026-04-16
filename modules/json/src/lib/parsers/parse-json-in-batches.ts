@@ -40,7 +40,10 @@ export async function* parseJSONInBatches(
       if (metadata) {
         const initialBatch: TableBatch = {
           // Common fields
-          shape: options?.json?.shape || 'array-row-table',
+          shape:
+            options?.json?.shape === 'arrow-table'
+              ? 'array-row-table'
+              : options?.json?.shape || 'array-row-table',
           batchType: 'partial-result',
           data: [],
           length: 0,

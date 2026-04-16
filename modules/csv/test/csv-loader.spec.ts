@@ -31,6 +31,17 @@ test('CSVLoader#load(states.csv)', async t => {
   t.end();
 });
 
+test('CSVLoader#load(numbers-100.csv, shape: arrow-table)', async t => {
+  const table = await load(CSV_NO_HEADER_URL, CSVLoader, {
+    csv: {header: false, shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'Got correct table shape');
+  t.equal(table.data.numRows, 100, 'Got correct row count');
+  t.equal(table.data.getChildAt(0)?.get(0), 1, 'Got correct first value');
+  t.end();
+});
+
 // eslint-disable-next-line max-statements
 test('CSVLoader#load', async t => {
   const table = await load(CSV_SAMPLE_URL, CSVLoader, {csv: {shape: 'object-row-table'}});
@@ -177,6 +188,25 @@ test('CSVLoader#loadInBatches(sample.csv, columns)', async t => {
     batchCount++;
   }
   t.equal(batchCount, 1, 'Correct number of batches received');
+  t.end();
+});
+
+test('CSVLoader#loadInBatches(numbers-100.csv, shape: arrow-table)', async t => {
+  const iterator = await loadInBatches(CSV_STATES_URL, CSVLoader, {
+    batchSize: 40,
+    csv: {shape: 'arrow-table'}
+  });
+
+  let batchCount = 0;
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    t.equal(batch.shape, 'arrow-table', `Got correct Arrow batch shape for batch ${batchCount}`);
+    rowCount += batch.data.numRows;
+    batchCount++;
+  }
+
+  t.ok(batchCount >= 1, 'Received one or more batches');
+  t.equal(rowCount, 110, 'Correct number of rows received');
   t.end();
 });
 

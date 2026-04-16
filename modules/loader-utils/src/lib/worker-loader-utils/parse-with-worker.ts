@@ -24,6 +24,15 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
     return false;
   }
 
+  // Excel Arrow output currently relies on main-thread conversion helpers that
+  // should stay aligned with the primary loader path.
+  if (
+    loader.id === 'excel' &&
+    (options as {excel?: {shape?: string}} | undefined)?.excel?.shape === 'arrow-table'
+  ) {
+    return false;
+  }
+
   const useWorkers = options?.worker ?? options?.core?.worker;
   return Boolean(loader.worker && useWorkers);
 }

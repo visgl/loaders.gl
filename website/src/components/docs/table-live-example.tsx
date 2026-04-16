@@ -3,9 +3,9 @@ import styled from 'styled-components'
 
 import {load, type LoaderOptions} from '@loaders.gl/core'
 import {ArrowLoader} from '@loaders.gl/arrow'
-import {CSVArrowLoader, CSVLoader} from '@loaders.gl/csv'
+import {CSVLoader} from '@loaders.gl/csv'
 import {ExcelArrowLoader, ExcelLoader} from '@loaders.gl/excel'
-import {JSONLoader, NDJSONArrowLoader, NDJSONLoader} from '@loaders.gl/json'
+import {JSONLoader, NDJSONLoader} from '@loaders.gl/json'
 import type {Field, Table} from '@loaders.gl/schema'
 
 const TABLE_ROW_LIMIT = 12
@@ -14,12 +14,10 @@ const TABLE_COLUMN_LIMIT = 8
 /** Loader names supported by the docs table preview component. */
 export type TableLiveExampleLoaderName =
   | 'ArrowLoader'
-  | 'CSVArrowLoader'
   | 'CSVLoader'
   | 'ExcelArrowLoader'
   | 'ExcelLoader'
   | 'JSONLoader'
-  | 'NDJSONArrowLoader'
   | 'NDJSONLoader'
 
 /** Configuration for loading and rendering a tabular loader example in docs. */
@@ -495,8 +493,6 @@ function getTableLoader(loaderName: TableLiveExampleLoaderName) {
   switch (loaderName) {
     case 'ArrowLoader':
       return ArrowLoader
-    case 'CSVArrowLoader':
-      return CSVArrowLoader
     case 'CSVLoader':
       return CSVLoader
     case 'ExcelArrowLoader':
@@ -505,8 +501,6 @@ function getTableLoader(loaderName: TableLiveExampleLoaderName) {
       return ExcelLoader
     case 'JSONLoader':
       return JSONLoader
-    case 'NDJSONArrowLoader':
-      return NDJSONArrowLoader
     case 'NDJSONLoader':
       return NDJSONLoader
     default:
@@ -543,10 +537,8 @@ function createSourcePreview(
  */
 function isTextTableLoader(loaderName: TableLiveExampleLoaderName): boolean {
   switch (loaderName) {
-    case 'CSVArrowLoader':
     case 'CSVLoader':
     case 'JSONLoader':
-    case 'NDJSONArrowLoader':
     case 'NDJSONLoader':
       return true
     case 'ArrowLoader':

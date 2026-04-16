@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import type {CSVLoaderOptions} from './csv-loader';
-import {CSVLoader} from './csv-loader';
+import {CSVFormat} from './csv-format';
+import {DEFAULT_CSV_OPTIONS} from './lib/csv-default-options';
 import {
   parseRawArrowCSVInBatches,
   parseRawArrowCSVTable,
@@ -16,7 +17,7 @@ import {
 } from './lib/parsers/parse-csv-to-arrow';
 import type {CSVRawArrowParseOptions} from './lib/parsers/parse-csv-to-arrow';
 
-/** CSV options accepted by the Arrow CSV loader. */
+/** CSV options accepted by Arrow-shaped CSV parsing helpers. */
 type CSVArrowOptions = Omit<NonNullable<CSVLoaderOptions['csv']>, 'shape'> & {
   /** @internal Whether the caller explicitly supplied `skipEmptyLines`. */
   skipEmptyLinesIsExplicit?: boolean;
@@ -38,58 +39,33 @@ const FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
 const ISO_DATE =
   /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/;
 
-/** Default CSV options for CSVArrowLoader. */
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
+/** Default CSV options for Arrow-shaped CSV parsing. */
 const CSV_ARROW_DEFAULT_OPTIONS: CSVArrowOptions = {
-  optimizeMemoryUsage: CSVLoader.options.csv.optimizeMemoryUsage,
-  header: CSVLoader.options.csv.header,
-  columnPrefix: CSVLoader.options.csv.columnPrefix,
-  quoteChar: CSVLoader.options.csv.quoteChar,
-  escapeChar: CSVLoader.options.csv.escapeChar,
+  optimizeMemoryUsage: DEFAULT_CSV_OPTIONS.optimizeMemoryUsage,
+  header: DEFAULT_CSV_OPTIONS.header,
+  columnPrefix: DEFAULT_CSV_OPTIONS.columnPrefix,
+  quoteChar: DEFAULT_CSV_OPTIONS.quoteChar,
+  escapeChar: DEFAULT_CSV_OPTIONS.escapeChar,
   dynamicTyping: false,
-  comments: CSVLoader.options.csv.comments,
+  comments: DEFAULT_CSV_OPTIONS.comments,
   skipEmptyLines: false,
-  delimitersToGuess: CSVLoader.options.csv.delimitersToGuess
+  delimitersToGuess: DEFAULT_CSV_OPTIONS.delimitersToGuess
 };
 
 /** Options for parsing CSV input into Apache Arrow tables. */
-export type CSVArrowLoaderOptions = LoaderOptions & {
+export type CSVArrowParseOptions = LoaderOptions & {
   csv?: CSVArrowOptions;
 };
 
-/**
- * CSV loader that returns Apache Arrow tables.
- *
- * The default `csv.dynamicTyping: false` path emits Arrow Utf8 columns and uses
- * the byte-oriented parser when the supplied options are supported. Set
- * `csv.dynamicTyping: true` to opt into typed Arrow columns.
- */
-export const CSVArrowLoader = {
-  ...CSVLoader,
+/** Compatibility options for the deprecated CSVArrowLoader wrapper. */
+export type CSVArrowLoaderOptions = CSVArrowParseOptions;
 
-  dataType: null as unknown as ArrowTable,
-  batchType: null as unknown as ArrowTableBatch,
-
-  options: {
-    ...CSVLoader.options,
-    csv: CSV_ARROW_DEFAULT_OPTIONS
-  },
-
-  parse: async (arrayBuffer: ArrayBuffer, options?: CSVArrowLoaderOptions) =>
-    parseCSVArrayBufferToArrow(arrayBuffer, createCSVArrowLoaderOptions(options)),
-
-  parseText: (text: string, options?: CSVArrowLoaderOptions) =>
-    parseCSVTextToArrow(text, createCSVArrowLoaderOptions(options)),
-
-  parseInBatches: (
-    asyncIterator:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options?: CSVArrowLoaderOptions
-  ) => parseCSVToArrowBatches(asyncIterator, createCSVArrowLoaderOptions(options))
-} as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, CSVArrowLoaderOptions>;
-
-/** Applies CSVArrowLoader defaults before delegating to Arrow CSV parsing helpers. */
-function createCSVArrowLoaderOptions(options?: CSVArrowLoaderOptions): CSVArrowLoaderOptions {
+/** Applies Arrow-shaped CSV defaults before delegating to Arrow CSV parsing helpers. */
+function normalizeCSVArrowOptions(options?: CSVArrowParseOptions): CSVArrowParseOptions {
   const skipEmptyLinesIsExplicit =
     (options?.csv && Object.prototype.hasOwnProperty.call(options.csv, 'skipEmptyLinesIsExplicit')
       ? Boolean(options.csv.skipEmptyLinesIsExplicit)
@@ -98,20 +74,21 @@ function createCSVArrowLoaderOptions(options?: CSVArrowLoaderOptions): CSVArrowL
   return {
     ...options,
     csv: {
-      ...CSVArrowLoader.options.csv,
+      ...CSV_ARROW_DEFAULT_OPTIONS,
       ...options?.csv,
       skipEmptyLinesIsExplicit
     }
   };
 }
 
-/** Parses ArrayBuffer CSV input and optionally converts Utf8 Arrow columns to typed columns. */
-async function parseCSVArrayBufferToArrow(
+/** Parses ArrayBuffer CSV input into an Arrow table. */
+export async function parseCSVArrayBufferAsArrow(
   arrayBuffer: ArrayBuffer,
-  options?: CSVArrowLoaderOptions
+  options?: CSVArrowParseOptions
 ): Promise<ArrowTable> {
-  const csvOptions = createCSVArrowOptions(options);
-  const rawArrowCSVOptions = createRawArrowCSVOptions(options);
+  const normalizedOptions = normalizeCSVArrowOptions(options);
+  const csvOptions = createCSVArrowOptions(normalizedOptions);
+  const rawArrowCSVOptions = createRawArrowCSVOptions(normalizedOptions);
 
   const rawArrowTable = await parseRawArrowCSVTable(arrayBuffer, rawArrowCSVOptions);
 
@@ -122,13 +99,14 @@ async function parseCSVArrayBufferToArrow(
   return convertRawArrowTableToTypedArrowTable(rawArrowTable).typedArrowTable;
 }
 
-/** Parses string CSV input and optionally converts Utf8 Arrow columns to typed columns. */
-async function parseCSVTextToArrow(
+/** Parses string CSV input into an Arrow table. */
+export async function parseCSVTextAsArrow(
   csvText: string,
-  options?: CSVArrowLoaderOptions
+  options?: CSVArrowParseOptions
 ): Promise<ArrowTable> {
-  const csvOptions = createCSVArrowOptions(options);
-  const rawArrowCSVOptions = createRawArrowCSVOptions(options);
+  const normalizedOptions = normalizeCSVArrowOptions(options);
+  const csvOptions = createCSVArrowOptions(normalizedOptions);
+  const rawArrowCSVOptions = createRawArrowCSVOptions(normalizedOptions);
 
   const rawArrowTable = await parseRawArrowCSVText(csvText, rawArrowCSVOptions);
 
@@ -139,20 +117,47 @@ async function parseCSVTextToArrow(
   return convertRawArrowTableToTypedArrowTable(rawArrowTable).typedArrowTable;
 }
 
-/** Parses batch CSV input and optionally converts Utf8 Arrow batches to typed batches. */
-function parseCSVToArrowBatches(
+/** Parses batch CSV input into Arrow table batches. */
+export function parseCSVInArrowBatches(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
-  options?: CSVArrowLoaderOptions
+  options?: CSVArrowParseOptions
 ): AsyncIterable<ArrowTableBatch> {
-  const csvOptions = createCSVArrowOptions(options);
-  const rawArrowCSVOptions = createRawArrowCSVOptions(options);
+  const normalizedOptions = normalizeCSVArrowOptions(options);
+  const csvOptions = createCSVArrowOptions(normalizedOptions);
+  const rawArrowCSVOptions = createRawArrowCSVOptions(normalizedOptions);
 
   const rawArrowBatchIterator = parseRawArrowCSVInBatches(asyncIterator, rawArrowCSVOptions);
 
   return makeTypedArrowBatchIterator(rawArrowBatchIterator, csvOptions);
 }
+
+/**
+ * Compatibility wrapper that keeps the legacy CSVArrowLoader export available
+ * while `CSVLoader` adopts `csv.shape: 'arrow-table'`.
+ */
+export const CSVArrowLoader = {
+  ...CSVFormat,
+  dataType: null as unknown as ArrowTable,
+  batchType: null as unknown as ArrowTableBatch,
+  version: VERSION,
+  options: {
+    csv: {
+      ...CSV_ARROW_DEFAULT_OPTIONS,
+      shape: 'arrow-table'
+    }
+  },
+  parse: async (arrayBuffer: ArrayBuffer, options?: CSVArrowLoaderOptions) =>
+    parseCSVArrayBufferAsArrow(arrayBuffer, options),
+  parseText: (text: string, options?: CSVArrowLoaderOptions) => parseCSVTextAsArrow(text, options),
+  parseInBatches: (
+    asyncIterator:
+      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+      | Iterable<ArrayBufferLike | ArrayBufferView>,
+    options?: CSVArrowLoaderOptions
+  ) => parseCSVInArrowBatches(asyncIterator, options)
+} as const;
 
 /** Converts an async iterator of raw Utf8 Arrow batches to typed Arrow batches. */
 async function* makeTypedArrowBatchIterator(
@@ -191,15 +196,15 @@ async function* makeTypedArrowBatchIterator(
 }
 
 /** Merges caller options with Arrow CSV defaults. */
-function createCSVArrowOptions(options?: CSVArrowLoaderOptions): CSVArrowOptions {
+function createCSVArrowOptions(options?: CSVArrowParseOptions): CSVArrowOptions {
   return {
-    ...CSVArrowLoader.options.csv,
+    ...CSV_ARROW_DEFAULT_OPTIONS,
     ...options?.csv
   };
 }
 
 /** Creates raw Arrow options by stripping the typed conversion flag. */
-function createRawArrowCSVOptions(options?: CSVArrowLoaderOptions): CSVRawArrowParseOptions {
+function createRawArrowCSVOptions(options?: CSVArrowParseOptions): CSVRawArrowParseOptions {
   const csvOptions = createCSVArrowOptions(options);
   const {dynamicTyping, ...rawArrowCSVOptions} = csvOptions;
 
@@ -234,7 +239,7 @@ function convertRawArrowTableToTypedArrowTable(
           metadata: {
             ...rawArrowTable.schema?.metadata,
             'loaders.gl#format': 'csv',
-            'loaders.gl#loader': 'CSVArrowLoader'
+            'loaders.gl#loader': 'CSVLoader'
           }
         },
         data: rawArrowTable.data
@@ -298,7 +303,7 @@ function convertRawArrowTableToTypedArrowTable(
     metadata: {
       ...rawArrowTable.schema?.metadata,
       'loaders.gl#format': 'csv',
-      'loaders.gl#loader': 'CSVArrowLoader'
+      'loaders.gl#loader': 'CSVLoader'
     }
   };
 
