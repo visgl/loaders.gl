@@ -7,8 +7,10 @@ import type {
   LoaderWithParser,
   LoaderOptions,
   LoaderContext,
+  LoaderOptionsWithShape,
   SyncDataType,
   LoaderOptionsType,
+  LoaderShapeType,
   LoaderReturnType,
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
@@ -29,7 +31,10 @@ import {getResourceUrl} from '../utils/resource-utils';
  */
 export function parseSync<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   data: SyncDataType,
   loader: LoaderT,

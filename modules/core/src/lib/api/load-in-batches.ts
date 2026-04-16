@@ -9,7 +9,9 @@ import type {
   FetchLike,
   BatchableDataType,
   LoaderBatchType,
-  LoaderOptionsType
+  LoaderOptionsType,
+  LoaderOptionsWithShape,
+  LoaderShapeType
 } from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
@@ -23,7 +25,10 @@ type FileType = string | File | Blob | Response | (string | File | Blob | Respon
  */
 export async function loadInBatches<
   LoaderT extends LoaderWithParser,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   files: FileType,
   loader: LoaderT,

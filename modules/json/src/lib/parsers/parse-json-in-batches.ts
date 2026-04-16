@@ -19,6 +19,7 @@ export async function* parseJSONInBatches(
   options: JSONLoaderOptions
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const asyncIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
+  const shape = options?.json?.shape ?? 'array-row-table';
 
   const metadata = Boolean(options?.core?.metadata || (options as any)?.metadata);
   const {jsonpaths} = options.json || {};
@@ -27,7 +28,10 @@ export async function* parseJSONInBatches(
 
   // @ts-expect-error TODO fix Schema deduction
   const schema: Schema = null;
-  const tableBatchBuilder = new TableBatchBuilder(schema, options?.core);
+  const tableBatchBuilder = new TableBatchBuilder(schema, {
+    ...options?.core,
+    shape
+  });
 
   const parser = new StreamingJSONParser({jsonpaths});
 
@@ -40,7 +44,7 @@ export async function* parseJSONInBatches(
       if (metadata) {
         const initialBatch: TableBatch = {
           // Common fields
-          shape: options?.json?.shape || 'array-row-table',
+          shape,
           batchType: 'partial-result',
           data: [],
           length: 0,

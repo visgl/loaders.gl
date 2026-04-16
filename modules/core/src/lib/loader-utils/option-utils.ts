@@ -235,11 +235,44 @@ function normalizeOptionsInternal(
 
   const userOptions = normalizeLoaderOptions(options);
   mergeNestedFields(mergedOptions, userOptions);
+  applyCoreShapeDefault(mergedOptions, userOptions, loader);
 
   addUrlOptions(mergedOptions, url);
   addDeprecatedTopLevelOptions(mergedOptions);
 
   return mergedOptions;
+}
+
+function applyCoreShapeDefault(
+  mergedOptions: LoaderOptions,
+  userOptions: LoaderOptions,
+  loader: Loader
+): void {
+  const coreShape = mergedOptions.core?.shape;
+  if (coreShape === undefined) {
+    return;
+  }
+
+  const loaderScopedDefaults = loader.options?.[loader.id];
+  if (!isPureObject(loaderScopedDefaults) || !('shape' in loaderScopedDefaults)) {
+    return;
+  }
+
+  const globalLoaderScopedOptions = getGlobalLoaderOptions()[loader.id];
+  if (isPureObject(globalLoaderScopedOptions) && 'shape' in globalLoaderScopedOptions) {
+    return;
+  }
+
+  const userLoaderScopedOptions = userOptions[loader.id];
+  if (isPureObject(userLoaderScopedOptions) && 'shape' in userLoaderScopedOptions) {
+    return;
+  }
+
+  const loaderScopedOptions = mergedOptions[loader.id];
+  mergedOptions[loader.id] = {
+    ...(isPureObject(loaderScopedOptions) ? loaderScopedOptions : {}),
+    shape: coreShape
+  };
 }
 
 // Merge nested options objects

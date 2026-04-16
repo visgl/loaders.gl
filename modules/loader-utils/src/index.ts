@@ -33,6 +33,8 @@ export type {
   LoaderContext,
   StrictLoaderOptions,
   LoaderOptions,
+  LoaderShapeType,
+  LoaderOptionsWithShape,
   LoaderOptionsType,
   LoaderReturnType,
   LoaderBatchType,
