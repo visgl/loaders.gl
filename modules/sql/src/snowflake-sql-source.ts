@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema} from '@loaders.gl/schema';
-import type {Source, CoreAPI} from '@loaders.gl/loader-utils';
+import type {SourceLoader, CoreAPI} from '@loaders.gl/loader-utils';
 
 import {SQLDataSource, SQL_SOURCE_DEFAULT_OPTIONS} from './sql-source';
 import type {
@@ -25,6 +25,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Snowflake-backed SQL source. */
 export const SnowflakeSQLSource = {
+  dataType: null as unknown as SnowflakeSQLDataSource,
+  batchType: null as never,
   name: 'SnowflakeSQLSource',
   id: 'snowflake-sql',
   module: 'sql',
@@ -34,6 +36,30 @@ export const SnowflakeSQLSource = {
   type: 'snowflake-sql',
   fromUrl: true,
   fromBlob: false,
+  options: {
+    sql: {
+      resultFormat: 'auto',
+      adapterOptions: {},
+      browserAdapterFactory: undefined,
+      nodeAdapterFactory: undefined
+    },
+    duckdb: {
+      accessMode: 'auto',
+      bundles: undefined,
+      databasePath: undefined,
+      remoteUrl: undefined,
+      workerUrl: undefined
+    },
+    snowflake: {
+      account: undefined,
+      database: undefined,
+      schema: undefined,
+      token: undefined,
+      warehouse: undefined,
+      role: undefined,
+      authenticator: undefined
+    }
+  },
   defaultOptions: SQL_SOURCE_DEFAULT_OPTIONS,
   testURL: (url: string): boolean => /^(sql\+snowflake|snowflake):\/\//i.test(url),
   createDataSource: (
@@ -41,7 +67,7 @@ export const SnowflakeSQLSource = {
     options: SQLSourceOptions,
     coreApi?: CoreAPI
   ): SnowflakeSQLDataSource => new SnowflakeSQLDataSource(data, options, coreApi)
-} as const satisfies Source<SnowflakeSQLDataSource>;
+} as const satisfies SourceLoader<SnowflakeSQLDataSource>;
 
 /** SQLDataSource specialization for Snowflake. */
 export class SnowflakeSQLDataSource extends SQLDataSource {

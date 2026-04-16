@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema} from '@loaders.gl/schema';
-import type {Source, CoreAPI} from '@loaders.gl/loader-utils';
+import type {SourceLoader, CoreAPI} from '@loaders.gl/loader-utils';
 import {convertArrowToTable} from '@loaders.gl/schema-utils';
 
 import {SQLDataSource, SQL_SOURCE_DEFAULT_OPTIONS} from './sql-source';
@@ -29,6 +29,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** DuckDB-backed SQL source. */
 export const DuckDBSQLSource = {
+  dataType: null as unknown as DuckDBSQLDataSource,
+  batchType: null as never,
   name: 'DuckDBSQLSource',
   id: 'duckdb-sql',
   module: 'sql',
@@ -38,6 +40,30 @@ export const DuckDBSQLSource = {
   type: 'duckdb-sql',
   fromUrl: true,
   fromBlob: false,
+  options: {
+    sql: {
+      resultFormat: 'auto',
+      adapterOptions: {},
+      browserAdapterFactory: undefined,
+      nodeAdapterFactory: undefined
+    },
+    duckdb: {
+      accessMode: 'auto',
+      bundles: undefined,
+      databasePath: undefined,
+      remoteUrl: undefined,
+      workerUrl: undefined
+    },
+    snowflake: {
+      account: undefined,
+      database: undefined,
+      schema: undefined,
+      token: undefined,
+      warehouse: undefined,
+      role: undefined,
+      authenticator: undefined
+    }
+  },
   defaultOptions: SQL_SOURCE_DEFAULT_OPTIONS,
   testURL: (url: string): boolean => /^duckdb:\/\//i.test(url),
   createDataSource: (
@@ -45,7 +71,7 @@ export const DuckDBSQLSource = {
     options: SQLSourceOptions,
     coreApi?: CoreAPI
   ): DuckDBSQLDataSource => new DuckDBSQLDataSource(data, options, coreApi)
-} as const satisfies Source<DuckDBSQLDataSource>;
+} as const satisfies SourceLoader<DuckDBSQLDataSource>;
 
 /** SQLDataSource specialization for DuckDB. */
 export class DuckDBSQLDataSource extends SQLDataSource {
