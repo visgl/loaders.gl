@@ -150,7 +150,7 @@ const config = {
           // new webpack.EnvironmentPlugin(['MapboxAccessToken', 'GoogleMapsAPIKey', 'GoogleMapsMapId']),
           // These modules break server side bundling
           new webpack.IgnorePlugin({
-            resourceRegExp: /sql/
+            resourceRegExp: /^sql\.js$/
           }),
           new webpack.NormalModuleReplacementPlugin(/^web-worker$/, resolve('../node_modules/web-worker/src/browser/index.js')),
           new webpack.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
