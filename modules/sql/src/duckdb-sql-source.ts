@@ -3,8 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema} from '@loaders.gl/schema';
-import {Source} from '@loaders.gl/loader-utils';
-import type {CoreAPI} from '@loaders.gl/loader-utils';
+import type {Source, CoreAPI} from '@loaders.gl/loader-utils';
 import {convertArrowToTable} from '@loaders.gl/schema-utils';
 
 import {SQLDataSource, SQL_SOURCE_DEFAULT_OPTIONS} from './sql-source';
