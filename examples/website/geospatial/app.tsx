@@ -27,7 +27,7 @@ import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
-// import {GeoPackageLoader} from '@loaders.gl/geopackage'; // GeoPackage depends on sql.js which has bundling issues in docusuarus.
+import {GeoPackageLoader} from '@loaders.gl/geopackage';
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
@@ -39,7 +39,7 @@ const LOADERS = [
   GeoArrowLoader,
   GeoParquetLoader,
   FlatGeobufLoader,
-  // GeoPackageLoader
+  GeoPackageLoader,
   ShapefileLoader,
   KMLLoader,
   GPXLoader,
@@ -67,7 +67,8 @@ const LOADER_OPTIONS = {
     shape: 'geojson-table'
   },
   geopackage: {
-    shape: 'geojson-table'
+    shape: 'geojson-table',
+    sqlJsCDN: 'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'
     // table: 'FEATURESriversds'
   },
   shapefile: {
