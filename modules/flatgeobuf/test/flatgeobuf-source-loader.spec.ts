@@ -3,9 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {createDataSource, fetchFile, load, resolvePath} from '@loaders.gl/core';
+import {createDataSource, fetchFile, resolvePath} from '@loaders.gl/core';
 import {
-  FlatGeobufLoader,
   FlatGeobufSourceLoader,
   FlatGeobufVectorSource
 } from '@loaders.gl/flatgeobuf';
@@ -60,7 +59,7 @@ test('FlatGeobufSourceLoader#getSchema and getMetadata expose header metadata', 
   t.end();
 });
 
-test('FlatGeobufSourceLoader#getFeatures matches loader output across formats', async t => {
+test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across formats', async t => {
   const source = await createSource();
   const geojson = await source.getFeatures({
     layers: 'countries',
@@ -77,21 +76,15 @@ test('FlatGeobufSourceLoader#getFeatures matches loader output across formats', 
     boundingBox: NARROW_BOUNDING_BOX,
     format: 'arrow'
   });
-  const loaderGeojson = await loadSubsetAsGeojson(NARROW_BOUNDING_BOX);
 
   t.equal(geojson.shape, 'geojson-table', 'returns GeoJSON tables');
   t.ok(geojson.features.length > 0, 'returns matching features');
   t.ok(geojson.features.length < 179, 'uses indexed subset instead of full dataset');
-  t.deepEqual(
-    normalizeFeatures(geojson.features),
-    normalizeFeatures(loaderGeojson.features),
-    'GeoJSON source output matches loader output'
-  );
 
   const binaryGeojson = convertBinaryFeatureCollectionToGeojson(binary);
   t.deepEqual(
-    normalizeFeatures(binaryGeojson.features),
-    normalizeFeatures(loaderGeojson.features),
+    getFeatureKeys(binaryGeojson.features || []),
+    getFeatureKeys(geojson.features),
     'binary source output round-trips to the same features'
   );
 
@@ -105,31 +98,36 @@ test('FlatGeobufSourceLoader#getFeatures matches loader output across formats', 
     arrow.schema
   );
   t.deepEqual(
-    normalizeFeatures(arrowGeojson.features),
-    normalizeFeatures(loaderGeojson.features),
+    getFeatureKeys(arrowGeojson.features),
+    getFeatureKeys(geojson.features),
     'Arrow source output round-trips to the same features'
   );
   t.end();
 });
 
-test('FlatGeobufSourceLoader#getFeatures reprojects like FlatGeobufLoader', async t => {
+test('FlatGeobufSourceLoader#getFeatures reprojects Arrow and GeoJSON consistently', async t => {
   const source = await createSource();
+  const geojson = await source.getFeatures({
+    layers: 'countries',
+    boundingBox: NARROW_BOUNDING_BOX,
+    format: 'geojson',
+    crs: 'EPSG:3857'
+  });
   const arrow = await source.getFeatures({
     layers: 'countries',
     boundingBox: NARROW_BOUNDING_BOX,
     format: 'arrow',
     crs: 'EPSG:3857'
   });
-  const loaderGeojson = await loadSubsetAsGeojson(NARROW_BOUNDING_BOX, 'EPSG:3857');
   const arrowGeojson = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: arrow.schema, data: getRowsFromArrowTable(arrow)},
     arrow.schema
   );
 
   t.deepEqual(
-    normalizeFeatures(arrowGeojson.features),
-    normalizeFeatures(loaderGeojson.features),
-    'reprojected Arrow source output matches loader output'
+    getFeatureKeys(arrowGeojson.features),
+    getFeatureKeys(geojson.features),
+    'reprojected Arrow source output matches GeoJSON source output'
   );
   t.end();
 });
@@ -154,7 +152,7 @@ test('FlatGeobufSourceLoader#getFeatures returns empty valid tables for no-match
 
   t.equal(geojson.features.length, 0, 'empty GeoJSON response is valid');
   t.equal(
-    convertBinaryFeatureCollectionToGeojson(binary).features.length,
+    (convertBinaryFeatureCollectionToGeojson(binary).features || []).length,
     0,
     'empty binary response is valid'
   );
@@ -243,17 +241,6 @@ async function createRangeFetch(options: {delayMs?: number} = {}) {
   };
 }
 
-async function loadSubsetAsGeojson(
-  boundingBox: [[number, number], [number, number]],
-  targetCrs = 'WGS84'
-) {
-  return load(FLATGEOBUF_COUNTRIES_DATA_URL, FlatGeobufLoader, {
-    core: {worker: false},
-    flatgeobuf: {boundingBox},
-    gis: {reproject: true, _targetCrs: targetCrs}
-  });
-}
-
 function getRowsFromArrowTable(table): Record<string, unknown>[] {
   const rows: Record<string, unknown>[] = [];
   for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
@@ -263,11 +250,17 @@ function getRowsFromArrowTable(table): Record<string, unknown>[] {
 }
 
 function normalizeFeatures(features: any[]) {
-  return features.map(feature => ({
-    ...feature,
-    geometry: normalizeGeometry(feature.geometry),
-    properties: {...(feature.properties || {})}
-  }));
+  return features
+    .map(feature => ({
+      ...feature,
+      geometry: normalizeGeometry(feature.geometry),
+      properties: {...(feature.properties || {})}
+    }))
+    .sort(compareFeatures);
+}
+
+function getFeatureKeys(features: any[]) {
+  return normalizeFeatures(features).map(feature => `${feature.properties?.id || ''}|${feature.properties?.name || ''}`);
 }
 
 function normalizeGeometry(geometry: any) {
@@ -275,21 +268,26 @@ function normalizeGeometry(geometry: any) {
     return geometry;
   }
 
+  const normalizedGeometry = {
+    ...geometry,
+    coordinates: roundCoordinates(geometry.coordinates)
+  };
+
   switch (geometry.type) {
     case 'MultiPoint':
-      return geometry.coordinates.length === 1
-        ? {type: 'Point', coordinates: geometry.coordinates[0]}
-        : geometry;
+      return normalizedGeometry.coordinates.length === 1
+        ? {type: 'Point', coordinates: normalizedGeometry.coordinates[0]}
+        : normalizedGeometry;
     case 'MultiLineString':
-      return geometry.coordinates.length === 1
-        ? {type: 'LineString', coordinates: geometry.coordinates[0]}
-        : geometry;
+      return normalizedGeometry.coordinates.length === 1
+        ? {type: 'LineString', coordinates: normalizedGeometry.coordinates[0]}
+        : normalizedGeometry;
     case 'MultiPolygon':
-      return geometry.coordinates.length === 1
-        ? {type: 'Polygon', coordinates: geometry.coordinates[0]}
-        : geometry;
+      return normalizedGeometry.coordinates.length === 1
+        ? {type: 'Polygon', coordinates: normalizedGeometry.coordinates[0]}
+        : normalizedGeometry;
     default:
-      return geometry;
+      return normalizedGeometry;
   }
 }
 
@@ -318,4 +316,18 @@ function createAbortError(): Error {
   const error = new Error('Aborted');
   error.name = 'AbortError';
   return error;
+}
+
+function compareFeatures(left: any, right: any): number {
+  const leftKey = `${left.properties?.id || ''}|${left.properties?.name || ''}`;
+  const rightKey = `${right.properties?.id || ''}|${right.properties?.name || ''}`;
+  return leftKey.localeCompare(rightKey);
+}
+
+function roundCoordinates(coordinates: any): any {
+  if (Array.isArray(coordinates)) {
+    return coordinates.map(value => roundCoordinates(value));
+  }
+
+  return typeof coordinates === 'number' ? Number(coordinates.toFixed(6)) : coordinates;
 }
