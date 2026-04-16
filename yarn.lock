@@ -5086,6 +5086,7 @@ __metadata:
     "@loaders.gl/gis": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
+    "@loaders.gl/schema-utils": "npm:4.4.0"
     "@tmcw/togeojson": "npm:^4.5.0"
     "@xmldom/xmldom": "npm:^0.8.12"
   peerDependencies:
