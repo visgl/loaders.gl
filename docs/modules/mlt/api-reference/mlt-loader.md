@@ -86,7 +86,7 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 ## Additional examples
 
 - [Loaders.gl MLT website example](/examples/tiles/mlt).
-- [MLTSource](/docs/modules/mlt/api-reference/mlt-source) for URL tile sets.
+- [MLTSourceLoader](/docs/modules/mlt/api-reference/mlt-source-loader) for URL tile sets.
 
 ## Attribution
 

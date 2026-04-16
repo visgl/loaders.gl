@@ -191,15 +191,17 @@ export function Attributions(props: {attributions?: string[]}) {
 /**
  * Shows the selected example in bold font
  */
-const ExampleHeader: React.FC = ({categoryName, exampleName}) => {
-  if (!categoryName || !exampleName) {
+const ExampleHeader: React.FC = ({categoryName}) => {
+  if (!categoryName) {
     return null;
   }
+
+  const headerTitle = categoryName.endsWith('Loader') ? categoryName : `${categoryName}Loader`;
 
   return (
     <div>
       <h3>
-        {exampleName} <b>{categoryName}</b>{' '}
+        <b>{headerTitle}</b>
       </h3>
     </div>
   );

@@ -193,5 +193,5 @@ manually.
 ## Related APIs
 
 - [`TileJSONLoader`](/docs/modules/mvt/api-reference/tilejson-loader)
-- [`MVTSource`](/docs/modules/mvt/api-reference/mvt-source)
+- [`MVTSourceLoader`](/docs/modules/mvt/api-reference/mvt-source-loader)
 - [`Map Styles`](/docs/modules/mvt/formats/map-style)

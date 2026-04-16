@@ -7,17 +7,17 @@ import {BlobFile} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/version';
 
 import {VectorSourceInfo, ImageSourceInfo} from './source-info';
-import {PMTilesTileSource, PMTilesSourceOptions} from './pmtiles-source';
+import {PMTilesTileSource, PMTilesSourceLoaderOptions} from './pmtiles-source-loader';
 import {PMTilesFormat} from './pmtiles-format';
 
 export type PMTilesLoaderOptions = LoaderOptions & {
-  pmtiles?: PMTilesSourceOptions['pmtiles'];
+  pmtiles?: PMTilesSourceLoaderOptions['pmtiles'];
 };
 
 /**
  * Loader for PMTiles metadata
  * @note This loader is intended to allow PMTiles to be treated like other file types in top-level loading logic.
- * @note For actual access to the tile data, use the PMTilesSource class.
+ * @note For actual access to the tile data, use the PMTilesSourceLoader class.
  */
 export const PMTilesLoader = {
   ...PMTilesFormat,

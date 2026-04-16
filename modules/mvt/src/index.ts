@@ -31,12 +31,13 @@ export type {MVTLoaderOptions} from './mvt-loader';
 export {MVTWriter} from './mvt-writer';
 export type {MVTWriterOptions} from './lib/encode-mvt';
 
-// MVTSource
+// MVTSourceLoader
 
-export {MVTSource} from './mvt-source';
-export type {MVTTileSource, MVTSourceOptions} from './mvt-source';
+export {MVTSourceLoader} from './mvt-source-loader';
+export {MVTTileSource} from './mvt-source-loader';
+export type {MVTSourceLoaderOptions} from './mvt-source-loader';
 
-// TableTileSource (dynamically tiles a table)
+// TableTileSourceLoader (dynamically tiles a table)
 
-export type {TableTileSourceOptions, TableVectorTileSource} from './table-tile-source';
-export {TableTileSource} from './table-tile-source';
+export {TableTileSourceLoader, TableVectorTileSource} from './table-tile-source-loader';
+export type {TableTileSourceLoaderOptions} from './table-tile-source-loader';

@@ -35,7 +35,6 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/deck-layers\""
   },
   "dependencies": {
-    "@deck.gl-community/experimental": "^9.2.8",
     "@deck.gl/core": "^9.3.0",
     "@deck.gl/geo-layers": "^9.3.0",
     "@loaders.gl/compression": "4.4.0",

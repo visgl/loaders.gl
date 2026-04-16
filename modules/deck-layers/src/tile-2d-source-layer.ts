@@ -17,7 +17,7 @@ import {createDataSource} from '@loaders.gl/core';
 import type {
   DataSourceOptions,
   GetTileDataParameters,
-  Source,
+  SourceLoader,
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
@@ -50,7 +50,7 @@ export type Tile2DSourceLayerProps<DataT = unknown> = CompositeLayerProps &
     /** URL/blob input or a fully constructed loaders.gl tile source. */
     data: Tile2DSourceLayerData;
     /** Source factories used to auto-create tile sources from URL/blob inputs. */
-    sources?: Readonly<Source[]>;
+    sources?: Readonly<SourceLoader[]>;
     /** Options forwarded to `createDataSource` when `sources` are supplied. */
     sourceOptions?: DataSourceOptions;
     /** Optional metadata used by the example overlay and zoom bounds. */
@@ -135,7 +135,7 @@ const TILE2D_LAYER_DEFAULT_OPTION_VALUES = {
  *
  * This class is not part of the supported public API and is documented only through TSDoc.
  */
-class MVTSourceLayer extends MVTLayer<any> {
+class MVTSourceLoaderLayer extends MVTLayer<any> {
   /** Sync the cached vector tile source whenever deck.gl reports a data change. */
   updateState(params: any): void {
     super.updateState(params);
@@ -388,7 +388,7 @@ export class Tile2DSourceLayer<DataT = any> extends CompositeLayer<Tile2DSourceL
     const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
-      new MVTSourceLayer({
+      new MVTSourceLoaderLayer({
         id: `${this.props.id}-mvt`,
         data: tileSource as any,
         getLineColor: [0, 0, 0],

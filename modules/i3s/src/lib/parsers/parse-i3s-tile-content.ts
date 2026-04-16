@@ -78,7 +78,7 @@ export async function parseI3STileContent(
     featureIds: [],
     vertexCount: 0,
     modelMatrix: new Matrix4(),
-    coordinateSystem: 0,
+    coordinateSystem: 'meter-offsets',
     byteLength: 0,
     texture: null
   };
@@ -192,8 +192,7 @@ async function parseI3SNodeGeometry(
       },
       nestedContext
     )) as DracoMesh;
-    // @ts-expect-error
-    vertexCount = decompressedGeometry.header.vertexCount;
+    vertexCount = decompressedGeometry.header?.vertexCount ?? 0;
     indices = decompressedGeometry.indices?.value;
     const {
       POSITION,
@@ -261,10 +260,10 @@ async function parseI3SNodeGeometry(
   ) {
     const enuMatrix = parsePositions(attributes.position, tileOptions);
     content.modelMatrix = enuMatrix.invert();
-    content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
+    content.coordinateSystem = 'meter-offsets';
   } else {
     content.modelMatrix = getModelMatrix(attributes.position);
-    content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
+    content.coordinateSystem = 'lnglat-offsets';
   }
 
   content.attributes = {

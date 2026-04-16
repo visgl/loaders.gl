@@ -2,26 +2,23 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Source} from '@loaders.gl/loader-utils';
+import type {SourceLoader} from '@loaders.gl/loader-utils';
+import {selectLoaderSync} from './select-loader';
 
 /** Guess service type from URL */
 export function selectSource(
   url: string | Blob,
-  sources: Source[],
+  sources: SourceLoader[],
   options?: {
     /** Provide id of a source to select that source. Omit or provide 'auto' to test the source*/
     type?: string;
     nothrow?: boolean;
   }
-): Source | null {
+): SourceLoader | null {
   const type = options?.type || 'auto';
-  let selectedSource: Source | null = null;
+  let selectedSource: SourceLoader | null = null;
   if (type === 'auto') {
-    for (const source of sources) {
-      if (typeof url === 'string' && source.testURL && source.testURL(url)) {
-        return source;
-      }
-    }
+    selectedSource = selectLoaderSync(url, sources, {core: {nothrow: true}}) as SourceLoader | null;
   } else {
     selectedSource = getSourceOfType(type, sources);
   }
@@ -34,7 +31,7 @@ export function selectSource(
 }
 
 /** Guess service type from URL */
-function getSourceOfType(type: string, sources: Source[]): Source | null {
+function getSourceOfType(type: string, sources: SourceLoader[]): SourceLoader | null {
   for (const service of sources) {
     if (service.type === type) {
       return service;

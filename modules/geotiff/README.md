@@ -7,11 +7,11 @@ This module contains loaders and viewport-driven raster sources for TIFF and Geo
 Exports include:
 
 - `GeoTIFFLoader` for loader-based parsing
-- `GeoTIFFSource` / `GeoTIFFRasterSource` for viewport-driven raster access
-- `OMETiffSource` / `OMETiffImageSource` for non-geospatial OME-TIFF planes
+- `GeoTIFFSourceLoader` / `GeoTIFFRasterSource` for viewport-driven raster access
+- `OMETiffSourceLoader` / `OMETiffImageSource` for non-geospatial OME-TIFF planes
 - `loadGeoTiff()` / `TiffPixelSource` for lower-level pixel-source workflows
 
-`GeoTIFFSource` accepts 2D viewports and returns typed raster payloads suitable for texture upload.
+`GeoTIFFSourceLoader` accepts 2D viewports and returns typed raster payloads suitable for texture upload.
 The first version preserves source CRS metadata and rejects reprojection requests instead of
 resampling into a different projection.
 

@@ -7,6 +7,70 @@ These deprecations.removals are being considered for v5
 **@loaders.gl/core**
 
 - Top-level loader options are no longer supported
+- `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
+- `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
+- `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
+
+**@loaders.gl/loader-utils, @loaders.gl/core, and source modules**
+
+If you are upgrading from the 4.4 release line, migrate top-level source factories and types as follows:
+
+| v4.4 | v5.0 |
+| --- | --- |
+| `Source` | `SourceLoader` |
+| `WMSSource` | `WMSSourceLoader` |
+| `WFSSource` | `WFSSourceLoader` |
+| `MVTSource` | `MVTSourceLoader` |
+| `MLTSource` | `MLTSourceLoader` |
+| `PMTilesSource` | `PMTilesSourceLoader` |
+| `COPCSource` | `COPCSourceLoader` |
+| `PotreeSource` | `PotreeSourceLoader` |
+| `TableTileSource` | `TableTileSourceLoader` |
+| `FlatGeobufSource` | `FlatGeobufSourceLoader` |
+| `GeoTIFFSource` | `GeoTIFFSourceLoader` |
+| `OMETiffSource` | `OMETiffSourceLoader` |
+
+Concrete runtime classes are unchanged. For example:
+
+- `WMSSourceLoader` still creates `WMSImageSource`
+- `MVTSourceLoader` still creates `MVTTileSource`
+- `PMTilesSourceLoader` still creates `PMTilesTileSource`
+- `TableTileSourceLoader` still creates `TableVectorTileSource`
+
+The old top-level `*Source` aliases have been removed, so imports must be updated explicitly.
+
+### SourceLoader migration examples
+
+Before, in 4.4:
+
+```ts
+import type {Source} from '@loaders.gl/loader-utils';
+import {createDataSource, load} from '@loaders.gl/core';
+import {WMSSource, PMTilesSource} from '@loaders.gl/wms';
+
+const sources: Source[] = [WMSSource, PMTilesSource];
+const wmsSource = createDataSource(url, [WMSSource], options);
+const loaded = await load(url, WMSSource);
+```
+
+Now, in v5:
+
+```ts
+import type {SourceLoader} from '@loaders.gl/loader-utils';
+import {createDataSource, load} from '@loaders.gl/core';
+import {WMSSourceLoader} from '@loaders.gl/wms';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+
+const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
+const wmsSource = createDataSource(url, [WMSSourceLoader], options);
+const loaded = await load(url, WMSSourceLoader); // WMSImageSource
+```
+
+This unifies top-level loading behavior:
+
+- parser loaders still return parsed data
+- source loaders now return runtime source objects
+- metadata remains available from the returned runtime object, typically via `await source.getMetadata()`
 
 **@loaders.gl/images**
 

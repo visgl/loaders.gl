@@ -6,7 +6,7 @@
 </p>
 
 `RangeRequestScheduler` is a low-level utility for coalescing nearby byte-range requests.
-It is used by `PMTilesSource` and can be reused by other byte-range-addressable Sources.
+It is used by `PMTilesSourceLoader` and can be reused by other byte-range-addressable Sources.
 
 ```typescript
 import {RangeRequestScheduler, createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';

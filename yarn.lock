@@ -4790,7 +4790,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/deck-layers@workspace:modules/deck-layers"
   dependencies:
-    "@deck.gl-community/experimental": "npm:^9.2.8"
     "@deck.gl/core": "npm:^9.3.0"
     "@deck.gl/geo-layers": "npm:^9.3.0"
     "@loaders.gl/compression": "npm:4.4.0"
