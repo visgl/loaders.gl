@@ -7,9 +7,11 @@ import type {Schema} from '@loaders.gl/schema';
 import type {
   GetFeaturesParameters,
   VectorSource,
-  VectorSourceData,
   VectorSourceMetadata
 } from '@loaders.gl/loader-utils';
+
+/** Resolved feature-table type returned by the active vector source. */
+type VectorSetData = Awaited<ReturnType<VectorSource['getFeatures']>>;
 
 /** Mutable fetch options consumed by {@link VectorSet}. */
 export type VectorSetOptions = {
@@ -32,7 +34,7 @@ export type VectorSetState = {
   /** True while the latest viewport request is in flight. */
   isLoading: boolean;
   /** Latest accepted viewport table. */
-  data: VectorSourceData | null;
+  data: VectorSetData | null;
   /** Resolved source schema when available. */
   schema: Schema | null;
   /** Resolved source metadata when available. */
@@ -48,7 +50,7 @@ export type VectorSetEvents = {
   /** Called whenever any public state changes. */
   onUpdate?: () => void;
   /** Called when a viewport request resolves and becomes current. */
-  onDataLoad?: (table: VectorSourceData) => void;
+  onDataLoad?: (table: VectorSetData) => void;
   /** Called when metadata resolves. */
   onMetadataLoad?: (metadata: VectorSourceMetadata) => void;
   /** Called when schema resolves. */
@@ -79,7 +81,7 @@ export class VectorSet {
   /** True while the latest viewport request is in flight. */
   isLoading = false;
   /** Latest accepted viewport table. */
-  data: VectorSourceData | null = null;
+  data: VectorSetData | null = null;
   /** Resolved source schema. */
   schema: Schema | null = null;
   /** Resolved source metadata. */
@@ -303,7 +305,7 @@ export class VectorSet {
     }
   }
 
-  private emitDataLoad(table: VectorSourceData): void {
+  private emitDataLoad(table: VectorSetData): void {
     for (const subscription of this.subscriptions) {
       subscription.onDataLoad?.(table);
     }
