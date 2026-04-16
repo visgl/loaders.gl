@@ -118,8 +118,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: coverage/lcov.info
           format: lcov
-          flag-name: node-and-headless
-          debug: true
 
   build:
     name: Build
