@@ -37,7 +37,9 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "zarr": "^0.5.0"
+    "@loaders.gl/loader-utils": "4.4.0",
+    "zarr": "^0.5.0",
+    "zarrita": "^0.7.1"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~4.4.0"

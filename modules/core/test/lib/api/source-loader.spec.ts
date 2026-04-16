@@ -1,3 +1,4 @@
+import {pathToFileURL} from 'node:url';
 import {expect, test} from 'vitest';
 import {createDataSource, fetchFile, load, parse, resolvePath} from '@loaders.gl/core';
 import {
@@ -8,6 +9,7 @@ import {
 } from '@loaders.gl/mvt';
 import {PMTilesSourceLoader, PMTilesTileSource} from '@loaders.gl/pmtiles';
 import {WMSSourceLoader, WMSImageSource} from '@loaders.gl/wms';
+import {OMEZarrSourceLoader, OMEZarrImageSource} from '@loaders.gl/zarr';
 import type {Feature, GeoJSONTable} from '@loaders.gl/schema';
 
 const GEOJSON_TABLE: GeoJSONTable = {
@@ -25,6 +27,10 @@ const GEOJSON_TABLE: GeoJSONTable = {
 const PMTILES_FIXTURE_URL = resolvePath(
   '@loaders.gl/pmtiles/test/data/pmtiles-v2/test_fixture_1.pmtiles'
 );
+const OME_ZARR_FIXTURE_URL = resolvePath('@loaders.gl/zarr/test/data/ome.zarr');
+const OME_ZARR_V3_FIXTURE_URL = pathToFileURL(
+  resolvePath('@loaders.gl/zarr/test/data/spatialdata-v3.zarr')
+).href;
 
 async function createPmtilesFixtureBlob(): Promise<Blob> {
   const response = await fetchFile(PMTILES_FIXTURE_URL);
@@ -59,6 +65,28 @@ test('load#load returns PMTilesTileSource for PMTilesSourceLoader', async () => 
 test('load#load returns TableVectorTileSource for TableTileSourceLoader', async () => {
   const source = await load(GEOJSON_TABLE, TableTileSourceLoader);
   expect(source).toBeInstanceOf(TableVectorTileSource);
+});
+
+test('load#load returns OMEZarrImageSource for OMEZarrSourceLoader', async () => {
+  const source = await load(OME_ZARR_FIXTURE_URL, OMEZarrSourceLoader);
+  expect(source).toBeInstanceOf(OMEZarrImageSource);
+});
+
+test('createDataSource#createDataSource returns OMEZarrImageSource for OMEZarrSourceLoader', () => {
+  const source = createDataSource(OME_ZARR_FIXTURE_URL, [OMEZarrSourceLoader], {});
+  expect(source).toBeInstanceOf(OMEZarrImageSource);
+});
+
+test('createDataSource#createDataSource returns OMEZarrImageSource for v3 OMEZarrSourceLoader', async () => {
+  const source = createDataSource(OME_ZARR_V3_FIXTURE_URL, [OMEZarrSourceLoader], {
+    zarr: {path: 'images/example-image'}
+  });
+  expect(source).toBeInstanceOf(OMEZarrImageSource);
+  await expect(source.getMetadata()).resolves.toMatchObject({
+    width: 439,
+    height: 167,
+    bandCount: 3
+  });
 });
 
 test('parse#parse rejects SourceLoader candidates', async () => {

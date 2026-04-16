@@ -5507,7 +5507,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/zarr@workspace:modules/zarr"
   dependencies:
+    "@loaders.gl/loader-utils": "npm:4.4.0"
     zarr: "npm:^0.5.0"
+    zarrita: "npm:^0.7.1"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -10601,6 +10603,16 @@ __metadata:
     js-yaml: "npm:^3.10.0"
     tslib: "npm:^2.4.0"
   checksum: 10c0/a0c340e13129643162423d7e666061c0b39b143bfad3fc5a74c7d92a30fd740f6665d41cd4e61832c20375889d793eea1d1d103cacb39ed68f7acd168add8c53
+  languageName: node
+  linkType: hard
+
+"@zarrita/storage@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@zarrita/storage@npm:0.2.0"
+  dependencies:
+    reference-spec-reader: "npm:^0.2.0"
+    unzipit: "npm:2.0.0"
+  checksum: 10c0/9f433cb8ab404741f05c842b57e03710cc8add4f58826a001099a7b0eff7f2bb3fd3a87c9c038655d479abc9a50368eaf0685898433e313c9cf587b6d51b03a8
   languageName: node
   linkType: hard
 
@@ -16292,7 +16304,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fflate@npm:^0.8.2":
+"fflate@npm:^0.8.0, fflate@npm:^0.8.2":
   version: 0.8.2
   resolution: "fflate@npm:0.8.2"
   checksum: 10c0/03448d630c0a583abea594835a9fdb2aaf7d67787055a761515bf4ed862913cfd693b4c4ffd5c3f3b355a70cf1e19033e9ae5aedcca103188aaff91b8bd6e293
@@ -22297,6 +22309,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"numcodecs@npm:^0.3.2":
+  version: 0.3.2
+  resolution: "numcodecs@npm:0.3.2"
+  dependencies:
+    fflate: "npm:^0.8.0"
+  checksum: 10c0/38e6e60ee063f63f6530f78f9dd4c1b4e347989b29950ddcf3307e43579ad1bc1ba17a6faf0e5cb9786517ac1489c02ee86a77ca8c19fbd70d0d20a23e7d6a81
+  languageName: node
+  linkType: hard
+
 "nx@npm:>=17.1.2 < 21":
   version: 20.8.4
   resolution: "nx@npm:20.8.4"
@@ -25503,6 +25524,13 @@ __metadata:
     indent-string: "npm:^4.0.0"
     strip-indent: "npm:^3.0.0"
   checksum: 10c0/d64a6b5c0b50eb3ddce3ab770f866658a2b9998c678f797919ceb1b586bab9259b311407280bd80b804e2a7c7539b19238ae6a2a20c843f1a7fcff21d48c2eae
+  languageName: node
+  linkType: hard
+
+"reference-spec-reader@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "reference-spec-reader@npm:0.2.0"
+  checksum: 10c0/8d966a0124978edf910aae10fcc56c13c2b66393ce0217819296ff1ff1b626754698c6edc4b2bfe6171acfac827979eb8ef7a884f521794798304be4a523ccd0
   languageName: node
   linkType: hard
 
@@ -28777,6 +28805,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"unzipit@npm:2.0.0":
+  version: 2.0.0
+  resolution: "unzipit@npm:2.0.0"
+  checksum: 10c0/7ee6af8bf1b8a978c08cebbe65d7e0dfab8a0889d20ef89c1b2219389cad255074611f895242f34087cb0cf428719dd8251734d0e8fa4033c618c9ff21d67445
+  languageName: node
+  linkType: hard
+
 "upath@npm:2.0.1":
   version: 2.0.1
   resolution: "upath@npm:2.0.1"
@@ -30063,6 +30098,16 @@ __metadata:
     numcodecs: "npm:^0.2.2"
     p-queue: "npm:^7.1.0"
   checksum: 10c0/d784683d06debaff526165cc6271c5a5968468d77d241180d7e01c4c8c7035b9e16888aa81606f6402121cddb9925c9822bb8d1363fa00e40f97ec57426045f8
+  languageName: node
+  linkType: hard
+
+"zarrita@npm:^0.7.1":
+  version: 0.7.1
+  resolution: "zarrita@npm:0.7.1"
+  dependencies:
+    "@zarrita/storage": "npm:^0.2.0"
+    numcodecs: "npm:^0.3.2"
+  checksum: 10c0/f82f5710ff7a5594e02f50a3519a3a03eaba5395c0c546cdf9066a72c43442443191708835749917bd603e61062cf555fba3f0960ba3fc1c703aa76ed4ff7b9b
   languageName: node
   linkType: hard
 
