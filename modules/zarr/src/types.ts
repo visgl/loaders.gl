@@ -8,7 +8,8 @@ export type SupportedDtype = (typeof DTYPE_LOOKUP)[keyof typeof DTYPE_LOOKUP];
 export type SupportedTypedArray = InstanceType<(typeof globalThis)[`${SupportedDtype}Array`]>;
 
 interface Multiscale {
-  datasets: {path: string}[];
+  axes?: Array<string | {name?: string; type?: string}>;
+  datasets: {path: string; coordinateTransformations?: unknown[]}[];
   version?: string;
 }
 
@@ -36,13 +37,20 @@ interface Omero {
 
 interface MultiscaleAttrs {
   multiscales: Multiscale[];
+  coordinateTransformations?: unknown[];
 }
 
 interface OmeAttrs extends MultiscaleAttrs {
   omero: Omero;
 }
 
-export type RootAttrs = MultiscaleAttrs | OmeAttrs;
+interface OMEV05Attrs {
+  ome?: Partial<OmeAttrs> & {coordinateTransformations?: unknown[]};
+}
+
+export type RootAttrs = (MultiscaleAttrs | OmeAttrs) & OMEV05Attrs;
+
+export type {Channel, Multiscale, Omero};
 
 export interface PixelData {
   data: SupportedTypedArray;

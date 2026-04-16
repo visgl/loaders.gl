@@ -72,7 +72,7 @@ export function isInterleaved(shape: number[]) {
   return lastDimSize === 3 || lastDimSize === 4;
 }
 
-export function guessTileSize(arr: ZarrArray) {
+export function guessTileSize(arr: {shape: number[]; chunks: number[]}) {
   const interleaved = isInterleaved(arr.shape);
   const [yChunk, xChunk] = arr.chunks.slice(interleaved ? -3 : -2);
   const size = Math.min(yChunk, xChunk);
@@ -81,7 +81,10 @@ export function guessTileSize(arr: ZarrArray) {
 }
 
 export function guessLabels(rootAttrs: RootAttrs) {
-  if ('omero' in rootAttrs) {
+  if ('omero' in rootAttrs && rootAttrs.omero) {
+    return ['t', 'c', 'z', 'y', 'x'] as Labels<['t', 'c', 'z']>;
+  }
+  if ('ome' in rootAttrs && rootAttrs.ome?.omero) {
     return ['t', 'c', 'z', 'y', 'x'] as Labels<['t', 'c', 'z']>;
   }
   throw new Error(

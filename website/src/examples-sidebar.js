@@ -88,7 +88,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Bioimaging Raster Formats',
-      items: ['bioimaging/ome-tiff']
+      items: ['bioimaging/ome-tiff', 'bioimaging/ome-zarr']
     },
     {
       type: 'category',
