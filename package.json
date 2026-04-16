@@ -25,7 +25,7 @@
     "modules/*",
     "apps/*",
     "dev-modules/*",
-    "examples",
+    "examples/**",
     "website"
   ],
   "engines": {
