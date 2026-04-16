@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {CoreAPI, DataSourceOptions, Source} from '@loaders.gl/loader-utils';
+import type {CoreAPI, DataSourceOptions, SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 
@@ -66,7 +66,7 @@ export const GeoPackageSource = {
     options: GeoPackageSourceOptions,
     coreApi?: CoreAPI
   ): GeoPackageDataSource => new GeoPackageDataSource(data, options, coreApi)
-} as const satisfies Source<GeoPackageDataSource>;
+} as const satisfies SourceLoader<GeoPackageDataSource>;
 
 /**
  * GeoPackage data source that exposes vector table metadata and Arrow table reads.
