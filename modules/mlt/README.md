@@ -40,7 +40,7 @@ const featuresWgs84 = await parse(arrayBuffer, MLTLoader, {
 
 | Source                                                    |
 | --------------------------------------------------------- |
-| [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source) |
+| [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) |
 
 ## About MLT
 

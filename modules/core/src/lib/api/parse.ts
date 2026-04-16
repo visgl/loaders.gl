@@ -18,7 +18,8 @@ import {
   parseWithWorker,
   canParseWithWorker,
   mergeOptions,
-  isResponse
+  isResponse,
+  isSourceLoader
 } from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -102,6 +103,12 @@ export async function parse(
   // Note: if no loader was found, if so just return null
   if (!loader) {
     return null;
+  }
+
+  if (isSourceLoader(loader)) {
+    throw new Error(
+      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parse().`
+    );
   }
 
   // Normalize options

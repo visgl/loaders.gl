@@ -10,14 +10,20 @@ import type {
   LoaderOptionsType,
   LoaderReturnType,
   LoaderArrayOptionsType,
-  LoaderArrayReturnType
+  LoaderArrayReturnType,
+  SourceLoader
 } from '@loaders.gl/loader-utils';
-import {isBlob} from '@loaders.gl/loader-utils';
+import {isBlob, isSourceLoader} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 import {normalizeLoaderOptions} from '../loader-utils/option-utils';
+import {fetchFile} from '../fetch/fetch-file';
 
 import {parse} from './parse';
+import {parseSync} from './parse-sync';
+import {parseInBatches} from './parse-in-batches';
+import {loadInBatches} from './load-in-batches';
+import {selectLoader} from './select-loader';
 
 /**
  * Parses `data` using a specified loader
@@ -79,6 +85,64 @@ export async function load(
   } else {
     resolvedLoaders = loaders as Loader | Loader[];
     resolvedOptions = options as LoaderOptions;
+  }
+
+  if (!Array.isArray(resolvedLoaders) && isSourceLoader(resolvedLoaders)) {
+    const runtimeCoreApi = {
+      fetchFile,
+      parse,
+      parseSync,
+      parseInBatches,
+      load,
+      loadInBatches
+    };
+    return resolvedLoaders.createDataSource(
+      url as string | Blob,
+      (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
+      runtimeCoreApi
+    );
+  }
+
+  if (
+    Array.isArray(resolvedLoaders) &&
+    resolvedLoaders.length === 1 &&
+    isSourceLoader(resolvedLoaders[0])
+  ) {
+    const runtimeCoreApi = {
+      fetchFile,
+      parse,
+      parseSync,
+      parseInBatches,
+      load,
+      loadInBatches
+    };
+    return resolvedLoaders[0].createDataSource(
+      url as string | Blob,
+      (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
+      runtimeCoreApi
+    );
+  }
+
+  if (typeof url === 'string' || isBlob(url)) {
+    const selectedLoader = await selectLoader(url, resolvedLoaders as Loader | Loader[], {
+      ...resolvedOptions,
+      core: {...resolvedOptions?.core, nothrow: true}
+    });
+
+    if (selectedLoader && isSourceLoader(selectedLoader)) {
+      return selectedLoader.createDataSource(
+        url,
+        (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
+        {
+          fetchFile,
+          parse,
+          parseSync,
+          parseInBatches,
+          load,
+          loadInBatches
+        }
+      );
+    }
   }
 
   // Select fetch function

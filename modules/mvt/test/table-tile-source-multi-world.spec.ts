@@ -4,7 +4,7 @@
 // Forked from https://github.com/mapbox/geojson-vt under compatible ISC license
 
 import test from 'tape-promise/tape';
-import {TableTileSource} from '@loaders.gl/mvt';
+import {TableVectorTileSource} from '@loaders.gl/mvt';
 import type {GeoJSONTable, Feature} from '@loaders.gl/schema';
 
 const leftPoint = {
@@ -34,44 +34,41 @@ function makeGeoJSONTable(feature: Feature): GeoJSONTable {
 }
 
 test('GeoJSONVT#handle point only in the rightside world', async t => {
-  try {
-    const source = new TableTileSource(makeGeoJSONTable(rightPoint));
-    await source.ready;
+  const source = new TableVectorTileSource(makeGeoJSONTable(rightPoint), {});
+  await source.ready;
+  const tile = source.getProtoTile({z: 0, x: 0, y: 0});
 
-    t.equal(source.tiles[0].features[0].geometry[0], 1);
-    t.equal(source.tiles[0].features[0].geometry[1], 0.5);
-  } catch (err) {
-    t.ifError(err);
-  }
+  t.equal(tile?.protoFeatures[0].geometry[0][0], 4096);
+  t.equal(tile?.protoFeatures[0].geometry[0][1], 2048);
   t.end();
 });
 
 test('GeoJSONVT#handle point only in the leftside world', async t => {
-  try {
-    const source = new TableTileSource(makeGeoJSONTable(leftPoint));
-    t.equal(source.tiles[0].features[0].geometry[0], 0);
-    t.equal(source.tiles[0].features[0].geometry[1], 0.5);
-  } catch (err) {
-    t.ifError(err);
-  }
+  const source = new TableVectorTileSource(makeGeoJSONTable(leftPoint), {});
+  await source.ready;
+  const tile = source.getProtoTile({z: 0, x: 0, y: 0});
+
+  t.equal(tile?.protoFeatures[0].geometry[0][0], 0);
+  t.equal(tile?.protoFeatures[0].geometry[0][1], 2048);
   t.end();
 });
 
 test('GeoJSONVT#handle points in the leftside world and the rightside world', async t => {
-  try {
-    const source = new TableTileSource({
+  const source = new TableVectorTileSource(
+    {
       shape: 'geojson-table',
       type: 'FeatureCollection',
       features: [leftPoint, rightPoint]
-    });
+    },
+    {}
+  );
+  await source.ready;
+  const tile = source.getProtoTile({z: 0, x: 0, y: 0});
 
-    t.equal(source.tiles[0].features[0].geometry[0], 0);
-    t.equal(source.tiles[0].features[0].geometry[1], 0.5);
+  t.equal(tile?.protoFeatures[0].geometry[0][0], 0);
+  t.equal(tile?.protoFeatures[0].geometry[0][1], 2048);
 
-    t.equal(source.tiles[0].features[1].geometry[0], 1);
-    t.equal(source.tiles[0].features[1].geometry[1], 0.5);
-  } catch (err) {
-    t.ifError(err);
-  }
+  t.equal(tile?.protoFeatures[1].geometry[0][0], 4096);
+  t.equal(tile?.protoFeatures[1].geometry[0][1], 2048);
   t.end();
 });

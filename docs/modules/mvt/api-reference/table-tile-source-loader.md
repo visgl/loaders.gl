@@ -1,6 +1,6 @@
-# TableTileSource
+# TableTileSourceLoader
 
-The `TableTileSource` slices large GeoJSON datasets into small vector tiles on the fly.
+The `TableTileSourceLoader` slices large GeoJSON datasets into small vector tiles on the fly.
 Can enable rendering and interacting with large geospatial datasets
 in the browser without requiring data to be pre-tiled and tiles to be served from a server.
 
@@ -23,7 +23,7 @@ Features:
   (shapes are simplified and tiny polygons and line segments are filtered out).
 
 <!--
-There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to test out **TableTileSource** on different data. Just drag any GeoJSON on the page, watching the console.
+There's a convenient [example](http://mapbox.github.io/geojson-vt/debug/) to test out **TableTileSourceLoader** on different data. Just drag any GeoJSON on the page, watching the console.
 --->
 
 ### Install
@@ -42,11 +42,11 @@ Or just import via a browser script tag:
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {TableTileSource} from '@loaders.gl/mvt';
+import {TableTileSourceLoader} from '@loaders.gl/mvt';
 import {GeoJSONLoader} from '@loaders.gl/json';
 
 // build an initial index of tiles.,
-const tileSource = createDataSource(url, [TableTileSource], {
+const tileSource = createDataSource(url, [TableTileSourceLoader], {
 	core: {
 		loaders: [GeoJSONLoader]
 	}
@@ -81,8 +81,8 @@ although the defaults are sensible and work well for most use cases.
 
 ```typescript
 import {createDataSource} from '@loaders.gl/core';
-import {TableTileSource} from '@loaders.gl/mvt`
-const tileSource = createDataSource(parsedGeojson, [TableTileSource], {
+import {TableTileSourceLoader} from '@loaders.gl/mvt`
+const tileSource = createDataSource(parsedGeojson, [TableTileSourceLoader], {
 	maxZoom: 14,      // max zoom to preserve detail on; can't be higher than 24
 	tolerance: 3,     // simplification tolerance (higher means simpler)
 	debug: 0,     // logging level (0 to disable, 1 or 2)
@@ -101,14 +101,14 @@ Remarks:
 - `generateId` and `promoteId` options cannot both be specified at the same time.
 - `generateId` and `promoteId` options ignore existing `id` values on the feature objects.
 - By default, tiles at zoom levels above `indexMaxZoom` are generated on the fly, but you can pre-generate all possible tiles for `data` by setting `indexMaxZoom` and `maxZoom` to the same value, setting `indexMaxPoints` to `0`.
-- `TableTileSource` only generates tiles zoom levels up to 24.
+- `TableTileSourceLoader` only generates tiles zoom levels up to 24.
 
 ## Methods
 
 ### constructor
 
 ```ts
-new TableTileSource(geojson: GeoJSONTable | Promise<GeoJSONTable>);
+new TableTileSourceLoader(geojson: GeoJSONTable | Promise<GeoJSONTable>);
 ```
 
 ## Attribution

@@ -23,7 +23,7 @@ npm install @loaders.gl/core
 
 | Source                                                    |
 | --------------------------------------------------------- |
-| [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source) |
+| [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) |
 
 ## Examples
 

@@ -6,7 +6,7 @@ import type {GeoTIFF as GeoTIFFDataset} from 'geotiff';
 import {fromBlob, fromUrl} from 'geotiff';
 
 import type {
-  Source,
+  SourceLoader,
   DataSourceOptions,
   RasterData,
   RasterChannelDataType,
@@ -41,7 +41,7 @@ export type GetOMETiffParameters = {
 };
 
 /**
- * Channel metadata exposed by {@link OMETiffSourceMetadata}.
+ * Channel metadata exposed by {@link OMETiffSourceLoaderMetadata}.
  */
 export type OMETiffChannelMetadata = {
   /** Zero-based OME channel index. */
@@ -55,7 +55,7 @@ export type OMETiffChannelMetadata = {
 };
 
 /**
- * Pyramid level metadata exposed by {@link OMETiffSourceMetadata}.
+ * Pyramid level metadata exposed by {@link OMETiffSourceLoaderMetadata}.
  */
 export type OMETiffLevelMetadata = {
   /** Zero-based pyramid level. */
@@ -69,7 +69,7 @@ export type OMETiffLevelMetadata = {
 /**
  * Metadata exposed by {@link OMETiffImageSource}.
  */
-export type OMETiffSourceMetadata = {
+export type OMETiffSourceLoaderMetadata = {
   /** OME image name when present. */
   name?: string;
   /** Full-resolution width in pixels. */
@@ -103,7 +103,7 @@ export type OMETiffSourceMetadata = {
 /**
  * Options for creating an OME-TIFF source.
  */
-export type OMETiffSourceOptions = DataSourceOptions & {
+export type OMETiffSourceLoaderOptions = DataSourceOptions & {
   ometiff?: {
     /** Optional request headers forwarded to remote OME-TIFF fetches. */
     headers?: Record<string, string>;
@@ -116,14 +116,16 @@ export type OMETiffSourceOptions = DataSourceOptions & {
 
 type OMETiffInit = {
   data: TiffPixelSource<string[]>[];
-  metadata: OMETiffSourceMetadata;
+  metadata: OMETiffSourceLoaderMetadata;
 };
 
 /**
  * Source factory for non-geospatial OME-TIFF plane data.
  */
-export const OMETiffSource = {
-  name: 'OMETiffSource',
+export const OMETiffSourceLoader = {
+  dataType: null as unknown as OMETiffImageSource,
+  batchType: null as never,
+  name: 'OMETiffSourceLoader',
   id: 'ometiff',
   module: 'geotiff',
   version: VERSION,
@@ -132,6 +134,14 @@ export const OMETiffSource = {
   type: 'ometiff',
   fromUrl: true,
   fromBlob: true,
+
+  options: {
+    ometiff: {
+      headers: undefined!,
+      interleaved: false,
+      defaultChannels: undefined!
+    }
+  },
 
   defaultOptions: {
     ometiff: {
@@ -142,20 +152,22 @@ export const OMETiffSource = {
   },
 
   testURL: (url: string): boolean => /\.ome\.tiff?(?:$|[?#])/i.test(url),
-  createDataSource: (data: string | Blob, options: OMETiffSourceOptions): OMETiffImageSource =>
-    new OMETiffImageSource(data, options)
-} as const satisfies Source<OMETiffImageSource>;
+  createDataSource: (
+    data: string | Blob,
+    options: OMETiffSourceLoaderOptions
+  ): OMETiffImageSource => new OMETiffImageSource(data, options)
+} as const satisfies SourceLoader<OMETiffImageSource>;
 
 /**
  * Source that loads 2D planes from an OME-TIFF pyramid.
  */
-export class OMETiffImageSource extends DataSource<string | Blob, OMETiffSourceOptions> {
+export class OMETiffImageSource extends DataSource<string | Blob, OMETiffSourceLoaderOptions> {
   private _initPromise: Promise<OMETiffInit> | null = null;
 
   /**
    * Returns normalized OME-TIFF metadata for the first image in the file.
    */
-  async getMetadata(): Promise<OMETiffSourceMetadata> {
+  async getMetadata(): Promise<OMETiffSourceLoaderMetadata> {
     const {metadata} = await this._getInitPromise();
     return metadata;
   }
@@ -256,7 +268,7 @@ export class OMETiffImageSource extends DataSource<string | Blob, OMETiffSourceO
 function normalizeOMETiffMetadata(
   data: string | Blob,
   loaded: {data: TiffPixelSource<string[]>[]; metadata: Record<string, any>}
-): OMETiffSourceMetadata {
+): OMETiffSourceLoaderMetadata {
   const baseSource = loaded.data[0];
   const {width, height} = getImageSize(baseSource);
   const pixels = loaded.metadata.Pixels;

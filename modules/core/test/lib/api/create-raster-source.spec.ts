@@ -3,9 +3,9 @@ import {createDataSource} from '@loaders.gl/core';
 import {fetchFile, resolvePath} from '@loaders.gl/core';
 import {
   GeoTIFFRasterSource,
-  GeoTIFFSource,
+  GeoTIFFSourceLoader,
   OMETiffImageSource,
-  OMETiffSource
+  OMETiffSourceLoader
 } from '@loaders.gl/geotiff';
 import {createRangeStats, RangeRequestScheduler} from '@loaders.gl/loader-utils';
 import {flushMicrotasks} from '@loaders.gl/test-utils/vitest';
@@ -44,16 +44,16 @@ async function readFixtureBytes(url: string): Promise<Uint8Array> {
   return new Uint8Array(await response.arrayBuffer());
 }
 
-test('createDataSource selects GeoTIFFSource from URL', () => {
-  const dataSource = createDataSource('https://example.com/dataset.tif', [GeoTIFFSource], {
+test('createDataSource selects GeoTIFFSourceLoader from URL', () => {
+  const dataSource = createDataSource('https://example.com/dataset.tif', [GeoTIFFSourceLoader], {
     geotiff: {}
   });
 
   expect(dataSource).toBeInstanceOf(GeoTIFFRasterSource);
 });
 
-test('createDataSource selects GeoTIFFSource from explicit core.type', () => {
-  const dataSource = createDataSource(new Blob([new Uint8Array([0])]), [GeoTIFFSource], {
+test('createDataSource selects GeoTIFFSourceLoader from explicit core.type', () => {
+  const dataSource = createDataSource(new Blob([new Uint8Array([0])]), [GeoTIFFSourceLoader], {
     core: {type: 'geotiff'},
     geotiff: {}
   });
@@ -61,18 +61,18 @@ test('createDataSource selects GeoTIFFSource from explicit core.type', () => {
   expect(dataSource).toBeInstanceOf(GeoTIFFRasterSource);
 });
 
-test('createDataSource selects OMETiffSource from URL ahead of GeoTIFFSource', () => {
+test('createDataSource selects OMETiffSourceLoader from URL ahead of GeoTIFFSourceLoader', () => {
   const dataSource = createDataSource(
     'https://example.com/multi-channel.ome.tif',
-    [GeoTIFFSource, OMETiffSource],
+    [GeoTIFFSourceLoader, OMETiffSourceLoader],
     {geotiff: {}, ometiff: {}}
   );
 
   expect(dataSource).toBeInstanceOf(OMETiffImageSource);
 });
 
-test('createDataSource selects OMETiffSource from explicit core.type', () => {
-  const dataSource = createDataSource(new Blob([new Uint8Array([0])]), [OMETiffSource], {
+test('createDataSource selects OMETiffSourceLoader from explicit core.type', () => {
+  const dataSource = createDataSource(new Blob([new Uint8Array([0])]), [OMETiffSourceLoader], {
     core: {type: 'ometiff'},
     ometiff: {}
   });

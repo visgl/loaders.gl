@@ -11,8 +11,8 @@ import DeckGL from '@deck.gl/react';
 
 import {createDataSource} from '@loaders.gl/core';
 import type {RasterData} from '@loaders.gl/loader-utils';
-import type {OMETiffImageSource, OMETiffSourceMetadata} from '@loaders.gl/geotiff';
-import {OMETiffSource} from '@loaders.gl/geotiff';
+import type {OMETiffImageSource, OMETiffSourceLoaderMetadata} from '@loaders.gl/geotiff';
+import {OMETiffSourceLoader} from '@loaders.gl/geotiff';
 
 const DATA_URL = '/multi-channel.ome.tif';
 
@@ -64,13 +64,13 @@ export default function App(props: AppProps = {}) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
 
   if (!sourceRef.current) {
-    sourceRef.current = createDataSource(DATA_URL, [OMETiffSource], {
+    sourceRef.current = createDataSource(DATA_URL, [OMETiffSourceLoader], {
       core: {type: 'ometiff'},
       ometiff: {}
     }) as OMETiffImageSource;
   }
 
-  const [metadata, setMetadata] = useState<OMETiffSourceMetadata | null>(null);
+  const [metadata, setMetadata] = useState<OMETiffSourceLoaderMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState(0);
@@ -296,7 +296,7 @@ export function renderToDOM(container = document.body) {
  * Requests the channels needed for the active display mode.
  */
 function getRequestedChannels(
-  metadata: OMETiffSourceMetadata,
+  metadata: OMETiffSourceLoaderMetadata,
   displayMode: DisplayMode
 ): number[] {
   if (displayMode === 'rgb') {
@@ -583,7 +583,7 @@ function LoadingSpinner() {
  * Control and metadata panel for the OME-TIFF viewer.
  */
 function InfoPanel(props: {
-  metadata: OMETiffSourceMetadata | null;
+  metadata: OMETiffSourceLoaderMetadata | null;
   error: string | null;
   loading: boolean;
   stats: RasterStatistics | null;

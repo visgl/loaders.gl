@@ -4,6 +4,7 @@ import type {TypedArray, MeshAttribute, TextureLevel} from '@loaders.gl/schema';
 import {TILESET_TYPE, TILE_REFINEMENT, TILE_TYPE, Tile3D, Tileset3D} from '@loaders.gl/tiles';
 import I3SNodePagesTiles from './lib/helpers/i3s-nodepages-tiles';
 import {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoordinateSystem} from './lib/parsers/constants';
 
 export type COLOR = [number, number, number, number];
 
@@ -150,9 +151,9 @@ export type I3SParseOptions = {
   decodeTextures?: boolean;
   /** deck.gl compatible coordinate system.
    * https://github.com/visgl/deck.gl/blob/master/docs/developer-guide/coordinate-systems.md
-   * Supported coordinate systems: METER_OFFSETS, LNGLAT_OFFSETS
+   * Supported coordinate systems: `meter-offsets`, `lnglat-offsets`
    */
-  coordinateSystem?: number;
+  coordinateSystem?: CoordinateSystem;
   /** Options to colorize 3DObjects by attribute value */
   colorsByAttribute?: {
     /** Feature attribute name */
@@ -199,7 +200,7 @@ export type I3STileContent = {
   featureIds: number[] | TypedArray;
   vertexCount: number;
   modelMatrix: Matrix4;
-  coordinateSystem: number;
+  coordinateSystem: CoordinateSystem;
   byteLength: number;
   texture: TileContentTexture;
   [key: string]: any;

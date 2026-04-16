@@ -18,7 +18,7 @@ npm install @loaders.gl/core @loaders.gl/copc
 
 | Loader                                                       |
 | ------------------------------------------------------------ |
-| [`COPCSource`](/docs/modules/copc/api-reference/copc-source) |
+| [`COPCSourceLoader`](/docs/modules/copc/api-reference/copc-source-loader) |
 
 ## Attribution
 

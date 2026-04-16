@@ -56,15 +56,16 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // OGC Services
 
-// export {CSWSource} from './csw-source';
-export {WMSSource, WMSImageSource} from './wms-source';
-export {WFSSource, WFSVectorSource} from './wfs-source';
+// export {CSWSourceLoader} from './csw-source-loader';
+/** @deprecated Use `WMSSourceLoader`. Kept for deck.gl compatibility. */
+export {WMSSourceLoader as WMSSource, WMSSourceLoader, WMSImageSource} from './wms-source-loader';
+export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
 
 // ArcGIS SourceLoaders
 
 export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';
-export {ArcGISFeatureServerSource as _ArcGISFeatureServerSource} from './arcgis/arcgis-feature-source';
-export {ArcGISImageServerSource as _ArcGISImageServerSource} from './arcgis/arcgis-image-source';
+export {ArcGISFeatureServerSourceLoader as _ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader';
+export {ArcGISImageServerSourceLoader as _ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
 
 export {ImageSource} from '@loaders.gl/loader-utils';
 export type {ImageType} from '@loaders.gl/images';

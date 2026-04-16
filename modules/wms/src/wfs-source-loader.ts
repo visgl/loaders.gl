@@ -9,7 +9,7 @@ import type {
   VectorSourceMetadata,
   GetFeaturesParameters
 } from '@loaders.gl/loader-utils';
-import {Source, DataSource, VectorSource, mergeOptions} from '@loaders.gl/loader-utils';
+import {SourceLoader, DataSource, VectorSource, mergeOptions} from '@loaders.gl/loader-utils';
 
 import type {WFSCapabilities} from './wfs-capabilities-loader';
 import {WFSCapabilitiesLoader} from './wfs-capabilities-loader';
@@ -35,7 +35,9 @@ export type WFSourceOptions = DataSourceOptions & {
  * @deprecated This is a WIP, not fully implemented
  * @see https://developers.arcgis.com/rest/services-reference/enterprise/feature-service.htm
  */
-export const WFSSource = {
+export const WFSSourceLoader = {
+  dataType: null as unknown as WFSVectorSource,
+  batchType: null as never,
   name: 'WFS',
   id: 'wfs',
   module: 'wms',
@@ -46,6 +48,10 @@ export const WFSSource = {
   fromUrl: true,
   fromBlob: false,
 
+  options: {
+    wfs: {}
+  },
+
   defaultOptions: {
     wfs: {}
   },
@@ -53,7 +59,7 @@ export const WFSSource = {
   testURL: (url: string): boolean => url.toLowerCase().includes('wfs'),
   createDataSource: (url: string, options: WFSourceOptions, coreApi?: CoreAPI): WFSVectorSource =>
     new WFSVectorSource(url, options, coreApi)
-} as const satisfies Source<WFSVectorSource>;
+} as const satisfies SourceLoader<WFSVectorSource>;
 
 // PARAMETER TYPES FOR WFS SOURCE
 
@@ -221,7 +227,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
 
   /** Create a WFSVectorSource */
   constructor(data: string, options: WFSourceOptions, coreApi?: CoreAPI) {
-    super(data, options, WFSSource.defaultOptions, coreApi);
+    super(data, options, WFSSourceLoader.defaultOptions, coreApi);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WFS URL more likely to make this class just work.

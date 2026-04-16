@@ -5,7 +5,7 @@
 /* eslint-disable camelcase */
 import type {
   CoreAPI,
-  Source,
+  SourceLoader,
   DataSourceOptions,
   ImageSourceMetadata,
   GetImageParameters
@@ -27,7 +27,7 @@ import type {WMSLoaderOptions} from './wms-error-loader';
 import {WMSErrorLoader} from './wms-error-loader';
 
 /** Properties for creating a enw WMS service */
-export type WMSSourceOptions = DataSourceOptions & {
+export type WMSSourceLoaderOptions = DataSourceOptions & {
   wms?: {
     // TODO - move parameters inside WMS scope
     /** In 1.3.0, replaces references to EPSG:4326 with CRS:84 */
@@ -39,7 +39,9 @@ export type WMSSourceOptions = DataSourceOptions & {
   };
 };
 
-export const WMSSource = {
+export const WMSSourceLoader = {
+  dataType: null as unknown as WMSImageSource,
+  batchType: null as never,
   name: 'Web Map Service (OGC WMS)',
   id: 'wms',
   module: 'wms',
@@ -50,6 +52,12 @@ export const WMSSource = {
   fromUrl: true,
   fromBlob: false,
 
+  options: {
+    wms: {
+      // TODO - add options here
+    }
+  },
+
   defaultOptions: {
     wms: {
       // TODO - add options here
@@ -57,9 +65,9 @@ export const WMSSource = {
   },
 
   testURL: (url: string): boolean => url.toLowerCase().includes('wms'),
-  createDataSource: (url, options: WMSSourceOptions, coreApi?: CoreAPI) =>
+  createDataSource: (url, options: WMSSourceLoaderOptions, coreApi?: CoreAPI) =>
     new WMSImageSource(url as string, options, coreApi)
-} as const satisfies Source<WMSImageSource>;
+} as const satisfies SourceLoader<WMSImageSource>;
 
 // PARAMETER TYPES FOR WMS SOURCE
 
@@ -203,7 +211,10 @@ export type WMSGetLegendGraphicParameters = {
  * - implements the ImageSource interface
  * @note Only the URL parameter conversion is supported. XML posts are not supported.
  */
-export class WMSImageSource extends DataSource<string, WMSSourceOptions> implements ImageSource {
+export class WMSImageSource
+  extends DataSource<string, WMSSourceLoaderOptions>
+  implements ImageSource
+{
   /** In WMS 1.3.0, replaces references to EPSG:4326 with CRS:84. But not always supported. Default: false */
   substituteCRS84: boolean;
   /** In WMS 1.3.0, flips x,y (lng, lat) coordinates for the supplied coordinate systems. Default: ['ESPG:4326'] */
@@ -217,8 +228,8 @@ export class WMSImageSource extends DataSource<string, WMSSourceOptions> impleme
   capabilities: WMSCapabilities | null = null;
 
   /** Create a WMSImageSource */
-  constructor(url: string, options: WMSSourceOptions, coreApi?: CoreAPI) {
-    super(url, options, WMSSource.defaultOptions, coreApi);
+  constructor(url: string, options: WMSSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(url, options, WMSSourceLoader.defaultOptions, coreApi);
 
     // TODO - defaults such as version, layers etc could be extracted from a base URL with parameters
     // This would make pasting in any WMS URL more likely to make this class just work.

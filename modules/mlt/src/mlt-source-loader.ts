@@ -4,7 +4,7 @@
 
 import type {
   CoreAPI,
-  Source,
+  SourceLoader,
   VectorTileSource,
   GetTileParameters,
   GetTileDataParameters
@@ -14,7 +14,7 @@ import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/loa
 import {MLTLoader, MLTLoaderOptions} from './mlt-loader';
 import {MLTFormat} from './mlt-format';
 
-export type MLTSourceOptions = DataSourceOptions & {
+export type MLTSourceLoaderOptions = DataSourceOptions & {
   mlt?: {
     /** Optional metadata URL. */
     metadataUrl?: string | null;
@@ -32,13 +32,25 @@ export type MLTSourceOptions = DataSourceOptions & {
 /**
  * Source factory for MapLibre Tile (`.mlt`) tiles
  */
-export const MLTSource = {
+export const MLTSourceLoader = {
+  dataType: null as unknown as MLTTileSource,
+  batchType: null as never,
   ...MLTFormat,
   name: 'MLTTileSource',
   version: '0.0.0',
   type: 'mlt',
   fromUrl: true,
   fromBlob: false,
+
+  options: {
+    mlt: {
+      extension: '.mlt',
+      metadataUrl: null,
+      coordinates: 'wgs84',
+      shape: undefined!,
+      layers: undefined!
+    }
+  },
 
   defaultOptions: {
     mlt: {
@@ -52,15 +64,18 @@ export const MLTSource = {
 
   testURL: (url: string): boolean =>
     url.endsWith('.mlt') || url.endsWith('/plain') || isURLTemplate(url),
-  createDataSource: (url: string, options: MLTSourceOptions, coreApi?: CoreAPI): MLTTileSource =>
-    new MLTTileSource(url, options, coreApi)
-} as const satisfies Source<MLTTileSource>;
+  createDataSource: (
+    url: string,
+    options: MLTSourceLoaderOptions,
+    coreApi?: CoreAPI
+  ): MLTTileSource => new MLTTileSource(url, options, coreApi)
+} as const satisfies SourceLoader<MLTTileSource>;
 
 /**
  * Vector tile source for MapLibre Tile files served by `z/x/y` tile services.
  */
 export class MLTTileSource
-  extends DataSource<string, MLTSourceOptions>
+  extends DataSource<string, MLTSourceLoaderOptions>
   implements VectorTileSource
 {
   readonly metadataUrl: string | null;
@@ -69,8 +84,8 @@ export class MLTTileSource
   extension: string;
   mimeType = 'application/vnd.maplibre-tile';
 
-  constructor(url: string, options: MLTSourceOptions, coreApi?: CoreAPI) {
-    super(url, options, MLTSource.defaultOptions, coreApi);
+  constructor(url: string, options: MLTSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(url, options, MLTSourceLoader.defaultOptions, coreApi);
     this.metadataUrl = this.options.mlt?.metadataUrl || null;
     this.extension = this.options.mlt?.extension || '.mlt';
 
@@ -158,7 +173,7 @@ export class MLTTileSource
     arrayBuffer: ArrayBuffer,
     tileParameters: GetTileParameters
   ): Promise<Feature[] | BinaryFeatureCollection | null> {
-    const options: MLTSourceOptions = this.options;
+    const options: MLTSourceLoaderOptions = this.options;
     const coordinates = options.mlt?.coordinates || 'wgs84';
     const shape = options.mlt?.shape || 'geojson';
     const tileIndex =

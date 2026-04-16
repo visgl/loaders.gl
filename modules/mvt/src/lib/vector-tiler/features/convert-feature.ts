@@ -36,18 +36,37 @@ export function convertFeaturesToProtoFeature(
     case 'FeatureCollection':
       let i = 0;
       for (const feature of data.features) {
-        protoFeatures.push(convertFeature(feature, options, i++));
+        const convertedFeatures = convertFeature(feature, options, i++);
+        pushConvertedFeatures(protoFeatures, convertedFeatures);
       }
       break;
     case 'Feature':
-      protoFeatures.push(convertFeature(data, options));
+      {
+        const convertedFeatures = convertFeature(data, options);
+        pushConvertedFeatures(protoFeatures, convertedFeatures);
+      }
       break;
-    default:
+    default: {
       // single geometry or a geometry collection
-      protoFeatures.push(convertFeature({geometry: data}, options));
+      const convertedFeatures = convertFeature({geometry: data}, options);
+      pushConvertedFeatures(protoFeatures, convertedFeatures);
+    }
   }
 
   return protoFeatures;
+}
+
+function pushConvertedFeatures(protoFeatures, convertedFeatures): void {
+  if (!convertedFeatures) {
+    return;
+  }
+
+  if (Array.isArray(convertedFeatures)) {
+    protoFeatures.push(...convertedFeatures);
+    return;
+  }
+
+  protoFeatures.push(convertedFeatures);
 }
 
 /**
@@ -58,7 +77,7 @@ function convertFeature(
   geojson: Feature,
   options: ConvertFeatureOptions,
   index: number
-): ProtoFeature {
+): ProtoFeature | ProtoFeature[] | undefined {
   // GeoJSON geometries can be null, but no vector tile will include them.
   if (!geojson.geometry) {
     return;
@@ -93,13 +112,15 @@ function convertFeature(
     case 'MultiLineString':
       if (options.lineMetrics) {
         // explode into linestrings to be able to track metrics
+        const features = [];
         for (const line of coords) {
           geometry = [];
           convertLine(line, geometry, tolerance, false);
           features.push(createProtoFeature(id, 'LineString', geometry, geojson.properties));
         }
-        return;
+        return features;
       }
+      convertLines(coords, geometry, tolerance, false);
       break;
 
     case 'Polygon':
@@ -114,10 +135,10 @@ function convertFeature(
       }
       break;
 
-    case 'GeometryCollection':
+    case 'GeometryCollection': {
+      const features = [];
       for (const singleGeometry of geojson.geometry.geometries) {
-        convertFeature(
-          features,
+        const convertedFeatures = convertFeature(
           {
             id,
             geometry: singleGeometry,
@@ -126,8 +147,10 @@ function convertFeature(
           options,
           index
         );
+        pushConvertedFeatures(features, convertedFeatures);
       }
-      break;
+      return features;
+    }
 
     default:
       throw new Error('Input data is not a valid GeoJSON object.');
