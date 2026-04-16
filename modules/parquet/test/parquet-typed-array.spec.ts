@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {readFile} from 'node:fs/promises';
 
+import {fetchFile} from '@loaders.gl/core';
 import {BlobFile} from '@loaders.gl/loader-utils';
 
 import {PARQUET_CODECS} from '../src/parquetjs/codecs/index';
@@ -15,7 +15,7 @@ import {ParquetSchema} from '../src/parquetjs/schema/schema';
 import {materializeRows} from '../src/parquetjs/schema/shred';
 import {concatUint8Arrays} from '../src/parquetjs/utils/binary-utils';
 
-const PARQUET_DIR = new URL('./data/', import.meta.url);
+const PARQUET_DIR = '@loaders.gl/parquet/test/data';
 const TEXT_DECODER = new TextDecoder();
 
 type MutableGlobalThis = typeof globalThis & {
@@ -29,7 +29,8 @@ function toExactArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 
 /** Read a parquet fixture into Uint8Array to avoid Node Buffer parser inputs. */
 async function readTestBytes(path: string): Promise<Uint8Array> {
-  return new Uint8Array(await readFile(new URL(path, PARQUET_DIR)));
+  const response = await fetchFile(`${PARQUET_DIR}/${path}`);
+  return new Uint8Array(await response.arrayBuffer());
 }
 
 /** Read a little-endian unsigned 32-bit value from any Uint8Array view. */
@@ -298,27 +299,30 @@ test('Parquet row materializer decodes dictionary-backed UTF8 bytes as strings',
   t.end();
 });
 
-test('ParquetReader and ParquetJSONLoader parse without global Buffer', async t => {
+test('ParquetReader and ParquetLoader parse without global Buffer', async t => {
   const fruitsBytes = await readTestBytes('fruits.parquet');
   const binaryBytes = await readTestBytes('apache/good/binary.parquet');
   const snappyBytes = await readTestBytes('apache/good/alltypes_plain.snappy.parquet');
+  const originalBuffer = (globalThis as MutableGlobalThis).Buffer;
 
   await withoutGlobalBuffer(async () => {
-    const [{ParquetJSONLoader}] = await Promise.all([import('../src/index')]);
+    const [{ParquetLoader}] = await Promise.all([import('../src/index')]);
 
     const reader = new ParquetReader(new BlobFile(toExactArrayBuffer(fruitsBytes)));
     const metadata = await reader.getSchemaMetadata();
     t.deepEqual(metadata, {myuid: '420', fnord: 'dronf'}, 'reader metadata parsed');
 
-    const binaryTable = await ParquetJSONLoader.parse(toExactArrayBuffer(binaryBytes), {
-      core: {worker: false}
+    const binaryTable = await ParquetLoader.parse(toExactArrayBuffer(binaryBytes), {
+      core: {worker: false},
+      parquet: {implementation: 'js'}
     });
     t.equal(binaryTable.shape, 'object-row-table', 'binary table shape');
     t.ok(binaryTable.data[0].foo instanceof Uint8Array, 'raw binary field is Uint8Array');
     t.deepEqual(Array.from(binaryTable.data[11].foo), [11], 'raw binary bytes are preserved');
 
-    const snappyTable = await ParquetJSONLoader.parse(toExactArrayBuffer(snappyBytes), {
-      core: {worker: false}
+    const snappyTable = await ParquetLoader.parse(toExactArrayBuffer(snappyBytes), {
+      core: {worker: false},
+      parquet: {implementation: 'js'}
     });
     t.equal(snappyTable.data[0].id, 6, 'compressed physical INT32 materializes as number');
     t.ok(
@@ -328,10 +332,6 @@ test('ParquetReader and ParquetJSONLoader parse without global Buffer', async t 
     t.ok(snappyTable.data[0].string_col instanceof Uint8Array, 'compressed raw BYTE_ARRAY is bytes');
   });
 
-  t.equal(
-    typeof (globalThis as MutableGlobalThis).Buffer,
-    'function',
-    'test restored global Buffer'
-  );
+  t.equal((globalThis as MutableGlobalThis).Buffer, originalBuffer, 'test restored global Buffer');
   t.end();
 });
