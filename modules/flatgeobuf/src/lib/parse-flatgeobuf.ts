@@ -6,7 +6,16 @@ import {Proj4Projection} from '@math.gl/proj4';
 import {convertGeometryToWKB, transformGeoJsonCoords} from '@loaders.gl/gis';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 
-import type {ArrowTable, ArrowTableBatch, Feature, Field, GeoJSONTable, Schema, Table} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  Feature,
+  Field,
+  GeoJSONTable,
+  Geometry,
+  Schema,
+  Table
+} from '@loaders.gl/schema';
 
 import {fgbToBinaryGeometry} from './binary-geometries';
 import {getSchemaFromFGBHeader} from './get-schema-from-fgb-header';
@@ -264,8 +273,8 @@ function convertBoundingBox(boundingBox: [[number, number], [number, number]]): 
   };
 }
 
-// TODO: reproject binary features
-function binaryFromFeature(feature: fgb.Feature, header: fgb.HeaderMeta) {
+/** Converts one FlatGeobuf feature into binary geometry output. */
+export function binaryFromFeature(feature: fgb.Feature, header: fgb.HeaderMeta) {
   const geometry = feature.geometry();
 
   // FlatGeobuf files can only hold a single geometry type per file, otherwise
@@ -281,7 +290,8 @@ function binaryFromFeature(feature: fgb.Feature, header: fgb.HeaderMeta) {
   return parsedGeometry;
 }
 
-function makeArrowSchema(fgbHeader?: fgb.HeaderMeta): Schema {
+/** Builds the Arrow schema used by FlatGeobuf Arrow outputs. */
+export function makeArrowSchema(fgbHeader?: fgb.HeaderMeta): Schema {
   const sourceSchema = fgbHeader ? getSchemaFromFGBHeader(fgbHeader) : {fields: [], metadata: {}};
   const fields = sourceSchema.fields.map((field, fieldIndex) =>
     normalizeFieldForArrow(field, fgbHeader?.columns?.[fieldIndex]?.type)
@@ -321,10 +331,17 @@ function normalizeFieldForArrow(field: Field, columnType?: ColumnType): Field {
   return field;
 }
 
-function makeArrowRow(feature: Feature, fgbHeader?: fgb.HeaderMeta): Record<string, unknown> {
+/** Converts one GeoJSON feature into one Arrow object row with WKB geometry. */
+export function makeArrowRow(
+  feature: Feature,
+  fgbHeader?: fgb.HeaderMeta
+): Record<string, unknown> {
   const row = normalizePropertiesForArrow(feature.properties || {}, fgbHeader);
-  row[GEOMETRY_COLUMN_NAME] = feature.geometry
-    ? new Uint8Array(convertGeometryToWKB(feature.geometry))
+  const normalizedGeometry = feature.geometry
+    ? normalizeGeometryForHeader(feature.geometry, fgbHeader?.geometryType)
+    : null;
+  row[GEOMETRY_COLUMN_NAME] = normalizedGeometry
+    ? new Uint8Array(convertGeometryToWKB(normalizedGeometry))
     : null;
   return row;
 }
@@ -353,7 +370,8 @@ function normalizePropertiesForArrow(
   return normalizedProperties;
 }
 
-function getProjection(
+/** Resolves the FlatGeobuf reprojection used by both table and source paths. */
+export function getProjection(
   fgbHeader: fgb.HeaderMeta | undefined,
   reproject: boolean,
   crs: string
@@ -388,6 +406,25 @@ function getGeometryTypesForMetadata(geometryType?: GeometryType): string[] {
       return ['GeometryCollection'];
     default:
       return [];
+  }
+}
+
+function normalizeGeometryForHeader(geometry: Geometry, geometryType?: GeometryType): Geometry {
+  switch (geometryType) {
+    case GeometryType.MultiPoint:
+      return geometry.type === 'Point'
+        ? {type: 'MultiPoint', coordinates: [geometry.coordinates]}
+        : geometry;
+    case GeometryType.MultiLineString:
+      return geometry.type === 'LineString'
+        ? {type: 'MultiLineString', coordinates: [geometry.coordinates]}
+        : geometry;
+    case GeometryType.MultiPolygon:
+      return geometry.type === 'Polygon'
+        ? {type: 'MultiPolygon', coordinates: [geometry.coordinates]}
+        : geometry;
+    default:
+      return geometry;
   }
 }
 

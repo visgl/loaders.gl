@@ -35,13 +35,16 @@ export class HttpReader {
   // Fetch the header, preparing the reader to read Feature data.
   //
   // and potentially some opportunistic fetching of the index.
-  static async open(url: string): Promise<HttpReader> {
+  static async open(
+    url: string,
+    options?: {fetch?: (url: string, options?: RequestInit) => Promise<Response>; signal?: AbortSignal}
+  ): Promise<HttpReader> {
     // In reality, the header is probably less than half this size, but
     // better to overshoot and fetch an extra kb rather than have to issue
     // a second request.
     const assumedHeaderLength = 2024;
 
-    const headerClient = new BufferedHttpRangeClient(url);
+    const headerClient = new BufferedHttpRangeClient(url, options);
 
     // Immediately following the header is the optional spatial index, we deliberately fetch
     // a small part of that to skip subsequent requests.
@@ -101,7 +104,10 @@ export class HttpReader {
     return new HttpReader(headerClient, header, headerLength, indexLength);
   }
 
-  async *selectBbox(rect: Rect): AsyncGenerator<Feature, void, unknown> {
+  async *selectBbox(
+    rect: Rect,
+    options?: {fetch?: (url: string, options?: RequestInit) => Promise<Response>; signal?: AbortSignal}
+  ): AsyncGenerator<Feature, void, unknown> {
     // Read R-Tree index and build filter for features within bbox
     const lengthBeforeTree = this.lengthBeforeTree();
 
@@ -161,7 +167,7 @@ export class HttpReader {
     }
 
     const promises: AsyncGenerator<Feature, any, any>[] = batches.flatMap(
-      (batch: [number, number][]) => this.readFeatureBatch(batch)
+      (batch: [number, number][]) => this.readFeatureBatch(batch, options)
     );
 
     // Fetch all batches concurrently, yielding features as they become
@@ -178,8 +184,11 @@ export class HttpReader {
     return this.lengthBeforeTree() + this.indexLength;
   }
 
-  buildFeatureClient(): BufferedHttpRangeClient {
-    return new BufferedHttpRangeClient(this.headerClient.httpClient);
+  buildFeatureClient(options?: {
+    fetch?: (url: string, options?: RequestInit) => Promise<Response>;
+    signal?: AbortSignal;
+  }): BufferedHttpRangeClient {
+    return new BufferedHttpRangeClient(this.headerClient.httpClient, options);
   }
 
   /**
@@ -187,7 +196,10 @@ export class HttpReader {
    *
    * `batch`: [offset, length] of features in the batch
    */
-  async *readFeatureBatch(batch: [number, number][]): AsyncGenerator<Feature, void, unknown> {
+  async *readFeatureBatch(
+    batch: [number, number][],
+    options?: {fetch?: (url: string, options?: RequestInit) => Promise<Response>; signal?: AbortSignal}
+  ): AsyncGenerator<Feature, void, unknown> {
     const [firstFeatureOffset] = batch[0];
     const [lastFeatureOffset, lastFeatureLength] = batch[batch.length - 1];
 
@@ -196,7 +208,7 @@ export class HttpReader {
     const batchSize = batchEnd - batchStart;
 
     // A new feature client is needed for each batch to own the underlying buffer as features are yielded.
-    const featureClient = this.buildFeatureClient();
+    const featureClient = this.buildFeatureClient(options);
 
     let minFeatureReqLength = batchSize;
     for (const [featureOffset] of batch) {
@@ -251,11 +263,17 @@ class BufferedHttpRangeClient {
   // buffered
   private head = 0;
 
-  constructor(source: string | HttpRangeClient) {
+  constructor(
+    source: string | HttpRangeClient,
+    options?: {fetch?: (url: string, options?: RequestInit) => Promise<Response>; signal?: AbortSignal}
+  ) {
     if (typeof source === 'string') {
-      this.httpClient = new HttpRangeClient(source);
+      this.httpClient = new HttpRangeClient(source, options);
     } else if (source instanceof HttpRangeClient) {
-      this.httpClient = source;
+      this.httpClient = new HttpRangeClient(source.url, {
+        fetch: options?.fetch || source.fetch,
+        signal: options?.signal || source.signal
+      });
     } else {
       throw new Error('Unknown source ');
     }
@@ -297,11 +315,18 @@ class BufferedHttpRangeClient {
 
 class HttpRangeClient {
   url: string;
+  fetch: (url: string, options?: RequestInit) => Promise<Response>;
+  signal?: AbortSignal;
   requestsEverMade = 0;
   bytesEverRequested = 0;
 
-  constructor(url: string) {
+  constructor(
+    url: string,
+    options?: {fetch?: (url: string, options?: RequestInit) => Promise<Response>; signal?: AbortSignal}
+  ) {
     this.url = url;
+    this.fetch = options?.fetch || fetch;
+    this.signal = options?.signal;
   }
 
   async getRange(begin: number, length: number, purpose: string): Promise<ArrayBuffer> {
@@ -313,7 +338,7 @@ class HttpRangeClient {
       `request: #${this.requestsEverMade}, purpose: ${purpose}), bytes: (this_request: ${length}, ever: ${this.bytesEverRequested}), Range: ${range}`
     );
 
-    const response = await fetch(this.url, {
+    const response = await this.fetch(this.url, {
       headers: {
         Range: range
         // TODO: better parallelize requests on Chrome
@@ -343,7 +368,8 @@ class HttpRangeClient {
         // See:
         // https://bugs.chromium.org/p/chromium/issues/detail?id=969828&q=concurrent%20range%20requests&can=2
         // https://stackoverflow.com/questions/27513994/chrome-stalls-when-making-multiple-requests-to-same-resource
-      }
+      },
+      signal: this.signal
     });
 
     return response.arrayBuffer();

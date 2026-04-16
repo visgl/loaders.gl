@@ -55,12 +55,29 @@ export const TCXLoader = {
   TCXLoaderOptions
 >;
 
+/**
+ * Parses TCX XML text into a GeoJSON feature collection.
+ *
+ * @param text - TCX XML document text.
+ * @returns Parsed GeoJSON feature collection.
+ */
+export function parseTCXTextToFeatureCollection(text: string): FeatureCollection {
+  const doc = new DOMParser().parseFromString(text, 'text/xml');
+  return tcx(doc);
+}
+
+/**
+ * Parses TCX text into the requested table shape.
+ *
+ * @param text - TCX XML document text.
+ * @param options - Loader options controlling the output shape.
+ * @returns A GeoJSON table, object-row table, or binary feature collection.
+ */
 function parseTextSync(
   text: string,
   options?: TCXLoaderOptions
 ): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
-  const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson: FeatureCollection = tcx(doc);
+  const geojson = parseTCXTextToFeatureCollection(text);
 
   const tcxOptions = {...TCXLoader.options.tcx, ...options?.tcx};
 

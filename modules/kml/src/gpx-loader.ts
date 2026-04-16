@@ -55,12 +55,29 @@ export const GPXLoader = {
   GPXLoaderOptions
 >;
 
+/**
+ * Parses GPX XML text into a GeoJSON feature collection.
+ *
+ * @param text - GPX XML document text.
+ * @returns Parsed GeoJSON feature collection.
+ */
+export function parseGPXTextToFeatureCollection(text: string): FeatureCollection {
+  const doc = new DOMParser().parseFromString(text, 'text/xml');
+  return gpx(doc);
+}
+
+/**
+ * Parses GPX text into the requested table shape.
+ *
+ * @param text - GPX XML document text.
+ * @param options - Loader options controlling the output shape.
+ * @returns A GeoJSON table, object-row table, or binary feature collection.
+ */
 function parseTextSync(
   text: string,
   options?: GPXLoaderOptions
 ): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
-  const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson: FeatureCollection = gpx(doc);
+  const geojson = parseGPXTextToFeatureCollection(text);
 
   const gpxOptions = {...GPXLoader.options.gpx, ...options?.gpx};
 

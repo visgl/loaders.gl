@@ -103,7 +103,6 @@ test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async t => {
     {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
     arrowTable.schema
   );
-
   t.deepEqual(
     normalizeFeatures(roundTripped.features),
     normalizeFeatures(geojsonTable.features),
@@ -196,6 +195,30 @@ function getRowsFromArrowTable(table): Record<string, unknown>[] {
 function normalizeFeatures(features: any[]) {
   return features.map(feature => ({
     ...feature,
+    geometry: normalizeGeometry(feature.geometry),
     properties: {...(feature.properties || {})}
   }));
+}
+
+function normalizeGeometry(geometry: any) {
+  if (!geometry) {
+    return geometry;
+  }
+
+  switch (geometry.type) {
+    case 'MultiPoint':
+      return geometry.coordinates.length === 1
+        ? {type: 'Point', coordinates: geometry.coordinates[0]}
+        : geometry;
+    case 'MultiLineString':
+      return geometry.coordinates.length === 1
+        ? {type: 'LineString', coordinates: geometry.coordinates[0]}
+        : geometry;
+    case 'MultiPolygon':
+      return geometry.coordinates.length === 1
+        ? {type: 'Polygon', coordinates: geometry.coordinates[0]}
+        : geometry;
+    default:
+      return geometry;
+  }
 }
