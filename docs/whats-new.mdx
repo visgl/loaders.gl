@@ -60,6 +60,11 @@ Release Date: 2026
 
 - [`ShapefileArrowLoader`](/docs/modules/shapefile/api-reference/shapefile-arrow-loader) NEW - loads Shapefiles into Arrow tables with DBF property columns and a WKB `geometry` column annotated with geospatial schema metadata.
 
+**@loaders.gl/flatgeobuf**
+
+- [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) adds `flatgeobuf.shape: 'arrow-table'` with FlatGeobuf property columns, a WKB `geometry` column, and geospatial Arrow metadata for round-tripping to GeoJSON.
+- [`FlatGeobufSourceLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader) NEW - creates indexed remote `.fgb` vector sources with schema/metadata discovery, bbox-filtered HTTP range reads, and `geojson`, `binary`, or `arrow` outputs.
+
 ## v4.4
 
 Release Date: March 31, 2026

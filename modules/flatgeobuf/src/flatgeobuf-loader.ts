@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {
   parseFlatGeobuf,
@@ -20,7 +20,7 @@ const FGB_MAGIC_NUMBER = [0x66, 0x67, 0x62, 0x03, 0x66, 0x67, 0x62, 0x01];
 
 export type FlatGeobufLoaderOptions = LoaderOptions & {
   flatgeobuf?: {
-    shape?: 'geojson-table' | 'columnar-table' | 'binary';
+    shape?: 'geojson-table' | 'columnar-table' | 'binary' | 'arrow-table';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
     boundingBox?: [[number, number], [number, number]];
@@ -48,7 +48,11 @@ export const FlatGeobufWorkerLoader = {
       reproject: false
     }
   }
-} as const satisfies Loader<GeoJSONTable | BinaryFeatureCollection, any, FlatGeobufLoaderOptions>;
+} as const satisfies Loader<
+  GeoJSONTable | ArrowTable | BinaryFeatureCollection,
+  ArrowTableBatch | any,
+  FlatGeobufLoaderOptions
+>;
 
 export const FlatGeobufLoader = {
   ...FlatGeobufWorkerLoader,

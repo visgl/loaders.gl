@@ -4,4 +4,7 @@
 
 This module contains loaders for the KML format.
 
+Arrow variants are also available for KML, GPX, and TCX inputs via
+`KMLArrowLoader`, `GPXArrowLoader`, and `TCXArrowLoader`.
+
 For documentation please visit the [website](https://loaders.gl).
