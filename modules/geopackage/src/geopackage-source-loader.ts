@@ -45,11 +45,22 @@ export type GeoPackageSourceOptions = DataSourceOptions & {
  */
 export const GeoPackageSource = {
   ...GeoPackageFormat,
+  dataType: null as unknown as GeoPackageDataSource,
+  batchType: null as never,
   name: 'GeoPackageSource',
   version: VERSION,
   type: 'geopackage',
   fromUrl: true,
   fromBlob: true,
+
+  options: {
+    geopackage: {
+      sqlJsCDN: DEFAULT_SQLJS_CDN,
+      table: undefined,
+      workerUrl: undefined
+    },
+    gis: {}
+  },
 
   defaultOptions: {
     geopackage: {
