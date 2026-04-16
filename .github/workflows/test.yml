@@ -118,6 +118,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: coverage/lcov.info
           format: lcov
+          fail-on-error: false
 
   build:
     name: Build

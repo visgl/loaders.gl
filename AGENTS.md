@@ -12,13 +12,14 @@
 - Run headless browser tests: `yarn test-headless`
 - Format code: `yarn lint fix`
 - Always run `yarn lint fix` after making changes to ensure that Biome formatting is maintained.
+- Use the exact script names from `package.json`; do not substitute spaced forms such as `yarn test node` or `yarn test headless`.
 
 ## Ready for merge
 
 - Add or update TSDoc for every new class, function, method, and field.
 - Update docs when behavior, public API, examples, or migration guidance changed.
 - Run build: `yarn build`
-- Run tests: `yarn test`
+- Run Node tests: `yarn test-node`
 - Run headless browser tests: `yarn test-headless`
 - Format code: `yarn lint fix`
 - Provide a copyable markdown PR description, compared to `master`, that starts with goals of the PR and then lists actual changes.
