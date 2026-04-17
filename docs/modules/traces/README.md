@@ -6,3 +6,9 @@ The `@loaders.gl/traces` module will provide parsers for performance trace forma
 
 - Chrome Trace Event format
 - Perfetto Trace format
+
+## Current APIs
+
+- `ChromeTraceLoader`
+- `parseChromeTrace(...)`
+- Chrome trace streaming helpers for logical events, Arrow batches, and chunked files

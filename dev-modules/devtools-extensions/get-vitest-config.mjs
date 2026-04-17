@@ -73,6 +73,7 @@ export async function getVitestConfig(options = {}) {
               'modules/images/test/**/*.spec.{ts,js}',
               'modules/loader-utils/test/**/*.spec.{ts,js}',
               'modules/polyfills/test/**/*.spec.{ts,js}',
+              'modules/traces/test/**/*.spec.{ts,js}',
               'modules/**/*.node.spec.{ts,js}',
               'test/**/*.node.spec.{ts,js}'
             ],
