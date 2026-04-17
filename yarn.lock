@@ -5252,6 +5252,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/geoarrow@workspace:modules/geoarrow"
   dependencies:
+    "@loaders.gl/gis": "npm:4.4.0"
+    "@loaders.gl/loader-utils": "npm:4.4.0"
+    "@loaders.gl/schema": "npm:4.4.0"
+    "@loaders.gl/schema-utils": "npm:4.4.0"
     "@math.gl/polygon": "npm:^4.1.0"
     apache-arrow: "npm:>= 17.0.0"
   peerDependencies:
@@ -5295,7 +5299,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/gis@workspace:modules/gis"
   dependencies:
-    "@loaders.gl/geoarrow": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
     "@loaders.gl/schema-utils": "npm:4.4.0"
@@ -19313,6 +19316,7 @@ __metadata:
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/flatgeobuf": "workspace:*"
     "@loaders.gl/geopackage": "workspace:*"
+    "@loaders.gl/gis": "workspace:*"
     "@loaders.gl/kml": "workspace:*"
     "@loaders.gl/parquet": "workspace:*"
     "@loaders.gl/shapefile": "workspace:*"
