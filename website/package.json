@@ -21,7 +21,6 @@
     "@algolia/autocomplete-js": "^1.17.0",
     "@algolia/client-search": "^4.26.0",
     "@arcgis/core": "^4.25.0",
-    "@deck.gl-community/experimental": "^9.2.8",
     "@deck.gl/arcgis": "^9.3.0",
     "@deck.gl/core": "^9.3.0",
     "@deck.gl/extensions": "^9.3.0",

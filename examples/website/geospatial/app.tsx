@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import React, {useEffect, useRef, useState} from 'react';
+import {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import styled from 'styled-components';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -12,40 +11,32 @@ import maplibregl from 'maplibre-gl';
 import {DeckGL} from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
+import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 
-import {ExamplePanel, MetadataViewer} from './components/example-panel';
 // import {FileUploader} from './components/file-uploader';
 
 import type {Example} from './examples';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 
-import {Table, GeoJSON} from '@loaders.gl/schema';
+import {Table, GeoJSON, type Schema} from '@loaders.gl/schema';
 import {load, LoaderOptions} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
+import {convertGeoArrowToTable} from '@loaders.gl/geoarrow';
 import {GeoParquetLoader, preloadCompressions} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
-import {ShapefileLoader} from '@loaders.gl/shapefile';
-import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
+import {GeoPackageLoader, GeoPackageArrowLoader} from '@loaders.gl/geopackage';
+import {ShapefileLoader, ShapefileArrowLoader} from '@loaders.gl/shapefile';
+import {KMLLoader, KMLArrowLoader, GPXLoader, GPXArrowLoader, TCXLoader, TCXArrowLoader} from '@loaders.gl/kml';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
-import {GeoPackageLoader} from '@loaders.gl/geopackage';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {convertTable} from '@loaders.gl/schema-utils';
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
+import '@deck.gl/widgets/stylesheet.css';
 
 export const INITIAL_MAP_STYLE =
   'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
-
-const LOADERS = [
-  GeoArrowLoader,
-  GeoParquetLoader,
-  FlatGeobufLoader,
-  GeoPackageLoader,
-  ShapefileLoader,
-  KMLLoader,
-  GPXLoader,
-  TCXLoader,
-  GeoJSONLoader
-] as const;
 
 const LOADER_OPTIONS = {
   core: {
@@ -83,7 +74,9 @@ const LOADER_OPTIONS = {
   tcx: {
     shape: 'geojson-table'
   }
-} as const satisfies LoaderOptions;
+} as const;
+
+type TableFormat = 'plain' | 'arrow';
 
 const VIEW_STATE = {
   height: 600,
@@ -111,7 +104,7 @@ type AppProps = {
   /** Whether to hide the example controls, metadata, and descriptive overlay. */
   hideChrome?: boolean;
   /** Any informational text to display in the overlay */
-  children?: React.Children;
+  children?: ReactNode;
 };
 
 type AppState = {
@@ -127,62 +120,22 @@ type AppState = {
   loadDurationSeconds?: number | null;
   displayedParquetImplementation?: 'wasm' | 'js' | null;
   // CURRENT VIEW POINT / CAMERA POSITION
-  viewState: Record<string, number>;
+  viewState: Record<string, unknown>;
 };
-
-const SidebarSection = styled.div`
-  margin: 0 0 0.75rem;
-`;
-
-const SidebarLabel = styled.label`
-  display: block;
-  margin: 0 0 0.25rem;
-  font-weight: 600;
-`;
-
-const SidebarSelect = styled.select`
-  width: 100%;
-  margin: 0 0 0.25rem;
-`;
-
-const SidebarHint = styled.div`
-  color: #555;
-  font-size: 12px;
-  line-height: 1.4;
-`;
-
-const LoadStatus = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 0 0.75rem;
-  color: #555;
-  font-size: 12px;
-  line-height: 1.4;
-`;
-
-const Spinner = styled.div`
-  width: 12px;
-  height: 12px;
-  border: 2px solid #bbb;
-  border-top-color: #222;
-  border-radius: 50%;
-  animation: geospatial-loader-spin 0.8s linear infinite;
-
-  @keyframes geospatial-loader-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
 
 /**
  * A Geospatial table map viewer
  */
 export default function App(props: AppProps = {}) {
   const [parquetImplementation, setParquetImplementation] = useState<'wasm' | 'js'>('js');
+  const [tableFormat, setTableFormat] = useState<TableFormat>('plain');
   const previousParquetImplementation = useRef(parquetImplementation);
+  const previousTableFormat = useRef(tableFormat);
   const loadRequestIdRef = useRef(0);
+  const availableExamples = useMemo(
+    () => getExamplesForFormat(EXAMPLES, props.format),
+    [props.format]
+  );
   const [state, setState] = useState<AppState>({
     table: null,
     viewState: INITIAL_VIEW_STATE,
@@ -194,6 +147,30 @@ export default function App(props: AppProps = {}) {
     loadDurationSeconds: null,
     displayedParquetImplementation: null
   });
+
+  useEffect(() => {
+    const initialCategoryName = props.format || INITIAL_LOADER_NAME;
+    const initialExamples = availableExamples[initialCategoryName];
+    if (!initialExamples) {
+      return;
+    }
+
+    const initialExampleName = props.format
+      ? Object.keys(initialExamples)[0]
+      : INITIAL_EXAMPLE_NAME;
+    const initialExample = initialExamples[initialExampleName];
+    if (!initialExample) {
+      return;
+    }
+
+    void loadExample(
+      initialCategoryName,
+      initialExampleName,
+      initialExample,
+      previousParquetImplementation.current,
+      previousTableFormat.current
+    );
+  }, [availableExamples, props.format]);
 
   useEffect(() => {
     const implementationChanged = previousParquetImplementation.current !== parquetImplementation;
@@ -212,7 +189,8 @@ export default function App(props: AppProps = {}) {
       state.selectedCategoryName,
       state.selectedExampleName,
       state.selectedExample,
-      parquetImplementation
+      parquetImplementation,
+      tableFormat
     );
   }, [
     parquetImplementation,
@@ -221,98 +199,117 @@ export default function App(props: AppProps = {}) {
     state.selectedExampleName
   ]);
 
+  useEffect(() => {
+    const formatChanged = previousTableFormat.current !== tableFormat;
+    previousTableFormat.current = tableFormat;
+
+    if (!formatChanged || !state.selectedCategoryName || !state.selectedExample || !state.selectedExampleName) {
+      return;
+    }
+
+    void loadExample(
+      state.selectedCategoryName,
+      state.selectedExampleName,
+      state.selectedExample,
+      parquetImplementation,
+      tableFormat
+    );
+  }, [
+    parquetImplementation,
+    state.selectedCategoryName,
+    state.selectedExample,
+    state.selectedExampleName,
+    tableFormat
+  ]);
+
+  const widgets = useMemo(() => {
+    if (props.hideChrome) {
+      return [];
+    }
+
+    return [
+      new SidebarWidget({
+        id: 'geospatial-example-sidebar',
+        placement: 'top-right',
+        side: 'right',
+        widthPx: 420,
+        panel: new ColumnPanel({
+          id: 'geospatial-example-panel',
+          title: getLoaderDisplayName(state.selectedCategoryName, tableFormat),
+          panels: {
+            controls: new CustomPanel({
+              id: 'geospatial-example-controls',
+              title: '',
+              onRenderHTML: (rootElement) =>
+                renderGeospatialSidebar(rootElement, {
+                  examples: availableExamples,
+                  selectedCategoryName: state.selectedCategoryName,
+                  selectedExampleName: state.selectedExampleName,
+                  tableFormat,
+                  parquetImplementation,
+                  loadDurationSeconds: state.loadDurationSeconds,
+                  loading: state.loading,
+                  error: state.error,
+                  schema: state.table?.schema ? JSON.stringify(state.table.schema, null, 2) : null,
+                  viewState: state.viewState,
+                  onExampleChange: ({categoryName, exampleName}) => {
+                    const example = availableExamples[categoryName]?.[exampleName];
+                    if (example) {
+                      void loadExample(
+                        categoryName,
+                        exampleName,
+                        example,
+                        parquetImplementation,
+                        tableFormat
+                      );
+                    }
+                  },
+                  onTableFormatChange: setTableFormat,
+                  onParquetImplementationChange: setParquetImplementation
+                })
+            })
+          }
+        })
+      })
+    ];
+  }, [
+    availableExamples,
+    parquetImplementation,
+    props.hideChrome,
+    state.error,
+    state.loadDurationSeconds,
+    state.loading,
+    state.selectedCategoryName,
+    state.selectedExampleName,
+    state.table?.schema,
+    state.viewState,
+    tableFormat
+  ]);
+
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <ExamplePanel
-        examples={EXAMPLES}
-        initialCategoryName={INITIAL_LOADER_NAME}
-        initialExampleName={INITIAL_EXAMPLE_NAME}
-        format={props.format}
-        hideChrome={props.hideChrome}
-        onExampleChange={onExampleChange}
-      >
-        {props.children}
-        <LoadStatus>
-          {state.loading ? <Spinner aria-hidden="true" /> : null}
-          <span>
-            {state.loading
-              ? 'Loading...'
-              : state.loadDurationSeconds !== null
-                ? `Loaded in ${state.loadDurationSeconds.toFixed(2)} s`
-                : ''}
-          </span>
-        </LoadStatus>
-        {state.selectedCategoryName === 'GeoParquet' ? (
-          <SidebarSection>
-            <SidebarLabel htmlFor="parquet-implementation">GeoParquetLoader options</SidebarLabel>
-            <SidebarSelect
-              id="parquet-implementation"
-              value={parquetImplementation}
-              onChange={(event) => {
-                setParquetImplementation(event.target.value as 'wasm' | 'js');
-              }}
-            >
-              <option value="wasm">wasm</option>
-              <option value="js">js</option>
-            </SidebarSelect>
-            <SidebarHint>
-              Switches GeoParquet loading between the Arrow-backed wasm path and the JS fallback.
-            </SidebarHint>
-          </SidebarSection>
-        ) : null}
-        {state.error ? <div style={{color: 'red'}}>{state.error}</div> : ''}
-        <div style={{textAlign: 'center'}}>
-          center long/lat: {state.viewState.longitude.toFixed(3)},
-          {state.viewState.latitude.toFixed(3)}, zoom: {state.viewState.zoom.toFixed(2)}
-        </div>
-        {/* TODO -restore drag and drop
-        <FileUploader
-          onFileRemoved={() => setState(state => ({...state, table: null}))}
-          onFileSelected={async (uploadedFile: File) => {
-            // TODO - error handling
-            const data = (await load(uploadedFile, LOADERS, LOADER_OPTIONS)) as Table;
-            setState(state => ({
-              ...state,
-              selectedExample: uploadedFile.name,
-              table: data
-            }));
-          }}
-        />
-        */}
-        <h2>Table Schema</h2>
-        <MetadataViewer
-          metadata={state.table?.schema && JSON.stringify(state.table.schema, null, 2)}
-        />
-      </ExamplePanel>
-
       <DeckGL
         layers={renderLayer(state)}
         viewState={state.viewState}
         onViewStateChange={({viewState}) => setState((state) => ({...state, viewState}))}
-        controller={{type: MapController, maxPitch: 85}}
+        controller={{type: MapController, maxPitch: 85} as any}
         getTooltip={({object}) => getTooltipData({object}, state)}
+        widgets={widgets}
       >
-        <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} preventStyleDiffing />
+        <Map reuseMaps mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
       </DeckGL>
     </div>
   );
-
-  async function onExampleChange(args: {
-    categoryName: string;
-    exampleName: string;
-    example: Example;
-  }) {
-    await loadExample(args.categoryName, args.exampleName, args.example, parquetImplementation);
-  }
-
   async function loadExample(
     categoryName: string,
     exampleName: string,
     example: Example,
-    implementation: 'wasm' | 'js'
+    implementation: 'wasm' | 'js',
+    nextTableFormat: TableFormat
   ) {
     const url = example.data;
-    const loaderOptions = getLoaderOptions(implementation);
+    const loaderOptions = getLoaderOptions(example, implementation, nextTableFormat);
+    const loaders = getLoaders(example, nextTableFormat);
     const requestId = ++loadRequestIdRef.current;
     const loadStartTime = performance.now();
 
@@ -327,10 +324,11 @@ export default function App(props: AppProps = {}) {
     }));
 
     try {
-      const table = (await load(url, LOADERS, loaderOptions)) as Table;
+      const rawTable = (await load(url, loaders as any, loaderOptions)) as Table;
       if (requestId !== loadRequestIdRef.current) {
         return;
       }
+      const table = normalizeLoadedTable(rawTable);
       console.log('Loaded table', url, table);
       const viewState = {...state.viewState, ...example.viewState};
       const loadDurationSeconds = (performance.now() - loadStartTime) / 1000;
@@ -365,21 +363,134 @@ export default function App(props: AppProps = {}) {
   }
 }
 
-function getLoaderOptions(implementation: 'wasm' | 'js'): LoaderOptions {
+function getLoaders(example: Example, tableFormat: TableFormat) {
+  if (tableFormat === 'plain') {
+    switch (example.format) {
+      case 'geopackage':
+        return [GeoPackageLoader];
+      case 'shapefile':
+        return [ShapefileLoader];
+      case 'kml':
+        return [KMLLoader];
+      case 'gpx':
+        return [GPXLoader];
+      case 'tcx':
+        return [TCXLoader];
+      case 'geojson':
+        return [GeoJSONLoader];
+      case 'flatgeobuf':
+        return [FlatGeobufLoader];
+      case 'geoparquet':
+        return [GeoParquetLoader];
+      case 'geoarrow':
+        return [GeoArrowLoader];
+      default:
+        return [GeoJSONLoader];
+    }
+  }
+
+  switch (example.format) {
+    case 'geopackage':
+      return [GeoPackageArrowLoader()];
+    case 'shapefile':
+      return [ShapefileArrowLoader];
+    case 'kml':
+      return [KMLArrowLoader];
+    case 'gpx':
+      return [GPXArrowLoader];
+    case 'tcx':
+      return [TCXArrowLoader];
+    case 'geojson':
+      return [GeoJSONLoader];
+    case 'flatgeobuf':
+      return [FlatGeobufLoader];
+    case 'geoparquet':
+      return [GeoParquetLoader];
+    case 'geoarrow':
+      return [GeoArrowLoader];
+    default:
+      return [GeoJSONLoader];
+  }
+}
+
+function getLoaderOptions(
+  example: Example,
+  implementation: 'wasm' | 'js',
+  tableFormat: TableFormat
+): LoaderOptions {
+  const tableShape = tableFormat === 'arrow' ? 'arrow-table' : 'geojson-table';
+
   return {
     ...LOADER_OPTIONS,
     parquet: {
       ...LOADER_OPTIONS.parquet,
+      shape: tableShape,
       implementation
+    },
+    arrow: {
+      ...LOADER_OPTIONS.arrow,
+      shape: example.format === 'geoarrow' ? tableShape : LOADER_OPTIONS.arrow.shape
+    },
+    flatgeobuf: {
+      shape: tableFormat === 'arrow' ? 'arrow-table' : 'geojson-table'
     }
-  };
+  } as unknown as LoaderOptions;
 }
 
-function renderLayer({table, selectedExample, index}) {
+function normalizeLoadedTable(table: Table): Table {
+  if (table.shape === 'arrow-table') {
+    try {
+      return convertGeoArrowToTable(table.data, 'geojson-table');
+    } catch (error) {
+      if (!(error instanceof Error) || !error.message.includes('No GeoArrow geometry column found')) {
+        throw error;
+      }
+
+      return convertWKBArrowTableToGeoJSON(table);
+    }
+  }
+
+  return table;
+}
+
+function convertWKBArrowTableToGeoJSON(table: Table): Table {
+  const objectRowTable = convertTable(table, 'object-row-table');
+  return convertWKBTableToGeoJSON(objectRowTable, table.schema as Schema);
+}
+
+function getLoaderDisplayName(
+  selectedCategoryName?: string | null,
+  tableFormat: TableFormat = 'plain'
+): string {
+  switch (selectedCategoryName) {
+    case 'GeoArrow':
+      return 'GeoArrowLoader';
+    case 'GeoParquet':
+      return 'GeoParquetLoader';
+    case 'GeoJSON':
+      return 'GeoJSONLoader';
+    case 'GeoPackage':
+      return tableFormat === 'arrow' ? 'GeoPackageArrowLoader' : 'GeoPackageLoader';
+    case 'FlatGeobuf':
+      return 'FlatGeobufLoader';
+    case 'Shapefile':
+      return tableFormat === 'arrow' ? 'ShapefileArrowLoader' : 'ShapefileLoader';
+    case 'KML':
+      return tableFormat === 'arrow' ? 'KMLArrowLoader' : 'KMLLoader';
+    case 'GPX':
+      return tableFormat === 'arrow' ? 'GPXArrowLoader' : 'GPXLoader';
+    case 'TCX':
+      return tableFormat === 'arrow' ? 'TCXArrowLoader' : 'TCXLoader';
+    default:
+      return 'Loader';
+  }
+}
+
+function renderLayer({table, selectedExample}: {table: Table | null; selectedExample?: Example | null}) {
   const geojson = table as GeoJSON;
   return [
     new GeoJsonLayer({
-      id: `geojson-${index})`,
+      id: 'geojson-layer',
       data: geojson,
 
       pickable: true,
@@ -439,4 +550,291 @@ function getDefaultTooltipData({object}) {
 
 export function renderToDOM(container) {
   createRoot(container).render(<App />);
+}
+
+function getExamplesForFormat(
+  examples: Record<string, Record<string, Example>>,
+  format?: string
+): Record<string, Record<string, Example>> {
+  if (format) {
+    return {[format]: examples[format]};
+  }
+
+  return {...examples};
+}
+
+function renderGeospatialSidebar(
+  rootElement: HTMLElement,
+  options: {
+    examples: Record<string, Record<string, Example>>;
+    selectedCategoryName?: string | null;
+    selectedExampleName?: string | null;
+    tableFormat: TableFormat;
+    parquetImplementation: 'wasm' | 'js';
+    loadDurationSeconds?: number | null;
+    loading: boolean;
+    error?: string | null;
+    schema: string | null;
+    viewState: Record<string, unknown>;
+    onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
+    onTableFormatChange: (tableFormat: TableFormat) => void;
+    onParquetImplementationChange: (implementation: 'wasm' | 'js') => void;
+  }
+): void {
+  rootElement.replaceChildren();
+  rootElement.style.display = 'flex';
+  rootElement.style.flexDirection = 'column';
+  rootElement.style.gap = '12px';
+  rootElement.style.padding = '4px 0 0';
+
+  rootElement.appendChild(
+    createSelectSection({
+      examples: options.examples,
+      selectedCategoryName: options.selectedCategoryName,
+      selectedExampleName: options.selectedExampleName,
+      tableFormat: options.tableFormat,
+      onExampleChange: options.onExampleChange,
+      onTableFormatChange: options.onTableFormatChange
+    })
+  );
+
+  rootElement.appendChild(
+    createStatusSection({
+      loading: options.loading,
+      loadDurationSeconds: options.loadDurationSeconds
+    })
+  );
+
+  if (options.selectedCategoryName === 'GeoParquet') {
+    rootElement.appendChild(
+      createParquetSection(options.parquetImplementation, options.onParquetImplementationChange)
+    );
+  }
+
+  if (options.error) {
+    rootElement.appendChild(createErrorSection(options.error));
+  }
+
+  rootElement.appendChild(createViewStateSection(options.viewState));
+  rootElement.appendChild(createMetadataSection(options.schema ?? 'No metadata available'));
+}
+
+function createSelectSection(options: {
+  examples: Record<string, Record<string, Example>>;
+  selectedCategoryName?: string | null;
+  selectedExampleName?: string | null;
+  tableFormat: TableFormat;
+  onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
+  onTableFormatChange: (tableFormat: TableFormat) => void;
+}): HTMLElement {
+  const section = createSection();
+  section.appendChild(createLabel('Example'));
+
+  const selectElement = document.createElement('select');
+  selectElement.style.width = '100%';
+  selectElement.style.margin = '0';
+  selectElement.style.padding = '8px';
+  selectElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+  selectElement.style.borderRadius = '8px';
+  selectElement.style.background = 'var(--menu-background, #fff)';
+  selectElement.style.color = 'inherit';
+  selectElement.value = `${options.selectedCategoryName}.${options.selectedExampleName}`;
+  selectElement.addEventListener('change', (event) => {
+    const nextValue = (event.target as HTMLSelectElement).value;
+    const [categoryName, exampleName] = nextValue.split('.');
+    options.onExampleChange({categoryName, exampleName});
+  });
+
+  for (const categoryName of Object.keys(options.examples)) {
+    const examplesInCategory = options.examples[categoryName];
+    const groupElement = document.createElement('optgroup');
+    groupElement.label = categoryName;
+
+    for (const exampleName of Object.keys(examplesInCategory)) {
+      const optionElement = document.createElement('option');
+      optionElement.value = `${categoryName}.${exampleName}`;
+      optionElement.textContent = `${exampleName} (${categoryName})`;
+      groupElement.appendChild(optionElement);
+    }
+
+    selectElement.appendChild(groupElement);
+  }
+
+  section.appendChild(selectElement);
+
+  section.appendChild(createLabel('Format'));
+
+  const formatSelectElement = document.createElement('select');
+  formatSelectElement.style.width = '100%';
+  formatSelectElement.style.margin = '0';
+  formatSelectElement.style.padding = '8px';
+  formatSelectElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+  formatSelectElement.style.borderRadius = '8px';
+  formatSelectElement.style.background = 'var(--menu-background, #fff)';
+  formatSelectElement.style.color = 'inherit';
+  formatSelectElement.value = options.tableFormat;
+  formatSelectElement.addEventListener('change', (event) => {
+    options.onTableFormatChange((event.target as HTMLSelectElement).value as TableFormat);
+  });
+
+  for (const [value, label] of [
+    ['plain', 'Plain'],
+    ['arrow', 'Apache Arrow']
+  ] as const) {
+    const optionElement = document.createElement('option');
+    optionElement.value = value;
+    optionElement.textContent = label;
+    formatSelectElement.appendChild(optionElement);
+  }
+
+  section.appendChild(formatSelectElement);
+  return section;
+}
+
+function createStatusSection(options: {
+  loading: boolean;
+  loadDurationSeconds?: number | null;
+}): HTMLElement {
+  const section = createSection();
+  section.style.display = 'flex';
+  section.style.alignItems = 'center';
+  section.style.gap = '8px';
+  section.style.color = '#555';
+  section.style.fontSize = '12px';
+  section.style.lineHeight = '1.4';
+
+  if (options.loading) {
+    const spinnerElement = document.createElement('span');
+    spinnerElement.setAttribute('aria-hidden', 'true');
+    spinnerElement.style.width = '12px';
+    spinnerElement.style.height = '12px';
+    spinnerElement.style.border = '2px solid #bbb';
+    spinnerElement.style.borderTopColor = '#222';
+    spinnerElement.style.borderRadius = '999px';
+    spinnerElement.style.display = 'inline-block';
+    spinnerElement.style.animation = 'geospatial-loader-spin 0.8s linear infinite';
+    section.appendChild(spinnerElement);
+  }
+
+  const labelElement = document.createElement('span');
+  if (options.loading) {
+    labelElement.textContent = 'Loading...';
+  } else if (options.loadDurationSeconds !== null && options.loadDurationSeconds !== undefined) {
+    labelElement.textContent = `Loaded in ${options.loadDurationSeconds.toFixed(2)} s`;
+  } else {
+    labelElement.textContent = '';
+  }
+
+  section.appendChild(labelElement);
+  ensureGeospatialSpinnerStyle(document);
+  return section;
+}
+
+function createParquetSection(
+  parquetImplementation: 'wasm' | 'js',
+  onParquetImplementationChange: (implementation: 'wasm' | 'js') => void
+): HTMLElement {
+  const section = createSection();
+  section.appendChild(createLabel('GeoParquetLoader options', 'parquet-implementation'));
+
+  const selectElement = document.createElement('select');
+  selectElement.id = 'parquet-implementation';
+  selectElement.value = parquetImplementation;
+  selectElement.style.width = '100%';
+  selectElement.style.margin = '0 0 4px';
+  selectElement.style.padding = '8px';
+  selectElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+  selectElement.style.borderRadius = '8px';
+  selectElement.style.background = 'var(--menu-background, #fff)';
+  selectElement.style.color = 'inherit';
+  selectElement.add(new Option('wasm', 'wasm'));
+  selectElement.add(new Option('js', 'js'));
+  selectElement.addEventListener('change', (event) => {
+    onParquetImplementationChange((event.target as HTMLSelectElement).value as 'wasm' | 'js');
+  });
+  section.appendChild(selectElement);
+
+  const hintElement = document.createElement('div');
+  hintElement.textContent =
+    'Switches GeoParquet loading between the Arrow-backed wasm path and the JS fallback.';
+  hintElement.style.color = '#555';
+  hintElement.style.fontSize = '12px';
+  hintElement.style.lineHeight = '1.4';
+  section.appendChild(hintElement);
+
+  return section;
+}
+
+function createErrorSection(message: string): HTMLElement {
+  const element = document.createElement('div');
+  element.textContent = message;
+  element.style.color = '#b91c1c';
+  element.style.whiteSpace = 'pre-wrap';
+  return element;
+}
+
+function createViewStateSection(viewState: Record<string, unknown>): HTMLElement {
+  const element = document.createElement('div');
+  element.style.textAlign = 'center';
+  const longitude = Number(viewState.longitude ?? 0);
+  const latitude = Number(viewState.latitude ?? 0);
+  const zoom = Number(viewState.zoom ?? 0);
+  element.textContent = `center long/lat: ${longitude.toFixed(3)}, ${latitude.toFixed(3)}, zoom: ${zoom.toFixed(2)}`;
+  return element;
+}
+
+function createMetadataSection(metadata: string): HTMLElement {
+  const section = createSection();
+  const preElement = document.createElement('pre');
+  preElement.textContent = metadata;
+  preElement.style.margin = '0';
+  preElement.style.maxHeight = '320px';
+  preElement.style.overflow = 'auto';
+  preElement.style.padding = '12px';
+  preElement.style.borderRadius = '8px';
+  preElement.style.background = '#0f172a';
+  preElement.style.color = '#e2e8f0';
+  preElement.style.fontSize = '12px';
+  preElement.style.lineHeight = '1.4';
+  preElement.style.whiteSpace = 'pre-wrap';
+  section.appendChild(preElement);
+
+  return section;
+}
+
+function createSection(): HTMLElement {
+  const section = document.createElement('section');
+  section.style.display = 'flex';
+  section.style.flexDirection = 'column';
+  section.style.gap = '4px';
+  return section;
+}
+
+function createLabel(text: string, htmlFor?: string): HTMLElement {
+  const labelElement = document.createElement('label');
+  labelElement.textContent = text;
+  labelElement.style.fontWeight = '600';
+  labelElement.style.display = 'block';
+  if (htmlFor) {
+    labelElement.htmlFor = htmlFor;
+  }
+  return labelElement;
+}
+
+function ensureGeospatialSpinnerStyle(documentObject: Document): void {
+  const styleId = 'geospatial-loader-sidebar-style';
+  if (documentObject.getElementById(styleId)) {
+    return;
+  }
+
+  const styleElement = documentObject.createElement('style');
+  styleElement.id = styleId;
+  styleElement.textContent = `
+    @keyframes geospatial-loader-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  `;
+  documentObject.head.appendChild(styleElement);
 }

@@ -41,6 +41,14 @@ module.exports = function(context, opts = {
             ...(_config.resolve.modules || [])
           ];
         }
+        if (resolve.extensions) {
+          _config.resolve.extensions = [
+            ...resolve.extensions,
+            ...(_config.resolve.extensions || []).filter(
+              extension => !resolve.extensions.includes(extension)
+            )
+          ];
+        }
         Object.assign(_config.resolve.alias, resolve.alias);
       }
 

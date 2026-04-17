@@ -9,6 +9,15 @@ export {getDeckBinaryDataFromArrowMesh} from './mesharrow/get-deck-binary-data';
 
 // GIS CATEGORY - GEOARROW
 export type {GeoArrowMetadata, GeoArrowEncoding} from './metadata/geoarrow-metadata';
+export type {
+  GeoArrowConvertToOptions,
+  GeoArrowConvertFromOptions
+} from './geoarrow-converter/geoarrow-converter';
+export {
+  GEOARROW_CONVERTERS,
+  GeoArrowConverter,
+  GeoArrowTableConverter
+} from './geoarrow-converter/geoarrow-converter';
 
 export type {
   GeoArrowWKB,
@@ -55,3 +64,23 @@ export {
 export {getGeoArrowGeometryInfo} from './get-geoarrow-geometry-info';
 
 export {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
+
+export type {
+  BinaryDataFromGeoArrow,
+  BinaryGeometriesFromArrowOptions
+} from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
+export {
+  getBinaryGeometryTemplate,
+  getTriangleIndices,
+  getMeanCentersFromBinaryGeometries
+} from './lib/feature-collection-converters/convert-geoarrow-to-binary-features';
+export {
+  convertGeoArrowGeometryToGeoJSON,
+  convertGeoArrowToBinaryFeatureCollection,
+  convertGeoArrowToTable,
+  convertWKBTableToGeoJSON,
+  convertTableToGeoArrow,
+  convertFeatureCollectionToGeoArrowTable,
+  convertFeaturesToGeoArrowTable
+} from './deprecated';
+export type {GeoArrowConvertFromEncoding} from './convert-table-to-geoarrow';

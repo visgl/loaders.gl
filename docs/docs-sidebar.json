@@ -176,6 +176,7 @@
         "items": [
           "developer-guide/using-loaders",
           "developer-guide/using-writers",
+          "developer-guide/converting-data",
           "developer-guide/using-sources",
           "developer-guide/using-range-requests",
           "developer-guide/loader-categories",

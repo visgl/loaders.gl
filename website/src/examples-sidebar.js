@@ -8,7 +8,7 @@
 
  Create as many sidebars as you want.
  */
-export const sidebars = {
+const sidebars = {
   examplesSidebar: [
     {
       type: 'doc',
@@ -94,3 +94,5 @@ export const sidebars = {
     }
   ]
 };
+
+module.exports = sidebars;

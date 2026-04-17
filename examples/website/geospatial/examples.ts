@@ -2,7 +2,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Example} from './components/example-panel';
+export type Example = {
+  format: 'geoarrow' | 'geoparquet' | 'geojson' | 'geopackage' | 'flatgeobuf' | 'shapefile' | 'kml' | 'tcx' | 'gpx';
+  data: string;
+  attributions?: string[];
+  viewState?: Record<string, unknown>;
+  tileSize?: number[];
+  layerProps?: Record<string, any>;
+  getTooltipData?: (event: {
+    object?: {
+      properties?: Record<string, unknown>;
+    };
+  }) => null | {title: string; properties: Record<string, unknown>};
+};
 
 export const INITIAL_LOADER_NAME = 'GeoParquet';
 export const INITIAL_EXAMPLE_NAME = 'Airports';

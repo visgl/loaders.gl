@@ -32,7 +32,6 @@
     "README.md"
   ],
   "dependencies": {
-    "@loaders.gl/geoarrow": "4.4.0",
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
     "@loaders.gl/schema-utils": "4.4.0",
