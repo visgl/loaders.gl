@@ -5,11 +5,19 @@
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
-import {JSONLoader, _GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
+import {
+  JSONLoader,
+  _FastJSONLoader as FastJSONLoader,
+  _GeoJSONLoader as GeoJSONLoader
+} from '@loaders.gl/json';
 import {JSONLoader as BundledJSONLoader} from '@loaders.gl/json/bundled';
 
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH = '@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json';
+const STREAMING_LOADERS = [
+  {name: 'JSONLoader', loader: JSONLoader},
+  {name: 'FastJSONLoader', loader: FastJSONLoader}
+];
 
 test('JSONLoader#load(geojson.json)', async t => {
   const table = await load(GEOJSON_PATH, JSONLoader, {json: {table: true}});
@@ -31,59 +39,55 @@ test('JSONLoader#load(geojson.json, shape: arrow-table)', async t => {
   t.end();
 });
 
-test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t => {
-  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader);
-  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
+for (const {name, loader} of STREAMING_LOADERS) {
+  test(`${name}#loadInBatches(geojson.json, rows, batchSize = auto)`, async t => {
+    const iterator = await loadInBatches(GEOJSON_PATH, loader);
+    t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
-  let batch;
-  let batchCount = 0;
-  let rowCount = 0;
-  // TODO - incorrect length read after 2.3 polyfills upgrade, investigate!
-  // let byteLength = 0;
-  for await (batch of iterator) {
-    batchCount++;
-    rowCount += batch.length;
-    // byteLength = batch.bytesUsed;
-  }
-
-  // t.comment(JSON.stringify(batchCount));
-  t.ok(batchCount <= 4, 'Correct number of batches received');
-  t.equal(rowCount, 308, 'Correct number of row received');
-  // t.equal(byteLength, 135910, 'Correct number of bytes received');
-  t.end();
-});
-
-test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => {
-  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
-    batchSize: 10
-  });
-  t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
-
-  let batch;
-  let batchCount = 0;
-  let rowCount = 0;
-  for await (batch of iterator) {
-    // t.comment(`BATCH ${batch.count}: ${batch.length} ${JSON.stringify(batch.data).slice(0, 200)}`);
-    if (batchCount < 30) {
-      t.equal(batch.length, 10, `Got correct batch size for batch ${batchCount}`);
+    let batch;
+    let batchCount = 0;
+    let rowCount = 0;
+    for await (batch of iterator) {
+      batchCount++;
+      rowCount += batch.length;
     }
 
-    const feature = batch.data[0];
-    t.equal(feature.type, 'Feature', 'row 0 valid');
-    t.equal(feature.geometry.type, 'Point', 'row 0 valid');
+    t.ok(batchCount <= 4, 'Correct number of batches received');
+    t.equal(rowCount, 308, 'Correct number of row received');
+    t.end();
+  });
 
-    batchCount++;
-    rowCount += batch.length;
-  }
+  test(`${name}#loadInBatches(geojson.json, rows, batchSize = 10)`, async t => {
+    const iterator = await loadInBatches(GEOJSON_PATH, loader, {
+      batchSize: 10
+    });
+    t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
-  const lastFeature = batch.data[batch.data.length - 1];
-  t.equal(lastFeature.type, 'Feature', 'row 0 valid');
-  t.equal(lastFeature.properties.name, 'West Oakland (WOAK)', 'row 0 valid');
+    let batch;
+    let batchCount = 0;
+    let rowCount = 0;
+    for await (batch of iterator) {
+      if (batchCount < 30) {
+        t.equal(batch.length, 10, `Got correct batch size for batch ${batchCount}`);
+      }
 
-  t.equal(batchCount, 31, 'Correct number of batches received');
-  t.equal(rowCount, 308, 'Correct number of row received');
-  t.end();
-});
+      const feature = batch.data[0];
+      t.equal(feature.type, 'Feature', 'row 0 valid');
+      t.equal(feature.geometry.type, 'Point', 'row 0 valid');
+
+      batchCount++;
+      rowCount += batch.length;
+    }
+
+    const lastFeature = batch.data[batch.data.length - 1];
+    t.equal(lastFeature.type, 'Feature', 'row 0 valid');
+    t.equal(lastFeature.properties.name, 'West Oakland (WOAK)', 'row 0 valid');
+
+    t.equal(batchCount, 31, 'Correct number of batches received');
+    t.equal(rowCount, 308, 'Correct number of row received');
+    t.end();
+  });
+}
 
 test('JSONLoader#parseInBatches(complete rows with nested arrays)', async t => {
   const valueCount = 2048;
@@ -127,36 +131,32 @@ test('JSONLoader#parseInBatches(complete rows with nested arrays)', async t => {
   t.end();
 });
 
-test('JSONLoader#loadInBatches(jsonpaths)', async t => {
-  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
-    json: {jsonpaths: ['$.features']}
+for (const {name, loader} of STREAMING_LOADERS) {
+  test(`${name}#loadInBatches(jsonpaths)`, async t => {
+    let iterator = await loadInBatches(GEOJSON_PATH, loader, {
+      json: {jsonpaths: ['$.features']}
+    });
+
+    let rowCount = 0;
+    for await (const batch of iterator) {
+      rowCount += batch.length;
+      // @ts-ignore
+      t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
+    }
+
+    t.equal(rowCount, 308, 'Correct number of row received');
+
+    iterator = await loadInBatches(GEOJSON_PATH, loader, {json: {jsonpaths: ['$.featureTypo']}});
+
+    rowCount = 0;
+    for await (const batch of iterator) {
+      rowCount += batch.length;
+    }
+
+    t.equal(rowCount, 0, 'Correct number of row received');
+    t.end();
   });
-
-  // let batchCount = 0;
-  let rowCount = 0;
-  // let byteLength = 0;
-  for await (const batch of iterator) {
-    // batchCount++;
-    rowCount += batch.length;
-    // byteLength = batch.bytesUsed;
-    // @ts-ignore
-    t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
-  }
-
-  // t.skip(batchCount <= 3, 'Correct number of batches received');
-  t.equal(rowCount, 308, 'Correct number of row received');
-  // t.equal(byteLength, 135910, 'Correct number of bytes received');
-
-  iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {json: {jsonpaths: ['$.featureTypo']}});
-
-  rowCount = 0;
-  for await (const batch of iterator) {
-    rowCount += batch.length;
-  }
-
-  t.equal(rowCount, 0, 'Correct number of row received');
-  t.end();
-});
+}
 
 test('JSONLoader#loadInBatches(jsonpaths, shape: arrow-table)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
@@ -242,54 +242,55 @@ async function testContainerBatches(t, iterator, expectedCount) {
   t.equal(closecontainerBatchCount, expectedCount, 'final-result batch as expected');
 }
 
-test('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async t => {
-  let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
-    metadata: true,
-    json: {table: true}
+for (const {name, loader} of STREAMING_LOADERS) {
+  test(`${name}#loadInBatches(geojson.json, {metadata: true})`, async t => {
+    let iterator = await loadInBatches(GEOJSON_PATH, loader, {
+      metadata: true,
+      json: {table: true}
+    });
+    await testContainerBatches(t, iterator, 1);
+
+    iterator = await loadInBatches(GEOJSON_PATH, loader, {
+      metadata: false,
+      json: {table: true}
+    });
+    await testContainerBatches(t, iterator, 0);
+
+    t.end();
   });
-  await testContainerBatches(t, iterator, 1);
 
-  iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
-    metadata: false,
-    json: {table: true}
-  });
-  await testContainerBatches(t, iterator, 0);
+  test(`${name}#loadInBatches(streaming array of arrays)`, async t => {
+    const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, loader, {
+      metadata: true,
+      json: {
+        table: true,
+        jsonpaths: ['$.data.allData']
+      }
+    });
 
-  t.end();
-});
-
-test('JSONLoader#loadInBatches(streaming array of arrays)', async t => {
-  const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, JSONLoader, {
-    metadata: true,
-    json: {
-      table: true,
-      jsonpaths: ['$.data.allData']
+    let rowCount = 0;
+    for await (const batch of iterator) {
+      switch (batch.batchType) {
+        case 'metadata':
+        case 'partial-result':
+          break;
+        case 'data':
+          const rowBatch = batch as ObjectRowTableBatch;
+          rowCount += getTableLength(rowBatch);
+          break;
+        case 'final-result':
+          if (batch.shape === 'json') {
+            t.ok(batch.container, 'final batch contains json');
+          }
+          break;
+        default:
+      }
     }
+    t.equal(rowCount, 247, '247 rows found');
+
+    t.end();
   });
-
-  let rowCount = 0;
-  for await (const batch of iterator) {
-    switch (batch.batchType) {
-      case 'metadata':
-      case 'partial-result':
-        break;
-      case 'data':
-        const rowBatch = batch as ObjectRowTableBatch;
-        rowCount += getTableLength(rowBatch);
-        // t.equal(rowBatch?.data?.[0].length, 10);
-        break;
-      case 'final-result':
-        if (batch.shape === 'json') {
-          t.ok(batch.container, 'final batch contains json');
-        }
-        break;
-      default:
-    }
-  }
-  t.equal(rowCount, 247, '247 rows found');
-
-  t.end();
-});
+}
 
 /** Emits UTF-8 JSON text chunks for streaming parser tests. */
 async function* makeChunkedTextIterator(text: string, chunkSize: number) {

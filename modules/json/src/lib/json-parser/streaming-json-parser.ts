@@ -4,6 +4,7 @@
 
 import {default as JSONParser} from './json-parser';
 import JSONPath from '../jsonpath/jsonpath';
+import type {StreamingJSONParserOptions} from './streaming-json-parser-types';
 
 /**
  * The `StreamingJSONParser` looks for the first array in the JSON structure.
@@ -21,7 +22,7 @@ export default class StreamingJSONParser extends JSONParser {
   /** Root object used by metadata batches when streaming an embedded array. */
   private topLevelObject: object | null = null;
 
-  constructor(options: {[key: string]: any} = {}) {
+  constructor(options: StreamingJSONParserOptions = {}) {
     super({
       onopenarray: () => {
         if (!this.streamingArray) {

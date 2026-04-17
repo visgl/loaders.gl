@@ -36,6 +36,8 @@ _addAliases(ALIASES);
  * @returns {Promise<void>} Resolves after all compatible benchmarks have been added.
  */
 export async function addModuleBenchmarksToSuite(suite) {
+  await jsonBench(suite);
+
   await lasBench(suite);
 
   await gisBench(suite);
@@ -53,7 +55,7 @@ export async function addModuleBenchmarksToSuite(suite) {
   await parquetBench(suite);
   await plyBench(suite);
 
-  await jsonBench(suite);
+  // await shapefileBench(suite);
 
   // await mvtBench(suite);
   await loaderUtilsBench(suite);
