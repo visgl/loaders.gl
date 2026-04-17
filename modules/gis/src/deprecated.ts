@@ -13,6 +13,7 @@ import {convertGeometryToWKT as convertGeometryToWKTImplementation} from './lib/
 import {convertTWKBToGeometry as convertTWKBToGeometryImplementation} from './lib/geometry-converters/wkb/convert-twkb-to-geometry';
 import {convertWKBToBinaryGeometry as convertWKBToBinaryGeometryImplementation} from './lib/geometry-converters/wkb/convert-wkb-to-binary-geometry';
 import {convertWKBToGeometry as convertWKBToGeometryImplementation} from './lib/geometry-converters/wkb/convert-wkb-to-geometry';
+import {convertWKBTableToGeoJSON as convertWKBTableToGeoJSONImplementation} from './lib/table-converters/convert-wkb-table-to-geojson';
 import {convertWKTToGeometry as convertWKTToGeometryImplementation} from './lib/geometry-converters/wkb/convert-wkt-to-geometry';
 
 /**
@@ -71,6 +72,14 @@ export const convertBinaryFeatureCollectionToGeojson: typeof convertBinaryFeatur
  * @deprecated Use `convert(input, 'geojson', [FeatureCollectionConverter])`.
  */
 export const binaryToGeojson = convertBinaryFeatureCollectionToGeojson;
+
+/**
+ * @deprecated Use `convert(input, 'geojson-table', [GeoArrowTableConverter])`.
+ */
+export const convertWKBTableToGeoJSON: typeof convertWKBTableToGeoJSONImplementation = ((...args) =>
+  convertWKBTableToGeoJSONImplementation(
+    ...(args as Parameters<typeof convertWKBTableToGeoJSONImplementation>)
+  )) as typeof convertWKBTableToGeoJSONImplementation;
 
 /**
  * @deprecated Use `convert(input, 'geojson-geometry', [GeometryConverter])`.

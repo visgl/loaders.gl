@@ -55,6 +55,7 @@ export {GeometryConverter} from './lib/geometry-converters/geometry-converter/ge
 export {GeometryColumnConverter} from './lib/geometry-converters/geometry-column-converter';
 export {
   convertBinaryGeometryToGeometry,
+  convertWKBTableToGeoJSON,
   convertWKTToGeometry,
   convertWKBToGeometry,
   convertWKBToBinaryGeometry,

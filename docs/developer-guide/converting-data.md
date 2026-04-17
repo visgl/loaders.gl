@@ -81,7 +81,7 @@ Current leaf converters include:
 | `from` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
 | `to` | `'arrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'arrow-table'`, `'geojson-table'` |
 | Detection | Treats raw Apache Arrow `Table` instances without a loaders.gl `shape` field as `'arrow'` |
-| Direct paths | `'arrow'` <-> loaders.gl table shapes |
+| Direct paths | `'arrow'` ↔ loaders.gl table shapes |
 | Typical use | Bridge between Apache Arrow tables and loaders.gl table wrappers |
 
 | Method | Type | Description |
@@ -102,7 +102,7 @@ Current leaf converters include:
 | `from` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
 | `to` | `'geoarrow'`, `'object-row-table'`, `'array-row-table'`, `'columnar-table'`, `'geojson-table'`, `'arrow-table'` |
 | Detection | Detects Arrow tables whose schema contains GeoArrow geometry metadata |
-| Direct paths | `'geoarrow'` <-> loaders.gl table shapes |
+| Direct paths | `'geoarrow'` ↔ loaders.gl table shapes |
 | Typical use | Move between GeoArrow Arrow tables and loaders.gl table wrappers |
 
 | Method | Type | Description |
