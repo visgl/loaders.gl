@@ -64,6 +64,27 @@ test('ArrowLoader#parseSync(simple.arrow) type="object-row-table"', async t => {
   t.end();
 });
 
+test('ArrowLoader#parseSync(simple.arrow) supports core.shape', async t => {
+  const rowFormatTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
+    core: {worker: false, shape: 'object-row-table'}
+  });
+  t.equal(rowFormatTable.shape, 'object-row-table');
+  if (rowFormatTable.shape === 'object-row-table') {
+    t.equal(rowFormatTable.data.length, 5);
+    t.deepEqual(rowFormatTable.data[0], {foo: 1, bar: 1, baz: 'aa'});
+  }
+  t.end();
+});
+
+test('ArrowLoader#parseSync(simple.arrow) loader shape overrides core.shape', async t => {
+  const rowFormatTable = await parse(fetchFile(ARROW_SIMPLE), ArrowLoader, {
+    core: {worker: false, shape: 'array-row-table'},
+    arrow: {shape: 'object-row-table'}
+  });
+  t.equal(rowFormatTable.shape, 'object-row-table');
+  t.end();
+});
+
 // This table triggers an arrow bug in apache-arrow v12, v13
 // https://github.com/visgl/loaders.gl/pull/2632#issuecomment-1712001480
 // https://github.com/apache/arrow/blob/f1d2fc92f9d898fc067d46a0d032d9b117a2d7fc/js/src/ipc/metadata/message.ts#L389

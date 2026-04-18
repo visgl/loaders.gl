@@ -143,6 +143,12 @@ export const GeoParquetLoader = {
   ParquetLoaderOptions
 >;
 
+/**
+ * Parses a Parquet file using the canonical wasm-backed table loader.
+ * @param file readable file abstraction
+ * @param options optional loader options
+ * @returns object-row or Arrow table output depending on `parquet.shape`
+ */
 async function parseParquetTable(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions
@@ -156,6 +162,12 @@ async function parseParquetTable(
   return await parseParquetObjectRowTable(file, parquetOptions);
 }
 
+/**
+ * Parses a Parquet file into streamed table batches using the canonical wasm-backed loader.
+ * @param file readable file abstraction
+ * @param options optional loader options
+ * @returns async iterable of object-row or Arrow batches
+ */
 async function* parseParquetTableInBatches(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions
@@ -170,10 +182,30 @@ async function* parseParquetTableInBatches(
   yield* parseParquetObjectRowTableInBatches(file, parquetOptions);
 }
 
+/**
+ * Normalizes caller options for the canonical wasm-backed Parquet loaders.
+ * @param options caller-supplied loader options
+ * @returns normalized loader options
+ */
 function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions {
-  return normalizeParquetOptions(options, ParquetBaseLoader.options.parquet);
+  return normalizeParquetOptions(
+    {
+      ...options,
+      parquet: {
+        ...(options?.parquet || {}),
+        implementation: 'wasm'
+      }
+    },
+    ParquetBaseLoader.options.parquet
+  );
 }
 
+/**
+ * Parses a GeoParquet file into GeoJSON-table or Arrow output.
+ * @param file readable file abstraction
+ * @param options normalized loader options
+ * @returns GeoJSON-table or Arrow output
+ */
 async function parseGeoParquetTable(
   file: BlobFile | ReadableFile,
   options: ParquetLoaderOptions
@@ -185,6 +217,12 @@ async function parseGeoParquetTable(
   return await parseGeoParquetFile(file, options);
 }
 
+/**
+ * Parses a GeoParquet file into streamed GeoJSON-table or Arrow batches.
+ * @param file readable file abstraction
+ * @param options normalized loader options
+ * @returns async iterable of GeoJSON-table or Arrow batches
+ */
 async function* parseGeoParquetTableInBatches(
   file: BlobFile | ReadableFile,
   options: ParquetLoaderOptions

@@ -6,7 +6,9 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-Streaming loader for Apache Parquet encoded files. `ParquetLoader` is the canonical loader entrypoint and supports both plain object-row output and Arrow output through `parquet.shape`.
+Streaming loader for Apache Parquet encoded files. `ParquetLoader` returns plain JavaScript object rows and delegates parsing to the wasm-backed `ParquetArrowLoader`.
+
+[`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) is the plain-row loader for the experimental parquetjs backend. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
 
@@ -27,10 +29,11 @@ which [Parquet format features](/docs/modules/parquet/formats/parquet) are suppo
 Load a Parquet file as object rows.
 
 ```typescript
-import {ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, ParquetLoader, {parquet: options});
+const wasmRows = await load(url, ParquetLoader, {parquet: options});
+const jsRows = await load(url, ParquetJSLoader, {parquet: options});
 ```
 
 Load a Parquet file as Arrow using the main loader.
@@ -41,7 +44,6 @@ import {load} from '@loaders.gl/core';
 
 const arrowTable = await load(url, ParquetLoader, {
   parquet: {
-    implementation: 'wasm',
     shape: 'arrow-table'
   }
 });
@@ -54,7 +56,7 @@ import {ParquetArrowLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
 const arrowTable = await load(url, ParquetArrowLoader, {
-  parquet: {implementation: 'wasm'}
+  parquet: options
 });
 ```
 
@@ -139,12 +141,17 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'object-row-table'` | Selects the returned table shape for `ParquetLoader`. |
-| `parquet.implementation` | `'wasm' \| 'js'` | `'wasm'` | Selects the internal reader used by `ParquetLoader` and `ParquetArrowLoader`. |
+| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'object-row-table'` | Selects the returned table shape for `ParquetLoader`. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
 | `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |
 | `parquet.columns` | `string[]` | `undefined` | Restrict parsing to the listed columns. |
-| `parquet.rowGroups` | `number[]` | `undefined` | Restrict reading to the listed row groups when supported by the selected implementation. |
-| `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for implementations that support it. |
-| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for the `wasm` implementation. |
+| `parquet.rowGroups` | `number[]` | `undefined` | Restrict reading to the listed row groups for the wasm loader implementations. |
+| `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for the wasm loader implementations. |
+| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetLoader` and `ParquetArrowLoader`. |
+
+## Backend Selection
+
+- Use `ParquetLoader` for the default wasm-backed plain-row loader.
+- Use `ParquetJSLoader` for the experimental parquetjs plain-row loader.
+- Use `ParquetArrowLoader` for the wasm-backed Arrow-first API.

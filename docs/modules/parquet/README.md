@@ -8,6 +8,10 @@
 
 Experimental loader and writer for the Apache Parquet format.
 
+- `ParquetLoader` and `ParquetWriter` are the default wasm-backed plain-row APIs.
+- [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) provide the experimental parquetjs plain-row and plain-table APIs. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- `ParquetArrowLoader` and `ParquetArrowWriter` remain the wasm-backed Arrow-first APIs.
+
 ## Geospatial Metadata
 
 GeoParquet and GeoArrow metadata are handled as two parallel layers:

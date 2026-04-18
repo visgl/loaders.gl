@@ -10,6 +10,19 @@ The _table_ category loaders supports loading tables in _row-based_, _columnar_ 
 | [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader)       |                                    |
 | [`JSONLoader`](/docs/modules/json/api-reference/json-loader)    | Set `options.json.table` to `true` |
 
+## Supported shapes
+
+`options.core.shape` sets a shared default shape for loaders that support shape selection. `options[loaderId].shape` overrides `options.core.shape` for that loader.
+
+| Shape | Loaders | Notes |
+| --- | --- | --- |
+| `arrow-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader) | Default for Arrow IPC parsing can still be overridden with `options.arrow.shape`. |
+| `columnar-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader) | Column-major output for Arrow data. |
+| `array-row-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | Row arrays. Scoped overrides: `options.arrow.shape`, `options.csv.shape`, `options.json.shape`. |
+| `object-row-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | Row objects. Default for CSV. |
+
+`GeoJSONLoader` also accepts `options.core.shape = 'geojson-table'`, but binary output remains controlled by `options.gis.format`.
+
 ## Data Structure
 
 | Field    | Type                | Contents                                                     |

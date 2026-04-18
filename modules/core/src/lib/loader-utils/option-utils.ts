@@ -33,6 +33,7 @@ const CORE_LOADER_OPTION_KEYS = [
   '_workerType',
   'limit',
   '_limitMB',
+  'shape',
   'batchSize',
   'batchDebounceMs',
   'metadata',
@@ -235,6 +236,7 @@ function normalizeOptionsInternal(
 
   const userOptions = normalizeLoaderOptions(options);
   mergeNestedFields(mergedOptions, userOptions);
+  applyCoreShapeDefault(mergedOptions, userOptions, loader);
 
   addUrlOptions(mergedOptions, url);
   addDeprecatedTopLevelOptions(mergedOptions);
@@ -242,7 +244,50 @@ function normalizeOptionsInternal(
   return mergedOptions;
 }
 
-// Merge nested options objects
+/**
+ * Applies `options.core.shape` to a loader's scoped `shape` option when that loader declares
+ * shape support and neither global nor user-supplied loader-scoped options override it.
+ * @param mergedOptions fully merged options object being normalized
+ * @param userOptions normalized user-supplied options
+ * @param loader selected loader
+ */
+function applyCoreShapeDefault(
+  mergedOptions: LoaderOptions,
+  userOptions: LoaderOptions,
+  loader: Loader
+): void {
+  const coreShape = mergedOptions.core?.shape;
+  if (coreShape === undefined) {
+    return;
+  }
+
+  const loaderScopedDefaults = loader.options?.[loader.id];
+  if (!isPureObject(loaderScopedDefaults) || !('shape' in loaderScopedDefaults)) {
+    return;
+  }
+
+  const globalLoaderScopedOptions = getGlobalLoaderOptions()[loader.id];
+  if (isPureObject(globalLoaderScopedOptions) && 'shape' in globalLoaderScopedOptions) {
+    return;
+  }
+
+  const userLoaderScopedOptions = userOptions[loader.id];
+  if (isPureObject(userLoaderScopedOptions) && 'shape' in userLoaderScopedOptions) {
+    return;
+  }
+
+  const loaderScopedOptions = mergedOptions[loader.id];
+  mergedOptions[loader.id] = {
+    ...(isPureObject(loaderScopedOptions) ? loaderScopedOptions : {}),
+    shape: coreShape
+  };
+}
+
+/**
+ * Merges one level of nested option objects into the target options record.
+ * @param mergedOptions target options object to mutate
+ * @param options source options object
+ */
 function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions): void {
   for (const key in options) {
     // Check for nested options
@@ -288,6 +333,11 @@ function cloneLoaderOptions(options: LoaderOptions): LoaderOptions {
   return clonedOptions;
 }
 
+/**
+ * Moves deprecated top-level core option aliases into `options.core` without overwriting
+ * explicitly provided `options.core` values.
+ * @param options loader options to normalize in place
+ */
 function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
   if (options.baseUri !== undefined) {
     options.core ||= {};
@@ -319,6 +369,11 @@ function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
   }
 }
 
+/**
+ * Rehydrates deprecated top-level aliases from `options.core` for compatibility with older
+ * call sites that still read normalized options from the top level.
+ * @param options normalized loader options to mutate in place
+ */
 function addDeprecatedTopLevelOptions(options: LoaderOptions): void {
   const coreOptions = options.core as Record<string, unknown> | undefined;
   if (!coreOptions) {

@@ -245,6 +245,8 @@ function parseCSVInBatches(
         row = JSON.parse(JSON.stringify(row));
       }
 
+      const shape = getBatchShape();
+
       if (!geometryDetectionFinalized && headerRow) {
         sniffedRows.push(row);
         geometryDetectionFinalized = shouldFinalizeGeometryDetection(
@@ -264,7 +266,7 @@ function parseCSVInBatches(
           );
           isFirstRow = false;
           for (const normalizedSniffedRow of normalizedSniffedRows) {
-            addCSVBatchRow(normalizedSniffedRow);
+            addCSVBatchRow(normalizedSniffedRow, shape, bytesUsed);
           }
           sniffedRows = [];
         }
@@ -283,33 +285,8 @@ function parseCSVInBatches(
         isFirstRow = false;
       }
 
-      const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
       const normalizedRow = normalizeGeometryArrayRow(row, detectedGeometryColumns);
-      addCSVBatchRow(normalizedRow);
-
-      function addCSVBatchRow(rowToAdd: unknown[]): void {
-        let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;
-        if (shape === 'object-row-table' && headerRow && rowToAdd.length > headerRow.length) {
-          batchRow = convertToPapaObjectRow(rowToAdd, headerRow);
-        }
-
-        tableBatchBuilder =
-          tableBatchBuilder ||
-          new TableBatchBuilder(schema!, {
-            shape,
-            ...(options?.core || {})
-          });
-
-        try {
-          tableBatchBuilder.addRow(batchRow);
-          const batch = tableBatchBuilder && tableBatchBuilder.getFullBatch({bytesUsed});
-          if (batch) {
-            asyncQueue.enqueue(batch);
-          }
-        } catch (error) {
-          asyncQueue.enqueue(error as Error);
-        }
-      }
+      addCSVBatchRow(normalizedRow, shape, bytesUsed);
     },
 
     // complete is called when all rows have been read
@@ -325,12 +302,12 @@ function parseCSVInBatches(
             headerRow,
             detectedGeometryColumns
           );
-          const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+          const shape = getBatchShape();
           tableBatchBuilder =
             tableBatchBuilder ||
             new TableBatchBuilder(schema, {
-              shape,
-              ...(options?.core || {})
+              ...(options?.core || {}),
+              shape
             });
           for (const normalizedSniffedRow of normalizedSniffedRows) {
             const batchRow =
@@ -359,6 +336,41 @@ function parseCSVInBatches(
   // TODO - Does it matter if we return asyncIterable or asyncIterator
   // return asyncQueue[Symbol.asyncIterator]();
   return asyncQueue;
+
+  function addCSVBatchRow(
+    rowToAdd: unknown[],
+    shape: 'array-row-table' | 'object-row-table',
+    bytesUsed: number
+  ): void {
+    let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;
+    if (shape === 'object-row-table' && headerRow && rowToAdd.length > headerRow.length) {
+      batchRow = convertToPapaObjectRow(rowToAdd, headerRow);
+    }
+
+    tableBatchBuilder =
+      tableBatchBuilder ||
+      new TableBatchBuilder(schema!, {
+        ...(options?.core || {}),
+        shape
+      });
+
+    try {
+      tableBatchBuilder.addRow(batchRow);
+      const batch = tableBatchBuilder && tableBatchBuilder.getFullBatch({bytesUsed});
+      if (batch) {
+        asyncQueue.enqueue(batch);
+      }
+    } catch (error) {
+      asyncQueue.enqueue(error as Error);
+    }
+  }
+
+  function getBatchShape(): 'array-row-table' | 'object-row-table' {
+    const deprecatedShape = (
+      options as {shape?: 'array-row-table' | 'object-row-table'} | undefined
+    )?.shape;
+    return deprecatedShape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+  }
 }
 
 /**

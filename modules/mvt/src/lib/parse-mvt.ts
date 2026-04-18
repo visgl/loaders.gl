@@ -131,19 +131,20 @@ function parseToGeojsonFeatures(arrayBuffer: ArrayBuffer, options: MVTOptions): 
 
 /** Check that options are good */
 function checkOptions(options?: MVTLoaderOptions): MVTOptions {
-  if (!options?.mvt) {
+  const mvtOptions = options?.mvt as MVTOptions | undefined;
+  if (!mvtOptions) {
     throw new Error('mvt options required');
   }
 
-  if (options.mvt?.coordinates === 'wgs84' && !options.mvt.tileIndex) {
+  if (mvtOptions.coordinates === 'wgs84' && !mvtOptions.tileIndex) {
     throw new Error('MVT Loader: WGS84 coordinates need tileIndex property');
   }
 
-  if (options.gis) {
+  if (options?.gis) {
     log.warn('MVTLoader: "options.gis" is deprecated, use "options.mvt.shape" instead')();
   }
 
-  return options.mvt;
+  return mvtOptions;
 }
 
 /**

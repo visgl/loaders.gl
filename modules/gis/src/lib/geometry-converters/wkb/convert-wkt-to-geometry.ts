@@ -14,6 +14,8 @@ const tuples = new RegExp('^' + numberRegexp.source + '(\\s' + numberRegexp.sour
 
 export type ParseWKTOptions = {
   wkt?: {
+    /** Shape selection is handled by the caller; only GeoJSON geometry is currently supported. */
+    shape?: 'geojson-geometry';
     /** Whether to add any CRS, if found, as undocumented CRS property on the return geometry */
     crs?: boolean;
   };

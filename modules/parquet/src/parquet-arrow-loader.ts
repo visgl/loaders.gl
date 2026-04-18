@@ -76,12 +76,18 @@ export const ParquetArrowLoader = {
   }
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, ParquetArrowLoaderOptions>;
 
+/**
+ * Normalizes caller options for the Arrow-first Parquet loader and forces the wasm backend.
+ * @param options caller-supplied loader options
+ * @returns normalized loader options
+ */
 function getParquetOptions(options?: ParquetArrowLoaderOptions): ParquetLoaderOptions {
   return normalizeParquetOptions(
     {
       ...options,
       parquet: {
         ...(options?.parquet || {}),
+        implementation: 'wasm',
         shape: 'arrow-table'
       }
     },
@@ -89,10 +95,22 @@ function getParquetOptions(options?: ParquetArrowLoaderOptions): ParquetLoaderOp
   );
 }
 
+/**
+ * Parses a readable file as an Arrow-backed Parquet table.
+ * @param file readable file abstraction
+ * @param options normalized loader options
+ * @returns Arrow-backed table
+ */
 function parseArrowTable(file: ReadableFile, options: ParquetLoaderOptions): Promise<ArrowTable> {
   return parseParquetArrowTable(file, options);
 }
 
+/**
+ * Parses a readable file into Arrow-backed Parquet batches.
+ * @param file readable file abstraction
+ * @param options normalized loader options
+ * @returns async iterable of Arrow-backed batches
+ */
 function parseArrowTableInBatches(file: ReadableFile, options: ParquetLoaderOptions) {
   return parseParquetArrowTableInBatches(file, options);
 }
