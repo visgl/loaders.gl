@@ -14,6 +14,11 @@ export {ArrowWorkerLoader} from './exports/arrow-loader';
 export {ArrowLoader} from './arrow-loader';
 
 export {ArrowWriter} from './arrow-writer';
+export type {
+  ArrowConvertFromOptions,
+  ArrowConvertToOptions
+} from './arrow-converter/arrow-converter';
+export {ARROW_CONVERTERS, ArrowConverter} from './arrow-converter/arrow-converter';
 
 export {tightenArrowTableSchemaNullability} from './lib/tighten-arrow-table-schema-nullability';
 

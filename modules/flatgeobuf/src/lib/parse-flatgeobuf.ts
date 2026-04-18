@@ -3,7 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {Proj4Projection} from '@math.gl/proj4';
-import {convertGeometryToWKB, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {
+  convertGeometryToWKB,
+  type GeoParquetGeometryType,
+  makeWKBGeometryField,
+  setWKBGeometrySchemaMetadata,
+  transformGeoJsonCoords
+} from '@loaders.gl/gis';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 
 import type {
@@ -296,31 +302,23 @@ export function makeArrowSchema(fgbHeader?: fgb.HeaderMeta): Schema {
   const fields = sourceSchema.fields.map((field, fieldIndex) =>
     normalizeFieldForArrow(field, fgbHeader?.columns?.[fieldIndex]?.type)
   );
-  fields.push({
-    name: GEOMETRY_COLUMN_NAME,
-    type: 'binary',
-    nullable: true,
-    metadata: {}
-  });
+  fields.push(makeWKBGeometryField(GEOMETRY_COLUMN_NAME));
 
   const geometryTypes = getGeometryTypesForMetadata(fgbHeader?.geometryType);
 
-  return {
+  const schema: Schema = {
     fields,
     metadata: {
-      ...sourceSchema.metadata,
-      geo: JSON.stringify({
-        version: '1.1.0',
-        primary_column: GEOMETRY_COLUMN_NAME,
-        columns: {
-          [GEOMETRY_COLUMN_NAME]: {
-            encoding: 'wkb',
-            geometry_types: geometryTypes
-          }
-        }
-      })
+      ...sourceSchema.metadata
     }
   };
+
+  setWKBGeometrySchemaMetadata(schema, {
+    geometryColumnName: GEOMETRY_COLUMN_NAME,
+    geometryTypes
+  });
+
+  return schema;
 }
 
 function normalizeFieldForArrow(field: Field, columnType?: ColumnType): Field {
@@ -388,7 +386,7 @@ export function getProjection(
   }
 }
 
-function getGeometryTypesForMetadata(geometryType?: GeometryType): string[] {
+function getGeometryTypesForMetadata(geometryType?: GeometryType): GeoParquetGeometryType[] {
   switch (geometryType) {
     case GeometryType.Point:
       return ['Point'];

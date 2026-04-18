@@ -19,6 +19,7 @@ import type {
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Default option bag for the experimental parquetjs plain-row loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
   columns: undefined,
   implementation: 'js' as const,
@@ -64,6 +65,11 @@ export const ParquetJSLoader = {
   }
 } as const satisfies LoaderWithParser<ObjectRowTable, ObjectRowTableBatch, ParquetJSLoaderOptions>;
 
+/**
+ * Normalizes caller options for the parquetjs-backed loader.
+ * @param options caller-supplied loader options
+ * @returns normalized options with parquetjs defaults applied
+ */
 function getParquetOptions(options?: ParquetJSLoaderOptions): ParquetLoaderImplementationOptions {
   return normalizeParquetOptions(options, DEFAULT_PARQUET_JS_OPTIONS);
 }

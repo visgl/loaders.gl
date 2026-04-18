@@ -31,6 +31,18 @@ The _table_ category loaders supports loading tables in _row-based_, _columnar_ 
 | `schema` | `Object`            | Metadata of the table, maps name of each column to its type. |
 | `data`   | `Object` or `Array` | Data of the table, see [table types](#table-types)           |
 
+## Shapes
+
+| Shape | Meaning |
+| --- | --- |
+| `'object-row-table'` | loaders.gl table wrapper storing rows as JavaScript objects |
+| `'array-row-table'` | loaders.gl table wrapper storing rows as JavaScript arrays |
+| `'columnar-table'` | loaders.gl table wrapper storing one column array per field |
+| `'arrow-table'` | loaders.gl table wrapper whose `data` field is an Arrow table |
+| `'geojson-table'` | loaders.gl GIS-oriented table wrapper storing features plus schema |
+| `'arrow'` | raw Apache Arrow table value |
+| `'geoarrow'` | raw Arrow table value with GeoArrow geometry metadata |
+
 ## Table Types
 
 loaders.gl deals with (and offers utilities to convert between) three different types of tables:

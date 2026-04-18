@@ -14,6 +14,7 @@ import {ParquetFormat} from './parquet-format';
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+/** Encoder-specific options for the experimental parquetjs writer. */
 type ParquetJSWriterEncoderOptions = {
   rowGroupSize?: number;
   pageSize?: number;
@@ -27,6 +28,7 @@ export type ParquetJSWriterOptions = WriterOptions & {
   };
 };
 
+/** Default option bag for the experimental parquetjs writer. */
 const DEFAULT_PARQUET_JS_OPTIONS = {};
 
 /** Plain-row Parquet writer backed by the experimental parquetjs implementation. */

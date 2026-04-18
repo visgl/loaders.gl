@@ -201,6 +201,11 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 .backToTopButton_node_modules-\@docusaurus-theme-classic-lib-theme-BackToTopButton-styles-module {
   box-shadow: var(--ifm-global-shadow-md) !important;
 }
+
+html.examples-demo-page .footer {
+  display: none;
+}
+
 /* map labels style overwrite */
 #view-main > div > div.maplibregl-control-container.mapboxgl-control-container > div.maplibregl-ctrl-bottom-right.mapboxgl-ctrl-bottom-right > details {
   position: absolute !important;

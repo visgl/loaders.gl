@@ -60,6 +60,27 @@ For geospatial loaders that contain a single geometry:
 - `data`: `*` - Data is formatted according to `options.gis.format`
 - `format`: `string` - The encoding of `data` layers, corresponds to `options.gis.format`.
 
+## Conversion Shapes
+
+loaders.gl currently converts GIS data between several related shapes:
+
+| Shape | Family | Typical producer |
+| --- | --- | --- |
+| `geojson` | feature collection | JSON, KML, GPX, shapefile, MVT |
+| `flat-geojson` | flattened feature collection | GIS conversion utilities |
+| `binary-feature-collection` | render-oriented feature collection | GIS conversion utilities, deck.gl pipelines |
+| `arrow-binary-feature-collection` | Arrow-backed render-oriented wrapper | GIS conversion utilities |
+| `geojson-geometry` | single geometry | WKB/WKT/TWKB converters |
+| `wkb`, `wkt`, `twkb` | geometry wire formats | WKT/WKB loaders and GIS geometry converters |
+| `geoarrow` and `geoarrow.*` | Arrow + GeoArrow metadata | GeoArrow loaders and converters |
+
+See the converter docs for details:
+
+- [Converting data](/docs/developer-guide/converting-data)
+- [GeoArrow converters](/docs/developer-guide/converters/geoarrow-converters)
+- [Render converters](/docs/developer-guide/converters/render-converters)
+- [Format categories](/docs/developer-guide/converters/format-categories)
+
 ## Data Structure
 
 ### GeoJSON
@@ -79,3 +100,14 @@ A JavaScript object with a number of top-level array-valued fields:
 ### GeoJSON Conversion
 
 Geospatial category data can be converted to GeoJSON (sometimes with a loss of information). Most geospatial applications can consume geojson.
+
+## Multi-Geometries And GeometryCollection
+
+For render-oriented binary conversion:
+
+- `MultiPoint` is mapped into the `points` bin
+- `MultiLineString` is mapped into the `lines` bin
+- `MultiPolygon` is mapped into the `polygons` bin
+- `GeometryCollection` is flattened recursively into those same bins
+
+The source feature identity is preserved through feature id arrays.

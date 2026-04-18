@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertGeometryToWKB} from '@loaders.gl/gis';
 import type {
   ArrowTable,
   Feature,
@@ -11,10 +10,18 @@ import type {
   GeoJsonProperties,
   Schema
 } from '@loaders.gl/schema';
+import {
+  encodeWKBGeometryValue,
+  getCoordinateDimensions as getCoordinateDimensionsFromGeometry,
+  getGeometrySampleCoordinates as getGeometrySampleCoordinatesFromGeometry,
+  getGeometryWKBOptions as getGeometryWKBOptionsFromGeometry,
+  inferGeoParquetGeometryTypes,
+  makeWKBGeometryField,
+  setWKBGeometrySchemaMetadata
+} from '@loaders.gl/gis';
 import {ArrowTableBuilder, getDataTypeFromArray} from '@loaders.gl/schema-utils';
 
 const GEOMETRY_COLUMN_NAME = 'geometry';
-const GEO_METADATA_VERSION = '1.1.0';
 
 /**
  * Converts GeoJSON features into a loaders.gl Arrow table with WKB geometry metadata.
@@ -45,29 +52,29 @@ export function convertFeatureCollectionToArrowTable(features: Feature[]): Arrow
  * @returns Output schema with appended geometry field and geo metadata.
  */
 export function buildFeatureArrowSchema(propertySchema: Schema, features: Feature[]): Schema {
-  const geometryField: Field = {
-    name: GEOMETRY_COLUMN_NAME,
-    type: 'binary',
-    nullable: true,
-    metadata: {}
+  const geometryField: Field = makeWKBGeometryField(GEOMETRY_COLUMN_NAME);
+  const schema: Schema = {
+    fields: [...propertySchema.fields, geometryField],
+    metadata: {...(propertySchema.metadata || {})}
   };
 
-  return {
-    fields: [...propertySchema.fields, geometryField],
-    metadata: {
-      ...(propertySchema.metadata || {}),
-      geo: JSON.stringify({
-        version: GEO_METADATA_VERSION,
-        primary_column: GEOMETRY_COLUMN_NAME,
-        columns: {
-          [GEOMETRY_COLUMN_NAME]: {
-            encoding: 'wkb',
-            geometry_types: inferFeatureGeometryTypes(features)
-          }
-        }
-      })
-    }
-  };
+  setWKBGeometrySchemaMetadata(schema, {
+    geometryColumnName: GEOMETRY_COLUMN_NAME,
+    geometryTypes: inferGeoParquetGeometryTypes(features.map(feature => feature.geometry))
+  });
+
+  return schema;
+}
+
+/**
+ * Builds a feature-table schema from GeoJSON feature properties.
+ *
+ * @param features - Parsed GeoJSON features.
+ * @returns Schema inferred from feature properties.
+ */
+export function buildFeatureTableSchema(features: Feature[]): Schema {
+  const propertyRows = features.map(feature => normalizeProperties(feature.properties));
+  return getPropertySchema(propertyRows);
 }
 
 /**
@@ -83,11 +90,7 @@ export function makeFeatureArrowRow(
 ): Record<string, unknown> {
   return {
     ...properties,
-    [GEOMETRY_COLUMN_NAME]: feature.geometry
-      ? new Uint8Array(
-          convertGeometryToWKB(feature.geometry, getGeometryWKBOptions(feature.geometry))
-        )
-      : null
+    [GEOMETRY_COLUMN_NAME]: encodeWKBGeometryValue(feature.geometry)
   };
 }
 
@@ -98,18 +101,7 @@ export function makeFeatureArrowRow(
  * @returns Unique geometry type strings in encounter order.
  */
 export function inferFeatureGeometryTypes(features: Feature[]): string[] {
-  const geometryTypes = new Set<string>();
-
-  for (const feature of features) {
-    if (!feature.geometry) {
-      continue;
-    }
-
-    const dimensions = getCoordinateDimensions(getGeometrySampleCoordinates(feature.geometry));
-    geometryTypes.add(dimensions > 2 ? `${feature.geometry.type} Z` : feature.geometry.type);
-  }
-
-  return [...geometryTypes];
+  return inferGeoParquetGeometryTypes(features.map(feature => feature.geometry));
 }
 
 /**
@@ -164,11 +156,7 @@ export function getPropertySchema(propertyRows: Record<string, unknown>[]): Sche
  * @returns WKB options preserving Z and M ordinates when present.
  */
 export function getGeometryWKBOptions(geometry: Geometry): {hasZ?: boolean; hasM?: boolean} {
-  const dimensions = getCoordinateDimensions(getGeometrySampleCoordinates(geometry));
-  return {
-    hasZ: dimensions > 2,
-    hasM: dimensions > 3
-  };
+  return getGeometryWKBOptionsFromGeometry(geometry);
 }
 
 /**
@@ -178,19 +166,7 @@ export function getGeometryWKBOptions(geometry: Geometry): {hasZ?: boolean; hasM
  * @returns Coordinate tuple length, defaulting to `2`.
  */
 export function getCoordinateDimensions(coordinates: unknown): number {
-  if (!Array.isArray(coordinates)) {
-    return 2;
-  }
-
-  if (typeof coordinates[0] === 'number') {
-    return coordinates.length;
-  }
-
-  if (coordinates.length === 0) {
-    return 2;
-  }
-
-  return getCoordinateDimensions(coordinates[0]);
+  return getCoordinateDimensionsFromGeometry(coordinates);
 }
 
 /**
@@ -200,15 +176,7 @@ export function getCoordinateDimensions(coordinates: unknown): number {
  * @returns Representative coordinates or `undefined` when the geometry is empty.
  */
 export function getGeometrySampleCoordinates(geometry: Geometry): unknown {
-  if ('coordinates' in geometry) {
-    return geometry.coordinates;
-  }
-
-  if ('geometries' in geometry && geometry.geometries.length > 0) {
-    return getGeometrySampleCoordinates(geometry.geometries[0]);
-  }
-
-  return undefined;
+  return getGeometrySampleCoordinatesFromGeometry(geometry);
 }
 
 /**

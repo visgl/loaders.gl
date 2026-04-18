@@ -72,6 +72,11 @@ This unifies top-level loading behavior:
 - source loaders now return runtime source objects
 - metadata remains available from the returned runtime object, typically via `await source.getMetadata()`
 
+**@loaders.gl/parquet**
+
+- `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoader`, or `ParquetJSWriter` instead depending on the backend you want.
+- `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. The experimental parquetjs backend now lives behind the explicit `ParquetJSLoader` and `ParquetJSWriter` exports.
+
 **@loaders.gl/images**
 
 - ImageLoader now only returns ImageBitmap (never Image or data), with a polyfill under Node.js. There is a function to extract data from an ImageBitmap?

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
@@ -22,6 +22,7 @@ import maplibregl from 'maplibre-gl';
 
 import {ExamplePanel, Example, MetadataViewer} from './components/example-panel';
 import {INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
+import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 export const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json';
 
@@ -86,12 +87,14 @@ export default function App(props: AppProps = {}) {
   });
 
   const layers = renderLayer(state.example, state.source);
+  const widgets = useMemo(() => [createDeckStatsWidget('wms-stats')], []);
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
         layers={layers}
         viewState={state.viewState}
+        widgets={widgets}
         onViewStateChange={onViewStateChange}
         onError={(error: Error) => setState((state) => ({...state, error: error.message}))}
         getTooltip={getTooltip}

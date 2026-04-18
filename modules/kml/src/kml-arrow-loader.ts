@@ -5,8 +5,7 @@
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 import type {KMLLoaderOptions} from './kml-loader';
-import {KMLLoader, parseKMLTextToFeatureCollection} from './kml-loader';
-import {convertFeatureCollectionToArrowTable} from './lib/feature-collection-to-arrow';
+import {KMLLoader} from './kml-loader';
 
 /** Options for `KMLArrowLoader`. */
 export type KMLArrowLoaderOptions = KMLLoaderOptions;
@@ -21,18 +20,17 @@ export const KMLArrowLoader = {
   dataType: null as unknown as ArrowTable,
   batchType: null as never,
   parse: async (arrayBuffer: ArrayBuffer, options?: KMLArrowLoaderOptions) =>
-    parseKMLArrow(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: parseKMLArrow
+    KMLLoader.parse(arrayBuffer, withArrowShape(options)) as Promise<ArrowTable>,
+  parseTextSync: (text: string, options?: KMLArrowLoaderOptions) =>
+    KMLLoader.parseTextSync(text, withArrowShape(options)) as ArrowTable
 } as const satisfies LoaderWithParser<ArrowTable, never, KMLArrowLoaderOptions>;
 
-/**
- * Parses KML XML text into an Arrow table.
- *
- * @param text - KML XML document text.
- * @param _options - Loader options accepted for API parity with `KMLLoader`.
- * @returns Arrow table with properties and WKB geometry.
- */
-function parseKMLArrow(text: string, _options?: KMLArrowLoaderOptions): ArrowTable {
-  const geojson = parseKMLTextToFeatureCollection(text);
-  return convertFeatureCollectionToArrowTable(geojson.features);
+function withArrowShape(options?: KMLLoaderOptions): KMLLoaderOptions {
+  return {
+    ...options,
+    kml: {
+      ...options?.kml,
+      shape: 'arrow-table'
+    }
+  };
 }

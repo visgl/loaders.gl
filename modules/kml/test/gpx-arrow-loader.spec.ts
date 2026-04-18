@@ -8,7 +8,7 @@ import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load} from '@loaders.gl/core';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
-import {GPXArrowLoader} from '@loaders.gl/kml';
+import {GPXArrowLoader, GPXLoader} from '@loaders.gl/kml';
 import type {ArrowTable} from '@loaders.gl/schema';
 
 const GPX_URL = '@loaders.gl/kml/test/data/gpx/trek';
@@ -20,6 +20,9 @@ test('GPXArrowLoader#loader conformance', t => {
 
 test('GPXArrowLoader#parse', async t => {
   const arrowTable = await load(`${GPX_URL}.gpx`, GPXArrowLoader);
+  const mainLoaderArrowTable = await load(`${GPX_URL}.gpx`, GPXLoader, {
+    gpx: {shape: 'arrow-table'}
+  });
   const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
   const roundTripped = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
@@ -32,6 +35,11 @@ test('GPXArrowLoader#parse', async t => {
   t.equal(arrowTable.shape, 'arrow-table', 'shape is arrow-table');
   t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
   t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata uses WKB encoding');
+  t.deepEqual(
+    getRowsFromArrowTable(arrowTable),
+    getRowsFromArrowTable(mainLoaderArrowTable),
+    'wrapper matches GPXLoader arrow-table output'
+  );
   t.deepEqual(
     geoMetadata?.columns.geometry.geometry_types,
     ['LineString Z'],

@@ -48,6 +48,12 @@ export async function encodeTableToParquetJs(
   return concatUint8Arrays(chunks).slice().buffer;
 }
 
+/**
+ * Converts a loaders.gl schema into a parquetjs schema definition.
+ * @param schema table schema
+ * @param objectRowTable table data in object-row form
+ * @returns parquetjs schema definition
+ */
 function convertSchemaToParquetSchema(
   schema: Schema,
   objectRowTable: ObjectRowTable
@@ -61,6 +67,12 @@ function convertSchemaToParquetSchema(
   return parquetFields;
 }
 
+/**
+ * Converts one loaders.gl field to the closest parquetjs field definition.
+ * @param field table field metadata
+ * @param rows object rows used for nullability and fallback inference
+ * @returns parquetjs field definition
+ */
 function convertFieldToParquetFieldDefinition(
   field: Field,
   rows: Array<Record<string, unknown>>
@@ -135,6 +147,12 @@ function convertFieldToParquetFieldDefinition(
   }
 }
 
+/**
+ * Finds the first non-nullish value in a column.
+ * @param rows table rows
+ * @param columnName column name
+ * @returns first defined value, if any
+ */
 function getFirstDefinedValue(rows: Array<Record<string, unknown>>, columnName: string): unknown {
   for (const row of rows) {
     const value = row[columnName];
@@ -146,6 +164,11 @@ function getFirstDefinedValue(rows: Array<Record<string, unknown>>, columnName: 
   return undefined;
 }
 
+/**
+ * Infers a loaders.gl data type from a JavaScript value.
+ * @param value sample value
+ * @returns inferred data type
+ */
 function getDataTypeFromValue(value: unknown): DataType {
   if (typeof value === 'boolean') {
     return 'bool';
@@ -166,6 +189,11 @@ function getDataTypeFromValue(value: unknown): DataType {
   throw new Error('ParquetJSWriter: Unable to infer a Parquet type from the provided row data');
 }
 
+/**
+ * Formats a loaders.gl data type for error messages.
+ * @param dataType input data type
+ * @returns human-readable type string
+ */
 function formatDataType(dataType: DataType): string {
   return typeof dataType === 'string' ? dataType : dataType.type;
 }

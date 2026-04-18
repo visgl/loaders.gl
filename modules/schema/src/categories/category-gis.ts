@@ -53,3 +53,11 @@ export type {
   BinaryLineFeature,
   BinaryPolygonFeature
 } from '../geometry/binary-features';
+export type {
+  ArrowBinaryFeatureTable,
+  ArrowBinaryPointFeature,
+  ArrowBinaryLineFeature,
+  ArrowBinaryPolygonFeature,
+  ArrowBinaryFeatureCollection,
+  BinaryFeatureCollectionLike
+} from '../geometry/arrow-binary-features';

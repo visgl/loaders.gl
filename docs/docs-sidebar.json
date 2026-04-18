@@ -55,6 +55,7 @@
           "modules/mvt/api-reference/tilejson-loader",
           "modules/obj/api-reference/obj-loader",
           "modules/parquet/api-reference/parquet-loader",
+          "modules/parquet/api-reference/parquet-js-loader",
           "modules/pcd/api-reference/pcd-loader",
           "modules/ply/api-reference/ply-loader",
           "modules/terrain/api-reference/quantized-mesh-loader",
@@ -89,6 +90,8 @@
           "modules/las/api-reference/las-writer",
           "modules/mvt/api-reference/mvt-writer",
           "modules/obj/api-reference/obj-writer",
+          "modules/parquet/api-reference/parquet-writer",
+          "modules/parquet/api-reference/parquet-js-writer",
           "modules/pcd/api-reference/pcd-writer",
           "modules/ply/api-reference/ply-writer",
           "modules/terrain/api-reference/quantized-mesh-writer",
@@ -182,6 +185,19 @@
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",
           "developer-guide/node"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Converters",
+        "items": [
+          "developer-guide/converting-data",
+          "developer-guide/converters/dispatcher",
+          "developer-guide/converters/table-and-arrow-converters",
+          "developer-guide/converters/geoarrow-converters",
+          "developer-guide/converters/feature-collection-converters",
+          "developer-guide/converters/render-converters",
+          "developer-guide/converters/format-categories"
         ]
       },
       {

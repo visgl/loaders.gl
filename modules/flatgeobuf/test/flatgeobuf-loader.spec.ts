@@ -89,6 +89,11 @@ test('FlatGeobufLoader#load arrow-table round-trips to GeoJSON', async t => {
   t.equal(arrowTable.schema.fields.length, 3, 'adds a geometry field');
   t.equal(arrowTable.schema.fields[2].name, 'geometry', 'geometry field appended');
   t.equal(arrowTable.schema.fields[2].type, 'binary', 'geometry field is binary');
+  t.equal(
+    arrowTable.schema.fields[2].metadata?.['ARROW:extension:name'],
+    'geoarrow.wkb',
+    'geometry field includes GeoArrow WKB field metadata'
+  );
 
   const geoMetadata = getGeoMetadata(arrowTable.schema.metadata);
   t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');

@@ -139,9 +139,9 @@ export function parseWKBHeader(dataView: DataView, target?: WKBHeader): WKBHeade
     geometryType: 1,
     dimensions: 2,
     coordinates: 'xy',
-    littleEndian: true,
-    byteOffset: 0
+    littleEndian: true
   } as WKBHeader);
+  wkbHeader.byteOffset = target?.byteOffset ?? 0;
 
   if (isWKT(dataView.buffer)) {
     // TODO - WKB header could include WKT type

@@ -64,6 +64,7 @@ const config = {
       {
         debug: true,
         resolve: {
+          extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
           fallback: {path: false, fs: false, buffer: true},
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {

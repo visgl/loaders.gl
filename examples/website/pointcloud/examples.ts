@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Example} from './components/example-panel';
+export type Example = {
+  type: 'las' | 'draco' | 'pcd' | 'ply' | 'obj';
+  url: string;
+  initialExample?: boolean;
+  attributions?: string[];
+  viewState?: Record<string, unknown>;
+  tileSize?: number[];
+};
 
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
