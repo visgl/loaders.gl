@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataType, Field, Schema} from '@loaders.gl/schema';
+import type {DataType, Field, Geometry, Schema} from '@loaders.gl/schema';
 import {
   convertWKBToGeometry,
   convertWKTToGeometry,
@@ -10,7 +10,8 @@ import {
   getGeoMetadata,
   inferGeoParquetGeometryTypes,
   isWKT,
-  setGeoMetadata
+  setGeoMetadata,
+  type GeoParquetGeometryType
 } from '@loaders.gl/gis';
 
 const GEOMETRY_COLUMN_NAMES = new Set(['geom', 'geometry', 'the_geom', 'wkt', 'wkb']);
@@ -29,7 +30,7 @@ export type DetectedGeometryColumn = {
   /** GeoArrow extension name for the detected encoding. */
   encoding: CSVGeometryEncoding;
   /** Geometry type strings inferred from sampled values. */
-  geometryTypes: string[];
+  geometryTypes: GeoParquetGeometryType[];
 };
 
 /** Returns whether a column name is eligible for geometry sniffing. */
@@ -263,7 +264,7 @@ function sampleGeometryColumnValues(rows: unknown[][], columnIndex: number): str
 
 /** Returns sampled geometries when every sampled value is WKT, otherwise `null`. */
 function collectWKTGeometries(sampledValues: string[]) {
-  const geometries = [];
+  const geometries: Array<Geometry | null> = [];
 
   for (const sampledValue of sampledValues) {
     const trimmedValue = sampledValue.trim();
@@ -282,7 +283,7 @@ function collectWKTGeometries(sampledValues: string[]) {
 
 /** Returns sampled geometries when every sampled value is hex WKB, otherwise `null`. */
 function collectHexWKBGeometries(sampledValues: string[]) {
-  const geometries = [];
+  const geometries: Geometry[] = [];
 
   for (const sampledValue of sampledValues) {
     const trimmedValue = sampledValue.trim();

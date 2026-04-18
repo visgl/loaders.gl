@@ -272,9 +272,13 @@ function parseCSVInBatches(
       }
 
       if (isFirstRow) {
+        if (!headerRow) {
+          return;
+        }
         schema = deduceCSVSchemaFromRows(
           [normalizeGeometryArrayRow(row, detectedGeometryColumns)],
-          headerRow
+          headerRow,
+          detectedGeometryColumns
         );
         isFirstRow = false;
       }

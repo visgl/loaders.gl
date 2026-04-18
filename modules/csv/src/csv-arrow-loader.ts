@@ -193,7 +193,11 @@ function parseCSVToArrowBatches(
 function convertCSVRowTableToArrowTable(table: ObjectRowTable | ArrayRowTable): ArrowTable {
   const arrowTableBuilder = new ArrowTableBuilder(table.schema!);
   for (const row of table.data) {
-    arrowTableBuilder.addRow(row);
+    if (table.shape === 'object-row-table') {
+      arrowTableBuilder.addObjectRow(row as {[columnName: string]: unknown});
+    } else {
+      arrowTableBuilder.addArrayRow(row as unknown[]);
+    }
   }
   return arrowTableBuilder.finishTable();
 }
@@ -203,13 +207,20 @@ async function* convertCSVRowBatchesToArrowBatches(
   rowBatchIterator: AsyncIterable<TableBatch>
 ): AsyncIterable<ArrowTableBatch> {
   for await (const rowBatch of rowBatchIterator) {
-    if (rowBatch.shape !== 'array-row-table' && rowBatch.shape !== 'object-row-table') {
+    if (
+      (rowBatch.shape !== 'array-row-table' && rowBatch.shape !== 'object-row-table') ||
+      !rowBatch.schema
+    ) {
       continue;
     }
 
     const arrowTableBuilder = new ArrowTableBuilder(rowBatch.schema);
     for (const row of rowBatch.data) {
-      arrowTableBuilder.addRow(row);
+      if (rowBatch.shape === 'object-row-table') {
+        arrowTableBuilder.addObjectRow(row as {[columnName: string]: unknown});
+      } else {
+        arrowTableBuilder.addArrayRow(row as unknown[]);
+      }
     }
     const arrowTable = arrowTableBuilder.finishTable();
     yield {
