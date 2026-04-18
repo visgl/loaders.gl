@@ -18,6 +18,7 @@
 
 - Add or update TSDoc for every new class, function, method, and field.
 - Update docs when behavior, public API, examples, or migration guidance changed.
+- Make sure `yarn.lock` is up to date by running `yarn` in the repo root.
 - Run build: `yarn build`
 - Run Node tests: `yarn test-node`
 - Run headless browser tests: `yarn test-headless`
