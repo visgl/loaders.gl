@@ -5,10 +5,9 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Schema, ArrayRowTable, ObjectRowTable, TableBatch} from '@loaders.gl/schema';
 
-import {log, toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import {
   AsyncQueue,
-  deduceTableSchema,
   TableBatchBuilder,
   convertToArrayRow,
   convertToObjectRow
@@ -16,6 +15,14 @@ import {
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 import {CSVFormat} from './csv-format';
+import {
+  deduceCSVSchemaFromRows,
+  detectGeometryColumns,
+  MAX_GEOMETRY_SNIFF_ROWS,
+  normalizeGeometryArrayRow,
+  normalizeGeometryObjectRow,
+  shouldFinalizeGeometryDetection
+} from './lib/csv-geometry';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -43,6 +50,7 @@ export type CSVLoaderOptions = LoaderOptions & {
     skipEmptyLines?: boolean | 'greedy';
     // transform: null?
     delimitersToGuess?: string[];
+    detectGeometryColumns?: boolean;
     // fastMode: auto
   };
 };
@@ -74,6 +82,7 @@ export const CSVLoader = {
       comments: false,
       skipEmptyLines: true,
       // transform: null?
+      detectGeometryColumns: false,
       delimitersToGuess: [',', '\t', '|', ';']
       // fastMode: auto
     }
@@ -127,7 +136,27 @@ async function parseCSV(
     default:
       throw new Error(shape);
   }
-  table.schema = deduceTableSchema(table!);
+  const detectedGeometryColumns = csvOptions.detectGeometryColumns
+    ? detectGeometryColumns(
+        headerRow,
+        rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow)))
+      )
+    : [];
+
+  if (detectedGeometryColumns.length > 0) {
+    table =
+      table.shape === 'array-row-table'
+        ? {
+            ...table,
+            data: table.data.map(row => normalizeGeometryArrayRow(row, detectedGeometryColumns))
+          }
+        : {
+            ...table,
+            data: table.data.map(row => normalizeGeometryObjectRow(row, detectedGeometryColumns))
+          };
+  }
+
+  table.schema = deduceCSVSchemaFromRows(table.data, headerRow, detectedGeometryColumns);
   return table;
 }
 
@@ -154,6 +183,9 @@ function parseCSVInBatches(
   let headerRow: string[] | null = null;
   let tableBatchBuilder: TableBatchBuilder | null = null;
   let schema: Schema | null = null;
+  let sniffedRows: unknown[][] = [];
+  let detectedGeometryColumns = [] as ReturnType<typeof detectGeometryColumns>;
+  let geometryDetectionFinalized = !csvOptions.detectGeometryColumns;
 
   const config = {
     // dynamicTyping: true, // Convert numbers and boolean values in rows from strings,
@@ -202,11 +234,9 @@ function parseCSVInBatches(
 
       // If first data row, we can deduce the schema
       if (isFirstRow) {
-        isFirstRow = false;
         if (!headerRow) {
           headerRow = generateHeader(csvOptions.columnPrefix, row.length);
         }
-        schema = deduceCSVSchema(row, headerRow);
       }
 
       if (csvOptions.optimizeMemoryUsage) {
@@ -215,38 +245,97 @@ function parseCSVInBatches(
         row = JSON.parse(JSON.stringify(row));
       }
 
-      const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
-      if (shape === 'object-row-table' && headerRow && row.length > headerRow.length) {
-        row = convertToPapaObjectRow(row, headerRow);
+      if (!geometryDetectionFinalized && headerRow) {
+        sniffedRows.push(row);
+        geometryDetectionFinalized = shouldFinalizeGeometryDetection(
+          headerRow,
+          sniffedRows,
+          MAX_GEOMETRY_SNIFF_ROWS
+        );
+        if (geometryDetectionFinalized) {
+          detectedGeometryColumns = detectGeometryColumns(headerRow, sniffedRows);
+          const normalizedSniffedRows = sniffedRows.map(sniffedRow =>
+            normalizeGeometryArrayRow(sniffedRow, detectedGeometryColumns)
+          );
+          schema = deduceCSVSchemaFromRows(
+            normalizedSniffedRows,
+            headerRow,
+            detectedGeometryColumns
+          );
+          isFirstRow = false;
+          for (const normalizedSniffedRow of normalizedSniffedRows) {
+            addCSVBatchRow(normalizedSniffedRow);
+          }
+          sniffedRows = [];
+        }
+        return;
       }
 
-      // Add the row
-      tableBatchBuilder =
-        tableBatchBuilder ||
-        new TableBatchBuilder(
-          // @ts-expect-error TODO this is not a proper schema
-          schema,
-          {
+      if (isFirstRow) {
+        schema = deduceCSVSchemaFromRows(
+          [normalizeGeometryArrayRow(row, detectedGeometryColumns)],
+          headerRow
+        );
+        isFirstRow = false;
+      }
+
+      const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+      const normalizedRow = normalizeGeometryArrayRow(row, detectedGeometryColumns);
+      addCSVBatchRow(normalizedRow);
+
+      function addCSVBatchRow(rowToAdd: unknown[]): void {
+        let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;
+        if (shape === 'object-row-table' && headerRow && rowToAdd.length > headerRow.length) {
+          batchRow = convertToPapaObjectRow(rowToAdd, headerRow);
+        }
+
+        tableBatchBuilder =
+          tableBatchBuilder ||
+          new TableBatchBuilder(schema!, {
             shape,
             ...(options?.core || {})
-          }
-        );
+          });
 
-      try {
-        tableBatchBuilder.addRow(row);
-        // If a batch has been completed, emit it
-        const batch = tableBatchBuilder && tableBatchBuilder.getFullBatch({bytesUsed});
-        if (batch) {
-          asyncQueue.enqueue(batch);
+        try {
+          tableBatchBuilder.addRow(batchRow);
+          const batch = tableBatchBuilder && tableBatchBuilder.getFullBatch({bytesUsed});
+          if (batch) {
+            asyncQueue.enqueue(batch);
+          }
+        } catch (error) {
+          asyncQueue.enqueue(error as Error);
         }
-      } catch (error) {
-        asyncQueue.enqueue(error as Error);
       }
     },
 
     // complete is called when all rows have been read
     complete(results) {
       try {
+        if (!geometryDetectionFinalized && headerRow) {
+          detectedGeometryColumns = detectGeometryColumns(headerRow, sniffedRows);
+          const normalizedSniffedRows = sniffedRows.map(row =>
+            normalizeGeometryArrayRow(row, detectedGeometryColumns)
+          );
+          schema = deduceCSVSchemaFromRows(
+            normalizedSniffedRows,
+            headerRow,
+            detectedGeometryColumns
+          );
+          const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+          tableBatchBuilder =
+            tableBatchBuilder ||
+            new TableBatchBuilder(schema, {
+              shape,
+              ...(options?.core || {})
+            });
+          for (const normalizedSniffedRow of normalizedSniffedRows) {
+            const batchRow =
+              shape === 'object-row-table' && normalizedSniffedRow.length > headerRow.length
+                ? convertToPapaObjectRow(normalizedSniffedRow, headerRow)
+                : normalizedSniffedRow;
+            tableBatchBuilder.addRow(batchRow);
+          }
+        }
         const bytesUsed = results.meta.cursor;
         // Ensure any final (partial) batch gets emitted
         const batch = tableBatchBuilder && tableBatchBuilder.getFinalBatch({bytesUsed});
@@ -339,57 +428,3 @@ function convertToPapaObjectRow(
   }
   return objectRow;
 }
-
-function deduceCSVSchema(row, headerRow): Schema {
-  const fields: Schema['fields'] = [];
-  for (let i = 0; i < row.length; i++) {
-    const columnName = (headerRow && headerRow[i]) || i;
-    const value = row[i];
-    switch (typeof value) {
-      case 'number':
-        fields.push({name: String(columnName), type: 'float64', nullable: true});
-        break;
-      case 'boolean':
-        fields.push({name: String(columnName), type: 'bool', nullable: true});
-        break;
-      case 'string':
-        fields.push({name: String(columnName), type: 'utf8', nullable: true});
-        break;
-      default:
-        log.warn(`CSV: Unknown column type: ${typeof value}`)();
-        fields.push({name: String(columnName), type: 'utf8', nullable: true});
-    }
-  }
-  return {
-    fields,
-    metadata: {
-      'loaders.gl#format': 'csv',
-      'loaders.gl#loader': 'CSVLoader'
-    }
-  };
-}
-
-// TODO - remove
-// type ObjectField = {name: string; index: number; type: any};
-// type ObjectSchema = {[key: string]: ObjectField} | ObjectField[];
-
-// function deduceObjectSchema(row, headerRow): ObjectSchema {
-//   const schema: ObjectSchema = headerRow ? {} : [];
-//   for (let i = 0; i < row.length; i++) {
-//     const columnName = (headerRow && headerRow[i]) || i;
-//     const value = row[i];
-//     switch (typeof value) {
-//       case 'number':
-//       case 'boolean':
-//         // TODO - booleans could be handled differently...
-//         schema[columnName] = {name: String(columnName), index: i, type: Float32Array};
-//         break;
-//       case 'string':
-//       default:
-//         schema[columnName] = {name: String(columnName), index: i, type: Array};
-//       // We currently only handle numeric rows
-//       // TODO we could offer a function to map strings to numbers?
-//     }
-//   }
-//   return schema;
-// }

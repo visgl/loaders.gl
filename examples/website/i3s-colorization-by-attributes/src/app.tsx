@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import Map from 'react-map-gl';
@@ -24,6 +24,7 @@ import {
   TRANSITION_DURAITON
 } from './constants';
 import {getNumericAttributeInfo} from './utils/fetch-attributes-data';
+import {createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
 export default function App() {
   const tileSets: string[] = Object.keys(EXAMPLES);
@@ -35,6 +36,10 @@ export default function App() {
     attributeName: ''
   });
   const [colorsByAttribute, setColorsByAttribute] = useState<ColorsByAttribute | null>(null);
+  const widgets = useMemo(
+    () => [createDeckStatsWidget('i3s-colorization-by-attributes-stats')],
+    []
+  );
 
   function onSelectTilesetHandler(item: string) {
     setTilesetSelected(item);
@@ -115,7 +120,12 @@ export default function App() {
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <DeckGL initialViewState={viewState} layers={renderLayers()} controller={MAP_CONTROLLER}>
+      <DeckGL
+        initialViewState={viewState}
+        layers={renderLayers()}
+        controller={MAP_CONTROLLER}
+        widgets={widgets}
+      >
         <Map
           reuseMaps
           mapLib={maplibregl}

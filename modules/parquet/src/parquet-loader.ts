@@ -96,8 +96,8 @@ export const ParquetLoader = {
 const GeoParquetBaseLoader = {
   ...ParquetFormat,
 
-  dataType: null as unknown as GeoJSONTable,
-  batchType: null as unknown as GeoJSONTableBatch,
+  dataType: null as unknown as GeoJSONTable | ArrowTable,
+  batchType: null as unknown as GeoJSONTableBatch | ArrowTableBatch,
 
   id: 'parquet',
   module: 'parquet',
@@ -109,19 +109,23 @@ const GeoParquetBaseLoader = {
       ...PARQUET_LOADER_DEFAULT_OPTIONS
     }
   }
-} as const satisfies Loader<GeoJSONTable, GeoJSONTableBatch, ParquetLoaderOptions>;
+} as const satisfies Loader<
+  GeoJSONTable | ArrowTable,
+  GeoJSONTableBatch | ArrowTableBatch,
+  ParquetLoaderOptions
+>;
 
 /** GeoParquet table loader that returns GeoJSON tables via Arrow conversion. */
 export const GeoParquetLoader = {
   ...GeoParquetBaseLoader,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return parseGeoParquetFile(new BlobFile(arrayBuffer), getParquetOptions(options));
+    return parseGeoParquetTable(new BlobFile(arrayBuffer), getParquetOptions(options));
   },
   parseFile(file, options?: ParquetLoaderOptions) {
-    return parseGeoParquetFile(file, getParquetOptions(options));
+    return parseGeoParquetTable(file, getParquetOptions(options));
   },
   parseFileInBatches(file, options?: ParquetLoaderOptions) {
-    return parseGeoParquetFileInBatches(file, getParquetOptions(options));
+    return parseGeoParquetTableInBatches(file, getParquetOptions(options));
   },
   async *parseInBatches(
     asyncIterator:
@@ -131,9 +135,13 @@ export const GeoParquetLoader = {
     _context?: unknown
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
-    yield* parseGeoParquetFileInBatches(new BlobFile(arrayBuffer), getParquetOptions(options));
+    yield* parseGeoParquetTableInBatches(new BlobFile(arrayBuffer), getParquetOptions(options));
   }
-} as const satisfies LoaderWithParser<GeoJSONTable, GeoJSONTableBatch, ParquetLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  GeoJSONTable | ArrowTable,
+  GeoJSONTableBatch | ArrowTableBatch,
+  ParquetLoaderOptions
+>;
 
 async function parseParquetTable(
   file: BlobFile | ReadableFile,
@@ -164,4 +172,27 @@ async function* parseParquetTableInBatches(
 
 function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions {
   return normalizeParquetOptions(options, ParquetBaseLoader.options.parquet);
+}
+
+async function parseGeoParquetTable(
+  file: BlobFile | ReadableFile,
+  options: ParquetLoaderOptions
+): Promise<GeoJSONTable | ArrowTable> {
+  if (options.parquet?.shape === 'arrow-table') {
+    return await parseParquetArrowTable(file, options);
+  }
+
+  return await parseGeoParquetFile(file, options);
+}
+
+async function* parseGeoParquetTableInBatches(
+  file: BlobFile | ReadableFile,
+  options: ParquetLoaderOptions
+): AsyncIterable<GeoJSONTableBatch | ArrowTableBatch> {
+  if (options.parquet?.shape === 'arrow-table') {
+    yield* parseParquetArrowTableInBatches(file, options);
+    return;
+  }
+
+  yield* parseGeoParquetFileInBatches(file, options);
 }

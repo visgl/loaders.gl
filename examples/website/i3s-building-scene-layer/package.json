@@ -19,6 +19,7 @@
     "@loaders.gl/i3s": "workspace:*",
     "@luma.gl/core": "^9.3.2",
     "deck.gl": "^9.3.0",
+    "@deck.gl/widgets": "^9.3.0",
     "mapbox-gl": "npm:maplibre-gl@^3.6.2",
     "maplibre-gl": "^3.6.2",
     "prop-types": "^15.7.2",

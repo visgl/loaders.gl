@@ -22,6 +22,7 @@ import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 import {Tile2DSourceLayer} from '@loaders.gl/deck-layers';
+import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
@@ -145,6 +146,7 @@ export default function App(props: AppProps = {}) {
     }
 
     return [
+      createDeckStatsWidget('tiles-stats'),
       new SidebarWidget({
         id: 'tiles-example-sidebar',
         placement: 'top-right',

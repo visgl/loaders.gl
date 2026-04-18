@@ -25,6 +25,7 @@ import {PLYLoader} from '@loaders.gl/ply';
 
 import type {Example} from './examples';
 import {EXAMPLES} from './examples';
+import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 import '@deck.gl/widgets/stylesheet.css';
 
 const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader] as const;
@@ -115,6 +116,7 @@ export default function App(props: AppProps = {}) {
     }
 
     return [
+      createDeckStatsWidget('pointcloud-stats'),
       new SidebarWidget({
         id: 'pointcloud-example-sidebar',
         placement: 'top-right',

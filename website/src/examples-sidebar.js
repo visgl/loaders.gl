@@ -19,15 +19,30 @@ const sidebars = {
       type: 'category',
       label: 'Geospatial Table Formats',
       items: [
-        'geospatial/flatgeobuf',
+        'geospatial/csv',
+        'geospatial/shapefile',
+        'geospatial/geojson',
         'geospatial/geoarrow',
         'geospatial/geoparquet',
         'geospatial/geopackage',
-        'geospatial/geojson',
-        'geospatial/shapefile',
         'geospatial/kml',
         'geospatial/gpx',
         'geospatial/tcx'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Tile Formats',
+      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Services',
+      items: [
+        'tiles/wms',
+        'tiles/wfs',
+        'tiles/arcgis-image-server',
+        'tiles/arcgis-feature-server'
       ]
     },
     {
@@ -39,21 +54,6 @@ const sidebars = {
       type: 'category',
       label: 'Bioimaging Raster Formats',
       items: ['bioimaging/ome-tiff']
-    },
-    {
-      type: 'category',
-      label: 'Geospatial Tile Formats',
-      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
-    },
-    {
-      type: 'category',
-      label: 'Image and Vector Services',
-      items: [
-        'tiles/wms',
-        'tiles/wfs',
-        'tiles/arcgis-image-server',
-        'tiles/arcgis-feature-server'
-      ]
     },
     {
       type: 'category',

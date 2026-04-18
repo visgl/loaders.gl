@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@deck.gl/core": "^9.3.0",
+    "@deck.gl/widgets": "^9.3.0",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/i3s": "workspace:*",
     "@luma.gl/core": "^9.3.2",

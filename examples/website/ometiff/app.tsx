@@ -13,6 +13,7 @@ import {createDataSource} from '@loaders.gl/core';
 import type {RasterData} from '@loaders.gl/loader-utils';
 import type {OMETiffImageSource, OMETiffSourceLoaderMetadata} from '@loaders.gl/geotiff';
 import {OMETiffSourceLoader} from '@loaders.gl/geotiff';
+import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 const DATA_URL = '/multi-channel.ome.tif';
 
@@ -229,6 +230,14 @@ export default function App(props: AppProps = {}) {
     ];
   }, [rasterCanvas, rasterDimensions]);
 
+  const widgets = useMemo(() => {
+    if (props.hideChrome) {
+      return [];
+    }
+
+    return [createDeckStatsWidget('ometiff-stats')];
+  }, [props.hideChrome]);
+
   return (
     <div
       style={{
@@ -254,6 +263,7 @@ export default function App(props: AppProps = {}) {
           layers={layers}
           views={deckView}
           viewState={viewState}
+          widgets={widgets}
           onViewStateChange={({viewState: nextViewState}) =>
             setViewState(normalizeViewState(nextViewState))
           }

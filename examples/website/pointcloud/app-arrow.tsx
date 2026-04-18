@@ -26,6 +26,7 @@ import {PLYArrowLoader} from '@loaders.gl/ply';
 
 import type {Example} from './examples';
 import {EXAMPLES} from './examples';
+import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 import '@deck.gl/widgets/stylesheet.css';
 
 const POINT_CLOUD_LOADERS = [
@@ -116,6 +117,7 @@ export default function App(props: AppProps = {}) {
 
   const widgets = useMemo(
     () => [
+      createDeckStatsWidget('pointcloud-arrow-stats'),
       new SidebarWidget({
         id: 'pointcloud-arrow-example-sidebar',
         placement: 'top-right',

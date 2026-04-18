@@ -13,13 +13,14 @@ import {MapController} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 import {GeoArrowLayer} from '@loaders.gl/deck-layers';
+import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 // import {FileUploader} from './components/file-uploader';
 
 import type {Example} from './examples';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 
-import {Table, GeoJSON, type Schema} from '@loaders.gl/schema';
+import {Table, GeoJSON, type ArrowTable, type Schema} from '@loaders.gl/schema';
 import {load, LoaderOptions} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
 import {
@@ -33,9 +34,10 @@ import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
+import {CSVArrowLoader, CSVLoader} from '@loaders.gl/csv';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 import {convertWKBTableToGeoJSON, getGeoMetadata} from '@loaders.gl/gis';
-import {convertArrowToSchema, convertTable} from '@loaders.gl/schema-utils';
+import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/schema-utils';
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
@@ -79,12 +81,16 @@ const LOADER_OPTIONS = {
   },
   tcx: {
     shape: 'geojson-table'
+  },
+  csv: {
+    shape: 'object-row-table',
+    detectGeometryColumns: true
   }
 } as const;
 
-type TableFormat = 'plain' | 'arrow';
+type TableFormat = 'geojson' | 'geoarrow';
 type LoadedDataName = 'geojson' | 'geoarrow';
-type LoadedGeometryType = GeoArrowEncoding | 'wkb' | 'wkt' | null;
+type LoadedGeometryType = GeoArrowEncoding | string | null;
 
 const VIEW_STATE = {
   height: 600,
@@ -138,7 +144,7 @@ type AppState = {
  */
 export default function App(props: AppProps = {}) {
   const [parquetImplementation, setParquetImplementation] = useState<'wasm' | 'js'>('js');
-  const [tableFormat, setTableFormat] = useState<TableFormat>('plain');
+  const [tableFormat, setTableFormat] = useState<TableFormat>('geoarrow');
   const previousParquetImplementation = useRef(parquetImplementation);
   const previousTableFormat = useRef(tableFormat);
   const loadRequestIdRef = useRef(0);
@@ -240,6 +246,7 @@ export default function App(props: AppProps = {}) {
     }
 
     return [
+      createDeckStatsWidget('geospatial-stats'),
       new SidebarWidget({
         id: 'geospatial-example-sidebar',
         placement: 'top-right',
@@ -259,8 +266,10 @@ export default function App(props: AppProps = {}) {
                   selectedExampleName: state.selectedExampleName,
                   tableFormat,
                   activeLayerName: getActiveLayerName(state.table),
+                  sourceName: getExampleSourceName(state.selectedExample, state.selectedExampleName),
                   loadedDataName: state.loadedDataName,
                   loadedGeometryType: state.loadedGeometryType,
+                  rowCount: state.table ? getTableLength(state.table) : null,
                   parquetImplementation,
                   loadDurationSeconds: state.loadDurationSeconds,
                   loading: state.loading,
@@ -386,7 +395,7 @@ export default function App(props: AppProps = {}) {
 }
 
 function getLoaders(example: Example, tableFormat: TableFormat) {
-  if (tableFormat === 'plain') {
+  if (tableFormat === 'geojson') {
     switch (example.format) {
       case 'geopackage':
         return [GeoPackageLoader];
@@ -400,6 +409,8 @@ function getLoaders(example: Example, tableFormat: TableFormat) {
         return [TCXLoader];
       case 'geojson':
         return [GeoJSONLoader];
+      case 'csv':
+        return [CSVLoader];
       case 'flatgeobuf':
         return [FlatGeobufLoader];
       case 'geoparquet':
@@ -424,6 +435,8 @@ function getLoaders(example: Example, tableFormat: TableFormat) {
       return [TCXLoader];
     case 'geojson':
       return [GeoJSONLoader];
+    case 'csv':
+      return [CSVArrowLoader];
     case 'flatgeobuf':
       return [FlatGeobufLoader];
     case 'geoparquet':
@@ -440,7 +453,7 @@ function getLoaderOptions(
   implementation: 'wasm' | 'js',
   tableFormat: TableFormat
 ): LoaderOptions {
-  const tableShape = tableFormat === 'arrow' ? 'arrow-table' : 'geojson-table';
+  const tableShape = tableFormat === 'geoarrow' ? 'arrow-table' : 'geojson-table';
   const geoArrowTableShape = 'arrow-table';
 
   return {
@@ -476,6 +489,10 @@ function getLoaderOptions(
     },
     flatgeobuf: {
       shape: tableShape
+    },
+    csv: {
+      ...LOADER_OPTIONS.csv,
+      shape: tableFormat === 'geoarrow' ? 'arrow-table' : 'object-row-table'
     }
   } as unknown as LoaderOptions;
 }
@@ -500,6 +517,10 @@ function normalizeLoadedTable(table: Table, example?: Example | null): Table {
     }
   }
 
+  if (example?.format === 'csv') {
+    return convertWKBTableToGeoJSON(table as any, table.schema as Schema);
+  }
+
   return table;
 }
 
@@ -510,7 +531,7 @@ function convertWKBArrowTableToGeoJSON(table: Table): Table {
 
 function getLoaderDisplayName(
   selectedCategoryName?: string | null,
-  tableFormat: TableFormat = 'plain'
+  tableFormat: TableFormat = 'geojson'
 ): string {
   switch (selectedCategoryName) {
     case 'GeoArrow':
@@ -519,22 +540,24 @@ function getLoaderDisplayName(
       return 'GeoParquetLoader';
     case 'GeoJSON':
       return 'GeoJSONLoader';
+    case 'CSV':
+      return tableFormat === 'geoarrow' ? 'CSVArrowLoader' : 'CSVLoader';
     case 'GeoPackage':
-      return tableFormat === 'arrow'
+      return tableFormat === 'geoarrow'
         ? "GeoPackageLoader (shape: 'arrow-table')"
         : 'GeoPackageLoader';
     case 'FlatGeobuf':
       return 'FlatGeobufLoader';
     case 'Shapefile':
-      return tableFormat === 'arrow'
+      return tableFormat === 'geoarrow'
         ? "ShapefileLoader (shape: 'arrow-table')"
         : 'ShapefileLoader';
     case 'KML':
-      return tableFormat === 'arrow' ? "KMLLoader (shape: 'arrow-table')" : 'KMLLoader';
+      return 'KMLLoader';
     case 'GPX':
-      return tableFormat === 'arrow' ? "GPXLoader (shape: 'arrow-table')" : 'GPXLoader';
+      return 'GPXLoader';
     case 'TCX':
-      return tableFormat === 'arrow' ? "TCXLoader (shape: 'arrow-table')" : 'TCXLoader';
+      return 'TCXLoader';
     default:
       return 'Loader';
   }
@@ -587,10 +610,11 @@ function renderLayer({table, selectedExample}: {table: Table | null; selectedExa
 
   const geometryColumn = getGeoArrowLayerGeometryColumn(table);
   if (geometryColumn) {
+    const arrowTable = table as ArrowTable;
     return [
       new GeoArrowLayer({
         id: 'geoarrow-layer',
-        data: table.data,
+        data: arrowTable.data,
         geometryColumn,
         pickable: true,
         autoHighlight: true,
@@ -649,7 +673,7 @@ function getGeoArrowLayerGeometryColumn(table: Table | null): string | null {
 }
 
 function getGeoArrowColumns(table: Table): Record<string, GeoArrowMetadata> {
-  const schema = convertArrowToSchema(table.data.schema);
+  const schema = convertArrowToSchema((table as ArrowTable).data.schema);
   return getGeometryColumnsFromSchema(schema);
 }
 
@@ -667,7 +691,7 @@ function getGeoArrowExampleLayerProps(layerProps: Record<string, unknown> | unde
     pathLayerProps: {
       getColor: [0, 0, 255, 255] as [number, number, number, number],
       getWidth: 3,
-      widthUnits: 'pixels'
+      widthUnits: 'pixels' as const
     },
     solidPolygonLayerProps: {
       filled: true,
@@ -823,8 +847,10 @@ function renderGeospatialSidebar(
     selectedExampleName?: string | null;
     tableFormat: TableFormat;
     activeLayerName: string;
+    sourceName: string;
     loadedDataName: LoadedDataName;
     loadedGeometryType: LoadedGeometryType;
+    rowCount: number | null;
     parquetImplementation: 'wasm' | 'js';
     loadDurationSeconds?: number | null;
     loading: boolean;
@@ -843,6 +869,10 @@ function renderGeospatialSidebar(
   rootElement.style.padding = '4px 0 0';
 
   rootElement.appendChild(
+    createSidebarTitle(getLoaderDisplayName(options.selectedCategoryName, options.tableFormat))
+  );
+
+  rootElement.appendChild(
     createSelectSection({
       examples: options.examples,
       selectedCategoryName: options.selectedCategoryName,
@@ -853,22 +883,23 @@ function renderGeospatialSidebar(
     })
   );
 
-  rootElement.appendChild(
-    createStatusSection({
-      loading: options.loading,
-      loadDurationSeconds: options.loadDurationSeconds,
-      loadedDataName: options.loadedDataName,
-      loadedGeometryType: options.loadedGeometryType
-    })
-  );
-
-  rootElement.appendChild(createIndicatorSection('Layer', options.activeLayerName));
-
   if (options.selectedCategoryName === 'GeoParquet') {
     rootElement.appendChild(
       createParquetSection(options.parquetImplementation, options.onParquetImplementationChange)
     );
   }
+
+  rootElement.appendChild(
+    createStatusSection({
+      loading: options.loading,
+      loadDurationSeconds: options.loadDurationSeconds,
+      sourceName: options.sourceName,
+      activeLayerName: options.activeLayerName,
+      loadedDataName: options.loadedDataName,
+      loadedGeometryType: options.loadedGeometryType,
+      rowCount: options.rowCount
+    })
+  );
 
   if (options.error) {
     rootElement.appendChild(createErrorSection(options.error));
@@ -876,6 +907,16 @@ function renderGeospatialSidebar(
 
   rootElement.appendChild(createViewStateSection(options.viewState));
   rootElement.appendChild(createMetadataSection(options.schema ?? 'No metadata available'));
+}
+
+function createSidebarTitle(title: string): HTMLElement {
+  const titleElement = document.createElement('div');
+  titleElement.textContent = title;
+  titleElement.style.fontSize = '28px';
+  titleElement.style.fontWeight = '700';
+  titleElement.style.lineHeight = '1.1';
+  titleElement.style.margin = '0 0 4px';
+  return titleElement;
 }
 
 function createSelectSection(options: {
@@ -887,7 +928,7 @@ function createSelectSection(options: {
   onTableFormatChange: (tableFormat: TableFormat) => void;
 }): HTMLElement {
   const section = createSection();
-  section.appendChild(createLabel('Example'));
+  section.appendChild(createLabel('Dataset'));
 
   const selectElement = document.createElement('select');
   selectElement.style.width = '100%';
@@ -921,7 +962,7 @@ function createSelectSection(options: {
   selectElement.value = `${options.selectedCategoryName}.${options.selectedExampleName}`;
   section.appendChild(selectElement);
 
-  section.appendChild(createLabel('Format'));
+  section.appendChild(createLabel('Load As'));
 
   const formatSelectElement = document.createElement('select');
   formatSelectElement.style.width = '100%';
@@ -936,8 +977,8 @@ function createSelectSection(options: {
   });
 
   for (const [value, label] of [
-    ['plain', 'Plain'],
-    ['arrow', 'Apache Arrow']
+    ['geoarrow', 'GeoArrow'],
+    ['geojson', 'GeoJSON']
   ] as const) {
     const optionElement = document.createElement('option');
     optionElement.value = value;
@@ -953,16 +994,25 @@ function createSelectSection(options: {
 function createStatusSection(options: {
   loading: boolean;
   loadDurationSeconds?: number | null;
+  sourceName: string;
+  activeLayerName: string;
   loadedDataName: LoadedDataName;
   loadedGeometryType: LoadedGeometryType;
+  rowCount: number | null;
 }): HTMLElement {
   const section = createSection();
   section.style.display = 'flex';
-  section.style.alignItems = 'center';
+  section.style.flexDirection = 'column';
+  section.style.alignItems = 'flex-start';
   section.style.gap = '8px';
   section.style.color = '#555';
   section.style.fontSize = '12px';
   section.style.lineHeight = '1.4';
+
+  const summaryElement = document.createElement('div');
+  summaryElement.style.display = 'flex';
+  summaryElement.style.alignItems = 'center';
+  summaryElement.style.gap = '8px';
 
   if (options.loading) {
     const spinnerElement = document.createElement('span');
@@ -974,37 +1024,46 @@ function createStatusSection(options: {
     spinnerElement.style.borderRadius = '999px';
     spinnerElement.style.display = 'inline-block';
     spinnerElement.style.animation = 'geospatial-loader-spin 0.8s linear infinite';
-    section.appendChild(spinnerElement);
+    summaryElement.appendChild(spinnerElement);
   }
 
   const labelElement = document.createElement('span');
   if (options.loading) {
     labelElement.textContent = 'Loading...';
   } else if (options.loadDurationSeconds !== null && options.loadDurationSeconds !== undefined) {
-    const geometryTypeSuffix = options.loadedGeometryType
-      ? ` (geometry: ${options.loadedGeometryType})`
-      : '';
-    labelElement.textContent = `Loaded '${options.loadedDataName}'${geometryTypeSuffix} in ${options.loadDurationSeconds.toFixed(2)} s`;
+    const rowLabel = options.rowCount === 1 ? 'row' : 'rows';
+    labelElement.textContent = `Loaded ${options.rowCount ?? 0} ${rowLabel} in ${options.loadDurationSeconds.toFixed(2)} s`;
   } else {
     labelElement.textContent = '';
   }
+  summaryElement.appendChild(labelElement);
+  section.appendChild(summaryElement);
 
-  section.appendChild(labelElement);
+  if (!options.loading) {
+    const detailsElement = document.createElement('div');
+    detailsElement.style.display = 'flex';
+    detailsElement.style.alignItems = 'center';
+    detailsElement.style.flexWrap = 'wrap';
+    detailsElement.style.gap = '8px';
+
+    const sourceNameElement = document.createElement('span');
+    sourceNameElement.textContent = options.sourceName;
+    sourceNameElement.style.fontFamily = 'monospace';
+    sourceNameElement.style.fontSize = '13px';
+    sourceNameElement.style.color = '#111';
+    detailsElement.appendChild(sourceNameElement);
+    detailsElement.appendChild(createArrowSeparator());
+    detailsElement.appendChild(createBadge(options.loadedGeometryType || options.loadedDataName));
+    detailsElement.appendChild(createArrowSeparator());
+    detailsElement.appendChild(createBadge(options.activeLayerName));
+    section.appendChild(detailsElement);
+  }
+
   ensureGeospatialSpinnerStyle(document);
   return section;
 }
 
-function createIndicatorSection(label: string, value: string): HTMLElement {
-  const section = createSection();
-  section.style.display = 'flex';
-  section.style.flexDirection = 'row';
-  section.style.justifyContent = 'space-between';
-  section.style.alignItems = 'center';
-
-  const labelElement = document.createElement('span');
-  labelElement.textContent = label;
-  labelElement.style.fontWeight = '600';
-
+function createBadge(value: string): HTMLElement {
   const valueElement = document.createElement('span');
   valueElement.textContent = value;
   valueElement.style.padding = '2px 8px';
@@ -1012,10 +1071,15 @@ function createIndicatorSection(label: string, value: string): HTMLElement {
   valueElement.style.background = 'rgba(15, 23, 42, 0.08)';
   valueElement.style.fontFamily = 'monospace';
   valueElement.style.fontSize = '12px';
+  return valueElement;
+}
 
-  section.appendChild(labelElement);
-  section.appendChild(valueElement);
-  return section;
+function createArrowSeparator(): HTMLElement {
+  const separatorElement = document.createElement('span');
+  separatorElement.textContent = '→';
+  separatorElement.style.color = '#64748b';
+  separatorElement.style.fontSize = '13px';
+  return separatorElement;
 }
 
 function createParquetSection(
@@ -1107,6 +1171,24 @@ function createLabel(text: string, htmlFor?: string): HTMLElement {
     labelElement.htmlFor = htmlFor;
   }
   return labelElement;
+}
+
+function getExampleSourceName(
+  selectedExample?: Example | null,
+  selectedExampleName?: string | null
+): string {
+  const sourceUrl = selectedExample?.data;
+  if (!sourceUrl) {
+    return selectedExampleName || 'dataset';
+  }
+
+  if (sourceUrl.startsWith('data:')) {
+    return selectedExampleName || 'inline-data';
+  }
+
+  const pathname = sourceUrl.split('?')[0];
+  const pathSegments = pathname.split('/').filter(Boolean);
+  return pathSegments[pathSegments.length - 1] || selectedExampleName || pathname;
 }
 
 function ensureGeospatialSpinnerStyle(documentObject: Document): void {

@@ -41,3 +41,4 @@
 - Default new tests to shared `*.spec.ts` coverage so they run in both Node and headless browser projects. Use `*.node.spec.ts` only when the test genuinely depends on Node-only behavior or APIs.
 - In `package.json` `browser` fields, use relative replacements that match actual emitted files in the current layout: pair `./src/...*.ts` entries with the corresponding `./dist/...*.js` entries, and map each one either to a real browser shim file or to `false`. Do not leave stale paths such as old `dist/esm` targets or entries for files that do not exist in that module.
 - Keep the upgrade guide focused on deleted or deprecated functionality. New feature documentation belongs in the module docs and release notes instead.
+- Running module- or file-scoped commands such as `tsc` tends to generate `.js` and `.d.ts` files in this repo. After such commands, check for generated files and remove them before finishing.

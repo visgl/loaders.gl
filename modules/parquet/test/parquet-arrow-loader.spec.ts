@@ -9,7 +9,13 @@ import {load, loadInBatches, encode, fetchFile, setLoaderOptions} from '@loaders
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 import {getGeoMetadata, convertGeometryToWKB} from '@loaders.gl/gis';
-import {ParquetArrowLoader, ParquetArrowWriter, ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
+import {
+  GeoParquetLoader,
+  ParquetArrowLoader,
+  ParquetArrowWriter,
+  ParquetLoader,
+  ParquetWriter
+} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
 import {WASM_SUPPORTED_FILES} from './data/files';
 
@@ -287,6 +293,34 @@ test('ParquetArrowLoader#GeoParquet Arrow output preserves schema and field meta
   t.end();
 });
 
+test('GeoParquetLoader#supports arrow-table shape', async (t) => {
+  const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
+  const table = await load(url, GeoParquetLoader, {
+    parquet: {
+      shape: 'arrow-table',
+      implementation: 'wasm'
+    }
+  });
+
+  t.equal(table.shape, 'arrow-table', 'returns Arrow output when requested');
+  if (table.shape === 'arrow-table') {
+    t.equal(
+      getGeometryColumnsFromSchema(table.schema!).geometry?.encoding,
+      'geoarrow.wkb',
+      'geometry field is annotated for Arrow output'
+    );
+    t.equal(
+      table.data.schema.fields.find(field => field.name === 'geometry')?.metadata.get(
+        'ARROW:extension:name'
+      ),
+      'geoarrow.wkb',
+      'Arrow schema field metadata is preserved'
+    );
+  }
+
+  t.end();
+});
+
 test('ParquetArrowWriter#synthesizes GeoParquet metadata from GeoArrow WKB fields', async (t) => {
   const table = createGeoArrowWKBTable();
 
@@ -370,7 +404,9 @@ test('ParquetArrowWriter#replaces invalid GeoParquet metadata from GeoArrow inpu
 });
 
 test('ParquetArrowWriter#synthesizes native GeoParquet encoding from GeoArrow input', async (t) => {
-  const response = await fetchFile('@loaders.gl/geoarrow/test/data/geoarrow/point.arrow');
+  const response = await fetchFile(
+    new URL('../../geoarrow/test/data/geoarrow/point.arrow', import.meta.url).href
+  );
   const arrayBuffer = await response.arrayBuffer();
   const pointTable = {shape: 'arrow-table' as const, data: arrow.tableFromIPC(arrayBuffer)};
 

@@ -3,7 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 export type Example = {
-  format: 'geoarrow' | 'geoparquet' | 'geojson' | 'geopackage' | 'flatgeobuf' | 'shapefile' | 'kml' | 'tcx' | 'gpx';
+  format:
+    | 'geoarrow'
+    | 'geoparquet'
+    | 'geojson'
+    | 'geopackage'
+    | 'flatgeobuf'
+    | 'shapefile'
+    | 'kml'
+    | 'tcx'
+    | 'gpx'
+    | 'csv';
   data: string;
   attributions?: string[];
   viewState?: Record<string, unknown>;
@@ -29,6 +39,41 @@ const GEOMETRY_COLLECTION_WKB_DATA_URL =
 
 const GEOARROW_TEST_DATA = `${LOADERS_URL}/modules/arrow/test/data/geoarrow`;
 export const EXAMPLES: Record<string, Record<string, Example>> = {
+  CSV: {
+    'Points (WKT)': {
+      format: 'csv',
+      data: `${LOADERS_URL}/modules/csv/test/data/geospatial-points-wkt.csv`,
+      viewState: {longitude: -122.307, latitude: 37.834, zoom: 9.8},
+      layerProps: {
+        getPointRadius: 12,
+        pointRadiusScale: 1,
+        pointRadiusUnits: 'pixels'
+      }
+    },
+    'Points (WKB)': {
+      format: 'csv',
+      data: `${LOADERS_URL}/modules/csv/test/data/geospatial-points-wkb.csv`,
+      viewState: {longitude: -122.307, latitude: 37.834, zoom: 9.8},
+      layerProps: {
+        getPointRadius: 12,
+        pointRadiusScale: 1,
+        pointRadiusUnits: 'pixels'
+      }
+    }
+  },
+  Shapefile: {
+    'Countries and Graticules': {
+      format: 'shapefile',
+      data: `${LOADERS_URL}/modules/shapefile/test/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
+      viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76},
+      layerProps: {getFillColor: (_, {index}) => [0, index % 255, 0]}
+    },
+    'SF Topography': {
+      format: 'shapefile',
+      data: `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`,
+      viewState: {latitude: 37.75, longitude: -122.4, zoom: 11}
+    }
+  },
   GeoArrow: {
     Point: {
       format: 'geoarrow',
@@ -207,20 +252,6 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       layerProps: {getFillColor: (_, {index}) => [index % 255, 0, 0]}
     }
   },
-  Shapefile: {
-    'Countries and Graticules': {
-      format: 'shapefile',
-      data: `${LOADERS_URL}/modules/shapefile/test/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
-      viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76},
-      layerProps: {getFillColor: (_, {index}) => [0, index % 255, 0]}
-    },
-    'SF Topography': {
-      format: 'shapefile',
-      data: `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`,
-      viewState: {latitude: 37.75, longitude: -122.4, zoom: 11}
-    }
-  },
-
   KML: {
     'Congressional Districts': {
       format: 'kml',
