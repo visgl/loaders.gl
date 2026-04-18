@@ -5,20 +5,27 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg)](/studio/user-guide/import" alt="BETA" />
 </p>
 
-`ParquetWriter` accepts plain JS loaders.gl tables and converts them to Arrow before delegating to `ParquetArrowWriter`.
+`ParquetWriter` accepts plain JS loaders.gl tables and converts them to Arrow before delegating to the wasm-backed `ParquetArrowWriter`.
+
+`ParquetJSWriter` is the plain-table writer for the experimental parquetjs backend.
 
 The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```typescript
-import {ParquetWriter, ParquetArrowWriter} from '@loaders.gl/parquet';
+import {ParquetWriter, ParquetJSWriter, ParquetArrowWriter} from '@loaders.gl/parquet';
 ```
 
 ## Options
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.implementation` | `'wasm' \| 'js'` | `'wasm'` | Selects the internal writer implementation. `js` currently throws a not-implemented error. |
-| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for the `wasm` implementation. |
+| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetWriter` and `ParquetArrowWriter`. |
+
+## Backend Selection
+
+- Use `ParquetWriter` for the default wasm-backed plain-table writer.
+- Use `ParquetJSWriter` for the experimental parquetjs plain-table writer.
+- Use `ParquetArrowWriter` for the wasm-backed Arrow-first writer.
 
 ## Supported Files
 

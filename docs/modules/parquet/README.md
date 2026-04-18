@@ -8,6 +8,10 @@
 
 Experimental loader and writer for the Apache Parquet format.
 
+- `ParquetLoader` and `ParquetWriter` are the default wasm-backed plain-row APIs.
+- `ParquetJSLoader` and `ParquetJSWriter` provide the experimental parquetjs plain-row and plain-table APIs.
+- `ParquetArrowLoader` and `ParquetArrowWriter` remain the wasm-backed Arrow-first APIs.
+
 # Attribution
 
 - Based on a fork of https://github.com/ironSource/parquetjs and https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.).

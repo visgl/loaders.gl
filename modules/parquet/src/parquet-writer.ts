@@ -16,7 +16,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type ParquetWriterOptions = ParquetArrowWriterOptions;
 
-/** Plain JS parquet writer that converts tables to Arrow before encoding. */
+/** Plain-row Parquet writer that converts tables to Arrow before wasm encoding. */
 export const ParquetWriter = {
   ...ParquetFormat,
   id: 'parquet',

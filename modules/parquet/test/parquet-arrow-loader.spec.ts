@@ -7,7 +7,14 @@ import test from 'tape-promise/tape';
 
 import {load, loadInBatches, encode, fetchFile, setLoaderOptions} from '@loaders.gl/core';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
-import {ParquetArrowLoader, ParquetArrowWriter, ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
+import {
+  ParquetArrowLoader,
+  ParquetArrowWriter,
+  ParquetJSLoader,
+  ParquetJSWriter,
+  ParquetLoader,
+  ParquetWriter
+} from '@loaders.gl/parquet';
 import * as arrow from 'apache-arrow';
 import {WASM_SUPPORTED_FILES} from './data/files';
 
@@ -72,47 +79,46 @@ test('ParquetArrowLoader#parse applies reader options without passing wasmUrl up
   t.end();
 });
 
-test('ParquetArrowLoader#load supports js implementation', async (t) => {
-  const url = `${PARQUET_DIR}/apache/good/alltypes_plain.parquet`;
+test('ParquetArrowLoader#ignores implementation option and stays on wasm', async (t) => {
+  const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const table = await load(url, ParquetArrowLoader, {
     parquet: {
       implementation: 'js',
-      limit: 3,
-      offset: 1,
-      columns: ['id', 'bool_col']
+      limit: 3
     }
-  });
+  } as any);
 
   t.equal(table.shape, 'arrow-table');
-  t.equal(table.data.numRows, 3, 'applies limit and offset');
+  t.equal(table.data.numRows, 3, 'applies limit');
   t.deepEqual(
     table.schema?.fields.map((field) => field.name),
-    ['id', 'bool_col'],
-    'applies projected columns'
+    ['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry'],
+    'keeps the wasm schema'
   );
   t.end();
 });
 
-test('ParquetArrowLoader#loadInBatches supports js implementation batchSize', async (t) => {
-  const url = `${PARQUET_DIR}/apache/good/alltypes_plain.parquet`;
+test('ParquetArrowLoader#loadInBatches ignores implementation option and stays on wasm', async (t) => {
+  const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
   const iterator = await loadInBatches(url, ParquetArrowLoader, {
     parquet: {
       implementation: 'js',
-      offset: 1,
       limit: 5,
-      batchSize: 2,
-      columns: ['id']
+      batchSize: 2
     }
-  });
+  } as any);
 
   const batchLengths: number[] = [];
   for await (const batch of iterator) {
     batchLengths.push(batch.length);
     t.equal(batch.shape, 'arrow-table');
-    t.deepEqual(batch.schema.fields.map((field) => field.name), ['id']);
+    t.deepEqual(
+      batch.schema.fields.map((field) => field.name),
+      ['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry']
+    );
   }
 
-  t.deepEqual(batchLengths, [2, 2, 1], 'chunks js batches using batchSize');
+  t.deepEqual(batchLengths, [2, 2, 1], 'chunks batches using batchSize');
   t.end();
 });
 
@@ -130,22 +136,23 @@ test('ParquetArrowWriter#writer/loader round trip', async (t) => {
   t.end();
 });
 
-test('ParquetArrowWriter#js implementation is not implemented', async (t) => {
+test('ParquetArrowWriter#ignores implementation option and stays on wasm', async (t) => {
   const table = createArrowTable();
+  const parquetBuffer = await encode(table, ParquetArrowWriter, {
+    parquet: {implementation: 'js'}
+  } as any);
+  const newTable = await load(parquetBuffer, ParquetArrowLoader, {
+    core: {worker: false}
+  });
 
-  await t.rejects(
-    () => encode(table, ParquetArrowWriter, {parquet: {implementation: 'js'}}),
-    /implementation "js" is not implemented yet/
-  );
-
+  t.deepEqual(table.data.schema, newTable.data.schema);
   t.end();
 });
 
-test('ParquetLoader#returns object rows through Arrow adapter', async (t) => {
+test('ParquetJSLoader#returns object rows through parquetjs adapter', async (t) => {
   const url = `${PARQUET_DIR}/apache/good/alltypes_plain.parquet`;
-  const table = (await load(url, ParquetLoader, {
+  const table = (await load(url, ParquetJSLoader, {
     parquet: {
-      implementation: 'js',
       limit: 2,
       columns: ['id', 'bool_col']
     }
@@ -157,7 +164,7 @@ test('ParquetLoader#returns object rows through Arrow adapter', async (t) => {
   t.end();
 });
 
-test('ParquetWriter#encodes plain JS tables through Arrow adapter', async (t) => {
+test('ParquetWriter#encodes plain JS tables through Arrow wasm adapter', async (t) => {
   const table: ObjectRowTable = {
     shape: 'object-row-table',
     data: [
@@ -170,8 +177,30 @@ test('ParquetWriter#encodes plain JS tables through Arrow adapter', async (t) =>
     worker: false
   });
   const newTable = await load(parquetBuffer, ParquetLoader, {
-    core: {worker: false},
-    parquet: {implementation: 'js'}
+    core: {worker: false}
+  });
+
+  t.equal(newTable.shape, 'object-row-table');
+  if (newTable.shape === 'object-row-table') {
+    t.deepEqual(newTable.data, table.data);
+  }
+  t.end();
+});
+
+test('ParquetJSWriter#encodes plain JS tables through parquetjs adapter', async (t) => {
+  const table: ObjectRowTable = {
+    shape: 'object-row-table',
+    data: [
+      {city: 'Paris', count: 2},
+      {city: 'New York', count: 5}
+    ]
+  };
+
+  const parquetBuffer = await encode(table, ParquetJSWriter, {
+    worker: false
+  });
+  const newTable = await load(parquetBuffer, ParquetJSLoader, {
+    core: {worker: false}
   });
 
   t.equal(newTable.shape, 'object-row-table');

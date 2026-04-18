@@ -6,9 +6,13 @@
 
 export {ParquetFormat} from './parquet-format';
 
+export type {ParquetLoaderOptions, ParquetJSLoaderOptions} from './parquet-loader-options';
 export {ParquetLoader, GeoParquetLoader} from './parquet-loader';
+export {ParquetJSLoader} from './parquet-js-loader';
 
 export {ParquetWriter} from './parquet-writer';
+export type {ParquetJSWriterOptions} from './parquet-js-writer';
+export {ParquetJSWriter} from './parquet-js-writer';
 
 // Arrow-first Parquet APIs
 

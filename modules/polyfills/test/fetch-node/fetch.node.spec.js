@@ -11,7 +11,7 @@ const TEXT_URL_WITH_REDIRECT = `https://unpkg.com/@loaders.gl/textures@beta/dist
 // This type of links on github works via 302 redirect
 // ("https://github.com/repository/raw/branch-name/path/to/file/file-name.extension")
 const REDIRECT_URL =
-  'https://github.com/visgl/deck.gl-data/raw/master/3d-tiles/RoyalExhibitionBuilding/1/1.pnts';
+  'https://github.com/visgl/loaders.gl/raw/master/modules/polyfills/test/data/data.txt';
 
 test('polyfills#fetch() (NODE)', async () => {
   const response = await fetch(PLY_CUBE_ATT_URL);
@@ -98,11 +98,14 @@ test.skip('polyfills#fetch() able to decompress .gz extension (NODE)', async () 
 test('polyfills#fetch() should follow redirect if `followRedirect` option is true', async () => {
   const defaultFetchResponse = await fetch(REDIRECT_URL);
   expect(defaultFetchResponse.status).toBe(200);
+  expect(await defaultFetchResponse.text()).toBe('123456');
   const defaultResponse = await fetchFile(REDIRECT_URL, {});
   expect(defaultResponse.status).toBe(200);
+  expect(await defaultResponse.text()).toBe('123456');
   // @ts-ignore - TODO/ActionEngine
   const successResponse = await fetchFile(REDIRECT_URL, {followRedirect: true});
   expect(successResponse.status).toBe(200);
+  expect(await successResponse.text()).toBe('123456');
 });
 test.skip('polyfills#fetch() should follow redirect if header location doesn`t have protocol and origin', async () => {
   const defaultFetchResponse = await fetch(TEXT_URL_WITH_REDIRECT);
