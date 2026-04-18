@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@arcgis/core": "^4.34.8",
+    "@deck.gl/widgets": "^9.3.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-solid-svg-icons": "^5.15.2",
     "@fortawesome/react-fontawesome": "^0.1.14",
@@ -19,7 +20,6 @@
     "@loaders.gl/i3s": "workspace:*",
     "@luma.gl/core": "^9.3.2",
     "deck.gl": "^9.3.0",
-    "@deck.gl/widgets": "^9.3.0",
     "mapbox-gl": "npm:maplibre-gl@^3.6.2",
     "maplibre-gl": "^3.6.2",
     "prop-types": "^15.7.2",
