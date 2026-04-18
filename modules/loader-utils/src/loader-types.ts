@@ -20,7 +20,7 @@ export type StrictLoaderOptions = {
     fetch?: typeof fetch | FetchLike | RequestInit | null;
     /** Do not throw on errors */
     nothrow?: boolean;
-    /** Shared default shape for loaders that support shape selection */
+    /** Shared default shape for loaders that support shape selection. Loader-scoped `shape` options override this default. */
     shape?: string;
 
     /** loader selection, search first for supplied mimeType */
@@ -123,6 +123,8 @@ export type LoaderOptions = {
   limit?: 0;
   /** @deprecated Use options.core._limitMB */
   _limitMB?: 0;
+  /** @deprecated Use options.core.shape */
+  shape?: string;
   /** @deprecated Use options.core.batchSize */
   batchSize?: number | 'auto';
   /** @deprecated Use options.core.batchDebounceMs */

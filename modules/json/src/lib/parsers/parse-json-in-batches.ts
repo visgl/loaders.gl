@@ -12,6 +12,12 @@ import JSONPath from '../jsonpath/jsonpath';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity
+/**
+ * Parses JSON data incrementally and yields row-table batches plus optional container metadata.
+ * When `options.json.shape` is omitted, streamed row batches preserve the incoming row shape.
+ * @param binaryAsyncIterator incoming binary chunks
+ * @param options loader options
+ */
 export async function* parseJSONInBatches(
   binaryAsyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
@@ -99,6 +105,12 @@ export async function* parseJSONInBatches(
   }
 }
 
+/**
+ * Rebuilds the final JSON value from the parser's metadata batch and the collected streamed rows.
+ * @param batch final metadata batch emitted by `parseJSONInBatches`
+ * @param data streamed rows collected by the caller
+ * @returns the reconstructed top-level JSON value
+ */
 export function rebuildJsonObject(batch, data) {
   // Last batch will have this special type and will provide all the root object of the parsed file
   assert(batch.batchType === 'final-result');
