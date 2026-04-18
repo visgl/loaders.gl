@@ -27,7 +27,7 @@ import {SHPLoader} from '../../shp-loader';
 import {DBFLoader} from '../../dbf-loader';
 
 type Feature = any;
-interface ShapefileOutput {
+export interface ShapefileOutput {
   encoding?: string;
   prj?: string;
   shx?: SHXOutput;

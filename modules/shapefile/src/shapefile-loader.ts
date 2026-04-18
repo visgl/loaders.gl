@@ -3,10 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import type {StrictLoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import type {Batch, GeoJSONTable} from '@loaders.gl/schema';
+import type {Batch, GeoJSONTable, ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {SHP_MAGIC_NUMBER, SHPLoaderOptions} from './shp-loader';
-import {parseShapefile, parseShapefileInBatches} from './lib/parsers/parse-shapefile';
+import {
+  parseShapefile,
+  parseShapefileInBatches,
+  type ShapefileOutput
+} from './lib/parsers/parse-shapefile';
 import {DBFLoaderOptions} from './dbf-loader';
+import {parseShapefileToArrow, parseShapefileToArrowInBatches} from './shapefile-arrow-loader';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -16,7 +21,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
   SHPLoaderOptions &
   DBFLoaderOptions & {
     shapefile?: {
-      shape?: 'geojson-table' | 'v3';
+      shape?: 'geojson-table' | 'arrow-table' | 'v3';
       /** @deprecated Worker URLs must be specified with .dbf.workerUrl * .shp.workerUrl */
       workerUrl?: never;
     };
@@ -31,6 +36,8 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
  * @note Shapefile is multifile format and requires providing additional files
  */
 export const ShapefileLoader = {
+  dataType: null as unknown as ShapefileOutput | GeoJSONTable | ArrowTable,
+  batchType: null as unknown as ShapefileOutput | Batch | ArrowTableBatch,
   name: 'Shapefile',
   id: 'shapefile',
   module: 'shapefile',
@@ -47,8 +54,16 @@ export const ShapefileLoader = {
       _maxDimensions: 4
     }
   },
-  // @ts-expect-error
-  parse: parseShapefile,
-  // @ts-expect-error
-  parseInBatches: parseShapefileInBatches
-} as const satisfies LoaderWithParser<GeoJSONTable, Batch, ShapefileLoaderOptions>;
+  parse: (arrayBuffer, options, context) =>
+    options?.shapefile?.shape === 'arrow-table'
+      ? parseShapefileToArrow(arrayBuffer, options, context)
+      : parseShapefile(arrayBuffer, options, context),
+  parseInBatches: (asyncIterator, options, context) =>
+    options?.shapefile?.shape === 'arrow-table'
+      ? parseShapefileToArrowInBatches(asyncIterator, options, context)
+      : parseShapefileInBatches(asyncIterator, options, context)
+} as const satisfies LoaderWithParser<
+  ShapefileOutput | GeoJSONTable | ArrowTable,
+  ShapefileOutput | Batch | ArrowTableBatch,
+  ShapefileLoaderOptions
+>;

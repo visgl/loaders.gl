@@ -22,11 +22,19 @@ test('GeoPackageArrowLoader#loader conformance', t => {
 
 test('GeoPackageArrowLoader#load file as Arrow table', async t => {
   const table = await load(GPKG_RIVERS, GeoPackageArrowLoader());
+  const mainLoaderArrowTable = await load(GPKG_RIVERS, GeoPackageLoader, {
+    geopackage: {shape: 'arrow-table'}
+  });
   const geoMetadata = getGeoMetadata(table.schema.metadata);
 
   t.equal(table.shape, 'arrow-table');
   t.equal(table.data.numRows, 1, 'loads one feature');
   t.equal(table.schema.fields.length, 5, 'schema replaces source geom column with geometry');
+  t.deepEqual(
+    getRowsFromArrowTable(table),
+    getRowsFromArrowTable(mainLoaderArrowTable),
+    'wrapper matches GeoPackageLoader arrow-table output'
+  );
   t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
   t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata identifies WKB encoding');
 
@@ -48,6 +56,9 @@ test('GeoPackageArrowLoader#load file as Arrow table', async t => {
 
 test('GeoPackageArrowLoader#load explicit table', async t => {
   const table = await load(GPKG_RIVERS_MULTI, GeoPackageArrowLoader('FEATURESriversds'));
+  const mainLoaderArrowTable = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
+    geopackage: {shape: 'arrow-table', table: 'FEATURESriversds'}
+  });
   const rows = getRowsFromArrowTable(table);
   const roundTripped = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: table.schema, data: rows},
@@ -57,6 +68,11 @@ test('GeoPackageArrowLoader#load explicit table', async t => {
     geopackage: {shape: 'geojson-table', table: 'FEATURESriversds'}
   });
 
+  t.deepEqual(
+    rows,
+    getRowsFromArrowTable(mainLoaderArrowTable),
+    'wrapper explicit table matches main loader arrow-table output'
+  );
   t.deepEqual(
     normalizeFeatures(roundTripped.features),
     normalizeFeatures(geojsonTable.features),

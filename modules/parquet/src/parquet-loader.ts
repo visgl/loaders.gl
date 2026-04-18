@@ -4,7 +4,6 @@
 
 import type {Loader, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
-import {convertArrowToTable} from '@loaders.gl/schema-utils';
 import type {
   ObjectRowTable,
   ObjectRowTableBatch,
@@ -22,27 +21,31 @@ import {
   parseGeoParquetFile,
   parseGeoParquetFileInBatches
 } from './lib/parsers/parse-geoparquet-to-geojson';
-import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-json';
-// import {
-//   parseParquetFileInColumns,
-//   parseParquetFileInColumnarBatches
-// } from './lib/parsers/parse-parquet-to-columns';
+import {
+  parseParquetArrowTable,
+  parseParquetArrowTableInBatches,
+  parseParquetObjectRowTable,
+  parseParquetObjectRowTableInBatches
+} from './lib/parsers/parse-parquet-tables';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {ParquetFormat} from './parquet-format';
-import {ParquetArrowLoader, type ParquetArrowLoaderOptions} from './parquet-arrow-loader';
+import {
+  PARQUET_LOADER_DEFAULT_OPTIONS,
+  type ParquetLoaderOptions as SharedParquetLoaderOptions
+} from './parquet-loader-options';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Options for the parquet loader */
-export type ParquetLoaderOptions = ParquetArrowLoaderOptions;
+export type ParquetLoaderOptions = SharedParquetLoaderOptions;
 
 const ParquetBaseLoader = {
   ...ParquetFormat,
 
-  dataType: null as unknown as ObjectRowTable,
-  batchType: null as unknown as ObjectRowTableBatch,
+  dataType: null as unknown as ObjectRowTable | ArrowTable,
+  batchType: null as unknown as ObjectRowTableBatch | ArrowTableBatch,
 
   id: 'parquet',
   module: 'parquet',
@@ -50,26 +53,28 @@ const ParquetBaseLoader = {
   worker: false,
   options: {
     parquet: {
-      columns: undefined,
-      implementation: 'wasm',
-      preserveBinary: false
+      ...PARQUET_LOADER_DEFAULT_OPTIONS
     }
   }
-} as const satisfies Loader<ObjectRowTable, ObjectRowTableBatch, ParquetLoaderOptions>;
+} as const satisfies Loader<
+  ObjectRowTable | ArrowTable,
+  ObjectRowTableBatch | ArrowTableBatch,
+  ParquetLoaderOptions
+>;
 
-/** Parquet table loader that returns plain JS object rows via Arrow conversion. */
+/** Parquet table loader supporting object-row and Arrow table output. */
 export const ParquetLoader = {
   ...ParquetBaseLoader,
   parse(arrayBuffer: ArrayBuffer, options?: ParquetLoaderOptions) {
-    return parseObjectRowTable(new BlobFile(arrayBuffer), options);
+    return parseParquetTable(new BlobFile(arrayBuffer), options);
   },
 
   parseFile(file, options?: ParquetLoaderOptions) {
-    return parseObjectRowTable(file, options);
+    return parseParquetTable(file, options);
   },
 
   parseFileInBatches(file, options?: ParquetLoaderOptions) {
-    return parseObjectRowTableInBatches(file, options);
+    return parseParquetTableInBatches(file, options);
   },
 
   async *parseInBatches(
@@ -80,9 +85,13 @@ export const ParquetLoader = {
     _context?: unknown
   ) {
     const arrayBuffer = await concatenateArrayBuffersAsync(asyncIterator);
-    yield* parseObjectRowTableInBatches(new BlobFile(arrayBuffer), options);
+    yield* parseParquetTableInBatches(new BlobFile(arrayBuffer), options);
   }
-} as const satisfies LoaderWithParser<ObjectRowTable, ObjectRowTableBatch, ParquetLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  ObjectRowTable | ArrowTable,
+  ObjectRowTableBatch | ArrowTableBatch,
+  ParquetLoaderOptions
+>;
 
 const GeoParquetBaseLoader = {
   ...ParquetFormat,
@@ -97,9 +106,7 @@ const GeoParquetBaseLoader = {
 
   options: {
     parquet: {
-      columns: undefined,
-      implementation: 'wasm',
-      preserveBinary: false
+      ...PARQUET_LOADER_DEFAULT_OPTIONS
     }
   }
 } as const satisfies Loader<GeoJSONTable, GeoJSONTableBatch, ParquetLoaderOptions>;
@@ -128,58 +135,33 @@ export const GeoParquetLoader = {
   }
 } as const satisfies LoaderWithParser<GeoJSONTable, GeoJSONTableBatch, ParquetLoaderOptions>;
 
-async function parseObjectRowTable(
+async function parseParquetTable(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions
-): Promise<ObjectRowTable> {
+): Promise<ObjectRowTable | ArrowTable> {
   const parquetOptions = getParquetOptions(options);
-  if (parquetOptions.parquet?.implementation === 'js') {
-    return await parseParquetFile(file, parquetOptions);
+
+  if (parquetOptions.parquet?.shape === 'arrow-table') {
+    return await parseParquetArrowTable(file, parquetOptions);
   }
 
-  const arrowTable = await ParquetArrowLoader.parseFile(file, parquetOptions);
-  return convertArrowTableToObjectRows(arrowTable);
+  return await parseParquetObjectRowTable(file, parquetOptions);
 }
 
-async function* parseObjectRowTableInBatches(
+async function* parseParquetTableInBatches(
   file: BlobFile | ReadableFile,
   options?: ParquetLoaderOptions
-): AsyncIterable<ObjectRowTableBatch> {
+): AsyncIterable<ObjectRowTableBatch | ArrowTableBatch> {
   const parquetOptions = getParquetOptions(options);
 
-  if (parquetOptions.parquet?.implementation === 'js') {
-    yield* parseParquetFileInBatches(file, parquetOptions);
+  if (parquetOptions.parquet?.shape === 'arrow-table') {
+    yield* parseParquetArrowTableInBatches(file, parquetOptions);
     return;
   }
 
-  for await (const batch of ParquetArrowLoader.parseFileInBatches(file, parquetOptions)) {
-    const objectRowTable = convertArrowBatchToObjectRows(batch);
-    yield {
-      batchType: batch.batchType,
-      schema: objectRowTable.schema,
-      shape: objectRowTable.shape,
-      data: objectRowTable.data,
-      length: batch.length
-    };
-  }
-}
-
-function convertArrowTableToObjectRows(arrowTable: ArrowTable): ObjectRowTable {
-  return convertArrowToTable(arrowTable.data, 'object-row-table') as ObjectRowTable;
+  yield* parseParquetObjectRowTableInBatches(file, parquetOptions);
 }
 
 function getParquetOptions(options?: ParquetLoaderOptions): ParquetLoaderOptions {
   return normalizeParquetOptions(options, ParquetBaseLoader.options.parquet);
-}
-
-function convertArrowBatchToObjectRows(batch: ArrowTableBatch): ObjectRowTableBatch {
-  const objectRowTable = convertArrowToTable(batch.data, 'object-row-table') as ObjectRowTable;
-
-  return {
-    batchType: batch.batchType,
-    shape: objectRowTable.shape,
-    schema: objectRowTable.schema,
-    data: objectRowTable.data,
-    length: batch.length
-  };
 }

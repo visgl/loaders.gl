@@ -102,8 +102,21 @@ test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async t => {
 test('NDJSONArrowLoader#load(ndjson.ndjson)', async t => {
   const classicTable = await load(NDJSON_PATH, NDJSONLoader);
   const table = await load(NDJSON_PATH, NDJSONArrowLoader);
+  const mainLoaderArrowTable = await load(NDJSON_PATH, NDJSONLoader, {
+    ndjson: {shape: 'arrow-table'}
+  });
   t.equal(table.shape, 'arrow-table', 'Correct table type received');
   t.equal(table.data.numRows, classicTable.data.length, 'row count matches NDJSONLoader');
+  t.equal(
+    mainLoaderArrowTable.shape,
+    'arrow-table',
+    'main loader returns Arrow table when requested'
+  );
+  t.deepEqual(
+    table.data.toArray().map(row => row.toJSON()),
+    mainLoaderArrowTable.data.toArray().map(row => row.toJSON()),
+    'wrapper matches main loader arrow-table output'
+  );
 
   for (let rowIndex = 0; rowIndex < classicTable.data.length; rowIndex++) {
     for (const [fieldName, value] of Object.entries(classicTable.data[rowIndex])) {
@@ -139,17 +152,31 @@ test('NDJSONArrowLoader#loadInBatches(ndjson.ndjson, batchSize = 5)', async t =>
   const iterator = await loadInBatches(NDJSON_PATH, NDJSONArrowLoader, {
     batchSize: 5
   });
+  const mainLoaderIterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
+    batchSize: 5,
+    ndjson: {shape: 'arrow-table'}
+  });
+  const mainLoaderArrowBatches: any[] = [];
+  for await (const batch of mainLoaderIterator) {
+    mainLoaderArrowBatches.push(batch);
+  }
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
   let batchCount = 0;
   let rowCount = 0;
   for await (const batch of iterator) {
     const classicBatch = classicBatches[batchCount];
+    const mainLoaderArrowBatch = mainLoaderArrowBatches[batchCount];
     t.equal(batch.shape, 'arrow-table', `Got correct batch type for batch ${batchCount}`);
     t.equal(
       batch.data.numRows,
       classicBatch.length,
       `batch ${batchCount} row count matches NDJSONLoader`
+    );
+    t.equal(
+      mainLoaderArrowBatch.data.numRows,
+      batch.data.numRows,
+      `batch ${batchCount} row count matches main loader arrow-table output`
     );
 
     for (let rowIndex = 0; rowIndex < classicBatch.data.length; rowIndex++) {

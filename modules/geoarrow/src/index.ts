@@ -18,6 +18,13 @@ export {
   GeoArrowConverter,
   GeoArrowTableConverter
 } from './geoarrow-converter/geoarrow-converter';
+export type {GeoArrowGeometryShape} from './geoarrow-converter/geoarrow-geometry-converter';
+export {
+  GEOARROW_GEOMETRY_CONVERTERS,
+  GeoArrowGeometryConverter,
+  convertGeoArrowGeometry
+} from './geoarrow-converter/geoarrow-geometry-converter';
+export type {GeoArrowGeometryConvertOptions} from './geoarrow-converter/convert-geoarrow-geometry';
 
 export type {
   GeoArrowWKB,

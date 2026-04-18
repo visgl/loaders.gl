@@ -5,6 +5,7 @@
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 import {encodeArrowToParquet} from './lib/encoders/encode-arrow-to-parquet';
+import {ensureGeoParquetMetadataOnArrowTable} from './lib/geo/geospatial-metadata';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {ParquetFormat} from './parquet-format';
 
@@ -34,6 +35,6 @@ export const ParquetArrowWriter = {
     if (options.parquet?.implementation === 'js') {
       throw new Error('ParquetArrowWriter: implementation "js" is not implemented yet');
     }
-    return encodeArrowToParquet(arrowTable, options);
+    return encodeArrowToParquet(ensureGeoParquetMetadataOnArrowTable(arrowTable), options);
   }
 } as const satisfies WriterWithEncoder<ArrowTable, never, ParquetArrowWriterOptions>;

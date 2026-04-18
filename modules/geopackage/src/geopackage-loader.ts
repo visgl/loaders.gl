@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {Tables, GeoJSONTable} from '@loaders.gl/schema';
+import {Tables, GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
 import {parseGeoPackage, DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 import {GeoPackageFormat} from './geopackage-format';
 
@@ -16,7 +16,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
   /** Options for the geopackage loader */
   geopackage?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'tables';
+    shape?: 'geojson-table' | 'arrow-table' | 'tables';
     /** Name of table to load (defaults to first table), unless shape==='tables' */
     table?: string;
     /** Use null in Node */
@@ -33,7 +33,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
 export const GeoPackageLoader = {
   ...GeoPackageFormat,
 
-  dataType: null as unknown as GeoJSONTable | Tables<GeoJSONTable>,
+  dataType: null as unknown as GeoJSONTable | Tables<GeoJSONTable> | ArrowTable,
   batchType: null as never,
 
   version: VERSION,
@@ -46,7 +46,7 @@ export const GeoPackageLoader = {
     gis: {}
   }
 } as const satisfies LoaderWithParser<
-  GeoJSONTable | Tables<GeoJSONTable>,
+  GeoJSONTable | Tables<GeoJSONTable> | ArrowTable,
   never,
   GeoPackageLoaderOptions
 >;

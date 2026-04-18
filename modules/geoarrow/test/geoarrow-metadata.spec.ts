@@ -23,3 +23,21 @@ test('geoarrow#getGeometryColumnsFromSchema', t => {
 
   t.end();
 });
+
+test('geoarrow#getGeometryColumnsFromSchema preserves encoding when extension metadata is empty', t => {
+  const columns = getGeometryColumnsFromSchema({
+    fields: [
+      {
+        name: 'geometry',
+        type: 'binary',
+        metadata: {
+          'ARROW:extension:name': 'geoarrow.wkb',
+          'ARROW:extension:metadata': '{}'
+        }
+      }
+    ]
+  } as any);
+
+  t.deepEqual(columns, {geometry: {encoding: 'geoarrow.wkb'}});
+  t.end();
+});

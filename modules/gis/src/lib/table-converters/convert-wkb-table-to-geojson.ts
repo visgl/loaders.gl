@@ -7,22 +7,14 @@ import type {
   Feature,
   GeoJSONTable,
   Geometry,
-  Metadata,
   ObjectRowTable,
   Schema
 } from '@loaders.gl/schema';
 import {getTableLength, getTableRowAsObject} from '@loaders.gl/schema-utils';
+import type {GeoColumnMetadata} from '../geoarrow/geoparquet-metadata';
+import {getGeoMetadata} from '../geoarrow/geoparquet-metadata';
 import {convertWKBToGeometry} from '../geometry-converters/wkb/convert-wkb-to-geometry';
 import {convertWKTToGeometry} from '../geometry-converters/wkb/convert-wkt-to-geometry';
-
-type GeoMetadata = {
-  primary_column?: string;
-  columns?: Record<string, GeoColumnMetadata>;
-};
-
-type GeoColumnMetadata = {
-  encoding?: string;
-};
 
 /**
  * Converts a WKB- or WKT-encoded table with GeoParquet-style metadata to a GeoJSON table.
@@ -66,25 +58,5 @@ function parseGeometry(geometry: unknown, columnMetadata: GeoColumnMetadata): Ge
         : (geometry as ArrayBuffer);
       return convertWKBToGeometry(arrayBuffer);
     }
-  }
-}
-
-function getGeoMetadata(metadata?: Metadata): GeoMetadata | null {
-  if (!metadata) {
-    return null;
-  }
-
-  const stringifiedMetadata =
-    metadata instanceof Map ? metadata.get('geo') || null : metadata.geo || null;
-
-  if (!stringifiedMetadata) {
-    return null;
-  }
-
-  try {
-    const geoMetadata = JSON.parse(stringifiedMetadata) as GeoMetadata;
-    return geoMetadata && typeof geoMetadata === 'object' ? geoMetadata : null;
-  } catch {
-    return null;
   }
 }

@@ -26,7 +26,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
   SHPLoaderOptions &
   DBFLoaderOptions & {
     shapefile?: {
-      shape?: 'geojson-table' | 'v3';
+      shape?: 'geojson-table' | 'arrow-table' | 'v3';
     };
     gis?: {
       reproject?: boolean;

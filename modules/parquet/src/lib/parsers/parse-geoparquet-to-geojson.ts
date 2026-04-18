@@ -9,17 +9,17 @@ import type {
   ArrowTableBatch,
   ObjectRowTable
 } from '@loaders.gl/schema';
-import {convertWKBTableToGeoJSON} from '@loaders.gl/geoarrow';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
 import {convertArrowToTable} from '@loaders.gl/schema-utils';
 
-import type {ParquetLoaderOptions} from '../../parquet-loader';
-import {ParquetArrowLoader} from '../../parquet-arrow-loader';
+import type {ParquetLoaderOptions} from '../../parquet-loader-options';
+import {parseParquetArrowTable, parseParquetArrowTableInBatches} from './parse-parquet-tables';
 
 export async function parseGeoParquetFile(
   file: ReadableFile,
   options?: ParquetLoaderOptions
 ): Promise<GeoJSONTable> {
-  const arrowTable = await ParquetArrowLoader.parseFile(file, options);
+  const arrowTable = await parseParquetArrowTable(file, options || {});
   const objectRowTable = convertArrowToTable(arrowTable.data, 'object-row-table') as ObjectRowTable;
   return convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema!);
 }
@@ -28,7 +28,7 @@ export async function* parseGeoParquetFileInBatches(
   file: ReadableFile,
   options?: ParquetLoaderOptions
 ): AsyncIterable<GeoJSONTableBatch> {
-  const tableBatches = ParquetArrowLoader.parseFileInBatches(file, options);
+  const tableBatches = parseParquetArrowTableInBatches(file, options || {});
 
   for await (const batch of tableBatches) {
     yield convertGeoParquetArrowBatch(batch);

@@ -5,9 +5,13 @@
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {geojsonToBinary} from '@loaders.gl/gis';
 // import {GeoJSONTable} from '@loaders.gl/schema';
-import {FeatureCollection, GeoJSONTable, ObjectRowTable} from '@loaders.gl/schema';
+import {FeatureCollection, GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
 import {kml} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
+import {
+  buildFeatureTableSchema,
+  convertFeatureCollectionToArrowTable
+} from './lib/feature-collection-to-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -15,7 +19,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMLLoaderOptions = LoaderOptions & {
   kml?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary' | 'raw';
   };
 };
 
@@ -27,7 +31,7 @@ const KML_HEADER = `\
  * Loader for KML (Keyhole Markup Language)
  */
 export const KMLLoader = {
-  dataType: null as unknown as ObjectRowTable | GeoJSONTable,
+  dataType: null as unknown as ObjectRowTable | GeoJSONTable | ArrowTable,
   batchType: null as never,
 
   name: 'KML (Keyhole Markup Language)',
@@ -45,7 +49,11 @@ export const KMLLoader = {
     kml: {shape: 'geojson-table'},
     gis: {}
   }
-} as const satisfies LoaderWithParser<ObjectRowTable | GeoJSONTable, never, KMLLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  ObjectRowTable | GeoJSONTable | ArrowTable,
+  never,
+  KMLLoaderOptions
+>;
 
 /**
  * Parses KML XML text into a GeoJSON feature collection.
@@ -65,8 +73,12 @@ export function parseKMLTextToFeatureCollection(text: string): FeatureCollection
  * @param options - Loader options controlling the output shape.
  * @returns A GeoJSON or object-row table.
  */
-function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable | GeoJSONTable {
+function parseTextSync(
+  text: string,
+  options?: KMLLoaderOptions
+): ObjectRowTable | GeoJSONTable | ArrowTable {
   const geojson = parseKMLTextToFeatureCollection(text);
+  const schema = buildFeatureTableSchema(geojson.features);
 
   const kmlOptions = {...KMLLoader.options.kml, ...options?.kml};
 
@@ -74,11 +86,14 @@ function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable
     case 'geojson-table': {
       const table: GeoJSONTable = {
         shape: 'geojson-table',
+        schema,
         type: 'FeatureCollection',
         features: geojson.features
       };
       return table;
     }
+    case 'arrow-table':
+      return convertFeatureCollectionToArrowTable(geojson.features);
     // case 'geojson':
     //   return geojson;
     // case 'binary':

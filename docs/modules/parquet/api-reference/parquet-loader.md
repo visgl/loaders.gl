@@ -6,7 +6,7 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-Streaming loader for Apache Parquet encoded files. `ParquetLoader` returns plain JavaScript object rows and delegates parsing to `ParquetArrowLoader`.
+Streaming loader for Apache Parquet encoded files. `ParquetLoader` is the canonical loader entrypoint and supports both plain object-row output and Arrow output through `parquet.shape`.
 
 The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
 
@@ -24,7 +24,7 @@ which [Parquet format features](/docs/modules/parquet/formats/parquet) are suppo
 
 ## Usage
 
-Load a Parquet file as a table.
+Load a Parquet file as object rows.
 
 ```typescript
 import {ParquetLoader} from '@loaders.gl/parquet';
@@ -33,7 +33,21 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, ParquetLoader, {parquet: options});
 ```
 
-Load a Parquet file as Arrow with the Arrow-first API.
+Load a Parquet file as Arrow using the main loader.
+
+```typescript
+import {ParquetLoader} from '@loaders.gl/parquet';
+import {load} from '@loaders.gl/core';
+
+const arrowTable = await load(url, ParquetLoader, {
+  parquet: {
+    implementation: 'wasm',
+    shape: 'arrow-table'
+  }
+});
+```
+
+`ParquetArrowLoader` remains available as a compatibility wrapper around the same Arrow code path.
 
 ```typescript
 import {ParquetArrowLoader} from '@loaders.gl/parquet';
@@ -62,6 +76,34 @@ for await (const batch of batches) {
   }
 }
 ```
+
+## Geospatial Metadata
+
+When `ParquetLoader` or `ParquetArrowLoader` reads a GeoParquet file as Arrow:
+
+- the original GeoParquet `geo` metadata is preserved in `schema.metadata.geo`
+- matching geometry fields are annotated with GeoArrow field metadata when that mapping is safe
+- geometry columns are passed through unchanged; this loader does not convert WKB to native GeoArrow or vice versa in this path
+
+The loader currently maps:
+
+- GeoParquet `encoding: "WKB"` -> `ARROW:extension:name = "geoarrow.wkb"`
+- GeoParquet native single-geometry encodings -> matching GeoArrow extension names:
+  - `point`
+  - `linestring`
+  - `polygon`
+  - `multipoint`
+  - `multilinestring`
+  - `multipolygon`
+- `crs`, `crs_type`, and `edges` onto field-level `ARROW:extension:metadata` when present
+
+GeoParquet-only schema metadata such as `version`, `primary_column`, `columns`, `geometry_types`,
+`bbox`, `covering`, `orientation`, and `epoch` remains in `schema.metadata.geo` and is not mirrored
+into GeoArrow field metadata.
+
+If GeoParquet metadata says a column is geospatial but the physical Arrow field is clearly incompatible
+with that encoding, loaders.gl preserves the schema-level `geo` metadata and skips adding misleading
+field-level GeoArrow metadata.
 
 ## Compressions
 
@@ -97,6 +139,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'object-row-table'` | Selects the returned table shape for `ParquetLoader`. |
 | `parquet.implementation` | `'wasm' \| 'js'` | `'wasm'` | Selects the internal reader used by `ParquetLoader` and `ParquetArrowLoader`. |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |

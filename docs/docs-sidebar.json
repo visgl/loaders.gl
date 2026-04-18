@@ -176,13 +176,25 @@
         "items": [
           "developer-guide/using-loaders",
           "developer-guide/using-writers",
-          "developer-guide/converting-data",
           "developer-guide/using-sources",
           "developer-guide/using-range-requests",
           "developer-guide/loader-categories",
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",
           "developer-guide/node"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Converters",
+        "items": [
+          "developer-guide/converting-data",
+          "developer-guide/converters/dispatcher",
+          "developer-guide/converters/table-and-arrow-converters",
+          "developer-guide/converters/geoarrow-converters",
+          "developer-guide/converters/feature-collection-converters",
+          "developer-guide/converters/render-converters",
+          "developer-guide/converters/format-categories"
         ]
       },
       {

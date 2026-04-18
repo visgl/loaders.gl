@@ -8,6 +8,19 @@
 
 Experimental loader and writer for the Apache Parquet format.
 
+## Geospatial Metadata
+
+GeoParquet and GeoArrow metadata are handled as two parallel layers:
+
+- GeoParquet `schema.metadata.geo` is preserved as schema/file metadata
+- GeoArrow field metadata is added to geometry columns when it can be derived safely
+
+On read, geometry columns are passed through unchanged while loaders.gl maps supported GeoParquet
+geometry encodings onto field-level GeoArrow metadata.
+
+On write, GeoArrow field metadata can be used to synthesize missing or invalid GeoParquet `geo`
+metadata before Parquet encoding.
+
 # Attribution
 
 - Based on a fork of https://github.com/ironSource/parquetjs and https://github.com/kbajalc/parquets under MIT license (Copyright (c) 2017 ironSource Ltd.).

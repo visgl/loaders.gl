@@ -20,6 +20,7 @@ test('TCXArrowLoader#loader conformance', t => {
 
 test('TCXArrowLoader#parse', async t => {
   const arrowTable = await load(TCX_URL, TCXArrowLoader);
+  const mainLoaderArrowTable = await load(TCX_URL, TCXLoader, {tcx: {shape: 'arrow-table'}});
   const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
   const roundTripped = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
@@ -34,6 +35,11 @@ test('TCXArrowLoader#parse', async t => {
   t.equal(arrowTable.shape, 'arrow-table', 'shape is arrow-table');
   t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
   t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata uses WKB encoding');
+  t.deepEqual(
+    getRowsFromArrowTable(arrowTable),
+    getRowsFromArrowTable(mainLoaderArrowTable),
+    'wrapper matches TCXLoader arrow-table output'
+  );
   t.deepEqual(
     geoMetadata?.columns.geometry.geometry_types,
     inferExpectedGeometryTypes(expectedFeatures),

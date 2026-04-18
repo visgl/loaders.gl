@@ -14,6 +14,31 @@ export {GIS_CONVERTERS} from './converters';
 //   unpackGeoMetadata
 // } from './lib/geoarrow/geoparquet-metadata';
 // export {unpackJSONStringMetadata} from './lib/geoarrow/geoparquet-metadata';
+export type {Metadata, SchemaWithMetadata} from './lib/geoarrow/metadata-utils';
+export {getMetadataValue, setMetadataValue} from './lib/geoarrow/metadata-utils';
+export type {
+  GeoMetadata,
+  GeoColumnMetadata,
+  GeoParquetGeometryType
+} from './lib/geoarrow/geoparquet-metadata';
+export {
+  getGeoMetadata,
+  setGeoMetadata,
+  unpackGeoMetadata,
+  unpackJSONStringMetadata,
+  parseJSONStringMetadata
+} from './lib/geoarrow/geoparquet-metadata';
+export type {WKBGeometryColumnOptions} from './lib/geoarrow/wkb-geoarrow-utils';
+export {
+  makeWKBGeometryField,
+  setWKBGeometryColumnMetadata,
+  setWKBGeometrySchemaMetadata,
+  encodeWKBGeometryValue,
+  getGeometryWKBOptions,
+  inferGeoParquetGeometryTypes,
+  getCoordinateDimensions,
+  getGeometrySampleCoordinates
+} from './lib/geoarrow/wkb-geoarrow-utils';
 
 //
 export type {GeojsonGeometryInfo} from './lib/geometry-api/geometry-info';
@@ -32,6 +57,23 @@ export {
   FEATURE_COLLECTION_CONVERTERS,
   FeatureCollectionConverter
 } from './lib/feature-collection-converters/feature-collection-converter/feature-collection-converter';
+export type {
+  GeometryColumnBinaryEncoding,
+  BinaryPointFeatureScratch,
+  BinaryLineFeatureScratch,
+  BinaryPolygonFeatureScratch,
+  GeometryColumnBinaryFeatureCollectionScratch,
+  GeometryColumnToBinaryFeatureCollectionOptions,
+  TableGeometryColumnToBinaryFeatureCollectionOptions
+} from './lib/feature-collection-converters/convert-geometry-column-to-binary-feature-collection';
+export {
+  convertGeometryColumnToBinaryFeatureCollection,
+  convertGeometryValuesToBinaryFeatureCollection
+} from './lib/feature-collection-converters/convert-geometry-column-to-binary-feature-collection';
+export {
+  convertArrowBinaryFeatureCollectionToBinaryFeatureCollection,
+  convertBinaryFeatureCollectionToArrowBinaryFeatureCollection
+} from './lib/feature-collection-converters/convert-arrow-binary-feature-collection';
 export {
   convertFlatGeojsonToBinaryFeatureCollection,
   flatGeojsonToBinary,

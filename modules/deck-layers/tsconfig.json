@@ -11,8 +11,10 @@
     {"path": "../compression"},
     {"path": "../core"},
     {"path": "../crypto"},
+    {"path": "../geoarrow"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
+    {"path": "../schema-utils"},
     {"path": "../tiles"},
     {"path": "../zip"}
   ]

@@ -8,10 +8,15 @@ import type {
   GeoJSONTable,
   FeatureCollection,
   ObjectRowTable,
-  BinaryFeatureCollection
+  BinaryFeatureCollection,
+  ArrowTable
 } from '@loaders.gl/schema';
 import {tcx} from '@tmcw/togeojson';
 import {DOMParser} from '@xmldom/xmldom';
+import {
+  buildFeatureTableSchema,
+  convertFeatureCollectionToArrowTable
+} from './lib/feature-collection-to-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -19,7 +24,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type TCXLoaderOptions = LoaderOptions & {
   tcx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary' | 'raw';
   };
 };
 
@@ -31,7 +36,7 @@ const TCX_HEADER = `\
  * Loader for TCX (Training Center XML) - Garmin GPS track format
  */
 export const TCXLoader = {
-  dataType: null as unknown as ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
+  dataType: null as unknown as ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   batchType: null as never,
 
   name: 'TCX (Training Center XML)',
@@ -50,7 +55,7 @@ export const TCXLoader = {
     gis: {}
   }
 } as const satisfies LoaderWithParser<
-  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection,
+  ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   never,
   TCXLoaderOptions
 >;
@@ -76,8 +81,9 @@ export function parseTCXTextToFeatureCollection(text: string): FeatureCollection
 function parseTextSync(
   text: string,
   options?: TCXLoaderOptions
-): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection {
+): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable {
   const geojson = parseTCXTextToFeatureCollection(text);
+  const schema = buildFeatureTableSchema(geojson.features);
 
   const tcxOptions = {...TCXLoader.options.tcx, ...options?.tcx};
 
@@ -93,11 +99,13 @@ function parseTextSync(
       const table: GeoJSONTable = {
         shape: 'geojson-table',
         type: 'FeatureCollection',
-        schema: {metadata: {}, fields: []},
+        schema,
         features: geojson.features
       };
       return table;
     }
+    case 'arrow-table':
+      return convertFeatureCollectionToArrowTable(geojson.features);
     case 'binary':
       return geojsonToBinary(geojson.features);
 
