@@ -12,10 +12,12 @@ npm install @loaders.gl/geopackage
 
 ## Loaders and Writers
 
-| Loader                                                                         |
-| ------------------------------------------------------------------------------ |
-| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader) |
+| Export                                                                                     |
+| ------------------------------------------------------------------------------------------ |
+| [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader)             |
+| [`GeoPackageArrowLoader`](/docs/modules/geopackage/api-reference/geopackage-arrow-loader) |
+| [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source)            |
 
 ## Attribution
 
-The `GeoPackageLoader` uses [SQL.js](https://sql.js.org/) under the MIT license.
+The GeoPackage loaders and source use [SQL.js](https://sql.js.org/) under the MIT license.

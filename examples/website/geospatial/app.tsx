@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
+import styled from 'styled-components';
 
 import {Map} from 'react-map-gl';
-import maplibregl, {Properties} from 'maplibre-gl';
+import maplibregl from 'maplibre-gl';
 
 import {DeckGL} from '@deck.gl/react';
 import {MapController} from '@deck.gl/core';
@@ -19,14 +20,14 @@ import type {Example} from './examples';
 import {INITIAL_LOADER_NAME, INITIAL_EXAMPLE_NAME, EXAMPLES} from './examples';
 
 import {Table, GeoJSON} from '@loaders.gl/schema';
-import {Loader, load, LoaderOptions} from '@loaders.gl/core';
+import {load, LoaderOptions} from '@loaders.gl/core';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
 import {GeoParquetLoader, preloadCompressions} from '@loaders.gl/parquet';
 import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
-// import {GeoPackageLoader} from '@loaders.gl/geopackage'; // GeoPackage depends on sql.js which has bundling issues in docusuarus.
+import {GeoPackageLoader} from '@loaders.gl/geopackage';
 
 // Needed for ParquetLoader zstd support
 import {ZstdCodec} from 'zstd-codec';
@@ -38,7 +39,7 @@ const LOADERS = [
   GeoArrowLoader,
   GeoParquetLoader,
   FlatGeobufLoader,
-  // GeoPackageLoader
+  GeoPackageLoader,
   ShapefileLoader,
   KMLLoader,
   GPXLoader,
@@ -66,7 +67,8 @@ const LOADER_OPTIONS = {
     shape: 'geojson-table'
   },
   geopackage: {
-    shape: 'geojson-table'
+    shape: 'geojson-table',
+    sqlJsCDN: 'https://cdn.jsdelivr.net/npm/sql.js@1.14.1/dist/'
     // table: 'FEATURESriversds'
   },
   shapefile: {
@@ -117,22 +119,107 @@ type AppState = {
   table: Table | null;
   layerProps?: Record<string, unknown>;
   getTooltipData?: Function; // (object: Properties) => {title: string; properties: Record<string, unknown>};
+  selectedCategoryName?: string | null;
+  selectedExampleName?: string | null;
+  selectedExample?: Example | null;
+  error?: string | null;
+  loading?: boolean;
+  loadDurationSeconds?: number | null;
+  displayedParquetImplementation?: 'wasm' | 'js' | null;
   // CURRENT VIEW POINT / CAMERA POSITION
   viewState: Record<string, number>;
 };
+
+const SidebarSection = styled.div`
+  margin: 0 0 0.75rem;
+`;
+
+const SidebarLabel = styled.label`
+  display: block;
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+`;
+
+const SidebarSelect = styled.select`
+  width: 100%;
+  margin: 0 0 0.25rem;
+`;
+
+const SidebarHint = styled.div`
+  color: #555;
+  font-size: 12px;
+  line-height: 1.4;
+`;
+
+const LoadStatus = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  color: #555;
+  font-size: 12px;
+  line-height: 1.4;
+`;
+
+const Spinner = styled.div`
+  width: 12px;
+  height: 12px;
+  border: 2px solid #bbb;
+  border-top-color: #222;
+  border-radius: 50%;
+  animation: geospatial-loader-spin 0.8s linear infinite;
+
+  @keyframes geospatial-loader-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
 
 /**
  * A Geospatial table map viewer
  */
 export default function App(props: AppProps = {}) {
+  const [parquetImplementation, setParquetImplementation] = useState<'wasm' | 'js'>('js');
+  const previousParquetImplementation = useRef(parquetImplementation);
+  const loadRequestIdRef = useRef(0);
   const [state, setState] = useState<AppState>({
     table: null,
     viewState: INITIAL_VIEW_STATE,
     selectedExample: null,
-    error: null
+    selectedCategoryName: null,
+    selectedExampleName: null,
+    error: null,
+    loading: false,
+    loadDurationSeconds: null,
+    displayedParquetImplementation: null
   });
-  const stateRef = useRef<string>();
-  stateRef.current = state;
+
+  useEffect(() => {
+    const implementationChanged = previousParquetImplementation.current !== parquetImplementation;
+    previousParquetImplementation.current = parquetImplementation;
+
+    if (
+      !implementationChanged ||
+      state.selectedCategoryName !== 'GeoParquet' ||
+      !state.selectedExample ||
+      !state.selectedExampleName
+    ) {
+      return;
+    }
+
+    void loadExample(
+      state.selectedCategoryName,
+      state.selectedExampleName,
+      state.selectedExample,
+      parquetImplementation
+    );
+  }, [
+    parquetImplementation,
+    state.selectedCategoryName,
+    state.selectedExample,
+    state.selectedExampleName
+  ]);
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
@@ -145,6 +232,34 @@ export default function App(props: AppProps = {}) {
         onExampleChange={onExampleChange}
       >
         {props.children}
+        <LoadStatus>
+          {state.loading ? <Spinner aria-hidden="true" /> : null}
+          <span>
+            {state.loading
+              ? 'Loading...'
+              : state.loadDurationSeconds !== null
+                ? `Loaded in ${state.loadDurationSeconds.toFixed(2)} s`
+                : ''}
+          </span>
+        </LoadStatus>
+        {state.selectedCategoryName === 'GeoParquet' ? (
+          <SidebarSection>
+            <SidebarLabel htmlFor="parquet-implementation">GeoParquetLoader options</SidebarLabel>
+            <SidebarSelect
+              id="parquet-implementation"
+              value={parquetImplementation}
+              onChange={(event) => {
+                setParquetImplementation(event.target.value as 'wasm' | 'js');
+              }}
+            >
+              <option value="wasm">wasm</option>
+              <option value="js">js</option>
+            </SidebarSelect>
+            <SidebarHint>
+              Switches GeoParquet loading between the Arrow-backed wasm path and the JS fallback.
+            </SidebarHint>
+          </SidebarSection>
+        ) : null}
         {state.error ? <div style={{color: 'red'}}>{state.error}</div> : ''}
         <div style={{textAlign: 'center'}}>
           center long/lat: {state.viewState.longitude.toFixed(3)},
@@ -187,27 +302,77 @@ export default function App(props: AppProps = {}) {
     exampleName: string;
     example: Example;
   }) {
-    const {exampleName, example} = args;
+    await loadExample(args.categoryName, args.exampleName, args.example, parquetImplementation);
+  }
 
+  async function loadExample(
+    categoryName: string,
+    exampleName: string,
+    example: Example,
+    implementation: 'wasm' | 'js'
+  ) {
     const url = example.data;
+    const loaderOptions = getLoaderOptions(implementation);
+    const requestId = ++loadRequestIdRef.current;
+    const loadStartTime = performance.now();
+
+    setState((state) => ({
+      ...state,
+      loading: true,
+      loadDurationSeconds: null,
+      selectedCategoryName: categoryName,
+      selectedExampleName: exampleName,
+      selectedExample: example,
+      error: null
+    }));
+
     try {
-      const table = (await load(url, LOADERS, LOADER_OPTIONS)) as Table;
+      const table = (await load(url, LOADERS, loaderOptions)) as Table;
+      if (requestId !== loadRequestIdRef.current) {
+        return;
+      }
       console.log('Loaded table', url, table);
       const viewState = {...state.viewState, ...example.viewState};
+      const loadDurationSeconds = (performance.now() - loadStartTime) / 1000;
       setState((state) => ({
         ...state,
         table,
         viewState,
-        selectedExample: example
+        selectedCategoryName: categoryName,
+        selectedExampleName: exampleName,
+        selectedExample: example,
+        error: null,
+        loading: false,
+        loadDurationSeconds,
+        displayedParquetImplementation: implementation
       }));
     } catch (error) {
+      if (requestId !== loadRequestIdRef.current) {
+        return;
+      }
       console.error('Failed to load table', url, error);
+      const message = error instanceof Error ? error.message : String(error);
       setState((state) => ({
         ...state,
-        error: `Could not load ${exampleName}: ${error.message}`
+        selectedCategoryName: categoryName,
+        selectedExampleName: exampleName,
+        selectedExample: example,
+        error: `Could not load ${exampleName}: ${message}`,
+        loading: false,
+        loadDurationSeconds: null
       }));
     }
   }
+}
+
+function getLoaderOptions(implementation: 'wasm' | 'js'): LoaderOptions {
+  return {
+    ...LOADER_OPTIONS,
+    parquet: {
+      ...LOADER_OPTIONS.parquet,
+      implementation
+    }
+  };
 }
 
 function renderLayer({table, selectedExample, index}) {

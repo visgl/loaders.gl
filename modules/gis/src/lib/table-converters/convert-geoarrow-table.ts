@@ -21,7 +21,7 @@ import {
   getTableNumCols,
   getTableCellAt
 } from '@loaders.gl/schema-utils';
-import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
+import {getGeoMetadata, getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 import {convertGeoArrowGeometryToGeoJSON} from '../geometry-converters/convert-geoarrow-to-geojson';
 
 /**
@@ -182,9 +182,19 @@ function convertArrowToColumnarTable(arrowTable: arrow.Table): ColumnarTable {
 function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
   const schema = convertArrowToSchema(arrowTable.schema);
   const geometryColumns = getGeometryColumnsFromSchema(schema);
+  const geoMetadata = getGeoMetadata(schema.metadata);
+  const primaryColumnName = geoMetadata?.primary_column;
+  const geometryColumnName =
+    (primaryColumnName && geometryColumns[primaryColumnName] && primaryColumnName) ||
+    Object.keys(geometryColumns)[0];
+  const geometryColumnMetadata =
+    (geometryColumnName && geometryColumns[geometryColumnName]) || undefined;
 
-  // get encoding from geometryColumns['geometry']
-  const encoding = geometryColumns.geometry.encoding;
+  if (!geometryColumnName || !geometryColumnMetadata?.encoding) {
+    throw new Error('No GeoArrow geometry column found in schema');
+  }
+
+  const encoding = geometryColumnMetadata.encoding;
 
   const features: Feature[] = [];
 
@@ -195,7 +205,7 @@ function convertArrowToGeoJSONTable(arrowTable: arrow.Table): GeoJSONTable {
     .filter(name => !(name in geometryColumns));
   const propertiesTable = arrowTable.select(propertyColumnNames);
 
-  const arrowGeometryColumn = arrowTable.getChild('geometry');
+  const arrowGeometryColumn = arrowTable.getChild(geometryColumnName);
 
   for (let row = 0; row < arrowTable.numRows; row++) {
     // get the geometry value from arrow geometry column

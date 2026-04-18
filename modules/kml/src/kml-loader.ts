@@ -47,9 +47,26 @@ export const KMLLoader = {
   }
 } as const satisfies LoaderWithParser<ObjectRowTable | GeoJSONTable, never, KMLLoaderOptions>;
 
-function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable | GeoJSONTable {
+/**
+ * Parses KML XML text into a GeoJSON feature collection.
+ *
+ * @param text - KML XML document text.
+ * @returns Parsed GeoJSON feature collection.
+ */
+export function parseKMLTextToFeatureCollection(text: string): FeatureCollection {
   const doc = new DOMParser().parseFromString(text, 'text/xml');
-  const geojson: FeatureCollection = kml(doc);
+  return kml(doc);
+}
+
+/**
+ * Parses KML text into the requested table shape.
+ *
+ * @param text - KML XML document text.
+ * @param options - Loader options controlling the output shape.
+ * @returns A GeoJSON or object-row table.
+ */
+function parseTextSync(text: string, options?: KMLLoaderOptions): ObjectRowTable | GeoJSONTable {
+  const geojson = parseKMLTextToFeatureCollection(text);
 
   const kmlOptions = {...KMLLoader.options.kml, ...options?.kml};
 

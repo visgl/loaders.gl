@@ -127,7 +127,7 @@ const config = {
             '@loaders.gl/xml': resolve('../modules/xml/src'),
             '@loaders.gl/zarr': resolve('../modules/zarr/src'),
             '@loaders.gl/zip': resolve('../modules/zip/src'),
-            'sql.js': resolve('../node_modules/sql.js/dist/sql-wasm.js'),
+            'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 
             // '@deck.gl/react': resolve()
             // '@deck.gl/layers'
@@ -148,10 +148,6 @@ const config = {
             __VERSION__: JSON.stringify(version)
           }),
           // new webpack.EnvironmentPlugin(['MapboxAccessToken', 'GoogleMapsAPIKey', 'GoogleMapsMapId']),
-          // These modules break server side bundling
-          new webpack.IgnorePlugin({
-            resourceRegExp: /sql/
-          }),
           new webpack.NormalModuleReplacementPlugin(/^web-worker$/, resolve('../node_modules/web-worker/src/browser/index.js')),
           new webpack.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
             const normalizedContext = resource.context?.replace(/\\/g, '/');

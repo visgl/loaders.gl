@@ -81,6 +81,10 @@ function convertRowsToArrowTable(rows: {[key: string]: unknown}[]): ArrowTable {
  */
 function deducePrimitiveAwareSchema(table: ObjectRowTable): Schema {
   const fields = table.schema!.fields.map((field): Field => {
+    if (field.type === 'float32') {
+      return {...field, type: 'float64'};
+    }
+
     if (field.type !== 'null') {
       return field;
     }

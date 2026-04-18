@@ -6,31 +6,44 @@ import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {
   GeoJSONTable,
   GeoJSONTableBatch,
-  ObjectRowTable,
-  ObjectRowTableBatch
+  ArrowTableBatch,
+  ObjectRowTable
 } from '@loaders.gl/schema';
-// import {convertGeoArrowToTable} from '@loaders.gl/gis';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
+import {convertArrowToTable} from '@loaders.gl/schema-utils';
 
-import type {ParquetJSONLoaderOptions} from '../../parquet-json-loader';
-
-import {parseParquetFile, parseParquetFileInBatches} from './parse-parquet-to-json';
+import type {ParquetLoaderOptions} from '../../parquet-loader';
+import {ParquetArrowLoader} from '../../parquet-arrow-loader';
 
 export async function parseGeoParquetFile(
   file: ReadableFile,
-  options?: ParquetJSONLoaderOptions
-): Promise<ObjectRowTable | GeoJSONTable> {
-  const table = await parseParquetFile(file, {...options, shape: 'object-row-table'});
-  // return convertGeoArrowToTable(table, 'geojson-table');
-  return table;
+  options?: ParquetLoaderOptions
+): Promise<GeoJSONTable> {
+  const arrowTable = await ParquetArrowLoader.parseFile(file, options);
+  const objectRowTable = convertArrowToTable(arrowTable.data, 'object-row-table') as ObjectRowTable;
+  return convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema!);
 }
 
 export async function* parseGeoParquetFileInBatches(
   file: ReadableFile,
-  options?: ParquetJSONLoaderOptions
-): AsyncIterable<ObjectRowTableBatch | GeoJSONTableBatch> {
-  const tableBatches = parseParquetFileInBatches(file, {...options, shape: 'object-row-table'});
+  options?: ParquetLoaderOptions
+): AsyncIterable<GeoJSONTableBatch> {
+  const tableBatches = ParquetArrowLoader.parseFileInBatches(file, options);
 
   for await (const batch of tableBatches) {
-    yield batch; // convertGeoArrowToTable(batch, 'geojson-table');
+    yield convertGeoParquetArrowBatch(batch);
   }
+}
+
+function convertGeoParquetArrowBatch(batch: ArrowTableBatch): GeoJSONTableBatch {
+  const objectRowTable = convertArrowToTable(batch.data, 'object-row-table') as ObjectRowTable;
+  const geojsonTable = convertWKBTableToGeoJSON(objectRowTable, objectRowTable.schema!);
+  return {
+    batchType: batch.batchType,
+    shape: geojsonTable.shape,
+    type: geojsonTable.type,
+    schema: geojsonTable.schema,
+    features: geojsonTable.features,
+    length: batch.length
+  };
 }

@@ -6,7 +6,9 @@
 	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
 </p>
 
-Streaming loader for Apache Parquet encoded files.
+Streaming loader for Apache Parquet encoded files. `ParquetLoader` returns plain JavaScript object rows and delegates parsing to `ParquetArrowLoader`.
+
+The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |
@@ -29,6 +31,17 @@ import {ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, ParquetLoader, {parquet: options});
+```
+
+Load a Parquet file as Arrow with the Arrow-first API.
+
+```typescript
+import {ParquetArrowLoader} from '@loaders.gl/parquet';
+import {load} from '@loaders.gl/core';
+
+const arrowTable = await load(url, ParquetArrowLoader, {
+  parquet: {implementation: 'wasm'}
+});
 ```
 
 The ParquetLoader supports streaming parsing, in which case it will yield "batches" of rows.
@@ -82,5 +95,13 @@ returned as parsed JavaScript values.
 
 Supports table category options such as `batchType` and `batchSize`.
 
-| Option | From | Type | Default | Description |
-| ------ | ---- | ---- | ------- | ----------- |
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `parquet.implementation` | `'wasm' \| 'js'` | `'wasm'` | Selects the internal reader used by `ParquetLoader` and `ParquetArrowLoader`. |
+| `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
+| `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
+| `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |
+| `parquet.columns` | `string[]` | `undefined` | Restrict parsing to the listed columns. |
+| `parquet.rowGroups` | `number[]` | `undefined` | Restrict reading to the listed row groups when supported by the selected implementation. |
+| `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for implementations that support it. |
+| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for the `wasm` implementation. |
