@@ -33,6 +33,7 @@ const CORE_LOADER_OPTION_KEYS = [
   '_workerType',
   'limit',
   '_limitMB',
+  'shape',
   'batchSize',
   'batchDebounceMs',
   'metadata',

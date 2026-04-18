@@ -43,6 +43,15 @@ const TEST_CASES = [
   },
   {
     loader: ArrowLoader,
+    options: {shape: 'object-row-table'},
+    assert: options => {
+      expect(options.core.shape).toBe('object-row-table');
+      expect(options.arrow.shape).toBe('object-row-table');
+      expect(options.shape).toBe(undefined);
+    }
+  },
+  {
+    loader: ArrowLoader,
     options: {core: {shape: 'object-row-table'}},
     assert: options => {
       expect(options.core.shape).toBe('object-row-table');
