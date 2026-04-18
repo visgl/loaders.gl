@@ -20,6 +20,7 @@ export async function* parseJSONInBatches(
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const asyncIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
   const shape = options?.json?.shape;
+  const metadataBatchShape = shape ?? 'object-row-table';
 
   const metadata = Boolean(options?.core?.metadata || (options as any)?.metadata);
   const {jsonpaths} = options.json || {};
@@ -44,7 +45,7 @@ export async function* parseJSONInBatches(
       if (metadata) {
         const initialBatch: TableBatch = {
           // Common fields
-          shape,
+          shape: metadataBatchShape,
           batchType: 'partial-result',
           data: [],
           length: 0,
