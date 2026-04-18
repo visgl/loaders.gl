@@ -140,13 +140,16 @@ load(url, Loader, {
   core: {
     fetch: customFetch,
     worker: false,
-    nothrow: true
+    nothrow: true,
+    shape: 'object-row-table'
   },
   gltf: {...}
 });
 ```
 
-The deprecated top-level forms (`options.fetch`, `options.worker`, `options.nothrow`, ...) are still supported for backwards compatibility and will continue to emit a warning so that applications can migrate at their own pace. The intent is to make the structure of loader options self-describing by grouping cross-loader settings together under `core`.
+Use `options.core.shape` when you want one shared default return shape across loaders that support shape selection. Loader-scoped options such as `options.csv.shape` or `options.json.shape` still take precedence for that loader.
+
+The deprecated top-level forms (`options.fetch`, `options.worker`, `options.nothrow`, `options.shape`, ...) are still supported for backwards compatibility and will continue to emit a warning so that applications can migrate at their own pace. The intent is to make the structure of loader options self-describing by grouping cross-loader settings together under `core`.
 
 ## Using Composite Loaders
 

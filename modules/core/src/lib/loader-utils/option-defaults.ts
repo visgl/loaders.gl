@@ -15,6 +15,7 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
     fallbackMimeType: undefined,
     ignoreRegisteredLoaders: undefined,
     nothrow: false,
+    shape: undefined,
     log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
     useLocalLibraries: false,
 
@@ -57,6 +58,7 @@ export const REMOVED_LOADER_OPTIONS = {
 
   limit: 'core.limit',
   _limitMB: 'core._limitMB',
+  shape: 'core.shape',
   batchSize: 'core.batchSize',
   batchDebounceMs: 'core.batchDebounceMs',
   metadata: 'core.metadata',

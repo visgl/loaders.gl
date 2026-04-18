@@ -6,6 +6,7 @@ import {
 } from '@loaders.gl/core/lib/loader-utils/option-utils';
 import {GLTFLoader} from '@loaders.gl/gltf';
 import {LASLoader} from '@loaders.gl/las';
+import {ArrowLoader} from '@loaders.gl/arrow';
 const TEST_CASES = [
   {
     loader: GLTFLoader,
@@ -38,6 +39,31 @@ const TEST_CASES = [
     assert: options => {
       expect(options.core.worker).toBe(true);
       expect(options.worker).toBe(undefined);
+    }
+  },
+  {
+    loader: ArrowLoader,
+    options: {shape: 'object-row-table'},
+    assert: options => {
+      expect(options.core.shape).toBe('object-row-table');
+      expect(options.arrow.shape).toBe('object-row-table');
+      expect(options.shape).toBe(undefined);
+    }
+  },
+  {
+    loader: ArrowLoader,
+    options: {core: {shape: 'object-row-table'}},
+    assert: options => {
+      expect(options.core.shape).toBe('object-row-table');
+      expect(options.arrow.shape).toBe('object-row-table');
+    }
+  },
+  {
+    loader: ArrowLoader,
+    options: {core: {shape: 'object-row-table'}, arrow: {shape: 'array-row-table'}},
+    assert: options => {
+      expect(options.core.shape).toBe('object-row-table');
+      expect(options.arrow.shape).toBe('array-row-table');
     }
   },
   {

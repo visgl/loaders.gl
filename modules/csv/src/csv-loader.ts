@@ -215,7 +215,7 @@ function parseCSVInBatches(
         row = JSON.parse(JSON.stringify(row));
       }
 
-      const shape = (options as any)?.shape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+      const shape = csvOptions.shape || DEFAULT_CSV_SHAPE;
       if (shape === 'object-row-table' && headerRow && row.length > headerRow.length) {
         row = convertToPapaObjectRow(row, headerRow);
       }
@@ -227,8 +227,8 @@ function parseCSVInBatches(
           // @ts-expect-error TODO this is not a proper schema
           schema,
           {
-            shape,
-            ...(options?.core || {})
+            ...(options?.core || {}),
+            shape
           }
         );
 

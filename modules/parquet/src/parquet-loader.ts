@@ -22,7 +22,6 @@ import {
   parseGeoParquetFile,
   parseGeoParquetFileInBatches
 } from './lib/parsers/parse-geoparquet-to-geojson';
-import {parseParquetFile, parseParquetFileInBatches} from './lib/parsers/parse-parquet-to-json';
 // import {
 //   parseParquetFileInColumns,
 //   parseParquetFileInColumnarBatches
@@ -51,7 +50,6 @@ const ParquetBaseLoader = {
   options: {
     parquet: {
       columns: undefined,
-      implementation: 'wasm',
       preserveBinary: false
     }
   }
@@ -98,7 +96,6 @@ const GeoParquetBaseLoader = {
   options: {
     parquet: {
       columns: undefined,
-      implementation: 'wasm',
       preserveBinary: false
     }
   }
@@ -133,10 +130,6 @@ async function parseObjectRowTable(
   options?: ParquetLoaderOptions
 ): Promise<ObjectRowTable> {
   const parquetOptions = getParquetOptions(options);
-  if (parquetOptions.parquet?.implementation === 'js') {
-    return await parseParquetFile(file, parquetOptions);
-  }
-
   const arrowTable = await ParquetArrowLoader.parseFile(file, parquetOptions);
   return convertArrowTableToObjectRows(arrowTable);
 }
@@ -146,11 +139,6 @@ async function* parseObjectRowTableInBatches(
   options?: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
   const parquetOptions = getParquetOptions(options);
-
-  if (parquetOptions.parquet?.implementation === 'js') {
-    yield* parseParquetFileInBatches(file, parquetOptions);
-    return;
-  }
 
   for await (const batch of ParquetArrowLoader.parseFileInBatches(file, parquetOptions)) {
     const objectRowTable = convertArrowBatchToObjectRows(batch);

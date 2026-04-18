@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetLoader, ParquetArrowLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoader, ParquetLoader, ParquetArrowLoader} from '@loaders.gl/parquet';
 import {fetchFile, load} from '@loaders.gl/core';
 
 // const PARQUET_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
@@ -20,65 +20,37 @@ export async function parquetBench(suite) {
   const geoArrayBuffer = await response.arrayBuffer();
 
   for (const implementation of IMPLEMENTATIONS) {
+    const loader = implementation === 'js' ? ParquetJSLoader : ParquetLoader;
     suite.addAsync(
-      `load(ParquetLoader, implementation=${implementation}) - Parquet load`,
+      `load(${implementation === 'js' ? 'ParquetJSLoader' : 'ParquetLoader'}) - Parquet load`,
       {multiplier: 40000, unit: 'rows'},
       async () => {
-        await load(arrayBuffer, ParquetLoader, {
-          core: {worker: false},
-          parquet: {implementation}
+        await load(arrayBuffer, loader, {
+          core: {worker: false}
         });
       }
     );
   }
 
-  for (const implementation of IMPLEMENTATIONS) {
-    let supportsParquetArrowLoad = true;
-    try {
-      await load(arrayBuffer.slice(0), ParquetArrowLoader, {
-        core: {worker: false},
-        parquet: {implementation}
+  suite.addAsync(
+    'load(ParquetArrowLoader) - Parquet load',
+    {multiplier: 40000, unit: 'rows'},
+    async () => {
+      await load(arrayBuffer, ParquetArrowLoader, {
+        core: {worker: false}
       });
-    } catch {
-      supportsParquetArrowLoad = false;
     }
+  );
 
-    if (supportsParquetArrowLoad) {
-      suite.addAsync(
-        `load(ParquetArrowLoader, implementation=${implementation}) - Parquet load`,
-        {multiplier: 40000, unit: 'rows'},
-        async () => {
-          await load(arrayBuffer, ParquetArrowLoader, {
-            core: {worker: false},
-            parquet: {implementation}
-          });
-        }
-      );
-    }
-
-    let supportsGeoParquetArrowLoad = true;
-    try {
-      await load(geoArrayBuffer.slice(0), ParquetArrowLoader, {
-        core: {worker: false},
-        parquet: {implementation}
+  suite.addAsync(
+    'load(ParquetArrowLoader) - GeoParquet load',
+    {multiplier: 40000, unit: 'rows'},
+    async () => {
+      await load(geoArrayBuffer, ParquetArrowLoader, {
+        core: {worker: false}
       });
-    } catch {
-      supportsGeoParquetArrowLoad = false;
     }
-
-    if (supportsGeoParquetArrowLoad) {
-      suite.addAsync(
-        `load(ParquetArrowLoader, implementation=${implementation}) - GeoParquet load`,
-        {multiplier: 40000, unit: 'rows'},
-        async () => {
-          await load(geoArrayBuffer, ParquetArrowLoader, {
-            core: {worker: false},
-            parquet: {implementation}
-          });
-        }
-      );
-    }
-  }
+  );
 
   // suite.addAsync('load(ParquetColumnarLoader) - GeoParquet load', {multiplier: 40000, unit: 'rows'}, async () => {
   //   await load(geoArrayBuffer, ParquetColumnarLoader, {
