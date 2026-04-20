@@ -1,0 +1,222 @@
+{
+  "arrow": {
+    "asset": "apache-arrow-logo.png",
+    "provenance": "local-copy",
+    "source": "docs/modules/arrow/images/apache-arrow-small.png"
+  },
+  "geoarrow": {
+    "asset": "apache-arrow-logo.png",
+    "provenance": "local-copy",
+    "source": "docs/modules/arrow/images/apache-arrow-small.png"
+  },
+  "bson": {
+    "asset": "bson-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/bson-logo.png"
+  },
+  "csv": {
+    "asset": "csv-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "draco": {
+    "asset": "draco-logo.png",
+    "provenance": "local-copy",
+    "source": "docs/modules/draco/images/draco-small.png"
+  },
+  "pcd": {
+    "asset": "pcd-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "ply": {
+    "asset": "ply-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "flatgeobuf": {
+    "asset": "flatgeobuf-logo.png",
+    "provenance": "local-copy",
+    "source": "docs/modules/flatgeobuf/images/flatgeobuf-logo.png"
+  },
+  "geojson": {
+    "asset": "geojson-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "geojson-geometry": {
+    "asset": "geojson-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "glb": {
+    "asset": "gltf-logo.png",
+    "provenance": "local-copy",
+    "source": "docs/modules/gltf/images/gltf-small.png"
+  },
+  "gltf": {
+    "asset": "gltf-logo.png",
+    "provenance": "local-copy",
+    "source": "docs/modules/gltf/images/gltf-small.png"
+  },
+  "geopackage": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "geotiff": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "kml": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "gpx": {
+    "asset": "w3c-xml-logo.svg",
+    "provenance": "upstream-download",
+    "source": "https://www.w3.org/Icons/XML/xml.svg"
+  },
+  "tcx": {
+    "asset": "w3c-xml-logo.svg",
+    "provenance": "upstream-download",
+    "source": "https://www.w3.org/Icons/XML/xml.svg"
+  },
+  "las": {
+    "asset": "las-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "mlt": {
+    "asset": "maplibre-logo.svg",
+    "provenance": "upstream-download",
+    "source": "https://maplibre.org/brand-assets/"
+  },
+  "mvt": {
+    "asset": "mapbox-logo.png",
+    "provenance": "upstream-download",
+    "source": "https://www.mapbox.com/about/press/brand-guidelines"
+  },
+  "tilejson": {
+    "asset": "mapbox-logo.png",
+    "provenance": "upstream-download",
+    "source": "https://www.mapbox.com/about/press/brand-guidelines"
+  },
+  "parquet": {
+    "asset": "parquet-logo.png",
+    "provenance": "local-copy",
+    "source": "docs/modules/parquet/images/parquet-logo-small.png"
+  },
+  "geoparquet": {
+    "asset": "parquet-logo.png",
+    "provenance": "local-copy",
+    "source": "docs/modules/parquet/images/parquet-logo-small.png"
+  },
+  "pmtiles": {
+    "asset": "pmtiles-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "shapefile": {
+    "asset": "esri-logo.png",
+    "provenance": "local-copy",
+    "source": "website/static/images/logos/esri-logo.png"
+  },
+  "arcgis-server": {
+    "asset": "arcgis-logo.jpg",
+    "provenance": "upstream-download",
+    "source": "https://www.esri.com/content/dam/esrisites/en-us/newsroom/media-relations/b-roll-video-page-updates/media-relations-card-arcgis-logo-small.jpg"
+  },
+  "basis": {
+    "asset": "khronos-logo.png",
+    "provenance": "upstream-download",
+    "source": "https://www.khronos.org/legal/logo-usage-guidelines"
+  },
+  "compressed-textures": {
+    "asset": "khronos-logo.png",
+    "provenance": "upstream-download",
+    "source": "https://www.khronos.org/legal/logo-usage-guidelines"
+  },
+  "crunch": {
+    "asset": "khronos-logo.png",
+    "provenance": "upstream-download",
+    "source": "https://www.khronos.org/legal/logo-usage-guidelines"
+  },
+  "dds": {
+    "asset": "dds-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "hdr": {
+    "asset": "hdr-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  },
+  "ktx": {
+    "asset": "khronos-logo.png",
+    "provenance": "upstream-download",
+    "source": "https://www.khronos.org/legal/logo-usage-guidelines"
+  },
+  "pvr": {
+    "asset": "khronos-logo.png",
+    "provenance": "upstream-download",
+    "source": "https://www.khronos.org/legal/logo-usage-guidelines"
+  },
+  "csw": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "wms": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "wmts": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "wfs": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "gml": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "lerc": {
+    "asset": "esri-logo.png",
+    "provenance": "local-copy",
+    "source": "website/static/images/logos/esri-logo.png"
+  },
+  "wkt": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "wkb": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "wkt-crs": {
+    "asset": "ogc-logo.png",
+    "provenance": "shared-existing",
+    "source": "docs/images/logos/ogc-logo-80.png"
+  },
+  "xml": {
+    "asset": "w3c-xml-logo.svg",
+    "provenance": "upstream-download",
+    "source": "https://www.w3.org/Icons/XML/xml.svg"
+  },
+  "zip": {
+    "asset": "zip-logo.svg",
+    "provenance": "generated-fallback",
+    "source": "No canonical upstream logo collected during this pass."
+  }
+}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 120" role="img" aria-labelledby="title desc">
+  <title id="title">PCD logo</title>
+  <desc id="desc">Generated fallback badge for PCD format.</desc>
+  <rect width="320" height="120" rx="24" fill="#eff6ff" />
+  <rect x="10" y="10" width="300" height="100" rx="18" fill="#ffffff" stroke="#0f172a" stroke-width="6" />
+  <rect x="26" y="24" width="64" height="72" rx="12" fill="#2563eb" />
+  <circle cx="45" cy="45" r="5" fill="#ffffff" />
+  <circle cx="67" cy="45" r="5" fill="#ffffff" />
+  <circle cx="56" cy="60" r="5" fill="#ffffff" />
+  <circle cx="45" cy="75" r="5" fill="#ffffff" />
+  <circle cx="67" cy="75" r="5" fill="#ffffff" />
+  <text x="112" y="76" fill="#0f172a" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="46" font-weight="700">PCD</text>
+</svg>
