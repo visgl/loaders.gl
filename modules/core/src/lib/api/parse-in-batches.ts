@@ -10,8 +10,10 @@ import type {
   StrictLoaderOptions,
   LoaderOptions,
   LoaderContext,
+  LoaderOptionsWithShape,
   BatchableDataType,
   LoaderOptionsType,
+  LoaderShapeType,
   LoaderBatchType,
   LoaderArrayOptionsType,
   LoaderArrayBatchType,
@@ -34,7 +36,10 @@ import {parse} from './parse';
  */
 export async function parseInBatches<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   data: BatchableDataType,
   loader: LoaderT,

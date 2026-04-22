@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
+import {convertGeometryToWKB} from '@loaders.gl/gis';
 import {VectorSourceLayer, type VectorSourceLayerProps} from '@loaders.gl/deck-layers';
+import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {VectorSet} from '../src/vector-source-layer/vector-set';
 
 function createDeferredPromise<T>() {
@@ -32,6 +34,8 @@ const TABLE_B = {
   type: 'FeatureCollection',
   features: [{type: 'Feature', geometry: null, properties: {name: 'b'}}]
 } as const;
+
+const ARROW_TABLE = createArrowTable();
 
 const TEST_VECTOR_SOURCE = {
   async getMetadata() {
@@ -140,6 +144,50 @@ test('VectorSet#emits loading state changes', async t => {
   t.end();
 });
 
+test('VectorSet#finishes superseded viewport loads', async t => {
+  const loadingStates: boolean[] = [];
+  const firstRequest = createDeferredPromise<any>();
+  const secondRequest = createDeferredPromise<any>();
+  let requestCount = 0;
+  const vectorSet = new VectorSet({
+    vectorSource: {
+      async getMetadata() {
+        return {name: 'roads', keywords: [], layers: []};
+      },
+      async getSchema() {
+        return {metadata: {}, fields: []};
+      },
+      async getFeatures() {
+        requestCount++;
+        return requestCount === 1 ? firstRequest.promise : secondRequest.promise;
+      }
+    } as any,
+    layers: ['roads'],
+    crs: 'EPSG:4326',
+    debounceTime: 0
+  });
+
+  vectorSet.subscribe({
+    onLoadingStateChange: isLoading => loadingStates.push(isLoading)
+  });
+
+  const firstPromise = vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
+  const secondPromise = vectorSet.updateViewport(createViewport([10, 11, 12, 13]) as any);
+
+  secondRequest.resolvePromise(TABLE_B as any);
+  await secondPromise;
+  firstRequest.resolvePromise(TABLE_A as any);
+  await firstPromise;
+
+  t.deepEqual(
+    loadingStates,
+    [true, false],
+    'clears loading after stale and current requests settle'
+  );
+  t.equal(vectorSet.isLoading, false, 'does not leave isLoading stuck after superseded requests');
+  t.end();
+});
+
 test('VectorSet#debounces viewport requests', async t => {
   const requestedParameters: any[] = [];
   const vectorSet = new VectorSet({
@@ -223,7 +271,9 @@ test('VectorSourceLayer#fetches for initial and changed viewports and renders Ge
       return {
         shape: 'geojson-table',
         type: 'FeatureCollection',
-        features: [{type: 'Feature', geometry: null, properties: {requestCount: requestedParameters.length}}]
+        features: [
+          {type: 'Feature', geometry: null, properties: {requestCount: requestedParameters.length}}
+        ]
       };
     }
   };
@@ -309,3 +359,82 @@ test('VectorSourceLayer#forwards request errors', async t => {
   t.equal(errors[0]?.message, 'request failed');
   t.end();
 });
+
+test('VectorSet accepts Arrow tables and VectorSourceLayer fails clearly for Arrow rendering', async t => {
+  const vectorSet = new VectorSet({
+    vectorSource: {
+      async getMetadata() {
+        return {name: 'roads', keywords: [], layers: []};
+      },
+      async getSchema() {
+        return {metadata: {}, fields: []};
+      },
+      async getFeatures() {
+        return ARROW_TABLE as any;
+      }
+    } as any,
+    layers: ['roads'],
+    crs: 'EPSG:4326',
+    format: 'arrow',
+    debounceTime: 0
+  });
+
+  await vectorSet.updateViewport(createViewport([0, 1, 2, 3]) as any);
+  t.equal(vectorSet.data, ARROW_TABLE, 'VectorSet keeps Arrow tables');
+
+  const layer = createLayer({
+    id: 'vector-layer-arrow',
+    data: {
+      async getMetadata() {
+        return {name: 'roads', keywords: [], layers: [{name: 'roads'}]};
+      },
+      async getSchema() {
+        return ARROW_TABLE.schema;
+      },
+      async getFeatures() {
+        return ARROW_TABLE as any;
+      }
+    } as any,
+    layers: ['roads'],
+    format: 'arrow',
+    debounceTime: 0
+  });
+
+  layer.initializeState();
+  layer.context = {viewport: createViewport([0, 1, 2, 3])};
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, data: null},
+    changeFlags: {dataChanged: true, viewportChanged: true}
+  });
+  await flushMicrotasks();
+
+  t.throws(
+    () => layer.renderLayers(),
+    /does not render Arrow tables directly/i,
+    'fails clearly instead of silently mis-rendering Arrow data'
+  );
+  t.end();
+});
+
+function createArrowTable() {
+  const schema = {
+    fields: [
+      {name: 'name', type: 'utf8', nullable: true, metadata: {}},
+      {name: 'geometry', type: 'binary', nullable: true, metadata: {}}
+    ],
+    metadata: {
+      geo: JSON.stringify({
+        version: '1.1.0',
+        primary_column: 'geometry',
+        columns: {geometry: {encoding: 'wkb', geometry_types: ['Point']}}
+      })
+    }
+  };
+  const builder = new ArrowTableBuilder(schema);
+  builder.addObjectRow({
+    name: 'arrow',
+    geometry: new Uint8Array(convertGeometryToWKB({type: 'Point', coordinates: [1, 2]}))
+  });
+  return builder.finishTable();
+}

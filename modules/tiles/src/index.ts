@@ -11,6 +11,7 @@ export type {
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
+  TilesetSourceResolver,
   Tileset3DSource,
   TilesetSourceViewState
 } from './tileset-3d/common/tileset-source';
@@ -51,8 +52,21 @@ export {
   STRATEGY_NEVER,
   STRATEGY_REPLACE
 } from './tileset-2d';
-export type {ImageSetBaseProps, ImageSetListener, ImageSetProps, ImageSetRequest} from './image-set';
+export type {
+  ImageSetBaseProps,
+  ImageSetListener,
+  ImageSetProps,
+  ImageSetRequest
+} from './image-set';
 export {ImageSet} from './image-set';
+export type {
+  RasterSetBaseProps,
+  RasterSetListener,
+  RasterSetProps,
+  RasterSetRequest,
+  RasterSetShouldRefetchArgs
+} from './raster-set';
+export {RasterSet} from './raster-set';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 

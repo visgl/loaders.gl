@@ -118,6 +118,14 @@ export type {
   BinaryLineFeature,
   BinaryPolygonFeature
 } from './categories/category-gis';
+export type {
+  ArrowBinaryFeatureTable,
+  ArrowBinaryPointFeature,
+  ArrowBinaryLineFeature,
+  ArrowBinaryPolygonFeature,
+  ArrowBinaryFeatureCollection,
+  BinaryFeatureCollectionLike
+} from './categories/category-gis';
 
 // DEPRECATED
 

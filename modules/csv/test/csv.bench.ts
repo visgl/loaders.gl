@@ -405,7 +405,7 @@ function addWriterBenchmarks(bench, scenario: BenchmarkScenario, dynamicTyping: 
  * @param scenarios CSV benchmark scenarios.
  * @returns Benchmark suite with CSV debug diagnostics added.
  */
-function csvDebugBench(bench, scenarios: BenchmarkScenario[], csvLoaderWithParser: Loader) {
+export function csvDebugBench(bench, scenarios: BenchmarkScenario[], csvLoaderWithParser: Loader) {
   const diagnosticScenarios = [
     scenarios.find(scenario => scenario.name === 'unquoted fast-mode'),
     scenarios.find(scenario => scenario.name === 'quoted'),

@@ -25,7 +25,7 @@
     "modules/*",
     "apps/*",
     "dev-modules/*",
-    "examples",
+    "examples/**",
     "website"
   ],
   "engines": {
@@ -52,6 +52,8 @@
     "test-node": "node ./scripts/test.mjs node",
     "test-browser": "node ./scripts/test.mjs browser",
     "test-headless": "node ./scripts/test.mjs browser-headless",
+    "test-node-cover": "node ./scripts/test.mjs cover-node",
+    "test-headless-cover": "node ./scripts/test.mjs cover-headless",
     "test-vitest-async-guardrails": "node ./scripts/check-vitest-async-guardrails.mjs",
     "playwright:install": "yarn workspace @loaders.gl/devtools-extensions playwright:install",
     "test-cover": "node ./scripts/test.mjs cover",
@@ -64,6 +66,7 @@
   "devDependencies": {
     "@loaders.gl/devtools-extensions": "workspace:*",
     "@probe.gl/bench": "^4.1.1",
+    "@probe.gl/env": "^4.1.1",
     "@probe.gl/test-utils": "^4.1.1",
     "@types/node": "^25.3.0",
     "@types/tape-promise": "^4.0.1",
@@ -104,6 +107,7 @@
     "@loaders.gl/mvt": "^4.4.0",
     "@loaders.gl/obj": "^4.4.0",
     "@loaders.gl/ply": "^4.4.0",
+    "@loaders.gl/sql": "^4.4.0",
     "@loaders.gl/schema": "^4.4.0",
     "@loaders.gl/schema-utils": "^4.4.0",
     "@loaders.gl/terrain": "^4.4.0",

@@ -4,6 +4,8 @@
 
 export type {ShapefileLoaderOptions} from './shapefile-loader';
 export {ShapefileLoader} from './shapefile-loader';
+export type {ShapefileArrowLoaderOptions} from './shapefile-arrow-loader';
+export {ShapefileArrowLoader} from './shapefile-arrow-loader';
 
 export type {DBFLoaderOptions} from './dbf-loader';
 export {DBFLoader, DBFWorkerLoader} from './dbf-loader';

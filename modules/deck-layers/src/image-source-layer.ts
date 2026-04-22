@@ -19,7 +19,7 @@ import type {
   GetImageParameters,
   ImageSource,
   ImageSourceMetadata,
-  Source
+  SourceLoader
 } from '@loaders.gl/loader-utils';
 import {ImageSet, type ImageSetRequest} from '@loaders.gl/tiles';
 import {projectWGS84ToPseudoMercator} from './image-source-layer/utils';
@@ -39,7 +39,7 @@ export type ImageSourceLayerProps = CompositeLayerProps & {
   /** Debounce interval applied before viewport image requests are issued. */
   debounceTime?: number;
   /** Source factories used to auto-create image sources from URL/blob inputs. */
-  sources?: Readonly<Source[]>;
+  sources?: Readonly<SourceLoader[]>;
   /** Options forwarded to `createDataSource` when `sources` are supplied. */
   sourceOptions?: DataSourceOptions;
   /** Called when metadata resolves successfully. */
@@ -148,7 +148,10 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
         return;
       }
 
-      const imageSet = this._getOrCreateImageSet(resolvedData, resolvedData !== previousResolvedData);
+      const imageSet = this._getOrCreateImageSet(
+        resolvedData,
+        resolvedData !== previousResolvedData
+      );
       imageSet.setOptions({imageSource: resolvedData});
       void imageSet.loadMetadata().catch(() => {});
       this.loadImage(this.context.viewport, 0);
@@ -159,8 +162,15 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       return;
     }
 
-    if (!deepEqual(props.layers, oldProps.layers, 1) || props.debounceTime !== oldProps.debounceTime) {
-      this.state.imageSet.setOptions({imageSource: this.state.resolvedData, debounceTime: props.debounceTime});
+    if (
+      !deepEqual(props.layers, oldProps.layers, 1) ||
+      props.debounceTime !== oldProps.debounceTime ||
+      props.srs !== oldProps.srs
+    ) {
+      this.state.imageSet.setOptions({
+        imageSource: this.state.resolvedData,
+        debounceTime: props.debounceTime
+      });
       this.loadImage(this.context.viewport, 0);
     } else if (changeFlags.viewportChanged) {
       this.loadImage(this.context.viewport);
@@ -180,12 +190,12 @@ export class ImageSourceLayer extends CompositeLayer<ImageSourceLayerProps> {
       image,
       parameters: {boundingBox, crs}
     } = currentRequest;
-    const bounds = [
-      boundingBox[0][0],
-      boundingBox[0][1],
-      boundingBox[1][0],
-      boundingBox[1][1]
-    ] as [number, number, number, number];
+    const bounds = [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]] as [
+      number,
+      number,
+      number,
+      number
+    ];
 
     return new BitmapLayer({
       ...this.getSubLayerProps({id: 'bitmap'}),

@@ -1,21 +1,21 @@
 import {describe, expect, test} from 'vitest';
 import {parse, parseInBatches, parseSync, preload} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/csv/unbundled';
 
 const CSV_TEXT = 'city,population\nParis,2148000\n';
 const CSV_ARRAY_BUFFER = new TextEncoder().encode(CSV_TEXT).buffer;
 
 describe('preload', () => {
   test('resolves a parser-bearing loader and caches it', async () => {
-    const firstLoader = await preload(CSVLoader);
-    const secondLoader = await preload(CSVLoader);
+    const firstLoader = await preload(UnbundledCSVLoader);
+    const secondLoader = await preload(UnbundledCSVLoader);
 
     expect(firstLoader).toBe(secondLoader);
     expect(typeof firstLoader.parse).toBe('function');
   });
 
   test('parse upgrades CSVLoader through preload', async () => {
-    const table = await parse(CSV_ARRAY_BUFFER, CSVLoader, {
+    const table = await parse(CSV_ARRAY_BUFFER, UnbundledCSVLoader, {
       csv: {shape: 'object-row-table'}
     });
 
@@ -26,7 +26,7 @@ describe('preload', () => {
   });
 
   test('parseInBatches upgrades CSVLoader through preload', async () => {
-    const iterator = await parseInBatches([new Uint8Array(CSV_ARRAY_BUFFER)], CSVLoader, {
+    const iterator = await parseInBatches([new Uint8Array(CSV_ARRAY_BUFFER)], UnbundledCSVLoader, {
       csv: {shape: 'object-row-table'}
     });
     const rows: unknown[] = [];
@@ -41,7 +41,7 @@ describe('preload', () => {
   });
 
   test('parseSync accepts a parser-bearing loader returned by preload', async () => {
-    const CSVLoaderWithParser = await preload(CSVLoader);
+    const CSVLoaderWithParser = await preload(UnbundledCSVLoader);
     const table = parseSync(CSV_ARRAY_BUFFER, CSVLoaderWithParser, {
       csv: {shape: 'object-row-table'}
     });
@@ -54,7 +54,7 @@ describe('preload', () => {
 
   test('parseSync rejects CSVLoader without a parser-bearing import', () => {
     expect(() =>
-      parseSync(CSV_ARRAY_BUFFER, CSVLoader, {
+      parseSync(CSV_ARRAY_BUFFER, UnbundledCSVLoader, {
         csv: {shape: 'object-row-table'}
       })
     ).toThrow(/Import the loader implementation directly/);

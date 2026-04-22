@@ -20,6 +20,16 @@ test('JSONLoader#load(geojson.json)', async t => {
   t.end();
 });
 
+test('JSONLoader#load(geojson.json, shape: arrow-table)', async t => {
+  const arrowTable = await load(GEOJSON_PATH, JSONLoader, {
+    json: {table: true, shape: 'arrow-table'}
+  });
+  t.equal(arrowTable.shape, 'arrow-table', 'Correct Arrow table type received');
+  t.equal(arrowTable.data.numRows, 308, 'Correct number of Arrow rows received');
+  t.equal(arrowTable.data.getChild('type')?.get(0), 'Feature', 'Arrow field values are preserved');
+  t.end();
+});
+
 test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader);
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
@@ -102,6 +112,27 @@ test('JSONLoader#loadInBatches(jsonpaths)', async t => {
   }
 
   t.equal(rowCount, 0, 'Correct number of row received');
+  t.end();
+});
+
+test('JSONLoader#loadInBatches(jsonpaths, shape: arrow-table)', async t => {
+  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    json: {jsonpaths: ['$.features'], shape: 'arrow-table'}
+  });
+
+  let rowCount = 0;
+  let dataBatchCount = 0;
+  for await (const batch of iterator) {
+    if (batch.shape === 'arrow-table') {
+      dataBatchCount++;
+      rowCount += batch.data.numRows;
+      // @ts-ignore
+      t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on Arrow batch');
+    }
+  }
+
+  t.ok(dataBatchCount > 0, 'received Arrow data batches');
+  t.equal(rowCount, 308, 'Correct number of Arrow rows received');
   t.end();
 });
 

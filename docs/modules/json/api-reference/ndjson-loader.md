@@ -1,11 +1,6 @@
-# NDJSON Loaders
+# NDJSONLoader
 
-Streaming loaders for NDJSON encoded files and related formats (LDJSON and JSONL).
-
-| Loader              | Output                     | Use when                      |
-| ------------------- | -------------------------- | ----------------------------- |
-| `NDJSONLoader`      | `ObjectRowTable` batches   | You want JavaScript row data. |
-| `NDJSONArrowLoader` | `ArrowTable` batches       | You want columnar batch data. |
+Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL).
 
 | Characteristic | Value                                                                                  |
 | -------------- | -------------------------------------------------------------------------------------- |
@@ -20,9 +15,7 @@ Streaming loaders for NDJSON encoded files and related formats (LDJSON and JSONL
 [format_ldjson]: http://jsonlines.org/
 [format_json_seq]: https://datatracker.ietf.org/doc/html/rfc7464
 
-## NDJSONLoader
-
-`NDJSONLoader` loads NDJSON data as loaders.gl row tables.
+`NDJSONLoader` loads NDJSON data as loaders.gl row tables by default and can also emit Apache Arrow tables with `json.shape: 'arrow-table'`.
 
 ## Usage
 
@@ -50,34 +43,20 @@ for await (const batch of batches) {
 }
 ```
 
-## NDJSONArrowLoader
-
-`NDJSONArrowLoader` loads NDJSON data as loaders.gl `ArrowTable` objects that wrap Apache Arrow tables.
+To request Arrow output, set `json.shape: 'arrow-table'`.
 
 ```typescript
-import {load} from '@loaders.gl/core';
-import {NDJSONArrowLoader} from '@loaders.gl/json';
+import {load, loadInBatches} from '@loaders.gl/core';
+import {NDJSONLoader} from '@loaders.gl/json';
 
-const table = await load(url, NDJSONArrowLoader);
-
-const idColumn = table.data.getChild('id');
-const firstId = idColumn?.get(0);
-```
-
-`NDJSONArrowLoader` supports streaming NDJSON parsing. Each streamed batch is returned as an Apache Arrow table batch.
-
-```typescript
-import {loadInBatches} from '@loaders.gl/core';
-import {NDJSONArrowLoader} from '@loaders.gl/json';
-
-const batches = await loadInBatches('ndjson.ndjson', NDJSONArrowLoader, {
-  batchSize: 1000
+const table = await load(url, NDJSONLoader, {
+  json: {shape: 'arrow-table'}
 });
 
-for await (const batch of batches) {
-  // batch.data is an Apache Arrow Table
-  const rowCount = batch.data.numRows;
-}
+const batches = await loadInBatches('ndjson.ndjson', NDJSONLoader, {
+  batchSize: 1000,
+  json: {shape: 'arrow-table'}
+});
 ```
 
 ## Data Format
@@ -98,3 +77,7 @@ Each element in the `data` array corresponds to a line (Object) in the NDJSON da
 ## Options
 
 Supports the table category options such as `batchSize`.
+
+| Option       | From                                                                                       | Type                                                 | Default              | Description                                         |
+| ------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------- | -------------------- | --------------------------------------------------- |
+| `json.shape` | [![Website shields.io](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)](http://shields.io) | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `object-row-table` | Selects row-table output or Apache Arrow output. |

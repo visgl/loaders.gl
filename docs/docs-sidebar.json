@@ -50,11 +50,12 @@
           "modules/kml/api-reference/tcx-loader",
           "modules/las/api-reference/las-loader",
           "modules/mlt/api-reference/mlt-loader",
-          "modules/mlt/api-reference/mlt-source",
+          "modules/mlt/api-reference/mlt-source-loader",
           "modules/mvt/api-reference/mvt-loader",
           "modules/mvt/api-reference/tilejson-loader",
           "modules/obj/api-reference/obj-loader",
           "modules/parquet/api-reference/parquet-loader",
+          "modules/parquet/api-reference/parquet-js-loader",
           "modules/pcd/api-reference/pcd-loader",
           "modules/ply/api-reference/ply-loader",
           "modules/terrain/api-reference/quantized-mesh-loader",
@@ -89,6 +90,8 @@
           "modules/las/api-reference/las-writer",
           "modules/mvt/api-reference/mvt-writer",
           "modules/obj/api-reference/obj-writer",
+          "modules/parquet/api-reference/parquet-writer",
+          "modules/parquet/api-reference/parquet-js-writer",
           "modules/pcd/api-reference/pcd-writer",
           "modules/ply/api-reference/ply-writer",
           "modules/terrain/api-reference/quantized-mesh-writer",
@@ -106,12 +109,12 @@
         "type": "category",
         "label": "Sources",
         "items": [
-          "modules/pmtiles/api-reference/pmtiles-source",
-          "modules/mvt/api-reference/mvt-source",
-          "modules/mvt/api-reference/table-tile-source",
-          "modules/mlt/api-reference/mlt-source",
-          "modules/wms/api-reference/csw-source",
-          "modules/wms/api-reference/wms-source"
+          "modules/pmtiles/api-reference/pmtiles-source-loader",
+          "modules/mvt/api-reference/mvt-source-loader",
+          "modules/mvt/api-reference/table-tile-source-loader",
+          "modules/mlt/api-reference/mlt-source-loader",
+          "modules/wms/api-reference/csw-source-loader",
+          "modules/wms/api-reference/wms-source-loader"
         ]
       }
     ]
@@ -182,6 +185,19 @@
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",
           "developer-guide/node"
+        ]
+      },
+      {
+        "type": "category",
+        "label": "Converters",
+        "items": [
+          "developer-guide/converting-data",
+          "developer-guide/converters/dispatcher",
+          "developer-guide/converters/table-and-arrow-converters",
+          "developer-guide/converters/geoarrow-converters",
+          "developer-guide/converters/feature-collection-converters",
+          "developer-guide/converters/render-converters",
+          "developer-guide/converters/format-categories"
         ]
       },
       {

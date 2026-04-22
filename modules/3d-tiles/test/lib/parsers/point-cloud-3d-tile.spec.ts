@@ -7,7 +7,7 @@
 
 import test from 'tape-promise/tape';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
-import {load, parseSync, encodeSync, LoaderContext} from '@loaders.gl/core';
+import {load, parseSync, encodeSync, LoaderContext, coreApi} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadDraco} from '../../../src/lib/parsers/parse-3d-tile-point-cloud';
 // import {loadRootTileFromTileset} from '../utils/load-utils';
@@ -105,6 +105,7 @@ test('loadDraco# Pass options to draco loader properly', async t => {
   };
 
   const context: LoaderContext = {
+    coreApi,
     _parse: async (buffer, loader, resultOptions) => {
       t.deepEqual(resultOptions, resultObject);
       t.equal(resultOptions?.['3d-tiles'], undefined);

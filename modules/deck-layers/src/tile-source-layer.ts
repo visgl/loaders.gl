@@ -35,7 +35,7 @@ export type TileSourceRuntime = TileSource & {
  *
  * This class is not part of the supported public API and is documented only through TSDoc.
  */
-class MVTSourceLayer extends MVTLayer<any> {
+class MVTSourceLoaderLayer extends MVTLayer<any> {
   /** Sync the cached vector tile source whenever deck.gl reports a data change. */
   updateState(params: any): void {
     super.updateState(params);
@@ -131,13 +131,13 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
     }
 
     if (this.sourceSupportsMVTLayer()) {
-      // TODO - Currently only TileSource that supports CRS override is TableTileSource
+      // TODO - Currently only TileSource that supports CRS override is TableTileSourceLoader
       tileSource.options.table = tileSource.options.table || {};
       tileSource.options.table.coordinates = 'local';
       return this.renderMVTLayer();
     }
 
-    // TODO - Currently only TileSource that supports CRS override is TableTileSource
+    // TODO - Currently only TileSource that supports CRS override is TableTileSourceLoader
     tileSource.options.table = tileSource.options.table || {};
     tileSource.options.table.coordinates = 'wgs84';
     return this.renderTileLayer();
@@ -157,7 +157,7 @@ export class TileSourceLayer extends CompositeLayer<TileSourceLayerProps> {
     const devicePixelRatio = this.context.device.getCanvasContext().getDevicePixelRatio();
 
     return [
-      new MVTSourceLayer({
+      new MVTSourceLoaderLayer({
         id: String(data.url),
         data: data as any,
         getLineColor: [0, 0, 0],

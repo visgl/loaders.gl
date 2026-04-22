@@ -28,12 +28,12 @@ function createJsonResponse(json: unknown, ok = true, status = 200) {
   };
 }
 
-test('MapStyleLoader#loader conformance', (t) => {
+test('MapStyleLoader#loader conformance', t => {
   validateLoader(t, MapStyleLoader, 'MapStyleLoader');
   t.end();
 });
 
-test('MapStyleLoader#parse inline style fixture', async (t) => {
+test('MapStyleLoader#parse inline style fixture', async t => {
   const style = await parse(inlineStyleText, MapStyleLoader, {
     mapStyle: {baseUrl: INLINE_STYLE_URL.href}
   });
@@ -55,7 +55,18 @@ test('MapStyleLoader#parse inline style fixture', async (t) => {
   t.end();
 });
 
-test('resolveMapStyle resolves relative tiles from baseUrl', async (t) => {
+test('MapStyleLoader#parseText inline style fixture', async t => {
+  const style = await MapStyleLoader.parseText?.(inlineStyleText, {
+    mapStyle: {baseUrl: INLINE_STYLE_URL.href}
+  });
+
+  t.ok(style, 'parseText returns a resolved style');
+  t.equal(style?.version, 8, 'style version is preserved');
+  t.equal(style?.sources['inline-source']?.type, 'vector', 'source metadata is preserved');
+  t.end();
+});
+
+test('resolveMapStyle resolves relative tiles from baseUrl', async t => {
   const style: MapStyle = {
     version: 8,
     sources: {
@@ -80,7 +91,7 @@ test('resolveMapStyle resolves relative tiles from baseUrl', async (t) => {
   t.end();
 });
 
-test('resolveMapStyle resolves TileJSON-backed sources', async (t) => {
+test('resolveMapStyle resolves TileJSON-backed sources', async t => {
   let requestedUrl = '';
   const resolvedStyle = await resolveMapStyle(
     {
@@ -97,7 +108,7 @@ test('resolveMapStyle resolves TileJSON-backed sources', async (t) => {
     {
       mapStyle: {
         baseUrl: STYLE_BASE_URL,
-        fetch: async (url) => {
+        fetch: async url => {
           requestedUrl = String(url);
           return createJsonResponse({
             tiles: ['./tiles/{z}/{x}/{y}.pbf'],
@@ -118,12 +129,16 @@ test('resolveMapStyle resolves TileJSON-backed sources', async (t) => {
     'TileJSON tiles are resolved against the TileJSON URL'
   );
   t.equal(resolvedStyle.sources.terrain.minzoom, 2, 'TileJSON fields are merged');
-  t.equal(resolvedStyle.sources.terrain.attribution, 'kept', 'existing source fields are preserved');
+  t.equal(
+    resolvedStyle.sources.terrain.attribution,
+    'kept',
+    'existing source fields are preserved'
+  );
 
   t.end();
 });
 
-test('MapStyleLoader honors custom fetch implementation', async (t) => {
+test('MapStyleLoader honors custom fetch implementation', async t => {
   const arrayBuffer = new TextEncoder().encode(
     JSON.stringify({
       version: 8,
@@ -140,7 +155,7 @@ test('MapStyleLoader honors custom fetch implementation', async (t) => {
   const options: MapStyleLoadOptions = {
     mapStyle: {
       baseUrl: STYLE_BASE_URL,
-      fetch: async (url) => {
+      fetch: async url => {
         requestedUrls.push(String(url));
         return createJsonResponse({tiles: ['./tiles/{z}/{x}/{y}.mvt']}) as Response;
       }
@@ -155,7 +170,7 @@ test('MapStyleLoader honors custom fetch implementation', async (t) => {
   t.end();
 });
 
-test('resolveMapStyle preserves extra fields and initializes empty collections', async (t) => {
+test('resolveMapStyle preserves extra fields and initializes empty collections', async t => {
   const style = await resolveMapStyle({
     version: 8,
     metadata: {theme: 'test'},
@@ -169,7 +184,7 @@ test('resolveMapStyle preserves extra fields and initializes empty collections',
   t.end();
 });
 
-test('MapStyleLoader rejects invalid JSON', async (t) => {
+test('MapStyleLoader rejects invalid JSON', async t => {
   await t.rejects(
     async () => await MapStyleLoader.parse(new TextEncoder().encode('{"version":8').buffer, {}),
     /JSON/,
@@ -179,7 +194,7 @@ test('MapStyleLoader rejects invalid JSON', async (t) => {
   t.end();
 });
 
-test('resolveMapStyle rejects invalid fetched TileJSON', async (t) => {
+test('resolveMapStyle rejects invalid fetched TileJSON', async t => {
   await t.rejects(
     async () =>
       await resolveMapStyle(

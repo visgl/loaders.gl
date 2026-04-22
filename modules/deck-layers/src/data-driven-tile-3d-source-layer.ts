@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DataDrivenTile3DLayer} from '@deck.gl-community/experimental';
+import {DataDrivenTile3DLayer} from './data-driven-tile-3d-layer';
 import {Tileset3D, type Tileset3DProps} from '@loaders.gl/tiles';
 import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {createSource} from './tile-3d-source-layer';
@@ -17,6 +17,9 @@ export class SourceDataDrivenTile3DLayer<
   DataT = any,
   ExtraProps extends Record<string, unknown> = Record<string, unknown>
 > extends DataDrivenTile3DLayer<DataT, ExtraProps> {
+  /** deck.gl layer name used for warnings, defaults, and diagnostics. */
+  static layerName = 'SourceDataDrivenTile3DLayer';
+
   /** Install source-backed loading hooks after the base layer initializes its state. */
   initializeState(): void {
     super.initializeState();

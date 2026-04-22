@@ -6,8 +6,10 @@ import {
   fetchFile,
   registerLoaders,
   resolvePath,
+  NullLoader,
   NullWorkerLoader
 } from '@loaders.gl/core';
+import {ArrowLoader} from '@loaders.gl/arrow';
 import {JSONLoader} from '@loaders.gl/json';
 
 const JSON_URL = '@loaders.gl/core/test/data/files/basic.json';
@@ -101,3 +103,22 @@ test('load#stream', async () => {
 
   expect(typeof data, 'load(stream) returned data').toBe('object');
 });
+
+test('load#ignores core.shape for loaders without shape support', async () => {
+  const data = await load(JSON_URL, NullLoader, {core: {shape: 'object-row-table'}});
+  expect(data).toBe(null);
+});
+
+function _typeTestsForCoreShape() {
+  load(JSON_URL, JSONLoader, {core: {shape: 'array-row-table'}});
+  load(JSON_URL, JSONLoader, {core: {shape: 'object-row-table'}});
+  // @ts-expect-error JSONLoader core.shape should be limited to JSON row shapes
+  load(JSON_URL, JSONLoader, {core: {shape: 'columnar-table'}});
+
+  load(JSON_URL, [JSONLoader, ArrowLoader], {core: {shape: 'columnar-table'}});
+  load(JSON_URL, [JSONLoader, ArrowLoader], {core: {shape: 'array-row-table'}});
+  // @ts-expect-error JSONLoader + ArrowLoader core.shape should reject unsupported shapes
+  load(JSON_URL, [JSONLoader, ArrowLoader], {core: {shape: 'binary'}});
+}
+
+void _typeTestsForCoreShape;

@@ -4,8 +4,10 @@
 
 // binary features
 import './binary-features/binary-to-geojson.spec';
+import './binary-features/arrow-binary-feature-collection.spec';
 import './binary-features/geojson-to-flat-geojson.spec';
 import './binary-features/geojson-to-binary.spec';
+import './binary-features/geometry-column-to-binary.spec';
 import './binary-features/transform.spec';
 
 // utils
@@ -27,5 +29,6 @@ import './wkt-crs/parse-wkt-crs.spec';
 // geoarrow
 import './geoarrow/convert-geoarrow-to-binary-geometry.spec';
 import './geoarrow/convert-geoarrow-to-geojson.spec';
+import './geoarrow/wkb-geoarrow-utils.spec';
 
 import './table-converters/convert-geojson-to-arrow-table.spec';

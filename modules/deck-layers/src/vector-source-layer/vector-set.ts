@@ -3,8 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import type {Viewport} from '@deck.gl/core';
-import type {BinaryFeatureCollection, GeoJSONTable, Schema} from '@loaders.gl/schema';
-import type {GetFeaturesParameters, VectorSource, VectorSourceMetadata} from '@loaders.gl/loader-utils';
+import type {Schema} from '@loaders.gl/schema';
+import type {
+  GetFeaturesParameters,
+  VectorSource,
+  VectorSourceMetadata
+} from '@loaders.gl/loader-utils';
+
+/** Resolved feature-table type returned by the active vector source. */
+type VectorSetData = Awaited<ReturnType<VectorSource['getFeatures']>>;
 
 /** Mutable fetch options consumed by {@link VectorSet}. */
 export type VectorSetOptions = {
@@ -14,6 +21,8 @@ export type VectorSetOptions = {
   layers: string | string[];
   /** Output CRS forwarded to the vector source. */
   crs?: string;
+  /** Output format forwarded to the vector source. */
+  format?: GetFeaturesParameters['format'];
   /** Debounce interval applied before issuing viewport requests. */
   debounceTime?: number;
 };
@@ -25,7 +34,7 @@ export type VectorSetState = {
   /** True while the latest viewport request is in flight. */
   isLoading: boolean;
   /** Latest accepted viewport table. */
-  data: GeoJSONTable | BinaryFeatureCollection | null;
+  data: VectorSetData | null;
   /** Resolved source schema when available. */
   schema: Schema | null;
   /** Resolved source metadata when available. */
@@ -41,7 +50,7 @@ export type VectorSetEvents = {
   /** Called whenever any public state changes. */
   onUpdate?: () => void;
   /** Called when a viewport request resolves and becomes current. */
-  onDataLoad?: (table: GeoJSONTable | BinaryFeatureCollection) => void;
+  onDataLoad?: (table: VectorSetData) => void;
   /** Called when metadata resolves. */
   onMetadataLoad?: (metadata: VectorSourceMetadata) => void;
   /** Called when schema resolves. */
@@ -62,6 +71,8 @@ export class VectorSet {
   layers: string | string[];
   /** Output CRS forwarded to `VectorSource#getFeatures`. */
   crs?: string;
+  /** Output format forwarded to `VectorSource#getFeatures`. */
+  format?: GetFeaturesParameters['format'];
   /** Debounce interval applied before issuing viewport requests. */
   debounceTime: number;
 
@@ -70,7 +81,7 @@ export class VectorSet {
   /** True while the latest viewport request is in flight. */
   isLoading = false;
   /** Latest accepted viewport table. */
-  data: GeoJSONTable | BinaryFeatureCollection | null = null;
+  data: VectorSetData | null = null;
   /** Resolved source schema. */
   schema: Schema | null = null;
   /** Resolved source metadata. */
@@ -92,11 +103,15 @@ export class VectorSet {
     this.vectorSource = options.vectorSource;
     this.layers = options.layers;
     this.crs = options.crs;
+    this.format = options.format;
     this.debounceTime = options.debounceTime ?? 200;
   }
 
   /** Creates a `VectorSet` from a vector source instance. */
-  static fromVectorSource(vectorSource: VectorSource, options: Omit<VectorSetOptions, 'vectorSource'>) {
+  static fromVectorSource(
+    vectorSource: VectorSource,
+    options: Omit<VectorSetOptions, 'vectorSource'>
+  ) {
     return new VectorSet({vectorSource, ...options});
   }
 
@@ -117,10 +132,12 @@ export class VectorSet {
     const sourceChanged = options.vectorSource !== this.vectorSource;
     const layersChanged = !areLayerSelectionsEqual(options.layers, this.layers);
     const crsChanged = options.crs !== this.crs;
+    const formatChanged = options.format !== this.format;
 
     this.vectorSource = options.vectorSource;
     this.layers = options.layers;
     this.crs = options.crs;
+    this.format = options.format;
     this.debounceTime = options.debounceTime ?? this.debounceTime;
 
     if (sourceChanged) {
@@ -139,7 +156,7 @@ export class VectorSet {
       return;
     }
 
-    if (layersChanged || crsChanged) {
+    if (layersChanged || crsChanged || formatChanged) {
       this.lastRequestKey = null;
     }
   }
@@ -221,13 +238,13 @@ export class VectorSet {
   ): Promise<void> {
     this.lastRequestKey = requestKey;
     const requestSequenceNumber = ++this.requestSequenceNumber;
+    const abortController = new AbortController();
 
     this._startLoading();
     this.error = null;
     this.emitUpdate();
 
     try {
-      const abortController = new AbortController();
       this.abortController = abortController;
       const table = await this.vectorSource.getFeatures({
         ...requestParameters,
@@ -254,9 +271,10 @@ export class VectorSet {
       this.emitError(this.error);
       this.emitUpdate();
     } finally {
-      if (requestSequenceNumber === this.requestSequenceNumber) {
-        this._finishLoading();
+      if (this.abortController === abortController) {
+        this.abortController = null;
       }
+      this._finishLoading();
     }
   }
 
@@ -270,7 +288,8 @@ export class VectorSet {
         [bounds[0], bounds[1]],
         [bounds[2], bounds[3]]
       ],
-      crs: this.crs
+      crs: this.crs,
+      format: this.format
     };
   }
 
@@ -286,7 +305,7 @@ export class VectorSet {
     }
   }
 
-  private emitDataLoad(table: GeoJSONTable | BinaryFeatureCollection): void {
+  private emitDataLoad(table: VectorSetData): void {
     for (const subscription of this.subscriptions) {
       subscription.onDataLoad?.(table);
     }
@@ -356,13 +375,16 @@ function isAbortError(error: unknown): boolean {
 function getRequestKey(parameters: GetFeaturesParameters): string {
   const layers = Array.isArray(parameters.layers) ? parameters.layers.join(',') : parameters.layers;
   const crs = parameters.crs || '';
+  const format = parameters.format || '';
   const boundingBox = parameters.boundingBox.flat().join(',');
-  return `${layers}|${crs}|${boundingBox}`;
+  return `${layers}|${crs}|${format}|${boundingBox}`;
 }
 
 function areLayerSelectionsEqual(left: string | string[], right: string | string[]): boolean {
   if (Array.isArray(left) && Array.isArray(right)) {
-    return left.length === right.length && left.every((layerName, index) => layerName === right[index]);
+    return (
+      left.length === right.length && left.every((layerName, index) => layerName === right[index])
+    );
   }
   return left === right;
 }

@@ -51,13 +51,16 @@ export default function ExamplesIndex({
   defaultThumbnail = DEFAULT_EXAMPLE_THUMBNAIL
 }) {
   const mainSidebar = useDocsSidebar();
-  const sidebar = mainSidebar.items[0];
-  return <MainExamples>
-    {sidebar.items.map(item => {
-      if (item.type === 'category' && item.items && item.label) {
-        return renderCategory(item, getThumbnail, defaultThumbnail);
-      }
-      return null;
-    })}
-  </MainExamples>;
+  const sidebarItems = mainSidebar?.items?.[0]?.items || [];
+
+  return (
+    <MainExamples>
+      {sidebarItems.map(item => {
+        if (item.type === 'category' && item.items && item.label) {
+          return renderCategory(item, getThumbnail, defaultThumbnail);
+        }
+        return null;
+      })}
+    </MainExamples>
+  );
 }

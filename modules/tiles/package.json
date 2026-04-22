@@ -51,7 +51,7 @@
     "@probe.gl/stats": "^4.1.1"
   },
   "devDependencies": {
-    "@deck.gl/core": "^9.0.33"
+    "@deck.gl/core": "^9.3.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~4.4.0"

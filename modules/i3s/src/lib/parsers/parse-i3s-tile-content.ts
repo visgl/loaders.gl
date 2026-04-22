@@ -1,5 +1,4 @@
 import type {TypedArray} from '@loaders.gl/schema';
-import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
@@ -25,6 +24,16 @@ import {GL_TYPE_MAP, getConstructorForDataFormat, sizeOf, COORDINATE_SYSTEM} fro
 import {I3SLoaderOptions} from '../../i3s-loader';
 
 const scratchVector = new Vector3([0, 0, 0]);
+
+function getRequiredContext(context: LoaderContext | undefined, operation: string): LoaderContext {
+  if (!context) {
+    throw new Error(
+      `parseI3STileContent requires LoaderContext to ${operation}. Nested I3S parsing must run through parseFromContext().`
+    );
+  }
+
+  return context;
+}
 
 /**
  * Select the loader used to decode the texture payload for an I3S node.
@@ -69,10 +78,11 @@ export async function parseI3STileContent(
     featureIds: [],
     vertexCount: 0,
     modelMatrix: new Matrix4(),
-    coordinateSystem: 0,
+    coordinateSystem: 'meter-offsets',
     byteLength: 0,
     texture: null
   };
+  const requiredContext = context ? getRequiredContext(context, 'parse nested resources') : null;
 
   if (tileOptions.textureUrl) {
     try {
@@ -89,6 +99,10 @@ export async function parseI3STileContent(
 
       // @ts-expect-error options is not properly typed
       if (options?.i3s.decodeTextures) {
+        const nestedContext = getRequiredContext(
+          requiredContext || context,
+          'decode texture payloads'
+        );
         // TODO - replace with switch
         if (loader === ImageBitmapLoader) {
           const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
@@ -97,23 +111,24 @@ export async function parseI3STileContent(
               textureArrayBuffer,
               ImageBitmapLoader,
               imageLoaderOptions,
-              context!
+              nestedContext
             );
             content.texture = getImageData(parsedTexture);
           } catch (_error) {
-            const parsedTexture: any = await parse(
+            const parsedTexture: any = await parseFromContext(
               textureArrayBuffer,
               loader,
               imageLoaderOptions,
-              context
+              nestedContext
             );
             content.texture = getImageData(parsedTexture);
           }
         } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-          let texture: any = await load(
+          let texture: any = await parseFromContext(
             textureArrayBuffer,
             loader,
-            tileOptions.textureLoaderOptions
+            tileOptions.textureLoaderOptions,
+            nestedContext
           );
           if (loader === BasisLoader) {
             texture = texture[0];
@@ -139,7 +154,14 @@ export async function parseI3STileContent(
     content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, content, tileOptions, tilesetOptions, options);
+  return await parseI3SNodeGeometry(
+    arrayBuffer,
+    content,
+    tileOptions,
+    tilesetOptions,
+    options,
+    context
+  );
 }
 
 /* eslint-disable max-statements */
@@ -148,7 +170,8 @@ async function parseI3SNodeGeometry(
   content: I3STileContent,
   tileOptions: I3STileOptions,
   tilesetOptions: I3STilesetOptions,
-  options?: I3SLoaderOptions
+  options?: I3SLoaderOptions,
+  context?: LoaderContext
 ): Promise<I3STileContent> {
   const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
@@ -158,13 +181,18 @@ async function parseI3SNodeGeometry(
   let indices: TypedArray | undefined;
 
   if (tileOptions.isDracoGeometry) {
-    const decompressedGeometry: DracoMesh = await parse(arrayBuffer, DracoLoader, {
-      draco: {
-        attributeNameEntry: I3S_ATTRIBUTE_TYPE
-      }
-    });
-    // @ts-expect-error
-    vertexCount = decompressedGeometry.header.vertexCount;
+    const nestedContext = getRequiredContext(context, 'decode Draco geometry');
+    const decompressedGeometry: DracoMesh = (await parseFromContext(
+      arrayBuffer,
+      DracoLoader,
+      {
+        draco: {
+          attributeNameEntry: I3S_ATTRIBUTE_TYPE
+        }
+      },
+      nestedContext
+    )) as DracoMesh;
+    vertexCount = decompressedGeometry.header?.vertexCount ?? 0;
     indices = decompressedGeometry.indices?.value;
     const {
       POSITION,
@@ -232,10 +260,10 @@ async function parseI3SNodeGeometry(
   ) {
     const enuMatrix = parsePositions(attributes.position, tileOptions);
     content.modelMatrix = enuMatrix.invert();
-    content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
+    content.coordinateSystem = 'meter-offsets';
   } else {
     content.modelMatrix = getModelMatrix(attributes.position);
-    content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
+    content.coordinateSystem = 'lnglat-offsets';
   }
 
   content.attributes = {

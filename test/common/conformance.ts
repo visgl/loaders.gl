@@ -2,38 +2,141 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export function validateLoader(t, loader, name = '') {
-  t.ok(typeof loader.id === 'string', `Loader ${name} loader.id is not defined`);
-  t.ok(loader, `Loader ${name} defined`);
-  t.equal(typeof loader.name, 'string', `Loader ${name} has a name`);
-  t.ok(Array.isArray(loader.extensions), `Loader ${name} has an extensions array`);
-  t.ok(Array.isArray(loader.mimeTypes), `Loader ${name} has a mimeTypes array`);
+import {expect as vitestExpect} from 'vitest';
+
+type AssertionTarget = {
+  ok(value: unknown, message?: string): void;
+  notOk(value: unknown, message?: string): void;
+  equal(actual: unknown, expected: unknown, message?: string): void;
+  equals?(actual: unknown, expected: unknown, message?: string): void;
+};
+
+function getAssertionTarget(assertionTarget?: AssertionTarget): AssertionTarget {
+  if (assertionTarget) {
+    return assertionTarget;
+  }
+
+  const expectFunction =
+    (globalThis as typeof globalThis & {expect?: (value: unknown, message?: string) => any})
+      .expect || vitestExpect;
+
+  if (!expectFunction) {
+    throw new Error('validateLoader requires tape assertions or a global expect');
+  }
+
+  return {
+    ok(value, message) {
+      expectFunction(value, message).toBeTruthy();
+    },
+    notOk(value, message) {
+      expectFunction(value, message).toBeFalsy();
+    },
+    equal(actual, expected, message) {
+      expectFunction(actual, message).toBe(expected);
+    },
+    equals(actual, expected, message) {
+      expectFunction(actual, message).toBe(expected);
+    }
+  };
+}
+
+function resolveAssertionsAndValue<T>(
+  assertionTargetOrValue: AssertionTarget | T,
+  valueOrName?: T | string,
+  name?: string
+): {assertionTarget: AssertionTarget; value: T; name: string} {
+  if (
+    assertionTargetOrValue &&
+    typeof assertionTargetOrValue === 'object' &&
+    ('ok' in assertionTargetOrValue || 'equal' in assertionTargetOrValue)
+  ) {
+    return {
+      assertionTarget: getAssertionTarget(assertionTargetOrValue as AssertionTarget),
+      value: valueOrName as T,
+      name: name || ''
+    };
+  }
+
+  return {
+    assertionTarget: getAssertionTarget(),
+    value: assertionTargetOrValue as T,
+    name: (valueOrName as string) || ''
+  };
+}
+
+export function validateLoader(
+  assertionTargetOrLoader: AssertionTarget | any,
+  loaderOrName?: any,
+  name = ''
+) {
+  const {
+    assertionTarget,
+    value: loader,
+    name: resolvedName
+  } = resolveAssertionsAndValue(assertionTargetOrLoader, loaderOrName, name);
+
+  assertionTarget.ok(
+    typeof loader.id === 'string',
+    `Loader ${resolvedName} loader.id is not defined`
+  );
+  assertionTarget.ok(loader, `Loader ${resolvedName} defined`);
+  assertionTarget.equal(typeof loader.name, 'string', `Loader ${resolvedName} has a name`);
+  assertionTarget.ok(
+    Array.isArray(loader.extensions),
+    `Loader ${resolvedName} has an extensions array`
+  );
+  assertionTarget.ok(
+    Array.isArray(loader.mimeTypes),
+    `Loader ${resolvedName} has a mimeTypes array`
+  );
 
   const options = loader.options || {};
-  t.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');
-  if (name.includes('Worker')) {
-    t.ok('worker' in loader, `Loader ${name} loader.worker is not defined`);
+  assertionTarget.ok(!('workerUrl' in options), 'workerUrl is not defined on loader.options');
+  if (resolvedName.includes('Worker')) {
+    assertionTarget.ok('worker' in loader, `Loader ${resolvedName} loader.worker is not defined`);
   }
 
   // const loaderOptions = options[loader.id] || {};
   if (!loader.parse) {
     // t.ok(loaderOptions.workerUrl, 'options.<loaderId>.workerUrl');
   } else {
-    t.equal(typeof loader.parse, 'function', `Loader ${name} has 'parse' function`);
+    assertionTarget.equal(
+      typeof loader.parse,
+      'function',
+      `Loader ${resolvedName} has 'parse' function`
+    );
     // Call parse just to ensure it returns a promise
     const promise = loader.parse(new ArrayBuffer(0), {}).catch(_ => {});
-    t.ok(promise.then, `Loader ${name} is async (returns a promise)`);
+    assertionTarget.ok(promise.then, `Loader ${resolvedName} is async (returns a promise)`);
   }
 }
 
-export function validateWriter(t, writer, name = '') {
-  t.ok(writer, `Writer ${name} defined`);
-  t.equal(typeof writer.name, 'string', `Writer ${name} has a name`);
+export function validateWriter(
+  assertionTargetOrWriter: AssertionTarget | any,
+  writerOrName?: any,
+  name = ''
+) {
+  const {
+    assertionTarget,
+    value: writer,
+    name: resolvedName
+  } = resolveAssertionsAndValue(assertionTargetOrWriter, writerOrName, name);
+  assertionTarget.ok(writer, `Writer ${resolvedName} defined`);
+  assertionTarget.equal(typeof writer.name, 'string', `Writer ${resolvedName} has a name`);
 }
 
-export function validateBuilder(t, builder, name = '') {
-  t.ok(builder, `Builder ${name} defined`);
-  t.equal(typeof builder.name, 'string', `Builder ${name} has a name`);
+export function validateBuilder(
+  assertionTargetOrBuilder: AssertionTarget | any,
+  builderOrName?: any,
+  name = ''
+) {
+  const {
+    assertionTarget,
+    value: builder,
+    name: resolvedName
+  } = resolveAssertionsAndValue(assertionTargetOrBuilder, builderOrName, name);
+  assertionTarget.ok(builder, `Builder ${resolvedName} defined`);
+  assertionTarget.equal(typeof builder.name, 'string', `Builder ${resolvedName} has a name`);
 }
 
 /**

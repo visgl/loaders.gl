@@ -6,23 +6,15 @@
 
 export {ParquetFormat} from './parquet-format';
 
-export {
-  ParquetJSONWorkerLoader,
-  ParquetJSONLoader,
-  GeoParquetWorkerLoader,
-  GeoParquetLoader,
-  // deprecated
-  ParquetJSONWorkerLoader as ParquetWorkerLoader,
-  ParquetJSONLoader as ParquetLoader
-} from './parquet-json-loader';
+export type {ParquetLoaderOptions, ParquetJSLoaderOptions} from './parquet-loader-options';
+export {ParquetLoader, GeoParquetLoader} from './parquet-loader';
+export {ParquetJSLoader} from './parquet-js-loader';
 
-export {
-  ParquetJSONWriter as _ParquetJSONWriter,
-  // deprecated
-  ParquetJSONWriter as ParquetWriter
-} from './parquet-json-writer';
+export {ParquetWriter} from './parquet-writer';
+export type {ParquetJSWriterOptions} from './parquet-js-writer';
+export {ParquetJSWriter} from './parquet-js-writer';
 
-// EXPERIMENTAL - expose Parquet WASM loaders/writer
+// Arrow-first Parquet APIs
 
 export type {ParquetArrowLoaderOptions} from './parquet-arrow-loader';
 export {ParquetArrowLoader, ParquetArrowWorkerLoader} from './parquet-arrow-loader';

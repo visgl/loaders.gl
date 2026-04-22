@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Vector3} from '@math.gl/core';
 import type {TilesetTraverser, TilesetTraverserProps} from './tileset-traverser';
 import type {Tile3D} from './tile-3d';
@@ -16,6 +16,30 @@ import type {TILESET_TYPE} from '../../constants';
 export type TilesetJSON = any;
 
 /**
+ * Resource-loading strategy used by source implementations to fetch and parse root metadata
+ * and tile resources.
+ */
+export type TilesetSourceResolver = {
+  /**
+   * Loads and parses the root metadata resource for a source.
+   */
+  loadRoot<DataT>(
+    url: string,
+    loader: LoaderWithParser<DataT>,
+    loadOptions: LoaderOptions
+  ): Promise<DataT>;
+
+  /**
+   * Loads and parses an arbitrary source-relative resource.
+   */
+  loadResource<DataT>(
+    url: string,
+    loader: LoaderWithParser<DataT>,
+    loadOptions: LoaderOptions
+  ): Promise<DataT>;
+};
+
+/**
  * URL-based source input used when a source is responsible for fetching root metadata.
  */
 export type TilesetSourceRequest = {
@@ -25,6 +49,10 @@ export type TilesetSourceRequest = {
   loader: LoaderWithParser;
   /** Optional base path override for relative resources. */
   basePath?: string;
+  /** Optional resource-loading strategy used for archive-backed datasets. */
+  resolver?: TilesetSourceResolver;
+  /** Optional core API implementation used for nested source loading. */
+  coreApi?: CoreAPI;
 };
 
 /**
@@ -108,6 +136,8 @@ export interface Tileset3DSource {
   readonly tileset?: TilesetJSON | null;
   /** Loader options forwarded to metadata and content requests. */
   readonly loadOptions: LoaderOptions;
+  /** Core API used for source-managed loads, when injected by the caller. */
+  coreApi?: CoreAPI;
   /** Accumulated content-format flags for the tileset. */
   readonly contentFormats: TilesetContentFormats;
   /** Format-specific asset metadata, if any. */

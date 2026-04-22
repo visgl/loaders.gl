@@ -24,6 +24,7 @@ export const CSV_ARROW_DEFAULT_OPTIONS: CSVArrowOptions = {
   dynamicTyping: false,
   comments: CSV_LOADER_OPTIONS.csv.comments,
   skipEmptyLines: false,
+  detectGeometryColumns: CSV_LOADER_OPTIONS.csv.detectGeometryColumns,
   delimitersToGuess: CSV_LOADER_OPTIONS.csv.delimitersToGuess
 };
 

@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {ArrowTable, BinaryFeatureCollection, GeoJSONTable, Schema} from '@loaders.gl/schema';
 
 export type VectorSourceProps = {};
+
+/** Valid vector-source response tables. */
+export type VectorSourceData = GeoJSONTable | BinaryFeatureCollection | ArrowTable;
 
 /**
  * VectorSource - data sources that allow features to be queried by (geospatial) extents
@@ -17,9 +20,7 @@ export abstract class VectorSource {
 
   abstract getSchema(): Promise<Schema>;
   abstract getMetadata(options: {formatSpecificMetadata?: boolean}): Promise<VectorSourceMetadata>;
-  abstract getFeatures(
-    parameters: GetFeaturesParameters
-  ): Promise<GeoJSONTable | BinaryFeatureCollection>;
+  abstract getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData>;
 }
 
 // PARAMETER TYPES
@@ -65,8 +66,8 @@ export type GetFeaturesParameters = {
   boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
   /** crs for the returned features (not the bounding box) */
   crs?: string;
-  /** @deprecated requested format for the return image */
-  format?: 'geojson' | 'binary';
+  /** Requested feature encoding for the returned table. */
+  format?: 'geojson' | 'binary' | 'arrow';
   /** Abort signal for canceling in-flight requests. */
   signal?: AbortSignal;
 };

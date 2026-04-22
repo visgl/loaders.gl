@@ -12,16 +12,18 @@ export const DEFAULT_CSV_SHAPE = 'object-row-table';
 
 export type CSVLoaderOptions = LoaderOptions & {
   csv?: {
-    shape?: 'array-row-table' | 'object-row-table';
+    /** Selects row-table, columnar-table, or Arrow-table output. */
+    shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
     /** optimizes memory usage but increases parsing time. */
     optimizeMemoryUsage?: boolean;
     columnPrefix?: string;
-    header?: 'auto';
+    header?: boolean | 'auto';
     quoteChar?: string;
     escapeChar?: string;
     dynamicTyping?: boolean;
     comments?: boolean;
     skipEmptyLines?: boolean | 'greedy';
+    detectGeometryColumns?: boolean;
     delimitersToGuess?: string[];
   };
 };
@@ -37,6 +39,7 @@ export const CSV_LOADER_OPTIONS = {
     dynamicTyping: true,
     comments: false,
     skipEmptyLines: true,
+    detectGeometryColumns: false,
     delimitersToGuess: [',', '\t', '|', ';']
   }
 } as const satisfies CSVLoaderOptions;

@@ -13,6 +13,10 @@ import {
   preload
 } from '@loaders.gl/core';
 import {CSVArrowLoader, CSVArrowWorkerLoader, CSVLoader} from '@loaders.gl/csv';
+import {
+  CSVArrowLoader as UnbundledCSVArrowLoader,
+  CSVArrowWorkerLoader as UnbundledCSVArrowWorkerLoader
+} from '@loaders.gl/csv/unbundled';
 import * as csv from '@loaders.gl/csv';
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
@@ -95,13 +99,48 @@ test('CSVArrowLoader#load(numbers-100.csv)', async t => {
   t.end();
 });
 
-test('CSVArrow metadata loader exposes preload and deprecated WorkerLoader alias', t => {
-  t.equal(typeof CSVArrowLoader.preload, 'function', 'CSVArrowLoader exposes preload');
-  t.notOk('parse' in CSVArrowLoader, 'CSVArrowLoader does not expose parse');
+test('CSVArrow root loader exposes parser methods and deprecated WorkerLoader alias', t => {
+  t.equal(typeof CSVArrowLoader.parse, 'function', 'CSVArrowLoader exposes parse');
+  t.equal(
+    typeof CSVArrowLoader.parseInBatches,
+    'function',
+    'CSVArrowLoader exposes parseInBatches'
+  );
   t.equal(CSVArrowWorkerLoader, CSVArrowLoader, 'CSVArrowWorkerLoader aliases CSVArrowLoader');
   t.notOk(
     'CSVArrowLoaderWithParser' in csv,
     'root package does not export CSVArrowLoaderWithParser'
+  );
+  t.end();
+});
+
+test('CSVArrow unbundled metadata loader exposes preload and deprecated WorkerLoader alias', async t => {
+  t.equal(
+    typeof UnbundledCSVArrowLoader.preload,
+    'function',
+    'unbundled CSVArrowLoader exposes preload'
+  );
+  t.notOk('parse' in UnbundledCSVArrowLoader, 'unbundled CSVArrowLoader does not expose parse');
+  t.notOk(
+    'parseInBatches' in UnbundledCSVArrowLoader,
+    'unbundled CSVArrowLoader does not expose parseInBatches'
+  );
+  t.equal(
+    UnbundledCSVArrowWorkerLoader,
+    UnbundledCSVArrowLoader,
+    'unbundled CSVArrowWorkerLoader aliases CSVArrowLoader'
+  );
+
+  const parsedTable = await parse('city,population\nParis,2148000', UnbundledCSVArrowLoader, {
+    csv: {header: true}
+  });
+  t.equal(parsedTable.shape, 'arrow-table', 'parse works with unbundled CSVArrowLoader');
+
+  const preloadedLoader = await preload(UnbundledCSVArrowLoader);
+  t.equal(
+    typeof preloadedLoader.parse,
+    'function',
+    'preload returns parser-bearing CSVArrow loader'
   );
   t.end();
 });

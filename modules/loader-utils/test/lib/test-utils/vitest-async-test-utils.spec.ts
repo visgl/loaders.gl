@@ -4,6 +4,11 @@ import {
   advanceTimersAndFlush,
   createDeferred,
   flushMicrotasks,
+  isBrowser,
+  isNode,
+  testIf,
+  testIfBrowser,
+  testIfNode,
   waitForCondition,
   withFakeTimers
 } from '@loaders.gl/test-utils/vitest';
@@ -68,4 +73,26 @@ test('vitest async utils#withFakeTimers restores timers after failure', async ()
       setTimeout(() => resolve('real timer'), 0);
     })
   ).resolves.toBe('real timer');
+});
+
+test('vitest runtime utils#runtime flags are exclusive', () => {
+  expect(isNode).toBe(!isBrowser);
+});
+
+testIf(true, 'vitest runtime utils#testIf runs enabled tests', () => {
+  expect(true).toBe(true);
+});
+
+testIf(false, 'vitest runtime utils#testIf skips disabled tests', () => {
+  throw new Error('testIf(false) should skip this test body');
+});
+
+testIfNode('vitest runtime utils#testIfNode runs only in Node.js', () => {
+  expect(isNode).toBe(true);
+  expect(isBrowser).toBe(false);
+});
+
+testIfBrowser('vitest runtime utils#testIfBrowser runs only in browser runtimes', () => {
+  expect(isBrowser).toBe(true);
+  expect(isNode).toBe(false);
 });

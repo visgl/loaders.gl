@@ -7,6 +7,7 @@ export type {
   Loader,
   LoaderWithParser,
   LoaderContext,
+  CoreAPI,
   LoaderOptions,
   Writer,
   WriterOptions,
@@ -19,6 +20,7 @@ export type {
   FileSystem,
   RandomAccessFileSystem
 } from '@loaders.gl/loader-utils';
+export type {SourceLoader} from '@loaders.gl/loader-utils';
 
 // FILE READING AND WRITING
 export {fetchFile} from './lib/fetch/fetch-file';
@@ -38,6 +40,7 @@ export {parse} from './lib/api/parse';
 export {parseSync} from './lib/api/parse-sync';
 export {parseInBatches} from './lib/api/parse-in-batches';
 export {preload} from './lib/api/preload';
+export {coreApi} from './lib/api/core-api';
 
 export {load} from './lib/api/load';
 export {loadInBatches} from './lib/api/load-in-batches';

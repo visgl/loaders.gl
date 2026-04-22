@@ -6,9 +6,11 @@ import type {
   Loader,
   LoaderContext,
   LoaderOptions,
+  LoaderOptionsWithShape,
   DataType,
   LoaderWithParser,
   LoaderOptionsType,
+  LoaderShapeType,
   LoaderReturnType,
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
@@ -18,7 +20,8 @@ import {
   parseWithWorker,
   canParseWithWorker,
   mergeOptions,
-  isResponse
+  isResponse,
+  isSourceLoader
 } from '@loaders.gl/loader-utils';
 import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
@@ -36,7 +39,10 @@ import {selectLoader} from './select-loader';
  */
 export async function parse<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   data: DataType | Promise<DataType>,
   loader: LoaderT,
@@ -105,6 +111,12 @@ export async function parse(
     return null;
   }
 
+  if (isSourceLoader(loader)) {
+    throw new Error(
+      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parse().`
+    );
+  }
+
   // Normalize options
   // @ts-expect-error candidateLoaders
   const strictOptions = normalizeOptions(options, loader, candidateLoaders, url); // Could be invalid...
@@ -144,7 +156,11 @@ async function parseWithLoader(
 
   const candidateLoaderWithParser = loader as LoaderWithParser;
 
-  // First check for synchronous text parser, wrap results in promises
+  if (candidateLoaderWithParser.parseText && typeof data === 'string') {
+    return await candidateLoaderWithParser.parseText(data, options, context);
+  }
+
+  // Fall back to synchronous text parser, wrap results in promises
   if (candidateLoaderWithParser.parseTextSync && typeof data === 'string') {
     return candidateLoaderWithParser.parseTextSync(data, options, context);
   }
@@ -164,12 +180,11 @@ async function parseWithLoaderImplementation(
   options: StrictLoaderOptions,
   context: LoaderContext
 ): Promise<unknown> {
-  if (loader.parseTextSync && typeof data === 'string') {
-    return loader.parseTextSync(data, options, context);
-  }
-  // Check for asynchronous parser
   if (loader.parseText && typeof data === 'string') {
     return await loader.parseText(data, options, context);
+  }
+  if (loader.parseTextSync && typeof data === 'string') {
+    return loader.parseTextSync(data, options, context);
   }
 
   if (loader.parse) {

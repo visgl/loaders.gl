@@ -1,4 +1,60 @@
-import {vi} from 'vitest';
+import {isBrowser as checkIsBrowser} from '@probe.gl/env';
+import {test as vitestTest, vi, type TestFunction, type TestOptions} from 'vitest';
+
+/** True when the current Vitest project is running in a browser-like runtime. */
+export const isBrowser = checkIsBrowser();
+
+/** True when the current Vitest project is running in Node.js. */
+export const isNode = !isBrowser;
+
+/** Options accepted by Vitest's test registration API. */
+export type ConditionalTestOptions = number | TestOptions;
+
+/**
+ * Registers a Vitest test when `condition` is true, otherwise registers it as skipped.
+ */
+export function testIf(
+  condition: boolean,
+  name: string,
+  testFunction: TestFunction,
+  options?: ConditionalTestOptions
+): void {
+  const testImplementation = condition ? vitestTest : vitestTest.skip;
+
+  if (options === undefined) {
+    testImplementation(name, testFunction);
+    return;
+  }
+
+  if (typeof options === 'number') {
+    testImplementation(name, testFunction, options);
+    return;
+  }
+
+  testImplementation(name, options, testFunction);
+}
+
+/**
+ * Registers a Vitest test only in browser-like runtimes.
+ */
+export function testIfBrowser(
+  name: string,
+  testFunction: TestFunction,
+  options?: ConditionalTestOptions
+): void {
+  testIf(isBrowser, name, testFunction, options);
+}
+
+/**
+ * Registers a Vitest test only in Node.js.
+ */
+export function testIfNode(
+  name: string,
+  testFunction: TestFunction,
+  options?: ConditionalTestOptions
+): void {
+  testIf(isNode, name, testFunction, options);
+}
 
 /** Deferred promise handles used to orchestrate callback-driven async tests. */
 export type Deferred<T> = {

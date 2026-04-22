@@ -1,12 +1,12 @@
 import test from 'tape-promise/tape';
-import {PotreeSource} from '@loaders.gl/potree';
+import {PotreeSourceLoader} from '@loaders.gl/potree';
 
 const POTREE_BIN_URL = '@loaders.gl/potree/test/data/lion_takanawa';
 const POTREE_LAZ_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted';
 
-test('PotreeSource#initialize', async t => {
-  const DS = PotreeSource;
+test('PotreeSourceLoader#initialize', async t => {
+  const DS = PotreeSourceLoader;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
   t.notOk(source.isReady);
 
@@ -19,8 +19,8 @@ test('PotreeSource#initialize', async t => {
   t.end();
 });
 
-test.skip('PotreeSource#loadNodeContent - should return null for unsupported source', async t => {
-  const DS = PotreeSource;
+test.skip('PotreeSourceLoader#loadNodeContent - should return null for unsupported source', async t => {
+  const DS = PotreeSourceLoader;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
 
   const existingNodeContent = await source.loadNodeContent('360');
@@ -29,8 +29,8 @@ test.skip('PotreeSource#loadNodeContent - should return null for unsupported sou
   t.end();
 });
 
-test.skip('PotreeSource#loadNodeContent', async t => {
-  const DS = PotreeSource;
+test.skip('PotreeSourceLoader#loadNodeContent', async t => {
+  const DS = PotreeSourceLoader;
   const source = DS.createDataSource(POTREE_LAZ_URL, {});
 
   await source.init();

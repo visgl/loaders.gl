@@ -6,7 +6,7 @@ Support for loading tiled data from [PMTiles](/docs/modules/pmtiles/formats/pmti
 
 | Loader                                                                |
 | --------------------------------------------------------------------- |
-| [`PMTilesSource`](/docs/modules/pmtiles/api-reference/pmtiles-source) |
+| [`PMTilesSourceLoader`](/docs/modules/pmtiles/api-reference/pmtiles-source-loader) |
 
 ## Attribution
 

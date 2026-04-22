@@ -223,18 +223,22 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
     switch (dataType.type) {
       case 'decimal':
         return new arrow.Decimal(dataType.precision, dataType.scale, dataType.bitWidth);
-      case 'map':
-        let children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
+      case 'map': {
+        const children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
         return new arrow.Map_(children as any, dataType.keysSorted);
-      case 'list':
+      }
+      case 'list': {
         const field = deserializeArrowField(dataType.children[0]);
         return new arrow.List(field);
-      case 'fixed-size-list':
+      }
+      case 'fixed-size-list': {
         const child = deserializeArrowField(dataType.children[0]);
         return new arrow.FixedSizeList(dataType.listSize, child);
-      case 'struct':
-        children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
+      }
+      case 'struct': {
+        const children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
         return new arrow.Struct(children);
+      }
       default:
         throw new Error('array type not supported');
     }

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import Map from 'react-map-gl';
@@ -19,7 +19,8 @@ import {fetchFile, load} from '@loaders.gl/core';
 import {Sublayer, buildSublayersTree} from './helpers/sublayers';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {BuildingExplorer} from './components/building-explorer';
-import {filterTile} from '@deck.gl-community/experimental';
+import {filterTile} from './filter-tile';
+import {createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Turanga_Library/SceneServer/layers/0';
@@ -56,6 +57,7 @@ export default function App() {
     attributeName: string;
     value: number;
   } | null>(null);
+  const widgets = useMemo(() => [createDeckStatsWidget('i3s-building-scene-layer-stats')], []);
 
   useEffect(() => {
     const getFlattenedSublayers = async (tilesetUrl: string): Promise<void> => {
@@ -167,7 +169,12 @@ export default function App() {
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <DeckGL initialViewState={viewState} layers={renderLayers()} controller={MAP_CONTROLLER}>
+      <DeckGL
+        initialViewState={viewState}
+        layers={renderLayers()}
+        controller={MAP_CONTROLLER}
+        widgets={widgets}
+      >
         <Map
           reuseMaps
           mapLib={maplibregl}

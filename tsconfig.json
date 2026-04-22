@@ -233,6 +233,12 @@
       "@loaders.gl/pmtiles/test": [
         "modules/pmtiles/test"
       ],
+      "@loaders.gl/sql": [
+        "modules/sql/src"
+      ],
+      "@loaders.gl/sql/test": [
+        "modules/sql/test"
+      ],
       "@loaders.gl/ply": [
         "modules/ply/src"
       ],

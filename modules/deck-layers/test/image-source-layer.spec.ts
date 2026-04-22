@@ -33,9 +33,7 @@ const TEST_SOURCE_FACTORY = {
   }
 };
 
-function createLayer(
-  props: ImageSourceLayerProps = {id: 'test', data: TEST_IMAGE_SOURCE as any}
-) {
+function createLayer(props: ImageSourceLayerProps = {id: 'test', data: TEST_IMAGE_SOURCE as any}) {
   return new ImageSourceLayer(props as any) as any;
 }
 
@@ -93,7 +91,10 @@ test('ImageSourceLayer#forwards feature info using the last request parameters',
         image: {} as any,
         parameters: {
           layers: ['visible'],
-          boundingBox: [[1, 2], [3, 4]],
+          boundingBox: [
+            [1, 2],
+            [3, 4]
+          ],
           width: 256,
           height: 128,
           crs: 'EPSG:4326'
@@ -152,5 +153,46 @@ test('ImageSourceLayer#passes debounceTime into ImageSet', t => {
   t.equal(imageSet._opts.debounceTime, 25);
 
   layer._releaseImageSet();
+  t.end();
+});
+
+test('ImageSourceLayer#reloads imagery when srs changes on a static viewport', t => {
+  const requestedParameters: any[] = [];
+  const layer = createLayer({
+    id: 'test',
+    data: TEST_IMAGE_SOURCE as any,
+    srs: 'EPSG:4326'
+  });
+
+  layer.context = {
+    viewport: {
+      getBounds: () => [1, 2, 3, 4],
+      width: 256,
+      height: 128,
+      resolution: 1
+    }
+  };
+  layer.state = {
+    resolvedData: TEST_IMAGE_SOURCE,
+    imageSet: {
+      loadMetadata: async () => {},
+      setOptions: () => {},
+      requestImage: (parameters: any) => requestedParameters.push(parameters)
+    },
+    unsubscribeImageSetEvents: null
+  };
+
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, srs: 'EPSG:3857'},
+    changeFlags: {dataChanged: false, viewportChanged: false}
+  });
+
+  t.equal(requestedParameters.length, 1, 'issues a fresh image request when srs changes');
+  t.equal(requestedParameters[0].crs, 'EPSG:4326', 'uses the updated srs in request parameters');
+  t.deepEqual(requestedParameters[0].boundingBox, [
+    [1, 2],
+    [3, 4]
+  ]);
   t.end();
 });

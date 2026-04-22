@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {load} from '@loaders.gl/core';
 import {path} from '@loaders.gl/loader-utils';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {Vector3} from '@math.gl/core';
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {CoreAPI, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {Tile3D} from '../common/tile-3d';
 import {Tileset3DTraverser} from './tileset-3d-traverser';
 import type {Tileset3D} from '../common/tileset-3d';
@@ -18,6 +17,7 @@ import type {
   TilesetSourceInput,
   TilesetSourceMetadata,
   TilesetSourceRequest,
+  TilesetSourceResolver,
   TilesetSourceViewState
 } from '../common/tileset-source';
 import {Tile3D as Tile3DNode} from '../common/tile-3d';
@@ -48,6 +48,8 @@ export class Tiles3DSource implements Tileset3DSource {
   tileset: TilesetJSON | null = null;
   /** Loader options forwarded to content requests. */
   readonly loadOptions: LoaderOptions;
+  /** Core API used for root and tile-content loads when injected by the caller. */
+  coreApi?: CoreAPI;
   /** Aggregate content-format flags discovered during streaming. */
   readonly contentFormats: TilesetContentFormats = {...EMPTY_CONTENT_FORMATS};
 
@@ -64,6 +66,7 @@ export class Tiles3DSource implements Tileset3DSource {
 
   private readonly queryParams: Record<string, string> = {};
   private readonly extensionsUsed: string[] = [];
+  private readonly resolver?: TilesetSourceResolver;
   private rootTileset: TilesetJSON;
 
   /**
@@ -78,6 +81,8 @@ export class Tiles3DSource implements Tileset3DSource {
     this.loader = request.loader;
     this.url = request.url;
     this.basePath = request.basePath || path.dirname(request.url);
+    this.resolver = request.resolver;
+    this.coreApi = request.coreApi;
     this.loadOptions = loadOptions;
   }
 
@@ -87,7 +92,7 @@ export class Tiles3DSource implements Tileset3DSource {
   async initialize(): Promise<void> {
     if (!this.rootTileset) {
       const loaderOptions = (this.loadOptions[this.loader.id] as Record<string, unknown>) || {};
-      this.rootTileset = await load(this.url, this.loader, {
+      this.rootTileset = await this.loadRootData(this.url, {
         ...this.loadOptions,
         [this.loader.id]: {
           ...loaderOptions,
@@ -216,7 +221,7 @@ export class Tiles3DSource implements Tileset3DSource {
       }
     };
 
-    const content = await load(contentUrl, this.loader, options);
+    const content = await this.loadResourceData(contentUrl, options);
     tile.content = content;
 
     return {
@@ -310,6 +315,39 @@ export class Tiles3DSource implements Tileset3DSource {
       tileset._initializeTileHeaders(loadResult.nestedTileset, tile);
     }
   }
+
+  /**
+   * Loads data through injected core APIs so this module stays independent from `@loaders.gl/core`.
+   */
+  private async loadWithCoreApi(url: string, options: LoaderOptions): Promise<any> {
+    if (!this.coreApi) {
+      throw new Error('Tiles3DSource requires an injected coreApi to load tileset data');
+    }
+
+    return await this.coreApi.load(url, this.loader, options);
+  }
+
+  /**
+   * Loads data through an injected resolver when present, otherwise through the injected core API.
+   */
+  private async loadRootData(url: string, options: LoaderOptions): Promise<any> {
+    if (this.resolver) {
+      return await this.resolver.loadRoot(url, this.loader, options);
+    }
+
+    return await this.loadWithCoreApi(url, options);
+  }
+
+  /**
+   * Loads tile content through an injected resolver when present, otherwise through the injected core API.
+   */
+  private async loadResourceData(url: string, options: LoaderOptions): Promise<any> {
+    if (this.resolver) {
+      return await this.resolver.loadResource(url, this.loader, options);
+    }
+
+    return await this.loadWithCoreApi(url, options);
+  }
 }
 
 function isTilesetRequest(input: TilesetSourceInput): input is TilesetSourceRequest {
@@ -334,6 +372,8 @@ function normalizeTiles3DRequest(input: TilesetSourceInput): TilesetSourceReques
   return {
     url: input.url,
     loader: input.loader,
-    basePath: input.basePath || path.dirname(input.url)
+    basePath: input.basePath || path.dirname(input.url),
+    resolver: (input as TilesetSourceRequest).resolver,
+    coreApi: (input as TilesetSourceRequest).coreApi
   };
 }

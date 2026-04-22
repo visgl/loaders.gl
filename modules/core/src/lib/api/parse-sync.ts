@@ -7,13 +7,16 @@ import type {
   LoaderWithParser,
   LoaderOptions,
   LoaderContext,
+  LoaderOptionsWithShape,
   SyncDataType,
   LoaderOptionsType,
+  LoaderShapeType,
   LoaderReturnType,
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
   StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
+import {isSourceLoader} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
@@ -28,7 +31,10 @@ import {getResourceUrl} from '../utils/resource-utils';
  */
 export function parseSync<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   data: SyncDataType,
   loader: LoaderT,
@@ -82,6 +88,12 @@ export function parseSync(
   // Note: if nothrow option was set, it is possible that no loader was found, if so just return null
   if (!loader) {
     return null;
+  }
+
+  if (isSourceLoader(loader)) {
+    throw new Error(
+      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parseSync().`
+    );
   }
 
   // Normalize options

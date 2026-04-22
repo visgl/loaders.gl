@@ -7,17 +7,25 @@ import type {
   Loader,
   LoaderContext,
   LoaderOptions,
+  LoaderOptionsWithShape,
   LoaderOptionsType,
+  LoaderShapeType,
   LoaderReturnType,
   LoaderArrayOptionsType,
-  LoaderArrayReturnType
+  LoaderArrayReturnType,
+  SourceLoader
 } from '@loaders.gl/loader-utils';
-import {isBlob} from '@loaders.gl/loader-utils';
+import {isBlob, isSourceLoader} from '@loaders.gl/loader-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {getFetchFunction} from '../loader-utils/get-fetch-function';
 import {normalizeLoaderOptions} from '../loader-utils/option-utils';
+import {fetchFile} from '../fetch/fetch-file';
 
 import {parse} from './parse';
+import {parseSync} from './parse-sync';
+import {parseInBatches} from './parse-in-batches';
+import {loadInBatches} from './load-in-batches';
+import {selectLoader} from './select-loader';
 
 /**
  * Parses `data` using a specified loader
@@ -31,7 +39,10 @@ import {parse} from './parse';
 
 export async function load<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   url: string | DataType,
   loader: LoaderT,
@@ -81,6 +92,64 @@ export async function load(
     resolvedOptions = options as LoaderOptions;
   }
 
+  if (!Array.isArray(resolvedLoaders) && isSourceLoader(resolvedLoaders)) {
+    const runtimeCoreApi = {
+      fetchFile,
+      parse,
+      parseSync,
+      parseInBatches,
+      load,
+      loadInBatches
+    };
+    return resolvedLoaders.createDataSource(
+      url as string | Blob,
+      (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
+      runtimeCoreApi
+    );
+  }
+
+  if (
+    Array.isArray(resolvedLoaders) &&
+    resolvedLoaders.length === 1 &&
+    isSourceLoader(resolvedLoaders[0])
+  ) {
+    const runtimeCoreApi = {
+      fetchFile,
+      parse,
+      parseSync,
+      parseInBatches,
+      load,
+      loadInBatches
+    };
+    return resolvedLoaders[0].createDataSource(
+      url as string | Blob,
+      (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
+      runtimeCoreApi
+    );
+  }
+
+  if (typeof url === 'string' || isBlob(url)) {
+    const selectedLoader = await selectLoader(url, resolvedLoaders as Loader | Loader[], {
+      ...resolvedOptions,
+      core: {...resolvedOptions?.core, nothrow: true}
+    });
+
+    if (selectedLoader && isSourceLoader(selectedLoader)) {
+      return selectedLoader.createDataSource(
+        url,
+        (resolvedOptions || {}) as LoaderOptionsType<SourceLoader>,
+        {
+          fetchFile,
+          parse,
+          parseSync,
+          parseInBatches,
+          load,
+          loadInBatches
+        }
+      );
+    }
+  }
+
   // Select fetch function
   const fetch = getFetchFunction(resolvedOptions);
 
@@ -114,6 +183,6 @@ export async function load(
   // Data is loaded (at least we have a `Response` object) so time to hand over to `parse`
   // return await parse(data, loaders as Loader[], options);
   return Array.isArray(resolvedLoaders)
-    ? await parse(data, resolvedLoaders, resolvedOptions) // loader array overload
-    : await parse(data, resolvedLoaders, resolvedOptions); // single loader overload
+    ? await parse(data, resolvedLoaders, resolvedOptions, context) // loader array overload
+    : await parse(data, resolvedLoaders, resolvedOptions, context); // single loader overload
 }

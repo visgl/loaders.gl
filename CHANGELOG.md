@@ -213,14 +213,14 @@ See `4.3-release` branch for additional CHANGELOGS
 - fix(tile-converter): Fix according to new NodeJS security limitations (#3071)
 - fix(tile-converter): Added flag to size calculation (#3069)
 - chore(gltf): fix env dependency in a test (#3068)
-- chore(potree): test PotreeSource on a supported dataset (#3065)
+- chore(potree): test PotreeSourceLoader on a supported dataset (#3065)
 
 ### v4.3.0-alpha.6
 
 - fix(tile-converter): Returned non-slpk behavior for calculateFilesSize function (#3066)
 - fix(tile-converter): Wrong percent calculation fix (#3063)
 - Create security policy (#3064)
-- test(potree): Add tests for PotreeSource (#3062)
+- test(potree): Add tests for PotreeSourceLoader (#3062)
 - fix(potree): hierarchy loading (#3061)
 - chore(deps): bump elliptic from 6.5.4 to 6.5.7 in /website (#3058)
 - chore(deps): bump axios from 1.6.8 to 1.7.4 (#3059)
@@ -263,7 +263,7 @@ See `4.3-release` branch for additional CHANGELOGS
 ### v4.3.0-alpha.3
 
 - fix(i3s): slpk full path on Windows (#3011)
-- feat(mvt): TableTileSource refactor, improved typing (#2990)
+- feat(mvt): TableTileSourceLoader refactor, improved typing (#2990)
 - chore: Cleanup of Source parameters (#3015)
 - fix(csv): move d3-dsv from devDependencies to dependencies (#3009)
 - fix(loader-utils): add missing dependency for @probe.gl/log (#3008)
@@ -284,7 +284,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - chore: update yarn and docusaurus deps (#2994)
 - example: TileSourceLayer can now render MVTLayer (#2992)
 - feat(parquet): Adopt new parquet-wasm File reader API. (#2987)
-- feat(mvt): TableTileSource uses probe.gl Stats and Log (#2989)
+- feat(mvt): TableTileSourceLoader uses probe.gl Stats and Log (#2989)
 - feat(mvt): Add WGS84 support to GeoJSONTileSource (#2977)
 - fix(zip): zip optimization for range requests (#2983)
 - chore: Bump ocular-dev-tools@alpha.31 (#2988)
@@ -301,7 +301,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - chore(mvt): loader and source cleanup (#2975)
 - feat(parquet): support 'limit' option (#2973)
 - chore(mvt): Deduplicate vector tile code (#2974)
-- feat(mvt): TableTileSource (#2969)
+- feat(mvt): TableTileSourceLoader (#2969)
 - chore(mvt): refactor for clarity (#2971)
 - docs: v4.2 release notes (#2963)
 
@@ -454,7 +454,7 @@ See `4.3-release` branch for additional CHANGELOGS
 
 ### v4.1.0-alpha.3
 
-- feat(mvt): Add templateUrl etc to MVTSource. (#2837)
+- feat(mvt): Add templateUrl etc to MVTSourceLoader. (#2837)
 - fix(mvt): TileJSONLoader options.maxValues default (#2835)
 - chore(deps): bump vite from 4.4.9 to 4.5.1 (#2822)
 - fix(3d-tiles): Fix implicit tileset subtree parsing (#2823)
@@ -618,7 +618,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - chore: Restore library loading (#2686)
 - fix(tiles): convert region to obb (#2685)
 - feat: Move to ES modules, upgrade dev-tools (#2681)
-- feat(mvt): Add MVTSource (#2674)
+- feat(mvt): Add MVTSourceLoader (#2674)
 - chore(core): Remove writeSync, save and fs dependencies (#2678)
 - feat(loader-utils): Refactor FileSystem to be independent of fs (#2676)
 - chore: Remove Buffer usage (#2675)
@@ -636,7 +636,7 @@ See `4.3-release` branch for additional CHANGELOGS
 - feat(gltf): added support of arrays to ext-feature-metadata (#2663)
 - feat(mvt): Add TileJSONLoader (#2666)
 - feat(pmtiles): Create PMTileSource from Blob (#2668)
-- feat(wms): Separate WMSSource and WMSService (#2667)
+- feat(wms): Separate WMSSourceLoader and WMSService (#2667)
 - fix: remove unused ts directive (#2665)
 - Move master to 4.0-beta tags (#2661)
 - feat(pmtools): Add vector tile support (#2664)

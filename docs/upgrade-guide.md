@@ -7,6 +7,75 @@ These deprecations.removals are being considered for v5
 **@loaders.gl/core**
 
 - Top-level loader options are no longer supported
+- `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
+- `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
+- `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
+
+**@loaders.gl/loader-utils, @loaders.gl/core, and source modules**
+
+If you are upgrading from the 4.4 release line, migrate top-level source factories and types as follows:
+
+| v4.4 | v5.0 |
+| --- | --- |
+| `Source` | `SourceLoader` |
+| `WMSSource` | `WMSSourceLoader` |
+| `WFSSource` | `WFSSourceLoader` |
+| `MVTSource` | `MVTSourceLoader` |
+| `MLTSource` | `MLTSourceLoader` |
+| `PMTilesSource` | `PMTilesSourceLoader` |
+| `COPCSource` | `COPCSourceLoader` |
+| `PotreeSource` | `PotreeSourceLoader` |
+| `TableTileSource` | `TableTileSourceLoader` |
+| `FlatGeobufSource` | `FlatGeobufSourceLoader` |
+| `GeoTIFFSource` | `GeoTIFFSourceLoader` |
+| `OMETiffSource` | `OMETiffSourceLoader` |
+
+Concrete runtime classes are unchanged. For example:
+
+- `WMSSourceLoader` still creates `WMSImageSource`
+- `MVTSourceLoader` still creates `MVTTileSource`
+- `PMTilesSourceLoader` still creates `PMTilesTileSource`
+- `TableTileSourceLoader` still creates `TableVectorTileSource`
+
+The old top-level `*Source` aliases have been removed, so imports must be updated explicitly.
+
+### SourceLoader migration examples
+
+Before, in 4.4:
+
+```ts
+import type {Source} from '@loaders.gl/loader-utils';
+import {createDataSource, load} from '@loaders.gl/core';
+import {WMSSource, PMTilesSource} from '@loaders.gl/wms';
+
+const sources: Source[] = [WMSSource, PMTilesSource];
+const wmsSource = createDataSource(url, [WMSSource], options);
+const loaded = await load(url, WMSSource);
+```
+
+Now, in v5:
+
+```ts
+import type {SourceLoader} from '@loaders.gl/loader-utils';
+import {createDataSource, load} from '@loaders.gl/core';
+import {WMSSourceLoader} from '@loaders.gl/wms';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+
+const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
+const wmsSource = createDataSource(url, [WMSSourceLoader], options);
+const loaded = await load(url, WMSSourceLoader); // WMSImageSource
+```
+
+This unifies top-level loading behavior:
+
+- parser loaders still return parsed data
+- source loaders now return runtime source objects
+- metadata remains available from the returned runtime object, typically via `await source.getMetadata()`
+
+**@loaders.gl/parquet**
+
+- `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoader`, or `ParquetJSWriter` instead depending on the backend you want.
+- `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. The experimental parquetjs backend now lives behind the explicit `ParquetJSLoader` and `ParquetJSWriter` exports.
 
 **@loaders.gl/images**
 
@@ -43,6 +112,7 @@ These deprecations.removals are being considered for v5
 
 - `@loaders.gl/parquet/buffer`, `BufferPolyfill`, and `installBufferPolyfill()` were removed. The JavaScript Parquet parser and writer now use `Uint8Array` internally instead of installing a global `Buffer`.
 - `ParquetLoader` and the experimental parquetjs APIs now return unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` values as `Uint8Array` instead of `Buffer`. Logical values such as `UTF8` and `JSON` are still decoded to JavaScript strings/objects according to the Parquet schema.
+- `ParquetLoader` and `ParquetWriter` are now wasm-only. Use `ParquetJSLoader` and `ParquetJSWriter` for the experimental parquetjs plain-row/plain-table backend.
 
 ## Upgrading to v4.3
 

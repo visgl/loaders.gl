@@ -110,7 +110,10 @@ export function getMapStyleLoadOptions(
 /**
  * Resolves a URL against the provided base URL.
  */
-export function normalizeMapStyleUrl(url: string | undefined, baseUrl?: string): string | undefined {
+export function normalizeMapStyleUrl(
+  url: string | undefined,
+  baseUrl?: string
+): string | undefined {
   if (!url) {
     return url;
   }
@@ -130,7 +133,7 @@ export function normalizeMapStyleTiles(
   baseUrl?: string
 ): string[] | undefined {
   return Array.isArray(tiles)
-    ? tiles.map((tile) => normalizeMapStyleUrl(tile, baseUrl) || tile)
+    ? tiles.map(tile => normalizeMapStyleUrl(tile, baseUrl) || tile)
     : tiles;
 }
 

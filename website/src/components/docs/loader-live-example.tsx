@@ -69,6 +69,7 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
     kind: 'geospatial',
     format: 'FlatGeobuf'
   },
+  'modules/geopackage/api-reference/geopackage-loader': {kind: 'geospatial', format: 'GeoPackage'},
   'modules/json/api-reference/json-loader': {
     kind: 'table',
     table: {
@@ -78,13 +79,6 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
     }
   },
   'modules/json/api-reference/geojson-loader': {kind: 'geospatial', format: 'GeoJSON'},
-  'modules/json/api-reference/ndjson-arrow-loader': {
-    kind: 'table',
-    table: {
-      loaderName: 'NDJSONArrowLoader',
-      url: `${LOADERS_URL}/modules/json/test/data/ndjson.ndjson`
-    }
-  },
   'modules/json/api-reference/ndjson-loader': {
     kind: 'table',
     table: {

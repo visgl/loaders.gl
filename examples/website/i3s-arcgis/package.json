@@ -11,20 +11,25 @@
   },
   "dependencies": {
     "@arcgis/core": "^4.25.0",
-    "@deck.gl/arcgis": "^9.0.1",
-    "@deck.gl/core": "^9.0.1",
-    "@deck.gl/extensions": "^9.0.1",
-    "@deck.gl/geo-layers": "^9.0.1",
-    "@deck.gl/layers": "^9.0.1",
-    "@deck.gl/mesh-layers": "^9.0.1",
+    "@deck.gl/arcgis": "^9.3.0",
+    "@deck.gl/core": "^9.3.0",
+    "@deck.gl/extensions": "^9.3.0",
+    "@deck.gl/geo-layers": "^9.3.0",
+    "@deck.gl/layers": "^9.3.0",
+    "@deck.gl/mesh-layers": "^9.3.0",
     "@esri/react-arcgis": "^5.2.0",
-    "@loaders.gl/core": "4.4.0-alpha.1",
-    "@loaders.gl/i3s": "4.4.0-alpha.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/i3s": "workspace:*",
+    "@luma.gl/core": "^9.3.2",
+    "@luma.gl/engine": "^9.3.2",
+    "@luma.gl/shadertools": "^9.3.2",
+    "@luma.gl/webgl": "^9.3.2",
+    "esri-loader": "^2.15.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "typescript": "^5.3.0",
+    "typescript": "^5.6.0",
     "vite": "^7.2.7"
   }
 }

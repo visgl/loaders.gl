@@ -12,8 +12,8 @@ import {
 } from '@deck.gl/core';
 import type {GeoJsonLayerProps} from '@deck.gl/layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
-import type {BinaryFeatureCollection, GeoJSONTable} from '@loaders.gl/schema';
-import type {VectorSource} from '@loaders.gl/loader-utils';
+import type {GeoJSONTable} from '@loaders.gl/schema';
+import type {VectorSource, VectorSourceData} from '@loaders.gl/loader-utils';
 import {VectorSet} from './vector-source-layer/vector-set';
 
 /** Props for {@link VectorSourceLayer}. */
@@ -24,10 +24,12 @@ export type VectorSourceLayerProps = CompositeLayerProps & {
   layers: string | string[];
   /** Output CRS forwarded to `VectorSource#getFeatures`. */
   crs?: string;
+  /** Output format forwarded to `VectorSource#getFeatures`. */
+  format?: 'geojson' | 'binary' | 'arrow';
   /** Debounce interval applied before viewport requests are issued. */
   debounceTime?: number;
   /** Called when the current viewport request resolves successfully. */
-  onDataLoad?: (table: GeoJSONTable | BinaryFeatureCollection) => void;
+  onDataLoad?: (table: VectorSourceData) => void;
   /** Called when metadata or viewport requests fail. */
   onError?: (error: Error) => void;
   /** Called when metadata/viewport loading starts or stops. */
@@ -44,6 +46,7 @@ type VectorSourceLayerState = {
 const defaultProps: DefaultProps<VectorSourceLayerProps> = {
   id: 'vector-source-layer',
   crs: 'EPSG:4326',
+  format: 'geojson',
   debounceTime: 200,
   geoJsonLayerProps: {type: 'object', compare: false, value: {}},
   onDataLoad: {type: 'function', value: () => {}},
@@ -113,7 +116,11 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
       return;
     }
 
-    if (!deepEqual(props.layers, oldProps.layers, 1) || props.crs !== oldProps.crs) {
+    if (
+      !deepEqual(props.layers, oldProps.layers, 1) ||
+      props.crs !== oldProps.crs ||
+      props.format !== oldProps.format
+    ) {
       this.state.vectorSet.setOptions(this._getVectorSetOptions(props));
       void this._updateViewport();
       return;
@@ -135,6 +142,12 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
     const table = this.state.vectorSet?.data;
     if (!table) {
       return null;
+    }
+
+    if (isArrowTable(table)) {
+      throw new Error(
+        'VectorSourceLayer does not render Arrow tables directly. Request geojson/binary output or convert Arrow results before rendering.'
+      );
     }
 
     const geoJsonData = isGeoJSONTable(table)
@@ -159,6 +172,7 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
       const vectorSet = VectorSet.fromVectorSource(vectorSource, {
         layers: this.props.layers,
         crs: this.props.crs,
+        format: this.props.format,
         debounceTime: this.props.debounceTime
       });
       const unsubscribeVectorSetEvents = vectorSet.subscribe({
@@ -191,6 +205,7 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
       vectorSource: props.data,
       layers: props.layers,
       crs: props.crs,
+      format: props.format,
       debounceTime: props.debounceTime
     };
   }
@@ -207,8 +222,10 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
   }
 }
 
-function isGeoJSONTable(
-  data: GeoJSONTable | BinaryFeatureCollection
-): data is GeoJSONTable {
+function isGeoJSONTable(data: VectorSourceData): data is GeoJSONTable {
   return (data as GeoJSONTable).shape === 'geojson-table';
+}
+
+function isArrowTable(data: VectorSourceData): boolean {
+  return (data as {shape?: string}).shape === 'arrow-table';
 }

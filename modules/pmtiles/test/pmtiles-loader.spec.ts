@@ -10,7 +10,7 @@ import {_PMTilesLoader as PMTilesLoader} from '@loaders.gl/pmtiles';
 
 test('PMTilesLoader#schemas', async t => {
   if (!isBrowser) {
-    t.comment('PMTilesSource currently only supported in browser');
+    t.comment('PMTilesSourceLoader currently only supported in browser');
     t.end();
     return;
   }
