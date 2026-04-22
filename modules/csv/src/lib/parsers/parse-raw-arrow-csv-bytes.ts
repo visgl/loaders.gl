@@ -1218,7 +1218,7 @@ function createUtf8Schema(headerRow: string[]): Schema {
     fields: headerRow.map(columnName => ({name: columnName, type: 'utf8', nullable: true})),
     metadata: {
       'loaders.gl#format': 'csv',
-      'loaders.gl#loader': 'CSVArrowLoader'
+      'loaders.gl#loader': 'CSVLoader'
     }
   };
 }

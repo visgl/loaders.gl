@@ -59,5 +59,26 @@ export type TapeTestFunction = {
 
 declare const test: TapeTestFunction;
 
+/** True when the current Vitest project is running in a browser-like runtime. */
+export declare const isBrowser: boolean;
+
+/** True when the current Vitest project is running in Node.js. */
+export declare const isNode: boolean;
+
+/**
+ * Registers a tape-style test when `condition` is true, otherwise registers it as skipped.
+ */
+export declare function testIf(condition: boolean, name: string, callback: TestCallback): unknown;
+
+/**
+ * Registers a tape-style test only in browser-like runtimes.
+ */
+export declare function testIfBrowser(name: string, callback: TestCallback): unknown;
+
+/**
+ * Registers a tape-style test only in Node.js.
+ */
+export declare function testIfNode(name: string, callback: TestCallback): unknown;
+
 export {test};
 export default test;

@@ -20,6 +20,7 @@ export async function getVitestConfig(options = {}) {
   const vitestConfig = ocularConfig.devtools?.vitest || {};
   const tsconfigProjects = vitestConfig.tsconfigProjects || ['./tsconfig.json'];
   const excludePatterns = vitestConfig.excludePatterns || [];
+  const nodeExcludePatterns = vitestConfig.nodeExcludePatterns || [];
   const sharedExcludePatterns = ['**/node_modules/**', ...excludePatterns];
   const setupFiles = vitestConfig.setupFiles || ['./test/vitest-setup.ts'];
   const browserName = vitestConfig.browserName || 'chromium';
@@ -49,7 +50,7 @@ export async function getVitestConfig(options = {}) {
   return defineConfig({
     plugins: [serveRangeRequestsPlugin(repositoryRoot)],
     optimizeDeps: {
-      include: ['get-pixels']
+      include: ['get-pixels', '@probe.gl/env']
     },
     resolve: {
       alias: [
@@ -68,17 +69,11 @@ export async function getVitestConfig(options = {}) {
             environment: 'node',
             passWithNoTests: true,
             setupFiles,
-            include: [
-              'modules/core/test/**/*.spec.{ts,js}',
-              'modules/images/test/**/*.spec.{ts,js}',
-              'modules/loader-utils/test/**/*.spec.{ts,js}',
-              'modules/polyfills/test/**/*.spec.{ts,js}',
-              'modules/**/*.node.spec.{ts,js}',
-              'test/**/*.node.spec.{ts,js}'
-            ],
+            include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
             exclude: [
               'modules/**/*.browser.spec.{ts,js}',
               'test/**/*.browser.spec.{ts,js}',
+              ...nodeExcludePatterns,
               ...sharedExcludePatterns
             ],
             browser: {
