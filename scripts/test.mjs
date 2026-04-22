@@ -13,12 +13,33 @@ const modeArguments = {
   browser: ['run', '--config', VITEST_CONFIG, '--project', 'browser'],
   'browser-headless': ['run', '--config', VITEST_CONFIG, '--project', 'headless'],
   full: ['run', '--config', VITEST_CONFIG, '--project', 'node', '--project', 'headless'],
-  'cover-headless': ['run', '--config', VITEST_CONFIG, '--coverage', '--project', 'headless'],
+  'cover-node': [
+    'run',
+    '--config',
+    VITEST_CONFIG,
+    '--coverage',
+    '--testTimeout',
+    '60000',
+    '--project',
+    'node'
+  ],
+  'cover-headless': [
+    'run',
+    '--config',
+    VITEST_CONFIG,
+    '--coverage',
+    '--testTimeout',
+    '60000',
+    '--project',
+    'headless'
+  ],
   cover: [
     'run',
     '--config',
     VITEST_CONFIG,
     '--coverage',
+    '--testTimeout',
+    '60000',
     '--project',
     'node',
     '--project',
@@ -80,6 +101,7 @@ Modes:
   node             Run Node-only tests
   browser          Run browser tests in a headed browser
   browser-headless Run browser tests in a headless browser
+  cover-node       Run Node-only tests with coverage
   cover-headless   Run headless browser tests with coverage
   cover            Run Node-only and headless browser tests with coverage
 `);

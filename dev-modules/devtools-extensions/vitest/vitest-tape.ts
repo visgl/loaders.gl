@@ -425,7 +425,7 @@ class VitestTape implements Test {
         ]);
       }
 
-      if (waitsForEnd && !isPromiseLike(callbackResult)) {
+      if (waitsForEnd) {
         if (this.timeoutMilliseconds === undefined) {
           await this.endPromise;
         } else {
