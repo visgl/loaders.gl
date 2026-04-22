@@ -7,6 +7,7 @@ import {load, loadInBatches} from '@loaders.gl/core';
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
 import {ExcelArrowLoader, ExcelLoader} from '@loaders.gl/excel';
 import {CSVLoader} from '@loaders.gl/csv';
+import {convertExcelRowsToArrowTable} from '../src/lib/convert-excel-rows-to-arrow';
 
 const ZIPCODES_XLSX_PATH = '@loaders.gl/excel/test/data/zipcodes.xlsx';
 const ZIPCODES_XLSB_PATH = '@loaders.gl/excel/test/data/zipcodes.xlsb';
@@ -97,6 +98,42 @@ test('ExcelLoader#load(ZIPCODES, shape: arrow-table)', async t => {
     classicTable.data[100].city,
     'XLSX: Arrow values match classic loader'
   );
+  t.end();
+});
+
+test('convertExcelRowsToArrowTable handles empty and nullable primitive rows', t => {
+  const emptyTable = convertExcelRowsToArrowTable([]);
+
+  t.equal(emptyTable.shape, 'arrow-table', 'Empty rows return an Arrow table');
+  t.equal(emptyTable.data.numCols, 0, 'Empty rows return no columns');
+  t.equal(emptyTable.data.numRows, 0, 'Empty rows return no rows');
+
+  const dateValue = new Date('2020-01-02T00:00:00.000Z');
+  const table = convertExcelRowsToArrowTable([
+    {
+      numberValue: null,
+      booleanValue: null,
+      stringValue: null,
+      dateValue: null,
+      emptyValue: null
+    },
+    {
+      numberValue: 1,
+      booleanValue: true,
+      stringValue: 'x',
+      dateValue,
+      emptyValue: null
+    }
+  ]);
+
+  t.equal(table.schema?.fields.find(field => field.name === 'numberValue')?.type, 'float64');
+  t.equal(table.schema?.fields.find(field => field.name === 'booleanValue')?.type, 'bool');
+  t.equal(table.schema?.fields.find(field => field.name === 'stringValue')?.type, 'utf8');
+  t.equal(table.schema?.fields.find(field => field.name === 'dateValue')?.type, 'date-millisecond');
+  t.equal(table.schema?.fields.find(field => field.name === 'emptyValue')?.type, 'null');
+  t.equal(table.data.getChild('numberValue')?.get(1), 1, 'Number value is preserved');
+  t.equal(table.data.getChild('booleanValue')?.get(1), true, 'Boolean value is preserved');
+  t.equal(table.data.getChild('stringValue')?.get(1), 'x', 'String value is preserved');
   t.end();
 });
 
