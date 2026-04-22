@@ -33,6 +33,7 @@ import {RasterSet} from '@loaders.gl/tiles';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
+import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 const DATA_URL = '/gfw-azores.tif';
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
@@ -200,12 +201,21 @@ export default function App(props: AppProps = {}) {
     ];
   }, [rasterState.bounds, rasterState.canvas]);
 
+  const widgets = useMemo(() => {
+    if (props.hideChrome) {
+      return [];
+    }
+
+    return [createDeckStatsWidget('geotiff-stats')];
+  }, [props.hideChrome]);
+
   return (
     <div ref={containerRef} style={{position: 'relative', height: '100%'}}>
       <DeckGL
         controller={{type: MapController}}
         layers={layers}
         viewState={viewState}
+        widgets={widgets}
         onViewStateChange={({viewState: nextViewState}) =>
           setViewState(nextViewState as MapViewState)
         }

@@ -12,6 +12,12 @@ import JSONPath from '../jsonpath/jsonpath';
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity
+/**
+ * Parses JSON data incrementally and yields row-table batches plus optional container metadata.
+ * When `options.json.shape` is omitted, streamed row batches preserve the incoming row shape.
+ * @param binaryAsyncIterator incoming binary chunks
+ * @param options loader options
+ */
 export async function* parseJSONInBatches(
   binaryAsyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
@@ -19,6 +25,9 @@ export async function* parseJSONInBatches(
   options: JSONLoaderOptions
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const asyncIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
+  const shape = options?.json?.shape;
+  const metadataBatchShape =
+    shape === 'arrow-table' ? 'array-row-table' : (shape ?? 'object-row-table');
 
   const metadata = Boolean(options?.core?.metadata || (options as any)?.metadata);
   const {jsonpaths} = options.json || {};
@@ -27,7 +36,10 @@ export async function* parseJSONInBatches(
 
   // @ts-expect-error TODO fix Schema deduction
   const schema: Schema = null;
-  const tableBatchBuilder = new TableBatchBuilder(schema, options?.core);
+  const tableBatchBuilder = new TableBatchBuilder(schema, {
+    ...options?.core,
+    shape
+  });
 
   const parser = new StreamingJSONParser({jsonpaths});
 
@@ -40,10 +52,7 @@ export async function* parseJSONInBatches(
       if (metadata) {
         const initialBatch: TableBatch = {
           // Common fields
-          shape:
-            options?.json?.shape === 'arrow-table'
-              ? 'array-row-table'
-              : options?.json?.shape || 'array-row-table',
+          shape: metadataBatchShape,
           batchType: 'partial-result',
           data: [],
           length: 0,
@@ -97,6 +106,12 @@ export async function* parseJSONInBatches(
   }
 }
 
+/**
+ * Rebuilds the final JSON value from the parser's metadata batch and the collected streamed rows.
+ * @param batch final metadata batch emitted by `parseJSONInBatches`
+ * @param data streamed rows collected by the caller
+ * @returns the reconstructed top-level JSON value
+ */
 export function rebuildJsonObject(batch, data) {
   // Last batch will have this special type and will provide all the root object of the parsed file
   assert(batch.batchType === 'final-result');

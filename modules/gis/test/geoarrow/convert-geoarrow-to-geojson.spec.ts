@@ -11,8 +11,7 @@ import {
 import {load} from '@loaders.gl/core';
 import type {FeatureCollection} from '@loaders.gl/schema';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
-import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
-import {convertGeoArrowGeometryToGeoJSON} from '@loaders.gl/gis';
+import {getGeometryColumnsFromSchema, convertGeoArrowGeometryToGeoJSON} from '@loaders.gl/geoarrow';
 import {ArrowLoader} from '@loaders.gl/arrow';
 
 test('ArrowUtils#convertGeoArrowGeometryToGeoJSON', async t => {

@@ -20,6 +20,8 @@ export type StrictLoaderOptions = {
     fetch?: typeof fetch | FetchLike | RequestInit | null;
     /** Do not throw on errors */
     nothrow?: boolean;
+    /** Shared default shape for loaders that support shape selection. Loader-scoped `shape` options override this default. */
+    shape?: string;
 
     /** loader selection, search first for supplied mimeType */
     mimeType?: string;
@@ -121,6 +123,8 @@ export type LoaderOptions = {
   limit?: 0;
   /** @deprecated Use options.core._limitMB */
   _limitMB?: 0;
+  /** @deprecated Use options.core.shape */
+  shape?: string;
   /** @deprecated Use options.core.batchSize */
   batchSize?: number | 'auto';
   /** @deprecated Use options.core.batchDebounceMs */
@@ -326,6 +330,22 @@ type Preload = (url: string, options?: PreloadOptions) => any;
 /** Typescript helper to extract options type from a loader type */
 export type LoaderOptionsType<T = Loader> =
   T extends Loader<unknown, unknown, infer Options> ? Options : never;
+export type LoaderShapeType<T extends Loader = Loader> = LoaderOptionsType<T>[T['id']] extends {
+  shape?: infer Shape;
+}
+  ? Extract<Shape, string>
+  : LoaderOptionsType<T>[T['id']] extends {shape: infer Shape}
+    ? Extract<Shape, string>
+    : never;
+type LoaderShapeOrString<Shape extends string> = [Shape] extends [never] ? string : Shape;
+export type LoaderOptionsWithShape<
+  Options extends LoaderOptions,
+  Shape extends string
+> = Options extends LoaderOptions
+  ? Omit<Options, 'core'> & {
+      core?: Omit<NonNullable<Options['core']>, 'shape'> & {shape?: LoaderShapeOrString<Shape>};
+    }
+  : never;
 /** Typescript helper to extract data type from a loader type */
 export type LoaderReturnType<T = Loader> =
   T extends Loader<infer Return, unknown, unknown> ? Return : never;
@@ -334,8 +354,10 @@ export type LoaderBatchType<T = Loader> =
   T extends Loader<unknown, infer Batch, unknown> ? Batch : never;
 
 /** Typescript helper to extract options type from an array of loader types */
-export type LoaderArrayOptionsType<LoadersT extends Loader[] = Loader[]> =
-  LoadersT[number]['options'];
+export type LoaderArrayOptionsType<LoadersT extends Loader[] = Loader[]> = LoaderOptionsWithShape<
+  LoadersT[number]['options'],
+  LoaderShapeType<LoadersT[number]>
+>;
 /** Typescript helper to extract data type from a loader type */
 export type LoaderArrayReturnType<LoadersT extends Loader[] = Loader[]> =
   LoadersT[number]['dataType'];
@@ -348,7 +370,10 @@ export type LoaderArrayBatchType<LoadersT extends Loader[] = Loader[]> =
  */
 export async function parseFromContext<
   LoaderT extends Loader,
-  OptionsT extends StrictLoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends StrictLoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   data: ArrayBuffer,
   loader: LoaderT,

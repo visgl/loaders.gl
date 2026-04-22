@@ -21,11 +21,17 @@ import {
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
+type NDJSONShape = 'array-row-table' | 'object-row-table' | 'arrow-table';
+
 /** Options for parsing newline-delimited JSON data. */
 export type NDJSONLoaderOptions = LoaderOptions & {
-  json?: {
+  ndjson?: {
     /** Selects row-table output or Apache Arrow output. */
-    shape?: 'array-row-table' | 'object-row-table' | 'arrow-table';
+    shape?: NDJSONShape;
+  };
+  json?: {
+    /** Deprecated alias for `ndjson.shape`. */
+    shape?: NDJSONShape;
   };
 };
 
@@ -47,15 +53,19 @@ export const NDJSONLoader = {
   category: 'table',
   text: true,
   parse: async (arrayBuffer: ArrayBuffer, options?: NDJSONLoaderOptions) =>
-    parseNDJSONTable(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: NDJSONLoaderOptions) => parseNDJSONTable(text, options),
+    parseNDJSONText(new TextDecoder().decode(arrayBuffer), options),
+  parseTextSync: (text: string, options?: NDJSONLoaderOptions) => parseNDJSONText(text, options),
   parseInBatches: (
     asyncIterator:
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options?: NDJSONLoaderOptions
-  ) => makeNDJSONBatchIterator(asyncIterator, options),
-  options: {}
+  ) => parseNDJSONInRequestedShape(asyncIterator, options),
+  options: {
+    ndjson: {
+      shape: 'object-row-table'
+    }
+  }
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrayRowTable | ArrowTable,
   TableBatch | ArrowTableBatch,
@@ -69,12 +79,12 @@ export const NDJSONLoader = {
  * @param options - Loader options including optional output shape.
  * @returns Row-table output by default, or an Arrow table when requested.
  */
-function parseNDJSONTable(
+function parseNDJSONText(
   text: string,
   options?: NDJSONLoaderOptions
 ): ObjectRowTable | ArrayRowTable | ArrowTable {
   const table = parseNDJSONSync(text);
-  return options?.json?.shape === 'arrow-table' ? convertRowTableToArrowTable(table) : table;
+  return getNDJSONShape(options) === 'arrow-table' ? convertRowTableToArrowTable(table) : table;
 }
 
 /**
@@ -84,12 +94,17 @@ function parseNDJSONTable(
  * @param options - Loader options including optional output shape.
  * @returns Batch iterator yielding row-table or Arrow batches.
  */
-function makeNDJSONBatchIterator(
+function parseNDJSONInRequestedShape(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: NDJSONLoaderOptions
 ): AsyncIterable<TableBatch | ArrowTableBatch> {
   const batches = parseNDJSONInBatches(asyncIterator, options);
-  return options?.json?.shape === 'arrow-table' ? convertTableBatchesToArrow(batches) : batches;
+  return getNDJSONShape(options) === 'arrow-table' ? convertTableBatchesToArrow(batches) : batches;
+}
+
+/** Returns the requested NDJSON output shape, including the deprecated JSON alias. */
+function getNDJSONShape(options?: NDJSONLoaderOptions): NDJSONShape {
+  return options?.ndjson?.shape || options?.json?.shape || NDJSONLoader.options.ndjson.shape;
 }

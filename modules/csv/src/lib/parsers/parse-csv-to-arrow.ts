@@ -175,7 +175,7 @@ async function parseRawArrowCSVTextWithPapa(
       ? isHeaderRow(headerPreview, Boolean(csvOptions.dynamicTyping))
       : Boolean(csvOptions.header);
   const parseWithHeader = header;
-  const result = Papa.parse(csvText, {
+  const papaparseConfig = {
     ...csvOptions,
     header: parseWithHeader,
     download: false,
@@ -183,7 +183,8 @@ async function parseRawArrowCSVTextWithPapa(
     error(error) {
       throw new Error(error);
     }
-  });
+  };
+  const result = Papa.parse(csvText, papaparseConfig);
 
   const headerRow =
     result.meta.fields || generateHeader(csvOptions.columnPrefix || 'column', headerPreview.length);
@@ -429,13 +430,13 @@ function shouldUsePapaCompatibleSkipEmptyLines(csvOptions: CSVRawArrowOptions): 
 }
 
 /** Returns whether a Papa-parsed first row looks like a header row. */
-function isHeaderRow(row: string[], dynamicTyping: boolean): boolean {
+function isHeaderRow(row: unknown[], dynamicTyping: boolean): boolean {
   return row && row.every(value => isHeaderValue(value, dynamicTyping));
 }
 
 /** Returns whether a first-row value should be treated as a Papa-style header cell. */
-function isHeaderValue(value: string, dynamicTyping: boolean): boolean {
-  if (!dynamicTyping) {
+function isHeaderValue(value: unknown, dynamicTyping: boolean): boolean {
+  if (!dynamicTyping || typeof value !== 'string') {
     return typeof value === 'string';
   }
 

@@ -5,11 +5,13 @@
 import test from 'tape-promise/tape';
 
 import * as parquet from '@loaders.gl/parquet';
-import {ParquetArrowWriter, ParquetWriter} from '@loaders.gl/parquet';
+import {ParquetArrowWriter, ParquetJSLoader, ParquetJSWriter, ParquetWriter} from '@loaders.gl/parquet';
 
 test('ParquetWriter#writer objects', (t) => {
   t.ok(ParquetArrowWriter, 'ParquetArrowWriter');
   t.ok(ParquetWriter, 'ParquetWriter');
+  t.ok(ParquetJSLoader, 'ParquetJSLoader');
+  t.ok(ParquetJSWriter, 'ParquetJSWriter');
   t.end();
 });
 

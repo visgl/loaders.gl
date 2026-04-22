@@ -33,6 +33,9 @@ test('ShapefileArrowLoader#load fixtures round-trip to GeoJSON', async t => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
     const table = await load(filename, ShapefileArrowLoader);
+    const mainLoaderArrowTable = await load(filename, ShapefileLoader, {
+      shapefile: {shape: 'arrow-table'}
+    });
     const geoMetadata = getGeoMetadata(table.schema.metadata);
     t.equal(
       geoMetadata?.primary_column,
@@ -48,6 +51,11 @@ test('ShapefileArrowLoader#load fixtures round-trip to GeoJSON', async t => {
 
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const expected = await response.json();
+    t.deepEqual(
+      getRowsFromArrowTable(table),
+      getRowsFromArrowTable(mainLoaderArrowTable),
+      `${testFileName}: wrapper matches ShapefileLoader arrow-table output`
+    );
     t.deepEqual(roundTripped.features, expected.features, `${testFileName}: features round-trip`);
   }
 
@@ -101,6 +109,27 @@ test('ShapefileArrowLoader#loadInBatches yields stable Arrow schema', async t =>
     );
   }
 
+  t.end();
+});
+
+test('ShapefileLoader#loadInBatches arrow-table yields Arrow batches', async t => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const batches = await loadInBatches(filename, ShapefileLoader, {
+    shapefile: {shape: 'arrow-table'},
+    metadata: true
+  });
+
+  let sawDataBatch = false;
+  for await (const batch of batches) {
+    if (batch?.batchType === 'metadata') {
+      continue;
+    }
+    sawDataBatch = true;
+    t.equal(batch.shape, 'arrow-table', 'main loader yields arrow-table batches');
+    break;
+  }
+
+  t.ok(sawDataBatch, 'main loader produced at least one Arrow batch');
   t.end();
 });
 

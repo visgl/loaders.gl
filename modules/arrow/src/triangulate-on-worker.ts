@@ -5,8 +5,7 @@
 import * as arrow from 'apache-arrow';
 import type {WorkerOptions} from '@loaders.gl/worker-utils';
 import {processOnWorker} from '@loaders.gl/worker-utils';
-import type {GeoArrowEncoding} from '@loaders.gl/geoarrow';
-import {BinaryDataFromGeoArrow} from '@loaders.gl/gis';
+import type {BinaryDataFromGeoArrow, GeoArrowEncoding} from '@loaders.gl/geoarrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

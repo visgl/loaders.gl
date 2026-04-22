@@ -16,5 +16,6 @@ export const DEFAULT_CSV_OPTIONS = {
   dynamicTyping: true,
   comments: false,
   skipEmptyLines: true,
+  detectGeometryColumns: false,
   delimitersToGuess: [',', '\t', '|', ';']
 };

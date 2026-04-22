@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import {HtmlClassNameProvider} from '@docusaurus/theme-common';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
 const DemoContainer = styled.div`
@@ -19,18 +20,19 @@ bottom: 0;
 export default function({content, route}) {
   const MDXComponent = content;
   const indexPath = useBaseUrl('/examples');
-
-  if (route.path === indexPath) {
-    return (
-      <div key="index">
-        <MDXComponent />
-      </div>
-    )
-  }
+  const htmlClassName = route.path === indexPath ? 'examples-index-page' : 'examples-demo-page';
 
   return (
-    <DemoContainer key="demo">
-      <MDXComponent />
-    </DemoContainer>
+    <HtmlClassNameProvider className={htmlClassName}>
+      {route.path === indexPath ? (
+        <div key="index">
+          <MDXComponent />
+        </div>
+      ) : (
+        <DemoContainer key="demo">
+          <MDXComponent />
+        </DemoContainer>
+      )}
+    </HtmlClassNameProvider>
   );
 }

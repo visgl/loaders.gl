@@ -10,23 +10,26 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@deck.gl-community/widgets": "^9.3.2",
     "@deck.gl/core": "^9.3.0",
     "@deck.gl/layers": "^9.3.0",
     "@deck.gl/react": "^9.3.0",
-    "@loaders.gl/core": "4.4.0-alpha.1",
-    "@loaders.gl/draco": "4.4.0-alpha.1",
-    "@loaders.gl/las": "4.4.0-alpha.1",
-    "@loaders.gl/obj": "4.4.0-alpha.1",
-    "@loaders.gl/pcd": "4.4.0-alpha.1",
-    "@loaders.gl/ply": "4.4.0-alpha.1",
-    "@monaco-editor/react": "^4.5.0",
+    "@deck.gl/widgets": "^9.3.0",
+    "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/draco": "workspace:*",
+    "@loaders.gl/las": "workspace:*",
+    "@loaders.gl/obj": "workspace:*",
+    "@loaders.gl/pcd": "workspace:*",
+    "@loaders.gl/ply": "workspace:*",
+    "@luma.gl/core": "^9.3.2",
+    "@luma.gl/engine": "^9.3.2",
+    "@luma.gl/shadertools": "^9.3.2",
     "prop-types": "^15.7.2",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "styled-components": "^4.2.0"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "typescript": "^5.3.0",
+    "typescript": "^5.6.0",
     "vite": "^7.2.7"
   }
 }

@@ -5,11 +5,14 @@
 // eslint-disable
 import type {ReadableFile} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
-import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
 import type * as parquetWasm from 'parquet-wasm/esm/parquet_wasm.js';
 import * as arrow from 'apache-arrow';
 
+import {
+  normalizeArrowTableGeoMetadata,
+  getParquetFileMetadataMap
+} from '../geo/geospatial-metadata';
 import {loadWasm} from '../utils/load-wasm';
 import {makeStreamIterator} from '../utils/make-stream-iterator';
 
@@ -29,12 +32,13 @@ export async function parseParquetFileToArrow(
     const wasmTable = await parquetFile.read(readerOptions);
     const ipcStream = wasmTable.intoIPCStream();
     const arrowTable = arrow.tableFromIPC(ipcStream);
-
-    return {
-      shape: 'arrow-table',
-      schema: convertArrowToSchema(arrowTable.schema),
-      data: arrowTable
-    };
+    return normalizeArrowTableGeoMetadata(
+      {
+        shape: 'arrow-table',
+        data: arrowTable
+      },
+      getParquetFileMetadataMap(parquetFile.metadata())
+    );
   } finally {
     parquetFile.free();
   }
@@ -52,17 +56,24 @@ export async function* parseParquetFileToArrowInBatches(
   const parquetFile = await createParquetFile(file, wasm);
   try {
     const stream = await parquetFile.stream(readerOptions);
+    const schemaMetadata = getParquetFileMetadataMap(parquetFile.metadata());
 
     let schema: Schema | undefined;
     for await (const wasmRecordBatch of makeStreamIterator<parquetWasm.RecordBatch>(stream)) {
-      const arrowTable = arrow.tableFromIPC(wasmRecordBatch.intoIPCStream());
-      schema ||= convertArrowToSchema(arrowTable.schema);
+      const normalizedArrowTable = normalizeArrowTableGeoMetadata(
+        {
+          shape: 'arrow-table',
+          data: arrow.tableFromIPC(wasmRecordBatch.intoIPCStream())
+        },
+        schemaMetadata
+      );
+      schema ||= normalizedArrowTable.schema;
       yield {
         batchType: 'data',
         shape: 'arrow-table',
         schema,
-        data: arrowTable,
-        length: arrowTable.numRows
+        data: normalizedArrowTable.data,
+        length: normalizedArrowTable.data.numRows
       };
     }
   } finally {

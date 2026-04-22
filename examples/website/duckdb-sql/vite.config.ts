@@ -13,8 +13,7 @@ const getAliases = async (frameworkName, frameworkRootDir) => {
 
 export default defineConfig(async () => {
   return {
-    resolve: {
-      alias: await getAliases('@loaders.gl', `${__dirname}/../../..`)
+    resolve: {extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'], alias: await getAliases('@loaders.gl', `${__dirname}/../../..`)
     },
     server: {open: true}
   }

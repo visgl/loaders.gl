@@ -2,7 +2,29 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Example} from './components/example-panel';
+export type Example = {
+  format:
+    | 'geoarrow'
+    | 'geoparquet'
+    | 'geojson'
+    | 'geopackage'
+    | 'flatgeobuf'
+    | 'shapefile'
+    | 'kml'
+    | 'tcx'
+    | 'gpx'
+    | 'csv';
+  data: string;
+  attributions?: string[];
+  viewState?: Record<string, unknown>;
+  tileSize?: number[];
+  layerProps?: Record<string, any>;
+  getTooltipData?: (event: {
+    object?: {
+      properties?: Record<string, unknown>;
+    };
+  }) => null | {title: string; properties: Record<string, unknown>};
+};
 
 export const INITIAL_LOADER_NAME = 'GeoParquet';
 export const INITIAL_EXAMPLE_NAME = 'Airports';
@@ -12,15 +34,91 @@ export const INITIAL_EXAMPLE_NAME = 'Airports';
 export const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const PARQUET_PATH = '/formats/geoparquet';
+const GEOMETRY_COLLECTION_WKB_DATA_URL =
+  'data:application/vnd.apache.arrow.file;base64,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';
 
 const GEOARROW_TEST_DATA = `${LOADERS_URL}/modules/arrow/test/data/geoarrow`;
-
 export const EXAMPLES: Record<string, Record<string, Example>> = {
+  CSV: {
+    'Points (WKT)': {
+      format: 'csv',
+      data: `${LOADERS_URL}/modules/csv/test/data/geospatial-points-wkt.csv`,
+      viewState: {longitude: -122.307, latitude: 37.834, zoom: 9.8},
+      layerProps: {
+        getPointRadius: 12,
+        pointRadiusScale: 1,
+        pointRadiusUnits: 'pixels'
+      }
+    },
+    'Points (WKB)': {
+      format: 'csv',
+      data: `${LOADERS_URL}/modules/csv/test/data/geospatial-points-wkb.csv`,
+      viewState: {longitude: -122.307, latitude: 37.834, zoom: 9.8},
+      layerProps: {
+        getPointRadius: 12,
+        pointRadiusScale: 1,
+        pointRadiusUnits: 'pixels'
+      }
+    }
+  },
+  Shapefile: {
+    'Countries and Graticules': {
+      format: 'shapefile',
+      data: `${LOADERS_URL}/modules/shapefile/test/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
+      viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76},
+      layerProps: {getFillColor: (_, {index}) => [0, index % 255, 0]}
+    },
+    'SF Topography': {
+      format: 'shapefile',
+      data: `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`,
+      viewState: {latitude: 37.75, longitude: -122.4, zoom: 11}
+    }
+  },
   GeoArrow: {
-    multipolygon_hole: {
+    Point: {
       format: 'geoarrow',
-      data: `${GEOARROW_TEST_DATA}/multipolygon_hole.arrow`,
-      viewState: {longitude: 10.388, latitude: 1.447, zoom: 4}
+      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/point.arrow`,
+      viewState: {longitude: 30, latitude: 10, zoom: 4.5}
+    },
+    'Point (WKT)': {
+      format: 'geoarrow',
+      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/point_wkt.arrow`,
+      viewState: {longitude: 25, latitude: 25, zoom: 3}
+    },
+    'Point (WKB)': {
+      format: 'geoarrow',
+      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/point_wkb.arrow`,
+      viewState: {longitude: 25, latitude: 25, zoom: 3}
+    },
+    LineString: {
+      format: 'geoarrow',
+      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/line.arrow`,
+      viewState: {longitude: 25, latitude: 25, zoom: 3}
+    },
+    Polygon: {
+      format: 'geoarrow',
+      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/polygon.arrow`,
+      viewState: {longitude: 25, latitude: 25, zoom: 3}
+    },
+    MultiPolygon: {
+      format: 'geoarrow',
+      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/multipolygon.arrow`,
+      viewState: {longitude: 25, latitude: 25, zoom: 3}
+    },
+    'MultiPolygon Hole': {
+      format: 'geoarrow',
+      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/multipolygon_hole.arrow`,
+      viewState: {longitude: 25, latitude: 25, zoom: 3}
+    },
+    'GeometryCollection (WKB)': {
+      format: 'geoarrow',
+      data: GEOMETRY_COLLECTION_WKB_DATA_URL,
+      viewState: {longitude: 25, latitude: 25, zoom: 3}
+    },
+    'MultiPolygon Hole (WKB)': {
+      format: 'geoarrow',
+      data: `${LOADERS_URL}/modules/geoarrow/test/data/geoarrow/multipolygon_hole_wkb.arrow`,
+      viewState: {longitude: 25, latitude: 25, zoom: 3}
     }
   },
   GeoParquet: {
@@ -154,20 +252,6 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       layerProps: {getFillColor: (_, {index}) => [index % 255, 0, 0]}
     }
   },
-  Shapefile: {
-    'Countries and Graticules': {
-      format: 'shapefile',
-      data: `${LOADERS_URL}/modules/shapefile/test/data/graticules-and-countries/99bfd9e7-bb42-4728-87b5-07f8c8ac631c2020328-1-1vef4ev.lu5nk.shp`,
-      viewState: {longitude: -4.65, latitude: -29.76, zoom: 1.76},
-      layerProps: {getFillColor: (_, {index}) => [0, index % 255, 0]}
-    },
-    'SF Topography': {
-      format: 'shapefile',
-      data: `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`,
-      viewState: {latitude: 37.75, longitude: -122.4, zoom: 11}
-    }
-  },
-
   KML: {
     'Congressional Districts': {
       format: 'kml',

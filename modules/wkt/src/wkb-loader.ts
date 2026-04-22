@@ -50,7 +50,7 @@ export function parseWKB(
   arrayBuffer: ArrayBuffer,
   options?: {shape?: 'geojson-geometry'}
 ): Geometry {
-  const shape = options?.shape || 'geojson-geometry';
+  const shape = options?.shape ?? 'geojson-geometry';
   switch (shape) {
     case 'geojson-geometry':
       return convertWKBToGeometry(arrayBuffer);

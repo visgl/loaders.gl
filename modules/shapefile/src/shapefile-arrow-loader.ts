@@ -21,6 +21,9 @@ import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {
   convertBinaryGeometryToGeometry,
   convertGeometryToWKB,
+  type GeoParquetGeometryType,
+  makeWKBGeometryField,
+  setWKBGeometryColumnMetadata,
   transformGeoJsonCoords
 } from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -55,9 +58,11 @@ export const ShapefileArrowLoader = {
   extensions: ['shp'],
   mimeTypes: ['application/octet-stream'],
   tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
+  dataType: null as unknown as ArrowTable,
+  batchType: null as unknown as ArrowTableBatch,
   options: {
     shapefile: {
-      shape: 'v3'
+      shape: 'arrow-table'
     },
     shp: {
       _maxDimensions: 4
@@ -68,7 +73,7 @@ export const ShapefileArrowLoader = {
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, ShapefileArrowLoaderOptions>;
 
 /** Parses a shapefile and returns an Arrow table with a WKB geometry column. */
-async function parseShapefileToArrow(
+export async function parseShapefileToArrow(
   arrayBuffer: ArrayBuffer,
   options?: ShapefileArrowLoaderOptions,
   context?: LoaderContext
@@ -122,7 +127,7 @@ async function parseShapefileToArrow(
 }
 
 /** Parses a shapefile into Arrow batches while keeping DBF-derived schema stable. */
-async function* parseShapefileToArrowInBatches(
+export async function* parseShapefileToArrowInBatches(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
@@ -284,33 +289,20 @@ function buildOutputSchema(
   geometries: Geometry[],
   header?: SHPHeader
 ): TableSchema {
-  const geometryTypes = inferGeometryTypes(geometries, header);
-  const metadata = {
-    geo: JSON.stringify({
-      version: '1.1.0',
-      primary_column: GEOMETRY_COLUMN_NAME,
-      columns: {
-        [GEOMETRY_COLUMN_NAME]: {
-          encoding: 'wkb',
-          geometry_types: geometryTypes
-        }
-      }
-    })
-  };
-  const geometryField: Field = {
-    name: GEOMETRY_COLUMN_NAME,
-    type: 'binary',
-    nullable: true,
-    metadata: {}
-  };
-
-  return {
+  const geometryField: Field = makeWKBGeometryField(GEOMETRY_COLUMN_NAME);
+  const schema: TableSchema = {
     fields: [...(propertySchema?.fields || []), geometryField],
     metadata: {
-      ...(propertySchema?.metadata || {}),
-      ...metadata
+      ...(propertySchema?.metadata || {})
     }
   };
+
+  setWKBGeometryColumnMetadata(schema.metadata!, {
+    geometryColumnName: GEOMETRY_COLUMN_NAME,
+    geometryTypes: inferGeometryTypes(geometries, header)
+  });
+
+  return schema;
 }
 
 /** Combines one property row and one geometry into an Arrow-builder friendly object row. */
@@ -389,11 +381,13 @@ function getCoordinateDimensions(coordinates: unknown): number {
 }
 
 /** Infers GeoParquet geometry type metadata from parsed geometries or the SHP header. */
-function inferGeometryTypes(geometries: Geometry[], header?: SHPHeader): string[] {
-  const geometryTypes = new Set<string>();
+function inferGeometryTypes(geometries: Geometry[], header?: SHPHeader): GeoParquetGeometryType[] {
+  const geometryTypes = new Set<GeoParquetGeometryType>();
   for (const geometry of geometries) {
     const dimensions = getCoordinateDimensions(getGeometrySampleCoordinates(geometry));
-    geometryTypes.add(dimensions > 2 ? `${geometry.type} Z` : geometry.type);
+    geometryTypes.add(
+      (dimensions > 2 ? `${geometry.type} Z` : geometry.type) as GeoParquetGeometryType
+    );
   }
   if (geometryTypes.size > 0) {
     return [...geometryTypes];
@@ -404,7 +398,7 @@ function inferGeometryTypes(geometries: Geometry[], header?: SHPHeader): string[
 }
 
 /** Maps SHP header geometry type codes to GeoParquet geometry type strings. */
-function getGeometryTypeFromHeader(type?: number): string | null {
+function getGeometryTypeFromHeader(type?: number): GeoParquetGeometryType | null {
   switch (type) {
     case 1:
     case 11:
