@@ -3,7 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {Schema, ArrayRowTable, ObjectRowTable, TableBatch} from '@loaders.gl/schema';
+import type {
+  Schema,
+  ArrayRowTable,
+  ColumnarTable,
+  ColumnarTableBatch,
+  ObjectRowTable,
+  TableBatch,
+  ArrowTable,
+  ArrowTableBatch
+} from '@loaders.gl/schema';
 
 import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import {
@@ -15,6 +24,12 @@ import {
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 import {CSVFormat} from './csv-format';
+import {DEFAULT_CSV_OPTIONS, DEFAULT_CSV_SHAPE} from './lib/csv-default-options';
+import {
+  parseCSVArrayBufferAsArrow,
+  parseCSVInArrowBatches,
+  parseCSVTextAsArrow
+} from './csv-arrow-loader';
 import {
   deduceCSVSchemaFromRows,
   detectGeometryColumns,
@@ -28,66 +43,68 @@ import {
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-const DEFAULT_CSV_SHAPE = 'object-row-table';
-
+/** Options for parsing CSV input into row tables or Arrow tables. */
 export type CSVLoaderOptions = LoaderOptions & {
   csv?: {
-    // loaders.gl options
-    shape?: 'array-row-table' | 'object-row-table';
-    /** optimizes memory usage but increases parsing time. */
+    /** Selects row-table output or Arrow columnar output. */
+    shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
+    /** Optimizes memory usage but increases parsing time. */
     optimizeMemoryUsage?: boolean;
+    /** Prefix for generated column names when headers are absent. */
     columnPrefix?: string;
-    header?: 'auto';
+    /** Controls whether the first row is treated as headers. */
+    header?: boolean | 'auto';
 
     // CSV options (papaparse)
     // delimiter: auto
     // newline: auto
+    /** Character used to quote CSV fields. */
     quoteChar?: string;
+    /** Character used to escape quoted CSV fields. */
     escapeChar?: string;
-    // Convert numbers and boolean values in rows from strings
+    /** Converts numbers and booleans and, for Arrow output, can infer dates. */
     dynamicTyping?: boolean;
+    /** Enables comment line parsing. */
     comments?: boolean;
+    /** Skips empty rows. */
     skipEmptyLines?: boolean | 'greedy';
     // transform: null?
+    /** Candidate delimiters for automatic detection. */
     delimitersToGuess?: string[];
     detectGeometryColumns?: boolean;
     // fastMode: auto
   };
 };
 
+/** Loader for CSV and other delimiter-separated tabular text formats. */
 export const CSVLoader = {
   ...CSVFormat,
 
-  dataType: null as unknown as ObjectRowTable | ArrayRowTable,
-  batchType: null as unknown as TableBatch,
+  dataType: null as unknown as ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
+  batchType: null as unknown as TableBatch | ColumnarTableBatch | ArrowTableBatch,
   version: VERSION,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
-    parseCSV(new TextDecoder().decode(arrayBuffer), options),
-  parseText: (text: string, options?: CSVLoaderOptions) => parseCSV(text, options),
-  parseInBatches: parseCSVInBatches,
+    options?.csv?.shape === 'arrow-table'
+      ? parseCSVArrayBufferAsArrow(arrayBuffer, options)
+      : parseCSV(new TextDecoder().decode(arrayBuffer), options),
+  parseText: (text: string, options?: CSVLoaderOptions) =>
+    options?.csv?.shape === 'arrow-table'
+      ? parseCSVTextAsArrow(text, options)
+      : parseCSV(text, options),
+  parseInBatches: (asyncIterator, options?: CSVLoaderOptions) =>
+    options?.csv?.shape === 'arrow-table'
+      ? parseCSVInArrowBatches(asyncIterator, options)
+      : parseCSVInBatches(asyncIterator, options),
   // @ts-ignore
   // testText: null,
   options: {
-    csv: {
-      shape: DEFAULT_CSV_SHAPE, // 'object-row-table'
-      optimizeMemoryUsage: false,
-      // CSV options
-      header: 'auto',
-      columnPrefix: 'column',
-      // delimiter: auto
-      // newline: auto
-      quoteChar: '"',
-      escapeChar: '"',
-      dynamicTyping: true,
-      comments: false,
-      skipEmptyLines: true,
-      // transform: null?
-      detectGeometryColumns: false,
-      delimitersToGuess: [',', '\t', '|', ';']
-      // fastMode: auto
-    }
+    csv: DEFAULT_CSV_OPTIONS
   }
-} as const satisfies LoaderWithParser<ObjectRowTable | ArrayRowTable, TableBatch, CSVLoaderOptions>;
+} as const satisfies LoaderWithParser<
+  ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
+  TableBatch | ColumnarTableBatch | ArrowTableBatch,
+  CSVLoaderOptions
+>;
 
 async function parseCSV(
   csvText: string,
@@ -337,11 +354,7 @@ function parseCSVInBatches(
   // return asyncQueue[Symbol.asyncIterator]();
   return asyncQueue;
 
-  function addCSVBatchRow(
-    rowToAdd: unknown[],
-    shape: 'array-row-table' | 'object-row-table',
-    bytesUsed: number
-  ): void {
+  function addCSVBatchRow(rowToAdd: unknown[], shape: CSVBatchShape, bytesUsed: number): void {
     let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;
     if (shape === 'object-row-table' && headerRow && rowToAdd.length > headerRow.length) {
       batchRow = convertToPapaObjectRow(rowToAdd, headerRow);
@@ -365,13 +378,20 @@ function parseCSVInBatches(
     }
   }
 
-  function getBatchShape(): 'array-row-table' | 'object-row-table' {
-    const deprecatedShape = (
-      options as {shape?: 'array-row-table' | 'object-row-table'} | undefined
-    )?.shape;
-    return deprecatedShape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+  function getBatchShape(): CSVBatchShape {
+    const deprecatedShape = (options as {shape?: CSVBatchShape} | undefined)?.shape;
+    const shape = deprecatedShape || csvOptions.shape || DEFAULT_CSV_SHAPE;
+    switch (shape) {
+      case 'array-row-table':
+      case 'columnar-table':
+        return shape;
+      default:
+        return DEFAULT_CSV_SHAPE;
+    }
   }
 }
+
+type CSVBatchShape = 'array-row-table' | 'object-row-table' | 'columnar-table';
 
 /**
  * Checks if a certain row is a header row

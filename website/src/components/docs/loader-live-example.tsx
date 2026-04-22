@@ -79,13 +79,6 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
     }
   },
   'modules/json/api-reference/geojson-loader': {kind: 'geospatial', format: 'GeoJSON'},
-  'modules/json/api-reference/ndjson-arrow-loader': {
-    kind: 'table',
-    table: {
-      loaderName: 'NDJSONArrowLoader',
-      url: `${LOADERS_URL}/modules/json/test/data/ndjson.ndjson`
-    }
-  },
   'modules/json/api-reference/ndjson-loader': {
     kind: 'table',
     table: {

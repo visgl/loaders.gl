@@ -9,7 +9,6 @@ import {
   decodeHex,
   getGeoMetadata,
   inferGeoParquetGeometryTypes,
-  isWKT,
   setGeoMetadata,
   type GeoParquetGeometryType
 } from '@loaders.gl/gis';
@@ -268,11 +267,12 @@ function collectWKTGeometries(sampledValues: string[]) {
 
   for (const sampledValue of sampledValues) {
     const trimmedValue = sampledValue.trim();
-    if (!isWKT(trimmedValue)) {
-      return null;
-    }
     try {
-      geometries.push(convertWKTToGeometry(trimmedValue));
+      const geometry = convertWKTToGeometry(trimmedValue);
+      if (!geometry) {
+        return null;
+      }
+      geometries.push(geometry);
     } catch {
       return null;
     }

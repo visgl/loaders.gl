@@ -7,7 +7,7 @@ import React, {useEffect, useState} from 'react';
 import {Bench, type BenchProps, type LogEntry, type LogFunction} from '@probe.gl/bench';
 import {BenchResults} from '@probe.gl/react-bench';
 import {fetchFile} from '@loaders.gl/core';
-import {CSVArrowLoader, CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/csv';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {autoType, csvParse, tsvParse} from 'd3-dsv';
 import PapaParseNPM from 'papaparse';
@@ -438,7 +438,12 @@ function getCSVLoaderBenchmarks(
   dynamicTyping: boolean
 ): LoaderBenchmark[] {
   const arrowOptions = {
-    csv: {header: true as const, delimiter: scenario.delimiter, dynamicTyping}
+    csv: {
+      header: true as const,
+      delimiter: scenario.delimiter,
+      dynamicTyping,
+      shape: 'arrow-table' as const
+    }
   };
   const csvOptions = {
     csv: {
@@ -449,7 +454,7 @@ function getCSVLoaderBenchmarks(
     }
   };
   return [
-    {name: 'CSVArrowLoader', loader: CSVArrowLoader, options: arrowOptions},
+    {name: 'CSVLoader (arrow-table)', loader: CSVLoader, options: arrowOptions},
     {name: 'CSVLoader', loader: CSVLoader, options: csvOptions}
   ];
 }
@@ -583,7 +588,7 @@ function getBenchmarkDisplayName(benchmarkId: string): string {
  * @returns Whether the row is a loaders.gl benchmark.
  */
 function isLoadersGLBenchmarkName(displayName: string): boolean {
-  return displayName === 'CSVArrowLoader' || displayName === 'CSVLoader';
+  return displayName === 'CSVLoader (arrow-table)' || displayName === 'CSVLoader';
 }
 
 /**

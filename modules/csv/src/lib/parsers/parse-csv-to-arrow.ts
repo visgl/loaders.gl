@@ -5,11 +5,16 @@
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
 import {concatenateArrayBuffersAsync, toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch, Schema} from '@loaders.gl/schema';
-import {AsyncQueue, ArrowTableBuilder, convertArrowToSchema} from '@loaders.gl/schema-utils';
+import {
+  AsyncQueue,
+  ArrowTableBuilder,
+  convertArrowToSchema,
+  convertToObjectRow
+} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
 import type {CSVLoaderOptions} from '../../csv-loader';
-import {CSVLoader} from '../../csv-loader';
+import {DEFAULT_CSV_OPTIONS} from '../csv-default-options';
 import Papa from '../../papaparse/papaparse';
 import AsyncIteratorStreamer from '../../papaparse/async-iterator-streamer';
 import {parseRawArrowCSVBytes} from './parse-raw-arrow-csv-bytes';
@@ -33,7 +38,7 @@ const DEFAULT_BATCH_SIZE = 4000;
 
 /** Default CSV options for internal Arrow table parsing. */
 const DEFAULT_RAW_ARROW_CSV_OPTIONS: CSVRawArrowOptions = {
-  ...CSVLoader.options.csv,
+  ...DEFAULT_CSV_OPTIONS,
   header: false,
   dynamicTyping: false
 };
@@ -164,18 +169,35 @@ async function parseRawArrowCSVTextWithPapa(
   options: CSVRawArrowParseOptions | undefined,
   csvOptions: CSVRawArrowOptions
 ): Promise<ArrowTable> {
-  const rowTable = await CSVLoader.parseText(csvText, {
-    ...options,
-    csv: {
-      ...options?.csv,
-      shape: 'object-row-table'
+  const headerPreview = readFirstRow(csvText, Boolean(csvOptions.dynamicTyping));
+  const header =
+    csvOptions.header === 'auto'
+      ? isHeaderRow(headerPreview, Boolean(csvOptions.dynamicTyping))
+      : Boolean(csvOptions.header);
+  const parseWithHeader = header;
+  const papaparseConfig = {
+    ...csvOptions,
+    header: parseWithHeader,
+    download: false,
+    transformHeader: parseWithHeader ? createDuplicateColumnTransformer() : undefined,
+    error(error) {
+      throw new Error(error);
     }
-  } as any);
+  };
+  const result = Papa.parse(csvText, papaparseConfig);
 
-  const rows = rowTable.shape === 'object-row-table' ? rowTable.data : [];
-  const columnNames = getPapaCompatibleColumnNames(rows, rowTable.schema?.fields || [], {
-    includeParsedExtra: shouldIncludePapaParsedExtraColumn(csvOptions)
-  });
+  const headerRow =
+    result.meta.fields || generateHeader(csvOptions.columnPrefix || 'column', headerPreview.length);
+  const rows = (result.data as unknown[]).map(row =>
+    Array.isArray(row) ? convertToObjectRow(row, headerRow) : (row as Record<string, unknown>)
+  );
+  const columnNames = getPapaCompatibleColumnNames(
+    rows,
+    headerRow.map(columnName => ({name: columnName, type: 'utf8', nullable: true})),
+    {
+      includeParsedExtra: shouldIncludePapaParsedExtraColumn(csvOptions)
+    }
+  );
   const columns: Record<string, arrow.Vector> = {};
   const listType = new arrow.List(new arrow.Field('item', new arrow.Utf8(), true));
 
@@ -193,6 +215,15 @@ async function parseRawArrowCSVTextWithPapa(
     schema: convertArrowToSchema(data.schema),
     data
   };
+}
+
+/** Reads and parses the first CSV row for header detection. */
+function readFirstRow(csvText: string, dynamicTyping: boolean): unknown[] {
+  const result = Papa.parse(csvText, {
+    dynamicTyping,
+    preview: 1
+  });
+  return result.data[0] || [];
 }
 
 /** Returns schema fields plus selected Papa dynamic keys when parser options require them. */
@@ -399,13 +430,13 @@ function shouldUsePapaCompatibleSkipEmptyLines(csvOptions: CSVRawArrowOptions): 
 }
 
 /** Returns whether a Papa-parsed first row looks like a header row. */
-function isHeaderRow(row: string[], dynamicTyping: boolean): boolean {
+function isHeaderRow(row: unknown[], dynamicTyping: boolean): boolean {
   return row && row.every(value => isHeaderValue(value, dynamicTyping));
 }
 
 /** Returns whether a first-row value should be treated as a Papa-style header cell. */
-function isHeaderValue(value: string, dynamicTyping: boolean): boolean {
-  if (!dynamicTyping) {
+function isHeaderValue(value: unknown, dynamicTyping: boolean): boolean {
+  if (!dynamicTyping || typeof value !== 'string') {
     return typeof value === 'string';
   }
 
@@ -449,7 +480,7 @@ function createUtf8Schema(headerRow: string[]): Schema {
     fields: headerRow.map(columnName => ({name: columnName, type: 'utf8', nullable: true})),
     metadata: {
       'loaders.gl#format': 'csv',
-      'loaders.gl#loader': 'CSVArrowLoader'
+      'loaders.gl#loader': 'CSVLoader'
     }
   };
 }
