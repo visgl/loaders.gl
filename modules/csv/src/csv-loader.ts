@@ -80,6 +80,9 @@ export const CSVLoaderWithParser = {
   CSVLoaderOptions
 >;
 
+/** Parser-bearing CSV loader export for the direct `csv-loader` subpath. */
+export const CSVLoader = CSVLoaderWithParser;
+
 async function parseCSVText(
   csvText: string,
   options?: CSVLoaderOptions

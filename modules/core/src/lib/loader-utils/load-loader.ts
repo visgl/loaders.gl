@@ -6,17 +6,7 @@ import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-u
 
 const loaderImplementationPromiseCache = new Map<string, Promise<LoaderWithParser>>();
 
-export function isLoaderWithParser(loader: Loader): loader is LoaderWithParser {
-  const candidate = loader as LoaderWithParser;
-  return Boolean(
-    candidate.parse ||
-      candidate.parseSync ||
-      candidate.parseInBatches ||
-      candidate.parseText ||
-      candidate.parseTextSync
-  );
-}
-
+/** Loads a parser-bearing implementation for metadata-only loaders. */
 export async function loadLoaderImplementation(
   loader: Loader,
   options?: LoaderOptions,
@@ -35,6 +25,20 @@ export async function loadLoaderImplementation(
   }
 
   return await loaderImplementationPromise;
+}
+
+/** Returns true when a loader object already includes parser methods. */
+export function isLoaderWithParser(loader: Loader): loader is LoaderWithParser {
+  const candidate = loader as LoaderWithParser;
+  return Boolean(
+    candidate.parse ||
+      candidate.parseSync ||
+      candidate.parseInBatches ||
+      candidate.parseText ||
+      candidate.parseTextSync ||
+      candidate.parseFile ||
+      candidate.parseFileInBatches
+  );
 }
 
 function getLoaderImplementationCacheKey(loader: Loader, options?: LoaderOptions): string {

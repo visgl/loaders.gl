@@ -65,6 +65,9 @@ test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader 
     csv: {header: true, shape: 'object-row-table'}
   });
   t.equal(parsedTable.shape, 'object-row-table', 'parse works with unbundled CSVLoader');
+  if (parsedTable.shape === 'object-row-table') {
+    t.deepEqual(parsedTable.data[0], {city: 'Paris', population: 2148000});
+  }
 
   const preloadedLoader = await preload(UnbundledCSVLoader);
   t.equal(typeof preloadedLoader.parse, 'function', 'preload returns parser-bearing CSV loader');

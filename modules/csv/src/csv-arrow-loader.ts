@@ -14,7 +14,7 @@ import type {
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
-import {CSVArrowLoader} from './csv-arrow-loader-types';
+import {CSVArrowLoader as CSVArrowLoaderMetadata} from './csv-arrow-loader-types';
 import type {CSVArrowLoaderOptions, CSVArrowOptions} from './csv-arrow-loader-options';
 import {CSV_ARROW_DEFAULT_OPTIONS} from './csv-arrow-loader-options';
 import {CSVLoaderWithParser} from './csv-loader';
@@ -52,7 +52,7 @@ const ISO_DATE =
  * `csv.dynamicTyping: true` to opt into typed Arrow columns.
  */
 export const CSVArrowLoaderWithParser = {
-  ...CSVArrowLoader,
+  ...CSVArrowLoaderMetadata,
 
   dataType: null as unknown as ArrowTable,
   batchType: null as unknown as ArrowTableBatch,
@@ -71,6 +71,9 @@ export const CSVArrowLoaderWithParser = {
     options?: CSVArrowLoaderOptions
   ) => parseCSVInArrowBatches(asyncIterator, normalizeCSVArrowOptions(options))
 } as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, CSVArrowLoaderOptions>;
+
+/** Parser-bearing CSV Arrow loader export for the direct `csv-arrow-loader` subpath. */
+export const CSVArrowLoader = CSVArrowLoaderWithParser;
 
 /** Applies Arrow-shaped CSV defaults before delegating to Arrow CSV parsing helpers. */
 function normalizeCSVArrowOptions(options?: CSVArrowParseOptions): CSVArrowParseOptions {

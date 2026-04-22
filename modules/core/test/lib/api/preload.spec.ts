@@ -2,8 +2,51 @@ import {describe, expect, test} from 'vitest';
 import {parse, parseInBatches, parseSync, preload} from '@loaders.gl/core';
 import {CSVLoader as UnbundledCSVLoader} from '@loaders.gl/csv/unbundled';
 
-const CSV_TEXT = 'city,population\nParis,2148000\n';
+const CSV_TEXT = 'city,population\nParis,2148000\nBerlin,3769000';
 const CSV_ARRAY_BUFFER = new TextEncoder().encode(CSV_TEXT).buffer;
+
+const SyncTextLoader = {
+  id: 'sync-text',
+  name: 'SyncText',
+  module: 'core',
+  version: 'latest',
+  extensions: ['txt'],
+  mimeTypes: ['text/plain'],
+  text: true,
+  parseTextSync: text => text.toUpperCase()
+};
+
+const PreloadSyncTextLoader = {
+  id: 'preload-sync-text',
+  name: 'PreloadSyncText',
+  module: 'core',
+  version: 'latest',
+  extensions: ['txt'],
+  mimeTypes: ['text/plain'],
+  text: true,
+  preload: async () => SyncTextLoader
+};
+
+const NoParserLoader = {
+  id: 'no-parser',
+  name: 'NoParser',
+  module: 'core',
+  version: 'latest',
+  extensions: ['txt'],
+  mimeTypes: ['text/plain'],
+  text: true
+};
+
+const InvalidPreloadLoader = {
+  id: 'invalid-preload',
+  name: 'InvalidPreload',
+  module: 'core',
+  version: 'latest',
+  extensions: ['txt'],
+  mimeTypes: ['text/plain'],
+  text: true,
+  preload: async () => NoParserLoader
+};
 
 describe('preload', () => {
   test('resolves a parser-bearing loader and caches it', async () => {
@@ -11,23 +54,33 @@ describe('preload', () => {
     const secondLoader = await preload(UnbundledCSVLoader);
 
     expect(firstLoader).toBe(secondLoader);
-    expect(typeof firstLoader.parse).toBe('function');
+    expect(firstLoader.id).toBe(UnbundledCSVLoader.id);
+    expect(firstLoader.parse).toBeTypeOf('function');
+    expect(firstLoader.parseInBatches).toBeTypeOf('function');
+  });
+
+  test('rejects loaders without parser implementations', async () => {
+    await expect(preload(NoParserLoader)).rejects.toThrow(/parser implementation/);
+    await expect(preload(InvalidPreloadLoader)).rejects.toThrow(/parser-bearing loader/);
   });
 
   test('parse upgrades CSVLoader through preload', async () => {
     const table = await parse(CSV_ARRAY_BUFFER, UnbundledCSVLoader, {
-      csv: {shape: 'object-row-table'}
+      csv: {header: true, shape: 'object-row-table'}
     });
 
     expect(table).toMatchObject({
       shape: 'object-row-table',
-      data: [{city: 'Paris', population: 2148000}]
+      data: [
+        {city: 'Paris', population: 2148000},
+        {city: 'Berlin', population: 3769000}
+      ]
     });
   });
 
   test('parseInBatches upgrades CSVLoader through preload', async () => {
     const iterator = await parseInBatches([new Uint8Array(CSV_ARRAY_BUFFER)], UnbundledCSVLoader, {
-      csv: {shape: 'object-row-table'}
+      csv: {header: true, shape: 'object-row-table'}
     });
     const rows: unknown[] = [];
 
@@ -37,26 +90,34 @@ describe('preload', () => {
       }
     }
 
-    expect(rows).toEqual([{city: 'Paris', population: 2148000}]);
+    expect(rows).toEqual([
+      {city: 'Paris', population: 2148000},
+      {city: 'Berlin', population: 3769000}
+    ]);
   });
 
   test('parseSync accepts a parser-bearing loader returned by preload', async () => {
     const CSVLoaderWithParser = await preload(UnbundledCSVLoader);
     const table = parseSync(CSV_ARRAY_BUFFER, CSVLoaderWithParser, {
-      csv: {shape: 'object-row-table'}
+      csv: {header: true, shape: 'object-row-table'}
     });
 
     expect(table).toMatchObject({
       shape: 'object-row-table',
-      data: [{city: 'Paris', population: 2148000}]
+      data: [
+        {city: 'Paris', population: 2148000},
+        {city: 'Berlin', population: 3769000}
+      ]
     });
   });
 
-  test('parseSync rejects CSVLoader without a parser-bearing import', () => {
+  test('parseSync rejects metadata-only loaders', () => {
+    expect(parseSync('abc', SyncTextLoader)).toBe('ABC');
+    expect(() => parseSync('abc', PreloadSyncTextLoader)).toThrow(/parseSync/);
     expect(() =>
       parseSync(CSV_ARRAY_BUFFER, UnbundledCSVLoader, {
-        csv: {shape: 'object-row-table'}
+        csv: {header: true, shape: 'object-row-table'}
       })
-    ).toThrow(/Import the loader implementation directly/);
+    ).toThrow(/parseSync/);
   });
 });

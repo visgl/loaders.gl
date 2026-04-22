@@ -32,6 +32,15 @@ const data = await load(url, CSVLoader);
 const data = await load(url, CSVLoader, {csv: options});
 ```
 
+Applications that want to defer loading the parser implementation can import the metadata-only loader from the `unbundled` subpath. Core async APIs call `preload()` and dynamically import the parser-bearing implementation when parsing starts.
+
+```typescript
+import {parse} from '@loaders.gl/core';
+import {CSVLoader} from '@loaders.gl/csv/unbundled';
+
+const data = await parse(csvText, CSVLoader);
+```
+
 A complication with the CSV format is that CSV files can come with or without an initial header line. While the `CSVLoader` will attempt to detect if the first line is a header, this can fail. If you know the format of the file you can use `options.csv.header` to specify how to handle the first line.
 
 ```typescript

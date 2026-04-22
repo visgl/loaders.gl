@@ -18,8 +18,8 @@ import {CSV_LOADER_OPTIONS, CSV_LOADER_VERSION, type CSVLoaderOptions} from './c
 export type {CSVLoaderOptions} from './csv-loader-options';
 
 async function preload() {
-  const {CSVLoaderWithParser} = await import('@loaders.gl/csv/csv-loader');
-  return CSVLoaderWithParser;
+  const {CSVLoader} = await import('@loaders.gl/csv/csv-loader');
+  return CSVLoader;
 }
 
 export const CSVLoader = {

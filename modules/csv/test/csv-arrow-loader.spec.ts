@@ -31,6 +31,47 @@ const CSV_SAMPLE_URL_EMPTY_LINES = '@loaders.gl/csv/test/data/sample-empty-line.
 const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
 const TSV_BRAZIL = '@loaders.gl/csv/test/data/tsv/brazil.tsv';
 
+test('CSVArrowLoader#root export includes parser methods', t => {
+  t.equal(typeof CSVArrowLoader.parse, 'function', 'root CSVArrowLoader exposes parse');
+  t.equal(
+    typeof CSVArrowLoader.parseInBatches,
+    'function',
+    'root CSVArrowLoader exposes parseInBatches'
+  );
+  t.equal(CSVArrowWorkerLoader, CSVArrowLoader, 'CSVArrowWorkerLoader aliases CSVArrowLoader');
+  t.notOk('CSVArrowLoaderWithParser' in csv, 'root does not export CSVArrowLoaderWithParser');
+  t.end();
+});
+
+test('CSVArrowLoader#unbundled export preloads parser implementation', async t => {
+  t.equal(
+    UnbundledCSVArrowWorkerLoader,
+    UnbundledCSVArrowLoader,
+    'worker alias points to CSVArrowLoader'
+  );
+  t.equal(
+    typeof UnbundledCSVArrowLoader.preload,
+    'function',
+    'unbundled CSVArrowLoader exposes preload'
+  );
+  t.notOk('parse' in UnbundledCSVArrowLoader, 'unbundled CSVArrowLoader does not expose parse');
+  t.notOk(
+    'parseInBatches' in UnbundledCSVArrowLoader,
+    'unbundled CSVArrowLoader does not expose parseInBatches'
+  );
+
+  const table = await parse('city,population\nParis,2148000', UnbundledCSVArrowLoader, {
+    csv: {header: true}
+  });
+  t.equal(table.shape, 'arrow-table', 'parse upgrades unbundled CSVArrowLoader');
+  t.equal(table.data.numRows, 1, 'returns Arrow rows');
+  t.equal(table.data.getChild('city')?.get(0), 'Paris', 'returns Arrow column values');
+
+  const parserLoader = await preload(UnbundledCSVArrowLoader);
+  t.equal(typeof parserLoader.parse, 'function', 'preload returns parser-bearing CSVArrowLoader');
+  t.end();
+});
+
 test('CSVArrowLoader#loadInBatches(numbers-100.csv)', async t => {
   const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
     batchSize: 40
@@ -96,52 +137,6 @@ test('CSVArrowLoader#load(numbers-100.csv)', async t => {
     'all columns are Utf8'
   );
 
-  t.end();
-});
-
-test('CSVArrow root loader exposes parser methods and deprecated WorkerLoader alias', t => {
-  t.equal(typeof CSVArrowLoader.parse, 'function', 'CSVArrowLoader exposes parse');
-  t.equal(
-    typeof CSVArrowLoader.parseInBatches,
-    'function',
-    'CSVArrowLoader exposes parseInBatches'
-  );
-  t.equal(CSVArrowWorkerLoader, CSVArrowLoader, 'CSVArrowWorkerLoader aliases CSVArrowLoader');
-  t.notOk(
-    'CSVArrowLoaderWithParser' in csv,
-    'root package does not export CSVArrowLoaderWithParser'
-  );
-  t.end();
-});
-
-test('CSVArrow unbundled metadata loader exposes preload and deprecated WorkerLoader alias', async t => {
-  t.equal(
-    typeof UnbundledCSVArrowLoader.preload,
-    'function',
-    'unbundled CSVArrowLoader exposes preload'
-  );
-  t.notOk('parse' in UnbundledCSVArrowLoader, 'unbundled CSVArrowLoader does not expose parse');
-  t.notOk(
-    'parseInBatches' in UnbundledCSVArrowLoader,
-    'unbundled CSVArrowLoader does not expose parseInBatches'
-  );
-  t.equal(
-    UnbundledCSVArrowWorkerLoader,
-    UnbundledCSVArrowLoader,
-    'unbundled CSVArrowWorkerLoader aliases CSVArrowLoader'
-  );
-
-  const parsedTable = await parse('city,population\nParis,2148000', UnbundledCSVArrowLoader, {
-    csv: {header: true}
-  });
-  t.equal(parsedTable.shape, 'arrow-table', 'parse works with unbundled CSVArrowLoader');
-
-  const preloadedLoader = await preload(UnbundledCSVArrowLoader);
-  t.equal(
-    typeof preloadedLoader.parse,
-    'function',
-    'preload returns parser-bearing CSVArrow loader'
-  );
   t.end();
 });
 

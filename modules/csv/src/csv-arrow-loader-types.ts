@@ -11,8 +11,8 @@ import {CSV_LOADER_VERSION} from './csv-loader-options';
 export type {CSVArrowLoaderOptions} from './csv-arrow-loader-options';
 
 async function preload() {
-  const {CSVArrowLoaderWithParser} = await import('@loaders.gl/csv/csv-arrow-loader');
-  return CSVArrowLoaderWithParser;
+  const {CSVArrowLoader} = await import('@loaders.gl/csv/csv-arrow-loader');
+  return CSVArrowLoader;
 }
 
 export const CSVArrowLoader = {
