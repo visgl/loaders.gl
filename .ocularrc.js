@@ -37,8 +37,8 @@ const config = {
   // Reusable logic lives under `dev-modules/devtools-extensions/`; repo-specific policy belongs here.
   devtools: {
     vitest: {
-      // Plain `*.spec.*` files are the browser/default suite. Only Node-only tests use `.node.spec.*`.
-      // Keep the first migration aligned with the currently imported module suite.
+      // Plain `*.spec.*` files run in both Node and browser projects unless explicitly excluded.
+      // Use `.node.spec.*`, `.browser.spec.*`, or conditional runtime helpers for runtime-specific cases.
       excludePatterns: [
         '**/*.disabled.*',
         'modules/**/wip/**',
