@@ -6,6 +6,8 @@ import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {
   Schema,
   ArrayRowTable,
+  ColumnarTable,
+  ColumnarTableBatch,
   ObjectRowTable,
   TableBatch,
   ArrowTable,
@@ -45,7 +47,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type CSVLoaderOptions = LoaderOptions & {
   csv?: {
     /** Selects row-table output or Arrow columnar output. */
-    shape?: 'array-row-table' | 'object-row-table' | 'arrow-table';
+    shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
     /** Optimizes memory usage but increases parsing time. */
     optimizeMemoryUsage?: boolean;
     /** Prefix for generated column names when headers are absent. */
@@ -78,8 +80,8 @@ export type CSVLoaderOptions = LoaderOptions & {
 export const CSVLoader = {
   ...CSVFormat,
 
-  dataType: null as unknown as ObjectRowTable | ArrayRowTable | ArrowTable,
-  batchType: null as unknown as TableBatch | ArrowTableBatch,
+  dataType: null as unknown as ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
+  batchType: null as unknown as TableBatch | ColumnarTableBatch | ArrowTableBatch,
   version: VERSION,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     options?.csv?.shape === 'arrow-table'
@@ -99,8 +101,8 @@ export const CSVLoader = {
     csv: DEFAULT_CSV_OPTIONS
   }
 } as const satisfies LoaderWithParser<
-  ObjectRowTable | ArrayRowTable | ArrowTable,
-  TableBatch | ArrowTableBatch,
+  ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
+  TableBatch | ColumnarTableBatch | ArrowTableBatch,
   CSVLoaderOptions
 >;
 
@@ -352,11 +354,7 @@ function parseCSVInBatches(
   // return asyncQueue[Symbol.asyncIterator]();
   return asyncQueue;
 
-  function addCSVBatchRow(
-    rowToAdd: unknown[],
-    shape: 'array-row-table' | 'object-row-table',
-    bytesUsed: number
-  ): void {
+  function addCSVBatchRow(rowToAdd: unknown[], shape: CSVBatchShape, bytesUsed: number): void {
     let batchRow: unknown[] | {[columnName: string]: unknown} = rowToAdd;
     if (shape === 'object-row-table' && headerRow && rowToAdd.length > headerRow.length) {
       batchRow = convertToPapaObjectRow(rowToAdd, headerRow);
@@ -380,14 +378,20 @@ function parseCSVInBatches(
     }
   }
 
-  function getBatchShape(): 'array-row-table' | 'object-row-table' {
-    const deprecatedShape = (
-      options as {shape?: 'array-row-table' | 'object-row-table'} | undefined
-    )?.shape;
+  function getBatchShape(): CSVBatchShape {
+    const deprecatedShape = (options as {shape?: CSVBatchShape} | undefined)?.shape;
     const shape = deprecatedShape || csvOptions.shape || DEFAULT_CSV_SHAPE;
-    return shape === 'array-row-table' ? 'array-row-table' : DEFAULT_CSV_SHAPE;
+    switch (shape) {
+      case 'array-row-table':
+      case 'columnar-table':
+        return shape;
+      default:
+        return DEFAULT_CSV_SHAPE;
+    }
   }
 }
+
+type CSVBatchShape = 'array-row-table' | 'object-row-table' | 'columnar-table';
 
 /**
  * Checks if a certain row is a header row

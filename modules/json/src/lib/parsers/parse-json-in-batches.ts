@@ -26,6 +26,7 @@ export async function* parseJSONInBatches(
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const asyncIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
   const shape = options?.json?.shape;
+  const tableBatchBuilderShape = shape === 'arrow-table' ? 'object-row-table' : shape;
   const metadataBatchShape =
     shape === 'arrow-table' ? 'array-row-table' : (shape ?? 'object-row-table');
 
@@ -38,7 +39,7 @@ export async function* parseJSONInBatches(
   const schema: Schema = null;
   const tableBatchBuilder = new TableBatchBuilder(schema, {
     ...options?.core,
-    shape
+    shape: tableBatchBuilderShape
   });
 
   const parser = new StreamingJSONParser({jsonpaths});
