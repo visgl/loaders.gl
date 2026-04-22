@@ -5,7 +5,7 @@
 
 import test from 'tape-promise/tape';
 import {createDataSource, fetchFile, load} from '@loaders.gl/core';
-import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/json';
 import {TableTileSourceLoader, TableVectorTileSource} from '@loaders.gl/mvt';
 import {Feature, GeoJSONTable, Geometry} from '@loaders.gl/schema';
 

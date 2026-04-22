@@ -80,6 +80,8 @@ for await (const batch of batches) {
 }
 ```
 
+`NDJSONLoader` also returns Arrow tables when called with `ndjson.shape: 'arrow-table'`. In Arrow mode, `ndjson.schema` accepts either a loaders.gl `Schema` or Apache Arrow `Schema`. `ndjson.arrowConversion` has the same strict-by-default recovery policy as `JSONLoader`: type mismatches and missing fields throw unless configured to write `null` to nullable fields, and extra fields throw unless configured to drop. GeoJSON feature rows are converted as generic nested JSON rows; use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` for GeoArrow WKB output.
+
 ## Data Format
 
 Parsed `NDJSONLoader` batches are of the format.
@@ -98,3 +100,9 @@ Each element in the `data` array corresponds to a line (Object) in the NDJSON da
 ## Options
 
 Supports the table category options such as `batchSize`.
+
+| Option                   | Type                    | Default | Description |
+| ------------------------ | ----------------------- | ------- | ----------- |
+| `ndjson.shape`           | `string`                | `'object-row-table'` | Requested table shape. Supported values are `'object-row-table'`, `'array-row-table'`, and `'arrow-table'`. |
+| `ndjson.schema`          | `Schema \| arrow.Schema` | `undefined` | Optional schema used when `ndjson.shape` is `'arrow-table'`. |
+| `ndjson.arrowConversion` | `object`                | strict recovery policy | Optional Arrow conversion policy. Supports `onTypeMismatch`, `onMissingField`, `onExtraField`, and `logRecoveries`. |

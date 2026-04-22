@@ -51,10 +51,10 @@ allowing correct distinctions to be made in usage.
 | [NewLine Delimited JSON][format_ndjson]           | `.ndjson`    | `application/x-ndjson`     | `NDJSONLoader`                                                |
 | [JSON Lines][format_jsonlines]                    | `.jsonl`     | `application/x-ldjson`     | `NDJSONLoader`                                                |
 | [JSON Text Sequences][format_json_seq]            |              | `application/json-seq`     | `NDJSONLoader`. Partial records must not span multiple lines. |     |
-| [GeoJSON][format_geojson]                         | `.json`      | `application/geo+json`     | `JSONLoader`                                                  |
-| [Newline Delimited GeoJSON][format_ndgeojson]     | `.ndgeojson` |                            | `NDJSONLoader`                                                |
-| [GeoJSON Lines][format_geojson]                   | `.geojsonl`  |                            | `NDJSONLoader`                                                |
-| [GeoJSON Text Sequences][format_geojson_text_seq] |              | `application/geo+json-seq` | `NDJSONLoader`                                                |
+| [GeoJSON][format_geojson]                         | `.geojson`   | `application/geo+json`     | `GeoJSONLoader`                                               |
+| [Newline Delimited GeoJSON][format_ndgeojson]     | `.ndgeojson` |                            | `NDGeoJSONLoader`                                             |
+| [GeoJSON Lines][format_geojson]                   | `.geojsonl`  |                            | `NDGeoJSONLoader`                                             |
+| [GeoJSON Text Sequences][format_geojson_text_seq] |              | `application/geo+json-seq` | `NDGeoJSONLoader`                                             |
 
 [format_json]: https://www.json.org/json-en.html
 [format_ndjson]: http://ndjson.org/

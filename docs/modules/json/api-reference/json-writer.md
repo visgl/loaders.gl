@@ -26,6 +26,23 @@ import {encode} from '@loaders.gl/core';
 const data = await encode(url, JSONWriter, {json: options});
 ```
 
+`JSONWriter` accepts loaders.gl row, columnar, and Arrow tables. Arrow table inputs are serialized as JSON row objects by default.
+
+```typescript
+const json = await encode(arrowTable, JSONWriter, {
+  json: {shape: 'arrow-table'}
+});
+```
+
+If an Arrow table has a `geoarrow.wkb` geometry column, `JSONWriter` decodes that column to GeoJSON geometry objects before serializing. This keeps JSON output readable while preserving the writer's normal array-of-rows shape.
+
+```typescript
+const json = await encode(geoArrowTable, JSONWriter);
+// [{"name":"A","geometry":{"type":"Point","coordinates":[1,2]}}]
+```
+
+Set `json.geoarrow: 'none'` to serialize the raw WKB values instead.
+
 ### Streaming and JSON paths
 
 For larger files, JSONWriter supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
@@ -61,8 +78,8 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option           | From                                                                                  | Type       | Default | Description                                                                                                                           |
 | ---------------- | ------------------------------------------------------------------------------------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `json.table`     | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `boolean`  | `false` | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
-| `json.jsonpaths` | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `[]`    | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
+| `json.shape`     |                                                                                       | `string`   | `'object-row-table'` | Requested JSON row shape. Supported values are `'object-row-table'`, `'array-row-table'`, and `'arrow-table'`. `'arrow-table'` is accepted for Arrow table inputs and serializes rows as objects. |
+| `json.geoarrow`  |                                                                                       | `'auto' \| 'none'` | `'auto'` | Controls GeoArrow WKB decoding. `'auto'` decodes `geoarrow.wkb` columns to GeoJSON geometry objects. `'none'` serializes the raw values. |
 
 ## JSONPaths
 

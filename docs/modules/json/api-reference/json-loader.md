@@ -8,7 +8,7 @@ Streaming loader for JSON encoded files.
 | Media Type     | `application/json`                                   |
 | File Type      | Text                                                 |
 | File Format    | [JSON](https://www.json.org/json-en.html)            |
-| Data Format    | [Classic Table](/docs/specifications/category-table) |
+| Data Format    | [Tables](/docs/specifications/category-table) |
 | Supported APIs | `load`, `parse`, `parseSync`, `parseInBatches`       |
 
 ## Usage
@@ -21,6 +21,39 @@ import {load} from '@loaders.gl/core';
 
 const data = await load(url, JSONLoader, {json: options});
 ```
+
+To return an Apache Arrow table instead of JavaScript row objects, request `json.shape: 'arrow-table'`.
+
+```typescript
+import {JSONLoader} from '@loaders.gl/json';
+import {load} from '@loaders.gl/core';
+
+const table = await load(url, JSONLoader, {
+  json: {shape: 'arrow-table'}
+});
+```
+
+`JSONLoader` infers nested Arrow `struct` and `list` fields from nested JSON objects and arrays. Rows with incompatible non-null field shapes, such as a number in one row and an object in another, throw an error instead of coercing values.
+
+Callers can also provide a loaders.gl `Schema` or Apache Arrow `Schema` when requesting Arrow output. Supplied schemas are used directly instead of inferring the schema from the JSON rows.
+
+```typescript
+const table = await load(url, JSONLoader, {
+  json: {
+    shape: 'arrow-table',
+    schema,
+    arrowConversion: {
+      onTypeMismatch: 'null',
+      onMissingField: 'null',
+      onExtraField: 'drop'
+    }
+  }
+});
+```
+
+By default, Arrow conversion is strict: type mismatches, missing schema fields, and extra row fields throw. The optional `json.arrowConversion` policy can recover by writing `null` for nullable schema fields or dropping values that are not in the schema. Recovered issues are logged once per issue kind and field path through `options.core.log`.
+
+`JSONLoader` is generic. GeoJSON input loaded through `JSONLoader` in Arrow mode is converted as nested JSON rows. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON should be converted to GeoArrow WKB.
 
 For larger files, JSONLoader supports streaming JSON parsing, in which case it will yield "batches" of rows from one array.
 To parse a stream of GeoJSON, the user can specify the `options.json.jsonpaths` to stream the `features` array.
@@ -81,6 +114,8 @@ To avoid confusion when inspecting batches:
 
 1. Consume `batch.data` only when `batch.batchType === 'data'`; metadata batches will appear “incomplete” by design because they omit the streamed array.
 2. If you need the full root object after streaming, enable `{metadata: true}` and merge the streamed `data` rows back into the container object instead of relying on the metadata batches alone.
+3. If `json.shape` is set to `'arrow-table'`, only `data` batches are converted to Arrow. `partial-result` and `final-result` batches remain metadata-oriented container batches.
+4. Arrow `data` batches use a frozen schema. If `json.schema` is supplied, that schema is used for every batch. Otherwise the schema is inferred from the first non-empty `data` batch, and later batches are converted against that schema.
 
 ## Data Format
 
@@ -105,6 +140,9 @@ Supports table category options such as `batchType` and `batchSize`.
 | Option                 | From                                                                                  | Type       | Default                                                                                                                                          | Description                                                                                                                           |
 | ---------------------- | ------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `json.table`           | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `boolean`  | `false`                                                                                                                                          | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing. |
+| `json.shape`           |                                                                                       | `string`   | `undefined`                                                                                                                                      | Requested table shape. Supported values are `'object-row-table'`, `'array-row-table'`, and `'arrow-table'`. Arrow batches freeze their schema from the first non-empty streamed batch. |
+| `json.schema`          |                                                                                       | `Schema \| arrow.Schema` | `undefined`                                                                                                                             | Optional schema used when `json.shape` is `'arrow-table'`. The loader converts rows against this schema instead of inferring one. |
+| `json.arrowConversion` |                                                                                       | `object`   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', logRecoveries: true}`                                                  | Optional Arrow conversion policy. `onTypeMismatch: 'null'` and `onMissingField: 'null'` write `null` only for nullable fields. `onExtraField: 'drop'` omits fields that are not in the schema. |
 | `json.jsonpaths`       | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]` | `[]`                                                                                                                                             | A list of JSON paths (see below) indicating the array that can be streamed.                                                           |
 | `metadata` (top level) | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`  | If `true`, yields an initial and final batch containing the partial and final result (i.e. the root object, excluding the array being streamed). |
 

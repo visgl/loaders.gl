@@ -4,22 +4,24 @@
 
 export type {JSONLoaderOptions} from './json-loader';
 export {JSONLoader} from './json-loader';
+export type {NDJSONLoaderOptions} from './ndjson-loader';
 export {NDJSONLoader} from './ndjson-loader';
 export type {NDJSONArrowLoaderOptions} from './ndjson-arrow-loader';
 export {NDJSONArrowLoader} from './ndjson-arrow-loader';
+export type {
+  ArrowConversionOptions,
+  JSONArrowConversionOptions,
+  JSONArrowSchema
+} from './lib/parsers/parse-ndjson-to-arrow';
 
 export type {JSONWriterOptions} from './json-writer';
 export {JSONWriter} from './json-writer';
 
-// EXPERIMENTAL EXPORTS - WARNING: MAY BE REMOVED WIHTOUT NOTICE IN FUTURE RELEASES
-export type {GeoJSONLoaderOptions as _GeoJSONLoaderOptions} from './geojson-loader';
-export {
-  GeoJSONLoader as _GeoJSONLoader,
-  GeoJSONWorkerLoader as _GeoJSONWorkerLoader
-} from './geojson-loader';
+export type {GeoJSONLoaderOptions} from './geojson-loader';
+export {GeoJSONLoader, GeoJSONWorkerLoader} from './geojson-loader';
 
-export type {GeoJSONWriterOptions as _GeoJSONWriterOptions} from './geojson-writer';
-export {GeoJSONWriter as _GeoJSONWriter} from './geojson-writer';
+export type {GeoJSONWriterOptions} from './geojson-writer';
+export {GeoJSONWriter} from './geojson-writer';
 
 export {default as _JSONPath} from './lib/jsonpath/jsonpath';
 export {default as _ClarinetParser} from './lib/clarinet/clarinet';
