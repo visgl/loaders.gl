@@ -20,6 +20,7 @@ export async function getVitestConfig(options = {}) {
   const vitestConfig = ocularConfig.devtools?.vitest || {};
   const tsconfigProjects = vitestConfig.tsconfigProjects || ['./tsconfig.json'];
   const excludePatterns = vitestConfig.excludePatterns || [];
+  const nodeExcludePatterns = vitestConfig.nodeExcludePatterns || [];
   const sharedExcludePatterns = ['**/node_modules/**', ...excludePatterns];
   const setupFiles = vitestConfig.setupFiles || ['./test/vitest-setup.ts'];
   const browserName = vitestConfig.browserName || 'chromium';
@@ -72,6 +73,7 @@ export async function getVitestConfig(options = {}) {
             exclude: [
               'modules/**/*.browser.spec.{ts,js}',
               'test/**/*.browser.spec.{ts,js}',
+              ...nodeExcludePatterns,
               ...sharedExcludePatterns
             ],
             browser: {

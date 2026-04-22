@@ -65,6 +65,20 @@ const config = {
         'test/bench/**',
         'test/render/**'
       ],
+      nodeExcludePatterns: [
+        // These shared specs currently depend on browser fetch semantics or worker entrypoints
+        // that are not valid in the Node Vitest project.
+        'modules/arrow/test/triangulate-on-worker.spec.ts',
+        'modules/compression/test/compression.spec.ts',
+        'modules/crypto/test/crypto-worker.spec.ts',
+        'modules/draco/test/draco-loader.spec.ts',
+        'modules/draco/test/draco-writer.spec.ts',
+        'modules/parquet/test/parquet-arrow-loader.spec.ts',
+        'modules/parquet/test/parquetjs/integration.spec.ts',
+        'modules/potree/test/potree-source.spec.ts',
+        'modules/textures/test/basis-loader.spec.ts',
+        'modules/textures/test/ktx2-basis-universal-texture-writer.spec.ts'
+      ],
       softwareGpu: Boolean(process.env.CI)
     }
   },
