@@ -5,7 +5,7 @@
 import type {ArrayRowTable, ObjectRowTable} from '@loaders.gl/schema';
 import {makeTableFromData} from '@loaders.gl/schema-utils';
 import type {JSONLoaderOptions} from '../../json-loader';
-import {convertRowTableToArrowTable} from './parse-ndjson-to-arrow';
+import {convertRowTableToArrowTable} from './convert-row-table-to-arrow';
 
 /** Parses one JSON payload into either raw JSON or the requested table shape. */
 export function parseJSONSync(jsonText: string, options: JSONLoaderOptions): unknown {

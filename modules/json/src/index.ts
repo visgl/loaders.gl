@@ -12,7 +12,7 @@ export type {
   ArrowConversionOptions,
   JSONArrowConversionOptions,
   JSONArrowSchema
-} from './lib/parsers/parse-ndjson-to-arrow';
+} from './lib/parsers/convert-row-table-to-arrow';
 
 export type {JSONWriterOptions} from './json-writer';
 export {JSONWriter} from './json-writer';

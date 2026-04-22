@@ -39,7 +39,6 @@ test('JSONLoader#load(geojson.json)', async t => {
   t.end();
 });
 
-<<<<<<< HEAD
 test('JSONLoader#parse(arrow-table nested rows)', async t => {
   const table = JSONLoader.parseTextSync?.(NESTED_JSON_TEXT, {
     json: {shape: 'arrow-table'}
@@ -198,7 +197,9 @@ test('JSONLoader#parse(arrow-table empty arrays and rows)', async t => {
   t.equal(emptyObjectRowsTable.data.numRows, 2, 'array of empty objects keeps row count');
   t.equal(emptyObjectRowsTable.data.numCols, 0, 'array of empty objects keeps zero columns');
 
-=======
+  t.end();
+});
+
 test('JSONLoader#load(geojson.json, shape: arrow-table)', async t => {
   const arrowTable = await load(GEOJSON_PATH, JSONLoader, {
     json: {table: true, shape: 'arrow-table'}
@@ -206,7 +207,6 @@ test('JSONLoader#load(geojson.json, shape: arrow-table)', async t => {
   t.equal(arrowTable.shape, 'arrow-table', 'Correct Arrow table type received');
   t.equal(arrowTable.data.numRows, 308, 'Correct number of Arrow rows received');
   t.equal(arrowTable.data.getChild('type')?.get(0), 'Feature', 'Arrow field values are preserved');
->>>>>>> master
   t.end();
 });
 
@@ -295,7 +295,6 @@ test('JSONLoader#loadInBatches(jsonpaths)', async t => {
   t.end();
 });
 
-<<<<<<< HEAD
 test('GeoJSONLoader#loadInBatches(arrow-table streams GeoArrow WKB)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, GeoJSONLoader, {
     batchSize: 10,
@@ -711,6 +710,16 @@ test('NDJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async t
   t.end();
 });
 
+test('NDJSONLoader#parse(deprecated json.shape arrow-table alias)', async t => {
+  const table = NDJSONLoader.parseTextSync?.('{"id":1}\n{"id":2}\n', {
+    json: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'deprecated json.shape alias requests Arrow output');
+  t.equal(table.data.numRows, 2, 'converts all rows');
+  t.end();
+});
+
 test('NDJSONLoader#parseInBatches(arrow-table treats GeoJSON features as generic rows)', async t => {
   const ndjsonText = `${JSON.stringify({
     type: 'Feature',
@@ -852,10 +861,21 @@ test('GeoJSONLoader#parse(arrow-table preserves legacy GeoJSON CRS)', async t =>
     'CRS84',
     'maps known root CRS to GeoArrow CRS metadata'
   );
-=======
+  t.end();
+});
+
 test('JSONLoader#loadInBatches(jsonpaths, shape: arrow-table)', async t => {
+  const schema: Schema = {
+    fields: [{name: 'type', type: 'utf8', nullable: false}],
+    metadata: {}
+  };
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
-    json: {jsonpaths: ['$.features'], shape: 'arrow-table'}
+    json: {
+      jsonpaths: ['$.features'],
+      shape: 'arrow-table',
+      schema,
+      arrowConversion: {onExtraField: 'drop'}
+    }
   });
 
   let rowCount = 0;
@@ -871,7 +891,6 @@ test('JSONLoader#loadInBatches(jsonpaths, shape: arrow-table)', async t => {
 
   t.ok(dataBatchCount > 0, 'received Arrow data batches');
   t.equal(rowCount, 308, 'Correct number of Arrow rows received');
->>>>>>> master
   t.end();
 });
 

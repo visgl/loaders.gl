@@ -22,7 +22,7 @@ import {
   type ArrowConversionOptions,
   convertGeoJSONFeaturesToArrowTable,
   normalizeJSONArrowSchema
-} from './lib/parsers/parse-ndjson-to-arrow';
+} from './lib/parsers/convert-row-table-to-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.

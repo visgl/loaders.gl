@@ -8,11 +8,8 @@ import {
   ArrayRowTable,
   ArrowTable,
   ArrowTableBatch,
-<<<<<<< HEAD
-  Schema
-=======
+  Schema,
   TableBatch
->>>>>>> master
 } from '@loaders.gl/schema';
 import type * as arrow from 'apache-arrow';
 import {parseNDJSONSync} from './lib/parsers/parse-ndjson';
@@ -20,7 +17,7 @@ import {parseNDJSONInBatches} from './lib/parsers/parse-ndjson-in-batches';
 import {
   type ArrowConversionOptions,
   convertRowTableToArrowTable,
-  convertTableBatchesToArrow
+  makeNDJSONArrowBatchIterator
 } from './lib/parsers/convert-row-table-to-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -33,21 +30,17 @@ type NDJSONShape = 'array-row-table' | 'object-row-table' | 'arrow-table';
 export type NDJSONLoaderOptions = LoaderOptions & {
   /** NDJSON parser options. */
   ndjson?: {
-<<<<<<< HEAD
     /** Requested output shape. */
-    shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
+    shape?: NDJSONShape;
     /** Optional schema used when converting NDJSON rows to Arrow. */
     schema?: Schema | arrow.Schema;
     /** Optional recovery policy used when converting NDJSON rows to Arrow. */
     arrowConversion?: ArrowConversionOptions;
-=======
-    /** Selects row-table output or Apache Arrow output. */
-    shape?: NDJSONShape;
   };
+  /** Deprecated JSON parser alias used only for NDJSON shape selection. */
   json?: {
-    /** Deprecated alias for `ndjson.shape`. */
+    /** Deprecated alias for `ndjson.shape`; `ndjson.shape` takes precedence. */
     shape?: NDJSONShape;
->>>>>>> master
   };
 };
 
@@ -103,18 +96,13 @@ function parseNDJSONText(
 ): ObjectRowTable | ArrayRowTable | ArrowTable {
   validateNDJSONArrowOptions(options);
   const table = parseNDJSONSync(text);
-<<<<<<< HEAD
-  const shape = options?.ndjson?.shape || NDJSONLoader.options.ndjson.shape;
-  return shape === 'arrow-table'
+  return getNDJSONShape(options) === 'arrow-table'
     ? convertRowTableToArrowTable(table, {
         schema: options?.ndjson?.schema,
         arrowConversion: options?.ndjson?.arrowConversion,
         log: getNDJSONLoaderLog(options)
       })
     : table;
-=======
-  return getNDJSONShape(options) === 'arrow-table' ? convertRowTableToArrowTable(table) : table;
->>>>>>> master
 }
 
 /**
@@ -132,9 +120,7 @@ function parseNDJSONInRequestedShape(
 ): AsyncIterable<TableBatch | ArrowTableBatch> {
   validateNDJSONArrowOptions(options);
   const batches = parseNDJSONInBatches(asyncIterator, options);
-<<<<<<< HEAD
-  const shape = options?.ndjson?.shape || NDJSONLoader.options.ndjson.shape;
-  return shape === 'arrow-table'
+  return getNDJSONShape(options) === 'arrow-table'
     ? makeNDJSONArrowBatchIterator(batches, {
         schema: options?.ndjson?.schema,
         arrowConversion: options?.ndjson?.arrowConversion,
@@ -143,25 +129,22 @@ function parseNDJSONInRequestedShape(
     : batches;
 }
 
+/** Returns the requested NDJSON output shape, including the deprecated JSON alias. */
+function getNDJSONShape(options?: NDJSONLoaderOptions): NDJSONShape {
+  return options?.ndjson?.shape || options?.json?.shape || NDJSONLoader.options.ndjson.shape;
+}
+
 /** Returns the loader log object from normalized or deprecated option locations. */
 function getNDJSONLoaderLog(options?: NDJSONLoaderOptions): any {
   return options?.core?.log || options?.log;
 }
 
 function validateNDJSONArrowOptions(options?: NDJSONLoaderOptions): void {
-  const shape = options?.ndjson?.shape || NDJSONLoader.options.ndjson.shape;
+  const shape = getNDJSONShape(options);
   const hasArrowOnlyOptions = Boolean(options?.ndjson?.schema || options?.ndjson?.arrowConversion);
   if (hasArrowOnlyOptions && shape !== 'arrow-table') {
     throw new Error(
-      'NDJSONLoader: ndjson.schema and ndjson.arrowConversion require ndjson.shape to be "arrow-table"'
+      'NDJSONLoader: ndjson.schema and ndjson.arrowConversion require ndjson.shape or json.shape to be "arrow-table"'
     );
   }
-=======
-  return getNDJSONShape(options) === 'arrow-table' ? convertTableBatchesToArrow(batches) : batches;
-}
-
-/** Returns the requested NDJSON output shape, including the deprecated JSON alias. */
-function getNDJSONShape(options?: NDJSONLoaderOptions): NDJSONShape {
-  return options?.ndjson?.shape || options?.json?.shape || NDJSONLoader.options.ndjson.shape;
->>>>>>> master
 }
