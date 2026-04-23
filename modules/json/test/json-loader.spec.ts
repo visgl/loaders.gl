@@ -84,6 +84,45 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => 
   t.end();
 });
 
+test('JSONLoader#parseInBatches(complete rows with nested arrays)', async t => {
+  const valueCount = 2048;
+  const rows = Array.from({length: 3}, (_, rowIndex) => ({
+    text: `row-${rowIndex}`,
+    values: Array.from({length: valueCount}, (_, valueIndex) => rowIndex * valueCount + valueIndex)
+  }));
+
+  const iterator = JSONLoader.parseInBatches?.(makeChunkedTextIterator(JSON.stringify(rows), 128), {
+    batchSize: 1
+  });
+
+  t.ok(iterator, 'parseInBatches returned iterator');
+  if (!iterator) {
+    t.end();
+    return;
+  }
+
+  let emittedRowCount = 0;
+  for await (const batch of iterator) {
+    if (batch.batchType === 'data') {
+      t.equal(batch.length, 1, 'fixed-size batch contains one complete row');
+      for (const row of batch.data) {
+        const expectedFirstValue = emittedRowCount * valueCount;
+        emittedRowCount++;
+        t.equal(row.values.length, valueCount, 'nested values array is complete when emitted');
+        t.equal(row.values[0], expectedFirstValue, 'first nested value is preserved');
+        t.equal(
+          row.values[valueCount - 1],
+          expectedFirstValue + valueCount - 1,
+          'last nested value is preserved'
+        );
+      }
+    }
+  }
+
+  t.equal(emittedRowCount, rows.length, 'all rows were emitted');
+  t.end();
+});
+
 test('JSONLoader#loadInBatches(jsonpaths)', async t => {
   let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
     json: {jsonpaths: ['$.features']}
@@ -247,3 +286,11 @@ test('JSONLoader#loadInBatches(streaming array of arrays)', async t => {
 
   t.end();
 });
+
+/** Emits UTF-8 JSON text chunks for streaming parser tests. */
+async function* makeChunkedTextIterator(text: string, chunkSize: number) {
+  const textEncoder = new TextEncoder();
+  for (let index = 0; index < text.length; index += chunkSize) {
+    yield textEncoder.encode(text.slice(index, index + chunkSize));
+  }
+}
