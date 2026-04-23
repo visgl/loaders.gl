@@ -30,5 +30,7 @@ The `QuantizedMeshLoader` is a fork of
 [`quantized-mesh-decoder`](https://github.com/heremaps/quantized-mesh-decoder)
 from HERE under the MIT license to decode quantized mesh.
 
-The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini) or [Delatin](https://github.com/mapbox/delatin) for mesh
-reconstruction which are both under the ISC License.
+The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini), [Delatin](https://github.com/mapbox/delatin), or a fixed grid tesselator for mesh
+reconstruction. Martini and Delatin are both under the ISC License.
+
+The fixed grid path is designed for predictable terrain tile density and emits longitude, latitude, and elevation positions directly, which is useful for renderers such as deck.gl `TerrainLayer`.

@@ -8,7 +8,8 @@ import {parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import {parseQuantizedMesh} from './lib/parse-quantized-mesh';
-import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
+import type {TerrainOptions} from './lib/parse-terrain';
+import {makeTerrainMeshFromImage} from './lib/parse-terrain';
 
 import {TerrainLoader as TerrainWorkerLoader, TerrainLoaderOptions} from './terrain-loader';
 import {
@@ -17,6 +18,12 @@ import {
 } from './quantized-mesh-loader';
 export type {QuantizedMeshWriterOptions} from './quantized-mesh-writer';
 export {QuantizedMeshWriter} from './quantized-mesh-writer';
+export type {GridTerrainOptions, TerrainBounds, TerrainOptions} from './lib/parse-terrain';
+export {
+  buildGridMeshAttributes,
+  makeGridTerrainMesh,
+  makeTerrainMeshFromImage
+} from './lib/parse-terrain';
 
 // TerrainLoader
 

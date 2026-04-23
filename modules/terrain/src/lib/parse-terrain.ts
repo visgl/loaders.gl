@@ -7,16 +7,39 @@ import {deduceMeshSchema, getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import Martini from '@mapbox/martini';
 import Delatin from './delatin/index';
 import {addSkirt} from './helpers/skirt';
+import {makeGridTerrainMesh} from './grid-terrain-mesh';
+import type {TerrainBounds} from './grid-terrain-mesh';
+
+export type {GridTerrainOptions, TerrainBounds} from './grid-terrain-mesh';
+export {buildGridMeshAttributes, makeGridTerrainMesh} from './grid-terrain-mesh';
 
 export type TerrainOptions = {
   /** Maximum terrain mesh error in meters. */
   meshMaxError: number;
-  /** Bounds used to map terrain image coordinates to x/y positions. */
-  bounds: number[];
+  /**
+   * Bounds used to map terrain image coordinates to x/y positions.
+   *
+   * For `martini`, `delatin`, and `auto`, bounds are in the caller's flat
+   * projection units, commonly Web Mercator world units.
+   *
+   * For `grid`, bounds are longitude and latitude degrees ordered as west,
+   * south, east, north. The grid mesh emits POSITION attributes directly as
+   * longitude, latitude, and elevation.
+   */
+  bounds: number[] | TerrainBounds;
   /** Decoder used to convert terrain image channels to elevation values. */
   elevationDecoder: ElevationDecoder;
-  /** Tesselation algorithm used to reconstruct the terrain mesh. */
-  tesselator: 'martini' | 'delatin' | 'auto';
+  /**
+   * Tesselation algorithm.
+   *
+   * `martini` and `delatin` use error-driven refinement. `grid` uses a fixed
+   * longitude/latitude grid with Mercator-y row sampling, which is faster and
+   * avoids high-latitude texture warping when used by deck.gl TerrainLayer.
+   * `auto` uses Martini for square power-of-two tiles and Delatin otherwise.
+   */
+  tesselator: 'martini' | 'delatin' | 'grid' | 'auto';
+  /** Vertices per side when `tesselator` is `grid`. */
+  gridSize?: number;
   /** Optional skirt height in meters. */
   skirtHeight?: number;
 };
@@ -32,11 +55,11 @@ type TerrainImage = {
 
 type ElevationDecoder = {
   /** Red channel elevation scale. */
-  rScaler: any;
+  rScaler: number;
   /** Blue channel elevation scale. */
-  bScaler: any;
+  bScaler: number;
   /** Green channel elevation scale. */
-  gScaler: any;
+  gScaler: number;
   /** Elevation offset added after channel scaling. */
   offset: number;
 };
@@ -55,6 +78,15 @@ export function makeTerrainMeshFromImage(
   const {meshMaxError, bounds, elevationDecoder} = terrainOptions;
 
   const {data, width, height} = terrainImage;
+
+  if (terrainOptions.tesselator === 'grid') {
+    return makeGridTerrainMesh(terrainImage, {
+      bounds: bounds as [number, number, number, number],
+      elevationDecoder,
+      gridSize: terrainOptions.gridSize,
+      skirtHeight: terrainOptions.skirtHeight
+    });
+  }
 
   let terrain;
   let mesh;
