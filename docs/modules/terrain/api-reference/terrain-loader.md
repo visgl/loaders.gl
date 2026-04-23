@@ -32,6 +32,85 @@ const data = await load(url, TerrainLoader, options);
 
 `TerrainLoader` internally decodes heightmap images with [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) and then converts them with `getImageData(image)`.
 
+### Fixed grid loader example
+
+Use the fixed grid tesselator when you want deterministic mesh density and longitude/latitude output positions for a terrain tile:
+
+```typescript
+import {load} from '@loaders.gl/core';
+import {TerrainLoader} from '@loaders.gl/terrain';
+
+const terrainMesh = await load('https://example.com/terrain-rgb.png', TerrainLoader, {
+  terrain: {
+    tesselator: 'grid',
+    gridSize: 33,
+    bounds: [-122.523, 37.649, -122.356, 37.815], // [west, south, east, north]
+    skirtHeight: 20,
+    elevationDecoder: {
+      rScaler: 65536 * 0.1,
+      gScaler: 256 * 0.1,
+      bScaler: 0.1,
+      offset: -10000
+    }
+  }
+});
+```
+
+With `terrain.tesselator = 'grid'`, the returned mesh contains:
+
+- `POSITION` attributes as `[longitude, latitude, elevation]`
+- `TEXCOORD_0` attributes aligned with the source image
+- indexed triangle-list geometry with a stable vertex count of `gridSize * gridSize`
+
+### Direct mesh API example
+
+If you already have decoded height-map bytes, you can bypass image loading and build the mesh directly:
+
+```typescript
+import {makeGridTerrainMesh} from '@loaders.gl/terrain';
+
+const terrainMesh = makeGridTerrainMesh(
+  {
+    width: imageData.width,
+    height: imageData.height,
+    data: new Uint8Array(imageData.data.buffer, imageData.data.byteOffset, imageData.data.byteLength)
+  },
+  {
+    bounds: [-122.523, 37.649, -122.356, 37.815],
+    gridSize: 33,
+    skirtHeight: 20,
+    elevationDecoder: {
+      rScaler: 65536 * 0.1,
+      gScaler: 256 * 0.1,
+      bScaler: 0.1,
+      offset: -10000
+    }
+  }
+);
+```
+
+## Benchmark comparison
+
+The fixed grid path was added to reduce terrain mesh generation cost for renderers such as deck.gl `TerrainLayer`. The benchmark in [`modules/terrain/test/terrain-loader.bench.js`](https://github.com/visgl/loaders.gl/blob/master/modules/terrain/test/terrain-loader.bench.js) compares the three tesselators on the same already-decoded `mapbox.png` tile, so the numbers reflect mesh generation only and not image decode or network time.
+
+Run it with:
+
+```bash
+node ./scripts/test.mjs bench
+```
+
+Representative Node benchmark output for that fixture:
+
+| Strategy                | Vertex count | Triangle count | Throughput |
+| ----------------------- | ------------ | -------------- | ---------- |
+| `auto` / `martini`      | `52,302`     | `103,770`      | `76.7 tiles/s` |
+| `delatin`               | `45,298`     | `90,245`       | `10.0 tiles/s` |
+| `grid` with `gridSize=33` | `1,089`      | `2,048`        | `33.2K tiles/s` |
+
+On this fixture, `gridSize=33` was about `430x` faster than Martini and about `3,300x` faster than Delatin. The tradeoff is mesh density: `grid` emits a fixed-resolution mesh, while Martini and Delatin spend substantially more CPU time adapting triangles to the height field.
+
+Use `grid` when you want predictable per-tile cost, stable longitude/latitude output, and smooth streaming updates in `TerrainLayer`. Use Martini or Delatin when preserving more terrain detail per tile is more important than meshing speed.
+
 ## Options
 
 | Option                     | Type            | Default   | Description                                                                                                                                   |
@@ -40,6 +119,7 @@ const data = await load(url, TerrainLoader, options);
 | `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
 | `terrain.tesselator`       | `string`        | `auto`    | See below                                                                                                                                     |
+| `terrain.gridSize`         | `number`        | `33`      | Vertices per side when `terrain.tesselator` is `grid`.                                                                                        |
 | `terrain.skirtHeight`      | `number`        | `null`    | If set, create the skirt for the tile with particular height in meters                                                                        |
 
 ### elevationDecoder
@@ -103,3 +183,11 @@ The choices for tesselator are as follows:
 - Works on arbitrary raster grids.
 - Generates a single mesh for a particular detail.
 - Optimized for quality (as little triangles as possible for a given error).
+
+`grid`:
+
+- Builds a fixed-resolution indexed triangle grid directly from the height map.
+- Uses `terrain.gridSize` to control vertices per side. The default `33` produces 1089 vertices and 2048 triangles per tile. `terrain.meshMaxError` is ignored by this fixed-resolution path.
+- Requires `terrain.bounds` as longitude and latitude degrees ordered `[west, south, east, north]`.
+- Emits `POSITION` attributes as `[longitude, latitude, elevation]`, which lets deck.gl `TerrainLayer` render the same mesh in `COORDINATE_SYSTEM.LNGLAT` across map and globe projections.
+- Samples rows uniformly in Mercator y so high-latitude terrain tiles avoid the stretching produced by latitude-uniform sampling.

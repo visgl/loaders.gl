@@ -37,6 +37,7 @@ export const TerrainLoader = {
       tesselator: 'auto',
       bounds: undefined!,
       meshMaxError: 10,
+      gridSize: 33,
       elevationDecoder: {
         rScaler: 1,
         gScaler: 0,
