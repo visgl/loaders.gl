@@ -6,7 +6,12 @@
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 
-import {TerrainLoader, TerrainWorkerLoader, makeGridTerrainMesh} from '@loaders.gl/terrain';
+import {
+  TerrainLoader,
+  TerrainWorkerLoader,
+  buildGridMeshAttributes,
+  makeGridTerrainMesh
+} from '@loaders.gl/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 
 // Should be possible to remove this
@@ -55,6 +60,7 @@ function testAlmostEqual(t, actual, expected, message) {
 test('TerrainLoader#loader objects', async t => {
   validateLoader(t, TerrainLoader, 'TerrainLoader');
   validateLoader(t, TerrainWorkerLoader, 'TerrainWorkerLoader');
+  t.equal(TerrainLoader.options.terrain.gridSize, 33, 'grid size default was found');
   t.end();
 });
 
@@ -313,6 +319,72 @@ test('TerrainLoader#makeGridTerrainMesh applies skirts without changing terrain 
     skirtedTerrainMesh.header.boundingBox,
     terrainMesh.header.boundingBox,
     'skirt does not change terrain bounding box'
+  );
+
+  t.end();
+});
+
+test('TerrainLoader#buildGridMeshAttributes rejects invalid bounds', t => {
+  t.throws(
+    () =>
+      buildGridMeshAttributes(
+        {
+          width: 2,
+          height: 2,
+          data: new Uint8Array(16)
+        },
+        {
+          bounds: [NaN, 0, 1, 1],
+          elevationDecoder: GRID_ELEVATION_DECODER,
+          gridSize: 3
+        }
+      ),
+    /requires bounds as \[west, south, east, north\] in degrees/,
+    'invalid bounds are rejected'
+  );
+
+  t.end();
+});
+
+test('TerrainLoader#buildGridMeshAttributes rejects invalid grid size', t => {
+  t.throws(
+    () =>
+      buildGridMeshAttributes(
+        {
+          width: 2,
+          height: 2,
+          data: new Uint8Array(16)
+        },
+        {
+          bounds: GRID_TERRAIN_BOUNDS,
+          elevationDecoder: GRID_ELEVATION_DECODER,
+          gridSize: 1
+        }
+      ),
+    /gridSize must be an integer greater than or equal to 2/,
+    'invalid grid size is rejected'
+  );
+
+  t.end();
+});
+
+test('TerrainLoader#buildGridMeshAttributes rejects invalid terrain image', t => {
+  t.throws(
+    () =>
+      buildGridMeshAttributes(
+        {
+          width: 0,
+          height: 2,
+          data: new Uint8Array()
+        },
+        {
+          bounds: GRID_TERRAIN_BOUNDS,
+          elevationDecoder: GRID_ELEVATION_DECODER,
+          gridSize: 3
+        }
+      ),
+    /requires a valid terrain image/,
+    'invalid terrain image is rejected'
   );
 
   t.end();
