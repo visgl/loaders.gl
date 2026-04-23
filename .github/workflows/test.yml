@@ -17,25 +17,25 @@ jobs:
         include:
           - node-version: 24
             coverage: true
-            coverage-flag: node
+            coverage-artifact: coverage-node
             playwright: false
             scope: 'node tests'
             test-command: test-node-cover
           - node-version: 24
             coverage: true
-            coverage-flag: headless
+            coverage-artifact: coverage-headless
             playwright: true
             scope: 'headless tests'
             test-command: test-headless-cover
           - node-version: 22
             coverage: false
-            coverage-flag: ''
+            coverage-artifact: ''
             playwright: false
             scope: 'node tests'
             test-command: test-node
           - node-version: 20
             coverage: false
-            coverage-flag: ''
+            coverage-artifact: ''
             playwright: false
             scope: 'node tests'
             test-command: test-node
@@ -120,31 +120,37 @@ jobs:
           fs.writeFileSync(coveragePath, `${records.join('\n')}\n`);
           NODE
 
-      - name: Upload coverage to Coveralls
+      - name: Upload coverage artifact
         if: matrix.coverage
-        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+        uses: actions/upload-artifact@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          file: coverage/lcov.info
-          format: lcov
-          flag-name: ${{ matrix.coverage-flag }}
-          parallel: true
-          fail-on-error: false
+          name: ${{ matrix.coverage-artifact }}
+          path: coverage/lcov.info
+          if-no-files-found: error
 
-  finish-coverage:
-    name: Finish coverage
+  upload-coverage:
+    name: Upload coverage
     needs: test
-    if: ${{ always() }}
     runs-on: ubuntu-22.04
     timeout-minutes: 5
 
     steps:
-      - name: Close Coveralls parallel build
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          merge-multiple: false
+          path: coverage-artifacts
+
+      - name: Upload combined coverage to Coveralls
         uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
-          carryforward: node,headless
+          files: coverage-artifacts/coverage-node/lcov.info coverage-artifacts/coverage-headless/lcov.info
+          format: lcov
           fail-on-error: false
 
   build:
