@@ -34,3 +34,5 @@ The `TerrainLoader` uses [MARTINI](https://github.com/mapbox/martini), [Delatin]
 reconstruction. Martini and Delatin are both under the ISC License.
 
 The fixed grid path is designed for predictable terrain tile density and emits longitude, latitude, and elevation positions directly, which is useful for renderers such as deck.gl `TerrainLayer`.
+
+On the shared `mapbox.png` terrain benchmark, the fixed `gridSize=33` path generated about `33.2K tiles/s`, compared to `76.7 tiles/s` for Martini and `10.0 tiles/s` for Delatin on the same decoded tile. See the [TerrainLoader API reference](/docs/modules/terrain/api-reference/terrain-loader) for the benchmark setup and tradeoffs.

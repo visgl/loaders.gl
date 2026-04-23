@@ -89,6 +89,28 @@ const terrainMesh = makeGridTerrainMesh(
 );
 ```
 
+## Benchmark comparison
+
+The fixed grid path was added to reduce terrain mesh generation cost for renderers such as deck.gl `TerrainLayer`. The benchmark in [`modules/terrain/test/terrain-loader.bench.js`](https://github.com/visgl/loaders.gl/blob/master/modules/terrain/test/terrain-loader.bench.js) compares the three tesselators on the same already-decoded `mapbox.png` tile, so the numbers reflect mesh generation only and not image decode or network time.
+
+Run it with:
+
+```bash
+node ./scripts/test.mjs bench
+```
+
+Representative Node benchmark output for that fixture:
+
+| Strategy                | Vertex count | Triangle count | Throughput |
+| ----------------------- | ------------ | -------------- | ---------- |
+| `auto` / `martini`      | `52,302`     | `103,770`      | `76.7 tiles/s` |
+| `delatin`               | `45,298`     | `90,245`       | `10.0 tiles/s` |
+| `grid` with `gridSize=33` | `1,089`      | `2,048`        | `33.2K tiles/s` |
+
+On this fixture, `gridSize=33` was about `430x` faster than Martini and about `3,300x` faster than Delatin. The tradeoff is mesh density: `grid` emits a fixed-resolution mesh, while Martini and Delatin spend substantially more CPU time adapting triangles to the height field.
+
+Use `grid` when you want predictable per-tile cost, stable longitude/latitude output, and smooth streaming updates in `TerrainLayer`. Use Martini or Delatin when preserving more terrain detail per tile is more important than meshing speed.
+
 ## Options
 
 | Option                     | Type            | Default   | Description                                                                                                                                   |

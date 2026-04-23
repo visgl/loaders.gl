@@ -10,7 +10,8 @@ import {
   TerrainLoader,
   TerrainWorkerLoader,
   buildGridMeshAttributes,
-  makeGridTerrainMesh
+  makeGridTerrainMesh,
+  makeTerrainMeshFromImage
 } from '@loaders.gl/terrain';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 
@@ -319,6 +320,151 @@ test('TerrainLoader#makeGridTerrainMesh applies skirts without changing terrain 
     skirtedTerrainMesh.header.boundingBox,
     terrainMesh.header.boundingBox,
     'skirt does not change terrain bounding box'
+  );
+
+  t.end();
+});
+
+test('TerrainLoader#buildGridMeshAttributes uses default grid size and samples Uint8ClampedArray input', t => {
+  const terrainImage = {
+    width: 2,
+    height: 2,
+    data: new Uint8ClampedArray([10, 0, 0, 255, 20, 0, 0, 255, 30, 0, 0, 255, 40, 0, 0, 255])
+  };
+  const {attributes, indices, boundingBox} = buildGridMeshAttributes(terrainImage, {
+    bounds: [-10, -90, 10, 90],
+    elevationDecoder: GRID_ELEVATION_DECODER
+  });
+
+  t.equal(
+    attributes.POSITION.value.length,
+    33 * 33 * 3,
+    'default grid size generated 33x33 positions'
+  );
+  t.equal(
+    attributes.TEXCOORD_0.value.length,
+    33 * 33 * 2,
+    'default grid size generated 33x33 texCoords'
+  );
+  t.equal(indices.length, 32 * 32 * 6, 'default grid size generated the expected triangle indices');
+
+  const positions = attributes.POSITION.value;
+  const topLeftLatitude = positions[1];
+  const centerPositionIndex = (33 * 16 + 16) * 3;
+  const centerElevation = positions[centerPositionIndex + 2];
+  const bottomLeftPositionIndex = 33 * 32 * 3;
+  const bottomLeftLatitude = positions[bottomLeftPositionIndex + 1];
+
+  testAlmostEqual(
+    t,
+    topLeftLatitude,
+    MAX_LATITUDE,
+    'north edge latitude is clamped to Mercator max'
+  );
+  testAlmostEqual(
+    t,
+    bottomLeftLatitude,
+    -MAX_LATITUDE,
+    'south edge latitude is clamped to Mercator min'
+  );
+  testAlmostEqual(t, centerElevation, 25, 'center elevation is bilinearly interpolated');
+  t.deepEqual(
+    boundingBox,
+    [
+      [-10, -90, 10],
+      [10, 90, 40]
+    ],
+    'bounding box keeps input bounds and sampled elevations'
+  );
+
+  t.end();
+});
+
+test('TerrainLoader#makeTerrainMeshFromImage grid path returns mesh metadata', t => {
+  const terrainImage = {
+    width: 2,
+    height: 2,
+    data: new Uint8Array([10, 0, 0, 255, 20, 0, 0, 255, 30, 0, 0, 255, 40, 0, 0, 255])
+  };
+  const terrainMesh = makeTerrainMeshFromImage(terrainImage, {
+    meshMaxError: 999,
+    bounds: GRID_TERRAIN_BOUNDS,
+    elevationDecoder: GRID_ELEVATION_DECODER,
+    tesselator: 'grid',
+    gridSize: 2
+  });
+
+  t.equal(terrainMesh.topology, 'triangle-list', 'grid path returns triangle-list topology');
+  t.equal(terrainMesh.mode, 4, 'grid path returns TRIANGLES mode');
+  t.equal(terrainMesh.indices.value.length, 6, 'grid path generated one quad as two triangles');
+  t.equal(terrainMesh.header.vertexCount, 6, 'header vertexCount matches generated indices');
+  t.deepEqual(
+    terrainMesh.header.boundingBox,
+    [GRID_TERRAIN_BOUNDS.slice(0, 2).concat(10), GRID_TERRAIN_BOUNDS.slice(2, 4).concat(40)],
+    'grid path header bounding box tracks source bounds and elevations'
+  );
+  t.ok(terrainMesh.schema, 'grid path generated schema metadata');
+
+  t.end();
+});
+
+test('TerrainLoader#makeTerrainMeshFromImage auto chooses martini for square power-of-two tiles', t => {
+  const terrainImage = {
+    width: 2,
+    height: 2,
+    data: new Uint8Array([10, 0, 0, 255, 20, 0, 0, 255, 30, 0, 0, 255, 40, 0, 0, 255])
+  };
+  const terrainOptions = {
+    meshMaxError: 0,
+    bounds: [0, 0, 2, 2],
+    elevationDecoder: GRID_ELEVATION_DECODER
+  };
+  const martiniMesh = makeTerrainMeshFromImage(terrainImage, {
+    ...terrainOptions,
+    tesselator: 'martini'
+  });
+  const autoMesh = makeTerrainMeshFromImage(terrainImage, {
+    ...terrainOptions,
+    tesselator: 'auto'
+  });
+
+  t.deepEqual(autoMesh.indices.value, martiniMesh.indices.value, 'auto matched martini indices');
+  t.deepEqual(
+    autoMesh.attributes.POSITION.value,
+    martiniMesh.attributes.POSITION.value,
+    'auto matched martini positions'
+  );
+
+  t.end();
+});
+
+test('TerrainLoader#makeTerrainMeshFromImage auto chooses delatin for non-square tiles', t => {
+  const terrainImage = {
+    width: 3,
+    height: 2,
+    data: new Uint8Array([
+      10, 0, 0, 255, 20, 0, 0, 255, 30, 0, 0, 255, 40, 0, 0, 255, 50, 0, 0, 255, 60, 0, 0, 255
+    ])
+  };
+  const terrainOptions = {
+    meshMaxError: 0,
+    bounds: [0, 0, 3, 2],
+    elevationDecoder: GRID_ELEVATION_DECODER
+  };
+  const delatinMesh = makeTerrainMeshFromImage(terrainImage, {
+    ...terrainOptions,
+    tesselator: 'delatin'
+  });
+  const autoMesh = makeTerrainMeshFromImage(terrainImage, {
+    ...terrainOptions,
+    tesselator: 'auto'
+  });
+
+  t.deepEqual(autoMesh.indices.value, delatinMesh.indices.value, 'auto matched delatin indices');
+  t.deepEqual(
+    autoMesh.attributes.POSITION.value,
+    delatinMesh.attributes.POSITION.value,
+    'auto matched delatin positions'
   );
 
   t.end();
