@@ -104,6 +104,9 @@
       "@loaders.gl/csv": [
         "modules/csv/src"
       ],
+      "@loaders.gl/csv/*": [
+        "modules/csv/src/*"
+      ],
       "@loaders.gl/csv/test": [
         "modules/csv/test"
       ],

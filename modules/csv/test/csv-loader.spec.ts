@@ -5,9 +5,22 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {load, loadInBatches, isAsyncIterable} from '@loaders.gl/core';
+import {
+  load,
+  loadInBatches,
+  isAsyncIterable,
+  parse,
+  parseInBatches,
+  preload,
+  preloadSync
+} from '@loaders.gl/core';
+import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
+import {
+  CSVLoader as UnbundledCSVLoader,
+  CSVWorkerLoader as UnbundledCSVWorkerLoader
+} from '@loaders.gl/csv/unbundled';
+import * as csv from '@loaders.gl/csv';
 import {getGeoMetadata} from '@loaders.gl/gis';
-import {CSVLoader} from '../src/csv-loader';
 import {getTableLength} from '@loaders.gl/schema-utils';
 
 // Small CSV Sample Files
@@ -28,6 +41,46 @@ test('CSVLoader#loader conformance', t => {
   t.end();
 });
 
+test('CSV root loaders expose parser methods and deprecated WorkerLoader aliases', t => {
+  t.equal(typeof CSVLoader.parse, 'function', 'CSVLoader exposes parse');
+  t.equal(typeof CSVLoader.parseInBatches, 'function', 'CSVLoader exposes parseInBatches');
+  t.equal(CSVWorkerLoader, CSVLoader, 'CSVWorkerLoader aliases CSVLoader');
+  t.notOk('CSVLoaderWithParser' in csv, 'root package does not export CSVLoaderWithParser');
+  t.end();
+});
+
+test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader aliases', async t => {
+  t.equal(preloadSync(UnbundledCSVLoader), null, 'unbundled CSVLoader is not preloaded initially');
+  t.equal(typeof UnbundledCSVLoader.preload, 'function', 'unbundled CSVLoader exposes preload');
+  t.notOk('parse' in UnbundledCSVLoader, 'unbundled CSVLoader does not expose parse');
+  t.notOk('parseSync' in UnbundledCSVLoader, 'unbundled CSVLoader does not expose parseSync');
+  t.notOk(
+    'parseInBatches' in UnbundledCSVLoader,
+    'unbundled CSVLoader does not expose parseInBatches'
+  );
+  t.equal(
+    UnbundledCSVWorkerLoader,
+    UnbundledCSVLoader,
+    'unbundled CSVWorkerLoader aliases CSVLoader'
+  );
+
+  const parsedTable = await parse('city,population\nParis,2148000', UnbundledCSVLoader, {
+    csv: {header: true, shape: 'object-row-table'}
+  });
+  t.equal(parsedTable.shape, 'object-row-table', 'parse works with unbundled CSVLoader');
+  if (parsedTable.shape === 'object-row-table') {
+    t.deepEqual(parsedTable.data[0], {city: 'Paris', population: 2148000});
+  }
+
+  const preloadedLoader = await preload(UnbundledCSVLoader);
+  t.equal(typeof preloadedLoader.parse, 'function', 'preload returns parser-bearing CSV loader');
+  t.equal(
+    preloadSync(UnbundledCSVLoader),
+    preloadedLoader,
+    'preloadSync returns cached CSV loader'
+  );
+  t.end();
+});
 test('CSVLoader#load(states.csv)', async t => {
   const table = await load(CSV_STATES_URL, CSVLoader);
   t.equal(getTableLength(table), 110);
@@ -570,13 +623,15 @@ test('CSVLoader#loadInBatches(csv with quotes)', async t => {
   t.end();
 });
 
-test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', async t => {
+test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks after preload', async t => {
   const csvText = 'city\nZürich\n東京\n';
   const csvBytes = new TextEncoder().encode(csvText);
   const splitIndex = csvBytes.indexOf(0xc3) + 1;
+  const preloadedLoader = await preload(CSVLoader);
 
-  const iterator = CSVLoader.parseInBatches(
+  const iterator = await parseInBatches(
     [csvBytes.subarray(0, splitIndex), csvBytes.subarray(splitIndex)],
+    preloadedLoader,
     {
       csv: {
         header: true,
@@ -593,6 +648,16 @@ test('CSVLoader#parseInBatches preserves UTF-8 characters split across chunks', 
   }
 
   t.deepEqual(rows, [{city: 'Zürich'}, {city: '東京'}], 'preserves split UTF-8 characters');
+  t.end();
+});
+
+test('CSV parser loaders are available through direct implementation imports', async t => {
+  const preloadedLoader = await preload(CSVLoader);
+  const csvTable = await parse('city,population\nParis,2148000', preloadedLoader, {
+    csv: {shape: 'object-row-table'}
+  });
+
+  t.equal(csvTable.shape, 'object-row-table', 'preloaded CSV loader parses text directly');
   t.end();
 });
 

@@ -4,12 +4,14 @@
 
 export type {CSVLoaderOptions} from './csv-loader';
 export {CSVLoader} from './csv-loader';
+export {CSVLoader as CSVWorkerLoader} from './csv-loader';
 
 export type {CSVWriterOptions} from './csv-writer';
 export {CSVWriter} from './csv-writer';
 
 export type {CSVArrowLoaderOptions} from './csv-arrow-loader';
 export {CSVArrowLoader} from './csv-arrow-loader';
+export {CSVArrowLoader as CSVArrowWorkerLoader} from './csv-arrow-loader';
 
 export type {CSVArrowWriterOptions} from './csv-arrow-writer';
 export {CSVArrowWriter} from './csv-arrow-writer';

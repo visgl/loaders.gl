@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {
   Schema,
   ArrayRowTable,
+  ArrowTable,
+  ArrowTableBatch,
   ColumnarTable,
   ColumnarTableBatch,
   ObjectRowTable,
-  TableBatch,
-  ArrowTable,
-  ArrowTableBatch
+  TableBatch
 } from '@loaders.gl/schema';
 
 import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
@@ -24,7 +24,12 @@ import {
 import Papa from './papaparse/papaparse';
 import AsyncIteratorStreamer from './papaparse/async-iterator-streamer';
 import {CSVFormat} from './csv-format';
-import {DEFAULT_CSV_OPTIONS, DEFAULT_CSV_SHAPE} from './lib/csv-default-options';
+import {
+  CSV_LOADER_OPTIONS,
+  CSV_LOADER_VERSION,
+  DEFAULT_CSV_SHAPE,
+  type CSVLoaderOptions
+} from './csv-loader-options';
 import {
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
@@ -39,58 +44,27 @@ import {
   shouldFinalizeGeometryDetection
 } from './lib/csv-geometry';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-/** Options for parsing CSV input into row tables or Arrow tables. */
-export type CSVLoaderOptions = LoaderOptions & {
-  csv?: {
-    /** Selects row-table output or Arrow columnar output. */
-    shape?: 'array-row-table' | 'object-row-table' | 'columnar-table' | 'arrow-table';
-    /** Optimizes memory usage but increases parsing time. */
-    optimizeMemoryUsage?: boolean;
-    /** Prefix for generated column names when headers are absent. */
-    columnPrefix?: string;
-    /** Controls whether the first row is treated as headers. */
-    header?: boolean | 'auto';
-
-    // CSV options (papaparse)
-    // delimiter: auto
-    // newline: auto
-    /** Character used to quote CSV fields. */
-    quoteChar?: string;
-    /** Character used to escape quoted CSV fields. */
-    escapeChar?: string;
-    /** Converts numbers and booleans and, for Arrow output, can infer dates. */
-    dynamicTyping?: boolean;
-    /** Enables comment line parsing. */
-    comments?: boolean;
-    /** Skips empty rows. */
-    skipEmptyLines?: boolean | 'greedy';
-    // transform: null?
-    /** Candidate delimiters for automatic detection. */
-    delimitersToGuess?: string[];
-    detectGeometryColumns?: boolean;
-    // fastMode: auto
-  };
-};
+export type {CSVLoaderOptions} from './csv-loader-options';
 
 /** Loader for CSV and other delimiter-separated tabular text formats. */
-export const CSVLoader = {
+export const CSVLoaderWithParser = {
   ...CSVFormat,
 
   dataType: null as unknown as ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
   batchType: null as unknown as TableBatch | ColumnarTableBatch | ArrowTableBatch,
-  version: VERSION,
+  version: CSV_LOADER_VERSION,
+  text: true,
   parse: async (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
     options?.csv?.shape === 'arrow-table'
       ? parseCSVArrayBufferAsArrow(arrayBuffer, options)
-      : parseCSV(new TextDecoder().decode(arrayBuffer), options),
+      : parseCSVText(new TextDecoder().decode(arrayBuffer), options),
+  parseSync: (arrayBuffer: ArrayBuffer, options?: CSVLoaderOptions) =>
+    parseCSVTextSync(new TextDecoder().decode(arrayBuffer), options),
   parseText: (text: string, options?: CSVLoaderOptions) =>
     options?.csv?.shape === 'arrow-table'
       ? parseCSVTextAsArrow(text, options)
-      : parseCSV(text, options),
+      : parseCSVText(text, options),
+  parseTextSync: (text: string, options?: CSVLoaderOptions) => parseCSVTextSync(text, options),
   parseInBatches: (asyncIterator, options?: CSVLoaderOptions) =>
     options?.csv?.shape === 'arrow-table'
       ? parseCSVInArrowBatches(asyncIterator, options)
@@ -98,7 +72,7 @@ export const CSVLoader = {
   // @ts-ignore
   // testText: null,
   options: {
-    csv: DEFAULT_CSV_OPTIONS
+    ...CSV_LOADER_OPTIONS
   }
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
@@ -106,12 +80,22 @@ export const CSVLoader = {
   CSVLoaderOptions
 >;
 
-async function parseCSV(
+/** Parser-bearing CSV loader export for the direct `csv-loader` subpath. */
+export const CSVLoader = CSVLoaderWithParser;
+
+async function parseCSVText(
   csvText: string,
   options?: CSVLoaderOptions
 ): Promise<ObjectRowTable | ArrayRowTable> {
+  return parseCSVTextSync(csvText, options);
+}
+
+function parseCSVTextSync(
+  csvText: string,
+  options?: CSVLoaderOptions
+): ObjectRowTable | ArrayRowTable {
   // Apps can call the parse method directly, so we apply default options here
-  const csvOptions = {...CSVLoader.options.csv, ...options?.csv};
+  const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
 
   const firstRow = readFirstRow(csvText);
   const header: boolean =
@@ -192,7 +176,7 @@ function parseCSVInBatches(
   }
 
   // Apps can call the parse method directly, we so apply default options here
-  const csvOptions = {...CSVLoader.options.csv, ...options?.csv};
+  const csvOptions = {...CSVLoaderWithParser.options.csv, ...options?.csv};
 
   const asyncQueue = new AsyncQueue<TableBatch>();
 
