@@ -145,11 +145,128 @@ jobs:
           merge-multiple: false
           path: coverage-artifacts
 
+      - name: Merge coverage reports
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const coverageFiles = [
+            'coverage-artifacts/coverage-node/lcov.info',
+            'coverage-artifacts/coverage-headless/lcov.info'
+          ];
+
+          const reports = new Map();
+          for (const coverageFile of coverageFiles) {
+            const records = fs.readFileSync(coverageFile, 'utf8').split('end_of_record');
+            for (const recordText of records) {
+              const lines = recordText.split(/\r?\n/).filter(Boolean);
+              const sourceFileLine = lines.find(line => line.startsWith('SF:'));
+              if (!sourceFileLine) {
+                continue;
+              }
+
+              const sourceFile = sourceFileLine.slice(3);
+              const report = reports.get(sourceFile) || {
+                sourceFile,
+                testName: '',
+                functions: new Map(),
+                functionData: new Map(),
+                branches: new Map(),
+                lines: new Map()
+              };
+
+              for (const line of lines) {
+                if (line.startsWith('TN:') && !report.testName) {
+                  report.testName = line.slice(3);
+                } else if (line.startsWith('FN:')) {
+                  const [, lineNumber, functionName] = line.match(/^FN:(\d+),(.+)$/) || [];
+                  if (lineNumber && functionName) {
+                    report.functions.set(functionName, Number(lineNumber));
+                  }
+                } else if (line.startsWith('FNDA:')) {
+                  const [, hits, functionName] = line.match(/^FNDA:(\d+),(.+)$/) || [];
+                  if (hits && functionName) {
+                    report.functionData.set(
+                      functionName,
+                      (report.functionData.get(functionName) || 0) + Number(hits)
+                    );
+                  }
+                } else if (line.startsWith('BRDA:')) {
+                  const [, block, branch, branchIndex, hits] =
+                    line.match(/^BRDA:(\d+),(\d+),(\d+),(.+)$/) || [];
+                  if (block && branch && branchIndex && hits) {
+                    const branchKey = `${block},${branch},${branchIndex}`;
+                    const hitCount = hits === '-' ? 0 : Number(hits);
+                    report.branches.set(branchKey, (report.branches.get(branchKey) || 0) + hitCount);
+                  }
+                } else if (line.startsWith('DA:')) {
+                  const [, lineNumber, hits] = line.match(/^DA:(\d+),(\d+)$/) || [];
+                  if (lineNumber && hits) {
+                    report.lines.set(
+                      Number(lineNumber),
+                      (report.lines.get(Number(lineNumber)) || 0) + Number(hits)
+                    );
+                  }
+                }
+              }
+
+              reports.set(sourceFile, report);
+            }
+          }
+
+          const output = [];
+          for (const report of [...reports.values()].sort((left, right) =>
+            left.sourceFile.localeCompare(right.sourceFile)
+          )) {
+            output.push(`TN:${report.testName}`, `SF:${report.sourceFile}`);
+
+            for (const [functionName, lineNumber] of [...report.functions.entries()].sort(
+              (left, right) => left[1] - right[1] || left[0].localeCompare(right[0])
+            )) {
+              output.push(`FN:${lineNumber},${functionName}`);
+            }
+            for (const [functionName, hits] of [...report.functionData.entries()].sort(
+              (left, right) => left[0].localeCompare(right[0])
+            )) {
+              output.push(`FNDA:${hits},${functionName}`);
+            }
+            output.push(
+              `FNF:${report.functions.size}`,
+              `FNH:${[...report.functionData.values()].filter(hits => hits > 0).length}`
+            );
+
+            for (const [branchKey, hits] of [...report.branches.entries()].sort((left, right) =>
+              left[0].localeCompare(right[0], undefined, {numeric: true})
+            )) {
+              output.push(`BRDA:${branchKey},${hits}`);
+            }
+            output.push(
+              `BRF:${report.branches.size}`,
+              `BRH:${[...report.branches.values()].filter(hits => hits > 0).length}`
+            );
+
+            for (const [lineNumber, hits] of [...report.lines.entries()].sort(
+              (left, right) => left[0] - right[0]
+            )) {
+              output.push(`DA:${lineNumber},${hits}`);
+            }
+            output.push(
+              `LF:${report.lines.size}`,
+              `LH:${[...report.lines.values()].filter(hits => hits > 0).length}`,
+              'end_of_record'
+            );
+          }
+
+          fs.mkdirSync('coverage', {recursive: true});
+          fs.writeFileSync(path.join('coverage', 'lcov.info'), `${output.join('\n')}\n`);
+          NODE
+
       - name: Upload combined coverage to Coveralls
         uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          files: coverage-artifacts/coverage-node/lcov.info coverage-artifacts/coverage-headless/lcov.info
+          file: coverage/lcov.info
           format: lcov
           fail-on-error: false
 
