@@ -34,6 +34,8 @@ const data = await load(url, CSVLoader, {csv: options});
 
 Applications that want to defer loading the parser implementation can import the metadata-only loader from the `unbundled` subpath. Core async APIs call `preload()` and dynamically import the parser-bearing implementation when parsing starts.
 
+See [Using Unbundled Loaders](/docs/developer-guide/using-unbundled-loaders) for the bundle-splitting model and preload behavior.
+
 ```typescript
 import {parse} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv/unbundled';

@@ -39,7 +39,7 @@ export {selectLoader, selectLoaderSync} from './lib/api/select-loader';
 export {parse} from './lib/api/parse';
 export {parseSync} from './lib/api/parse-sync';
 export {parseInBatches} from './lib/api/parse-in-batches';
-export {preload} from './lib/api/preload';
+export {preload, preloadSync} from './lib/api/preload';
 export {coreApi} from './lib/api/core-api';
 
 export {load} from './lib/api/load';

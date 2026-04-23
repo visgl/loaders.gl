@@ -11,7 +11,8 @@ import {
   isAsyncIterable,
   parse,
   parseInBatches,
-  preload
+  preload,
+  preloadSync
 } from '@loaders.gl/core';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {
@@ -49,8 +50,10 @@ test('CSV root loaders expose parser methods and deprecated WorkerLoader aliases
 });
 
 test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader aliases', async t => {
+  t.equal(preloadSync(UnbundledCSVLoader), null, 'unbundled CSVLoader is not preloaded initially');
   t.equal(typeof UnbundledCSVLoader.preload, 'function', 'unbundled CSVLoader exposes preload');
   t.notOk('parse' in UnbundledCSVLoader, 'unbundled CSVLoader does not expose parse');
+  t.notOk('parseSync' in UnbundledCSVLoader, 'unbundled CSVLoader does not expose parseSync');
   t.notOk(
     'parseInBatches' in UnbundledCSVLoader,
     'unbundled CSVLoader does not expose parseInBatches'
@@ -71,6 +74,11 @@ test('CSV unbundled metadata loaders expose preload and deprecated WorkerLoader 
 
   const preloadedLoader = await preload(UnbundledCSVLoader);
   t.equal(typeof preloadedLoader.parse, 'function', 'preload returns parser-bearing CSV loader');
+  t.equal(
+    preloadSync(UnbundledCSVLoader),
+    preloadedLoader,
+    'preloadSync returns cached CSV loader'
+  );
   t.end();
 });
 test('CSVLoader#load(states.csv)', async t => {

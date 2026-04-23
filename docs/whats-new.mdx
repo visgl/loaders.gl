@@ -9,6 +9,7 @@ Release Date: 2026
 - **Documentation** - Interactive graphical docs explain loaders.gl concepts, loader pages have live previews.
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF website examples.
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables. 
+- **Unbundled loaders** - Loader modules can expose metadata-only loaders from `/unbundled` subpaths, using imports such as `import {CSVLoader} from '@loaders.gl/csv/unbundled';`, so applications can support rarely used formats without putting every parser implementation in the main bundle.
 - **Benchmarks** - Now includes external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
 
 **Features**
@@ -41,7 +42,13 @@ Release Date: 2026
   
 - `CSVArrowLoader` NEW - is now the official Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
 - `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
+- `CSVLoader` and `CSVArrowLoader` are available from `@loaders.gl/csv/unbundled` as metadata-only loaders that dynamically import parser-bearing implementations on first async use. See [Using Unbundled Loaders](/docs/developer-guide/using-unbundled-loaders).
 - `CSVArrowWriter` NEW writes Apache Arrow tables to CSV text.
+
+**@loaders.gl/core**
+
+- `preload(loader)` now returns and caches parser-bearing implementations for unbundled loaders.
+- `preloadSync(loader)` NEW returns a cached parser-bearing implementation, or `null` if the loader has not been preloaded.
 
 **@loaders.gl/loader-utils**
 

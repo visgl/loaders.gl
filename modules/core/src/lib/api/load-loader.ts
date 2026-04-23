@@ -4,10 +4,11 @@
 
 import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 
-const loaderImplementationPromiseCache = new Map<string, Promise<LoaderWithParser>>();
+const loaderImplementationPromises = new Map<Loader, Promise<LoaderWithParser>>();
+const loaderImplementations = new Map<Loader, LoaderWithParser>();
 
-/** Loads a parser-bearing implementation for metadata-only loaders. */
-export async function loadLoaderImplementation(
+/** Gets a parser-bearing implementation for a loader, loading it if needed. */
+export async function getLoaderImplementation(
   loader: Loader,
   options?: LoaderOptions,
   url?: string
@@ -16,15 +17,35 @@ export async function loadLoaderImplementation(
     return loader;
   }
 
-  const implementation = getLoaderImplementationCacheKey(loader, options);
-  let loaderImplementationPromise = loaderImplementationPromiseCache.get(implementation);
+  const loaderImplementation = loaderImplementations.get(loader);
+  if (loaderImplementation) {
+    return loaderImplementation;
+  }
 
+  let loaderImplementationPromise = loaderImplementationPromises.get(loader);
   if (!loaderImplementationPromise) {
-    loaderImplementationPromise = resolveLoaderImplementation(loader, options, url);
-    loaderImplementationPromiseCache.set(implementation, loaderImplementationPromise);
+    loaderImplementationPromise = resolveLoaderImplementation(loader, options, url)
+      .then(implementation => {
+        loaderImplementations.set(loader, implementation);
+        return implementation;
+      })
+      .catch(error => {
+        loaderImplementationPromises.delete(loader);
+        throw error;
+      });
+    loaderImplementationPromises.set(loader, loaderImplementationPromise);
   }
 
   return await loaderImplementationPromise;
+}
+
+/** Gets a cached parser-bearing implementation for a loader without loading it. */
+export function getLoaderImplementationSync(loader: Loader): LoaderWithParser | null {
+  if (isLoaderWithParser(loader)) {
+    return loader;
+  }
+
+  return loaderImplementations.get(loader) || null;
 }
 
 /** Returns true when a loader object already includes parser methods. */
@@ -41,19 +62,7 @@ export function isLoaderWithParser(loader: Loader): loader is LoaderWithParser {
   );
 }
 
-function getLoaderImplementationCacheKey(loader: Loader, options?: LoaderOptions): string {
-  const workerType = options?._workerType || options?.core?._workerType;
-  if (workerType === 'test') {
-    return `test:${loader.module}:${loader.id}`;
-  }
-
-  if (loader.preload) {
-    return `preload:${loader.module}:${loader.id}:${loader.name}`;
-  }
-
-  return `${loader.module}:${loader.id}`;
-}
-
+/** Resolves a parser-bearing implementation through loader preload or the test import fallback. */
 async function resolveLoaderImplementation(
   loader: Loader,
   options?: LoaderOptions,
@@ -72,6 +81,7 @@ async function resolveLoaderImplementation(
   return await importLoaderImplementation(implementationSpecifier, loader.id);
 }
 
+/** Gets the dynamic implementation specifier for the test worker fallback path. */
 function getLoaderImplementationSpecifier(loader: Loader, options?: LoaderOptions): string {
   const workerType = options?._workerType || options?.core?._workerType;
   if (workerType === 'test') {
@@ -92,11 +102,14 @@ function getLoaderImplementationSpecifier(loader: Loader, options?: LoaderOption
   );
 }
 
+/** Imports a module and finds the parser-bearing loader implementation with the requested id. */
 async function importLoaderImplementation(
   implementationSpecifier: string,
   loaderId: string
 ): Promise<LoaderWithParser> {
-  const moduleExports = await import(implementationSpecifier);
+  const moduleExports = await import(
+    /* webpackIgnore: true */ /* @vite-ignore */ implementationSpecifier
+  );
 
   for (const exportValue of Object.values(moduleExports)) {
     if (

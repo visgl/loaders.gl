@@ -182,6 +182,7 @@
           "developer-guide/using-sources",
           "developer-guide/using-range-requests",
           "developer-guide/loader-categories",
+          "developer-guide/using-unbundled-loaders",
           "developer-guide/using-worker-loaders",
           "developer-guide/using-streaming-loaders",
           "developer-guide/node"

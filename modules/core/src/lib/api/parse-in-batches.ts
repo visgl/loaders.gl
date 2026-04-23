@@ -24,8 +24,8 @@ import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getLoaderContext} from '../loader-utils/loader-context';
 import {getAsyncIterableFromData} from '../loader-utils/get-data';
-import {loadLoaderImplementation} from '../loader-utils/load-loader';
 import {getResourceUrl} from '../utils/resource-utils';
+import {getLoaderImplementation} from './load-loader';
 import {selectLoader} from './select-loader';
 
 // Ensure `parse` is available in context if loader falls back to `parse`
@@ -114,7 +114,7 @@ export async function parseInBatches(
     context || null
   );
 
-  const loaderWithParser = await loadLoaderImplementation(loader, strictOptions, context.url);
+  const loaderWithParser = await getLoaderImplementation(loader, strictOptions, context.url);
   return await parseWithLoaderInBatches(loader, loaderWithParser, data, strictOptions, context);
 }
 

@@ -10,7 +10,8 @@ import {
   isAsyncIterable,
   parse,
   parseInBatches,
-  preload
+  preload,
+  preloadSync
 } from '@loaders.gl/core';
 import {CSVArrowLoader, CSVArrowWorkerLoader, CSVLoader} from '@loaders.gl/csv';
 import {
@@ -45,6 +46,11 @@ test('CSVArrowLoader#root export includes parser methods', t => {
 
 test('CSVArrowLoader#unbundled export preloads parser implementation', async t => {
   t.equal(
+    preloadSync(UnbundledCSVArrowLoader),
+    null,
+    'unbundled CSVArrowLoader is not preloaded initially'
+  );
+  t.equal(
     UnbundledCSVArrowWorkerLoader,
     UnbundledCSVArrowLoader,
     'worker alias points to CSVArrowLoader'
@@ -55,6 +61,10 @@ test('CSVArrowLoader#unbundled export preloads parser implementation', async t =
     'unbundled CSVArrowLoader exposes preload'
   );
   t.notOk('parse' in UnbundledCSVArrowLoader, 'unbundled CSVArrowLoader does not expose parse');
+  t.notOk(
+    'parseSync' in UnbundledCSVArrowLoader,
+    'unbundled CSVArrowLoader does not expose parseSync'
+  );
   t.notOk(
     'parseInBatches' in UnbundledCSVArrowLoader,
     'unbundled CSVArrowLoader does not expose parseInBatches'
@@ -69,6 +79,11 @@ test('CSVArrowLoader#unbundled export preloads parser implementation', async t =
 
   const parserLoader = await preload(UnbundledCSVArrowLoader);
   t.equal(typeof parserLoader.parse, 'function', 'preload returns parser-bearing CSVArrowLoader');
+  t.equal(
+    preloadSync(UnbundledCSVArrowLoader),
+    parserLoader,
+    'preloadSync returns cached CSVArrowLoader'
+  );
   t.end();
 });
 

@@ -28,8 +28,8 @@ import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
-import {loadLoaderImplementation} from '../loader-utils/load-loader';
 import {getResourceUrl} from '../utils/resource-utils';
+import {getLoaderImplementation} from './load-loader';
 import {selectLoader} from './select-loader';
 
 // type LoaderArrayType<T> = T extends (infer Loader)[] ? LoaderOptionsType<Loader> : T
@@ -170,7 +170,7 @@ async function parseWithLoader(
     return await parseWithWorker(loader, data, options, context, parse);
   }
 
-  const loaderWithParser = await loadLoaderImplementation(loader, options, context.url);
+  const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
   return await parseWithLoaderImplementation(loaderWithParser, data, options, context);
 }
 
