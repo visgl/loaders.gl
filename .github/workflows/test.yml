@@ -128,23 +128,6 @@ jobs:
           file: coverage/lcov.info
           format: lcov
           flag-name: ${{ matrix.coverage-flag }}
-          parallel: true
-          fail-on-error: false
-
-  finish-coverage:
-    name: Finish coverage
-    needs: test
-    if: ${{ always() }}
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-
-    steps:
-      - name: Close Coveralls parallel build
-        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
-          carryforward: node,headless
           fail-on-error: false
 
   build:
