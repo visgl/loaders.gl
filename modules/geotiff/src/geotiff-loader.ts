@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {TypedArray, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {fromArrayBuffer} from 'geotiff';
+import type {TypedArray, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -27,7 +26,13 @@ export type GeoTIFFLoaderOptions = LoaderOptions & {
   };
 };
 
-/** GeoTIFF loader */
+/** Preloads the parser-bearing GeoTIFF loader implementation. */
+async function preload() {
+  const {GeoTIFFLoaderWithParser} = await import('./geotiff-loader-with-parser');
+  return GeoTIFFLoaderWithParser;
+}
+
+/** Metadata-only GeoTIFF loader. */
 export const GeoTIFFLoader = {
   dataType: null as unknown as GeoTIFFData,
   batchType: null as never,
@@ -43,8 +48,8 @@ export const GeoTIFFLoader = {
   },
   mimeTypes: ['image/tiff', 'image/geotiff'],
   extensions: ['geotiff', 'tiff', 'geotif', 'tif'],
-  parse: parseGeoTIFF
-} as const satisfies LoaderWithParser<GeoTIFFData, never, GeoTIFFLoaderOptions>;
+  preload
+} as const satisfies Loader<GeoTIFFData, never, GeoTIFFLoaderOptions>;
 
 export function isTiff(arrayBuffer: ArrayBuffer): boolean {
   const dataView = new DataView(arrayBuffer);
@@ -69,51 +74,4 @@ export function isTiff(arrayBuffer: ArrayBuffer): boolean {
   }
 
   return true;
-}
-
-/**
- * Loads a GeoTIFF file containing a RGB image.
- */
-async function parseGeoTIFF(
-  data: ArrayBuffer,
-  options?: GeoTIFFLoaderOptions
-): Promise<GeoTIFFData> {
-  // Load using Geotiff.js
-  const tiff = await fromArrayBuffer(data);
-
-  // Assumes we only have one image inside TIFF
-  const image = await tiff.getImage();
-
-  // Read image and size
-  // TODO: Add support for worker pools here.
-  // TODO: Add support for more image formats.
-  const rgbData = await image.readRGB({
-    enableAlpha: options?.geotiff?.enableAlpha
-  });
-
-  const width = image.getWidth();
-  const height = image.getHeight();
-
-  // Create a new ImageData object
-  const imageData = new Uint8ClampedArray(rgbData as unknown as Uint8Array);
-
-  // Get geo data
-  const bounds = image.getBoundingBox();
-  const metadata = image.getGeoKeys();
-
-  // ProjectedCSTypeGeoKey is the only key we support for now, we assume it is an EPSG code
-  let crs: string | undefined;
-  if (metadata?.ProjectedCSTypeGeoKey) {
-    crs = `EPSG:${metadata.ProjectedCSTypeGeoKey}`;
-  }
-
-  // Return GeoReferenced image data
-  return {
-    crs,
-    bounds,
-    width,
-    height,
-    data: imageData,
-    metadata
-  };
 }

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
-import {parseNPY, NPYTile} from './lib/parsers/parse-npy';
+import type {NPYTile} from './lib/parsers/parse-npy';
 
 // \x93NUMPY
 const NPY_MAGIC_NUMBER = new Uint8Array([147, 78, 85, 77, 80, 89]);
@@ -18,9 +18,13 @@ export type NPYLoaderOptions = LoaderOptions & {
   };
 };
 
-/**
- * Worker loader for numpy "tiles"
- */
+/** Preloads the parser-bearing NPY loader implementation. */
+async function preload() {
+  const {NPYLoaderWithParser} = await import('./npy-loader-with-parser');
+  return NPYLoaderWithParser;
+}
+
+/** Metadata-only worker loader for numpy "tiles". */
 export const NPYWorkerLoader = {
   dataType: null as any as NPYTile,
   batchType: null as never,
@@ -35,14 +39,12 @@ export const NPYWorkerLoader = {
   tests: [NPY_MAGIC_NUMBER.buffer],
   options: {
     npy: {}
-  }
+  },
+  preload
 } as const satisfies Loader<NPYTile, never, NPYLoaderOptions>;
 
-/**
- * Loader for numpy "tiles"
- */
+/** Metadata-only loader for numpy "tiles". */
 export const NPYLoader = {
   ...NPYWorkerLoader,
-  parseSync: parseNPY,
-  parse: async (arrayBuffer: ArrayBuffer, options?: LoaderOptions) => parseNPY(arrayBuffer, options)
-} as const satisfies LoaderWithParser<any, any, NPYLoaderOptions>;
+  preload
+} as const satisfies Loader<any, any, NPYLoaderOptions>;

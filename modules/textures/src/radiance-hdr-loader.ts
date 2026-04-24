@@ -2,15 +2,20 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {Texture} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
 import type {RadianceHDRMetadata} from './lib/parsers/parse-hdr';
-import {isHDR, parseHDR} from './lib/parsers/parse-hdr';
 
 export type RadianceHDRLoaderOptions = StrictLoaderOptions & {
   hdr?: {};
 };
+
+/** Preloads the parser-bearing Radiance HDR loader implementation. */
+async function preload() {
+  const {RadianceHDRLoaderWithParser} = await import('./radiance-hdr-loader-with-parser');
+  return RadianceHDRLoaderWithParser;
+}
 
 export const RadianceHDRLoader = {
   dataType: null as unknown as Texture<RadianceHDRMetadata>,
@@ -27,10 +32,10 @@ export const RadianceHDRLoader = {
   options: {
     hdr: {}
   },
-  parseSync: parseHDR,
-  parse: async (arrayBuffer: ArrayBuffer) => parseHDR(arrayBuffer)
-} as const satisfies LoaderWithParser<
-  Texture<RadianceHDRMetadata>,
-  never,
-  RadianceHDRLoaderOptions
->;
+  preload
+} as const satisfies Loader<Texture<RadianceHDRMetadata>, never, RadianceHDRLoaderOptions>;
+
+function isHDR(arrayBuffer: ArrayBuffer): boolean {
+  const firstLine = new TextDecoder().decode(arrayBuffer.slice(0, 16)).split('\n')[0];
+  return firstLine === '#?RADIANCE' || firstLine === '#?RGBE';
+}

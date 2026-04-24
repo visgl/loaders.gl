@@ -12,7 +12,8 @@ import {
   isBrowser,
   _BrowserFileSystem as BrowserFileSystem
 } from '@loaders.gl/core';
-import {ShapefileLoader, DBFLoader} from '@loaders.gl/shapefile';
+import {ShapefileLoader} from '@loaders.gl/shapefile';
+import {DBFLoaderWithParser as DBFLoader} from '../src/dbf-loader-with-parser';
 import {Proj4Projection} from '@math.gl/proj4';
 import {tapeEqualsEpsilon} from 'test/utils/tape-assertions';
 

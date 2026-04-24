@@ -7,6 +7,12 @@ import * as BSON from 'bson';
 
 export type ParseBSONOptions = DeserializeOptions;
 
+/**
+ * Parses a BSON binary payload synchronously.
+ * @param value - BSON-encoded binary data.
+ * @param options - BSON deserialization options.
+ * @returns Parsed BSON document.
+ */
 export function parseBSONSync(
   value: ArrayBuffer,
   options?: ParseBSONOptions

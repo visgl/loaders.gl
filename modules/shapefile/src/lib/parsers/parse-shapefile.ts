@@ -23,8 +23,8 @@ import type {SHPHeader} from './parse-shp-header';
 import type {ShapefileLoaderOptions} from './types';
 import {parseShx} from './parse-shx';
 import {zipBatchIterators} from '../streaming/zip-batch-iterators';
-import {SHPLoader} from '../../shp-loader';
-import {DBFLoader} from '../../dbf-loader';
+import {SHPLoaderWithParser} from '../../shp-loader-with-parser';
+import {DBFLoaderWithParser} from '../../dbf-loader-with-parser';
 
 type Feature = any;
 export interface ShapefileOutput {
@@ -51,7 +51,7 @@ export async function* parseShapefileInBatches(
   // parse geometries
   const shapeIterable = await parseInBatchesFromContext(
     toArrayBufferIterator(asyncIterator),
-    SHPLoader,
+    SHPLoaderWithParser,
     options,
     context!
   );
@@ -65,7 +65,7 @@ export async function* parseShapefileInBatches(
   if (dbfResponse?.ok) {
     const propertyIterable = await parseInBatchesFromContext(
       dbfResponse,
-      DBFLoader,
+      DBFLoaderWithParser,
       {
         ...options,
         dbf: {
@@ -148,7 +148,12 @@ export async function parseShapefile(
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const {header, geometries} = await parseFromContext(arrayBuffer, SHPLoader, options, context!); // {shp: shx}
+  const {header, geometries} = await parseFromContext(
+    arrayBuffer,
+    SHPLoaderWithParser,
+    options,
+    context!
+  ); // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 
@@ -165,7 +170,12 @@ export async function parseShapefile(
         encoding: cpg || 'latin1'
       }
     };
-    propertyTable = await parseFromContext(dbfResponse as any, DBFLoader, dbfOptions, context!);
+    propertyTable = await parseFromContext(
+      dbfResponse as any,
+      DBFLoaderWithParser,
+      dbfOptions,
+      context!
+    );
   }
 
   let features = joinProperties(geojsonGeometries, propertyTable?.data || []);

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parseWMSError} from './lib/parsers/wms/parse-wms-error';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -18,9 +17,13 @@ export type WMSLoaderOptions = LoaderOptions & {
   };
 };
 
-/**
- * Loader for the response to the WMS GetCapability request
- */
+/** Preloads the parser-bearing WMS error loader implementation. */
+async function preload() {
+  const {WMSErrorLoaderWithParser} = await import('./wms-error-loader-with-parser');
+  return WMSErrorLoaderWithParser;
+}
+
+/** Metadata-only loader for WMS service exception responses. */
 export const WMSErrorLoader = {
   dataType: null as unknown as string,
   batchType: null as never,
@@ -31,6 +34,7 @@ export const WMSErrorLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  text: true,
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.se_xml', 'application/xml', 'text/xml'],
   testText: testXMLFile,
@@ -39,24 +43,10 @@ export const WMSErrorLoader = {
       throwOnError: false
     }
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions): Promise<string> =>
-    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: WMSLoaderOptions): string =>
-    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMSLoaderOptions): string => parseTextSync(text, options)
-} as const satisfies LoaderWithParser<string, never, WMSLoaderOptions>;
+  preload
+} as const satisfies Loader<string, never, WMSLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.
   return text.startsWith('<?xml');
-}
-
-function parseTextSync(text: string, options?: WMSLoaderOptions): string {
-  const wmsOptions: WMSLoaderOptions['wms'] = {...WMSErrorLoader.options.wms, ...options?.wms};
-  const error = parseWMSError(text, wmsOptions);
-  const message = wmsOptions.minimalErrors ? error : `WMS Service error: ${error}`;
-  if (wmsOptions.throwOnError) {
-    throw new Error(message);
-  }
-  return message;
 }

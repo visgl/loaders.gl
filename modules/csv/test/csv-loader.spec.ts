@@ -16,6 +16,10 @@ import {
 } from '@loaders.gl/core';
 import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {
+  CSVLoader as BundledCSVLoader,
+  CSVWorkerLoader as BundledCSVWorkerLoader
+} from '@loaders.gl/csv/bundled';
+import {
   CSVLoader as UnbundledCSVLoader,
   CSVWorkerLoader as UnbundledCSVWorkerLoader
 } from '@loaders.gl/csv/unbundled';
@@ -41,11 +45,23 @@ test('CSVLoader#loader conformance', t => {
   t.end();
 });
 
-test('CSV root loaders expose parser methods and deprecated WorkerLoader aliases', t => {
-  t.equal(typeof CSVLoader.parse, 'function', 'CSVLoader exposes parse');
-  t.equal(typeof CSVLoader.parseInBatches, 'function', 'CSVLoader exposes parseInBatches');
+test('CSV root loaders expose metadata loaders and deprecated WorkerLoader aliases', t => {
+  t.equal(typeof CSVLoader.preload, 'function', 'CSVLoader exposes preload');
+  t.notOk('parse' in CSVLoader, 'CSVLoader does not expose parse');
+  t.notOk('parseInBatches' in CSVLoader, 'CSVLoader does not expose parseInBatches');
   t.equal(CSVWorkerLoader, CSVLoader, 'CSVWorkerLoader aliases CSVLoader');
   t.notOk('CSVLoaderWithParser' in csv, 'root package does not export CSVLoaderWithParser');
+  t.end();
+});
+
+test('CSV bundled loaders expose parser methods and deprecated WorkerLoader aliases', t => {
+  t.equal(typeof BundledCSVLoader.parse, 'function', 'bundled CSVLoader exposes parse');
+  t.equal(
+    typeof BundledCSVLoader.parseInBatches,
+    'function',
+    'bundled CSVLoader exposes parseInBatches'
+  );
+  t.equal(BundledCSVWorkerLoader, BundledCSVLoader, 'bundled CSVWorkerLoader aliases CSVLoader');
   t.end();
 });
 

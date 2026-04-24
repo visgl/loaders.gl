@@ -30,6 +30,9 @@ export const QuantizedMeshLoader = {
   worker: true,
   extensions: ['terrain'],
   mimeTypes: ['application/vnd.quantized-mesh'],
+  /** Loads the parser-bearing quantized mesh loader implementation. */
+  preload: async () =>
+    (await import('./quantized-mesh-loader-with-parser')).QuantizedMeshLoaderWithParser,
   options: {
     'quantized-mesh': {
       bounds: [0, 0, 1, 1],

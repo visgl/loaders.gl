@@ -1,4 +1,4 @@
-import {I3SNodePageLoader} from '../../i3s-node-page-loader';
+import {I3SNodePageLoaderWithParser} from '../../i3s-node-page-loader-with-parser';
 import {normalizeTileNonUrlData} from '../parsers/parse-i3s';
 import {getUrlWithToken, generateTilesetAttributeUrls} from '../utils/url-utils';
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
@@ -322,7 +322,7 @@ async function loadNodePage(url: string, options: LoaderOptions): Promise<NodePa
   }
 
   const arrayBuffer = await response.arrayBuffer();
-  return await I3SNodePageLoader.parse(arrayBuffer, options);
+  return await I3SNodePageLoaderWithParser.parse(arrayBuffer, options);
 }
 
 function getSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Set<string> {

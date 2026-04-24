@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf-to-arrow';
 import {DBFFormat} from './dbf-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -19,9 +18,13 @@ export type DBFLoaderOptions = StrictLoaderOptions & {
   };
 };
 
-/**
- * DBFLoader - DBF files are used to contain non-geometry columns in Shapefiles
- */
+/** Preloads the parser-bearing DBF Arrow loader implementation. */
+async function preload() {
+  const {DBFArrowLoaderWithParser} = await import('./dbf-arrow-loader-with-parser');
+  return DBFArrowLoaderWithParser;
+}
+
+/** Metadata-only DBF Arrow worker loader. */
 export const DBFArrowWorkerLoader = {
   ...DBFFormat,
   dataType: null as unknown as ArrowTable,
@@ -32,20 +35,12 @@ export const DBFArrowWorkerLoader = {
     dbf: {
       encoding: 'latin1'
     }
-  }
+  },
+  preload
 } as const satisfies Loader<ArrowTable, ArrowTableBatch, DBFLoaderOptions>;
 
-/** DBF file loader */
+/** Metadata-only DBF Arrow file loader. */
 export const DBFArrowLoader = {
   ...DBFArrowWorkerLoader,
-  parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
-  parseSync: parseDBF,
-  parseInBatches(
-    arrayBufferIterator:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ) {
-    return parseDBFInBatches(arrayBufferIterator, options);
-  }
-} as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, DBFLoaderOptions>;
+  preload
+} as const satisfies Loader<ArrowTable, ArrowTableBatch, DBFLoaderOptions>;

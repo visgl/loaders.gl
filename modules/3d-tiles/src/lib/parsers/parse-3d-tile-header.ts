@@ -5,7 +5,7 @@
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
 import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {parseFromContext, path} from '@loaders.gl/loader-utils';
-import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
+import {Tile3DSubtreeLoaderWithParser} from '../../tile-3d-subtree-loader-with-parser';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
 import {
   ImplicitTilingExensionData,
@@ -216,7 +216,7 @@ export async function normalizeImplicitTileHeaders(
   const arrayBuffer = await response.arrayBuffer();
   const subtree = (await parseFromContext(
     arrayBuffer,
-    Tile3DSubtreeLoader,
+    Tile3DSubtreeLoaderWithParser,
     options,
     context
   )) as Subtree;

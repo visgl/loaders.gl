@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Mesh} from '@loaders.gl/schema';
 import {OBJFormat} from './obj-format';
-import {parseOBJ} from './lib/parse-obj';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -19,7 +18,15 @@ export type OBJLoaderOptions = LoaderOptions & {
 };
 
 /**
- * Worker loader for the OBJ geometry format
+ * Preloads the parser-bearing OBJ loader implementation.
+ */
+async function preload() {
+  const {OBJLoaderWithParser} = await import('./obj-loader-with-parser');
+  return OBJLoaderWithParser;
+}
+
+/**
+ * Metadata-only worker loader for the OBJ geometry format
  */
 export const OBJWorkerLoader = {
   ...OBJFormat,
@@ -28,10 +35,12 @@ export const OBJWorkerLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  text: true,
   testText: testOBJFile,
   options: {
     obj: {}
-  }
+  },
+  preload
 } as const satisfies Loader<Mesh, never, OBJLoaderOptions>;
 
 function testOBJFile(text: string): boolean {
@@ -42,11 +51,8 @@ function testOBJFile(text: string): boolean {
 // OBJLoader
 
 /**
- * Loader for the OBJ geometry format
+ * Metadata-only loader for the OBJ geometry format
  */
 export const OBJLoader = {
-  ...OBJWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?: OBJLoaderOptions) =>
-    parseOBJ(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: OBJLoaderOptions) => parseOBJ(text, options)
-} as const satisfies LoaderWithParser<Mesh, never, OBJLoaderOptions>;
+  ...OBJWorkerLoader
+} as const satisfies Loader<Mesh, never, OBJLoaderOptions>;

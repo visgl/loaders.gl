@@ -6,6 +6,7 @@ import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
 import {JSONLoader, _GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
+import {JSONLoader as BundledJSONLoader} from '@loaders.gl/json/bundled';
 
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH = '@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json';
@@ -91,9 +92,12 @@ test('JSONLoader#parseInBatches(complete rows with nested arrays)', async t => {
     values: Array.from({length: valueCount}, (_, valueIndex) => rowIndex * valueCount + valueIndex)
   }));
 
-  const iterator = JSONLoader.parseInBatches?.(makeChunkedTextIterator(JSON.stringify(rows), 128), {
-    batchSize: 1
-  });
+  const iterator = BundledJSONLoader.parseInBatches?.(
+    makeChunkedTextIterator(JSON.stringify(rows), 128),
+    {
+      batchSize: 1
+    }
+  );
 
   t.ok(iterator, 'parseInBatches returned iterator');
   if (!iterator) {

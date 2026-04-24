@@ -5,7 +5,7 @@
 // Forked from https://github.com/kbajalc/parquets under MIT license
 
 /* eslint-disable camelcase */
-import {BSONLoader, BSONWriter} from '@loaders.gl/bson';
+import {BSONWriter, parseBSONSync} from '@loaders.gl/bson';
 import {OriginalType, ParquetField, ParquetType, PrimitiveType} from './declare';
 import {
   decodeUtf8,
@@ -359,7 +359,7 @@ function toPrimitive_BSON(value: any): Uint8Array {
 }
 
 function fromPrimitive_BSON(value: any) {
-  return BSONLoader.parseSync?.(toArrayBuffer(value));
+  return parseBSONSync(toArrayBuffer(value));
 }
 
 function toPrimitive_TIME_MILLIS(value: any) {

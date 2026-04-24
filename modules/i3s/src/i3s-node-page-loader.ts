@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {NodePage} from './types';
 
@@ -22,13 +22,11 @@ export const I3SNodePageLoader = {
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/json'],
-  parse: parseNodePage,
+  /** Loads the parser-bearing I3S node page loader implementation. */
+  preload: async () =>
+    (await import('./i3s-node-page-loader-with-parser')).I3SNodePageLoaderWithParser,
   extensions: ['json'],
   options: {
     i3s: {}
   }
-} as const satisfies LoaderWithParser<NodePage, never, I3SLoaderOptions>;
-
-async function parseNodePage(data: ArrayBuffer, options?: LoaderOptions): Promise<NodePage> {
-  return JSON.parse(new TextDecoder().decode(data)) as NodePage;
-}
+} as const satisfies Loader<NodePage, never, I3SLoaderOptions>;

@@ -6,7 +6,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile, parseSync} from '@loaders.gl/core';
-import {HexWKBLoader} from '@loaders.gl/wkt';
+import {HexWKBLoader} from '@loaders.gl/wkt/bundled';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';

@@ -9,10 +9,10 @@ export type {GPUTextureFormat, TextureFormat} from '@loaders.gl/schema';
 
 // Loaders
 export type {BasisLoaderOptions} from './basis-loader';
-export {BasisLoader, BasisWorkerLoader} from './basis-loader';
+export {BasisLoader} from './basis-loader';
 
 export type {CompressedTextureLoaderOptions} from './compressed-texture-loader';
-export {CompressedTextureLoader, CompressedTextureWorkerLoader} from './compressed-texture-loader';
+export {CompressedTextureLoader} from './compressed-texture-loader';
 
 export type {CrunchLoaderOptions} from './crunch-loader';
 export {CrunchLoader} from './crunch-loader';
@@ -22,7 +22,7 @@ export type {RadianceHDRMetadata} from './lib/parsers/parse-hdr';
 export {RadianceHDRLoader} from './radiance-hdr-loader';
 
 export type {NPYLoaderOptions} from './npy-loader';
-export {NPYLoader, NPYWorkerLoader} from './npy-loader';
+export {NPYLoader} from './npy-loader';
 
 export type {TextureManifestLoaderOptions, TextureManifest} from './texture-loader';
 export {TextureLoader} from './texture-loader';
@@ -70,8 +70,14 @@ export {loadImageTextureCube} from './lib/texture-api/load-image-cube';
 // Utilities
 export * from './lib/gl-extensions';
 
-// DEPRECATED
-// @deprecated
-export {CrunchLoader as CrunchWorkerLoader} from './crunch-loader';
-// @deprecated
+// DEPRECATED EXPORTS
+/** @deprecated Use CompressedTextureLoaderOptions. */
 export type {CompressedTextureLoaderOptions as TextureLoaderOptions} from './compressed-texture-loader';
+/** @deprecated Use BasisLoader. */
+export {BasisWorkerLoader} from './basis-loader';
+/** @deprecated Use CompressedTextureLoader. */
+export {CompressedTextureWorkerLoader} from './compressed-texture-loader';
+/** @deprecated Use NPYLoader. */
+export {NPYWorkerLoader} from './npy-loader';
+/** @deprecated Use CrunchLoader. */
+export {CrunchLoader as CrunchWorkerLoader} from './crunch-loader';

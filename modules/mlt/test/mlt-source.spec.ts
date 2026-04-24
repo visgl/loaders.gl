@@ -5,7 +5,8 @@
 import test from 'tape-promise/tape';
 import type {Feature} from '@loaders.gl/schema';
 
-import {MLTLoader, MLTSourceLoader} from '@loaders.gl/mlt';
+import {MLTSourceLoader} from '@loaders.gl/mlt';
+import {MLTLoaderWithParser as MLTLoader} from '../src/mlt-loader-with-parser';
 import {getURLFromTemplate} from '../src/mlt-source-loader';
 
 test('MLTSourceLoader#testURL', t => {

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
-import {convertTWKBToGeometry, isTWKB} from '@loaders.gl/gis';
+import {isTWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 
 export type WKBLoaderOptions = LoaderOptions & {
@@ -14,7 +14,15 @@ export type WKBLoaderOptions = LoaderOptions & {
 };
 
 /**
- * Worker loader for WKB (Well-Known Binary)
+ * Preloads the parser-bearing TWKB loader implementation.
+ */
+async function preload() {
+  const {TWKBLoaderWithParser} = await import('./twkb-loader-with-parser');
+  return TWKBLoaderWithParser;
+}
+
+/**
+ * Metadata-only worker loader for WKB (Well-Known Binary)
  */
 export const TWKBWorkerLoader = {
   dataType: null as unknown as Geometry,
@@ -34,14 +42,13 @@ export const TWKBWorkerLoader = {
     wkb: {
       shape: 'binary-geometry' // 'geojson-geometry'
     }
-  }
+  },
+  preload
 } as const satisfies Loader<Geometry, never, WKBLoaderOptions>;
 
 /**
- * Loader for WKB (Well-Known Binary)
+ * Metadata-only loader for WKB (Well-Known Binary)
  */
 export const TWKBLoader = {
-  ...TWKBWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer) => convertTWKBToGeometry(arrayBuffer),
-  parseSync: convertTWKBToGeometry
-} as const satisfies LoaderWithParser<BinaryGeometry | Geometry, never, WKBLoaderOptions>;
+  ...TWKBWorkerLoader
+} as const satisfies Loader<BinaryGeometry | Geometry, never, WKBLoaderOptions>;

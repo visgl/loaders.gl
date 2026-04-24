@@ -5,7 +5,8 @@
 
 import test from 'tape-promise/tape';
 import {parseSync, encodeTextSync} from '@loaders.gl/core';
-import {WKTCRSLoader, WKTCRSWriter} from '@loaders.gl/wkt';
+import {WKTCRSWriter} from '@loaders.gl/wkt';
+import {WKTCRSLoader} from '@loaders.gl/wkt/bundled';
 
 const roundtrip = wkt => encodeTextSync(parseSync(wkt, WKTCRSLoader, {raw: true}), WKTCRSWriter);
 

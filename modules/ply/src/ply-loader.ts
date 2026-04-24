@@ -3,11 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 // PLY Loader
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
-import {parsePLY} from './lib/parse-ply';
-import {parsePLYInBatches} from './lib/parse-ply-in-batches';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -21,7 +19,15 @@ export type PLYLoaderOptions = LoaderOptions & {
 };
 
 /**
- * Worker loader for PLY - Polygon File Format (aka Stanford Triangle Format)'
+ * Preloads the parser-bearing PLY loader implementation.
+ */
+async function preload() {
+  const {PLYLoaderWithParser} = await import('./ply-loader-with-parser');
+  return PLYLoaderWithParser;
+}
+
+/**
+ * Metadata-only worker loader for PLY - Polygon File Format (aka Stanford Triangle Format)'
  * links: ['http://paulbourke.net/dataformats/ply/',
  * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
  */
@@ -42,22 +48,13 @@ export const PLYWorkerLoader = {
   tests: ['ply'],
   options: {
     ply: {}
-  }
+  },
+  preload
 } as const satisfies Loader<PLYMesh, never, LoaderOptions>;
 
 /**
- * Loader for PLY - Polygon File Format
+ * Metadata-only loader for PLY - Polygon File Format
  */
 export const PLYLoader = {
-  ...PLYWorkerLoader,
-  // Note: parsePLY supports both text and binary
-  parse: async (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply), // TODO - this may not detect text correctly?
-  parseTextSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
-  parseSync: (arrayBuffer, options) => parsePLY(arrayBuffer, options?.ply),
-  parseInBatches: (
-    arrayBuffer:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ) => parsePLYInBatches(arrayBuffer, options?.ply)
-} as const satisfies LoaderWithParser<PLYMesh, any, PLYLoaderOptions>;
+  ...PLYWorkerLoader
+} as const satisfies Loader<PLYMesh, any, PLYLoaderOptions>;
