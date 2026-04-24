@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {GeoPackageLoader} from '../geopackage-loader';
+import {GeoPackageLoaderWithParser} from '../geopackage-loader-with-parser';
 
-createLoaderWorker(GeoPackageLoader);
+createLoaderWorker(GeoPackageLoaderWithParser);

@@ -154,23 +154,8 @@ async function parseWithLoader(
 
   data = await getArrayBufferOrStringFromData(data, loader, options);
 
-  const candidateLoaderWithParser = loader as LoaderWithParser;
-
-  if (candidateLoaderWithParser.parseText && typeof data === 'string') {
-    return await candidateLoaderWithParser.parseText(data, options, context);
-  }
-
-  // Fall back to synchronous text parser, wrap results in promises
-  if (candidateLoaderWithParser.parseTextSync && typeof data === 'string') {
-    return candidateLoaderWithParser.parseTextSync(data, options, context);
-  }
-
-  // If we have a workerUrl and the loader can parse the given options efficiently in a worker
-  if (canParseWithWorker(loader, options)) {
-    return await parseWithWorker(loader, data, options, context, parse);
-  }
-
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
+
   return await parseWithLoaderImplementation(loaderWithParser, data, options, context);
 }
 
@@ -183,8 +168,15 @@ async function parseWithLoaderImplementation(
   if (loader.parseText && typeof data === 'string') {
     return await loader.parseText(data, options, context);
   }
+
+  // Fall back to synchronous text parser, wrap results in promises
   if (loader.parseTextSync && typeof data === 'string') {
     return loader.parseTextSync(data, options, context);
+  }
+
+  // If we have a workerUrl and the loader can parse the given options efficiently in a worker
+  if (canParseWithWorker(loader, options)) {
+    return await parseWithWorker(loader, data, options, context, parse);
   }
 
   if (loader.parse) {

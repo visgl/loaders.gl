@@ -1,7 +1,6 @@
-import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ImageType} from './types';
 import {VERSION} from './lib/utils/version';
-import {parseImage} from './lib/parsers/parse-image';
 import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg', 'avif'];
@@ -38,8 +37,13 @@ const DEFAULT_IMAGE_LOADER_OPTIONS: ImageLoaderOptions = {
 /**
  * @deprecated in v4.4. Use `ImageBitmapLoader` for a pure `ImageBitmap` return type.
  *
- * Loads a platform-specific image type for compatibility with older code.
+ * Metadata-only loader for platform-specific image types.
  */
+async function preload() {
+  const {ImageLoaderWithParser} = await import('./image-loader-with-parser');
+  return ImageLoaderWithParser;
+}
+
 export const ImageLoader = {
   dataType: null as unknown as ImageType,
   batchType: null as never,
@@ -49,8 +53,8 @@ export const ImageLoader = {
   version: VERSION,
   mimeTypes: MIME_TYPES,
   extensions: EXTENSIONS,
-  parse: parseImage,
   // TODO: byteOffset, byteLength;
   tests: [arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer)))],
-  options: DEFAULT_IMAGE_LOADER_OPTIONS
-} as const satisfies LoaderWithParser<ImageType, never, ImageLoaderOptions>;
+  options: DEFAULT_IMAGE_LOADER_OPTIONS,
+  preload
+} as const satisfies Loader<ImageType, never, ImageLoaderOptions>;

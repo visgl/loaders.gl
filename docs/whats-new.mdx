@@ -42,7 +42,9 @@ Release Date: 2026
   
 - `CSVArrowLoader` NEW - is now the official Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
 - `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
+- The root `CSVLoader` and `CSVArrowLoader` exports are now metadata-only loaders that work with core async APIs through dynamic preload.
 - `CSVLoader` and `CSVArrowLoader` are available from `@loaders.gl/csv/unbundled` as metadata-only loaders that dynamically import parser-bearing implementations on first async use. See [Using Unbundled Loaders](/docs/developer-guide/using-unbundled-loaders).
+- `CSVLoader` and `CSVArrowLoader` are also available from `@loaders.gl/csv/bundled` as explicit parser-bearing imports.
 - `CSVArrowWriter` NEW writes Apache Arrow tables to CSV text.
 
 **@loaders.gl/core**

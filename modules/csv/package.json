@@ -35,17 +35,13 @@
       "types": "./dist/unbundled.d.ts",
       "import": "./dist/unbundled.js"
     },
-    "./csv-arrow-loader": {
-      "types": "./dist/csv-arrow-loader.d.ts",
-      "import": "./dist/csv-arrow-loader.js"
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
     },
     "./csv-arrow-writer": {
       "types": "./dist/csv-arrow-writer.d.ts",
       "import": "./dist/csv-arrow-writer.js"
-    },
-    "./csv-loader": {
-      "types": "./dist/csv-loader.d.ts",
-      "import": "./dist/csv-loader.js"
     },
     "./csv-writer": {
       "types": "./dist/csv-writer.d.ts",

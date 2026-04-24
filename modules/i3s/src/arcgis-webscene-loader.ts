@@ -1,7 +1,5 @@
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import type {ArcGISWebSceneData} from './types';
-
-import {parseWebscene} from './lib/parsers/parse-arcgis-webscene';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -21,15 +19,9 @@ export const ArcGISWebSceneLoader = {
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/json'],
-  parse,
+  /** Loads the parser-bearing ArcGIS WebScene loader implementation. */
+  preload: async () =>
+    (await import('./arcgis-webscene-loader-with-parser')).ArcGISWebSceneLoaderWithParser,
   extensions: ['json'],
   options: {}
-} as const satisfies LoaderWithParser<ArcGISWebSceneData, never, ArcGISWebSceneLoaderOptions>;
-
-/**
- * Parse ArcGIS webscene
- * @param data
- */
-async function parse(data: ArrayBuffer): Promise<ArcGISWebSceneData> {
-  return parseWebscene(data);
-}
+} as const satisfies Loader<ArcGISWebSceneData, never, ArcGISWebSceneLoaderOptions>;

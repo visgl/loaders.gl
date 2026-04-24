@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {isWKT, WKT_MAGIC_STRINGS, convertWKTToGeometry} from '@loaders.gl/gis';
+import {isWKT, WKT_MAGIC_STRINGS} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
 
 export type WKTLoaderOptions = LoaderOptions & {
@@ -20,7 +20,15 @@ export type WKTLoaderOptions = LoaderOptions & {
 };
 
 /**
- * Well-Known text worker loader
+ * Preloads the parser-bearing WKT loader implementation.
+ */
+async function preload() {
+  const {WKTLoaderWithParser} = await import('./wkt-loader-with-parser');
+  return WKTLoaderWithParser;
+}
+
+/**
+ * Metadata-only Well-Known text worker loader
  */
 export const WKTWorkerLoader = {
   dataType: null as unknown as Geometry,
@@ -42,15 +50,13 @@ export const WKTWorkerLoader = {
       shape: 'geojson-geometry',
       crs: true
     }
-  }
+  },
+  preload
 } as const satisfies Loader<Geometry, never, WKTLoaderOptions>;
 
 /**
- * Well-Known text loader
+ * Metadata-only Well-Known text loader
  */
 export const WKTLoader = {
-  ...WKTWorkerLoader,
-  parse: async (arrayBuffer, options?) =>
-    convertWKTToGeometry(new TextDecoder().decode(arrayBuffer), options)!,
-  parseTextSync: (string: string, options?) => convertWKTToGeometry(string, options)!
-} as const satisfies LoaderWithParser<Geometry, never, WKTLoaderOptions>;
+  ...WKTWorkerLoader
+} as const satisfies Loader<Geometry, never, WKTLoaderOptions>;

@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LERCData} from './lib/parsers/lerc/lerc-types';
-import * as Lerc from 'lerc';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -23,9 +22,13 @@ export type LERCLoaderOptions = LoaderOptions & {
   };
 };
 
-/**
- * Loader for the LERC raster format
- */
+/** Preloads the parser-bearing LERC loader implementation. */
+async function preload() {
+  const {LERCLoaderWithParser} = await import('./lerc-loader-with-parser');
+  return LERCLoaderWithParser;
+}
+
+/** Metadata-only loader for the LERC raster format. */
 export const LERCLoader = {
   dataType: null as unknown as LERCData,
   batchType: null as never,
@@ -42,14 +45,5 @@ export const LERCLoader = {
   options: {
     lerc: {}
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: LERCLoaderOptions) =>
-    parseLERC(arrayBuffer, options)
-} as const satisfies LoaderWithParser<LERCData, never, LERCLoaderOptions>;
-
-async function parseLERC(arrayBuffer: ArrayBuffer, options?: LERCLoaderOptions): Promise<LERCData> {
-  // Load the WASM library
-  await Lerc.load();
-  // Perform the decode
-  const pixelBlock = Lerc.decode(arrayBuffer, options?.lerc);
-  return pixelBlock;
-}
+  preload
+} as const satisfies Loader<LERCData, never, LERCLoaderOptions>;

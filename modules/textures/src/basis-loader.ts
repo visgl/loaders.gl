@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {VERSION} from './lib/utils/version';
-import {parseBasis} from './lib/parsers/parse-basis';
 import type {BasisFormat} from './lib/parsers/parse-basis';
 
 type BasisFormatOption = BasisFormat | Uppercase<BasisFormat>;
@@ -35,9 +34,13 @@ export type BasisLoaderOptions = LoaderOptions & {
   };
 };
 
-/**
- * Worker loader for Basis super compressed textures
- */
+/** Preloads the parser-bearing Basis loader implementation. */
+async function preload() {
+  const {BasisLoaderWithParser} = await import('./basis-loader-with-parser');
+  return BasisLoaderWithParser;
+}
+
+/** Metadata-only worker loader for Basis super compressed textures. */
 export const BasisWorkerLoader = {
   dataType: null as unknown as TextureLevel[][],
   batchType: null as never,
@@ -57,13 +60,12 @@ export const BasisWorkerLoader = {
       containerFormat: 'auto',
       module: 'transcoder'
     }
-  }
+  },
+  preload
 } as const satisfies Loader<TextureLevel[][], never, BasisLoaderOptions>;
 
-/**
- * Loader for Basis super compressed textures
- */
+/** Metadata-only loader for Basis super compressed textures. */
 export const BasisLoader = {
   ...BasisWorkerLoader,
-  parse: parseBasis
-} as const satisfies LoaderWithParser<TextureLevel[][], never, LoaderOptions>;
+  preload
+} as const satisfies Loader<TextureLevel[][], never, LoaderOptions>;

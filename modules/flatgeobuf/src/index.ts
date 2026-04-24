@@ -5,7 +5,7 @@
 export {FlatGeobufFormat} from './flatgeobuf-format';
 
 export type {FlatGeobufLoaderOptions} from './flatgeobuf-loader';
-export {FlatGeobufLoader, FlatGeobufWorkerLoader} from './flatgeobuf-loader';
+export {FlatGeobufLoader} from './flatgeobuf-loader';
 
 export type {FlatGeobufSourceLoaderOptions} from './flatgeobuf-source-loader';
 export {
@@ -13,3 +13,7 @@ export {
   FlatGeobufSourceLoader as _FlatGeobufSourceLoader,
   FlatGeobufVectorSource
 } from './flatgeobuf-source-loader';
+
+// DEPRECATED EXPORTS
+/** @deprecated Use FlatGeobufLoader. */
+export {FlatGeobufWorkerLoader} from './flatgeobuf-loader';

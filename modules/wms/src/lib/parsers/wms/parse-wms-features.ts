@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {XMLLoader} from '@loaders.gl/xml';
+import {parseXMLTextSync} from '../xml/parse-xml-text';
 
 /** WMS Feature info - response to a WMS `GetFeatureInfo` request */
 export type WMSFeatureInfo = {
@@ -20,7 +20,7 @@ export type WMSFeature = {
  * @note Error handlings is fairly weak
  */
 export function parseWMSFeatureInfo(text: string, options): WMSFeatureInfo {
-  const parsedXML = XMLLoader.parseTextSync?.(text, options);
+  const parsedXML = parseXMLTextSync(text, options);
   const xmlFeatureInfo: any = parsedXML.FeatureInfoResponse?.FIELDS || [];
 
   const xmlFeatures = Array.isArray(xmlFeatureInfo) ? xmlFeatureInfo : [xmlFeatureInfo];

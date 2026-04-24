@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -18,9 +17,13 @@ export type DBFLoaderOptions = StrictLoaderOptions & {
   };
 };
 
-/**
- * DBFLoader - DBF files are used to contain non-geometry columns in Shapefiles
- */
+/** Preloads the parser-bearing DBF loader implementation. */
+async function preload() {
+  const {DBFLoaderWithParser} = await import('./dbf-loader-with-parser');
+  return DBFLoaderWithParser;
+}
+
+/** Metadata-only DBF worker loader. */
 export const DBFWorkerLoader = {
   name: 'DBF',
   dataType: null as unknown,
@@ -37,20 +40,12 @@ export const DBFWorkerLoader = {
     dbf: {
       encoding: 'latin1'
     }
-  }
+  },
+  preload
 } as const satisfies Loader<any, any, DBFLoaderOptions>;
 
-/** DBF file loader */
-export const DBFLoader: LoaderWithParser = {
+/** Metadata-only DBF file loader. */
+export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
   ...DBFWorkerLoader,
-  parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
-  parseSync: parseDBF,
-  parseInBatches(
-    arrayBufferIterator:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ) {
-    return parseDBFInBatches(arrayBufferIterator, options);
-  }
+  preload
 };

@@ -127,7 +127,7 @@ export type {
   BinaryFeatureCollectionLike
 } from './categories/category-gis';
 
-// DEPRECATED
+// DEPRECATED EXPORTS
 
 // MESH CATEGORY
 

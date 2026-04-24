@@ -32,6 +32,8 @@ export const TerrainLoader = {
   worker: true,
   extensions: ['png', 'pngraw', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'],
   mimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'],
+  /** Loads the parser-bearing terrain loader implementation. */
+  preload: async () => (await import('./terrain-loader-with-parser')).TerrainLoaderWithParser,
   options: {
     terrain: {
       tesselator: 'auto',

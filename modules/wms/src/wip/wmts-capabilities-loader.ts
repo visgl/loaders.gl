@@ -1,9 +1,9 @@
 // loaders.gl, MIT license
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
 // import type {WMTSCapabilities} from './lib/wmts/parse-wmts-capabilities';
-import {parseWMTSCapabilities, WMTSCapabilities} from './lib/wmts/parse-wmts-capabilities';
+import type {WMTSCapabilities} from './lib/wmts/parse-wmts-capabilities';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -34,14 +34,13 @@ export const WMTSCapabilitiesLoader = {
   options: {
     wms: {}
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMTSLoaderOptions) =>
-    parseWMTSCapabilities(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: WMTSLoaderOptions) => parseWMTSCapabilities(text, options)
-} as const satisfies LoaderWithParser<WMTSCapabilities, never, WMTSLoaderOptions>;
+  /** Loads the parser-bearing WMTS capabilities loader implementation. */
+  preload: async () => (await import('./wmts-capabilities-loader-with-parser')).WMTSCapabilitiesLoaderWithParser
+} as const satisfies Loader<WMTSCapabilities, never, WMTSLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.
   return text.startsWith('<?xml');
 }
 
-export const _typecheckWMTSCapabilitiesLoader: LoaderWithParser = WMTSCapabilitiesLoader;
+export const _typecheckWMTSCapabilitiesLoader: Loader = WMTSCapabilitiesLoader;

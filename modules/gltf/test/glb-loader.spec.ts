@@ -3,7 +3,7 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {load, parseSync, fetchFile} from '@loaders.gl/core';
-import {GLBLoader} from '@loaders.gl/gltf';
+import {GLBLoader} from '@loaders.gl/gltf/bundled';
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/gltf-2.0/2CylinderEngine.glb';
 const GLB_V1_TILE_CESIUM_AIR_URL = '@loaders.gl/gltf/test/data/3d-tiles/Cesium_Air.glb';

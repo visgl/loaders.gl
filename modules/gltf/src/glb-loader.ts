@@ -1,8 +1,7 @@
-import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
 import type {ParseGLBOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
-import {parseGLBSync} from './lib/parsers/parse-glb';
 
 /** GLB loader options */
 export type GLBLoaderOptions = StrictLoaderOptions & {
@@ -15,10 +14,13 @@ export type GLBLoaderOptions = StrictLoaderOptions & {
   };
 };
 
-/**
- * GLB Loader -
- * GLB is the binary container format for GLTF
- */
+/** Preloads the parser-bearing GLB loader implementation. */
+async function preload() {
+  const {GLBLoaderWithParser} = await import('./glb-loader-with-parser');
+  return GLBLoaderWithParser;
+}
+
+/** Metadata-only GLB loader for the binary glTF container format. */
 export const GLBLoader = {
   dataType: null as unknown as GLB,
   batchType: null as never,
@@ -29,21 +31,10 @@ export const GLBLoader = {
   extensions: ['glb'],
   mimeTypes: ['model/gltf-binary'],
   binary: true,
-  parse,
-  parseSync,
+  preload,
   options: {
     glb: {
       strict: false // Enables deprecated XVIZ support (illegal CHUNK formats)
     }
   }
-} as const satisfies LoaderWithParser<GLB, never, GLBLoaderOptions>;
-
-async function parse(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): Promise<GLB> {
-  return parseSync(arrayBuffer, options);
-}
-
-function parseSync(arrayBuffer: ArrayBuffer, options?: GLBLoaderOptions): GLB {
-  const glb: GLB = {} as GLB;
-  parseGLBSync(glb, arrayBuffer, options?.glb?.byteOffset || 0, options?.glb);
-  return glb;
-}
+} as const satisfies Loader<GLB, never, GLBLoaderOptions>;

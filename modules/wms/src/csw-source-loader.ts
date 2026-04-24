@@ -8,15 +8,15 @@ import type {CoreAPI, SourceLoader, DataSourceOptions} from '@loaders.gl/loader-
 import {DataSource} from '@loaders.gl/loader-utils';
 
 import type {CSWCapabilities} from './csw-capabilities-loader';
-import {CSWCapabilitiesLoader} from './csw-capabilities-loader';
+import {CSWCapabilitiesLoaderWithParser} from './csw-capabilities-loader-with-parser';
 
 import type {CSWRecords} from './csw-records-loader';
-import {CSWRecordsLoader} from './csw-records-loader';
+import {CSWRecordsLoaderWithParser} from './csw-records-loader-with-parser';
 
 import type {CSWDomain} from './csw-domain-loader';
-import {CSWDomainLoader} from './csw-domain-loader';
+import {CSWDomainLoaderWithParser} from './csw-domain-loader-with-parser';
 
-import {WMSErrorLoader as CSWErrorLoader} from './wms-error-loader';
+import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 
 /** Describes a service or resource exposed by the catalog */
 export type Service = {
@@ -101,7 +101,7 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions>
 
   capabilities: CSWCapabilities | null = null;
   /** A list of loaders used by the CSWCatalogSource methods */
-  readonly loaders = [CSWErrorLoader, CSWCapabilitiesLoader];
+  readonly loaders = [WMSErrorLoaderWithParser, CSWCapabilitiesLoaderWithParser];
 
   /** Create a CSWCatalogSource */
   constructor(url: string, options: CSWSourceLoaderOptions, coreApi?: CoreAPI) {
@@ -172,7 +172,7 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions>
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    const capabilities = await CSWCapabilitiesLoader.parse(
+    const capabilities = await CSWCapabilitiesLoaderWithParser.parse(
       arrayBuffer,
       this.options.core.loadOptions
     );
@@ -188,7 +188,7 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions>
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await CSWRecordsLoader.parse(arrayBuffer, this.options.core.loadOptions);
+    return await CSWRecordsLoaderWithParser.parse(arrayBuffer, this.options.core.loadOptions);
   }
 
   /** Get Domain */
@@ -200,7 +200,7 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions>
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await CSWDomainLoader.parse(arrayBuffer, this.options.core.loadOptions);
+    return await CSWDomainLoaderWithParser.parse(arrayBuffer, this.options.core.loadOptions);
   }
 
   // Typed URL creators
@@ -278,15 +278,18 @@ export class CSWCatalogSource extends DataSource<string, CSWSourceLoaderOptions>
   /** Checks for and parses a CSW XML formatted ServiceError and throws an exception */
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers['content-type'];
-    if (!response.ok || CSWErrorLoader.mimeTypes.includes(contentType)) {
-      const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.options.core.loadOptions);
+    if (!response.ok || WMSErrorLoaderWithParser.mimeTypes.includes(contentType)) {
+      const error = WMSErrorLoaderWithParser.parseSync?.(
+        arrayBuffer,
+        this.options.core.loadOptions
+      );
       throw new Error(error);
     }
   }
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = CSWErrorLoader.parseSync?.(arrayBuffer, this.options.core.loadOptions);
+    const error = WMSErrorLoaderWithParser.parseSync?.(arrayBuffer, this.options.core.loadOptions);
     return new Error(error);
   }
 }

@@ -2,16 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // import {geojsonToBinary} from '@loaders.gl/gis';
 // import {GeoJSONTable} from '@loaders.gl/schema';
-import {FeatureCollection, GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
-import {kml} from '@tmcw/togeojson';
-import {DOMParser} from '@xmldom/xmldom';
-import {
-  buildFeatureTableSchema,
-  convertFeatureCollectionToArrowTable
-} from './lib/feature-collection-to-arrow';
+import type {GeoJSONTable, ObjectRowTable, ArrowTable} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -27,9 +21,13 @@ const KML_HEADER = `\
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">`;
 
-/**
- * Loader for KML (Keyhole Markup Language)
- */
+/** Preloads the parser-bearing KML loader implementation. */
+async function preload() {
+  const {KMLLoaderWithParser} = await import('./kml-loader-with-parser');
+  return KMLLoaderWithParser;
+}
+
+/** Metadata-only loader for KML (Keyhole Markup Language). */
 export const KMLLoader = {
   dataType: null as unknown as ObjectRowTable | GeoJSONTable | ArrowTable,
   batchType: null as never,
@@ -42,71 +40,9 @@ export const KMLLoader = {
   mimeTypes: ['application/vnd.google-earth.kml+xml'],
   text: true,
   tests: [KML_HEADER],
-  parse: async (arrayBuffer, options?: KMLLoaderOptions) =>
-    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync,
   options: {
     kml: {shape: 'geojson-table'},
     gis: {}
-  }
-} as const satisfies LoaderWithParser<
-  ObjectRowTable | GeoJSONTable | ArrowTable,
-  never,
-  KMLLoaderOptions
->;
-
-/**
- * Parses KML XML text into a GeoJSON feature collection.
- *
- * @param text - KML XML document text.
- * @returns Parsed GeoJSON feature collection.
- */
-export function parseKMLTextToFeatureCollection(text: string): FeatureCollection {
-  const doc = new DOMParser().parseFromString(text, 'text/xml');
-  return kml(doc);
-}
-
-/**
- * Parses KML text into the requested table shape.
- *
- * @param text - KML XML document text.
- * @param options - Loader options controlling the output shape.
- * @returns A GeoJSON or object-row table.
- */
-function parseTextSync(
-  text: string,
-  options?: KMLLoaderOptions
-): ObjectRowTable | GeoJSONTable | ArrowTable {
-  const geojson = parseKMLTextToFeatureCollection(text);
-  const schema = buildFeatureTableSchema(geojson.features);
-
-  const kmlOptions = {...KMLLoader.options.kml, ...options?.kml};
-
-  switch (kmlOptions.shape) {
-    case 'geojson-table': {
-      const table: GeoJSONTable = {
-        shape: 'geojson-table',
-        schema,
-        type: 'FeatureCollection',
-        features: geojson.features
-      };
-      return table;
-    }
-    case 'arrow-table':
-      return convertFeatureCollectionToArrowTable(geojson.features);
-    // case 'geojson':
-    //   return geojson;
-    // case 'binary':
-    //   return geojsonToBinary(geojson.features);
-    // case 'raw':
-    //   return doc;
-    case 'object-row-table':
-      const table: ObjectRowTable = {
-        shape: 'object-row-table',
-        data: geojson.features
-      };
-      return table;
-    default:
-      throw new Error(kmlOptions.shape);
-  }
-}
+  },
+  preload
+} as const satisfies Loader<ObjectRowTable | GeoJSONTable | ArrowTable, never, KMLLoaderOptions>;

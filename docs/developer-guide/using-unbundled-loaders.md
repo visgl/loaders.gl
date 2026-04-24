@@ -8,7 +8,9 @@ Unbundled loaders keep the loader metadata in the main application bundle while 
 
 Use unbundled loaders when an application needs to recognize or support a format, but most sessions will not actually parse that format. For example, an import tool may support CSV, JSON, Parquet, Shapefile, FlatGeobuf, and several point cloud formats, while any individual user usually uploads only one of them.
 
-The normal bundled loader import is still the best default when a loader is central to the application path, used frequently, or needed by synchronous APIs without a preload step.
+The bundled loader import is still the best default when a loader is central to the application path, used frequently, or needed by synchronous APIs without a preload step.
+
+Some modules expose an explicit `/bundled` subpath with the parser-bearing loaders exported under the same names. This is equivalent to importing the parser implementation directly and gives applications a stable import path even if a module's root export is metadata-only.
 
 ## Importing unbundled loaders
 
@@ -27,7 +29,13 @@ import {CSVLoader} from '@loaders.gl/csv/unbundled';
 const table = await load(url, CSVLoader);
 ```
 
-The unbundled loader has the same loader id, extensions, MIME types, and option shape as the normal loader. The difference is that parser methods such as `parse`, `parseSync`, and `parseInBatches` are not present on the imported object. Instead, the loader exposes a `preload` function that core can use to dynamically import the parser-bearing implementation.
+CSV also provides parser-bearing loaders from `@loaders.gl/csv/bundled`:
+
+```typescript
+import {CSVLoader} from '@loaders.gl/csv/bundled';
+```
+
+The unbundled loader has the same loader id, extensions, MIME types, and option shape as the bundled loader. The difference is that parser methods such as `parse`, `parseSync`, and `parseInBatches` are not present on the imported object. Instead, the loader exposes a `preload` function that core can use to dynamically import the parser-bearing implementation.
 
 ## How dynamic loading works
 

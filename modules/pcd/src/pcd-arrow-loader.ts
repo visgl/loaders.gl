@@ -2,24 +2,26 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 
 import {PCDLoaderOptions, PCDWorkerLoader} from './pcd-loader';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
-import {parsePCD} from './lib/parse-pcd';
 
 /**
- * Worker loader for PCD - Point Cloud Data
+ * Preloads the parser-bearing PCD Arrow loader implementation.
+ */
+async function preload() {
+  const {PCDArrowLoaderWithParser} = await import('./pcd-arrow-loader-with-parser');
+  return PCDArrowLoaderWithParser;
+}
+
+/**
+ * Metadata-only loader for PCD - Point Cloud Data
  */
 export const PCDArrowLoader = {
   ...PCDWorkerLoader,
   dataType: null as unknown as ArrowTable,
   batchType: null as never,
   worker: false,
-  parse: async (arrayBuffer: ArrayBuffer) => {
-    const mesh = parsePCD(arrayBuffer);
-    const arrowTable = convertMeshToTable(mesh, 'arrow-table');
-    return arrowTable;
-  }
-} as const satisfies LoaderWithParser<ArrowTable, never, PCDLoaderOptions>;
+  preload
+} as const satisfies Loader<ArrowTable, never, PCDLoaderOptions>;

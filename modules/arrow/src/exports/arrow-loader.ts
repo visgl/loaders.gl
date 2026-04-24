@@ -23,6 +23,12 @@ export type ArrowLoaderOptions = LoaderOptions & {
 };
 
 /** ArrowJS table loader */
+async function preload() {
+  const {ArrowLoaderWithParser} = await import('../arrow-loader-with-parser');
+  return ArrowLoaderWithParser;
+}
+
+/** Metadata-only ArrowJS table worker loader. */
 export const ArrowWorkerLoader = {
   dataType: null as unknown as ArrowTable,
   batchType: null as never,
@@ -45,5 +51,6 @@ export const ArrowWorkerLoader = {
     arrow: {
       shape: 'columnar-table'
     }
-  }
+  },
+  preload
 } as const satisfies Loader<ArrowTable, never, ArrowLoaderOptions>;

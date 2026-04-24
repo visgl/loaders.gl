@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
-import {XMLLoader} from '@loaders.gl/xml';
 import {parseExceptionReport} from './parse-exception-report';
+import {parseXMLTextSync} from '../xml/parse-xml-text';
 
 /** Describes the values of resource */
 export type CSWDomain = {
@@ -22,7 +22,7 @@ export type CSWDomain = {
  * @note Error handlings is fairly weak
  */
 export function parseCSWDomain(text: string, options?: XMLLoaderOptions): CSWDomain {
-  const parsedXML = XMLLoader.parseTextSync?.(text, {
+  const parsedXML = parseXMLTextSync(text, {
     ...options,
     xml: {
       ...options?.xml,

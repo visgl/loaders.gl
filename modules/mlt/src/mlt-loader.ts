@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parseMLT} from './lib/parse-mlt';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {MLTFormat} from './mlt-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -32,9 +31,13 @@ export const MLT_DEFAULT_OPTIONS = {
   layerProperty: 'layerName' as const
 };
 
-/**
- * Worker loader for the MapLibre Tile (MLT) format
- */
+/** Preloads the parser-bearing MLT loader implementation. */
+async function preload() {
+  const {MLTLoaderWithParser} = await import('./mlt-loader-with-parser');
+  return MLTLoaderWithParser;
+}
+
+/** Metadata-only worker loader for the MapLibre Tile (MLT) format. */
 export const MLTWorkerLoader = {
   ...MLTFormat,
   dataType: null as any,
@@ -47,17 +50,13 @@ export const MLTWorkerLoader = {
       layers: undefined!,
       tileIndex: undefined!
     }
-  }
+  },
+  preload
 } as const satisfies Loader<any, never, MLTLoaderOptions>;
 
-/**
- * Loader for the MapLibre Tile (MLT) format
- */
+/** Metadata-only loader for the MapLibre Tile (MLT) format. */
 export const MLTLoader = {
   ...MLTWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?: MLTLoaderOptions) =>
-    parseMLT(arrayBuffer, options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: MLTLoaderOptions) =>
-    parseMLT(arrayBuffer, options),
-  binary: true
-} as const satisfies LoaderWithParser<any, never, MLTLoaderOptions>;
+  binary: true,
+  preload
+} as const satisfies Loader<any, never, MLTLoaderOptions>;

@@ -306,7 +306,7 @@ test('ParquetReader and ParquetJSLoader parse without global Buffer', async t =>
   const originalBuffer = (globalThis as MutableGlobalThis).Buffer;
 
   await withoutGlobalBuffer(async () => {
-    const [{ParquetJSLoader}] = await Promise.all([import('../src/index')]);
+    const [{ParquetJSLoader}] = await Promise.all([import('../src/bundled')]);
 
     const reader = new ParquetReader(new BlobFile(toExactArrayBuffer(fruitsBytes)));
     const metadata = await reader.getSchemaMetadata();

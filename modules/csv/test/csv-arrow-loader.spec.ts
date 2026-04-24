@@ -15,6 +15,10 @@ import {
 } from '@loaders.gl/core';
 import {CSVArrowLoader, CSVArrowWorkerLoader, CSVLoader} from '@loaders.gl/csv';
 import {
+  CSVArrowLoader as BundledCSVArrowLoader,
+  CSVArrowWorkerLoader as BundledCSVArrowWorkerLoader
+} from '@loaders.gl/csv/bundled';
+import {
   CSVArrowLoader as UnbundledCSVArrowLoader,
   CSVArrowWorkerLoader as UnbundledCSVArrowWorkerLoader
 } from '@loaders.gl/csv/unbundled';
@@ -32,15 +36,27 @@ const CSV_SAMPLE_URL_EMPTY_LINES = '@loaders.gl/csv/test/data/sample-empty-line.
 const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
 const TSV_BRAZIL = '@loaders.gl/csv/test/data/tsv/brazil.tsv';
 
-test('CSVArrowLoader#root export includes parser methods', t => {
-  t.equal(typeof CSVArrowLoader.parse, 'function', 'root CSVArrowLoader exposes parse');
-  t.equal(
-    typeof CSVArrowLoader.parseInBatches,
-    'function',
-    'root CSVArrowLoader exposes parseInBatches'
-  );
+test('CSVArrowLoader#root export includes metadata loader', t => {
+  t.equal(typeof CSVArrowLoader.preload, 'function', 'root CSVArrowLoader exposes preload');
+  t.notOk('parse' in CSVArrowLoader, 'root CSVArrowLoader does not expose parse');
+  t.notOk('parseInBatches' in CSVArrowLoader, 'root CSVArrowLoader does not expose parseInBatches');
   t.equal(CSVArrowWorkerLoader, CSVArrowLoader, 'CSVArrowWorkerLoader aliases CSVArrowLoader');
   t.notOk('CSVArrowLoaderWithParser' in csv, 'root does not export CSVArrowLoaderWithParser');
+  t.end();
+});
+
+test('CSVArrowLoader#bundled export includes parser methods', t => {
+  t.equal(typeof BundledCSVArrowLoader.parse, 'function', 'bundled CSVArrowLoader exposes parse');
+  t.equal(
+    typeof BundledCSVArrowLoader.parseInBatches,
+    'function',
+    'bundled CSVArrowLoader exposes parseInBatches'
+  );
+  t.equal(
+    BundledCSVArrowWorkerLoader,
+    BundledCSVArrowLoader,
+    'bundled CSVArrowWorkerLoader aliases CSVArrowLoader'
+  );
   t.end();
 });
 

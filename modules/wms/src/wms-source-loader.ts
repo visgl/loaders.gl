@@ -19,12 +19,12 @@ import type {WMSCapabilities} from './wms-capabilities-loader';
 import type {WMSFeatureInfo} from './wip/wms-feature-info-loader';
 import type {WMSLayerDescription} from './wip/wms-layer-description-loader';
 
-import {WMSCapabilitiesLoader} from './wms-capabilities-loader';
-import {WMSFeatureInfoLoader} from './wip/wms-feature-info-loader';
-import {WMSLayerDescriptionLoader} from './wip/wms-layer-description-loader';
+import {WMSCapabilitiesLoaderWithParser} from './wms-capabilities-loader-with-parser';
+import {WMSFeatureInfoLoaderWithParser} from './wip/wms-feature-info-loader-with-parser';
+import {WMSLayerDescriptionLoaderWithParser} from './wip/wms-layer-description-loader-with-parser';
 
 import type {WMSLoaderOptions} from './wms-error-loader';
-import {WMSErrorLoader} from './wms-error-loader';
+import {WMSErrorLoaderWithParser} from './wms-error-loader-with-parser';
 
 /** Properties for creating a enw WMS service */
 export type WMSSourceLoaderOptions = DataSourceOptions & {
@@ -287,7 +287,7 @@ export class WMSImageSource
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    const capabilities = await WMSCapabilitiesLoader.parse(arrayBuffer, this.loadOptions);
+    const capabilities = await WMSCapabilitiesLoaderWithParser.parse(arrayBuffer, this.loadOptions);
     this.capabilities = capabilities;
     return capabilities;
   }
@@ -303,7 +303,11 @@ export class WMSImageSource
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {
-      return await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions);
+      return (await this.coreApi.parse(
+        arrayBuffer,
+        ImageBitmapLoader,
+        this.loadOptions
+      )) as ImageType;
     } catch {
       throw this._parseError(arrayBuffer);
     }
@@ -318,7 +322,7 @@ export class WMSImageSource
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await WMSFeatureInfoLoader.parse(arrayBuffer, this.loadOptions);
+    return await WMSFeatureInfoLoaderWithParser.parse(arrayBuffer, this.loadOptions);
   }
 
   /** Get Feature Info for a coordinate */
@@ -342,7 +346,7 @@ export class WMSImageSource
     const response = await this.fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
-    return await WMSLayerDescriptionLoader.parse(arrayBuffer, this.loadOptions);
+    return await WMSLayerDescriptionLoaderWithParser.parse(arrayBuffer, this.loadOptions);
   }
 
   /** Get an image with a semantic legend */
@@ -355,7 +359,11 @@ export class WMSImageSource
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     try {
-      return await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions);
+      return (await this.coreApi.parse(
+        arrayBuffer,
+        ImageBitmapLoader,
+        this.loadOptions
+      )) as ImageType;
     } catch {
       throw this._parseError(arrayBuffer);
     }
@@ -606,19 +614,19 @@ export class WMSImageSource
   /** Checks for and parses a WMS XML formatted ServiceError and throws an exception */
   protected _checkResponse(response: Response, arrayBuffer: ArrayBuffer): void {
     const contentType = response.headers['content-type'];
-    if (!response.ok || WMSErrorLoader.mimeTypes.includes(contentType)) {
-      // We want error responses to throw exceptions, the WMSErrorLoader can do this
+    if (!response.ok || WMSErrorLoaderWithParser.mimeTypes.includes(contentType)) {
+      // We want error responses to throw exceptions, the WMSErrorLoaderWithParser can do this
       const loadOptions = mergeOptions<WMSLoaderOptions>(this.loadOptions, {
         wms: {throwOnError: true}
       });
-      const error = WMSErrorLoader.parseSync?.(arrayBuffer, loadOptions);
+      const error = WMSErrorLoaderWithParser.parseSync?.(arrayBuffer, loadOptions);
       throw new Error(error);
     }
   }
 
   /** Error situation detected */
   protected _parseError(arrayBuffer: ArrayBuffer): Error {
-    const error = WMSErrorLoader.parseSync?.(arrayBuffer, this.options.core?.loadOptions);
+    const error = WMSErrorLoaderWithParser.parseSync?.(arrayBuffer, this.options.core?.loadOptions);
     return new Error(error);
   }
 }

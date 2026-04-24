@@ -6,7 +6,8 @@ import test from 'tape-promise/tape';
 import {validateWriter} from 'test/common/conformance';
 
 import {parseSync, encodeSync} from '@loaders.gl/core';
-import {ArrowLoader, ArrowWriter} from '@loaders.gl/arrow';
+import {ArrowWriter} from '@loaders.gl/arrow';
+import {ArrowLoader} from '@loaders.gl/arrow/bundled';
 
 test('ArrowWriter#writer conformance', t => {
   validateWriter(t, ArrowWriter, 'ArrowWriter');

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {XMLLoader} from '@loaders.gl/xml';
+import {parseXMLTextSync} from '../xml/parse-xml-text';
 
 /**
  * Extract an error message from WMS error response XML
@@ -11,7 +11,7 @@ import {XMLLoader} from '@loaders.gl/xml';
  * @returns a string with a human readable message
  */
 export function parseWMSError(text: string, options): string {
-  const parsedXML = XMLLoader.parseTextSync?.(text, options);
+  const parsedXML = parseXMLTextSync(text, options);
   const serviceExceptionXML =
     parsedXML?.ServiceExceptionReport?.ServiceException ||
     parsedXML?.['ogc:ServiceExceptionReport']?.['ogc:ServiceException'];

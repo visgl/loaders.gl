@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import parseVideo from './lib/parsers/parse-video';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -13,9 +12,13 @@ export type VideoLoaderOptions = LoaderOptions & {
   video: {};
 };
 
-/**
- * Loads a platform-specific image type that can be used as input data to WebGL textures
- */
+/** Preloads the parser-bearing video loader implementation. */
+async function preload() {
+  const {VideoLoaderWithParser} = await import('./video-loader-with-parser');
+  return VideoLoaderWithParser;
+}
+
+/** Metadata-only loader for platform-specific video elements. */
 export const VideoLoader = {
   dataType: null as unknown as HTMLVideoElement,
   batchType: null as never,
@@ -29,5 +32,5 @@ export const VideoLoader = {
   options: {
     video: {}
   },
-  parse: parseVideo
-} as const satisfies LoaderWithParser<HTMLVideoElement, never, VideoLoaderOptions>;
+  preload
+} as const satisfies Loader<HTMLVideoElement, never, VideoLoaderOptions>;

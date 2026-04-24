@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
-import {WMSCapabilities, parseWMSCapabilities} from './lib/parsers/wms/parse-wms-capabilities';
+import type {WMSCapabilities} from './lib/parsers/wms/parse-wms-capabilities';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -31,9 +31,13 @@ export type WMSCapabilitiesLoaderOptions = XMLLoaderOptions & {
   };
 };
 
-/**
- * Loader for the response to the WMS GetCapability request
- */
+/** Preloads the parser-bearing WMS capabilities loader implementation. */
+async function preload() {
+  const {WMSCapabilitiesLoaderWithParser} = await import('./wms-capabilities-loader-with-parser');
+  return WMSCapabilitiesLoaderWithParser;
+}
+
+/** Metadata-only loader for the response to the WMS GetCapability request. */
 export const WMSCapabilitiesLoader = {
   dataType: null as unknown as WMSCapabilities,
   batchType: null as never,
@@ -44,19 +48,15 @@ export const WMSCapabilitiesLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  text: true,
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.wms_xml', 'application/xml', 'text/xml'],
   testText: testXMLFile,
   options: {
     wms: {}
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: WMSCapabilitiesLoaderOptions) =>
-    // TODO pass in XML options
-    parseWMSCapabilities(new TextDecoder().decode(arrayBuffer), options?.wms),
-  parseTextSync: (text: string, options?: WMSCapabilitiesLoaderOptions) =>
-    // TODO pass in XML options
-    parseWMSCapabilities(text, options?.wms)
-} as const satisfies LoaderWithParser<WMSCapabilities, never, WMSCapabilitiesLoaderOptions>;
+  preload
+} as const satisfies Loader<WMSCapabilities, never, WMSCapabilitiesLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

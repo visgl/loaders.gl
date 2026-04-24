@@ -1,6 +1,5 @@
-import type {LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
-import {parseImageBitmap} from './lib/parsers/parse-image-bitmap';
 import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
 
 const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg', 'avif'];
@@ -34,8 +33,13 @@ const DEFAULT_IMAGE_BITMAP_LOADER_OPTIONS: ImageBitmapLoaderOptions = {
 };
 
 /**
- * Loads images as `ImageBitmap` in browsers and in Node.js when `@loaders.gl/polyfills` is installed.
+ * Metadata-only loader for images as `ImageBitmap`.
  */
+async function preload() {
+  const {ImageBitmapLoaderWithParser} = await import('./image-bitmap-loader-with-parser');
+  return ImageBitmapLoaderWithParser;
+}
+
 export const ImageBitmapLoader = {
   dataType: null as unknown as ImageBitmap,
   batchType: null as never,
@@ -45,7 +49,7 @@ export const ImageBitmapLoader = {
   version: VERSION,
   mimeTypes: MIME_TYPES,
   extensions: EXTENSIONS,
-  parse: parseImageBitmap,
   tests: [arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer)))],
-  options: DEFAULT_IMAGE_BITMAP_LOADER_OPTIONS
-} as const satisfies LoaderWithParser<ImageBitmap, never, ImageBitmapLoaderOptions>;
+  options: DEFAULT_IMAGE_BITMAP_LOADER_OPTIONS,
+  preload
+} as const satisfies Loader<ImageBitmap, never, ImageBitmapLoaderOptions>;

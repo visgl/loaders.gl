@@ -10,7 +10,7 @@ export {VECTOR_TYPES} from './lib/types';
 export {ArrowFormat} from './exports/arrow-format';
 
 export type {ArrowLoaderOptions} from './exports/arrow-loader';
-export {ArrowWorkerLoader} from './exports/arrow-loader';
+
 export {ArrowLoader} from './arrow-loader';
 
 export {ArrowWriter} from './arrow-writer';
@@ -23,7 +23,7 @@ export {ARROW_CONVERTERS, ArrowConverter} from './arrow-converter/arrow-converte
 export {tightenArrowTableSchemaNullability} from './lib/tighten-arrow-table-schema-nullability';
 
 // Geoarrow loader
-export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';
+
 export {GeoArrowLoader} from './geoarrow-loader';
 
 // EXPERIMENTAL
@@ -68,3 +68,9 @@ export {
   triangulateOnWorker,
   parseGeoArrowOnWorker
 } from './triangulate-on-worker';
+
+// DEPRECATED EXPORTS
+/** @deprecated Use ArrowLoader. */
+export {ArrowWorkerLoader} from './exports/arrow-loader';
+/** @deprecated Use GeoArrowLoader. */
+export {GeoArrowWorkerLoader} from './exports/geoarrow-loader';

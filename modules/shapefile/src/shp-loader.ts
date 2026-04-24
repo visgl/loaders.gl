@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -20,9 +19,13 @@ export type SHPLoaderOptions = StrictLoaderOptions & {
   };
 };
 
-/**
- * SHP file loader
- */
+/** Preloads the parser-bearing SHP loader implementation. */
+async function preload() {
+  const {SHPLoaderWithParser} = await import('./shp-loader-with-parser');
+  return SHPLoaderWithParser;
+}
+
+/** Metadata-only SHP worker loader. */
 export const SHPWorkerLoader = {
   dataType: null as unknown,
   batchType: null as never,
@@ -41,18 +44,12 @@ export const SHPWorkerLoader = {
     shp: {
       _maxDimensions: 4
     }
-  }
+  },
+  preload
 } as const satisfies Loader<any, any, SHPLoaderOptions>;
 
-/** SHP file loader */
-export const SHPLoader: LoaderWithParser = {
+/** Metadata-only SHP file loader. */
+export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {
   ...SHPWorkerLoader,
-  parse: async (arrayBuffer, options?) => parseSHP(arrayBuffer, options),
-  parseSync: parseSHP,
-  parseInBatches: (
-    arrayBufferIterator:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ) => parseSHPInBatches(arrayBufferIterator, options)
+  preload
 };
