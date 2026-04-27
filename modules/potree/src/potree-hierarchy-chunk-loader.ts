@@ -6,6 +6,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import type {POTreeLoaderOptions} from './potree-loader';
 import type {POTreeNode} from './parsers/parse-potree-hierarchy-chunk';
 
+import {PotreeHierarchyChunkFormat} from './potree-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -20,6 +21,7 @@ async function preload() {
 
 /** Metadata-only Potree hierarchy chunk loader. */
 export const PotreeHierarchyChunkLoader = {
+  ...PotreeHierarchyChunkFormat,
   dataType: null as unknown as POTreeNode,
   batchType: null as never,
 

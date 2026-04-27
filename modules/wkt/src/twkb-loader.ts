@@ -6,6 +6,7 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {BinaryGeometry, Geometry} from '@loaders.gl/schema';
 import {isTWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {TWKBFormat} from './wkt-format';
 
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
@@ -25,6 +26,7 @@ async function preload() {
  * Metadata-only worker loader for WKB (Well-Known Binary)
  */
 export const TWKBWorkerLoader = {
+  ...TWKBFormat,
   dataType: null as unknown as Geometry,
   batchType: null as never,
 
@@ -34,6 +36,8 @@ export const TWKBWorkerLoader = {
   version: VERSION,
   worker: true,
   category: 'geometry',
+  encoding: 'binary',
+  format: 'twkb',
   extensions: ['twkb'],
   mimeTypes: [],
   // TODO can we define static, serializable tests, eg. some binary strings?

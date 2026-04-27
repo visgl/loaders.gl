@@ -6,6 +6,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {I3STileContent} from './types';
 
+import {I3SContentFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
@@ -15,6 +16,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * Loader for I3S - Indexed 3D Scene Layer
  */
 export const I3SContentLoader = {
+  ...I3SContentFormat,
   dataType: null as unknown as I3STileContent | null,
   batchType: null as never,
 

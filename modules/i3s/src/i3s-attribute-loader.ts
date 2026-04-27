@@ -2,6 +2,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {I3STileAttributes} from './lib/parsers/parse-i3s-attribute';
 
+import {I3SAttributeFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -10,6 +11,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * Loader for I3S attributes
  */
 export const I3SAttributeLoader = {
+  ...I3SAttributeFormat,
   dataType: null as unknown as I3STileAttributes,
   batchType: null as never,
   name: 'I3S Attribute',

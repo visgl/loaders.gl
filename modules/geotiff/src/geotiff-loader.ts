@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {TypedArray, Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {GeoTIFFFormat} from './geotiff-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -37,17 +38,13 @@ export const GeoTIFFLoader = {
   dataType: null as unknown as GeoTIFFData,
   batchType: null as never,
 
-  id: 'geotiff',
-  name: 'GeoTIFF',
-  module: 'geotiff',
+  ...GeoTIFFFormat,
   version: VERSION,
   options: {
     geotiff: {
       enableAlpha: true
     }
   },
-  mimeTypes: ['image/tiff', 'image/geotiff'],
-  extensions: ['geotiff', 'tiff', 'geotif', 'tif'],
   preload
 } as const satisfies Loader<GeoTIFFData, never, GeoTIFFLoaderOptions>;
 

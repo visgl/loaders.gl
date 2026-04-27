@@ -10,6 +10,7 @@ import type {
   ArrowTableBatch,
   TableBatch
 } from '@loaders.gl/schema';
+import {NDJSONFormat} from './json-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -40,18 +41,8 @@ export const NDJSONLoader = {
   dataType: null as unknown as ArrayRowTable | ObjectRowTable | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch,
 
-  name: 'NDJSON',
-  id: 'ndjson',
-  module: 'json',
+  ...NDJSONFormat,
   version: VERSION,
-  extensions: ['ndjson', 'jsonl'],
-  mimeTypes: [
-    'application/x-ndjson',
-    'application/jsonlines', // https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html#cm-batch
-    'application/json-seq'
-  ],
-  category: 'table',
-  text: true,
   options: {
     ndjson: {
       shape: 'object-row-table'

@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrayRowTable, ObjectRowTable, Batch} from '@loaders.gl/schema';
+import {NDGeoJSONFormat} from './json-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -30,20 +31,8 @@ export const NDJSONLoader = {
   dataType: null as unknown as ArrayRowTable | ObjectRowTable,
   batchType: null as unknown as Batch,
 
-  name: 'NDJSON',
-  id: 'ndjson',
-  module: 'json',
+  ...NDGeoJSONFormat,
   version: VERSION,
-  extensions: ['ndjson', 'ndgeojson'],
-  mimeTypes: [
-    'application/geo+x-ndjson',
-    'application/geo+x-ldjson',
-    'application/jsonlines', // https://docs.aws.amazon.com/sagemaker/latest/dg/cdf-inference.html#cm-batch
-    'application/geo+json-seq',
-    'application/x-ndjson'
-  ],
-  category: 'table',
-  text: true,
   options: {
     geojson: {
       shape: 'object-row-table'

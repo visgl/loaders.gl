@@ -1,19 +1,7 @@
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ImageType} from './types';
 import {VERSION} from './lib/utils/version';
-import {getBinaryImageMetadata} from './lib/category-api/binary-image-api';
-
-const EXTENSIONS = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'ico', 'svg', 'avif'];
-const MIME_TYPES = [
-  'image/png',
-  'image/jpeg',
-  'image/gif',
-  'image/webp',
-  'image/avif',
-  'image/bmp',
-  'image/vnd.microsoft.icon',
-  'image/svg+xml'
-];
+import {ImageFormat} from './image-format';
 
 /**
  * @deprecated in v4.4. Use `ImageBitmapLoaderOptions` for new code.
@@ -47,14 +35,9 @@ async function preload() {
 export const ImageLoader = {
   dataType: null as unknown as ImageType,
   batchType: null as never,
-  id: 'image',
-  module: 'images',
-  name: 'Images',
+  ...ImageFormat,
   version: VERSION,
-  mimeTypes: MIME_TYPES,
-  extensions: EXTENSIONS,
   // TODO: byteOffset, byteLength;
-  tests: [arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer)))],
   options: DEFAULT_IMAGE_LOADER_OPTIONS,
   preload
 } as const satisfies Loader<ImageType, never, ImageLoaderOptions>;

@@ -21,6 +21,7 @@ async function preload() {
 /** Metadata-only GeoArrow worker loader. */
 export const GeoArrowWorkerLoader = {
   ...ArrowWorkerLoader,
+  format: 'geoarrow',
   options: {
     arrow: {
       shape: 'arrow-table'

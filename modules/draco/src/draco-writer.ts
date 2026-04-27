@@ -11,6 +11,7 @@ import type {DracoBuildOptions} from './lib/draco-builder';
 import DRACOBuilder from './lib/draco-builder';
 import {loadDracoEncoderModule} from './lib/draco-module-loader';
 import {VERSION} from './lib/utils/version';
+import {DracoFormat} from './draco-format';
 
 /** Options for `DracoWriter`. */
 export type DracoWriterOptions = WriterOptions & {
@@ -58,12 +59,9 @@ export const DracoWriterWorker = {
  * Exporter for Draco3D compressed geometries
  */
 export const DracoWriter = {
+  ...DracoFormat,
   name: 'DRACO',
-  id: 'draco',
-  module: 'draco',
   version: VERSION,
-  extensions: ['drc'],
-  mimeTypes: ['application/octet-stream'],
   options: {
     draco: DEFAULT_DRACO_WRITER_OPTIONS
   },

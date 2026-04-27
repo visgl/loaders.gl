@@ -6,6 +6,7 @@ import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
 import {VERSION} from './lib/utils/version';
+import {DracoFormat} from './draco-format';
 
 export type DracoLoaderOptions = StrictLoaderOptions & {
   draco?: DracoParseOptions & {
@@ -26,16 +27,10 @@ async function preload() {
 export const DracoWorkerLoader = {
   dataType: null as unknown as DracoMesh,
   batchType: null as never,
-  name: 'Draco',
-  id: 'draco',
-  module: 'draco',
+  ...DracoFormat,
   // shapes: ['mesh'],
   version: VERSION,
   worker: true,
-  extensions: ['drc'],
-  mimeTypes: ['application/octet-stream'],
-  binary: true,
-  tests: ['DRACO'],
   options: {
     draco: {
       decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11

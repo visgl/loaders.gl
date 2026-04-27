@@ -6,6 +6,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
 import type {CSWDomain} from './lib/parsers/csw/parse-csw-domain';
 
+import {CSWDomainFormat} from './wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -24,6 +25,7 @@ async function preload() {
 
 /** Metadata-only loader for the response to the CSW GetDomain request. */
 export const CSWDomainLoader = {
+  ...CSWDomainFormat,
   dataType: null as unknown as CSWDomain,
   batchType: null as never,
 
@@ -33,6 +35,8 @@ export const CSWDomainLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  encoding: 'xml',
+  format: 'csw-domain',
   text: true,
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.csw_xml', 'application/xml', 'text/xml'],

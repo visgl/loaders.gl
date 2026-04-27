@@ -4,6 +4,7 @@
 
 import type {Loader} from '@loaders.gl/loader-utils';
 import {XMLLoader, type XMLLoaderOptions} from './xml-loader';
+import {HTMLFormat} from './xml-format';
 
 export type HTMLLoaderOptions = XMLLoaderOptions;
 
@@ -18,11 +19,7 @@ async function preload() {
  */
 export const HTMLLoader = {
   ...XMLLoader,
-  name: 'HTML',
-  id: 'html',
-  text: true,
-  extensions: ['html', 'htm'],
-  mimeTypes: ['text/html'],
+  ...HTMLFormat,
   testText: testHTMLFile,
   preload
 } as const satisfies Loader<any, never, HTMLLoaderOptions>;

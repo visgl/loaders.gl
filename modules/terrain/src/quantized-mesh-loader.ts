@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {VERSION} from './lib/utils/version';
+import {QuantizedMeshFormat} from './terrain-format';
 
 /** QuantizedMeshLoader options */
 export type QuantizedMeshLoaderOptions = LoaderOptions & {
@@ -23,13 +24,9 @@ export const QuantizedMeshLoader = {
   dataType: null as unknown as any, // Mesh,
   batchType: null as never,
 
-  name: 'Quantized Mesh',
-  id: 'quantized-mesh',
-  module: 'terrain',
+  ...QuantizedMeshFormat,
   version: VERSION,
   worker: true,
-  extensions: ['terrain'],
-  mimeTypes: ['application/vnd.quantized-mesh'],
   /** Loads the parser-bearing quantized mesh loader implementation. */
   preload: async () =>
     (await import('./quantized-mesh-loader-with-parser')).QuantizedMeshLoaderWithParser,

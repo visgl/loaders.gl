@@ -5,6 +5,7 @@ import type {XMLLoaderOptions} from '@loaders.gl/xml';
 // import type {WMTSCapabilities} from './lib/wmts/parse-wmts-capabilities';
 import type {WMTSCapabilities} from './lib/wmts/parse-wmts-capabilities';
 
+import {WMTSCapabilitiesFormat} from '../wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -19,6 +20,7 @@ export type WMTSLoaderOptions = XMLLoaderOptions & {
  * Loader for the response to the WMTS GetCapability request
  */
 export const WMTSCapabilitiesLoader = {
+  ...WMTSCapabilitiesFormat,
   dataType: null as unknown as WMTSCapabilities,
   batchType: null as never,
 
@@ -28,6 +30,8 @@ export const WMTSCapabilitiesLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  encoding: 'xml',
+  format: 'wmts-capabilities',
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.wmts_xml', 'application/xml', 'text/xml'],
   testText: testXMLFile,

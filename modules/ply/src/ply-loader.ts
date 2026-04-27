@@ -6,6 +6,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
+import {PLYFormat} from './ply-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -35,17 +36,10 @@ export const PLYWorkerLoader = {
   dataType: null as unknown as PLYMesh,
   batchType: null as never,
 
-  name: 'PLY',
-  id: 'ply',
-  module: 'ply',
+  ...PLYFormat,
   // shapes: ['mesh', 'gltf', 'columnar-table'],
   version: VERSION,
   worker: true,
-  extensions: ['ply'],
-  mimeTypes: ['text/plain', 'application/octet-stream'],
-  text: true,
-  binary: true,
-  tests: ['ply'],
   options: {
     ply: {}
   },

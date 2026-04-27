@@ -9,6 +9,7 @@ import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 
 import {VERSION} from './lib/utils/version';
 import type {Tiles3DTileContent, Tiles3DTilesetJSONPostprocessed} from './types';
+import {Tiles3DFormat} from './tiles-3d-format';
 
 export type Tiles3DLoaderOptions = StrictLoaderOptions &
   // GLTFLoaderOptions & - TODO not yet exported
@@ -32,13 +33,8 @@ export type Tiles3DLoaderOptions = StrictLoaderOptions &
 export const Tiles3DLoader = {
   dataType: null as any,
   batchType: null as never,
-  id: '3d-tiles',
-  name: '3D Tiles',
-  module: '3d-tiles',
+  ...Tiles3DFormat,
   version: VERSION,
-  extensions: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
-  mimeTypes: ['application/octet-stream'],
-  tests: ['cmpt', 'pnts', 'b3dm', 'i3dm'],
   /** Loads the parser-bearing 3D Tiles loader implementation. */
   preload: async () => (await import('./tiles-3d-loader-with-parser')).Tiles3DLoaderWithParser,
   options: {

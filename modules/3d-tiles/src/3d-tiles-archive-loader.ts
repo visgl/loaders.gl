@@ -3,6 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {ThreeTZFormat} from './tiles-3d-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -22,11 +23,9 @@ export type Tiles3DArchiveFileLoaderOptions = LoaderOptions & {
 export const Tiles3DArchiveFileLoader = {
   dataType: null as unknown as ArrayBuffer,
   batchType: null as never,
+  ...ThreeTZFormat,
   name: '3tz',
-  id: '3tz',
-  module: '3d-tiles',
   version: VERSION,
-  mimeTypes: ['application/octet-stream', 'application/vnd.maxar.archive.3tz+zip'],
   /** Loads the parser-bearing 3tz archive loader implementation. */
   preload: async () =>
     (await import('./3d-tiles-archive-loader-with-parser')).Tiles3DArchiveFileLoaderWithParser,

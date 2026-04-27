@@ -1,6 +1,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {NetCDFHeader} from './netcdfjs/netcdf-types';
 
+import {NetCDFFormat} from './netcdf-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -27,6 +28,7 @@ async function preload() {
  * Metadata-only loader for NETCDF.
  */
 export const NetCDFWorkerLoader = {
+  ...NetCDFFormat,
   dataType: null as unknown as NetCDF,
   batchType: null as never,
 

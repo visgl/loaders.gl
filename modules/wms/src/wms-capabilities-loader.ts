@@ -6,6 +6,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
 import type {WMSCapabilities} from './lib/parsers/wms/parse-wms-capabilities';
 
+import {WMSCapabilitiesFormat} from './wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -39,6 +40,7 @@ async function preload() {
 
 /** Metadata-only loader for the response to the WMS GetCapability request. */
 export const WMSCapabilitiesLoader = {
+  ...WMSCapabilitiesFormat,
   dataType: null as unknown as WMSCapabilities,
   batchType: null as never,
 
@@ -48,6 +50,8 @@ export const WMSCapabilitiesLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  encoding: 'xml',
+  format: 'wms-capabilities',
   text: true,
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.wms_xml', 'application/xml', 'text/xml'],
