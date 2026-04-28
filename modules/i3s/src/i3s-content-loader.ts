@@ -22,6 +22,9 @@ export const I3SContentLoader = {
   id: 'i3s-content',
   module: 'i3s',
   worker: true,
+  workerFile: 'i3s-classic.js',
+  workerModuleFile: 'i3s-module.js',
+  workerNodeFile: 'i3s-classic-node.cjs',
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
   /** Loads the parser-bearing I3S content loader implementation. */

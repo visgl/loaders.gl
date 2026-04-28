@@ -37,6 +37,14 @@
     },
     "./wkt-worker.js": {
       "import": "./dist/wkt-worker.js"
+    },
+    "./wkt-module.js": {
+      "import": "./dist/wkt-module.js"
+    },
+    "./wkt-classic.js": {
+      "browser": "./dist/wkt-classic.js",
+      "require": "./dist/wkt-classic-node.cjs",
+      "default": "./dist/wkt-classic.js"
     }
   },
   "sideEffects": false,
@@ -46,10 +54,13 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/wkt-worker.ts --bundle --outfile=dist/wkt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/wkt-worker.ts --bundle --outfile=dist/wkt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/wkt-module.ts --bundle --format=esm --outfile=dist/wkt-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/wkt-module.ts --bundle --format=cjs --outfile=dist/wkt-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/wkt-module.ts --bundle --format=iife --outfile=dist/wkt-classic.js --target=esnext --global-name=loaders.wkt --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "devDependencies": {
     "fuzzer": "^0.2.1"

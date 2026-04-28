@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WorkerObject, WorkerOptions} from '../../types';
+import type {WorkerObject, WorkerOptions, WorkerType} from '../../types';
 import {assert} from '../env-utils/assert';
 import {isBrowser} from '../env-utils/globals';
 import {VERSION} from '../env-utils/version';
@@ -21,6 +21,41 @@ export function getWorkerName(worker: WorkerObject): string {
 }
 
 /**
+ * Gets worker object's pool name.
+ * Combined module workers should share a pool across loaders in the same module.
+ */
+export function getWorkerPoolName(worker: WorkerObject, options: WorkerOptions = {}): string {
+  const workerOptions = options[worker.id] || {};
+  const customUrl =
+    workerOptions.workerUrl || (worker.id === 'compression' ? options.workerUrl : undefined);
+  if (customUrl) {
+    return `${worker.id}:${customUrl}`;
+  }
+
+  const workerFile = getWorkerFile(worker, options);
+  return workerFile === getDefaultWorkerFile(worker, options)
+    ? worker.id
+    : `${getWorkerPackage(worker)}/${workerFile}`;
+}
+
+/** Gets the worker script type for Worker construction. */
+export function getWorkerType(worker: WorkerObject, options: WorkerOptions = {}): WorkerType {
+  const workerOptions = options[worker.id] || {};
+  const workerType = workerOptions.workerType || options.workerType || options.core?.workerType;
+  if (workerType) {
+    return workerType;
+  }
+
+  const customUrl =
+    workerOptions.workerUrl || (worker.id === 'compression' ? options.workerUrl : undefined);
+  if (customUrl) {
+    return 'classic';
+  }
+
+  return worker.workerType || 'classic';
+}
+
+/**
  * Generate a worker URL based on worker object and options
  * @returns A URL to one of the following:
  * - a published worker on unpkg CDN
@@ -29,8 +64,7 @@ export function getWorkerName(worker: WorkerObject): string {
  */
 export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}): string {
   const workerOptions = options[worker.id] || {};
-
-  const workerFile = isBrowser ? `${worker.id}-worker.js` : `${worker.id}-worker-node.js`;
+  const workerFile = getWorkerFile(worker, options);
 
   let url = workerOptions.workerUrl;
 
@@ -49,10 +83,12 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
   const workerType = (options as any)._workerType || (options as any)?.core?._workerType;
   if (workerType === 'test') {
     if (isBrowser) {
-      url = `modules/${worker.module}/dist/${workerFile}`;
+      url = `modules/${getWorkerPackage(worker)}/dist/${workerFile}`;
+    } else if (worker.workerNodeFile) {
+      url = `modules/${getWorkerPackage(worker)}/dist/${workerFile}`;
     } else {
       // In the test environment the ts-node loader requires TypeScript code
-      url = `modules/${worker.module}/src/workers/${worker.id}-worker-node.ts`;
+      url = `modules/${getWorkerPackage(worker)}/src/workers/${worker.id}-worker-node.ts`;
     }
   }
 
@@ -66,11 +102,32 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
       version = NPM_TAG;
     }
     const versionTag = version ? `@${version}` : '';
-    url = `https://unpkg.com/@loaders.gl/${worker.module}${versionTag}/dist/${workerFile}`;
+    url = `https://unpkg.com/@loaders.gl/${getWorkerPackage(worker)}${versionTag}/dist/${workerFile}`;
   }
 
   assert(url);
 
   // Allow user to override location
   return url;
+}
+
+function getWorkerFile(worker: WorkerObject, options: WorkerOptions): string {
+  if (!isBrowser) {
+    return worker.workerNodeFile || getDefaultWorkerFile(worker, options);
+  }
+
+  const workerType = getWorkerType(worker, options);
+  if (workerType === 'module' && worker.workerModuleFile) {
+    return worker.workerModuleFile;
+  }
+
+  return worker.workerFile || getDefaultWorkerFile(worker, options);
+}
+
+function getDefaultWorkerFile(worker: WorkerObject, options: WorkerOptions): string {
+  return isBrowser ? `${worker.id}-worker.js` : `${worker.id}-worker-node.js`;
+}
+
+function getWorkerPackage(worker: WorkerObject): string {
+  return worker.workerPackage || worker.module;
 }

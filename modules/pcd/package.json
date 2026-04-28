@@ -38,6 +38,14 @@
     },
     "./pcd-worker.js": {
       "import": "./dist/pcd-worker.js"
+    },
+    "./pcd-module.js": {
+      "import": "./dist/pcd-module.js"
+    },
+    "./pcd-classic.js": {
+      "browser": "./dist/pcd-classic.js",
+      "require": "./dist/pcd-classic-node.cjs",
+      "default": "./dist/pcd-classic.js"
     }
   },
   "sideEffects": false,
@@ -47,10 +55,13 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/pcd-worker.ts --bundle --outfile=dist/pcd-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/pcd-worker.ts --bundle --outfile=dist/pcd-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/pcd-module.ts --bundle --format=esm --outfile=dist/pcd-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/pcd-module.ts --bundle --format=cjs --outfile=dist/pcd-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/pcd-module.ts --bundle --format=iife --outfile=dist/pcd-classic.js --target=esnext --global-name=loaders.pcd --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",

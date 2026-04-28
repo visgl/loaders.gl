@@ -38,6 +38,14 @@
     },
     "./ply-worker.js": {
       "import": "./dist/ply-worker.js"
+    },
+    "./ply-module.js": {
+      "import": "./dist/ply-module.js"
+    },
+    "./ply-classic.js": {
+      "browser": "./dist/ply-classic.js",
+      "require": "./dist/ply-classic-node.cjs",
+      "default": "./dist/ply-classic.js"
     }
   },
   "sideEffects": false,
@@ -47,10 +55,13 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/ply-worker.ts --bundle --outfile=dist/ply-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/ply-module.ts --bundle --format=esm --outfile=dist/ply-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/ply-module.ts --bundle --format=cjs --outfile=dist/ply-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/ply-module.ts --bundle --format=iife --outfile=dist/ply-classic.js --target=esnext --global-name=loaders.ply --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",

@@ -60,6 +60,8 @@ export type StrictLoaderOptions = {
     CDN?: string | null;
     /** Set to `false` to disable workers */
     worker?: boolean;
+    /** Load worker scripts as classic scripts or ES module workers */
+    workerType?: 'classic' | 'module';
     /** Number of concurrent workers (per loader) on desktop browser */
     maxConcurrency?: number;
     /** Number of concurrent workers (per loader) on mobile browsers */
@@ -159,6 +161,18 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   version: string;
   /** A boolean, or a URL */
   worker?: string | boolean;
+  /** Classic worker artifact to load in browsers */
+  workerFile?: string;
+  /** ES module worker artifact to load in browsers when `workerType` is `module` */
+  workerModuleFile?: string;
+  /** Worker artifact to load in Node.js */
+  workerNodeFile?: string;
+  /** Package/module directory that owns the worker artifact */
+  workerPackage?: string;
+  /** Worker script type */
+  workerType?: 'classic' | 'module';
+  /** Unique loader id used by combined worker dispatch */
+  workerLoaderId?: string;
   /**
    * Optionally warm the loader before parse/load is invoked.
    * Can be used to avoid a later delay and may return a parser-bearing loader that also supports `parseSync`.

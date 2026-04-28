@@ -31,6 +31,10 @@ export const DBFArrowWorkerLoader = {
   batchType: null as unknown as ArrowTableBatch,
   version: VERSION,
   worker: true,
+  workerFile: 'shapefile-classic.js',
+  workerModuleFile: 'shapefile-module.js',
+  workerNodeFile: 'shapefile-classic-node.cjs',
+  workerLoaderId: 'dbf-arrow',
   options: {
     dbf: {
       encoding: 'latin1'

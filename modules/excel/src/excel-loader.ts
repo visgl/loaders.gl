@@ -36,6 +36,9 @@ export const ExcelWorkerLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  workerFile: 'excel-classic.js',
+  workerModuleFile: 'excel-module.js',
+  workerNodeFile: 'excel-classic-node.cjs',
   options: {
     excel: {
       shape: 'object-row-table',

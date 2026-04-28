@@ -11,7 +11,7 @@ import type {
 } from '../../types';
 import type WorkerJob from '../worker-farm/worker-job';
 import WorkerFarm from '../worker-farm/worker-farm';
-import {getWorkerURL, getWorkerName} from './get-worker-url';
+import {getWorkerURL, getWorkerName, getWorkerType} from './get-worker-url';
 import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
 
 /** Options for worker processing */
@@ -49,7 +49,12 @@ export async function processOnWorker(
 
   const workerFarm = WorkerFarm.getWorkerFarm(options);
   const {source} = options;
-  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
+  const workerPoolProps: {
+    name: string;
+    source?: string;
+    url?: string;
+    type?: 'classic' | 'module';
+  } = {name, source, type: getWorkerType(worker, options)};
   if (!source) {
     workerPoolProps.url = getWorkerURL(worker, options);
   }

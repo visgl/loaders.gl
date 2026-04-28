@@ -9,6 +9,7 @@ import {fileURLToPath} from 'url';
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, '..');
 const packageDirectories = getPackageDirectories();
+const moduleBundlesOnly = process.argv.includes('--module-bundles-only');
 
 for (const packageDirectory of packageDirectories) {
   const packageJson = await import(join(packageDirectory, 'package.json'), {
@@ -64,6 +65,10 @@ function getChildPackageDirectories(rootDirectoryName) {
  * @returns {string[]} Script names to run.
  */
 function getWorkerBuildScripts(scripts) {
+  if (moduleBundlesOnly) {
+    return Object.keys(scripts).filter(scriptName => isModuleBundleBuildScript(scriptName, scripts));
+  }
+
   const copyScripts = Object.keys(scripts).filter(scriptName => isCopyArtifactScript(scriptName, scripts));
 
   if (scripts['build-workers']) {
@@ -72,6 +77,21 @@ function getWorkerBuildScripts(scripts) {
 
   const workerScripts = Object.keys(scripts).filter(scriptName => isWorkerBuildScript(scriptName, scripts));
   return [...copyScripts, ...deduplicateWorkerScriptsByOutput(workerScripts, scripts)];
+}
+
+/**
+ * Returns whether a script builds an exported module-level worker bundle.
+ * @param {string} scriptName Package script name.
+ * @param {Record<string, string>} scripts Package scripts.
+ * @returns {boolean} True if the script builds a module bundle artifact.
+ */
+function isModuleBundleBuildScript(scriptName, scripts) {
+  return (
+    (scriptName === 'build-combined-worker' ||
+      scriptName === 'build-combined-worker-classic' ||
+      scriptName === 'build-combined-worker-node') &&
+    !scripts[scriptName].trim().startsWith('#')
+  );
 }
 
 /**

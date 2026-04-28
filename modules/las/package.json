@@ -39,6 +39,14 @@
     },
     "./las-worker.js": {
       "import": "./dist/las-worker.js"
+    },
+    "./las-module.js": {
+      "import": "./dist/las-module.js"
+    },
+    "./las-classic.js": {
+      "browser": "./dist/las-classic.js",
+      "require": "./dist/las-classic-node.cjs",
+      "default": "./dist/las-classic.js"
     }
   },
   "sideEffects": false,
@@ -54,11 +62,14 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run copy-wasm-files && npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
+    "pre-build": "npm run copy-wasm-files && npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "copy-wasm-files": "cp src/libs/laz-rs-wasm/*.wasm* dist/libs/laz-rs-wasm/",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/las-worker.ts --bundle --outfile=dist/las-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/las-worker.ts --bundle --outfile=dist/las-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/las-module.ts --bundle --format=esm --outfile=dist/las-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/las-module.ts --bundle --format=cjs --outfile=dist/las-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/las-module.ts --bundle --format=iife --outfile=dist/las-classic.js --target=esnext --global-name=loaders.las --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",

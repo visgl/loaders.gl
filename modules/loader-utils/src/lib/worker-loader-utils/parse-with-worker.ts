@@ -4,6 +4,8 @@ import {
   WorkerMessagePayload,
   isBrowser,
   WorkerFarm,
+  getWorkerPoolName,
+  getWorkerType,
   getWorkerURL
 } from '@loaders.gl/worker-utils';
 import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
@@ -48,11 +50,12 @@ export async function parseWithWorker(
   context?: LoaderContext,
   parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<unknown>
 ) {
-  const name = loader.id; // TODO
+  const name = getWorkerPoolName(loader, options);
   const url = getWorkerURL(loader, options);
+  const type = getWorkerType(loader, options);
 
   const workerFarm = WorkerFarm.getWorkerFarm(options?.core);
-  const workerPool = workerFarm.getWorkerPool({name, url});
+  const workerPool = workerFarm.getWorkerPool({name, url, type});
 
   // options.log object contains functions which cannot be transferred
   // context.fetch & context.parse functions cannot be transferred
@@ -67,6 +70,7 @@ export async function parseWithWorker(
   );
 
   job.postMessage('process', {
+    loaderId: loader.workerLoaderId || loader.id,
     // @ts-ignore
     input: data,
     options,

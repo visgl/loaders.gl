@@ -38,6 +38,14 @@
     },
     "./obj-worker.js": {
       "import": "./dist/obj-worker.js"
+    },
+    "./obj-module.js": {
+      "import": "./dist/obj-module.js"
+    },
+    "./obj-classic.js": {
+      "browser": "./dist/obj-classic.js",
+      "require": "./dist/obj-classic-node.cjs",
+      "default": "./dist/obj-classic.js"
     }
   },
   "sideEffects": false,
@@ -47,10 +55,13 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/obj-module.ts --bundle --format=esm --outfile=dist/obj-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/obj-module.ts --bundle --format=cjs --outfile=dist/obj-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/obj-module.ts --bundle --format=iife --outfile=dist/obj-classic.js --target=esnext --global-name=loaders.obj --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",

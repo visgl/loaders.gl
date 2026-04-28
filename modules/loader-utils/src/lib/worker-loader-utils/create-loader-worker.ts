@@ -6,15 +6,21 @@ import {WorkerBody} from '@loaders.gl/worker-utils';
 
 let requestId = 0;
 
+type LoaderWorkerRegistry = Record<string, LoaderWithParser>;
+type LoaderWorkerInput = LoaderWithParser | LoaderWithParser[] | LoaderWorkerRegistry;
+
 /**
  * Set up a WebWorkerGlobalScope to talk with the main thread
  * @param loader
  */
-export async function createLoaderWorker(loader: LoaderWithParser) {
+export async function createLoaderWorker(loader: LoaderWorkerInput) {
   // Check that we are actually in a worker thread
   if (!(await WorkerBody.inWorkerThread())) {
     return;
   }
+
+  const loaderRegistry = getLoaderRegistry(loader);
+  const singleLoader = isLoaderWithParser(loader) ? loader : null;
 
   WorkerBody.onmessage = async (type, payload) => {
     switch (type) {
@@ -22,10 +28,11 @@ export async function createLoaderWorker(loader: LoaderWithParser) {
         try {
           // validateLoaderVersion(loader, data.source.split('@')[1]);
 
-          const {input, options = {}, context = {}} = payload;
+          const {input, loaderId, options = {}, context = {}} = payload;
+          const selectedLoader = selectLoader(loaderRegistry, singleLoader, loaderId);
 
           const result = await parseData({
-            loader,
+            loader: selectedLoader,
             arrayBuffer: input,
             options,
             // @ts-expect-error fetch missing
@@ -44,6 +51,60 @@ export async function createLoaderWorker(loader: LoaderWithParser) {
       default:
     }
   };
+}
+
+/**
+ * Selects the loader that should process a worker message.
+ */
+export function selectLoaderForWorkerMessage(
+  loader: LoaderWorkerInput,
+  loaderId?: string
+): LoaderWithParser {
+  const loaderRegistry = getLoaderRegistry(loader);
+  const singleLoader = isLoaderWithParser(loader) ? loader : null;
+  return selectLoader(loaderRegistry, singleLoader, loaderId);
+}
+
+function getLoaderRegistry(loader: LoaderWorkerInput): LoaderWorkerRegistry {
+  if (isLoaderWithParser(loader)) {
+    return {[loader.workerLoaderId || loader.id]: loader};
+  }
+
+  if (Array.isArray(loader)) {
+    return Object.fromEntries(
+      loader.map(loaderWithParser => [
+        loaderWithParser.workerLoaderId || loaderWithParser.id,
+        loaderWithParser
+      ])
+    );
+  }
+
+  return loader;
+}
+
+function isLoaderWithParser(loader: LoaderWorkerInput): loader is LoaderWithParser {
+  return Boolean((loader as LoaderWithParser).id);
+}
+
+function selectLoader(
+  loaderRegistry: LoaderWorkerRegistry,
+  singleLoader: LoaderWithParser | null,
+  loaderId?: string
+): LoaderWithParser {
+  if (!loaderId && singleLoader) {
+    return singleLoader;
+  }
+
+  if (!loaderId) {
+    throw new Error('loaderId is required when using a combined loader worker');
+  }
+
+  const selectedLoader = loaderRegistry[loaderId];
+  if (!selectedLoader) {
+    throw new Error(`No loader registered for loaderId ${loaderId}`);
+  }
+
+  return selectedLoader;
 }
 
 function createWorkerCoreApi(): CoreAPI {

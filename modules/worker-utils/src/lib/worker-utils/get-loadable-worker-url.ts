@@ -15,20 +15,25 @@ const workerURLCache = new Map();
  * @param props.url Worker URL
  * @returns loadable url
  */
-export function getLoadableWorkerURL(props: {source?: string; url?: string}) {
+export function getLoadableWorkerURL(props: {
+  source?: string;
+  url?: string;
+  type?: 'classic' | 'module';
+}) {
   assert((props.source && !props.url) || (!props.source && props.url)); // Either source or url must be defined
 
-  let workerURL = workerURLCache.get(props.source || props.url);
+  const workerURLCacheKey = `${props.type || 'classic'}:${props.source || props.url}`;
+  let workerURL = workerURLCache.get(workerURLCacheKey);
   if (!workerURL) {
     // Differentiate worker urls from worker source code
     if (props.url) {
-      workerURL = getLoadableWorkerURLFromURL(props.url);
-      workerURLCache.set(props.url, workerURL);
+      workerURL = getLoadableWorkerURLFromURL(props.url, props.type || 'classic');
+      workerURLCache.set(workerURLCacheKey, workerURL);
     }
 
     if (props.source) {
       workerURL = getLoadableWorkerURLFromSource(props.source);
-      workerURLCache.set(props.source, workerURL);
+      workerURLCache.set(workerURLCacheKey, workerURL);
     }
   }
 
@@ -41,14 +46,15 @@ export function getLoadableWorkerURL(props: {source?: string; url?: string}) {
  * @param url
  * @returns loadable URL
  */
-function getLoadableWorkerURLFromURL(url: string): string {
+function getLoadableWorkerURLFromURL(url: string, workerType: 'classic' | 'module'): string {
   // A local script url, we can use it to initialize a Worker directly
   if (!url.startsWith('http')) {
     return url;
   }
 
   // A remote script, we need to use `importScripts` to load from different origin
-  const workerSource = buildScriptSource(url);
+  const workerSource =
+    workerType === 'module' ? buildModuleWorkerSource(url) : buildClassicWorkerSource(url);
   return getLoadableWorkerURLFromSource(workerSource);
 }
 
@@ -70,7 +76,7 @@ function getLoadableWorkerURLFromSource(workerSource: string): string {
  * @param workerUrl
  * @returns source
  */
-function buildScriptSource(workerUrl: string): string {
+function buildClassicWorkerSource(workerUrl: string): string {
   return `\
 try {
   importScripts('${workerUrl}');
@@ -78,4 +84,9 @@ try {
   console.error(error);
   throw error;
 }`;
+}
+
+function buildModuleWorkerSource(workerUrl: string): string {
+  return `\
+import '${workerUrl}';`;
 }

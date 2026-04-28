@@ -14,8 +14,11 @@ export type WorkerOptions = {
   reuseWorkers?: boolean;
   _workerType?: string;
   workerUrl?: string;
+  workerType?: WorkerType;
   [key: string]: any; // TODO
 };
+
+export type WorkerType = 'classic' | 'module';
 
 export type WorkerContext = {
   process?: Process;
@@ -39,6 +42,18 @@ export type WorkerObject = {
   module: string;
   version: string;
   worker?: string | boolean;
+  /** Classic worker artifact to load in browsers */
+  workerFile?: string;
+  /** ES module worker artifact to load in browsers when `workerType` is `module` */
+  workerModuleFile?: string;
+  /** Worker artifact to load in Node.js */
+  workerNodeFile?: string;
+  /** Package/module directory that owns the worker artifact */
+  workerPackage?: string;
+  /** Worker script type */
+  workerType?: WorkerType;
+  /** Unique loader id used by combined worker dispatch */
+  workerLoaderId?: string;
   options: {[key: string]: any};
   deprecatedOptions?: object;
 
@@ -74,6 +89,7 @@ export type WorkerMessageType =
 
 export type WorkerMessagePayload = {
   id?: number;
+  loaderId?: string;
   options?: {[key: string]: any};
   context?: {[key: string]: any};
   input?: any; // Transferable;

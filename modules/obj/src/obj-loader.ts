@@ -35,6 +35,9 @@ export const OBJWorkerLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  workerFile: 'obj-classic.js',
+  workerModuleFile: 'obj-module.js',
+  workerNodeFile: 'obj-classic-node.cjs',
   text: true,
   testText: testOBJFile,
   options: {

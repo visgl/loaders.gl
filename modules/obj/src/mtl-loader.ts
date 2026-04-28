@@ -34,6 +34,9 @@ export const MTLWorkerLoader = {
 
   version: VERSION,
   worker: true,
+  workerFile: 'obj-classic.js',
+  workerModuleFile: 'obj-module.js',
+  workerNodeFile: 'obj-classic-node.cjs',
   text: true,
   testText: (text: string): boolean => text.includes('newmtl'),
   options: {

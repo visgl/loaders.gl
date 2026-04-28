@@ -46,6 +46,9 @@ export const MVTWorkerLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  workerFile: 'mvt-classic.js',
+  workerModuleFile: 'mvt-module.js',
+  workerNodeFile: 'mvt-classic-node.cjs',
   options: {
     mvt: {
       shape: 'geojson',

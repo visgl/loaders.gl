@@ -38,7 +38,11 @@ const onMessageWrapperMap = new Map();
 export default class WorkerBody {
   /** Check that we are actually in a worker thread */
   static async inWorkerThread(): Promise<boolean> {
-    return typeof self !== 'undefined' || Boolean(await getParentPort());
+    const isBrowserWorker =
+      typeof self !== 'undefined' &&
+      typeof window === 'undefined' &&
+      typeof document === 'undefined';
+    return isBrowserWorker || Boolean(await getParentPort());
   }
 
   /*

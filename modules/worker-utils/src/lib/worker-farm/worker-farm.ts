@@ -87,14 +87,20 @@ export default class WorkerFarm {
    * @example
    *   const job = WorkerFarm.getWorkerFarm().getWorkerPool({name, url}).startJob(...);
    */
-  getWorkerPool(options: {name: string; source?: string; url?: string}): WorkerPool {
-    const {name, source, url} = options;
+  getWorkerPool(options: {
+    name: string;
+    source?: string;
+    url?: string;
+    type?: 'classic' | 'module';
+  }): WorkerPool {
+    const {name, source, url, type} = options;
     let workerPool = this.workerPools.get(name);
     if (!workerPool) {
       workerPool = new WorkerPool({
         name,
         source,
-        url
+        url,
+        type
       });
       workerPool.setProps(this._getWorkerPoolProps());
       this.workerPools.set(name, workerPool);

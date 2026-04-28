@@ -35,7 +35,12 @@ export {processOnWorker, canProcessOnWorker} from './lib/worker-api/process-on-w
 export {createWorker} from './lib/worker-api/create-worker';
 
 // WORKER UTILS - EXPORTS
-export {getWorkerURL} from './lib/worker-api/get-worker-url';
+export {
+  getWorkerName,
+  getWorkerPoolName,
+  getWorkerType,
+  getWorkerURL
+} from './lib/worker-api/get-worker-url';
 export {validateWorkerVersion} from './lib/worker-api/validate-worker-version';
 export {getTransferList, getTransferListForWriter} from './lib/worker-utils/get-transfer-list';
 

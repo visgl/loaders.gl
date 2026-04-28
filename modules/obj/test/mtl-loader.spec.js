@@ -2,13 +2,18 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {MTLLoader} from '@loaders.gl/obj';
-import {load} from '@loaders.gl/core';
+import {MTLLoader, MTLWorkerLoader} from '@loaders.gl/obj';
+import {load, setLoaderOptions} from '@loaders.gl/core';
 
 const MTL_URL = '@loaders.gl/obj/test/data/windmill.mtl';
 
+setLoaderOptions({
+  _workerType: 'test'
+});
+
 test('MTLLoader#loader objects', t => {
   validateLoader(t, MTLLoader, 'MTLLoader');
+  validateLoader(t, MTLWorkerLoader, 'MTLWorkerLoader');
   t.end();
 });
 
@@ -43,5 +48,20 @@ test('MTLLoader#parse(windmill.mtl', async t => {
   t.equal(materials[1].diffuseTextureUrl, 'windmill_001_base_COL.jpg');
   // t.equal(materials[1].map_Bump, 'windmill_001_base_NOR.jpg');
   // t.equal(materials[1].specularTextureUrl, 'windmill_001_base_SPEC.jpg');
+  t.end();
+});
+
+test('MTLWorkerLoader#parse(windmill.mtl)', async t => {
+  if (typeof Worker === 'undefined') {
+    t.comment('Worker is not usable in non-browser environments');
+    t.end();
+    return;
+  }
+
+  const materials = await load(MTL_URL, MTLWorkerLoader);
+
+  t.equal(materials.length, 2, '2 material');
+  t.equal(materials[0].name, 'Material', 'Material');
+  t.equal(materials[1].name, 'windmill', 'windmill');
   t.end();
 });

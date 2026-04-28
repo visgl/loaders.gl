@@ -23,6 +23,9 @@ const [{default: aliases}, {_addAliases}] = await Promise.all([
 _addAliases(aliases);
 
 if (typeof window !== 'undefined') {
+  const {setLoaderOptions} = await import('@loaders.gl/core');
+  setLoaderOptions({_workerType: 'test'});
+
   Object.defineProperty(globalThis, 'global', {
     configurable: true,
     enumerable: false,

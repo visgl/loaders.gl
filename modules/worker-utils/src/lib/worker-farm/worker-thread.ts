@@ -14,6 +14,7 @@ export type WorkerThreadProps = {
   name: string;
   source?: string;
   url?: string;
+  type?: 'classic' | 'module';
 };
 
 /**
@@ -23,6 +24,7 @@ export default class WorkerThread {
   readonly name: string;
   readonly source: string | undefined;
   readonly url: string | undefined;
+  readonly type: 'classic' | 'module';
   terminated: boolean = false;
   worker: Worker | NodeWorkerType;
   onMessage: (message: any) => void;
@@ -39,11 +41,12 @@ export default class WorkerThread {
   }
 
   constructor(props: WorkerThreadProps) {
-    const {name, source, url} = props;
+    const {name, source, url, type = 'classic'} = props;
     assert(source || url); // Either source or url must be defined
     this.name = name;
     this.source = source;
     this.url = url;
+    this.type = type;
     this.onMessage = NOOP;
     this.onError = error => console.log(error); // eslint-disable-line
 
@@ -103,8 +106,16 @@ export default class WorkerThread {
    * Creates a worker thread on the browser
    */
   _createBrowserWorker(): Worker {
-    this._loadableURL = getLoadableWorkerURL({source: this.source, url: this.url});
-    const worker = new Worker(this._loadableURL, {name: this.name});
+    this._loadableURL = getLoadableWorkerURL({
+      source: this.source,
+      url: this.url,
+      type: this.type
+    });
+    const workerOptions: WorkerOptions = {name: this.name};
+    if (this.type === 'module') {
+      workerOptions.type = 'module';
+    }
+    const worker = new Worker(this._loadableURL, workerOptions);
 
     worker.onmessage = event => {
       if (!event.data) {

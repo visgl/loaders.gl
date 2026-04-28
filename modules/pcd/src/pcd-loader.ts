@@ -34,6 +34,9 @@ export const PCDWorkerLoader = {
   batchType: null as never,
   version: VERSION,
   worker: true,
+  workerFile: 'pcd-classic.js',
+  workerModuleFile: 'pcd-module.js',
+  workerNodeFile: 'pcd-classic-node.cjs',
   options: {
     pcd: {}
   },

@@ -41,6 +41,14 @@
     },
     "./quantized-mesh-worker.js": {
       "import": "./dist/quantized-mesh-worker.js"
+    },
+    "./terrain-module.js": {
+      "import": "./dist/terrain-module.js"
+    },
+    "./terrain-classic.js": {
+      "browser": "./dist/terrain-classic.js",
+      "require": "./dist/terrain-classic-node.cjs",
+      "default": "./dist/terrain-classic.js"
     }
   },
   "sideEffects": false,
@@ -50,11 +58,14 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker && npm run build-worker2 && npm run build-bundle && npm run build-bundle-dev && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/terrain-worker.ts --bundle --outfile=dist/terrain-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker2": "esbuild src/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker2": "esbuild src/workers/quantized-mesh-worker.ts --bundle --outfile=dist/quantized-mesh-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/terrain-module.ts --bundle --format=esm --outfile=dist/terrain-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/terrain-module.ts --bundle --format=cjs --outfile=dist/terrain-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/terrain-module.ts --bundle --format=iife --outfile=dist/terrain-classic.js --target=esnext --global-name=loaders.terrain --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/images": "4.4.0",

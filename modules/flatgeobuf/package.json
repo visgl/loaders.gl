@@ -40,6 +40,14 @@
     },
     "./flatgeobuf-worker.js": {
       "import": "./dist/flatgeobuf-worker.js"
+    },
+    "./flatgeobuf-module.js": {
+      "import": "./dist/flatgeobuf-module.js"
+    },
+    "./flatgeobuf-classic.js": {
+      "browser": "./dist/flatgeobuf-classic.js",
+      "require": "./dist/flatgeobuf-classic-node.cjs",
+      "default": "./dist/flatgeobuf-classic.js"
     }
   },
   "sideEffects": false,
@@ -49,10 +57,13 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker && npm run build-worker --env.dev && npm run build-bundle && npm run build-bundle-dev && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker": "esbuild src/workers/flatgeobuf-worker.ts --bundle --outfile=dist/flatgeobuf-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/flatgeobuf-module.ts --bundle --format=esm --outfile=dist/flatgeobuf-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/flatgeobuf-module.ts --bundle --format=cjs --outfile=dist/flatgeobuf-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/flatgeobuf-module.ts --bundle --format=iife --outfile=dist/flatgeobuf-classic.js --target=esnext --global-name=loaders.flatgeobuf --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/gis": "4.4.0",

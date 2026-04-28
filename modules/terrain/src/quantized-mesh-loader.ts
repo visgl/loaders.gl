@@ -28,6 +28,9 @@ export const QuantizedMeshLoader = {
   module: 'terrain',
   version: VERSION,
   worker: true,
+  workerFile: 'terrain-classic.js',
+  workerModuleFile: 'terrain-module.js',
+  workerNodeFile: 'terrain-classic-node.cjs',
   extensions: ['terrain'],
   mimeTypes: ['application/vnd.quantized-mesh'],
   /** Loads the parser-bearing quantized mesh loader implementation. */

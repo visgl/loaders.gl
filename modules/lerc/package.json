@@ -36,6 +36,14 @@
     },
     "./lerc-worker.js": {
       "import": "./dist/lerc-worker.js"
+    },
+    "./lerc-module.js": {
+      "import": "./dist/lerc-module.js"
+    },
+    "./lerc-classic.js": {
+      "browser": "./dist/lerc-classic.js",
+      "require": "./dist/lerc-classic-node.cjs",
+      "default": "./dist/lerc-classic.js"
     }
   },
   "sideEffects": false,
@@ -49,7 +57,10 @@
     "pre-build-2": "echo npm run build-bundle && npm run build-bundle-dev && npm run build-worker",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js --external:url --external:fs --external:path",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js --external:url --external:fs --external:path",
-    "build-worker": "esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\" --external:url --external:fs --external:path"
+    "build-worker": "esbuild src/workers/lerc-worker.ts --bundle --outfile=dist/lerc-worker.js --define:__VERSION__=\\\"$npm_package_version\\\" --external:url --external:fs --external:path",
+    "build-combined-worker": "esbuild src/workers/lerc-module.ts --bundle --format=esm --outfile=dist/lerc-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\" --external:url --external:fs --external:path",
+    "build-combined-worker-node": "esbuild src/workers/lerc-module.ts --bundle --format=cjs --outfile=dist/lerc-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\" --external:url --external:fs --external:path",
+    "build-combined-worker-classic": "esbuild src/workers/lerc-module.ts --bundle --format=iife --outfile=dist/lerc-classic.js --target=esnext --global-name=loaders.lerc --define:__VERSION__=\\\"$npm_package_version\\\" --external:url --external:fs --external:path"
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",

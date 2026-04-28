@@ -47,6 +47,14 @@
     },
     "./arrow-worker.js": {
       "import": "./dist/arrow-worker.js"
+    },
+    "./arrow-module.js": {
+      "import": "./dist/arrow-module.js"
+    },
+    "./arrow-classic.js": {
+      "browser": "./dist/arrow-classic.js",
+      "require": "./dist/arrow-classic-node.cjs",
+      "default": "./dist/arrow-classic.js"
     }
   },
   "sideEffects": false,
@@ -59,13 +67,16 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-triangulation-worker",
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-triangulation-worker && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-triangulation-worker": "esbuild src/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "pre-build2": "cp fixed-package.json ../../node_modules/apache-arrow/package.json && npm run build-bundle && npm run build-worker",
     "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
+    "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}",
+    "build-combined-worker": "esbuild src/workers/arrow-module.ts --bundle --format=esm --outfile=dist/arrow-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\" --external:{stream}",
+    "build-combined-worker-node": "esbuild src/workers/arrow-module.ts --bundle --format=cjs --outfile=dist/arrow-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\" --external:{stream}",
+    "build-combined-worker-classic": "esbuild src/workers/arrow-module.ts --bundle --format=iife --outfile=dist/arrow-classic.js --target=esnext --global-name=loaders.arrow --define:__VERSION__=\\\"$npm_package_version\\\" --external:{stream}"
   },
   "dependencies": {
     "@loaders.gl/gis": "4.4.0",

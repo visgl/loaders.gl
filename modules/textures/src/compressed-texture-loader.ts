@@ -33,6 +33,9 @@ export const CompressedTextureWorkerLoader = {
   module: 'textures',
   version: VERSION,
   worker: true,
+  workerFile: 'textures-classic.js',
+  workerModuleFile: 'textures-module.js',
+  workerNodeFile: 'textures-classic-node.cjs',
   extensions: [
     'ktx',
     'ktx2',

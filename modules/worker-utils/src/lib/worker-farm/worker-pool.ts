@@ -22,6 +22,7 @@ export type WorkerPoolProps = {
   name?: string;
   source?: string; // | Function;
   url?: string;
+  type?: 'classic' | 'module';
   maxConcurrency?: number;
   maxMobileConcurrency?: number;
   onDebug?: (options: OnDebugParameters) => any;
@@ -46,6 +47,7 @@ export default class WorkerPool {
   name: string = 'unnamed';
   source?: string; // | Function;
   url?: string;
+  type: 'classic' | 'module' = 'classic';
   maxConcurrency: number = 1;
   maxMobileConcurrency: number = 1;
   onDebug: (options: OnDebugParameters) => any = () => {};
@@ -69,6 +71,7 @@ export default class WorkerPool {
   constructor(props: WorkerPoolProps) {
     this.source = props.source;
     this.url = props.url;
+    this.type = props.type || 'classic';
     this.setProps(props);
   }
 
@@ -96,6 +99,9 @@ export default class WorkerPool {
     }
     if (props.reuseWorkers !== undefined) {
       this.reuseWorkers = props.reuseWorkers;
+    }
+    if (props.type !== undefined) {
+      this.type = props.type;
     }
     if (props.onDebug !== undefined) {
       this.onDebug = props.onDebug;
@@ -212,7 +218,7 @@ export default class WorkerPool {
     if (this.count < this._getMaxConcurrency()) {
       this.count++;
       const name = `${this.name.toLowerCase()} (#${this.count} of ${this.maxConcurrency})`;
-      return new WorkerThread({name, source: this.source, url: this.url});
+      return new WorkerThread({name, source: this.source, url: this.url, type: this.type});
     }
 
     // No worker available, have to wait

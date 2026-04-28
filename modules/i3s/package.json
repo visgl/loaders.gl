@@ -40,6 +40,14 @@
     },
     "./i3s-content-worker-node.js": {
       "import": "./dist/i3s-content-worker-node.js"
+    },
+    "./i3s-module.js": {
+      "import": "./dist/i3s-module.js"
+    },
+    "./i3s-classic.js": {
+      "browser": "./dist/i3s-classic.js",
+      "require": "./dist/i3s-classic-node.cjs",
+      "default": "./dist/i3s-classic.js"
     }
   },
   "sideEffects": false,
@@ -49,11 +57,14 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/i3s-content-worker.ts --outfile=dist/i3s-content-worker.js --target=esnext --bundle --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/i3s-content-worker-node.ts --outfile=dist/i3s-content-worker-node.js --platform=node --target=node16 --minify --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/i3s-module.ts --bundle --format=esm --outfile=dist/i3s-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/i3s-classic-node.ts --bundle --format=cjs --outfile=dist/i3s-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/i3s-module.ts --bundle --format=iife --outfile=dist/i3s-classic.js --target=esnext --global-name=loaders.i3s --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/compression": "4.4.0",

@@ -45,6 +45,9 @@ export const FlatGeobufWorkerLoader = {
   batchType: null as any,
   version: VERSION,
   worker: true,
+  workerFile: 'flatgeobuf-classic.js',
+  workerModuleFile: 'flatgeobuf-module.js',
+  workerNodeFile: 'flatgeobuf-classic-node.cjs',
   tests: [new Uint8Array(FGB_MAGIC_NUMBER).buffer],
   options: {
     flatgeobuf: {

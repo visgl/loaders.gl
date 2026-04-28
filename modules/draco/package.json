@@ -54,6 +54,14 @@
     },
     "./draco-writer-worker-node.js": {
       "import": "./dist/draco-writer-worker-node.js"
+    },
+    "./draco-module.js": {
+      "import": "./dist/draco-module.js"
+    },
+    "./draco-classic.js": {
+      "browser": "./dist/draco-classic.js",
+      "require": "./dist/draco-classic-node.cjs",
+      "default": "./dist/draco-classic.js"
     }
   },
   "sideEffects": false,
@@ -70,11 +78,14 @@
     "copy-libs": "cp -rf ./src/libs ./dist/libs",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-workers": "yarn build-loader-worker && yarn build-loader-worker-node && yarn build-writer-worker && yarn build-writer-worker-node",
+    "build-workers": "npm run build-loader-worker && npm run build-loader-worker-node && npm run build-writer-worker && npm run build-writer-worker-node && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-loader-worker": "esbuild src/workers/draco-worker.ts --outfile=dist/draco-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-loader-worker-node": "esbuild src/workers/draco-worker-node.ts --outfile=dist/draco-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-writer-worker": "esbuild src/workers/draco-writer-worker.ts --outfile=dist/draco-writer-worker.js --target=esnext --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-writer-worker-node": "esbuild src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-writer-worker-node": "esbuild src/workers/draco-writer-worker-node.ts --outfile=dist/draco-writer-worker-node.js --target=node16 --platform=node --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/draco-module.ts --bundle --format=esm --outfile=dist/draco-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/draco-classic-node.ts --bundle --format=cjs --outfile=dist/draco-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/draco-module.ts --bundle --format=iife --outfile=dist/draco-classic.js --target=esnext --global-name=loaders.draco --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",

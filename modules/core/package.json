@@ -38,6 +38,14 @@
     },
     "./null-worker-node.js": {
       "import": "./dist/null-worker-node.js"
+    },
+    "./core-module.js": {
+      "import": "./dist/core-module.js"
+    },
+    "./core-classic.js": {
+      "browser": "./dist/core-classic.js",
+      "require": "./dist/core-classic-node.cjs",
+      "default": "./dist/core-classic.js"
     }
   },
   "sideEffects": false,
@@ -51,11 +59,14 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node",
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev && npm run build-worker && npm run build-worker-node && npm run build-combined-worker && npm run build-combined-worker-classic && npm run build-combined-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-worker": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker.js --bundle --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
-    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\""
+    "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --bundle --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker": "esbuild src/workers/core-module.ts --bundle --format=esm --outfile=dist/core-module.js --target=esnext --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-node": "esbuild src/workers/core-module.ts --bundle --format=cjs --outfile=dist/core-classic-node.cjs --platform=node --target=node16 --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-combined-worker-classic": "esbuild src/workers/core-module.ts --bundle --format=iife --outfile=dist/core-classic.js --target=esnext --global-name=loaders.core --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
     "@loaders.gl/loader-utils": "4.4.0",

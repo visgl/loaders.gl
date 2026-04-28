@@ -30,6 +30,9 @@ export const TerrainLoader = {
   module: 'terrain',
   version: VERSION,
   worker: true,
+  workerFile: 'terrain-classic.js',
+  workerModuleFile: 'terrain-module.js',
+  workerNodeFile: 'terrain-classic-node.cjs',
   extensions: ['png', 'pngraw', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'],
   mimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'],
   /** Loads the parser-bearing terrain loader implementation. */

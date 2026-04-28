@@ -38,6 +38,9 @@ export const LASWorkerLoader = {
 
   version: VERSION,
   worker: true,
+  workerFile: 'las-classic.js',
+  workerModuleFile: 'las-module.js',
+  workerNodeFile: 'las-classic-node.cjs',
   options: {
     las: {
       shape: 'mesh',
