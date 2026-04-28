@@ -1,4 +1,8 @@
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+
 # WFS - Web Feature Service
+
+<WmsDocsTabs active="wfs" />
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

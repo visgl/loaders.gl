@@ -1,20 +1,16 @@
+import {PcdDocsTabs} from '@site/src/components/docs/pcd-docs-tabs';
+
 # PCDWriter
+
+<PcdDocsTabs active="pcdwriter" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   &nbsp;
-  <img src="https://img.shields.io/badge/-EXPERIMENTAL-orange.svg?style=flat-square" alt="EXPERIMENTAL" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 The `PCDWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) point cloud data as ASCII Point Cloud Data (PCD) text.
-
-| Writer         | Characteristic                                                                                 |
-| -------------- | ---------------------------------------------------------------------------------------------- |
-| File Format    | [PCD](/docs/modules/pcd/formats/pcd)                                                           |
-| Data Format    | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
-| File Extension | `.pcd`                                                                                         |
-| File Type      | Text                                                                                           |
-| Supported APIs | `encode`, `encodeSync`, `encodeTextSync`                                                       |
 
 ## Usage
 

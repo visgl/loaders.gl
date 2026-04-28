@@ -1,23 +1,16 @@
+import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
+
 # SHPLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
 </p>
 
+<ShapefileDocsTabs active="shp" />
+
 A "sub loader" for the `.shp` (geometries) file component of a shapefile.
 
 Note: Most applications will want to use the `ShapefileLoader` instead of this loader.
-
-| Loader                | Characteristic                                         |
-| --------------------- | ------------------------------------------------------ |
-| File Format           | [Shapefile](/docs/modules/shapefile/formats/shapefile) |
-| Data Format           | [Geometry](/docs/specifications/category-gis)          |
-| File Extension        | `.shp`                                                 |
-| File Type             | Binary                                                 |
-| File Format           | Shapefiles                                             |
-| Supported APIs        | `load`, `parse`, `parseSync`                           |
-| Decoder Type          | Synchronous                                            |
-| Worker Thread Support | Yes                                                    |
 
 ## Usage
 

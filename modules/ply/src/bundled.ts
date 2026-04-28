@@ -7,4 +7,3 @@ export {
   PLYWorkerLoaderWithParser as PLYWorkerLoader,
   PLYLoaderWithParser as PLYLoader
 } from './ply-loader-with-parser';
-export {PLYArrowLoaderWithParser as PLYArrowLoader} from './ply-arrow-loader-with-parser';

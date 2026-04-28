@@ -4,6 +4,8 @@
 
 // LASER (LAS) FILE FORMAT
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/schema';
+import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import type {LASLoaderOptions} from './las-loader';
 import type {LASMesh} from './lib/las-types';
 import {parseLAS} from './lib/laz-perf/parse-las';
@@ -19,7 +21,11 @@ const {preload: _LAZPerfLoaderPreload, ...LAZPerfLoaderMetadataWithoutPreload} =
 export const LAZPerfLoaderWithParser = {
   ...LAZPerfLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    parseLAS(arrayBuffer, options),
+    convertLASMesh(parseLAS(arrayBuffer, options), options),
   parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    parseLAS(arrayBuffer, options)
-} as const satisfies LoaderWithParser<LASMesh, never, LASLoaderOptions>;
+    convertLASMesh(parseLAS(arrayBuffer, options), options)
+} as const satisfies LoaderWithParser<LASMesh | MeshArrowTable, never, LASLoaderOptions>;
+
+function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
+  return options?.las?.shape === 'arrow-table' ? convertMeshToTable(mesh, 'arrow-table') : mesh;
+}

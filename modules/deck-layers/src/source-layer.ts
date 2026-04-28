@@ -43,6 +43,7 @@ export type SourceLayerProps<DataT = unknown> = CompositeLayerProps &
  */
 type ResolvedSourceData =
   | string
+  | Blob
   | TileSourceRuntime
   | DataSource<any, any>
   | Tileset3DSource
@@ -112,6 +113,7 @@ export class SourceLayer<
    */
   private _resolveData(props: SourceLayerProps<DataT>): ResolvedSourceData {
     const {data, sources, sourceOptions = {}} = props;
+    const loaders = props.loader || props.loaders;
 
     if (isTileSourceRuntime(data) || isTileset3DSource(data)) {
       return data;
@@ -125,7 +127,11 @@ export class SourceLayer<
       return data;
     }
 
-    throw new Error('SourceLayer requires `sources` to resolve Blob inputs');
+    if (data instanceof Blob && loaders) {
+      return data;
+    }
+
+    throw new Error('SourceLayer requires `sources` or 3D loaders to resolve Blob inputs');
   }
 }
 

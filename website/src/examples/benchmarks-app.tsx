@@ -7,7 +7,7 @@ import React, {useEffect, useState} from 'react';
 import {Bench, type BenchProps, type LogEntry, type LogFunction} from '@probe.gl/bench';
 import {BenchResults} from '@probe.gl/react-bench';
 import {fetchFile} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/csv/bundled';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {autoType, csvParse, tsvParse} from 'd3-dsv';
 import PapaParseNPM from 'papaparse';
@@ -470,6 +470,11 @@ function addLoaderParseBenchmark(
   scenario: BenchmarkScenario,
   loaderBenchmark: LoaderBenchmark
 ): void {
+  const parseText = loaderBenchmark.loader.parseText;
+  if (!parseText) {
+    throw new Error(`${loaderBenchmark.name} benchmark requires a parser-bearing loader`);
+  }
+
   bench.addAsync(
     createBenchmarkId(loaderBenchmark.name, {
       dynamicTyping: loaderBenchmark.options.csv.dynamicTyping,
@@ -477,7 +482,7 @@ function addLoaderParseBenchmark(
       scenario: scenario.name
     }),
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount},
-    async () => await loaderBenchmark.loader.parseText?.(scenario.text, loaderBenchmark.options)
+    async () => await parseText(scenario.text, loaderBenchmark.options)
   );
 }
 

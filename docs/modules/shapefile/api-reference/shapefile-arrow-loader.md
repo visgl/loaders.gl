@@ -1,21 +1,14 @@
+import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
+
 # ShapefileArrowLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 
-`ShapefileArrowLoader` loads an Esri Shapefile into an Arrow table with DBF property columns and a WKB `geometry` column.
+<ShapefileDocsTabs active="loader" />
 
-| Loader                | Characteristic                                         |
-| --------------------- | ------------------------------------------------------ |
-| File Format           | [Shapefile](/docs/modules/shapefile/formats/shapefile) |
-| Data Format           | [Table](/docs/specifications/category-table)           |
-| Data Format           | [Geometry](/docs/specifications/category-gis)          |
-| File Extension        | `.shp`                                                 |
-| File Type             | Binary, Multi-File                                     |
-| Supported APIs        | `load`, `parse`, `parseInBatches`                      |
-| Decoder Type          | Synchronous                                            |
-| Worker Thread Support | No                                                     |
+`ShapefileArrowLoader` loads an Esri Shapefile into an Arrow table with DBF property columns and a WKB `geometry` column.
 
 ## Usage
 

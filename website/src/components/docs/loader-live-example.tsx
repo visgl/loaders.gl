@@ -8,6 +8,7 @@ const GeospatialExample = React.lazy(() => import('examples/website/geospatial/a
 const PointcloudExample = React.lazy(() => import('examples/website/pointcloud/app'));
 const TilesExample = React.lazy(() => import('examples/website/tiles/app'));
 const Tiles3DExample = React.lazy(() => import('examples/website/3d-tiles/app'));
+const PointcloudDataPreview = React.lazy(() => import('./pointcloud-data-preview'));
 const TableExample = React.lazy(() => import('./table-live-example'));
 
 const LOADERS_URL = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
@@ -33,23 +34,7 @@ type LoaderLiveExampleConfig =
 const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
   'modules/3d-tiles/api-reference/tiles-3d-loader': {kind: '3d-tiles'},
   'modules/3d-tiles/api-reference/cesium-ion-loader': {kind: '3d-tiles'},
-  'modules/arrow/api-reference/arrow-loader': {
-    kind: 'table',
-    table: {
-      loaderName: 'ArrowLoader',
-      url: `${LOADERS_URL}/modules/arrow/test/data/arrow/simple.arrow`,
-      options: {arrow: {shape: 'arrow-table'}}
-    }
-  },
   'modules/arrow/api-reference/geoarrow-loader': {kind: 'geospatial', format: 'GeoArrow'},
-  'modules/csv/api-reference/csv-loader': {
-    kind: 'table',
-    table: {
-      loaderName: 'CSVLoader',
-      url: `${LOADERS_URL}/modules/csv/test/data/sf_incidents-small.csv`
-    }
-  },
-  'modules/draco/api-reference/draco-loader': {kind: 'pointcloud', format: 'Draco'},
   'modules/excel/api-reference/excel-arrow-loader': {
     kind: 'table',
     table: {
@@ -65,19 +50,6 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
       options: {core: {worker: false}}
     }
   },
-  'modules/flatgeobuf/api-reference/flatgeobuf-loader': {
-    kind: 'geospatial',
-    format: 'FlatGeobuf'
-  },
-  'modules/geopackage/api-reference/geopackage-loader': {kind: 'geospatial', format: 'GeoPackage'},
-  'modules/json/api-reference/json-loader': {
-    kind: 'table',
-    table: {
-      loaderName: 'JSONLoader',
-      url: `${LOADERS_URL}/modules/json/test/data/clarinet/sample.json`,
-      options: {json: {table: true, shape: 'object-row-table'}}
-    }
-  },
   'modules/json/api-reference/geojson-loader': {kind: 'geospatial', format: 'GeoJSON'},
   'modules/json/api-reference/ndjson-loader': {
     kind: 'table',
@@ -86,17 +58,9 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
       url: `${LOADERS_URL}/modules/json/test/data/ndjson.ndjson`
     }
   },
-  'modules/kml/api-reference/gpx-loader': {kind: 'geospatial', format: 'GPX'},
-  'modules/kml/api-reference/kml-loader': {kind: 'geospatial', format: 'KML'},
-  'modules/kml/api-reference/tcx-loader': {kind: 'geospatial', format: 'TCX'},
-  'modules/las/api-reference/las-loader': {kind: 'pointcloud', format: 'LAZ'},
   'modules/mlt/api-reference/mlt-loader': {kind: 'tiles', format: 'MLT'},
   'modules/mvt/api-reference/mvt-loader': {kind: 'tiles', format: 'MVT'},
-  'modules/obj/api-reference/obj-loader': {kind: 'pointcloud', format: 'OBJ'},
-  'modules/parquet/api-reference/parquet-loader': {kind: 'geospatial', format: 'GeoParquet'},
-  'modules/pcd/api-reference/pcd-loader': {kind: 'pointcloud', format: 'PCD'},
-  'modules/ply/api-reference/ply-loader': {kind: 'pointcloud', format: 'PLY'},
-  'modules/shapefile/api-reference/shapefile-loader': {kind: 'geospatial', format: 'Shapefile'}
+  'modules/obj/api-reference/obj-loader': {kind: 'pointcloud', format: 'OBJ'}
 };
 
 const ExampleContainer = styled.div<{$kind: LoaderLiveExampleKind}>`
@@ -127,6 +91,52 @@ export function LoaderLiveExample() {
         {() => (
           <Suspense fallback={<LoadingContainer $kind={exampleConfig.kind} />}>
             <LoaderLiveExampleContent exampleConfig={exampleConfig} />
+          </Suspense>
+        )}
+      </BrowserOnly>
+    </ExampleContainer>
+  );
+}
+
+/**
+ * Renders a point cloud loader example without relying on automatic doc-page injection.
+ */
+export function PointcloudLoaderLiveExample({
+  format
+}: {
+  /** Example app format filter to select a specific point cloud loader format. */
+  format: string;
+}) {
+  return (
+    <BrowserOnly fallback={<LoadingContainer $kind="pointcloud" />}>
+      {() => (
+        <Suspense fallback={<LoadingContainer $kind="pointcloud" />}>
+          <PointcloudDataPreview format={format}>
+            <div data-loader-live-example style={{position: 'relative', height: '100%'}}>
+              <PointcloudExample format={format} hideChrome={true} />
+            </div>
+          </PointcloudDataPreview>
+        </Suspense>
+      )}
+    </BrowserOnly>
+  );
+}
+
+/**
+ * Renders a geospatial loader example without relying on automatic doc-page injection.
+ */
+export function GeospatialLoaderLiveExample({
+  format
+}: {
+  /** Example app format filter to select a specific geospatial loader format. */
+  format: string;
+}) {
+  return (
+    <ExampleContainer data-loader-live-example $kind="geospatial">
+      <BrowserOnly fallback={<LoadingContainer $kind="geospatial" />}>
+        {() => (
+          <Suspense fallback={<LoadingContainer $kind="geospatial" />}>
+            <GeospatialExample format={format} hideChrome={true} />
           </Suspense>
         )}
       </BrowserOnly>

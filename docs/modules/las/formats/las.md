@@ -1,4 +1,8 @@
+import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
+
 # LAS / LAZ
+
+<LasDocsTabs active="overview" />
 
 - _[`@loaders.gl/las`](/docs/modules/las)_
 - _[Wikipedia](https://en.wikipedia.org/wiki/LAS_file_format)_ - _[LAS Spec](https://www.loc.gov/preservation/digital/formats/fdd/fdd000418.shtml)_ - _[LASER file format](https://www.asprs.org/divisions-committees/lidar-division/laser-las-file-format-exchange-activities)_ - _[LASzip project](https://github.com/LASzip/LASzip)_ - _[LAZ spec](https://www.cs.unc.edu/~isenburg/lastools/download/laszip.pdf)_

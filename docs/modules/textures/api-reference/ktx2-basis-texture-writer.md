@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # KTX2BasisWriter 🚧
+
+<TexturesDocsTabs active="ktx2basiswriter" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />

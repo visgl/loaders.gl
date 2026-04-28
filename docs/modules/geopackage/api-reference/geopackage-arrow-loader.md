@@ -1,4 +1,12 @@
+import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+
 # GeoPackageArrowLoader
+
+<GeoPackageDocsTabs active="loader" />
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+</p>
 
 `GeoPackageArrowLoader(tableName?)` loads one GeoPackage vector table into a loaders.gl `ArrowTable`.
 

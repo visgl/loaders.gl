@@ -1,23 +1,16 @@
+import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+
 # XMLLoader
+
+<XmlDocsTabs active="xmlloader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-v3.3" />
   &nbsp;
-	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 The `XMLLoader` parses XML-encoded data.
-
-| Loader                | Characteristic                                           |
-| --------------------- | -------------------------------------------------------- |
-| File Extension        | `.xml`                                                   |
-| MIME Type             | `application/xml`, `text/xml`                            |
-| File Type             | Text                                                     |
-| File Format           | [eXtensible Markup Language](https://www.w3.org/TR/xml/) |
-| Data Format           | Free format data structure                               |
-| Decoder Type          | Synchronous                                              |
-| Worker Thread Support | No                                                       |
-| Streaming Support     | No                                                       |
 
 The goal of the `XMLLoader` is to make it easy for JavaScript applications to access XML formatted data.
 It is not intended to be a tool for advanced manipulation of XML data, and options provided are focused

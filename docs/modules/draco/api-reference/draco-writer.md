@@ -1,16 +1,16 @@
+import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+
 # DracoWriter
+
+<DracoDocsTabs active="dracowriter" />
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
 
 ![logo](../images/draco-small.png)
 
 The `DracoWriter` encodes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) data using [Draco](/docs/modules/draco/formats/draco) compression.
-
-| Loader         | Characteristic                             |
-| -------------- | ------------------------------------------ |
-| File Format    | [Draco](/docs/modules/draco/formats/draco) |
-| Data Format    | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
-| File Extension | `.drc`                                     |
-| File Type      | Binary                                     |
-| Support API    | `encode`                                   |
 
 ## Support
 

@@ -15,7 +15,7 @@ export type {
 
 // SCHEMAS AND DATA TYPES
 
-export type {Schema, Field, DataType, SchemaMetadata, FieldMetadata} from './types/schema';
+export type {Schema, Field, DataType, KeyType, SchemaMetadata, FieldMetadata} from './types/schema';
 export type {Batch} from './types/batch';
 
 // TABLE CATEGORY TYPES

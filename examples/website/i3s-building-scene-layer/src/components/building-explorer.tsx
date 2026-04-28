@@ -2,9 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import {Font, Color} from './styles';
 import {Checkbox, CheckboxOption, CheckboxSpan} from './checkbox';
-import {faAngleDown, faAngleRight, faCircle} from '@fortawesome/free-solid-svg-icons';
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import {IconProp, SizeProp} from '@fortawesome/fontawesome-svg-core';
 import {Sublayer} from '../helpers/sublayers';
 import {DropDown} from './drop-down';
 
@@ -27,8 +24,11 @@ const BuildingExplorerSublayers = styled.div`
 `;
 
 const CollapseContainer = styled.div`
+  width: 16px;
   margin-right: 5px;
   cursor: pointer;
+  text-align: center;
+  user-select: none;
 `;
 
 const CheckboxContainer = styled.div`
@@ -94,25 +94,14 @@ export function BuildingExplorer({
   function renderSublayers(sublayers: Sublayer[]) {
     return sublayers.map((sublayer) => {
       const childLayers = sublayer.sublayers || [];
-      let icon = faCircle;
-      let size = 'xs';
-      if (sublayer.sublayers) {
-        size = 'lg';
-        if (sublayer.expanded) {
-          icon = faAngleDown;
-        } else {
-          icon = faAngleRight;
-        }
-      }
+      const hasChildLayers = childLayers.length > 0;
+      const collapseMarker = hasChildLayers ? (sublayer.expanded ? 'v' : '>') : 'o';
+
       return (
         <CheckboxContainer key={sublayer.id}>
           <CheckboxOption>
-            <CollapseContainer>
-              <FontAwesomeIcon
-                icon={icon as IconProp}
-                onClick={() => toggleGroup(sublayer)}
-                size={size as SizeProp}
-              />
+            <CollapseContainer onClick={() => (hasChildLayers ? toggleGroup(sublayer) : undefined)}>
+              {collapseMarker}
             </CollapseContainer>
             <label>
               <Checkbox

@@ -1,4 +1,8 @@
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+
 # WMTS - Web Map Tiling Service
+
+<WmsDocsTabs active="wmts" />
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

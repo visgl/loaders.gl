@@ -1,4 +1,8 @@
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+
 # GeoParquet
+
+<ParquetDocsTabs active="geoparquet" />
 
 ![parquet-logo](../images/parquet-logo-small.png)
 &emsp;

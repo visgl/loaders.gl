@@ -1,4 +1,12 @@
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+
 # TableTileSourceLoader
+
+<TileDocsTabs active="table-tile-source-loader" />
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+</p>
 
 The `TableTileSourceLoader` slices large GeoJSON datasets into small vector tiles on the fly.
 Can enable rendering and interacting with large geospatial datasets

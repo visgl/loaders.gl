@@ -8,7 +8,6 @@ export {
   OBJWorkerLoaderWithParser as OBJWorkerLoader,
   OBJLoaderWithParser as OBJLoader
 } from './obj-loader-with-parser';
-export {OBJArrowLoaderWithParser as OBJArrowLoader} from './obj-arrow-loader-with-parser';
 export {MTLFormat} from './mtl-format';
 export type {MTLLoaderOptions} from './mtl-loader-with-parser';
 export {
