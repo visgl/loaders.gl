@@ -206,10 +206,34 @@ const config = {
             '/examples/pmtiles': '/examples/tiles/pmtiles',
             '/examples/wms': '/examples/tiles/wms',
           };
+          const legacyTryItRedirects = {
+            '/examples/table/arrow': '/docs/modules/arrow/try-it',
+            '/examples/table/bson': '/docs/modules/bson/try-it',
+            '/examples/geospatial/csv': '/docs/modules/csv/try-it',
+            '/examples/pointclouds/draco': '/docs/modules/draco/try-it',
+            '/examples/geospatial/flatgeobuf': '/docs/modules/flatgeobuf/try-it',
+            '/examples/geospatial/geopackage': '/docs/modules/geopackage/try-it',
+            '/examples/table/json': '/docs/modules/json/try-it',
+            '/examples/geospatial/kml': '/docs/modules/kml/try-it',
+            '/examples/pointclouds/las': '/docs/modules/las/try-it',
+            '/examples/pointclouds/obj': '/docs/modules/obj/try-it',
+            '/examples/geospatial/geoparquet': '/docs/modules/parquet/try-it',
+            '/examples/pointclouds/pcd': '/docs/modules/pcd/try-it',
+            '/examples/pointclouds/ply': '/docs/modules/ply/try-it',
+            '/examples/geospatial/shapefile': '/docs/modules/shapefile/try-it',
+            '/examples/table/xml': '/docs/modules/xml/try-it'
+          };
+          const redirectSources = [];
+          if (legacyTryItRedirects[existingPath]) {
+            redirectSources.push(legacyTryItRedirects[existingPath]);
+          }
           for (const [oldLink, newLink] of Object.entries(pageRedirects)) {
-            if (existingPath.includes(oldLink)) {
-              return existingPath.replace(oldLink, newLink);
+            if (existingPath.includes(newLink)) {
+              redirectSources.push(existingPath.replace(newLink, oldLink));
             }
+          }
+          if (redirectSources.length) {
+            return redirectSources;
           }
           if (pageRedirects[existingPath]) {
             return [pageRedirects[existingPath]];

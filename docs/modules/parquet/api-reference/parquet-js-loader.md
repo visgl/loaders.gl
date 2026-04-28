@@ -1,9 +1,13 @@
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+
 # ParquetJSLoader
+
+<ParquetDocsTabs active="parquetjsloader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   &nbsp;
-	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 Experimental plain-row Parquet loader backed by the parquetjs implementation.

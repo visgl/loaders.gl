@@ -1,20 +1,26 @@
+import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+
 # Apache Arrow
 
-![arrow-logo](../images/apache-arrow-small.png)
-&emsp;
-![apache-logo](../../../images/logos/apache-logo.png)
+<ArrowDocsTabs active="overview" />
+
+Apache Arrow is a language-independent binary columnar memory format for table-like data. It enables efficient sharing between systems and languages with minimal copying.
 
 - _[`@loaders.gl/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
-- _[Apache Arrow](https://arrow.apache.org/)_ - A specification for large in-memory columnar data.
-- _[ArrowJS](https://arrow.apache.org/docs/js)_ - official documentation on ArrowJS API.
-- _[ArrowJS](/docs/arrowjs)_ - loaders.gl documentation on ArrowJS API.
+- _[Apache Arrow](https://arrow.apache.org/)_ - Apache Arrow project
+- _[Arrow JS](https://arrow.apache.org/docs/js)_ - official Apache Arrow JS documentation
+- _[Arrow JS](/docs/arrowjs)_ - loaders.gl Arrow JS API reference
 
-The Apache Arrow project specifies a language-independent binary columnar memory format. It enables zero-copy shared memory and streaming messaging, interprocess communication, and is supported by many programming languages and data libraries.
+## About Apache Arrow
 
-This Apache Arrow specification supports encoding vectors and table-like containers of flat and nested data.
+The Apache Arrow project specifies a binary columnar memory format for flat and nested data. It supports zero-copy shared memory, streaming messages, interprocess communication, and efficient integration with data libraries.
 
-The Arrow spec is performance-optimized to eliminate memory copies and aligns columnar data in memory to minimize cache misses and take advantage of the latest SIMD (Single input multiple data) and GPU operations on modern processors.
+Arrow stores values by column rather than by row. This layout improves cache locality and enables vectorized operations, SIMD processing, and efficient transfer to runtimes that understand Arrow memory.
 
-Apache Arrow is emerging as a de-facto standard for large in-memory columnar data (Spark, Pandas, Drill, ...).
+## Arrow JS
 
-By standardizing on a common binary interchange format, big data systems can reduce the costs and friction associated with cross-system communication.
+`@loaders.gl/arrow` uses Apache Arrow JS for IPC parsing, writing, and table access. The loaders.gl wrapper adds loader metadata, worker integration, table shape conversion, and utilities for common Arrow table workflows.
+
+## Related Formats
+
+[GeoArrow](/docs/modules/arrow/formats/geoarrow) is not a separate file format. It defines geospatial conventions for Arrow extension metadata and geometry column layout.

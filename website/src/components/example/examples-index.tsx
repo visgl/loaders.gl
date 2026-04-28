@@ -51,7 +51,7 @@ export default function ExamplesIndex({
   defaultThumbnail = DEFAULT_EXAMPLE_THUMBNAIL
 }) {
   const mainSidebar = useDocsSidebar();
-  const sidebarItems = mainSidebar?.items?.[0]?.items || [];
+  const sidebarItems = mainSidebar?.items?.[0]?.items || mainSidebar?.items || [];
 
   return (
     <MainExamples>

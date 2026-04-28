@@ -1,20 +1,14 @@
+import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
+
 # GPXLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-The `GPXLoader` parses [GPX files][gpx_wikipedia] into GeoJSON. From Wikipedia:
+<KmlDocsTabs active="gpxloader" />
 
-| Loader                | Characteristic                           |
-| --------------------- | ---------------------------------------- |
-| File Extension        | `.gpx`                                   |
-| File Type             | Text                                     |
-| File Format           | [GPX][gpx_wikipedia]                     |
-| Data Format           | [GIS](/docs/specifications/category-gis) |
-| Decoder Type          | Synchronous                              |
-| Worker Thread Support | No                                       |
-| Streaming Support     | No                                       |
+The `GPXLoader` parses [GPX files][gpx_wikipedia] into loaders.gl geometry tables.
 
 [gpx_wikipedia]: https://en.wikipedia.org/wiki/GPS_Exchange_Format
 
@@ -27,11 +21,22 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, GPXLoader, options);
 ```
 
+## Shapes
+
+`GPXLoader` returns loaders.gl `GeoJSONTable` objects by default. Set `gpx.shape` to select another table representation.
+
+| Shape                | Output                                       |
+| -------------------- | -------------------------------------------- |
+| `geojson-table`      | loaders.gl GeoJSON table                     |
+| `object-row-table`   | loaders.gl row table with GeoJSON features   |
+| `arrow-table`        | loaders.gl `ArrowTable` with WKB geometry    |
+| `binary`             | loaders.gl binary feature collection         |
+
 ## Options
 
-| Option       | Type   | Default     | Description                                       |
-| ------------ | ------ | ----------- | ------------------------------------------------- |
-| `gis.format` | string | `'geojson'` | Can be set to `'raw'`, `'geojson'` or `'binary'`. |
+| Option      | Type   | Default           | Description                            |
+| ----------- | ------ | ----------------- | -------------------------------------- |
+| `gpx.shape` | string | `'geojson-table'` | Selects the returned table shape.      |
 
 ## Limitations
 

@@ -1,6 +1,8 @@
 # ImageLoader
 
 <p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+  &nbsp;
   <img src="https://img.shields.io/badge/Deprecated-v4.4-orange.svg?style=flat-square" alt="Deprecated-v4.4" />
 </p>
 

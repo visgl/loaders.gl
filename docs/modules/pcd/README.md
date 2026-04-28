@@ -13,8 +13,7 @@ npm install @loaders.gl/core
 
 | Loader or Writer                                              | Description                                  |
 | ------------------------------------------------------------- | -------------------------------------------- |
-| [`PCDArrowLoader`](/docs/modules/pcd/api-reference/pcd-loader) | Loads PCD point clouds as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
-| [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader)      | Loads PCD point clouds as Mesh objects.      |
+| [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader)      | Loads PCD point clouds as PointCloud objects or Mesh Arrow tables. |
 | [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer)      | Writes Mesh or Mesh Arrow table point clouds as ASCII PCD text. |
 
 ## Attribution

@@ -4,7 +4,6 @@
 
 export type {PCDLoaderOptions} from './pcd-loader';
 export {PCDLoader} from './pcd-loader';
-export {PCDArrowLoader} from './pcd-arrow-loader';
 export type {PCDWriterOptions} from './pcd-writer';
 export {PCDWriter} from './pcd-writer';
 

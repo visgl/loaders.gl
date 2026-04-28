@@ -16,7 +16,9 @@ import {PointCloudLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 
 import {load} from '@loaders.gl/core';
-import type {Mesh} from '@loaders.gl/schema';
+import {MeshArrowPointCloudLayer} from '@loaders.gl/deck-layers';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
 import {OBJLoader} from '@loaders.gl/obj';
@@ -62,6 +64,14 @@ type AppState = {
   error?: string | null;
 };
 
+type DeckPoint = {
+  position: [number, number, number];
+  color?: [number, number, number] | [number, number, number, number];
+  rowIndex: number;
+  intensity?: number;
+  classification?: number;
+};
+
 export default function App(props: AppProps = {}) {
   const availableExamples = useMemo(
     () => getExamplesForFormat(EXAMPLES, props.format),
@@ -97,18 +107,13 @@ export default function App(props: AppProps = {}) {
     });
   }, [availableExamples, props.format]);
 
-  const layers = [
-    state.pointData &&
-      new PointCloudLayer({
-        id: `point-cloud-layer-${state.selectedExampleName ?? 'example'}`,
-        coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-        data: state.pointData,
-        getNormal: [0, 1, 0],
-        getColor: [200, 200, 255],
-        opacity: 0.5,
-        pointSize: 0.5
-      })
-  ];
+  const layers = state.pointData
+    ? [
+        isMeshArrowTable(state.pointData)
+          ? createMeshArrowPointCloudLayer(state.pointData, state.selectedExampleName)
+          : createPointCloudLayer(state.pointData, state.selectedExampleName)
+      ]
+    : [];
 
   const widgets = useMemo(() => {
     if (props.hideChrome) {
@@ -138,7 +143,7 @@ export default function App(props: AppProps = {}) {
                   metadata: state.metadata,
                   selectedCategoryName: state.selectedCategoryName,
                   selectedExampleName: state.selectedExampleName,
-                  vertexCount: state.pointData?.length || 0,
+                  vertexCount: getPointDataLength(state.pointData),
                   onExampleChange: ({categoryName, exampleName}) => {
                     const example = availableExamples[categoryName]?.[exampleName];
                     if (example) {
@@ -174,6 +179,7 @@ export default function App(props: AppProps = {}) {
         onViewStateChange={({viewState}) =>
           setState((currentState) => ({...currentState, viewState: viewState as OrbitViewState}))
         }
+        getTooltip={(info) => formatPointTooltip(info, state.pointData)}
         parameters={{
           clearColor: [0.07, 0.14, 0.19, 1]
         }}
@@ -216,8 +222,17 @@ export default function App(props: AppProps = {}) {
 
     const {url} = example;
     try {
-      const pointCloud = (await load(url, POINT_CLOUD_LOADERS as any, {worker: false})) as Mesh;
-      const {schema, header, loaderData, attributes} = pointCloud as any;
+      const pointCloud = await load(url, POINT_CLOUD_LOADERS as any, {
+        worker: false,
+        las: {shape: 'arrow-table'},
+        obj: {shape: 'arrow-table'},
+        pcd: {shape: 'arrow-table'},
+        ply: {shape: 'arrow-table'}
+      });
+      const mesh = isMeshArrowTable(pointCloud)
+        ? ((convertTableToMesh(pointCloud) as unknown) as Mesh)
+        : (pointCloud as Mesh);
+      const {schema, header, loaderData, attributes} = mesh as any;
 
       const viewState = getViewState(state.viewState, loaderData, attributes);
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
@@ -226,7 +241,9 @@ export default function App(props: AppProps = {}) {
         ...currentState,
         loadTimeMs: currentState.loadStartMs ? Date.now() - currentState.loadStartMs : undefined,
         loadStartMs: undefined,
-        pointData: convertLoadersMeshToDeckPointCloudData(attributes),
+        pointData: isMeshArrowTable(pointCloud)
+          ? pointCloud
+          : convertLoadersMeshToDeckPointCloudData(attributes),
         viewState,
         metadata,
         selectedCategoryName: categoryName,
@@ -242,6 +259,52 @@ export default function App(props: AppProps = {}) {
       }));
     }
   }
+}
+
+function isMeshArrowTable(data: unknown): data is MeshArrowTable {
+  return Boolean(data && typeof data === 'object' && 'shape' in data && data.shape === 'arrow-table');
+}
+
+function getPointDataLength(pointData: any): number {
+  if (isMeshArrowTable(pointData)) {
+    return pointData.data.numRows;
+  }
+  return pointData?.length || 0;
+}
+
+function createMeshArrowPointCloudLayer(
+  pointData: MeshArrowTable,
+  selectedExampleName?: string | null
+): MeshArrowPointCloudLayer {
+  return new MeshArrowPointCloudLayer({
+    id: `point-cloud-layer-${selectedExampleName ?? 'example'}`,
+    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    data: pointData,
+    pickable: true,
+    autoHighlight: true,
+    pointCloudLayerProps: {
+      getNormal: [0, 1, 0],
+      opacity: 0.5,
+      pointSize: 0.5
+    }
+  });
+}
+
+function createPointCloudLayer(
+  pointData: DeckPoint[],
+  selectedExampleName?: string | null
+): PointCloudLayer<DeckPoint> {
+  return new PointCloudLayer<DeckPoint>({
+    id: `point-cloud-layer-${selectedExampleName ?? 'example'}`,
+    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    data: pointData,
+    pickable: true,
+    autoHighlight: true,
+    getNormal: [0, 1, 0],
+    getColor: (point: DeckPoint) => point.color || [200, 200, 255],
+    opacity: 0.5,
+    pointSize: 0.5
+  });
 }
 
 function renderPointcloudSidebar(
@@ -420,17 +483,120 @@ function calculateBounds(attributes: Record<string, {value: Float32Array | Float
 
 function convertLoadersMeshToDeckPointCloudData(attributes: any) {
   const positions = attributes.POSITION.value;
-  const colors = attributes.COLOR_0?.value;
+  const colorAttribute = attributes.COLOR_0;
+  const colors = colorAttribute?.value;
+  const colorSize = colorAttribute?.size || colorAttribute?.components || 3;
+  const intensityAttribute = attributes.intensity;
+  const classificationAttribute = attributes.classification;
 
-  const points = [];
-  for (let index = 0; index < positions.length; index += 3) {
+  const points: DeckPoint[] = [];
+  const pointCount = Math.floor(positions.length / 3);
+  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+    const positionIndex = pointIndex * 3;
+    const colorIndex = pointIndex * colorSize;
     points.push({
-      position: [positions[index], positions[index + 1], positions[index + 2]],
-      color: colors ? [colors[index], colors[index + 1], colors[index + 2]] : undefined
+      position: [positions[positionIndex], positions[positionIndex + 1], positions[positionIndex + 2]],
+      rowIndex: pointIndex,
+      intensity: getAttributeScalarValue(intensityAttribute, pointIndex),
+      classification: getAttributeScalarValue(classificationAttribute, pointIndex),
+      color: colors
+        ? [
+            colors[colorIndex],
+            colors[colorIndex + 1],
+            colors[colorIndex + 2],
+            colorSize > 3 ? colors[colorIndex + 3] : 255
+          ]
+        : undefined
     });
   }
 
   return points;
+}
+
+/**
+ * Returns a scalar mesh attribute value for a point row.
+ */
+function getAttributeScalarValue(attribute: any, pointIndex: number): number | undefined {
+  const value = attribute?.value;
+  if (!value) {
+    return undefined;
+  }
+  const size = attribute?.size || attribute?.components || 1;
+  return value[pointIndex * size];
+}
+
+function getPointRow(pointData: any, pointIndex: number): DeckPoint | null {
+  if (pointIndex < 0) {
+    return null;
+  }
+
+  if (isMeshArrowTable(pointData)) {
+    const position = pointData.data.getChild('POSITION')?.get(pointIndex);
+    if (!position) {
+      return null;
+    }
+    const color = pointData.data.getChild('COLOR_0')?.get(pointIndex);
+    return {
+      position: Array.from(position) as [number, number, number],
+      rowIndex: pointIndex,
+      intensity: pointData.data.getChild('intensity')?.get(pointIndex),
+      classification: pointData.data.getChild('classification')?.get(pointIndex),
+      color: color ? (Array.from(color) as [number, number, number, number]) : undefined
+    };
+  }
+
+  return pointData?.[pointIndex] || null;
+}
+
+function formatPointTooltipContent(point: DeckPoint | null): string | null {
+  if (!point) {
+    return null;
+  }
+
+  const lines = [
+    `Row: ${point.rowIndex}`,
+    `Position: ${point.position.map((value) => value.toPrecision(6)).join(', ')}`
+  ];
+
+  if (point.intensity !== undefined) {
+    lines.push(`Intensity: ${point.intensity}`);
+  }
+  if (point.classification !== undefined) {
+    lines.push(`Classification: ${point.classification}`);
+  }
+  if (point.color) {
+    lines.push(`Color: ${point.color.join(', ')}`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Formats the deck.gl picking tooltip for point cloud vertices.
+ */
+function formatPointTooltip(info: any, pointData: any) {
+  const point = info.object || getPointRow(pointData, info.index);
+  const text = formatPointTooltipContent(point);
+
+  return text
+    ? {
+        text,
+        style: {
+          backgroundColor: 'rgba(7, 14, 24, 0.92)',
+          border: '1px solid rgba(148, 163, 184, 0.38)',
+          borderRadius: '8px',
+          boxShadow: '0 14px 36px rgba(0, 0, 0, 0.38)',
+          color: '#f8fafc',
+          fontFamily:
+            'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          fontSize: '12px',
+          fontWeight: '650',
+          lineHeight: '1.45',
+          padding: '10px 12px',
+          whiteSpace: 'pre'
+        }
+      }
+    : null;
 }
 
 export function renderToDOM(container: HTMLElement) {

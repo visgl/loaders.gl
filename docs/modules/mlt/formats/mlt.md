@@ -1,4 +1,8 @@
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+
 # MapLibre Tile (MLT)
+
+<TileDocsTabs active="mlt" />
 
 - _[MapLibre Tile format](https://github.com/maplibre/mlt)_
 - _[@loaders.gl/mlt](/docs/modules/mlt)_

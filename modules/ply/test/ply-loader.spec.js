@@ -1,6 +1,8 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {indexedMeshArrowSchema} from '@loaders.gl/schema';
 
 import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
 import {
@@ -38,6 +40,29 @@ test('PLYLoader#parse(textFile)', async t => {
 
   validateMeshCategoryData(t, data);
   validateTextPLY(t, data);
+  t.end();
+});
+
+test('PLYLoader#parse(shape: arrow-table)', async t => {
+  const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {
+    ply: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
+    schemaName: 'PLYLoader IndexedMesh table'
+  });
+  t.deepEqual(
+    table.data.schema.fields.map(field => field.name),
+    ['POSITION', 'indices', 'NORMAL'],
+    'indexed schema fields are first'
+  );
+
+  const indicesColumn = table.data.getChild('indices');
+  t.ok(indicesColumn, 'indices column was found');
+  t.equal(indicesColumn.get(0).length, 36, 'indices were found in row 0');
+  t.equal(indicesColumn.get(1), null, 'indices are null after row 0');
+
   t.end();
 });
 

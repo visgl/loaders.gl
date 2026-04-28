@@ -1,3 +1,5 @@
+import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+
 # FlatGeobufSourceLoader
 
 <p class="badges">
@@ -5,15 +7,9 @@
   <img src="https://img.shields.io/badge/range_requests-From_v5.0-blue.svg?style=flat-square" alt="range requests from v5.0" />
 </p>
 
-The `FlatGeobufSourceLoader` creates an indexed vector source for remote `.fgb` datasets and serves viewport-sized feature subsets through HTTP range requests.
+<FlatGeobufDocsTabs active="source" />
 
-| Loader         | Characteristic                                                                            |
-| -------------- | ----------------------------------------------------------------------------------------- |
-| File Extension | `.fgb`                                                                                    |
-| File Type      | Binary                                                                                    |
-| File Format    | [FlatGeobuf](/docs/modules/flatgeobuf/formats/flatgeobuf)                                |
-| Data Format    | [GeoJSONTable](/docs/specifications/category-gis), binary features, [ArrowTable](/docs/modules/schema/api-reference/apache-arrow) |
-| Supported APIs | `createDataSource`, `VectorSource#getMetadata`, `VectorSource#getSchema`, `VectorSource#getFeatures` |
+The `FlatGeobufSourceLoader` creates an indexed vector source for remote `.fgb` datasets and serves viewport-sized feature subsets through HTTP range requests.
 
 ## Usage
 
