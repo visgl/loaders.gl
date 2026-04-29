@@ -19,6 +19,28 @@ const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
 const PLY_BUN_BINARY_URL = '@loaders.gl/ply/test/data/bunny.ply';
 
+const GAUSSIAN_SPLAT_PLY = `ply
+format ascii 1.0
+element vertex 2
+property float x
+property float y
+property float z
+property float f_dc_0
+property float f_dc_1
+property float f_dc_2
+property float opacity
+property float scale_0
+property float scale_1
+property float scale_2
+property float rot_0
+property float rot_1
+property float rot_2
+property float rot_3
+end_header
+0 0 0 0 0 0 1 0.1 0.2 0.3 1 0 0 0
+1 2 3 1 0 -1 0.5 0.4 0.5 0.6 0.707 0 0.707 0
+`;
+
 setLoaderOptions({
   _workerType: 'test'
 });
@@ -83,6 +105,20 @@ test('PLYLoader#parse(ascii)', async t => {
   t.equal(data.attributes.POSITION.value.length, 107841, 'POSITION attribute was found');
   t.equal(data.attributes.confidence.value.length, 35947, 'confidence attribute was found');
   t.equal(data.attributes.intensity.value.length, 35947, 'intensity attribute was found');
+  t.end();
+});
+
+test('PLYLoader#parse(gaussian splats)', async t => {
+  const data = parseSync(GAUSSIAN_SPLAT_PLY, PLYLoader, {
+    ply: {shape: 'gaussian-splats'}
+  });
+
+  t.equal(data.header.splatCount, 2, 'splatCount found');
+  t.equal(data.attributes.POSITION.value.length, 6, 'POSITION attribute was found');
+  t.equal(data.attributes.COLOR_0.value.length, 6, 'COLOR_0 attribute was derived from f_dc_*');
+  t.equal(data.attributes.OPACITY.value.length, 2, 'OPACITY attribute was found');
+  t.equal(data.attributes.SCALE.value.length, 6, 'SCALE attribute was found');
+  t.equal(data.attributes.ROTATION.value.length, 8, 'ROTATION attribute was found');
   t.end();
 });
 

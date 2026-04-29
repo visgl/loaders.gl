@@ -7,6 +7,7 @@ export {PLYFormat} from './ply-format';
 
 export type {PLYLoaderOptions} from './ply-loader';
 export {PLYLoader} from './ply-loader';
+export type {PLYGaussianSplats} from './lib/ply-types';
 export type {PLYWriterOptions} from './ply-writer';
 export {PLYWriter} from './ply-writer';
 

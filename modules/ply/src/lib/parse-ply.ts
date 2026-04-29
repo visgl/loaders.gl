@@ -26,6 +26,7 @@
 // });
 import type {
   PLYMesh,
+  PLYGaussianSplats,
   PLYHeader,
   PLYAttributes,
   MeshHeader,
@@ -33,9 +34,11 @@ import type {
   PLYProperty
 } from './ply-types';
 import normalizePLY from './normalize-ply';
+import normalizeGaussianSplatPLY from './normalize-gaussian-splat-ply';
 
 export type ParsePLYOptions = {
   propertyNameMapping?: Record<string, string>;
+  shape?: 'mesh' | 'arrow-table' | 'gaussian-splats';
 };
 
 /**
@@ -43,7 +46,10 @@ export type ParsePLYOptions = {
  * @param options
  * @returns
  */
-export function parsePLY(data: ArrayBuffer | string, options: ParsePLYOptions = {}): PLYMesh {
+export function parsePLY(
+  data: ArrayBuffer | string,
+  options: ParsePLYOptions = {}
+): PLYMesh | PLYGaussianSplats {
   let header: PLYHeader & MeshHeader;
   let attributes: PLYAttributes;
 
@@ -56,7 +62,9 @@ export function parsePLY(data: ArrayBuffer | string, options: ParsePLYOptions = 
     attributes = parseASCII(data, header);
   }
 
-  return normalizePLY(header, attributes);
+  return options.shape === 'gaussian-splats'
+    ? normalizeGaussianSplatPLY(header, attributes)
+    : normalizePLY(header, attributes);
 }
 
 /**

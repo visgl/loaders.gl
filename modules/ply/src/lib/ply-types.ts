@@ -2,9 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 import type {Mesh} from '@loaders.gl/schema';
+import type {GaussianSplats} from '@loaders.gl/schema';
 
 /** A parsed PLY mesh */
 export type PLYMesh = Mesh & {
+  loader: 'ply';
+  loaderData: PLYHeader;
+};
+
+/** A parsed PLY Gaussian splat set */
+export type PLYGaussianSplats = GaussianSplats & {
   loader: 'ply';
   loaderData: PLYHeader;
 };

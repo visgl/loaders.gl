@@ -53,6 +53,9 @@ export type {
 } from './categories/category-mesh';
 export {meshArrowSchema, indexedMeshArrowSchema} from './categories/category-mesh';
 
+// SPLAT CATEGORY
+export type {GaussianSplats, SplatAttribute, SplatAttributes} from './categories/category-splat';
+
 // TEXTURES
 export type {
   TextureMetadata,
