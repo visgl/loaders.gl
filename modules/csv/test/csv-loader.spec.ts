@@ -124,18 +124,41 @@ test('CSVLoader#load(geospatial-points-wkt.csv, detectGeometryColumns)', async t
     const geometryField = table.schema?.fields.find(field => field.name === 'geometry');
     const geoMetadata = getGeoMetadata(table.schema?.metadata);
 
+    t.equal(geometryField?.type, 'binary', 'WKT geometry field is converted to a binary column');
+    t.equal(
+      geometryField?.metadata?.['ARROW:extension:name'],
+      'geoarrow.wkb',
+      'WKT geometry field is annotated as WKB'
+    );
+    t.equal(geoMetadata?.primary_column, 'geometry', 'Geo metadata primary column is set');
+    t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'Geo metadata includes WKB encoding');
+    t.equal(
+      geoMetadata?.columns.geometry.geometry_types[0],
+      'Point',
+      'Geo metadata includes inferred geometry type'
+    );
+    t.ok(table.data[0].geometry instanceof Uint8Array, 'WKT geometry value is encoded as WKB');
+  }
+  t.end();
+});
+
+test('CSVLoader#load(geospatial-points-wkt.csv, detectGeometryColumns, source geometry)', async t => {
+  const table = await load(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
+    csv: {shape: 'object-row-table', detectGeometryColumns: true, geometryEncoding: 'source'}
+  });
+
+  t.equal(table.shape, 'object-row-table', 'Got correct table shape');
+  if (table.shape === 'object-row-table') {
+    const geometryField = table.schema?.fields.find(field => field.name === 'geometry');
+    const geoMetadata = getGeoMetadata(table.schema?.metadata);
+
     t.equal(geometryField?.type, 'utf8', 'WKT geometry field is a string column');
     t.equal(
       geometryField?.metadata?.['ARROW:extension:name'],
       'geoarrow.wkt',
       'WKT geometry field is annotated'
     );
-    t.equal(geoMetadata?.primary_column, 'geometry', 'Geo metadata primary column is set');
-    t.equal(
-      geoMetadata?.columns.geometry.geometry_types[0],
-      'Point',
-      'Geo metadata includes inferred geometry type'
-    );
+    t.equal(geoMetadata?.columns.geometry.encoding, 'wkt', 'Geo metadata includes WKT encoding');
     t.equal(table.data[0].geometry, 'POINT (-122.3933 37.7955)', 'WKT geometry value is preserved');
   }
   t.end();
@@ -331,16 +354,36 @@ test('CSVLoader#loadInBatches(geospatial-points-wkt.csv, detectGeometryColumns)'
     t.equal(firstBatch.length, 3, 'Got correct batch size');
     t.equal(
       geometryField?.metadata?.['ARROW:extension:name'],
-      'geoarrow.wkt',
-      'WKT batch geometry field is annotated'
+      'geoarrow.wkb',
+      'WKT batch geometry field is annotated as WKB'
     );
-    t.equal(geoMetadata?.columns.geometry.encoding, 'wkt', 'Batch geo metadata includes encoding');
-    t.equal(
-      firstBatch.data.geometry[0],
-      'POINT (-122.3933 37.7955)',
-      'WKT batch geometry value is preserved'
-    );
+    t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'Batch geo metadata includes encoding');
+    t.ok(firstBatch.data.geometry[0] instanceof Uint8Array, 'WKT batch geometry value is encoded');
   }
+  t.end();
+});
+
+test('CSVLoader#load(geospatial-points-wkt.csv, arrow-table, detectGeometryColumns)', async t => {
+  const table = await load(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
+    csv: {shape: 'arrow-table', detectGeometryColumns: true}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'Got correct table shape');
+  const geometryField = table.schema?.fields.find(field => field.name === 'geometry');
+  const geoMetadata = getGeoMetadata(table.schema?.metadata);
+
+  t.equal(geometryField?.type, 'binary', 'WKT Arrow geometry field is binary');
+  t.equal(
+    geometryField?.metadata?.['ARROW:extension:name'],
+    'geoarrow.wkb',
+    'WKT Arrow geometry field is annotated as WKB'
+  );
+  t.equal(
+    geoMetadata?.columns.geometry.encoding,
+    'wkb',
+    'Arrow geo metadata includes WKB encoding'
+  );
+  t.ok(table.data.getChild('geometry')?.get(0) instanceof Uint8Array, 'Arrow geometry is WKB');
   t.end();
 });
 

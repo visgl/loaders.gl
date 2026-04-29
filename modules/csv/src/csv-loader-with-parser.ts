@@ -124,7 +124,8 @@ function parseCSVTextSync(
   const detectedGeometryColumns = csvOptions.detectGeometryColumns
     ? detectGeometryColumns(
         headerRow,
-        rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow)))
+        rows.map(row => (Array.isArray(row) ? row : convertToArrayRow(row, headerRow))),
+        csvOptions.geometryEncoding
       )
     : [];
 
@@ -240,7 +241,11 @@ function parseCSVInBatches(
           MAX_GEOMETRY_SNIFF_ROWS
         );
         if (geometryDetectionFinalized) {
-          detectedGeometryColumns = detectGeometryColumns(headerRow, sniffedRows);
+          detectedGeometryColumns = detectGeometryColumns(
+            headerRow,
+            sniffedRows,
+            csvOptions.geometryEncoding
+          );
           const normalizedSniffedRows = sniffedRows.map(sniffedRow =>
             normalizeGeometryArrayRow(sniffedRow, detectedGeometryColumns)
           );
@@ -278,7 +283,11 @@ function parseCSVInBatches(
     complete(results) {
       try {
         if (!geometryDetectionFinalized && headerRow) {
-          detectedGeometryColumns = detectGeometryColumns(headerRow, sniffedRows);
+          detectedGeometryColumns = detectGeometryColumns(
+            headerRow,
+            sniffedRows,
+            csvOptions.geometryEncoding
+          );
           const normalizedSniffedRows = sniffedRows.map(row =>
             normalizeGeometryArrayRow(row, detectedGeometryColumns)
           );

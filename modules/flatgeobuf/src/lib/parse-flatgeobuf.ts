@@ -4,7 +4,7 @@
 
 import {Proj4Projection} from '@math.gl/proj4';
 import {
-  convertGeometryToWKB,
+  encodeWKBGeometryValue,
   type GeoParquetGeometryType,
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata,
@@ -40,7 +40,7 @@ const deserializeGeneric = generic.deserialize;
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
 export type ParseFlatGeobufOptions = {
-  shape?: 'geojson-table' | 'columnar-table' | 'binary' | 'arrow-table';
+  shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
   /** If supplied, only loads features within the bounding box */
   boundingBox?: [[number, number], [number, number]];
   /** Desired output CRS */
@@ -68,7 +68,7 @@ export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options: ParseFlatGeob
       // @ts-expect-error
       return {shape: 'columnar-table', data: binary};
 
-    case 'binary':
+    case 'binary-geometry':
       // @ts-expect-error
       return parseFlatGeobufToBinary(arrayBuffer, options);
 
@@ -173,7 +173,7 @@ function parseFlatGeobufToArrowTable(
 export function parseFlatGeobufInBatches(stream, options: ParseFlatGeobufOptions) {
   const shape = options.shape;
   switch (shape) {
-    case 'binary':
+    case 'binary-geometry':
       return parseFlatGeobufInBatchesToBinary(stream, options);
     case 'geojson-table':
       return parseFlatGeobufInBatchesToGeoJSON(stream, options);
@@ -338,9 +338,7 @@ export function makeArrowRow(
   const normalizedGeometry = feature.geometry
     ? normalizeGeometryForHeader(feature.geometry, fgbHeader?.geometryType)
     : null;
-  row[GEOMETRY_COLUMN_NAME] = normalizedGeometry
-    ? new Uint8Array(convertGeometryToWKB(normalizedGeometry))
-    : null;
+  row[GEOMETRY_COLUMN_NAME] = encodeWKBGeometryValue(normalizedGeometry);
   return row;
 }
 

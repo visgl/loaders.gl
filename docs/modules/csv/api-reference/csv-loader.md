@@ -69,6 +69,10 @@ const typedTable = await load(url, CSVLoader, {
 
 For the default `csv.dynamicTyping: false` Arrow path, `CSVLoader.parse(ArrayBuffer)` uses a byte-oriented parser for supported CSV options and creates Arrow `Utf8` columns without materializing per-cell JavaScript strings. `CSVLoader.parseText` encodes text to UTF-8 and uses the same byte-oriented path when possible. `CSVLoader.parseInBatches` uses the byte-oriented path when the input can be emitted as one batch, and keeps the streaming string parser for explicit batch sizes.
 
+### Geometry Columns
+
+`CSVLoader` can detect WKT and hex-encoded WKB geometry columns when `csv.detectGeometryColumns` is enabled. Detected geometries are emitted as `geoarrow.wkb` by default. Set `csv.geometryEncoding: 'source'` to preserve WKT columns as `geoarrow.wkt`.
+
 ## CSVLoader Options
 
 | Option                      | Type                                                                                       | Default                       | Description                                                                                                                  |
@@ -83,6 +87,7 @@ For the default `csv.dynamicTyping: false` Arrow path, `CSVLoader.parse(ArrayBuf
 | `csv.comments`              | `boolean`                                                                                  | `false`                       | Skip lines that start with a comment indicator.                                                                              |
 | `csv.skipEmptyLines`        | `boolean \| 'greedy'`                                                                      | `true`                        | Skip empty lines; `'greedy'` also skips lines that only contain whitespace.                                                  |
 | `csv.detectGeometryColumns` | `boolean`                                                                                  | `false`                       | Detect geometry columns when producing geospatial table output.                                                              |
+| `csv.geometryEncoding`      | `'wkb' \| 'source'`                                                                        | `wkb`                         | Output encoding for detected geometry columns. `wkb` normalizes WKT and WKB to `geoarrow.wkb`; `source` preserves WKT.       |
 | `csv.delimitersToGuess`     | `string[]`                                                                                 | `[',', '\t', '\|', ';']`      | Delimiters to try when no delimiter is specified.                                                                            |
 
 ## Remarks

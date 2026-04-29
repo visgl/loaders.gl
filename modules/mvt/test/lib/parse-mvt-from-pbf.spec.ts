@@ -300,7 +300,7 @@ test('Point MVT to local coordinates JSON', async t => {
 //   const response = await fetchFile(WITH_FEATURE_ID);
 //   const mvtArrayBuffer = await response.arrayBuffer();
 
-//   const binary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {shape: 'binary'}});
+//   const binary = await parse(mvtArrayBuffer, MVTLoader, {mvt: {shape: 'binary-geometry'}});
 //   t.ok(binary.points.fields.length, 'feature.id fields are preserved');
 //   t.ok(binary.lines.fields.length, 'feature.id fields are preserved');
 //   t.ok(binary.polygons.fields.length, 'feature.id fields are preserved');
