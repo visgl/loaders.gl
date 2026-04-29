@@ -5,10 +5,17 @@
 import type {Schema, ObjectRowTable} from '@loaders.gl/schema';
 import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 
+/**
+ * GeoArrow geometry encoding mode for SHP Arrow output.
+ * `geoarrow` infers a geometry-specific encoding from the SHP header.
+ */
+export type SHPGeoArrowEncoding = 'geoarrow.wkb' | 'geoarrow';
+
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
     shape?: 'binary-geometry' | 'arrow-table' | 'wkb';
+    geoarrowEncoding?: SHPGeoArrowEncoding;
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
@@ -30,6 +37,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
   DBFLoaderOptions & {
     shapefile?: {
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
+      geoarrowEncoding?: SHPGeoArrowEncoding;
       batchSize?: number;
     };
     gis?: {

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Field, Geometry, Schema} from '@loaders.gl/schema';
+import type {GeoArrowBuilderEncoding} from './geoarrow-builder';
 import {convertGeometryToWKB} from '../geometry-converters/wkb/convert-geometry-to-wkb';
 import {
   getGeoMetadata,
@@ -33,6 +34,26 @@ export type WKBGeometryColumnOptions = {
   columnMetadata?: Omit<GeoColumnMetadata, 'encoding' | 'geometry_types'>;
 };
 
+/** Options for creating or updating one typed GeoArrow geometry column definition. */
+export type GeoArrowGeometryColumnOptions = {
+  /** Geometry column name. */
+  geometryColumnName?: string;
+  /** Primary geometry column name. Defaults to `geometryColumnName`. */
+  primaryColumnName?: string;
+  /** GeoArrow geometry encoding. */
+  encoding: GeoArrowBuilderEncoding;
+  /** Coordinate tuple size. */
+  coordinateSize?: 2 | 3;
+  /** Known geometry type strings for metadata. */
+  geometryTypes?: GeoParquetGeometryType[];
+  /** Whether the Arrow field is nullable. */
+  nullable?: boolean;
+  /** GeoParquet metadata version. */
+  version?: string;
+  /** Additional column metadata fields to preserve. */
+  columnMetadata?: Omit<GeoColumnMetadata, 'encoding' | 'geometry_types'>;
+};
+
 /**
  * Creates a nullable binary Arrow field for a WKB geometry column.
  *
@@ -47,6 +68,33 @@ export function makeWKBGeometryField(geometryColumnName = 'geometry', nullable =
     nullable,
     metadata: {
       'ARROW:extension:name': 'geoarrow.wkb'
+    }
+  };
+}
+
+/**
+ * Creates a nullable nested Arrow field for a typed GeoArrow geometry column.
+ *
+ * @param options - GeoArrow geometry field options.
+ * @returns Arrow field definition.
+ */
+export function makeGeoArrowGeometryField(options: GeoArrowGeometryColumnOptions): Field {
+  const coordinateSize = options.coordinateSize || 2;
+  const coordinateField: Field = {
+    name: 'xy',
+    type: {
+      type: 'fixed-size-list',
+      listSize: coordinateSize,
+      children: [{name: 'value', type: 'float64', nullable: false}]
+    },
+    nullable: false
+  };
+  return {
+    name: options.geometryColumnName || 'geometry',
+    type: getGeoArrowGeometryFieldType(options.encoding, coordinateField),
+    nullable: options.nullable ?? true,
+    metadata: {
+      'ARROW:extension:name': options.encoding
     }
   };
 }
@@ -74,6 +122,35 @@ export function setWKBGeometryColumnMetadata(
     ...nextGeoMetadata.columns[geometryColumnName],
     ...options.columnMetadata,
     encoding: 'wkb',
+    geometry_types: geometryTypes
+  };
+
+  setGeoMetadata(metadata, nextGeoMetadata);
+}
+
+/**
+ * Updates schema-level GeoParquet metadata for one typed GeoArrow geometry column.
+ *
+ * @param metadata - Schema metadata container.
+ * @param options - GeoArrow geometry column options.
+ */
+export function setGeoArrowGeometryColumnMetadata(
+  metadata: Metadata,
+  options: GeoArrowGeometryColumnOptions
+): void {
+  const geometryColumnName = options.geometryColumnName || 'geometry';
+  const primaryColumnName = options.primaryColumnName || geometryColumnName;
+  const geometryTypes = options.geometryTypes || [];
+  const nextGeoMetadata: GeoMetadata = getGeoMetadata(metadata) || {columns: {}};
+
+  nextGeoMetadata.version =
+    options.version || nextGeoMetadata.version || DEFAULT_GEO_METADATA_VERSION;
+  nextGeoMetadata.primary_column = primaryColumnName;
+  nextGeoMetadata.columns ||= {};
+  nextGeoMetadata.columns[geometryColumnName] = {
+    ...nextGeoMetadata.columns[geometryColumnName],
+    ...options.columnMetadata,
+    encoding: options.encoding.replace('geoarrow.', '') as GeoColumnMetadata['encoding'],
     geometry_types: geometryTypes
   };
 
@@ -211,4 +288,38 @@ function isGeometry(value: unknown): value is Geometry {
   }
 
   return 'type' in value && ('coordinates' in value || 'geometries' in value);
+}
+
+function getGeoArrowGeometryFieldType(
+  encoding: GeoArrowBuilderEncoding,
+  coordinateField: Field
+): Field['type'] {
+  switch (encoding) {
+    case 'geoarrow.point':
+      return coordinateField.type;
+    case 'geoarrow.linestring':
+    case 'geoarrow.multipoint':
+      return {type: 'list', children: [coordinateField]};
+    case 'geoarrow.polygon':
+    case 'geoarrow.multilinestring':
+      return {
+        type: 'list',
+        children: [{name: 'rings', type: {type: 'list', children: [coordinateField]}}]
+      };
+    case 'geoarrow.multipolygon':
+      return {
+        type: 'list',
+        children: [
+          {
+            name: 'polygons',
+            type: {
+              type: 'list',
+              children: [{name: 'rings', type: {type: 'list', children: [coordinateField]}}]
+            }
+          }
+        ]
+      };
+    default:
+      throw new Error(`Unsupported GeoArrow encoding ${encoding}`);
+  }
 }

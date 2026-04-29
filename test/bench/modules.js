@@ -16,7 +16,8 @@ import imageBench from '@loaders.gl/images/test/images.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 // import mvtBench from '@loaders.gl/mvt/test/mvt-loader.bench';
 import {parquetBench} from '@loaders.gl/parquet/test/parquet.bench';
-// import shapefileBench from '@loaders.gl/shapefile/test/shapefile.bench';
+import shapefileBench from '@loaders.gl/shapefile/test/shapefile.bench';
+import shpBench from '@loaders.gl/shapefile/test/shp.bench';
 
 import cryptoBench from '@loaders.gl/crypto/test/crypto.bench';
 // import i3sLoaderBench from '@loaders.gl/i3s/test/i3s-loader.bench';
@@ -29,6 +30,9 @@ _addAliases(ALIASES);
  * @returns {Promise<void>} Resolves after all compatible benchmarks have been added.
  */
 export async function addModuleBenchmarksToSuite(suite) {
+  await shapefileBench(suite);
+  await shpBench(suite);
+
   await csvBench(suite);
 
   await coreBench(suite);
@@ -36,8 +40,6 @@ export async function addModuleBenchmarksToSuite(suite) {
   await parquetBench(suite);
 
   await jsonBench(suite);
-
-  // await shapefileBench(suite);
 
   // await mvtBench(suite);
   await loaderUtilsBench(suite);

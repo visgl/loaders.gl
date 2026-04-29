@@ -28,9 +28,14 @@ export {
   unpackJSONStringMetadata,
   parseJSONStringMetadata
 } from './lib/geoarrow/geoparquet-metadata';
-export type {WKBGeometryColumnOptions} from './lib/geoarrow/wkb-geoarrow-utils';
+export type {
+  WKBGeometryColumnOptions,
+  GeoArrowGeometryColumnOptions
+} from './lib/geoarrow/wkb-geoarrow-utils';
 export {
+  makeGeoArrowGeometryField,
   makeWKBGeometryField,
+  setGeoArrowGeometryColumnMetadata,
   setWKBGeometryColumnMetadata,
   setWKBGeometrySchemaMetadata,
   encodeWKBGeometryValue,
@@ -39,6 +44,18 @@ export {
   getCoordinateDimensions,
   getGeometrySampleCoordinates
 } from './lib/geoarrow/wkb-geoarrow-utils';
+export type {
+  GeoArrowBuilderEncoding,
+  GeoArrowCoordinateTransform,
+  GeoArrowBuilderTarget,
+  GeoArrowGeometryArray,
+  GeoArrowBuilderBaseOptions,
+  GeoArrowBuilderMeasureOptions,
+  GeoArrowBuilderWriteOptions,
+  GeoArrowBuilderOptions,
+  GeoArrowGeometryWriter
+} from './lib/geoarrow/geoarrow-builder';
+export {GeoArrowBuilder} from './lib/geoarrow/geoarrow-builder';
 
 //
 export type {GeojsonGeometryInfo} from './lib/geometry-api/geometry-info';

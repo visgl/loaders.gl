@@ -70,7 +70,9 @@ export async function* parseShapefileInBatches(
 
   // parse properties
   let propertyIterator: AsyncIterator<any> | null = null;
-  const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+  const dbfResponse = context?.url
+    ? await context?.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
+    : null;
   if (dbfResponse?.ok) {
     const propertyIterable = await parseInBatchesFromContext(
       dbfResponse,
@@ -176,7 +178,9 @@ export async function parseShapefile(
   // parse properties
   let propertyTable: ObjectRowTable | undefined;
 
-  const dbfResponse = await context?.fetch(replaceExtension(context?.url!, 'dbf'));
+  const dbfResponse = context?.url
+    ? await context?.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
+    : null;
   if (dbfResponse?.ok) {
     const dbfOptions = {
       ...options,
@@ -293,12 +297,15 @@ export async function loadShapefileSidecarFiles(
   cpg?: string;
   prj?: string;
 }> {
+  if (!context?.url || !context.fetch) {
+    return {};
+  }
+
   // Attempt a parallel load of the small sidecar files
-  // @ts-ignore context must be defined
   const {url, fetch} = context;
-  const shxPromise = fetch(replaceExtension(url, 'shx'));
-  const cpgPromise = fetch(replaceExtension(url, 'cpg'));
-  const prjPromise = fetch(replaceExtension(url, 'prj'));
+  const shxPromise = fetch(replaceExtension(url, 'shx')).catch(() => null);
+  const cpgPromise = fetch(replaceExtension(url, 'cpg')).catch(() => null);
+  const prjPromise = fetch(replaceExtension(url, 'prj')).catch(() => null);
   await Promise.all([shxPromise, cpgPromise, prjPromise]);
 
   let shx: SHXOutput | undefined;
@@ -306,13 +313,13 @@ export async function loadShapefileSidecarFiles(
   let prj: string | undefined;
 
   const shxResponse = await shxPromise;
-  if (shxResponse.ok && !isHtmlFallbackResponse(shxResponse)) {
+  if (shxResponse?.ok && !isHtmlFallbackResponse(shxResponse)) {
     const arrayBuffer = await shxResponse.arrayBuffer();
     shx = parseShx(arrayBuffer);
   }
 
   const cpgResponse = await cpgPromise;
-  if (cpgResponse.ok && !isHtmlFallbackResponse(cpgResponse)) {
+  if (cpgResponse?.ok && !isHtmlFallbackResponse(cpgResponse)) {
     const encoding = await cpgResponse.text();
     // Vite serves the test page for missing sidecar files; only accept plausible encoding labels.
     if (/^[\w-]+$/.test(encoding.trim())) {
@@ -321,7 +328,7 @@ export async function loadShapefileSidecarFiles(
   }
 
   const prjResponse = await prjPromise;
-  if (prjResponse.ok && !isHtmlFallbackResponse(prjResponse)) {
+  if (prjResponse?.ok && !isHtmlFallbackResponse(prjResponse)) {
     prj = await prjResponse.text();
   }
 

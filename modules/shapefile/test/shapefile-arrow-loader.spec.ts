@@ -101,6 +101,32 @@ test('ShapefileLoader#load arrow-table stores WKB in one contiguous Arrow values
   t.end();
 });
 
+test('ShapefileLoader#load arrow-table can emit typed GeoArrow point geometry', async t => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const table = await load(filename, ShapefileLoader, {
+    shapefile: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+  });
+  const geoMetadata = getGeoMetadata(table.schema.metadata);
+  const recordBatch = table.data.batches[0];
+  const geometryFieldIndex = table.schema.fields.findIndex(field => field.name === 'geometry');
+  const geometryField = table.data.schema.fields[geometryFieldIndex];
+  const geometryData = recordBatch.data.children[geometryFieldIndex];
+
+  t.equal(
+    geoMetadata?.columns.geometry.encoding,
+    'point',
+    'geo metadata records typed point encoding'
+  );
+  t.equal(
+    geometryField.metadata.get('ARROW:extension:name'),
+    'geoarrow.point',
+    'geometry field has GeoArrow point extension'
+  );
+  t.equal(geometryData.length, table.data.numRows, 'geometry data has one row per feature');
+  t.equal(geometryData.children[0].values.length, table.data.numRows * 2, 'coordinates are dense');
+  t.end();
+});
+
 test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', async t => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;

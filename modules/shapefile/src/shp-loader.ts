@@ -4,6 +4,7 @@
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -16,6 +17,7 @@ export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
     shape?: 'binary-geometry' | 'arrow-table' | 'wkb';
+    geoarrowEncoding?: SHPGeoArrowEncoding;
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;

@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
-import {WKBBuilder, convertWKBToBinaryGeometry} from '@loaders.gl/gis';
+import {GeoArrowBuilder, WKBBuilder, convertWKBToBinaryGeometry} from '@loaders.gl/gis';
 import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
@@ -77,6 +77,54 @@ function writeRecordToWKB(builder: WKBBuilder, view: DataView, type: number): vo
   }
 }
 
+/**
+ * Writes one SHP record directly into a typed GeoArrow builder.
+ *
+ * @param builder GeoArrow builder.
+ * @param view Record data.
+ * @param recordType Optional record type, read from the record when omitted.
+ */
+export function writeRecordToGeoArrow(
+  builder: GeoArrowBuilder,
+  view: DataView,
+  recordType = view.getInt32(0, LITTLE_ENDIAN)
+): void {
+  if (recordType === 0) {
+    builder.writeNullGeometry();
+    return;
+  }
+
+  const offset = Int32Array.BYTES_PER_ELEMENT;
+  switch (recordType) {
+    case 1:
+    case 11:
+    case 21:
+      writePointRecordToGeoArrow(builder, view, offset);
+      return;
+    case 3:
+    case 13:
+    case 23:
+      writeLineRecordToGeoArrow(builder, view, getPolyRecordLayout(view, offset, recordType));
+      return;
+    case 5:
+    case 15:
+    case 25:
+      writePolygonRecordToGeoArrow(builder, view, getPolyRecordLayout(view, offset, recordType));
+      return;
+    case 8:
+    case 18:
+    case 28:
+      writeMultiPointRecordToGeoArrow(
+        builder,
+        view,
+        getMultiPointRecordLayout(view, offset, recordType)
+      );
+      return;
+    default:
+      throw new Error(`unsupported shape type: ${recordType}`);
+  }
+}
+
 function writePointRecordToWKB(builder: WKBBuilder, view: DataView, offset: number): void {
   builder.beginPoint();
   const x = view.getFloat64(offset, LITTLE_ENDIAN);
@@ -92,6 +140,22 @@ function writePointRecordToWKB(builder: WKBBuilder, view: DataView, offset: numb
       ? view.getFloat64(mOffset, LITTLE_ENDIAN)
       : undefined;
   builder.writeCoordinate(x, y, z, m);
+}
+
+function writePointRecordToGeoArrow(
+  builder: GeoArrowBuilder,
+  view: DataView,
+  offset: number
+): void {
+  builder.beginPoint();
+  const x = view.getFloat64(offset, LITTLE_ENDIAN);
+  const y = view.getFloat64(offset + 8, LITTLE_ENDIAN);
+  const zOffset = offset + 16;
+  const z =
+    builder.hasZ && zOffset + Float64Array.BYTES_PER_ELEMENT <= view.byteLength
+      ? view.getFloat64(zOffset, LITTLE_ENDIAN)
+      : undefined;
+  builder.writeCoordinate(x, y, z);
 }
 
 function writeMultiPointRecordToWKB(
@@ -111,6 +175,17 @@ function writeMultiPointRecordToWKB(
   builder.beginMultiPoint(layout.pointCount);
   for (let pointIndex = 0; pointIndex < layout.pointCount; pointIndex++) {
     builder.beginPoint();
+    writeRecordCoordinate(builder, view, layout, pointIndex);
+  }
+}
+
+function writeMultiPointRecordToGeoArrow(
+  builder: GeoArrowBuilder,
+  view: DataView,
+  layout: SHPPointRecordLayout
+): void {
+  builder.beginMultiPoint(layout.pointCount);
+  for (let pointIndex = 0; pointIndex < layout.pointCount; pointIndex++) {
     writeRecordCoordinate(builder, view, layout, pointIndex);
   }
 }
@@ -142,8 +217,41 @@ function writeLineRecordToWKB(builder: WKBBuilder, view: DataView, layout: SHPPo
   }
 }
 
+function writeLineRecordToGeoArrow(
+  builder: GeoArrowBuilder,
+  view: DataView,
+  layout: SHPPolyRecordLayout
+) {
+  if (builder.encoding === 'geoarrow.linestring') {
+    if (layout.partCount !== 1) {
+      throw new Error('Cannot write multi-part SHP polyline into geoarrow.linestring');
+    }
+    writeLinePartToGeoArrow(builder, view, layout, 0);
+    return;
+  }
+
+  builder.beginMultiLineString(layout.partCount);
+  for (let partIndex = 0; partIndex < layout.partCount; partIndex++) {
+    writeLinePartToGeoArrow(builder, view, layout, partIndex);
+  }
+}
+
 function writeLinePartToWKB(
   builder: WKBBuilder,
+  view: DataView,
+  layout: SHPPolyRecordLayout,
+  partIndex: number
+) {
+  const startPoint = getPartStart(view, layout, partIndex);
+  const endPoint = getPartEnd(view, layout, partIndex);
+  builder.beginLineString(endPoint - startPoint);
+  for (let pointIndex = startPoint; pointIndex < endPoint; pointIndex++) {
+    writeRecordCoordinate(builder, view, layout, pointIndex);
+  }
+}
+
+function writeLinePartToGeoArrow(
+  builder: GeoArrowBuilder,
   view: DataView,
   layout: SHPPolyRecordLayout,
   partIndex: number
@@ -171,8 +279,52 @@ function writePolygonRecordToWKB(builder: WKBBuilder, view: DataView, layout: SH
   }
 }
 
+function writePolygonRecordToGeoArrow(
+  builder: GeoArrowBuilder,
+  view: DataView,
+  layout: SHPPolyRecordLayout
+) {
+  const exteriorPartIndices = getExteriorPartIndices(view, layout);
+  if (builder.encoding === 'geoarrow.polygon') {
+    if (exteriorPartIndices.length > 1) {
+      throw new Error('Cannot write multi-polygon SHP polygon into geoarrow.polygon');
+    }
+    writePolygonPartsToGeoArrow(builder, view, layout, 0, layout.partCount);
+    return;
+  }
+
+  builder.beginMultiPolygon(Math.max(1, exteriorPartIndices.length));
+  if (exteriorPartIndices.length === 0) {
+    writePolygonPartsToGeoArrow(builder, view, layout, 0, layout.partCount);
+    return;
+  }
+  for (let polygonIndex = 0; polygonIndex < exteriorPartIndices.length; polygonIndex++) {
+    const startPartIndex = exteriorPartIndices[polygonIndex];
+    const endPartIndex = exteriorPartIndices[polygonIndex + 1] ?? layout.partCount;
+    writePolygonPartsToGeoArrow(builder, view, layout, startPartIndex, endPartIndex);
+  }
+}
+
 function writePolygonPartsToWKB(
   builder: WKBBuilder,
+  view: DataView,
+  layout: SHPPolyRecordLayout,
+  startPartIndex: number,
+  endPartIndex: number
+) {
+  builder.beginPolygon(endPartIndex - startPartIndex);
+  for (let partIndex = startPartIndex; partIndex < endPartIndex; partIndex++) {
+    const startPoint = getPartStart(view, layout, partIndex);
+    const endPoint = getPartEnd(view, layout, partIndex);
+    builder.beginLinearRing(endPoint - startPoint);
+    for (let pointIndex = startPoint; pointIndex < endPoint; pointIndex++) {
+      writeRecordCoordinate(builder, view, layout, pointIndex);
+    }
+  }
+}
+
+function writePolygonPartsToGeoArrow(
+  builder: GeoArrowBuilder,
   view: DataView,
   layout: SHPPolyRecordLayout,
   startPartIndex: number,
@@ -253,7 +405,7 @@ function getCoordinateLayout(
 }
 
 function writeRecordCoordinate(
-  builder: WKBBuilder,
+  builder: WKBBuilder | GeoArrowBuilder,
   view: DataView,
   layout: SHPPointRecordLayout,
   pointIndex: number
@@ -266,7 +418,7 @@ function writeRecordCoordinate(
       ? view.getFloat64(layout.zOffset + pointIndex * Float64Array.BYTES_PER_ELEMENT, LITTLE_ENDIAN)
       : undefined;
   const m =
-    builder.hasM && layout.mOffset !== undefined
+    'hasM' in builder && builder.hasM && layout.mOffset !== undefined
       ? view.getFloat64(layout.mOffset + pointIndex * Float64Array.BYTES_PER_ELEMENT, LITTLE_ENDIAN)
       : undefined;
   builder.writeCoordinate(x, y, z, m);

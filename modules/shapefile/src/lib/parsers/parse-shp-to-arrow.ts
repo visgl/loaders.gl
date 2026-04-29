@@ -13,10 +13,15 @@ import {parseSHP, parseSHPInBatches} from './parse-shp';
 import type {SHPHeader} from './parse-shp-header';
 import type {SHPLoaderOptions} from './types';
 import {type SHPWKBGeometry, makeWKBGeometryArrowTable} from './build-wkb-geometry-arrow';
+import {makeSHPGeoArrowGeometryTable} from './build-geoarrow-geometry-arrow';
 
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
 export function parseSHPToArrow(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): ArrowTable {
+  if (shouldUseTypedGeoArrow(options?.shp?.geoarrowEncoding)) {
+    return makeSHPGeoArrowGeometryTable(arrayBuffer, options);
+  }
+
   const result = parseSHP(arrayBuffer, getWKBOptions(options));
   const geometries = result.geometries as (SHPWKBGeometry | null)[];
   const schema = buildOutputSchema(result.header);
@@ -29,6 +34,10 @@ export async function* parseSHPToArrowInBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: SHPLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
+  if (shouldUseTypedGeoArrow(options?.shp?.geoarrowEncoding)) {
+    throw new Error('Typed GeoArrow SHP output is only supported for non-streaming parse.');
+  }
+
   const shpIterator = parseSHPInBatches(asyncIterator, getWKBOptions(options));
   let header: SHPHeader | undefined;
   let yieldedDataBatch = false;
@@ -55,6 +64,10 @@ export async function* parseSHPToArrowInBatches(
   if (!yieldedDataBatch) {
     yield makeEmptyArrowBatch(buildOutputSchema(header));
   }
+}
+
+function shouldUseTypedGeoArrow(encoding: unknown): boolean {
+  return encoding === 'geoarrow';
 }
 
 function buildOutputSchema(header?: SHPHeader) {

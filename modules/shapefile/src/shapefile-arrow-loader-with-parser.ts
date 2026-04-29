@@ -27,6 +27,7 @@ import {
   type SHPWKBGeometry,
   makeWKBGeometryArrowTable
 } from './lib/parsers/build-wkb-geometry-arrow';
+import {makeSHPGeoArrowGeometryTable} from './lib/parsers/build-geoarrow-geometry-arrow';
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
 /** Parses a shapefile and returns an Arrow table with a WKB geometry column. */
@@ -35,25 +36,41 @@ export async function parseShapefileToArrow(
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): Promise<ArrowTable> {
-  const {header, geometries} = (await parseFromContext(
-    arrayBuffer,
-    SHPLoaderWithParser,
-    {
-      ...options,
-      shp: {
-        ...options?.shp,
-        shape: 'wkb'
-      }
-    },
-    context!
-  )) as SHPResult;
   const {cpg, prj} = await loadShapefileSidecarFiles(options, context);
   const transform = getReprojectionTransform(prj, options);
+  const geoArrowEncoding = getTypedGeoArrowEncoding(options);
+  let header: SHPHeader | undefined;
+  let geometryTable: ArrowTable;
+
+  if (geoArrowEncoding) {
+    geometryTable = makeSHPGeoArrowGeometryTable(arrayBuffer, options, {transform});
+  } else {
+    const shpResult = (await parseFromContext(
+      arrayBuffer,
+      SHPLoaderWithParser,
+      {
+        ...options,
+        shp: {
+          ...options?.shp,
+          shape: 'wkb'
+        }
+      },
+      context!
+    )) as SHPResult;
+    header = shpResult.header;
+    geometryTable = makeGeometryArrowTable(
+      shpResult.geometries as (SHPWKBGeometry | null)[],
+      header,
+      transform
+    );
+  }
 
   let propertySchema: TableSchema | null = null;
   let propertyTable: ArrowTable | null = null;
 
-  const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+  const dbfResponse = context?.url
+    ? await context.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
+    : null;
   if (dbfResponse?.ok) {
     propertyTable = (await parseFromContext(
       dbfResponse as any,
@@ -71,12 +88,7 @@ export async function parseShapefileToArrow(
     propertySchema = propertyTable.schema || null;
   }
 
-  const schema = buildOutputSchema(propertySchema, header);
-  const geometryTable = makeGeometryArrowTable(
-    geometries as (SHPWKBGeometry | null)[],
-    header,
-    transform
-  );
+  const schema = buildOutputSchema(propertySchema, header, geometryTable.schema);
   return propertyTable
     ? appendGeometryColumnToArrowTable(propertyTable, geometryTable, schema)
     : geometryTable;
@@ -90,6 +102,10 @@ export async function* parseShapefileToArrowInBatches(
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
 ): AsyncIterable<ArrowTableBatch> {
+  if (getTypedGeoArrowEncoding(options)) {
+    throw new Error('Typed GeoArrow shapefile output is only supported for non-streaming parse.');
+  }
+
   const {cpg, prj} = await loadShapefileSidecarFiles(options, context);
   const batchSize =
     options?.shapefile?.batchSize || options?.shp?.batchSize || options?.dbf?.batchSize || 10000;
@@ -115,7 +131,9 @@ export async function* parseShapefileToArrowInBatches(
   let propertyIterator: AsyncIterator<any> | null = null;
   let propertySchema: TableSchema | null = null;
 
-  const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+  const dbfResponse = context?.url
+    ? await context.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
+    : null;
   if (dbfResponse?.ok) {
     const dbfOptions = {
       ...options,
@@ -240,19 +258,27 @@ export async function* parseShapefileToArrowInBatches(
 }
 
 /** Creates the output Arrow schema by appending the WKB geometry column to DBF fields. */
-function buildOutputSchema(propertySchema: TableSchema | null, header?: SHPHeader): TableSchema {
-  const geometryField: Field = makeWKBGeometryField(GEOMETRY_COLUMN_NAME);
+function buildOutputSchema(
+  propertySchema: TableSchema | null,
+  header?: SHPHeader,
+  geometrySchema?: TableSchema
+): TableSchema {
+  const geometryField: Field =
+    geometrySchema?.fields[0] || makeWKBGeometryField(GEOMETRY_COLUMN_NAME);
   const schema: TableSchema = {
     fields: [...(propertySchema?.fields || []), geometryField],
     metadata: {
-      ...(propertySchema?.metadata || {})
+      ...(propertySchema?.metadata || {}),
+      ...(geometrySchema?.metadata || {})
     }
   };
 
-  setWKBGeometryColumnMetadata(schema.metadata!, {
-    geometryColumnName: GEOMETRY_COLUMN_NAME,
-    geometryTypes: inferGeometryTypes(header)
-  });
+  if (!geometrySchema) {
+    setWKBGeometryColumnMetadata(schema.metadata!, {
+      geometryColumnName: GEOMETRY_COLUMN_NAME,
+      geometryTypes: inferGeometryTypes(header)
+    });
+  }
 
   return schema;
 }
@@ -297,6 +323,11 @@ function getReprojectionTransform(
   }
   const projection = new Proj4Projection({from: sourceCrs || 'WGS84', to: _targetCrs || 'WGS84'});
   return coordinate => projection.project(coordinate);
+}
+
+function getTypedGeoArrowEncoding(options?: ShapefileLoaderOptions): boolean {
+  const encoding = options?.shapefile?.geoarrowEncoding || options?.shp?.geoarrowEncoding;
+  return encoding === 'geoarrow';
 }
 
 /** Infers GeoParquet geometry type metadata from parsed geometries or the SHP header. */

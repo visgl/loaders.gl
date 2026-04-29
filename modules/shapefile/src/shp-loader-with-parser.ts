@@ -8,6 +8,7 @@ import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
 import type {SHPGeometry, SHPResult} from './lib/parsers/parse-shp';
 import {parseSHPToArrow, parseSHPToArrowInBatches} from './lib/parsers/parse-shp-to-arrow';
 import type {SHPHeader} from './lib/parsers/parse-shp-header';
+import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {SHPWorkerLoader as SHPWorkerLoaderMetadata} from './shp-loader';
 import {SHPLoader as SHPLoaderMetadata} from './shp-loader';
 
@@ -22,6 +23,7 @@ export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
     shape?: 'binary-geometry' | 'arrow-table' | 'wkb';
+    geoarrowEncoding?: SHPGeoArrowEncoding;
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
