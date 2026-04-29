@@ -4,12 +4,9 @@
 
 export type {ShapefileLoaderOptions} from './shapefile-loader';
 export {ShapefileLoader} from './shapefile-loader';
-export type {ShapefileArrowLoaderOptions} from './shapefile-arrow-loader';
-export {ShapefileArrowLoader} from './shapefile-arrow-loader';
 
 export type {DBFLoaderOptions} from './dbf-loader';
 export {DBFLoader} from './dbf-loader';
-export {DBFArrowLoader} from './dbf-arrow-loader';
 
 export type {SHPLoaderOptions} from './shp-loader';
 export {SHPLoader} from './shp-loader';
@@ -22,7 +19,5 @@ export {zipBatchIterators as _zipBatchIterators} from './lib/streaming/zip-batch
 // DEPRECATED EXPORTS
 /** @deprecated Use DBFLoader. */
 export {DBFWorkerLoader} from './dbf-loader';
-/** @deprecated Use DBFArrowLoader. */
-export {DBFArrowWorkerLoader} from './dbf-arrow-loader';
 /** @deprecated Use SHPLoader. */
 export {SHPWorkerLoader} from './shp-loader';

@@ -8,6 +8,8 @@ import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
+    shape?: 'binary-geometry' | 'arrow-table';
+    batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -16,7 +18,8 @@ export type SHPLoaderOptions = StrictLoaderOptions & {
 export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
-    shape?: 'rows' | 'table' | 'object-row-table';
+    shape?: 'rows' | 'table' | 'object-row-table' | 'arrow-table';
+    batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -27,6 +30,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
   DBFLoaderOptions & {
     shapefile?: {
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
+      batchSize?: number;
     };
     gis?: {
       reproject?: boolean;

@@ -18,8 +18,10 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
+const BINARY_GEOMETRY_OPTIONS = {shp: {shape: 'binary-geometry' as const}};
+
 test('SHPLoader#load polygons', async t => {
-  const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader);
+  const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader, BINARY_GEOMETRY_OPTIONS);
 
   t.ok(result.header, 'A header received');
   t.equal(result.geometries.length, 3, 'Correct number of rows received');
@@ -28,7 +30,11 @@ test('SHPLoader#load polygons', async t => {
 
 test('Shapefile JS Point tests', async t => {
   for (const testFileName of SHAPEFILE_JS_POINT_TEST_FILES) {
-    const output = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`, SHPLoader);
+    const output = await load(
+      `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`,
+      SHPLoader,
+      BINARY_GEOMETRY_OPTIONS
+    );
 
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
@@ -46,7 +52,11 @@ test('Shapefile JS Point tests', async t => {
 
 test('Shapefile JS Polyline tests', async t => {
   for (const testFileName of SHAPEFILE_JS_POLYLINE_TEST_FILES) {
-    const output = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`, SHPLoader);
+    const output = await load(
+      `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`,
+      SHPLoader,
+      BINARY_GEOMETRY_OPTIONS
+    );
 
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
@@ -65,7 +75,11 @@ test('Shapefile JS Polyline tests', async t => {
 
 test('Shapefile JS Polygon tests', async t => {
   for (const testFileName of SHAPEFILE_JS_POLYGON_TEST_FILES) {
-    const output = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`, SHPLoader);
+    const output = await load(
+      `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`,
+      SHPLoader,
+      BINARY_GEOMETRY_OPTIONS
+    );
 
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
@@ -88,13 +102,14 @@ test('Shapefile JS Polygon tests', async t => {
 
 test('SHPLoader#_maxDimensions', async t => {
   const output2d = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`, SHPLoader, {
-    shp: {_maxDimensions: 2}
+    shp: {_maxDimensions: 2, shape: 'binary-geometry'}
   });
   t.equal(output2d.geometries[0].positions.size, 2);
 
   const defaultOutput = await load(
     `${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`,
-    SHPLoader
+    SHPLoader,
+    BINARY_GEOMETRY_OPTIONS
   );
   t.equal(defaultOutput.geometries[0].positions.size, 4);
 

@@ -25,6 +25,7 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
   DBFLoaderOptions & {
     shapefile?: {
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
+      batchSize?: number;
       /** @deprecated Worker URLs must be specified with .dbf.workerUrl * .shp.workerUrl */
       workerUrl?: never;
     };

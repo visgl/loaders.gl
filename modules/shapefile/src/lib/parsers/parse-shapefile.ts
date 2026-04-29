@@ -12,6 +12,9 @@ import {
 import {convertBinaryGeometryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import type {
   BinaryGeometry,
+  Feature,
+  GeoJsonProperties,
+  GeoJSONTable,
   Geometry,
   ObjectRowTable,
   ObjectRowTableBatch
@@ -19,6 +22,7 @@ import type {
 import {Proj4Projection} from '@math.gl/proj4';
 
 import type {SHXOutput} from './parse-shx';
+import type {SHPResult} from './parse-shp';
 import type {SHPHeader} from './parse-shp-header';
 import type {ShapefileLoaderOptions} from './types';
 import {parseShx} from './parse-shx';
@@ -26,13 +30,12 @@ import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoaderWithParser} from '../../shp-loader-with-parser';
 import {DBFLoaderWithParser} from '../../dbf-loader-with-parser';
 
-type Feature = any;
 export interface ShapefileOutput {
   encoding?: string;
   prj?: string;
   shx?: SHXOutput;
   header: SHPHeader;
-  data: object[];
+  data: Feature[];
 }
 /**
  * Parsing of file in batches
@@ -52,7 +55,13 @@ export async function* parseShapefileInBatches(
   const shapeIterable = await parseInBatchesFromContext(
     toArrayBufferIterator(asyncIterator),
     SHPLoaderWithParser,
-    options,
+    {
+      ...options,
+      shp: {
+        ...options?.shp,
+        shape: 'binary-geometry'
+      }
+    },
     context!
   );
 
@@ -70,6 +79,7 @@ export async function* parseShapefileInBatches(
         ...options,
         dbf: {
           ...options?.dbf,
+          shape: 'object-row-table',
           encoding: cpg || 'latin1'
         }
       },
@@ -107,12 +117,12 @@ export async function* parseShapefileInBatches(
   };
 
   for await (const batch of zippedBatchIterable) {
-    let geometries: any;
-    let properties: any;
+    let geometries: BinaryGeometry[];
+    let properties: GeoJsonProperties[] = [];
     if (!propertyIterator) {
-      geometries = batch;
+      geometries = batch as unknown as BinaryGeometry[];
     } else {
-      [geometries, properties] = batch.data;
+      [geometries, properties] = batch.data as unknown as [BinaryGeometry[], GeoJsonProperties[]];
     }
 
     const geojsonGeometries = parseGeometries(geometries);
@@ -143,19 +153,25 @@ export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
-): Promise<ShapefileOutput> {
+): Promise<ShapefileOutput | GeoJSONTable> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const {header, geometries} = await parseFromContext(
+  const {header, geometries} = (await parseFromContext(
     arrayBuffer,
     SHPLoaderWithParser,
-    options,
+    {
+      ...options,
+      shp: {
+        ...options?.shp,
+        shape: 'binary-geometry'
+      }
+    },
     context!
-  ); // {shp: shx}
+  )) as SHPResult; // {shp: shx}
 
-  const geojsonGeometries = parseGeometries(geometries);
+  const geojsonGeometries = parseGeometries(geometries.filter(Boolean) as BinaryGeometry[]);
 
   // parse properties
   let propertyTable: ObjectRowTable | undefined;
@@ -170,12 +186,12 @@ export async function parseShapefile(
         encoding: cpg || 'latin1'
       }
     };
-    propertyTable = await parseFromContext(
+    propertyTable = (await parseFromContext(
       dbfResponse as any,
       DBFLoaderWithParser,
       dbfOptions,
       context!
-    );
+    )) as ObjectRowTable;
   }
 
   let features = joinProperties(geojsonGeometries, propertyTable?.data || []);
@@ -186,14 +202,13 @@ export async function parseShapefile(
   switch (options?.shapefile?.shape) {
     case 'geojson-table':
       return {
-        // @ts-expect-error
         shape: 'geojson-table',
         type: 'FeatureCollection',
         encoding: cpg,
         schema: propertyTable?.schema || {metadata: {}, fields: []},
         prj,
         shx,
-        header,
+        header: header!,
         features
       };
     default:
@@ -201,7 +216,7 @@ export async function parseShapefile(
         encoding: cpg,
         prj,
         shx,
-        header,
+        header: header!,
         data: features
       };
   }
@@ -214,7 +229,7 @@ export async function parseShapefile(
  * @returns geometries as an array
  */
 function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
-  const geojsonGeometries: any[] = [];
+  const geojsonGeometries: Geometry[] = [];
   for (const geom of geometries) {
     geojsonGeometries.push(convertBinaryGeometryToGeometry(geom));
   }
@@ -228,7 +243,7 @@ function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
  * @param  properties [description]
  * @return [description]
  */
-function joinProperties(geometries: Geometry[], properties: object[]): Feature[] {
+function joinProperties(geometries: Geometry[], properties: GeoJsonProperties[]): Feature[] {
   const features: Feature[] = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];

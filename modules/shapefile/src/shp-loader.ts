@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -14,6 +15,8 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
+    shape?: 'binary-geometry' | 'arrow-table';
+    batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -46,7 +49,7 @@ export const SHPWorkerLoader = {
     }
   },
   preload
-} as const satisfies Loader<any, any, SHPLoaderOptions>;
+} as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, SHPLoaderOptions>;
 
 /** Metadata-only SHP file loader. */
 export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {

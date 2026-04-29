@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 import {setLoaderOptions, fetchFile, load, loadInBatches} from '@loaders.gl/core';
-import {ShapefileArrowLoader, ShapefileLoader} from '@loaders.gl/shapefile';
+import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
 
@@ -24,16 +24,16 @@ const TEST_FILES = [
   'empty'
 ];
 
-test('ShapefileArrowLoader#loader conformance', t => {
-  validateLoader(t, ShapefileArrowLoader, 'ShapefileArrowLoader');
+test('ShapefileLoader#loader conformance', t => {
+  validateLoader(t, ShapefileLoader, 'ShapefileLoader');
   t.end();
 });
 
-test('ShapefileArrowLoader#load fixtures round-trip to GeoJSON', async t => {
+test('ShapefileLoader#load arrow-table fixtures round-trip to GeoJSON', async t => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const table = await load(filename, ShapefileArrowLoader);
-    const mainLoaderArrowTable = await load(filename, ShapefileLoader, {
+    const table = await load(filename, ShapefileLoader, {shapefile: {shape: 'arrow-table'}});
+    const explicitArrowTable = await load(filename, ShapefileLoader, {
       shapefile: {shape: 'arrow-table'}
     });
     const geoMetadata = getGeoMetadata(table.schema.metadata);
@@ -53,8 +53,8 @@ test('ShapefileArrowLoader#load fixtures round-trip to GeoJSON', async t => {
     const expected = await response.json();
     t.deepEqual(
       getRowsFromArrowTable(table),
-      getRowsFromArrowTable(mainLoaderArrowTable),
-      `${testFileName}: wrapper matches ShapefileLoader arrow-table output`
+      getRowsFromArrowTable(explicitArrowTable),
+      `${testFileName}: arrow-table output is stable`
     );
     t.deepEqual(roundTripped.features, expected.features, `${testFileName}: features round-trip`);
   }
@@ -62,12 +62,14 @@ test('ShapefileArrowLoader#load fixtures round-trip to GeoJSON', async t => {
   t.end();
 });
 
-test('ShapefileArrowLoader#load reprojects like ShapefileLoader', async t => {
+test('ShapefileLoader#load arrow-table reprojects like v3 output', async t => {
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
-  const arrowTable = await load(filename, ShapefileArrowLoader, {
+  const arrowTable = await load(filename, ShapefileLoader, {
+    shapefile: {shape: 'arrow-table'},
     gis: {reproject: true, _targetCrs: 'EPSG:3857'}
   });
   const shapeTable = await load(filename, ShapefileLoader, {
+    shapefile: {shape: 'v3'},
     gis: {reproject: true, _targetCrs: 'EPSG:3857'}
   });
 
@@ -81,10 +83,13 @@ test('ShapefileArrowLoader#load reprojects like ShapefileLoader', async t => {
   t.end();
 });
 
-test('ShapefileArrowLoader#loadInBatches yields stable Arrow schema', async t => {
+test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', async t => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const batches = await loadInBatches(filename, ShapefileArrowLoader, {metadata: true});
+    const batches = await loadInBatches(filename, ShapefileLoader, {
+      shapefile: {shape: 'arrow-table'},
+      metadata: true
+    });
     const collectedRows = [];
     let schema = null;
     for await (const batch of batches) {
@@ -130,6 +135,27 @@ test('ShapefileLoader#loadInBatches arrow-table yields Arrow batches', async t =
   }
 
   t.ok(sawDataBatch, 'main loader produced at least one Arrow batch');
+  t.end();
+});
+
+test('ShapefileLoader#loadInBatches arrow-table respects batchSize', async t => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const batches = await loadInBatches(filename, ShapefileLoader, {
+    shapefile: {shape: 'arrow-table', batchSize: 1}
+  });
+  const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/points.json`);
+  const expected = await response.json();
+
+  let batchCount = 0;
+  for await (const batch of batches) {
+    if (batch?.batchType === 'metadata' || batch.length === 0) {
+      continue;
+    }
+    batchCount++;
+    t.equal(batch.length, 1, 'emits requested row batch size');
+  }
+
+  t.equal(batchCount, expected.features.length, 'emits one Arrow batch per point');
   t.end();
 });
 
