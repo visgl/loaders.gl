@@ -8,6 +8,16 @@ import {VERSION} from './lib/utils/version';
 export type {GPUTextureFormat, TextureFormat} from '@loaders.gl/schema';
 
 // Loaders
+export {
+  BasisTextureFormat,
+  CompressedTextureFormat,
+  CrunchTextureFormat,
+  DDSTextureFormat,
+  KTX2BasisTextureFormat,
+  NPYFormat,
+  RadianceHDRFormat
+} from './texture-format';
+
 export type {BasisLoaderOptions} from './basis-loader';
 export {BasisLoader} from './basis-loader';
 

@@ -4,6 +4,20 @@
 
 // CSW - Catalog Service for the Web
 
+export {
+  CSWCapabilitiesFormat,
+  CSWDomainFormat,
+  CSWRecordsFormat,
+  GMLFormat,
+  WCSCapabilitiesFormat,
+  WFSCapabilitiesFormat,
+  WMSCapabilitiesFormat,
+  WMSErrorFormat,
+  WMSFeatureInfoFormat,
+  WMSLayerDescriptionFormat,
+  WMTSCapabilitiesFormat
+} from './wms-format';
+
 export type {CSWLoaderOptions} from './csw-capabilities-loader';
 
 export type {CSWCapabilities} from './csw-capabilities-loader';

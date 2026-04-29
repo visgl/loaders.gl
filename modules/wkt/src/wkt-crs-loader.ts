@@ -5,6 +5,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ParseWKTCRSOptions, WKTCRS} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {WKTCRSFormat} from './wkt-format';
 
 export type WKTCRSLoaderOptions = LoaderOptions & {
   'wkt-crs'?: ParseWKTCRSOptions;
@@ -24,6 +25,7 @@ async function preload() {
  * @see Wikipedia Page: https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems
  */
 export const WKTCRSLoader = {
+  ...WKTCRSFormat,
   dataType: null as unknown as WKTCRS,
   batchType: null as never,
   name: 'WKT CRS (Well-Known Text Coordinate Reference System)',

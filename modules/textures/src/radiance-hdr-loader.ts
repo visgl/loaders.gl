@@ -4,6 +4,7 @@
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {Texture} from '@loaders.gl/schema';
+import {RadianceHDRFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
 import type {RadianceHDRMetadata} from './lib/parsers/parse-hdr';
 
@@ -18,6 +19,7 @@ async function preload() {
 }
 
 export const RadianceHDRLoader = {
+  ...RadianceHDRFormat,
   dataType: null as unknown as Texture<RadianceHDRMetadata>,
   batchType: null as never,
 

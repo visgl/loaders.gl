@@ -15,13 +15,14 @@ export type ArcGISWebSceneLoaderOptions = LoaderOptions & {};
  */
 export const ArcGISWebSceneLoaderWithParser = {
   ...ArcGISWebSceneLoaderMetadataWithoutPreload,
-  parse
+  parse,
+  parseText: parse
 } as const satisfies LoaderWithParser<ArcGISWebSceneData, never, ArcGISWebSceneLoaderOptions>;
 
 /**
  * Parse ArcGIS webscene
- * @param data
+ * @param data - WebScene JSON as text or encoded bytes.
  */
-async function parse(data: ArrayBuffer): Promise<ArcGISWebSceneData> {
+async function parse(data: string | ArrayBuffer): Promise<ArcGISWebSceneData> {
   return parseWebscene(data);
 }

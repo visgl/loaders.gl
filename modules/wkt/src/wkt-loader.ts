@@ -4,8 +4,8 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {isWKT, WKT_MAGIC_STRINGS} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {WKTFormat} from './wkt-format';
 
 export type WKTLoaderOptions = LoaderOptions & {
   /** Options for the WKTLoader */
@@ -34,17 +34,9 @@ export const WKTWorkerLoader = {
   dataType: null as unknown as Geometry,
   batchType: null as never,
 
-  name: 'WKT (Well-Known Text)',
-  id: 'wkt',
-  module: 'wkt',
+  ...WKTFormat,
   version: VERSION,
   worker: true,
-  extensions: ['wkt'],
-  mimeTypes: ['text/plain'],
-  category: 'geometry',
-  text: true,
-  tests: WKT_MAGIC_STRINGS,
-  testText: isWKT,
   options: {
     wkt: {
       shape: 'geojson-geometry',

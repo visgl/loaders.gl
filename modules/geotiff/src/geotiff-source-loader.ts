@@ -22,6 +22,7 @@ import {
   getRasterViewportBoundingBox,
   RangeRequestScheduler
 } from '@loaders.gl/loader-utils';
+import {GeoTIFFFormat} from './geotiff-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -51,12 +52,9 @@ export type GeoTIFFSourceLoaderOptions = DataSourceOptions & {
 export const GeoTIFFSourceLoader = {
   dataType: null as unknown as GeoTIFFRasterSource,
   batchType: null as never,
+  ...GeoTIFFFormat,
   name: 'GeoTIFFSourceLoader',
-  id: 'geotiff',
-  module: 'geotiff',
   version: VERSION,
-  extensions: ['geotiff', 'tiff', 'geotif', 'tif'],
-  mimeTypes: ['image/tiff', 'image/geotiff'],
   type: 'geotiff',
   fromUrl: true,
   fromBlob: true,

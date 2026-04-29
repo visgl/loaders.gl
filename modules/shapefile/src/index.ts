@@ -3,9 +3,11 @@
 // Copyright (c) vis.gl contributors
 
 export type {ShapefileLoaderOptions} from './shapefile-loader';
+export {ShapefileFormat, SHPFormat} from './shp-format';
 export {ShapefileLoader} from './shapefile-loader';
 
 export type {DBFLoaderOptions} from './dbf-loader';
+export {DBFFormat} from './dbf-format';
 export {DBFLoader} from './dbf-loader';
 
 export type {SHPLoaderOptions} from './shp-loader';

@@ -3,6 +3,7 @@
 // Copyright vis.gl contributors
 
 export type {PCDLoaderOptions} from './pcd-loader';
+export {PCDFormat} from './pcd-format';
 export {PCDLoader} from './pcd-loader';
 export type {PCDWriterOptions} from './pcd-writer';
 export {PCDWriter} from './pcd-writer';

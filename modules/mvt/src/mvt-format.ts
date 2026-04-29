@@ -11,6 +11,8 @@ export const MVTFormat = {
   name: 'Mapbox Vector Tile',
   id: 'mvt',
   module: 'mvt',
+  encoding: 'protobuf',
+  format: 'mvt',
   // Note: ArcGIS uses '.pbf' extension and 'application/octet-stream'
   extensions: ['mvt', 'pbf'],
   mimeTypes: [

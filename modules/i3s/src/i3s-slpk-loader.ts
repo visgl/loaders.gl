@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
+import {SLPKFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -24,6 +25,7 @@ export type SLPKLoaderOptions = LoaderOptions & {
  * @todo - this should be updated to use `parseFile` and ReadableFile
  */
 export const SLPKLoader = {
+  ...SLPKFormat,
   dataType: null as unknown as ArrayBuffer,
   batchType: null as never,
 

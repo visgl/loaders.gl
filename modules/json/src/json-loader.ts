@@ -4,6 +4,7 @@
 
 import type {ArrowTable, ArrowTableBatch, Batch, Table, TableBatch} from '@loaders.gl/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {JSONFormat} from './json-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -44,14 +45,8 @@ export const JSONLoader = {
   dataType: null as unknown as Table | ArrowTable,
   batchType: null as unknown as TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
 
-  name: 'JSON',
-  id: 'json',
-  module: 'json',
+  ...JSONFormat,
   version: VERSION,
-  extensions: ['json', 'geojson'],
-  mimeTypes: ['application/json'],
-  category: 'table',
-  text: true,
   options: {
     json: {
       shape: undefined,

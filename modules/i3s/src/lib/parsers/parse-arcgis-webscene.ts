@@ -44,10 +44,11 @@ export class LayerError extends Error {
 
 /**
  * Parses ArcGIS WebScene
- * @param data
+ * @param data - WebScene JSON as text or encoded bytes.
  */
-export async function parseWebscene(data: ArrayBuffer): Promise<ArcGISWebSceneData> {
-  const layer0 = JSON.parse(new TextDecoder().decode(data));
+export async function parseWebscene(data: string | ArrayBuffer): Promise<ArcGISWebSceneData> {
+  const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
+  const layer0 = JSON.parse(text);
   const {operationalLayers} = layer0;
   const {layers, unsupportedLayers} = await parseOperationalLayers(operationalLayers, true);
 

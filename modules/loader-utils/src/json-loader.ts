@@ -18,6 +18,8 @@ export const JSONLoader = {
   id: 'json',
   module: 'json',
   version: VERSION,
+  encoding: 'json',
+  format: 'json',
   extensions: ['json', 'geojson'],
   mimeTypes: ['application/json'],
   category: 'json',

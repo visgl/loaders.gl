@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ParseXMLOptions} from './lib/parsers/parse-xml';
+import {XMLFormat} from './xml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -25,14 +26,9 @@ async function preload() {
 export const XMLLoader = {
   dataType: null as any,
   batchType: null as never,
-  name: 'XML',
-  id: 'xml',
-  module: 'xml',
+  ...XMLFormat,
   version: VERSION,
   worker: false,
-  text: true,
-  extensions: ['xml'],
-  mimeTypes: ['application/xml', 'text/xml'],
   testText: testXMLFile,
   options: {
     xml: {

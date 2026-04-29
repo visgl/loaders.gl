@@ -10,15 +10,18 @@ import type {WMSFeatureInfo} from '../lib/parsers/wms/parse-wms-features';
 
 export {WMSFeatureInfo};
 
+import {WMSFeatureInfoFormat} from '../wms-format';
 /**
  * Loader for the response to the WMS GetFeatureInfo request
  */
 export const WMSFeatureInfoLoader = {
+  ...WMSFeatureInfoFormat,
   ...WMSCapabilitiesLoader,
   dataType: null as unknown as WMSFeatureInfo,
 
   id: 'wms-feature-info',
   name: 'WMS FeatureInfo',
+  format: 'wms-feature-info',
 
   /** Loads the parser-bearing WMS FeatureInfo loader implementation. */
   preload: async () => (await import('./wms-feature-info-loader-with-parser')).WMSFeatureInfoLoaderWithParser
