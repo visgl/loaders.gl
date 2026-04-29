@@ -2,16 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {StrictLoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {StrictLoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import type {Batch, GeoJSONTable, ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {SHP_MAGIC_NUMBER, SHPLoaderOptions} from './shp-loader';
-import {
-  parseShapefile,
-  parseShapefileInBatches,
-  type ShapefileOutput
-} from './lib/parsers/parse-shapefile';
-import {DBFLoaderOptions} from './dbf-loader';
-import {parseShapefileToArrow, parseShapefileToArrowInBatches} from './shapefile-arrow-loader';
+import type {SHPLoaderOptions} from './shp-loader';
+import type {ShapefileOutput} from './lib/parsers/parse-shapefile';
+import type {DBFLoaderOptions} from './dbf-loader';
+import type {SHPGeoArrowEncoding} from './lib/parsers/types';
+import {ShapefileFormat} from './shp-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -22,6 +19,8 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
   DBFLoaderOptions & {
     shapefile?: {
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
+      geoarrowEncoding?: SHPGeoArrowEncoding;
+      batchSize?: number;
       /** @deprecated Worker URLs must be specified with .dbf.workerUrl * .shp.workerUrl */
       workerUrl?: never;
     };
@@ -31,21 +30,18 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
     };
   };
 
-/**
- * Shapefile loader
- * @note Shapefile is multifile format and requires providing additional files
- */
+/** Preloads the parser-bearing Shapefile loader implementation. */
+async function preload() {
+  const {ShapefileLoaderWithParser} = await import('./shapefile-loader-with-parser');
+  return ShapefileLoaderWithParser;
+}
+
+/** Metadata-only Shapefile loader. */
 export const ShapefileLoader = {
   dataType: null as unknown as ShapefileOutput | GeoJSONTable | ArrowTable,
   batchType: null as unknown as ShapefileOutput | Batch | ArrowTableBatch,
-  name: 'Shapefile',
-  id: 'shapefile',
-  module: 'shapefile',
+  ...ShapefileFormat,
   version: VERSION,
-  category: 'geometry',
-  extensions: ['shp'],
-  mimeTypes: ['application/octet-stream'],
-  tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shapefile: {
       shape: 'v3'
@@ -54,15 +50,8 @@ export const ShapefileLoader = {
       _maxDimensions: 4
     }
   },
-  parse: (arrayBuffer, options, context) =>
-    options?.shapefile?.shape === 'arrow-table'
-      ? parseShapefileToArrow(arrayBuffer, options, context)
-      : parseShapefile(arrayBuffer, options, context),
-  parseInBatches: (asyncIterator, options, context) =>
-    options?.shapefile?.shape === 'arrow-table'
-      ? parseShapefileToArrowInBatches(asyncIterator, options, context)
-      : parseShapefileInBatches(asyncIterator, options, context)
-} as const satisfies LoaderWithParser<
+  preload
+} as const satisfies Loader<
   ShapefileOutput | GeoJSONTable | ArrowTable,
   ShapefileOutput | Batch | ArrowTableBatch,
   ShapefileLoaderOptions

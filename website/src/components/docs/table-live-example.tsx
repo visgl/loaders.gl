@@ -1,4 +1,4 @@
-import React, {type ReactNode, useEffect, useState} from 'react'
+import React, {type ChangeEvent, type DragEvent, type KeyboardEvent, type ReactNode, useEffect, useState} from 'react'
 import styled from 'styled-components'
 
 import {load, type LoaderOptions} from '@loaders.gl/core'
@@ -26,12 +26,22 @@ export type TableLiveExampleConfig = {
   loaderName: TableLiveExampleLoaderName
   /** Source data URL to load in the browser. */
   url: string
+  /** Named sample files for the source selector. */
+  sampleFiles?: TableLiveExampleSampleFile[]
   /** Loader options passed to loaders.gl. */
   options?: LoaderOptions
   /** Maximum number of rows to render. */
   rowLimit?: number
   /** Maximum number of columns to render. */
   columnLimit?: number
+}
+
+/** Named source file that can be selected from the source URL card. */
+export type TableLiveExampleSampleFile = {
+  /** User-visible sample file label. */
+  label: string
+  /** Source URL loaded when the sample file is selected. */
+  url: string
 }
 
 type TableLiveExampleState =
@@ -52,7 +62,20 @@ type TableLiveExampleState =
       status: 'error'
       /** Error message from loading or parsing the table. */
       errorMessage: string
+      /** Source preview content, when source bytes loaded before parsing failed. */
+      sourcePreview?: SourcePreview
     }
+
+type TableLiveExampleSource = {
+  /** User-visible source label. */
+  label: string
+  /** Source input type. */
+  type: 'url' | 'file'
+  /** URL or file name shown in the source card. */
+  value: string
+  /** File source, when the example was loaded through drag and drop. */
+  file?: File
+}
 
 type SourcePreview = {
   /** Source preview mode for the left-hand panel. */
@@ -96,6 +119,108 @@ const PaneCard = styled.div`
     0 6px 18px rgba(43, 56, 72, 0.08);
 `
 
+const SourceSummaryCard = styled.form<{$hasSamples?: boolean; $isDragActive?: boolean}>`
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: ${(props) =>
+    props.$hasSamples
+      ? 'max-content minmax(10rem, max-content) minmax(0, 1fr) max-content'
+      : 'max-content minmax(0, 1fr) max-content'};
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.7rem 0.9rem;
+  border: 1px dashed ${(props) => (props.$isDragActive ? 'var(--ifm-color-primary)' : 'var(--ifm-color-gray-300)')};
+  border-radius: 8px;
+  background: ${(props) =>
+    props.$isDragActive ? 'rgba(225, 245, 255, 0.96)' : 'rgba(255, 255, 255, 0.96)'};
+  color: var(--ifm-color-gray-900);
+  box-shadow: 0 8px 20px rgba(43, 56, 72, 0.08);
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+`
+
+const SourceSummaryLabel = styled.div`
+  color: var(--ifm-color-gray-700);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+`
+
+const SourceInput = styled.input`
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ifm-color-gray-900);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+  outline: none;
+  white-space: nowrap;
+
+  &::placeholder {
+    color: var(--ifm-color-gray-600);
+  }
+`
+
+const SourceSampleSelect = styled.select`
+  min-width: 0;
+  max-width: 16rem;
+  border: 1px solid rgba(43, 56, 72, 0.18);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ifm-color-gray-800);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.38rem 0.5rem;
+`
+
+const SourceAction = styled.button`
+  border: 1px solid rgba(43, 56, 72, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ifm-color-gray-800);
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.42rem 0.58rem;
+
+  &:hover {
+    background: var(--ifm-color-gray-100);
+  }
+`
+
+const SourceErrorMessage = styled.div`
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(185, 28, 28, 0.24);
+  border-radius: 8px;
+  background: rgba(254, 242, 242, 0.96);
+  color: rgb(127, 29, 29);
+`
+
+const SourceErrorLabel = styled.div`
+  margin-bottom: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+`
+
+const SourceErrorText = styled.pre`
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+  line-height: 1.45;
+`
+
 const PaneHeader = styled.div`
   display: flex;
   align-items: baseline;
@@ -121,7 +246,30 @@ const PaneMeta = styled.div`
   text-align: right;
 `
 
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+`
+
+const ToggleButton = styled.button`
+  border: 1px solid rgba(43, 56, 72, 0.2);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ifm-color-gray-800);
+  cursor: pointer;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0.42rem 0.58rem;
+
+  &:hover {
+    background: var(--ifm-color-gray-100);
+  }
+`
+
 const TableShell = styled.div`
+  position: relative;
   width: 100%;
   height: 32rem;
   overflow-x: auto;
@@ -142,7 +290,7 @@ const SourceShell = styled.div`
   background: transparent;
 `
 
-const SourceViewport = styled.pre`
+const SourceViewport = styled.pre<{$wrap?: boolean}>`
   min-height: 100%;
   margin: 0;
   padding: 1rem 1.05rem;
@@ -153,7 +301,8 @@ const SourceViewport = styled.pre`
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.8rem;
   line-height: 1.6;
-  white-space: pre;
+  overflow-wrap: ${(props) => (props.$wrap ? 'anywhere' : 'normal')};
+  white-space: ${(props) => (props.$wrap ? 'pre-wrap' : 'pre')};
 `
 
 const BinaryViewport = styled.div`
@@ -232,11 +381,12 @@ const StatusContainer = styled.div`
 `
 
 const PreviewTable = styled.table`
-  width: max-content;
-  min-width: min(36rem, 100%);
+  width: 100%;
+  min-width: 100%;
   margin: 0;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: auto;
   font-size: 0.85rem;
   color: var(--ifm-color-gray-900);
   background: rgba(255, 255, 255, 0.96);
@@ -244,24 +394,19 @@ const PreviewTable = styled.table`
   overflow: hidden;
 `
 
-const PreviewTableTitleCell = styled.th`
-  padding: 0.95rem 1rem;
-  text-align: center;
-  background: var(--ifm-color-gray-200);
-  border-bottom: 1px solid rgba(43, 56, 72, 0.12);
-  color: var(--ifm-color-gray-900);
-  font-size: 1.1rem;
-  font-weight: 800;
-  line-height: 1.2;
+const PreviewTableHead = styled.thead`
+  position: sticky;
+  top: 0;
+  z-index: 4;
 `
 
 const HeaderCell = styled.th`
-  max-width: 240px;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  min-width: 12rem;
   padding: 0.7rem 0.95rem;
-  overflow: hidden;
   text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   background: var(--ifm-color-gray-200);
   border-bottom: 1px solid rgba(43, 56, 72, 0.12);
   color: var(--ifm-color-gray-900);
@@ -270,11 +415,11 @@ const HeaderCell = styled.th`
 `
 
 const BodyCell = styled.td`
-  max-width: 240px;
+  min-width: 12rem;
   padding: 0.68rem 0.95rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
   border-bottom: 1px solid rgba(43, 56, 72, 0.08);
   color: var(--ifm-color-gray-800);
 `
@@ -292,6 +437,32 @@ const GlobalTableStyle = styled.div`
     box-shadow:
       0 18px 42px rgba(0, 0, 0, 0.3),
       0 4px 12px rgba(0, 0, 0, 0.24);
+  }
+
+  html[data-theme='dark'] & ${SourceSummaryCard} {
+    border-color: rgba(158, 174, 192, 0.22);
+    background: rgba(30, 41, 59, 0.96);
+    color: rgba(241, 245, 249, 0.92);
+  }
+
+  html[data-theme='dark'] & ${SourceSummaryLabel} {
+    color: rgba(203, 213, 225, 0.9);
+  }
+
+  html[data-theme='dark'] & ${SourceInput} {
+    color: rgba(241, 245, 249, 0.92);
+  }
+
+  html[data-theme='dark'] & ${SourceSampleSelect} {
+    border-color: rgba(158, 174, 192, 0.28);
+    background: rgba(51, 65, 85, 0.92);
+    color: rgba(241, 245, 249, 0.92);
+  }
+
+  html[data-theme='dark'] & ${SourceErrorMessage} {
+    border-color: rgba(248, 113, 113, 0.32);
+    background: rgba(69, 10, 10, 0.56);
+    color: rgba(254, 226, 226, 0.96);
   }
 
   html[data-theme='dark'] & ${TableShell} {
@@ -328,13 +499,14 @@ const GlobalTableStyle = styled.div`
     color: rgba(241, 245, 249, 0.92);
   }
 
-  html[data-theme='dark'] & ${HeaderCell} {
-    background: rgba(72, 86, 104, 0.72);
-    border-bottom-color: rgba(225, 232, 240, 0.14);
-    color: rgba(255, 255, 255, 0.92);
+  html[data-theme='dark'] & ${ToggleButton},
+  html[data-theme='dark'] & ${SourceAction} {
+    border-color: rgba(158, 174, 192, 0.28);
+    background: rgba(51, 65, 85, 0.92);
+    color: rgba(241, 245, 249, 0.92);
   }
 
-  html[data-theme='dark'] & ${PreviewTableTitleCell} {
+  html[data-theme='dark'] & ${HeaderCell} {
     background: rgba(72, 86, 104, 0.72);
     border-bottom-color: rgba(225, 232, 240, 0.14);
     color: rgba(255, 255, 255, 0.92);
@@ -351,19 +523,32 @@ const GlobalTableStyle = styled.div`
  */
 export default function TableLiveExample({config}: {config: TableLiveExampleConfig}) {
   const [state, setState] = useState<TableLiveExampleState>({status: 'loading'})
+  const [source, setSource] = useState<TableLiveExampleSource>({
+    label: 'Source URL',
+    type: 'url',
+    value: config.url
+  })
+  const [sourceInputValue, setSourceInputValue] = useState(config.url)
+  const [isDragActive, setIsDragActive] = useState(false)
+  const [wrapSourceText, setWrapSourceText] = useState(false)
+
+  useEffect(() => {
+    setSource({label: 'Source URL', type: 'url', value: config.url})
+    setSourceInputValue(config.url)
+  }, [config.url])
 
   useEffect(() => {
     let isCancelled = false
 
     async function loadTable() {
       setState({status: 'loading'})
+      let sourcePreview: SourcePreview | undefined
 
       try {
-        const response = await fetch(config.url)
-        const arrayBuffer = await response.arrayBuffer()
+        const arrayBuffer = await loadSourceArrayBuffer(source)
+        sourcePreview = createSourcePreview(config.loaderName, arrayBuffer)
         const loader = getTableLoader(config.loaderName)
         const table = (await load(arrayBuffer, loader, config.options)) as Table
-        const sourcePreview = createSourcePreview(config.loaderName, arrayBuffer)
 
         if (!isCancelled) {
           setState({status: 'loaded', table, sourcePreview})
@@ -372,7 +557,8 @@ export default function TableLiveExample({config}: {config: TableLiveExampleConf
         if (!isCancelled) {
           setState({
             status: 'error',
-            errorMessage: error instanceof Error ? error.message : String(error)
+            errorMessage: formatLoadError(error, config.loaderName, source),
+            sourcePreview
           })
         }
       }
@@ -383,49 +569,188 @@ export default function TableLiveExample({config}: {config: TableLiveExampleConf
     return () => {
       isCancelled = true
     }
-  }, [config])
+  }, [config.loaderName, config.options, source])
+
+  function updateSourceUrl() {
+    const nextUrl = sourceInputValue.trim()
+    if (nextUrl) {
+      setSource({label: 'Source URL', type: 'url', value: nextUrl})
+    }
+  }
+
+  function handleSourceInputChange(event: ChangeEvent<HTMLInputElement>) {
+    setSourceInputValue(event.target.value)
+  }
+
+  function handleSampleFileChange(event: ChangeEvent<HTMLSelectElement>) {
+    const nextUrl = event.target.value
+    if (nextUrl) {
+      setSource({label: 'Source URL', type: 'url', value: nextUrl})
+      setSourceInputValue(nextUrl)
+    }
+  }
+
+  function handleSourceInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      updateSourceUrl()
+    }
+  }
+
+  function handleDragOver(event: DragEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setIsDragActive(true)
+  }
+
+  function handleDragLeave(event: DragEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setIsDragActive(false)
+  }
+
+  function handleDrop(event: DragEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setIsDragActive(false)
+    const file = event.dataTransfer.files[0]
+    if (file) {
+      setSource({label: 'Dropped file', type: 'file', value: file.name, file})
+      setSourceInputValue(file.name)
+    }
+  }
 
   return (
     <GlobalTableStyle>
-      {state.status === 'loading' && <StatusContainer>Loading table...</StatusContainer>}
-      {state.status === 'error' && <StatusContainer>{state.errorMessage}</StatusContainer>}
-      {state.status === 'loaded' && (
-        <PreviewLayout data-loader-live-table-example>
-          <PreviewPane>
-            <PaneCard>
-              <PaneHeader>
-                <PaneLabel>{state.sourcePreview.label}</PaneLabel>
-                <PaneMeta>{formatByteCount(state.sourcePreview.byteLength)}</PaneMeta>
-              </PaneHeader>
-              <SourceShell>
-                {state.sourcePreview.mode === 'text' ? (
-                  <SourceViewport>{state.sourcePreview.content}</SourceViewport>
-                ) : (
-                  <BinaryViewport>{state.sourcePreview.content}</BinaryViewport>
-                )}
-              </SourceShell>
-            </PaneCard>
-          </PreviewPane>
+      <PreviewLayout data-loader-live-table-example>
+        <SourceSummaryCard
+          $hasSamples={Boolean(config.sampleFiles?.length)}
+          $isDragActive={isDragActive}
+          onSubmit={(event) => {
+            event.preventDefault()
+            updateSourceUrl()
+          }}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <SourceSummaryLabel>{source.label}</SourceSummaryLabel>
+          {config.sampleFiles?.length ? (
+            <SourceSampleSelect
+              aria-label="Sample file"
+              value={getSelectedSampleUrl(config.sampleFiles, source)}
+              onChange={handleSampleFileChange}
+            >
+              <option value="">Sample files</option>
+              {config.sampleFiles.map(sampleFile => (
+                <option key={sampleFile.url} value={sampleFile.url}>
+                  {sampleFile.label}
+                </option>
+              ))}
+            </SourceSampleSelect>
+          ) : null}
+          <SourceInput
+            aria-label="Source URL or dropped file"
+            value={sourceInputValue}
+            placeholder="Enter a source URL or drop a file"
+            onChange={handleSourceInputChange}
+            onBlur={updateSourceUrl}
+            onKeyDown={handleSourceInputKeyDown}
+            readOnly={source.type === 'file'}
+            title={source.value}
+          />
+          <SourceAction type="submit">Load</SourceAction>
+          {state.status === 'error' && (
+            <SourceErrorMessage role="alert">
+              <SourceErrorLabel>Loader error</SourceErrorLabel>
+              <SourceErrorText>{state.errorMessage}</SourceErrorText>
+            </SourceErrorMessage>
+          )}
+        </SourceSummaryCard>
+        {state.status === 'loading' && <StatusContainer>Loading table...</StatusContainer>}
+        {state.status === 'error' && state.sourcePreview && (
+          <>
+            <SourcePreviewPane
+              sourcePreview={state.sourcePreview}
+              wrapSourceText={wrapSourceText}
+              onToggleWrapSourceText={() => setWrapSourceText(value => !value)}
+            />
+            <PreviewPane>
+              <PaneCard>
+                <PaneHeader>
+                  <PaneLabel>Parsed table</PaneLabel>
+                  <PaneMeta>&nbsp;</PaneMeta>
+                </PaneHeader>
+                <StatusContainer>No parsed table</StatusContainer>
+              </PaneCard>
+            </PreviewPane>
+          </>
+        )}
+        {state.status === 'loaded' && (
+          <>
+            <SourcePreviewPane
+              sourcePreview={state.sourcePreview}
+              wrapSourceText={wrapSourceText}
+              onToggleWrapSourceText={() => setWrapSourceText(value => !value)}
+            />
 
-          <PreviewPane>
-            <PaneCard>
-              <PaneHeader>
-                <PaneLabel>Parsed table</PaneLabel>
-                <PaneMeta>&nbsp;</PaneMeta>
-              </PaneHeader>
-              <TableShell>
-                <TablePreview
-                  loaderName={config.loaderName}
-                  table={state.table}
-                  rowLimit={config.rowLimit || TABLE_ROW_LIMIT}
-                  columnLimit={config.columnLimit || TABLE_COLUMN_LIMIT}
-                />
-              </TableShell>
-            </PaneCard>
-          </PreviewPane>
-        </PreviewLayout>
-      )}
+            <PreviewPane>
+              <PaneCard>
+                <PaneHeader>
+                  <PaneLabel>Parsed table</PaneLabel>
+                  <PaneMeta>&nbsp;</PaneMeta>
+                </PaneHeader>
+                <TableShell>
+                  <TablePreview
+                    table={state.table}
+                    rowLimit={config.rowLimit || TABLE_ROW_LIMIT}
+                    columnLimit={config.columnLimit || TABLE_COLUMN_LIMIT}
+                  />
+                </TableShell>
+              </PaneCard>
+            </PreviewPane>
+          </>
+        )}
+      </PreviewLayout>
     </GlobalTableStyle>
+  )
+}
+
+/**
+ * Renders the loaded source bytes beside the parsed table.
+ */
+function SourcePreviewPane({
+  sourcePreview,
+  wrapSourceText,
+  onToggleWrapSourceText
+}: {
+  /** Source preview content for the loaded file. */
+  sourcePreview: SourcePreview
+  /** Whether to wrap text source content. */
+  wrapSourceText: boolean
+  /** Toggles text wrapping for source content. */
+  onToggleWrapSourceText: () => void
+}) {
+  return (
+    <PreviewPane>
+      <PaneCard>
+        <PaneHeader>
+          <PaneLabel>{sourcePreview.label}</PaneLabel>
+          <HeaderActions>
+            {sourcePreview.mode === 'text' && (
+              <ToggleButton type="button" onClick={onToggleWrapSourceText}>
+                {wrapSourceText ? 'No Wrap' : 'Wrap'}
+              </ToggleButton>
+            )}
+            <PaneMeta>{formatByteCount(sourcePreview.byteLength)}</PaneMeta>
+          </HeaderActions>
+        </PaneHeader>
+        <SourceShell>
+          {sourcePreview.mode === 'text' ? (
+            <SourceViewport $wrap={wrapSourceText}>{sourcePreview.content}</SourceViewport>
+          ) : (
+            <BinaryViewport>{sourcePreview.content}</BinaryViewport>
+          )}
+        </SourceShell>
+      </PaneCard>
+    </PreviewPane>
   )
 }
 
@@ -433,13 +758,10 @@ export default function TableLiveExample({config}: {config: TableLiveExampleConf
  * Renders capped table rows and columns for a loaded table.
  */
 function TablePreview({
-  loaderName,
   table,
   rowLimit,
   columnLimit
 }: {
-  /** Loader name for the preview header. */
-  loaderName: TableLiveExampleLoaderName
   /** Table to render. */
   table: Table
   /** Maximum number of rows to render. */
@@ -456,10 +778,7 @@ function TablePreview({
 
   return (
     <PreviewTable>
-      <thead>
-        <tr>
-          <PreviewTableTitleCell colSpan={columnNames.length}>{loaderName}</PreviewTableTitleCell>
-        </tr>
+      <PreviewTableHead>
         <tr>
           {columnNames.map(columnName => (
             <HeaderCell key={columnName} title={columnName}>
@@ -467,7 +786,7 @@ function TablePreview({
             </HeaderCell>
           ))}
         </tr>
-      </thead>
+      </PreviewTableHead>
       <tbody>
         {Array.from({length: rowCount}, (_row, rowIndex) => (
           <PreviewRow key={rowIndex}>
@@ -484,6 +803,62 @@ function TablePreview({
       </tbody>
     </PreviewTable>
   )
+}
+
+/**
+ * Loads source bytes from either a remote URL or a dropped file.
+ */
+async function loadSourceArrayBuffer(source: TableLiveExampleSource): Promise<ArrayBuffer> {
+  if (source.type === 'file') {
+    if (!source.file) {
+      throw new Error('No dropped file is available')
+    }
+    return await source.file.arrayBuffer()
+  }
+
+  const response = await fetch(source.value)
+  if (!response.ok) {
+    throw new Error(`Failed to load ${source.value}: ${response.status} ${response.statusText}`)
+  }
+  return await response.arrayBuffer()
+}
+
+/**
+ * Formats source loading and loader parser errors for the source URL card.
+ */
+function formatLoadError(
+  error: unknown,
+  loaderName: TableLiveExampleLoaderName,
+  source: TableLiveExampleSource
+): string {
+  const message =
+    error instanceof Error
+      ? error.name && error.name !== 'Error'
+        ? `${error.name}: ${error.message}`
+        : error.message
+      : String(error)
+
+  if (loaderName === 'JSONLoader' && message.includes('failed to parse JSON')) {
+    const fileContext = source.type === 'file' ? `\n\nDropped file: ${source.value}` : ''
+    return `${message}${fileContext}
+
+This preview is configured to parse JSON as a table. The file can still be valid JSON, but it must be a JSON array of rows or contain a nested row array that can be converted to a table. Files such as Mapbox style JSON from the MVT tests are better opened in the MVT example or with a non-tabular JSON preview.`
+  }
+
+  return message
+}
+
+/**
+ * Returns the select value for the currently loaded source when it is a known sample.
+ */
+function getSelectedSampleUrl(
+  sampleFiles: TableLiveExampleSampleFile[],
+  source: TableLiveExampleSource
+): string {
+  if (source.type !== 'url') {
+    return ''
+  }
+  return sampleFiles.some(sampleFile => sampleFile.url === source.value) ? source.value : ''
 }
 
 /**

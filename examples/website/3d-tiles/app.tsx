@@ -283,7 +283,7 @@ export default class App extends PureComponent<AppProps> {
     return new SourceLayer({
       id: 'tile-3d-layer',
       data: dataUrl,
-      loader: ionAssetId ? CesiumIonLoader : Tiles3DLoader,
+      loaders: [ionAssetId ? CesiumIonLoader : Tiles3DLoader],
       loadOptions,
       pickable: true,
       pointSize: 2,

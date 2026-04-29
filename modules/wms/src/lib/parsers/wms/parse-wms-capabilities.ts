@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {XMLLoader} from '@loaders.gl/xml';
 import {
   getXMLArray,
   getXMLStringArray,
@@ -10,6 +9,7 @@ import {
   getXMLFloat,
   getXMLBoolean
 } from '../xml/parse-xml-helpers';
+import {parseXMLTextSync} from '../xml/parse-xml-text';
 
 /** All capabilities of a WMS service - response to a WMS `GetCapabilities` data structure extracted from XML */
 export type WMSCapabilities = {
@@ -162,7 +162,7 @@ export function parseWMSCapabilities(
   xmlText: string,
   options?: ParseWMSCapabilitiesOptions
 ): WMSCapabilities {
-  const parsedXML = XMLLoader.parseTextSync?.(xmlText, options);
+  const parsedXML = parseXMLTextSync(xmlText, options);
   const xmlCapabilities: any =
     parsedXML.WMT_MS_Capabilities || parsedXML.WMS_Capabilities || parsedXML;
   const capabilities = extractCapabilities(xmlCapabilities);

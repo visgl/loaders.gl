@@ -6,7 +6,12 @@ import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import type {Schema} from '@loaders.gl/schema';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
-import {JSONLoader, NDJSONLoader, GeoJSONLoader} from '@loaders.gl/json';
+import {JSONLoader, GeoJSONLoader} from '@loaders.gl/json';
+import {
+  JSONLoader as BundledJSONLoader,
+  NDJSONLoader as BundledNDJSONLoader,
+  GeoJSONLoader as BundledGeoJSONLoader
+} from '@loaders.gl/json/bundled';
 import {getGeoMetadata} from '@loaders.gl/gis';
 import * as jsonModule from '@loaders.gl/json';
 import * as arrow from 'apache-arrow';
@@ -24,7 +29,7 @@ const NESTED_JSON_TEXT = JSON.stringify({
     {
       type: 'Feature',
       geometry: {type: 'Point', coordinates: [3, 4]},
-      properties: {name: 'B', active: false}
+      properties: {name: 'B', count: 0, active: false}
     }
   ]
 });
@@ -40,7 +45,7 @@ test('JSONLoader#load(geojson.json)', async t => {
 });
 
 test('JSONLoader#parse(arrow-table nested rows)', async t => {
-  const table = JSONLoader.parseTextSync?.(NESTED_JSON_TEXT, {
+  const table = BundledJSONLoader.parseTextSync?.(NESTED_JSON_TEXT, {
     json: {shape: 'arrow-table'}
   });
 
@@ -74,14 +79,14 @@ test('JSONLoader#parse(arrow-table nested rows)', async t => {
     active: boolean;
   };
   t.equal(properties.name, 'B', 'properties struct is materialized');
-  t.equal(properties.count, null, 'missing nested values normalize to null');
+  t.equal(properties.count, 0, 'nested numeric values are preserved');
   t.equal(properties.active, false, 'boolean nested values are preserved');
 
   t.end();
 });
 
 test('JSONLoader#parse(arrow-table treats GeoJSON as generic JSON rows)', async t => {
-  const table = JSONLoader.parseTextSync?.(
+  const table = BundledJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
       features: [
@@ -125,7 +130,7 @@ test('GeoJSONLoader#parse(arrow-table with supplied schema)', async t => {
     ],
     metadata: {}
   };
-  const table = GeoJSONLoader.parseTextSync?.(
+  const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
       features: [
@@ -159,7 +164,7 @@ test('GeoJSONLoader#parse(arrow-table with supplied arrow.Schema)', async t => {
     new arrow.Field('name', new arrow.Utf8(), false),
     new arrow.Field('geometry', new arrow.Binary(), true)
   ]);
-  const table = GeoJSONLoader.parseTextSync?.(
+  const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify([
       {
         type: 'Feature',
@@ -184,16 +189,19 @@ test('GeoJSONLoader#parse(arrow-table with supplied arrow.Schema)', async t => {
 });
 
 test('JSONLoader#parse(arrow-table empty arrays and rows)', async t => {
-  const emptyArrayTable = JSONLoader.parseTextSync?.(JSON.stringify({items: []}), {
+  const emptyArrayTable = BundledJSONLoader.parseTextSync?.(JSON.stringify({items: []}), {
     json: {shape: 'arrow-table'}
   });
   t.equal(emptyArrayTable.shape, 'arrow-table', 'empty selected array returns Arrow table');
   t.equal(emptyArrayTable.data.numRows, 0, 'empty selected array keeps zero rows');
   t.equal(emptyArrayTable.data.numCols, 0, 'empty selected array keeps zero columns');
 
-  const emptyObjectRowsTable = JSONLoader.parseTextSync?.(JSON.stringify({items: [{}, {}]}), {
-    json: {shape: 'arrow-table'}
-  });
+  const emptyObjectRowsTable = BundledJSONLoader.parseTextSync?.(
+    JSON.stringify({items: [{}, {}]}),
+    {
+      json: {shape: 'arrow-table'}
+    }
+  );
   t.equal(emptyObjectRowsTable.data.numRows, 2, 'array of empty objects keeps row count');
   t.equal(emptyObjectRowsTable.data.numCols, 0, 'array of empty objects keeps zero columns');
 
@@ -264,6 +272,48 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => 
   t.end();
 });
 
+test('JSONLoader#parseInBatches(complete rows with nested arrays)', async t => {
+  const valueCount = 2048;
+  const rows = Array.from({length: 3}, (_, rowIndex) => ({
+    text: `row-${rowIndex}`,
+    values: Array.from({length: valueCount}, (_, valueIndex) => rowIndex * valueCount + valueIndex)
+  }));
+
+  const iterator = BundledJSONLoader.parseInBatches?.(
+    makeChunkedTextIterator(JSON.stringify(rows), 128),
+    {
+      batchSize: 1
+    }
+  );
+
+  t.ok(iterator, 'parseInBatches returned iterator');
+  if (!iterator) {
+    t.end();
+    return;
+  }
+
+  let emittedRowCount = 0;
+  for await (const batch of iterator) {
+    if (batch.batchType === 'data') {
+      t.equal(batch.length, 1, 'fixed-size batch contains one complete row');
+      for (const row of batch.data) {
+        const expectedFirstValue = emittedRowCount * valueCount;
+        emittedRowCount++;
+        t.equal(row.values.length, valueCount, 'nested values array is complete when emitted');
+        t.equal(row.values[0], expectedFirstValue, 'first nested value is preserved');
+        t.equal(
+          row.values[valueCount - 1],
+          expectedFirstValue + valueCount - 1,
+          'last nested value is preserved'
+        );
+      }
+    }
+  }
+
+  t.equal(emittedRowCount, rows.length, 'all rows were emitted');
+  t.end();
+});
+
 test('JSONLoader#loadInBatches(jsonpaths)', async t => {
   let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
     json: {jsonpaths: ['$.features']}
@@ -321,7 +371,7 @@ test('GeoJSONLoader#loadInBatches(arrow-table streams GeoArrow WKB)', async t =>
 
 test('GeoJSONLoader#parseInBatches(arrow-table applies early legacy GeoJSON CRS)', async t => {
   const crs = {type: 'name', properties: {name: 'EPSG:4326'}};
-  const iterator = GeoJSONLoader.parseInBatches?.(
+  const iterator = BundledGeoJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(
       JSON.stringify({
         type: 'FeatureCollection',
@@ -357,7 +407,7 @@ test('GeoJSONLoader#parseInBatches(arrow-table applies early legacy GeoJSON CRS)
 });
 
 test('GeoJSONLoader#parseInBatches(arrow-table ignores late legacy GeoJSON CRS)', async t => {
-  const iterator = GeoJSONLoader.parseInBatches?.(
+  const iterator = BundledGeoJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(
       JSON.stringify({
         type: 'FeatureCollection',
@@ -389,7 +439,7 @@ test('GeoJSONLoader#parseInBatches(arrow-table ignores late legacy GeoJSON CRS)'
 });
 
 test('GeoJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async t => {
-  const iterator = GeoJSONLoader.parseInBatches?.(
+  const iterator = BundledGeoJSONLoader.parseInBatches?.(
     makeChunkedTextIterator(
       JSON.stringify({
         type: 'FeatureCollection',
@@ -425,14 +475,17 @@ test('GeoJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async 
 });
 
 test('JSONLoader#parseInBatches(arrow-table preserves metadata batches)', async t => {
-  const iterator = JSONLoader.parseInBatches?.(makeChunkedTextIterator(NESTED_JSON_TEXT, 13), {
-    metadata: true,
-    batchSize: 1,
-    json: {
-      shape: 'arrow-table',
-      jsonpaths: ['$.features']
+  const iterator = BundledJSONLoader.parseInBatches?.(
+    makeChunkedTextIterator(NESTED_JSON_TEXT, 13),
+    {
+      metadata: true,
+      batchSize: 2,
+      json: {
+        shape: 'arrow-table',
+        jsonpaths: ['$.features']
+      }
     }
-  });
+  );
 
   let dataBatchCount = 0;
   for await (const batch of iterator) {
@@ -463,9 +516,12 @@ test('JSONLoader#parseInBatches(arrow-table preserves metadata batches)', async 
 test('JSONLoader#parse(arrow-table rejects incompatible field shapes)', async t => {
   t.throws(
     () =>
-      JSONLoader.parseTextSync?.(JSON.stringify({items: [{value: 1}, {value: {nested: true}}]}), {
-        json: {shape: 'arrow-table'}
-      }),
+      BundledJSONLoader.parseTextSync?.(
+        JSON.stringify({items: [{value: 1}, {value: {nested: true}}]}),
+        {
+          json: {shape: 'arrow-table'}
+        }
+      ),
     /incompatible Arrow field types/,
     'throws when rows disagree on field shape'
   );
@@ -482,7 +538,7 @@ test('JSONLoader#parse(arrow-table with supplied loaders.gl schema)', async t =>
     metadata: {}
   };
 
-  const table = JSONLoader.parseTextSync?.(JSON.stringify([{id: 1, name: 'A'}]), {
+  const table = BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 1, name: 'A'}]), {
     json: {shape: 'arrow-table', schema}
   });
 
@@ -499,7 +555,7 @@ test('JSONLoader#parse(arrow-table with supplied arrow.Schema)', async t => {
     new arrow.Field('name', new arrow.Utf8(), true)
   ]);
 
-  const table = JSONLoader.parseTextSync?.(JSON.stringify([{id: 1, name: 'A'}]), {
+  const table = BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 1, name: 'A'}]), {
     json: {shape: 'arrow-table', schema}
   });
 
@@ -522,7 +578,7 @@ test('JSONLoader#parse(arrow-table conversion policy)', async t => {
 
   t.throws(
     () =>
-      JSONLoader.parseTextSync?.(JSON.stringify([{id: 'bad'}]), {
+      BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 'bad'}]), {
         json: {shape: 'arrow-table', schema: nullableSchema}
       }),
     /expected number/,
@@ -530,20 +586,23 @@ test('JSONLoader#parse(arrow-table conversion policy)', async t => {
   );
 
   const typeMismatchLog = makeTestLog();
-  const nullTypeTable = JSONLoader.parseTextSync?.(JSON.stringify([{id: 'bad'}, {id: 'worse'}]), {
-    core: {log: typeMismatchLog},
-    json: {
-      shape: 'arrow-table',
-      schema: nullableSchema,
-      arrowConversion: {onTypeMismatch: 'null'}
+  const nullTypeTable = BundledJSONLoader.parseTextSync?.(
+    JSON.stringify([{id: 'bad'}, {id: 'worse'}]),
+    {
+      core: {log: typeMismatchLog},
+      json: {
+        shape: 'arrow-table',
+        schema: nullableSchema,
+        arrowConversion: {onTypeMismatch: 'null'}
+      }
     }
-  });
+  );
   t.equal(nullTypeTable.data.getChild('id')?.get(0), null, 'type mismatch can recover to null');
   t.equal(typeMismatchLog.messages.length, 1, 'type mismatch recovery logs once');
 
   t.throws(
     () =>
-      JSONLoader.parseTextSync?.(JSON.stringify([{}]), {
+      BundledJSONLoader.parseTextSync?.(JSON.stringify([{}]), {
         json: {shape: 'arrow-table', schema: nullableSchema}
       }),
     /missing field id/,
@@ -551,7 +610,7 @@ test('JSONLoader#parse(arrow-table conversion policy)', async t => {
   );
 
   const missingFieldLog = makeTestLog();
-  const missingFieldTable = JSONLoader.parseTextSync?.(JSON.stringify([{}, {}]), {
+  const missingFieldTable = BundledJSONLoader.parseTextSync?.(JSON.stringify([{}, {}]), {
     core: {log: missingFieldLog},
     json: {
       shape: 'arrow-table',
@@ -564,7 +623,7 @@ test('JSONLoader#parse(arrow-table conversion policy)', async t => {
 
   t.throws(
     () =>
-      JSONLoader.parseTextSync?.(JSON.stringify([{id: 1, extra: true}]), {
+      BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 1, extra: true}]), {
         json: {shape: 'arrow-table', schema: nullableSchema}
       }),
     /unexpected field extra/,
@@ -572,7 +631,7 @@ test('JSONLoader#parse(arrow-table conversion policy)', async t => {
   );
 
   const extraFieldLog = makeTestLog();
-  const dropExtraTable = JSONLoader.parseTextSync?.(
+  const dropExtraTable = BundledJSONLoader.parseTextSync?.(
     JSON.stringify([
       {id: 1, extra: true},
       {id: 2, extra: false}
@@ -592,7 +651,7 @@ test('JSONLoader#parse(arrow-table conversion policy)', async t => {
 
   t.throws(
     () =>
-      JSONLoader.parseTextSync?.(JSON.stringify([{id: 'bad'}]), {
+      BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 'bad'}]), {
         json: {
           shape: 'arrow-table',
           schema: strictSchema,
@@ -613,14 +672,14 @@ test('JSONLoader#parse(arrow-table schema options require Arrow shape)', async t
   };
 
   t.throws(
-    () => JSONLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {json: {schema}}),
+    () => BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {json: {schema}}),
     /require json.shape to be "arrow-table"/,
     'schema without Arrow shape throws'
   );
 
   t.throws(
     () =>
-      JSONLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {
+      BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 1}]), {
         json: {arrowConversion: {onExtraField: 'drop'}}
       }),
     /require json.shape to be "arrow-table"/,
@@ -638,27 +697,36 @@ test('GeoJSONLoader#parse(arrow-table options require Arrow shape)', async t => 
 
   t.throws(
     () =>
-      GeoJSONLoader.parseTextSync?.(JSON.stringify({type: 'FeatureCollection', features: []}), {
-        json: {schema}
-      }),
+      BundledGeoJSONLoader.parseTextSync?.(
+        JSON.stringify({type: 'FeatureCollection', features: []}),
+        {
+          json: {schema}
+        }
+      ),
     /require geojson.shape to be "arrow-table"/,
     'schema without Arrow shape throws'
   );
 
   t.throws(
     () =>
-      GeoJSONLoader.parseTextSync?.(JSON.stringify({type: 'FeatureCollection', features: []}), {
-        json: {arrowConversion: {onExtraField: 'drop'}}
-      }),
+      BundledGeoJSONLoader.parseTextSync?.(
+        JSON.stringify({type: 'FeatureCollection', features: []}),
+        {
+          json: {arrowConversion: {onExtraField: 'drop'}}
+        }
+      ),
     /require geojson.shape to be "arrow-table"/,
     'conversion policy without Arrow shape throws'
   );
 
   t.throws(
     () =>
-      GeoJSONLoader.parseTextSync?.(JSON.stringify({type: 'FeatureCollection', features: []}), {
-        json: {geoarrowGeometryColumn: 'geom'}
-      }),
+      BundledGeoJSONLoader.parseTextSync?.(
+        JSON.stringify({type: 'FeatureCollection', features: []}),
+        {
+          json: {geoarrowGeometryColumn: 'geom'}
+        }
+      ),
     /require geojson.shape to be "arrow-table"/,
     'geometry column option without Arrow shape throws'
   );
@@ -671,7 +739,7 @@ test('JSONLoader#parseInBatches(arrow-table with supplied schema)', async t => {
     fields: [{name: 'id', type: 'float64', nullable: false}],
     metadata: {}
   };
-  const iterator = JSONLoader.parseInBatches?.(
+  const iterator = BundledJSONLoader.parseInBatches?.(
     makeChunkedTextIterator('{"items":[{"id":1},{"id":2}]}', 100),
     {
       batchSize: 1,
@@ -692,7 +760,7 @@ test('JSONLoader#parseInBatches(arrow-table with supplied schema)', async t => {
 });
 
 test('NDJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async t => {
-  const iterator = NDJSONLoader.parseInBatches?.(
+  const iterator = BundledNDJSONLoader.parseInBatches?.(
     makeChunkedTextIterator('{"id":1}\n{"id":2,"extra":true}\n', 9),
     {batchSize: 1, ndjson: {shape: 'arrow-table'}}
   );
@@ -711,7 +779,7 @@ test('NDJSONLoader#parseInBatches(arrow-table freezes inferred schema)', async t
 });
 
 test('NDJSONLoader#parse(deprecated json.shape arrow-table alias)', async t => {
-  const table = NDJSONLoader.parseTextSync?.('{"id":1}\n{"id":2}\n', {
+  const table = BundledNDJSONLoader.parseTextSync?.('{"id":1}\n{"id":2}\n', {
     json: {shape: 'arrow-table'}
   });
 
@@ -730,7 +798,7 @@ test('NDJSONLoader#parseInBatches(arrow-table treats GeoJSON features as generic
     geometry: {type: 'Point', coordinates: [3, 4]},
     properties: {name: 'B'}
   })}\n`;
-  const iterator = NDJSONLoader.parseInBatches?.(makeChunkedTextIterator(ndjsonText, 40), {
+  const iterator = BundledNDJSONLoader.parseInBatches?.(makeChunkedTextIterator(ndjsonText, 40), {
     batchSize: 1,
     ndjson: {shape: 'arrow-table'}
   });
@@ -771,7 +839,7 @@ test('GeoJSONLoader#exports official names only', t => {
 });
 
 test('GeoJSONLoader#parse(default geojson-table shape)', async t => {
-  const table = GeoJSONLoader.parseTextSync?.(
+  const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
       features: [
@@ -790,7 +858,7 @@ test('GeoJSONLoader#parse(default geojson-table shape)', async t => {
 });
 
 test('GeoJSONLoader#parse(binary-feature-collection shape)', async t => {
-  const binary = GeoJSONLoader.parseTextSync?.(
+  const binary = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
       features: [
@@ -810,7 +878,7 @@ test('GeoJSONLoader#parse(binary-feature-collection shape)', async t => {
 });
 
 test('GeoJSONLoader#parse(arrow-table GeoArrow WKB)', async t => {
-  const table = GeoJSONLoader.parseTextSync?.(
+  const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
       features: [
@@ -839,7 +907,7 @@ test('GeoJSONLoader#parse(arrow-table GeoArrow WKB)', async t => {
 
 test('GeoJSONLoader#parse(arrow-table preserves legacy GeoJSON CRS)', async t => {
   const crs = {type: 'name', properties: {name: 'urn:ogc:def:crs:OGC:1.3:CRS84'}};
-  const table = GeoJSONLoader.parseTextSync?.(
+  const table = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
       crs,

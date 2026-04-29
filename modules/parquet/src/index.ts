@@ -7,7 +7,8 @@
 export {ParquetFormat} from './parquet-format';
 
 export type {ParquetLoaderOptions, ParquetJSLoaderOptions} from './parquet-loader-options';
-export {ParquetLoader, GeoParquetLoader} from './parquet-loader';
+export {ParquetLoader} from './parquet-loader';
+export {GeoParquetLoader} from './geoparquet-loader';
 export {ParquetJSLoader} from './parquet-js-loader';
 
 export {ParquetWriter} from './parquet-writer';
@@ -17,7 +18,7 @@ export {ParquetJSWriter} from './parquet-js-writer';
 // Arrow-first Parquet APIs
 
 export type {ParquetArrowLoaderOptions} from './parquet-arrow-loader';
-export {ParquetArrowLoader, ParquetArrowWorkerLoader} from './parquet-arrow-loader';
+export {ParquetArrowLoader} from './parquet-arrow-loader';
 export {ParquetArrowWriter} from './parquet-arrow-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API
@@ -32,3 +33,7 @@ export {
   convertParquetSchema,
   convertParquetSchema as convertParquetToArrowSchema
 } from './lib/arrow/convert-schema-from-parquet';
+
+// DEPRECATED EXPORTS
+/** @deprecated Use ParquetArrowLoader. */
+export {ParquetArrowWorkerLoader} from './parquet-arrow-loader';

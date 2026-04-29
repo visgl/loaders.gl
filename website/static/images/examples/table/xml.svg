@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title">
+  <title id="title">XML example thumbnail</title>
+  <rect width="480" height="320" fill="#f6f8fb"/>
+  <rect x="48" y="48" width="384" height="224" rx="8" fill="#ffffff" stroke="#d7dde8" stroke-width="4"/>
+  <path d="M184 108l-56 52 56 52" fill="none" stroke="#2563eb" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M296 108l56 52-56 52" fill="none" stroke="#2563eb" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M260 104l-40 112" fill="none" stroke="#6b7280" stroke-width="16" stroke-linecap="round"/>
+  <text x="240" y="252" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#1f2937">XML</text>
+</svg>

@@ -1,35 +1,34 @@
-# PLY Loaders
+import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
 
-The `PLYArrowLoader` parses simple meshes in the Polygon File Format or the Stanford Triangle Format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+# PLYLoader
 
-`PLYLoader` parses the same PLY format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+<PlyDocsTabs active="plyloader" />
 
-| Loader           | Output             | Use when                           |
-| ---------------- | ------------------ | ---------------------------------- |
-| `PLYLoader`      | `Mesh`             | You want the legacy mesh object.   |
-| `PLYArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes. |
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
 
-| Loader                | Characteristic                             |
-| --------------------- | ------------------------------------------ |
-| File Format           | [PLY](/docs/modules/ply/formats/ply)       |
-| Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
-| File Extension        | `.ply`                                     |
-| File Type             | Binary/Text                                |
-| Decoder Type          | Synchronous                                |
-| Worker Thread Support | Yes                                        |
-| Streaming Support     | No                                         |
+`PLYLoader` parses simple meshes in the Polygon File Format or the Stanford Triangle Format and returns a legacy [Mesh](/docs/specifications/category-mesh) object by default.
+
+Set `ply.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+| Shape         | Output             | Use when                           |
+| ------------- | ------------------ | ---------------------------------- |
+| `mesh`        | `Mesh`             | You want the legacy mesh object.   |
+| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 ## Usage
 
 ```typescript
-import {PLYArrowLoader, PLYLoader} from '@loaders.gl/ply';
+import {PLYLoader} from '@loaders.gl/ply';
 import {load} from '@loaders.gl/core';
 
-const table = await load(url, PLYArrowLoader, options);
 const data = await load(url, PLYLoader, options);
+const table = await load(url, PLYLoader, {ply: {shape: 'arrow-table'}});
 ```
 
 ## Options
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `ply.shape` | `'mesh' \| 'arrow-table'` | `'mesh'` | Selects Mesh or Mesh Arrow table output. |

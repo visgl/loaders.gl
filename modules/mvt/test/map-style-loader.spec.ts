@@ -5,13 +5,9 @@
 import test from 'tape-promise/tape';
 import {parse} from '@loaders.gl/core';
 import {validateLoader} from 'test/common/conformance';
+import {MapStyleLoader} from '@loaders.gl/mvt/bundled';
 import inlineStyleText from './data/map-style/inline.style.json?raw';
-import {
-  MapStyleLoader,
-  resolveMapStyle,
-  type MapStyle,
-  type MapStyleLoadOptions
-} from '../src/index';
+import {resolveMapStyle, type MapStyle, type MapStyleLoadOptions} from '../src/index';
 
 const INLINE_STYLE_URL = new URL('./data/map-style/inline.style.json', import.meta.url);
 const STYLE_BASE_URL = 'https://example.com/styles/root.style.json';

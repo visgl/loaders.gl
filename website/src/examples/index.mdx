@@ -9,9 +9,21 @@ import {ExamplesIndex} from '../components';
 Check the [loader catalog](/docs/modules/arrow/api-reference/arrow-loader) to see if the format you need is available.*
 
 <ExamplesIndex
-  getThumbnail={item =>
-    item.docId === 'tiles/mlt'
-      ? '/images/tiles-mlt.jpg'
-      : `/images/${item.href || item.label.toLowerCase()}.jpg`
-  }
+  getThumbnail={item => {
+    const thumbnails = {
+      'table/arrow': '/images/examples/table/arrow.svg',
+      'table/bson': '/images/examples/table/bson.svg',
+      'table/json': '/images/examples/table/json.svg',
+      'table/xml': '/images/examples/table/xml.svg',
+      'geospatial/csv': '/images/examples/geospatial/geospatial.jpg',
+      'geospatial/geotiff': '/images/examples/geospatial/geospatial.jpg',
+      'bioimaging/ome-tiff': '/images/examples/geospatial/geospatial.jpg',
+      'tiles/mlt': '/images/examples/tiles/mvt.jpg',
+      'tiles/wfs': '/images/examples/tiles/wms.jpg',
+      'tiles/arcgis-image-server': '/images/examples/tiles/wms.jpg',
+      'tiles/arcgis-feature-server': '/images/examples/tiles/wms.jpg'
+    };
+
+    return thumbnails[item.docId] || `/images/examples/${item.docId}.jpg`;
+  }}
 />

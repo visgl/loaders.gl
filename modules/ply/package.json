@@ -28,6 +28,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
     "./ply-worker.js": {
       "import": "./dist/ply-worker.js"
     }

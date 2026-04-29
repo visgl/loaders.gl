@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 
 import {GeoPackageLoader, type GeoPackageLoaderOptions} from './geopackage-loader';
@@ -18,12 +18,11 @@ export type GeoPackageArrowLoaderOptions = GeoPackageLoaderOptions;
 /**
  * Creates a GeoPackage Arrow loader specialized to one optional table name.
  *
- * The returned loader parses a single vector table and emits an Arrow table with a
- * WKB `geometry` column annotated using geospatial schema metadata.
+ * The returned metadata-only loader targets a single vector table and emits Arrow output.
  */
 export function GeoPackageArrowLoader(
   tableName?: string
-): LoaderWithParser<ArrowTable, never, GeoPackageArrowLoaderOptions> {
+): Loader<ArrowTable, never, GeoPackageArrowLoaderOptions> {
   return {
     ...GeoPackageLoader,
     id: 'geopackage-arrow',
@@ -32,11 +31,6 @@ export function GeoPackageArrowLoader(
     dataType: null as unknown as ArrowTable,
     batchType: null as never,
     worker: false,
-    parse: async (arrayBuffer: ArrayBuffer, options?: GeoPackageArrowLoaderOptions) =>
-      GeoPackageLoader.parse(
-        arrayBuffer,
-        withArrowShape(options, tableName)
-      ) as Promise<ArrowTable>,
     options: {
       geopackage: {
         sqlJsCDN: DEFAULT_SQLJS_CDN,
@@ -44,21 +38,12 @@ export function GeoPackageArrowLoader(
         shape: 'arrow-table'
       },
       gis: {}
-    }
-  };
-}
-
-function withArrowShape(
-  options: GeoPackageArrowLoaderOptions | undefined,
-  tableName?: string
-): GeoPackageArrowLoaderOptions {
-  return {
-    ...options,
-    geopackage: {
-      ...options?.geopackage,
-      sqlJsCDN: options?.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN,
-      table: tableName || options?.geopackage?.table,
-      shape: 'arrow-table'
+    },
+    preload: async () => {
+      const {GeoPackageArrowLoaderWithParser} = await import(
+        './geopackage-arrow-loader-with-parser'
+      );
+      return GeoPackageArrowLoaderWithParser(tableName);
     }
   };
 }

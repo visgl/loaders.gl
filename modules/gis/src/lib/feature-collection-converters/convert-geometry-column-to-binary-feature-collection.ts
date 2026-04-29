@@ -14,11 +14,12 @@ import type {
 } from '@loaders.gl/schema';
 import {convertTable} from '@loaders.gl/schema-utils';
 import {earcut} from '@math.gl/polygon';
+import type {GeoArrowBuilderEncoding} from '../geoarrow/geoarrow-builder';
 import {convertWKBToGeometry} from '../geometry-converters/wkb/convert-wkb-to-geometry';
 import {convertWKTToGeometry} from '../geometry-converters/wkb/convert-wkt-to-geometry';
 
 /** Supported geometry encodings for direct binary rendering. */
-export type GeometryColumnBinaryEncoding = 'wkb' | 'wkt';
+export type GeometryColumnBinaryEncoding = 'wkb' | 'wkt' | GeoArrowBuilderEncoding;
 
 /** Scratch buffers for reusable point arrays. */
 export type BinaryPointFeatureScratch = {
@@ -217,6 +218,13 @@ export function convertGeometryColumnToBinaryFeatureCollection(
   table: Table | arrow.Table,
   options: TableGeometryColumnToBinaryFeatureCollectionOptions
 ): BinaryFeatureCollection {
+  if (isArrowTableLike(table)) {
+    const geoArrowBinaryFeatures = convertGeoArrowColumnToBinaryFeatureCollection(table, options);
+    if (geoArrowBinaryFeatures) {
+      return geoArrowBinaryFeatures;
+    }
+  }
+
   const geometryValues = getGeometryValuesFromTable(table, options.geometryColumn);
   const propertyResolver = getPropertyResolver(table, options.geometryColumn);
 
@@ -275,6 +283,568 @@ function isArrowTableLike(table: Table | arrow.Table): table is arrow.Table {
       typeof (table as arrow.Table).getChild === 'function' &&
       (table as arrow.Table).schema?.fields
   );
+}
+
+/** Converts a typed GeoArrow column to binary features without decoding through GeoJSON. */
+function convertGeoArrowColumnToBinaryFeatureCollection(
+  table: arrow.Table,
+  options: TableGeometryColumnToBinaryFeatureCollectionOptions
+): BinaryFeatureCollection | null {
+  const encoding = getGeoArrowColumnEncoding(
+    table,
+    options.geometryColumn,
+    options.geometryEncoding
+  );
+  if (!encoding) {
+    return null;
+  }
+
+  const column = table.getChild(options.geometryColumn) as unknown as {data?: arrow.Data[]};
+  const data = column?.data?.[0];
+  if (!data || column.data!.length !== 1) {
+    return null;
+  }
+
+  const layout = getGeoArrowDataLayout(data, encoding);
+  const propertyResolver = getPropertyResolver(table, options.geometryColumn);
+  const globalFeatureIdOffset = options.globalFeatureIdOffset || 0;
+
+  switch (encoding) {
+    case 'geoarrow.point':
+      return convertGeoArrowPointData(data, layout, propertyResolver, globalFeatureIdOffset);
+    case 'geoarrow.multipoint':
+      return convertGeoArrowMultiPointData(data, layout, propertyResolver, globalFeatureIdOffset);
+    case 'geoarrow.linestring':
+      return convertGeoArrowLineData(data, layout, propertyResolver, globalFeatureIdOffset);
+    case 'geoarrow.multilinestring':
+      return convertGeoArrowMultiLineData(data, layout, propertyResolver, globalFeatureIdOffset);
+    case 'geoarrow.polygon':
+      return convertGeoArrowPolygonData(
+        data,
+        layout,
+        propertyResolver,
+        globalFeatureIdOffset,
+        options.triangulate !== false
+      );
+    case 'geoarrow.multipolygon':
+      return convertGeoArrowMultiPolygonData(
+        data,
+        layout,
+        propertyResolver,
+        globalFeatureIdOffset,
+        options.triangulate !== false
+      );
+    default:
+      return null;
+  }
+}
+
+/** Returns a typed GeoArrow extension encoding for an Arrow geometry column. */
+function getGeoArrowColumnEncoding(
+  table: arrow.Table,
+  geometryColumn: string,
+  requestedEncoding?: GeometryColumnBinaryEncoding
+): GeoArrowBuilderEncoding | null {
+  if (requestedEncoding && requestedEncoding !== 'wkb' && requestedEncoding !== 'wkt') {
+    return requestedEncoding;
+  }
+  if (requestedEncoding === 'wkb' || requestedEncoding === 'wkt') {
+    return null;
+  }
+
+  const field = table.schema.fields.find(schemaField => schemaField.name === geometryColumn);
+  const extensionName = field?.metadata?.get('ARROW:extension:name');
+  return isGeoArrowBuilderEncoding(extensionName) ? extensionName : null;
+}
+
+/** Checks whether a metadata value is a supported typed GeoArrow encoding. */
+function isGeoArrowBuilderEncoding(value: unknown): value is GeoArrowBuilderEncoding {
+  return (
+    value === 'geoarrow.point' ||
+    value === 'geoarrow.linestring' ||
+    value === 'geoarrow.polygon' ||
+    value === 'geoarrow.multipoint' ||
+    value === 'geoarrow.multilinestring' ||
+    value === 'geoarrow.multipolygon'
+  );
+}
+
+type GeoArrowDataLayout = {
+  coordinates: Float64Array;
+  coordinateSize: 2 | 3 | 4;
+  geometryOffsets?: Int32Array;
+  partOffsets?: Int32Array;
+  ringOffsets?: Int32Array;
+};
+
+/** Extracts coordinates and offset buffers from nested typed GeoArrow data. */
+function getGeoArrowDataLayout(
+  data: arrow.Data,
+  encoding: GeoArrowBuilderEncoding
+): GeoArrowDataLayout {
+  switch (encoding) {
+    case 'geoarrow.point':
+      return getGeoArrowDataLayoutFromCoordinateData(data);
+    case 'geoarrow.linestring':
+    case 'geoarrow.multipoint':
+      return {
+        ...getGeoArrowDataLayoutFromCoordinateData(data.children[0]),
+        geometryOffsets: data.valueOffsets
+      };
+    case 'geoarrow.polygon':
+    case 'geoarrow.multilinestring':
+      return {
+        ...getGeoArrowDataLayoutFromCoordinateData(data.children[0].children[0]),
+        geometryOffsets: data.valueOffsets,
+        partOffsets: data.children[0].valueOffsets
+      };
+    case 'geoarrow.multipolygon':
+      return {
+        ...getGeoArrowDataLayoutFromCoordinateData(data.children[0].children[0].children[0]),
+        geometryOffsets: data.valueOffsets,
+        partOffsets: data.children[0].valueOffsets,
+        ringOffsets: data.children[0].children[0].valueOffsets
+      };
+    default:
+      throw new Error(`Unsupported GeoArrow encoding "${encoding}".`);
+  }
+}
+
+/** Extracts coordinate tuple values from a FixedSizeList coordinate data node. */
+function getGeoArrowDataLayoutFromCoordinateData(coordinateData: arrow.Data): GeoArrowDataLayout {
+  const coordinates = coordinateData.children[0].values as Float64Array;
+  const coordinateSize = getGeoArrowCoordinateSize(coordinateData, coordinates);
+  return {coordinates, coordinateSize};
+}
+
+/** Returns the coordinate tuple size for a FixedSizeList coordinate data node. */
+function getGeoArrowCoordinateSize(
+  coordinateData: arrow.Data,
+  coordinates: Float64Array
+): 2 | 3 | 4 {
+  const listSize = (coordinateData.type as unknown as {listSize?: number}).listSize;
+  return Math.min(
+    Math.max(listSize || coordinates.length / Math.max(coordinateData.length, 1), 2),
+    4
+  ) as 2 | 3 | 4;
+}
+
+/** Converts a GeoArrow Point column to the point binary feature bin. */
+function convertGeoArrowPointData(
+  data: arrow.Data,
+  layout: GeoArrowDataLayout,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number
+): BinaryFeatureCollection {
+  const validRowCount = countValidRows(data);
+  const positions =
+    validRowCount === data.length
+      ? layout.coordinates
+      : copyValidPointCoordinates(data, layout.coordinates, layout.coordinateSize, validRowCount);
+  const points = createPointFeature(positions, layout.coordinateSize, validRowCount);
+  let featureIndex = 0;
+
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    if (!isArrowRowValid(data, rowIndex)) {
+      continue;
+    }
+    points.featureIds.value[featureIndex] = featureIndex;
+    points.globalFeatureIds.value[featureIndex] = rowIndex + globalFeatureIdOffset;
+    points.properties.push(getPropertiesForRow(rowIndex));
+    featureIndex++;
+  }
+
+  return {shape: 'binary-feature-collection', points};
+}
+
+/** Converts a GeoArrow MultiPoint column to the point binary feature bin. */
+function convertGeoArrowMultiPointData(
+  data: arrow.Data,
+  layout: GeoArrowDataLayout,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number
+): BinaryFeatureCollection {
+  const offsets = layout.geometryOffsets!;
+  const points = createPointFeature(
+    layout.coordinates,
+    layout.coordinateSize,
+    offsets[offsets.length - 1]
+  );
+  fillVertexFeatureIds(points, data, offsets, getPropertiesForRow, globalFeatureIdOffset);
+  return {shape: 'binary-feature-collection', points};
+}
+
+/** Converts a GeoArrow LineString column to the line binary feature bin. */
+function convertGeoArrowLineData(
+  data: arrow.Data,
+  layout: GeoArrowDataLayout,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number
+): BinaryFeatureCollection {
+  const offsets = layout.geometryOffsets!;
+  const lines = createLineFeature(
+    layout.coordinates,
+    layout.coordinateSize,
+    reinterpretInt32AsUint32(offsets),
+    offsets[offsets.length - 1]
+  );
+  fillVertexFeatureIds(lines, data, offsets, getPropertiesForRow, globalFeatureIdOffset);
+  return {shape: 'binary-feature-collection', lines};
+}
+
+/** Converts a GeoArrow MultiLineString column to the line binary feature bin. */
+function convertGeoArrowMultiLineData(
+  data: arrow.Data,
+  layout: GeoArrowDataLayout,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number
+): BinaryFeatureCollection {
+  const geometryOffsets = layout.geometryOffsets!;
+  const pathIndices = reinterpretInt32AsUint32(layout.partOffsets!);
+  const lines = createLineFeature(
+    layout.coordinates,
+    layout.coordinateSize,
+    pathIndices,
+    pathIndices[pathIndices.length - 1]
+  );
+  fillNestedVertexFeatureIds(
+    lines,
+    data,
+    geometryOffsets,
+    layout.partOffsets!,
+    getPropertiesForRow,
+    globalFeatureIdOffset
+  );
+  return {shape: 'binary-feature-collection', lines};
+}
+
+/** Converts a GeoArrow Polygon column to the polygon binary feature bin. */
+function convertGeoArrowPolygonData(
+  data: arrow.Data,
+  layout: GeoArrowDataLayout,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number,
+  triangulate: boolean
+): BinaryFeatureCollection {
+  const geometryOffsets = layout.geometryOffsets!;
+  const ringOffsets = layout.partOffsets!;
+  const polygonIndices = derivePolygonIndicesFromGeometryOffsets(
+    data,
+    geometryOffsets,
+    ringOffsets
+  );
+  const polygons = createPolygonFeature(
+    layout.coordinates,
+    layout.coordinateSize,
+    polygonIndices,
+    reinterpretInt32AsUint32(ringOffsets),
+    ringOffsets[ringOffsets.length - 1]
+  );
+  fillNestedVertexFeatureIds(
+    polygons,
+    data,
+    geometryOffsets,
+    ringOffsets,
+    getPropertiesForRow,
+    globalFeatureIdOffset
+  );
+  maybeTriangulatePolygons(polygons, triangulate);
+  return {shape: 'binary-feature-collection', polygons};
+}
+
+/** Converts a GeoArrow MultiPolygon column to the polygon binary feature bin. */
+function convertGeoArrowMultiPolygonData(
+  data: arrow.Data,
+  layout: GeoArrowDataLayout,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number,
+  triangulate: boolean
+): BinaryFeatureCollection {
+  const geometryOffsets = layout.geometryOffsets!;
+  const polygonRingOffsets = layout.partOffsets!;
+  const ringOffsets = layout.ringOffsets!;
+  const polygonIndices = derivePolygonIndicesFromPolygonRingOffsets(
+    data,
+    geometryOffsets,
+    polygonRingOffsets,
+    ringOffsets
+  );
+  const polygons = createPolygonFeature(
+    layout.coordinates,
+    layout.coordinateSize,
+    polygonIndices,
+    reinterpretInt32AsUint32(ringOffsets),
+    ringOffsets[ringOffsets.length - 1]
+  );
+  fillMultiPolygonVertexFeatureIds(
+    polygons,
+    data,
+    geometryOffsets,
+    polygonRingOffsets,
+    ringOffsets,
+    getPropertiesForRow,
+    globalFeatureIdOffset
+  );
+  maybeTriangulatePolygons(polygons, triangulate);
+  return {shape: 'binary-feature-collection', polygons};
+}
+
+/** Creates an empty point binary feature bin backed by the supplied coordinate values. */
+function createPointFeature(
+  positions: Float64Array,
+  coordinateSize: 2 | 3 | 4,
+  vertexCount: number
+): BinaryPointFeature {
+  return {
+    type: 'Point',
+    positions: {value: positions.subarray(0, vertexCount * coordinateSize), size: coordinateSize},
+    featureIds: {value: new Uint32Array(vertexCount), size: 1},
+    globalFeatureIds: {value: new Uint32Array(vertexCount), size: 1},
+    properties: [],
+    numericProps: {}
+  };
+}
+
+/** Creates an empty line binary feature bin backed by the supplied coordinate values. */
+function createLineFeature(
+  positions: Float64Array,
+  coordinateSize: 2 | 3 | 4,
+  pathIndices: Uint32Array,
+  vertexCount: number
+): BinaryLineFeature {
+  return {
+    type: 'LineString',
+    positions: {value: positions.subarray(0, vertexCount * coordinateSize), size: coordinateSize},
+    pathIndices: {value: pathIndices, size: 1},
+    featureIds: {value: new Uint32Array(vertexCount), size: 1},
+    globalFeatureIds: {value: new Uint32Array(vertexCount), size: 1},
+    properties: [],
+    numericProps: {}
+  };
+}
+
+/** Creates an empty polygon binary feature bin backed by the supplied coordinate values. */
+function createPolygonFeature(
+  positions: Float64Array,
+  coordinateSize: 2 | 3 | 4,
+  polygonIndices: Uint32Array,
+  primitivePolygonIndices: Uint32Array,
+  vertexCount: number
+): BinaryPolygonFeature {
+  return {
+    type: 'Polygon',
+    positions: {value: positions.subarray(0, vertexCount * coordinateSize), size: coordinateSize},
+    polygonIndices: {value: polygonIndices, size: 1},
+    primitivePolygonIndices: {value: primitivePolygonIndices, size: 1},
+    featureIds: {value: new Uint32Array(vertexCount), size: 1},
+    globalFeatureIds: {value: new Uint32Array(vertexCount), size: 1},
+    properties: [],
+    numericProps: {}
+  };
+}
+
+/** Counts non-null rows in one Arrow data chunk. */
+function countValidRows(data: arrow.Data): number {
+  if (data.nullCount === 0) {
+    return data.length;
+  }
+  let validRowCount = 0;
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    if (isArrowRowValid(data, rowIndex)) {
+      validRowCount++;
+    }
+  }
+  return validRowCount;
+}
+
+/** Returns whether a row is valid in one Arrow data chunk. */
+function isArrowRowValid(data: arrow.Data, rowIndex: number): boolean {
+  return data.nullCount === 0 || data.getValid(rowIndex);
+}
+
+/** Copies non-null fixed-size point coordinates into a compact binary positions buffer. */
+function copyValidPointCoordinates(
+  data: arrow.Data,
+  coordinates: Float64Array,
+  coordinateSize: 2 | 3 | 4,
+  validRowCount: number
+): Float64Array {
+  const compactCoordinates = new Float64Array(validRowCount * coordinateSize);
+  let targetValueIndex = 0;
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    if (!isArrowRowValid(data, rowIndex)) {
+      continue;
+    }
+    const sourceValueIndex = rowIndex * coordinateSize;
+    compactCoordinates.set(
+      coordinates.subarray(sourceValueIndex, sourceValueIndex + coordinateSize),
+      targetValueIndex
+    );
+    targetValueIndex += coordinateSize;
+  }
+  return compactCoordinates;
+}
+
+/** Fills feature id columns for one-level variable-size GeoArrow encodings. */
+function fillVertexFeatureIds(
+  binaryFeature: BinaryPointFeature | BinaryLineFeature,
+  data: arrow.Data,
+  offsets: Int32Array,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number
+): void {
+  let featureIndex = 0;
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    if (!isArrowRowValid(data, rowIndex)) {
+      continue;
+    }
+    const globalFeatureId = rowIndex + globalFeatureIdOffset;
+    binaryFeature.properties.push(getPropertiesForRow(rowIndex));
+    fillFeatureIdRange(
+      binaryFeature,
+      offsets[rowIndex],
+      offsets[rowIndex + 1],
+      featureIndex,
+      globalFeatureId
+    );
+    featureIndex++;
+  }
+}
+
+/** Fills feature id columns for two-level variable-size GeoArrow encodings. */
+function fillNestedVertexFeatureIds(
+  binaryFeature: BinaryLineFeature | BinaryPolygonFeature,
+  data: arrow.Data,
+  geometryOffsets: Int32Array,
+  childOffsets: Int32Array,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number
+): void {
+  let featureIndex = 0;
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    if (!isArrowRowValid(data, rowIndex)) {
+      continue;
+    }
+    const startChildIndex = geometryOffsets[rowIndex];
+    const endChildIndex = geometryOffsets[rowIndex + 1];
+    const globalFeatureId = rowIndex + globalFeatureIdOffset;
+    binaryFeature.properties.push(getPropertiesForRow(rowIndex));
+    fillFeatureIdRange(
+      binaryFeature,
+      childOffsets[startChildIndex],
+      childOffsets[endChildIndex],
+      featureIndex,
+      globalFeatureId
+    );
+    featureIndex++;
+  }
+}
+
+/** Fills feature id columns for three-level MultiPolygon GeoArrow encodings. */
+function fillMultiPolygonVertexFeatureIds(
+  polygons: BinaryPolygonFeature,
+  data: arrow.Data,
+  geometryOffsets: Int32Array,
+  polygonRingOffsets: Int32Array,
+  ringOffsets: Int32Array,
+  getPropertiesForRow: (rowIndex: number) => Record<string, unknown>,
+  globalFeatureIdOffset: number
+): void {
+  let featureIndex = 0;
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    if (!isArrowRowValid(data, rowIndex)) {
+      continue;
+    }
+    const startPolygonIndex = geometryOffsets[rowIndex];
+    const endPolygonIndex = geometryOffsets[rowIndex + 1];
+    const startRingIndex = polygonRingOffsets[startPolygonIndex];
+    const endRingIndex = polygonRingOffsets[endPolygonIndex];
+    const globalFeatureId = rowIndex + globalFeatureIdOffset;
+    polygons.properties.push(getPropertiesForRow(rowIndex));
+    fillFeatureIdRange(
+      polygons,
+      ringOffsets[startRingIndex],
+      ringOffsets[endRingIndex],
+      featureIndex,
+      globalFeatureId
+    );
+    featureIndex++;
+  }
+}
+
+/** Fills one contiguous range of per-vertex feature ids. */
+function fillFeatureIdRange(
+  binaryFeature: BinaryPointFeature | BinaryLineFeature | BinaryPolygonFeature,
+  startVertexIndex: number,
+  endVertexIndex: number,
+  featureIndex: number,
+  globalFeatureId: number
+): void {
+  for (let vertexIndex = startVertexIndex; vertexIndex < endVertexIndex; vertexIndex++) {
+    binaryFeature.featureIds.value[vertexIndex] = featureIndex;
+    binaryFeature.globalFeatureIds.value[vertexIndex] = globalFeatureId;
+  }
+}
+
+/** Reinterprets non-negative Int32 offsets as Uint32 offsets without copying. */
+function reinterpretInt32AsUint32(offsets: Int32Array): Uint32Array {
+  return new Uint32Array(offsets.buffer, offsets.byteOffset, offsets.length);
+}
+
+/** Derives BinaryFeature polygon starts from GeoArrow Polygon row and ring offsets. */
+function derivePolygonIndicesFromGeometryOffsets(
+  data: arrow.Data,
+  geometryOffsets: Int32Array,
+  ringOffsets: Int32Array
+): Uint32Array {
+  const polygonIndices: number[] = [];
+  let finalVertexIndex = 0;
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    if (!isArrowRowValid(data, rowIndex)) {
+      continue;
+    }
+    polygonIndices.push(ringOffsets[geometryOffsets[rowIndex]]);
+    finalVertexIndex = ringOffsets[geometryOffsets[rowIndex + 1]];
+  }
+  polygonIndices.push(finalVertexIndex);
+  return Uint32Array.from(polygonIndices);
+}
+
+/** Derives BinaryFeature polygon starts from GeoArrow MultiPolygon nested offsets. */
+function derivePolygonIndicesFromPolygonRingOffsets(
+  data: arrow.Data,
+  geometryOffsets: Int32Array,
+  polygonRingOffsets: Int32Array,
+  ringOffsets: Int32Array
+): Uint32Array {
+  const polygonIndices: number[] = [];
+  let finalVertexIndex = 0;
+  for (let rowIndex = 0; rowIndex < data.length; rowIndex++) {
+    if (!isArrowRowValid(data, rowIndex)) {
+      continue;
+    }
+    for (
+      let polygonIndex = geometryOffsets[rowIndex];
+      polygonIndex < geometryOffsets[rowIndex + 1];
+      polygonIndex++
+    ) {
+      polygonIndices.push(ringOffsets[polygonRingOffsets[polygonIndex]]);
+      finalVertexIndex = ringOffsets[polygonRingOffsets[polygonIndex + 1]];
+    }
+  }
+  polygonIndices.push(finalVertexIndex);
+  return Uint32Array.from(polygonIndices);
+}
+
+/** Adds polygon triangles when requested and possible. */
+function maybeTriangulatePolygons(polygons: BinaryPolygonFeature, triangulate: boolean): void {
+  if (!triangulate) {
+    return;
+  }
+  const triangles = triangulatePolygons(polygons);
+  if (triangles) {
+    polygons.triangles = {value: triangles, size: 1};
+  }
 }
 
 function createEmptyMeasure(): GeometryMeasure {

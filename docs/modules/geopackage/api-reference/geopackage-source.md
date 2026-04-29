@@ -1,4 +1,8 @@
+import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+
 # GeoPackageSource
+
+<GeoPackageDocsTabs active="source" />
 
 `GeoPackageSource` is a GeoPackage-specific source that exposes table metadata and one-table Arrow loads.
 

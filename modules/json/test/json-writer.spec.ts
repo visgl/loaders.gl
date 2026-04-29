@@ -5,7 +5,8 @@
 
 import test from 'tape-promise/tape';
 
-import {GeoJSONLoader, JSONWriter} from '@loaders.gl/json';
+import {JSONWriter} from '@loaders.gl/json';
+import {GeoJSONLoader as BundledGeoJSONLoader} from '@loaders.gl/json/bundled';
 import {encodeTableAsText} from '@loaders.gl/core';
 import {convertTableToArrow} from '@loaders.gl/schema-utils';
 import {emptyTable, tableWithData} from '@loaders.gl/schema-utils/test/shared-utils';
@@ -91,7 +92,7 @@ test('JSONWriter#encodeTableAsText - arrow table input, explicit arrow shape', a
 });
 
 test('JSONWriter#encodeTableAsText - GeoArrow WKB arrow table input', async t => {
-  const arrowTable = GeoJSONLoader.parseTextSync?.(
+  const arrowTable = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify({
       type: 'FeatureCollection',
       features: [
@@ -118,7 +119,7 @@ test('JSONWriter#encodeTableAsText - GeoArrow WKB arrow table input', async t =>
 });
 
 test('JSONWriter#encodeTableAsText - GeoArrow WKB decoding can be disabled', async t => {
-  const arrowTable = GeoJSONLoader.parseTextSync?.(
+  const arrowTable = BundledGeoJSONLoader.parseTextSync?.(
     JSON.stringify([
       {
         type: 'Feature',

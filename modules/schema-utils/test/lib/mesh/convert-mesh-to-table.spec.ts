@@ -44,9 +44,17 @@ test('convertMeshToTable#unindexed mesh Arrow table round trip', t => {
   validateArrowTableSchema(table.data, meshArrowSchema, {schemaName: 'Mesh Arrow table'});
   t.deepEqual(
     table.data.schema.fields.map(field => field.name),
-    ['POSITION', 'NORMAL'],
+    ['POSITION', 'NORMAL', 'intensity'],
     'predefined position column is first'
   );
+  const intensityColumn = table.data.getChild('intensity');
+  t.ok(intensityColumn, 'scalar intensity column is present');
+  t.notOk(
+    intensityColumn!.type instanceof arrow.FixedSizeList,
+    'scalar intensity column is not a fixed-size list'
+  );
+  t.ok(intensityColumn!.type instanceof arrow.Uint16, 'scalar intensity column is uint16');
+  t.equal(intensityColumn!.get(0), 10, 'scalar intensity reads as a scalar');
   t.notOk(table.data.getChild('indices'), 'indices column is absent');
 
   const roundTripMesh = convertTableToMesh(table);
@@ -57,6 +65,12 @@ test('convertMeshToTable#unindexed mesh Arrow table round trip', t => {
     'round trip preserves positions'
   );
   t.equal(roundTripMesh.attributes.POSITION.size, 3, 'round trip preserves position size');
+  t.deepEqual(
+    Array.from(roundTripMesh.attributes.intensity.value),
+    [10, 20, 30],
+    'round trip preserves scalar intensity'
+  );
+  t.equal(roundTripMesh.attributes.intensity.size, 1, 'round trip preserves scalar size');
 
   t.end();
 });
@@ -70,7 +84,7 @@ test('convertMeshToTable#indexed mesh Arrow table round trip', t => {
 
   t.deepEqual(
     table.data.schema.fields.map(field => field.name),
-    ['POSITION', 'indices', 'NORMAL'],
+    ['POSITION', 'indices', 'NORMAL', 'intensity'],
     'indexed schema fields are first'
   );
 
@@ -140,6 +154,10 @@ function makeMesh(indices?: Uint16Array): Mesh {
     NORMAL: {
       value: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
       size: 3
+    },
+    intensity: {
+      value: new Uint16Array([10, 20, 30]),
+      size: 1
     }
   };
   const topology = indices ? 'triangle-list' : 'point-list';

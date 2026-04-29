@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import {parseDBF, parseDBFInBatches} from './lib/parsers/parse-dbf';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -12,15 +12,20 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
-    shape?: 'rows' | 'table' | 'object-row-table';
+    shape?: 'rows' | 'table' | 'object-row-table' | 'arrow-table';
+    batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
 };
 
-/**
- * DBFLoader - DBF files are used to contain non-geometry columns in Shapefiles
- */
+/** Preloads the parser-bearing DBF loader implementation. */
+async function preload() {
+  const {DBFLoaderWithParser} = await import('./dbf-loader-with-parser');
+  return DBFLoaderWithParser;
+}
+
+/** Metadata-only DBF worker loader. */
 export const DBFWorkerLoader = {
   name: 'DBF',
   dataType: null as unknown,
@@ -37,20 +42,12 @@ export const DBFWorkerLoader = {
     dbf: {
       encoding: 'latin1'
     }
-  }
-} as const satisfies Loader<any, any, DBFLoaderOptions>;
+  },
+  preload
+} as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, DBFLoaderOptions>;
 
-/** DBF file loader */
-export const DBFLoader: LoaderWithParser = {
+/** Metadata-only DBF file loader. */
+export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {
   ...DBFWorkerLoader,
-  parse: async (arrayBuffer, options) => parseDBF(arrayBuffer, options),
-  parseSync: parseDBF,
-  parseInBatches(
-    arrayBufferIterator:
-      | AsyncIterable<ArrayBufferLike | ArrayBufferView>
-      | Iterable<ArrayBufferLike | ArrayBufferView>,
-    options
-  ) {
-    return parseDBFInBatches(arrayBufferIterator, options);
-  }
+  preload
 };

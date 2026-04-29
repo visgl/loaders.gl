@@ -35,7 +35,7 @@ import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
 import {CSVArrowLoader, CSVLoader} from '@loaders.gl/csv';
-import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/json';
 import {convertWKBTableToGeoJSON, getGeoMetadata} from '@loaders.gl/gis';
 import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/schema-utils';
 
@@ -473,7 +473,8 @@ function getLoaderOptions(
     },
     shapefile: {
       ...LOADER_OPTIONS.shapefile,
-      shape: tableShape
+      shape: tableShape,
+      geoarrowEncoding: tableFormat === 'geoarrow' ? 'geoarrow' : 'geoarrow.wkb'
     },
     kml: {
       ...LOADER_OPTIONS.kml,
@@ -550,7 +551,7 @@ function getLoaderDisplayName(
       return 'FlatGeobufLoader';
     case 'Shapefile':
       return tableFormat === 'geoarrow'
-        ? "ShapefileLoader (shape: 'arrow-table')"
+        ? "ShapefileLoader (shape: 'arrow-table', typed GeoArrow)"
         : 'ShapefileLoader';
     case 'KML':
       return 'KMLLoader';

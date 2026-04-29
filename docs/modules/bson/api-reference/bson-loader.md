@@ -1,41 +1,28 @@
+import {BsonDocsTabs} from '@site/src/components/docs/bson-docs-tabs';
+
 # BSONLoader
 
-![bson-logo](../../../images/logos/bson-logo.png)
+<BsonDocsTabs active="bsonloader" />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
 </p>
 
-This loader is part of the [`@loaders.gl/bson`](/docs/modules/bson) module.
-
-Streaming loader for BSON encoded files.
-
-| Loader         | Characteristic                                          |
-| -------------- | ------------------------------------------------------- |
-| File Format    | [BSON](/docs/modules/bson/formats/bson)                 |
-| Data Format    | [Unstructured/JSON](/docs/specifications/category-json) |
-| File Extension | `.bson`                                                 |
-| Media Type     | `application/bson`                                      |
-| File Type      | Binary                                                  |
-| Supported APIs | `load`, `parse`, `parseSync`                            |
+`BSONLoader` loads BSON binary documents into JSON-like JavaScript objects.
 
 ## Usage
 
-For simple usage, you can load and parse a BSON file atomically:
-
 ```typescript
-import {BSONLoader} from '@loaders.gl/bson';
 import {load} from '@loaders.gl/core';
+import {BSONLoader} from '@loaders.gl/bson';
 
 const data = await load(url, BSONLoader, {bson: options});
 ```
 
-## Options
+## BSONLoader Options
 
-Supports table category options such as `batchType` and `batchSize`.
+`BSONLoader` currently passes `bson` options through to the underlying MongoDB `js-bson` parser. This pass-through behavior may change in future versions and should not be relied on for stable public API behavior.
 
-| Option | From | Type | Default | Description |
-| ------ | ---- | ---- | ------- | ----------- |
+## Attribution
 
-Note: Currently passes through options to the underlying `js-bson` module
-but this may change in future versions and should not be relied upon.
+This loader is a wrapper around MongoDB's [`js-bson`](https://github.com/mongodb/js-bson) module, which is under the Apache 2.0 license.

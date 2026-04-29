@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {DataViewReadableFile} from '@loaders.gl/zip';
-import {parse3DTilesArchive as parse3DTilesArchiveFromProvider} from './3d-tiles-archive/3d-tiles-archive-parser';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {ThreeTZFormat} from './tiles-3d-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -24,28 +23,12 @@ export type Tiles3DArchiveFileLoaderOptions = LoaderOptions & {
 export const Tiles3DArchiveFileLoader = {
   dataType: null as unknown as ArrayBuffer,
   batchType: null as never,
+  ...ThreeTZFormat,
   name: '3tz',
-  id: '3tz',
-  module: '3d-tiles',
   version: VERSION,
-  mimeTypes: ['application/octet-stream', 'application/vnd.maxar.archive.3tz+zip'],
-  parse: parse3DTilesArchive,
+  /** Loads the parser-bearing 3tz archive loader implementation. */
+  preload: async () =>
+    (await import('./3d-tiles-archive-loader-with-parser')).Tiles3DArchiveFileLoaderWithParser,
   extensions: ['3tz'],
   options: {}
-} satisfies LoaderWithParser<ArrayBuffer, never, Tiles3DArchiveFileLoaderOptions>;
-
-/**
- * returns a single file from the 3tz archive
- * @param data 3tz archive data
- * @param options options
- * @returns requested file
- */
-async function parse3DTilesArchive(
-  data: ArrayBuffer,
-  options: Tiles3DArchiveFileLoaderOptions = {}
-): Promise<ArrayBuffer> {
-  const archive = await parse3DTilesArchiveFromProvider(
-    new DataViewReadableFile(new DataView(data))
-  );
-  return archive.getFile(options['3d-tiles-archive']?.path ?? '');
-}
+} satisfies Loader<ArrayBuffer, never, Tiles3DArchiveFileLoaderOptions>;

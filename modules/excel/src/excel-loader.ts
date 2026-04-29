@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ObjectRowTable} from '@loaders.gl/schema';
-import {parseExcel} from './lib/parse-excel';
-import {convertExcelRowsToArrowTable} from './lib/convert-excel-rows-to-arrow';
 import {ExcelFormat} from './excel-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -25,7 +23,13 @@ export type ExcelLoaderOptions = LoaderOptions & {
   };
 };
 
-/** Worker loader for Excel files. */
+/** Preloads the parser-bearing Excel loader implementation. */
+async function preload() {
+  const {ExcelLoaderWithParser} = await import('./excel-loader-with-parser');
+  return ExcelLoaderWithParser;
+}
+
+/** Metadata-only worker loader for Excel files. */
 export const ExcelWorkerLoader = {
   ...ExcelFormat,
   dataType: null as unknown as ObjectRowTable | ArrowTable,
@@ -37,24 +41,12 @@ export const ExcelWorkerLoader = {
       shape: 'object-row-table',
       sheet: undefined // Load default Sheet
     }
-  }
+  },
+  preload
 } as const satisfies Loader<ObjectRowTable | ArrowTable, never, ExcelLoaderOptions>;
 
-/** Loader for Excel files. */
+/** Metadata-only loader for Excel files. */
 export const ExcelLoader = {
   ...ExcelWorkerLoader,
-  async parse(
-    arrayBuffer: ArrayBuffer,
-    options?: ExcelLoaderOptions
-  ): Promise<ObjectRowTable | ArrowTable> {
-    const excelOptions = {
-      ...options,
-      excel: {...ExcelLoader.options.excel, ...options?.excel}
-    } as ExcelLoaderOptions;
-    const rows = parseExcel(arrayBuffer, excelOptions);
-    if (excelOptions.excel?.shape === 'arrow-table') {
-      return convertExcelRowsToArrowTable(rows);
-    }
-    return {shape: 'object-row-table', data: rows};
-  }
-} as const satisfies LoaderWithParser<ObjectRowTable | ArrowTable, never, ExcelLoaderOptions>;
+  preload
+} as const satisfies Loader<ObjectRowTable | ArrowTable, never, ExcelLoaderOptions>;

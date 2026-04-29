@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {
-  LoaderWithParser,
+  Loader,
   LoaderOptions,
   LoaderContext,
   FetchLike,
@@ -24,7 +24,7 @@ type FileType = string | File | Blob | Response | (string | File | Blob | Respon
  * Parses `data` synchronously using a specified loader
  */
 export async function loadInBatches<
-  LoaderT extends LoaderWithParser,
+  LoaderT extends Loader,
   OptionsT extends LoaderOptions = LoaderOptionsWithShape<
     LoaderOptionsType<LoaderT>,
     LoaderShapeType<LoaderT>
@@ -45,32 +45,32 @@ export async function loadInBatches<
  */
 export function loadInBatches(
   files: FileType,
-  loaders?: LoaderWithParser | LoaderWithParser[] | LoaderOptions,
+  loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<AsyncIterable<unknown>>;
 
 export function loadInBatches(
   files: FileType[] | FileList,
-  loaders?: LoaderWithParser | LoaderWithParser[] | LoaderOptions,
+  loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<AsyncIterable<unknown>>[];
 
 export function loadInBatches(
   files: FileType | FileType[] | FileList,
-  loaders?: LoaderWithParser | LoaderWithParser[] | LoaderOptions,
+  loaders?: Loader | Loader[] | LoaderOptions,
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<AsyncIterable<unknown>> | Promise<AsyncIterable<unknown>>[] {
-  let loadersArray: LoaderWithParser | LoaderWithParser[] | undefined;
+  let loadersArray: Loader | Loader[] | undefined;
   // Signature: load(url, options)
   if (!Array.isArray(loaders) && !isLoaderObject(loaders)) {
     context = undefined; // context not supported in short signature
     options = loaders as LoaderOptions;
     loadersArray = undefined;
   } else {
-    loadersArray = loaders as LoaderWithParser | LoaderWithParser[] | undefined;
+    loadersArray = loaders as Loader | Loader[] | undefined;
   }
 
   // Select fetch function
@@ -92,7 +92,7 @@ export function loadInBatches(
 
 async function loadOneFileInBatches(
   file: FileType,
-  loaders: LoaderWithParser | LoaderWithParser[],
+  loaders: Loader | Loader[],
   options: LoaderOptions,
   fetch: FetchLike
 ): Promise<AsyncIterable<unknown>> {

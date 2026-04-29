@@ -4,6 +4,7 @@ export type {ImageLoaderOptions} from './image-loader';
 export type {ImageBitmapLoaderOptions} from './image-bitmap-loader';
 
 // LOADERS AND WRITERS
+export {ImageFormat, ImageBitmapFormat} from './image-format';
 export {ImageLoader} from './image-loader';
 export {ImageBitmapLoader} from './image-bitmap-loader';
 export {ImageWriter} from './image-writer';
@@ -27,7 +28,7 @@ export {
 export {getSupportedImageFormats} from './lib/category-api/image-format';
 export {isImageFormatSupported} from './lib/category-api/image-format';
 
-// REMOVED
+// DEPRECATED EXPORTS
 /** @deprecated Temporary placeholder to prevent builds from breaking */
 export function loadImage() {
   throw new Error('loadImage has moved to @loaders.gl/textures');

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export type {JSONLoaderOptions} from './json-loader';
+export {JSONFormat, GeoJSONFormat, NDJSONFormat, NDGeoJSONFormat} from './json-format';
 export {JSONLoader} from './json-loader';
 export type {NDJSONLoaderOptions} from './ndjson-loader';
 export {NDJSONLoader} from './ndjson-loader';

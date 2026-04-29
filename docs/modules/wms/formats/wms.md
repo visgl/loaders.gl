@@ -1,4 +1,8 @@
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+
 # WMS - Web Map Service
+
+<WmsDocsTabs active="wms" />
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

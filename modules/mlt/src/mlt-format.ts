@@ -11,6 +11,8 @@ export const MLTFormat = {
   name: 'MapLibre Tile',
   id: 'mlt',
   module: 'mlt',
+  encoding: 'binary',
+  format: 'mlt',
   extensions: ['mlt'],
   mimeTypes: ['application/vnd.maplibre-tile'],
   category: 'geometry'

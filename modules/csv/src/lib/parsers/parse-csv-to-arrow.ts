@@ -13,8 +13,8 @@ import {
 } from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 
-import type {CSVLoaderOptions} from '../../csv-loader';
-import {DEFAULT_CSV_OPTIONS} from '../csv-default-options';
+import type {CSVLoaderOptions} from '../../csv-loader-options';
+import {CSV_LOADER_OPTIONS} from '../../csv-loader-options';
 import Papa from '../../papaparse/papaparse';
 import AsyncIteratorStreamer from '../../papaparse/async-iterator-streamer';
 import {parseRawArrowCSVBytes} from './parse-raw-arrow-csv-bytes';
@@ -38,7 +38,7 @@ const DEFAULT_BATCH_SIZE = 4000;
 
 /** Default CSV options for internal Arrow table parsing. */
 const DEFAULT_RAW_ARROW_CSV_OPTIONS: CSVRawArrowOptions = {
-  ...DEFAULT_CSV_OPTIONS,
+  ...CSV_LOADER_OPTIONS.csv,
   header: false,
   dynamicTyping: false
 };

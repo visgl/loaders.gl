@@ -26,6 +26,12 @@ export type ParseXMLOptions = {
 /** Type for passing through fast-xml-parser options */
 export type _FastParseXMLOptions = Partial<X2jOptions>;
 
+/**
+ * Parses XML text synchronously.
+ * @param text - XML document text.
+ * @param options - XML parsing options.
+ * @returns Parsed XML object tree.
+ */
 export function parseXMLSync(text: string, options?: ParseXMLOptions): any {
   const xml =
     options?._parser === 'internal' || options?._parser === 'sax'

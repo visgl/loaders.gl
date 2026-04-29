@@ -23,6 +23,7 @@ import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromDataSync} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
+import {getLoaderImplementationSync} from './load-loader';
 
 // OVERLOADS
 
@@ -111,7 +112,13 @@ export function parseSync(
     context || null
   );
 
-  return parseWithLoaderSync(loader as LoaderWithParser, data, strictOptions, context);
+  const loaderWithParser = getLoaderImplementationSync(loader);
+  return parseWithLoaderSync(
+    loaderWithParser || (loader as LoaderWithParser),
+    data,
+    strictOptions,
+    context
+  );
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
@@ -129,6 +136,12 @@ function parseWithLoaderSync(
 
   if (loader.parseSync && data instanceof ArrayBuffer) {
     return loader.parseSync(data, options, context); // , loader);
+  }
+
+  if (loader.preload) {
+    throw new Error(
+      `${loader.name} loader: 'parseSync' requires a parser-bearing loader. Import the loader implementation directly, or call preload(loader) before parseSync(). ${context.url || ''}`
+    );
   }
 
   // TBD - If synchronous parser not available, return null

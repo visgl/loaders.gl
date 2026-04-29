@@ -138,7 +138,7 @@ export class ArcGISImageSource
     const response = await this.fetch(this.exportImageURL(options), signal ? {signal} : undefined);
     await this.checkResponse(response);
     const arrayBuffer = await response.arrayBuffer();
-    return await ImageLoader.parse(arrayBuffer, this.loadOptions);
+    return (await this.coreApi.parse(arrayBuffer, ImageLoader, this.loadOptions)) as ImageType;
   }
 
   /** Builds a metadata URL for the ArcGIS ImageServer endpoint. */

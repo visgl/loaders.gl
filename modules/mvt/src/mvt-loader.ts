@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // import type {MVTOptions} from './lib/types';
-import {parseMVT} from './lib/parse-mvt';
 import {MVTFormat} from './mvt-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -34,9 +33,13 @@ export type MVTLoaderOptions = LoaderOptions & {
   };
 };
 
-/**
- * Worker loader for the Mapbox Vector Tile format
- */
+/** Preloads the parser-bearing MVT loader implementation. */
+async function preload() {
+  const {MVTLoaderWithParser} = await import('./mvt-loader-with-parser');
+  return MVTLoaderWithParser;
+}
+
+/** Metadata-only worker loader for the Mapbox Vector Tile format. */
 export const MVTWorkerLoader = {
   ...MVTFormat,
   dataType: null as any,
@@ -51,22 +54,20 @@ export const MVTWorkerLoader = {
       layers: undefined!,
       tileIndex: undefined!
     }
-  }
+  },
+  preload
 } as const satisfies Loader<
   any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
   never,
   MVTLoaderOptions
 >;
 
-/**
- * Loader for the Mapbox Vector Tile format
- */
+/** Metadata-only loader for the Mapbox Vector Tile format. */
 export const MVTLoader = {
   ...MVTWorkerLoader,
-  parse: async (arrayBuffer, options?: MVTLoaderOptions) => parseMVT(arrayBuffer, options),
-  parseSync: parseMVT,
-  binary: true
-} as const satisfies LoaderWithParser<
+  binary: true,
+  preload
+} as const satisfies Loader<
   any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,
   never,
   MVTLoaderOptions

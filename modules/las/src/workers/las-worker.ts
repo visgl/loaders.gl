@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {LASLoader} from '../index';
+import {LAZPerfLoaderWithParser} from '../lazperf-loader-with-parser';
 
-createLoaderWorker(LASLoader);
+createLoaderWorker(LAZPerfLoaderWithParser);

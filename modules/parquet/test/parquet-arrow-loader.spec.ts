@@ -11,13 +11,12 @@ import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
 import {getGeoMetadata, convertGeometryToWKB} from '@loaders.gl/gis';
 import {
   GeoParquetLoader,
-  ParquetArrowLoader,
   ParquetArrowWriter,
-  ParquetJSLoader,
   ParquetJSWriter,
   ParquetLoader,
   ParquetWriter
 } from '@loaders.gl/parquet';
+import {ParquetArrowLoader, ParquetJSLoader} from '@loaders.gl/parquet/bundled';
 import * as arrow from 'apache-arrow';
 import {WASM_SUPPORTED_FILES} from './data/files';
 

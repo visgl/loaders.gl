@@ -3,7 +3,7 @@
 // Copyright vis.gl contributors
 
 import type {Availability, Tile3DBoundingVolume, Subtree} from '../../../types';
-import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
+import {Tile3DSubtreeLoaderWithParser} from '../../../tile-3d-subtree-loader-with-parser';
 import {parseFromContext} from '@loaders.gl/loader-utils';
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {default as log} from '@probe.gl/log';
@@ -202,7 +202,7 @@ export async function parseImplicitTiles(params: {
     const arrayBuffer = await response.arrayBuffer();
     const childSubtree = await parseFromContext(
       arrayBuffer,
-      Tile3DSubtreeLoader,
+      Tile3DSubtreeLoaderWithParser,
       loaderOptions,
       context
     );

@@ -3,28 +3,27 @@
 // Copyright (c) vis.gl contributors
 
 import type {
+  CoreAPI,
   SourceLoader,
   ImageType,
   DataSourceOptions,
   ImageTileSource,
   VectorTileSource,
+  TileSourceMetadata,
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
+import type {Schema} from '@loaders.gl/schema';
 import {DataSource} from '@loaders.gl/loader-utils';
 import {
   ImageBitmapLoader,
-  ImageBitmapLoaderOptions,
+  type ImageBitmapLoaderOptions,
   getBinaryImageMetadata
 } from '@loaders.gl/images';
-import {
-  MVTLoader,
-  MVTLoaderOptions,
-  TileJSONLoader,
-  TileJSON,
-  TileJSONLoaderOptions
-} from '@loaders.gl/mvt';
 import {MVTFormat} from './mvt-format';
+import {MVTLoader, type MVTLoaderOptions} from './mvt-loader';
+import {TileJSONLoader, type TileJSONLoaderOptions} from './tilejson-loader';
+import type {TileJSON} from './lib/parse-tilejson';
 
 /** Properties for a Mapbox Vector Tile Source */
 export type MVTSourceLoaderOptions = DataSourceOptions & {
@@ -64,8 +63,8 @@ export const MVTSourceLoader = {
   },
 
   testURL: (url: string): boolean => true,
-  createDataSource(url: string, options: MVTSourceLoaderOptions): MVTTileSource {
-    return new MVTTileSource(url, options);
+  createDataSource(url: string, options: MVTSourceLoaderOptions, coreApi?: CoreAPI): MVTTileSource {
+    return new MVTTileSource(url, options, coreApi);
   }
 } as const satisfies SourceLoader<MVTTileSource>;
 
@@ -82,12 +81,12 @@ export class MVTTileSource
 {
   readonly metadataUrl: string | null = null;
   schema: 'tms' | 'xyz' | 'template' = 'tms';
-  metadata: Promise<TileJSON | null>;
+  metadata: Promise<TileSourceMetadata>;
   extension: string;
   mimeType: string | null = null;
 
-  constructor(url: string, options: MVTSourceLoaderOptions) {
-    super(url, options, MVTSourceLoader.defaultOptions);
+  constructor(url: string, options: MVTSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(url, options, MVTSourceLoader.defaultOptions, coreApi);
     this.metadataUrl = options.mvt?.metadataUrl || `${this.url}/tilejson.json`;
     this.extension = options.mvt?.extension || '.png';
 
@@ -99,10 +98,19 @@ export class MVTTileSource
     }
   }
 
-  // @ts-ignore - Metadata type misalignment
-  async getMetadata(): Promise<TileJSON | null> {
+  async getSchema(): Promise<Schema> {
+    return {fields: [], metadata: {}};
+  }
+
+  async getMetadata(): Promise<TileSourceMetadata> {
+    const fallbackMetadata: TileSourceMetadata = {
+      minZoom: 0,
+      maxZoom: 30,
+      attributions: this.options.core?.attributions || []
+    };
+
     if (!this.metadataUrl) {
-      return null;
+      return fallbackMetadata;
     }
 
     let response: Response;
@@ -112,17 +120,21 @@ export class MVTTileSource
       response = await this.fetch(this.metadataUrl);
     } catch (error: unknown) {
       this.reportError(error, `Failed to fetch metadata from ${this.metadataUrl}`);
-      return null;
+      return fallbackMetadata;
     }
     if (!response.ok) {
       this.reportError(
         new Error(`${response.status} ${response.statusText}`),
         `Failed to fetch metadata from ${this.metadataUrl}`
       );
-      return null;
+      return fallbackMetadata;
     }
     const tileJSON = await response.text();
-    const metadata = TileJSONLoader.parseTextSync?.(tileJSON) || null;
+    const tileJSONMetadata = (await this.coreApi.parse(
+      tileJSON,
+      TileJSONLoader,
+      this.loadOptions
+    )) as TileJSON | null;
 
     // TODO add metadata attributions
     // metadata.attributions = [...this.options.attributions, ...(metadata.attributions || [])];
@@ -130,7 +142,12 @@ export class MVTTileSource
     //   this.mimeType = metadata?.tileMIMEType;
     // }
 
-    return metadata;
+    return {
+      ...fallbackMetadata,
+      ...tileJSONMetadata,
+      minZoom: tileJSONMetadata?.minZoom ?? fallbackMetadata.minZoom,
+      maxZoom: tileJSONMetadata?.maxZoom ?? fallbackMetadata.maxZoom
+    };
   }
 
   getTileMIMEType(): string | null {
@@ -184,7 +201,11 @@ export class MVTTileSource
   }
 
   protected async _parseImageTile(arrayBuffer: ArrayBuffer): Promise<ImageType> {
-    return await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions);
+    return (await this.coreApi.parse(
+      arrayBuffer,
+      ImageBitmapLoader,
+      this.loadOptions
+    )) as ImageType;
   }
 
   // VectorTileSource interface implementation
@@ -208,7 +229,7 @@ export class MVTTileSource
       ...this.loadOptions
     };
 
-    return await MVTLoader.parse(arrayBuffer, loadOptions);
+    return await this.coreApi.parse(arrayBuffer, MVTLoader, loadOptions);
   }
 
   getMetadataUrl(): string | null {

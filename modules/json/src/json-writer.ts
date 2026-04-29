@@ -7,6 +7,7 @@
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import {encodeTableAsJSON} from './lib/encoders/json-encoder';
+import {JSONFormat} from './json-format';
 
 export type JSONWriterOptions = WriterOptions & {
   /** JSON writer options. */
@@ -24,12 +25,8 @@ type RowObject = {[key: string]: unknown};
 type TableJSON = RowArray[] | RowObject[];
 
 export const JSONWriter = {
-  id: 'json',
+  ...JSONFormat,
   version: 'latest',
-  module: 'json',
-  name: 'JSON',
-  extensions: ['json'],
-  mimeTypes: ['application/json'],
   options: {},
   text: true,
   encode: async (table: Table, options: JSONWriterOptions) =>

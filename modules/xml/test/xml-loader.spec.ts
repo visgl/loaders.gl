@@ -6,6 +6,7 @@ import test from 'tape-promise/tape';
 // import {validateLoader} from 'test/common/conformance';
 
 import {XMLLoader} from '@loaders.gl/xml';
+import {XMLLoader as BundledXMLLoader} from '@loaders.gl/xml/bundled';
 import {load} from '@loaders.gl/core';
 
 const FORECASTS_URL = '@loaders.gl/xml/test/data/forecasts.xml';
@@ -97,10 +98,10 @@ test('XMLLoader#internal parser#parity', t => {
 
   for (const testCase of testCases) {
     const parserOptions = {textNodeName: 'value', ...testCase.options};
-    const fastXML = XMLLoader.parseTextSync?.(testCase.xml, {
+    const fastXML = BundledXMLLoader.parseTextSync?.(testCase.xml, {
       xml: {...parserOptions, _parser: 'fast-xml-parser'}
     });
-    const internalXML = XMLLoader.parseTextSync?.(testCase.xml, {
+    const internalXML = BundledXMLLoader.parseTextSync?.(testCase.xml, {
       xml: {...parserOptions, _parser: 'internal'}
     });
 

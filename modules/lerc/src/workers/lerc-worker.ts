@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {LERCLoader} from '../lerc-loader';
+import {LERCLoaderWithParser} from '../lerc-loader-with-parser';
 
-createLoaderWorker(LERCLoader);
+createLoaderWorker(LERCLoaderWithParser);

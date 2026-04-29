@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
 import type {ExcelLoaderOptions} from './excel-loader';
-import {ExcelLoader, ExcelWorkerLoader} from './excel-loader';
+import {ExcelWorkerLoader} from './excel-loader';
 
 /**
  * Options for parsing Excel files into Apache Arrow tables.
@@ -15,7 +15,7 @@ import {ExcelLoader, ExcelWorkerLoader} from './excel-loader';
 export type ExcelArrowLoaderOptions = ExcelLoaderOptions;
 
 /**
- * Loader for Excel files that returns an Apache Arrow table.
+ * Metadata-only loader for Excel files that returns an Apache Arrow table.
  *
  * `ExcelArrowLoader` parses the selected Excel worksheet into object rows using the
  * same parser as `ExcelLoader`, then converts those rows to an `ArrowTable`.
@@ -25,23 +25,14 @@ export const ExcelArrowLoader = {
   dataType: null as unknown as ArrowTable,
   batchType: null as never,
   worker: false,
-
-  parse: async (arrayBuffer: ArrayBuffer, options?: ExcelArrowLoaderOptions) =>
-    (await ExcelLoader.parse(arrayBuffer, withArrowShape(options))) as ArrowTable
-} as const satisfies LoaderWithParser<ArrowTable, never, ExcelArrowLoaderOptions>;
-
-/**
- * Converts loader options to prefer Arrow table output from `ExcelLoader`.
- *
- * @param options - Optional Excel loader options.
- * @returns Loader options with `excel.shape` forced to `arrow-table`.
- */
-function withArrowShape(options?: ExcelArrowLoaderOptions): ExcelArrowLoaderOptions {
-  return {
-    ...options,
+  options: {
     excel: {
-      ...options?.excel,
-      shape: 'arrow-table'
+      shape: 'arrow-table',
+      sheet: undefined
     }
-  };
-}
+  },
+  preload: async () => {
+    const {ExcelArrowLoaderWithParser} = await import('./excel-arrow-loader-with-parser');
+    return ExcelArrowLoaderWithParser;
+  }
+} as const satisfies Loader<ArrowTable, never, ExcelArrowLoaderOptions>;

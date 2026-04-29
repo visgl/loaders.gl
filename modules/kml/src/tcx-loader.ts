@@ -2,21 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {
   GeoJSONTable,
-  FeatureCollection,
   ObjectRowTable,
   BinaryFeatureCollection,
   ArrowTable
 } from '@loaders.gl/schema';
-import {tcx} from '@tmcw/togeojson';
-import {DOMParser} from '@xmldom/xmldom';
-import {
-  buildFeatureTableSchema,
-  convertFeatureCollectionToArrowTable
-} from './lib/feature-collection-to-arrow';
+import {TCXFormat} from './kml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -28,88 +21,26 @@ export type TCXLoaderOptions = LoaderOptions & {
   };
 };
 
-const TCX_HEADER = `\
-<?xml version="1.0" encoding="UTF-8"?>
-<TrainingCenterDatabase`;
+/** Preloads the parser-bearing TCX loader implementation. */
+async function preload() {
+  const {TCXLoaderWithParser} = await import('./tcx-loader-with-parser');
+  return TCXLoaderWithParser;
+}
 
-/**
- * Loader for TCX (Training Center XML) - Garmin GPS track format
- */
+/** Metadata-only loader for TCX (Training Center XML). */
 export const TCXLoader = {
   dataType: null as unknown as ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   batchType: null as never,
 
-  name: 'TCX (Training Center XML)',
-  id: 'tcx',
-  module: 'kml',
+  ...TCXFormat,
   version: VERSION,
-  extensions: ['tcx'],
-  mimeTypes: ['application/vnd.garmin.tcx+xml'],
-  text: true,
-  tests: [TCX_HEADER],
-  parse: async (arrayBuffer, options?: TCXLoaderOptions) =>
-    parseTextSync(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync,
   options: {
     tcx: {shape: 'geojson-table'},
     gis: {}
-  }
-} as const satisfies LoaderWithParser<
+  },
+  preload
+} as const satisfies Loader<
   ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   never,
   TCXLoaderOptions
 >;
-
-/**
- * Parses TCX XML text into a GeoJSON feature collection.
- *
- * @param text - TCX XML document text.
- * @returns Parsed GeoJSON feature collection.
- */
-export function parseTCXTextToFeatureCollection(text: string): FeatureCollection {
-  const doc = new DOMParser().parseFromString(text, 'text/xml');
-  return tcx(doc);
-}
-
-/**
- * Parses TCX text into the requested table shape.
- *
- * @param text - TCX XML document text.
- * @param options - Loader options controlling the output shape.
- * @returns A GeoJSON table, object-row table, or binary feature collection.
- */
-function parseTextSync(
-  text: string,
-  options?: TCXLoaderOptions
-): ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable {
-  const geojson = parseTCXTextToFeatureCollection(text);
-  const schema = buildFeatureTableSchema(geojson.features);
-
-  const tcxOptions = {...TCXLoader.options.tcx, ...options?.tcx};
-
-  switch (tcxOptions.shape) {
-    case 'object-row-table': {
-      const table: ObjectRowTable = {
-        shape: 'object-row-table',
-        data: geojson.features
-      };
-      return table;
-    }
-    case 'geojson-table': {
-      const table: GeoJSONTable = {
-        shape: 'geojson-table',
-        type: 'FeatureCollection',
-        schema,
-        features: geojson.features
-      };
-      return table;
-    }
-    case 'arrow-table':
-      return convertFeatureCollectionToArrowTable(geojson.features);
-    case 'binary':
-      return geojsonToBinary(geojson.features);
-
-    default:
-      throw new Error(tcxOptions.shape);
-  }
-}

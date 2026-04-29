@@ -8,6 +8,7 @@ export {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from './lib/draco
 // Draco data types
 
 export type {DracoMesh, DracoLoaderData} from './lib/draco-types';
+export {DracoFormat} from './draco-format';
 
 // Draco Writer
 
@@ -17,5 +18,9 @@ export {DracoWriterWorker, DracoWriter} from './draco-writer';
 // Draco Loader
 
 export type {DracoLoaderOptions} from './draco-loader';
-export {DracoWorkerLoader, DracoLoader} from './draco-loader';
+export {DracoLoader} from './draco-loader';
 export {DracoArrowLoader} from './draco-arrow-loader';
+
+// DEPRECATED EXPORTS
+/** @deprecated Use DracoLoader. */
+export {DracoWorkerLoader} from './draco-loader';

@@ -2,18 +2,25 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {Texture} from '@loaders.gl/schema';
 import type {TextureLoaderOptions as TextureApiLoaderOptions} from './lib/texture-api/texture-api-types';
 import {VERSION} from './lib/utils/version';
 import {
-  parseCompositeImageManifest,
   testCompositeImageManifestShape,
   type ImageTextureCubeArrayManifest
 } from './lib/composite-image/parse-composite-image';
 
 export type TextureCubeArrayLoaderOptions = TextureApiLoaderOptions;
 export type {ImageTextureCubeArrayManifest as TextureCubeArrayManifest};
+
+/** Preloads the parser-bearing texture cube array manifest loader implementation. */
+async function preload() {
+  const {TextureCubeArrayLoaderWithParser} = await import(
+    './texture-cube-array-loader-with-parser'
+  );
+  return TextureCubeArrayLoaderWithParser;
+}
 
 export const TextureCubeArrayLoader = {
   dataType: null as unknown as Texture,
@@ -30,20 +37,5 @@ export const TextureCubeArrayLoader = {
   options: {
     image: {}
   },
-  parse: async (
-    arrayBuffer: ArrayBuffer,
-    options?: TextureCubeArrayLoaderOptions,
-    context?: LoaderContext
-  ) =>
-    await parseCompositeImageManifest(
-      new TextDecoder().decode(arrayBuffer),
-      'image-texture-cube-array',
-      options,
-      context
-    ),
-  parseText: async (
-    text: string,
-    options?: TextureCubeArrayLoaderOptions,
-    context?: LoaderContext
-  ) => await parseCompositeImageManifest(text, 'image-texture-cube-array', options, context)
-} as const satisfies LoaderWithParser<Texture, never, TextureCubeArrayLoaderOptions>;
+  preload
+} as const satisfies Loader<Texture, never, TextureCubeArrayLoaderOptions>;

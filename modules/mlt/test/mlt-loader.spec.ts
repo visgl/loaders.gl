@@ -3,7 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import test from 'tape-promise/tape';
-import {MLTLoader, MLTLoaderOptions} from '@loaders.gl/mlt';
+import type {MLTLoaderOptions} from '@loaders.gl/mlt';
+import {MLTLoader} from '@loaders.gl/mlt/bundled';
 
 test('MLTLoader#metadata', t => {
   t.ok(MLTLoader, 'MLTLoader defined');

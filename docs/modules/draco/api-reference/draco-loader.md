@@ -1,4 +1,12 @@
+import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+
 # Draco Loaders
+
+<DracoDocsTabs active="dracoloader" />
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
 
 ![logo](../images/draco-small.png)
 
@@ -6,18 +14,26 @@ The `DracoArrowLoader` decodes a mesh or point cloud (maps of attributes) using 
 
 `DracoLoader` parses the same Draco format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
 
-| Loader             | Output             | Use when                            |
-| ------------------ | ------------------ | ----------------------------------- |
-| `DracoLoader`      | `Mesh`             | You want the legacy mesh object.    |
-| `DracoArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes.  |
+## Usage
 
-| Loader         | Characteristic                             |
-| -------------- | ------------------------------------------ |
-| File Format    | [Draco](/docs/modules/draco/formats/draco) |
-| Data Format    | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
-| File Extension | `.drc`                                     |
-| File Type      | Binary                                     |
-| Supported APIs | `parse`                                    |
+```typescript
+import {DracoLoader} from '@loaders.gl/draco';
+import {load} from '@loaders.gl/core';
+
+const data = await load(url, DracoLoader, options);
+const table = await load(url, DracoLoader, {draco: {shape: 'arrow-table'}});
+```
+
+## Shapes
+
+`DracoLoader` returns legacy `Mesh` objects by default. Set `draco.shape` to select another representation.
+
+| Shape         | Output                                                      | Compatibility loader |
+| ------------- | ----------------------------------------------------------- | -------------------- |
+| `mesh`        | legacy loaders.gl `Mesh` object                             | `DracoLoader`        |
+| `arrow-table` | loaders.gl Mesh Arrow table with geometry attribute columns | `DracoArrowLoader`   |
+
+`DracoArrowLoader` is a compatibility loader for `draco.shape: 'arrow-table'`.
 
 ## Support
 
@@ -39,20 +55,14 @@ Metadata Support:
 - Extracts metadata dictionaries, both for the full mesh and for each attribute.
 - Supports all Draco metadata field types, including `Int32Array`.
 
-## Usage
-
-```typescript
-import {DracoArrowLoader, DracoLoader} from '@loaders.gl/draco';
-import {load} from '@loaders.gl/core';
-
-const table = await load(url, DracoArrowLoader, options);
-const data = await load(url, DracoLoader, options);
-```
-
-## Options
+## DracoLoaderOptions
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `draco.shape` | string | `'mesh'` | Output shape: `'mesh'` or `'arrow-table'`. |
+| `draco.decoderType` | string | `'wasm'` when WebAssembly is available | Draco decoder runtime: `'wasm'` or `'js'`. |
+| `draco.extraAttributes` | object | `{}` | Additional custom attributes to decode. |
+| `draco.attributeNameEntry` | string | N/A | Metadata entry used to map Draco attribute ids to output attribute names. |
 
 ## Dependencies
 
