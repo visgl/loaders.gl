@@ -6,6 +6,7 @@ import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
 import type {Mesh, MeshArrowTable, MeshAttribute} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {VERSION} from './lib/utils/version';
+import {QuantizedMeshFormat} from './terrain-format';
 
 const QUANTIZED_MESH_HEADER_LENGTH = 88;
 const QUANTIZED_COORDINATE_RANGE = 32767;
@@ -24,12 +25,8 @@ export type QuantizedMeshWriterOptions = WriterOptions & {
  * Writer for the quantized mesh terrain format.
  */
 export const QuantizedMeshWriter = {
-  name: 'Quantized Mesh',
-  id: 'quantized-mesh',
-  module: 'terrain',
+  ...QuantizedMeshFormat,
   version: VERSION,
-  extensions: ['terrain'],
-  mimeTypes: ['application/vnd.quantized-mesh'],
   dataType: null as unknown as Mesh | MeshArrowTable,
   batchType: null as never,
   options: {

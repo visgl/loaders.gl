@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {VideoFormat} from './video-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -22,12 +23,8 @@ async function preload() {
 export const VideoLoader = {
   dataType: null as unknown as HTMLVideoElement,
   batchType: null as never,
-  name: 'Video',
-  id: 'video',
-  module: 'video',
+  ...VideoFormat,
   version: VERSION,
-  extensions: ['mp4'],
-  mimeTypes: ['video/mp4'],
   // tests: arrayBuffer => Boolean(getBinaryImageMetadata(new DataView(arrayBuffer))),
   options: {
     video: {}

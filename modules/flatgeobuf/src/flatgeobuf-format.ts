@@ -9,6 +9,8 @@ export const FlatGeobufFormat = {
   id: 'flatgeobuf',
   name: 'FlatGeobuf',
   module: 'flatgeobuf',
+  encoding: 'flatbuffers',
+  format: 'flatgeobuf',
   extensions: ['fgb'],
   mimeTypes: ['application/octet-stream'],
   category: 'geometry'

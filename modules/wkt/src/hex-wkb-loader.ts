@@ -8,6 +8,7 @@ import type {Geometry} from '@loaders.gl/schema';
 import type {WKBLoaderOptions} from './wkb-loader';
 import {WKBLoader} from './wkb-loader';
 import {VERSION} from './lib/version';
+import {HexWKBFormat} from './wkt-format';
 
 export type HexWKBLoaderOptions = WKBLoaderOptions;
 
@@ -25,14 +26,9 @@ async function preload() {
 export const HexWKBLoader = {
   dataType: null as unknown as Geometry,
   batchType: null as never,
-  name: 'Hexadecimal WKB',
-  id: 'wkb',
-  module: 'wkt',
+  ...HexWKBFormat,
   version: VERSION,
   worker: true,
-  category: 'geometry',
-  extensions: ['wkb'],
-  mimeTypes: [],
   options: WKBLoader.options,
   text: true,
   testText: isHexWKB,

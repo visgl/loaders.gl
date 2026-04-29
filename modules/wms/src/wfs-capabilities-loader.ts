@@ -3,6 +3,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {WFSCapabilities} from './lib/parsers/wfs/parse-wfs-capabilities';
 
+import {WFSCapabilitiesFormat} from './wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -24,6 +25,7 @@ async function preload() {
  * @deprecated Warning: this loader is still experimental and incomplete
  */
 export const WFSCapabilitiesLoader = {
+  ...WFSCapabilitiesFormat,
   dataType: null as unknown as WFSCapabilities,
   batchType: null as never,
 
@@ -33,6 +35,8 @@ export const WFSCapabilitiesLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  encoding: 'xml',
+  format: 'wfs-capabilities',
   text: true,
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.wfs_xml', 'application/xml', 'text/xml'],

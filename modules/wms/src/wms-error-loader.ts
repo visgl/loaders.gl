@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
+import {WMSErrorFormat} from './wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -25,6 +26,7 @@ async function preload() {
 
 /** Metadata-only loader for WMS service exception responses. */
 export const WMSErrorLoader = {
+  ...WMSErrorFormat,
   dataType: null as unknown as string,
   batchType: null as never,
 
@@ -34,6 +36,8 @@ export const WMSErrorLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  encoding: 'xml',
+  format: 'wms-error',
   text: true,
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.se_xml', 'application/xml', 'text/xml'],

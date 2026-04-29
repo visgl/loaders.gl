@@ -4,6 +4,7 @@
 
 // XMLLoader
 
+export {XMLFormat, HTMLFormat} from './xml-format';
 export type {XMLLoaderOptions} from './xml-loader';
 export {XMLLoader} from './xml-loader';
 

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import {NPYFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
 import type {NPYTile} from './lib/parsers/parse-npy';
 
@@ -26,6 +27,7 @@ async function preload() {
 
 /** Metadata-only worker loader for numpy "tiles". */
 export const NPYWorkerLoader = {
+  ...NPYFormat,
   dataType: null as any as NPYTile,
   batchType: null as never,
 

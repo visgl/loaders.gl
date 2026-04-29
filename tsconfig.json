@@ -83,6 +83,12 @@
       "@loaders.gl/compression/test": [
         "modules/compression/test"
       ],
+      "@loaders.gl/copc": [
+        "modules/copc/src"
+      ],
+      "@loaders.gl/copc/test": [
+        "modules/copc/test"
+      ],
       "@loaders.gl/crypto": [
         "modules/crypto/src"
       ],

@@ -4,8 +4,8 @@
 
 import type {Loader} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {SHP_MAGIC_NUMBER} from './shp-loader';
 import type {ShapefileLoaderOptions} from './shapefile-loader';
+import {ShapefileFormat} from './shp-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -22,14 +22,10 @@ async function preload() {
 
 /** Metadata-only Shapefile loader that returns properties and geometry as an Arrow table. */
 export const ShapefileArrowLoader = {
+  ...ShapefileFormat,
   name: 'Shapefile Arrow',
   id: 'shapefile-arrow',
-  module: 'shapefile',
   version: VERSION,
-  category: 'geometry',
-  extensions: ['shp'],
-  mimeTypes: ['application/octet-stream'],
-  tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   dataType: null as unknown as ArrowTable,
   batchType: null as unknown as ArrowTableBatch,
   options: {

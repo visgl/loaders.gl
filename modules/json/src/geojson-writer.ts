@@ -10,6 +10,7 @@ import {
 } from '@loaders.gl/loader-utils';
 import type {Table, TableBatch} from '@loaders.gl/schema';
 import {encodeTableAsGeojsonInBatches} from './lib/encoders/geojson-encoder';
+import {GeoJSONFormat} from './json-format';
 
 export type GeoJSONWriterOptions = WriterOptions & {
   geojson?: {
@@ -20,12 +21,8 @@ export type GeoJSONWriterOptions = WriterOptions & {
 };
 
 export const GeoJSONWriter = {
-  id: 'geojson',
+  ...GeoJSONFormat,
   version: 'latest',
-  module: 'geojson',
-  name: 'GeoJSON',
-  extensions: ['geojson'],
-  mimeTypes: ['application/geo+json'],
   text: true,
   options: {
     geojson: {

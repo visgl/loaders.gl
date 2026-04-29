@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
+import {PotreeFormat} from './potree-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -20,6 +21,7 @@ async function preload() {
 
 /** Metadata-only Potree loader. */
 export const PotreeLoader = {
+  ...PotreeFormat,
   dataType: null as unknown as any,
   batchType: null as never,
 

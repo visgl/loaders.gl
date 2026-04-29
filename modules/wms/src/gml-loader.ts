@@ -5,6 +5,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from './lib/parsers/gml/parse-gml';
 
+import {GMLFormat} from './wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -21,6 +22,7 @@ async function preload() {
 
 /** Metadata-only loader for GML geometry responses. */
 export const GMLLoader = {
+  ...GMLFormat,
   dataType: null as unknown as Geometry | null,
   batchType: null as never,
 
@@ -30,6 +32,8 @@ export const GMLLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  encoding: 'xml',
+  format: 'gml',
   text: true,
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.gml', 'application/xml', 'text/xml'],

@@ -4,6 +4,7 @@
 
 import type {Loader} from '@loaders.gl/loader-utils';
 import {type MapStyleLoadOptions, type ResolvedMapStyle} from './map-style';
+import {MapStyleFormat} from './map-style-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -20,14 +21,9 @@ export const MapStyleLoader = {
   dataType: null as unknown as ResolvedMapStyle,
   batchType: null as never,
 
-  name: 'Map Style',
-  id: 'map-style',
-  module: 'mvt',
+  ...MapStyleFormat,
   version: VERSION,
   worker: false,
-  extensions: ['json'],
-  mimeTypes: ['application/json', 'application/vnd.mapbox.style+json'],
-  text: true,
   options: {
     mapStyle: {}
   },

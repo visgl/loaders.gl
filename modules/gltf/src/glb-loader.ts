@@ -2,6 +2,7 @@ import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {GLB} from './lib/types/glb-types';
 import type {ParseGLBOptions} from './lib/parsers/parse-glb';
 import {VERSION} from './lib/utils/version';
+import {GLBFormat} from './gltf-format';
 
 /** GLB loader options */
 export type GLBLoaderOptions = StrictLoaderOptions & {
@@ -24,13 +25,8 @@ async function preload() {
 export const GLBLoader = {
   dataType: null as unknown as GLB,
   batchType: null as never,
-  name: 'GLB',
-  id: 'glb',
-  module: 'gltf',
+  ...GLBFormat,
   version: VERSION,
-  extensions: ['glb'],
-  mimeTypes: ['model/gltf-binary'],
-  binary: true,
   preload,
   options: {
     glb: {

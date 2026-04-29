@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
+import {ArrowFormat} from './arrow-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -33,20 +34,9 @@ export const ArrowWorkerLoader = {
   dataType: null as unknown as ArrowTable,
   batchType: null as never,
 
-  name: 'Apache Arrow',
-  id: 'arrow',
-  module: 'arrow',
+  ...ArrowFormat,
   version: VERSION,
   // worker: true,
-  category: 'table',
-  extensions: ['arrow', 'feather'],
-  mimeTypes: [
-    'application/vnd.apache.arrow.file',
-    'application/vnd.apache.arrow.stream',
-    'application/octet-stream'
-  ],
-  binary: true,
-  tests: ['ARROW'],
   options: {
     arrow: {
       shape: 'columnar-table'

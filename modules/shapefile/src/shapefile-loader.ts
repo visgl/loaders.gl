@@ -4,9 +4,10 @@
 
 import type {StrictLoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import type {Batch, GeoJSONTable, ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import {SHP_MAGIC_NUMBER, type SHPLoaderOptions} from './shp-loader';
+import type {SHPLoaderOptions} from './shp-loader';
 import type {ShapefileOutput} from './lib/parsers/parse-shapefile';
 import type {DBFLoaderOptions} from './dbf-loader';
+import {ShapefileFormat} from './shp-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -36,14 +37,8 @@ async function preload() {
 export const ShapefileLoader = {
   dataType: null as unknown as ShapefileOutput | GeoJSONTable | ArrowTable,
   batchType: null as unknown as ShapefileOutput | Batch | ArrowTableBatch,
-  name: 'Shapefile',
-  id: 'shapefile',
-  module: 'shapefile',
+  ...ShapefileFormat,
   version: VERSION,
-  category: 'geometry',
-  extensions: ['shp'],
-  mimeTypes: ['application/octet-stream'],
-  tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shapefile: {
       shape: 'v3'

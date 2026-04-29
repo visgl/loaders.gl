@@ -9,6 +9,7 @@ import type {
   BinaryFeatureCollection,
   ArrowTable
 } from '@loaders.gl/schema';
+import {TCXFormat} from './kml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -19,10 +20,6 @@ export type TCXLoaderOptions = LoaderOptions & {
     shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary' | 'raw';
   };
 };
-
-const TCX_HEADER = `\
-<?xml version="1.0" encoding="UTF-8"?>
-<TrainingCenterDatabase`;
 
 /** Preloads the parser-bearing TCX loader implementation. */
 async function preload() {
@@ -35,14 +32,8 @@ export const TCXLoader = {
   dataType: null as unknown as ObjectRowTable | GeoJSONTable | BinaryFeatureCollection | ArrowTable,
   batchType: null as never,
 
-  name: 'TCX (Training Center XML)',
-  id: 'tcx',
-  module: 'kml',
+  ...TCXFormat,
   version: VERSION,
-  extensions: ['tcx'],
-  mimeTypes: ['application/vnd.garmin.tcx+xml'],
-  text: true,
-  tests: [TCX_HEADER],
   options: {
     tcx: {shape: 'geojson-table'},
     gis: {}

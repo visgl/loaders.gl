@@ -23,7 +23,7 @@ export type {
 
 // formats
 
-export type {Format} from './format-types';
+export type {Format, FormatEncoding} from './format-types';
 
 // loaders
 

@@ -7,6 +7,7 @@ import {PotreeNodesSource} from './lib/potree-node-source';
 
 const VERSION = '1.7';
 
+import {PotreeBinFormat} from './potree-format';
 export type PotreeSourceLoaderOptions = DataSourceOptions & {
   potree?: {};
 };
@@ -15,6 +16,7 @@ export type PotreeSourceLoaderOptions = DataSourceOptions & {
  * Creates point cloud data sources for Potree urls
  */
 export const PotreeSourceLoader = {
+  ...PotreeBinFormat,
   dataType: null as unknown as PotreeNodesSource,
   batchType: null as never,
   name: 'Potree',

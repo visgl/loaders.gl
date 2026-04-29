@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import {SHPFormat} from './shp-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -30,16 +31,9 @@ export const SHPWorkerLoader = {
   dataType: null as unknown,
   batchType: null as never,
 
-  name: 'SHP',
-  id: 'shp',
-  module: 'shapefile',
+  ...SHPFormat,
   version: VERSION,
   worker: true,
-  category: 'geometry',
-  extensions: ['shp'],
-  mimeTypes: ['application/octet-stream'],
-  // ISSUE: This also identifies SHX files, which are identical to SHP for the first 100 bytes...
-  tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shp: {
       _maxDimensions: 4

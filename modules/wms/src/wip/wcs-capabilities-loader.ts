@@ -3,6 +3,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {WCSCapabilities} from './lib/wcs/parse-wcs-capabilities';
 
+import {WCSCapabilitiesFormat} from '../wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -17,6 +18,7 @@ export type WCSLoaderOptions = LoaderOptions & {
  * Loader for the response to the WCS GetCapability request
  */
 export const WCSCapabilitiesLoader = {
+  ...WCSCapabilitiesFormat,
   dataType: null as unknown as WCSCapabilities,
   batchType: null as never,
 
@@ -26,6 +28,8 @@ export const WCSCapabilitiesLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  encoding: 'xml',
+  format: 'wcs-capabilities',
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.wcs_xml', 'application/xml', 'text/xml'],
   testText: testXMLFile,

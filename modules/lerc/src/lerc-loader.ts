@@ -5,6 +5,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {LERCData} from './lib/parsers/lerc/lerc-types';
 
+import {LERCFormat} from './lerc-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -30,6 +31,7 @@ async function preload() {
 
 /** Metadata-only loader for the LERC raster format. */
 export const LERCLoader = {
+  ...LERCFormat,
   dataType: null as unknown as LERCData,
   batchType: null as never,
 

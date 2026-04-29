@@ -4,10 +4,12 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
+import {PotreeBinFormat} from './potree-format';
 /**
  * Loader for potree Binary Point Attributes
  * */
 export const PotreeBinLoader = {
+  ...PotreeBinFormat,
   dataType: null as unknown as {},
   batchType: null as never,
 

@@ -6,6 +6,7 @@ import type {TextureLoaderOptions} from '@loaders.gl/textures';
 import type {GLTFWithBuffers} from './lib/types/gltf-types';
 import type {GLBLoaderOptions} from './glb-loader';
 import type {ParseGLTFOptions} from './lib/parsers/parse-gltf';
+import {GLTFFormat} from './gltf-format';
 
 /**
  * GLTF loader options
@@ -28,16 +29,8 @@ async function preload() {
 export const GLTFLoader = {
   dataType: null as unknown as GLTFWithBuffers,
   batchType: null as never,
-  name: 'glTF',
-  id: 'gltf',
-  module: 'gltf',
+  ...GLTFFormat,
   version: VERSION,
-  extensions: ['gltf', 'glb'],
-  mimeTypes: ['model/gltf+json', 'model/gltf-binary'],
-
-  text: true,
-  binary: true,
-  tests: ['glTF'],
   preload,
 
   options: {
