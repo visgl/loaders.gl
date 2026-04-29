@@ -37,6 +37,7 @@
     "@fortawesome/react-fontawesome": "^0.1.14",
     "@loaders.gl/core": "workspace:*",
     "@loaders.gl/csv": "workspace:*",
+    "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/geopackage": "workspace:*",
     "@loaders.gl/i3s": "workspace:*",
     "@loaders.gl/las": "workspace:*",

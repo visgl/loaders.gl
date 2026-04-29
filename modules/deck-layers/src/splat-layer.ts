@@ -14,6 +14,7 @@ import {
   type DefaultProps,
   type LayerProps,
   type LayerDataSource,
+  type UpdateParameters,
   type Unit,
   type Color
 } from '@deck.gl/core';
@@ -23,6 +24,9 @@ import type {MeshArrowTable, TypedArray} from '@loaders.gl/schema';
 
 const SH_C0 = 0.28209479177387814;
 const DEFAULT_COLOR = [255, 255, 255, 255] as const;
+const GAUSSIAN_SUPPORT_RADIUS = 3;
+const DEFAULT_SCALE_ENCODING = 'log';
+const DEFAULT_OPACITY_ENCODING = 'logit';
 
 /** Props for {@link SplatLayer}. */
 export type SplatLayerProps = CompositeLayerProps & {
@@ -150,7 +154,7 @@ void main(void) {
     discard;
   }
 
-  float gaussianAlpha = exp(-4.0 * radiusSquared);
+  float gaussianAlpha = exp(-6.0 * radiusSquared);
   fragColor = vec4(vColor.rgb, vColor.a * gaussianAlpha);
   if (fragColor.a <= 0.00392156862) {
     discard;
@@ -203,9 +207,9 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
     radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER}
   };
 
-  declare state: {
+  state: {
     model?: Model;
-  };
+  } = {};
 
   /** Returns splat shaders. */
   getShaders() {
@@ -239,6 +243,17 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
     });
   }
 
+  /** Rebuilds the luma model when deck.gl shader extensions change. */
+  updateState(params: UpdateParameters<this>): void {
+    super.updateState(params);
+
+    if (!this.state.model || params.changeFlags.extensionsChanged) {
+      this.state.model?.destroy();
+      this.state.model = this._getModel();
+      this.getAttributeManager()!.invalidateAll();
+    }
+  }
+
   /** Draws all splat billboards. */
   draw(): void {
     const {sizeUnits, radiusScale, radiusMinPixels, radiusMaxPixels} = this.props;
@@ -248,7 +263,10 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       radiusMinPixels,
       radiusMaxPixels
     };
-    const model = this.state.model!;
+    const model = this.state.model;
+    if (!model) {
+      return;
+    }
     model.shaderInputs.setProps({splat: splatProps});
     model.draw(this.context.renderPass);
   }
@@ -349,15 +367,36 @@ function getSplatRadii(table: arrow.Table): Float32Array {
   const scale0 = getRequiredNumericColumn(table, 'scale_0');
   const scale1 = getRequiredNumericColumn(table, 'scale_1');
   const scale2 = getRequiredNumericColumn(table, 'scale_2');
-  const scaleEncoding = getFieldMetadata(table, 'scale_0', 'loaders_gl.gaussian_splats.encoding');
+  const scaleEncoding =
+    getFieldMetadata(table, 'scale_0', 'loaders_gl.gaussian_splats.encoding') ||
+    DEFAULT_SCALE_ENCODING;
   const radii = new Float32Array(table.numRows);
 
   for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
-    const radius = Math.max(scale0[rowIndex], scale1[rowIndex], scale2[rowIndex]);
-    radii[rowIndex] = scaleEncoding === 'linear' ? radius : Math.exp(radius);
+    const standardDeviation = decodeSplatScaleRadius(
+      scale0[rowIndex],
+      scale1[rowIndex],
+      scale2[rowIndex],
+      scaleEncoding
+    );
+    radii[rowIndex] = standardDeviation * GAUSSIAN_SUPPORT_RADIUS;
   }
 
   return radii;
+}
+
+/** Decode a circular fallback radius from anisotropic Gaussian scales. */
+function decodeSplatScaleRadius(
+  scale0: number,
+  scale1: number,
+  scale2: number,
+  scaleEncoding: string
+): number {
+  if (scaleEncoding === 'linear') {
+    return Math.cbrt(Math.max(scale0, 0) * Math.max(scale1, 0) * Math.max(scale2, 0));
+  }
+
+  return Math.exp((scale0 + scale1 + scale2) / 3);
 }
 
 /** Return splat colors from SH DC and opacity columns. */
@@ -366,7 +405,9 @@ function getSplatColors(table: arrow.Table, fallbackColor: Color): Uint8Array {
   const fdc1 = getOptionalNumericColumn(table, 'f_dc_1');
   const fdc2 = getOptionalNumericColumn(table, 'f_dc_2');
   const opacity = getOptionalNumericColumn(table, 'opacity');
-  const opacityEncoding = getFieldMetadata(table, 'opacity', 'loaders_gl.gaussian_splats.encoding');
+  const opacityEncoding =
+    getFieldMetadata(table, 'opacity', 'loaders_gl.gaussian_splats.encoding') ||
+    DEFAULT_OPACITY_ENCODING;
   const colors = new Uint8Array(table.numRows * 4);
 
   for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {

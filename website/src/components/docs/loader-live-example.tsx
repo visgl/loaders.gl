@@ -1,7 +1,8 @@
-import React, {Suspense} from 'react';
+import React, {Suspense, useState} from 'react';
 import BrowserOnly from '@docusaurus/BrowserOnly';
 import {useDoc} from '@docusaurus/plugin-content-docs/client';
 import styled from 'styled-components';
+import type {Example} from 'examples/website/pointcloud/examples';
 import type {TableLiveExampleConfig} from './table-live-example';
 
 const GeospatialExample = React.lazy(() => import('examples/website/geospatial/app'));
@@ -111,14 +112,36 @@ export function PointcloudLoaderLiveExample({
     <BrowserOnly fallback={<LoadingContainer $kind="pointcloud" />}>
       {() => (
         <Suspense fallback={<LoadingContainer $kind="pointcloud" />}>
-          <PointcloudDataPreview format={format}>
-            <div data-loader-live-example style={{position: 'relative', height: '100%'}}>
-              <PointcloudExample format={format} hideChrome={true} />
-            </div>
-          </PointcloudDataPreview>
+          <PointcloudLoaderLiveExampleContent format={format} />
         </Suspense>
       )}
     </BrowserOnly>
+  );
+}
+
+function PointcloudLoaderLiveExampleContent({format}: {format: string}) {
+  const [selectedExample, setSelectedExample] = useState<{
+    categoryName: string;
+    exampleName: string;
+    example: Example;
+  } | null>(null);
+
+  return (
+    <PointcloudDataPreview
+      format={format}
+      selectedExample={selectedExample}
+      onExampleChange={setSelectedExample}
+    >
+      <div data-loader-live-example style={{position: 'relative', height: '100%'}}>
+        <PointcloudExample
+          format={format}
+          hideChrome={true}
+          categoryName={selectedExample?.categoryName}
+          exampleName={selectedExample?.exampleName}
+          example={selectedExample?.example}
+        />
+      </div>
+    </PointcloudDataPreview>
   );
 }
 

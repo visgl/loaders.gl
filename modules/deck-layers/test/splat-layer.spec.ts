@@ -47,8 +47,11 @@ test('SplatLayer renders Gaussian splat Arrow table through binary attributes', 
     [0, 0, 0, 1, 2, 3],
     'passes interleaved positions'
   );
-  t.equal(data.attributes.getRadius.value[0], 1, 'decodes first log scale');
-  t.ok(Math.abs(data.attributes.getRadius.value[1] - Math.E) < 1e-6, 'decodes second log scale');
+  t.equal(data.attributes.getRadius.value[0], 3, 'decodes first log scale support radius');
+  t.ok(
+    Math.abs(data.attributes.getRadius.value[1] - Math.exp(0) * 3) < 1e-6,
+    'decodes second log scale support radius from geometric mean'
+  );
   t.deepEqual(
     Array.from(data.attributes.getColor.value.slice(0, 4)),
     [128, 128, 128, 128],

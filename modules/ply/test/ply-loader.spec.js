@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import * as arrow from 'apache-arrow';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {indexedMeshArrowSchema} from '@loaders.gl/schema';
@@ -18,6 +19,7 @@ import {
 const PLY_CUBE_ATT_URL = '@loaders.gl/ply/test/data/cube_att.ply';
 const PLY_BUN_ZIPPER_URL = '@loaders.gl/ply/test/data/bun_zipper.ply';
 const PLY_BUN_BINARY_URL = '@loaders.gl/ply/test/data/bunny.ply';
+const GAUSSIAN_SPLAT_BINARY_URL = '@loaders.gl/ply/test/data/gaussian/train-1000.ply';
 
 const GAUSSIAN_SPLAT_PLY = `ply
 format ascii 1.0
@@ -143,6 +145,65 @@ test('PLYLoader#parse(gaussian splat metadata)', async t => {
   t.ok(table.data.getChild('f_dc_0'), 'f_dc_0 column was preserved');
   t.ok(table.data.getChild('scale_0'), 'scale_0 column was preserved');
   t.ok(table.data.getChild('rot_0'), 'rot_0 column was preserved');
+  t.end();
+});
+
+test('PLYLoader#parse(gaussian splat binary fixture)', async t => {
+  const table = await parse(fetchFile(GAUSSIAN_SPLAT_BINARY_URL), PLYLoader, {
+    ply: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  t.equal(table.data.numRows, 1000, 'table has one row per fixture splat');
+  t.equal(table.data.schema.fields.length, 58, 'schema has expected normalized PLY columns');
+  t.equal(
+    table.data.schema.metadata.get('loaders_gl.semantic_type'),
+    'gaussian-splats',
+    'schema identifies Gaussian splat data'
+  );
+
+  const plyElements = JSON.parse(table.data.schema.metadata.get('ply_elements'));
+  t.equal(plyElements[0].name, 'vertex', 'schema preserves PLY vertex element metadata');
+  t.equal(plyElements[0].count, 1000, 'schema preserves truncated vertex count');
+  t.equal(plyElements[0].properties.length, 62, 'schema preserves source PLY property count');
+
+  const positionField = table.data.schema.fields.find(field => field.name === 'POSITION');
+  t.ok(positionField?.type instanceof arrow.FixedSizeList, 'POSITION is a fixed size list');
+  t.equal(positionField?.type.listSize, 3, 'POSITION is a vec3');
+  t.ok(table.data.getChild('POSITION'), 'POSITION column was preserved');
+
+  const normalField = table.data.schema.fields.find(field => field.name === 'NORMAL');
+  t.ok(normalField?.type instanceof arrow.FixedSizeList, 'NORMAL is a fixed size list');
+  t.equal(normalField?.type.listSize, 3, 'NORMAL is a vec3');
+
+  const scaleField = table.data.schema.fields.find(field => field.name === 'scale_0');
+  t.equal(
+    scaleField?.metadata.get('loaders_gl.gaussian_splats.semantic'),
+    'scale',
+    'scale field has semantic metadata'
+  );
+  t.equal(
+    scaleField?.metadata.get('loaders_gl.gaussian_splats.encoding'),
+    'log',
+    'scale field has encoding metadata'
+  );
+
+  const opacityField = table.data.schema.fields.find(field => field.name === 'opacity');
+  t.equal(
+    opacityField?.metadata.get('loaders_gl.gaussian_splats.encoding'),
+    'logit',
+    'opacity field has encoding metadata'
+  );
+
+  const sphericalHarmonicField = table.data.schema.fields.find(field => field.name === 'f_rest_44');
+  t.equal(
+    sphericalHarmonicField?.metadata.get('loaders_gl.gaussian_splats.semantic'),
+    'spherical_harmonic_rest',
+    'SH rest field has semantic metadata'
+  );
+  t.ok(table.data.getChild('f_rest_44'), 'last SH rest coefficient was preserved');
+  t.ok(table.data.getChild('scale_0'), 'scale_0 column was preserved');
+  t.ok(table.data.getChild('rot_3'), 'rot_3 column was preserved');
   t.end();
 });
 

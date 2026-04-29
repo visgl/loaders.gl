@@ -5,7 +5,8 @@ import {LASLoader} from '@loaders.gl/las';
 import {OBJLoader} from '@loaders.gl/obj';
 import {PCDLoader} from '@loaders.gl/pcd';
 import {PLYLoader} from '@loaders.gl/ply';
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import styled from 'styled-components';
 import {EXAMPLES, type Example} from 'examples/website/pointcloud/examples';
 
@@ -15,6 +16,17 @@ const PREVIEW_COLUMN_LIMIT = 9;
 const SOURCE_BYTE_LIMIT = 2048;
 const SOURCE_TEXT_LIMIT = 48000;
 const DEFAULT_SOURCE_BYTES_PER_ROW = 8;
+const SAVED_POINTCLOUD_URLS_KEY = 'loaders.gl.pointcloud-preview.urls';
+const MAX_SAVED_POINTCLOUD_URLS = 12;
+
+type SelectedPointcloudExample = {
+  /** Example category label. */
+  categoryName: string;
+  /** Example display name. */
+  exampleName: string;
+  /** Example source definition. */
+  example: Example;
+};
 
 type PointcloudDataPreviewState =
   | {status: 'loading'}
@@ -49,6 +61,21 @@ type BinaryBytesProps = {
   $bytesPerRow: number;
 };
 
+type UrlOption = {
+  /** Example format this URL belongs to. */
+  format: string;
+  /** Built-in example source definition. */
+  example?: Example;
+  /** URL option display label. */
+  label: string;
+  /** Parsed point count when known. */
+  pointCount?: number;
+  /** URL option value. */
+  url: string;
+  /** URL option group. */
+  group: 'Examples' | 'Saved URLs';
+};
+
 const PreviewLayout = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1fr);
@@ -63,6 +90,122 @@ const PreviewLayout = styled.div`
   @media (max-width: 760px) {
     grid-template-columns: 1fr;
   }
+`;
+
+const UrlCard = styled.form`
+  position: relative;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 0.9rem;
+  border: 1px solid var(--ifm-color-gray-400);
+  border-radius: 8px;
+  background: rgba(247, 250, 252, 0.92);
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const UrlInputGroup = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
+`;
+
+const UrlInput = styled.input`
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.65);
+  border-radius: 6px 0 0 6px;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+`;
+
+const UrlMenuButton = styled.button`
+  width: 2.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.65);
+  border-left: 0;
+  border-radius: 0 6px 6px 0;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+  cursor: pointer;
+`;
+
+const UrlMenuShell = styled.div`
+  position: relative;
+  min-width: 0;
+`;
+
+const UrlMenu = styled.div`
+  position: absolute;
+  z-index: 1000;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  left: 0;
+  max-height: 18rem;
+  overflow: auto;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.22);
+`;
+
+const UrlMenuGroup = styled.div`
+  padding: 0.55rem 0.65rem 0.3rem;
+  color: var(--ifm-color-gray-700);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+`;
+
+const UrlMenuOption = styled.button`
+  display: block;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+  background: transparent;
+  color: var(--ifm-font-color-base);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  text-align: left;
+
+  &:hover {
+    background: rgba(148, 163, 184, 0.16);
+  }
+`;
+
+const UrlMenuOptionLabel = styled.div`
+  font-weight: 700;
+`;
+
+const UrlMenuOptionCount = styled.div`
+  margin-top: 0.1rem;
+  color: var(--ifm-color-gray-700);
+  font-size: 0.75rem;
+  font-weight: 700;
+`;
+
+const UrlMenuOptionUrl = styled.div`
+  margin-top: 0.15rem;
+  color: var(--ifm-color-gray-700);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.72rem;
+`;
+
+const UrlButton = styled.button`
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  border-radius: 6px;
+  background: var(--ifm-color-emphasis-900);
+  color: var(--ifm-color-emphasis-0);
+  font-weight: 700;
+  cursor: pointer;
 `;
 
 const PreviewPane = styled.section`
@@ -133,7 +276,7 @@ const CanvasShell = styled.div`
   height: 24rem;
   overflow: hidden;
   border-radius: 8px;
-  background: transparent;
+  background: #eef2f7;
 `;
 
 const BinaryViewport = styled.div`
@@ -289,9 +432,23 @@ const StatusContainer = styled.div`
 `;
 
 const GlobalPreviewStyle = styled.div`
+  html[data-theme='dark'] & ${UrlCard},
   html[data-theme='dark'] & ${PaneCard} {
     border-color: rgba(158, 174, 192, 0.26);
     background: rgba(29, 38, 49, 0.94);
+  }
+
+  html[data-theme='dark'] & ${UrlMenu} {
+    border-color: rgba(158, 174, 192, 0.35);
+    background: #1f2937;
+  }
+
+  html[data-theme='dark'] & ${UrlMenuOption} {
+    border-top-color: rgba(225, 232, 240, 0.12);
+  }
+
+  html[data-theme='dark'] & ${UrlMenuOption}:hover {
+    background: rgba(148, 163, 184, 0.16);
   }
 
   html[data-theme='dark'] & ${BinaryViewport},
@@ -305,6 +462,9 @@ const GlobalPreviewStyle = styled.div`
   html[data-theme='dark'] & ${BinaryOffset},
   html[data-theme='dark'] & ${BinaryAscii},
   html[data-theme='dark'] & ${BinaryOverflow},
+  html[data-theme='dark'] & ${UrlMenuGroup},
+  html[data-theme='dark'] & ${UrlMenuOptionCount},
+  html[data-theme='dark'] & ${UrlMenuOptionUrl},
   html[data-theme='dark'] & ${PaneMeta} {
     color: rgba(203, 213, 225, 0.9);
   }
@@ -331,14 +491,22 @@ const GlobalPreviewStyle = styled.div`
  */
 export default function PointcloudDataPreview({
   children,
-  format
+  format,
+  selectedExample,
+  onExampleChange
 }: {
   /** Optional deck.gl point cloud rendering to show beside the data previews. */
   children?: ReactNode;
   /** Example app format filter to select a specific point cloud loader format. */
   format: string;
+  /** Selected point cloud example shared with the deck canvas. */
+  selectedExample?: SelectedPointcloudExample | null;
+  /** Callback when the preview selects a new example URL. */
+  onExampleChange?: (example: SelectedPointcloudExample) => void;
 }): ReactNode {
-  const exampleEntry = useMemo(() => getFirstExample(format), [format]);
+  const defaultExampleEntry = useMemo(() => getFirstExample(format), [format]);
+  const exampleEntry = selectedExample || defaultExampleEntry;
+  const urlOptions = useMemo(() => getUrlOptions(format), [format]);
   const [state, setState] = useState<PointcloudDataPreviewState>({status: 'loading'});
 
   useEffect(() => {
@@ -356,10 +524,7 @@ export default function PointcloudDataPreview({
         const response = await fetch(exampleEntry.example.url);
         const arrayBuffer = await response.arrayBuffer();
         const sourceText = getSourceText(arrayBuffer);
-        const loader = getPointCloudLoader(exampleEntry.example, format);
-        const mesh = (await load(arrayBuffer, loader as any, {
-          worker: false
-        })) as Mesh;
+        const mesh = await loadPreviewPointCloud(exampleEntry.example, format, arrayBuffer);
 
         if (!isCancelled) {
           setState({
@@ -389,6 +554,28 @@ export default function PointcloudDataPreview({
 
   return (
     <GlobalPreviewStyle>
+      {exampleEntry && (
+        <UrlInputCard
+          format={format}
+          selectedUrl={exampleEntry.example.url}
+          urlOptions={urlOptions}
+          onExampleSelect={(urlOption) => {
+            const example = urlOption.example || {type: getExampleType(format), url: urlOption.url};
+            onExampleChange?.({
+              categoryName: format,
+              exampleName: urlOption.label,
+              example
+            });
+          }}
+          onUrlChange={(url) =>
+            onExampleChange?.({
+              categoryName: 'URL',
+              exampleName: getFileNameFromUrl(url),
+              example: {type: getExampleType(format), url}
+            })
+          }
+        />
+      )}
       {state.status === 'loading' && <StatusContainer>Loading point cloud data...</StatusContainer>}
       {state.status === 'error' && <StatusContainer>{state.errorMessage}</StatusContainer>}
       {state.status === 'loaded' && (
@@ -412,7 +599,7 @@ export default function PointcloudDataPreview({
             <PaneCard>
               <PaneHeader>
                 <PaneLabel>Arrow table</PaneLabel>
-                <PaneMeta>{state.exampleName}</PaneMeta>
+                <PaneMeta>{formatRowCount(getPointCount((state.mesh as any).attributes || {}))}</PaneMeta>
               </PaneHeader>
               <TableShell>
                 <PointcloudTable mesh={state.mesh} />
@@ -433,6 +620,165 @@ export default function PointcloudDataPreview({
         </PreviewLayout>
       )}
     </GlobalPreviewStyle>
+  );
+}
+
+function UrlInputCard({
+  format,
+  selectedUrl,
+  urlOptions,
+  onExampleSelect,
+  onUrlChange
+}: {
+  /** Current point cloud format. */
+  format: string;
+  /** Current source URL. */
+  selectedUrl: string;
+  /** Selectable URL options. */
+  urlOptions: UrlOption[];
+  /** Callback when the user selects a built-in example or saved URL. */
+  onExampleSelect: (urlOption: UrlOption) => void;
+  /** Callback when the user submits a URL. */
+  onUrlChange: (url: string) => void;
+}): ReactNode {
+  const urlCardRef = useRef<HTMLFormElement | null>(null);
+  const [url, setUrl] = useState(selectedUrl);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [savedUrls, setSavedUrls] = useState<string[]>(() => readSavedPointcloudUrls(format));
+  const allUrlOptions = useMemo(
+    () => [
+      ...urlOptions.filter((urlOption) => isMatchingFormat(urlOption.format, format)),
+      ...savedUrls.map((savedUrl) => ({
+        format,
+        group: 'Saved URLs' as const,
+        label: getFileNameFromUrl(savedUrl),
+        url: savedUrl
+      }))
+    ],
+    [savedUrls, urlOptions]
+  );
+
+  useEffect(() => {
+    setUrl(selectedUrl);
+  }, [selectedUrl]);
+
+  useEffect(() => {
+    setSavedUrls(readSavedPointcloudUrls(format));
+  }, [format]);
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return undefined;
+    }
+
+    function closeMenuOnOutsideClick(event: MouseEvent): void {
+      const target = event.target;
+      if (target instanceof Node && !urlCardRef.current?.contains(target)) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    function closeMenuOnEscape(event: KeyboardEvent): void {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', closeMenuOnOutsideClick);
+    document.addEventListener('keydown', closeMenuOnEscape);
+    return () => {
+      document.removeEventListener('mousedown', closeMenuOnOutsideClick);
+      document.removeEventListener('keydown', closeMenuOnEscape);
+    };
+  }, [isMenuOpen]);
+
+  function submitUrl(nextUrl: string, shouldSaveUrl = true): void {
+    const trimmedUrl = nextUrl.trim();
+    if (!trimmedUrl) {
+      return;
+    }
+    if (shouldSaveUrl) {
+      const nextSavedUrls = savePointcloudUrl(format, trimmedUrl);
+      setSavedUrls(nextSavedUrls);
+    }
+    onUrlChange(trimmedUrl);
+  }
+
+  return (
+    <UrlCard
+      ref={urlCardRef}
+      onSubmit={(event) => {
+        event.preventDefault();
+        submitUrl(url);
+      }}
+    >
+      <UrlMenuShell>
+        <UrlInputGroup>
+          <UrlInput
+            aria-label="Point cloud source URL"
+            type="url"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+          />
+          <UrlMenuButton
+            aria-label="Show point cloud URL options"
+            aria-expanded={isMenuOpen}
+            type="button"
+            onClick={() => setIsMenuOpen((currentValue) => !currentValue)}
+          >
+            ▾
+          </UrlMenuButton>
+        </UrlInputGroup>
+        {isMenuOpen && (
+          <UrlMenu>
+            {renderUrlOptionGroup('Examples', format, allUrlOptions, (selectedUrlOption) => {
+              setUrl(selectedUrlOption.url);
+              setIsMenuOpen(false);
+              onExampleSelect(selectedUrlOption);
+            })}
+            {renderUrlOptionGroup('Saved URLs', format, allUrlOptions, (selectedUrlOption) => {
+              setUrl(selectedUrlOption.url);
+              setIsMenuOpen(false);
+              onExampleSelect(selectedUrlOption);
+            })}
+          </UrlMenu>
+        )}
+      </UrlMenuShell>
+      <UrlButton type="submit">Load URL</UrlButton>
+    </UrlCard>
+  );
+}
+
+function renderUrlOptionGroup(
+  group: UrlOption['group'],
+  format: string,
+  options: UrlOption[],
+  onSelectUrlOption: (urlOption: UrlOption) => void
+): ReactNode {
+  const groupOptions = options.filter(
+    (option) => option.group === group && isMatchingFormat(option.format, format)
+  );
+  if (!groupOptions.length) {
+    return null;
+  }
+
+  return (
+    <>
+      <UrlMenuGroup>{group}</UrlMenuGroup>
+      {groupOptions.map((option) => (
+        <UrlMenuOption
+          key={`${group}.${option.label}.${option.url}`}
+          type="button"
+          onClick={() => onSelectUrlOption(option)}
+        >
+          <UrlMenuOptionLabel>{option.label}</UrlMenuOptionLabel>
+          {option.pointCount !== undefined && (
+            <UrlMenuOptionCount>{formatPointCount(option.pointCount)}</UrlMenuOptionCount>
+          )}
+          <UrlMenuOptionUrl>{option.url}</UrlMenuOptionUrl>
+        </UrlMenuOption>
+      ))}
+    </>
   );
 }
 
@@ -548,7 +894,126 @@ function getFirstExample(format: string): {exampleName: string; example: Example
   const examplesForFormat = EXAMPLES[format];
   const exampleName = examplesForFormat && Object.keys(examplesForFormat)[0];
   const example = exampleName ? examplesForFormat[exampleName] : null;
-  return exampleName && example ? {exampleName, example} : null;
+  return exampleName && example ? {categoryName: format, exampleName, example} : null;
+}
+
+async function loadPreviewPointCloud(
+  example: Example,
+  format: string,
+  firstArrayBuffer: ArrayBuffer
+): Promise<Mesh> {
+  const urls = getExampleUrls(example);
+  const loader = getPointCloudLoader(example, format);
+
+  if (urls.length === 1) {
+    const pointCloud = await load(firstArrayBuffer, loader as any, {
+      worker: false,
+      las: {shape: 'arrow-table'},
+      obj: {shape: 'arrow-table'},
+      pcd: {shape: 'arrow-table'},
+      ply: {shape: 'arrow-table'}
+    });
+    return isMeshArrowTable(pointCloud) ? ((convertTableToMesh(pointCloud) as unknown) as Mesh) : (pointCloud as Mesh);
+  }
+
+  const pointClouds = await Promise.all(
+    urls.map(async (url, index) => {
+      const arrayBuffer =
+        index === 0 ? firstArrayBuffer : await (await fetch(url)).arrayBuffer();
+      return load(arrayBuffer, loader as any, {
+        worker: false,
+        las: {shape: 'arrow-table'},
+        obj: {shape: 'arrow-table'},
+        pcd: {shape: 'arrow-table'},
+        ply: {shape: 'arrow-table'}
+      });
+    })
+  );
+  const combinedPointCloud = combineMeshArrowTables(pointClouds as MeshArrowTable[]);
+  return (convertTableToMesh(combinedPointCloud) as unknown) as Mesh;
+}
+
+function combineMeshArrowTables(pointClouds: MeshArrowTable[]): MeshArrowTable {
+  const firstPointCloud = pointClouds[0];
+  if (!firstPointCloud || pointClouds.some((pointCloud) => !isMeshArrowTable(pointCloud))) {
+    throw new Error('Multi-file point cloud examples require Arrow table loader output.');
+  }
+
+  return {
+    ...firstPointCloud,
+    data: firstPointCloud.data.concat(...pointClouds.slice(1).map((pointCloud) => pointCloud.data))
+  };
+}
+
+function getExampleUrls(example: Example): string[] {
+  return example.urls?.length ? example.urls : [example.url];
+}
+
+function getUrlOptions(format: string): UrlOption[] {
+  const examplesForFormat = EXAMPLES[format] || {};
+  return Object.entries(examplesForFormat).map(([exampleName, example]) => ({
+    format,
+    example,
+    group: 'Examples',
+    label: exampleName,
+    pointCount: example.pointCount,
+    url: example.url
+  }));
+}
+
+function getExampleType(format: string): Example['type'] {
+  return format.toLowerCase() === 'laz' ? 'las' : (format.toLowerCase() as Example['type']);
+}
+
+function isMeshArrowTable(data: unknown): data is MeshArrowTable {
+  return Boolean(data && typeof data === 'object' && 'shape' in data && data.shape === 'arrow-table');
+}
+
+function isMatchingFormat(optionFormat: string, activeFormat: string): boolean {
+  return optionFormat.toLowerCase() === activeFormat.toLowerCase();
+}
+
+function readSavedPointcloudUrls(format: string): string[] {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+
+  try {
+    const savedUrls = JSON.parse(
+      window.localStorage.getItem(getSavedPointcloudUrlsKey(format)) || '[]'
+    );
+    return Array.isArray(savedUrls)
+      ? savedUrls.filter((savedUrl) => typeof savedUrl === 'string')
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePointcloudUrl(format: string, url: string): string[] {
+  const savedUrls = [
+    url,
+    ...readSavedPointcloudUrls(format).filter((savedUrl) => savedUrl !== url)
+  ].slice(0, MAX_SAVED_POINTCLOUD_URLS);
+
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(getSavedPointcloudUrlsKey(format), JSON.stringify(savedUrls));
+  }
+
+  return savedUrls;
+}
+
+function getSavedPointcloudUrlsKey(format: string): string {
+  return `${SAVED_POINTCLOUD_URLS_KEY}.${format.toLowerCase()}`;
+}
+
+function getFileNameFromUrl(url: string): string {
+  try {
+    const pathname = new URL(url).pathname;
+    return pathname.slice(pathname.lastIndexOf('/') + 1) || 'Custom PLY';
+  } catch {
+    return 'Custom PLY';
+  }
 }
 
 function getPointCloudLoader(example: Example, format: string) {
@@ -573,6 +1038,14 @@ function getPointCount(attributes: Record<string, any>): number {
   const positions = attributes.POSITION;
   const size = getAttributeSize(positions);
   return positions?.value?.length && size ? Math.floor(positions.value.length / size) : 0;
+}
+
+function formatRowCount(rowCount: number): string {
+  return `${rowCount.toLocaleString()} rows`;
+}
+
+function formatPointCount(pointCount: number): string {
+  return `${pointCount.toLocaleString()} points`;
 }
 
 function getPreviewColumns(attributes: Record<string, any>): PreviewColumn[] {

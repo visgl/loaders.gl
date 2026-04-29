@@ -16,7 +16,7 @@ import {PointCloudLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 
 import {load} from '@loaders.gl/core';
-import {MeshArrowPointCloudLayer} from '@loaders.gl/deck-layers';
+import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {DracoLoader} from '@loaders.gl/draco';
@@ -47,6 +47,9 @@ const transitionInterpolator = new LinearInterpolator(['rotationOrbit']);
 
 type AppProps = {
   format?: string;
+  example?: Example;
+  exampleName?: string;
+  categoryName?: string;
   hideChrome?: boolean;
   showTileBorders?: boolean;
   onTilesLoad?: Function;
@@ -87,30 +90,38 @@ export default function App(props: AppProps = {}) {
   });
 
   useEffect(() => {
-    const initialCategoryName =
-      props.format || Object.keys(availableExamples).find(Boolean) || 'PLY';
-    const initialExamples = availableExamples[initialCategoryName];
-    if (!initialExamples) {
-      return;
-    }
+    if (props.example) {
+      void onExampleChange({
+        categoryName: props.categoryName || props.format || 'URL',
+        exampleName: props.exampleName || getFileNameFromUrl(props.example.url),
+        example: props.example
+      });
+    } else {
+      const initialCategoryName =
+        props.format || Object.keys(availableExamples).find(Boolean) || 'PLY';
+      const initialExamples = availableExamples[initialCategoryName];
+      if (!initialExamples) {
+        return;
+      }
 
-    const initialExampleName = Object.keys(initialExamples)[0];
-    const initialExample = initialExamples[initialExampleName];
-    if (!initialExample) {
-      return;
-    }
+      const initialExampleName = Object.keys(initialExamples)[0];
+      const initialExample = initialExamples[initialExampleName];
+      if (!initialExample) {
+        return;
+      }
 
-    void onExampleChange({
-      categoryName: initialCategoryName,
-      exampleName: initialExampleName,
-      example: initialExample
-    });
-  }, [availableExamples, props.format]);
+      void onExampleChange({
+        categoryName: initialCategoryName,
+        exampleName: initialExampleName,
+        example: initialExample
+      });
+    }
+  }, [availableExamples, props.categoryName, props.example, props.exampleName, props.format]);
 
   const layers = state.pointData
     ? [
         isMeshArrowTable(state.pointData)
-          ? createMeshArrowPointCloudLayer(state.pointData, state.selectedExampleName)
+          ? createArrowPointCloudLayer(state.pointData, state.selectedExampleName)
           : createPointCloudLayer(state.pointData, state.selectedExampleName)
       ]
     : [];
@@ -143,12 +154,24 @@ export default function App(props: AppProps = {}) {
                   metadata: state.metadata,
                   selectedCategoryName: state.selectedCategoryName,
                   selectedExampleName: state.selectedExampleName,
+                  selectedUrl: getSelectedUrl(
+                    availableExamples,
+                    state.selectedCategoryName,
+                    state.selectedExampleName
+                  ),
                   vertexCount: getPointDataLength(state.pointData),
                   onExampleChange: ({categoryName, exampleName}) => {
                     const example = availableExamples[categoryName]?.[exampleName];
                     if (example) {
                       void onExampleChange({categoryName, exampleName, example});
                     }
+                  },
+                  onUrlChange: (url) => {
+                    void onExampleChange({
+                      categoryName: 'URL',
+                      exampleName: getFileNameFromUrl(url),
+                      example: {type: 'ply', url}
+                    });
                   }
                 })
             })
@@ -165,7 +188,8 @@ export default function App(props: AppProps = {}) {
     state.metadata,
     state.pointData,
     state.selectedCategoryName,
-    state.selectedExampleName
+    state.selectedExampleName,
+    onExampleChange
   ]);
 
   return (
@@ -220,15 +244,8 @@ export default function App(props: AppProps = {}) {
       error: null
     }));
 
-    const {url} = example;
     try {
-      const pointCloud = await load(url, POINT_CLOUD_LOADERS as any, {
-        worker: false,
-        las: {shape: 'arrow-table'},
-        obj: {shape: 'arrow-table'},
-        pcd: {shape: 'arrow-table'},
-        ply: {shape: 'arrow-table'}
-      });
+      const pointCloud = await loadPointCloudExample(example);
       const mesh = isMeshArrowTable(pointCloud)
         ? ((convertTableToMesh(pointCloud) as unknown) as Mesh)
         : (pointCloud as Mesh);
@@ -252,12 +269,67 @@ export default function App(props: AppProps = {}) {
 
       rotateCamera();
     } catch (error) {
-      console.error('Failed to load data', url, error);
+      console.error('Failed to load data', getExampleUrls(example), error);
       setState((currentState) => ({
         ...currentState,
         error: `Could not load ${exampleName}: ${error instanceof Error ? error.message : String(error)}`
       }));
     }
+  }
+}
+
+async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrowTable> {
+  const urls = getExampleUrls(example);
+  const loader = getPointCloudLoader(example);
+  const pointClouds = await Promise.all(
+    urls.map((url) =>
+      load(url, loader as any, {
+        worker: false,
+        las: {shape: 'arrow-table'},
+        obj: {shape: 'arrow-table'},
+        pcd: {shape: 'arrow-table'},
+        ply: {shape: 'arrow-table'}
+      })
+    )
+  );
+
+  if (pointClouds.length === 1) {
+    return pointClouds[0] as Mesh | MeshArrowTable;
+  }
+
+  return combineMeshArrowTables(pointClouds as MeshArrowTable[]);
+}
+
+function combineMeshArrowTables(pointClouds: MeshArrowTable[]): MeshArrowTable {
+  const firstPointCloud = pointClouds[0];
+  if (!firstPointCloud || pointClouds.some((pointCloud) => !isMeshArrowTable(pointCloud))) {
+    throw new Error('Multi-file point cloud examples require Arrow table loader output.');
+  }
+
+  return {
+    ...firstPointCloud,
+    data: firstPointCloud.data.concat(...pointClouds.slice(1).map((pointCloud) => pointCloud.data))
+  };
+}
+
+function getExampleUrls(example: Example): string[] {
+  return example.urls?.length ? example.urls : [example.url];
+}
+
+function getPointCloudLoader(example: Example) {
+  switch (example.type) {
+    case 'draco':
+      return DracoLoader;
+    case 'las':
+      return LASLoader;
+    case 'obj':
+      return OBJLoader;
+    case 'pcd':
+      return PCDLoader;
+    case 'ply':
+      return PLYLoader;
+    default:
+      return POINT_CLOUD_LOADERS;
   }
 }
 
@@ -272,10 +344,14 @@ function getPointDataLength(pointData: any): number {
   return pointData?.length || 0;
 }
 
-function createMeshArrowPointCloudLayer(
+function createArrowPointCloudLayer(
   pointData: MeshArrowTable,
   selectedExampleName?: string | null
-): MeshArrowPointCloudLayer {
+): MeshArrowPointCloudLayer | SplatLayer {
+  if (isGaussianSplatArrowTable(pointData)) {
+    return createSplatLayer(pointData, selectedExampleName);
+  }
+
   return new MeshArrowPointCloudLayer({
     id: `point-cloud-layer-${selectedExampleName ?? 'example'}`,
     coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
@@ -288,6 +364,26 @@ function createMeshArrowPointCloudLayer(
       pointSize: 0.5
     }
   });
+}
+
+function createSplatLayer(
+  pointData: MeshArrowTable,
+  selectedExampleName?: string | null
+): SplatLayer {
+  return new SplatLayer({
+    id: `splat-layer-${selectedExampleName ?? 'example'}`,
+    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    data: pointData,
+    pickable: true,
+    opacity: 0.75,
+    radiusScale: 1.4,
+    radiusMinPixels: 1,
+    radiusMaxPixels: 28
+  });
+}
+
+function isGaussianSplatArrowTable(pointData: MeshArrowTable): boolean {
+  return pointData.data.schema.metadata.get('loaders_gl.semantic_type') === 'gaussian-splats';
 }
 
 function createPointCloudLayer(
@@ -317,8 +413,10 @@ function renderPointcloudSidebar(
     metadata: string | null;
     selectedCategoryName?: string | null;
     selectedExampleName?: string | null;
+    selectedUrl?: string;
     vertexCount: number;
     onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
+    onUrlChange: (url: string) => void;
   }
 ): void {
   rootElement.replaceChildren();
@@ -327,6 +425,12 @@ function renderPointcloudSidebar(
   rootElement.style.gap = '12px';
   rootElement.style.padding = '4px 0 0';
 
+  rootElement.appendChild(
+    createUrlCard({
+      selectedUrl: options.selectedUrl,
+      onUrlChange: options.onUrlChange
+    })
+  );
   rootElement.appendChild(
     createExampleSelect({
       examples: options.examples,
@@ -366,9 +470,12 @@ function createExampleSelect(options: {
     const optGroupElement = document.createElement('optgroup');
     optGroupElement.label = categoryName;
     for (const exampleName of Object.keys(options.examples[categoryName])) {
+      const example = options.examples[categoryName][exampleName];
       const optionElement = document.createElement('option');
       optionElement.value = `${categoryName}.${exampleName}`;
-      optionElement.textContent = `${exampleName} (${categoryName})`;
+      optionElement.textContent = example.pointCount
+        ? `${exampleName} (${formatPointCount(example.pointCount)}, ${categoryName})`
+        : `${exampleName} (${categoryName})`;
       optGroupElement.appendChild(optionElement);
     }
     selectElement.appendChild(optGroupElement);
@@ -377,18 +484,54 @@ function createExampleSelect(options: {
   return selectElement;
 }
 
-function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: number): HTMLElement {
-  let pointsLabel = `${vertexCount}`;
-  if (vertexCount >= 1e7) {
-    pointsLabel = `${(vertexCount / 1e6).toFixed(0)}M`;
-  } else if (vertexCount >= 1e6) {
-    pointsLabel = `${(vertexCount / 1e6).toFixed(1)}M`;
-  } else if (vertexCount >= 1e4) {
-    pointsLabel = `${(vertexCount / 1e3).toFixed(0)}K`;
-  } else if (vertexCount >= 1e3) {
-    pointsLabel = `${(vertexCount / 1e3).toFixed(1)}K`;
-  }
+function createUrlCard(options: {
+  selectedUrl?: string;
+  onUrlChange: (url: string) => void;
+}): HTMLElement {
+  const wrapperElement = document.createElement('form');
+  wrapperElement.style.display = 'grid';
+  wrapperElement.style.gridTemplateColumns = '1fr auto';
+  wrapperElement.style.gap = '8px';
+  wrapperElement.style.padding = '10px';
+  wrapperElement.style.border = '1px solid rgba(148, 163, 184, 0.45)';
+  wrapperElement.style.borderRadius = '8px';
+  wrapperElement.style.background = 'rgba(15, 23, 42, 0.04)';
 
+  const inputElement = document.createElement('input');
+  inputElement.type = 'url';
+  inputElement.value = options.selectedUrl || '';
+  inputElement.placeholder = 'https://raw.githubusercontent.com/.../file.ply';
+  inputElement.style.minWidth = '0';
+  inputElement.style.padding = '8px';
+  inputElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+  inputElement.style.borderRadius = '6px';
+  inputElement.style.background = 'var(--menu-background, #fff)';
+
+  const buttonElement = document.createElement('button');
+  buttonElement.type = 'submit';
+  buttonElement.textContent = 'Load';
+  buttonElement.style.padding = '8px 12px';
+  buttonElement.style.border = '1px solid rgba(15, 23, 42, 0.25)';
+  buttonElement.style.borderRadius = '6px';
+  buttonElement.style.background = '#0f172a';
+  buttonElement.style.color = '#f8fafc';
+  buttonElement.style.cursor = 'pointer';
+
+  wrapperElement.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const url = inputElement.value.trim();
+    if (url) {
+      options.onUrlChange(url);
+    }
+  });
+
+  wrapperElement.appendChild(inputElement);
+  wrapperElement.appendChild(buttonElement);
+
+  return wrapperElement;
+}
+
+function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: number): HTMLElement {
   let loadMessage = '';
   if (loadTimeMs) {
     loadMessage = `Load time: ${(loadTimeMs / 1000).toFixed(1)}s`;
@@ -397,7 +540,7 @@ function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: 
   }
 
   const preElement = document.createElement('pre');
-  preElement.textContent = `Points: ${pointsLabel}\n${loadMessage}`;
+  preElement.textContent = `Points: ${formatPointCount(vertexCount)}\n${loadMessage}`;
   preElement.style.margin = '0';
   preElement.style.textAlign = 'center';
   preElement.style.whiteSpace = 'pre-wrap';
@@ -440,6 +583,38 @@ function getExamplesForFormat(
     return {[format]: examples[format]};
   }
   return {...examples};
+}
+
+function getSelectedUrl(
+  examples: Record<string, Record<string, Example>>,
+  selectedCategoryName?: string | null,
+  selectedExampleName?: string | null
+): string {
+  if (!selectedCategoryName || !selectedExampleName) {
+    return '';
+  }
+  return examples[selectedCategoryName]?.[selectedExampleName]?.url || '';
+}
+
+function getFileNameFromUrl(url: string): string {
+  const pathname = new URL(url).pathname;
+  return pathname.slice(pathname.lastIndexOf('/') + 1) || 'Custom PLY';
+}
+
+function formatPointCount(pointCount: number): string {
+  if (pointCount >= 1e7) {
+    return `${(pointCount / 1e6).toFixed(0)}M`;
+  }
+  if (pointCount >= 1e6) {
+    return `${(pointCount / 1e6).toFixed(1)}M`;
+  }
+  if (pointCount >= 1e4) {
+    return `${(pointCount / 1e3).toFixed(0)}K`;
+  }
+  if (pointCount >= 1e3) {
+    return `${(pointCount / 1e3).toFixed(1)}K`;
+  }
+  return `${pointCount}`;
 }
 
 function getViewState(
