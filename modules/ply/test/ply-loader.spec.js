@@ -108,17 +108,41 @@ test('PLYLoader#parse(ascii)', async t => {
   t.end();
 });
 
-test('PLYLoader#parse(gaussian splats)', async t => {
-  const data = parseSync(GAUSSIAN_SPLAT_PLY, PLYLoader, {
-    ply: {shape: 'gaussian-splats'}
+test('PLYLoader#parse(gaussian splat metadata)', async t => {
+  const table = parseSync(GAUSSIAN_SPLAT_PLY, PLYLoader, {
+    ply: {shape: 'arrow-table'}
   });
 
-  t.equal(data.header.splatCount, 2, 'splatCount found');
-  t.equal(data.attributes.POSITION.value.length, 6, 'POSITION attribute was found');
-  t.equal(data.attributes.COLOR_0.value.length, 6, 'COLOR_0 attribute was derived from f_dc_*');
-  t.equal(data.attributes.OPACITY.value.length, 2, 'OPACITY attribute was found');
-  t.equal(data.attributes.SCALE.value.length, 6, 'SCALE attribute was found');
-  t.equal(data.attributes.ROTATION.value.length, 8, 'ROTATION attribute was found');
+  t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  t.equal(table.data.numRows, 2, 'table has one row per splat');
+  t.equal(
+    table.data.schema.metadata.get('loaders_gl.semantic_type'),
+    'gaussian-splats',
+    'schema identifies Gaussian splat data'
+  );
+
+  const scaleField = table.data.schema.fields.find(field => field.name === 'scale_0');
+  t.equal(
+    scaleField?.metadata.get('loaders_gl.gaussian_splats.semantic'),
+    'scale',
+    'scale field has semantic metadata'
+  );
+  t.equal(
+    scaleField?.metadata.get('loaders_gl.gaussian_splats.encoding'),
+    'log',
+    'scale field has encoding metadata'
+  );
+
+  const opacityField = table.data.schema.fields.find(field => field.name === 'opacity');
+  t.equal(
+    opacityField?.metadata.get('loaders_gl.gaussian_splats.encoding'),
+    'logit',
+    'opacity field has encoding metadata'
+  );
+
+  t.ok(table.data.getChild('f_dc_0'), 'f_dc_0 column was preserved');
+  t.ok(table.data.getChild('scale_0'), 'scale_0 column was preserved');
+  t.ok(table.data.getChild('rot_0'), 'rot_0 column was preserved');
   t.end();
 });
 

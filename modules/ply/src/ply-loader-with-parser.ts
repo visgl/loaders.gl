@@ -5,7 +5,7 @@
 // PLY Loader
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import type {PLYGaussianSplats, PLYMesh} from './lib/ply-types';
+import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import {parsePLY} from './lib/parse-ply';
@@ -20,19 +20,14 @@ const {preload: _PLYLoaderPreload, ...PLYLoaderMetadataWithoutPreload} = PLYLoad
 export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
     /** Output shape. Defaults to a legacy Mesh object. */
-    shape?: 'mesh' | 'arrow-table' | 'gaussian-splats';
+    shape?: 'mesh' | 'arrow-table';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
 };
 
-function convertPLYMesh(
-  mesh: PLYMesh | PLYGaussianSplats,
-  options?: PLYLoaderOptions
-): PLYMesh | MeshArrowTable | PLYGaussianSplats {
-  return options?.ply?.shape === 'arrow-table'
-    ? convertMeshToTable(mesh as PLYMesh, 'arrow-table')
-    : mesh;
+function convertPLYMesh(mesh: PLYMesh, options?: PLYLoaderOptions): PLYMesh | MeshArrowTable {
+  return options?.ply?.shape === 'arrow-table' ? convertMeshToTable(mesh, 'arrow-table') : mesh;
 }
 
 /**
@@ -42,7 +37,7 @@ function convertPLYMesh(
  */
 export const PLYWorkerLoaderWithParser = {
   ...PLYWorkerLoaderMetadataWithoutPreload
-} as const satisfies Loader<PLYMesh | MeshArrowTable | PLYGaussianSplats, never, LoaderOptions>;
+} as const satisfies Loader<PLYMesh | MeshArrowTable, never, LoaderOptions>;
 
 /**
  * Loader for PLY - Polygon File Format
@@ -64,8 +59,4 @@ export const PLYLoaderWithParser = {
       yield convertPLYMesh(mesh, options);
     }
   }
-} as const satisfies LoaderWithParser<
-  PLYMesh | MeshArrowTable | PLYGaussianSplats,
-  any,
-  PLYLoaderOptions
->;
+} as const satisfies LoaderWithParser<PLYMesh | MeshArrowTable, any, PLYLoaderOptions>;
