@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {BinaryGeometry} from '@loaders.gl/schema';
 import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
-import {convertWKBToBinaryGeometry} from '@loaders.gl/gis';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {parseSHPHeader, SHPHeader} from './parse-shp-header';
 import {parseRecordToWKB} from './parse-shp-geometry';
@@ -29,7 +27,7 @@ const STATE = {
  * A complete or partial result from the SHP file parser.
  */
 export type SHPResult = {
-  geometries: (SHPGeometry | null)[];
+  geometries: (Uint8Array | null)[];
   header?: SHPHeader;
   error?: string;
   progress: {
@@ -39,8 +37,6 @@ export type SHPResult = {
   };
   currentIndex: number;
 };
-
-export type SHPGeometry = BinaryGeometry | Uint8Array;
 
 class SHPParser {
   options?: SHPLoaderOptions = {};
@@ -102,7 +98,7 @@ export async function* parseSHPInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: SHPLoaderOptions
-): AsyncGenerator<SHPGeometry[] | object> {
+): AsyncGenerator<(Uint8Array | null)[] | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
@@ -222,12 +218,7 @@ function parseState(
               binaryReader.rewind(4);
 
               const recordView = binaryReader.getDataView(recordHeader.byteLength) as DataView;
-              const wkbGeometry = parseRecordToWKB(recordView, options);
-              result.geometries.push(
-                getSHPShape(options) === 'wkb'
-                  ? wkbGeometry
-                  : convertWKBToBinaryGeometryOrNull(wkbGeometry)
-              );
+              result.geometries.push(parseRecordToWKB(recordView, options));
 
               result.currentIndex++;
               result.progress.rows = result.currentIndex - 1;
@@ -251,22 +242,4 @@ function parseState(
       return state;
     }
   }
-}
-
-function getSHPShape(
-  options?: SHPLoaderOptions
-): NonNullable<SHPLoaderOptions['shp']>['shape'] | undefined {
-  return options?.shp?.shape;
-}
-
-function convertWKBToBinaryGeometryOrNull(wkbGeometry: Uint8Array | null): BinaryGeometry | null {
-  if (!wkbGeometry) {
-    return null;
-  }
-  return convertWKBToBinaryGeometry(
-    wkbGeometry.buffer.slice(
-      wkbGeometry.byteOffset,
-      wkbGeometry.byteOffset + wkbGeometry.byteLength
-    ) as ArrayBuffer
-  );
 }

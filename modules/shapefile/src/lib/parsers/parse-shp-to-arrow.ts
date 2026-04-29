@@ -9,23 +9,27 @@ import {
   setWKBGeometryColumnMetadata
 } from '@loaders.gl/gis';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
-import {parseSHP, parseSHPInBatches} from './parse-shp';
-import type {SHPHeader} from './parse-shp-header';
+import {parseSHPInBatches} from './parse-shp';
+import {parseSHPHeader, type SHPHeader} from './parse-shp-header';
 import type {SHPLoaderOptions} from './types';
-import {type SHPWKBGeometry, makeWKBGeometryArrowTable} from './build-wkb-geometry-arrow';
+import {
+  type SHPWKBGeometry,
+  makeSHPWKBGeometryArrowTable,
+  makeWKBGeometryArrowTable
+} from './build-wkb-geometry-arrow';
 import {makeSHPGeoArrowGeometryTable} from './build-geoarrow-geometry-arrow';
 
 const GEOMETRY_COLUMN_NAME = 'geometry';
+const SHP_HEADER_SIZE = 100;
 
 export function parseSHPToArrow(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): ArrowTable {
   if (shouldUseTypedGeoArrow(options?.shp?.geoarrowEncoding)) {
     return makeSHPGeoArrowGeometryTable(arrayBuffer, options);
   }
 
-  const result = parseSHP(arrayBuffer, getWKBOptions(options));
-  const geometries = result.geometries as (SHPWKBGeometry | null)[];
-  const schema = buildOutputSchema(result.header);
-  return makeWKBGeometryArrowTable(geometries, schema);
+  const header = parseSHPHeader(new DataView(arrayBuffer, 0, SHP_HEADER_SIZE));
+  const schema = buildOutputSchema(header);
+  return makeSHPWKBGeometryArrowTable(arrayBuffer, schema, options);
 }
 
 export async function* parseSHPToArrowInBatches(

@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 import {parseSHP, parseSHPInBatches} from './lib/parsers/parse-shp';
-import type {SHPGeometry, SHPResult} from './lib/parsers/parse-shp';
+import type {SHPResult} from './lib/parsers/parse-shp';
 import {parseSHPToArrow, parseSHPToArrowInBatches} from './lib/parsers/parse-shp-to-arrow';
 import type {SHPHeader} from './lib/parsers/parse-shp-header';
 import type {SHPGeoArrowEncoding} from './lib/parsers/types';
@@ -22,7 +22,7 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
-    shape?: 'binary-geometry' | 'arrow-table' | 'wkb';
+    shape?: 'arrow-table' | 'wkb';
     geoarrowEncoding?: SHPGeoArrowEncoding;
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -40,7 +40,7 @@ export const SHPWorkerLoaderWithParser = {
 /** SHP file loader */
 export const SHPLoaderWithParser: LoaderWithParser<
   SHPResult | ArrowTable,
-  SHPHeader | (SHPGeometry | null)[] | ArrowTableBatch,
+  SHPHeader | (Uint8Array | null)[] | ArrowTableBatch,
   SHPLoaderOptions
 > = {
   ...SHPLoaderMetadataWithoutPreload,
@@ -57,11 +57,11 @@ export const SHPLoaderWithParser: LoaderWithParser<
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options
-  ): AsyncIterable<SHPHeader | (SHPGeometry | null)[] | ArrowTableBatch> =>
+  ): AsyncIterable<SHPHeader | (Uint8Array | null)[] | ArrowTableBatch> =>
     (getSHPShape(options) === 'arrow-table'
       ? parseSHPToArrowInBatches(arrayBufferIterator, options)
       : parseSHPInBatches(arrayBufferIterator, options)) as AsyncIterable<
-      SHPHeader | (SHPGeometry | null)[] | ArrowTableBatch
+      SHPHeader | (Uint8Array | null)[] | ArrowTableBatch
     >
 };
 

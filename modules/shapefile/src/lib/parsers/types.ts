@@ -14,7 +14,7 @@ export type SHPGeoArrowEncoding = 'geoarrow.wkb' | 'geoarrow';
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
-    shape?: 'binary-geometry' | 'arrow-table' | 'wkb';
+    shape?: 'arrow-table' | 'wkb';
     geoarrowEncoding?: SHPGeoArrowEncoding;
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */

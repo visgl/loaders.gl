@@ -4,7 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {setLoaderOptions, load, fetchFile} from '@loaders.gl/core';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import {convertWKBToGeometry} from '@loaders.gl/gis';
 import {SHPLoader} from '@loaders.gl/shapefile';
 
 const SHAPEFILE_POLYGON_PATH = '@loaders.gl/shapefile/test/data/shapefile-js/polygons.shp';
@@ -18,10 +18,10 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-const BINARY_GEOMETRY_OPTIONS = {shp: {shape: 'binary-geometry' as const}};
+const WKB_OPTIONS = {shp: {shape: 'wkb' as const}};
 
 test('SHPLoader#load polygons', async t => {
-  const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader, BINARY_GEOMETRY_OPTIONS);
+  const result = await load(SHAPEFILE_POLYGON_PATH, SHPLoader, WKB_OPTIONS);
 
   t.ok(result.header, 'A header received');
   t.equal(result.geometries.length, 3, 'Correct number of rows received');
@@ -33,17 +33,18 @@ test('Shapefile JS Point tests', async t => {
     const output = await load(
       `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`,
       SHPLoader,
-      BINARY_GEOMETRY_OPTIONS
+      WKB_OPTIONS
     );
 
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
 
     for (let i = 0; i < json.features.length; i++) {
-      const binary = geojsonToBinary([json.features[i]]);
-      const expBinary = binary.points && binary.points.positions;
-      // @ts-ignore
-      t.deepEqual(output.geometries[i].positions, expBinary);
+      t.deepEqual(
+        convertWKBToGeometry(toArrayBuffer(output.geometries[i])),
+        json.features[i].geometry,
+        `${testFileName}: point geometry matches`
+      );
     }
   }
 
@@ -51,11 +52,7 @@ test('Shapefile JS Point tests', async t => {
 });
 
 test('SHPLoader#Null Shape records in typed shapefile', async t => {
-  const output = await load(
-    `${SHAPEFILE_JS_DATA_FOLDER}/null.shp`,
-    SHPLoader,
-    BINARY_GEOMETRY_OPTIONS
-  );
+  const output = await load(`${SHAPEFILE_JS_DATA_FOLDER}/null.shp`, SHPLoader, WKB_OPTIONS);
 
   t.equal(output.header.type, 1, 'fixture is a Point shapefile');
   t.equal(output.geometries.length, 9, 'all records are preserved');
@@ -73,18 +70,18 @@ test('Shapefile JS Polyline tests', async t => {
     const output = await load(
       `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`,
       SHPLoader,
-      BINARY_GEOMETRY_OPTIONS
+      WKB_OPTIONS
     );
 
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
 
     for (let i = 0; i < json.features.length; i++) {
-      const expBinary = geojsonToBinary([json.features[i]]).lines;
-      // @ts-ignore
-      t.deepEqual(output.geometries[i].positions, expBinary.positions);
-      // @ts-ignore
-      t.deepEqual(output.geometries[i].pathIndices, expBinary.pathIndices);
+      t.deepEqual(
+        convertWKBToGeometry(toArrayBuffer(output.geometries[i])),
+        json.features[i].geometry,
+        `${testFileName}: line geometry matches`
+      );
     }
   }
 
@@ -96,22 +93,18 @@ test('Shapefile JS Polygon tests', async t => {
     const output = await load(
       `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`,
       SHPLoader,
-      BINARY_GEOMETRY_OPTIONS
+      WKB_OPTIONS
     );
 
     const response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const json = await response.json();
 
     for (let i = 0; i < json.features.length; i++) {
-      // SHP outer ring winding order is CW, while GeoJSON is CCW. For test disable
-      // the default geojsonToBinary ring winding fix to keep test data intact
-      const expBinary = geojsonToBinary([json.features[i]], {fixRingWinding: false}).polygons;
-      // @ts-ignore
-      t.deepEqual(output.geometries[i].positions, expBinary.positions);
-      // @ts-ignore
-      t.deepEqual(output.geometries[i].primitivePolygonIndices, expBinary.primitivePolygonIndices);
-      // @ts-ignore
-      t.deepEqual(output.geometries[i].polygonIndices, expBinary.polygonIndices);
+      t.deepEqual(
+        convertWKBToGeometry(toArrayBuffer(output.geometries[i])),
+        json.features[i].geometry,
+        `${testFileName}: polygon geometry matches`
+      );
     }
   }
 
@@ -120,16 +113,22 @@ test('Shapefile JS Polygon tests', async t => {
 
 test('SHPLoader#_maxDimensions', async t => {
   const output2d = await load(`${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`, SHPLoader, {
-    shp: {_maxDimensions: 2, shape: 'binary-geometry'}
+    shp: {_maxDimensions: 2, shape: 'wkb'}
   });
-  t.equal(output2d.geometries[0].positions.size, 2);
+  const geometry2d = convertWKBToGeometry(toArrayBuffer(output2d.geometries[0]));
+  t.equal(geometry2d.coordinates.length, 2);
 
   const defaultOutput = await load(
     `${SHAPEFILE_JS_DATA_FOLDER}/${POINT_Z_TEST_FILE}.shp`,
     SHPLoader,
-    BINARY_GEOMETRY_OPTIONS
+    WKB_OPTIONS
   );
-  t.equal(defaultOutput.geometries[0].positions.size, 4);
+  const defaultGeometry = convertWKBToGeometry(toArrayBuffer(defaultOutput.geometries[0]));
+  t.equal(defaultGeometry.coordinates.length, 4);
 
   t.end();
 });
+
+function toArrayBuffer(wkb: Uint8Array): ArrayBuffer {
+  return wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength) as ArrayBuffer;
+}

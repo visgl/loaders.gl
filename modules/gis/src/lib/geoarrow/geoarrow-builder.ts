@@ -225,12 +225,21 @@ export class GeoArrowBuilder {
       if (coordinateIndex >= target.coordinates.length / this.state.coordinateSize) {
         throw new Error('GeoArrowBuilder target coordinate buffer overflow');
       }
-      const coordinate = this.state.transform ? this.state.transform([x, y, z ?? 0]) : [x, y, z];
       const valueOffset = coordinateIndex * this.state.coordinateSize;
-      target.coordinates[valueOffset] = coordinate[0] ?? x;
-      target.coordinates[valueOffset + 1] = coordinate[1] ?? y;
+      if (this.state.transform) {
+        const coordinate = this.state.transform([x, y, z ?? 0]);
+        target.coordinates[valueOffset] = coordinate[0] ?? x;
+        target.coordinates[valueOffset + 1] = coordinate[1] ?? y;
+        if (this.hasZ) {
+          target.coordinates[valueOffset + 2] = coordinate[2] ?? z ?? Number.NaN;
+        }
+        this.state.coordinateCount++;
+        return;
+      }
+      target.coordinates[valueOffset] = x;
+      target.coordinates[valueOffset + 1] = y;
       if (this.hasZ) {
-        target.coordinates[valueOffset + 2] = coordinate[2] ?? z ?? Number.NaN;
+        target.coordinates[valueOffset + 2] = z ?? Number.NaN;
       }
     }
     this.state.coordinateCount++;
@@ -378,10 +387,7 @@ export class GeoArrowBuilder {
       return;
     }
     if (this.state.mode === 'measure') {
-      const nextOffsets = new Int32Array(offsets.length + 1);
-      nextOffsets.set(offsets);
-      nextOffsets[offsets.length] = value;
-      target[name] = nextOffsets;
+      this.incrementOffsetCount(name);
       return;
     }
     const index = this.getOffsetCount(name);
@@ -451,14 +457,28 @@ export class GeoArrowBuilder {
   }
 
   private getGeometryOffsets(): Int32Array | undefined {
+    if (this.state.mode === 'measure' && this.encoding !== 'geoarrow.point') {
+      return new Int32Array(this.state.geometryOffsetCount);
+    }
     return this.getTarget().geometryOffsets;
   }
 
   private getPartOffsets(): Int32Array | undefined {
+    if (
+      this.state.mode === 'measure' &&
+      (this.encoding === 'geoarrow.polygon' ||
+        this.encoding === 'geoarrow.multilinestring' ||
+        this.encoding === 'geoarrow.multipolygon')
+    ) {
+      return new Int32Array(this.state.partOffsetCount);
+    }
     return this.getTarget().partOffsets;
   }
 
   private getRingOffsets(): Int32Array | undefined {
+    if (this.state.mode === 'measure' && this.encoding === 'geoarrow.multipolygon') {
+      return new Int32Array(this.state.ringOffsetCount);
+    }
     return this.getTarget().ringOffsets;
   }
 }
@@ -491,7 +511,11 @@ function withNulls(data: arrow.Data, geometryArray: GeoArrowGeometryArray): arro
     0,
     geometryArray.length,
     geometryArray.nullCount,
-    [geometryArray.nullCount > 0 ? geometryArray.nullBitmap : undefined, data.valueOffsets],
+    [
+      data.valueOffsets,
+      data.values,
+      geometryArray.nullCount > 0 ? geometryArray.nullBitmap : undefined
+    ],
     data.children
   );
 }

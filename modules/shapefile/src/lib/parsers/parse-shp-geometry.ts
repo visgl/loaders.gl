@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
-import {GeoArrowBuilder, WKBBuilder, convertWKBToBinaryGeometry} from '@loaders.gl/gis';
+import type {BinaryGeometryType} from '@loaders.gl/schema';
+import {GeoArrowBuilder, WKBBuilder} from '@loaders.gl/gis';
 import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
@@ -12,12 +12,11 @@ const LITTLE_ENDIAN = true;
  * Parse individual record
  *
  * @param view Record data
- * @return Binary Geometry Object
+ * @return WKB geometry bytes, or null for Null Shape records.
  */
 // eslint-disable-next-line complexity
-export function parseRecord(view: DataView, options?: SHPLoaderOptions): BinaryGeometry | null {
-  const wkb = parseRecordToWKB(view, options);
-  return wkb ? convertWKBToBinaryGeometry(toArrayBuffer(wkb)) : null;
+export function parseRecord(view: DataView, options?: SHPLoaderOptions): Uint8Array | null {
+  return parseRecordToWKB(view, options);
 }
 
 /**
@@ -49,7 +48,14 @@ export function parseRecordToWKB(view: DataView, options?: SHPLoaderOptions): Ui
   return wkb;
 }
 
-function writeRecordToWKB(builder: WKBBuilder, view: DataView, type: number): void {
+/**
+ * Writes one SHP record directly into a WKB builder.
+ *
+ * @param builder WKB builder.
+ * @param view Record data.
+ * @param type SHP record type.
+ */
+export function writeRecordToWKB(builder: WKBBuilder, view: DataView, type: number): void {
   const offset = Int32Array.BYTES_PER_ELEMENT;
   switch (type) {
     case 1:
@@ -467,7 +473,13 @@ function getWindingDirectionFromRecord(
   return Math.sign(area / 2);
 }
 
-function getRecordWKBOptions(type: number, options?: SHPLoaderOptions) {
+/**
+ * Returns WKB dimensional options for an SHP record type.
+ *
+ * @param type SHP record type.
+ * @param options Loader options.
+ */
+export function getRecordWKBOptions(type: number, options?: SHPLoaderOptions) {
   const {_maxDimensions = 4} = options?.shp || {};
   switch (type) {
     case 11:
@@ -494,8 +506,4 @@ function isZShapeType(type: number): boolean {
 
 function isMShapeType(type: number): boolean {
   return type === 21 || type === 23 || type === 25 || type === 28;
-}
-
-function toArrayBuffer(wkb: Uint8Array): ArrayBuffer {
-  return wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength) as ArrayBuffer;
 }

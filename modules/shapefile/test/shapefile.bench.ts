@@ -21,23 +21,23 @@ export default async function shapefileLoaderBench(suite) {
   suite.group('ShapefileLoader');
 
   suite.addAsync(
-    'parse(ShapefileLoader without worker) to GeoJSON',
-    rowBenchmarkOptions,
-    async () => {
-      await load(arrayBuffer.slice(0), ShapefileLoader, {
-        core: {worker: false},
-        shapefile: {shape: 'geojson-table'}
-      });
-    }
-  );
-
-  suite.addAsync(
     'parse(ShapefileLoader without worker) to GeoArrow',
     rowBenchmarkOptions,
     async () => {
       await load(arrayBuffer.slice(0), ShapefileLoader, {
         core: {worker: false},
         shapefile: {shape: 'arrow-table'}
+      });
+    }
+  );
+
+  suite.addAsync(
+    'parse(ShapefileLoader without worker) to GeoJSON',
+    rowBenchmarkOptions,
+    async () => {
+      await load(arrayBuffer.slice(0), ShapefileLoader, {
+        core: {worker: false},
+        shapefile: {shape: 'geojson-table'}
       });
     }
   );

@@ -4,7 +4,10 @@
 
 import {SHPLoader} from '@loaders.gl/shapefile';
 import {parse, parseInBatches, fetchFile} from '@loaders.gl/core';
-import {convertBinaryGeometryToGeometry} from '@loaders.gl/gis';
+import {
+  convertGeometryColumnToBinaryFeatureCollection,
+  convertWKBToGeometry
+} from '@loaders.gl/gis';
 
 const DECKGL_DATA_URL = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const SHAPEFILE_URL = `${DECKGL_DATA_URL}/test-data/shapefile/geo_export_14556060-0002-4a9e-8ef0-03da3e246166.shp`;
@@ -43,22 +46,24 @@ export default async function shpLoaderBench(suite) {
   );
 
   suite.addAsync(
-    'binary geometry',
+    'geoarrow.[inferred typed] -> binary feature collection',
     coordinateBenchmarkOptions,
-    async () =>
-      await parse(arrayBuffer, SHPLoader, {
+    async () => {
+      const table = await parse(arrayBuffer.slice(0), SHPLoader, {
         core: {worker: false},
-        shp: {shape: 'binary-geometry'}
-      })
+        shp: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow'}
+      });
+      convertGeometryColumnToBinaryFeatureCollection(table.data, {geometryColumn: 'geometry'});
+    }
   );
 
   suite.addAsync('geojson', coordinateBenchmarkOptions, async () => {
     const result = await parse(arrayBuffer.slice(0), SHPLoader, {
       core: {worker: false},
-      shp: {shape: 'binary-geometry'}
+      shp: {shape: 'wkb'}
     });
     result.geometries.map(geometry =>
-      geometry ? convertBinaryGeometryToGeometry(geometry) : null
+      geometry ? convertWKBToGeometry(toArrayBuffer(geometry)) : null
     );
   });
 
@@ -79,6 +84,10 @@ export default async function shpLoaderBench(suite) {
   //   rows.push(...batch);
   // }
   // t.deepEqual(rows, output.geometries);
+}
+
+function toArrayBuffer(wkb: Uint8Array): ArrayBuffer {
+  return wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength) as ArrayBuffer;
 }
 
 /** Counts SHP records and coordinates so benchmark throughput can report geometry work. */

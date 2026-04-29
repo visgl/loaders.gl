@@ -9,9 +9,8 @@ import {
   parseFromContext,
   toArrayBufferIterator
 } from '@loaders.gl/loader-utils';
-import {convertBinaryGeometryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {convertWKBToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import type {
-  BinaryGeometry,
   Feature,
   GeoJsonProperties,
   GeoJSONTable,
@@ -59,7 +58,7 @@ export async function* parseShapefileInBatches(
       ...options,
       shp: {
         ...options?.shp,
-        shape: 'binary-geometry'
+        shape: 'wkb'
       }
     },
     context!
@@ -119,12 +118,15 @@ export async function* parseShapefileInBatches(
   };
 
   for await (const batch of zippedBatchIterable) {
-    let geometries: BinaryGeometry[];
+    let geometries: (Uint8Array | null)[];
     let properties: GeoJsonProperties[] = [];
     if (!propertyIterator) {
-      geometries = batch as unknown as BinaryGeometry[];
+      geometries = batch as unknown as (Uint8Array | null)[];
     } else {
-      [geometries, properties] = batch.data as unknown as [BinaryGeometry[], GeoJsonProperties[]];
+      [geometries, properties] = batch.data as unknown as [
+        (Uint8Array | null)[],
+        GeoJsonProperties[]
+      ];
     }
 
     const geojsonGeometries = parseGeometries(geometries);
@@ -167,13 +169,13 @@ export async function parseShapefile(
       ...options,
       shp: {
         ...options?.shp,
-        shape: 'binary-geometry'
+        shape: 'wkb'
       }
     },
     context!
   )) as SHPResult; // {shp: shx}
 
-  const geojsonGeometries = parseGeometries(geometries.filter(Boolean) as BinaryGeometry[]);
+  const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
   let propertyTable: ObjectRowTable | undefined;
@@ -232,14 +234,18 @@ export async function parseShapefile(
  * @param geometries
  * @returns geometries as an array
  */
-function parseGeometries(geometries: (BinaryGeometry | null)[]): Geometry[] {
+function parseGeometries(geometries: (Uint8Array | null)[]): Geometry[] {
   const geojsonGeometries: Geometry[] = [];
   for (const geom of geometries) {
     if (geom) {
-      geojsonGeometries.push(convertBinaryGeometryToGeometry(geom));
+      geojsonGeometries.push(convertWKBToGeometry(toArrayBuffer(geom)));
     }
   }
   return geojsonGeometries;
+}
+
+function toArrayBuffer(wkb: Uint8Array): ArrayBuffer {
+  return wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength) as ArrayBuffer;
 }
 
 /**
