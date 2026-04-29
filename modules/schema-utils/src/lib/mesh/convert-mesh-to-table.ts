@@ -83,7 +83,7 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): MeshArr
   for (const attributeName of attributeNames) {
     const attribute = mesh.attributes[attributeName];
     const {value, size = 1} = attribute;
-    const column = getFixedSizeListVector(value, size);
+    const column = getAttributeArrowVector(value, size);
 
     columns[attributeName] = column;
     fields.push(getAttributeArrowField(mesh, attributeName, column));
@@ -106,6 +106,11 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): MeshArr
     topology: mesh.topology,
     indices: hasIndices ? mesh.indices : undefined
   };
+}
+
+/** Return an Arrow vector for a mesh attribute. */
+function getAttributeArrowVector(value: MeshAttribute['value'], size: number): arrow.Vector {
+  return size === 1 ? arrow.makeVector(value) : getFixedSizeListVector(value, size);
 }
 
 /** Return mesh attribute names with predefined Mesh Arrow fields first. */

@@ -24,11 +24,13 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
     return false;
   }
 
-  // Excel Arrow output currently relies on main-thread conversion helpers that
-  // should stay aligned with the primary loader path.
+  // Some Arrow table outputs need main-thread class instances; structured clone
+  // preserves data but strips methods like `table.getChild()` from Arrow tables.
   if (
-    loader.id === 'excel' &&
-    (options as {excel?: {shape?: string}} | undefined)?.excel?.shape === 'arrow-table'
+    (loader.id === 'excel' &&
+      (options as {excel?: {shape?: string}} | undefined)?.excel?.shape === 'arrow-table') ||
+    (loader.id === 'ply' &&
+      (options as {ply?: {shape?: string}} | undefined)?.ply?.shape === 'arrow-table')
   ) {
     return false;
   }

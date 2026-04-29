@@ -1,5 +1,9 @@
 # NDGeoJSONLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
+
 For GeoJSON, the root level FeatureCollection object is removed with a simple array of features, one per line
 
 Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL).

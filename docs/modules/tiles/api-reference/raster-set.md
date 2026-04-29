@@ -1,8 +1,8 @@
 # RasterSet
 
-:::caution
-Experimental
-:::
+<p class="badges">
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
+</p>
 
 `RasterSet` is a lightweight loading manager for viewport-driven [`RasterSource`](/docs/developer-guide/using-sources) implementations.
 

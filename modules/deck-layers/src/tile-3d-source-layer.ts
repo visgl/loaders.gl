@@ -20,7 +20,7 @@ import {createSLPKArchiveResolver, createTiles3DArchiveResolver} from './archive
  */
 export type Tile3DSourceLayerProps<DataT = unknown> = Omit<Tile3DLayerProps<DataT>, 'data'> & {
   /** Root tileset URL or a pre-constructed tileset source. */
-  data: string | Tileset3DSource;
+  data: string | Blob | Tileset3DSource;
 };
 
 /**
@@ -50,7 +50,7 @@ export class Tile3DSourceLayer<
    * Loads a tileset from either a URL or a pre-constructed tileset source.
    * @param data Tileset URL or fully constructed source.
    */
-  private async loadSourceTileset(data: string | Tileset3DSource): Promise<void> {
+  private async loadSourceTileset(data: string | Blob | Tileset3DSource): Promise<void> {
     if (isTileset3DSource(data)) {
       data.coreApi ||= coreApi;
       const tileset3d = new Tileset3D(data, {
@@ -83,7 +83,7 @@ export class Tile3DSourceLayer<
     };
     let actualTilesetUrl = tilesetUrl;
 
-    if (loader.preload) {
+    if (typeof tilesetUrl === 'string' && loader.preload) {
       const preloadOptions = await loader.preload(tilesetUrl, loadOptions);
       if (preloadOptions.url) {
         actualTilesetUrl = preloadOptions.url;
@@ -125,12 +125,12 @@ export class Tile3DSourceLayer<
  * @returns A source implementation matching the loader format.
  */
 export function createSource(
-  url: string,
+  url: string | Blob,
   loader: LoaderWithParser,
   loadOptions: LoaderOptions,
   injectedCoreApi = coreApi
 ): Tiles3DSource | I3SSource {
-  const lowerCaseUrl = url.toLowerCase();
+  const lowerCaseUrl = typeof url === 'string' ? url.toLowerCase() : '';
 
   if (loader.id === 'slpk' || lowerCaseUrl.endsWith('.slpk')) {
     const archiveConfig =

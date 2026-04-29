@@ -4,6 +4,7 @@
 
 // PLY Loader
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {PLYFormat} from './ply-format';
@@ -14,6 +15,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
+    /** Output shape. Defaults to a legacy Mesh object. */
+    shape?: 'mesh' | 'arrow-table';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -33,7 +36,7 @@ async function preload() {
  * 'https://en.wikipedia.org/wiki/PLY_(file_format)']
  */
 export const PLYWorkerLoader = {
-  dataType: null as unknown as PLYMesh,
+  dataType: null as unknown as PLYMesh | MeshArrowTable,
   batchType: null as never,
 
   ...PLYFormat,
@@ -44,11 +47,11 @@ export const PLYWorkerLoader = {
     ply: {}
   },
   preload
-} as const satisfies Loader<PLYMesh, never, LoaderOptions>;
+} as const satisfies Loader<PLYMesh | MeshArrowTable, never, LoaderOptions>;
 
 /**
  * Metadata-only loader for PLY - Polygon File Format
  */
 export const PLYLoader = {
   ...PLYWorkerLoader
-} as const satisfies Loader<PLYMesh, any, PLYLoaderOptions>;
+} as const satisfies Loader<PLYMesh | MeshArrowTable, any, PLYLoaderOptions>;

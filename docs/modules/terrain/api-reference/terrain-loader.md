@@ -1,5 +1,9 @@
 # Terrain Loaders
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
+
 The `TerrainArrowLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values, and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
 `TerrainLoader` parses the same height map terrain formats and returns the legacy [Mesh](/docs/specifications/category-mesh) object.

@@ -1,22 +1,16 @@
+import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
+
 # DBFLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
 </p>
 
+<ShapefileDocsTabs active="dbf" />
+
 A sub loader for the `.dbf` (attributes/properties) file component of a shapefile. This is essentially a loader for the legacy dBase 7 database format.
 
 Note: Most applications will want to use the `ShapefileLoader` instead of this loader.
-
-| Loader                | Characteristic                                         |
-| --------------------- | ------------------------------------------------------ |
-| File Format           | [Shapefile](/docs/modules/shapefile/formats/shapefile) |
-| Data Format           | [Table](/docs/specifications/category-table)           |
-| File Extension        | `.dbf`,                                                |
-| File Type             | Binary                                                 |
-| Supported APIs        | `load`, `parse`, `parseSync`                           |
-| Decoder Type          | Synchronous                                            |
-| Worker Thread Support | Yes                                                    |
 
 ## Usage
 

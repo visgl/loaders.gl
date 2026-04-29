@@ -1,9 +1,13 @@
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+
 # ParquetLoader
+
+<ParquetDocsTabs active="parquetloader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
   &nbsp;
-	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 Streaming loader for Apache Parquet encoded files. `ParquetLoader` returns plain JavaScript object rows and delegates parsing to the wasm-backed `ParquetArrowLoader`.
@@ -11,15 +15,6 @@ Streaming loader for Apache Parquet encoded files. `ParquetLoader` returns plain
 [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) is the plain-row loader for the experimental parquetjs backend. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
-
-| Loader         | Characteristic                                       |
-| -------------- | ---------------------------------------------------- |
-| File Format    | [Parquet](/docs/modules/parquet/formats/parquet)     |
-| Data Format    | [Classic Table](/docs/specifications/category-table) |
-| File Extension | `.parquet`,                                          |
-| MIME Type      | N/A (`application/octet-stream`)                     |
-| File Type      | Binary                                               |
-| Supported APIs | `load`, `parse`, `parseInBatches`                    |
 
 Please refer to the `parquet` format page for information on
 which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.
@@ -59,6 +54,15 @@ const arrowTable = await load(url, ParquetArrowLoader, {
   parquet: options
 });
 ```
+
+## Shapes
+
+`ParquetLoader` returns object-row tables by default. Set `parquet.shape: 'arrow-table'` to return loaders.gl `ArrowTable` objects.
+
+| Shape              | Output                                           |
+| ------------------ | ------------------------------------------------ |
+| `object-row-table` | loaders.gl row table with objects                |
+| `arrow-table`      | loaders.gl `ArrowTable` wrapping an Arrow table  |
 
 The ParquetLoader supports streaming parsing, in which case it will yield "batches" of rows.
 

@@ -17,6 +17,11 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'General Data Formats',
+      items: ['table/arrow', 'table/bson', 'table/json', 'table/xml']
+    },
+    {
+      type: 'category',
       label: 'Geospatial Table Formats',
       items: [
         'geospatial/csv',

@@ -1,20 +1,16 @@
+import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
+
 # PLYWriter
+
+<PlyDocsTabs active="plywriter" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
   &nbsp;
-  <img src="https://img.shields.io/badge/-EXPERIMENTAL-orange.svg?style=flat-square" alt="EXPERIMENTAL" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 The `PLYWriter` writes [Mesh](/docs/specifications/category-mesh) or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) data as ASCII Polygon File Format (PLY) text.
-
-| Writer         | Characteristic                                                                                 |
-| -------------- | ---------------------------------------------------------------------------------------------- |
-| File Format    | [PLY](/docs/modules/ply/formats/ply)                                                           |
-| Data Format    | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
-| File Extension | `.ply`                                                                                         |
-| File Type      | Text                                                                                           |
-| Supported APIs | `encode`, `encodeSync`, `encodeTextSync`                                                       |
 
 ## Usage
 

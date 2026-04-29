@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {OBJFormat} from './obj-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -12,6 +12,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type OBJLoaderOptions = LoaderOptions & {
   obj?: {
+    /** Output shape. Defaults to a legacy Mesh object. */
+    shape?: 'mesh' | 'arrow-table';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -31,7 +33,7 @@ async function preload() {
 export const OBJWorkerLoader = {
   ...OBJFormat,
 
-  dataType: null as unknown as Mesh,
+  dataType: null as unknown as Mesh | MeshArrowTable,
   batchType: null as never,
   version: VERSION,
   worker: true,
@@ -41,7 +43,7 @@ export const OBJWorkerLoader = {
     obj: {}
   },
   preload
-} as const satisfies Loader<Mesh, never, OBJLoaderOptions>;
+} as const satisfies Loader<Mesh | MeshArrowTable, never, OBJLoaderOptions>;
 
 function testOBJFile(text: string): boolean {
   // TODO - There could be comment line first
@@ -55,4 +57,4 @@ function testOBJFile(text: string): boolean {
  */
 export const OBJLoader = {
   ...OBJWorkerLoader
-} as const satisfies Loader<Mesh, never, OBJLoaderOptions>;
+} as const satisfies Loader<Mesh | MeshArrowTable, never, OBJLoaderOptions>;

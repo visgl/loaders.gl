@@ -1,25 +1,14 @@
-import BrowserOnly from '@docusaurus/BrowserOnly';
+import {CsvDocsTabs} from '@site/src/components/docs/csv-docs-tabs';
 
-# CSV Loaders
+# CSVLoader
 
-Streaming loader for comma-separated value and [delimiter-separated value](https://en.wikipedia.org/wiki/Delimiter-separated_values) encoded files.
+<CsvDocsTabs active="csvloader" />
 
-| Loader      | Output                                                        | Use when                      |
-| ----------- | ------------------------------------------------------------- | ----------------------------- |
-| `CSVLoader` | `ObjectRowTable \| ArrayRowTable \| ArrowTable`               | You want row or columnar data. |
+<p className="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
 
-| Characteristic | Value                                               |
-| -------------- | --------------------------------------------------- |
-| File Format    | [CSV](/docs/modules/csv/formats/csv)                |
-| Data Format    | [Tables](/docs/specifications/category-table)       |
-| File Type      | Text                                                |
-| File Extension | `.csv`, `.tsv`, `.dsv`                              |
-| MIME Types     | `text/csv`, `text/tab-separated-values`, `text/dsv` |
-| Supported APIs | `load`, `parse`, `parseText`, `parseInBatches`      |
-
-## CSVLoader
-
-`CSVLoader` loads CSV and TSV data as loaders.gl row tables by default. Set `csv.shape: 'arrow-table'` to request Apache Arrow output.
+`CSVLoader` loads CSV and TSV data as loaders.gl row tables by default. Set `csv.shape: 'array-row-table'`, `csv.shape: 'columnar-table'`, or `csv.shape: 'arrow-table'` to request a different table shape.
 
 ## Usage
 
@@ -28,8 +17,7 @@ import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
 const data = await load(url, CSVLoader);
-// or
-const data = await load(url, CSVLoader, {csv: options});
+const table = await load(url, CSVLoader, {csv: {shape: 'arrow-table'}});
 ```
 
 The root CSV export is metadata-only and works with async core APIs such as `load`, `parse`, and `parseInBatches`, which preload the parser implementation when needed. Applications that need a parser-bearing loader object directly can import the same named loader from `@loaders.gl/csv/bundled`:
@@ -49,43 +37,23 @@ import {CSVLoader} from '@loaders.gl/csv/unbundled';
 const data = await parse(csvText, CSVLoader);
 ```
 
-A complication with the CSV format is that CSV files can come with or without an initial header line. While the `CSVLoader` will attempt to detect if the first line is a header, this can fail. If you know the format of the file you can use `options.csv.header` to specify how to handle the first line.
+### Header Detection
+
+A complication with the CSV format is that CSV files can come with or without an initial header line. While `CSVLoader` attempts to detect if the first line is a header, this can fail. If you know the file shape, use `options.csv.header` to specify how to handle the first line.
 
 ```typescript
 import {load} from '@loaders.gl/core';
 import {CSVLoader} from '@loaders.gl/csv';
 
-const data = await load(url_to_csv_with_header, CSVLoader, {csv: {header: true}});
-const data = await load(url_to_csv_without_header, CSVLoader, {csv: {header: false}});
+const data = await load(urlToCSVWithHeader, CSVLoader, {csv: {header: true}});
+const rows = await load(urlToCSVWithoutHeader, CSVLoader, {csv: {header: false}});
 ```
 
-### Unbundled Import
+### Apache Arrow
 
-For applications that want the parser implementation loaded on demand, import the metadata-only loader from the `unbundled` subpath. Async core APIs will preload the parser implementation automatically.
+When `csv.shape: 'arrow-table'` is selected, `CSVLoader` returns a loaders.gl `ArrowTable` object that wraps an Apache Arrow table.
 
-```typescript
-import {load} from '@loaders.gl/core';
-import {CSVLoader} from '@loaders.gl/csv/unbundled';
-
-const data = await load(url, CSVLoader);
-```
-
-## CSVLoader Options
-
-| Option                    | Type                                      | Default                  | Description                                                                                                                  |
-| ------------------------- | ----------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `csv.shape`               | [![Website shields.io](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)](http://shields.io) `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `object-row-table`       | Output rows as objects, arrays of values, or Apache Arrow columns.                                                          |
-| `csv.optimizeMemoryUsage` | `boolean`                                 | `false`                  | Optimize memory usage at the cost of additional parsing time.                                                                |
-| `csv.header`              | `boolean \| 'auto'`                       | `auto`                   | If `true`, treat the first row as field names. If `false`, treat the first row as data. `'auto'` attempts to detect headers. |
-| `csv.columnPrefix`        | `string`                                  | `column`                 | Prefix used when generating column names for files without headers (for example, `column1`, `column2`, ...).                 |
-| `csv.quoteChar`           | `string`                                  | `"`                      | Character used to quote fields.                                                                                              |
-| `csv.escapeChar`          | `string`                                  | `"`                      | Character used to escape the quote character within a field.                                                                 |
-| `csv.dynamicTyping`       | `boolean`                                 | `true`                   | Convert numeric and boolean values from strings to their native types.                                                       |
-| `csv.comments`            | `boolean`                                 | `false`                  | Skip lines that start with a comment indicator.                                                                              |
-| `csv.skipEmptyLines`      | `boolean \| 'greedy'`                     | `true`                   | Skip empty lines; `'greedy'` also skips lines that only contain whitespace.                                                  |
-| `csv.delimitersToGuess`   | `string[]`                                | `[',', '\t', '\|', ';']` | Delimiters to try when no delimiter is specified.                                                                            |
-
-When `csv.shape: 'arrow-table'` is selected, `CSVLoader` returns loaders.gl `ArrowTable` objects that wrap Apache Arrow tables.
+### Type Inference
 
 By default, `CSVLoader` emits Arrow `Utf8` columns in `csv.shape: 'arrow-table'` mode and does not infer numeric, boolean, or date types. Set `csv.dynamicTyping: true` to opt into typed Arrow columns.
 
@@ -101,11 +69,22 @@ const typedTable = await load(url, CSVLoader, {
 
 For the default `csv.dynamicTyping: false` Arrow path, `CSVLoader.parse(ArrayBuffer)` uses a byte-oriented parser for supported CSV options and creates Arrow `Utf8` columns without materializing per-cell JavaScript strings. `CSVLoader.parseText` encodes text to UTF-8 and uses the same byte-oriented path when possible. `CSVLoader.parseInBatches` uses the byte-oriented path when the input can be emitted as one batch, and keeps the streaming string parser for explicit batch sizes.
 
-## Live Benchmarks
+## CSVLoader Options
 
-<BrowserOnly fallback={<p>Loading browser benchmarks...</p>}>
-  {() => {
-    const BenchmarksApp = require('@site/src/examples/benchmarks-app').default;
-    return <BenchmarksApp />;
-  }}
-</BrowserOnly>
+| Option                      | Type                                                                                       | Default                       | Description                                                                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `csv.shape`                 | `'object-row-table' \| 'array-row-table' \| 'columnar-table' \| 'arrow-table'`             | `object-row-table`            | Output rows as objects, arrays of values, columns, or Apache Arrow columns.                                                  |
+| `csv.optimizeMemoryUsage`   | `boolean`                                                                                  | `false`                       | Optimize memory usage at the cost of additional parsing time.                                                                |
+| `csv.header`                | `boolean \| 'auto'`                                                                        | `auto`                        | If `true`, treat the first row as field names. If `false`, treat the first row as data. `'auto'` attempts to detect headers. |
+| `csv.columnPrefix`          | `string`                                                                                   | `column`                      | Prefix used when generating column names for files without headers, for example `column1`, `column2`, ...                    |
+| `csv.quoteChar`             | `string`                                                                                   | `"`                           | Character used to quote fields.                                                                                              |
+| `csv.escapeChar`            | `string`                                                                                   | `"`                           | Character used to escape the quote character within a field.                                                                 |
+| `csv.dynamicTyping`         | `boolean`                                                                                  | `true`                        | Convert numeric and boolean values from strings to their native types.                                                       |
+| `csv.comments`              | `boolean`                                                                                  | `false`                       | Skip lines that start with a comment indicator.                                                                              |
+| `csv.skipEmptyLines`        | `boolean \| 'greedy'`                                                                      | `true`                        | Skip empty lines; `'greedy'` also skips lines that only contain whitespace.                                                  |
+| `csv.detectGeometryColumns` | `boolean`                                                                                  | `false`                       | Detect geometry columns when producing geospatial table output.                                                              |
+| `csv.delimitersToGuess`     | `string[]`                                                                                 | `[',', '\t', '\|', ';']`      | Delimiters to try when no delimiter is specified.                                                                            |
+
+## Remarks
+
+`CSVWorkerLoader` is a deprecated alias for `CSVLoader`.

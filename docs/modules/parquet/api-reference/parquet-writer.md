@@ -1,8 +1,13 @@
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+
 # ParquetWriter
+
+<ParquetDocsTabs active="parquetwriter" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
-	<img src="https://img.shields.io/badge/-BETA-teal.svg)](/studio/user-guide/import" alt="BETA" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 `ParquetWriter` accepts plain JS loaders.gl tables and converts them to Arrow before delegating to the wasm-backed `ParquetArrowWriter`.

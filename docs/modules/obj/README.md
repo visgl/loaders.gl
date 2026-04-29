@@ -1,6 +1,6 @@
 # Overview
 
-The `@loaders.gl/obj` module handles the the [Wavefront OBJ format](https://en.wikipedia.org/wiki/Wavefront_.obj_file), a simple ASCII format that defines 3D geometries as vertices, normals and faces.
+The `@loaders.gl/obj` module handles the the [Wavefront OBJ format](/docs/modules/obj/formats/obj), a simple ASCII format that defines 3D geometries as vertices, normals and faces.
 
 ## Installation
 
@@ -13,8 +13,7 @@ npm install @loaders.gl/core
 
 | Loader or Writer                                               | Description                         |
 | -------------------------------------------------------------- | ----------------------------------- |
-| [`OBJArrowLoader`](/docs/modules/obj/api-reference/obj-loader) | Loads OBJ meshes as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
-| [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader)      | Loads OBJ meshes as Mesh objects.   |
+| [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader)      | Loads OBJ meshes as Mesh objects or Mesh Arrow tables. |
 | [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer)      | Writes Mesh or Mesh Arrow table data as OBJ text. |
 
 ## Attribution

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title">
+  <title id="title">Apache Arrow example thumbnail</title>
+  <rect width="480" height="320" fill="#f6f8fb"/>
+  <rect x="48" y="48" width="384" height="224" rx="8" fill="#ffffff" stroke="#d7dde8" stroke-width="4"/>
+  <image href="/images/examples/table/apache-arrow-small.png" x="100" y="104" width="280" height="102" preserveAspectRatio="xMidYMid meet"/>
+</svg>

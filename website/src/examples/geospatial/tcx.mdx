@@ -4,8 +4,11 @@ hide_title: true
 ---
 
 import Demo from 'examples/website/geospatial/app';
+import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
 
-<div style={{height: '100vh'}}> 
+<KmlDocsTabs active="try-it" tryItHref="/examples/geospatial/tcx" />
+
+<div style={{height: 'calc(100vh - 76px)'}}> 
   <Demo format="TCX" >
     [**`RCXLoader`**](/docs/modules/kml/api-reference/tcx-loader) loads TCX files, optionally into GeoJSON.
   </Demo>

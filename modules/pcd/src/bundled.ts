@@ -7,4 +7,3 @@ export {
   PCDWorkerLoaderWithParser as PCDWorkerLoader,
   PCDLoaderWithParser as PCDLoader
 } from './pcd-loader-with-parser';
-export {PCDArrowLoaderWithParser as PCDArrowLoader} from './pcd-arrow-loader-with-parser';

@@ -5,6 +5,8 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {meshArrowSchema} from '@loaders.gl/schema';
 
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
@@ -96,6 +98,38 @@ test('PCDLoader#parse(text)', async t => {
 
   t.equal(data.attributes.POSITION.value.length, 639, 'POSITION attribute was found');
   t.equal(data.attributes.COLOR_0.value.length, 639, 'COLOR attribute was found');
+
+  t.end();
+});
+
+test('PCDLoader#parse(shape: arrow-table)', async t => {
+  const arrowTable = await parse(fetchFile(PCD_ASCII_URL), PCDLoader, {
+    core: {worker: false},
+    pcd: {shape: 'arrow-table'}
+  });
+
+  validateArrowTableSchema(arrowTable.data, meshArrowSchema, {
+    schemaName: 'PCDLoader Mesh table'
+  });
+
+  const {data} = arrowTable;
+  t.equal(data.schema.fields.length, 2, 'schema field count is correct');
+  t.equal(data.schema.metadata.get('topology'), 'point-list', 'schema metadata is correct');
+  t.ok(data.schema.metadata.get('boundingBox'), 'schema metadata is correct');
+
+  t.equal(data.numRows, 639 / 3, 'table has 213 points');
+
+  const positionField = arrowTable.schema?.fields.find(field => field.name === 'POSITION');
+  // @ts-expect-error
+  t.equal(positionField?.type?.listSize, 3, 'position column size correct');
+  // @ts-expect-error
+  t.equal(positionField?.type?.children[0]?.type, 'float32', 'position column type correct');
+
+  const colorField = arrowTable.schema?.fields.find(field => field.name === 'COLOR_0');
+  // @ts-expect-error
+  t.equal(colorField?.type?.listSize, 3, 'color column size correct');
+  // @ts-expect-error
+  t.equal(colorField?.type?.children[0]?.type, 'uint8', 'color column type correct');
 
   t.end();
 });

@@ -85,10 +85,10 @@ test('ArrowLoader#parseSync(simple.arrow) loader shape overrides core.shape', as
   t.end();
 });
 
-// This table triggers an arrow bug in apache-arrow v12, v13
+// This table has a dictionary id that is not safe to represent as a JavaScript number.
 // https://github.com/visgl/loaders.gl/pull/2632#issuecomment-1712001480
 // https://github.com/apache/arrow/blob/f1d2fc92f9d898fc067d46a0d032d9b117a2d7fc/js/src/ipc/metadata/message.ts#L389
-test.skip('ArrowLoader#parseSync(dictionary.arrow)', async t => {
+test('ArrowLoader#parseSync(dictionary.arrow)', async t => {
   const columnarTable = await parse(fetchFile(ARROW_DICTIONARY), ArrowLoader);
   t.equal(columnarTable.shape, 'columnar-table');
   if (columnarTable.shape === 'columnar-table') {
