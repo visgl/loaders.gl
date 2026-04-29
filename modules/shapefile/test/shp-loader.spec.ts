@@ -50,6 +50,24 @@ test('Shapefile JS Point tests', async t => {
   t.end();
 });
 
+test('SHPLoader#Null Shape records in typed shapefile', async t => {
+  const output = await load(
+    `${SHAPEFILE_JS_DATA_FOLDER}/null.shp`,
+    SHPLoader,
+    BINARY_GEOMETRY_OPTIONS
+  );
+
+  t.equal(output.header.type, 1, 'fixture is a Point shapefile');
+  t.equal(output.geometries.length, 9, 'all records are preserved');
+  t.equal(output.geometries.filter(Boolean).length, 5, 'non-null point records are parsed');
+  t.equal(
+    output.geometries.filter(geometry => geometry === null).length,
+    4,
+    'null records are parsed'
+  );
+  t.end();
+});
+
 test('Shapefile JS Polyline tests', async t => {
   for (const testFileName of SHAPEFILE_JS_POLYLINE_TEST_FILES) {
     const output = await load(

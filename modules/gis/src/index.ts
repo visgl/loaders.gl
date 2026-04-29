@@ -95,6 +95,28 @@ export {WKT_MAGIC_STRINGS} from './lib/geometry-converters/wkb/helpers/wkb-types
 export type {GeometryShape} from './lib/geometry-converters/geometry-converter/geometry-converter';
 export {GeometryConverter} from './lib/geometry-converters/geometry-converter/geometry-converter';
 export {GeometryColumnConverter} from './lib/geometry-converters/geometry-column-converter';
+export type {
+  BinaryGeometryWKBOptions,
+  CoordinateTransform
+} from './lib/geometry-converters/wkb/convert-binary-geometry-to-wkb';
+export {
+  convertBinaryGeometryToWKB,
+  getBinaryGeometryWKBSize,
+  inferBinaryGeometryTypes,
+  reprojectWKBInPlace,
+  writeBinaryGeometryToWKB
+} from './lib/geometry-converters/wkb/convert-binary-geometry-to-wkb';
+export type {
+  WKBBuilderBaseOptions,
+  WKBBuilderMeasureOptions,
+  WKBBuilderOptions,
+  WKBBuilderWriteOptions,
+  WKBGeometryArray,
+  WKBGeometryTypeName,
+  WKBGeometryWriter,
+  WKBCoordinateTransform
+} from './lib/geometry-converters/wkb/wkb-builder';
+export {WKBBuilder} from './lib/geometry-converters/wkb/wkb-builder';
 export {
   convertBinaryGeometryToGeometry,
   convertWKBTableToGeoJSON,

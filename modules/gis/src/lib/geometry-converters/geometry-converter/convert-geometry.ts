@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Geometry as GeoJSONGeometry} from '@loaders.gl/schema';
+import type {BinaryGeometry, Geometry as GeoJSONGeometry} from '@loaders.gl/schema';
+import {convertBinaryGeometryToGeometry} from '../convert-binary-geometry-to-geojson';
+import {convertBinaryGeometryToWKB} from '../wkb/convert-binary-geometry-to-wkb';
 import {convertGeometryToWKB} from '../wkb/convert-geometry-to-wkb';
 import {convertGeometryToWKT} from '../wkb/convert-geometry-to-wkt';
 import {convertGeometryToTWKB} from '../wkb/convert-geometry-to-twkb';
@@ -16,16 +18,17 @@ import type {GeometryShape} from './geometry-converter';
  * Converts between single-geometry representations.
  */
 export function convertGeometry(input: GeoJSONGeometry, shape: 'wkb'): ArrayBuffer;
+export function convertGeometry(input: BinaryGeometry, shape: 'wkb'): Uint8Array | null;
 export function convertGeometry(input: GeoJSONGeometry, shape: 'wkt'): string;
 export function convertGeometry(input: GeoJSONGeometry, shape: 'twkb'): ArrayBuffer;
 export function convertGeometry(
-  input: string | ArrayBufferLike,
+  input: string | ArrayBufferLike | BinaryGeometry,
   shape: 'geojson-geometry'
 ): GeoJSONGeometry;
 export function convertGeometry(
-  input: GeoJSONGeometry | string | ArrayBufferLike,
+  input: GeoJSONGeometry | BinaryGeometry | string | ArrayBufferLike,
   shape: GeometryShape
-): GeoJSONGeometry | string | ArrayBuffer {
+): GeoJSONGeometry | string | ArrayBuffer | Uint8Array | null {
   if (typeof input === 'string') {
     if (shape !== 'geojson-geometry') {
       throw new Error(`Unsupported geometry conversion target: ${shape}`);
@@ -41,6 +44,17 @@ export function convertGeometry(
       return convertTWKBToGeometry(toArrayBuffer(input));
     }
     return convertWKBToGeometry(input);
+  }
+
+  if (isBinaryGeometry(input)) {
+    switch (shape) {
+      case 'geojson-geometry':
+        return convertBinaryGeometryToGeometry(input);
+      case 'wkb':
+        return convertBinaryGeometryToWKB(input);
+      default:
+        throw new Error(`Unsupported geometry conversion target: ${shape}`);
+    }
   }
 
   switch (shape) {
@@ -72,6 +86,19 @@ export function isGeoJSONGeometry(input: unknown): input is GeoJSONGeometry {
     'type' in input &&
     typeof input.type === 'string' &&
     ('coordinates' in input || input.type === 'GeometryCollection')
+  );
+}
+
+/**
+ * Checks whether an input looks like a binary geometry object.
+ */
+export function isBinaryGeometry(input: unknown): input is BinaryGeometry {
+  return (
+    typeof input === 'object' &&
+    input !== null &&
+    'type' in input &&
+    (input.type === 'Point' || input.type === 'LineString' || input.type === 'Polygon') &&
+    'positions' in input
   );
 }
 

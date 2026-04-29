@@ -8,7 +8,7 @@ import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
-    shape?: 'binary-geometry' | 'arrow-table';
+    shape?: 'binary-geometry' | 'arrow-table' | 'wkb';
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;

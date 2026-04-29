@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, BinaryGeometry, Field} from '@loaders.gl/schema';
+import type {ArrowTable, ArrowTableBatch, Field} from '@loaders.gl/schema';
 import {
   type GeoParquetGeometryType,
   makeWKBGeometryField,
@@ -10,25 +10,17 @@ import {
 } from '@loaders.gl/gis';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {parseSHP, parseSHPInBatches} from './parse-shp';
-import {
-  convertBinaryGeometryToWKB,
-  inferBinaryGeometryTypes
-} from './convert-binary-geometry-to-wkb';
 import type {SHPHeader} from './parse-shp-header';
 import type {SHPLoaderOptions} from './types';
+import {type SHPWKBGeometry, makeWKBGeometryArrowTable} from './build-wkb-geometry-arrow';
 
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
 export function parseSHPToArrow(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): ArrowTable {
-  const result = parseSHP(arrayBuffer, options);
-  const schema = buildOutputSchema(result.geometries, result.header);
-  const tableBuilder = new ArrowTableBuilder(schema);
-
-  for (const geometry of result.geometries) {
-    tableBuilder.addObjectRow(makeArrowRow(geometry, result.header));
-  }
-
-  return tableBuilder.finishTable();
+  const result = parseSHP(arrayBuffer, getWKBOptions(options));
+  const geometries = result.geometries as (SHPWKBGeometry | null)[];
+  const schema = buildOutputSchema(result.header);
+  return makeWKBGeometryArrowTable(geometries, schema);
 }
 
 export async function* parseSHPToArrowInBatches(
@@ -37,7 +29,7 @@ export async function* parseSHPToArrowInBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: SHPLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
-  const shpIterator = parseSHPInBatches(asyncIterator, options);
+  const shpIterator = parseSHPInBatches(asyncIterator, getWKBOptions(options));
   let header: SHPHeader | undefined;
   let yieldedDataBatch = false;
 
@@ -47,25 +39,25 @@ export async function* parseSHPToArrowInBatches(
       continue;
     }
 
-    const geometries = batch as (BinaryGeometry | null)[];
-    const schema = buildOutputSchema(geometries, header);
-    const tableBuilder = new ArrowTableBuilder(schema);
-    for (const geometry of geometries) {
-      tableBuilder.addObjectRow(makeArrowRow(geometry, header));
-    }
-    const arrowBatch = tableBuilder.finishBatch();
-    if (arrowBatch) {
-      yieldedDataBatch = true;
-      yield arrowBatch;
-    }
+    const geometries = batch as (SHPWKBGeometry | null)[];
+    const schema = buildOutputSchema(header);
+    const arrowTable = makeWKBGeometryArrowTable(geometries, schema);
+    yieldedDataBatch = true;
+    yield {
+      shape: 'arrow-table',
+      batchType: 'data',
+      length: arrowTable.data.numRows,
+      schema: arrowTable.schema,
+      data: arrowTable.data
+    };
   }
 
   if (!yieldedDataBatch) {
-    yield makeEmptyArrowBatch(buildOutputSchema([], header));
+    yield makeEmptyArrowBatch(buildOutputSchema(header));
   }
 }
 
-function buildOutputSchema(geometries: (BinaryGeometry | null)[], header?: SHPHeader) {
+function buildOutputSchema(header?: SHPHeader) {
   const geometryField: Field = makeWKBGeometryField(GEOMETRY_COLUMN_NAME);
   const schema = {
     fields: [geometryField],
@@ -74,34 +66,17 @@ function buildOutputSchema(geometries: (BinaryGeometry | null)[], header?: SHPHe
 
   setWKBGeometryColumnMetadata(schema.metadata, {
     geometryColumnName: GEOMETRY_COLUMN_NAME,
-    geometryTypes: inferGeometryTypes(geometries, header)
+    geometryTypes: inferGeometryTypes(header)
   });
 
   return schema;
-}
-
-function makeArrowRow(
-  geometry: BinaryGeometry | null,
-  header?: SHPHeader
-): Record<string, unknown> {
-  return {
-    [GEOMETRY_COLUMN_NAME]: convertBinaryGeometryToWKB(geometry, header)
-  };
 }
 
 function isSHPHeader(batch: unknown): batch is SHPHeader {
   return Boolean(batch && typeof batch === 'object' && 'type' in batch && 'length' in batch);
 }
 
-function inferGeometryTypes(
-  geometries: (BinaryGeometry | null)[],
-  header?: SHPHeader
-): GeoParquetGeometryType[] {
-  const geometryTypes = inferBinaryGeometryTypes(geometries);
-  if (geometryTypes.length > 0) {
-    return geometryTypes;
-  }
-
+function inferGeometryTypes(header?: SHPHeader): GeoParquetGeometryType[] {
   const fallbackType = getGeometryTypeFromHeader(header?.type);
   return fallbackType ? [fallbackType] : [];
 }
@@ -127,6 +102,16 @@ function getGeometryTypeFromHeader(type?: number): GeoParquetGeometryType | null
     default:
       return null;
   }
+}
+
+function getWKBOptions(options?: SHPLoaderOptions): SHPLoaderOptions {
+  return {
+    ...options,
+    shp: {
+      ...options?.shp,
+      shape: 'wkb'
+    }
+  };
 }
 
 function makeEmptyArrowBatch(schema: ArrowTable['schema']): ArrowTableBatch {

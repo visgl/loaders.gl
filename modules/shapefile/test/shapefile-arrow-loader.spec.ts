@@ -83,6 +83,24 @@ test('ShapefileLoader#load arrow-table reprojects like v3 output', async t => {
   t.end();
 });
 
+test('ShapefileLoader#load arrow-table stores WKB in one contiguous Arrow values buffer', async t => {
+  const filename = `${SHAPEFILE_JS_DATA_FOLDER}/points.shp`;
+  const table = await load(filename, ShapefileLoader, {shapefile: {shape: 'arrow-table'}});
+  const rows = getRowsFromArrowTable(table);
+  const recordBatch = table.data.batches[0];
+  const geometryFieldIndex = table.schema.fields.findIndex(field => field.name === 'geometry');
+  const geometryData = recordBatch.data.children[geometryFieldIndex];
+
+  t.equal(geometryData.valueOffsets.length, rows.length + 1, 'geometry offsets cover every row');
+  t.equal(
+    geometryData.valueOffsets[geometryData.valueOffsets.length - 1],
+    geometryData.values.byteLength,
+    'last offset points to the end of one values buffer'
+  );
+  t.ok(geometryData.values instanceof Uint8Array, 'geometry values are stored as a byte buffer');
+  t.end();
+});
+
 test('ShapefileLoader#loadInBatches arrow-table yields stable Arrow schema', async t => {
   for (const testFileName of TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;

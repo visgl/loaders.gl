@@ -4,9 +4,10 @@
 
 import type {BinaryGeometry} from '@loaders.gl/schema';
 import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
+import {convertWKBToBinaryGeometry} from '@loaders.gl/gis';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {parseSHPHeader, SHPHeader} from './parse-shp-header';
-import {parseRecord} from './parse-shp-geometry';
+import {parseRecordToWKB} from './parse-shp-geometry';
 import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
@@ -28,7 +29,7 @@ const STATE = {
  * A complete or partial result from the SHP file parser.
  */
 export type SHPResult = {
-  geometries: (BinaryGeometry | null)[];
+  geometries: (SHPGeometry | null)[];
   header?: SHPHeader;
   error?: string;
   progress: {
@@ -38,6 +39,8 @@ export type SHPResult = {
   };
   currentIndex: number;
 };
+
+export type SHPGeometry = BinaryGeometry | Uint8Array;
 
 class SHPParser {
   options?: SHPLoaderOptions = {};
@@ -99,7 +102,7 @@ export async function* parseSHPInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: SHPLoaderOptions
-): AsyncGenerator<BinaryGeometry | object> {
+): AsyncGenerator<SHPGeometry[] | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
@@ -203,7 +206,7 @@ function parseState(
 
             const invalidRecord =
               recordHeader.byteLength < 4 ||
-              recordHeader.type !== result.header?.type ||
+              (recordHeader.type !== result.header?.type && recordHeader.type !== 0) ||
               recordHeader.recordNumber !== result.currentIndex;
 
             // All records must have at least four bytes (for the record shape type)
@@ -219,8 +222,12 @@ function parseState(
               binaryReader.rewind(4);
 
               const recordView = binaryReader.getDataView(recordHeader.byteLength) as DataView;
-              const geometry = parseRecord(recordView, options);
-              result.geometries.push(geometry);
+              const wkbGeometry = parseRecordToWKB(recordView, options);
+              result.geometries.push(
+                getSHPShape(options) === 'wkb'
+                  ? wkbGeometry
+                  : convertWKBToBinaryGeometryOrNull(wkbGeometry)
+              );
 
               result.currentIndex++;
               result.progress.rows = result.currentIndex - 1;
@@ -244,4 +251,22 @@ function parseState(
       return state;
     }
   }
+}
+
+function getSHPShape(
+  options?: SHPLoaderOptions
+): NonNullable<SHPLoaderOptions['shp']>['shape'] | undefined {
+  return options?.shp?.shape;
+}
+
+function convertWKBToBinaryGeometryOrNull(wkbGeometry: Uint8Array | null): BinaryGeometry | null {
+  if (!wkbGeometry) {
+    return null;
+  }
+  return convertWKBToBinaryGeometry(
+    wkbGeometry.buffer.slice(
+      wkbGeometry.byteOffset,
+      wkbGeometry.byteOffset + wkbGeometry.byteLength
+    ) as ArrayBuffer
+  );
 }

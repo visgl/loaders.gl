@@ -16,11 +16,21 @@ export default async function shpLoaderBench(suite) {
   suite.group('SHPLoader');
 
   suite.addAsync(
-    'parse(SHPLoader without worker)',
+    'parse(SHPLoader without worker) to binary geometry',
     {multiplier: 77, unit: 'MB'},
     async () =>
       await parse(arrayBuffer, SHPLoader, {
-        core: {worker: false}
+        core: {worker: false},
+        shp: {shape: 'binary-geometry'}
+      })
+  );
+  suite.addAsync(
+    'parse(SHPLoader without worker) to GeoArrow',
+    {multiplier: 77, unit: 'MB'},
+    async () =>
+      await parse(arrayBuffer, SHPLoader, {
+        core: {worker: false},
+        shp: {shape: 'arrow-table'}
       })
   );
   suite.addAsync(

@@ -3,20 +3,25 @@
 // Copyright (c) vis.gl contributors
 
 import type {Converter} from '@loaders.gl/schema-utils';
-import {convertGeometry, isArrayBufferLike, isGeoJSONGeometry} from './convert-geometry';
+import {
+  convertGeometry,
+  isArrayBufferLike,
+  isBinaryGeometry,
+  isGeoJSONGeometry
+} from './convert-geometry';
 import {isTWKB, isWKB} from '../wkb/helpers/parse-wkb-header';
 
 /**
  * Shapes supported by the single-geometry converter.
  */
-export type GeometryShape = 'geojson-geometry' | 'wkb' | 'wkt' | 'twkb';
+export type GeometryShape = 'geojson-geometry' | 'binary-geometry' | 'wkb' | 'wkt' | 'twkb';
 
 /**
  * Leaf converter for single geometry values.
  */
 export const GeometryConverter: Converter<GeometryShape> = {
   id: 'geometry',
-  from: ['geojson-geometry', 'wkb', 'wkt', 'twkb'],
+  from: ['geojson-geometry', 'binary-geometry', 'wkb', 'wkt', 'twkb'],
   to: ['geojson-geometry', 'wkb', 'wkt', 'twkb'],
   canConvert(sourceShape, targetShape) {
     if (sourceShape === targetShape) {
@@ -24,6 +29,9 @@ export const GeometryConverter: Converter<GeometryShape> = {
     }
     if (sourceShape === 'geojson-geometry') {
       return targetShape === 'wkb' || targetShape === 'wkt' || targetShape === 'twkb';
+    }
+    if (sourceShape === 'binary-geometry') {
+      return targetShape === 'geojson-geometry' || targetShape === 'wkb';
     }
     return targetShape === 'geojson-geometry';
   },
@@ -36,6 +44,9 @@ export const GeometryConverter: Converter<GeometryShape> = {
     }
     if (isGeoJSONGeometry(input)) {
       return 'geojson-geometry';
+    }
+    if (isBinaryGeometry(input)) {
+      return 'binary-geometry';
     }
     return null;
   },

@@ -228,10 +228,12 @@ export async function parseShapefile(
  * @param geometries
  * @returns geometries as an array
  */
-function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
+function parseGeometries(geometries: (BinaryGeometry | null)[]): Geometry[] {
   const geojsonGeometries: Geometry[] = [];
   for (const geom of geometries) {
-    geojsonGeometries.push(convertBinaryGeometryToGeometry(geom));
+    if (geom) {
+      geojsonGeometries.push(convertBinaryGeometryToGeometry(geom));
+    }
   }
   return geojsonGeometries;
 }

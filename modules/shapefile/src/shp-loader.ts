@@ -15,7 +15,7 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
-    shape?: 'binary-geometry' | 'arrow-table';
+    shape?: 'binary-geometry' | 'arrow-table' | 'wkb';
     batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;

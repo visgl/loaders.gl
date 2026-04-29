@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {BinaryGeometry, BinaryGeometryType} from '@loaders.gl/schema';
+import {WKBBuilder, convertWKBToBinaryGeometry} from '@loaders.gl/gis';
 import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
@@ -15,328 +16,334 @@ const LITTLE_ENDIAN = true;
  */
 // eslint-disable-next-line complexity
 export function parseRecord(view: DataView, options?: SHPLoaderOptions): BinaryGeometry | null {
-  const {_maxDimensions = 4} = options?.shp || {};
+  const wkb = parseRecordToWKB(view, options);
+  return wkb ? convertWKBToBinaryGeometry(toArrayBuffer(wkb)) : null;
+}
 
-  let offset = 0;
-  const type: number = view.getInt32(offset, LITTLE_ENDIAN);
-  offset += Int32Array.BYTES_PER_ELEMENT;
+/**
+ * Parses one SHP record directly into WKB bytes.
+ *
+ * @param view Record data.
+ * @param options Loader options.
+ * @return WKB geometry bytes, or null for Null Shape records.
+ */
+export function parseRecordToWKB(view: DataView, options?: SHPLoaderOptions): Uint8Array | null {
+  const type = view.getInt32(0, LITTLE_ENDIAN);
+  if (type === 0) {
+    return null;
+  }
 
+  const measureBuilder = new WKBBuilder({
+    mode: 'measure',
+    ...getRecordWKBOptions(type, options)
+  });
+  writeRecordToWKB(measureBuilder, view, type);
+  const wkb = new Uint8Array(measureBuilder.finishGeometry());
+  const writeBuilder = new WKBBuilder({
+    mode: 'write',
+    target: wkb,
+    ...getRecordWKBOptions(type, options)
+  });
+  writeRecordToWKB(writeBuilder, view, type);
+  writeBuilder.finishGeometry();
+  return wkb;
+}
+
+function writeRecordToWKB(builder: WKBBuilder, view: DataView, type: number): void {
+  const offset = Int32Array.BYTES_PER_ELEMENT;
   switch (type) {
-    case 0:
-      // Null Shape
-      return parseNull();
     case 1:
-      // Point
-      return parsePoint(view, offset, Math.min(2, _maxDimensions));
-    case 3:
-      // PolyLine
-      return parsePoly(view, offset, Math.min(2, _maxDimensions), 'LineString');
-    case 5:
-      // Polygon
-      return parsePoly(view, offset, Math.min(2, _maxDimensions), 'Polygon');
-    case 8:
-      // MultiPoint
-      return parseMultiPoint(view, offset, Math.min(2, _maxDimensions));
-    // GeometryZ can have 3 or 4 dimensions, since the M is not required to
-    // exist
     case 11:
-      // PointZ
-      return parsePoint(view, offset, Math.min(4, _maxDimensions));
-    case 13:
-      // PolyLineZ
-      return parsePoly(view, offset, Math.min(4, _maxDimensions), 'LineString');
-    case 15:
-      // PolygonZ
-      return parsePoly(view, offset, Math.min(4, _maxDimensions), 'Polygon');
-    case 18:
-      // MultiPointZ
-      return parseMultiPoint(view, offset, Math.min(4, _maxDimensions));
     case 21:
-      // PointM
-      return parsePoint(view, offset, Math.min(3, _maxDimensions));
+      writePointRecordToWKB(builder, view, offset);
+      return;
+    case 3:
+    case 13:
     case 23:
-      // PolyLineM
-      return parsePoly(view, offset, Math.min(3, _maxDimensions), 'LineString');
+      writePolyRecordToWKB(builder, view, offset, 'LineString', type);
+      return;
+    case 5:
+    case 15:
     case 25:
-      // PolygonM
-      return parsePoly(view, offset, Math.min(3, _maxDimensions), 'Polygon');
+      writePolyRecordToWKB(builder, view, offset, 'Polygon', type);
+      return;
+    case 8:
+    case 18:
     case 28:
-      // MultiPointM
-      return parseMultiPoint(view, offset, Math.min(3, _maxDimensions));
+      writeMultiPointRecordToWKB(builder, view, offset, type);
+      return;
     default:
       throw new Error(`unsupported shape type: ${type}`);
   }
 }
 
-// TODO handle null
-/**
- * Parse Null geometry
- *
- * @return null
- */
-function parseNull(): null {
-  return null;
+function writePointRecordToWKB(builder: WKBBuilder, view: DataView, offset: number): void {
+  builder.beginPoint();
+  const x = view.getFloat64(offset, LITTLE_ENDIAN);
+  const y = view.getFloat64(offset + 8, LITTLE_ENDIAN);
+  const zOffset = offset + 16;
+  const mOffset = offset + (builder.hasZ ? 24 : 16);
+  const z =
+    builder.hasZ && zOffset + Float64Array.BYTES_PER_ELEMENT <= view.byteLength
+      ? view.getFloat64(zOffset, LITTLE_ENDIAN)
+      : undefined;
+  const m =
+    builder.hasM && mOffset + Float64Array.BYTES_PER_ELEMENT <= view.byteLength
+      ? view.getFloat64(mOffset, LITTLE_ENDIAN)
+      : undefined;
+  builder.writeCoordinate(x, y, z, m);
 }
 
-/**
- * Parse point geometry
- *
- * @param view Geometry data
- * @param offset Offset in view
- * @param dim Dimension size
- */
-function parsePoint(view: DataView, offset: number, dim: number): BinaryGeometry {
-  let positions: Float64Array;
-  [positions, offset] = parsePositions(view, offset, 1, dim);
-
-  return {
-    positions: {value: positions, size: dim},
-    type: 'Point'
-  };
-}
-
-/**
- * Parse MultiPoint geometry
- *
- * @param view Geometry data
- * @param offset Offset in view
- * @param dim Input dimension
- * @return Binary geometry object
- */
-function parseMultiPoint(view: DataView, offset: number, dim: number): BinaryGeometry {
-  // skip parsing box
-  offset += 4 * Float64Array.BYTES_PER_ELEMENT;
-
-  const nPoints = view.getInt32(offset, LITTLE_ENDIAN);
-  offset += Int32Array.BYTES_PER_ELEMENT;
-
-  let xyPositions: Float64Array | null = null;
-  let mPositions: Float64Array | null = null;
-  let zPositions: Float64Array | null = null;
-  [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
-
-  // Parse Z coordinates
-  if (dim === 4) {
-    // skip parsing range
-    offset += 2 * Float64Array.BYTES_PER_ELEMENT;
-    [zPositions, offset] = parsePositions(view, offset, nPoints, 1);
-  }
-
-  // Parse M coordinates
-  if (dim >= 3) {
-    // skip parsing range
-    offset += 2 * Float64Array.BYTES_PER_ELEMENT;
-    [mPositions, offset] = parsePositions(view, offset, nPoints, 1);
-  }
-
-  const positions = concatPositions(xyPositions, mPositions, zPositions);
-
-  return {
-    positions: {value: positions, size: dim},
-    type: 'Point'
-  };
-}
-
-/**
- * Polygon and PolyLine parsing
- *
- * @param view Geometry data
- * @param offset Offset in view
- * @param dim Input dimension
- * @param type Either 'Polygon' or 'Polyline'
- * @return Binary geometry object
- */
-// eslint-disable-next-line max-statements
-function parsePoly(
+function writeMultiPointRecordToWKB(
+  builder: WKBBuilder,
   view: DataView,
   offset: number,
-  dim: number,
-  type: BinaryGeometryType
-): BinaryGeometry {
-  // skip parsing bounding box
-  offset += 4 * Float64Array.BYTES_PER_ELEMENT;
+  type: number
+): void {
+  const layout = getMultiPointRecordLayout(view, offset, type);
 
-  const nParts = view.getInt32(offset, LITTLE_ENDIAN);
-  offset += Int32Array.BYTES_PER_ELEMENT;
-  const nPoints = view.getInt32(offset, LITTLE_ENDIAN);
-  offset += Int32Array.BYTES_PER_ELEMENT;
-
-  // Create longer indices array by 1 because output format is expected to
-  // include the last index as the total number of positions
-  const bufferOffset = view.byteOffset + offset;
-  const bufferLength = nParts * Int32Array.BYTES_PER_ELEMENT;
-  const ringIndices = new Int32Array(nParts + 1);
-  ringIndices.set(new Int32Array(view.buffer.slice(bufferOffset, bufferOffset + bufferLength)));
-  ringIndices[nParts] = nPoints;
-  offset += nParts * Int32Array.BYTES_PER_ELEMENT;
-
-  let xyPositions: Float64Array | null = null;
-  let mPositions: Float64Array | null = null;
-  let zPositions: Float64Array | null = null;
-  [xyPositions, offset] = parsePositions(view, offset, nPoints, 2);
-
-  // Parse Z coordinates
-  if (dim === 4) {
-    // skip parsing range
-    offset += 2 * Float64Array.BYTES_PER_ELEMENT;
-    [zPositions, offset] = parsePositions(view, offset, nPoints, 1);
+  if (layout.pointCount === 1) {
+    builder.beginPoint();
+    writeRecordCoordinate(builder, view, layout, 0);
+    return;
   }
 
-  // Parse M coordinates
-  if (dim >= 3) {
-    // skip parsing range
-    offset += 2 * Float64Array.BYTES_PER_ELEMENT;
-    [mPositions, offset] = parsePositions(view, offset, nPoints, 1);
+  builder.beginMultiPoint(layout.pointCount);
+  for (let pointIndex = 0; pointIndex < layout.pointCount; pointIndex++) {
+    builder.beginPoint();
+    writeRecordCoordinate(builder, view, layout, pointIndex);
+  }
+}
+
+function writePolyRecordToWKB(
+  builder: WKBBuilder,
+  view: DataView,
+  offset: number,
+  geometryType: BinaryGeometryType,
+  type: number
+): void {
+  const layout = getPolyRecordLayout(view, offset, type);
+  if (geometryType === 'LineString') {
+    writeLineRecordToWKB(builder, view, layout);
+    return;
+  }
+  writePolygonRecordToWKB(builder, view, layout);
+}
+
+function writeLineRecordToWKB(builder: WKBBuilder, view: DataView, layout: SHPPolyRecordLayout) {
+  if (layout.partCount === 1) {
+    writeLinePartToWKB(builder, view, layout, 0);
+    return;
   }
 
-  const positions = concatPositions(xyPositions, mPositions, zPositions);
+  builder.beginMultiLineString(layout.partCount);
+  for (let partIndex = 0; partIndex < layout.partCount; partIndex++) {
+    writeLinePartToWKB(builder, view, layout, partIndex);
+  }
+}
 
-  // parsePoly only accepts type = LineString or Polygon
-  if (type === 'LineString') {
-    return {
-      type,
-      positions: {value: positions, size: dim},
-      pathIndices: {value: ringIndices, size: 1}
-    };
+function writeLinePartToWKB(
+  builder: WKBBuilder,
+  view: DataView,
+  layout: SHPPolyRecordLayout,
+  partIndex: number
+) {
+  const startPoint = getPartStart(view, layout, partIndex);
+  const endPoint = getPartEnd(view, layout, partIndex);
+  builder.beginLineString(endPoint - startPoint);
+  for (let pointIndex = startPoint; pointIndex < endPoint; pointIndex++) {
+    writeRecordCoordinate(builder, view, layout, pointIndex);
+  }
+}
+
+function writePolygonRecordToWKB(builder: WKBBuilder, view: DataView, layout: SHPPolyRecordLayout) {
+  const exteriorPartIndices = getExteriorPartIndices(view, layout);
+  if (exteriorPartIndices.length <= 1) {
+    writePolygonPartsToWKB(builder, view, layout, 0, layout.partCount);
+    return;
   }
 
-  // for every ring, determine sign of polygon
-  // Use only 2D positions for ring calc
-  const polygonIndices: number[] = [];
-  for (let i = 1; i < ringIndices.length; i++) {
-    const startRingIndex = ringIndices[i - 1];
-    const endRingIndex = ringIndices[i];
-    // @ts-ignore
-    const ring = xyPositions.subarray(startRingIndex * 2, endRingIndex * 2);
-    const sign = getWindingDirection(ring);
+  builder.beginMultiPolygon(exteriorPartIndices.length);
+  for (let polygonIndex = 0; polygonIndex < exteriorPartIndices.length; polygonIndex++) {
+    const startPartIndex = exteriorPartIndices[polygonIndex];
+    const endPartIndex = exteriorPartIndices[polygonIndex + 1] ?? layout.partCount;
+    writePolygonPartsToWKB(builder, view, layout, startPartIndex, endPartIndex);
+  }
+}
 
-    // A positive sign implies clockwise
-    // A clockwise ring is a filled ring
-    if (sign > 0) {
-      polygonIndices.push(startRingIndex);
+function writePolygonPartsToWKB(
+  builder: WKBBuilder,
+  view: DataView,
+  layout: SHPPolyRecordLayout,
+  startPartIndex: number,
+  endPartIndex: number
+) {
+  builder.beginPolygon(endPartIndex - startPartIndex);
+  for (let partIndex = startPartIndex; partIndex < endPartIndex; partIndex++) {
+    const startPoint = getPartStart(view, layout, partIndex);
+    const endPoint = getPartEnd(view, layout, partIndex);
+    builder.beginLinearRing(endPoint - startPoint);
+    for (let pointIndex = startPoint; pointIndex < endPoint; pointIndex++) {
+      writeRecordCoordinate(builder, view, layout, pointIndex);
     }
   }
+}
 
-  polygonIndices.push(nPoints);
+type SHPPointRecordLayout = {
+  pointCount: number;
+  xyOffset: number;
+  zOffset?: number;
+  mOffset?: number;
+};
 
+type SHPPolyRecordLayout = SHPPointRecordLayout & {
+  partCount: number;
+  partsOffset: number;
+};
+
+function getMultiPointRecordLayout(
+  view: DataView,
+  offset: number,
+  type: number
+): SHPPointRecordLayout {
+  offset += 4 * Float64Array.BYTES_PER_ELEMENT;
+  const pointCount = view.getInt32(offset, LITTLE_ENDIAN);
+  const xyOffset = offset + Int32Array.BYTES_PER_ELEMENT;
+  return getCoordinateLayout(view, xyOffset, pointCount, type);
+}
+
+function getPolyRecordLayout(view: DataView, offset: number, type: number): SHPPolyRecordLayout {
+  offset += 4 * Float64Array.BYTES_PER_ELEMENT;
+  const partCount = view.getInt32(offset, LITTLE_ENDIAN);
+  const pointCount = view.getInt32(offset + Int32Array.BYTES_PER_ELEMENT, LITTLE_ENDIAN);
+  const partsOffset = offset + 2 * Int32Array.BYTES_PER_ELEMENT;
+  const xyOffset = partsOffset + partCount * Int32Array.BYTES_PER_ELEMENT;
   return {
-    type,
-    positions: {value: positions, size: dim},
-    primitivePolygonIndices: {value: ringIndices, size: 1},
-    // TODO: Dynamically choose Uint32Array over Uint16Array only when
-    // necessary. I believe the implementation requires nPoints to be the
-    // largest value in the array, so you should be able to use Uint32Array only
-    // when nPoints > 65535.
-    polygonIndices: {value: new Uint32Array(polygonIndices), size: 1}
+    ...getCoordinateLayout(view, xyOffset, pointCount, type),
+    partCount,
+    partsOffset
   };
 }
 
-/**
- * Parse a contiguous block of positions into a Float64Array
- *
- * @param view  Geometry data
- * @param offset  Offset in view
- * @param nPoints Number of points
- * @param dim     Input dimension
- * @return Data and offset
- */
-function parsePositions(
+function getCoordinateLayout(
   view: DataView,
-  offset: number,
-  nPoints: number,
-  dim: number
-): [Float64Array, number] {
-  const bufferOffset = view.byteOffset + offset;
-  const bufferLength = nPoints * dim * Float64Array.BYTES_PER_ELEMENT;
-  return [
-    new Float64Array(view.buffer.slice(bufferOffset, bufferOffset + bufferLength)),
-    offset + bufferLength
-  ];
+  xyOffset: number,
+  pointCount: number,
+  type: number
+): SHPPointRecordLayout {
+  const afterXYOffset = xyOffset + pointCount * 2 * Float64Array.BYTES_PER_ELEMENT;
+  let zOffset: number | undefined;
+  let mOffset: number | undefined;
+
+  if (isZShapeType(type)) {
+    zOffset = afterXYOffset + 2 * Float64Array.BYTES_PER_ELEMENT;
+    const afterZOffset = zOffset + pointCount * Float64Array.BYTES_PER_ELEMENT;
+    mOffset =
+      afterZOffset + 2 * Float64Array.BYTES_PER_ELEMENT <= view.byteLength
+        ? afterZOffset + 2 * Float64Array.BYTES_PER_ELEMENT
+        : undefined;
+  } else if (isMShapeType(type)) {
+    mOffset =
+      afterXYOffset + 2 * Float64Array.BYTES_PER_ELEMENT <= view.byteLength
+        ? afterXYOffset + 2 * Float64Array.BYTES_PER_ELEMENT
+        : undefined;
+  }
+
+  return {pointCount, xyOffset, zOffset, mOffset};
 }
 
-/**
- * Concatenate and interleave positions arrays
- * xy positions are interleaved; mPositions, zPositions are their own arrays
- *
- * @param xyPositions 2d positions
- * @param mPositions  M positions
- * @param zPositions  Z positions
- * @return Combined interleaved positions
- */
-// eslint-disable-next-line complexity
-function concatPositions(
-  xyPositions: Float64Array,
-  mPositions: Float64Array | null,
-  zPositions: Float64Array | null
-): Float64Array {
-  if (!(mPositions || zPositions)) {
-    return xyPositions;
-  }
+function writeRecordCoordinate(
+  builder: WKBBuilder,
+  view: DataView,
+  layout: SHPPointRecordLayout,
+  pointIndex: number
+) {
+  const xyOffset = layout.xyOffset + pointIndex * 2 * Float64Array.BYTES_PER_ELEMENT;
+  const x = view.getFloat64(xyOffset, LITTLE_ENDIAN);
+  const y = view.getFloat64(xyOffset + Float64Array.BYTES_PER_ELEMENT, LITTLE_ENDIAN);
+  const z =
+    builder.hasZ && layout.zOffset !== undefined
+      ? view.getFloat64(layout.zOffset + pointIndex * Float64Array.BYTES_PER_ELEMENT, LITTLE_ENDIAN)
+      : undefined;
+  const m =
+    builder.hasM && layout.mOffset !== undefined
+      ? view.getFloat64(layout.mOffset + pointIndex * Float64Array.BYTES_PER_ELEMENT, LITTLE_ENDIAN)
+      : undefined;
+  builder.writeCoordinate(x, y, z, m);
+}
 
-  let arrayLength = xyPositions.length;
-  let nDim = 2;
+function getPartStart(view: DataView, layout: SHPPolyRecordLayout, partIndex: number): number {
+  return view.getInt32(
+    layout.partsOffset + partIndex * Int32Array.BYTES_PER_ELEMENT,
+    LITTLE_ENDIAN
+  );
+}
 
-  if (zPositions && zPositions.length) {
-    arrayLength += zPositions.length;
-    nDim++;
-  }
+function getPartEnd(view: DataView, layout: SHPPolyRecordLayout, partIndex: number): number {
+  return partIndex + 1 < layout.partCount
+    ? getPartStart(view, layout, partIndex + 1)
+    : layout.pointCount;
+}
 
-  if (mPositions && mPositions.length) {
-    arrayLength += mPositions.length;
-    nDim++;
-  }
-
-  const positions = new Float64Array(arrayLength);
-  for (let i = 0; i < xyPositions.length / 2; i++) {
-    positions[nDim * i] = xyPositions[i * 2];
-    positions[nDim * i + 1] = xyPositions[i * 2 + 1];
-  }
-
-  if (zPositions && zPositions.length) {
-    for (let i = 0; i < zPositions.length; i++) {
-      // If Z coordinates exist; used as third coord in positions array
-      positions[nDim * i + 2] = zPositions[i];
+function getExteriorPartIndices(view: DataView, layout: SHPPolyRecordLayout): number[] {
+  const exteriorPartIndices: number[] = [];
+  for (let partIndex = 0; partIndex < layout.partCount; partIndex++) {
+    const startPoint = getPartStart(view, layout, partIndex);
+    const endPoint = getPartEnd(view, layout, partIndex);
+    if (getWindingDirectionFromRecord(view, layout, startPoint, endPoint) > 0) {
+      exteriorPartIndices.push(partIndex);
     }
   }
-
-  if (mPositions && mPositions.length) {
-    for (let i = 0; i < mPositions.length; i++) {
-      // M is always last, either 3rd or 4th depending on if Z exists
-      positions[nDim * i + (nDim - 1)] = mPositions[i];
-    }
-  }
-
-  return positions;
+  return exteriorPartIndices;
 }
 
-/**
- * Returns the direction of the polygon path
- * A positive number is clockwise.
- * A negative number is counter clockwise.
- *
- * @param positions
- * @return Sign of polygon ring
- */
-function getWindingDirection(positions: Float64Array): number {
-  return Math.sign(getSignedArea(positions));
-}
-
-/**
- * Get signed area of flat typed array of 2d positions
- *
- * @param positions
- * @return Signed area of polygon ring
- */
-function getSignedArea(positions: Float64Array): number {
+function getWindingDirectionFromRecord(
+  view: DataView,
+  layout: SHPPointRecordLayout,
+  startPoint: number,
+  endPoint: number
+): number {
   let area = 0;
-
-  // Rings are closed according to shapefile spec
-  const nCoords = positions.length / 2 - 1;
-  for (let i = 0; i < nCoords; i++) {
+  for (let pointIndex = startPoint; pointIndex < endPoint - 1; pointIndex++) {
+    const currentOffset = layout.xyOffset + pointIndex * 2 * Float64Array.BYTES_PER_ELEMENT;
+    const nextOffset = layout.xyOffset + (pointIndex + 1) * 2 * Float64Array.BYTES_PER_ELEMENT;
     area +=
-      (positions[i * 2] + positions[(i + 1) * 2]) *
-      (positions[i * 2 + 1] - positions[(i + 1) * 2 + 1]);
+      (view.getFloat64(currentOffset, LITTLE_ENDIAN) + view.getFloat64(nextOffset, LITTLE_ENDIAN)) *
+      (view.getFloat64(currentOffset + Float64Array.BYTES_PER_ELEMENT, LITTLE_ENDIAN) -
+        view.getFloat64(nextOffset + Float64Array.BYTES_PER_ELEMENT, LITTLE_ENDIAN));
   }
+  return Math.sign(area / 2);
+}
 
-  return area / 2;
+function getRecordWKBOptions(type: number, options?: SHPLoaderOptions) {
+  const {_maxDimensions = 4} = options?.shp || {};
+  switch (type) {
+    case 11:
+    case 13:
+    case 15:
+    case 18:
+      return {
+        hasZ: Math.min(4, _maxDimensions) > 2,
+        hasM: Math.min(4, _maxDimensions) > 3
+      };
+    case 21:
+    case 23:
+    case 25:
+    case 28:
+      return {hasM: Math.min(3, _maxDimensions) > 2};
+    default:
+      return {};
+  }
+}
+
+function isZShapeType(type: number): boolean {
+  return type === 11 || type === 13 || type === 15 || type === 18;
+}
+
+function isMShapeType(type: number): boolean {
+  return type === 21 || type === 23 || type === 25 || type === 28;
+}
+
+function toArrayBuffer(wkb: Uint8Array): ArrayBuffer {
+  return wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength) as ArrayBuffer;
 }
