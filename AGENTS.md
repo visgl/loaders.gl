@@ -44,6 +44,9 @@
 - Keep the upgrade guide focused on deleted or deprecated functionality. New feature documentation belongs in the module docs and release notes instead.
 - Running module- or file-scoped commands such as `tsc` tends to generate `.js` and `.d.ts` files in this repo. After such commands, check for generated files and remove them before finishing.
 - Running tests that use workers requires `yarn build` first so the worker bundles exist before the tests run.
+- `@loaders.gl/gis` should expose the minimal helper set loaders need to create returned geometries, in particular `geoarrow.wkb` geometry columns.
+- `@loaders.gl/geoarrow` should provide the richer converter and processing APIs for geospatial tables, especially GeoArrow-formatted Arrow tables.
+- Loaders should not import the larger `@loaders.gl/geoarrow` module; applications can install and use it when they need more extensive geospatial processing.
 
 ## Loader module structure
 

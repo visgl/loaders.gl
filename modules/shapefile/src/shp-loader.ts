@@ -3,6 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import type {SHPGeoArrowEncoding} from './lib/parsers/types';
+import {SHPFormat} from './shp-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -14,6 +17,9 @@ export const SHP_MAGIC_NUMBER = [0x00, 0x00, 0x27, 0x0a];
 export type SHPLoaderOptions = StrictLoaderOptions & {
   shp?: {
     _maxDimensions?: number;
+    shape?: 'arrow-table' | 'wkb';
+    geoarrowEncoding?: SHPGeoArrowEncoding;
+    batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -30,23 +36,16 @@ export const SHPWorkerLoader = {
   dataType: null as unknown,
   batchType: null as never,
 
-  name: 'SHP',
-  id: 'shp',
-  module: 'shapefile',
+  ...SHPFormat,
   version: VERSION,
   worker: true,
-  category: 'geometry',
-  extensions: ['shp'],
-  mimeTypes: ['application/octet-stream'],
-  // ISSUE: This also identifies SHX files, which are identical to SHP for the first 100 bytes...
-  tests: [new Uint8Array(SHP_MAGIC_NUMBER).buffer],
   options: {
     shp: {
       _maxDimensions: 4
     }
   },
   preload
-} as const satisfies Loader<any, any, SHPLoaderOptions>;
+} as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, SHPLoaderOptions>;
 
 /** Metadata-only SHP file loader. */
 export const SHPLoader: Loader<any, any, SHPLoaderOptions> = {

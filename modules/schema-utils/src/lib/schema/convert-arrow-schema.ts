@@ -77,6 +77,11 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       return 'null';
     case arrow.Binary:
       return 'binary';
+    case arrow.FixedSizeBinary:
+      return {
+        type: 'fixed-size-binary',
+        byteWidth: (arrowType as arrow.FixedSizeBinary).byteWidth
+      };
     case arrow.Bool:
       return 'bool';
     case arrow.Int:
@@ -252,6 +257,8 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
         const child = deserializeArrowField(dataType.children[0]);
         return new arrow.FixedSizeList(dataType.listSize, child);
       }
+      case 'fixed-size-binary':
+        return new arrow.FixedSizeBinary(dataType.byteWidth);
       case 'struct': {
         const children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
         return new arrow.Struct(children);

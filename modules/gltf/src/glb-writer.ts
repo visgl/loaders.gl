@@ -7,6 +7,7 @@ import type {GLB} from './lib/types/glb-types';
 import type {GLBEncodeOptions} from './lib/encoders/encode-glb';
 import {encodeGLBSync} from './lib/encoders/encode-glb';
 import {VERSION} from './lib/utils/version';
+import {GLBFormat} from './gltf-format';
 
 export type GLBWriterOptions = WriterOptions & {
   glb?: GLBEncodeOptions;
@@ -17,14 +18,8 @@ export type GLBWriterOptions = WriterOptions & {
  * GLB is the binary container format for GLTF
  */
 export const GLBWriter = {
-  name: 'GLB',
-  id: 'glb',
-  module: 'gltf',
+  ...GLBFormat,
   version: VERSION,
-
-  extensions: ['glb'],
-  mimeTypes: ['model/gltf-binary'],
-  binary: true,
   options: {
     glb: {}
   },

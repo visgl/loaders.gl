@@ -24,6 +24,7 @@ export type CSVLoaderOptions = LoaderOptions & {
     comments?: boolean;
     skipEmptyLines?: boolean | 'greedy';
     detectGeometryColumns?: boolean;
+    geometryEncoding?: 'wkb' | 'source';
     delimitersToGuess?: string[];
   };
 };
@@ -40,6 +41,7 @@ export const CSV_LOADER_OPTIONS = {
     comments: false,
     skipEmptyLines: true,
     detectGeometryColumns: false,
+    geometryEncoding: 'wkb',
     delimitersToGuess: [',', '\t', '|', ';']
   }
 } as const satisfies CSVLoaderOptions;

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 export {GeoTIFFLoader} from './geotiff-loader';
+export {GeoTIFFFormat, OMETiffFormat} from './geotiff-format';
 export type {GeoTIFFSourceLoaderOptions} from './geotiff-source-loader';
 export {GeoTIFFSourceLoader, GeoTIFFRasterSource} from './geotiff-source-loader';
 export type {

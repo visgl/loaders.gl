@@ -18,11 +18,12 @@ const {
  */
 export const I3SBuildingSceneLayerLoaderWithParser = {
   ...I3SBuildingSceneLayerLoaderMetadataWithoutPreload,
-  parse
+  parse,
+  parseText: parse
 } as const satisfies LoaderWithParser<BuildingSceneLayerTileset, never, I3SLoaderOptions>;
 
 async function parse(
-  data: ArrayBuffer,
+  data: string | ArrayBuffer,
   options?: LoaderOptions,
   context?: LoaderContext
 ): Promise<BuildingSceneLayerTileset> {

@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -11,7 +12,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type DBFLoaderOptions = StrictLoaderOptions & {
   dbf?: {
     encoding?: string;
-    shape?: 'rows' | 'table' | 'object-row-table';
+    shape?: 'rows' | 'table' | 'object-row-table' | 'arrow-table';
+    batchSize?: number;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -42,7 +44,7 @@ export const DBFWorkerLoader = {
     }
   },
   preload
-} as const satisfies Loader<any, any, DBFLoaderOptions>;
+} as const satisfies Loader<any | ArrowTable, any | ArrowTableBatch, DBFLoaderOptions>;
 
 /** Metadata-only DBF file loader. */
 export const DBFLoader: Loader<any, any, DBFLoaderOptions> = {

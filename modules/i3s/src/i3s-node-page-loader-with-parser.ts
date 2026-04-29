@@ -15,9 +15,14 @@ const {preload: _I3SNodePageLoaderPreload, ...I3SNodePageLoaderMetadataWithoutPr
  */
 export const I3SNodePageLoaderWithParser = {
   ...I3SNodePageLoaderMetadataWithoutPreload,
-  parse: parseNodePage
+  parse: parseNodePage,
+  parseText: parseNodePage
 } as const satisfies LoaderWithParser<NodePage, never, I3SLoaderOptions>;
 
-async function parseNodePage(data: ArrayBuffer, options?: LoaderOptions): Promise<NodePage> {
-  return JSON.parse(new TextDecoder().decode(data)) as NodePage;
+async function parseNodePage(
+  data: string | ArrayBuffer,
+  options?: LoaderOptions
+): Promise<NodePage> {
+  const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
+  return JSON.parse(text) as NodePage;
 }

@@ -5,6 +5,7 @@
 import type {Loader} from '@loaders.gl/loader-utils';
 import type {BinaryFeatureCollection, GeoJSONTable, TableBatch} from '@loaders.gl/schema';
 import type {JSONLoaderOptions} from './json-loader';
+import {GeoJSONFormat} from './json-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -30,15 +31,9 @@ export const GeoJSONWorkerLoader = {
   dataType: null as unknown as GeoJSONTable,
   batchType: null as unknown as TableBatch,
 
-  name: 'GeoJSON',
-  id: 'geojson',
-  module: 'geojson',
+  ...GeoJSONFormat,
   version: VERSION,
   worker: true,
-  extensions: ['geojson'],
-  mimeTypes: ['application/geo+json'],
-  category: 'geometry',
-  text: true,
   options: {
     geojson: {
       shape: 'geojson-table'

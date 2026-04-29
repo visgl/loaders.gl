@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import {CompressedTextureFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
 
 /** Options for the CompressedTextureLoader */
@@ -25,6 +26,7 @@ async function preload() {
 
 /** Metadata-only worker loader for KTX, DDS, and PVR texture container formats. */
 export const CompressedTextureWorkerLoader = {
+  ...CompressedTextureFormat,
   dataType: null as unknown as any,
   batchType: null as never,
 
@@ -33,6 +35,8 @@ export const CompressedTextureWorkerLoader = {
   module: 'textures',
   version: VERSION,
   worker: true,
+  encoding: 'image',
+  format: 'compressed-texture',
   extensions: [
     'ktx',
     'ktx2',

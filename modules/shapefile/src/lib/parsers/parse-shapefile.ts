@@ -9,9 +9,11 @@ import {
   parseFromContext,
   toArrayBufferIterator
 } from '@loaders.gl/loader-utils';
-import {convertBinaryGeometryToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {convertWKBToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
 import type {
-  BinaryGeometry,
+  Feature,
+  GeoJsonProperties,
+  GeoJSONTable,
   Geometry,
   ObjectRowTable,
   ObjectRowTableBatch
@@ -19,6 +21,7 @@ import type {
 import {Proj4Projection} from '@math.gl/proj4';
 
 import type {SHXOutput} from './parse-shx';
+import type {SHPResult} from './parse-shp';
 import type {SHPHeader} from './parse-shp-header';
 import type {ShapefileLoaderOptions} from './types';
 import {parseShx} from './parse-shx';
@@ -26,13 +29,12 @@ import {zipBatchIterators} from '../streaming/zip-batch-iterators';
 import {SHPLoaderWithParser} from '../../shp-loader-with-parser';
 import {DBFLoaderWithParser} from '../../dbf-loader-with-parser';
 
-type Feature = any;
 export interface ShapefileOutput {
   encoding?: string;
   prj?: string;
   shx?: SHXOutput;
   header: SHPHeader;
-  data: object[];
+  data: Feature[];
 }
 /**
  * Parsing of file in batches
@@ -52,7 +54,13 @@ export async function* parseShapefileInBatches(
   const shapeIterable = await parseInBatchesFromContext(
     toArrayBufferIterator(asyncIterator),
     SHPLoaderWithParser,
-    options,
+    {
+      ...options,
+      shp: {
+        ...options?.shp,
+        shape: 'wkb'
+      }
+    },
     context!
   );
 
@@ -61,7 +69,9 @@ export async function* parseShapefileInBatches(
 
   // parse properties
   let propertyIterator: AsyncIterator<any> | null = null;
-  const dbfResponse = await context?.fetch(replaceExtension(context?.url || '', 'dbf'));
+  const dbfResponse = context?.url
+    ? await context?.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
+    : null;
   if (dbfResponse?.ok) {
     const propertyIterable = await parseInBatchesFromContext(
       dbfResponse,
@@ -70,6 +80,7 @@ export async function* parseShapefileInBatches(
         ...options,
         dbf: {
           ...options?.dbf,
+          shape: 'object-row-table',
           encoding: cpg || 'latin1'
         }
       },
@@ -107,12 +118,15 @@ export async function* parseShapefileInBatches(
   };
 
   for await (const batch of zippedBatchIterable) {
-    let geometries: any;
-    let properties: any;
+    let geometries: (Uint8Array | null)[];
+    let properties: GeoJsonProperties[] = [];
     if (!propertyIterator) {
-      geometries = batch;
+      geometries = batch as unknown as (Uint8Array | null)[];
     } else {
-      [geometries, properties] = batch.data;
+      [geometries, properties] = batch.data as unknown as [
+        (Uint8Array | null)[],
+        GeoJsonProperties[]
+      ];
     }
 
     const geojsonGeometries = parseGeometries(geometries);
@@ -143,24 +157,32 @@ export async function parseShapefile(
   arrayBuffer: ArrayBuffer,
   options?: ShapefileLoaderOptions,
   context?: LoaderContext
-): Promise<ShapefileOutput> {
+): Promise<ShapefileOutput | GeoJSONTable> {
   const {reproject = false, _targetCrs = 'WGS84'} = options?.gis || {};
   const {shx, cpg, prj} = await loadShapefileSidecarFiles(options, context);
 
   // parse geometries
-  const {header, geometries} = await parseFromContext(
+  const {header, geometries} = (await parseFromContext(
     arrayBuffer,
     SHPLoaderWithParser,
-    options,
+    {
+      ...options,
+      shp: {
+        ...options?.shp,
+        shape: 'wkb'
+      }
+    },
     context!
-  ); // {shp: shx}
+  )) as SHPResult; // {shp: shx}
 
   const geojsonGeometries = parseGeometries(geometries);
 
   // parse properties
   let propertyTable: ObjectRowTable | undefined;
 
-  const dbfResponse = await context?.fetch(replaceExtension(context?.url!, 'dbf'));
+  const dbfResponse = context?.url
+    ? await context?.fetch(replaceExtension(context.url, 'dbf')).catch(() => null)
+    : null;
   if (dbfResponse?.ok) {
     const dbfOptions = {
       ...options,
@@ -170,12 +192,12 @@ export async function parseShapefile(
         encoding: cpg || 'latin1'
       }
     };
-    propertyTable = await parseFromContext(
+    propertyTable = (await parseFromContext(
       dbfResponse as any,
       DBFLoaderWithParser,
       dbfOptions,
       context!
-    );
+    )) as ObjectRowTable;
   }
 
   let features = joinProperties(geojsonGeometries, propertyTable?.data || []);
@@ -186,14 +208,13 @@ export async function parseShapefile(
   switch (options?.shapefile?.shape) {
     case 'geojson-table':
       return {
-        // @ts-expect-error
         shape: 'geojson-table',
         type: 'FeatureCollection',
         encoding: cpg,
         schema: propertyTable?.schema || {metadata: {}, fields: []},
         prj,
         shx,
-        header,
+        header: header!,
         features
       };
     default:
@@ -201,7 +222,7 @@ export async function parseShapefile(
         encoding: cpg,
         prj,
         shx,
-        header,
+        header: header!,
         data: features
       };
   }
@@ -213,12 +234,18 @@ export async function parseShapefile(
  * @param geometries
  * @returns geometries as an array
  */
-function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
-  const geojsonGeometries: any[] = [];
+function parseGeometries(geometries: (Uint8Array | null)[]): Geometry[] {
+  const geojsonGeometries: Geometry[] = [];
   for (const geom of geometries) {
-    geojsonGeometries.push(convertBinaryGeometryToGeometry(geom));
+    if (geom) {
+      geojsonGeometries.push(convertWKBToGeometry(toArrayBuffer(geom)));
+    }
   }
   return geojsonGeometries;
+}
+
+function toArrayBuffer(wkb: Uint8Array): ArrayBuffer {
+  return wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength) as ArrayBuffer;
 }
 
 /**
@@ -228,7 +255,7 @@ function parseGeometries(geometries: BinaryGeometry[]): Geometry[] {
  * @param  properties [description]
  * @return [description]
  */
-function joinProperties(geometries: Geometry[], properties: object[]): Feature[] {
+function joinProperties(geometries: Geometry[], properties: GeoJsonProperties[]): Feature[] {
   const features: Feature[] = [];
   for (let i = 0; i < geometries.length; i++) {
     const geometry = geometries[i];
@@ -276,12 +303,15 @@ export async function loadShapefileSidecarFiles(
   cpg?: string;
   prj?: string;
 }> {
+  if (!context?.url || !context.fetch) {
+    return {};
+  }
+
   // Attempt a parallel load of the small sidecar files
-  // @ts-ignore context must be defined
   const {url, fetch} = context;
-  const shxPromise = fetch(replaceExtension(url, 'shx'));
-  const cpgPromise = fetch(replaceExtension(url, 'cpg'));
-  const prjPromise = fetch(replaceExtension(url, 'prj'));
+  const shxPromise = fetch(replaceExtension(url, 'shx')).catch(() => null);
+  const cpgPromise = fetch(replaceExtension(url, 'cpg')).catch(() => null);
+  const prjPromise = fetch(replaceExtension(url, 'prj')).catch(() => null);
   await Promise.all([shxPromise, cpgPromise, prjPromise]);
 
   let shx: SHXOutput | undefined;
@@ -289,13 +319,13 @@ export async function loadShapefileSidecarFiles(
   let prj: string | undefined;
 
   const shxResponse = await shxPromise;
-  if (shxResponse.ok && !isHtmlFallbackResponse(shxResponse)) {
+  if (shxResponse?.ok && !isHtmlFallbackResponse(shxResponse)) {
     const arrayBuffer = await shxResponse.arrayBuffer();
     shx = parseShx(arrayBuffer);
   }
 
   const cpgResponse = await cpgPromise;
-  if (cpgResponse.ok && !isHtmlFallbackResponse(cpgResponse)) {
+  if (cpgResponse?.ok && !isHtmlFallbackResponse(cpgResponse)) {
     const encoding = await cpgResponse.text();
     // Vite serves the test page for missing sidecar files; only accept plausible encoding labels.
     if (/^[\w-]+$/.test(encoding.trim())) {
@@ -304,7 +334,7 @@ export async function loadShapefileSidecarFiles(
   }
 
   const prjResponse = await prjPromise;
-  if (prjResponse.ok && !isHtmlFallbackResponse(prjResponse)) {
+  if (prjResponse?.ok && !isHtmlFallbackResponse(prjResponse)) {
     prj = await prjResponse.text();
   }
 

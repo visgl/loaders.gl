@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {TileJSON} from './lib/parse-tilejson';
+import {TileJSONFormat} from './tilejson-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -28,14 +29,10 @@ export const TileJSONLoader = {
   dataType: null as unknown as TileJSON,
   batchType: null as never,
 
-  name: 'TileJSON',
-  id: 'tilejson',
+  ...TileJSONFormat,
   module: 'pmtiles',
   version: VERSION,
   worker: true,
-  extensions: ['json'],
-  mimeTypes: ['application/json'],
-  text: true,
   options: {
     tilejson: {
       maxValues: undefined

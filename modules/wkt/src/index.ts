@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+export {WKTFormat, WKBFormat, HexWKBFormat, TWKBFormat, WKTCRSFormat} from './wkt-format';
+
 export {WKTCRSLoader} from './wkt-crs-loader';
 export {WKTCRSWriter} from './wkt-crs-writer';
 

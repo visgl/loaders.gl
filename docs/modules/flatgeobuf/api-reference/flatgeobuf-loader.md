@@ -38,7 +38,7 @@ const arrowTable = await load(url, FlatGeobufLoader, {
 | `geojson-table`    | loaders.gl GeoJSON table              |
 | `arrow-table`      | loaders.gl `ArrowTable` with WKB geometry |
 | `columnar-table`   | loaders.gl columnar table             |
-| `binary`           | loaders.gl binary feature collection  |
+| `binary-geometry`  | loaders.gl binary feature collection  |
 
 ### GeoJSONTable
 
@@ -52,7 +52,7 @@ Set `flatgeobuf.shape` to `'arrow-table'` to return an Apache Arrow table that p
 
 | Option             | Type                                                     | Default           | Description                                                       |
 | ------------------ | -------------------------------------------------------- | ----------------- | ----------------------------------------------------------------- |
-| flatgeobuf.shape   | `string`                                                 | `'geojson-table'` | Output shape: `'geojson-table'`, `'arrow-table'`, `'columnar-table'`, or `'binary'`. |
+| flatgeobuf.shape   | `string`                                                 | `'geojson-table'` | Output shape: `'geojson-table'`, `'arrow-table'`, `'columnar-table'`, or `'binary-geometry'`. |
 | gis.reproject      | boolean                                                  | `false`           | Whether to reproject input data into the WGS84 coordinate system. |
 
 ## Remarks

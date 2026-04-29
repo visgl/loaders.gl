@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
+import {BasisTextureFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
 import type {BasisFormat} from './lib/parsers/parse-basis';
 
@@ -42,6 +43,7 @@ async function preload() {
 
 /** Metadata-only worker loader for Basis super compressed textures. */
 export const BasisWorkerLoader = {
+  ...BasisTextureFormat,
   dataType: null as unknown as TextureLevel[][],
   batchType: null as never,
 

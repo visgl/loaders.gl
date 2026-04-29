@@ -8,6 +8,7 @@ export {DRACO_EXTERNAL_LIBRARIES, DRACO_EXTERNAL_LIBRARY_URLS} from './lib/draco
 // Draco data types
 
 export type {DracoMesh, DracoLoaderData} from './lib/draco-types';
+export {DracoFormat} from './draco-format';
 
 // Draco Writer
 

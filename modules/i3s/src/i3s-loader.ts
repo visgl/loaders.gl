@@ -7,6 +7,7 @@ import type {I3STilesetHeader} from './types';
 import {COORDINATE_SYSTEM} from './lib/parsers/constants';
 import {I3SParseOptions} from './types';
 
+import {I3SFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -24,6 +25,7 @@ export type I3SLoaderOptions = StrictLoaderOptions & {
  * Loader for I3S - Indexed 3D Scene Layer
  */
 export const I3SLoader = {
+  ...I3SFormat,
   dataType: null as unknown as I3STilesetHeader,
   batchType: null as never,
 

@@ -2,6 +2,7 @@ import type {Loader} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {BuildingSceneLayerTileset} from './types';
 
+import {I3SBuildingSceneLayerFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 
@@ -11,6 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * Loader for I3S - Building Scene Layer
  */
 export const I3SBuildingSceneLayerLoader = {
+  ...I3SBuildingSceneLayerFormat,
   dataType: null as unknown as BuildingSceneLayerTileset,
   batchType: null as never,
 

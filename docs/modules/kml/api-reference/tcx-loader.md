@@ -30,7 +30,7 @@ const data = await load(url, TCXLoader, options);
 | `geojson-table`      | loaders.gl GeoJSON table                     |
 | `object-row-table`   | loaders.gl row table with GeoJSON features   |
 | `arrow-table`        | loaders.gl `ArrowTable` with WKB geometry    |
-| `binary`             | loaders.gl binary feature collection         |
+| `binary-geometry`    | loaders.gl binary feature collection         |
 
 ## Options
 

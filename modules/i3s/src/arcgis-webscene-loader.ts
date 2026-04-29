@@ -1,6 +1,7 @@
 import type {LoaderOptions, Loader} from '@loaders.gl/loader-utils';
 import type {ArcGISWebSceneData} from './types';
 
+import {ArcGISWebSceneFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -12,6 +13,7 @@ export type ArcGISWebSceneLoaderOptions = LoaderOptions & {};
  * Spec - https://developers.arcgis.com/web-scene-specification/objects/webscene/
  */
 export const ArcGISWebSceneLoader = {
+  ...ArcGISWebSceneFormat,
   dataType: null as unknown as ArcGISWebSceneData,
   batchType: null as never,
   name: 'ArcGIS Web Scene Loader',

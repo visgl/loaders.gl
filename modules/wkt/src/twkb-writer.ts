@@ -6,6 +6,7 @@ import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
 import {convertGeometryToTWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {TWKBFormat} from './wkt-format';
 
 export type TWKBWriterOptions = WriterOptions & {
   twkb?: {
@@ -18,6 +19,7 @@ export type TWKBWriterOptions = WriterOptions & {
  * WKB exporter
  */
 export const TWKBWriter = {
+  ...TWKBFormat,
   name: 'TWKB (Tiny Well Known Binary)',
   id: 'twkb',
   module: 'wkt',
