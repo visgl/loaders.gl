@@ -13,10 +13,10 @@ import type {
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 import {
   type GeoParquetGeometryType,
-  encodeWKBGeometryValue,
   makeWKBGeometryField,
   setWKBGeometrySchemaMetadata,
   convertWKBToGeometry,
+  reprojectWKBInPlace,
   transformGeoJsonCoords
 } from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
@@ -360,9 +360,11 @@ function constructArrowRow(
     const value = row[columnIndex];
 
     if (columnName === geometryColumnName) {
-      const geometry = parseGeometry(value);
-      const projectedGeometry = projection ? reprojectGeometry(geometry, projection) : geometry;
-      arrowRow[GEOMETRY_OUTPUT_COLUMN_NAME] = encodeWKBGeometryValue(projectedGeometry);
+      const wkb = parseGeometryWKB(value);
+      if (wkb && projection) {
+        reprojectWKBInPlace(wkb, coordinate => projection.project(coordinate));
+      }
+      arrowRow[GEOMETRY_OUTPUT_COLUMN_NAME] = wkb;
       continue;
     }
 
@@ -409,6 +411,13 @@ function reprojectGeometry(
  * GeoPackage vector geometries are slightly extended past the WKB standard.
  */
 function parseGeometry(geometryValue: unknown): Geometry | null {
+  const wkb = parseGeometryWKB(geometryValue);
+  return wkb
+    ? convertWKBToGeometry(wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength))
+    : null;
+}
+
+function parseGeometryWKB(geometryValue: unknown): Uint8Array | null {
   if (!geometryValue) {
     return null;
   }
@@ -422,8 +431,7 @@ function parseGeometry(geometryValue: unknown): Geometry | null {
   }
 
   const wkbOffset = 8 + envelopeLength;
-  const wkbBytes = arrayBuffer.slice(wkbOffset);
-  return convertWKBToGeometry(wkbBytes);
+  return new Uint8Array(arrayBuffer, wkbOffset);
 }
 
 function parseGeometryBitFlags(byte: number): GeometryBitFlags {

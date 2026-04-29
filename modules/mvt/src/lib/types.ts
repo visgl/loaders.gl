@@ -26,7 +26,7 @@ type MVTWgs84CoordinatesOptions = {
 };
 
 export type MVTOptions = (MVTLocalCoordinatesOptions | MVTWgs84CoordinatesOptions) & {
-  shape?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
+  shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry';
   /**
    * When non-`null`, the layer name of each feature is added to
    * `feature.properties[layerProperty]`. (A `feature.properties` object is created if the feature

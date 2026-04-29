@@ -38,11 +38,7 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
       };
       return table;
     }
-    case 'geojson':
-      return parseToGeojsonFeatures(arrayBuffer, mvtOptions);
     case 'binary-geometry':
-      return parseToBinary(arrayBuffer, mvtOptions);
-    case 'binary':
       return parseToBinary(arrayBuffer, mvtOptions);
     default:
       throw new Error(shape || 'undefined shape');

@@ -7,18 +7,50 @@ import * as arrow from 'apache-arrow';
 import type {Field, Schema} from '@loaders.gl/schema';
 import {
   getGeoMetadata,
+  getMetadataValue,
   setGeoMetadata,
   setMetadataValue,
   type GeoColumnMetadata,
   type GeoMetadata,
   type GeoParquetGeometryType
 } from '@loaders.gl/gis';
-import {getGeometryColumnsFromSchema, type GeoArrowEncoding} from '@loaders.gl/geoarrow';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 
 const GEOARROW_EXTENSION_NAME_KEY = 'ARROW:extension:name';
 const GEOARROW_EXTENSION_METADATA_KEY = 'ARROW:extension:metadata';
 const GEOPARQUET_VERSION = '1.1.0';
+
+type GeoArrowEncoding =
+  | 'geoarrow.geometry'
+  | 'geoarrow.geometrycollection'
+  | 'geoarrow.multipolygon'
+  | 'geoarrow.polygon'
+  | 'geoarrow.multilinestring'
+  | 'geoarrow.linestring'
+  | 'geoarrow.multipoint'
+  | 'geoarrow.point'
+  | 'geoarrow.wkb'
+  | 'geoarrow.wkt';
+
+type GeoArrowMetadata = {
+  encoding?: GeoArrowEncoding;
+  crs?: Record<string, unknown>;
+  edges?: 'spherical';
+  [key: string]: unknown;
+};
+
+const GEOARROW_ENCODINGS = [
+  'geoarrow.geometry',
+  'geoarrow.geometrycollection',
+  'geoarrow.multipolygon',
+  'geoarrow.polygon',
+  'geoarrow.multilinestring',
+  'geoarrow.linestring',
+  'geoarrow.multipoint',
+  'geoarrow.point',
+  'geoarrow.wkb',
+  'geoarrow.wkt'
+] as const satisfies GeoArrowEncoding[];
 
 const GEOPARQUET_TO_GEOARROW_ENCODINGS = {
   wkb: 'geoarrow.wkb',
@@ -48,6 +80,53 @@ const GEOARROW_TO_GEOMETRY_TYPE = {
   'geoarrow.multilinestring': 'MultiLineString',
   'geoarrow.multipolygon': 'MultiPolygon'
 } as const satisfies Record<string, GeoParquetGeometryType>;
+
+/** Returns GeoArrow geometry field metadata keyed by column name. */
+function getGeometryColumnsFromSchema(schema: Schema): Record<string, GeoArrowMetadata> {
+  const geometryColumns: Record<string, GeoArrowMetadata> = {};
+  for (const field of schema.fields || []) {
+    const metadata = getGeometryMetadataForField(field.metadata || {});
+    if (metadata) {
+      geometryColumns[field.name] = metadata;
+    }
+  }
+  return geometryColumns;
+}
+
+/** Extracts GeoArrow metadata from one schema field metadata object. */
+function getGeometryMetadataForField(
+  fieldMetadata: Record<string, string>
+): GeoArrowMetadata | null {
+  let metadata: GeoArrowMetadata | null = null;
+  let geoEncoding = getMetadataValue(fieldMetadata, GEOARROW_EXTENSION_NAME_KEY);
+  if (geoEncoding) {
+    geoEncoding = geoEncoding.toLowerCase();
+    if (geoEncoding === 'wkb') {
+      geoEncoding = 'geoarrow.wkb';
+    }
+    if (geoEncoding === 'wkt') {
+      geoEncoding = 'geoarrow.wkt';
+    }
+    if (GEOARROW_ENCODINGS.includes(geoEncoding as GeoArrowEncoding)) {
+      metadata ||= {};
+      metadata.encoding = geoEncoding as GeoArrowEncoding;
+    }
+  }
+
+  const columnMetadata = getMetadataValue(fieldMetadata, GEOARROW_EXTENSION_METADATA_KEY);
+  if (columnMetadata) {
+    try {
+      metadata = {
+        ...(metadata || {}),
+        ...(JSON.parse(columnMetadata) as GeoArrowMetadata)
+      };
+    } catch {
+      return metadata;
+    }
+  }
+
+  return metadata;
+}
 
 /**
  * Applies GeoParquet schema metadata to matching geometry fields as GeoArrow field metadata.

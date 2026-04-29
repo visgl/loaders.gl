@@ -23,7 +23,7 @@ const {preload: _TCXLoaderPreload, ...TCXLoaderMetadataWithoutPreload} = TCXLoad
 
 export type TCXLoaderOptions = LoaderOptions & {
   tcx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
   };
 };
 
@@ -87,7 +87,7 @@ function parseTextSync(
     }
     case 'arrow-table':
       return convertFeatureCollectionToArrowTable(geojson.features);
-    case 'binary':
+    case 'binary-geometry':
       return geojsonToBinary(geojson.features);
 
     default:

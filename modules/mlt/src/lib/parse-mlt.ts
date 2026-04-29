@@ -52,16 +52,16 @@ type MLTFeatureTable = {
 };
 
 /**
- * Parse an MLT ArrayBuffer and return GeoJSON or binary data.
+ * Parse an MLT ArrayBuffer and return GeoJSON table or binary geometry data.
  *
  * @param arrayBuffer An MLT tile as an ArrayBuffer
  * @param options
- * @returns GeoJSON features, a GeoJSON table, or a binary feature collection
+ * @returns GeoJSON table or binary feature collection
  */
 export function parseMLT(
   arrayBuffer: ArrayBuffer,
   options?: MLTLoaderOptions
-): Feature[] | GeoJSONTable | BinaryFeatureCollection {
+): GeoJSONTable | BinaryFeatureCollection {
   const mltOptions = checkOptions(options);
 
   const shape = mltOptions.shape;
@@ -74,16 +74,15 @@ export function parseMLT(
       };
       return table;
     }
-    case 'binary': {
+    case 'binary-geometry': {
       const geojsonFeatures = parseToGeojsonFeatures(arrayBuffer, mltOptions);
       const binaryData = geojsonToBinary(geojsonFeatures);
       // @ts-ignore
       binaryData.byteLength = arrayBuffer.byteLength;
       return binaryData;
     }
-    case 'geojson':
     default:
-      return parseToGeojsonFeatures(arrayBuffer, mltOptions);
+      throw new Error(shape || 'undefined shape');
   }
 }
 

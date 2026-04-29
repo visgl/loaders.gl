@@ -20,27 +20,19 @@ export default async function shapefileLoaderBench(suite) {
   // Add the tests
   suite.group('ShapefileLoader');
 
-  suite.addAsync(
-    'parse(ShapefileLoader without worker) to GeoArrow',
-    rowBenchmarkOptions,
-    async () => {
-      await load(arrayBuffer.slice(0), ShapefileLoader, {
-        core: {worker: false},
-        shapefile: {shape: 'arrow-table'}
-      });
-    }
-  );
+  suite.addAsync('load arrow-table geoarrow.wkb', rowBenchmarkOptions, async () => {
+    await load(arrayBuffer.slice(0), ShapefileLoader, {
+      core: {worker: false},
+      shapefile: {shape: 'arrow-table', geoarrowEncoding: 'geoarrow.wkb'}
+    });
+  });
 
-  suite.addAsync(
-    'parse(ShapefileLoader without worker) to GeoJSON',
-    rowBenchmarkOptions,
-    async () => {
-      await load(arrayBuffer.slice(0), ShapefileLoader, {
-        core: {worker: false},
-        shapefile: {shape: 'geojson-table'}
-      });
-    }
-  );
+  suite.addAsync('load geojson-table', rowBenchmarkOptions, async () => {
+    await load(arrayBuffer.slice(0), ShapefileLoader, {
+      core: {worker: false},
+      shapefile: {shape: 'geojson-table'}
+    });
+  });
 }
 
 /** Counts SHP records so benchmark throughput is reported as rows per second. */

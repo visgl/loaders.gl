@@ -25,13 +25,13 @@ const features = await source.getTile({x: 0, y: 0, z: 0});
 
 ## Options
 
-| Option            | Type                | Default      | Description                                     |
-| ----------------- | ------------------- | ------------ | ----------------------------------------------- | ----------------------------------------------------------------------- | ------------------------ |
-| `mlt.extension`   | `string`            | `.mlt`       | Tile URL extension.                             |
-| `mlt.metadataUrl` | `string \\          | null`        | `null`                                          | Optional metadata URL override (`tile.json` by default is not assumed). |
-| `mlt.coordinates` | `'wgs84' \\         | 'local'`     | `wgs84`                                         | Coordinates output from parsed tiles.                                   |
-| `mlt.shape`       | `'geojson-table' \\ | 'geojson' \\ | 'binary'`                                       | `geojson`                                                               | Returned geometry shape. |
-| `mlt.layers`      | `string[]`          | `N/A`        | Optional layer filter before decoding geometry. |
+| Option            | Type                                      | Default           | Description                                                        |
+| ----------------- | ----------------------------------------- | ----------------- | ------------------------------------------------------------------ |
+| `mlt.extension`   | `string`                                  | `.mlt`            | Tile URL extension.                                                |
+| `mlt.metadataUrl` | `string \| null`                          | `null`            | Optional metadata URL override (`tile.json` by default is not assumed). |
+| `mlt.coordinates` | `'wgs84' \| 'local'`                      | `wgs84`           | Coordinates output from parsed tiles.                              |
+| `mlt.shape`       | `'geojson-table' \| 'binary-geometry'`    | `geojson-table`   | Returned geometry shape.                                           |
+| `mlt.layers`      | `string[]`                                | `N/A`             | Optional layer filter before decoding geometry.                    |
 
 ## Additional references
 

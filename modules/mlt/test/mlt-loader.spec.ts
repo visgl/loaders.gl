@@ -15,7 +15,7 @@ test('MLTLoader#metadata', t => {
 });
 
 test('MLTLoader#options defaults', t => {
-  t.equal(MLTLoader.options.mlt.shape, 'geojson', 'default shape is geojson');
+  t.equal(MLTLoader.options.mlt.shape, 'geojson-table', 'default shape is geojson-table');
   t.equal(MLTLoader.options.mlt.coordinates, 'local', 'default coordinates are local');
   t.equal(MLTLoader.options.mlt.layerProperty, 'layerName', 'default layerProperty is layerName');
   t.end();
@@ -23,9 +23,9 @@ test('MLTLoader#options defaults', t => {
 
 test('MLTLoader#parse empty tile', async t => {
   const emptyBuffer = new ArrayBuffer(0);
-  const result = await MLTLoader.parse(emptyBuffer, {mlt: {shape: 'geojson'}});
-  t.ok(Array.isArray(result), 'empty tile returns an array');
-  t.equal((result as any[]).length, 0, 'empty tile returns empty array');
+  const result = await MLTLoader.parse(emptyBuffer, {mlt: {shape: 'geojson-table'}});
+  t.equal(result.shape, 'geojson-table', 'empty tile returns a GeoJSON table');
+  t.equal(result.features.length, 0, 'empty tile returns empty features');
   t.end();
 });
 

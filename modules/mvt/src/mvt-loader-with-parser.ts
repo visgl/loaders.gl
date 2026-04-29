@@ -15,7 +15,7 @@ const {preload: _MVTLoaderPreload, ...MVTLoaderMetadataWithoutPreload} = MVTLoad
 export type MVTLoaderOptions = LoaderOptions & {
   mvt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry';
     /** `wgs84`: coordinates in long, lat (`tileIndex` must be provided. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
@@ -28,10 +28,8 @@ export type MVTLoaderOptions = LoaderOptions & {
     workerUrl?: string;
   };
   gis?: {
-    /** @deprecated Use options.mvt.shape === 'binary-geometry' */
-    binary?: boolean;
     /** @deprecated. Use options.mvt.shape */
-    format?: 'geojson-table' | 'columnar-table' | 'geojson' | 'binary' | 'binary-geometry';
+    format?: 'geojson-table' | 'columnar-table' | 'binary-geometry';
   };
 };
 
