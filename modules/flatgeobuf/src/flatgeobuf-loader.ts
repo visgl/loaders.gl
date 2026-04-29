@@ -20,7 +20,7 @@ const FGB_MAGIC_NUMBER = [0x66, 0x67, 0x62, 0x03, 0x66, 0x67, 0x62, 0x01];
 
 export type FlatGeobufLoaderOptions = LoaderOptions & {
   flatgeobuf?: {
-    shape?: 'geojson-table' | 'columnar-table' | 'binary' | 'arrow-table';
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
     boundingBox?: [[number, number], [number, number]];

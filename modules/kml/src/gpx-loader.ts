@@ -17,7 +17,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type GPXLoaderOptions = LoaderOptions & {
   gpx?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary-geometry' | 'raw';
   };
 };
 

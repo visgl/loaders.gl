@@ -36,12 +36,14 @@ test('MVTWriter#roundtrip', async t => {
   const sourceTile = await response.arrayBuffer();
 
   const loaderOptions = {mvt: {coordinates: 'local'}};
-  const geojson = await parse(sourceTile, MVTLoader, loaderOptions);
+  const geojsonTable = await parse(sourceTile, MVTLoader, loaderOptions);
 
-  const roundtripBuffer = await encode(geojson, MVTWriter, {mvt: {layerName: 'layer0', tileIndex}});
-  const roundtripGeojson = await parse(roundtripBuffer, MVTLoader, loaderOptions);
+  const roundtripBuffer = await encode(geojsonTable.features, MVTWriter, {
+    mvt: {layerName: 'layer0', tileIndex}
+  });
+  const roundtripGeojsonTable = await parse(roundtripBuffer, MVTLoader, loaderOptions);
 
-  t.deepEqual(roundtripGeojson, geojson, 'Roundtrip preserves GeoJSON features');
+  t.deepEqual(roundtripGeojsonTable, geojsonTable, 'Roundtrip preserves GeoJSON features');
 
   t.end();
 });

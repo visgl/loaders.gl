@@ -18,7 +18,7 @@ const {preload: _KMLLoaderPreload, ...KMLLoaderMetadataWithoutPreload} = KMLLoad
 
 export type KMLLoaderOptions = LoaderOptions & {
   kml?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'raw';
   };
 };
 
@@ -75,10 +75,6 @@ function parseTextSync(
     }
     case 'arrow-table':
       return convertFeatureCollectionToArrowTable(geojson.features);
-    // case 'geojson':
-    //   return geojson;
-    // case 'binary':
-    //   return geojsonToBinary(geojson.features);
     // case 'raw':
     //   return doc;
     case 'object-row-table':

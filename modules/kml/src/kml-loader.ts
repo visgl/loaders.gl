@@ -14,7 +14,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type KMLLoaderOptions = LoaderOptions & {
   kml?: {
-    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'binary' | 'raw';
+    shape?: 'object-row-table' | 'geojson-table' | 'arrow-table' | 'raw';
   };
 };
 

@@ -247,6 +247,14 @@ Loader module changes, in order of estimated impact to applications:
 - `options.kml.shape` replaces all other mechanisms for specifying format of returned data (`.format` etc), and aligns with the `geojson-table` table shape as this is compatible with a GeoJSON `FeatureCollection`.
 - `options.gpx.shape` applies the same changes as `options.kml.shape`.
 - `options.tcx.shape` applies the same changes as `options.kml.shape`.
+- `options.gpx.shape: 'binary'` and `options.tcx.shape: 'binary'` have been removed. Use `shape: 'binary-geometry'` instead.
+
+**@loaders.gl/mvt, @loaders.gl/mlt, @loaders.gl/flatgeobuf**
+
+- Geospatial loader shapes now use `geojson-table` for GeoJSON feature table output and `binary-geometry` for binary geometry output.
+- The old `geojson` shape has been removed from `MVTLoader` and `MLTLoader`. Use `geojson-table` instead.
+- The old `binary` shape has been removed from `MVTLoader`, `MLTLoader`, and `FlatGeobufLoader`. Use `binary-geometry` instead.
+- `MVTLoader` and `MLTLoader` now default to `geojson-table`.
 
 ## Upgrading to v3.4
 

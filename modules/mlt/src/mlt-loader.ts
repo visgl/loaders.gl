@@ -12,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type MLTLoaderOptions = LoaderOptions & {
   mlt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'geojson' | 'binary';
+    shape?: 'geojson-table' | 'binary-geometry';
     /** `wgs84`: coordinates in longitude/latitude. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
@@ -26,7 +26,7 @@ export type MLTLoaderOptions = LoaderOptions & {
 
 /** Default options for the MLT loader */
 export const MLT_DEFAULT_OPTIONS = {
-  shape: 'geojson' as const,
+  shape: 'geojson-table' as const,
   coordinates: 'local' as const,
   layerProperty: 'layerName' as const
 };

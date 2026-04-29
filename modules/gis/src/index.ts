@@ -45,6 +45,19 @@ export {
   getGeometrySampleCoordinates
 } from './lib/geoarrow/wkb-geoarrow-utils';
 export type {
+  WKBArrowGeometryValueOptions,
+  WKBArrowGeometryWriterOptions,
+  WKBGeometryValue
+} from './lib/geoarrow/wkb-arrow-utils';
+export {
+  makeWKBGeometryArrowTable,
+  makeWKBGeometryArrowTableFromData,
+  makeWKBGeometryArrowTableFromWriters,
+  makeWKBGeometryData,
+  makeWKBGeometryDataFromArray,
+  makeWKBGeometryDataFromWriters
+} from './lib/geoarrow/wkb-arrow-utils';
+export type {
   GeoArrowBuilderEncoding,
   GeoArrowCoordinateTransform,
   GeoArrowBuilderTarget,

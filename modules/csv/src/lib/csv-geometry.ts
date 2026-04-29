@@ -4,6 +4,7 @@
 
 import type {DataType, Field, Geometry, Schema} from '@loaders.gl/schema';
 import {
+  convertGeometryToWKB,
   convertWKBToGeometry,
   convertWKTToGeometry,
   decodeHex,
@@ -19,6 +20,9 @@ export const MAX_GEOMETRY_SNIFF_ROWS = 50;
 
 /** Geometry encodings supported by CSV geometry detection. */
 export type CSVGeometryEncoding = 'geoarrow.wkb' | 'geoarrow.wkt';
+
+/** Output encoding policy for detected CSV geometry columns. */
+export type CSVGeometryOutputEncoding = 'wkb' | 'source';
 
 /** One detected geometry column definition. */
 export type DetectedGeometryColumn = {
@@ -70,7 +74,8 @@ export function shouldFinalizeGeometryDetection(
 /** Detects geometry columns from buffered CSV array rows and header names. */
 export function detectGeometryColumns(
   headerRow: string[],
-  rows: unknown[][]
+  rows: unknown[][],
+  geometryEncoding: CSVGeometryOutputEncoding = 'wkb'
 ): DetectedGeometryColumn[] {
   const detectedGeometryColumns: DetectedGeometryColumn[] = [];
 
@@ -85,7 +90,7 @@ export function detectGeometryColumns(
       detectedGeometryColumns.push({
         columnName: headerRow[columnIndex],
         columnIndex,
-        encoding: 'geoarrow.wkt',
+        encoding: geometryEncoding === 'source' ? 'geoarrow.wkt' : 'geoarrow.wkb',
         geometryTypes: inferGeoParquetGeometryTypes(wktGeometries)
       });
       continue;
@@ -206,7 +211,12 @@ export function normalizeGeometryValue(
     if (typeof value !== 'string') {
       return value;
     }
-    return decodeHex(value.trim());
+    const trimmedValue = value.trim();
+    if (isHexWKBString(trimmedValue)) {
+      return decodeHex(trimmedValue);
+    }
+    const geometry = convertWKTToGeometry(trimmedValue);
+    return geometry ? new Uint8Array(convertGeometryToWKB(geometry)) : null;
   }
 
   return typeof value === 'string' ? value : String(value);
