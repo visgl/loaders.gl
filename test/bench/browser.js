@@ -8,6 +8,7 @@ import ALIASES from '../aliases';
 
 const {Buffer} = await import('buffer');
 globalThis.Buffer = Buffer;
+await import('@loaders.gl/polyfills');
 const {addModuleBenchmarksToSuite} = await import('./modules');
 
 // Sets up aliases for file reader

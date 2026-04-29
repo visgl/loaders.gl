@@ -8,6 +8,7 @@ import {
   convertGeometryColumnToBinaryFeatureCollection,
   convertGeometryToWKB,
   convertGeometryValuesToBinaryFeatureCollection,
+  GeoArrowBuilder,
   type GeometryColumnBinaryFeatureCollectionScratch
 } from '@loaders.gl/gis';
 
@@ -165,3 +166,79 @@ test('gis#geometry-column-to-binary reads Arrow string columns', t => {
   );
   t.end();
 });
+
+test('gis#geometry-column-to-binary reuses typed GeoArrow coordinate buffers', t => {
+  const geometryArray = GeoArrowBuilder.buildGeometryArray(
+    [
+      builder => {
+        builder.beginMultiLineString(2);
+        builder.beginLineString(2);
+        builder.writeCoordinate(0, 0);
+        builder.writeCoordinate(1, 1);
+        builder.beginLineString(2);
+        builder.writeCoordinate(2, 2);
+        builder.writeCoordinate(3, 3);
+      },
+      builder => {
+        builder.beginMultiLineString(1);
+        builder.beginLineString(2);
+        builder.writeCoordinate(4, 4);
+        builder.writeCoordinate(5, 5);
+      }
+    ],
+    {encoding: 'geoarrow.multilinestring'}
+  );
+  const table = makeGeoArrowTestTable(
+    'geoarrow.multilinestring',
+    GeoArrowBuilder.makeGeometryData(geometryArray),
+    [10, 20]
+  );
+
+  const binaryFeatures = convertGeometryColumnToBinaryFeatureCollection(table, {
+    geometryColumn: 'geometry'
+  });
+
+  t.equal(
+    binaryFeatures.lines?.positions.value.buffer,
+    geometryArray.coordinates.buffer,
+    'line positions reuse GeoArrow coordinate buffer'
+  );
+  t.deepEqual(
+    Array.from(binaryFeatures.lines?.pathIndices.value || []),
+    [0, 2, 4, 6],
+    'line path indices reuse GeoArrow part offsets'
+  );
+  t.deepEqual(
+    Array.from(binaryFeatures.lines?.featureIds.value || []),
+    [0, 0, 0, 0, 1, 1],
+    'feature ids map vertices to source rows'
+  );
+  t.equal(binaryFeatures.lines?.properties[0]?.id, 10, 'preserves first row properties');
+  t.equal(binaryFeatures.lines?.properties[1]?.id, 20, 'preserves second row properties');
+  t.end();
+});
+
+function makeGeoArrowTestTable(
+  encoding: string,
+  geometryData: arrow.Data,
+  ids: number[]
+): arrow.Table {
+  const idData = arrow.makeData({
+    type: new arrow.Int32(),
+    data: Int32Array.from(ids)
+  } as any);
+  const schema = new arrow.Schema([
+    new arrow.Field('id', new arrow.Int32(), false),
+    new arrow.Field(
+      'geometry',
+      geometryData.type,
+      true,
+      new Map([['ARROW:extension:name', encoding]])
+    )
+  ]);
+  const structData = new arrow.Data(new arrow.Struct(schema.fields), 0, ids.length, 0, undefined, [
+    idData,
+    geometryData
+  ]);
+  return new arrow.Table(schema, [new arrow.RecordBatch(schema, structData)]);
+}

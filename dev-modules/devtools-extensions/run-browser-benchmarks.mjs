@@ -28,7 +28,10 @@ export async function runBrowserBenchmarks(options = {}) {
     root: process.cwd(),
     plugins: viteConfig.plugins,
     resolve: viteConfig.resolve,
-    optimizeDeps: viteConfig.optimizeDeps,
+    optimizeDeps: {
+      ...viteConfig.optimizeDeps,
+      entries: ['test/bench/index.html']
+    },
     server: {
       host: options.host || DEFAULT_HOST,
       port: options.port || 0

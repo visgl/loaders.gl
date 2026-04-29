@@ -7,6 +7,7 @@ import type {Batch, GeoJSONTable, ArrowTable, ArrowTableBatch} from '@loaders.gl
 import type {SHPLoaderOptions} from './shp-loader';
 import type {ShapefileOutput} from './lib/parsers/parse-shapefile';
 import type {DBFLoaderOptions} from './dbf-loader';
+import type {SHPGeoArrowEncoding} from './lib/parsers/types';
 import {ShapefileFormat} from './shp-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -18,6 +19,8 @@ export type ShapefileLoaderOptions = StrictLoaderOptions &
   DBFLoaderOptions & {
     shapefile?: {
       shape?: 'geojson-table' | 'arrow-table' | 'v3';
+      geoarrowEncoding?: SHPGeoArrowEncoding;
+      batchSize?: number;
       /** @deprecated Worker URLs must be specified with .dbf.workerUrl * .shp.workerUrl */
       workerUrl?: never;
     };

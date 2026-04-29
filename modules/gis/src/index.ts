@@ -28,9 +28,14 @@ export {
   unpackJSONStringMetadata,
   parseJSONStringMetadata
 } from './lib/geoarrow/geoparquet-metadata';
-export type {WKBGeometryColumnOptions} from './lib/geoarrow/wkb-geoarrow-utils';
+export type {
+  WKBGeometryColumnOptions,
+  GeoArrowGeometryColumnOptions
+} from './lib/geoarrow/wkb-geoarrow-utils';
 export {
+  makeGeoArrowGeometryField,
   makeWKBGeometryField,
+  setGeoArrowGeometryColumnMetadata,
   setWKBGeometryColumnMetadata,
   setWKBGeometrySchemaMetadata,
   encodeWKBGeometryValue,
@@ -39,6 +44,18 @@ export {
   getCoordinateDimensions,
   getGeometrySampleCoordinates
 } from './lib/geoarrow/wkb-geoarrow-utils';
+export type {
+  GeoArrowBuilderEncoding,
+  GeoArrowCoordinateTransform,
+  GeoArrowBuilderTarget,
+  GeoArrowGeometryArray,
+  GeoArrowBuilderBaseOptions,
+  GeoArrowBuilderMeasureOptions,
+  GeoArrowBuilderWriteOptions,
+  GeoArrowBuilderOptions,
+  GeoArrowGeometryWriter
+} from './lib/geoarrow/geoarrow-builder';
+export {GeoArrowBuilder} from './lib/geoarrow/geoarrow-builder';
 
 //
 export type {GeojsonGeometryInfo} from './lib/geometry-api/geometry-info';
@@ -95,6 +112,28 @@ export {WKT_MAGIC_STRINGS} from './lib/geometry-converters/wkb/helpers/wkb-types
 export type {GeometryShape} from './lib/geometry-converters/geometry-converter/geometry-converter';
 export {GeometryConverter} from './lib/geometry-converters/geometry-converter/geometry-converter';
 export {GeometryColumnConverter} from './lib/geometry-converters/geometry-column-converter';
+export type {
+  BinaryGeometryWKBOptions,
+  CoordinateTransform
+} from './lib/geometry-converters/wkb/convert-binary-geometry-to-wkb';
+export {
+  convertBinaryGeometryToWKB,
+  getBinaryGeometryWKBSize,
+  inferBinaryGeometryTypes,
+  reprojectWKBInPlace,
+  writeBinaryGeometryToWKB
+} from './lib/geometry-converters/wkb/convert-binary-geometry-to-wkb';
+export type {
+  WKBBuilderBaseOptions,
+  WKBBuilderMeasureOptions,
+  WKBBuilderOptions,
+  WKBBuilderWriteOptions,
+  WKBGeometryArray,
+  WKBGeometryTypeName,
+  WKBGeometryWriter,
+  WKBCoordinateTransform
+} from './lib/geometry-converters/wkb/wkb-builder';
+export {WKBBuilder} from './lib/geometry-converters/wkb/wkb-builder';
 export {
   convertBinaryGeometryToGeometry,
   convertWKBTableToGeoJSON,

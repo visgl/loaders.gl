@@ -63,7 +63,7 @@ test('ShapefileLoader#load (from browser File objects)', async t => {
       const fetch = fileSystem.fetch.bind(fileSystem.fetch);
       const filename = `${testFileName}.shp`;
       // @ts-ignore
-      const data = await load(filename, ShapefileLoader, {fetch});
+      const data = await load(filename, ShapefileLoader, {fetch, shapefile: {shape: 'v3'}});
       // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
       testShapefileData(t, testFileName, data);
@@ -76,7 +76,7 @@ test('ShapefileLoader#load (from files or URLs)', async t => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const data = await load(filename, ShapefileLoader);
+    const data = await load(filename, ShapefileLoader, {shapefile: {shape: 'v3'}});
     // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
 
     await testShapefileData(t, testFileName, data);
@@ -90,6 +90,7 @@ test('ShapefileLoader#load and reproject (from files or URLs)', async t => {
   const testFileName = 'points';
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
   const data = await load(filename, ShapefileLoader, {
+    shapefile: {shape: 'v3'},
     gis: {reproject: true, _targetCrs: 'EPSG:3857'}
   });
   // t.comment(`${filename}: ${JSON.stringify(data).slice(0, 70)}`);
@@ -130,7 +131,10 @@ test('ShapefileLoader#load passes dbf options to DBFLoader#parse', async t => {
   };
 
   try {
-    await load(filename, ShapefileLoader, {dbf: {workerUrl: dbfWorkerUrl}});
+    await load(filename, ShapefileLoader, {
+      shapefile: {shape: 'v3'},
+      dbf: {workerUrl: dbfWorkerUrl}
+    });
     t.equal(receivedOptions?.dbf?.workerUrl, dbfWorkerUrl, 'ShapefileLoader forwards dbf options');
   } finally {
     DBFLoader.parse = originalParse;
@@ -153,7 +157,7 @@ test('ShapefileLoader#loadInBatches(URL)', async t => {
   // test file load (node) or URL load (browser)
   for (const testFileName in SHAPEFILE_JS_TEST_FILES) {
     const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-    const batches = await loadInBatches(filename, ShapefileLoader);
+    const batches = await loadInBatches(filename, ShapefileLoader, {shapefile: {shape: 'v3'}});
     let data;
     for await (const batch of batches) {
       if (batch?.data) {
@@ -189,7 +193,10 @@ test('ShapefileLoader#loadInBatches(File)', async t => {
     const response = await fetchFile(filename);
     const file = new File([await response.blob()], filename);
     // @ts-ignore
-    const batches = await loadInBatches(file, ShapefileLoader, {fetch: fileSystem.fetch});
+    const batches = await loadInBatches(file, ShapefileLoader, {
+      fetch: fileSystem.fetch,
+      shapefile: {shape: 'v3'}
+    });
     let data;
     for await (const batch of batches) {
       if (batch?.data) {
@@ -215,6 +222,7 @@ test('ShapefileLoader#loadInBatches passes dbf options to DBFLoader#parseInBatch
 
   try {
     const batches = await loadInBatches(filename, ShapefileLoader, {
+      shapefile: {shape: 'v3'},
       dbf: {workerUrl: dbfWorkerUrl}
     });
     for await (const batch of batches) {
@@ -237,7 +245,10 @@ test('ShapefileLoader#loadInBatches passes dbf options to DBFLoader#parseInBatch
 test('ShapefileLoader#loadInBatches when options.metadata: true', async t => {
   const testFileName = Object.keys(SHAPEFILE_JS_TEST_FILES)[0];
   const filename = `${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.shp`;
-  const batches = await loadInBatches(filename, ShapefileLoader, {metadata: true});
+  const batches = await loadInBatches(filename, ShapefileLoader, {
+    shapefile: {shape: 'v3'},
+    metadata: true
+  });
   let data;
   for await (const batch of batches) {
     data = batch;
