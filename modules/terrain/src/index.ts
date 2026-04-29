@@ -5,6 +5,7 @@
 export type {TerrainLoaderOptions} from './terrain-loader';
 export type {QuantizedMeshLoaderOptions} from './quantized-mesh-loader';
 
+export {TerrainFormat, QuantizedMeshFormat} from './terrain-format';
 export {TerrainLoader} from './terrain-loader';
 
 export {parseTerrain} from './terrain-loader-with-parser';
