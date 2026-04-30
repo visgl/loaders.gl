@@ -8,6 +8,7 @@
 import test from 'tape-promise/tape';
 import {parse, fetchFile, load, isBrowser} from '@loaders.gl/core';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {Tiles3DLoader as BundledTiles3DLoader} from '@loaders.gl/3d-tiles/bundled';
 import {DracoLoader} from '@loaders.gl/draco';
 
 const TILE_B3DM_WITH_DRACO_URL = '@loaders.gl/3d-tiles/test/data/143.b3dm';
@@ -53,7 +54,7 @@ test('Tiles3DLoader#Tileset file', async t => {
   t.equals(tileset.type, 'TILES3D');
   t.equals(tileset.lodMetricType, 'geometricError');
   t.equals(tileset.lodMetricValue, 0);
-  t.equals(tileset.loader, Tiles3DLoader);
+  t.equals(tileset.loader, BundledTiles3DLoader);
 
   t.equals(tileset.root.refine, 1);
   t.deepEqual(

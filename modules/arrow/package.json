@@ -33,6 +33,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
     "./exports/*": {
       "types": "./dist/exports/*.d.ts",
       "import": "./dist/exports/*.js"

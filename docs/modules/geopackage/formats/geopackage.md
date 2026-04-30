@@ -1,4 +1,8 @@
+import {GeoPackageDocsTabs} from '@site/src/components/docs/geopackage-docs-tabs';
+
 # Geopackage
+
+<GeoPackageDocsTabs active="overview" />
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

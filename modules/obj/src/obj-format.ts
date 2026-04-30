@@ -11,6 +11,8 @@ export const OBJFormat = {
   name: 'OBJ',
   id: 'obj',
   module: 'obj',
+  encoding: 'text',
+  format: 'obj',
   extensions: ['obj'],
   mimeTypes: ['text/plain']
 } as const satisfies Format;

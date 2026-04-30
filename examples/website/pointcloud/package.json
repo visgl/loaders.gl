@@ -10,11 +10,13 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "@deck.gl-community/widgets": "^9.3.2",
     "@deck.gl/core": "^9.3.0",
     "@deck.gl/layers": "^9.3.0",
     "@deck.gl/react": "^9.3.0",
     "@deck.gl/widgets": "^9.3.0",
     "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/draco": "workspace:*",
     "@loaders.gl/las": "workspace:*",
     "@loaders.gl/obj": "workspace:*",
@@ -23,12 +25,9 @@
     "@luma.gl/core": "^9.3.2",
     "@luma.gl/engine": "^9.3.2",
     "@luma.gl/shadertools": "^9.3.2",
-    "@monaco-editor/react": "^4.5.0",
-    "monaco-editor": "^0.52.2",
     "prop-types": "^15.7.2",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "styled-components": "^4.2.0"
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

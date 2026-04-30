@@ -1,4 +1,12 @@
+import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
+
 # Overview
+
+<GeoTiffDocsTabs active="overview" />
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
+</p>
 
 The `@loaders.gl/geotiff` module provides loader and source support for
 [GeoTIFF](/docs/modules/geotiff/formats/geotiff) and OME-TIFF data.

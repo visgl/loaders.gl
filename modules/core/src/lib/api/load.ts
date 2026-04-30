@@ -7,7 +7,9 @@ import type {
   Loader,
   LoaderContext,
   LoaderOptions,
+  LoaderOptionsWithShape,
   LoaderOptionsType,
+  LoaderShapeType,
   LoaderReturnType,
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
@@ -37,7 +39,10 @@ import {selectLoader} from './select-loader';
 
 export async function load<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   url: string | DataType,
   loader: LoaderT,

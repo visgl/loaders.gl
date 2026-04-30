@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import Map from 'react-map-gl';
@@ -13,6 +13,7 @@ import {COORDINATE_SYSTEM, I3SLoader, loadFeatureAttributes} from '@loaders.gl/i
 import {Tileset3D} from '@loaders.gl/tiles';
 import {ControlPanel} from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
 export const EXAMPLES = {
   'San Francisco': {
@@ -57,6 +58,10 @@ export default function App() {
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
   const [highlightedObjectIndex, setHighlightedObjectIndex] = useState<number>(-1);
   const [attributesObject, setAttributesObject] = useState(null);
+  const widgets = useMemo(
+    () => [createDeckFullscreenWidget('i3s-picking-fullscreen'), createDeckStatsWidget('i3s-picking-stats')],
+    []
+  );
 
   function onSelectTilesetHandler(item: string) {
     setTilesetSelected(EXAMPLES[item]?.url);
@@ -124,6 +129,7 @@ export default function App() {
         initialViewState={viewState}
         layers={renderLayers()}
         controller={MAP_CONTROLLER}
+        widgets={widgets}
         onClick={onClickHandler}
       >
         <Map

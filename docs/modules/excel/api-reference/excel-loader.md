@@ -4,7 +4,7 @@ Non-streaming table loaders for Excel files.
 
 | Loader             | Output           | Use when                      |
 | ------------------ | ---------------- | ----------------------------- |
-| `ExcelLoader`      | `ObjectRowTable` | You want JavaScript row data. |
+| `ExcelLoader`      | `ObjectRowTable \| ArrowTable` | You want JavaScript row data or Arrow output. |
 | `ExcelArrowLoader` | `ArrowTable`     | You want columnar table data. |
 
 | Characteristic | Value                                                                                                               |
@@ -17,7 +17,7 @@ Non-streaming table loaders for Excel files.
 
 ## ExcelLoader
 
-`ExcelLoader` loads Excel worksheets as loaders.gl row tables.
+`ExcelLoader` loads Excel worksheets as loaders.gl row tables by default. Set `excel.shape: 'arrow-table'` to request Apache Arrow output.
 
 ## Usage
 
@@ -49,6 +49,7 @@ const firstZipCode = zipCodeColumn?.get(0);
 | Option        | Type             | Default | Description                                       |
 | ------------- | ---------------- | ------- | ------------------------------------------------- |
 | `excel.sheet` | `string \| null` | `null`  | Which worksheet to load. Defaults to first sheet. |
+| `excel.shape` | [![Website shields.io](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)](http://shields.io) `'object-row-table' \| 'arrow-table'` | `object-row-table` | Selects row-table output or Apache Arrow output. |
 
 ## Attribution
 

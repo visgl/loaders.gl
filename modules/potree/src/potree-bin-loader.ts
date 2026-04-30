@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parsePotreeBin} from './parsers/parse-potree-bin';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
+import {PotreeBinFormat} from './potree-format';
 /**
  * Loader for potree Binary Point Attributes
  * */
 export const PotreeBinLoader = {
+  ...PotreeBinFormat,
   dataType: null as unknown as {},
   batchType: null as never,
 
@@ -18,15 +19,9 @@ export const PotreeBinLoader = {
   mimeTypes: ['application/octet-stream'],
   // Unfortunately binary potree files have no header bytes, no test possible
   // test: ['...'],
-  parseSync,
+  /** Loads the parser-bearing potree binary attribute loader implementation. */
+  preload: async () => (await import('./potree-bin-loader-with-parser')).PotreeBinLoaderWithParser,
   binary: true,
   options: {}
   // @ts-ignore
-} as const satisfies LoaderWithParser<{}, never, LoaderOptions>;
-
-function parseSync(arrayBuffer: ArrayBuffer, options?: LoaderOptions): {} {
-  const index = {};
-  const byteOffset = 0;
-  parsePotreeBin(arrayBuffer, byteOffset, options, index);
-  return index;
-}
+} as const satisfies Loader<{}, never, LoaderOptions>;

@@ -2,33 +2,49 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import React, {useState, useEffect} from 'react';
+import {type ReactNode, useEffect, useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
-import {COORDINATE_SYSTEM, OrbitView, LinearInterpolator, OrbitViewState} from '@deck.gl/core';
+import {
+  COORDINATE_SYSTEM,
+  FirstPersonView,
+  type FirstPersonViewState,
+  LinearInterpolator,
+  OrbitView,
+  type OrbitViewState
+} from '@deck.gl/core';
 import {PointCloudLayer} from '@deck.gl/layers';
+import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 
 import {load} from '@loaders.gl/core';
-import type {Mesh} from '@loaders.gl/schema';
-
+import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
-import {PLYLoader} from '@loaders.gl/ply';
-import {PCDLoader} from '@loaders.gl/pcd';
 import {OBJLoader} from '@loaders.gl/obj';
+import {PCDLoader} from '@loaders.gl/pcd';
+import {PLYLoader} from '@loaders.gl/ply';
 
-import {ExamplePanel, Example, MetadataViewer} from './components/example-panel';
+import type {Example} from './examples';
 import {EXAMPLES} from './examples';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import '@deck.gl/widgets/stylesheet.css';
 
-// Additional format support can be added here, see
-const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader];
+const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader] as const;
+const CONTROLLER_MODES = ['orbit', 'first-person'] as const;
+const FIRST_PERSON_INITIAL_PITCH = -20;
+const FIRST_PERSON_MIN_PITCH = -75;
+const FIRST_PERSON_MAX_PITCH = 75;
+const ORBIT_MIN_ZOOM = 0;
+const ORBIT_MAX_ZOOM = 10;
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0] as [number, number, number],
-  rotationX: 0,
-  rotationOrbit: 0,
-  orbitAxis: 'Y',
+  rotationX: 56,
+  rotationOrbit: -25,
+  orbitAxis: 'Z',
   fov: 50,
   minZoom: 0,
   maxZoom: 10,
@@ -37,181 +53,576 @@ const INITIAL_VIEW_STATE = {
 
 const transitionInterpolator = new LinearInterpolator(['rotationOrbit']);
 
-/** Application props (used by website MDX pages to configure example */
 type AppProps = {
-  /** Controls which examples are shown */
   format?: string;
-  /** Whether to hide the example controls, metadata, and descriptive overlay. */
+  example?: Example;
+  exampleName?: string;
+  categoryName?: string;
   hideChrome?: boolean;
-  /** Show tile borders */
   showTileBorders?: boolean;
-  /** On tiles load */
   onTilesLoad?: Function;
-  /** Any informational text to display in the overlay */
-  children?: typeof React.Children;
+  children?: ReactNode;
 };
 
-/** Application state */
 type AppState = {
-  /** Currently active tile source */
   pointData: any;
-  /** Metadata loaded from active tile source */
   metadata: string | null;
-  /**Current view state */
-  viewState: OrbitViewState;
-  /** Metadata loaded from active tile source */
-  selectedExample?: string;
+  viewState: OrbitViewState | FirstPersonViewState;
+  controllerMode: ControllerMode;
+  selectedCategoryName?: string | null;
+  selectedExampleName?: string | null;
   loadTimeMs?: number;
   loadStartMs?: number;
+  error?: string | null;
 };
 
+type DeckPoint = {
+  position: [number, number, number];
+  color?: [number, number, number] | [number, number, number, number];
+  rowIndex: number;
+  intensity?: number;
+  classification?: number;
+};
+
+type ControllerMode = (typeof CONTROLLER_MODES)[number];
+
 export default function App(props: AppProps = {}) {
+  const availableExamples = useMemo(
+    () => getExamplesForFormat(EXAMPLES, props.format),
+    [props.format]
+  );
   const [state, setState] = useState<AppState>({
     viewState: INITIAL_VIEW_STATE,
+    controllerMode: 'orbit',
     pointData: null,
     metadata: null,
-      // TODO - handle errors
-    // error: null
+    selectedCategoryName: null,
+    selectedExampleName: null,
+    error: null
   });
 
-  const {pointData, selectedExample} = state;
+  useEffect(() => {
+    if (props.example) {
+      void onExampleChange({
+        categoryName: props.categoryName || props.format || 'URL',
+        exampleName: props.exampleName || getFileNameFromUrl(props.example.url),
+        example: props.example
+      });
+    } else {
+      const initialCategoryName =
+        props.format || Object.keys(availableExamples).find(Boolean) || 'PLY';
+      const initialExamples = availableExamples[initialCategoryName];
+      if (!initialExamples) {
+        return;
+      }
 
-  const layers = [
-    pointData &&
-      new PointCloudLayer({
-        // Layers can't reinitialize with new binary data
-        id: `point-cloud-layer-${selectedExample}`,
-        coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-        data: pointData,
-        getNormal: [0, 1, 0],
-        getColor: [200, 200, 255],
-        opacity: 0.5,
-        pointSize: 0.5
+      const initialExampleName = Object.keys(initialExamples)[0];
+      const initialExample = initialExamples[initialExampleName];
+      if (!initialExample) {
+        return;
+      }
+
+      void onExampleChange({
+        categoryName: initialCategoryName,
+        exampleName: initialExampleName,
+        example: initialExample
+      });
+    }
+  }, [availableExamples, props.categoryName, props.example, props.exampleName, props.format]);
+
+  const layers = state.pointData
+    ? [
+        isMeshArrowTable(state.pointData)
+          ? createArrowPointCloudLayer(state.pointData, state.selectedExampleName)
+          : createPointCloudLayer(state.pointData, state.selectedExampleName)
+      ]
+    : [];
+
+  const widgets = useMemo(() => {
+    if (props.hideChrome) {
+      return [];
+    }
+
+    return [
+      createDeckFullscreenWidget('pointcloud-fullscreen'),
+      createDeckStatsWidget('pointcloud-stats'),
+      new SidebarWidget({
+        id: 'pointcloud-example-sidebar',
+        placement: 'top-right',
+        side: 'right',
+        widthPx: 420,
+        panel: new ColumnPanel({
+          id: 'pointcloud-example-panel',
+          title: '',
+          panels: {
+            controls: new CustomPanel({
+              id: 'pointcloud-example-controls',
+              title: '',
+              onRenderHTML: (rootElement) =>
+                renderPointcloudSidebar(rootElement, {
+                  error: state.error ?? null,
+                  examples: availableExamples,
+                  loadStartMs: state.loadStartMs ?? 0,
+                  loadTimeMs: state.loadTimeMs ?? 0,
+                  metadata: state.metadata,
+                  selectedCategoryName: state.selectedCategoryName,
+                  selectedExampleName: state.selectedExampleName,
+                  selectedUrl: getSelectedUrl(
+                    availableExamples,
+                    state.selectedCategoryName,
+                    state.selectedExampleName
+                  ),
+                  controllerMode: state.controllerMode,
+                  vertexCount: getPointDataLength(state.pointData),
+                  onControllerModeChange: (controllerMode) =>
+                    setState((currentState) => ({
+                      ...currentState,
+                      controllerMode,
+                      viewState: getViewStateForControllerMode(currentState.viewState, controllerMode)
+                    })),
+                  onExampleChange: ({categoryName, exampleName}) => {
+                    const example = availableExamples[categoryName]?.[exampleName];
+                    if (example) {
+                      void onExampleChange({categoryName, exampleName, example});
+                    }
+                  },
+                  onUrlChange: (url) => {
+                    void onExampleChange({
+                      categoryName: 'URL',
+                      exampleName: getFileNameFromUrl(url),
+                      example: {type: 'ply', url}
+                    });
+                  }
+                })
+            })
+          }
+        })
       })
-  ];
+    ];
+  }, [
+    availableExamples,
+    props.hideChrome,
+    state.error,
+    state.loadStartMs,
+    state.loadTimeMs,
+    state.metadata,
+    state.pointData,
+    state.controllerMode,
+    state.selectedCategoryName,
+    state.selectedExampleName,
+    onExampleChange
+  ]);
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <ExamplePanel
-        examples={EXAMPLES}
-        format={props.format}
-        hideChrome={props.hideChrome}
-        onExampleChange={onExampleChange}
-      >
-        {props.children}
-        {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
-        <PointCloudStats
-          vertexCount={pointData?.length || 0}
-          loadTimeMs={state.loadTimeMs || 0}
-          loadStartMs={state.loadStartMs || 0}
-        />
-        <h3>Schema and Metadata</h3>
-        <MetadataViewer metadata={state.metadata} />
-      </ExamplePanel>
-
       <DeckGL
+        key={state.controllerMode}
         layers={layers}
-        views={new OrbitView({})}
+        views={getViewForControllerMode(state.controllerMode)}
         viewState={state.viewState}
         controller={{inertia: true}}
-        onViewStateChange={onViewStateChange}
-        // TODO - move to view
+        widgets={widgets}
+        onViewStateChange={({viewState}) =>
+          setState((currentState) => ({
+            ...currentState,
+            viewState: viewState as OrbitViewState | FirstPersonViewState
+          }))
+        }
+        getTooltip={(info) => formatPointTooltip(info, state.pointData)}
         parameters={{
           clearColor: [0.07, 0.14, 0.19, 1]
         }}
-      ></DeckGL>
+      />
     </div>
   );
 
-  /* <Attributions attributions={metadata?.attributions} /> */
-
-  function onViewStateChange({viewState}) {
-    setState((state) => ({...state, viewState}));
-  }
-
   function rotateCamera() {
-    console.log('rotateCamera', state.viewState)
-    setState((state) => ({
-      ...state,
-      viewState: {
-        ...state.viewState,
-        rotationOrbit: (state.viewState.rotationOrbit || 0) + 10,
-        transitionDuration: 600,
-        transitionInterpolator,
-        onTransitionEnd: rotateCamera
-      }
+    setState((currentState) => ({
+      ...currentState,
+      viewState:
+        currentState.controllerMode === 'orbit'
+          ? ({
+              ...currentState.viewState,
+              rotationOrbit: ((currentState.viewState as OrbitViewState).rotationOrbit || 0) + 10,
+              transitionDuration: 600,
+              transitionInterpolator,
+              onTransitionEnd: rotateCamera
+            } as OrbitViewState)
+          : currentState.viewState
     }));
   }
 
   async function onExampleChange({
+    categoryName,
     example,
     exampleName
   }: {
+    categoryName: string;
     example: Example;
     exampleName: string;
   }): Promise<void> {
-    // TODO - timing could be done automatically by `load`.
-
-    setState((state) => ({
-      ...state,
+    setState((currentState) => ({
+      ...currentState,
       pointData: null,
       metadata: null,
       loadTimeMs: undefined,
       loadStartMs: Date.now(),
-      selectedExample: exampleName,
+      selectedCategoryName: categoryName,
+      selectedExampleName: exampleName,
+      error: null
     }));
 
-    const {url} = example;
     try {
-      // TODO: remove worker: false, as it is used for local development
-      const pointCloud = (await load(url, POINT_CLOUD_LOADERS, {worker: false})) as Mesh;
-      const {schema, header, loaderData, attributes} = pointCloud;
+      const pointCloud = await loadPointCloudExample(example);
+      const mesh = isMeshArrowTable(pointCloud)
+        ? ((convertTableToMesh(pointCloud) as unknown) as Mesh)
+        : (pointCloud as Mesh);
+      const {schema, header, loaderData, attributes} = mesh as any;
 
-      const viewState = getViewState(state, loaderData, attributes);
-
+      const viewState = getViewState(state.viewState, state.controllerMode, loaderData, attributes);
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
 
-      setState((state) => ({
-        ...state,
-        loadTimeMs: state.loadStartMs ? Date.now() - state.loadStartMs : undefined,
+      setState((currentState) => ({
+        ...currentState,
+        loadTimeMs: currentState.loadStartMs ? Date.now() - currentState.loadStartMs : undefined,
         loadStartMs: undefined,
-        // TODO - Some popular "point cloud" formats (PLY) can also generate indexed meshes
-        // in which case the vertex count is not correct for display as points
-        // Proposal: Consider adding a `mesh.points` or `mesh.pointcloud` option to mesh loaders
-        // in which case the loader throws away indices and just return the vertices?
-        pointData: convertLoadersMeshToDeckPointCloudData(attributes),
+        pointData: isMeshArrowTable(pointCloud)
+          ? pointCloud
+          : convertLoadersMeshToDeckPointCloudData(attributes),
         viewState,
-        metadata
+        metadata,
+        selectedCategoryName: categoryName,
+        selectedExampleName: exampleName
       }));
 
       rotateCamera();
     } catch (error) {
-      console.error('Failed to load data', url, error);
-      setState((state) => ({...state, error: `Could not load ${exampleName}: ${error.message}`}));
+      console.error('Failed to load data', getExampleUrls(example), error);
+      setState((currentState) => ({
+        ...currentState,
+        error: `Could not load ${exampleName}: ${error instanceof Error ? error.message : String(error)}`
+      }));
     }
   }
 }
 
-/**
- * Component that renders formatted stats for the point cloud
- * @param props
- * @returns
- */
-function PointCloudStats(props: {vertexCount: number; loadTimeMs: number; loadStartMs: number}) {
-  const {vertexCount, loadTimeMs, loadStartMs} = props;
-  let message;
-  if (vertexCount >= 1e7) {
-    message = `${(vertexCount / 1e6).toFixed(0)}M`;
-  } else if (vertexCount >= 1e6) {
-    message = `${(vertexCount / 1e6).toFixed(1)}M`;
-  } else if (vertexCount >= 1e4) {
-    message = `${(vertexCount / 1e3).toFixed(0)}K`;
-  } else if (vertexCount >= 1e3) {
-    message = `${(vertexCount / 1e3).toFixed(1)}K`;
-  } else {
-    message = `${vertexCount}`;
+async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrowTable> {
+  const urls = getExampleUrls(example);
+  const loader = getPointCloudLoader(example);
+  const pointClouds = await Promise.all(
+    urls.map((url) =>
+      load(url, loader as any, {
+        worker: false,
+        las: {shape: 'arrow-table'},
+        obj: {shape: 'arrow-table'},
+        pcd: {shape: 'arrow-table'},
+        ply: {shape: 'arrow-table'}
+      })
+    )
+  );
+
+  if (pointClouds.length === 1) {
+    return pointClouds[0] as Mesh | MeshArrowTable;
   }
 
+  return combineMeshArrowTables(pointClouds as MeshArrowTable[]);
+}
+
+function combineMeshArrowTables(pointClouds: MeshArrowTable[]): MeshArrowTable {
+  const firstPointCloud = pointClouds[0];
+  if (!firstPointCloud || pointClouds.some((pointCloud) => !isMeshArrowTable(pointCloud))) {
+    throw new Error('Multi-file point cloud examples require Arrow table loader output.');
+  }
+
+  return {
+    ...firstPointCloud,
+    data: firstPointCloud.data.concat(...pointClouds.slice(1).map((pointCloud) => pointCloud.data))
+  };
+}
+
+function getExampleUrls(example: Example): string[] {
+  return example.urls?.length ? example.urls : [example.url];
+}
+
+function getPointCloudLoader(example: Example) {
+  switch (example.type) {
+    case 'draco':
+      return DracoLoader;
+    case 'las':
+      return LASLoader;
+    case 'obj':
+      return OBJLoader;
+    case 'pcd':
+      return PCDLoader;
+    case 'ply':
+      return PLYLoader;
+    default:
+      return POINT_CLOUD_LOADERS;
+  }
+}
+
+function isMeshArrowTable(data: unknown): data is MeshArrowTable {
+  return Boolean(data && typeof data === 'object' && 'shape' in data && data.shape === 'arrow-table');
+}
+
+function getPointDataLength(pointData: any): number {
+  if (isMeshArrowTable(pointData)) {
+    return pointData.data.numRows;
+  }
+  return pointData?.length || 0;
+}
+
+function createArrowPointCloudLayer(
+  pointData: MeshArrowTable,
+  selectedExampleName?: string | null
+): MeshArrowPointCloudLayer | SplatLayer {
+  if (isGaussianSplatArrowTable(pointData)) {
+    return createSplatLayer(pointData, selectedExampleName);
+  }
+
+  return new MeshArrowPointCloudLayer({
+    id: `point-cloud-layer-${selectedExampleName ?? 'example'}`,
+    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    data: pointData,
+    pickable: true,
+    autoHighlight: true,
+    pointCloudLayerProps: {
+      getNormal: [0, 1, 0],
+      opacity: 0.5,
+      pointSize: 0.5
+    }
+  });
+}
+
+function createSplatLayer(
+  pointData: MeshArrowTable,
+  selectedExampleName?: string | null
+): SplatLayer {
+  return new SplatLayer({
+    id: `splat-layer-${selectedExampleName ?? 'example'}`,
+    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    data: pointData,
+    pickable: true,
+    opacity: 0.75,
+    radiusScale: 1.4,
+    radiusMinPixels: 1,
+    radiusMaxPixels: 28
+  });
+}
+
+function isGaussianSplatArrowTable(pointData: MeshArrowTable): boolean {
+  return pointData.data.schema.metadata.get('loaders_gl.semantic_type') === 'gaussian-splats';
+}
+
+function createPointCloudLayer(
+  pointData: DeckPoint[],
+  selectedExampleName?: string | null
+): PointCloudLayer<DeckPoint> {
+  return new PointCloudLayer<DeckPoint>({
+    id: `point-cloud-layer-${selectedExampleName ?? 'example'}`,
+    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    data: pointData,
+    pickable: true,
+    autoHighlight: true,
+    getNormal: [0, 1, 0],
+    getColor: (point: DeckPoint) => point.color || [200, 200, 255],
+    opacity: 0.5,
+    pointSize: 0.5
+  });
+}
+
+function getViewForControllerMode(controllerMode: ControllerMode): OrbitView | FirstPersonView {
+  return controllerMode === 'first-person'
+    ? new FirstPersonView({near: 0.01, far: 100000, up: [0, 0, 1]} as any)
+    : new OrbitView({orbitAxis: 'Z'});
+}
+
+function getViewStateForControllerMode(
+  previousViewState: OrbitViewState | FirstPersonViewState,
+  controllerMode: ControllerMode
+): OrbitViewState | FirstPersonViewState {
+  if (controllerMode === 'first-person') {
+    const target = ((previousViewState as OrbitViewState).target || [0, 0, 0]) as [
+      number,
+      number,
+      number
+    ];
+    return {
+      position: [target[0], target[1] - 6, target[2] + 2],
+      bearing: 0,
+      pitch: FIRST_PERSON_INITIAL_PITCH,
+      minPitch: FIRST_PERSON_MIN_PITCH,
+      maxPitch: FIRST_PERSON_MAX_PITCH
+    };
+  }
+
+  return INITIAL_VIEW_STATE as OrbitViewState;
+}
+
+function renderPointcloudSidebar(
+  rootElement: HTMLElement,
+  options: {
+    error: string | null;
+    examples: Record<string, Record<string, Example>>;
+    loadStartMs: number;
+    loadTimeMs: number;
+    metadata: string | null;
+    selectedCategoryName?: string | null;
+    selectedExampleName?: string | null;
+    selectedUrl?: string;
+    controllerMode: ControllerMode;
+    vertexCount: number;
+    onControllerModeChange: (controllerMode: ControllerMode) => void;
+    onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
+    onUrlChange: (url: string) => void;
+  }
+): void {
+  rootElement.replaceChildren();
+  rootElement.style.display = 'flex';
+  rootElement.style.flexDirection = 'column';
+  rootElement.style.gap = '12px';
+  rootElement.style.padding = '4px 0 0';
+
+  rootElement.appendChild(
+    createUrlCard({
+      selectedUrl: options.selectedUrl,
+      onUrlChange: options.onUrlChange
+    })
+  );
+  rootElement.appendChild(
+    createExampleSelect({
+      examples: options.examples,
+      selectedCategoryName: options.selectedCategoryName,
+      selectedExampleName: options.selectedExampleName,
+      onExampleChange: options.onExampleChange
+    })
+  );
+  rootElement.appendChild(
+    createControllerModeSelect({
+      controllerMode: options.controllerMode,
+      onControllerModeChange: options.onControllerModeChange
+    })
+  );
+  rootElement.appendChild(createStatsBlock(options.vertexCount, options.loadTimeMs, options.loadStartMs));
+
+  if (options.error) {
+    rootElement.appendChild(createNotice(options.error));
+  }
+
+  rootElement.appendChild(createPreBlock(options.metadata ?? 'No metadata available'));
+}
+
+function createControllerModeSelect(options: {
+  controllerMode: ControllerMode;
+  onControllerModeChange: (controllerMode: ControllerMode) => void;
+}): HTMLElement {
+  const wrapperElement = document.createElement('div');
+  wrapperElement.style.display = 'grid';
+  wrapperElement.style.gridTemplateColumns = '1fr 1fr';
+  wrapperElement.style.gap = '6px';
+
+  for (const controllerMode of CONTROLLER_MODES) {
+    const buttonElement = document.createElement('button');
+    buttonElement.type = 'button';
+    buttonElement.textContent = controllerMode === 'orbit' ? 'Orbit' : 'First Person';
+    buttonElement.style.padding = '8px 10px';
+    buttonElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+    buttonElement.style.borderRadius = '6px';
+    buttonElement.style.cursor = 'pointer';
+    buttonElement.style.background =
+      controllerMode === options.controllerMode ? '#0f172a' : 'var(--menu-background, #fff)';
+    buttonElement.style.color = controllerMode === options.controllerMode ? '#f8fafc' : '#0f172a';
+    buttonElement.addEventListener('click', () => options.onControllerModeChange(controllerMode));
+    wrapperElement.appendChild(buttonElement);
+  }
+
+  return wrapperElement;
+}
+
+function createExampleSelect(options: {
+  examples: Record<string, Record<string, Example>>;
+  selectedCategoryName?: string | null;
+  selectedExampleName?: string | null;
+  onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
+}): HTMLElement {
+  const selectElement = document.createElement('select');
+  selectElement.style.width = '100%';
+  selectElement.style.padding = '8px';
+  selectElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+  selectElement.style.borderRadius = '8px';
+  selectElement.style.background = 'var(--menu-background, #fff)';
+  selectElement.value = `${options.selectedCategoryName}.${options.selectedExampleName}`;
+  selectElement.addEventListener('change', (event) => {
+    const [categoryName, exampleName] = (event.target as HTMLSelectElement).value.split('.');
+    options.onExampleChange({categoryName, exampleName});
+  });
+
+  for (const categoryName of Object.keys(options.examples)) {
+    const optGroupElement = document.createElement('optgroup');
+    optGroupElement.label = categoryName;
+    for (const exampleName of Object.keys(options.examples[categoryName])) {
+      const example = options.examples[categoryName][exampleName];
+      const optionElement = document.createElement('option');
+      optionElement.value = `${categoryName}.${exampleName}`;
+      optionElement.textContent = example.pointCount
+        ? `${exampleName} (${formatPointCount(example.pointCount)}, ${categoryName})`
+        : `${exampleName} (${categoryName})`;
+      optGroupElement.appendChild(optionElement);
+    }
+    selectElement.appendChild(optGroupElement);
+  }
+
+  return selectElement;
+}
+
+function createUrlCard(options: {
+  selectedUrl?: string;
+  onUrlChange: (url: string) => void;
+}): HTMLElement {
+  const wrapperElement = document.createElement('form');
+  wrapperElement.style.display = 'grid';
+  wrapperElement.style.gridTemplateColumns = '1fr auto';
+  wrapperElement.style.gap = '8px';
+  wrapperElement.style.padding = '10px';
+  wrapperElement.style.border = '1px solid rgba(148, 163, 184, 0.45)';
+  wrapperElement.style.borderRadius = '8px';
+  wrapperElement.style.background = 'rgba(15, 23, 42, 0.04)';
+
+  const inputElement = document.createElement('input');
+  inputElement.type = 'url';
+  inputElement.value = options.selectedUrl || '';
+  inputElement.placeholder = 'https://raw.githubusercontent.com/.../file.ply';
+  inputElement.style.minWidth = '0';
+  inputElement.style.padding = '8px';
+  inputElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+  inputElement.style.borderRadius = '6px';
+  inputElement.style.background = 'var(--menu-background, #fff)';
+
+  const buttonElement = document.createElement('button');
+  buttonElement.type = 'submit';
+  buttonElement.textContent = 'Load';
+  buttonElement.style.padding = '8px 12px';
+  buttonElement.style.border = '1px solid rgba(15, 23, 42, 0.25)';
+  buttonElement.style.borderRadius = '6px';
+  buttonElement.style.background = '#0f172a';
+  buttonElement.style.color = '#f8fafc';
+  buttonElement.style.cursor = 'pointer';
+
+  wrapperElement.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const url = inputElement.value.trim();
+    if (url) {
+      options.onUrlChange(url);
+    }
+  });
+
+  wrapperElement.appendChild(inputElement);
+  wrapperElement.appendChild(buttonElement);
+
+  return wrapperElement;
+}
+
+function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: number): HTMLElement {
   let loadMessage = '';
   if (loadTimeMs) {
     loadMessage = `Load time: ${(loadTimeMs / 1000).toFixed(1)}s`;
@@ -219,84 +630,274 @@ function PointCloudStats(props: {vertexCount: number; loadTimeMs: number; loadSt
     loadMessage = 'Loading...';
   }
 
-  return (
-    <pre style={{textAlign: 'center', margin: 0}}>
-      <div>{Number.isFinite(vertexCount) ? `Points: ${message}` : null}</div>
-      <div>
-        {loadMessage}
-      </div>
-    </pre>
-  );
+  const preElement = document.createElement('pre');
+  preElement.textContent = `Points: ${formatPointCount(vertexCount)}\n${loadMessage}`;
+  preElement.style.margin = '0';
+  preElement.style.textAlign = 'center';
+  preElement.style.whiteSpace = 'pre-wrap';
+  return preElement;
 }
 
-// function getTooltip(info) {
-//   if (info.tile) {
-//     const {x, y, z} = info.tile.index;
-//     return `tile: x: ${x}, y: ${y}, z: ${z}`;
-//   }
-//   return null;
-// }
+function createNotice(message: string): HTMLElement {
+  const element = document.createElement('div');
+  element.textContent = message;
+  element.style.background = '#fee2e2';
+  element.style.color = '#b91c1c';
+  element.style.lineHeight = '1.4';
+  element.style.padding = '8px';
+  element.style.whiteSpace = 'pre-wrap';
+  element.style.borderRadius = '8px';
+  return element;
+}
 
-// HELPER FUNCTIONS
+function createPreBlock(content: string): HTMLElement {
+  const preElement = document.createElement('pre');
+  preElement.textContent = content;
+  preElement.style.margin = '0';
+  preElement.style.maxHeight = '320px';
+  preElement.style.overflow = 'auto';
+  preElement.style.padding = '12px';
+  preElement.style.borderRadius = '8px';
+  preElement.style.background = '#0f172a';
+  preElement.style.color = '#e2e8f0';
+  preElement.style.fontSize = '12px';
+  preElement.style.lineHeight = '1.4';
+  preElement.style.whiteSpace = 'pre-wrap';
+  return preElement;
+}
 
-function getViewState(state: AppState, loaderData, attributes) {
-  // metadata from LAZ file header
+function getExamplesForFormat(
+  examples: Record<string, Record<string, Example>>,
+  format?: string
+): Record<string, Record<string, Example>> {
+  if (format) {
+    return {[format]: examples[format]};
+  }
+  return {...examples};
+}
+
+function getSelectedUrl(
+  examples: Record<string, Record<string, Example>>,
+  selectedCategoryName?: string | null,
+  selectedExampleName?: string | null
+): string {
+  if (!selectedCategoryName || !selectedExampleName) {
+    return '';
+  }
+  return examples[selectedCategoryName]?.[selectedExampleName]?.url || '';
+}
+
+function getFileNameFromUrl(url: string): string {
+  const pathname = new URL(url).pathname;
+  return pathname.slice(pathname.lastIndexOf('/') + 1) || 'Custom PLY';
+}
+
+function formatPointCount(pointCount: number): string {
+  if (pointCount >= 1e7) {
+    return `${(pointCount / 1e6).toFixed(0)}M`;
+  }
+  if (pointCount >= 1e6) {
+    return `${(pointCount / 1e6).toFixed(1)}M`;
+  }
+  if (pointCount >= 1e4) {
+    return `${(pointCount / 1e3).toFixed(0)}K`;
+  }
+  if (pointCount >= 1e3) {
+    return `${(pointCount / 1e3).toFixed(1)}K`;
+  }
+  return `${pointCount}`;
+}
+
+function getViewState(
+  previousViewState: OrbitViewState | FirstPersonViewState,
+  controllerMode: ControllerMode,
+  loaderData: any,
+  attributes: any
+): OrbitViewState | FirstPersonViewState {
   const {maxs, mins} =
     loaderData?.header?.mins && loaderData?.header?.maxs
       ? loaderData.header
       : calculateBounds(attributes);
+  const center =
+    getFiniteVector([
+    (mins[0] + maxs[0]) / 2,
+    (mins[1] + maxs[1]) / 2,
+    (mins[2] + maxs[2]) / 2
+    ]) || INITIAL_VIEW_STATE.target;
+  const size =
+    getFiniteVector([
+    maxs[0] - mins[0],
+    maxs[1] - mins[1],
+    maxs[2] - mins[2]
+    ]) || [1, 1, 1];
+  const horizontalSize = Math.max(size[0], size[1], Number.EPSILON);
+  const diagonalSize = Math.max(Math.hypot(size[0], size[1], size[2]), Number.EPSILON);
 
-  let {viewState} = state;
+  if (controllerMode === 'first-person') {
+    return {
+      position: [center[0], center[1] - diagonalSize * 1.5, center[2] + size[2] * 0.35],
+      bearing: 0,
+      pitch: FIRST_PERSON_INITIAL_PITCH,
+      minPitch: FIRST_PERSON_MIN_PITCH,
+      maxPitch: FIRST_PERSON_MAX_PITCH
+    };
+  }
 
-  // File contains bounding box info
   return {
     ...INITIAL_VIEW_STATE,
-    ...viewState,
-    target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2] as [number, number, number],
-    zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
-  };
+    ...(previousViewState as OrbitViewState),
+    target: center,
+    zoom: getOrbitZoom(horizontalSize)
+  } as OrbitViewState;
 }
 
-// basic helper method to calculate a models upper and lower bounds
-function calculateBounds(attributes) {
-  const mins = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE];
-  const maxs = [Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
+function getFiniteVector(vector: [number, number, number]): [number, number, number] | null {
+  return vector.every(Number.isFinite) ? vector : null;
+}
 
-  const pointSize = attributes.POSITION.size;
-  const pointCount = attributes.POSITION.value.length / pointSize;
+function getOrbitZoom(horizontalSize: number): number {
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const zoom = Math.log2(viewportWidth / Math.max(horizontalSize, Number.EPSILON)) - 1;
+  return Number.isFinite(zoom)
+    ? Math.min(Math.max(zoom, ORBIT_MIN_ZOOM), ORBIT_MAX_ZOOM)
+    : INITIAL_VIEW_STATE.zoom;
+}
 
-  for (let i = 0; i < pointCount; i += pointSize) {
-    const x = attributes.POSITION.value[i];
-    const y = attributes.POSITION.value[i + 1];
-    const z = attributes.POSITION.value[i + 2];
+function calculateBounds(attributes: Record<string, {value: Float32Array | Float64Array}>) {
+  const positions = attributes.POSITION.value;
+  const mins = [Infinity, Infinity, Infinity];
+  const maxs = [-Infinity, -Infinity, -Infinity];
 
-    if (x < mins[0]) mins[0] = x;
-    else if (x > maxs[0]) maxs[0] = x;
-
-    if (y < mins[1]) mins[1] = y;
-    else if (y > maxs[1]) maxs[1] = y;
-
-    if (z < mins[2]) mins[2] = z;
-    else if (z > maxs[2]) maxs[2] = z;
+  for (let index = 0; index < positions.length; index += 3) {
+    mins[0] = Math.min(mins[0], positions[index]);
+    mins[1] = Math.min(mins[1], positions[index + 1]);
+    mins[2] = Math.min(mins[2], positions[index + 2]);
+    maxs[0] = Math.max(maxs[0], positions[index]);
+    maxs[1] = Math.max(maxs[1], positions[index + 1]);
+    maxs[2] = Math.max(maxs[2], positions[index + 2]);
   }
 
   return {mins, maxs};
 }
 
-function convertLoadersMeshToDeckPointCloudData(attributes) {
-  const deckAttributes = {
-    getPosition: attributes.POSITION
-  };
-  if (attributes.COLOR_0) {
-    deckAttributes.getColor = attributes.COLOR_0;
+function convertLoadersMeshToDeckPointCloudData(attributes: any) {
+  const positions = attributes.POSITION.value;
+  const colorAttribute = attributes.COLOR_0;
+  const colors = colorAttribute?.value;
+  const colorSize = colorAttribute?.size || colorAttribute?.components || 3;
+  const intensityAttribute = attributes.intensity;
+  const classificationAttribute = attributes.classification;
+
+  const points: DeckPoint[] = [];
+  const pointCount = Math.floor(positions.length / 3);
+  for (let pointIndex = 0; pointIndex < pointCount; pointIndex++) {
+    const positionIndex = pointIndex * 3;
+    const colorIndex = pointIndex * colorSize;
+    points.push({
+      position: [positions[positionIndex], positions[positionIndex + 1], positions[positionIndex + 2]],
+      rowIndex: pointIndex,
+      intensity: getAttributeScalarValue(intensityAttribute, pointIndex),
+      classification: getAttributeScalarValue(classificationAttribute, pointIndex),
+      color: colors
+        ? [
+            colors[colorIndex],
+            colors[colorIndex + 1],
+            colors[colorIndex + 2],
+            colorSize > 3 ? colors[colorIndex + 3] : 255
+          ]
+        : undefined
+    });
   }
-  // Check PointCloudLayer docs for other supported props?
-  return {
-    length: attributes.POSITION.value.length / attributes.POSITION.size,
-    attributes: deckAttributes
-  };
+
+  return points;
 }
 
-export function renderToDOM(container) {
+/**
+ * Returns a scalar mesh attribute value for a point row.
+ */
+function getAttributeScalarValue(attribute: any, pointIndex: number): number | undefined {
+  const value = attribute?.value;
+  if (!value) {
+    return undefined;
+  }
+  const size = attribute?.size || attribute?.components || 1;
+  return value[pointIndex * size];
+}
+
+function getPointRow(pointData: any, pointIndex: number): DeckPoint | null {
+  if (pointIndex < 0) {
+    return null;
+  }
+
+  if (isMeshArrowTable(pointData)) {
+    const position = pointData.data.getChild('POSITION')?.get(pointIndex);
+    if (!position) {
+      return null;
+    }
+    const color = pointData.data.getChild('COLOR_0')?.get(pointIndex);
+    return {
+      position: Array.from(position) as [number, number, number],
+      rowIndex: pointIndex,
+      intensity: pointData.data.getChild('intensity')?.get(pointIndex),
+      classification: pointData.data.getChild('classification')?.get(pointIndex),
+      color: color ? (Array.from(color) as [number, number, number, number]) : undefined
+    };
+  }
+
+  return pointData?.[pointIndex] || null;
+}
+
+function formatPointTooltipContent(point: DeckPoint | null): string | null {
+  if (!point) {
+    return null;
+  }
+
+  const lines = [
+    `Row: ${point.rowIndex}`,
+    `Position: ${point.position.map((value) => value.toPrecision(6)).join(', ')}`
+  ];
+
+  if (point.intensity !== undefined) {
+    lines.push(`Intensity: ${point.intensity}`);
+  }
+  if (point.classification !== undefined) {
+    lines.push(`Classification: ${point.classification}`);
+  }
+  if (point.color) {
+    lines.push(`Color: ${point.color.join(', ')}`);
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Formats the deck.gl picking tooltip for point cloud vertices.
+ */
+function formatPointTooltip(info: any, pointData: any) {
+  const point = info.object || getPointRow(pointData, info.index);
+  const text = formatPointTooltipContent(point);
+
+  return text
+    ? {
+        text,
+        style: {
+          backgroundColor: 'rgba(7, 14, 24, 0.92)',
+          border: '1px solid rgba(148, 163, 184, 0.38)',
+          borderRadius: '8px',
+          boxShadow: '0 14px 36px rgba(0, 0, 0, 0.38)',
+          color: '#f8fafc',
+          fontFamily:
+            'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          fontSize: '12px',
+          fontWeight: '650',
+          lineHeight: '1.45',
+          padding: '10px 12px',
+          whiteSpace: 'pre'
+        }
+      }
+    : null;
+}
+
+export function renderToDOM(container: HTMLElement) {
   createRoot(container).render(<App />);
 }

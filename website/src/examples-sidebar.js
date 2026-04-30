@@ -8,7 +8,7 @@
 
  Create as many sidebars as you want.
  */
-export const sidebars = {
+const sidebars = {
   examplesSidebar: [
     {
       type: 'doc',
@@ -17,17 +17,42 @@ export const sidebars = {
     },
     {
       type: 'category',
+      label: 'General Data Formats',
+      items: ['table/arrow', 'table/bson', 'table/json', 'table/xml']
+    },
+    {
+      type: 'category',
+      label: 'Trace Formats',
+      items: ['traces/chrome-trace']
+    },
+    {
+      type: 'category',
       label: 'Geospatial Table Formats',
       items: [
-        'geospatial/flatgeobuf',
+        'geospatial/csv',
+        'geospatial/shapefile',
+        'geospatial/geojson',
         'geospatial/geoarrow',
         'geospatial/geoparquet',
         'geospatial/geopackage',
-        'geospatial/geojson',
-        'geospatial/shapefile',
         'geospatial/kml',
         'geospatial/gpx',
         'geospatial/tcx'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Tile Formats',
+      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Services',
+      items: [
+        'tiles/wms',
+        'tiles/wfs',
+        'tiles/arcgis-image-server',
+        'tiles/arcgis-feature-server'
       ]
     },
     {
@@ -39,21 +64,6 @@ export const sidebars = {
       type: 'category',
       label: 'Bioimaging Raster Formats',
       items: ['bioimaging/ome-tiff']
-    },
-    {
-      type: 'category',
-      label: 'Geospatial Tile Formats',
-      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
-    },
-    {
-      type: 'category',
-      label: 'Image and Vector Services',
-      items: [
-        'tiles/wms',
-        'tiles/wfs',
-        'tiles/arcgis-image-server',
-        'tiles/arcgis-feature-server'
-      ]
     },
     {
       type: 'category',
@@ -69,6 +79,7 @@ export const sidebars = {
       type: 'category',
       label: 'Point Cloud Formats',
       items: [
+        'pointclouds/gaussian-splats',
         'pointclouds/draco',
         'pointclouds/las',
         'pointclouds/pcd',
@@ -94,3 +105,5 @@ export const sidebars = {
     }
   ]
 };
+
+module.exports = sidebars;

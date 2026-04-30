@@ -4,11 +4,8 @@
 
 import * as arrow from 'apache-arrow';
 import {createWorker} from '@loaders.gl/worker-utils';
-import {
-  getTriangleIndices,
-  convertGeoArrowToBinaryFeatureCollection,
-  BinaryDataFromGeoArrow
-} from '@loaders.gl/gis';
+import type {BinaryDataFromGeoArrow} from '@loaders.gl/geoarrow';
+import {convertGeoArrowToBinaryFeatureCollection, getTriangleIndices} from '@loaders.gl/geoarrow';
 import type {
   TriangulationWorkerInput,
   TriangulateInput,

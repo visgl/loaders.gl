@@ -1,11 +1,8 @@
 import test from 'tape-promise/tape';
 import {createDataSource, fetchFile, setLoaderOptions} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
-import {
-  GeoPackageArrowLoader,
-  GeoPackageDataSource,
-  GeoPackageSource
-} from '@loaders.gl/geopackage';
+import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geopackage';
+import {GeoPackageArrowLoader} from '@loaders.gl/geopackage/bundled';
 
 const GPKG_RIVERS_MULTI = '@loaders.gl/geopackage/test/data/rivers_multi.gpkg';
 

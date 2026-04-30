@@ -8,6 +8,7 @@ import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
 import type {TerrainOptions} from './lib/parse-terrain';
+import {TerrainFormat} from './terrain-format';
 
 /** TerrainLoader options */
 export type TerrainLoaderOptions = ImageBitmapLoaderOptions & {
@@ -25,13 +26,11 @@ export const TerrainLoader = {
   dataType: null as unknown as Mesh,
   batchType: null as never,
 
-  name: 'Terrain',
-  id: 'terrain',
-  module: 'terrain',
+  ...TerrainFormat,
   version: VERSION,
   worker: true,
-  extensions: ['png', 'pngraw', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'],
-  mimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/bmp'],
+  /** Loads the parser-bearing terrain loader implementation. */
+  preload: async () => (await import('./terrain-loader-with-parser')).TerrainLoaderWithParser,
   options: {
     terrain: {
       tesselator: 'auto',

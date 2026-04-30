@@ -1,20 +1,14 @@
+import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+
 # ArrowWriter
 
-![arrow-logo](../images/apache-arrow-small.png)
+<ArrowDocsTabs active="arrowwriter" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-The `ArrowWriter` encodes a set of arrays into an ArrayBuffer of Apach Arrow columnar format.
-
-| Loader          | Characteristic                                                              |
-| --------------- | --------------------------------------------------------------------------- |
-| File Format     | [Arrow](https://arrow.apache.org/docs/format/Columnar.html#ipc-file-format) |
-| Data Format     | [Arrow Columnar Format](https://arrow.apache.org/docs/format/Columnar.html) |
-| File Extensions | `.arrow`, `.feather`                                                        |
-| File Type       | Binary                                                                      |
-| Support API     | `encodeSync`                                                                |
+The `ArrowWriter` encodes a set of arrays into an ArrayBuffer of Apache Arrow columnar format.
 
 ## Usage
 

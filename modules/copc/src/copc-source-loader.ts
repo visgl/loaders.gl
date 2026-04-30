@@ -31,6 +31,7 @@ type GetNodeParameters = {
   limit?: number;
 };
 
+import {COPCFormat} from './copc-format';
 export type COPCSourceLoaderOptions = DataSourceOptions & {
   copc?: {};
 };
@@ -39,12 +40,15 @@ export type COPCSourceLoaderOptions = DataSourceOptions & {
  * Creates point cloud tile source for COPC urls or blobs
  */
 export const COPCSourceLoader = {
+  ...COPCFormat,
   dataType: null as unknown as COPCTileSource,
   batchType: null as never,
   name: 'COPC',
   id: 'copc',
   module: 'copc',
   version: VERSION,
+  encoding: 'binary',
+  format: 'copc',
   extensions: ['laz'],
   mimeTypes: ['application/octet-stream'],
   type: 'copc',

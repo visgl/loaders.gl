@@ -4,7 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {setLoaderOptions, fetchFile, parse} from '@loaders.gl/core';
-import {DBFArrowLoader} from '@loaders.gl/shapefile';
+import {DBFLoader} from '@loaders.gl/shapefile';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -27,10 +27,10 @@ const SHAPEFILE_JS_TEST_FILES = [
   'utf8-property'
 ];
 
-test('Shapefile Arrow DBF tests', async t => {
+test('DBFLoader#parse arrow-table', async t => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     const encoding = testFileName === 'latin1-property' ? 'latin1' : 'utf8';
-    const options = {worker: false, dbf: {encoding}};
+    const options = {worker: false, dbf: {encoding, shape: 'arrow-table' as const}};
 
     let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.json`);
     const {features} = await response.json();
@@ -38,7 +38,7 @@ test('Shapefile Arrow DBF tests', async t => {
     response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
     const body = await response.arrayBuffer();
 
-    const table = await parse(body, DBFArrowLoader, options);
+    const table = await parse(body, DBFLoader, options);
 
     for (let i = 0; i < features.length; i++) {
       const row = table.data.get(i)!.toJSON();

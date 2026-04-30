@@ -64,6 +64,7 @@ const config = {
       {
         debug: true,
         resolve: {
+          extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
           fallback: {path: false, fs: false, buffer: true},
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
@@ -113,12 +114,14 @@ const config = {
             '@loaders.gl/schema': resolve('../modules/schema/src'),
             '@loaders.gl/schema-utils': resolve('../modules/schema-utils/src'),
             '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
+            '@loaders.gl/splats': resolve('../modules/splats/src'),
             '@loaders.gl/stac': resolve('../modules/stac/src'),
             '@loaders.gl/terrain': resolve('../modules/terrain/src'),
             '@loaders.gl/textures': resolve('../modules/textures/src'),
             '@loaders.gl/tile-converter': resolve('../apps/tile/converter/src-'),
             '@loaders.gl/tiles': resolve('../modules/tiles/src'),
             '@loaders.gl/tiles-2d': resolve('../modules/tiles-2d/src'),
+            '@loaders.gl/traces': resolve('../modules/traces/src'),
             '@loaders.gl/type-analyzer': resolve('../modules/type-analyzer/src'),
             '@loaders.gl/video': resolve('../modules/video/src'),
             '@loaders.gl/wkt': resolve('../modules/wkt/src'),
@@ -205,10 +208,34 @@ const config = {
             '/examples/pmtiles': '/examples/tiles/pmtiles',
             '/examples/wms': '/examples/tiles/wms',
           };
+          const legacyTryItRedirects = {
+            '/examples/table/arrow': '/docs/modules/arrow/try-it',
+            '/examples/table/bson': '/docs/modules/bson/try-it',
+            '/examples/geospatial/csv': '/docs/modules/csv/try-it',
+            '/examples/pointclouds/draco': '/docs/modules/draco/try-it',
+            '/examples/geospatial/flatgeobuf': '/docs/modules/flatgeobuf/try-it',
+            '/examples/geospatial/geopackage': '/docs/modules/geopackage/try-it',
+            '/examples/table/json': '/docs/modules/json/try-it',
+            '/examples/geospatial/kml': '/docs/modules/kml/try-it',
+            '/examples/pointclouds/las': '/docs/modules/las/try-it',
+            '/examples/pointclouds/obj': '/docs/modules/obj/try-it',
+            '/examples/geospatial/geoparquet': '/docs/modules/parquet/try-it',
+            '/examples/pointclouds/pcd': '/docs/modules/pcd/try-it',
+            '/examples/pointclouds/ply': '/docs/modules/ply/try-it',
+            '/examples/geospatial/shapefile': '/docs/modules/shapefile/try-it',
+            '/examples/table/xml': '/docs/modules/xml/try-it'
+          };
+          const redirectSources = [];
+          if (legacyTryItRedirects[existingPath]) {
+            redirectSources.push(legacyTryItRedirects[existingPath]);
+          }
           for (const [oldLink, newLink] of Object.entries(pageRedirects)) {
-            if (existingPath.includes(oldLink)) {
-              return existingPath.replace(oldLink, newLink);
+            if (existingPath.includes(newLink)) {
+              redirectSources.push(existingPath.replace(newLink, oldLink));
             }
+          }
+          if (redirectSources.length) {
+            return redirectSources;
           }
           if (pageRedirects[existingPath]) {
             return [pageRedirects[existingPath]];

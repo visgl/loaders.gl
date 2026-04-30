@@ -163,6 +163,87 @@ html[data-theme='dark'] .markdown .docs-markdown-table__table th code {
   color: var(--docs-table-link-hover);
 }
 
+.markdown .docs-page-tabs,
+html.examples-demo-page .docs-page-tabs {
+  border-bottom: 1px solid var(--docs-table-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.markdown .docs-page-tabs__tab,
+html.examples-demo-page .docs-page-tabs__tab {
+  border-bottom: 3px solid transparent;
+  color: var(--ifm-font-color-base);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+}
+
+.markdown .docs-page-tabs__tab:hover,
+.markdown .docs-page-tabs__tab:focus,
+html.examples-demo-page .docs-page-tabs__tab:hover,
+html.examples-demo-page .docs-page-tabs__tab:focus {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.markdown .docs-page-tabs__tab--active,
+html.examples-demo-page .docs-page-tabs__tab--active {
+  border-bottom-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+}
+
+.markdown .docs-api-card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 1.5rem 0 2rem;
+}
+
+.markdown .docs-api-card {
+  border: 1px solid var(--docs-table-border);
+  border-radius: 8px;
+  color: var(--ifm-font-color-base);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-height: 13rem;
+  padding: 1rem;
+  text-decoration: none;
+}
+
+.markdown .docs-api-card:hover,
+.markdown .docs-api-card:focus {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.markdown .docs-api-card strong {
+  color: var(--docs-table-link);
+  font-size: 1.12rem;
+}
+
+.markdown .docs-api-card__kind {
+  color: var(--ifm-color-gray-700);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.markdown .docs-api-card__meta {
+  color: var(--ifm-color-gray-700);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+html[data-theme='dark'] .markdown .docs-api-card__kind,
+html[data-theme='dark'] .markdown .docs-api-card__meta {
+  color: rgba(226, 232, 240, 0.72);
+}
+
 @media (max-width: 996px) {
   .markdown .docs-markdown-table {
     margin-left: 0;
@@ -171,6 +252,10 @@ html[data-theme='dark'] .markdown .docs-markdown-table__table th code {
 
   .markdown .docs-markdown-table__table {
     min-width: 40rem;
+  }
+
+  .markdown .docs-api-card-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -201,6 +286,11 @@ html[data-theme='dark'] .docusaurus-highlight-code-line {
 .backToTopButton_node_modules-\@docusaurus-theme-classic-lib-theme-BackToTopButton-styles-module {
   box-shadow: var(--ifm-global-shadow-md) !important;
 }
+
+html.examples-demo-page .footer {
+  display: none;
+}
+
 /* map labels style overwrite */
 #view-main > div > div.maplibregl-control-container.mapboxgl-control-container > div.maplibregl-ctrl-bottom-right.mapboxgl-ctrl-bottom-right > details {
   position: absolute !important;
@@ -472,4 +562,16 @@ body:has(.benchmark-page) footer.theme-layout-footer {
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: 1;
+}
+
+.badges {
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.badges img {
+  display: inline-block;
+  margin: 0;
 }

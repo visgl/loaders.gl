@@ -72,9 +72,20 @@ This unifies top-level loading behavior:
 - source loaders now return runtime source objects
 - metadata remains available from the returned runtime object, typically via `await source.getMetadata()`
 
+**@loaders.gl/parquet**
+
+- `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoader`, or `ParquetJSWriter` instead depending on the backend you want.
+- `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. The experimental parquetjs backend now lives behind the explicit `ParquetJSLoader` and `ParquetJSWriter` exports.
+
 **@loaders.gl/images**
 
 - ImageLoader now only returns ImageBitmap (never Image or data), with a polyfill under Node.js. There is a function to extract data from an ImageBitmap?
+
+**@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
+
+- Gaussian splat support is new and opt-in. Use `PLYLoader` with `ply.shape: 'arrow-table'`, or `SPLATLoader` / `KSPLATLoader` from `@loaders.gl/splats`, then pass the returned Mesh Arrow table to `SplatLayer`.
+- `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
+- The CPU/WebGL fallback remains circular-billboard based. Applications that need the oriented Gaussian renderer should request `renderMode: 'gpu'` and handle the clear error raised when the current deck.gl device is not WebGPU.
 
 **@loaders.gl/tiles**
 
@@ -107,6 +118,7 @@ This unifies top-level loading behavior:
 
 - `@loaders.gl/parquet/buffer`, `BufferPolyfill`, and `installBufferPolyfill()` were removed. The JavaScript Parquet parser and writer now use `Uint8Array` internally instead of installing a global `Buffer`.
 - `ParquetLoader` and the experimental parquetjs APIs now return unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` values as `Uint8Array` instead of `Buffer`. Logical values such as `UTF8` and `JSON` are still decoded to JavaScript strings/objects according to the Parquet schema.
+- `ParquetLoader` and `ParquetWriter` are now wasm-only. Use `ParquetJSLoader` and `ParquetJSWriter` for the experimental parquetjs plain-row/plain-table backend.
 
 ## Upgrading to v4.3
 
@@ -234,6 +246,14 @@ Loader module changes, in order of estimated impact to applications:
 - `options.kml.shape` replaces all other mechanisms for specifying format of returned data (`.format` etc), and aligns with the `geojson-table` table shape as this is compatible with a GeoJSON `FeatureCollection`.
 - `options.gpx.shape` applies the same changes as `options.kml.shape`.
 - `options.tcx.shape` applies the same changes as `options.kml.shape`.
+- `options.gpx.shape: 'binary'` and `options.tcx.shape: 'binary'` have been removed. Use `shape: 'binary-geometry'` instead.
+
+**@loaders.gl/mvt, @loaders.gl/mlt, @loaders.gl/flatgeobuf**
+
+- Geospatial loader shapes now use `geojson-table` for GeoJSON feature table output and `binary-geometry` for binary geometry output.
+- The old `geojson` shape has been removed from `MVTLoader` and `MLTLoader`. Use `geojson-table` instead.
+- The old `binary` shape has been removed from `MVTLoader`, `MLTLoader`, and `FlatGeobufLoader`. Use `binary-geometry` instead.
+- `MVTLoader` and `MLTLoader` now default to `geojson-table`.
 
 ## Upgrading to v3.4
 

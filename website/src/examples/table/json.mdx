@@ -1,0 +1,31 @@
+---
+title: "JSON"
+hide_title: true
+---
+
+import {ClientTableLiveExample} from '@site/src/components/docs/client-table-live-example';
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+
+<JsonDocsTabs active="try-it" />
+
+<ClientTableLiveExample
+  config={{
+    loaderName: 'JSONLoader',
+    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/json/test/data/clarinet/sample.json',
+    sampleFiles: [
+      {
+        label: 'sample.json',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/json/test/data/clarinet/sample.json'
+      },
+      {
+        label: 'geojson.json',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/json/test/data/geojson.json'
+      },
+      {
+        label: 'geojson-big.json',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/json/test/data/geojson-big.json'
+      }
+    ],
+    options: {json: {table: true, shape: 'object-row-table'}}
+  }}
+/>

@@ -13,9 +13,9 @@ const categoryTabs = [
         loaders: [
           'DracoArrowLoader',
           'LASArrowLoader',
-          'OBJArrowLoader',
-          'PCDArrowLoader',
-          'PLYArrowLoader',
+          'OBJLoader',
+          'PCDLoader',
+          'PLYLoader',
           'QuantizedMeshArrowLoader',
           'TerrainArrowLoader'
         ],
@@ -58,14 +58,8 @@ const categoryTabs = [
       arrow: {
         data: 'Arrow table data',
         detail: 'Columnar',
-        loaders: [
-          'ArrowLoader',
-          'CSVArrowLoader',
-          'ExcelArrowLoader',
-          'NDJSONArrowLoader',
-          'ParquetArrowLoader'
-        ],
-        writers: ['ArrowWriter', 'CSVArrowWriter', 'ParquetArrowWriter']
+        loaders: ['ArrowLoader', 'CSVLoader', 'ExcelLoader', 'NDJSONLoader', 'ParquetArrowLoader'],
+        writers: ['ArrowWriter', 'ParquetArrowWriter']
       },
       plain: {
         data: 'Table category data',
@@ -212,7 +206,6 @@ const loaderDocumentationLinks = {
   CesiumIonLoader: '/docs/modules/3d-tiles/api-reference/cesium-ion-loader',
   CompressedTextureLoader: '/docs/modules/textures/api-reference/compressed-texture-loader',
   CrunchWorkerLoader: '/docs/modules/textures/api-reference/crunch-loader',
-  CSVArrowLoader: '/docs/modules/csv/api-reference/csv-loader',
   CSVLoader: '/docs/modules/csv/api-reference/csv-loader',
   DracoArrowLoader: '/docs/modules/draco/api-reference/draco-loader',
   DracoLoader: '/docs/modules/draco/api-reference/draco-loader',
@@ -233,15 +226,11 @@ const loaderDocumentationLinks = {
   LASArrowLoader: '/docs/modules/las/api-reference/las-loader',
   LASLoader: '/docs/modules/las/api-reference/las-loader',
   MVTLoader: '/docs/modules/mvt/api-reference/mvt-loader',
-  NDJSONArrowLoader: '/docs/modules/json/api-reference/ndjson-arrow-loader',
   NDJSONLoader: '/docs/modules/json/api-reference/ndjson-loader',
-  OBJArrowLoader: '/docs/modules/obj/api-reference/obj-loader',
   OBJLoader: '/docs/modules/obj/api-reference/obj-loader',
   ParquetArrowLoader: '/docs/modules/parquet/api-reference/parquet-loader',
   ParquetLoader: '/docs/modules/parquet/api-reference/parquet-loader',
-  PCDArrowLoader: '/docs/modules/pcd/api-reference/pcd-loader',
   PCDLoader: '/docs/modules/pcd/api-reference/pcd-loader',
-  PLYArrowLoader: '/docs/modules/ply/api-reference/ply-loader',
   PLYLoader: '/docs/modules/ply/api-reference/ply-loader',
   PotreeLoader: '/docs/modules/potree/api-reference/potree-loader',
   QuantizedMeshArrowLoader: '/docs/modules/terrain/api-reference/quantized-mesh-loader',
@@ -265,7 +254,6 @@ const writerDocumentationLinks = {
   ArrowWriter: '/docs/modules/arrow/api-reference/arrow-writer',
   BSONWriter: '/docs/modules/bson/api-reference/bson-writer',
   CompressedTextureWriter: '/docs/modules/textures/api-reference/compressed-texture-writer',
-  CSVArrowWriter: '/docs/modules/csv/api-reference/csv-writer',
   CSVWriter: '/docs/modules/csv/api-reference/csv-writer',
   DracoWriter: '/docs/modules/draco/api-reference/draco-writer',
   GeoArrowWriter: '/docs/modules/arrow/formats/geoarrow',

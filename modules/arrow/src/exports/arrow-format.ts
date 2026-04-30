@@ -10,6 +10,8 @@ export const ArrowFormat = {
   id: 'arrow',
   module: 'arrow',
   category: 'table',
+  encoding: 'arrow',
+  format: 'arrow',
   extensions: ['arrow', 'feather'],
   mimeTypes: [
     'application/vnd.apache.arrow.file',

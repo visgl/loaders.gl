@@ -23,9 +23,13 @@ export type LASLoaderOptions = LoaderOptions & {
   onProgress?: Function;
 };
 
-/**
- * Loader for the LAS (LASer) point cloud format
- */
+/** Preloads the parser-bearing LAS loader implementation. */
+async function preload() {
+  const {LAZPerfLoaderWithParser} = await import('./lazperf-loader-with-parser');
+  return LAZPerfLoaderWithParser;
+}
+
+/** Metadata-only worker loader for the LAS (LASer) point cloud format. */
 export const LASWorkerLoader = {
   ...LASFormat,
 
@@ -41,5 +45,6 @@ export const LASWorkerLoader = {
       skip: 1,
       colorDepth: 8
     }
-  }
+  },
+  preload
 } as const satisfies Loader<LASMesh, never, LASLoaderOptions>;

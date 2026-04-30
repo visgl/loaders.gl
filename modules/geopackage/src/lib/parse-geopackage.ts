@@ -11,7 +11,14 @@ import type {
   Tables
 } from '@loaders.gl/schema';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
-import {convertGeometryToWKB, convertWKBToGeometry, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {
+  type GeoParquetGeometryType,
+  makeWKBGeometryField,
+  setWKBGeometrySchemaMetadata,
+  convertWKBToGeometry,
+  reprojectWKBInPlace,
+  transformGeoJsonCoords
+} from '@loaders.gl/gis';
 import {Proj4Projection} from '@math.gl/proj4';
 import initSqlJs, {Database, SqlJsStatic, Statement} from 'sql.js';
 
@@ -81,7 +88,7 @@ const DEFAULT_TABLE_MARKERS = new Set(['default', 'default table', 'main', 'prim
 export async function parseGeoPackage(
   arrayBuffer: ArrayBuffer,
   options?: GeoPackageLoaderOptions
-): Promise<GeoJSONTable | Tables<GeoJSONTable>> {
+): Promise<GeoJSONTable | Tables<GeoJSONTable> | ArrowTable> {
   const database = await loadGeoPackageDatabase(
     arrayBuffer,
     options?.geopackage?.sqlJsCDN ?? DEFAULT_SQLJS_CDN
@@ -99,6 +106,8 @@ export async function parseGeoPackage(
         targetCrs: _targetCrs
       });
     }
+    case 'arrow-table':
+      return parseGeoPackageToArrow(arrayBuffer, options);
 
     case 'tables': {
       const outputTables: Tables<GeoJSONTable> = {
@@ -351,11 +360,11 @@ function constructArrowRow(
     const value = row[columnIndex];
 
     if (columnName === geometryColumnName) {
-      const geometry = parseGeometry(value);
-      const projectedGeometry = projection ? reprojectGeometry(geometry, projection) : geometry;
-      arrowRow[GEOMETRY_OUTPUT_COLUMN_NAME] = projectedGeometry
-        ? new Uint8Array(convertGeometryToWKB(projectedGeometry))
-        : null;
+      const wkb = parseGeometryWKB(value);
+      if (wkb && projection) {
+        reprojectWKBInPlace(wkb, coordinate => projection.project(coordinate));
+      }
+      arrowRow[GEOMETRY_OUTPUT_COLUMN_NAME] = wkb;
       continue;
     }
 
@@ -402,6 +411,13 @@ function reprojectGeometry(
  * GeoPackage vector geometries are slightly extended past the WKB standard.
  */
 function parseGeometry(geometryValue: unknown): Geometry | null {
+  const wkb = parseGeometryWKB(geometryValue);
+  return wkb
+    ? convertWKBToGeometry(wkb.buffer.slice(wkb.byteOffset, wkb.byteOffset + wkb.byteLength))
+    : null;
+}
+
+function parseGeometryWKB(geometryValue: unknown): Uint8Array | null {
   if (!geometryValue) {
     return null;
   }
@@ -415,8 +431,7 @@ function parseGeometry(geometryValue: unknown): Geometry | null {
   }
 
   const wkbOffset = 8 + envelopeLength;
-  const wkbBytes = arrayBuffer.slice(wkbOffset);
-  return convertWKBToGeometry(wkbBytes);
+  return new Uint8Array(arrayBuffer, wkbOffset);
 }
 
 function parseGeometryBitFlags(byte: number): GeometryBitFlags {
@@ -499,44 +514,33 @@ function getArrowSchema(database: Database, vectorTable: GeoPackageVectorTableIn
     });
   }
 
-  fields.push({
-    name: GEOMETRY_OUTPUT_COLUMN_NAME,
-    type: 'binary',
-    nullable: true,
-    metadata: {}
-  });
+  fields.push(makeWKBGeometryField(GEOMETRY_OUTPUT_COLUMN_NAME));
 
-  return {
-    fields,
-    metadata: {
-      geo: JSON.stringify({
-        version: '1.1.0',
-        primary_column: GEOMETRY_OUTPUT_COLUMN_NAME,
-        columns: {
-          [GEOMETRY_OUTPUT_COLUMN_NAME]: {
-            encoding: 'wkb',
-            geometry_types: [getGeoMetadataGeometryType(vectorTable)]
-          }
-        }
-      })
-    }
-  };
+  const schema: Schema = {fields, metadata: {}};
+  setWKBGeometrySchemaMetadata(schema, {
+    geometryColumnName: GEOMETRY_OUTPUT_COLUMN_NAME,
+    geometryTypes: [getGeoMetadataGeometryType(vectorTable)]
+  });
+  return schema;
 }
 
-function getGeoMetadataGeometryType(vectorTable: GeoPackageVectorTableInfo): string {
-  const geometryTypeNameMap: Record<GeoPackageGeometryTypes, string> = {
-    GEOMETRY: 'Geometry',
-    POINT: 'Point',
-    LINESTRING: 'LineString',
-    POLYGON: 'Polygon',
-    MULTIPOINT: 'MultiPoint',
-    MULTILINESTRING: 'MultiLineString',
-    MULTIPOLYGON: 'MultiPolygon',
-    GEOMETRYCOLLECTION: 'GeometryCollection'
-  };
+function getGeoMetadataGeometryType(
+  vectorTable: GeoPackageVectorTableInfo
+): GeoParquetGeometryType {
+  const geometryTypeNameMap: Record<GeoPackageGeometryTypes, GeoParquetGeometryType | 'Geometry'> =
+    {
+      GEOMETRY: 'Geometry',
+      POINT: 'Point',
+      LINESTRING: 'LineString',
+      POLYGON: 'Polygon',
+      MULTIPOINT: 'MultiPoint',
+      MULTILINESTRING: 'MultiLineString',
+      MULTIPOLYGON: 'MultiPolygon',
+      GEOMETRYCOLLECTION: 'GeometryCollection'
+    };
 
   const geometryType = geometryTypeNameMap[vectorTable.geometryTypeName] || 'Geometry';
-  return vectorTable.z > 0 ? `${geometryType} Z` : geometryType;
+  return (vectorTable.z > 0 ? `${geometryType} Z` : geometryType) as GeoParquetGeometryType;
 }
 
 function getSqliteFieldType(sqliteType: string | undefined): DataType {

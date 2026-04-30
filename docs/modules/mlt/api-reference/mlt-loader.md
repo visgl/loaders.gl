@@ -67,15 +67,14 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 | `shape` option        | Output                    |
 | --------------------- | ------------------------- |
-| `'geojson'` (default) | `Feature[]`               |
-| `'geojson-table'`     | `GeoJSONTable`            |
-| `'binary'`            | binary feature collection |
+| `'geojson-table'` (default) | `GeoJSONTable`            |
+| `'binary-geometry'`         | binary feature collection |
 
 ## Options
 
 | Option              | Type                                       | Default     | Description                                                    |
 | ------------------- | ------------------------------------------ | ----------- | -------------------------------------------------------------- |
-| `mlt.shape`         | `'geojson-table' \| 'geojson' \| 'binary'` | `geojson`   | Output shape: GeoJSON array, GeoJSON table, or binary features |
+| `mlt.shape`         | `'geojson-table' \| 'binary-geometry'` | `geojson-table` | Output shape: GeoJSON table or binary geometry |
 | `mlt.coordinates`   | `'local' \| 'wgs84'`                       | `local`     | Coordinate system for returned geometries                      |
 | `mlt.tileIndex`     | `{x: number, y: number, z: number}`        | N/A         | Required when `coordinates` is `wgs84`                         |
 | `mlt.layerProperty` | `string`                                   | `layerName` | Name of layer property added to feature properties             |
@@ -90,4 +89,4 @@ const geoJSONfeatures = await load(url, MLTLoader, {
 
 ## Attribution
 
-`MLTLoader` implements loaders.gl integration, GeoJSON/binary shaping, and coordinate projection around the [@maplibre/mlt](https://github.com/maplibre/mlt) decoder and the [MapLibre Tile specification](https://github.com/maplibre/maplibre-tile-spec).
+`MLTLoader` implements loaders.gl integration, GeoJSON table and binary geometry shaping, and coordinate projection around the [@maplibre/mlt](https://github.com/maplibre/mlt) decoder and the [MapLibre Tile specification](https://github.com/maplibre/maplibre-tile-spec).

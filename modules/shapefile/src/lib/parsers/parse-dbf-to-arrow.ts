@@ -34,11 +34,14 @@ enum STATE {
 class DBFParser {
   binaryReader = new BinaryChunkReader();
   textDecoder: TextDecoder;
+  options: DBFLoaderOptions;
   state = STATE.START;
   result: DBFResult = {};
 
-  constructor(options: {encoding: string}) {
-    this.textDecoder = new TextDecoder(options.encoding);
+  constructor(options: DBFLoaderOptions) {
+    const {encoding = 'latin1'} = options.dbf || {};
+    this.options = options;
+    this.textDecoder = new TextDecoder(encoding);
   }
 
   /**
@@ -46,7 +49,13 @@ class DBFParser {
    */
   write(arrayBuffer: ArrayBuffer): void {
     this.binaryReader.write(arrayBuffer);
-    this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
+    this.state = parseState(
+      this.state,
+      this.result,
+      this.binaryReader,
+      this.textDecoder,
+      this.options
+    );
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
 
     // important events:
@@ -57,7 +66,13 @@ class DBFParser {
 
   end(): void {
     this.binaryReader.end();
-    this.state = parseState(this.state, this.result, this.binaryReader, this.textDecoder);
+    this.state = parseState(
+      this.state,
+      this.result,
+      this.binaryReader,
+      this.textDecoder,
+      this.options
+    );
     // this.result.progress.bytesUsed = this.binaryReader.bytesUsed();
     if (this.state !== STATE.END) {
       this.state = STATE.ERROR;
@@ -72,9 +87,13 @@ class DBFParser {
  * @returns DBFTable or rows
  */
 export function parseDBF(arrayBuffer: ArrayBuffer, options: DBFLoaderOptions = {}): ArrowTable {
-  const {encoding = 'latin1'} = options.dbf || {};
-
-  const dbfParser = new DBFParser({encoding});
+  const dbfParser = new DBFParser({
+    ...options,
+    dbf: {
+      ...options.dbf,
+      batchSize: undefined
+    }
+  });
   dbfParser.write(arrayBuffer);
   dbfParser.end();
 
@@ -93,27 +112,49 @@ export async function* parseDBFInBatches(
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options: DBFLoaderOptions = {}
 ): AsyncIterable<ArrowTableBatch> {
-  const {encoding = 'latin1'} = options.dbf || {};
+  const batchSize = options.dbf?.batchSize || Number.POSITIVE_INFINITY;
 
-  const parser = new DBFParser({encoding});
+  const parser = new DBFParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
     parser.write(arrayBuffer);
     if (!headerReturned && parser.result.dbfHeader) {
       headerReturned = true;
       const tableBuilder = parser.result.tableBuilder!;
-      const tableBatch = tableBuilder.firstBatch();
-      if (tableBatch) {
-        yield tableBatch;
+      if (tableBuilder.length === 0) {
+        const tableBatch = tableBuilder.firstBatch();
+        if (tableBatch) {
+          yield tableBatch;
+        }
       }
     }
     const tableBuilder = parser.result.tableBuilder!;
-    const tableBatch = tableBuilder.flushBatch();
-    if (tableBatch) {
-      yield tableBatch;
+    while (
+      batchSize === Number.POSITIVE_INFINITY
+        ? tableBuilder.length > 0
+        : tableBuilder.length >= batchSize
+    ) {
+      const tableBatch = tableBuilder.flushBatch();
+      if (tableBatch) {
+        yield tableBatch;
+      }
+      parser.state = parseState(
+        parser.state,
+        parser.result,
+        parser.binaryReader,
+        parser.textDecoder,
+        parser.options
+      );
     }
   }
-  parser.end();
+  parser.binaryReader.end();
+  parser.state = parseState(parser.state, parser.result, parser.binaryReader, parser.textDecoder, {
+    ...parser.options,
+    dbf: {
+      ...parser.options.dbf,
+      batchSize: undefined
+    }
+  });
   const tableBuilder = parser.result.tableBuilder!;
   const tableBatch = tableBuilder.finishBatch();
   if (tableBatch) {
@@ -134,7 +175,8 @@ function parseState(
   state: STATE,
   result: DBFResult,
   binaryReader: BinaryChunkReader,
-  textDecoder: TextDecoder
+  textDecoder: TextDecoder,
+  options: DBFLoaderOptions
 ): STATE {
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -186,9 +228,11 @@ function parseState(
 
         case STATE.FIELD_PROPERTIES:
           const {recordLength = 0, nRecords = 0} = result?.dbfHeader || {};
-          let rowCount = 0;
-          while (rowCount < nRecords) {
-            rowCount++;
+          while ((result.progress?.rows || 0) < nRecords) {
+            const batchSize = options.dbf?.batchSize || Number.POSITIVE_INFINITY;
+            if ((result.tableBuilder?.length || 0) >= batchSize) {
+              return state;
+            }
 
             const recordView = binaryReader.getDataView(recordLength - 1);
             if (!recordView) {
@@ -200,7 +244,7 @@ function parseState(
             // @ts-ignore
             const row = parseRow(recordView, result.dbfFields, textDecoder);
             result.tableBuilder!.addObjectRow(row);
-            // result.progress.rows = result.data.length;
+            result.progress!.rows++;
           }
           state = STATE.END;
           break;

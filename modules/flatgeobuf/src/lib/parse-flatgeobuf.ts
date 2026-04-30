@@ -3,7 +3,13 @@
 // Copyright (c) vis.gl contributors
 
 import {Proj4Projection} from '@math.gl/proj4';
-import {convertGeometryToWKB, transformGeoJsonCoords} from '@loaders.gl/gis';
+import {
+  encodeWKBGeometryValue,
+  type GeoParquetGeometryType,
+  makeWKBGeometryField,
+  setWKBGeometrySchemaMetadata,
+  transformGeoJsonCoords
+} from '@loaders.gl/gis';
 import {ArrowTableBuilder} from '@loaders.gl/schema-utils';
 
 import type {
@@ -34,7 +40,7 @@ const deserializeGeneric = generic.deserialize;
 const GEOMETRY_COLUMN_NAME = 'geometry';
 
 export type ParseFlatGeobufOptions = {
-  shape?: 'geojson-table' | 'columnar-table' | 'binary' | 'arrow-table';
+  shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
   /** If supplied, only loads features within the bounding box */
   boundingBox?: [[number, number], [number, number]];
   /** Desired output CRS */
@@ -62,7 +68,7 @@ export function parseFlatGeobuf(arrayBuffer: ArrayBuffer, options: ParseFlatGeob
       // @ts-expect-error
       return {shape: 'columnar-table', data: binary};
 
-    case 'binary':
+    case 'binary-geometry':
       // @ts-expect-error
       return parseFlatGeobufToBinary(arrayBuffer, options);
 
@@ -167,7 +173,7 @@ function parseFlatGeobufToArrowTable(
 export function parseFlatGeobufInBatches(stream, options: ParseFlatGeobufOptions) {
   const shape = options.shape;
   switch (shape) {
-    case 'binary':
+    case 'binary-geometry':
       return parseFlatGeobufInBatchesToBinary(stream, options);
     case 'geojson-table':
       return parseFlatGeobufInBatchesToGeoJSON(stream, options);
@@ -296,31 +302,23 @@ export function makeArrowSchema(fgbHeader?: fgb.HeaderMeta): Schema {
   const fields = sourceSchema.fields.map((field, fieldIndex) =>
     normalizeFieldForArrow(field, fgbHeader?.columns?.[fieldIndex]?.type)
   );
-  fields.push({
-    name: GEOMETRY_COLUMN_NAME,
-    type: 'binary',
-    nullable: true,
-    metadata: {}
-  });
+  fields.push(makeWKBGeometryField(GEOMETRY_COLUMN_NAME));
 
   const geometryTypes = getGeometryTypesForMetadata(fgbHeader?.geometryType);
 
-  return {
+  const schema: Schema = {
     fields,
     metadata: {
-      ...sourceSchema.metadata,
-      geo: JSON.stringify({
-        version: '1.1.0',
-        primary_column: GEOMETRY_COLUMN_NAME,
-        columns: {
-          [GEOMETRY_COLUMN_NAME]: {
-            encoding: 'wkb',
-            geometry_types: geometryTypes
-          }
-        }
-      })
+      ...sourceSchema.metadata
     }
   };
+
+  setWKBGeometrySchemaMetadata(schema, {
+    geometryColumnName: GEOMETRY_COLUMN_NAME,
+    geometryTypes
+  });
+
+  return schema;
 }
 
 function normalizeFieldForArrow(field: Field, columnType?: ColumnType): Field {
@@ -340,9 +338,7 @@ export function makeArrowRow(
   const normalizedGeometry = feature.geometry
     ? normalizeGeometryForHeader(feature.geometry, fgbHeader?.geometryType)
     : null;
-  row[GEOMETRY_COLUMN_NAME] = normalizedGeometry
-    ? new Uint8Array(convertGeometryToWKB(normalizedGeometry))
-    : null;
+  row[GEOMETRY_COLUMN_NAME] = encodeWKBGeometryValue(normalizedGeometry);
   return row;
 }
 
@@ -388,7 +384,7 @@ export function getProjection(
   }
 }
 
-function getGeometryTypesForMetadata(geometryType?: GeometryType): string[] {
+function getGeometryTypesForMetadata(geometryType?: GeometryType): GeoParquetGeometryType[] {
   switch (geometryType) {
     case GeometryType.Point:
       return ['Point'];

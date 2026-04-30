@@ -132,7 +132,8 @@ export async function loadCompositeImageMember(
   }
 
   const arrayBuffer = await response.arrayBuffer();
-  return await ImageBitmapLoader.parse(arrayBuffer, subloaderOptions as any);
+  const imageBitmapLoader = await ImageBitmapLoader.preload();
+  return await imageBitmapLoader.parse(arrayBuffer, subloaderOptions as any);
 }
 
 export async function getCompositeImageUrlTree(

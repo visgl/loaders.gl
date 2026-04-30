@@ -1,0 +1,83 @@
+<svg width="1200" height="420" viewBox="0 0 1200 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="page" x1="80" y1="48" x2="1120" y2="372" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6FBFF"/>
+      <stop offset="1" stop-color="#F7F8FC"/>
+    </linearGradient>
+    <linearGradient id="dataA" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#0CA7E6"/>
+      <stop offset="1" stop-color="#27C3A7"/>
+    </linearGradient>
+    <linearGradient id="dataB" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FF8A3D"/>
+      <stop offset="1" stop-color="#FFB347"/>
+    </linearGradient>
+    <linearGradient id="convert" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#14324B"/>
+      <stop offset="1" stop-color="#28596B"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0E2234" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="16" markerHeight="16" refX="14" refY="8" orient="auto">
+      <path d="M1 1L14 8L1 15" stroke="#4E7185" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="420" rx="24" fill="url(#page)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="78" y="70" width="276" height="280" rx="20" fill="white" stroke="#CFE0EC" stroke-width="2"/>
+    <rect x="462" y="52" width="276" height="316" rx="20" fill="white" stroke="#CFE0EC" stroke-width="2"/>
+    <rect x="846" y="70" width="276" height="280" rx="20" fill="white" stroke="#CFE0EC" stroke-width="2"/>
+  </g>
+
+  <text x="112" y="110" fill="#1680AB" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Input data</text>
+  <text x="496" y="92" fill="#225467" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Converters</text>
+  <text x="880" y="110" fill="#1680AB" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Output data</text>
+
+  <g>
+    <rect x="112" y="140" width="208" height="54" rx="12" fill="url(#dataA)"/>
+    <text x="136" y="173" fill="white" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">GeoJSON</text>
+
+    <rect x="112" y="214" width="208" height="54" rx="12" fill="url(#dataB)"/>
+    <text x="136" y="247" fill="#402200" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">Arrow table</text>
+
+    <rect x="112" y="288" width="208" height="34" rx="10" fill="#EFF5F8" stroke="#D8E3EA"/>
+    <text x="136" y="310" fill="#4C6676" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="600">shape detected from input</text>
+  </g>
+
+  <g>
+    <rect x="496" y="122" width="208" height="52" rx="12" fill="url(#convert)"/>
+    <text x="520" y="154" fill="white" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">TableConverter</text>
+
+    <rect x="496" y="192" width="208" height="52" rx="12" fill="url(#convert)"/>
+    <text x="520" y="224" fill="white" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">ArrowConverter</text>
+
+    <rect x="496" y="262" width="208" height="52" rx="12" fill="url(#convert)"/>
+    <text x="520" y="294" fill="white" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">GeometryConverter</text>
+
+    <rect x="496" y="332" width="208" height="20" rx="10" fill="#DCE7EE"/>
+    <text x="514" y="347" fill="#4C6676" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="600">dispatcher picks the shortest path</text>
+  </g>
+
+  <g>
+    <rect x="880" y="140" width="208" height="54" rx="12" fill="url(#dataA)"/>
+    <text x="904" y="173" fill="white" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">GeoArrow</text>
+
+    <rect x="880" y="214" width="208" height="54" rx="12" fill="url(#dataB)"/>
+    <text x="904" y="247" fill="#402200" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">WKB</text>
+
+    <rect x="880" y="288" width="208" height="34" rx="10" fill="#EFF5F8" stroke="#D8E3EA"/>
+    <text x="904" y="310" fill="#4C6676" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="600">same API, different shape</text>
+  </g>
+
+  <path d="M354 210H448" stroke="#4E7185" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/>
+  <path d="M738 210H832" stroke="#4E7185" stroke-width="4" stroke-linecap="round" marker-end="url(#arrow)"/>
+
+  <rect x="405" y="180" width="40" height="60" rx="20" fill="#E8F1F6"/>
+  <text x="418" y="217" fill="#4E7185" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">1</text>
+
+  <rect x="790" y="180" width="40" height="60" rx="20" fill="#E8F1F6"/>
+  <text x="803" y="217" fill="#4E7185" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700">2</text>
+</svg>

@@ -8,8 +8,8 @@ import {CoreAPI, DataSource, LoaderWithParser, resolvePath} from '@loaders.gl/lo
 import {LASLoader} from '@loaders.gl/las';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {POTreeNode} from '../parsers/parse-potree-hierarchy-chunk';
-import {PotreeHierarchyChunkLoader} from '../potree-hierarchy-chunk-loader';
-import {PotreeLoader} from '../potree-loader';
+import {PotreeHierarchyChunkLoaderWithParser} from '../potree-hierarchy-chunk-loader-with-parser';
+import {PotreeLoaderWithParser} from '../potree-loader-with-parser';
 import {parseVersion} from '../utils/parse-version';
 import {Proj4Projection} from '@math.gl/proj4';
 import {LASMesh} from '@loaders.gl/las/src/lib/las-types';
@@ -72,7 +72,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       await this.initPromise;
       return;
     }
-    this.metadata = await this.loadWithCoreApi(`${this.baseUrl}/cloud.js`, PotreeLoader);
+    this.metadata = await this.loadWithCoreApi(`${this.baseUrl}/cloud.js`, PotreeLoaderWithParser);
     this.projection = createProjection(this.metadata?.projection);
     this.parseBoundingVolume();
 
@@ -197,7 +197,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
   private async loadHierarchy(): Promise<void> {
     this.root = await this.loadWithCoreApi(
       `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
-      PotreeHierarchyChunkLoader
+      PotreeHierarchyChunkLoaderWithParser
     );
   }
 

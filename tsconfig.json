@@ -83,6 +83,12 @@
       "@loaders.gl/compression/test": [
         "modules/compression/test"
       ],
+      "@loaders.gl/copc": [
+        "modules/copc/src"
+      ],
+      "@loaders.gl/copc/test": [
+        "modules/copc/test"
+      ],
       "@loaders.gl/crypto": [
         "modules/crypto/src"
       ],
@@ -103,6 +109,9 @@
       ],
       "@loaders.gl/csv": [
         "modules/csv/src"
+      ],
+      "@loaders.gl/csv/*": [
+        "modules/csv/src/*"
       ],
       "@loaders.gl/csv/test": [
         "modules/csv/test"
@@ -242,6 +251,15 @@
       "@loaders.gl/ply/test": [
         "modules/ply/test"
       ],
+      "@loaders.gl/splats": [
+        "modules/splats/src"
+      ],
+      "@loaders.gl/splats/*": [
+        "modules/splats/src/*"
+      ],
+      "@loaders.gl/splats/test": [
+        "modules/splats/test"
+      ],
       "@loaders.gl/potree": [
         "modules/potree/src"
       ],
@@ -277,6 +295,12 @@
       ],
       "@loaders.gl/textures/test": [
         "modules/textures/test"
+      ],
+      "@loaders.gl/traces": [
+        "modules/traces/src"
+      ],
+      "@loaders.gl/traces/test": [
+        "modules/traces/test"
       ],
       "@loaders.gl/video": [
         "modules/video/src"

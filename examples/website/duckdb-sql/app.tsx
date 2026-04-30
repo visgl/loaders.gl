@@ -16,6 +16,7 @@ import maplibregl from 'maplibre-gl'
 import {createDataSource} from '@loaders.gl/core'
 import {DuckDBSQLSource} from '@loaders.gl/sql'
 import type {DuckDBSQLDataSource} from '@loaders.gl/sql'
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget'
 
 type Point = {
   type: 'Point'
@@ -194,6 +195,10 @@ export default function App() {
       }),
     [featureCollection]
   )
+  const widgets = useMemo(
+    () => [createDeckFullscreenWidget('duckdb-sql-fullscreen'), createDeckStatsWidget('duckdb-sql-stats')],
+    []
+  )
 
   return (
     <div style={pageStyle}>
@@ -233,6 +238,7 @@ export default function App() {
           initialViewState={INITIAL_VIEW_STATE}
           controller={{type: MapController}}
           layers={[layer]}
+          widgets={widgets}
           getTooltip={({object}: {object?: Feature<Point>}) => {
             if (!object?.properties) {
               return null

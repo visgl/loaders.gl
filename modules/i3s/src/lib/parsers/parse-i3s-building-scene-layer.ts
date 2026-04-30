@@ -4,15 +4,15 @@ const OBJECT_3D_LAYER_TYPE = '3DObject';
 
 /**
  * Parses Builiding Scene Layer and creates tileset
- * @param data
- * @param options
- * @param context
+ * @param data - Building scene layer JSON as text or encoded bytes.
+ * @param url - URL used as the base for sublayer URLs.
  */
 export async function parseBuildingSceneLayer(
-  data: ArrayBuffer,
+  data: string | ArrayBuffer,
   url: string
 ): Promise<BuildingSceneLayerTileset> {
-  const layer0 = JSON.parse(new TextDecoder().decode(data));
+  const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
+  const layer0 = JSON.parse(text);
   const {sublayers} = layer0;
 
   return {

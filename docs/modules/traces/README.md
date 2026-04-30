@@ -1,14 +1,24 @@
-# @loaders.gl/traces
+import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
 
-The `@loaders.gl/traces` module will provide parsers for performance trace formats.
+# Traces
 
-## Scope
+<TracesDocsTabs active="overview" />
 
-- Chrome Trace Event format
-- Perfetto Trace format
+The `@loaders.gl/traces` module provides parsers for browser and system performance trace formats.
 
-## Current APIs
+## Installation
 
-- `ChromeTraceLoader`
-- `parseChromeTrace(...)`
-- Chrome trace streaming helpers for logical events, Arrow batches, and chunked files
+```bash
+npm install @loaders.gl/core @loaders.gl/traces
+```
+
+## Loaders
+
+| Loader                                                                      | Description                                      |
+| --------------------------------------------------------------------------- | ------------------------------------------------ |
+| [`ChromeTraceLoader`](/docs/modules/traces/api-reference/chrome-trace-loader) | Loads Chrome Trace Event JSON as JSON or Arrow. |
+
+## Additional APIs
+
+`@loaders.gl/traces` also exports `parseChromeTrace(...)` and streaming helpers for logical events,
+Arrow batches, and chunked Chrome trace files.

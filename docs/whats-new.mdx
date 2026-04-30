@@ -6,10 +6,13 @@ Release Date: 2026
 
 **Highlights**
 
-- **Documentation** - Interactive graphical docs explain loaders.gl concepts, loader pages have live previews.
+- **Documentation** - Interactive graphical docs explain loaders.gl concepts, loader pages have live previews, related pages are navigable using tabs.
+- **Apache Arrow Support** - All loaders and writers now return/accept Apache Arrow tables via `shape: 'arrow-table'`.
+- **Unbundled loaders** - Loader modules can expose metadata-only loaders from `/unbundled` subpaths, using imports such as `import {CSVLoader} from '@loaders.gl/csv/unbundled';`, so applications can support rarely used formats without putting every parser implementation in the main bundle.
+- **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
+- **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF website examples.
-- **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables. 
-- **Benchmarks** - Now includes external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
+- **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
 
 **Features**
 
@@ -32,6 +35,12 @@ Release Date: 2026
 **@loaders.gl/ply**
 
 - [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
+- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
+
+**@loaders.gl/splats**
+
+- [`SPLATLoader`](/docs/modules/splats/api-reference/splat-loader) NEW - loads raw `.splat` Gaussian splat files into Mesh Arrow tables.
+- [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) NEW - loads GaussianSplats3D `.ksplat` files into Mesh Arrow tables.
 
 **@loaders.gl/terrain**
 
@@ -39,13 +48,32 @@ Release Date: 2026
 
 **@loaders.gl/csv** 
   
-- `CSVArrowLoader` NEW - is now the official Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
-- `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
-- `CSVArrowWriter` NEW writes Apache Arrow tables to CSV text.
+- `CSVLoader` supports `csv.shape: 'arrow-table'` for Apache Arrow table output. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
+- `CSVLoader` adds a byte-oriented Arrow parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
+- The root `CSVLoader` export is now a metadata-only loader that works with core async APIs through dynamic preload.
+- `CSVLoader` is available from `@loaders.gl/csv/unbundled` as a metadata-only loader that dynamically imports the parser-bearing implementation on first async use. See [Using Unbundled Loaders](/docs/developer-guide/using-unbundled-loaders).
+- `CSVLoader` is also available from `@loaders.gl/csv/bundled` as an explicit parser-bearing import.
+
+**@loaders.gl/core**
+
+- `preload(loader)` now returns and caches parser-bearing implementations for unbundled loaders.
+- `preloadSync(loader)` NEW returns a cached parser-bearing implementation, or `null` if the loader has not been preloaded.
+
+**@loaders.gl/deck-layers**
+
+- `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.
+- `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
+- `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.
 
 **@loaders.gl/loader-utils**
 
 - `RasterSource`, `RasterData`, `RasterViewport`, and `GetRasterParameters` NEW - shared typed raster contracts for viewport-driven sources.
+- `LoaderOptions.core.shape` is now documented as the shared shape default for compatible loaders, with consistent propagation during option normalization and batch parsing.
+
+**@loaders.gl/parquet**
+
+- [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) NEW - add the experimental parquetjs plain-row and plain-table APIs.
+- `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) is now documented for selecting object-row or Arrow output from the canonical wasm-backed loader.
 
 **@loaders.gl/geotiff**
 

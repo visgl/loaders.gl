@@ -5,7 +5,8 @@
 import test from 'tape-promise/tape';
 import type {Feature} from '@loaders.gl/schema';
 
-import {MLTLoader, MLTSourceLoader} from '@loaders.gl/mlt';
+import {MLTSourceLoader} from '@loaders.gl/mlt';
+import {MLTLoaderWithParser as MLTLoader} from '../src/mlt-loader-with-parser';
 import {getURLFromTemplate} from '../src/mlt-source-loader';
 
 test('MLTSourceLoader#testURL', t => {
@@ -67,7 +68,7 @@ test('MLTTileSource#getTileData returns Feature[] by default', async t => {
 
   MLTLoader.parse = (async (arrayBuffer: ArrayBuffer, options?: unknown) => {
     parseOptions.options = options;
-    return [feature];
+    return {shape: 'geojson-table', type: 'FeatureCollection', features: [feature]};
   }) as unknown as typeof MLTLoader.parse;
 
   const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
@@ -78,7 +79,7 @@ test('MLTTileSource#getTileData returns Feature[] by default', async t => {
       id: '1/2/3',
       bbox: {west: 0, north: 0, east: 0, south: 0}
     });
-    t.equal((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape, 'geojson');
+    t.equal((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape, 'geojson-table');
     t.equal((parseOptions.options as {mlt?: {coordinates?: string}})?.mlt?.coordinates, 'wgs84');
     t.deepEqual(tile, [feature]);
   } finally {

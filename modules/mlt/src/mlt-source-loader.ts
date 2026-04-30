@@ -11,7 +11,8 @@ import type {
 } from '@loaders.gl/loader-utils';
 import type {BinaryFeatureCollection, Schema, Feature} from '@loaders.gl/schema';
 import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
-import {MLTLoader, MLTLoaderOptions} from './mlt-loader';
+import {MLTLoaderWithParser} from './mlt-loader-with-parser';
+import type {MLTLoaderOptions} from './mlt-loader';
 import {MLTFormat} from './mlt-format';
 
 export type MLTSourceLoaderOptions = DataSourceOptions & {
@@ -23,7 +24,7 @@ export type MLTSourceLoaderOptions = DataSourceOptions & {
     /** Coordinates for parsed tile geometries. */
     coordinates?: 'wgs84' | 'local';
     /** Shape of returned data. */
-    shape?: 'geojson-table' | 'geojson' | 'binary';
+    shape?: 'geojson-table' | 'binary-geometry';
     /** Optional layer filter. */
     layers?: string[];
   };
@@ -175,7 +176,7 @@ export class MLTTileSource
   ): Promise<Feature[] | BinaryFeatureCollection | null> {
     const options: MLTSourceLoaderOptions = this.options;
     const coordinates = options.mlt?.coordinates || 'wgs84';
-    const shape = options.mlt?.shape || 'geojson';
+    const shape = options.mlt?.shape || 'geojson-table';
     const tileIndex =
       coordinates === 'wgs84'
         ? {x: tileParameters.x, y: tileParameters.y, z: tileParameters.z}
@@ -191,16 +192,15 @@ export class MLTTileSource
       }
     };
 
-    const parsed = await MLTLoader.parse(arrayBuffer, loadOptions);
+    const parsed = await MLTLoaderWithParser.parse(arrayBuffer, loadOptions);
     if (shape === 'geojson-table') {
       return (parsed as {features: Feature[]}).features || null;
     }
 
-    if (shape === 'binary') {
+    if (shape === 'binary-geometry') {
       return parsed as BinaryFeatureCollection;
     }
-
-    return parsed as Feature[];
+    return (parsed as {features: Feature[]}).features || null;
   }
 
   getTileURL(x: number, y: number, z: number) {

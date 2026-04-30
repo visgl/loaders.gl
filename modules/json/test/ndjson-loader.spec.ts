@@ -16,6 +16,25 @@ test('NDJSONLoader#load(ndjson.ndjson)', async t => {
   t.end();
 });
 
+test('NDJSONLoader#load(ndjson.ndjson, shape: arrow-table)', async t => {
+  const classicTable = await load(NDJSON_PATH, NDJSONLoader);
+  const table = await load(NDJSON_PATH, NDJSONLoader, {ndjson: {shape: 'arrow-table'}});
+  t.equal(table.shape, 'arrow-table', 'Correct Arrow table type received');
+  t.equal(table.data.numRows, classicTable.data.length, 'row count matches default NDJSONLoader');
+
+  for (let rowIndex = 0; rowIndex < classicTable.data.length; rowIndex++) {
+    for (const [fieldName, value] of Object.entries(classicTable.data[rowIndex])) {
+      t.equal(
+        table.data.getChild(fieldName)?.get(rowIndex),
+        value,
+        `${fieldName} row ${rowIndex} matches default NDJSONLoader`
+      );
+    }
+  }
+
+  t.end();
+});
+
 test('NDJSONLoader#load(ndjson-invalid.ndjson)', async t => {
   await t.rejects(
     () => load(NDJSON_INVALID_PATH, NDJSONLoader),
@@ -81,6 +100,50 @@ test('NDJSONLoader#loadInBatches(ndjson.ndjson, rows, batchSize = 5)', async t =
   t.end();
 });
 
+test('NDJSONLoader#loadInBatches(ndjson.ndjson, shape: arrow-table, batchSize = 5)', async t => {
+  const classicIterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
+    batchSize: 5
+  });
+  const classicBatches: any[] = [];
+  for await (const batch of classicIterator) {
+    classicBatches.push(batch);
+  }
+
+  const iterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
+    batchSize: 5,
+    ndjson: {shape: 'arrow-table'}
+  });
+
+  let batchCount = 0;
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    const classicBatch = classicBatches[batchCount];
+    t.equal(batch.shape, 'arrow-table', `Got correct Arrow batch type for batch ${batchCount}`);
+    t.equal(
+      batch.data.numRows,
+      classicBatch.length,
+      `batch ${batchCount} row count matches default NDJSONLoader`
+    );
+
+    for (let rowIndex = 0; rowIndex < classicBatch.data.length; rowIndex++) {
+      for (const [fieldName, value] of Object.entries(classicBatch.data[rowIndex])) {
+        t.equal(
+          batch.data.getChild(fieldName)?.get(rowIndex),
+          value,
+          `batch ${batchCount} ${fieldName} row ${rowIndex} matches default NDJSONLoader`
+        );
+      }
+    }
+
+    rowCount += batch.data.numRows;
+    batchCount++;
+  }
+
+  t.equal(batchCount, classicBatches.length, 'batch count matches default NDJSONLoader');
+  t.equal(rowCount, 11, 'Correct number of Arrow rows received');
+  t.end();
+});
+
 test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async t => {
   const iterator = await loadInBatches(NDJSON_INVALID_PATH, NDJSONLoader, {
     batchSize: 5
@@ -99,11 +162,35 @@ test.skip('NDJSONLoader#loadInBatches(ndjson-invalid.ndjson)', async t => {
   t.end();
 });
 
+test('NDJSONLoader#load(ndjson-empty-objects.ndjson, shape: arrow-table)', async t => {
+  const table = await load(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader, {
+    ndjson: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'Correct table type received');
+  t.equal(table.data.numCols, 0, 'Correct number of columns received');
+  t.equal(table.data.numRows, 3, 'Correct number of rows received');
+  t.end();
+});
+
 test('NDJSONArrowLoader#load(ndjson.ndjson)', async t => {
   const classicTable = await load(NDJSON_PATH, NDJSONLoader);
   const table = await load(NDJSON_PATH, NDJSONArrowLoader);
+  const mainLoaderArrowTable = await load(NDJSON_PATH, NDJSONLoader, {
+    ndjson: {shape: 'arrow-table'}
+  });
   t.equal(table.shape, 'arrow-table', 'Correct table type received');
   t.equal(table.data.numRows, classicTable.data.length, 'row count matches NDJSONLoader');
+  t.equal(
+    mainLoaderArrowTable.shape,
+    'arrow-table',
+    'main loader returns Arrow table when requested'
+  );
+  t.deepEqual(
+    table.data.toArray().map(row => row.toJSON()),
+    mainLoaderArrowTable.data.toArray().map(row => row.toJSON()),
+    'wrapper matches main loader arrow-table output'
+  );
 
   for (let rowIndex = 0; rowIndex < classicTable.data.length; rowIndex++) {
     for (const [fieldName, value] of Object.entries(classicTable.data[rowIndex])) {
@@ -139,17 +226,31 @@ test('NDJSONArrowLoader#loadInBatches(ndjson.ndjson, batchSize = 5)', async t =>
   const iterator = await loadInBatches(NDJSON_PATH, NDJSONArrowLoader, {
     batchSize: 5
   });
+  const mainLoaderIterator = await loadInBatches(NDJSON_PATH, NDJSONLoader, {
+    batchSize: 5,
+    ndjson: {shape: 'arrow-table'}
+  });
+  const mainLoaderArrowBatches: any[] = [];
+  for await (const batch of mainLoaderIterator) {
+    mainLoaderArrowBatches.push(batch);
+  }
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
   let batchCount = 0;
   let rowCount = 0;
   for await (const batch of iterator) {
     const classicBatch = classicBatches[batchCount];
+    const mainLoaderArrowBatch = mainLoaderArrowBatches[batchCount];
     t.equal(batch.shape, 'arrow-table', `Got correct batch type for batch ${batchCount}`);
     t.equal(
       batch.data.numRows,
       classicBatch.length,
       `batch ${batchCount} row count matches NDJSONLoader`
+    );
+    t.equal(
+      mainLoaderArrowBatch.data.numRows,
+      batch.data.numRows,
+      `batch ${batchCount} row count matches main loader arrow-table output`
     );
 
     for (let rowIndex = 0; rowIndex < classicBatch.data.length; rowIndex++) {
@@ -181,39 +282,22 @@ test('NDJSONArrowLoader#load(ndjson-empty-objects.ndjson)', async t => {
   t.end();
 });
 
-test('NDJSONArrowLoader#loadInBatches(ndjson-empty-objects.ndjson, batchSize = 2)', async t => {
-  const classicIterator = await loadInBatches(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader, {
-    batchSize: 2
-  });
-  const classicBatches: any[] = [];
-  for await (const batch of classicIterator) {
-    classicBatches.push(batch);
-  }
-
-  const iterator = await loadInBatches(NDJSON_EMPTY_OBJECTS_PATH, NDJSONArrowLoader, {
-    batchSize: 2
+test('NDJSONLoader#loadInBatches(ndjson-empty-objects.ndjson, shape: arrow-table, batchSize = 2)', async t => {
+  const iterator = await loadInBatches(NDJSON_EMPTY_OBJECTS_PATH, NDJSONLoader, {
+    batchSize: 2,
+    ndjson: {shape: 'arrow-table'}
   });
 
   let batchCount = 0;
   let rowCount = 0;
   for await (const batch of iterator) {
-    const classicBatch = classicBatches[batchCount];
     t.equal(batch.shape, 'arrow-table', `Got correct batch type for batch ${batchCount}`);
     t.equal(batch.data.numCols, 0, `Got correct column count for batch ${batchCount}`);
-    t.equal(
-      batch.data.numRows,
-      classicBatch.length,
-      `batch ${batchCount} row count matches NDJSONLoader`
-    );
     rowCount += batch.data.numRows;
     batchCount++;
   }
 
-  t.equal(batchCount, classicBatches.length, 'batch count matches NDJSONLoader');
-  t.equal(
-    rowCount,
-    classicBatches.reduce((sum, batch) => sum + batch.length, 0),
-    'row count matches'
-  );
+  t.equal(batchCount, 2, 'Correct number of batches received');
+  t.equal(rowCount, 3, 'Correct number of rows received');
   t.end();
 });

@@ -1,8 +1,14 @@
-# Shapefile
+---
+title: "Shapefile"
+hide_title: true
+---
 
 import Demo from 'examples/website/geospatial/app';
+import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
 
-<div style={{height: '100vh'}}> 
+<ShapefileDocsTabs active="try-it" />
+
+<div style={{height: 'calc(100vh - 76px)'}}> 
   <Demo format="Shapefile" >
     [**`ShapefileLoader`**](/docs/modules/arrow/api-reference/geopackage-loader) loads Esri Shapefiles, optionally into GeoJSON.
   </Demo>

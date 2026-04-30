@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {BinaryGeometry} from '@loaders.gl/schema';
 import {toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import {BinaryChunkReader} from '../streaming/binary-chunk-reader';
 import {parseSHPHeader, SHPHeader} from './parse-shp-header';
-import {parseRecord} from './parse-shp-geometry';
+import {parseRecordToWKB} from './parse-shp-geometry';
 import {SHPLoaderOptions} from './types';
 
 const LITTLE_ENDIAN = true;
@@ -24,8 +23,11 @@ const STATE = {
   ERROR: 3
 };
 
-type SHPResult = {
-  geometries: (BinaryGeometry | null)[];
+/**
+ * A complete or partial result from the SHP file parser.
+ */
+export type SHPResult = {
+  geometries: (Uint8Array | null)[];
   header?: SHPHeader;
   error?: string;
   progress: {
@@ -72,12 +74,17 @@ class SHPParser {
   }
 }
 
-export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): BinaryGeometry[] {
-  const shpParser = new SHPParser(options);
+export function parseSHP(arrayBuffer: ArrayBuffer, options?: SHPLoaderOptions): SHPResult {
+  const shpParser = new SHPParser({
+    ...options,
+    shp: {
+      ...options?.shp,
+      batchSize: undefined
+    }
+  });
   shpParser.write(arrayBuffer);
   shpParser.end();
 
-  // @ts-ignore
   return shpParser.result;
 }
 
@@ -91,7 +98,7 @@ export async function* parseSHPInBatches(
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
   options?: SHPLoaderOptions
-): AsyncGenerator<BinaryGeometry | object> {
+): AsyncGenerator<(Uint8Array | null)[] | object> {
   const parser = new SHPParser(options);
   let headerReturned = false;
   for await (const arrayBuffer of toArrayBufferIterator(asyncIterator)) {
@@ -101,12 +108,25 @@ export async function* parseSHPInBatches(
       yield parser.result.header;
     }
 
-    if (parser.result.geometries.length > 0) {
+    const batchSize = options?.shp?.batchSize || Number.POSITIVE_INFINITY;
+    while (
+      batchSize === Number.POSITIVE_INFINITY
+        ? parser.result.geometries.length > 0
+        : parser.result.geometries.length >= batchSize
+    ) {
       yield parser.result.geometries;
       parser.result.geometries = [];
+      parser.state = parseState(parser.state, parser.result, parser.binaryReader, parser.options);
     }
   }
-  parser.end();
+  parser.binaryReader.end();
+  parser.state = parseState(parser.state, parser.result, parser.binaryReader, {
+    ...parser.options,
+    shp: {
+      ...parser.options?.shp,
+      batchSize: undefined
+    }
+  });
   if (parser.result.geometries.length > 0) {
     yield parser.result.geometries;
   }
@@ -162,6 +182,10 @@ function parseState(
 
         case STATE.EXPECTING_RECORD:
           while (binaryReader.hasAvailableBytes(SHP_RECORD_HEADER_SIZE)) {
+            const batchSize = options?.shp?.batchSize || Number.POSITIVE_INFINITY;
+            if (result.geometries.length >= batchSize) {
+              return state;
+            }
             const recordHeaderView = binaryReader.getDataView(SHP_RECORD_HEADER_SIZE) as DataView;
             const recordHeader = {
               recordNumber: recordHeaderView.getInt32(0, BIG_ENDIAN),
@@ -178,7 +202,7 @@ function parseState(
 
             const invalidRecord =
               recordHeader.byteLength < 4 ||
-              recordHeader.type !== result.header?.type ||
+              (recordHeader.type !== result.header?.type && recordHeader.type !== 0) ||
               recordHeader.recordNumber !== result.currentIndex;
 
             // All records must have at least four bytes (for the record shape type)
@@ -194,8 +218,7 @@ function parseState(
               binaryReader.rewind(4);
 
               const recordView = binaryReader.getDataView(recordHeader.byteLength) as DataView;
-              const geometry = parseRecord(recordView, options);
-              result.geometries.push(geometry);
+              result.geometries.push(parseRecordToWKB(recordView, options));
 
               result.currentIndex++;
               result.progress.rows = result.currentIndex - 1;

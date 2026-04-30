@@ -24,6 +24,17 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
     return false;
   }
 
+  // Some Arrow table outputs need main-thread class instances; structured clone
+  // preserves data but strips methods like `table.getChild()` from Arrow tables.
+  if (
+    (loader.id === 'excel' &&
+      (options as {excel?: {shape?: string}} | undefined)?.excel?.shape === 'arrow-table') ||
+    (loader.id === 'ply' &&
+      (options as {ply?: {shape?: string}} | undefined)?.ply?.shape === 'arrow-table')
+  ) {
+    return false;
+  }
+
   const useWorkers = options?.worker ?? options?.core?.worker;
   return Boolean(loader.worker && useWorkers);
 }

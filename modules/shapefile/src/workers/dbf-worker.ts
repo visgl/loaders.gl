@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {DBFLoader} from '../dbf-loader';
+import {DBFLoaderWithParser} from '../dbf-loader-with-parser';
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createLoaderWorker(DBFLoader);
+createLoaderWorker(DBFLoaderWithParser);

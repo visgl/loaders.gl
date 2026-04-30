@@ -1,5 +1,9 @@
 # GLTFLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
+
 Parses a glTF file. Can load both the `.glb` (binary) and `.gltf` (application/json) file format variants.
 
 A glTF file contains a hierarchical scenegraph description that can be used to instantiate corresponding hierarcy of actual `Scenegraph` related classes in most WebGL libraries.

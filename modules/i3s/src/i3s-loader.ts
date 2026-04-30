@@ -2,23 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, StrictLoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import type {I3STilesetHeader} from './types';
-import {I3SContentLoader} from './i3s-content-loader';
-import {normalizeTileData, normalizeTilesetData} from './lib/parsers/parse-i3s';
 import {COORDINATE_SYSTEM} from './lib/parsers/constants';
 import {I3SParseOptions} from './types';
-import {getUrlWithoutParams} from './lib/utils/url-utils';
 
+import {I3SFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-const TILESET_REGEX = /layers\/[0-9]+$/;
-const LOCAL_SLPK_REGEX = /\.slpk$/;
-const TILE_HEADER_REGEX = /nodes\/([0-9-]+|root)$/;
-const SLPK_HEX = '504b0304';
-const POINT_CLOUD = 'PointCloud';
 
 export type I3SLoaderOptions = StrictLoaderOptions & {
   i3s?: I3SParseOptions & {
@@ -33,6 +25,7 @@ export type I3SLoaderOptions = StrictLoaderOptions & {
  * Loader for I3S - Indexed 3D Scene Layer
  */
 export const I3SLoader = {
+  ...I3SFormat,
   dataType: null as unknown as I3STilesetHeader,
   batchType: null as never,
 
@@ -41,7 +34,8 @@ export const I3SLoader = {
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/octet-stream'],
-  parse: parseI3S,
+  /** Loads the parser-bearing I3S loader implementation. */
+  preload: async () => (await import('./i3s-loader-with-parser')).I3SLoaderWithParser,
   extensions: ['bin'],
   options: {
     i3s: {
@@ -58,72 +52,4 @@ export const I3SLoader = {
       coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS
     }
   }
-} as const satisfies LoaderWithParser<I3STilesetHeader, never, I3SLoaderOptions>;
-
-async function parseI3S(data, options: I3SLoaderOptions = {}, context): Promise<I3STilesetHeader> {
-  const url = context.url;
-  options.i3s = options.i3s || {};
-  const magicNumber = getMagicNumber(data);
-
-  // check if file is slpk
-  if (magicNumber === SLPK_HEX) {
-    throw new Error('Files with .slpk extention currently are not supported by I3SLoader');
-  }
-
-  const urlWithoutParams = getUrlWithoutParams(url);
-
-  // auto detect file type based on url
-  let isTileset;
-  if (options.i3s.isTileset === 'auto') {
-    isTileset = TILESET_REGEX.test(urlWithoutParams) || LOCAL_SLPK_REGEX.test(urlWithoutParams);
-  } else {
-    isTileset = options.i3s.isTileset;
-  }
-
-  let isTileHeader;
-  if (options.i3s.isTileHeader === 'auto') {
-    isTileHeader = TILE_HEADER_REGEX.test(urlWithoutParams);
-  } else {
-    isTileHeader = options.i3s.isTileHeader;
-  }
-
-  if (isTileset) {
-    data = await parseTileset(data, options, context);
-  } else if (isTileHeader) {
-    data = await parseTile(data, context);
-  } else {
-    data = await parseTileContent(data, options, context);
-  }
-
-  return data;
-}
-
-async function parseTileContent(arrayBuffer, options: I3SLoaderOptions, context?: LoaderContext) {
-  return await I3SContentLoader.parse(arrayBuffer, options, context);
-}
-
-async function parseTileset(data, options: I3SLoaderOptions, context) {
-  const tilesetJson = JSON.parse(new TextDecoder().decode(data));
-
-  if (tilesetJson?.layerType === POINT_CLOUD) {
-    throw new Error('Point Cloud layers currently are not supported by I3SLoader');
-  }
-
-  const tilesetPostprocessed = await normalizeTilesetData(tilesetJson, options, context);
-  return tilesetPostprocessed;
-}
-
-async function parseTile(data, context) {
-  data = JSON.parse(new TextDecoder().decode(data));
-  return normalizeTileData(data, context);
-}
-
-function getMagicNumber(data) {
-  if (data instanceof ArrayBuffer) {
-    // slice binary data (4 bytes from the beginning) and transform it to hexadecimal numeral system
-    return [...new Uint8Array(data, 0, 4)]
-      .map(value => value.toString(16).padStart(2, '0'))
-      .join('');
-  }
-  return null;
-}
+} as const satisfies Loader<I3STilesetHeader, never, I3SLoaderOptions>;

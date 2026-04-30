@@ -17,6 +17,7 @@ import './lib/loader-utils/core-loader-options.spec';
 import './lib/loader-utils/normalize-loader.spec';
 import './lib/loader-utils/auto-parse.spec';
 import './lib/loader-utils/get-data.spec';
+import './lib/loader-utils/format-metadata.spec';
 
 import './lib/fetch/fetch-error-message.spec';
 import './lib/fetch/fetch-file.spec';
@@ -27,6 +28,7 @@ import './lib/fetch/fetch-file.node.spec';
 import './lib/api/set-loader-options.spec';
 import './lib/api/register-loaders.spec';
 import './lib/api/select-loader.spec';
+import './lib/api/preload.spec';
 import './lib/api/parse.spec';
 import './lib/api/load.spec';
 import './lib/api/parse-in-batches.spec';

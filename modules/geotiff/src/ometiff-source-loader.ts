@@ -17,6 +17,7 @@ import {DataSource} from '@loaders.gl/loader-utils';
 import type {TiffPixelSource} from './lib/tiff-pixel-source';
 import {loadOmeTiff, isOmeTiff} from './lib/ome/load-ome-tiff';
 import {ensureArray, getImageSize, intToRgba} from './lib/utils/tiff-utils';
+import {OMETiffFormat} from './geotiff-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -125,12 +126,9 @@ type OMETiffInit = {
 export const OMETiffSourceLoader = {
   dataType: null as unknown as OMETiffImageSource,
   batchType: null as never,
+  ...OMETiffFormat,
   name: 'OMETiffSourceLoader',
-  id: 'ometiff',
-  module: 'geotiff',
   version: VERSION,
-  extensions: ['ome.tif', 'ome.tiff'],
-  mimeTypes: ['image/tiff'],
   type: 'ometiff',
   fromUrl: true,
   fromBlob: true,

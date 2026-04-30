@@ -2,21 +2,30 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ParseWKTCRSOptions, WKTCRS} from '@loaders.gl/gis';
-import {parseWKTCRS} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {WKTCRSFormat} from './wkt-format';
 
 export type WKTCRSLoaderOptions = LoaderOptions & {
   'wkt-crs'?: ParseWKTCRSOptions;
 };
 
 /**
- * Well-Known text CRS loader
+ * Preloads the parser-bearing WKT CRS loader implementation.
+ */
+async function preload() {
+  const {WKTCRSLoaderWithParser} = await import('./wkt-crs-loader-with-parser');
+  return WKTCRSLoaderWithParser;
+}
+
+/**
+ * Metadata-only Well-Known text CRS loader
  * @see OGC Standard: https://www.ogc.org/standards/wkt-crs
  * @see Wikipedia Page: https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems
  */
 export const WKTCRSLoader = {
+  ...WKTCRSFormat,
   dataType: null as unknown as WKTCRS,
   batchType: null as never,
   name: 'WKT CRS (Well-Known Text Coordinate Reference System)',
@@ -31,7 +40,5 @@ export const WKTCRSLoader = {
   options: {
     'wkt-crs': {}
   },
-  parse: async (arrayBuffer, options) =>
-    parseWKTCRS(new TextDecoder().decode(arrayBuffer), options?.['wkt-crs']),
-  parseTextSync: (string, options) => parseWKTCRS(string, options?.['wkt-crs'])
-} as const satisfies LoaderWithParser<WKTCRS, never, WKTCRSLoaderOptions>;
+  preload
+} as const satisfies Loader<WKTCRS, never, WKTCRSLoaderOptions>;

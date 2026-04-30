@@ -2,7 +2,8 @@
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-3.4" />
-  <img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
+  &nbsp;
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)

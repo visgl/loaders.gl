@@ -299,30 +299,28 @@ test('Parquet row materializer decodes dictionary-backed UTF8 bytes as strings',
   t.end();
 });
 
-test('ParquetReader and ParquetLoader parse without global Buffer', async t => {
+test('ParquetReader and ParquetJSLoader parse without global Buffer', async t => {
   const fruitsBytes = await readTestBytes('fruits.parquet');
   const binaryBytes = await readTestBytes('apache/good/binary.parquet');
   const snappyBytes = await readTestBytes('apache/good/alltypes_plain.snappy.parquet');
   const originalBuffer = (globalThis as MutableGlobalThis).Buffer;
 
   await withoutGlobalBuffer(async () => {
-    const [{ParquetLoader}] = await Promise.all([import('../src/index')]);
+    const [{ParquetJSLoader}] = await Promise.all([import('../src/bundled')]);
 
     const reader = new ParquetReader(new BlobFile(toExactArrayBuffer(fruitsBytes)));
     const metadata = await reader.getSchemaMetadata();
     t.deepEqual(metadata, {myuid: '420', fnord: 'dronf'}, 'reader metadata parsed');
 
-    const binaryTable = await ParquetLoader.parse(toExactArrayBuffer(binaryBytes), {
-      core: {worker: false},
-      parquet: {implementation: 'js'}
+    const binaryTable = await ParquetJSLoader.parse(toExactArrayBuffer(binaryBytes), {
+      core: {worker: false}
     });
     t.equal(binaryTable.shape, 'object-row-table', 'binary table shape');
     t.ok(binaryTable.data[0].foo instanceof Uint8Array, 'raw binary field is Uint8Array');
     t.deepEqual(Array.from(binaryTable.data[11].foo), [11], 'raw binary bytes are preserved');
 
-    const snappyTable = await ParquetLoader.parse(toExactArrayBuffer(snappyBytes), {
-      core: {worker: false},
-      parquet: {implementation: 'js'}
+    const snappyTable = await ParquetJSLoader.parse(toExactArrayBuffer(snappyBytes), {
+      core: {worker: false}
     });
     t.equal(snappyTable.data[0].id, 6, 'compressed physical INT32 materializes as number');
     t.ok(

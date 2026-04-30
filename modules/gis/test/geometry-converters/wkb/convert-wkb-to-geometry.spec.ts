@@ -4,7 +4,7 @@
 
 import test from 'tape-promise/tape';
 import {fetchFile} from '@loaders.gl/core';
-import {convertWKBToBinaryGeometry, isWKB} from '@loaders.gl/gis';
+import {convertWKBToBinaryGeometry, convertWKBToGeometry, isWKB} from '@loaders.gl/gis';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
@@ -76,6 +76,52 @@ test('convertWKBToBinaryGeometry#Z', async t => {
     // if (testCase.wkbXdr && testCase.binary && testCase.geoJSON) {
     //   t.deepEqual(parseSync(testCase.wkbXdr, WKBLoader, {wkb: {shape: 'geometry'}}), testCase.geoJSON);
     // }
+  }
+
+  t.end();
+});
+
+test('convertWKBToGeometry#GeometryCollection 2D', async t => {
+  const response = await fetchFile(WKB_2D_TEST_CASES);
+  const testCases = parseTestCases(await response.json());
+
+  for (const [title, testCase] of Object.entries(testCases)) {
+    if (testCase.geoJSON?.type !== 'GeometryCollection') {
+      continue;
+    }
+
+    if (testCase.wkb) {
+      t.ok(isWKB(testCase.wkb), 'isWKB(GeometryCollection 2D)');
+      t.deepEqual(convertWKBToGeometry(testCase.wkb), testCase.geoJSON, `${title} little endian`);
+    }
+
+    if (testCase.wkbXdr) {
+      t.ok(isWKB(testCase.wkbXdr), 'isWKB(GeometryCollection 2D XDR)');
+      t.deepEqual(convertWKBToGeometry(testCase.wkbXdr), testCase.geoJSON, `${title} big endian`);
+    }
+  }
+
+  t.end();
+});
+
+test('convertWKBToGeometry#GeometryCollection Z', async t => {
+  const response = await fetchFile(WKB_Z_TEST_CASES);
+  const testCases = parseTestCases(await response.json());
+
+  for (const [title, testCase] of Object.entries(testCases)) {
+    if (testCase.geoJSON?.type !== 'GeometryCollection') {
+      continue;
+    }
+
+    if (testCase.wkb) {
+      t.ok(isWKB(testCase.wkb), 'isWKB(GeometryCollection Z)');
+      t.deepEqual(convertWKBToGeometry(testCase.wkb), testCase.geoJSON, `${title} little endian`);
+    }
+
+    if (testCase.wkbXdr) {
+      t.ok(isWKB(testCase.wkbXdr), 'isWKB(GeometryCollection Z XDR)');
+      t.deepEqual(convertWKBToGeometry(testCase.wkbXdr), testCase.geoJSON, `${title} big endian`);
+    }
   }
 
   t.end();

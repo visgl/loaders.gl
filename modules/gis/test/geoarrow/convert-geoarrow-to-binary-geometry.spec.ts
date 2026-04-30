@@ -4,8 +4,11 @@
 
 import test, {Test} from 'tape-promise/tape';
 
-import {getGeometryColumnsFromSchema} from '@loaders.gl/geoarrow';
-import {getBinaryGeometryTemplate, convertGeoArrowToBinaryFeatureCollection} from '@loaders.gl/gis';
+import {
+  getBinaryGeometryTemplate,
+  getGeometryColumnsFromSchema,
+  convertGeoArrowToBinaryFeatureCollection
+} from '@loaders.gl/geoarrow';
 import {convertArrowToSchema} from '@loaders.gl/schema-utils';
 import {load} from '@loaders.gl/core';
 import {ArrowLoader} from '@loaders.gl/arrow';

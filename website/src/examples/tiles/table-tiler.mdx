@@ -1,10 +1,15 @@
-# TableTileSourceLoader
+---
+title: "TableTileSourceLoader"
+hide_title: true
+---
 
 import Demo from 'examples/website/tiles/app';
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
 
-<div style={{height: '100vh'}}> 
+<TileDocsTabs active="table-tiler-example" />
+
+<div style={{height: 'calc(100vh - var(--ifm-navbar-height) - 4rem)'}}> 
   <Demo format="GeoJSON">
     [**`TableTileSourceLoader`**](/docs/modules/mvt/api-reference/table-tile-source-loader) dynamically **generates** tiles from GeoJSON data loaded into the browser.
   </Demo>
 </div>
-

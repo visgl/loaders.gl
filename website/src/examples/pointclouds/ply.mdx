@@ -1,7 +1,13 @@
+---
+title: "PLY"
+hide_title: true
+---
+
+import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
+import {PointcloudLoaderLiveExample} from '@site/src/components/docs/loader-live-example';
+
 # PLY
 
-import Demo from 'examples/website/pointcloud/app';
+<PlyDocsTabs active="try-it" />
 
-<div style={{height: 'calc(100vh - var(--ifm-navbar-height))'}}> 
-  <Demo format="PLY"/>
-</div>
+<PointcloudLoaderLiveExample format="PLY" />

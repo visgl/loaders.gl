@@ -9,7 +9,7 @@ const TEXT_URL_GZIPPED = '@loaders.gl/polyfills/test/data/data.txt.gz';
 const TEXT_URL_WITH_REDIRECT =
   'https://unpkg.com/@loaders.gl/textures@beta/dist/libs/basis_encoder.js';
 const REDIRECT_URL =
-  'https://github.com/visgl/deck.gl-data/raw/master/3d-tiles/RoyalExhibitionBuilding/1/1.pnts';
+  'https://github.com/visgl/loaders.gl/raw/master/modules/polyfills/test/data/data.txt';
 
 test('fetchFile() (NODE)', async () => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
@@ -99,13 +99,16 @@ test.skip('fetchFile() able to decompress .gz extension (NODE)', async () => {
 test('fetchFile() should follow redirect if `followRedirect` option is true', async () => {
   const defaultFetchResponse = await fetchFile(REDIRECT_URL);
   expect(defaultFetchResponse.status).toBe(200);
+  expect(await defaultFetchResponse.text()).toBe('123456');
 
   const defaultResponse = await fetchFile(REDIRECT_URL, {});
   expect(defaultResponse.status).toBe(200);
+  expect(await defaultResponse.text()).toBe('123456');
 
   // @ts-ignore - TODO/ActionEngine
   const successResponse = await fetchFile(REDIRECT_URL, {followRedirect: true});
   expect(successResponse.status).toBe(200);
+  expect(await successResponse.text()).toBe('123456');
 });
 
 test.skip('fetchFile() should follow redirect if header location doesn`t have protocol and origin', async () => {

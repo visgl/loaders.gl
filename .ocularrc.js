@@ -37,8 +37,8 @@ const config = {
   // Reusable logic lives under `dev-modules/devtools-extensions/`; repo-specific policy belongs here.
   devtools: {
     vitest: {
-      // Plain `*.spec.*` files are the browser/default suite. Only Node-only tests use `.node.spec.*`.
-      // Keep the first migration aligned with the currently imported module suite.
+      // Plain `*.spec.*` files run in both Node and browser projects unless explicitly excluded.
+      // Use `.node.spec.*`, `.browser.spec.*`, or conditional runtime helpers for runtime-specific cases.
       excludePatterns: [
         '**/*.disabled.*',
         'modules/**/wip/**',
@@ -64,6 +64,32 @@ const config = {
         'test/node.ts',
         'test/bench/**',
         'test/render/**'
+      ],
+      nodeExcludePatterns: [
+        // These shared specs currently depend on browser fetch semantics or worker entrypoints
+        // that are not valid in the Node Vitest project.
+        'modules/arrow/test/triangulate-on-worker.spec.ts',
+        'modules/compression/test/compression.spec.ts',
+        'modules/crypto/test/crypto-worker.spec.ts',
+        'modules/deck-layers/test/any-layer.spec.ts',
+        'modules/deck-layers/test/geoarrow-layer.spec.ts',
+        'modules/deck-layers/test/image-source-layer.spec.ts',
+        'modules/deck-layers/test/shared-tile-2d-view.spec.ts',
+        'modules/deck-layers/test/splat-layer.spec.ts',
+        'modules/deck-layers/test/tile-2d-source-layer.spec.ts',
+        'modules/deck-layers/test/tile-3d-source-layer.spec.ts',
+        'modules/deck-layers/test/vector-source-layer.spec.ts',
+        'modules/draco/test/draco-loader.spec.ts',
+        'modules/draco/test/draco-writer.spec.ts',
+        'modules/parquet/test/parquet-arrow-loader.spec.ts',
+        'modules/parquet/test/parquetjs/integration.spec.ts',
+        'modules/potree/test/potree-source.spec.ts',
+        'modules/textures/test/basis-loader.spec.ts',
+        'modules/textures/test/ktx2-basis-universal-texture-writer.spec.ts',
+        'modules/tiles/test/tileset/format-i3s/i3s-lod.spec.ts',
+        'modules/tiles/test/tileset/helpers/get-frame-state.spec.ts',
+        'modules/tiles/test/tileset/tileset-3d-traversal.spec.ts',
+        'modules/tiles/test/tileset/tileset-traverser.spec.ts'
       ],
       softwareGpu: Boolean(process.env.CI)
     }

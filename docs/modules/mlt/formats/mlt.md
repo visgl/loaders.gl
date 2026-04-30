@@ -1,4 +1,8 @@
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+
 # MapLibre Tile (MLT)
+
+<TileDocsTabs active="mlt" />
 
 - _[MapLibre Tile format](https://github.com/maplibre/mlt)_
 - _[@loaders.gl/mlt](/docs/modules/mlt)_
@@ -9,7 +13,7 @@
 A MapLibre Tile (MLT) file is a binary geospatial tile format used by vector tile services and tooling.
 
 The format stores one or more named feature tables, each containing geometry and attributes for a tile.
-`MLTLoader` decodes these tables into GeoJSON features, or binary data when `shape: 'binary'` is selected.
+`MLTLoader` decodes these tables into GeoJSON tables, or binary geometry data when `shape: 'binary-geometry'` is selected.
 
 ## File format
 

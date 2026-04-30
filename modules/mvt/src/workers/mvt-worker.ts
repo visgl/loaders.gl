@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import {MVTLoader} from '../mvt-loader';
+import {MVTLoaderWithParser} from '../mvt-loader-with-parser';
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createLoaderWorker(MVTLoader);
+createLoaderWorker(MVTLoaderWithParser);

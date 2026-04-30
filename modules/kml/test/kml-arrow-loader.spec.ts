@@ -21,6 +21,7 @@ test('KMLArrowLoader#loader conformance', t => {
 
 test('KMLArrowLoader#load sample infers mixed geometry metadata', async t => {
   const arrowTable = await load(KML_URL, KMLArrowLoader);
+  const mainLoaderArrowTable = await load(KML_URL, KMLLoader, {kml: {shape: 'arrow-table'}});
   const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
   const expectedFeatures = await loadKMLFeatures(KML_URL);
 
@@ -36,6 +37,11 @@ test('KMLArrowLoader#load sample infers mixed geometry metadata', async t => {
     geoMetadata?.columns.geometry.geometry_types,
     inferExpectedGeometryTypes(expectedFeatures),
     'geo metadata geometry types match mixed KML feature types'
+  );
+  t.deepEqual(
+    getRowsFromArrowTable(arrowTable),
+    getRowsFromArrowTable(mainLoaderArrowTable),
+    'wrapper matches KMLLoader arrow-table output'
   );
   t.end();
 });

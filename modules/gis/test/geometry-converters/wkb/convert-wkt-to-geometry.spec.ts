@@ -5,7 +5,7 @@
 // Fork of https://github.com/mapbox/wellknown under ISC license (MIT/BSD-2-clause equivalent)
 
 import test from 'tape-promise/tape';
-import {WKTLoader} from '@loaders.gl/wkt';
+import {WKTLoader} from '@loaders.gl/wkt/bundled';
 import {setLoaderOptions, fetchFile, parseSync} from '@loaders.gl/core';
 
 import fuzzer from 'fuzzer';

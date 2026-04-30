@@ -2,8 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DataType, Field, Schema, SchemaMetadata} from '@loaders.gl/schema';
+import type {DataType, Field, KeyType, Schema, SchemaMetadata} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
+
+type ArrowDictionaryKeyType =
+  | arrow.Int8
+  | arrow.Int16
+  | arrow.Int32
+  | arrow.Uint8
+  | arrow.Uint16
+  | arrow.Uint32;
 
 /** Convert Apache Arrow Schema (class instance) to a serialized Schema (plain data) */
 export function convertArrowToSchema(arrowSchema: arrow.Schema): Schema {
@@ -69,6 +77,11 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
       return 'null';
     case arrow.Binary:
       return 'binary';
+    case arrow.FixedSizeBinary:
+      return {
+        type: 'fixed-size-binary',
+        byteWidth: (arrowType as arrow.FixedSizeBinary).byteWidth
+      };
     case arrow.Bool:
       return 'bool';
     case arrow.Int:
@@ -211,6 +224,15 @@ export function serializeArrowType(arrowType: arrow.DataType): DataType {
         type: 'struct',
         children: structType.children.map(arrowField => serializeArrowField(arrowField))
       };
+    case arrow.Dictionary:
+      const dictionaryType = arrowType as arrow.Dictionary;
+      return {
+        type: 'dictionary',
+        id: dictionaryType.id,
+        indices: serializeArrowDictionaryKeyType(dictionaryType.indices),
+        dictionary: serializeArrowType(dictionaryType.dictionary),
+        isOrdered: dictionaryType.isOrdered
+      };
     default:
       throw new Error(`arrow type not supported: ${arrowType.constructor.name}`);
   }
@@ -235,9 +257,19 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
         const child = deserializeArrowField(dataType.children[0]);
         return new arrow.FixedSizeList(dataType.listSize, child);
       }
+      case 'fixed-size-binary':
+        return new arrow.FixedSizeBinary(dataType.byteWidth);
       case 'struct': {
         const children = dataType.children.map(arrowField => deserializeArrowField(arrowField));
         return new arrow.Struct(children);
+      }
+      case 'dictionary': {
+        return new arrow.Dictionary(
+          deserializeArrowType(dataType.dictionary),
+          deserializeArrowDictionaryKeyType(dataType.indices),
+          dataType.id,
+          dataType.isOrdered
+        );
       }
       default:
         throw new Error('array type not supported');
@@ -301,5 +333,58 @@ export function deserializeArrowType(dataType: DataType): arrow.DataType {
       return new arrow.IntervalYearMonth();
     default:
       throw new Error('array type not supported');
+  }
+}
+
+/** Converts Arrow dictionary index types to serializable schema key types. */
+function serializeArrowDictionaryKeyType(arrowType: arrow.DataType): KeyType {
+  if (arrowType instanceof arrow.Int) {
+    const prefix = arrowType.isSigned ? 'int' : 'uint';
+    const keyType = `${prefix}${arrowType.bitWidth}`;
+    if (isSchemaDictionaryKeyType(keyType)) {
+      return keyType;
+    }
+  }
+
+  switch (arrowType.constructor) {
+    case arrow.Int8:
+      return 'int8';
+    case arrow.Int16:
+      return 'int16';
+    case arrow.Int32:
+      return 'int32';
+    case arrow.Uint8:
+      return 'uint8';
+    case arrow.Uint16:
+      return 'uint16';
+    case arrow.Uint32:
+      return 'uint32';
+    default:
+      throw new Error(`arrow dictionary index type not supported: ${arrowType.constructor.name}`);
+  }
+}
+
+/** Checks whether a string is a supported serialized dictionary key type. */
+function isSchemaDictionaryKeyType(keyType: string): keyType is KeyType {
+  return ['int8', 'int16', 'int32', 'uint8', 'uint16', 'uint32'].includes(keyType);
+}
+
+/** Converts serializable schema dictionary key types to Arrow index types. */
+function deserializeArrowDictionaryKeyType(keyType: KeyType): ArrowDictionaryKeyType {
+  switch (keyType) {
+    case 'int8':
+      return new arrow.Int8();
+    case 'int16':
+      return new arrow.Int16();
+    case 'int32':
+      return new arrow.Int32();
+    case 'uint8':
+      return new arrow.Uint8();
+    case 'uint16':
+      return new arrow.Uint16();
+    case 'uint32':
+      return new arrow.Uint32();
+    default:
+      throw new Error(`schema dictionary index type not supported: ${keyType}`);
   }
 }

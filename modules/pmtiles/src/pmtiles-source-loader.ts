@@ -172,7 +172,9 @@ export class PMTilesTileSource
 
   async getImageTile(tileParams: GetTileParameters): Promise<ImageType | null> {
     const arrayBuffer = await this.getTile(tileParams);
-    return arrayBuffer ? await ImageBitmapLoader.parse(arrayBuffer, this.loadOptions) : null;
+    return arrayBuffer
+      ? ((await this.coreApi.parse(arrayBuffer, ImageBitmapLoader, this.loadOptions)) as ImageType)
+      : null;
   }
 
   // VectorTileSource interface implementation
@@ -189,7 +191,7 @@ export class PMTilesTileSource
       ...this.loadOptions
     };
 
-    return arrayBuffer ? await MVTLoader.parse(arrayBuffer, loadOptions) : null;
+    return arrayBuffer ? await this.coreApi.parse(arrayBuffer, MVTLoader, loadOptions) : null;
   }
 
   private getZxyBatched(
