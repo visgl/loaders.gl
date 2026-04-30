@@ -54,6 +54,7 @@ function makeAliases() {
     '@loaders.gl/textures/test': resolveTestPath('./modules/textures/test'),
     '@loaders.gl/tile-converter/test': resolveTestPath('./apps/tile-converter/test'),
     '@loaders.gl/tiles/test': resolveTestPath('./modules/tiles/test'),
+    '@loaders.gl/traces/test': resolveTestPath('./modules/traces/test'),
     '@loaders.gl/video/test': resolveTestPath('./modules/video/test'),
     '@loaders.gl/wkt/test': resolveTestPath('./modules/wkt/test'),
     '@loaders.gl/wms/test': resolveTestPath('./modules/wms/test'),

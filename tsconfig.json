@@ -296,6 +296,12 @@
       "@loaders.gl/textures/test": [
         "modules/textures/test"
       ],
+      "@loaders.gl/traces": [
+        "modules/traces/src"
+      ],
+      "@loaders.gl/traces/test": [
+        "modules/traces/test"
+      ],
       "@loaders.gl/video": [
         "modules/video/src"
       ],

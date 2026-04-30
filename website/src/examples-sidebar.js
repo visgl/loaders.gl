@@ -22,6 +22,11 @@ const sidebars = {
     },
     {
       type: 'category',
+      label: 'Trace Formats',
+      items: ['traces/chrome-trace']
+    },
+    {
+      type: 'category',
       label: 'Geospatial Table Formats',
       items: [
         'geospatial/csv',

@@ -65,6 +65,7 @@ import '@loaders.gl/csv/test';
 import '@loaders.gl/json/test';
 import '@loaders.gl/excel/test';
 import '@loaders.gl/parquet/test';
+import '@loaders.gl/traces/test';
 
 // unstructured (JSON) formats
 // JSON listed in tabular loaders since it optionally supports that category

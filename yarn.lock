@@ -5071,7 +5071,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/bson@npm:4.4.0, @loaders.gl/bson@workspace:modules/bson":
+"@loaders.gl/bson@npm:4.4.0, @loaders.gl/bson@workspace:*, @loaders.gl/bson@workspace:modules/bson":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/bson@workspace:modules/bson"
   dependencies:
@@ -5224,7 +5224,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/excel@workspace:modules/excel":
+"@loaders.gl/excel@workspace:*, @loaders.gl/excel@workspace:modules/excel":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/excel@workspace:modules/excel"
   dependencies:
@@ -5373,7 +5373,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/json@workspace:modules/json":
+"@loaders.gl/json@workspace:*, @loaders.gl/json@workspace:modules/json":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/json@workspace:modules/json"
   dependencies:
@@ -5756,9 +5756,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/traces@workspace:modules/traces":
+"@loaders.gl/traces@npm:^4.4.0, @loaders.gl/traces@workspace:modules/traces":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/traces@workspace:modules/traces"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:4.4.0"
+    apache-arrow: "npm:>= 17.0.0"
+    zod: "npm:^4.1.12"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -5812,7 +5816,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/xml@npm:4.4.0, @loaders.gl/xml@workspace:modules/xml":
+"@loaders.gl/xml@npm:4.4.0, @loaders.gl/xml@workspace:*, @loaders.gl/xml@workspace:modules/xml":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/xml@workspace:modules/xml"
   dependencies:
@@ -28499,11 +28503,15 @@ __metadata:
     "@fortawesome/fontawesome-svg-core": "npm:^1.2.34"
     "@fortawesome/free-solid-svg-icons": "npm:^5.15.2"
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
+    "@loaders.gl/arrow": "workspace:*"
+    "@loaders.gl/bson": "workspace:*"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/csv": "workspace:*"
     "@loaders.gl/deck-layers": "workspace:*"
+    "@loaders.gl/excel": "workspace:*"
     "@loaders.gl/geopackage": "workspace:*"
     "@loaders.gl/i3s": "workspace:*"
+    "@loaders.gl/json": "workspace:*"
     "@loaders.gl/las": "workspace:*"
     "@loaders.gl/loader-utils": "workspace:*"
     "@loaders.gl/obj": "workspace:*"
@@ -28511,6 +28519,8 @@ __metadata:
     "@loaders.gl/schema": "workspace:*"
     "@loaders.gl/schema-utils": "workspace:*"
     "@loaders.gl/splats": "workspace:*"
+    "@loaders.gl/traces": "workspace:*"
+    "@loaders.gl/xml": "workspace:*"
     "@luma.gl/constants": "npm:^9.3.2"
     "@luma.gl/core": "npm:^9.3.2"
     "@luma.gl/engine": "npm:^9.3.2"

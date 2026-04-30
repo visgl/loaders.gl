@@ -121,6 +121,7 @@ const config = {
             '@loaders.gl/tile-converter': resolve('../apps/tile/converter/src-'),
             '@loaders.gl/tiles': resolve('../modules/tiles/src'),
             '@loaders.gl/tiles-2d': resolve('../modules/tiles-2d/src'),
+            '@loaders.gl/traces': resolve('../modules/traces/src'),
             '@loaders.gl/type-analyzer': resolve('../modules/type-analyzer/src'),
             '@loaders.gl/video': resolve('../modules/video/src'),
             '@loaders.gl/wkt': resolve('../modules/wkt/src'),

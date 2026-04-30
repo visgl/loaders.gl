@@ -17,6 +17,7 @@
       "modules/arrow/formats/arrow",
       "modules/textures/formats/basis",
       "modules/bson/formats/bson",
+      "modules/traces/formats/chrome-trace",
       "modules/textures/formats/compressed-textures",
       "modules/copc/formats/copc",
       "modules/textures/formats/crunch",
@@ -101,6 +102,7 @@
           "modules/textures/api-reference/basis-loader",
           "modules/bson/api-reference/bson-loader",
           "modules/3d-tiles/api-reference/cesium-ion-loader",
+          "modules/traces/api-reference/chrome-trace-loader",
           "modules/textures/api-reference/compressed-texture-loader",
           "modules/textures/api-reference/crunch-loader",
           "modules/csv/api-reference/csv-loader",
@@ -518,7 +520,9 @@
         "type": "category",
         "label": "@loaders.gl/traces",
         "items": [
-          "modules/traces/README"
+          "modules/traces/README",
+          "modules/traces/formats/chrome-trace",
+          "modules/traces/api-reference/chrome-trace-loader"
         ]
       },
       {
