@@ -20,7 +20,7 @@ import {Sublayer, buildSublayersTree} from './helpers/sublayers';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {BuildingExplorer} from './components/building-explorer';
 import {filterTile} from './filter-tile';
-import {createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
 const TILESET_URL =
   'https://tiles.arcgis.com/tiles/cFEFS0EWrhfDeVw9/arcgis/rest/services/Turanga_Library/SceneServer/layers/0';
@@ -57,7 +57,13 @@ export default function App() {
     attributeName: string;
     value: number;
   } | null>(null);
-  const widgets = useMemo(() => [createDeckStatsWidget('i3s-building-scene-layer-stats')], []);
+  const widgets = useMemo(
+    () => [
+      createDeckFullscreenWidget('i3s-building-scene-layer-fullscreen'),
+      createDeckStatsWidget('i3s-building-scene-layer-stats')
+    ],
+    []
+  );
 
   useEffect(() => {
     const getFlattenedSublayers = async (tilesetUrl: string): Promise<void> => {

@@ -71,6 +71,12 @@ export function ExampleUrlInputCard<ExampleT = unknown>({
   }, [format]);
 
   useEffect(() => {
+    if (isMenuOpen) {
+      setSavedUrls(readSavedUrls(format));
+    }
+  }, [format, isMenuOpen]);
+
+  useEffect(() => {
     if (!isMenuOpen) {
       return undefined;
     }

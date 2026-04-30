@@ -5,12 +5,19 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
-import {COORDINATE_SYSTEM, OrbitView, type OrbitViewState} from '@deck.gl/core';
+import {
+  COORDINATE_SYSTEM,
+  FirstPersonView,
+  type FirstPersonViewState,
+  OrbitView,
+  type OrbitViewState
+} from '@deck.gl/core';
 import {webgpuAdapter} from '@luma.gl/webgpu';
 import {load} from '@loaders.gl/core';
 import {SplatLayer} from '@loaders.gl/deck-layers';
 import {PLYLoader} from '@loaders.gl/ply';
 import type {MeshArrowTable} from '@loaders.gl/schema';
+import {createDeckFullscreenWidget} from '../shared/create-deck-stats-widget';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
 import type {Example} from '../pointcloud/examples';
 import {DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME, GAUSSIAN_SPLAT_EXAMPLES} from './examples';
@@ -18,22 +25,40 @@ import {DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME, GAUSSIAN_SPLAT_EXAMPLES} from './ex
 const PREVIEW_ROW_COUNT = 8;
 const PREVIEW_COLUMN_COUNT = 8;
 const GAUSSIAN_SPLAT_FORMAT = 'Gaussian Splat';
+const CONTROLLER_MODES = ['orbit', 'first-person'] as const;
+const FIRST_PERSON_INITIAL_PITCH = -20;
+const FIRST_PERSON_MIN_PITCH = -75;
+const FIRST_PERSON_MAX_PITCH = 75;
+const ORBIT_MIN_ZOOM = -4;
+const ORBIT_MAX_ZOOM = 8;
+const SPLAT_LAYER_OPACITY = 0.38;
+const SPLAT_RADIUS_SCALE = 0.65;
+const SPLAT_RADIUS_MIN_PIXELS = 0.35;
+const SPLAT_RADIUS_MAX_PIXELS = 16;
+const SPLAT_ALPHA_SCALE = 0.45;
+const SPLAT_ALPHA_CUTOFF = 0.02;
+const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
-  rotationX: 12,
-  rotationOrbit: 0,
+  rotationX: 56,
+  rotationOrbit: -25,
+  orbitAxis: 'Z',
   fov: 48,
   minZoom: -4,
   maxZoom: 8,
   zoom: 1.4
 } as OrbitViewState;
 
+type ControllerMode = (typeof CONTROLLER_MODES)[number];
+
 type GaussianSplatsAppState = {
   /** Loaded Arrow table wrapper. */
   table: MeshArrowTable | null;
-  /** Current deck.gl orbit view state. */
-  viewState: OrbitViewState;
+  /** Current deck.gl view state. */
+  viewState: OrbitViewState | FirstPersonViewState;
+  /** Active camera controller. */
+  controllerMode: ControllerMode;
   /** Selected source URL shown in the URL picker. */
   selectedUrl: string;
   /** Whether source URLs are currently loading. */
@@ -51,6 +76,7 @@ export default function GaussianSplatsApp() {
   const [state, setState] = useState<GaussianSplatsAppState>({
     table: null,
     viewState: INITIAL_VIEW_STATE,
+    controllerMode: 'orbit',
     selectedUrl: defaultExample.url,
     isLoading: false,
     error: null
@@ -88,6 +114,7 @@ export default function GaussianSplatsApp() {
       setState((currentState) => ({
         ...currentState,
         table,
+        viewState: getGaussianSplatViewState(table, currentState.controllerMode),
         isLoading: false,
         loadTimeMs: Date.now() - loadStartMs,
         error: null
@@ -114,6 +141,10 @@ export default function GaussianSplatsApp() {
 
   const arrowPreview = useMemo(() => getArrowTablePreview(state.table), [state.table]);
   const urlOptions = useMemo(() => getGaussianSplatUrlOptions(), []);
+  const widgets = useMemo(
+    () => [createDeckFullscreenWidget('gaussian-splats-fullscreen', {placement: 'top-right'})],
+    []
+  );
 
   const layers = useMemo(
     () =>
@@ -124,10 +155,13 @@ export default function GaussianSplatsApp() {
               coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
               data: state.table,
               pickable: false,
-              opacity: 0.82,
-              radiusScale: 1.35,
-              radiusMinPixels: 0.5,
-              radiusMaxPixels: 34,
+              opacity: SPLAT_LAYER_OPACITY,
+              radiusScale: SPLAT_RADIUS_SCALE,
+              radiusMinPixels: SPLAT_RADIUS_MIN_PIXELS,
+              radiusMaxPixels: SPLAT_RADIUS_MAX_PIXELS,
+              alphaScale: SPLAT_ALPHA_SCALE,
+              alphaCutoff: SPLAT_ALPHA_CUTOFF,
+              screenSizeCutoffPixels: SPLAT_SCREEN_SIZE_CUTOFF_PIXELS,
               renderMode: 'gpu',
               sortMode: 'global'
             })
@@ -157,10 +191,12 @@ export default function GaussianSplatsApp() {
       <div style={styles.workspace}>
         <div style={styles.canvasCard}>
           <DeckGL
+            key={state.controllerMode}
             layers={layers}
-            views={new OrbitView({})}
+            views={getViewForControllerMode(state.controllerMode)}
             viewState={state.viewState}
             controller={{inertia: true}}
+            widgets={widgets}
             deviceProps={{
               type: 'webgpu',
               adapters: [webgpuAdapter]
@@ -168,13 +204,25 @@ export default function GaussianSplatsApp() {
             onViewStateChange={({viewState}) =>
               setState((currentState) => ({
                 ...currentState,
-                viewState: viewState as OrbitViewState
+                viewState: viewState as OrbitViewState | FirstPersonViewState
               }))
             }
             parameters={{
               depthWriteEnabled: false,
               depthCompare: 'always'
             } as any}
+          />
+          <ControllerModeSwitch
+            mode={state.controllerMode}
+            onChange={(controllerMode) =>
+              setState((currentState) => ({
+                ...currentState,
+                controllerMode,
+                viewState: currentState.table
+                  ? getGaussianSplatViewState(currentState.table, controllerMode)
+                  : getInitialViewState(controllerMode)
+              }))
+            }
           />
           <div style={styles.statusPanel}>
             <span>
@@ -192,6 +240,114 @@ export default function GaussianSplatsApp() {
       </div>
     </div>
   );
+}
+
+/** Return a deck.gl view matching the current controller mode. */
+function getViewForControllerMode(controllerMode: ControllerMode): OrbitView | FirstPersonView {
+  return controllerMode === 'first-person'
+    ? new FirstPersonView({near: 0.01, far: 100000, up: [0, 0, 1]} as any)
+    : new OrbitView({orbitAxis: 'Z'});
+}
+
+/** Return an initial camera for the selected controller mode. */
+function getInitialViewState(controllerMode: ControllerMode): OrbitViewState | FirstPersonViewState {
+  return controllerMode === 'first-person'
+    ? {
+        position: [0, -6, 2],
+        bearing: 0,
+        pitch: FIRST_PERSON_INITIAL_PITCH,
+        minPitch: FIRST_PERSON_MIN_PITCH,
+        maxPitch: FIRST_PERSON_MAX_PITCH
+      }
+    : INITIAL_VIEW_STATE;
+}
+
+/** Build a Z-up initial view from loaded Gaussian splat bounds. */
+function getGaussianSplatViewState(
+  table: MeshArrowTable,
+  controllerMode: ControllerMode
+): OrbitViewState | FirstPersonViewState {
+  const bounds = getPositionBounds(table);
+  const center = getBoundsCenter(bounds) || INITIAL_VIEW_STATE.target;
+  const size = getBoundsSize(bounds);
+  const horizontalSize = Math.max(size[0], size[1], Number.EPSILON);
+  const diagonalSize = Math.max(getVectorLength(size), Number.EPSILON);
+
+  if (controllerMode === 'first-person') {
+    return {
+      position: [center[0], center[1] - diagonalSize * 1.5, center[2] + size[2] * 0.35],
+      bearing: 0,
+      pitch: FIRST_PERSON_INITIAL_PITCH,
+      minPitch: FIRST_PERSON_MIN_PITCH,
+      maxPitch: FIRST_PERSON_MAX_PITCH
+    };
+  }
+
+  return {
+    ...INITIAL_VIEW_STATE,
+    target: center,
+    zoom: getOrbitZoom(horizontalSize)
+  } as OrbitViewState;
+}
+
+/** Return POSITION column bounds for a Mesh Arrow table. */
+function getPositionBounds(table: MeshArrowTable): {mins: [number, number, number]; maxs: [number, number, number]} {
+  const positions = table.data.getChild('POSITION');
+  const mins: [number, number, number] = [Infinity, Infinity, Infinity];
+  const maxs: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+
+  for (let rowIndex = 0; rowIndex < table.data.numRows; rowIndex++) {
+    const position = positions?.get(rowIndex) as ArrayLike<number> | null;
+    if (!position) {
+      continue;
+    }
+    for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
+      const value = Number(position[axisIndex]);
+      mins[axisIndex] = Math.min(mins[axisIndex], value);
+      maxs[axisIndex] = Math.max(maxs[axisIndex], value);
+    }
+  }
+
+  return {mins, maxs};
+}
+
+/** Return a bounds center. */
+function getBoundsCenter(bounds: {mins: [number, number, number]; maxs: [number, number, number]}): [number, number, number] | null {
+  const center: [number, number, number] = [
+    (bounds.mins[0] + bounds.maxs[0]) / 2,
+    (bounds.mins[1] + bounds.maxs[1]) / 2,
+    (bounds.mins[2] + bounds.maxs[2]) / 2
+  ];
+  return getFiniteVector(center);
+}
+
+/** Return bounds size. */
+function getBoundsSize(bounds: {mins: [number, number, number]; maxs: [number, number, number]}): [number, number, number] {
+  const size: [number, number, number] = [
+    bounds.maxs[0] - bounds.mins[0],
+    bounds.maxs[1] - bounds.mins[1],
+    bounds.maxs[2] - bounds.mins[2]
+  ];
+  return getFiniteVector(size) || [1, 1, 1];
+}
+
+/** Return vector length. */
+function getVectorLength(vector: readonly [number, number, number]): number {
+  return Math.hypot(vector[0], vector[1], vector[2]);
+}
+
+/** Return a finite vector or null when bounds are unusable. */
+function getFiniteVector(vector: [number, number, number]): [number, number, number] | null {
+  return vector.every(Number.isFinite) ? vector : null;
+}
+
+/** Return a finite, bounded orbit zoom for a cloud extent. */
+function getOrbitZoom(horizontalSize: number): number {
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const zoom = Math.log2(viewportWidth / Math.max(horizontalSize, Number.EPSILON)) - 1;
+  return Number.isFinite(zoom)
+    ? Math.min(Math.max(zoom, ORBIT_MIN_ZOOM), ORBIT_MAX_ZOOM)
+    : INITIAL_VIEW_STATE.zoom;
 }
 
 /** Combine multiple Mesh Arrow tables into one table wrapper. */
@@ -323,6 +479,34 @@ function ArrowTableViewer({preview}: {preview: ArrowTablePreview | null}) {
   );
 }
 
+/** Render the camera controller selector. */
+function ControllerModeSwitch({
+  mode,
+  onChange
+}: {
+  mode: ControllerMode;
+  onChange: (mode: ControllerMode) => void;
+}) {
+  return (
+    <div style={styles.controllerSwitch} role="group" aria-label="Camera controller">
+      {CONTROLLER_MODES.map((controllerMode) => (
+        <button
+          key={controllerMode}
+          type="button"
+          style={
+            controllerMode === mode
+              ? {...styles.controllerButton, ...styles.controllerButtonActive}
+              : styles.controllerButton
+          }
+          onClick={() => onChange(controllerMode)}
+        >
+          {controllerMode === 'orbit' ? 'Orbit' : 'First Person'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 const styles = {
   page: {
     position: 'relative',
@@ -369,6 +553,32 @@ const styles = {
     fontSize: 12,
     lineHeight: '16px',
     pointerEvents: 'none'
+  },
+  controllerSwitch: {
+    position: 'absolute',
+    left: 12,
+    top: 12,
+    display: 'flex',
+    gap: 4,
+    padding: 4,
+    borderRadius: 7,
+    border: '1px solid rgba(148, 163, 184, 0.32)',
+    background: 'rgba(2, 6, 23, 0.78)'
+  },
+  controllerButton: {
+    minWidth: 72,
+    padding: '6px 9px',
+    border: '1px solid transparent',
+    borderRadius: 5,
+    color: '#cbd5e1',
+    background: 'transparent',
+    fontSize: 12,
+    lineHeight: '16px',
+    cursor: 'pointer'
+  },
+  controllerButtonActive: {
+    color: '#0f172a',
+    background: '#f8fafc'
   },
   viewer: {
     flex: '0 1 420px',

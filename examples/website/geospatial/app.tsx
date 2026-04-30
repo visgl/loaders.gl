@@ -13,7 +13,7 @@ import {MapController} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 import {GeoArrowLayer} from '@loaders.gl/deck-layers';
-import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 // import {FileUploader} from './components/file-uploader';
 
@@ -246,6 +246,7 @@ export default function App(props: AppProps = {}) {
     }
 
     return [
+      createDeckFullscreenWidget('geospatial-fullscreen'),
       createDeckStatsWidget('geospatial-stats'),
       new SidebarWidget({
         id: 'geospatial-example-sidebar',

@@ -445,7 +445,8 @@
         "type": "category",
         "label": "@loaders.gl/ply",
         "items": [
-          "modules/ply/README"
+          "modules/ply/README",
+          "modules/ply/benchmarks"
         ]
       },
       {

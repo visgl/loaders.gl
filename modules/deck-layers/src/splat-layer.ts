@@ -7,6 +7,7 @@ import {
   color,
   CompositeLayer,
   Layer,
+  type Attribute,
   type LayerContext,
   picking,
   project32,
@@ -23,6 +24,7 @@ import type {BufferLayout} from '@luma.gl/core';
 import {Geometry, Model} from '@luma.gl/engine';
 import type {ShaderModule} from '@luma.gl/shadertools';
 import type {MeshArrowTable, TypedArray} from '@loaders.gl/schema';
+import {CullingVolume, Plane} from '@math.gl/culling';
 import {SplatEngine, type SplatSortMode} from './splat/splat-engine';
 import {getArrowTable, getGaussianSplatDataFromArrowTable} from './splat/splat-data';
 
@@ -46,6 +48,8 @@ export type SplatLayerProps = CompositeLayerProps & {
   radiusMinPixels?: number;
   /** Maximum rendered splat radius in pixels. */
   radiusMaxPixels?: number;
+  /** Additional multiplier applied to decoded Gaussian alpha before blending. */
+  alphaScale?: number;
   /** Fallback color used when spherical harmonic DC columns are not present. */
   getColor?: Color;
   /** Selects CPU/WebGL fallback rendering or the WebGPU engine path. */
@@ -66,6 +70,8 @@ type SplatPrimitiveLayerProps = LayerProps & {
   radiusScale?: number;
   radiusMinPixels?: number;
   radiusMaxPixels?: number;
+  alphaScale?: number;
+  screenSizeCutoffPixels?: number;
   splatEngine?: SplatEngine | null;
 };
 
@@ -74,6 +80,8 @@ type SplatUniformProps = {
   radiusScale: number;
   radiusMinPixels: number;
   radiusMaxPixels: number;
+  alphaScale: number;
+  screenSizeCutoffPixels: number;
 };
 
 type DeckBinaryData = {
@@ -98,6 +106,7 @@ const defaultProps: DefaultProps<SplatLayerProps> = {
   radiusScale: {type: 'number', min: 0, value: 1},
   radiusMinPixels: {type: 'number', min: 0, value: 0},
   radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
+  alphaScale: {type: 'number', min: 0, value: 1},
   getColor: {type: 'color', value: DEFAULT_COLOR},
   renderMode: 'auto',
   sortMode: 'global',
@@ -115,6 +124,8 @@ layout(std140) uniform splatUniforms {
   float radiusScale;
   float radiusMinPixels;
   float radiusMaxPixels;
+  float alphaScale;
+  float screenSizeCutoffPixels;
 } splat;
 `,
   fs: '',
@@ -122,7 +133,9 @@ layout(std140) uniform splatUniforms {
     sizeUnits: 'i32',
     radiusScale: 'f32',
     radiusMinPixels: 'f32',
-    radiusMaxPixels: 'f32'
+    radiusMaxPixels: 'f32',
+    alphaScale: 'f32',
+    screenSizeCutoffPixels: 'f32'
   }
 } as const satisfies ShaderModule<SplatUniformProps>;
 
@@ -132,17 +145,17 @@ struct SplatUniforms {
   radiusScale: f32,
   radiusMinPixels: f32,
   radiusMaxPixels: f32,
+  alphaScale: f32,
+  screenSizeCutoffPixels: f32,
 };
 
 @group(0) @binding(auto)
 var<uniform> splat: SplatUniforms;
 
-struct VertexInputs {
-  @location(0) positions: vec3<f32>,
-  @location(1) instancePositions: vec3<f32>,
-  @location(2) instanceRadii: f32,
-  @location(3) instanceColors: vec4<f32>,
-};
+@group(0) @binding(auto) var<storage, read> splatPositions: array<f32>;
+@group(0) @binding(auto) var<storage, read> splatColors: array<u32>;
+@group(0) @binding(auto) var<storage, read> splatIndices: array<u32>;
+@group(0) @binding(auto) var<storage, read> splatProjected: array<vec4<f32>>;
 
 struct FragmentInputs {
   @builtin(position) position: vec4<f32>,
@@ -151,27 +164,59 @@ struct FragmentInputs {
 };
 
 @vertex
-fn vertexMain(inputs: VertexInputs) -> FragmentInputs {
-  var outputs: FragmentInputs;
-  geometry.worldPosition = inputs.instancePositions;
-  geometry.uv = inputs.positions.xy;
-
-  let radiusPixels = clamp(
-    project_unit_size_to_pixel(inputs.instanceRadii * splat.radiusScale, splat.sizeUnits),
-    splat.radiusMinPixels,
-    splat.radiusMaxPixels
+fn vertexMain(
+  @builtin(vertex_index) vertexIndex: u32,
+  @builtin(instance_index) instanceIndex: u32
+) -> FragmentInputs {
+  let corner = array<vec2<f32>, 4>(
+    vec2<f32>(-1.0, -1.0),
+    vec2<f32>(1.0, -1.0),
+    vec2<f32>(-1.0, 1.0),
+    vec2<f32>(1.0, 1.0)
+  )[vertexIndex];
+  let splatIndex = splatIndices[instanceIndex];
+  let positionIndex = splatIndex * 3u;
+  let projected = splatProjected[splatIndex];
+  let splatPosition = vec3<f32>(
+    splatPositions[positionIndex],
+    splatPositions[positionIndex + 1u],
+    splatPositions[positionIndex + 2u]
   );
+  let radiusPixels = vec2<f32>(
+    project_unit_size_to_pixel(projected.x * splat.radiusScale, splat.sizeUnits),
+    project_unit_size_to_pixel(projected.y * splat.radiusScale, splat.sizeUnits)
+  );
+  let sizeVisibility = select(
+    0.0,
+    1.0,
+    max(radiusPixels.x, radiusPixels.y) >= splat.screenSizeCutoffPixels
+  );
+  let visibleAlpha = projected.z * layer.opacity * splat.alphaScale * projected.w * sizeVisibility;
+  let clampedRadiusPixels = min(
+    max(radiusPixels, vec2<f32>(splat.radiusMinPixels)),
+    vec2<f32>(splat.radiusMaxPixels)
+  );
+  let packedColor = splatColors[splatIndex];
+  let color = vec4<f32>(
+    f32(packedColor & 255u) / 255.0,
+    f32((packedColor >> 8u) & 255u) / 255.0,
+    f32((packedColor >> 16u) & 255u) / 255.0,
+    visibleAlpha
+  );
+  var outputs: FragmentInputs;
+  geometry.worldPosition = splatPosition;
+  geometry.uv = corner;
 
   var clipPosition = project_position_to_clipspace(
-    inputs.instancePositions,
+    splatPosition,
     vec3<f32>(0.0, 0.0, 0.0),
     vec3<f32>(0.0, 0.0, 0.0)
   );
-  clipPosition.xy += project_pixel_size_to_clipspace(inputs.positions.xy * radiusPixels);
+  clipPosition.xy += project_pixel_size_to_clipspace(corner * clampedRadiusPixels);
 
   outputs.position = clipPosition;
-  outputs.unitPosition = inputs.positions.xy;
-  outputs.color = vec4<f32>(inputs.instanceColors.rgb, inputs.instanceColors.a * layer.opacity);
+  outputs.unitPosition = corner;
+  outputs.color = color;
   return outputs;
 }
 
@@ -230,7 +275,7 @@ void main(void) {
   DECKGL_FILTER_SIZE(offset, geometry);
   gl_Position.xy += project_pixel_size_to_clipspace(offset.xy);
 
-  vColor = vec4(instanceColors.rgb, instanceColors.a * layer.opacity);
+  vColor = vec4(instanceColors.rgb, instanceColors.a * layer.opacity * splat.alphaScale);
   DECKGL_FILTER_COLOR(vColor, geometry);
 }
 `;
@@ -263,13 +308,8 @@ void main(void) {
 }
 `;
 
-/** WebGPU vertex buffer layout matching the WGSL shader attributes. */
-const WEBGPU_SPLAT_BUFFER_LAYOUT: BufferLayout[] = [
-  {name: 'positions', stepMode: 'vertex', format: 'float32x3'},
-  {name: 'instancePositions', stepMode: 'instance', format: 'float32x3'},
-  {name: 'instanceRadii', stepMode: 'instance', format: 'float32'},
-  {name: 'instanceColors', stepMode: 'instance', format: 'unorm8x4'}
-];
+/** WebGPU vertex buffer layout for the storage-buffer driven render path. */
+const WEBGPU_SPLAT_BUFFER_LAYOUT: BufferLayout[] = [];
 
 /**
  * Renders GraphDECO-style Gaussian splat PLY data parsed as an Arrow table.
@@ -333,12 +373,15 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
 
   /** Renders the Arrow table through a Gaussian billboard primitive. */
   renderLayers(): Layer | null {
+    const useGpuEngine = this.shouldUseGpuEngine();
     const arrowTable = getArrowTable(this.props.data);
-    const splatData = getDeckBinaryDataFromGaussianSplatArrowTable(
-      arrowTable,
-      this.props.getColor,
-      this.props.gaussianSupportRadius
-    );
+    const splatData = useGpuEngine
+      ? {length: this.state.splatEngine?.getSplatCount() ?? arrowTable.numRows, attributes: {}}
+      : getDeckBinaryDataFromGaussianSplatArrowTable(
+          arrowTable,
+          this.props.getColor,
+          this.props.gaussianSupportRadius
+        );
 
     return new SplatPrimitiveLayer({
       ...this.getSubLayerProps({id: 'splats'}),
@@ -347,7 +390,9 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       radiusScale: this.props.radiusScale,
       radiusMinPixels: this.props.radiusMinPixels,
       radiusMaxPixels: this.props.radiusMaxPixels,
-      splatEngine: this.shouldUseGpuEngine() ? this.state.splatEngine : null
+      alphaScale: this.props.alphaScale,
+      screenSizeCutoffPixels: this.props.screenSizeCutoffPixels,
+      splatEngine: useGpuEngine ? this.state.splatEngine : null
     }) as unknown as Layer;
   }
 
@@ -392,6 +437,8 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
     radiusScale: {type: 'number', min: 0, value: 1},
     radiusMinPixels: {type: 'number', min: 0, value: 0},
     radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
+    alphaScale: {type: 'number', min: 0, value: 1},
+    screenSizeCutoffPixels: {type: 'number', min: 0, value: 0},
     splatEngine: null
   };
 
@@ -417,6 +464,10 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
 
   /** Registers binary attributes consumed by the primitive shader. */
   initializeState(): void {
+    if (this.context.device.type === 'webgpu') {
+      return;
+    }
+
     this.getAttributeManager()!.addInstanced({
       instancePositions: {
         size: 3,
@@ -455,18 +506,36 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       return;
     }
 
-    const {sizeUnits, radiusScale, radiusMinPixels, radiusMaxPixels} = this.props;
+    const {
+      sizeUnits,
+      radiusScale,
+      radiusMinPixels,
+      radiusMaxPixels,
+      alphaScale,
+      screenSizeCutoffPixels
+    } = this.props;
     const splatProps: SplatUniformProps = {
       sizeUnits: UNIT[sizeUnits],
       radiusScale,
       radiusMinPixels,
-      radiusMaxPixels
+      radiusMaxPixels,
+      alphaScale,
+      screenSizeCutoffPixels
     };
     const model = this.state.model;
     if (!model) {
       return;
     }
-    this.props.splatEngine?.update();
+    this.props.splatEngine?.update(getSplatEngineUpdateProps(this.context.viewport));
+    if (this.context.device.type === 'webgpu') {
+      const splatEngine = this.props.splatEngine;
+      if (!splatEngine) {
+        return;
+      }
+      model.setBindings(splatEngine.getRenderBindings());
+      model.setInstanceCount(splatEngine.getSplatCount());
+      model.setVertexCount(4);
+    }
     model.shaderInputs.setProps({splat: splatProps});
     model.draw(this.context.renderPass);
   }
@@ -474,7 +543,7 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
   /** Applies attribute buffers while preserving the explicit WebGPU buffer layout. */
   protected _setModelAttributes(
     model: Model,
-    changedAttributes: Record<string, unknown>,
+    changedAttributes: {[id: string]: Attribute},
     bufferLayoutChanged = false
   ): void {
     super._setModelAttributes(
@@ -495,18 +564,49 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       ...this.getShaders(),
       id: this.props.id,
       bufferLayout,
-      geometry: new Geometry({
-        topology: 'triangle-strip',
-        attributes: {
-          positions: {
-            size: 3,
-            value: new Float32Array([-1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0])
-          }
-        }
-      }),
+      geometry:
+        this.context.device.type === 'webgpu'
+          ? null
+          : new Geometry({
+              topology: 'triangle-strip',
+              attributes: {
+                positions: {
+                  size: 3,
+                  value: new Float32Array([-1, -1, 0, 1, -1, 0, -1, 1, 0, 1, 1, 0])
+                }
+              }
+            }),
+      topology: 'triangle-strip',
+      vertexCount: 4,
+      instanceCount: this.props.splatEngine?.getSplatCount() ?? 0,
       isInstanced: true
     });
   }
+}
+
+/** Build draw-time engine inputs from the active deck.gl viewport. */
+function getSplatEngineUpdateProps(viewport: any) {
+  if (!viewport) {
+    return {};
+  }
+
+  return {
+    modelViewProjectionMatrix: viewport.viewProjectionMatrix,
+    viewportSize: [viewport.width || 1, viewport.height || 1] as [number, number],
+    cullingVolume: getCullingVolume(viewport)
+  };
+}
+
+/** Build a math.gl frustum culling volume from a deck.gl viewport. */
+function getCullingVolume(viewport: any): CullingVolume | undefined {
+  if (typeof viewport.getFrustumPlanes !== 'function') {
+    return undefined;
+  }
+
+  const planes = Object.values(viewport.getFrustumPlanes()).map(
+    ({normal, distance}: any) => new Plane(normal.clone().negate(), distance)
+  );
+  return new CullingVolume(planes);
 }
 
 /** Convert a Gaussian splat Arrow table into deck.gl binary attributes. */

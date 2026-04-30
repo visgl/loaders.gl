@@ -1,7 +1,7 @@
 // loaders.gl
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh, TypedArray} from '@loaders.gl/schema';
 
 /** A parsed PLY mesh */
 export type PLYMesh = Mesh & {
@@ -28,7 +28,7 @@ export type MeshHeader = {
 
 /** The parsed columnar values */
 export type PLYAttributes = {
-  [index: string]: number[];
+  [index: string]: number[] | TypedArray;
 };
 
 /** A top level PLY element (vertex, face,  ...) */

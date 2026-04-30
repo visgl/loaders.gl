@@ -5,6 +5,8 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
+import {FullscreenWidget} from '@deck.gl/widgets';
+import '@deck.gl/widgets/stylesheet.css';
 
 import {Tile3DSourceLayer} from '@loaders.gl/deck-layers';
 import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
@@ -32,7 +34,12 @@ export default function App() {
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <DeckGL initialViewState={INITIAL_VIEW_STATE} layers={renderLayers()} controller={false}>
+      <DeckGL
+        initialViewState={INITIAL_VIEW_STATE}
+        layers={renderLayers()}
+        controller={false}
+        widgets={[new FullscreenWidget({id: 'home-demo-fullscreen'})]}
+      >
         <Map
           reuseMaps
           mapLib={maplibregl}

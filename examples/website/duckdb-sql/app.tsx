@@ -16,7 +16,7 @@ import maplibregl from 'maplibre-gl'
 import {createDataSource} from '@loaders.gl/core'
 import {DuckDBSQLSource} from '@loaders.gl/sql'
 import type {DuckDBSQLDataSource} from '@loaders.gl/sql'
-import {createDeckStatsWidget} from '../shared/create-deck-stats-widget'
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget'
 
 type Point = {
   type: 'Point'
@@ -195,7 +195,10 @@ export default function App() {
       }),
     [featureCollection]
   )
-  const widgets = useMemo(() => [createDeckStatsWidget('duckdb-sql-stats')], [])
+  const widgets = useMemo(
+    () => [createDeckFullscreenWidget('duckdb-sql-fullscreen'), createDeckStatsWidget('duckdb-sql-stats')],
+    []
+  )
 
   return (
     <div style={pageStyle}>

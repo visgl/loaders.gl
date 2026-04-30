@@ -8,7 +8,7 @@ import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {convertMeshToTable} from '@loaders.gl/schema-utils';
-import {parsePLY} from './lib/parse-ply';
+import {parsePLY, parsePLYToArrowTable} from './lib/parse-ply';
 import {parsePLYInBatches} from './lib/parse-ply-in-batches';
 import {PLYWorkerLoader as PLYWorkerLoaderMetadata} from './ply-loader';
 import {PLYLoader as PLYLoaderMetadata} from './ply-loader';
@@ -30,6 +30,21 @@ function convertPLYMesh(mesh: PLYMesh, options?: PLYLoaderOptions): PLYMesh | Me
   return options?.ply?.shape === 'arrow-table' ? convertMeshToTable(mesh, 'arrow-table') : mesh;
 }
 
+/** Parse PLY data using a direct Arrow path when requested and supported. */
+function parsePLYData(
+  data: ArrayBuffer | string,
+  options?: PLYLoaderOptions
+): PLYMesh | MeshArrowTable {
+  if (options?.ply?.shape === 'arrow-table') {
+    const arrowTable = parsePLYToArrowTable(data, options.ply);
+    if (arrowTable) {
+      return arrowTable;
+    }
+  }
+
+  return convertPLYMesh(parsePLY(data, options?.ply), options);
+}
+
 /**
  * Worker loader for PLY - Polygon File Format (aka Stanford Triangle Format)'
  * links: ['http://paulbourke.net/dataformats/ply/',
@@ -44,19 +59,26 @@ export const PLYWorkerLoaderWithParser = {
  */
 export const PLYLoaderWithParser = {
   ...PLYLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer, options) =>
-    convertPLYMesh(parsePLY(arrayBuffer, options?.ply), options),
-  parseTextSync: (arrayBuffer, options) =>
-    convertPLYMesh(parsePLY(arrayBuffer, options?.ply), options),
-  parseSync: (arrayBuffer, options) => convertPLYMesh(parsePLY(arrayBuffer, options?.ply), options),
+  parse: async (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
+  parseTextSync: (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
+  parseSync: (arrayBuffer, options) => parsePLYData(arrayBuffer, options),
   parseInBatches: async function* (
     arrayBuffer:
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
       | Iterable<ArrayBufferLike | ArrayBufferView>,
     options
   ) {
-    for await (const mesh of parsePLYInBatches(arrayBuffer, options?.ply)) {
-      yield convertPLYMesh(mesh, options);
+    const plyOptions = {
+      ...options?.ply,
+      batchSize: options?.batchSize ?? options?.core?.batchSize
+    };
+    for await (const meshOrTable of parsePLYInBatches(arrayBuffer, plyOptions)) {
+      yield isMeshArrowTable(meshOrTable) ? meshOrTable : convertPLYMesh(meshOrTable, options);
     }
   }
 } as const satisfies LoaderWithParser<PLYMesh | MeshArrowTable, any, PLYLoaderOptions>;
+
+/** Return true if a parsed PLY batch is already a Mesh Arrow table. */
+function isMeshArrowTable(data: PLYMesh | MeshArrowTable): data is MeshArrowTable {
+  return 'shape' in data && data.shape === 'arrow-table';
+}

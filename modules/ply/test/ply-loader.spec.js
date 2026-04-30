@@ -207,6 +207,53 @@ test('PLYLoader#parse(gaussian splat binary fixture)', async t => {
   t.end();
 });
 
+test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', async t => {
+  const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
+  const batches = await parseInBatches(makeIterator(response), PLYLoader, {
+    batchSize: 400,
+    ply: {shape: 'arrow-table'}
+  });
+  const batchRowCounts = [];
+
+  for await (const table of batches) {
+    t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(
+      table.data.schema.metadata.get('loaders_gl.semantic_type'),
+      'gaussian-splats',
+      'batch schema identifies Gaussian splat data'
+    );
+    t.ok(table.data.getChild('POSITION'), 'batch includes POSITION column');
+    t.ok(table.data.getChild('scale_0'), 'batch includes scale_0 column');
+    batchRowCounts.push(table.data.numRows);
+  }
+
+  t.deepEqual(batchRowCounts, [400, 400, 200], 'binary PLY emits requested Arrow batches');
+  t.end();
+});
+
+test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk boundaries)', async t => {
+  const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const batches = await parseInBatches(makeChunkIterator(arrayBuffer, 777), PLYLoader, {
+    batchSize: 333,
+    ply: {shape: 'arrow-table'}
+  });
+  const batchRowCounts = [];
+
+  for await (const table of batches) {
+    batchRowCounts.push(table.data.numRows);
+  }
+
+  t.deepEqual(batchRowCounts, [333, 333, 333, 1], 'batches span input chunk boundaries');
+  t.end();
+});
+
+function* makeChunkIterator(arrayBuffer, chunkSize) {
+  for (let byteOffset = 0; byteOffset < arrayBuffer.byteLength; byteOffset += chunkSize) {
+    yield arrayBuffer.slice(byteOffset, byteOffset + chunkSize);
+  }
+}
+
 test('PLYLoader#parseSync(binary)', async t => {
   const arrayBuffer = await fetchFile(PLY_BUN_ZIPPER_URL).then(res => res.arrayBuffer());
   const data = parseSync(arrayBuffer, PLYLoader);

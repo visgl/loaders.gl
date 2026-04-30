@@ -6,10 +6,15 @@ import * as arrow from 'apache-arrow';
 import test from 'tape-promise/tape';
 import {getGaussianSplatDataFromArrowTable} from '../src/splat/splat-data';
 import {
+  getSplatTileBufferByteLengths,
+  getSplatTileGrid,
   getSplatTransientBufferByteLengths,
   packSplatDepthKey,
   SPLAT_RADIX_BUCKETS,
-  SPLAT_RADIX_PASS_COUNT
+  SPLAT_RADIX_PASS_COUNT,
+  SPLAT_TILE_RADIX_MAX_SPLATS,
+  SPLAT_TILE_RADIX_WORKGROUP_SIZE,
+  SPLAT_TILE_SIZE_PIXELS
 } from '../src/splat/splat-sort';
 
 /** Creates a minimal Gaussian splat Arrow table. */
@@ -68,5 +73,23 @@ test('splat-sort exposes radix constants and key packing', t => {
   t.ok(farKey < nearKey, 'farther depth sorts before nearer depth');
   t.equal(byteLengths.indices, 8, 'allocates one u32 per index');
   t.equal(byteLengths.projected, 32, 'allocates one vec4<f32> per projected splat');
+  t.end();
+});
+
+test('splat-sort calculates tile grid and buffer sizes', t => {
+  const tileGrid = getSplatTileGrid(1920, 1080);
+  const byteLengths = getSplatTileBufferByteLengths(1000, tileGrid);
+
+  t.equal(SPLAT_TILE_SIZE_PIXELS, 16, 'uses 16 pixel default tiles');
+  t.equal(SPLAT_TILE_RADIX_MAX_SPLATS, 1024, 'reserves 1024 splats per tile workgroup');
+  t.equal(SPLAT_TILE_RADIX_WORKGROUP_SIZE, 256, 'uses 256 lane tile radix workgroups');
+  t.equal(tileGrid.columns, 120, 'calculates tile columns');
+  t.equal(tileGrid.rows, 68, 'calculates tile rows');
+  t.equal(tileGrid.tileCount, 8160, 'calculates tile count');
+  t.equal(byteLengths.tileCounts, 8160 * 4, 'allocates one count per tile');
+  t.equal(byteLengths.tileOffsets, 8161 * 4, 'allocates sentinel tile offset');
+  t.equal(byteLengths.tileIndices, 1000 * 4, 'allocates compacted splat references');
+  t.equal(byteLengths.overflowCount, 4, 'allocates overflow counter');
+  t.equal(byteLengths.overflowIndices, 4, 'allocates at least one overflow slot');
   t.end();
 });

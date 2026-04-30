@@ -20,22 +20,6 @@ const HUGGING_FACE_GAUSSIAN_SPLAT_ATTRIBUTION = [
 
 /** Built-in Gaussian splat PLY examples shown in the Gaussian splats URL dropdown. */
 export const GAUSSIAN_SPLAT_EXAMPLES: Record<string, Example> = {
-  'Train 7K Full': {
-    type: 'ply',
-    url: GAUSSIAN_SPLAT_TRAIN_7K_URLS[0],
-    urls: GAUSSIAN_SPLAT_TRAIN_7K_URLS,
-    pointCount: 741883
-  },
-  'Train 7K Part 1': {
-    type: 'ply',
-    url: GAUSSIAN_SPLAT_TRAIN_7K_URLS[0],
-    pointCount: 370941
-  },
-  'Train 7K Part 2': {
-    type: 'ply',
-    url: GAUSSIAN_SPLAT_TRAIN_7K_URLS[1],
-    pointCount: 370942
-  },
   'HF Voxel51 Train 7K': {
     type: 'ply',
     url: `${HUGGING_FACE_VOXEL51_GAUSSIAN_SPLATTING_URI}/FO_dataset/train/point_cloud/iteration_7000/point_cloud.ply`,
@@ -59,8 +43,18 @@ export const GAUSSIAN_SPLAT_EXAMPLES: Record<string, Example> = {
     url: `${HUGGING_FACE_VOXEL51_GAUSSIAN_SPLATTING_URI}/FO_dataset/truck/point_cloud/iteration_7000/point_cloud.ply`,
     pointCount: 1692538,
     attributions: HUGGING_FACE_GAUSSIAN_SPLAT_ATTRIBUTION
+  },
+  'deck.gl-data Train 7K Part 1': {
+    type: 'ply',
+    url: GAUSSIAN_SPLAT_TRAIN_7K_URLS[0],
+    pointCount: 370941
+  },
+  'deck.gl-data Train 7K Part 2': {
+    type: 'ply',
+    url: GAUSSIAN_SPLAT_TRAIN_7K_URLS[1],
+    pointCount: 370942
   }
 };
 
 /** Default Gaussian splat example loaded when the app mounts. */
-export const DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME = 'Train 7K Full';
+export const DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME = 'HF Voxel51 Train 7K';
