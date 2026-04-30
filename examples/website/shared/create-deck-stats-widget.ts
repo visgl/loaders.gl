@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {_StatsWidget as DeckStatsWidget, type StatsWidgetProps} from '@deck.gl/widgets';
+import {
+  FullscreenWidget,
+  type FullscreenWidgetProps,
+  _StatsWidget as DeckStatsWidget,
+  type StatsWidgetProps
+} from '@deck.gl/widgets';
 import '@deck.gl/widgets/stylesheet.css';
 
 /**
@@ -17,6 +22,20 @@ export function createDeckStatsWidget(
     type: 'deck',
     placement: 'top-left',
     framesPerUpdate: 10,
+    ...props
+  });
+}
+
+/**
+ * Creates a stable deck.gl fullscreen widget for website examples.
+ */
+export function createDeckFullscreenWidget(
+  id: string,
+  props: Partial<FullscreenWidgetProps> = {}
+) {
+  return new FullscreenWidget({
+    id,
+    placement: 'top-left',
     ...props
   });
 }

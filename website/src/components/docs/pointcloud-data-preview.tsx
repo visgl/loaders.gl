@@ -5,9 +5,14 @@ import {LASLoader} from '@loaders.gl/las';
 import {OBJLoader} from '@loaders.gl/obj';
 import {PCDLoader} from '@loaders.gl/pcd';
 import {PLYLoader} from '@loaders.gl/ply';
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import styled from 'styled-components';
 import {EXAMPLES, type Example} from 'examples/website/pointcloud/examples';
+import {
+  ExampleUrlInputCard,
+  type UrlOption
+} from 'examples/website/shared/url-input-card';
 
 const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader] as const;
 const PREVIEW_ROW_LIMIT = 100;
@@ -15,6 +20,14 @@ const PREVIEW_COLUMN_LIMIT = 9;
 const SOURCE_BYTE_LIMIT = 2048;
 const SOURCE_TEXT_LIMIT = 48000;
 const DEFAULT_SOURCE_BYTES_PER_ROW = 8;
+type SelectedPointcloudExample = {
+  /** Example category label. */
+  categoryName: string;
+  /** Example display name. */
+  exampleName: string;
+  /** Example source definition. */
+  example: Example;
+};
 
 type PointcloudDataPreviewState =
   | {status: 'loading'}
@@ -133,7 +146,7 @@ const CanvasShell = styled.div`
   height: 24rem;
   overflow: hidden;
   border-radius: 8px;
-  background: transparent;
+  background: #eef2f7;
 `;
 
 const BinaryViewport = styled.div`
@@ -331,14 +344,22 @@ const GlobalPreviewStyle = styled.div`
  */
 export default function PointcloudDataPreview({
   children,
-  format
+  format,
+  selectedExample,
+  onExampleChange
 }: {
   /** Optional deck.gl point cloud rendering to show beside the data previews. */
   children?: ReactNode;
   /** Example app format filter to select a specific point cloud loader format. */
   format: string;
+  /** Selected point cloud example shared with the deck canvas. */
+  selectedExample?: SelectedPointcloudExample | null;
+  /** Callback when the preview selects a new example URL. */
+  onExampleChange?: (example: SelectedPointcloudExample) => void;
 }): ReactNode {
-  const exampleEntry = useMemo(() => getFirstExample(format), [format]);
+  const defaultExampleEntry = useMemo(() => getFirstExample(format), [format]);
+  const exampleEntry = selectedExample || defaultExampleEntry;
+  const urlOptions = useMemo(() => getUrlOptions(format), [format]);
   const [state, setState] = useState<PointcloudDataPreviewState>({status: 'loading'});
 
   useEffect(() => {
@@ -356,10 +377,7 @@ export default function PointcloudDataPreview({
         const response = await fetch(exampleEntry.example.url);
         const arrayBuffer = await response.arrayBuffer();
         const sourceText = getSourceText(arrayBuffer);
-        const loader = getPointCloudLoader(exampleEntry.example, format);
-        const mesh = (await load(arrayBuffer, loader as any, {
-          worker: false
-        })) as Mesh;
+        const mesh = await loadPreviewPointCloud(exampleEntry.example, format, arrayBuffer);
 
         if (!isCancelled) {
           setState({
@@ -389,6 +407,28 @@ export default function PointcloudDataPreview({
 
   return (
     <GlobalPreviewStyle>
+      {exampleEntry && (
+        <ExampleUrlInputCard<Example>
+          format={format}
+          selectedUrl={exampleEntry.example.url}
+          urlOptions={urlOptions}
+          onExampleSelect={(urlOption) => {
+            const example = urlOption.example || {type: getExampleType(format), url: urlOption.url};
+            onExampleChange?.({
+              categoryName: format,
+              exampleName: urlOption.label,
+              example
+            });
+          }}
+          onUrlChange={(url) =>
+            onExampleChange?.({
+              categoryName: 'URL',
+              exampleName: getFileNameFromUrl(url),
+              example: {type: getExampleType(format), url}
+            })
+          }
+        />
+      )}
       {state.status === 'loading' && <StatusContainer>Loading point cloud data...</StatusContainer>}
       {state.status === 'error' && <StatusContainer>{state.errorMessage}</StatusContainer>}
       {state.status === 'loaded' && (
@@ -412,7 +452,7 @@ export default function PointcloudDataPreview({
             <PaneCard>
               <PaneHeader>
                 <PaneLabel>Arrow table</PaneLabel>
-                <PaneMeta>{state.exampleName}</PaneMeta>
+                <PaneMeta>{formatRowCount(getPointCount((state.mesh as any).attributes || {}))}</PaneMeta>
               </PaneHeader>
               <TableShell>
                 <PointcloudTable mesh={state.mesh} />
@@ -548,7 +588,88 @@ function getFirstExample(format: string): {exampleName: string; example: Example
   const examplesForFormat = EXAMPLES[format];
   const exampleName = examplesForFormat && Object.keys(examplesForFormat)[0];
   const example = exampleName ? examplesForFormat[exampleName] : null;
-  return exampleName && example ? {exampleName, example} : null;
+  return exampleName && example ? {categoryName: format, exampleName, example} : null;
+}
+
+async function loadPreviewPointCloud(
+  example: Example,
+  format: string,
+  firstArrayBuffer: ArrayBuffer
+): Promise<Mesh> {
+  const urls = getExampleUrls(example);
+  const loader = getPointCloudLoader(example, format);
+
+  if (urls.length === 1) {
+    const pointCloud = await load(firstArrayBuffer, loader as any, {
+      worker: false,
+      las: {shape: 'arrow-table'},
+      obj: {shape: 'arrow-table'},
+      pcd: {shape: 'arrow-table'},
+      ply: {shape: 'arrow-table'}
+    });
+    return isMeshArrowTable(pointCloud) ? ((convertTableToMesh(pointCloud) as unknown) as Mesh) : (pointCloud as Mesh);
+  }
+
+  const pointClouds = await Promise.all(
+    urls.map(async (url, index) => {
+      const arrayBuffer =
+        index === 0 ? firstArrayBuffer : await (await fetch(url)).arrayBuffer();
+      return load(arrayBuffer, loader as any, {
+        worker: false,
+        las: {shape: 'arrow-table'},
+        obj: {shape: 'arrow-table'},
+        pcd: {shape: 'arrow-table'},
+        ply: {shape: 'arrow-table'}
+      });
+    })
+  );
+  const combinedPointCloud = combineMeshArrowTables(pointClouds as MeshArrowTable[]);
+  return (convertTableToMesh(combinedPointCloud) as unknown) as Mesh;
+}
+
+function combineMeshArrowTables(pointClouds: MeshArrowTable[]): MeshArrowTable {
+  const firstPointCloud = pointClouds[0];
+  if (!firstPointCloud || pointClouds.some((pointCloud) => !isMeshArrowTable(pointCloud))) {
+    throw new Error('Multi-file point cloud examples require Arrow table loader output.');
+  }
+
+  return {
+    ...firstPointCloud,
+    data: firstPointCloud.data.concat(...pointClouds.slice(1).map((pointCloud) => pointCloud.data))
+  };
+}
+
+function getExampleUrls(example: Example): string[] {
+  return example.urls?.length ? example.urls : [example.url];
+}
+
+function getUrlOptions(format: string): UrlOption<Example>[] {
+  const examplesForFormat = EXAMPLES[format] || {};
+  return Object.entries(examplesForFormat).map(([exampleName, example]) => ({
+    format,
+    example,
+    group: 'Examples',
+    label: exampleName,
+    pointCount: example.pointCount,
+    url: example.url
+  }));
+}
+
+function getExampleType(format: string): Example['type'] {
+  return format.toLowerCase() === 'laz' ? 'las' : (format.toLowerCase() as Example['type']);
+}
+
+function isMeshArrowTable(data: unknown): data is MeshArrowTable {
+  return Boolean(data && typeof data === 'object' && 'shape' in data && data.shape === 'arrow-table');
+}
+
+function getFileNameFromUrl(url: string): string {
+  try {
+    const pathname = new URL(url).pathname;
+    return pathname.slice(pathname.lastIndexOf('/') + 1) || 'Custom PLY';
+  } catch {
+    return 'Custom PLY';
+  }
 }
 
 function getPointCloudLoader(example: Example, format: string) {
@@ -573,6 +694,10 @@ function getPointCount(attributes: Record<string, any>): number {
   const positions = attributes.POSITION;
   const size = getAttributeSize(positions);
   return positions?.value?.length && size ? Math.floor(positions.value.length / size) : 0;
+}
+
+function formatRowCount(rowCount: number): string {
+  return `${rowCount.toLocaleString()} rows`;
 }
 
 function getPreviewColumns(attributes: Record<string, any>): PreviewColumn[] {

@@ -19,6 +19,7 @@ import flatgeobufBench from '@loaders.gl/flatgeobuf/test/flatgeobuf.bench';
 import geopackageBench from '@loaders.gl/geopackage/test/geopackage.bench';
 import kmlBench from '@loaders.gl/kml/test/kml.bench';
 import {parquetBench} from '@loaders.gl/parquet/test/parquet.bench';
+import plyBench from '@loaders.gl/ply/test/ply-loader.bench';
 import shapefileBench from '@loaders.gl/shapefile/test/shapefile.bench';
 import shpBench from '@loaders.gl/shapefile/test/shp.bench';
 
@@ -44,6 +45,7 @@ export async function addModuleBenchmarksToSuite(suite) {
   await coreBench(suite);
 
   await parquetBench(suite);
+  await plyBench(suite);
 
   await jsonBench(suite);
 

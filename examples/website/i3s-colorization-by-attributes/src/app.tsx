@@ -24,7 +24,7 @@ import {
   TRANSITION_DURAITON
 } from './constants';
 import {getNumericAttributeInfo} from './utils/fetch-attributes-data';
-import {createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
 export default function App() {
   const tileSets: string[] = Object.keys(EXAMPLES);
@@ -37,7 +37,10 @@ export default function App() {
   });
   const [colorsByAttribute, setColorsByAttribute] = useState<ColorsByAttribute | null>(null);
   const widgets = useMemo(
-    () => [createDeckStatsWidget('i3s-colorization-by-attributes-stats')],
+    () => [
+      createDeckFullscreenWidget('i3s-colorization-by-attributes-fullscreen'),
+      createDeckStatsWidget('i3s-colorization-by-attributes-stats')
+    ],
     []
   );
 

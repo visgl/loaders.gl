@@ -75,6 +75,7 @@ const config = {
         'modules/deck-layers/test/geoarrow-layer.spec.ts',
         'modules/deck-layers/test/image-source-layer.spec.ts',
         'modules/deck-layers/test/shared-tile-2d-view.spec.ts',
+        'modules/deck-layers/test/splat-layer.spec.ts',
         'modules/deck-layers/test/tile-2d-source-layer.spec.ts',
         'modules/deck-layers/test/tile-3d-source-layer.spec.ts',
         'modules/deck-layers/test/vector-source-layer.spec.ts',

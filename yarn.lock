@@ -5189,6 +5189,7 @@ __metadata:
     "@luma.gl/core": "npm:^9.3.2"
     "@luma.gl/engine": "npm:^9.3.2"
     "@luma.gl/shadertools": "npm:^9.3.2"
+    "@math.gl/culling": "npm:^4.1.0"
   languageName: unknown
   linkType: soft
 
@@ -5637,6 +5638,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/splats@npm:^4.4.0, @loaders.gl/splats@workspace:modules/splats":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/splats@workspace:modules/splats"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:4.4.0"
+    "@loaders.gl/schema": "npm:4.4.0"
+    apache-arrow: "npm:>= 17.0.0"
+  peerDependencies:
+    "@loaders.gl/core": ~4.4.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/sql@npm:^4.4.0, @loaders.gl/sql@workspace:modules/sql":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/sql@workspace:modules/sql"
@@ -5914,6 +5927,19 @@ __metadata:
   peerDependencies:
     "@luma.gl/core": ~9.3.0
   checksum: 10c0/0dfc293f6e8102866550685ed8bfb0f5f00872a1880203b91aa1d799aa4910aeca0aa61ea623c62303716b9401f46d665cda880638f2f3bc46d5e8522f634c05
+  languageName: node
+  linkType: hard
+
+"@luma.gl/webgpu@npm:^9.3.2":
+  version: 9.3.3
+  resolution: "@luma.gl/webgpu@npm:9.3.3"
+  dependencies:
+    "@probe.gl/env": "npm:^4.1.1"
+    "@webgpu/types": "npm:^0.1.69"
+    wgsl_reflect: "npm:^1.2.3"
+  peerDependencies:
+    "@luma.gl/core": ~9.3.0
+  checksum: 10c0/f85654a98829ac0e53aa2f599d18fc7ce73878ce93a924ed20fc0d3625c08745bf96e184b57a69022af39e9f81349d044d963aaa1fb2cf5f0762c93243275c92
   languageName: node
   linkType: hard
 
@@ -11799,6 +11825,13 @@ __metadata:
   version: 1.11.2
   resolution: "@webcomponents/shadycss@npm:1.11.2"
   checksum: 10c0/0f6f6545c0805e307747014e693a30e8d4128dea9ceca66884075de49bf7dee52461255b9136962fd19d6da075ad732f622c4ada9ee4d27e34c331ecb302e27b
+  languageName: node
+  linkType: hard
+
+"@webgpu/types@npm:^0.1.69":
+  version: 0.1.69
+  resolution: "@webgpu/types@npm:0.1.69"
+  checksum: 10c0/52b95a176de5ee918fd1d7132103c35029006a0b4eb321767479a9e430560d272926c0994c3795a5bbaa22cebcc7dce71e66ba8b6496e01c90c0d179a02bd968
   languageName: node
   linkType: hard
 
@@ -23111,6 +23144,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"loaders.gl-example-gaussian-splats@workspace:examples/website/gaussian-splats":
+  version: 0.0.0-use.local
+  resolution: "loaders.gl-example-gaussian-splats@workspace:examples/website/gaussian-splats"
+  dependencies:
+    "@deck.gl/core": "npm:^9.3.0"
+    "@deck.gl/react": "npm:^9.3.0"
+    "@deck.gl/widgets": "npm:^9.3.0"
+    "@loaders.gl/core": "workspace:*"
+    "@loaders.gl/deck-layers": "workspace:*"
+    "@loaders.gl/ply": "workspace:*"
+    "@loaders.gl/schema": "workspace:*"
+    "@luma.gl/core": "npm:^9.3.2"
+    "@luma.gl/webgpu": "npm:^9.3.2"
+    react: "npm:^19.2.5"
+    react-dom: "npm:^19.2.5"
+    typescript: "npm:^5.6.0"
+    vite: "npm:^7.2.7"
+  languageName: unknown
+  linkType: soft
+
 "loaders.gl-example-pointcloud-loaders@workspace:examples/website/pointcloud":
   version: 0.0.0-use.local
   resolution: "loaders.gl-example-pointcloud-loaders@workspace:examples/website/pointcloud"
@@ -23121,6 +23174,7 @@ __metadata:
     "@deck.gl/react": "npm:^9.3.0"
     "@deck.gl/widgets": "npm:^9.3.0"
     "@loaders.gl/core": "workspace:*"
+    "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/draco": "workspace:*"
     "@loaders.gl/las": "workspace:*"
     "@loaders.gl/obj": "workspace:*"
@@ -28447,6 +28501,7 @@ __metadata:
     "@fortawesome/react-fontawesome": "npm:^0.1.14"
     "@loaders.gl/core": "workspace:*"
     "@loaders.gl/csv": "workspace:*"
+    "@loaders.gl/deck-layers": "workspace:*"
     "@loaders.gl/geopackage": "workspace:*"
     "@loaders.gl/i3s": "workspace:*"
     "@loaders.gl/las": "workspace:*"
@@ -28455,12 +28510,14 @@ __metadata:
     "@loaders.gl/ply": "workspace:*"
     "@loaders.gl/schema": "workspace:*"
     "@loaders.gl/schema-utils": "workspace:*"
+    "@loaders.gl/splats": "workspace:*"
     "@luma.gl/constants": "npm:^9.3.2"
     "@luma.gl/core": "npm:^9.3.2"
     "@luma.gl/engine": "npm:^9.3.2"
     "@luma.gl/gltf": "npm:^9.3.2"
     "@luma.gl/shadertools": "npm:^9.3.2"
     "@luma.gl/webgl": "npm:^9.3.2"
+    "@luma.gl/webgpu": "npm:^9.3.2"
     "@material-ui/core": "npm:^4.10.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@material-ui/lab": "npm:^4.0.0-alpha.57"
@@ -34616,6 +34673,13 @@ __metadata:
   version: 0.1.4
   resolution: "websocket-extensions@npm:0.1.4"
   checksum: 10c0/bbc8c233388a0eb8a40786ee2e30d35935cacbfe26ab188b3e020987e85d519c2009fe07cfc37b7f718b85afdba7e54654c9153e6697301f72561bfe429177e0
+  languageName: node
+  linkType: hard
+
+"wgsl_reflect@npm:^1.2.3":
+  version: 1.2.3
+  resolution: "wgsl_reflect@npm:1.2.3"
+  checksum: 10c0/0ac66a98607a606ea0d9c419de9be63137ab0cbe05a9024f65fe3d606de1ab40d5b6a50a8fc30b8ad5b06dc7d676e7e5f6c4218ce0061f2b4a17d3722ca363b4
   languageName: node
   linkType: hard
 

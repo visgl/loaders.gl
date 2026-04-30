@@ -74,6 +74,7 @@ const sidebars = {
       type: 'category',
       label: 'Point Cloud Formats',
       items: [
+        'pointclouds/gaussian-splats',
         'pointclouds/draco',
         'pointclouds/las',
         'pointclouds/pcd',

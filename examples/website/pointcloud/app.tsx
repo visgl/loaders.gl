@@ -8,6 +8,8 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {
   COORDINATE_SYSTEM,
+  FirstPersonView,
+  type FirstPersonViewState,
   LinearInterpolator,
   OrbitView,
   type OrbitViewState
@@ -16,7 +18,7 @@ import {PointCloudLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 
 import {load} from '@loaders.gl/core';
-import {MeshArrowPointCloudLayer} from '@loaders.gl/deck-layers';
+import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {DracoLoader} from '@loaders.gl/draco';
@@ -27,16 +29,22 @@ import {PLYLoader} from '@loaders.gl/ply';
 
 import type {Example} from './examples';
 import {EXAMPLES} from './examples';
-import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 import '@deck.gl/widgets/stylesheet.css';
 
 const POINT_CLOUD_LOADERS = [DracoLoader, LASLoader, PLYLoader, PCDLoader, OBJLoader] as const;
+const CONTROLLER_MODES = ['orbit', 'first-person'] as const;
+const FIRST_PERSON_INITIAL_PITCH = -20;
+const FIRST_PERSON_MIN_PITCH = -75;
+const FIRST_PERSON_MAX_PITCH = 75;
+const ORBIT_MIN_ZOOM = 0;
+const ORBIT_MAX_ZOOM = 10;
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0] as [number, number, number],
-  rotationX: 0,
-  rotationOrbit: 0,
-  orbitAxis: 'Y',
+  rotationX: 56,
+  rotationOrbit: -25,
+  orbitAxis: 'Z',
   fov: 50,
   minZoom: 0,
   maxZoom: 10,
@@ -47,6 +55,9 @@ const transitionInterpolator = new LinearInterpolator(['rotationOrbit']);
 
 type AppProps = {
   format?: string;
+  example?: Example;
+  exampleName?: string;
+  categoryName?: string;
   hideChrome?: boolean;
   showTileBorders?: boolean;
   onTilesLoad?: Function;
@@ -56,7 +67,8 @@ type AppProps = {
 type AppState = {
   pointData: any;
   metadata: string | null;
-  viewState: OrbitViewState;
+  viewState: OrbitViewState | FirstPersonViewState;
+  controllerMode: ControllerMode;
   selectedCategoryName?: string | null;
   selectedExampleName?: string | null;
   loadTimeMs?: number;
@@ -72,6 +84,8 @@ type DeckPoint = {
   classification?: number;
 };
 
+type ControllerMode = (typeof CONTROLLER_MODES)[number];
+
 export default function App(props: AppProps = {}) {
   const availableExamples = useMemo(
     () => getExamplesForFormat(EXAMPLES, props.format),
@@ -79,6 +93,7 @@ export default function App(props: AppProps = {}) {
   );
   const [state, setState] = useState<AppState>({
     viewState: INITIAL_VIEW_STATE,
+    controllerMode: 'orbit',
     pointData: null,
     metadata: null,
     selectedCategoryName: null,
@@ -87,30 +102,38 @@ export default function App(props: AppProps = {}) {
   });
 
   useEffect(() => {
-    const initialCategoryName =
-      props.format || Object.keys(availableExamples).find(Boolean) || 'PLY';
-    const initialExamples = availableExamples[initialCategoryName];
-    if (!initialExamples) {
-      return;
-    }
+    if (props.example) {
+      void onExampleChange({
+        categoryName: props.categoryName || props.format || 'URL',
+        exampleName: props.exampleName || getFileNameFromUrl(props.example.url),
+        example: props.example
+      });
+    } else {
+      const initialCategoryName =
+        props.format || Object.keys(availableExamples).find(Boolean) || 'PLY';
+      const initialExamples = availableExamples[initialCategoryName];
+      if (!initialExamples) {
+        return;
+      }
 
-    const initialExampleName = Object.keys(initialExamples)[0];
-    const initialExample = initialExamples[initialExampleName];
-    if (!initialExample) {
-      return;
-    }
+      const initialExampleName = Object.keys(initialExamples)[0];
+      const initialExample = initialExamples[initialExampleName];
+      if (!initialExample) {
+        return;
+      }
 
-    void onExampleChange({
-      categoryName: initialCategoryName,
-      exampleName: initialExampleName,
-      example: initialExample
-    });
-  }, [availableExamples, props.format]);
+      void onExampleChange({
+        categoryName: initialCategoryName,
+        exampleName: initialExampleName,
+        example: initialExample
+      });
+    }
+  }, [availableExamples, props.categoryName, props.example, props.exampleName, props.format]);
 
   const layers = state.pointData
     ? [
         isMeshArrowTable(state.pointData)
-          ? createMeshArrowPointCloudLayer(state.pointData, state.selectedExampleName)
+          ? createArrowPointCloudLayer(state.pointData, state.selectedExampleName)
           : createPointCloudLayer(state.pointData, state.selectedExampleName)
       ]
     : [];
@@ -121,6 +144,7 @@ export default function App(props: AppProps = {}) {
     }
 
     return [
+      createDeckFullscreenWidget('pointcloud-fullscreen'),
       createDeckStatsWidget('pointcloud-stats'),
       new SidebarWidget({
         id: 'pointcloud-example-sidebar',
@@ -143,12 +167,31 @@ export default function App(props: AppProps = {}) {
                   metadata: state.metadata,
                   selectedCategoryName: state.selectedCategoryName,
                   selectedExampleName: state.selectedExampleName,
+                  selectedUrl: getSelectedUrl(
+                    availableExamples,
+                    state.selectedCategoryName,
+                    state.selectedExampleName
+                  ),
+                  controllerMode: state.controllerMode,
                   vertexCount: getPointDataLength(state.pointData),
+                  onControllerModeChange: (controllerMode) =>
+                    setState((currentState) => ({
+                      ...currentState,
+                      controllerMode,
+                      viewState: getViewStateForControllerMode(currentState.viewState, controllerMode)
+                    })),
                   onExampleChange: ({categoryName, exampleName}) => {
                     const example = availableExamples[categoryName]?.[exampleName];
                     if (example) {
                       void onExampleChange({categoryName, exampleName, example});
                     }
+                  },
+                  onUrlChange: (url) => {
+                    void onExampleChange({
+                      categoryName: 'URL',
+                      exampleName: getFileNameFromUrl(url),
+                      example: {type: 'ply', url}
+                    });
                   }
                 })
             })
@@ -164,20 +207,26 @@ export default function App(props: AppProps = {}) {
     state.loadTimeMs,
     state.metadata,
     state.pointData,
+    state.controllerMode,
     state.selectedCategoryName,
-    state.selectedExampleName
+    state.selectedExampleName,
+    onExampleChange
   ]);
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
+        key={state.controllerMode}
         layers={layers}
-        views={new OrbitView({})}
+        views={getViewForControllerMode(state.controllerMode)}
         viewState={state.viewState}
         controller={{inertia: true}}
         widgets={widgets}
         onViewStateChange={({viewState}) =>
-          setState((currentState) => ({...currentState, viewState: viewState as OrbitViewState}))
+          setState((currentState) => ({
+            ...currentState,
+            viewState: viewState as OrbitViewState | FirstPersonViewState
+          }))
         }
         getTooltip={(info) => formatPointTooltip(info, state.pointData)}
         parameters={{
@@ -190,13 +239,16 @@ export default function App(props: AppProps = {}) {
   function rotateCamera() {
     setState((currentState) => ({
       ...currentState,
-      viewState: {
-        ...currentState.viewState,
-        rotationOrbit: (currentState.viewState.rotationOrbit || 0) + 10,
-        transitionDuration: 600,
-        transitionInterpolator,
-        onTransitionEnd: rotateCamera
-      } as OrbitViewState
+      viewState:
+        currentState.controllerMode === 'orbit'
+          ? ({
+              ...currentState.viewState,
+              rotationOrbit: ((currentState.viewState as OrbitViewState).rotationOrbit || 0) + 10,
+              transitionDuration: 600,
+              transitionInterpolator,
+              onTransitionEnd: rotateCamera
+            } as OrbitViewState)
+          : currentState.viewState
     }));
   }
 
@@ -220,21 +272,14 @@ export default function App(props: AppProps = {}) {
       error: null
     }));
 
-    const {url} = example;
     try {
-      const pointCloud = await load(url, POINT_CLOUD_LOADERS as any, {
-        worker: false,
-        las: {shape: 'arrow-table'},
-        obj: {shape: 'arrow-table'},
-        pcd: {shape: 'arrow-table'},
-        ply: {shape: 'arrow-table'}
-      });
+      const pointCloud = await loadPointCloudExample(example);
       const mesh = isMeshArrowTable(pointCloud)
         ? ((convertTableToMesh(pointCloud) as unknown) as Mesh)
         : (pointCloud as Mesh);
       const {schema, header, loaderData, attributes} = mesh as any;
 
-      const viewState = getViewState(state.viewState, loaderData, attributes);
+      const viewState = getViewState(state.viewState, state.controllerMode, loaderData, attributes);
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
 
       setState((currentState) => ({
@@ -252,12 +297,67 @@ export default function App(props: AppProps = {}) {
 
       rotateCamera();
     } catch (error) {
-      console.error('Failed to load data', url, error);
+      console.error('Failed to load data', getExampleUrls(example), error);
       setState((currentState) => ({
         ...currentState,
         error: `Could not load ${exampleName}: ${error instanceof Error ? error.message : String(error)}`
       }));
     }
+  }
+}
+
+async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrowTable> {
+  const urls = getExampleUrls(example);
+  const loader = getPointCloudLoader(example);
+  const pointClouds = await Promise.all(
+    urls.map((url) =>
+      load(url, loader as any, {
+        worker: false,
+        las: {shape: 'arrow-table'},
+        obj: {shape: 'arrow-table'},
+        pcd: {shape: 'arrow-table'},
+        ply: {shape: 'arrow-table'}
+      })
+    )
+  );
+
+  if (pointClouds.length === 1) {
+    return pointClouds[0] as Mesh | MeshArrowTable;
+  }
+
+  return combineMeshArrowTables(pointClouds as MeshArrowTable[]);
+}
+
+function combineMeshArrowTables(pointClouds: MeshArrowTable[]): MeshArrowTable {
+  const firstPointCloud = pointClouds[0];
+  if (!firstPointCloud || pointClouds.some((pointCloud) => !isMeshArrowTable(pointCloud))) {
+    throw new Error('Multi-file point cloud examples require Arrow table loader output.');
+  }
+
+  return {
+    ...firstPointCloud,
+    data: firstPointCloud.data.concat(...pointClouds.slice(1).map((pointCloud) => pointCloud.data))
+  };
+}
+
+function getExampleUrls(example: Example): string[] {
+  return example.urls?.length ? example.urls : [example.url];
+}
+
+function getPointCloudLoader(example: Example) {
+  switch (example.type) {
+    case 'draco':
+      return DracoLoader;
+    case 'las':
+      return LASLoader;
+    case 'obj':
+      return OBJLoader;
+    case 'pcd':
+      return PCDLoader;
+    case 'ply':
+      return PLYLoader;
+    default:
+      return POINT_CLOUD_LOADERS;
   }
 }
 
@@ -272,10 +372,14 @@ function getPointDataLength(pointData: any): number {
   return pointData?.length || 0;
 }
 
-function createMeshArrowPointCloudLayer(
+function createArrowPointCloudLayer(
   pointData: MeshArrowTable,
   selectedExampleName?: string | null
-): MeshArrowPointCloudLayer {
+): MeshArrowPointCloudLayer | SplatLayer {
+  if (isGaussianSplatArrowTable(pointData)) {
+    return createSplatLayer(pointData, selectedExampleName);
+  }
+
   return new MeshArrowPointCloudLayer({
     id: `point-cloud-layer-${selectedExampleName ?? 'example'}`,
     coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
@@ -288,6 +392,26 @@ function createMeshArrowPointCloudLayer(
       pointSize: 0.5
     }
   });
+}
+
+function createSplatLayer(
+  pointData: MeshArrowTable,
+  selectedExampleName?: string | null
+): SplatLayer {
+  return new SplatLayer({
+    id: `splat-layer-${selectedExampleName ?? 'example'}`,
+    coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+    data: pointData,
+    pickable: true,
+    opacity: 0.75,
+    radiusScale: 1.4,
+    radiusMinPixels: 1,
+    radiusMaxPixels: 28
+  });
+}
+
+function isGaussianSplatArrowTable(pointData: MeshArrowTable): boolean {
+  return pointData.data.schema.metadata.get('loaders_gl.semantic_type') === 'gaussian-splats';
 }
 
 function createPointCloudLayer(
@@ -307,6 +431,34 @@ function createPointCloudLayer(
   });
 }
 
+function getViewForControllerMode(controllerMode: ControllerMode): OrbitView | FirstPersonView {
+  return controllerMode === 'first-person'
+    ? new FirstPersonView({near: 0.01, far: 100000, up: [0, 0, 1]} as any)
+    : new OrbitView({orbitAxis: 'Z'});
+}
+
+function getViewStateForControllerMode(
+  previousViewState: OrbitViewState | FirstPersonViewState,
+  controllerMode: ControllerMode
+): OrbitViewState | FirstPersonViewState {
+  if (controllerMode === 'first-person') {
+    const target = ((previousViewState as OrbitViewState).target || [0, 0, 0]) as [
+      number,
+      number,
+      number
+    ];
+    return {
+      position: [target[0], target[1] - 6, target[2] + 2],
+      bearing: 0,
+      pitch: FIRST_PERSON_INITIAL_PITCH,
+      minPitch: FIRST_PERSON_MIN_PITCH,
+      maxPitch: FIRST_PERSON_MAX_PITCH
+    };
+  }
+
+  return INITIAL_VIEW_STATE as OrbitViewState;
+}
+
 function renderPointcloudSidebar(
   rootElement: HTMLElement,
   options: {
@@ -317,8 +469,12 @@ function renderPointcloudSidebar(
     metadata: string | null;
     selectedCategoryName?: string | null;
     selectedExampleName?: string | null;
+    selectedUrl?: string;
+    controllerMode: ControllerMode;
     vertexCount: number;
+    onControllerModeChange: (controllerMode: ControllerMode) => void;
     onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
+    onUrlChange: (url: string) => void;
   }
 ): void {
   rootElement.replaceChildren();
@@ -328,11 +484,23 @@ function renderPointcloudSidebar(
   rootElement.style.padding = '4px 0 0';
 
   rootElement.appendChild(
+    createUrlCard({
+      selectedUrl: options.selectedUrl,
+      onUrlChange: options.onUrlChange
+    })
+  );
+  rootElement.appendChild(
     createExampleSelect({
       examples: options.examples,
       selectedCategoryName: options.selectedCategoryName,
       selectedExampleName: options.selectedExampleName,
       onExampleChange: options.onExampleChange
+    })
+  );
+  rootElement.appendChild(
+    createControllerModeSelect({
+      controllerMode: options.controllerMode,
+      onControllerModeChange: options.onControllerModeChange
     })
   );
   rootElement.appendChild(createStatsBlock(options.vertexCount, options.loadTimeMs, options.loadStartMs));
@@ -342,6 +510,33 @@ function renderPointcloudSidebar(
   }
 
   rootElement.appendChild(createPreBlock(options.metadata ?? 'No metadata available'));
+}
+
+function createControllerModeSelect(options: {
+  controllerMode: ControllerMode;
+  onControllerModeChange: (controllerMode: ControllerMode) => void;
+}): HTMLElement {
+  const wrapperElement = document.createElement('div');
+  wrapperElement.style.display = 'grid';
+  wrapperElement.style.gridTemplateColumns = '1fr 1fr';
+  wrapperElement.style.gap = '6px';
+
+  for (const controllerMode of CONTROLLER_MODES) {
+    const buttonElement = document.createElement('button');
+    buttonElement.type = 'button';
+    buttonElement.textContent = controllerMode === 'orbit' ? 'Orbit' : 'First Person';
+    buttonElement.style.padding = '8px 10px';
+    buttonElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+    buttonElement.style.borderRadius = '6px';
+    buttonElement.style.cursor = 'pointer';
+    buttonElement.style.background =
+      controllerMode === options.controllerMode ? '#0f172a' : 'var(--menu-background, #fff)';
+    buttonElement.style.color = controllerMode === options.controllerMode ? '#f8fafc' : '#0f172a';
+    buttonElement.addEventListener('click', () => options.onControllerModeChange(controllerMode));
+    wrapperElement.appendChild(buttonElement);
+  }
+
+  return wrapperElement;
 }
 
 function createExampleSelect(options: {
@@ -366,9 +561,12 @@ function createExampleSelect(options: {
     const optGroupElement = document.createElement('optgroup');
     optGroupElement.label = categoryName;
     for (const exampleName of Object.keys(options.examples[categoryName])) {
+      const example = options.examples[categoryName][exampleName];
       const optionElement = document.createElement('option');
       optionElement.value = `${categoryName}.${exampleName}`;
-      optionElement.textContent = `${exampleName} (${categoryName})`;
+      optionElement.textContent = example.pointCount
+        ? `${exampleName} (${formatPointCount(example.pointCount)}, ${categoryName})`
+        : `${exampleName} (${categoryName})`;
       optGroupElement.appendChild(optionElement);
     }
     selectElement.appendChild(optGroupElement);
@@ -377,18 +575,54 @@ function createExampleSelect(options: {
   return selectElement;
 }
 
-function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: number): HTMLElement {
-  let pointsLabel = `${vertexCount}`;
-  if (vertexCount >= 1e7) {
-    pointsLabel = `${(vertexCount / 1e6).toFixed(0)}M`;
-  } else if (vertexCount >= 1e6) {
-    pointsLabel = `${(vertexCount / 1e6).toFixed(1)}M`;
-  } else if (vertexCount >= 1e4) {
-    pointsLabel = `${(vertexCount / 1e3).toFixed(0)}K`;
-  } else if (vertexCount >= 1e3) {
-    pointsLabel = `${(vertexCount / 1e3).toFixed(1)}K`;
-  }
+function createUrlCard(options: {
+  selectedUrl?: string;
+  onUrlChange: (url: string) => void;
+}): HTMLElement {
+  const wrapperElement = document.createElement('form');
+  wrapperElement.style.display = 'grid';
+  wrapperElement.style.gridTemplateColumns = '1fr auto';
+  wrapperElement.style.gap = '8px';
+  wrapperElement.style.padding = '10px';
+  wrapperElement.style.border = '1px solid rgba(148, 163, 184, 0.45)';
+  wrapperElement.style.borderRadius = '8px';
+  wrapperElement.style.background = 'rgba(15, 23, 42, 0.04)';
 
+  const inputElement = document.createElement('input');
+  inputElement.type = 'url';
+  inputElement.value = options.selectedUrl || '';
+  inputElement.placeholder = 'https://raw.githubusercontent.com/.../file.ply';
+  inputElement.style.minWidth = '0';
+  inputElement.style.padding = '8px';
+  inputElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+  inputElement.style.borderRadius = '6px';
+  inputElement.style.background = 'var(--menu-background, #fff)';
+
+  const buttonElement = document.createElement('button');
+  buttonElement.type = 'submit';
+  buttonElement.textContent = 'Load';
+  buttonElement.style.padding = '8px 12px';
+  buttonElement.style.border = '1px solid rgba(15, 23, 42, 0.25)';
+  buttonElement.style.borderRadius = '6px';
+  buttonElement.style.background = '#0f172a';
+  buttonElement.style.color = '#f8fafc';
+  buttonElement.style.cursor = 'pointer';
+
+  wrapperElement.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const url = inputElement.value.trim();
+    if (url) {
+      options.onUrlChange(url);
+    }
+  });
+
+  wrapperElement.appendChild(inputElement);
+  wrapperElement.appendChild(buttonElement);
+
+  return wrapperElement;
+}
+
+function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: number): HTMLElement {
   let loadMessage = '';
   if (loadTimeMs) {
     loadMessage = `Load time: ${(loadTimeMs / 1000).toFixed(1)}s`;
@@ -397,7 +631,7 @@ function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: 
   }
 
   const preElement = document.createElement('pre');
-  preElement.textContent = `Points: ${pointsLabel}\n${loadMessage}`;
+  preElement.textContent = `Points: ${formatPointCount(vertexCount)}\n${loadMessage}`;
   preElement.style.margin = '0';
   preElement.style.textAlign = 'center';
   preElement.style.whiteSpace = 'pre-wrap';
@@ -442,26 +676,91 @@ function getExamplesForFormat(
   return {...examples};
 }
 
+function getSelectedUrl(
+  examples: Record<string, Record<string, Example>>,
+  selectedCategoryName?: string | null,
+  selectedExampleName?: string | null
+): string {
+  if (!selectedCategoryName || !selectedExampleName) {
+    return '';
+  }
+  return examples[selectedCategoryName]?.[selectedExampleName]?.url || '';
+}
+
+function getFileNameFromUrl(url: string): string {
+  const pathname = new URL(url).pathname;
+  return pathname.slice(pathname.lastIndexOf('/') + 1) || 'Custom PLY';
+}
+
+function formatPointCount(pointCount: number): string {
+  if (pointCount >= 1e7) {
+    return `${(pointCount / 1e6).toFixed(0)}M`;
+  }
+  if (pointCount >= 1e6) {
+    return `${(pointCount / 1e6).toFixed(1)}M`;
+  }
+  if (pointCount >= 1e4) {
+    return `${(pointCount / 1e3).toFixed(0)}K`;
+  }
+  if (pointCount >= 1e3) {
+    return `${(pointCount / 1e3).toFixed(1)}K`;
+  }
+  return `${pointCount}`;
+}
+
 function getViewState(
-  previousViewState: OrbitViewState,
+  previousViewState: OrbitViewState | FirstPersonViewState,
+  controllerMode: ControllerMode,
   loaderData: any,
   attributes: any
-): OrbitViewState {
+): OrbitViewState | FirstPersonViewState {
   const {maxs, mins} =
     loaderData?.header?.mins && loaderData?.header?.maxs
       ? loaderData.header
       : calculateBounds(attributes);
+  const center =
+    getFiniteVector([
+    (mins[0] + maxs[0]) / 2,
+    (mins[1] + maxs[1]) / 2,
+    (mins[2] + maxs[2]) / 2
+    ]) || INITIAL_VIEW_STATE.target;
+  const size =
+    getFiniteVector([
+    maxs[0] - mins[0],
+    maxs[1] - mins[1],
+    maxs[2] - mins[2]
+    ]) || [1, 1, 1];
+  const horizontalSize = Math.max(size[0], size[1], Number.EPSILON);
+  const diagonalSize = Math.max(Math.hypot(size[0], size[1], size[2]), Number.EPSILON);
+
+  if (controllerMode === 'first-person') {
+    return {
+      position: [center[0], center[1] - diagonalSize * 1.5, center[2] + size[2] * 0.35],
+      bearing: 0,
+      pitch: FIRST_PERSON_INITIAL_PITCH,
+      minPitch: FIRST_PERSON_MIN_PITCH,
+      maxPitch: FIRST_PERSON_MAX_PITCH
+    };
+  }
 
   return {
     ...INITIAL_VIEW_STATE,
-    ...previousViewState,
-    target: [
-      (mins[0] + maxs[0]) / 2,
-      (mins[1] + maxs[1]) / 2,
-      (mins[2] + maxs[2]) / 2
-    ] as [number, number, number],
-    zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
+    ...(previousViewState as OrbitViewState),
+    target: center,
+    zoom: getOrbitZoom(horizontalSize)
   } as OrbitViewState;
+}
+
+function getFiniteVector(vector: [number, number, number]): [number, number, number] | null {
+  return vector.every(Number.isFinite) ? vector : null;
+}
+
+function getOrbitZoom(horizontalSize: number): number {
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const zoom = Math.log2(viewportWidth / Math.max(horizontalSize, Number.EPSILON)) - 1;
+  return Number.isFinite(zoom)
+    ? Math.min(Math.max(zoom, ORBIT_MIN_ZOOM), ORBIT_MAX_ZOOM)
+    : INITIAL_VIEW_STATE.zoom;
 }
 
 function calculateBounds(attributes: Record<string, {value: Float32Array | Float64Array}>) {
