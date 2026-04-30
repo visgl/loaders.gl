@@ -114,6 +114,7 @@ const config = {
             '@loaders.gl/schema': resolve('../modules/schema/src'),
             '@loaders.gl/schema-utils': resolve('../modules/schema-utils/src'),
             '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
+            '@loaders.gl/splats': resolve('../modules/splats/src'),
             '@loaders.gl/stac': resolve('../modules/stac/src'),
             '@loaders.gl/terrain': resolve('../modules/terrain/src'),
             '@loaders.gl/textures': resolve('../modules/textures/src'),

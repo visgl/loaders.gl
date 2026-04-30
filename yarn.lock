@@ -5638,7 +5638,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@loaders.gl/splats@workspace:modules/splats":
+"@loaders.gl/splats@npm:^4.4.0, @loaders.gl/splats@workspace:modules/splats":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/splats@workspace:modules/splats"
   dependencies:
@@ -28510,6 +28510,7 @@ __metadata:
     "@loaders.gl/ply": "workspace:*"
     "@loaders.gl/schema": "workspace:*"
     "@loaders.gl/schema-utils": "workspace:*"
+    "@loaders.gl/splats": "workspace:*"
     "@luma.gl/constants": "npm:^9.3.2"
     "@luma.gl/core": "npm:^9.3.2"
     "@luma.gl/engine": "npm:^9.3.2"

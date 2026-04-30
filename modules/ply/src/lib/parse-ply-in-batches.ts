@@ -128,25 +128,26 @@ async function* parseBinaryFixedWidthVertexPLYToArrowInBatches(
   let pendingBytes = initialBodyBytes;
 
   while (true) {
+    while (remainingVertices > 0 && Math.floor(pendingBytes.length / vertexStride) >= batchSize) {
+      const batchVertexCount = Math.min(batchSize, remainingVertices);
+      const batch = makeBinaryPLYArrowBatch(
+        header,
+        pendingBytes,
+        batchVertexCount,
+        vertexStride,
+        options,
+        parsePlan
+      );
+      pendingBytes = pendingBytes.subarray(batchVertexCount * vertexStride);
+      remainingVertices -= batchVertexCount;
+      yield batch;
+    }
+
     const {value: chunk, done} = await byteIterator.next();
     if (done) {
       break;
     }
     pendingBytes = concatenateBytes([pendingBytes, getUint8Array(chunk)]);
-
-    while (remainingVertices > 0 && Math.floor(pendingBytes.length / vertexStride) >= batchSize) {
-      const batch = makeBinaryPLYArrowBatch(
-        header,
-        pendingBytes,
-        batchSize,
-        vertexStride,
-        options,
-        parsePlan
-      );
-      pendingBytes = pendingBytes.subarray(batchSize * vertexStride);
-      remainingVertices -= batchSize;
-      yield batch;
-    }
   }
 
   if (remainingVertices > 0) {

@@ -46,6 +46,7 @@
     "@loaders.gl/ply": "workspace:*",
     "@loaders.gl/schema": "workspace:*",
     "@loaders.gl/schema-utils": "workspace:*",
+    "@loaders.gl/splats": "workspace:*",
     "@luma.gl/constants": "^9.3.2",
     "@luma.gl/core": "^9.3.2",
     "@luma.gl/engine": "^9.3.2",
@@ -111,7 +112,8 @@
     "@loaders.gl/obj": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
     "@loaders.gl/schema": "workspace:*",
-    "@loaders.gl/schema-utils": "workspace:*"
+    "@loaders.gl/schema-utils": "workspace:*",
+    "@loaders.gl/splats": "workspace:*"
   },
   "browser": {
     "fs": false,
