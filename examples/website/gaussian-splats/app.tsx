@@ -17,10 +17,11 @@ import {load} from '@loaders.gl/core';
 import {SplatLayer} from '@loaders.gl/deck-layers';
 import {PLYLoader} from '@loaders.gl/ply';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import {createDeckFullscreenWidget} from '../shared/create-deck-stats-widget';
+import {FullscreenWidget, _StatsWidget as StatsWidget} from '@deck.gl/widgets';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
 import type {Example} from '../pointcloud/examples';
 import {DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME, GAUSSIAN_SPLAT_EXAMPLES} from './examples';
+import '@deck.gl/widgets/stylesheet.css';
 
 const PREVIEW_ROW_COUNT = 8;
 const PREVIEW_COLUMN_COUNT = 8;
@@ -31,13 +32,15 @@ const FIRST_PERSON_MIN_PITCH = -75;
 const FIRST_PERSON_MAX_PITCH = 75;
 const ORBIT_MIN_ZOOM = -4;
 const ORBIT_MAX_ZOOM = 8;
-const SPLAT_LAYER_OPACITY = 0.38;
-const SPLAT_RADIUS_SCALE = 0.65;
+const SPLAT_LAYER_OPACITY = 0.34;
+const SPLAT_RADIUS_SCALE = 0.78;
 const SPLAT_RADIUS_MIN_PIXELS = 0.35;
 const SPLAT_RADIUS_MAX_PIXELS = 16;
-const SPLAT_ALPHA_SCALE = 0.45;
+const SPLAT_ALPHA_SCALE = 0.38;
 const SPLAT_ALPHA_CUTOFF = 0.02;
 const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
+const SPLAT_KERNEL_2D_SIZE = 0.3;
+const SPLAT_MAX_SCREEN_SPACE_SIZE = 256;
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -142,7 +145,10 @@ export default function GaussianSplatsApp() {
   const arrowPreview = useMemo(() => getArrowTablePreview(state.table), [state.table]);
   const urlOptions = useMemo(() => getGaussianSplatUrlOptions(), []);
   const widgets = useMemo(
-    () => [createDeckFullscreenWidget('gaussian-splats-fullscreen', {placement: 'top-right'})],
+    () => [
+      new FullscreenWidget({id: 'gaussian-splats-fullscreen', placement: 'top-right'}),
+      new StatsWidget({id: 'gaussian-splats-fps', placement: 'bottom-right', type: 'deck'})
+    ],
     []
   );
 
@@ -162,8 +168,10 @@ export default function GaussianSplatsApp() {
               alphaScale: SPLAT_ALPHA_SCALE,
               alphaCutoff: SPLAT_ALPHA_CUTOFF,
               screenSizeCutoffPixels: SPLAT_SCREEN_SIZE_CUTOFF_PIXELS,
+              kernel2DSize: SPLAT_KERNEL_2D_SIZE,
+              maxScreenSpaceSplatSize: SPLAT_MAX_SCREEN_SPACE_SIZE,
               renderMode: 'gpu',
-              sortMode: 'global'
+              sortMode: 'tile'
             })
           ]
         : [],

@@ -6,6 +6,7 @@ import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {indexedMeshArrowSchema} from '@loaders.gl/schema';
 
 import {PLYLoader, PLYWorkerLoader} from '@loaders.gl/ply';
+import {parsePLYToElementTables} from '../src/lib/parse-ply-arrow';
 import {
   setLoaderOptions,
   fetchFile,
@@ -41,6 +42,19 @@ property float rot_3
 end_header
 0 0 0 0 0 0 1 0.1 0.2 0.3 1 0 0 0
 1 2 3 1 0 -1 0.5 0.4 0.5 0.6 0.707 0 0.707 0
+`;
+
+const ASCII_POINT_CLOUD_PLY = `ply
+format ascii 1.0
+element vertex 3
+property float x
+property float y
+property float z
+property float intensity
+end_header
+0 0 0 0.25
+1 2 3 0.5
+4 5 6 0.75
 `;
 
 setLoaderOptions({
@@ -87,6 +101,31 @@ test('PLYLoader#parse(shape: arrow-table)', async t => {
   t.equal(indicesColumn.get(0).length, 36, 'indices were found in row 0');
   t.equal(indicesColumn.get(1), null, 'indices are null after row 0');
 
+  t.end();
+});
+
+test('PLYLoader#parse(raw element tables preserve list properties)', async t => {
+  const response = await fetchFile(PLY_CUBE_ATT_URL);
+  const elementTables = parsePLYToElementTables(await response.text());
+  const faceTable = elementTables.elements.find(
+    elementTable => elementTable.element.name === 'face'
+  );
+
+  t.ok(faceTable, 'face element table was found');
+  t.ok(
+    faceTable.table.getChild('vertex_indices')?.type instanceof arrow.List,
+    'face indices are an Arrow list'
+  );
+  t.ok(
+    faceTable.table.getChild('texcoord')?.type instanceof arrow.List,
+    'face texcoords are an Arrow list'
+  );
+  t.deepEqual(
+    Array.from(faceTable.table.getChild('vertex_indices').get(0)),
+    [9, 11, 13],
+    'face vertex indices are preserved before mesh conversion'
+  );
+  t.equal(faceTable.table.getChild('texcoord').get(0).length, 6, 'face texcoord list is preserved');
   t.end();
 });
 
@@ -248,10 +287,125 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk
   t.end();
 });
 
+test('PLYLoader#parseInBatches(ascii point cloud, arrow-table)', async t => {
+  const batches = await parseInBatches(makeTextIterator(ASCII_POINT_CLOUD_PLY), PLYLoader, {
+    batchSize: 2,
+    ply: {shape: 'arrow-table'}
+  });
+  const batchRowCounts = [];
+
+  for await (const table of batches) {
+    t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.ok(table.data.getChild('POSITION'), 'batch includes POSITION column');
+    t.ok(table.data.getChild('intensity'), 'batch includes custom scalar column');
+    batchRowCounts.push(table.data.numRows);
+  }
+
+  t.deepEqual(batchRowCounts, [2, 1], 'ASCII point cloud emits requested Arrow batches');
+  t.end();
+});
+
+test('PLYLoader#parseInBatches(binary vertex list properties, arrow-table)', async t => {
+  const arrayBuffer = makeBinaryVertexListPLY();
+  const elementTables = parsePLYToElementTables(arrayBuffer);
+  const vertexTable = elementTables.elements[0].table;
+
+  t.ok(
+    vertexTable.getChild('neighbors')?.type instanceof arrow.List,
+    'raw vertex list property is an Arrow list'
+  );
+  t.deepEqual(
+    Array.from(vertexTable.getChild('neighbors').get(1)),
+    [0, 2],
+    'binary list values are preserved'
+  );
+
+  const batches = await parseInBatches(makeChunkIterator(arrayBuffer, 11), PLYLoader, {
+    batchSize: 2,
+    ply: {shape: 'arrow-table'}
+  });
+  const batchRowCounts = [];
+
+  for await (const table of batches) {
+    batchRowCounts.push(table.data.numRows);
+  }
+
+  t.deepEqual(batchRowCounts, [2, 1], 'binary variable-width vertex PLY emits Arrow batches');
+  t.end();
+});
+
+test('PLYLoader#parse(arrow-first mesh parity with legacy parser)', async t => {
+  const response = await fetchFile(PLY_CUBE_ATT_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const arrowFirstMesh = parseSync(arrayBuffer, PLYLoader);
+  const legacyMesh = parseSync(arrayBuffer, PLYLoader, {
+    ply: {_useLegacyParser: true}
+  });
+
+  t.deepEqual(
+    Array.from(arrowFirstMesh.attributes.POSITION.value),
+    Array.from(legacyMesh.attributes.POSITION.value),
+    'arrow-first mesh preserves positions'
+  );
+  t.deepEqual(
+    Array.from(arrowFirstMesh.indices.value),
+    Array.from(legacyMesh.indices.value),
+    'arrow-first mesh preserves triangulated indices'
+  );
+  t.end();
+});
+
 function* makeChunkIterator(arrayBuffer, chunkSize) {
   for (let byteOffset = 0; byteOffset < arrayBuffer.byteLength; byteOffset += chunkSize) {
     yield arrayBuffer.slice(byteOffset, byteOffset + chunkSize);
   }
+}
+
+function* makeTextIterator(text) {
+  yield new TextEncoder().encode(text).buffer;
+}
+
+function makeBinaryVertexListPLY() {
+  const header = [
+    'ply',
+    'format binary_little_endian 1.0',
+    'element vertex 3',
+    'property float x',
+    'property float y',
+    'property float z',
+    'property list uchar int neighbors',
+    'end_header',
+    ''
+  ].join('\n');
+  const rows = [
+    {position: [0, 0, 0], neighbors: [1]},
+    {position: [1, 2, 3], neighbors: [0, 2]},
+    {position: [4, 5, 6], neighbors: []}
+  ];
+  const bodyByteLength = rows.reduce(
+    (byteLength, row) => byteLength + 12 + 1 + row.neighbors.length * 4,
+    0
+  );
+  const headerBytes = new TextEncoder().encode(header);
+  const bytes = new Uint8Array(headerBytes.length + bodyByteLength);
+  bytes.set(headerBytes, 0);
+  const dataView = new DataView(bytes.buffer);
+  let byteOffset = headerBytes.length;
+
+  for (const row of rows) {
+    for (const coordinate of row.position) {
+      dataView.setFloat32(byteOffset, coordinate, true);
+      byteOffset += 4;
+    }
+    dataView.setUint8(byteOffset, row.neighbors.length);
+    byteOffset++;
+    for (const neighbor of row.neighbors) {
+      dataView.setInt32(byteOffset, neighbor, true);
+      byteOffset += 4;
+    }
+  }
+
+  return bytes.buffer;
 }
 
 test('PLYLoader#parseSync(binary)', async t => {

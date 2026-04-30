@@ -34,7 +34,13 @@ import {
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import normalizePLY from './normalize-ply';
 import {PLYMesh, PLYHeader, PLYElement, PLYProperty, PLYAttributes} from './ply-types';
-import {parsePLYBinaryPointCloudToArrowTable, parsePLYHeader} from './parse-ply';
+import {
+  getPLYBinaryPointCloudParsePlan,
+  parsePLYBinaryPointCloudRecordsToArrowTable,
+  parsePLYHeader,
+  type PLYBinaryPointCloudParsePlan
+} from './parse-ply';
+import {convertPLYElementTablesToMeshArrowTable, parsePLYToElementTables} from './parse-ply-arrow';
 
 let currentElement: PLYElement;
 type MutablePLYAttributes = {[index: string]: number[]};
@@ -74,7 +80,7 @@ export async function* parsePLYInBatches(
   yield normalizePLY(header, attributes, options);
 }
 
-/** Parse fixed-width binary PLY vertices into Arrow table batches. */
+/** Parse PLY vertices into Arrow table batches. */
 async function* parseBinaryPLYToArrowInBatches(
   iterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
@@ -82,10 +88,42 @@ async function* parseBinaryPLYToArrowInBatches(
   options: any
 ): AsyncIterable<MeshArrowTable> {
   const byteIterator = toArrayBufferIterator(iterator)[Symbol.asyncIterator]();
-  const {header, initialBodyBytes} = await readBinaryPLYHeader(byteIterator, options);
+  const {header, initialBodyBytes} = await readPLYHeader(byteIterator, options);
+  if (header.format === 'ascii') {
+    yield* parseASCIIPLYToArrowInBatches(byteIterator, header, initialBodyBytes, options);
+    return;
+  }
+
+  const vertexElement = getVertexOnlyElement(header);
+  if (vertexElement.properties.some(property => property.type === 'list')) {
+    yield* parseBinaryVariableWidthVertexPLYToArrowInBatches(
+      byteIterator,
+      header,
+      initialBodyBytes,
+      options
+    );
+    return;
+  }
+
+  yield* parseBinaryFixedWidthVertexPLYToArrowInBatches(
+    byteIterator,
+    header,
+    initialBodyBytes,
+    options
+  );
+}
+
+/** Parse fixed-width binary PLY vertices into Arrow table batches. */
+async function* parseBinaryFixedWidthVertexPLYToArrowInBatches(
+  byteIterator: AsyncIterator<ArrayBufferLike>,
+  header: PLYHeader,
+  initialBodyBytes: ByteArray,
+  options: any
+): AsyncIterable<MeshArrowTable> {
   const vertexElement = getFixedWidthVertexElement(header);
   const batchSize = getBatchSize(options);
   const vertexStride = getPLYElementSize(vertexElement);
+  const parsePlan = getPLYBinaryPointCloudParsePlan(header, options);
   let remainingVertices = vertexElement.count;
   let pendingBytes = initialBodyBytes;
 
@@ -97,7 +135,14 @@ async function* parseBinaryPLYToArrowInBatches(
     pendingBytes = concatenateBytes([pendingBytes, getUint8Array(chunk)]);
 
     while (remainingVertices > 0 && Math.floor(pendingBytes.length / vertexStride) >= batchSize) {
-      const batch = makeBinaryPLYArrowBatch(header, pendingBytes, batchSize, vertexStride, options);
+      const batch = makeBinaryPLYArrowBatch(
+        header,
+        pendingBytes,
+        batchSize,
+        vertexStride,
+        options,
+        parsePlan
+      );
       pendingBytes = pendingBytes.subarray(batchSize * vertexStride);
       remainingVertices -= batchSize;
       yield batch;
@@ -110,13 +155,115 @@ async function* parseBinaryPLYToArrowInBatches(
       Math.floor(pendingBytes.length / vertexStride)
     );
     if (batchVertexCount > 0) {
-      yield makeBinaryPLYArrowBatch(header, pendingBytes, batchVertexCount, vertexStride, options);
+      yield makeBinaryPLYArrowBatch(
+        header,
+        pendingBytes,
+        batchVertexCount,
+        vertexStride,
+        options,
+        parsePlan
+      );
     }
   }
 }
 
-/** Read and parse the binary PLY header from the byte stream. */
-async function readBinaryPLYHeader(
+/** Parse ASCII vertex PLY rows into Arrow table batches. */
+async function* parseASCIIPLYToArrowInBatches(
+  byteIterator: AsyncIterator<ArrayBufferLike>,
+  header: PLYHeader,
+  initialBodyBytes: ByteArray,
+  options: any
+): AsyncIterable<MeshArrowTable> {
+  const vertexElement = getVertexOnlyElement(header);
+  const batchSize = getBatchSize(options);
+  const lineIterator = makeLineIterator(
+    makeTextDecoderIterator(getByteIteratorWithInitialBytes(byteIterator, initialBodyBytes))
+  );
+  let batchLines: string[] = [];
+  let remainingVertices = vertexElement.count;
+
+  for await (const sourceLine of lineIterator) {
+    const line = sourceLine.trim();
+    if (line === '') {
+      continue;
+    }
+    batchLines.push(line);
+    remainingVertices--;
+    if (batchLines.length >= batchSize) {
+      yield makeASCIIPLYArrowBatch(header, batchLines, options);
+      batchLines = [];
+    }
+    if (remainingVertices <= 0) {
+      break;
+    }
+  }
+
+  if (batchLines.length > 0) {
+    yield makeASCIIPLYArrowBatch(header, batchLines, options);
+  }
+}
+
+/** Parse variable-width binary vertex rows into Arrow table batches. */
+async function* parseBinaryVariableWidthVertexPLYToArrowInBatches(
+  byteIterator: AsyncIterator<ArrayBufferLike>,
+  header: PLYHeader,
+  initialBodyBytes: ByteArray,
+  options: any
+): AsyncIterable<MeshArrowTable> {
+  const vertexElement = getVertexOnlyElement(header);
+  const batchSize = getBatchSize(options);
+  const littleEndian = header.format !== 'binary_big_endian';
+  let remainingVertices = vertexElement.count;
+  let pendingBytes = initialBodyBytes;
+  let batchBytes: ByteArray[] = [];
+  let batchByteLength = 0;
+  let batchRowCount = 0;
+
+  while (remainingVertices > 0) {
+    const rowByteLength = getBinaryElementRowByteLength(pendingBytes, vertexElement, littleEndian);
+    if (rowByteLength === null) {
+      const {value: chunk, done} = await byteIterator.next();
+      if (done) {
+        break;
+      }
+      pendingBytes = concatenateBytes([pendingBytes, getUint8Array(chunk)]);
+      continue;
+    }
+
+    const rowBytes = pendingBytes.subarray(0, rowByteLength);
+    batchBytes.push(rowBytes);
+    batchByteLength += rowByteLength;
+    batchRowCount++;
+    remainingVertices--;
+    pendingBytes = pendingBytes.subarray(rowByteLength);
+
+    if (batchRowCount >= batchSize) {
+      yield makeBinaryPLYArrowBatchFromRows(
+        header,
+        batchBytes,
+        batchByteLength,
+        batchRowCount,
+        options
+      );
+      batchBytes = [];
+      batchByteLength = 0;
+      batchRowCount = 0;
+    }
+  }
+
+  if (batchRowCount > 0) {
+    yield makeBinaryPLYArrowBatchFromRows(
+      header,
+      batchBytes,
+      batchByteLength,
+      batchRowCount,
+      options
+    );
+  }
+}
+
+/** Read and parse the PLY header from the byte stream. */
+async function readPLYHeader(
   iterator: AsyncIterator<ArrayBufferLike>,
   options: any
 ): Promise<{header: PLYHeader; initialBodyBytes: ByteArray}> {
@@ -135,12 +282,17 @@ async function readBinaryPLYHeader(
     }
 
     const header = parsePLYHeader(getArrayBuffer(headerBytes.subarray(0, headerEnd)), options);
-    if (header.format === 'ascii') {
-      throw new Error('PLY arrow-table batch parsing currently requires binary PLY');
-    }
-
     return {header, initialBodyBytes: headerBytes.subarray(headerEnd)};
   }
+}
+
+/** Return the single vertex element, or throw for unsupported Arrow batches. */
+function getVertexOnlyElement(header: PLYHeader): PLYElement {
+  const vertexElement = header.elements[0];
+  if (header.elements.length !== 1 || vertexElement?.name !== 'vertex') {
+    throw new Error('PLY arrow-table batch parsing requires one vertex element');
+  }
+  return vertexElement;
 }
 
 /** Return the single fixed-width vertex element, or throw for unsupported binary batches. */
@@ -162,7 +314,8 @@ function makeBinaryPLYArrowBatch(
   pendingBytes: ByteArray,
   vertexCount: number,
   vertexStride: number,
-  options: any
+  options: any,
+  parsePlan: PLYBinaryPointCloudParsePlan | null
 ): MeshArrowTable {
   const vertexElement = header.elements[0];
   const batchHeader = {
@@ -171,12 +324,155 @@ function makeBinaryPLYArrowBatch(
     elements: [{...vertexElement, count: vertexCount}]
   };
   const byteLength = vertexCount * vertexStride;
-  const arrayBuffer = getArrayBuffer(pendingBytes.subarray(0, byteLength));
-  const table = parsePLYBinaryPointCloudToArrowTable(arrayBuffer, batchHeader, options);
+  const table = parsePLYBinaryPointCloudRecordsToArrowTable(
+    pendingBytes.subarray(0, byteLength),
+    batchHeader,
+    options,
+    parsePlan || undefined
+  );
   if (!table) {
     throw new Error('Failed to parse binary PLY Arrow batch');
   }
   return table;
+}
+
+/** Build one Arrow table batch from ASCII PLY vertex lines. */
+function makeASCIIPLYArrowBatch(header: PLYHeader, lines: string[], options: any): MeshArrowTable {
+  const batchHeaderText = makePLYHeaderText(header, lines.length);
+  const elementTables = parsePLYToElementTables(`${batchHeaderText}${lines.join('\n')}\n`, options);
+  return convertPLYElementTablesToMeshArrowTable(elementTables);
+}
+
+/** Build one Arrow table batch from variable-width binary PLY vertex rows. */
+function makeBinaryPLYArrowBatchFromRows(
+  header: PLYHeader,
+  rows: ByteArray[],
+  byteLength: number,
+  vertexCount: number,
+  options: any
+): MeshArrowTable {
+  const batchHeaderText = makePLYHeaderText(header, vertexCount);
+  const headerBytes = new TextEncoder().encode(batchHeaderText);
+  const batchBytes = new Uint8Array(headerBytes.length + byteLength);
+  batchBytes.set(headerBytes, 0);
+  let byteOffset = headerBytes.length;
+  for (const row of rows) {
+    batchBytes.set(row, byteOffset);
+    byteOffset += row.length;
+  }
+  const elementTables = parsePLYToElementTables(getArrayBuffer(batchBytes), options);
+  return convertPLYElementTablesToMeshArrowTable(elementTables);
+}
+
+/** Return binary element row byte length, or null if more bytes are needed. */
+function getBinaryElementRowByteLength(
+  bytes: ByteArray,
+  element: PLYElement,
+  littleEndian: boolean
+): number | null {
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let byteOffset = 0;
+
+  for (const property of element.properties) {
+    if (property.type === 'list') {
+      const countSize = getPLYTypeSize(property.countType!);
+      if (byteOffset + countSize > bytes.length) {
+        return null;
+      }
+      const count = readBinaryScalar(dataView, byteOffset, property.countType!, littleEndian);
+      byteOffset += countSize;
+      const valuesByteLength = count * getPLYTypeSize(property.itemType!);
+      if (byteOffset + valuesByteLength > bytes.length) {
+        return null;
+      }
+      byteOffset += valuesByteLength;
+    } else {
+      const propertySize = getPLYTypeSize(property.type);
+      if (byteOffset + propertySize > bytes.length) {
+        return null;
+      }
+      byteOffset += propertySize;
+    }
+  }
+
+  return byteOffset;
+}
+
+/** Read one binary scalar value. */
+// eslint-disable-next-line complexity
+function readBinaryScalar(
+  dataView: DataView,
+  byteOffset: number,
+  type: string,
+  littleEndian: boolean
+): number {
+  switch (type) {
+    case 'int8':
+    case 'char':
+      return dataView.getInt8(byteOffset);
+    case 'uint8':
+    case 'uchar':
+      return dataView.getUint8(byteOffset);
+    case 'int16':
+    case 'short':
+      return dataView.getInt16(byteOffset, littleEndian);
+    case 'uint16':
+    case 'ushort':
+      return dataView.getUint16(byteOffset, littleEndian);
+    case 'int32':
+    case 'int':
+      return dataView.getInt32(byteOffset, littleEndian);
+    case 'uint32':
+    case 'uint':
+      return dataView.getUint32(byteOffset, littleEndian);
+    case 'float32':
+    case 'float':
+      return dataView.getFloat32(byteOffset, littleEndian);
+    case 'float64':
+    case 'double':
+      return dataView.getFloat64(byteOffset, littleEndian);
+    default:
+      throw new Error(type);
+  }
+}
+
+/** Rebuild a PLY header text for one emitted batch. */
+function makePLYHeaderText(header: PLYHeader, vertexCount: number): string {
+  const lines = ['ply', `format ${header.format} ${header.version || '1.0'}`];
+  for (const comment of header.comments) {
+    lines.push(`comment ${comment}`);
+  }
+  for (const element of header.elements) {
+    lines.push(
+      `element ${element.name} ${element.name === 'vertex' ? vertexCount : element.count}`
+    );
+    for (const property of element.properties) {
+      lines.push(
+        property.type === 'list'
+          ? `property list ${property.countType} ${property.itemType} ${property.name}`
+          : `property ${property.type} ${property.name}`
+      );
+    }
+  }
+  lines.push('end_header');
+  return `${lines.join('\n')}\n`;
+}
+
+/** Return a byte iterator that emits pending body bytes before reading source chunks. */
+async function* getByteIteratorWithInitialBytes(
+  iterator: AsyncIterator<ArrayBufferLike>,
+  initialBodyBytes: ByteArray
+): AsyncIterable<ArrayBuffer> {
+  if (initialBodyBytes.length > 0) {
+    yield getArrayBuffer(initialBodyBytes);
+  }
+  while (true) {
+    const {value, done} = await iterator.next();
+    if (done) {
+      break;
+    }
+    yield getArrayBuffer(getUint8Array(value));
+  }
 }
 
 /** Return the configured binary PLY batch size. */

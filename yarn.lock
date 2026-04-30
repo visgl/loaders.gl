@@ -5638,6 +5638,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@loaders.gl/splats@workspace:modules/splats":
+  version: 0.0.0-use.local
+  resolution: "@loaders.gl/splats@workspace:modules/splats"
+  dependencies:
+    "@loaders.gl/loader-utils": "npm:4.4.0"
+    "@loaders.gl/schema": "npm:4.4.0"
+    apache-arrow: "npm:>= 17.0.0"
+  peerDependencies:
+    "@loaders.gl/core": ~4.4.0
+  languageName: unknown
+  linkType: soft
+
 "@loaders.gl/sql@npm:^4.4.0, @loaders.gl/sql@workspace:modules/sql":
   version: 0.0.0-use.local
   resolution: "@loaders.gl/sql@workspace:modules/sql"

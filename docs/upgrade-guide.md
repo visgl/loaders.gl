@@ -81,6 +81,12 @@ This unifies top-level loading behavior:
 
 - ImageLoader now only returns ImageBitmap (never Image or data), with a polyfill under Node.js. There is a function to extract data from an ImageBitmap?
 
+**@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
+
+- Gaussian splat support is new and opt-in. Use `PLYLoader` with `ply.shape: 'arrow-table'`, or `SPLATLoader` / `KSPLATLoader` from `@loaders.gl/splats`, then pass the returned Mesh Arrow table to `SplatLayer`.
+- `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
+- The CPU/WebGL fallback remains circular-billboard based. Applications that need the oriented Gaussian renderer should request `renderMode: 'gpu'` and handle the clear error raised when the current deck.gl device is not WebGPU.
+
 **@loaders.gl/tiles**
 
 - `Tileset3D` now requires a `Tile3DSource` and can no longer be instantiated with a JSON payload.

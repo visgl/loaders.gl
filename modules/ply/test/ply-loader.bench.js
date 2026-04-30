@@ -44,17 +44,27 @@ export default async function PLYLoaderBench(bench) {
       })
 
       .group('PLYLoader (Gaussian Splat Binary Arrow)')
-      .addAsync('parse arrow-table direct', {multiplier: 1000, unit: 'splats'}, async () => {
+      .addAsync('parse arrow-first arrow-table', {multiplier: 1000, unit: 'splats'}, async () => {
         await parse(gaussianSplatArrayBuffer, PLYLoader, {
           ply: {shape: 'arrow-table'}
         });
       })
+      .addAsync('parse arrow-first mesh', {multiplier: 1000, unit: 'splats'}, async () => {
+        await parse(gaussianSplatArrayBuffer, PLYLoader, {
+          ply: {shape: 'mesh'}
+        });
+      })
+      .addAsync('parse legacy mesh', {multiplier: 1000, unit: 'splats'}, async () => {
+        await parse(gaussianSplatArrayBuffer, PLYLoader, {
+          ply: {_useLegacyParser: true}
+        });
+      })
       .addAsync(
-        'parse arrow-table legacy mesh conversion',
+        'parse legacy mesh conversion to arrow-table',
         {multiplier: 1000, unit: 'splats'},
         async () => {
           await parse(gaussianSplatArrayBuffer, PLYLoader, {
-            ply: {shape: 'arrow-table', _useLegacyBinaryPointCloudParser: true}
+            ply: {shape: 'arrow-table', _useLegacyParser: true}
           });
         }
       )

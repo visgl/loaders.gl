@@ -34,7 +34,7 @@ const DEFAULT_COLOR = [255, 255, 255, 255] as const;
 export type SplatRenderMode = 'auto' | 'cpu' | 'gpu';
 
 /** Public sorting modes supported by {@link SplatLayer}. */
-export type PublicSplatSortMode = 'none' | 'global';
+export type PublicSplatSortMode = 'none' | 'global' | 'tile';
 
 /** Props for {@link SplatLayer}. */
 export type SplatLayerProps = CompositeLayerProps & {
@@ -62,6 +62,10 @@ export type SplatLayerProps = CompositeLayerProps & {
   screenSizeCutoffPixels?: number;
   /** Gaussian support radius used when deriving billboard radii and bounds. */
   gaussianSupportRadius?: number;
+  /** Additional two-dimensional screen-space Gaussian kernel radius in pixels. */
+  kernel2DSize?: number;
+  /** Maximum one-sigma screen-space splat size in pixels before support scaling. */
+  maxScreenSpaceSplatSize?: number;
 };
 
 type SplatPrimitiveLayerProps = LayerProps & {
@@ -72,6 +76,9 @@ type SplatPrimitiveLayerProps = LayerProps & {
   radiusMaxPixels?: number;
   alphaScale?: number;
   screenSizeCutoffPixels?: number;
+  gaussianSupportRadius?: number;
+  kernel2DSize?: number;
+  maxScreenSpaceSplatSize?: number;
   splatEngine?: SplatEngine | null;
 };
 
@@ -82,6 +89,7 @@ type SplatUniformProps = {
   radiusMaxPixels: number;
   alphaScale: number;
   screenSizeCutoffPixels: number;
+  gaussianSupportRadius: number;
 };
 
 type DeckBinaryData = {
@@ -112,7 +120,9 @@ const defaultProps: DefaultProps<SplatLayerProps> = {
   sortMode: 'global',
   alphaCutoff: {type: 'number', min: 0, max: 1, value: 1 / 255},
   screenSizeCutoffPixels: {type: 'number', min: 0, value: 0},
-  gaussianSupportRadius: {type: 'number', min: 0, value: 3}
+  gaussianSupportRadius: {type: 'number', min: 0, value: 3},
+  kernel2DSize: {type: 'number', min: 0, value: 0.3},
+  maxScreenSpaceSplatSize: {type: 'number', min: 1, value: 1024}
 };
 
 const splatUniforms = {
@@ -126,6 +136,7 @@ layout(std140) uniform splatUniforms {
   float radiusMaxPixels;
   float alphaScale;
   float screenSizeCutoffPixels;
+  float gaussianSupportRadius;
 } splat;
 `,
   fs: '',
@@ -135,7 +146,8 @@ layout(std140) uniform splatUniforms {
     radiusMinPixels: 'f32',
     radiusMaxPixels: 'f32',
     alphaScale: 'f32',
-    screenSizeCutoffPixels: 'f32'
+    screenSizeCutoffPixels: 'f32',
+    gaussianSupportRadius: 'f32'
   }
 } as const satisfies ShaderModule<SplatUniformProps>;
 
@@ -147,6 +159,7 @@ struct SplatUniforms {
   radiusMaxPixels: f32,
   alphaScale: f32,
   screenSizeCutoffPixels: f32,
+  gaussianSupportRadius: f32,
 };
 
 @group(0) @binding(auto)
@@ -159,7 +172,7 @@ var<uniform> splat: SplatUniforms;
 
 struct FragmentInputs {
   @builtin(position) position: vec4<f32>,
-  @location(0) unitPosition: vec2<f32>,
+  @location(0) gaussianCoord: vec2<f32>,
   @location(1) color: vec4<f32>,
 };
 
@@ -176,26 +189,31 @@ fn vertexMain(
   )[vertexIndex];
   let splatIndex = splatIndices[instanceIndex];
   let positionIndex = splatIndex * 3u;
-  let projected = splatProjected[splatIndex];
+  let projectedBase = splatIndex * 2u;
+  let projectedAxes = splatProjected[projectedBase];
+  let projectedMetadata = splatProjected[projectedBase + 1u];
   let splatPosition = vec3<f32>(
     splatPositions[positionIndex],
     splatPositions[positionIndex + 1u],
     splatPositions[positionIndex + 2u]
   );
-  let radiusPixels = vec2<f32>(
-    project_unit_size_to_pixel(projected.x * splat.radiusScale, splat.sizeUnits),
-    project_unit_size_to_pixel(projected.y * splat.radiusScale, splat.sizeUnits)
+  let supportScale = splat.gaussianSupportRadius * splat.radiusScale;
+  let rawAxis0 = projectedAxes.xy * supportScale;
+  let rawAxis1 = projectedAxes.zw * supportScale;
+  let rawMaxAxisPixels = max(length(rawAxis0), length(rawAxis1));
+  let clampedMaxAxisPixels = min(
+    max(rawMaxAxisPixels, splat.radiusMinPixels),
+    splat.radiusMaxPixels
   );
+  let axisClampScale = clampedMaxAxisPixels / max(rawMaxAxisPixels, 0.000001);
+  let axis0 = rawAxis0 * axisClampScale;
+  let axis1 = rawAxis1 * axisClampScale;
   let sizeVisibility = select(
     0.0,
     1.0,
-    max(radiusPixels.x, radiusPixels.y) >= splat.screenSizeCutoffPixels
+    rawMaxAxisPixels >= splat.screenSizeCutoffPixels
   );
-  let visibleAlpha = projected.z * layer.opacity * splat.alphaScale * projected.w * sizeVisibility;
-  let clampedRadiusPixels = min(
-    max(radiusPixels, vec2<f32>(splat.radiusMinPixels)),
-    vec2<f32>(splat.radiusMaxPixels)
-  );
+  let visibleAlpha = projectedMetadata.x * layer.opacity * splat.alphaScale * projectedMetadata.y * sizeVisibility;
   let packedColor = splatColors[splatIndex];
   let color = vec4<f32>(
     f32(packedColor & 255u) / 255.0,
@@ -205,30 +223,32 @@ fn vertexMain(
   );
   var outputs: FragmentInputs;
   geometry.worldPosition = splatPosition;
-  geometry.uv = corner;
+  let gaussianCoord = corner * splat.gaussianSupportRadius;
+  geometry.uv = gaussianCoord;
 
   var clipPosition = project_position_to_clipspace(
     splatPosition,
     vec3<f32>(0.0, 0.0, 0.0),
     vec3<f32>(0.0, 0.0, 0.0)
   );
-  clipPosition.xy += project_pixel_size_to_clipspace(corner * clampedRadiusPixels);
+  let pixelOffset = corner.x * axis0 + corner.y * axis1;
+  clipPosition.xy += project_pixel_size_to_clipspace(pixelOffset);
 
   outputs.position = clipPosition;
-  outputs.unitPosition = corner;
+  outputs.gaussianCoord = gaussianCoord;
   outputs.color = color;
   return outputs;
 }
 
 @fragment
 fn fragmentMain(inputs: FragmentInputs) -> @location(0) vec4<f32> {
-  let radiusSquared = dot(inputs.unitPosition, inputs.unitPosition);
-  if (radiusSquared > 1.0) {
+  let radiusSquared = dot(inputs.gaussianCoord, inputs.gaussianCoord);
+  if (radiusSquared > splat.gaussianSupportRadius * splat.gaussianSupportRadius) {
     discard;
   }
 
-  let gaussianAlpha = exp(-6.0 * radiusSquared);
-  let color = vec4<f32>(inputs.color.rgb, inputs.color.a * gaussianAlpha);
+  let gaussianAlpha = exp(-0.5 * radiusSquared);
+  let color = vec4<f32>(inputs.color.rgb, min(inputs.color.a * gaussianAlpha, 0.18));
   if (color.a <= 0.00392156862) {
     discard;
   }
@@ -392,6 +412,9 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       radiusMaxPixels: this.props.radiusMaxPixels,
       alphaScale: this.props.alphaScale,
       screenSizeCutoffPixels: this.props.screenSizeCutoffPixels,
+      gaussianSupportRadius: this.props.gaussianSupportRadius,
+      kernel2DSize: this.props.kernel2DSize,
+      maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize,
       splatEngine: useGpuEngine ? this.state.splatEngine : null
     }) as unknown as Layer;
   }
@@ -416,7 +439,9 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       sortMode: (this.props.sortMode || 'global') as SplatSortMode,
       alphaCutoff: this.props.alphaCutoff ?? 1 / 255,
       screenSizeCutoffPixels: this.props.screenSizeCutoffPixels ?? 0,
-      gaussianSupportRadius: this.props.gaussianSupportRadius ?? 3
+      gaussianSupportRadius: this.props.gaussianSupportRadius ?? 3,
+      kernel2DSize: this.props.kernel2DSize ?? 0.3,
+      maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize ?? 1024
     };
   }
 
@@ -439,6 +464,9 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
     radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
     alphaScale: {type: 'number', min: 0, value: 1},
     screenSizeCutoffPixels: {type: 'number', min: 0, value: 0},
+    gaussianSupportRadius: {type: 'number', min: 0, value: 3},
+    kernel2DSize: {type: 'number', min: 0, value: 0.3},
+    maxScreenSpaceSplatSize: {type: 'number', min: 1, value: 1024},
     splatEngine: null
   };
 
@@ -512,7 +540,8 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       radiusMinPixels,
       radiusMaxPixels,
       alphaScale,
-      screenSizeCutoffPixels
+      screenSizeCutoffPixels,
+      gaussianSupportRadius
     } = this.props;
     const splatProps: SplatUniformProps = {
       sizeUnits: UNIT[sizeUnits],
@@ -520,20 +549,23 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       radiusMinPixels,
       radiusMaxPixels,
       alphaScale,
-      screenSizeCutoffPixels
+      screenSizeCutoffPixels,
+      gaussianSupportRadius
     };
     const model = this.state.model;
     if (!model) {
       return;
     }
-    this.props.splatEngine?.update(getSplatEngineUpdateProps(this.context.viewport));
+    this.props.splatEngine?.update(
+      getSplatEngineUpdateProps(this.context.viewport, this.props.radiusScale)
+    );
     if (this.context.device.type === 'webgpu') {
       const splatEngine = this.props.splatEngine;
       if (!splatEngine) {
         return;
       }
       model.setBindings(splatEngine.getRenderBindings());
-      model.setInstanceCount(splatEngine.getSplatCount());
+      model.setInstanceCount(splatEngine.getRenderSplatCount());
       model.setVertexCount(4);
     }
     model.shaderInputs.setProps({splat: splatProps});
@@ -578,22 +610,23 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
             }),
       topology: 'triangle-strip',
       vertexCount: 4,
-      instanceCount: this.props.splatEngine?.getSplatCount() ?? 0,
+      instanceCount: this.props.splatEngine?.getRenderSplatCount() ?? 0,
       isInstanced: true
     });
   }
 }
 
 /** Build draw-time engine inputs from the active deck.gl viewport. */
-function getSplatEngineUpdateProps(viewport: any) {
+function getSplatEngineUpdateProps(viewport: any, radiusScale: number) {
   if (!viewport) {
-    return {};
+    return {radiusScale};
   }
 
   return {
     modelViewProjectionMatrix: viewport.viewProjectionMatrix,
     viewportSize: [viewport.width || 1, viewport.height || 1] as [number, number],
-    cullingVolume: getCullingVolume(viewport)
+    cullingVolume: getCullingVolume(viewport),
+    radiusScale
   };
 }
 

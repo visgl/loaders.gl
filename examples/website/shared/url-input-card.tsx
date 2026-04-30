@@ -5,7 +5,17 @@
 import {useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
 
 const MAX_SAVED_URLS = 12;
-const SAVED_URLS_KEY = 'loaders.gl.pointcloud-preview.urls';
+const SAVED_URLS_KEY = 'loaders.gl.example-url-input.urls.v1';
+
+/** Stored URL entry persisted in local storage. */
+type StoredUrlEntry = {
+  /** URL option display label when known. */
+  label?: string;
+  /** Last selected or submitted URL. */
+  url: string;
+  /** Last update time in milliseconds since epoch. */
+  updatedAt: number;
+};
 
 /** URL option shown in the shared example URL dropdown. */
 export type UrlOption<ExampleT = unknown> = {
@@ -27,6 +37,8 @@ export type UrlOption<ExampleT = unknown> = {
 export type ExampleUrlInputCardProps<ExampleT = unknown> = {
   /** Current source format. */
   format: string;
+  /** Optional local storage key; defaults to the current source format. */
+  storageKey?: string;
   /** Current source URL. */
   selectedUrl: string;
   /** Selectable URL options. */
@@ -40,23 +52,28 @@ export type ExampleUrlInputCardProps<ExampleT = unknown> = {
 /** Shared URL input and example dropdown used by point cloud-style examples. */
 export function ExampleUrlInputCard<ExampleT = unknown>({
   format,
+  storageKey,
   selectedUrl,
   urlOptions,
   onExampleSelect,
   onUrlChange
 }: ExampleUrlInputCardProps<ExampleT>): ReactNode {
   const urlCardRef = useRef<HTMLFormElement | null>(null);
+  const hasRestoredUrlRef = useRef(false);
+  const activeStorageKey = storageKey || format;
   const [url, setUrl] = useState(selectedUrl);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [savedUrls, setSavedUrls] = useState<string[]>(() => readSavedUrls(format));
+  const [savedUrls, setSavedUrls] = useState<StoredUrlEntry[]>(() =>
+    readStoredUrlEntries(activeStorageKey)
+  );
   const allUrlOptions = useMemo(
     () => [
       ...urlOptions.filter((urlOption) => isMatchingFormat(urlOption.format, format)),
-      ...savedUrls.map((savedUrl) => ({
+      ...savedUrls.map((savedUrlEntry) => ({
         format,
         group: 'Saved URLs' as const,
-        label: getFileNameFromUrl(savedUrl),
-        url: savedUrl
+        label: savedUrlEntry.label || getFileNameFromUrl(savedUrlEntry.url),
+        url: savedUrlEntry.url
       }))
     ],
     [savedUrls, urlOptions, format]
@@ -67,14 +84,45 @@ export function ExampleUrlInputCard<ExampleT = unknown>({
   }, [selectedUrl]);
 
   useEffect(() => {
-    setSavedUrls(readSavedUrls(format));
-  }, [format]);
+    hasRestoredUrlRef.current = false;
+    setSavedUrls(readStoredUrlEntries(activeStorageKey));
+  }, [activeStorageKey]);
+
+  useEffect(() => {
+    if (hasRestoredUrlRef.current) {
+      return;
+    }
+    hasRestoredUrlRef.current = true;
+    const lastUrlEntry = readStoredUrlEntries(activeStorageKey)[0];
+    if (!lastUrlEntry || lastUrlEntry.url === selectedUrl) {
+      return;
+    }
+
+    const restoredUrlOption =
+      urlOptions.find(
+        (urlOption) =>
+          isMatchingFormat(urlOption.format, format) && urlOption.url === lastUrlEntry.url
+      ) ||
+      ({
+        format,
+        group: 'Saved URLs',
+        label: lastUrlEntry.label || getFileNameFromUrl(lastUrlEntry.url),
+        url: lastUrlEntry.url
+      } as UrlOption<ExampleT>);
+
+    setUrl(restoredUrlOption.url);
+    if (restoredUrlOption.example) {
+      onExampleSelect(restoredUrlOption);
+    } else {
+      onUrlChange(restoredUrlOption.url);
+    }
+  }, [activeStorageKey, format, onExampleSelect, onUrlChange, selectedUrl, urlOptions]);
 
   useEffect(() => {
     if (isMenuOpen) {
-      setSavedUrls(readSavedUrls(format));
+      setSavedUrls(readStoredUrlEntries(activeStorageKey));
     }
-  }, [format, isMenuOpen]);
+  }, [activeStorageKey, isMenuOpen]);
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -108,7 +156,7 @@ export function ExampleUrlInputCard<ExampleT = unknown>({
       return;
     }
     if (shouldSaveUrl) {
-      const nextSavedUrls = saveUrl(format, trimmedUrl);
+      const nextSavedUrls = saveUrlEntry(activeStorageKey, {url: trimmedUrl});
       setSavedUrls(nextSavedUrls);
     }
     onUrlChange(trimmedUrl);
@@ -145,11 +193,23 @@ export function ExampleUrlInputCard<ExampleT = unknown>({
         {isMenuOpen && (
           <div style={styles.urlMenu}>
             {renderUrlOptionGroup('Examples', format, allUrlOptions, (selectedUrlOption) => {
+              setSavedUrls(
+                saveUrlEntry(activeStorageKey, {
+                  label: selectedUrlOption.label,
+                  url: selectedUrlOption.url
+                })
+              );
               setUrl(selectedUrlOption.url);
               setIsMenuOpen(false);
               onExampleSelect(selectedUrlOption as UrlOption<ExampleT>);
             })}
             {renderUrlOptionGroup('Saved URLs', format, allUrlOptions, (selectedUrlOption) => {
+              setSavedUrls(
+                saveUrlEntry(activeStorageKey, {
+                  label: selectedUrlOption.label,
+                  url: selectedUrlOption.url
+                })
+              );
               setUrl(selectedUrlOption.url);
               setIsMenuOpen(false);
               onExampleSelect(selectedUrlOption as UrlOption<ExampleT>);
@@ -202,32 +262,66 @@ function isMatchingFormat(optionFormat: string, activeFormat: string): boolean {
   return optionFormat.toLowerCase() === activeFormat.toLowerCase();
 }
 
-function readSavedUrls(format: string): string[] {
+function readStoredUrlEntries(storageKey: string): StoredUrlEntry[] {
   if (typeof window === 'undefined') {
     return [];
   }
   try {
-    const savedUrls = JSON.parse(window.localStorage.getItem(getSavedUrlsKey(format)) || '[]');
-    return Array.isArray(savedUrls) ? savedUrls.filter((url) => typeof url === 'string') : [];
+    const savedUrls = JSON.parse(window.localStorage.getItem(getSavedUrlsKey(storageKey)) || '[]');
+    if (!Array.isArray(savedUrls)) {
+      return [];
+    }
+    return savedUrls
+      .map(normalizeStoredUrlEntry)
+      .filter((savedUrl): savedUrl is StoredUrlEntry => Boolean(savedUrl))
+      .slice(0, MAX_SAVED_URLS);
   } catch {
     return [];
   }
 }
 
-function saveUrl(format: string, url: string): string[] {
+function saveUrlEntry(
+  storageKey: string,
+  urlEntry: Pick<StoredUrlEntry, 'url'> & Partial<StoredUrlEntry>
+): StoredUrlEntry[] {
+  const trimmedUrl = urlEntry.url.trim();
+  const nextUrlEntry: StoredUrlEntry = {
+    label: urlEntry.label,
+    url: trimmedUrl,
+    updatedAt: Date.now()
+  };
   if (typeof window === 'undefined') {
-    return [url];
+    return [nextUrlEntry];
   }
+
   const savedUrls = [
-    url,
-    ...readSavedUrls(format).filter((savedUrl) => savedUrl !== url)
+    nextUrlEntry,
+    ...readStoredUrlEntries(storageKey).filter((savedUrl) => savedUrl.url !== trimmedUrl)
   ].slice(0, MAX_SAVED_URLS);
-  window.localStorage.setItem(getSavedUrlsKey(format), JSON.stringify(savedUrls));
+  window.localStorage.setItem(getSavedUrlsKey(storageKey), JSON.stringify(savedUrls));
   return savedUrls;
 }
 
-function getSavedUrlsKey(format: string): string {
-  return `${SAVED_URLS_KEY}.${format.toLowerCase()}`;
+function normalizeStoredUrlEntry(value: unknown): StoredUrlEntry | null {
+  if (typeof value === 'string') {
+    return {url: value, updatedAt: 0};
+  }
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const urlEntry = value as Partial<StoredUrlEntry>;
+  if (typeof urlEntry.url !== 'string') {
+    return null;
+  }
+  return {
+    label: typeof urlEntry.label === 'string' ? urlEntry.label : undefined,
+    url: urlEntry.url,
+    updatedAt: typeof urlEntry.updatedAt === 'number' ? urlEntry.updatedAt : 0
+  };
+}
+
+function getSavedUrlsKey(storageKey: string): string {
+  return `${SAVED_URLS_KEY}.${storageKey.toLowerCase()}`;
 }
 
 function getFileNameFromUrl(url: string): string {

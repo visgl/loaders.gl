@@ -42,6 +42,8 @@ const PLY_END_HEADER = 'end_header';
 type MutablePLYAttributes = {[index: string]: number[]};
 
 export type ParsePLYOptions = {
+  /** Force the legacy mesh parser; intended for parser benchmarks and regression checks. */
+  _useLegacyParser?: boolean;
   /** Disable direct binary point-cloud parsing; intended for parser benchmarks and regression checks. */
   _useLegacyBinaryPointCloudParser?: boolean;
   propertyNameMapping?: Record<string, string>;
@@ -111,6 +113,24 @@ export function parsePLYBinaryPointCloudToArrowTable(
   options: ParsePLYOptions = {}
 ): MeshArrowTable | null {
   const attributes = parseBinaryPointCloud(data, header, options);
+  return attributes ? makePLYArrowTable(header, attributes) : null;
+}
+
+/**
+ * Parse fixed-width binary vertex records directly from a byte view into an Arrow table.
+ * @param records Binary PLY vertex records without a header.
+ * @param header PLY header with the batch vertex count already applied.
+ * @param options Parser options.
+ * @param plan Optional reusable parse plan for the same header layout.
+ * @returns Arrow table, or null when the header is not supported by the fixed-width path.
+ */
+export function parsePLYBinaryPointCloudRecordsToArrowTable(
+  records: Uint8Array,
+  header: PLYHeader,
+  options: ParsePLYOptions = {},
+  plan?: PLYBinaryPointCloudParsePlan
+): MeshArrowTable | null {
+  const attributes = parseBinaryPointCloudRecords(records, header, options, plan);
   return attributes ? makePLYArrowTable(header, attributes) : null;
 }
 
@@ -593,6 +613,16 @@ type BinaryPointCloudProperty = {
   size: number;
 };
 
+/** Reusable binary point-cloud parse plan. */
+export type PLYBinaryPointCloudParsePlan = {
+  /** Precomputed scalar property readers and record offsets. */
+  properties: BinaryPointCloudProperty[];
+  /** Fixed byte stride for one vertex record. */
+  vertexStride: number;
+  /** Whether scalar values are little-endian encoded. */
+  littleEndian: boolean;
+};
+
 /** Build an Arrow table from normalized PLY attribute arrays. */
 function makePLYArrowTable(header: PLYHeader, attributes: PLYAttributes): MeshArrowTable {
   const meshAttributes = getPLYMeshAttributes(attributes);
@@ -745,6 +775,54 @@ function parseBinaryPointCloud(
   header: PLYHeader,
   options?: ParsePLYOptions
 ): BinaryAttributes | null {
+  const records = new Uint8Array(data, header.headerLength || 0);
+  return parseBinaryPointCloudRecords(records, header, options);
+}
+
+/** Parse binary PLY point-cloud records directly from a byte view into typed arrays. */
+function parseBinaryPointCloudRecords(
+  records: Uint8Array,
+  header: PLYHeader,
+  options?: ParsePLYOptions,
+  parsePlan?: PLYBinaryPointCloudParsePlan
+): BinaryAttributes | null {
+  const vertexElement = header.elements[0];
+  if (
+    !parsePlan &&
+    (options?._useLegacyBinaryPointCloudParser ||
+      header.elements.length !== 1 ||
+      vertexElement?.name !== 'vertex' ||
+      vertexElement.properties.some(property => property.type === 'list'))
+  ) {
+    return null;
+  }
+
+  const plan = parsePlan || getPLYBinaryPointCloudParsePlan(header, options);
+  if (!plan || !vertexElement) {
+    return null;
+  }
+
+  const attributes = getBinaryPointCloudAttributes(vertexElement);
+  const dataView = new DataView(records.buffer, records.byteOffset, records.byteLength);
+  let vertexOffset = 0;
+
+  for (let vertexIndex = 0; vertexIndex < vertexElement.count; vertexIndex++) {
+    for (const property of plan.properties) {
+      const value = property.read(dataView, vertexOffset + property.offset, plan.littleEndian);
+      writeBinaryPointCloudProperty(attributes, property.name, value, vertexIndex);
+    }
+
+    vertexOffset += plan.vertexStride;
+  }
+
+  return attributes;
+}
+
+/** Return a reusable binary point-cloud parse plan, or null when unsupported. */
+export function getPLYBinaryPointCloudParsePlan(
+  header: PLYHeader,
+  options?: ParsePLYOptions
+): PLYBinaryPointCloudParsePlan | null {
   const vertexElement = header.elements[0];
   if (
     options?._useLegacyBinaryPointCloudParser ||
@@ -755,23 +833,12 @@ function parseBinaryPointCloud(
     return null;
   }
 
-  const attributes = getBinaryPointCloudAttributes(vertexElement);
-  const littleEndian = header.format === 'binary_little_endian';
-  const dataView = new DataView(data, header.headerLength);
   const properties = getBinaryPointCloudProperties(vertexElement);
-  const vertexStride = getPLYElementSize(properties);
-  let vertexOffset = 0;
-
-  for (let vertexIndex = 0; vertexIndex < vertexElement.count; vertexIndex++) {
-    for (const property of properties) {
-      const value = property.read(dataView, vertexOffset + property.offset, littleEndian);
-      writeBinaryPointCloudProperty(attributes, property.name, value, vertexIndex);
-    }
-
-    vertexOffset += vertexStride;
-  }
-
-  return attributes;
+  return {
+    properties,
+    vertexStride: getPLYElementSize(properties),
+    littleEndian: header.format === 'binary_little_endian'
+  };
 }
 
 /** Allocate direct typed arrays for the normalized PLY attributes. */

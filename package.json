@@ -107,6 +107,7 @@
     "@loaders.gl/mvt": "^4.4.0",
     "@loaders.gl/obj": "^4.4.0",
     "@loaders.gl/ply": "^4.4.0",
+    "@loaders.gl/splats": "^4.4.0",
     "@loaders.gl/sql": "^4.4.0",
     "@loaders.gl/schema": "^4.4.0",
     "@loaders.gl/schema-utils": "^4.4.0",

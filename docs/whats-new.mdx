@@ -12,6 +12,7 @@ Release Date: 2026
 - **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF website examples.
+- **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
 
 **Features**
 
@@ -34,6 +35,12 @@ Release Date: 2026
 **@loaders.gl/ply**
 
 - [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
+- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
+
+**@loaders.gl/splats**
+
+- [`SPLATLoader`](/docs/modules/splats/api-reference/splat-loader) NEW - loads raw `.splat` Gaussian splat files into Mesh Arrow tables.
+- [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) NEW - loads GaussianSplats3D `.ksplat` files into Mesh Arrow tables.
 
 **@loaders.gl/terrain**
 
@@ -51,6 +58,12 @@ Release Date: 2026
 
 - `preload(loader)` now returns and caches parser-bearing implementations for unbundled loaders.
 - `preloadSync(loader)` NEW returns a cached parser-bearing implementation, or `null` if the loader has not been preloaded.
+
+**@loaders.gl/deck-layers**
+
+- `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.
+- `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
+- `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.
 
 **@loaders.gl/loader-utils**
 

@@ -9,6 +9,11 @@ import type {PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
 import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import {parsePLY, parsePLYToArrowTable} from './lib/parse-ply';
+import {
+  convertPLYElementTablesToMesh,
+  convertPLYElementTablesToMeshArrowTable,
+  parsePLYToElementTables
+} from './lib/parse-ply-arrow';
 import {parsePLYInBatches} from './lib/parse-ply-in-batches';
 import {PLYWorkerLoader as PLYWorkerLoaderMetadata} from './ply-loader';
 import {PLYLoader as PLYLoaderMetadata} from './ply-loader';
@@ -35,6 +40,10 @@ function parsePLYData(
   data: ArrayBuffer | string,
   options?: PLYLoaderOptions
 ): PLYMesh | MeshArrowTable {
+  if (options?.ply?._useLegacyParser) {
+    return convertPLYMesh(parsePLY(data, options?.ply), options);
+  }
+
   if (options?.ply?.shape === 'arrow-table') {
     const arrowTable = parsePLYToArrowTable(data, options.ply);
     if (arrowTable) {
@@ -42,7 +51,10 @@ function parsePLYData(
     }
   }
 
-  return convertPLYMesh(parsePLY(data, options?.ply), options);
+  const elementTables = parsePLYToElementTables(data, options?.ply);
+  return options?.ply?.shape === 'arrow-table'
+    ? convertPLYElementTablesToMeshArrowTable(elementTables)
+    : convertPLYElementTablesToMesh(elementTables);
 }
 
 /**

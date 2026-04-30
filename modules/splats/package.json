@@ -1,0 +1,68 @@
+{
+  "name": "@loaders.gl/splats",
+  "version": "4.4.0",
+  "description": "Framework-independent loaders for Gaussian splat formats",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "webgl",
+    "loader",
+    "3d",
+    "point cloud",
+    "gaussian splats",
+    "splat",
+    "ksplat"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./splat-loader": {
+      "types": "./dist/splat-loader.d.ts",
+      "import": "./dist/splat-loader.js"
+    },
+    "./ksplat-loader": {
+      "types": "./dist/ksplat-loader.d.ts",
+      "import": "./dist/ksplat-loader.js"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
+    "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
+  },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  }
+}

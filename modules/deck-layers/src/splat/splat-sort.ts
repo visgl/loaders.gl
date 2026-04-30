@@ -99,7 +99,7 @@ export function getSplatTransientBufferByteLengths(splatCount: number): Record<s
     indices: splatBytes,
     tempKeys: splatBytes,
     tempIndices: splatBytes,
-    projected: Math.max(splatCount, 1) * 4 * Float32Array.BYTES_PER_ELEMENT
+    projected: Math.max(splatCount, 1) * 8 * Float32Array.BYTES_PER_ELEMENT
   };
 }
 
