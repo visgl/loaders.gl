@@ -18,7 +18,7 @@ export type {GeoArrowLayerProps} from './geoarrow-layer';
 export {GeoArrowLayer} from './geoarrow-layer';
 export type {MeshArrowPointCloudLayerProps} from './mesh-arrow-point-cloud-layer';
 export {MeshArrowPointCloudLayer} from './mesh-arrow-point-cloud-layer';
-export type {SplatLayerProps} from './splat-layer';
+export type {PublicSplatSortMode, SplatLayerProps, SplatRenderMode} from './splat-layer';
 export {SplatLayer} from './splat-layer';
 export type {Tile3DSourceLayerProps} from './tile-3d-source-layer';
 export {createSource, Tile3DSourceLayer} from './tile-3d-source-layer';

@@ -7,6 +7,7 @@ import {
   color,
   CompositeLayer,
   Layer,
+  type LayerContext,
   picking,
   project32,
   UNIT,
@@ -18,15 +19,20 @@ import {
   type Unit,
   type Color
 } from '@deck.gl/core';
+import type {BufferLayout} from '@luma.gl/core';
 import {Geometry, Model} from '@luma.gl/engine';
 import type {ShaderModule} from '@luma.gl/shadertools';
 import type {MeshArrowTable, TypedArray} from '@loaders.gl/schema';
+import {SplatEngine, type SplatSortMode} from './splat/splat-engine';
+import {getArrowTable, getGaussianSplatDataFromArrowTable} from './splat/splat-data';
 
-const SH_C0 = 0.28209479177387814;
 const DEFAULT_COLOR = [255, 255, 255, 255] as const;
-const GAUSSIAN_SUPPORT_RADIUS = 3;
-const DEFAULT_SCALE_ENCODING = 'log';
-const DEFAULT_OPACITY_ENCODING = 'logit';
+
+/** Public rendering modes supported by {@link SplatLayer}. */
+export type SplatRenderMode = 'auto' | 'cpu' | 'gpu';
+
+/** Public sorting modes supported by {@link SplatLayer}. */
+export type PublicSplatSortMode = 'none' | 'global';
 
 /** Props for {@link SplatLayer}. */
 export type SplatLayerProps = CompositeLayerProps & {
@@ -42,6 +48,16 @@ export type SplatLayerProps = CompositeLayerProps & {
   radiusMaxPixels?: number;
   /** Fallback color used when spherical harmonic DC columns are not present. */
   getColor?: Color;
+  /** Selects CPU/WebGL fallback rendering or the WebGPU engine path. */
+  renderMode?: SplatRenderMode;
+  /** Sorting strategy used by the WebGPU engine path. */
+  sortMode?: PublicSplatSortMode;
+  /** Minimum normalized alpha retained by the WebGPU engine path. */
+  alphaCutoff?: number;
+  /** Minimum projected screen size retained by the WebGPU engine path. */
+  screenSizeCutoffPixels?: number;
+  /** Gaussian support radius used when deriving billboard radii and bounds. */
+  gaussianSupportRadius?: number;
 };
 
 type SplatPrimitiveLayerProps = LayerProps & {
@@ -50,6 +66,7 @@ type SplatPrimitiveLayerProps = LayerProps & {
   radiusScale?: number;
   radiusMinPixels?: number;
   radiusMaxPixels?: number;
+  splatEngine?: SplatEngine | null;
 };
 
 type SplatUniformProps = {
@@ -64,17 +81,34 @@ type DeckBinaryData = {
   attributes: Record<string, {value: TypedArray; size: number; type?: string}>;
 };
 
+type DrawOptions = {
+  /** Shader module props supplied by deck.gl for this draw pass. */
+  shaderModuleProps?: {
+    /** Picking module uniforms for picking framebuffer passes. */
+    picking?: {
+      /** Whether this draw is writing to a picking framebuffer. */
+      isActive?: boolean;
+    };
+  };
+};
+
 const defaultProps: DefaultProps<SplatLayerProps> = {
   id: 'splat-layer',
   sizeUnits: 'meters',
   radiusScale: {type: 'number', min: 0, value: 1},
   radiusMinPixels: {type: 'number', min: 0, value: 0},
   radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
-  getColor: {type: 'color', value: DEFAULT_COLOR}
+  getColor: {type: 'color', value: DEFAULT_COLOR},
+  renderMode: 'auto',
+  sortMode: 'global',
+  alphaCutoff: {type: 'number', min: 0, max: 1, value: 1 / 255},
+  screenSizeCutoffPixels: {type: 'number', min: 0, value: 0},
+  gaussianSupportRadius: {type: 'number', min: 0, value: 3}
 };
 
 const splatUniforms = {
   name: 'splat',
+  source: '',
   vs: /* glsl */ `\
 layout(std140) uniform splatUniforms {
   highp int sizeUnits;
@@ -84,7 +118,6 @@ layout(std140) uniform splatUniforms {
 } splat;
 `,
   fs: '',
-  source: '',
   uniformTypes: {
     sizeUnits: 'i32',
     radiusScale: 'f32',
@@ -92,6 +125,72 @@ layout(std140) uniform splatUniforms {
     radiusMaxPixels: 'f32'
   }
 } as const satisfies ShaderModule<SplatUniformProps>;
+
+const source = /* wgsl */ `\
+struct SplatUniforms {
+  sizeUnits: i32,
+  radiusScale: f32,
+  radiusMinPixels: f32,
+  radiusMaxPixels: f32,
+};
+
+@group(0) @binding(auto)
+var<uniform> splat: SplatUniforms;
+
+struct VertexInputs {
+  @location(0) positions: vec3<f32>,
+  @location(1) instancePositions: vec3<f32>,
+  @location(2) instanceRadii: f32,
+  @location(3) instanceColors: vec4<f32>,
+};
+
+struct FragmentInputs {
+  @builtin(position) position: vec4<f32>,
+  @location(0) unitPosition: vec2<f32>,
+  @location(1) color: vec4<f32>,
+};
+
+@vertex
+fn vertexMain(inputs: VertexInputs) -> FragmentInputs {
+  var outputs: FragmentInputs;
+  geometry.worldPosition = inputs.instancePositions;
+  geometry.uv = inputs.positions.xy;
+
+  let radiusPixels = clamp(
+    project_unit_size_to_pixel(inputs.instanceRadii * splat.radiusScale, splat.sizeUnits),
+    splat.radiusMinPixels,
+    splat.radiusMaxPixels
+  );
+
+  var clipPosition = project_position_to_clipspace(
+    inputs.instancePositions,
+    vec3<f32>(0.0, 0.0, 0.0),
+    vec3<f32>(0.0, 0.0, 0.0)
+  );
+  clipPosition.xy += project_pixel_size_to_clipspace(inputs.positions.xy * radiusPixels);
+
+  outputs.position = clipPosition;
+  outputs.unitPosition = inputs.positions.xy;
+  outputs.color = vec4<f32>(inputs.instanceColors.rgb, inputs.instanceColors.a * layer.opacity);
+  return outputs;
+}
+
+@fragment
+fn fragmentMain(inputs: FragmentInputs) -> @location(0) vec4<f32> {
+  let radiusSquared = dot(inputs.unitPosition, inputs.unitPosition);
+  if (radiusSquared > 1.0) {
+    discard;
+  }
+
+  let gaussianAlpha = exp(-6.0 * radiusSquared);
+  let color = vec4<f32>(inputs.color.rgb, inputs.color.a * gaussianAlpha);
+  if (color.a <= 0.00392156862) {
+    discard;
+  }
+
+  return color;
+}
+`;
 
 const vs = /* glsl */ `\
 #version 300 es
@@ -164,6 +263,14 @@ void main(void) {
 }
 `;
 
+/** WebGPU vertex buffer layout matching the WGSL shader attributes. */
+const WEBGPU_SPLAT_BUFFER_LAYOUT: BufferLayout[] = [
+  {name: 'positions', stepMode: 'vertex', format: 'float32x3'},
+  {name: 'instancePositions', stepMode: 'instance', format: 'float32x3'},
+  {name: 'instanceRadii', stepMode: 'instance', format: 'float32'},
+  {name: 'instanceColors', stepMode: 'instance', format: 'unorm8x4'}
+];
+
 /**
  * Renders GraphDECO-style Gaussian splat PLY data parsed as an Arrow table.
  *
@@ -178,10 +285,60 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
   /** Default props shared across splat layers. */
   static defaultProps: DefaultProps = defaultProps;
 
+  declare state: {
+    /** WebGPU engine used when the GPU path is selected. */
+    splatEngine?: SplatEngine;
+    /** Last Arrow table uploaded to the WebGPU engine. */
+    engineTable?: arrow.Table;
+    /** Last fallback color uploaded to the WebGPU engine. */
+    engineFallbackColor?: Color;
+  };
+
+  /** Updates the optional WebGPU engine when layer props change. */
+  updateState(params: UpdateParameters<this>): void {
+    super.updateState(params);
+
+    const useGpuEngine = this.shouldUseGpuEngine();
+    if (!useGpuEngine) {
+      this.destroySplatEngine();
+      return;
+    }
+
+    const arrowTable = getArrowTable(this.props.data);
+    const fallbackColor = this.props.getColor || DEFAULT_COLOR;
+    let splatEngine = this.state.splatEngine;
+    if (!splatEngine) {
+      splatEngine = new SplatEngine(this.context.device, this.getSplatEngineProps());
+      this.setState({splatEngine});
+    }
+
+    splatEngine.setProps(this.getSplatEngineProps());
+
+    if (
+      params.changeFlags.dataChanged ||
+      this.state.engineTable !== arrowTable ||
+      this.state.engineFallbackColor !== fallbackColor ||
+      params.changeFlags.propsChanged
+    ) {
+      splatEngine.setData(arrowTable, fallbackColor);
+      this.setState({engineTable: arrowTable, engineFallbackColor: fallbackColor});
+    }
+  }
+
+  /** Releases the WebGPU engine. */
+  finalizeState(context: LayerContext): void {
+    super.finalizeState(context);
+    this.destroySplatEngine();
+  }
+
   /** Renders the Arrow table through a Gaussian billboard primitive. */
   renderLayers(): Layer | null {
     const arrowTable = getArrowTable(this.props.data);
-    const splatData = getDeckBinaryDataFromGaussianSplatArrowTable(arrowTable, this.props.getColor);
+    const splatData = getDeckBinaryDataFromGaussianSplatArrowTable(
+      arrowTable,
+      this.props.getColor,
+      this.props.gaussianSupportRadius
+    );
 
     return new SplatPrimitiveLayer({
       ...this.getSubLayerProps({id: 'splats'}),
@@ -189,8 +346,38 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       sizeUnits: this.props.sizeUnits,
       radiusScale: this.props.radiusScale,
       radiusMinPixels: this.props.radiusMinPixels,
-      radiusMaxPixels: this.props.radiusMaxPixels
+      radiusMaxPixels: this.props.radiusMaxPixels,
+      splatEngine: this.shouldUseGpuEngine() ? this.state.splatEngine : null
     }) as unknown as Layer;
+  }
+
+  private shouldUseGpuEngine(): boolean {
+    const renderMode = this.props.renderMode || 'auto';
+    const device = this.context?.device;
+    if (renderMode === 'cpu') {
+      return false;
+    }
+    if (device?.type === 'webgpu') {
+      return true;
+    }
+    if (renderMode === 'gpu') {
+      throw new Error('SplatLayer renderMode "gpu" requires a WebGPU device.');
+    }
+    return false;
+  }
+
+  private getSplatEngineProps() {
+    return {
+      sortMode: (this.props.sortMode || 'global') as SplatSortMode,
+      alphaCutoff: this.props.alphaCutoff ?? 1 / 255,
+      screenSizeCutoffPixels: this.props.screenSizeCutoffPixels ?? 0,
+      gaussianSupportRadius: this.props.gaussianSupportRadius ?? 3
+    };
+  }
+
+  private destroySplatEngine(): void {
+    this.state.splatEngine?.destroy();
+    this.setState({splatEngine: undefined, engineTable: undefined, engineFallbackColor: undefined});
   }
 }
 
@@ -204,7 +391,8 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
     sizeUnits: 'meters',
     radiusScale: {type: 'number', min: 0, value: 1},
     radiusMinPixels: {type: 'number', min: 0, value: 0},
-    radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER}
+    radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
+    splatEngine: null
   };
 
   state: {
@@ -213,6 +401,13 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
 
   /** Returns splat shaders. */
   getShaders() {
+    if (this.context.device.type === 'webgpu') {
+      return super.getShaders({
+        source,
+        modules: [project32, splatUniforms]
+      });
+    }
+
     return super.getShaders({
       vs,
       fs,
@@ -255,7 +450,11 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
   }
 
   /** Draws all splat billboards. */
-  draw(): void {
+  draw(options: DrawOptions = {}): void {
+    if (this.context.device.type === 'webgpu' && options.shaderModuleProps?.picking?.isActive) {
+      return;
+    }
+
     const {sizeUnits, radiusScale, radiusMinPixels, radiusMaxPixels} = this.props;
     const splatProps: SplatUniformProps = {
       sizeUnits: UNIT[sizeUnits],
@@ -267,16 +466,35 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
     if (!model) {
       return;
     }
+    this.props.splatEngine?.update();
     model.shaderInputs.setProps({splat: splatProps});
     model.draw(this.context.renderPass);
   }
 
+  /** Applies attribute buffers while preserving the explicit WebGPU buffer layout. */
+  protected _setModelAttributes(
+    model: Model,
+    changedAttributes: Record<string, unknown>,
+    bufferLayoutChanged = false
+  ): void {
+    super._setModelAttributes(
+      model,
+      changedAttributes,
+      this.context.device.type === 'webgpu' ? false : bufferLayoutChanged
+    );
+  }
+
   /** Builds the instanced billboard model. */
   protected _getModel(): Model {
+    const bufferLayout =
+      this.context.device.type === 'webgpu'
+        ? WEBGPU_SPLAT_BUFFER_LAYOUT
+        : this.getAttributeManager()!.getBufferLayouts();
+
     return new Model(this.context.device, {
       ...this.getShaders(),
       id: this.props.id,
-      bufferLayout: this.getAttributeManager()!.getBufferLayouts(),
+      bufferLayout,
       geometry: new Geometry({
         topology: 'triangle-strip',
         attributes: {
@@ -294,185 +512,17 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
 /** Convert a Gaussian splat Arrow table into deck.gl binary attributes. */
 function getDeckBinaryDataFromGaussianSplatArrowTable(
   table: arrow.Table,
-  fallbackColor: Color = DEFAULT_COLOR
+  fallbackColor: Color = DEFAULT_COLOR,
+  gaussianSupportRadius: number = 3
 ): DeckBinaryData {
-  const length = table.numRows;
-  const positions = getPositionValues(table);
-  const radii = getSplatRadii(table);
-  const colors = getSplatColors(table, fallbackColor);
+  const splatData = getGaussianSplatDataFromArrowTable(table, fallbackColor, gaussianSupportRadius);
 
   return {
-    length,
+    length: splatData.length,
     attributes: {
-      getPosition: {value: positions, size: 3},
-      getRadius: {value: radii, size: 1},
-      getColor: {value: colors, size: 4, type: 'unorm8'}
+      getPosition: {value: splatData.positions, size: 3},
+      getRadius: {value: splatData.radii, size: 1},
+      getColor: {value: splatData.colors, size: 4, type: 'unorm8'}
     }
   };
-}
-
-/** Return the underlying Apache Arrow table. */
-function getArrowTable(data: MeshArrowTable | arrow.Table): arrow.Table {
-  return isMeshArrowTable(data) ? data.data : (data as arrow.Table);
-}
-
-/** Checks whether layer data is a loaders.gl Arrow table wrapper. */
-function isMeshArrowTable(data: MeshArrowTable | arrow.Table): data is MeshArrowTable {
-  return (data as MeshArrowTable).shape === 'arrow-table';
-}
-
-/** Return POSITION values as an interleaved XYZ array. */
-function getPositionValues(table: arrow.Table): Float32Array {
-  const positionVector = table.getChild('POSITION');
-  if (!positionVector) {
-    throw new Error('SplatLayer requires a POSITION column.');
-  }
-
-  const directValues = getDirectFixedSizeListValues(positionVector, 3);
-  if (directValues) {
-    return directValues;
-  }
-
-  const positions = new Float32Array(table.numRows * 3);
-  for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
-    const position = positionVector.get(rowIndex) as ArrayLike<number> | null;
-    if (!position || position.length < 3) {
-      throw new Error(`SplatLayer could not read POSITION row ${rowIndex}.`);
-    }
-    positions[rowIndex * 3 + 0] = getArrayLikeValue(position, 0);
-    positions[rowIndex * 3 + 1] = getArrayLikeValue(position, 1);
-    positions[rowIndex * 3 + 2] = getArrayLikeValue(position, 2);
-  }
-  return positions;
-}
-
-/** Return a direct typed array for a single-chunk FixedSizeList vector when possible. */
-function getDirectFixedSizeListValues(vector: arrow.Vector, size: number): Float32Array | null {
-  const data = vector.data[0];
-  const childData = data?.children[0];
-  if (vector.data.length !== 1 || data.offset !== 0 || !childData?.values) {
-    return null;
-  }
-
-  const values = childData.values;
-  if (values instanceof Float32Array && values.length === vector.length * size) {
-    return values;
-  }
-
-  return null;
-}
-
-/** Return decoded splat radii from `scale_0..2` columns. */
-function getSplatRadii(table: arrow.Table): Float32Array {
-  const scale0 = getRequiredNumericColumn(table, 'scale_0');
-  const scale1 = getRequiredNumericColumn(table, 'scale_1');
-  const scale2 = getRequiredNumericColumn(table, 'scale_2');
-  const scaleEncoding =
-    getFieldMetadata(table, 'scale_0', 'loaders_gl.gaussian_splats.encoding') ||
-    DEFAULT_SCALE_ENCODING;
-  const radii = new Float32Array(table.numRows);
-
-  for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
-    const standardDeviation = decodeSplatScaleRadius(
-      scale0[rowIndex],
-      scale1[rowIndex],
-      scale2[rowIndex],
-      scaleEncoding
-    );
-    radii[rowIndex] = standardDeviation * GAUSSIAN_SUPPORT_RADIUS;
-  }
-
-  return radii;
-}
-
-/** Decode a circular fallback radius from anisotropic Gaussian scales. */
-function decodeSplatScaleRadius(
-  scale0: number,
-  scale1: number,
-  scale2: number,
-  scaleEncoding: string
-): number {
-  if (scaleEncoding === 'linear') {
-    return Math.cbrt(Math.max(scale0, 0) * Math.max(scale1, 0) * Math.max(scale2, 0));
-  }
-
-  return Math.exp((scale0 + scale1 + scale2) / 3);
-}
-
-/** Return splat colors from SH DC and opacity columns. */
-function getSplatColors(table: arrow.Table, fallbackColor: Color): Uint8Array {
-  const fdc0 = getOptionalNumericColumn(table, 'f_dc_0');
-  const fdc1 = getOptionalNumericColumn(table, 'f_dc_1');
-  const fdc2 = getOptionalNumericColumn(table, 'f_dc_2');
-  const opacity = getOptionalNumericColumn(table, 'opacity');
-  const opacityEncoding =
-    getFieldMetadata(table, 'opacity', 'loaders_gl.gaussian_splats.encoding') ||
-    DEFAULT_OPACITY_ENCODING;
-  const colors = new Uint8Array(table.numRows * 4);
-
-  for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
-    const colorIndex = rowIndex * 4;
-    if (fdc0 && fdc1 && fdc2) {
-      colors[colorIndex + 0] = normalizeColorByte(fdc0[rowIndex] * SH_C0 + 0.5);
-      colors[colorIndex + 1] = normalizeColorByte(fdc1[rowIndex] * SH_C0 + 0.5);
-      colors[colorIndex + 2] = normalizeColorByte(fdc2[rowIndex] * SH_C0 + 0.5);
-    } else {
-      colors[colorIndex + 0] = fallbackColor[0] ?? DEFAULT_COLOR[0];
-      colors[colorIndex + 1] = fallbackColor[1] ?? DEFAULT_COLOR[1];
-      colors[colorIndex + 2] = fallbackColor[2] ?? DEFAULT_COLOR[2];
-    }
-
-    const alpha = opacity ? opacity[rowIndex] : (fallbackColor[3] ?? DEFAULT_COLOR[3]) / 255;
-    colors[colorIndex + 3] = normalizeColorByte(
-      opacityEncoding === 'linear' ? alpha : 1 / (1 + Math.exp(-alpha))
-    );
-  }
-
-  return colors;
-}
-
-/** Return a required numeric column as Float32 values. */
-function getRequiredNumericColumn(table: arrow.Table, columnName: string): Float32Array {
-  const column = getOptionalNumericColumn(table, columnName);
-  if (!column) {
-    throw new Error(`SplatLayer requires a ${columnName} column.`);
-  }
-  return column;
-}
-
-/** Return an optional numeric column as Float32 values. */
-function getOptionalNumericColumn(table: arrow.Table, columnName: string): Float32Array | null {
-  const column = table.getChild(columnName);
-  if (!column) {
-    return null;
-  }
-
-  const values = new Float32Array(table.numRows);
-  for (let rowIndex = 0; rowIndex < table.numRows; rowIndex++) {
-    values[rowIndex] = Number(column.get(rowIndex) ?? 0);
-  }
-  return values;
-}
-
-/** Return one field metadata value. */
-function getFieldMetadata(table: arrow.Table, fieldName: string, key: string): string | undefined {
-  return table.schema.fields.find(field => field.name === fieldName)?.metadata.get(key);
-}
-
-/** Return an indexed value from either an array or an Arrow vector. */
-function getArrayLikeValue(values: ArrayLike<number>, index: number): number {
-  const value = hasGetValue(values) ? values.get(index) : values[index];
-  return Number(value);
-}
-
-/** Return true when a value has an Arrow-vector-style getter. */
-function hasGetValue(values: ArrayLike<number>): values is ArrayLike<number> & {
-  get: (index: number) => number;
-} {
-  return 'get' in values && typeof values.get === 'function';
-}
-
-/** Clamp a normalized color value and convert it to an unorm8 byte. */
-function normalizeColorByte(value: number): number {
-  return Math.round(Math.min(Math.max(value, 0), 1) * 255);
 }

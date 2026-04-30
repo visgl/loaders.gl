@@ -52,6 +52,7 @@
     "@luma.gl/gltf": "^9.3.2",
     "@luma.gl/shadertools": "^9.3.2",
     "@luma.gl/webgl": "^9.3.2",
+    "@luma.gl/webgpu": "^9.3.2",
     "@material-ui/core": "^4.10.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.57",
