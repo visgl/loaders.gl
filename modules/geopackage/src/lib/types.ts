@@ -128,6 +128,26 @@ export interface ContentsRow {
   srs_id?: number;
 }
 
+export type GeoPackageBounds = {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+};
+
+export interface GeoPackageVectorTableInfo {
+  name: string;
+  identifier?: string;
+  description?: string;
+  lastChange: string;
+  srsId?: number;
+  geometryColumnName: string;
+  geometryTypeName: GeometryType;
+  z: 0 | 1 | 2;
+  m: 0 | 1 | 2;
+  bounds?: GeoPackageBounds;
+}
+
 // https://www.geopackage.org/spec121/#geometry_types_extension
 type GeometryType =
   | 'GEOMETRY'

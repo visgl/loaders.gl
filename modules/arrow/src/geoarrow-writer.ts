@@ -18,6 +18,8 @@ export const GeoArrowWriter = {
   id: 'arrow',
   module: 'arrow',
   version: VERSION,
+  encoding: 'arrow',
+  format: 'geoarrow',
   extensions: ['arrow', 'feather'],
   mimeTypes: [
     'application/vnd.apache.arrow.file',

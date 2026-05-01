@@ -31,8 +31,13 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./parquet-worker.js": {
-      "import": "./dist/parquet-worker.js"
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
     }
   },
   "sideEffects": false,
@@ -42,10 +47,9 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "echo npm run build-worker && yarn run copy-wasm",
+    "pre-build": "yarn run copy-wasm",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
-    "build-worker": "esbuild src/workers/parquet-worker.ts --outfile=dist/parquet-worker.js --bundle --minify --sourcemap --external:{util,fs,path,crypto,events} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "copy-wasm": "cp ../../node_modules/parquet-wasm/esm/parquet_wasm_bg.wasm dist/parquet_wasm_bg.wasm"
   },
   "browser": {

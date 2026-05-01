@@ -32,6 +32,29 @@ test('GeoPackageLoader#load file as tables', async t => {
   t.end();
 });
 
+test('GeoPackageLoader#load supports core.shape', async t => {
+  const result = await load(GPKG_RIVERS, GeoPackageLoader, {
+    core: {shape: 'geojson-table'}
+  });
+
+  t.equal(result.shape, 'geojson-table');
+  if (result.shape === 'geojson-table') {
+    t.equal(result.features.length, 1);
+  }
+
+  t.end();
+});
+
+test('GeoPackageLoader#loader shape overrides core.shape', async t => {
+  const result = await load(GPKG_RIVERS, GeoPackageLoader, {
+    core: {shape: 'geojson-table'},
+    geopackage: {shape: 'tables'}
+  });
+
+  t.equal(result.shape, 'tables');
+  t.end();
+});
+
 test('GeoPackageLoader#load file and reproject to WGS84', async t => {
   const result = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'tables'},

@@ -1,7 +1,19 @@
+import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
+
 # Overview
 
-The `@loaders.gl/geotiff` module provides support for the [GeoTIFF](/docs/modules/geotiff/formats/geotiff) format.
-GeoTIFF images embedded georeferencing information within a multi-band image file.
+<GeoTiffDocsTabs active="overview" />
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
+</p>
+
+The `@loaders.gl/geotiff` module provides loader and source support for
+[GeoTIFF](/docs/modules/geotiff/formats/geotiff) and OME-TIFF data.
+
+GeoTIFF combines georeferencing metadata with multi-band raster imagery. The module now also
+includes viewport-driven raster sources for typed raster access and texture-oriented rendering
+workflows.
 
 ## Installation
 
@@ -9,16 +21,20 @@ GeoTIFF images embedded georeferencing information within a multi-band image fil
 npm install @loaders.gl/core @loaders.gl/geotiff
 ```
 
-## Loaders and Writers
+## Loaders and Sources
 
 | Loader                                                                |
 | --------------------------------------------------------------------- |
 | [`GeoTIFFLoader`](/docs/modules/geotiff/api-reference/geotiff-loader) |
-| [`GeoTIFFSource`](/docs/modules/geotiff/api-reference/geotiff-source) |
+| [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) |
+| [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) |
 
 ## Additional APIs
 
-See image category.
+- [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) returns `RasterData`
+  payloads for viewport requests.
+- [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) returns typed OME-TIFF
+  planes for non-geospatial image pyramids.
 
 ## Attributions
 

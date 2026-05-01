@@ -1,10 +1,16 @@
-# Mapbox Vector Tiles
+---
+title: "Mapbox Vector Tiles"
+hide_title: true
+---
 
 import Demo from 'examples/website/tiles/app';
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
 
-<div style={{height: '100vh'}}> 
+<TileDocsTabs active="mvt-example" />
+
+<div style={{height: 'calc(100vh - var(--ifm-navbar-height) - 4rem)'}}> 
   <Demo format="MVT">
-    [**`MVTSource`**](/docs/modules/mvt/api-reference/mvt-source) dynamically loads tiles 
+    [**`MVTSourceLoader`**](/docs/modules/mvt/api-reference/mvt-source-loader) dynamically loads tiles 
     from big pre-tiled hierarchies on cloud storage.
     <small>
       Uses [**`MVTLoader`**](/docs/modules/mvt/api-reference/mvt-loader) for Mapbox Vector Tiles files 

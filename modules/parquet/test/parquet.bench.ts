@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetLoader, ParquetArrowLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoader, ParquetLoader, ParquetArrowLoader, GeoParquetLoader} from '@loaders.gl/parquet';
 import {fetchFile, load} from '@loaders.gl/core';
 
 // const PARQUET_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
 const PARQUET_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
 const GEO_PARQUET_URL = '@loaders.gl/parquet/test/data/geoparquet/airports.parquet';
+const IMPLEMENTATIONS = ['js', 'wasm'] as const;
 
 export async function parquetBench(suite) {
   suite = suite.group('ParquetLoader');
@@ -18,54 +19,61 @@ export async function parquetBench(suite) {
   response = await fetchFile(GEO_PARQUET_URL);
   const geoArrayBuffer = await response.arrayBuffer();
 
-  suite.addAsync('load(ParquetLoader) - Parquet load', {multiplier: 40000, unit: 'rows'}, async () => {
-    await load(arrayBuffer, ParquetLoader, {
-      core: {worker: false}
-    });
-  });
-
-  let supportsParquetArrowLoad = true;
-  try {
-    await load(arrayBuffer.slice(0), ParquetArrowLoader, {worker: false});
-  } catch {
-    supportsParquetArrowLoad = false;
-  }
-
-  if (supportsParquetArrowLoad) {
-    // let i = 0;
+  for (const implementation of IMPLEMENTATIONS) {
+    const loader = implementation === 'js' ? ParquetJSLoader : ParquetLoader;
     suite.addAsync(
-      'load(ParquetArrowLoader) - Parquet load',
+      `load(${implementation === 'js' ? 'ParquetJSLoader' : 'ParquetLoader'}) - Parquet load`,
       {multiplier: 40000, unit: 'rows'},
       async () => {
-        // const j = i++;
-        // console.time(`load-${j}`);
-        await load(arrayBuffer, ParquetArrowLoader, {worker: false});
-        // console.timeEnd(`load-${j}`);
-      }
-    );
-  }
-
-  let supportsGeoParquetArrowLoad = true;
-  try {
-    await load(geoArrayBuffer.slice(0), ParquetArrowLoader, {
-      core: {worker: false}
-    });
-  } catch {
-    supportsGeoParquetArrowLoad = false;
-  }
-
-  if (supportsGeoParquetArrowLoad) {
-    suite.addAsync(
-      'load(ParquetArrowLoader) - GeoParquet load',
-      {multiplier: 40000, unit: 'rows'},
-      async () => {
-        await load(geoArrayBuffer, ParquetArrowLoader, {
+        await load(arrayBuffer, loader, {
           core: {worker: false}
         });
-        // console.timeEnd(`load-${j}`);
       }
     );
   }
+
+  suite.addAsync(
+    'load(ParquetArrowLoader) - Parquet load',
+    {multiplier: 40000, unit: 'rows'},
+    async () => {
+      await load(arrayBuffer, ParquetArrowLoader, {
+        core: {worker: false}
+      });
+    }
+  );
+
+  suite.addAsync(
+    'load(ParquetArrowLoader) - GeoParquet load',
+    {multiplier: 40000, unit: 'rows'},
+    async () => {
+      await load(geoArrayBuffer, ParquetArrowLoader, {
+        core: {worker: false}
+      });
+    }
+  );
+
+  suite = suite.group('GeoParquetLoader');
+
+  suite.addAsync(
+    'load arrow-table geoarrow.wkb',
+    {multiplier: 40000, unit: 'rows'},
+    async () => {
+      await load(geoArrayBuffer.slice(0), GeoParquetLoader, {
+        core: {worker: false},
+        parquet: {shape: 'arrow-table'}
+      });
+    }
+  );
+
+  suite.addAsync(
+    'load geojson-table',
+    {multiplier: 40000, unit: 'rows'},
+    async () => {
+      await load(geoArrayBuffer.slice(0), GeoParquetLoader, {
+        core: {worker: false}
+      });
+    }
+  );
 
   // suite.addAsync('load(ParquetColumnarLoader) - GeoParquet load', {multiplier: 40000, unit: 'rows'}, async () => {
   //   await load(geoArrayBuffer, ParquetColumnarLoader, {

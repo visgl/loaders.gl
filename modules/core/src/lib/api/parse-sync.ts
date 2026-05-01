@@ -7,19 +7,23 @@ import type {
   LoaderWithParser,
   LoaderOptions,
   LoaderContext,
+  LoaderOptionsWithShape,
   SyncDataType,
   LoaderOptionsType,
+  LoaderShapeType,
   LoaderReturnType,
   LoaderArrayOptionsType,
   LoaderArrayReturnType,
   StrictLoaderOptions
 } from '@loaders.gl/loader-utils';
+import {isSourceLoader} from '@loaders.gl/loader-utils';
 import {selectLoaderSync} from './select-loader';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromDataSync} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
+import {getLoaderImplementationSync} from './load-loader';
 
 // OVERLOADS
 
@@ -28,7 +32,10 @@ import {getResourceUrl} from '../utils/resource-utils';
  */
 export function parseSync<
   LoaderT extends Loader,
-  OptionsT extends LoaderOptions = LoaderOptionsType<LoaderT>
+  OptionsT extends LoaderOptions = LoaderOptionsWithShape<
+    LoaderOptionsType<LoaderT>,
+    LoaderShapeType<LoaderT>
+  >
 >(
   data: SyncDataType,
   loader: LoaderT,
@@ -84,6 +91,12 @@ export function parseSync(
     return null;
   }
 
+  if (isSourceLoader(loader)) {
+    throw new Error(
+      `${loader.id} is a SourceLoader. Use load() to create a runtime source object instead of parseSync().`
+    );
+  }
+
   // Normalize options
   const strictOptions = normalizeOptions(options, loader, candidateLoaders as Loader[] | undefined);
 
@@ -99,7 +112,13 @@ export function parseSync(
     context || null
   );
 
-  return parseWithLoaderSync(loader as LoaderWithParser, data, strictOptions, context);
+  const loaderWithParser = getLoaderImplementationSync(loader);
+  return parseWithLoaderSync(
+    loaderWithParser || (loader as LoaderWithParser),
+    data,
+    strictOptions,
+    context
+  );
 }
 
 // TODO - should accept loader.parseSync/parse and generate 1 chunk asyncIterator
@@ -117,6 +136,12 @@ function parseWithLoaderSync(
 
   if (loader.parseSync && data instanceof ArrayBuffer) {
     return loader.parseSync(data, options, context); // , loader);
+  }
+
+  if (loader.preload) {
+    throw new Error(
+      `${loader.name} loader: 'parseSync' requires a parser-bearing loader. Import the loader implementation directly, or call preload(loader) before parseSync(). ${context.url || ''}`
+    );
   }
 
   // TBD - If synchronous parser not available, return null

@@ -1,6 +1,8 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {meshArrowSchema} from '@loaders.gl/schema';
 
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 import {setLoaderOptions, load} from '@loaders.gl/core';
@@ -29,6 +31,20 @@ test('OBJLoader#parseText', async t => {
 
   t.equal(data.attributes.POSITION.value.length, 14904 * 3, 'POSITION attribute was found');
   t.equal(data.attributes.POSITION.size, 3, 'POSITION attribute was found');
+
+  t.end();
+});
+
+test('OBJLoader#parseText(shape: arrow-table)', async t => {
+  const table = await load(OBJ_ASCII_URL, OBJLoader, {
+    obj: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  validateArrowTableSchema(table.data, meshArrowSchema, {
+    schemaName: 'OBJLoader Mesh table'
+  });
+  t.equal(table.data.numRows, 14904, 'table has expected vertex count');
 
   t.end();
 });

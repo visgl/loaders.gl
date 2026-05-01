@@ -4,6 +4,7 @@
 
 // XMLLoader
 
+export {XMLFormat, HTMLFormat} from './xml-format';
 export type {XMLLoaderOptions} from './xml-loader';
 export {XMLLoader} from './xml-loader';
 
@@ -20,6 +21,8 @@ export {SAXParser as SAXParser} from './sax-ts/sax';
 // Utilities
 
 export {convertXMLValueToArray, convertXMLFieldToArrayInPlace} from './lib/xml-utils/xml-utils';
+export type {ParseXMLOptions} from './lib/parsers/parse-xml';
+export {parseXMLSync} from './lib/parsers/parse-xml';
 
 // Experimental
 

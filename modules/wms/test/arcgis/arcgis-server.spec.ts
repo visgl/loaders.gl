@@ -5,21 +5,24 @@
 import test from 'tape-promise/tape';
 
 import {
-  _ArcGISFeatureServerSource as ArcGISFeatureServerSource,
-  _ArcGISImageServerSource as ArcGISImageServerSource
+  _ArcGISFeatureServerSourceLoader as ArcGISFeatureServerSourceLoader,
+  _ArcGISImageServerSourceLoader as ArcGISImageServerSourceLoader
 } from '@loaders.gl/wms';
 
 const IMAGE_SERVER_URL = 'https://example.com/arcgis/rest/services/Imagery/ImageServer';
 const FEATURE_SERVER_URL = 'https://example.com/arcgis/rest/services/Roads/FeatureServer/0';
 
-test('ArcGISImageServerSource#testURL', t => {
-  t.ok(ArcGISImageServerSource);
-  t.ok(ArcGISImageServerSource.testURL(IMAGE_SERVER_URL), 'identifies ArcGIS ImageServer URLs');
+test('ArcGISImageServerSourceLoader#testURL', t => {
+  t.ok(ArcGISImageServerSourceLoader);
+  t.ok(
+    ArcGISImageServerSourceLoader.testURL(IMAGE_SERVER_URL),
+    'identifies ArcGIS ImageServer URLs'
+  );
   t.end();
 });
 
 test('ArcGISImageSource#metadataURL', t => {
-  const source = ArcGISImageServerSource.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
 
   const metadataUrl = new URL(source.metadataURL());
   t.equal(metadataUrl.origin + metadataUrl.pathname, IMAGE_SERVER_URL, 'metadata base URL');
@@ -28,7 +31,7 @@ test('ArcGISImageSource#metadataURL', t => {
 });
 
 test('ArcGISImageSource#exportImageURL', t => {
-  const source = ArcGISImageServerSource.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
 
   const exportImageUrl = new URL(
     source.exportImageURL({
@@ -52,7 +55,7 @@ test('ArcGISImageSource#exportImageURL', t => {
 });
 
 test('ArcGISImageSource#getMetadata', async t => {
-  const source = ArcGISImageServerSource.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
   source.fetch = async () =>
     new Response(
       JSON.stringify({
@@ -70,7 +73,7 @@ test('ArcGISImageSource#getMetadata', async t => {
 });
 
 test('ArcGISImageSource#getImage maps generic parameters', async t => {
-  const source = ArcGISImageServerSource.createDataSource(IMAGE_SERVER_URL, {});
+  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
   let exportImageParameters;
   source.exportImage = async parameters => {
     exportImageParameters = parameters;
@@ -100,17 +103,48 @@ test('ArcGISImageSource#getImage maps generic parameters', async t => {
   t.end();
 });
 
-test('ArcGISFeatureServerSource#testURL', t => {
-  t.ok(ArcGISFeatureServerSource);
+test('ArcGISImageSource#getImage normalizes EPSG-prefixed spatial references', async t => {
+  const source = ArcGISImageServerSourceLoader.createDataSource(IMAGE_SERVER_URL, {});
+  let exportImageParameters;
+  source.exportImage = async parameters => {
+    exportImageParameters = parameters;
+    return {} as never;
+  };
+
+  await source.getImage({
+    boundingBox: [
+      [1, 2],
+      [3, 4]
+    ],
+    width: 512,
+    height: 256,
+    crs: 'EPSG:3857',
+    format: 'image/png',
+    layers: []
+  });
+
+  t.deepEqual(exportImageParameters, {
+    bbox: [1, 2, 3, 4],
+    bboxSR: '3857',
+    imageSR: '3857',
+    width: 512,
+    height: 256,
+    format: 'png'
+  });
+  t.end();
+});
+
+test('ArcGISFeatureServerSourceLoader#testURL', t => {
+  t.ok(ArcGISFeatureServerSourceLoader);
   t.ok(
-    ArcGISFeatureServerSource.testURL(FEATURE_SERVER_URL),
+    ArcGISFeatureServerSourceLoader.testURL(FEATURE_SERVER_URL),
     'identifies ArcGIS FeatureServer URLs'
   );
   t.end();
 });
 
 test('ArcGISVectorSource#metadataURL', t => {
-  const source = ArcGISFeatureServerSource.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
 
   const metadataUrl = new URL(source.metadataURL());
   t.equal(metadataUrl.origin + metadataUrl.pathname, FEATURE_SERVER_URL, 'metadata base URL');
@@ -119,7 +153,7 @@ test('ArcGISVectorSource#metadataURL', t => {
 });
 
 test('ArcGISVectorSource#getFeaturesURL', t => {
-  const source = ArcGISFeatureServerSource.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   const featuresUrl = new URL(
     source.getFeaturesURL({
       boundingBox: [
@@ -144,8 +178,26 @@ test('ArcGISVectorSource#getFeaturesURL', t => {
   t.end();
 });
 
+test('ArcGISVectorSource#getFeaturesURL normalizes EPSG-prefixed spatial references', t => {
+  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const featuresUrl = new URL(
+    source.getFeaturesURL({
+      boundingBox: [
+        [1, 2],
+        [3, 4]
+      ],
+      layers: [],
+      crs: 'EPSG:3857'
+    })
+  );
+
+  t.equal(featuresUrl.searchParams.get('outSR'), '3857');
+  t.equal(featuresUrl.searchParams.get('inSR'), '3857');
+  t.end();
+});
+
 test('ArcGISVectorSource#getMetadata and getSchema', async t => {
-  const source = ArcGISFeatureServerSource.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   source.fetch = async () =>
     new Response(
       JSON.stringify({
@@ -176,7 +228,7 @@ test('ArcGISVectorSource#getMetadata and getSchema', async t => {
 });
 
 test('ArcGISVectorSource#getFeatures', async t => {
-  const source = ArcGISFeatureServerSource.createDataSource(FEATURE_SERVER_URL, {});
+  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
     features: [

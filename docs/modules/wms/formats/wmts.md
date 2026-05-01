@@ -1,4 +1,8 @@
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+
 # WMTS - Web Map Tiling Service
+
+<WmsDocsTabs active="wmts" />
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
@@ -20,9 +24,9 @@ The WMTS standard specifies a number of "request types" that a standards-complia
 | **WMTS Request**   | **Response Loader**      | **Description**                                                                                                                                                                                                                      |
 | ------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `GetCapabilities`  | `WMTSCapabilitiesLoader` | Returns parameters about the WMTS (such as map image format and WMTS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
-| `GetTile`          | `ImageLoader`            | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                                     |
+| `GetTile`          | `ImageBitmapLoader`      | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                                     |
 | `GetFeatureInfo`   | `WMTSFeatureInfoLoader`  | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                                   |
-| `GetLegendGraphic` | `ImageLoader`            | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                                 |
+| `GetLegendGraphic` | `ImageBitmapLoader`      | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                                 |
 
 Note that only the `GetCapabilities` and `GetTile` request types are are required to be supported by a WMTS server. The response to `GetCapabilities` contains information about which request types are supported
 

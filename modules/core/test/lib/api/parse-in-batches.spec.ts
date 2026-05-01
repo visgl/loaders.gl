@@ -1,33 +1,24 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {parseInBatches} from '@loaders.gl/core';
-
 const NoOpLoader = {
   name: 'JSON',
   extensions: ['json'],
   testText: null,
   parseInBatches: (iterator, options) => iterator
 };
-
-test('parseInBatches', async t => {
+test('parseInBatches', async () => {
   // @ts-ignore
   let batches = await parseInBatches([1, 1], NoOpLoader);
-
   let metadata = false;
   for await (const batch of batches) {
     if (batch.batchType === 'metadata') {
       metadata = true;
     }
-    t.deepEquals(batch, 1, 'parseInBatches returned data');
+    expect(batch, 'parseInBatches returned data').toEqual(1);
   }
-  t.notOk(metadata, 'metadata batch was generated');
-
+  expect(metadata, 'metadata batch was generated').toBeFalsy();
   // @ts-ignore
   batches = await parseInBatches([1, 2], NoOpLoader, {metadata: true});
-
   const values: unknown[] = [];
   metadata = false;
   for await (const batch of batches) {
@@ -37,8 +28,6 @@ test('parseInBatches', async t => {
       values.push(batch);
     }
   }
-  t.deepEquals(values, [1, 2], 'parseInBatches returned data');
-  t.ok(metadata, 'metadata batch was generated');
-
-  t.end();
+  expect(values, 'parseInBatches returned data').toEqual([1, 2]);
+  expect(metadata, 'metadata batch was generated').toBeTruthy();
 });

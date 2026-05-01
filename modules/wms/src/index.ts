@@ -4,6 +4,20 @@
 
 // CSW - Catalog Service for the Web
 
+export {
+  CSWCapabilitiesFormat,
+  CSWDomainFormat,
+  CSWRecordsFormat,
+  GMLFormat,
+  WCSCapabilitiesFormat,
+  WFSCapabilitiesFormat,
+  WMSCapabilitiesFormat,
+  WMSErrorFormat,
+  WMSFeatureInfoFormat,
+  WMSLayerDescriptionFormat,
+  WMTSCapabilitiesFormat
+} from './wms-format';
+
 export type {CSWLoaderOptions} from './csw-capabilities-loader';
 
 export type {CSWCapabilities} from './csw-capabilities-loader';
@@ -38,7 +52,6 @@ export {WMSLayerDescriptionLoader as _WMSLayerDescriptionLoader} from './wip/wms
 
 // export type {WMTSLoaderOptions as _WMTSLoaderOptions} from './wip/wmts-capabilities-loader';
 // export type {WMTSCapabilities as _WMTSCapabilities} from './wip/wmts-capabilities-loader';
-// export {WMTSCapabilitiesLoader as _WMTSCapabilitiesLoader} from './wip/wmts-capabilities-loader';
 
 // WFS - Web Feature Service
 
@@ -56,15 +69,20 @@ export {GMLLoader as _GMLLoader} from './gml-loader';
 
 // OGC Services
 
-// export {CSWSource} from './csw-source';
-export {WMSSource, WMSImageSource} from './wms-source';
+// export {CSWSourceLoader} from './csw-source-loader';
+export {WMSSourceLoader, WMSImageSource} from './wms-source-loader';
+export {WFSSourceLoader, WFSVectorSource} from './wfs-source-loader';
 
 // ArcGIS SourceLoaders
 
 export {getArcGISServices as _getArcGISServices} from './arcgis/arcgis-server';
-export {ArcGISFeatureServerSource as _ArcGISFeatureServerSource} from './arcgis/arcgis-feature-source';
-export {ArcGISImageServerSource as _ArcGISImageServerSource} from './arcgis/arcgis-image-source';
+export {ArcGISFeatureServerSourceLoader as _ArcGISFeatureServerSourceLoader} from './arcgis/arcgis-feature-server-source-loader';
+export {ArcGISImageServerSourceLoader as _ArcGISImageServerSourceLoader} from './arcgis/arcgis-image-server-source-loader';
 
 export {ImageSource} from '@loaders.gl/loader-utils';
 export type {ImageType} from '@loaders.gl/images';
 export {createImageSource} from './lib/deprecated/create-image-source';
+
+// DEPRECATED EXPORTS
+/** @deprecated Use `WMSSourceLoader`. Kept for deck.gl compatibility. */
+export {WMSSourceLoader as WMSSource} from './wms-source-loader';

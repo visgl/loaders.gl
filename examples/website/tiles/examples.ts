@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Example} from './components/example-panel';
+export type Example = {
+  sourceType: 'mvt' | 'pmtiles' | 'table' | 'mlt';
+  data: string;
+  attributions?: string[];
+  viewState?: Record<string, unknown>;
+  tileSize?: number[];
+  localRangeServer?: boolean;
+};
 
 export const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 

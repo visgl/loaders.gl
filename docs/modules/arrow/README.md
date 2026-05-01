@@ -29,12 +29,15 @@ See [Using with Apache Arrow](/docs/developer-guide/apache-arrow) for practical 
 ## Additional APIs
 
 `@loaders.gl/arrow` also provides utilities for working with Apache Arrow JS tables after loading
-or when integrating Arrow-backed data sources.
+or when integrating Arrow-backed data sources. Arrow worker transport helpers are available from
+the focused `@loaders.gl/arrow/transport` subpath as well as the root export.
 
 | Utility                                                                          | Description                                                            |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`IndexedArrowTable`](/docs/modules/arrow/api-reference/indexed-arrow-table)     | Readonly indexed table and vector views that avoid copying column data |
 | [`MappedArrowTable`](/docs/modules/arrow/api-reference/mapped-arrow-table)       | String-keyed row lookup view layered on top of an indexed Arrow table  |
+| [`splitArrowBuffers`](/docs/modules/arrow/api-reference/split-arrow-buffers)     | Rebuild Arrow objects so sliced buffers can be transferred safely       |
+| [`Arrow Table Transport`](/docs/modules/arrow/api-reference/arrow-table-transport) | Dehydrate/hydrate or serialize/deserialize Arrow tables across workers |
 | [`Arrow Schema Utilities`](/docs/modules/arrow/api-reference/arrow-schema-utils) | Runtime schema validation and column-renaming helpers                  |
 | [`UTF-8 Utilities`](/docs/modules/arrow/api-reference/utf8-utils)                | Compare and parse Arrow UTF-8 byte ranges without decoding strings     |
 

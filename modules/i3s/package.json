@@ -27,6 +27,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
     "./i3s-content-worker.js": {
       "import": "./dist/i3s-content-worker.js"
     },

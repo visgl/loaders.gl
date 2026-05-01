@@ -1,9 +1,15 @@
-# MapLibre Tile (MLT)
+---
+title: "MapLibre Tile (MLT)"
+hide_title: true
+---
 
 import Demo from 'examples/website/tiles/app';
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
 
-<div style={{height: '100vh'}}> 
+<TileDocsTabs active="mlt-example" />
+
+<div style={{height: 'calc(100vh - var(--ifm-navbar-height) - 4rem)'}}> 
   <Demo format="MLT">
-    [**`MLTSource`**](/docs/modules/mlt/api-reference/mlt-source) and [**`MLTLoader`**](/docs/modules/mlt/api-reference/mlt-loader) dynamically load [MapLibre tile](/docs/modules/mlt/formats/mlt) (`.mlt`) data.
+    [**`MLTSourceLoader`**](/docs/modules/mlt/api-reference/mlt-source-loader) and [**`MLTLoader`**](/docs/modules/mlt/api-reference/mlt-loader) dynamically load [MapLibre tile](/docs/modules/mlt/formats/mlt) (`.mlt`) data.
   </Demo>
 </div>

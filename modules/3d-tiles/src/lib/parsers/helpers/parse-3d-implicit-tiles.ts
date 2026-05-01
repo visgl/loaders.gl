@@ -3,8 +3,9 @@
 // Copyright vis.gl contributors
 
 import type {Availability, Tile3DBoundingVolume, Subtree} from '../../../types';
-import {Tile3DSubtreeLoader} from '../../../tile-3d-subtree-loader';
-import {load} from '@loaders.gl/core';
+import {Tile3DSubtreeLoaderWithParser} from '../../../tile-3d-subtree-loader-with-parser';
+import {parseFromContext} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {default as log} from '@probe.gl/log';
 
 import {getS2CellIdFromToken, getS2ChildCellId, getS2TokenFromCellId} from '../../utils/s2/index';
@@ -105,6 +106,7 @@ export async function parseImplicitTiles(params: {
   implicitOptions: ImplicitOptions;
   loaderOptions: Tiles3DLoaderOptions;
   s2VolumeBox?: S2VolumeBox;
+  context?: LoaderContext;
 }) {
   const {
     subtree,
@@ -124,7 +126,8 @@ export async function parseImplicitTiles(params: {
     childIndex = 0,
     implicitOptions,
     loaderOptions,
-    s2VolumeBox
+    s2VolumeBox,
+    context
   } = params;
   const {
     subdivisionScheme,
@@ -185,9 +188,24 @@ export async function parseImplicitTiles(params: {
   let tileAvailabilityIndex;
 
   if (isChildSubtreeAvailable) {
+    if (!context) {
+      throw new Error(
+        'parseImplicitTiles requires LoaderContext to load child subtree data without importing @loaders.gl/core'
+      );
+    }
     const subtreePath = `${basePath}/${subtreesUriTemplate}`;
     const childSubtreeUrl = replaceContentUrlTemplate(subtreePath, level, x, y, z);
-    const childSubtree = await load(childSubtreeUrl, Tile3DSubtreeLoader, loaderOptions);
+    const response = await context.fetch(childSubtreeUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to load 3D Tiles subtree: ${response.status} ${response.statusText}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const childSubtree = await parseFromContext(
+      arrayBuffer,
+      Tile3DSubtreeLoaderWithParser,
+      loaderOptions,
+      context
+    );
 
     // The next subtree is the newly-loaded child subtree.
     nextSubtree = childSubtree;
@@ -240,7 +258,8 @@ export async function parseImplicitTiles(params: {
       childIndex: index,
       implicitOptions,
       loaderOptions,
-      s2VolumeBox: childS2VolumeBox
+      s2VolumeBox: childS2VolumeBox,
+      context
     });
 
     if (childTile.contentUrl || childTile.children.length) {

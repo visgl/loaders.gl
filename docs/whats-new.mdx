@@ -1,14 +1,18 @@
 # What's New
 
-## v5.0
+## v5.0 (In Development)
 
 Release Date: 2026
 
 **Highlights**
 
-- **Documentation** - Interactive graphical docs explain loaders.gl concepts, loader pages have live previews.
-- **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables. 
-- **Benchmarks** - Now includes external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
+- **Documentation** - Interactive graphical docs explain loaders.gl concepts, loader pages have live previews, related pages are navigable using tabs.
+- **Apache Arrow Support** - All loaders and writers now return/accept Apache Arrow tables via `shape: 'arrow-table'`.
+- **Unbundled loaders** - Loader modules can expose metadata-only loaders from `/unbundled` subpaths, using imports such as `import {CSVLoader} from '@loaders.gl/csv/unbundled';`, so applications can support rarely used formats without putting every parser implementation in the main bundle.
+- **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
+- **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
+- **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF website examples.
+- **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
 
 **Features**
 
@@ -31,6 +35,12 @@ Release Date: 2026
 **@loaders.gl/ply**
 
 - [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
+- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
+
+**@loaders.gl/splats**
+
+- [`SPLATLoader`](/docs/modules/splats/api-reference/splat-loader) NEW - loads raw `.splat` Gaussian splat files into Mesh Arrow tables.
+- [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) NEW - loads GaussianSplats3D `.ksplat` files into Mesh Arrow tables.
 
 **@loaders.gl/terrain**
 
@@ -38,9 +48,50 @@ Release Date: 2026
 
 **@loaders.gl/csv** 
   
-- `CSVArrowLoader` NEW - is now the official Arrow CSV loader. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
-- `CSVArrowLoader` adds a byte-oriented parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
-- `CSVArrowWriter` NEW writes Apache Arrow tables to CSV text.
+- `CSVLoader` supports `csv.shape: 'arrow-table'` for Apache Arrow table output. It emits Arrow `Utf8` columns by default and uses `csv.dynamicTyping: true` to opt into typed Arrow columns.
+- `CSVLoader` adds a byte-oriented Arrow parse path for supported raw UTF-8 CSV inputs, including `parse(ArrayBuffer)` and the default unbatched `parseInBatches` path.
+- The root `CSVLoader` export is now a metadata-only loader that works with core async APIs through dynamic preload.
+- `CSVLoader` is available from `@loaders.gl/csv/unbundled` as a metadata-only loader that dynamically imports the parser-bearing implementation on first async use. See [Using Unbundled Loaders](/docs/developer-guide/using-unbundled-loaders).
+- `CSVLoader` is also available from `@loaders.gl/csv/bundled` as an explicit parser-bearing import.
+
+**@loaders.gl/core**
+
+- `preload(loader)` now returns and caches parser-bearing implementations for unbundled loaders.
+- `preloadSync(loader)` NEW returns a cached parser-bearing implementation, or `null` if the loader has not been preloaded.
+
+**@loaders.gl/deck-layers**
+
+- `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.
+- `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
+- `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.
+
+**@loaders.gl/loader-utils**
+
+- `RasterSource`, `RasterData`, `RasterViewport`, and `GetRasterParameters` NEW - shared typed raster contracts for viewport-driven sources.
+- `LoaderOptions.core.shape` is now documented as the shared shape default for compatible loaders, with consistent propagation during option normalization and batch parsing.
+
+**@loaders.gl/parquet**
+
+- [`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) and [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) NEW - add the experimental parquetjs plain-row and plain-table APIs.
+- `parquet.shape` on [`ParquetLoader`](/docs/modules/parquet/api-reference/parquet-loader) is now documented for selecting object-row or Arrow output from the canonical wasm-backed loader.
+
+**@loaders.gl/geotiff**
+
+- [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) NEW - viewport-driven GeoTIFF / COG source that returns typed raster payloads plus CRS and bounds metadata.
+- [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) NEW - non-geospatial OME-TIFF source for channel-aware 2D plane reads from image pyramids.
+
+**@loaders.gl/tiles**
+
+- `RasterSet` NEW - loading manager for `RasterSource` implementations with metadata caching, debounced viewport requests, and loading lifecycle callbacks.
+
+**@loaders.gl/shapefile**
+
+- [`ShapefileArrowLoader`](/docs/modules/shapefile/api-reference/shapefile-arrow-loader) NEW - loads Shapefiles into Arrow tables with DBF property columns and a WKB `geometry` column annotated with geospatial schema metadata.
+
+**@loaders.gl/flatgeobuf**
+
+- [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) adds `flatgeobuf.shape: 'arrow-table'` with FlatGeobuf property columns, a WKB `geometry` column, and geospatial Arrow metadata for round-tripping to GeoJSON.
+- [`FlatGeobufSourceLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader) NEW - creates indexed remote `.fgb` vector sources with schema/metadata discovery, bbox-filtered HTTP range reads, and `geojson`, `binary`, or `arrow` outputs.
 
 ## v4.4
 
@@ -48,7 +99,7 @@ Release Date: March 31, 2026
 
 **Highlights**
 
-- **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSource`](/docs/modules/mlt/api-reference/mlt-source) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
+- **@loaders.gl/mlt** - New [`MLTLoader`](/docs/modules/mlt/api-reference/mlt-loader) and [`MLTSourceLoader`](/docs/modules/mlt/api-reference/mlt-source-loader) add support for the [`MapLibre Tile`](/docs/modules/mlt/formats/mlt) format, with a new [MLT website example](/examples/tiles/mlt).
 - **@loaders.gl/textures** - Texture loaders now return `TextureLevel` objects with explicit `shape`, `format`, and `textureFormat` fields, add manifest-driven [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader), [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader), and [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader), and support Radiance HDR textures through [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader).
 - **@loaders.gl/arrow** - Added support for `apache-arrow@21` and a new guide for [Using with Apache Arrow](/docs/developer-guide/apache-arrow).
 - **@loaders.gl/mvt** - New experimental [`MVTWriter`](/docs/modules/mvt/api-reference/mvt-writer) allows GeoJSON to be written in binary MVT tile format.
@@ -108,7 +159,7 @@ A minor release that includes:
 
 **@loaders.gl/mvt**
 
-- [`TableTileSource`](/docs/modules/mvt/api-reference/table-tile-source) - Geospatial tables can now be vector tiled dynamically in the browser.
+- [`TableTileSourceLoader`](/docs/modules/mvt/api-reference/table-tile-source-loader) - Geospatial tables can now be vector tiled dynamically in the browser.
 
 **@loaders.gl/textures**
 
@@ -143,8 +194,8 @@ A minor release that includes:
 
 **@loaders.gl/pmtiles**
 
-- `PMTilesSource` - now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
-- `PMTilesSource` - Now refreshes the already loaded index if the underlying PMTiles file being loaded from is changed.
+- `PMTilesSourceLoader` - now uses [`pmtiles` version 3](https://github.com/protomaps/PMTiles/blob/main/js/CHANGELOG.md).
+- `PMTilesSourceLoader` - Now refreshes the already loaded index if the underlying PMTiles file being loaded from is changed.
 
 **@loaders.gl/parquet**
 
@@ -218,7 +269,7 @@ A major release that brings:
 
 **@loaders.gl/pmtiles** - NEW
 
-- New [`PMTilesSource`](/docs/modules/pmtiles/api-reference/pmtiles-source) supports the [PMTiles](/docs/modules/pmtiles/formats/pmtiles) format.
+- New [`PMTilesSourceLoader`](/docs/modules/pmtiles/api-reference/pmtiles-source-loader) supports the [PMTiles](/docs/modules/pmtiles/formats/pmtiles) format.
 - New [PMTiles example](/examples/tiles/pmtiles).
 
 **@loaders.gl/parquet**
@@ -374,7 +425,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 
 **@loaders.gl/wms**
 
-- [`WMSService`](modules/wms/api-reference/wms-source)
+- [`WMSService`](modules/wms/api-reference/wms-source-loader)
   - WMS version 1.3.0 is now the default. When connecting to older servers, version dependent parameters, coordinate conventions etc are remapped under the hood.
   - HTTP Authentication: `loadOptions` now enables overriding fetch options, including supplying an HTTP `Authentication` header.
   - Transparent rendering: The `transparent` prop is now enabling requesting images that are transparent where there is no data.
@@ -382,7 +433,7 @@ _For patch releases, see [CHANGELOG](https://github.com/visgl/loaders.gl/blob/3.
 - [`WMSCapabilitiesLoader`](modules/wms/api-reference/wms-capabilities-loader)
   - Now handles version 1.3.0, and when loading older capabilities, fields and parameters that have changed across WMS versions are automatically remapped to 1.3.0 equivalents (`CRS` vs `SRS` etc).
   - Extracts more information (such as `version`, `abstract` fields, layer bounding boxes, available `dimensions` (time etc) and flags (`opaque`, `queryable`, `cascaded`), MIME types for `exceptions`) etc.
-- [`CSWService`](modules/wms/api-reference/csw-source)
+- [`CSWService`](modules/wms/api-reference/csw-source-loader)
   - New service supporting the [**CSW (Catalog Services for the Web)**](modules/wms/formats/csw) protocol.
   - Enables applications to discover available services (including WMS).
 - `WMSCapabilities` type has some breaking changes, please refer to the upgrade guide.

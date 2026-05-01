@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {WKBLoader} from '../wkb-loader';
+import {WKBLoaderWithParser} from '../wkb-loader-with-parser';
 
-createLoaderWorker(WKBLoader);
+createLoaderWorker(WKBLoaderWithParser);

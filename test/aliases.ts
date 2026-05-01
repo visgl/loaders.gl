@@ -18,6 +18,7 @@ function makeAliases() {
   return {
     test: resolveTestPath('./test'),
     '@loaders.gl/3d-tiles/test': resolveTestPath('./modules/3d-tiles/test'),
+    '@loaders.gl/arrow/transport': resolveTestPath('./modules/arrow/src/transport'),
     '@loaders.gl/arrow/test': resolveTestPath('./modules/arrow/test'),
     '@loaders.gl/bson/test': resolveTestPath('./modules/bson/test'),
     '@loaders.gl/compression/test': resolveTestPath('./modules/compression/test'),
@@ -44,6 +45,7 @@ function makeAliases() {
     '@loaders.gl/parquet/test': resolveTestPath('./modules/parquet/test'),
     '@loaders.gl/pcd/test': resolveTestPath('./modules/pcd/test'),
     '@loaders.gl/ply/test': resolveTestPath('./modules/ply/test'),
+    '@loaders.gl/splats/test': resolveTestPath('./modules/splats/test'),
     '@loaders.gl/pmtiles/test': resolveTestPath('./modules/pmtiles/test'),
     '@loaders.gl/polyfills/test': resolveTestPath('./modules/polyfills/test'),
     '@loaders.gl/potree/test': resolveTestPath('./modules/potree/test'),
@@ -53,6 +55,7 @@ function makeAliases() {
     '@loaders.gl/textures/test': resolveTestPath('./modules/textures/test'),
     '@loaders.gl/tile-converter/test': resolveTestPath('./apps/tile-converter/test'),
     '@loaders.gl/tiles/test': resolveTestPath('./modules/tiles/test'),
+    '@loaders.gl/traces/test': resolveTestPath('./modules/traces/test'),
     '@loaders.gl/video/test': resolveTestPath('./modules/video/test'),
     '@loaders.gl/wkt/test': resolveTestPath('./modules/wkt/test'),
     '@loaders.gl/wms/test': resolveTestPath('./modules/wms/test'),

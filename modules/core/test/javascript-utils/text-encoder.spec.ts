@@ -1,21 +1,16 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-/* eslint-disable max-len */
-import test from 'tape-promise/tape';
-
-test('TextEncoder', t => {
-  t.ok(new TextEncoder(), 'TextEncoder successfully instantiated (available or polyfilled)');
-  t.end();
+import {expect, test} from 'vitest';
+test('TextEncoder', () => {
+  expect(
+    new TextEncoder(),
+    'TextEncoder successfully instantiated (available or polyfilled)'
+  ).toBeTruthy();
 });
-
-test('TextDecoder', t => {
-  t.ok(new TextDecoder(), 'TextDecoder successfully instantiated (available or polyfilled)');
-  t.end();
+test('TextDecoder', () => {
+  expect(
+    new TextDecoder(),
+    'TextDecoder successfully instantiated (available or polyfilled)'
+  ).toBeTruthy();
 });
-
-test('ReadableStream', t => {
-  t.ok(ReadableStream, 'ReadableStream defined');
-  t.end();
+test('ReadableStream', () => {
+  expect(ReadableStream, 'ReadableStream defined').toBeTruthy();
 });

@@ -23,6 +23,7 @@ import './wmts/wmts-capabilities-loader.spec';
 // WMS - Web Feature Service
 
 import './wfs/wfs-capabilities-loader.spec';
+import './wfs/wfs-source.spec';
 
 // GML - Geographic Markup Language
 

@@ -1,4 +1,4 @@
-# WKT-CRS - Well-Known Text for Coordinate Reference Systems
+# WKT-CRS - Coordinate Systems
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

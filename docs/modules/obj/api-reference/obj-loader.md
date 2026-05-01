@@ -1,33 +1,37 @@
+import {ObjDocsTabs} from '@site/src/components/docs/obj-docs-tabs';
+
 # OBJLoader
 
-The `OBJArrowLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+<ObjDocsTabs active="objloader" />
 
-`OBJLoader` parses the same OBJ format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
 
-| Loader                | Characteristic                                                          |
-| --------------------- | ----------------------------------------------------------------------- |
-| File Extension        | `.obj`                                                                  |
-| File Type             | Text                                                                    |
-| File Format           | [Wavefront OBJ file](https://en.wikipedia.org/wiki/Wavefront_.obj_file) |
-| Data Format           | [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables), [Mesh](/docs/specifications/category-mesh) |
-| Decoder Type          | Synchronous                                                             |
-| Worker Thread Support | Yes                                                                     |
-| Streaming Support     | No                                                                      |
+`OBJLoader` parses the OBJ half of the classic Wavefront OBJ/MTL format and returns a legacy [Mesh](/docs/specifications/category-mesh) object by default.
+
+Set `obj.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+
+| Shape         | Output             | Use when                           |
+| ------------- | ------------------ | ---------------------------------- |
+| `mesh`        | `Mesh`             | You want the legacy mesh object.   |
+| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 ## Usage
 
 ```typescript
-import {OBJArrowLoader, OBJLoader} from '@loaders.gl/obj';
+import {OBJLoader} from '@loaders.gl/obj';
 import {load} from '@loaders.gl/core';
 
-const table = await load(url, OBJArrowLoader, options);
 const data = await load(url, OBJLoader, options);
+const table = await load(url, OBJLoader, {obj: {shape: 'arrow-table'}});
 ```
 
 ## Options
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `obj.shape` | `'mesh' \| 'arrow-table'` | `'mesh'` | Selects Mesh or Mesh Arrow table output. |
 
 Remarks:
 

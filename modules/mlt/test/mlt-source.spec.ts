@@ -5,18 +5,19 @@
 import test from 'tape-promise/tape';
 import type {Feature} from '@loaders.gl/schema';
 
-import {MLTLoader, MLTSource} from '@loaders.gl/mlt';
-import {getURLFromTemplate} from '../src/mlt-source';
+import {MLTSourceLoader} from '@loaders.gl/mlt';
+import {MLTLoaderWithParser as MLTLoader} from '../src/mlt-loader-with-parser';
+import {getURLFromTemplate} from '../src/mlt-source-loader';
 
-test('MLTSource#testURL', t => {
-  t.true(MLTSource.testURL('https://server/{z}/{x}/{y}.mlt'));
-  t.true(MLTSource.testURL('https://server/{z}/{x}/{-y}.mlt'));
-  t.true(MLTSource.testURL('https://server/tiles-mlt/plain'));
-  t.true(MLTSource.testURL('https://server/tiles.mlt'));
+test('MLTSourceLoader#testURL', t => {
+  t.true(MLTSourceLoader.testURL('https://server/{z}/{x}/{y}.mlt'));
+  t.true(MLTSourceLoader.testURL('https://server/{z}/{x}/{-y}.mlt'));
+  t.true(MLTSourceLoader.testURL('https://server/tiles-mlt/plain'));
+  t.true(MLTSourceLoader.testURL('https://server/tiles.mlt'));
   t.end();
 });
 
-test('MLTSource#getURLFromTemplate', t => {
+test('MLTSourceLoader#getURLFromTemplate', t => {
   t.is(
     getURLFromTemplate('https://server/{z}/{x}/{y}', 1, 2, 3, '.mlt'),
     'https://server/3/1/2.mlt'
@@ -38,15 +39,15 @@ test('MLTSource#getURLFromTemplate', t => {
 });
 
 test('MLTTileSource#getTileURL', t => {
-  const tmsSource = MLTSource.createDataSource('https://example.com/tiles', {});
+  const tmsSource = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
   t.equal(tmsSource.getTileURL(1, 2, 3), 'https://example.com/tiles/3/1/2.mlt');
 
-  const templateSource = MLTSource.createDataSource('https://example.com/tiles/{z}/{x}/{y}', {
+  const templateSource = MLTSourceLoader.createDataSource('https://example.com/tiles/{z}/{x}/{y}', {
     mlt: {extension: '.mvt'}
   });
   t.equal(templateSource.getTileURL(1, 2, 3), 'https://example.com/tiles/3/1/2.mvt');
 
-  const templateSourceWithExt = MLTSource.createDataSource(
+  const templateSourceWithExt = MLTSourceLoader.createDataSource(
     'https://example.com/tiles/{z}/{x}/{y}',
     {mlt: {extension: '.mvt'}}
   );
@@ -67,10 +68,10 @@ test('MLTTileSource#getTileData returns Feature[] by default', async t => {
 
   MLTLoader.parse = (async (arrayBuffer: ArrayBuffer, options?: unknown) => {
     parseOptions.options = options;
-    return [feature];
+    return {shape: 'geojson-table', type: 'FeatureCollection', features: [feature]};
   }) as unknown as typeof MLTLoader.parse;
 
-  const source = MLTSource.createDataSource('https://example.com/tiles', {});
+  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {});
   source.fetch = async () => new Response(new ArrayBuffer(8));
   try {
     const tile = await source.getTileData({
@@ -78,7 +79,7 @@ test('MLTTileSource#getTileData returns Feature[] by default', async t => {
       id: '1/2/3',
       bbox: {west: 0, north: 0, east: 0, south: 0}
     });
-    t.equal((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape, 'geojson');
+    t.equal((parseOptions.options as {mlt?: {shape?: string}})?.mlt?.shape, 'geojson-table');
     t.equal((parseOptions.options as {mlt?: {coordinates?: string}})?.mlt?.coordinates, 'wgs84');
     t.deepEqual(tile, [feature]);
   } finally {
@@ -102,7 +103,7 @@ test('MLTTileSource#supports table shape by converting to Feature[]', async t =>
     features: [feature]
   })) as unknown as typeof MLTLoader.parse;
 
-  const source = MLTSource.createDataSource('https://example.com/tiles', {
+  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
     mlt: {shape: 'geojson-table'}
   });
   source.fetch = async () => new Response(new ArrayBuffer(8));

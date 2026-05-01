@@ -1,20 +1,14 @@
+import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
+
 # TCXLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
-The `TCXLoader` parses [TCX files][tcx_wikipedia] into GeoJSON. From Wikipedia:
+<KmlDocsTabs active="tcxloader" />
 
-| Loader                | Characteristic                           |
-| --------------------- | ---------------------------------------- |
-| File Extension        | `.tcx`                                   |
-| File Type             | Text                                     |
-| File Format           | [TCX][tcx_wikipedia]                     |
-| Data Format           | [GIS](/docs/specifications/category-gis) |
-| Decoder Type          | Synchronous                              |
-| Worker Thread Support | No                                       |
-| Streaming Support     | No                                       |
+The `TCXLoader` parses [TCX files][tcx_wikipedia] into loaders.gl geometry tables.
 
 [tcx_wikipedia]: https://en.wikipedia.org/wiki/Training_Center_XML
 
@@ -27,11 +21,22 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, TCXLoader, options);
 ```
 
+## Shapes
+
+`TCXLoader` returns loaders.gl `GeoJSONTable` objects by default. Set `tcx.shape` to select another table representation.
+
+| Shape                | Output                                       |
+| -------------------- | -------------------------------------------- |
+| `geojson-table`      | loaders.gl GeoJSON table                     |
+| `object-row-table`   | loaders.gl row table with GeoJSON features   |
+| `arrow-table`        | loaders.gl `ArrowTable` with WKB geometry    |
+| `binary-geometry`    | loaders.gl binary feature collection         |
+
 ## Options
 
-| Option       | Type   | Default     | Description                                       |
-| ------------ | ------ | ----------- | ------------------------------------------------- |
-| `gis.format` | string | `'geojson'` | Can be set to `'raw'`, `'geojson'` or `'binary'`. |
+| Option      | Type   | Default           | Description                            |
+| ----------- | ------ | ----------------- | -------------------------------------- |
+| `tcx.shape` | string | `'geojson-table'` | Selects the returned table shape.      |
 
 ## Limitations
 

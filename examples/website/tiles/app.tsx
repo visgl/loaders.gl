@@ -2,66 +2,59 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// React
-import React, {useRef, useState, useEffect} from 'react';
+import {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
-// loaders.gl sources and loaders
 import type {
-  RangeStats,
-  VectorTileSource,
   ImageTileSource,
-  RangeRequestEvent
+  RangeRequestEvent,
+  RangeStats,
+  VectorTileSource
 } from '@loaders.gl/loader-utils';
 import {createRangeStats, getRangeStats} from '@loaders.gl/loader-utils';
 import {createDataSource} from '@loaders.gl/core';
-import {PMTilesSource} from '@loaders.gl/pmtiles';
-import {MVTSource, TableTileSource} from '@loaders.gl/mvt';
-import {MLTSource} from '@loaders.gl/mlt';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+import {MLTSourceLoader} from '@loaders.gl/mlt';
+import {MVTSourceLoader, TableTileSourceLoader} from '@loaders.gl/mvt';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 
-// D\deck.gl + layers
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';
-import {TileSourceLayer} from './components/tile-source-layer';
+import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
+import {Tile2DSourceLayer} from '@loaders.gl/deck-layers';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
-// Basemap
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
 
-// CUT IF YOU COPY THIS EXAMPLE
-import {Example, ExamplePanel, Attributions, MetadataViewer} from './components/example-panel';
-import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME} from './examples';
-import {INITIAL_MAP_STYLE} from './examples';
-// END CUT
+import type {Example} from './examples';
+import {EXAMPLES, INITIAL_CATEGORY_NAME, INITIAL_EXAMPLE_NAME, INITIAL_MAP_STYLE} from './examples';
+import '@deck.gl/widgets/stylesheet.css';
 
-/** Arbitrary initial view state */
+const TILE_SOURCE_FACTORIES = [
+  PMTilesSourceLoader,
+  TableTileSourceLoader,
+  MVTSourceLoader,
+  MLTSourceLoader
+] as const;
+
 const INITIAL_VIEW_STATE = {latitude: 47.65, longitude: 7, zoom: 2, maxZoom: 20};
 
-/** Application props (used by website MDX pages to configure example */
 type AppProps = {
-  /** Controls which examples are shown */
   format?: string;
-  /** Whether to hide the example controls, metadata, and descriptive overlay. */
   hideChrome?: boolean;
-  /** Show tile borders */
   showTileBorders?: boolean;
-  /** On tiles load */
   onTilesLoad?: Function;
-  /** Any informational text to display in the overlay */
-  children?: React.Children;
+  children?: ReactNode;
 };
 
-/** Application state */
 type AppState = {
-  /** Currently active tile source */
-  tileSource: VectorTileSource | ImageTileSource;
-  /** Metadata loaded from active tile source */
-  metadata: string;
-  /**Current view state */
-  viewState: Record<string, number>;
-  /** Data-source, metadata, or tile-load error to show in the example overlay. */
+  tileSource: VectorTileSource | ImageTileSource | null;
+  metadata: string | null;
+  viewState: Record<string, unknown>;
   error: string | null;
+  selectedCategoryName?: string | null;
+  selectedExampleName?: string | null;
 };
 
 export default function App(props: AppProps = {}) {
@@ -69,63 +62,157 @@ export default function App(props: AppProps = {}) {
   const [rangeStats, setRangeStats] = useState<RangeStats>(
     getRangeStats(rangeStatsObjectRef.current)
   );
+  const [hideBasemap, setHideBasemap] = useState(false);
   const [currentExample, setCurrentExample] = useState<Example | null>(null);
+  const availableExamples = useMemo(
+    () => getExamplesForFormat(EXAMPLES, props.format),
+    [props.format]
+  );
   const [state, setState] = useState<AppState>({
     tileSource: null,
     metadata: null,
     viewState: INITIAL_VIEW_STATE,
-    // TODO - handle errors
-    error: null
+    error: null,
+    selectedCategoryName: null,
+    selectedExampleName: null
   });
 
-  const {tileSource, metadata} = state;
+  useEffect(() => {
+    const initialCategoryName = props.format || INITIAL_CATEGORY_NAME;
+    const initialExamples = availableExamples[initialCategoryName];
+    if (!initialExamples) {
+      return;
+    }
+
+    const initialExampleName = props.format ? Object.keys(initialExamples)[0] : INITIAL_EXAMPLE_NAME;
+    const initialExample = initialExamples[initialExampleName];
+    if (!initialExample) {
+      return;
+    }
+
+    void onExampleChange({
+      categoryName: initialCategoryName,
+      exampleName: initialExampleName,
+      example: initialExample
+    });
+  }, [availableExamples, props.format]);
+
+  const sourceOptions = useMemo(
+    () =>
+      currentExample
+        ? {
+            core: {
+              type: currentExample.sourceType,
+              attributions: currentExample.attributions,
+              loaders: [GeoJSONLoader],
+              loadOptions: {
+                tilejson: {maxValues: 10}
+              }
+            },
+            pmtiles: {},
+            rangeRequests: {
+              batchDelayMs: 50,
+              stats: rangeStatsObjectRef.current,
+              onEvent: onTileRangeRequest
+            },
+            table: {
+              generateId: true
+            },
+            mvt: {},
+            mlt: {}
+          }
+        : null,
+    [currentExample]
+  );
+
   const tileLayer =
-    tileSource &&
-    new TileSourceLayer({
-      data: tileSource,
-      tileSource,
-      showTileBorders: true,
-      // @ts-expect-error
-      metadata,
+    currentExample &&
+    sourceOptions &&
+    new Tile2DSourceLayer({
+      data: currentExample.data,
+      sources: TILE_SOURCE_FACTORIES,
+      sourceOptions,
+      showTileBorders: props.showTileBorders ?? true,
+      metadata: state.metadata as any,
       onTileError: onTileLoadError,
-      onTilesLoad: props.onTilesLoad,
+      onTilesLoad: props.onTilesLoad as any,
       pickable: true,
       autoHighlight: true
-      // custom props
     });
+
+  const widgets = useMemo(() => {
+    if (props.hideChrome) {
+      return [];
+    }
+
+    return [
+      createDeckFullscreenWidget('tiles-fullscreen'),
+      createDeckStatsWidget('tiles-stats'),
+      new SidebarWidget({
+        id: 'tiles-example-sidebar',
+        placement: 'top-right',
+        side: 'right',
+        widthPx: 420,
+        panel: new ColumnPanel({
+          id: 'tiles-example-panel',
+          title: '',
+          panels: {
+            controls: new CustomPanel({
+              id: 'tiles-example-controls',
+              title: '',
+              onRenderHTML: (rootElement) =>
+                renderTilesSidebar(rootElement, {
+                  currentExample,
+                  error: state.error,
+                  examples: availableExamples,
+                  hideBasemap,
+                  metadata: state.metadata,
+                  rangeStats,
+                  selectedCategoryName: state.selectedCategoryName,
+                  selectedExampleName: state.selectedExampleName,
+                  onExampleChange: ({categoryName, exampleName}) => {
+                    const example = availableExamples[categoryName]?.[exampleName];
+                    if (example) {
+                      void onExampleChange({categoryName, exampleName, example});
+                    }
+                  },
+                  onHideBasemapChange: setHideBasemap
+                })
+            })
+          }
+        })
+      })
+    ];
+  }, [
+    availableExamples,
+    currentExample,
+    hideBasemap,
+    props.hideChrome,
+    rangeStats,
+    state.error,
+    state.metadata,
+    state.selectedCategoryName,
+    state.selectedExampleName
+  ]);
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <ExamplePanel
-        title="Tileset Metadata"
-        examples={EXAMPLES}
-        format={props.format}
-        hideChrome={props.hideChrome}
-        initialCategoryName={INITIAL_CATEGORY_NAME}
-        initialExampleName={INITIAL_EXAMPLE_NAME}
-        onExampleChange={onExampleChange}
-      >
-        <MetadataViewer metadata={metadata} />
-        <ErrorViewer error={state.error} example={currentExample} />
-        <RangeStatsViewer rangeStats={rangeStats} />
-        <LocalRangeServerNote example={currentExample} />
-        {props.children}
-        {/* error ? <div style={{color: 'red'}}>{error}</div> : '' */}
-        <pre style={{textAlign: 'center', margin: 0}}>
-          {/* long/lat: {viewState.longitude.toFixed(5)}, {viewState.latitude.toFixed(5)}, zoom:{' '} */}
-          {/* viewState.zoom.toFixed(2) */}
-        </pre>
-      </ExamplePanel>
-
       <DeckGL
         layers={[tileLayer]}
         views={new MapView({repeat: true})}
-        initialViewState={state.viewState}
+        viewState={state.viewState as any}
         controller={true}
-        getTooltip={getTooltip}
+        getTooltip={getTooltip as any}
+        widgets={widgets}
+        onViewStateChange={({viewState}) =>
+          setState((currentState) => ({
+            ...currentState,
+            viewState: viewState as Record<string, unknown>
+          }))
+        }
       >
-        <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />
-        {!props.hideChrome && <Attributions attributions={metadata?.attributions} />}
+        {!hideBasemap && <Map mapLib={maplibregl} mapStyle={INITIAL_MAP_STYLE} />}
+        {!props.hideChrome && <Attributions attributions={currentExample?.attributions} />}
       </DeckGL>
     </div>
   );
@@ -136,55 +223,66 @@ export default function App(props: AppProps = {}) {
     example: Example;
   }) {
     const {categoryName, exampleName, example} = args;
-
     const url = example.data;
+
     try {
       rangeStatsObjectRef.current = createRangeStats('pmtiles-example-range-transport');
       setRangeStats(getRangeStats(rangeStatsObjectRef.current));
       setCurrentExample(example);
 
-      let tileSource = createTileSource(
-        example,
-        rangeStatsObjectRef.current,
-        onTileRangeRequest
-      );
+      const tileSource = createTileSource(example, rangeStatsObjectRef.current, onTileRangeRequest);
 
-      setState((state) => ({
-        ...state,
+      setState((currentState) => ({
+        ...currentState,
         tileSource,
         metadata: null,
-        error: null
+        error: null,
+        selectedCategoryName: categoryName,
+        selectedExampleName: exampleName
       }));
 
-      (async () => {
-        const metadata = await tileSource.getMetadata();
-        let initialViewState = {...state.viewState, ...example.viewState};
-        initialViewState = adjustViewStateToMetadata(initialViewState, metadata);
+      void tileSource
+        .getMetadata()
+        .then((metadata) => {
+          const initialViewState = adjustViewStateToMetadata(
+            {...state.viewState, ...example.viewState},
+            metadata
+          );
 
-        setState((state) => ({
-          ...state,
-          initialViewState,
-          error: null,
-          metadata: metadata ? JSON.stringify(metadata, null, 2) : ''
-        }));
-      })().catch((error) => {
-        console.error('Failed to load metadata', url, error);
-        setState((state) => ({
-          ...state,
-          metadata: null,
-          error: `Could not load metadata for ${exampleName}: ${getErrorMessage(error)}`
-        }));
-      });
+          setState((currentState) => ({
+            ...currentState,
+            viewState: initialViewState,
+            error: null,
+            metadata: metadata ? JSON.stringify(metadata, null, 2) : '',
+            selectedCategoryName: categoryName,
+            selectedExampleName: exampleName
+          }));
+        })
+        .catch((error) => {
+          console.error('Failed to load metadata', url, error);
+          setState((currentState) => ({
+            ...currentState,
+            metadata: null,
+            error: `Could not load metadata for ${exampleName}: ${getErrorMessage(error)}`,
+            selectedCategoryName: categoryName,
+            selectedExampleName: exampleName
+          }));
+        });
     } catch (error) {
       console.error('Failed to load data', url, error);
-      setState((state) => ({...state, error: `Could not load ${exampleName}: ${getErrorMessage(error)}`}));
+      setState((currentState) => ({
+        ...currentState,
+        error: `Could not load ${exampleName}: ${getErrorMessage(error)}`,
+        selectedCategoryName: categoryName,
+        selectedExampleName: exampleName
+      }));
     }
   }
 
   function onTileLoadError(error: unknown, tileParameters?: unknown): void {
     console.error('Failed to load tile', tileParameters, error);
-    setState((state) => ({
-      ...state,
+    setState((currentState) => ({
+      ...currentState,
       error: `Could not load one or more tiles: ${getErrorMessage(error)}`
     }));
   }
@@ -201,38 +299,211 @@ export default function App(props: AppProps = {}) {
   }
 }
 
-function ErrorViewer({error, example}: {error: string | null; example: Example | null}) {
-  if (!error) {
-    return null;
+function renderTilesSidebar(
+  rootElement: HTMLElement,
+  options: {
+    currentExample: Example | null;
+    error: string | null;
+    examples: Record<string, Record<string, Example>>;
+    hideBasemap: boolean;
+    metadata: string | null;
+    rangeStats: RangeStats;
+    selectedCategoryName?: string | null;
+    selectedExampleName?: string | null;
+    onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
+    onHideBasemapChange: (value: boolean) => void;
+  }
+): void {
+  rootElement.replaceChildren();
+  rootElement.style.display = 'flex';
+  rootElement.style.flexDirection = 'column';
+  rootElement.style.gap = '12px';
+  rootElement.style.padding = '4px 0 0';
+
+  rootElement.appendChild(
+    createExampleSelect({
+      examples: options.examples,
+      selectedCategoryName: options.selectedCategoryName,
+      selectedExampleName: options.selectedExampleName,
+      onExampleChange: options.onExampleChange
+    })
+  );
+  rootElement.appendChild(createCheckboxRow('Hide basemap', options.hideBasemap, options.onHideBasemapChange));
+
+  if (options.error) {
+    rootElement.appendChild(createNotice(options.error, '#b91c1c', '#fee2e2'));
   }
 
+  if (options.currentExample?.localRangeServer) {
+    rootElement.appendChild(
+      createPreBlock('Run this command from the loaders.gl repository root:\nyarn serve-range --root ./modules/pmtiles/test/data/pmtiles-v3 --port 9000')
+    );
+  }
+
+  if (options.rangeStats.logicalRanges > 0) {
+    rootElement.appendChild(createRangeStatsTable(options.rangeStats));
+  }
+
+  rootElement.appendChild(createPreBlock(options.metadata ?? 'No metadata available'));
+}
+
+function createExampleSelect(options: {
+  examples: Record<string, Record<string, Example>>;
+  selectedCategoryName?: string | null;
+  selectedExampleName?: string | null;
+  onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
+}): HTMLElement {
+  const section = createSection();
+  const selectElement = document.createElement('select');
+  selectElement.style.width = '100%';
+  selectElement.style.padding = '8px';
+  selectElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+  selectElement.style.borderRadius = '8px';
+  selectElement.style.background = 'var(--menu-background, #fff)';
+  selectElement.value = `${options.selectedCategoryName}.${options.selectedExampleName}`;
+  selectElement.addEventListener('change', (event) => {
+    const [categoryName, exampleName] = (event.target as HTMLSelectElement).value.split('.');
+    options.onExampleChange({categoryName, exampleName});
+  });
+
+  for (const categoryName of Object.keys(options.examples)) {
+    const optGroupElement = document.createElement('optgroup');
+    optGroupElement.label = categoryName;
+
+    for (const exampleName of Object.keys(options.examples[categoryName])) {
+      const optionElement = document.createElement('option');
+      optionElement.value = `${categoryName}.${exampleName}`;
+      optionElement.textContent = `${exampleName} (${categoryName})`;
+      optGroupElement.appendChild(optionElement);
+    }
+
+    selectElement.appendChild(optGroupElement);
+  }
+
+  section.appendChild(selectElement);
+  return section;
+}
+
+function createCheckboxRow(
+  label: string,
+  checked: boolean,
+  onChange: (value: boolean) => void
+): HTMLElement {
+  const labelElement = document.createElement('label');
+  labelElement.style.display = 'flex';
+  labelElement.style.alignItems = 'center';
+  labelElement.style.gap = '8px';
+  labelElement.style.lineHeight = '1.4';
+
+  const inputElement = document.createElement('input');
+  inputElement.type = 'checkbox';
+  inputElement.checked = checked;
+  inputElement.addEventListener('change', (event) => {
+    onChange((event.target as HTMLInputElement).checked);
+  });
+
+  const textElement = document.createElement('span');
+  textElement.textContent = label;
+
+  labelElement.append(inputElement, textElement);
+  return labelElement;
+}
+
+function createRangeStatsTable(rangeStats: RangeStats): HTMLElement {
+  const section = createSection();
+  const tableElement = document.createElement('table');
+  tableElement.style.borderCollapse = 'collapse';
+  tableElement.style.width = '100%';
+
+  const rows = [
+    ['Ranges', `${rangeStats.logicalRanges} logical -> ${rangeStats.completedTransportRanges}/${rangeStats.transportRanges} HTTP`],
+    ['Batches', String(rangeStats.rangeBatches)],
+    ['Coalesced', String(rangeStats.coalescedRanges)],
+    ['Requested', formatBytes(rangeStats.requestedBytes)],
+    ['Transport', formatBytes(rangeStats.transportBytes)],
+    ['Received', formatBytes(rangeStats.responseBytes)],
+    ['Overfetch', formatBytes(rangeStats.overfetchBytes)],
+    ['Failures', String(rangeStats.failedTransportRanges)],
+    ['Aborted', String(rangeStats.abortedLogicalRanges)],
+    ['Full-file fallback', String(rangeStats.fullResponseFallbacks)]
+  ];
+
+  for (const [label, value] of rows) {
+    const rowElement = document.createElement('tr');
+    const labelElement = document.createElement('th');
+    labelElement.textContent = label;
+    labelElement.style.fontWeight = '400';
+    labelElement.style.paddingRight = '8px';
+    labelElement.style.textAlign = 'left';
+    labelElement.style.whiteSpace = 'nowrap';
+
+    const valueElement = document.createElement('td');
+    valueElement.textContent = value;
+    valueElement.style.fontFamily = 'monospace';
+    valueElement.style.textAlign = 'right';
+
+    rowElement.append(labelElement, valueElement);
+    tableElement.appendChild(rowElement);
+  }
+
+  section.appendChild(tableElement);
+  return section;
+}
+
+function createNotice(message: string, color: string, background: string): HTMLElement {
+  const element = document.createElement('div');
+  element.textContent = message;
+  element.style.background = background;
+  element.style.color = color;
+  element.style.lineHeight = '1.4';
+  element.style.padding = '8px';
+  element.style.whiteSpace = 'pre-wrap';
+  element.style.borderRadius = '8px';
+  return element;
+}
+
+function createPreBlock(content: string): HTMLElement {
+  const preElement = document.createElement('pre');
+  preElement.textContent = content;
+  preElement.style.margin = '0';
+  preElement.style.maxHeight = '320px';
+  preElement.style.overflow = 'auto';
+  preElement.style.padding = '12px';
+  preElement.style.borderRadius = '8px';
+  preElement.style.background = '#0f172a';
+  preElement.style.color = '#e2e8f0';
+  preElement.style.fontSize = '12px';
+  preElement.style.lineHeight = '1.4';
+  preElement.style.whiteSpace = 'pre-wrap';
+  return preElement;
+}
+
+function createSection(): HTMLElement {
+  const section = document.createElement('section');
+  section.style.display = 'flex';
+  section.style.flexDirection = 'column';
+  section.style.gap = '4px';
+  return section;
+}
+
+function Attributions(props: {attributions?: string[]}) {
   return (
     <div
       style={{
-        background: '#ffe6e6',
-        color: '#700',
-        lineHeight: 1.4,
-        marginBottom: 8,
-        padding: 8,
-        whiteSpace: 'pre-wrap'
+        position: 'absolute',
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'hsla(0,0%,100%,.5)',
+        padding: '0 5px',
+        font: '12px/20px Helvetica Neue,Arial,Helvetica,sans-serif'
       }}
     >
-      <b>Tile example error</b>
-      <div>{error}</div>
-      {example?.localRangeServer ? (
-        <div>
-          If you are testing the local PMTiles entry, start the range server in the loaders.gl
-          repository root:
-          <pre style={{whiteSpace: 'pre-wrap'}}>
-            yarn serve-range --root ./modules/pmtiles/test/data/pmtiles-v3 --port 9000
-          </pre>
-        </div>
-      ) : null}
+      {props.attributions?.map((attribution) => <div key={attribution}>{attribution}</div>)}
     </div>
   );
 }
 
-function getTooltip(info) {
+function getTooltip(info: {tile?: {index: {x: number; y: number; z: number}}}) {
   if (info.tile) {
     const {x, y, z} = info.tile.index;
     return `tile: x: ${x}, y: ${y}, z: ${z}`;
@@ -244,94 +515,36 @@ export function renderToDOM(container: HTMLElement) {
   createRoot(container).render(<App />);
 }
 
-// Helpers
-
-/** Create a source from the example url */
 function createTileSource(
   example: Example,
   rangeStatsObject: ReturnType<typeof createRangeStats>,
   onTileRangeRequest: (event: RangeRequestEvent) => void
 ): VectorTileSource | ImageTileSource {
-  const url = example.data;
   return createDataSource(
-    url,
-    [PMTilesSource, TableTileSource, MVTSource, MLTSource],
+    example.data,
+    [PMTilesSourceLoader, TableTileSourceLoader, MVTSourceLoader, MLTSourceLoader],
     {
       core: {
+        type: example.sourceType,
         attributions: example.attributions,
         loaders: [GeoJSONLoader],
-        // Make the Schema more presentable by limiting the number of values per column the field metadata
         loadOptions: {
           tilejson: {maxValues: 10}
         }
       },
-      pmtiles: {
-      },
+      pmtiles: {},
       rangeRequests: {
         batchDelayMs: 50,
         stats: rangeStatsObject,
         onEvent: onTileRangeRequest
       },
       table: {
-        generateId: true,
+        generateId: true
       },
       mvt: {},
       mlt: {}
     }
-  );
-}
-
-function RangeStatsViewer({rangeStats}: {rangeStats: RangeStats}) {
-  if (rangeStats.logicalRanges === 0) {
-    return null;
-  }
-
-  return (
-    <div style={{lineHeight: 1.4, marginBottom: 8}}>
-      <b>Range transport</b>
-      <table style={{borderCollapse: 'collapse', width: '100%'}}>
-        <tbody>
-          <RangeStatsRow
-            label="Ranges"
-            value={`${rangeStats.logicalRanges} logical → ${rangeStats.completedTransportRanges}/${rangeStats.transportRanges} HTTP`}
-          />
-          <RangeStatsRow label="Batches" value={rangeStats.rangeBatches} />
-          <RangeStatsRow label="Coalesced" value={rangeStats.coalescedRanges} />
-          <RangeStatsRow label="Requested" value={formatBytes(rangeStats.requestedBytes)} />
-          <RangeStatsRow label="Transport" value={formatBytes(rangeStats.transportBytes)} />
-          <RangeStatsRow label="Received" value={formatBytes(rangeStats.responseBytes)} />
-          <RangeStatsRow label="Overfetch" value={formatBytes(rangeStats.overfetchBytes)} />
-          <RangeStatsRow label="Failures" value={rangeStats.failedTransportRanges} />
-          <RangeStatsRow label="Aborted" value={rangeStats.abortedLogicalRanges} />
-          <RangeStatsRow label="Full-file fallback" value={rangeStats.fullResponseFallbacks} />
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function RangeStatsRow({label, value}: {label: string; value: React.ReactNode}) {
-  return (
-    <tr>
-      <th style={{fontWeight: 400, paddingRight: 8, textAlign: 'left', whiteSpace: 'nowrap'}}>{label}</th>
-      <td style={{fontFamily: 'monospace', textAlign: 'right'}}>{value}</td>
-    </tr>
-  );
-}
-
-function LocalRangeServerNote({example}: {example: Example | null}) {
-  if (!example?.localRangeServer) {
-    return null;
-  }
-
-  return (
-    <div style={{lineHeight: 1.4, marginBottom: 8}}>
-      Run this command from the loaders.gl repository root:
-      <pre style={{whiteSpace: 'pre-wrap'}}>
-        yarn serve-range --root ./modules/pmtiles/test/data/pmtiles-v3 --port 9000
-      </pre>
-    </div>
-  );
+  ) as VectorTileSource | ImageTileSource;
 }
 
 function formatBytes(bytes: number): string {
@@ -348,33 +561,36 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-/**
- * Helper function to adjust view state based on tileset metadata, keep zoom in visible range etc
- * TODO - perhaps TileSourceLayer could provide a callback to let app adjust view state to fit within available tile levels
- */
-function adjustViewStateToMetadata(viewState, metadata) {
+function getExamplesForFormat(
+  examples: Record<string, Record<string, Example>>,
+  format?: string
+): Record<string, Record<string, Example>> {
+  if (format) {
+    return {[format]: examples[format]};
+  }
+  return {...examples};
+}
+
+function adjustViewStateToMetadata(
+  viewState: Record<string, unknown>,
+  metadata: Record<string, any>
+): Record<string, unknown> {
   if (!metadata) {
     return viewState;
   }
 
-  // Copy to make sure we don't modify input
-  viewState = {...viewState};
+  const nextViewState = {...viewState};
 
-  // Ensure we are zoomed in to an available zoom level
-  if (metadata.minZoom < viewState.zoom) {
-    // TODO - basemap seems to get out of sync at too low zooms, so apply a lower bottom.
-    viewState.zoom = Math.max(metadata.minZoom, 1.2);
+  if (typeof metadata.minZoom === 'number' && typeof nextViewState.zoom === 'number' && metadata.minZoom < nextViewState.zoom) {
+    nextViewState.zoom = Math.max(metadata.minZoom, 1.2);
   }
-  if (metadata.minZoom > viewState.zoom) {
-    viewState.zoom = metadata.maxZoom;
+  if (typeof metadata.minZoom === 'number' && typeof nextViewState.zoom === 'number' && metadata.minZoom > nextViewState.zoom) {
+    nextViewState.zoom = metadata.maxZoom;
   }
-  // If the tileset has a center, user it
   if (typeof metadata.center?.[0] === 'number' && typeof metadata.center?.[1] === 'number') {
-    viewState = {
-      ...viewState,
-      longitude: metadata.center[0],
-      latitude: metadata.center[1]
-    };
+    nextViewState.longitude = metadata.center[0];
+    nextViewState.latitude = metadata.center[1];
   }
-  return viewState;
+
+  return nextViewState;
 }

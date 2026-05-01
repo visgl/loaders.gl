@@ -1,4 +1,8 @@
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+
 # GeoParquet
+
+<ParquetDocsTabs active="geoparquet" />
 
 ![parquet-logo](../images/parquet-logo-small.png)
 &emsp;
@@ -14,7 +18,7 @@ Standardization is happening at [geoparquet.org](https://geoparquet.org).
 GeoParquet file is a Parquet file that additionally follows these conventions:
 
 - Geospatial metadata describing any geospatial columns is stored in the Parquet file's schema metadata (as stringified JSON).
-- Geometry columns are [WKB](/docs/modules/wkt/formats/wkb) encoded (additional encodings will likely be added).
+- Geometry columns are [WKB](/docs/modules/wkt/formats/wkb) encoded or use GeoParquet single-geometry native encodings based on the GeoArrow specification.
 
 ## Supported features checklist
 
@@ -22,10 +26,21 @@ GeoParquet file is a Parquet file that additionally follows these conventions:
 | -------------------------------------------------------------------------------------------- | --------- |
 | Parse file metadata                                                                          | ✅        |
 | Geometry column encoding: WKB                                                                | ✅        |
-| Geometry column encoding: single-geometry type encodings based on the GeoArrow specification | ❌        |
+| Geometry column encoding: single-geometry type encodings based on the GeoArrow specification | ✅ metadata pass-through and mapping |
 | "crs" column metadata: transformt CRS to WGS84 with longitude, latitude representation.      | ❌        |
 | "orientation" column metadata: reorder vertices if set "counterclockwise"                    | ❌        |
 | "covering" column metadata: per-row bounding boxes                                           | ❌        |
+
+## Metadata behavior in Arrow output
+
+When a GeoParquet file is loaded as Arrow:
+
+- the original GeoParquet `geo` JSON is preserved in `schema.metadata.geo`
+- geometry fields receive GeoArrow field metadata when the encoding can be mapped safely
+- geometry column buffers/layouts are passed through unchanged
+
+GeoParquet-only metadata such as `primary_column`, `geometry_types`, `bbox`, and `covering`
+remains in the schema-level `geo` metadata rather than being mirrored into field metadata.
 
 ## Data size limitation
 

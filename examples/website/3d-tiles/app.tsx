@@ -11,8 +11,9 @@ import styled from 'styled-components';
 import {luma} from '@luma.gl/core';
 import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
-import {Tile3DLayer} from '@deck.gl/geo-layers';
+import {SourceLayer} from '@loaders.gl/deck-layers';
 import {StatsWidget} from '@probe.gl/stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -54,6 +55,18 @@ const StatsWidgetContainer = styled.div`
   }
 `;
 
+const ErrorContainer = styled.div`
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  max-width: 360px;
+  padding: 12px 16px;
+  background: rgba(32, 32, 32, 0.92);
+  color: #fff;
+  z-index: 100;
+  line-height: 1.4;
+`;
+
 type AppProps = {
   /** Whether to hide the example controls, statistics, and descriptive overlay. */
   hideChrome?: boolean;
@@ -69,6 +82,7 @@ export default class App extends PureComponent<AppProps> {
 
       // current tileset
       tileset: null,
+      error: null,
 
       // MAP STATE
       selectedMapStyle: INITIAL_MAP_STYLE,
@@ -84,6 +98,7 @@ export default class App extends PureComponent<AppProps> {
     this._deckRef = null;
     this._onTilesetLoad = this._onTilesetLoad.bind(this);
     this._onTilesetChange = this._onTilesetChange.bind(this);
+    this._onTilesetError = this._onTilesetError.bind(this);
   }
 
   componentDidMount() {
@@ -159,7 +174,7 @@ export default class App extends PureComponent<AppProps> {
 
   // Called by ControlPanel when user selects a new example
   _onSelectExample({example, category, name}) {
-    this.setState({selectedExample: example, category, name});
+    this.setState({selectedExample: example, category, name, error: null, tileset: null});
   }
 
   // Called by ControlPanel when user selects a new map style
@@ -169,7 +184,7 @@ export default class App extends PureComponent<AppProps> {
 
   // Called by Tile3DLayer when a new tileset is loaded
   _onTilesetLoad(tileset) {
-    this.setState({tileset});
+    this.setState({tileset, error: null});
     this._tilesetStatsWidget?.setStats(tileset.stats);
     this._centerViewOnTileset(tileset);
   }
@@ -198,6 +213,11 @@ export default class App extends PureComponent<AppProps> {
   // Called by Tile3DLayer whenever an individual tile in the current tileset is load or unload
   _onTilesetChange(tileHeader) {
     this._updateStatWidgets();
+  }
+
+  _onTilesetError(error) {
+    const message = error instanceof Error ? error.message : String(error);
+    this.setState({error: message, tileset: null});
   }
 
   // Called by DeckGL when user interacts with the map
@@ -236,6 +256,15 @@ export default class App extends PureComponent<AppProps> {
     );
   }
 
+  /** Lazily creates the deck.gl stats widget used by the example. */
+  _getDeckWidgets() {
+    if (!this._deckStatsWidget) {
+      this._deckStatsWidget = createDeckStatsWidget('3d-tiles-deck-stats');
+    }
+
+    return [createDeckFullscreenWidget('3d-tiles-fullscreen'), this._deckStatsWidget];
+  }
+
   _renderTile3DLayer() {
     const {selectedExample} = this.state;
     if (!selectedExample) {
@@ -244,15 +273,17 @@ export default class App extends PureComponent<AppProps> {
 
     const {ionAssetId, ionAccessToken, maximumScreenSpaceError, tilesetUrl} = selectedExample;
     const dataUrl = ionAssetId ? `${TILESET_SERVER_URL}/${ionAssetId}/tileset.json` : tilesetUrl;
-    const loadOptions = {'cesium-ion': {accessToken: ionAccessToken}};
+    const loadOptions = {
+      'cesium-ion': {accessToken: ionAccessToken, onError: this._onTilesetError}
+    };
     if (maximumScreenSpaceError) {
       loadOptions.maximumScreenSpaceError = maximumScreenSpaceError;
     }
 
-    return new Tile3DLayer({
+    return new SourceLayer({
       id: 'tile-3d-layer',
       data: dataUrl,
-      loader: ionAssetId ? CesiumIonLoader : Tiles3DLoader,
+      loaders: [ionAssetId ? CesiumIonLoader : Tiles3DLoader],
       loadOptions,
       pickable: true,
       pointSize: 2,
@@ -262,6 +293,15 @@ export default class App extends PureComponent<AppProps> {
       onTileUnload: this._onTilesetChange,
       onTileError: this._onTilesetChange
     });
+  }
+
+  _renderError() {
+    const {error} = this.state;
+    if (!error) {
+      return null;
+    }
+
+    return <ErrorContainer>{error}</ErrorContainer>;
   }
 
   render() {
@@ -277,10 +317,12 @@ export default class App extends PureComponent<AppProps> {
           viewState={viewState}
           onViewStateChange={this._onViewStateChange.bind(this)}
           controller={{type: MapController, maxPitch: 85, inertia: true}}
+          widgets={this.props.hideChrome ? [] : this._getDeckWidgets()}
           onAfterRender={() => this._updateStatWidgets()}
         >
           <Map reuseMaps mapLib={maplibregl} mapStyle={selectedMapStyle} preventStyleDiffing />
         </DeckGL>
+        {this._renderError()}
       </div>
     );
   }

@@ -1,9 +1,8 @@
 import type {TypedArray} from '@loaders.gl/schema';
-import {load, parse} from '@loaders.gl/core';
 import {Vector3, Matrix4} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 import {StrictLoaderOptions, LoaderContext, parseFromContext} from '@loaders.gl/loader-utils';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {DracoLoader, DracoMesh} from '@loaders.gl/draco';
 import {BasisLoader, CompressedTextureLoader} from '@loaders.gl/textures';
 
@@ -26,6 +25,21 @@ import {I3SLoaderOptions} from '../../i3s-loader';
 
 const scratchVector = new Vector3([0, 0, 0]);
 
+function getRequiredContext(context: LoaderContext | undefined, operation: string): LoaderContext {
+  if (!context) {
+    throw new Error(
+      `parseI3STileContent requires LoaderContext to ${operation}. Nested I3S parsing must run through parseFromContext().`
+    );
+  }
+
+  return context;
+}
+
+/**
+ * Select the loader used to decode the texture payload for an I3S node.
+ * @param textureFormat - Texture format declared by the tileset.
+ * @returns The loaders.gl texture loader that can decode the format.
+ */
 function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 'dds' | 'ktx2') {
   switch (textureFormat) {
     case 'ktx-etc2':
@@ -36,12 +50,21 @@ function getLoaderForTextureFormat(textureFormat?: 'jpg' | 'png' | 'ktx-etc2' | 
     case 'jpg':
     case 'png':
     default:
-      return ImageLoader;
+      return ImageBitmapLoader;
   }
 }
 
 const I3S_ATTRIBUTE_TYPE = 'i3s-attribute-type';
 
+/**
+ * Parse a single I3S node payload, including optional texture data and geometry.
+ * @param arrayBuffer - Raw node binary payload.
+ * @param tileOptions - Tile-level urls, material metadata, and coordinate settings.
+ * @param tilesetOptions - Shared schema information from the parent tileset.
+ * @param options - Loader options propagated from the top-level load call.
+ * @param context - Loader context used for fetch and parser resolution.
+ * @returns Parsed tile content ready for deck.gl rendering.
+ */
 export async function parseI3STileContent(
   arrayBuffer: ArrayBuffer,
   tileOptions: I3STileOptions,
@@ -55,50 +78,74 @@ export async function parseI3STileContent(
     featureIds: [],
     vertexCount: 0,
     modelMatrix: new Matrix4(),
-    coordinateSystem: 0,
+    coordinateSystem: 'meter-offsets',
     byteLength: 0,
     texture: null
   };
+  const requiredContext = context ? getRequiredContext(context, 'parse nested resources') : null;
 
   if (tileOptions.textureUrl) {
-    // @ts-expect-error options is not properly typed
-    const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
-    const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
-    const fetchFunc = context?.fetch || fetch;
-    const response = await fetchFunc(url); // options?.fetch
-    const arrayBuffer = await response.arrayBuffer();
-
-    // @ts-expect-error options is not properly typed
-    if (options?.i3s.decodeTextures) {
-      // TODO - replace with switch
-      if (loader === ImageLoader) {
-        const options = {...tileOptions.textureLoaderOptions, image: {type: 'data'}};
-        try {
-          // Image constructor is not supported in worker thread.
-          // Do parsing image data on the main thread by using context to avoid worker issues.
-          const texture: any = await parseFromContext(arrayBuffer, [], options, context!);
-          content.texture = texture;
-        } catch (_e) {
-          // context object is different between worker and node.js conversion script.
-          // To prevent error we parse data in ordinary way if it is not parsed by using context.
-          const texture: any = await parse(arrayBuffer, loader, options, context);
-          content.texture = texture;
-        }
-      } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
-        let texture: any = await load(arrayBuffer, loader, tileOptions.textureLoaderOptions);
-        if (loader === BasisLoader) {
-          texture = texture[0];
-        }
-        content.texture = {
-          compressed: true,
-          mipmaps: false,
-          width: texture[0].width,
-          height: texture[0].height,
-          data: texture
-        };
+    try {
+      // @ts-expect-error options is not properly typed
+      const url = getUrlWithToken(tileOptions.textureUrl, options?.i3s?.token);
+      const loader = getLoaderForTextureFormat(tileOptions.textureFormat);
+      const fetchFunc = context?.fetch || fetch;
+      const response = await fetchFunc(url); // options?.fetch
+      if (!response.ok) {
+        throw new Error(`Failed to load I3S texture: ${response.status} ${response.statusText}`);
       }
-    } else {
-      content.texture = arrayBuffer;
+
+      const textureArrayBuffer = await response.arrayBuffer();
+
+      // @ts-expect-error options is not properly typed
+      if (options?.i3s.decodeTextures) {
+        const nestedContext = getRequiredContext(
+          requiredContext || context,
+          'decode texture payloads'
+        );
+        // TODO - replace with switch
+        if (loader === ImageBitmapLoader) {
+          const imageLoaderOptions = {...tileOptions.textureLoaderOptions};
+          try {
+            const parsedTexture: any = await parseFromContext(
+              textureArrayBuffer,
+              ImageBitmapLoader,
+              imageLoaderOptions,
+              nestedContext
+            );
+            content.texture = getImageData(parsedTexture);
+          } catch (_error) {
+            const parsedTexture: any = await parseFromContext(
+              textureArrayBuffer,
+              loader,
+              imageLoaderOptions,
+              nestedContext
+            );
+            content.texture = getImageData(parsedTexture);
+          }
+        } else if (loader === CompressedTextureLoader || loader === BasisLoader) {
+          let texture: any = await parseFromContext(
+            textureArrayBuffer,
+            loader,
+            tileOptions.textureLoaderOptions,
+            nestedContext
+          );
+          if (loader === BasisLoader) {
+            texture = texture[0];
+          }
+          content.texture = {
+            compressed: true,
+            mipmaps: false,
+            width: texture[0].width,
+            height: texture[0].height,
+            data: texture
+          };
+        }
+      } else {
+        content.texture = textureArrayBuffer;
+      }
+    } catch (error) {
+      console.warn(error);
     }
   }
 
@@ -107,7 +154,14 @@ export async function parseI3STileContent(
     content.texture = null;
   }
 
-  return await parseI3SNodeGeometry(arrayBuffer, content, tileOptions, tilesetOptions, options);
+  return await parseI3SNodeGeometry(
+    arrayBuffer,
+    content,
+    tileOptions,
+    tilesetOptions,
+    options,
+    context
+  );
 }
 
 /* eslint-disable max-statements */
@@ -116,7 +170,8 @@ async function parseI3SNodeGeometry(
   content: I3STileContent,
   tileOptions: I3STileOptions,
   tilesetOptions: I3STilesetOptions,
-  options?: I3SLoaderOptions
+  options?: I3SLoaderOptions,
+  context?: LoaderContext
 ): Promise<I3STileContent> {
   const contentByteLength = arrayBuffer.byteLength;
   let attributes: I3SMeshAttributes;
@@ -126,13 +181,18 @@ async function parseI3SNodeGeometry(
   let indices: TypedArray | undefined;
 
   if (tileOptions.isDracoGeometry) {
-    const decompressedGeometry: DracoMesh = await parse(arrayBuffer, DracoLoader, {
-      draco: {
-        attributeNameEntry: I3S_ATTRIBUTE_TYPE
-      }
-    });
-    // @ts-expect-error
-    vertexCount = decompressedGeometry.header.vertexCount;
+    const nestedContext = getRequiredContext(context, 'decode Draco geometry');
+    const decompressedGeometry: DracoMesh = (await parseFromContext(
+      arrayBuffer,
+      DracoLoader,
+      {
+        draco: {
+          attributeNameEntry: I3S_ATTRIBUTE_TYPE
+        }
+      },
+      nestedContext
+    )) as DracoMesh;
+    vertexCount = decompressedGeometry.header?.vertexCount ?? 0;
     indices = decompressedGeometry.indices?.value;
     const {
       POSITION,
@@ -200,10 +260,10 @@ async function parseI3SNodeGeometry(
   ) {
     const enuMatrix = parsePositions(attributes.position, tileOptions);
     content.modelMatrix = enuMatrix.invert();
-    content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
+    content.coordinateSystem = 'meter-offsets';
   } else {
     content.modelMatrix = getModelMatrix(attributes.position);
-    content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
+    content.coordinateSystem = 'lnglat-offsets';
   }
 
   content.attributes = {
@@ -467,11 +527,11 @@ function getModelMatrix(positions: I3SMeshAttribute): Matrix4 {
 }
 
 /**
- * Makes a glTF-compatible PBR material from an I3S material definition
+ * Make a glTF-compatible PBR material from an I3S material definition.
  * @param materialDefinition - i3s material definition
  *  https://github.com/Esri/i3s-spec/blob/master/docs/1.7/materialDefinitions.cmn.md
- * @param texture - texture image
- * @returns {object}
+ * @param texture - Decoded texture data when one was fetched successfully.
+ * @returns Material definition normalized for glTF-style rendering.
  */
 function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: TileContentTexture) {
   let pbrMaterial;
@@ -512,7 +572,7 @@ function makePbrMaterial(materialDefinition?: I3SMaterialDefinition, texture?: T
   }
 
   if (texture) {
-    setMaterialTexture(pbrMaterial, texture);
+    setMaterialTexture(pbrMaterial, texture!);
   }
 
   return pbrMaterial;
@@ -532,10 +592,9 @@ function convertColorFormat(colorFactor: number[]): number[] {
 }
 
 /**
- * Set texture in PBR material
- * @param {object} material - i3s material definition
+ * Attach a decoded texture to the first compatible material slot.
+ * @param material - i3s material definition
  * @param image - texture image
- * @returns
  */
 function setMaterialTexture(material, image: TileContentTexture): void {
   const texture = {source: {image}};

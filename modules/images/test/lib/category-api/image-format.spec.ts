@@ -1,8 +1,6 @@
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 import {isBrowser} from '@loaders.gl/loader-utils';
-
 import {isImageFormatSupported, getSupportedImageFormats} from '@loaders.gl/images';
-
 export const TEST_CASES = [
   {
     mimeType: 'image/png',
@@ -38,24 +36,18 @@ export const TEST_CASES = [
     supportedAsync: isBrowser
   }
 ];
-
-test('Image Category#isImageFormatSupported', t => {
+test('Image Category#isImageFormatSupported', () => {
   for (const tc of TEST_CASES) {
     const isSupported = isImageFormatSupported(tc.mimeType);
-    t.equal(isSupported, tc.supported, `${tc.mimeType} support ${isSupported}`);
+    expect(isSupported, `${tc.mimeType} support ${isSupported}`).toBe(tc.supported);
   }
-  t.end();
 });
-
-test('Image Category#getSupportedImageFormats', async t => {
+test('Image Category#getSupportedImageFormats', async () => {
   const supportedImageFormats = await getSupportedImageFormats();
   for (const tc of TEST_CASES) {
     const isSupported = supportedImageFormats.has(tc.mimeType);
-    t.equal(
-      isSupported,
-      Boolean(tc.supported || tc.supportedAsync),
-      `${tc.mimeType} support ${isSupported}`
+    expect(isSupported, `${tc.mimeType} support ${isSupported}`).toBe(
+      Boolean(tc.supported || tc.supportedAsync)
     );
   }
-  t.end();
 });

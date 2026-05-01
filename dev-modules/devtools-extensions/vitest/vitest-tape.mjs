@@ -1,4 +1,8 @@
+import {isBrowser as checkIsBrowser} from '@probe.gl/env';
 import {test as vitestTest, expect} from 'vitest';
+
+const isBrowser = checkIsBrowser();
+const isNode = !isBrowser;
 
 function isArrayBufferView(value) {
   return ArrayBuffer.isView(value);
@@ -331,12 +335,17 @@ class VitestTape {
   async run(callback) {
     try {
       const waitsForEnd = usesExplicitEndSignal(callback);
+      let callbackResult;
 
       if (this.timeoutMilliseconds === undefined) {
-        await callback(this);
+        callbackResult = callback(this);
+        if (isPromiseLike(callbackResult)) {
+          await callbackResult;
+        }
       } else {
+        callbackResult = callback(this);
         await Promise.race([
-          callback(this),
+          callbackResult,
           new Promise((_, reject) =>
             setTimeout(
               () => reject(new Error(`Test timed out after ${this.timeoutMilliseconds}ms`)),
@@ -346,7 +355,7 @@ class VitestTape {
         ]);
       }
 
-      if (waitsForEnd) {
+      if (waitsForEnd && !isPromiseLike(callbackResult)) {
         if (this.timeoutMilliseconds === undefined) {
           await this.endPromise;
         } else {
@@ -424,5 +433,17 @@ const test = wrapTest(vitestTest);
 test.only = wrapTest(vitestTest.only);
 test.skip = wrapTest(vitestTest.skip);
 
-export {test};
+function testIf(condition, name, callback) {
+  return condition ? test(name, callback) : test.skip(name, callback);
+}
+
+function testIfBrowser(name, callback) {
+  return testIf(isBrowser, name, callback);
+}
+
+function testIfNode(name, callback) {
+  return testIf(isNode, name, callback);
+}
+
+export {isBrowser, isNode, test, testIf, testIfBrowser, testIfNode};
 export default test;

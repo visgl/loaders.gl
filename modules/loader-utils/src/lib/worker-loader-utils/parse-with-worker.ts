@@ -20,6 +20,21 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
     return false;
   }
 
+  // Some Arrow table outputs need main-thread class instances; structured clone
+  // preserves data but strips methods like `table.getChild()` from Arrow tables.
+  if (
+    (loader.id === 'excel' &&
+      (options as {excel?: {shape?: string}} | undefined)?.excel?.shape === 'arrow-table') ||
+    (loader.id === 'ply' &&
+      (options as {ply?: {shape?: string}} | undefined)?.ply?.shape === 'arrow-table')
+  ) {
+    return false;
+  }
+
+  if (loader.id === 'csv' && !shouldParseCSVWithWorker(options)) {
+    return false;
+  }
+
   return Boolean(canProcessOnWorker(loader, workerOptions));
 }
 
@@ -34,7 +49,7 @@ export async function parseWithWorker(
   context?: LoaderContext,
   parseOnMainThread?: ParseOnMainThread
 ) {
-  return await processOnWorker(
+  const result = await processOnWorker(
     loader,
     data,
     getWorkerOptions(options),
@@ -51,6 +66,9 @@ export async function parseWithWorker(
     },
     getSerializableLoaderContext(context)
   );
+  return isLoaderWithWorkerResultDeserializer(loader)
+    ? loader.deserializeWorkerResult(result, options, context)
+    : result;
 }
 
 /**
@@ -73,6 +91,31 @@ function getSerializableLoaderContext(context?: LoaderContext) {
   if (!context) {
     return {};
   }
-  const {fetch, loaders, _parse, _parseSync, _parseInBatches, ...serializableContext} = context;
+  const {fetch, loaders, coreApi, _parse, _parseSync, _parseInBatches, ...serializableContext} =
+    context;
   return JSON.parse(JSON.stringify(serializableContext));
+}
+
+/**
+ * Checks whether CSV options request Arrow output that can be transported from a worker.
+ * @param options Loader options.
+ * @returns True when CSV should parse on a worker.
+ */
+function shouldParseCSVWithWorker(options?: LoaderOptions): boolean {
+  const csvOptions = options as {csv?: {shape?: string}; core?: {shape?: string}} | undefined;
+  return (csvOptions?.csv?.shape ?? csvOptions?.core?.shape) === 'arrow-table';
+}
+
+/**
+ * Tests whether a loader can deserialize worker results.
+ * @param loader Loader object.
+ * @returns True when the loader exposes a worker result deserializer.
+ */
+function isLoaderWithWorkerResultDeserializer(
+  loader: Loader
+): loader is Loader & Required<Pick<Loader, 'deserializeWorkerResult'>> {
+  return (
+    typeof (loader as Loader & {deserializeWorkerResult?: unknown}).deserializeWorkerResult ===
+    'function'
+  );
 }

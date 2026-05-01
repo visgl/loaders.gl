@@ -16,7 +16,7 @@ import './lib/path-utils/file-aliases.spec';
 import './lib/path-utils/path.spec';
 
 import './lib/request-utils/request-scheduler.spec';
-import './lib/request-utils/tile-range-request-scheduler.node.spec';
+import './lib/request-utils/range-request-scheduler.node.spec';
 import './lib/javascript-utils/is-type.spec';
 import './lib/sources/data-source.spec';
 
@@ -25,4 +25,4 @@ import './lib/sources/data-source.spec';
 
 import './lib/readable-file/readable-file.spec';
 
-import './lib/worker-loader-utils/parse-with-worker.spec';
+import './lib/worker-loader-utils/parse-with-worker.browser.spec';

@@ -3,10 +3,9 @@
 // Copyright vis.gl contributors
 
 import type {Tiles3DLoaderOptions} from '../../tiles-3d-loader';
-import type {StrictLoaderOptions} from '@loaders.gl/loader-utils';
-import {path} from '@loaders.gl/loader-utils';
-import {Tile3DSubtreeLoader} from '../../tile-3d-subtree-loader';
-import {load} from '@loaders.gl/core';
+import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import {parseFromContext, path} from '@loaders.gl/loader-utils';
+import {Tile3DSubtreeLoaderWithParser} from '../../tile-3d-subtree-loader-with-parser';
 import {LOD_METRIC_TYPE, TILE_REFINEMENT, TILE_TYPE} from '@loaders.gl/tiles';
 import {
   ImplicitTilingExensionData,
@@ -130,7 +129,8 @@ export function normalizeTileData(
 export async function normalizeTileHeaders(
   tileset: Tiles3DTilesetJSON,
   basePath: string,
-  options: StrictLoaderOptions
+  options: StrictLoaderOptions,
+  context?: LoaderContext
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   let root: Tiles3DTileJSONPostprocessed | null = null;
 
@@ -141,7 +141,8 @@ export async function normalizeTileHeaders(
       tileset,
       basePath,
       rootImplicitTilingExtension,
-      options
+      options,
+      context
     );
   } else {
     root = normalizeTileData(tileset.root, basePath);
@@ -163,7 +164,8 @@ export async function normalizeTileHeaders(
           tileset,
           basePath,
           childImplicitTilingExtension,
-          options
+          options,
+          context
         );
       } else {
         childHeaderPostprocessed = normalizeTileData(childHeader, basePath);
@@ -190,7 +192,8 @@ export async function normalizeImplicitTileHeaders(
   tileset: Tiles3DTilesetJSON,
   basePath: string,
   implicitTilingExtension: ImplicitTilingExensionData,
-  options: Tiles3DLoaderOptions
+  options: Tiles3DLoaderOptions,
+  context?: LoaderContext
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   const {
     subdivisionScheme,
@@ -199,9 +202,24 @@ export async function normalizeImplicitTileHeaders(
     subtreeLevels,
     subtrees: {uri: subtreesUriTemplate}
   } = implicitTilingExtension;
+  if (!context) {
+    throw new Error(
+      'normalizeImplicitTileHeaders requires LoaderContext to load subtree data without importing @loaders.gl/core'
+    );
+  }
   const replacedUrlTemplate = replaceContentUrlTemplate(subtreesUriTemplate, 0, 0, 0, 0);
   const subtreeUrl = resolveUri(replacedUrlTemplate, basePath);
-  const subtree = await load(subtreeUrl, Tile3DSubtreeLoader, options);
+  const response = await context.fetch(subtreeUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to load 3D Tiles subtree: ${response.status} ${response.statusText}`);
+  }
+  const arrayBuffer = await response.arrayBuffer();
+  const subtree = (await parseFromContext(
+    arrayBuffer,
+    Tile3DSubtreeLoaderWithParser,
+    options,
+    context
+  )) as Subtree;
   const tileContentUri = tile.content?.uri;
   const contentUrlTemplate = tileContentUri ? resolveUri(tileContentUri, basePath) : '';
   const refine = tileset?.root?.refine;
@@ -233,7 +251,14 @@ export async function normalizeImplicitTileHeaders(
     getRefine
   };
 
-  return await normalizeImplicitTileData(tile, basePath, subtree, implicitOptions, options);
+  return await normalizeImplicitTileData(
+    tile,
+    basePath,
+    subtree,
+    implicitOptions,
+    options,
+    context
+  );
 }
 
 /**
@@ -248,7 +273,8 @@ export async function normalizeImplicitTileData(
   basePath: string,
   rootSubtree: Subtree,
   implicitOptions: ImplicitOptions,
-  loaderOptions: Tiles3DLoaderOptions
+  loaderOptions: Tiles3DLoaderOptions,
+  context?: LoaderContext
 ): Promise<Tiles3DTileJSONPostprocessed | null> {
   if (!tile) {
     return null;
@@ -257,7 +283,8 @@ export async function normalizeImplicitTileData(
   const {children, contentUrl} = await parseImplicitTiles({
     subtree: rootSubtree,
     implicitOptions,
-    loaderOptions
+    loaderOptions,
+    context
   });
 
   let tileContentUrl: string | undefined;

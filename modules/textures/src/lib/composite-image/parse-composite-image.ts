@@ -5,7 +5,7 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {parseFromContext, path, resolvePath} from '@loaders.gl/loader-utils';
 import type {Texture, TextureFormat, TextureLevel} from '@loaders.gl/schema';
-import {ImageLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images';
+import {ImageBitmapLoader, getImageSize, isImage, type ImageType} from '@loaders.gl/images';
 import {asyncDeepMap} from '../texture-api/async-deep-map';
 import type {TextureLoaderOptions} from '../texture-api/texture-api-types';
 import {
@@ -125,14 +125,15 @@ export async function loadCompositeImageMember(
     const childContext = getCompositeImageMemberContext(resolvedUrl, response, context);
     return await parseFromContext(
       response as any,
-      [ImageLoader],
+      [ImageBitmapLoader],
       subloaderOptions as any,
       childContext
     );
   }
 
   const arrayBuffer = await response.arrayBuffer();
-  return await ImageLoader.parse(arrayBuffer, subloaderOptions as any);
+  const imageBitmapLoader = await ImageBitmapLoader.preload();
+  return await imageBitmapLoader.parse(arrayBuffer, subloaderOptions as any);
 }
 
 export async function getCompositeImageUrlTree(

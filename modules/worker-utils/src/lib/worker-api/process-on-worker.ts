@@ -21,6 +21,12 @@ export type ProcessOnWorkerOptions = WorkerOptions & {
   [key: string]: any;
 };
 
+/** Options for preloading workers. */
+export type PreloadWorkerOptions = {
+  /** Number of workers to warm in the worker pool. */
+  count?: number;
+};
+
 /**
  * Determines if we can parse with worker
  * @param loader
@@ -78,6 +84,40 @@ export async function processOnWorker(
 }
 
 /**
+ * Warm-start one or more workers in the same pool used by processOnWorker.
+ * @param worker Worker object to preload.
+ * @param options Worker options used to resolve the worker pool.
+ * @param preloadOptions Preload options.
+ */
+export async function preloadWorker(
+  worker: WorkerObject,
+  options: ProcessOnWorkerOptions = {},
+  preloadOptions: PreloadWorkerOptions = {}
+): Promise<void> {
+  const name = getWorkerName(worker);
+  const workerFarm = WorkerFarm.getWorkerFarm(options);
+  const {source} = options;
+  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
+  if (!source) {
+    workerPoolProps.url = getWorkerURL(worker, options);
+  }
+  const workerPool = workerFarm.getWorkerPool(workerPoolProps);
+  const count = preloadOptions.count ?? options.maxConcurrency ?? options.core?.maxConcurrency ?? 1;
+
+  const jobs = await Promise.all(
+    Array.from({length: count}, () =>
+      workerPool.startJob(`${worker.name} preload`, onPreloadMessage)
+    )
+  );
+
+  for (const job of jobs) {
+    job.postMessage('preload', {});
+  }
+
+  await Promise.all(jobs.map(job => job.result));
+}
+
+/**
  * Job completes when we receive the result
  * @param job
  * @param message
@@ -118,5 +158,27 @@ async function onMessage(
     default:
       // eslint-disable-next-line
       console.warn(`process-on-worker: unknown message ${type}`);
+  }
+}
+
+/**
+ * Completes a preload job when the worker acknowledges the preload message.
+ * @param job Worker job.
+ * @param type Worker message type.
+ * @param payload Worker message payload.
+ */
+function onPreloadMessage(job: WorkerJob, type: WorkerMessageType, payload: WorkerMessagePayload) {
+  switch (type) {
+    case 'done':
+      job.done(payload);
+      break;
+
+    case 'error':
+      job.error(new Error(payload.error));
+      break;
+
+    default:
+      // eslint-disable-next-line
+      console.warn(`process-on-worker: unknown preload message ${type}`);
   }
 }

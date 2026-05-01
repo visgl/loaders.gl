@@ -20,6 +20,8 @@ export async function getVitestConfig(options = {}) {
   const vitestConfig = ocularConfig.devtools?.vitest || {};
   const tsconfigProjects = vitestConfig.tsconfigProjects || ['./tsconfig.json'];
   const excludePatterns = vitestConfig.excludePatterns || [];
+  const nodeExcludePatterns = vitestConfig.nodeExcludePatterns || [];
+  const sharedExcludePatterns = ['**/node_modules/**', ...excludePatterns];
   const setupFiles = vitestConfig.setupFiles || ['./test/vitest-setup.ts'];
   const browserName = vitestConfig.browserName || 'chromium';
   const testTimeout = vitestConfig.testTimeout || 60_000;
@@ -47,6 +49,9 @@ export async function getVitestConfig(options = {}) {
 
   return defineConfig({
     plugins: [serveRangeRequestsPlugin(repositoryRoot)],
+    optimizeDeps: {
+      include: ['get-pixels', '@probe.gl/env']
+    },
     resolve: {
       alias: [
         ...testAliases,
@@ -64,8 +69,13 @@ export async function getVitestConfig(options = {}) {
             environment: 'node',
             passWithNoTests: true,
             setupFiles,
-            include: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}'],
-            exclude: ['modules/**/*.browser.spec.{ts,js}', 'test/**/*.browser.spec.{ts,js}', ...excludePatterns],
+            include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
+            exclude: [
+              'modules/**/*.browser.spec.{ts,js}',
+              'test/**/*.browser.spec.{ts,js}',
+              ...nodeExcludePatterns,
+              ...sharedExcludePatterns
+            ],
             browser: {
               enabled: false
             }
@@ -81,7 +91,7 @@ export async function getVitestConfig(options = {}) {
             testTimeout,
             setupFiles,
             include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
-            exclude: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}', ...excludePatterns],
+            exclude: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}', ...sharedExcludePatterns],
             browser: {
               enabled: true,
               provider: createPlaywrightProvider(),
@@ -99,7 +109,7 @@ export async function getVitestConfig(options = {}) {
             testTimeout,
             setupFiles,
             include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
-            exclude: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}', ...excludePatterns],
+            exclude: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}', ...sharedExcludePatterns],
             browser: {
               enabled: true,
               provider: createPlaywrightProvider(),

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
-import {convertWKBToGeometry, isWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {WKBFormat} from './wkt-format';
 
 export type WKBLoaderOptions = LoaderOptions & {
   wkb?: {
@@ -15,46 +15,33 @@ export type WKBLoaderOptions = LoaderOptions & {
 };
 
 /**
- * Worker loader for WKB (Well-Known Binary)
+ * Preloads the parser-bearing WKB loader implementation.
+ */
+async function preload() {
+  const {WKBLoaderWithParser} = await import('./wkb-loader-with-parser');
+  return WKBLoaderWithParser;
+}
+
+/**
+ * Metadata-only worker loader for WKB (Well-Known Binary)
  */
 export const WKBWorkerLoader = {
   dataType: null as unknown as Geometry,
   batchType: null as never,
-  name: 'WKB',
-  id: 'wkb',
-  module: 'wkt',
+  ...WKBFormat,
   version: VERSION,
   worker: true,
-  category: 'geometry',
-  extensions: ['wkb'],
-  mimeTypes: [],
-  // TODO can we define static, serializable tests, eg. some binary strings?
-  tests: [isWKB],
   options: {
     wkb: {
       shape: 'geojson-geometry'
     }
-  }
+  },
+  preload
 } as const satisfies Loader<Geometry, never, WKBLoaderOptions>;
 
 /**
- * Loader for WKB (Well-Known Binary)
+ * Metadata-only loader for WKB (Well-Known Binary)
  */
 export const WKBLoader = {
-  ...WKBWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?) => parseWKB(arrayBuffer, options?.wkb),
-  parseSync: (arrayBuffer: ArrayBuffer, options?) => parseWKB(arrayBuffer, options?.wkb)
-} as const satisfies LoaderWithParser<Geometry, never, WKBLoaderOptions>;
-
-export function parseWKB(
-  arrayBuffer: ArrayBuffer,
-  options?: {shape?: 'geojson-geometry'}
-): Geometry {
-  const shape = options?.shape || 'geojson-geometry';
-  switch (shape) {
-    case 'geojson-geometry':
-      return convertWKBToGeometry(arrayBuffer);
-    default:
-      throw new Error(shape);
-  }
-}
+  ...WKBWorkerLoader
+} as const satisfies Loader<Geometry, never, WKBLoaderOptions>;

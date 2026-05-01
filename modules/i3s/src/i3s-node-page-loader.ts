@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {I3SLoaderOptions} from './i3s-loader';
 import type {NodePage} from './types';
 
+import {I3SNodePageFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -14,6 +15,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * Loader for I3S node pages
  */
 export const I3SNodePageLoader = {
+  ...I3SNodePageFormat,
   dataType: null as unknown as NodePage,
   batchType: null as never,
 
@@ -22,13 +24,11 @@ export const I3SNodePageLoader = {
   module: 'i3s',
   version: VERSION,
   mimeTypes: ['application/json'],
-  parse: parseNodePage,
+  /** Loads the parser-bearing I3S node page loader implementation. */
+  preload: async () =>
+    (await import('./i3s-node-page-loader-with-parser')).I3SNodePageLoaderWithParser,
   extensions: ['json'],
   options: {
     i3s: {}
   }
-} as const satisfies LoaderWithParser<NodePage, never, I3SLoaderOptions>;
-
-async function parseNodePage(data: ArrayBuffer, options?: LoaderOptions): Promise<NodePage> {
-  return JSON.parse(new TextDecoder().decode(data)) as NodePage;
-}
+} as const satisfies Loader<NodePage, never, I3SLoaderOptions>;

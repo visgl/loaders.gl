@@ -1,12 +1,9 @@
-import test from 'tape-promise/tape';
-
+import {expect, test} from 'vitest';
 import {mergeOptions} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
-
 // NOTE: addAliases is not a public export, already used by test setup
 // import {_addAliases} from '@loaders.gl/loader-utils';
-
-test('mergeOptions', t => {
+test('mergeOptions', () => {
   const originalOptions: XMLLoaderOptions = {
     xml: {
       _fastXML: {
@@ -16,7 +13,6 @@ test('mergeOptions', t => {
       }
     }
   };
-
   // Set HTML parsing options
   const mergedOptions = mergeOptions(originalOptions, {
     xml: {
@@ -26,7 +22,6 @@ test('mergeOptions', t => {
       }
     }
   });
-
   const expectedOptions = {
     xml: {
       _parser: 'fast-xml-parser',
@@ -38,8 +33,5 @@ test('mergeOptions', t => {
       }
     }
   };
-
-  t.deepEqual(mergedOptions, expectedOptions, 'mergeOptions() returns correct value');
-
-  t.end();
+  expect(mergedOptions, 'mergeOptions() returns correct value').toEqual(expectedOptions);
 });

@@ -1,0 +1,33 @@
+{
+  "private": true,
+  "name": "duckdb-sql-loaders-example",
+  "description": "DuckDBSQLSource geospatial example with deck.gl and Vite.",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "@deck.gl/core": "^9.3.0",
+    "@deck.gl/layers": "^9.3.0",
+    "@deck.gl/react": "^9.3.0",
+    "@deck.gl/widgets": "^9.3.0",
+    "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/sql": "workspace:*",
+    "@luma.gl/core": "^9.3.2",
+    "@luma.gl/engine": "^9.3.2",
+    "@luma.gl/shadertools": "^9.3.2",
+    "mapbox-gl": "npm:maplibre-gl@^3.6.2",
+    "maplibre-gl": "^3.6.2",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-map-gl": "^7.1.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vite": "^7.2.7"
+  }
+}

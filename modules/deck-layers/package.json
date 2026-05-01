@@ -1,0 +1,57 @@
+{
+  "name": "@loaders.gl/deck-layers",
+  "version": "4.4.0",
+  "description": "Private internal deck.gl layers used by loaders.gl examples",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "deck.gl",
+    "layer",
+    "examples",
+    "loader"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "pre-build": "echo \"Nothing to build in @loaders.gl/deck-layers\""
+  },
+  "dependencies": {
+    "@deck.gl/core": "^9.3.0",
+    "@deck.gl/extensions": "^9.3.0",
+    "@deck.gl/geo-layers": "^9.3.0",
+    "@deck.gl/layers": "^9.3.0",
+    "@deck.gl/mesh-layers": "^9.3.0",
+    "@loaders.gl/compression": "4.4.0",
+    "@loaders.gl/core": "4.4.0",
+    "@loaders.gl/crypto": "4.4.0",
+    "@loaders.gl/geoarrow": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
+    "@loaders.gl/tiles": "4.4.0",
+    "@loaders.gl/zip": "4.4.0",
+    "@luma.gl/core": "^9.3.2",
+    "@luma.gl/engine": "^9.3.2",
+    "@luma.gl/shadertools": "^9.3.2",
+    "@math.gl/culling": "^4.1.0"
+  }
+}

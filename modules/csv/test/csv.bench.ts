@@ -1,7 +1,8 @@
-import {encodeTableAsText, fetchFile, parse} from '@loaders.gl/core';
-import {CSV2Loader, CSVArrowLoader, CSVArrowWriter, CSVLoader, CSVWriter} from '@loaders.gl/csv';
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import {encodeTableAsText, fetchFile, parse, preload} from '@loaders.gl/core';
+import {CSVLoader, CSVWriter} from '@loaders.gl/csv';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {ArrowTable, Table} from '@loaders.gl/schema';
+import {preloadWorker} from '@loaders.gl/worker-utils';
 import PapaParseNPM from 'papaparse';
 import {inferSchema, initParser} from 'udsv';
 import Papa from '../src/papaparse/papaparse';
@@ -45,96 +46,179 @@ const D3TSVLoaderTyped = {
 
 const ROW_COUNT = 2000;
 const WIDE_COLUMN_COUNT = 40;
-const STREAM_CHUNK_SIZE = 4096;
-const STREAM_CHUNK_SIZES = [1024, STREAM_CHUNK_SIZE, 64 * 1024, 1024 * 1024];
 const BENCHMARK_OPTIONS = {minIterations: 3};
 
 export default async function csvBench(bench) {
+  const csvLoaderWithParser = await preload(CSVLoader);
   const response = await fetchFile(SAMPLE_CSV_URL);
   const sample = await response.text();
   const scenarios = createBenchmarkScenarios(sample);
   const standardScenarios = getStandardBenchmarkScenarios(scenarios);
-  await addBenchmarkScenarioTables(standardScenarios);
+  await addBenchmarkScenarioTables(standardScenarios, csvLoaderWithParser);
 
   for (const scenario of standardScenarios) {
-    const arrowOptions = {csv: {header: true as const, dynamicTyping: false}};
+    const arrowOptions = {
+      csv: {header: true as const, shape: 'arrow-table' as const, dynamicTyping: false}
+    };
     const csvOptions = {
       csv: {
         header: true as const,
-        shape: 'array-row-table' as const,
+        shape: 'object-row-table' as const,
         dynamicTyping: false
       }
     };
     const loaderBenchmarks = [
-      {name: 'CSVArrowLoader dynamicTyping=false', loader: CSVArrowLoader, options: arrowOptions},
-      {name: 'CSV2Loader dynamicTyping=false', loader: CSV2Loader, options: csvOptions},
-      {name: 'CSVLoader dynamicTyping=false', loader: CSVLoader, options: csvOptions}
+      {
+        name: "CSVLoader#parse({header:true, shape: 'arrow-table', dynamicTyping: false})",
+        loader: csvLoaderWithParser,
+        options: arrowOptions
+      },
+      {
+        name: "CSVLoader#parse({header:true, shape: 'object-row-table', dynamicTyping: false})",
+        loader: csvLoaderWithParser,
+        options: csvOptions
+      }
     ];
 
-    let braggartsBench = bench.group(`CSV Decode - The Braggarts - Untyped - ${scenario.name}`);
-    braggartsBench = addUDSVParseBenchmark(braggartsBench, scenario, false);
-    braggartsBench = addD3ParseBenchmark(braggartsBench, scenario, false);
-    braggartsBench = addExternalParserBenchmarks(braggartsBench, scenario, false);
-
-    let loadersBench = bench.group(`CSV Decode - loaders.gl - Untyped - ${scenario.name}`);
-    loadersBench = addLoaderBenchmarks(loadersBench, scenario, loaderBenchmarks, {
-      isPrimaryScenario: true
+    let decodeBench = bench.group(`CSV Decode - Untyped - ${scenario.name}`);
+    decodeBench = addUDSVParseBenchmark(decodeBench, scenario, false);
+    decodeBench = addD3ParseBenchmark(decodeBench, scenario, false);
+    decodeBench = addExternalParserBenchmarks(decodeBench, scenario, false);
+    decodeBench = addLoaderBenchmarks(decodeBench, scenario, loaderBenchmarks, {
+      operation: 'parse'
     });
   }
 
+  await addCSVArrowTableWorkerBenchmarks(bench, standardScenarios);
+
   for (const scenario of standardScenarios) {
-    const arrowOptions = {csv: {header: true as const, dynamicTyping: true}};
+    const arrowOptions = {
+      csv: {header: true as const, shape: 'arrow-table' as const, dynamicTyping: true}
+    };
     const csvOptions = {
       csv: {
         header: true as const,
-        shape: 'array-row-table' as const,
+        shape: 'object-row-table' as const,
         dynamicTyping: true
       }
     };
     const loaderBenchmarks = [
-      {name: 'CSVArrowLoader dynamicTyping=true', loader: CSVArrowLoader, options: arrowOptions},
-      {name: 'CSV2Loader dynamicTyping=true', loader: CSV2Loader, options: csvOptions},
-      {name: 'CSVLoader dynamicTyping=true', loader: CSVLoader, options: csvOptions}
+      {
+        name: "CSVLoader#parse({header:true, shape: 'arrow-table', dynamicTyping: true})",
+        loader: csvLoaderWithParser,
+        options: arrowOptions
+      },
+      {
+        name: "CSVLoader#parse({header:true, shape: 'object-row-table', dynamicTyping: true})",
+        loader: csvLoaderWithParser,
+        options: csvOptions
+      }
     ];
 
-    let braggartsBench = bench.group(`CSV Decode - The Braggarts - Typed - ${scenario.name}`);
-    braggartsBench = addUDSVParseBenchmark(braggartsBench, scenario, true);
-    braggartsBench = addD3ParseBenchmark(braggartsBench, scenario, true);
-    braggartsBench = addExternalParserBenchmarks(braggartsBench, scenario, true);
-
-    let loadersBench = bench.group(`CSV Decode - loaders.gl - Typed - ${scenario.name}`);
-    loadersBench = addLoaderBenchmarks(loadersBench, scenario, loaderBenchmarks, {
-      isPrimaryScenario: true
+    let decodeBench = bench.group(`CSV Decode - Typed - ${scenario.name}`);
+    decodeBench = addUDSVParseBenchmark(decodeBench, scenario, true);
+    decodeBench = addD3ParseBenchmark(decodeBench, scenario, true);
+    decodeBench = addExternalParserBenchmarks(decodeBench, scenario, true);
+    decodeBench = addLoaderBenchmarks(decodeBench, scenario, loaderBenchmarks, {
+      operation: 'parse'
     });
   }
 
   for (const scenario of standardScenarios) {
-    let braggartsBench = bench.group(`CSV Encode - The Braggarts - Untyped - ${scenario.name}`);
-    braggartsBench = addD3FormatBenchmark(braggartsBench, scenario, false);
-
-    let loadersBench = bench.group(`CSV Encode - loaders.gl - Untyped - ${scenario.name}`);
-    loadersBench = addWriterBenchmarks(loadersBench, scenario, false);
+    let encodeBench = bench.group(`CSV Encode - Untyped - ${scenario.name}`);
+    encodeBench = addD3FormatBenchmark(encodeBench, scenario, false);
+    encodeBench = addWriterBenchmarks(encodeBench, scenario, false);
   }
 
   for (const scenario of standardScenarios) {
-    let braggartsBench = bench.group(`CSV Encode - The Braggarts - Typed - ${scenario.name}`);
-    braggartsBench = addD3FormatBenchmark(braggartsBench, scenario, true);
-
-    let loadersBench = bench.group(`CSV Encode - loaders.gl - Typed - ${scenario.name}`);
-    loadersBench = addWriterBenchmarks(loadersBench, scenario, true);
+    let encodeBench = bench.group(`CSV Encode - Typed - ${scenario.name}`);
+    encodeBench = addD3FormatBenchmark(encodeBench, scenario, true);
+    encodeBench = addWriterBenchmarks(encodeBench, scenario, true);
   }
 
   // csvDebugBench includes generated scenarios, parser/tokenizer diagnostics and is
   // intentionally excluded from standard benchmark runs. Uncomment when investigating CSV internals.
-  // await addBenchmarkScenarioTables(scenarios);
-  // bench = csvDebugBench(bench, scenarios);
+  // await addBenchmarkScenarioTables(scenarios, csvLoaderWithParser);
+  // bench = csvDebugBench(bench, scenarios, csvLoaderWithParser);
 
   return bench;
 }
 
+/** Adds browser worker throughput benchmarks for CSV Arrow parsing. */
+async function addCSVArrowTableWorkerBenchmarks(
+  bench,
+  scenarios: BenchmarkScenario[]
+): Promise<void> {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  for (const scenario of scenarios) {
+    const workerCounts = [1, 2, 3];
+    const workerLoaders = workerCounts.map(createCSVWorkerBenchmarkLoader);
+
+    await Promise.all(
+      workerLoaders.map(({loader, workerCount}) =>
+        preloadWorker(
+          loader,
+          {
+            worker: true,
+            _workerType: 'test',
+            maxConcurrency: workerCount,
+            reuseWorkers: true
+          },
+          {count: workerCount}
+        )
+      )
+    );
+
+    let workerBench = bench.group(`CSV Worker Decode - Arrow - ${scenario.name}`);
+    workerBench = workerBench.addAsync(
+      'CSVLoader main-thread arrow-table#parse',
+      {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
+      async () =>
+        await parse(scenario.arrayBuffer.slice(0), CSVLoader, {
+          csv: {header: true, shape: 'arrow-table', dynamicTyping: false}
+        })
+    );
+
+    for (const {loader, workerCount} of workerLoaders) {
+      workerBench = workerBench.addAsync(
+        `CSVLoader worker arrow-table workers=${workerCount}#parse`,
+        {
+          ...BENCHMARK_OPTIONS,
+          _throughput: workerCount,
+          multiplier: scenario.rowCount,
+          unit: 'rows'
+        },
+        async () =>
+          await parse(scenario.arrayBuffer.slice(0), loader, {
+            csv: {header: true, shape: 'arrow-table', dynamicTyping: false},
+            core: {
+              worker: true,
+              _workerType: 'test',
+              maxConcurrency: workerCount,
+              reuseWorkers: true
+            }
+          })
+      );
+    }
+  }
+}
+
+/** Creates a CSV loader clone with an isolated worker pool name for benchmark concurrency. */
+function createCSVWorkerBenchmarkLoader(workerCount: number): Loader<any, any, any> {
+  return {
+    ...CSVLoader,
+    name: `CSV worker benchmark ${workerCount}`
+  };
+}
+
 function addD3ParseBenchmark(bench, scenario: BenchmarkScenario, dynamicTyping: boolean) {
+  const format = scenario.name === 'tsv' ? 'tsv' : 'csv';
+  const rowTransform = dynamicTyping ? 'autoType' : 'none';
   return bench.addAsync(
-    `d3-dsv ${scenario.name} dynamicTyping=${dynamicTyping}#parse`,
+    `d3-dsv format=${format} header=first-row rowType=object rowTransform=${rowTransform}#parse`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => {
       // @ts-ignore
@@ -161,8 +245,9 @@ function addExternalParserBenchmarks(bench, scenario: BenchmarkScenario, dynamic
 
 /** Adds the latest npm PapaParse package as an external parser baseline. */
 function addPapaParseNPMBenchmark(bench, scenario: BenchmarkScenario, dynamicTyping: boolean) {
+  const delimiter = scenario.name === 'tsv' ? '\\t' : 'auto';
   return bench.addAsync(
-    `PapaParse npm ${scenario.name} dynamicTyping=${dynamicTyping}#parse`,
+    `PapaParse npm header=true rowType=object delimiter=${delimiter} dynamicTyping=${dynamicTyping}#parse`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () =>
       PapaParseNPM.parse(scenario.text, {
@@ -175,8 +260,10 @@ function addPapaParseNPMBenchmark(bench, scenario: BenchmarkScenario, dynamicTyp
 
 /** Adds a uDSV parse benchmark for either string-object or typed-object output. */
 function addUDSVParseBenchmark(bench, scenario: BenchmarkScenario, dynamicTyping: boolean) {
+  const delimiter = scenario.name === 'tsv' ? '\\t' : ',';
+  const mode = dynamicTyping ? 'typedObjs' : 'stringObjs';
   return bench.addAsync(
-    `uDSV ${scenario.name} dynamicTyping=${dynamicTyping}#parse`,
+    `uDSV header=true rowType=object delimiter=${delimiter} mode=${mode}#parse`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => {
       const schema = inferSchema(scenario.text, {
@@ -190,8 +277,9 @@ function addUDSVParseBenchmark(bench, scenario: BenchmarkScenario, dynamicTyping
 
 /** Adds a csv-parser streaming benchmark for untyped object-row output. */
 function addCSVParserParseBenchmark(bench, scenario: BenchmarkScenario) {
+  const delimiter = scenario.name === 'tsv' ? '\\t' : ',';
   return bench.addAsync(
-    `csv-parser ${scenario.name} dynamicTyping=false#parse`,
+    `csv-parser header=true rowType=object delimiter=${delimiter}#parse`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => parseWithCSVParser(scenario.text, scenario.name === 'tsv')
   );
@@ -215,7 +303,7 @@ function parseWithCSVParser(text: string, isTSV: boolean): Promise<any[]> {
 
 type LoaderBenchmark = {
   name: string;
-  loader: LoaderWithParser<any, any, any>;
+  loader: Loader<any, any, any>;
   options: any;
 };
 
@@ -224,16 +312,10 @@ function addLoaderBenchmarks(
   bench,
   scenario: BenchmarkScenario,
   loaderBenchmarks: LoaderBenchmark[],
-  options: {isPrimaryScenario: boolean}
+  options: {operation: 'parseText' | 'parse'}
 ) {
   for (const loaderBenchmark of loaderBenchmarks) {
-    if (options.isPrimaryScenario) {
-      bench = addLoaderOperationBenchmark(bench, scenario, 'parse', loaderBenchmark);
-    }
-    bench = addLoaderOperationBenchmark(bench, scenario, 'parseInBatches', loaderBenchmark);
-    if (options.isPrimaryScenario) {
-      bench = addLoaderOperationBenchmark(bench, scenario, 'parseText', loaderBenchmark);
-    }
+    bench = addLoaderOperationBenchmark(bench, scenario, options.operation, loaderBenchmark);
   }
 
   return bench;
@@ -243,25 +325,18 @@ function addLoaderBenchmarks(
 function addLoaderOperationBenchmark(
   bench,
   scenario: BenchmarkScenario,
-  operation: 'parseInBatches' | 'parseText' | 'parse',
+  operation: 'parseText' | 'parse',
   loaderBenchmark: LoaderBenchmark
 ) {
   return bench.addAsync(
-    `${loaderBenchmark.name} ${scenario.name}#${operation}`,
+    loaderBenchmark.name,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => {
       switch (operation) {
-        case 'parseInBatches':
-          return await consumeBatches(
-            loaderBenchmark.loader.parseInBatches?.(scenario.chunks, loaderBenchmark.options)
-          );
         case 'parseText':
-          return await loaderBenchmark.loader.parseText?.(scenario.text, loaderBenchmark.options);
+          return await parse(scenario.text, loaderBenchmark.loader, loaderBenchmark.options);
         case 'parse':
-          return await loaderBenchmark.loader.parse?.(
-            scenario.arrayBuffer,
-            loaderBenchmark.options
-          );
+          return await parse(scenario.text, loaderBenchmark.loader, loaderBenchmark.options);
         default:
           throw new Error(operation);
       }
@@ -273,7 +348,6 @@ type BenchmarkScenario = {
   name: string;
   text: string;
   arrayBuffer: ArrayBuffer;
-  chunks: Uint8Array[];
   byteLength: number;
   rowCount: number;
   d3UntypedRows?: any[];
@@ -315,42 +389,46 @@ function createBenchmarkScenario(
     name,
     text,
     arrayBuffer: bytes.buffer,
-    chunks: createChunks(bytes, STREAM_CHUNK_SIZE),
     byteLength: bytes.byteLength,
     rowCount
   };
 }
 
-async function addBenchmarkScenarioTables(scenarios: BenchmarkScenario[]): Promise<void> {
+async function addBenchmarkScenarioTables(
+  scenarios: BenchmarkScenario[],
+  csvLoaderWithParser: Loader
+): Promise<void> {
   for (const scenario of scenarios) {
     const isTSV = scenario.name === 'tsv';
     scenario.d3UntypedRows = isTSV ? tsvParse(scenario.text) : csvParse(scenario.text);
     scenario.d3TypedRows = isTSV
       ? tsvParse(scenario.text, autoType)
       : csvParse(scenario.text, autoType);
-    scenario.untypedCSVTable = await CSVLoader.parseText(scenario.text, {
+    scenario.untypedCSVTable = await parse(scenario.text, csvLoaderWithParser, {
       csv: {
         header: true,
         shape: 'array-row-table',
         dynamicTyping: false
       }
     });
-    scenario.typedCSVTable = await CSVLoader.parseText(scenario.text, {
+    scenario.typedCSVTable = await parse(scenario.text, csvLoaderWithParser, {
       csv: {
         header: true,
         shape: 'array-row-table',
         dynamicTyping: true
       }
     });
-    scenario.untypedArrowTable = await CSVArrowLoader.parse(scenario.arrayBuffer, {
+    scenario.untypedArrowTable = await parse(scenario.text, csvLoaderWithParser, {
       csv: {
         header: true,
+        shape: 'arrow-table',
         dynamicTyping: false
       }
     });
-    scenario.typedArrowTable = await CSVArrowLoader.parse(scenario.arrayBuffer, {
+    scenario.typedArrowTable = await parse(scenario.text, csvLoaderWithParser, {
       csv: {
         header: true,
+        shape: 'arrow-table',
         dynamicTyping: true
       }
     });
@@ -358,8 +436,10 @@ async function addBenchmarkScenarioTables(scenarios: BenchmarkScenario[]): Promi
 }
 
 function addD3FormatBenchmark(bench, scenario: BenchmarkScenario, dynamicTyping: boolean) {
+  const format = scenario.name === 'tsv' ? 'tsv' : 'csv';
+  const inputRows = dynamicTyping ? 'typed' : 'untyped';
   return bench.addAsync(
-    `d3-dsv ${scenario.name} dynamicTyping=${dynamicTyping}#format`,
+    `d3-dsv format=${format} rowType=object inputRows=${inputRows}#format`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => {
       const rows = dynamicTyping ? scenario.d3TypedRows : scenario.d3UntypedRows;
@@ -371,9 +451,10 @@ function addD3FormatBenchmark(bench, scenario: BenchmarkScenario, dynamicTyping:
 function addWriterBenchmarks(bench, scenario: BenchmarkScenario, dynamicTyping: boolean) {
   const csvTable = dynamicTyping ? scenario.typedCSVTable : scenario.untypedCSVTable;
   const arrowTable = dynamicTyping ? scenario.typedArrowTable : scenario.untypedArrowTable;
+  const inputRows = dynamicTyping ? 'typed' : 'untyped';
 
   bench = bench.addAsync(
-    `CSVWriter ${scenario.name} dynamicTyping=${dynamicTyping}#encodeText`,
+    `CSVWriter rowType=object format=csv inputRows=${inputRows}#encodeText`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => {
       return await encodeTableAsText(csvTable!, CSVWriter);
@@ -381,10 +462,10 @@ function addWriterBenchmarks(bench, scenario: BenchmarkScenario, dynamicTyping: 
   );
 
   bench = bench.addAsync(
-    `CSVArrowWriter ${scenario.name} dynamicTyping=${dynamicTyping}#encodeText`,
+    `CSVWriter rowType=arrow-table format=csv inputRows=${inputRows}#encodeText`,
     {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
     async () => {
-      return await encodeTableAsText(arrowTable!, CSVArrowWriter);
+      return await encodeTableAsText(arrowTable!, CSVWriter);
     }
   );
 
@@ -397,7 +478,7 @@ function addWriterBenchmarks(bench, scenario: BenchmarkScenario, dynamicTyping: 
  * @param scenarios CSV benchmark scenarios.
  * @returns Benchmark suite with CSV debug diagnostics added.
  */
-function csvDebugBench(bench, scenarios: BenchmarkScenario[]) {
+export function csvDebugBench(bench, scenarios: BenchmarkScenario[], csvLoaderWithParser: Loader) {
   const diagnosticScenarios = [
     scenarios.find(scenario => scenario.name === 'unquoted fast-mode'),
     scenarios.find(scenario => scenario.name === 'quoted'),
@@ -409,11 +490,8 @@ function csvDebugBench(bench, scenarios: BenchmarkScenario[]) {
 
   for (const scenario of diagnosticScenarios) {
     diagnosticBench = addTokenizerBenchmarks(diagnosticBench, scenario);
-    diagnosticBench = addCSVLoaderOptionBenchmarks(diagnosticBench, scenario);
+    diagnosticBench = addCSVLoaderOptionBenchmarks(diagnosticBench, scenario, csvLoaderWithParser);
   }
-
-  const streamingScenario = scenarios.find(scenario => scenario.name === 'fixture') || scenarios[0];
-  diagnosticBench = addStreamingChunkSizeBenchmarks(diagnosticBench, streamingScenario);
 
   return bench;
 }
@@ -470,7 +548,11 @@ function addTokenizerBenchmarks(bench, scenario: BenchmarkScenario) {
   return bench;
 }
 
-function addCSVLoaderOptionBenchmarks(bench, scenario: BenchmarkScenario) {
+function addCSVLoaderOptionBenchmarks(
+  bench,
+  scenario: BenchmarkScenario,
+  csvLoaderWithParser: Loader
+) {
   const delimiter = scenario.name === 'tsv' ? '\t' : ',';
   const baseCSVOptions = {
     header: true as const,
@@ -484,7 +566,7 @@ function addCSVLoaderOptionBenchmarks(bench, scenario: BenchmarkScenario) {
         `CSVLoader options ${scenario.name}#${shape} dynamicTyping=${dynamicTyping}`,
         {...BENCHMARK_OPTIONS, multiplier: scenario.rowCount, unit: 'rows'},
         async () => {
-          return await CSVLoader.parseText(scenario.text, {
+          return await parse(scenario.text, csvLoaderWithParser, {
             csv: {
               ...baseCSVOptions,
               shape,
@@ -499,59 +581,8 @@ function addCSVLoaderOptionBenchmarks(bench, scenario: BenchmarkScenario) {
   return bench;
 }
 
-function addStreamingChunkSizeBenchmarks(bench, scenario: BenchmarkScenario) {
-  const options = {
-    csv: {
-      header: true as const,
-      shape: 'array-row-table' as const,
-      dynamicTyping: false,
-      skipEmptyLines: false
-    }
-  };
-
-  for (const chunkSize of STREAM_CHUNK_SIZES) {
-    const chunks = createChunks(new Uint8Array(scenario.arrayBuffer), chunkSize);
-    bench = bench.addAsync(
-      `Streaming ${scenario.name}#parseInBatches chunkSize=${chunkSize}`,
-      {...BENCHMARK_OPTIONS, multiplier: scenario.byteLength, unit: 'bytes'},
-      async () => {
-        return await consumeBatches(CSVLoader.parseInBatches(chunks, options));
-      }
-    );
-  }
-
-  bench = bench.addAsync(
-    `Streaming ${scenario.name}#parseInBatches chunkSize=whole`,
-    {...BENCHMARK_OPTIONS, multiplier: scenario.byteLength, unit: 'bytes'},
-    async () => {
-      return await consumeBatches(CSVLoader.parseInBatches([scenario.arrayBuffer], options));
-    }
-  );
-
-  return bench;
-}
-
 function countDataRows(text: string): number {
   return Math.max(0, text.trimEnd().split('\n').length - 1);
-}
-
-function createChunks(bytes: Uint8Array, chunkSize: number): Uint8Array[] {
-  const chunks: Uint8Array[] = [];
-  for (let start = 0; start < bytes.byteLength; start += chunkSize) {
-    chunks.push(bytes.subarray(start, start + chunkSize));
-  }
-  return chunks;
-}
-
-async function consumeBatches(asyncIterable?: AsyncIterable<{length?: number}>): Promise<number> {
-  let rowCount = 0;
-  if (!asyncIterable) {
-    return rowCount;
-  }
-  for await (const batch of asyncIterable) {
-    rowCount += batch.length || 0;
-  }
-  return rowCount;
 }
 
 function createUnquotedCSV(): string {

@@ -30,6 +30,24 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
+    "./csv-worker.js": {
+      "import": "./dist/csv-worker.js"
+    },
+    "./csv-worker-node.js": {
+      "import": "./dist/csv-worker-node.js"
+    },
+    "./csv-writer": {
+      "types": "./dist/csv-writer.d.ts",
+      "import": "./dist/csv-writer.js"
     }
   },
   "sideEffects": false,
@@ -39,11 +57,15 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker && npm run build-worker-node && npm run build-bundle && npm run build-bundle-dev",
+    "build-worker": "esbuild src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
+    "@loaders.gl/arrow": "4.4.0",
+    "@loaders.gl/gis": "4.4.0",
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
     "apache-arrow": ">= 17.0.0",

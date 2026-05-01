@@ -11,13 +11,25 @@ import {
   ExampleTitle
 } from './styled';
 
-function renderItem(item, getThumbnail) {
+const DEFAULT_EXAMPLE_THUMBNAIL = '/images/maps.jpg';
+
+function renderItem(item, getThumbnail, defaultThumbnail) {
   const imageUrl = useBaseUrl(getThumbnail(item));
+  const fallbackImageUrl = useBaseUrl(defaultThumbnail);
   const {label, href} = item;
 
   return (
     <ExampleCard key={label} href={href}>
-      <img width="100%" src={imageUrl} alt={label} />
+      <img
+        width="100%"
+        src={imageUrl}
+        alt={label}
+        onError={(event) => {
+          const image = event.currentTarget;
+          image.onerror = null;
+          image.src = fallbackImageUrl;
+        }}
+      />
       <ExampleTitle>
         <span>{label}</span>
       </ExampleTitle>
@@ -25,24 +37,30 @@ function renderItem(item, getThumbnail) {
   );
 }
 
-function renderCategory({label, items}, getThumbnail) {
+function renderCategory({label, items}, getThumbnail, defaultThumbnail) {
   return [
     <ExampleHeader key={`${label}-header`}>{label}</ExampleHeader>,
     <ExamplesGroup key={label}>
-      {items.map(item => renderItem(item, getThumbnail))}
+      {items.map(item => renderItem(item, getThumbnail, defaultThumbnail))}
     </ExamplesGroup>
   ];
 }
 
-export default function ExamplesIndex({getThumbnail}) {
+export default function ExamplesIndex({
+  getThumbnail,
+  defaultThumbnail = DEFAULT_EXAMPLE_THUMBNAIL
+}) {
   const mainSidebar = useDocsSidebar();
-  const sidebar = mainSidebar.items[0];
-  return <MainExamples>
-    {sidebar.items.map(item => {
-      if (item.type === 'category' && item.items && item.label) {
-        return renderCategory(item, getThumbnail);
-      }
-      return null;
-    })}
-  </MainExamples>;
+  const sidebarItems = mainSidebar?.items?.[0]?.items || mainSidebar?.items || [];
+
+  return (
+    <MainExamples>
+      {sidebarItems.map(item => {
+        if (item.type === 'category' && item.items && item.label) {
+          return renderCategory(item, getThumbnail, defaultThumbnail);
+        }
+        return null;
+      })}
+    </MainExamples>
+  );
 }

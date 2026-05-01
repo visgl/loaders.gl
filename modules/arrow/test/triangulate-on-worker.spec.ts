@@ -8,7 +8,7 @@ import {
   triangulateOnWorker,
   parseGeoArrowOnWorker,
   TriangulationWorker,
-  hardClone,
+  splitArrowBuffers,
   ParseGeoArrowInput
 } from '@loaders.gl/arrow';
 import {fetchFile} from '@loaders.gl/core';
@@ -88,7 +88,7 @@ test('parseGeoArrowOnWorker', async t => {
   const geometryChunk = geometryColumn?.data[0];
 
   if (geometryChunk) {
-    const chunkCopy = hardClone(geometryChunk, true);
+    const chunkCopy = splitArrowBuffers(geometryChunk, {copy: 'all'});
     const chunkData = {
       type: {
         ...chunkCopy?.type,

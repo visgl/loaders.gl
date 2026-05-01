@@ -5,7 +5,7 @@
 import test from 'tape-promise/tape';
 import {readFile} from 'node:fs/promises';
 
-import {XMLLoader} from '@loaders.gl/xml';
+import {XMLLoader} from '@loaders.gl/xml/bundled';
 
 const FORECASTS_URL = new URL('./data/forecasts.xml', import.meta.url);
 

@@ -75,6 +75,7 @@ export type WorkerObject = {
               <= process-batches-error
  */
 export type WorkerMessageType =
+  | 'preload'
   | 'process'
   | 'done'
   | 'error'

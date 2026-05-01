@@ -6,7 +6,7 @@
 
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
-import {WKTLoader, WKTWorkerLoader} from '@loaders.gl/wkt';
+import {WKTLoader, WKTWorkerLoader} from '@loaders.gl/wkt/bundled';
 import {setLoaderOptions, fetchFile, parseSync} from '@loaders.gl/core';
 
 import fuzzer from 'fuzzer';

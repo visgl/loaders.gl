@@ -44,6 +44,10 @@ export async function createWorker(
   WorkerBody.onmessage = async (type: WorkerMessageType, payload: WorkerMessagePayload) => {
     try {
       switch (type) {
+        case 'preload':
+          WorkerBody.postMessage('done', {});
+          break;
+
         case 'process':
           if (!process) {
             throw new Error('Worker does not support atomic processing');

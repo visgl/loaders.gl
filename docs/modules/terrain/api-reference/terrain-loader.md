@@ -1,8 +1,17 @@
-# TerrainLoader
+# Terrain Loaders
+
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
 
 The `TerrainArrowLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values, and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
 `TerrainLoader` parses the same height map terrain formats and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+
+| Loader               | Output             | Use when                           |
+| -------------------- | ------------------ | ---------------------------------- |
+| `TerrainLoader`      | `Mesh`             | You want the legacy mesh object.   |
+| `TerrainArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
@@ -18,15 +27,14 @@ The `TerrainArrowLoader` reconstructs mesh surfaces from height map images, e.g.
 ## Usage
 
 ```typescript
-import {ImageLoader} from '@loaders.gl/images';
 import {TerrainArrowLoader, TerrainLoader} from '@loaders.gl/terrain';
-import {load, registerLoaders} from '@loaders.gl/core';
-
-registerLoaders(ImageLoader);
+import {load} from '@loaders.gl/core';
 
 const table = await load(url, TerrainArrowLoader, options);
 const data = await load(url, TerrainLoader, options);
 ```
+
+`TerrainLoader` internally decodes heightmap images with [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) and then converts them with `getImageData(image)`.
 
 ## Options
 

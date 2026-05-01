@@ -71,11 +71,23 @@
       "@loaders.gl/core/test": [
         "modules/core/test"
       ],
+      "@loaders.gl/test-utils/vitest": [
+        "test/vitest-async-test-utils.ts"
+      ],
+      "@loaders.gl/deck-layers": [
+        "modules/deck-layers/src"
+      ],
       "@loaders.gl/compression": [
         "modules/compression/src"
       ],
       "@loaders.gl/compression/test": [
         "modules/compression/test"
+      ],
+      "@loaders.gl/copc": [
+        "modules/copc/src"
+      ],
+      "@loaders.gl/copc/test": [
+        "modules/copc/test"
       ],
       "@loaders.gl/crypto": [
         "modules/crypto/src"
@@ -92,11 +104,17 @@
       "@loaders.gl/arrow": [
         "modules/arrow/src"
       ],
+      "@loaders.gl/arrow/transport": [
+        "modules/arrow/src/transport"
+      ],
       "@loaders.gl/arrow/test": [
         "modules/arrow/test"
       ],
       "@loaders.gl/csv": [
         "modules/csv/src"
+      ],
+      "@loaders.gl/csv/*": [
+        "modules/csv/src/*"
       ],
       "@loaders.gl/csv/test": [
         "modules/csv/test"
@@ -224,11 +242,26 @@
       "@loaders.gl/pmtiles/test": [
         "modules/pmtiles/test"
       ],
+      "@loaders.gl/sql": [
+        "modules/sql/src"
+      ],
+      "@loaders.gl/sql/test": [
+        "modules/sql/test"
+      ],
       "@loaders.gl/ply": [
         "modules/ply/src"
       ],
       "@loaders.gl/ply/test": [
         "modules/ply/test"
+      ],
+      "@loaders.gl/splats": [
+        "modules/splats/src"
+      ],
+      "@loaders.gl/splats/*": [
+        "modules/splats/src/*"
+      ],
+      "@loaders.gl/splats/test": [
+        "modules/splats/test"
       ],
       "@loaders.gl/potree": [
         "modules/potree/src"
@@ -265,6 +298,12 @@
       ],
       "@loaders.gl/textures/test": [
         "modules/textures/test"
+      ],
+      "@loaders.gl/traces": [
+        "modules/traces/src"
+      ],
+      "@loaders.gl/traces/test": [
+        "modules/traces/test"
       ],
       "@loaders.gl/video": [
         "modules/video/src"

@@ -5,6 +5,8 @@
   "version": "0.0.0",
   "exports": {
     ".": "./index.mjs",
+    "./bench-loader": "./bench-loader.mjs",
+    "./run-browser-benchmarks": "./run-browser-benchmarks.mjs",
     "./range-server": "./range-server.mjs",
     "./tape-test-utils": {
       "types": "./tape-test-utils.d.ts",
@@ -18,10 +20,12 @@
     "test-node": "cd ../.. && vitest run --config vitest.config.ts --project node",
     "test-browser": "cd ../.. && vitest run --config vitest.config.ts --project browser",
     "test-headless": "cd ../.. && vitest run --config vitest.config.ts --project headless",
+    "playwright:install": "playwright install",
     "test-coverage": "cd ../.. && vitest run --config vitest.config.ts --coverage --project node --project headless"
   },
   "dependencies": {
     "@biomejs/biome": "^2.4.8",
+    "@probe.gl/env": "^4.1.1",
     "@vitest/browser": "^4.0.18",
     "@vitest/browser-playwright": "^4.0.18",
     "@vitest/coverage-v8": "^4.0.18",

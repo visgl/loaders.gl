@@ -2,7 +2,7 @@
 
 loaders.gl is developed under open governance by multiple contributors working with their own priorities. This page aims to give information about upcoming releases and directions.
 
-## v4.4 (in development)
+## v5.0
 
 loaders.gl v4.4 will focus on cloud-native, binary data.
 A number of modules will expose "ArrowLoaders" will return binary data in the Apache Arrow and Apache GeoArrow formats.
@@ -24,7 +24,7 @@ While no loader support has been removed, the flavor of the loaders.gl framework
 ### Per-module changes
 
 - **`@loaders.gl/csv`**
-  - `CSVArrowLoader` - New CSV loader that returns Apache Arrow tables.
+  - `CSVLoader` - Supports Apache Arrow table output through `csv.shape: 'arrow-table'`.
 
 - **`@loaders.gl/parquet`**
   - `ParquetArrowLoader` now returns Apache Arrow tables and leverages the high-performance `parquet-wasm` library.
@@ -36,20 +36,11 @@ While no loader support has been removed, the flavor of the loaders.gl framework
 - **`@loaders.gl/gis`**
   - Now provides support for working Apache GeoArrow data.
 
-### Upgrading to v4.4
-
-- The `Source` and `DataSource` APIs have matured leading to some minor breaking changes.
-- TBA...
-
----
-
-## v5.0
 
 - **Cloud native** (raster/data): `GeoTIFFLoader`, `ZarrLoader`, kerchunk, NetCDF4, ...
 - **Cloud native** (point clouds): `COPCService`, `POTreeV2Service`...
 - Unbundled loaders (load non-worker loaders as separate bundle, similar to how workers are loaded today).
 - More comprehensive support for `options.shape` to control the output format of loaders.
-- `ffmpeg` WASM integration for `@loaders.gl/video`
 
 **Single output format per loader**
 

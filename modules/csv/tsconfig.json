@@ -8,6 +8,8 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../arrow"},
+    {"path": "../gis"},
     {"path": "../loader-utils"},
     {"path": "../schema"},
     {"path": "../schema-utils"}

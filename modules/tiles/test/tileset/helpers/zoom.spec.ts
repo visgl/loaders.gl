@@ -6,7 +6,7 @@ import {
   getZoomFromBoundingVolume,
   getZoomFromExtent,
   getZoomFromFullExtent
-} from '../../../src/tileset/helpers/zoom';
+} from '../../../src/tileset-3d/helpers/zoom';
 import {Ellipsoid} from '@math.gl/geospatial';
 
 test('Tiles zoom#getZoomFromBoundingVolume', t => {

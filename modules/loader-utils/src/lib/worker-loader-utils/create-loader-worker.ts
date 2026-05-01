@@ -1,4 +1,5 @@
 /* eslint-disable no-restricted-globals */
+import type {CoreAPI} from '../sources/data-source';
 import type {LoaderWithParser, LoaderOptions, LoaderContext, Loader} from '../../loader-types';
 import {createWorker} from '@loaders.gl/worker-utils';
 // import {validateLoaderVersion} from './validate-loader-version';
@@ -18,13 +19,35 @@ export async function createLoaderWorker(loader: LoaderWithParser) {
         options,
         context: {
           ...loaderContext,
+          coreApi: createWorkerCoreApi(),
           _parse: createParseOnMainThread(workerContext?.process)
         } as LoaderContext
       });
 
-      return result;
+      return loader.serializeWorkerResult
+        ? loader.serializeWorkerResult(result, options, loaderContext as LoaderContext)
+        : result;
     }
   );
+}
+
+/**
+ * Create a minimal core API implementation available inside worker loaders.
+ */
+function createWorkerCoreApi(): CoreAPI {
+  const unavailable = (methodName: keyof CoreAPI) => () => {
+    throw new Error(`context.coreApi.${methodName} is unavailable inside worker loaders.`);
+  };
+
+  return {
+    fetchFile: async (urlOrData, fetchOptions) =>
+      await fetch(urlOrData as RequestInfo | URL, fetchOptions),
+    parseSync: unavailable('parseSync'),
+    parse: unavailable('parse'),
+    parseInBatches: unavailable('parseInBatches'),
+    load: unavailable('load'),
+    loadInBatches: unavailable('loadInBatches')
+  };
 }
 
 /**
@@ -91,7 +114,8 @@ function getSerializableLoaderContext(context?: LoaderContext) {
   if (!context) {
     return undefined;
   }
-  const {fetch, loaders, _parse, _parseSync, _parseInBatches, ...serializableContext} = context;
+  const {fetch, loaders, coreApi, _parse, _parseSync, _parseInBatches, ...serializableContext} =
+    context;
   return JSON.parse(JSON.stringify(serializableContext));
 }
 

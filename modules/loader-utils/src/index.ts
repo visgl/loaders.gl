@@ -23,7 +23,7 @@ export type {
 
 // formats
 
-export type {Format} from './format-types';
+export type {Format, FormatEncoding} from './format-types';
 
 // loaders
 
@@ -33,6 +33,8 @@ export type {
   LoaderContext,
   StrictLoaderOptions,
   LoaderOptions,
+  LoaderShapeType,
+  LoaderOptionsWithShape,
   LoaderOptionsType,
   LoaderReturnType,
   LoaderBatchType,
@@ -140,24 +142,18 @@ export {
 export {default as RequestScheduler} from './lib/request-utils/request-scheduler';
 export {
   RangeRequestScheduler,
-  TileRangeRequestScheduler,
   createRangeStats,
   fetchHttpRange,
   getRangeStats
-} from './lib/request-utils/tile-range-request-scheduler';
+} from './lib/request-utils/range-request-scheduler';
 export type {
   RangeFetchRequest,
   RangeRequest,
   RangeRequestEvent,
   RangeRequestSchedulerProps,
   RangeRequestTransportResult,
-  RangeStats,
-  TileRangeFetchRequest,
-  TileRangeRequest,
-  TileRangeRequestEvent,
-  TileRangeRequestTransportResult,
-  TileRangeRequestSchedulerProps
-} from './lib/request-utils/tile-range-request-scheduler';
+  RangeStats
+} from './lib/request-utils/range-request-scheduler';
 
 // PATH HELPERS
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
@@ -204,9 +200,10 @@ export type {FileSystem, RandomAccessFileSystem} from './lib/filesystems/filesys
 export {NodeFileSystemFacade as NodeFilesystem} from './lib/filesystems/node-filesystem-facade';
 
 // EXPERIMENTAL: DATA SOURCES
-export type {Source, SourceArrayOptionsType, SourceArrayDataSourceType} from './source-types';
+export type {SourceLoader, SourceArrayOptionsType, SourceArrayDataSourceType} from './source-types';
+export {isSourceLoader} from './source-types';
 
-export type {DataSourceOptions} from './lib/sources/data-source';
+export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
 
 export {ImageSource} from './lib/sources/image-source';
@@ -214,9 +211,13 @@ export type {ImageType} from './lib/sources/utils/image-type';
 export type {ImageSourceMetadata} from './lib/sources/image-source';
 export type {GetImageParameters} from './lib/sources/image-source';
 
-export type {VectorSource} from './lib/sources/vector-source';
-export type {VectorSourceMetadata} from './lib/sources/vector-source';
-export type {GetFeaturesParameters} from './lib/sources/vector-source';
+export type {
+  GetFeaturesParameters,
+  VectorSource,
+  VectorSourceData,
+  VectorSourceLayer,
+  VectorSourceMetadata
+} from './lib/sources/vector-source';
 
 export type {TileSource} from './lib/sources/tile-source';
 export type {TileSourceMetadata, GetTileParameters} from './lib/sources/tile-source';
@@ -227,3 +228,14 @@ export type {ImageTileSource} from './lib/sources/image-tile-source';
 
 export type {VectorTileSource} from './lib/sources/vector-tile-source';
 export type {VectorTile} from './lib/sources/vector-tile-source';
+
+export {RasterSource, getRasterViewportBoundingBox} from './lib/sources/raster-source';
+export type {
+  RasterChannelDataType,
+  RasterBoundingBox,
+  RasterViewport,
+  RasterData,
+  GetRasterParameters,
+  RasterOverview,
+  RasterSourceMetadata
+} from './lib/sources/raster-source';

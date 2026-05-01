@@ -1,10 +1,16 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # Overview
+
+<TexturesDocsTabs active="overview" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />
 </p>
 
 The `@loaders.gl/textures` module contains loaders for compressed textures. More specifically it contains loaders and writers for compressed texture **container** formats, including KTX, DDS and PVR. It also supports supercompressed Basis textures and decoded Radiance HDR images.
+
+See [Texture Loaders](/docs/specifications/category-texture) for the shared category conventions.
 
 Note that a texture is more complex than an image. A texture typically has many subimages. A texture can represent a single logical image but can also be a texture cube, a texture array etc representing many logical images. In addition, each "image" typically has many mipmap levels.
 
@@ -41,10 +47,10 @@ The `@loaders.gl/textures` module handles the following formats:
 | [`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader) | KTX, DDS and PVR mip chains as `TextureLevel[]`                                                                                           |
 | [`RadianceHDRLoader`](/docs/modules/textures/api-reference/radiance-hdr-loader)             | Radiance `.hdr` textures as `Texture` <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />     |
 | [`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)                  | Crunch mip chains as `TextureLevel[]`                                                                                                     |
-| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" /> |
-| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />            |
-| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />                  |
-| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Manifest-driven cube arrays <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />               |
+| [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader)                      | Manifest-driven single image or mip chain <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
+| [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader)           | Manifest-driven texture arrays <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />            |
+| [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader)             | Manifest-driven cubemaps <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />                  |
+| [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader)  | Manifest-driven cube arrays <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />               |
 
 ## Return Types
 
@@ -80,13 +86,13 @@ See [`BasisLoader`](/docs/modules/textures/api-reference/basis-loader) and [`Com
 
 The textures module also includes manifest-driven loaders for composite image textures:
 
-- [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader) for a single image or mip chain <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
-- [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) for texture arrays, including mipmapped layers <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
-- [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader) for cubemaps, including mipmapped faces <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
-- [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+- [`TextureLoader`](/docs/modules/textures/api-reference/texture-loader) for a single image or mip chain <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- [`TextureArrayLoader`](/docs/modules/textures/api-reference/texture-array-loader) for texture arrays, including mipmapped layers <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- [`TextureCubeLoader`](/docs/modules/textures/api-reference/texture-cube-loader) for cubemaps, including mipmapped faces <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+- [`TextureCubeArrayLoader`](/docs/modules/textures/api-reference/texture-cube-array-loader) for cube arrays <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 These loaders resolve relative member URLs against the manifest URL, or against `options.core.baseUrl` when parsing an in-memory manifest.
-Member assets are parsed with `ImageLoader` by default, and additional loaders passed to top-level `load()` are also available for manifest members.
+Member assets are parsed with `ImageBitmapLoader` by default.
 They return schema `Texture` objects rather than raw image trees.
 
 ## Attributions

@@ -3,20 +3,22 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const packageDirectory = path.dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = path.resolve(packageDirectory, '..');
 const repoRoot = path.resolve(packageDirectory, '..', '..', '..');
+const biomeConfigPath = path.join(repoRoot, 'biome.jsonc');
 const biomeArguments = process.argv.slice(2);
 const mode = biomeArguments[0] === 'fix' ? 'fix' : 'check';
 const extraArguments = mode === 'fix' ? biomeArguments.slice(1) : biomeArguments;
-const targetPaths = ['modules', 'apps', 'dev-docs', 'docs', 'test'];
-const sharedArguments = [
-  '--config-path=biome.jsonc',
-  '--files-ignore-unknown=true',
-  '--no-errors-on-unmatched',
-  '--reporter=summary'
-];
+const targetPaths = [repoRoot];
+const sharedArguments = [`--config-path=${biomeConfigPath}`, '--files-ignore-unknown=true', '--no-errors-on-unmatched'];
 
-runBiome('format', mode === 'fix' ? ['--write'] : []);
-runBiome('lint', mode === 'fix' ? ['--write', '--diagnostic-level=error'] : ['--diagnostic-level=warn']);
+runBiome('format', mode === 'fix' ? ['--write', '--reporter=summary'] : ['--reporter=summary']);
+runBiome(
+  'lint',
+  mode === 'fix'
+    ? ['--write', '--diagnostic-level=warn']
+    : ['--diagnostic-level=warn', '--reporter=summary']
+);
 
 function runBiome(command, commandArguments) {
   const result = spawnSync(
@@ -31,7 +33,7 @@ function runBiome(command, commandArguments) {
       ...targetPaths
     ],
     {
-      cwd: repoRoot,
+      cwd: workspaceRoot,
       stdio: 'inherit'
     }
   );

@@ -4,6 +4,8 @@
 
 Current support:
 - Biome base config and root lint wrapper used by `yarn lint` / `yarn lint fix`
+- Benchmark resolver used by `yarn test bench`
+- Browser benchmark runner used by `yarn test bench-browser` / `yarn test bench-headless`
 
 Boundary:
 - Reusable defaults and helper code live in `dev-modules/devtools-extensions`

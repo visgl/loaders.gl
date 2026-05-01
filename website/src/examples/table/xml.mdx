@@ -1,0 +1,23 @@
+---
+title: "XML"
+hide_title: true
+---
+
+import {ClientStructuredDataLiveExample} from '@site/src/components/docs/client-structured-data-live-example';
+import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+
+<XmlDocsTabs active="try-it" />
+
+<ClientStructuredDataLiveExample
+  config={{
+    loaderName: 'XMLLoader',
+    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/xml/test/data/forecasts.xml',
+    sampleFiles: [
+      {
+        label: 'forecasts.xml',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/xml/test/data/forecasts.xml'
+      }
+    ],
+    options: {xml: {removeNSPrefix: true}}
+  }}
+/>

@@ -1,8 +1,15 @@
+import {isBrowser as checkIsBrowser} from '@probe.gl/env';
 import {test as vitestTest, expect} from 'vitest';
 
 type TestCallback = (test: Test) => void | Promise<void>;
 
 type MatchPattern = RegExp | string;
+
+/** True when the current Vitest project is running in a browser-like runtime. */
+export const isBrowser = checkIsBrowser();
+
+/** True when the current Vitest project is running in Node.js. */
+export const isNode = !isBrowser;
 
 function isArrayBufferView(value: unknown): value is ArrayBufferView {
   return ArrayBuffer.isView(value);
@@ -398,12 +405,17 @@ class VitestTape implements Test {
   async run(callback: TestCallback): Promise<void> {
     try {
       const waitsForEnd = usesExplicitEndSignal(callback);
+      let callbackResult: void | Promise<void>;
 
       if (this.timeoutMilliseconds === undefined) {
-        await callback(this);
+        callbackResult = callback(this);
+        if (isPromiseLike(callbackResult)) {
+          await callbackResult;
+        }
       } else {
+        callbackResult = callback(this);
         await Promise.race([
-          callback(this),
+          callbackResult,
           new Promise((_, reject) =>
             setTimeout(
               () => reject(new Error(`Test timed out after ${this.timeoutMilliseconds}ms`)),
@@ -498,6 +510,37 @@ const test = wrapTest(vitestTest) as TapeTestFunction;
 
 test.only = wrapTest(vitestTest.only);
 test.skip = wrapTest(vitestTest.skip);
+
+/**
+ * Registers a tape-style test when `condition` is true, otherwise registers it as skipped.
+ */
+export function testIf(
+  condition: boolean,
+  name: string,
+  callback: TestCallback
+): ReturnType<TapeTestFunction['skip']> | ReturnType<TapeTestFunction> {
+  return condition ? test(name, callback) : test.skip(name, callback);
+}
+
+/**
+ * Registers a tape-style test only in browser-like runtimes.
+ */
+export function testIfBrowser(
+  name: string,
+  callback: TestCallback
+): ReturnType<TapeTestFunction['skip']> | ReturnType<TapeTestFunction> {
+  return testIf(isBrowser, name, callback);
+}
+
+/**
+ * Registers a tape-style test only in Node.js.
+ */
+export function testIfNode(
+  name: string,
+  callback: TestCallback
+): ReturnType<TapeTestFunction['skip']> | ReturnType<TapeTestFunction> {
+  return testIf(isNode, name, callback);
+}
 
 export {test};
 export default test;

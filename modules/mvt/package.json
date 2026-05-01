@@ -27,6 +27,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
     "./mvt-worker.js": {
       "import": "./dist/mvt-worker.js"
     }
@@ -50,7 +58,8 @@
     "@loaders.gl/schema": "4.4.0",
     "@math.gl/polygon": "^4.1.0",
     "@probe.gl/stats": "^4.1.1",
-    "pbf": "^3.2.1"
+    "pbf": "^3.2.1",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/pbf": "^3.0.2"

@@ -1,13 +1,7 @@
-// loaders.gl
-// SPDX-License-Identifier: MIT
-// Copyright (c) vis.gl contributors
-
-import test from 'tape-promise/tape';
-
+import {test} from 'vitest';
 import {isBrowser} from '@loaders.gl/core';
 
 // const JSON_DATA = [{col1: 22, col2: 'abc'}];
-
 // const JSONLoader = {
 //   name: 'JSON',
 //   extensions: ['json'],
@@ -15,43 +9,12 @@ import {isBrowser} from '@loaders.gl/core';
 //   parseTextSync: JSON.parse
 // };
 
-test('parse#Blob (text)', async t => {
-  if (!isBrowser) {
-    t.comment('Skipping parse(Blob) tests in Node.js');
-    t.end();
-    return;
-  }
+test.runIf(isBrowser)('parse#Blob (text)', async () => {});
 
-  // TODO/ActionEngine - restore test
-  // const TEXT_DATA = JSON.stringify(JSON_DATA);
-  // const blob = new Blob([TEXT_DATA]);
-
-  // // @ts-ignore (partial loader object)
-  // const data = await parse(blob, JSONLoader);
-
-  // t.deepEquals(data, JSON_DATA, 'parse(Blob) returned data');
-
-  t.end();
+test.runIf(isBrowser)('parse#Blob (binary)', async () => {
+  console.log('Not implemented...');
 });
 
-test('parse#Blob (binary)', async t => {
-  if (!isBrowser) {
-    t.comment('Skipping parse(Blob) tests in Node.js');
-    t.end();
-    return;
-  }
-
-  t.comment('Not implemented...');
-  t.end();
-});
-
-test('parse#Blob (streaming parser)', async t => {
-  if (!isBrowser) {
-    t.comment('Skipping fetchFile in Node.js');
-    t.end();
-    return;
-  }
-
-  t.comment('Not implemented...');
-  t.end();
+test.runIf(isBrowser)('parse#Blob (streaming parser)', async () => {
+  console.log('Not implemented...');
 });

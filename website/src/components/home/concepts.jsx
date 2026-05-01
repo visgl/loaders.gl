@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import styled from 'styled-components';
+import SourceLoaderGraphic from '../source-loader-graphic';
 
 const categoryTabs = [
   {
@@ -12,9 +13,9 @@ const categoryTabs = [
         loaders: [
           'DracoArrowLoader',
           'LASArrowLoader',
-          'OBJArrowLoader',
-          'PCDArrowLoader',
-          'PLYArrowLoader',
+          'OBJLoader',
+          'PCDLoader',
+          'PLYLoader',
           'QuantizedMeshArrowLoader',
           'TerrainArrowLoader'
         ],
@@ -57,14 +58,8 @@ const categoryTabs = [
       arrow: {
         data: 'Arrow table data',
         detail: 'Columnar',
-        loaders: [
-          'ArrowLoader',
-          'CSVArrowLoader',
-          'ExcelArrowLoader',
-          'NDJSONArrowLoader',
-          'ParquetArrowLoader'
-        ],
-        writers: ['ArrowWriter', 'CSVArrowWriter', 'ParquetArrowWriter']
+        loaders: ['ArrowLoader', 'CSVLoader', 'ExcelLoader', 'NDJSONLoader', 'ParquetArrowLoader'],
+        writers: ['ArrowWriter', 'ParquetArrowWriter']
       },
       plain: {
         data: 'Table category data',
@@ -192,62 +187,6 @@ const representationTabs = [
   {id: 'plain', label: 'Plain'}
 ];
 
-const sourceTabs = [
-  {
-    id: 'vector-tile-source',
-    label: 'Vector Tiles',
-    sources: ['PMTilesSource', 'MVTSource', 'MLTSource', 'TableTileSource'],
-    dataSource: 'VectorTileDataSource',
-    methods: ['getMetadata()', 'getTile()'],
-    outputCategory: 'VectorTileTables',
-    outputDetail: 'Tables<ArrowTable>',
-    loadingManager: 'Tileset2D',
-    deckLayers: ['MVTLayer', 'GeoJsonLayer']
-  },
-  {
-    id: 'image-tile-source',
-    label: 'Image Tiles',
-    sources: ['PMTilesSource', 'MVTSource'],
-    dataSource: 'ImageTileDataSource',
-    methods: ['getMetadata()', 'getImageTile()'],
-    outputCategory: 'ImageTile',
-    outputDetail: 'ImageType',
-    loadingManager: 'Tileset2D',
-    deckLayers: ['BitmapLayer']
-  },
-  {
-    id: 'image-source',
-    label: 'Images',
-    sources: ['WMSSource'],
-    dataSource: 'ImageDataSource',
-    methods: ['getMetadata()', 'getImage()'],
-    outputCategory: 'MapImage',
-    outputDetail: 'ImageType',
-    loadingManager: 'Image2D',
-    deckLayers: ['BitmapLayer']
-  },
-  {
-    id: 'tile-source',
-    label: '3D Tiles',
-    sources: ['COPCSource'],
-    dataSource: 'TileDataSource',
-    methods: ['getMetadata()', 'getTile()'],
-    outputCategory: 'PointTile',
-    outputDetail: 'Point cloud tile',
-    loadingManager: 'Tileset3D',
-    deckLayers: ['PointCloudLayer']
-  }
-];
-
-const sourceTags = {
-  COPCSource: 'Cloud Archive',
-  MLTSource: 'Web Service',
-  MVTSource: 'Cloud Archive',
-  PMTilesSource: 'Cloud Archive',
-  TableTileSource: 'Generated',
-  WMSSource: 'Web Service'
-};
-
 const subloaders = ['DracoLoader', 'ImageLoader', 'TextureLoader'];
 
 const categoryDocumentationLinks = {
@@ -267,7 +206,6 @@ const loaderDocumentationLinks = {
   CesiumIonLoader: '/docs/modules/3d-tiles/api-reference/cesium-ion-loader',
   CompressedTextureLoader: '/docs/modules/textures/api-reference/compressed-texture-loader',
   CrunchWorkerLoader: '/docs/modules/textures/api-reference/crunch-loader',
-  CSVArrowLoader: '/docs/modules/csv/api-reference/csv-loader',
   CSVLoader: '/docs/modules/csv/api-reference/csv-loader',
   DracoArrowLoader: '/docs/modules/draco/api-reference/draco-loader',
   DracoLoader: '/docs/modules/draco/api-reference/draco-loader',
@@ -288,15 +226,11 @@ const loaderDocumentationLinks = {
   LASArrowLoader: '/docs/modules/las/api-reference/las-loader',
   LASLoader: '/docs/modules/las/api-reference/las-loader',
   MVTLoader: '/docs/modules/mvt/api-reference/mvt-loader',
-  NDJSONArrowLoader: '/docs/modules/json/api-reference/ndjson-arrow-loader',
   NDJSONLoader: '/docs/modules/json/api-reference/ndjson-loader',
-  OBJArrowLoader: '/docs/modules/obj/api-reference/obj-loader',
   OBJLoader: '/docs/modules/obj/api-reference/obj-loader',
   ParquetArrowLoader: '/docs/modules/parquet/api-reference/parquet-loader',
   ParquetLoader: '/docs/modules/parquet/api-reference/parquet-loader',
-  PCDArrowLoader: '/docs/modules/pcd/api-reference/pcd-loader',
   PCDLoader: '/docs/modules/pcd/api-reference/pcd-loader',
-  PLYArrowLoader: '/docs/modules/ply/api-reference/ply-loader',
   PLYLoader: '/docs/modules/ply/api-reference/ply-loader',
   PotreeLoader: '/docs/modules/potree/api-reference/potree-loader',
   QuantizedMeshArrowLoader: '/docs/modules/terrain/api-reference/quantized-mesh-loader',
@@ -320,7 +254,6 @@ const writerDocumentationLinks = {
   ArrowWriter: '/docs/modules/arrow/api-reference/arrow-writer',
   BSONWriter: '/docs/modules/bson/api-reference/bson-writer',
   CompressedTextureWriter: '/docs/modules/textures/api-reference/compressed-texture-writer',
-  CSVArrowWriter: '/docs/modules/csv/api-reference/csv-writer',
   CSVWriter: '/docs/modules/csv/api-reference/csv-writer',
   DracoWriter: '/docs/modules/draco/api-reference/draco-writer',
   GeoArrowWriter: '/docs/modules/arrow/formats/geoarrow',
@@ -341,22 +274,6 @@ const writerDocumentationLinks = {
   TWKBWriter: '/docs/modules/wkt/api-reference/twkb-writer',
   WKBWriter: '/docs/modules/wkt/api-reference/wkb-writer',
   WKTWriter: '/docs/modules/wkt/api-reference/wkt-writer'
-};
-
-const sourceDocumentationLinks = {
-  COPCSource: '/docs/modules/copc/api-reference/copc-source',
-  MLTSource: '/docs/modules/mlt/api-reference/mlt-source',
-  MVTSource: '/docs/modules/mvt/api-reference/mvt-source',
-  PMTilesSource: '/docs/modules/pmtiles/api-reference/pmtiles-source',
-  TableTileSource: '/docs/modules/mvt/api-reference/table-tile-source',
-  WMSSource: '/docs/modules/wms/api-reference/wms-source'
-};
-
-const deckLayerDocumentationLinks = {
-  BitmapLayer: 'https://deck.gl/docs/api-reference/layers/bitmap-layer',
-  GeoJsonLayer: 'https://deck.gl/docs/api-reference/layers/geojson-layer',
-  MVTLayer: 'https://deck.gl/docs/api-reference/geo-layers/mvt-layer',
-  PointCloudLayer: 'https://deck.gl/docs/api-reference/layers/point-cloud-layer'
 };
 
 const streamingLoaders = ['CSVLoader', 'JSONLoader', 'GeoJSONLoader', 'ParquetLoader'];
@@ -574,10 +491,6 @@ const Flow = styled.div`
   }
 `;
 
-const SourceFlow = styled(Flow)`
-  grid-template-columns: 1fr;
-`;
-
 const StreamingFlow = styled(Flow)`
   grid-template-columns: minmax(180px, 1fr) auto minmax(210px, 0.9fr) auto minmax(170px, 0.8fr);
 
@@ -614,33 +527,9 @@ const StageLabel = styled.p`
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
-  margin: 0;
+  margin: 8px 0 -2px;
   text-align: center;
   text-transform: uppercase;
-`;
-
-const SourceStage = styled.div`
-  display: grid;
-  gap: 10px;
-`;
-
-const SourceInstruction = styled.p`
-  color: var(--ifm-color-primary-darkest);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1;
-  margin: 0;
-  text-align: center;
-  text-transform: uppercase;
-`;
-
-const SourceBox = styled.div`
-  background: var(--ifm-color-white);
-  border: 1px solid var(--ifm-color-gray-400);
-  border-radius: 8px;
-  display: grid;
-  gap: 10px;
-  padding: 14px;
 `;
 
 const LoaderGrid = styled.div`
@@ -650,14 +539,6 @@ const LoaderGrid = styled.div`
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
   @media screen and (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const SourceGrid = styled(LoaderGrid)`
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-
-  @media screen and (max-width: 420px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -703,26 +584,6 @@ const CompactNode = styled(Node)`
   font-size: ${(props) => (props.$compactText ? '11px' : '12px')};
   min-height: 34px;
   padding: 8px 10px;
-`;
-
-const LinkedCompactNode = styled(CompactNode).attrs({as: 'a'})`
-  text-decoration: none;
-  transition:
-    border-color 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-
-  &:hover {
-    border-color: var(--ifm-color-primary);
-    color: var(--ifm-color-primary-darkest);
-    text-decoration: none;
-    transform: translateY(-1px);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--ifm-color-primary);
-    outline-offset: 2px;
-  }
 `;
 
 const EmptyNode = styled(Node)`
@@ -771,7 +632,7 @@ const DataSourceNode = styled(CategoryNode)`
 `;
 
 const LabelOnlyNode = styled(CategoryNode)`
-  justify-content: flex-end;
+  justify-content: flex-start;
 `;
 
 const MethodGrid = styled.div`
@@ -853,7 +714,9 @@ const Connector = styled.div`
 `;
 
 const VerticalConnector = styled(Connector)`
-  min-height: 18px;
+  align-items: flex-end;
+  min-height: 28px;
+  padding-bottom: 2px;
 
   &::before {
     border: 0;
@@ -890,10 +753,8 @@ const Note = styled.div`
 export default function Concepts() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(categoryTabs[0].id);
   const [selectedRepresentationId, setSelectedRepresentationId] = useState(representationTabs[0].id);
-  const [selectedSourceTabId, setSelectedSourceTabId] = useState(sourceTabs[0].id);
   const selectedCategory = categoryTabs.find((category) => category.id === selectedCategoryId);
   const selectedRepresentation = selectedCategory.representations[selectedRepresentationId];
-  const selectedSourceTab = sourceTabs.find((sourceTab) => sourceTab.id === selectedSourceTabId);
 
   return (
     <ConceptsSection>
@@ -1025,80 +886,12 @@ export default function Concepts() {
               <PanelLabel $color="#287A4B">Data sources</PanelLabel>
               <PanelTitle>Load incrementally from tiles or services.</PanelTitle>
               <PanelText>
-                Sources encapsulate incremental data loading from cloud archives and web services.
+                SourceLoaders encapsulate incremental loading for vector, raster, imagery, and 3D
+                data from cloud archives and web services.
               </PanelText>
             </PanelHeader>
             <Diagram>
-              <SourceFlow>
-                <SourceStage>
-                  <TabList role="tablist" aria-label="Data source type tabs">
-                    {sourceTabs.map((sourceTab) => (
-                      <TabButton
-                        key={sourceTab.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={selectedSourceTab.id === sourceTab.id}
-                        $active={selectedSourceTab.id === sourceTab.id}
-                        onClick={() => setSelectedSourceTabId(sourceTab.id)}
-                      >
-                        {sourceTab.label}
-                      </TabButton>
-                    ))}
-                  </TabList>
-                  <SourceBox>
-                    <SourceInstruction>Sources</SourceInstruction>
-                    <SourceGrid>
-                      {selectedSourceTab.sources.map((source) => (
-                        <LinkedCompactNode
-                          key={source}
-                          href={sourceDocumentationLinks[source]}
-                          $compactText={source.length > 20}
-                        >
-                          <span>{source}</span>
-                          <NodeMeta>
-                            <SourceTag>{sourceTags[source]}</SourceTag>
-                            <LinkMark aria-hidden="true">↗</LinkMark>
-                          </NodeMeta>
-                        </LinkedCompactNode>
-                      ))}
-                    </SourceGrid>
-                  </SourceBox>
-                </SourceStage>
-                <VerticalConnector $label="Create a Data Source" />
-                <DataSourceNode $background="rgba(53, 173, 107, 0.12)" $border="rgba(53, 173, 107, 0.55)">
-                  <span>createDataSource()</span>
-                  <TinyLabel>{selectedSourceTab.dataSource}</TinyLabel>
-                </DataSourceNode>
-                <VerticalConnector $label="Incrementally Load Data" />
-                <DataSourceNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">
-                  {selectedSourceTab.dataSource}
-                  <MethodGrid>
-                    {selectedSourceTab.methods.map((method) => (
-                      <CompactNode key={method}>{method}</CompactNode>
-                    ))}
-                  </MethodGrid>
-                </DataSourceNode>
-                <StageLabel>Loaded data</StageLabel>
-                <CategoryNode $background="rgba(0, 173, 230, 0.1)" $border="rgba(0, 173, 230, 0.45)">
-                  <span>{selectedSourceTab.outputCategory}</span>
-                  <TinyLabel>{selectedSourceTab.outputDetail}</TinyLabel>
-                </CategoryNode>
-                <StageLabel>Manage loading</StageLabel>
-                <CategoryNode $background="rgba(255, 196, 57, 0.2)" $border="rgba(184, 122, 0, 0.42)">
-                  {selectedSourceTab.loadingManager}
-                </CategoryNode>
-                <StageLabel>Render with deck.gl (optional)</StageLabel>
-                <CategoryNode $background="rgba(255, 196, 57, 0.16)" $border="rgba(184, 122, 0, 0.36)">
-                  <MethodGrid>
-                    {selectedSourceTab.deckLayers.map((layer) => (
-                      <LinkedCompactNode key={layer} href={deckLayerDocumentationLinks[layer]}>
-                        <span>{layer}</span>
-                        <LinkMark aria-hidden="true">↗</LinkMark>
-                      </LinkedCompactNode>
-                    ))}
-                  </MethodGrid>
-                </CategoryNode>
-              </SourceFlow>
+              <SourceLoaderGraphic />
             </Diagram>
           </Panel>
 
@@ -1139,7 +932,7 @@ export default function Concepts() {
                   </Stack>
                   <VerticalConnector $label="returns" />
                   <LabelOnlyNode $background="rgba(181, 79, 73, 0.1)" $border="rgba(181, 79, 73, 0.5)">
-                    <TinyLabel>Return</TinyLabel>
+                    <span>glTF data</span>
                   </LabelOnlyNode>
                 </CompactFlow>
                 <Note $color="#B54F49">

@@ -1,3 +1,0 @@
-# COPCSource 🚧
-
-TBA

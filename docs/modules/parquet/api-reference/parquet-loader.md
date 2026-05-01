@@ -1,35 +1,68 @@
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+
 # ParquetLoader
+
+<ParquetDocsTabs active="parquetloader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
   &nbsp;
-	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-Streaming loader for Apache Parquet encoded files.
+Streaming loader for Apache Parquet encoded files. `ParquetLoader` returns plain JavaScript object rows and delegates parsing to the wasm-backed `ParquetArrowLoader`.
 
-| Loader         | Characteristic                                       |
-| -------------- | ---------------------------------------------------- |
-| File Format    | [Parquet](/docs/modules/parquet/formats/parquet)     |
-| Data Format    | [Classic Table](/docs/specifications/category-table) |
-| File Extension | `.parquet`,                                          |
-| MIME Type      | N/A (`application/octet-stream`)                     |
-| File Type      | Binary                                               |
-| Supported APIs | `load`, `parse`, `parseInBatches`                    |
+[`ParquetJSLoader`](/docs/modules/parquet/api-reference/parquet-js-loader) is the plain-row loader for the experimental parquetjs backend. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+
+The legacy `ParquetJSONLoader` compatibility alias has been removed. Use `ParquetLoader`.
 
 Please refer to the `parquet` format page for information on
 which [Parquet format features](/docs/modules/parquet/formats/parquet) are supported.
 
 ## Usage
 
-Load a Parquet file as a table.
+Load a Parquet file as object rows.
+
+```typescript
+import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
+import {load} from '@loaders.gl/core';
+
+const wasmRows = await load(url, ParquetLoader, {parquet: options});
+const jsRows = await load(url, ParquetJSLoader, {parquet: options});
+```
+
+Load a Parquet file as Arrow using the main loader.
 
 ```typescript
 import {ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
-const data = await load(url, ParquetLoader, {parquet: options});
+const arrowTable = await load(url, ParquetLoader, {
+  parquet: {
+    shape: 'arrow-table'
+  }
+});
 ```
+
+`ParquetArrowLoader` remains available as a compatibility wrapper around the same Arrow code path.
+
+```typescript
+import {ParquetArrowLoader} from '@loaders.gl/parquet';
+import {load} from '@loaders.gl/core';
+
+const arrowTable = await load(url, ParquetArrowLoader, {
+  parquet: options
+});
+```
+
+## Shapes
+
+`ParquetLoader` returns object-row tables by default. Set `parquet.shape: 'arrow-table'` to return loaders.gl `ArrowTable` objects.
+
+| Shape              | Output                                           |
+| ------------------ | ------------------------------------------------ |
+| `object-row-table` | loaders.gl row table with objects                |
+| `arrow-table`      | loaders.gl `ArrowTable` wrapping an Arrow table  |
 
 The ParquetLoader supports streaming parsing, in which case it will yield "batches" of rows.
 
@@ -49,6 +82,34 @@ for await (const batch of batches) {
   }
 }
 ```
+
+## Geospatial Metadata
+
+When `ParquetLoader` or `ParquetArrowLoader` reads a GeoParquet file as Arrow:
+
+- the original GeoParquet `geo` metadata is preserved in `schema.metadata.geo`
+- matching geometry fields are annotated with GeoArrow field metadata when that mapping is safe
+- geometry columns are passed through unchanged; this loader does not convert WKB to native GeoArrow or vice versa in this path
+
+The loader currently maps:
+
+- GeoParquet `encoding: "WKB"` -> `ARROW:extension:name = "geoarrow.wkb"`
+- GeoParquet native single-geometry encodings -> matching GeoArrow extension names:
+  - `point`
+  - `linestring`
+  - `polygon`
+  - `multipoint`
+  - `multilinestring`
+  - `multipolygon`
+- `crs`, `crs_type`, and `edges` onto field-level `ARROW:extension:metadata` when present
+
+GeoParquet-only schema metadata such as `version`, `primary_column`, `columns`, `geometry_types`,
+`bbox`, `covering`, `orientation`, and `epoch` remains in `schema.metadata.geo` and is not mirrored
+into GeoArrow field metadata.
+
+If GeoParquet metadata says a column is geospatial but the physical Arrow field is clearly incompatible
+with that encoding, loaders.gl preserves the schema-level `geo` metadata and skips adding misleading
+field-level GeoArrow metadata.
 
 ## Compressions
 
@@ -82,5 +143,19 @@ returned as parsed JavaScript values.
 
 Supports table category options such as `batchType` and `batchSize`.
 
-| Option | From | Type | Default | Description |
-| ------ | ---- | ---- | ------- | ----------- |
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'object-row-table'` | Selects the returned table shape for `ParquetLoader`. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
+| `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
+| `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |
+| `parquet.batchSize` | `number` | `undefined` | Target number of rows per batch when streaming. |
+| `parquet.columns` | `string[]` | `undefined` | Restrict parsing to the listed columns. |
+| `parquet.rowGroups` | `number[]` | `undefined` | Restrict reading to the listed row groups for the wasm loader implementations. |
+| `parquet.concurrency` | `number` | `undefined` | Controls parallel reads for the wasm loader implementations. |
+| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetLoader` and `ParquetArrowLoader`. |
+
+## Backend Selection
+
+- Use `ParquetLoader` for the default wasm-backed plain-row loader.
+- Use `ParquetJSLoader` for the experimental parquetjs plain-row loader.
+- Use `ParquetArrowLoader` for the wasm-backed Arrow-first API.

@@ -12,8 +12,7 @@ npm install @loaders.gl/core @loaders.gl/ply
 
 | Loader or Writer                                              | Description                       |
 | ------------------------------------------------------------- | --------------------------------- |
-| [`PLYArrowLoader`](/docs/modules/ply/api-reference/ply-loader) | Loads PLY meshes as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
-| [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader)      | Loads PLY meshes as Mesh objects.      |
+| [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader)      | Loads PLY meshes as Mesh objects or Mesh Arrow tables. |
 | [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer)      | Writes Mesh or Mesh Arrow table data as ASCII PLY text. |
 
 ## Attribution

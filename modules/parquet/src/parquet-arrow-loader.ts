@@ -3,29 +3,21 @@
 // Copyright (c) vis.gl contributors
 
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {ReadableFile, BlobFile} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 
-import {
-  parseParquetFileToArrow,
-  parseParquetFileToArrowInBatches
-} from './lib/parsers/parse-parquet-to-arrow';
 import {VERSION, PARQUET_WASM_URL} from './lib/constants';
+import {PARQUET_LOADER_DEFAULT_OPTIONS, type ParquetLoaderOptions} from './parquet-loader-options';
 
 /** Parquet WASM loader options */
-export type ParquetArrowLoaderOptions = LoaderOptions & {
-  parquet?: {
-    limit?: number; // Provide a limit to the number of rows to be read.
-    offset?: number; // Provide an offset to skip over the given number of rows.
-    batchSize?: number; // The number of rows in each batch. If not provided, the upstream parquet default is 1024.
-    columns?: string[]; // The column names from the file to read.
-    rowGroups?: number[]; // Only read data from the provided row group indexes.
-    concurrency?: number; // The number of concurrent requests to make
-    wasmUrl?: string;
-  };
-};
+export type ParquetArrowLoaderOptions = ParquetLoaderOptions;
 
-/** Parquet WASM table loader */
+/** Preloads the parser-bearing Parquet Arrow loader implementation. */
+async function preload() {
+  const {ParquetArrowLoaderWithParser} = await import('./parquet-arrow-loader-with-parser');
+  return ParquetArrowLoaderWithParser;
+}
+
+/** Metadata-only Parquet WASM worker loader. */
 export const ParquetArrowWorkerLoader = {
   dataType: null as unknown as ArrowTable,
   batchType: null as unknown as ArrowTableBatch,
@@ -42,33 +34,23 @@ export const ParquetArrowWorkerLoader = {
   tests: ['PAR1', 'PARE'],
   options: {
     parquet: {
-      limit: undefined, // Provide a limit to the number of rows to be read.
-      offset: 0, // Provide an offset to skip over the given number of rows.
-      batchSize: undefined, // The number of rows in each batch. If not provided, the upstream parquet default is 1024.
-      columns: undefined, // The column names from the file to read.
-      rowGroups: undefined, // Only read data from the provided row group indexes.
-      concurrency: undefined, // The number of concurrent requests to make
-      wasmUrl: PARQUET_WASM_URL
+      ...PARQUET_LOADER_DEFAULT_OPTIONS,
+      limit: undefined,
+      offset: 0,
+      batchSize: undefined,
+      columns: undefined,
+      rowGroups: undefined,
+      concurrency: undefined,
+      wasmUrl: PARQUET_WASM_URL,
+      implementation: 'wasm',
+      shape: 'arrow-table'
     }
-  }
+  },
+  preload
 } as const satisfies Loader<ArrowTable, ArrowTableBatch, ParquetArrowLoaderOptions>;
 
-/** Parquet WASM table loader */
+/** Metadata-only Parquet WASM table loader. */
 export const ParquetArrowLoader = {
   ...ParquetArrowWorkerLoader,
-
-  parse(arrayBuffer: ArrayBuffer, options?: ParquetArrowLoaderOptions) {
-    const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
-    return parseParquetFileToArrow(new BlobFile(arrayBuffer), wasmOptions);
-  },
-
-  parseFile(file: ReadableFile, options?: ParquetArrowLoaderOptions) {
-    const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
-    return parseParquetFileToArrow(file, wasmOptions);
-  },
-
-  parseFileInBatches(file: ReadableFile, options?: ParquetArrowLoaderOptions) {
-    const wasmOptions = {...ParquetArrowLoader.options.parquet, ...options?.parquet};
-    return parseParquetFileToArrowInBatches(file, wasmOptions);
-  }
-} as const satisfies LoaderWithParser<ArrowTable, ArrowTableBatch, ParquetArrowLoaderOptions>;
+  preload
+} as const satisfies Loader<ArrowTable, ArrowTableBatch, ParquetArrowLoaderOptions>;

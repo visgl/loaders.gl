@@ -1,5 +1,9 @@
 # GLBLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
+
 The `GLBLoader` parses a GLB binary "envelope" extracting the embedded JSON and binary chunks.
 
 Note: applications that want to parse GLB-formatted glTF files would normally use the `GLTFLoader` instead. The `GLBLoader` can be used to load custom data that combines JSON and binary resources.

@@ -5,8 +5,10 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
+import {FullscreenWidget} from '@deck.gl/widgets';
+import '@deck.gl/widgets/stylesheet.css';
 
-import {Tile3DLayer} from '@deck.gl/geo-layers';
+import {Tile3DSourceLayer} from '@loaders.gl/deck-layers';
 import {COORDINATE_SYSTEM, I3SLoader} from '@loaders.gl/i3s';
 
 const INITIAL_VIEW_STATE = {
@@ -22,7 +24,7 @@ export default function App() {
 
   function renderLayers() {
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
-    const layers = new Tile3DLayer({
+    const layers = new Tile3DSourceLayer({
       data: 'https://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/SanFrancisco_Bldgs/SceneServer/layers/0',
       loader: I3SLoader,
       loadOptions
@@ -32,7 +34,12 @@ export default function App() {
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
-      <DeckGL initialViewState={INITIAL_VIEW_STATE} layers={renderLayers()} controller={false}>
+      <DeckGL
+        initialViewState={INITIAL_VIEW_STATE}
+        layers={renderLayers()}
+        controller={false}
+        widgets={[new FullscreenWidget({id: 'home-demo-fullscreen'})]}
+      >
         <Map
           reuseMaps
           mapLib={maplibregl}

@@ -5,7 +5,7 @@
 import type {ArrowTable, Schema} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 
-import type {CSVRawArrowOptions} from '../../csv-raw-arrow-loader';
+import type {CSVRawArrowOptions} from './parse-csv-to-arrow';
 
 /** Normalized ASCII-byte CSV options used by the raw Arrow byte parser. */
 type CSVByteParserOptions = {
@@ -1218,7 +1218,7 @@ function createUtf8Schema(headerRow: string[]): Schema {
     fields: headerRow.map(columnName => ({name: columnName, type: 'utf8', nullable: true})),
     metadata: {
       'loaders.gl#format': 'csv',
-      'loaders.gl#loader': 'CSVArrowLoader'
+      'loaders.gl#loader': 'CSVLoader'
     }
   };
 }

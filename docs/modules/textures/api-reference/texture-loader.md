@@ -1,7 +1,7 @@
 # TextureLoader
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 </p>
 
 A loader for image-based composite textures described by a JSON manifest.
@@ -23,20 +23,16 @@ import {TextureLoader} from '@loaders.gl/textures';
 const image = await load('texture.image-texture.json', TextureLoader);
 ```
 
-Member images are parsed with `ImageLoader` by default. If you call `load()` with a loader array, those additional loaders are also available for manifest members:
+Member images are parsed with `ImageBitmapLoader` by default:
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {TextureLoader, CompressedTextureLoader, BasisLoader} from '@loaders.gl/textures';
+import {TextureLoader} from '@loaders.gl/textures';
 
-const texture = await load('texture.image-texture.json', [
-  TextureLoader,
-  CompressedTextureLoader,
-  BasisLoader
-]);
+const texture = await load('texture.image-texture.json', TextureLoader);
 ```
 
-This allows manifest members to use image formats handled by `ImageLoader` as well as compressed member formats handled by the additional loaders.
+Member images use the same runtime-dependent bitmap contract as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader): native `ImageBitmap` in browsers and the installed Node.js `ImageBitmap` polyfill when `@loaders.gl/polyfills` is present.
 
 ## Manifest
 

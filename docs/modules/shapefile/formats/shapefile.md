@@ -1,4 +1,8 @@
+import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
+
 # Shapefile
+
+<ShapefileDocsTabs active="overview" />
 
 ESRI Shapefiles is a file format for storing geospatial vector data.
 

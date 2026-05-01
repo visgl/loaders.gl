@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import Map from 'react-map-gl';
@@ -7,12 +7,13 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
 import {ViewState, MapController, FlyToInterpolator, PickingInfo} from '@deck.gl/core';
+import {Tile3DSourceLayer} from '@loaders.gl/deck-layers';
 
-import {Tile3DLayer} from '@deck.gl/geo-layers';
 import {COORDINATE_SYSTEM, I3SLoader, loadFeatureAttributes} from '@loaders.gl/i3s';
 import {Tileset3D} from '@loaders.gl/tiles';
 import {ControlPanel} from './components/control-panel';
 import AttributesPanel from './components/attributes-panel';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../../shared/create-deck-stats-widget';
 
 export const EXAMPLES = {
   'San Francisco': {
@@ -57,6 +58,10 @@ export default function App() {
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
   const [highlightedObjectIndex, setHighlightedObjectIndex] = useState<number>(-1);
   const [attributesObject, setAttributesObject] = useState(null);
+  const widgets = useMemo(
+    () => [createDeckFullscreenWidget('i3s-picking-fullscreen'), createDeckStatsWidget('i3s-picking-stats')],
+    []
+  );
 
   function onSelectTilesetHandler(item: string) {
     setTilesetSelected(EXAMPLES[item]?.url);
@@ -96,7 +101,7 @@ export default function App() {
 
   function renderLayers() {
     const loadOptions = {i3s: {coordinateSystem: COORDINATE_SYSTEM.LNGLAT_OFFSETS}};
-    const layers = new Tile3DLayer({
+    const layers = new Tile3DSourceLayer({
       data: tilesetSelected,
       loader: I3SLoader,
       onTilesetLoad: onTilesetLoadHandler,
@@ -124,6 +129,7 @@ export default function App() {
         initialViewState={viewState}
         layers={renderLayers()}
         controller={MAP_CONTROLLER}
+        widgets={widgets}
         onClick={onClickHandler}
       >
         <Map

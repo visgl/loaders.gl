@@ -12,5 +12,7 @@ import './lib/table/make-table-from-batches.spec';
 import './lib/table/deduce-table-schema.spec';
 import './lib/table/convert-table.spec';
 import './lib/table/convert-arrow-to-table.spec';
+import './lib/converters/convert.spec';
+import './lib/schema/convert-arrow-schema.spec';
 
 import './lib/mesh/convert-mesh-to-table.spec';

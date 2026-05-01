@@ -68,7 +68,7 @@ export function validateArrowTableSchema<T extends arrow.TypeMap>(
     if (expected.type.typeId !== actual.type.typeId) {
       throw new Error(getFieldTypeValidationError(expected, actual, schemaPrefix));
     }
-    if (expected.type.toString() !== actual.type.toString()) {
+    if (!areArrowTypesEquivalent(expected.type, actual.type)) {
       throw new Error(getFieldTypeValidationError(expected, actual, schemaPrefix));
     }
     if (expected.nullable !== actual.nullable) {
@@ -94,6 +94,80 @@ function getFieldTypeValidationError(
     `(type id ${expectedField.type.typeId}), got ${actualField.type.toString()} ` +
     `(type id ${actualField.type.typeId})`
   );
+}
+
+/**
+ * Compares Arrow types structurally instead of relying only on `toString()`.
+ *
+ * Some browser builds can stringify nested Arrow types as `[object Object]` even when the
+ * hydrated type metadata is otherwise intact. Structural comparison keeps the validator strict
+ * for nested child types while avoiding false negatives from environment-specific string output.
+ */
+function areArrowTypesEquivalent(
+  expectedType: arrow.DataType,
+  actualType: arrow.DataType
+): boolean {
+  if (expectedType.typeId !== actualType.typeId) {
+    return false;
+  }
+
+  if (!areArrowTypePropertiesEquivalent(expectedType, actualType)) {
+    return false;
+  }
+
+  const expectedChildren = expectedType.children || [];
+  const actualChildren = actualType.children || [];
+  if (expectedChildren.length !== actualChildren.length) {
+    return false;
+  }
+
+  return expectedChildren.every((expectedChild, childIndex) => {
+    const actualChild = actualChildren[childIndex];
+    return (
+      expectedChild.name === actualChild.name &&
+      expectedChild.nullable === actualChild.nullable &&
+      areArrowTypesEquivalent(expectedChild.type, actualChild.type)
+    );
+  });
+}
+
+/**
+ * Compares scalar Arrow type options that are not fully represented by `typeId`.
+ */
+function areArrowTypePropertiesEquivalent(
+  expectedType: arrow.DataType,
+  actualType: arrow.DataType
+): boolean {
+  const propertyNames = [
+    'bitWidth',
+    'isSigned',
+    'precision',
+    'scale',
+    'unit',
+    'timezone',
+    'byteWidth',
+    'listSize',
+    'keysSorted',
+    'isOrdered'
+  ];
+
+  for (const propertyName of propertyNames) {
+    const expectedValue = (expectedType as unknown as Record<string, unknown>)[propertyName];
+    const actualValue = (actualType as unknown as Record<string, unknown>)[propertyName];
+    if (expectedValue !== actualValue) {
+      return false;
+    }
+  }
+
+  if (arrow.DataType.isDictionary(expectedType) && arrow.DataType.isDictionary(actualType)) {
+    return (
+      expectedType.id === actualType.id &&
+      areArrowTypesEquivalent(expectedType.indices, actualType.indices) &&
+      areArrowTypesEquivalent(expectedType.dictionary, actualType.dictionary)
+    );
+  }
+
+  return true;
 }
 
 /**

@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parseMLT} from './lib/parse-mlt';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {MLTFormat} from './mlt-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -13,7 +12,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type MLTLoaderOptions = LoaderOptions & {
   mlt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'geojson' | 'binary';
+    shape?: 'geojson-table' | 'binary-geometry';
     /** `wgs84`: coordinates in longitude/latitude. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
@@ -27,14 +26,18 @@ export type MLTLoaderOptions = LoaderOptions & {
 
 /** Default options for the MLT loader */
 export const MLT_DEFAULT_OPTIONS = {
-  shape: 'geojson' as const,
+  shape: 'geojson-table' as const,
   coordinates: 'local' as const,
   layerProperty: 'layerName' as const
 };
 
-/**
- * Worker loader for the MapLibre Tile (MLT) format
- */
+/** Preloads the parser-bearing MLT loader implementation. */
+async function preload() {
+  const {MLTLoaderWithParser} = await import('./mlt-loader-with-parser');
+  return MLTLoaderWithParser;
+}
+
+/** Metadata-only worker loader for the MapLibre Tile (MLT) format. */
 export const MLTWorkerLoader = {
   ...MLTFormat,
   dataType: null as any,
@@ -47,17 +50,13 @@ export const MLTWorkerLoader = {
       layers: undefined!,
       tileIndex: undefined!
     }
-  }
+  },
+  preload
 } as const satisfies Loader<any, never, MLTLoaderOptions>;
 
-/**
- * Loader for the MapLibre Tile (MLT) format
- */
+/** Metadata-only loader for the MapLibre Tile (MLT) format. */
 export const MLTLoader = {
   ...MLTWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?: MLTLoaderOptions) =>
-    parseMLT(arrayBuffer, options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: MLTLoaderOptions) =>
-    parseMLT(arrayBuffer, options),
-  binary: true
-} as const satisfies LoaderWithParser<any, never, MLTLoaderOptions>;
+  binary: true,
+  preload
+} as const satisfies Loader<any, never, MLTLoaderOptions>;

@@ -1,5 +1,5 @@
-import {JSONLoader, load} from '@loaders.gl/core';
 import type {ArcGISWebSceneData, OperationalLayer} from '../../types';
+import {resolvePath} from '@loaders.gl/loader-utils';
 
 /**
  * WKID, or Well-Known ID, of the CRS. Specify either WKID or WKT of the CRS.
@@ -44,10 +44,11 @@ export class LayerError extends Error {
 
 /**
  * Parses ArcGIS WebScene
- * @param data
+ * @param data - WebScene JSON as text or encoded bytes.
  */
-export async function parseWebscene(data: ArrayBuffer): Promise<ArcGISWebSceneData> {
-  const layer0 = JSON.parse(new TextDecoder().decode(data));
+export async function parseWebscene(data: string | ArrayBuffer): Promise<ArcGISWebSceneData> {
+  const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
+  const layer0 = JSON.parse(text);
   const {operationalLayers} = layer0;
   const {layers, unsupportedLayers} = await parseOperationalLayers(operationalLayers, true);
 
@@ -105,8 +106,8 @@ async function parseOperationalLayers(
  */
 async function checkSupportedIndexCRS(layer: OperationalLayer) {
   try {
-    const layerJson = await load(layer.url, JSONLoader);
-    // @ts-expect-error
+    const response = await fetchWebSceneLayerMetadata(layer.url);
+    const layerJson = await response.json();
     const wkid = layerJson?.spatialReference?.wkid;
 
     if (wkid !== SUPPORTED_WKID) {
@@ -115,4 +116,22 @@ async function checkSupportedIndexCRS(layer: OperationalLayer) {
   } catch (error) {
     throw error;
   }
+}
+
+async function fetchWebSceneLayerMetadata(url: string): Promise<Response> {
+  const resolvedUrl = resolvePath(url);
+
+  if (
+    resolvedUrl.startsWith('http://') ||
+    resolvedUrl.startsWith('https://') ||
+    resolvedUrl.startsWith('data:')
+  ) {
+    return await fetch(resolvedUrl);
+  }
+
+  if (globalThis.loaders?.fetchNode) {
+    return await globalThis.loaders.fetchNode(resolvedUrl);
+  }
+
+  return await fetch(resolvedUrl);
 }

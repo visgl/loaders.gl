@@ -7,7 +7,7 @@
 export {LASFormat} from './las-format';
 
 export type {LASLoaderOptions} from './las-loader';
-export {LASWorkerLoader} from './las-loader';
+
 export type {LASWriterOptions} from './las-writer';
 export {LASWriter} from './las-writer';
 
@@ -18,3 +18,7 @@ export {LASArrowLoader} from './las-arrow-loader';
 // Implementation specific loaders, for bench marking and testing
 export {LAZPerfLoader} from './lazperf-loader';
 export {LAZRsLoader} from './laz-rs-loader';
+
+// DEPRECATED EXPORTS
+/** @deprecated Use LASLoader. */
+export {LASWorkerLoader} from './las-loader';
