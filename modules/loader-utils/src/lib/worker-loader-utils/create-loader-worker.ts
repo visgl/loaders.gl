@@ -83,14 +83,11 @@ function getMainThreadParseArguments(
   options?: LoaderOptions,
   context?: LoaderContext
 ): {options?: LoaderOptions; context?: Record<string, any>} {
-  if (Array.isArray(loaders) && loaders.length > 0) {
-    throw new Error('Worker nested parse cannot pass explicit loader arrays to the main thread');
-  }
-  if (loaders && !Array.isArray(loaders) && isLoaderObject(loaders)) {
-    throw new Error('Worker nested parse cannot pass explicit loaders to the main thread');
-  }
   if (options) {
     return {options, context: getSerializableLoaderContext(context)};
+  }
+  if (Array.isArray(loaders) || (loaders && isLoaderObject(loaders))) {
+    return {options: undefined, context: getSerializableLoaderContext(context)};
   }
   if (loaders && !Array.isArray(loaders)) {
     return {options: loaders};
