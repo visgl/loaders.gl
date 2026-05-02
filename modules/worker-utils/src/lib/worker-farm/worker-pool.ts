@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {WorkerMessageType, WorkerMessagePayload} from '../../types';
-import {isMobile, isBrowser} from '../env-utils/globals';
+import {isMobile} from '../env-utils/globals';
 import WorkerThread from './worker-thread';
 import WorkerJob from './worker-job';
 
@@ -147,6 +147,7 @@ export default class WorkerPool {
 
       // Create a worker job to let the app access thread and manage job completion
       const job = new WorkerJob(queuedJob.name, workerThread);
+      workerThread.ref();
 
       // Set the worker thread's message handlers
       workerThread.onMessage = data => queuedJob.onMessage(job, data.type, data.payload);
@@ -177,9 +178,6 @@ export default class WorkerPool {
    */
   returnWorkerToQueue(worker: WorkerThread) {
     const shouldDestroyWorker =
-      // Workers on Node.js prevent the process from exiting.
-      // Until we figure out how to close them before exit, we always destroy them
-      !isBrowser ||
       // If the pool is destroyed, there is no reason to keep the worker around
       this.isDestroyed ||
       // If the app has disabled worker reuse, any completed workers should be destroyed
@@ -191,6 +189,7 @@ export default class WorkerPool {
       worker.destroy();
       this.count--;
     } else {
+      worker.unref();
       this.idleQueue.push(worker);
     }
 

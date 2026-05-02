@@ -13,18 +13,22 @@ import {
   preload,
   preloadSync
 } from '@loaders.gl/core';
-import {CSVArrowLoader, CSVArrowWorkerLoader, CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader, CSVWorkerLoader} from '@loaders.gl/csv';
 import {
-  CSVArrowLoader as BundledCSVArrowLoader,
-  CSVArrowWorkerLoader as BundledCSVArrowWorkerLoader
+  CSVLoader as BundledCSVLoader,
+  CSVWorkerLoader as BundledCSVWorkerLoader
 } from '@loaders.gl/csv/bundled';
 import {
-  CSVArrowLoader as UnbundledCSVArrowLoader,
-  CSVArrowWorkerLoader as UnbundledCSVArrowWorkerLoader
+  CSVLoader as UnbundledCSVLoader,
+  CSVWorkerLoader as UnbundledCSVWorkerLoader
 } from '@loaders.gl/csv/unbundled';
 import * as csv from '@loaders.gl/csv';
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {
+  deserializeCSVWorkerResult,
+  serializeCSVWorkerResult
+} from '../src/lib/csv-worker-transport';
 
 // Small CSV Sample Files
 const CSV_NUMBERS_100_URL = '@loaders.gl/csv/test/data/numbers-100.csv';
@@ -36,76 +40,57 @@ const CSV_SAMPLE_URL_EMPTY_LINES = '@loaders.gl/csv/test/data/sample-empty-line.
 const CSV_NO_HEADER_URL = '@loaders.gl/csv/test/data/numbers-100-no-header.csv';
 const TSV_BRAZIL = '@loaders.gl/csv/test/data/tsv/brazil.tsv';
 
-test('CSVArrowLoader#root export includes metadata loader', t => {
-  t.equal(typeof CSVArrowLoader.preload, 'function', 'root CSVArrowLoader exposes preload');
-  t.notOk('parse' in CSVArrowLoader, 'root CSVArrowLoader does not expose parse');
-  t.notOk('parseInBatches' in CSVArrowLoader, 'root CSVArrowLoader does not expose parseInBatches');
-  t.equal(CSVArrowWorkerLoader, CSVArrowLoader, 'CSVArrowWorkerLoader aliases CSVArrowLoader');
-  t.notOk('CSVArrowLoaderWithParser' in csv, 'root does not export CSVArrowLoaderWithParser');
+test('CSVLoader#root export includes metadata loader', t => {
+  t.equal(typeof CSVLoader.preload, 'function', 'root CSVLoader exposes preload');
+  t.notOk('parse' in CSVLoader, 'root CSVLoader does not expose parse');
+  t.notOk('parseInBatches' in CSVLoader, 'root CSVLoader does not expose parseInBatches');
+  t.equal(CSVWorkerLoader, CSVLoader, 'CSVWorkerLoader aliases CSVLoader');
+  t.notOk('CSVLoaderWithParser' in csv, 'root does not export CSVLoaderWithParser');
+  t.notOk('CSVArrowLoader' in csv, 'root does not export CSVArrowLoader');
+  t.notOk('CSVArrowWriter' in csv, 'root does not export CSVArrowWriter');
   t.end();
 });
 
-test('CSVArrowLoader#bundled export includes parser methods', t => {
-  t.equal(typeof BundledCSVArrowLoader.parse, 'function', 'bundled CSVArrowLoader exposes parse');
+test('CSVLoader#bundled export includes parser methods', t => {
+  t.equal(typeof BundledCSVLoader.parse, 'function', 'bundled CSVLoader exposes parse');
   t.equal(
-    typeof BundledCSVArrowLoader.parseInBatches,
+    typeof BundledCSVLoader.parseInBatches,
     'function',
-    'bundled CSVArrowLoader exposes parseInBatches'
+    'bundled CSVLoader exposes parseInBatches'
   );
-  t.equal(
-    BundledCSVArrowWorkerLoader,
-    BundledCSVArrowLoader,
-    'bundled CSVArrowWorkerLoader aliases CSVArrowLoader'
-  );
+  t.equal(BundledCSVWorkerLoader, BundledCSVLoader, 'bundled CSVWorkerLoader aliases CSVLoader');
   t.end();
 });
 
-test('CSVArrowLoader#unbundled export preloads parser implementation', async t => {
-  t.equal(
-    preloadSync(UnbundledCSVArrowLoader),
-    null,
-    'unbundled CSVArrowLoader is not preloaded initially'
-  );
-  t.equal(
-    UnbundledCSVArrowWorkerLoader,
-    UnbundledCSVArrowLoader,
-    'worker alias points to CSVArrowLoader'
-  );
-  t.equal(
-    typeof UnbundledCSVArrowLoader.preload,
-    'function',
-    'unbundled CSVArrowLoader exposes preload'
-  );
-  t.notOk('parse' in UnbundledCSVArrowLoader, 'unbundled CSVArrowLoader does not expose parse');
+test('CSVLoader#unbundled export preloads parser implementation', async t => {
+  t.equal(preloadSync(UnbundledCSVLoader), null, 'unbundled CSVLoader is not preloaded initially');
+  t.equal(UnbundledCSVWorkerLoader, UnbundledCSVLoader, 'worker alias points to CSVLoader');
+  t.equal(typeof UnbundledCSVLoader.preload, 'function', 'unbundled CSVLoader exposes preload');
+  t.notOk('parse' in UnbundledCSVLoader, 'unbundled CSVLoader does not expose parse');
+  t.notOk('parseSync' in UnbundledCSVLoader, 'unbundled CSVLoader does not expose parseSync');
   t.notOk(
-    'parseSync' in UnbundledCSVArrowLoader,
-    'unbundled CSVArrowLoader does not expose parseSync'
-  );
-  t.notOk(
-    'parseInBatches' in UnbundledCSVArrowLoader,
-    'unbundled CSVArrowLoader does not expose parseInBatches'
+    'parseInBatches' in UnbundledCSVLoader,
+    'unbundled CSVLoader does not expose parseInBatches'
   );
 
-  const table = await parse('city,population\nParis,2148000', UnbundledCSVArrowLoader, {
-    csv: {header: true}
+  const table = await parse('city,population\nParis,2148000', UnbundledCSVLoader, {
+    core: {worker: false},
+    csv: {shape: 'arrow-table', header: true}
   });
-  t.equal(table.shape, 'arrow-table', 'parse upgrades unbundled CSVArrowLoader');
+  t.equal(table.shape, 'arrow-table', 'parse returns Arrow table shape');
   t.equal(table.data.numRows, 1, 'returns Arrow rows');
   t.equal(table.data.getChild('city')?.get(0), 'Paris', 'returns Arrow column values');
 
-  const parserLoader = await preload(UnbundledCSVArrowLoader);
-  t.equal(typeof parserLoader.parse, 'function', 'preload returns parser-bearing CSVArrowLoader');
-  t.equal(
-    preloadSync(UnbundledCSVArrowLoader),
-    parserLoader,
-    'preloadSync returns cached CSVArrowLoader'
-  );
+  const parserLoader = await preload(UnbundledCSVLoader);
+  t.equal(typeof parserLoader.parse, 'function', 'preload returns parser-bearing CSVLoader');
+  t.equal(preloadSync(UnbundledCSVLoader), parserLoader, 'preloadSync returns cached CSVLoader');
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(numbers-100.csv)', async t => {
-  const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
-    batchSize: 40
+test('CSVLoader#loadInBatches(numbers-100.csv)', async t => {
+  const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVLoader, {
+    core: {worker: false, batchSize: 40},
+    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
   });
 
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
@@ -121,9 +106,10 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv)', async t => {
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(numbers-10000.csv)', async t => {
-  const iterator = await loadInBatches(CSV_NUMBERS_10000_URL, CSVArrowLoader, {
-    batchSize: 2000
+test('CSVLoader#loadInBatches(numbers-10000.csv)', async t => {
+  const iterator = await loadInBatches(CSV_NUMBERS_10000_URL, CSVLoader, {
+    core: {worker: false, batchSize: 2000},
+    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
   });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
@@ -138,8 +124,11 @@ test('CSVArrowLoader#loadInBatches(numbers-10000.csv)', async t => {
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(incidents.csv)', async t => {
-  const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVArrowLoader);
+test('CSVLoader#loadInBatches(incidents.csv)', async t => {
+  const iterator = await loadInBatches(CSV_INCIDENTS_URL_QUOTES, CSVLoader, {
+    core: {worker: false},
+    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
+  });
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
   let batchCount = 0;
@@ -153,8 +142,11 @@ test('CSVArrowLoader#loadInBatches(incidents.csv)', async t => {
   t.end();
 });
 
-test('CSVArrowLoader#load(numbers-100.csv)', async t => {
-  const table = await load(CSV_NUMBERS_100_URL, CSVArrowLoader);
+test('CSVLoader#load(numbers-100.csv)', async t => {
+  const table = await load(CSV_NUMBERS_100_URL, CSVLoader, {
+    core: {worker: false},
+    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
+  });
 
   t.ok(table.data instanceof arrow.Table, 'returns arrow table');
   t.equal(table.data.numRows, 100, 'respects header detection and excludes header row');
@@ -171,7 +163,7 @@ test('CSVArrowLoader#load(numbers-100.csv)', async t => {
   t.end();
 });
 
-test('CSVArrowLoader#load matches CSVLoader output across fixture cases', async t => {
+test('CSVLoader#load matches CSVLoader output across fixture cases', async t => {
   const cases: Array<{
     name: string;
     url: string;
@@ -268,18 +260,19 @@ test('CSVArrowLoader#load matches CSVLoader output across fixture cases', async 
     const csvLoaderTable = await load(url, CSVLoader, options);
     const {shape: csvShape, ...arrowOptions} = options.csv;
     t.equal(csvShape, shape, `${name}: uses expected CSVLoader row shape`);
-    const arrowTable = await load(url, CSVArrowLoader, {
-      csv: arrowOptions
+    const arrowTable = await load(url, CSVLoader, {
+      core: {worker: false},
+      csv: {...arrowOptions, shape: 'arrow-table'}
     });
     const arrowRows = materializeArrowTableRows(arrowTable, shape);
 
-    t.deepEqual(arrowRows, csvLoaderTable.data, `${name}: CSVArrowLoader matches CSVLoader`);
+    t.deepEqual(arrowRows, csvLoaderTable.data, `${name}: arrow-table matches CSVLoader`);
   }
 
   t.end();
 });
 
-test('CSVArrowLoader#parseInBatches matches CSVLoader output across fixture cases', async t => {
+test('CSVLoader#parseInBatches matches CSVLoader output across fixture cases', async t => {
   const cases: Array<{
     name: string;
     url: string;
@@ -334,21 +327,25 @@ test('CSVArrowLoader#parseInBatches matches CSVLoader output across fixture case
 
   for (const {name, url, options} of cases) {
     const csvLoaderRows = await collectCSVLoaderBatchRows(url, options);
-    const arrowRows = await collectCSVArrowLoaderBatchRows(url, options);
-    t.deepEqual(arrowRows, csvLoaderRows, `${name}: CSVArrowLoader batches match CSVLoader`);
+    const arrowRows = await collectCSVArrowTableBatchRows(url, options);
+    t.deepEqual(arrowRows, csvLoaderRows, `${name}: arrow-table batches match CSVLoader`);
   }
 
   t.end();
 });
 
-test('CSVArrowLoader#parse handles raw UTF-8 and quoted fields without string tokenization', async t => {
+test('CSVLoader#parse handles raw UTF-8 and quoted fields without string tokenization', async t => {
   const csvText = 'name,note\nÅsa,mañana\nBob,"x,y"\n"Eve","hello\nthere"\n"Dan","b""c"\n';
   const csvBuffer = new TextEncoder().encode(csvText);
-  const preloadedLoader = await preload(CSVArrowLoader);
+  const preloadedLoader = await preload(CSVLoader);
 
   const table = await parse(csvBuffer.buffer, preloadedLoader, {
+    core: {worker: false},
     csv: {
-      header: true
+      shape: 'arrow-table',
+      dynamicTyping: false,
+      header: true,
+      skipEmptyLines: false
     }
   });
 
@@ -385,7 +382,7 @@ async function collectCSVLoaderBatchRows(
   return rows;
 }
 
-async function collectCSVArrowLoaderBatchRows(
+async function collectCSVArrowTableBatchRows(
   url: string,
   options: {
     csv: {
@@ -399,8 +396,9 @@ async function collectCSVArrowLoaderBatchRows(
 ): Promise<unknown[]> {
   const rows: unknown[] = [];
   const {shape, ...arrowCSVOptions} = options.csv;
-  const iterator = await loadInBatches(url, CSVArrowLoader, {
-    csv: arrowCSVOptions
+  const iterator = await loadInBatches(url, CSVLoader, {
+    core: {worker: false},
+    csv: {...arrowCSVOptions, shape: 'arrow-table'}
   });
   for await (const batch of iterator) {
     rows.push(
@@ -460,14 +458,18 @@ function materializeArrowCellValue(value: unknown): unknown {
   return value;
 }
 
-test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing cells', async t => {
+test('CSVLoader#parse byte path handles TSV, duplicate headers, and missing cells', async t => {
   const csvText = 'a\ta\n1\t2\n3\n';
   const csvBuffer = new TextEncoder().encode(csvText);
-  const preloadedLoader = await preload(CSVArrowLoader);
+  const preloadedLoader = await preload(CSVLoader);
 
   const table = await parse(csvBuffer.buffer, preloadedLoader, {
+    core: {worker: false},
     csv: {
-      header: true
+      shape: 'arrow-table',
+      dynamicTyping: false,
+      header: true,
+      skipEmptyLines: false
     }
   });
 
@@ -484,12 +486,14 @@ test('CSVArrowLoader#parse byte path handles TSV, duplicate headers, and missing
   t.end();
 });
 
-test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra cells', async t => {
+test('CSVLoader#parse only adds __parsed_extra for Papa-compatible extra cells', async t => {
   const noExtraText = 'A,B,C\nx,1,some text\ny,2,other text\n\n';
   const noExtraBuffer = new TextEncoder().encode(noExtraText);
-  const preloadedLoader = await preload(CSVArrowLoader);
+  const preloadedLoader = await preload(CSVLoader);
   const noExtraTable = await parse(noExtraBuffer.buffer, preloadedLoader, {
+    core: {worker: false},
     csv: {
+      shape: 'arrow-table',
       header: true,
       skipEmptyLines: true
     }
@@ -503,7 +507,9 @@ test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra ce
   const extraText = 'A,B,C\nx,1,some text\n,,,\ny,2,other text\n';
   const extraBuffer = new TextEncoder().encode(extraText);
   const extraTable = await parse(extraBuffer.buffer, preloadedLoader, {
+    core: {worker: false},
     csv: {
+      shape: 'arrow-table',
       header: true,
       skipEmptyLines: true
     }
@@ -515,7 +521,9 @@ test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra ce
   );
 
   const headerlessExtraTable = await parse(extraBuffer.buffer, preloadedLoader, {
+    core: {worker: false},
     csv: {
+      shape: 'arrow-table',
       header: false,
       skipEmptyLines: true
     }
@@ -529,9 +537,10 @@ test('CSVArrowLoader#parse only adds __parsed_extra for Papa-compatible extra ce
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(numbers-100.csv, utf8 columns)', async t => {
-  const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
-    batchSize: 40
+test('CSVLoader#loadInBatches(numbers-100.csv, utf8 columns)', async t => {
+  const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVLoader, {
+    core: {worker: false, batchSize: 40},
+    csv: {shape: 'arrow-table', dynamicTyping: false, skipEmptyLines: false}
   });
 
   let rowCount = 0;
@@ -551,9 +560,11 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv, utf8 columns)', async t => {
   t.end();
 });
 
-test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping true)', async t => {
-  const table = await load(CSV_NUMBERS_100_URL, CSVArrowLoader, {
+test('CSVLoader#load(numbers-100.csv, dynamicTyping true)', async t => {
+  const table = await load(CSV_NUMBERS_100_URL, CSVLoader, {
+    core: {worker: false},
     csv: {
+      shape: 'arrow-table',
       dynamicTyping: true
     }
   });
@@ -573,9 +584,11 @@ test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping true)', async t => {
   t.end();
 });
 
-test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping false)', async t => {
-  const table = await load(CSV_NUMBERS_100_URL, CSVArrowLoader, {
+test('CSVLoader#load(numbers-100.csv, dynamicTyping false)', async t => {
+  const table = await load(CSV_NUMBERS_100_URL, CSVLoader, {
+    core: {worker: false},
     csv: {
+      shape: 'arrow-table',
       dynamicTyping: false
     }
   });
@@ -595,10 +608,11 @@ test('CSVArrowLoader#load(numbers-100.csv, dynamicTyping false)', async t => {
   t.end();
 });
 
-test('CSVArrowLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async t => {
-  const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVArrowLoader, {
-    batchSize: 40,
+test('CSVLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async t => {
+  const iterator = await loadInBatches(CSV_NUMBERS_100_URL, CSVLoader, {
+    core: {worker: false, batchSize: 40},
     csv: {
+      shape: 'arrow-table',
       dynamicTyping: true
     }
   });
@@ -620,18 +634,21 @@ test('CSVArrowLoader#loadInBatches(numbers-100.csv, dynamicTyping true)', async 
   t.end();
 });
 
-test('CSVArrowLoader#parseInBatches freezes schema after first typed batch', async t => {
+test('CSVLoader#parseInBatches freezes schema after first typed batch', async t => {
   const csvText = 'value\n1\nfoo\n';
   const csvBuffer = new TextEncoder().encode(csvText);
-  const preloadedLoader = await preload(CSVArrowLoader);
+  const preloadedLoader = await preload(CSVLoader);
 
   const iterator = await parseInBatches([csvBuffer], preloadedLoader, {
     core: {
+      worker: false,
       batchSize: 1
     },
     csv: {
+      shape: 'arrow-table',
       header: true,
-      dynamicTyping: true
+      dynamicTyping: true,
+      skipEmptyLines: false
     }
   });
 
@@ -651,6 +668,54 @@ test('CSVArrowLoader#parseInBatches freezes schema after first typed batch', asy
   const secondBatchValue = batches[1]?.data.getChildAt(0)?.get(0);
   t.equal(firstBatchValue, 1, 'first batch keeps typed numeric value');
   t.equal(secondBatchValue, null, 'second batch coerces incompatible string value to null');
+
+  t.end();
+});
+
+test('CSVLoader#worker transport serializes and hydrates Arrow table results', async t => {
+  const table = await parse('city,population\nParis,2148000', CSVLoader, {
+    core: {worker: false},
+    csv: {
+      shape: 'arrow-table',
+      header: true,
+      dynamicTyping: false
+    }
+  });
+
+  const serialized = serializeCSVWorkerResult(table, {
+    core: {workerTransferBufferCopy: 'all'}
+  }) as {
+    shape: 'arrow-table';
+    data: {transport: string; getChild?: unknown};
+  };
+  t.equal(serialized.shape, 'arrow-table', 'serialized result keeps table wrapper shape');
+  t.equal(serialized.data.transport, 'arrow-js', 'serialized result uses Arrow JS transport');
+  t.notOk(serialized.data.getChild, 'serialized data is plain transport payload');
+
+  const hydrated = deserializeCSVWorkerResult(serialized) as ArrowTable;
+  t.ok(hydrated.data instanceof arrow.Table, 'hydrated result restores real Arrow table');
+  t.equal(hydrated.data.getChild('city')?.get(0), 'Paris', 'hydrated result keeps values');
+
+  const serializedWithDeprecatedOption = serializeCSVWorkerResult(table, {
+    workerTransferBufferCopy: 'none'
+  } as any) as {data: {transport: string}};
+  t.equal(
+    serializedWithDeprecatedOption.data.transport,
+    'arrow-js',
+    'deprecated buffer copy option is accepted'
+  );
+
+  const plainResult = {shape: 'object-row-table', data: [{city: 'Paris'}]};
+  t.equal(
+    serializeCSVWorkerResult(plainResult),
+    plainResult,
+    'serialize leaves non-Arrow results untouched'
+  );
+  t.equal(
+    deserializeCSVWorkerResult(plainResult),
+    plainResult,
+    'deserialize leaves non-Arrow results untouched'
+  );
 
   t.end();
 });

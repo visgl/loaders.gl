@@ -104,6 +104,9 @@
       "@loaders.gl/arrow": [
         "modules/arrow/src"
       ],
+      "@loaders.gl/arrow/transport": [
+        "modules/arrow/src/transport"
+      ],
       "@loaders.gl/arrow/test": [
         "modules/arrow/test"
       ],

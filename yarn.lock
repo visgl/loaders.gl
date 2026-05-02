@@ -5154,6 +5154,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/csv@workspace:modules/csv"
   dependencies:
+    "@loaders.gl/arrow": "npm:4.4.0"
     "@loaders.gl/gis": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"

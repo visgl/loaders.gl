@@ -52,6 +52,23 @@ export {
   type RenamedArrowColumns
 } from './lib/utils/rename-arrow-columns';
 export {
+  splitArrowBuffers,
+  splitArrowTableBuffers,
+  type SplitArrowBuffersInput,
+  type SplitArrowBuffersOptions
+} from './lib/utils/split-arrow-buffers';
+export {
+  dehydrateArrowTable,
+  hydrateArrowTable,
+  serializeArrowTableToIPC,
+  deserializeArrowTableFromIPC,
+  type DehydratedArrowData,
+  type DehydratedArrowRecordBatch,
+  type DehydratedArrowTable,
+  type DehydratedArrowVector,
+  type SerializedArrowTableIPC
+} from './lib/utils/arrow-table-transport';
+export {
   compareUTF8,
   parseUTF8BigInt,
   parseUTF8Boolean,
@@ -59,15 +76,22 @@ export {
   type UTF8Comparison
 } from './lib/utils/utf8-utils';
 
-// EXPERIMENTAL WORKER
-export {hardClone} from './workers/hard-clone';
-
-export type {ParseGeoArrowInput, ParseGeoArrowResult} from './triangulate-on-worker';
+export type {
+  ParseGeoArrowInput,
+  ParseGeoArrowResult,
+  TriangulateWKBColumnInput,
+  TriangulateWKBColumnResult
+} from './triangulate-on-worker';
 export {
   TriangulationWorker,
   triangulateOnWorker,
+  triangulateWKBColumnOnWorker,
   parseGeoArrowOnWorker
 } from './triangulate-on-worker';
+export {
+  triangulateWKBGeometryColumn,
+  type TriangulatedWKBGeometryColumns
+} from './triangulate-wkb-geometry-column';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use ArrowLoader. */

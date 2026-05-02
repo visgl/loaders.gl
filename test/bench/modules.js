@@ -17,6 +17,7 @@ import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 // import mvtBench from '@loaders.gl/mvt/test/mvt-loader.bench';
 import flatgeobufBench from '@loaders.gl/flatgeobuf/test/flatgeobuf.bench';
 import geopackageBench from '@loaders.gl/geopackage/test/geopackage.bench';
+import gisBench from '@loaders.gl/gis/test/binary-features/gis.bench';
 import kmlBench from '@loaders.gl/kml/test/kml.bench';
 import {parquetBench} from '@loaders.gl/parquet/test/parquet.bench';
 import plyBench from '@loaders.gl/ply/test/ply-loader.bench';
@@ -34,6 +35,8 @@ _addAliases(ALIASES);
  * @returns {Promise<void>} Resolves after all compatible benchmarks have been added.
  */
 export async function addModuleBenchmarksToSuite(suite) {
+  await gisBench(suite);
+
   await shapefileBench(suite);
   await shpBench(suite);
   await geopackageBench(suite);

@@ -34,7 +34,7 @@ import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
-import {CSVArrowLoader, CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/csv';
 import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
 import {convertWKBTableToGeoJSON, getGeoMetadata} from '@loaders.gl/gis';
 import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/schema-utils';
@@ -437,7 +437,7 @@ function getLoaders(example: Example, tableFormat: TableFormat) {
     case 'geojson':
       return [GeoJSONLoader];
     case 'csv':
-      return [CSVArrowLoader];
+      return [CSVLoader];
     case 'flatgeobuf':
       return [FlatGeobufLoader];
     case 'geoparquet':
@@ -543,7 +543,7 @@ function getLoaderDisplayName(
     case 'GeoJSON':
       return 'GeoJSONLoader';
     case 'CSV':
-      return tableFormat === 'geoarrow' ? 'CSVArrowLoader' : 'CSVLoader';
+      return tableFormat === 'geoarrow' ? "CSVLoader (shape: 'arrow-table')" : 'CSVLoader';
     case 'GeoPackage':
       return tableFormat === 'geoarrow'
         ? "GeoPackageLoader (shape: 'arrow-table')"

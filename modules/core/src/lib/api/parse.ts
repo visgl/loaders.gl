@@ -27,6 +27,7 @@ import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
+import {getArrayBufferFromData} from '../loader-utils/get-data';
 import {getLoaderContext, getLoadersFromContext} from '../loader-utils/loader-context';
 import {getResourceUrl} from '../utils/resource-utils';
 import {getLoaderImplementation} from './load-loader';
@@ -152,9 +153,14 @@ async function parseWithLoader(
     context.response = {headers, ok, redirected, status, statusText, type, url};
   }
 
-  data = await getArrayBufferOrStringFromData(data, loader, options);
-
   const loaderWithParser = await getLoaderImplementation(loader, options, context.url);
+
+  if (canParseWithWorker(loaderWithParser, options)) {
+    data = await getArrayBufferFromData(data, options);
+    return await parseWithWorker(loaderWithParser, data, options, context, parse);
+  }
+
+  data = await getArrayBufferOrStringFromData(data, loader, options);
 
   return await parseWithLoaderImplementation(loaderWithParser, data, options, context);
 }
@@ -172,11 +178,6 @@ async function parseWithLoaderImplementation(
   // Fall back to synchronous text parser, wrap results in promises
   if (loader.parseTextSync && typeof data === 'string') {
     return loader.parseTextSync(data, options, context);
-  }
-
-  // If we have a workerUrl and the loader can parse the given options efficiently in a worker
-  if (canParseWithWorker(loader, options)) {
-    return await parseWithWorker(loader, data, options, context, parse);
   }
 
   if (loader.parse) {

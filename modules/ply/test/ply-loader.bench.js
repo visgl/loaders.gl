@@ -18,10 +18,10 @@ export default async function PLYLoaderBench(bench) {
       // TODO - add parse from arrayBuffer (no load)
 
       .group('PLYLoader (ASCII)')
-      .addAsync('Atomic parsing', async () => {
+      .addAsync('PLYLoader ASCII Atomic parsing', async () => {
         await load(ASCII_PLY_URL, PLYLoader);
       })
-      .addAsync('Worker parsing', async () => {
+      .addAsync('PLYLoader ASCII Worker parsing', async () => {
         // Once binary is transferred to worker it cannot be read from the main thread
         // Duplicate it here to avoid breaking other tests
         const response = await fetchFile(ASCII_PLY_URL);
@@ -34,10 +34,10 @@ export default async function PLYLoaderBench(bench) {
       // })
 
       .group('PLYLoader (Binary)')
-      .addAsync('Atomic parsing', async () => {
+      .addAsync('PLYLoader Binary Atomic parsing', async () => {
         await load(BINARY_PLY_URL, PLYLoader);
       })
-      .addAsync('Worker parsing', async () => {
+      .addAsync('PLYLoader Binary Worker parsing', async () => {
         const response = await fetchFile(BINARY_PLY_URL);
         const arrayBuffer = await response.arrayBuffer();
         await load(arrayBuffer, PLYWorkerLoader);

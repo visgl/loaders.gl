@@ -31,7 +31,7 @@ export function extractLoadLibraryOptions<
   ModulesT extends Record<string, any> = Record<string, any>
 >(options: ExtractableLoadLibraryOptions<ModulesT> = {}): LoadLibraryOptions<ModulesT> {
   const useLocalLibraries = options.useLocalLibraries ?? options.core?.useLocalLibraries;
-  const CDN = options.CDN ?? options.core?.CDN;
+  const CDN = getCDNOption(options.CDN, options.core?.CDN);
   const modules = options.modules;
 
   return {
@@ -39,6 +39,22 @@ export function extractLoadLibraryOptions<
     ...(CDN !== undefined ? {CDN} : {}),
     ...(modules !== undefined ? {modules} : {})
   };
+}
+
+/**
+ * Extracts a valid CDN option from normalized or legacy loader options.
+ * @param cdn Deprecated top-level CDN option.
+ * @param coreCDN Nested core CDN option.
+ * @returns CDN option if it is a string or null.
+ */
+function getCDNOption(cdn: unknown, coreCDN: unknown): string | null | undefined {
+  if (typeof cdn === 'string' || cdn === null) {
+    return cdn;
+  }
+  if (typeof coreCDN === 'string' || coreCDN === null) {
+    return coreCDN;
+  }
+  return undefined;
 }
 
 /**
@@ -106,6 +122,9 @@ export function getLibraryUrl(
 
   // In browser, load from external scripts
   if (options.CDN) {
+    if (typeof options.CDN !== 'string') {
+      throw new Error('loadLibrary: options.CDN must be a string or null');
+    }
     assert(options.CDN.startsWith('http'));
     return `${options.CDN}/${moduleName}@${VERSION}/dist/libs/${libraryName}`;
   }

@@ -9,9 +9,16 @@ import {
   IndexedArrowVector,
   IndexedArrowTable,
   MappedArrowTable,
+  splitArrowBuffers,
+  splitArrowTableBuffers,
+  dehydrateArrowTable,
+  hydrateArrowTable,
+  serializeArrowTableToIPC,
+  deserializeArrowTableFromIPC,
   renameArrowColumns,
   validateArrowTableSchema
 } from '@loaders.gl/arrow';
+import * as arrowTransport from '@loaders.gl/arrow/transport';
 
 type TestArrowColumns = {
   name: arrow.Utf8;
@@ -399,6 +406,220 @@ test('ArrowUtils#MappedArrowTable inherits indexed table materialization', t => 
   t.end();
 });
 
+test('ArrowUtils#splitArrowBuffers reuses whole buffers', t => {
+  const values = new Float64Array([1, 2, 3]);
+  const table = createFloat64Table(values);
+  const splitTable = splitArrowBuffers(table);
+  const originalDataBuffer = getDataBuffer(table);
+  const splitDataBuffer = getDataBuffer(splitTable);
+
+  t.ok(splitTable instanceof arrow.Table, 'returns a real Arrow table');
+  t.deepEqual(Array.from(splitTable.getChild('value') ?? []), [1, 2, 3], 'preserves values');
+  t.equal(splitDataBuffer, originalDataBuffer, 'reuses whole-buffer typed array');
+  t.equal(splitDataBuffer?.buffer, values.buffer, 'reuses whole backing ArrayBuffer');
+  t.equal(splitTable.batches.length, table.batches.length, 'preserves batch count');
+  t.equal(splitTable.numRows, table.numRows, 'preserves row count');
+  t.end();
+});
+
+test('ArrowUtils#splitArrowBuffers copies sliced primitive buffers', t => {
+  const backingValues = new Float64Array([99, 1, 2, 3, 100]);
+  const slicedValues = backingValues.subarray(1, 4);
+  const table = createFloat64Table(slicedValues);
+  const splitTable = splitArrowTableBuffers(table);
+  const originalDataBuffer = getDataBuffer(table);
+  const splitDataBuffer = getDataBuffer(splitTable);
+
+  t.deepEqual(Array.from(splitTable.getChild('value') ?? []), [1, 2, 3], 'preserves values');
+  t.equal(
+    originalDataBuffer?.byteOffset,
+    Float64Array.BYTES_PER_ELEMENT,
+    'original table remains sliced'
+  );
+  t.equal(originalDataBuffer?.buffer, backingValues.buffer, 'original table keeps backing buffer');
+  t.notEqual(splitDataBuffer?.buffer, backingValues.buffer, 'copies into a different ArrayBuffer');
+  t.equal(splitDataBuffer?.byteOffset, 0, 'copied typed array starts at byte offset zero');
+  t.equal(
+    splitDataBuffer?.byteLength,
+    splitDataBuffer?.buffer.byteLength,
+    'copied typed array spans its backing buffer'
+  );
+  t.end();
+});
+
+test('ArrowUtils#splitArrowBuffers accepts RecordBatch Vector and Data', t => {
+  const backingValues = new Float64Array([99, 1, 2, 3, 100]);
+  const slicedValues = backingValues.subarray(1, 4);
+  const table = createFloat64Table(slicedValues);
+  const recordBatch = table.batches[0];
+  const vector = table.getChild('value')!;
+  const data = vector.data[0];
+
+  const splitRecordBatch = splitArrowBuffers(recordBatch);
+  const splitVector = splitArrowBuffers(vector);
+  const splitData = splitArrowBuffers(data);
+
+  t.ok(splitRecordBatch instanceof arrow.RecordBatch, 'returns a real Arrow record batch');
+  t.ok(splitVector instanceof arrow.Vector, 'returns a real Arrow vector');
+  t.ok(splitData instanceof arrow.Data, 'returns a real Arrow data node');
+  t.deepEqual(Array.from(splitVector), [1, 2, 3], 'preserves vector values');
+  t.notEqual(
+    splitRecordBatch.data.children[0].buffers[arrow.BufferType.DATA]?.buffer,
+    backingValues.buffer,
+    'copies sliced record batch child buffer'
+  );
+  t.notEqual(
+    splitVector.data[0].buffers[arrow.BufferType.DATA]?.buffer,
+    backingValues.buffer,
+    'copies sliced vector buffer'
+  );
+  t.notEqual(
+    splitData.buffers[arrow.BufferType.DATA]?.buffer,
+    backingValues.buffer,
+    'copies sliced data buffer'
+  );
+  t.end();
+});
+
+test('ArrowUtils#splitArrowBuffers copies sliced nested string buffers', t => {
+  const offsetsBacking = new Int32Array([99, 0, 1, 3, 99]);
+  const valuesBacking = new Uint8Array([99, 65, 66, 67, 99]);
+  const offsets = offsetsBacking.subarray(1, 4);
+  const values = valuesBacking.subarray(1, 4);
+  const table = createUtf8Table(offsets, values);
+  const splitTable = splitArrowBuffers(table);
+  const originalData = table.getChild('name')!.data[0];
+  const splitData = splitTable.getChild('name')!.data[0];
+  const splitOffsetBuffer = splitData.buffers[arrow.BufferType.OFFSET];
+  const splitValueBuffer = splitData.buffers[arrow.BufferType.DATA];
+
+  t.deepEqual(Array.from(splitTable.getChild('name') ?? []), ['A', 'BC'], 'preserves strings');
+  t.equal(originalData.buffers[arrow.BufferType.OFFSET]?.buffer, offsetsBacking.buffer);
+  t.equal(originalData.buffers[arrow.BufferType.DATA]?.buffer, valuesBacking.buffer);
+  t.notEqual(splitOffsetBuffer?.buffer, offsetsBacking.buffer, 'copies sliced offset buffer');
+  t.notEqual(splitValueBuffer?.buffer, valuesBacking.buffer, 'copies sliced string value buffer');
+  t.equal(splitOffsetBuffer?.byteOffset, 0, 'copied offset buffer starts at byte offset zero');
+  t.equal(splitValueBuffer?.byteOffset, 0, 'copied value buffer starts at byte offset zero');
+  t.equal(
+    splitOffsetBuffer?.byteLength,
+    splitOffsetBuffer?.buffer.byteLength,
+    'copied offset buffer spans its backing buffer'
+  );
+  t.equal(
+    splitValueBuffer?.byteLength,
+    splitValueBuffer?.buffer.byteLength,
+    'copied value buffer spans its backing buffer'
+  );
+  t.end();
+});
+
+test('ArrowUtils#splitArrowBuffers can copy every internal buffer', t => {
+  const values = new Float64Array([1, 2, 3]);
+  const table = createFloat64Table(values);
+  const splitTable = splitArrowBuffers(table, {copy: 'all'});
+  const splitDataBuffer = getDataBuffer(splitTable);
+
+  t.deepEqual(Array.from(splitTable.getChild('value') ?? []), [1, 2, 3], 'preserves values');
+  t.notEqual(splitDataBuffer?.buffer, values.buffer, 'copies whole-buffer typed arrays on request');
+  t.end();
+});
+
+test('ArrowUtils#splitArrowBuffers can skip buffer copying', t => {
+  const backingValues = new Float64Array([99, 1, 2, 3, 100]);
+  const slicedValues = backingValues.subarray(1, 4);
+  const table = createFloat64Table(slicedValues);
+  const splitTable = splitArrowBuffers(table, {copy: 'none'});
+  const splitDataBuffer = getDataBuffer(splitTable);
+
+  t.deepEqual(Array.from(splitTable.getChild('value') ?? []), [1, 2, 3], 'preserves values');
+  t.equal(splitDataBuffer?.buffer, backingValues.buffer, 'reuses sliced backing buffer');
+  t.equal(
+    splitDataBuffer?.byteOffset,
+    Float64Array.BYTES_PER_ELEMENT,
+    'preserves sliced byte offset'
+  );
+  t.end();
+});
+
+test('ArrowUtils#dehydrateArrowTable and hydrateArrowTable round trip structured payloads', t => {
+  const backingValues = new Float64Array([99, 1, 2, 3, 100]);
+  const slicedValues = backingValues.subarray(1, 4);
+  const table = createFloat64Table(slicedValues);
+  const dehydratedTable = dehydrateArrowTable(table);
+  const clonedPayload = structuredClone(dehydratedTable);
+  const hydratedTable = hydrateArrowTable(clonedPayload);
+  const hydratedDataBuffer = getDataBuffer(hydratedTable);
+
+  t.equal(dehydratedTable.shape, 'arrow-table', 'marks table shape');
+  t.equal(dehydratedTable.transport, 'arrow-js', 'marks Arrow JS transport');
+  t.ok(hydratedTable instanceof arrow.Table, 'hydrates a real Arrow table');
+  t.deepEqual(Array.from(hydratedTable.getChild('value') ?? []), [1, 2, 3], 'preserves values');
+  t.notEqual(hydratedDataBuffer?.buffer, backingValues.buffer, 'isolates sliced backing buffer');
+  t.equal(hydratedDataBuffer?.byteOffset, 0, 'hydrated buffer starts at byte offset zero');
+  t.equal(
+    hydratedDataBuffer?.byteLength,
+    hydratedDataBuffer?.buffer.byteLength,
+    'hydrated buffer spans its backing buffer'
+  );
+  t.end();
+});
+
+test('ArrowUtils#transport subpath exports Arrow table transport utilities', t => {
+  t.equal(arrowTransport.dehydrateArrowTable, dehydrateArrowTable, 'exports dehydrateArrowTable');
+  t.equal(arrowTransport.hydrateArrowTable, hydrateArrowTable, 'exports hydrateArrowTable');
+  t.equal(
+    arrowTransport.serializeArrowTableToIPC,
+    serializeArrowTableToIPC,
+    'exports serializeArrowTableToIPC'
+  );
+  t.equal(
+    arrowTransport.deserializeArrowTableFromIPC,
+    deserializeArrowTableFromIPC,
+    'exports deserializeArrowTableFromIPC'
+  );
+  t.equal(arrowTransport.splitArrowBuffers, splitArrowBuffers, 'exports splitArrowBuffers');
+  t.equal(
+    arrowTransport.splitArrowTableBuffers,
+    splitArrowTableBuffers,
+    'exports splitArrowTableBuffers'
+  );
+  t.end();
+});
+
+test('ArrowUtils#transport subpath round trips Arrow JS payloads', t => {
+  const table = createFloat64Table(new Float64Array([1, 2, 3]));
+  const dehydratedTable = arrowTransport.dehydrateArrowTable(table);
+  const hydratedTable = arrowTransport.hydrateArrowTable(structuredClone(dehydratedTable));
+
+  t.ok(hydratedTable instanceof arrow.Table, 'hydrates a real Arrow table');
+  t.deepEqual(Array.from(hydratedTable.getChild('value') ?? []), [1, 2, 3], 'preserves values');
+  t.end();
+});
+
+test('ArrowUtils#serializeArrowTableToIPC and deserializeArrowTableFromIPC round trip IPC payloads', t => {
+  const table = createUtf8Table(new Int32Array([0, 1, 3]), new Uint8Array([65, 66, 67]));
+  const serializedTable = serializeArrowTableToIPC(table);
+  const clonedPayload = structuredClone(serializedTable);
+  const deserializedTable = deserializeArrowTableFromIPC(clonedPayload);
+  const deserializedRawTable = deserializeArrowTableFromIPC(clonedPayload.data);
+
+  t.equal(serializedTable.shape, 'arrow-table', 'marks table shape');
+  t.equal(serializedTable.transport, 'arrow-ipc', 'marks Arrow IPC transport');
+  t.ok(serializedTable.data instanceof Uint8Array, 'returns IPC bytes');
+  t.ok(deserializedTable instanceof arrow.Table, 'deserializes a real Arrow table');
+  t.deepEqual(
+    Array.from(deserializedTable.getChild('name') ?? []),
+    ['A', 'BC'],
+    'preserves values from payload'
+  );
+  t.deepEqual(
+    Array.from(deserializedRawTable.getChild('name') ?? []),
+    ['A', 'BC'],
+    'preserves values from raw IPC bytes'
+  );
+  t.end();
+});
+
 test('ArrowUtils#validateArrowTableSchema validates expected Arrow schema fields', t => {
   const expectedSchema = new arrow.Schema([
     new arrow.Field(RECORD_ID_FIELD, new arrow.Utf8(), false),
@@ -679,4 +900,38 @@ function createArrowTable<T extends arrow.TypeMap>(
   columns: {[P in keyof T]: arrow.Vector<T[P]>}
 ): arrow.Table<T> {
   return new (arrow.Table as any)(schema, columns) as arrow.Table<T>;
+}
+
+/**
+ * Builds a one-column Float64 Arrow table from a caller-provided typed array.
+ */
+function createFloat64Table(values: Float64Array): arrow.Table<{value: arrow.Float64}> {
+  const type = new arrow.Float64();
+  const vector = new arrow.Vector([
+    new arrow.Data(type, 0, values.length, 0, {[arrow.BufferType.DATA]: values} as any)
+  ]);
+  const schema = new arrow.Schema<{value: arrow.Float64}>([new arrow.Field('value', type, false)]);
+  return createArrowTable(schema, {value: vector});
+}
+
+/**
+ * Builds a one-column Utf8 Arrow table from caller-provided offset and value buffers.
+ */
+function createUtf8Table(offsets: Int32Array, values: Uint8Array): arrow.Table<{name: arrow.Utf8}> {
+  const type = new arrow.Utf8();
+  const vector = new arrow.Vector([
+    new arrow.Data(type, 0, offsets.length - 1, 0, {
+      [arrow.BufferType.OFFSET]: offsets,
+      [arrow.BufferType.DATA]: values
+    } as any)
+  ]);
+  const schema = new arrow.Schema<{name: arrow.Utf8}>([new arrow.Field('name', type, false)]);
+  return createArrowTable(schema, {name: vector});
+}
+
+/**
+ * Gets the internal DATA buffer for the Float64 test table.
+ */
+function getDataBuffer(table: arrow.Table<{value: arrow.Float64}>): Float64Array | undefined {
+  return table.getChild('value')?.data[0].buffers[arrow.BufferType.DATA];
 }

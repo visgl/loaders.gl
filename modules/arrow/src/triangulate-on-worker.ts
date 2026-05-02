@@ -13,11 +13,13 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type TriangulationWorkerInput =
   | ({operation: 'triangulate'} & TriangulateInput)
+  | TriangulateWKBColumnInput
   | ParseGeoArrowInput
   | {operation: 'test'; data: any};
 
 export type TriangulationWorkerOutput =
   | ({operation: 'triangulate'} & TriangulateResult)
+  | ({operation: 'triangulate-wkb-column'} & TriangulateWKBColumnResult)
   | ({operation: 'parse-geoarrow'} & ParseGeoArrowResult)
   | {operation: 'test'; data: any};
 
@@ -27,7 +29,7 @@ type GeoArrowChunkData = {
   length: number;
   nullCount: number;
   buffers: any;
-  children: arrow.Data[];
+  children: GeoArrowChunkData[];
   dictionary?: arrow.Vector;
 };
 
@@ -44,6 +46,20 @@ export type ParseGeoArrowInput = {
 export type ParseGeoArrowResult = {
   chunkIndex: number;
   binaryDataFromGeoArrow: BinaryDataFromGeoArrow | null;
+};
+
+/** Input data for operation: 'triangulate-wkb-column'. */
+export type TriangulateWKBColumnInput = {
+  operation: 'triangulate-wkb-column';
+  chunkData: GeoArrowChunkData;
+  chunkIndex: number;
+};
+
+/** Result type for operation: 'triangulate-wkb-column'. */
+export type TriangulateWKBColumnResult = {
+  chunkIndex: number;
+  vertexIndexColumn: GeoArrowChunkData;
+  vertexColumn: GeoArrowChunkData;
 };
 
 /** Input data for operation: 'triangulate' */
@@ -78,6 +94,16 @@ export function triangulateOnWorker(
   options: WorkerOptions = {}
 ): Promise<TriangulateResult> {
   return processOnWorker(TriangulationWorker, {...data, operation: 'triangulate'}, options);
+}
+
+/**
+ * Triangulate a GeoArrow WKB geometry column on a worker.
+ */
+export function triangulateWKBColumnOnWorker(
+  data: TriangulateWKBColumnInput,
+  options: WorkerOptions = {}
+): Promise<TriangulateWKBColumnResult> {
+  return processOnWorker(TriangulationWorker, data, options);
 }
 
 /**

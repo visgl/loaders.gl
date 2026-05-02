@@ -28,6 +28,7 @@ export const CSVLoader = {
   batchType: null as unknown as TableBatch | ColumnarTableBatch | ArrowTableBatch,
   version: CSV_LOADER_VERSION,
   text: true,
+  worker: true,
   options: CSV_LOADER_OPTIONS,
   preload
 } as const satisfies Loader<

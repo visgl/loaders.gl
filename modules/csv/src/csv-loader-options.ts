@@ -23,6 +23,8 @@ export type CSVLoaderOptions = LoaderOptions & {
     dynamicTyping?: boolean;
     comments?: boolean;
     skipEmptyLines?: boolean | 'greedy';
+    /** @internal Whether the caller explicitly supplied `skipEmptyLines`. */
+    skipEmptyLinesIsExplicit?: boolean;
     detectGeometryColumns?: boolean;
     geometryEncoding?: 'wkb' | 'source';
     delimitersToGuess?: string[];

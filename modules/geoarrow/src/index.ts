@@ -69,6 +69,7 @@ export {
 } from './metadata/geoparquet-metadata';
 
 export {getGeoArrowGeometryInfo} from './get-geoarrow-geometry-info';
+export {getGeoarrowVertexCount} from './get-geoarrow-vertex-count';
 
 export {updateBoundsFromGeoArrowSamples} from './get-arrow-bounds';
 

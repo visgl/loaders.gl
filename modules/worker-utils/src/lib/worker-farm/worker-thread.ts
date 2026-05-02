@@ -61,6 +61,20 @@ export default class WorkerThread {
     this.terminated = true;
   }
 
+  /** Keeps this worker from preventing Node.js process exit while idle. */
+  unref(): void {
+    if (!isBrowser && typeof (this.worker as NodeWorkerType).unref === 'function') {
+      (this.worker as NodeWorkerType).unref();
+    }
+  }
+
+  /** Keeps this worker alive while it is actively processing a job. */
+  ref(): void {
+    if (!isBrowser && typeof (this.worker as NodeWorkerType).ref === 'function') {
+      (this.worker as NodeWorkerType).ref();
+    }
+  }
+
   get isRunning() {
     return Boolean(this.onMessage);
   }
