@@ -39,6 +39,45 @@ Concrete runtime classes are unchanged. For example:
 
 The old top-level `*Source` aliases have been removed, so imports must be updated explicitly.
 
+### Arrow loader and writer variant removal
+
+Redundant Arrow-specific loader and writer variants have been removed where the primary loader or writer already supports Arrow table data.
+
+| Removed API | Replacement |
+| --- | --- |
+| `ExcelArrowLoader` | `ExcelLoader` with `excel.shape: 'arrow-table'` |
+| `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow-table'` |
+| `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow-table'` |
+| `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow-table'` |
+| `GPXArrowLoader` | `GPXLoader` with `gpx.shape: 'arrow-table'` |
+| `TCXArrowLoader` | `TCXLoader` with `tcx.shape: 'arrow-table'` |
+| `DracoArrowLoader` | `DracoLoader` with `draco.shape: 'arrow-table'` |
+| `TerrainArrowLoader` | `TerrainLoader` with `terrain.shape: 'arrow-table'` |
+| `QuantizedMeshArrowLoader` | `QuantizedMeshLoader` with `quantized-mesh.shape: 'arrow-table'` |
+| `GeoPackageArrowLoader(tableName?)` | `GeoPackageLoader` with `geopackage.shape: 'arrow-table'` and optional `geopackage.table` |
+| `ParquetArrowLoader` | `ParquetLoader` with `parquet.shape: 'arrow-table'` |
+| `ParquetArrowWorkerLoader` | `ParquetLoader` with `parquet.shape: 'arrow-table'` |
+| `ParquetArrowWriter` | `ParquetWriter` |
+| `ShapefileArrowLoader` | `ShapefileLoader` with `shapefile.shape: 'arrow-table'` |
+
+For example:
+
+```ts
+import {load, encode} from '@loaders.gl/core';
+import {ExcelLoader} from '@loaders.gl/excel';
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
+
+const excelArrowTable = await load(excelUrl, ExcelLoader, {
+  excel: {shape: 'arrow-table'}
+});
+
+const parquetArrowTable = await load(parquetUrl, ParquetLoader, {
+  parquet: {shape: 'arrow-table'}
+});
+
+const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
+```
+
 ### SourceLoader migration examples
 
 Before, in 4.4:

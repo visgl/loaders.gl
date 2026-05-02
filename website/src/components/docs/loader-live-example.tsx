@@ -36,13 +36,6 @@ const LOADER_LIVE_EXAMPLES: Record<string, LoaderLiveExampleConfig> = {
   'modules/3d-tiles/api-reference/tiles-3d-loader': {kind: '3d-tiles'},
   'modules/3d-tiles/api-reference/cesium-ion-loader': {kind: '3d-tiles'},
   'modules/arrow/api-reference/geoarrow-loader': {kind: 'geospatial', format: 'GeoArrow'},
-  'modules/excel/api-reference/excel-arrow-loader': {
-    kind: 'table',
-    table: {
-      loaderName: 'ExcelArrowLoader',
-      url: `${LOADERS_URL}/modules/excel/test/data/zipcodes.xlsx`
-    }
-  },
   'modules/excel/api-reference/excel-loader': {
     kind: 'table',
     table: {

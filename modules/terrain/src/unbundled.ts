@@ -5,6 +5,4 @@
 export type {TerrainLoaderOptions} from './terrain-loader';
 export type {QuantizedMeshLoaderOptions} from './quantized-mesh-loader';
 export {TerrainLoader} from './terrain-loader';
-export {TerrainArrowLoader} from './terrain-arrow-loader';
 export {QuantizedMeshLoader} from './quantized-mesh-loader';
-export {QuantizedMeshArrowLoader} from './quantized-mesh-arrow-loader';

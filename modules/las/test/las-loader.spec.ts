@@ -11,6 +11,9 @@ import {
 } from 'test/common/conformance';
 
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
+import * as las from '@loaders.gl/las';
+import * as bundledLas from '@loaders.gl/las/bundled';
+import * as unbundledLas from '@loaders.gl/las/unbundled';
 import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
 // import {ArrowLoader} from '@loaders.gl/arrow';
 
@@ -24,6 +27,13 @@ setLoaderOptions({
 test('LASLoader#loader conformance', t => {
   validateLoader(t, LASLoader, 'LASLoader');
   validateLoader(t, LASWorkerLoader, 'LASWorkerLoader');
+  t.end();
+});
+
+test('LASLoader#removed Arrow variant exports are absent', t => {
+  t.notOk('LASArrowLoader' in las, 'root does not export LASArrowLoader');
+  t.notOk('LASArrowLoader' in bundledLas, 'bundled does not export LASArrowLoader');
+  t.notOk('LASArrowLoader' in unbundledLas, 'unbundled does not export LASArrowLoader');
   t.end();
 });
 
@@ -110,45 +120,13 @@ test.skip('LASLoader#shape="columnar-table"', async t => {
   t.end();
 });
 
-// Related code was commented due to breaking pointcloud example on the website
-/*
-test.skip('LAS#shape="arrow-table"', async (t) => {
+test('LASLoader#shape="arrow-table"', async t => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'arrow-table', skip: 10},
-    core:{ worker: false}
+    core: {worker: false}
   });
-  t.ok(result);
-
-  const table = result.data;
-  const arrowData = await parse(table.serialize(), ArrowLoader);
-  t.ok(arrowData);
-  t.equals(arrowData.classification.length, 80805);
-  t.ok(
-    arrowData.classification[0].data.values instanceof Uint8Array,
-    'arrowData.classification value is instance of `Uint8Vector`'
-  );
-  t.equals(arrowData.classification[0].data.values.length, 1);
-
-  t.equals(arrowData.COLOR_0.length, 80805);
-  t.ok(
-    arrowData.COLOR_0[0].data.values instanceof Uint8Array,
-    'arrowData.COLOR_0 value is instance of `Uint8Vector`'
-  );
-  t.equals(arrowData.COLOR_0[0].data.values.length, 4);
-
-  t.equals(arrowData.intensity.length, 80805);
-  t.ok(
-    arrowData.intensity[0].data.values instanceof Uint16Array,
-    'arrowData.intensity value is instance of `Uint16Vector`'
-  );
-  t.equals(arrowData.intensity[0].data.values.length, 1);
-
-  t.equals(arrowData.POSITION.length, 80805);
-  t.ok(
-    arrowData.POSITION[0].data.values instanceof Float32Array,
-    'arrowData.POSITION value is instance of `Float32Vector`'
-  );
-  t.equals(arrowData.POSITION[0].data.values.length, 3);
+  validateTableCategoryData(t, result);
+  t.equal(result.shape, 'arrow-table', 'returns Arrow table shape');
+  t.ok(result.data.getChild('POSITION'), 'returns POSITION column');
   t.end();
 });
-*/

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {ParquetJSLoader, ParquetLoader, ParquetArrowLoader, GeoParquetLoader} from '@loaders.gl/parquet';
+import {ParquetJSLoader, ParquetLoader, GeoParquetLoader} from '@loaders.gl/parquet';
 import {fetchFile, load} from '@loaders.gl/core';
 
 // const PARQUET_URL = '@loaders.gl/parquet/test/data/apache/good/alltypes_plain.parquet';
@@ -33,21 +33,23 @@ export async function parquetBench(suite) {
   }
 
   suite.addAsync(
-    'load(ParquetArrowLoader) - Parquet load',
+    "load(ParquetLoader, shape: 'arrow-table') - Parquet load",
     {multiplier: 40000, unit: 'rows'},
     async () => {
-      await load(arrayBuffer, ParquetArrowLoader, {
-        core: {worker: false}
+      await load(arrayBuffer, ParquetLoader, {
+        core: {worker: false},
+        parquet: {shape: 'arrow-table'}
       });
     }
   );
 
   suite.addAsync(
-    'load(ParquetArrowLoader) - GeoParquet load',
+    "load(ParquetLoader, shape: 'arrow-table') - GeoParquet load",
     {multiplier: 40000, unit: 'rows'},
     async () => {
-      await load(geoArrayBuffer, ParquetArrowLoader, {
-        core: {worker: false}
+      await load(geoArrayBuffer, ParquetLoader, {
+        core: {worker: false},
+        parquet: {shape: 'arrow-table'}
       });
     }
   );

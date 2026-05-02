@@ -10,6 +10,8 @@ import {DracoFormat} from './draco-format';
 
 export type DracoLoaderOptions = StrictLoaderOptions & {
   draco?: DracoParseOptions & {
+    /** Selects mesh output or Apache Arrow output. */
+    shape?: 'mesh' | 'arrow-table';
     /** @deprecated WASM decoding is faster but JS is more backwards compatible */
     decoderType?: 'wasm' | 'js';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
@@ -35,7 +37,8 @@ export const DracoWorkerLoader = {
     draco: {
       decoderType: typeof WebAssembly === 'object' ? 'wasm' : 'js', // 'js' for IE11
       extraAttributes: {},
-      attributeNameEntry: undefined
+      attributeNameEntry: undefined,
+      shape: 'mesh'
     }
   },
   preload

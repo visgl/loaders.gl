@@ -4,14 +4,12 @@
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
-The `TerrainArrowLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values, and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+`TerrainLoader` reconstructs mesh surfaces from height map images, e.g. [Mapzen Terrain Tiles](https://github.com/tilezen/joerd/blob/master/docs/formats.md), which encodes elevation into R,G,B values. It returns the legacy [Mesh](/docs/specifications/category-mesh) object by default and can return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with `terrain.shape: 'arrow-table'`.
 
-`TerrainLoader` parses the same height map terrain formats and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
-
-| Loader               | Output             | Use when                           |
-| -------------------- | ------------------ | ---------------------------------- |
-| `TerrainLoader`      | `Mesh`             | You want the legacy mesh object.   |
-| `TerrainArrowLoader` | `Mesh Arrow table` | You want columnar mesh attributes. |
+| Shape         | Output             | Use when                           |
+| ------------- | ------------------ | ---------------------------------- |
+| `mesh`        | `Mesh`             | You want the legacy mesh object.   |
+| `arrow-table` | `Mesh Arrow table` | You want columnar mesh attributes. |
 
 | Loader                | Characteristic                             |
 | --------------------- | ------------------------------------------ |
@@ -27,11 +25,14 @@ The `TerrainArrowLoader` reconstructs mesh surfaces from height map images, e.g.
 ## Usage
 
 ```typescript
-import {TerrainArrowLoader, TerrainLoader} from '@loaders.gl/terrain';
+import {TerrainLoader} from '@loaders.gl/terrain';
 import {load} from '@loaders.gl/core';
 
-const table = await load(url, TerrainArrowLoader, options);
 const data = await load(url, TerrainLoader, options);
+const table = await load(url, TerrainLoader, {
+  worker: false,
+  terrain: {...options.terrain, shape: 'arrow-table'}
+});
 ```
 
 `TerrainLoader` internally decodes heightmap images with [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader) and then converts them with `getImageData(image)`.
@@ -44,6 +45,7 @@ const data = await load(url, TerrainLoader, options);
 | `terrain.bounds`           | `array<number>` | `null`    | Bounds of the image to fit x,y coordinates into. In `[minX, minY, maxX, maxY]`. If not supplied, x and y are in pixels relative to the image. |
 | `terrain.elevationDecoder` | `object`        | See below | See below                                                                                                                                     |
 | `terrain.tesselator`       | `string`        | `auto`    | See below                                                                                                                                     |
+| `terrain.shape`            | `string`        | `mesh`    | Output shape: `'mesh'` or `'arrow-table'`.                                                                                                     |
 | `terrain.skirtHeight`      | `number`        | `null`    | If set, create the skirt for the tile with particular height in meters                                                                        |
 
 ### elevationDecoder
