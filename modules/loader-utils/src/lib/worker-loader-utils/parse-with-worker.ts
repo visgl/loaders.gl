@@ -1,10 +1,10 @@
 import {canProcessOnWorker, isBrowser, processOnWorker} from '@loaders.gl/worker-utils';
-import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
+import type {Loader, StrictLoaderOptions, LoaderContext} from '../../loader-types';
 
 type ParseOnMainThread = (
   arrayBuffer: ArrayBuffer,
-  loaders?: Loader | Loader[] | LoaderOptions,
-  options?: LoaderOptions,
+  loaders?: Loader | Loader[] | StrictLoaderOptions,
+  options?: StrictLoaderOptions,
   context?: LoaderContext
 ) => Promise<unknown>;
 
@@ -13,7 +13,7 @@ type ParseOnMainThread = (
  * @param loader
  * @param options
  */
-export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
+export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions) {
   const workerOptions = getWorkerOptions(options);
   const nodeWorkers = workerOptions._nodeWorkers;
   if (!isBrowser && !nodeWorkers) {
@@ -45,7 +45,7 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
 export async function parseWithWorker(
   loader: Loader,
   data: any,
-  options?: LoaderOptions,
+  options?: StrictLoaderOptions,
   context?: LoaderContext,
   parseOnMainThread?: ParseOnMainThread
 ) {
@@ -75,7 +75,7 @@ export async function parseWithWorker(
  * Create worker options with deprecated top-level worker fields available to worker-utils.
  * @param options
  */
-function getWorkerOptions(options: LoaderOptions = {}) {
+function getWorkerOptions(options: StrictLoaderOptions = {}) {
   const serializedOptions = JSON.parse(JSON.stringify(options));
   return {
     ...serializedOptions.core,
@@ -101,7 +101,7 @@ function getSerializableLoaderContext(context?: LoaderContext) {
  * @param options Loader options.
  * @returns True when CSV should parse on a worker.
  */
-function shouldParseCSVWithWorker(options?: LoaderOptions): boolean {
+function shouldParseCSVWithWorker(options?: StrictLoaderOptions): boolean {
   const csvOptions = options as {csv?: {shape?: string}; core?: {shape?: string}} | undefined;
   return (csvOptions?.csv?.shape ?? csvOptions?.core?.shape) === 'arrow-table';
 }

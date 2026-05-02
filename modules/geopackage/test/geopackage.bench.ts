@@ -14,14 +14,18 @@ export default async function geopackageLoaderBench(suite) {
 
   suite = suite.group('GeoPackageLoader');
 
-  suite.addAsync('load arrow-table geoarrow.wkb', ROW_BENCHMARK_OPTIONS, async () => {
-    await load(arrayBuffer.slice(0), GeoPackageLoader, {
-      core: {worker: false},
-      geopackage: {shape: 'arrow-table'}
-    });
-  });
+  suite.addAsync(
+    'GeoPackageLoader load arrow-table geoarrow.wkb',
+    ROW_BENCHMARK_OPTIONS,
+    async () => {
+      await load(arrayBuffer.slice(0), GeoPackageLoader, {
+        core: {worker: false},
+        geopackage: {shape: 'arrow-table'}
+      });
+    }
+  );
 
-  suite.addAsync('load geojson-table', ROW_BENCHMARK_OPTIONS, async () => {
+  suite.addAsync('GeoPackageLoader load geojson-table', ROW_BENCHMARK_OPTIONS, async () => {
     await load(arrayBuffer.slice(0), GeoPackageLoader, {
       core: {worker: false},
       geopackage: {shape: 'geojson-table'}

@@ -76,12 +76,22 @@ export {
   type UTF8Comparison
 } from './lib/utils/utf8-utils';
 
-export type {ParseGeoArrowInput, ParseGeoArrowResult} from './triangulate-on-worker';
+export type {
+  ParseGeoArrowInput,
+  ParseGeoArrowResult,
+  TriangulateWKBColumnInput,
+  TriangulateWKBColumnResult
+} from './triangulate-on-worker';
 export {
   TriangulationWorker,
   triangulateOnWorker,
+  triangulateWKBColumnOnWorker,
   parseGeoArrowOnWorker
 } from './triangulate-on-worker';
+export {
+  triangulateWKBGeometryColumn,
+  type TriangulatedWKBGeometryColumns
+} from './triangulate-wkb-geometry-column';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use ArrowLoader. */

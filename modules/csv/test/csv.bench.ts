@@ -8,6 +8,7 @@ import {inferSchema, initParser} from 'udsv';
 import Papa from '../src/papaparse/papaparse';
 
 const SAMPLE_CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
+const LARGE_SAMPLE_CSV_URL = '@loaders.gl/csv/test/data/numbers-10000.csv';
 
 // Comparison loader based on D3
 import {autoType, csvFormat, csvParse, tsvFormat, tsvParse} from 'd3-dsv';
@@ -46,14 +47,19 @@ const D3TSVLoaderTyped = {
 
 const ROW_COUNT = 2000;
 const WIDE_COLUMN_COUNT = 40;
+const WORKER_SAMPLE_REPEAT_COUNT = 8;
 const BENCHMARK_OPTIONS = {minIterations: 3};
 
 export default async function csvBench(bench) {
   const csvLoaderWithParser = await preload(CSVLoader);
-  const response = await fetchFile(SAMPLE_CSV_URL);
-  const sample = await response.text();
+  const [response, largeResponse] = await Promise.all([
+    fetchFile(SAMPLE_CSV_URL),
+    fetchFile(LARGE_SAMPLE_CSV_URL)
+  ]);
+  const [sample, largeSample] = await Promise.all([response.text(), largeResponse.text()]);
   const scenarios = createBenchmarkScenarios(sample);
   const standardScenarios = getStandardBenchmarkScenarios(scenarios);
+  const workerScenarios = createWorkerBenchmarkScenarios(largeSample);
   await addBenchmarkScenarioTables(standardScenarios, csvLoaderWithParser);
 
   for (const scenario of standardScenarios) {
@@ -89,7 +95,7 @@ export default async function csvBench(bench) {
     });
   }
 
-  await addCSVArrowTableWorkerBenchmarks(bench, standardScenarios);
+  await addCSVArrowTableWorkerBenchmarks(bench, workerScenarios);
 
   for (const scenario of standardScenarios) {
     const arrowOptions = {
@@ -144,18 +150,15 @@ export default async function csvBench(bench) {
   return bench;
 }
 
-/** Adds browser worker throughput benchmarks for CSV Arrow parsing. */
+/** Adds worker throughput benchmarks for CSV Arrow parsing. */
 async function addCSVArrowTableWorkerBenchmarks(
   bench,
   scenarios: BenchmarkScenario[]
 ): Promise<void> {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
   for (const scenario of scenarios) {
     const workerCounts = [1, 2, 3];
     const workerLoaders = workerCounts.map(createCSVWorkerBenchmarkLoader);
+    const nodeWorkerOptions = typeof window === 'undefined' ? {_nodeWorkers: true} : {};
 
     await Promise.all(
       workerLoaders.map(({loader, workerCount}) =>
@@ -164,6 +167,7 @@ async function addCSVArrowTableWorkerBenchmarks(
           {
             worker: true,
             _workerType: 'test',
+            ...nodeWorkerOptions,
             maxConcurrency: workerCount,
             reuseWorkers: true
           },
@@ -187,30 +191,41 @@ async function addCSVArrowTableWorkerBenchmarks(
         `CSVLoader worker arrow-table workers=${workerCount}#parse`,
         {
           ...BENCHMARK_OPTIONS,
-          _throughput: workerCount,
-          multiplier: scenario.rowCount,
+          multiplier: scenario.rowCount * workerCount,
           unit: 'rows'
         },
         async () =>
-          await parse(scenario.arrayBuffer.slice(0), loader, {
-            csv: {header: true, shape: 'arrow-table', dynamicTyping: false},
-            core: {
-              worker: true,
-              _workerType: 'test',
-              maxConcurrency: workerCount,
-              reuseWorkers: true
-            }
-          })
+          await Promise.all(
+            Array.from({length: workerCount}, () =>
+              parse(scenario.arrayBuffer.slice(0), loader, {
+                csv: {header: true, shape: 'arrow-table', dynamicTyping: false},
+                core: {
+                  worker: true,
+                  _workerType: 'test',
+                  ...nodeWorkerOptions,
+                  maxConcurrency: workerCount,
+                  reuseWorkers: true,
+                  workerTransferBufferCopy: 'none'
+                }
+              })
+            )
+          )
       );
     }
   }
 }
 
 /** Creates a CSV loader clone with an isolated worker pool name for benchmark concurrency. */
-function createCSVWorkerBenchmarkLoader(workerCount: number): Loader<any, any, any> {
+function createCSVWorkerBenchmarkLoader(workerCount: number): {
+  loader: Loader<any, any, any>;
+  workerCount: number;
+} {
   return {
-    ...CSVLoader,
-    name: `CSV worker benchmark ${workerCount}`
+    loader: {
+      ...CSVLoader,
+      name: `CSV worker benchmark ${workerCount}`
+    },
+    workerCount
   };
 }
 
@@ -370,6 +385,16 @@ function createBenchmarkScenarios(sample: string): BenchmarkScenario[] {
   ];
 }
 
+/** Creates larger CSV scenarios for worker benchmarks where startup cost should not dominate. */
+function createWorkerBenchmarkScenarios(sample: string): BenchmarkScenario[] {
+  return [
+    createBenchmarkScenario(
+      `large fixture x${WORKER_SAMPLE_REPEAT_COUNT}`,
+      repeatCSVWithSingleHeader(sample, WORKER_SAMPLE_REPEAT_COUNT)
+    )
+  ];
+}
+
 /**
  * Returns the representative scenarios that should appear in regular benchmark output.
  * @param scenarios All CSV benchmark scenarios.
@@ -392,6 +417,20 @@ function createBenchmarkScenario(
     byteLength: bytes.byteLength,
     rowCount
   };
+}
+
+/** Repeats a CSV fixture while keeping only the first header row. */
+function repeatCSVWithSingleHeader(text: string, repeatCount: number): string {
+  const rows = text.trimEnd().split('\n');
+  const header = rows[0];
+  const dataRows = rows.slice(1);
+  const repeatedRows = [header];
+
+  for (let repeatIndex = 0; repeatIndex < repeatCount; repeatIndex++) {
+    repeatedRows.push(...dataRows);
+  }
+
+  return `${repeatedRows.join('\n')}\n`;
 }
 
 async function addBenchmarkScenarioTables(

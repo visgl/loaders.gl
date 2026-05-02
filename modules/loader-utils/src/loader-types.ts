@@ -66,6 +66,8 @@ export type StrictLoaderOptions = {
     maxMobileConcurrency?: number;
     /** Set to `false` to prevent reuse workers */
     reuseWorkers?: boolean;
+    /** Controls whether worker result transfer prepares standalone ArrayBuffers. */
+    workerTransferBufferCopy?: 'none' | 'sliced' | 'all';
     /** Whether to use workers under Node.js (experimental) */
     _nodeWorkers?: boolean;
     /** set to 'test' to run local worker */
@@ -113,6 +115,8 @@ export type LoaderOptions = {
   maxMobileConcurrency?: number;
   /** @deprecated Use options.core.reuseWorkers */
   reuseWorkers?: boolean;
+  /** @deprecated Use options.core.workerTransferBufferCopy */
+  workerTransferBufferCopy?: 'none' | 'sliced' | 'all';
   /** @deprecated Use options.core._nodeWorkers */
   _nodeWorkers?: boolean;
   /** @deprecated Use options.core._workerType */

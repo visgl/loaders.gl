@@ -5,6 +5,9 @@
 import {Bench} from '@probe.gl/bench';
 import {_addAliases} from '@loaders.gl/loader-utils';
 import ALIASES from '../aliases';
+import {installSortedGroupBenchOverride} from './group-sorted';
+
+installSortedGroupBenchOverride(Bench);
 
 const {Buffer} = await import('buffer');
 globalThis.Buffer = Buffer;

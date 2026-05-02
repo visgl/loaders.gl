@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {DehydratedArrowTable} from '@loaders.gl/arrow/transport';
+import type {DehydratedArrowTable, SplitArrowBuffersOptions} from '@loaders.gl/arrow/transport';
 import {dehydrateArrowTable, hydrateArrowTable} from '@loaders.gl/arrow/transport';
-import type {ArrowTable} from '@loaders.gl/schema';
+import type {ArrayRowTable, ArrowTable, ColumnarTable, ObjectRowTable} from '@loaders.gl/schema';
+import type {CSVLoaderOptions} from '../csv-loader-options';
+
+type CSVWorkerResult = ArrowTable | ObjectRowTable | ArrayRowTable | ColumnarTable;
 
 type SerializedArrowTable = Omit<ArrowTable, 'data'> & {
   data: DehydratedArrowTable;
@@ -13,13 +16,15 @@ type SerializedArrowTable = Omit<ArrowTable, 'data'> & {
 /**
  * Serializes CSV worker results so Arrow tables survive structured clone.
  * @param result Parser result.
+ * @param options Loader options.
  * @returns Worker-safe parser result.
  */
-export function serializeCSVWorkerResult(result: unknown): unknown {
+export function serializeCSVWorkerResult(result: unknown, options?: CSVLoaderOptions): unknown {
   if (isArrowTable(result)) {
+    const bufferCopyMode = getWorkerTransferBufferCopyMode(options);
     return {
       ...result,
-      data: dehydrateArrowTable(result.data)
+      data: dehydrateArrowTable(result.data, bufferCopyMode ? {copy: bufferCopyMode} : undefined)
     };
   }
 
@@ -31,7 +36,7 @@ export function serializeCSVWorkerResult(result: unknown): unknown {
  * @param result Worker parser result.
  * @returns Hydrated parser result.
  */
-export function deserializeCSVWorkerResult(result: unknown): unknown {
+export function deserializeCSVWorkerResult(result: unknown): CSVWorkerResult {
   if (isSerializedArrowTable(result)) {
     return {
       ...result,
@@ -39,7 +44,7 @@ export function deserializeCSVWorkerResult(result: unknown): unknown {
     };
   }
 
-  return result;
+  return result as CSVWorkerResult;
 }
 
 /**
@@ -55,6 +60,17 @@ function isArrowTable(value: unknown): value is ArrowTable {
       (value as ArrowTable).data &&
       'batches' in (value as ArrowTable).data
   );
+}
+
+/**
+ * Gets the Arrow worker-result buffer copy mode from normalized or deprecated core options.
+ * @param options Loader options.
+ * @returns Buffer copy mode, or undefined for the Arrow transport default.
+ */
+function getWorkerTransferBufferCopyMode(
+  options?: CSVLoaderOptions
+): SplitArrowBuffersOptions['copy'] | undefined {
+  return options?.core?.workerTransferBufferCopy ?? options?.workerTransferBufferCopy;
 }
 
 /**

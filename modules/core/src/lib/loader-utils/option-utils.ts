@@ -29,6 +29,7 @@ const CORE_LOADER_OPTION_KEYS = [
   'maxConcurrency',
   'maxMobileConcurrency',
   'reuseWorkers',
+  'workerTransferBufferCopy',
   '_nodeWorkers',
   '_workerType',
   'limit',

@@ -268,6 +268,7 @@
           "modules/arrow/api-reference/mapped-arrow-table",
           "modules/arrow/api-reference/split-arrow-buffers",
           "modules/arrow/api-reference/arrow-table-transport",
+          "modules/arrow/api-reference/triangulate-wkb-geometry-column",
           "modules/arrow/api-reference/arrow-schema-utils",
           "modules/arrow/api-reference/utf8-utils"
         ]

@@ -12,6 +12,8 @@ import {isBrowser} from '../env-utils/globals';
 import {VERSION} from '../env-utils/version';
 import {NPM_TAG} from '../npm-tag';
 
+const warnedWorkerVersionFallbacks = new Set<string>();
+
 /**
  * Gets worker object's name (for debugging in Chrome thread inspector window)
  */
@@ -67,10 +69,29 @@ export function getWorkerURL(worker: WorkerObject, options: WorkerOptions = {}):
     }
     const versionTag = version ? `@${version}` : '';
     url = `https://unpkg.com/@loaders.gl/${worker.module}${versionTag}/dist/${workerFile}`;
+    warnIfUsingNpmTagFallback(worker, url);
   }
 
   assert(url);
 
   // Allow user to override location
   return url;
+}
+
+/** Warn once when a worker falls back to the npm tag because __VERSION__ was not injected. */
+function warnIfUsingNpmTagFallback(worker: WorkerObject, url: string): void {
+  if (worker.version !== 'latest') {
+    return;
+  }
+
+  const workerId = `${worker.module}:${worker.id}`;
+  if (warnedWorkerVersionFallbacks.has(workerId)) {
+    return;
+  }
+
+  warnedWorkerVersionFallbacks.add(workerId);
+  // eslint-disable-next-line no-console
+  console.warn(
+    `loaders.gl: ${worker.name} loader worker version is "latest" because __VERSION__ was not injected. Fetching ${url} from CDN.`
+  );
 }

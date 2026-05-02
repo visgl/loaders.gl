@@ -6,6 +6,9 @@ import '@loaders.gl/polyfills';
 import {Bench} from '@probe.gl/bench';
 
 import {addModuleBenchmarksToSuite} from './modules';
+import {installSortedGroupBenchOverride} from './group-sorted';
+
+installSortedGroupBenchOverride(Bench);
 
 const suite = new Bench({
   // Speed for CI testing

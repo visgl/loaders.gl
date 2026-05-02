@@ -136,9 +136,9 @@ async function parseData({
 }) {
   let data;
   let parser;
-  if (loader.parseSync || loader.parse) {
+  if (loader.parse || loader.parseSync) {
     data = arrayBuffer;
-    parser = loader.parseSync || loader.parse;
+    parser = loader.parse || loader.parseSync;
   } else if (loader.parseTextSync) {
     const textDecoder = new TextDecoder();
     data = textDecoder.decode(arrayBuffer);

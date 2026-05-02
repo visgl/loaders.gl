@@ -5,4 +5,5 @@
 import './geoarrow-metadata.spec';
 import './geoarrow-geometry-converter.spec';
 import './get-geoarrow-geometry-info.spec';
+import './get-geoarrow-vertex-count.spec';
 import './get-arrow-bounds.spec';
