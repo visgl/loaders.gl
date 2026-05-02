@@ -12,7 +12,6 @@ npm install @loaders.gl/shapefile
 
 | Loader                                                          |
 | --------------------------------------------------------------- |
-| [`ShapefileArrowLoader`](/docs/modules/shapefile/api-reference/shapefile-arrow-loader) |
 | [`ShapefileLoader`](/docs/modules/shapefile/api-reference/shapefile-loader) |
 | [`SHPLoader`](/docs/modules/shapefile/api-reference/shp-loader) |
 

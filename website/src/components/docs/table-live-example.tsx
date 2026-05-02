@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import {load, type LoaderOptions} from '@loaders.gl/core'
 import {ArrowLoader} from '@loaders.gl/arrow'
 import {CSVLoader} from '@loaders.gl/csv'
-import {ExcelArrowLoader, ExcelLoader} from '@loaders.gl/excel'
+import {ExcelLoader} from '@loaders.gl/excel'
 import {JSONLoader, NDJSONLoader} from '@loaders.gl/json'
 import type {Field, Table} from '@loaders.gl/schema'
 import {ChromeTraceLoader} from '@loaders.gl/traces'
@@ -16,7 +16,6 @@ const TABLE_COLUMN_LIMIT = 8
 export type TableLiveExampleLoaderName =
   | 'ArrowLoader'
   | 'CSVLoader'
-  | 'ExcelArrowLoader'
   | 'ExcelLoader'
   | 'JSONLoader'
   | 'NDJSONLoader'
@@ -885,8 +884,6 @@ function getTableLoader(loaderName: TableLiveExampleLoaderName) {
       return ArrowLoader
     case 'CSVLoader':
       return CSVLoader
-    case 'ExcelArrowLoader':
-      return ExcelArrowLoader
     case 'ExcelLoader':
       return ExcelLoader
     case 'JSONLoader':
@@ -964,7 +961,6 @@ function isTextTableLoader(loaderName: TableLiveExampleLoaderName): boolean {
     case 'ChromeTraceLoader':
       return true
     case 'ArrowLoader':
-    case 'ExcelArrowLoader':
     case 'ExcelLoader':
       return false
     default:

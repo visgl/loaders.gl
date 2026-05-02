@@ -9,9 +9,7 @@ export {TerrainFormat, QuantizedMeshFormat} from './terrain-format';
 export {TerrainLoader} from './terrain-loader';
 
 export {parseTerrain} from './terrain-loader-with-parser';
-export {TerrainArrowLoader} from './terrain-arrow-loader';
 export {QuantizedMeshLoader} from './quantized-mesh-loader';
-export {QuantizedMeshArrowLoader} from './quantized-mesh-arrow-loader';
 
 export type {QuantizedMeshWriterOptions} from './quantized-mesh-writer';
 export {QuantizedMeshWriter} from './quantized-mesh-writer';

@@ -10,20 +10,19 @@ import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
   <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-`ParquetWriter` accepts plain JS loaders.gl tables and converts them to Arrow before delegating to the wasm-backed `ParquetArrowWriter`.
+`ParquetWriter` accepts loaders.gl tables, including Arrow tables, and encodes them through the wasm-backed Parquet writer path.
 
 [`ParquetJSWriter`](/docs/modules/parquet/api-reference/parquet-js-writer) is the plain-table writer for the experimental parquetjs backend. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 The legacy `ParquetJSONWriter` compatibility alias has been removed. Use `ParquetWriter`.
 
 ```typescript
-import {ParquetWriter, ParquetJSWriter, ParquetArrowWriter} from '@loaders.gl/parquet';
+import {ParquetWriter, ParquetJSWriter} from '@loaders.gl/parquet';
 ```
 
 ## Geospatial Metadata
 
-When `ParquetWriter` or `ParquetArrowWriter` receives Arrow input with GeoArrow field metadata,
-loaders.gl synthesizes GeoParquet `geo` schema metadata when it is missing or invalid.
+When `ParquetWriter` receives Arrow input with GeoArrow field metadata, loaders.gl synthesizes GeoParquet `geo` schema metadata when it is missing or invalid.
 
 Writer precedence is:
 
@@ -51,13 +50,13 @@ preserved when existing GeoParquet metadata is already valid.
 
 ```typescript
 import {load, encode} from '@loaders.gl/core';
-import {ParquetLoader, ParquetArrowWriter} from '@loaders.gl/parquet';
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
 
 const arrowTable = await load(url, ParquetLoader, {
   parquet: {shape: 'arrow-table'}
 });
 
-const parquetBuffer = await encode(arrowTable, ParquetArrowWriter, {
+const parquetBuffer = await encode(arrowTable, ParquetWriter, {
   core: {worker: false}
 });
 ```
@@ -66,13 +65,12 @@ const parquetBuffer = await encode(arrowTable, ParquetArrowWriter, {
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
-| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetWriter` and `ParquetArrowWriter`. |
+| `parquet.wasmUrl` | `string` | bundled URL | Overrides the `parquet-wasm` binary URL for `ParquetWriter`. |
 
 ## Backend Selection
 
 - Use `ParquetWriter` for the default wasm-backed plain-table writer.
 - Use `ParquetJSWriter` for the experimental parquetjs plain-table writer.
-- Use `ParquetArrowWriter` for the wasm-backed Arrow-first writer.
 
 ## Supported Files
 

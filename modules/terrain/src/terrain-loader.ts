@@ -3,7 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader} from '@loaders.gl/loader-utils';
-import type {Mesh} from '@loaders.gl/schema';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import type {ImageBitmapLoaderOptions} from '@loaders.gl/images';
 import {VERSION} from './lib/utils/version';
 
@@ -14,6 +14,8 @@ import {TerrainFormat} from './terrain-format';
 export type TerrainLoaderOptions = ImageBitmapLoaderOptions & {
   /** TerrainLoader options */
   terrain?: TerrainOptions & {
+    /** Selects mesh output or Apache Arrow output. */
+    shape?: 'mesh' | 'arrow-table';
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -23,7 +25,7 @@ export type TerrainLoaderOptions = ImageBitmapLoaderOptions & {
  * Worker loader for image encoded terrain
  */
 export const TerrainLoader = {
-  dataType: null as unknown as Mesh,
+  dataType: null as unknown as Mesh | MeshArrowTable,
   batchType: null as never,
 
   ...TerrainFormat,
@@ -45,4 +47,4 @@ export const TerrainLoader = {
       skirtHeight: undefined
     }
   }
-} as const satisfies Loader<Mesh, never, TerrainLoaderOptions>;
+} as const satisfies Loader<Mesh | MeshArrowTable, never, TerrainLoaderOptions>;

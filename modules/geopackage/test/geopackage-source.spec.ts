@@ -1,8 +1,8 @@
 import test from 'tape-promise/tape';
-import {createDataSource, fetchFile, setLoaderOptions} from '@loaders.gl/core';
+import {createDataSource, fetchFile, load, setLoaderOptions} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
 import {GeoPackageDataSource, GeoPackageSource} from '@loaders.gl/geopackage';
-import {GeoPackageArrowLoader} from '@loaders.gl/geopackage/bundled';
+import {GeoPackageLoader as BundledGeoPackageLoader} from '@loaders.gl/geopackage/bundled';
 
 const GPKG_RIVERS_MULTI = '@loaders.gl/geopackage/test/data/rivers_multi.gpkg';
 
@@ -42,7 +42,7 @@ test('GeoPackageSource#getMetadata returns tables and default selection', async 
   t.end();
 });
 
-test('GeoPackageSource#getTable matches GeoPackageArrowLoader', async t => {
+test('GeoPackageSource#getTable matches GeoPackageLoader Arrow output', async t => {
   const fixtureResponse = await fetchFile(GPKG_RIVERS_MULTI);
   const fixtureArrayBuffer = await fixtureResponse.arrayBuffer();
   const dataSource = createDataSource(new Blob([fixtureArrayBuffer]), [GeoPackageSource], {
@@ -51,7 +51,9 @@ test('GeoPackageSource#getTable matches GeoPackageArrowLoader', async t => {
   }) as GeoPackageDataSource;
 
   const sourceTable = await dataSource.getTable('FEATURESriversds');
-  const loaderTable = await GeoPackageArrowLoader('FEATURESriversds').parse(fixtureArrayBuffer, {});
+  const loaderTable = await load(fixtureArrayBuffer, BundledGeoPackageLoader, {
+    geopackage: {shape: 'arrow-table', table: 'FEATURESriversds'}
+  });
 
   t.deepEqual(getRows(sourceTable), getRows(loaderTable), 'source matches loader output');
   t.end();

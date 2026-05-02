@@ -10,9 +10,7 @@ import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
 
 ![logo](../images/draco-small.png)
 
-The `DracoArrowLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
-
-`DracoLoader` parses the same Draco format and returns the legacy [Mesh](/docs/specifications/category-mesh) object.
+`DracoLoader` decodes a mesh or point cloud (maps of attributes) using [DRACO](https://google.github.io/draco/) compression. It returns the legacy [Mesh](/docs/specifications/category-mesh) object by default and can return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with `draco.shape: 'arrow-table'`.
 
 ## Usage
 
@@ -21,19 +19,20 @@ import {DracoLoader} from '@loaders.gl/draco';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, DracoLoader, options);
-const table = await load(url, DracoLoader, {draco: {shape: 'arrow-table'}});
+const table = await load(url, DracoLoader, {
+  worker: false,
+  draco: {shape: 'arrow-table'}
+});
 ```
 
 ## Shapes
 
 `DracoLoader` returns legacy `Mesh` objects by default. Set `draco.shape` to select another representation.
 
-| Shape         | Output                                                      | Compatibility loader |
-| ------------- | ----------------------------------------------------------- | -------------------- |
-| `mesh`        | legacy loaders.gl `Mesh` object                             | `DracoLoader`        |
-| `arrow-table` | loaders.gl Mesh Arrow table with geometry attribute columns | `DracoArrowLoader`   |
-
-`DracoArrowLoader` is a compatibility loader for `draco.shape: 'arrow-table'`.
+| Shape         | Output                                                      |
+| ------------- | ----------------------------------------------------------- |
+| `mesh`        | legacy loaders.gl `Mesh` object                             |
+| `arrow-table` | loaders.gl Mesh Arrow table with geometry attribute columns |
 
 ## Support
 

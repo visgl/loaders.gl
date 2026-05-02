@@ -27,7 +27,7 @@ While no loader support has been removed, the flavor of the loaders.gl framework
   - `CSVLoader` - Supports Apache Arrow table output through `csv.shape: 'arrow-table'`.
 
 - **`@loaders.gl/parquet`**
-  - `ParquetArrowLoader` now returns Apache Arrow tables and leverages the high-performance `parquet-wasm` library.
+  - `ParquetLoader` can return Apache Arrow tables with `parquet.shape: 'arrow-table'` and leverages the high-performance `parquet-wasm` library.
   - The v4 Parquet loader is still available as `ParquetJSONLoader`
 
 - **`@loaders.gl/schema-utils`**

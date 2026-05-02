@@ -2,20 +2,22 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {WriterWithEncoder} from '@loaders.gl/loader-utils';
-import type {Table, TableBatch} from '@loaders.gl/schema';
+import type {WriterOptions, WriterWithEncoder} from '@loaders.gl/loader-utils';
+import type {ArrowTable, Table, TableBatch} from '@loaders.gl/schema';
 import {convertTable, deduceTableSchema} from '@loaders.gl/schema-utils';
 
+import {encodeArrowToParquet} from './lib/encoders/encode-arrow-to-parquet';
 import {ensureGeoParquetMetadataOnArrowTable} from './lib/geo/geospatial-metadata';
 import {normalizeParquetOptions} from './lib/utils/normalize-parquet-options';
 import {ParquetFormat} from './parquet-format';
-import {ParquetArrowWriter, type ParquetArrowWriterOptions} from './parquet-arrow-writer';
+import {VERSION, PARQUET_WASM_URL} from './lib/constants';
 
-// __VERSION__ is injected by babel-plugin-version-inline
-// @ts-ignore TS2304: Cannot find name '__VERSION__'.
-const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
-
-export type ParquetWriterOptions = ParquetArrowWriterOptions;
+/** Public options for the wasm-backed Parquet writer. */
+export type ParquetWriterOptions = WriterOptions & {
+  parquet?: {
+    wasmUrl?: string;
+  };
+};
 
 /** Plain-row Parquet writer that converts tables to Arrow before wasm encoding. */
 export const ParquetWriter = {
@@ -23,15 +25,20 @@ export const ParquetWriter = {
   id: 'parquet',
   module: 'parquet',
   version: VERSION,
-  options: ParquetArrowWriter.options,
+  options: {
+    parquet: {
+      wasmUrl: PARQUET_WASM_URL
+    }
+  },
   encode(table: Table, options?: ParquetWriterOptions) {
-    const schema = table.schema || deduceTableSchema(table);
-    const arrowTable = ensureGeoParquetMetadataOnArrowTable(
-      convertTable({...table, schema}, 'arrow-table')
-    );
-    return ParquetArrowWriter.encode(
-      arrowTable,
-      normalizeParquetOptions(options, ParquetArrowWriter.options.parquet)
-    );
+    const arrowTable =
+      table.shape === 'arrow-table'
+        ? (table as ArrowTable)
+        : (convertTable(
+            {...table, schema: table.schema || deduceTableSchema(table)},
+            'arrow-table'
+          ) as ArrowTable);
+    const parquetOptions = normalizeParquetOptions(options, ParquetWriter.options.parquet);
+    return encodeArrowToParquet(ensureGeoParquetMetadataOnArrowTable(arrowTable), parquetOptions);
   }
 } as const satisfies WriterWithEncoder<Table, TableBatch, ParquetWriterOptions>;
