@@ -104,17 +104,13 @@ export async function preloadWorker(
   const workerPool = workerFarm.getWorkerPool(workerPoolProps);
   const count = preloadOptions.count ?? options.maxConcurrency ?? options.core?.maxConcurrency ?? 1;
 
-  const jobs = await Promise.all(
-    Array.from({length: count}, () =>
-      workerPool.startJob(`${worker.name} preload`, onPreloadMessage)
-    )
-  );
-
-  for (const job of jobs) {
+  const preloadJobs = Array.from({length: count}, async () => {
+    const job = await workerPool.startJob(`${worker.name} preload`, onPreloadMessage);
     job.postMessage('preload', {});
-  }
+    return await job.result;
+  });
 
-  await Promise.all(jobs.map(job => job.result));
+  await Promise.all(preloadJobs);
 }
 
 /**

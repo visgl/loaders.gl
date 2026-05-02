@@ -61,7 +61,12 @@ export async function parseWithWorker(
         const mainThreadContext = context
           ? ({...context, ...(parseContext || {})} as LoaderContext)
           : undefined;
-        return await parseOnMainThread(input, undefined, processOptions, mainThreadContext);
+        return await callParseOnMainThread(
+          parseOnMainThread,
+          input,
+          processOptions,
+          mainThreadContext
+        );
       }
     },
     getSerializableLoaderContext(context)
@@ -69,6 +74,25 @@ export async function parseWithWorker(
   return isLoaderWithWorkerResultDeserializer(loader)
     ? loader.deserializeWorkerResult(result, options, context)
     : result;
+}
+
+/**
+ * Calls either the legacy two-argument parse callback or the loader-utils callback.
+ * @param parseOnMainThread Main-thread parse callback.
+ * @param input Data to parse on the main thread.
+ * @param options Loader options from the worker.
+ * @param context Loader context merged from the worker and caller.
+ */
+function callParseOnMainThread(
+  parseOnMainThread: ParseOnMainThread,
+  input: ArrayBuffer,
+  options?: StrictLoaderOptions,
+  context?: LoaderContext
+): Promise<unknown> {
+  if (parseOnMainThread.length <= 2) {
+    return parseOnMainThread(input, options);
+  }
+  return parseOnMainThread(input, undefined, options, context);
 }
 
 /**

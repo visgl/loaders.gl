@@ -49,3 +49,32 @@ test('preloadWorker', async t => {
   t.equal(nullData, 'abc', 'preloaded worker pool can process later jobs');
   t.end();
 });
+
+test('preloadWorker handles count above maxConcurrency', async t => {
+  if (!isBrowser) {
+    t.end();
+    return;
+  }
+
+  await Promise.race([
+    preloadWorker(
+      NullWorker,
+      {
+        _workerType: 'test',
+        maxConcurrency: 2,
+        reuseWorkers: true
+      },
+      {count: 5}
+    ),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('preloadWorker timed out')), 2000))
+  ]);
+
+  const nullData = await processOnWorker(NullWorker, 'abc', {
+    _workerType: 'test',
+    maxConcurrency: 2,
+    reuseWorkers: true
+  });
+
+  t.equal(nullData, 'abc', 'preloaded constrained worker pool can process later jobs');
+  t.end();
+});

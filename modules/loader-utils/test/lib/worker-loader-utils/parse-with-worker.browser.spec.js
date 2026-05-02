@@ -153,3 +153,67 @@ test('parseWithWorker#nested', async () => {
     _unregisterLoaders();
   }
 });
+
+test('parseWithWorker#nested preserves legacy parseOnMainThread options argument', async () => {
+  if (!WorkerPool.isSupported()) {
+    console.log('Workers not supported, skipping tests');
+    return;
+  }
+
+  const NestedWorkerLoader = {
+    id: 'nested-legacy-options-worker',
+    name: 'Nested Legacy Options Worker',
+    module: 'loader-utils',
+    version: 'latest',
+    worker: true,
+    extensions: [],
+    mimeTypes: [],
+    tests: [arrayBuffer => arrayBuffer instanceof ArrayBuffer],
+    options: {}
+  };
+
+  const nestedWorkerSource = `
+    let requestId = 0;
+
+    self.onmessage = event => {
+      const {type, payload} = event.data;
+      if (type !== 'process') {
+        return;
+      }
+
+      const id = requestId++;
+
+      const onMessage = nestedEvent => {
+        const {type: nestedType, payload: nestedPayload} = nestedEvent.data;
+        if (nestedPayload.id !== id) {
+          return;
+        }
+
+        self.removeEventListener('message', onMessage);
+        if (nestedType === 'done') {
+          self.postMessage({source: 'loaders.gl', type: 'done', payload: {result: nestedPayload.result}});
+        } else if (nestedType === 'error') {
+          self.postMessage({source: 'loaders.gl', type: 'error', payload: {error: nestedPayload.error}});
+        }
+      };
+
+      self.addEventListener('message', onMessage);
+      self.postMessage({
+        source: 'loaders.gl',
+        type: 'process',
+        payload: {id, input: payload.input, options: {...payload.options, worker: false}}
+      });
+    };
+  `;
+
+  const result = await parseWithWorker(
+    NestedWorkerLoader,
+    toArrayBuffer('abc'),
+    {source: nestedWorkerSource, worker: true, reuseWorkers: false, custom: 'custom-option'},
+    {fetch, coreApi, _parse: async arrayBuffer => arrayBuffer},
+    async (_arrayBuffer, options) => options
+  );
+
+  expect(result.custom).toBe('custom-option');
+  expect(result.worker).toBe(false);
+});
