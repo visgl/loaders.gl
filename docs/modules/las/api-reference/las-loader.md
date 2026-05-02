@@ -13,23 +13,25 @@ The `@loaders.gl/las` module only supports LAS/lAZ files up to LAS v1.3. It does
 For more detail, see the discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
 :::
 
-The `LASArrowLoader` parses a point cloud in the LASER file format and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
-
-`LASLoader` parses the same LAS/LAZ format and returns the legacy [PointCloud](/docs/specifications/category-mesh) object.
+`LASLoader` parses LAS/LAZ point clouds into the legacy [PointCloud](/docs/specifications/category-mesh) object by default. Set `las.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
 | Loader           | Output             | Use when                                  |
 | ---------------- | ------------------ | ----------------------------------------- |
-| `LASLoader`      | `PointCloud`       | You want the legacy point cloud object.   |
-| `LASArrowLoader` | `Mesh Arrow table` | You want columnar point cloud attributes. |
+| `LASLoader`      | `PointCloud \| Mesh Arrow table` | You want point cloud data as mesh or Arrow output. |
 
 ## Usage
 
 ```typescript
-import {LASArrowLoader, LASLoader} from '@loaders.gl/las';
+import {LASLoader} from '@loaders.gl/las';
 import {load} from '@loaders.gl/core';
 
-const table = await load(url, LASArrowLoader, options);
 const data = await load(url, LASLoader, options);
+const table = await load(url, LASLoader, {
+  las: {
+    ...options?.las,
+    shape: 'arrow-table'
+  }
+});
 ```
 
 ## Options

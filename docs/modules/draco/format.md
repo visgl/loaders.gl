@@ -22,15 +22,8 @@ import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
   <a className="docs-api-card" href="/docs/modules/draco/api-reference/draco-loader">
     <span className="docs-api-card__kind">Loader</span>
     <strong>DracoLoader</strong>
-    <span>Loads Draco meshes and point clouds as Mesh objects.</span>
-    <span className="docs-api-card__meta">Output: Mesh</span>
-    <span className="docs-api-card__meta">APIs: load, parse, parseSync</span>
-  </a>
-  <a className="docs-api-card" href="/docs/modules/draco/api-reference/draco-loader">
-    <span className="docs-api-card__kind">Loader</span>
-    <strong>DracoArrowLoader</strong>
-    <span>Loads Draco meshes and point clouds as Mesh Arrow tables.</span>
-    <span className="docs-api-card__meta">Output: Mesh Arrow table</span>
+    <span>Loads Draco meshes and point clouds as Mesh objects or Mesh Arrow tables.</span>
+    <span className="docs-api-card__meta">Output: Mesh, Mesh Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/draco/api-reference/draco-writer">

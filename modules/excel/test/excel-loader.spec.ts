@@ -5,7 +5,10 @@
 import test from 'tape-promise/tape';
 import {load, loadInBatches} from '@loaders.gl/core';
 import type {ObjectRowTable, ObjectRowTableBatch} from '@loaders.gl/schema';
-import {ExcelArrowLoader, ExcelLoader} from '@loaders.gl/excel';
+import {ExcelLoader} from '@loaders.gl/excel';
+import * as excel from '@loaders.gl/excel';
+import * as bundledExcel from '@loaders.gl/excel/bundled';
+import * as unbundledExcel from '@loaders.gl/excel/unbundled';
 import {CSVLoader} from '@loaders.gl/csv';
 import {convertExcelRowsToArrowTable} from '../src/lib/convert-excel-rows-to-arrow';
 
@@ -44,20 +47,28 @@ test('ExcelLoader#loadInBatches (on worker)', async t => {
   t.end();
 });
 
-test('ExcelArrowLoader#load(ZIPCODES)', async t => {
+test('ExcelLoader#removed Arrow variant exports are absent', t => {
+  t.notOk('ExcelArrowLoader' in excel, 'root does not export ExcelArrowLoader');
+  t.notOk('ExcelArrowLoaderOptions' in excel, 'root does not export ExcelArrowLoaderOptions');
+  t.notOk('ExcelArrowLoader' in bundledExcel, 'bundled does not export ExcelArrowLoader');
+  t.notOk('ExcelArrowLoader' in unbundledExcel, 'unbundled does not export ExcelArrowLoader');
+  t.end();
+});
+
+test('ExcelLoader#load(ZIPCODES, shape: arrow-table)', async t => {
   const csvTable = (await load(ZIPCODES_CSV_PATH, CSVLoader, {
     csv: {shape: 'object-row-table'}
   })) as ObjectRowTable;
-  const classicTable = await load(ZIPCODES_XLSX_PATH, ExcelLoader, {
+  const classicTable = await load(ZIPCODES_XLSX_PATH, ExcelLoader);
+
+  const table = await load(ZIPCODES_XLSX_PATH, ExcelLoader, {
     excel: {shape: 'arrow-table'}
   });
-
-  const table = await load(ZIPCODES_XLSX_PATH, ExcelArrowLoader);
   t.equal(table.shape, 'arrow-table', 'XLSX: correct table type received');
-  t.equal(table.data.numRows, classicTable.data.numRows, 'XLSX: row count matches ExcelLoader');
+  t.equal(table.data.numRows, classicTable.data.length, 'XLSX: row count matches ExcelLoader');
 
   for (const rowIndex of [0, 100]) {
-    const row = classicTable.data.get(rowIndex)?.toJSON() || {};
+    const row = classicTable.data[rowIndex] || {};
     for (const [fieldName, value] of Object.entries(row)) {
       t.equal(
         table.data.getChild(fieldName)?.get(rowIndex),
@@ -78,26 +89,6 @@ test('ExcelArrowLoader#load(ZIPCODES)', async t => {
     'XLSX: city corresponds to CSV'
   );
 
-  t.end();
-});
-
-test('ExcelLoader#load(ZIPCODES, shape: arrow-table)', async t => {
-  const classicTable = await load(ZIPCODES_XLSX_PATH, ExcelLoader);
-  const table = await load(ZIPCODES_XLSX_PATH, ExcelLoader, {
-    excel: {shape: 'arrow-table'}
-  });
-
-  t.equal(table.shape, 'arrow-table', 'XLSX: correct Arrow table type received');
-  t.equal(
-    table.data.numRows,
-    classicTable.data.length,
-    'XLSX: Arrow row count matches classic loader'
-  );
-  t.equal(
-    table.data.getChild('city')?.get(100),
-    classicTable.data[100].city,
-    'XLSX: Arrow values match classic loader'
-  );
   t.end();
 });
 
@@ -153,37 +144,6 @@ test('ExcelLoader#loadInBatches(shape: arrow-table)', async t => {
     firstBatch?.data.getChild('city')?.get(100),
     classicTable.data[100].city,
     'XLSX: Arrow batch values are preserved'
-  );
-  t.end();
-});
-
-test('ExcelArrowLoader#loadInBatches', async t => {
-  const classicBatches = (await loadInBatches(ZIPCODES_XLSX_PATH, ExcelLoader, {
-    excel: {shape: 'arrow-table'}
-  })) as unknown as AsyncIterable<any>;
-  let classicFirstBatch: any = null;
-  for await (const batch of classicBatches) {
-    classicFirstBatch = classicFirstBatch || batch;
-  }
-
-  const batches = (await loadInBatches(
-    ZIPCODES_XLSX_PATH,
-    ExcelArrowLoader
-  )) as unknown as AsyncIterable<any>;
-  let firstBatch: any = null;
-  for await (const batch of batches) {
-    firstBatch = firstBatch || batch;
-  }
-  t.equal(firstBatch?.shape, 'arrow-table', 'XLSX: correct batch type received');
-  t.equal(
-    firstBatch?.data.numRows,
-    classicFirstBatch?.data.numRows,
-    'XLSX: batch row count matches ExcelLoader'
-  );
-  t.equal(
-    firstBatch?.data.getChild('city')?.get(100),
-    classicFirstBatch?.data.get(100)?.toJSON()?.city,
-    'XLSX: batch city value matches ExcelLoader'
   );
   t.end();
 });

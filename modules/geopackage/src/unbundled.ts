@@ -4,5 +4,3 @@
 
 export type {GeoPackageLoaderOptions} from './geopackage-loader';
 export {GeoPackageLoader} from './geopackage-loader';
-export type {GeoPackageArrowLoaderOptions} from './geopackage-arrow-loader';
-export {GeoPackageArrowLoader} from './geopackage-arrow-loader';

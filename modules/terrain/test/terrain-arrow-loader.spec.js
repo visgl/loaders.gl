@@ -6,7 +6,10 @@
 import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
-import {TerrainArrowLoader, QuantizedMeshArrowLoader} from '@loaders.gl/terrain';
+import {TerrainLoader, QuantizedMeshLoader} from '@loaders.gl/terrain';
+import * as terrain from '@loaders.gl/terrain';
+import * as bundledTerrain from '@loaders.gl/terrain/bundled';
+import * as unbundledTerrain from '@loaders.gl/terrain/unbundled';
 import {setLoaderOptions, load, registerLoaders} from '@loaders.gl/core';
 import {ImageLoader} from '@loaders.gl/images';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
@@ -21,14 +24,31 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('TerrainArrowLoader#loader objects', t => {
-  validateLoader(t, TerrainArrowLoader, 'TerrainArrowLoader');
-  validateLoader(t, QuantizedMeshArrowLoader, 'QuantizedMeshArrowLoader');
+test('TerrainLoader#loader objects', t => {
+  validateLoader(t, TerrainLoader, 'TerrainLoader');
+  validateLoader(t, QuantizedMeshLoader, 'QuantizedMeshLoader');
   t.end();
 });
 
-test('TerrainArrowLoader#parse terrarium martini', async t => {
-  const table = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainArrowLoader, {
+test('TerrainLoader#removed Arrow loader exports', t => {
+  t.notOk('TerrainArrowLoader' in terrain, 'root does not export TerrainArrowLoader');
+  t.notOk('QuantizedMeshArrowLoader' in terrain, 'root does not export QuantizedMeshArrowLoader');
+  t.notOk('TerrainArrowLoader' in bundledTerrain, 'bundled does not export TerrainArrowLoader');
+  t.notOk(
+    'QuantizedMeshArrowLoader' in bundledTerrain,
+    'bundled does not export QuantizedMeshArrowLoader'
+  );
+  t.notOk('TerrainArrowLoader' in unbundledTerrain, 'unbundled does not export TerrainArrowLoader');
+  t.notOk(
+    'QuantizedMeshArrowLoader' in unbundledTerrain,
+    'unbundled does not export QuantizedMeshArrowLoader'
+  );
+  t.end();
+});
+
+test('TerrainLoader#parse terrarium martini with shape: arrow-table', async t => {
+  const table = await load(TERRARIUM_TERRAIN_PNG_URL, TerrainLoader, {
+    worker: false,
     terrain: {
       elevationDecoder: {
         rScaler: 256,
@@ -38,15 +58,16 @@ test('TerrainArrowLoader#parse terrarium martini', async t => {
       },
       meshMaxError: 10.0,
       bounds: [83, 329.5, 83.125, 329.625],
-      tesselator: 'martini'
+      tesselator: 'martini',
+      shape: 'arrow-table'
     }
   });
 
   t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
   validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
-    schemaName: 'TerrainArrowLoader IndexedMesh table'
+    schemaName: 'TerrainLoader IndexedMesh table'
   });
-  t.equal(table.data.numRows, 5696, 'table has one row per vertex');
+  t.equal(getArrowTableRowCount(table), 5696, 'table has one row per vertex');
   t.ok(table.data.getChild('POSITION'), 'POSITION column was found');
   t.ok(table.data.getChild('TEXCOORD_0'), 'TEXCOORD_0 column was found');
   const indicesColumn = table.data.getChild('indices');
@@ -57,14 +78,17 @@ test('TerrainArrowLoader#parse terrarium martini', async t => {
   t.end();
 });
 
-test('QuantizedMeshArrowLoader#parse tile-with-extensions', async t => {
-  const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshArrowLoader);
+test('QuantizedMeshLoader#parse tile-with-extensions with shape: arrow-table', async t => {
+  const table = await load(TILE_WITH_EXTENSIONS_URL, QuantizedMeshLoader, {
+    worker: false,
+    'quantized-mesh': {shape: 'arrow-table'}
+  });
 
   t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
   validateArrowTableSchema(table.data, indexedMeshArrowSchema, {
-    schemaName: 'QuantizedMeshArrowLoader IndexedMesh table'
+    schemaName: 'QuantizedMeshLoader IndexedMesh table'
   });
-  t.equal(table.data.numRows, 627, 'table has one row per vertex');
+  t.equal(getArrowTableRowCount(table), 627, 'table has one row per vertex');
   t.ok(table.data.getChild('POSITION'), 'POSITION column was found');
   t.ok(table.data.getChild('TEXCOORD_0'), 'TEXCOORD_0 column was found');
   const indicesColumn = table.data.getChild('indices');
@@ -74,3 +98,14 @@ test('QuantizedMeshArrowLoader#parse tile-with-extensions', async t => {
 
   t.end();
 });
+
+function getArrowTableRowCount(table) {
+  const positionColumn =
+    typeof table.data.getChild === 'function' ? table.data.getChild('POSITION') : undefined;
+  return (
+    table.data.numRows ??
+    table.data.length ??
+    positionColumn?.length ??
+    positionColumn?.data?.[0]?.length
+  );
+}

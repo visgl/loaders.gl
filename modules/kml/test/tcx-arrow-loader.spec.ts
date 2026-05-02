@@ -8,19 +8,28 @@ import {validateLoader} from 'test/common/conformance';
 import {load} from '@loaders.gl/core';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
-import {TCXArrowLoader, TCXLoader} from '@loaders.gl/kml';
+import {TCXLoader} from '@loaders.gl/kml';
+import * as kml from '@loaders.gl/kml';
+import * as bundledKml from '@loaders.gl/kml/bundled';
+import * as unbundledKml from '@loaders.gl/kml/unbundled';
 import type {ArrowTable, Feature, Geometry} from '@loaders.gl/schema';
 
 const TCX_URL = '@loaders.gl/kml/test/data/tcx/tcx_sample.tcx';
 
-test('TCXArrowLoader#loader conformance', t => {
-  validateLoader(t, TCXArrowLoader, 'TCXArrowLoader');
+test('TCXLoader#loader conformance', t => {
+  validateLoader(t, TCXLoader, 'TCXLoader');
   t.end();
 });
 
-test('TCXArrowLoader#parse', async t => {
-  const arrowTable = await load(TCX_URL, TCXArrowLoader);
-  const mainLoaderArrowTable = await load(TCX_URL, TCXLoader, {tcx: {shape: 'arrow-table'}});
+test('TCXLoader#removed Arrow loader exports', t => {
+  t.notOk('TCXArrowLoader' in kml, 'root does not export TCXArrowLoader');
+  t.notOk('TCXArrowLoader' in bundledKml, 'bundled does not export TCXArrowLoader');
+  t.notOk('TCXArrowLoader' in unbundledKml, 'unbundled does not export TCXArrowLoader');
+  t.end();
+});
+
+test('TCXLoader#parse with shape: arrow-table', async t => {
+  const arrowTable = await load(TCX_URL, TCXLoader, {tcx: {shape: 'arrow-table'}});
   const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
   const roundTripped = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
@@ -35,11 +44,6 @@ test('TCXArrowLoader#parse', async t => {
   t.equal(arrowTable.shape, 'arrow-table', 'shape is arrow-table');
   t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
   t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata uses WKB encoding');
-  t.deepEqual(
-    getRowsFromArrowTable(arrowTable),
-    getRowsFromArrowTable(mainLoaderArrowTable),
-    'wrapper matches TCXLoader arrow-table output'
-  );
   t.deepEqual(
     geoMetadata?.columns.geometry.geometry_types,
     inferExpectedGeometryTypes(expectedFeatures),

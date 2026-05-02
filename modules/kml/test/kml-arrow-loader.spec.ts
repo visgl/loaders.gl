@@ -8,20 +8,29 @@ import {validateLoader} from 'test/common/conformance';
 import {fetchFile, load} from '@loaders.gl/core';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
-import {KMLArrowLoader, KMLLoader} from '@loaders.gl/kml';
+import {KMLLoader} from '@loaders.gl/kml';
+import * as kml from '@loaders.gl/kml';
+import * as bundledKml from '@loaders.gl/kml/bundled';
+import * as unbundledKml from '@loaders.gl/kml/unbundled';
 import type {ArrowTable, Feature, Geometry} from '@loaders.gl/schema';
 
 const KML_URL = '@loaders.gl/kml/test/data/kml/KML_Samples.kml';
 const KML_LINESTRING_URL = '@loaders.gl/kml/test/data/kml/linestring';
 
-test('KMLArrowLoader#loader conformance', t => {
-  validateLoader(t, KMLArrowLoader, 'KMLArrowLoader');
+test('KMLLoader#loader conformance', t => {
+  validateLoader(t, KMLLoader, 'KMLLoader');
   t.end();
 });
 
-test('KMLArrowLoader#load sample infers mixed geometry metadata', async t => {
-  const arrowTable = await load(KML_URL, KMLArrowLoader);
-  const mainLoaderArrowTable = await load(KML_URL, KMLLoader, {kml: {shape: 'arrow-table'}});
+test('KMLLoader#removed Arrow loader exports', t => {
+  t.notOk('KMLArrowLoader' in kml, 'root does not export KMLArrowLoader');
+  t.notOk('KMLArrowLoader' in bundledKml, 'bundled does not export KMLArrowLoader');
+  t.notOk('KMLArrowLoader' in unbundledKml, 'unbundled does not export KMLArrowLoader');
+  t.end();
+});
+
+test('KMLLoader#load sample infers mixed geometry metadata with shape: arrow-table', async t => {
+  const arrowTable = await load(KML_URL, KMLLoader, {kml: {shape: 'arrow-table'}});
   const geoMetadata = getGeoMetadata(arrowTable.schema?.metadata || {});
   const expectedFeatures = await loadKMLFeatures(KML_URL);
 
@@ -38,16 +47,13 @@ test('KMLArrowLoader#load sample infers mixed geometry metadata', async t => {
     inferExpectedGeometryTypes(expectedFeatures),
     'geo metadata geometry types match mixed KML feature types'
   );
-  t.deepEqual(
-    getRowsFromArrowTable(arrowTable),
-    getRowsFromArrowTable(mainLoaderArrowTable),
-    'wrapper matches KMLLoader arrow-table output'
-  );
   t.end();
 });
 
-test('KMLArrowLoader#load fixture matches expected GeoJSON', async t => {
-  const arrowTable = await load(`${KML_LINESTRING_URL}.kml`, KMLArrowLoader);
+test('KMLLoader#load fixture matches expected GeoJSON with shape: arrow-table', async t => {
+  const arrowTable = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {
+    kml: {shape: 'arrow-table'}
+  });
   const roundTripped = convertWKBTableToGeoJSON(
     {shape: 'object-row-table', schema: arrowTable.schema, data: getRowsFromArrowTable(arrowTable)},
     arrowTable.schema!

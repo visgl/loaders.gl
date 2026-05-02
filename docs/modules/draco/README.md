@@ -14,8 +14,7 @@ npm install @loaders.gl/core @loaders.gl/draco
 
 | Loader                                                                | Description                                      |
 | --------------------------------------------------------------------- | ------------------------------------------------ |
-| [`DracoArrowLoader`](/docs/modules/draco/api-reference/draco-loader)  | Loads Draco meshes and point clouds as [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
-| [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)       | Loads Draco meshes and point clouds as Mesh objects. |
+| [`DracoLoader`](/docs/modules/draco/api-reference/draco-loader)       | Loads Draco meshes and point clouds as Mesh objects or [Mesh Arrow tables](/docs/specifications/category-mesh#mesh-arrow-tables). |
 | [`DracoWorkerLoader`](/docs/modules/draco/api-reference/draco-loader) | Loads Draco meshes and point clouds in a worker. |
 | [`DracoWriter`](/docs/modules/draco/api-reference/draco-writer)       | Encodes Draco meshes and point clouds from Mesh or Mesh Arrow table data. |
 

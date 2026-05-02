@@ -7,4 +7,3 @@ export {
   DracoWorkerLoaderWithParser as DracoWorkerLoader,
   DracoLoaderWithParser as DracoLoader
 } from './draco-loader-with-parser';
-export {DracoArrowLoaderWithParser as DracoArrowLoader} from './draco-arrow-loader-with-parser';

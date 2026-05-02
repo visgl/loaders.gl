@@ -13,7 +13,6 @@ npm install @loaders.gl/core @loaders.gl/excel
 | Loader                                                                        |
 | ----------------------------------------------------------------------------- |
 | [`ExcelLoader`](/docs/modules/excel/api-reference/excel-loader#excelloader)   |
-| [`ExcelArrowLoader`](/docs/modules/excel/api-reference/excel-loader#excelarrowloader) |
 
 ## Additional APIs
 

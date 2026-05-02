@@ -19,7 +19,6 @@ export {DracoWriterWorker, DracoWriter} from './draco-writer';
 
 export type {DracoLoaderOptions} from './draco-loader';
 export {DracoLoader} from './draco-loader';
-export {DracoArrowLoader} from './draco-arrow-loader';
 
 // DEPRECATED EXPORTS
 /** @deprecated Use DracoLoader. */

@@ -15,7 +15,6 @@ npm install @loaders.gl/geopackage
 | Export                                                                                     |
 | ------------------------------------------------------------------------------------------ |
 | [`GeoPackageLoader`](/docs/modules/geopackage/api-reference/geopackage-loader)             |
-| [`GeoPackageArrowLoader`](/docs/modules/geopackage/api-reference/geopackage-arrow-loader) |
 | [`GeoPackageSource`](/docs/modules/geopackage/api-reference/geopackage-source)            |
 
 ## Attribution

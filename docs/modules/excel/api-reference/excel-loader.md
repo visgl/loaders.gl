@@ -5,7 +5,6 @@ Non-streaming table loaders for Excel files.
 | Loader             | Output           | Use when                      |
 | ------------------ | ---------------- | ----------------------------- |
 | `ExcelLoader`      | `ObjectRowTable \| ArrowTable` | You want JavaScript row data or Arrow output. |
-| `ExcelArrowLoader` | `ArrowTable`     | You want columnar table data. |
 
 | Characteristic | Value                                                                                                               |
 | -------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -28,21 +27,22 @@ import {load} from '@loaders.gl/core';
 const data = await load(url, ExcelLoader, {excel: options});
 ```
 
-## ExcelArrowLoader
-
-`ExcelArrowLoader` loads Excel worksheets as loaders.gl `ArrowTable` objects that wrap Apache Arrow tables.
+Load an Excel worksheet as a loaders.gl `ArrowTable` by setting `excel.shape: 'arrow-table'`.
 
 ```typescript
 import {load} from '@loaders.gl/core';
-import {ExcelArrowLoader} from '@loaders.gl/excel';
+import {ExcelLoader} from '@loaders.gl/excel';
 
-const table = await load(url, ExcelArrowLoader, {excel: options});
+const table = await load(url, ExcelLoader, {
+  excel: {
+    ...options,
+    shape: 'arrow-table'
+  }
+});
 
 const zipCodeColumn = table.data.getChild('zip_code');
 const firstZipCode = zipCodeColumn?.get(0);
 ```
-
-`ExcelArrowLoader` supports the same file formats and options as `ExcelLoader`, but converts the parsed worksheet rows into an Apache Arrow table. Use `ExcelArrowLoader` when the consumer prefers columnar Apache Arrow data over object-row tables.
 
 ## Options
 
