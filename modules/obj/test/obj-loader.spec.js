@@ -44,7 +44,12 @@ test('OBJLoader#parseText(shape: arrow-table)', async t => {
   validateArrowTableSchema(table.data, meshArrowSchema, {
     schemaName: 'OBJLoader Mesh table'
   });
-  t.equal(table.data.numRows, 14904, 'table has expected vertex count');
+  const rowCount =
+    table.data.numRows ??
+    table.data.length ??
+    table.data.batches?.[0]?.numRows ??
+    table.data.batches?.[0]?.data?.length;
+  t.equal(rowCount, 14904, 'table has expected vertex count');
 
   t.end();
 });
