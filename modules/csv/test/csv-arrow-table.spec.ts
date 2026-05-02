@@ -25,6 +25,10 @@ import {
 import * as csv from '@loaders.gl/csv';
 import * as arrow from 'apache-arrow';
 import type {ArrowTable, ArrowTableBatch} from '@loaders.gl/schema';
+import {
+  deserializeCSVWorkerResult,
+  serializeCSVWorkerResult
+} from '../src/lib/csv-worker-transport';
 
 // Small CSV Sample Files
 const CSV_NUMBERS_100_URL = '@loaders.gl/csv/test/data/numbers-100.csv';
@@ -664,6 +668,54 @@ test('CSVLoader#parseInBatches freezes schema after first typed batch', async t 
   const secondBatchValue = batches[1]?.data.getChildAt(0)?.get(0);
   t.equal(firstBatchValue, 1, 'first batch keeps typed numeric value');
   t.equal(secondBatchValue, null, 'second batch coerces incompatible string value to null');
+
+  t.end();
+});
+
+test('CSVLoader#worker transport serializes and hydrates Arrow table results', async t => {
+  const table = await parse('city,population\nParis,2148000', CSVLoader, {
+    core: {worker: false},
+    csv: {
+      shape: 'arrow-table',
+      header: true,
+      dynamicTyping: false
+    }
+  });
+
+  const serialized = serializeCSVWorkerResult(table, {
+    core: {workerTransferBufferCopy: 'all'}
+  }) as {
+    shape: 'arrow-table';
+    data: {transport: string; getChild?: unknown};
+  };
+  t.equal(serialized.shape, 'arrow-table', 'serialized result keeps table wrapper shape');
+  t.equal(serialized.data.transport, 'arrow-js', 'serialized result uses Arrow JS transport');
+  t.notOk(serialized.data.getChild, 'serialized data is plain transport payload');
+
+  const hydrated = deserializeCSVWorkerResult(serialized) as ArrowTable;
+  t.ok(hydrated.data instanceof arrow.Table, 'hydrated result restores real Arrow table');
+  t.equal(hydrated.data.getChild('city')?.get(0), 'Paris', 'hydrated result keeps values');
+
+  const serializedWithDeprecatedOption = serializeCSVWorkerResult(table, {
+    workerTransferBufferCopy: 'none'
+  } as any) as {data: {transport: string}};
+  t.equal(
+    serializedWithDeprecatedOption.data.transport,
+    'arrow-js',
+    'deprecated buffer copy option is accepted'
+  );
+
+  const plainResult = {shape: 'object-row-table', data: [{city: 'Paris'}]};
+  t.equal(
+    serializeCSVWorkerResult(plainResult),
+    plainResult,
+    'serialize leaves non-Arrow results untouched'
+  );
+  t.equal(
+    deserializeCSVWorkerResult(plainResult),
+    plainResult,
+    'deserialize leaves non-Arrow results untouched'
+  );
 
   t.end();
 });
