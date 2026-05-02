@@ -50,6 +50,8 @@ export type ArrowConversionOptions = {
   onMissingField?: 'error' | 'null';
   /** Behavior when a row contains a field or array column that is not in the schema. */
   onExtraField?: 'error' | 'drop';
+  /** Behavior when a number must be converted to an integer Arrow field. */
+  integerConversion?: 'clamp-and-round' | 'null' | 'warn' | 'error';
   /** Whether recovered conversion issues should be logged once per issue kind and field path. */
   logRecoveries?: boolean;
 };
@@ -76,7 +78,11 @@ export type GeoJSONArrowConversionOptions = JSONArrowConversionOptions & {
 
 type NormalizedArrowConversionOptions = Required<ArrowConversionOptions>;
 
-type ConversionWarningKind = 'type-mismatch' | 'missing-field' | 'extra-field';
+type ConversionWarningKind =
+  | 'type-mismatch'
+  | 'missing-field'
+  | 'extra-field'
+  | 'integer-conversion';
 
 type ConversionLogger = {
   warn: (kind: ConversionWarningKind, path: string, message: string) => void;
@@ -86,6 +92,7 @@ const DEFAULT_ARROW_CONVERSION_OPTIONS: NormalizedArrowConversionOptions = {
   onTypeMismatch: 'error',
   onMissingField: 'error',
   onExtraField: 'error',
+  integerConversion: 'error',
   logRecoveries: true
 };
 
@@ -724,6 +731,9 @@ function normalizeValueForArrow(
     if (isPrimitiveValueCompatible(value, field.type)) {
       return value;
     }
+    if (isIntegerFieldType(field.type) && typeof value === 'number') {
+      return recoverIntegerConversion(field, value, path, conversionOptions, conversionLogger);
+    }
     return recoverTypeMismatch(
       field,
       path,
@@ -846,6 +856,47 @@ function recoverTypeMismatch(
   throw new Error(errorMessage);
 }
 
+function recoverIntegerConversion(
+  field: Field,
+  value: number,
+  path: string,
+  conversionOptions: NormalizedArrowConversionOptions,
+  conversionLogger: ConversionLogger
+): number | null {
+  switch (conversionOptions.integerConversion) {
+    case 'clamp-and-round':
+      return clampAndRoundIntegerValue(value, field.type as string);
+
+    case 'warn':
+      conversionLogger.warn(
+        'integer-conversion',
+        path,
+        `JSONLoader: integer Arrow field at ${path} received ${value}; clamping and rounding`
+      );
+      return clampAndRoundIntegerValue(value, field.type as string);
+
+    case 'null':
+      if (field.nullable) {
+        conversionLogger.warn(
+          'integer-conversion',
+          path,
+          `JSONLoader: integer Arrow field at ${path} received ${value}; writing null`
+        );
+        return null;
+      }
+      break;
+
+    case 'error':
+      break;
+
+    default:
+  }
+
+  throw new Error(
+    `JSONLoader: incompatible Arrow field at ${path}, expected ${formatPrimitiveExpectation(field.type as string)}`
+  );
+}
+
 function handleExtraField(
   path: string,
   conversionOptions: NormalizedArrowConversionOptions,
@@ -882,6 +933,13 @@ function isPrimitiveValueCompatible(value: unknown, type: string): boolean {
     case 'uint16':
     case 'uint32':
     case 'uint64':
+      return (
+        typeof value === 'number' &&
+        Number.isInteger(value) &&
+        Number.isFinite(value) &&
+        isIntegerValueInRange(value, type)
+      );
+
     case 'float':
     case 'float16':
     case 'float32':
@@ -910,6 +968,63 @@ function isPrimitiveValueCompatible(value: unknown, type: string): boolean {
   throw new Error(`JSONLoader: unsupported Arrow primitive field type ${type}`);
 }
 
+function isIntegerFieldType(type: string): boolean {
+  switch (type) {
+    case 'int':
+    case 'int8':
+    case 'int16':
+    case 'int32':
+    case 'int64':
+    case 'uint8':
+    case 'uint16':
+    case 'uint32':
+    case 'uint64':
+      return true;
+    default:
+      return false;
+  }
+}
+
+function isIntegerValueInRange(value: number, type: string): boolean {
+  const range = getIntegerTypeRange(type);
+  return value >= range.minimum && value <= range.maximum;
+}
+
+function clampAndRoundIntegerValue(value: number, type: string): number {
+  const range = getIntegerTypeRange(type);
+  const roundedValue = Math.round(value);
+
+  if (Number.isNaN(roundedValue)) {
+    return range.minimum;
+  }
+
+  return Math.min(range.maximum, Math.max(range.minimum, roundedValue));
+}
+
+function getIntegerTypeRange(type: string): {minimum: number; maximum: number} {
+  switch (type) {
+    case 'int8':
+      return {minimum: -128, maximum: 127};
+    case 'int16':
+      return {minimum: -32768, maximum: 32767};
+    case 'int32':
+      return {minimum: -2147483648, maximum: 2147483647};
+    case 'uint8':
+      return {minimum: 0, maximum: 255};
+    case 'uint16':
+      return {minimum: 0, maximum: 65535};
+    case 'uint32':
+      return {minimum: 0, maximum: 4294967295};
+    case 'uint64':
+      return {minimum: 0, maximum: Number.MAX_SAFE_INTEGER};
+    case 'int':
+    case 'int64':
+      return {minimum: Number.MIN_SAFE_INTEGER, maximum: Number.MAX_SAFE_INTEGER};
+    default:
+      throw new Error(`JSONLoader: unsupported Arrow integer field type ${type}`);
+  }
+}
+
 function formatPrimitiveExpectation(type: string): string {
   switch (type) {
     case 'bool':
@@ -931,6 +1046,16 @@ function formatPrimitiveExpectation(type: string): string {
       return 'binary';
     case 'null':
       return 'null';
+    case 'int':
+    case 'int8':
+    case 'int16':
+    case 'int32':
+    case 'int64':
+    case 'uint8':
+    case 'uint16':
+    case 'uint32':
+    case 'uint64':
+      return 'integer';
     default:
       return 'number';
   }

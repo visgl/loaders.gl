@@ -665,6 +665,94 @@ test('JSONLoader#parse(arrow-table conversion policy)', async t => {
   t.end();
 });
 
+test('JSONLoader#parse(arrow-table integer conversion policy)', async t => {
+  const nullableSchema: Schema = {
+    fields: [{name: 'id', type: 'int8', nullable: true}],
+    metadata: {}
+  };
+  const strictSchema: Schema = {
+    fields: [{name: 'id', type: 'int8', nullable: false}],
+    metadata: {}
+  };
+
+  t.throws(
+    () =>
+      BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 1.5}]), {
+        json: {shape: 'arrow-table', schema: nullableSchema}
+      }),
+    /expected integer/,
+    'strict mode rejects non-integral integer values'
+  );
+
+  t.throws(
+    () =>
+      BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: -1}]), {
+        json: {
+          shape: 'arrow-table',
+          schema: {fields: [{name: 'id', type: 'uint8', nullable: true}], metadata: {}}
+        }
+      }),
+    /expected integer/,
+    'strict mode rejects out-of-range unsigned integer values'
+  );
+
+  const nullIntegerTable = BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 1.5}]), {
+    json: {
+      shape: 'arrow-table',
+      schema: nullableSchema,
+      arrowConversion: {integerConversion: 'null'}
+    }
+  });
+  t.equal(
+    nullIntegerTable.data.getChild('id')?.get(0),
+    null,
+    'integer conversion can recover to null'
+  );
+
+  t.throws(
+    () =>
+      BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 1.5}]), {
+        json: {
+          shape: 'arrow-table',
+          schema: strictSchema,
+          arrowConversion: {integerConversion: 'null'}
+        }
+      }),
+    /expected integer/,
+    'non-nullable integer field still rejects null recovery'
+  );
+
+  const clampedIntegerTable = BundledJSONLoader.parseTextSync?.(JSON.stringify([{id: 127.6}]), {
+    json: {
+      shape: 'arrow-table',
+      schema: strictSchema,
+      arrowConversion: {integerConversion: 'clamp-and-round'}
+    }
+  });
+  t.equal(
+    clampedIntegerTable.data.getChild('id')?.get(0),
+    127,
+    'integer conversion can round and clamp'
+  );
+
+  const integerConversionLog = makeTestLog();
+  const warnedIntegerTable = BundledJSONLoader.parseTextSync?.(
+    JSON.stringify([{id: 2.5}, {id: 3.5}]),
+    {
+      core: {log: integerConversionLog},
+      json: {
+        shape: 'arrow-table',
+        schema: strictSchema,
+        arrowConversion: {integerConversion: 'warn'}
+      }
+    }
+  );
+  t.equal(warnedIntegerTable.data.getChild('id')?.get(0), 3, 'warn mode rounds values');
+  t.equal(integerConversionLog.messages.length, 1, 'integer conversion warning logs once');
+
+  t.end();
+});
+
 test('JSONLoader#parse(arrow-table schema options require Arrow shape)', async t => {
   const schema: Schema = {
     fields: [{name: 'id', type: 'float64', nullable: true}],

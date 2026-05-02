@@ -51,13 +51,14 @@ const table = await load(url, JSONLoader, {
     arrowConversion: {
       onTypeMismatch: 'null',
       onMissingField: 'null',
-      onExtraField: 'drop'
+      onExtraField: 'drop',
+      integerConversion: 'warn'
     }
   }
 });
 ```
 
-By default, Arrow conversion is strict: type mismatches, missing schema fields, and extra row fields throw. The optional `json.arrowConversion` policy can recover by writing `null` for nullable schema fields or dropping values that are not in the schema. Recovered issues are logged once per issue kind and field path through `options.core.log`.
+By default, Arrow conversion is strict: type mismatches, missing schema fields, extra row fields, and non-integral or out-of-range integer values throw. The optional `json.arrowConversion` policy can recover by writing `null` for nullable schema fields, dropping values that are not in the schema, or explicitly clamping and rounding integer values. Recovered issues are logged once per issue kind and field path through `options.core.log`.
 
 `JSONLoader` is generic. GeoJSON input loaded through `JSONLoader` in Arrow mode is converted as nested JSON rows. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON should be converted to GeoArrow WKB.
 
@@ -143,7 +144,7 @@ Supports table category options such as `batchType` and `batchSize`.
 | `json.table`           | [![Website shields.io](https://img.shields.io/badge/v2.0-blue.svg?style=flat-square)] | `boolean`                                                  | `false`                                                                                                                                            | Parses non-streaming JSON as table, i.e. return the first embedded array in the JSON. Always `true` during batched/streaming parsing.             |
 | `json.shape`           | [![Website shields.io](https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square)](http://shields.io) | `'object-row-table' \| 'array-row-table' \| 'arrow-table'` | `object-row-table` for table outputs                                                                                                               | Selects row-table output or Apache Arrow output for tabular JSON results. Arrow batches freeze their schema from the first non-empty streamed batch. |
 | `json.schema`          |                                                                                       | `Schema \| arrow.Schema`                                   | `undefined`                                                                                                                                        | Optional schema used when `json.shape` is `'arrow-table'`. The loader converts rows against this schema instead of inferring one.                 |
-| `json.arrowConversion` |                                                                                       | `object`                                                   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', logRecoveries: true}`                                                    | Optional Arrow conversion policy. `onTypeMismatch: 'null'` and `onMissingField: 'null'` write `null` only for nullable fields. `onExtraField: 'drop'` omits fields that are not in the schema. |
+| `json.arrowConversion` |                                                                                       | `object`                                                   | `{onTypeMismatch: 'error', onMissingField: 'error', onExtraField: 'error', integerConversion: 'error', logRecoveries: true}`                                                    | Optional Arrow conversion policy. `onTypeMismatch: 'null'`, `onMissingField: 'null'`, and `integerConversion: 'null'` write `null` only for nullable fields. `onExtraField: 'drop'` omits fields that are not in the schema. `integerConversion: 'clamp-and-round'` applies lossy integer conversion, and `'warn'` does the same while logging. |
 | `json.jsonpaths`       | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `string[]`                                                 | `[]`                                                                                                                                               | A list of JSON paths indicating the array that can be streamed.                                                                                   |
 | `metadata` (top level) | [![Website shields.io](https://img.shields.io/badge/v2.2-blue.svg?style=flat-square)] | `boolean`                                                  | If `true`, yields an initial and final batch containing the partial and final result, i.e. the root object excluding the array being streamed.       |
 
