@@ -5,7 +5,7 @@
 import type {LoaderContext} from '@loaders.gl/loader-utils';
 import {sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 
-import {DracoLoader, DracoLoaderOptions} from '@loaders.gl/draco';
+import {DracoLoader, DracoLoaderOptions, type DracoMesh} from '@loaders.gl/draco';
 
 import type {
   GLTF,
@@ -103,7 +103,12 @@ async function decompressPrimitive(
 
   // TODO - remove hack: The entire tileset might be included, too expensive to serialize
   delete dracoOptions['3d-tiles'];
-  const decodedData = await parseFromContext(bufferCopy, DracoLoader, dracoOptions, context);
+  const decodedData = (await parseFromContext(
+    bufferCopy,
+    DracoLoader,
+    dracoOptions,
+    context
+  )) as DracoMesh;
 
   const decodedAttributes: {[key: string]: GLTFAccessor} = getGLTFAccessors(decodedData.attributes);
 

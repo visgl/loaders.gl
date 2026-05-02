@@ -26,7 +26,7 @@ type ParquetInternalLoaderOptions = ParquetWasmLoaderOptions & {
   implementation?: 'wasm' | 'js';
 };
 
-/** Public options for the wasm-backed `ParquetLoader`, `GeoParquetLoader`, and `ParquetArrowLoader`. */
+/** Public options for the wasm-backed `ParquetLoader` and `GeoParquetLoader`. */
 export type ParquetLoaderOptions = LoaderOptions & {
   parquet?: {shape?: 'object-row-table' | 'arrow-table'; implementation?: 'wasm' | 'js'} & {
     [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];

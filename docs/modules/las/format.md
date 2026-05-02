@@ -22,15 +22,8 @@ import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
   <a className="docs-api-card" href="/docs/modules/las/api-reference/las-loader">
     <span className="docs-api-card__kind">Loader</span>
     <strong>LASLoader</strong>
-    <span>Loads LAS and LAZ point clouds as PointCloud objects.</span>
-    <span className="docs-api-card__meta">Output: PointCloud</span>
-    <span className="docs-api-card__meta">APIs: load, parse, parseSync</span>
-  </a>
-  <a className="docs-api-card" href="/docs/modules/las/api-reference/las-loader">
-    <span className="docs-api-card__kind">Loader</span>
-    <strong>LASArrowLoader</strong>
-    <span>Loads LAS and LAZ point clouds as Mesh Arrow tables.</span>
-    <span className="docs-api-card__meta">Output: Mesh Arrow table</span>
+    <span>Loads LAS and LAZ point clouds as PointCloud objects or Mesh Arrow tables.</span>
+    <span className="docs-api-card__meta">Output: PointCloud, Mesh Arrow table</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/las/api-reference/las-writer">

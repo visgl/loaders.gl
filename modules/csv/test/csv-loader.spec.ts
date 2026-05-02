@@ -105,6 +105,7 @@ test('CSVLoader#load(states.csv)', async t => {
 
 test('CSVLoader#load(numbers-100.csv, shape: arrow-table)', async t => {
   const table = await load(CSV_NO_HEADER_URL, CSVLoader, {
+    core: {worker: false},
     csv: {header: false, shape: 'arrow-table'}
   });
 
@@ -365,6 +366,7 @@ test('CSVLoader#loadInBatches(geospatial-points-wkt.csv, detectGeometryColumns)'
 
 test('CSVLoader#load(geospatial-points-wkt.csv, arrow-table, detectGeometryColumns)', async t => {
   const table = await load(CSV_GEOSPATIAL_WKT_URL, CSVLoader, {
+    core: {worker: false},
     csv: {shape: 'arrow-table', detectGeometryColumns: true}
   });
 
@@ -389,7 +391,7 @@ test('CSVLoader#load(geospatial-points-wkt.csv, arrow-table, detectGeometryColum
 
 test('CSVLoader#loadInBatches(numbers-100.csv, shape: arrow-table)', async t => {
   const iterator = await loadInBatches(CSV_STATES_URL, CSVLoader, {
-    batchSize: 40,
+    core: {worker: false, batchSize: 40},
     csv: {shape: 'arrow-table'}
   });
 

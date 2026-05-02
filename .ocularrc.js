@@ -68,13 +68,13 @@ const config = {
       nodeExcludePatterns: [
         // These shared specs currently depend on browser fetch semantics or worker entrypoints
         // that are not valid in the Node Vitest project.
-        'modules/arrow/test/triangulate-on-worker.spec.ts',
         'modules/compression/test/compression.spec.ts',
         'modules/crypto/test/crypto-worker.spec.ts',
         'modules/deck-layers/test/any-layer.spec.ts',
         'modules/deck-layers/test/geoarrow-layer.spec.ts',
         'modules/deck-layers/test/image-source-layer.spec.ts',
         'modules/deck-layers/test/shared-tile-2d-view.spec.ts',
+        'modules/deck-layers/test/splat-layer.spec.ts',
         'modules/deck-layers/test/tile-2d-source-layer.spec.ts',
         'modules/deck-layers/test/tile-3d-source-layer.spec.ts',
         'modules/deck-layers/test/vector-source-layer.spec.ts',

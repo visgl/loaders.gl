@@ -23,6 +23,7 @@ export type TileJSONLoaderOptions = LoaderOptions & {
  */
 export const TileJSONLoaderWithParser = {
   ...TileJSONLoaderMetadataWithoutPreload,
+  worker: false,
   parse: async (arrayBuffer: ArrayBuffer, options?: TileJSONLoaderOptions) => {
     const jsonString = new TextDecoder().decode(arrayBuffer);
     const json = JSON.parse(jsonString);

@@ -4,7 +4,10 @@ import {setLoaderOptions, fetchFile, load} from '@loaders.gl/core';
 import {getTableRowAsObject} from '@loaders.gl/schema-utils';
 import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
 import {getGeoMetadata} from '@loaders.gl/geoarrow';
-import {GeoPackageArrowLoader, GeoPackageLoader} from '@loaders.gl/geopackage';
+import {GeoPackageLoader} from '@loaders.gl/geopackage';
+import * as geopackage from '@loaders.gl/geopackage';
+import * as bundledGeopackage from '@loaders.gl/geopackage/bundled';
+import * as unbundledGeopackage from '@loaders.gl/geopackage/unbundled';
 
 const GPKG_RIVERS = '@loaders.gl/geopackage/test/data/rivers_small.gpkg';
 const GPKG_RIVERS_MULTI = '@loaders.gl/geopackage/test/data/rivers_multi.gpkg';
@@ -15,14 +18,26 @@ setLoaderOptions({
   worker: false
 });
 
-test('GeoPackageArrowLoader#loader conformance', t => {
-  validateLoader(t, GeoPackageArrowLoader(), 'GeoPackageArrowLoader');
+test('GeoPackageLoader#loader conformance', t => {
+  validateLoader(t, GeoPackageLoader, 'GeoPackageLoader');
   t.end();
 });
 
-test('GeoPackageArrowLoader#load file as Arrow table', async t => {
-  const table = await load(GPKG_RIVERS, GeoPackageArrowLoader());
-  const mainLoaderArrowTable = await load(GPKG_RIVERS, GeoPackageLoader, {
+test('GeoPackageLoader#removed Arrow loader exports', t => {
+  t.notOk('GeoPackageArrowLoader' in geopackage, 'root does not export GeoPackageArrowLoader');
+  t.notOk(
+    'GeoPackageArrowLoader' in bundledGeopackage,
+    'bundled does not export GeoPackageArrowLoader'
+  );
+  t.notOk(
+    'GeoPackageArrowLoader' in unbundledGeopackage,
+    'unbundled does not export GeoPackageArrowLoader'
+  );
+  t.end();
+});
+
+test('GeoPackageLoader#load file as Arrow table', async t => {
+  const table = await load(GPKG_RIVERS, GeoPackageLoader, {
     geopackage: {shape: 'arrow-table'}
   });
   const geoMetadata = getGeoMetadata(table.schema.metadata);
@@ -30,11 +45,6 @@ test('GeoPackageArrowLoader#load file as Arrow table', async t => {
   t.equal(table.shape, 'arrow-table');
   t.equal(table.data.numRows, 1, 'loads one feature');
   t.equal(table.schema.fields.length, 5, 'schema replaces source geom column with geometry');
-  t.deepEqual(
-    getRowsFromArrowTable(table),
-    getRowsFromArrowTable(mainLoaderArrowTable),
-    'wrapper matches GeoPackageLoader arrow-table output'
-  );
   t.equal(geoMetadata?.primary_column, 'geometry', 'geo metadata primary column is set');
   t.equal(geoMetadata?.columns.geometry.encoding, 'wkb', 'geo metadata identifies WKB encoding');
 
@@ -54,9 +64,8 @@ test('GeoPackageArrowLoader#load file as Arrow table', async t => {
   t.end();
 });
 
-test('GeoPackageArrowLoader#load explicit table', async t => {
-  const table = await load(GPKG_RIVERS_MULTI, GeoPackageArrowLoader('FEATURESriversds'));
-  const mainLoaderArrowTable = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
+test('GeoPackageLoader#load explicit table as Arrow table', async t => {
+  const table = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
     geopackage: {shape: 'arrow-table', table: 'FEATURESriversds'}
   });
   const rows = getRowsFromArrowTable(table);
@@ -69,11 +78,6 @@ test('GeoPackageArrowLoader#load explicit table', async t => {
   });
 
   t.deepEqual(
-    rows,
-    getRowsFromArrowTable(mainLoaderArrowTable),
-    'wrapper explicit table matches main loader arrow-table output'
-  );
-  t.deepEqual(
     normalizeFeatures(roundTripped.features),
     normalizeFeatures(geojsonTable.features),
     'explicit table matches GeoPackageLoader'
@@ -81,9 +85,13 @@ test('GeoPackageArrowLoader#load explicit table', async t => {
   t.end();
 });
 
-test('GeoPackageArrowLoader#load default table honors metadata heuristic', async t => {
-  const table = await load(GPKG_RIVERS_MULTI, GeoPackageArrowLoader());
-  const defaultTable = await load(GPKG_RIVERS_MULTI, GeoPackageArrowLoader('preferred_rivers'));
+test('GeoPackageLoader#load default table honors metadata heuristic', async t => {
+  const table = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
+    geopackage: {shape: 'arrow-table'}
+  });
+  const defaultTable = await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
+    geopackage: {shape: 'arrow-table', table: 'preferred_rivers'}
+  });
 
   t.deepEqual(
     getRowsFromArrowTable(table),
@@ -93,8 +101,9 @@ test('GeoPackageArrowLoader#load default table honors metadata heuristic', async
   t.end();
 });
 
-test('GeoPackageArrowLoader#load reprojects like GeoPackageLoader', async t => {
-  const arrowTable = await load(GPKG_RIVERS, GeoPackageArrowLoader(), {
+test('GeoPackageLoader#load Arrow table reprojects like GeoJSON output', async t => {
+  const arrowTable = await load(GPKG_RIVERS, GeoPackageLoader, {
+    geopackage: {shape: 'arrow-table'},
     gis: {reproject: true, _targetCrs: 'WGS84'}
   });
   const geojsonTable = await load(GPKG_RIVERS, GeoPackageLoader, {
@@ -116,10 +125,10 @@ test('GeoPackageArrowLoader#load reprojects like GeoPackageLoader', async t => {
   t.end();
 });
 
-test('GeoPackageArrowLoader#load missing table errors clearly', async t => {
+test('GeoPackageLoader#load missing table errors clearly', async t => {
   try {
-    await load(GPKG_RIVERS_MULTI, GeoPackageArrowLoader(), {
-      geopackage: {table: 'missing_table_name'}
+    await load(GPKG_RIVERS_MULTI, GeoPackageLoader, {
+      geopackage: {shape: 'arrow-table', table: 'missing_table_name'}
     });
     t.fail('expected load to throw');
   } catch (error) {

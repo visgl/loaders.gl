@@ -13,7 +13,6 @@ export {LASWriter} from './las-writer';
 
 // Export the laz-perf based loader as default LASLoader until we have done more testing
 export {LAZPerfLoader as LASLoader} from './lazperf-loader';
-export {LASArrowLoader} from './las-arrow-loader';
 
 // Implementation specific loaders, for bench marking and testing
 export {LAZPerfLoader} from './lazperf-loader';

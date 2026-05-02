@@ -35,6 +35,11 @@
   "scripts": {
     "pre-build": "echo \"Nothing to build in @loaders.gl/traces\""
   },
+  "dependencies": {
+    "@loaders.gl/loader-utils": "4.4.0",
+    "apache-arrow": ">= 17.0.0",
+    "zod": "^4.1.12"
+  },
   "peerDependencies": {
     "@loaders.gl/core": "~4.4.0"
   },

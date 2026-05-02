@@ -14,14 +14,18 @@ export default async function flatgeobufBench(suite) {
 
   suite = suite.group('FlatGeobufLoader');
 
-  suite.addAsync('load arrow-table geoarrow.wkb', ROW_BENCHMARK_OPTIONS, async () => {
-    await load(arrayBuffer.slice(0), FlatGeobufLoader, {
-      core: {worker: false},
-      flatgeobuf: {shape: 'arrow-table'}
-    });
-  });
+  suite.addAsync(
+    'FlatGeobufLoader load arrow-table geoarrow.wkb',
+    ROW_BENCHMARK_OPTIONS,
+    async () => {
+      await load(arrayBuffer.slice(0), FlatGeobufLoader, {
+        core: {worker: false},
+        flatgeobuf: {shape: 'arrow-table'}
+      });
+    }
+  );
 
-  suite.addAsync('load geojson-table', ROW_BENCHMARK_OPTIONS, async () => {
+  suite.addAsync('FlatGeobufLoader load geojson-table', ROW_BENCHMARK_OPTIONS, async () => {
     await load(arrayBuffer.slice(0), FlatGeobufLoader, {
       core: {worker: false},
       flatgeobuf: {shape: 'geojson-table'}

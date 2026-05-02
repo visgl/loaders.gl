@@ -8,6 +8,8 @@ import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {
   COORDINATE_SYSTEM,
+  FirstPersonView,
+  type FirstPersonViewState,
   LinearInterpolator,
   OrbitView,
   type OrbitViewState
@@ -26,7 +28,7 @@ import {PLYArrowLoader} from '@loaders.gl/ply';
 
 import type {Example} from './examples';
 import {EXAMPLES} from './examples';
-import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 import '@deck.gl/widgets/stylesheet.css';
 
 const POINT_CLOUD_LOADERS = [
@@ -36,12 +38,18 @@ const POINT_CLOUD_LOADERS = [
   PCDArrowLoader,
   OBJArrowLoader
 ] as const;
+const CONTROLLER_MODES = ['orbit', 'first-person'] as const;
+const FIRST_PERSON_INITIAL_PITCH = -20;
+const FIRST_PERSON_MIN_PITCH = -75;
+const FIRST_PERSON_MAX_PITCH = 75;
+const ORBIT_MIN_ZOOM = 0;
+const ORBIT_MAX_ZOOM = 10;
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0] as [number, number, number],
-  rotationX: 0,
-  rotationOrbit: 0,
-  orbitAxis: 'Y',
+  rotationX: 56,
+  rotationOrbit: -25,
+  orbitAxis: 'Z',
   fov: 50,
   minZoom: 0,
   maxZoom: 10,
@@ -60,13 +68,16 @@ type AppProps = {
 type AppState = {
   pointData: any;
   metadata: string | null;
-  viewState: OrbitViewState;
+  viewState: OrbitViewState | FirstPersonViewState;
+  controllerMode: ControllerMode;
   selectedCategoryName?: string | null;
   selectedExampleName?: string | null;
   loadTimeMs?: number;
   loadStartMs?: number;
   error?: string | null;
 };
+
+type ControllerMode = (typeof CONTROLLER_MODES)[number];
 
 export default function App(props: AppProps = {}) {
   const availableExamples = useMemo(
@@ -75,6 +86,7 @@ export default function App(props: AppProps = {}) {
   );
   const [state, setState] = useState<AppState>({
     viewState: INITIAL_VIEW_STATE,
+    controllerMode: 'orbit',
     pointData: null,
     metadata: null,
     selectedCategoryName: null,
@@ -117,6 +129,7 @@ export default function App(props: AppProps = {}) {
 
   const widgets = useMemo(
     () => [
+      createDeckFullscreenWidget('pointcloud-arrow-fullscreen'),
       createDeckStatsWidget('pointcloud-arrow-stats'),
       new SidebarWidget({
         id: 'pointcloud-arrow-example-sidebar',
@@ -139,7 +152,14 @@ export default function App(props: AppProps = {}) {
                   metadata: state.metadata,
                   selectedCategoryName: state.selectedCategoryName,
                   selectedExampleName: state.selectedExampleName,
+                  controllerMode: state.controllerMode,
                   vertexCount: state.pointData?.points?.positions?.value?.length || 0,
+                  onControllerModeChange: (controllerMode) =>
+                    setState((currentState) => ({
+                      ...currentState,
+                      controllerMode,
+                      viewState: getViewStateForControllerMode(currentState.viewState, controllerMode)
+                    })),
                   onExampleChange: ({categoryName, exampleName}) => {
                     const example = availableExamples[categoryName]?.[exampleName];
                     if (example) {
@@ -167,13 +187,17 @@ export default function App(props: AppProps = {}) {
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
+        key={state.controllerMode}
         layers={layers}
-        views={new OrbitView({})}
+        views={getViewForControllerMode(state.controllerMode)}
         viewState={state.viewState}
         controller={{inertia: true}}
         widgets={widgets}
         onViewStateChange={({viewState}) =>
-          setState((currentState) => ({...currentState, viewState: viewState as OrbitViewState}))
+          setState((currentState) => ({
+            ...currentState,
+            viewState: viewState as OrbitViewState | FirstPersonViewState
+          }))
         }
         parameters={{clearColor: [0.07, 0.14, 0.19, 1]}}
       />
@@ -185,11 +209,15 @@ export default function App(props: AppProps = {}) {
       ...currentState,
       viewState: {
         ...currentState.viewState,
-        rotationOrbit: (currentState.viewState.rotationOrbit || 0) + 10,
-        transitionDuration: 600,
-        transitionInterpolator,
-        onTransitionEnd: rotateCamera
-      } as OrbitViewState
+        ...(currentState.controllerMode === 'orbit'
+          ? {
+              rotationOrbit: ((currentState.viewState as OrbitViewState).rotationOrbit || 0) + 10,
+              transitionDuration: 600,
+              transitionInterpolator,
+              onTransitionEnd: rotateCamera
+            }
+          : {})
+      } as OrbitViewState | FirstPersonViewState
     }));
   }
 
@@ -218,7 +246,12 @@ export default function App(props: AppProps = {}) {
       const pointCloud = convertTableToMesh(arrowTable as any) as any;
       const {schema, header, loaderData, attributes} = pointCloud;
 
-      const viewState = getArrowViewState(state.viewState, arrowTable as any, loaderData);
+      const viewState = getArrowViewState(
+        state.viewState,
+        state.controllerMode,
+        arrowTable as any,
+        loaderData
+      );
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
       const pointData = getDeckBinaryDataFromArrowMesh((arrowTable as any).data);
 
@@ -264,7 +297,9 @@ function renderPointcloudSidebar(
     metadata: string | null;
     selectedCategoryName?: string | null;
     selectedExampleName?: string | null;
+    controllerMode: ControllerMode;
     vertexCount: number;
+    onControllerModeChange: (controllerMode: ControllerMode) => void;
     onExampleChange: (selection: {categoryName: string; exampleName: string}) => void;
   }
 ): void {
@@ -298,6 +333,12 @@ function renderPointcloudSidebar(
     selectElement.appendChild(optGroupElement);
   }
   rootElement.appendChild(selectElement);
+  rootElement.appendChild(
+    createControllerModeSelect({
+      controllerMode: options.controllerMode,
+      onControllerModeChange: options.onControllerModeChange
+    })
+  );
 
   const statsElement = document.createElement('pre');
   statsElement.style.margin = '0';
@@ -338,18 +379,108 @@ function renderPointcloudSidebar(
   rootElement.appendChild(preElement);
 }
 
-function getArrowViewState(previousViewState: OrbitViewState, arrowTable: any, loaderData: any) {
+function createControllerModeSelect(options: {
+  controllerMode: ControllerMode;
+  onControllerModeChange: (controllerMode: ControllerMode) => void;
+}): HTMLElement {
+  const wrapperElement = document.createElement('div');
+  wrapperElement.style.display = 'grid';
+  wrapperElement.style.gridTemplateColumns = '1fr 1fr';
+  wrapperElement.style.gap = '6px';
+
+  for (const controllerMode of CONTROLLER_MODES) {
+    const buttonElement = document.createElement('button');
+    buttonElement.type = 'button';
+    buttonElement.textContent = controllerMode === 'orbit' ? 'Orbit' : 'First Person';
+    buttonElement.style.padding = '8px 10px';
+    buttonElement.style.border = '1px solid rgba(148, 163, 184, 0.55)';
+    buttonElement.style.borderRadius = '6px';
+    buttonElement.style.cursor = 'pointer';
+    buttonElement.style.background =
+      controllerMode === options.controllerMode ? '#0f172a' : 'var(--menu-background, #fff)';
+    buttonElement.style.color = controllerMode === options.controllerMode ? '#f8fafc' : '#0f172a';
+    buttonElement.addEventListener('click', () => options.onControllerModeChange(controllerMode));
+    wrapperElement.appendChild(buttonElement);
+  }
+
+  return wrapperElement;
+}
+
+function getViewForControllerMode(controllerMode: ControllerMode): OrbitView | FirstPersonView {
+  return controllerMode === 'first-person'
+    ? new FirstPersonView({near: 0.01, far: 100000, up: [0, 0, 1]} as any)
+    : new OrbitView({orbitAxis: 'Z'});
+}
+
+function getViewStateForControllerMode(
+  previousViewState: OrbitViewState | FirstPersonViewState,
+  controllerMode: ControllerMode
+): OrbitViewState | FirstPersonViewState {
+  if (controllerMode === 'first-person') {
+    const target = ((previousViewState as OrbitViewState).target || [0, 0, 0]) as [
+      number,
+      number,
+      number
+    ];
+    return {
+      position: [target[0], target[1] - 6, target[2] + 2],
+      bearing: 0,
+      pitch: FIRST_PERSON_INITIAL_PITCH,
+      minPitch: FIRST_PERSON_MIN_PITCH,
+      maxPitch: FIRST_PERSON_MAX_PITCH
+    };
+  }
+
+  return INITIAL_VIEW_STATE as OrbitViewState;
+}
+
+function getArrowViewState(
+  previousViewState: OrbitViewState | FirstPersonViewState,
+  controllerMode: ControllerMode,
+  arrowTable: any,
+  loaderData: any
+) {
   const [mins, maxs] =
     loaderData?.header?.mins && loaderData?.header?.maxs
       ? [loaderData.header.mins, loaderData.header.maxs]
       : getBoundingBoxFromArrowPositions(arrowTable.data.getChild('POSITION'));
+  const center =
+    getFiniteVector([(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2]) ||
+    INITIAL_VIEW_STATE.target;
+  const size = getFiniteVector([maxs[0] - mins[0], maxs[1] - mins[1], maxs[2] - mins[2]]) || [
+    1, 1, 1
+  ];
+  const horizontalSize = Math.max(size[0], size[1], Number.EPSILON);
+  const diagonalSize = Math.max(Math.hypot(size[0], size[1], size[2]), Number.EPSILON);
+
+  if (controllerMode === 'first-person') {
+    return {
+      position: [center[0], center[1] - diagonalSize * 1.5, center[2] + size[2] * 0.35],
+      bearing: 0,
+      pitch: FIRST_PERSON_INITIAL_PITCH,
+      minPitch: FIRST_PERSON_MIN_PITCH,
+      maxPitch: FIRST_PERSON_MAX_PITCH
+    } as FirstPersonViewState;
+  }
 
   return {
     ...INITIAL_VIEW_STATE,
-    ...previousViewState,
-    target: [(mins[0] + maxs[0]) / 2, (mins[1] + maxs[1]) / 2, (mins[2] + maxs[2]) / 2],
-    zoom: Math.log2(window.innerWidth / (maxs[0] - mins[0])) - 1
+    ...(previousViewState as OrbitViewState),
+    target: center,
+    zoom: getOrbitZoom(horizontalSize)
   } as OrbitViewState;
+}
+
+function getFiniteVector(vector: [number, number, number]): [number, number, number] | null {
+  return vector.every(Number.isFinite) ? vector : null;
+}
+
+function getOrbitZoom(horizontalSize: number): number {
+  const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const zoom = Math.log2(viewportWidth / Math.max(horizontalSize, Number.EPSILON)) - 1;
+  return Number.isFinite(zoom)
+    ? Math.min(Math.max(zoom, ORBIT_MIN_ZOOM), ORBIT_MAX_ZOOM)
+    : INITIAL_VIEW_STATE.zoom;
 }
 
 export function renderToDOM(container: HTMLElement) {

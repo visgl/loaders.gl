@@ -22,12 +22,23 @@ export type WorkerContext = {
   processInBatches?: ProcessInBatches;
 };
 
-export type Process = (data: any, options?: {[key: string]: any}, context?: WorkerContext) => any;
+/** Serializable context sent with a single worker job. */
+export type WorkerJobContext = {
+  [key: string]: any;
+};
+
+export type Process = (
+  data: any,
+  options?: {[key: string]: any},
+  context?: WorkerContext,
+  jobContext?: WorkerJobContext
+) => any;
 
 export type ProcessInBatches = (
   iterator: AsyncIterable<any> | Iterable<any>,
   options?: {[key: string]: any},
-  context?: WorkerContext
+  context?: WorkerContext,
+  jobContext?: WorkerJobContext
 ) => AsyncIterable<any>;
 
 /**
@@ -64,6 +75,7 @@ export type WorkerObject = {
               <= process-batches-error
  */
 export type WorkerMessageType =
+  | 'preload'
   | 'process'
   | 'done'
   | 'error'
@@ -75,7 +87,7 @@ export type WorkerMessageType =
 export type WorkerMessagePayload = {
   id?: number;
   options?: {[key: string]: any};
-  context?: {[key: string]: any};
+  context?: WorkerJobContext;
   input?: any; // Transferable;
   result?: any; // Transferable
   error?: string;

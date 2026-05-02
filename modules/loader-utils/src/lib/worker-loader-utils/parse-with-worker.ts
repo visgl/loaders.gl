@@ -1,25 +1,21 @@
-import {
-  WorkerJob,
-  WorkerMessageType,
-  WorkerMessagePayload,
-  isBrowser,
-  WorkerFarm,
-  getWorkerURL
-} from '@loaders.gl/worker-utils';
-import type {Loader, LoaderOptions, LoaderContext} from '../../loader-types';
+import {canProcessOnWorker, isBrowser, processOnWorker} from '@loaders.gl/worker-utils';
+import type {Loader, StrictLoaderOptions, LoaderContext} from '../../loader-types';
+
+type ParseOnMainThread = (
+  arrayBuffer: ArrayBuffer,
+  loaders?: Loader | Loader[] | StrictLoaderOptions,
+  options?: StrictLoaderOptions,
+  context?: LoaderContext
+) => Promise<unknown>;
 
 /**
  * Determines if a loader can parse with worker
  * @param loader
  * @param options
  */
-export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
-  if (!WorkerFarm.isSupported()) {
-    return false;
-  }
-
-  // Node workers are still experimental
-  const nodeWorkers = options?._nodeWorkers ?? options?.core?._nodeWorkers;
+export function canParseWithWorker(loader: Loader, options?: StrictLoaderOptions) {
+  const workerOptions = getWorkerOptions(options);
+  const nodeWorkers = workerOptions._nodeWorkers;
   if (!isBrowser && !nodeWorkers) {
     return false;
   }
@@ -35,8 +31,11 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
     return false;
   }
 
-  const useWorkers = options?.worker ?? options?.core?.worker;
-  return Boolean(loader.worker && useWorkers);
+  if (loader.id === 'csv' && !shouldParseCSVWithWorker(options)) {
+    return false;
+  }
+
+  return Boolean(canProcessOnWorker(loader, workerOptions));
 }
 
 /**
@@ -46,75 +45,101 @@ export function canParseWithWorker(loader: Loader, options?: LoaderOptions) {
 export async function parseWithWorker(
   loader: Loader,
   data: any,
-  options?: LoaderOptions,
+  options?: StrictLoaderOptions,
   context?: LoaderContext,
-  parseOnMainThread?: (arrayBuffer: ArrayBuffer, options: {[key: string]: any}) => Promise<unknown>
+  parseOnMainThread?: ParseOnMainThread
 ) {
-  const name = loader.id; // TODO
-  const url = getWorkerURL(loader, options);
-
-  const workerFarm = WorkerFarm.getWorkerFarm(options?.core);
-  const workerPool = workerFarm.getWorkerPool({name, url});
-
-  // options.log object contains functions which cannot be transferred
-  // context.fetch & context.parse functions cannot be transferred
-  // TODO - decide how to handle logging on workers
-  options = JSON.parse(JSON.stringify(options));
-  context = JSON.parse(JSON.stringify(context || {}));
-
-  const job = await workerPool.startJob(
-    'process-on-worker',
-    // @ts-expect-error
-    onMessage.bind(null, parseOnMainThread) // eslint-disable-line @typescript-eslint/no-misused-promises
+  const result = await processOnWorker(
+    loader,
+    data,
+    getWorkerOptions(options),
+    {
+      process: async (input, processOptions, _workerContext, parseContext) => {
+        if (!parseOnMainThread) {
+          throw new Error('Worker not set up to parse on main thread');
+        }
+        const mainThreadContext = context
+          ? ({...context, ...(parseContext || {})} as LoaderContext)
+          : undefined;
+        return await callParseOnMainThread(
+          parseOnMainThread,
+          input,
+          processOptions,
+          mainThreadContext
+        );
+      }
+    },
+    getSerializableLoaderContext(context)
   );
-
-  job.postMessage('process', {
-    // @ts-ignore
-    input: data,
-    options,
-    context
-  });
-
-  const result = await job.result;
-  // TODO - what is going on here?
-  return await result.result;
+  return isLoaderWithWorkerResultDeserializer(loader)
+    ? loader.deserializeWorkerResult(result, options, context)
+    : result;
 }
 
 /**
- * Handle worker's responses to the main thread
- * @param job
- * @param type
- * @param payload
+ * Calls either the legacy two-argument parse callback or the loader-utils callback.
+ * @param parseOnMainThread Main-thread parse callback.
+ * @param input Data to parse on the main thread.
+ * @param options Loader options from the worker.
+ * @param context Loader context merged from the worker and caller.
  */
-async function onMessage(
-  parseOnMainThread: (arrayBuffer: ArrayBuffer, options?: {[key: string]: any}) => Promise<void>,
-  job: WorkerJob,
-  type: WorkerMessageType,
-  payload: WorkerMessagePayload
-) {
-  switch (type) {
-    case 'done':
-      job.done(payload);
-      break;
-
-    case 'error':
-      job.error(new Error(payload.error));
-      break;
-
-    case 'process':
-      // Worker is asking for main thread to parseO
-      const {id, input, options} = payload;
-      try {
-        const result = await parseOnMainThread(input, options);
-        job.postMessage('done', {id, result});
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'unknown error';
-        job.postMessage('error', {id, error: message});
-      }
-      break;
-
-    default:
-      // eslint-disable-next-line
-      console.warn(`parse-with-worker unknown message ${type}`);
+function callParseOnMainThread(
+  parseOnMainThread: ParseOnMainThread,
+  input: ArrayBuffer,
+  options?: StrictLoaderOptions,
+  context?: LoaderContext
+): Promise<unknown> {
+  if (parseOnMainThread.length <= 2) {
+    return parseOnMainThread(input, options);
   }
+  return parseOnMainThread(input, undefined, options, context);
+}
+
+/**
+ * Create worker options with deprecated top-level worker fields available to worker-utils.
+ * @param options
+ */
+function getWorkerOptions(options: StrictLoaderOptions = {}) {
+  const serializedOptions = JSON.parse(JSON.stringify(options));
+  return {
+    ...serializedOptions.core,
+    ...serializedOptions
+  };
+}
+
+/**
+ * Create a serializable loader context for worker jobs.
+ * @param context
+ */
+function getSerializableLoaderContext(context?: LoaderContext) {
+  if (!context) {
+    return {};
+  }
+  const {fetch, loaders, coreApi, _parse, _parseSync, _parseInBatches, ...serializableContext} =
+    context;
+  return JSON.parse(JSON.stringify(serializableContext));
+}
+
+/**
+ * Checks whether CSV options request Arrow output that can be transported from a worker.
+ * @param options Loader options.
+ * @returns True when CSV should parse on a worker.
+ */
+function shouldParseCSVWithWorker(options?: StrictLoaderOptions): boolean {
+  const csvOptions = options as {csv?: {shape?: string}; core?: {shape?: string}} | undefined;
+  return (csvOptions?.csv?.shape ?? csvOptions?.core?.shape) === 'arrow-table';
+}
+
+/**
+ * Tests whether a loader can deserialize worker results.
+ * @param loader Loader object.
+ * @returns True when the loader exposes a worker result deserializer.
+ */
+function isLoaderWithWorkerResultDeserializer(
+  loader: Loader
+): loader is Loader & Required<Pick<Loader, 'deserializeWorkerResult'>> {
+  return (
+    typeof (loader as Loader & {deserializeWorkerResult?: unknown}).deserializeWorkerResult ===
+    'function'
+  );
 }

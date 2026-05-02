@@ -13,7 +13,7 @@ import {createDataSource} from '@loaders.gl/core';
 import type {RasterData} from '@loaders.gl/loader-utils';
 import type {OMETiffImageSource, OMETiffSourceLoaderMetadata} from '@loaders.gl/geotiff';
 import {OMETiffSourceLoader} from '@loaders.gl/geotiff';
-import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 const DATA_URL = '/multi-channel.ome.tif';
 
@@ -235,7 +235,7 @@ export default function App(props: AppProps = {}) {
       return [];
     }
 
-    return [createDeckStatsWidget('ometiff-stats')];
+    return [createDeckFullscreenWidget('ometiff-fullscreen'), createDeckStatsWidget('ometiff-stats')];
   }, [props.hideChrome]);
 
   return (

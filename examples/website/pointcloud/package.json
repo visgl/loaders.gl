@@ -16,6 +16,7 @@
     "@deck.gl/react": "^9.3.0",
     "@deck.gl/widgets": "^9.3.0",
     "@loaders.gl/core": "workspace:*",
+    "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/draco": "workspace:*",
     "@loaders.gl/las": "workspace:*",
     "@loaders.gl/obj": "workspace:*",

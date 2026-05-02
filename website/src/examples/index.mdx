@@ -5,7 +5,7 @@ hide_title: true
 
 import {ExamplesIndex} from '../components';
 
-*Notes: These examples use [deck.gl](https://deck.gl) to visualize loaded data and only cover a subset of the available loaders.
+*Notes: Some visual examples use [deck.gl](https://deck.gl) to render loaded data, and these examples only cover a subset of the available loaders.
 Check the [loader catalog](/docs/modules/arrow/api-reference/arrow-loader) to see if the format you need is available.*
 
 <ExamplesIndex
@@ -15,13 +15,15 @@ Check the [loader catalog](/docs/modules/arrow/api-reference/arrow-loader) to se
       'table/bson': '/images/examples/table/bson.svg',
       'table/json': '/images/examples/table/json.svg',
       'table/xml': '/images/examples/table/xml.svg',
+      'traces/chrome-trace': '/images/examples/table/arrow.svg',
       'geospatial/csv': '/images/examples/geospatial/geospatial.jpg',
       'geospatial/geotiff': '/images/examples/geospatial/geospatial.jpg',
       'bioimaging/ome-tiff': '/images/examples/geospatial/geospatial.jpg',
       'tiles/mlt': '/images/examples/tiles/mvt.jpg',
       'tiles/wfs': '/images/examples/tiles/wms.jpg',
       'tiles/arcgis-image-server': '/images/examples/tiles/wms.jpg',
-      'tiles/arcgis-feature-server': '/images/examples/tiles/wms.jpg'
+      'tiles/arcgis-feature-server': '/images/examples/tiles/wms.jpg',
+      'pointclouds/gaussian-splats': '/images/examples/pointclouds/ply.jpg'
     };
 
     return thumbnails[item.docId] || `/images/examples/${item.docId}.jpg`;

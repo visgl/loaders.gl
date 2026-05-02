@@ -13,7 +13,7 @@ import {MapController} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 import {GeoArrowLayer} from '@loaders.gl/deck-layers';
-import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 // import {FileUploader} from './components/file-uploader';
 
@@ -34,7 +34,7 @@ import {FlatGeobufLoader} from '@loaders.gl/flatgeobuf';
 import {GeoPackageLoader} from '@loaders.gl/geopackage';
 import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {KMLLoader, GPXLoader, TCXLoader} from '@loaders.gl/kml';
-import {CSVArrowLoader, CSVLoader} from '@loaders.gl/csv';
+import {CSVLoader} from '@loaders.gl/csv';
 import {GeoJSONLoader} from '@loaders.gl/json';
 import {convertWKBTableToGeoJSON, getGeoMetadata} from '@loaders.gl/gis';
 import {convertArrowToSchema, convertTable, getTableLength} from '@loaders.gl/schema-utils';
@@ -246,6 +246,7 @@ export default function App(props: AppProps = {}) {
     }
 
     return [
+      createDeckFullscreenWidget('geospatial-fullscreen'),
       createDeckStatsWidget('geospatial-stats'),
       new SidebarWidget({
         id: 'geospatial-example-sidebar',
@@ -436,7 +437,7 @@ function getLoaders(example: Example, tableFormat: TableFormat) {
     case 'geojson':
       return [GeoJSONLoader];
     case 'csv':
-      return [CSVArrowLoader];
+      return [CSVLoader];
     case 'flatgeobuf':
       return [FlatGeobufLoader];
     case 'geoparquet':
@@ -542,7 +543,7 @@ function getLoaderDisplayName(
     case 'GeoJSON':
       return 'GeoJSONLoader';
     case 'CSV':
-      return tableFormat === 'geoarrow' ? 'CSVArrowLoader' : 'CSVLoader';
+      return tableFormat === 'geoarrow' ? "CSVLoader (shape: 'arrow-table')" : 'CSVLoader';
     case 'GeoPackage':
       return tableFormat === 'geoarrow'
         ? "GeoPackageLoader (shape: 'arrow-table')"

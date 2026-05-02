@@ -172,7 +172,9 @@ test('TableTileSourceLoader#getTile#polygon clipping on the boundary', async t =
 test('TableTileSourceLoader#load#url input uses options.core.loaders', async t => {
   const source = await load(`${DATA_PATH}/us-states.json`, TableTileSourceLoader, {
     core: {
-      loaders: [GeoJSONLoader]
+      worker: false,
+      loaders: [GeoJSONLoader],
+      loadOptions: {core: {worker: false}}
     },
     table: {
       coordinates: 'wgs84'
@@ -188,7 +190,9 @@ test('TableTileSourceLoader#load#url input uses options.core.loaders', async t =
 test('TableTileSourceLoader#createDataSource#url input uses options.core.loaders', async t => {
   const source = createDataSource(`${DATA_PATH}/us-states.json`, [TableTileSourceLoader], {
     core: {
-      loaders: [GeoJSONLoader]
+      worker: false,
+      loaders: [GeoJSONLoader],
+      loadOptions: {core: {worker: false}}
     },
     table: {
       coordinates: 'wgs84'

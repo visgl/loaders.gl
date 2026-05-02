@@ -66,6 +66,8 @@ export type StrictLoaderOptions = {
     maxMobileConcurrency?: number;
     /** Set to `false` to prevent reuse workers */
     reuseWorkers?: boolean;
+    /** Controls whether worker result transfer prepares standalone ArrayBuffers. */
+    workerTransferBufferCopy?: 'none' | 'sliced' | 'all';
     /** Whether to use workers under Node.js (experimental) */
     _nodeWorkers?: boolean;
     /** set to 'test' to run local worker */
@@ -113,6 +115,8 @@ export type LoaderOptions = {
   maxMobileConcurrency?: number;
   /** @deprecated Use options.core.reuseWorkers */
   reuseWorkers?: boolean;
+  /** @deprecated Use options.core.workerTransferBufferCopy */
+  workerTransferBufferCopy?: 'none' | 'sliced' | 'all';
   /** @deprecated Use options.core._nodeWorkers */
   _nodeWorkers?: boolean;
   /** @deprecated Use options.core._workerType */
@@ -164,6 +168,18 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
    * Can be used to avoid a later delay and may return a parser-bearing loader that also supports `parseSync`.
    */
   preload?: Preload;
+  /** Serializes parser output before returning it from a worker. */
+  serializeWorkerResult?: (
+    result: DataT,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => unknown;
+  /** Deserializes parser output returned from a worker. */
+  deserializeWorkerResult?: (
+    result: unknown,
+    options?: LoaderOptionsT,
+    context?: LoaderContext
+  ) => DataT;
   // end Worker
 
   /** Human readable name */

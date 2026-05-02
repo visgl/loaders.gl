@@ -17,6 +17,7 @@
       "modules/arrow/formats/arrow",
       "modules/textures/formats/basis",
       "modules/bson/formats/bson",
+      "modules/traces/formats/chrome-trace",
       "modules/textures/formats/compressed-textures",
       "modules/copc/formats/copc",
       "modules/textures/formats/crunch",
@@ -101,6 +102,7 @@
           "modules/textures/api-reference/basis-loader",
           "modules/bson/api-reference/bson-loader",
           "modules/3d-tiles/api-reference/cesium-ion-loader",
+          "modules/traces/api-reference/chrome-trace-loader",
           "modules/textures/api-reference/compressed-texture-loader",
           "modules/textures/api-reference/crunch-loader",
           "modules/csv/api-reference/csv-loader",
@@ -110,7 +112,6 @@
           "modules/arrow/api-reference/geoarrow-loader",
           "modules/json/api-reference/geojson-loader",
           "modules/parquet/api-reference/geoparquet-loader",
-          "modules/geopackage/api-reference/geopackage-arrow-loader",
           "modules/geopackage/api-reference/geopackage-loader",
           "modules/geotiff/api-reference/geotiff-loader",
           "modules/gltf/api-reference/glb-loader",
@@ -137,7 +138,6 @@
           "modules/potree/api-reference/potree-loader",
           "modules/terrain/api-reference/quantized-mesh-loader",
           "modules/textures/api-reference/radiance-hdr-loader",
-          "modules/shapefile/api-reference/shapefile-arrow-loader",
           "modules/shapefile/api-reference/shapefile-loader",
           "modules/kml/api-reference/tcx-loader",
           "modules/terrain/api-reference/terrain-loader",
@@ -264,6 +264,9 @@
           "modules/arrow/README",
           "modules/arrow/api-reference/indexed-arrow-table",
           "modules/arrow/api-reference/mapped-arrow-table",
+          "modules/arrow/api-reference/split-arrow-buffers",
+          "modules/arrow/api-reference/arrow-table-transport",
+          "modules/arrow/api-reference/triangulate-wkb-geometry-column",
           "modules/arrow/api-reference/arrow-schema-utils",
           "modules/arrow/api-reference/utf8-utils"
         ]
@@ -445,7 +448,8 @@
         "type": "category",
         "label": "@loaders.gl/ply",
         "items": [
-          "modules/ply/README"
+          "modules/ply/README",
+          "modules/ply/benchmarks"
         ]
       },
       {
@@ -517,7 +521,9 @@
         "type": "category",
         "label": "@loaders.gl/traces",
         "items": [
-          "modules/traces/README"
+          "modules/traces/README",
+          "modules/traces/formats/chrome-trace",
+          "modules/traces/api-reference/chrome-trace-loader"
         ]
       },
       {

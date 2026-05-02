@@ -11,14 +11,21 @@ type PlyDocsTab = {
 };
 
 /** PLY documentation tab identifiers. */
-export type PlyDocsTabId = 'overview' | 'try-it' | 'format' | 'plyloader' | 'plywriter';
+export type PlyDocsTabId =
+  | 'overview'
+  | 'try-it'
+  | 'format'
+  | 'plyloader'
+  | 'plywriter'
+  | 'benchmarks';
 
 const PLY_DOCS_TABS: PlyDocsTab[] = [
   {id: 'try-it', label: 'Try It', href: '/examples/pointclouds/ply'},
   {id: 'overview', label: 'Overview', href: '/docs/modules/ply/formats/ply'},
   {id: 'format', label: 'Format', href: '/docs/modules/ply/format'},
   {id: 'plyloader', label: 'PLYLoader', href: '/docs/modules/ply/api-reference/ply-loader'},
-  {id: 'plywriter', label: 'PLYWriter', href: '/docs/modules/ply/api-reference/ply-writer'}
+  {id: 'plywriter', label: 'PLYWriter', href: '/docs/modules/ply/api-reference/ply-writer'},
+  {id: 'benchmarks', label: 'Benchmarks', href: '/docs/modules/ply/benchmarks'}
 ];
 
 /**

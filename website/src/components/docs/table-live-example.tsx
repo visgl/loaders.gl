@@ -4,9 +4,10 @@ import styled from 'styled-components'
 import {load, type LoaderOptions} from '@loaders.gl/core'
 import {ArrowLoader} from '@loaders.gl/arrow'
 import {CSVLoader} from '@loaders.gl/csv'
-import {ExcelArrowLoader, ExcelLoader} from '@loaders.gl/excel'
+import {ExcelLoader} from '@loaders.gl/excel'
 import {JSONLoader, NDJSONLoader} from '@loaders.gl/json'
 import type {Field, Table} from '@loaders.gl/schema'
+import {ChromeTraceLoader} from '@loaders.gl/traces'
 
 const TABLE_ROW_LIMIT = 12
 const TABLE_COLUMN_LIMIT = 8
@@ -15,10 +16,10 @@ const TABLE_COLUMN_LIMIT = 8
 export type TableLiveExampleLoaderName =
   | 'ArrowLoader'
   | 'CSVLoader'
-  | 'ExcelArrowLoader'
   | 'ExcelLoader'
   | 'JSONLoader'
   | 'NDJSONLoader'
+  | 'ChromeTraceLoader'
 
 /** Configuration for loading and rendering a tabular loader example in docs. */
 export type TableLiveExampleConfig = {
@@ -86,6 +87,19 @@ type SourcePreview = {
   byteLength: number
   /** Rendered source preview content. */
   content: ReactNode
+}
+
+/** Minimal Apache Arrow table contract used by the docs preview. */
+type ArrowTableLike = {
+  /** Apache Arrow schema with ordered field names. */
+  schema: {
+    /** Ordered Arrow schema fields. */
+    fields: {name: string}[]
+  }
+  /** Number of rows in the Arrow table. */
+  numRows: number
+  /** Returns one column vector by index. */
+  getChildAt(columnIndex: number): {get(rowIndex: number): unknown} | null
 }
 
 const PreviewLayout = styled.div`
@@ -548,7 +562,7 @@ export default function TableLiveExample({config}: {config: TableLiveExampleConf
         const arrayBuffer = await loadSourceArrayBuffer(source)
         sourcePreview = createSourcePreview(config.loaderName, arrayBuffer)
         const loader = getTableLoader(config.loaderName)
-        const table = (await load(arrayBuffer, loader, config.options)) as Table
+        const table = normalizeLoadedTable(await load(arrayBuffer, loader, config.options))
 
         if (!isCancelled) {
           setState({status: 'loaded', table, sourcePreview})
@@ -870,17 +884,46 @@ function getTableLoader(loaderName: TableLiveExampleLoaderName) {
       return ArrowLoader
     case 'CSVLoader':
       return CSVLoader
-    case 'ExcelArrowLoader':
-      return ExcelArrowLoader
     case 'ExcelLoader':
       return ExcelLoader
     case 'JSONLoader':
       return JSONLoader
     case 'NDJSONLoader':
       return NDJSONLoader
+    case 'ChromeTraceLoader':
+      return ChromeTraceLoader
     default:
       throw new Error(loaderName)
   }
+}
+
+/**
+ * Normalizes direct Apache Arrow loader output into the loaders.gl ArrowTable wrapper shape.
+ */
+function normalizeLoadedTable(data: unknown): Table {
+  if (isArrowTableLike(data)) {
+    return {
+      shape: 'arrow-table',
+      data
+    } as Table
+  }
+
+  return data as Table
+}
+
+/**
+ * Returns true when a value has the Apache Arrow table methods needed by the preview.
+ */
+function isArrowTableLike(data: unknown): data is ArrowTableLike {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'schema' in data &&
+    'numRows' in data &&
+    'getChildAt' in data &&
+    typeof (data as ArrowTableLike).getChildAt === 'function' &&
+    Array.isArray((data as ArrowTableLike).schema?.fields)
+  )
 }
 
 /**
@@ -915,9 +958,9 @@ function isTextTableLoader(loaderName: TableLiveExampleLoaderName): boolean {
     case 'CSVLoader':
     case 'JSONLoader':
     case 'NDJSONLoader':
+    case 'ChromeTraceLoader':
       return true
     case 'ArrowLoader':
-    case 'ExcelArrowLoader':
     case 'ExcelLoader':
       return false
     default:

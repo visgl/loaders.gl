@@ -28,7 +28,7 @@ import {
   parseCSVArrayBufferAsArrow,
   parseCSVInArrowBatches,
   parseCSVTextAsArrow
-} from './csv-arrow-loader-with-parser';
+} from './csv-arrow-table-parser';
 import {
   deduceCSVSchemaFromRows,
   detectGeometryColumns,
@@ -38,6 +38,7 @@ import {
   shouldFinalizeGeometryDetection
 } from './lib/csv-geometry';
 import {CSVLoader as CSVLoaderMetadata, type CSVLoaderOptions} from './csv-loader';
+import {deserializeCSVWorkerResult, serializeCSVWorkerResult} from './lib/csv-worker-transport';
 
 const {preload: _CSVLoaderPreload, ...CSVLoaderMetadataWithoutPreload} = CSVLoaderMetadata;
 
@@ -60,7 +61,9 @@ export const CSVLoaderWithParser = {
   parseInBatches: (asyncIterator, options?: CSVLoaderOptions) =>
     options?.csv?.shape === 'arrow-table'
       ? parseCSVInArrowBatches(asyncIterator, options)
-      : parseCSVInBatches(asyncIterator, options)
+      : parseCSVInBatches(asyncIterator, options),
+  serializeWorkerResult: serializeCSVWorkerResult,
+  deserializeWorkerResult: deserializeCSVWorkerResult
 } as const satisfies LoaderWithParser<
   ObjectRowTable | ArrayRowTable | ColumnarTable | ArrowTable,
   TableBatch | ColumnarTableBatch | ArrowTableBatch,

@@ -33,7 +33,7 @@ import {RasterSet} from '@loaders.gl/tiles';
 
 import {Map} from 'react-map-gl';
 import maplibregl from 'maplibre-gl';
-import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 const DATA_URL = '/gfw-azores.tif';
 const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
@@ -206,7 +206,7 @@ export default function App(props: AppProps = {}) {
       return [];
     }
 
-    return [createDeckStatsWidget('geotiff-stats')];
+    return [createDeckFullscreenWidget('geotiff-fullscreen'), createDeckStatsWidget('geotiff-stats')];
   }, [props.hideChrome]);
 
   return (

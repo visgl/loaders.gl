@@ -13,7 +13,7 @@ import DeckGL from '@deck.gl/react';
 import {MapController, FlyToInterpolator} from '@deck.gl/core';
 import {SourceLayer} from '@loaders.gl/deck-layers';
 import {StatsWidget} from '@probe.gl/stats-widget';
-import {createDeckStatsWidget} from '../shared/create-deck-stats-widget';
+import {createDeckFullscreenWidget, createDeckStatsWidget} from '../shared/create-deck-stats-widget';
 
 // To manage dependencies and bundle size, the app must decide which supporting loaders to bring in
 import {CesiumIonLoader, Tiles3DLoader} from '@loaders.gl/3d-tiles';
@@ -262,7 +262,7 @@ export default class App extends PureComponent<AppProps> {
       this._deckStatsWidget = createDeckStatsWidget('3d-tiles-deck-stats');
     }
 
-    return [this._deckStatsWidget];
+    return [createDeckFullscreenWidget('3d-tiles-fullscreen'), this._deckStatsWidget];
   }
 
   _renderTile3DLayer() {

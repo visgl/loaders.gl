@@ -7,10 +7,9 @@ export {JSONFormat, GeoJSONFormat, NDJSONFormat, NDGeoJSONFormat} from './json-f
 export {JSONLoader} from './json-loader';
 export type {NDJSONLoaderOptions} from './ndjson-loader';
 export {NDJSONLoader} from './ndjson-loader';
-export type {NDJSONArrowLoaderOptions} from './ndjson-arrow-loader';
-export {NDJSONArrowLoader} from './ndjson-arrow-loader';
 export type {
   ArrowConversionOptions,
+  GeoJSONArrowConversionOptions,
   JSONArrowConversionOptions,
   JSONArrowSchema
 } from './lib/parsers/convert-row-table-to-arrow';

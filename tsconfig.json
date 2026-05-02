@@ -104,6 +104,9 @@
       "@loaders.gl/arrow": [
         "modules/arrow/src"
       ],
+      "@loaders.gl/arrow/transport": [
+        "modules/arrow/src/transport"
+      ],
       "@loaders.gl/arrow/test": [
         "modules/arrow/test"
       ],
@@ -251,6 +254,15 @@
       "@loaders.gl/ply/test": [
         "modules/ply/test"
       ],
+      "@loaders.gl/splats": [
+        "modules/splats/src"
+      ],
+      "@loaders.gl/splats/*": [
+        "modules/splats/src/*"
+      ],
+      "@loaders.gl/splats/test": [
+        "modules/splats/test"
+      ],
       "@loaders.gl/potree": [
         "modules/potree/src"
       ],
@@ -286,6 +298,12 @@
       ],
       "@loaders.gl/textures/test": [
         "modules/textures/test"
+      ],
+      "@loaders.gl/traces": [
+        "modules/traces/src"
+      ],
+      "@loaders.gl/traces/test": [
+        "modules/traces/test"
       ],
       "@loaders.gl/video": [
         "modules/video/src"

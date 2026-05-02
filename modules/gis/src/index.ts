@@ -161,6 +161,7 @@ export type {
   WKBCoordinateTransform
 } from './lib/geometry-converters/wkb/wkb-builder';
 export {WKBBuilder} from './lib/geometry-converters/wkb/wkb-builder';
+export {triangulateWKB} from './lib/geometry-converters/wkb/triangulate-wkb';
 export {
   convertBinaryGeometryToGeometry,
   convertWKBTableToGeoJSON,
