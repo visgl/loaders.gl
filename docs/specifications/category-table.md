@@ -21,7 +21,7 @@ The _table_ category loaders supports loading tables in _row-based_, _columnar_ 
 | `array-row-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | Row arrays. Scoped overrides: `options.arrow.shape`, `options.csv.shape`, `options.json.shape`. |
 | `object-row-table` | [`ArrowLoader`](/docs/modules/arrow/api-reference/arrow-loader), [`CSVLoader`](/docs/modules/csv/api-reference/csv-loader), [`JSONLoader`](/docs/modules/json/api-reference/json-loader) | Row objects. Default for CSV. |
 
-`GeoJSONLoader` also accepts `options.core.shape = 'geojson-table'`, but binary output remains controlled by `options.gis.format`.
+`GeoJSONLoader` uses `options.geojson.shape` for GIS-specific output shapes such as `geojson-table`, `binary-feature-collection`, and `arrow-table`.
 
 ## Data Structure
 

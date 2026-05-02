@@ -93,6 +93,14 @@ Release Date: 2026
 - [`FlatGeobufLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-loader) adds `flatgeobuf.shape: 'arrow-table'` with FlatGeobuf property columns, a WKB `geometry` column, and geospatial Arrow metadata for round-tripping to GeoJSON.
 - [`FlatGeobufSourceLoader`](/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader) NEW - creates indexed remote `.fgb` vector sources with schema/metadata discovery, bbox-filtered HTTP range reads, and `geojson`, `binary`, or `arrow` outputs.
 
+**@loaders.gl/json**
+
+- [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader), `GeoJSONWorkerLoader`, and [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer) are now official exports.
+- [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) now selects output with `geojson.shape`, including `'geojson-table'`, `'binary-feature-collection'`, and `'arrow-table'`.
+- [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) adds GeoArrow WKB Arrow output through `geojson.shape: 'arrow-table'`; [`JSONLoader`](/docs/modules/json/api-reference/json-loader) and [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) remain generic JSON-to-Arrow loaders.
+- [`JSONLoader`](/docs/modules/json/api-reference/json-loader) and [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) add schema-aware Arrow conversion with strict defaults, optional recovery policies, and one-time recovery logging.
+- [`JSONWriter`](/docs/modules/json/api-reference/json-writer) now accepts Arrow table inputs and decodes GeoArrow WKB geometry columns to GeoJSON geometry objects by default.
+
 ## v4.4
 
 Release Date: March 31, 2026

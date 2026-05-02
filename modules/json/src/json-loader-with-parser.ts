@@ -6,46 +6,26 @@ import type {
   ArrayRowTable,
   ArrowTable,
   ArrowTableBatch,
-  Batch,
   ObjectRowTable,
   Table,
   TableBatch
 } from '@loaders.gl/schema';
 import {makeTableFromData} from '@loaders.gl/schema-utils';
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {
   convertRowTableToArrowTable,
   convertTableBatchesToArrow
 } from './lib/parsers/convert-row-table-to-arrow';
-import {JSONLoader as JSONLoaderMetadata} from './json-loader';
+import {
+  JSONLoader as JSONLoaderMetadata,
+  type JSONBatch,
+  type JSONLoaderOptions,
+  type MetadataBatch
+} from './json-loader';
 
 const {preload: _JSONLoaderPreload, ...JSONLoaderMetadataWithoutPreload} = JSONLoaderMetadata;
-
-/** Metadata batch emitted while streaming JSON. */
-export type MetadataBatch = Batch & {
-  shape: 'metadata';
-};
-
-/** Partial or final container object emitted while streaming JSON. */
-export type JSONBatch = Batch & {
-  shape: 'json';
-  /** JSON data */
-  container: any;
-};
-
-/** Options for parsing JSON documents and tabular selections. */
-export type JSONLoaderOptions = LoaderOptions & {
-  json?: {
-    /** Selects row-table output or Apache Arrow output for tabular JSON. */
-    shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
-    /** Enables table extraction from non-streaming JSON. */
-    table?: boolean;
-    /** Selects one or more JSON arrays to stream. */
-    jsonpaths?: string[];
-  };
-};
 
 /** Loader for JSON documents, including tabular JSON and streaming table extraction. */
 export const JSONLoaderWithParser = {
@@ -65,13 +45,33 @@ async function parse(arrayBuffer: ArrayBuffer, options?: JSONLoaderOptions) {
 
 function parseTextSync(text: string, options?: JSONLoaderOptions) {
   const jsonOptions = {...options, json: {...JSONLoaderWithParser.options.json, ...options?.json}};
-  const json = parseJSONSync(text, jsonOptions as JSONLoaderOptions);
+  validateJSONArrowOptions(jsonOptions as JSONLoaderOptions);
   if (jsonOptions.json?.shape !== 'arrow-table') {
+    const json = parseJSONSync(text, jsonOptions as JSONLoaderOptions);
     return json;
   }
 
+  const json = parseJSONSync(text, getRawJSONOptions(jsonOptions as JSONLoaderOptions));
   const table = getArrowCompatibleTable(json, jsonOptions as JSONLoaderOptions);
-  return table ? convertRowTableToArrowTable(table) : json;
+  return table
+    ? convertRowTableToArrowTable(table, {
+        schema: jsonOptions.json.schema,
+        arrowConversion: jsonOptions.json.arrowConversion,
+        log: getJSONLoaderLog(jsonOptions as JSONLoaderOptions)
+      })
+    : json;
+}
+
+/** Requests raw JSON from the shared parser before Arrow conversion. */
+function getRawJSONOptions(options: JSONLoaderOptions): JSONLoaderOptions {
+  return {
+    ...options,
+    json: {
+      ...options.json,
+      shape: undefined,
+      table: false
+    }
+  };
 }
 
 function parseInBatches(
@@ -81,8 +81,19 @@ function parseInBatches(
   options?: JSONLoaderOptions
 ): AsyncIterable<TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = {...options, json: {...JSONLoaderWithParser.options.json, ...options?.json}};
-  const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions);
-  return jsonOptions.json?.shape === 'arrow-table' ? convertTableBatchesToArrow(batches) : batches;
+  validateJSONArrowOptions(jsonOptions as JSONLoaderOptions);
+  if (jsonOptions.json?.shape !== 'arrow-table') {
+    return parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions);
+  }
+
+  return convertTableBatchesToArrow(
+    parseJSONInBatches(asyncIterator, getRowBatchJSONOptions(jsonOptions as JSONLoaderOptions)),
+    {
+      schema: jsonOptions.json.schema,
+      arrowConversion: jsonOptions.json.arrowConversion,
+      log: getJSONLoaderLog(jsonOptions as JSONLoaderOptions)
+    }
+  );
 }
 
 /**
@@ -115,9 +126,16 @@ function getArrowCompatibleTable(
     }
   }
 
-  if (options.json?.table && json && typeof json === 'object') {
+  if (
+    (options.json?.table || options.json?.shape === 'arrow-table') &&
+    json &&
+    typeof json === 'object'
+  ) {
     const firstArray = getFirstArray(json);
-    if (firstArray?.length) {
+    if (firstArray) {
+      if (firstArray.length === 0) {
+        return {shape: 'array-row-table', schema: {fields: [], metadata: {}}, data: []};
+      }
       return Array.isArray(firstArray[0])
         ? makeTableFromData(firstArray as unknown[][])
         : makeTableFromData(firstArray as {[key: string]: unknown}[]);
@@ -163,3 +181,30 @@ function getFirstArray(json: unknown): unknown[][] | {[key: string]: unknown}[] 
   }
   return null;
 }
+
+/** Removes Arrow shape from streaming parse options so metadata batches stay row-shaped. */
+function getRowBatchJSONOptions(options: JSONLoaderOptions): JSONLoaderOptions {
+  return {
+    ...options,
+    json: {
+      ...options.json,
+      shape: undefined
+    }
+  };
+}
+
+/** Returns the loader log object from normalized or deprecated option locations. */
+function getJSONLoaderLog(options: JSONLoaderOptions): any {
+  return options.core?.log || options.log;
+}
+
+function validateJSONArrowOptions(options: JSONLoaderOptions): void {
+  const hasArrowOnlyOptions = Boolean(options.json?.schema || options.json?.arrowConversion);
+  if (hasArrowOnlyOptions && options.json?.shape !== 'arrow-table') {
+    throw new Error(
+      'JSONLoader: json.schema and json.arrowConversion require json.shape to be "arrow-table"'
+    );
+  }
+}
+
+export type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader';

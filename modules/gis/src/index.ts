@@ -104,6 +104,20 @@ export {
   convertArrowBinaryFeatureCollectionToBinaryFeatureCollection,
   convertBinaryFeatureCollectionToArrowBinaryFeatureCollection
 } from './lib/feature-collection-converters/convert-arrow-binary-feature-collection';
+export type {
+  LegacyGeoJSONCRS,
+  GeoJSONToGeoArrowEncoding,
+  GeoJSONToGeoArrowOptions
+} from './lib/table-converters/convert-geojson-to-geoarrow';
+export {
+  applyLegacyGeoJSONCRSToSchema,
+  convertFeatureCollectionToGeoArrowTable,
+  convertFeaturesToGeoArrowTable,
+  isGeoJSONFeatureArray,
+  isGeoJSONFeatureCollection,
+  makeGeoArrowFeatureRows,
+  makeGeoArrowFeatureSchema
+} from './lib/table-converters/convert-geojson-to-geoarrow';
 export {
   convertFlatGeojsonToBinaryFeatureCollection,
   flatGeojsonToBinary,

@@ -2,9 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, Batch, Table, TableBatch} from '@loaders.gl/schema';
+import type {
+  ArrowTable,
+  ArrowTableBatch,
+  Batch,
+  Schema,
+  Table,
+  TableBatch
+} from '@loaders.gl/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type * as arrow from 'apache-arrow';
 import {JSONFormat} from './json-format';
+import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -18,19 +27,24 @@ export type MetadataBatch = Batch & {
 /** Partial or final container object emitted while streaming JSON. */
 export type JSONBatch = Batch & {
   shape: 'json';
-  /** JSON data */
+  /** JSON data. */
   container: any;
 };
 
 /** Options for parsing JSON documents and tabular selections. */
 export type JSONLoaderOptions = LoaderOptions & {
+  /** JSON parser options. */
   json?: {
-    /** Selects row-table output or Apache Arrow output for tabular JSON. */
+    /** Requested output shape. Omitting shape preserves the default JSON result. */
     shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
-    /** Enables table extraction from non-streaming JSON. */
+    /** Whether non-streaming JSON should be interpreted as table rows. */
     table?: boolean;
-    /** Selects one or more JSON arrays to stream. */
+    /** JSON paths identifying arrays that can be streamed as row batches. */
     jsonpaths?: string[];
+    /** Optional schema used when converting JSON rows to Arrow. */
+    schema?: Schema | arrow.Schema;
+    /** Optional recovery policy used when converting JSON rows to Arrow. */
+    arrowConversion?: ArrowConversionOptions;
   };
 };
 
@@ -51,7 +65,9 @@ export const JSONLoader = {
     json: {
       shape: undefined,
       table: false,
-      jsonpaths: []
+      jsonpaths: [],
+      schema: undefined,
+      arrowConversion: undefined
       // batchSize: 'auto'
     }
   },

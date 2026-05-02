@@ -8,24 +8,33 @@ import type {
   ArrayRowTable,
   ArrowTable,
   ArrowTableBatch,
+  Schema,
   TableBatch
 } from '@loaders.gl/schema';
+import type * as arrow from 'apache-arrow';
 import {NDJSONFormat} from './json-format';
+import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
-type NDJSONShape = 'array-row-table' | 'object-row-table' | 'arrow-table';
+export type NDJSONShape = 'array-row-table' | 'object-row-table' | 'arrow-table';
 
 /** Options for parsing newline-delimited JSON data. */
 export type NDJSONLoaderOptions = LoaderOptions & {
+  /** NDJSON parser options. */
   ndjson?: {
-    /** Selects row-table output or Apache Arrow output. */
+    /** Requested output shape. */
     shape?: NDJSONShape;
+    /** Optional schema used when converting NDJSON rows to Arrow. */
+    schema?: Schema | arrow.Schema;
+    /** Optional recovery policy used when converting NDJSON rows to Arrow. */
+    arrowConversion?: ArrowConversionOptions;
   };
+  /** Deprecated JSON parser alias used only for NDJSON shape selection. */
   json?: {
-    /** Deprecated alias for `ndjson.shape`. */
+    /** Deprecated alias for `ndjson.shape`; `ndjson.shape` takes precedence. */
     shape?: NDJSONShape;
   };
 };
@@ -45,7 +54,9 @@ export const NDJSONLoader = {
   version: VERSION,
   options: {
     ndjson: {
-      shape: 'object-row-table'
+      shape: 'object-row-table',
+      schema: undefined,
+      arrowConversion: undefined
     }
   },
   preload

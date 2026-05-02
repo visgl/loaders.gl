@@ -120,6 +120,13 @@ This unifies top-level loading behavior:
 
 - ImageLoader now only returns ImageBitmap (never Image or data), with a polyfill under Node.js. There is a function to extract data from an ImageBitmap?
 
+**@loaders.gl/json**
+
+- The underscored GeoJSON exports have been removed. Replace `_GeoJSONLoader`, `_GeoJSONWorkerLoader`, and `_GeoJSONWriter` with `GeoJSONLoader`, `GeoJSONWorkerLoader`, and `GeoJSONWriter`.
+- `GeoJSONLoader` no longer uses `options.gis.format`. Select output with `options.geojson.shape`: use `'geojson-table'` for the default feature table, `'binary-feature-collection'` for deck.gl-style binary features, or `'arrow-table'` for GeoArrow WKB output.
+- `JSONLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
+- `JSONLoader` and `NDJSONLoader` now support strict schema-aware Arrow conversion through `json.schema`, `ndjson.schema`, `json.arrowConversion`, and `ndjson.arrowConversion`. These options require `shape: 'arrow-table'`.
+
 **@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
 
 - Gaussian splat support is new and opt-in. Use `PLYLoader` with `ply.shape: 'arrow-table'`, or `SPLATLoader` / `KSPLATLoader` from `@loaders.gl/splats`, then pass the returned Mesh Arrow table to `SplatLayer`.

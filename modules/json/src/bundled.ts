@@ -9,8 +9,8 @@ export {NDJSONLoaderWithParser as NDJSONLoader} from './ndjson-loader-with-parse
 export type {NDGeoJSONLoaderOptions} from './ndgeoson-loader-with-parser';
 export {NDJSONLoaderWithParser as NDGeoJSONLoader} from './ndgeoson-loader-with-parser';
 
-export type {GeoJSONLoaderOptions as _GeoJSONLoaderOptions} from './geojson-loader-with-parser';
+export type {GeoJSONLoaderOptions} from './geojson-loader-with-parser';
 export {
-  GeoJSONLoaderWithParser as _GeoJSONLoader,
-  GeoJSONWorkerLoaderWithParser as _GeoJSONWorkerLoader
+  GeoJSONLoaderWithParser as GeoJSONLoader,
+  GeoJSONWorkerLoaderWithParser as GeoJSONWorkerLoader
 } from './geojson-loader-with-parser';

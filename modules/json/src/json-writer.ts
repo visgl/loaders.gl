@@ -10,8 +10,12 @@ import {encodeTableAsJSON} from './lib/encoders/json-encoder';
 import {JSONFormat} from './json-format';
 
 export type JSONWriterOptions = WriterOptions & {
+  /** JSON writer options. */
   json?: {
-    shape?: 'object-row-table' | 'array-row-table';
+    /** Requested row shape to serialize. */
+    shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
+    /** Whether GeoArrow WKB geometry columns should be decoded to GeoJSON geometries. */
+    geoarrow?: 'auto' | 'none';
     wrapper?: (table: TableJSON) => unknown;
   };
 };
