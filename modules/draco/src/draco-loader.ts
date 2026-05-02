@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {ArrowTable} from '@loaders.gl/schema';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
 import {VERSION} from './lib/utils/version';
@@ -27,7 +28,7 @@ async function preload() {
 
 /** Metadata-only worker loader for Draco3D compressed geometries. */
 export const DracoWorkerLoader = {
-  dataType: null as unknown as DracoMesh,
+  dataType: null as unknown as DracoMesh | ArrowTable,
   batchType: null as never,
   ...DracoFormat,
   // shapes: ['mesh'],
@@ -42,10 +43,10 @@ export const DracoWorkerLoader = {
     }
   },
   preload
-} as const satisfies Loader<DracoMesh, never, DracoLoaderOptions>;
+} as const satisfies Loader<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
 
 /** Metadata-only loader for Draco3D compressed geometries. */
 export const DracoLoader = {
   ...DracoWorkerLoader,
   preload
-} as const satisfies Loader<DracoMesh, never, DracoLoaderOptions>;
+} as const satisfies Loader<DracoMesh | ArrowTable, never, DracoLoaderOptions>;

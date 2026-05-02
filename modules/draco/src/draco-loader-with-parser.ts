@@ -33,7 +33,7 @@ export type DracoLoaderOptions = StrictLoaderOptions & {
  */
 export const DracoWorkerLoaderWithParser = {
   ...DracoWorkerLoaderMetadataWithoutPreload
-} as const satisfies Loader<DracoMesh, never, DracoLoaderOptions>;
+} as const satisfies Loader<DracoMesh | ArrowTable, never, DracoLoaderOptions>;
 
 /**
  * Loader for Draco3D compressed geometries
