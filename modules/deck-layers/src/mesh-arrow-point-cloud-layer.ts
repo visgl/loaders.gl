@@ -15,9 +15,15 @@ import {
 } from '@deck.gl/core';
 import {PointCloudLayer, type PointCloudLayerProps} from '@deck.gl/layers';
 import {getDeckBinaryDataFromArrowMesh} from '@loaders.gl/geoarrow';
-import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
-
-type MeshArrowPointCloudData = MeshArrowTable | arrow.Table | AsyncIterable<ArrowTableBatch> | null;
+import type {ArrowTableBatch} from '@loaders.gl/schema';
+import {
+  getArrowTable,
+  getArrowTableRowProperties,
+  getBatchIndexFromLayerId,
+  isArrowTableBatch,
+  isAsyncIterable,
+  type MeshArrowPointCloudData
+} from './mesh-arrow-point-cloud-layer-utils';
 
 type MeshArrowPointCloudLayerState = {
   /** Arrow table batches loaded so far from async data. */
@@ -202,71 +208,4 @@ export class MeshArrowPointCloudLayer extends CompositeLayer<MeshArrowPointCloud
       }
     }
   }
-}
-
-/** Returns the async batch index encoded in a rendered sublayer id. */
-function getBatchIndexFromLayerId(layerId: string | undefined): number {
-  const batchIndexText = layerId?.match(/points-(\d+)$/)?.[1];
-  return batchIndexText ? Number(batchIndexText) : 0;
-}
-
-/** Reads all column values for one Arrow table row. */
-function getArrowTableRowProperties(table: arrow.Table, rowIndex: number): Record<string, unknown> {
-  const properties: Record<string, unknown> = {};
-  for (const field of table.schema.fields) {
-    const vector = table.getChild(field.name);
-    if (vector) {
-      properties[field.name] = getSerializableArrowValue(vector.get(rowIndex));
-    }
-  }
-  return properties;
-}
-
-/** Converts Arrow vector values into values suitable for tooltip rendering. */
-function getSerializableArrowValue(value: unknown): unknown {
-  if (ArrayBuffer.isView(value)) {
-    return value instanceof DataView
-      ? Array.from(new Uint8Array(value.buffer, value.byteOffset, value.byteLength))
-      : Array.from(value as unknown as ArrayLike<unknown>);
-  }
-  if (Array.isArray(value)) {
-    return value.map(getSerializableArrowValue);
-  }
-  if (value && typeof value === 'object' && Symbol.iterator in value) {
-    return Array.from(value as Iterable<unknown>).map(getSerializableArrowValue);
-  }
-  return value;
-}
-
-function getArrowTable(
-  data: MeshArrowTable | arrow.Table | AsyncIterable<ArrowTableBatch>
-): arrow.Table {
-  return isMeshArrowTable(data) ? data.data : (data as arrow.Table);
-}
-
-/** Checks whether layer data is a loaders.gl Arrow table wrapper. */
-function isMeshArrowTable(data: unknown): data is MeshArrowTable {
-  return (data as MeshArrowTable).shape === 'arrow-table';
-}
-
-/** Returns true when data can be consumed as async Arrow table batches. */
-function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> {
-  return Boolean(
-    data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
-  );
-}
-
-/** Returns true when a value is a loaders.gl Arrow table data batch. */
-function isArrowTableBatch(data: unknown): data is ArrowTableBatch {
-  const arrowTableBatch = data as ArrowTableBatch;
-  return (
-    arrowTableBatch?.shape === 'arrow-table' &&
-    arrowTableBatch.batchType === 'data' &&
-    isArrowTable(arrowTableBatch.data)
-  );
-}
-
-/** Returns true when a value is an Apache Arrow table. */
-function isArrowTable(data: unknown): data is arrow.Table {
-  return Boolean(data && typeof (data as arrow.Table).getChild === 'function');
 }
