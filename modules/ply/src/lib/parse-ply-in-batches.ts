@@ -94,7 +94,7 @@ async function* parseBinaryPLYToArrowInBatches(
     return;
   }
 
-  const vertexElement = getVertexOnlyElement(header);
+  const vertexElement = getVertexElement(header, options);
   if (vertexElement.properties.some(property => property.type === 'list')) {
     yield* parseBinaryVariableWidthVertexPLYToArrowInBatches(
       byteIterator,
@@ -120,7 +120,7 @@ async function* parseBinaryFixedWidthVertexPLYToArrowInBatches(
   initialBodyBytes: ByteArray,
   options: any
 ): AsyncIterable<MeshArrowTable> {
-  const vertexElement = getFixedWidthVertexElement(header);
+  const vertexElement = getFixedWidthVertexElement(header, options);
   const batchSize = getBatchSize(options);
   const vertexStride = getPLYElementSize(vertexElement);
   const parsePlan = getPLYBinaryPointCloudParsePlan(header, options);
@@ -141,6 +141,10 @@ async function* parseBinaryFixedWidthVertexPLYToArrowInBatches(
       pendingBytes = pendingBytes.subarray(batchVertexCount * vertexStride);
       remainingVertices -= batchVertexCount;
       yield batch;
+    }
+
+    if (options?.pointCloud && remainingVertices <= 0) {
+      return;
     }
 
     const {value: chunk, done} = await byteIterator.next();
@@ -175,7 +179,7 @@ async function* parseASCIIPLYToArrowInBatches(
   initialBodyBytes: ByteArray,
   options: any
 ): AsyncIterable<MeshArrowTable> {
-  const vertexElement = getVertexOnlyElement(header);
+  const vertexElement = getVertexElement(header, options);
   const batchSize = getBatchSize(options);
   const lineIterator = makeLineIterator(
     makeTextDecoderIterator(getByteIteratorWithInitialBytes(byteIterator, initialBodyBytes))
@@ -211,7 +215,7 @@ async function* parseBinaryVariableWidthVertexPLYToArrowInBatches(
   initialBodyBytes: ByteArray,
   options: any
 ): AsyncIterable<MeshArrowTable> {
-  const vertexElement = getVertexOnlyElement(header);
+  const vertexElement = getVertexElement(header, options);
   const batchSize = getBatchSize(options);
   const littleEndian = header.format !== 'binary_big_endian';
   let remainingVertices = vertexElement.count;
@@ -287,20 +291,20 @@ async function readPLYHeader(
   }
 }
 
-/** Return the single vertex element, or throw for unsupported Arrow batches. */
-function getVertexOnlyElement(header: PLYHeader): PLYElement {
+/** Return the vertex element, or throw for unsupported Arrow batches. */
+function getVertexElement(header: PLYHeader, options: any): PLYElement {
   const vertexElement = header.elements[0];
-  if (header.elements.length !== 1 || vertexElement?.name !== 'vertex') {
+  if ((!options?.pointCloud && header.elements.length !== 1) || vertexElement?.name !== 'vertex') {
     throw new Error('PLY arrow-table batch parsing requires one vertex element');
   }
   return vertexElement;
 }
 
-/** Return the single fixed-width vertex element, or throw for unsupported binary batches. */
-function getFixedWidthVertexElement(header: PLYHeader): PLYElement {
+/** Return the fixed-width vertex element, or throw for unsupported binary batches. */
+function getFixedWidthVertexElement(header: PLYHeader, options: any): PLYElement {
   const vertexElement = header.elements[0];
   if (
-    header.elements.length !== 1 ||
+    (!options?.pointCloud && header.elements.length !== 1) ||
     vertexElement?.name !== 'vertex' ||
     vertexElement.properties.some(property => property.type === 'list')
   ) {
@@ -339,7 +343,7 @@ function makeBinaryPLYArrowBatch(
 
 /** Build one Arrow table batch from ASCII PLY vertex lines. */
 function makeASCIIPLYArrowBatch(header: PLYHeader, lines: string[], options: any): MeshArrowTable {
-  const batchHeaderText = makePLYHeaderText(header, lines.length);
+  const batchHeaderText = makePLYHeaderText(header, lines.length, options);
   const elementTables = parsePLYToElementTables(`${batchHeaderText}${lines.join('\n')}\n`, options);
   return convertPLYElementTablesToMeshArrowTable(elementTables);
 }
@@ -352,7 +356,7 @@ function makeBinaryPLYArrowBatchFromRows(
   vertexCount: number,
   options: any
 ): MeshArrowTable {
-  const batchHeaderText = makePLYHeaderText(header, vertexCount);
+  const batchHeaderText = makePLYHeaderText(header, vertexCount, options);
   const headerBytes = new TextEncoder().encode(batchHeaderText);
   const batchBytes = new Uint8Array(headerBytes.length + byteLength);
   batchBytes.set(headerBytes, 0);
@@ -438,12 +442,13 @@ function readBinaryScalar(
 }
 
 /** Rebuild a PLY header text for one emitted batch. */
-function makePLYHeaderText(header: PLYHeader, vertexCount: number): string {
+function makePLYHeaderText(header: PLYHeader, vertexCount: number, options: any): string {
   const lines = ['ply', `format ${header.format} ${header.version || '1.0'}`];
+  const elements = options?.pointCloud ? header.elements.slice(0, 1) : header.elements;
   for (const comment of header.comments) {
     lines.push(`comment ${comment}`);
   }
-  for (const element of header.elements) {
+  for (const element of elements) {
     lines.push(
       `element ${element.name} ${element.name === 'vertex' ? vertexCount : element.count}`
     );

@@ -9,8 +9,7 @@ import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
 </p>
 
 :::caution
-The `@loaders.gl/las` module only supports LAS/lAZ files up to LAS v1.3. It does not support LAS v1.4 files.
-For more detail, see the discussion in [Github Issues](https://github.com/visgl/loaders.gl/issues/591).
+The default `laz-perf` backend only supports LAS/LAZ files up to LAS v1.3. Use `las.backend: 'copc'` or `las.backend: 'laz-rs'` for LAS 1.4 point formats supported by those backends.
 :::
 
 `LASLoader` parses LAS/LAZ point clouds into the legacy [PointCloud](/docs/specifications/category-mesh) object by default. Set `las.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
@@ -38,6 +37,7 @@ const table = await load(url, LASLoader, {
 
 | Option                   | Type                 | Default | Description                                                                                                    |
 | ------------------------ | -------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| `options.las.backend`    | `string`             | `laz-perf` | Decoder backend: `'laz-perf'` for the current vendored backend, `'copc'` for the COPC package laz-perf backend, or `'laz-rs'` for the Rust/WASM backend. |
 | `options.las.shape`      | `string`             | `mesh`  | Format of parsed data, e.g: `'mesh'`, `'columnar-table'`, `'arrow-table'`.                                     |
 | `options.las.skip`       | `number`             | `1`     | Read one from every _n_ points.                                                                                |
 | `options.las.fp64`       | `number`             | `false` | If `true`, positions are stored in 64-bit floats instead of 32-bit.                                            |

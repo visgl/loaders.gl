@@ -42,8 +42,20 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Geospatial Tile Formats',
+      label: 'Tiled Geospatial Formats',
       items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
+    },
+    {
+      type: 'category',
+      label: 'Tiled 3D Formats',
+      items: [
+        'i3s-building-scene-layer',
+        'i3s-picking',
+        'i3s-colorization-by-attributes',
+        '3d-tiles',
+        'pointclouds/potree-source',
+        'pointclouds/copc-source'
+      ]
     },
     {
       type: 'category',
@@ -57,26 +69,6 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Geospatial Raster Formats',
-      items: ['geospatial/geotiff']
-    },
-    {
-      type: 'category',
-      label: 'Bioimaging Raster Formats',
-      items: ['bioimaging/ome-tiff']
-    },
-    {
-      type: 'category',
-      label: '3D Tile Formats',
-      items: [
-        'i3s-building-scene-layer',
-        'i3s-picking',
-        'i3s-colorization-by-attributes',
-        '3d-tiles'
-      ]
-    },
-    {
-      type: 'category',
       label: 'Point Cloud Formats',
       items: [
         'pointclouds/gaussian-splats',
@@ -86,6 +78,16 @@ const sidebars = {
         'pointclouds/ply',
         'pointclouds/obj'
       ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Raster Formats',
+      items: ['geospatial/geotiff']
+    },
+    {
+      type: 'category',
+      label: 'Bioimaging Raster Formats',
+      items: ['bioimaging/ome-tiff']
     },
     {
       type: 'category',

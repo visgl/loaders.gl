@@ -1,4 +1,8 @@
+import {CopcDocsTabs} from '@site/src/components/docs/copc-docs-tabs';
+
 # COPC
+
+<CopcDocsTabs active="format" />
 
 - _[Specification at COPC.io](https://copc.io/)_
 - _[Video Overview](https://www.youtube.com/watch?v=rWkKKZYN86A)_

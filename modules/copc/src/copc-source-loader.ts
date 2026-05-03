@@ -2,38 +2,56 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Field, DataType} from '@loaders.gl/schema';
+import type {Schema, Field, DataType, Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import type {
   CoreAPI,
   SourceLoader,
   DataSourceOptions,
   TileSource,
+  TileSourceMetadata,
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
+import {Proj4Projection} from '@math.gl/proj4';
 
-import {Copc, Hierarchy, Dimension, Getter} from 'copc';
+import {Copc, Hierarchy, Dimension, Getter, Bounds, Key} from 'copc';
 
 const VERSION = '1.0.0';
+const COORDINATE_SYSTEM = {
+  CARTESIAN: 'cartesian',
+  LNGLAT_OFFSETS: 'lnglat-offsets'
+} as const;
 
-type COPCMetadata = Record<string, unknown>;
+type COPCViewState = {
+  boundingVolume: {
+    cartographicBounds: [number[], number[]];
+    center: number[];
+    radius: number;
+  };
+  cartographicCenter: number[];
+  zoom: number;
+};
+
+type COPCMetadata = TileSourceMetadata & {
+  formatSpecificMetadata: Copc;
+  viewState: COPCViewState;
+};
 
 type GetNodeParameters = {
-  nodeIndex: {
-    x: number;
-    y: number;
-    z: number;
-    d: number;
-  };
+  nodeIndex: [depth: number, x: number, y: number, z: number];
   columns?: string[];
   offset?: number;
   limit?: number;
 };
 
 import {COPCFormat} from './copc-format';
+
 export type COPCSourceLoaderOptions = DataSourceOptions & {
-  copc?: {};
+  copc?: {
+    sourceCoordinateSystem?: string;
+  };
 };
 
 /**
@@ -63,7 +81,7 @@ export const COPCSourceLoader = {
     copc: {}
   },
 
-  testURL: (url: string) => url.endsWith('.pmtiles'),
+  testURL: (url: string) => /\.copc\.laz($|\?)/i.test(url),
   createDataSource: (url: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) =>
     new COPCTileSource(url, options, coreApi)
 } as const satisfies SourceLoader<COPCTileSource>;
@@ -78,6 +96,7 @@ export class COPCTileSource
 {
   mimeType: string | null = null;
   metadata: Promise<COPCMetadata>;
+  isReady = false;
 
   protected _initPromise: Promise<{
     copc: Copc;
@@ -85,13 +104,20 @@ export class COPCTileSource
     rootNode: Hierarchy.Node;
   }>;
   protected _urlOrGetter: string | Getter;
+  protected _copc: Copc | null = null;
+  protected _projection: Proj4Projection | null = null;
+  protected _hierarchy: Hierarchy.Subtree | null = null;
+  protected _pageLoadPromises: Map<string, Promise<void>> = new Map();
 
   constructor(data: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, COPCSourceLoader.defaultOptions, coreApi);
-    // TODO - create a getter if a blob
-    this._urlOrGetter = this.url as any;
-    this._initPromise = this._initCopc(this.url);
+    this._urlOrGetter = createCOPCGetter(data, this.url);
+    this._initPromise = this._initCopc(this.url || 'Blob');
     this.metadata = this.getMetadata();
+  }
+
+  async initialize(): Promise<void> {
+    await this._initPromise;
   }
 
   async getSchema(): Promise<Schema> {
@@ -111,14 +137,89 @@ export class COPCTileSource
 
   async getMetadata(): Promise<COPCMetadata> {
     const {copc} = await this._initPromise;
+    const viewState = this.getInferredViewState();
+    const [minBounds, maxBounds] = viewState.boundingVolume.cartographicBounds;
     const metadata: COPCMetadata = {
-      formatSpecificMetadata: copc
+      format: 'copc',
+      boundingBox: [
+        [minBounds[0], minBounds[1]],
+        [maxBounds[0], maxBounds[1]]
+      ],
+      formatSpecificMetadata: copc,
+      viewState
     };
     return metadata;
   }
 
+  async getRootTile(): Promise<{
+    id: string;
+    level: number;
+    pointCount: number;
+    geometricError: number;
+    boundingVolume: {
+      cartographicBounds: [number[], number[]];
+      center: number[];
+      radius: number;
+    };
+  }> {
+    const {rootNode} = await this._initPromise;
+    return {
+      id: '0-0-0-0',
+      level: 0,
+      pointCount: rootNode.pointCount,
+      geometricError: this.getGeometricError(0),
+      boundingVolume: this.getDataBoundingVolume()
+    };
+  }
+
+  async getChildren(tile: {id: string}): Promise<
+    {
+      id: string;
+      level: number;
+      pointCount: number;
+      geometricError: number;
+      boundingVolume: {
+        cartographicBounds: [number[], number[]];
+        center: number[];
+        radius: number;
+      };
+    }[]
+  > {
+    await this.initialize();
+    await this.ensureHierarchyLoaded(tile.id);
+
+    const childKeys = this.getChildKeys(tile.id);
+    const children = await Promise.all(
+      childKeys.map(async childKey => {
+        const node = await this.getNodeById(childKey);
+        return node ? this.getTileHeader(childKey, node) : null;
+      })
+    );
+
+    return children.filter(Boolean) as {
+      id: string;
+      level: number;
+      pointCount: number;
+      geometricError: number;
+      boundingVolume: {
+        cartographicBounds: [number[], number[]];
+        center: number[];
+        radius: number;
+      };
+    }[];
+  }
+
+  getViewState(): COPCViewState {
+    return this.getInferredViewState();
+  }
+
   async getTile(tileParams: GetTileParameters): Promise<number[] | null> {
-    const nodeIndex = {x: tileParams.x, y: tileParams.y, z: tileParams.z, d: 0};
+    const nodeIndex: [number, number, number, number] = [
+      0,
+      tileParams.x,
+      tileParams.y,
+      tileParams.z
+    ];
     return this.getPoints({nodeIndex});
   }
 
@@ -153,11 +254,26 @@ export class COPCTileSource
   }
 
   async getNode(parameters: GetNodeParameters): Promise<Hierarchy.Node | undefined> {
-    const {hierarchy} = await this._initPromise;
-    const {x, y, z, d} = parameters.nodeIndex;
-    const key = `${x}-${y}-${z}-${d}`;
-    const {[key]: node} = hierarchy.nodes;
-    return node;
+    return await this.getNodeById(Key.toString(parameters.nodeIndex));
+  }
+
+  async loadTileContent(tile: {id: string}) {
+    const {copc} = await this._initPromise;
+    const node = await this.getNodeById(tile.id);
+    if (!node) {
+      return null;
+    }
+
+    const view = await Copc.loadPointDataView(this._urlOrGetter, copc, node);
+    const pointCount = view.pointCount;
+    const positions = new Float32Array(pointCount * 3);
+    const nativeOrigin = this.getNativeTileCenter(tile.id);
+    const cartographicOrigin = this.projectPoint(nativeOrigin);
+    const colors = this.createColorArray(view, pointCount);
+
+    this.populateTileAttributes(view, positions, colors, nativeOrigin, cartographicOrigin);
+
+    return this.createTileContentResult(pointCount, positions, colors, cartographicOrigin);
   }
 
   async _initCopc(url: string) {
@@ -167,7 +283,413 @@ export class COPCTileSource
     if (!rootNode) {
       throw new Error(`Failed to load COPC hierarchy root node ${url}`);
     }
+    this._copc = copc;
+    this._hierarchy = hierarchy;
+    this._projection = createProjection(copc.wkt || this.options.copc?.sourceCoordinateSystem);
+    this.isReady = true;
     return {copc, hierarchy, rootNode};
+  }
+
+  protected async getNodeById(tileId: string): Promise<Hierarchy.Node | undefined> {
+    await this.initialize();
+
+    if (!this._hierarchy) {
+      return undefined;
+    }
+
+    if (this._hierarchy.nodes[tileId]) {
+      return this._hierarchy.nodes[tileId];
+    }
+
+    const parentKeys = this.getAncestorKeys(tileId);
+    for (const parentKey of parentKeys) {
+      await this.ensureHierarchyLoaded(parentKey);
+      if (this._hierarchy.nodes[tileId]) {
+        return this._hierarchy.nodes[tileId];
+      }
+    }
+
+    return this._hierarchy.nodes[tileId];
+  }
+
+  protected createColorArray(
+    view: Awaited<ReturnType<typeof Copc.loadPointDataView>>,
+    pointCount: number
+  ) {
+    const hasColors =
+      Boolean(view.dimensions.Red) &&
+      Boolean(view.dimensions.Green) &&
+      Boolean(view.dimensions.Blue);
+    return hasColors ? new Uint16Array(pointCount * 3) : null;
+  }
+
+  protected populateTileAttributes(
+    view: Awaited<ReturnType<typeof Copc.loadPointDataView>>,
+    positions: Float32Array,
+    colors: Uint16Array | null,
+    nativeOrigin: number[],
+    cartographicOrigin: number[]
+  ): void {
+    const getX = view.getter('X');
+    const getY = view.getter('Y');
+    const getZ = view.getter('Z');
+    const getRed = colors ? view.getter('Red') : null;
+    const getGreen = colors ? view.getter('Green') : null;
+    const getBlue = colors ? view.getter('Blue') : null;
+
+    for (let index = 0; index < view.pointCount; index++) {
+      const targetIndex = index * 3;
+      this.writePositionValues(
+        positions,
+        targetIndex,
+        [getX(index), getY(index), getZ(index)],
+        nativeOrigin,
+        cartographicOrigin
+      );
+      if (colors && getRed && getGreen && getBlue) {
+        this.writeColorValues(colors, targetIndex, getRed(index), getGreen(index), getBlue(index));
+      }
+    }
+  }
+
+  protected writePositionValues(
+    positions: Float32Array,
+    targetIndex: number,
+    nativePosition: [number, number, number],
+    nativeOrigin: number[],
+    cartographicOrigin: number[]
+  ): void {
+    if (this._projection) {
+      const cartographicPosition = this.projectPoint(nativePosition);
+      positions[targetIndex] = cartographicPosition[0] - cartographicOrigin[0];
+      positions[targetIndex + 1] = cartographicPosition[1] - cartographicOrigin[1];
+      positions[targetIndex + 2] = nativePosition[2] - nativeOrigin[2];
+      return;
+    }
+
+    positions[targetIndex] = nativePosition[0] - nativeOrigin[0];
+    positions[targetIndex + 1] = nativePosition[1] - nativeOrigin[1];
+    positions[targetIndex + 2] = nativePosition[2] - nativeOrigin[2];
+  }
+
+  protected writeColorValues(
+    colors: Uint16Array,
+    targetIndex: number,
+    red: number,
+    green: number,
+    blue: number
+  ): void {
+    colors[targetIndex] = red;
+    colors[targetIndex + 1] = green;
+    colors[targetIndex + 2] = blue;
+  }
+
+  protected createTileContentResult(
+    pointCount: number,
+    positions: Float32Array,
+    colors: Uint16Array | null,
+    origin: number[]
+  ) {
+    const positionsAttribute = {value: positions, size: 3};
+    const colorsAttribute = colors ? {value: colors, size: 3, normalized: true} : undefined;
+    const data = this.createTileContentTable(pointCount, positionsAttribute, colorsAttribute);
+
+    return {
+      data,
+      pointCount,
+      cartographicOrigin: origin,
+      coordinateSystem: this._projection
+        ? COORDINATE_SYSTEM.LNGLAT_OFFSETS
+        : COORDINATE_SYSTEM.CARTESIAN
+    };
+  }
+
+  protected createTileContentTable(
+    pointCount: number,
+    positions: {value: Float32Array; size: number},
+    colors?: {value: Uint16Array; size: number; normalized: boolean}
+  ): MeshArrowTable {
+    const attributes: Mesh['attributes'] = {
+      POSITION: positions
+    };
+    if (colors) {
+      attributes.COLOR_0 = colors;
+    }
+
+    return convertMeshToTable(
+      {
+        topology: 'point-list',
+        mode: 0,
+        header: {vertexCount: pointCount},
+        schema: {
+          fields: [],
+          metadata: {}
+        },
+        attributes
+      },
+      'arrow-table'
+    );
+  }
+
+  protected async ensureHierarchyLoaded(tileId: string): Promise<void> {
+    await this.initialize();
+
+    if (!this._hierarchy) {
+      return;
+    }
+
+    const page = this._hierarchy.pages[tileId];
+    if (!page) {
+      return;
+    }
+
+    if (!this._pageLoadPromises.has(tileId)) {
+      const loadPromise = this.loadHierarchyPage(tileId, page);
+      this._pageLoadPromises.set(tileId, loadPromise);
+    }
+
+    await this._pageLoadPromises.get(tileId);
+  }
+
+  protected async loadHierarchyPage(tileId: string, page: Hierarchy.Page): Promise<void> {
+    if (!this._hierarchy) {
+      return;
+    }
+
+    const subtree = await Copc.loadHierarchyPage(this._urlOrGetter, page);
+    this._hierarchy.nodes = {
+      ...this._hierarchy.nodes,
+      ...subtree.nodes
+    };
+    this._hierarchy.pages = {
+      ...this._hierarchy.pages,
+      ...subtree.pages
+    };
+    delete this._hierarchy.pages[tileId];
+  }
+
+  protected getTileHeader(
+    tileId: string,
+    node: Hierarchy.Node
+  ): {
+    id: string;
+    level: number;
+    pointCount: number;
+    geometricError: number;
+    boundingVolume: {
+      cartographicBounds: [number[], number[]];
+      center: number[];
+      radius: number;
+    };
+  } {
+    const [depth] = Key.parse(tileId);
+    return {
+      id: tileId,
+      level: depth,
+      pointCount: node.pointCount,
+      geometricError: this.getGeometricError(depth),
+      boundingVolume: this.getBoundingVolume(tileId)
+    };
+  }
+
+  protected getBoundingVolume(tileId: string): {
+    cartographicBounds: [number[], number[]];
+    center: number[];
+    radius: number;
+  } {
+    const [minBounds, maxBounds] = this.getCartographicBounds(tileId);
+    const center = [
+      (minBounds[0] + maxBounds[0]) / 2,
+      (minBounds[1] + maxBounds[1]) / 2,
+      (minBounds[2] + maxBounds[2]) / 2
+    ];
+    const radius = Math.sqrt(
+      Math.pow(maxBounds[0] - center[0], 2) +
+        Math.pow(maxBounds[1] - center[1], 2) +
+        Math.pow(maxBounds[2] - center[2], 2)
+    );
+
+    return {
+      cartographicBounds: [minBounds, maxBounds] as [number[], number[]],
+      center,
+      radius
+    };
+  }
+
+  protected getTileCenter(tileId: string): number[] {
+    return this.getBoundingVolume(tileId).center;
+  }
+
+  protected getInferredViewState(): COPCViewState {
+    const boundingVolume = this.getDataBoundingVolume();
+    return {
+      boundingVolume,
+      cartographicCenter: boundingVolume.center,
+      zoom: this.estimateZoom(boundingVolume)
+    };
+  }
+
+  protected getDataBoundingVolume(): {
+    cartographicBounds: [number[], number[]];
+    center: number[];
+    radius: number;
+  } {
+    const {copc} = this.unwrapState();
+    const [minBounds, maxBounds] = this.projectBounds([
+      [copc.header.min[0], copc.header.min[1], copc.header.min[2] ?? 0],
+      [copc.header.max[0], copc.header.max[1], copc.header.max[2] ?? 0]
+    ]);
+
+    const center = [
+      (minBounds[0] + maxBounds[0]) / 2,
+      (minBounds[1] + maxBounds[1]) / 2,
+      (minBounds[2] + maxBounds[2]) / 2
+    ];
+    const radius = Math.sqrt(
+      Math.pow(maxBounds[0] - center[0], 2) +
+        Math.pow(maxBounds[1] - center[1], 2) +
+        Math.pow(maxBounds[2] - center[2], 2)
+    );
+
+    return {
+      cartographicBounds: [minBounds, maxBounds],
+      center,
+      radius
+    };
+  }
+
+  protected getNativeTileCenter(tileId: string): number[] {
+    const [minBounds, maxBounds] = this.getNativeTileBounds(tileId);
+    return [
+      (minBounds[0] + maxBounds[0]) / 2,
+      (minBounds[1] + maxBounds[1]) / 2,
+      (minBounds[2] + maxBounds[2]) / 2
+    ];
+  }
+
+  protected getCartographicBounds(tileId: string): [number[], number[]] {
+    return this.projectBounds(this.getNativeTileBounds(tileId));
+  }
+
+  protected getGeometricError(depth: number): number {
+    const {copc} = this.unwrapState();
+    return copc.info.spacing / Math.pow(2, depth);
+  }
+
+  protected estimateZoom(boundingVolume: {cartographicBounds: [number[], number[]]}): number {
+    const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
+    const longitudeSpan = Math.max(Math.abs(maxBounds[0] - minBounds[0]), 0.000001);
+    return Math.max(1, Math.round(Math.log2(360 / longitudeSpan)));
+  }
+
+  protected projectPoint(point: number[]): number[] {
+    if (!this._projection) {
+      return [...point];
+    }
+
+    const projectedPoint = this._projection.project([...point]);
+    return [projectedPoint[0], projectedPoint[1], projectedPoint[2] ?? point[2] ?? 0];
+  }
+
+  protected projectBounds(bounds: [number[], number[]]): [number[], number[]] {
+    const [minBounds, maxBounds] = bounds;
+    const corners = [
+      [minBounds[0], minBounds[1], minBounds[2] || 0],
+      [minBounds[0], minBounds[1], maxBounds[2] || 0],
+      [minBounds[0], maxBounds[1], minBounds[2] || 0],
+      [minBounds[0], maxBounds[1], maxBounds[2] || 0],
+      [maxBounds[0], minBounds[1], minBounds[2] || 0],
+      [maxBounds[0], minBounds[1], maxBounds[2] || 0],
+      [maxBounds[0], maxBounds[1], minBounds[2] || 0],
+      [maxBounds[0], maxBounds[1], maxBounds[2] || 0]
+    ].map(corner => this.projectPoint(corner));
+
+    return [
+      [
+        Math.min(...corners.map(corner => corner[0])),
+        Math.min(...corners.map(corner => corner[1])),
+        Math.min(...corners.map(corner => corner[2] ?? 0))
+      ],
+      [
+        Math.max(...corners.map(corner => corner[0])),
+        Math.max(...corners.map(corner => corner[1])),
+        Math.max(...corners.map(corner => corner[2] ?? 0))
+      ]
+    ];
+  }
+
+  protected getNativeTileBounds(tileId: string): [number[], number[]] {
+    const {copc} = this.unwrapState();
+    const nativeBounds = Bounds.stepTo(copc.info.cube, Key.parse(tileId));
+    const dataMin = copc.header.min;
+    const dataMax = copc.header.max;
+
+    return [
+      [
+        Math.max(nativeBounds[0], dataMin[0]),
+        Math.max(nativeBounds[1], dataMin[1]),
+        Math.max(nativeBounds[2], dataMin[2] ?? nativeBounds[2])
+      ],
+      [
+        Math.min(nativeBounds[3], dataMax[0]),
+        Math.min(nativeBounds[4], dataMax[1]),
+        Math.min(nativeBounds[5], dataMax[2] ?? nativeBounds[5])
+      ]
+    ];
+  }
+
+  protected getChildKeys(tileId: string): string[] {
+    const key = Key.parse(tileId);
+    const result: string[] = [];
+
+    for (let childX = 0; childX < 2; childX++) {
+      for (let childY = 0; childY < 2; childY++) {
+        for (let childZ = 0; childZ < 2; childZ++) {
+          result.push(
+            Key.toString([
+              key[0] + 1,
+              key[1] * 2 + childX,
+              key[2] * 2 + childY,
+              key[3] * 2 + childZ
+            ])
+          );
+        }
+      }
+    }
+
+    return result;
+  }
+
+  protected getAncestorKeys(tileId: string): string[] {
+    const key = Key.parse(tileId);
+    const result: string[] = [];
+
+    for (let depth = key[0] - 1; depth >= 0; depth--) {
+      result.push(
+        Key.toString([
+          depth,
+          key[1] >> (key[0] - depth),
+          key[2] >> (key[0] - depth),
+          key[3] >> (key[0] - depth)
+        ])
+      );
+    }
+
+    return result;
+  }
+
+  protected unwrapState(): {
+    copc: Copc;
+    hierarchy: Hierarchy.Subtree;
+  } {
+    if (!this._copc || !this._hierarchy) {
+      throw new Error('COPC source is not initialized');
+    }
+
+    return {
+      copc: this._copc,
+      hierarchy: this._hierarchy
+    };
   }
 
   /*
@@ -210,4 +732,43 @@ function getDataTypeFromDimension(dimension: Dimension): DataType {
     default:
       return 'null';
   }
+}
+
+function createProjection(projectionData?: string): Proj4Projection | null {
+  if (!projectionData) {
+    return null;
+  }
+
+  try {
+    return new Proj4Projection({
+      from: normalizeProjectionDefinition(projectionData),
+      to: 'WGS84'
+    });
+  } catch {
+    return null;
+  }
+}
+
+function normalizeProjectionDefinition(projectionData: string): string {
+  const horizontalWktMatch =
+    projectionData.match(/(PROJCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/) ||
+    projectionData.match(/(GEOGCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/);
+
+  return horizontalWktMatch?.[1] || projectionData;
+}
+
+/** Create the COPC package byte-range getter for URL/path and Blob inputs. */
+function createCOPCGetter(data: string | Blob, url: string): string | Getter {
+  if (typeof data === 'string') {
+    return url;
+  }
+
+  return async (begin: number, end: number): Promise<Uint8Array> => {
+    if (begin < 0 || end < 0 || begin > end) {
+      throw new Error('Invalid range');
+    }
+
+    const arrayBuffer = await data.slice(begin, end).arrayBuffer();
+    return new Uint8Array(arrayBuffer);
+  };
 }

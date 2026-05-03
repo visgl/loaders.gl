@@ -47,6 +47,8 @@ export type ParsePLYOptions = {
   /** Disable direct binary point-cloud parsing; intended for parser benchmarks and regression checks. */
   _useLegacyBinaryPointCloudParser?: boolean;
   propertyNameMapping?: Record<string, string>;
+  /** Treat PLY data as a point cloud by reading only the leading vertex element. */
+  pointCloud?: boolean;
   shape?: 'mesh' | 'arrow-table';
 };
 
@@ -790,7 +792,7 @@ function parseBinaryPointCloudRecords(
   if (
     !parsePlan &&
     (options?._useLegacyBinaryPointCloudParser ||
-      header.elements.length !== 1 ||
+      (!options?.pointCloud && header.elements.length !== 1) ||
       vertexElement?.name !== 'vertex' ||
       vertexElement.properties.some(property => property.type === 'list'))
   ) {
@@ -826,7 +828,7 @@ export function getPLYBinaryPointCloudParsePlan(
   const vertexElement = header.elements[0];
   if (
     options?._useLegacyBinaryPointCloudParser ||
-    header.elements.length !== 1 ||
+    (!options?.pointCloud && header.elements.length !== 1) ||
     vertexElement?.name !== 'vertex' ||
     vertexElement.properties.some(property => property.type === 'list')
   ) {

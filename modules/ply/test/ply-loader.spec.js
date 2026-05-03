@@ -104,6 +104,18 @@ test('PLYLoader#parse(shape: arrow-table)', async t => {
   t.end();
 });
 
+test('PLYLoader#parse(shape: arrow-table, pointCloud)', async t => {
+  const table = await parse(fetchFile(PLY_CUBE_ATT_URL), PLYLoader, {
+    ply: {shape: 'arrow-table', pointCloud: true}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  t.equal(table.data.numRows, 24, 'table has one row per vertex');
+  t.ok(table.data.getChild('POSITION'), 'POSITION column was found');
+  t.notOk(table.data.getChild('indices'), 'indices column is skipped in pointCloud mode');
+  t.end();
+});
+
 test('PLYLoader#parse(raw element tables preserve list properties)', async t => {
   const response = await fetchFile(PLY_CUBE_ATT_URL);
   const elementTables = parsePLYToElementTables(await response.text());
@@ -256,6 +268,7 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', asy
 
   for await (const table of batches) {
     t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(table.batchType, 'data', 'batch has data batchType');
     t.equal(
       table.data.schema.metadata.get('loaders_gl.semantic_type'),
       'gaussian-splats',
@@ -280,6 +293,7 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table, chunk
   const batchRowCounts = [];
 
   for await (const table of batches) {
+    t.equal(table.batchType, 'data', 'batch has data batchType');
     batchRowCounts.push(table.data.numRows);
   }
 
@@ -296,12 +310,57 @@ test('PLYLoader#parseInBatches(ascii point cloud, arrow-table)', async t => {
 
   for await (const table of batches) {
     t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(table.batchType, 'data', 'batch has data batchType');
     t.ok(table.data.getChild('POSITION'), 'batch includes POSITION column');
     t.ok(table.data.getChild('intensity'), 'batch includes custom scalar column');
     batchRowCounts.push(table.data.numRows);
   }
 
   t.deepEqual(batchRowCounts, [2, 1], 'ASCII point cloud emits requested Arrow batches');
+  t.end();
+});
+
+test('PLYLoader#parseInBatches(mesh PLY, arrow-table, pointCloud)', async t => {
+  const response = await fetchFile(PLY_CUBE_ATT_URL);
+  const sourceText = await response.text();
+  const batches = await parseInBatches(makeTextIterator(sourceText), PLYLoader, {
+    batchSize: 10,
+    ply: {shape: 'arrow-table', pointCloud: true}
+  });
+  const batchRowCounts = [];
+
+  for await (const table of batches) {
+    t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(table.batchType, 'data', 'batch has data batchType');
+    t.ok(table.data.getChild('POSITION'), 'batch includes POSITION column');
+    t.notOk(table.data.getChild('indices'), 'batch skips mesh indices');
+    batchRowCounts.push(table.data.numRows);
+  }
+
+  t.deepEqual(batchRowCounts, [10, 10, 4], 'pointCloud mode streams only vertex rows');
+  t.end();
+});
+
+test('PLYLoader#parseInBatches(mesh PLY, arrow-table)', async t => {
+  const response = await fetchFile(PLY_CUBE_ATT_URL);
+  const sourceText = await response.text();
+  const batches = await parseInBatches(makeTextIterator(sourceText), PLYLoader, {
+    batchSize: 10,
+    ply: {shape: 'arrow-table'}
+  });
+
+  try {
+    for await (const table of batches) {
+      t.fail(`unexpected batch with ${table.data.numRows} rows`);
+    }
+    t.fail('mesh PLY should not stream as Arrow table without pointCloud mode');
+  } catch (error) {
+    t.match(
+      String(error),
+      /PLY arrow-table batch parsing requires one vertex element/,
+      'mesh PLY requires pointCloud mode for Arrow table streaming'
+    );
+  }
   t.end();
 });
 

@@ -59,6 +59,17 @@ const NoParserLoader = {
   text: true
 };
 
+const SyncBinaryOnlyLoader = {
+  id: 'sync-binary-only',
+  name: 'SyncBinaryOnly',
+  module: 'core',
+  version: 'latest',
+  extensions: ['bin'],
+  mimeTypes: ['application/octet-stream'],
+  binary: true,
+  parseSync: (arrayBuffer: ArrayBuffer) => arrayBuffer.byteLength
+};
+
 const InvalidPreloadLoader = {
   id: 'invalid-preload',
   name: 'InvalidPreload',
@@ -158,6 +169,12 @@ describe('preload', () => {
         {city: 'Berlin', population: 3769000}
       ]
     });
+  });
+
+  test('parse rejects parser-bearing sync loaders without async parse', async () => {
+    await expect(parse(CSV_ARRAY_BUFFER, SyncBinaryOnlyLoader)).rejects.toThrow(
+      /Add an async 'parse' function/
+    );
   });
 
   test('parseInBatches upgrades CSVLoader through preload', async () => {

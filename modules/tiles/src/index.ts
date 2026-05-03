@@ -67,6 +67,17 @@ export type {
   RasterSetShouldRefetchArgs
 } from './raster-set';
 export {RasterSet} from './raster-set';
+export type {
+  PointCloudAttribute,
+  PointCloudBoundingVolume,
+  PointCloudTileContent,
+  PointCloudTileHeader,
+  PointCloudTilesetSource,
+  PointCloudTilesetViewState
+} from './point-cloud/types';
+export type {PointCloudTilesetOptions} from './point-cloud/point-cloud-tileset';
+export {PointCloudTileset} from './point-cloud/point-cloud-tileset';
+export {PointCloudTile} from './point-cloud/point-cloud-tile';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 

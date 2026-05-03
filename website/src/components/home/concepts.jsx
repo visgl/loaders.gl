@@ -57,8 +57,8 @@ const categoryTabs = [
     representations: {
       arrow: {
         data: 'Arrow table data',
-        detail: 'Columnar',
-        loaders: ['ArrowLoader', 'CSVLoader', 'ExcelLoader', 'NDJSONLoader', 'ParquetLoader'],
+        detail: "shape: 'arrow-table'",
+        loaders: ['ArrowLoader', 'CSVLoader', 'ExcelLoader', 'JSONLoader', 'NDJSONLoader', 'ParquetLoader'],
         writers: ['ArrowWriter', 'ParquetWriter']
       },
       plain: {
@@ -75,9 +75,19 @@ const categoryTabs = [
     representations: {
       arrow: {
         data: 'GeoArrow table data',
-        detail: 'Geometry columns',
-        loaders: ['GeoArrowLoader'],
-        writers: ['GeoArrowWriter']
+        detail: "shape: 'arrow-table'",
+        loaders: [
+          'GeoArrowLoader',
+          'GeoJSONLoader',
+          'FlatGeobufLoader',
+          'GeoPackageLoader',
+          'GPXLoader',
+          'KMLLoader',
+          'ShapefileLoader',
+          'SHPLoader',
+          'TCXLoader'
+        ],
+        writers: []
       },
       plain: {
         data: 'GIS category data',
@@ -104,7 +114,7 @@ const categoryTabs = [
     label: 'Image',
     representations: {
       arrow: {
-        data: 'No Arrow image category',
+        data: 'No Arrow table image output',
         detail: 'Use plain',
         loaders: [],
         writers: []
@@ -131,9 +141,9 @@ const categoryTabs = [
     label: 'JSON',
     representations: {
       arrow: {
-        data: 'No Arrow JSON category',
-        detail: 'Use table',
-        loaders: [],
+        data: 'Arrow table data',
+        detail: "shape: 'arrow-table'",
+        loaders: ['JSONLoader'],
         writers: []
       },
       plain: {
@@ -149,7 +159,7 @@ const categoryTabs = [
     label: 'Scenegraph',
     representations: {
       arrow: {
-        data: 'No Arrow scenegraph category',
+        data: 'No Arrow table scenegraph output',
         detail: 'Use plain',
         loaders: [],
         writers: []
@@ -167,7 +177,7 @@ const categoryTabs = [
     label: '3D Tiles',
     representations: {
       arrow: {
-        data: 'No Arrow 3D Tiles category',
+        data: 'No Arrow table tiles output',
         detail: 'Use plain',
         loaders: [],
         writers: []
@@ -183,7 +193,7 @@ const categoryTabs = [
 ];
 
 const representationTabs = [
-  {id: 'arrow', label: 'Arrow'},
+  {id: 'arrow', label: 'Arrow Table'},
   {id: 'plain', label: 'Plain'}
 ];
 
@@ -250,7 +260,6 @@ const writerDocumentationLinks = {
   CompressedTextureWriter: '/docs/modules/textures/api-reference/compressed-texture-writer',
   CSVWriter: '/docs/modules/csv/api-reference/csv-writer',
   DracoWriter: '/docs/modules/draco/api-reference/draco-writer',
-  GeoArrowWriter: '/docs/modules/arrow/formats/geoarrow',
   GeoJSONWriter: '/docs/modules/json/api-reference/geojson-writer',
   GLBWriter: '/docs/modules/gltf/api-reference/glb-writer',
   GLTFWriter: '/docs/modules/gltf/api-reference/gltf-writer',
@@ -830,7 +839,9 @@ export default function Concepts() {
                         </LinkedNode>
                       ))
                     ) : (
-                      <EmptyNode>No {selectedRepresentationId === 'arrow' ? 'Arrow' : 'plain'} loaders</EmptyNode>
+                      <EmptyNode>
+                        No {selectedRepresentationId === 'arrow' ? 'Arrow table' : 'plain'} loaders
+                      </EmptyNode>
                     )}
                   </LoaderGrid>
                 </ConceptColumn>
@@ -867,7 +878,9 @@ export default function Concepts() {
                         </LinkedCategoryNode>
                       ))
                     ) : (
-                      <EmptyNode>No {selectedRepresentationId === 'arrow' ? 'Arrow' : 'plain'} writers</EmptyNode>
+                      <EmptyNode>
+                        No {selectedRepresentationId === 'arrow' ? 'Arrow table' : 'plain'} writers
+                      </EmptyNode>
                     )}
                   </WriterStack>
                 </ConceptColumn>

@@ -27,6 +27,23 @@ const data = await load(url, PLYLoader, options);
 const table = await load(url, PLYLoader, {ply: {shape: 'arrow-table'}});
 ```
 
+## Batched Parsing
+
+`PLYLoader` supports `loadInBatches` and `parseInBatches`. When `ply.shape: 'arrow-table'` is set, each yielded batch is an `ArrowTableBatch` with `shape: 'arrow-table'`, `batchType: 'data'`, and `data` containing an Apache Arrow table.
+
+```typescript
+import {loadInBatches} from '@loaders.gl/core';
+import {PLYLoader} from '@loaders.gl/ply';
+
+const batches = await loadInBatches(url, PLYLoader, {
+  ply: {shape: 'arrow-table'}
+});
+
+for await (const batch of batches) {
+  console.log(batch.length, batch.data);
+}
+```
+
 ## Options
 
 | Option | Type | Default | Description |

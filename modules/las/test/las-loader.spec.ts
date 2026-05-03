@@ -14,11 +14,20 @@ import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
 import * as las from '@loaders.gl/las';
 import * as bundledLas from '@loaders.gl/las/bundled';
 import * as unbundledLas from '@loaders.gl/las/unbundled';
-import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
+import {
+  setLoaderOptions,
+  fetchFile,
+  parse,
+  parseInBatches,
+  load,
+  makeIterator
+} from '@loaders.gl/core';
 // import {ArrowLoader} from '@loaders.gl/arrow';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
+const LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/points-1.4.las';
+const LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/ellipsoid-1.4.laz';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -50,6 +59,142 @@ test('LASLoader#parse(binary)', async t => {
   t.notOk(data.indices, 'INDICES attribute was not preset');
   t.equal(data.attributes.POSITION.value.length, 80805 * 3, 'POSITION attribute was found');
 
+  t.end();
+});
+
+test('LASLoader#parseInBatches(mesh)', async t => {
+  const response = await fetchFile(LAS_BINARY_URL);
+  const batches = await parseInBatches(makeIterator(response), LASLoader, {
+    batchSize: 25000,
+    las: {skip: 10},
+    core: {worker: false}
+  });
+  const batchVertexCounts: number[] = [];
+  let totalVertexCount = 0;
+
+  for await (const batch of batches as AsyncIterable<any>) {
+    validateMeshCategoryData(t, batch);
+    t.equal(batch.mode, 0, 'batch mode is POINTS (0)');
+    t.ok(batch.attributes.POSITION, 'batch includes POSITION attribute');
+    t.ok(batch.attributes.intensity, 'batch includes intensity attribute');
+    t.ok(batch.attributes.classification, 'batch includes classification attribute');
+    t.ok(batch.attributes.COLOR_0, 'batch includes COLOR_0 attribute');
+    t.equal(
+      batch.attributes.POSITION.value.length,
+      batch.header.vertexCount * 3,
+      'POSITION length matches batch vertex count'
+    );
+    t.ok(batch.progress > 0 && batch.progress <= 1, 'batch includes progress');
+    batchVertexCounts.push(batch.header.vertexCount);
+    totalVertexCount += batch.header.vertexCount;
+  }
+
+  t.deepEqual(batchVertexCounts, [25000, 25000, 25000, 5805], 'emits requested mesh batches');
+  t.equal(totalVertexCount, 80805, 'batched vertex count matches full parse');
+  t.end();
+});
+
+test('LASLoader#parseInBatches(arrow-table)', async t => {
+  const response = await fetchFile(LAS_BINARY_URL);
+  const batches = await parseInBatches(makeIterator(response), LASLoader, {
+    batchSize: 30000,
+    las: {shape: 'arrow-table', skip: 10},
+    core: {worker: false}
+  });
+  const batchRowCounts: number[] = [];
+
+  for await (const table of batches as AsyncIterable<any>) {
+    validateTableCategoryData(t, table);
+    t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.ok(table.data.getChild('POSITION'), 'batch includes POSITION column');
+    t.ok(table.data.getChild('intensity'), 'batch includes intensity column');
+    t.ok(table.data.getChild('classification'), 'batch includes classification column');
+    batchRowCounts.push(table.data.numRows);
+  }
+
+  t.deepEqual(batchRowCounts, [30000, 30000, 20805], 'emits requested Arrow batches');
+  t.end();
+});
+
+test('LASLoader#parseInBatches(fp64)', async t => {
+  const response = await fetchFile(LAS_BINARY_URL);
+  const batches = await parseInBatches(makeIterator(response), LASLoader, {
+    batchSize: 25000,
+    las: {skip: 10, fp64: true},
+    core: {worker: false}
+  });
+
+  for await (const batch of batches as AsyncIterable<any>) {
+    t.ok(
+      batch.attributes.POSITION.value instanceof Float64Array,
+      'batch POSITION attribute is Float64Array'
+    );
+    break;
+  }
+
+  t.end();
+});
+
+test('LASLoader#parseInBatches backend option', async t => {
+  for (const backend of ['laz-perf', 'copc', 'laz-rs'] as const) {
+    const response = await fetchFile(LAS_BINARY_URL);
+    const batches = await parseInBatches(makeIterator(response), LASLoader, {
+      batchSize: 30000,
+      las: {backend, skip: 10},
+      core: {worker: false}
+    });
+    let totalVertexCount = 0;
+
+    for await (const batch of batches as AsyncIterable<any>) {
+      totalVertexCount += batch.header.vertexCount;
+    }
+
+    t.equal(totalVertexCount, 80805, `${backend} backend emits all skipped points`);
+  }
+
+  t.end();
+});
+
+test('LASLoader#parse LAS 1.4 fixture', async t => {
+  const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
+    las: {backend: 'copc'},
+    core: {worker: false}
+  });
+  validateMeshCategoryData(t, data);
+
+  t.equal(data.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
+  t.equal(data.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
+  t.equal(data.header.vertexCount, 3, 'fixture point count is expected');
+  t.ok(data.attributes.COLOR_0, 'fixture includes color');
+  t.end();
+});
+
+test('LASLoader#parse LAZ 1.4 fixture', async t => {
+  const data = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASLoader, {
+    las: {backend: 'copc', skip: 1000},
+    core: {worker: false}
+  });
+  validateMeshCategoryData(t, data);
+
+  t.equal(data.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
+  t.equal(data.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
+  t.equal(data.header.vertexCount, 100, 'fixture point count respects skip');
+  t.ok(data.attributes.COLOR_0, 'fixture includes color');
+  t.end();
+});
+
+test('LASLoader#parseSync rejects async backends', t => {
+  const arrayBuffer = new ArrayBuffer(0);
+  t.throws(
+    () => bundledLas.LASLoader.parseSync?.(arrayBuffer, {las: {backend: 'copc'}}),
+    /does not support parseSync/,
+    'copc backend cannot run through parseSync'
+  );
+  t.throws(
+    () => bundledLas.LASLoader.parseSync?.(arrayBuffer, {las: {backend: 'laz-rs'}}),
+    /does not support parseSync/,
+    'laz-rs backend cannot run through parseSync'
+  );
   t.end();
 });
 

@@ -13,10 +13,10 @@ import {
   type OrbitViewState
 } from '@deck.gl/core';
 import {webgpuAdapter} from '@luma.gl/webgpu';
-import {load} from '@loaders.gl/core';
+import {loadInBatches} from '@loaders.gl/core';
 import {SplatLayer} from '@loaders.gl/deck-layers';
 import {PLYLoader} from '@loaders.gl/ply';
-import type {MeshArrowTable} from '@loaders.gl/schema';
+import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
 import {FullscreenWidget, _StatsWidget as StatsWidget} from '@deck.gl/widgets';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
 import type {Example} from '../pointcloud/examples';
@@ -56,8 +56,12 @@ const INITIAL_VIEW_STATE = {
 type ControllerMode = (typeof CONTROLLER_MODES)[number];
 
 type GaussianSplatsAppState = {
-  /** Loaded Arrow table wrapper. */
-  table: MeshArrowTable | null;
+  /** Loaded Arrow table wrapper or streaming loaders.gl Arrow table batches. */
+  data: MeshArrowTable | AsyncIterable<ArrowTableBatch> | null;
+  /** First loaded table used for schema and row previews. */
+  previewTable: MeshArrowTable | null;
+  /** Number of splat rows loaded so far. */
+  loadedSplatCount: number;
   /** Current deck.gl view state. */
   viewState: OrbitViewState | FirstPersonViewState;
   /** Active camera controller. */
@@ -77,7 +81,9 @@ export default function GaussianSplatsApp() {
   const loadRequestIndexRef = useRef(0);
   const defaultExample = GAUSSIAN_SPLAT_EXAMPLES[DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME];
   const [state, setState] = useState<GaussianSplatsAppState>({
-    table: null,
+    data: null,
+    previewTable: null,
+    loadedSplatCount: 0,
     viewState: INITIAL_VIEW_STATE,
     controllerMode: 'orbit',
     selectedUrl: defaultExample.url,
@@ -90,7 +96,9 @@ export default function GaussianSplatsApp() {
     const loadStartMs = Date.now();
     setState((currentState) => ({
       ...currentState,
-      table: null,
+      data: null,
+      previewTable: null,
+      loadedSplatCount: 0,
       isLoading: true,
       loadTimeMs: undefined,
       error: null
@@ -101,32 +109,58 @@ export default function GaussianSplatsApp() {
         throw new Error('Enter at least one Gaussian splat PLY URL.');
       }
 
-      const tables = await Promise.all(
-        sourceUrls.map((sourceUrl) =>
-          load(sourceUrl, PLYLoader, {
-            worker: false,
-            ply: {shape: 'arrow-table'}
-          })
-        )
-      );
       if (loadRequestIndex !== loadRequestIndexRef.current) {
         return;
       }
 
-      const table = combineMeshArrowTables(tables as MeshArrowTable[]);
       setState((currentState) => ({
         ...currentState,
-        table,
-        viewState: getGaussianSplatViewState(table, currentState.controllerMode),
-        isLoading: false,
-        loadTimeMs: Date.now() - loadStartMs,
+        data: trackGaussianSplatBatches(sourceUrls, {
+          onBatch: (arrowTableBatch, loadedSplatCount) => {
+            if (loadRequestIndex !== loadRequestIndexRef.current) {
+              return;
+            }
+            const table = getMeshArrowTableFromBatch(arrowTableBatch);
+            setState((currentState) => ({
+              ...currentState,
+              previewTable: currentState.previewTable || table,
+              loadedSplatCount,
+              viewState: currentState.previewTable
+                ? currentState.viewState
+                : getGaussianSplatViewState(table, currentState.controllerMode)
+            }));
+          },
+          onComplete: () => {
+            if (loadRequestIndex !== loadRequestIndexRef.current) {
+              return;
+            }
+            setState((currentState) => ({
+              ...currentState,
+              isLoading: false,
+              loadTimeMs: Date.now() - loadStartMs,
+              error: null
+            }));
+          },
+          onError: (error) => {
+            if (loadRequestIndex !== loadRequestIndexRef.current) {
+              return;
+            }
+            setState((currentState) => ({
+              ...currentState,
+              data: null,
+              isLoading: false,
+              error: error instanceof Error ? error.message : String(error)
+            }));
+          }
+        }),
         error: null
       }));
     } catch (error) {
       if (loadRequestIndex === loadRequestIndexRef.current) {
         setState((currentState) => ({
           ...currentState,
-          table: null,
+          data: null,
+          previewTable: null,
           isLoading: false,
           error: error instanceof Error ? error.message : String(error)
         }));
@@ -142,7 +176,10 @@ export default function GaussianSplatsApp() {
     };
   }, [defaultExample, loadGaussianSplats]);
 
-  const arrowPreview = useMemo(() => getArrowTablePreview(state.table), [state.table]);
+  const arrowPreview = useMemo(
+    () => getArrowTablePreview(state.previewTable, state.loadedSplatCount),
+    [state.previewTable, state.loadedSplatCount]
+  );
   const urlOptions = useMemo(() => getGaussianSplatUrlOptions(), []);
   const widgets = useMemo(
     () => [
@@ -154,12 +191,12 @@ export default function GaussianSplatsApp() {
 
   const layers = useMemo(
     () =>
-      state.table
+      state.data
         ? [
             new SplatLayer({
               id: 'gaussian-splats-webgpu',
               coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-              data: state.table,
+              data: state.data as any,
               pickable: false,
               opacity: SPLAT_LAYER_OPACITY,
               radiusScale: SPLAT_RADIUS_SCALE,
@@ -175,7 +212,7 @@ export default function GaussianSplatsApp() {
             })
           ]
         : [],
-    [state.table]
+    [state.data]
   );
 
   return (
@@ -226,18 +263,18 @@ export default function GaussianSplatsApp() {
               setState((currentState) => ({
                 ...currentState,
                 controllerMode,
-                viewState: currentState.table
-                  ? getGaussianSplatViewState(currentState.table, controllerMode)
+                viewState: currentState.previewTable
+                  ? getGaussianSplatViewState(currentState.previewTable, controllerMode)
                   : getInitialViewState(controllerMode)
               }))
             }
           />
           <div style={styles.statusPanel}>
             <span>
-              {state.table
-                ? `${state.table.data.numRows.toLocaleString()} splats`
+              {state.loadedSplatCount
+                ? `${state.loadedSplatCount.toLocaleString()} splats`
                 : state.isLoading
-                  ? 'Loading'
+                  ? 'Loading 0 splats'
                   : 'No table'}
             </span>
             {state.loadTimeMs !== undefined && <span>{state.loadTimeMs.toLocaleString()} ms</span>}
@@ -358,16 +395,64 @@ function getOrbitZoom(horizontalSize: number): number {
     : INITIAL_VIEW_STATE.zoom;
 }
 
-/** Combine multiple Mesh Arrow tables into one table wrapper. */
-function combineMeshArrowTables(tables: MeshArrowTable[]): MeshArrowTable {
-  const firstTable = tables[0];
-  if (!firstTable) {
-    throw new Error('No Gaussian splat tables loaded.');
+/**
+ * Loads Gaussian splat PLY URLs in Arrow table batches while reporting row progress.
+ */
+async function* trackGaussianSplatBatches(
+  sourceUrls: string[],
+  callbacks: {
+    onBatch: (arrowTableBatch: ArrowTableBatch, loadedSplatCount: number) => void;
+    onComplete: () => void;
+    onError: (error: unknown) => void;
+  }
+): AsyncIterable<ArrowTableBatch> {
+  let loadedSplatCount = 0;
+
+  try {
+    for (const sourceUrl of sourceUrls) {
+      const sourceBatches = (await loadInBatches(sourceUrl, PLYLoader, {
+        worker: false,
+        ply: {shape: 'arrow-table'}
+      })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
+
+      for await (const sourceBatch of sourceBatches) {
+        const arrowTableBatch = normalizeArrowTableBatch(sourceBatch);
+        loadedSplatCount += arrowTableBatch.length;
+        callbacks.onBatch(arrowTableBatch, loadedSplatCount);
+        yield arrowTableBatch;
+      }
+    }
+    callbacks.onComplete();
+  } catch (error) {
+    callbacks.onError(error);
+    throw error;
+  }
+}
+
+/**
+ * Normalizes current PLY streaming output to the loaders.gl Arrow table batch wrapper.
+ */
+function normalizeArrowTableBatch(sourceBatch: ArrowTableBatch | MeshArrowTable): ArrowTableBatch {
+  if ('batchType' in sourceBatch && sourceBatch.batchType === 'data') {
+    return sourceBatch;
   }
 
   return {
-    ...firstTable,
-    data: (firstTable.data as any).concat(...tables.slice(1).map((table) => table.data))
+    shape: 'arrow-table',
+    batchType: 'data',
+    schema: sourceBatch.schema,
+    data: sourceBatch.data,
+    length: sourceBatch.data.numRows
+  };
+}
+
+/** Returns a Mesh Arrow table wrapper for one Arrow table batch. */
+function getMeshArrowTableFromBatch(arrowTableBatch: ArrowTableBatch): MeshArrowTable {
+  return {
+    shape: 'arrow-table',
+    topology: 'point-list',
+    schema: arrowTableBatch.schema,
+    data: arrowTableBatch.data
   };
 }
 
@@ -397,8 +482,11 @@ function getGaussianSplatUrlOptions(): UrlOption<Example>[] {
   }));
 }
 
-/** Build a compact schema and row preview from a Mesh Arrow table. */
-function getArrowTablePreview(table: MeshArrowTable | null): ArrowTablePreview | null {
+/** Build a compact schema and row preview from the first Mesh Arrow table batch. */
+function getArrowTablePreview(
+  table: MeshArrowTable | null,
+  loadedSplatCount: number
+): ArrowTablePreview | null {
   if (!table) {
     return null;
   }
@@ -417,7 +505,7 @@ function getArrowTablePreview(table: MeshArrowTable | null): ArrowTablePreview |
     );
   }
 
-  return {rowCount: arrowTable.numRows, columns, rows};
+  return {rowCount: loadedSplatCount, columns, rows};
 }
 
 /** Format one Arrow cell for compact display. */

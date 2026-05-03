@@ -6,6 +6,7 @@ import type {Mesh, ColumnarTable, ArrowTable, Schema} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListSize} from '../arrow-utils/arrow-fixed-size-list-utils';
 import {serializeArrowSchema} from '../schema/convert-arrow-schema';
+import {getMeshBoundingBox} from './mesh-utils';
 // import {makeMeshAttributeMetadata} from './deduce-mesh-schema';
 
 /**
@@ -51,8 +52,19 @@ export function convertArrowTableToMesh(table: ArrowTable): Mesh {
   const topology = schema.metadata.topology as any;
   const mode = getMeshMode(schema);
   const indices = getIndices(arrowTable);
+  const boundingBox = getMeshBoundingBox(attributes);
 
-  return {schema, attributes, topology, mode, indices};
+  return {
+    schema,
+    attributes,
+    topology,
+    mode,
+    indices,
+    header: {
+      vertexCount: arrowTable.numRows,
+      boundingBox
+    }
+  };
 }
 
 /** Ensure required mesh metadata defaults are present on a schema. */

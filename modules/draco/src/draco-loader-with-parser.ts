@@ -5,7 +5,7 @@
 import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
 import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import type {ArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {DracoMesh} from './lib/draco-types';
 import type {DracoParseOptions} from './lib/draco-parser';
 import DracoParser from './lib/draco-parser';
@@ -54,7 +54,15 @@ async function parse(
   const dracoParser = new DracoParser(draco);
   try {
     const mesh = dracoParser.parseSync(arrayBuffer, options?.draco);
-    return options?.draco?.shape === 'arrow-table' ? convertMeshToTable(mesh, 'arrow-table') : mesh;
+    const table = convertMeshToTable(mesh, 'arrow-table');
+    if (options?.draco?.shape === 'arrow-table') {
+      return table;
+    }
+    return {
+      ...(convertTableToMesh(table) as DracoMesh),
+      loader: mesh.loader,
+      loaderData: mesh.loaderData
+    };
   } finally {
     dracoParser.destroy();
   }

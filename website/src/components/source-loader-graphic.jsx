@@ -32,30 +32,35 @@ const sourceTabs = [
   {
     id: 'vector-source',
     label: 'Vector',
-    sourceLoaders: ['VectorSource', 'WFSSourceLoader'],
-    dataSource: 'VectorDataSource',
+    sourceLoaders: [
+      'FlatGeobufSourceLoader',
+      'GeoPackageSourceLoader',
+      'WFSSourceLoader',
+      '_ArcGISFeatureServerSourceLoader'
+    ],
+    dataSource: 'VectorSource',
     methods: ['getMetadata()', 'getFeatures()'],
-    outputCategory: 'GeoJSONTable',
-    outputDetail: 'Features / binary geometry',
+    outputCategory: 'VectorSourceData',
+    outputDetail: 'GeoJSON / binary / Arrow',
     loadingManager: 'VectorSet',
     deckLayers: ['GeoJsonLayer']
   },
   {
     id: 'image-source',
     label: 'Images',
-    sourceLoaders: ['WMSSourceLoader'],
-    dataSource: 'ImageDataSource',
+    sourceLoaders: ['WMSSourceLoader', 'OMETiffSourceLoader', '_ArcGISImageServerSourceLoader'],
+    dataSource: 'ImageSource',
     methods: ['getMetadata()', 'getImage()'],
-    outputCategory: 'MapImage',
-    outputDetail: 'ImageType',
+    outputCategory: 'ImageSourceData',
+    outputDetail: 'Map images / image planes',
     loadingManager: 'ImageSet',
     deckLayers: ['BitmapLayer']
   },
   {
     id: 'raster-source',
     label: 'Raster',
-    sourceLoaders: ['RasterSource', 'GeoTIFFSourceLoader'],
-    dataSource: 'RasterDataSource',
+    sourceLoaders: ['GeoTIFFSourceLoader'],
+    dataSource: 'RasterSource',
     methods: ['getMetadata()', 'getRaster()'],
     outputCategory: 'RasterData',
     outputDetail: 'Typed arrays / multiband textures',
@@ -65,42 +70,78 @@ const sourceTabs = [
   {
     id: 'tile-source',
     label: '3D Tiles',
-    sourceLoaders: ['COPCSourceLoader', 'Tiles3DSource', 'I3SSource'],
-    dataSource: 'TileDataSource',
+    sourceLoaders: ['COPCSourceLoader', 'PotreeSourceLoader', 'Tiles3DSource', 'I3SSource'],
+    dataSource: 'TileSource / Tileset3DSource',
     methods: ['getMetadata()', 'getTile()'],
     outputCategory: 'PointTile',
     outputDetail: 'Point cloud tile',
     loadingManager: 'Tileset3D',
     deckLayers: ['Tile3DSourceLayer', 'PointCloudLayer', 'ScenegraphLayer']
+  },
+  {
+    id: 'sql-source',
+    label: 'SQL',
+    sourceLoaders: ['DuckDBSQLSource', 'SnowflakeSQLSource'],
+    dataSource: 'SQLDataSource',
+    methods: ['listTables()', 'queryRows()', 'queryArrow()'],
+    outputCategory: 'SQLSourceData',
+    outputDetail: 'Rows / Arrow tables',
+    loadingManager: 'Application',
+    deckLayers: []
+  },
+  {
+    id: 'catalog-source',
+    label: 'Catalog',
+    sourceLoaders: ['CSWSourceLoader'],
+    dataSource: 'CatalogSource',
+    methods: ['getRecords()', 'getMetadata()'],
+    outputCategory: 'Catalog records',
+    outputDetail: 'Service metadata',
+    loadingManager: 'Application',
+    deckLayers: []
   }
 ];
 
 const sourceTags = {
+  _ArcGISFeatureServerSourceLoader: 'Experimental',
+  _ArcGISImageServerSourceLoader: 'Experimental',
   COPCSourceLoader: 'Cloud Archive',
+  CSWSourceLoader: 'Web Service',
+  DuckDBSQLSource: 'Database',
+  FlatGeobufSourceLoader: 'Cloud Archive',
+  GeoPackageSourceLoader: 'Archive',
   GeoTIFFSourceLoader: 'Cloud Archive',
   I3SSource: 'Tileset',
   MLTSourceLoader: 'Web Service',
   MVTSourceLoader: 'Cloud Archive',
+  OMETiffSourceLoader: 'Image Pyramid',
   PMTilesSourceLoader: 'Cloud Archive',
-  RasterSource: 'Base Type',
+  PotreeSourceLoader: 'Tileset',
+  SnowflakeSQLSource: 'Database',
   TableTileSourceLoader: 'Generated',
   Tiles3DSource: 'Tileset',
-  VectorSource: 'Base Type',
   WFSSourceLoader: 'Web Service',
   WMSSourceLoader: 'Web Service'
 };
 
 const sourceDocumentationLinks = {
+  _ArcGISFeatureServerSourceLoader: '/docs/modules/wms/services/arcgis-feature-server',
+  _ArcGISImageServerSourceLoader: '/docs/modules/wms/services/arcgis-image-server',
   COPCSourceLoader: '/docs/modules/copc/api-reference/copc-source-loader',
-  GeoTIFFSourceLoader: '/docs/modules/geotiff',
+  CSWSourceLoader: '/docs/modules/wms/api-reference/csw-source-loader',
+  DuckDBSQLSource: '/docs/modules/sql/api-reference/sql-source',
+  FlatGeobufSourceLoader: '/docs/modules/flatgeobuf/api-reference/flatgeobuf-source-loader',
+  GeoPackageSourceLoader: '/docs/modules/geopackage/api-reference/geopackage-source',
+  GeoTIFFSourceLoader: '/docs/modules/geotiff/api-reference/geotiff-source-loader',
   I3SSource: '/docs/modules/tiles/api-reference/i3s-source',
   MLTSourceLoader: '/docs/modules/mlt/api-reference/mlt-source-loader',
   MVTSourceLoader: '/docs/modules/mvt/api-reference/mvt-source-loader',
+  OMETiffSourceLoader: '/docs/modules/geotiff/api-reference/ometiff-source-loader',
   PMTilesSourceLoader: '/docs/modules/pmtiles/api-reference/pmtiles-source-loader',
-  RasterSource: '/docs/developer-guide/using-sources',
+  PotreeSourceLoader: '/docs/modules/potree/api-reference/potree-source-loader',
+  SnowflakeSQLSource: '/docs/modules/sql/api-reference/sql-source',
   TableTileSourceLoader: '/docs/modules/mvt/api-reference/table-tile-source-loader',
   Tiles3DSource: '/docs/modules/tiles/api-reference/tiles-3d-source',
-  VectorSource: '/docs/developer-guide/using-sources',
   WFSSourceLoader: '/docs/modules/wms/api-reference/wfs-source-loader',
   WMSSourceLoader: '/docs/modules/wms/api-reference/wms-source-loader'
 };
@@ -404,8 +445,10 @@ const LayerPreviewConnector = styled.div`
 export default function SourceLoaderGraphic({standalone = false}) {
   const [selectedSourceTabId, setSelectedSourceTabId] = useState('raster-source');
   const selectedSourceTab = sourceTabs.find((sourceTab) => sourceTab.id === selectedSourceTabId);
-  const previewLayer =
-    selectedSourceTab.deckLayers.find((layer) => !deckLayerDocumentationLinks[layer]) || null;
+  const hasDeckLayers = selectedSourceTab.deckLayers.length > 0;
+  const previewLayer = hasDeckLayers
+    ? selectedSourceTab.deckLayers.find((layer) => !deckLayerDocumentationLinks[layer]) || null
+    : null;
   const renderedDeckLayers = previewLayer
     ? selectedSourceTab.deckLayers.filter((layer) => layer !== previewLayer)
     : selectedSourceTab.deckLayers;
@@ -490,13 +533,20 @@ export default function SourceLoaderGraphic({standalone = false}) {
           <span>{selectedSourceTab.outputCategory}</span>
           <TinyLabel>{selectedSourceTab.outputDetail}</TinyLabel>
         </CategoryNode>
-        <StageLabel>Render with deck.gl (optional)</StageLabel>
+        <StageLabel>{hasDeckLayers ? 'Render with deck.gl (optional)' : 'Use in application code'}</StageLabel>
         <CategoryNode
           $background="rgba(0, 173, 230, 0.08)"
           $border="rgba(0, 173, 230, 0.32)"
         >
           <CenteredNodeContent>
-            {previewLayer ? (
+            {!hasDeckLayers ? (
+              <LayerPreviewNode>
+                <span>Application code</span>
+                <NodeMeta>
+                  <SourceTag>Custom</SourceTag>
+                </NodeMeta>
+              </LayerPreviewNode>
+            ) : previewLayer ? (
               <LayerPreviewStack>
                 <LayerPreviewParentRow>
                   <LayerPreviewNode>

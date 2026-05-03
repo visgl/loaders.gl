@@ -77,11 +77,13 @@ const config = {
             'website-geotiff-basedecoder': resolve('../node_modules/geotiff/dist-module/compression/basedecoder.js'),
             'website-geotiff-globals': resolve('../node_modules/geotiff/dist-module/globals.js'),
             'website-lerc-es': resolve('../node_modules/lerc/LercDecode.es.js'),
+            'laz-perf$': resolve('./src/utils/laz-perf-with-wasm.js'),
 
             '@loaders.gl/3d-tiles': resolve('../modules/3d-tiles/src'),
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
             '@loaders.gl/bson': resolve('../modules/bson/src'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
+            '@loaders.gl/copc': resolve('../modules/copc/src'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/csv': resolve('../modules/csv/src'),
@@ -167,6 +169,10 @@ const config = {
         ],
         module: {
           rules: [
+            {
+              test: /laz-perf\.wasm$/,
+              type: 'asset/resource'
+            },
             // https://github.com/Esri/calcite-components/issues/2865
             {
               test: /\.m?js/,

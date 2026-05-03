@@ -4,13 +4,12 @@
 
 // PLY Loader
 import type {Loader, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import type {MeshArrowTable} from '@loaders.gl/schema';
-import type {PLYMesh} from './lib/ply-types';
+import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
+import type {PLYHeader, PLYMesh} from './lib/ply-types';
 import type {ParsePLYOptions} from './lib/parse-ply';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
-import {parsePLY, parsePLYToArrowTable} from './lib/parse-ply';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import {parsePLY, parsePLYHeader, parsePLYToArrowTable} from './lib/parse-ply';
 import {
-  convertPLYElementTablesToMesh,
   convertPLYElementTablesToMeshArrowTable,
   parsePLYToElementTables
 } from './lib/parse-ply-arrow';
@@ -26,13 +25,16 @@ export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
     /** Output shape. Defaults to a legacy Mesh object. */
     shape?: 'mesh' | 'arrow-table';
+    /** Treat PLY data as a point cloud by reading only the leading vertex element. */
+    pointCloud?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
 };
 
 function convertPLYMesh(mesh: PLYMesh, options?: PLYLoaderOptions): PLYMesh | MeshArrowTable {
-  return options?.ply?.shape === 'arrow-table' ? convertMeshToTable(mesh, 'arrow-table') : mesh;
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  return convertPLYTable(table, options, mesh.loaderData);
 }
 
 /** Parse PLY data using a direct Arrow path when requested and supported. */
@@ -44,17 +46,17 @@ function parsePLYData(
     return convertPLYMesh(parsePLY(data, options?.ply), options);
   }
 
-  if (options?.ply?.shape === 'arrow-table') {
-    const arrowTable = parsePLYToArrowTable(data, options.ply);
-    if (arrowTable) {
-      return arrowTable;
-    }
+  const arrowTable = parsePLYToArrowTable(data, options?.ply);
+  if (arrowTable) {
+    return convertPLYTable(arrowTable, options, parsePLYHeader(data, options?.ply));
   }
 
   const elementTables = parsePLYToElementTables(data, options?.ply);
-  return options?.ply?.shape === 'arrow-table'
-    ? convertPLYElementTablesToMeshArrowTable(elementTables)
-    : convertPLYElementTablesToMesh(elementTables);
+  return convertPLYTable(
+    convertPLYElementTablesToMeshArrowTable(elementTables),
+    options,
+    elementTables.header
+  );
 }
 
 /**
@@ -85,10 +87,40 @@ export const PLYLoaderWithParser = {
       batchSize: options?.batchSize ?? options?.core?.batchSize
     };
     for await (const meshOrTable of parsePLYInBatches(arrayBuffer, plyOptions)) {
-      yield isMeshArrowTable(meshOrTable) ? meshOrTable : convertPLYMesh(meshOrTable, options);
+      const convertedData = isMeshArrowTable(meshOrTable)
+        ? convertPLYTable(meshOrTable, options)
+        : convertPLYMesh(meshOrTable, options);
+      yield isMeshArrowTable(convertedData) ? makeArrowTableBatch(convertedData) : convertedData;
     }
   }
 } as const satisfies LoaderWithParser<PLYMesh | MeshArrowTable, any, PLYLoaderOptions>;
+
+/** Return requested public PLY shape from the parser's Arrow table. */
+function convertPLYTable(
+  table: MeshArrowTable,
+  options?: PLYLoaderOptions,
+  header?: PLYHeader
+): PLYMesh | MeshArrowTable {
+  if (options?.ply?.shape === 'arrow-table') {
+    return table;
+  }
+  return {
+    ...(convertTableToMesh(table) as PLYMesh),
+    loader: 'ply',
+    loaderData: header || {comments: [], elements: []}
+  };
+}
+
+/** Wrap a Mesh Arrow table as a loaders.gl Arrow table batch. */
+function makeArrowTableBatch(table: MeshArrowTable): ArrowTableBatch {
+  return {
+    shape: 'arrow-table',
+    batchType: 'data',
+    schema: table.schema,
+    data: table.data,
+    length: table.data.numRows
+  };
+}
 
 /** Return true if a parsed PLY batch is already a Mesh Arrow table. */
 function isMeshArrowTable(data: PLYMesh | MeshArrowTable): data is MeshArrowTable {

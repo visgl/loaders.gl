@@ -23,7 +23,7 @@ import {
   isResponse,
   isSourceLoader
 } from '@loaders.gl/loader-utils';
-import {assert, validateWorkerVersion} from '@loaders.gl/worker-utils';
+import {validateWorkerVersion} from '@loaders.gl/worker-utils';
 import {isLoaderObject} from '../loader-utils/normalize-loader';
 import {normalizeOptions} from '../loader-utils/option-utils';
 import {getArrayBufferOrStringFromData} from '../loader-utils/get-data';
@@ -184,8 +184,12 @@ async function parseWithLoaderImplementation(
     return await loader.parse(data as ArrayBuffer, options, context);
   }
 
-  // This should not happen, all sync loaders should also offer `parse` function
-  assert(!loader.parseSync);
+  // All parser-bearing sync loaders should also offer `parse` so async APIs can use them.
+  if (loader.parseSync) {
+    throw new Error(
+      `${loader.name} loader: 'parse' not available on parser-bearing sync loader. Add an async 'parse' function to this loader, or call preload(loader) before parseSync(). ${context.url || ''}`
+    );
+  }
 
   // TBD - If asynchronous parser not available, return null
   throw new Error(`${loader.id} loader - no parser found and worker is disabled`);

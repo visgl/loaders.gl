@@ -5,7 +5,7 @@ import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';
 
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
-import {setLoaderOptions, load} from '@loaders.gl/core';
+import {setLoaderOptions, load, parseInBatches} from '@loaders.gl/core';
 import {equals} from '@math.gl/core';
 
 const OBJ_ASCII_URL = '@loaders.gl/obj/test/data/bunny.obj';
@@ -51,6 +51,74 @@ test('OBJLoader#parseText(shape: arrow-table)', async t => {
     table.data.batches?.[0]?.data?.length;
   t.equal(rowCount, 14904, 'table has expected vertex count');
 
+  t.end();
+});
+
+test('OBJLoader#parseInBatches(vertex-only point cloud, arrow-table)', async t => {
+  const batches = await parseInBatches(
+    [new TextEncoder().encode(['v 0 0 0', 'v 1 1 1', 'v 2 2 2', 'v 3 3 3', ''].join('\n')).buffer],
+    OBJLoader,
+    {
+      batchSize: 2,
+      obj: {shape: 'arrow-table'}
+    }
+  );
+  const batchRowCounts = [];
+
+  for await (const batch of batches) {
+    t.equal(batch.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(batch.batchType, 'data', 'batch has data batchType');
+    t.ok(batch.data.getChild('POSITION'), 'batch includes POSITION column');
+    batchRowCounts.push(batch.length);
+  }
+
+  t.deepEqual(batchRowCounts, [2, 2], 'emits requested OBJ point cloud Arrow batches');
+  t.end();
+});
+
+test('OBJLoader#parseInBatches(pointCloud flag streams vertices without geometry scan)', async t => {
+  const batches = await parseInBatches(
+    [
+      new TextEncoder().encode(
+        ['v 0 0 0', 'v 1 1 1', 'f 1 1 1', 'v 2 2 2', 'v 3 3 3', ''].join('\n')
+      ).buffer
+    ],
+    OBJLoader,
+    {
+      batchSize: 2,
+      obj: {shape: 'arrow-table', pointCloud: true}
+    }
+  );
+  const batchRowCounts = [];
+
+  for await (const batch of batches) {
+    t.equal(batch.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(batch.batchType, 'data', 'batch has data batchType');
+    batchRowCounts.push(batch.length);
+  }
+
+  t.deepEqual(batchRowCounts, [2, 2], 'pointCloud mode streams vertex rows and ignores faces');
+  t.end();
+});
+
+test('OBJLoader#parseInBatches(faces, arrow-table) falls back to atomic parse', async t => {
+  const batches = await parseInBatches(
+    [new TextEncoder().encode(['v 0 0 0', 'v 1 0 0', 'v 0 1 0', 'f 1 2 3', ''].join('\n')).buffer],
+    OBJLoader,
+    {
+      batchSize: 1,
+      obj: {shape: 'arrow-table'}
+    }
+  );
+  const batchRowCounts = [];
+
+  for await (const batch of batches) {
+    t.equal(batch.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(batch.batchType, 'data', 'batch has data batchType');
+    batchRowCounts.push(batch.length);
+  }
+
+  t.deepEqual(batchRowCounts, [3], 'face geometry emits one atomic Arrow batch');
   t.end();
 });
 

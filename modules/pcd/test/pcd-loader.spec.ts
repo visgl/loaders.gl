@@ -9,7 +9,7 @@ import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';
 
 import {PCDLoader, PCDWorkerLoader} from '@loaders.gl/pcd';
-import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
+import {setLoaderOptions, fetchFile, parse, load, parseInBatches} from '@loaders.gl/core';
 
 const PCD_ASCII_URL = '@loaders.gl/pcd/test/data/simple-ascii.pcd';
 const PCD_BINARY_URL = '@loaders.gl/pcd/test/data/Zaghetto.pcd';
@@ -134,6 +134,26 @@ test('PCDLoader#parse(shape: arrow-table)', async t => {
   t.end();
 });
 
+test('PCDLoader#parseInBatches(ascii, arrow-table)', async t => {
+  const response = await fetchFile(PCD_ASCII_URL);
+  const batches = await parseInBatches(response, PCDLoader, {
+    batchSize: 100,
+    core: {worker: false},
+    pcd: {shape: 'arrow-table'}
+  });
+  const batchRowCounts: number[] = [];
+
+  for await (const batch of batches) {
+    t.equal(batch.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(batch.batchType, 'data', 'batch has data batchType');
+    t.ok(batch.data.getChild('POSITION'), 'batch includes POSITION column');
+    batchRowCounts.push(batch.length);
+  }
+
+  t.deepEqual(batchRowCounts, [100, 100, 13], 'emits requested ASCII PCD Arrow batches');
+  t.end();
+});
+
 test('PCDLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(PCD_BINARY_URL), PCDLoader, {
     core: {worker: false}
@@ -166,6 +186,29 @@ test('PCDLoader#parse(binary with counted fields)', async t => {
     'positions read correctly'
   );
 
+  t.end();
+});
+
+test('PCDLoader#parseInBatches(binary with counted fields, arrow-table)', async t => {
+  const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
+  const batches = await parseInBatches([binaryArrayBuffer], PCDLoader, {
+    batchSize: 1,
+    core: {worker: false},
+    pcd: {shape: 'arrow-table'}
+  });
+  const positions: number[] = [];
+  const batchRowCounts: number[] = [];
+
+  for await (const batch of batches) {
+    t.equal(batch.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(batch.batchType, 'data', 'batch has data batchType');
+    batchRowCounts.push(batch.length);
+    const positionColumn = batch.data.getChild('POSITION');
+    positions.push(...Array.from(positionColumn.get(0)));
+  }
+
+  t.deepEqual(batchRowCounts, [1, 1], 'emits requested binary PCD Arrow batches');
+  t.deepEqual(positions, [1, 2, 3, 4, 5, 6], 'positions read correctly across batches');
   t.end();
 });
 

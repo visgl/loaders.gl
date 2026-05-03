@@ -1,8 +1,8 @@
 import {Tile3DLayer, Tile3DLayerProps} from '@deck.gl/geo-layers';
-import {Viewport, UpdateParameters, COORDINATE_SYSTEM} from '@deck.gl/core';
+import {Viewport, UpdateParameters, COORDINATE_SYSTEM, Layer, LayersList} from '@deck.gl/core';
 import {Source} from '@loaders.gl/loader-utils';
-import {PointcloudTileset} from './pointcloud-tileset';
-import { PointCloudLayer } from '@deck.gl/layers';
+import {PointCloudLayer} from '@deck.gl/layers';
+import {PointCloudTile, PointCloudTileset} from '@loaders.gl/tiles';
 
 export type PointTileSourceLayerProps = {
   source: Source;
@@ -40,11 +40,9 @@ export class PointTileSourceLayer<
   }
 
   private async _loadTileset(tilesetUrl) {
-    const {loadOptions = {}} = this.props;
-
     const dataSource = this.props.source.createDataSource(tilesetUrl, {});
 
-    const tileset3d = new PointcloudTileset(dataSource);
+    const tileset3d = new PointCloudTileset(dataSource);
 
     this.setState({
       tileset3d,
@@ -77,9 +75,13 @@ export class PointTileSourceLayer<
   }
 
   private _makePointCloudLayer(
-    tileHeader: Tile3D,
+    tileHeader: PointCloudTile,
     oldLayer?: PointCloudLayer<DataT>
   ): PointCloudLayer<DataT> | null {
+    if (!tileHeader.content) {
+      return null;
+    }
+
     const {
       attributes,
       pointCount,
@@ -124,5 +126,29 @@ export class PointTileSourceLayer<
         _offset: 0
       }
     );
+  }
+
+  renderLayers(): Layer | null | LayersList {
+    const {tileset3d, layerMap} = this.state;
+    if (!tileset3d) {
+      return null;
+    }
+
+    return tileset3d.tiles
+      .map((tile) => {
+        const layerCache = (layerMap[tile.id] = layerMap[tile.id] || {tile});
+        let {layer} = layerCache;
+        if (tile.selected) {
+          if (!layer) {
+            layer = this._makePointCloudLayer(tile);
+          } else if (layerCache.needsUpdate) {
+            layer = this._makePointCloudLayer(tile, layer);
+            layerCache.needsUpdate = false;
+          }
+        }
+        layerCache.layer = layer;
+        return layer;
+      })
+      .filter(Boolean);
   }
 }

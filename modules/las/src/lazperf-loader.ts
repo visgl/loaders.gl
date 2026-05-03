@@ -4,6 +4,7 @@
 
 // LASER (LAS) FILE FORMAT
 import type {Loader} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from './las-loader';
 import {LASWorkerLoader} from './las-loader';
 import type {LASMesh} from './lib/las-types';
@@ -18,4 +19,4 @@ export const LAZPerfLoader = {
     const {LAZPerfLoaderWithParser} = await import('./lazperf-loader-with-parser');
     return LAZPerfLoaderWithParser;
   }
-} as const satisfies Loader<LASMesh, never, LASLoaderOptions>;
+} as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;
