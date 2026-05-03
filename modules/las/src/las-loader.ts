@@ -14,6 +14,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type LASLoaderOptions = LoaderOptions & {
   las?: {
+    /** Decoder backend. Defaults to the current vendored laz-perf implementation. */
+    backend?: 'laz-perf' | 'copc' | 'laz-rs';
     shape?: 'mesh' | 'columnar-table' | 'arrow-table';
     fp64?: boolean;
     skip?: number;
@@ -41,6 +43,7 @@ export const LASWorkerLoader = {
   worker: true,
   options: {
     las: {
+      backend: 'laz-perf',
       shape: 'mesh',
       fp64: false,
       skip: 1,

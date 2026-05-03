@@ -1,12 +1,12 @@
 import test from 'tape-promise/tape';
-import {join} from 'path';
-import {createDataSource} from '@loaders.gl/core';
+import {createDataSource, fetchFile, isBrowser} from '@loaders.gl/core';
 import {COPCSourceLoader, COPCTileSource} from '@loaders.gl/copc';
 
-const ellipsoidFilename = join(__dirname, 'data/ellipsoid.copc.laz');
+const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
+const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.url).href;
 
 test('COPCSourceLoader#creates a source through createDataSource', async t => {
-  const dataSource = createDataSource(ellipsoidFilename, [COPCSourceLoader], {
+  const dataSource = createDataSource(await createEllipsoidSourceData(), [COPCSourceLoader], {
     core: {
       type: 'copc'
     },
@@ -18,7 +18,7 @@ test('COPCSourceLoader#creates a source through createDataSource', async t => {
 });
 
 test('COPCSourceLoader#loads normalized root and child tiles', async t => {
-  const source = COPCSourceLoader.createDataSource(ellipsoidFilename, {});
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -39,7 +39,13 @@ test('COPCSourceLoader#loads normalized root and child tiles', async t => {
 });
 
 test('COPCSourceLoader#loads full point content for a tile', async t => {
-  const source = COPCSourceLoader.createDataSource(ellipsoidFilename, {});
+  if (isBrowser) {
+    t.comment('Skipping browser content decode until laz-perf wasm is served as an asset');
+    t.end();
+    return;
+  }
+
+  const source = COPCSourceLoader.createDataSource(ELLIPSOID_FILE_PATH, {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -49,16 +55,40 @@ test('COPCSourceLoader#loads full point content for a tile', async t => {
 
   t.ok(content, 'tile content loads');
   t.equal(
-    content?.attributes.positions.value.length,
-    content?.pointCount * 3,
-    'positions array contains all points'
+    content?.data.data.getChild('POSITION')?.length,
+    content?.pointCount,
+    'Arrow table contains one position row per point'
   );
+  t.equal(content?.data.shape, 'arrow-table', 'tile content is returned as an Arrow table');
   t.ok(content?.cartographicOrigin.length === 3, 'content includes a coordinate origin');
   t.end();
 });
 
+test('COPCSourceLoader#loads tile content from a Blob', async t => {
+  if (isBrowser) {
+    t.comment('Skipping browser content decode until laz-perf wasm is served as an asset');
+    t.end();
+    return;
+  }
+
+  const blob = await createEllipsoidBlob();
+  const source = COPCSourceLoader.createDataSource(blob, {});
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const content = await source.loadTileContent(rootTile);
+
+  t.ok(content, 'Blob-backed tile content loads');
+  t.equal(
+    content?.data.data.getChild('POSITION')?.length,
+    content?.pointCount,
+    'Blob-backed Arrow table contains one position row per point'
+  );
+  t.end();
+});
+
 test('COPCSourceLoader#derives cartographic view metadata from the dataset', async t => {
-  const source = COPCSourceLoader.createDataSource(ellipsoidFilename, {});
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {});
 
   const metadata = await source.getMetadata();
   const viewState = source.getViewState();
@@ -75,3 +105,14 @@ test('COPCSourceLoader#derives cartographic view metadata from the dataset', asy
   );
   t.end();
 });
+
+/** Returns the COPC fixture input for the active test runner. */
+async function createEllipsoidSourceData(): Promise<string | Blob> {
+  return isBrowser ? await createEllipsoidBlob() : ELLIPSOID_FILE_PATH;
+}
+
+/** Loads the shared COPC fixture as a Blob in both Node and browser test runners. */
+async function createEllipsoidBlob(): Promise<Blob> {
+  const url = isBrowser ? ELLIPSOID_BROWSER_URL : ELLIPSOID_FILE_PATH;
+  return new Blob([await (await fetchFile(url)).arrayBuffer()]);
+}

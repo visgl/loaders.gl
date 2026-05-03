@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Field, DataType} from '@loaders.gl/schema';
+import type {Schema, Field, DataType, Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import type {
   CoreAPI,
   SourceLoader,
@@ -110,9 +111,8 @@ export class COPCTileSource
 
   constructor(data: string | Blob, options: COPCSourceLoaderOptions, coreApi?: CoreAPI) {
     super(data, options, COPCSourceLoader.defaultOptions, coreApi);
-    // TODO - create a getter if a blob
-    this._urlOrGetter = this.url as any;
-    this._initPromise = this._initCopc(this.url);
+    this._urlOrGetter = createCOPCGetter(data, this.url);
+    this._initPromise = this._initCopc(this.url || 'Blob');
     this.metadata = this.getMetadata();
   }
 
@@ -392,18 +392,43 @@ export class COPCTileSource
   ) {
     const positionsAttribute = {value: positions, size: 3};
     const colorsAttribute = colors ? {value: colors, size: 3, normalized: true} : undefined;
+    const data = this.createTileContentTable(pointCount, positionsAttribute, colorsAttribute);
 
     return {
-      attributes: {
-        positions: positionsAttribute,
-        colors: colorsAttribute
-      },
+      data,
       pointCount,
       cartographicOrigin: origin,
       coordinateSystem: this._projection
         ? COORDINATE_SYSTEM.LNGLAT_OFFSETS
         : COORDINATE_SYSTEM.CARTESIAN
     };
+  }
+
+  protected createTileContentTable(
+    pointCount: number,
+    positions: {value: Float32Array; size: number},
+    colors?: {value: Uint16Array; size: number; normalized: boolean}
+  ): MeshArrowTable {
+    const attributes: Mesh['attributes'] = {
+      POSITION: positions
+    };
+    if (colors) {
+      attributes.COLOR_0 = colors;
+    }
+
+    return convertMeshToTable(
+      {
+        topology: 'point-list',
+        mode: 0,
+        header: {vertexCount: pointCount},
+        schema: {
+          fields: [],
+          metadata: {}
+        },
+        attributes
+      },
+      'arrow-table'
+    );
   }
 
   protected async ensureHierarchyLoaded(tileId: string): Promise<void> {
@@ -730,4 +755,20 @@ function normalizeProjectionDefinition(projectionData: string): string {
     projectionData.match(/(GEOGCS\[[\s\S]*\])(?:,VERT_CS\[[\s\S]*\])\]$/);
 
   return horizontalWktMatch?.[1] || projectionData;
+}
+
+/** Create the COPC package byte-range getter for URL/path and Blob inputs. */
+function createCOPCGetter(data: string | Blob, url: string): string | Getter {
+  if (typeof data === 'string') {
+    return url;
+  }
+
+  return async (begin: number, end: number): Promise<Uint8Array> => {
+    if (begin < 0 || end < 0 || begin > end) {
+      throw new Error('Invalid range');
+    }
+
+    const arrayBuffer = await data.slice(begin, end).arrayBuffer();
+    return new Uint8Array(arrayBuffer);
+  };
 }

@@ -53,6 +53,8 @@ export type SplatEngineProps = {
   maxScreenSpaceSplatSize: number;
   /** Optional callback fired after async data uploads a new accumulated batch. */
   onDataUpdate?: () => void;
+  /** Optional callback fired when async data consumption fails. */
+  onDataError?: (error: Error) => void;
 };
 
 /** Draw-time inputs used by {@link SplatEngine.update}. */
@@ -82,6 +84,21 @@ export type SplatProjectedData = {
   visible: number;
   /** Maximum one-sigma axis length in screen pixels. */
   maxAxisPixels: number;
+};
+
+/** deck.gl binary attributes produced by the engine for WebGL rendering. */
+export type SplatWebGLAttributes = {
+  /** Number of decoded splats. */
+  length: number;
+  /** Binary attributes consumed by the WebGL primitive layer. */
+  attributes: {
+    /** Interleaved world positions. */
+    getPosition: {value: Float32Array; size: 3};
+    /** Circular fallback radii. */
+    getRadius: {value: Float32Array; size: 1};
+    /** Unorm8 RGBA colors. */
+    getColor: {value: Uint8Array; size: 4; type: 'unorm8'};
+  };
 };
 
 /** GPU buffers owned by {@link SplatEngine}. */
@@ -238,10 +255,6 @@ export class SplatEngine {
   private overflowSplatCount = 0;
 
   constructor(device: Device, props: Partial<SplatEngineProps> = {}) {
-    if (device.type !== 'webgpu') {
-      throw new Error('SplatEngine requires a WebGPU device.');
-    }
-
     this.device = device;
     this.setProps(props);
   }
@@ -273,7 +286,12 @@ export class SplatEngine {
   setData(table: arrow.Table | AsyncIterable<ArrowTableBatch>, fallbackColor: Color): void {
     this.dataStreamVersion++;
     if (isAsyncIterable(table)) {
-      void this.setDataFromBatches(table, fallbackColor, this.dataStreamVersion);
+      const streamVersion = this.dataStreamVersion;
+      void this.setDataFromBatches(table, fallbackColor, streamVersion).catch(error => {
+        if (this.dataStreamVersion === streamVersion) {
+          this.props.onDataError?.(error instanceof Error ? error : new Error(String(error)));
+        }
+      });
       return;
     }
 
@@ -323,7 +341,7 @@ export class SplatEngine {
 
     this.destroyBuffers();
     this.destroyComputeBuffers();
-    this.buffers = this.createBuffers(data);
+    this.buffers = this.device.type === 'webgpu' ? this.createBuffers(data) : null;
   }
 
   /** Update projection/sort state before rendering. */
@@ -362,6 +380,30 @@ export class SplatEngine {
       splatColors: this.buffers.colors,
       splatIndices: this.buffers.indices,
       splatProjected: this.buffers.projected
+    };
+  }
+
+  /** Return deck.gl binary attributes for the WebGL fallback path. */
+  getWebGLAttributes(): SplatWebGLAttributes {
+    const data = this.data;
+    if (!data) {
+      return {
+        length: 0,
+        attributes: {
+          getPosition: {value: new Float32Array(0), size: 3},
+          getRadius: {value: new Float32Array(0), size: 1},
+          getColor: {value: new Uint8Array(0), size: 4, type: 'unorm8'}
+        }
+      };
+    }
+
+    return {
+      length: data.length,
+      attributes: {
+        getPosition: {value: data.positions, size: 3},
+        getRadius: {value: data.radii, size: 1},
+        getColor: {value: data.colors, size: 4, type: 'unorm8'}
+      }
     };
   }
 
@@ -955,6 +997,28 @@ function writeCullingPlanes(
       paramsF32[base + 3] = Number.POSITIVE_INFINITY;
     }
   }
+}
+
+/** Returns true when data can be consumed as async Arrow table batches. */
+function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> {
+  return Boolean(
+    data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
+  );
+}
+
+/** Returns true when a value is a loaders.gl Arrow table data batch. */
+function isArrowTableBatch(data: unknown): data is ArrowTableBatch {
+  const arrowTableBatch = data as ArrowTableBatch;
+  return (
+    arrowTableBatch?.shape === 'arrow-table' &&
+    arrowTableBatch.batchType === 'data' &&
+    isArrowTable(arrowTableBatch.data)
+  );
+}
+
+/** Returns true when a value is an Apache Arrow table. */
+function isArrowTable(data: unknown): data is arrow.Table {
+  return Boolean(data && typeof (data as arrow.Table).getChild === 'function');
 }
 
 /** Return a stable signature for projection inputs that affect render buffers. */

@@ -51,15 +51,16 @@ export function parsePLYToElementTables(
   options: ParsePLYOptions = {}
 ): PLYElementTables {
   const header = parsePLYHeader(data, options);
+  const parseHeader = options.pointCloud ? getPointCloudPLYHeader(header) : header;
   if (header.format === 'ascii') {
     const text = data instanceof ArrayBuffer ? new TextDecoder().decode(data) : data;
-    return parseASCIIPLYToElementTables(text, header);
+    return parseASCIIPLYToElementTables(text, parseHeader);
   }
 
   if (!(data instanceof ArrayBuffer)) {
     throw new Error('Binary PLY parsing requires an ArrayBuffer.');
   }
-  return parseBinaryPLYToElementTables(data, header);
+  return parseBinaryPLYToElementTables(data, parseHeader);
 }
 
 /** Convert raw PLY element tables into the public Mesh Arrow table shape. */
@@ -146,6 +147,19 @@ function parseBinaryPLYToElementTables(data: ArrayBuffer, header: PLYHeader): PL
   }
 
   return {header, elements: collector.map(makePLYElementTable)};
+}
+
+/** Return a vertex-only PLY header for point-cloud parsing. */
+function getPointCloudPLYHeader(header: PLYHeader): PLYHeader {
+  const vertexElement = header.elements[0];
+  if (vertexElement?.name !== 'vertex') {
+    throw new Error('PLY pointCloud parsing requires a leading vertex element');
+  }
+
+  return {
+    ...header,
+    elements: [vertexElement]
+  };
 }
 
 /** Create mutable collectors for all PLY element properties. */

@@ -37,6 +37,6 @@ The created data source exposes the point-cloud tile methods used by `PointCloud
 
 ## Notes
 
-- Potree 1.x datasets are supported.
+- See the [Potree module overview](/docs/modules/potree) for the Potree format version support matrix.
 - `LAS` and `LAZ` node payloads are loaded through `LASLoader`.
 - Binary Potree point attribute payloads are loaded through `PotreeBinLoader`.

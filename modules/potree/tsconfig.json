@@ -11,6 +11,7 @@
     {"path": "../core"},
     {"path": "../las"},
     {"path": "../schema"},
+    {"path": "../schema-utils"},
     {"path": "../math"}
   ]
 }

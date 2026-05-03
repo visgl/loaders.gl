@@ -5,9 +5,12 @@
 import type * as arrow from 'apache-arrow';
 import {
   CompositeLayer,
+  type Color,
   type CompositeLayerProps,
   type DefaultProps,
+  type GetPickingInfoParams,
   type Layer,
+  type PickingInfo,
   type UpdateParameters
 } from '@deck.gl/core';
 import {PointCloudLayer, type PointCloudLayerProps} from '@deck.gl/layers';
@@ -27,10 +30,20 @@ type MeshArrowPointCloudLayerState = {
   streamingData: AsyncIterable<ArrowTableBatch> | null;
 };
 
+/** Row properties returned when a Mesh Arrow point is picked. */
+export type MeshArrowPointCloudPickingObject = {
+  /** Row index inside the picked Arrow table or batch. */
+  index: number;
+  /** Point attribute values keyed by Arrow column name. */
+  properties: Record<string, unknown>;
+};
+
 /** Props for {@link MeshArrowPointCloudLayer}. */
 export type MeshArrowPointCloudLayerProps = CompositeLayerProps & {
   /** loaders.gl Mesh Arrow table wrapper, raw Apache Arrow table, or loaders.gl Arrow table batches. */
   data: MeshArrowPointCloudData;
+  /** Fallback point color used when the Arrow table does not contain a `COLOR_0` column. */
+  defaultPointColor?: Color;
   /** Optional props forwarded to deck.gl's PointCloudLayer. */
   pointCloudLayerProps?: Partial<PointCloudLayerProps>;
 };
@@ -38,6 +51,7 @@ export type MeshArrowPointCloudLayerProps = CompositeLayerProps & {
 const defaultProps: DefaultProps<MeshArrowPointCloudLayerProps> = {
   id: 'mesh-arrow-point-cloud-layer',
   data: {type: 'object', compare: false, value: null},
+  defaultPointColor: {type: 'color', value: [200, 200, 255]},
   pointCloudLayerProps: {type: 'object', compare: false, value: {}}
 };
 
@@ -108,13 +122,56 @@ export class MeshArrowPointCloudLayer extends CompositeLayer<MeshArrowPointCloud
 
   private renderPointCloudLayer(arrowTable: arrow.Table, id: string): Layer {
     const pointCloudData = getDeckBinaryDataFromArrowMesh(arrowTable);
+    const pointCloudLayerProps = this.props.pointCloudLayerProps || {};
+    const getColor =
+      pointCloudData.attributes.getColor || pointCloudLayerProps.getColor
+        ? pointCloudLayerProps.getColor
+        : this.props.defaultPointColor;
 
     return new PointCloudLayer({
       ...this.getSubLayerProps({id}),
-      ...this.props.pointCloudLayerProps,
+      ...pointCloudLayerProps,
       data: pointCloudData,
-      updateTriggers: this.props.pointCloudLayerProps?.updateTriggers
+      getColor,
+      updateTriggers: pointCloudLayerProps.updateTriggers
     }) as unknown as Layer;
+  }
+
+  /** Adds Arrow row values to deck.gl picking info. */
+  getPickingInfo(params: GetPickingInfoParams): PickingInfo {
+    const info = params.info;
+    if (!info.picked || info.index < 0) {
+      return info;
+    }
+
+    const arrowTable = this.getPickedArrowTable(params.sourceLayer?.id);
+    if (!arrowTable || info.index >= arrowTable.numRows) {
+      return info;
+    }
+
+    info.object = {
+      index: info.index,
+      properties: getArrowTableRowProperties(arrowTable, info.index)
+    } satisfies MeshArrowPointCloudPickingObject;
+
+    return info;
+  }
+
+  /** Returns the Arrow table that contains the picked point. */
+  private getPickedArrowTable(sourceLayerId?: string): arrow.Table | null {
+    if (!this.props.data) {
+      return null;
+    }
+
+    if (isAsyncIterable(this.props.data)) {
+      const batchIndex = getBatchIndexFromLayerId(sourceLayerId);
+      const arrowTableBatch = (this.state as MeshArrowPointCloudLayerState).arrowTableBatches[
+        batchIndex
+      ];
+      return arrowTableBatch?.data || null;
+    }
+
+    return getArrowTable(this.props.data);
   }
 
   private async consumeArrowTableBatches(
@@ -145,6 +202,40 @@ export class MeshArrowPointCloudLayer extends CompositeLayer<MeshArrowPointCloud
       }
     }
   }
+}
+
+/** Returns the async batch index encoded in a rendered sublayer id. */
+function getBatchIndexFromLayerId(layerId: string | undefined): number {
+  const batchIndexText = layerId?.match(/points-(\d+)$/)?.[1];
+  return batchIndexText ? Number(batchIndexText) : 0;
+}
+
+/** Reads all column values for one Arrow table row. */
+function getArrowTableRowProperties(table: arrow.Table, rowIndex: number): Record<string, unknown> {
+  const properties: Record<string, unknown> = {};
+  for (const field of table.schema.fields) {
+    const vector = table.getChild(field.name);
+    if (vector) {
+      properties[field.name] = getSerializableArrowValue(vector.get(rowIndex));
+    }
+  }
+  return properties;
+}
+
+/** Converts Arrow vector values into values suitable for tooltip rendering. */
+function getSerializableArrowValue(value: unknown): unknown {
+  if (ArrayBuffer.isView(value)) {
+    return value instanceof DataView
+      ? Array.from(new Uint8Array(value.buffer, value.byteOffset, value.byteLength))
+      : Array.from(value as unknown as ArrayLike<unknown>);
+  }
+  if (Array.isArray(value)) {
+    return value.map(getSerializableArrowValue);
+  }
+  if (value && typeof value === 'object' && Symbol.iterator in value) {
+    return Array.from(value as Iterable<unknown>).map(getSerializableArrowValue);
+  }
+  return value;
 }
 
 function getArrowTable(

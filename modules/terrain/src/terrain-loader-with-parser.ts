@@ -5,7 +5,7 @@
 import type {LoaderContext, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {parseFromContext} from '@loaders.gl/loader-utils';
 import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {TerrainOptions, makeTerrainMeshFromImage} from './lib/parse-terrain';
 import {TerrainLoader as TerrainLoaderMetadata, type TerrainLoaderOptions} from './terrain-loader';
@@ -56,5 +56,13 @@ export async function parseTerrain(
     ...options?.terrain
   } as TerrainOptions;
   const mesh = makeTerrainMeshFromImage(terrainImage, terrainOptions);
-  return options?.terrain?.shape === 'arrow-table' ? convertMeshToTable(mesh, 'arrow-table') : mesh;
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  if (options?.terrain?.shape === 'arrow-table') {
+    return table;
+  }
+  return {
+    ...convertTableToMesh(table),
+    loader: mesh.loader,
+    loaderData: mesh.loaderData
+  };
 }

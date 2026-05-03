@@ -11,6 +11,17 @@ import {PotreeDocsTabs} from '@site/src/components/docs/potree-docs-tabs';
 
 Support for loading and traversing [potree](http://potree.org/) format point clouds.
 
+## Format Support
+
+| Potree format version | Supported | Notes |
+| --- | --- | --- |
+| 1.0 - 1.3 | ❌ | Older metadata and node layouts are not supported by `PotreeSourceLoader`. |
+| 1.4 | ✅ | Supports inline `cloud.js` hierarchy metadata and flat `octreeDir/r*.bin` node payloads. |
+| 1.5 - 1.6 | ✅ | Supports Potree 1.x binary node payloads with `POSITION_CARTESIAN` attributes. |
+| 1.7 | ✅ | Supports hierarchy chunk files and nested `octreeDir/r/r*.bin` node payloads. |
+| 1.8 | ✅ | Supports hierarchy chunk files and `LAS`, `LAZ`, or Potree binary point payloads. |
+| 2.x | ❌ | Potree 2.x metadata and octree layouts are not supported. |
+
 ## Installation
 
 ```bash

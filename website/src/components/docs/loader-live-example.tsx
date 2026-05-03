@@ -7,6 +7,7 @@ import type {TableLiveExampleConfig} from './table-live-example';
 
 const GeospatialExample = React.lazy(() => import('examples/website/geospatial/app'));
 const PointcloudExample = React.lazy(() => import('examples/website/pointcloud/app'));
+const PointTileSourceExample = React.lazy(() => import('examples/website/point-tile-source/app'));
 const TilesExample = React.lazy(() => import('examples/website/tiles/app'));
 const Tiles3DExample = React.lazy(() => import('examples/website/3d-tiles/app'));
 const PointcloudDataPreview = React.lazy(() => import('./pointcloud-data-preview'));
@@ -106,6 +107,28 @@ export function PointcloudLoaderLiveExample({
       {() => (
         <Suspense fallback={<LoadingContainer $kind="pointcloud" />}>
           <PointcloudLoaderLiveExampleContent format={format} />
+        </Suspense>
+      )}
+    </BrowserOnly>
+  );
+}
+
+/**
+ * Renders a point-cloud tile source example without relying on automatic doc-page injection.
+ */
+export function PointTileSourceLiveExample({
+  format
+}: {
+  /** Example app format filter to select a specific point-cloud source format. */
+  format?: 'potree' | 'copc';
+}) {
+  return (
+    <BrowserOnly fallback={<LoadingContainer $kind="pointcloud" />}>
+      {() => (
+        <Suspense fallback={<LoadingContainer $kind="pointcloud" />}>
+          <div style={{height: 'calc(100vh - var(--ifm-navbar-height))'}}>
+            <PointTileSourceExample format={format} />
+          </div>
         </Suspense>
       )}
     </BrowserOnly>

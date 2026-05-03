@@ -1,4 +1,5 @@
 import type {DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/schema';
 
 /**
  * An accessor-like description for point cloud attributes.
@@ -23,11 +24,7 @@ export type PointCloudCoordinateSystem =
  * A normalized point cloud tile content payload.
  */
 export type PointCloudTileContent = {
-  attributes: {
-    positions: PointCloudAttribute;
-    colors?: PointCloudAttribute;
-    normals?: PointCloudAttribute;
-  };
+  data: MeshArrowTable;
   pointCount: number;
   cartographicOrigin: number[];
   coordinateSystem: PointCloudCoordinateSystem;

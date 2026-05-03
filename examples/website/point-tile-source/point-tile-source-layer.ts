@@ -4,8 +4,8 @@
 
 import type {Layer, LayersList, UpdateParameters, Viewport} from '@deck.gl/core';
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
-import {PointCloudLayer} from '@deck.gl/layers';
 import {Tile3DLayer, type Tile3DLayerProps} from '@deck.gl/geo-layers';
+import {MeshArrowPointCloudLayer, TileBoundingBoxLayer} from '@loaders.gl/deck-layers';
 import type {
   PointCloudTile,
   PointCloudTileset,
@@ -24,38 +24,9 @@ export type PointTileSourceLayerProps = {
   onPointTilesetUpdate?: (tileset: PointCloudTileset) => void;
   onPointTileLoad?: (tile: PointCloudTile) => void;
   onPointTileError?: (tile: PointCloudTile, error: Error) => void;
+  /** Render selected point-cloud tile bounding boxes for traversal debugging. */
+  showTileBoundingBoxes?: boolean;
 };
-
-type PointTileSourceAttribute = {
-  value: ArrayBufferView;
-  size: number;
-  normalized?: boolean;
-};
-
-type PointTileSourceLayerAttribute = PointTileSourceAttribute & {
-  type?: string;
-};
-
-/**
- * Converts a source color attribute into a deck.gl attribute descriptor.
- */
-function getPointCloudLayerColorAttribute(
-  colors: PointTileSourceAttribute | undefined
-): PointTileSourceLayerAttribute | undefined {
-  if (!colors) {
-    return undefined;
-  }
-
-  if (colors.value instanceof Uint16Array) {
-    return {...colors, type: 'unorm16', normalized: true};
-  }
-
-  if (colors.value instanceof Uint8Array || colors.value instanceof Uint8ClampedArray) {
-    return {...colors, type: 'unorm8', normalized: true};
-  }
-
-  return colors;
-}
 
 /**
  * A point-cloud-only deck.gl layer backed by `PointCloudTileset`.
@@ -66,6 +37,16 @@ export class PointTileSourceLayer<
 > extends Tile3DLayer<DataT, Tile3DLayerProps & PointTileSourceLayerProps & ExtraProps> {
   static layerName = 'PointTileSourceLayer';
   static defaultProps = Tile3DLayer.defaultProps;
+
+  /**
+   * Keeps Tile3DLayer's tile filtering for tile-backed sublayers while allowing helper layers.
+   */
+  filterSubLayer(filterParameters: {layer: Layer; viewport: Viewport; cullRect?: unknown; isPicking?: boolean}): boolean {
+    if (!filterParameters.layer.props.tile) {
+      return true;
+    }
+    return super.filterSubLayer(filterParameters as any);
+  }
 
   /**
    * Updates the backing point-cloud tileset when the source or viewport changes.
@@ -178,64 +159,48 @@ export class PointTileSourceLayer<
   }
 
   /**
-   * Converts a loaded point tile into a deck.gl `PointCloudLayer`.
+   * Converts a loaded point tile into a `MeshArrowPointCloudLayer`.
    */
   private makePointCloudLayer(
     tile: PointCloudTile,
-    oldLayer?: PointCloudLayer<DataT>
-  ): PointCloudLayer<DataT> | null {
+    oldLayer?: MeshArrowPointCloudLayer
+  ): MeshArrowPointCloudLayer | null {
     if (!tile.content) {
       return null;
     }
 
     const {
-      attributes,
-      pointCount,
       constantRGBA,
       cartographicOrigin,
       modelMatrix,
       coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS
     } = tile.content;
-    const {positions, normals, colors} = attributes;
+    const data = oldLayer?.props.data || tile.content.data;
 
-    if (!positions) {
+    if (!data) {
       return null;
     }
 
-    const colorAttribute = getPointCloudLayerColorAttribute(colors);
-    const data = (oldLayer && oldLayer.props.data) || {
-      header: {
-        vertexCount: pointCount
-      },
-      attributes: {
-        POSITION: positions,
-        NORMAL: normals,
-        instanceColors: colorAttribute
-      }
-    };
-
     const {pointSize, getPointColor} = this.props;
-    const SubLayerClass = this.getSubLayerClass('pointcloud', PointCloudLayer);
+    const SubLayerClass = this.getSubLayerClass('pointcloud', MeshArrowPointCloudLayer);
 
-    return new SubLayerClass(
-      {
-        pointSize,
-        parameters: {depthTest: false}
-      },
-      this.getSubLayerProps({
+    return new SubLayerClass({
+      ...this.getSubLayerProps({
         id: 'pointcloud'
       }),
-      {
-        id: `${this.id}-pointcloud-${tile.id}`,
-        tile,
-        data,
-        coordinateSystem,
-        coordinateOrigin: coordinateSystem === COORDINATE_SYSTEM.CARTESIAN ? undefined : cartographicOrigin,
-        modelMatrix,
-        getColor: constantRGBA || getPointColor,
-        _offset: 0
+      id: `${this.id}-pointcloud-${tile.id}`,
+      tile,
+      data,
+      coordinateSystem,
+      coordinateOrigin: coordinateSystem === COORDINATE_SYSTEM.CARTESIAN ? undefined : cartographicOrigin,
+      modelMatrix,
+      defaultPointColor: (constantRGBA || getPointColor) as [number, number, number],
+      pointCloudLayerProps: {
+        pickable: true,
+        pointSize,
+        parameters: {depthTest: false}
       }
-    );
+    });
   }
 
   /**
@@ -248,7 +213,7 @@ export class PointTileSourceLayer<
       return null;
     }
 
-    return tileset3d.tiles
+    const pointCloudLayers = tileset3d.tiles
       .map((tile: PointCloudTile) => {
         const layerCache = (layerMap[tile.id] = layerMap[tile.id] || {tile});
         let {layer} = layerCache;
@@ -266,5 +231,29 @@ export class PointTileSourceLayer<
         return layer;
       })
       .filter(Boolean);
+
+    if (!this.props.showTileBoundingBoxes) {
+      return pointCloudLayers;
+    }
+
+    return [
+      ...pointCloudLayers,
+      new TileBoundingBoxLayer({
+        id: `${this.id}-tile-bounding-boxes`,
+        tiles: tileset3d.tiles,
+        selectedOnly: true,
+        coordinateSystem: getTileBoundingBoxCoordinateSystem(tileset3d.tiles)
+      })
+    ];
   }
+}
+
+/**
+ * Infers the coordinate system used by tile bounding volumes from loaded tile content.
+ */
+function getTileBoundingBoxCoordinateSystem(tiles: PointCloudTile[]): number {
+  const tileWithContent = tiles.find((tile) => tile.content?.coordinateSystem !== undefined);
+  return tileWithContent?.content?.coordinateSystem === COORDINATE_SYSTEM.CARTESIAN
+    ? COORDINATE_SYSTEM.CARTESIAN
+    : COORDINATE_SYSTEM.LNGLAT;
 }

@@ -14,17 +14,17 @@ type PotreeDocsTab = {
 export type PotreeDocsTabId = 'overview' | 'loader' | 'source' | 'example';
 
 const POTREE_DOCS_TABS: PotreeDocsTab[] = [
+  {
+    id: 'example',
+    label: 'Try It',
+    href: '/examples/pointclouds/potree-source'
+  },
   {id: 'overview', label: 'Overview', href: '/docs/modules/potree'},
   {id: 'loader', label: 'PotreeLoader', href: '/docs/modules/potree/api-reference/potree-loader'},
   {
     id: 'source',
     label: 'PotreeSourceLoader',
     href: '/docs/modules/potree/api-reference/potree-source-loader'
-  },
-  {
-    id: 'example',
-    label: 'Example',
-    href: '/examples/pointclouds/point-tile-source'
   }
 ];
 

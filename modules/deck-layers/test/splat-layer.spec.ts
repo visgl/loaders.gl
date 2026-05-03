@@ -14,10 +14,12 @@ type ControlledAsyncIterable<T> = AsyncIterable<T> & {
 
 /** Creates a SplatLayer instance for testing. */
 function createLayer(props: SplatLayerProps): SplatLayer {
-  return new SplatLayer({
+  const layer = new SplatLayer({
     id: 'test-splat-layer',
     ...props
   });
+  layer.context = {device: {type: 'webgl'}} as any;
+  return layer;
 }
 
 /** Creates a minimal Gaussian splat Arrow table. */
@@ -101,6 +103,8 @@ function createControlledAsyncIterable<T>(): ControlledAsyncIterable<T> {
 async function waitForAsyncIterator(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
+  await Promise.resolve();
+  await Promise.resolve();
 }
 
 test('SplatLayer renders Gaussian splat Arrow table through binary attributes', t => {
@@ -152,8 +156,8 @@ test('SplatLayer incrementally renders Arrow table batches', async t => {
   await waitForAsyncIterator();
 
   sublayers = asLayerArray(layer.renderLayers());
-  t.equal(sublayers.length, 2, 'renders one sublayer per loaded batch');
-  t.equal((sublayers[1].props.data as any).length, 2, 'uses the second batch row count');
+  t.equal(sublayers.length, 1, 'keeps streaming batches in one engine-backed sublayer');
+  t.equal((sublayers[0].props.data as any).length, 4, 'uses the accumulated batch row count');
 
   splatBatches.close();
   t.end();

@@ -118,6 +118,18 @@ test('MeshArrowPointCloudLayer renders a static Mesh Arrow table', t => {
   t.end();
 });
 
+test('MeshArrowPointCloudLayer applies defaultPointColor without table colors', t => {
+  const meshArrowTable = convertMeshToTable(createPointCloudMesh([0, 0, 0]), 'arrow-table');
+  const layer = createLayer({
+    data: meshArrowTable,
+    defaultPointColor: [1, 2, 3]
+  });
+  const [sublayer] = asLayerArray(layer.renderLayers());
+
+  t.deepEqual(sublayer.props.getColor, [1, 2, 3], 'passes defaultPointColor to PointCloudLayer');
+  t.end();
+});
+
 test('MeshArrowPointCloudLayer incrementally renders Arrow table batches', async t => {
   const pointCloudBatches = createControlledAsyncIterable<ArrowTableBatch>();
   const layer = createLayer({data: pointCloudBatches});

@@ -5244,8 +5244,9 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/mvt": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
+    "@loaders.gl/schema-utils": "npm:4.4.0"
     "@math.gl/proj4": "npm:^4.1.0"
-    copc: "npm:0.0.6"
+    copc: "npm:0.0.8"
   languageName: unknown
   linkType: soft
 
@@ -5534,7 +5535,8 @@ __metadata:
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
     "@loaders.gl/schema-utils": "npm:4.4.0"
-    laz-perf: "npm:^0.0.6"
+    copc: "npm:0.0.8"
+    laz-perf: "npm:^0.0.7"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -5718,9 +5720,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/potree@workspace:modules/potree"
   dependencies:
+    "@loaders.gl/gis": "npm:4.4.0"
     "@loaders.gl/las": "npm:4.4.0"
     "@loaders.gl/math": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
+    "@loaders.gl/schema-utils": "npm:4.4.0"
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/proj4": "npm:^4.1.0"
   peerDependencies:
@@ -5871,6 +5875,7 @@ __metadata:
     "@deck.gl/core": "npm:^9.3.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/math": "npm:4.4.0"
+    "@loaders.gl/schema": "npm:4.4.0"
     "@math.gl/core": "npm:^4.1.0"
     "@math.gl/culling": "npm:^4.1.0"
     "@math.gl/geospatial": "npm:^4.1.0"
@@ -15209,13 +15214,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"copc@npm:0.0.6":
-  version: 0.0.6
-  resolution: "copc@npm:0.0.6"
+"copc@npm:0.0.8":
+  version: 0.0.8
+  resolution: "copc@npm:0.0.8"
   dependencies:
     cross-fetch: "npm:^3.1.5"
-    laz-perf: "npm:^0.0.5"
-  checksum: 10c0/1491ba2aa7059a361c7f79c13cb4d1a4a5a843b3d53d9ddf3d690ba845aa08a5dd65f132a96785bfeda38dd380cb1670ff352cd0fef2862b210bd5abe75d8052
+    laz-perf: "npm:^0.0.7"
+  checksum: 10c0/fcca32b7b410ca12b231bd1728f64c648f086c9e7b5bec6da95c43887140297dc8cffb0e6c9a4ab46cad6589435360bac63b5bda4e4600fa968880196d2fa67a
   languageName: node
   linkType: hard
 
@@ -22971,17 +22976,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"laz-perf@npm:^0.0.5":
-  version: 0.0.5
-  resolution: "laz-perf@npm:0.0.5"
-  checksum: 10c0/cac8bdee8f6e9fa78f7fab3e6d806d28d8e675d2d148efc6c3e24a4e4a273ed02536535d30c653201cac470854768e4f24bc75d4705433c249d406ceb1ce705d
-  languageName: node
-  linkType: hard
-
-"laz-perf@npm:^0.0.6":
-  version: 0.0.6
-  resolution: "laz-perf@npm:0.0.6"
-  checksum: 10c0/c7ff934bc2d1df77ebb0b81043ccd5c65d9eec977a0bb6a5e25ab2e8759ad4292d14b65d3b34774d5ac9983adb49f21b6c863b76ac8439970c66758644539653
+"laz-perf@npm:^0.0.7":
+  version: 0.0.7
+  resolution: "laz-perf@npm:0.0.7"
+  checksum: 10c0/fc90bfeb6b2f3001de085be3ec109b993e3470b6dd016c7af5c12b924e3322104e5f129d26dca64f03b8b87fd873f3dbfeea133eac4dc8dd7840e4604a5f11c1
   languageName: node
   linkType: hard
 

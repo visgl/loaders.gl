@@ -10,6 +10,7 @@ import type {
 
 export type PointCloudTilesetOptions = {
   debounceTime?: number;
+  minimumNodePixelSize?: number;
   maximumScreenSpaceError?: number;
   pointBudget?: number;
   maxDepth?: number;
@@ -23,6 +24,7 @@ type PointCloudTilesetProps = Required<PointCloudTilesetOptions>;
 
 const DEFAULT_PROPS: PointCloudTilesetProps = {
   debounceTime: 0,
+  minimumNodePixelSize: 150,
   maximumScreenSpaceError: 1,
   pointBudget: 2_000_000,
   maxDepth: Number.POSITIVE_INFINITY,
@@ -255,7 +257,7 @@ export class PointCloudTileset {
 
     let selectedPointCount = initialSelectedPointCount;
     const traversalQueue: TraversalCandidate[] = [
-      {tile: this.root, weight: this.estimateTraversalWeight(this.root, traversalContext.viewport)}
+      {tile: this.root, weight: this.estimateScreenRadius(this.root, traversalContext.viewport)}
     ];
 
     while (traversalQueue.length > 0) {
@@ -299,14 +301,12 @@ export class PointCloudTileset {
     return selectedPointCount;
   }
 
-  /**
-   * Whether a tile should refine to children based on its projected footprint.
-   */
+  /** Whether a tile should refine to children based on its projected screen radius. */
   private shouldRefine(tile: PointCloudTile, traversalWeight: number): boolean {
     return (
       tile.level < this.options.maxDepth &&
       Number.isFinite(traversalWeight) &&
-      traversalWeight > this.options.maximumScreenSpaceError
+      traversalWeight >= this.options.minimumNodePixelSize
     );
   }
 
@@ -314,9 +314,10 @@ export class PointCloudTileset {
    * Build per-viewport traversal state once per traversal pass.
    */
   private getTraversalContext(viewport: Viewport): TraversalContext {
+    const cullingVolume = this.getCullingVolume(viewport as PointCloudViewport);
     return {
       viewport,
-      cullingVolume: this.getCullingVolume(viewport as PointCloudViewport)
+      cullingVolume: this.shouldUseCullingVolume(viewport, cullingVolume) ? cullingVolume : null
     };
   }
 
@@ -331,15 +332,10 @@ export class PointCloudTileset {
       );
 
       if (boundingSphere) {
-        const isInsideFrustum =
-          traversalContext.cullingVolume.computeVisibilityWithPlaneMask(
-            boundingSphere,
-            CullingVolume.MASK_INDETERMINATE
-          ) !== CullingVolume.MASK_OUTSIDE;
-
-        if (isInsideFrustum) {
-          return true;
-        }
+        return this.isBoundingSphereInsideCullingVolume(
+          boundingSphere,
+          traversalContext.cullingVolume
+        );
       }
     }
 
@@ -348,49 +344,67 @@ export class PointCloudTileset {
       return false;
     }
 
-    return !(
-      footprint.x + footprint.radius < -VISIBILITY_MARGIN_PIXELS ||
-      footprint.x - footprint.radius > traversalContext.viewport.width + VISIBILITY_MARGIN_PIXELS ||
-      footprint.y + footprint.radius < -VISIBILITY_MARGIN_PIXELS ||
-      footprint.y - footprint.radius > traversalContext.viewport.height + VISIBILITY_MARGIN_PIXELS
+    return this.isProjectedFootprintVisible(footprint, traversalContext.viewport);
+  }
+
+  /**
+   * Returns true when the viewport frustum appears usable for this tileset's coordinate space.
+   */
+  private shouldUseCullingVolume(
+    viewport: Viewport,
+    cullingVolume: CullingVolume | null
+  ): cullingVolume is CullingVolume {
+    if (!this.root || !cullingVolume) {
+      return false;
+    }
+
+    const rootBoundingSphere = this.getCommonSpaceBoundingSphere(
+      this.root.boundingVolume,
+      viewport as PointCloudViewport
+    );
+    if (!rootBoundingSphere) {
+      return false;
+    }
+
+    if (this.isBoundingSphereInsideCullingVolume(rootBoundingSphere, cullingVolume)) {
+      return true;
+    }
+
+    const projectedFootprint = this.getProjectedFootprint(this.root.boundingVolume, viewport);
+    return !projectedFootprint || !this.isProjectedFootprintVisible(projectedFootprint, viewport);
+  }
+
+  /**
+   * Checks whether a common-space bounding sphere intersects a culling volume.
+   */
+  private isBoundingSphereInsideCullingVolume(
+    boundingSphere: BoundingSphere,
+    cullingVolume: CullingVolume
+  ): boolean {
+    return (
+      cullingVolume.computeVisibilityWithPlaneMask(
+        boundingSphere,
+        CullingVolume.MASK_INDETERMINATE
+      ) !== CullingVolume.MASK_OUTSIDE
     );
   }
 
   /**
-   * Estimate traversal priority from projected geometric error in pixels.
+   * Checks a projected screen-space footprint against the viewport rectangle.
    */
-  private estimateTraversalWeight(tile: PointCloudTile, viewport: Viewport): number {
-    const pointCloudViewport = viewport as PointCloudViewport;
-    const projectPosition = pointCloudViewport.projectPosition?.bind(pointCloudViewport);
-    const cameraPosition = pointCloudViewport.cameraPosition;
-    if (!projectPosition || !cameraPosition) {
-      const footprint = this.getProjectedFootprint(tile.boundingVolume, viewport);
-      return footprint ? footprint.radius * 2 : 0;
-    }
-
-    let centerCommonSpace: number[];
-    try {
-      centerCommonSpace = projectPosition(tile.boundingVolume.center);
-    } catch {
-      return 0;
-    }
-
-    const distanceToCamera = Math.max(
-      1e-6,
-      Math.hypot(
-        centerCommonSpace[0] - cameraPosition[0],
-        centerCommonSpace[1] - cameraPosition[1],
-        (centerCommonSpace[2] || 0) - (cameraPosition[2] || 0)
-      )
+  private isProjectedFootprintVisible(footprint: ProjectedFootprint, viewport: Viewport): boolean {
+    return !(
+      footprint.x + footprint.radius < -VISIBILITY_MARGIN_PIXELS ||
+      footprint.x - footprint.radius > viewport.width + VISIBILITY_MARGIN_PIXELS ||
+      footprint.y + footprint.radius < -VISIBILITY_MARGIN_PIXELS ||
+      footprint.y - footprint.radius > viewport.height + VISIBILITY_MARGIN_PIXELS
     );
+  }
 
-    const projectionScale = this.getProjectionScalePixels(pointCloudViewport);
-    const geometricErrorCommonSpace = this.getGeometricErrorInCommonSpace(
-      tile.geometricError,
-      pointCloudViewport
-    );
-
-    return (geometricErrorCommonSpace * projectionScale) / distanceToCamera;
+  /** Estimate traversal priority from projected node radius in screen pixels. */
+  private estimateScreenRadius(tile: PointCloudTile, viewport: Viewport): number {
+    const footprint = this.getProjectedFootprint(tile.boundingVolume, viewport);
+    return footprint ? footprint.radius : 0;
   }
 
   /**
@@ -500,7 +514,7 @@ export class PointCloudTileset {
     return children
       .map(child => ({
         tile: child,
-        weight: this.estimateTraversalWeight(child, traversalContext.viewport)
+        weight: this.estimateScreenRadius(child, traversalContext.viewport)
       }))
       .filter(candidate => this.isVisible(candidate.tile, traversalContext));
   }
@@ -691,39 +705,5 @@ export class PointCloudTileset {
     }
 
     return new BoundingSphere().fromCornerPoints([minX, minY, minZ], [maxX, maxY, maxZ]);
-  }
-
-  /**
-   * Approximate the viewport projection scale in screen pixels.
-   */
-  private getProjectionScalePixels(viewport: PointCloudViewport): number {
-    const projectionMatrix = viewport.projectionMatrix;
-    if (projectionMatrix && Number.isFinite(projectionMatrix[5])) {
-      return Math.abs(projectionMatrix[5]) * viewport.height * 0.5;
-    }
-
-    return viewport.height;
-  }
-
-  /**
-   * Convert a geometric error in meters into common-space units for the active viewport.
-   */
-  private getGeometricErrorInCommonSpace(
-    geometricError: number,
-    viewport: PointCloudViewport
-  ): number {
-    const unitsPerMeter = viewport.distanceScales?.unitsPerMeter;
-    if (!unitsPerMeter) {
-      return geometricError;
-    }
-
-    const scale = Math.max(
-      Math.abs(unitsPerMeter[0] || 0),
-      Math.abs(unitsPerMeter[1] || 0),
-      Math.abs(unitsPerMeter[2] || 0),
-      1
-    );
-
-    return geometricError * scale;
   }
 }

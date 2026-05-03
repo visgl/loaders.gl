@@ -365,6 +365,8 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
     streamError: Error | null;
     /** Async iterable currently being consumed. */
     streamingData: AsyncIterable<ArrowTableBatch> | null;
+    /** Version incremented when the engine loads another async batch. */
+    engineDataVersion: number;
   };
 
   /** Initializes state used for static and streaming splat rendering. */
@@ -374,27 +376,33 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       streamEngines: [],
       streamId: 0,
       streamError: null,
-      streamingData: null
+      streamingData: null,
+      engineDataVersion: 0
     });
   }
 
-  /** Updates the optional WebGPU engine when layer props change. */
+  /** Updates the shared splat engine when layer props change. */
   updateState(params: UpdateParameters<this>): void {
     super.updateState(params);
 
     if (isAsyncIterable(this.props.data)) {
-      this.destroySplatEngine();
-      this.updateStreamingState(params);
+      const splatEngine = this.getOrCreateSplatEngine();
+      splatEngine.setProps(this.getSplatEngineProps());
+      if (params.changeFlags.dataChanged) {
+        this.destroyStreamEngines();
+        const streamId = (this.state.streamId || 0) + 1;
+        this.setState({
+          arrowTableBatches: [],
+          streamId,
+          streamError: null,
+          streamingData: this.props.data
+        });
+        splatEngine.setData(this.props.data, this.props.getColor || DEFAULT_COLOR);
+      }
       return;
     }
 
     this.destroyStreamEngines();
-
-    const useGpuEngine = this.shouldUseGpuEngine();
-    if (!useGpuEngine) {
-      this.destroySplatEngine();
-      return;
-    }
 
     if (!this.props.data) {
       this.destroySplatEngine();
@@ -403,12 +411,7 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
 
     const arrowTable = getArrowTable(this.props.data);
     const fallbackColor = this.props.getColor || DEFAULT_COLOR;
-    let splatEngine = this.state.splatEngine;
-    if (!splatEngine) {
-      splatEngine = new SplatEngine(this.context.device, this.getSplatEngineProps());
-      this.setState({splatEngine});
-    }
-
+    const splatEngine = this.getOrCreateSplatEngine();
     splatEngine.setProps(this.getSplatEngineProps());
 
     if (
@@ -436,38 +439,31 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
     }
 
     if (isAsyncIterable(this.props.data)) {
-      const {arrowTableBatches, streamEngines, streamError} = this.state;
+      const {streamError, splatEngine} = this.state;
       if (streamError) {
         throw streamError;
       }
 
-      return arrowTableBatches.map((arrowTableBatch, batchIndex) =>
-        this.renderSplatPrimitiveLayer(
-          arrowTableBatch.data,
-          `splats-${batchIndex}`,
-          streamEngines[batchIndex] || null
-        )
-      );
+      return splatEngine && splatEngine.getSplatCount() > 0
+        ? this.renderSplatPrimitiveLayer(null, 'splats', splatEngine)
+        : null;
     }
 
-    const useGpuEngine = this.shouldUseGpuEngine();
     const arrowTable = getArrowTable(this.props.data);
-    return this.renderSplatPrimitiveLayer(
-      arrowTable,
-      'splats',
-      useGpuEngine ? this.state.splatEngine || null : null
-    );
+    return this.renderSplatPrimitiveLayer(arrowTable, 'splats', this.state?.splatEngine || null);
   }
 
   private renderSplatPrimitiveLayer(
-    arrowTable: arrow.Table,
+    arrowTable: arrow.Table | null,
     id: string,
     splatEngine: SplatEngine | null
   ): Layer {
     const splatData = splatEngine
-      ? {length: splatEngine.getSplatCount(), attributes: {}}
+      ? this.context.device.type === 'webgpu'
+        ? {length: splatEngine.getSplatCount(), attributes: {}}
+        : splatEngine.getWebGLAttributes()
       : getDeckBinaryDataFromGaussianSplatArrowTable(
-          arrowTable,
+          arrowTable!,
           this.props.getColor,
           this.props.gaussianSupportRadius
         );
@@ -488,98 +484,6 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
     }) as unknown as Layer;
   }
 
-  private updateStreamingState(params: UpdateParameters<this>): void {
-    if (params.changeFlags.dataChanged) {
-      this.destroyStreamEngines();
-      const streamId = (this.state.streamId || 0) + 1;
-      this.setState({
-        arrowTableBatches: [],
-        streamEngines: [],
-        streamEngineFallbackColor: undefined,
-        streamId,
-        streamError: null,
-        streamingData: this.props.data
-      });
-      void this.consumeArrowTableBatches(this.props.data as AsyncIterable<ArrowTableBatch>, streamId);
-    }
-
-    if (this.shouldUseGpuEngine()) {
-      this.updateStreamEngines(params);
-    } else {
-      this.destroyStreamEngines();
-    }
-  }
-
-  private updateStreamEngines(params: UpdateParameters<this>): void {
-    const fallbackColor = this.props.getColor || DEFAULT_COLOR;
-    const engineProps = this.getSplatEngineProps();
-    const streamEngines = [...(this.state.streamEngines || [])];
-    let changed = false;
-
-    for (let batchIndex = 0; batchIndex < this.state.arrowTableBatches.length; batchIndex++) {
-      let splatEngine = streamEngines[batchIndex];
-      if (!splatEngine) {
-        splatEngine = new SplatEngine(this.context.device, engineProps);
-        streamEngines[batchIndex] = splatEngine;
-        changed = true;
-      }
-
-      splatEngine.setProps(engineProps);
-      if (
-        params.changeFlags.propsChanged ||
-        this.state.streamEngineFallbackColor !== fallbackColor ||
-        changed
-      ) {
-        splatEngine.setData(this.state.arrowTableBatches[batchIndex].data, fallbackColor);
-      }
-    }
-
-    if (changed || this.state.streamEngineFallbackColor !== fallbackColor) {
-      this.setState({streamEngines, streamEngineFallbackColor: fallbackColor});
-    }
-  }
-
-  private async consumeArrowTableBatches(
-    arrowTableBatchIterator: AsyncIterable<ArrowTableBatch>,
-    streamId: number
-  ): Promise<void> {
-    try {
-      for await (const arrowTableBatch of arrowTableBatchIterator) {
-        if (this.state.streamId !== streamId || this.state.streamingData !== arrowTableBatchIterator) {
-          return;
-        }
-
-        if (!isArrowTableBatch(arrowTableBatch)) {
-          throw new Error('SplatLayer async data requires ArrowTableBatch values.');
-        }
-
-        const fallbackColor = this.props.getColor || DEFAULT_COLOR;
-        const streamEngines = [...(this.state.streamEngines || [])];
-        let streamEngineFallbackColor = this.state.streamEngineFallbackColor;
-        if (this.shouldUseGpuEngine()) {
-          const splatEngine = new SplatEngine(this.context.device, this.getSplatEngineProps());
-          splatEngine.setData(arrowTableBatch.data, fallbackColor);
-          streamEngines.push(splatEngine);
-          streamEngineFallbackColor = fallbackColor;
-        } else {
-          streamEngines.push(null);
-        }
-
-        this.setState({
-          arrowTableBatches: [...this.state.arrowTableBatches, arrowTableBatch],
-          streamEngines,
-          streamEngineFallbackColor
-        });
-      }
-    } catch (error) {
-      if (this.state.streamId === streamId && this.state.streamingData === arrowTableBatchIterator) {
-        this.setState({
-          streamError: error instanceof Error ? error : new Error(String(error))
-        });
-      }
-    }
-  }
-
   private shouldUseGpuEngine(): boolean {
     const renderMode = this.props.renderMode || 'auto';
     const device = this.context?.device;
@@ -595,6 +499,16 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
     return false;
   }
 
+  private getOrCreateSplatEngine(): SplatEngine {
+    this.shouldUseGpuEngine();
+    let splatEngine = this.state.splatEngine;
+    if (!splatEngine) {
+      splatEngine = new SplatEngine(this.context.device, this.getSplatEngineProps());
+      this.setState({splatEngine});
+    }
+    return splatEngine;
+  }
+
   private getSplatEngineProps() {
     return {
       sortMode: (this.props.sortMode || 'global') as SplatSortMode,
@@ -602,7 +516,10 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       screenSizeCutoffPixels: this.props.screenSizeCutoffPixels ?? 0,
       gaussianSupportRadius: this.props.gaussianSupportRadius ?? 3,
       kernel2DSize: this.props.kernel2DSize ?? 0.3,
-      maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize ?? 1024
+      maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize ?? 1024,
+      onDataUpdate: () =>
+        this.setState({engineDataVersion: (this.state.engineDataVersion || 0) + 1}),
+      onDataError: (error: Error) => this.setState({streamError: error})
     };
   }
 
@@ -612,15 +529,25 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
   }
 
   private destroyStreamEngines(): void {
-    for (const splatEngine of this.state.streamEngines || []) {
-      splatEngine?.destroy();
-    }
+    this.destroyStreamEngineResources();
     this.setState({
       arrowTableBatches: [],
       streamEngines: [],
       streamEngineFallbackColor: undefined,
       streamError: null,
-      streamingData: null
+      streamingData: null,
+      engineDataVersion: 0
+    });
+  }
+
+  /** Releases per-batch WebGPU engines without clearing loaded async batch state. */
+  private destroyStreamEngineResources(): void {
+    for (const splatEngine of this.state.streamEngines || []) {
+      splatEngine?.destroy();
+    }
+    this.setState({
+      streamEngines: [],
+      streamEngineFallbackColor: undefined
     });
   }
 }
@@ -821,21 +748,6 @@ function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> 
   return Boolean(
     data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
   );
-}
-
-/** Returns true when a value is a loaders.gl Arrow table data batch. */
-function isArrowTableBatch(data: unknown): data is ArrowTableBatch {
-  const arrowTableBatch = data as ArrowTableBatch;
-  return (
-    arrowTableBatch?.shape === 'arrow-table' &&
-    arrowTableBatch.batchType === 'data' &&
-    isArrowTable(arrowTableBatch.data)
-  );
-}
-
-/** Returns true when a value is an Apache Arrow table. */
-function isArrowTable(data: unknown): data is arrow.Table {
-  return Boolean(data && typeof (data as arrow.Table).getChild === 'function');
 }
 
 /** Convert a Gaussian splat Arrow table into deck.gl binary attributes. */

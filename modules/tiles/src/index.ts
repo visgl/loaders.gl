@@ -77,6 +77,7 @@ export type {
 } from './point-cloud/types';
 export type {PointCloudTilesetOptions} from './point-cloud/point-cloud-tileset';
 export {PointCloudTileset} from './point-cloud/point-cloud-tileset';
+export {PointCloudTile} from './point-cloud/point-cloud-tile';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 

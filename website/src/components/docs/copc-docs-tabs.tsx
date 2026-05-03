@@ -11,9 +11,10 @@ type CopcDocsTab = {
 };
 
 /** COPC documentation tab identifiers. */
-export type CopcDocsTabId = 'overview' | 'format' | 'source';
+export type CopcDocsTabId = 'overview' | 'format' | 'source' | 'example';
 
 const COPC_DOCS_TABS: CopcDocsTab[] = [
+  {id: 'example', label: 'Try It', href: '/examples/pointclouds/copc-source'},
   {id: 'overview', label: 'Overview', href: '/docs/modules/copc'},
   {id: 'format', label: 'Format', href: '/docs/modules/copc/formats/copc'},
   {id: 'source', label: 'COPCSourceLoader', href: '/docs/modules/copc/api-reference/copc-source-loader'}

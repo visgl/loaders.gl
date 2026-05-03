@@ -1,5 +1,6 @@
 declare module '@loaders.gl/tiles' {
   import type {Viewport} from '@deck.gl/core';
+  import type {MeshArrowTable} from '@loaders.gl/schema';
 
   export type PointCloudAttribute = {
     value: ArrayBufferView;
@@ -8,11 +9,7 @@ declare module '@loaders.gl/tiles' {
   };
 
   export type PointCloudTileContent = {
-    attributes: {
-      positions: PointCloudAttribute;
-      colors?: PointCloudAttribute;
-      normals?: PointCloudAttribute;
-    };
+    data: MeshArrowTable;
     pointCount: number;
     cartographicOrigin: number[];
     coordinateSystem: 'default' | 'lnglat' | 'meter-offsets' | 'lnglat-offsets' | 'cartesian';
@@ -56,6 +53,7 @@ declare module '@loaders.gl/tiles' {
 
   export type PointCloudTilesetOptions = {
     debounceTime?: number;
+    minimumNodePixelSize?: number;
     maximumScreenSpaceError?: number;
     pointBudget?: number;
     maxDepth?: number;

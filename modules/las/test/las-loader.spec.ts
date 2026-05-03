@@ -26,6 +26,8 @@ import {
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAS_EXTRABYTES_BINARY_URL = '@loaders.gl/las/test/data/extrabytes.laz';
+const LAS_1_4_BINARY_URL = '@loaders.gl/las/test/data/points-1.4.las';
+const LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/ellipsoid-1.4.laz';
 
 setLoaderOptions({
   _workerType: 'test'
@@ -130,6 +132,69 @@ test('LASLoader#parseInBatches(fp64)', async t => {
     break;
   }
 
+  t.end();
+});
+
+test('LASLoader#parseInBatches backend option', async t => {
+  for (const backend of ['laz-perf', 'copc', 'laz-rs'] as const) {
+    const response = await fetchFile(LAS_BINARY_URL);
+    const batches = await parseInBatches(makeIterator(response), LASLoader, {
+      batchSize: 30000,
+      las: {backend, skip: 10},
+      core: {worker: false}
+    });
+    let totalVertexCount = 0;
+
+    for await (const batch of batches as AsyncIterable<any>) {
+      totalVertexCount += batch.header.vertexCount;
+    }
+
+    t.equal(totalVertexCount, 80805, `${backend} backend emits all skipped points`);
+  }
+
+  t.end();
+});
+
+test('LASLoader#parse LAS 1.4 fixture', async t => {
+  const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
+    las: {backend: 'copc'},
+    core: {worker: false}
+  });
+  validateMeshCategoryData(t, data);
+
+  t.equal(data.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
+  t.equal(data.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
+  t.equal(data.header.vertexCount, 3, 'fixture point count is expected');
+  t.ok(data.attributes.COLOR_0, 'fixture includes color');
+  t.end();
+});
+
+test('LASLoader#parse LAZ 1.4 fixture', async t => {
+  const data = await parse(fetchFile(LAZ_1_4_BINARY_URL), LASLoader, {
+    las: {backend: 'copc', skip: 1000},
+    core: {worker: false}
+  });
+  validateMeshCategoryData(t, data);
+
+  t.equal(data.loaderData.versionAsString, '1.4', 'fixture is LAS 1.4');
+  t.equal(data.loaderData.pointsFormatId, 7, 'fixture uses point format 7');
+  t.equal(data.header.vertexCount, 100, 'fixture point count respects skip');
+  t.ok(data.attributes.COLOR_0, 'fixture includes color');
+  t.end();
+});
+
+test('LASLoader#parseSync rejects async backends', t => {
+  const arrayBuffer = new ArrayBuffer(0);
+  t.throws(
+    () => bundledLas.LASLoader.parseSync?.(arrayBuffer, {las: {backend: 'copc'}}),
+    /does not support parseSync/,
+    'copc backend cannot run through parseSync'
+  );
+  t.throws(
+    () => bundledLas.LASLoader.parseSync?.(arrayBuffer, {las: {backend: 'laz-rs'}}),
+    /does not support parseSync/,
+    'laz-rs backend cannot run through parseSync'
+  );
   t.end();
 });
 

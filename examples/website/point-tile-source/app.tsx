@@ -9,16 +9,18 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 import DeckGL from '@deck.gl/react';
-import {
-  FlyToInterpolator,
-  LinearInterpolator,
-  OrbitView
-} from '@deck.gl/core';
-import type {PointCloudTileset, PointCloudTilesetSource} from '@loaders.gl/tiles';
+import {FlyToInterpolator, LinearInterpolator, OrbitView, TerrainController} from '@deck.gl/core';
+import type {
+  PointCloudBoundingVolume,
+  PointCloudTileset,
+  PointCloudTilesetSource
+} from '@loaders.gl/tiles';
+import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
 
 import {
   DEFAULT_EXAMPLE_ID,
   POINT_TILE_SOURCE_EXAMPLES,
+  createPointCloudDataSource,
   type PointTileMapViewState,
   type PointTileOrbitViewState,
   type PointTileSourceExample,
@@ -60,6 +62,23 @@ type TilesetSummary = {
   renderedPoints: number;
   loaded: boolean;
 };
+
+/**
+ * Returns URL dropdown options for the active point tile source examples.
+ */
+function getPointTileSourceUrlOptions(
+  examples: PointTileSourceExample[],
+  format?: PointTileSourceExample['format']
+): UrlOption<PointTileSourceExample>[] {
+  const optionFormat = format || 'point-tile-source';
+  return examples.map((example) => ({
+    format: optionFormat,
+    example,
+    label: example.label,
+    url: example.url,
+    group: 'Examples'
+  }));
+}
 
 /**
  * Returns a serializable view of the active point-cloud tileset.
@@ -154,6 +173,15 @@ function getMapPointCloudViewState(
  */
 function getOrbitPointCloudViewState(tileset: PointCloudTileset): Partial<PointTileOrbitViewState> | null {
   const boundingVolume = tileset.boundingVolume || tileset.root?.boundingVolume;
+  return getOrbitPointCloudViewStateFromBoundingVolume(boundingVolume);
+}
+
+/**
+ * Builds an orbit view state from a point-cloud bounding volume.
+ */
+function getOrbitPointCloudViewStateFromBoundingVolume(
+  boundingVolume?: PointCloudBoundingVolume | null
+): Partial<PointTileOrbitViewState> | null {
   if (!boundingVolume) {
     return null;
   }
@@ -178,6 +206,10 @@ function isMapExample(example?: PointTileSourceExample): boolean {
   return example?.viewMode !== 'orbit';
 }
 
+function isMapViewMode(viewMode?: PointTileSourceExample['viewMode']): boolean {
+  return viewMode !== 'orbit';
+}
+
 function isMapViewState(viewState: PointTileViewState): viewState is PointTileMapViewState {
   return 'longitude' in viewState && 'latitude' in viewState;
 }
@@ -188,9 +220,10 @@ function isOrbitViewState(viewState: PointTileViewState): viewState is PointTile
 
 function getDeckViewState(
   example: PointTileSourceExample | undefined,
-  viewState: PointTileViewState
+  viewState: PointTileViewState,
+  viewMode?: PointTileSourceExample['viewMode']
 ): PointTileMapViewState | PointTileOrbitViewState {
-  if (isMapExample(example)) {
+  if (isMapViewMode(viewMode || example?.viewMode)) {
     return isMapViewState(viewState)
       ? viewState
       : {
@@ -208,6 +241,42 @@ function getDeckViewState(
 }
 
 /**
+ * Formats picked Arrow point attributes for deck.gl's tooltip.
+ */
+function formatPointTooltip(info: {
+  object?: {index?: number; properties?: Record<string, unknown>};
+}): string | null {
+  const properties = info.object?.properties;
+  if (!properties) {
+    return null;
+  }
+
+  const rows = Object.entries(properties)
+    .slice(0, 12)
+    .map(([propertyName, propertyValue]) => {
+      return `${propertyName}: ${formatPointPropertyValue(propertyValue)}`;
+    });
+
+  return [`Point ${info.object?.index ?? ''}`, ...rows].join('\n');
+}
+
+/**
+ * Formats one picked point property value for compact display.
+ */
+function formatPointPropertyValue(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(formatPointPropertyValue).join(', ')}]`;
+  }
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? value.toString() : value.toFixed(3);
+  }
+  if (value === null || value === undefined) {
+    return String(value);
+  }
+  return String(value);
+}
+
+/**
  * Logs point-tile-source errors with browser console context.
  */
 function logPointTileSourceError(message: string, error: unknown): void {
@@ -217,17 +286,30 @@ function logPointTileSourceError(message: string, error: unknown): void {
 /**
  * Website demo for the source-backed point-cloud tileset flow.
  */
-export default function App(): React.JSX.Element {
+export default function App({
+  format
+}: {
+  /** Optional point-cloud source format filter. */
+  format?: PointTileSourceExample['format'];
+}): React.JSX.Element {
+  const availableExamples = format
+    ? POINT_TILE_SOURCE_EXAMPLES.filter((example) => example.format === format)
+    : POINT_TILE_SOURCE_EXAMPLES;
+  const initialExampleId = availableExamples[0]?.id || DEFAULT_EXAMPLE_ID;
   const [viewState, setViewState] = useState<PointTileViewState>(INITIAL_MAP_VIEW_STATE);
-  const [selectedExampleId, setSelectedExampleId] = useState<string>(DEFAULT_EXAMPLE_ID);
+  const [selectedExampleId, setSelectedExampleId] = useState<string>(initialExampleId);
+  const [selectedUrl, setSelectedUrl] = useState<string>(availableExamples[0]?.url || '');
   const [dataSource, setDataSource] = useState<PointCloudTilesetSource | null>(null);
   const [tilesetSummary, setTilesetSummary] = useState<TilesetSummary | null>(null);
   const [metadataText, setMetadataText] = useState<string>('Loading metadata...');
   const [error, setError] = useState<string | null>(null);
+  const [activeViewMode, setActiveViewMode] =
+    useState<PointTileSourceExample['viewMode']>('map');
 
   const selectedExample =
-    POINT_TILE_SOURCE_EXAMPLES.find((example) => example.id === selectedExampleId) ||
-    POINT_TILE_SOURCE_EXAMPLES[0];
+    availableExamples.find((example) => example.id === selectedExampleId) || availableExamples[0];
+  const urlPickerFormat = format || 'point-tile-source';
+  const urlOptions = getPointTileSourceUrlOptions(availableExamples, format);
 
   useEffect(() => {
     if (!selectedExample) {
@@ -237,54 +319,63 @@ export default function App(): React.JSX.Element {
     let isCancelled = false;
 
     try {
-      const nextDataSource = selectedExample.createPointCloudDataSource();
+      const nextDataSource = createPointCloudDataSource(selectedExample.format, selectedUrl);
       setError(null);
       setTilesetSummary(null);
       setMetadataText('Loading metadata...');
       setViewState(getInitialViewState(selectedExample));
-      setDataSource(nextDataSource);
-
-      if (selectedExample.viewMode === 'map') {
-        void nextDataSource
-          .initialize()
-          .then(async () => await nextDataSource.getViewState?.())
-          .then((sourceViewState) => {
-            if (isCancelled || !sourceViewState) {
-              return;
-            }
-
-            const nextViewState = getMapPointCloudViewState(
-              sourceViewState.cartographicCenter,
-              sourceViewState.zoom
-            );
-            if (nextViewState) {
-              setViewState((currentViewState) => ({
-                ...currentViewState,
-                ...nextViewState
-              }));
-            }
-          })
-          .catch((initializationError) => {
-            if (!isCancelled) {
-              logPointTileSourceError('Failed to initialize point-cloud source', initializationError);
-              setError((initializationError as Error).message);
-            }
-          });
-      }
+      setActiveViewMode(selectedExample.viewMode);
+      setDataSource(null);
 
       void nextDataSource
-        .getMetadata?.()
+        .initialize()
+        .then(async () => {
+          if (isCancelled) {
+            return;
+          }
+
+          setDataSource(nextDataSource);
+          const sourceViewState = await nextDataSource.getViewState?.();
+          const mapViewState = getMapPointCloudViewState(
+            sourceViewState?.cartographicCenter,
+            sourceViewState?.zoom
+          );
+          const nextViewMode = mapViewState ? 'map' : selectedExample.viewMode;
+          const nextViewState =
+            nextViewMode === 'map'
+              ? mapViewState
+              : getOrbitPointCloudViewStateFromBoundingVolume(sourceViewState?.boundingVolume);
+
+          setActiveViewMode(nextViewMode);
+
+          if (nextViewState) {
+            setViewState({
+              ...(nextViewMode === 'map'
+                ? INITIAL_MAP_VIEW_STATE
+                : {
+                    ...INITIAL_ORBIT_VIEW_STATE,
+                    ...getExampleViewState(selectedExample)
+                  }),
+              ...nextViewState
+            });
+          }
+
+          return await nextDataSource.getMetadata?.();
+        })
         .then((metadata) => {
-          if (!isCancelled) {
+          if (!isCancelled && metadata) {
             setMetadataText(JSON.stringify(metadata, null, 2));
           }
         })
-        .catch((metadataError) => {
+        .catch((initializationError) => {
           if (!isCancelled) {
-            logPointTileSourceError('Failed to load point-cloud metadata', metadataError);
-            setMetadataText(`Metadata unavailable: ${(metadataError as Error).message}`);
+            logPointTileSourceError('Failed to initialize point-cloud source', initializationError);
+            setDataSource(null);
+            setError((initializationError as Error).message);
+            setMetadataText(`Metadata unavailable: ${(initializationError as Error).message}`);
           }
         });
+
     } catch (creationError) {
       logPointTileSourceError('Failed to create point-cloud source', creationError);
       setDataSource(null);
@@ -295,7 +386,7 @@ export default function App(): React.JSX.Element {
     return () => {
       isCancelled = true;
     };
-  }, [selectedExample]);
+  }, [selectedExample, selectedUrl]);
 
   const layers = dataSource
     ? [
@@ -304,12 +395,16 @@ export default function App(): React.JSX.Element {
           dataSource,
           pointSize: selectedExample?.pointSize || 1,
           getPointColor: selectedExample?.color || [55, 126, 184],
+          showTileBoundingBoxes: true,
           pointTilesetOptions: {
-            maximumScreenSpaceError: 1,
+            minimumNodePixelSize: 150,
             pointBudget: 2_000_000
           },
           onPointTilesetLoad: (tileset) => {
-            const nextViewState = getTilesetViewState(tileset, selectedExample) || getExampleViewState(selectedExample);
+            const nextViewState =
+              activeViewMode === 'map'
+                ? getMapPointCloudViewState(tileset.cartographicCenter, tileset.zoom)
+                : getTilesetViewState(tileset, selectedExample) || getExampleViewState(selectedExample);
             setTilesetSummary(summarizeTileset(tileset));
             if (nextViewState) {
               setViewState((currentViewState) => ({
@@ -328,21 +423,29 @@ export default function App(): React.JSX.Element {
         })
       ]
     : [];
-  const deckViewState = getDeckViewState(selectedExample, viewState);
+  const deckViewState = getDeckViewState(selectedExample, viewState, activeViewMode);
 
   return (
     <div style={{position: 'relative', height: '100%'}}>
       <DeckGL
-        key={selectedExample?.viewMode || 'map'}
-        controller={true}
+        key={activeViewMode}
+        controller={
+          activeViewMode === 'map'
+            ? {
+                type: TerrainController,
+                rotationPivot: '3d'
+              }
+            : true
+        }
         layers={layers}
-        views={selectedExample?.viewMode === 'orbit' ? new OrbitView({id: 'orbit'}) : undefined}
+        views={activeViewMode === 'orbit' ? new OrbitView({id: 'orbit'}) : undefined}
         viewState={deckViewState as any}
+        getTooltip={formatPointTooltip}
         onViewStateChange={({viewState: nextViewState}) =>
           setViewState(nextViewState as PointTileViewState)
         }
       >
-        {isMapExample(selectedExample) ? (
+        {isMapViewMode(activeViewMode) ? (
           <Map
             reuseMaps={true}
             mapLib={maplibregl}
@@ -352,11 +455,37 @@ export default function App(): React.JSX.Element {
         ) : null}
       </DeckGL>
 
+      {selectedExample ? (
+        <div
+          style={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            right: 16,
+            zIndex: 2
+          }}
+        >
+          <ExampleUrlInputCard<PointTileSourceExample>
+            format={urlPickerFormat}
+            storageKey={`point-tile-source.${urlPickerFormat}`}
+            selectedUrl={selectedUrl}
+            urlOptions={urlOptions}
+            onExampleSelect={(urlOption) => {
+              if (urlOption.example) {
+                setSelectedExampleId(urlOption.example.id);
+              }
+              setSelectedUrl(urlOption.url);
+            }}
+            onUrlChange={(url) => setSelectedUrl(url)}
+          />
+        </div>
+      ) : null}
+
       <div
         style={{
           position: 'absolute',
           top: 16,
-          left: 16,
+          right: 16,
           width: 340,
           maxHeight: 'calc(100% - 32px)',
           maxWidth: 'calc(100% - 32px)',
@@ -375,33 +504,6 @@ export default function App(): React.JSX.Element {
           Compare Potree and COPC using the small point-cloud tileset manager instead of the full
           3D Tiles pipeline.
         </p>
-
-        <div style={{marginTop: 16}}>
-          <div style={{marginBottom: 6, fontSize: 12, letterSpacing: '0.06em', opacity: 0.72}}>
-            DATASET
-          </div>
-          <select
-            value={selectedExample?.id || ''}
-            onChange={(event) => setSelectedExampleId(event.target.value)}
-            style={{
-              width: '100%',
-              border: 0,
-              borderRadius: 10,
-              padding: '10px 12px',
-              fontSize: 15,
-              fontWeight: 600,
-              background: '#f8fafc',
-              color: '#0f172a'
-            }}
-          >
-            {POINT_TILE_SOURCE_EXAMPLES.map((example: PointTileSourceExample) => (
-              <option key={example.id} value={example.id}>
-                {example.datasetName} ({example.format.toUpperCase()})
-              </option>
-            ))}
-          </select>
-        </div>
-
         {selectedExample ? (
           <div style={{marginTop: 16, fontSize: 14, lineHeight: 1.5}}>
             <div>
@@ -422,7 +524,7 @@ export default function App(): React.JSX.Element {
             <div style={{marginTop: 6}}>
               <strong>URL:</strong>{' '}
               <a
-                href={selectedExample.url}
+                href={selectedUrl}
                 target="_blank"
                 rel="noreferrer"
                 style={{color: '#93c5fd'}}

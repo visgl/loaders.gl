@@ -396,7 +396,7 @@ async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrow
         las: {shape: 'arrow-table'},
         obj: {shape: 'arrow-table'},
         pcd: {shape: 'arrow-table'},
-        ply: {shape: 'arrow-table'}
+        ply: {shape: 'arrow-table', pointCloud: true}
       })
     )
   );
@@ -427,7 +427,7 @@ async function loadPointCloudExampleInBatches(
 
   const pointCloudBatches = (await loadInBatches(urls[0], PLYLoader, {
     worker: false,
-    ply: {shape: 'arrow-table'}
+    ply: {shape: 'arrow-table', pointCloud: true}
   })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
 
   return trackPointCloudBatches(pointCloudBatches, callbacks);
@@ -583,6 +583,7 @@ function createArrowPointCloudLayer(
     data: pointData,
     pickable: true,
     autoHighlight: true,
+    defaultPointColor: [200, 200, 255],
     pointCloudLayerProps: {
       getNormal: [0, 1, 0],
       opacity: 0.5,
@@ -820,15 +821,17 @@ function createUrlCard(options: {
 }
 
 function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: number): HTMLElement {
+  let pointMessage = `Points: ${formatPointCount(vertexCount)}`;
   let loadMessage = '';
   if (loadTimeMs) {
     loadMessage = `Load time: ${(loadTimeMs / 1000).toFixed(1)}s`;
   } else if (loadStartMs) {
+    pointMessage = `Rows loaded: ${formatPointCount(vertexCount)}`;
     loadMessage = 'Loading...';
   }
 
   const preElement = document.createElement('pre');
-  preElement.textContent = `Points: ${formatPointCount(vertexCount)}\n${loadMessage}`;
+  preElement.textContent = `${pointMessage}\n${loadMessage}`;
   preElement.style.margin = '0';
   preElement.style.textAlign = 'center';
   preElement.style.whiteSpace = 'pre-wrap';

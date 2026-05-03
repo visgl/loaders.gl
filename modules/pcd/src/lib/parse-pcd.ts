@@ -163,7 +163,7 @@ function getMeshAttributes(attributes: HeaderAttributes): {[attributeName: strin
  * @returns Header
  */
 /* eslint-disable complexity, max-statements */
-function parsePCDHeader(data: string): PCDHeader {
+export function parsePCDHeader(data: string): PCDHeader {
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
   const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 

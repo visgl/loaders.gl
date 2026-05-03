@@ -3,12 +3,15 @@
 // Copyright (c) vis.gl contributors
 
 import type {LoaderOptions} from '@loaders.gl/loader-utils';
-import type {Mesh, MeshAttributes} from '@loaders.gl/schema';
+import type {Mesh, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {PotreeAttribute} from '../types/potree-metadata';
 
 /** Loader options for Potree binary point tiles. */
 export type PotreeBinLoaderOptions = LoaderOptions & {
   potree?: {
+    /** Selects mesh output or Apache Arrow output. */
+    shape?: 'mesh' | 'arrow-table';
     pointAttributes?: PotreeAttribute[];
     scale?: number;
     positionOrigin?: [number, number, number];
@@ -31,7 +34,7 @@ export function parsePotreeBin(
   arrayBuffer: ArrayBuffer,
   byteOffset = 0,
   options?: PotreeBinLoaderOptions
-): Mesh {
+): Mesh | MeshArrowTable {
   const resolvedOptions = getResolvedPotreeBinOptions(options);
   const pointByteSize = resolvedOptions.pointAttributes.reduce(
     (totalByteLength, pointAttribute) =>
@@ -111,7 +114,7 @@ export function parsePotreeBin(
     };
   }
 
-  return {
+  const mesh: Mesh = {
     loader: 'potree',
     loaderData: {
       pointAttributes: resolvedOptions.pointAttributes,
@@ -129,6 +132,16 @@ export function parsePotreeBin(
       fields: [],
       metadata: {}
     }
+  };
+
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  if (options?.potree?.shape === 'arrow-table') {
+    return table;
+  }
+  return {
+    ...convertTableToMesh(table),
+    loader: mesh.loader,
+    loaderData: mesh.loaderData
   };
 }
 

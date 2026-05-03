@@ -47,33 +47,24 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Geospatial Services',
-      items: [
-        'tiles/wms',
-        'tiles/wfs',
-        'tiles/arcgis-image-server',
-        'tiles/arcgis-feature-server'
-      ]
-    },
-    {
-      type: 'category',
-      label: 'Geospatial Raster Formats',
-      items: ['geospatial/geotiff']
-    },
-    {
-      type: 'category',
-      label: 'Bioimaging Raster Formats',
-      items: ['bioimaging/ome-tiff']
-    },
-    {
-      type: 'category',
       label: 'Tiled 3D Formats',
       items: [
         'i3s-building-scene-layer',
         'i3s-picking',
         'i3s-colorization-by-attributes',
         '3d-tiles',
-        'pointclouds/point-tile-source'
+        'pointclouds/potree-source',
+        'pointclouds/copc-source'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Services',
+      items: [
+        'tiles/wms',
+        'tiles/wfs',
+        'tiles/arcgis-image-server',
+        'tiles/arcgis-feature-server'
       ]
     },
     {
@@ -87,6 +78,16 @@ const sidebars = {
         'pointclouds/ply',
         'pointclouds/obj'
       ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Raster Formats',
+      items: ['geospatial/geotiff']
+    },
+    {
+      type: 'category',
+      label: 'Bioimaging Raster Formats',
+      items: ['bioimaging/ome-tiff']
     },
     {
       type: 'category',

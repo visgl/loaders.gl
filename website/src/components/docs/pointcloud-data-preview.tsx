@@ -20,6 +20,7 @@ const PREVIEW_COLUMN_LIMIT = 9;
 const SOURCE_BYTE_LIMIT = 2048;
 const SOURCE_TEXT_LIMIT = 48000;
 const DEFAULT_SOURCE_BYTES_PER_ROW = 8;
+const PREVIEW_LOAD_DELAY_MS = 250;
 type SelectedPointcloudExample = {
   /** Example category label. */
   categoryName: string;
@@ -364,6 +365,7 @@ export default function PointcloudDataPreview({
 
   useEffect(() => {
     let isCancelled = false;
+    const cancelPreviewLoad = schedulePreviewLoad(loadPointcloudPreview);
 
     async function loadPointcloudPreview(): Promise<void> {
       if (!exampleEntry) {
@@ -398,10 +400,9 @@ export default function PointcloudDataPreview({
       }
     }
 
-    loadPointcloudPreview();
-
     return () => {
       isCancelled = true;
+      cancelPreviewLoad();
     };
   }, [exampleEntry, format]);
 
@@ -429,51 +430,91 @@ export default function PointcloudDataPreview({
           }
         />
       )}
-      {state.status === 'loading' && <StatusContainer>Loading point cloud data...</StatusContainer>}
-      {state.status === 'error' && <StatusContainer>{state.errorMessage}</StatusContainer>}
-      {state.status === 'loaded' && (
-        <PreviewLayout data-loader-live-pointcloud-data-preview>
+      <PreviewLayout data-loader-live-pointcloud-data-preview>
+        <PreviewPane>
+          <PaneCard>
+            <PaneHeader>
+              <PaneLabel>
+                {state.status === 'loaded' && state.sourceText ? 'Source text' : 'Source bytes'}
+              </PaneLabel>
+              <PaneMeta>
+                {state.status === 'loaded' ? formatByteCount(state.arrayBuffer.byteLength) : '\u00a0'}
+              </PaneMeta>
+            </PaneHeader>
+            <SourceShell>
+              {state.status === 'loading' && <StatusContainer>Loading point cloud data...</StatusContainer>}
+              {state.status === 'error' && <StatusContainer>{state.errorMessage}</StatusContainer>}
+              {state.status === 'loaded' && state.sourceText && (
+                <SourceTextPreview sourceText={state.sourceText} />
+              )}
+              {state.status === 'loaded' && !state.sourceText && (
+                <SourceBytesPreview arrayBuffer={state.arrayBuffer} />
+              )}
+            </SourceShell>
+          </PaneCard>
+        </PreviewPane>
+        <PreviewPane>
+          <PaneCard>
+            <PaneHeader>
+              <PaneLabel>Arrow table</PaneLabel>
+              <PaneMeta>
+                {state.status === 'loaded'
+                  ? formatRowCount(getPointCount((state.mesh as any).attributes || {}))
+                  : '\u00a0'}
+              </PaneMeta>
+            </PaneHeader>
+            <TableShell>
+              {state.status === 'loading' && <StatusContainer>Loading point cloud data...</StatusContainer>}
+              {state.status === 'error' && <StatusContainer>{state.errorMessage}</StatusContainer>}
+              {state.status === 'loaded' && <PointcloudTable mesh={state.mesh} />}
+            </TableShell>
+          </PaneCard>
+        </PreviewPane>
+        {children && (
           <PreviewPane>
             <PaneCard>
               <PaneHeader>
-                <PaneLabel>{state.sourceText ? 'Source text' : 'Source bytes'}</PaneLabel>
-                <PaneMeta>{formatByteCount(state.arrayBuffer.byteLength)}</PaneMeta>
+                <PaneLabel>Deck canvas</PaneLabel>
+                <PaneMeta>&nbsp;</PaneMeta>
               </PaneHeader>
-              <SourceShell>
-                {state.sourceText ? (
-                  <SourceTextPreview sourceText={state.sourceText} />
-                ) : (
-                  <SourceBytesPreview arrayBuffer={state.arrayBuffer} />
-                )}
-              </SourceShell>
+              <CanvasShell>{children}</CanvasShell>
             </PaneCard>
           </PreviewPane>
-          <PreviewPane>
-            <PaneCard>
-              <PaneHeader>
-                <PaneLabel>Arrow table</PaneLabel>
-                <PaneMeta>{formatRowCount(getPointCount((state.mesh as any).attributes || {}))}</PaneMeta>
-              </PaneHeader>
-              <TableShell>
-                <PointcloudTable mesh={state.mesh} />
-              </TableShell>
-            </PaneCard>
-          </PreviewPane>
-          {children && (
-            <PreviewPane>
-              <PaneCard>
-                <PaneHeader>
-                  <PaneLabel>Deck canvas</PaneLabel>
-                  <PaneMeta>&nbsp;</PaneMeta>
-                </PaneHeader>
-                <CanvasShell>{children}</CanvasShell>
-              </PaneCard>
-            </PreviewPane>
-          )}
-        </PreviewLayout>
-      )}
+        )}
+      </PreviewLayout>
     </GlobalPreviewStyle>
   );
+}
+
+/**
+ * Schedules the full preview load after the initial canvas render has a chance to paint.
+ */
+function schedulePreviewLoad(callback: () => void): () => void {
+  if (typeof window === 'undefined') {
+    return () => {};
+  }
+
+  let timeoutId: number | null = null;
+  let idleCallbackId: number | null = null;
+
+  const animationFrameId = window.requestAnimationFrame(() => {
+    const requestIdleCallback = window.requestIdleCallback;
+    if (requestIdleCallback) {
+      idleCallbackId = requestIdleCallback(callback, {timeout: PREVIEW_LOAD_DELAY_MS});
+    } else {
+      timeoutId = window.setTimeout(callback, PREVIEW_LOAD_DELAY_MS);
+    }
+  });
+
+  return () => {
+    window.cancelAnimationFrame(animationFrameId);
+    if (idleCallbackId !== null) {
+      window.cancelIdleCallback?.(idleCallbackId);
+    }
+    if (timeoutId !== null) {
+      window.clearTimeout(timeoutId);
+    }
+  };
 }
 
 /**
@@ -605,7 +646,7 @@ async function loadPreviewPointCloud(
       las: {shape: 'arrow-table'},
       obj: {shape: 'arrow-table'},
       pcd: {shape: 'arrow-table'},
-      ply: {shape: 'arrow-table'}
+      ply: {shape: 'arrow-table', pointCloud: true}
     });
     return isMeshArrowTable(pointCloud) ? ((convertTableToMesh(pointCloud) as unknown) as Mesh) : (pointCloud as Mesh);
   }
@@ -619,7 +660,7 @@ async function loadPreviewPointCloud(
         las: {shape: 'arrow-table'},
         obj: {shape: 'arrow-table'},
         pcd: {shape: 'arrow-table'},
-        ply: {shape: 'arrow-table'}
+        ply: {shape: 'arrow-table', pointCloud: true}
       });
     })
   );

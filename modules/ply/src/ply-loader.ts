@@ -17,6 +17,8 @@ export type PLYLoaderOptions = LoaderOptions & {
   ply?: ParsePLYOptions & {
     /** Output shape. Defaults to a legacy Mesh object. */
     shape?: 'mesh' | 'arrow-table';
+    /** Treat PLY data as a point cloud by reading only the leading vertex element. */
+    pointCloud?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };

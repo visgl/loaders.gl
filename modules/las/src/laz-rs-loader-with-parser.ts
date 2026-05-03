@@ -5,7 +5,7 @@
 // LASER (LAS) FILE FORMAT
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable} from '@loaders.gl/schema-utils';
+import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {LASLoaderOptions} from './las-loader';
 import type {LASMesh} from './lib/las-types';
 import {parseLAS, parseLASInBatches} from './lib/laz-rs-wasm/parse-las';
@@ -36,5 +36,14 @@ export const LAZRsLoaderWithParser = {
 >;
 
 function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
-  return options?.las?.shape === 'arrow-table' ? convertMeshToTable(mesh, 'arrow-table') : mesh;
+  const table = convertMeshToTable(mesh, 'arrow-table');
+  if (options?.las?.shape === 'arrow-table') {
+    return table;
+  }
+  return {
+    ...(convertTableToMesh(table) as LASMesh),
+    loader: mesh.loader,
+    loaderData: mesh.loaderData,
+    progress: (mesh as LASMesh & {progress?: number}).progress
+  } as LASMesh & {progress?: number};
 }

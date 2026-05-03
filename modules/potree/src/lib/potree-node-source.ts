@@ -6,8 +6,13 @@ import type {PotreeSourceLoaderOptions} from '../potree-source-loader';
 import type {CoreAPI, Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {convertMeshToTable} from '@loaders.gl/schema-utils';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
-import {POTreeNode} from '../parsers/parse-potree-hierarchy-chunk';
+import {
+  POTreeNode,
+  buildPotreeHierarchyFromMetadata
+} from '../parsers/parse-potree-hierarchy-chunk';
 import {PotreeHierarchyChunkLoaderWithParser} from '../potree-hierarchy-chunk-loader-with-parser';
 import {PotreeLoaderWithParser} from '../potree-loader-with-parser';
 import {PotreeBinLoaderWithParser} from '../potree-bin-loader-with-parser';
@@ -45,6 +50,8 @@ export interface PotreeNodeMesh extends LASMesh {
 export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOptions> {
   /** Dataset base URL */
   baseUrl: string = '';
+  /** Metadata URL, preserving direct `cloud.js` inputs. */
+  metadataUrl: string = '';
   /** Meta information from `cloud.js` */
   metadata: PotreeMetadata | null = null;
   /** Root node */
@@ -55,6 +62,8 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
   projection: Proj4Projection | null = null;
   /** The data set minimum bounding box */
   boundingBox?: PotreeBoundingBox;
+  /** The octree hierarchy bounding box in source coordinates */
+  nativeHierarchyBoundingBox?: PotreeBoundingBox;
   /** The octree hierarchy bounding box in source or projected coordinates */
   hierarchyBoundingBox?: PotreeBoundingBox;
   /** Tile lookup by normalized tile id */
@@ -75,6 +84,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
     this.makeBaseUrl(this.data);
 
     this.initPromise = this.initialize();
+    this.initPromise.catch(() => {});
   }
 
   /** Initial data source loading */
@@ -83,7 +93,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       await this.initPromise;
       return;
     }
-    this.metadata = await this.loadWithCoreApi(`${this.baseUrl}/cloud.js`, PotreeLoaderWithParser);
+    this.metadata = await this.loadWithCoreApi(this.metadataUrl, PotreeLoaderWithParser);
     this.projection = createProjection(this.metadata?.projection);
     this.parseBoundingVolume();
 
@@ -166,7 +176,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       const loader = this.getNodeContentLoader();
       const loaderOptions = this.getNodeContentLoaderOptions(tileBoundingBox);
       const result = (await this.loadWithCoreApi(
-        `${this.baseUrl}/${this.metadata?.octreeDir}/r/r${nodeName}.${contentExtension}`,
+        this.getNodeContentUrl(nodeName, contentExtension),
         loader,
         loaderOptions
       )) as PotreeNodeMesh & {
@@ -185,11 +195,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
    * Load normalized point cloud tile content.
    */
   async loadTileContent(tile: {id: string}): Promise<{
-    attributes: {
-      positions: {value: ArrayBufferView; size: number; normalized?: boolean};
-      colors?: {value: ArrayBufferView; size: number; normalized?: boolean};
-      normals?: {value: ArrayBufferView; size: number; normalized?: boolean};
-    };
+    data: MeshArrowTable;
     pointCount: number;
     cartographicOrigin: number[];
     coordinateSystem: PotreeCoordinateSystem;
@@ -204,13 +210,10 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
     if (!positions) {
       return null;
     }
+    const data = this.getPointCloudTileTable(mesh);
 
     return {
-      attributes: {
-        positions,
-        colors: mesh.attributes.colors,
-        normals: mesh.attributes.normals
-      },
+      data,
       pointCount: mesh.header?.vertexCount || positions.value.length / positions.size,
       cartographicOrigin: mesh.cartographicOrigin,
       coordinateSystem: mesh.coordinateSystem
@@ -312,6 +315,14 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
    * Load data source hierarchy into tree of available nodes
    */
   private async loadHierarchy(): Promise<void> {
+    if (this.metadata?.hierarchy?.length) {
+      this.root = buildPotreeHierarchyFromMetadata(this.metadata.hierarchy, {
+        spacing: this.metadata.spacing
+      });
+      this.indexNodes();
+      return;
+    }
+
     this.root = await this.loadWithCoreApi(
       `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
       PotreeHierarchyChunkLoaderWithParser
@@ -346,33 +357,87 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
    * @param data - data source input data
    */
   private makeBaseUrl(data: string | Blob): void {
-    this.baseUrl = typeof data === 'string' ? resolvePath(data) : '';
-    if (this.baseUrl.endsWith('cloud.js')) {
-      this.baseUrl = this.baseUrl.slice(0, -8);
+    const resolvedUrl = typeof data === 'string' ? this.resolveInputUrl(data) : '';
+    const normalizedUrl = resolvedUrl.endsWith('/') ? resolvedUrl.slice(0, -1) : resolvedUrl;
+    this.baseUrl = normalizedUrl;
+    this.metadataUrl = normalizedUrl;
+
+    if (this.isMetadataUrl(normalizedUrl)) {
+      this.baseUrl = this.getDirectoryUrl(normalizedUrl);
+    } else {
+      this.metadataUrl = `${normalizedUrl}/cloud.js`;
     }
+
     if (this.baseUrl.endsWith('/')) {
       this.baseUrl = this.baseUrl.substring(0, -1);
+    }
+    if (this.metadataUrl.endsWith('/cloud.js')) {
+      return;
+    }
+    if (this.metadataUrl.endsWith('/')) {
+      this.metadataUrl = `${this.metadataUrl}cloud.js`;
+    }
+  }
+
+  /**
+   * Resolves local aliases while preserving absolute web URLs exactly.
+   */
+  private resolveInputUrl(url: string): string {
+    const trimmedUrl = url.trim();
+    if (/^https?:\/\//i.test(trimmedUrl)) {
+      return trimmedUrl;
+    }
+    return resolvePath(trimmedUrl);
+  }
+
+  /**
+   * Checks whether a source URL points directly at Potree metadata.
+   */
+  private isMetadataUrl(url: string): boolean {
+    try {
+      return new URL(url).pathname.endsWith('/cloud.js');
+    } catch {
+      return url.endsWith('cloud.js');
+    }
+  }
+
+  /**
+   * Returns the containing directory for a file URL or path.
+   */
+  private getDirectoryUrl(url: string): string {
+    try {
+      const parsedUrl = new URL(url);
+      parsedUrl.search = '';
+      parsedUrl.hash = '';
+      parsedUrl.pathname = parsedUrl.pathname.slice(0, parsedUrl.pathname.lastIndexOf('/'));
+      return parsedUrl.toString();
+    } catch {
+      return url.slice(0, -8);
     }
   }
 
   private parseBoundingVolume(): void {
     if (!this.metadata) {
       this.boundingBox = undefined;
+      this.nativeHierarchyBoundingBox = undefined;
       this.hierarchyBoundingBox = undefined;
       return;
     }
 
-    if (this.metadata.projection) {
-      const projection = new Proj4Projection({
-        from: this.metadata.projection,
-        to: 'WGS84'
-      });
+    this.nativeHierarchyBoundingBox = this.metadata.boundingBox || this.metadata.tightBoundingBox;
 
-      this.hierarchyBoundingBox = this.projectBoundingBox(projection, this.metadata.boundingBox);
-      this.boundingBox = this.projectBoundingBox(
-        projection,
-        this.metadata.tightBoundingBox || this.metadata.boundingBox
-      );
+    if (this.metadata.projection) {
+      const projection = this.projection || createProjection(this.metadata.projection);
+
+      this.hierarchyBoundingBox = projection
+        ? this.projectBoundingBox(projection, this.metadata.boundingBox)
+        : this.metadata.boundingBox;
+      this.boundingBox = projection
+        ? this.projectBoundingBox(
+            projection,
+            this.metadata.tightBoundingBox || this.metadata.boundingBox
+          )
+        : this.metadata.tightBoundingBox || this.metadata.boundingBox;
     } else {
       this.hierarchyBoundingBox = this.metadata.boundingBox || this.metadata.tightBoundingBox;
       this.boundingBox = this.metadata.tightBoundingBox || this.metadata.boundingBox;
@@ -477,8 +542,20 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       throw new Error('Potree bounding box is not initialized');
     }
 
+    const bounds = this.getChildNodeBounds(tileId, this.hierarchyBoundingBox);
+    this.warnIfInvalidChildBounds(tileId, bounds);
+    return bounds;
+  }
+
+  /**
+   * Derive a child node bounding box by splitting a root octree bounding box.
+   */
+  private getChildNodeBounds(
+    tileId: string,
+    rootBoundingBox: PotreeBoundingBox
+  ): PotreeBoundingBox {
     const nodeName = this.getNodeName(tileId);
-    const bounds = {...this.hierarchyBoundingBox};
+    const bounds = {...rootBoundingBox};
 
     for (const char of nodeName) {
       const index = Number(char);
@@ -505,7 +582,6 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       }
     }
 
-    this.warnIfInvalidChildBounds(tileId, bounds);
     return bounds;
   }
 
@@ -554,11 +630,35 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
    * Build a tile bounding box tuple for loader metadata and headers.
    */
   private getTileBoundingBox(tileId: string): [number[], number[]] {
-    const bounds = this.getNodeBounds(tileId);
+    const bounds = this.getNativeNodeBounds(tileId);
     return [
       [bounds.lx, bounds.ly, bounds.lz],
       [bounds.ux, bounds.uy, bounds.uz]
     ];
+  }
+
+  /**
+   * Builds a node content URL for old flat and newer nested Potree layouts.
+   */
+  private getNodeContentUrl(nodeName: string, contentExtension: string): string {
+    const nodeId = nodeName ? `r${nodeName}` : 'r';
+
+    if (this.metadata?.hierarchy?.length) {
+      return `${this.baseUrl}/${this.metadata.octreeDir}/${nodeId}.${contentExtension}`;
+    }
+
+    return `${this.baseUrl}/${this.metadata?.octreeDir}/r/${nodeId}.${contentExtension}`;
+  }
+
+  /**
+   * Return a tile bounding box in the source projection for binary decoding.
+   */
+  private getNativeNodeBounds(tileId: string): PotreeBoundingBox {
+    if (!this.nativeHierarchyBoundingBox) {
+      throw new Error('Potree native bounding box is not initialized');
+    }
+
+    return this.getChildNodeBounds(tileId, this.nativeHierarchyBoundingBox);
   }
 
   /**
@@ -643,6 +743,39 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
   }
 
   /**
+   * Convert normalized node content to the Mesh Arrow table tile payload.
+   */
+  private getPointCloudTileTable(mesh: PotreeNodeMesh): MeshArrowTable {
+    const attributes: Mesh['attributes'] = {
+      POSITION: mesh.attributes.positions
+    };
+    if (mesh.attributes.colors) {
+      attributes.COLOR_0 = mesh.attributes.colors;
+    }
+    if (mesh.attributes.normals) {
+      attributes.NORMAL = mesh.attributes.normals;
+    }
+
+    return convertMeshToTable(
+      {
+        topology: 'point-list',
+        mode: 0,
+        header: {
+          vertexCount:
+            mesh.header?.vertexCount ||
+            mesh.attributes.positions.value.length / mesh.attributes.positions.size
+        },
+        schema: {
+          fields: [],
+          metadata: {}
+        },
+        attributes
+      },
+      'arrow-table'
+    );
+  }
+
+  /**
    * Detect whether a color buffer contains usable RGB information.
    */
   private hasUsableColors(colors?: {
@@ -670,21 +803,21 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
       return false;
     }
 
-    let maxChannelValue = 0;
+    let minChannelValue = Number.POSITIVE_INFINITY;
+    let maxChannelValue = Number.NEGATIVE_INFINITY;
     for (let sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
       const valueIndex = sampleIndex * colorSize;
-      maxChannelValue = Math.max(
-        maxChannelValue,
-        Number(colorValues[valueIndex] || 0),
-        Number(colorValues[valueIndex + 1] || 0),
-        Number(colorValues[valueIndex + 2] || 0)
-      );
+      const red = Number(colorValues[valueIndex] || 0);
+      const green = Number(colorValues[valueIndex + 1] || 0);
+      const blue = Number(colorValues[valueIndex + 2] || 0);
+      minChannelValue = Math.min(minChannelValue, red, green, blue);
+      maxChannelValue = Math.max(maxChannelValue, red, green, blue);
       if (maxChannelValue > 8) {
         return true;
       }
     }
 
-    return false;
+    return maxChannelValue - minChannelValue > 1e-6;
   }
 
   /**
@@ -694,15 +827,21 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOpti
     projection: Proj4Projection,
     boundingBox: PotreeBoundingBox
   ): PotreeBoundingBox {
-    const lowerCoordinate = projection.project([boundingBox.lx, boundingBox.ly]);
-    const upperCoordinate = projection.project([boundingBox.ux, boundingBox.uy]);
+    const projectedCorners = [
+      projection.project([boundingBox.lx, boundingBox.ly]),
+      projection.project([boundingBox.lx, boundingBox.uy]),
+      projection.project([boundingBox.ux, boundingBox.ly]),
+      projection.project([boundingBox.ux, boundingBox.uy])
+    ];
+    const longitudes = projectedCorners.map(coordinate => coordinate[0]);
+    const latitudes = projectedCorners.map(coordinate => coordinate[1]);
 
     return {
       ...boundingBox,
-      lx: lowerCoordinate[0],
-      ly: lowerCoordinate[1],
-      ux: upperCoordinate[0],
-      uy: upperCoordinate[1]
+      lx: Math.min(...longitudes),
+      ly: Math.min(...latitudes),
+      ux: Math.max(...longitudes),
+      uy: Math.max(...latitudes)
     };
   }
 }

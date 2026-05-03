@@ -40,28 +40,50 @@ const POTREE_FARMLAND_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/refs/heads/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted';
 const POTREE_LION_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/potree/test/data/lion_takanawa';
+const POTREE_VOL_TOTAL_URL = 'https://potree.github.io/potree/pointclouds/vol_total/cloud.js';
 const COPC_ELLIPSOID_URL =
   'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/copc/test/data/ellipsoid.copc.laz';
 const COPC_MIAMI_URL =
   'https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9271/20180425_324741D.copc.laz';
 
-function createPotreeDataSource(url: string): PointCloudTilesetSource {
-  return createDataSource(url, [PotreeSourceLoader], {
+export function createPotreeDataSource(url: string): PointCloudTilesetSource {
+  return createDataSource(getExampleSourceUrl(url), [PotreeSourceLoader], {
     core: {type: 'potree'},
     potree: {}
   }) as PointCloudTilesetSource;
 }
 
-function createCopcDataSource(
+export function createCopcDataSource(
   url: string,
   sourceCoordinateSystem?: string
 ): PointCloudTilesetSource {
-  return createDataSource(url, [COPCSourceLoader], {
+  return createDataSource(getExampleSourceUrl(url), [COPCSourceLoader], {
     core: {type: 'copc'},
     copc: {
       sourceCoordinateSystem
     }
   }) as PointCloudTilesetSource;
+}
+
+/**
+ * Creates a point-cloud tileset source for a supported tiled point-cloud format.
+ */
+export function createPointCloudDataSource(
+  format: PointTileSourceExample['format'],
+  url: string
+): PointCloudTilesetSource {
+  return format === 'potree' ? createPotreeDataSource(url) : createCopcDataSource(url);
+}
+
+/**
+ * Returns a source URL from the example input without rewriting absolute web URLs.
+ */
+function getExampleSourceUrl(url: string): string {
+  const trimmedUrl = url.trim();
+  if (/^https?:\/\//i.test(trimmedUrl)) {
+    return trimmedUrl;
+  }
+  return trimmedUrl;
 }
 
 export const POINT_TILE_SOURCE_EXAMPLES: PointTileSourceExample[] = [
@@ -102,6 +124,20 @@ export const POINT_TILE_SOURCE_EXAMPLES: PointTileSourceExample[] = [
     pointSize: 2,
     color: [55, 126, 184],
     createPointCloudDataSource: () => createPotreeDataSource(POTREE_FARMLAND_URL)
+  },
+  {
+    id: 'potree-vol-total',
+    label: 'Vol Total',
+    format: 'potree',
+    viewMode: 'map',
+    datasetName: 'Vol Total',
+    location: 'Near Switzerland, projected with Swiss Oblique Mercator',
+    expectedAppearance: 'A georeferenced outdoor Potree 1.4 point cloud with color variation.',
+    description: 'Legacy public Potree cloud.js dataset from the Potree examples.',
+    url: POTREE_VOL_TOTAL_URL,
+    pointSize: 2,
+    color: [96, 165, 250],
+    createPointCloudDataSource: () => createPotreeDataSource(POTREE_VOL_TOTAL_URL)
   },
   {
     id: 'copc-ellipsoid',
