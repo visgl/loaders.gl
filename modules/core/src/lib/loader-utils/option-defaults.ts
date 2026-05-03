@@ -8,13 +8,14 @@ import {ConsoleLog} from './loggers';
 
 export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
   core: {
-    baseUri: undefined,
-    // baseUri
+    baseUrl: undefined,
+    // baseUrl
     fetch: null,
     mimeType: undefined,
     fallbackMimeType: undefined,
     ignoreRegisteredLoaders: undefined,
     nothrow: false,
+    shape: undefined,
     log: new ConsoleLog(), // A probe.gl compatible (`log.log()()` syntax) that just logs to console
     useLocalLibraries: false,
 
@@ -36,8 +37,8 @@ export const DEFAULT_LOADER_OPTIONS: LoaderOptions = {
 };
 
 export const REMOVED_LOADER_OPTIONS = {
-  // baseUri
-  baseUri: 'core.baseUri',
+  // deprecated top-level alias
+  baseUri: 'core.baseUrl',
   fetch: 'core.fetch',
   mimeType: 'core.mimeType',
   fallbackMimeType: 'core.fallbackMimeType',
@@ -57,6 +58,7 @@ export const REMOVED_LOADER_OPTIONS = {
 
   limit: 'core.limit',
   _limitMB: 'core._limitMB',
+  shape: 'core.shape',
   batchSize: 'core.batchSize',
   batchDebounceMs: 'core.batchDebounceMs',
   metadata: 'core.metadata',
@@ -65,7 +67,7 @@ export const REMOVED_LOADER_OPTIONS = {
   // Older deprecations
   throws: 'nothrow',
   dataType: '(no longer used)',
-  uri: 'baseUri',
+  uri: 'core.baseUrl',
 
   // Warn if fetch options are used on toplevel
   method: 'core.fetch.method',

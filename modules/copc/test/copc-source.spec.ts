@@ -1,12 +1,12 @@
 import test from 'tape-promise/tape';
 import {join} from 'path';
 import {createDataSource} from '@loaders.gl/core';
-import {COPCSource, COPCTileSource} from '@loaders.gl/copc';
+import {COPCSourceLoader, COPCTileSource} from '@loaders.gl/copc';
 
 const ellipsoidFilename = join(__dirname, 'data/ellipsoid.copc.laz');
 
-test('COPCSource#creates a source through createDataSource', async (t) => {
-  const dataSource = createDataSource(ellipsoidFilename, [COPCSource], {
+test('COPCSourceLoader#creates a source through createDataSource', async t => {
+  const dataSource = createDataSource(ellipsoidFilename, [COPCSourceLoader], {
     core: {
       type: 'copc'
     },
@@ -17,8 +17,8 @@ test('COPCSource#creates a source through createDataSource', async (t) => {
   t.end();
 });
 
-test('COPCSource#loads normalized root and child tiles', async (t) => {
-  const source = COPCSource.createDataSource(ellipsoidFilename, {});
+test('COPCSourceLoader#loads normalized root and child tiles', async t => {
+  const source = COPCSourceLoader.createDataSource(ellipsoidFilename, {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -29,7 +29,7 @@ test('COPCSource#loads normalized root and child tiles', async (t) => {
   t.ok(rootTile.boundingVolume.radius > 0, 'root tile has a bounding volume');
   t.ok(childTiles.length > 0, 'child tile headers are exposed');
   t.ok(
-    childTiles.every((tile) => tile.geometricError < rootTile.geometricError),
+    childTiles.every(tile => tile.geometricError < rootTile.geometricError),
     'child tiles refine geometric error'
   );
 
@@ -38,8 +38,8 @@ test('COPCSource#loads normalized root and child tiles', async (t) => {
   t.end();
 });
 
-test('COPCSource#loads full point content for a tile', async (t) => {
-  const source = COPCSource.createDataSource(ellipsoidFilename, {});
+test('COPCSourceLoader#loads full point content for a tile', async t => {
+  const source = COPCSourceLoader.createDataSource(ellipsoidFilename, {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
@@ -57,13 +57,16 @@ test('COPCSource#loads full point content for a tile', async (t) => {
   t.end();
 });
 
-test('COPCSource#derives cartographic view metadata from the dataset', async (t) => {
-  const source = COPCSource.createDataSource(ellipsoidFilename, {});
+test('COPCSourceLoader#derives cartographic view metadata from the dataset', async t => {
+  const source = COPCSourceLoader.createDataSource(ellipsoidFilename, {});
 
   const metadata = await source.getMetadata();
   const viewState = source.getViewState();
 
-  t.ok(Array.isArray(metadata.viewState.cartographicCenter), 'metadata includes a cartographic center');
+  t.ok(
+    Array.isArray(metadata.viewState.cartographicCenter),
+    'metadata includes a cartographic center'
+  );
   t.ok(metadata.viewState.zoom > 0, 'metadata includes an inferred zoom');
   t.deepEqual(
     metadata.viewState.cartographicCenter,

@@ -1,5 +1,135 @@
 # Upgrade Guide
 
+## Upgrading to v5.0
+
+These deprecations.removals are being considered for v5
+
+**@loaders.gl/core**
+
+- Top-level loader options are no longer supported
+- `Source` has been replaced by `SourceLoader` for top-level runtime source factories.
+- `load(url, SomeSourceLoader)` now returns the runtime `DataSource` instance created by that source loader instead of metadata or parsed payloads.
+- `parse()` and `parseSync()` no longer accept source loaders. Use `load()` for source loaders and keep `parse()` for parser loaders.
+
+**@loaders.gl/loader-utils, @loaders.gl/core, and source modules**
+
+If you are upgrading from the 4.4 release line, migrate top-level source factories and types as follows:
+
+| v4.4 | v5.0 |
+| --- | --- |
+| `Source` | `SourceLoader` |
+| `WMSSource` | `WMSSourceLoader` |
+| `WFSSource` | `WFSSourceLoader` |
+| `MVTSource` | `MVTSourceLoader` |
+| `MLTSource` | `MLTSourceLoader` |
+| `PMTilesSource` | `PMTilesSourceLoader` |
+| `COPCSource` | `COPCSourceLoader` |
+| `PotreeSource` | `PotreeSourceLoader` |
+| `TableTileSource` | `TableTileSourceLoader` |
+| `FlatGeobufSource` | `FlatGeobufSourceLoader` |
+| `GeoTIFFSource` | `GeoTIFFSourceLoader` |
+| `OMETiffSource` | `OMETiffSourceLoader` |
+
+Concrete runtime classes are unchanged. For example:
+
+- `WMSSourceLoader` still creates `WMSImageSource`
+- `MVTSourceLoader` still creates `MVTTileSource`
+- `PMTilesSourceLoader` still creates `PMTilesTileSource`
+- `TableTileSourceLoader` still creates `TableVectorTileSource`
+
+The old top-level `*Source` aliases have been removed, so imports must be updated explicitly.
+
+### Arrow loader and writer variant removal
+
+Redundant Arrow-specific loader and writer variants have been removed where the primary loader or writer already supports Arrow table data.
+
+| Removed API | Replacement |
+| --- | --- |
+| `ExcelArrowLoader` | `ExcelLoader` with `excel.shape: 'arrow-table'` |
+| `LASArrowLoader` | `LASLoader` with `las.shape: 'arrow-table'` |
+| `NDJSONArrowLoader` | `NDJSONLoader` with `ndjson.shape: 'arrow-table'` |
+| `KMLArrowLoader` | `KMLLoader` with `kml.shape: 'arrow-table'` |
+| `GPXArrowLoader` | `GPXLoader` with `gpx.shape: 'arrow-table'` |
+| `TCXArrowLoader` | `TCXLoader` with `tcx.shape: 'arrow-table'` |
+| `DracoArrowLoader` | `DracoLoader` with `draco.shape: 'arrow-table'` |
+| `TerrainArrowLoader` | `TerrainLoader` with `terrain.shape: 'arrow-table'` |
+| `QuantizedMeshArrowLoader` | `QuantizedMeshLoader` with `quantized-mesh.shape: 'arrow-table'` |
+| `GeoPackageArrowLoader(tableName?)` | `GeoPackageLoader` with `geopackage.shape: 'arrow-table'` and optional `geopackage.table` |
+| `ParquetArrowLoader` | `ParquetLoader` with `parquet.shape: 'arrow-table'` |
+| `ParquetArrowWorkerLoader` | `ParquetLoader` with `parquet.shape: 'arrow-table'` |
+| `ParquetArrowWriter` | `ParquetWriter` |
+| `ShapefileArrowLoader` | `ShapefileLoader` with `shapefile.shape: 'arrow-table'` |
+
+For example:
+
+```ts
+import {load, encode} from '@loaders.gl/core';
+import {ExcelLoader} from '@loaders.gl/excel';
+import {ParquetLoader, ParquetWriter} from '@loaders.gl/parquet';
+
+const excelArrowTable = await load(excelUrl, ExcelLoader, {
+  excel: {shape: 'arrow-table'}
+});
+
+const parquetArrowTable = await load(parquetUrl, ParquetLoader, {
+  parquet: {shape: 'arrow-table'}
+});
+
+const parquetBuffer = await encode(parquetArrowTable, ParquetWriter);
+```
+
+### SourceLoader migration examples
+
+Before, in 4.4:
+
+```ts
+import type {Source} from '@loaders.gl/loader-utils';
+import {createDataSource, load} from '@loaders.gl/core';
+import {WMSSource, PMTilesSource} from '@loaders.gl/wms';
+
+const sources: Source[] = [WMSSource, PMTilesSource];
+const wmsSource = createDataSource(url, [WMSSource], options);
+const loaded = await load(url, WMSSource);
+```
+
+Now, in v5:
+
+```ts
+import type {SourceLoader} from '@loaders.gl/loader-utils';
+import {createDataSource, load} from '@loaders.gl/core';
+import {WMSSourceLoader} from '@loaders.gl/wms';
+import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
+
+const sources: SourceLoader[] = [WMSSourceLoader, PMTilesSourceLoader];
+const wmsSource = createDataSource(url, [WMSSourceLoader], options);
+const loaded = await load(url, WMSSourceLoader); // WMSImageSource
+```
+
+This unifies top-level loading behavior:
+
+- parser loaders still return parsed data
+- source loaders now return runtime source objects
+- metadata remains available from the returned runtime object, typically via `await source.getMetadata()`
+
+**@loaders.gl/parquet**
+
+- `ParquetJSONLoader` and `ParquetJSONWriter` compatibility aliases have been removed. Use `ParquetLoader`, `ParquetWriter`, `ParquetJSLoader`, or `ParquetJSWriter` instead depending on the backend you want.
+- `ParquetLoader` and `ParquetWriter` remain the canonical wasm-backed APIs. The experimental parquetjs backend now lives behind the explicit `ParquetJSLoader` and `ParquetJSWriter` exports.
+
+**@loaders.gl/images**
+
+- ImageLoader now only returns ImageBitmap (never Image or data), with a polyfill under Node.js. There is a function to extract data from an ImageBitmap?
+
+**@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
+
+- Gaussian splat support is new and opt-in. Use `PLYLoader` with `ply.shape: 'arrow-table'`, or `SPLATLoader` / `KSPLATLoader` from `@loaders.gl/splats`, then pass the returned Mesh Arrow table to `SplatLayer`.
+- `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
+- The CPU/WebGL fallback remains circular-billboard based. Applications that need the oriented Gaussian renderer should request `renderMode: 'gpu'` and handle the clear error raised when the current deck.gl device is not WebGPU.
+
+**@loaders.gl/tiles**
+
+- `Tileset3D` now requires a `Tile3DSource` and can no longer be instantiated with a JSON payload.
+
 ## Upgrading to v4.4
 
 **@loaders.gl/textures**
@@ -9,6 +139,12 @@
 - `@loaders.gl/textures` no longer exports `selectSupportedBasisFormat` or `getSupportedGPUTextureFormats`. Pass `basis.supportedTextureFormats` to `BasisLoader` instead of using exported auto-detection helpers.
 - `BasisLoader`, `CrunchLoader`, and `CompressedTextureLoader` no longer support `libraryPath`. Supply runtime libraries through `options.modules` instead.
 
+| Deprecated helper         | Replacement                     |
+| ------------------------- | ------------------------------- |
+| `loadImageTexture()`      | `load(url, TextureLoader)`      |
+| `loadImageTextureArray()` | `load(url, TextureArrayLoader)` |
+| `loadImageTextureCube()`  | `load(url, TextureCubeLoader)`  |
+
 **@loaders.gl/draco**
 
 - `DracoLoader` no longer supports `draco.libraryPath`. Supply `modules: {draco3d}` instead of configuring decoder library paths manually.
@@ -16,6 +152,12 @@
 **@loaders.gl/compression**
 
 - `LZOCompression` was removed due to maintenance and licensing concerns with the underlying `lzo-wasm` library.
+
+**@loaders.gl/parquet**
+
+- `@loaders.gl/parquet/buffer`, `BufferPolyfill`, and `installBufferPolyfill()` were removed. The JavaScript Parquet parser and writer now use `Uint8Array` internally instead of installing a global `Buffer`.
+- `ParquetLoader` and the experimental parquetjs APIs now return unannotated Parquet `BYTE_ARRAY` and `FIXED_LEN_BYTE_ARRAY` values as `Uint8Array` instead of `Buffer`. Logical values such as `UTF8` and `JSON` are still decoded to JavaScript strings/objects according to the Parquet schema.
+- `ParquetLoader` and `ParquetWriter` are now wasm-only. Use `ParquetJSLoader` and `ParquetJSWriter` for the experimental parquetjs plain-row/plain-table backend.
 
 ## Upgrading to v4.3
 
@@ -76,6 +218,8 @@ Some loaders can return multiple formats, often controlled with the loader optio
 **Apache Arrow JS**
 
 loaders.gl now imports `apache-arrow` v13 which is a major upgrade but Apache Arrow JS v9 introduces breaking changes (compared with Apache Arrow v4 which is used by loaders.gl v3.x\_).
+
+- `@loaders.gl/deck-layers` - `TileSourceLayer` now accepts the tile source only via `data`. The redundant `tileSource` prop has been removed.
 
 If your application is using the Apache Arrow API directly to work with Apache Arrow tables returned from loaders.gl, note that the Apache Arrow v9 API contains a number of breaking changes.
 
@@ -141,6 +285,14 @@ Loader module changes, in order of estimated impact to applications:
 - `options.kml.shape` replaces all other mechanisms for specifying format of returned data (`.format` etc), and aligns with the `geojson-table` table shape as this is compatible with a GeoJSON `FeatureCollection`.
 - `options.gpx.shape` applies the same changes as `options.kml.shape`.
 - `options.tcx.shape` applies the same changes as `options.kml.shape`.
+- `options.gpx.shape: 'binary'` and `options.tcx.shape: 'binary'` have been removed. Use `shape: 'binary-geometry'` instead.
+
+**@loaders.gl/mvt, @loaders.gl/mlt, @loaders.gl/flatgeobuf**
+
+- Geospatial loader shapes now use `geojson-table` for GeoJSON feature table output and `binary-geometry` for binary geometry output.
+- The old `geojson` shape has been removed from `MVTLoader` and `MLTLoader`. Use `geojson-table` instead.
+- The old `binary` shape has been removed from `MVTLoader`, `MLTLoader`, and `FlatGeobufLoader`. Use `binary-geometry` instead.
+- `MVTLoader` and `MLTLoader` now default to `geojson-table`.
 
 ## Upgrading to v3.4
 
@@ -203,13 +355,13 @@ Default number of worker threads for each loader has been reduced from `5` to `3
 - The binary image API has been consolidated in a single function `getBinaryImageMetadata()`:
 - A number of previously deprecated exports have been removed:
 
-| Export                                 | Replacement                                             |
-| -------------------------------------- | ------------------------------------------------------- |
-| `isBinaryImage(arrayBuffer)`           | `Boolean(getBinaryImageMetadata(arrayBuffer))`          |
-| `getBinaryImageMIMEType(arrayBuffer)`  | `getBinaryImageMetadata(arrayBuffer)?.mimeType`         |
-| `getBinaryImageSize(arrayBuffer)`      | `getBinaryImageMetadata(arrayBuffer)?.{width, height}`  |
-| `HTMLImageLoader`                      | Use `ImageLoader` with options `{image: type: 'image'}` |
-| `getDefaultImageType()`                | N/A                                                     |
+| Export                                 | Replacement                                                                 |
+| -------------------------------------- | --------------------------------------------------------------------------- |
+| `isBinaryImage(arrayBuffer)`           | `Boolean(getBinaryImageMetadata(arrayBuffer))`                              |
+| `getBinaryImageMIMEType(arrayBuffer)`  | `getBinaryImageMetadata(arrayBuffer)?.mimeType`                             |
+| `getBinaryImageSize(arrayBuffer)`      | `getBinaryImageMetadata(arrayBuffer)?.{width, height}`                      |
+| `HTMLImageLoader`                      | No direct replacement. `ImageLoader` now returns `ImageBitmap` in browsers. |
+| `getDefaultImageType()`                | N/A                                                                         |
 | `getSupportedImageType(imageType?)` NA |
 
 **@loaders.gl/kml**
@@ -297,7 +449,8 @@ The experimental ImageLoaders for individual formats introduced in 2.0 have been
 `@loaders.gl/images`
 
 - `getImageData(image)` now returns an object with `{data, width, height}` instead of just the `data` array. This small breaking change ensures that the concept of _image data_ is consistent across the API.
-- `ImageLoader`: `options.image.type`: The `html` and `ndarray` image types are now deprecated and replaced with `image` and `data` respectively.
+- `ImageBitmapLoader`: reintroduced in v4.4 as the preferred pure `ImageBitmap` loader.
+- `ImageLoader`: deprecated in v4.4 and retained as the broad compatibility loader. If application code needs raw pixels from either loader, load the image and call `getImageData(image)`.
 
 **`@loaders.gl/3d-tiles`**
 
@@ -325,15 +478,15 @@ Some general changes:
 
 ### `@loaders.gl/images`
 
-| Removal             | Replacement                                               |
-| ------------------- | --------------------------------------------------------- |
-| `ImageHTMLLoader`   | `ImageLoader` with `options.images.format: 'image'`       |
-| `ImageBitmapLoader` | `ImageLoader` with `options.images.format: 'imagebitmap'` |
-| `decodeImage`       | `parse(arrayBuffer, ImageLoader)`                         |
-| `isImage`           | `isBinaryImage`                                           |
-| `getImageMIMEType`  | `getBinaryImageMIMEType`                                  |
-| `getImageSize`      | `getBinaryImageSize`                                      |
-| `getImageMetadata`  | `getBinaryImageMIMEType` + `getBinaryImageSize`           |
+| Removal             | Replacement                                     |
+| ------------------- | ----------------------------------------------- |
+| `ImageHTMLLoader`   | Deprecated `ImageLoader`                        |
+| `ImageBitmapLoader` | `ImageBitmapLoader` (reintroduced in v4.4)      |
+| `decodeImage`       | `parse(arrayBuffer, ImageLoader)`               |
+| `isImage`           | `isBinaryImage`                                 |
+| `getImageMIMEType`  | `getBinaryImageMIMEType`                        |
+| `getImageSize`      | `getBinaryImageSize`                            |
+| `getImageMetadata`  | `getBinaryImageMIMEType` + `getBinaryImageSize` |
 
 ### Loader Objects
 

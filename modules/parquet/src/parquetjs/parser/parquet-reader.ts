@@ -20,6 +20,7 @@ import {
   ParquetReaderContext
 } from '../schema/declare';
 import {decodeFileMetadata, getThriftEnum, fieldIndexOf} from '../utils/read-utils';
+import {decodeString, readUInt32LE, toUint8Array} from '../utils/binary-utils';
 
 export type ParquetReaderProps = {
   defaultDictionarySize?: number;
@@ -82,9 +83,7 @@ export class ParquetReader {
   /** Iterate over the raw row groups */
   async *rowGroupIterator(props?: ParquetIterationProps) {
     // Ensure strings are nested in arrays
-    const columnList: string[][] = (props?.columnList || []).map((x) =>
-      Array.isArray(x) ? x : [x]
-    );
+    const columnList: string[][] = (props?.columnList || []).map(x => (Array.isArray(x) ? x : [x]));
 
     const metadata = await this.getFileMetadata();
     const schema = await this.getSchema();
@@ -140,8 +139,7 @@ export class ParquetReader {
   /** Metadata is stored in the footer */
   async readHeader(): Promise<void> {
     const arrayBuffer = await this.file.read(0, PARQUET_MAGIC.length);
-    const buffer = Buffer.from(arrayBuffer);
-    const magic = buffer.toString();
+    const magic = decodeString(toUint8Array(arrayBuffer));
     switch (magic) {
       case PARQUET_MAGIC:
         break;
@@ -156,21 +154,21 @@ export class ParquetReader {
   async readFooter(): Promise<FileMetaData> {
     const trailerLen = PARQUET_MAGIC.length + 4;
     const arrayBuffer = await this.file.read(this.file.size - trailerLen, trailerLen);
-    const trailerBuf = Buffer.from(arrayBuffer);
+    const trailer = toUint8Array(arrayBuffer);
 
-    const magic = trailerBuf.slice(4).toString();
+    const magic = decodeString(trailer, 4);
     if (magic !== PARQUET_MAGIC) {
       throw new Error(`Not a valid parquet file (magic="${magic})`);
     }
 
-    const metadataSize = trailerBuf.readUInt32LE(0);
+    const metadataSize = readUInt32LE(trailer, 0);
     const metadataOffset = this.file.size - metadataSize - trailerLen;
     if (metadataOffset < PARQUET_MAGIC.length) {
       throw new Error(`Invalid metadata size ${metadataOffset}`);
     }
 
     const arrayBuffer2 = await this.file.read(metadataOffset, metadataSize);
-    const metadataBuf = Buffer.from(arrayBuffer2);
+    const metadataBuf = toUint8Array(arrayBuffer2);
     // let metadata = new parquet_thrift.FileMetaData();
     // parquet_util.decodeThrift(metadata, metadataBuf);
 
@@ -253,7 +251,7 @@ export class ParquetReader {
 
     dictionary = context.dictionary?.length ? context.dictionary : dictionary;
     const arrayBuffer = await this.file.read(pagesOffset, pagesSize);
-    const pagesBuf = Buffer.from(arrayBuffer);
+    const pagesBuf = toUint8Array(arrayBuffer);
     return await decodeDataPages(pagesBuf, {...context, dictionary});
   }
 
@@ -268,7 +266,7 @@ export class ParquetReader {
     dictionaryPageOffset: number,
     context: ParquetReaderContext,
     pagesOffset: number
-  ): Promise<string[]> {
+  ): Promise<any[]> {
     if (dictionaryPageOffset === 0) {
       // dictionarySize = Math.min(this.fileSize - pagesOffset, this.defaultDictionarySize);
       // pagesBuf = await this.read(pagesOffset, dictionarySize);
@@ -285,7 +283,7 @@ export class ParquetReader {
       this.props.defaultDictionarySize
     );
     const arrayBuffer = await this.file.read(dictionaryPageOffset, dictionarySize);
-    const pagesBuf = Buffer.from(arrayBuffer);
+    const pagesBuf = toUint8Array(arrayBuffer);
 
     const cursor = {buffer: pagesBuf, offset: 0, size: pagesBuf.length};
     const decodedPage = await decodePage(cursor, context);

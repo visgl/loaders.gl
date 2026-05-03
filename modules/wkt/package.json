@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/wkt",
   "description": "Loader and Writer for the WKT (Well Known Text) Format",
-  "version": "4.4.0-alpha.18",
+  "version": "4.4.0",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -27,6 +27,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
     "./wkt-worker.js": {
       "import": "./dist/wkt-worker.js"
     }
@@ -47,12 +55,12 @@
     "fuzzer": "^0.2.1"
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.4.0-alpha.18",
-    "@loaders.gl/loader-utils": "4.4.0-alpha.18",
-    "@loaders.gl/schema": "4.4.0-alpha.18"
+    "@loaders.gl/gis": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.1"
+    "@loaders.gl/core": "~4.4.0"
   },
   "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

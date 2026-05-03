@@ -7,14 +7,14 @@ import {load} from '@loaders.gl/core';
 
 const MTL_URL = '@loaders.gl/obj/test/data/windmill.mtl';
 
-test('MTLLoader#loader objects', (t) => {
+test('MTLLoader#loader objects', t => {
   validateLoader(t, MTLLoader, 'MTLLoader');
   t.end();
 });
 
-test('MTLLoader#parse(windmill.mtl', async (t) => {
+test('MTLLoader#parse(windmill.mtl', async t => {
   /** @type {import('../src/lib/parse-mtl').MTLMaterial[]} */
-  const materials = await load(MTL_URL, MTLLoader);
+  const materials = await load(MTL_URL, MTLLoader, {core: {worker: false}});
 
   // t.comment(JSON.stringify(materials));
   t.equal(materials.length, 2, '2 material');

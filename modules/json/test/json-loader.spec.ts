@@ -6,11 +6,12 @@ import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
 import {JSONLoader, _GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
+import {JSONLoader as BundledJSONLoader} from '@loaders.gl/json/bundled';
 
 const GEOJSON_PATH = '@loaders.gl/json/test/data/geojson-big.json';
 const GEOJSON_KEPLER_DATASET_PATH = '@loaders.gl/json/test/data/kepler-dataset-sf-incidents.json';
 
-test('JSONLoader#load(geojson.json)', async (t) => {
+test('JSONLoader#load(geojson.json)', async t => {
   const table = await load(GEOJSON_PATH, JSONLoader, {json: {table: true}});
   t.equal(
     table.shape === 'object-row-table' && table.data.length,
@@ -20,7 +21,17 @@ test('JSONLoader#load(geojson.json)', async (t) => {
   t.end();
 });
 
-test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async (t) => {
+test('JSONLoader#load(geojson.json, shape: arrow-table)', async t => {
+  const arrowTable = await load(GEOJSON_PATH, JSONLoader, {
+    json: {table: true, shape: 'arrow-table'}
+  });
+  t.equal(arrowTable.shape, 'arrow-table', 'Correct Arrow table type received');
+  t.equal(arrowTable.data.numRows, 308, 'Correct number of Arrow rows received');
+  t.equal(arrowTable.data.getChild('type')?.get(0), 'Feature', 'Arrow field values are preserved');
+  t.end();
+});
+
+test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader);
   t.ok(isIterator(iterator) || isAsyncIterable(iterator), 'loadInBatches returned iterator');
 
@@ -42,7 +53,7 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = auto)', async (t)
   t.end();
 });
 
-test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async (t) => {
+test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
     batchSize: 10
   });
@@ -74,7 +85,49 @@ test('JSONLoader#loadInBatches(geojson.json, rows, batchSize = 10)', async (t) =
   t.end();
 });
 
-test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
+test('JSONLoader#parseInBatches(complete rows with nested arrays)', async t => {
+  const valueCount = 2048;
+  const rows = Array.from({length: 3}, (_, rowIndex) => ({
+    text: `row-${rowIndex}`,
+    values: Array.from({length: valueCount}, (_, valueIndex) => rowIndex * valueCount + valueIndex)
+  }));
+
+  const iterator = BundledJSONLoader.parseInBatches?.(
+    makeChunkedTextIterator(JSON.stringify(rows), 128),
+    {
+      batchSize: 1
+    }
+  );
+
+  t.ok(iterator, 'parseInBatches returned iterator');
+  if (!iterator) {
+    t.end();
+    return;
+  }
+
+  let emittedRowCount = 0;
+  for await (const batch of iterator) {
+    if (batch.batchType === 'data') {
+      t.equal(batch.length, 1, 'fixed-size batch contains one complete row');
+      for (const row of batch.data) {
+        const expectedFirstValue = emittedRowCount * valueCount;
+        emittedRowCount++;
+        t.equal(row.values.length, valueCount, 'nested values array is complete when emitted');
+        t.equal(row.values[0], expectedFirstValue, 'first nested value is preserved');
+        t.equal(
+          row.values[valueCount - 1],
+          expectedFirstValue + valueCount - 1,
+          'last nested value is preserved'
+        );
+      }
+    }
+  }
+
+  t.equal(emittedRowCount, rows.length, 'all rows were emitted');
+  t.end();
+});
+
+test('JSONLoader#loadInBatches(jsonpaths)', async t => {
   let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
     json: {jsonpaths: ['$.features']}
   });
@@ -105,7 +158,28 @@ test('JSONLoader#loadInBatches(jsonpaths)', async (t) => {
   t.end();
 });
 
-test('GeoJSONLoader#loadInBatches(jsonpaths)', async (t) => {
+test('JSONLoader#loadInBatches(jsonpaths, shape: arrow-table)', async t => {
+  const iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
+    json: {jsonpaths: ['$.features'], shape: 'arrow-table'}
+  });
+
+  let rowCount = 0;
+  let dataBatchCount = 0;
+  for await (const batch of iterator) {
+    if (batch.shape === 'arrow-table') {
+      dataBatchCount++;
+      rowCount += batch.data.numRows;
+      // @ts-ignore
+      t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on Arrow batch');
+    }
+  }
+
+  t.ok(dataBatchCount > 0, 'received Arrow data batches');
+  t.equal(rowCount, 308, 'Correct number of Arrow rows received');
+  t.end();
+});
+
+test('GeoJSONLoader#loadInBatches(jsonpaths)', async t => {
   const iterator = await loadInBatches(GEOJSON_PATH, GeoJSONLoader, {
     json: {jsonpaths: ['$.features']}
   });
@@ -168,7 +242,7 @@ async function testContainerBatches(t, iterator, expectedCount) {
   t.equal(closecontainerBatchCount, expectedCount, 'final-result batch as expected');
 }
 
-test('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async (t) => {
+test('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async t => {
   let iterator = await loadInBatches(GEOJSON_PATH, JSONLoader, {
     metadata: true,
     json: {table: true}
@@ -184,7 +258,7 @@ test('JSONLoader#loadInBatches(geojson.json, {metadata: true})', async (t) => {
   t.end();
 });
 
-test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
+test('JSONLoader#loadInBatches(streaming array of arrays)', async t => {
   const iterator = await loadInBatches(GEOJSON_KEPLER_DATASET_PATH, JSONLoader, {
     metadata: true,
     json: {
@@ -216,3 +290,11 @@ test('JSONLoader#loadInBatches(streaming array of arrays)', async (t) => {
 
   t.end();
 });
+
+/** Emits UTF-8 JSON text chunks for streaming parser tests. */
+async function* makeChunkedTextIterator(text: string, chunkSize: number) {
+  const textEncoder = new TextEncoder();
+  for (let index = 0; index < text.length; index += chunkSize) {
+    yield textEncoder.encode(text.slice(index, index + chunkSize));
+  }
+}

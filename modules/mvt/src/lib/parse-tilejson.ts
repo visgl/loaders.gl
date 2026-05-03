@@ -132,7 +132,7 @@ type TilestatsLayerAttribute = {
   values?: unknown[];
 };
 
-const isObject: (x: unknown) => boolean = (x) => x !== null && typeof x === 'object';
+const isObject: (x: unknown) => boolean = x => x !== null && typeof x === 'object';
 
 /**
  * Parse TileJSON from metadata
@@ -177,9 +177,7 @@ export function parseTileJSON(jsonMetadata: any, options: TileJSONOptions): Tile
     // try to parse json
     try {
       tileJSON.metaJson = JSON.parse(jsonMetadata.json);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn('Failed to parse tilejson.json field', error);
+    } catch (_error) {
       // do nothing
     }
   }
@@ -213,7 +211,7 @@ function parseTileJSONLayers(layers: any[]): TileJSONLayer[] {
   if (!Array.isArray(layers)) {
     return [];
   }
-  return layers.map((layer) => parseTileJSONLayer(layer));
+  return layers.map(layer => parseTileJSONLayer(layer));
 }
 
 function parseTileJSONLayer(layer: any): TileJSONLayer {
@@ -234,7 +232,7 @@ function parseTileJSONLayer(layer: any): TileJSONLayer {
 function parseTilestatsLayers(tilestats: any, options: TileJSONOptions): TileJSONLayer[] {
   if (isObject(tilestats) && Array.isArray(tilestats.layers)) {
     // we are in luck!
-    return tilestats.layers.map((layer) => parseTilestatsForLayer(layer, options));
+    return tilestats.layers.map(layer => parseTilestatsForLayer(layer, options));
   }
   return [];
 }
@@ -253,8 +251,6 @@ function parseTilestatsForLayer(layer: TilestatsLayer, options: TileJSONOptions)
         const fname = name.split('|')[0];
         indexedAttributes[fname] = indexedAttributes[fname] || [];
         indexedAttributes[fname].push(attribute);
-        // eslint-disable-next-line no-console
-        console.warn('ignoring tilestats indexed field', fname);
       } else if (!fields[name]) {
         fields.push(attributeToField(attribute, options));
       } else {
@@ -271,7 +267,7 @@ function parseTilestatsForLayer(layer: TilestatsLayer, options: TileJSONOptions)
 
 function mergeLayers(layers: TileJSONLayer[], tilestatsLayers: TileJSONLayer[]): TileJSONLayer[] {
   return layers.map((layer: TileJSONLayer): TileJSONLayer => {
-    const tilestatsLayer = tilestatsLayers.find((tsLayer) => tsLayer.name === layer.name);
+    const tilestatsLayer = tilestatsLayers.find(tsLayer => tsLayer.name === layer.name);
     const fields = tilestatsLayer?.fields || layer.fields || [];
     const mergedLayer = {
       ...layer,
@@ -329,7 +325,7 @@ function parseCenter(center: string | number[]): number[] | null {
 function safeParseFloat(input: unknown): number | null {
   const result =
     typeof input === 'string' ? parseFloat(input) : typeof input === 'number' ? input : null;
-  return result === null || isNaN(result) ? null : result;
+  return result === null || Number.isNaN(result) ? null : result;
 }
 
 // https://github.com/mapbox/tilejson-spec/tree/master/2.2.0

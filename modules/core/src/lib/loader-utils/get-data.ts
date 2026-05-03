@@ -96,6 +96,42 @@ export async function getArrayBufferOrStringFromData(
 }
 
 /**
+ * Resolves the provided data into an {@link ArrayBuffer}, preserving bytes for worker transfer.
+ */
+export async function getArrayBufferFromData(
+  data: DataType,
+  options: LoaderOptions
+): Promise<ArrayBuffer> {
+  if (typeof data === 'string') {
+    return new TextEncoder().encode(data).buffer;
+  }
+
+  if (isArrayBufferLike(data)) {
+    return toArrayBuffer(toArrayBufferView(data));
+  }
+
+  if (isBlob(data)) {
+    data = await makeResponse(data);
+  }
+
+  if (isResponse(data)) {
+    await checkResponse(data);
+    return await data.arrayBuffer();
+  }
+
+  if (isReadableStream(data)) {
+    // @ts-expect-error TS2559 options type
+    data = makeIterator(data as ReadableStream, options);
+  }
+
+  if (isIterable(data) || isAsyncIterable(data)) {
+    return concatenateArrayBuffersAsync(data as AsyncIterable<ArrayBufferLike>);
+  }
+
+  throw new Error(ERR_DATA);
+}
+
+/**
  * Normalizes batchable inputs into async iterables for batch parsing flows.
  * Supports synchronous iterables, async iterables, fetch responses, readable streams, and
  * single binary chunks (including typed array views and `ArrayBufferLike` values).

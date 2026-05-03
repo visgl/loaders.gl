@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#xml-entities', (t) => {
+test('SAXParser#xml-entities', t => {
   testSax(t, {
     saxOptions: {strictEntities: true},
     xml:

@@ -8,7 +8,7 @@
 
  Create as many sidebars as you want.
  */
-export const sidebars = {
+const sidebars = {
   examplesSidebar: [
     {
       type: 'doc',
@@ -17,14 +17,24 @@ export const sidebars = {
     },
     {
       type: 'category',
+      label: 'General Data Formats',
+      items: ['table/arrow', 'table/bson', 'table/json', 'table/xml']
+    },
+    {
+      type: 'category',
+      label: 'Trace Formats',
+      items: ['traces/chrome-trace']
+    },
+    {
+      type: 'category',
       label: 'Geospatial Table Formats',
       items: [
-        'geospatial/flatgeobuf',
+        'geospatial/csv',
+        'geospatial/shapefile',
+        'geospatial/geojson',
         'geospatial/geoarrow',
         'geospatial/geoparquet',
         'geospatial/geopackage',
-        'geospatial/geojson',
-        'geospatial/shapefile',
         'geospatial/kml',
         'geospatial/gpx',
         'geospatial/tcx'
@@ -32,24 +42,45 @@ export const sidebars = {
     },
     {
       type: 'category',
-      label: 'Geospatial Tile Formats',
-      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/wms']
+      label: 'Tiled Geospatial Formats',
+      items: ['tiles/mvt', 'tiles/pmtiles', 'tiles/table-tiler', 'tiles/mlt']
     },
     {
       type: 'category',
-      label: '3D Tile Formats',
+      label: 'Geospatial Services',
+      items: [
+        'tiles/wms',
+        'tiles/wfs',
+        'tiles/arcgis-image-server',
+        'tiles/arcgis-feature-server'
+      ]
+    },
+    {
+      type: 'category',
+      label: 'Geospatial Raster Formats',
+      items: ['geospatial/geotiff']
+    },
+    {
+      type: 'category',
+      label: 'Bioimaging Raster Formats',
+      items: ['bioimaging/ome-tiff']
+    },
+    {
+      type: 'category',
+      label: 'Tiled 3D Formats',
       items: [
         'i3s-building-scene-layer',
         'i3s-picking',
         'i3s-colorization-by-attributes',
-        '3d-tiles'
+        '3d-tiles',
+        'pointclouds/point-tile-source'
       ]
     },
     {
       type: 'category',
       label: 'Point Cloud Formats',
       items: [
-        'pointclouds/point-tile-source',
+        'pointclouds/gaussian-splats',
         'pointclouds/draco',
         'pointclouds/las',
         'pointclouds/pcd',
@@ -65,13 +96,15 @@ export const sidebars = {
         'textures',
         // 'gltf',
       ]
+    },
+    {
+      type: 'category',
+      label: 'Benchmarks',
+      items: [
+        'benchmarks',
+      ]
     }
-    // {
-    //   type: 'category',
-    //   label: 'Benchmarks',
-    //   items: [
-    //     'benchmarks',
-    //   ]
-    // }
   ]
 };
+
+module.exports = sidebars;

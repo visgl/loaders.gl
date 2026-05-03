@@ -1,34 +1,28 @@
+import {BsonDocsTabs} from '@site/src/components/docs/bson-docs-tabs';
+
 # BSONWriter
 
-![bson-logo](../../../images/logos/bson-logo.png)
+<BsonDocsTabs active="bsonwriter" />
 
-<p class="badges">
+<p className="badges">
   <img src="https://img.shields.io/badge/From-v3.4-blue.svg?style=flat-square" alt="From-v3.4" />
 </p>
 
-Writer for BSON files.
-
-| Loader         | Characteristic                                          |
-| -------------- | ------------------------------------------------------- |
-| File Format    | [BSON](/docs/modules/bson/formats/bson)                 |
-| Data Format    | [Unstructured/JSON](/docs/specifications/category-json) |
-| File Extension | `.bson`                                                 |
-| Media Type     | `application/bson`                                      |
-| File Type      | Binary                                                  |
-| Supported APIs | `encode`, `encodeSync`                                  |
+`BSONWriter` writes JSON-like JavaScript objects as BSON binary documents.
 
 ## Usage
 
 ```typescript
-import {BSONWriter} from '@loaders.gl/json';
 import {encode} from '@loaders.gl/core';
+import {BSONWriter} from '@loaders.gl/bson';
 
-const arrayBufer = await encode(data, BSONWriter);
+const arrayBuffer = await encode(data, BSONWriter);
 ```
 
-## Options
+## BSONWriter Options
 
-N/A
+`BSONWriter` currently passes `bson` options through to the underlying MongoDB `js-bson` serializer. This pass-through behavior may change in future versions and should not be relied on for stable public API behavior.
 
-Note: Currently passes through options to the underlying `js-bson` module
-but this may change in future versions and should not be relied upon.
+## Attribution
+
+This writer is a wrapper around MongoDB's [`js-bson`](https://github.com/mongodb/js-bson) module, which is under the Apache 2.0 license.

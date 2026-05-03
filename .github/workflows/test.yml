@@ -16,14 +16,29 @@ jobs:
       matrix:
         include:
           - node-version: 24
-            full: true
-            scope: 'full suite'
+            coverage: true
+            coverage-flag: node
+            playwright: false
+            scope: 'node tests'
+            test-command: test-node-cover
+          - node-version: 24
+            coverage: true
+            coverage-flag: headless
+            playwright: true
+            scope: 'headless tests'
+            test-command: test-headless-cover
           - node-version: 22
-            full: false
-            scope: 'build + node tests'
+            coverage: false
+            coverage-flag: ''
+            playwright: false
+            scope: 'node tests'
+            test-command: test-node
           - node-version: 20
-            full: false
-            scope: 'build + node tests'
+            coverage: false
+            coverage-flag: ''
+            playwright: false
+            scope: 'node tests'
+            test-command: test-node
 
     steps:
       - name: Checkout code
@@ -61,32 +76,109 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Build
-        run: |
-          yarn run build
+      - name: Install Playwright browsers
+        if: matrix.playwright
+        run: yarn playwright install --with-deps chromium
 
       - name: Build workers
         run: yarn run build-workers
 
-      - name: Run browser tests (generate coverage)
-        if: matrix.full
+      - name: Run tests
         run: |
-          yarn run test-cover
+          yarn run ${{ matrix.test-command }}
 
-      - name: Run node tests
+      - name: Sanitize lcov for Coveralls
+        if: matrix.coverage
         run: |
-          yarn run test-node
+          node - <<'NODE'
+          const fs = require('fs');
+          const coveragePath = 'coverage/lcov.info';
+          const lines = fs.readFileSync(coveragePath, 'utf8').split(/\r?\n/);
+          const records = [];
+          let currentRecord = [];
 
-      - name: Run lint
-        if: matrix.full
-        run: |
-          yarn run lint
+          for (const line of lines) {
+            currentRecord.push(line);
+            if (line === 'end_of_record') {
+              const sourceFileLine = currentRecord.find(recordLine => recordLine.startsWith('SF:'));
+              const sourceFile = sourceFileLine ? sourceFileLine.slice(3).trim() : '';
+              if (sourceFile) {
+                records.push(currentRecord.join('\n'));
+              }
+              currentRecord = [];
+            }
+          }
 
-      - name: Coveralls
-        if: matrix.full
-        uses: coverallsapp/github-action@master
+          if (currentRecord.length) {
+            const sourceFileLine = currentRecord.find(recordLine => recordLine.startsWith('SF:'));
+            const sourceFile = sourceFileLine ? sourceFileLine.slice(3).trim() : '';
+            if (sourceFile) {
+              records.push(currentRecord.join('\n'));
+            }
+          }
+
+          fs.writeFileSync(coveragePath, `${records.join('\n')}\n`);
+          NODE
+
+      - name: Upload coverage to Coveralls
+        if: matrix.coverage
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: coverage/lcov.info
+          format: lcov
+          flag-name: ${{ matrix.coverage-flag }}
+          fail-on-error: false
+
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node (with Corepack)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack / Yarn 4
+        run: |
+          corepack enable
+          corepack prepare yarn@4.10.3 --activate
+          yarn -v
+
+      - name: Cache Yarn 4 artifacts
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .pnp.*
+            .yarn/install-state.gz
+          key: yarn-cache-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            yarn-cache-${{ runner.os }}-
+
+      - name: Print versions
+        run: |
+          node -v
+          yarn -v
+          node -p "process.versions"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run Vitest async guardrails
+        run: yarn run test-vitest-async-guardrails
+
+      - name: Build
+        run: yarn run build
+
+      - name: Run lint
+        run: yarn run lint
 
   website-build:
     runs-on: ubuntu-22.04
@@ -124,10 +216,6 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
-
-      - name: Build
-        run: |
-          yarn run build
 
       - name: Build website
         run: |

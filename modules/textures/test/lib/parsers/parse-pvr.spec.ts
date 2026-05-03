@@ -20,22 +20,22 @@ const TEST_CASES = [
   {
     url: '@loaders.gl/textures/test/data/shannon-pvrtc-2bpp-rgb.pvr',
     format: GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG,
-    textureFormat: 'pvrtc-rgb2unorm-ext'
+    textureFormat: 'pvrtc-rgb2unorm-webgl'
   },
   {
     url: '@loaders.gl/textures/test/data/shannon-pvrtc-2bpp-rgba.pvr',
     format: GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG,
-    textureFormat: 'pvrtc-rgba2unorm-ext'
+    textureFormat: 'pvrtc-rgba2unorm-webgl'
   },
   {
     url: '@loaders.gl/textures/test/data/shannon-pvrtc-4bpp-rgb.pvr',
     format: GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,
-    textureFormat: 'pvrtc-rgb4unorm-ext'
+    textureFormat: 'pvrtc-rgb4unorm-webgl'
   },
   {
     url: '@loaders.gl/textures/test/data/shannon-pvrtc-4bpp-rgba.pvr',
     format: GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,
-    textureFormat: 'pvrtc-rgba4unorm-ext'
+    textureFormat: 'pvrtc-rgba4unorm-webgl'
   },
   {
     url: '@loaders.gl/textures/test/data/shannon-astc-10x10.pvr',
@@ -49,7 +49,7 @@ const TEST_CASES = [
   }
 ];
 
-test('CompressedTextureLoader#pvr', async (t) => {
+test('CompressedTextureLoader#pvr', async t => {
   for (const testCase of TEST_CASES) {
     const response = await fetchFile(testCase.url);
     const data = await response.arrayBuffer();

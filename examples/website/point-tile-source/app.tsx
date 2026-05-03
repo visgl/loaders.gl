@@ -208,6 +208,13 @@ function getDeckViewState(
 }
 
 /**
+ * Logs point-tile-source errors with browser console context.
+ */
+function logPointTileSourceError(message: string, error: unknown): void {
+  console.error(`[point-tile-source] ${message}`, error);
+}
+
+/**
  * Website demo for the source-backed point-cloud tileset flow.
  */
 export default function App(): React.JSX.Element {
@@ -259,6 +266,7 @@ export default function App(): React.JSX.Element {
           })
           .catch((initializationError) => {
             if (!isCancelled) {
+              logPointTileSourceError('Failed to initialize point-cloud source', initializationError);
               setError((initializationError as Error).message);
             }
           });
@@ -273,10 +281,12 @@ export default function App(): React.JSX.Element {
         })
         .catch((metadataError) => {
           if (!isCancelled) {
+            logPointTileSourceError('Failed to load point-cloud metadata', metadataError);
             setMetadataText(`Metadata unavailable: ${(metadataError as Error).message}`);
           }
         });
     } catch (creationError) {
+      logPointTileSourceError('Failed to create point-cloud source', creationError);
       setDataSource(null);
       setError((creationError as Error).message);
       setMetadataText('Metadata unavailable');
@@ -311,7 +321,8 @@ export default function App(): React.JSX.Element {
           onPointTilesetUpdate: (tileset) => {
             setTilesetSummary(summarizeTileset(tileset));
           },
-          onPointTileError: (_tile, tileError) => {
+          onPointTileError: (tile, tileError) => {
+            logPointTileSourceError(`Failed to load point-cloud tile ${tile.id}`, tileError);
             setError(tileError.message);
           }
         })

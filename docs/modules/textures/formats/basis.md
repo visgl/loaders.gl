@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # Basis Universal
+
+<TexturesDocsTabs active="basis" />
 
 - _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
 - _[`BasisLoader`](/docs/modules/textures/api-reference/basis-loader)_ - decodes Basis Universal textures

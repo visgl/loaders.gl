@@ -1,21 +1,14 @@
+import {ShapefileDocsTabs} from '@site/src/components/docs/shapefile-docs-tabs';
+
 # ShapefileLoader
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v2.3-blue.svg?style=flat-square" alt="From-v2.3" />
 </p>
 
-Shapefile loader
+<ShapefileDocsTabs active="loader" />
 
-| Loader                | Characteristic                                         |
-| --------------------- | ------------------------------------------------------ |
-| File Format           | [Shapefile](/docs/modules/shapefile/formats/shapefile) |
-| Data Format           | [Table](/docs/specifications/category-table)           |
-| Data Format           | [Geometry](/docs/specifications/category-gis)          |
-| File Extension        | `.shp`,                                                |
-| File Type             | Binary, Multi-File                                     |
-| Supported APIs        | `load`, `parse`, `parseSync`                           |
-| Decoder Type          | Synchronous                                            |
-| Worker Thread Support | Yes, For Some Loaders                                  |
+The `ShapefileLoader` parses Shapefile datasets into loaders.gl geometry tables.
 
 ## Usage
 
@@ -24,13 +17,26 @@ import {ShapefileLoader} from '@loaders.gl/shapefile';
 import {load} from '@loaders.gl/core';
 
 const data = await load(url, ShapefileLoader);
+const table = await load(url, ShapefileLoader, {shapefile: {shape: 'arrow-table'}});
 ```
+
+## Shapes
+
+`ShapefileLoader` returns the legacy v3 shapefile output by default. Set `shapefile.shape` to select another representation.
+
+| Shape           | Output                                                      |
+| --------------- | ----------------------------------------------------------- |
+| `v3`            | legacy Shapefile output object                              |
+| `geojson-table` | loaders.gl GeoJSON table                                    |
+| `arrow-table`   | loaders.gl `ArrowTable` with WKB or typed GeoArrow geometry |
 
 ## Options
 
-| Option              | Type    | Default | Description                                                                                                                                                                                                                                                                |
-| ------------------- | ------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| shp.\_maxDimensions | Integer | `4`     | Shapefiles can hold up to 4 dimensions (XYZM). By default all dimensions are parsed; when set to `2` only the X and Y dimensions are parsed. Note that for some Shapefiles, the third dimension is M, not Z. `header.type` in the output designates the stored dimensions. |
+| Option                     | Type    | Default          | Description                                                                                                                                                                                                                                                                |
+| -------------------------- | ------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| shapefile.shape            | String  | `'v3'`           | Output shape: `'v3'`, `'geojson-table'`, or `'arrow-table'`.                                                                                                                                                                                                               |
+| shapefile.geoarrowEncoding | String  | `'geoarrow.wkb'` | Arrow geometry encoding when `shapefile.shape` is `'arrow-table'`: `'geoarrow.wkb'` or `'geoarrow'`. `'geoarrow'` infers a geometry-specific GeoArrow encoding from the SHP header.                                                                                        |
+| shp.\_maxDimensions        | Integer | `4`              | Shapefiles can hold up to 4 dimensions (XYZM). By default all dimensions are parsed; when set to `2` only the X and Y dimensions are parsed. Note that for some Shapefiles, the third dimension is M, not Z. `header.type` in the output designates the stored dimensions. |
 
 ## Output
 

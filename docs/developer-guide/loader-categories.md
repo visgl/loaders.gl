@@ -40,6 +40,8 @@ To access format-specific properties, use the `loaderData` field in data object 
 Categories are described in the specifications section. Some currently defined categories are:
 
 - [Table](/docs/specifications/category-table)
+- [Image](/docs/specifications/category-image)
+- [Texture](/docs/specifications/category-texture)
 - [PointCloud/Mesh](/docs/specifications/category-mesh)
 - [Scenegraph](/docs/specifications/category-scenegraph)
 - [GIS](/docs/specifications/category-gis)

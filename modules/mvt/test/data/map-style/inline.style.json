@@ -1,0 +1,32 @@
+{
+  "version": 8,
+  "metadata": {
+    "name": "Inline style"
+  },
+  "sources": {
+    "inline-source": {
+      "type": "vector",
+      "tiles": ["./tiles/{z}/{x}/{y}.mvt"],
+      "minzoom": 1,
+      "maxzoom": 12,
+      "custom": {
+        "preserved": true
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "land",
+      "type": "fill",
+      "source": "inline-source",
+      "source-layer": "land",
+      "paint": {
+        "fill-color": "#f0f0f0"
+      },
+      "metadata": {
+        "layerCategory": "background"
+      }
+    }
+  ],
+  "glyphs": "./fonts/{fontstack}/{range}.pbf"
+}

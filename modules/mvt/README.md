@@ -4,6 +4,11 @@ This module contains a geometry loader for Mapbox Vector Tiles (MVT) and a write
 
 [loaders.gl](https://loaders.gl/docs) is a collection of framework-independent visualization-focused loaders (parsers).
 
+## Metadata
+
+Use `TileJSONLoader` to parse tileset metadata and `MapStyleLoader` to parse MapLibre / Mapbox
+style JSON into a normalized style document with resolved source URLs and tile templates.
+
 ## Writing
 
 Use the `MVTWriter` with `@loaders.gl/core`'s `encode` helper to serialize GeoJSON into a Mapbox Vector Tile `ArrayBuffer`.

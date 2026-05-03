@@ -9,13 +9,13 @@ import {fetchFile} from '@loaders.gl/core';
 
 const FORECASTS_URL = '@loaders.gl/xml/test/data/forecasts.xml';
 
-test('XML#pretty-print', async (t) => {
-  t.test('forecasts.xml', async (t) => {
+test('XML#pretty-print', async t => {
+  t.test('forecasts.xml', async t => {
     const response = await fetchFile(FORECASTS_URL);
     const json = await response.text();
 
     const prettyPrinter = new PrettyPrinter();
-    prettyPrinter.onprintline = (line) => {};
+    prettyPrinter.onprintline = _line => {};
     // prettyPrinter.onprintline = line => t.comment(line);
     prettyPrinter.write(json);
 
@@ -59,7 +59,7 @@ class PrettyPrinter {
 
   private _createParser() {
     return new SAXParser({
-      onopentag: (tag) => {
+      onopentag: tag => {
         this.indent();
         this.level++;
         this.print(`<${tag.name}`);
@@ -69,33 +69,33 @@ class PrettyPrinter {
         this.print('>');
       },
 
-      ontext: (text) => {
+      ontext: text => {
         this.indent();
         this.print(text);
       },
 
-      ondoctype: (text) => {
+      ondoctype: text => {
         this.indent();
         this.print(text);
       },
 
-      onclosetag: (tag) => {
+      onclosetag: tag => {
         this.level--;
         this.indent();
         this.print(`</${tag}>`);
       },
 
-      oncdata: (data) => {
+      oncdata: data => {
         this.indent();
         this.print(`<![CDATA[${data}]]>`);
       },
 
-      oncomment: (comment) => {
+      oncomment: comment => {
         this.indent();
         this.print(`<!--${comment}-->`);
       },
 
-      onerror: (error) => {
+      onerror: error => {
         console.error(error); // eslint-disable-line no-console
         throw error;
       }

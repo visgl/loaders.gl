@@ -36,7 +36,18 @@ module.exports = function(context, opts = {
       // Custom merging
       if (resolve) {
         if (resolve.modules) {
-          _config.resolve.modules = resolve.modules;
+          _config.resolve.modules = [
+            ...resolve.modules,
+            ...(_config.resolve.modules || [])
+          ];
+        }
+        if (resolve.extensions) {
+          _config.resolve.extensions = [
+            ...resolve.extensions,
+            ...(_config.resolve.extensions || []).filter(
+              extension => !resolve.extensions.includes(extension)
+            )
+          ];
         }
         Object.assign(_config.resolve.alias, resolve.alias);
       }

@@ -34,7 +34,8 @@ export function parsePotreeBin(
 ): Mesh {
   const resolvedOptions = getResolvedPotreeBinOptions(options);
   const pointByteSize = resolvedOptions.pointAttributes.reduce(
-    (totalByteLength, pointAttribute) => totalByteLength + getPotreeAttributeByteSize(pointAttribute),
+    (totalByteLength, pointAttribute) =>
+      totalByteLength + getPotreeAttributeByteSize(pointAttribute),
     0
   );
   const byteLength = arrayBuffer.byteLength - byteOffset;
@@ -49,7 +50,10 @@ export function parsePotreeBin(
   const dataView = new DataView(arrayBuffer, byteOffset, byteLength);
   const positions = new Float32Array(pointCount * 3);
   const hasColor = resolvedOptions.pointAttributes.some(
-    (pointAttribute) => pointAttribute === 'COLOR_PACKED' || pointAttribute === 'RGBA_PACKED' || pointAttribute === 'RGB_PACKED'
+    pointAttribute =>
+      pointAttribute === 'COLOR_PACKED' ||
+      pointAttribute === 'RGBA_PACKED' ||
+      pointAttribute === 'RGB_PACKED'
   );
   const colors = hasColor ? new Uint8Array(pointCount * 3) : null;
 
@@ -131,9 +135,7 @@ export function parsePotreeBin(
 /**
  * Validate and normalize Potree binary parser options.
  */
-function getResolvedPotreeBinOptions(
-  options?: PotreeBinLoaderOptions
-): ResolvedPotreeBinOptions {
+function getResolvedPotreeBinOptions(options?: PotreeBinLoaderOptions): ResolvedPotreeBinOptions {
   const pointAttributes = options?.potree?.pointAttributes;
 
   if (!pointAttributes?.length) {

@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#flush', (t) => {
+test('SAXParser#flush', t => {
   const parser = testSax(t, {
     expect: [
       ['opentagstart', {name: 'T', attributes: {}}],

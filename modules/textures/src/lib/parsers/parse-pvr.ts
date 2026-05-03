@@ -24,12 +24,12 @@ const PVR_CONSTANTS: Record<string, number> = {
 };
 
 const PVR_TEXTURE_FORMATS: Record<number, TextureFormat[]> = {
-  0: ['pvrtc-rgb2unorm-ext'],
-  1: ['pvrtc-rgba2unorm-ext'],
-  2: ['pvrtc-rgb4unorm-ext'],
-  3: ['pvrtc-rgba4unorm-ext'],
-  6: ['etc1-rbg-unorm-ext'],
-  7: ['bc1-rgb-unorm-ext'],
+  0: ['pvrtc-rgb2unorm-webgl'],
+  1: ['pvrtc-rgba2unorm-webgl'],
+  2: ['pvrtc-rgb4unorm-webgl'],
+  3: ['pvrtc-rgba4unorm-webgl'],
+  6: ['etc1-rgb-unorm-webgl'],
+  7: ['bc1-rgb-unorm-webgl'],
   9: ['bc2-rgba-unorm'],
   11: ['bc3-rgba-unorm'],
   22: ['etc2-rgb8unorm'],

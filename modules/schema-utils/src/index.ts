@@ -4,6 +4,8 @@
 
 // Schema
 export {getArrayTypeFromDataType} from './lib/schema/data-type';
+export {convert} from './lib/converters/converters';
+export type {Converter, ConversionContext} from './lib/converters/converters';
 
 // Schema utils
 export {
@@ -27,9 +29,15 @@ export {deduceTableSchema} from './lib/schema/deduce-table-schema';
 export {makeTableFromData} from './lib/table/tables/make-table';
 export {makeTableFromBatches} from './lib/table/batches/make-table-from-batches';
 
-export {convertTable} from './lib/table/tables/convert-table';
-export {convertToObjectRow, convertToArrayRow} from './lib/table/tables/row-utils';
-export {convertArrowToTable, convertTableToArrow} from './lib/table/tables/convert-arrow-table';
+export type {TableShape} from './lib/table/tables/table-converter/table-converter';
+export {TABLE_CONVERTERS, TableConverter} from './lib/table/tables/table-converter/table-converter';
+export {
+  convertTable,
+  convertToObjectRow,
+  convertToArrayRow,
+  convertArrowToTable,
+  convertTableToArrow
+} from './deprecated';
 
 export {
   makeTableBatchIterator,

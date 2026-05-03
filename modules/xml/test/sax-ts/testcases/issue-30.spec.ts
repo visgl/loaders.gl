@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
 // https://github.com/isaacs/sax-js/issues/33
-test(`SAXParser#${__filename}`, (t) => {
+test(`SAXParser#${__filename}`, t => {
   testSax(t, {
     xml:
       '<xml>\n' +

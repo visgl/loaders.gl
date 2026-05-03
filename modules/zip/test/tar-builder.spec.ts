@@ -10,12 +10,12 @@ import {isBrowser} from '@loaders.gl/core';
 
 import {IMAGE_DATA_ARRAY} from './lib/test-cases';
 
-test('Zip#TarBuilder conformance', (t) => {
+test('Zip#TarBuilder conformance', t => {
   validateBuilder(t, TarBuilder, 'TarBuilder');
   t.end();
 });
 
-test('Zip#TarBuilder addFile', async (t) => {
+test('Zip#TarBuilder addFile', async t => {
   if (!isBrowser) {
     t.comment('TarBuilder is not usable in non-browser environments');
     t.end();

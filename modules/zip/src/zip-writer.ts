@@ -4,6 +4,7 @@
 
 import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import JSZip, {JSZipFileOptions, JSZipGeneratorOptions} from 'jszip';
+import {ZipFormat} from './zip-format';
 
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -22,13 +23,8 @@ export type ZipWriterOptions = WriterOptions & {
  * Zip exporter
  */
 export const ZipWriter = {
-  name: 'Zip Archive',
-  id: 'zip',
-  module: 'zip',
+  ...ZipFormat,
   version: VERSION,
-  extensions: ['zip'],
-  category: 'archive',
-  mimeTypes: ['application/zip'],
   options: {
     zip: {
       onUpdate: () => {},
@@ -89,7 +85,7 @@ function addParentDirectoryEntries(
   options: ZipWriterOptions,
   directoryEntries: Set<string>
 ): void {
-  const subPathParts = subFileName.split('/').filter((part) => part.length > 0);
+  const subPathParts = subFileName.split('/').filter(part => part.length > 0);
   const subPathPartCount = subFileName.endsWith('/')
     ? subPathParts.length
     : subPathParts.length - 1;

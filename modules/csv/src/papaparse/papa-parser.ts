@@ -182,6 +182,8 @@ export class ParserHandle {
   _input;
   /** The core parser being used */
   _parser;
+  /** The parser config used by the reusable core parser */
+  _parserConfig;
   /** Whether we are paused or not */
   _paused = false;
   /** Whether the parser has aborted or not */
@@ -206,7 +208,7 @@ export class ParserHandle {
 
     if (isFunction(_config.step)) {
       const userStep = _config.step;
-      _config.step = (results) => {
+      _config.step = results => {
         this._results = results;
 
         if (this.needsHeaderRow()) {
@@ -261,11 +263,13 @@ export class ParserHandle {
       this._results.meta.delimiter = this._config.delimiter;
     }
 
-    const parserConfig = copy(this._config);
-    if (this._config.preview && this._config.header) parserConfig.preview++; // to compensate for header row
+    if (!this._parserConfig) {
+      this._parserConfig = copy(this._config);
+      if (this._config.preview && this._config.header) this._parserConfig.preview++; // to compensate for header row
+    }
 
     this._input = input;
-    this._parser = new Parser(parserConfig);
+    this._parser = this._parser || new Parser(this._parserConfig);
     this._results = this._parser.parse(this._input, baseIndex, ignoreLastRow);
     this.processResults();
     return this._paused ? {meta: {paused: true}} : this._results || {meta: {paused: false}};
@@ -279,6 +283,8 @@ export class ParserHandle {
     this._paused = true;
     this._parser.abort();
     this._input = this._input.substr(this._parser.getCharIndex());
+    this._parser = null;
+    this._parserConfig = null;
   }
 
   resume() {
@@ -294,6 +300,8 @@ export class ParserHandle {
   abort() {
     this._aborted = true;
     this._parser.abort();
+    this._parser = null;
+    this._parserConfig = null;
     this._results.meta.aborted = true;
     if (isFunction(this._config.complete)) {
       this._config.complete(this._results);
@@ -336,7 +344,7 @@ export class ParserHandle {
   fillHeaderFields() {
     if (!this._results) return;
 
-    const addHeder = (header) => {
+    const addHeder = header => {
       if (isFunction(this._config.transformHeader)) header = this._config.transformHeader(header);
       this._fields.push(header);
     };
@@ -595,23 +603,34 @@ export function Parser(config: CSVParserConfig = {}) {
     if (!input) return returnable();
 
     if (fastMode || (fastMode !== false && input.indexOf(quoteChar) === -1)) {
-      const rows = input.split(newline);
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i];
-        cursor += row.length;
-        if (i !== rows.length - 1) cursor += newline.length;
-        else if (ignoreLastRow) return returnable();
-        if (comments && row.substr(0, commentsLen) === comments) continue;
-        if (stepIsFunction) {
-          data = [];
-          pushRow(row.split(delim));
-          doStep();
-          if (aborted) return returnable();
-        } else pushRow(row.split(delim));
-        if (preview && i >= preview) {
-          data = data.slice(0, preview);
-          return returnable(true);
+      let rowStart = 0;
+      let rowIndex = 0;
+      for (;;) {
+        const newlineIndex = input.indexOf(newline, rowStart);
+        const rowEnd = newlineIndex === -1 ? inputLen : newlineIndex;
+        if (newlineIndex === -1 && ignoreLastRow) return returnable();
+
+        const row = input.slice(rowStart, rowEnd);
+        cursor = rowEnd;
+        if (newlineIndex !== -1) cursor += newlineLen;
+
+        if (!comments || row.substr(0, commentsLen) !== comments) {
+          if (stepIsFunction) {
+            data = [];
+            pushRow(row.split(delim));
+            doStep();
+            if (aborted) return returnable();
+          } else pushRow(row.split(delim));
+          if (preview && rowIndex >= preview) {
+            data = data.slice(0, preview);
+            return returnable(true);
+          }
         }
+
+        if (newlineIndex === -1) break;
+
+        rowStart = newlineIndex + newlineLen;
+        rowIndex++;
       }
       return returnable();
     }

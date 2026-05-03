@@ -1,6 +1,8 @@
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
+import {validateArrowTableSchema} from '@loaders.gl/arrow';
+import {meshArrowSchema} from '@loaders.gl/schema';
 
 import {OBJLoader, OBJWorkerLoader} from '@loaders.gl/obj';
 import {setLoaderOptions, load} from '@loaders.gl/core';
@@ -15,13 +17,13 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('OBJLoader#loader objects', (t) => {
+test('OBJLoader#loader objects', t => {
   validateLoader(t, OBJLoader, 'OBJLoader');
   validateLoader(t, OBJWorkerLoader, 'OBJWorkerLoader');
   t.end();
 });
 
-test('OBJLoader#parseText', async (t) => {
+test('OBJLoader#parseText', async t => {
   const data = await load(OBJ_ASCII_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -33,7 +35,26 @@ test('OBJLoader#parseText', async (t) => {
   t.end();
 });
 
-test('OBJLoader#parse(SCHEMA)', async (t) => {
+test('OBJLoader#parseText(shape: arrow-table)', async t => {
+  const table = await load(OBJ_ASCII_URL, OBJLoader, {
+    obj: {shape: 'arrow-table'}
+  });
+
+  t.equal(table.shape, 'arrow-table', 'table has arrow-table shape');
+  validateArrowTableSchema(table.data, meshArrowSchema, {
+    schemaName: 'OBJLoader Mesh table'
+  });
+  const rowCount =
+    table.data.numRows ??
+    table.data.length ??
+    table.data.batches?.[0]?.numRows ??
+    table.data.batches?.[0]?.data?.length;
+  t.equal(rowCount, 14904, 'table has expected vertex count');
+
+  t.end();
+});
+
+test('OBJLoader#parse(SCHEMA)', async t => {
   const data = await load(OBJ_NORMALS_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -41,13 +62,13 @@ test('OBJLoader#parse(SCHEMA)', async (t) => {
   t.equal(data.schema.metadata.mode, '4', 'schema metadata is correct');
   t.ok(data.schema.metadata.boundingBox, 'schema metadata is correct');
 
-  const positionField = data.schema.fields.find((field) => field.name === 'POSITION');
+  const positionField = data.schema.fields.find(field => field.name === 'POSITION');
   // @ts-expect-error
   t.equal(positionField?.type.listSize, 3, 'schema size correct');
   // TODO/ActionEngine - restore this test
   // t.equal(positionField.type.valueType.precision, 32, 'schema type correct');
 
-  const colorField = data.schema.fields.find((field) => field.name === 'TEXCOORD_0');
+  const colorField = data.schema.fields.find(field => field.name === 'TEXCOORD_0');
   // @ts-expect-error
   t.equal(colorField?.type.listSize, 2, 'schema size correct');
 
@@ -57,7 +78,7 @@ test('OBJLoader#parse(SCHEMA)', async (t) => {
   t.end();
 });
 
-test('OBJLoader#parseText - object with normals', async (t) => {
+test('OBJLoader#parseText - object with normals', async t => {
   const data = await load(OBJ_NORMALS_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -70,7 +91,7 @@ test('OBJLoader#parseText - object with normals', async (t) => {
   t.end();
 });
 
-test('OBJLoader#parseText - multi-part object', async (t) => {
+test('OBJLoader#parseText - multi-part object', async t => {
   const data = await load(OBJ_MULTI_PART_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -78,7 +99,7 @@ test('OBJLoader#parseText - multi-part object', async (t) => {
   t.end();
 });
 
-test('OBJLoader#parseText - object with vertex colors', async (t) => {
+test('OBJLoader#parseText - object with vertex colors', async t => {
   const data = await load(OBJ_VERTEX_COLOR_URL, OBJLoader);
   validateMeshCategoryData(t, data);
 
@@ -108,7 +129,7 @@ test('OBJLoader#parseText - object with vertex colors', async (t) => {
   t.end();
 });
 
-test('OBJWorkerLoader#parse(text)', async (t) => {
+test('OBJWorkerLoader#parse(text)', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();

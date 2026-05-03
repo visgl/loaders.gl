@@ -21,7 +21,7 @@ export function encodeTableAsCSV(
 
   const fields = table.schema?.fields || [];
 
-  const columnNames = fields.map((f) => {
+  const columnNames = fields.map(f => {
     // This is a leaky abstraction, assuming Kepler metadata
     const displayName = f.metadata?.displayName;
     return useDisplayNames && typeof displayName === 'string' ? displayName : f.name;
@@ -38,7 +38,7 @@ export function encodeTableAsCSV(
   }
 
   // We represent missing values as '', leaving the option for the app to explicity represent 'null'.
-  const stringsOnly = formattedData.map((row) => row.map((value) => (value === null ? '' : value)));
+  const stringsOnly = formattedData.map(row => row.map(value => (value === null ? '' : value)));
 
   return csvFormatRows(stringsOnly);
 }

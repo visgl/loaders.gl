@@ -19,7 +19,7 @@ export function getXMLArray(xmlValue: any): any[] {
 /** Get a list of strings from XML */
 export function getXMLStringArray(xmlValue: any): string[] {
   const xmlArray = getXMLArray(xmlValue);
-  if (xmlArray.length > 0 && xmlArray.every((_) => typeof _ === 'string')) {
+  if (xmlArray.length > 0 && xmlArray.every(_ => typeof _ === 'string')) {
     return xmlArray;
   }
   // TODO - error handling?

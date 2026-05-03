@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # Crunch
+
+<TexturesDocsTabs active="crunch" />
 
 - _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
 - _[`CrunchWorkerLoader`](/docs/modules/textures/api-reference/crunch-loader)_ - reads Crunch `.crn` textures

@@ -1,0 +1,29 @@
+---
+title: "BSON"
+hide_title: true
+---
+
+import {BsonDocsTabs} from '@site/src/components/docs/bson-docs-tabs';
+import {ClientStructuredDataLiveExample} from '@site/src/components/docs/client-structured-data-live-example';
+
+# BSON
+
+<BsonDocsTabs active="try-it" />
+
+<ClientStructuredDataLiveExample
+  config={{
+    loaderName: 'BSONLoader',
+    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/bson/test/data/js-bson/test.bson',
+    sampleFiles: [
+      {
+        label: 'test.bson',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/bson/test/data/js-bson/test.bson'
+      },
+      {
+        label: 'mongodump.airpair.tags.bson',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/bson/test/data/js-bson/mongodump.airpair.tags.bson'
+      }
+    ],
+    options: {bson: {concatenatedDocuments: 'first'}}
+  }}
+/>

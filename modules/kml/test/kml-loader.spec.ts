@@ -19,12 +19,12 @@ const INVALID_KML = `\
 </kml>
 `;
 
-test('KMLLoader#loader conformance', (t) => {
+test('KMLLoader#loader conformance', t => {
   validateLoader(t, KMLLoader, 'KMLLoader');
   t.end();
 });
 
-test('KMLLoader#testText', async (t) => {
+test('KMLLoader#testText', async t => {
   const response = await fetchFile(KML_URL);
   const KML = await response.text();
   const KMLTest = KMLLoader.tests && KMLLoader.tests[0];
@@ -37,7 +37,7 @@ test('KMLLoader#testText', async (t) => {
   t.end();
 });
 
-test('KMLLoader#parse', async (t) => {
+test('KMLLoader#parse', async t => {
   const data = await load(KML_URL, KMLLoader);
   t.ok(data);
   // t.equal(data.documents.length, 2, 'Documents were found');
@@ -54,7 +54,7 @@ test('KMLLoader#parse', async (t) => {
   t.end();
 });
 
-test('KMLLoader#parse(text)', async (t) => {
+test('KMLLoader#parse(text)', async t => {
   const table = await load(KML_URL, KMLLoader, {kml: {shape: 'object-row-table'}});
   t.equal(table.shape, 'object-row-table', 'shape is object-row-table');
   if (table.shape === 'object-row-table') {
@@ -67,7 +67,7 @@ test('KMLLoader#parse(text)', async (t) => {
   t.end();
 });
 
-test('KMLLoader#parse(geojson-table)', async (t) => {
+test('KMLLoader#parse(geojson-table)', async t => {
   const table = await load(`${KML_LINESTRING_URL}.kml`, KMLLoader, {
     gis: {format: 'geojson-table'}
   });

@@ -209,7 +209,7 @@ export class Tiles3DContentConverter {
     featureAttributes: I3STileAttributes
   ): PropertyAttribute | null {
     const attributeValues = featureAttributes[attributeName];
-    const info = attributeStorageInfo.find((e) => e.name === attributeName);
+    const info = attributeStorageInfo.find(e => e.name === attributeName);
     if (!info) {
       return null;
     }
@@ -477,6 +477,6 @@ export class Tiles3DContentConverter {
    */
   _checkNormals(normals) {
     // If all normals === 0, the resulting tileset is all in black colors on Cesium
-    return normals.find((value) => value);
+    return normals.find(value => value);
   }
 }

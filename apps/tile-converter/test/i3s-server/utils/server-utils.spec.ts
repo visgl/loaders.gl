@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {formErrorHandler, normalizePort} from '../../../src/i3s-server/utils/server-utils';
 
-test('tile-converter(i3s-server)#normalizePort', async (t) => {
+test('tile-converter(i3s-server)#normalizePort', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -20,7 +20,7 @@ test('tile-converter(i3s-server)#normalizePort', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s-server)#formErrorHandler', async (t) => {
+test('tile-converter(i3s-server)#formErrorHandler', async t => {
   if (isBrowser) {
     t.end();
     return;

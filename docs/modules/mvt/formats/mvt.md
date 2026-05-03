@@ -1,4 +1,8 @@
+import {TileDocsTabs} from '@site/src/components/docs/tile-docs-tabs';
+
 # Mapbox Vector Tile
+
+<TileDocsTabs active="mvt" />
 
 - _[`@loaders.gl/mvt`](/docs/modules/mvt)_
 - _[Mapbox Vector Tile Specification](https://github.com/mapbox/vector-tile-spec)_

@@ -73,6 +73,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Install Playwright browsers
+        run: yarn playwright install --with-deps chromium
+
       - name: Build
         run: yarn build
 
@@ -80,7 +83,7 @@ jobs:
         run: yarn build-workers
 
       - name: Run tests from transpiled code
-        run: npx ocular-test dist
+        run: yarn test-modules dist
 
       - name: Login to NPM
         run: npm config set "//registry.npmjs.org/:_authToken=${NPM_ACCESS_TOKEN}"

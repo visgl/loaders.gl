@@ -4,13 +4,12 @@
 
 import type {ColumnarTable, ColumnarTableBatch, Schema} from '@loaders.gl/schema';
 import type {ReadableFile} from '@loaders.gl/loader-utils';
-import type {ParquetJSONLoaderOptions} from '../../parquet-json-loader';
+import type {ParquetLoaderOptions} from '../../parquet-loader';
 import {ParquetReader} from '../../parquetjs/parser/parquet-reader';
 import {ParquetRowGroup} from '../../parquetjs/schema/declare';
 import {ParquetSchema} from '../../parquetjs/schema/schema';
 import {materializeColumns} from '../../parquetjs/schema/shred';
 import {getSchemaFromParquetReader} from './get-parquet-schema';
-import {installBufferPolyfill} from '../../polyfills/buffer/index';
 import {preloadCompressions} from '../../parquetjs/compression';
 
 /**
@@ -18,9 +17,8 @@ import {preloadCompressions} from '../../parquetjs/compression';
  */
 export async function parseParquetFileInColumns(
   file: ReadableFile,
-  options?: ParquetJSONLoaderOptions
+  options?: ParquetLoaderOptions
 ): Promise<ColumnarTable> {
-  installBufferPolyfill();
   await preloadCompressions(options);
 
   for await (const batch of parseParquetFileInColumnarBatches(file, options)) {
@@ -38,9 +36,8 @@ export async function parseParquetFileInColumns(
  */
 export async function* parseParquetFileInColumnarBatches(
   file: ReadableFile,
-  options?: ParquetJSONLoaderOptions
+  options?: ParquetLoaderOptions
 ): AsyncIterable<ColumnarTableBatch> {
-  installBufferPolyfill();
   await preloadCompressions(options);
 
   const reader = new ParquetReader(file);
@@ -51,7 +48,9 @@ export async function* parseParquetFileInColumnarBatches(
   const parquetSchema = await reader.getSchema();
 
   // Iterate over row batches
-  const rowGroups = reader.rowGroupIterator(options?.parquet);
+  const rowGroups = reader.rowGroupIterator(
+    options?.parquet?.columns?.length ? {columnList: options.parquet.columns} : undefined
+  );
   for await (const rowGroup of rowGroups) {
     yield convertRowGroupToTableBatch(rowGroup, parquetSchema, schema);
   }

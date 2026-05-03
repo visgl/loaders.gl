@@ -7,13 +7,13 @@
 import test from 'tape-promise/tape';
 import {fetchFile, parseSync} from '@loaders.gl/core';
 import {isWKB} from '@loaders.gl/gis';
-import {WKBLoader} from '@loaders.gl/wkt';
+import {WKBLoader} from '@loaders.gl/wkt/bundled';
 import {parseTestCases} from '@loaders.gl/gis/test/data/wkt/parse-test-cases';
 
 const WKB_2D_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdata2d.json';
 const WKB_Z_TEST_CASES = '@loaders.gl/gis/test/data/wkt/wkb-testdataZ.json';
 
-test('WKBLoader#2D', async (t) => {
+test('WKBLoader#2D', async t => {
   const response = await fetchFile(WKB_2D_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 
@@ -38,7 +38,7 @@ test('WKBLoader#2D', async (t) => {
   t.end();
 });
 
-test('WKBLoader#Z', async (t) => {
+test('WKBLoader#Z', async t => {
   const response = await fetchFile(WKB_Z_TEST_CASES);
   const TEST_CASES = parseTestCases(await response.json());
 

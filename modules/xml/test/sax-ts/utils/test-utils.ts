@@ -7,7 +7,7 @@ import type {Test} from 'tape-promise/tape';
 import {SAXParser, SAXParserOptions} from '@loaders.gl/xml';
 
 type TestSAXParams = {
-  xml?: string | Buffer;
+  xml?: string | {toString(): string};
   expect: any[];
   saxOptions?: SAXParserOptions;
 };

@@ -27,7 +27,7 @@ const DXT_FORMAT_MAP: Record<
   {textureFormat: TextureFormat; sizeFunction: (width: number, height: number) => number}
 > = {
   [CRN_FORMAT.cCRNFmtDXT1]: {
-    textureFormat: 'bc1-rgb-unorm-ext',
+    textureFormat: 'bc1-rgb-unorm-webgl',
     sizeFunction: getDxt1LevelSize
   },
   [CRN_FORMAT.cCRNFmtDXT3]: {

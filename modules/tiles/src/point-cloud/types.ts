@@ -10,6 +10,16 @@ export type PointCloudAttribute = {
 };
 
 /**
+ * deck.gl coordinate system string values accepted by point cloud tile content.
+ */
+export type PointCloudCoordinateSystem =
+  | 'default'
+  | 'lnglat'
+  | 'meter-offsets'
+  | 'lnglat-offsets'
+  | 'cartesian';
+
+/**
  * A normalized point cloud tile content payload.
  */
 export type PointCloudTileContent = {
@@ -20,8 +30,9 @@ export type PointCloudTileContent = {
   };
   pointCount: number;
   cartographicOrigin: number[];
-  coordinateSystem: number;
+  coordinateSystem: PointCloudCoordinateSystem;
   constantRGBA?: number[];
+  modelMatrix?: number[] | Float32Array;
 };
 
 /**

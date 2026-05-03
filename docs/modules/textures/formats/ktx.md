@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # KTX / KTX2
+
+<TexturesDocsTabs active="ktx" />
 
 - _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
 - _[`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader)_ - reads KTX and KTX2 containers

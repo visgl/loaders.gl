@@ -6,7 +6,7 @@ import {meshoptDecodeGltfBuffer} from '../../meshopt/meshopt-decoder';
 
 // @ts-ignore
 // eslint-disable-next-line
-const DEFAULT_MESHOPT_OPTIONS = {
+const _DEFAULT_MESHOPT_OPTIONS = {
   byteOffset: 0,
   filter: 'NONE'
 };

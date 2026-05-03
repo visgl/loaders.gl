@@ -16,7 +16,7 @@ const INTERNAL_BINARY_SUBTREE_FILE_URL =
 const INTERNAL_BINARY_SPARSE_SUBTREE_FILE_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/SparseOctree/subtrees/0/0/0/0.subtree';
 
-test('Tile3DSubtreeLoader#Should load quadtree subtree with constant availability', async (t) => {
+test('Tile3DSubtreeLoader#Should load quadtree subtree with constant availability', async t => {
   const EXPECTED = {
     buffers: [],
     bufferViews: [],
@@ -32,7 +32,7 @@ test('Tile3DSubtreeLoader#Should load quadtree subtree with constant availabilit
   t.end();
 });
 
-test('Tile3DSubtreeLoader#Should load quadtree subtree with expicitBitstream', async (t) => {
+test('Tile3DSubtreeLoader#Should load quadtree subtree with expicitBitstream', async t => {
   const EXPECTED = {
     buffers: [{byteLength: 2}],
     bufferViews: [
@@ -51,7 +51,7 @@ test('Tile3DSubtreeLoader#Should load quadtree subtree with expicitBitstream', a
   t.end();
 });
 
-test('Tile3DSubtreeLoader#Should load octree subtree with expicitBitstream', async (t) => {
+test('Tile3DSubtreeLoader#Should load octree subtree with expicitBitstream', async t => {
   const EXPECTED = {
     buffers: [{byteLength: 96}],
     bufferViews: [

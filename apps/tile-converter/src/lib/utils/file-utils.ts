@@ -81,7 +81,7 @@ export async function openJson(path: string, fileName: string): Promise<{[key: s
     const intervalId = setInterval(() => {
       const pathFile = join(path, fileName);
       load(pathFile, JSONLoader)
-        .then((result) => {
+        .then(result => {
           clearInterval(intervalId);
           resolve(result);
         })
@@ -147,7 +147,7 @@ export async function renameFile(oldPath: string, newPath: string): Promise<void
   try {
     await fs.rename(oldPath, newPath);
   } catch (err) {
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     console.log('Can\'t rename file', err); // eslint-disable-line no-console
   }
 }

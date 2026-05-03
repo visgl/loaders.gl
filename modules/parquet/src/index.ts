@@ -2,33 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-export {Buffer} from './polyfills/buffer/install-buffer-polyfill';
-
 // import {ArrowTable, ArrowTableBatch} from '@loaders.gl/arrow';
 
 export {ParquetFormat} from './parquet-format';
 
-export {
-  ParquetJSONWorkerLoader,
-  ParquetJSONLoader,
-  GeoParquetWorkerLoader,
-  GeoParquetLoader,
-  // deprecated
-  ParquetJSONWorkerLoader as ParquetWorkerLoader,
-  ParquetJSONLoader as ParquetLoader
-} from './parquet-json-loader';
+export type {ParquetLoaderOptions, ParquetJSLoaderOptions} from './parquet-loader-options';
+export {ParquetLoader} from './parquet-loader';
+export {GeoParquetLoader} from './geoparquet-loader';
+export {ParquetJSLoader} from './parquet-js-loader';
 
-export {
-  ParquetJSONWriter as _ParquetJSONWriter,
-  // deprecated
-  ParquetJSONWriter as ParquetWriter
-} from './parquet-json-writer';
-
-// EXPERIMENTAL - expose Parquet WASM loaders/writer
-
-export type {ParquetArrowLoaderOptions} from './parquet-arrow-loader';
-export {ParquetArrowLoader, ParquetArrowWorkerLoader} from './parquet-arrow-loader';
-export {ParquetArrowWriter} from './parquet-arrow-writer';
+export {ParquetWriter} from './parquet-writer';
+export type {ParquetJSWriterOptions} from './parquet-js-writer';
+export {ParquetJSWriter} from './parquet-js-writer';
 
 // EXPERIMENTAL - expose the internal parquetjs API
 
@@ -42,6 +27,3 @@ export {
   convertParquetSchema,
   convertParquetSchema as convertParquetToArrowSchema
 } from './lib/arrow/convert-schema-from-parquet';
-
-// Experimental
-export {BufferPolyfill, installBufferPolyfill} from './polyfills/buffer/index';

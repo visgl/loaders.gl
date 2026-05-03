@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {MeshAttribute, MeshAttributes, Schema, Field} from '@loaders.gl/schema';
+import {DataType, MeshAttribute, MeshAttributes, Schema, Field} from '@loaders.gl/schema';
 import {getDataTypeFromTypedArray} from '../schema/data-type';
 
 /**
@@ -33,9 +33,13 @@ export function deduceMeshField(
 ): Field {
   const type = getDataTypeFromTypedArray(attribute.value);
   const metadata = optionalMetadata ? optionalMetadata : makeMeshAttributeMetadata(attribute);
+  const dataType: DataType =
+    attribute.size === 1
+      ? type
+      : {type: 'fixed-size-list', listSize: attribute.size, children: [{name: 'value', type}]};
   return {
     name,
-    type: {type: 'fixed-size-list', listSize: attribute.size, children: [{name: 'value', type}]},
+    type: dataType,
     nullable: false,
     metadata
   };

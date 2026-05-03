@@ -4,15 +4,15 @@
 
 import test from 'tape-promise/tape';
 import {load, encode} from '@loaders.gl/core';
-import {ImageLoader} from '@loaders.gl/images';
+import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {BasisLoader, KTX2BasisWriter, KTX2BasisWriterWorker} from '@loaders.gl/textures';
 import {isBrowser, processOnWorker, WorkerFarm} from '@loaders.gl/worker-utils';
 
 const shannonPNG = '@loaders.gl/textures/test/data/shannon.png';
 const shannonJPG = '@loaders.gl/textures/test/data/shannon.jpg';
 
-test('KTX2BasisUniversalTextureWriter#Should encode PNG', async (t) => {
-  const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
+test('KTX2BasisUniversalTextureWriter#Should encode PNG', async t => {
+  const image = getImageData(await load(shannonPNG, ImageBitmapLoader));
   const encodedData = await encode(image, KTX2BasisWriter);
   const transcodedImages = await load(encodedData, BasisLoader);
   const transcodedImage = transcodedImages[0][0];
@@ -25,8 +25,8 @@ test('KTX2BasisUniversalTextureWriter#Should encode PNG', async (t) => {
   t.end();
 });
 
-test('KTX2BasisUniversalTextureWriter # Worker # Should encode PNG', async (t) => {
-  const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
+test('KTX2BasisUniversalTextureWriter # Worker # Should encode PNG', async t => {
+  const image = getImageData(await load(shannonPNG, ImageBitmapLoader));
   const encodedData = await processOnWorker(KTX2BasisWriterWorker, image, {
     _workerType: 'test'
   });
@@ -46,8 +46,8 @@ test('KTX2BasisUniversalTextureWriter # Worker # Should encode PNG', async (t) =
   t.end();
 });
 
-test('KTX2BasisUniversalTextureWriter#Should encode JPG', async (t) => {
-  const image = await load(shannonJPG, ImageLoader, {image: {type: 'data'}});
+test('KTX2BasisUniversalTextureWriter#Should encode JPG', async t => {
+  const image = getImageData(await load(shannonJPG, ImageBitmapLoader));
   const encodedData = await encode(image, KTX2BasisWriter);
   const transcodedImages = await load(encodedData, BasisLoader);
   const transcodedImage = transcodedImages[0][0];

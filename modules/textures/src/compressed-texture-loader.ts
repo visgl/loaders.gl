@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Loader, LoaderWithParser, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import {CompressedTextureFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
-import {parseCompressedTexture} from './lib/parsers/parse-compressed-texture';
-import {parseBasis} from './lib/parsers/parse-basis';
 
 /** Options for the CompressedTextureLoader */
 export type CompressedTextureLoaderOptions = StrictLoaderOptions & {
@@ -17,10 +16,17 @@ export type CompressedTextureLoaderOptions = StrictLoaderOptions & {
   };
 };
 
-/**
- * Worker Loader for KTX, DDS, and PVR texture container formats
- */
+/** Preloads the parser-bearing compressed texture loader implementation. */
+async function preload() {
+  const {CompressedTextureLoaderWithParser} = await import(
+    './compressed-texture-loader-with-parser'
+  );
+  return CompressedTextureLoaderWithParser;
+}
+
+/** Metadata-only worker loader for KTX, DDS, and PVR texture container formats. */
 export const CompressedTextureWorkerLoader = {
+  ...CompressedTextureFormat,
   dataType: null as unknown as any,
   batchType: null as never,
 
@@ -29,6 +35,8 @@ export const CompressedTextureWorkerLoader = {
   module: 'textures',
   version: VERSION,
   worker: true,
+  encoding: 'image',
+  format: 'compressed-texture',
   extensions: [
     'ktx',
     'ktx2',
@@ -47,29 +55,12 @@ export const CompressedTextureWorkerLoader = {
     'compressed-texture': {
       useBasis: false
     }
-  }
+  },
+  preload
 } as const satisfies Loader<any, never, CompressedTextureLoaderOptions>;
 
-/**
- * Loader for KTX, DDS, and PVR texture container formats
- */
+/** Metadata-only loader for KTX, DDS, and PVR texture container formats. */
 export const CompressedTextureLoader = {
   ...CompressedTextureWorkerLoader,
-  parse: async (arrayBuffer: ArrayBuffer, options?: CompressedTextureLoaderOptions) => {
-    options = {...options};
-    if (options?.['compressed-texture']?.useBasis) {
-      options.basis = {
-        format: {
-          alpha: 'BC3',
-          noAlpha: 'BC1'
-        },
-        ...options.basis,
-        containerFormat: 'ktx2',
-        module: 'encoder'
-      };
-      const result = await parseBasis(arrayBuffer, options);
-      return result[0];
-    }
-    return parseCompressedTexture(arrayBuffer);
-  }
-} as const satisfies LoaderWithParser<any, never, CompressedTextureLoaderOptions>;
+  preload
+} as const satisfies Loader<any, never, CompressedTextureLoaderOptions>;

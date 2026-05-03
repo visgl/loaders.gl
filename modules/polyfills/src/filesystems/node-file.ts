@@ -19,13 +19,13 @@ export class NodeFile implements ReadableFile, WritableFile {
 
   async close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.close(this.handle, (err) => (err ? reject(err) : resolve()));
+      fs.close(this.handle, err => (err ? reject(err) : resolve()));
     });
   }
 
   async truncate(length: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.ftruncate(this.handle, length, (err) => {
+      fs.ftruncate(this.handle, length, err => {
         if (err) {
           reject(err);
         } else {
@@ -39,7 +39,7 @@ export class NodeFile implements ReadableFile, WritableFile {
 
   async append(data: Uint8Array): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.appendFile(this.handle, data, (err) => {
+      fs.appendFile(this.handle, data, err => {
         if (err) {
           reject(err);
         } else {

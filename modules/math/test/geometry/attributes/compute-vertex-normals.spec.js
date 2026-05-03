@@ -13,7 +13,7 @@ function getNormalsForVertices(vertices, t) {
 }
 
 // eslint-disable-next-line complexity
-test('computeVertexNormals (non-indexed)', (t) => {
+test('computeVertexNormals (non-indexed)', t => {
   // get normals for a counter clockwise created triangle
   let normals = getNormalsForVertices([-1, 0, 0, 1, 0, 0, 0, 1, 0], t);
 
@@ -70,12 +70,12 @@ test('computeVertexNormals (non-indexed)', (t) => {
   }
 });
 
-test('computeVertexNormals (indexed)', (t) => {
+test('computeVertexNormals (indexed)', t => {
   const sqrt = 0.5 * Math.sqrt(2);
 
   const normal = {
     size: 3,
-    // prettier-ignore
+    // biome-ignore format: preserve intentional fixture layout
     values: new Float32Array([
       -1, 0, 0, 1, 0, 0, 1, 0, 0, sqrt, sqrt, 0, sqrt, sqrt, 0, sqrt, sqrt, 0, 1, 0, 0
     ])
@@ -84,7 +84,7 @@ test('computeVertexNormals (indexed)', (t) => {
   const attributes = {
     positions: {
       size: 3,
-      // prettier-ignore
+      // biome-ignore format: preserve intentional fixture layout
       values: new Float32Array([
         0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
         -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5

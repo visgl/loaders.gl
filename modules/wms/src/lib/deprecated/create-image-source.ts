@@ -2,20 +2,24 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Source, SourceArrayDataSourceType, DataSourceOptions} from '@loaders.gl/loader-utils';
-import type {WMSSourceOptions} from '../../wms-source';
-import {WMSSource} from '../../wms-source';
-import {ArcGISImageServerSource} from '../../arcgis/arcgis-image-source';
+import type {
+  SourceArrayDataSourceType,
+  DataSourceOptions,
+  SourceLoader
+} from '@loaders.gl/loader-utils';
+import type {WMSSourceLoaderOptions} from '../../wms-source-loader';
+import {WMSSourceLoader} from '../../wms-source-loader';
+import {ArcGISImageServerSourceLoader} from '../../arcgis/arcgis-image-server-source-loader';
 
 export type ImageSourceType = 'wms' | 'arcgis-image-server' | 'template';
 
-const SOURCES = [WMSSource, ArcGISImageServerSource] as const;
+const SOURCES = [WMSSourceLoader, ArcGISImageServerSourceLoader] as const;
 
 /**
  * * @deprecated Use createDataSource from @loaders.gl/core
  */
 type CreateImageSourceOptions = DataSourceOptions &
-  WMSSourceOptions & {
+  WMSSourceLoaderOptions & {
     type?: ImageSourceType | 'auto';
   };
 
@@ -28,12 +32,12 @@ type CreateImageSourceOptions = DataSourceOptions &
  *
  * @deprecated Use createDataSource from @loaders.gl/core
  */
-export function createImageSource<SourceArrayT extends Source[]>(options: {
+export function createImageSource<SourceArrayT extends SourceLoader[]>(options: {
   url: string;
   type: string;
   loadOptions: any;
   options: Readonly<CreateImageSourceOptions>; // Readonly<SourceArrayOptionsType<SourceArrayT>>,
-  sources: Readonly<Source[]>;
+  sources: Readonly<SourceLoader[]>;
 }): SourceArrayDataSourceType<SourceArrayT> {
   const {type = 'auto', url, sources = SOURCES, loadOptions} = options;
   const source: SourceArrayT[number] | null =
@@ -46,7 +50,7 @@ export function createImageSource<SourceArrayT extends Source[]>(options: {
 }
 
 /** Guess service type from URL */
-function getSourceOfType(type: string, sources: Readonly<Source[]>): Source | null {
+function getSourceOfType(type: string, sources: Readonly<SourceLoader[]>): SourceLoader | null {
   // if (type === 'template') {
   //   return ImageSource;
   // }
@@ -61,7 +65,7 @@ function getSourceOfType(type: string, sources: Readonly<Source[]>): Source | nu
 }
 
 /** Guess source type from URL */
-function guessSourceType(url: string, sources: Readonly<Source[]>): Source | null {
+function guessSourceType(url: string, sources: Readonly<SourceLoader[]>): SourceLoader | null {
   for (const source of sources) {
     if (source.testURL && source.testURL(url)) {
       return source;

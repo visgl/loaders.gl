@@ -67,7 +67,7 @@ export class ColumnarTableBatchAggregator implements TableBatchAggregator {
     }
 
     // @ts-ignore TODO
-    this.allocated = this.allocated > 0 ? (this.allocated *= 2) : DEFAULT_ROW_COUNT;
+    this.allocated = this.allocated > 0 ? this.allocated * 2 : DEFAULT_ROW_COUNT;
     this.columns = {};
 
     for (const field of this.schema.fields) {

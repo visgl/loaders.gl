@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # KTX2BasisWriter 🚧
+
+<TexturesDocsTabs active="ktx2basiswriter" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
@@ -22,11 +26,12 @@
 ```typescript
 import '@loaders.gl/polyfill'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
+import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 
 const shannonPNG = 'shannon.png';
 
-const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
+const image = getImageData(await load(shannonPNG, ImageBitmapLoader));
 const encodedData = await encode(image, KTX2BasisUniversalTextureWriter);
 ```
 

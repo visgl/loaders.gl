@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/csv",
-  "version": "4.4.0-alpha.18",
+  "version": "4.4.0",
   "description": "Framework-independent loader for CSV and DSV table formats",
   "license": "MIT",
   "type": "module",
@@ -30,6 +30,24 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
+    "./csv-worker.js": {
+      "import": "./dist/csv-worker.js"
+    },
+    "./csv-worker-node.js": {
+      "import": "./dist/csv-worker-node.js"
+    },
+    "./csv-writer": {
+      "types": "./dist/csv-writer.d.ts",
+      "import": "./dist/csv-writer.js"
     }
   },
   "sideEffects": false,
@@ -39,17 +57,28 @@
     "README.md"
   ],
   "scripts": {
-    "pre-build": "npm run build-bundle && npm run build-bundle-dev",
+    "pre-build": "npm run build-worker && npm run build-worker-node && npm run build-bundle && npm run build-bundle-dev",
+    "build-worker": "esbuild src/workers/csv-worker.ts --bundle --outfile=dist/csv-worker.js --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-worker-node": "esbuild src/workers/csv-worker-node.ts --outfile=dist/csv-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.4.0-alpha.18",
-    "@loaders.gl/schema": "4.4.0-alpha.18",
+    "@loaders.gl/arrow": "4.4.0",
+    "@loaders.gl/gis": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "apache-arrow": ">= 17.0.0",
     "d3-dsv": "^1.2.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.1"
+    "@loaders.gl/core": "~4.4.0"
   },
-  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3",
+  "devDependencies": {
+    "@types/papaparse": "^5",
+    "csv-parser": "^3.2.0",
+    "papaparse": "^5.5.3",
+    "udsv": "^0.7.3"
+  }
 }

@@ -11,7 +11,7 @@ let slpkArchive: SLPKArchive;
 export async function loadArchive(fullLayerPath: string): Promise<void> {
   slpkArchive = await parseSLPKArchive(
     new NodeFile(fullLayerPath),
-    (msg) => console.log(msg) // eslint-disable-line no-console
+    msg => console.log(msg) // eslint-disable-line no-console
   );
   // eslint-disable-next-line no-console
   console.log('The server is ready to use');

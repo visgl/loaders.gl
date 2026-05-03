@@ -23,6 +23,7 @@ import './wmts/wmts-capabilities-loader.spec';
 // WMS - Web Feature Service
 
 import './wfs/wfs-capabilities-loader.spec';
+import './wfs/wfs-source.spec';
 
 // GML - Geographic Markup Language
 
@@ -31,4 +32,4 @@ import './gml/gml-loader.spec';
 // Services
 
 import './wms/wms-source.spec';
-// import './services/arcgis-server.spec';
+import './arcgis/arcgis-server.spec';

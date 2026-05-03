@@ -4,8 +4,8 @@
 
 import type {MapViewState, OrbitViewState} from '@deck.gl/core';
 import {createDataSource} from '@loaders.gl/core';
-import {COPCSource} from '@loaders.gl/copc';
-import {PotreeSource} from '@loaders.gl/potree';
+import {COPCSourceLoader} from '@loaders.gl/copc';
+import {PotreeSourceLoader} from '@loaders.gl/potree';
 import type {PointCloudTilesetSource} from '@loaders.gl/tiles';
 
 export type PointTileMapViewState = MapViewState & {
@@ -46,7 +46,7 @@ const COPC_MIAMI_URL =
   'https://noaa-nos-coastal-lidar-pds.s3.amazonaws.com/laz/geoid18/9271/20180425_324741D.copc.laz';
 
 function createPotreeDataSource(url: string): PointCloudTilesetSource {
-  return createDataSource(url, [PotreeSource], {
+  return createDataSource(url, [PotreeSourceLoader], {
     core: {type: 'potree'},
     potree: {}
   }) as PointCloudTilesetSource;
@@ -56,7 +56,7 @@ function createCopcDataSource(
   url: string,
   sourceCoordinateSystem?: string
 ): PointCloudTilesetSource {
-  return createDataSource(url, [COPCSource], {
+  return createDataSource(url, [COPCSourceLoader], {
     core: {type: 'copc'},
     copc: {
       sourceCoordinateSystem

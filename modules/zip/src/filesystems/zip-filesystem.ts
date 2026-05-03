@@ -14,9 +14,9 @@ export type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayB
 /** Handling different compression types in zip */
 export const ZIP_COMPRESSION_HANDLERS: {[key: number]: CompressionHandler} = {
   /** No compression */
-  0: async (compressedFile) => compressedFile,
+  0: async compressedFile => compressedFile,
   /** Deflation */
-  8: async (compressedFile) => {
+  8: async compressedFile => {
     const compression = new DeflateCompression({raw: true});
     const decompressedData = await compression.decompress(compressedFile);
     return decompressedData;

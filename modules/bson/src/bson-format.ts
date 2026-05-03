@@ -11,5 +11,7 @@ export const BSONFormat = {
   extensions: ['bson'],
   mimeTypes: ['application/bson'],
   category: 'json',
+  encoding: 'binary',
+  format: 'bson',
   binary: true
 } as const satisfies Format;

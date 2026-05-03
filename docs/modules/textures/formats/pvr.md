@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # PVR
+
+<TexturesDocsTabs active="pvr" />
 
 - _[`@loaders.gl/textures`](/docs/modules/textures)_ - loaders.gl implementation
 - _[`CompressedTextureLoader`](/docs/modules/textures/api-reference/compressed-texture-loader)_ - reads PVR containers

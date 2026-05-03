@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#trailing-non-whitespace', (t) => {
+test('SAXParser#trailing-non-whitespace', t => {
   testSax(t, {
     xml: '<span>Welcome,</span> to monkey land',
     expect: [

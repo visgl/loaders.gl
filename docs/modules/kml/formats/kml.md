@@ -1,4 +1,8 @@
+import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
+
 # KML
+
+<KmlDocsTabs active="overview" />
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

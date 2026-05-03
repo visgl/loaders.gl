@@ -22,11 +22,11 @@ export function getFetchFunction(options?: LoaderOptions) {
   // options.fetch can be an options object, use global fetch with those options
   const fetchOptions = options?.fetch;
   if (fetchOptions && typeof fetchOptions !== 'function') {
-    return (url) => fetch(url, fetchOptions);
+    return url => fetch(url, fetchOptions);
   }
 
   // else return the global fetch function
-  return (url) => fetch(url);
+  return url => fetch(url);
 }
 
 export function mergeImageSourceLoaderProps<Props extends {loadOptions?: any}>(

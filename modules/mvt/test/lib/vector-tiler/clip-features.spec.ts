@@ -15,7 +15,7 @@ const geom1 = [
 ];
 const geom2 = [0, 0, 0, 50, 0, 0, 50, 10, 0, 0, 10, 0];
 
-test('VectorTiler#clipFeatures#clips polylines', (t) => {
+test('VectorTiler#clipFeatures#clips polylines', t => {
   const clipped = clipFeatures(
     [
       {geometry: geom1, type: 'LineString', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},
@@ -66,7 +66,7 @@ test('VectorTiler#clipFeatures#clips polylines', (t) => {
   t.end();
 });
 
-test('VectorTiler#clipFeatures#clips lines with line metrics on', (t) => {
+test('VectorTiler#clipFeatures#clips lines with line metrics on', t => {
   const geom = geom1.slice();
   // @ts-expect-error
   geom.size = 0;
@@ -93,7 +93,7 @@ test('VectorTiler#clipFeatures#clips lines with line metrics on', (t) => {
   );
 
   t.same(
-    clipped.map((f) => [f.geometry.start, f.geometry.end]),
+    clipped.map(f => [f.geometry.start, f.geometry.end]),
     [
       [10, 40],
       [70, 130],
@@ -109,7 +109,7 @@ function closed(geometry) {
   return [geometry.concat(geometry.slice(0, 3))];
 }
 
-test('VectorTiler#clipFeatures#clips polygons', (t) => {
+test('VectorTiler#clipFeatures#clips polygons', t => {
   const clipped = clipFeatures(
     [
       {geometry: closed(geom1), type: 'Polygon', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},
@@ -157,7 +157,7 @@ test('VectorTiler#clipFeatures#clips polygons', (t) => {
   t.end();
 });
 
-test('VectorTiler#clipFeatures#clips points', (t) => {
+test('VectorTiler#clipFeatures#clips points', t => {
   const clipped = clipFeatures(
     [
       {geometry: geom1, type: 'MultiPoint', tags: 1, minX: 0, minY: 0, maxX: 50, maxY: 60},

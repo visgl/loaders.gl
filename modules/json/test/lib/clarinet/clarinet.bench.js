@@ -1,6 +1,6 @@
 import {_ClarinetParser} from '@loaders.gl/json';
 
-const loadJSON = async (relativePath) => {
+const loadJSON = async relativePath => {
   const url = new URL(relativePath, import.meta.url);
   if (url.protocol === 'file:' && typeof window === 'undefined') {
     const {readFile} = await import('fs/promises');

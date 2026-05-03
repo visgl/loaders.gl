@@ -1,12 +1,12 @@
 import test from 'tape-promise/tape';
-import {PotreeSource} from '@loaders.gl/potree';
+import {PotreeSourceLoader} from '@loaders.gl/potree';
 
 const POTREE_BIN_URL = '@loaders.gl/potree/test/data/lion_takanawa';
 const POTREE_LAZ_URL =
   'https://raw.githubusercontent.com/visgl/deck.gl-data/master/formats/potree/1.8/3dm_32_291_5744_1_nw-converted';
 
-test('PotreeSource#initialize', async (t) => {
-  const DS = PotreeSource;
+test('PotreeSourceLoader#initialize', async t => {
+  const DS = PotreeSourceLoader;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
   t.notOk(source.isReady);
 
@@ -19,8 +19,8 @@ test('PotreeSource#initialize', async (t) => {
   t.end();
 });
 
-test('PotreeSource#loadNodeContent - loads binary point content', async (t) => {
-  const DS = PotreeSource;
+test('PotreeSourceLoader#loadNodeContent - loads binary point content', async t => {
+  const DS = PotreeSourceLoader;
   const source = DS.createDataSource(POTREE_BIN_URL, {});
 
   await source.initialize();
@@ -42,13 +42,13 @@ test('PotreeSource#loadNodeContent - loads binary point content', async (t) => {
   t.end();
 });
 
-test('PotreeSource#exposes normalized tile headers and bounds', async (t) => {
-  const source = PotreeSource.createDataSource(POTREE_BIN_URL, {});
+test('PotreeSourceLoader#exposes normalized tile headers and bounds', async t => {
+  const source = PotreeSourceLoader.createDataSource(POTREE_BIN_URL, {});
   await source.initialize();
 
   const rootTile = await source.getRootTile();
   const childTiles = await source.getChildren(rootTile);
-  const childZero = childTiles.find((tile) => tile.id === 'r0');
+  const childZero = childTiles.find(tile => tile.id === 'r0');
 
   t.equal(rootTile.id, 'r', 'root tile id is normalized');
   t.equal(rootTile.level, 0, 'root tile level is preserved');
@@ -70,13 +70,16 @@ test('PotreeSource#exposes normalized tile headers and bounds', async (t) => {
   t.end();
 });
 
-test('PotreeSource#derives cartographic view metadata from the dataset', async (t) => {
-  const source = PotreeSource.createDataSource(POTREE_LAZ_URL, {});
+test('PotreeSourceLoader#derives cartographic view metadata from the dataset', async t => {
+  const source = PotreeSourceLoader.createDataSource(POTREE_LAZ_URL, {});
 
   const metadata = await source.getMetadata();
   const viewState = source.getViewState();
 
-  t.ok(Array.isArray(metadata.viewState.cartographicCenter), 'metadata includes a cartographic center');
+  t.ok(
+    Array.isArray(metadata.viewState.cartographicCenter),
+    'metadata includes a cartographic center'
+  );
   t.ok((metadata.viewState.zoom || 0) > 0, 'metadata includes an inferred zoom');
   t.deepEqual(
     metadata.viewState.cartographicCenter,
@@ -86,8 +89,8 @@ test('PotreeSource#derives cartographic view metadata from the dataset', async (
   t.end();
 });
 
-test.skip('PotreeSource#loadNodeContent', async (t) => {
-  const DS = PotreeSource;
+test.skip('PotreeSourceLoader#loadNodeContent', async t => {
+  const DS = PotreeSourceLoader;
   const source = DS.createDataSource(POTREE_LAZ_URL, {});
 
   await source.init();

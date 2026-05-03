@@ -1,0 +1,98 @@
+{
+  "displayTimeUnit": "us",
+  "metadata": {
+    "name": "loaders.gl sample Chrome trace",
+    "source": "website-example"
+  },
+  "traceEvents": [
+    {
+      "name": "process_name",
+      "ph": "M",
+      "pid": 100,
+      "tid": 0,
+      "args": {
+        "name": "Renderer"
+      }
+    },
+    {
+      "name": "thread_name",
+      "ph": "M",
+      "pid": 100,
+      "tid": 1,
+      "args": {
+        "name": "Main"
+      }
+    },
+    {
+      "name": "ParseHTML",
+      "cat": "blink",
+      "ph": "X",
+      "ts": 1000,
+      "dur": 3200,
+      "pid": 100,
+      "tid": 1,
+      "args": {
+        "url": "https://loaders.gl/examples/traces/chrome-trace"
+      }
+    },
+    {
+      "name": "EvaluateScript",
+      "cat": "v8",
+      "ph": "X",
+      "ts": 4700,
+      "dur": 1800,
+      "pid": 100,
+      "tid": 1,
+      "args": {
+        "scriptName": "table-live-example.tsx"
+      }
+    },
+    {
+      "name": "Layout",
+      "cat": "blink",
+      "ph": "X",
+      "ts": 7000,
+      "dur": 950,
+      "pid": 100,
+      "tid": 1,
+      "args": {
+        "dirtyObjects": 24
+      }
+    },
+    {
+      "name": "Paint",
+      "cat": "devtools.timeline",
+      "ph": "X",
+      "ts": 8200,
+      "dur": 450,
+      "pid": 100,
+      "tid": 1,
+      "args": {
+        "layerId": 3
+      }
+    },
+    {
+      "name": "async-resource",
+      "cat": "netlog",
+      "ph": "b",
+      "ts": 9100,
+      "pid": 100,
+      "tid": 1,
+      "id": "resource-1",
+      "s": "p"
+    },
+    {
+      "name": "async-resource",
+      "cat": "netlog",
+      "ph": "e",
+      "ts": 11200,
+      "pid": 100,
+      "tid": 1,
+      "id": "resource-1",
+      "s": "p",
+      "args": {
+        "encodedDataLength": 4096
+      }
+    }
+  ]
+}

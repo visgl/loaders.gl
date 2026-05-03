@@ -1,8 +1,8 @@
 # MVTWriter
 
-:::caution
-Experimental
-:::
+<p class="badges">
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
+</p>
 
 Writer for the [Mapbox Vector Tile](https://docs.mapbox.com/vector-tiles/specification/) format for representation of geometry.
 

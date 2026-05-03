@@ -1,6 +1,13 @@
+import {PotreeDocsTabs} from '@site/src/components/docs/potree-docs-tabs';
+
 # @loaders.gl/potree
 
-> The potree loaders are still under development and are not yet considered ready for use.
+<p class="badges">
+  <img src="https://img.shields.io/badge/Status-Work--In--Progress-orange.svg?style=flat-square" alt="Status: Work-In-Progress" />
+  <img src="https://img.shields.io/badge/source_loader-From_v5.0-blue.svg?style=flat-square" alt="source loader from v5.0" />
+</p>
+
+<PotreeDocsTabs active="overview" />
 
 Support for loading and traversing [potree](http://potree.org/) format point clouds.
 
@@ -30,9 +37,9 @@ Potree can also be used through the `DataSource` path with the lightweight point
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {PointCloudTileset} from '@loaders.gl/tiles';
-import {PotreeSource} from '@loaders.gl/potree';
+import {PotreeSourceLoader} from '@loaders.gl/potree';
 
-const dataSource = createDataSource(POTREE_URL, [PotreeSource], {
+const dataSource = createDataSource(POTREE_URL, [PotreeSourceLoader], {
   core: {type: 'potree'},
   potree: {}
 });
@@ -46,6 +53,7 @@ await tileset.selectTiles(viewport);
 This modules provides the following exports:
 
 - `PotreeHierarchyChunkLoader` for the hierarchy indices
+- `PotreeSourceLoader` for point-cloud tile sources <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
 
 ## Roadmap
 

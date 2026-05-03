@@ -8,7 +8,7 @@ import md5WASM from '../../src/lib/algorithms/md5-wasm';
 
 const textEncoder = new TextEncoder();
 
-test('md5WASM#hash supports ArrayBuffer and Uint8Array inputs', async (t) => {
+test('md5WASM#hash supports ArrayBuffer and Uint8Array inputs', async t => {
   const input = textEncoder.encode('array md5 input');
   const arrayBufferInput = input.buffer.slice(0);
 
@@ -21,7 +21,7 @@ test('md5WASM#hash supports ArrayBuffer and Uint8Array inputs', async (t) => {
   t.end();
 });
 
-test('md5WASM#hash works when Buffer is undefined', async (t) => {
+test('md5WASM#hash works when Buffer is undefined', async t => {
   const originalBuffer = globalThis.Buffer;
   // @ts-ignore Buffer is intentionally overridden for this test
   globalThis.Buffer = undefined;

@@ -1,4 +1,8 @@
-# Worker
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
+# CrunchWorkerLoader
+
+<TexturesDocsTabs active="crunchloader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />

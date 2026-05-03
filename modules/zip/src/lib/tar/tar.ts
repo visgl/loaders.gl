@@ -86,7 +86,7 @@ class Tar {
 
     // calculate the checksum
     checksum = 0;
-    Object.keys(data).forEach((key) => {
+    Object.keys(data).forEach(key => {
       let i: number;
       const value = data[key];
       let length: number;

@@ -11,6 +11,8 @@ export const PCDFormat = {
   name: 'PCD (Point Cloud Data)',
   id: 'pcd',
   module: 'pcd',
+  encoding: 'text',
+  format: 'pcd',
   extensions: ['pcd'],
   mimeTypes: ['text/plain'],
   category: 'pointcloud',

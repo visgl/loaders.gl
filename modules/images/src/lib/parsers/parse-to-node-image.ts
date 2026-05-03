@@ -1,4 +1,3 @@
-import type {ImageLoaderOptions} from '../../image-loader';
 import type {ImageDataType} from '../../types';
 import {assert} from '@loaders.gl/loader-utils';
 import {getBinaryImageMetadata} from '../category-api/binary-image-api';
@@ -15,18 +14,30 @@ type NDArray = {
 };
 
 type ParseImageNode = (arrayBuffer: ArrayBuffer, mimeType: string) => Promise<NDArray>;
+type CreateImageBitmapNode = (imageData: ImageDataType) => ImageBitmap;
 
-// Use polyfills if installed to parsed image using get-pixels
+/**
+ * Parses an encoded image under Node.js using the installed loaders.gl image polyfills.
+ * @param arrayBuffer - Encoded image bytes.
+ * @param _options - Reserved for future Node-specific bitmap options.
+ * @returns A Node.js `ImageBitmap` polyfill instance.
+ */
 export async function parseToNodeImage(
   arrayBuffer: ArrayBuffer,
-  options: ImageLoaderOptions
-): Promise<ImageDataType> {
+  _options?: unknown
+): Promise<ImageBitmap> {
   const {mimeType} = getBinaryImageMetadata(arrayBuffer) || {};
 
   // @ts-ignore
   const parseImageNode: ParseImageNode = globalThis.loaders?.parseImageNode;
   assert(parseImageNode); // '@loaders.gl/polyfills not installed'
+  const createImageBitmapNode: CreateImageBitmapNode | undefined =
+    globalThis.loaders?.createImageBitmapNode;
+  if (!createImageBitmapNode) {
+    throw new Error("Install '@loaders.gl/polyfills' to parse images under Node.js");
+  }
 
   // @ts-expect-error TODO should we throw error in this case?
-  return await parseImageNode(arrayBuffer, mimeType);
+  const imageData = await parseImageNode(arrayBuffer, mimeType);
+  return createImageBitmapNode(imageData);
 }

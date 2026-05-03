@@ -10,7 +10,7 @@ import {
 } from '@loaders.gl/i3s/test/test-utils/load-utils';
 import {loadI3SContent} from '../../../src/3d-tiles-converter/helpers/load-i3s';
 
-test('tile-converter(i3s)#loadNestedTileset', async (t) => {
+test('tile-converter(i3s)#loadNestedTileset', async t => {
   const i3sTilesetData = TILESET_STUB();
   const i3SNodePagesTiles = new I3SNodePagesTiles(i3sTilesetData, TEST_LAYER_URL, {});
   const node1 = await i3SNodePagesTiles.formTileFromNodePages(1);

@@ -1,7 +1,7 @@
 import test from 'tape-promise/tape';
 import {AttributeMetadataInfo} from '../../../src/i3s-converter/helpers/attribute-metadata-info';
 
-test('tile-converter(i3s)#createPopupInfo - Should create popup info', async (t) => {
+test('tile-converter(i3s)#createPopupInfo - Should create popup info', async t => {
   const attributeNames = ['OBJECTID', 'color', 'name', 'opt_uint8'];
 
   const popupInfoExpected = {
@@ -74,7 +74,7 @@ test('tile-converter(i3s)#createPopupInfo - Should create popup info', async (t)
   t.deepEqual(popupInfo, popupInfoExpected, 'popupInfo');
 });
 
-test('tile-converter(i3s)#createStorageAttributes - Should create Attribute storage info', async (t) => {
+test('tile-converter(i3s)#createStorageAttributes - Should create Attribute storage info', async t => {
   /* eslint-disable camelcase */
   const attributeTypesMap1 = {
     color: 'string',

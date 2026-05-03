@@ -69,7 +69,7 @@ const EXTENSIONS_ENCODING: GLTFExtensionPlugin[] = [EXT_structural_metadata, EXT
 
 /** Call before any resource loading starts */
 export function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
-  const extensions = EXTENSIONS.filter((extension) => useExtension(extension.name, options));
+  const extensions = EXTENSIONS.filter(extension => useExtension(extension.name, options));
   for (const extension of extensions) {
     extension.preprocess?.(gltf, options, context);
   }
@@ -77,7 +77,7 @@ export function preprocessExtensions(gltf, options: GLTFLoaderOptions = {}, cont
 
 /** Call after resource loading */
 export async function decodeExtensions(gltf, options: GLTFLoaderOptions = {}, context?) {
-  const extensions = EXTENSIONS.filter((extension) => useExtension(extension.name, options));
+  const extensions = EXTENSIONS.filter(extension => useExtension(extension.name, options));
   for (const extension of extensions) {
     // Note: We decode async extensions sequentially, this might not be necessary
     // Currently we only have Draco, but when we add Basis we may revisit

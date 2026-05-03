@@ -304,7 +304,7 @@ async function _makeNodeResources({
       faceRange.buffer
     )
   );
-  // prettier-ignore
+  // biome-ignore format: preserve intentional fixture layout
   const compressedGeometry = draco
     ? generateCompressedGeometry(
       vertexCount,
@@ -1059,7 +1059,7 @@ async function mergeMaterials(
 function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterialWithTexture {
   const material: I3SMaterialDefinition = {
     doubleSided: sourceMaterial.doubleSided,
-    emissiveFactor: sourceMaterial.emissiveFactor?.map((c) => Math.round(c * 255)) as [
+    emissiveFactor: sourceMaterial.emissiveFactor?.map(c => Math.round(c * 255)) as [
       number,
       number,
       number
@@ -1096,7 +1096,7 @@ function convertMaterial(sourceMaterial: GLTFMaterialPostprocessed): I3SMaterial
     // https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness
     const baseColorFactor = sourceMaterial?.pbrMetallicRoughness?.baseColorFactor;
     material.pbrMetallicRoughness.baseColorFactor =
-      ((baseColorFactor && baseColorFactor.map((c) => Math.round(c * 255))) as [
+      ((baseColorFactor && baseColorFactor.map(c => Math.round(c * 255))) as [
         number,
         number,
         number,
@@ -1472,7 +1472,7 @@ function generateAttributeBuffer(type: string, value: any): ArrayBuffer {
  * @returns attribute type.
  */
 function getAttributeType(key: string, attributeStorageInfo: any[]): string {
-  const attribute = attributeStorageInfo.find((attr) => attr.name === key);
+  const attribute = attributeStorageInfo.find(attr => attr.name === key);
   if (!attribute) {
     // eslint-disable-next-line no-console
     console.error(

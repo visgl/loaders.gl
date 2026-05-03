@@ -11,7 +11,17 @@ import {
 } from 'test/common/conformance';
 
 import {LASLoader, LASWorkerLoader} from '@loaders.gl/las';
-import {setLoaderOptions, fetchFile, parse, load} from '@loaders.gl/core';
+import * as las from '@loaders.gl/las';
+import * as bundledLas from '@loaders.gl/las/bundled';
+import * as unbundledLas from '@loaders.gl/las/unbundled';
+import {
+  setLoaderOptions,
+  fetchFile,
+  parse,
+  parseInBatches,
+  load,
+  makeIterator
+} from '@loaders.gl/core';
 // import {ArrowLoader} from '@loaders.gl/arrow';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
@@ -21,13 +31,20 @@ setLoaderOptions({
   _workerType: 'test'
 });
 
-test('LASLoader#loader conformance', (t) => {
+test('LASLoader#loader conformance', t => {
   validateLoader(t, LASLoader, 'LASLoader');
   validateLoader(t, LASWorkerLoader, 'LASWorkerLoader');
   t.end();
 });
 
-test('LASLoader#parse(binary)', async (t) => {
+test('LASLoader#removed Arrow variant exports are absent', t => {
+  t.notOk('LASArrowLoader' in las, 'root does not export LASArrowLoader');
+  t.notOk('LASArrowLoader' in bundledLas, 'bundled does not export LASArrowLoader');
+  t.notOk('LASArrowLoader' in unbundledLas, 'unbundled does not export LASArrowLoader');
+  t.end();
+});
+
+test('LASLoader#parse(binary)', async t => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {skip: 10},
     core: {worker: false}
@@ -43,7 +60,80 @@ test('LASLoader#parse(binary)', async (t) => {
   t.end();
 });
 
-test('LASLoader#options', async (t) => {
+test('LASLoader#parseInBatches(mesh)', async t => {
+  const response = await fetchFile(LAS_BINARY_URL);
+  const batches = await parseInBatches(makeIterator(response), LASLoader, {
+    batchSize: 25000,
+    las: {skip: 10},
+    core: {worker: false}
+  });
+  const batchVertexCounts: number[] = [];
+  let totalVertexCount = 0;
+
+  for await (const batch of batches as AsyncIterable<any>) {
+    validateMeshCategoryData(t, batch);
+    t.equal(batch.mode, 0, 'batch mode is POINTS (0)');
+    t.ok(batch.attributes.POSITION, 'batch includes POSITION attribute');
+    t.ok(batch.attributes.intensity, 'batch includes intensity attribute');
+    t.ok(batch.attributes.classification, 'batch includes classification attribute');
+    t.ok(batch.attributes.COLOR_0, 'batch includes COLOR_0 attribute');
+    t.equal(
+      batch.attributes.POSITION.value.length,
+      batch.header.vertexCount * 3,
+      'POSITION length matches batch vertex count'
+    );
+    t.ok(batch.progress > 0 && batch.progress <= 1, 'batch includes progress');
+    batchVertexCounts.push(batch.header.vertexCount);
+    totalVertexCount += batch.header.vertexCount;
+  }
+
+  t.deepEqual(batchVertexCounts, [25000, 25000, 25000, 5805], 'emits requested mesh batches');
+  t.equal(totalVertexCount, 80805, 'batched vertex count matches full parse');
+  t.end();
+});
+
+test('LASLoader#parseInBatches(arrow-table)', async t => {
+  const response = await fetchFile(LAS_BINARY_URL);
+  const batches = await parseInBatches(makeIterator(response), LASLoader, {
+    batchSize: 30000,
+    las: {shape: 'arrow-table', skip: 10},
+    core: {worker: false}
+  });
+  const batchRowCounts: number[] = [];
+
+  for await (const table of batches as AsyncIterable<any>) {
+    validateTableCategoryData(t, table);
+    t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.ok(table.data.getChild('POSITION'), 'batch includes POSITION column');
+    t.ok(table.data.getChild('intensity'), 'batch includes intensity column');
+    t.ok(table.data.getChild('classification'), 'batch includes classification column');
+    batchRowCounts.push(table.data.numRows);
+  }
+
+  t.deepEqual(batchRowCounts, [30000, 30000, 20805], 'emits requested Arrow batches');
+  t.end();
+});
+
+test('LASLoader#parseInBatches(fp64)', async t => {
+  const response = await fetchFile(LAS_BINARY_URL);
+  const batches = await parseInBatches(makeIterator(response), LASLoader, {
+    batchSize: 25000,
+    las: {skip: 10, fp64: true},
+    core: {worker: false}
+  });
+
+  for await (const batch of batches as AsyncIterable<any>) {
+    t.ok(
+      batch.attributes.POSITION.value instanceof Float64Array,
+      'batch POSITION attribute is Float64Array'
+    );
+    break;
+  }
+
+  t.end();
+});
+
+test('LASLoader#options', async t => {
   const data = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {skip: 100, fp64: false},
     core: {worker: false}
@@ -65,7 +155,7 @@ test('LASLoader#options', async (t) => {
   t.end();
 });
 
-test('LASWorker#parse(binary) extra bytes', async (t) => {
+test('LASWorker#parse(binary) extra bytes', async t => {
   const data = await parse(fetchFile(LAS_EXTRABYTES_BINARY_URL), LASLoader, {
     las: {skip: 10},
     core: {worker: false}
@@ -81,7 +171,7 @@ test('LASWorker#parse(binary) extra bytes', async (t) => {
   t.end();
 });
 
-test('LASWorkerLoader#load(worker)', async (t) => {
+test('LASWorkerLoader#load(worker)', async t => {
   if (typeof Worker === 'undefined') {
     t.comment('Worker is not usable in non-browser environments');
     t.end();
@@ -95,14 +185,14 @@ test('LASWorkerLoader#load(worker)', async (t) => {
   t.end();
 });
 
-test('LASLoader#shape="mesh"', async (t) => {
+test('LASLoader#shape="mesh"', async t => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {las: {shape: 'mesh'}});
   validateMeshCategoryData(t, result);
   t.end();
 });
 
 // Related code was commented due to breaking pointcloud example on the website
-test.skip('LASLoader#shape="columnar-table"', async (t) => {
+test.skip('LASLoader#shape="columnar-table"', async t => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'columnar-table'}
   });
@@ -110,45 +200,13 @@ test.skip('LASLoader#shape="columnar-table"', async (t) => {
   t.end();
 });
 
-// Related code was commented due to breaking pointcloud example on the website
-/*
-test.skip('LAS#shape="arrow-table"', async (t) => {
+test('LASLoader#shape="arrow-table"', async t => {
   const result = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
     las: {shape: 'arrow-table', skip: 10},
-    core:{ worker: false}
+    core: {worker: false}
   });
-  t.ok(result);
-
-  const table = result.data;
-  const arrowData = await parse(table.serialize(), ArrowLoader);
-  t.ok(arrowData);
-  t.equals(arrowData.classification.length, 80805);
-  t.ok(
-    arrowData.classification[0].data.values instanceof Uint8Array,
-    'arrowData.classification value is instance of `Uint8Vector`'
-  );
-  t.equals(arrowData.classification[0].data.values.length, 1);
-
-  t.equals(arrowData.COLOR_0.length, 80805);
-  t.ok(
-    arrowData.COLOR_0[0].data.values instanceof Uint8Array,
-    'arrowData.COLOR_0 value is instance of `Uint8Vector`'
-  );
-  t.equals(arrowData.COLOR_0[0].data.values.length, 4);
-
-  t.equals(arrowData.intensity.length, 80805);
-  t.ok(
-    arrowData.intensity[0].data.values instanceof Uint16Array,
-    'arrowData.intensity value is instance of `Uint16Vector`'
-  );
-  t.equals(arrowData.intensity[0].data.values.length, 1);
-
-  t.equals(arrowData.POSITION.length, 80805);
-  t.ok(
-    arrowData.POSITION[0].data.values instanceof Float32Array,
-    'arrowData.POSITION value is instance of `Float32Vector`'
-  );
-  t.equals(arrowData.POSITION[0].data.values.length, 3);
+  validateTableCategoryData(t, result);
+  t.equal(result.shape, 'arrow-table', 'returns Arrow table shape');
+  t.ok(result.data.getChild('POSITION'), 'returns POSITION column');
   t.end();
 });
-*/

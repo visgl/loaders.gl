@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {BasisLoader} from '../basis-loader';
+import {BasisLoaderWithParser} from '../basis-loader-with-parser';
 
-createLoaderWorker(BasisLoader);
+createLoaderWorker(BasisLoaderWithParser);

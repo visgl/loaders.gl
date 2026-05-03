@@ -31,7 +31,7 @@ npm install @loaders.gl/core
 import {TWKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 
-// prettier-ignore
+// biome-ignore format: preserve intentional fixture layout
 const buffer = new Uint8Array([
   1, 1, 0, 0,   0,  0,  0,
   0, 0, 0, 0, 240, 63,  0,

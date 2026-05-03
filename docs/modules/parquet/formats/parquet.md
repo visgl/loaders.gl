@@ -1,4 +1,8 @@
+import {ParquetDocsTabs} from '@site/src/components/docs/parquet-docs-tabs';
+
 # Parquet
+
+<ParquetDocsTabs active="overview" />
 
 ![parquet-logo](../images/parquet-logo-small.png)
 &emsp;

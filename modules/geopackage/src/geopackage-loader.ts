@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {Tables, GeoJSONTable} from '@loaders.gl/schema';
-import {parseGeoPackage, DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Tables, GeoJSONTable, ArrowTable} from '@loaders.gl/schema';
+import {DEFAULT_SQLJS_CDN} from './lib/parse-geopackage';
 import {GeoPackageFormat} from './geopackage-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
@@ -16,7 +16,7 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
   /** Options for the geopackage loader */
   geopackage?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'tables';
+    shape?: 'geojson-table' | 'arrow-table' | 'tables';
     /** Name of table to load (defaults to first table), unless shape==='tables' */
     table?: string;
     /** Use null in Node */
@@ -30,23 +30,30 @@ export type GeoPackageLoaderOptions = LoaderOptions & {
   };
 };
 
+/** Preloads the parser-bearing GeoPackage loader implementation. */
+async function preload() {
+  const {GeoPackageLoaderWithParser} = await import('./geopackage-loader-with-parser');
+  return GeoPackageLoaderWithParser;
+}
+
+/** Metadata-only loader for GeoPackage files. */
 export const GeoPackageLoader = {
   ...GeoPackageFormat,
 
-  dataType: null as unknown as GeoJSONTable | Tables<GeoJSONTable>,
+  dataType: null as unknown as GeoJSONTable | Tables<GeoJSONTable> | ArrowTable,
   batchType: null as never,
 
   version: VERSION,
-  parse: parseGeoPackage,
   options: {
     geopackage: {
       sqlJsCDN: DEFAULT_SQLJS_CDN,
       shape: 'tables'
     },
     gis: {}
-  }
-} as const satisfies LoaderWithParser<
-  GeoJSONTable | Tables<GeoJSONTable>,
+  },
+  preload
+} as const satisfies Loader<
+  GeoJSONTable | Tables<GeoJSONTable> | ArrowTable,
   never,
   GeoPackageLoaderOptions
 >;

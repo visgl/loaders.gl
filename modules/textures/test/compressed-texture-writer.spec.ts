@@ -8,7 +8,7 @@ import {CompressedTextureWriter} from '@loaders.gl/textures';
 
 export const IMAGE_URL = '@loaders.gl/images/test/data/img1-preview.png';
 
-test('CompressedTextureWriter#write-and-read-image', async (t) => {
+test('CompressedTextureWriter#write-and-read-image', async t => {
   if (isBrowser) {
     t.comment('CompressedTextureWriter only supported on Node.js');
     t.end();
@@ -22,7 +22,7 @@ test('CompressedTextureWriter#write-and-read-image', async (t) => {
       {}
     );
     t.ok(outputFilename, 'a filename was returned');
-  } catch (error) {
+  } catch (_error) {
     // @ts-ignore
     // t.comment(error);
   }

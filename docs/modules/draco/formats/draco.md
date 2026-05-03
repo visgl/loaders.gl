@@ -1,4 +1,8 @@
+import {DracoDocsTabs} from '@site/src/components/docs/draco-docs-tabs';
+
 # Draco3D
+
+<DracoDocsTabs active="overview" />
 
 ![logo](../images/draco-small.png)
 

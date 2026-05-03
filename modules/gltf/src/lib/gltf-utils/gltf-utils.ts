@@ -96,8 +96,8 @@ export function getMemoryUsageGLTF(gltf: GLTFPostprocessed): number {
   let {images, bufferViews} = gltf;
   images = images || [];
   bufferViews = bufferViews || [];
-  const imageBufferViews = images.map((i) => i.bufferView);
-  bufferViews = bufferViews.filter((view) => !imageBufferViews.includes(view as any));
+  const imageBufferViews = images.map(i => i.bufferView);
+  bufferViews = bufferViews.filter(view => !imageBufferViews.includes(view as any));
 
   const bufferMemory = bufferViews.reduce((acc, view) => acc + view.byteLength, 0);
 

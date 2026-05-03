@@ -111,7 +111,7 @@ function testBrowserImageFormatSupport(mimeType: string): boolean {
 
 // Check WebPSupport asynchronously
 async function testBrowserImageFormatSupportAsync(testImageDataURL: string): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const image = new Image();
     image.src = testImageDataURL;
     image.onload = () => resolve(image.height > 0);

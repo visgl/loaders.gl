@@ -12,9 +12,13 @@ To be compatible with the parsing/loading functions in `@loaders.gl/core` such a
 | `extension`         | `String`   | Required | Three letter (typically) extension used by files of this format |
 | `extensions`        | `String[]` | Required | Array of file extension strings supported by this loader        |
 | `category`          | `String`   | Optional | Indicates the type/shape of data                                |
+| `encoding`          | `String`   | Optional | Physical serialization, such as `json`, `xml`, `protobuf`, `arrow`, `parquet`, `zip`, `image` or `binary` |
+| `format`            | `String`   | Optional | Logical file format or subtype, such as `geojson`, `tilejson`, `mvt`, `gltf` or `flatgeobuf` |
 | `parse` \| `worker` | `Function` | `null`   | Every non-worker loader should expose a `parse` function.       |
 
 Note: Only one of `extension` or `extensions` is required. If both are supplied, `extensions` will be used.
+
+`encoding` and `format` are additive metadata. Existing `text` and `binary` fields remain compatibility hints used by core loading and encoding paths.
 
 ### Test Function
 

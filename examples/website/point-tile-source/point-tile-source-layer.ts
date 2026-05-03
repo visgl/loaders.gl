@@ -26,6 +26,37 @@ export type PointTileSourceLayerProps = {
   onPointTileError?: (tile: PointCloudTile, error: Error) => void;
 };
 
+type PointTileSourceAttribute = {
+  value: ArrayBufferView;
+  size: number;
+  normalized?: boolean;
+};
+
+type PointTileSourceLayerAttribute = PointTileSourceAttribute & {
+  type?: string;
+};
+
+/**
+ * Converts a source color attribute into a deck.gl attribute descriptor.
+ */
+function getPointCloudLayerColorAttribute(
+  colors: PointTileSourceAttribute | undefined
+): PointTileSourceLayerAttribute | undefined {
+  if (!colors) {
+    return undefined;
+  }
+
+  if (colors.value instanceof Uint16Array) {
+    return {...colors, type: 'unorm16', normalized: true};
+  }
+
+  if (colors.value instanceof Uint8Array || colors.value instanceof Uint8ClampedArray) {
+    return {...colors, type: 'unorm8', normalized: true};
+  }
+
+  return colors;
+}
+
 /**
  * A point-cloud-only deck.gl layer backed by `PointCloudTileset`.
  */
@@ -171,6 +202,7 @@ export class PointTileSourceLayer<
       return null;
     }
 
+    const colorAttribute = getPointCloudLayerColorAttribute(colors);
     const data = (oldLayer && oldLayer.props.data) || {
       header: {
         vertexCount: pointCount
@@ -178,7 +210,7 @@ export class PointTileSourceLayer<
       attributes: {
         POSITION: positions,
         NORMAL: normals,
-        COLOR_0: colors
+        instanceColors: colorAttribute
       }
     };
 

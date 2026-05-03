@@ -9,7 +9,7 @@ import GeoJsonEquality from 'geojson-equality';
 
 const eq = new GeoJsonEquality({precision: 1});
 
-test('property encoding: JSON.stringify non-primitive values', (t) => {
+test('property encoding: JSON.stringify non-primitive values', t => {
   // Includes two properties with a common non-primitive value for
   // https://github.com/mapbox/vt-pbf/issues/9
   const orig = {
@@ -60,7 +60,7 @@ test('property encoding: JSON.stringify non-primitive values', (t) => {
   t.end();
 });
 
-test('number encoding https://github.com/mapbox/vt-pbf/pull/11', (t) => {
+test('number encoding https://github.com/mapbox/vt-pbf/pull/11', t => {
   const orig = {
     type: 'Feature',
     properties: {
@@ -85,7 +85,7 @@ test('number encoding https://github.com/mapbox/vt-pbf/pull/11', (t) => {
   t.end();
 });
 
-test('id encoding', (t) => {
+test('id encoding', t => {
   const orig = {
     type: 'FeatureCollection',
     features: [
@@ -129,7 +129,7 @@ test('id encoding', (t) => {
   t.end();
 });
 
-test('accept geojson-vt options https://github.com/mapbox/vt-pbf/pull/21', async (t) => {
+test('accept geojson-vt options https://github.com/mapbox/vt-pbf/pull/21', async t => {
   const RECTANGLE_URL = '@loaders.gl/mvt/test/data/mapbox-vt-pbf-fixtures/rectangle.geojson';
   const response = await fetchFile(RECTANGLE_URL);
   const orig = await response.json();

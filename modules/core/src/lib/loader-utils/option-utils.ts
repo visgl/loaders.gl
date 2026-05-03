@@ -8,13 +8,15 @@ import {
   registerJSModules,
   isPureObject,
   isObject,
-  StrictLoaderOptions
+  StrictLoaderOptions,
+  path
 } from '@loaders.gl/loader-utils';
 import {probeLog, NullLog} from './loggers';
 import {DEFAULT_LOADER_OPTIONS, REMOVED_LOADER_OPTIONS} from './option-defaults';
+import {stripQueryString} from '../utils/url-utils';
 
 const CORE_LOADER_OPTION_KEYS = [
-  'baseUri',
+  'baseUrl',
   'fetch',
   'mimeType',
   'fallbackMimeType',
@@ -27,10 +29,12 @@ const CORE_LOADER_OPTION_KEYS = [
   'maxConcurrency',
   'maxMobileConcurrency',
   'reuseWorkers',
+  'workerTransferBufferCopy',
   '_nodeWorkers',
   '_workerType',
   'limit',
   '_limitMB',
+  'shape',
   'batchSize',
   'batchDebounceMs',
   'metadata',
@@ -91,7 +95,7 @@ export function setGlobalOptions(options: LoaderOptions): void {
 }
 
 /**
- * Merges options with global opts and loader defaults, also injects baseUri
+ * Merges options with global opts and loader defaults, also injects baseUrl
  * @param options
  * @param loader
  * @param loaders
@@ -233,6 +237,7 @@ function normalizeOptionsInternal(
 
   const userOptions = normalizeLoaderOptions(options);
   mergeNestedFields(mergedOptions, userOptions);
+  applyCoreShapeDefault(mergedOptions, userOptions, loader);
 
   addUrlOptions(mergedOptions, url);
   addDeprecatedTopLevelOptions(mergedOptions);
@@ -240,7 +245,50 @@ function normalizeOptionsInternal(
   return mergedOptions;
 }
 
-// Merge nested options objects
+/**
+ * Applies `options.core.shape` to a loader's scoped `shape` option when that loader declares
+ * shape support and neither global nor user-supplied loader-scoped options override it.
+ * @param mergedOptions fully merged options object being normalized
+ * @param userOptions normalized user-supplied options
+ * @param loader selected loader
+ */
+function applyCoreShapeDefault(
+  mergedOptions: LoaderOptions,
+  userOptions: LoaderOptions,
+  loader: Loader
+): void {
+  const coreShape = mergedOptions.core?.shape;
+  if (coreShape === undefined) {
+    return;
+  }
+
+  const loaderScopedDefaults = loader.options?.[loader.id];
+  if (!isPureObject(loaderScopedDefaults) || !('shape' in loaderScopedDefaults)) {
+    return;
+  }
+
+  const globalLoaderScopedOptions = getGlobalLoaderOptions()[loader.id];
+  if (isPureObject(globalLoaderScopedOptions) && 'shape' in globalLoaderScopedOptions) {
+    return;
+  }
+
+  const userLoaderScopedOptions = userOptions[loader.id];
+  if (isPureObject(userLoaderScopedOptions) && 'shape' in userLoaderScopedOptions) {
+    return;
+  }
+
+  const loaderScopedOptions = mergedOptions[loader.id];
+  mergedOptions[loader.id] = {
+    ...(isPureObject(loaderScopedOptions) ? loaderScopedOptions : {}),
+    shape: coreShape
+  };
+}
+
+/**
+ * Merges one level of nested option objects into the target options record.
+ * @param mergedOptions target options object to mutate
+ * @param options source options object
+ */
 function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions): void {
   for (const key in options) {
     // Check for nested options
@@ -262,8 +310,7 @@ function mergeNestedFields(mergedOptions: LoaderOptions, options: LoaderOptions)
 
 /**
  * Harvest information from the url
- * @deprecated This is mainly there to support a hack in the GLTFLoader
- * TODO - baseUri should be a directory, i.e. remove file component from baseUri
+ * @deprecated This is mainly there to support loaders that still resolve from options
  * TODO - extract extension?
  * TODO - extract query parameters?
  * TODO - should these be injected on context instead of options?
@@ -272,11 +319,10 @@ function addUrlOptions(options: LoaderOptions, url?: string): void {
   if (!url) {
     return;
   }
-  const hasTopLevelBaseUri = options.baseUri !== undefined;
-  const hasCoreBaseUri = options.core?.baseUri !== undefined;
-  if (!hasTopLevelBaseUri && !hasCoreBaseUri) {
+  const hasCoreBaseUrl = options.core?.baseUrl !== undefined;
+  if (!hasCoreBaseUrl) {
     options.core ||= {};
-    options.core.baseUri = url;
+    options.core.baseUrl = path.dirname(stripQueryString(url));
   }
 }
 
@@ -288,10 +334,23 @@ function cloneLoaderOptions(options: LoaderOptions): LoaderOptions {
   return clonedOptions;
 }
 
+/**
+ * Moves deprecated top-level core option aliases into `options.core` without overwriting
+ * explicitly provided `options.core` values.
+ * @param options loader options to normalize in place
+ */
 function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
+  if (options.baseUri !== undefined) {
+    options.core ||= {};
+    if (options.core.baseUrl === undefined) {
+      options.core.baseUrl = options.baseUri;
+    }
+  }
+
   for (const key of CORE_LOADER_OPTION_KEYS) {
     if ((options as Record<string, unknown>)[key] !== undefined) {
-      const coreOptions = (options.core = options.core || {});
+      options.core ||= {};
+      const coreOptions = options.core;
       const coreRecord = coreOptions as Record<string, unknown>;
       // Treat deprecated top-level core options as aliases to `options.core`, but never override an explicitly
       // provided `options.core` value.
@@ -311,6 +370,11 @@ function moveDeprecatedTopLevelOptionsToCore(options: LoaderOptions): void {
   }
 }
 
+/**
+ * Rehydrates deprecated top-level aliases from `options.core` for compatibility with older
+ * call sites that still read normalized options from the top level.
+ * @param options normalized loader options to mutate in place
+ */
 function addDeprecatedTopLevelOptions(options: LoaderOptions): void {
   const coreOptions = options.core as Record<string, unknown> | undefined;
   if (!coreOptions) {

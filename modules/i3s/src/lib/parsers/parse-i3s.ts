@@ -14,7 +14,7 @@ import {
   I3SParseOptions
 } from '../../types';
 import type {LoaderOptions, LoaderContext} from '@loaders.gl/loader-utils';
-import { I3SLoader } from '../../i3s-loader';
+import {I3SLoaderWithParser} from '../../i3s-loader-with-parser';
 
 export function normalizeTileData(tile : Node3DIndexDocument, context: LoaderContext): I3STileHeader {
   const url: string = context.url || '';
@@ -41,7 +41,7 @@ export function normalizeTileData(tile : Node3DIndexDocument, context: LoaderCon
     url,
     contentUrl,
     textureUrl,
-    textureFormat: 'jpg', // `jpg` format will cause `ImageLoader` usage that will be able to handle `png` as well
+    textureFormat: 'jpg', // `jpg` format selects bitmap image loading that can also handle `png`
     attributeUrls,
     isDracoGeometry: false
   });
@@ -95,7 +95,7 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
       (options.i3s && typeof options.i3s === 'object' ? options.i3s : {}) as I3SParseOptions;
     const rootNodeUrl = getUrlWithToken(`${url}/nodes/root`, parseOptions.token);
     // eslint-disable-next-line no-use-before-define
-    root = await load(rootNodeUrl, I3SLoader, {
+    root = (await load(rootNodeUrl, I3SLoaderWithParser, {
       ...options,
       i3s: {
         ...parseOptions,
@@ -103,12 +103,12 @@ export async function normalizeTilesetData(tileset : SceneLayer3D, options : Loa
         isTileHeader: true,
         isTileset: false
       }
-    });
+    })) as I3STileHeader | I3STilesetHeader;
   }
 
   return {
     ...tileset,
-    loader: I3SLoader,
+    loader: I3SLoaderWithParser,
     url,
     basePath: url,
     type: TILESET_TYPE.I3S,

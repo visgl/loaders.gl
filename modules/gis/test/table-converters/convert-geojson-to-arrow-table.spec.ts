@@ -9,7 +9,7 @@ import {fetchFile, parse} from '@loaders.gl/core';
 import {FeatureCollection} from '@loaders.gl/schema';
 import {GeoArrowLoader} from '@loaders.gl/arrow';
 
-test('ArrowLoader#shape:geojson-table', async (t) => {
+test('ArrowLoader#shape:geojson-table', async t => {
   for (const testCase of GEOARROW_TEST_CASES) {
     await testConversion(t, testCase[0], testCase[1]);
   }

@@ -1,5 +1,9 @@
 # GLTFLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
+
 Parses a glTF file. Can load both the `.glb` (binary) and `.gltf` (application/json) file format variants.
 
 A glTF file contains a hierarchical scenegraph description that can be used to instantiate corresponding hierarcy of actual `Scenegraph` related classes in most WebGL libraries.
@@ -11,7 +15,7 @@ A glTF file contains a hierarchical scenegraph description that can be used to i
 | File Format     | [glTF v2](https://github.com/KhronosGroup/glTF/tree/master/specification/2.0), [GLTF v1](https://github.com/KhronosGroup/glTF/tree/master/specification/1.0) \* |
 | Data Format     | [Scenegraph](/docs/specifications/category-scenegraph)                                                                                                          |
 | Supported APIs  | `load`, `parse`                                                                                                                                                 |
-| Subloaders      | `DracoLoader`, `ImageLoader`                                                                                                                                    |     |
+| Subloaders      | `DracoLoader`, `ImageBitmapLoader`                                                                                                                              |     |
 
 \* From [![Website shields.io](https://img.shields.io/badge/v2.3-blue.svg?style=flat-square)](http://shields.io), the `GLTFLoader` offers optional, best-effort support for converting older glTF v1 files to glTF v2 format (`options.gltf.normalize: true`). This conversion has a number of limitations and the parsed data structure may be only partially converted to glTF v2, causing issues to show up later e.g. when attempting to render the scenegraphs.
 
@@ -47,6 +51,7 @@ Note: while supported, synchronous parsing of glTF (e.g. using `parseSync()`) ha
 - linked binary resource URI:s will be loaded and resolved (assuming a valid base url is available).
 - base64 encoded binary URI:s inside the JSON payload will be decoded.
 - linked image URI:s can be loaded and decoded.
+- linked raster image URI:s are decoded through [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), producing `ImageBitmap` in browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/polyfills` is installed.
 - Draco meshes can be decoded asynchronously on worker threads (in parallel!).
 
 ## Options
@@ -107,9 +112,10 @@ However, the objects inside these arrays will have been pre-processed to simplif
     byteLength: Number
   }],
 
-  // Images can optionally be loaded and decoded, they will be stored here
+  // Images can optionally be loaded and decoded, they will be stored here.
+  // Standard raster images are decoded through ImageBitmapLoader.
   // Length and indices of this array will match `json.buffers`
-  images: Image[],
+  images: Array<ImageBitmap | object>,
 
   // GLBLoader output, if this was a GLB encoded glTF
   _glb?: Object

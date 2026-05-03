@@ -6,6 +6,7 @@ import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Geometry} from '@loaders.gl/schema';
 import {convertGeometryToWKT} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {WKTFormat} from './wkt-format';
 
 export type WKTWriterOptions = WriterOptions & {
   wkt?: {};
@@ -15,6 +16,7 @@ export type WKTWriterOptions = WriterOptions & {
  * WKT exporter
  */
 export const WKTWriter = {
+  ...WKTFormat,
   name: 'WKT (Well Known Text)',
   id: 'wkt',
   module: 'wkt',

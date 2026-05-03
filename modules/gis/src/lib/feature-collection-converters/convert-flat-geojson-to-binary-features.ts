@@ -41,7 +41,7 @@ export function convertFlatGeojsonToBinaryFeatureCollection(
   options?: FlatGeojsonToBinaryOptions
 ): BinaryFeatureCollection {
   const propArrayTypes = extractNumericPropTypes(features);
-  const numericPropKeys = Object.keys(propArrayTypes).filter((k) => propArrayTypes[k] !== Array);
+  const numericPropKeys = Object.keys(propArrayTypes).filter(k => propArrayTypes[k] !== Array);
   return fillArrays(
     features,
     {

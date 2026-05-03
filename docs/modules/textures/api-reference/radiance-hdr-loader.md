@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # RadianceHDRLoader
+
+<TexturesDocsTabs active="radiancehdrloader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.4-blue.svg?style=flat-square" alt="From-v4.4" />
@@ -8,13 +12,13 @@ Loader for Radiance RGBE `.hdr` textures.
 
 See also: [`Radiance HDR`](/docs/modules/textures/formats/hdr)
 
-| Loader         | Characteristic               |
-| -------------- | ---------------------------- |
-| File Format    | Radiance HDR / RGBE          |
-| File Extension | `.hdr`                       |
-| File Type      | Binary                       |
-| Data Format    | `Texture`                    |
-| Supported APIs | `load`, `parse`, `parseSync` |
+| Loader         | Characteristic                                       |
+| -------------- | ---------------------------------------------------- |
+| File Format    | Radiance HDR / RGBE                                  |
+| File Extension | `.hdr`                                               |
+| File Type      | Binary                                               |
+| Data Format    | [`Texture`](/docs/modules/textures#texture-category) |
+| Supported APIs | `load`, `parse`, `parseSync`                         |
 
 ## Usage
 

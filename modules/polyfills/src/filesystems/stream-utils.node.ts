@@ -32,13 +32,13 @@ export async function concatenateReadStream(readStream): Promise<ArrayBuffer> {
   const arrayBufferChunks: ArrayBuffer[] = [];
 
   return await new Promise((resolve, reject) => {
-    readStream.on('error', (error) => reject(error));
+    readStream.on('error', error => reject(error));
 
     // Once the readable callback has been added, stream switches to "flowing mode"
     // In Node 10 (but not 12 and 14) this causes `data` and `end` to never be called unless we read data here
     readStream.on('readable', () => readStream.read());
 
-    readStream.on('data', (chunk) => {
+    readStream.on('data', chunk => {
       if (typeof chunk === 'string') {
         reject(new Error('Read stream not binary'));
       }
@@ -59,7 +59,7 @@ export async function concatenateReadStream(readStream): Promise<ArrayBuffer> {
  */
 export function concatenateArrayBuffers(sources: (ArrayBuffer | Uint8Array)[]): ArrayBuffer {
   // Make sure all inputs are wrapped in typed arrays
-  const sourceArrays = sources.map((source2) =>
+  const sourceArrays = sources.map(source2 =>
     source2 instanceof ArrayBuffer ? new Uint8Array(source2) : source2
   );
 

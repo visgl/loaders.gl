@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {GeoJSONLoader} from '../geojson-loader';
+import {GeoJSONLoaderWithParser} from '../geojson-loader-with-parser';
 
-createLoaderWorker(GeoJSONLoader);
+createLoaderWorker(GeoJSONLoaderWithParser);

@@ -21,8 +21,8 @@ const KITTI_COLORS_URL =
 let kittiPointCloud;
 
 async function loadKittiPointCloud() {
-  const KITTI_POSITIONS = await fetchFile(KITTI_POSITIONS_URL).then((res) => res.arrayBuffer());
-  const KITTI_COLORS = await fetchFile(KITTI_COLORS_URL).then((res) => res.arrayBuffer());
+  const KITTI_POSITIONS = await fetchFile(KITTI_POSITIONS_URL).then(res => res.arrayBuffer());
+  const KITTI_COLORS = await fetchFile(KITTI_COLORS_URL).then(res => res.arrayBuffer());
 
   if (!kittiPointCloud) {
     kittiPointCloud = {

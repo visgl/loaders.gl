@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {NPYLoader} from '../npy-loader';
+import {NPYLoaderWithParser} from '../npy-loader-with-parser';
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
 
-createLoaderWorker(NPYLoader);
+createLoaderWorker(NPYLoaderWithParser);

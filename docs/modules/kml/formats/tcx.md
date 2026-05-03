@@ -1,4 +1,8 @@
+import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
+
 # TCX
+
+<KmlDocsTabs active="tcx" />
 
 - [TCX - Wikipedia](https://en.wikipedia.org/wiki/Training_Center_XML)
 

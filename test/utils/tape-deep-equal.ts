@@ -25,7 +25,7 @@ export function deepEqual(a: any, b: any): boolean {
     return true;
   }
   // TODO - implement deep equal on view descriptors
-  return Object.keys(a).every((key) => {
+  return Object.keys(a).every(key => {
     if (Array.isArray(a[key]) && Array.isArray(b[key])) {
       return deepEqual(a[key], b[key]);
     }

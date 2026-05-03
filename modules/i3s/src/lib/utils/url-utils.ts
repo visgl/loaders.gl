@@ -16,7 +16,7 @@ export function getUrlWithoutParams(url: string): string {
     if (urlWithoutParams.startsWith('null')) {
       urlWithoutParams = null;
     }
-  } catch (e) {
+  } catch (_e) {
     urlWithoutParams = null;
   }
   return urlWithoutParams || url;

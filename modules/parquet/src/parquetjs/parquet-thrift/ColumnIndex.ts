@@ -60,7 +60,7 @@ export class ColumnIndex {
       );
     }
     if (args != null && args.null_counts != null) {
-      this.null_counts = args.null_counts.map((c) => new Int64(+c));
+      this.null_counts = args.null_counts.map(c => new Int64(+c));
     }
   }
   public write(output: thrift.TProtocol): void {

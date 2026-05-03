@@ -141,7 +141,7 @@ export class ConversionDump {
           return;
         }
       } catch (error) {
-        // prettier-ignore
+        // biome-ignore format: preserve intentional fixture layout
         console.log('Can\'t open dump file', error); // eslint-disable-line no-console
       }
     }
@@ -196,7 +196,7 @@ export class ConversionDump {
           )
         );
       } catch (error) {
-        // prettier-ignore
+        // biome-ignore format: preserve intentional fixture layout
         console.log('Can\'t update dump file', error); // eslint-disable-line no-console
       }
     }
@@ -289,7 +289,7 @@ export class ConversionDump {
     value: boolean
   ) {
     const nodeDump = this.tilesConverted[filename]?.nodes.find(
-      (element) => element.nodeId === nodeId
+      element => element.nodeId === nodeId
     );
     if (nodeDump) {
       if (!nodeDump.progress) {
@@ -361,7 +361,7 @@ export class ConversionDump {
     done: boolean
   ): Promise<void> {
     const nodeDump = this.tilesConverted[filename]?.nodes.find(
-      (element) => element.nodeId === nodeId
+      element => element.nodeId === nodeId
     );
     if (nodeDump) {
       nodeDump.done = done;

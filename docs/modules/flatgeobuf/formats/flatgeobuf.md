@@ -1,4 +1,8 @@
+import {FlatGeobufDocsTabs} from '@site/src/components/docs/flatgeobuf-docs-tabs';
+
 # FlatGeobuf
+
+<FlatGeobufDocsTabs active="overview" />
 
 ![flatgeobuf-logo](../images/flatgeobuf-logo.png)
 

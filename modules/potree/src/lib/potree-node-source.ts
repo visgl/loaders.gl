@@ -2,16 +2,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {PotreeSourceOptions} from '../potree-source';
-import {load} from '@loaders.gl/core';
-import type {LoaderOptions} from '@loaders.gl/loader-utils';
+import type {PotreeSourceLoaderOptions} from '../potree-source-loader';
+import type {CoreAPI, Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 import {DataSource, resolvePath} from '@loaders.gl/loader-utils';
 import {LASLoader} from '@loaders.gl/las';
 import {PotreeBoundingBox, PotreeMetadata} from '../types/potree-metadata';
 import {POTreeNode} from '../parsers/parse-potree-hierarchy-chunk';
-import {PotreeHierarchyChunkLoader} from '../potree-hierarchy-chunk-loader';
-import {PotreeBinLoader} from '../potree-bin-loader';
-import {PotreeLoader} from '../potree-loader';
+import {PotreeHierarchyChunkLoaderWithParser} from '../potree-hierarchy-chunk-loader-with-parser';
+import {PotreeLoaderWithParser} from '../potree-loader-with-parser';
+import {PotreeBinLoaderWithParser} from '../potree-bin-loader-with-parser';
 import {parseVersion} from '../utils/parse-version';
 import {Proj4Projection} from '@math.gl/proj4';
 import {LASMesh} from '@loaders.gl/las/src/lib/las-types';
@@ -21,37 +20,20 @@ import {
   getNativeOriginFromBoundingBox
 } from '../utils/bounding-box-utils';
 
-// https://github.com/visgl/deck.gl/blob/9548f43cba2234a1f4877b6b17f6c88eb35b2e08/modules/core/src/lib/constants.js#L27
-// Describes the format of positions
-export enum COORDINATE_SYSTEM {
-  /**
-   * `LNGLAT` if rendering into a geospatial viewport, `CARTESIAN` otherwise
-   */
-  DEFAULT = -1,
-  /**
-   * Positions are interpreted as [lng, lat, elevation]
-   * lng lat are degrees, elevation is meters. distances as meters.
-   */
-  LNGLAT = 1,
-  /**
-   * Positions are interpreted as meter offsets, distances as meters
-   */
-  METER_OFFSETS = 2,
-  /**
-   * Positions are interpreted as lng lat offsets: [deltaLng, deltaLat, elevation]
-   * deltaLng, deltaLat are delta degrees, elevation is meters.
-   * distances as meters.
-   */
-  LNGLAT_OFFSETS = 3,
-  /**
-   * Non-geospatial
-   */
-  CARTESIAN = 0
-}
+export const COORDINATE_SYSTEM = {
+  DEFAULT: 'default',
+  LNGLAT: 'lnglat',
+  METER_OFFSETS: 'meter-offsets',
+  LNGLAT_OFFSETS: 'lnglat-offsets',
+  CARTESIAN: 'cartesian'
+} as const;
+
+/** deck.gl coordinate system string values emitted with Potree point tile content. */
+export type PotreeCoordinateSystem = (typeof COORDINATE_SYSTEM)[keyof typeof COORDINATE_SYSTEM];
 
 export interface PotreeNodeMesh extends LASMesh {
   cartographicOrigin: number[];
-  coordinateSystem: number;
+  coordinateSystem: PotreeCoordinateSystem;
 }
 
 /**
@@ -60,7 +42,7 @@ export interface PotreeNodeMesh extends LASMesh {
  * @version 1.7 - @see https://github.com/potree/potree/blob/1.7/docs/potree-file-format.md
  * @note Point cloud nodes tile source
  */
-export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
+export class PotreeNodesSource extends DataSource<string, PotreeSourceLoaderOptions> {
   /** Dataset base URL */
   baseUrl: string = '';
   /** Meta information from `cloud.js` */
@@ -88,9 +70,9 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    *              - if Blob - single file data
    * @param options - data source properties
    */
-  constructor(data: string, options: PotreeSourceOptions) {
-    super(data, options);
-    this.makeBaseUrl(data);
+  constructor(data: string, options: PotreeSourceLoaderOptions, coreApi?: CoreAPI) {
+    super(data, options, undefined, coreApi);
+    this.makeBaseUrl(this.data);
 
     this.initPromise = this.initialize();
   }
@@ -101,7 +83,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       await this.initPromise;
       return;
     }
-    this.metadata = await load(`${this.baseUrl}/cloud.js`, PotreeLoader);
+    this.metadata = await this.loadWithCoreApi(`${this.baseUrl}/cloud.js`, PotreeLoaderWithParser);
     this.projection = createProjection(this.metadata?.projection);
     this.parseBoundingVolume();
 
@@ -183,7 +165,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       const tileBoundingBox = this.getTileBoundingBox(tileId);
       const loader = this.getNodeContentLoader();
       const loaderOptions = this.getNodeContentLoaderOptions(tileBoundingBox);
-      const result = (await load(
+      const result = (await this.loadWithCoreApi(
         `${this.baseUrl}/${this.metadata?.octreeDir}/r/r${nodeName}.${contentExtension}`,
         loader,
         loaderOptions
@@ -210,7 +192,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
     };
     pointCount: number;
     cartographicOrigin: number[];
-    coordinateSystem: number;
+    coordinateSystem: PotreeCoordinateSystem;
   } | null> {
     const nodeName = this.getNodeName(tile.id);
     const mesh = await this.loadNodeContent(nodeName);
@@ -269,7 +251,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
       return [];
     }
 
-    return node.children.map((child) => this.getTileHeader(child));
+    return node.children.map(child => this.getTileHeader(child));
   }
 
   /**
@@ -303,7 +285,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    */
   async isNodeAvailable(nodeName: string): Promise<boolean> {
     if (this.metadata?.hierarchy) {
-      return this.metadata.hierarchy.findIndex((item) => item[0] === `r${nodeName}`) !== -1;
+      return this.metadata.hierarchy.findIndex(item => item[0] === `r${nodeName}`) !== -1;
     }
 
     if (!this.root) {
@@ -314,7 +296,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
     let result = true;
     for (const char of nodeName) {
       const newName = `${name}${char}`;
-      const node = currentParent.children.find((child) => child.name === newName);
+      const node = currentParent.children.find(child => child.name === newName);
       if (node) {
         currentParent = node;
         name = newName;
@@ -330,11 +312,33 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    * Load data source hierarchy into tree of available nodes
    */
   private async loadHierarchy(): Promise<void> {
-    this.root = await load(
+    this.root = await this.loadWithCoreApi(
       `${this.baseUrl}/${this.metadata?.octreeDir}/r/r.hrc`,
-      PotreeHierarchyChunkLoader
+      PotreeHierarchyChunkLoaderWithParser
     );
     this.indexNodes();
+  }
+
+  private async loadWithCoreApi<T>(
+    url: string,
+    loader: LoaderWithParser<T, never, LoaderOptions>,
+    options?: LoaderOptions
+  ): Promise<T> {
+    if (this.hasCoreApi) {
+      return (await this.coreApi.load(url, loader as Loader, options || this.loadOptions)) as T;
+    }
+
+    const response = await this.fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to load Potree resource: ${response.status} ${response.statusText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    if (!loader.parse) {
+      throw new Error(`Loader ${loader.id} does not support parse()`);
+    }
+
+    return await loader.parse(arrayBuffer, options || this.loadOptions);
   }
 
   /**
@@ -378,9 +382,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   /**
    * Estimate a deck.gl map zoom from the tileset longitude span.
    */
-  private estimateZoom(boundingVolume: {
-    cartographicBounds: [number[], number[]];
-  }): number {
+  private estimateZoom(boundingVolume: {cartographicBounds: [number[], number[]]}): number {
     const [minBounds, maxBounds] = boundingVolume.cartographicBounds;
     const longitudeSpan = Math.max(Math.abs(maxBounds[0] - minBounds[0]), 0.000001);
     return Math.max(1, Math.round(Math.log2(360 / longitudeSpan)));
@@ -563,7 +565,7 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
    * Select the proper node-content loader for the dataset.
    */
   private getNodeContentLoader() {
-    return Array.isArray(this.metadata?.pointAttributes) ? PotreeBinLoader : LASLoader;
+    return Array.isArray(this.metadata?.pointAttributes) ? PotreeBinLoaderWithParser : LASLoader;
   }
 
   /**
@@ -643,9 +645,11 @@ export class PotreeNodesSource extends DataSource<string, PotreeSourceOptions> {
   /**
    * Detect whether a color buffer contains usable RGB information.
    */
-  private hasUsableColors(
-    colors?: {value: ArrayBufferView; size: number; normalized?: boolean}
-  ): boolean {
+  private hasUsableColors(colors?: {
+    value: ArrayBufferView;
+    size: number;
+    normalized?: boolean;
+  }): boolean {
     if (!colors?.value) {
       return false;
     }

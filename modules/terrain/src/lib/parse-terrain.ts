@@ -2,29 +2,42 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import type {Mesh} from '@loaders.gl/schema';
+import {deduceMeshSchema, getMeshBoundingBox} from '@loaders.gl/schema-utils';
 import Martini from '@mapbox/martini';
 import Delatin from './delatin/index';
 import {addSkirt} from './helpers/skirt';
 
 export type TerrainOptions = {
+  /** Maximum terrain mesh error in meters. */
   meshMaxError: number;
+  /** Bounds used to map terrain image coordinates to x/y positions. */
   bounds: number[];
+  /** Decoder used to convert terrain image channels to elevation values. */
   elevationDecoder: ElevationDecoder;
+  /** Tesselation algorithm used to reconstruct the terrain mesh. */
   tesselator: 'martini' | 'delatin' | 'auto';
+  /** Optional skirt height in meters. */
   skirtHeight?: number;
 };
 
 type TerrainImage = {
+  /** Terrain image pixel data. */
   data: Uint8Array;
+  /** Terrain image width in pixels. */
   width: number;
+  /** Terrain image height in pixels. */
   height: number;
 };
 
 type ElevationDecoder = {
+  /** Red channel elevation scale. */
   rScaler: any;
+  /** Blue channel elevation scale. */
   bScaler: any;
+  /** Green channel elevation scale. */
   gScaler: any;
+  /** Elevation offset added after channel scaling. */
   offset: number;
 };
 
@@ -38,7 +51,7 @@ type ElevationDecoder = {
 export function makeTerrainMeshFromImage(
   terrainImage: TerrainImage,
   terrainOptions: TerrainOptions
-) {
+): Mesh {
   const {meshMaxError, bounds, elevationDecoder} = terrainOptions;
 
   const {data, width, height} = terrainImage;
@@ -83,6 +96,14 @@ export function makeTerrainMeshFromImage(
     triangles = newTriangles;
   }
 
+  const topology = 'triangle-list';
+  const mode = 4; // TRIANGLES
+  const schema = deduceMeshSchema(attributes, {
+    topology,
+    mode: String(mode),
+    boundingBox: JSON.stringify(boundingBox)
+  });
+
   return {
     // Data return by this loader implementation
     loaderData: {
@@ -92,7 +113,9 @@ export function makeTerrainMeshFromImage(
       vertexCount: triangles.length,
       boundingBox
     },
-    mode: 4, // TRIANGLES
+    schema,
+    topology,
+    mode,
     indices: {value: Uint32Array.from(triangles), size: 1},
     attributes
   };

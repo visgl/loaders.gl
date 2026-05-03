@@ -20,7 +20,7 @@ const expected = {
   sseDenominator: 1.15
 };
 
-test('getFrameState', (t) => {
+test('getFrameState', t => {
   const viewport = new WebMercatorViewport({
     width: 793,
     height: 775,
@@ -60,7 +60,7 @@ test('getFrameState', (t) => {
   t.end();
 });
 
-test('getFrameState#cullingVolume', (t) => {
+test('getFrameState#cullingVolume', t => {
   const viewport = new FirstPersonView({near: 1, far: 100}).makeViewport({
     width: 800,
     height: 500,

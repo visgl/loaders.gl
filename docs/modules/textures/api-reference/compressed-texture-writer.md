@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # CompressedTextureWriter 🚧
+
+<TexturesDocsTabs active="compressedtexturewriter" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.0-blue.svg?style=flat-square" alt="From-v3.0" />

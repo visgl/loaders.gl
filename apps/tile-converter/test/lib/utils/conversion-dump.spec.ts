@@ -67,7 +67,7 @@ const testMaterialDefinitions = [
   }
 ];
 
-test('tile-converter(i3s)#ConversionDump - Should create conversion dump with options, add node and delete dump file', async (t) => {
+test('tile-converter(i3s)#ConversionDump - Should create conversion dump with options, add node and delete dump file', async t => {
   const conversionDump = new ConversionDump();
   await conversionDump.createDump(testOptions as ConversionDumpOptions);
   await conversionDump.addNode('1.b3dm', 1, testDumpMetadata);
@@ -105,7 +105,7 @@ test('tile-converter(i3s)#ConversionDump - Should create conversion dump with op
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - Should restore conversion dump with options and tilesConverted data, then reset the dump', async (t) => {
+test('tile-converter(i3s)#ConversionDump - Should restore conversion dump with options and tilesConverted data, then reset the dump', async t => {
   const conversionDump = new ConversionDump();
   await conversionDump.createDump(testOptions as ConversionDumpOptions);
   await conversionDump.addNode('1.b3dm', 1, testDumpMetadata);
@@ -134,7 +134,7 @@ test('tile-converter(i3s)#ConversionDump - Should restore conversion dump with o
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - Add node to the dump', async (t) => {
+test('tile-converter(i3s)#ConversionDump - Add node to the dump', async t => {
   const conversionDump = new ConversionDump();
   const testOptions = {
     outputPath: 'testPath',
@@ -169,7 +169,7 @@ test('tile-converter(i3s)#ConversionDump - Add node to the dump', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - update Done Status', async (t) => {
+test('tile-converter(i3s)#ConversionDump - update Done Status', async t => {
   const conversionDump = new ConversionDump();
   const testOptions = {
     outputPath: 'testPath',
@@ -193,7 +193,7 @@ test('tile-converter(i3s)#ConversionDump - update Done Status', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump, isFileConversionComplete', async (t) => {
+test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump, isFileConversionComplete', async t => {
   const conversionDump = new ConversionDump();
   await conversionDump.createDump(testOptions as ConversionDumpOptions);
   await conversionDump.addNode('1.glb', 1, testDumpMetadata);
@@ -231,7 +231,7 @@ test('tile-converter(i3s)#ConversionDump - updateConvertedTilesDump, isFileConve
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - test clearDumpRecord', async (t) => {
+test('tile-converter(i3s)#ConversionDump - test clearDumpRecord', async t => {
   const conversionDump = new ConversionDump();
   await conversionDump.createDump(testOptions as ConversionDumpOptions);
   await conversionDump.addNode('1.glb', 1, testDumpMetadata);
@@ -244,7 +244,7 @@ test('tile-converter(i3s)#ConversionDump - test clearDumpRecord', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - test updateConvertedNodesDumpFile', async (t) => {
+test('tile-converter(i3s)#ConversionDump - test updateConvertedNodesDumpFile', async t => {
   const conversionDump = new ConversionDump();
   await conversionDump.createDump(testOptions as ConversionDumpOptions);
   await conversionDump.addNode('1.b3dm', '1');
@@ -273,14 +273,14 @@ test('tile-converter(i3s)#ConversionDump - test updateConvertedNodesDumpFile', a
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - test addTexturesDefinitions method', (t) => {
+test('tile-converter(i3s)#ConversionDump - test addTexturesDefinitions method', t => {
   const conversionDump = new ConversionDump();
   conversionDump.addTexturesDefinitions(testTextureSetDefinitions);
   t.deepEqual(conversionDump.textureSetDefinitions, testTextureSetDefinitions);
   t.end();
 });
 
-test('tile-converter(i3s)#ConversionDump - test setMaterialsDefinitions method', (t) => {
+test('tile-converter(i3s)#ConversionDump - test setMaterialsDefinitions method', t => {
   const conversionDump = new ConversionDump();
   conversionDump.setMaterialsDefinitions(testMaterialDefinitions as I3SMaterialDefinition[]);
   t.deepEqual(conversionDump.materialDefinitions, testMaterialDefinitions);

@@ -15,7 +15,7 @@ export type {
 
 // SCHEMAS AND DATA TYPES
 
-export type {Schema, Field, DataType, SchemaMetadata, FieldMetadata} from './types/schema';
+export type {Schema, Field, DataType, KeyType, SchemaMetadata, FieldMetadata} from './types/schema';
 export type {Batch} from './types/batch';
 
 // TABLE CATEGORY TYPES
@@ -42,11 +42,16 @@ export type {
 export type {
   MeshTable,
   MeshArrowTable,
+  MeshArrowColumns,
+  IndexedMeshArrowColumns,
+  MeshArrowTableData,
+  IndexedMeshArrowTableData,
   Mesh,
   MeshGeometry,
   MeshAttribute,
   MeshAttributes
 } from './categories/category-mesh';
+export {meshArrowSchema, indexedMeshArrowSchema} from './categories/category-mesh';
 
 // TEXTURES
 export type {
@@ -113,8 +118,16 @@ export type {
   BinaryLineFeature,
   BinaryPolygonFeature
 } from './categories/category-gis';
+export type {
+  ArrowBinaryFeatureTable,
+  ArrowBinaryPointFeature,
+  ArrowBinaryLineFeature,
+  ArrowBinaryPolygonFeature,
+  ArrowBinaryFeatureCollection,
+  BinaryFeatureCollectionLike
+} from './categories/category-gis';
 
-// DEPRECATED
+// DEPRECATED EXPORTS
 
 // MESH CATEGORY
 

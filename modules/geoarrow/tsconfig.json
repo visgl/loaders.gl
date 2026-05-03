@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../gis"},
     {"path": "../schema-utils"}
   ]
 }

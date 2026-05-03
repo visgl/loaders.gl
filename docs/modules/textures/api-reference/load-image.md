@@ -33,7 +33,7 @@ for (const lodImage of imageArray) {
 A basic image loading function for loading a single image (or an array of mipmap images representing a single image).
 
 - `getUrl`: A function that generates the url for each image, it is called for each image with the `lod` of that image.
-- `options`: Supports the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader).
+- `options`: Supports the same image parsing options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader).
 
 Returns
 
@@ -41,10 +41,12 @@ Returns
 
 ## Options
 
-Accepts the same options as [`ImageLoader`](/docs/modules/images/api-reference/image-loader), and
+Accepts the same options as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader), and
 
 | Option            | Type    | Default | Description |
 | ----------------- | ------- | ------- | ----------- | ------------------------------------------------------ |
 | `image.mipLevels` | `Number | String` | `0`         | If `'auto'` or non-zero, loads an array of mip images. |
 
 Number of mip level images to load: Use `0` to indicate a single image with no mips. Supplying the string `'auto'` will infer the mipLevel from the size of the `lod`=`0` image.
+
+Returned images use the same runtime-dependent `ImageBitmap` contract as [`ImageBitmapLoader`](/docs/modules/images/api-reference/image-bitmap-loader): native `ImageBitmap` in supported browsers and the Node.js `ImageBitmap` polyfill when `@loaders.gl/polyfills` is installed.

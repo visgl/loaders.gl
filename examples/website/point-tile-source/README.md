@@ -3,8 +3,8 @@ This is a standalone website example for the source-backed point-cloud tileset f
 It demonstrates:
 
 - `PointCloudTileset` from `@loaders.gl/tiles`
-- `PotreeSource` from `@loaders.gl/potree`
-- `COPCSource` from `@loaders.gl/copc`
+- `PotreeSourceLoader` from `@loaders.gl/potree`
+- `COPCSourceLoader` from `@loaders.gl/copc`
 - a small deck.gl layer that renders normalized point-tile content
 
 ### Usage

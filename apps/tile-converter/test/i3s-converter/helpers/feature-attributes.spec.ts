@@ -8,7 +8,7 @@ import {
 } from '../../../src/i3s-converter/helpers/feature-attributes';
 import type {GLTFPostprocessed} from '@loaders.gl/gltf';
 
-test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async (t) => {
+test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatten property table', async t => {
   const featureIdsMap = {0: 0, 1: 1, 3: 3};
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock', 'Frames'],
@@ -22,7 +22,7 @@ test('tile-converter(i3s)#flattenPropertyTableByFeatureIds - Should return flatt
   t.deepEqual(result, expectedResult);
 });
 
-test('tile-converter(i3s)#checkPropertiesLength - Should return false if properies count is the same as featureIds count', async (t) => {
+test('tile-converter(i3s)#checkPropertiesLength - Should return false if properies count is the same as featureIds count', async t => {
   const featureIds = [0, 1, 3];
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock'],
@@ -32,7 +32,7 @@ test('tile-converter(i3s)#checkPropertiesLength - Should return false if properi
   t.deepEqual(result, false);
 });
 
-test('tile-converter(i3s)#checkPropertiesLength - Should return true if properies count is not the same as featureIds count', async (t) => {
+test('tile-converter(i3s)#checkPropertiesLength - Should return true if properies count is not the same as featureIds count', async t => {
   const featureIds = [0, 1, 3];
   const propertyTable = {
     component: ['Wall', 'Roof', 'Clock', 'Frames'],
@@ -42,7 +42,7 @@ test('tile-converter(i3s)#checkPropertiesLength - Should return true if properie
   t.deepEqual(result, true);
 });
 
-test('tile-converter(i3s)#getAttributeType - Should return the type of attribute', async (t) => {
+test('tile-converter(i3s)#getAttributeType - Should return the type of attribute', async t => {
   const attributes = ['', 'myName', 0, 1, 2n, 3.5];
   const typesExpected = ['string', 'string', 'Int32', 'Int32', 'string', 'double'];
   const types: string[] = [];
@@ -52,7 +52,7 @@ test('tile-converter(i3s)#getAttributeType - Should return the type of attribute
   t.deepEqual(types, typesExpected, 'popupInfo');
 });
 
-test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes type taken from the extension schema', async (t) => {
+test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes type taken from the extension schema', async t => {
   /* eslint-disable camelcase */
 
   const gltfJson = {
@@ -116,7 +116,7 @@ test('tile-converter(i3s)#getAttributeTypesFromSchema - Should return attributes
   t.deepEqual(attributePropertySet, schema_expected, 'attribute type taken from the schema');
 });
 
-test('tile-converter(i3s)#getAttributeTypesFromPropertyTable - Should return attributes type taken from the extension schema', async (t) => {
+test('tile-converter(i3s)#getAttributeTypesFromPropertyTable - Should return attributes type taken from the extension schema', async t => {
   /* eslint-disable camelcase */
 
   const propertyTable = {

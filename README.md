@@ -21,7 +21,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 ## Build and test workflows
 
 - Run `yarn build-modules` to execute the existing ocular and lerna build flow for modules. The default `yarn build` command delegates to this script for backward compatibility.
-- Run `yarn test-modules` for the standard module test suite (also available through `yarn test`).
+- Run `yarn test` to list available test modes, or `yarn test full` for the standard module test suite.
 - Run `yarn build-apps` to run the tile-converter app build (currently the only app in this repository).
 - Run `yarn test-apps` to exercise the tile-converter app test/build script when available.
 

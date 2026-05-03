@@ -14,9 +14,9 @@ It is intended for source-backed octree formats such as Potree and COPC and expo
 ```ts
 import {createDataSource} from '@loaders.gl/core';
 import {PointCloudTileset} from '@loaders.gl/tiles';
-import {PotreeSource} from '@loaders.gl/potree';
+import {PotreeSourceLoader} from '@loaders.gl/potree';
 
-const dataSource = createDataSource(POTREE_URL, [PotreeSource], {
+const dataSource = createDataSource(POTREE_URL, [PotreeSourceLoader], {
   core: {type: 'potree'},
   potree: {}
 });

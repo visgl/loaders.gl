@@ -3,6 +3,6 @@
 // Copyright (c) vis.gl contributors
 
 import {createLoaderWorker} from '@loaders.gl/loader-utils';
-import {PCDLoader} from '../index';
+import {PCDLoaderWithParser} from '../pcd-loader-with-parser';
 
-createLoaderWorker(PCDLoader);
+createLoaderWorker(PCDLoaderWithParser);

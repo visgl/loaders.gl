@@ -26,8 +26,8 @@ export function fromString(str: string) {
   if (!res.OME) {
     throw Error('Failed to parse OME-XML metadata.');
   }
-  return ensureArray(res.OME.Image).map((img) => {
-    const Channels = ensureArray(img.Pixels.Channel).map((c) => {
+  return ensureArray(res.OME.Image).map(img => {
+    const Channels = ensureArray(img.Pixels.Channel).map(c => {
       if ('Color' in c.attr) {
         return {...c.attr, Color: intToRgba(c.attr.Color)};
       }
@@ -49,7 +49,7 @@ export function fromString(str: string) {
         const {Pixels} = image;
 
         const sizes = (['X', 'Y', 'Z'] as const)
-          .map((name) => {
+          .map(name => {
             const size = Pixels[`PhysicalSize${name}` as const];
             const unit = Pixels[`PhysicalSize${name}Unit` as const];
             return size && unit ? `${size} ${unit}` : '-';

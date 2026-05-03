@@ -58,7 +58,7 @@ function coordMap(array: unknown, fn: (coord: number[]) => number[]): unknown[] 
     return fn(array as number[]);
   }
 
-  return (array as unknown[]).map((item) => {
+  return (array as unknown[]).map(item => {
     return coordMap(item, fn);
   });
 }

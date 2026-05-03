@@ -9,7 +9,8 @@ import {
   log,
   isBlob,
   ensureArrayBuffer,
-  isArrayBufferLike
+  isArrayBufferLike,
+  isSourceLoader
 } from '@loaders.gl/loader-utils';
 import {TypedArray} from '@loaders.gl/schema';
 import {normalizeLoader} from '../loader-utils/normalize-loader';
@@ -47,6 +48,19 @@ export async function selectLoader(
   const normalizedOptions = normalizeLoaderOptions(options || {});
   normalizedOptions.core ||= {};
 
+  if (data instanceof Response && mayContainText(data)) {
+    const text = await data.clone().text();
+    const textLoader = selectLoaderSync(
+      text,
+      loaders,
+      {...normalizedOptions, core: {...normalizedOptions.core, nothrow: true}},
+      context
+    );
+    if (textLoader) {
+      return textLoader;
+    }
+  }
+
   // First make a sync attempt, disabling exceptions
   let loader = selectLoaderSync(
     data,
@@ -65,12 +79,27 @@ export async function selectLoader(
     loader = selectLoaderSync(data, loaders, normalizedOptions, context);
   }
 
+  if (!loader && data instanceof Response && mayContainText(data)) {
+    const text = await data.clone().text();
+    loader = selectLoaderSync(text, loaders, normalizedOptions, context);
+  }
+
   // no loader available
   if (!loader && !normalizedOptions.core.nothrow) {
     throw new Error(getNoValidLoaderMessage(data));
   }
 
   return loader;
+}
+
+function mayContainText(response: Response): boolean {
+  const mimeType = getResourceMIMEType(response);
+  return Boolean(
+    mimeType &&
+      (mimeType.startsWith('text/') ||
+        mimeType === 'application/json' ||
+        mimeType.endsWith('+json'))
+  );
 }
 
 /**
@@ -144,10 +173,21 @@ function selectLoaderInternal(
   let reason: string = '';
 
   // if options.mimeType is supplied, it takes precedence
+  const sourceType =
+    options?.core && 'type' in options.core ? (options.core.type as string | undefined) : undefined;
+  if (sourceType && sourceType !== 'auto') {
+    loader = findSourceLoaderByType(loaders, sourceType);
+    reason = loader ? `match forced by supplied source type ${sourceType}` : '';
+  }
+
+  // if options.mimeType is supplied, it takes precedence
   if (options?.core?.mimeType) {
     loader = findLoaderByMIMEType(loaders, options?.core?.mimeType);
     reason = `match forced by supplied MIME type ${options?.core?.mimeType}`;
   }
+
+  loader = loader || findSourceLoaderByTestURL(loaders, testUrl);
+  reason = reason || (loader ? `matched source url ${testUrl}` : '');
 
   // Look up loader by url
   loader = loader || findLoaderByUrl(loaders, testUrl);
@@ -162,6 +202,11 @@ function selectLoaderInternal(
   loader = loader || findLoaderByInitialBytes(loaders, data);
   // @ts-ignore Blob | Response
   reason = reason || (loader ? `matched initial data ${getFirstCharacters(data)}` : '');
+
+  if (!loader && isBlob(data)) {
+    loader = findSourceLoaderByTestData(loaders, data);
+    reason = reason || (loader ? 'matched source testData' : '');
+  }
 
   // Look up loader by fallback mime type
   if (options?.core?.fallbackMimeType) {
@@ -232,9 +277,42 @@ function findLoaderByExtension(loaders: Loader[], extension: string): Loader | n
   return null;
 }
 
+function findSourceLoaderByType(loaders: Loader[], type: string): Loader | null {
+  for (const loader of loaders) {
+    if (isSourceLoader(loader) && loader.type === type) {
+      return loader;
+    }
+  }
+  return null;
+}
+
+function findSourceLoaderByTestURL(loaders: Loader[], url?: string): Loader | null {
+  if (!url) {
+    return null;
+  }
+
+  for (const loader of loaders) {
+    if (isSourceLoader(loader) && loader.testURL(url)) {
+      return loader;
+    }
+  }
+  return null;
+}
+
+function findSourceLoaderByTestData(loaders: Loader[], data: Blob): Loader | null {
+  for (const loader of loaders) {
+    if (isSourceLoader(loader)) {
+      if (loader.testData?.(data)) {
+        return loader;
+      }
+    }
+  }
+  return null;
+}
+
 function findLoaderByMIMEType(loaders: Loader[], mimeType: string): Loader | null {
   for (const loader of loaders) {
-    if (loader.mimeTypes?.some((mimeType1) => compareMIMETypes(mimeType, mimeType1))) {
+    if (loader.mimeTypes?.some(mimeType1 => compareMIMETypes(mimeType, mimeType1))) {
       return loader;
     }
 
@@ -279,12 +357,12 @@ function testDataAgainstText(data: string, loader: Loader): boolean {
   }
 
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some((test) => data.startsWith(test as string));
+  return tests.some(test => data.startsWith(test as string));
 }
 
 function testDataAgainstBinary(data: ArrayBufferLike, byteOffset: number, loader: Loader): boolean {
   const tests = Array.isArray(loader.tests) ? loader.tests : [loader.tests];
-  return tests.some((test) => testBinary(data, byteOffset, loader, test));
+  return tests.some(test => testBinary(data, byteOffset, loader, test));
 }
 
 function testBinary(

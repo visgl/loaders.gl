@@ -52,7 +52,7 @@ function getFeatureFromRow(table: Table, row: Row, geometryColumnIndex: number):
   if (typeof featureOrGeometry === 'string') {
     try {
       featureOrGeometry = JSON.parse(featureOrGeometry);
-    } catch (err) {
+    } catch (_err) {
       throw new Error('Invalid string geometry');
     }
   }

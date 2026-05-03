@@ -2,16 +2,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {preloadCompressions,installBufferPolyfill} from '@loaders.gl/parquet';
+import {preloadCompressions} from '@loaders.gl/parquet';
 
 // Import big dependencies
 
 // import brotli from 'brotli'; - brotli has problems with decompress in browsers
 import brotliDecompress from 'brotli/decompress';
+import {ZstdCodec} from 'zstd-codec';
 // import lzo from 'lzo';
-
-
-installBufferPolyfill();
 
 // Inject large dependencies through Compression constructor options
 const modules = {
@@ -23,6 +21,7 @@ const modules = {
     }
   },
   // lzo,
+  'zstd-codec': ZstdCodec
 };
 
 // Start loading compression modules in the background to minimize 

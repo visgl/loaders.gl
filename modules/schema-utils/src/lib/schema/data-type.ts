@@ -12,8 +12,11 @@ export function getDataTypeFromValue(
   if (value instanceof Date) {
     return 'date-millisecond';
   }
-  if (value instanceof Number) {
+  if (typeof value === 'number') {
     return defaultNumberType;
+  }
+  if (typeof value === 'boolean') {
+    return 'bool';
   }
   if (typeof value === 'string') {
     return 'utf8';

@@ -49,7 +49,7 @@ const TEST_CASES = [
 
 const HASHES = [new CRC32Hash(), new CRC32CHash(), new MD5Hash(), new SHA256Hash({modules})];
 
-test('crypto#atomic hashes', async (t) => {
+test('crypto#atomic hashes', async t => {
   await loadTestCaseData();
 
   for (const tc of TEST_CASES) {
@@ -66,7 +66,7 @@ test('crypto#atomic hashes', async (t) => {
   t.end();
 });
 
-test('crypto#streaming hashes', async (t) => {
+test('crypto#streaming hashes', async t => {
   for (const tc of TEST_CASES) {
     // test each test case against all precomputed digests/hashes
     for (const algorithm in tc.digests) {
@@ -78,7 +78,7 @@ test('crypto#streaming hashes', async (t) => {
         // @ts-expect-error
         const cryptoHash = new Hash({
           crypto: {
-            onEnd: (result) => {
+            onEnd: result => {
               hash = result.hash;
             }
           }
@@ -90,7 +90,7 @@ test('crypto#streaming hashes', async (t) => {
 
         // @ts-ignore
         // eslint-disable-next-line no-unused-vars, no-empty, max-depth, @typescript-eslint/no-unused-vars
-        for await (const batch of nullIterator) {
+        for await (const _batch of nullIterator) {
         }
 
         t.equal(hash, tc.digests[algorithm], `${algorithm} hash is correct for ${tc.title}`);
@@ -103,7 +103,7 @@ test('crypto#streaming hashes', async (t) => {
 
 // EXTRA TESTS NOT COVERED BY TEST CASES
 
-test('NodeHash#hash', async (t) => {
+test('NodeHash#hash', async t => {
   if (!isBrowser) {
     const cryptoHash = new NodeHash({crypto: {algorithm: 'SHA256'}});
 
@@ -128,7 +128,7 @@ test('NodeHash#hash', async (t) => {
 // HELPERS
 
 function getHash(algorithm) {
-  const hash = HASHES.find((hash_) => hash_.name === algorithm);
+  const hash = HASHES.find(hash_ => hash_.name === algorithm);
   if (!hash) {
     throw new Error(algorithm);
   }

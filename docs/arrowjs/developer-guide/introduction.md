@@ -1,8 +1,12 @@
+import {ArrowJsStructureGraphic} from '@site/src/components/docs/arrow-js-structure-graphic';
+
 # Introduction
 
 Apache Arrow is a binary specification and set of libraries for representing Tables and Columns of strongly-typed fixed-width, variable-width, and nested data structures in-memory and over-the-wire.
 
 Arrow represents columns of values in sets of contiguous buffers. This is in contrast to a row-oriented representation, where the values for each row are stored in a contiguous buffer. The columnar representation makes it easier to take advantage of SIMD instruction sets in modern CPUs and GPUs, and can lead to dramatic performance improvements processing large amounts of data.
+
+<ArrowJsStructureGraphic />
 
 ## Components
 

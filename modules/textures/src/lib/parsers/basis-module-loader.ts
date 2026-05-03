@@ -67,9 +67,9 @@ function initializeBasisTranscoderModule(BasisModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     // if you try to return BasisModule the browser crashes!
-    BasisModule(options).then((module) => {
+    BasisModule(options).then(module => {
       const {BasisFile, initializeBasis} = module;
       initializeBasis();
       resolve({BasisFile});
@@ -127,9 +127,9 @@ function initializeBasisEncoderModule(BasisEncoderModule, wasmBinary) {
     options.wasmBinary = wasmBinary;
   }
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     // if you try to return BasisModule the browser crashes!
-    BasisEncoderModule(options).then((module) => {
+    BasisEncoderModule(options).then(module => {
       const {BasisFile, KTX2File, initializeBasis, BasisEncoder} = module;
       initializeBasis();
       resolve({BasisFile, KTX2File, BasisEncoder});

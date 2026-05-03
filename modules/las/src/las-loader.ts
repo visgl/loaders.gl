@@ -4,6 +4,7 @@
 
 // LASER (LAS) FILE FORMAT
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {LASMesh} from './lib/las-types';
 import {LASFormat} from './las-format';
 
@@ -23,14 +24,18 @@ export type LASLoaderOptions = LoaderOptions & {
   onProgress?: Function;
 };
 
-/**
- * Loader for the LAS (LASer) point cloud format
- */
+/** Preloads the parser-bearing LAS loader implementation. */
+async function preload() {
+  const {LAZPerfLoaderWithParser} = await import('./lazperf-loader-with-parser');
+  return LAZPerfLoaderWithParser;
+}
+
+/** Metadata-only worker loader for the LAS (LASer) point cloud format. */
 export const LASWorkerLoader = {
   ...LASFormat,
 
-  dataType: null as unknown as LASMesh,
-  batchType: null as never,
+  dataType: null as unknown as LASMesh | MeshArrowTable,
+  batchType: null as unknown as LASMesh | MeshArrowTable,
 
   version: VERSION,
   worker: true,
@@ -41,5 +46,6 @@ export const LASWorkerLoader = {
       skip: 1,
       colorDepth: 8
     }
-  }
-} as const satisfies Loader<LASMesh, never, LASLoaderOptions>;
+  },
+  preload
+} as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;

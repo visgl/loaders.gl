@@ -15,7 +15,7 @@ declare module '@loaders.gl/tiles' {
     };
     pointCount: number;
     cartographicOrigin: number[];
-    coordinateSystem: number;
+    coordinateSystem: 'default' | 'lnglat' | 'meter-offsets' | 'lnglat-offsets' | 'cartesian';
     constantRGBA?: number[];
     modelMatrix?: number[] | Float32Array;
   };

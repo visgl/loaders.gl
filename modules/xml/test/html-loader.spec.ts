@@ -30,7 +30,7 @@ support@yourcompany.com</a>.
 </HTML>
 `;
 
-test('HTMLLoader#forecasts.xml', async (t) => {
+test('HTMLLoader#forecasts.xml', async t => {
   const html = await parse(HTML, HTMLLoader);
 
   t.ok(html, 'got result');

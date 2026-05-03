@@ -11,6 +11,8 @@ export const ExcelFormat = {
   name: 'Excel',
   id: 'excel',
   module: 'excel',
+  encoding: 'zip',
+  format: 'excel',
   extensions: ['xls', 'xlsb', 'xlsm', 'xlsx'],
   mimeTypes: [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

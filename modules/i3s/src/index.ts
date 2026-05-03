@@ -40,6 +40,15 @@ export type {
 export type {I3SLoaderOptions} from './i3s-loader';
 
 export {COORDINATE_SYSTEM} from './lib/parsers/constants';
+export {
+  ArcGISWebSceneFormat,
+  I3SAttributeFormat,
+  I3SBuildingSceneLayerFormat,
+  I3SContentFormat,
+  I3SFormat,
+  I3SNodePageFormat,
+  SLPKFormat
+} from './i3s-format';
 
 export {I3SLoader} from './i3s-loader';
 export {SLPKLoader} from './i3s-slpk-loader';

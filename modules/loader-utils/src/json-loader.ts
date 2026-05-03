@@ -18,12 +18,14 @@ export const JSONLoader = {
   id: 'json',
   module: 'json',
   version: VERSION,
+  encoding: 'json',
+  format: 'json',
   extensions: ['json', 'geojson'],
   mimeTypes: ['application/json'],
   category: 'json',
   text: true,
   parseTextSync,
-  parse: async (arrayBuffer) => parseTextSync(new TextDecoder().decode(arrayBuffer)),
+  parse: async arrayBuffer => parseTextSync(new TextDecoder().decode(arrayBuffer)),
   options: {}
 } as const satisfies LoaderWithParser<Table, TableBatch, JSONLoaderOptions>;
 

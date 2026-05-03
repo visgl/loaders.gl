@@ -9,13 +9,13 @@ const BROWSER_PREFIXES = ['', 'WEBKIT_', 'MOZ_'];
 const WEBGL_TEXTURE_FORMATS: {[key: string]: TextureFormat[]} = {
   /* eslint-disable camelcase */
   WEBGL_compressed_texture_s3tc: [
-    'bc1-rgb-unorm-ext',
+    'bc1-rgb-unorm-webgl',
     'bc1-rgba-unorm',
     'bc2-rgba-unorm',
     'bc3-rgba-unorm'
   ],
   WEBGL_compressed_texture_s3tc_srgb: [
-    'bc1-rgb-unorm-srgb-ext',
+    'bc1-rgb-unorm-srgb-webgl',
     'bc1-rgba-unorm-srgb',
     'bc2-rgba-unorm-srgb',
     'bc3-rgba-unorm-srgb'
@@ -27,7 +27,7 @@ const WEBGL_TEXTURE_FORMATS: {[key: string]: TextureFormat[]} = {
     'bc7-rgba-unorm',
     'bc7-rgba-unorm-srgb'
   ],
-  WEBGL_compressed_texture_etc1: ['etc1-rbg-unorm-ext'],
+  WEBGL_compressed_texture_etc1: ['etc1-rgb-unorm-webgl'],
   WEBGL_compressed_texture_etc: [
     'etc2-rgb8unorm',
     'etc2-rgb8unorm-srgb',
@@ -41,12 +41,16 @@ const WEBGL_TEXTURE_FORMATS: {[key: string]: TextureFormat[]} = {
     'eac-rg11snorm'
   ],
   WEBGL_compressed_texture_pvrtc: [
-    'pvrtc-rgb4unorm-ext',
-    'pvrtc-rgba4unorm-ext',
-    'pvrtc-rgb2unorm-ext',
-    'pvrtc-rgba2unorm-ext'
+    'pvrtc-rgb4unorm-webgl',
+    'pvrtc-rgba4unorm-webgl',
+    'pvrtc-rgb2unorm-webgl',
+    'pvrtc-rgba2unorm-webgl'
   ],
-  WEBGL_compressed_texture_atc: ['atc-rgb-unorm-ext', 'atc-rgba-unorm-ext', 'atc-rgbai-unorm-ext'],
+  WEBGL_compressed_texture_atc: [
+    'atc-rgb-unorm-webgl',
+    'atc-rgba-unorm-webgl',
+    'atc-rgbai-unorm-webgl'
+  ],
   WEBGL_compressed_texture_astc: [
     'astc-4x4-unorm',
     'astc-4x4-unorm-srgb',
@@ -81,14 +85,14 @@ const WEBGL_TEXTURE_FORMATS: {[key: string]: TextureFormat[]} = {
 };
 
 const GPU_TEXTURE_FORMATS: {[key in GPUTextureFormat]: TextureFormat[]} = {
-  dxt: ['bc1-rgb-unorm-ext', 'bc1-rgba-unorm', 'bc2-rgba-unorm', 'bc3-rgba-unorm'],
+  dxt: ['bc1-rgb-unorm-webgl', 'bc1-rgba-unorm', 'bc2-rgba-unorm', 'bc3-rgba-unorm'],
   'dxt-srgb': [
-    'bc1-rgb-unorm-srgb-ext',
+    'bc1-rgb-unorm-srgb-webgl',
     'bc1-rgba-unorm-srgb',
     'bc2-rgba-unorm-srgb',
     'bc3-rgba-unorm-srgb'
   ],
-  etc1: ['etc1-rbg-unorm-ext'],
+  etc1: ['etc1-rgb-unorm-webgl'],
   etc2: [
     'etc2-rgb8unorm',
     'etc2-rgb8unorm-srgb',
@@ -102,12 +106,12 @@ const GPU_TEXTURE_FORMATS: {[key in GPUTextureFormat]: TextureFormat[]} = {
     'eac-rg11snorm'
   ],
   pvrtc: [
-    'pvrtc-rgb4unorm-ext',
-    'pvrtc-rgba4unorm-ext',
-    'pvrtc-rgb2unorm-ext',
-    'pvrtc-rgba2unorm-ext'
+    'pvrtc-rgb4unorm-webgl',
+    'pvrtc-rgba4unorm-webgl',
+    'pvrtc-rgb2unorm-webgl',
+    'pvrtc-rgba2unorm-webgl'
   ],
-  atc: ['atc-rgb-unorm-ext', 'atc-rgba-unorm-ext', 'atc-rgbai-unorm-ext'],
+  atc: ['atc-rgb-unorm-webgl', 'atc-rgba-unorm-webgl', 'atc-rgbai-unorm-webgl'],
   astc: [
     'astc-4x4-unorm',
     'astc-4x4-unorm-srgb',
@@ -183,7 +187,7 @@ export function detectSupportedGPUTextureFormats(gl?: WebGLRenderingContext): Se
     for (const gpuTextureFormat in GPU_TEXTURE_FORMATS) {
       const textureFormatsForGroup = GPU_TEXTURE_FORMATS[gpuTextureFormat as GPUTextureFormat];
       if (
-        textureFormatsForGroup.some((textureFormat) => supportedTextureFormats.has(textureFormat))
+        textureFormatsForGroup.some(textureFormat => supportedTextureFormats.has(textureFormat))
       ) {
         formats.add(gpuTextureFormat as GPUTextureFormat);
       }
@@ -200,7 +204,7 @@ function getWebGLContext() {
   try {
     const canvas = document.createElement('canvas');
     return canvas.getContext('webgl');
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

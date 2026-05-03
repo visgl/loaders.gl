@@ -13,7 +13,7 @@ export async function encodeImageURLToCompressedTextureURL(
   outputUrl: string,
   options?: CompressedTextureWriterOptions
 ): Promise<string> {
-  // prettier-ignore
+  // biome-ignore format: preserve intentional fixture layout
   const args = [
     // Note: our actual executable is `npx`, so `texture-compressor` is an argument
     'texture-compressor',

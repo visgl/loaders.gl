@@ -12,12 +12,20 @@ export type GeoArrowLoaderOptions = LoaderOptions & {
   };
 };
 
-/** ArrowJS table loader */
+/** Preloads the parser-bearing GeoArrow loader implementation. */
+async function preload() {
+  const {GeoArrowLoaderWithParser} = await import('../geoarrow-loader-with-parser');
+  return GeoArrowLoaderWithParser;
+}
+
+/** Metadata-only GeoArrow worker loader. */
 export const GeoArrowWorkerLoader = {
   ...ArrowWorkerLoader,
+  format: 'geoarrow',
   options: {
     arrow: {
       shape: 'arrow-table'
     }
-  }
+  },
+  preload
 } as const satisfies Loader<ArrowTable | BinaryGeometry, ArrowTableBatch, GeoArrowLoaderOptions>;

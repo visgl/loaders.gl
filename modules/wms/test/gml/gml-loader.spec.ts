@@ -46,7 +46,7 @@ const VALID_TEST = {
   'v3/repeated-name.xml': true
 };
 
-test('GMLLoader#parse', async (t) => {
+test('GMLLoader#parse', async t => {
   for (const [fileName, xmlText] of Object.entries(GML_V3_TESTS)) {
     if (VALID_TEST[fileName]) {
       const geojson = (await parse(xmlText, GMLLoader)) as GeoJSON;

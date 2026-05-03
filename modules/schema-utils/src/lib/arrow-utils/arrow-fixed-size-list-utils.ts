@@ -58,6 +58,6 @@ export function getFixedSizeListData(
 export function getFixedSizeListType(typedArray: TypedArray, stride: number): arrow.FixedSizeList {
   const {type} = getDataTypeFromArray(typedArray);
   const arrowType = deserializeArrowType(type);
-  const listType = new arrow.FixedSizeList(stride, new arrow.Field('value', arrowType));
+  const listType = new arrow.FixedSizeList(stride, new arrow.Field('value', arrowType, false));
   return listType;
 }

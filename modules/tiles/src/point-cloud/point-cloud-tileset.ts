@@ -126,7 +126,7 @@ export class PointCloudTileset {
     return (
       this.frameNumberValue > 0 &&
       this.pendingCount === 0 &&
-      this.selectedTiles.every((tile) => tile.contentAvailable || tile.contentFailed)
+      this.selectedTiles.every(tile => tile.contentAvailable || tile.contentFailed)
     );
   }
 
@@ -140,6 +140,21 @@ export class PointCloudTileset {
    */
   update(viewports: Viewport[] | Viewport | null = null): void {
     this.selectTiles(viewports).catch(() => undefined);
+  }
+
+  /**
+   * Releases traversal state held by this tileset.
+   */
+  destroy(): void {
+    this.selectedTiles = [];
+    this.tilesMap.clear();
+    this.root = null;
+    this.cartographicCenter = null;
+    this.boundingVolume = null;
+    this.visibleTilesCount = 0;
+    this.pendingCount = 0;
+    this.lastUpdatedViewports = null;
+    this.updatePromise = null;
   }
 
   /**
@@ -188,7 +203,7 @@ export class PointCloudTileset {
       return;
     }
 
-    const previousSelectedIds = new Set(this.selectedTiles.map((tile) => tile.id));
+    const previousSelectedIds = new Set(this.selectedTiles.map(tile => tile.id));
     for (const tile of this.tilesMap.values()) {
       tile.clearSelection();
     }
@@ -219,7 +234,7 @@ export class PointCloudTileset {
       this.loadTile(tile).catch(() => undefined);
     }
 
-    const nextSelectedIds = new Set(this.selectedTiles.map((tile) => tile.id));
+    const nextSelectedIds = new Set(this.selectedTiles.map(tile => tile.id));
     if (!this.haveSameIds(previousSelectedIds, nextSelectedIds)) {
       this.options.onUpdate();
     }
@@ -240,7 +255,7 @@ export class PointCloudTileset {
 
     let selectedPointCount = initialSelectedPointCount;
     const traversalQueue: TraversalCandidate[] = [
-      {tile: this.root, weight: Number.POSITIVE_INFINITY}
+      {tile: this.root, weight: this.estimateTraversalWeight(this.root, traversalContext.viewport)}
     ];
 
     while (traversalQueue.length > 0) {
@@ -407,7 +422,12 @@ export class PointCloudTileset {
       return null;
     }
 
-    if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+    if (
+      !Number.isFinite(minX) ||
+      !Number.isFinite(minY) ||
+      !Number.isFinite(maxX) ||
+      !Number.isFinite(maxY)
+    ) {
       return null;
     }
 
@@ -454,7 +474,10 @@ export class PointCloudTileset {
       const fallbackBounds = this.projectBounds(boundingVolume, viewport);
       if (fallbackBounds) {
         projectedRadius =
-          Math.max(fallbackBounds.maxX - fallbackBounds.minX, fallbackBounds.maxY - fallbackBounds.minY) / 2;
+          Math.max(
+            fallbackBounds.maxX - fallbackBounds.minX,
+            fallbackBounds.maxY - fallbackBounds.minY
+          ) / 2;
       }
     }
 
@@ -475,11 +498,11 @@ export class PointCloudTileset {
     const children = await this.getChildren(tile);
 
     return children
-      .map((child) => ({
+      .map(child => ({
         tile: child,
         weight: this.estimateTraversalWeight(child, traversalContext.viewport)
       }))
-      .filter((candidate) => this.isVisible(candidate.tile, traversalContext));
+      .filter(candidate => this.isVisible(candidate.tile, traversalContext));
   }
 
   private async getChildren(tile: PointCloudTile): Promise<PointCloudTile[]> {
@@ -490,8 +513,8 @@ export class PointCloudTileset {
     if (!tile.childrenPromise) {
       const childrenPromise = this.dataSource
         .getChildren(tile.header)
-        .then((headers) => headers.map((header) => this.getOrCreateTile(header, tile)))
-        .then((children) => {
+        .then(headers => headers.map(header => this.getOrCreateTile(header, tile)))
+        .then(children => {
           tile.children = children;
           tile.childrenLoaded = true;
           return children;
@@ -522,7 +545,7 @@ export class PointCloudTileset {
 
     const tile = new PointCloudTile(header, parent);
     this.tilesMap.set(header.id, tile);
-    if (parent && !parent.children.find((child) => child.id === tile.id)) {
+    if (parent && !parent.children.find(child => child.id === tile.id)) {
       parent.children.push(tile);
     }
     return tile;

@@ -16,7 +16,7 @@ const CSV_URL = '@loaders.gl/csv/test/data/sample-very-long.csv';
 /** Externally computed hash: `openssl md5 -binary sample-very-long.json | openssl base64` */
 const CSV_MD5 = 'zmLuuVSkigYR9r5FcsKkCw==';
 
-test('CryptoHash#hash(CSV, against external hash)', async (t) => {
+test('CryptoHash#hash(CSV, against external hash)', async t => {
   const response = await fetchFile(CSV_URL);
   const data = await response.arrayBuffer();
 
@@ -29,14 +29,14 @@ test('CryptoHash#hash(CSV, against external hash)', async (t) => {
   t.end();
 });
 
-test('CryptoHash#iterator(CSV stream, against external hash)', async (t) => {
+test('CryptoHash#iterator(CSV stream, against external hash)', async t => {
   let hash;
 
   const cryptoHash = new CryptoHash({
     modules: {CryptoJS},
     crypto: {
       algorithm: 'MD5',
-      onEnd: (result) => {
+      onEnd: result => {
         hash = result.hash;
       }
     }
@@ -57,7 +57,7 @@ test('CryptoHash#iterator(CSV stream, against external hash)', async (t) => {
   t.end();
 });
 
-test('CryptoHash#hash(MD5 = default)', async (t) => {
+test('CryptoHash#hash(MD5 = default)', async t => {
   const {binaryData, repeatedData} = getBinaryData();
 
   const cryptoHash = new CryptoHash({
@@ -75,7 +75,7 @@ test('CryptoHash#hash(MD5 = default)', async (t) => {
   t.end();
 });
 
-test('CryptoHash#hashBatches(small chunks)', async (t) => {
+test('CryptoHash#hashBatches(small chunks)', async t => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -88,7 +88,7 @@ test('CryptoHash#hashBatches(small chunks)', async (t) => {
     modules: {CryptoJS},
     crypto: {
       algorithm: 'MD5',
-      onEnd: (result) => {
+      onEnd: result => {
         hash = result.hash;
       }
     }
@@ -106,7 +106,7 @@ test('CryptoHash#hashBatches(small chunks)', async (t) => {
   t.end();
 });
 
-test('CryptoHash#batches(100K)', async (t) => {
+test('CryptoHash#batches(100K)', async t => {
   const {binaryData} = getBinaryData();
 
   const inputChunks = [binaryData];
@@ -117,7 +117,7 @@ test('CryptoHash#batches(100K)', async (t) => {
     modules: {CryptoJS},
     crypto: {
       algorithm: 'MD5',
-      onEnd: (result) => {
+      onEnd: result => {
         hash = result.hash;
       }
     }

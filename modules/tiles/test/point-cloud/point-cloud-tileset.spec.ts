@@ -30,7 +30,7 @@ type TileHeaderOptions = {
 
 function createDeferred<T>(): Deferred<T> {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((resolveValue) => {
+  const promise = new Promise<T>(resolveValue => {
     resolve = resolveValue;
   });
 
@@ -119,7 +119,7 @@ class TestPointCloudSource extends DataSource<string, DataSourceOptions> {
       },
       pointCount: 2,
       cartographicOrigin: [0, 0, 0],
-      coordinateSystem: 3
+      coordinateSystem: 'lnglat-offsets'
     });
   }
 }
@@ -159,7 +159,7 @@ function createViewport() {
   } as any;
 }
 
-test('PointCloudTileset#selectTiles updates tiles and load state', async (t) => {
+test('PointCloudTileset#selectTiles updates tiles and load state', async t => {
   const source = new TestPointCloudSource();
   let tileLoadCount = 0;
   const tileset = new PointCloudTileset(source as any, {
@@ -175,7 +175,7 @@ test('PointCloudTileset#selectTiles updates tiles and load state', async (t) => 
   t.equal(tileset.frameNumber, 1, 'tileset frame number is updated');
   t.equal(tileset.tiles.length, 3, 'all discovered tiles are tracked');
   t.deepEqual(
-    tileset.selectedTiles.map((tile) => tile.id).sort(),
+    tileset.selectedTiles.map(tile => tile.id).sort(),
     ['left', 'right', 'root'],
     'point-cloud traversal keeps parent and child tiles selected during refinement'
   );
@@ -183,14 +183,14 @@ test('PointCloudTileset#selectTiles updates tiles and load state', async (t) => 
 
   source.resolveTile('left');
   source.resolveTile('right');
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise(resolve => setTimeout(resolve, 0));
 
   t.equal(tileLoadCount, 2, 'tile load callback fires for loaded child tiles');
   t.equal(tileset.isLoaded(), true, 'tileset reports loaded after selected content resolves');
   t.end();
 });
 
-test('PointCloudTileset#debounces repeated traversal requests', async (t) => {
+test('PointCloudTileset#debounces repeated traversal requests', async t => {
   const source = new TestPointCloudSource();
   const tileset = new PointCloudTileset(source as any, {
     debounceTime: 10
