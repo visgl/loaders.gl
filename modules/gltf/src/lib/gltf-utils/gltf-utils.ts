@@ -26,6 +26,7 @@ const ARRAY_CONSTRUCTOR_TO_WEBGL_CONSTANT: [TypedArrayConstructor, number][] = [
   [Uint8Array, 5121],
   [Int16Array, 5122],
   [Uint16Array, 5123],
+  [Int32Array, 5124],
   [Uint32Array, 5125],
   [Float32Array, 5126],
   [Float64Array, 5130]
@@ -49,6 +50,7 @@ const ATTRIBUTE_COMPONENT_TYPE_TO_BYTE_SIZE = {
   5121: 1,
   5122: 2,
   5123: 2,
+  5124: 4,
   5125: 4,
   5126: 4
 };
@@ -58,6 +60,7 @@ const ATTRIBUTE_COMPONENT_TYPE_TO_ARRAY = {
   5121: Uint8Array,
   5122: Int16Array,
   5123: Uint16Array,
+  5124: Int32Array,
   5125: Uint32Array,
   5126: Float32Array
 };
