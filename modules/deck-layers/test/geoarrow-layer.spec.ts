@@ -12,8 +12,13 @@ import {
   GEOARROW_POINT_WKB_FILE,
   GEOARROW_POLYGON_FILE
 } from '@loaders.gl/arrow/test/data/geoarrow/test-cases';
-import {GeoArrowLayer, type GeoArrowLayerProps} from '@loaders.gl/deck-layers';
-import {PathLayer, ScatterplotLayer, SolidPolygonLayer} from '@deck.gl/layers';
+import {
+  convertGeoArrowTableToBinaryFeatureCollection,
+  GeoArrowLayer,
+  type GeoArrowLayerProps
+} from '@loaders.gl/deck-layers';
+import type {ArrowTable} from '@loaders.gl/schema';
+import {GeoJsonLayer} from '@deck.gl/layers';
 
 /**
  * Loads an Apache Arrow table from a GeoArrow test fixture.
@@ -49,44 +54,44 @@ function asLayerArray(layerResult: ReturnType<GeoArrowLayer['renderLayers']>) {
   return Array.isArray(layerResult) ? layerResult : [layerResult];
 }
 
-test('GeoArrowLayer renders scatterplot sublayer for point data', async t => {
+test('GeoArrowLayer renders GeoJsonLayer binary data for point data', async t => {
   const table = await loadArrowTable(GEOARROW_POINT_FILE);
   const layer = createLayer({data: table});
   const [sublayer] = asLayerArray(layer.renderLayers());
 
-  t.ok(sublayer instanceof ScatterplotLayer, 'creates a ScatterplotLayer');
+  t.ok(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
   t.equal(
-    (sublayer as ScatterplotLayer).props.data.length,
-    2,
-    'passes one rendered object per point'
+    (sublayer as GeoJsonLayer).props.data.points.positions.value.length,
+    4,
+    'passes point binary feature data'
   );
   t.end();
 });
 
-test('GeoArrowLayer renders path sublayer for multiline data', async t => {
+test('GeoArrowLayer renders GeoJsonLayer binary data for multiline data', async t => {
   const table = await loadArrowTable(GEOARROW_MULTILINE_FILE);
   const layer = createLayer({data: table});
   const [sublayer] = asLayerArray(layer.renderLayers());
 
-  t.ok(sublayer instanceof PathLayer, 'creates a PathLayer');
+  t.ok(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
   t.deepEqual(
-    Array.from(((sublayer as PathLayer).props.data as {startIndices: Uint32Array}).startIndices),
+    Array.from((sublayer as GeoJsonLayer).props.data.lines.pathIndices.value),
     [0, 2, 4, 6, 8],
     'passes exploded path indices'
   );
   t.end();
 });
 
-test('GeoArrowLayer renders solid polygon sublayer for polygon data', async t => {
+test('GeoArrowLayer renders GeoJsonLayer binary data for polygon data', async t => {
   const table = await loadArrowTable(GEOARROW_POLYGON_FILE);
   const layer = createLayer({data: table});
   const [sublayer] = asLayerArray(layer.renderLayers());
 
-  t.ok(sublayer instanceof SolidPolygonLayer, 'creates a SolidPolygonLayer');
+  t.ok(sublayer instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
   t.equal(
-    (sublayer as SolidPolygonLayer).props._normalize,
-    false,
-    'uses binary normalized polygon input'
+    (sublayer as GeoJsonLayer).props.data.polygons.positions.size,
+    2,
+    'passes polygon binary feature data'
   );
   t.end();
 });
@@ -136,7 +141,7 @@ test('GeoArrowLayer respects explicit geometryColumn override', async t => {
   const layer = createLayer({data: table, geometryColumn: 'geometry2'});
   const [sublayer] = asLayerArray(layer.renderLayers());
 
-  t.ok(sublayer instanceof PathLayer, 'uses the explicitly selected geometry column');
+  t.ok((sublayer as GeoJsonLayer).props.data.lines, 'uses the explicitly selected geometry column');
   t.end();
 });
 
@@ -155,16 +160,14 @@ test('GeoArrowLayer throws when no geometry metadata is present', t => {
   t.end();
 });
 
-test('GeoArrowLayer renders WKB point data through the scatterplot path', async t => {
+test('GeoArrowLayer renders WKB point data through the GeoJsonLayer binary path', async t => {
   const table = await loadArrowTable(GEOARROW_POINT_WKB_FILE);
   const layer = createLayer({data: table});
   const sublayers = asLayerArray(layer.renderLayers());
 
   t.equal(sublayers.length, 1, 'renders a single sublayer for WKB points');
-  t.ok(
-    sublayers[0] instanceof ScatterplotLayer,
-    'converts WKB point data to a renderable point layer'
-  );
+  t.ok(sublayers[0] instanceof GeoJsonLayer, 'creates a GeoJsonLayer');
+  t.ok(sublayers[0].props.data.points, 'converts WKB point data to binary point data');
   t.end();
 });
 
@@ -211,15 +214,21 @@ test('GeoArrowLayer renders geometry collections as multiple primitive sublayers
   const layer = createLayer({data: table});
   const sublayers = asLayerArray(layer.renderLayers());
 
-  t.equal(sublayers.length, 2, 'renders two primitive sublayers');
-  t.ok(
-    sublayers.some(sublayer => sublayer instanceof ScatterplotLayer),
-    'renders points from the geometry collection'
-  );
-  t.ok(
-    sublayers.some(sublayer => sublayer instanceof PathLayer),
-    'renders lines from the geometry collection'
-  );
+  t.equal(sublayers.length, 1, 'renders one GeoJsonLayer sublayer');
+  t.ok(sublayers[0].props.data.points, 'renders points from the geometry collection');
+  t.ok(sublayers[0].props.data.lines, 'renders lines from the geometry collection');
+  t.end();
+});
+
+test('GeoArrow adapter accepts loaders.gl ArrowTable wrappers', async t => {
+  const table = await loadArrowTable(GEOARROW_POINT_WKB_FILE);
+  const binaryFeatureCollection = convertGeoArrowTableToBinaryFeatureCollection({
+    shape: 'arrow-table',
+    data: table
+  } as ArrowTable);
+
+  t.equal(binaryFeatureCollection.shape, 'binary-feature-collection');
+  t.ok(binaryFeatureCollection.points, 'converts wrapper input to binary point data');
   t.end();
 });
 

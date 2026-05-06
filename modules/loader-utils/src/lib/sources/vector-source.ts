@@ -66,7 +66,10 @@ export type GetFeaturesParameters = {
   boundingBox: [min: [x: number, y: number], max: [x: number, y: number]];
   /** crs for the returned features (not the bounding box) */
   crs?: string;
-  /** Requested feature encoding for the returned table. */
+  /**
+   * Requested feature encoding for the returned table.
+   * `arrow` returns a loaders.gl `ArrowTable` with `shape: 'arrow-table'`.
+   */
   format?: 'geojson' | 'binary' | 'arrow';
   /** Abort signal for canceling in-flight requests. */
   signal?: AbortSignal;

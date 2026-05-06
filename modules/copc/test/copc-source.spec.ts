@@ -64,6 +64,24 @@ test('COPCSourceLoader#loads full point content for a tile', async t => {
   t.end();
 });
 
+test('COPCSourceLoader#loads tile content with TypeScript LAZ decoder', async t => {
+  const source = COPCSourceLoader.createDataSource(await createEllipsoidSourceData(), {
+    copc: {decoder: 'typescript-laz'}
+  });
+  await source.initialize();
+
+  const rootTile = await source.getRootTile();
+  const content = await source.loadTileContent(rootTile);
+
+  t.ok(content, 'tile content loads');
+  t.equal(
+    content?.data.data.getChild('POSITION')?.length,
+    content?.pointCount,
+    'Arrow table contains one position row per point'
+  );
+  t.end();
+});
+
 test('COPCSourceLoader#loads tile content from a Blob', async t => {
   if (isBrowser) {
     t.comment('Skipping browser content decode until laz-perf wasm is served as an asset');

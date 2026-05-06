@@ -42,7 +42,7 @@ test('WFSSourceLoader#getCapabilitiesURL defaults version', t => {
   t.end();
 });
 
-test('WFSSourceLoader#getFeatures', async t => {
+test('WFSSourceLoader#getFeatures returns Arrow by default', async t => {
   const source = WFSSourceLoader.createDataSource(WFS_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
@@ -63,6 +63,36 @@ test('WFSSourceLoader#getFeatures', async t => {
     ],
     layers: ['roads'],
     crs: 'EPSG:4326'
+  });
+
+  t.equal(table.shape, 'arrow-table', 'returns Arrow tables by default');
+  t.equal(table.data.numRows, 1, 'preserves feature rows');
+  t.ok(table.schema?.metadata?.geo, 'adds GeoArrow metadata');
+  t.end();
+});
+
+test('WFSSourceLoader#getFeatures supports explicit GeoJSON', async t => {
+  const source = WFSSourceLoader.createDataSource(WFS_URL, {});
+  const featureCollection = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        geometry: {type: 'Point', coordinates: [1, 2]},
+        properties: {name: 'Road'}
+      }
+    ]
+  };
+  source.fetch = async () => new Response(JSON.stringify(featureCollection));
+
+  const table = await source.getFeatures({
+    boundingBox: [
+      [1, 2],
+      [3, 4]
+    ],
+    layers: ['roads'],
+    crs: 'EPSG:4326',
+    format: 'geojson'
   });
 
   t.deepEqual(table, {

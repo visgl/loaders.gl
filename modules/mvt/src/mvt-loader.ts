@@ -5,6 +5,7 @@
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 // import type {MVTOptions} from './lib/types';
 import {MVTFormat} from './mvt-format';
+import {deserializeMVTWorkerResult, serializeMVTWorkerResult} from './lib/mvt-worker-transport';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -13,7 +14,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type MVTLoaderOptions = LoaderOptions & {
   mvt?: {
     /** Shape of returned data */
-    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry';
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
     /** `wgs84`: coordinates in long, lat (`tileIndex` must be provided. `local` coordinates are `0-1` from tile origin */
     coordinates?: 'wgs84' | 'local';
     /** An object containing tile index values (`x`, `y`, `z`) to reproject features' coordinates into WGS84. Mandatory with `wgs84` coordinates option. */
@@ -27,7 +28,7 @@ export type MVTLoaderOptions = LoaderOptions & {
   };
   gis?: {
     /** @deprecated. Use options.mvt.shape */
-    format?: 'geojson-table' | 'columnar-table' | 'binary-geometry';
+    format?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
   };
 };
 
@@ -53,6 +54,8 @@ export const MVTWorkerLoader = {
       tileIndex: undefined!
     }
   },
+  serializeWorkerResult: serializeMVTWorkerResult,
+  deserializeWorkerResult: deserializeMVTWorkerResult,
   preload
 } as const satisfies Loader<
   any, // BinaryFeatureCollection | GeoJSONTable | Feature<Geometry, GeoJsonProperties>,

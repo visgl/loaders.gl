@@ -15,10 +15,9 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 export type LASLoaderOptions = LoaderOptions & {
   las?: {
     /** Decoder backend. Defaults to the current vendored laz-perf implementation. */
-    backend?: 'laz-perf' | 'copc' | 'laz-rs';
+    backend?: 'laz-perf' | 'copc' | 'laz-rs' | 'typescript';
     shape?: 'mesh' | 'columnar-table' | 'arrow-table';
     fp64?: boolean;
-    skip?: number;
     colorDepth?: number | string;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
@@ -46,7 +45,6 @@ export const LASWorkerLoader = {
       backend: 'laz-perf',
       shape: 'mesh',
       fp64: false,
-      skip: 1,
       colorDepth: 8
     }
   },

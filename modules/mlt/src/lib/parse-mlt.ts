@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Feature, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
-import {geojsonToBinary} from '@loaders.gl/gis';
+import type {ArrowTable, Feature, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
+import {convertFeaturesToWKBArrowTable, geojsonToBinary} from '@loaders.gl/gis';
 import type {Feature as MLTFeature} from '@maplibre/mlt';
 import * as maplibreMLT from '@maplibre/mlt';
 
@@ -61,7 +61,7 @@ type MLTFeatureTable = {
 export function parseMLT(
   arrayBuffer: ArrayBuffer,
   options?: MLTLoaderOptions
-): GeoJSONTable | BinaryFeatureCollection {
+): GeoJSONTable | BinaryFeatureCollection | ArrowTable {
   const mltOptions = checkOptions(options);
 
   const shape = mltOptions.shape;
@@ -81,6 +81,8 @@ export function parseMLT(
       binaryData.byteLength = arrayBuffer.byteLength;
       return binaryData;
     }
+    case 'arrow-table':
+      return convertFeaturesToWKBArrowTable(parseToGeojsonFeatures(arrayBuffer, mltOptions));
     default:
       throw new Error(shape || 'undefined shape');
   }

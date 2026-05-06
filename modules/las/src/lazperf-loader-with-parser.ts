@@ -10,6 +10,7 @@ import type {LASLoaderOptions} from './las-loader';
 import type {LASMesh} from './lib/las-types';
 import {parseLAS, parseLASInBatches} from './lib/laz-perf/parse-las';
 import {LAZPerfLoader as LAZPerfLoaderMetadata} from './lazperf-loader';
+import {TypeScriptLASLoaderWithParser} from './typescript-loader-with-parser';
 
 const {preload: _LAZPerfLoaderPreload, ...LAZPerfLoaderMetadataWithoutPreload} =
   LAZPerfLoaderMetadata;
@@ -28,6 +29,9 @@ export const LAZPerfLoaderWithParser = {
   },
   parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
     const backend = getLASBackend(options);
+    if (backend === 'typescript') {
+      return TypeScriptLASLoaderWithParser.parseSync(arrayBuffer, options);
+    }
     if (backend !== 'laz-perf') {
       throw new Error(`LASLoader: backend "${backend}" does not support parseSync`);
     }
@@ -52,7 +56,7 @@ export const LAZPerfLoaderWithParser = {
  * @param options LAS loader options
  * @returns Selected backend id
  */
-function getLASBackend(options?: LASLoaderOptions): 'laz-perf' | 'copc' | 'laz-rs' {
+function getLASBackend(options?: LASLoaderOptions): 'laz-perf' | 'copc' | 'laz-rs' | 'typescript' {
   return options?.las?.backend || 'laz-perf';
 }
 
@@ -74,6 +78,9 @@ async function getLASBackendLoader(
     case 'laz-rs': {
       const {LAZRsLoaderWithParser} = await import('./laz-rs-loader-with-parser');
       return LAZRsLoaderWithParser;
+    }
+    case 'typescript': {
+      return TypeScriptLASLoaderWithParser;
     }
     default:
       throw new Error(`LASLoader: unsupported backend "${options?.las?.backend}"`);

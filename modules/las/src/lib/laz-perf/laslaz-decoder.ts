@@ -160,52 +160,23 @@ class LASLoader {
   /**
    * Reading data
    * @param count
-   * @param skip
    * @returns new ArrayBuffer, count, hasMoreData
    */
-  readData(count: number, skip: number) {
+  readData(count: number) {
     const {header, arraybuffer} = this;
     if (!header) {
       throw new Error('Cannot start reading data till a header request is issued');
     }
 
     let {readOffset} = this;
-    let start: number;
-
-    if (skip <= 1) {
-      count = Math.min(count, header.pointsCount - readOffset);
-      start = header.pointsOffset + readOffset * header.pointsStructSize;
-      const end = start + count * header.pointsStructSize;
-      readOffset += count;
-      this.readOffset = readOffset;
-      return {
-        buffer: arraybuffer.slice(start, end),
-        count,
-        hasMoreData: readOffset < header.pointsCount
-      };
-    }
-
-    const pointsToRead = Math.min(count * skip, header.pointsCount - readOffset);
-    const bufferSize = Math.ceil(pointsToRead / skip);
-    let pointsRead = 0;
-
-    const buf = new Uint8Array(bufferSize * header.pointsStructSize);
-    for (let i = 0; i < pointsToRead; i++) {
-      if (i % skip === 0) {
-        start = header.pointsOffset + readOffset * header.pointsStructSize;
-        const src = new Uint8Array(arraybuffer, start, header.pointsStructSize);
-
-        buf.set(src, pointsRead * header.pointsStructSize);
-        pointsRead++;
-      }
-
-      readOffset++;
-    }
+    count = Math.min(count, header.pointsCount - readOffset);
+    const start = header.pointsOffset + readOffset * header.pointsStructSize;
+    const end = start + count * header.pointsStructSize;
+    readOffset += count;
     this.readOffset = readOffset;
-
     return {
-      buffer: buf.buffer,
-      count: pointsRead,
+      buffer: arraybuffer.slice(start, end),
+      count,
       hasMoreData: readOffset < header.pointsCount
     };
   }
@@ -278,10 +249,9 @@ class LAZLoader {
   }
   /**
    * @param count
-   * @param skip
    * @returns Data
    */
-  readData(count: number, skip: number): LASData {
+  readData(count: number): LASData {
     if (!this.instance) {
       throw new Error('You need to open the file before trying to read stuff');
     }
@@ -295,27 +265,19 @@ class LAZLoader {
     }
 
     try {
-      const pointsToRead = Math.min(count * skip, header.pointsCount - instance.readOffset);
-      const bufferSize = Math.ceil(pointsToRead / skip);
-      let pointsRead = 0;
-
-      const thisBuf = new Uint8Array(bufferSize * header.pointsStructSize);
+      const pointsToRead = Math.min(count, header.pointsCount - instance.readOffset);
+      const thisBuf = new Uint8Array(pointsToRead * header.pointsStructSize);
       const bufRead = Module._malloc(header.pointsStructSize);
       for (let i = 0; i < pointsToRead; i++) {
         instance.getPoint(bufRead);
-
-        if (i % skip === 0) {
-          const a = new Uint8Array(Module.HEAPU8.buffer, bufRead, header.pointsStructSize);
-          thisBuf.set(a, pointsRead * header.pointsStructSize);
-          pointsRead++;
-        }
-
+        const a = new Uint8Array(Module.HEAPU8.buffer, bufRead, header.pointsStructSize);
+        thisBuf.set(a, i * header.pointsStructSize);
         instance.readOffset++;
       }
       Module._free(bufRead);
       return {
         buffer: thisBuf.buffer,
-        count: pointsRead,
+        count: pointsToRead,
         hasMoreData: instance.readOffset < header.pointsCount
       };
     } catch (error) {
@@ -455,11 +417,10 @@ export class LASFile {
 
   /**
    * @param count
-   * @param skip
    * @returns Data
    */
-  readData(count: number, skip: number): LASData {
-    return this.loader.readData(count, skip);
+  readData(count: number): LASData {
+    return this.loader.readData(count);
   }
 
   /**

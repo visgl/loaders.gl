@@ -5303,6 +5303,7 @@ __metadata:
     "@deck.gl/geo-layers": "npm:^9.3.0"
     "@deck.gl/layers": "npm:^9.3.0"
     "@deck.gl/mesh-layers": "npm:^9.3.0"
+    "@loaders.gl/arrow": "npm:4.4.0"
     "@loaders.gl/compression": "npm:4.4.0"
     "@loaders.gl/core": "npm:4.4.0"
     "@loaders.gl/crypto": "npm:4.4.0"
@@ -5590,6 +5591,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/mvt@workspace:modules/mvt"
   dependencies:
+    "@loaders.gl/arrow": "npm:4.4.0"
     "@loaders.gl/gis": "npm:4.4.0"
     "@loaders.gl/images": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
@@ -5927,6 +5929,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/wms@workspace:modules/wms"
   dependencies:
+    "@loaders.gl/gis": "npm:4.4.0"
     "@loaders.gl/images": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"

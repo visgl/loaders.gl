@@ -21,10 +21,12 @@ import type {
   TileSource,
   TileSourceMetadata
 } from '@loaders.gl/loader-utils';
+import type {ArrowTable} from '@loaders.gl/schema';
 import {SharedTile2DHeader, Tileset2D, type Tileset2DProps} from '@loaders.gl/tiles';
 import {Matrix4, type NumericArray} from '@math.gl/core';
 import {sharedTile2DDeckAdapter} from './shared-tile-2d/deck-tileset-adapter';
 import {SharedTile2DView} from './shared-tile-2d/shared-tile-2d-view';
+import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';
 
 /** Runtime shape used by loaders.gl source-backed tile layers. */
 export type TileSourceRuntime = TileSource & {
@@ -697,7 +699,9 @@ function defaultRenderSubLayers<DataT>(
           props as any,
           {
             id: `${props.id}-geojson`,
-            data: props.data as any,
+            data: isArrowTable(props.data)
+              ? convertGeoArrowTableToBinaryFeatureCollection(props.data)
+              : (props.data as any),
             pickable: true,
             autoHighlight: true,
             lineWidthScale: 500,
@@ -759,6 +763,10 @@ function defaultRenderSubLayers<DataT>(
   }
 
   return layers;
+}
+
+function isArrowTable(data: unknown): data is ArrowTable {
+  return (data as {shape?: string} | null)?.shape === 'arrow-table';
 }
 
 function isTileSourceRuntime(value: unknown): value is TileSourceRuntime {

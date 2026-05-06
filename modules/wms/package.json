@@ -58,6 +58,7 @@
     "path": false
   },
   "dependencies": {
+    "@loaders.gl/gis": "4.4.0",
     "@loaders.gl/images": "4.4.0",
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",

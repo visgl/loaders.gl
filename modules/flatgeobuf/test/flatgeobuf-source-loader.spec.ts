@@ -58,6 +58,10 @@ test('FlatGeobufSourceLoader#getSchema and getMetadata expose header metadata', 
 
 test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across formats', async t => {
   const source = await createSource();
+  const defaultTable = await source.getFeatures({
+    layers: 'countries',
+    boundingBox: NARROW_BOUNDING_BOX
+  });
   const geojson = await source.getFeatures({
     layers: 'countries',
     boundingBox: NARROW_BOUNDING_BOX,
@@ -74,6 +78,7 @@ test('FlatGeobufSourceLoader#getFeatures returns matching feature sets across fo
     format: 'arrow'
   });
 
+  t.equal(defaultTable.shape, 'arrow-table', 'returns Arrow tables by default');
   t.equal(geojson.shape, 'geojson-table', 'returns GeoJSON tables');
   t.ok(geojson.features.length > 0, 'returns matching features');
   t.ok(geojson.features.length < 179, 'uses indexed subset instead of full dataset');

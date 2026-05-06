@@ -227,7 +227,7 @@ test('ArcGISVectorSource#getMetadata and getSchema', async t => {
   t.end();
 });
 
-test('ArcGISVectorSource#getFeatures', async t => {
+test('ArcGISVectorSource#getFeatures defaults to Arrow', async t => {
   const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
   const featureCollection = {
     type: 'FeatureCollection',
@@ -250,9 +250,36 @@ test('ArcGISVectorSource#getFeatures', async t => {
     crs: '4326'
   });
 
-  t.deepEqual(table, {
-    shape: 'geojson-table',
-    ...featureCollection
+  t.equal(table.shape, 'arrow-table', 'returns Arrow tables by default');
+  t.equal(table.data.numRows, 1, 'preserves feature rows');
+  t.ok(table.schema?.metadata?.geo, 'adds GeoArrow metadata');
+  t.end();
+});
+
+test('ArcGISVectorSource#getFeatures supports explicit GeoJSON', async t => {
+  const source = ArcGISFeatureServerSourceLoader.createDataSource(FEATURE_SERVER_URL, {});
+  const featureCollection = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        geometry: {type: 'Point', coordinates: [1, 2]},
+        properties: {name: 'Road'}
+      }
+    ]
+  };
+  source.fetch = async () => new Response(JSON.stringify(featureCollection));
+
+  const table = await source.getFeatures({
+    boundingBox: [
+      [1, 2],
+      [3, 4]
+    ],
+    layers: [],
+    crs: '4326',
+    format: 'geojson'
   });
+
+  t.deepEqual(table, {shape: 'geojson-table', ...featureCollection});
   t.end();
 });
