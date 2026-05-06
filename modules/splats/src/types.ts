@@ -15,7 +15,7 @@ export type SplatsLoaderOptions = LoaderOptions & {
 /** Linear Gaussian splat values before Arrow table construction. */
 export type GaussianSplats = {
   /** Source format identifier. */
-  format: 'splat' | 'ksplat';
+  format: 'splat' | 'ksplat' | 'spz';
   /** Number of decoded splats. */
   splatCount: number;
   /** Interleaved xyz positions. */
@@ -26,6 +26,8 @@ export type GaussianSplats = {
   rotations: Float32Array;
   /** Interleaved RGB colors as unorm8 values. */
   colors: Uint8Array;
+  /** Optional interleaved RGB spherical harmonic DC coefficients. */
+  sphericalHarmonicDcs?: Float32Array;
   /** Linear opacity values in the `[0, 1]` range. */
   opacities: Float32Array;
   /** Optional spherical harmonic rest coefficients. */

@@ -4,3 +4,4 @@
 
 import './splat-loader.spec';
 import './ksplat-loader.spec';
+import './spz-loader.spec';

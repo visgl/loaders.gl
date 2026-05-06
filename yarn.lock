@@ -5771,9 +5771,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@loaders.gl/splats@workspace:modules/splats"
   dependencies:
+    "@loaders.gl/compression": "npm:4.4.0"
     "@loaders.gl/loader-utils": "npm:4.4.0"
     "@loaders.gl/schema": "npm:4.4.0"
     apache-arrow: "npm:>= 17.0.0"
+    zstd-codec: "npm:^0.1.0"
   peerDependencies:
     "@loaders.gl/core": ~4.4.0
   languageName: unknown
@@ -35695,7 +35697,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zstd-codec@npm:^0.1, zstd-codec@npm:^0.1.4":
+"zstd-codec@npm:^0.1, zstd-codec@npm:^0.1.0, zstd-codec@npm:^0.1.4":
   version: 0.1.5
   resolution: "zstd-codec@npm:0.1.5"
   checksum: 10c0/8b7e6d9ce86f00fc4ea16c949aab5538505a1f3f1a9c7c095b2a7308b4ed894deec7bdb2c614e1486a337abdce09a6e56282dc0e39fe9f880953b094f8c7810b
