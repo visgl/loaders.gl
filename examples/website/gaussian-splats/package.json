@@ -17,10 +17,12 @@
     "@loaders.gl/deck-layers": "workspace:*",
     "@loaders.gl/ply": "workspace:*",
     "@loaders.gl/schema": "workspace:*",
+    "@loaders.gl/splats": "workspace:*",
     "@luma.gl/core": "^9.3.2",
     "@luma.gl/webgpu": "^9.3.2",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "zstd-codec": "^0.1.0"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

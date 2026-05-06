@@ -30,7 +30,7 @@ test('SPZLoader parses Niantic Spatial v4 Gaussian splats', async t => {
     'decodes linear opacity'
   );
   t.ok(
-    Math.abs(Number(table.data.getChild('f_dc_0')?.get(0)) - ((140 / 255 - 0.5) / 0.15)) < 1e-6,
+    Math.abs(Number(table.data.getChild('f_dc_0')?.get(0)) - (140 / 255 - 0.5) / 0.15) < 1e-6,
     'decodes SPZ DC coefficient'
   );
   t.ok(Math.abs(Number(table.data.getChild('rot_0')?.get(0)) - 1) < 1e-6, 'decodes rotation');
@@ -68,7 +68,9 @@ async function makeSPZFixture(): Promise<ArrayBuffer> {
   ];
   const compression = new ZstdCompression({modules});
   await compression.preload(modules);
-  const compressedStreams = streams.map(stream => new Uint8Array(compression.compressSync(stream.buffer)));
+  const compressedStreams = streams.map(
+    stream => new Uint8Array(compression.compressSync(stream.buffer))
+  );
   const headerByteLength = 32;
   const tocByteLength = compressedStreams.length * 16;
   const byteLength =

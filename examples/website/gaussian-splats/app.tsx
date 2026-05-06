@@ -13,14 +13,19 @@ import {
   type OrbitViewState
 } from '@deck.gl/core';
 import {webgpuAdapter} from '@luma.gl/webgpu';
-import {loadInBatches} from '@loaders.gl/core';
+import {load, loadInBatches} from '@loaders.gl/core';
 import {SplatLayer} from '@loaders.gl/deck-layers';
 import {PLYLoader} from '@loaders.gl/ply';
+import {KSPLATLoader, SPLATLoader, SPZLoader} from '@loaders.gl/splats';
 import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
 import {FullscreenWidget, _StatsWidget as StatsWidget} from '@deck.gl/widgets';
+import {ZstdCodec} from 'zstd-codec';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
-import type {Example} from '../pointcloud/examples';
-import {DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME, GAUSSIAN_SPLAT_EXAMPLES} from './examples';
+import {
+  DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME,
+  GAUSSIAN_SPLAT_EXAMPLES,
+  type GaussianSplatExample
+} from './examples';
 import '@deck.gl/widgets/stylesheet.css';
 
 const PREVIEW_ROW_COUNT = 8;
@@ -41,6 +46,7 @@ const SPLAT_ALPHA_CUTOFF = 0.02;
 const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
 const SPLAT_KERNEL_2D_SIZE = 0.3;
 const SPLAT_MAX_SCREEN_SPACE_SIZE = 256;
+const ZSTD_MODULES = {'zstd-codec': ZstdCodec};
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -218,7 +224,7 @@ export default function GaussianSplatsApp() {
   return (
     <div style={styles.page}>
       <div style={styles.controls}>
-        <ExampleUrlInputCard<Example>
+        <ExampleUrlInputCard<GaussianSplatExample>
           format={GAUSSIAN_SPLAT_FORMAT}
           selectedUrl={state.selectedUrl}
           urlOptions={urlOptions}
@@ -396,7 +402,7 @@ function getOrbitZoom(horizontalSize: number): number {
 }
 
 /**
- * Loads Gaussian splat PLY URLs in Arrow table batches while reporting row progress.
+ * Loads Gaussian splat URLs in Arrow table batches while reporting row progress.
  */
 async function* trackGaussianSplatBatches(
   sourceUrls: string[],
@@ -410,13 +416,26 @@ async function* trackGaussianSplatBatches(
 
   try {
     for (const sourceUrl of sourceUrls) {
-      const sourceBatches = (await loadInBatches(sourceUrl, PLYLoader, {
-        worker: false,
-        ply: {shape: 'arrow-table'}
-      })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
+      const sourceType = getGaussianSplatSourceType(sourceUrl);
+      if (sourceType === 'ply') {
+        const sourceBatches = (await loadInBatches(sourceUrl, PLYLoader, {
+          worker: false,
+          ply: {shape: 'arrow-table'}
+        })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
 
-      for await (const sourceBatch of sourceBatches) {
-        const arrowTableBatch = normalizeArrowTableBatch(sourceBatch);
+        for await (const sourceBatch of sourceBatches) {
+          const arrowTableBatch = normalizeArrowTableBatch(sourceBatch);
+          loadedSplatCount += arrowTableBatch.length;
+          callbacks.onBatch(arrowTableBatch, loadedSplatCount);
+          yield arrowTableBatch;
+        }
+      } else {
+        const table = await load(sourceUrl, getGaussianSplatLoader(sourceType), {
+          worker: false,
+          modules: ZSTD_MODULES,
+          splats: {shape: 'arrow-table'}
+        });
+        const arrowTableBatch = normalizeArrowTableBatch(table as MeshArrowTable);
         loadedSplatCount += arrowTableBatch.length;
         callbacks.onBatch(arrowTableBatch, loadedSplatCount);
         yield arrowTableBatch;
@@ -466,12 +485,12 @@ type ArrowTablePreview = {
 };
 
 /** Return source URLs for a Gaussian splat example. */
-function getExampleUrls(example: Example): string[] {
+function getExampleUrls(example: GaussianSplatExample): string[] {
   return example.urls?.length ? example.urls : [example.url];
 }
 
 /** Return Gaussian splat URL options for the shared URL picker. */
-function getGaussianSplatUrlOptions(): UrlOption<Example>[] {
+function getGaussianSplatUrlOptions(): UrlOption<GaussianSplatExample>[] {
   return Object.entries(GAUSSIAN_SPLAT_EXAMPLES).map(([exampleName, example]) => ({
     format: GAUSSIAN_SPLAT_FORMAT,
     example,
@@ -480,6 +499,38 @@ function getGaussianSplatUrlOptions(): UrlOption<Example>[] {
     pointCount: example.pointCount,
     url: example.url
   }));
+}
+
+/** Returns the Gaussian splat source type from a URL extension. */
+function getGaussianSplatSourceType(sourceUrl: string): GaussianSplatExample['type'] {
+  const pathname = sourceUrl.split(/[?#]/)[0].toLowerCase();
+  if (pathname.endsWith('.splat')) {
+    return 'splat';
+  }
+  if (pathname.endsWith('.ksplat')) {
+    return 'ksplat';
+  }
+  if (pathname.endsWith('.spz')) {
+    return 'spz';
+  }
+  if (pathname.endsWith('.ply')) {
+    return 'ply';
+  }
+  throw new Error('Enter a Gaussian splat URL ending in .ply, .splat, .ksplat, or .spz.');
+}
+
+/** Returns the whole-file loader for binary Gaussian splat formats. */
+function getGaussianSplatLoader(sourceType: Exclude<GaussianSplatExample['type'], 'ply'>) {
+  switch (sourceType) {
+    case 'splat':
+      return SPLATLoader;
+    case 'ksplat':
+      return KSPLATLoader;
+    case 'spz':
+      return SPZLoader;
+    default:
+      throw new Error(`Unsupported Gaussian splat source type: ${sourceType}`);
+  }
 }
 
 /** Build a compact schema and row preview from the first Mesh Arrow table batch. */

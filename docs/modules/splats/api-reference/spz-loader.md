@@ -1,64 +1,58 @@
-# SPZLoader Proposal
+# SPZLoader
 
 <p class="badges">
-  <img src="https://img.shields.io/badge/Status-Proposal-lightgrey.svg?style=flat-square" alt="Status: Proposal" />
+  <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
-`SPZLoader` is a proposed loader for Niantic Spatial `.spz` Gaussian splat files. It would complement the existing `SPLATLoader` and `KSPLATLoader` by adding support for a compact interchange format designed for small files, parallel attribute decompression, metadata, and vendor extensions.
+`SPZLoader` parses Niantic Spatial `.spz` Gaussian splat files and returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
-| Property     | Proposed value                             |
+| Property     | Value                                      |
 | ------------ | ------------------------------------------ |
 | File format  | [SPZ](/docs/modules/splats/formats/splats) |
 | Extensions   | `.spz`                                     |
-| Worker       | Yes, if ZSTD/WASM decompression is used    |
+| Worker       | No                                         |
 | Input type   | `ArrayBuffer`                              |
 | Output shape | `arrow-table`                              |
-| Status       | Proposal, not implemented                  |
 
-## Goals
+## Usage
 
-- Decode SPZ version 4 files into the same Mesh Arrow table shape returned by `SPLATLoader` and `KSPLATLoader`.
-- Keep `@loaders.gl/splats` output stable for downstream consumers such as `SplatLayer`.
-- Preserve SPZ header values and recognized extension metadata in `loaderData`.
-- Leave room for parallel or worker-based decompression without requiring a new output shape.
-
-## Proposed usage
+SPZ version 4 uses ZSTD-compressed attribute streams. Inject `zstd-codec` through loader options so applications that only use `SPLATLoader` or `KSPLATLoader` do not pay the ZSTD dependency cost.
 
 ```typescript
 import {load} from '@loaders.gl/core';
 import {SPZLoader} from '@loaders.gl/splats';
+import {ZstdCodec} from 'zstd-codec';
 
-const table = await load(url, SPZLoader);
+const table = await load(url, SPZLoader, {
+  modules: {'zstd-codec': ZstdCodec}
+});
 ```
 
-## Proposed format handling
+The parser-bearing subpath can also be imported directly:
 
-SPZ version 4 files start with the `NGSP` magic value and a 32-byte little-endian header. The proposed loader should parse:
+```typescript
+import {SPZLoaderWithParser} from '@loaders.gl/splats/spz-loader';
+```
 
-- `version`
-- `numPoints`
-- `shDegree`
-- `fractionalBits`
-- `flags`
-- `numStreams`
-- `tocByteOffset`
-- stream compressed and uncompressed sizes from the table of contents
-- optional plaintext extension records when the extension flag is set
+## Format support
 
-The loader should then decompress the independent attribute streams and decode:
+`SPZLoader` supports SPZ version 4 files that start with the `NGSP` magic value and use the plaintext 32-byte header, table of contents, and independent ZSTD-compressed attribute streams.
+
+The loader decodes:
 
 - 24-bit fixed-point positions
-- 8-bit log-encoded scales
-- compressed rotations using the smallest-three quaternion representation
-- 8-bit alphas
-- 8-bit colors
-- spherical harmonics for supported degrees
+- 8-bit alpha values into linear opacity
+- 8-bit color values into SH DC coefficients
+- 8-bit log-encoded scales into linear scale standard deviations
+- smallest-three quaternion rotations into `rot_0`, `rot_1`, `rot_2`, `rot_3`
+- 8-bit spherical harmonic rest coefficients for SPZ degrees 1 through 4
 
-Legacy SPZ versions 1 through 3 use a gzip-compressed single-stream layout. Support for those versions should be considered separately from the first version 4 implementation.
+Legacy SPZ versions 1 through 3 use a gzip-compressed single-stream layout and are not supported.
 
-## Proposed output
+## Output
 
-The loader should return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with the existing Gaussian splat columns:
+The loader returns a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with the existing Gaussian splat columns:
 
 - `POSITION`
 - `f_dc_0`, `f_dc_1`, `f_dc_2`
@@ -67,33 +61,13 @@ The loader should return a [Mesh Arrow table](/docs/specifications/category-mesh
 - `rot_0`, `rot_1`, `rot_2`, `rot_3`
 - `f_rest_*` when spherical harmonics are present
 
-Schema metadata should continue to include `loaders_gl.semantic_type = gaussian-splats`, with `loaders_gl.gaussian_splats.source_format = spz`.
+Schema metadata includes `loaders_gl.semantic_type = gaussian-splats` and `loaders_gl.gaussian_splats.source_format = spz`.
 
-## Comparison with current loaders
+`loaderData` includes the SPZ header fields, `antialiased`, `extensionByteLength`, and `extensionBytes` when plaintext extension records are present.
 
-| Capability       | SPLATLoader                         | KSPLATLoader                                      | Proposed SPZLoader                                      |
-| ---------------- | ----------------------------------- | ------------------------------------------------- | ------------------------------------------------------- |
-| Container        | Headerless fixed-width rows         | GaussianSplats3D sectioned buffer                 | Header, extension records, TOC, compressed streams      |
-| Compression      | None                                | Compression levels of 0, 1, and 2                | Attribute quantization plus independent ZSTD streams    |
-| Loading model    | Full in-memory decode               | Full in-memory decode                             | Full in-memory decode first, worker path preferred      |
-| SH support       | DC color only                       | SH degree 0 through 3                             | SPZ degree 0 through 4, subject to Arrow schema support |
-| Metadata         | Minimal source metadata             | Header and section metadata                       | Header, stream table, flags, and recognized extensions  |
-| Implementation   | Pure TypeScript                     | Pure TypeScript                                   | Requires ZSTD strategy, likely WASM or native fallback  |
+## Options
 
-## Dependency strategy
-
-SPZ version 4 requires ZSTD decompression. The first implementation should avoid adding a mandatory heavy dependency to applications that only use `SPLATLoader` or `KSPLATLoader`.
-
-Preferred options:
-
-1. Lazy-load a ZSTD implementation from the parser-bearing `SPZLoaderWithParser` entry point.
-2. Run decompression in a worker when practical.
-3. Keep the root `@loaders.gl/splats` import metadata-only, following the existing loader split.
-
-## Open questions
-
-- Which ZSTD implementation should be used in browser and Node.js environments?
-- Should legacy gzip SPZ versions 1 through 3 be supported in the first implementation?
-- How should unrecognized SPZ extension records be exposed in `loaderData`?
-- Should SPZ degree 4 spherical harmonics add 72 `f_rest_*` columns immediately, or should the shared Gaussian splat schema first document degree 4 explicitly?
-- Should coordinate-system conversion be exposed as a loader option, or should the first implementation preserve SPZ coordinates as stored?
+| Option         | Type            | Default         | Description                              |
+| -------------- | --------------- | --------------- | ---------------------------------------- |
+| `splats.shape` | `'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table output. V1 only supports `arrow-table`. |
+| `modules`      | `object`        | `{}`            | Must include `{'zstd-codec': ZstdCodec}` to decode SPZ version 4 streams. |

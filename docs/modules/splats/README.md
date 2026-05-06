@@ -19,7 +19,7 @@ npm install @loaders.gl/core @loaders.gl/splats
 | ------------------------------------------------------------- | ---------------------------------------------------------- |
 | [`SPLATLoader`](/docs/modules/splats/api-reference/splat-loader)   | Loads raw `.splat` Gaussian splat files.                   |
 | [`KSPLATLoader`](/docs/modules/splats/api-reference/ksplat-loader) | Loads GaussianSplats3D `.ksplat` files from full buffers. |
-| [`SPZLoader` proposal](/docs/modules/splats/api-reference/spz-loader) | Proposes support for Niantic Spatial `.spz` files.       |
+| [`SPZLoader`](/docs/modules/splats/api-reference/spz-loader)       | Loads Niantic Spatial `.spz` files from full buffers.     |
 
 ## Formats
 

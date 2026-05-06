@@ -190,8 +190,14 @@ function decodeSPZStreams(
   const sphericalHarmonics = sphericalHarmonicsComponentCount
     ? new Float32Array(splatCount * sphericalHarmonicsComponentCount)
     : undefined;
-  const [positionStream, alphaStream, colorStream, scaleStream, rotationStream, sphericalHarmonicsStream] =
-    streams.map(stream => new Uint8Array(stream));
+  const [
+    positionStream,
+    alphaStream,
+    colorStream,
+    scaleStream,
+    rotationStream,
+    sphericalHarmonicsStream
+  ] = streams.map(stream => new Uint8Array(stream));
 
   decodeSPZPositions(positionStream, positions, header.fractionalBits);
   decodeSPZScales(scaleStream, scales);
@@ -279,8 +285,7 @@ function decodeSPZQuaternion(component: number): [number, number, number, number
       const magnitude = remainingBits & SPZ_ROTATION_COMPONENT_MASK;
       const isNegative = (remainingBits >>> 9) & 0x1;
       remainingBits >>>= 10;
-      let value =
-        (SPZ_ROTATION_COMPONENT_SCALE * magnitude) / SPZ_ROTATION_COMPONENT_MASK;
+      let value = (SPZ_ROTATION_COMPONENT_SCALE * magnitude) / SPZ_ROTATION_COMPONENT_MASK;
       if (isNegative) {
         value = -value;
       }
@@ -300,7 +305,8 @@ function decodeSPZColors(
   sphericalHarmonicDcs: Float32Array
 ): void {
   for (let componentIndex = 0; componentIndex < colors.length; componentIndex++) {
-    sphericalHarmonicDcs[componentIndex] = (colorStream[componentIndex] / 255 - 0.5) / SPZ_COLOR_SCALE;
+    sphericalHarmonicDcs[componentIndex] =
+      (colorStream[componentIndex] / 255 - 0.5) / SPZ_COLOR_SCALE;
     colors[componentIndex] = normalizeColorByte(sphericalHarmonicDcs[componentIndex]);
   }
 }
@@ -324,7 +330,10 @@ function decodeSPZSphericalHarmonics(
 
 /** Converts an SH DC coefficient to a fallback RGB byte for preview paths. */
 function normalizeColorByte(sphericalHarmonicDc: number): number {
-  return Math.min(Math.max(Math.round((sphericalHarmonicDc * SPZ_COLOR_SCALE + 0.5) * 255), 0), 255);
+  return Math.min(
+    Math.max(Math.round((sphericalHarmonicDc * SPZ_COLOR_SCALE + 0.5) * 255), 0),
+    255
+  );
 }
 
 /** Returns the number of SH rest coefficients per splat for an SPZ degree. */

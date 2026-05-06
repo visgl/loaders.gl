@@ -34,13 +34,15 @@ The v1 loader supports complete in-memory `.ksplat` files and decodes compressio
 
 `.spz` is Niantic Spatial's compressed 3D Gaussian splat interchange format. SPZ version 4 stores a 32-byte plaintext header, optional extension records, a table of contents, and independent ZSTD-compressed attribute streams for positions, alphas, colors, scales, rotations, and spherical harmonics.
 
-An `SPZLoader` is proposed but not yet implemented. The proposed loader would decode complete in-memory `.spz` files into the same Mesh Arrow table shape as `SPLATLoader` and `KSPLATLoader`, preserving SPZ header fields and extension metadata in `loaderData` where practical.
+`SPZLoader` decodes complete in-memory SPZ version 4 files into the same Mesh Arrow table shape as `SPLATLoader` and `KSPLATLoader`, preserving SPZ header fields and extension bytes in `loaderData` where practical.
 
-See the [SPZLoader proposal](/docs/modules/splats/api-reference/spz-loader) for the proposed scope and open questions.
+Legacy SPZ versions 1 through 3 use a gzip-compressed single-stream layout and are not supported by `SPZLoader`.
+
+See the [SPZLoader](/docs/modules/splats/api-reference/spz-loader) API reference for usage and ZSTD module requirements.
 
 ## Output
 
-The implemented loaders return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with Gaussian splat metadata:
+The loaders return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with Gaussian splat metadata:
 
 - `POSITION`
 - `f_dc_0`, `f_dc_1`, `f_dc_2`

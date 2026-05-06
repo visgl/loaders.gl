@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Example} from '../pointcloud/examples';
-
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const HUGGING_FACE_VOXEL51_GAUSSIAN_SPLATTING_URI =
   'https://huggingface.co/datasets/Voxel51/gaussian_splatting/resolve/main';
@@ -18,8 +16,22 @@ const HUGGING_FACE_GAUSSIAN_SPLAT_ATTRIBUTION = [
   'Created using GraphDECO-INRIA 3D Gaussian Splatting'
 ];
 
+/** Gaussian splat example source shown in the Gaussian splats URL dropdown. */
+export type GaussianSplatExample = {
+  /** Source file format. */
+  type: 'ply' | 'splat' | 'ksplat' | 'spz';
+  /** Primary source URL. */
+  url: string;
+  /** Optional multi-part source URLs. */
+  urls?: string[];
+  /** Parsed splat count when known. */
+  pointCount?: number;
+  /** Optional source attribution lines. */
+  attributions?: string[];
+};
+
 /** Built-in Gaussian splat PLY examples shown in the Gaussian splats URL dropdown. */
-export const GAUSSIAN_SPLAT_EXAMPLES: Record<string, Example> = {
+export const GAUSSIAN_SPLAT_EXAMPLES: Record<string, GaussianSplatExample> = {
   'HF Voxel51 Train 7K': {
     type: 'ply',
     url: `${HUGGING_FACE_VOXEL51_GAUSSIAN_SPLATTING_URI}/FO_dataset/train/point_cloud/iteration_7000/point_cloud.ply`,
