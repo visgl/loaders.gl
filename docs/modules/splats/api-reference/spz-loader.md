@@ -6,14 +6,14 @@
 
 `SPZLoader` is a proposed loader for Niantic Spatial `.spz` Gaussian splat files. It would complement the existing `SPLATLoader` and `KSPLATLoader` by adding support for a compact interchange format designed for small files, parallel attribute decompression, metadata, and vendor extensions.
 
-| Property     | Proposed value                                      |
-| ------------ | --------------------------------------------------- |
-| File format  | [SPZ](/docs/modules/splats/formats/splats)          |
-| Extensions   | `.spz`                                              |
-| Worker       | Yes, if ZSTD/WASM decompression is used             |
-| Input type   | `ArrayBuffer`                                       |
-| Output shape | `arrow-table`                                       |
-| Status       | Proposal, not implemented                           |
+| Property     | Proposed value                             |
+| ------------ | ------------------------------------------ |
+| File format  | [SPZ](/docs/modules/splats/formats/splats) |
+| Extensions   | `.spz`                                     |
+| Worker       | Yes, if ZSTD/WASM decompression is used    |
+| Input type   | `ArrayBuffer`                              |
+| Output shape | `arrow-table`                              |
+| Status       | Proposal, not implemented                  |
 
 ## Goals
 
@@ -74,7 +74,7 @@ Schema metadata should continue to include `loaders_gl.semantic_type = gaussian-
 | Capability       | SPLATLoader                         | KSPLATLoader                                      | Proposed SPZLoader                                      |
 | ---------------- | ----------------------------------- | ------------------------------------------------- | ------------------------------------------------------- |
 | Container        | Headerless fixed-width rows         | GaussianSplats3D sectioned buffer                 | Header, extension records, TOC, compressed streams      |
-| Compression      | None                                | Compression levels 0, 1, and 2                   | Attribute quantization plus independent ZSTD streams    |
+| Compression      | None                                | Compression levels of 0, 1, and 2                | Attribute quantization plus independent ZSTD streams    |
 | Loading model    | Full in-memory decode               | Full in-memory decode                             | Full in-memory decode first, worker path preferred      |
 | SH support       | DC color only                       | SH degree 0 through 3                             | SPZ degree 0 through 4, subject to Arrow schema support |
 | Metadata         | Minimal source metadata             | Header and section metadata                       | Header, stream table, flags, and recognized extensions  |
@@ -97,4 +97,3 @@ Preferred options:
 - How should unrecognized SPZ extension records be exposed in `loaderData`?
 - Should SPZ degree 4 spherical harmonics add 72 `f_rest_*` columns immediately, or should the shared Gaussian splat schema first document degree 4 explicitly?
 - Should coordinate-system conversion be exposed as a loader option, or should the first implementation preserve SPZ coordinates as stored?
-
