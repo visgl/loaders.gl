@@ -1,4 +1,4 @@
-# SPLAT and KSPLAT
+# SPLAT, KSPLAT, and SPZ
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -30,9 +30,17 @@ The format has no header, so loader selection depends on the file extension or e
 
 The v1 loader supports complete in-memory `.ksplat` files and decodes compression levels 0, 1, and 2. Progressive section loading is intentionally not part of the initial API.
 
+## SPZ
+
+`.spz` is Niantic Spatial's compressed 3D Gaussian splat interchange format. SPZ version 4 stores a 32-byte plaintext header, optional extension records, a table of contents, and independent ZSTD-compressed attribute streams for positions, alphas, colors, scales, rotations, and spherical harmonics.
+
+An `SPZLoader` is proposed but not yet implemented. The proposed loader would decode complete in-memory `.spz` files into the same Mesh Arrow table shape as `SPLATLoader` and `KSPLATLoader`, preserving SPZ header fields and extension metadata in `loaderData` where practical.
+
+See the [SPZLoader proposal](/docs/modules/splats/api-reference/spz-loader) for the proposed scope and open questions.
+
 ## Output
 
-Both loaders return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with Gaussian splat metadata:
+The implemented loaders return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with Gaussian splat metadata:
 
 - `POSITION`
 - `f_dc_0`, `f_dc_1`, `f_dc_2`
