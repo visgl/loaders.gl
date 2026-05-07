@@ -41,6 +41,14 @@
       "types": "./dist/spz-loader.d.ts",
       "import": "./dist/spz-loader.js"
     },
+    "./rad-loader": {
+      "types": "./dist/rad-loader.d.ts",
+      "import": "./dist/rad-loader.js"
+    },
+    "./rad-source-loader": {
+      "types": "./dist/rad-source-loader.d.ts",
+      "import": "./dist/rad-source-loader.js"
+    },
     "./unbundled": {
       "types": "./dist/unbundled.d.ts",
       "import": "./dist/unbundled.js"

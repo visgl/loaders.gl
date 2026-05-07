@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
+import React, {useEffect, useMemo, useRef, useState, type ReactNode} from 'react';
 
 const MAX_SAVED_URLS = 12;
 const SAVED_URLS_KEY = 'loaders.gl.example-url-input.urls.v1';

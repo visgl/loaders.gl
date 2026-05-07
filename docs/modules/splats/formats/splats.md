@@ -1,4 +1,4 @@
-# SPLAT, KSPLAT, and SPZ
+# SPLAT, KSPLAT, SPZ, and RAD
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" />
@@ -40,9 +40,30 @@ Legacy SPZ versions 1 through 3 use a gzip-compressed single-stream layout and a
 
 See the [SPZLoader](/docs/modules/splats/api-reference/spz-loader) API reference for usage and ZSTD module requirements.
 
+## RAD
+
+`.rad` is Spark's paged level-of-detail Gaussian splat container. A RAD file starts
+with the `RAD0` magic value, a JSON metadata block, and then either inline RADC
+chunks or chunk table entries that point to sidecar `.radc` files.
+
+`RADLoader` parses the top-level RAD metadata from a full buffer. `RADSourceLoader`
+is the preferred entry point for applications because it can range-fetch the
+header, expose the chunk table, and fetch inline or sidecar RADC chunk bytes on
+demand.
+
+`RADSourceLoader` can also decode individual RADC chunks into the same Gaussian
+splat Mesh Arrow table shape used by the full-buffer loaders. RAD remains a paged
+LoD format, so large scenes should still be rendered with chunk paging, LoD tree
+traversal, and GPU residency management instead of eagerly decoding every chunk.
+
+See the [RADSourceLoader](/docs/modules/splats/api-reference/rad-source-loader)
+API reference for usage.
+
 ## Output
 
-The loaders return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with Gaussian splat metadata:
+`SPLATLoader`, `KSPLATLoader`, and `SPZLoader` return a
+[Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables) with
+Gaussian splat metadata:
 
 - `POSITION`
 - `f_dc_0`, `f_dc_1`, `f_dc_2`

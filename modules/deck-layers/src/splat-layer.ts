@@ -175,6 +175,7 @@ struct FragmentInputs {
   @builtin(position) position: vec4<f32>,
   @location(0) gaussianCoord: vec2<f32>,
   @location(1) color: vec4<f32>,
+  @location(2) splatAlpha: f32,
 };
 
 @vertex
@@ -198,7 +199,13 @@ fn vertexMain(
     splatPositions[positionIndex + 1u],
     splatPositions[positionIndex + 2u]
   );
-  let supportScale = splat.gaussianSupportRadius * splat.radiusScale;
+  var adjustedSplatAlpha = projectedMetadata.x;
+  var adjustedSupportRadius = splat.gaussianSupportRadius;
+  if (adjustedSplatAlpha > 1.0) {
+    adjustedSplatAlpha = min(adjustedSplatAlpha * 4.0 - 3.0, 5.0);
+    adjustedSupportRadius = splat.gaussianSupportRadius + 0.7 * (adjustedSplatAlpha - 1.0);
+  }
+  let supportScale = adjustedSupportRadius * splat.radiusScale;
   let rawAxis0 = projectedAxes.xy * supportScale;
   let rawAxis1 = projectedAxes.zw * supportScale;
   let rawMaxAxisPixels = max(length(rawAxis0), length(rawAxis1));
@@ -214,17 +221,17 @@ fn vertexMain(
     1.0,
     rawMaxAxisPixels >= splat.screenSizeCutoffPixels
   );
-  let visibleAlpha = projectedMetadata.x * layer.opacity * splat.alphaScale * projectedMetadata.y * sizeVisibility;
+  let visibleAlphaScale = layer.opacity * splat.alphaScale * projectedMetadata.y * sizeVisibility;
   let packedColor = splatColors[splatIndex];
   let color = vec4<f32>(
     f32(packedColor & 255u) / 255.0,
     f32((packedColor >> 8u) & 255u) / 255.0,
     f32((packedColor >> 16u) & 255u) / 255.0,
-    visibleAlpha
+    visibleAlphaScale
   );
   var outputs: FragmentInputs;
   geometry.worldPosition = splatPosition;
-  let gaussianCoord = corner * splat.gaussianSupportRadius;
+  let gaussianCoord = corner * adjustedSupportRadius;
   geometry.uv = gaussianCoord;
 
   var clipPosition = project_position_to_clipspace(
@@ -233,23 +240,41 @@ fn vertexMain(
     vec3<f32>(0.0, 0.0, 0.0)
   );
   let pixelOffset = corner.x * axis0 + corner.y * axis1;
-  clipPosition.xy += project_pixel_size_to_clipspace(pixelOffset);
+  let clipOffset = project_pixel_size_to_clipspace(pixelOffset);
+  clipPosition = vec4<f32>(
+    clipPosition.x + clipOffset.x,
+    clipPosition.y + clipOffset.y,
+    clipPosition.z,
+    clipPosition.w
+  );
 
   outputs.position = clipPosition;
   outputs.gaussianCoord = gaussianCoord;
   outputs.color = color;
+  outputs.splatAlpha = adjustedSplatAlpha;
   return outputs;
 }
 
 @fragment
 fn fragmentMain(inputs: FragmentInputs) -> @location(0) vec4<f32> {
   let radiusSquared = dot(inputs.gaussianCoord, inputs.gaussianCoord);
-  if (radiusSquared > splat.gaussianSupportRadius * splat.gaussianSupportRadius) {
+  let supportRadius = select(
+    splat.gaussianSupportRadius,
+    splat.gaussianSupportRadius + 0.7 * (inputs.splatAlpha - 1.0),
+    inputs.splatAlpha > 1.0
+  );
+  if (radiusSquared > supportRadius * supportRadius) {
     discard;
   }
 
-  let gaussianAlpha = exp(-0.5 * radiusSquared);
-  let color = vec4<f32>(inputs.color.rgb, min(inputs.color.a * gaussianAlpha, 0.18));
+  var alpha = inputs.splatAlpha;
+  if (alpha <= 1.0) {
+    alpha = alpha * exp(-0.5 * radiusSquared);
+  } else {
+    let alphaPower = exp((alpha * alpha - 1.0) / 2.718281828459045);
+    alpha = 1.0 - pow(1.0 - exp(-0.5 * radiusSquared), alphaPower);
+  }
+  let color = vec4<f32>(inputs.color.rgb, inputs.color.a * alpha);
   if (color.a <= 0.00392156862) {
     discard;
   }
@@ -336,6 +361,7 @@ const WEBGPU_SPLAT_BUFFER_LAYOUT: BufferLayout[] = [];
  * Renders GraphDECO-style Gaussian splat PLY data parsed as an Arrow table.
  *
  * The layer expects `POSITION`, `scale_0..2`, `opacity`, and `f_dc_0..2` columns.
+ * Optional `f_rest_*` columns are evaluated as view-dependent spherical harmonic color.
  * `scale_*` and `opacity` encodings are read from `loaders_gl.gaussian_splats.*`
  * field metadata when available.
  */
@@ -727,8 +753,45 @@ function getSplatEngineUpdateProps(viewport: any, radiusScale: number) {
     modelViewProjectionMatrix: viewport.viewProjectionMatrix,
     viewportSize: [viewport.width || 1, viewport.height || 1] as [number, number],
     cullingVolume: getCullingVolume(viewport),
-    radiusScale
+    radiusScale,
+    viewOrigin: getViewportCameraPosition(viewport)
   };
+}
+
+/** Return a viewport camera position suitable for view-dependent splat color. */
+function getViewportCameraPosition(viewport: any): [number, number, number] | undefined {
+  const cameraPosition = viewport.cameraPosition;
+  if (cameraPosition && cameraPosition.length >= 3) {
+    return [Number(cameraPosition[0]), Number(cameraPosition[1]), Number(cameraPosition[2])];
+  }
+
+  const viewMatrix = viewport.viewMatrix;
+  if (viewMatrix && viewMatrix.length >= 16) {
+    const translationX = Number(viewMatrix[12]);
+    const translationY = Number(viewMatrix[13]);
+    const translationZ = Number(viewMatrix[14]);
+    const position: [number, number, number] = [
+      -(
+        Number(viewMatrix[0]) * translationX +
+        Number(viewMatrix[1]) * translationY +
+        Number(viewMatrix[2]) * translationZ
+      ),
+      -(
+        Number(viewMatrix[4]) * translationX +
+        Number(viewMatrix[5]) * translationY +
+        Number(viewMatrix[6]) * translationZ
+      ),
+      -(
+        Number(viewMatrix[8]) * translationX +
+        Number(viewMatrix[9]) * translationY +
+        Number(viewMatrix[10]) * translationZ
+      )
+    ];
+    if (position.every(Number.isFinite)) {
+      return position;
+    }
+  }
+  return undefined;
 }
 
 /** Build a math.gl frustum culling volume from a deck.gl viewport. */

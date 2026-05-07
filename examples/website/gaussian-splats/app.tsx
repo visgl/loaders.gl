@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import DeckGL from '@deck.gl/react';
 import {
@@ -16,10 +16,11 @@ import {webgpuAdapter} from '@luma.gl/webgpu';
 import {load, loadInBatches} from '@loaders.gl/core';
 import {SplatLayer} from '@loaders.gl/deck-layers';
 import {PLYLoader} from '@loaders.gl/ply';
-import {KSPLATLoader, SPLATLoader, SPZLoader} from '@loaders.gl/splats';
+import {KSPLATLoader, RADSourceLoader, SPLATLoader, SPZLoader} from '@loaders.gl/splats';
+import type {RADSource} from '@loaders.gl/splats';
 import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
 import {FullscreenWidget, _StatsWidget as StatsWidget} from '@deck.gl/widgets';
-import {ZstdCodec} from 'zstd-codec';
+import zstdCodecModule from 'zstd-codec';
 import {ExampleUrlInputCard, type UrlOption} from '../shared/url-input-card';
 import {
   DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME,
@@ -46,7 +47,11 @@ const SPLAT_ALPHA_CUTOFF = 0.02;
 const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
 const SPLAT_KERNEL_2D_SIZE = 0.3;
 const SPLAT_MAX_SCREEN_SPACE_SIZE = 256;
-const ZSTD_MODULES = {'zstd-codec': ZstdCodec};
+const RAD_PREVIEW_MAX_CHUNKS = 8;
+const RAD_PREVIEW_MAX_SPLATS = 600000;
+const ZSTD_MODULES = {
+  'zstd-codec': zstdCodecModule.ZstdCodec || zstdCodecModule.default?.ZstdCodec
+};
 
 const INITIAL_VIEW_STATE = {
   target: [0, 0, 0],
@@ -112,7 +117,7 @@ export default function GaussianSplatsApp() {
 
     try {
       if (sourceUrls.length === 0) {
-        throw new Error('Enter at least one Gaussian splat PLY URL.');
+        throw new Error('Enter at least one Gaussian splat URL.');
       }
 
       if (loadRequestIndex !== loadRequestIndexRef.current) {
@@ -214,7 +219,7 @@ export default function GaussianSplatsApp() {
               kernel2DSize: SPLAT_KERNEL_2D_SIZE,
               maxScreenSpaceSplatSize: SPLAT_MAX_SCREEN_SPACE_SIZE,
               renderMode: 'gpu',
-              sortMode: 'tile'
+              sortMode: 'global'
             })
           ]
         : [],
@@ -429,6 +434,24 @@ async function* trackGaussianSplatBatches(
           callbacks.onBatch(arrowTableBatch, loadedSplatCount);
           yield arrowTableBatch;
         }
+      } else if (sourceType === 'rad') {
+        const source = (await load(sourceUrl, RADSourceLoader, {
+          worker: false
+        })) as RADSource;
+        for await (const table of source.getChunkTables({
+          maxChunks: RAD_PREVIEW_MAX_CHUNKS,
+          maxSplats: RAD_PREVIEW_MAX_SPLATS,
+          pruneLoadedLoDParents: true,
+          radChunk: {
+            includeLoDTree: true,
+            includeSphericalHarmonics: true
+          }
+        })) {
+          const arrowTableBatch = normalizeArrowTableBatch(table);
+          loadedSplatCount += arrowTableBatch.length;
+          callbacks.onBatch(arrowTableBatch, loadedSplatCount);
+          yield arrowTableBatch;
+        }
       } else {
         const table = await load(sourceUrl, getGaussianSplatLoader(sourceType), {
           worker: false,
@@ -513,14 +536,17 @@ function getGaussianSplatSourceType(sourceUrl: string): GaussianSplatExample['ty
   if (pathname.endsWith('.spz')) {
     return 'spz';
   }
+  if (pathname.endsWith('.rad')) {
+    return 'rad';
+  }
   if (pathname.endsWith('.ply')) {
     return 'ply';
   }
-  throw new Error('Enter a Gaussian splat URL ending in .ply, .splat, .ksplat, or .spz.');
+  throw new Error('Enter a Gaussian splat URL ending in .ply, .splat, .ksplat, .spz, or .rad.');
 }
 
 /** Returns the whole-file loader for binary Gaussian splat formats. */
-function getGaussianSplatLoader(sourceType: Exclude<GaussianSplatExample['type'], 'ply'>) {
+function getGaussianSplatLoader(sourceType: Exclude<GaussianSplatExample['type'], 'ply' | 'rad'>) {
   switch (sourceType) {
     case 'splat':
       return SPLATLoader;

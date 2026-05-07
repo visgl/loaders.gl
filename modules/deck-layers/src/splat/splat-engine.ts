@@ -67,6 +67,8 @@ export type SplatEngineUpdateProps = {
   cullingVolume?: CullingVolume;
   /** Render radius multiplier used for screen-size culling. */
   radiusScale?: number;
+  /** World-space camera position used to evaluate view-dependent color. */
+  viewOrigin?: readonly [number, number, number];
 };
 
 /** Bindings consumed by the future WebGPU render path. */
@@ -250,8 +252,14 @@ export class SplatEngine {
   private computePipelines: SplatComputePipelines | null = null;
   private computeTileGrid = getSplatTileGrid(1, 1);
   private computeBufferSignature = '';
+  /** Pending asynchronous visible-count readback, if one is in flight. */
   private countReadbackPromise: Promise<void> | null = null;
+  /** Monotonic serial used to ignore stale compute readbacks. */
   private computeUpdateSerial = 0;
+  /** True when a newer compute pass ran while the count readback was busy. */
+  private countReadbackDirty = false;
+  /** Last data/camera signature used for view-dependent SH color evaluation. */
+  private colorViewSignature = '';
   private overflowSplatCount = 0;
 
   constructor(device: Device, props: Partial<SplatEngineProps> = {}) {
@@ -262,6 +270,7 @@ export class SplatEngine {
   /** Release all GPU resources owned by this engine. */
   destroy(): void {
     this.dataStreamVersion++;
+    this.computeUpdateSerial++;
     this.destroyBuffers();
     this.destroyComputeResources();
   }
@@ -330,6 +339,7 @@ export class SplatEngine {
     );
     this.data = data;
     this.dataVersion++;
+    this.computeUpdateSerial++;
     this.sortedVersion = -1;
     this.sortedIndices = createSequentialIndices(data.length);
     this.renderSplatCount = data.length;
@@ -338,6 +348,8 @@ export class SplatEngine {
     this.computeBufferSignature = '';
     this.overflowSplatCount = 0;
     this.countReadbackPromise = null;
+    this.countReadbackDirty = false;
+    this.colorViewSignature = '';
 
     this.destroyBuffers();
     this.destroyComputeBuffers();
@@ -346,7 +358,12 @@ export class SplatEngine {
 
   /** Update projection/sort state before rendering. */
   update(props: SplatEngineUpdateProps = {}): void {
-    if (!this.data || !this.buffers) {
+    if (!this.data) {
+      return;
+    }
+
+    this.updateViewDependentColors(props);
+    if (!this.buffers) {
       return;
     }
 
@@ -576,6 +593,7 @@ export class SplatEngine {
       splatWorkgroups
     );
     computePass.end();
+    const computeSerial = ++this.computeUpdateSerial;
     const shouldReadCounts = !this.countReadbackPromise;
     if (shouldReadCounts) {
       commandEncoder.copyBufferToBuffer({
@@ -583,11 +601,13 @@ export class SplatEngine {
         destinationBuffer: computeBuffers.countReadback,
         size: COUNT_BUFFER_BYTE_LENGTH
       });
+    } else {
+      this.countReadbackDirty = true;
     }
     this.device.submit(commandEncoder.finish({id: 'splat-compute-command-buffer'}));
 
     if (shouldReadCounts) {
-      this.updateCountReadback();
+      this.updateCountReadback(computeSerial);
     }
   }
 
@@ -753,14 +773,13 @@ export class SplatEngine {
   }
 
   /** Start an asynchronous readback of visible and overflow counts without stalling draw. */
-  private updateCountReadback(): void {
+  private updateCountReadback(readbackSerial: number): void {
     const computeBuffers = this.computeBuffers;
     if (!computeBuffers || this.countReadbackPromise) {
       return;
     }
 
-    const readbackSerial = ++this.computeUpdateSerial;
-    this.countReadbackPromise = computeBuffers.countReadback
+    const readbackPromise = computeBuffers.countReadback
       .readAsync(0, COUNT_BUFFER_BYTE_LENGTH)
       .then(bytes => {
         if (readbackSerial < this.computeUpdateSerial) {
@@ -772,8 +791,17 @@ export class SplatEngine {
       })
       .catch(() => {})
       .finally(() => {
+        if (this.countReadbackPromise !== readbackPromise) {
+          return;
+        }
         this.countReadbackPromise = null;
+        if (this.countReadbackDirty) {
+          this.countReadbackDirty = false;
+          this.sortedVersion = -1;
+          this.props.onDataUpdate?.();
+        }
       });
+    this.countReadbackPromise = readbackPromise;
   }
 
   private updateDepthSortBuffers(props: SplatEngineUpdateProps): void {
@@ -896,6 +924,23 @@ export class SplatEngine {
     }
     buffers.keys.write(this.keys);
     buffers.projected.write(this.projectedData);
+  }
+
+  /** Updates color buffers with view-dependent spherical harmonic terms. */
+  private updateViewDependentColors(props: SplatEngineUpdateProps): void {
+    const data = this.data;
+    if (!data?.sphericalHarmonics || !data.sphericalHarmonicsComponentCount || !props.viewOrigin) {
+      return;
+    }
+
+    const signature = `${this.dataVersion}|${props.viewOrigin[0]},${props.viewOrigin[1]},${props.viewOrigin[2]}`;
+    if (signature === this.colorViewSignature) {
+      return;
+    }
+
+    writeSphericalHarmonicColors(data, props.viewOrigin);
+    this.colorViewSignature = signature;
+    this.buffers?.colors.write(packColors(data.colors));
   }
 
   private destroyBuffers(): void {
@@ -1164,6 +1209,123 @@ function createSequentialIndices(length: number): Uint32Array {
     indices[index] = index;
   }
   return indices;
+}
+
+/** Recomputes RGBA bytes by evaluating available spherical harmonic rest coefficients. */
+function writeSphericalHarmonicColors(
+  data: GaussianSplatData,
+  viewOrigin: readonly [number, number, number]
+): void {
+  const sphericalHarmonics = data.sphericalHarmonics;
+  const componentCount = data.sphericalHarmonicsComponentCount ?? 0;
+  if (!sphericalHarmonics || componentCount < 9) {
+    return;
+  }
+
+  for (let splatIndex = 0; splatIndex < data.length; splatIndex++) {
+    const positionIndex = splatIndex * 3;
+    const direction = normalizeVector([
+      data.positions[positionIndex + 0] - viewOrigin[0],
+      data.positions[positionIndex + 1] - viewOrigin[1],
+      data.positions[positionIndex + 2] - viewOrigin[2]
+    ]);
+    const rgbIndex = splatIndex * 3;
+    const harmonicIndex = splatIndex * componentCount;
+    let red = data.baseRgb[rgbIndex + 0];
+    let green = data.baseRgb[rgbIndex + 1];
+    let blue = data.baseRgb[rgbIndex + 2];
+
+    const sh1Basis0 = -0.4886025 * direction[1];
+    const sh1Basis1 = 0.4886025 * direction[2];
+    const sh1Basis2 = -0.4886025 * direction[0];
+    red +=
+      sphericalHarmonics[harmonicIndex + 0] * sh1Basis0 +
+      sphericalHarmonics[harmonicIndex + 3] * sh1Basis1 +
+      sphericalHarmonics[harmonicIndex + 6] * sh1Basis2;
+    green +=
+      sphericalHarmonics[harmonicIndex + 1] * sh1Basis0 +
+      sphericalHarmonics[harmonicIndex + 4] * sh1Basis1 +
+      sphericalHarmonics[harmonicIndex + 7] * sh1Basis2;
+    blue +=
+      sphericalHarmonics[harmonicIndex + 2] * sh1Basis0 +
+      sphericalHarmonics[harmonicIndex + 5] * sh1Basis1 +
+      sphericalHarmonics[harmonicIndex + 8] * sh1Basis2;
+
+    if (componentCount >= 24) {
+      const sh2 = getSphericalHarmonicDegree2Basis(direction);
+      for (let basisIndex = 0; basisIndex < 5; basisIndex++) {
+        const offset = harmonicIndex + 9 + basisIndex * 3;
+        red += sphericalHarmonics[offset + 0] * sh2[basisIndex];
+        green += sphericalHarmonics[offset + 1] * sh2[basisIndex];
+        blue += sphericalHarmonics[offset + 2] * sh2[basisIndex];
+      }
+    }
+
+    if (componentCount >= 45) {
+      const sh3 = getSphericalHarmonicDegree3Basis(direction);
+      for (let basisIndex = 0; basisIndex < 7; basisIndex++) {
+        const offset = harmonicIndex + 24 + basisIndex * 3;
+        red += sphericalHarmonics[offset + 0] * sh3[basisIndex];
+        green += sphericalHarmonics[offset + 1] * sh3[basisIndex];
+        blue += sphericalHarmonics[offset + 2] * sh3[basisIndex];
+      }
+    }
+
+    const colorIndex = splatIndex * 4;
+    data.colors[colorIndex + 0] = normalizeColorByte(red);
+    data.colors[colorIndex + 1] = normalizeColorByte(green);
+    data.colors[colorIndex + 2] = normalizeColorByte(blue);
+    data.colors[colorIndex + 3] = normalizeColorByte(data.opacities[splatIndex]);
+  }
+}
+
+/** Returns degree-2 real SH basis values in Spark's packed order. */
+function getSphericalHarmonicDegree2Basis(
+  direction: readonly [number, number, number]
+): readonly [number, number, number, number, number] {
+  const [x, y, z] = direction;
+  return [
+    1.0925484 * x * y,
+    -1.0925484 * y * z,
+    0.3153915 * (2 * z * z - x * x - y * y),
+    -1.0925484 * x * z,
+    0.5462742 * (x * x - y * y)
+  ];
+}
+
+/** Returns degree-3 real SH basis values in Spark's packed order. */
+function getSphericalHarmonicDegree3Basis(
+  direction: readonly [number, number, number]
+): readonly [number, number, number, number, number, number, number] {
+  const [x, y, z] = direction;
+  const xx = x * x;
+  const yy = y * y;
+  const zz = z * z;
+  return [
+    -0.5900436 * y * (3 * xx - yy),
+    2.8906114 * x * y * z,
+    -0.4570458 * y * (4 * zz - xx - yy),
+    0.3731763 * z * (2 * zz - 3 * xx - 3 * yy),
+    -0.4570458 * x * (4 * zz - xx - yy),
+    1.4453057 * z * (xx - yy),
+    -0.5900436 * x * (xx - 3 * yy)
+  ];
+}
+
+/** Returns a normalized 3-vector, or a stable fallback for zero-length inputs. */
+function normalizeVector(
+  vector: readonly [number, number, number]
+): readonly [number, number, number] {
+  const length = Math.hypot(vector[0], vector[1], vector[2]);
+  if (!Number.isFinite(length) || length <= Number.EPSILON) {
+    return [0, 0, 1];
+  }
+  return [vector[0] / length, vector[1] / length, vector[2] / length];
+}
+
+/** Clamp a normalized color value and convert it to an unorm8 byte. */
+function normalizeColorByte(value: number): number {
+  return Math.round(Math.min(Math.max(value, 0), 1) * 255);
 }
 
 /** Pack RGBA bytes into little-endian unsigned integers for storage buffers. */

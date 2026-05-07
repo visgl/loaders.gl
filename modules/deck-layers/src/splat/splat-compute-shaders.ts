@@ -237,7 +237,7 @@ fn project(@builtin(global_invocation_id) globalId: vec3<u32>) {
   let maxAxisPixels = getMaxAxisPixels(axes);
   let opacity = opacities[index];
   let renderedMaxAxisPixels = maxAxisPixels * params.viewportAlpha.w * params.radius.x;
-  let boundingRadius = max(max(scale.x, scale.y), scale.z) * params.radius.x;
+  let boundingRadius = max(max(scale.x, scale.y), scale.z) * params.radius.x * params.radius.z;
   let visible = opacity >= params.viewportAlpha.z &&
     renderedMaxAxisPixels >= params.radius.y &&
     isInsideFrustum(position, boundingRadius);

@@ -47,6 +47,33 @@ function createGaussianSplatTable(): arrow.Table {
   });
 }
 
+/** Creates a Gaussian splat Arrow table with degree-1 SH rest coefficients. */
+function createSphericalHarmonicSplatTable(): arrow.Table {
+  return arrow.tableFromArrays({
+    POSITION: [[0, 0, -2]],
+    f_dc_0: [0],
+    f_dc_1: [0],
+    f_dc_2: [0],
+    opacity: [0],
+    scale_0: [0],
+    scale_1: [0],
+    scale_2: [0],
+    rot_0: [1],
+    rot_1: [0],
+    rot_2: [0],
+    rot_3: [0],
+    f_rest_0: [1],
+    f_rest_1: [0],
+    f_rest_2: [0],
+    f_rest_3: [0],
+    f_rest_4: [0],
+    f_rest_5: [0],
+    f_rest_6: [0],
+    f_rest_7: [0],
+    f_rest_8: [0]
+  });
+}
+
 /** Creates a minimal WebGPU-like device for SplatEngine state tests. */
 function createTestDevice() {
   return {
@@ -74,6 +101,26 @@ test('splat-data extracts shared Gaussian splat columns', t => {
   t.equal(data.radii[0], 3, 'decodes log scale support radius');
   t.ok(Math.abs(data.opacities[0] - 0.5) < 1e-6, 'decodes logit opacity');
   t.deepEqual(Array.from(data.colors.slice(0, 4)), [128, 128, 128, 128], 'derives color');
+  t.end();
+});
+
+test('SplatEngine evaluates view-dependent spherical harmonic colors', t => {
+  const engine = new SplatEngine(createTestDevice(), {
+    sortMode: 'global',
+    alphaCutoff: 0,
+    screenSizeCutoffPixels: 0,
+    gaussianSupportRadius: 3,
+    kernel2DSize: 0,
+    maxScreenSpaceSplatSize: 1024
+  });
+  engine.setData(createSphericalHarmonicSplatTable(), [255, 255, 255, 255]);
+  engine.update({viewportSize: [100, 100], radiusScale: 1, viewOrigin: [0, 1, -2]});
+
+  const color = engine.getWebGLAttributes().attributes.getColor.value;
+  t.ok(color[0] > 240, 'adds degree-1 SH red contribution for the active view');
+  t.equal(color[1], 128, 'keeps unchanged green channel at the DC color');
+  t.equal(color[2], 128, 'keeps unchanged blue channel at the DC color');
+  engine.destroy();
   t.end();
 });
 
