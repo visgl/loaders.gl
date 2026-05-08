@@ -5650,7 +5650,7 @@ __metadata:
     object-stream: "npm:0.0.1"
     parquet-wasm: "npm:0.7.1"
     snappyjs: "npm:^0.6.0"
-    thrift: "npm:^0.19.0"
+    thrift: "npm:^0.23.0"
     util: "npm:^0.12.5"
     varint: "npm:^6.0.0"
     zstd-codec: "npm:^0.1"
@@ -32750,16 +32750,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"thrift@npm:^0.19.0":
-  version: 0.19.0
-  resolution: "thrift@npm:0.19.0"
+"thrift@npm:^0.23.0":
+  version: 0.23.0
+  resolution: "thrift@npm:0.23.0"
   dependencies:
     browser-or-node: "npm:^1.2.1"
     isomorphic-ws: "npm:^4.0.1"
     node-int64: "npm:^0.4.0"
     q: "npm:^1.5.0"
+    uuid: "npm:^13.0.0"
     ws: "npm:^5.2.3"
-  checksum: 10c0/935c2d9fcd3f23528fb462e8186aacf6e9c185593f59ac6ede1e3f5862de85f7d093a99546edce77443c990e6fde850a5ef5603e087cc1e9df96003f01860435
+  checksum: 10c0/746c043b8235fa03d86c3bf3737dd8a9e2223680524f745b8d659a83534893b467ae1346998a819a59506d7234a28ce9f9a75ff311964bf2cfbdcbda5e25ba76
   languageName: node
   linkType: hard
 
@@ -34076,6 +34077,15 @@ __metadata:
   bin:
     uuid: dist/bin/uuid
   checksum: 10c0/eab18c27fe4ab9fb9709a5d5f40119b45f2ec8314f8d4cf12ce27e4c6f4ffa4a6321dc7db6c515068fa373c075b49691ba969f0010bf37f44c37ca40cd6bf7fe
+  languageName: node
+  linkType: hard
+
+"uuid@npm:^13.0.0":
+  version: 13.0.2
+  resolution: "uuid@npm:13.0.2"
+  bin:
+    uuid: dist-node/bin/uuid
+  checksum: 10c0/32c7ee84fa7c7966cc09b3a1514a752a8e2f609f15c00033fbaedc0255d577d1877b839f11ee537f37e587bbc620bbb98c3b3a1482931b8ed47d79497cd7a7cd
   languageName: node
   linkType: hard
 
