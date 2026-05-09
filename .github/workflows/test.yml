@@ -15,6 +15,12 @@ jobs:
     strategy:
       matrix:
         include:
+          - node-version: 26
+            coverage: false
+            coverage-flag: ''
+            playwright: false
+            scope: 'node tests'
+            test-command: test-node
           - node-version: 24
             coverage: true
             coverage-flag: node
