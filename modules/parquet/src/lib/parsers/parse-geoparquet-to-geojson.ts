@@ -20,7 +20,7 @@ export async function parseGeoParquetFile(
   options?: ParquetJSONLoaderOptions
 ): Promise<ObjectRowTable | GeoJSONTable> {
   const table = await parseParquetFile(file, {...options, shape: 'object-row-table'});
-  return convertWKBTableToGeoJSON(table as ObjectRowTable, table.schema!);
+  return convertWKBTableToGeoJSON(table, table.schema!);
 }
 
 export async function* parseGeoParquetFileInBatches(
