@@ -15,10 +15,12 @@ import {makeTableFromData} from '@loaders.gl/schema-utils';
 import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
+import FastStreamingJSONParser from './lib/json-parser/fast-streaming-json-parser';
 import {
   convertRowTableToArrowTable,
   convertTableBatchesToArrow
 } from './lib/parsers/convert-row-table-to-arrow';
+import type {StreamingJSONParserFactory} from './lib/json-parser/streaming-json-parser-types';
 import {JSONLoader as JSONLoaderMetadata} from './json-loader';
 
 const {preload: _JSONLoaderPreload, ...JSONLoaderMetadataWithoutPreload} = JSONLoaderMetadata;
@@ -38,6 +40,8 @@ export type JSONBatch = Batch & {
 /** Options for parsing JSON documents and tabular selections. */
 export type JSONLoaderOptions = LoaderOptions & {
   json?: {
+    /** Selects the streaming JSON parser backend. */
+    backend?: 'clarinet' | 'fast';
     /** Selects row-table output or Apache Arrow output for tabular JSON. */
     shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
     /** Enables table extraction from non-streaming JSON. */
@@ -59,10 +63,24 @@ export const JSONLoaderWithParser = {
   JSONLoaderOptions
 >;
 
+/**
+ * Parses JSON from an ArrayBuffer using the configured JSON loader options.
+ *
+ * @param arrayBuffer - UTF-8 encoded JSON payload.
+ * @param options - JSON loader options.
+ * @returns Parsed JSON, row table, or Arrow table output.
+ */
 async function parse(arrayBuffer: ArrayBuffer, options?: JSONLoaderOptions) {
   return parseTextSync(new TextDecoder().decode(arrayBuffer), options);
 }
 
+/**
+ * Parses JSON text synchronously using the atomic JSON parser path.
+ *
+ * @param text - JSON text to parse.
+ * @param options - JSON loader options.
+ * @returns Parsed JSON, row table, or Arrow table output.
+ */
 function parseTextSync(text: string, options?: JSONLoaderOptions) {
   const jsonOptions = {...options, json: {...JSONLoaderWithParser.options.json, ...options?.json}};
   const json = parseJSONSync(text, jsonOptions as JSONLoaderOptions);
@@ -74,6 +92,13 @@ function parseTextSync(text: string, options?: JSONLoaderOptions) {
   return table ? convertRowTableToArrowTable(table) : json;
 }
 
+/**
+ * Parses JSON incrementally and yields table or metadata batches.
+ *
+ * @param asyncIterator - Iterable or async iterable of binary JSON chunks.
+ * @param options - JSON loader options, including the optional streaming backend.
+ * @returns Async iterable of parsed JSON batches.
+ */
 function parseInBatches(
   asyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
@@ -81,8 +106,21 @@ function parseInBatches(
   options?: JSONLoaderOptions
 ): AsyncIterable<TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = {...options, json: {...JSONLoaderWithParser.options.json, ...options?.json}};
-  const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions);
+  const parseOptions =
+    jsonOptions.json?.backend === 'fast'
+      ? {parserFactory: getFastStreamingJSONParserFactory()}
+      : undefined;
+  const batches = parseJSONInBatches(asyncIterator, jsonOptions as JSONLoaderOptions, parseOptions);
   return jsonOptions.json?.shape === 'arrow-table' ? convertTableBatchesToArrow(batches) : batches;
+}
+
+/**
+ * Returns a factory for the fast streaming JSON parser backend.
+ *
+ * @returns Parser factory that constructs `FastStreamingJSONParser` instances.
+ */
+function getFastStreamingJSONParserFactory(): StreamingJSONParserFactory {
+  return parserOptions => new FastStreamingJSONParser(parserOptions);
 }
 
 /**

@@ -9,6 +9,8 @@ The `@loaders.gl/json` module parses JSON. It can parse arbitrary JSON data but 
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
 to avoid blocking for tens of seconds.
 
+`JSONLoader` exposes `json.backend: 'fast'` as an experimental opt-in backend for streaming extraction. This keeps atomic JSON parsing on the standard `JSON.parse` path while using the faster streaming parser for `loadInBatches`.
+
 ## Installation
 
 ```bash

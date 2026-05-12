@@ -49,7 +49,7 @@ const modeArguments = {
 
 if (mode === 'bench') {
   const benchLoaderRegistration =
-    'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("@loaders.gl/devtools-extensions/bench-loader", pathToFileURL("./"));';
+    'data:text/javascript,import { register } from "node:module"; import { pathToFileURL } from "node:url"; register("ts-node/esm", pathToFileURL("./")); register("@loaders.gl/devtools-extensions/bench-loader", pathToFileURL("./"));';
   process.exitCode = await runProcess(
     'node',
     ['--import', benchLoaderRegistration, './test/bench/node.js', ...passthroughArgs]
