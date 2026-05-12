@@ -25,6 +25,8 @@ export type JSONBatch = Batch & {
 /** Options for parsing JSON documents and tabular selections. */
 export type JSONLoaderOptions = LoaderOptions & {
   json?: {
+    /** Selects the streaming JSON parser backend. */
+    backend?: 'clarinet' | 'fast';
     /** Selects row-table output or Apache Arrow output for tabular JSON. */
     shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
     /** Enables table extraction from non-streaming JSON. */
@@ -49,6 +51,7 @@ export const JSONLoader = {
   version: VERSION,
   options: {
     json: {
+      backend: 'clarinet',
       shape: undefined,
       table: false,
       jsonpaths: []
