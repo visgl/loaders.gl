@@ -8,7 +8,7 @@ import type {ParseGLBOptions} from './parse-glb';
 import type {ImageType, TextureLevel} from '@loaders.gl/schema';
 import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageBitmapLoader} from '@loaders.gl/images';
-import {BasisLoader} from '@loaders.gl/textures';
+import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 
 import {assert} from '../utils/assert';
 import {isGLB, parseGLBSync} from './parse-glb';
@@ -219,11 +219,16 @@ async function loadImage(
 
   assert(arrayBuffer, 'glTF image has no data');
 
+  // Debug: trace image loading
+  const firstBytes = new Uint8Array(arrayBuffer.slice(0, 12));
+  console.log(`loadImage[${index}]`, {mimeType: image.mimeType, byteLength: arrayBuffer.byteLength, firstBytes: Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' '), 'options.worker': (options as any)?.worker, 'options.core.worker': (options as any)?.core?.worker});
+
   const strictOptions = options;
 
   const gltfOptions = {
     ...strictOptions,
-    core: {...strictOptions?.core, mimeType: image.mimeType}
+    core: {...strictOptions?.core, mimeType: image.mimeType},
+    basis: strictOptions?.basis || {format: selectSupportedBasisFormat()}
   } satisfies StrictLoaderOptions;
 
   // Call `parse`
