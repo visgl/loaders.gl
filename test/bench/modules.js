@@ -13,6 +13,7 @@ import csvBench from '@loaders.gl/csv/test/csv.bench';
 import dracoBench from '@loaders.gl/draco/test/draco.bench';
 import excelBench from '@loaders.gl/excel/test/excel.bench';
 import imageBench from '@loaders.gl/images/test/images.bench';
+import lasBench from '@loaders.gl/las/test/las-loader.bench';
 import jsonBench from '@loaders.gl/json/test/json-loader.bench';
 // import mvtBench from '@loaders.gl/mvt/test/mvt-loader.bench';
 import flatgeobufBench from '@loaders.gl/flatgeobuf/test/flatgeobuf.bench';
@@ -35,6 +36,10 @@ _addAliases(ALIASES);
  * @returns {Promise<void>} Resolves after all compatible benchmarks have been added.
  */
 export async function addModuleBenchmarksToSuite(suite) {
+  await jsonBench(suite);
+
+  await lasBench(suite);
+
   await gisBench(suite);
 
   await shapefileBench(suite);
@@ -50,7 +55,7 @@ export async function addModuleBenchmarksToSuite(suite) {
   await parquetBench(suite);
   await plyBench(suite);
 
-  await jsonBench(suite);
+  // await shapefileBench(suite);
 
   // await mvtBench(suite);
   await loaderUtilsBench(suite);

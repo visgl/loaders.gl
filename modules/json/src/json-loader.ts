@@ -2,18 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {
-  ArrowTable,
-  ArrowTableBatch,
-  Batch,
-  Schema,
-  Table,
-  TableBatch
-} from '@loaders.gl/schema';
+import type {Batch, TableBatch} from '@loaders.gl/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
-import type * as arrow from 'apache-arrow';
 import {JSONFormat} from './json-format';
-import type {ArrowConversionOptions} from './lib/parsers/convert-row-table-to-arrow';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -35,16 +26,14 @@ export type JSONBatch = Batch & {
 export type JSONLoaderOptions = LoaderOptions & {
   /** JSON parser options. */
   json?: {
-    /** Requested output shape. Omitting shape preserves the default JSON result. */
-    shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
+    /** Selects the streaming JSON parser backend. */
+    backend?: 'clarinet' | 'fast';
+    /** Requested row-table output shape. Omitting shape preserves the default JSON result. */
+    shape?: 'object-row-table' | 'array-row-table';
     /** Whether non-streaming JSON should be interpreted as table rows. */
     table?: boolean;
     /** JSON paths identifying arrays that can be streamed as row batches. */
     jsonpaths?: string[];
-    /** Optional schema used when converting JSON rows to Arrow. */
-    schema?: Schema | arrow.Schema;
-    /** Optional recovery policy used when converting JSON rows to Arrow. */
-    arrowConversion?: ArrowConversionOptions;
   };
 };
 
@@ -56,24 +45,19 @@ async function preload() {
 
 /** Metadata-only loader for JSON documents, including tabular JSON and streaming table extraction. */
 export const JSONLoader = {
-  dataType: null as unknown as Table | ArrowTable,
-  batchType: null as unknown as TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
+  dataType: null as unknown,
+  batchType: null as unknown as TableBatch | MetadataBatch | JSONBatch,
 
   ...JSONFormat,
   version: VERSION,
   options: {
     json: {
+      backend: 'clarinet',
       shape: undefined,
       table: false,
-      jsonpaths: [],
-      schema: undefined,
-      arrowConversion: undefined
+      jsonpaths: []
       // batchSize: 'auto'
     }
   },
   preload
-} as const satisfies Loader<
-  Table | ArrowTable,
-  TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
-  JSONLoaderOptions
->;
+} as const satisfies Loader<unknown, TableBatch | MetadataBatch | JSONBatch, JSONLoaderOptions>;

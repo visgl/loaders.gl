@@ -4,6 +4,7 @@
 
 // LASER (LAS) FILE FORMAT
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/schema';
 import type {LASMesh} from './lib/las-types';
 import {LASFormat} from './las-format';
 
@@ -13,6 +14,8 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 export type LASLoaderOptions = LoaderOptions & {
   las?: {
+    /** Decoder backend. Defaults to the current vendored laz-perf implementation. */
+    backend?: 'laz-perf' | 'copc' | 'laz-rs';
     shape?: 'mesh' | 'columnar-table' | 'arrow-table';
     fp64?: boolean;
     skip?: number;
@@ -33,13 +36,14 @@ async function preload() {
 export const LASWorkerLoader = {
   ...LASFormat,
 
-  dataType: null as unknown as LASMesh,
-  batchType: null as never,
+  dataType: null as unknown as LASMesh | MeshArrowTable,
+  batchType: null as unknown as LASMesh | MeshArrowTable,
 
   version: VERSION,
   worker: true,
   options: {
     las: {
+      backend: 'laz-perf',
       shape: 'mesh',
       fp64: false,
       skip: 1,
@@ -47,4 +51,4 @@ export const LASWorkerLoader = {
     }
   },
   preload
-} as const satisfies Loader<LASMesh, never, LASLoaderOptions>;
+} as const satisfies Loader<LASMesh | MeshArrowTable, LASMesh | MeshArrowTable, LASLoaderOptions>;

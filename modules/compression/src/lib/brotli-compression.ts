@@ -83,6 +83,9 @@ export class BrotliCompression extends Compression {
     const brotli = getJSModule<Brotli>('brotli', this.name);
     // @ts-ignore brotli types state that only Buffers are accepted...
     const outputArray = brotli.compress(inputArray, brotliOptions);
+    if (!outputArray) {
+      throw new Error('Brotli compression failed');
+    }
     return toArrayBuffer(outputArray.buffer);
   }
 

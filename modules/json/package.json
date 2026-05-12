@@ -38,6 +38,10 @@
       "types": "./dist/bundled.d.ts",
       "import": "./dist/bundled.js"
     },
+    "./json-table-loader": {
+      "types": "./dist/json-table-loader-with-parser.d.ts",
+      "import": "./dist/json-table-loader-with-parser.js"
+    },
     "./geojson-worker.js": {
       "import": "./dist/geojson-worker.js"
     }

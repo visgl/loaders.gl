@@ -16,7 +16,7 @@ JSON stores values as objects, arrays, strings, numbers, booleans, and null. The
 
 ## Tabular Data
 
-JSON can represent deeply nested structures, not just rectangular tables. `JSONLoader` can parse complete JSON documents and can also stream rows from an array inside a larger document.
+JSON can represent deeply nested structures, not just rectangular tables. `JSONLoader` can parse complete JSON documents and can also stream rows from an array inside a larger document. Use `JSONTableLoader` when the public contract should always return table output.
 
 ## Syntax
 

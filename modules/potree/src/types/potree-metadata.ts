@@ -90,5 +90,5 @@ export interface PotreeMetadata {
    * The hierarchy of files, now loaded through index files.
    * @deprecated
    * */
-  hierarchy: HierarchyItem[];
+  hierarchy?: HierarchyItem[];
 }

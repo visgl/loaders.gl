@@ -4,6 +4,8 @@
 
 export type {JSONLoaderOptions} from './json-loader-with-parser';
 export {JSONLoaderWithParser as JSONLoader} from './json-loader-with-parser';
+export type {JSONTableLoaderOptions} from './json-table-loader-with-parser';
+export {JSONTableLoaderWithParser as JSONTableLoader} from './json-table-loader-with-parser';
 export type {NDJSONLoaderOptions} from './ndjson-loader-with-parser';
 export {NDJSONLoaderWithParser as NDJSONLoader} from './ndjson-loader-with-parser';
 export type {NDGeoJSONLoaderOptions} from './ndgeoson-loader-with-parser';

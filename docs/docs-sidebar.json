@@ -121,6 +121,7 @@
           "modules/images/api-reference/image-bitmap-loader",
           "modules/images/api-reference/image-loader",
           "modules/json/api-reference/json-loader",
+          "modules/json/api-reference/json-table-loader",
           "modules/kml/api-reference/kml-loader",
           "modules/mvt/api-reference/map-style-loader",
           "modules/las/api-reference/las-loader",
@@ -196,6 +197,7 @@
           "modules/tiles/api-reference/i3s-source",
           "modules/geotiff/api-reference/ometiff-source-loader",
           "modules/pmtiles/api-reference/pmtiles-source-loader",
+          "modules/potree/api-reference/potree-source-loader",
           "modules/tiles/api-reference/raster-set",
           "modules/tiles/api-reference/tiles-3d-source",
           "modules/tiles/api-reference/tileset-3d-source",
@@ -490,6 +492,7 @@
         "label": "@loaders.gl/tiles",
         "items": [
           "modules/tiles/README",
+          "modules/tiles/api-reference/point-cloud-tileset",
           "modules/tiles/api-reference/tileset-3d",
           "modules/tiles/api-reference/tile-3d"
         ]

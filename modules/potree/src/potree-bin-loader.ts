@@ -2,19 +2,28 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {PotreeBinLoaderOptions} from './parsers/parse-potree-bin';
 
 import {PotreeBinFormat} from './potree-format';
+
+// __VERSION__ is injected by babel-plugin-version-inline
+// @ts-ignore TS2304: Cannot find name '__VERSION__'.
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
+
 /**
  * Loader for potree Binary Point Attributes
  * */
 export const PotreeBinLoader = {
   ...PotreeBinFormat,
-  dataType: null as unknown as {},
+  dataType: null as unknown as Mesh | MeshArrowTable,
   batchType: null as never,
 
   name: 'potree Binary Point Attributes',
   id: 'potree',
+  module: 'potree',
+  version: VERSION,
   extensions: ['bin'],
   mimeTypes: ['application/octet-stream'],
   // Unfortunately binary potree files have no header bytes, no test possible
@@ -24,4 +33,4 @@ export const PotreeBinLoader = {
   binary: true,
   options: {}
   // @ts-ignore
-} as const satisfies Loader<{}, never, LoaderOptions>;
+} as const satisfies Loader<Mesh | MeshArrowTable, never, PotreeBinLoaderOptions>;

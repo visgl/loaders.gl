@@ -10,8 +10,15 @@ import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
   <a className="docs-api-card" href="/docs/modules/json/api-reference/json-loader">
     <span className="docs-api-card__kind">Loader</span>
     <strong>JSONLoader</strong>
-    <span>Loads JSON documents and can extract arrays as loaders.gl row or Arrow tables.</span>
-    <span className="docs-api-card__meta">Output: object, ObjectRowTable, ArrayRowTable, ArrowTable</span>
+    <span>Loads arbitrary JSON documents and can extract arrays as loaders.gl row tables.</span>
+    <span className="docs-api-card__meta">Output: JSON value, ObjectRowTable, ArrayRowTable</span>
+    <span className="docs-api-card__meta">APIs: load, parse, parseSync, parseInBatches</span>
+  </a>
+  <a className="docs-api-card" href="/docs/modules/json/api-reference/json-table-loader">
+    <span className="docs-api-card__kind">Loader</span>
+    <strong>JSONTableLoader</strong>
+    <span>Loads JSON row arrays as loaders.gl row tables or Apache Arrow tables.</span>
+    <span className="docs-api-card__meta">Output: ObjectRowTable, ArrayRowTable, ArrowTable</span>
     <span className="docs-api-card__meta">APIs: load, parse, parseSync, parseInBatches</span>
   </a>
   <a className="docs-api-card" href="/docs/modules/json/api-reference/json-writer">

@@ -210,6 +210,34 @@ test('SplatEngine exposes oriented projected data and visibility', t => {
   t.end();
 });
 
+test('SplatEngine exposes WebGL binary attributes', t => {
+  const engine = new SplatEngine({type: 'webgl'} as any, {
+    gaussianSupportRadius: 3,
+    sortMode: 'global',
+    alphaCutoff: 0,
+    screenSizeCutoffPixels: 0,
+    kernel2DSize: 0,
+    maxScreenSpaceSplatSize: 1024
+  });
+  engine.setData(createGaussianSplatTable(), [255, 255, 255, 255]);
+
+  const webGLAttributes = engine.getWebGLAttributes();
+  t.equal(webGLAttributes.length, 2, 'exposes one rendered object per splat');
+  t.deepEqual(
+    Array.from(webGLAttributes.attributes.getPosition.value),
+    [0, 0, -2, 1, 2, -1],
+    'exposes interleaved positions'
+  );
+  t.equal(webGLAttributes.attributes.getRadius.value[0], 3, 'exposes decoded radii');
+  t.deepEqual(
+    Array.from(webGLAttributes.attributes.getColor.value.slice(0, 4)),
+    [128, 128, 128, 128],
+    'exposes unorm8 colors'
+  );
+  engine.destroy();
+  t.end();
+});
+
 test('SplatEngine supports tile-local visible index ordering', t => {
   const engine = new SplatEngine(createTestDevice(), {
     sortMode: 'tile',

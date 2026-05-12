@@ -1,10 +1,16 @@
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+
 # GeoJSONLoader
+
+<JsonDocsTabs active="geojsonloader" tryItHref="/examples/geospatial/geojson" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
 Streaming loader for GeoJSON encoded files.
+
+GeoJSON is a geospatial interchange format that uses JSON encoding. Use `GeoJSONLoader` for GeoJSON semantics such as features, geometries, feature collections, and GeoArrow WKB output; use `JSONLoader` for arbitrary JSON documents.
 
 | Loader         | Characteristic                                       |
 | -------------- | ---------------------------------------------------- |

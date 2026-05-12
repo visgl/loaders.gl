@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {type ReactNode, useEffect, useMemo, useState} from 'react';
+import {type ReactNode, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 import DeckGL from '@deck.gl/react';
@@ -17,9 +17,9 @@ import {
 import {PointCloudLayer} from '@deck.gl/layers';
 import {ColumnPanel, CustomPanel, SidebarWidget} from '@deck.gl-community/widgets';
 
-import {load} from '@loaders.gl/core';
+import {load, loadInBatches} from '@loaders.gl/core';
 import {MeshArrowPointCloudLayer, SplatLayer} from '@loaders.gl/deck-layers';
-import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import type {ArrowTableBatch, Mesh, MeshArrowTable} from '@loaders.gl/schema';
 import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import {DracoLoader} from '@loaders.gl/draco';
 import {LASLoader} from '@loaders.gl/las';
@@ -65,7 +65,7 @@ type AppProps = {
 };
 
 type AppState = {
-  pointData: any;
+  pointData: PointCloudData;
   metadata: string | null;
   viewState: OrbitViewState | FirstPersonViewState;
   controllerMode: ControllerMode;
@@ -73,8 +73,12 @@ type AppState = {
   selectedExampleName?: string | null;
   loadTimeMs?: number;
   loadStartMs?: number;
+  /** Number of currently loaded points, including partial streaming loads. */
+  pointCount?: number;
   error?: string | null;
 };
+
+type PointCloudData = DeckPoint[] | MeshArrowTable | AsyncIterable<ArrowTableBatch> | null;
 
 type DeckPoint = {
   position: [number, number, number];
@@ -100,6 +104,7 @@ export default function App(props: AppProps = {}) {
     selectedExampleName: null,
     error: null
   });
+  const loadRequestId = useRef(0);
 
   useEffect(() => {
     if (props.example) {
@@ -132,7 +137,7 @@ export default function App(props: AppProps = {}) {
 
   const layers = state.pointData
     ? [
-        isMeshArrowTable(state.pointData)
+        isMeshArrowTable(state.pointData) || isArrowTableBatchIterator(state.pointData)
           ? createArrowPointCloudLayer(state.pointData, state.selectedExampleName)
           : createPointCloudLayer(state.pointData, state.selectedExampleName)
       ]
@@ -173,7 +178,7 @@ export default function App(props: AppProps = {}) {
                     state.selectedExampleName
                   ),
                   controllerMode: state.controllerMode,
-                  vertexCount: getPointDataLength(state.pointData),
+                  vertexCount: state.pointCount ?? getPointDataLength(state.pointData),
                   onControllerModeChange: (controllerMode) =>
                     setState((currentState) => ({
                       ...currentState,
@@ -261,19 +266,89 @@ export default function App(props: AppProps = {}) {
     example: Example;
     exampleName: string;
   }): Promise<void> {
+    const requestId = ++loadRequestId.current;
     setState((currentState) => ({
       ...currentState,
       pointData: null,
       metadata: null,
       loadTimeMs: undefined,
       loadStartMs: Date.now(),
+      pointCount: 0,
       selectedCategoryName: categoryName,
       selectedExampleName: exampleName,
       error: null
     }));
 
     try {
+      if (shouldStreamPointCloudExample(example)) {
+        const pointCloudBatches = await loadPointCloudExampleInBatches(example, {
+          onBatch: (arrowTableBatch, pointCount) => {
+            if (loadRequestId.current !== requestId) {
+              return;
+            }
+
+            setState((currentState) => {
+              const mesh = convertArrowTableBatchToMesh(arrowTableBatch);
+              const {schema, header, loaderData, attributes} = mesh as any;
+              const hasMetadata = Boolean(currentState.metadata);
+              return {
+                ...currentState,
+                pointCount,
+                metadata: hasMetadata
+                  ? currentState.metadata
+                  : JSON.stringify({schema, header, loaderData}, null, 2),
+                viewState: hasMetadata
+                  ? currentState.viewState
+                  : getViewState(
+                      currentState.viewState,
+                      currentState.controllerMode,
+                      loaderData,
+                      attributes
+                    )
+              };
+            });
+          },
+          onComplete: () => {
+            if (loadRequestId.current !== requestId) {
+              return;
+            }
+            setState((currentState) => ({
+              ...currentState,
+              loadTimeMs: currentState.loadStartMs
+                ? Date.now() - currentState.loadStartMs
+                : undefined,
+              loadStartMs: undefined
+            }));
+          },
+          onError: (error) => {
+            if (loadRequestId.current !== requestId) {
+              return;
+            }
+            setState((currentState) => ({
+              ...currentState,
+              error: `Could not load ${exampleName}: ${error instanceof Error ? error.message : String(error)}`
+            }));
+          },
+          onFirstBatch: rotateCamera
+        });
+
+        if (loadRequestId.current !== requestId) {
+          return;
+        }
+
+        setState((currentState) => ({
+          ...currentState,
+          pointData: pointCloudBatches,
+          selectedCategoryName: categoryName,
+          selectedExampleName: exampleName
+        }));
+        return;
+      }
+
       const pointCloud = await loadPointCloudExample(example);
+      if (loadRequestId.current !== requestId) {
+        return;
+      }
       const mesh = isMeshArrowTable(pointCloud)
         ? ((convertTableToMesh(pointCloud) as unknown) as Mesh)
         : (pointCloud as Mesh);
@@ -281,14 +356,16 @@ export default function App(props: AppProps = {}) {
 
       const viewState = getViewState(state.viewState, state.controllerMode, loaderData, attributes);
       const metadata = JSON.stringify({schema, header, loaderData}, null, 2);
+      const pointData = isMeshArrowTable(pointCloud)
+        ? pointCloud
+        : convertLoadersMeshToDeckPointCloudData(attributes);
 
       setState((currentState) => ({
         ...currentState,
         loadTimeMs: currentState.loadStartMs ? Date.now() - currentState.loadStartMs : undefined,
         loadStartMs: undefined,
-        pointData: isMeshArrowTable(pointCloud)
-          ? pointCloud
-          : convertLoadersMeshToDeckPointCloudData(attributes),
+        pointData,
+        pointCount: getPointDataLength(pointData),
         viewState,
         metadata,
         selectedCategoryName: categoryName,
@@ -298,6 +375,9 @@ export default function App(props: AppProps = {}) {
       rotateCamera();
     } catch (error) {
       console.error('Failed to load data', getExampleUrls(example), error);
+      if (loadRequestId.current !== requestId) {
+        return;
+      }
       setState((currentState) => ({
         ...currentState,
         error: `Could not load ${exampleName}: ${error instanceof Error ? error.message : String(error)}`
@@ -316,7 +396,7 @@ async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrow
         las: {shape: 'arrow-table'},
         obj: {shape: 'arrow-table'},
         pcd: {shape: 'arrow-table'},
-        ply: {shape: 'arrow-table'}
+        ply: {shape: 'arrow-table', pointCloud: true}
       })
     )
   );
@@ -326,6 +406,95 @@ async function loadPointCloudExample(example: Example): Promise<Mesh | MeshArrow
   }
 
   return combineMeshArrowTables(pointClouds as MeshArrowTable[]);
+}
+
+/**
+ * Loads a streamable point cloud example as loaders.gl Arrow table batches.
+ */
+async function loadPointCloudExampleInBatches(
+  example: Example,
+  callbacks: {
+    onBatch: (arrowTableBatch: ArrowTableBatch, pointCount: number) => void;
+    onComplete: () => void;
+    onError: (error: unknown) => void;
+    onFirstBatch: () => void;
+  }
+): Promise<AsyncIterable<ArrowTableBatch>> {
+  const urls = getExampleUrls(example);
+  if (urls.length !== 1) {
+    throw new Error('Streaming point cloud examples require a single URL.');
+  }
+
+  const pointCloudBatches = (await loadInBatches(urls[0], PLYLoader, {
+    worker: false,
+    ply: {shape: 'arrow-table', pointCloud: true}
+  })) as AsyncIterable<ArrowTableBatch | MeshArrowTable>;
+
+  return trackPointCloudBatches(pointCloudBatches, callbacks);
+}
+
+/**
+ * Normalizes point cloud loader output to Arrow table batches while reporting streaming progress.
+ */
+async function* trackPointCloudBatches(
+  pointCloudBatches: AsyncIterable<ArrowTableBatch | MeshArrowTable>,
+  callbacks: {
+    onBatch: (arrowTableBatch: ArrowTableBatch, pointCount: number) => void;
+    onComplete: () => void;
+    onError: (error: unknown) => void;
+    onFirstBatch: () => void;
+  }
+): AsyncIterable<ArrowTableBatch> {
+  let pointCount = 0;
+  let batchIndex = 0;
+
+  try {
+    for await (const pointCloudBatch of pointCloudBatches) {
+      const arrowTableBatch = normalizeArrowTableBatch(pointCloudBatch);
+      pointCount += arrowTableBatch.length;
+      callbacks.onBatch(arrowTableBatch, pointCount);
+      if (batchIndex === 0) {
+        callbacks.onFirstBatch();
+      }
+      batchIndex++;
+      yield arrowTableBatch;
+    }
+    callbacks.onComplete();
+  } catch (error) {
+    callbacks.onError(error);
+    throw error;
+  }
+}
+
+/**
+ * Converts current PLY streaming output to the loaders.gl Arrow table batch wrapper.
+ */
+function normalizeArrowTableBatch(
+  pointCloudBatch: ArrowTableBatch | MeshArrowTable
+): ArrowTableBatch {
+  if ('batchType' in pointCloudBatch && pointCloudBatch.batchType === 'data') {
+    return pointCloudBatch;
+  }
+
+  return {
+    shape: 'arrow-table',
+    batchType: 'data',
+    schema: pointCloudBatch.schema,
+    data: pointCloudBatch.data,
+    length: pointCloudBatch.data.numRows
+  };
+}
+
+/**
+ * Converts an Arrow table batch to Mesh category data for metadata, bounds, and view-state helpers.
+ */
+function convertArrowTableBatchToMesh(arrowTableBatch: ArrowTableBatch): Mesh {
+  return convertTableToMesh({
+    shape: 'arrow-table',
+    topology: 'point-list',
+    schema: arrowTableBatch.schema,
+    data: arrowTableBatch.data
+  } as MeshArrowTable) as unknown as Mesh;
 }
 
 function combineMeshArrowTables(pointClouds: MeshArrowTable[]): MeshArrowTable {
@@ -361,8 +530,36 @@ function getPointCloudLoader(example: Example) {
   }
 }
 
+/**
+ * Returns true when the example should use incremental batch loading.
+ */
+function shouldStreamPointCloudExample(example: Example): boolean {
+  return example.type === 'ply' && !isGaussianSplatExample(example);
+}
+
+/**
+ * Returns true for splat URLs that should stay on the non-streaming splat rendering path.
+ */
+function isGaussianSplatExample(example: Example): boolean {
+  return (
+    example.url.endsWith('.splat') ||
+    example.urls?.some((url) => url.endsWith('.splat')) === true
+  );
+}
+
 function isMeshArrowTable(data: unknown): data is MeshArrowTable {
   return Boolean(data && typeof data === 'object' && 'shape' in data && data.shape === 'arrow-table');
+}
+
+/**
+ * Returns true when point data is an async iterator of loaders.gl Arrow table batches.
+ */
+function isArrowTableBatchIterator(data: unknown): data is AsyncIterable<ArrowTableBatch> {
+  return Boolean(
+    data &&
+      typeof data === 'object' &&
+      typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
+  );
 }
 
 function getPointDataLength(pointData: any): number {
@@ -373,10 +570,10 @@ function getPointDataLength(pointData: any): number {
 }
 
 function createArrowPointCloudLayer(
-  pointData: MeshArrowTable,
+  pointData: MeshArrowTable | AsyncIterable<ArrowTableBatch>,
   selectedExampleName?: string | null
 ): MeshArrowPointCloudLayer | SplatLayer {
-  if (isGaussianSplatArrowTable(pointData)) {
+  if (isMeshArrowTable(pointData) && isGaussianSplatArrowTable(pointData)) {
     return createSplatLayer(pointData, selectedExampleName);
   }
 
@@ -386,6 +583,7 @@ function createArrowPointCloudLayer(
     data: pointData,
     pickable: true,
     autoHighlight: true,
+    defaultPointColor: [200, 200, 255],
     pointCloudLayerProps: {
       getNormal: [0, 1, 0],
       opacity: 0.5,
@@ -623,15 +821,17 @@ function createUrlCard(options: {
 }
 
 function createStatsBlock(vertexCount: number, loadTimeMs: number, loadStartMs: number): HTMLElement {
+  let pointMessage = `Points: ${formatPointCount(vertexCount)}`;
   let loadMessage = '';
   if (loadTimeMs) {
     loadMessage = `Load time: ${(loadTimeMs / 1000).toFixed(1)}s`;
   } else if (loadStartMs) {
+    pointMessage = `Rows loaded: ${formatPointCount(vertexCount)}`;
     loadMessage = 'Loading...';
   }
 
   const preElement = document.createElement('pre');
-  preElement.textContent = `Points: ${formatPointCount(vertexCount)}\n${loadMessage}`;
+  preElement.textContent = `${pointMessage}\n${loadMessage}`;
   preElement.style.margin = '0';
   preElement.style.textAlign = 'center';
   preElement.style.whiteSpace = 'pre-wrap';

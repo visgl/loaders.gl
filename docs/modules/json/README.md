@@ -1,13 +1,16 @@
 # Overview
 
-The `@loaders.gl/json` module parses JSON. It can parse arbitrary JSON data but is optimized for:
+The `@loaders.gl/json` module parses JSON, tabular JSON, and geospatial formats that use JSON encoding. It includes:
 
-- loading tabular data stored in JSON arrays.
-- loading tabular geospatial data stored in GeoJSON.
-- loading tabular data from various streaming JSON and GeoJSON formats, such as new-line delimited JSON.
+- `JSONLoader` for arbitrary JSON documents.
+- `JSONTableLoader` for JSON documents that should always resolve to table output.
+- `GeoJSONLoader` for the GeoJSON geospatial format, which uses JSON encoding.
+- Streaming JSON and GeoJSON loaders for line-oriented formats.
 
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
 to avoid blocking for tens of seconds.
+
+`JSONLoader` exposes `json.backend: 'fast'` as an experimental opt-in backend for streaming extraction. This keeps atomic JSON parsing on the standard `JSON.parse` path while using the faster streaming parser for `loadInBatches`.
 
 ## Installation
 
@@ -20,6 +23,7 @@ npm install @loaders.gl/core @loaders.gl/json
 | Exports                                                                     |
 | --------------------------------------------------------------------------- |
 | [`JSONLoader`](/docs/modules/json/api-reference/json-loader)                |
+| [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader)     |
 | [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) |
 | [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader)          |
 | [`NDGeoJSONLoader`](/docs/modules/json/api-reference/ndgeojson-loader)      |

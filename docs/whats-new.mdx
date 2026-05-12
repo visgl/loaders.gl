@@ -26,16 +26,19 @@ Release Date: 2026
 
 **@loaders.gl/obj**
 
+- [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader) adds batched parsing for vertex-only point-cloud OBJ inputs, including `obj.pointCloud: true` for explicit streaming of `v` records and atomic fallback when face or line records are present.
 - [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer) NEW - writes Wavefront OBJ mesh data.
 
 **@loaders.gl/pcd**
 
+- [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader) adds batched parsing for ASCII and uncompressed binary point clouds, yielding `ArrowTableBatch` values when `pcd.shape: 'arrow-table'` is enabled.
 - [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer) NEW - writes ASCII Point Cloud Data (PCD).
 
 **@loaders.gl/ply**
 
 - [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
 - [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
+- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) now returns loaders.gl `ArrowTableBatch` values from batched Arrow table parsing, enabling progressive point cloud and Gaussian splat rendering.
 
 **@loaders.gl/splats**
 
@@ -80,6 +83,10 @@ Release Date: 2026
 - [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader) NEW - viewport-driven GeoTIFF / COG source that returns typed raster payloads plus CRS and bounds metadata.
 - [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader) NEW - non-geospatial OME-TIFF source for channel-aware 2D plane reads from image pyramids.
 
+**@loaders.gl/json**
+
+- [`JSONLoader`](/docs/modules/json/api-reference/json-loader) adds experimental `json.backend: 'fast'` for opt-in faster streaming extraction while keeping atomic JSON parsing on the standard `JSON.parse` path.
+
 **@loaders.gl/tiles**
 
 - `RasterSet` NEW - loading manager for `RasterSource` implementations with metadata caching, debounced viewport requests, and loading lifecycle callbacks.
@@ -97,8 +104,9 @@ Release Date: 2026
 
 - [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader), `GeoJSONWorkerLoader`, and [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer) are now official exports.
 - [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) now selects output with `geojson.shape`, including `'geojson-table'`, `'binary-feature-collection'`, and `'arrow-table'`.
-- [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) adds GeoArrow WKB Arrow output through `geojson.shape: 'arrow-table'`; [`JSONLoader`](/docs/modules/json/api-reference/json-loader) and [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) remain generic JSON-to-Arrow loaders.
-- [`JSONLoader`](/docs/modules/json/api-reference/json-loader) and [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) add schema-aware Arrow conversion with strict defaults, optional recovery policies, and one-time recovery logging.
+- [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader) adds GeoArrow WKB Arrow output through `geojson.shape: 'arrow-table'`; GeoJSON remains a geospatial format with dedicated loader semantics even though it uses JSON encoding.
+- [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader) is the dedicated table-returning JSON API. [`JSONLoader`](/docs/modules/json/api-reference/json-loader) remains the arbitrary JSON document loader.
+- [`JSONTableLoader`](/docs/modules/json/api-reference/json-table-loader) and [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) add schema-aware Arrow conversion with strict defaults, optional recovery policies, and one-time recovery logging.
 - [`JSONWriter`](/docs/modules/json/api-reference/json-writer) now accepts Arrow table inputs and decodes GeoArrow WKB geometry columns to GeoJSON geometry objects by default.
 
 ## v4.4

@@ -23,7 +23,7 @@ import {
 import type {BufferLayout} from '@luma.gl/core';
 import {Geometry, Model} from '@luma.gl/engine';
 import type {ShaderModule} from '@luma.gl/shadertools';
-import type {MeshArrowTable, TypedArray} from '@loaders.gl/schema';
+import type {ArrowTableBatch, MeshArrowTable, TypedArray} from '@loaders.gl/schema';
 import {CullingVolume, Plane} from '@math.gl/culling';
 import {SplatEngine, type SplatSortMode} from './splat/splat-engine';
 import {getArrowTable, getGaussianSplatDataFromArrowTable} from './splat/splat-data';
@@ -38,8 +38,8 @@ export type PublicSplatSortMode = 'none' | 'global' | 'tile';
 
 /** Props for {@link SplatLayer}. */
 export type SplatLayerProps = CompositeLayerProps & {
-  /** Gaussian splat table produced by `PLYLoader` with `ply.shape: 'arrow-table'`. */
-  data: MeshArrowTable | arrow.Table;
+  /** Gaussian splat table or loaders.gl Arrow table batches produced by `PLYLoader` with `ply.shape: 'arrow-table'`. */
+  data: MeshArrowTable | arrow.Table | AsyncIterable<ArrowTableBatch> | null;
   /** Units used by decoded splat radii. */
   sizeUnits?: Unit;
   /** Radius multiplier applied after decoding `scale_*` columns. */
@@ -110,6 +110,7 @@ type DrawOptions = {
 
 const defaultProps: DefaultProps<SplatLayerProps> = {
   id: 'splat-layer',
+  data: {type: 'object', compare: false, value: null},
   sizeUnits: 'meters',
   radiusScale: {type: 'number', min: 0, value: 1},
   radiusMinPixels: {type: 'number', min: 0, value: 0},
@@ -232,7 +233,13 @@ fn vertexMain(
     vec3<f32>(0.0, 0.0, 0.0)
   );
   let pixelOffset = corner.x * axis0 + corner.y * axis1;
-  clipPosition.xy += project_pixel_size_to_clipspace(pixelOffset);
+  let clipOffset = project_pixel_size_to_clipspace(pixelOffset);
+  clipPosition = vec4<f32>(
+    clipPosition.x + clipOffset.x,
+    clipPosition.y + clipOffset.y,
+    clipPosition.z,
+    clipPosition.w
+  );
 
   outputs.position = clipPosition;
   outputs.gaussianCoord = gaussianCoord;
@@ -352,26 +359,65 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
     engineTable?: arrow.Table;
     /** Last fallback color uploaded to the WebGPU engine. */
     engineFallbackColor?: Color;
+    /** Arrow table batches loaded so far from async data. */
+    arrowTableBatches: ArrowTableBatch[];
+    /** WebGPU engines matching `arrowTableBatches`, when the GPU path is active. */
+    streamEngines: (SplatEngine | null)[];
+    /** Fallback color used to upload current stream engines. */
+    streamEngineFallbackColor?: Color;
+    /** Monotonic stream identifier used to ignore stale async data. */
+    streamId: number;
+    /** Error raised while consuming the current async data stream. */
+    streamError: Error | null;
+    /** Async iterable currently being consumed. */
+    streamingData: AsyncIterable<ArrowTableBatch> | null;
+    /** Version incremented when the engine loads another async batch. */
+    engineDataVersion: number;
   };
 
-  /** Updates the optional WebGPU engine when layer props change. */
+  /** Initializes state used for static and streaming splat rendering. */
+  initializeState(): void {
+    this.setState({
+      arrowTableBatches: [],
+      streamEngines: [],
+      streamId: 0,
+      streamError: null,
+      streamingData: null,
+      engineDataVersion: 0
+    });
+  }
+
+  /** Updates the shared splat engine when layer props change. */
   updateState(params: UpdateParameters<this>): void {
     super.updateState(params);
 
-    const useGpuEngine = this.shouldUseGpuEngine();
-    if (!useGpuEngine) {
+    if (isAsyncIterable(this.props.data)) {
+      const splatEngine = this.getOrCreateSplatEngine();
+      splatEngine.setProps(this.getSplatEngineProps());
+      if (params.changeFlags.dataChanged) {
+        this.destroyStreamEngines();
+        const streamId = (this.state.streamId || 0) + 1;
+        this.setState({
+          arrowTableBatches: [],
+          streamId,
+          streamError: null,
+          streamingData: this.props.data
+        });
+        splatEngine.setData(this.props.data, this.props.getColor || DEFAULT_COLOR);
+      }
+      return;
+    }
+
+    this.destroyStreamEngines();
+
+    if (!this.props.data) {
       this.destroySplatEngine();
       return;
     }
 
     const arrowTable = getArrowTable(this.props.data);
     const fallbackColor = this.props.getColor || DEFAULT_COLOR;
-    let splatEngine = this.state.splatEngine;
-    if (!splatEngine) {
-      splatEngine = new SplatEngine(this.context.device, this.getSplatEngineProps());
-      this.setState({splatEngine});
-    }
-
+    const splatEngine = this.getOrCreateSplatEngine();
     splatEngine.setProps(this.getSplatEngineProps());
 
     if (
@@ -389,22 +435,47 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
   finalizeState(context: LayerContext): void {
     super.finalizeState(context);
     this.destroySplatEngine();
+    this.destroyStreamEngines();
   }
 
   /** Renders the Arrow table through a Gaussian billboard primitive. */
-  renderLayers(): Layer | null {
-    const useGpuEngine = this.shouldUseGpuEngine();
+  renderLayers(): Layer | Layer[] | null {
+    if (!this.props.data) {
+      return null;
+    }
+
+    if (isAsyncIterable(this.props.data)) {
+      const {streamError, splatEngine} = this.state;
+      if (streamError) {
+        throw streamError;
+      }
+
+      return splatEngine && splatEngine.getSplatCount() > 0
+        ? this.renderSplatPrimitiveLayer(null, 'splats', splatEngine)
+        : null;
+    }
+
     const arrowTable = getArrowTable(this.props.data);
-    const splatData = useGpuEngine
-      ? {length: this.state.splatEngine?.getSplatCount() ?? arrowTable.numRows, attributes: {}}
+    return this.renderSplatPrimitiveLayer(arrowTable, 'splats', this.state?.splatEngine || null);
+  }
+
+  private renderSplatPrimitiveLayer(
+    arrowTable: arrow.Table | null,
+    id: string,
+    splatEngine: SplatEngine | null
+  ): Layer {
+    const splatData = splatEngine
+      ? this.context.device.type === 'webgpu'
+        ? {length: splatEngine.getSplatCount(), attributes: {}}
+        : splatEngine.getWebGLAttributes()
       : getDeckBinaryDataFromGaussianSplatArrowTable(
-          arrowTable,
+          arrowTable!,
           this.props.getColor,
           this.props.gaussianSupportRadius
         );
 
     return new SplatPrimitiveLayer({
-      ...this.getSubLayerProps({id: 'splats'}),
+      ...this.getSubLayerProps({id}),
       data: splatData,
       sizeUnits: this.props.sizeUnits,
       radiusScale: this.props.radiusScale,
@@ -415,7 +486,7 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       gaussianSupportRadius: this.props.gaussianSupportRadius,
       kernel2DSize: this.props.kernel2DSize,
       maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize,
-      splatEngine: useGpuEngine ? this.state.splatEngine : null
+      splatEngine
     }) as unknown as Layer;
   }
 
@@ -434,6 +505,16 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
     return false;
   }
 
+  private getOrCreateSplatEngine(): SplatEngine {
+    this.shouldUseGpuEngine();
+    let splatEngine = this.state.splatEngine;
+    if (!splatEngine) {
+      splatEngine = new SplatEngine(this.context.device, this.getSplatEngineProps());
+      this.setState({splatEngine});
+    }
+    return splatEngine;
+  }
+
   private getSplatEngineProps() {
     return {
       sortMode: (this.props.sortMode || 'global') as SplatSortMode,
@@ -441,13 +522,39 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
       screenSizeCutoffPixels: this.props.screenSizeCutoffPixels ?? 0,
       gaussianSupportRadius: this.props.gaussianSupportRadius ?? 3,
       kernel2DSize: this.props.kernel2DSize ?? 0.3,
-      maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize ?? 1024
+      maxScreenSpaceSplatSize: this.props.maxScreenSpaceSplatSize ?? 1024,
+      onDataUpdate: () =>
+        this.setState({engineDataVersion: (this.state.engineDataVersion || 0) + 1}),
+      onDataError: (error: Error) => this.setState({streamError: error})
     };
   }
 
   private destroySplatEngine(): void {
     this.state.splatEngine?.destroy();
     this.setState({splatEngine: undefined, engineTable: undefined, engineFallbackColor: undefined});
+  }
+
+  private destroyStreamEngines(): void {
+    this.destroyStreamEngineResources();
+    this.setState({
+      arrowTableBatches: [],
+      streamEngines: [],
+      streamEngineFallbackColor: undefined,
+      streamError: null,
+      streamingData: null,
+      engineDataVersion: 0
+    });
+  }
+
+  /** Releases per-batch WebGPU engines without clearing loaded async batch state. */
+  private destroyStreamEngineResources(): void {
+    for (const splatEngine of this.state.streamEngines || []) {
+      splatEngine?.destroy();
+    }
+    this.setState({
+      streamEngines: [],
+      streamEngineFallbackColor: undefined
+    });
   }
 }
 
@@ -640,6 +747,13 @@ function getCullingVolume(viewport: any): CullingVolume | undefined {
     ({normal, distance}: any) => new Plane(normal.clone().negate(), distance)
   );
   return new CullingVolume(planes);
+}
+
+/** Returns true when data can be consumed as async Arrow table batches. */
+function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> {
+  return Boolean(
+    data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
+  );
 }
 
 /** Convert a Gaussian splat Arrow table into deck.gl binary attributes. */

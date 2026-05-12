@@ -1,4 +1,8 @@
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+
 # NDJSONLoader
+
+<JsonDocsTabs active="ndjsonloader" />
 
 Streaming loader for NDJSON encoded files and related formats (LDJSON and JSONL).
 
@@ -59,7 +63,7 @@ const batches = await loadInBatches('ndjson.ndjson', NDJSONLoader, {
 });
 ```
 
-`NDJSONLoader` also accepts the deprecated `json.shape` alias for shape selection. `ndjson.shape` takes precedence, and schema/recovery options remain under `ndjson.*`. In Arrow mode, `ndjson.schema` accepts either a loaders.gl `Schema` or Apache Arrow `Schema`. `ndjson.arrowConversion` has the same strict-by-default recovery policy as `JSONLoader`: type mismatches, missing fields, and integer conversion issues throw unless configured to recover, and extra fields throw unless configured to drop. GeoJSON feature rows are converted as generic nested JSON rows; use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` for GeoArrow WKB output.
+`NDJSONLoader` also accepts the deprecated `json.shape` alias for shape selection. `ndjson.shape` takes precedence, and schema/recovery options remain under `ndjson.*`. In Arrow mode, `ndjson.schema` accepts either a loaders.gl `Schema` or Apache Arrow `Schema`. `ndjson.arrowConversion` has the same strict-by-default recovery policy as `JSONTableLoader`: type mismatches, missing fields, and integer conversion issues throw unless configured to recover, and extra fields throw unless configured to drop. GeoJSON feature rows are converted as generic nested JSON rows; use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` for GeoArrow WKB output.
 
 ## Data Format
 

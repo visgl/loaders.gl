@@ -1,4 +1,8 @@
+import {JsonDocsTabs} from '@site/src/components/docs/json-docs-tabs';
+
 # NDGeoJSONLoader
+
+<JsonDocsTabs active="ndgeojsonloader" tryItHref="/examples/geospatial/geojson" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />

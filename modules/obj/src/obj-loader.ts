@@ -14,6 +14,8 @@ export type OBJLoaderOptions = LoaderOptions & {
   obj?: {
     /** Output shape. Defaults to a legacy Mesh object. */
     shape?: 'mesh' | 'arrow-table';
+    /** Treat OBJ vertex records as a point cloud and stream `v` rows in batches. */
+    pointCloud?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };

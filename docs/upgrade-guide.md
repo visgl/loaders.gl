@@ -124,8 +124,9 @@ This unifies top-level loading behavior:
 
 - The underscored GeoJSON exports have been removed. Replace `_GeoJSONLoader`, `_GeoJSONWorkerLoader`, and `_GeoJSONWriter` with `GeoJSONLoader`, `GeoJSONWorkerLoader`, and `GeoJSONWriter`.
 - `GeoJSONLoader` no longer uses `options.gis.format`. Select output with `options.geojson.shape`: use `'geojson-table'` for the default feature table, `'binary-feature-collection'` for deck.gl-style binary features, or `'arrow-table'` for GeoArrow WKB output.
-- `JSONLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
-- `JSONLoader` and `NDJSONLoader` now support strict schema-aware Arrow conversion through `json.schema`, `ndjson.schema`, `json.arrowConversion`, and `ndjson.arrowConversion`. These options require `shape: 'arrow-table'`.
+- `JSONLoader` remains the arbitrary JSON document loader. Use `JSONTableLoader` for table-only JSON workflows and for `json.shape: 'arrow-table'`.
+- `JSONTableLoader` and `NDJSONLoader` no longer perform GeoJSON-specific Arrow conversion. Use `GeoJSONLoader` with `geojson.shape: 'arrow-table'` when GeoJSON features should become property columns plus a GeoArrow WKB `geometry` column.
+- `JSONTableLoader` and `NDJSONLoader` support strict schema-aware Arrow conversion through `json.schema`, `ndjson.schema`, `json.arrowConversion`, and `ndjson.arrowConversion`. These options require `shape: 'arrow-table'`.
 
 **@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
 

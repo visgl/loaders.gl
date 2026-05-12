@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
-import {parsePotreeBin} from './parsers/parse-potree-bin';
+import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Mesh, MeshArrowTable} from '@loaders.gl/schema';
+import {parsePotreeBin, type PotreeBinLoaderOptions} from './parsers/parse-potree-bin';
 import {PotreeBinLoader as PotreeBinLoaderMetadata} from './potree-bin-loader';
 
 const {preload: _PotreeBinLoaderPreload, ...PotreeBinLoaderMetadataWithoutPreload} =
@@ -14,12 +15,14 @@ const {preload: _PotreeBinLoaderPreload, ...PotreeBinLoaderMetadataWithoutPreloa
  * */
 export const PotreeBinLoaderWithParser = {
   ...PotreeBinLoaderMetadataWithoutPreload,
+  parse: async (arrayBuffer: ArrayBuffer, options?: PotreeBinLoaderOptions) =>
+    parsePotreeBin(arrayBuffer, 0, options),
   parseSync
-} as const satisfies LoaderWithParser<{}, never, LoaderOptions>;
+} as const satisfies LoaderWithParser<Mesh | MeshArrowTable, never, PotreeBinLoaderOptions>;
 
-function parseSync(arrayBuffer: ArrayBuffer, options?: LoaderOptions): {} {
-  const index = {};
-  const byteOffset = 0;
-  parsePotreeBin(arrayBuffer, byteOffset, options, index);
-  return index;
+function parseSync(
+  arrayBuffer: ArrayBuffer,
+  options?: PotreeBinLoaderOptions
+): Mesh | MeshArrowTable {
+  return parsePotreeBin(arrayBuffer, 0, options);
 }

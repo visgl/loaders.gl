@@ -12,6 +12,7 @@ import {
   type Shader
 } from '@luma.gl/core';
 import type {Color} from '@deck.gl/core';
+import type {ArrowTableBatch} from '@loaders.gl/schema';
 import {BoundingSphere, CullingVolume} from '@math.gl/culling';
 import {
   projectSplatCovarianceToScreen,
@@ -50,6 +51,10 @@ export type SplatEngineProps = {
   kernel2DSize: number;
   /** Maximum one-sigma screen-space splat size in pixels. */
   maxScreenSpaceSplatSize: number;
+  /** Optional callback fired after async data uploads a new accumulated batch. */
+  onDataUpdate?: () => void;
+  /** Optional callback fired when async data consumption fails. */
+  onDataError?: (error: Error) => void;
 };
 
 /** Draw-time inputs used by {@link SplatEngine.update}. */
@@ -79,6 +84,21 @@ export type SplatProjectedData = {
   visible: number;
   /** Maximum one-sigma axis length in screen pixels. */
   maxAxisPixels: number;
+};
+
+/** deck.gl binary attributes produced by the engine for WebGL rendering. */
+export type SplatWebGLAttributes = {
+  /** Number of decoded splats. */
+  length: number;
+  /** Binary attributes consumed by the WebGL primitive layer. */
+  attributes: {
+    /** Interleaved world positions. */
+    getPosition: {value: Float32Array; size: 3};
+    /** Circular fallback radii. */
+    getRadius: {value: Float32Array; size: 1};
+    /** Unorm8 RGBA colors. */
+    getColor: {value: Uint8Array; size: 4; type: 'unorm8'};
+  };
 };
 
 /** GPU buffers owned by {@link SplatEngine}. */
@@ -218,6 +238,7 @@ export class SplatEngine {
   buffers: SplatEngineBuffers | null = null;
 
   private sortedIndices: Uint32Array = new Uint32Array(0);
+  private dataStreamVersion = 0;
   private keys: Uint32Array = new Uint32Array(0);
   private projectedData: Float32Array = new Float32Array(0);
   private renderSplatCount = 0;
@@ -234,16 +255,13 @@ export class SplatEngine {
   private overflowSplatCount = 0;
 
   constructor(device: Device, props: Partial<SplatEngineProps> = {}) {
-    if (device.type !== 'webgpu') {
-      throw new Error('SplatEngine requires a WebGPU device.');
-    }
-
     this.device = device;
     this.setProps(props);
   }
 
   /** Release all GPU resources owned by this engine. */
   destroy(): void {
+    this.dataStreamVersion++;
     this.destroyBuffers();
     this.destroyComputeResources();
   }
@@ -265,7 +283,46 @@ export class SplatEngine {
   }
 
   /** Decode Arrow data and upload persistent/transient GPU buffers. */
-  setData(table: arrow.Table, fallbackColor: Color): void {
+  setData(table: arrow.Table | AsyncIterable<ArrowTableBatch>, fallbackColor: Color): void {
+    this.dataStreamVersion++;
+    if (isAsyncIterable(table)) {
+      const streamVersion = this.dataStreamVersion;
+      void this.setDataFromBatches(table, fallbackColor, streamVersion).catch(error => {
+        if (this.dataStreamVersion === streamVersion) {
+          this.props.onDataError?.(error instanceof Error ? error : new Error(String(error)));
+        }
+      });
+      return;
+    }
+
+    this.setArrowTableData(table, fallbackColor);
+  }
+
+  private async setDataFromBatches(
+    tableBatches: AsyncIterable<ArrowTableBatch>,
+    fallbackColor: Color,
+    streamVersion: number
+  ): Promise<void> {
+    let accumulatedTable: arrow.Table | null = null;
+
+    for await (const tableBatch of tableBatches) {
+      if (this.dataStreamVersion !== streamVersion) {
+        return;
+      }
+
+      if (!isArrowTableBatch(tableBatch)) {
+        throw new Error('SplatEngine async data requires ArrowTableBatch values.');
+      }
+
+      accumulatedTable = accumulatedTable
+        ? accumulatedTable.concat(tableBatch.data)
+        : tableBatch.data;
+      this.setArrowTableData(accumulatedTable, fallbackColor);
+      this.props.onDataUpdate?.();
+    }
+  }
+
+  private setArrowTableData(table: arrow.Table, fallbackColor: Color): void {
     const data = getGaussianSplatDataFromArrowTable(
       table,
       fallbackColor,
@@ -284,7 +341,7 @@ export class SplatEngine {
 
     this.destroyBuffers();
     this.destroyComputeBuffers();
-    this.buffers = this.createBuffers(data);
+    this.buffers = this.device.type === 'webgpu' ? this.createBuffers(data) : null;
   }
 
   /** Update projection/sort state before rendering. */
@@ -323,6 +380,30 @@ export class SplatEngine {
       splatColors: this.buffers.colors,
       splatIndices: this.buffers.indices,
       splatProjected: this.buffers.projected
+    };
+  }
+
+  /** Return deck.gl binary attributes for the WebGL fallback path. */
+  getWebGLAttributes(): SplatWebGLAttributes {
+    const data = this.data;
+    if (!data) {
+      return {
+        length: 0,
+        attributes: {
+          getPosition: {value: new Float32Array(0), size: 3},
+          getRadius: {value: new Float32Array(0), size: 1},
+          getColor: {value: new Uint8Array(0), size: 4, type: 'unorm8'}
+        }
+      };
+    }
+
+    return {
+      length: data.length,
+      attributes: {
+        getPosition: {value: data.positions, size: 3},
+        getRadius: {value: data.radii, size: 1},
+        getColor: {value: data.colors, size: 4, type: 'unorm8'}
+      }
     };
   }
 
@@ -916,6 +997,28 @@ function writeCullingPlanes(
       paramsF32[base + 3] = Number.POSITIVE_INFINITY;
     }
   }
+}
+
+/** Returns true when data can be consumed as async Arrow table batches. */
+function isAsyncIterable(data: unknown): data is AsyncIterable<ArrowTableBatch> {
+  return Boolean(
+    data && typeof (data as AsyncIterable<ArrowTableBatch>)[Symbol.asyncIterator] === 'function'
+  );
+}
+
+/** Returns true when a value is a loaders.gl Arrow table data batch. */
+function isArrowTableBatch(data: unknown): data is ArrowTableBatch {
+  const arrowTableBatch = data as ArrowTableBatch;
+  return (
+    arrowTableBatch?.shape === 'arrow-table' &&
+    arrowTableBatch.batchType === 'data' &&
+    isArrowTable(arrowTableBatch.data)
+  );
+}
+
+/** Returns true when a value is an Apache Arrow table. */
+function isArrowTable(data: unknown): data is arrow.Table {
+  return Boolean(data && typeof (data as arrow.Table).getChild === 'function');
 }
 
 /** Return a stable signature for projection inputs that affect render buffers. */

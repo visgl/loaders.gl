@@ -8,7 +8,15 @@ import type {JSONLoaderOptions, MetadataBatch, JSONBatch} from '../../json-loade
 import {TableBatchBuilder} from '@loaders.gl/schema-utils';
 import {assert, makeTextDecoderIterator, toArrayBufferIterator} from '@loaders.gl/loader-utils';
 import StreamingJSONParser from '../json-parser/streaming-json-parser';
+import type {
+  StreamingJSONParserFactory,
+  StreamingJSONParserOptions
+} from '../json-parser/streaming-json-parser-types';
 import JSONPath from '../jsonpath/jsonpath';
+
+type ParseJSONInBatchesOptions = {
+  parserFactory?: StreamingJSONParserFactory;
+};
 
 // TODO - support batch size 0 = no batching/single batch?
 // eslint-disable-next-line max-statements, complexity
@@ -22,11 +30,11 @@ export async function* parseJSONInBatches(
   binaryAsyncIterator:
     | AsyncIterable<ArrayBufferLike | ArrayBufferView>
     | Iterable<ArrayBufferLike | ArrayBufferView>,
-  options: JSONLoaderOptions
+  options: JSONLoaderOptions,
+  parseOptions: ParseJSONInBatchesOptions = {}
 ): AsyncIterable<TableBatch | MetadataBatch | JSONBatch> {
   const asyncIterator = makeTextDecoderIterator(toArrayBufferIterator(binaryAsyncIterator));
   const shape = options?.json?.shape;
-  const tableBatchBuilderShape = shape === 'arrow-table' ? 'object-row-table' : shape;
   const metadataBatchShape = shape === 'array-row-table' ? 'array-row-table' : 'object-row-table';
 
   const metadata = Boolean(options?.core?.metadata || (options as any)?.metadata);
@@ -38,10 +46,13 @@ export async function* parseJSONInBatches(
   const schema: Schema = null;
   const tableBatchBuilder = new TableBatchBuilder(schema, {
     ...options?.core,
-    shape: tableBatchBuilderShape
+    shape
   });
 
-  const parser = new StreamingJSONParser({jsonpaths});
+  const parserFactory =
+    parseOptions.parserFactory ||
+    ((parserOptions: StreamingJSONParserOptions) => new StreamingJSONParser(parserOptions));
+  const parser = parserFactory({jsonpaths, metadata});
 
   for await (const chunk of asyncIterator) {
     const rows = parser.write(chunk);
@@ -83,6 +94,8 @@ export async function* parseJSONInBatches(
       yield batch;
     }
   }
+
+  parser.close();
 
   // yield final batch
   const jsonpath = parser.getStreamingJsonPathAsString();
