@@ -5,7 +5,11 @@
 import test from 'tape-promise/tape';
 import {load, loadInBatches, isIterator, isAsyncIterable} from '@loaders.gl/core';
 import {ObjectRowTableBatch, getTableLength} from '@loaders.gl/schema-utils';
-import {JSONLoader, _GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
+import {
+  JSONLoader,
+  _FastJSONLoader as FastJSONLoader,
+  _GeoJSONLoader as GeoJSONLoader
+} from '@loaders.gl/json';
 import type {JSONLoaderOptions} from '@loaders.gl/json';
 import {JSONLoader as BundledJSONLoader} from '@loaders.gl/json/bundled';
 
@@ -33,6 +37,55 @@ test('JSONLoader#load(geojson.json, shape: arrow-table)', async t => {
   t.equal(arrowTable.shape, 'arrow-table', 'Correct Arrow table type received');
   t.equal(arrowTable.data.numRows, 308, 'Correct number of Arrow rows received');
   t.equal(arrowTable.data.getChild('type')?.get(0), 'Feature', 'Arrow field values are preserved');
+  t.end();
+});
+
+test('BundledJSONLoader#parse(ArrayBuffer, shape: arrow-table)', async t => {
+  const arrayBuffer = new TextEncoder().encode(
+    JSON.stringify({metadata: {name: 'features'}, features: [{id: 1}, {id: 2}]})
+  ).buffer;
+  const arrowTable = await BundledJSONLoader.parse(arrayBuffer, {
+    json: {table: true, shape: 'arrow-table'}
+  });
+
+  t.equal(arrowTable.shape, 'arrow-table', 'Correct Arrow table type received');
+  t.equal(arrowTable.data.numRows, 2, 'Correct number of Arrow rows received');
+  t.equal(arrowTable.data.getChild('id')?.get(0), 1, 'Arrow field values are preserved');
+  t.end();
+});
+
+test('FastJSONLoader#load(geojson.json)', async t => {
+  const table = await load(GEOJSON_PATH, FastJSONLoader, {json: {table: true}});
+  t.equal(
+    table.shape === 'object-row-table' && table.data.length,
+    308,
+    'Correct number of rows received'
+  );
+  t.end();
+});
+
+test('FastJSONLoader#parse(ArrayBuffer)', async t => {
+  const arrayBuffer = new TextEncoder().encode('[{"id": 1}, {"id": 2}]').buffer;
+  const table = await FastJSONLoader.parse(arrayBuffer, {json: {table: true}});
+
+  t.equal(table.shape, 'object-row-table', 'parsed JSON array as row table');
+  t.equal(table.data.length, 2, 'parsed both rows');
+  t.end();
+});
+
+test('FastJSONLoader#loadInBatches(jsonpaths)', async t => {
+  const iterator = await loadInBatches(GEOJSON_PATH, FastJSONLoader, {
+    json: {jsonpaths: ['$.features']}
+  });
+
+  let rowCount = 0;
+  for await (const batch of iterator) {
+    rowCount += batch.length;
+    // @ts-ignore
+    t.equal(batch.jsonpath?.toString(), '$.features', 'correct jsonpath on batch');
+  }
+
+  t.equal(rowCount, 308, 'Correct number of row received');
   t.end();
 });
 

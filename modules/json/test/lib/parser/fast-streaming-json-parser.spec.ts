@@ -123,6 +123,45 @@ test('Streaming parsers match for scalar string array chunk boundaries', t => {
   t.end();
 });
 
+test('FastStreamingJSONParser handles primitive array rows', t => {
+  const output = collectParserOutput(FastStreamingJSONParser, '[1, true, null, -2.5]', 2);
+
+  t.deepEqual(output.rows, [1, true, null, -2.5], 'primitive rows are emitted');
+  t.equal(output.jsonpath, '$', 'jsonpath is root array');
+  t.ok(output.rawJsonPath, 'raw JSONPath object is available');
+  t.end();
+});
+
+test('FastStreamingJSONParser handles escaped keys and unicode stream strings', t => {
+  const json = '{"\\u0066eatures":["\\u2603", "line\\nbreak"],"line\\nbreak":[1]}';
+  const output = collectParserOutput(FastStreamingJSONParser, json, 1, ['$.features']);
+
+  t.deepEqual(output.rows, ['☃', 'line\nbreak'], 'escaped string rows are decoded');
+  t.deepEqual(output.partialResult, {features: []}, 'partial result preserves escaped key path');
+  t.equal(output.jsonpath, '$.features', 'jsonpath matches escaped key');
+  t.end();
+});
+
+test('FastStreamingJSONParser handles unmatched paths and non-streaming close', t => {
+  const json = '  {"empty": {}, "nested": [[], {"value": 1}], "flag": true}';
+  const output = collectParserOutput(FastStreamingJSONParser, json, 3, ['$.missing']);
+
+  t.deepEqual(output.rows, [], 'no rows are emitted without a matching path');
+  t.deepEqual(output.finalResult, JSON.parse(json), 'complete JSON is available after close');
+  t.equal(output.jsonpath, null, 'no streaming jsonpath is selected');
+  t.end();
+});
+
+test('FastStreamingJSONParser tolerates incomplete trailing JSON', t => {
+  const parser = new FastStreamingJSONParser({metadata: true});
+
+  t.deepEqual(parser.write('[1'), [], 'incomplete primitive is held until more data arrives');
+  parser.close();
+  t.deepEqual(parser.write(''), [], 'closed incomplete input does not emit partial rows');
+  t.deepEqual(parser.getPartialResult(), [], 'root streaming metadata is initialized');
+  t.end();
+});
+
 /**
  * Collects rows and metadata from a streaming parser for comparison.
  */
@@ -150,6 +189,7 @@ function collectParserOutput(
     rows,
     partialResult,
     finalResult: parser.getPartialResult(),
+    rawJsonPath: parser.getStreamingJsonPath(),
     jsonpath: parser.getStreamingJsonPathAsString()
   };
 }
