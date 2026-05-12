@@ -35,6 +35,7 @@ const INVALID_KEY: u32 = 4294967295u;
 @group(0) @binding(12) var<storage, read_write> tempTileIndices: array<u32>;
 @group(0) @binding(13) var<storage, read_write> tempTileKeys: array<u32>;
 @group(0) @binding(14) var<storage, read_write> counts: array<atomic<u32>>;
+@group(0) @binding(15) var<storage, read> activeFlags: array<f32>;
 
 struct Params {
   viewProjection: mat4x4<f32>,
@@ -50,7 +51,7 @@ struct Params {
   counts1: vec4<u32>,
 };
 
-@group(0) @binding(15) var<uniform> params: Params;
+@group(0) @binding(16) var<uniform> params: Params;
 
 var<workgroup> localKeys: array<u32, 1024>;
 var<workgroup> localIndices: array<u32, 1024>;
@@ -178,6 +179,10 @@ fn isInsideFrustum(position: vec3<f32>, radius: f32) -> bool {
   return true;
 }
 
+fn getExpandedLoDOpacity(opacity: f32) -> f32 {
+  return select(opacity, min(opacity * 4.0 - 3.0, 5.0), opacity > 1.0);
+}
+
 @compute @workgroup_size(WORKGROUP_SIZE)
 fn clear(@builtin(global_invocation_id) globalId: vec3<u32>) {
   let index = globalId.x;
@@ -198,6 +203,11 @@ fn clear(@builtin(global_invocation_id) globalId: vec3<u32>) {
 fn project(@builtin(global_invocation_id) globalId: vec3<u32>) {
   let index = globalId.x;
   if (index >= params.counts0.x) {
+    return;
+  }
+  let activeWeight = activeFlags[index];
+  if (activeWeight <= 0.0) {
+    projected[index * 2u + 1u] = vec4<f32>(0.0, 0.0, 0.0, 0.0);
     return;
   }
 
@@ -235,15 +245,17 @@ fn project(@builtin(global_invocation_id) globalId: vec3<u32>) {
   let rawAxes = getCovarianceAxes(covariance00 + kernelVariance, covariance01, covariance11 + kernelVariance);
   let axes = clampAxes(rawAxes, params.radius.w);
   let maxAxisPixels = getMaxAxisPixels(axes);
-  let opacity = opacities[index];
-  let renderedMaxAxisPixels = maxAxisPixels * params.viewportAlpha.w * params.radius.x;
-  let boundingRadius = max(max(scale.x, scale.y), scale.z) * params.radius.x * params.radius.z;
+  let opacity = opacities[index] * activeWeight;
+  let splatAlpha = getExpandedLoDOpacity(opacity);
+  let adjustedSupportRadius = params.viewportAlpha.w + max(splatAlpha - 1.0, 0.0) * 0.7;
+  let renderedMaxAxisPixels = maxAxisPixels * adjustedSupportRadius * params.radius.x;
+  let boundingRadius = max(max(scale.x, scale.y), scale.z) * params.radius.x * adjustedSupportRadius;
   let visible = opacity >= params.viewportAlpha.z &&
     renderedMaxAxisPixels >= params.radius.y &&
     isInsideFrustum(position, boundingRadius);
   let projectedBase = index * 2u;
   projected[projectedBase] = axes;
-  projected[projectedBase + 1u] = vec4<f32>(opacity, select(0.0, 1.0, visible), maxAxisPixels, 0.0);
+  projected[projectedBase + 1u] = vec4<f32>(splatAlpha, select(0.0, 1.0, visible), maxAxisPixels, 0.0);
 
   let clip = transformPosition(position);
   let key = getDepthKey(clip, index);

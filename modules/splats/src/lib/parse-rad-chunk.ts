@@ -106,9 +106,26 @@ function decodeRADAlpha(
   }
   const opacities = decodeRADFloatProperty(bytes, metadata, property, 1);
   for (let splatIndex = 0; splatIndex < opacities.length; splatIndex++) {
-    opacities[splatIndex] = Math.max(opacities[splatIndex], 0);
+    opacities[splatIndex] = decodeRADOpacity(opacities[splatIndex], metadata, property);
   }
   return opacities;
+}
+
+/** Decodes normal or Spark LoD opacity into the renderer opacity domain. */
+function decodeRADOpacity(
+  opacity: number,
+  metadata: RADChunkMetadata,
+  property: RADChunkProperty
+): number {
+  const normalizedOpacity = Math.max(opacity, 0);
+  if (
+    !metadata.splatEncoding?.lodOpacity ||
+    (property.encoding !== 'r8' && property.encoding !== 'r8_delta')
+  ) {
+    return normalizedOpacity;
+  }
+
+  return normalizedOpacity * 2;
 }
 
 /** Decodes the chunk RGB property, falling back to white splats. */

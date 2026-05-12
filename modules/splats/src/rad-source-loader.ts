@@ -22,6 +22,7 @@ import {makeGaussianSplatsArrowTable} from './lib/splats-arrow-table';
 import type {GaussianSplats} from './types';
 
 const DEFAULT_RAD_HEADER_BYTE_LENGTHS = [64 * 1024, 256 * 1024, 1024 * 1024];
+const DEFAULT_RAD_MAX_CONCURRENT_CHUNK_REQUESTS = 4;
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -53,6 +54,8 @@ export type RADChunkTableIteratorOptions = RADChunkRequestOptions & {
   maxChunks?: number;
   /** Maximum number of splats to decode before stopping. */
   maxSplats?: number;
+  /** Maximum number of RAD chunks to fetch and decode at once when the iterator must inspect a chunk window before yielding. */
+  maxConcurrentChunkRequests?: number;
   /** Whether loaded child splats should replace parent LoD splats in returned tables. */
   pruneLoadedLoDParents?: boolean;
 };
@@ -207,15 +210,15 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
     let splatCount = 0;
 
     if (options.pruneLoadedLoDParents) {
-      const splatChunks: GaussianSplats[] = [];
+      const chunkIndices = getRADChunkTableIteratorIndices(
+        metadata,
+        startChunkIndex,
+        maxChunks,
+        maxSplats
+      );
+      const splatChunks = await this._getChunkSplatsConcurrently(chunkIndices, options);
       let loadedGlobalSplatEnd = 0;
-      for (
-        let chunkIndex = startChunkIndex;
-        chunkIndex < metadata.chunks.length && chunkCount < maxChunks && splatCount < maxSplats;
-        chunkIndex++
-      ) {
-        const splats = await this.getChunkSplats(chunkIndex, options);
-        splatChunks.push(splats);
+      for (const splats of splatChunks) {
         chunkCount++;
         splatCount += splats.splatCount;
         const base = getRADChunkSplatBase(splats);
@@ -237,6 +240,30 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
       splatCount += table.data.numRows;
       yield table;
     }
+  }
+
+  /** Fetches and decodes RAD chunks with bounded concurrency while preserving chunk order. */
+  private async _getChunkSplatsConcurrently(
+    chunkIndices: number[],
+    options: RADChunkTableIteratorOptions
+  ): Promise<GaussianSplats[]> {
+    const splatChunks = new Array<GaussianSplats>(chunkIndices.length);
+    const maxConcurrentChunkRequests = getRADMaxConcurrentChunkRequests(
+      options.maxConcurrentChunkRequests
+    );
+    let nextResultIndex = 0;
+
+    async function loadNextChunk(source: RADSource): Promise<void> {
+      while (nextResultIndex < chunkIndices.length) {
+        const resultIndex = nextResultIndex++;
+        const chunkIndex = chunkIndices[resultIndex];
+        splatChunks[resultIndex] = await source.getChunkSplats(chunkIndex, options);
+      }
+    }
+
+    const workerCount = Math.min(maxConcurrentChunkRequests, chunkIndices.length);
+    await Promise.all(Array.from({length: workerCount}, () => loadNextChunk(this)));
+    return splatChunks;
   }
 
   /** Loads and parses the top-level RAD metadata. */
@@ -330,6 +357,36 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
       signal: options.signal
     };
   }
+}
+
+/** Returns the RAD chunk indices requested by a chunk-table iterator. */
+function getRADChunkTableIteratorIndices(
+  metadata: RADMetadata,
+  startChunkIndex: number,
+  maxChunks: number,
+  maxSplats: number
+): number[] {
+  const chunkIndices: number[] = [];
+  let estimatedSplatCount = 0;
+  for (
+    let chunkIndex = startChunkIndex;
+    chunkIndex < metadata.chunks.length &&
+    chunkIndices.length < maxChunks &&
+    estimatedSplatCount < maxSplats;
+    chunkIndex++
+  ) {
+    const chunk = metadata.chunks[chunkIndex];
+    chunkIndices.push(chunkIndex);
+    estimatedSplatCount += chunk?.count ?? metadata.chunkSize ?? 0;
+  }
+  return chunkIndices;
+}
+
+/** Returns a positive integer chunk request concurrency limit. */
+function getRADMaxConcurrentChunkRequests(maxConcurrentChunkRequests?: number): number {
+  return Number.isFinite(maxConcurrentChunkRequests) && maxConcurrentChunkRequests! > 0
+    ? Math.floor(maxConcurrentChunkRequests!)
+    : DEFAULT_RAD_MAX_CONCURRENT_CHUNK_REQUESTS;
 }
 
 /** Returns the first global splat index represented by decoded RAD chunk data. */

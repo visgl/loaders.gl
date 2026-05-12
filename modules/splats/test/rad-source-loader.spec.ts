@@ -74,6 +74,19 @@ test('parseRADChunkToGaussianSplats decodes Spark RADC chunk payloads', t => {
   t.end();
 });
 
+test('parseRADChunkToGaussianSplats expands Spark LoD opacity bytes', t => {
+  const splats = parseRADChunkToGaussianSplats(
+    makeRADChunkFixture({
+      alphaEncoding: 'r8',
+      splatEncoding: {lodOpacity: true}
+    })
+  );
+
+  t.ok(Math.abs(splats.opacities[0] - (64 / 255) * 2) < 1e-6, 'decodes opacity below one');
+  t.ok(Math.abs(splats.opacities[1] - (191 / 255) * 2) < 1e-6, 'decodes opacity above one');
+  t.end();
+});
+
 test('RADSourceLoader resolves and fetches sidecar RADC chunks', async t => {
   const chunk = makeRADChunkFixture();
   const rad = makeRADFixture({chunkFilename: 'chunks/scene-0.radc', inlineChunk: false});
@@ -107,6 +120,53 @@ test('RADSourceLoader resolves and fetches sidecar RADC chunks', async t => {
   t.end();
 });
 
+test('RADSourceLoader bounds concurrent pruned chunk table reads', async t => {
+  const chunk = makeRADChunkFixture();
+  const rad = makeRADFixture({
+    chunkFilenames: [
+      'chunks/scene-0.radc',
+      'chunks/scene-1.radc',
+      'chunks/scene-2.radc',
+      'chunks/scene-3.radc'
+    ],
+    inlineChunk: false
+  });
+  let activeChunkFetchCount = 0;
+  let maxActiveChunkFetchCount = 0;
+  const source = RADSourceLoader.createDataSource('https://example.com/assets/scene.rad', {
+    core: {
+      loadOptions: {
+        core: {
+          fetch: async (url: string | RequestInfo | URL) => {
+            const urlString = String(url);
+            if (!urlString.endsWith('.radc')) {
+              return new Response(rad);
+            }
+            activeChunkFetchCount++;
+            maxActiveChunkFetchCount = Math.max(maxActiveChunkFetchCount, activeChunkFetchCount);
+            await new Promise(resolve => setTimeout(resolve, 10));
+            activeChunkFetchCount--;
+            return new Response(chunk);
+          }
+        }
+      }
+    }
+  });
+
+  const chunkTables: MeshArrowTable[] = [];
+  for await (const table of source.getChunkTables({
+    maxChunks: 4,
+    maxConcurrentChunkRequests: 2,
+    pruneLoadedLoDParents: true
+  })) {
+    chunkTables.push(table);
+  }
+
+  t.equal(chunkTables.length, 4, 'iterates all selected pruned chunk tables');
+  t.equal(maxActiveChunkFetchCount, 2, 'limits concurrent chunk fetches');
+  t.end();
+});
+
 test('RAD parsing validates magic headers', t => {
   t.throws(
     () => parseRADChunkHeader(new ArrayBuffer(16)),
@@ -125,6 +185,8 @@ test('RAD parsing validates magic headers', t => {
 type RADFixtureOptions = {
   /** Optional sidecar chunk filename. */
   chunkFilename?: string;
+  /** Optional sidecar chunk filenames. */
+  chunkFilenames?: string[];
   /** Whether to append chunk bytes inline after the RAD header. */
   inlineChunk?: boolean;
 };
@@ -133,20 +195,21 @@ type RADFixtureOptions = {
 function makeRADFixture(options: RADFixtureOptions = {}): ArrayBuffer {
   const chunk = makeRADChunkFixture();
   const inlineChunk = options.inlineChunk ?? true;
+  const chunkFilenames =
+    options.chunkFilenames || (options.chunkFilename ? [options.chunkFilename] : undefined);
+  const chunkCount = chunkFilenames?.length || 1;
   const metadata = {
     version: 1,
     type: 'gsplat',
-    count: 2,
+    count: chunkCount * 2,
     maxSh: 0,
     chunkSize: 2,
-    allChunkBytes: inlineChunk ? chunk.byteLength : 0,
-    chunks: [
-      {
-        offset: 0,
-        bytes: chunk.byteLength,
-        filename: options.chunkFilename
-      }
-    ],
+    allChunkBytes: inlineChunk ? chunk.byteLength * chunkCount : 0,
+    chunks: Array.from({length: chunkCount}, (_, chunkIndex) => ({
+      offset: inlineChunk ? chunk.byteLength * chunkIndex : 0,
+      bytes: chunk.byteLength,
+      filename: chunkFilenames?.[chunkIndex]
+    })),
     splatEncoding: {lodOpacity: true}
   };
 
@@ -160,13 +223,27 @@ function makeRADFixture(options: RADFixtureOptions = {}): ArrayBuffer {
   dataView.setUint32(4, metadataBytes.byteLength, true);
   bytes.set(metadataBytes, 8);
   if (inlineChunk) {
-    bytes.set(new Uint8Array(chunk), chunksByteOffset);
+    for (let chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++) {
+      bytes.set(new Uint8Array(chunk), chunksByteOffset + chunk.byteLength * chunkIndex);
+    }
   }
   return data;
 }
 
+/** Options for building deterministic RADC chunk fixtures. */
+type RADChunkFixtureOptions = {
+  /** Encoding used for the alpha property. */
+  alphaEncoding?: 'f32' | 'r8';
+  /** Optional chunk-local splat encoding metadata. */
+  splatEncoding?: Record<string, unknown>;
+};
+
 /** Builds a deterministic Spark RADC chunk fixture. */
-function makeRADChunkFixture(): ArrayBuffer {
+function makeRADChunkFixture(options: RADChunkFixtureOptions = {}): ArrayBuffer {
+  const alphaPayload =
+    options.alphaEncoding === 'r8'
+      ? makeRADChunkPayload('alpha', 'r8', new Uint8Array([64, 191]), {min: 0, max: 1})
+      : makeRADChunkPayload('alpha', 'f32', encodeF32(new Float32Array([0.25, 0.75]), 1, 2));
   const propertyPayloads = [
     makeRADChunkPayload(
       'center',
@@ -176,7 +253,7 @@ function makeRADChunkFixture(): ArrayBuffer {
         compression: 'gz'
       }
     ),
-    makeRADChunkPayload('alpha', 'f32', encodeF32(new Float32Array([0.25, 0.75]), 1, 2)),
+    alphaPayload,
     makeRADChunkPayload(
       'rgb',
       'r8_delta',
@@ -214,6 +291,7 @@ function makeRADChunkFixture(): ArrayBuffer {
     payloadBytes,
     maxSh: 0,
     lodTree: true,
+    splatEncoding: options.splatEncoding,
     properties
   };
   const metadataBytes = new TextEncoder().encode(JSON.stringify(metadata));

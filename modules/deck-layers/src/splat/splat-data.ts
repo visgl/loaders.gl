@@ -35,6 +35,28 @@ export type GaussianSplatData = {
   radii: Float32Array;
 };
 
+/** Linear Gaussian splat arrays that can be uploaded without Arrow conversion. */
+export type GaussianSplatValues = {
+  /** Number of splats represented by these arrays. */
+  splatCount: number;
+  /** Interleaved `x, y, z` positions. */
+  positions: Float32Array;
+  /** Interleaved decoded `scale_0, scale_1, scale_2` standard deviations. */
+  scales: Float32Array;
+  /** Interleaved quaternion rotations in `[w, x, y, z]` order. */
+  rotations: Float32Array;
+  /** Interleaved RGB color bytes. */
+  colors: Uint8Array;
+  /** Optional interleaved RGB spherical harmonic DC coefficients. */
+  sphericalHarmonicDcs?: Float32Array;
+  /** Linear opacity values used for blending and culling. */
+  opacities: Float32Array;
+  /** Optional interleaved spherical harmonic rest coefficients. */
+  sphericalHarmonics?: Float32Array;
+  /** Number of spherical harmonic rest coefficients per splat. */
+  sphericalHarmonicsComponentCount?: number;
+};
+
 /** Convert a loaders.gl wrapper or raw Apache Arrow table to a raw Arrow table. */
 export function getArrowTable(data: MeshArrowTable | arrow.Table): arrow.Table {
   return isMeshArrowTable(data) ? data.data : (data as arrow.Table);
@@ -73,6 +95,33 @@ export function getGaussianSplatDataFromArrowTable(
     colors,
     sphericalHarmonics,
     sphericalHarmonicsComponentCount,
+    radii
+  };
+}
+
+/** Convert decoded Gaussian splat arrays to render-ready data without building Arrow columns. */
+export function getGaussianSplatDataFromValues(
+  splats: GaussianSplatValues,
+  fallbackColor: Color = DEFAULT_COLOR,
+  gaussianSupportRadius: number = 3
+): GaussianSplatData {
+  const length = splats.splatCount;
+  const baseRgb = splats.sphericalHarmonicDcs
+    ? getSplatBaseRgbFromSphericalHarmonicDcs(splats.sphericalHarmonicDcs, length)
+    : getSplatBaseRgbFromColorBytes(splats.colors, length, fallbackColor);
+  const colors = getSplatColorsFromBaseRgb(baseRgb, splats.opacities);
+  const radii = getSplatRadii(splats.scales, gaussianSupportRadius);
+
+  return {
+    length,
+    positions: splats.positions,
+    scales: splats.scales,
+    rotations: splats.rotations,
+    opacities: splats.opacities,
+    baseRgb,
+    colors,
+    sphericalHarmonics: splats.sphericalHarmonics,
+    sphericalHarmonicsComponentCount: splats.sphericalHarmonicsComponentCount,
     radii
   };
 }
@@ -184,6 +233,43 @@ export function getSplatBaseRgb(table: arrow.Table, fallbackColor: Color): Float
     }
   }
 
+  return rgb;
+}
+
+/** Return linear RGB values from interleaved SH DC coefficient arrays. */
+function getSplatBaseRgbFromSphericalHarmonicDcs(
+  sphericalHarmonicDcs: Float32Array,
+  splatCount: number
+): Float32Array {
+  const rgb = new Float32Array(splatCount * 3);
+  for (let rowIndex = 0; rowIndex < splatCount; rowIndex++) {
+    const colorIndex = rowIndex * 3;
+    rgb[colorIndex + 0] = sphericalHarmonicDcs[colorIndex + 0] * SH_C0 + 0.5;
+    rgb[colorIndex + 1] = sphericalHarmonicDcs[colorIndex + 1] * SH_C0 + 0.5;
+    rgb[colorIndex + 2] = sphericalHarmonicDcs[colorIndex + 2] * SH_C0 + 0.5;
+  }
+  return rgb;
+}
+
+/** Return linear RGB values from interleaved RGB color bytes or a fallback color. */
+function getSplatBaseRgbFromColorBytes(
+  colors: Uint8Array,
+  splatCount: number,
+  fallbackColor: Color
+): Float32Array {
+  const rgb = new Float32Array(splatCount * 3);
+  for (let rowIndex = 0; rowIndex < splatCount; rowIndex++) {
+    const colorIndex = rowIndex * 3;
+    if (colors.length >= colorIndex + 3) {
+      rgb[colorIndex + 0] = colors[colorIndex + 0] / 255;
+      rgb[colorIndex + 1] = colors[colorIndex + 1] / 255;
+      rgb[colorIndex + 2] = colors[colorIndex + 2] / 255;
+    } else {
+      rgb[colorIndex + 0] = (fallbackColor[0] ?? DEFAULT_COLOR[0]) / 255;
+      rgb[colorIndex + 1] = (fallbackColor[1] ?? DEFAULT_COLOR[1]) / 255;
+      rgb[colorIndex + 2] = (fallbackColor[2] ?? DEFAULT_COLOR[2]) / 255;
+    }
+  }
   return rgb;
 }
 

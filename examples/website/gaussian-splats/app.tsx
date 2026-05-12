@@ -14,7 +14,12 @@ import {
 } from '@deck.gl/core';
 import {webgpuAdapter} from '@luma.gl/webgpu';
 import {load, loadInBatches} from '@loaders.gl/core';
-import {SplatLayer} from '@loaders.gl/deck-layers';
+import {
+  RADSplatLayer,
+  SplatLayer,
+  type RADSplatBounds,
+  type RADSplatLoadProgress
+} from '@loaders.gl/deck-layers';
 import {PLYLoader} from '@loaders.gl/ply';
 import {KSPLATLoader, RADSourceLoader, SPLATLoader, SPZLoader} from '@loaders.gl/splats';
 import type {RADSource} from '@loaders.gl/splats';
@@ -36,19 +41,53 @@ const CONTROLLER_MODES = ['orbit', 'first-person'] as const;
 const FIRST_PERSON_INITIAL_PITCH = -20;
 const FIRST_PERSON_MIN_PITCH = -75;
 const FIRST_PERSON_MAX_PITCH = 75;
+const RAD_PREVIEW_MAX_PIXEL_RADIUS = 64;
+const RAD_MIN_FOV = 25;
+const RAD_MAX_FOV = 90;
+const RAD_DEFAULT_FOV = 50;
+const RAD_MIN_LEVEL_OF_DETAIL = 0.5;
+const RAD_MAX_LEVEL_OF_DETAIL = 4;
 const ORBIT_MIN_ZOOM = -4;
 const ORBIT_MAX_ZOOM = 8;
 const SPLAT_LAYER_OPACITY = 0.34;
+const RAD_SPLAT_LAYER_OPACITY = 1;
 const SPLAT_RADIUS_SCALE = 0.78;
+const RAD_SPLAT_RADIUS_SCALE = 0.75;
 const SPLAT_RADIUS_MIN_PIXELS = 0.35;
 const SPLAT_RADIUS_MAX_PIXELS = 16;
+const RAD_SPLAT_RADIUS_MAX_PIXELS = RAD_PREVIEW_MAX_PIXEL_RADIUS;
 const SPLAT_ALPHA_SCALE = 0.38;
+const RAD_SPLAT_ALPHA_SCALE = 0.5;
 const SPLAT_ALPHA_CUTOFF = 0.02;
+const RAD_SPLAT_ALPHA_CUTOFF = 0.5 / 255;
 const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
 const SPLAT_KERNEL_2D_SIZE = 0.3;
 const SPLAT_MAX_SCREEN_SPACE_SIZE = 256;
-const RAD_PREVIEW_MAX_CHUNKS = 8;
-const RAD_PREVIEW_MAX_SPLATS = 600000;
+const RAD_SPLAT_MAX_SCREEN_SPACE_SIZE = RAD_PREVIEW_MAX_PIXEL_RADIUS;
+const RAD_PREVIEW_BASE_MAX_CHUNKS = 384;
+const RAD_PREVIEW_BASE_MAX_SPLATS = 3600000;
+const RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS = 768;
+const RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS = 4;
+const RAD_DEFAULT_LEVEL_OF_DETAIL = 1.5;
+const RAD_DEFAULT_LOD_RENDER_SCALE = 1;
+const RAD_DEFAULT_BEHIND_FOVEATE = 0.2;
+const RAD_DEFAULT_CONE_FOVEATE = 0.4;
+const COIT_TOWER_RAD_MODEL_MATRIX = new Float32Array([
+  10, 0, 0, 0,
+  0, 0, -10, 0,
+  0, 10, 0, 0,
+  0, 0, 0, 1
+]);
+const COIT_TOWER_RAD_INITIAL_VIEW_STATE = {
+  position: [-0.858, 1.128, 2.203],
+  bearing: 77.80625917963492,
+  pitch: 14,
+  fov: RAD_DEFAULT_FOV,
+  fovy: RAD_DEFAULT_FOV,
+  minPitch: FIRST_PERSON_MIN_PITCH,
+  maxPitch: FIRST_PERSON_MAX_PITCH
+} as FirstPersonViewState;
+const SAVED_GAUSSIAN_SPLAT_URLS_KEY = 'loaders.gl.example-url-input.urls.v1.gaussian splat';
 const ZSTD_MODULES = {
   'zstd-codec': zstdCodecModule.ZstdCodec || zstdCodecModule.default?.ZstdCodec
 };
@@ -66,17 +105,61 @@ const INITIAL_VIEW_STATE = {
 
 type ControllerMode = (typeof CONTROLLER_MODES)[number];
 
+type RADRenderSettings = {
+  /** Vertical field of view used by RAD preview cameras. */
+  fov: number;
+  /** Level-of-detail multiplier used for page priority and render budget. */
+  levelOfDetail: number;
+  /** Render-radius multiplier applied after RAD LoD selection. */
+  lodRenderScale: number;
+  /** Relative priority retained behind the active view. */
+  behindFoveate: number;
+  /** Relative priority retained around the active view cone. */
+  coneFoveate: number;
+};
+
+type RADRenderProgress = {
+  /** Number of source chunks resident in the RAD runtime. */
+  residentChunkCount?: number;
+  /** Number of decoded splats resident in the RAD runtime. */
+  residentSplatCount?: number;
+  /** Number of chunk requests currently active. */
+  requestedChunkCount?: number;
+  /** Number of resident chunks evicted by the runtime page store. */
+  evictedChunkCount?: number;
+  /** Upload duration for the most recent chunk page. */
+  lastUploadTimeMs?: number;
+  /** Time from source load to the latest coherent LoD commit. */
+  lastCommitTimeMs?: number;
+};
+
+/** Deck view state extended with FoV fields accepted at runtime. */
+type GaussianSplatViewState = (OrbitViewState | FirstPersonViewState) & {
+  /** Runtime FoV field consumed by deck.gl perspective views. */
+  fov?: number;
+  /** Runtime vertical FoV field consumed by deck.gl perspective views. */
+  fovy?: number;
+};
+
 type GaussianSplatsAppState = {
   /** Loaded Arrow table wrapper or streaming loaders.gl Arrow table batches. */
   data: MeshArrowTable | AsyncIterable<ArrowTableBatch> | null;
+  /** Loaded RAD source rendered through the direct RAD splat layer. */
+  radSource: RADSource | null;
   /** First loaded table used for schema and row previews. */
   previewTable: MeshArrowTable | null;
   /** Number of splat rows loaded so far. */
   loadedSplatCount: number;
+  /** Total source splat count when known. */
+  totalSplatCount?: number;
   /** Current deck.gl view state. */
-  viewState: OrbitViewState | FirstPersonViewState;
+  viewState: GaussianSplatViewState;
   /** Active camera controller. */
   controllerMode: ControllerMode;
+  /** RAD-specific camera and LoD controls. */
+  radSettings: RADRenderSettings;
+  /** RAD runtime page-store status. */
+  radProgress?: RADRenderProgress;
   /** Selected source URL shown in the URL picker. */
   selectedUrl: string;
   /** Whether source URLs are currently loading. */
@@ -87,17 +170,57 @@ type GaussianSplatsAppState = {
   error?: string | null;
 };
 
+/** Return default RAD controls matching Spark-style preview behavior. */
+function getDefaultRADRenderSettings(): RADRenderSettings {
+  return {
+    fov: RAD_DEFAULT_FOV,
+    levelOfDetail: RAD_DEFAULT_LEVEL_OF_DETAIL,
+    lodRenderScale: RAD_DEFAULT_LOD_RENDER_SCALE,
+    behindFoveate: RAD_DEFAULT_BEHIND_FOVEATE,
+    coneFoveate: RAD_DEFAULT_CONE_FOVEATE
+  };
+}
+
+/** Return RAD chunk budget scaled by the selected LoD. */
+function getRADMaxChunks(levelOfDetail: number): number {
+  const scale = getRADLevelOfDetailBudgetScale(levelOfDetail);
+  return Math.max(Math.round(RAD_PREVIEW_BASE_MAX_CHUNKS * scale), 1);
+}
+
+/** Return RAD splat budget scaled by the selected LoD. */
+function getRADMaxSplats(levelOfDetail: number): number {
+  const scale = getRADLevelOfDetailBudgetScale(levelOfDetail);
+  return Math.max(Math.round(RAD_PREVIEW_BASE_MAX_SPLATS * scale), 1);
+}
+
+/** Return decoded RAD cache budget for the current chunk budget. */
+function getRADMaxCachedChunks(maxChunks: number): number {
+  return Math.max(RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS, maxChunks * 2);
+}
+
+/** Return a normalized budget multiplier from a Spark-like LoD setting. */
+function getRADLevelOfDetailBudgetScale(levelOfDetail: number): number {
+  return Math.max(levelOfDetail, RAD_MIN_LEVEL_OF_DETAIL) / RAD_DEFAULT_LEVEL_OF_DETAIL;
+}
+
 /** Gaussian splats website example rendered through a WebGPU deck.gl canvas. */
 export default function GaussianSplatsApp() {
   const loadRequestIndexRef = useRef(0);
   const defaultExample = GAUSSIAN_SPLAT_EXAMPLES[DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME];
+  const initialSource = useMemo(
+    () => getInitialGaussianSplatSource(defaultExample),
+    [defaultExample]
+  );
   const [state, setState] = useState<GaussianSplatsAppState>({
     data: null,
+    radSource: null,
     previewTable: null,
     loadedSplatCount: 0,
     viewState: INITIAL_VIEW_STATE,
     controllerMode: 'orbit',
-    selectedUrl: defaultExample.url,
+    radSettings: getDefaultRADRenderSettings(),
+    radProgress: undefined,
+    selectedUrl: initialSource.selectedUrl,
     isLoading: false,
     error: null
   });
@@ -108,8 +231,11 @@ export default function GaussianSplatsApp() {
     setState((currentState) => ({
       ...currentState,
       data: null,
+      radSource: null,
       previewTable: null,
       loadedSplatCount: 0,
+      totalSplatCount: undefined,
+      radProgress: undefined,
       isLoading: true,
       loadTimeMs: undefined,
       error: null
@@ -124,8 +250,39 @@ export default function GaussianSplatsApp() {
         return;
       }
 
+      if (sourceUrls.length === 1 && getGaussianSplatSourceType(sourceUrls[0]) === 'rad') {
+        const source = (await load(sourceUrls[0], RADSourceLoader, {
+          worker: false
+        })) as RADSource;
+        const metadata = await source.getMetadata();
+        if (loadRequestIndex !== loadRequestIndexRef.current) {
+          return;
+        }
+        setState((currentState) => {
+          const controllerMode = getRADControllerMode(sourceUrls[0], currentState.controllerMode);
+          return {
+            ...currentState,
+            data: null,
+            radSource: source,
+            previewTable: null,
+            loadedSplatCount: 0,
+            totalSplatCount: metadata.count,
+            radProgress: undefined,
+            viewState: applyRADViewStateFov(
+              getRADInitialViewState(sourceUrls[0], controllerMode),
+              currentState.radSettings.fov
+            ),
+            controllerMode,
+            isLoading: true,
+            error: null
+          };
+        });
+        return;
+      }
+
       setState((currentState) => ({
         ...currentState,
+        radSource: null,
         data: trackGaussianSplatBatches(sourceUrls, {
           onBatch: (arrowTableBatch, loadedSplatCount) => {
             if (loadRequestIndex !== loadRequestIndexRef.current) {
@@ -159,6 +316,7 @@ export default function GaussianSplatsApp() {
             setState((currentState) => ({
               ...currentState,
               data: null,
+              radSource: null,
               isLoading: false,
               error: error instanceof Error ? error.message : String(error)
             }));
@@ -171,6 +329,7 @@ export default function GaussianSplatsApp() {
         setState((currentState) => ({
           ...currentState,
           data: null,
+          radSource: null,
           previewTable: null,
           isLoading: false,
           error: error instanceof Error ? error.message : String(error)
@@ -180,12 +339,12 @@ export default function GaussianSplatsApp() {
   }, []);
 
   useEffect(() => {
-    void loadGaussianSplats(getExampleUrls(defaultExample));
+    void loadGaussianSplats(initialSource.sourceUrls);
 
     return () => {
       loadRequestIndexRef.current++;
     };
-  }, [defaultExample, loadGaussianSplats]);
+  }, [initialSource, loadGaussianSplats]);
 
   const arrowPreview = useMemo(
     () => getArrowTablePreview(state.previewTable, state.loadedSplatCount),
@@ -199,32 +358,86 @@ export default function GaussianSplatsApp() {
     ],
     []
   );
+  const handleRADLoadProgress = useCallback((progress: RADSplatLoadProgress) => {
+    setState((currentState) => ({
+      ...currentState,
+      loadedSplatCount: progress.visibleSplatCount ?? progress.loadedSplatCount,
+      totalSplatCount: progress.totalSplatCount || currentState.totalSplatCount,
+      radProgress: {
+        residentChunkCount: progress.residentChunkCount,
+        residentSplatCount: progress.residentSplatCount,
+        requestedChunkCount: progress.requestedChunkCount,
+        evictedChunkCount: progress.evictedChunkCount,
+        lastUploadTimeMs: progress.lastUploadTimeMs,
+        lastCommitTimeMs: progress.lastCommitTimeMs
+      },
+      isLoading: progress.isLoading,
+      loadTimeMs: progress.loadTimeMs,
+      error: progress.error ?? null
+    }));
+  }, []);
 
-  const layers = useMemo(
-    () =>
-      state.data
-        ? [
-            new SplatLayer({
-              id: 'gaussian-splats-webgpu',
-              coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
-              data: state.data as any,
-              pickable: false,
-              opacity: SPLAT_LAYER_OPACITY,
-              radiusScale: SPLAT_RADIUS_SCALE,
-              radiusMinPixels: SPLAT_RADIUS_MIN_PIXELS,
-              radiusMaxPixels: SPLAT_RADIUS_MAX_PIXELS,
-              alphaScale: SPLAT_ALPHA_SCALE,
-              alphaCutoff: SPLAT_ALPHA_CUTOFF,
-              screenSizeCutoffPixels: SPLAT_SCREEN_SIZE_CUTOFF_PIXELS,
-              kernel2DSize: SPLAT_KERNEL_2D_SIZE,
-              maxScreenSpaceSplatSize: SPLAT_MAX_SCREEN_SPACE_SIZE,
-              renderMode: 'gpu',
-              sortMode: 'global'
-            })
-          ]
-        : [],
-    [state.data]
-  );
+  const layers = useMemo(() => {
+    if (state.radSource) {
+      const radMaxChunks = getRADMaxChunks(state.radSettings.levelOfDetail);
+      const radMaxSplats = getRADMaxSplats(state.radSettings.levelOfDetail);
+      return [
+        new RADSplatLayer({
+          id: 'gaussian-splats-rad-webgpu',
+          coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+          data: state.radSource,
+          pickable: false,
+          opacity: RAD_SPLAT_LAYER_OPACITY,
+          radiusScale: RAD_SPLAT_RADIUS_SCALE,
+          radiusMinPixels: SPLAT_RADIUS_MIN_PIXELS,
+          radiusMaxPixels: RAD_SPLAT_RADIUS_MAX_PIXELS,
+          alphaScale: RAD_SPLAT_ALPHA_SCALE,
+          alphaCutoff: RAD_SPLAT_ALPHA_CUTOFF,
+          screenSizeCutoffPixels: 0.03,
+          kernel2DSize: SPLAT_KERNEL_2D_SIZE,
+          maxScreenSpaceSplatSize: RAD_SPLAT_MAX_SCREEN_SPACE_SIZE,
+          modelMatrix: getRADModelMatrix(state.selectedUrl),
+          renderMode: 'gpu',
+          sortMode: 'tile',
+          maxChunks: radMaxChunks,
+          maxSplats: radMaxSplats,
+          lodSplatCount: radMaxSplats,
+          maxResidentSplats: radMaxSplats * 2,
+          maxPagedSplats: radMaxSplats * 2,
+          maxCachedChunks: getRADMaxCachedChunks(radMaxChunks),
+          maxConcurrentChunkRequests: RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS,
+          pruneLoadedLoDParents: true,
+          lodSplatScale: state.radSettings.levelOfDetail,
+          lodRenderScale: state.radSettings.lodRenderScale,
+          behindFoveate: state.radSettings.behindFoveate,
+          coneFoveate: state.radSettings.coneFoveate,
+          onLoadProgress: handleRADLoadProgress
+        })
+      ];
+    }
+
+    return state.data
+      ? [
+          new SplatLayer({
+            id: 'gaussian-splats-webgpu',
+            coordinateSystem: COORDINATE_SYSTEM.CARTESIAN,
+            data: state.data as any,
+            pickable: false,
+            opacity: SPLAT_LAYER_OPACITY,
+            radiusScale: SPLAT_RADIUS_SCALE,
+            radiusMinPixels: SPLAT_RADIUS_MIN_PIXELS,
+            radiusMaxPixels: SPLAT_RADIUS_MAX_PIXELS,
+            alphaScale: SPLAT_ALPHA_SCALE,
+            alphaCutoff: SPLAT_ALPHA_CUTOFF,
+            screenSizeCutoffPixels: SPLAT_SCREEN_SIZE_CUTOFF_PIXELS,
+            kernel2DSize: SPLAT_KERNEL_2D_SIZE,
+            maxScreenSpaceSplatSize: SPLAT_MAX_SCREEN_SPACE_SIZE,
+            renderMode: 'gpu',
+            sortMode: 'global'
+          })
+        ]
+      : [];
+  }, [handleRADLoadProgress, state.data, state.radSettings, state.radSource, state.selectedUrl]);
 
   return (
     <div style={styles.page}>
@@ -245,11 +458,14 @@ export default function GaussianSplatsApp() {
         />
       </div>
       <div style={styles.workspace}>
-        <div style={styles.canvasCard}>
+        <div style={state.radSource ? {...styles.canvasCard, ...styles.radCanvasCard} : styles.canvasCard}>
           <DeckGL
             key={state.controllerMode}
             layers={layers}
-            views={getViewForControllerMode(state.controllerMode)}
+            views={getViewForControllerMode(
+              state.controllerMode,
+              state.radSource ? state.radSettings.fov : undefined
+            )}
             viewState={state.viewState}
             controller={{inertia: true}}
             widgets={widgets}
@@ -260,13 +476,15 @@ export default function GaussianSplatsApp() {
             onViewStateChange={({viewState}) =>
               setState((currentState) => ({
                 ...currentState,
-                viewState: viewState as OrbitViewState | FirstPersonViewState
+                viewState: viewState as GaussianSplatViewState
               }))
             }
-            parameters={{
-              depthWriteEnabled: false,
-              depthCompare: 'always'
-            } as any}
+            parameters={
+              {
+                depthWriteEnabled: false,
+                depthCompare: 'always'
+              } as any
+            }
           />
           <ControllerModeSwitch
             mode={state.controllerMode}
@@ -274,21 +492,41 @@ export default function GaussianSplatsApp() {
               setState((currentState) => ({
                 ...currentState,
                 controllerMode,
-                viewState: currentState.previewTable
-                  ? getGaussianSplatViewState(currentState.previewTable, controllerMode)
-                  : getInitialViewState(controllerMode)
+                viewState: currentState.radSource
+                  ? applyRADViewStateFov(
+                      getRADInitialViewState(currentState.selectedUrl, controllerMode),
+                      currentState.radSettings.fov
+                    )
+                  : currentState.previewTable
+                    ? getGaussianSplatViewState(currentState.previewTable, controllerMode)
+                    : getInitialViewState(controllerMode)
               }))
             }
           />
+          {state.radSource && (
+            <RADRenderControls
+              settings={state.radSettings}
+              onChange={(radSettings) =>
+                setState((currentState) => ({
+                  ...currentState,
+                  radSettings,
+                  viewState: applyRADViewStateFov(currentState.viewState, radSettings.fov)
+                }))
+              }
+            />
+          )}
           <div style={styles.statusPanel}>
             <span>
               {state.loadedSplatCount
-                ? `${state.loadedSplatCount.toLocaleString()} splats`
+                ? formatSplatCount(state.loadedSplatCount, state.totalSplatCount)
                 : state.isLoading
                   ? 'Loading 0 splats'
                   : 'No table'}
             </span>
             {state.loadTimeMs !== undefined && <span>{state.loadTimeMs.toLocaleString()} ms</span>}
+            {state.radSource && state.radProgress && (
+              <span>{formatRADRuntimeProgress(state.radProgress)}</span>
+            )}
             {state.error && <span>{state.error}</span>}
           </div>
         </div>
@@ -299,31 +537,79 @@ export default function GaussianSplatsApp() {
 }
 
 /** Return a deck.gl view matching the current controller mode. */
-function getViewForControllerMode(controllerMode: ControllerMode): OrbitView | FirstPersonView {
+function getViewForControllerMode(
+  controllerMode: ControllerMode,
+  fov: number = RAD_DEFAULT_FOV
+): OrbitView | FirstPersonView {
   return controllerMode === 'first-person'
-    ? new FirstPersonView({near: 0.01, far: 100000, up: [0, 0, 1]} as any)
-    : new OrbitView({orbitAxis: 'Z'});
+    ? new FirstPersonView({near: 0.01, far: 100000, up: [0, 0, 1], fov, fovy: fov} as any)
+    : new OrbitView({orbitAxis: 'Z', fov, fovy: fov} as any);
 }
 
 /** Return an initial camera for the selected controller mode. */
-function getInitialViewState(controllerMode: ControllerMode): OrbitViewState | FirstPersonViewState {
+function getInitialViewState(controllerMode: ControllerMode): GaussianSplatViewState {
   return controllerMode === 'first-person'
     ? {
         position: [0, -6, 2],
         bearing: 0,
         pitch: FIRST_PERSON_INITIAL_PITCH,
+        fov: RAD_DEFAULT_FOV,
+        fovy: RAD_DEFAULT_FOV,
         minPitch: FIRST_PERSON_MIN_PITCH,
         maxPitch: FIRST_PERSON_MAX_PITCH
       }
     : INITIAL_VIEW_STATE;
 }
 
+/** Return a deck.gl view state with RAD FoV fields kept in sync. */
+function applyRADViewStateFov(
+  viewState: GaussianSplatViewState,
+  fov: number
+): GaussianSplatViewState {
+  return {
+    ...viewState,
+    fov,
+    fovy: fov
+  } as GaussianSplatViewState;
+}
+
+/** Return the preferred controller mode for a RAD source. */
+function getRADControllerMode(sourceUrl: string, controllerMode: ControllerMode): ControllerMode {
+  return isCoitTowerRADSource(sourceUrl) ? 'first-person' : controllerMode;
+}
+
+/** Return a source-specific initial camera for RAD scenes when one is known. */
+function getRADInitialViewState(
+  sourceUrl: string,
+  controllerMode: ControllerMode
+): GaussianSplatViewState {
+  if (hasRADInitialViewState(sourceUrl, controllerMode)) {
+    return {
+      ...COIT_TOWER_RAD_INITIAL_VIEW_STATE,
+      position: [-0.858, 1.128, 2.203]
+    } as FirstPersonViewState;
+  }
+  return getInitialViewState(controllerMode);
+}
+
+/** Returns true when a RAD source has a hand-matched initial camera. */
+function hasRADInitialViewState(sourceUrl: string, controllerMode: ControllerMode): boolean {
+  return isCoitTowerRADSource(sourceUrl) && controllerMode === 'first-person';
+}
+
 /** Build a Z-up initial view from loaded Gaussian splat bounds. */
 function getGaussianSplatViewState(
   table: MeshArrowTable,
   controllerMode: ControllerMode
-): OrbitViewState | FirstPersonViewState {
-  const bounds = getPositionBounds(table);
+): GaussianSplatViewState {
+  return getGaussianSplatBoundsViewState(getPositionBounds(table), controllerMode);
+}
+
+/** Build a Z-up initial view from decoded Gaussian splat bounds. */
+function getGaussianSplatBoundsViewState(
+  bounds: RADSplatBounds,
+  controllerMode: ControllerMode
+): GaussianSplatViewState {
   const center = getBoundsCenter(bounds) || INITIAL_VIEW_STATE.target;
   const size = getBoundsSize(bounds);
   const horizontalSize = Math.max(size[0], size[1], Number.EPSILON);
@@ -344,6 +630,34 @@ function getGaussianSplatViewState(
     target: center,
     zoom: getOrbitZoom(horizontalSize)
   } as OrbitViewState;
+}
+
+/** Return a deck.gl model matrix for RAD sources that ship with Spark scene transforms. */
+function getRADModelMatrix(sourceUrl: string): Float32Array | null {
+  return isCoitTowerRADSource(sourceUrl) ? COIT_TOWER_RAD_MODEL_MATRIX : null;
+}
+
+/** Returns true for the Spark Coit Tower RAD fixture. */
+function isCoitTowerRADSource(sourceUrl: string): boolean {
+  return sourceUrl.includes('coit-40m-sh1-lod.rad');
+}
+
+/** Format loaded and total splat counts for the canvas status panel. */
+function formatSplatCount(loadedSplatCount: number, totalSplatCount?: number): string {
+  if (totalSplatCount && totalSplatCount > loadedSplatCount) {
+    return `${loadedSplatCount.toLocaleString()} / ${totalSplatCount.toLocaleString()} splats`;
+  }
+  return `${loadedSplatCount.toLocaleString()} splats`;
+}
+
+/** Format RAD runtime counters for the canvas status panel. */
+function formatRADRuntimeProgress(progress: RADRenderProgress): string {
+  const chunks = progress.residentChunkCount ?? 0;
+  const requests = progress.requestedChunkCount ?? 0;
+  const evictions = progress.evictedChunkCount ?? 0;
+  const uploadMs =
+    progress.lastUploadTimeMs === undefined ? '-' : `${Math.round(progress.lastUploadTimeMs)} ms`;
+  return `${chunks.toLocaleString()} chunks | ${requests} req | ${evictions} evict | ${uploadMs}`;
 }
 
 /** Return POSITION column bounds for a Mesh Arrow table. */
@@ -439,8 +753,9 @@ async function* trackGaussianSplatBatches(
           worker: false
         })) as RADSource;
         for await (const table of source.getChunkTables({
-          maxChunks: RAD_PREVIEW_MAX_CHUNKS,
-          maxSplats: RAD_PREVIEW_MAX_SPLATS,
+          maxChunks: getRADMaxChunks(RAD_DEFAULT_LEVEL_OF_DETAIL),
+          maxSplats: getRADMaxSplats(RAD_DEFAULT_LEVEL_OF_DETAIL),
+          maxConcurrentChunkRequests: RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS,
           pruneLoadedLoDParents: true,
           radChunk: {
             includeLoDTree: true,
@@ -510,6 +825,49 @@ type ArrowTablePreview = {
 /** Return source URLs for a Gaussian splat example. */
 function getExampleUrls(example: GaussianSplatExample): string[] {
   return example.urls?.length ? example.urls : [example.url];
+}
+
+/** Initial Gaussian splat source restored before the first load starts. */
+type InitialGaussianSplatSource = {
+  /** URL shown in the URL input. */
+  selectedUrl: string;
+  /** Source URLs to load on mount. */
+  sourceUrls: string[];
+};
+
+/** Return the initial source, preferring the last saved URL when available. */
+function getInitialGaussianSplatSource(defaultExample: GaussianSplatExample): InitialGaussianSplatSource {
+  const storedUrl = readStoredGaussianSplatUrl();
+  if (!storedUrl) {
+    return {selectedUrl: defaultExample.url, sourceUrls: getExampleUrls(defaultExample)};
+  }
+
+  const storedExample = Object.values(GAUSSIAN_SPLAT_EXAMPLES).find(
+    example => example.url === storedUrl || example.urls?.includes(storedUrl)
+  );
+  return {
+    selectedUrl: storedUrl,
+    sourceUrls: storedExample ? getExampleUrls(storedExample) : [storedUrl]
+  };
+}
+
+/** Return the most recently saved Gaussian splat URL. */
+function readStoredGaussianSplatUrl(): string | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+  try {
+    const savedUrls = JSON.parse(
+      window.localStorage.getItem(SAVED_GAUSSIAN_SPLAT_URLS_KEY) || '[]'
+    );
+    const firstSavedUrl = Array.isArray(savedUrls) ? savedUrls[0] : null;
+    if (typeof firstSavedUrl === 'string') {
+      return firstSavedUrl;
+    }
+    return typeof firstSavedUrl?.url === 'string' ? firstSavedUrl.url : null;
+  } catch {
+    return null;
+  }
 }
 
 /** Return Gaussian splat URL options for the shared URL picker. */
@@ -652,6 +1010,112 @@ function ArrowTableViewer({preview}: {preview: ArrowTablePreview | null}) {
   );
 }
 
+/** Render RAD camera and LoD controls. */
+function RADRenderControls({
+  settings,
+  onChange
+}: {
+  settings: RADRenderSettings;
+  onChange: (settings: RADRenderSettings) => void;
+}) {
+  const updateSetting = (setting: keyof RADRenderSettings, value: number) => {
+    onChange({
+      ...settings,
+      [setting]: value
+    });
+  };
+
+  return (
+    <div style={styles.radControls} role="group" aria-label="RAD render controls">
+      <ControlSlider
+        label="FoV"
+        value={settings.fov}
+        min={RAD_MIN_FOV}
+        max={RAD_MAX_FOV}
+        step={1}
+        onChange={value => updateSetting('fov', value)}
+      />
+      <ControlSlider
+        label="LoD"
+        value={settings.levelOfDetail}
+        min={RAD_MIN_LEVEL_OF_DETAIL}
+        max={RAD_MAX_LEVEL_OF_DETAIL}
+        step={0.1}
+        onChange={value => updateSetting('levelOfDetail', value)}
+      />
+      <ControlSlider
+        label="Scale"
+        value={settings.lodRenderScale}
+        min={0.5}
+        max={2.5}
+        step={0.05}
+        onChange={value => updateSetting('lodRenderScale', value)}
+      />
+      <ControlSlider
+        label="Behind"
+        value={settings.behindFoveate}
+        min={0}
+        max={1}
+        step={0.05}
+        onChange={value => updateSetting('behindFoveate', value)}
+      />
+      <ControlSlider
+        label="Cone"
+        value={settings.coneFoveate}
+        min={0}
+        max={1}
+        step={0.05}
+        onChange={value => updateSetting('coneFoveate', value)}
+      />
+    </div>
+  );
+}
+
+/** Render one compact numeric slider row. */
+function ControlSlider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label style={styles.controlRow}>
+      <span style={styles.controlLabel}>{label}</span>
+      <input
+        style={styles.controlRange}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onInput={event => onChange(Number(event.currentTarget.value))}
+        onChange={event => onChange(Number(event.target.value))}
+      />
+      <span style={styles.controlValue}>{formatControlValue(value, step)}</span>
+    </label>
+  );
+}
+
+/** Format a slider value at the precision implied by its step. */
+function formatControlValue(value: number, step: number): string {
+  if (step >= 1) {
+    return Math.round(value).toString();
+  }
+  if (step >= 0.1) {
+    return value.toFixed(1);
+  }
+  return value.toFixed(2);
+}
+
 /** Render the camera controller selector. */
 function ControllerModeSwitch({
   mode,
@@ -712,13 +1176,18 @@ const styles = {
     borderRadius: 8,
     background: '#05070a'
   },
+  radCanvasCard: {
+    background: '#cafefe'
+  },
   statusPanel: {
     position: 'absolute',
     left: 12,
     bottom: 12,
     display: 'flex',
+    flexWrap: 'wrap',
     gap: 12,
     alignItems: 'center',
+    maxWidth: 'calc(100% - 24px)',
     padding: '7px 10px',
     borderRadius: 6,
     color: '#e5e7eb',
@@ -752,6 +1221,41 @@ const styles = {
   controllerButtonActive: {
     color: '#0f172a',
     background: '#f8fafc'
+  },
+  radControls: {
+    position: 'absolute',
+    right: 12,
+    top: 52,
+    display: 'grid',
+    gap: 8,
+    width: 236,
+    padding: 10,
+    borderRadius: 7,
+    border: '1px solid rgba(148, 163, 184, 0.32)',
+    color: '#e5e7eb',
+    background: 'rgba(2, 6, 23, 0.78)',
+    fontSize: 12,
+    lineHeight: '16px',
+    zIndex: 1
+  },
+  controlRow: {
+    display: 'grid',
+    gridTemplateColumns: '56px minmax(96px, 1fr) 42px',
+    gap: 8,
+    alignItems: 'center'
+  },
+  controlLabel: {
+    color: '#cbd5e1',
+    fontWeight: 600
+  },
+  controlRange: {
+    width: '100%',
+    accentColor: '#38bdf8'
+  },
+  controlValue: {
+    color: '#7dd3fc',
+    fontVariantNumeric: 'tabular-nums',
+    textAlign: 'right'
   },
   viewer: {
     flex: '0 1 420px',

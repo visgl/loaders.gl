@@ -13,7 +13,10 @@ import {
   SPLAT_COMPUTE_WORKGROUP_SIZE
 } from '../src/splat/splat-compute-shaders';
 import {projectSplatCovarianceToScreen} from '../src/splat/splat-covariance';
-import {getGaussianSplatDataFromArrowTable} from '../src/splat/splat-data';
+import {
+  getGaussianSplatDataFromArrowTable,
+  getGaussianSplatDataFromValues
+} from '../src/splat/splat-data';
 import {
   getSplatTileBufferByteLengths,
   getSplatTileGrid,
@@ -134,6 +137,23 @@ test('splat-data reports missing required columns', t => {
     /SplatLayer requires a scale_0 column/,
     'throws a clear error for missing required columns'
   );
+  t.end();
+});
+
+test('splat-data converts decoded Gaussian splat values', t => {
+  const data = getGaussianSplatDataFromValues({
+    splatCount: 1,
+    positions: new Float32Array([1, 2, 3]),
+    scales: new Float32Array([1, 2, 4]),
+    rotations: new Float32Array([1, 0, 0, 0]),
+    colors: new Uint8Array([64, 128, 255]),
+    opacities: new Float32Array([0.5])
+  });
+
+  t.equal(data.length, 1, 'extracts decoded row count');
+  t.deepEqual(Array.from(data.positions), [1, 2, 3], 'preserves decoded positions');
+  t.deepEqual(Array.from(data.colors), [64, 128, 255, 128], 'packs decoded RGB and opacity');
+  t.equal(data.radii[0], 6, 'derives fallback radius from decoded scale');
   t.end();
 });
 
@@ -332,5 +352,17 @@ test('splat-compute shader exposes projection and tile-sort entry points', t => 
   t.ok(SPLAT_COMPUTE_SHADER.includes('fn scatterTiles('), 'includes scatter entry point');
   t.ok(SPLAT_COMPUTE_SHADER.includes('fn tileSort('), 'includes tile sort entry point');
   t.ok(SPLAT_COMPUTE_SHADER.includes('fn copySorted('), 'includes sorted copy entry point');
+  t.ok(
+    SPLAT_COMPUTE_SHADER.includes(
+      'let adjustedSupportRadius = params.viewportAlpha.w + max(splatAlpha - 1.0, 0.0) * 0.7;'
+    ),
+    'expands compute support radius for Spark LoD opacity values'
+  );
+  t.ok(
+    SPLAT_COMPUTE_SHADER.includes(
+      'let boundingRadius = max(max(scale.x, scale.y), scale.z) * params.radius.x * adjustedSupportRadius;'
+    ),
+    'uses render radius scale for compute frustum bounds'
+  );
   t.end();
 });

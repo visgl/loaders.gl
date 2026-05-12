@@ -4,7 +4,14 @@
 
 import * as arrow from 'apache-arrow';
 import test from 'tape-promise/tape';
-import {SplatLayer, type SplatLayerProps} from '../src/splat-layer';
+import {
+  RADSplatLayer,
+  SplatLayer,
+  _getRADRenderFrontierSplatChunksForTesting,
+  _getRADViewportLoadSignatureForTesting,
+  type RADSplatLayerProps,
+  type SplatLayerProps
+} from '../src/splat-layer';
 import type {ArrowTableBatch} from '@loaders.gl/schema';
 
 type ControlledAsyncIterable<T> = AsyncIterable<T> & {
@@ -19,6 +26,26 @@ function createLayer(props: SplatLayerProps): SplatLayer {
     ...props
   });
   layer.context = {device: {type: 'webgl'}} as any;
+  return layer;
+}
+
+/** Creates a RADSplatLayer instance for testing. */
+function createRADLayer(props: RADSplatLayerProps): RADSplatLayer {
+  const layer = new RADSplatLayer({
+    id: 'test-rad-splat-layer',
+    ...props
+  });
+  layer.context = {
+    device: {type: 'webgl'},
+    viewport: {
+      width: 800,
+      height: 600,
+      cameraPosition: [0, 0, 5],
+      viewMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      viewProjectionMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      fovy: 50
+    }
+  } as any;
   return layer;
 }
 
@@ -51,6 +78,77 @@ function createGaussianSplatBatch(table: arrow.Table): ArrowTableBatch {
     data: table,
     length: table.numRows
   };
+}
+
+/** Creates decoded RAD chunk values for frontier tests. */
+function createRADChunk(
+  chunkIndex: number,
+  base: number,
+  childCounts: number[],
+  childStarts: number[]
+) {
+  const splatCount = childCounts.length;
+  const positions = new Float32Array(splatCount * 3);
+  const scales = new Float32Array(splatCount * 3).fill(1);
+  const rotations = new Float32Array(splatCount * 4);
+  const colors = new Uint8Array(splatCount * 3).fill(255);
+  const opacities = new Float32Array(splatCount).fill(1);
+  for (let rowIndex = 0; rowIndex < splatCount; rowIndex++) {
+    positions[rowIndex * 3] = base + rowIndex;
+    rotations[rowIndex * 4] = 1;
+  }
+  return {
+    chunkIndex,
+    splats: {
+      splatCount,
+      positions,
+      scales,
+      rotations,
+      colors,
+      opacities,
+      loaderData: {
+        base,
+        count: splatCount,
+        childCounts: new Uint16Array(childCounts),
+        childStarts: new Uint32Array(childStarts)
+      }
+    }
+  };
+}
+
+/** Creates a minimal RAD source with trackable chunk requests. */
+function createRADSource(chunks: ReturnType<typeof createRADChunk>[]) {
+  const requestedChunkIndices: number[] = [];
+  return {
+    requestedChunkIndices,
+    async getMetadata() {
+      return {
+        count: chunks.reduce((total, chunk) => total + chunk.splats.splatCount, 0),
+        chunkSize: 1,
+        chunks: chunks.map(chunk => ({
+          base: chunk.splats.loaderData.base as number,
+          count: chunk.splats.splatCount
+        }))
+      };
+    },
+    async getChunkSplats(chunkIndex: number) {
+      requestedChunkIndices.push(chunkIndex);
+      await Promise.resolve();
+      return chunks[chunkIndex].splats;
+    }
+  };
+}
+
+/** Returns x positions from frontier chunks for compact assertions. */
+function getFrontierPositionXs(frontierChunks: any[]): number[] {
+  return frontierChunks.flatMap(chunk => {
+    const positions = chunk.positions as Float32Array;
+    const xs: number[] = [];
+    for (let positionIndex = 0; positionIndex < positions.length; positionIndex += 3) {
+      xs.push(positions[positionIndex]);
+    }
+    return xs;
+  });
 }
 
 /** Normalizes a layer render result to an array. */
@@ -105,6 +203,25 @@ async function waitForAsyncIterator(): Promise<void> {
   await Promise.resolve();
   await Promise.resolve();
   await Promise.resolve();
+}
+
+/** Lets RAD runtime metadata, chunk, and reselection promises settle. */
+async function waitForRADRuntime(): Promise<void> {
+  for (let passIndex = 0; passIndex < 6; passIndex++) {
+    await Promise.resolve();
+    await waitForFrame();
+  }
+}
+
+/** Lets queued animation-frame work settle in browser and Node test projects. */
+async function waitForFrame(): Promise<void> {
+  await new Promise<void>(resolve => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => resolve());
+      return;
+    }
+    setTimeout(resolve, 0);
+  });
 }
 
 test('SplatLayer renders Gaussian splat Arrow table through binary attributes', t => {
@@ -183,5 +300,170 @@ test('SplatLayer reports invalid async batch shapes', async t => {
     'throws a stable error for invalid async batch values'
   );
   splatBatches.close();
+  t.end();
+});
+
+test('RADSplatLayer frontier keeps parents for partially loaded children', t => {
+  const parentChunk = createRADChunk(0, 0, [400, 0], [2, 0]);
+  const partialChildChunk = createRADChunk(1, 2, [0, 0], [0, 0]);
+
+  const frontierChunks = _getRADRenderFrontierSplatChunksForTesting([
+    parentChunk,
+    partialChildChunk
+  ]);
+
+  t.deepEqual(
+    getFrontierPositionXs(frontierChunks),
+    [0, 1],
+    'keeps parent rows and suppresses partial descendants'
+  );
+  t.end();
+});
+
+test('RADSplatLayer frontier preserves large partial descendants', t => {
+  const parentChunk = createRADChunk(0, 0, [70000, 0], [2, 0]);
+  const partialChildChunk = createRADChunk(1, 2, [0, 0], [0, 0]);
+
+  const frontierChunks = _getRADRenderFrontierSplatChunksForTesting([
+    parentChunk,
+    partialChildChunk
+  ]);
+
+  t.deepEqual(
+    getFrontierPositionXs(frontierChunks),
+    [0, 1, 2, 3],
+    'keeps coarse parents without suppressing broad partially loaded child ranges'
+  );
+  t.end();
+});
+
+test('RADSplatLayer frontier descends into fully loaded children', t => {
+  const parentChunk = createRADChunk(0, 0, [2, 0], [2, 0]);
+  const childChunk = createRADChunk(1, 2, [0, 0], [0, 0]);
+
+  const frontierChunks = _getRADRenderFrontierSplatChunksForTesting([parentChunk, childChunk]);
+
+  t.deepEqual(
+    getFrontierPositionXs(frontierChunks),
+    [1, 2, 3],
+    'replaces covered parent rows with loaded child rows'
+  );
+  t.end();
+});
+
+test('RADSplatLayer keeps resident progress across viewport reselection', async t => {
+  const rootChunk = createRADChunk(0, 0, [1], [1]);
+  const childChunk = createRADChunk(1, 1, [0], [0]);
+  const source = createRADSource([rootChunk, childChunk]);
+  const progressEvents: any[] = [];
+  const layer = createRADLayer({
+    data: source,
+    maxChunks: 2,
+    maxSplats: 2,
+    onLoadProgress: progress => progressEvents.push(progress)
+  });
+  layer.state = {} as any;
+  layer.initializeState();
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, data: null},
+    changeFlags: {dataChanged: true, propsOrDataChanged: true}
+  } as any);
+  await waitForRADRuntime();
+
+  const firstRootRequestCount = source.requestedChunkIndices.filter(
+    chunkIndex => chunkIndex === 0
+  ).length;
+  const firstLoadedSplatCount = Math.max(
+    ...progressEvents.map(progress => progress.loadedSplatCount)
+  );
+  t.equal(firstRootRequestCount, 1, 'loads the root chunk once');
+  t.ok(firstLoadedSplatCount > 0, 'reports resident loaded splats after first load');
+
+  layer.context = {
+    ...layer.context,
+    viewport: {
+      ...(layer.context.viewport as any),
+      cameraPosition: [1, 0, 5],
+      bearing: 20
+    }
+  } as any;
+  layer.updateState({
+    props: layer.props,
+    oldProps: layer.props,
+    changeFlags: {viewportChanged: true}
+  } as any);
+  await waitForRADRuntime();
+
+  const latestProgress = progressEvents[progressEvents.length - 1];
+  t.equal(
+    source.requestedChunkIndices.filter(chunkIndex => chunkIndex === 0).length,
+    1,
+    'does not refetch resident chunks on viewport change'
+  );
+  t.ok(
+    latestProgress.loadedSplatCount >= firstLoadedSplatCount,
+    'does not reset progress to zero on viewport change'
+  );
+  (layer.state as any).runtime?.destroy();
+  t.end();
+});
+
+test('RADSplatLayer retains previous render pages while child chunks refine', async t => {
+  const rootChunk = createRADChunk(0, 0, [1], [1]);
+  const childChunk = createRADChunk(1, 1, [0], [0]);
+  const source = createRADSource([rootChunk, childChunk]);
+  const layer = createRADLayer({
+    data: source,
+    maxChunks: 2,
+    maxSplats: 2
+  });
+  layer.state = {} as any;
+  layer.initializeState();
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, data: null},
+    changeFlags: {dataChanged: true, propsOrDataChanged: true}
+  } as any);
+  await waitForRADRuntime();
+
+  const sublayers = asLayerArray(layer.renderLayers());
+  t.ok(sublayers.length >= 1, 'renders resident pages after progressive loading');
+  t.ok(
+    source.requestedChunkIndices.includes(1),
+    'requests child chunks without clearing the root page'
+  );
+  (layer.state as any).runtime?.destroy();
+  t.end();
+});
+
+test('RADSplatLayer viewport signature tracks FoV and camera buckets', t => {
+  const baseViewport = {
+    cameraPosition: [1, 2, 3],
+    viewMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+    fovy: 50,
+    zoom: 1,
+    pitch: 10,
+    bearing: 20,
+    width: 1024,
+    height: 768
+  };
+
+  const baseSignature = _getRADViewportLoadSignatureForTesting(baseViewport);
+  t.notEqual(
+    _getRADViewportLoadSignatureForTesting({...baseViewport, fovy: 60}),
+    baseSignature,
+    'changes when FoV changes'
+  );
+  t.notEqual(
+    _getRADViewportLoadSignatureForTesting({...baseViewport, cameraPosition: [1.3, 2, 3]}),
+    baseSignature,
+    'changes when camera position crosses a fine bucket'
+  );
+  t.notEqual(
+    _getRADViewportLoadSignatureForTesting({...baseViewport, bearing: 25}),
+    baseSignature,
+    'changes when view orientation changes'
+  );
   t.end();
 });
