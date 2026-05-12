@@ -9,7 +9,7 @@ import type {
   ObjectRowTable,
   ObjectRowTableBatch
 } from '@loaders.gl/schema';
-// import {convertGeoArrowToTable} from '@loaders.gl/gis';
+import {convertWKBTableToGeoJSON} from '@loaders.gl/gis';
 
 import type {ParquetJSONLoaderOptions} from '../../parquet-json-loader';
 
@@ -20,8 +20,7 @@ export async function parseGeoParquetFile(
   options?: ParquetJSONLoaderOptions
 ): Promise<ObjectRowTable | GeoJSONTable> {
   const table = await parseParquetFile(file, {...options, shape: 'object-row-table'});
-  // return convertGeoArrowToTable(table, 'geojson-table');
-  return table;
+  return convertWKBTableToGeoJSON(table, table.schema!);
 }
 
 export async function* parseGeoParquetFileInBatches(
@@ -31,6 +30,7 @@ export async function* parseGeoParquetFileInBatches(
   const tableBatches = parseParquetFileInBatches(file, {...options, shape: 'object-row-table'});
 
   for await (const batch of tableBatches) {
-    yield batch; // convertGeoArrowToTable(batch, 'geojson-table');
+    const geojson = convertWKBTableToGeoJSON(batch as ObjectRowTable, batch.schema!);
+    yield {...batch, ...geojson};
   }
 }
