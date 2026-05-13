@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Table, TableBatch} from '@loaders.gl/schema';
+import type {TableBatch} from '@loaders.gl/schema';
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader';
 import {parseJSONSync} from './lib/parsers/parse-json';
@@ -17,7 +17,7 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
  * Experimental JSON loader that uses the fast streaming parser backend.
  */
 export const FastJSONLoader = {
-  dataType: null as unknown as Table,
+  dataType: null as unknown,
   batchType: null as unknown as TableBatch | MetadataBatch | JSONBatch,
 
   name: 'Fast JSON',
@@ -40,7 +40,7 @@ export const FastJSONLoader = {
   parseTextSync,
   parseInBatches
 } as const satisfies LoaderWithParser<
-  Table,
+  unknown,
   TableBatch | MetadataBatch | JSONBatch,
   JSONLoaderOptions
 >;

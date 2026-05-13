@@ -16,7 +16,7 @@ import {createDataSource} from '@loaders.gl/core';
 import {PMTilesSourceLoader} from '@loaders.gl/pmtiles';
 import {MLTSourceLoader} from '@loaders.gl/mlt';
 import {MVTSourceLoader, TableTileSourceLoader} from '@loaders.gl/mvt';
-import {_GeoJSONLoader as GeoJSONLoader} from '@loaders.gl/json';
+import {GeoJSONLoader} from '@loaders.gl/json';
 
 import DeckGL from '@deck.gl/react';
 import {MapView} from '@deck.gl/core';

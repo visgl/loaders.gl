@@ -2,33 +2,25 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {convertGeometryToWKB, convertGeometryToWKT} from '@loaders.gl/gis';
-import type {
-  ArrowTable,
-  Feature,
-  Field,
-  Geometry,
-  GeoJsonProperties,
-  GeoJSONTable,
-  Schema,
-  Table
-} from '@loaders.gl/schema';
 import {
-  ArrowTableBuilder,
-  convertTableToArrow,
-  getDataTypeFromArray
-} from '@loaders.gl/schema-utils';
+  convertFeatureCollectionToGeoArrowTable as convertGISFeatureCollectionToGeoArrowTable,
+  convertFeaturesToGeoArrowTable as convertGISFeaturesToGeoArrowTable
+} from '@loaders.gl/gis';
+import type {ArrowTable, Feature, GeoJSONTable, Table} from '@loaders.gl/schema';
+import {convertTableToArrow} from '@loaders.gl/schema-utils';
 import type * as arrow from 'apache-arrow';
 import type {GeoArrowEncoding} from './metadata/geoarrow-metadata';
 
-const GEOMETRY_COLUMN_NAME = 'geometry';
-const GEO_METADATA_VERSION = '1.1.0';
-
+/** Encodings accepted when converting feature geometry columns to GeoArrow output. */
 export type GeoArrowConvertFromEncoding = 'wkb' | 'wkt' | 'geometry' | GeoArrowEncoding;
 
+/** Options for converting loaders.gl tables to GeoArrow-compatible Arrow tables. */
 export type GeoArrowConvertFromOptions = {
+  /** Optional batch size forwarded to generic table-to-Arrow conversion. */
   batchSize?: number;
+  /** GeoArrow-specific conversion options. */
   geoarrow?: {
+    /** Geometry encoding to write for GeoJSON feature inputs. */
     encoding?: GeoArrowConvertFromEncoding;
   };
 };
@@ -64,7 +56,9 @@ export function convertFeatureCollectionToGeoArrowTable(
   table: GeoJSONTable,
   options?: GeoArrowConvertFromOptions
 ): ArrowTable {
-  return convertFeaturesToGeoArrowTable(table.features, options);
+  return convertGISFeatureCollectionToGeoArrowTable(table, {
+    encoding: normalizeGeoArrowEncoding(options?.geoarrow?.encoding)
+  });
 }
 
 /**
@@ -74,68 +68,12 @@ export function convertFeaturesToGeoArrowTable(
   features: Feature[],
   options?: GeoArrowConvertFromOptions
 ): ArrowTable {
-  const encoding = normalizeGeoArrowEncoding(options?.geoarrow?.encoding);
-  const propertyRows = features.map(feature => normalizeProperties(feature.properties));
-  const propertySchema = getPropertySchema(propertyRows);
-  const schema = buildFeatureArrowSchema(propertySchema, features, encoding);
-  const arrowTableBuilder = new ArrowTableBuilder(schema);
-
-  for (let featureIndex = 0; featureIndex < features.length; featureIndex++) {
-    arrowTableBuilder.addObjectRow(
-      makeFeatureArrowRow(propertyRows[featureIndex], features[featureIndex], encoding)
-    );
-  }
-
-  return arrowTableBuilder.finishTable();
+  return convertGISFeaturesToGeoArrowTable(features, {
+    encoding: normalizeGeoArrowEncoding(options?.geoarrow?.encoding)
+  });
 }
 
-function buildFeatureArrowSchema(
-  propertySchema: Schema,
-  features: Feature[],
-  encoding: 'wkb' | 'wkt'
-): Schema {
-  const geometryField: Field = {
-    name: GEOMETRY_COLUMN_NAME,
-    type: encoding === 'wkt' ? 'utf8' : 'binary',
-    nullable: true,
-    metadata: {}
-  };
-
-  return {
-    fields: [...propertySchema.fields, geometryField],
-    metadata: {
-      ...(propertySchema.metadata || {}),
-      geo: JSON.stringify({
-        version: GEO_METADATA_VERSION,
-        primary_column: GEOMETRY_COLUMN_NAME,
-        columns: {
-          [GEOMETRY_COLUMN_NAME]: {
-            encoding,
-            geometry_types: inferFeatureGeometryTypes(features)
-          }
-        }
-      })
-    }
-  };
-}
-
-function makeFeatureArrowRow(
-  properties: Record<string, unknown>,
-  feature: Feature,
-  encoding: 'wkb' | 'wkt'
-): Record<string, unknown> {
-  return {
-    ...properties,
-    [GEOMETRY_COLUMN_NAME]: feature.geometry
-      ? encoding === 'wkt'
-        ? convertGeometryToWKT(feature.geometry)
-        : new Uint8Array(
-            convertGeometryToWKB(feature.geometry, getGeometryWKBOptions(feature.geometry))
-          )
-      : null
-  };
-}
-
+/** Normalizes public GeoArrow encoding names to implemented GIS helper encodings. */
 function normalizeGeoArrowEncoding(
   encoding: GeoArrowConvertFromEncoding | undefined
 ): 'wkb' | 'wkt' {
@@ -160,116 +98,4 @@ function normalizeGeoArrowEncoding(
     default:
       throw new Error(`Unknown GeoArrow encoding "${encoding}"`);
   }
-}
-
-function inferFeatureGeometryTypes(features: Feature[]): string[] {
-  const geometryTypes = new Set<string>();
-
-  for (const feature of features) {
-    if (!feature.geometry) {
-      continue;
-    }
-
-    const dimensions = getCoordinateDimensions(getGeometrySampleCoordinates(feature.geometry));
-    geometryTypes.add(dimensions > 2 ? `${feature.geometry.type} Z` : feature.geometry.type);
-  }
-
-  return [...geometryTypes];
-}
-
-function normalizeProperties(properties: GeoJsonProperties): Record<string, unknown> {
-  if (!properties || typeof properties !== 'object') {
-    return {};
-  }
-
-  const normalizedProperties: Record<string, unknown> = {};
-  for (const [propertyName, propertyValue] of Object.entries(properties)) {
-    normalizedProperties[propertyName] = normalizePropertyValue(propertyValue);
-  }
-  return normalizedProperties;
-}
-
-function getPropertySchema(propertyRows: Record<string, unknown>[]): Schema {
-  if (propertyRows.length === 0) {
-    return {fields: [], metadata: {}};
-  }
-
-  const fieldNames = getFieldNames(propertyRows);
-  return {
-    metadata: {},
-    fields: fieldNames.map((fieldName): Field => {
-      const inferredType = getDataTypeFromArray(
-        propertyRows.map(propertyRow => propertyRow[fieldName])
-      );
-      return {
-        name: fieldName,
-        type: inferredType.type === 'float32' ? 'float64' : inferredType.type,
-        nullable: inferredType.nullable
-      };
-    })
-  };
-}
-
-function getGeometryWKBOptions(geometry: Geometry): {hasZ?: boolean; hasM?: boolean} {
-  const dimensions = getCoordinateDimensions(getGeometrySampleCoordinates(geometry));
-  return {
-    hasZ: dimensions > 2,
-    hasM: dimensions > 3
-  };
-}
-
-function getCoordinateDimensions(coordinates: unknown): number {
-  if (!Array.isArray(coordinates)) {
-    return 2;
-  }
-
-  if (typeof coordinates[0] === 'number') {
-    return coordinates.length;
-  }
-
-  if (coordinates.length === 0) {
-    return 2;
-  }
-
-  return getCoordinateDimensions(coordinates[0]);
-}
-
-function getGeometrySampleCoordinates(geometry: Geometry): unknown {
-  if ('coordinates' in geometry) {
-    return geometry.coordinates;
-  }
-
-  if ('geometries' in geometry && geometry.geometries.length > 0) {
-    return getGeometrySampleCoordinates(geometry.geometries[0]);
-  }
-
-  return undefined;
-}
-
-function normalizePropertyValue(propertyValue: unknown): unknown {
-  if (
-    propertyValue === null ||
-    propertyValue === undefined ||
-    typeof propertyValue === 'string' ||
-    typeof propertyValue === 'number' ||
-    typeof propertyValue === 'boolean'
-  ) {
-    return propertyValue ?? null;
-  }
-
-  if (propertyValue instanceof Date) {
-    return propertyValue.toISOString();
-  }
-
-  return JSON.stringify(propertyValue);
-}
-
-function getFieldNames(propertyRows: Record<string, unknown>[]): string[] {
-  const fieldNames = new Set<string>();
-  for (const propertyRow of propertyRows) {
-    for (const fieldName of Object.keys(propertyRow)) {
-      fieldNames.add(fieldName);
-    }
-  }
-  return [...fieldNames];
 }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {ArrowTable, ArrowTableBatch, Batch, Table, TableBatch} from '@loaders.gl/schema';
+import type {Batch, TableBatch} from '@loaders.gl/schema';
 import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import {JSONFormat} from './json-format';
 
@@ -18,20 +18,21 @@ export type MetadataBatch = Batch & {
 /** Partial or final container object emitted while streaming JSON. */
 export type JSONBatch = Batch & {
   shape: 'json';
-  /** JSON data */
+  /** JSON data. */
   container: any;
 };
 
 /** Options for parsing JSON documents and tabular selections. */
 export type JSONLoaderOptions = LoaderOptions & {
+  /** JSON parser options. */
   json?: {
     /** Selects the streaming JSON parser backend. */
     backend?: 'clarinet' | 'fast';
-    /** Selects row-table output or Apache Arrow output for tabular JSON. */
-    shape?: 'object-row-table' | 'array-row-table' | 'arrow-table';
-    /** Enables table extraction from non-streaming JSON. */
+    /** Requested row-table output shape. Omitting shape preserves the default JSON result. */
+    shape?: 'object-row-table' | 'array-row-table';
+    /** Whether non-streaming JSON should be interpreted as table rows. */
     table?: boolean;
-    /** Selects one or more JSON arrays to stream. */
+    /** JSON paths identifying arrays that can be streamed as row batches. */
     jsonpaths?: string[];
   };
 };
@@ -44,8 +45,8 @@ async function preload() {
 
 /** Metadata-only loader for JSON documents, including tabular JSON and streaming table extraction. */
 export const JSONLoader = {
-  dataType: null as unknown as Table | ArrowTable,
-  batchType: null as unknown as TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
+  dataType: null as unknown,
+  batchType: null as unknown as TableBatch | MetadataBatch | JSONBatch,
 
   ...JSONFormat,
   version: VERSION,
@@ -59,8 +60,4 @@ export const JSONLoader = {
     }
   },
   preload
-} as const satisfies Loader<
-  Table | ArrowTable,
-  TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch,
-  JSONLoaderOptions
->;
+} as const satisfies Loader<unknown, TableBatch | MetadataBatch | JSONBatch, JSONLoaderOptions>;
