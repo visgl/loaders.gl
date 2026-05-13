@@ -219,10 +219,6 @@ async function loadImage(
 
   assert(arrayBuffer, 'glTF image has no data');
 
-  // Debug: trace image loading
-  const firstBytes = new Uint8Array(arrayBuffer.slice(0, 12));
-  console.log(`loadImage[${index}]`, {mimeType: image.mimeType, byteLength: arrayBuffer.byteLength, firstBytes: Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' '), 'options.worker': (options as any)?.worker, 'options.core.worker': (options as any)?.core?.worker});
-
   const strictOptions = options;
 
   const gltfOptions = {
