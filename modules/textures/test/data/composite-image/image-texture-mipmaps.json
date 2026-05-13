@@ -1,0 +1,8 @@
+{
+  "shape": "image-texture",
+  "mipmaps": [
+    "../../../../images/test/data/ibl/papermill/specular/specular_back_0.jpg",
+    "../../../../images/test/data/ibl/papermill/specular/specular_back_1.jpg",
+    "../../../../images/test/data/ibl/papermill/specular/specular_back_2.jpg"
+  ]
+}

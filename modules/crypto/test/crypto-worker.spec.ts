@@ -7,7 +7,7 @@ import {processOnWorker, isBrowser, WorkerFarm} from '@loaders.gl/worker-utils';
 import {CryptoWorker, CryptoJSWorker} from '@loaders.gl/crypto';
 import {getBinaryData} from './test-utils/test-utils';
 
-test('CryptoWorker', async (t) => {
+test('CryptoWorker', async t => {
   const {binaryData} = getBinaryData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -43,7 +43,7 @@ test('CryptoWorker', async (t) => {
 });
 
 // CryptoJSWorker is disabled
-test.skip('CryptoJSWorker', async (t) => {
+test.skip('CryptoJSWorker', async t => {
   if (!isBrowser) {
     t.end();
     return;

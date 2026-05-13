@@ -1,4 +1,8 @@
+import {TexturesDocsTabs} from '@site/src/components/docs/textures-docs-tabs';
+
 # KTX2BasisWriter 🚧
+
+<TexturesDocsTabs active="ktx2basiswriter" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.1-blue.svg?style=flat-square" alt="From-v3.1" />
@@ -22,11 +26,12 @@
 ```typescript
 import '@loaders.gl/polyfill'; // only if using under Node
 import {load, encode} from '@loaders.gl/core';
+import {ImageBitmapLoader, getImageData} from '@loaders.gl/images';
 import {KTX2BasisUniversalTextureWriter} from '@loaders.gl/textures';
 
 const shannonPNG = 'shannon.png';
 
-const image = await load(shannonPNG, ImageLoader, {image: {type: 'data'}});
+const image = getImageData(await load(shannonPNG, ImageBitmapLoader));
 const encodedData = await encode(image, KTX2BasisUniversalTextureWriter);
 ```
 
@@ -49,3 +54,11 @@ The writer applies BinomialLCC basis universal encoder. The libraries are loaded
 
 - https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.wasm
 - https://unpkg.com/@loaders.gl/textures@${VERSION}/dist/libs/basis_encoder.js
+
+## Module Overrides
+
+Use `options.modules` to override the Basis encoder runtime used by `KTX2BasisUniversalTextureWriter`.
+
+- `modules.basisEncoder`: supply a preloaded Basis encoder module that resolves to `{BasisFile, KTX2File, BasisEncoder}`.
+- `'basis_encoder.js'`: override the URL used for the Basis encoder JavaScript wrapper.
+- `'basis_encoder.wasm'`: override the URL used for the Basis encoder WebAssembly binary.

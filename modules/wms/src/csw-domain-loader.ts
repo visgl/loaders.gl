@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {Loader} from '@loaders.gl/loader-utils';
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
 import type {CSWDomain} from './lib/parsers/csw/parse-csw-domain';
-import {parseCSWDomain} from './lib/parsers/csw/parse-csw-domain';
 
+import {CSWDomainFormat} from './wms-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -17,10 +17,15 @@ export type CSWLoaderOptions = XMLLoaderOptions & {
   csw?: {};
 };
 
-/**
- * Loader for the response to the CSW GetCapability request
- */
+/** Preloads the parser-bearing CSW domain loader implementation. */
+async function preload() {
+  const {CSWDomainLoaderWithParser} = await import('./csw-domain-loader-with-parser');
+  return CSWDomainLoaderWithParser;
+}
+
+/** Metadata-only loader for the response to the CSW GetDomain request. */
 export const CSWDomainLoader = {
+  ...CSWDomainFormat,
   dataType: null as unknown as CSWDomain,
   batchType: null as never,
 
@@ -30,16 +35,17 @@ export const CSWDomainLoader = {
   module: 'wms',
   version: VERSION,
   worker: false,
+  encoding: 'xml',
+  format: 'csw-domain',
+  text: true,
   extensions: ['xml'],
   mimeTypes: ['application/vnd.ogc.csw_xml', 'application/xml', 'text/xml'],
   testText: testXMLFile,
   options: {
     csw: {}
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: CSWLoaderOptions) =>
-    parseCSWDomain(new TextDecoder().decode(arrayBuffer), options),
-  parseTextSync: (text: string, options?: CSWLoaderOptions) => parseCSWDomain(text, options)
-} as const satisfies LoaderWithParser<CSWDomain, never, CSWLoaderOptions>;
+  preload
+} as const satisfies Loader<CSWDomain, never, CSWLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

@@ -79,4 +79,4 @@ const textEncoder = new TextEncoder();
  * @note Order matches WKBGeometryType enum (need to add 1)
  * @note: We only support this "geojson" subset of the OGC simple features standard
  */
-export const WKT_MAGIC_BYTES = WKT_MAGIC_STRINGS.map((string) => textEncoder.encode(string));
+export const WKT_MAGIC_BYTES = WKT_MAGIC_STRINGS.map(string => textEncoder.encode(string));

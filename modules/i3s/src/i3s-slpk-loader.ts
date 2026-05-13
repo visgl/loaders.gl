@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
-import {DataViewReadableFile} from '@loaders.gl/zip';
-import {parseSLPKArchive} from './lib/parsers/parse-slpk/parse-slpk';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 
+import {SLPKFormat} from './i3s-format';
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
@@ -26,6 +25,7 @@ export type SLPKLoaderOptions = LoaderOptions & {
  * @todo - this should be updated to use `parseFile` and ReadableFile
  */
 export const SLPKLoader = {
+  ...SLPKFormat,
   dataType: null as unknown as ArrayBuffer,
   batchType: null as never,
 
@@ -41,8 +41,6 @@ export const SLPKLoader = {
       pathMode: undefined
     }
   },
-  parse: async (data: ArrayBuffer, options: SLPKLoaderOptions = {}): Promise<ArrayBuffer> => {
-    const archive = await parseSLPKArchive(new DataViewReadableFile(new DataView(data)));
-    return archive.getFile(options.slpk?.path ?? '', options.slpk?.pathMode);
-  }
-} as const satisfies LoaderWithParser<ArrayBuffer, never, SLPKLoaderOptions>;
+  /** Loads the parser-bearing SLPK loader implementation. */
+  preload: async () => (await import('./i3s-slpk-loader-with-parser')).SLPKLoaderWithParser
+} as const satisfies Loader<ArrayBuffer, never, SLPKLoaderOptions>;

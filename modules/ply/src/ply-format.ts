@@ -13,6 +13,8 @@ export const PLYFormat = {
   name: 'PLY',
   id: 'ply',
   module: 'ply',
+  encoding: 'text',
+  format: 'ply',
   // shapes: ['mesh', 'gltf', 'columnar-table'],
   extensions: ['ply'],
   mimeTypes: ['text/plain', 'application/octet-stream'],

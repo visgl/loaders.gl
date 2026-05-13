@@ -15,11 +15,11 @@ const version = VERSION[0] >= '0' && VERSION[0] <= '9' ? `v${VERSION}` : '';
 function createLog() {
   const log = new Log({id: 'loaders.gl'});
 
-  globalThis.loaders = globalThis.loaders || {};
+  globalThis.loaders ||= {};
   globalThis.loaders.log = log;
   globalThis.loaders.version = version;
 
-  globalThis.probe = globalThis.probe || {};
+  globalThis.probe ||= {};
   globalThis.probe.loaders = log;
 
   return log;

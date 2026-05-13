@@ -90,7 +90,7 @@ if (!isBrowser) {
   COMPRESSIONS.push();
 }
 
-test('compression#atomic', async (t) => {
+test('compression#atomic', async t => {
   for (const compression of COMPRESSIONS) {
     // brotli compress import issue
     if (!compression.isSupported || compression.name === 'brotli') {
@@ -122,7 +122,7 @@ test('compression#atomic', async (t) => {
 
 // BATCHED TESTS
 
-test('compression#batched', async (t) => {
+test('compression#batched', async t => {
   const inputChunks = [
     new Uint8Array([1, 2, 3]).buffer,
     new Uint8Array([4, 5, 6]).buffer,
@@ -163,7 +163,7 @@ test('compression#batched', async (t) => {
 });
 
 // WORKER TESTS
-test('gzip#worker', async (t) => {
+test('gzip#worker', async t => {
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -200,7 +200,7 @@ test('gzip#worker', async (t) => {
   t.end();
 });
 
-test('lz4#worker', async (t) => {
+test('lz4#worker', async t => {
   const {binaryData} = getData();
 
   t.equal(binaryData.byteLength, 100000, 'Length correct');
@@ -231,7 +231,7 @@ test('lz4#worker', async (t) => {
   t.end();
 });
 
-test.skip('zstd#worker', async (t) => {
+test.skip('zstd#worker', async t => {
   if (!isBrowser) {
     t.end();
     return;

@@ -467,7 +467,7 @@
   "useDracoGeometry": true,
   "useCompressedTextures": true,
   "decodeTextures": true,
-  "coordinateSystem": 3,
+  "coordinateSystem": "lnglat-offsets",
   "colorsByAttribute": {
     "attributeName": "HEIGHTROOF",
     "minValue": 0,

@@ -152,7 +152,7 @@ async function main() {
   await convert(validatedOptions);
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.log(error);
   process.exit(1); // eslint-disable-line no-process-exit
 });
@@ -280,13 +280,13 @@ function validateOptions(
     inputType: {
       getMessage: () =>
         console.log('Missed/Incorrect: --input-type [tileset input type: I3S or 3DTILES]'),
-      condition: (value) =>
+      condition: value =>
         addHash || (Boolean(value) && Object.values(TILESET_TYPE).includes(value.toUpperCase()))
     },
     outputVersion: {
       getMessage: () =>
         console.log('Incorrect: --output-version [1.0 or 1.1] is for --input-type "I3S" only'),
-      condition: (value) =>
+      condition: value =>
         addHash ||
         (Boolean(value) &&
           Object.values(['1.0', '1.1']).includes(value) &&
@@ -307,7 +307,7 @@ function validateOptions(
     }
   }
   if (exceptions.length) {
-    exceptions.forEach((exeption) => exeption());
+    exceptions.forEach(exeption => exeption());
     process.exit(1); // eslint-disable-line no-process-exit
   }
   return <ValidatedTileConversionOptions>options;

@@ -47,12 +47,15 @@ async function loadBunny() {
   return await parse(arrayBuffer, DracoLoader);
 }
 
-test('DracoWriter#loader conformance', (t) => {
+test('DracoWriter#loader conformance', t => {
   validateWriter(t, DracoWriter, 'DracoWriter');
   t.end();
 });
 
-test('DracoWriter#encode(bunny.drc)', async (t) => {
+test('DracoWriter#encode(bunny.drc)', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -67,11 +70,13 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
       POSITION: data.attributes.POSITION.value
     }
   };
+  const compressedMeshByteLengths = new Map<string, number>();
 
   for (const tc of TEST_CASES) {
     const mesh = tc.options.draco?.pointcloud ? POINTCLOUD : MESH;
 
     const compressedMesh = await encode(mesh, DracoWriter, tc.options);
+    compressedMeshByteLengths.set(tc.title, compressedMesh.byteLength);
 
     // const meshSize = getMeshSize(mesh.attributes);
     // const ratio = meshSize / compressedMesh.byteLength;
@@ -91,6 +96,19 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
     }
   }
 
+  const sequentialMeshByteLength = compressedMeshByteLengths.get('Encoding Draco Mesh: SEQUENTIAL');
+  const edgebreakerMeshByteLength = compressedMeshByteLengths.get(
+    'Encoding Draco Mesh: EDGEBREAKER'
+  );
+  t.ok(sequentialMeshByteLength, 'Sequential mesh encoded');
+  t.ok(edgebreakerMeshByteLength, 'Edgebreaker mesh encoded');
+  t.ok(
+    sequentialMeshByteLength &&
+      edgebreakerMeshByteLength &&
+      edgebreakerMeshByteLength < sequentialMeshByteLength,
+    `Edgebreaker mesh encoding (${edgebreakerMeshByteLength}) is smaller than sequential mesh encoding (${sequentialMeshByteLength})`
+  );
+
   t.end();
 });
 
@@ -99,7 +117,7 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
  * Refused to execute script from 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' because its MIME type ('') is not executable.
  * [Error: Failed to execute 'importScripts' on 'WorkerGlobalScope': The script at 'https://raw.githubusercontent.com/google/draco/1.4.1/javascript/draco_encoder.js' failed to load.
  */
-test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
+test.skip('DracoWriter#Worker$encode(bunny.drc)', async t => {
   if (!isBrowser) {
     t.end();
     return;
@@ -148,7 +166,7 @@ test.skip('DracoWriter#Worker$encode(bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
+test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -202,7 +220,10 @@ test('DracoWriter#WorkerNodeJS#encode(bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
+test('DracoWriter#encode via draco3d npm package (bunny.drc)', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
 
@@ -253,7 +274,10 @@ test('DracoWriter#encode via draco3d npm package (bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#encode(bunny.drc)', async (t) => {
+test('DracoWriter#encode(bunny.drc)', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -291,7 +315,10 @@ test('DracoWriter#encode(bunny.drc)', async (t) => {
   t.end();
 });
 
-test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async (t) => {
+test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attribute type', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -333,7 +360,10 @@ test('DracoWriter#should encode texCoord/texCoords attribute as TEX_COORD attrib
   t.end();
 });
 
-test('DracoWriter#geometry metadata', async (t) => {
+test('DracoWriter#geometry metadata', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -393,7 +423,10 @@ test('DracoWriter#geometry metadata', async (t) => {
   t.end();
 });
 
-test('DracoWriter#attributes metadata', async (t) => {
+test('DracoWriter#attributes metadata', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   validateMeshCategoryData(t, data);
   t.equal(data.attributes.POSITION.value.length, 104502, 'POSITION attribute was found');
@@ -448,7 +481,10 @@ test('DracoWriter#attributes metadata', async (t) => {
   t.end();
 });
 
-test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async (t) => {
+test('DracoWriter#metadata - should be able to define optional "name entry" for custom attribute', async t => {
+  if (skipBrowserDracoWasmTest(t)) {
+    return;
+  }
   const data = await loadBunny();
   const attributes = {
     POSITION: data.attributes.POSITION.value,
@@ -510,4 +546,16 @@ function validatePositionMetadata(t, data) {
     data.loaderData.attributes[POSITION].metadata['optional-entry-int-array'].intArray,
     [0, 1, 2, -3000, 31987, 77]
   );
+}
+
+/**
+ * Skips Draco writer tests that depend on direct WASM module initialization in browser runs.
+ */
+function skipBrowserDracoWasmTest(t) {
+  if (isBrowser) {
+    t.comment('Skipping Draco WASM writer test in browser');
+    t.end();
+    return true;
+  }
+  return false;
 }

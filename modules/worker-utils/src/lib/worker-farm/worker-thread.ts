@@ -45,7 +45,7 @@ export default class WorkerThread {
     this.source = source;
     this.url = url;
     this.onMessage = NOOP;
-    this.onError = (error) => console.log(error); // eslint-disable-line
+    this.onError = error => console.log(error); // eslint-disable-line
 
     this.worker = isBrowser ? this._createBrowserWorker() : this._createNodeWorker();
   }
@@ -59,6 +59,20 @@ export default class WorkerThread {
     this.onError = NOOP;
     this.worker.terminate(); // eslint-disable-line @typescript-eslint/no-floating-promises
     this.terminated = true;
+  }
+
+  /** Keeps this worker from preventing Node.js process exit while idle. */
+  unref(): void {
+    if (!isBrowser && typeof (this.worker as NodeWorkerType).unref === 'function') {
+      (this.worker as NodeWorkerType).unref();
+    }
+  }
+
+  /** Keeps this worker alive while it is actively processing a job. */
+  ref(): void {
+    if (!isBrowser && typeof (this.worker as NodeWorkerType).ref === 'function') {
+      (this.worker as NodeWorkerType).ref();
+    }
   }
 
   get isRunning() {
@@ -106,7 +120,7 @@ export default class WorkerThread {
     this._loadableURL = getLoadableWorkerURL({source: this.source, url: this.url});
     const worker = new Worker(this._loadableURL, {name: this.name});
 
-    worker.onmessage = (event) => {
+    worker.onmessage = event => {
       if (!event.data) {
         this.onError(new Error('No data received'));
       } else {
@@ -119,7 +133,7 @@ export default class WorkerThread {
       this.terminated = true;
     };
     // TODO - not clear when this would be called, for now just log in case it happens
-    worker.onmessageerror = (event) => console.error(event); // eslint-disable-line
+    worker.onmessageerror = event => console.error(event); // eslint-disable-line
 
     return worker;
   }
@@ -136,22 +150,21 @@ export default class WorkerThread {
       const url = absolute ? this.url : `./${this.url}`;
       const type = this.url.endsWith('.ts') || this.url.endsWith('.mjs') ? 'module' : 'commonjs';
       // console.log('Starting work from', url);
-      // @ts-expect-error TODO - looks like type argmument is missing in @types/node
+      // @ts-expect-error type is not known
       worker = new NodeWorker(url, {eval: false, type});
     } else if (this.source) {
       worker = new NodeWorker(this.source, {eval: true});
     } else {
       throw new Error('no worker');
     }
-    worker.on('message', (data) => {
+    worker.on('message', data => {
       // console.error('message', data);
       this.onMessage(data);
     });
-    worker.on('error', (error) => {
-      // console.error('error', error);
-      this.onError(error);
+    worker.on('error', error => {
+      this.onError(error as Error);
     });
-    worker.on('exit', (code) => {
+    worker.on('exit', _code => {
       // console.error('exit', code);
     });
     return worker;

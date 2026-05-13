@@ -9,7 +9,7 @@ import {DataViewReadableFile} from '../../src/parse-zip/readable-file-utils';
 import {generateCDHeader, parseZipCDFileHeader} from '../../src/parse-zip/cd-file-header';
 import {createZip64Info} from '../../src/parse-zip/zip64-info-generation';
 
-test('SLPKLoader#central directory file header parse', async (t) => {
+test('SLPKLoader#central directory file header parse', async t => {
   const cdFileHeader = await parseZipCDFileHeader(
     78n,
     new DataViewReadableFile(new DataView(DATA_ARRAY.buffer))
@@ -21,7 +21,7 @@ test('SLPKLoader#central directory file header parse', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#central directory file header generation', async (t) => {
+test('SLPKLoader#central directory file header generation', async t => {
   const header = generateCDHeader({
     crc32: 0,
     fileName: '@specialIndexFileHASH128@1',
@@ -32,7 +32,7 @@ test('SLPKLoader#central directory file header generation', async (t) => {
   t.end();
 });
 
-test('SLPKLoader#zip64 info generation', async (t) => {
+test('SLPKLoader#zip64 info generation', async t => {
   const header = createZip64Info({
     size: 0xffffffffff
   });

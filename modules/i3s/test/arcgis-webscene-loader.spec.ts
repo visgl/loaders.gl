@@ -14,7 +14,7 @@ const ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_CRS_URL =
 const ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_LAYERS_URL =
   '@loaders.gl/i3s/test/data/arcgis-webscenes/arcgis-webscene-with-all-unsupported-layers.json';
 
-test('ArcGISWebSceneLoader#should load WebScene', async (t) => {
+test('ArcGISWebSceneLoader#should load WebScene', async t => {
   const WEB_SCENE_FIRST_OPERATIONAL_LAYER_EXPECTED = {
     id: '15f2fe08c8d-layer-0',
     showLegend: true,
@@ -71,7 +71,7 @@ test('ArcGISWebSceneLoader#should load WebScene', async (t) => {
   t.end();
 });
 
-test('ArcGISWebSceneLoader#should load WebScene with partially unsupported layers', async (t) => {
+test('ArcGISWebSceneLoader#should load WebScene with partially unsupported layers', async t => {
   const webScene = await load(
     ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_LAYER_IN_LIST_URL,
     ArcGISWebSceneLoader
@@ -90,7 +90,7 @@ test('ArcGISWebSceneLoader#should load WebScene with partially unsupported layer
   t.end();
 });
 
-test('ArcGISWebSceneLoader#should return error of loading WebScene if one layer has unsupported CRS', async (t) => {
+test('ArcGISWebSceneLoader#should return error of loading WebScene if one layer has unsupported CRS', async t => {
   try {
     await load(ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_CRS_URL, ArcGISWebSceneLoader);
   } catch (error) {
@@ -100,7 +100,7 @@ test('ArcGISWebSceneLoader#should return error of loading WebScene if one layer 
   t.end();
 });
 
-test('ArcGISWebSceneLoader#should return error of loading WebScene if no any supported layers', async (t) => {
+test('ArcGISWebSceneLoader#should return error of loading WebScene if no any supported layers', async t => {
   try {
     await load(ARCGIS_WEB_SCENE_WITH_UNSUPPORTED_LAYERS_URL, ArcGISWebSceneLoader);
   } catch (error) {

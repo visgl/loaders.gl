@@ -1,7 +1,6 @@
 // loaders.gl, MIT license
 
-import {XMLLoader} from '@loaders.gl/xml';
-
+import {parseXMLTextSync} from '../../../lib/parsers/xml/parse-xml-text';
 
 /** All capabilities of a WMTS service - response to a WMTS `GetCapabilities` data structure extracted from XML */
 export type WMTSCapabilities = {
@@ -90,7 +89,7 @@ export type WMTSTileMatrixSet = {
  * @note Error handlings is fairly weak
  */
 export function parseWMTSCapabilities(text: string, options): WMTSCapabilities {
-  const parsedXML = XMLLoader.parseTextSync?.(text, {...options, xml: {
+  const parsedXML = parseXMLTextSync(text, {...options, xml: {
     ...options?.xml, 
     removeNSPrefix: true,
     uncapitalizeKeys: true

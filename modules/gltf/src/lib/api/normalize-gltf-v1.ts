@@ -235,16 +235,16 @@ class GLTFV1Normalizer {
 
   _convertNodeIds(node) {
     if (node.children) {
-      node.children = node.children.map((child) => this._convertIdToIndex(child, 'node'));
+      node.children = node.children.map(child => this._convertIdToIndex(child, 'node'));
     }
     if (node.meshes) {
-      node.meshes = node.meshes.map((mesh) => this._convertIdToIndex(mesh, 'mesh'));
+      node.meshes = node.meshes.map(mesh => this._convertIdToIndex(mesh, 'mesh'));
     }
   }
 
   _convertSceneIds(scene) {
     if (scene.nodes) {
-      scene.nodes = scene.nodes.map((node) => this._convertIdToIndex(node, 'node'));
+      scene.nodes = scene.nodes.map(node => this._convertIdToIndex(node, 'node'));
     }
   }
 
@@ -300,7 +300,7 @@ class GLTFV1Normalizer {
 
       const textureId =
         material.values?.tex || material.values?.texture2d_0 || material.values?.diffuseTex;
-      const textureIndex = json.textures.findIndex((texture) => texture.id === textureId);
+      const textureIndex = json.textures.findIndex(texture => texture.id === textureId);
       if (textureIndex !== -1) {
         material.pbrMetallicRoughness.baseColorTexture = {index: textureIndex};
       }

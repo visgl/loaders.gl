@@ -148,7 +148,7 @@ const simplified = [
   [0.86636, 0.48077]
 ];
 
-test('GeoJSONVT#simplifyPath#simplifies points correctly with the given tolerance', (t) => {
+test('GeoJSONVT#simplifyPath#simplifies points correctly with the given tolerance', t => {
   const coords: number[] = [];
   for (let i = 0; i < points.length; i++) {
     coords.push(points[i][0], points[i][1], 0);
@@ -168,7 +168,7 @@ test('GeoJSONVT#simplifyPath#simplifies points correctly with the given toleranc
   t.end();
 });
 
-test('GeoJSONVT#simplifyPath#does not throw max call stack error on bad long input', (t) => {
+test('GeoJSONVT#simplifyPath#does not throw max call stack error on bad long input', t => {
   const coords: number[][] = [];
   for (let i = 0; i < 1400; i++) {
     coords.push([0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]);

@@ -28,7 +28,7 @@ const CSW_RESPONSE_2_0_2 =
   '</csw:ListOfValues>' +
   '</csw:DomainValues>' +
   '</csw:GetDomainResponse>';
-test('CSWGetDomainLoader', async (t) => {
+test('CSWGetDomainLoader', async t => {
   const domain = await parse(CSW_RESPONSE_2_0_2, CSWDomainLoader);
   // t.comment(JSON.stringify(domain));
 

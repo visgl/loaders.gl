@@ -2,11 +2,141 @@
 
 ## v4.4
 
-### v4.3.0-alpha.2
+
+### v4.4.0
+
+- Official publish
+
+### v4.4.0-alpha.19
+
+- [Feat] Add @loaders.gl/mlt — MapLibre Tile format support (#3315)
+- feat(textures) Add composite texture loaders (#3328)
+- b388320bd chore(textures): Revert constant renames (#3337)
+- 5dd3a550c feat(textures): New HDR format loader (#3327)
+- dd6e393d7 fix(textures): Fix format strings, serialize basis transcoding. (#3329)
+
+### v4.4.0-alpha.18
+
+- chore: Clean up library load options (#3320)
+
+### v4.4.0-alpha.17 
+
+- chore: update package.json "browser" fields (#3318)
+- fix(zip): Handle directories better (#3304)
+- feat(textures): Add WebGPU textureFormat field (#3317)
+- chore: Update dev tools config imports (#3279)
+
+### v4.4.0-alpha.16
+
+- fix(tiles): Extract rootNode.matrix into cartesianModelMatrix (#3314)
+
+### v4.4.0-alpha.15
+
+- Fix(tiles): Remove rendering flicker by holding refined tile (#3311)
+
+### v4.4.0-alpha.14
+
+- fix(parquet): Types to fix parquet module build (#3305)
+- fix(las): Pass correct params in LAZLoader.readData (#3297)
+- chore: bump probe.gl (#3298)
+- chore: TypeScript 5.9, @types/node 25, yarn lock refresh (#3301)
+- fix(loader-utils): Avoid option warnings unless log level is increased (#3299)
+- feat(arrow): Support Apache Arrow JS v21 (#3302)
+
+### v4.4.0-alpha.13
+
+- chore(deps): bump fast-xml-parser from 4.5.0 to 5.3.6 (#3295)
+- fix(tiles): Refine empty tiles (#3293)
+
+### v4.4.0-alpha.12
+
+- fix(las): Explicitly copy wasm files for npm (#3288)
+
+### v4.4.0-alpha.11
+
+- chore(las): package WASM using copy-libs (#3287)
+
+### v4.4.0-alpha.10
+
+- chore: mark geoarrow package as public (gis dependency) (#3286)
+
+### v4.4.0-alpha.9
+
+### v4.4.0-alpha.8
+
+### v4.4.0-alpha.7
+
+### v4.4.0-alpha.6
+
+- feat(loader-utils): RequestScheduler.setProps (#3280)
+
+### v4.4.0-alpha.5
+
+- Make `@loaders.gl/zarr` and `@loaders.gl/geoarrow` libraries private
+
+### v4.4.0-alpha.4
+
+- Make `@loaders.gl/graph` and `@loaders.gl/traces` libraries private
+
+### v4.4.0-alpha.3
+
+- Enable fetchNode gzip decompression test (#3267)
+- feat: Upgrade to handle ArrayBufferLike (#3271)
+- fix/pcd sizesum calc Jclaessens97  (#3270)
+- Merge branch 'weldonji-remove-lzo-wasm-dependency'
+- chore(wkb): Re-enable TWKB/WKB geometry tests (#3268)
+- fix(gltf): KHR_texture_transform - Avoid overwriting shared texcoord buffer views (#3255)
+- docs: v4.4 updates (#3265)
+- Merge branch 'rddesmond-dbf-sidecar-options'
+- feat(loader-utils): Export is-type helpers (#3258)
+- feat: LoaderOptions.core - improved loader type safety (#3112)
+- chore: Separate app build and tests tile-converter (#3264)
+- feat(json): JSONPath improvements, error messages (#3259)
+- feat: Add traces and graphs module scaffolds (#3253)
+- chore(deps): bump @babel/runtime from 7.25.7 to 7.28.4 (#3263)
+- chore(tile-converter): Move tile-converter from modules/ to apps/ (#3261)
+- docs(json) Clarify JSONLoader streaming semantics (#3257)
+- chore(crypto)  make md5 wasm decoder Buffer independent (#3256)
+- fix(json): GeoJSON batch option merging (#3254)
+- chore: Upgrade to @vis.gl/dev-tools@1.0 (#3252)
+- docs(csv): CSVLoader options documentation (#3248)
+- Fix(terrain): quantized mesh skirt height docs (#3249)
+- docs(core): registerLoaders deprecation notice (#3250)
+- chore: Add worker bundles to package exports (#3251)
+- feat(mvt): Experimental MVTWriter  (#3164)
+- chore: Migrate to ArrayBufferLike (#3235)
+- Move shapefile whats-new note to v4.4 (#3246)
+- docs: Fix typos and table formatting (#3226)
+- Add ReadableFile coverage for archives (#3241)
+- docs: upgrade docusaurus to 3.9.2 (#3240)
+- chore: Standardize on ReadableFile (#3237)
+- Handle child process module lazily (#3230)
+- chore: Adjust CI matrix to run full suite only on Node 24 (#3234)
+- chore: Add Yarn cache to test workflows (#3233)
+- chore: Split out website-build job in CI (#3232)
+- chore: Run CI on node 24,22,20 (#3231)
+- chore: bump vite to 7.2.7 (#3228)
+- Upgrade example apps to React 19.2.3 (#3229)
+- chore: Move loaders.gl from volta to corepack (#3227)
+- Update parquet.md (#3183)
+- Fixes typo in PMTiles API Reference doc (#3216)
+- Update options shape (#3214)
+- Pass options to DBF sidecar loader
+- Remove lzo-wasm dependency and references
+- chore: Fix CI (#3177)
+- chore(deps-dev): bump next in /examples/get-started/bundle-with-nextjs (#3175)
+- chore(deps): bump nanoid from 3.3.7 to 3.3.8 (#3173)
+- chore(deps): bump cross-spawn in /test/apps/typescript-test (#3166)
+- feat(las): Enable both laz-perf and laz-rs-wasm for comparison and benchmarking. (#3168)
+- feat(las): Use laz-rs-wasm to support laz 1.4 (#3165)
+- chore(test): Add license headers (#3169)
+- feat(potree): render all nodes (#3162)
+
+### v4.4.0-alpha.2
 
 - Hofix to remove not existing version (#3163)
 
-### v4.3.0-alpha.1
+### v4.4.0-alpha.1
 
 - fix(loader-utils): ReadableFile implementation to match the interface (#3157)
 - feat(geoarrow): Add support for Arrow meshes (#3159)
@@ -63,6 +193,8 @@
 
 ## v4.3
 
+See `4.3-release` branch for additional CHANGELOGS
+
 ### v4.3.0-beta.1
 
 - feat(gltf): extensions, encoding feature metadata (#2972)
@@ -81,14 +213,14 @@
 - fix(tile-converter): Fix according to new NodeJS security limitations (#3071)
 - fix(tile-converter): Added flag to size calculation (#3069)
 - chore(gltf): fix env dependency in a test (#3068)
-- chore(potree): test PotreeSource on a supported dataset (#3065)
+- chore(potree): test PotreeSourceLoader on a supported dataset (#3065)
 
 ### v4.3.0-alpha.6
 
 - fix(tile-converter): Returned non-slpk behavior for calculateFilesSize function (#3066)
 - fix(tile-converter): Wrong percent calculation fix (#3063)
 - Create security policy (#3064)
-- test(potree): Add tests for PotreeSource (#3062)
+- test(potree): Add tests for PotreeSourceLoader (#3062)
 - fix(potree): hierarchy loading (#3061)
 - chore(deps): bump elliptic from 6.5.4 to 6.5.7 in /website (#3058)
 - chore(deps): bump axios from 1.6.8 to 1.7.4 (#3059)
@@ -131,7 +263,7 @@
 ### v4.3.0-alpha.3
 
 - fix(i3s): slpk full path on Windows (#3011)
-- feat(mvt): TableTileSource refactor, improved typing (#2990)
+- feat(mvt): TableTileSourceLoader refactor, improved typing (#2990)
 - chore: Cleanup of Source parameters (#3015)
 - fix(csv): move d3-dsv from devDependencies to dependencies (#3009)
 - fix(loader-utils): add missing dependency for @probe.gl/log (#3008)
@@ -152,7 +284,7 @@
 - chore: update yarn and docusaurus deps (#2994)
 - example: TileSourceLayer can now render MVTLayer (#2992)
 - feat(parquet): Adopt new parquet-wasm File reader API. (#2987)
-- feat(mvt): TableTileSource uses probe.gl Stats and Log (#2989)
+- feat(mvt): TableTileSourceLoader uses probe.gl Stats and Log (#2989)
 - feat(mvt): Add WGS84 support to GeoJSONTileSource (#2977)
 - fix(zip): zip optimization for range requests (#2983)
 - chore: Bump ocular-dev-tools@alpha.31 (#2988)
@@ -169,7 +301,7 @@
 - chore(mvt): loader and source cleanup (#2975)
 - feat(parquet): support 'limit' option (#2973)
 - chore(mvt): Deduplicate vector tile code (#2974)
-- feat(mvt): TableTileSource (#2969)
+- feat(mvt): TableTileSourceLoader (#2969)
 - chore(mvt): refactor for clarity (#2971)
 - docs: v4.2 release notes (#2963)
 
@@ -322,7 +454,7 @@
 
 ### v4.1.0-alpha.3
 
-- feat(mvt): Add templateUrl etc to MVTSource. (#2837)
+- feat(mvt): Add templateUrl etc to MVTSourceLoader. (#2837)
 - fix(mvt): TileJSONLoader options.maxValues default (#2835)
 - chore(deps): bump vite from 4.4.9 to 4.5.1 (#2822)
 - fix(3d-tiles): Fix implicit tileset subtree parsing (#2823)
@@ -486,7 +618,7 @@
 - chore: Restore library loading (#2686)
 - fix(tiles): convert region to obb (#2685)
 - feat: Move to ES modules, upgrade dev-tools (#2681)
-- feat(mvt): Add MVTSource (#2674)
+- feat(mvt): Add MVTSourceLoader (#2674)
 - chore(core): Remove writeSync, save and fs dependencies (#2678)
 - feat(loader-utils): Refactor FileSystem to be independent of fs (#2676)
 - chore: Remove Buffer usage (#2675)
@@ -504,7 +636,7 @@
 - feat(gltf): added support of arrays to ext-feature-metadata (#2663)
 - feat(mvt): Add TileJSONLoader (#2666)
 - feat(pmtiles): Create PMTileSource from Blob (#2668)
-- feat(wms): Separate WMSSource and WMSService (#2667)
+- feat(wms): Separate WMSSourceLoader and WMSService (#2667)
 - fix: remove unused ts directive (#2665)
 - Move master to 4.0-beta tags (#2661)
 - feat(pmtools): Add vector tile support (#2664)

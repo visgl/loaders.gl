@@ -20,7 +20,7 @@ const LERC_FILES = [
   '@loaders.gl/lerc/test/data/lerc/world.lerc1'
 ];
 
-test('LERCLoader#level2', async (t) => {
+test('LERCLoader#level2', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -48,11 +48,11 @@ test('LERCLoader#level2', async (t) => {
 /** Helper function */
 function formatPixelBlock(pb1: LERCData) {
   const pb: Partial<LERCData> = {...pb1};
-  const pixels = pb1.pixels.map((band) => band.join(','));
+  const pixels = pb1.pixels.map(band => band.join(','));
   const mask = pb1.mask?.join(',');
   const statistics = pb1.statistics;
   if (statistics?.length) {
-    statistics.forEach((bandStat) => {
+    statistics.forEach(bandStat => {
       const {depthStats} = bandStat;
       if (depthStats) {
         // @ts-expect-error
@@ -66,9 +66,9 @@ function formatPixelBlock(pb1: LERCData) {
     ? pb.mask.reduce((a, b) => a + b)
     : pb1.width * pb1.height;
   const validPixelCountPerBand = pb.bandMasks
-    ? pb.bandMasks.map((mask) => mask.reduce((a, b) => a + b)).join(',')
+    ? pb.bandMasks.map(mask => mask.reduce((a, b) => a + b)).join(',')
     : null;
-  const bandMasks = pb.bandMasks ? pb.bandMasks.map((mask) => mask.join(',')) : pb.bandMasks;
+  const bandMasks = pb.bandMasks ? pb.bandMasks.map(mask => mask.join(',')) : pb.bandMasks;
   // push properties to the end
   delete pb.pixels;
   delete pb.mask;

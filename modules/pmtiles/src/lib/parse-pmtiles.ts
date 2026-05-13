@@ -4,7 +4,7 @@
 
 import {LoaderOptions} from '@loaders.gl/loader-utils';
 import type {TileJSON} from '@loaders.gl/mvt';
-import {TileJSONLoader} from '@loaders.gl/mvt';
+import {parseTileJSON} from '@loaders.gl/mvt';
 // import {Source, PMTiles, Header, TileType} from 'pmtiles';
 import * as pmtiles from 'pmtiles';
 const {TileType} = pmtiles;
@@ -71,8 +71,7 @@ export function parsePMTilesHeader(
   let tilejson: TileJSON | null = null;
   if (pmtilesMetadata) {
     try {
-      const string = JSON.stringify(pmtilesMetadata);
-      tilejson = TileJSONLoader.parseTextSync?.(string, loadOptions) || null;
+      tilejson = parseTileJSON(pmtilesMetadata, (loadOptions as any)?.tilejson) || null;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('PMTiles metadata could not be interpreted as TileJSON', error);

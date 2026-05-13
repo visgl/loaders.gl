@@ -1,0 +1,37 @@
+---
+title: "Arrow"
+hide_title: true
+---
+
+import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+import {ClientTableLiveExample} from '@site/src/components/docs/client-table-live-example';
+
+# Apache Arrow
+
+<ArrowDocsTabs active="try-it" />
+
+<ClientTableLiveExample
+  config={{
+    loaderName: 'ArrowLoader',
+    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/arrow/test/data/arrow/simple.arrow',
+    sampleFiles: [
+      {
+        label: 'simple.arrow',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/arrow/test/data/arrow/simple.arrow'
+      },
+      {
+        label: 'dictionary.arrow',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/arrow/test/data/arrow/dictionary.arrow'
+      },
+      {
+        label: 'struct.arrow',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/arrow/test/data/arrow/struct.arrow'
+      },
+      {
+        label: 'biogrid-nodes.arrow',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/arrow/test/data/arrow/biogrid-nodes.arrow'
+      }
+    ],
+    options: {arrow: {shape: 'arrow-table'}}
+  }}
+/>

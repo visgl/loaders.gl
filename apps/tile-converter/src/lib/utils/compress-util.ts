@@ -18,7 +18,7 @@ export function compressFileWithGzip(pathFile: string): Promise<string> {
       console.log(`${compressedPathFile} compressed and saved.`); // eslint-disable-line no-undef,no-console
       resolve(compressedPathFile);
     });
-    input.on('error', (error) => {
+    input.on('error', error => {
       console.log(`${compressedPathFile}: compression error!`); // eslint-disable-line no-undef,no-console
       reject(error);
     });

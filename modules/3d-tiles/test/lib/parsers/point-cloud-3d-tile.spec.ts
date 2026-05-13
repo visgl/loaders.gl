@@ -7,7 +7,7 @@
 
 import test from 'tape-promise/tape';
 import type {DracoLoaderOptions} from '@loaders.gl/draco';
-import {load, parseSync, encodeSync, LoaderContext} from '@loaders.gl/core';
+import {load, parseSync, encodeSync, LoaderContext, coreApi} from '@loaders.gl/core';
 import {Tiles3DLoader, Tile3DWriter, TILE3D_TYPE} from '@loaders.gl/3d-tiles';
 import {loadDraco} from '../../../src/lib/parsers/parse-3d-tile-point-cloud';
 // import {loadRootTileFromTileset} from '../utils/load-utils';
@@ -39,7 +39,7 @@ const POINTCLOUD_WITH_TRANSFORM_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/P
 const POINTCLOUD_TILESET_URL = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetPoints/tileset.json';
 */
 
-test('point cloud tile#throws with invalid version', (t) => {
+test('point cloud tile#throws with invalid version', t => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     version: 2
@@ -49,7 +49,7 @@ test('point cloud tile#throws with invalid version', (t) => {
   t.end();
 });
 
-test('point cloud tile#throws if featureTableJsonByteLength is 0', (t) => {
+test('point cloud tile#throws if featureTableJsonByteLength is 0', t => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJsonByteLength: 0
@@ -62,7 +62,7 @@ test('point cloud tile#throws if featureTableJsonByteLength is 0', (t) => {
   t.end();
 });
 
-test('point cloud tile#throws if the feature table does not contain POINTS_LENGTH', (t) => {
+test('point cloud tile#throws if the feature table does not contain POINTS_LENGTH', t => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
@@ -79,7 +79,7 @@ test('point cloud tile#throws if the feature table does not contain POINTS_LENGT
   t.end();
 });
 
-test('point cloud tile#throws if the feature table does not contain POSITION or POSITION_QUANTIZED', (t) => {
+test('point cloud tile#throws if the feature table does not contain POSITION or POSITION_QUANTIZED', t => {
   const TILE = {
     type: TILE3D_TYPE.POINT_CLOUD,
     featureTableJson: {
@@ -94,7 +94,7 @@ test('point cloud tile#throws if the feature table does not contain POSITION or 
   t.end();
 });
 
-test('loadDraco# Pass options to draco loader properly', async (t) => {
+test('loadDraco# Pass options to draco loader properly', async t => {
   const resultObject = {
     draco: {
       decoderType: 'js',
@@ -105,10 +105,12 @@ test('loadDraco# Pass options to draco loader properly', async (t) => {
   };
 
   const context: LoaderContext = {
+    coreApi,
     _parse: async (buffer, loader, resultOptions) => {
       t.deepEqual(resultOptions, resultObject);
       t.equal(resultOptions?.['3d-tiles'], undefined);
       t.end();
+      return {attributes: {}};
     }
   } as LoaderContext;
 
@@ -125,7 +127,7 @@ test('loadDraco# Pass options to draco loader properly', async (t) => {
 });
 
 // TODO - we need a test file with 64 bit data
-test.skip('point cloud tile#64bit attribute', async (t) => {
+test.skip('point cloud tile#64bit attribute', async t => {
   const POINTCLOUD_64BIT_URL = '@loaders.gl/3d-tiles/test/data/64-bit-attribute/1.pnts';
   const result = await load(POINTCLOUD_64BIT_URL, Tiles3DLoader, {core: {worker: false}});
   t.ok(result.attributes.gpstime instanceof Float64Array);

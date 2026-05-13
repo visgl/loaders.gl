@@ -65,4 +65,6 @@ export type GetImageParameters = {
   crs?: string;
   /** requested format for the return image */
   format?: 'image/png';
+  /** Abort signal for canceling in-flight requests. */
+  signal?: AbortSignal;
 };

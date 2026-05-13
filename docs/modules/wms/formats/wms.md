@@ -1,4 +1,8 @@
+import {WmsDocsTabs} from '@site/src/components/docs/wms-docs-tabs';
+
 # WMS - Web Map Service
+
+<WmsDocsTabs active="wms" />
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 
@@ -159,10 +163,10 @@ The WMS standard specifies protocol defined as a number of "request types" that 
 | **WMS Request**    | **loaders.gl support**                         | **Description**                                                                                                                                                                                                        |
 | ------------------ | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `GetCapabilities`  | [`WMSCapabilitiesLoader`][capabilities_loader] | Returns WMS metadata (such as map image format and WMS version compatibility) and the available layers (map bounding box, coordinate reference systems, URI of the data and whether the layer is mostly opaque or not) |
-| `GetMap`           | `ImageLoader`][image_loader]                   | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
+| `GetMap`           | [`ImageBitmapLoader`][image_bitmap_loader]     | returns a map image. Parameters include: width and height of the map, coordinate reference system, rendering style, image format                                                                                       |
 | `GetFeatureInfo`   | `WMSFeatureInfoLoader`][feature_info_loader]   | if a layer is marked as 'queryable' then you can request data about a coordinate of the map image.                                                                                                                     |
 | `DescribeLayer`    |                                                | gets feature types of the specified layer or layers, which can be further described using WFS or WCS requests. (Styled Layer Descriptor (SLD) Profile of WMS).                                                         |
-| `GetLegendGraphic` | `ImageLoader`][image_loader]                   | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
+| `GetLegendGraphic` | [`ImageBitmapLoader`][image_bitmap_loader]     | An image of the map's legend, giving a visual guide to map elements.                                                                                                                                                   |
 | Exceptions         | `WMSErrorLoader`                               | Parses an XML encoded WMS error response from any malformed request.                                                                                                                                                   |
 
 Remarks:
@@ -172,7 +176,7 @@ Remarks:
 
 [capabilities_loader]: /docs/modules/wms/api-reference/wms-capabilities-loader
 [feature_info_loader]: /docs/modules/wms/api-reference/wms-feature-info-loader
-[image_loader]: /docs/modules/images/api-reference/image-loader
+[image_bitmap_loader]: /docs/modules/images/api-reference/image-bitmap-loader
 
 ## Coordinate Reference Systems
 
@@ -186,7 +190,6 @@ Version 1.3.0 of the WMS standard was released in January 2004
 
 - Use `CRS` instead of `SRS` parameter for 1.3.0
 - The order of parameters for BBOX (in v1.3.0 only) depends on whether the CRS definition has flipped axes. You will see this in the `GetCapabilities` request at 1.3.0 - the response should show the flipped axes.
-
   - `BBOX=xmin,ymin,xmax,ymax NON-FLIPPED`
   - `BBOX=ymin,xmin,ymax,xmax FLIPPED`
   - `EPSG:4326` needs to have flipped axes. `4326 1 WGS 84 Latitude North Longitude East`

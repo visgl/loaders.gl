@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#self-closing-child', (t) => {
+test('SAXParser#self-closing-child', t => {
   testSax(t, {
     xml:
       '<root>' +

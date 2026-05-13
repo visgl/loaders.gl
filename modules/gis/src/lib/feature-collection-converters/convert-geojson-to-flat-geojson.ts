@@ -32,7 +32,7 @@ export function convertGeojsonToFlatGeojson(
   features: Feature[],
   options: GeojsonToFlatGeojsonOptions = {coordLength: 2, fixRingWinding: true}
 ): FlatFeature[] {
-  return features.map((feature) => flattenFeature(feature, options));
+  return features.map(feature => flattenFeature(feature, options));
 }
 
 /**
@@ -103,7 +103,7 @@ function flattenPolygon(
   const ringAreas: number[] = [];
   const polygons: number[] = [];
   for (const lineString of coordinates) {
-    const lineString2d = lineString.map((p) => p.slice(0, 2));
+    const lineString2d = lineString.map(p => p.slice(0, 2));
     let area = getPolygonSignedArea(lineString2d.flat());
     const ccw = area < 0;
 
@@ -147,7 +147,7 @@ function flattenFeature(feature: Feature, options: GeojsonToFlatGeojsonOptions):
       break;
     case 'MultiPoint':
       type = 'Point';
-      geometry.coordinates.map((c) => flattenPoint(c, data, indices, options));
+      geometry.coordinates.map(c => flattenPoint(c, data, indices, options));
       break;
     case 'LineString':
       type = 'LineString';
@@ -155,7 +155,7 @@ function flattenFeature(feature: Feature, options: GeojsonToFlatGeojsonOptions):
       break;
     case 'MultiLineString':
       type = 'LineString';
-      geometry.coordinates.map((c) => flattenLineString(c, data, indices, options));
+      geometry.coordinates.map(c => flattenLineString(c, data, indices, options));
       break;
     case 'Polygon':
       type = 'Polygon';
@@ -165,7 +165,7 @@ function flattenFeature(feature: Feature, options: GeojsonToFlatGeojsonOptions):
     case 'MultiPolygon':
       type = 'Polygon';
       areas = [];
-      geometry.coordinates.map((c) => flattenPolygon(c, data, indices, areas, options));
+      geometry.coordinates.map(c => flattenPolygon(c, data, indices, areas, options));
       break;
     default:
       throw new Error(`Unknown type: ${type}`);

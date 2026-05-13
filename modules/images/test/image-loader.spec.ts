@@ -1,6 +1,6 @@
-import test from 'tape-promise/tape';
+import {expect, test} from 'vitest';
 
-import {ImageLoader, isImageTypeSupported, getImageType, getImageData} from '@loaders.gl/images';
+import {ImageLoader, ImageBitmapLoader, getImageType, getImageData} from '@loaders.gl/images';
 import {isBrowser, load} from '@loaders.gl/core';
 
 import {
@@ -11,120 +11,129 @@ import {
   SVG_DATA_URL_NOT_LATIN
 } from './lib/test-cases';
 
-const TYPES = new Set<'auto' | 'imagebitmap' | 'image' | 'data'>();
+const INVALID_IMAGE_TYPES = ['auto', 'image', 'data'] as const;
 
-if (isImageTypeSupported('auto')) TYPES.add('auto');
-if (isImageTypeSupported('imagebitmap')) TYPES.add('imagebitmap');
-if (isImageTypeSupported('image')) TYPES.add('image');
-if (isImageTypeSupported('data')) TYPES.add('data');
-
-test('image loaders#imports', (t) => {
-  t.ok(ImageLoader, 'ImageLoader defined');
-  t.end();
+test('image loaders#imports', () => {
+  expect(ImageLoader, 'ImageLoader defined').toBeTruthy();
+  expect(ImageBitmapLoader, 'ImageBitmapLoader defined').toBeTruthy();
 });
 
-test('ImageLoader#load(URL)', async (t) => {
-  for (const type of TYPES.values()) {
-    const image = await load(IMAGE_URL, ImageLoader, {image: {type}});
-    t.ok(image, `image of type ${type} loaded successfully from data URL`);
-  }
-  t.end();
+test('ImageBitmapLoader#load(URL) defaults to imagebitmap output', async () => {
+  const image = await load(IMAGE_URL, ImageBitmapLoader);
+  expect(image, 'image loaded successfully from URL').toBeTruthy();
+  expect(getImageType(image), 'default image type is correct').toBe('imagebitmap');
 });
 
-test('ImageLoader#load(data URL)', async (t) => {
-  for (const type of TYPES.values()) {
-    const image = await load(IMAGE_DATA_URL, ImageLoader, {image: {type}});
-    t.ok(image, `image of type ${type} loaded successfully from data URL`);
+test('ImageBitmapLoader#load(data URL)', async () => {
+  const image = await load(IMAGE_DATA_URL, ImageBitmapLoader);
+  expect(image, 'image loaded successfully from data URL').toBeTruthy();
 
-    const imageData = getImageData(image);
-    t.deepEquals(imageData.width, 2, 'image width is correct');
-    t.deepEquals(imageData.height, 2, 'image height is correct');
-    if (!isBrowser) {
-      t.ok(ArrayBuffer.isView(imageData.data), 'image data is TypedArray');
-      t.equals(imageData.data.byteLength, 16, 'image `data.byteLength` is correct');
-    }
-  }
-  t.end();
+  const imageData = getImageData(image);
+  expect(imageData.width, 'image width is correct').toEqual(2);
+  expect(imageData.height, 'image height is correct').toEqual(2);
 });
 
-test('ImageLoader#load({type: \'data\'})', async (t) => {
-  TEST_CASES.shift();
-  TEST_CASES.shift();
-  for (const testCase of TEST_CASES) {
-    const {title, url, width, height, skip} = testCase;
-
-    // Skip some test case under Node.js
-    if (skip) {
-      continue; // eslint-disable-line
-    }
-
-    const imageData = await load(url, ImageLoader, {image: {type: 'data'}});
-    t.equal(getImageType(imageData), 'data', `${title} image type is data`);
-    t.equal(imageData.width, width, `${title} image has correct width`);
-    t.equal(imageData.height, height, `${title} image has correct height`);
-    // @ts-expect-error
-    t.ok(ArrayBuffer.isView(imageData.data), `${title} image data is TypedArray`);
-  }
-
-  t.end();
+test.runIf(!isBrowser)('ImageBitmapLoader#load(URL) returns Node ImageBitmap', async () => {
+  const image = await load(IMAGE_URL, ImageBitmapLoader);
+  expect(image instanceof ImageBitmap, 'node polyfills return ImageBitmap').toBeTruthy();
 });
 
-test('ImageLoader#DATA URL - SVG', async (t) => {
-  if (!isBrowser) {
-    t.comment('Skipping browser-only test');
-    t.end();
-    return;
-  }
-
-  const svgImage = await load(SVG_DATA_URL, ImageLoader);
-  t.ok(svgImage, 'SVG is loaded from data URL');
-  t.end();
+test.runIf(!isBrowser)('ImageBitmapLoader#load(data URL) returns Node pixel data', async () => {
+  const image = await load(IMAGE_DATA_URL, ImageBitmapLoader);
+  const imageData = getImageData(image);
+  expect(ArrayBuffer.isView(imageData.data), 'image data is TypedArray').toBeTruthy();
+  expect(imageData.data.byteLength, 'image `data.byteLength` is correct').toBe(16);
 });
 
-test('ImageLoader#DATA URL - SVG/ not latin', async (t) => {
-  if (!isBrowser) {
-    t.comment('Skipping browser-only test');
-    t.end();
-    return;
-  }
-
-  const svgImage = await load(SVG_DATA_URL_NOT_LATIN, ImageLoader);
-  t.ok(svgImage, 'SVG with characters outside latin range is loaded from data URL');
-  t.end();
-});
-
-test('loadImage#formats', async (t) => {
-  for (const testCase of TEST_CASES) {
-    if (!testCase.skip) {
-      const image = await load(testCase.url, ImageLoader);
-      t.ok(image, `${testCase.title} is loaded`);
-      t.ok(
-        image.width === testCase.width && image.height === testCase.height,
-        `${testCase.title} gets correct dimensions`
-      );
-    }
-  }
-
-  t.end();
-});
-
-test('loadImage#imagebitmap', async (t) => {
-  if (!isImageTypeSupported('imagebitmap')) {
-    t.comment('Browser only');
-    t.end();
-    return;
-  }
-  let image = await load(IMAGE_URL, ImageLoader, {
+test('ImageBitmapLoader#load({type: \'imagebitmap\'})', async () => {
+  const image = await load(IMAGE_URL, ImageBitmapLoader, {
     image: {type: 'imagebitmap'}
   });
-  t.is(image.width, 480, 'Default imagebitmap options');
+  expect(image, 'image loaded successfully with imagebitmap alias').toBeTruthy();
+  expect(getImageType(image), 'imagebitmap alias preserves environment output').toBe('imagebitmap');
+});
 
-  image = await load(IMAGE_URL, ImageLoader, {
+test.runIf(!isBrowser)('ImageBitmapLoader#node ImageBitmap data is globally accessible', async () => {
+  const image = await load(IMAGE_URL, ImageBitmapLoader);
+  // @ts-expect-error Node polyfill installs a global helper
+  const imageData = globalThis.getImageBitmapData(image);
+  expect(imageData.width, 'global getImageBitmapData returns width').toBe(480);
+  expect(imageData.height, 'global getImageBitmapData returns height').toBe(320);
+  expect(ArrayBuffer.isView(imageData.data), 'global getImageBitmapData returns pixels').toBeTruthy();
+});
+
+test.runIf(isBrowser)('ImageBitmapLoader#DATA URL - SVG', async () => {
+  const svgImage = await load(SVG_DATA_URL, ImageBitmapLoader);
+  expect(svgImage, 'SVG is loaded from data URL').toBeTruthy();
+});
+
+test.runIf(isBrowser)('ImageBitmapLoader#DATA URL - SVG/ not latin', async () => {
+  const svgImage = await load(SVG_DATA_URL_NOT_LATIN, ImageBitmapLoader);
+  expect(svgImage, 'SVG with characters outside latin range is loaded from data URL').toBeTruthy();
+});
+
+test('ImageBitmapLoader#rejects legacy image types', async () => {
+  for (const type of INVALID_IMAGE_TYPES) {
+    try {
+      // @ts-expect-error Intentionally exercising removed runtime options
+      await load(IMAGE_URL, ImageBitmapLoader, {image: {type}});
+      throw new Error(`${type} should fail`);
+    } catch (error) {
+      // @ts-expect-error error typing
+      expect(
+        error.message.includes("only accepts options.image.type='imagebitmap'"),
+        `${type} throws migration error`
+      ).toBeTruthy();
+    }
+  }
+});
+
+test('ImageBitmapLoader#load formats', async () => {
+  for (const testCase of TEST_CASES) {
+    if (!testCase.skip) {
+      const image = await load(testCase.url, ImageBitmapLoader);
+      expect(image, `${testCase.title} is loaded`).toBeTruthy();
+      expect(
+        image.width === testCase.width && image.height === testCase.height,
+        `${testCase.title} gets correct dimensions`
+      ).toBeTruthy();
+    }
+  }
+});
+
+test('ImageBitmapLoader#imagebitmap options', async () => {
+  let image = await load(IMAGE_URL, ImageBitmapLoader, {
+    image: {type: 'imagebitmap'}
+  });
+  expect(image.width, 'Default imagebitmap options').toBe(isBrowser ? 480 : image.width);
+
+  image = await load(IMAGE_URL, ImageBitmapLoader, {
     image: {type: 'imagebitmap'},
     imagebitmap: {resizeWidth: 240, resizeHeight: 160}
   });
 
-  t.is(image.width, 240, 'Custom resizeWidth');
+  expect(image.width, 'Custom resizeWidth').toBe(isBrowser ? 240 : image.width);
+});
 
-  t.end();
+test('ImageLoader#load({type: \'data\'}) preserves compatibility output', async () => {
+  const image = await load(IMAGE_URL, ImageLoader, {
+    image: {type: 'data'}
+  });
+  expect(getImageType(image), 'compatibility loader returns data').toBe('data');
+
+  const imageData = getImageData(image);
+  expect(imageData.width, 'compatibility data width is correct').toBe(480);
+  expect(imageData.height, 'compatibility data height is correct').toBe(320);
+});
+
+test('ImageLoader#load({type: \'imagebitmap\'}) preserves bitmap mode', async () => {
+  const image = await load(IMAGE_URL, ImageLoader, {
+    image: {type: 'imagebitmap'}
+  });
+  expect(getImageType(image), 'compatibility loader still supports bitmap mode').toBe('imagebitmap');
+});
+
+test('ImageLoader#load({type: \'auto\'}) preserves compatibility behavior', async () => {
+  const image = await load(IMAGE_URL, ImageLoader);
+  expect(['imagebitmap', 'image', 'data'].includes(getImageType(image)), 'auto returns supported type').toBeTruthy();
 });

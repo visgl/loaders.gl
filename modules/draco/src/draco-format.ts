@@ -11,6 +11,8 @@ export const DracoFormat = {
   name: 'Draco',
   id: 'draco',
   module: 'draco',
+  encoding: 'binary',
+  format: 'draco',
   extensions: ['drc'],
   mimeTypes: ['application/octet-stream'],
   binary: true,

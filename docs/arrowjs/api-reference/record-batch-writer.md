@@ -1,123 +1,107 @@
-## RecordBatchWriter
+# RecordBatchWriter
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
-The `RecordBatchWriter` "serializes" Arrow Tables (or streams of RecordBatches) to the Arrow File, Stream, or JSON representations for inter-process communication (see also: [Arrow IPC format docs](https://arrow.apache.org/docs/format/IPC.html#streaming-format)).
+Writes `RecordBatch` / `Table` payloads to IPC message streams (`stream`, `file`, and `json`).
 
-The RecordBatchWriter is conceptually a "transform" stream that transforms Tables or RecordBatches into binary `Uint8Array` chunks that represent the Arrow IPC messages (`Schema`, `DictionaryBatch`, `RecordBatch`, and in the case of the File format, `Footer` messages).
+## Usage
 
-These binary chunks are buffered inside the `RecordBatchWriter` instance until they are consumed, typically by piping the RecordBatchWriter instance to a Writable Stream (like a file or socket), enumerating the chunks via async-iteration, or by calling `toUint8Array()` to create a single contiguous buffer of the concatenated results once the desired Tables or RecordBatches have been written.
+```ts
+import {makeTable, RecordBatchStreamWriter, Int32} from 'apache-arrow';
 
-RecordBatchWriter conforms to the `AsyncIterableIterator` protocol in all environments, and supports two additional stream primitives based on the environment (nodejs or browsers) available at runtime.
-
-- In nodejs, the `RecordBatchWriter` can be converted to a `ReadableStream`, piped to a `WritableStream`, and has a static method that returns a `TransformStream` suitable in chained `pipe` calls.
-- browser environments that support the [DOM/WhatWG Streams Standard](https://github.com/whatwg/streams), corresponding methods exist to convert `RecordBatchWriters` to the DOM `ReadableStream`, `WritableStream`, and `TransformStream` variants.
-
-_Note_: The Arrow JSON representation is not suitable as an IPC mechanism in real-world scenarios. It is used inside the Arrow project as a human-readable debugging tool and for validating interoperability between each language's separate implementation of the Arrow library.
-
-## Member Fields
-
-closed: Promise (readonly)
-
-A Promise which resolves when this `RecordBatchWriter` is closed.
-
-## Static Methods
-
-### `RecordBatchWriter.throughNode(options?: Object): DuplexStream`
-
-Creates a Node.js `TransformStream` that transforms an input `ReadableStream` of Tables or RecordBatches into a stream of `Uint8Array` Arrow Message chunks.
-
-- `options.autoDestroy`: boolean - (default: `true`) Indicates whether the RecordBatchWriter should close after writing the first logical stream of RecordBatches (batches which all share the same Schema), or should continue and reset each time it encounters a new Schema.
-- `options.*` - Any Node Duplex stream options can be supplied
-
-Returns: A Node.js Duplex stream
-
-Example:
-
-```typescript
-const fs = require('fs');
-const {PassThrough, finished} = require('stream');
-const {Table, RecordBatchWriter} = require('apache-arrow');
-
-const table = Table.new({
-  i32: Int32Vector.from([1, 2, 3]),
-  f32: Float32Vector.from([1.0, 1.5, 2.0])
-});
-
-const source = new PassThrough({objectMode: true});
-
-const result = source
-  .pipe(RecordBatchWriter.throughNode())
-  .pipe(fs.createWriteStream('table.arrow'));
-
-source.write(table);
-source.end();
-
-finished(result, () => console.log('done writing table.arrow'));
+const table = makeTable({id: [1, 2, 3]});
+const bytes = await RecordBatchStreamWriter.writeAll(table).toUint8Array();
+console.log(bytes.byteLength);
 ```
 
-### RecordBatchWriter.throughDOM(writableStrategy? : Object, readableStrategy? : Object) : Object
+```ts
+import {makeTable, RecordBatchJSONWriter} from 'apache-arrow';
 
-Creates a DOM/WhatWG `ReadableStream`/`WritableStream` pair that together transforms an input `ReadableStream` of Tables or RecordBatches into a stream of `Uint8Array` Arrow Message chunks.
+const table = makeTable({label: ['a', 'b']});
+const writer = await RecordBatchJSONWriter.writeAll(table);
+for await (const chunk of writer) {
+  console.log(chunk.length);
+}
+```
 
-- `options.autoDestroy`: boolean - (default: `true`) Indicates whether the RecordBatchWriter should close after writing the first logical stream of RecordBatches (batches which all share the same Schema), or should continue and reset each time it encounters a new Schema.
-- `writableStrategy.*`= - Any options for` QueuingStrategy<RecordBatch>`
-- `readableStrategy.highWaterMark`? : Number
-- `readableStrategy.size`?: Number
+## Static helpers
 
-Returns: an object with the following fields:
+### `RecordBatchWriter.throughNode(options?: DuplexOptions & { autoDestroy: boolean }): Duplex`
 
-- `writable`: `WritableStream<Table | RecordBatch>`
-- `readable`: `ReadableStream<Uint8Array>`
+Create a Node.js transform stream.
 
-## Methods
+### `RecordBatchWriter.throughDOM<TType extends TypeMap = any>(writableStrategy?: ByteLengthQueuingStrategy, readableStrategy?: { autoDestroy: boolean }): { writable: WritableStream<Table<TType> | RecordBatch<TType>>; readable: ReadableStream<Uint8Array> }`
 
-constructor(options? : Object)
+Create a WHATWG transform stream pair.
 
-- `options.autoDestroy`: boolean -
+### `RecordBatchStreamWriter.writeAll<TType extends TypeMap = any>(input: Table<TType> | Iterable<RecordBatch<TType>>, options?: RecordBatchStreamWriterOptions): Promise<RecordBatchStreamWriter<TType>> | RecordBatchStreamWriter<TType>`
 
-### `toString(sync: Boolean): string | Promise<string>`
+### `RecordBatchStreamWriter.writeAll<TType extends TypeMap = any>(input: AsyncIterable<RecordBatch<TType>> | Promise<AsyncIterable<RecordBatch<TType>>>, options?: RecordBatchStreamWriterOptions): Promise<RecordBatchStreamWriter<TType>>`
 
-### `toUint8Array(sync: Boolean): Uint8Array | Promise<Uint8Array>`
+### `RecordBatchFileWriter.writeAll<TType extends TypeMap = any>(input: Table<TType> | Iterable<RecordBatch<TType>>, options?: RecordBatchStreamWriterOptions): Promise<RecordBatchFileWriter<TType>>`
 
-### `writeAll(input: Table | Iterable<RecordBatch>): this`
+### `RecordBatchFileWriter.writeAll<TType extends TypeMap = any>(input: AsyncIterable<RecordBatch<TType>> | Promise<AsyncIterable<RecordBatch<TType>>>, options?: RecordBatchStreamWriterOptions): Promise<RecordBatchFileWriter<TType>>`
 
-### `writeAll(input: AsyncIterable<RecordBatch>`): `Promise<this>`
+### `RecordBatchJSONWriter.writeAll<TType extends TypeMap = any>(input: Table<TType> | Iterable<RecordBatch<TType>>): Promise<RecordBatchJSONWriter<TType>>`
 
-### `writeAll(input: PromiseLike<AsyncIterable<RecordBatch>>): Promise<this>`
+### `RecordBatchJSONWriter.writeAll<TType extends TypeMap = any>(input: AsyncIterable<RecordBatch<TType>> | Promise<AsyncIterable<RecordBatch<TType>>>): Promise<RecordBatchJSONWriter<TType>>`
 
-### `writeAll(input: PromiseLike<Table | Iterable<RecordBatch>>): Promise<this>`
+Convenience writers that consume a table or iterator and return a configured writer.
 
-- `[Symbol.asyncIterator](): AsyncByteQueue<Uint8Array>`
+## Writer methods
 
-Returns An async iterator that produces Uint8Arrays.
+### `toString(sync: true): string`
 
-### `toDOMStream(options?: Object): ReadableStream<Uint8Array>`
+### `toString(sync?: false): Promise<string>`
 
-Returns a new DOM/WhatWG stream that can be used to read the Uint8Array chunks produced by the RecordBatchWriter
+Returns serialized stream payload as string.
 
-- `options` - passed through to the DOM ReadableStream constructor, any DOM ReadableStream options.
+### `toUint8Array(sync: true): Uint8Array`
 
-### `toNodeStream(options?: Object): Readable`
+### `toUint8Array(sync?: false): Promise<Uint8Array>`
 
-- `options` - passed through to the Node ReadableStream constructor, any Node ReadableStream options.
+Returns serialized IPC payload as raw bytes.
 
-### `close() : void`
+### `writeAll(input: Table<T> | Iterable<RecordBatch<T>>): this`
 
-Close the RecordBatchWriter. After close is called, no more chunks can be written.
+### `writeAll(input: AsyncIterable<RecordBatch<T>> | Promise<AsyncIterable<RecordBatch<T>>>): Promise<this>`
 
-### `abort(reason?: any) : void`
+Buffers and serializes all input record batches.
 
-### `finish() : this`
+### `[Symbol.asyncIterator](): AsyncByteQueue<Uint8Array>`
 
-### `reset(sink?: WritableSink<ArrayBufferViewInput>, schema?: Schema | null): this`
+Iterates serialized IPC chunks.
 
-Change the sink
+### `toDOMStream(options?: ReadableDOMStreamOptions): ReadableStream<Uint8Array>`
 
-### `write(payload?: Table | RecordBatch | Iterable<Table> | Iterable<RecordBatch> | null): void`
+Builds a DOM-compatible readable stream.
 
-Writes a `RecordBatch` or all the RecordBatches from a `Table`.
+### `toNodeStream(options?: ReadableOptions): NodeJS.ReadableStream`
+
+Builds a Node.js readable stream.
+
+### `write(payload?: Table<T> | RecordBatch<T> | Iterable<RecordBatch<T>>): void`
+
+Writes one table/batch payload to the stream buffer.
+
+### `close(): void`
+
+Signal end-of-input and finalize stream state.
+
+### `abort(reason?: any): void`
+
+Aborts stream and discards buffered payload.
+
+### `finish(): this`
+
+Finishes any open writes and returns the writer.
+
+### `reset(sink?: WritableSink<ArrayBufferView>, schema?: Schema<T> | null): this`
+
+Replaces output sink and schema; used for reusing the writer instance.
 
 ## Remarks
 
-- Just like the `RecordBatchReader`, a `RecordBatchWriter` is a factory base class that returns an instance of the subclass appropriate to the situation: `RecordBatchStreamWriter`, `RecordBatchFileWriter`, `RecordBatchJSONWriter`
+`RecordBatchWriter` is intentionally stream-oriented and supports both sync and async consumption patterns.

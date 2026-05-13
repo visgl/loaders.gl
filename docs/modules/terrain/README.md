@@ -14,6 +14,14 @@ npm install @loaders.gl/terrain
 npm install @loaders.gl/core
 ```
 
+## Loaders and Writers
+
+| Loader or Writer                                                                | Description                                         |
+| ------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `TerrainLoader`                                                                 | Loads height-map terrain as a Mesh or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| `QuantizedMeshLoader`                                                           | Loads quantized mesh terrain as a Mesh or [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables). |
+| [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) | Writes triangle-list Mesh or Mesh Arrow table terrain data as quantized mesh. |
+
 ## Attribution
 
 The `QuantizedMeshLoader` is a fork of

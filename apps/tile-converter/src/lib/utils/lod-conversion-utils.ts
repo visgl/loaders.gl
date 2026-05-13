@@ -65,13 +65,11 @@ export function convertGeometricErrorToScreenThreshold(
  * @returns lod metric in 3d-tiles format
  */
 export function convertScreenThresholdToGeometricError(node: I3STileHeader): number {
-  const metricData = node.lodSelection?.find(
-    (metric) => metric.metricType === 'maxScreenThreshold'
-  );
+  const metricData = node.lodSelection?.find(metric => metric.metricType === 'maxScreenThreshold');
   let maxError = metricData?.maxError;
   if (!maxError) {
     const sqMetricData = node.lodSelection?.find(
-      (metric) => metric.metricType === 'maxScreenThresholdSQ'
+      metric => metric.metricType === 'maxScreenThresholdSQ'
     );
     if (sqMetricData) {
       maxError = Math.sqrt(sqMetricData.maxError / (Math.PI * 0.25));

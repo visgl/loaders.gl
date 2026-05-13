@@ -12,7 +12,7 @@ export function removeNontransferableOptions(object: object | null): object {
   }
   const clone = Object.assign({}, object);
 
-  Object.keys(clone).forEach((key) => {
+  Object.keys(clone).forEach(key => {
     // Checking if it is an object and not a typed array.
     if (typeof object[key] === 'object' && !ArrayBuffer.isView(object[key])) {
       clone[key] = removeNontransferableOptions(object[key]);

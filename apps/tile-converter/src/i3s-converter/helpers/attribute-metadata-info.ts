@@ -74,7 +74,7 @@ export class AttributeMetadataInfo {
       /*
       We will append a new attribute only in case it has not been added to the attribute storage info yet.
       */
-      const elementFound = this._attributeStorageInfo.find((element) => element.name === key);
+      const elementFound = this._attributeStorageInfo.find(element => element.name === key);
       if (!elementFound) {
         const attributeType = attributeTypes[key];
 

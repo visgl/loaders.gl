@@ -31,7 +31,12 @@ export {default as WorkerBody} from './lib/worker-farm/worker-body';
 
 // PROCESS ON WORKER
 export type {ProcessOnWorkerOptions} from './lib/worker-api/process-on-worker';
-export {processOnWorker, canProcessOnWorker} from './lib/worker-api/process-on-worker';
+export type {PreloadWorkerOptions} from './lib/worker-api/process-on-worker';
+export {
+  processOnWorker,
+  preloadWorker,
+  canProcessOnWorker
+} from './lib/worker-api/process-on-worker';
 export {createWorker} from './lib/worker-api/create-worker';
 
 // WORKER UTILS - EXPORTS
@@ -41,6 +46,7 @@ export {getTransferList, getTransferListForWriter} from './lib/worker-utils/get-
 
 // LIBRARY UTILS
 export {
+  extractLoadLibraryOptions,
   getLibraryUrl,
   loadLibrary,
   type LoadLibraryOptions

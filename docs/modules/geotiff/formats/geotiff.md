@@ -1,4 +1,8 @@
+import {GeoTiffDocsTabs} from '@site/src/components/docs/geotiff-docs-tabs';
+
 # GeoTIFF
+
+<GeoTiffDocsTabs active="format" />
 
 ![ogc-logo](../../../images/logos/ogc-logo-60.png)
 

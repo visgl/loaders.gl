@@ -43,7 +43,7 @@ const DEFAULT_PROPS: ChildProcessProxyProps = {
   port: 5000,
   autoPort: true,
   wait: 2000,
-  onSuccess: (processProxy) => {
+  onSuccess: processProxy => {
     console.log(`Started ${processProxy.props.command}`);
   }
 };
@@ -92,25 +92,30 @@ export default class ChildProcessProxy {
         });
 
         console.log(`Spawning ${props.command} ${props.arguments.join(' ')}`);
-        const childProcess = childProcessModule.spawn(props.command, args, props.spawn);
+        const spawnOptions: SpawnOptions = props.spawn || {};
+        const childProcess: NodeChildProcess = childProcessModule.spawn(
+          props.command,
+          args,
+          spawnOptions
+        );
         this.childProcess = childProcess;
 
-        childProcess.stdout.on('data', (data) => {
+        childProcess.stdout?.on('data', data => {
           console.log(data.toString());
         });
-        childProcess.stderr.on('data', (data) => {
+        childProcess.stderr?.on('data', data => {
           console.log(`Child process wrote to stderr: "${data}".`);
           if (!props.ignoreStderr) {
             this._clearTimeout();
             reject(new Error(data));
           }
         });
-        childProcess.on('error', (error) => {
+        childProcess.on('error', error => {
           console.log(`Child process errored with ${error}`);
           this._clearTimeout();
           reject(error);
         });
-        childProcess.on('close', (code) => {
+        childProcess.on('close', code => {
           console.log(`Child process exited with ${code}`);
           this.childProcess = null;
           this._clearTimeout();

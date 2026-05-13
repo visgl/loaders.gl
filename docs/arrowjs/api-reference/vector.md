@@ -1,117 +1,130 @@
-# Vectors
+# Vector
 
-A `Vector` is an Array-like data structure. Use `makeVector` and `vectorFromArray` to create vectors.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
-### makeVector
+An array-like Arrow data container. Use [`makeVector`](/docs/arrowjs/api-reference/vectors) and [`vectorFromArray`](/docs/arrowjs/api-reference/vectors) to construct vectors.
 
-### vectorFromArray
+## Usage
 
-### Vector
+```ts
+import {makeVector} from 'apache-arrow';
 
-Also referred to as `BaseVector`. An abstract base class for vector types.
+const values = makeVector([1, 2, 3]);
+console.log(values.length, values.get(1));
+```
 
-- Can support a null map
-- ...
-- TBD
+```ts
+import {vectorFromArray, Struct, Field, Int32, Utf8} from 'apache-arrow';
+
+const rows = vectorFromArray(
+  [
+    {id: 1, tag: 'a'},
+    {id: 2, tag: 'b'}
+  ],
+  new Struct([new Field('id', new Int32()), new Field('tag', new Utf8())])
+);
+console.log(rows.get(0)?.tag, rows.toArray());
+```
+
+## Constructors
+
+`new Vector<T extends DataType = any>(input: readonly (Data<T> | Vector<T>)[])`
+
+Create a vector from one or more `Data<T>` segments. Multiple chunks are treated as a single logical vector.
 
 ## Fields
 
-### `type: DataType`
-
-The Arrow `DataType` that describes the elements in this Vector.
-
-### `data: Data<T> (readonly)`
-
-The underlying Data instance for this Vector.
-
-### `numChildren: number (readonly)`
-
-The number of logical Vector children. Only applicable if the DataType of the Vector is one of the nested types (List, FixedSizeList, Struct, or Map).
-
-### `typeId: T['typeId']`
-
-The `typeId` enum value of the `type` instance
-
-### `length: number`
-
-Number of elements in the `Vector`
-
-### `offset: number`
-
-Offset to the first element in the underlying data.
-
-### `stride: number`
-
-Stride between successive elements in the the underlying data.
-
-The number of elements in the underlying data buffer that constitute a single logical value for the given type. The stride for all DataTypes is 1 unless noted here:
-
-- For `Decimal` types, the stride is 4.
-- For `Date` types, the stride is 1 if the `unit` is DateUnit.DAY, else 2.
-- For `Int`, `Interval`, or `Time` types, the stride is 1 if `bitWidth <= 32`, else 2.
-- For `FixedSizeList` types, the stride is the `listSize` property of the `FixedSizeList` instance.
-- For `FixedSizeBinary` types, the stride is the `byteWidth` property of the `FixedSizeBinary` instance.
-
-### `nullCount: number`
-
-Number of `null` values in this `Vector` instance (`null` values require a null map to be present).
-
-### `VectorName: string`
-
-Returns the name of the Vector
-
-### `ArrayType: TypedArrayConstructor | ArrayConstructor`
-
-Returns the constructor of the underlying typed array for the values buffer as determined by this Vector's DataType.
-
-### `values: T['TArray']`
-
-Returns the underlying data buffer of the Vector, if applicable.
-
-### `typeIds: Int8Array | null`
-
-Returns the underlying typeIds buffer, if the Vector DataType is Union.
-
-### `nullBitmap: Uint8Array | null`
-
-Returns the underlying validity bitmap buffer, if applicable.
-
-Note: Since the validity bitmap is a Uint8Array of bits, it is _not_ sliced when you call `vector.slice()`. Instead, the `vector.offset` property is updated on the returned Vector. Therefore, you must factor `vector.offset` into the bit position if you wish to slice or read the null positions manually. See the implementation of `BaseVector.isValid()` for an example of how this is done.
-
-### `valueOffsets: Int32Array | null`
-
-Returns the underlying valueOffsets buffer, if applicable. Only the List, Utf8, Binary, and DenseUnion DataTypes will have valueOffsets.
+- `readonly type: T`
+  - Logical `DataType` for all entries.
+- `readonly data: ReadonlyArray<Data<T>>`
+  - Backing `Data` chunks that power random access and iteration.
+- `readonly length: number`
+  - Number of logical elements across all chunks.
+- `readonly stride: number`
+  - Physical values consumed per logical element for the underlying type.
+- `readonly numChildren: number`
+  - Count of nested child vectors for nested data types.
+- `byteLength: number`
+  - Aggregate size of value buffers and child vectors in bytes.
+- `nullable: boolean`
+  - Whether any element can be null.
+- `nullCount: number`
+  - Number of null rows in the vector.
+- `readonly ArrayType: T['ArrayType']`
+  - Typed array constructor for non-null value storage.
+- `readonly VectorName: string`
+  - Display label used in diagnostics.
+- `readonly [Symbol.toStringTag]: string`
+  - Class name exposed by `Object.prototype.toString`.
 
 ## Methods
 
-### `clone(data: Data<R>, children): Vector<R>`
+### `isValid(index: number): boolean`
 
-Returns a clone of the current Vector, using the supplied Data and optional children for the new clone. Does not copy any underlying buffers.
+Returns whether the value at `index` is not null.
 
-### `concat(...others: Vector<T>[])`
+### `get(index: number): T['TValue'] | null`
 
-Returns a `Chunked` vector that concatenates this Vector with the supplied other Vectors. Other Vectors must be the same type as this Vector.
+Returns the value at `index`.
 
-### `slice(begin?: number, end?: number)`
+### `at(index: number): T['TValue'] | null`
 
-Returns a zero-copy slice of this Vector. The begin and end arguments are handled the same way as JS' `Array.prototype.slice`; they are clamped between 0 and `vector.length` and wrap around when negative, e.g. `slice(-1, 5)` or `slice(5, -1)`
+Returns the value at `index`, supporting negative offsets from the end.
 
-### `isValid()`
+### `set(index: number, value: T['TValue'] | null): void`
 
-```ts
-vector.isValid(index: number): boolean
-```
+Overwrites a position in the current chunk.
 
-Returns `true` the supplied index is valid in the underlying validity bitmap.
+### `indexOf(element: T['TValue'], offset?: number): number`
 
-### `getChildAt()`
+Finds the first row index with a matching value.
 
-```ts
-vector.getChildAt<R extends DataType = any>(index: number): Vector<R> | null
-```
+### `includes(element: T['TValue'], offset?: number): boolean`
 
-Returns the inner Vector child if the DataType is one of the nested types such as Map or Struct.
+Returns whether `element` exists from `offset` onward.
 
-### `toJSON()`
+### `[Symbol.iterator](): IterableIterator<T['TValue'] | null>`
 
-Returns a dense JS Array of the Vector values, with null sentinels in-place.
+Iterates the vector values in order.
+
+### `concat(...others: Vector<T>[]): Vector<T>`
+
+Creates a concatenated vector from vectors of the same logical type.
+
+### `slice(begin?: number, end?: number): Vector<T>`
+
+Returns a zero-copy logical slice over `[begin, end)`.
+
+### `toArray(): T['TArray']`
+
+Materializes the logical values as a JS array or typed array.
+
+### `toJSON(): (T['TValue'] | null)[]`
+
+Converts values to a JSON-friendly array.
+
+### `toString(): string`
+
+Returns a human-readable value summary.
+
+### `getChild<R extends keyof T['TChildren']>(name: R): Vector<T['TChildren'][R]> | null`
+
+Returns a nested child by name.
+
+### `getChildAt<R extends DataType = any>(index: number): Vector<R> | null`
+
+Returns a nested child by positional index.
+
+### `isMemoized(): boolean`
+
+Whether decoded values are memoized for repeated reads.
+
+### `memoize(): MemoizedVector<T>`
+
+Returns a memoized view that caches expensive decoding paths.
+
+### `unmemoize(): Vector<T>`
+
+Returns a non-memoized equivalent view.

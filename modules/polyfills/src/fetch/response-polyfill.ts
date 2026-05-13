@@ -6,10 +6,10 @@ import {assert} from '../utils/assert';
 import {decompressReadStream, concatenateReadStream} from '../filesystems/stream-utils.node';
 import {Headers} from './headers-polyfill';
 
-const isBoolean = (x) => typeof x === 'boolean';
-const isFunction = (x) => typeof x === 'function';
-const isObject = (x) => x !== null && typeof x === 'object';
-const isReadableNodeStream = (x) =>
+const isBoolean = x => typeof x === 'boolean';
+const isFunction = x => typeof x === 'function';
+const isObject = x => x !== null && typeof x === 'object';
+const isReadableNodeStream = x =>
   isObject(x) && isFunction(x.read) && isFunction(x.pipe) && isBoolean(x.readable);
 
 /**
@@ -55,10 +55,8 @@ export class Response {
     if (isReadableNodeStream(body)) {
       this._body = decompressReadStream(body, headers);
     } else if (typeof body === 'string') {
-      // @ts-expect-error
       this._body = stream.Readable.from([new TextEncoder().encode(body)]);
     } else {
-      // @ts-expect-error
       this._body = stream.Readable.from([body || new ArrayBuffer(0)]);
     }
   }

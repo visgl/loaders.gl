@@ -1,6 +1,5 @@
-import {Test as TapeTest} from 'tape';
 import {equals, withEpsilon} from '@math.gl/core';
-import './tape-deep-equal';
+import type {Test as TapeTest} from '@loaders.gl/devtools-extensions/tape-test-utils';
 
 // FOR TAPE TESTING
 // Use tape assert to compares using a.equals(b)
@@ -15,7 +14,6 @@ export function tapeEquals(t: TapeTest, a: any, b: any, msg?: string, extra?: an
   } else {
     valid = equals(a, b);
   }
-  // @ts-ignore
   t._assert(valid, {
     message: msg || 'should be equal',
     operator: 'equal',

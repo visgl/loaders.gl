@@ -1,5 +1,9 @@
 # CesiumIonLoader
 
+<p class="badges">
+  <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
+</p>
+
 > Extends from `Tiles3DLoader`, inherits all the options and share the same resolved `Tileset` and `Tile` format.
 > Along with the support of resolving tileset metadata and authorization from Cesium ion server.
 

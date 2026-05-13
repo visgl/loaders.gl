@@ -28,21 +28,21 @@ type LASData = {
 };
 
 const POINT_FORMAT_READERS: LASReaders = {
-  0: (dv) => {
+  0: dv => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
       classification: dv.getUint8(15)
     };
   },
-  1: (dv) => {
+  1: dv => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
       classification: dv.getUint8(15)
     };
   },
-  2: (dv) => {
+  2: dv => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
@@ -50,7 +50,7 @@ const POINT_FORMAT_READERS: LASReaders = {
       color: [dv.getUint16(20, true), dv.getUint16(22, true), dv.getUint16(24, true)]
     };
   },
-  3: (dv) => {
+  3: dv => {
     return {
       position: [dv.getInt32(0, true), dv.getInt32(4, true), dv.getInt32(8, true)],
       intensity: dv.getUint16(12, true),
@@ -108,6 +108,9 @@ function parseLASHeader(arraybuffer: ArrayBuffer): LASHeader {
   start += 48; // 8*6;
   o.maxs = [bounds[0], bounds[2], bounds[4]];
   o.mins = [bounds[1], bounds[3], bounds[5]];
+
+  const colorPointFormats = new Set([2, 3]);
+  o.hasColor = colorPointFormats.has(o.pointsFormatId! & 0x3f);
 
   return o as LASHeader;
 }
@@ -275,11 +278,10 @@ class LAZLoader {
   }
   /**
    * @param count
-   * @param offset
    * @param skip
    * @returns Data
    */
-  readData(count: number, offset: number, skip: number): LASData {
+  readData(count: number, skip: number): LASData {
     if (!this.instance) {
       throw new Error('You need to open the file before trying to read stuff');
     }
@@ -453,12 +455,11 @@ export class LASFile {
 
   /**
    * @param count
-   * @param start
    * @param skip
    * @returns Data
    */
-  readData(count: number, start: number, skip: number): LASData {
-    return this.loader.readData(count, start, skip);
+  readData(count: number, skip: number): LASData {
+    return this.loader.readData(count, skip);
   }
 
   /**

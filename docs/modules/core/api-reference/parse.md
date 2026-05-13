@@ -51,7 +51,6 @@ try {
 Parses data asynchronously either using the provided loader or loaders, or using the pre-registered loaders (see `register-loaders`).
 
 - `data`: loaded data or an object that allows data to be loaded. This parameter can be any of the following types:
-
   - `Response` - response object returned by `fetchFile` or `fetch`.
   - `ArrayBuffer` - Parse from binary data in an array buffer
   - `String` - Parse from text data in a string. (Only works for loaders that support textual input).

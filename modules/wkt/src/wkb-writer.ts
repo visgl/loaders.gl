@@ -6,6 +6,7 @@ import type {WriterWithEncoder, WriterOptions} from '@loaders.gl/loader-utils';
 import type {Geometry, Feature} from '@loaders.gl/schema';
 import {convertGeometryToWKB} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {WKBFormat} from './wkt-format';
 
 export type WKBWriterOptions = WriterOptions & {
   wkb?: {
@@ -24,6 +25,7 @@ export type WKBWriterOptions = WriterOptions & {
  * WKB exporter
  */
 export const WKBWriter = {
+  ...WKBFormat,
   name: 'WKB (Well Known Binary)',
   id: 'wkb',
   module: 'wkt',

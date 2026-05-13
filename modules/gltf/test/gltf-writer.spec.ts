@@ -18,12 +18,12 @@ const REQUIRED_EXTENSION_2 = 'UBER_extension_2';
 const USED_EXTENSION_1 = 'UBER_extension_3';
 const USED_EXTENSION_2 = 'UBER_extension_4';
 
-test('GLTFWriter#loader conformance', (t) => {
+test('GLTFWriter#loader conformance', t => {
   validateWriter(t, GLTFWriter, 'GLTFWriter');
   t.end();
 });
 
-test('GLTFWriter#encode', async (t) => {
+test('GLTFWriter#encode', async t => {
   const gltfBuilder = new GLTFScenegraph();
   gltfBuilder.addApplicationData('viz', APP_DATA);
   gltfBuilder.addExtraData('test', EXTRA_DATA);
@@ -159,7 +159,7 @@ const arrayBufferExpected = new Uint8Array([
   0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0
 ]).buffer;
 
-test('GLTFWriter#encode with extensions', async (t) => {
+test('GLTFWriter#encode with extensions', async t => {
   const gltfBuilder = new GLTFScenegraph(gltfWithExtension);
   const arrayBuffer = encodeSync(gltfBuilder.gltf, GLTFWriter);
   t.deepEqual(gltfBuilder.gltf.json, gltfJsonWithExtensionEncodedExpected);
@@ -168,7 +168,7 @@ test('GLTFWriter#encode with extensions', async (t) => {
   t.end();
 });
 
-test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder functions', async (t) => {
+test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder functions', async t => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
   const gltfBuilder = new GLTFScenegraph();
@@ -203,7 +203,7 @@ test('GLTFWriter#Should build a GLTF object with GLTFScenegraph builder function
   t.end();
 });
 
-test('GLTFWriter#should write extra data to binary chunk', async (t) => {
+test('GLTFWriter#should write extra data to binary chunk', async t => {
   const gltfWithBuffers1 = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers1);
 
@@ -244,7 +244,7 @@ test('GLTFWriter#should write extra data to binary chunk', async (t) => {
   t.end();
 });
 
-test('GLTFWriter#should write extra data to binary chunk twice', async (t) => {
+test('GLTFWriter#should write extra data to binary chunk twice', async t => {
   const gltfWithBuffers = await load(GLTF_BINARY_URL, GLTFLoader);
   const inputData = postProcessGLTF(gltfWithBuffers);
 

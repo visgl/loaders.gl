@@ -18,7 +18,7 @@ const PLAIN_GEOMETRY_DEFINITION = () => ({
   },
   uv0: {
     path: 'hasTexture',
-    transform: (val) => (val && {type: 'Float32', component: 2}) || false,
+    transform: val => (val && {type: 'Float32', component: 2}) || false,
     omitValues: [false]
   },
   color: {
@@ -29,7 +29,7 @@ const PLAIN_GEOMETRY_DEFINITION = () => ({
   },
   uvRegion: {
     path: 'hasUvRegions',
-    transform: (val) => (val && {type: 'UInt16', component: 4}) || false,
+    transform: val => (val && {type: 'UInt16', component: 4}) || false,
     omitValues: [false]
   },
   featureId: {
@@ -54,7 +54,7 @@ const COMPRESSED_GEOMETRY_DEFINITION = () => ({
   },
   'compressedAttributes.attributes': {
     path: 'geometryConfig',
-    transform: (val) => {
+    transform: val => {
       const result = ['position', 'normal'];
       if (val.hasTexture) {
         result.push('uv0');
@@ -72,7 +72,7 @@ const COMPRESSED_GEOMETRY_DEFINITION = () => ({
 export const GEOMETRY_DEFINITION = () => ({
   geometryBuffers: {
     path: 'geometryConfig',
-    transform: (val) => {
+    transform: val => {
       const result = [transform(val, PLAIN_GEOMETRY_DEFINITION())];
       if (val.draco) {
         result.push(transform({geometryConfig: val}, COMPRESSED_GEOMETRY_DEFINITION()));

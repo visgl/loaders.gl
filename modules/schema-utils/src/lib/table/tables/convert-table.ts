@@ -115,10 +115,11 @@ export function convertToObjectRowTable(table: Table): ObjectRowTable {
  * @note this depends on the `@loaders.gl/arrow module being imported
  */
 export function convertToArrowTable(table: Table): ArrowTable {
-  const arrowTable = convertTableToArrow(table);
+  const schema = table.schema || deduceTableSchema(table);
+  const arrowTable = convertTableToArrow({...table, schema});
   return {
     shape: 'arrow-table',
-    schema: table.schema,
+    schema,
     data: arrowTable
   };
 }

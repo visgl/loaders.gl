@@ -10,6 +10,8 @@ export const DBFFormat = {
   id: 'dbf',
   module: 'shapefile',
   category: 'table',
+  encoding: 'binary',
+  format: 'dbf',
   extensions: ['dbf'],
   mimeTypes: ['application/x-dbf']
 } as const satisfies Format;

@@ -9,6 +9,8 @@ The `@loaders.gl/json` module parses JSON. It can parse arbitrary JSON data but 
 The JSON loaders also support batched parsing which can be useful when loading very large tabular JSON files
 to avoid blocking for tens of seconds.
 
+`JSONLoader` exposes `json.backend: 'fast'` as an experimental opt-in backend for streaming extraction. This keeps atomic JSON parsing on the standard `JSON.parse` path while using the faster streaming parser for `loadInBatches`.
+
 ## Installation
 
 ```bash
@@ -17,14 +19,14 @@ npm install @loaders.gl/core @loaders.gl/json
 
 ## Loaders and Writers
 
-| Exports                                                                |
-| ---------------------------------------------------------------------- |
-| [`JSONLoader`](/docs/modules/json/api-reference/json-loader)           |
-| [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader)       |
-| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader)     |
-| [`NDGeoJSONLoader`](/docs/modules/json/api-reference/ndgeojson-loader) |
-| [`JSONWriter`](/docs/modules/json/api-reference/json-writer)           |
-| [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer)     |
+| Exports                                                                     |
+| --------------------------------------------------------------------------- |
+| [`JSONLoader`](/docs/modules/json/api-reference/json-loader)                |
+| [`NDJSONLoader`](/docs/modules/json/api-reference/ndjson-loader) |
+| [`GeoJSONLoader`](/docs/modules/json/api-reference/geojson-loader)          |
+| [`NDGeoJSONLoader`](/docs/modules/json/api-reference/ndgeojson-loader)      |
+| [`JSONWriter`](/docs/modules/json/api-reference/json-writer)                |
+| [`GeoJSONWriter`](/docs/modules/json/api-reference/geojson-writer)          |
 
 ## Additional APIs
 

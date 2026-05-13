@@ -31,7 +31,7 @@ export function getSchemaFromFGBHeader(fgbHeader: fgb.HeaderMeta): Schema {
     bounds: fgbHeader.envelope?.join(',') || ''
   };
 
-  const fields: Field[] = fgbHeader.columns?.map((column) => getFieldFromFGBColumn(column)) || [];
+  const fields: Field[] = fgbHeader.columns?.map(column => getFieldFromFGBColumn(column)) || [];
   return {metadata, fields};
 }
 

@@ -6,6 +6,7 @@
 // - Node: Yes
 // - Browser: No
 
+export {KMLFormat, GPXFormat, TCXFormat} from './kml-format';
 export type {GPXLoaderOptions} from './gpx-loader';
 export {GPXLoader} from './gpx-loader';
 

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/obj",
-  "version": "4.4.0-alpha.2",
+  "version": "4.4.0",
   "description": "Framework-independent loader for the OBJ format",
   "license": "MIT",
   "type": "module",
@@ -28,6 +28,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
     "./obj-worker.js": {
       "import": "./dist/obj-worker.js"
     }
@@ -45,12 +53,12 @@
     "build-worker": "esbuild src/workers/obj-worker.ts --bundle --outfile=dist/obj-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.4.0-alpha.2",
-    "@loaders.gl/schema": "4.4.0-alpha.2",
-    "@loaders.gl/schema-utils": "4.4.0-alpha.2"
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.1"
+    "@loaders.gl/core": "~4.4.0"
   },
-  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

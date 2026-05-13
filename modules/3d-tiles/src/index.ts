@@ -3,6 +3,7 @@
 // Copyright vis.gl contributors
 
 // LOADERS
+export {Tiles3DFormat, Tile3DSubtreeFormat, ThreeTZFormat} from './tiles-3d-format';
 export {Tiles3DLoader} from './tiles-3d-loader';
 export {CesiumIonLoader} from './cesium-ion-loader';
 export {Tile3DSubtreeLoader} from './tile-3d-subtree-loader';

@@ -2,7 +2,7 @@ import test from 'tape-promise/tape';
 import {Progress} from '../../../src/i3s-converter/helpers/progress';
 
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#Progress methods', async (t) => {
+test('tile-converter(i3s)#Progress methods', async t => {
   let currentTimeMS: number = 0;
   /*
     Normally the Progress class takes the current time from the system and makes the necessary calculations based on it.

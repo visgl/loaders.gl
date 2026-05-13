@@ -10,17 +10,25 @@ import {BSONLoader} from '@loaders.gl/bson';
 const TAGS_BSON_URL = '@loaders.gl/bson/test/data/js-bson/mongodump.airpair.tags.bson';
 const MINI_BSON_URL = '@loaders.gl/bson/test/data/js-bson/test.bson';
 
-test('BSONLoader#load(test.bson)', async (t) => {
+test('BSONLoader#load(test.bson)', async t => {
   const data = await load(MINI_BSON_URL, BSONLoader);
   // t.comment(JSON.stringify(data));
   t.ok(data, 'Data received');
   t.end();
 });
 
-// This seems to be a corrupt test file?
-test.skip('BSONLoader#load(mongodump.airpair.tags.bson)', async (t) => {
-  const data = await load(TAGS_BSON_URL, BSONLoader);
-  t.ok(data, 'data received');
+test('BSONLoader#load(mongodump.airpair.tags.bson)', async t => {
+  await t.rejects(
+    load(TAGS_BSON_URL, BSONLoader),
+    /detected a concatenated BSON dump with 50 documents/
+  );
+  t.end();
+});
+
+test('BSONLoader#load(mongodump.airpair.tags.bson, concatenatedDocuments=first)', async t => {
+  const data = await load(TAGS_BSON_URL, BSONLoader, {bson: {concatenatedDocuments: 'first'}});
+  t.equal(data._id.toString(), '514825fa2a26ea0200000006');
+  t.ok(String(data.desc).includes('Android'), 'loads first document contents');
   t.end();
 });
 

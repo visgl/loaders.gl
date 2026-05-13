@@ -9,6 +9,8 @@ import {BlobFile} from '@loaders.gl/loader-utils';
 import {ParquetSchema, ParquetReader, ParquetEncoder} from '@loaders.gl/parquet';
 
 const FRUITS_URL = '@loaders.gl/parquet/test/data/fruits.parquet';
+const GENERATED_PARQUET_DIRECTORY = 'tmp/test-artifacts/parquet';
+const GENERATED_PARQUET_FILE = `${GENERATED_PARQUET_DIRECTORY}/fruits.parquet`;
 const TEST_NUM_ROWS = 10000;
 const TEST_VTIME = Date.now();
 
@@ -100,9 +102,12 @@ function mkTestRows(opts) {
 }
 
 async function writeTestFile(opts) {
+  const {mkdir} = await import('node:fs/promises');
   const schema = mkTestSchema(opts);
 
-  const writer = await ParquetEncoder.openFile(schema, 'fruits.parquet', opts);
+  await mkdir(GENERATED_PARQUET_DIRECTORY, {recursive: true});
+
+  const writer = await ParquetEncoder.openFile(schema, GENERATED_PARQUET_FILE, opts);
   writer.setMetadata('myuid', '420');
   writer.setMetadata('fnord', 'dronf');
 

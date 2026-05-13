@@ -87,7 +87,7 @@ export class NetCDFReader {
    * @return
    */
   attributeExists(attributeName: string): boolean {
-    const attribute = this.attributes.find((val) => val.name === attributeName);
+    const attribute = this.attributes.find(val => val.name === attributeName);
     return attribute !== undefined;
   }
 
@@ -97,7 +97,7 @@ export class NetCDFReader {
    * @return Value of the attributeName or null
    */
   getAttribute(attributeName: string): string | null {
-    const attribute = this.attributes.find((val) => val.name === attributeName);
+    const attribute = this.attributes.find(val => val.name === attributeName);
     if (attribute) return attribute.value;
     return null;
   }
@@ -184,7 +184,7 @@ export class NetCDFReader {
       variable.value = this.getDataVariable(variable);
       let stringify = JSON.stringify(variable.value);
       if (stringify.length > 50) stringify = stringify.substring(0, 50);
-      if (!isNaN(variable.value.length)) {
+      if (!Number.isNaN(variable.value.length)) {
         stringify += ` (length: ${variable.value.length})`;
       }
       result.push(`  ${variable.name.padEnd(30)} = ${stringify}`);

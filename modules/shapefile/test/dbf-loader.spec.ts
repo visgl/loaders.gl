@@ -27,11 +27,11 @@ const SHAPEFILE_JS_TEST_FILES = [
   'utf8-property'
 ];
 
-test('Shapefile JS DBF tests', async (t) => {
+test('Shapefile JS DBF tests', async t => {
   for (const testFileName of SHAPEFILE_JS_TEST_FILES) {
     let response = await fetchFile(`${SHAPEFILE_JS_DATA_FOLDER}/${testFileName}.dbf`);
     const body = await response.arrayBuffer();
-    const options = {core: {worker: false}, dbf: {encoding: 'utf8'}};
+    const options = {core: {worker: false}, dbf: {encoding: 'utf8', shape: 'rows' as const}};
 
     if (testFileName === 'latin1-property') {
       options.dbf.encoding = 'latin1';

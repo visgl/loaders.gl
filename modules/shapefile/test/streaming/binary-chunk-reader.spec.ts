@@ -9,13 +9,13 @@ const buf1 = new Uint8Array([1, 2, 3]).buffer;
 const buf2 = new Uint8Array([4, 5, 6]).buffer;
 const buf3 = new Uint8Array([7, 8, 9]).buffer;
 
-test('BinaryChunkReader', (t) => {
+test('BinaryChunkReader', t => {
   const reader = new BinaryChunkReader();
   t.ok(reader);
   t.end();
 });
 
-test('BinaryChunkReader#add arrayBuffers', (t) => {
+test('BinaryChunkReader#add arrayBuffers', t => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
@@ -23,7 +23,7 @@ test('BinaryChunkReader#add arrayBuffers', (t) => {
   t.end();
 });
 
-test('BinaryChunkReader#findBufferOffsets single view', (t) => {
+test('BinaryChunkReader#findBufferOffsets single view', t => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
@@ -50,7 +50,7 @@ test('BinaryChunkReader#findBufferOffsets single view', (t) => {
   t.end();
 });
 
-test('BinaryChunkReader#findBufferOffsets multiple views', (t) => {
+test('BinaryChunkReader#findBufferOffsets multiple views', t => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
@@ -78,7 +78,7 @@ test('BinaryChunkReader#findBufferOffsets multiple views', (t) => {
   t.end();
 });
 
-test('BinaryChunkReader#getDataView single source array', (t) => {
+test('BinaryChunkReader#getDataView single source array', t => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
@@ -95,7 +95,7 @@ test('BinaryChunkReader#getDataView single source array', (t) => {
   t.end();
 });
 
-test('BinaryChunkReader#getDataView multiple source arrays', (t) => {
+test('BinaryChunkReader#getDataView multiple source arrays', t => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
@@ -114,7 +114,7 @@ test('BinaryChunkReader#getDataView multiple source arrays', (t) => {
   t.end();
 });
 
-test('BinaryChunkReader#disposeBuffers', (t) => {
+test('BinaryChunkReader#disposeBuffers', t => {
   const reader = new BinaryChunkReader();
   reader.write(buf1);
   reader.write(buf2);
@@ -134,7 +134,7 @@ test('BinaryChunkReader#disposeBuffers', (t) => {
   t.end();
 });
 
-test('BinaryChunkReader#disposeBuffers with maxRewindBytes', (t) => {
+test('BinaryChunkReader#disposeBuffers with maxRewindBytes', t => {
   const reader = new BinaryChunkReader({maxRewindBytes: 2});
   reader.write(buf1);
   reader.write(buf2);

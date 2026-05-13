@@ -9,7 +9,7 @@ import {decode as decodeTextureTransform} from '../../../src/lib/extensions/KHR_
 
 const GLTF_BINARY_URL = '@loaders.gl/gltf/test/data/meshopt/BoxTextured_meshopt.glb';
 
-test('GLTFLoader#KHR_texture_transform', async (t) => {
+test('GLTFLoader#KHR_texture_transform', async t => {
   const response = await fetchFile(GLTF_BINARY_URL);
   const data = await response.arrayBuffer();
   const gltfWithBuffers = await parse(data, GLTFLoader);
@@ -29,7 +29,7 @@ test('GLTFLoader#KHR_texture_transform', async (t) => {
   t.end();
 });
 
-test('GLTFLoader#KHR_texture_transform preserves shared bufferView data', async (t) => {
+test('GLTFLoader#KHR_texture_transform preserves shared bufferView data', async t => {
   const interleavedVertexData = new Float32Array([
     // Vertex 0
     0, 0, 0, 0, 0, 1, 0, 0,

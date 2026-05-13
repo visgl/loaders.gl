@@ -9,14 +9,14 @@ import {JSONWriter} from '@loaders.gl/json';
 import {encodeTableAsText} from '@loaders.gl/core';
 import {emptyTable, tableWithData} from '@loaders.gl/schema-utils/test/shared-utils';
 
-test('JSONWriter#encodeTableAsText - empty table', async (t) => {
+test('JSONWriter#encodeTableAsText - empty table', async t => {
   const encodedText = await encodeTableAsText(emptyTable, JSONWriter);
   t.equal(encodedText, '[]', 'got expected output');
 
   t.end();
 });
 
-test('JSONWriter#encodeTableAsText - data table, row objects', async (t) => {
+test('JSONWriter#encodeTableAsText - data table, row objects', async t => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter);
   t.equal(
     encodedText,
@@ -27,7 +27,7 @@ test('JSONWriter#encodeTableAsText - data table, row objects', async (t) => {
   t.end();
 });
 
-test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async (t) => {
+test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async t => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
     json: {shape: 'object-row-table'}
   });
@@ -40,7 +40,7 @@ test('JSONWriter#encodeTableAsText - data table, row objects (explicit)', async 
   t.end();
 });
 
-test('JSONWriter#encodeTableAsText - data table, row arrays', async (t) => {
+test('JSONWriter#encodeTableAsText - data table, row arrays', async t => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
     json: {shape: 'array-row-table'}
   });
@@ -53,9 +53,9 @@ test('JSONWriter#encodeTableAsText - data table, row arrays', async (t) => {
   t.end();
 });
 
-test.skip('JSONWriter#encodeTableAsText - data table, wrapper', async (t) => {
+test.skip('JSONWriter#encodeTableAsText - data table, wrapper', async t => {
   const encodedText = await encodeTableAsText(tableWithData, JSONWriter, {
-    json: {shape: 'array-row-table', wrapper: (table) => ({wrapped: true, table})}
+    json: {shape: 'array-row-table', wrapper: table => ({wrapped: true, table})}
   });
   t.equal(
     encodedText,

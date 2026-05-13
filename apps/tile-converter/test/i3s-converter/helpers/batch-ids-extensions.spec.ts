@@ -2,7 +2,7 @@
 import test from 'tape-promise/tape';
 import {handleBatchIdsExtensions} from '../../../src/i3s-converter/helpers/batch-ids-extensions';
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array if no extensions in primitive', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array if no extensions in primitive', async t => {
   const attributes = {};
   const primitive = {};
   const images = [];
@@ -14,7 +14,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array i
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array for not supported extensions', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array for not supported extensions', async t => {
   const attributes = {};
   const primitive = {
     extensions: {
@@ -30,7 +30,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - Should return empty array f
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty array for empty EXT_feature_metadata extension', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty array for empty EXT_feature_metadata extension', async t => {
   const attributes = {};
   const primitive = {
     extensions: {
@@ -46,7 +46,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return batchIds if attribute exists', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return batchIds if attribute exists', async t => {
   const attributes = {
     _FEATURE_ID_0: {value: new Float32Array([1, 2, 3])}
   };
@@ -73,7 +73,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty array for implicit batchIds if no POSITIONS', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty array for implicit batchIds if no POSITIONS', async t => {
   const attributes = {};
   const primitive = {
     extensions: {
@@ -98,7 +98,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return implicit batchIds for divisor = 0 ', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return implicit batchIds for divisor = 0 ', async t => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])}
   };
@@ -126,7 +126,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return implicit batchIds for divisor = 1', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return implicit batchIds for divisor = 1', async t => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])}
   };
@@ -154,7 +154,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return implicit batchIds for divisor = 2', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return implicit batchIds for divisor = 2', async t => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])}
   };
@@ -182,7 +182,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty batchIds for compressed texture', (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return empty batchIds for compressed texture', t => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])},
     TEXCOORD_0: {
@@ -227,7 +227,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return batchIds for featureTextures provided', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return batchIds for featureTextures provided', async t => {
   const attributes = {
     firstTextureName: {
       value: new Float32Array([33, 35, 29, 32, 24, 28])
@@ -256,7 +256,7 @@ test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Shou
   t.end();
 });
 
-test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return batchIds for texture', async (t) => {
+test('tile-converter(i3s)#handleBatchIdsExtensions - EXT_feature_metadata - Should return batchIds for texture', async t => {
   const attributes = {
     POSITIONS: {value: new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9])},
     TEXCOORD_0: {

@@ -1,0 +1,56 @@
+{
+  "name": "@loaders.gl/sql",
+  "description": "Framework-independent SQL data sources",
+  "version": "4.4.0",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/visgl/loaders.gl"
+  },
+  "keywords": [
+    "sql",
+    "duckdb",
+    "snowflake",
+    "arrow"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "browser": {
+    "@duckdb/node-api": false,
+    "fs": false,
+    "path": false
+  },
+  "scripts": {
+    "pre-build": "npm run build-bundle && npm run build-bundle -- --env=dev",
+    "build-bundle": "# ocular-bundle ./bundle.ts --external:{util,fs,path}"
+  },
+  "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.33.1-dev45.0",
+    "@duckdb/node-api": "^1.5.2-r.1",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
+    "apache-arrow": ">= 17.0.0"
+  },
+  "peerDependencies": {
+    "@loaders.gl/core": "~4.4.0"
+  }
+}

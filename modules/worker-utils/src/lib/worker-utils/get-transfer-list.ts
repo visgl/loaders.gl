@@ -74,7 +74,7 @@ export function getTransferListForWriter(object: object | null): object {
   }
   const clone = Object.assign({}, object);
 
-  Object.keys(clone).forEach((key) => {
+  Object.keys(clone).forEach(key => {
     // Typed Arrays and Arrays are passed with no change
     if (
       typeof object[key] === 'object' &&

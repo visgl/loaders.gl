@@ -6,7 +6,7 @@
 import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
-test('SAXParser#unclosed-root', (t) => {
+test('SAXParser#unclosed-root', t => {
   testSax(t, {
     xml: '<root>',
     expect: [

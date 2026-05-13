@@ -403,7 +403,7 @@ export const ENTITIES: {[key: string]: number | string} = {
   diams: 9830
 };
 
-Object.keys(ENTITIES).forEach((key) => {
+Object.keys(ENTITIES).forEach(key => {
   const e = ENTITIES[key];
   ENTITIES[key] = typeof e === 'number' ? String.fromCharCode(e) : e;
 });
@@ -1229,7 +1229,8 @@ abstract class SAX {
   private newTag(): void {
     if (!this.strict) this.tagName = this.tagName[this.looseCase]();
     const parent = this.tags[this.tags.length - 1] || this;
-    const tag: any = (this.tag = {name: this.tagName, attributes: {}});
+    const tag: any = {name: this.tagName, attributes: {}};
+    this.tag = tag;
 
     // will be overridden if tag contains an xmlns="foo" or xmlns:foo="bar"
     if (this.opt.xmlns) {
@@ -1269,7 +1270,7 @@ abstract class SAX {
     }
 
     entity = entity.replace(/^0+/, '');
-    if (isNaN(num) || numStr.toLowerCase() !== entity) {
+    if (Number.isNaN(num) || numStr.toLowerCase() !== entity) {
       this.strictFail('Invalid character entity');
       return `&${this.entity};`;
     }
@@ -1372,7 +1373,7 @@ abstract class SAX {
       const parent = this.tags[this.tags.length - 1] || this;
       if (tag.ns && parent.ns !== tag.ns) {
         const that = this;
-        Object.keys(tag.ns).forEach((p) => {
+        Object.keys(tag.ns).forEach(p => {
           that.emitNode('onopennamespace', {
             prefix: p,
             uri: tag.ns[p]
@@ -1477,7 +1478,8 @@ abstract class SAX {
     this.tagName = tagName;
     let s = this.tags.length;
     while (s-- > t) {
-      const tag = (this.tag = this.tags.pop());
+      const tag = this.tags.pop();
+      this.tag = tag;
       this.tagName = this.tag.name;
       this.emitNode('onclosetag', this.tagName);
 
@@ -1492,7 +1494,7 @@ abstract class SAX {
       if (this.opt.xmlns && tag.ns !== parent.ns) {
         // remove namespace bindings introduced by tag
         const that = this;
-        Object.keys(tag.ns).forEach((p) => {
+        Object.keys(tag.ns).forEach(p => {
           const n = tag.ns[p];
           that.emitNode('onclosenamespace', {prefix: p, uri: n});
         });

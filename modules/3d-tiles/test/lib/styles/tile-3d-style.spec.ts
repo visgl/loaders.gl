@@ -5,9 +5,6 @@
 // This file is derived from the Cesium code base under Apache 2 license
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
-/* eslint-disable */
-// @ts-nocheck
-import {Tile3DStyle} from './tiles';
 import {Cartesian2, Cartesian4} from '@math.gl/core';
 
 // defineSuite([

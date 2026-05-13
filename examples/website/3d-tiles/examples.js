@@ -3,13 +3,13 @@ import {fetchFile} from '@loaders.gl/core';
 
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const ION_TOKEN =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3NjEwMjA4Ni00YmVkLTQyMjgtYjRmZS1lY2M3ZWFiMmFmNTYiLCJpZCI6MjYxMzMsImlhdCI6MTY3NTM2ODY4NX0.chGkGL6DkDNv5wYJQDMzWIvi9iDoVa27dgng_5ARDmo';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI4OGMyMDVmMS0zNjIyLTRkMDQtYTQ2MS05YmQ3MTc5ZDJhOTAiLCJpZCI6MjYxMzMsImlhdCI6MTc3NjA4NzkxNX0.wfqN4Vu94UsALYDIunRGWO8wKFYMoe67ooozJwDAo-c';
 
 const DATA_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
 const EXAMPLE_INDEX_URL = `${DATA_URI}/modules/3d-tiles/test/data/index.json`;
 
-export const INITIAL_EXAMPLE_CATEGORY = 'ion';
-export const INITIAL_EXAMPLE_NAME = 'Melbourne (PointCloud)';
+export const INITIAL_EXAMPLE_CATEGORY = 'github';
+export const INITIAL_EXAMPLE_NAME = 'Royal Exhibition Building (Github Pages)';
 
 const SHOWCASE_EXAMPLES = {
   ion: {

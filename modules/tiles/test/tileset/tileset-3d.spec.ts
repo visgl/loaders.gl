@@ -2,9 +2,10 @@
 // See LICENSE.md and https://github.com/AnalyticalGraphicsInc/cesium/blob/master/LICENSE.md
 
 import test from 'tape-promise/tape';
-import {load} from '@loaders.gl/core';
-import {Tile3D, Tileset3D} from '@loaders.gl/tiles';
+import {coreApi, load} from '@loaders.gl/core';
+import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
+import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
 // import {loadTileset} from '../utils/load-utils';
 
 // Parent tile with content and four child tiles with content
@@ -112,28 +113,44 @@ const POINT_CLOUD_BATCHED_URL =
   '@loaders.gl/3d-tiles/test/data/CesiumJS/PointCloud/PointCloudBatched/tileset.json';
 */
 
-test('Tileset3D#throws with undefined url', (t) => {
+test('Tileset3D#throws with undefined url', t => {
   // @ts-ignore
   t.throws(() => new Tileset3D());
   t.end();
 });
 
-test('Tileset3D#url set up correctly given tileset JSON filepath', async (t) => {
-  const path = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
+test('Tileset3D#exports source-backed construction helpers', async t => {
+  const source = new Tiles3DSource({url: TILESET_URL, loader: Tiles3DLoader, coreApi});
+  const tileset = new Tileset3D(source);
+  await tileset.tilesetInitializationPromise;
 
-  const tilesetJson = await load(path, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const i3sTilesetHeader = await getI3sTileHeader();
+  const i3sSource = new I3SSource({...i3sTilesetHeader, coreApi});
+
+  t.ok(Tiles3DSource);
+  t.ok(I3SSource);
+  t.ok(source);
+  t.ok(i3sSource);
+  t.equals(tileset.url.slice(-30), TILESET_URL.slice(-30));
+  t.equals(tileset.asset.version, '1.0');
+  t.end();
+});
+
+test('Tileset3D#url set up correctly given tileset JSON filepath', async t => {
+  const path = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
+  const tileset = new Tileset3D(new Tiles3DSource({url: path, loader: Tiles3DLoader, coreApi}));
+  await tileset.tilesetInitializationPromise;
   // NOTE: The url has been resolved (@loaders.gl/3d-tiles => localhost) so initial part is now different
   t.equals(tileset.url.slice(-30), path.slice(-30));
   t.end();
 });
 
-test('Tileset3D#url set up correctly given path with query string', async (t) => {
+test('Tileset3D#url set up correctly given path with query string', async t => {
   const path = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset.json';
   const param = '?param1=1&param2=2';
   // TODO - params do not work with fetchFile...
   const tilesetJson = await load(path + param, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
   t.equals(
     tileset.url.replace(/.*3d-tiles/, ''),
     (path + param).replace(/.*3d-tiles/, ''),
@@ -171,18 +188,18 @@ test('Tileset3D#url set up correctly given path with query string', async (t) =>
   t.end();
 });
 
-test('Tileset3D#getTileUrl should not ends with sign ? or &', async (t) => {
+test('Tileset3D#getTileUrl should not ends with sign ? or &', async t => {
   const path = '@loaders.gl/3d-tiles/test/data/CesiumJS/Tilesets/TilesetOfTilesets/tileset2.json';
   const tilesetJson = await load(path, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
   const urlEnds = tileset.getTileUrl(tileset.url).slice(-1);
   t.equals('?&'.includes(urlEnds), false);
   t.end();
 });
 
-test('Tileset3D#loads and initializes with tileset JSON file', async (t) => {
+test('Tileset3D#loads and initializes with tileset JSON file', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
 
   t.ok('asset' in tileset);
   t.equals(tileset.asset.version, '1.0');
@@ -201,9 +218,9 @@ test('Tileset3D#loads and initializes with tileset JSON file', async (t) => {
   t.end();
 });
 
-test('Tileset3D#loads tileset with extras', async (t) => {
+test('Tileset3D#loads tileset with extras', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
   const extras = tileset.root?.extras;
 
   t.deepEquals(tileset.extras, {name: 'Sample Tileset'});
@@ -223,52 +240,52 @@ test('Tileset3D#loads tileset with extras', async (t) => {
   t.end();
 });
 
-test('Tileset3D#gets root tile', async (t) => {
+test('Tileset3D#gets root tile', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
 
   t.ok(tileset.root);
   t.end();
 });
 
-test('Tileset3D#handles global tilesets without error', async (t) => {
+test('Tileset3D#handles global tilesets without error', async t => {
   const tilesetJson = await load(TILESET_GLOBAL_URL, Tiles3DLoader);
 
   try {
-    const tileset = new Tileset3D(tilesetJson);
+    const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
     await tileset.tilesetInitializationPromise;
 
     t.deepEqual(
       tileset.cartographicCenter ? tileset.cartographicCenter.toArray() : null,
       [0, 0, -6378137]
     );
-  } catch (e) {
+  } catch (_e) {
     t.fail('exception thrown when loading tileset with bbox-center at [0,0,0]');
   }
 
   t.end();
 });
 
-test('Tileset3D#hasExtension returns true if the tileset JSON file uses the specified extension', async (t) => {
+test('Tileset3D#hasExtension returns true if the tileset JSON file uses the specified extension', async t => {
   const tilesetJson = await load(TILESET_WITH_BATCH_TABLE_HIERARCHY_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
 
   t.equals(tileset.hasExtension('3DTILES_batch_table_hierarchy'), true);
   t.equals(tileset.hasExtension('3DTILES_nonexistant_extension'), false);
   t.end();
 });
 
-test('Tileset3D#passes query parameters onto child requests', async (t) => {
+test('Tileset3D#passes query parameters onto child requests', async t => {
   const queryString = '?a=123&b=abc';
   const tilesetJson = await load(TILESET_URL + queryString, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
   t.equals(tileset.queryParams, 'a=123&b=abc&v=1.2.3');
   t.end();
 });
 /*
 test('Tileset3D#passes version in query string to tiles', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson, TILESET_URL);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), TILESET_URL);
 
   t.equals(
     tileset.root.content._resource.url,
@@ -422,9 +439,9 @@ test('Tileset3D#handles failed tile processing', t => {
 });
 */
 
-test('Tileset3D#loads tiles in tileset', async (t) => {
+test('Tileset3D#loads tiles in tileset', async t => {
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
   // @ts-ignore
   tileset.root._visible = true;
   await tileset.root?.loadContent();
@@ -436,14 +453,130 @@ test('Tileset3D#loads tiles in tileset', async (t) => {
   t.end();
 });
 
-test('Tileset3D#should detect ktx2 texture', async (t) => {
+test('Tileset3D#should detect ktx2 texture', async t => {
   const tilesetJson = await load(KTX2_TILESET_URL, Tiles3DLoader);
-  const tileset = new Tileset3D(tilesetJson);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
 
   const tile = tileset.root?.children?.[0] as Tile3D;
   await tileset._loadTile(tile);
 
   t.deepEquals(tileset.contentFormats, {draco: false, meshopt: false, dds: false, ktx2: true});
+  t.end();
+});
+
+test('Tileset3D#transition hold keeps tiles visible until replacements draw', async t => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  let onUpdateCount = 0;
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    onUpdate: () => {
+      onUpdateCount++;
+    }
+  });
+  await tileset.tilesetInitializationPromise;
+
+  const root = tileset.root as Tile3D;
+  t.ok(root, 'root tile exists');
+  t.ok(root.children.length > 0, 'root has children');
+
+  // Load root content so contentAvailable becomes true
+  // @ts-ignore
+  root._visible = true;
+  await root.loadContent();
+  t.ok(root.contentAvailable, 'root content is available after loading');
+
+  const childA = root.children[0];
+  const childB = root.children[1];
+
+  // --- Frame 1: root is selected, all tiles drawn ---
+  tileset._frameNumber = 1;
+  // @ts-ignore - frameStateData is private
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [root], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  onUpdateCount = 0;
+  tileset._updateTiles();
+
+  t.equals(tileset.selectedTiles.length, 1, 'frame 1: only root selected');
+  t.equals(tileset.selectedTiles[0].id, root.id, 'frame 1: selected tile is root');
+  t.ok(onUpdateCount > 0, 'frame 1: onUpdate called');
+
+  // --- Frame 2: children selected instead of root (REPLACE transition) ---
+  // Simulate renderer opt-in: children haven't drawn yet
+  childA.tileDrawn = false;
+  childB.tileDrawn = false;
+  tileset._frameNumber = 2;
+  // @ts-ignore
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [childA, childB], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  tileset._updateTiles();
+
+  // Root should be held back because children haven't drawn
+  const selectedIdsF2 = tileset.selectedTiles.map(tile => tile.id);
+  t.ok(selectedIdsF2.includes(root.id), 'frame 2: root is held back');
+  t.ok(selectedIdsF2.includes(childA.id), 'frame 2: childA is selected');
+  t.ok(selectedIdsF2.includes(childB.id), 'frame 2: childB is selected');
+  t.equals(tileset.selectedTiles.length, 3, 'frame 2: 3 tiles (2 children + held root)');
+
+  // --- Frame 3: children have drawn, root should be released ---
+  childA.tileDrawn = true;
+  childB.tileDrawn = true;
+  tileset._frameNumber = 3;
+  // @ts-ignore
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [childA, childB], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  tileset._updateTiles();
+
+  const selectedIdsF3 = tileset.selectedTiles.map(tile => tile.id);
+  t.equals(tileset.selectedTiles.length, 2, 'frame 3: only children selected, root released');
+  t.ok(!selectedIdsF3.includes(root.id), 'frame 3: root no longer held');
+
+  t.end();
+});
+
+test('Tileset3D#transition hold is a no-op when tileDrawn defaults to true', async t => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const tileset = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}));
+  await tileset.tilesetInitializationPromise;
+
+  const root = tileset.root as Tile3D;
+  // @ts-ignore
+  root._visible = true;
+  await root.loadContent();
+
+  const childA = root.children[0];
+  const childB = root.children[1];
+
+  // All tiles have tileDrawn=true (the default), so transition hold should never activate
+  t.equals(childA.tileDrawn, true, 'childA tileDrawn defaults to true');
+  t.equals(childB.tileDrawn, true, 'childB tileDrawn defaults to true');
+
+  // Frame 1: root selected
+  tileset._frameNumber = 1;
+  // @ts-ignore
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [root], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  tileset._updateTiles();
+
+  // Frame 2: children selected instead — but since tileDrawn is true, no hold needed
+  tileset._frameNumber = 2;
+  // @ts-ignore
+  tileset.frameStateData = {
+    viewport0: {selectedTiles: [childA, childB], _requestedTiles: [], _emptyTiles: []}
+  };
+  tileset.traverseCounter = 0;
+  tileset._updateTiles();
+
+  t.equals(tileset.selectedTiles.length, 2, 'no tiles held back when tileDrawn defaults to true');
+  const selectedIds = tileset.selectedTiles.map(tile => tile.id);
+  t.ok(!selectedIds.includes(root.id), 'root not held when all tiles already drawn');
+
   t.end();
 });
 

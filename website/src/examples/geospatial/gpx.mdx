@@ -1,8 +1,14 @@
-# GPX
+---
+title: "GPX"
+hide_title: true
+---
 
 import Demo from 'examples/website/geospatial/app';
+import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
 
-<div style={{height: '100vh'}}> 
+<KmlDocsTabs active="try-it" tryItHref="/examples/geospatial/gpx" />
+
+<div style={{height: 'calc(100vh - 76px)'}}> 
   <Demo format="GPX" >
       [**`GPXLoader`**](/docs/modules/kml/api-reference/gpx-loader) loads GPX files, optionally into GPX.
   </Demo>

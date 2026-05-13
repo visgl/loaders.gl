@@ -33,7 +33,7 @@ npm install @loaders.gl/core
 import {HexWKBLoader} from '@loaders.gl/wkt';
 import {parseSync} from '@loaders.gl/core';
 
-// prettier-ignore
+// biome-ignore format: preserve intentional fixture layout
 const data = parseSync(data, HexWKBLoader);
 // => { positions: { value: Float64Array(2) [ 1, 2 ], size: 2 } }
 ```

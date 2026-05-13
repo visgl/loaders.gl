@@ -37,7 +37,7 @@ const INVALID_JSONPATHS = [
   }
 ];
 
-test('JSONPath#parsing', async (t) => {
+test('JSONPath#parsing', async t => {
   for (const testCase of VALID_JSONPATHS) {
     const jsonpath = new _JSONPath(testCase.jsonpath);
     const expected = new _JSONPath(testCase.expected);
@@ -68,7 +68,7 @@ test('JSONPath#parsing', async (t) => {
   t.end();
 });
 
-test('JSONPath#validation', async (t) => {
+test('JSONPath#validation', async t => {
   for (const testCase of INVALID_JSONPATHS) {
     t.throws(
       () => new _JSONPath(testCase.jsonpath),
@@ -79,7 +79,7 @@ test('JSONPath#validation', async (t) => {
   t.end();
 });
 
-test('JSONPath#deep set', async (t) => {
+test('JSONPath#deep set', async t => {
   const jsonpath = new _JSONPath('$.a.b');
   const deepValue = {a: {b: 1}};
   t.equal(jsonpath.getFieldAtPath(deepValue), 1, 'JSONPath.getFieldAtPath');

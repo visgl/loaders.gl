@@ -13,10 +13,10 @@ OUTPUT_DIR=build
 
 case $MODE in
   "prod")
-    docusaurus build
+    DOCUSAURUS_NO_PERSISTENT_CACHE=1 docusaurus build
     ;;
   "staging")
-    STAGING=true docusaurus build
+    DOCUSAURUS_NO_PERSISTENT_CACHE=1 STAGING=true docusaurus build
     ;;
 esac
 

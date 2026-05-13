@@ -6,6 +6,7 @@ import type {
   WorkerObject,
   WorkerOptions,
   WorkerContext,
+  WorkerJobContext,
   WorkerMessageType,
   WorkerMessagePayload
 } from '../../types';
@@ -18,6 +19,12 @@ import {getTransferListForWriter} from '../worker-utils/get-transfer-list';
 export type ProcessOnWorkerOptions = WorkerOptions & {
   jobName?: string;
   [key: string]: any;
+};
+
+/** Options for preloading workers. */
+export type PreloadWorkerOptions = {
+  /** Number of workers to warm in the worker pool. */
+  count?: number;
 };
 
 /**
@@ -43,7 +50,8 @@ export async function processOnWorker(
   worker: WorkerObject,
   data: any,
   options: ProcessOnWorkerOptions = {},
-  context: WorkerContext = {}
+  context: WorkerContext = {},
+  jobContext: WorkerJobContext = {}
 ): Promise<any> {
   const name = getWorkerName(worker);
 
@@ -64,10 +72,45 @@ export async function processOnWorker(
 
   // Kick off the processing in the worker
   const transferableOptions = getTransferListForWriter(options);
-  job.postMessage('process', {input: data, options: transferableOptions});
+  const transferableContext = getTransferListForWriter(jobContext);
+  job.postMessage('process', {
+    input: data,
+    options: transferableOptions,
+    context: transferableContext
+  });
 
   const result = await job.result;
   return result.result;
+}
+
+/**
+ * Warm-start one or more workers in the same pool used by processOnWorker.
+ * @param worker Worker object to preload.
+ * @param options Worker options used to resolve the worker pool.
+ * @param preloadOptions Preload options.
+ */
+export async function preloadWorker(
+  worker: WorkerObject,
+  options: ProcessOnWorkerOptions = {},
+  preloadOptions: PreloadWorkerOptions = {}
+): Promise<void> {
+  const name = getWorkerName(worker);
+  const workerFarm = WorkerFarm.getWorkerFarm(options);
+  const {source} = options;
+  const workerPoolProps: {name: string; source?: string; url?: string} = {name, source};
+  if (!source) {
+    workerPoolProps.url = getWorkerURL(worker, options);
+  }
+  const workerPool = workerFarm.getWorkerPool(workerPoolProps);
+  const count = preloadOptions.count ?? options.maxConcurrency ?? options.core?.maxConcurrency ?? 1;
+
+  const preloadJobs = Array.from({length: count}, async () => {
+    const job = await workerPool.startJob(`${worker.name} preload`, onPreloadMessage);
+    job.postMessage('preload', {});
+    return await job.result;
+  });
+
+  await Promise.all(preloadJobs);
 }
 
 /**
@@ -100,7 +143,7 @@ async function onMessage(
           job.postMessage('error', {id, error: 'Worker not set up to process on main thread'});
           return;
         }
-        const result = await context.process(input, options);
+        const result = await context.process(input, options, undefined, payload.context || {});
         job.postMessage('done', {id, result});
       } catch (error) {
         const message = error instanceof Error ? error.message : 'unknown error';
@@ -111,5 +154,27 @@ async function onMessage(
     default:
       // eslint-disable-next-line
       console.warn(`process-on-worker: unknown message ${type}`);
+  }
+}
+
+/**
+ * Completes a preload job when the worker acknowledges the preload message.
+ * @param job Worker job.
+ * @param type Worker message type.
+ * @param payload Worker message payload.
+ */
+function onPreloadMessage(job: WorkerJob, type: WorkerMessageType, payload: WorkerMessagePayload) {
+  switch (type) {
+    case 'done':
+      job.done(payload);
+      break;
+
+    case 'error':
+      job.error(new Error(payload.error));
+      break;
+
+    default:
+      // eslint-disable-next-line
+      console.warn(`process-on-worker: unknown preload message ${type}`);
   }
 }

@@ -11,23 +11,21 @@ export class NodeFile implements ReadableFile, WritableFile {
   constructor(path: string, flags: 'r' | 'w' | 'wx' | 'a+', mode?: number) {
     path = resolvePath(path);
     this.handle = fs.openSync(path, flags, mode);
-    // @ts-expect-error Nodew 20?
     const stats = fs.fstatSync(this.handle, {bigint: true});
     this.size = Number(stats.size);
-    // @ts-expect-error
     this.bigsize = stats.size;
     this.url = path;
   }
 
   async close(): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.close(this.handle, (err) => (err ? reject(err) : resolve()));
+      fs.close(this.handle, err => (err ? reject(err) : resolve()));
     });
   }
 
   async truncate(length: number): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.ftruncate(this.handle, length, (err) => {
+      fs.ftruncate(this.handle, length, err => {
         if (err) {
           reject(err);
         } else {
@@ -41,7 +39,7 @@ export class NodeFile implements ReadableFile, WritableFile {
 
   async append(data: Uint8Array): Promise<void> {
     return new Promise((resolve, reject) => {
-      fs.appendFile(this.handle, data, (err) => {
+      fs.appendFile(this.handle, data, err => {
         if (err) {
           reject(err);
         } else {
@@ -55,7 +53,6 @@ export class NodeFile implements ReadableFile, WritableFile {
 
   async stat(): Promise<Stat> {
     return await new Promise((resolve, reject) =>
-      // @ts-expect-error bigint typings
       fs.fstat(this.handle, {bigint: true}, (err, info) => {
         const stats: Stat = {
           size: Number(info.size),
@@ -124,7 +121,6 @@ async function readBytes(
   position: number | bigint | null
 ): Promise<number> {
   return await new Promise<number>((resolve, reject) =>
-    // @ts-expect-error bigint?
     fs.read(fd, uint8Array, offset, length, position, (err, bytesRead) =>
       err ? reject(err) : resolve(bytesRead)
     )

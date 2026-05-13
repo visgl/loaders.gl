@@ -2,7 +2,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import {Example} from './components/example-panel';
+export type Example = {
+  type: 'las' | 'draco' | 'pcd' | 'ply' | 'obj';
+  url: string;
+  urls?: string[];
+  pointCount?: number;
+  initialExample?: boolean;
+  attributions?: string[];
+  viewState?: Record<string, unknown>;
+  tileSize?: number[];
+};
 
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const LOADERS_URI = 'https://raw.githubusercontent.com/visgl/loaders.gl/master';
@@ -11,23 +20,28 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   PLY: {
     'Richmond Azaelias': {
       type: 'ply',
-      url: `${LOADERS_URI}/modules/ply/test/data/richmond-azaelias.ply`
+      url: `${LOADERS_URI}/modules/ply/test/data/richmond-azaelias.ply`,
+      pointCount: 359610
     },
     'Lucy 800K': {
       type: 'ply',
-      url: `${DECK_DATA_URI}/examples/point-cloud-ply/lucy800k.ply`
+      url: `${DECK_DATA_URI}/examples/point-cloud-ply/lucy800k.ply`,
+      pointCount: 772191
     },
     'Lucy 100K': {
       type: 'ply',
-      url: `${DECK_DATA_URI}/examples/point-cloud-ply/lucy100k.ply`
+      url: `${DECK_DATA_URI}/examples/point-cloud-ply/lucy100k.ply`,
+      pointCount: 50002
     },
     Bunny: {
       type: 'ply',
-      url: `${LOADERS_URI}/modules/ply/test/data/bunny.ply`
+      url: `${LOADERS_URI}/modules/ply/test/data/bunny.ply`,
+      pointCount: 34834
     },
     'Bun Zipper (Text)': {
       type: 'ply',
-      url: `${LOADERS_URI}/modules/ply/test/data/bun_zipper.ply`
+      url: `${LOADERS_URI}/modules/ply/test/data/bun_zipper.ply`,
+      pointCount: 35947
     }
   },
 
@@ -59,9 +73,11 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
   // TODO need fix
   PCD: {
     Zaghetto: {
+      type: 'pcd',
       url: `${LOADERS_URI}/modules/pcd/test/data/Zaghetto.pcd`
     },
     'Simple (Text)': {
+      type: 'pcd',
       url: `${LOADERS_URI}/modules/pcd/test/data/simple-ascii.pcd`
     }
   },

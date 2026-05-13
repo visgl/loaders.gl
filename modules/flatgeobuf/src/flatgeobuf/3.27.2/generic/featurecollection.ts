@@ -88,6 +88,7 @@ export async function* deserializeStream(
   headerMetaFn?: HeaderMetaFn
 ): AsyncGenerator<IFeature> {
   const reader = slice(stream);
+  // @ts-expect-error Looks like we need to return .buffer but this is forked code
   const read: ReadFn = async (size) => await reader.slice(size);
 
   let bytes = new Uint8Array(await read(8, 'magic bytes'));

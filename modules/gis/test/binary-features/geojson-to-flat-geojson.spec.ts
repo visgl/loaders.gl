@@ -12,7 +12,7 @@ const FEATURES_3D = '@loaders.gl/gis/test/data/binary-features/3d_features.json'
 // Some features have 3D coordinates
 const FEATURES_MIXED = '@loaders.gl/gis/test/data/binary-features/mixed_features.json';
 
-test('gis#geojson-to-flat-geojson 2D', async (t) => {
+test('gis#geojson-to-flat-geojson 2D', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
 
@@ -104,7 +104,7 @@ test('gis#geojson-to-flat-geojson 2D', async (t) => {
   t.end();
 });
 
-test('gis#geojson-to-flat-geojson 3D', async (t) => {
+test('gis#geojson-to-flat-geojson 3D', async t => {
   const response = await fetchFile(FEATURES_3D);
   const {features} = await response.json();
 
@@ -197,7 +197,7 @@ test('gis#geojson-to-flat-geojson 3D', async (t) => {
   t.end();
 });
 
-test('gis#geojson-to-flat-geojson Mixed', async (t) => {
+test('gis#geojson-to-flat-geojson Mixed', async t => {
   const response = await fetchFile(FEATURES_MIXED);
   const {features} = await response.json();
 
@@ -290,7 +290,7 @@ test('gis#geojson-to-flat-geojson Mixed', async (t) => {
 });
 
 // eslint-disable-next-line max-statements
-test('gis#geojson-to-flat-geojson winding', async (t) => {
+test('gis#geojson-to-flat-geojson winding', async t => {
   const response = await fetchFile(FEATURES_2D);
   const {features} = await response.json();
   const polygons = features.slice(4);
@@ -298,10 +298,10 @@ test('gis#geojson-to-flat-geojson winding', async (t) => {
   // Manually reverse winding for all shapes
   for (const {geometry} of polygons) {
     if (geometry.type === 'Polygon') {
-      geometry.coordinates.forEach((shape) => shape.reverse());
+      geometry.coordinates.forEach(shape => shape.reverse());
     } else if (geometry.type === 'MultiPolygon') {
-      geometry.coordinates.forEach((g) => {
-        g.forEach((shape) => shape.reverse());
+      geometry.coordinates.forEach(g => {
+        g.forEach(shape => shape.reverse());
       });
     }
   }
@@ -416,7 +416,7 @@ test('gis#geojson-to-flat-geojson winding', async (t) => {
   t.end();
 });
 
-test('gis#geojson-to-flat-geojson invalid type', async (t) => {
+test('gis#geojson-to-flat-geojson invalid type', async t => {
   const features = [
     {
       id: 0,

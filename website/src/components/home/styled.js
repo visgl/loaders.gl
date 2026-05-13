@@ -3,12 +3,12 @@ import {isMobile} from '../common';
 
 export const Banner = styled.section`
   position: relative;
-  height: 30rem;
+  height: 300px;
   background: var(--ifm-color-gray-400);
   color: var(--ifm-color-gray-900);
   z-index: 0;
   ${isMobile} {
-    height: 80vh;
+    height: 300px;
   }
 `;
 
@@ -57,7 +57,7 @@ export const ProjectName = styled.h1`
 `;
 
 export const TagLine = styled.p`
-  text-shadow: 1px 1px 2px black, 0 0 1em white, 0 0 0.2em lightblue;
+  text-shadow: none;
 `;
 
 export const GetStartedLink = styled.a`

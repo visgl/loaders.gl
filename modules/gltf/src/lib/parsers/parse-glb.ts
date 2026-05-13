@@ -92,7 +92,7 @@ export function parseGLBSync(
     case 1:
       return parseGLBV1(glb, dataView, byteOffset);
     case 2:
-      return parseGLBV2(glb, dataView, byteOffset, (options = {}));
+      return parseGLBV2(glb, dataView, byteOffset, options);
     default:
       throw new Error(`Invalid GLB version ${glb.version}. Only supports version 1 and 2.`);
   }

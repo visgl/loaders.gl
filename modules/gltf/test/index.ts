@@ -5,6 +5,7 @@ import './lib/glb/glb-encoder-decoder.spec';
 import './lib/glb/glb-custom-payload.spec';
 
 import './lib/gltf-utils/gltf-attribute-utils.spec';
+import './lib/gltf-utils/resolve-url.spec';
 
 import './lib/api/gltf-scenegraph-modifiers.spec';
 import './lib/api/gltf-scenegraph-accessors.spec';

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+export {ZipFormat} from './zip-format';
 export {ZipLoader} from './zip-loader';
 export {ZipWriter} from './zip-writer';
 export {TarBuilder} from './tar-builder';

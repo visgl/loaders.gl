@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 // @ts-nocheck
-import {getJSModuleOrNull, LoaderOptions, registerJSModules} from '@loaders.gl/loader-utils';
-import {loadLibrary} from '@loaders.gl/worker-utils';
+import {getJSModuleOrNull, registerJSModules} from '@loaders.gl/loader-utils';
+import {loadLibrary, type LoadLibraryOptions} from '@loaders.gl/worker-utils';
 
 export const CRUNCH_EXTERNAL_LIBRARIES = {
   /** Crunch decoder library. It is used as dynamically imported script */
@@ -16,7 +16,7 @@ export const CRUNCH_EXTERNAL_LIBRARIES = {
  * @param options - loader options
  * @returns Promise of module object
  */
-export async function loadCrunchModule(options: LoaderOptions): Promise<any> {
+export async function loadCrunchModule(options: LoadLibraryOptions): Promise<any> {
   registerJSModules(options.modules);
   const crunch = getJSModuleOrNull('crunch');
   if (crunch) {
@@ -33,7 +33,7 @@ let crunchModule;
  * @param {any} options - Loader options
  * @returns {Promise<any>} Promise of Module object
  */
-async function loadCrunch(options: LoaderOptions): Promise<any> {
+async function loadCrunch(options: LoadLibraryOptions): Promise<any> {
   if (crunchModule) {
     return crunchModule;
   }

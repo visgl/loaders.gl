@@ -77,21 +77,54 @@ export const EXAMPLES: Record<string, Record<string, Example>> = {
       viewState: {longitude: -100, latitude: 55, zoom: 3}
     },
   },
-  /*
-  ImageServer: {
-    NLCDLandCover2001: {
-      url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer/exportImage?bbox={east},{north},{west},{south}&bboxSR=4326&size={width},{height}&imageSR=102100&time=&format=jpgpng&pixelType=U8&noData=&noDataInterpretation=esriNoDataMatchAny&interpolation=+RSP_NearestNeighbor&compression=&compressionQuality=&bandIds=&mosaicRule=&renderingRule=&f=image',
-      type: 'template',
-      viewState: {...VIEW_STATE}
+  'ArcGIS Image Server': {
+    'NLCD Land Cover 2001': {
+      type: 'arcgis-image-server',
+      url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/NLCDLandCover2001/ImageServer',
+      description: 'ArcGIS sample imagery service rendered through loaders.gl ImageSourceLayer.',
+      viewState: {longitude: -96, latitude: 38.5, zoom: 4},
+      layerProps: {
+        opacity: 0.75
+      }
     },
-    ArcGISSampleImageryLayer: {
-      url: 'https://developers.arcgis.com/javascript/latest/sample-code/layers-imagerylayer/',
-      viewState: {...VIEW_STATE}
-    },
-    ArcGISExportedImage: {
-      url: 'https://developers.arcgis.com/rest/services-reference/enterprise/export-image.htm',
-      viewState: {...VIEW_STATE}
+  },
+  'ArcGIS Feature Server': {
+    'Kentucky Bicycle Routes FeatureServer': {
+      type: 'arcgis-feature-server',
+      url: 'https://services2.arcgis.com/CcI36Pduqd0OR4W9/ArcGIS/rest/services/Bicycle_Routes_Public/FeatureServer/0',
+      description: 'ArcGIS FeatureServer viewport queries rendered through loaders.gl VectorSourceLayer.',
+      layers: ['0'],
+      viewState: {longitude: -85.75, latitude: 37.75, zoom: 6},
+      layerProps: {
+        pickable: true,
+        stroked: true,
+        filled: false,
+        lineWidthMinPixels: 4,
+        lineWidthMaxPixels: 8,
+        getLineColor: [0, 80, 255, 220]
+      }
+    }
+  },
+  WFS: {
+    'Redon Reuse Sites': {
+      type: 'wfs',
+      url: 'https://geobretagne.fr/geoserver/ows',
+      description: 'GeoServer WFS features queried by viewport and rendered through loaders.gl VectorSourceLayer.',
+      layers: ['caredon:acteur_reemploi_redon_agglo'],
+      viewState: {longitude: -2.2, latitude: 47.65, zoom: 9},
+      layerProps: {
+        pickable: true,
+        pointType: 'circle',
+        stroked: true,
+        filled: true,
+        pointRadiusMinPixels: 14,
+        pointRadiusMaxPixels: 22,
+        getPointRadius: 10,
+        lineWidthMinPixels: 3,
+        lineWidthMaxPixels: 6,
+        getLineColor: [255, 255, 255, 255],
+        getFillColor: [220, 30, 30, 230]
+      }
     }
   }
-  */
 };

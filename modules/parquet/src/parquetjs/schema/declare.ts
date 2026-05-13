@@ -66,7 +66,7 @@ export type OriginalType =
   | 'BSON' // 20
   | 'INTERVAL'; // 21
 
-export type ParquetDictionary = string[];
+export type ParquetDictionary = any[];
 
 export interface SchemaDefinition {
   [string: string]: FieldDefinition;

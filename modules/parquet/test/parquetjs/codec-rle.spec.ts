@@ -5,6 +5,10 @@
 import test from 'tape-promise/tape';
 import {PARQUET_CODECS} from '@loaders.gl/parquet/parquetjs/codecs';
 
+function bytes(values: number[]): Uint8Array {
+  return new Uint8Array(values);
+}
+
 test('ParquetCodec::RLE#should encode bitpacked values', assert => {
   const buf = PARQUET_CODECS.RLE.encodeValues(
     'INT32',
@@ -14,7 +18,7 @@ test('ParquetCodec::RLE#should encode bitpacked values', assert => {
       bitWidth: 3
     });
 
-  assert.deepEqual(buf, new Buffer([0x03, 0x88, 0xc6, 0xfa]));
+  assert.deepEqual(buf, bytes([0x03, 0x88, 0xc6, 0xfa]));
   assert.end();
 });
 
@@ -22,7 +26,7 @@ test('ParquetCodec::RLE#should decode bitpacked values', assert => {
   const vals = PARQUET_CODECS.RLE.decodeValues(
     'INT32',
     {
-      buffer: new Buffer([0x03, 0x88, 0xc6, 0xfa]),
+      buffer: bytes([0x03, 0x88, 0xc6, 0xfa]),
       offset: 0,
     },
     8,
@@ -46,7 +50,7 @@ test('ParquetCodec::RLE#should encode bitpacked values', assert => {
       bitWidth: 3
     });
 
-  assert.deepEqual(buf, new Buffer([0x05, 0x88, 0xc6, 0xfa, 0x2e, 0x00, 0x00]));
+  assert.deepEqual(buf, bytes([0x05, 0x88, 0xc6, 0xfa, 0x2e, 0x00, 0x00]));
   assert.end();
 });
 
@@ -54,7 +58,7 @@ test('ParquetCodec::RLE#should decode bitpacked values', assert => {
   const vals = PARQUET_CODECS.RLE.decodeValues(
     'INT32',
     {
-      buffer: new Buffer([0x05, 0x88, 0xc6, 0xfa, 0x2e, 0x00, 0x00]),
+      buffer: bytes([0x05, 0x88, 0xc6, 0xfa, 0x2e, 0x00, 0x00]),
       offset: 0,
     },
     10,
@@ -76,7 +80,7 @@ test('ParquetCodec::RLE#should encode repeated values', assert => {
       bitWidth: 6
     });
 
-  assert.deepEqual(buf, new Buffer([0x10, 0x2a]));
+  assert.deepEqual(buf, bytes([0x10, 0x2a]));
   assert.end();
 });
 
@@ -84,7 +88,7 @@ test('ParquetCodec::RLE#should decode repeated values', assert => {
   const vals = PARQUET_CODECS.RLE.decodeValues(
     'INT32',
     {
-      buffer: new Buffer([0x10, 0x2a]),
+      buffer: bytes([0x10, 0x2a]),
       offset: 0,
     },
     8,
@@ -106,7 +110,7 @@ test('ParquetCodec::RLE#should encode mixed runs', assert => {
       bitWidth: 3
     });
 
-  assert.deepEqual(buf, new Buffer([0x03, 0x88, 0xc6, 0xfa, 0x10, 0x04, 0x03, 0x88, 0xc6, 0xfa]));
+  assert.deepEqual(buf, bytes([0x03, 0x88, 0xc6, 0xfa, 0x10, 0x04, 0x03, 0x88, 0xc6, 0xfa]));
   assert.end();
 });
 
@@ -114,7 +118,7 @@ test('ParquetCodec::RLE#should decode mixed runs', assert => {
   const vals = PARQUET_CODECS.RLE.decodeValues(
     'INT32',
     {
-      buffer: new Buffer([0x03, 0x88, 0xc6, 0xfa, 0x10, 0x04, 0x03, 0x88, 0xc6, 0xfa]),
+      buffer: bytes([0x03, 0x88, 0xc6, 0xfa, 0x10, 0x04, 0x03, 0x88, 0xc6, 0xfa]),
       offset: 0,
     },
     24,

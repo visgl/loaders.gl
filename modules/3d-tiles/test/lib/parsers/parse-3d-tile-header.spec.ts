@@ -41,7 +41,7 @@ const TESTS = [
   ]
 ];
 
-test('normalizeTileData#corectly resolves different styles of URLs', async (t) => {
+test('normalizeTileData#corectly resolves different styles of URLs', async t => {
   for (const [contentUri, basePath, resolvedUrl] of TESTS) {
     const tile = {content: {uri: contentUri}};
     // @ts-expect-error

@@ -14,6 +14,8 @@ const tuples = new RegExp('^' + numberRegexp.source + '(\\s' + numberRegexp.sour
 
 export type ParseWKTOptions = {
   wkt?: {
+    /** Shape selection is handled by the caller; only GeoJSON geometry is currently supported. */
+    shape?: 'geojson-geometry';
     /** Whether to add any CRS, if found, as undocumented CRS property on the return geometry */
     crs?: boolean;
   };
@@ -199,11 +201,13 @@ function parseGeometryCollection(state: ParseWKTState): Geometry | null {
   if (!$(/^(\()/, state)) {
     return null;
   }
-  while ((geometry = parseGeometry(state))) {
+  geometry = parseGeometry(state);
+  while (geometry) {
     geometries.push(geometry);
     white(state);
     $(/^(,)/, state);
     white(state);
+    geometry = parseGeometry(state);
   }
   if (!$(/^(\))/, state)) {
     return null;
@@ -225,7 +229,8 @@ function multicoords(state: ParseWKTState): number[][] | null {
   let pointer: any = rings;
   let elem;
 
-  while ((elem = $(/^(\()/, state) || $(/^(\))/, state) || $(/^(,)/, state) || $(tuples, state))) {
+  elem = $(/^(\()/, state) || $(/^(\))/, state) || $(/^(,)/, state) || $(tuples, state);
+  while (elem) {
     if (elem === '(') {
       stack.push(pointer);
       pointer = [];
@@ -244,12 +249,13 @@ function multicoords(state: ParseWKTState): number[][] | null {
     } else if (elem === ',') {
       pointer = [];
       stack[stack.length - 1].push(pointer);
-    } else if (!elem.split(/\s/g).some(isNaN)) {
+    } else if (!elem.split(/\s/g).some(Number.isNaN)) {
       Array.prototype.push.apply(pointer, elem.split(/\s/g).map(parseFloat));
     } else {
       return null;
     }
     white(state);
+    elem = $(/^(\()/, state) || $(/^(\))/, state) || $(/^(,)/, state) || $(tuples, state);
   }
 
   if (depth !== 0) return null;
@@ -261,15 +267,17 @@ function coords(state: ParseWKTState): number[][] | null {
   const list: number[][] = [];
   let item: any;
   let pt;
-  while ((pt = $(tuples, state) || $(/^(,)/, state))) {
+  pt = $(tuples, state) || $(/^(,)/, state);
+  while (pt) {
     if (pt === ',') {
       list.push(item);
       item = [];
-    } else if (!pt.split(/\s/g).some(isNaN)) {
+    } else if (!pt.split(/\s/g).some(Number.isNaN)) {
       if (!item) item = [];
       Array.prototype.push.apply(item, pt.split(/\s/g).map(parseFloat));
     }
     white(state);
+    pt = $(tuples, state) || $(/^(,)/, state);
   }
 
   if (item) list.push(item);

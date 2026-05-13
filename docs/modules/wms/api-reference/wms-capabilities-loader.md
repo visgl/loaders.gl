@@ -5,7 +5,7 @@
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v3.3-blue.svg?style=flat-square" alt="From-3.3" />
   &nbsp;
-	<img src="https://img.shields.io/badge/-BETA-teal.svg" alt="BETA" />
+  <img src="https://img.shields.io/badge/Status-Experimental-orange.svg?style=flat-square" alt="Status: Experimental" />
 </p>
 
 The `WMSCapabilitiesLoader` parses the XML-formatted response from the

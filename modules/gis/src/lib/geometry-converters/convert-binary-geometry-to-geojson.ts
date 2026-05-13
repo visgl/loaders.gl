@@ -44,9 +44,9 @@ function polygonToGeoJson(
   endIndex: number = Infinity
 ): Polygon | MultiPolygon {
   const {positions} = data;
-  const polygonIndices = data.polygonIndices.value.filter((x) => x >= startIndex && x <= endIndex);
+  const polygonIndices = data.polygonIndices.value.filter(x => x >= startIndex && x <= endIndex);
   const primitivePolygonIndices = data.primitivePolygonIndices.value.filter(
-    (x) => x >= startIndex && x <= endIndex
+    x => x >= startIndex && x <= endIndex
   );
   const multi = polygonIndices.length > 2;
 
@@ -86,7 +86,7 @@ function lineStringToGeoJson(
   endIndex: number = Infinity
 ): LineString | MultiLineString {
   const {positions} = data;
-  const pathIndices = data.pathIndices.value.filter((x) => x >= startIndex && x <= endIndex);
+  const pathIndices = data.pathIndices.value.filter(x => x >= startIndex && x <= endIndex);
   const multi = pathIndices.length > 2;
 
   if (!multi) {

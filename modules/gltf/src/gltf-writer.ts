@@ -3,6 +3,7 @@ import {VERSION} from './lib/utils/version';
 import {encodeGLTFSync} from './lib/encoders/encode-gltf';
 import {GLTFWithBuffers} from '@loaders.gl/gltf';
 import {encodeExtensions} from './lib/api/gltf-extensions';
+import {GLTFFormat} from './gltf-format';
 
 export type GLTFWriterOptions = WriterOptions & {
   gltf?: {};
@@ -16,14 +17,8 @@ export const GLTFWriter = {
   dataType: null as unknown as any,
   batchType: null as never,
 
-  name: 'glTF',
-  id: 'gltf',
-  module: 'gltf',
+  ...GLTFFormat,
   version: VERSION,
-
-  extensions: ['glb'], // We only support encoding to binary GLB, not to JSON GLTF
-  mimeTypes: ['model/gltf-binary'], // 'model/gltf+json',
-  binary: true,
   options: {
     gltf: {}
   },

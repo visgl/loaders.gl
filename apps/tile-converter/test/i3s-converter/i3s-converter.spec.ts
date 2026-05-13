@@ -46,7 +46,7 @@ setLoaderOptions({
   _worker: 'test'
 });
 
-test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async (t) => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async t => {
   const converter = new I3SConverter();
   const tilesetJson = await converter.convert({
     inputUrl: TILESET_URL,
@@ -63,7 +63,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset', async (t) =
   t.end();
 });
 
-test('tile-converter(i3s)#should create Draco compressed geometry', async (t) => {
+test('tile-converter(i3s)#should create Draco compressed geometry', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -79,7 +79,7 @@ test('tile-converter(i3s)#should create Draco compressed geometry', async (t) =>
   t.end();
 });
 
-test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validation', async (t) => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validation', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -95,7 +95,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with validati
   t.end();
 });
 
-test('tile-converter(i3s)#root node should not contain geometry and textures', async (t) => {
+test('tile-converter(i3s)#root node should not contain geometry and textures', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -115,7 +115,7 @@ test('tile-converter(i3s)#root node should not contain geometry and textures', a
   t.end();
 });
 
-test('tile-converter(i3s)#should create sharedResources json file', async (t) => {
+test('tile-converter(i3s)#should create sharedResources json file', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -134,7 +134,7 @@ test('tile-converter(i3s)#should create sharedResources json file', async (t) =>
   t.end();
 });
 
-test('tile-converter(i3s)#should generate KTX2 texture', async (t) => {
+test('tile-converter(i3s)#should generate KTX2 texture', async t => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -174,7 +174,7 @@ test('tile-converter(i3s)#should generate KTX2 texture', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async (t) => {
+test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provided and generateTextures = false', async t => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {formats: [{name: '1', format: 'ktx2'}]},
@@ -203,7 +203,7 @@ test('tile-converter(i3s)#Should not generate JPG texture if only KTX2 is provid
   t.end();
 });
 
-test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async (t) => {
+test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided and generateTextures = true', async t => {
   if (!isBrowser) {
     const EXPECTED_TEXTURE_SET_DEFINITIONS = [
       {
@@ -243,7 +243,7 @@ test('tile-converter(i3s)#Should generate JPG texture if only KTX2 is provided a
   t.end();
 });
 
-test('tile-converter(i3s)#should create only unique materials', async (t) => {
+test('tile-converter(i3s)#should create only unique materials', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -263,7 +263,7 @@ test('tile-converter(i3s)#should create only unique materials', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async (t) => {
+test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding volume creation from geometry', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     const tilesetJson = await converter.convert({
@@ -279,7 +279,7 @@ test('tile-converter(i3s)#converts 3d-tiles tileset to i3s tileset with bounding
   t.end();
 });
 
-test('tile-converter(i3s)#layer json should contain fullExtent field', async (t) => {
+test('tile-converter(i3s)#layer json should contain fullExtent field', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -301,7 +301,7 @@ test('tile-converter(i3s)#layer json should contain fullExtent field', async (t)
   t.end();
 });
 
-test('tile-converter(i3s)#proceed with failing content', async (t) => {
+test('tile-converter(i3s)#proceed with failing content', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -323,7 +323,7 @@ test('tile-converter(i3s)#proceed with failing content', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#convert with --metadata-class option', async (t) => {
+test('tile-converter(i3s)#convert with --metadata-class option', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({
@@ -341,7 +341,7 @@ test('tile-converter(i3s)#convert with --metadata-class option', async (t) => {
   t.end();
 });
 
-test('tile-converter(i3s)#convert 3tz arhive', async (t) => {
+test('tile-converter(i3s)#convert 3tz arhive', async t => {
   if (!isBrowser) {
     const converter = new I3SConverter();
     await converter.convert({

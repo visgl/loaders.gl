@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {ImageDataType} from '@loaders.gl/images';
+import {extractLoadLibraryOptions} from '@loaders.gl/worker-utils';
 import {loadBasisEncoderModule} from '../parsers/basis-module-loader';
 import {type KTX2BasisWriterOptions} from '../../ktx2-basis-writer';
 
@@ -24,7 +25,7 @@ export async function encodeKTX2BasisTexture(
     encodeUASTC = false,
     mipmaps = false
   } = options?.['ktx2-basis-writer'] || {};
-  const {BasisEncoder} = await loadBasisEncoderModule(options.core || {});
+  const {BasisEncoder} = await loadBasisEncoderModule(extractLoadLibraryOptions(options));
   const basisEncoder = new BasisEncoder();
 
   try {

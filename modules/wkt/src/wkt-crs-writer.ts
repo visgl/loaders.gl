@@ -10,6 +10,7 @@ import {
 import type {WKTCRS, EncodeWKTCRSOptions} from '@loaders.gl/gis';
 import {encodeWKTCRS} from '@loaders.gl/gis';
 import {VERSION} from './lib/version';
+import {WKTCRSFormat} from './wkt-format';
 
 export type WKTCRSWriterOptions = WriterOptions & {
   'wkt-crs'?: EncodeWKTCRSOptions;
@@ -21,6 +22,7 @@ export type WKTCRSWriterOptions = WriterOptions & {
  * @see Wikipedia Page: https://en.wikipedia.org/wiki/Well-known_text_representation_of_coordinate_reference_systems
  */
 export const WKTCRSWriter = {
+  ...WKTCRSFormat,
   name: 'WKT CRS (Well-Known Text Coordinate Reference System)',
   id: 'wkt-crs',
   module: 'wkt-crs',

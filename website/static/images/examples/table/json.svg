@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 320" role="img" aria-labelledby="title">
+  <title id="title">JSON example thumbnail</title>
+  <rect width="480" height="320" fill="#f6f8fb"/>
+  <rect x="48" y="48" width="384" height="224" rx="8" fill="#ffffff" stroke="#d7dde8" stroke-width="4"/>
+  <text x="156" y="174" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="86" font-weight="700" fill="#f59e0b">{</text>
+  <text x="324" y="174" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="86" font-weight="700" fill="#f59e0b">}</text>
+  <rect x="200" y="108" width="80" height="18" rx="9" fill="#374151"/>
+  <rect x="200" y="144" width="112" height="18" rx="9" fill="#6b7280"/>
+  <text x="240" y="252" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#1f2937">JSON</text>
+</svg>

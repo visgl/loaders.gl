@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
+import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {ParseXMLOptions} from './lib/parsers/parse-xml';
-import {parseXMLSync} from './lib/parsers/parse-xml';
+import {XMLFormat} from './xml-format';
 
 // __VERSION__ is injected by babel-plugin-version-inline
 // @ts-ignore TS2304: Cannot find name '__VERSION__'.
@@ -14,19 +14,21 @@ export type XMLLoaderOptions = LoaderOptions & {
   xml?: ParseXMLOptions;
 };
 
+/** Preloads the parser-bearing XML loader implementation. */
+async function preload() {
+  const {XMLLoaderWithParser} = await import('./xml-loader-with-parser');
+  return XMLLoaderWithParser;
+}
+
 /**
- * Loader for XML files
+ * Metadata-only loader for XML files.
  */
 export const XMLLoader = {
   dataType: null as any,
   batchType: null as never,
-  name: 'XML',
-  id: 'xml',
-  module: 'xml',
+  ...XMLFormat,
   version: VERSION,
   worker: false,
-  extensions: ['xml'],
-  mimeTypes: ['application/xml', 'text/xml'],
   testText: testXMLFile,
   options: {
     xml: {
@@ -37,14 +39,8 @@ export const XMLLoader = {
       arrayPaths: []
     }
   },
-  parse: async (arrayBuffer: ArrayBuffer, options?: XMLLoaderOptions) =>
-    parseXMLSync(new TextDecoder().decode(arrayBuffer), {
-      ...XMLLoader.options.xml,
-      ...options?.xml
-    }),
-  parseTextSync: (text: string, options?: XMLLoaderOptions) =>
-    parseXMLSync(text, {...XMLLoader.options.xml, ...options?.xml})
-} as const satisfies LoaderWithParser<any, never, XMLLoaderOptions>;
+  preload
+} as const satisfies Loader<any, never, XMLLoaderOptions>;
 
 function testXMLFile(text: string): boolean {
   // TODO - There could be space first.

@@ -8,6 +8,8 @@ export const GeoPackageFormat = {
   id: 'geopackage',
   name: 'GeoPackage',
   module: 'geopackage',
+  encoding: 'sqlite',
+  format: 'geopackage',
   extensions: ['gpkg'],
   mimeTypes: ['application/geopackage+sqlite3'],
   category: 'geometry'

@@ -78,6 +78,7 @@ export type {
 } from './lib/types/gltf-postprocessed-schema';
 
 export type {GLTFWithBuffers, FeatureTableJson} from './lib/types/gltf-types';
+export {GLTFFormat, GLBFormat} from './gltf-format';
 
 // glTF loader/writer definition objects
 export {GLTFLoader} from './gltf-loader';

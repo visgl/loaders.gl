@@ -11,7 +11,7 @@ Arrow supports a rich set of data types:
 
 ### Converting Dates
 
-Apache Arrow Timestamp is a 64-bit int of milliseconds since the epoch, represented as two 32-bit ints in JS to preserve precision. The fist number is the "low" int and the second number is the "high" int.
+Apache Arrow Timestamp is a 64-bit int of milliseconds since the epoch, represented as two 32-bit ints in JS to preserve precision. The first number is the "low" int and the second number is the "high" int.
 
 ```typescript
 function toDate(timestamp) {

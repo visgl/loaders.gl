@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/worker-utils",
-  "version": "4.4.0-alpha.2",
+  "version": "4.4.0",
   "description": "Utilities for running tasks on worker threads",
   "license": "MIT",
   "type": "module",
@@ -39,12 +39,10 @@
     "README.md"
   ],
   "browser": {
-    "./dist/esm/lib/process-utils/child-process-proxy.js": false,
-    "./dist/lib/node/require-utils.node.js": false,
     "./dist/lib/node/worker_threads.js": "./dist/lib/node/worker_threads-browser.js",
-    "./src/lib/node/require-utils.node.ts": false,
+    "./dist/lib/process-utils/child-process-proxy.js": "./dist/lib/process-utils/child-process-proxy.browser.js",
     "./src/lib/node/worker_threads.ts": "./src/lib/node/worker_threads-browser.ts",
-    "./src/lib/process-utils/child-process-proxy.ts": false,
+    "./src/lib/process-utils/child-process-proxy.ts": "./src/lib/process-utils/child-process-proxy.browser.ts",
     "child_process": false,
     "fs": false,
     "module": false,
@@ -56,7 +54,7 @@
     "build-worker-node": "esbuild src/workers/null-worker.ts --outfile=dist/null-worker-node.js --platform=node --target=node16 --bundle --sourcemap --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.1"
+    "@loaders.gl/core": "~4.4.0"
   },
-  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

@@ -7,7 +7,7 @@ import test from 'tape-promise/tape';
 import {testSax} from '../utils/test-utils';
 
 // split high-order numeric attributes into surrogate pairs
-test('SAXParser#emoji', (t) => {
+test('SAXParser#emoji', t => {
   testSax(t, {
     xml: '<a>&#x1f525;</a>',
     expect: [

@@ -31,7 +31,7 @@ setLoaderOptions({
 });
 
 // TODO app breakout
-test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt tile content', async (t) => {
+test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankfurt tile content', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -87,7 +87,7 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
             height: 1024,
             bitmapByteLength: 8388608
           },
-          // prettier-ignore
+          // biome-ignore format: preserve intentional fixture layout
           boundingVolumes: generateBoundingVolumes
             ? {
               mbs: [8.622161535185821, 50.0841151227351, -188.79808730024337, 633.1951829721843],
@@ -118,7 +118,7 @@ test.skip('tile-converter(i3s)#convert B3dmToI3sGeometry - should convert Frankf
 });
 
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile content', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -197,7 +197,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Berlin tile 
 });
 
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York tile content', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -261,7 +261,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert New York til
 });
 
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile content', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile content', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -333,7 +333,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert Ferry tile c
 });
 
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be converted to independent TRIANGLES', async t => {
   const EXPECT_VERTEX_COUNT = [42891, 12861];
 
   if (isBrowser) {
@@ -391,7 +391,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - TRIANGLE_STRIPS should be c
   t.end();
 });
 
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point geometry', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point geometry', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -442,7 +442,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should not convert point ge
   t.end();
 });
 
-test('tile-converter(i3s)#getPropertyTable - should get the property table from EXT_feature_metadata extension', async (t) => {
+test('tile-converter(i3s)#getPropertyTable - should get the property table from EXT_feature_metadata extension', async t => {
   const propertyTableExpected = {
     'r3dm::uncertainty_ce90sum': [33, 35, 29, 32, 24, 28, 25, 39, 30, 34, 27, 36, 31, 37, 23]
   };
@@ -463,7 +463,7 @@ test('tile-converter(i3s)#getPropertyTable - should get the property table from 
 });
 
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content with EXT_feature_metadata extension', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -530,7 +530,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert tile content
 });
 
 // eslint-disable-next-line max-statements
-test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be converted to a node attibute of type string', async (t) => {
+test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be converted to a node attibute of type string', async t => {
   if (isBrowser) {
     t.end();
     return;
@@ -601,7 +601,7 @@ test('tile-converter(i3s)#convertB3dmToI3sGeometry - array of UINTxx should be c
 });
 
 // eslint-disable-next-line max-statements
-test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async (t) => {
+test.skip('tile-converter(i3s)#convertB3dmToI3sGeometry - should convert 64-bit attributes to strings', async t => {
   if (isBrowser) {
     t.end();
     return;

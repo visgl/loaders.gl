@@ -1,0 +1,27 @@
+---
+title: "Chrome Trace"
+hide_title: true
+---
+
+import {ClientTableLiveExample} from '@site/src/components/docs/client-table-live-example';
+import {TracesDocsTabs} from '@site/src/components/docs/traces-docs-tabs';
+
+# Chrome Trace
+
+<TracesDocsTabs active="try-it" />
+
+<ClientTableLiveExample
+  config={{
+    loaderName: 'ChromeTraceLoader',
+    url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/traces/test/data/chrome-trace/sample-chrome-trace.json',
+    sampleFiles: [
+      {
+        label: 'sample-chrome-trace.json',
+        url: 'https://raw.githubusercontent.com/visgl/loaders.gl/master/modules/traces/test/data/chrome-trace/sample-chrome-trace.json'
+      }
+    ],
+    options: {chromeTrace: {shape: 'arrow-table'}},
+    rowLimit: 8,
+    columnLimit: 8
+  }}
+/>

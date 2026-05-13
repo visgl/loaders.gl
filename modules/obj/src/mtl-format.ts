@@ -12,6 +12,8 @@ export const MTLFormat = {
   name: 'MTL',
   id: 'mtl',
   module: 'mtl',
+  encoding: 'text',
+  format: 'mtl',
   extensions: ['mtl'],
   mimeTypes: ['text/plain']
 } as const satisfies Format;

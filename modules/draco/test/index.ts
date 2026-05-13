@@ -4,6 +4,7 @@
 
 import './lib/utils/get-draco-schema.spec';
 
+import './draco-module-loader.spec';
 import './draco-loader.spec';
 import './draco-arrow-loader.spec';
 import './draco-writer.spec';

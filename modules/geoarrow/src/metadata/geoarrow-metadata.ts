@@ -5,6 +5,8 @@
 import {Metadata, SchemaWithMetadata, getMetadataValue} from './metadata-utils';
 
 export type GeoArrowEncoding =
+  | 'geoarrow.geometry'
+  | 'geoarrow.geometrycollection'
   | 'geoarrow.multipolygon'
   | 'geoarrow.polygon'
   | 'geoarrow.multilinestring'
@@ -16,6 +18,8 @@ export type GeoArrowEncoding =
 
 /** Array containing all encodings */
 const GEOARROW_ENCODINGS = [
+  'geoarrow.geometry',
+  'geoarrow.geometrycollection',
   'geoarrow.multipolygon',
   'geoarrow.polygon',
   'geoarrow.multilinestring',
@@ -91,7 +95,11 @@ export function getGeometryMetadataForField(fieldMetadata: Metadata): GeoArrowMe
   const columnMetadata = getMetadataValue(fieldMetadata, GEOARROW_METADATA);
   if (columnMetadata) {
     try {
-      metadata = JSON.parse(columnMetadata);
+      const parsedMetadata = JSON.parse(columnMetadata) as GeoArrowMetadata;
+      metadata = {
+        ...(metadata || {}),
+        ...parsedMetadata
+      };
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('Failed to parse GeoArrow metadata', error);

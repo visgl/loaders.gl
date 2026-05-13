@@ -27,7 +27,7 @@ const TEST_CASES: TestCase[] = [
   // TODO - add some non-trivial cases
 ];
 
-test('zipBatchIterators', async (t) => {
+test('zipBatchIterators', async t => {
   for (const tc of TEST_CASES) {
     const zippedIterator = zipBatchIterators(tc.iterator1, tc.iterator2, tc.shape);
     const batches: RowTableBatch[] = [];

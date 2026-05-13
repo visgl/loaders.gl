@@ -14,9 +14,9 @@ type CompressionHandler = (compressedFile: ArrayBuffer) => Promise<ArrayBuffer>;
  */
 const COMPRESSION_METHODS: {[key: number]: CompressionHandler} = {
   /** No compression */
-  0: (data) => new NoCompression().decompress(data),
+  0: data => new NoCompression().decompress(data),
   /** Deflation */
-  8: (data) => new DeflateCompression({raw: true}).decompress(data)
+  8: data => new DeflateCompression({raw: true}).decompress(data)
 };
 
 /**

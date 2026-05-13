@@ -3,8 +3,8 @@
 // Copyright (c) vis.gl contributors
 
 import type {XMLLoaderOptions} from '@loaders.gl/xml';
-import {XMLLoader} from '@loaders.gl/xml';
 import {parseExceptionReport} from './parse-exception-report';
+import {parseXMLTextSync} from '../xml/parse-xml-text';
 
 // CSW:GetCapabilitiesResponse
 
@@ -89,7 +89,7 @@ export type CSWCapabilities = {
  * @note Error handlings is fairly weak
  */
 export function parseCSWCapabilities(text: string, options?: XMLLoaderOptions): CSWCapabilities {
-  const parsedXML = XMLLoader.parseTextSync?.(text, {
+  const parsedXML = parseXMLTextSync(text, {
     ...options,
     xml: {
       ...options?.xml,

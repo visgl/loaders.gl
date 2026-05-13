@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/images",
-  "version": "4.4.0-alpha.2",
+  "version": "4.4.0",
   "description": "Framework-independent loaders and writers for images (PNG, JPG, ...)",
   "license": "MIT",
   "type": "module",
@@ -27,6 +27,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
     }
   },
   "sideEffects": false,
@@ -41,13 +49,13 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "4.4.0-alpha.2"
+    "@loaders.gl/loader-utils": "4.4.0"
   },
   "devDependencies": {
     "@types/get-pixels": "^3.3.2"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.1"
+    "@loaders.gl/core": "~4.4.0"
   },
-  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

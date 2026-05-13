@@ -1,4 +1,8 @@
+import {KmlDocsTabs} from '@site/src/components/docs/kml-docs-tabs';
+
 # GPX
+
+<KmlDocsTabs active="gpx" />
 
 - [GPX - Wikipedia](https://en.wikipedia.org/wiki/GPS_Exchange_Format)
 

@@ -19,7 +19,6 @@ export async function loadGifshotModule(options: LoadLibraryOptions = {}) {
 }
 
 async function loadGifshot(options: LoadLibraryOptions) {
-  options.libraryPath = options.libraryPath || 'libs/';
   const gifshot = await loadLibrary('gifshot.js', 'gifshot', options);
 
   // Depends on how import happened...

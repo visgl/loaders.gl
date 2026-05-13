@@ -3,7 +3,7 @@ import {OrientedBoundingBox, BoundingSphere} from '@math.gl/culling';
 import {Vector3} from '@math.gl/core';
 import {Ellipsoid} from '@math.gl/geospatial';
 
-// prettier-ignore
+// biome-ignore format: preserve intentional fixture layout
 const CUBE_POSITIONS = new Float32Array([
   -1,  -1,  1, 1,  -1,  1,  1,  1,  1,  -1,  1,  1,
   -1,  -1,  -1,  -1,  1,  -1,  1,  1,  -1,  1,  -1,  -1,
@@ -103,11 +103,10 @@ function getTileObbVertices(node: Node3DIndexDocument): number[] {
   let vertices = [];
 
   for (let i = 0; i < positions.length; i += 3) {
-    const positionsVector = new Vector3(
-      (positions[i] *= halfSize[0]),
-      (positions[i + 1] *= halfSize[1]),
-      (positions[i + 2] *= halfSize[2])
-    );
+    positions[i] *= halfSize[0];
+    positions[i + 1] *= halfSize[1];
+    positions[i + 2] *= halfSize[2];
+    const positionsVector = new Vector3(positions[i], positions[i + 1], positions[i + 2]);
     const rotatedPositions = positionsVector
       // @ts-expect-error
       .transformByQuaternion(node.obb.quaternion)

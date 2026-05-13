@@ -1,11 +1,11 @@
+import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+
 # GeoArrow
 
-![arrow-logo](../images/apache-arrow-small.png)
-&emsp;
-![apache-logo](../../../images/logos/apache-logo.png)
+<ArrowDocsTabs active="geoarrow" />
 
 - _[`@loaders.gl/arrow`](/docs/modules/arrow)_ - loaders.gl implementation
-- \*[GeoArrow Specification](https://github.com/geoarrow/geoarrow)
+- _[GeoArrow Specification](https://github.com/geoarrow/geoarrow)_
 - _[Apache Arrow](https://arrow.apache.org/)_ - A specification for large in-memory columnar data.
 - _[ArrowJS](/docs/arrowjs)_ - loaders.gl documentation on ArrowJS API.
 

@@ -20,7 +20,7 @@ export function encodeWKTCRS(wkt: WKTCRS, options?: EncodeWKTCRSOptions): string
 
   const [kw, ...attrs] = wkt;
   const str = `${kw}[${attrs
-    .map((attr) => {
+    .map(attr => {
       if (Array.isArray(attr)) {
         return encodeWKTCRS(attr, options);
       } else if (typeof attr === 'number') {

@@ -1,4 +1,8 @@
+import {XmlDocsTabs} from '@site/src/components/docs/xml-docs-tabs';
+
 # XML
+
+<XmlDocsTabs active="overview" />
 
 - _[`@loaders.gl/xml`](/docs/modules/xml)_
 - _[Wikipedia article](https://en.wikipedia.org/wiki/XML)_

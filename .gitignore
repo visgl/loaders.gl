@@ -2,6 +2,8 @@
 test/data/test.png
 tmp
 !modules/zip/test/data/**/*.zip
+.vitest-attachments/
+**/__screenshots__/
 
 # dists
 dist/*

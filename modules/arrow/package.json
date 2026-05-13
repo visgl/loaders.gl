@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/arrow",
-  "version": "4.4.0-alpha.2",
+  "version": "4.4.0",
   "description": "Simple columnar table loader for the Apache Arrow format",
   "license": "MIT",
   "type": "module",
@@ -33,6 +33,18 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./unbundled": {
+      "types": "./dist/unbundled.d.ts",
+      "import": "./dist/unbundled.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "import": "./dist/bundled.js"
+    },
+    "./transport": {
+      "types": "./dist/transport.d.ts",
+      "import": "./dist/transport.js"
+    },
     "./exports/*": {
       "types": "./dist/exports/*.d.ts",
       "import": "./dist/exports/*.js"
@@ -51,26 +63,27 @@
     "fs": false
   },
   "scripts": {
-    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-triangulation-worker",
+    "pre-build": "npm run build-worker && npm run build-bundle && npm run build-bundle-dev && npm run build-triangulation-worker && npm run build-triangulation-worker-node",
     "build-bundle": "ocular-bundle ./bundle.ts --output=dist/dist.min.js",
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js",
     "build-triangulation-worker": "esbuild src/workers/triangulation-worker.ts --bundle --outfile=dist/triangulation-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
+    "build-triangulation-worker-node": "esbuild src/workers/triangulation-worker-node.ts --bundle --outfile=dist/triangulation-worker-node.js --platform=node --target=node16 --format=esm --tree-shaking=false --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "pre-build2": "cp fixed-package.json ../../node_modules/apache-arrow/package.json && npm run build-bundle && npm run build-worker",
     "build-worker": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js  --platform=browser --external:{stream} --define:__VERSION__=\\\"$npm_package_version\\\"",
     "build-worker2": "esbuild src/workers/arrow-worker.ts --bundle --outfile=dist/arrow-worker.js --platform=browser --external:{stream}"
   },
   "dependencies": {
-    "@loaders.gl/gis": "4.4.0-alpha.2",
-    "@loaders.gl/loader-utils": "4.4.0-alpha.2",
-    "@loaders.gl/schema": "4.4.0-alpha.2",
-    "@loaders.gl/schema-utils": "4.4.0-alpha.2",
-    "@loaders.gl/wkt": "4.4.0-alpha.2",
-    "@loaders.gl/worker-utils": "4.4.0-alpha.2",
+    "@loaders.gl/gis": "4.4.0",
+    "@loaders.gl/loader-utils": "4.4.0",
+    "@loaders.gl/schema": "4.4.0",
+    "@loaders.gl/schema-utils": "4.4.0",
+    "@loaders.gl/wkt": "4.4.0",
+    "@loaders.gl/worker-utils": "4.4.0",
     "@math.gl/polygon": "^4.1.0",
-    "apache-arrow": ">= 16.1.0"
+    "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "4.4.0-alpha.1"
+    "@loaders.gl/core": "~4.4.0"
   },
-  "gitHead": "3213679d79e6ff2814d48fd3337acfa446c74099"
+  "gitHead": "8a9e77743ea90a7be4ebec572416bb50ca9d73c3"
 }

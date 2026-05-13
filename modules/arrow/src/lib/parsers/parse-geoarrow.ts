@@ -9,7 +9,7 @@ import type {
   ArrowTableBatch
 } from '@loaders.gl/schema';
 import {parseArrowSync, parseArrowInBatches} from './parse-arrow';
-import {convertGeoArrowToTable} from '@loaders.gl/gis';
+import {convertGeoArrowToTable} from '@loaders.gl/geoarrow';
 
 // Parses arrow to a columnar table
 export function parseGeoArrowSync(

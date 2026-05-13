@@ -3,16 +3,20 @@
 
 const webpack = require('webpack');
 const {resolve} = require('path');
+const {version} = require('../package.json');
 const {themes} = require('prism-react-renderer');
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
+const siteUrl = process.env.DOCUSAURUS_URL || 'https://loaders.gl';
+const baseUrl = process.env.DOCUSAURUS_BASE_URL || '/';
+
 const config = {
   title: 'loaders.gl',
   tagline: 'A collection of loaders modules for Geospatial and 3D visualization use cases',
-  url: 'https://loaders.gl',
-  baseUrl: '/',
+  url: siteUrl,
+  baseUrl,
   onBrokenLinks: 'warn',
   favicon: '/favicon.png',
   organizationName: 'visgl', // Usually your GitHub org/user name.
@@ -33,6 +37,7 @@ const config = {
         docs: {
           path: '../docs',
           sidebarPath: resolve('./src/docs-sidebar.js'),
+          docItemComponent: resolve('./src/components/docs/doc-item.tsx'),
           // Point to to the website directory in your repo.
           editUrl: 'https://github.com/visgl/loaders.gl/tree/master/website'
         },
@@ -59,23 +64,36 @@ const config = {
       {
         debug: true,
         resolve: {
+          extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
           fallback: {path: false, fs: false, buffer: true},
           modules: [resolve('node_modules'), resolve('../node_modules')],
           alias: {
             examples: resolve('../examples'),
+            bufferutil: false,
+            'utf-8-validate': false,
+            'lerc$': resolve('./src/shims/lerc.js'),
+            'web-worker$': resolve('../node_modules/web-worker/src/browser/index.js'),
+            'web-worker/src/node/index.js$': resolve('../node_modules/web-worker/src/browser/index.js'),
+            'website-geotiff-basedecoder': resolve('../node_modules/geotiff/dist-module/compression/basedecoder.js'),
+            'website-geotiff-globals': resolve('../node_modules/geotiff/dist-module/globals.js'),
+            'website-lerc-es': resolve('../node_modules/lerc/LercDecode.es.js'),
+            'laz-perf$': resolve('./src/utils/laz-perf-with-wasm.js'),
 
             '@loaders.gl/3d-tiles': resolve('../modules/3d-tiles/src'),
             '@loaders.gl/arrow': resolve('../modules/arrow/src'),
             '@loaders.gl/bson': resolve('../modules/bson/src'),
             '@loaders.gl/compression': resolve('../modules/compression/src'),
+            '@loaders.gl/copc': resolve('../modules/copc/src'),
             '@loaders.gl/core': resolve('../modules/core/src'),
             '@loaders.gl/crypto': resolve('../modules/crypto/src'),
             '@loaders.gl/csv': resolve('../modules/csv/src'),
+            '@loaders.gl/deck-layers': resolve('../modules/deck-layers/src'),
             '@loaders.gl/draco': resolve('../modules/draco/src'),
             '@loaders.gl/excel': resolve('../modules/excel/src'),
             '@loaders.gl/flatgeobuf': resolve('../modules/flatgeobuf/src'),
             '@loaders.gl/geopackage': resolve('../modules/geopackage/src'),
             '@loaders.gl/geotiff': resolve('../modules/geotiff/src'),
+            '@loaders.gl/geoarrow': resolve('../modules/geoarrow/src'),
             '@loaders.gl/gis': resolve('../modules/gis/src'),
             '@loaders.gl/gltf': resolve('../modules/gltf/src'),
             '@loaders.gl/i3s': resolve('../modules/i3s/src'),
@@ -85,6 +103,7 @@ const config = {
             '@loaders.gl/las': resolve('../modules/las/src'),
             '@loaders.gl/loader-utils': resolve('../modules/loader-utils/src'),
             '@loaders.gl/math': resolve('../modules/math/src'),
+            '@loaders.gl/mlt': resolve('../modules/mlt/src'),
             '@loaders.gl/mvt': resolve('../modules/mvt/src'),
             '@loaders.gl/netcdf': resolve('../modules/netcdf/src'),
             '@loaders.gl/obj': resolve('../modules/obj/src'),
@@ -97,12 +116,14 @@ const config = {
             '@loaders.gl/schema': resolve('../modules/schema/src'),
             '@loaders.gl/schema-utils': resolve('../modules/schema-utils/src'),
             '@loaders.gl/shapefile': resolve('../modules/shapefile/src'),
+            '@loaders.gl/splats': resolve('../modules/splats/src'),
             '@loaders.gl/stac': resolve('../modules/stac/src'),
             '@loaders.gl/terrain': resolve('../modules/terrain/src'),
             '@loaders.gl/textures': resolve('../modules/textures/src'),
             '@loaders.gl/tile-converter': resolve('../apps/tile/converter/src-'),
             '@loaders.gl/tiles': resolve('../modules/tiles/src'),
             '@loaders.gl/tiles-2d': resolve('../modules/tiles-2d/src'),
+            '@loaders.gl/traces': resolve('../modules/traces/src'),
             '@loaders.gl/type-analyzer': resolve('../modules/type-analyzer/src'),
             '@loaders.gl/video': resolve('../modules/video/src'),
             '@loaders.gl/wkt': resolve('../modules/wkt/src'),
@@ -111,7 +132,7 @@ const config = {
             '@loaders.gl/xml': resolve('../modules/xml/src'),
             '@loaders.gl/zarr': resolve('../modules/zarr/src'),
             '@loaders.gl/zip': resolve('../modules/zip/src'),
-            'sql.js': resolve('../node_modules/sql.js/dist/sql-wasm.js'),
+            'sql.js$': require.resolve('sql.js/dist/sql-wasm-browser.js'),
 
             // '@deck.gl/react': resolve()
             // '@deck.gl/layers'
@@ -128,14 +149,30 @@ const config = {
           }
         },
         plugins: [
+          new webpack.DefinePlugin({
+            __VERSION__: JSON.stringify(version)
+          }),
           // new webpack.EnvironmentPlugin(['MapboxAccessToken', 'GoogleMapsAPIKey', 'GoogleMapsMapId']),
-          // These modules break server side bundling
-          new webpack.IgnorePlugin({
-            resourceRegExp: /sql/
+          new webpack.NormalModuleReplacementPlugin(/^web-worker$/, resolve('../node_modules/web-worker/src/browser/index.js')),
+          new webpack.NormalModuleReplacementPlugin(/env-utils[\\/]version$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.includes('/modules/worker-utils/src')) {
+              resource.request = resolve('./src/shims/loadersgl-worker-version.js');
+            }
+          }),
+          new webpack.NormalModuleReplacementPlugin(/^\.\/lerc\.js$/, resource => {
+            const normalizedContext = resource.context?.replace(/\\/g, '/');
+            if (normalizedContext?.endsWith('/node_modules/geotiff/dist-module/compression')) {
+              resource.request = resolve('./src/shims/geotiff-lerc-decoder.js');
+            }
           })
         ],
         module: {
           rules: [
+            {
+              test: /laz-perf\.wasm$/,
+              type: 'asset/resource'
+            },
             // https://github.com/Esri/calcite-components/issues/2865
             {
               test: /\.m?js/,
@@ -177,10 +214,34 @@ const config = {
             '/examples/pmtiles': '/examples/tiles/pmtiles',
             '/examples/wms': '/examples/tiles/wms',
           };
+          const legacyTryItRedirects = {
+            '/examples/table/arrow': '/docs/modules/arrow/try-it',
+            '/examples/table/bson': '/docs/modules/bson/try-it',
+            '/examples/geospatial/csv': '/docs/modules/csv/try-it',
+            '/examples/pointclouds/draco': '/docs/modules/draco/try-it',
+            '/examples/geospatial/flatgeobuf': '/docs/modules/flatgeobuf/try-it',
+            '/examples/geospatial/geopackage': '/docs/modules/geopackage/try-it',
+            '/examples/table/json': '/docs/modules/json/try-it',
+            '/examples/geospatial/kml': '/docs/modules/kml/try-it',
+            '/examples/pointclouds/las': '/docs/modules/las/try-it',
+            '/examples/pointclouds/obj': '/docs/modules/obj/try-it',
+            '/examples/geospatial/geoparquet': '/docs/modules/parquet/try-it',
+            '/examples/pointclouds/pcd': '/docs/modules/pcd/try-it',
+            '/examples/pointclouds/ply': '/docs/modules/ply/try-it',
+            '/examples/geospatial/shapefile': '/docs/modules/shapefile/try-it',
+            '/examples/table/xml': '/docs/modules/xml/try-it'
+          };
+          const redirectSources = [];
+          if (legacyTryItRedirects[existingPath]) {
+            redirectSources.push(legacyTryItRedirects[existingPath]);
+          }
           for (const [oldLink, newLink] of Object.entries(pageRedirects)) {
-            if (existingPath.includes(oldLink)) {
-              return existingPath.replace(oldLink, newLink);
+            if (existingPath.includes(newLink)) {
+              redirectSources.push(existingPath.replace(newLink, oldLink));
             }
+          }
+          if (redirectSources.length) {
+            return redirectSources;
           }
           if (pageRedirects[existingPath]) {
             return [pageRedirects[existingPath]];

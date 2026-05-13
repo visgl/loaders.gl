@@ -1,22 +1,14 @@
+import {ArrowDocsTabs} from '@site/src/components/docs/arrow-docs-tabs';
+
 # GeoArrowLoader
 
-![arrow-logo](../images/apache-arrow-small.png)
+<ArrowDocsTabs active="geoarrowloader" />
 
 <p class="badges">
   <img src="https://img.shields.io/badge/From-v4.1-blue.svg?style=flat-square" alt="From-v4.1" />
 </p>
 
 The `GeoArrowLoader` parses Apache Arrow columnar table format files, and looks for `GeoArrow` type extensions to parse geometries from the table.
-
-| Loader                | Characteristic                                                                                                                          |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| File Format           | [IPC: Encapsulated Message Format](https://arrow.apache.org/docs/format/Columnar.html#serialization-and-interprocess-communication-ipc) |
-| Data Format           | [Geometry Table](/docs/specifications/category-table)                                                                                   |
-| File Extension        | `.arrow`                                                                                                                                |
-| File Type             | Binary                                                                                                                                  |
-| Decoder Type          | `load`, `parse`, `parseSync`, `parseInBatches`                                                                                          |
-| Worker Thread Support | Yes                                                                                                                                     |
-| Streaming Support     | Yes                                                                                                                                     |
 
 ## Usage
 

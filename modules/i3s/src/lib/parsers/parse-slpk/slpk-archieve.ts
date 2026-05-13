@@ -73,7 +73,7 @@ export class SLPKArchive extends IndexedArchive {
    */
   async getFile(path: string, mode: 'http' | 'raw' = 'raw'): Promise<ArrayBuffer> {
     if (mode === 'http') {
-      const extensions = PATH_DESCRIPTIONS.find((val) => val.test.test(path))?.extensions;
+      const extensions = PATH_DESCRIPTIONS.find(val => val.test.test(path))?.extensions;
       if (extensions) {
         let data: ArrayBuffer | undefined;
         for (const ext of extensions) {

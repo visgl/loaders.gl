@@ -11,6 +11,8 @@ export const LASFormat = {
   name: 'LAS',
   id: 'las',
   module: 'las',
+  encoding: 'binary',
+  format: 'las',
   extensions: ['las', 'laz'], // LAZ is the "compressed" flavor of LAS,
   mimeTypes: ['application/octet-stream'], // TODO - text version?
   text: false,

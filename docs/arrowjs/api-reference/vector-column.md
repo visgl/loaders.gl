@@ -1,56 +1,32 @@
 # Column
 
-> This documentation reflects Arrow JS v4.0. Needs to be updated for the new Arrow API in v9.0 +.
+:::info
+This page is aligned to Apache Arrow JS v21.x (`apache-arrow`).
+:::
 
-An immutable column data structure consisting of a field (type metadata) and a chunked data array.
+`Column` is a legacy name in Arrow JS API history. In modern v21 documentation, table column access uses `Vector` and `Table.getChild()`.
 
 ## Usage
 
-Copy a column
+```ts
+import {tableFromJSON} from 'apache-arrow';
 
-```typescript
-const typedArray = column.slice();
+const table = tableFromJSON([
+  {origin_lat: 12.3, origin_lon: 45.6},
+  {origin_lat: 22.1, origin_lon: 55.2}
+]);
+
+const latitudes = table.getChild('origin_lat');
+console.log(latitudes?.get(0));
 ```
 
-Get a contiguous typed array from a `Column` (creates a new typed array unless only one chunk)
+## Migration note
 
-```typescript
-const typedArray = column.toArray();
+Use `table.getChild(name)` (or `table.getChildAt(index)`) instead of `table.getColumn(...)` when reading columns.
+
+```ts
+const latitudes = table.getChild('origin_lat');
+const first = latitudes?.get(0);
 ```
 
-columns are iterable
-
-```typescript
-let max = column.get(0);
-let min = max;
-for (const value of column) {
-  if (value > max) max = value;
-  else if (value < min) min = value;
-}
-```
-
-## Inheritance
-
-## Fields
-
-In addition to fields inherited from `Chunked`, Colum also defines
-
-### name : String
-
-The name of the column (short for `field.name`)
-
-### field : Field
-
-Returns the `Field` instance that describes for the column.
-
-## Methods
-
-### constructor(field : Field, vectors: Vector, offsets?: Uint32Array)
-
-### clone
-
-Returns a new `Column` instance with the same properties.
-
-### getChildAt(index : Number) : Vector
-
-Returns the `Vector` that contains the element with
+When a single API compatibility page is needed, older examples referencing `Column` should map them to `Vector`.

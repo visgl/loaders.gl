@@ -101,7 +101,7 @@ export function getTableCell(table: Table, rowIndex: number, columnName: string)
     case 'arrow-table':
       const arrowTable = table.data as any;
       const arrowColumnIndex = arrowTable.schema.fields.findIndex(
-        (field) => field.name === columnName
+        field => field.name === columnName
       );
       return arrowTable.getChildAt(arrowColumnIndex)?.get(rowIndex);
 
@@ -157,7 +157,7 @@ export function getTableRowShape(table: Table): 'array-row-table' | 'object-row-
 
 /** Get the index of a named table column. Requires the table to have a schema */
 export function getTableColumnIndex(table: Table, columnName: string): number {
-  const columnIndex = table.schema?.fields.findIndex((field) => field.name === columnName);
+  const columnIndex = table.schema?.fields.findIndex(field => field.name === columnName);
   if (columnIndex === undefined) {
     throw new Error(columnName);
   }

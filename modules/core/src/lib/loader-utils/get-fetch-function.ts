@@ -14,7 +14,8 @@ import {getGlobalLoaderOptions} from './option-utils';
  */
 export function getFetchFunction(
   options?: LoaderOptions,
-  context?: Omit<LoaderContext, 'fetch'> & Partial<Pick<LoaderContext, 'fetch'>>
+  context?: Omit<LoaderContext, 'fetch' | 'coreApi'> &
+    Partial<Pick<LoaderContext, 'fetch' | 'coreApi'>>
 ): FetchLike {
   const globalOptions = getGlobalLoaderOptions();
 
@@ -28,7 +29,7 @@ export function getFetchFunction(
 
   // options.fetch can be an options object
   if (isObject(fetchOption)) {
-    return (url) => fetchFile(url, fetchOption as RequestInit);
+    return url => fetchFile(url, fetchOption as RequestInit);
   }
 
   // else refer to context (from parent loader) if available

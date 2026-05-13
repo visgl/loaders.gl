@@ -163,7 +163,7 @@ function getMeshAttributes(attributes: HeaderAttributes): {[attributeName: strin
  * @returns Header
  */
 /* eslint-disable complexity, max-statements */
-function parsePCDHeader(data: string): PCDHeader {
+export function parsePCDHeader(data: string): PCDHeader {
   const result1 = data.search(/[\r\n]DATA\s(\S*)\s/i);
   const result2 = /[\r\n]DATA\s(\S*)\s/i.exec(data.substr(result1 - 1));
 
@@ -229,11 +229,11 @@ function parsePCDHeader(data: string): PCDHeader {
   }
 
   if (pcdHeader.size !== null) {
-    pcdHeader.size = pcdHeader.size[1].split(' ').map((x) => parseInt(x, 10));
+    pcdHeader.size = pcdHeader.size[1].split(' ').map(x => parseInt(x, 10));
   }
 
   if (pcdHeader.count !== null) {
-    pcdHeader.count = pcdHeader.count[1].split(' ').map((x) => parseInt(x, 10));
+    pcdHeader.count = pcdHeader.count[1].split(' ').map(x => parseInt(x, 10));
   } else {
     pcdHeader.count = [];
     if (pcdHeader.fields !== null) {

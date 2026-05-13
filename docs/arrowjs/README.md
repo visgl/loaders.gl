@@ -1,18 +1,6 @@
 # Introduction
 
-## Why does loaders.gl provide an Arrow JS API Reference?
-
-> The idea is that this documentation should at some point be contributed back to the Apache Arrow project/repository, but so far this has not happened.
-
-loaders.gl is designed to output parsed tables and meshes in binary columnar format (whenever the parsed data structure allows). Binary columnar tables are a compact and efficient representation that is easy to work with analytically in JavaScript and to seamlessly upload to GPUs (via e.g. WebGL or WebGPU) for ultra-performance rendering and computation.
-
-While loaders.gl can load data into binary columnar tables, it only provides limited support for working with binary tables. The intention is that the application should be able to use complementary libraries like Apache Arrow JS.
-
-While the Apache Arrow JS library itself is excellent, the [reference documentation for the JavaScript bindings](https://arrow.apache.org/docs/js/) is unfortunately rather thin. It can therefore be challenging to get up to speed on the Arrow JS API, which is why this documentation is provided in loaders.gl.
-
-## About Apache Arrow JS
-
-The Apache Arrow JavaScript API is designed to help applications work with binary columnar data in the Apache Arrow format. Arrow JS offers a core set of classes that supports use cases such as batched loading and writing, column and row access, schemas etc.
+The Apache Arrow Arrow JS library provides a JavaScript API is designed to help applications work with binary columnar data in the Apache Arrow format. Arrow JS offers a core set of classes that supports use cases such as batched loading and writing, column and row access, schemas etc.
 
 ## Getting Started
 
@@ -38,3 +26,11 @@ Apache Arrow project links:
 - [Apache Arrow Home](https://arrow.apache.org/)
 - [Apache Arrow JS on github](https://github.com/apache/arrow/tree/master/js)
 - [Apache Arrow JS on npm](https://www.npmjs.com/package/apache-arrow)
+
+## Why does loaders.gl provide an Arrow JS API Reference?
+
+While the Apache Arrow JS library itself is excellent, the [reference documentation for the JavaScript bindings](https://arrow.apache.org/docs/js/) is unfortunately rather thin. It can therefore be challenging to get up to speed on the Arrow JS API.
+
+Since loaders.gl is relying more and more on Apache Arrow formatted tables, it seemed important to ensure users can find good documentation.
+
+> The original idea was that this documentation would at some point be contributed back to the Apache Arrow project/repository.

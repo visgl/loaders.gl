@@ -23,8 +23,8 @@ import type {
   // GeometryCollection
 } from '@loaders.gl/schema';
 
-import {XMLLoader} from '@loaders.gl/xml';
 import {deepStrictEqual} from './deep-strict-equal';
+import {parseXMLTextSync} from '../xml/parse-xml-text';
 import rewind from '@turf/rewind';
 
 function noTransform(...coords) {
@@ -49,7 +49,7 @@ export type ParseGMLContext = {
  */
 export function parseGML(text: string, options) {
   // GeoJSON | null {
-  const parsedXML = XMLLoader.parseTextSync?.(text, options);
+  const parsedXML = parseXMLTextSync(text, options);
 
   options = {transformCoords: noTransform, stride: 2, ...options};
   const context = createChildContext(parsedXML, options, {});

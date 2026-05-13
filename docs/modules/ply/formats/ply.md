@@ -1,54 +1,54 @@
+import {PlyDocsTabs} from '@site/src/components/docs/ply-docs-tabs';
+
 # PLY - Polygon File Format
+
+<PlyDocsTabs active="overview" />
+
+PLY (Polygon File Format, also known as the Stanford Triangle Format) stores 3D graphical objects as a collection of vertices, faces, and other polygon-oriented elements.
 
 - _[`@loaders.gl/ply`](/docs/modules/ply)_
 - _[PLY documentation](http://paulbourke.net/dataformats/ply/)_
 
-PLY (Polygon File Format, also known as the Stanford Triangle Format) is a format for storing graphical objects that are described as a collection of polygons.
+## About PLY
 
-The PLY format has two sub-formats: an ASCII representation for easily getting started, and a binary version for compact storage and for rapid saving and loading.
+The PLY format has two sub-formats: an ASCII representation for easy inspection and a binary representation for compact storage and faster loading.
 
-PLY files are sometimes used for storing point clouds, however the format is designed to describes a mesh object as a collection of vertices, faces and other elements, along with properties such as color and normal direction that can be attached to these elements.
-
-Sources
+PLY files are sometimes used for point clouds, but the format is designed for mesh objects made from vertices, faces, and other elements. Properties such as color, normals, texture coordinates, transparency, and confidence values can be attached to those elements.
 
 ## Columns
 
-Columns (properties) that might be stored include: color, surface normals, texture coordinates, transparency, range data confidence, and different properties for the front and back of a polygon.
+Columns, called properties in the PLY specification, may include color, surface normals, texture coordinates, transparency, range data confidence, and different properties for the front and back of a polygon.
 
 ## Detailed File Structure
 
-This is the structure of a typical PLY file:
+A typical PLY file contains:
 
 - Header
-- Vertex List
-- Face List
-- (lists of other elements)
+- Vertex list
+- Face list
+- Lists of other elements
 
-The header is a series of carriage-return terminated lines of text that describe the remainder of the file. The ASCII header contains lines such as
+The header is a series of text lines that describe the rest of the file. It declares each element type, how many elements of that type are present, the properties associated with each element, and whether the file body is ASCII or binary.
 
-- a description of each element type, including the element's name (e.g. "edge"),
-- how many such elements are in the object, and a list of the various properties associated with the element.
-- whether the file is binary or ASCII.
-
-Following the header is one list of elements for each element type, presented in the order described in the header.
+Following the header, each element list appears in the order described by the header.
 
 ## Example File
 
-Below is the complete ASCII description for a cube. The header of a binary version of the same object would differ only in substituting the word "binary_little_endian" or "binary_big_endian" for the word "ascii". The comments in brackets are NOT part of the file, they are annotations to this example. Comments in files are ordinary keyword-identified lines that begin with the word "comment".
+Below is the complete ASCII description for a cube. Comments in files are ordinary keyword-identified lines that begin with `comment`.
 
-```
+```text
 ply
-format ascii 1.0           { ascii/binary, format version number }
-comment made by Greg Turk  { comments keyword specified, like all lines }
+format ascii 1.0
+comment made by Greg Turk
 comment this file is a cube
-element vertex 8           { define "vertex" element, 8 of them in file }
-property float x           { vertex contains float "x" coordinate }
-property float y           { y coordinate is also a vertex property }
-property float z           { z coordinate, too }
-element face 6             { there are 6 "face" elements in the file }
-property list uchar int vertex_index { "vertex_indices" is a list of ints }
-end_header                 { delimits the end of the header }
-0 0 0                      { start of vertex list }
+element vertex 8
+property float x
+property float y
+property float z
+element face 6
+property list uchar int vertex_index
+end_header
+0 0 0
 0 0 1
 0 1 1
 0 1 0
@@ -56,7 +56,7 @@ end_header                 { delimits the end of the header }
 1 0 1
 1 1 1
 1 1 0
-4 0 1 2 3                  { start of face list }
+4 0 1 2 3
 4 7 6 5 4
 4 0 4 5 1
 4 1 5 6 2

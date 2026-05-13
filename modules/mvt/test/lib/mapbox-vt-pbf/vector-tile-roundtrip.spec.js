@@ -18,7 +18,7 @@ const vtvalidate = {
 
 const eq = new GeoJsonEquality({precision: 1});
 
-test('geojson-vt', (t) => {
+test('geojson-vt', t => {
   if (isBrowser) {
     t.comment('Skipping as @mapbox/geojson-fixtures is only supported in Node.js');
     t.end();
@@ -66,7 +66,7 @@ test('geojson-vt', (t) => {
   t.end();
 });
 
-test('vector-tile-js', (t) => {
+test('vector-tile-js', t => {
   // See https://github.com/mapbox/mvt-fixtures/blob/master/FIXTURES.md for
   // fixture descriptions
   mvtf.each(function (fixture) {

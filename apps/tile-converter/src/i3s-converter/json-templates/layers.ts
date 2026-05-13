@@ -69,7 +69,7 @@ const FULL_EXTENT = () => ({
 export const LAYERS = () => ({
   version: {
     path: 'version',
-    transform: (val) => val.toUpperCase()
+    transform: val => val.toUpperCase()
   },
   id: {
     path: 'id',
@@ -88,7 +88,7 @@ export const LAYERS = () => ({
   },
   spatialReference: {
     path: 'spatialReference',
-    transform: (val) => transform(val, SPATIAL_REFERENCE())
+    transform: val => transform(val, SPATIAL_REFERENCE())
   },
   capabilities: {
     path: 'capabilities',
@@ -96,19 +96,19 @@ export const LAYERS = () => ({
   },
   store: {
     path: 'store',
-    transform: (val) => transform(val, STORE)
+    transform: val => transform(val, STORE)
   },
   fullExtent: {
     path: 'fullExtent',
-    transform: (val) => transform(val, FULL_EXTENT())
+    transform: val => transform(val, FULL_EXTENT())
   },
   heightModelInfo: {
     path: 'heightModelInfo',
-    transform: (val) => transform(val, HEIGHT_MODEL_INFO())
+    transform: val => transform(val, HEIGHT_MODEL_INFO())
   },
   nodePages: {
     path: 'nodePages',
-    transform: (val) => transform(val, NODE_PAGES())
+    transform: val => transform(val, NODE_PAGES())
   },
   materialDefinitions: {
     path: 'materialDefinitions',
