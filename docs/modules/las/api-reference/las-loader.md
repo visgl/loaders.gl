@@ -8,11 +8,7 @@ import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
   <img src="https://img.shields.io/badge/From-v1.0-blue.svg?style=flat-square" alt="From-v1.0" />
 </p>
 
-:::caution
-The default `laz-perf` backend only supports LAS/LAZ files up to LAS v1.3. Use `las.backend: 'copc'` or `las.backend: 'laz-rs'` for LAS 1.4 point formats supported by those backends.
-:::
-
-`LASLoader` parses LAS/LAZ point clouds into the legacy [PointCloud](/docs/specifications/category-mesh) object by default. Set `las.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+The `LASLoader` parses a point cloud in the LASER file format.
 
 | Loader           | Output             | Use when                                  |
 | ---------------- | ------------------ | ----------------------------------------- |
