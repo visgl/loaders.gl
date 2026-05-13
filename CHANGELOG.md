@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.2
+
+- fix(geoparquet): restore GeoJSON output (#3422)
+
 ### v4.4.1
 
 - Fix peerDependencies specifiers
