@@ -88,6 +88,10 @@ export {getMeshSize, getMeshBoundingBox} from './lib/mesh/mesh-utils';
 export {convertMeshToTable} from './lib/mesh/convert-mesh-to-table';
 export {convertTableToMesh} from './lib/mesh/convert-table-to-mesh';
 export {
+  makePackedMeshArrowTable,
+  type MakePackedMeshArrowTableOptions
+} from './lib/mesh/make-packed-mesh-arrow-table';
+export {
   deduceMeshSchema,
   deduceMeshField,
   makeMeshAttributeMetadata

@@ -8,8 +8,12 @@ import type {MeshArrowTable} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {LASLoaderOptions} from './las-loader';
 import type {LASMesh} from './lib/las-types';
-import {parseLAS, parseLASInBatches} from './lib/laz-perf/parse-las';
-import {makePackedLASArrowTable} from './lib/make-packed-las-arrow-table';
+import {
+  parseLAS,
+  parseLASInBatches,
+  parseLASPackedArrowTable,
+  parseLASPackedArrowTableInBatches
+} from './lib/laz-perf/parse-las';
 import {LAZPerfLoader as LAZPerfLoaderMetadata} from './lazperf-loader';
 
 const {preload: _LAZPerfLoaderPreload, ...LAZPerfLoaderMetadataWithoutPreload} =
@@ -25,7 +29,9 @@ export const LAZPerfLoaderWithParser = {
     validateLASInterleavedOptions(options);
     const backendLoader = await getLASBackendLoader(options);
     return backendLoader === LAZPerfLoaderWithParser
-      ? convertLASMesh(parseLAS(arrayBuffer, options), options)
+      ? options?.las?.interleaved
+        ? parseLASPackedArrowTable(arrayBuffer, options)
+        : convertLASMesh(parseLAS(arrayBuffer, options), options)
       : backendLoader.parse(arrayBuffer, options);
   },
   parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
@@ -34,13 +40,19 @@ export const LAZPerfLoaderWithParser = {
     if (backend !== 'laz-perf') {
       throw new Error(`LASLoader: backend "${backend}" does not support parseSync`);
     }
-    return convertLASMesh(parseLAS(arrayBuffer, options), options);
+    return options?.las?.interleaved
+      ? parseLASPackedArrowTable(arrayBuffer, options)
+      : convertLASMesh(parseLAS(arrayBuffer, options), options);
   },
   parseInBatches: async function* (arrayBufferIterator, options?: LASLoaderOptions) {
     validateLASInterleavedOptions(options);
     const backendLoader = await getLASBackendLoader(options);
     if (backendLoader === LAZPerfLoaderWithParser) {
-      yield* convertLASMeshBatches(parseLASInBatches(arrayBufferIterator, options), options);
+      if (options?.las?.interleaved) {
+        yield* parseLASPackedArrowTableInBatches(arrayBufferIterator, options);
+      } else {
+        yield* convertLASMeshBatches(parseLASInBatches(arrayBufferIterator, options), options);
+      }
       return;
     }
     yield* backendLoader.parseInBatches!(arrayBufferIterator, options);
@@ -85,9 +97,6 @@ async function getLASBackendLoader(
 }
 
 function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
-  if (options?.las?.interleaved) {
-    return makePackedLASArrowTable(mesh);
-  }
   const table = convertMeshToTable(mesh, 'arrow-table');
   if (options?.las?.shape === 'arrow-table') {
     return table;

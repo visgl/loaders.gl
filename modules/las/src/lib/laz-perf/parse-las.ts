@@ -6,10 +6,11 @@
 // import type {ArrowTable, ColumnarTable} from '@loaders.gl/schema';
 import type {LASLoaderOptions} from '../../las-loader';
 import type {LASMesh, LASHeader} from '../las-types';
-import type {MeshAttributes} from '@loaders.gl/schema';
+import type {MeshArrowTable, MeshAttributes, PackedMeshArrowLayout} from '@loaders.gl/schema';
 import {getMeshBoundingBox /* , convertMeshToTable */} from '@loaders.gl/schema-utils';
 import {concatenateArrayBuffersAsync} from '@loaders.gl/loader-utils';
 import {getLASSchema} from '../get-las-schema';
+import {getPackedLASLayout, makePackedLASArrowTable} from '../make-packed-las-arrow-table';
 import {LASFile} from './laslaz-decoder';
 
 type LASChunk = {
@@ -49,6 +50,58 @@ export function parseLAS(arrayBuffer: ArrayBuffer, options?: LASLoaderOptions): 
 }
 
 /**
+ * Parse LAS/LAZ data directly into one packed interleaved Arrow table.
+ * @param arrayBuffer Complete LAS/LAZ file bytes.
+ * @param options LAS loader options.
+ * @returns Packed-only Mesh Arrow output without intermediate attribute arrays.
+ */
+export function parseLASPackedArrowTable(
+  arrayBuffer: ArrayBuffer,
+  options: LASLoaderOptions = {}
+): MeshArrowTable {
+  let originalHeader: LASHeader | null = null;
+  let packedLayout: PackedMeshArrowLayout | null = null;
+  let packedBytes: Uint8Array | null = null;
+  let vertexCount = 0;
+  const boundingBox = createPackedLASBoundingBox();
+
+  for (const {decoder, header} of parseLASChunkedIterator(
+    arrayBuffer,
+    options.las?.skip,
+    getBatchSize(options)
+  )) {
+    if (!originalHeader) {
+      originalHeader = header;
+      packedLayout = getPackedLASLayout(header.hasColor);
+      packedBytes = new Uint8Array(header.totalToRead * packedLayout.byteStride);
+    }
+
+    writePackedLASRecords(
+      decoder,
+      header,
+      options,
+      packedBytes!,
+      packedLayout!,
+      vertexCount,
+      boundingBox
+    );
+    vertexCount += decoder.pointsCount;
+  }
+
+  if (!originalHeader || !packedLayout || !packedBytes) {
+    throw new Error('LASLoader: packed LAS parsing did not produce header metadata');
+  }
+
+  return makePackedLASArrowTable({
+    bytes: packedBytes,
+    vertexCount,
+    lasHeader: originalHeader,
+    boundingBox: finalizePackedLASBoundingBox(boundingBox, vertexCount),
+    packedLayout
+  });
+}
+
+/**
  * Parse LAS/LAZ data in decoded point batches.
  * @param arrayBufferIterator Iterator yielding LAS/LAZ binary chunks
  * @param options LAS loader options
@@ -69,6 +122,42 @@ export async function* parseLASInBatches(
     batchSize
   )) {
     yield parseLASMeshBatch(decoder, header, options);
+  }
+}
+
+/**
+ * Parse LAS/LAZ data directly into packed interleaved Arrow batches.
+ * @param arrayBufferIterator Iterator yielding LAS/LAZ binary chunks.
+ * @param options LAS loader options.
+ * @returns Async iterable of packed-only Mesh Arrow batches.
+ */
+export async function* parseLASPackedArrowTableInBatches(
+  arrayBufferIterator:
+    | AsyncIterable<ArrayBufferLike | ArrayBufferView>
+    | Iterable<ArrayBufferLike | ArrayBufferView>,
+  options: LASLoaderOptions = {}
+): AsyncIterable<MeshArrowTable> {
+  const arrayBuffer = await concatenateArrayBuffersAsync(arrayBufferIterator);
+  const batchSize = getBatchSize(options);
+
+  for (const {decoder, header} of parseLASChunkedIterator(
+    arrayBuffer,
+    options.las?.skip,
+    batchSize
+  )) {
+    const packedLayout = getPackedLASLayout(header.hasColor);
+    const packedBytes = new Uint8Array(decoder.pointsCount * packedLayout.byteStride);
+    const boundingBox = createPackedLASBoundingBox();
+
+    writePackedLASRecords(decoder, header, options, packedBytes, packedLayout, 0, boundingBox);
+
+    yield makePackedLASArrowTable({
+      bytes: packedBytes,
+      vertexCount: decoder.pointsCount,
+      lasHeader: {...header},
+      boundingBox: finalizePackedLASBoundingBox(boundingBox, decoder.pointsCount),
+      packedLayout
+    });
   }
 }
 
@@ -294,6 +383,150 @@ function populateLASAttributes(
     target.intensities[pointIndex] = intensity;
     target.classifications[pointIndex] = classification;
   }
+}
+
+type PackedLASBoundingBox = [[number, number, number], [number, number, number]];
+
+/**
+ * Allocate an initially empty packed LAS bounding box accumulator.
+ * @returns Mutable min/max bounds updated while point records are written.
+ */
+function createPackedLASBoundingBox(): PackedLASBoundingBox {
+  return [
+    [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
+    [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY]
+  ];
+}
+
+/**
+ * Return stable bounds for packed output, including the empty-point fallback.
+ * @param boundingBox Mutable min/max bounds accumulated during writes.
+ * @param vertexCount Number of packed point rows.
+ * @returns Final bounding box metadata.
+ */
+function finalizePackedLASBoundingBox(
+  boundingBox: PackedLASBoundingBox,
+  vertexCount: number
+): [number[], number[]] {
+  if (vertexCount === 0) {
+    return [
+      [0, 0, 0],
+      [0, 0, 0]
+    ];
+  }
+  return boundingBox;
+}
+
+/**
+ * Write decoded LAS point records directly into an interleaved packed byte buffer.
+ * @param decoder Decoded LAS point reader for the current chunk.
+ * @param lasHeader LAS header with scale, offset, and color metadata.
+ * @param options LAS loader options.
+ * @param packedBytes Destination interleaved byte storage.
+ * @param packedLayout Packed record byte layout.
+ * @param pointOffset Destination point offset inside `packedBytes`.
+ * @param boundingBox Mutable min/max bounds accumulator.
+ */
+function writePackedLASRecords(
+  decoder: LASDecoder,
+  lasHeader: LASHeader,
+  options: LASLoaderOptions,
+  packedBytes: Uint8Array,
+  packedLayout: PackedMeshArrowLayout,
+  pointOffset: number,
+  boundingBox: PackedLASBoundingBox
+): void {
+  const batchSize = decoder.pointsCount;
+  const dataView = new DataView(packedBytes.buffer, packedBytes.byteOffset, packedBytes.byteLength);
+  const positionByteOffset = getRequiredPackedLASAttributeByteOffset(packedLayout, 'POSITION');
+  const colorByteOffset = getPackedLASAttributeByteOffset(packedLayout, 'COLOR_0');
+  const intensityByteOffset = getRequiredPackedLASAttributeByteOffset(packedLayout, 'intensity');
+  const classificationByteOffset = getRequiredPackedLASAttributeByteOffset(
+    packedLayout,
+    'classification'
+  );
+  const {
+    scale: [scaleX, scaleY, scaleZ],
+    offset: [offsetX, offsetY, offsetZ]
+  } = lasHeader;
+  const twoByteColor = detectTwoByteColors(decoder, batchSize, options.las?.colorDepth);
+
+  for (let chunkPointIndex = 0; chunkPointIndex < batchSize; chunkPointIndex++) {
+    const {position, color, intensity, classification} = decoder.getPoint(chunkPointIndex);
+    const packedPointIndex = pointOffset + chunkPointIndex;
+    const recordByteOffset = packedPointIndex * packedLayout.byteStride;
+    const positionX = position[0] * scaleX + offsetX;
+    const positionY = position[1] * scaleY + offsetY;
+    const positionZ = position[2] * scaleZ + offsetZ;
+    const positionRecordByteOffset = recordByteOffset + positionByteOffset;
+
+    dataView.setFloat32(positionRecordByteOffset, positionX, true);
+    dataView.setFloat32(positionRecordByteOffset + 4, positionY, true);
+    dataView.setFloat32(positionRecordByteOffset + 8, positionZ, true);
+    updatePackedLASBoundingBox(boundingBox, positionX, positionY, positionZ);
+
+    if (color && colorByteOffset !== undefined) {
+      const colorRecordByteOffset = recordByteOffset + colorByteOffset;
+      packedBytes[colorRecordByteOffset] = twoByteColor ? color[0] / 256 : color[0];
+      packedBytes[colorRecordByteOffset + 1] = twoByteColor ? color[1] / 256 : color[1];
+      packedBytes[colorRecordByteOffset + 2] = twoByteColor ? color[2] / 256 : color[2];
+      packedBytes[colorRecordByteOffset + 3] = 255;
+    }
+
+    dataView.setUint16(recordByteOffset + intensityByteOffset, intensity, true);
+    dataView.setUint8(recordByteOffset + classificationByteOffset, classification);
+  }
+}
+
+/**
+ * Resolve one packed LAS attribute offset from the layout metadata.
+ * @param packedLayout Packed LAS layout.
+ * @param attribute Packed LAS attribute name.
+ * @returns Attribute byte offset, or undefined when the attribute is absent.
+ */
+function getPackedLASAttributeByteOffset(
+  packedLayout: PackedMeshArrowLayout,
+  attribute: string
+): number | undefined {
+  return packedLayout.attributes.find(layout => layout.attribute === attribute)?.byteOffset;
+}
+
+/**
+ * Resolve one required packed LAS attribute offset from layout metadata.
+ * @param packedLayout Packed LAS layout.
+ * @param attribute Required packed LAS attribute name.
+ * @returns Attribute byte offset.
+ */
+function getRequiredPackedLASAttributeByteOffset(
+  packedLayout: PackedMeshArrowLayout,
+  attribute: string
+): number {
+  const byteOffset = getPackedLASAttributeByteOffset(packedLayout, attribute);
+  if (byteOffset === undefined) {
+    throw new Error(`LASLoader: packed LAS layout is missing attribute "${attribute}"`);
+  }
+  return byteOffset;
+}
+
+/**
+ * Extend packed LAS bounds with one decoded point position.
+ * @param boundingBox Mutable min/max accumulator.
+ * @param positionX Scaled X coordinate.
+ * @param positionY Scaled Y coordinate.
+ * @param positionZ Scaled Z coordinate.
+ */
+function updatePackedLASBoundingBox(
+  boundingBox: PackedLASBoundingBox,
+  positionX: number,
+  positionY: number,
+  positionZ: number
+): void {
+  boundingBox[0][0] = Math.min(boundingBox[0][0], positionX);
+  boundingBox[0][1] = Math.min(boundingBox[0][1], positionY);
+  boundingBox[0][2] = Math.min(boundingBox[0][2], positionZ);
+  boundingBox[1][0] = Math.max(boundingBox[1][0], positionX);
+  boundingBox[1][1] = Math.max(boundingBox[1][1], positionY);
+  boundingBox[1][2] = Math.max(boundingBox[1][2], positionZ);
 }
 
 /**
