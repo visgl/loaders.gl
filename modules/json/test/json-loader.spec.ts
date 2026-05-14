@@ -813,6 +813,46 @@ test('JSONTableLoader#parse(arrow-table integer conversion policy)', async t => 
   t.end();
 });
 
+test('JSONTableLoader#parse(arrow-table Utf8 numeric conversion policy)', async t => {
+  const schema: Schema = {
+    fields: [{name: 'id', type: 'utf8', nullable: false}],
+    metadata: {}
+  };
+
+  t.throws(
+    () =>
+      BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 7}]), {
+        json: {shape: 'arrow-table', schema}
+      }),
+    /expected string/,
+    'strict mode rejects numeric Utf8 values by default'
+  );
+
+  const table = BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: 7}, {id: '8'}]), {
+    json: {
+      shape: 'arrow-table',
+      schema,
+      arrowConversion: {utf8Conversion: 'number-to-string'}
+    }
+  });
+  t.equal(table.data.getChild('id')?.get(0), '7', 'numeric Utf8 values can coerce to strings');
+  t.equal(table.data.getChild('id')?.get(1), '8', 'string Utf8 values remain unchanged');
+
+  t.throws(
+    () =>
+      BundledJSONTableLoader.parseTextSync?.(JSON.stringify([{id: true}]), {
+        json: {
+          shape: 'arrow-table',
+          schema,
+          arrowConversion: {utf8Conversion: 'number-to-string'}
+        }
+      }),
+    /expected string/,
+    'non-numeric primitive values still reject Utf8 coercion'
+  );
+  t.end();
+});
+
 test('JSONTableLoader#parse(arrow-table schema options require Arrow shape)', async t => {
   const schema: Schema = {
     fields: [{name: 'id', type: 'float64', nullable: true}],
@@ -904,6 +944,87 @@ test('JSONTableLoader#parseInBatches(arrow-table with supplied schema)', async t
   }
 
   t.equal(rowCount, 2, 'converts all streamed rows');
+  t.end();
+});
+
+test('JSONTableLoader#parseInBatches(fast arrow-table preserves raw Utf8 JSON fields)', async t => {
+  const schema: Schema = {
+    fields: [
+      {name: 'id', type: 'float64', nullable: false},
+      {name: 'metadata', type: 'utf8', nullable: true},
+      {name: 'tags', type: 'utf8', nullable: true},
+      {name: 'label', type: 'utf8', nullable: false}
+    ],
+    metadata: {}
+  };
+  const jsonText =
+    '{"items":[{"id":1,"metadata": { "nested" : [1, {"escaped":"\\u2603"}] }, "tags": [ "alpha" , {"value":2} ], "label":"line\\nbreak"},{"id":2,"metadata":null,"label":"plain"}]}';
+  const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 3), {
+    batchSize: 1,
+    json: {
+      backend: 'fast',
+      shape: 'arrow-table',
+      jsonpaths: ['$.items'],
+      schema,
+      arrowConversion: {onMissingField: 'null'}
+    }
+  });
+
+  const metadataValues: (string | null)[] = [];
+  const tagValues: (string | null)[] = [];
+  const labelValues: string[] = [];
+  for await (const batch of iterator) {
+    if (batch.batchType === 'data') {
+      metadataValues.push(batch.data.getChild('metadata')?.get(0) as string | null);
+      tagValues.push(batch.data.getChild('tags')?.get(0) as string | null);
+      labelValues.push(batch.data.getChild('label')?.get(0) as string);
+    }
+  }
+
+  t.deepEqual(
+    metadataValues,
+    ['{ "nested" : [1, {"escaped":"\\u2603"}] }', null],
+    'object values keep their exact JSON source or null'
+  );
+  t.deepEqual(
+    tagValues,
+    ['[ "alpha" , {"value":2} ]', null],
+    'array values keep their exact JSON source or recovered missing null'
+  );
+  t.deepEqual(labelValues, ['line\nbreak', 'plain'], 'ordinary Utf8 strings still decode');
+  t.end();
+});
+
+test('JSONTableLoader raw Utf8 capture is limited to fast streaming Arrow parsing', async t => {
+  const schema: Schema = {
+    fields: [{name: 'metadata', type: 'utf8', nullable: false}],
+    metadata: {}
+  };
+  const jsonText = '{"items":[{"metadata":{"nested":true}}]}';
+
+  t.throws(
+    () =>
+      BundledJSONTableLoader.parseTextSync?.(jsonText, {
+        json: {shape: 'arrow-table', schema}
+      }),
+    /expected string/,
+    'sync parsing still rejects object values for Utf8 schema fields'
+  );
+
+  const iterator = BundledJSONTableLoader.parseInBatches?.(makeChunkedTextIterator(jsonText, 8), {
+    batchSize: 1,
+    json: {shape: 'arrow-table', jsonpaths: ['$.items'], schema}
+  });
+
+  await t.rejects(
+    async () => {
+      for await (const _batch of iterator) {
+        // Consume batches until Arrow conversion reaches the nested object value.
+      }
+    },
+    /expected string/,
+    'clarinet streaming still rejects object values for Utf8 schema fields'
+  );
   t.end();
 });
 

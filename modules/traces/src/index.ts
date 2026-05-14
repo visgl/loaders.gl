@@ -8,7 +8,8 @@ export {
 } from './chrome-trace-loader';
 export {
   type ChromeTraceEventArrowRecordBatch,
-  type ChromeTraceEventArrowTable
+  type ChromeTraceEventArrowTable,
+  type ChromeTraceEventStreamArrowRecordBatch
 } from './chrome-trace-arrow-schema';
 export type {
   ChromeTraceEventSchema,
