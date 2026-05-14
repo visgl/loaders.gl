@@ -8,6 +8,7 @@
     "outDir": "dist"
   },
   "references": [
+    {"path": "../json"},
     {"path": "../loader-utils"}
   ]
 }

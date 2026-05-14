@@ -9,6 +9,7 @@ import FastStreamingJSONParser from '../../../src/lib/json-parser/fast-streaming
 type StreamingParserConstructor = new (options?: {
   jsonpaths?: string[];
   metadata?: boolean;
+  rawJsonUtf8Fields?: string[];
 }) => {
   write(chunk: string): unknown[];
   close(): void;
@@ -58,6 +59,8 @@ const ROOT_ARRAY_JSON = JSON.stringify([
   {id: 3, name: 'three'}
 ]);
 const STRING_ARRAY_JSON = JSON.stringify(['alpha', 'emoji 😀', 'line\nbreak', 'escaped "quote"']);
+const RAW_UTF8_ROW_JSON =
+  '[{"metadata": { "nested" : [1, {"escaped":"\\u2603"}] }, "tags": [ "alpha" , {"value":2} ], "label":"line\\nbreak"}]';
 
 test('FastStreamingJSONParser matches current parser for $.features across chunk sizes', t => {
   for (const chunkSize of [1, 2, 3, 5, 13]) {
@@ -129,6 +132,31 @@ test('FastStreamingJSONParser handles primitive array rows', t => {
   t.deepEqual(output.rows, [1, true, null, -2.5], 'primitive rows are emitted');
   t.equal(output.jsonpath, '$', 'jsonpath is root array');
   t.ok(output.rawJsonPath, 'raw JSONPath object is available');
+  t.end();
+});
+
+test('FastStreamingJSONParser preserves configured raw Utf8 object and array fields', t => {
+  const parser = new FastStreamingJSONParser({
+    rawJsonUtf8Fields: ['metadata', 'tags']
+  });
+  const rows: unknown[] = [];
+
+  for (const chunk of splitIntoChunks(RAW_UTF8_ROW_JSON, 1)) {
+    rows.push(...parser.write(chunk));
+  }
+  parser.close();
+
+  t.deepEqual(
+    rows,
+    [
+      {
+        metadata: '{ "nested" : [1, {"escaped":"\\u2603"}] }',
+        tags: '[ "alpha" , {"value":2} ]',
+        label: 'line\nbreak'
+      }
+    ],
+    'selected nested values remain exact JSON source while strings decode normally'
+  );
   t.end();
 });
 

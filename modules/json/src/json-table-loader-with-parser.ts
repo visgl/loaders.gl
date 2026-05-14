@@ -18,7 +18,8 @@ import {parseJSONSync} from './lib/parsers/parse-json';
 import {parseJSONInBatches} from './lib/parsers/parse-json-in-batches';
 import {
   convertRowTableToArrowTable,
-  convertTableBatchesToArrow
+  convertTableBatchesToArrow,
+  normalizeJSONArrowSchema
 } from './lib/parsers/convert-row-table-to-arrow';
 import type {JSONBatch, JSONLoaderOptions, MetadataBatch} from './json-loader';
 import {
@@ -101,9 +102,10 @@ function parseInBatches(
   options?: JSONTableLoaderOptions
 ): AsyncIterable<TableBatch | ArrowTableBatch | MetadataBatch | JSONBatch> {
   const jsonOptions = normalizeJSONTableLoaderOptions(options);
+  const rawJsonUtf8Fields = getRawJsonUtf8Fields(jsonOptions);
   const parseOptions =
     jsonOptions.json?.backend === 'fast'
-      ? {parserFactory: getFastStreamingJSONParserFactory()}
+      ? {parserFactory: getFastStreamingJSONParserFactory(rawJsonUtf8Fields)}
       : undefined;
   validateJSONTableArrowOptions(jsonOptions);
 
@@ -249,8 +251,25 @@ function getFirstArray(json: unknown): unknown[] | null {
  *
  * @returns Streaming parser factory used by the `fast` backend.
  */
-function getFastStreamingJSONParserFactory(): StreamingJSONParserFactory {
-  return parserOptions => new FastStreamingJSONParser(parserOptions);
+function getFastStreamingJSONParserFactory(
+  rawJsonUtf8Fields: string[]
+): StreamingJSONParserFactory {
+  return parserOptions => new FastStreamingJSONParser({...parserOptions, rawJsonUtf8Fields});
+}
+
+/**
+ * Resolves row-level Utf8 schema fields eligible for fast raw JSON source capture.
+ *
+ * @param options - Normalized JSON table loader options.
+ * @returns Row-level Utf8 field names for streamed fast Arrow parsing.
+ */
+function getRawJsonUtf8Fields(options: JSONTableLoaderOptions): string[] {
+  if (options.json?.shape !== 'arrow-table' || !options.json.schema) {
+    return [];
+  }
+
+  const schema = normalizeJSONArrowSchema(options.json.schema);
+  return schema.fields.filter(field => field.type === 'utf8').map(field => field.name);
 }
 
 /**

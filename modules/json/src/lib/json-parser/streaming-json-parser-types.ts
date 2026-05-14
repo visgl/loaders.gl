@@ -10,6 +10,8 @@ import type JSONPath from '../jsonpath/jsonpath';
 export type StreamingJSONParserOptions = {
   jsonpaths?: string[];
   metadata?: boolean;
+  /** Row-level object fields whose object or array JSON source should stay as raw Utf8 text. */
+  rawJsonUtf8Fields?: string[];
 };
 
 /**

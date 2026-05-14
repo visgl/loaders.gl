@@ -52,6 +52,8 @@ export type ArrowConversionOptions = {
   onExtraField?: 'error' | 'drop';
   /** Behavior when a number must be converted to an integer Arrow field. */
   integerConversion?: 'clamp-and-round' | 'null' | 'warn' | 'error';
+  /** Behavior when a number must be converted to a Utf8 Arrow field. */
+  utf8Conversion?: 'number-to-string' | 'error';
   /** Whether recovered conversion issues should be logged once per issue kind and field path. */
   logRecoveries?: boolean;
 };
@@ -93,6 +95,7 @@ const DEFAULT_ARROW_CONVERSION_OPTIONS: NormalizedArrowConversionOptions = {
   onMissingField: 'error',
   onExtraField: 'error',
   integerConversion: 'error',
+  utf8Conversion: 'error',
   logRecoveries: true
 };
 
@@ -730,6 +733,13 @@ function normalizeValueForArrow(
   if (typeof field.type === 'string') {
     if (isPrimitiveValueCompatible(value, field.type)) {
       return value;
+    }
+    if (
+      field.type === 'utf8' &&
+      typeof value === 'number' &&
+      conversionOptions.utf8Conversion === 'number-to-string'
+    ) {
+      return String(value);
     }
     if (isIntegerFieldType(field.type) && typeof value === 'number') {
       return recoverIntegerConversion(field, value, path, conversionOptions, conversionLogger);
