@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+import {PACKED_MESH_ARROW_LAYOUT_METADATA_KEY} from '@loaders.gl/schema';
 import {TypedArray} from '@math.gl/types';
 import {getSizeAndValueFromMeshArrowVector} from './mesh-accessors';
 import * as arrow from 'apache-arrow';
@@ -20,6 +21,11 @@ export type DeckBinaryData = {
 
 /**  */
 export function getDeckBinaryDataFromArrowMesh(table: arrow.Table): DeckBinaryData {
+  if (table.schema.metadata.has(PACKED_MESH_ARROW_LAYOUT_METADATA_KEY)) {
+    throw new Error(
+      'Packed-only Mesh Arrow tables are not supported by getDeckBinaryDataFromArrowMesh'
+    );
+  }
   const positionVector = table.getChild('POSITION');
   if (!positionVector) {
     throw new Error('POSITION attribute not found');

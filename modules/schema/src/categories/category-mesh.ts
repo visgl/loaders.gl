@@ -21,8 +21,10 @@ export interface MeshArrowTable extends ArrowTable {
   topology: 'point-list' | 'triangle-list' | 'triangle-strip';
   /** Optional top-level primitive indices accessor for indexed meshes. */
   indices?: MeshAttribute;
-  /** Raw Apache Arrow table data for Mesh or IndexedMesh columns. */
-  data: MeshArrowTableData | IndexedMeshArrowTableData;
+  /** Raw Apache Arrow table data for Mesh, IndexedMesh, or packed mesh columns. */
+  data: MeshArrowTableData | IndexedMeshArrowTableData | PackedMeshArrowTableData;
+  /** Optional packed GPU buffer layout mirrored from Arrow schema metadata. */
+  packedLayout?: PackedMeshArrowLayout;
 }
 
 /** Apache Arrow columns for a mesh vertex table. */
@@ -39,11 +41,45 @@ export type IndexedMeshArrowColumns = MeshArrowColumns & {
   indices: arrow.List<arrow.Int32>;
 };
 
+/** Apache Arrow columns for a packed interleaved mesh vertex table. */
+export type PackedMeshArrowColumns = {
+  /** One fixed-width packed GPU vertex record per Arrow row. */
+  vertexData: arrow.FixedSizeBinary;
+};
+
 /** Raw Apache Arrow table data for a mesh vertex table. */
 export type MeshArrowTableData = arrow.Table<MeshArrowColumns>;
 
 /** Raw Apache Arrow table data for an indexed mesh vertex table. */
 export type IndexedMeshArrowTableData = arrow.Table<IndexedMeshArrowColumns>;
+
+/** Raw Apache Arrow table data for a packed interleaved mesh vertex table. */
+export type PackedMeshArrowTableData = arrow.Table<PackedMeshArrowColumns>;
+
+/** One shader-visible attribute view inside a packed mesh vertex record. */
+export type PackedMeshArrowAttributeLayout = {
+  /** Arrow/mesh attribute semantic. */
+  attribute: string;
+  /** GPU vertex format for this packed byte range. */
+  format: string;
+  /** Byte offset inside each packed vertex record. */
+  byteOffset: number;
+};
+
+/** GPU buffer layout mirrored on packed Mesh Arrow wrappers for ergonomic access. */
+export type PackedMeshArrowLayout = {
+  /** Packed Arrow column name. */
+  columnName: string;
+  /** Logical GPU buffer name. */
+  bufferName: string;
+  /** Bytes between successive packed vertex records. */
+  byteStride: number;
+  /** Attribute views exposed from the packed bytes. */
+  attributes: PackedMeshArrowAttributeLayout[];
+};
+
+/** Arrow schema metadata key that marks a packed-only Mesh Arrow table. */
+export const PACKED_MESH_ARROW_LAYOUT_METADATA_KEY = 'mesh.packedLayout';
 
 /** Predefined Apache Arrow schema for common mesh vertex columns. */
 export const meshArrowSchema = new arrow.Schema<MeshArrowColumns>([

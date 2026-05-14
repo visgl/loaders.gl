@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Mesh, ColumnarTable, ArrowTable, Schema} from '@loaders.gl/schema';
+import {
+  PACKED_MESH_ARROW_LAYOUT_METADATA_KEY,
+  type Mesh,
+  type ColumnarTable,
+  type ArrowTable,
+  type Schema
+} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
 import {getFixedSizeListSize} from '../arrow-utils/arrow-fixed-size-list-utils';
 import {serializeArrowSchema} from '../schema/convert-arrow-schema';
@@ -32,6 +38,9 @@ export function convertTableToMesh(table: ColumnarTable | ArrowTable): Mesh {
  */
 export function convertArrowTableToMesh(table: ArrowTable): Mesh {
   const arrowTable = table.data;
+  if (arrowTable.schema.metadata.has(PACKED_MESH_ARROW_LAYOUT_METADATA_KEY)) {
+    throw new Error('convertTableToMesh does not support packed-only Mesh Arrow tables');
+  }
 
   const schema = serializeArrowSchema(arrowTable.schema);
   const fields = schema.fields;

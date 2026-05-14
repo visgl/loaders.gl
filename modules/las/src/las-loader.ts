@@ -17,6 +17,8 @@ export type LASLoaderOptions = LoaderOptions & {
     /** Decoder backend. Defaults to the current vendored laz-perf implementation. */
     backend?: 'laz-perf' | 'copc' | 'laz-rs';
     shape?: 'mesh' | 'columnar-table' | 'arrow-table';
+    /** Return packed interleaved Arrow vertex records for WebGPU buffer upload. */
+    interleaved?: boolean;
     fp64?: boolean;
     skip?: number;
     colorDepth?: number | string;

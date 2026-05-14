@@ -38,7 +38,7 @@ Mesh category writers accept Mesh Arrow tables and legacy Mesh objects. Legacy M
 
 A single mesh is typically defined by a set of attributes, such as `positions`, `colors`, `normals` etc, as well as a draw mode.
 
-The Mesh/PointCloud category uses Arrow as the primary tabular mesh representation. Arrow loader variants return a loaders.gl Arrow table wrapper (`shape: 'arrow-table'`) whose raw Arrow `data` value has shape `'arrow'` and can be typed with `MeshArrowTableData` or `IndexedMeshArrowTableData` from `@loaders.gl/schema`.
+The Mesh/PointCloud category uses Arrow as the primary tabular mesh representation. Arrow loader variants return a loaders.gl Arrow table wrapper (`shape: 'arrow-table'`) whose raw Arrow `data` value has shape `'arrow'` and can be typed with `MeshArrowTableData`, `IndexedMeshArrowTableData`, or `PackedMeshArrowTableData` from `@loaders.gl/schema`.
 
 Legacy Mesh loader variants return a JavaScript object shape that is optimized for direct use in WebGL frameworks:
 
@@ -66,6 +66,7 @@ Legacy Mesh loader variants return a JavaScript object shape that is optimized f
 | `IndexedMeshArrowColumns`    | Column type map for indexed mesh Arrow tables.                                              |
 | `MeshArrowTableData`         | Raw `arrow.Table<MeshArrowColumns>` alias.                                                   |
 | `IndexedMeshArrowTableData`  | Raw `arrow.Table<IndexedMeshArrowColumns>` alias.                                            |
+| `PackedMeshArrowTableData`   | Raw `arrow.Table<PackedMeshArrowColumns>` alias for packed interleaved vertex records.       |
 | `meshArrowSchema`            | Predefined mesh Arrow schema, starting with `POSITION: FixedSizeList<Float32>[3]`.           |
 | `indexedMeshArrowSchema`     | Predefined indexed mesh Arrow schema with `POSITION` plus nullable `indices: List<Int32>`.   |
 
@@ -74,6 +75,8 @@ Legacy Mesh loader variants return a JavaScript object shape that is optimized f
 For indexed meshes, the full index list is stored in the nullable `indices` column at Arrow row `0`; remaining vertex rows store `null`. Vertex attributes are stored as Arrow `FixedSizeList` columns, so `POSITION` is a row-per-vertex `FixedSizeList<Float32>[3]` column.
 
 Consumers can validate common columns with `meshArrowSchema` or `indexedMeshArrowSchema`. Loaders may append loader-specific trailing attribute columns after the predefined fields, such as `NORMAL`, `COLOR_0`, `TEXCOORD_0`, or custom Draco attributes.
+
+Some loaders may instead emit a packed-only Mesh Arrow table for direct GPU buffer upload. In that subtype, each Arrow row is one fixed-width `FixedSizeBinary` vertex record and the Arrow schema metadata describes the buffer name, byte stride, and shader-visible attribute views. Packed-only tables intentionally do not expose ordinary numeric `POSITION` or `COLOR_0` columns, so helpers that reconstruct legacy Mesh objects or expect columnar point-cloud attributes may reject them explicitly.
 
 ### Mesh Arrow Columns
 
@@ -85,6 +88,7 @@ Consumers can validate common columns with `meshArrowSchema` or `indexedMeshArro
 | `COLOR_0`    | `FixedSizeList<T>[3 or 4]`   | No       | Optional vertex color column when present in the source mesh. `T` follows the source attribute typed array when possible.           |
 | `TEXCOORD_0` | `FixedSizeList<T>[2]`        | No       | Optional first texture coordinate column when present in the source mesh. `T` follows the source attribute typed array when possible. |
 | Custom       | `FixedSizeList<T>[size]`     | No       | Optional loader-specific or source-specific vertex attribute column appended after predefined fields.                               |
+| `vertexData` | `FixedSizeBinary<byteStride>` | No      | Packed-only interleaved vertex record column emitted by loaders that opt into GPU-ready Arrow layouts.                              |
 
 ### Mesh Arrow Metadata
 
@@ -97,6 +101,7 @@ Schema-level metadata:
 | `topology`    | String                                      | Mesh topology, such as `point-list`, `triangle-list`, or `triangle-strip`.                   |
 | `mode`        | Numeric string                              | Primitive mode using WebGL/glTF constants, such as `0` for points or `4` for triangles.      |
 | `boundingBox` | JSON string `[[minX, minY, minZ], [maxX, maxY, maxZ]]` | Mesh bounding box when available.                                                           |
+| `mesh.packedLayout` | JSON string | Packed-only vertex buffer layout containing the packed column name, buffer name, byte stride, and attribute offset/format descriptors. |
 
 Field-level metadata:
 

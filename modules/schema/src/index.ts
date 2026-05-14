@@ -44,14 +44,19 @@ export type {
   MeshArrowTable,
   MeshArrowColumns,
   IndexedMeshArrowColumns,
+  PackedMeshArrowColumns,
   MeshArrowTableData,
   IndexedMeshArrowTableData,
+  PackedMeshArrowTableData,
+  PackedMeshArrowAttributeLayout,
+  PackedMeshArrowLayout,
   Mesh,
   MeshGeometry,
   MeshAttribute,
   MeshAttributes
 } from './categories/category-mesh';
 export {meshArrowSchema, indexedMeshArrowSchema} from './categories/category-mesh';
+export {PACKED_MESH_ARROW_LAYOUT_METADATA_KEY} from './categories/category-mesh';
 
 // TEXTURES
 export type {
