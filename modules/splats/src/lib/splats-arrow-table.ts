@@ -26,7 +26,7 @@ export function makeGaussianSplatsArrowTable(splats: GaussianSplats): MeshArrowT
     }
   );
 
-  const colorCoefficients = getColorCoefficients(splats.colors);
+  const colorCoefficients = getColorCoefficients(splats);
   addScalarColumn(columns, fields, schemaFields, 'f_dc_0', colorCoefficients[0], {
     'loaders_gl.gaussian_splats.semantic': 'spherical_harmonic_dc',
     'loaders_gl.gaussian_splats.component': '0',
@@ -167,16 +167,22 @@ function makeFixedSizeListVector(value: Float32Array, size: number): arrow.Vecto
   return new arrow.Vector([data]);
 }
 
-/** Converts interleaved RGB bytes to separate SH DC coefficient arrays. */
-function getColorCoefficients(colors: Uint8Array): [Float32Array, Float32Array, Float32Array] {
-  const rowCount = colors.length / 3;
+/** Returns separate SH DC coefficient arrays from direct coefficients or RGB bytes. */
+function getColorCoefficients(splats: GaussianSplats): [Float32Array, Float32Array, Float32Array] {
+  const rowCount = splats.splatCount;
   const fdc0 = new Float32Array(rowCount);
   const fdc1 = new Float32Array(rowCount);
   const fdc2 = new Float32Array(rowCount);
   for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-    fdc0[rowIndex] = convertColorByteToSphericalHarmonicDc(colors[rowIndex * 3 + 0]);
-    fdc1[rowIndex] = convertColorByteToSphericalHarmonicDc(colors[rowIndex * 3 + 1]);
-    fdc2[rowIndex] = convertColorByteToSphericalHarmonicDc(colors[rowIndex * 3 + 2]);
+    if (splats.sphericalHarmonicDcs) {
+      fdc0[rowIndex] = splats.sphericalHarmonicDcs[rowIndex * 3 + 0];
+      fdc1[rowIndex] = splats.sphericalHarmonicDcs[rowIndex * 3 + 1];
+      fdc2[rowIndex] = splats.sphericalHarmonicDcs[rowIndex * 3 + 2];
+    } else {
+      fdc0[rowIndex] = convertColorByteToSphericalHarmonicDc(splats.colors[rowIndex * 3 + 0]);
+      fdc1[rowIndex] = convertColorByteToSphericalHarmonicDc(splats.colors[rowIndex * 3 + 1]);
+      fdc2[rowIndex] = convertColorByteToSphericalHarmonicDc(splats.colors[rowIndex * 3 + 2]);
+    }
   }
   return [fdc0, fdc1, fdc2];
 }

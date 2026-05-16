@@ -37,6 +37,18 @@
       "types": "./dist/ksplat-loader.d.ts",
       "import": "./dist/ksplat-loader.js"
     },
+    "./spz-loader": {
+      "types": "./dist/spz-loader.d.ts",
+      "import": "./dist/spz-loader.js"
+    },
+    "./rad-loader": {
+      "types": "./dist/rad-loader.d.ts",
+      "import": "./dist/rad-loader.js"
+    },
+    "./rad-source-loader": {
+      "types": "./dist/rad-source-loader.d.ts",
+      "import": "./dist/rad-source-loader.js"
+    },
     "./unbundled": {
       "types": "./dist/unbundled.d.ts",
       "import": "./dist/unbundled.js"
@@ -58,9 +70,13 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
+    "@loaders.gl/compression": "4.4.0",
     "@loaders.gl/loader-utils": "4.4.0",
     "@loaders.gl/schema": "4.4.0",
     "apache-arrow": ">= 17.0.0"
+  },
+  "devDependencies": {
+    "zstd-codec": "^0.1.0"
   },
   "peerDependencies": {
     "@loaders.gl/core": "~4.4.0"
