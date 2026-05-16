@@ -15,9 +15,8 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react",
     "noEmit": true
   },
-  "include": ["./app.tsx", "./global.d.ts", "./zstd-codec.d.ts"],
+  "include": ["./app.ts", "./global.d.ts"],
   "exclude": []
 }

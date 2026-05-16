@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Example} from '../pointcloud/examples';
-
 const DECK_DATA_URI = 'https://raw.githubusercontent.com/visgl/deck.gl-data/master';
 const HUGGING_FACE_VOXEL51_GAUSSIAN_SPLATTING_URI =
   'https://huggingface.co/datasets/Voxel51/gaussian_splatting/resolve/main';
@@ -12,14 +10,42 @@ const GAUSSIAN_SPLAT_TRAIN_7K_URLS = [
   `${DECK_DATA_URI}/formats/ply/gaussian-splat/train-iteration-7000-part-00.ply`,
   `${DECK_DATA_URI}/formats/ply/gaussian-splat/train-iteration-7000-part-01.ply`
 ];
+const LOCAL_SPZ_FIXTURE_URL = '/data/two-splats.spz';
+const SPARK_RAD_URI = 'https://storage.googleapis.com/forge-dev-public/asundqui/rad/260217';
 
 const HUGGING_FACE_GAUSSIAN_SPLAT_ATTRIBUTION = [
   'Voxel51 Gaussian Splats Dataset, Apache-2.0',
   'Created using GraphDECO-INRIA 3D Gaussian Splatting'
 ];
 
-/** Built-in Gaussian splat PLY examples shown in the Gaussian splats URL dropdown. */
-export const GAUSSIAN_SPLAT_EXAMPLES: Record<string, Example> = {
+/** Gaussian splat example source shown in the Gaussian splats URL dropdown. */
+export type GaussianSplatExample = {
+  /** Source file format. */
+  type: 'ply' | 'splat' | 'ksplat' | 'spz' | 'rad';
+  /** Primary source URL. */
+  url: string;
+  /** Optional multi-part source URLs. */
+  urls?: string[];
+  /** Parsed splat count when known. */
+  pointCount?: number;
+  /** Optional source attribution lines. */
+  attributions?: string[];
+};
+
+/** Built-in Gaussian splat examples shown in the Gaussian splats URL dropdown. */
+export const GAUSSIAN_SPLAT_EXAMPLES: Record<string, GaussianSplatExample> = {
+  'Local SPZ v4 Fixture': {
+    type: 'spz',
+    url: LOCAL_SPZ_FIXTURE_URL,
+    pointCount: 2,
+    attributions: ['Generated deterministic SPZ v4 fixture for loader smoke testing']
+  },
+  'Spark Coit Tower RAD LoD': {
+    type: 'rad',
+    url: `${SPARK_RAD_URI}/coit-40m-sh1-lod.rad`,
+    pointCount: 50937127,
+    attributions: ['Spark RAD LoD example asset']
+  },
   'HF Voxel51 Train 7K': {
     type: 'ply',
     url: `${HUGGING_FACE_VOXEL51_GAUSSIAN_SPLATTING_URI}/FO_dataset/train/point_cloud/iteration_7000/point_cloud.ply`,

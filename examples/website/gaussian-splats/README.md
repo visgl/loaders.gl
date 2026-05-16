@@ -1,4 +1,4 @@
-This is a standalone web app using `@loaders.gl/ply` and `@loaders.gl/deck-layers`.
+This is a standalone web app using `@loaders.gl/ply`, `@loaders.gl/splats`, and `@loaders.gl/deck-layers`.
 
 ### Usage
 
@@ -7,6 +7,6 @@ yarn
 yarn start
 ```
 
-### Data Source
+### Supported Sources
 
-The sample data is from the deck.gl-data Gaussian splat PLY fixtures.
+The URL input accepts Gaussian splat `.ply`, `.splat`, `.ksplat`, and `.spz` sources. SPZ loading uses `SPZLoader` with the `zstd-codec` module injected for ZSTD decompression.
