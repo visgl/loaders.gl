@@ -3,7 +3,7 @@
 
 import test from 'tape-promise/tape';
 import {coreApi, load} from '@loaders.gl/core';
-import {I3SSource, Tile3D, Tiles3DSource, Tileset3D} from '@loaders.gl/tiles';
+import {I3SSource, Tile3D, Tiles3DSource, Tileset3D, TILE_REFINEMENT} from '@loaders.gl/tiles';
 import {Tiles3DLoader} from '@loaders.gl/3d-tiles';
 import {getI3sTileHeader} from '@loaders.gl/i3s/test/test-utils/load-utils';
 // import {loadTileset} from '../utils/load-utils';
@@ -477,6 +477,8 @@ test('Tileset3D#transition hold keeps tiles visible until replacements draw', as
   const root = tileset.root as Tile3D;
   t.ok(root, 'root tile exists');
   t.ok(root.children.length > 0, 'root has children');
+
+  root.refine = TILE_REFINEMENT.REPLACE;
 
   // Load root content so contentAvailable becomes true
   // @ts-ignore

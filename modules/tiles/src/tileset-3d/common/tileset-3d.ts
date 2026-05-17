@@ -14,7 +14,7 @@ import {FrameState, getFrameState, limitSelectedTiles} from '../helpers/frame-st
 
 import type {GeospatialViewport, Viewport} from '../../types';
 import {Tile3D} from './tile-3d';
-import {TILESET_TYPE} from '../../constants';
+import {TILESET_TYPE, TILE_REFINEMENT} from '../../constants';
 
 import {TilesetTraverser} from './tileset-traverser';
 import {
@@ -200,7 +200,6 @@ export class Tileset3D {
   _cache = new TilesetCache();
   _requestScheduler: RequestScheduler;
 
-  private _heldTiles: Set<string> = new Set();
   private updatePromise: Promise<number> | null = null;
   tilesetInitializationPromise: Promise<void>;
 
@@ -410,31 +409,35 @@ export class Tileset3D {
 
     this.selectedTiles = this.options.onTraversalComplete(this.selectedTiles);
 
+    // Transition hold: keep parent tiles visible until their REPLACE children have drawn
+    // This prevents single-frame flashes during refinement transitions
     const selectedIds = new Set(this.selectedTiles.map(tile => tile.id));
-    const hasUndrawnTiles = this.selectedTiles.some(tile => !tile.tileDrawn);
+    const tilesToHoldBack: Tile3D[] = [];
 
-    let heldBackCount = 0;
-    if (hasUndrawnTiles) {
-      for (const tileId of selectedIds) {
-        this._heldTiles.add(tileId);
-      }
-      for (const tileId of this._heldTiles) {
-        if (selectedIds.has(tileId)) continue;
-
-        const tile = this._tiles[tileId];
-        if (tile && tile.contentAvailable) {
-          tile._selectedFrame = this._frameNumber;
-          this.selectedTiles.push(tile);
-          heldBackCount++;
-        } else {
-          this._heldTiles.delete(tileId);
+    // Check tiles that need REPLACE refinement transition hold
+    for (const tile of this.selectedTiles) {
+      // For tiles with REPLACE parents that were recently visible
+      if (
+        tile.parent &&
+        tile.parent.refine === TILE_REFINEMENT.REPLACE &&
+        tile.parent.contentAvailable &&
+        !tile.tileDrawn &&
+        !selectedIds.has(tile.parent.id)
+      ) {
+        // Hold the parent until this child (and any other selected siblings) have drawn
+        const parentTile = tile.parent;
+        if (!tilesToHoldBack.find(t => t.id === parentTile.id)) {
+          parentTile._selectedFrame = this._frameNumber;
+          tilesToHoldBack.push(parentTile);
         }
       }
-    } else {
-      this._heldTiles = selectedIds;
     }
 
-    if (heldBackCount > 0) {
+    // Add held tiles back to selection
+    if (tilesToHoldBack.length > 0) {
+      this.selectedTiles.push(...tilesToHoldBack);
+
+      // Schedule another update once tiles have drawn
       setTimeout(() => {
         this.selectTiles();
       }, 0);
