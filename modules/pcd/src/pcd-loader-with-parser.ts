@@ -11,7 +11,7 @@ import {
 import type {ArrowTableBatch, MeshArrowTable} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {PCDMesh} from './lib/pcd-types';
-import {parsePCD, parsePCDHeader} from './lib/parse-pcd';
+import {parsePCD, parsePCDHeader, parsePCDPackedArrowTable} from './lib/parse-pcd';
 import {PCDWorkerLoader as PCDWorkerLoaderMetadata} from './pcd-loader';
 import {PCDLoader as PCDLoaderMetadata} from './pcd-loader';
 
@@ -23,6 +23,8 @@ export type PCDLoaderOptions = LoaderOptions & {
   pcd?: {
     /** Output shape. Defaults to a legacy PointCloud object. */
     shape?: 'mesh' | 'arrow-table';
+    /** Return packed interleaved Arrow point records for GPU buffer upload. */
+    interleaved?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };
@@ -47,8 +49,8 @@ export const PCDWorkerLoaderWithParser = {
  */
 export const PCDLoaderWithParser = {
   ...PCDLoaderMetadataWithoutPreload,
-  parse: async (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer), options),
-  parseSync: (arrayBuffer, options) => convertPCDMesh(parsePCD(arrayBuffer), options),
+  parse: async (arrayBuffer, options) => parsePCDInRequestedShape(arrayBuffer, options),
+  parseSync: (arrayBuffer, options) => parsePCDInRequestedShape(arrayBuffer, options),
   parseInBatches: async function* (
     arrayBuffer:
       | AsyncIterable<ArrayBufferLike | ArrayBufferView>
@@ -70,9 +72,20 @@ export const PCDLoaderWithParser = {
       return;
     }
 
-    yield makePCDBatch(parsePCD(data), options);
+    yield makePCDDataBatch(data, options);
   }
 } as const satisfies LoaderWithParser<PCDMesh | MeshArrowTable, PCDParsedBatch, PCDLoaderOptions>;
+
+/** Parse one PCD payload in the requested public output shape. */
+function parsePCDInRequestedShape(
+  arrayBuffer: ArrayBufferLike,
+  options?: PCDLoaderOptions
+): PCDMesh | MeshArrowTable {
+  validatePCDInterleavedOptions(options);
+  return options?.pcd?.interleaved
+    ? parsePCDPackedArrowTable(arrayBuffer)
+    : convertPCDMesh(parsePCD(arrayBuffer), options);
+}
 
 /** Returns a numeric batch size when batching has an explicit row count. */
 function getNumericBatchSize(options?: PCDLoaderOptions): number | undefined {
@@ -96,7 +109,7 @@ function* parsePCDASCIIInBatches(
   for (let rowIndex = 0; rowIndex < lines.length; rowIndex += normalizedBatchSize) {
     const batchLines = lines.slice(rowIndex, rowIndex + normalizedBatchSize);
     const batchText = `${makePCDHeaderText(pcdHeader, batchLines.length)}${batchLines.join('\n')}\n`;
-    yield makePCDBatch(parsePCD(new TextEncoder().encode(batchText).buffer), options);
+    yield makePCDDataBatch(new TextEncoder().encode(batchText).buffer, options);
   }
 }
 
@@ -121,16 +134,32 @@ function* parsePCDBinaryInBatches(
       dataBytes.subarray(rowByteOffset, rowByteOffset + rowByteLength),
       headerBytes.length
     );
-    yield makePCDBatch(parsePCD(batchBytes.buffer), options);
+    yield makePCDDataBatch(batchBytes.buffer, options);
   }
 }
 
+/** Parse one PCD batch payload in the requested shape and wrap Arrow output as a batch. */
+function makePCDDataBatch(data: ArrayBufferLike, options?: PCDLoaderOptions): PCDParsedBatch {
+  validatePCDInterleavedOptions(options);
+  if (options?.pcd?.interleaved) {
+    const table = parsePCDPackedArrowTable(data);
+    return makePCDArrowBatch(table);
+  }
+  return makePCDBatch(parsePCD(data), options);
+}
+
+/** Wrap a parsed PCD mesh or Arrow table as the requested public batch shape. */
 function makePCDBatch(mesh: PCDMesh, options?: PCDLoaderOptions): PCDParsedBatch {
   const table = convertMeshToTable(mesh, 'arrow-table');
   if (options?.pcd?.shape !== 'arrow-table') {
     return convertPCDTableToMesh(table, mesh);
   }
 
+  return makePCDArrowBatch(table);
+}
+
+/** Wrap a PCD Arrow table as a loaders.gl Arrow table batch. */
+function makePCDArrowBatch(table: MeshArrowTable): ArrowTableBatch {
   return {
     shape: 'arrow-table',
     batchType: 'data',
@@ -138,6 +167,13 @@ function makePCDBatch(mesh: PCDMesh, options?: PCDLoaderOptions): PCDParsedBatch
     data: table.data,
     length: table.data.numRows
   };
+}
+
+/** Validate PCD packed output options before parsing. */
+function validatePCDInterleavedOptions(options?: PCDLoaderOptions): void {
+  if (options?.pcd?.interleaved && options.pcd.shape !== 'arrow-table') {
+    throw new Error('PCDLoader: pcd.interleaved requires pcd.shape="arrow-table"');
+  }
 }
 
 /** Convert the parser's Arrow table to legacy PCD mesh output. */

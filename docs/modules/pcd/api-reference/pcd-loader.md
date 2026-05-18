@@ -27,6 +27,9 @@ import {load} from '@loaders.gl/core';
 
 const data = await load(url, PCDLoader, options);
 const table = await load(url, PCDLoader, {pcd: {shape: 'arrow-table'}});
+const packedTable = await load(url, PCDLoader, {
+  pcd: {shape: 'arrow-table', interleaved: true}
+});
 ```
 
 ## Batched Parsing
@@ -47,8 +50,11 @@ for await (const batch of batches) {
 }
 ```
 
+When `pcd.interleaved: true` is enabled, `PCDLoader` allocates each packed vertex-record buffer up front and writes point data into that buffer during parsing. Packed output uses one `vertexData: FixedSizeBinary<byteStride>` Arrow column plus schema metadata and wrapper `packedLayout` metadata for `POSITION`, optional `NORMAL`, and optional `COLOR_0`.
+
 ## Options
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `pcd.shape` | `'mesh' \| 'arrow-table'` | `'mesh'` | Selects PointCloud or Mesh Arrow table output. |
+| `pcd.interleaved` | `boolean` | `false` | With `shape: 'arrow-table'`, returns direct-written packed point records for GPU buffer upload. |

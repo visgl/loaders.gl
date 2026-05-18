@@ -15,6 +15,8 @@ export type PCDLoaderOptions = LoaderOptions & {
   pcd?: {
     /** Output shape. Defaults to a legacy PointCloud object. */
     shape?: 'mesh' | 'arrow-table';
+    /** Return packed interleaved Arrow point records for GPU buffer upload. */
+    interleaved?: boolean;
     /** Override the URL to the worker bundle (by default loads from unpkg.com) */
     workerUrl?: string;
   };

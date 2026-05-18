@@ -24,7 +24,13 @@
 //     diffuse_blue: 'blue'
 //   }
 // });
-import type {MeshAttribute, MeshAttributes, MeshArrowTable} from '@loaders.gl/schema';
+import type {
+  MeshAttribute,
+  MeshAttributes,
+  MeshArrowTable,
+  PackedMeshArrowLayout
+} from '@loaders.gl/schema';
+import {makePackedMeshArrowTable} from '@loaders.gl/schema-utils';
 import * as arrow from 'apache-arrow';
 import type {
   PLYMesh,
@@ -50,6 +56,8 @@ export type ParsePLYOptions = {
   /** Treat PLY data as a point cloud by reading only the leading vertex element. */
   pointCloud?: boolean;
   shape?: 'mesh' | 'arrow-table';
+  /** Return packed interleaved Arrow point records for GPU buffer upload. */
+  interleaved?: boolean;
 };
 
 /**
@@ -85,13 +93,31 @@ export function parsePLYToArrowTable(
   data: ArrayBuffer | string,
   options: ParsePLYOptions = {}
 ): MeshArrowTable | null {
+  validatePLYInterleavedOptions(options);
   if (!(data instanceof ArrayBuffer)) {
+    if (options.interleaved) {
+      throw new Error('PLYLoader: ply.interleaved currently requires binary PLY input');
+    }
     return null;
   }
 
   const header = parsePLYHeader(data, options);
   if (header.format === 'ascii') {
+    if (options.interleaved) {
+      throw new Error('PLYLoader: ply.interleaved currently supports only fixed-width binary PLY');
+    }
     return null;
+  }
+
+  if (options.interleaved) {
+    const plan = getPLYBinaryPointCloudParsePlan(header, options);
+    if (!plan) {
+      throw new Error(
+        'PLYLoader: ply.interleaved currently supports only fixed-width binary vertex records'
+      );
+    }
+    const records = new Uint8Array(data, header.headerLength || 0);
+    return parsePLYBinaryPointCloudRecordsToPackedArrowTable(records, header, options, plan);
   }
 
   const attributes = parseBinaryPointCloud(data, header, options);
@@ -114,6 +140,21 @@ export function parsePLYBinaryPointCloudToArrowTable(
   header: PLYHeader,
   options: ParsePLYOptions = {}
 ): MeshArrowTable | null {
+  validatePLYInterleavedOptions(options);
+  if (options.interleaved) {
+    const plan = getPLYBinaryPointCloudParsePlan(header, options);
+    if (!plan) {
+      throw new Error(
+        'PLYLoader: ply.interleaved currently supports only fixed-width binary vertex records'
+      );
+    }
+    return parsePLYBinaryPointCloudRecordsToPackedArrowTable(
+      new Uint8Array(data),
+      header,
+      options,
+      plan
+    );
+  }
   const attributes = parseBinaryPointCloud(data, header, options);
   return attributes ? makePLYArrowTable(header, attributes) : null;
 }
@@ -132,6 +173,21 @@ export function parsePLYBinaryPointCloudRecordsToArrowTable(
   options: ParsePLYOptions = {},
   plan?: PLYBinaryPointCloudParsePlan
 ): MeshArrowTable | null {
+  validatePLYInterleavedOptions(options);
+  if (options.interleaved) {
+    const resolvedPlan = plan || getPLYBinaryPointCloudParsePlan(header, options);
+    if (!resolvedPlan) {
+      throw new Error(
+        'PLYLoader: ply.interleaved currently supports only fixed-width binary vertex records'
+      );
+    }
+    return parsePLYBinaryPointCloudRecordsToPackedArrowTable(
+      records,
+      header,
+      options,
+      resolvedPlan
+    );
+  }
   const attributes = parseBinaryPointCloudRecords(records, header, options, plan);
   return attributes ? makePLYArrowTable(header, attributes) : null;
 }
@@ -818,6 +874,287 @@ function parseBinaryPointCloudRecords(
   }
 
   return attributes;
+}
+
+type PackedPLYBoundingBox = [[number, number, number], [number, number, number]];
+
+/** Parse fixed-width binary PLY vertex records directly into packed Mesh Arrow bytes. */
+function parsePLYBinaryPointCloudRecordsToPackedArrowTable(
+  records: Uint8Array,
+  header: PLYHeader,
+  options: ParsePLYOptions,
+  plan: PLYBinaryPointCloudParsePlan
+): MeshArrowTable {
+  const vertexElement = header.elements[0];
+  if (!vertexElement) {
+    throw new Error('PLYLoader: packed PLY parsing requires a vertex element');
+  }
+
+  const packedLayout = getPackedPLYLayout(vertexElement);
+  const packedBytes = new Uint8Array(vertexElement.count * packedLayout.byteStride);
+  const packedView = new DataView(
+    packedBytes.buffer,
+    packedBytes.byteOffset,
+    packedBytes.byteLength
+  );
+  const sourceView = new DataView(records.buffer, records.byteOffset, records.byteLength);
+  const boundingBox = createPackedPLYBoundingBox();
+  const propertyWriters = getPackedPLYPropertyWriters(packedLayout);
+  let vertexOffset = 0;
+
+  for (let vertexIndex = 0; vertexIndex < vertexElement.count; vertexIndex++) {
+    const recordByteOffset = vertexIndex * packedLayout.byteStride;
+    const position = {x: 0, y: 0, z: 0};
+
+    for (const property of plan.properties) {
+      const value = property.read(sourceView, vertexOffset + property.offset, plan.littleEndian);
+      writePackedPLYProperty(
+        packedBytes,
+        packedView,
+        recordByteOffset,
+        propertyWriters,
+        property.name,
+        value,
+        position
+      );
+    }
+
+    updatePackedPLYBoundingBox(boundingBox, position.x, position.y, position.z);
+    vertexOffset += plan.vertexStride;
+  }
+
+  const schema = getPLYSchema(header, {});
+  schema.metadata.topology = 'point-list';
+  schema.metadata.mode = '0';
+
+  return makePackedMeshArrowTable({
+    bytes: packedBytes,
+    vertexCount: vertexElement.count,
+    packedLayout,
+    topology: 'point-list',
+    mode: 0,
+    boundingBox: finalizePackedPLYBoundingBox(boundingBox, vertexElement.count),
+    metadata: schema.metadata
+  });
+}
+
+/** Return the packed vertex layout for fixed-width point-cloud PLY records. */
+function getPackedPLYLayout(vertexElement: PLYElement): PackedMeshArrowLayout {
+  const propertyNames = new Set(vertexElement.properties.map(property => property.name));
+  if (!(propertyNames.has('x') && propertyNames.has('y') && propertyNames.has('z'))) {
+    throw new Error('PLYLoader: ply.interleaved requires x, y, and z vertex properties');
+  }
+
+  const attributes: PackedMeshArrowLayout['attributes'] = [
+    {attribute: 'POSITION', format: 'float32x3', byteOffset: 0}
+  ];
+  let byteOffset = 12;
+
+  if (propertyNames.has('nx') && propertyNames.has('ny') && propertyNames.has('nz')) {
+    attributes.push({attribute: 'NORMAL', format: 'float32x3', byteOffset});
+    byteOffset += 12;
+  }
+  if (propertyNames.has('s') && propertyNames.has('t')) {
+    attributes.push({attribute: 'TEXCOORD_0', format: 'float32x2', byteOffset});
+    byteOffset += 8;
+  }
+  if (propertyNames.has('red') && propertyNames.has('green') && propertyNames.has('blue')) {
+    attributes.push({attribute: 'COLOR_0', format: 'unorm8x4', byteOffset});
+    byteOffset += 4;
+  }
+
+  for (const property of vertexElement.properties) {
+    if (!isNormalizedPLYAttributeProperty(property.name)) {
+      attributes.push({attribute: property.name, format: 'float32', byteOffset});
+      byteOffset += 4;
+    }
+  }
+
+  return {
+    columnName: 'vertexData',
+    bufferName: 'vertexData',
+    byteStride: alignPackedPLYByteStride(byteOffset),
+    attributes
+  };
+}
+
+type PackedPLYPropertyWriters = {
+  position: number;
+  normal?: number;
+  textureCoordinates?: number;
+  color?: number;
+  scalarOffsets: Map<string, number>;
+};
+
+/** Resolve packed attribute offsets into per-property writer metadata. */
+function getPackedPLYPropertyWriters(
+  packedLayout: PackedMeshArrowLayout
+): PackedPLYPropertyWriters {
+  const scalarOffsets = new Map<string, number>();
+  for (const attribute of packedLayout.attributes) {
+    if (
+      attribute.attribute !== 'POSITION' &&
+      attribute.attribute !== 'NORMAL' &&
+      attribute.attribute !== 'TEXCOORD_0' &&
+      attribute.attribute !== 'COLOR_0'
+    ) {
+      scalarOffsets.set(attribute.attribute, attribute.byteOffset);
+    }
+  }
+
+  return {
+    position: getRequiredPackedPLYAttributeByteOffset(packedLayout, 'POSITION'),
+    normal: getPackedPLYAttributeByteOffset(packedLayout, 'NORMAL'),
+    textureCoordinates: getPackedPLYAttributeByteOffset(packedLayout, 'TEXCOORD_0'),
+    color: getPackedPLYAttributeByteOffset(packedLayout, 'COLOR_0'),
+    scalarOffsets
+  };
+}
+
+/** Write one fixed-width PLY scalar property into its packed destination. */
+function writePackedPLYProperty(
+  packedBytes: Uint8Array,
+  packedView: DataView,
+  recordByteOffset: number,
+  propertyWriters: PackedPLYPropertyWriters,
+  propertyName: string,
+  value: number,
+  position: {x: number; y: number; z: number}
+): void {
+  switch (propertyName) {
+    case 'x':
+      position.x = value;
+      packedView.setFloat32(recordByteOffset + propertyWriters.position, value, true);
+      return;
+    case 'y':
+      position.y = value;
+      packedView.setFloat32(recordByteOffset + propertyWriters.position + 4, value, true);
+      return;
+    case 'z':
+      position.z = value;
+      packedView.setFloat32(recordByteOffset + propertyWriters.position + 8, value, true);
+      return;
+    case 'nx':
+      if (propertyWriters.normal !== undefined) {
+        packedView.setFloat32(recordByteOffset + propertyWriters.normal, value, true);
+      }
+      return;
+    case 'ny':
+      if (propertyWriters.normal !== undefined) {
+        packedView.setFloat32(recordByteOffset + propertyWriters.normal + 4, value, true);
+      }
+      return;
+    case 'nz':
+      if (propertyWriters.normal !== undefined) {
+        packedView.setFloat32(recordByteOffset + propertyWriters.normal + 8, value, true);
+      }
+      return;
+    case 's':
+      if (propertyWriters.textureCoordinates !== undefined) {
+        packedView.setFloat32(recordByteOffset + propertyWriters.textureCoordinates, value, true);
+      }
+      return;
+    case 't':
+      if (propertyWriters.textureCoordinates !== undefined) {
+        packedView.setFloat32(
+          recordByteOffset + propertyWriters.textureCoordinates + 4,
+          value,
+          true
+        );
+      }
+      return;
+    case 'red':
+      if (propertyWriters.color !== undefined) {
+        packedBytes[recordByteOffset + propertyWriters.color] = value;
+      }
+      return;
+    case 'green':
+      if (propertyWriters.color !== undefined) {
+        packedBytes[recordByteOffset + propertyWriters.color + 1] = value;
+      }
+      return;
+    case 'blue':
+      if (propertyWriters.color !== undefined) {
+        packedBytes[recordByteOffset + propertyWriters.color + 2] = value;
+        packedBytes[recordByteOffset + propertyWriters.color + 3] = 255;
+      }
+      return;
+    default: {
+      const byteOffset = propertyWriters.scalarOffsets.get(propertyName);
+      if (byteOffset !== undefined) {
+        packedView.setFloat32(recordByteOffset + byteOffset, value, true);
+      }
+    }
+  }
+}
+
+/** Return an initially empty PLY bounding box accumulator. */
+function createPackedPLYBoundingBox(): PackedPLYBoundingBox {
+  return [
+    [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
+    [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY]
+  ];
+}
+
+/** Extend PLY packed bounds with one decoded position. */
+function updatePackedPLYBoundingBox(
+  boundingBox: PackedPLYBoundingBox,
+  positionX: number,
+  positionY: number,
+  positionZ: number
+): void {
+  boundingBox[0][0] = Math.min(boundingBox[0][0], positionX);
+  boundingBox[0][1] = Math.min(boundingBox[0][1], positionY);
+  boundingBox[0][2] = Math.min(boundingBox[0][2], positionZ);
+  boundingBox[1][0] = Math.max(boundingBox[1][0], positionX);
+  boundingBox[1][1] = Math.max(boundingBox[1][1], positionY);
+  boundingBox[1][2] = Math.max(boundingBox[1][2], positionZ);
+}
+
+/** Return stable final PLY bounds, including the empty-table fallback. */
+function finalizePackedPLYBoundingBox(
+  boundingBox: PackedPLYBoundingBox,
+  vertexCount: number
+): [number[], number[]] {
+  if (vertexCount === 0) {
+    return [
+      [0, 0, 0],
+      [0, 0, 0]
+    ];
+  }
+  return boundingBox;
+}
+
+/** Validate PLY packed output options. */
+function validatePLYInterleavedOptions(options: ParsePLYOptions): void {
+  if (options.interleaved && options.shape !== 'arrow-table') {
+    throw new Error('PLYLoader: ply.interleaved requires ply.shape="arrow-table"');
+  }
+}
+
+/** Resolve an optional packed PLY attribute offset. */
+function getPackedPLYAttributeByteOffset(
+  packedLayout: PackedMeshArrowLayout,
+  attribute: string
+): number | undefined {
+  return packedLayout.attributes.find(layout => layout.attribute === attribute)?.byteOffset;
+}
+
+/** Resolve a required packed PLY attribute offset. */
+function getRequiredPackedPLYAttributeByteOffset(
+  packedLayout: PackedMeshArrowLayout,
+  attribute: string
+): number {
+  const byteOffset = getPackedPLYAttributeByteOffset(packedLayout, attribute);
+  if (byteOffset === undefined) {
+    throw new Error(`PLYLoader: packed layout is missing attribute "${attribute}"`);
+  }
+  return byteOffset;
+}
+
+/** Round packed PLY record strides up to four-byte alignment. */
+function alignPackedPLYByteStride(byteOffset: number): number {
+  return Math.ceil(byteOffset / 4) * 4;
 }
 
 /** Return a reusable binary point-cloud parse plan, or null when unsupported. */

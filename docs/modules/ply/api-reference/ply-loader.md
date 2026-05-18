@@ -25,6 +25,9 @@ import {load} from '@loaders.gl/core';
 
 const data = await load(url, PLYLoader, options);
 const table = await load(url, PLYLoader, {ply: {shape: 'arrow-table'}});
+const packedTable = await load(url, PLYLoader, {
+  ply: {shape: 'arrow-table', pointCloud: true, interleaved: true}
+});
 ```
 
 ## Batched Parsing
@@ -44,8 +47,11 @@ for await (const batch of batches) {
 }
 ```
 
+When `ply.interleaved: true` is enabled, `PLYLoader` allocates each packed vertex-record buffer up front and fills it directly while parsing fixed-width binary point-cloud vertex records. ASCII PLY and variable-width/list-property binary PLY currently remain on the standard paths. Packed output uses one `vertexData: FixedSizeBinary<byteStride>` Arrow column plus schema metadata and wrapper `packedLayout` metadata for `POSITION`, optional `NORMAL`, optional `TEXCOORD_0`, optional `COLOR_0`, and scalar custom vertex attributes.
+
 ## Options
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `ply.shape` | `'mesh' \| 'arrow-table'` | `'mesh'` | Selects Mesh or Mesh Arrow table output. |
+| `ply.interleaved` | `boolean` | `false` | With `shape: 'arrow-table'`, returns direct-written packed records for fixed-width binary point-cloud PLY inputs. |

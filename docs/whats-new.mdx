@@ -25,6 +25,10 @@ Release Date: 2026
 - [`LASWriter`](/docs/modules/las/api-reference/las-writer) NEW -writes uncompressed LAS point cloud data.
 - [`LASLoader`](/docs/modules/las/api-reference/las-loader) adds opt-in `las.interleaved: true` packed Arrow output for the default laz-perf backend, storing GPU-ready fixed-width vertex records plus buffer layout metadata.
 
+**@loaders.gl/potree**
+
+- `PotreeBinLoader` adds opt-in `potree.interleaved: true` packed Arrow output for binary Potree point tiles, allocating one interleaved vertex buffer per tile and filling it directly during parse.
+
 **@loaders.gl/obj**
 
 - [`OBJLoader`](/docs/modules/obj/api-reference/obj-loader) adds batched parsing for vertex-only point-cloud OBJ inputs, including `obj.pointCloud: true` for explicit streaming of `v` records and atomic fallback when face or line records are present.
@@ -33,6 +37,7 @@ Release Date: 2026
 **@loaders.gl/pcd**
 
 - [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader) adds batched parsing for ASCII and uncompressed binary point clouds, yielding `ArrowTableBatch` values when `pcd.shape: 'arrow-table'` is enabled.
+- [`PCDLoader`](/docs/modules/pcd/api-reference/pcd-loader) adds opt-in `pcd.interleaved: true` packed Arrow output that writes directly into preallocated batch buffers for point-cloud rendering.
 - [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer) NEW - writes ASCII Point Cloud Data (PCD).
 
 **@loaders.gl/ply**
@@ -40,6 +45,7 @@ Release Date: 2026
 - [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer) NEW - writes ASCII Polygon File Format (PLY).
 - [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) supports `ply.shape: 'arrow-table'` for Mesh Arrow table output and preserves Gaussian splat columns such as `f_dc_*`, `opacity`, `scale_*`, and `rot_*` with schema metadata for rendering.
 - [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) now returns loaders.gl `ArrowTableBatch` values from batched Arrow table parsing, enabling progressive point cloud and Gaussian splat rendering.
+- [`PLYLoader`](/docs/modules/ply/api-reference/ply-loader) adds opt-in `ply.interleaved: true` packed Arrow output for fixed-width binary point-cloud PLY inputs, including custom scalar vertex attributes.
 
 **@loaders.gl/splats**
 

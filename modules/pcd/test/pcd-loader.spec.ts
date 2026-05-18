@@ -4,6 +4,7 @@
 
 /* eslint-disable max-len */
 import test from 'tape-promise/tape';
+import * as arrow from 'apache-arrow';
 import {validateLoader, validateMeshCategoryData} from 'test/common/conformance';
 import {validateArrowTableSchema} from '@loaders.gl/arrow';
 import {meshArrowSchema} from '@loaders.gl/schema';
@@ -186,6 +187,46 @@ test('PCDLoader#parse(binary with counted fields)', async t => {
     'positions read correctly'
   );
 
+  t.end();
+});
+
+test('PCDLoader#parse(binary interleaved with counted fields)', async t => {
+  const binaryArrayBuffer = createBinaryArrayBufferWithCountedField();
+  const table = await parse(binaryArrayBuffer, PCDLoader, {
+    core: {worker: false},
+    pcd: {shape: 'arrow-table', interleaved: true}
+  });
+
+  t.deepEqual(
+    table.data.schema.fields.map(field => field.name),
+    ['vertexData'],
+    'packed output exposes one binary vertex column'
+  );
+  t.ok(
+    table.data.schema.fields[0].type instanceof arrow.FixedSizeBinary,
+    'packed column uses FixedSizeBinary'
+  );
+  t.equal(table.data.numRows, 2, 'packed table has point rows');
+  t.equal(table.packedLayout.byteStride, 12, 'position-only PCD rows use a 12-byte stride');
+
+  const vertexBytes = table.data.getChild('vertexData').data[0].values;
+  const packedView = new DataView(
+    vertexBytes.buffer,
+    vertexBytes.byteOffset,
+    vertexBytes.byteLength
+  );
+  t.deepEqual(
+    [
+      packedView.getFloat32(0, true),
+      packedView.getFloat32(4, true),
+      packedView.getFloat32(8, true),
+      packedView.getFloat32(12, true),
+      packedView.getFloat32(16, true),
+      packedView.getFloat32(20, true)
+    ],
+    [1, 2, 3, 4, 5, 6],
+    'packed PCD positions match decoded point rows'
+  );
   t.end();
 });
 

@@ -258,6 +258,33 @@ test('PLYLoader#parse(gaussian splat binary fixture)', async t => {
   t.end();
 });
 
+test('PLYLoader#parse(binary point cloud interleaved)', async t => {
+  const table = await parse(fetchFile(GAUSSIAN_SPLAT_BINARY_URL), PLYLoader, {
+    ply: {shape: 'arrow-table', interleaved: true}
+  });
+
+  t.deepEqual(
+    table.data.schema.fields.map(field => field.name),
+    ['vertexData'],
+    'packed output exposes one binary vertex column'
+  );
+  t.ok(
+    table.data.schema.fields[0].type instanceof arrow.FixedSizeBinary,
+    'packed column uses FixedSizeBinary'
+  );
+  t.equal(table.data.numRows, 1000, 'packed table preserves point count');
+  t.equal(
+    table.data.schema.metadata.get('loaders_gl.semantic_type'),
+    'gaussian-splats',
+    'packed PLY preserves source semantic metadata'
+  );
+  t.ok(
+    table.packedLayout.attributes.some(attribute => attribute.attribute === 'scale_0'),
+    'packed PLY retains custom scalar vertex properties'
+  );
+  t.end();
+});
+
 test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', async t => {
   const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
   const batches = await parseInBatches(makeIterator(response), PLYLoader, {
@@ -280,6 +307,29 @@ test('PLYLoader#parseInBatches(gaussian splat binary fixture, arrow-table)', asy
   }
 
   t.deepEqual(batchRowCounts, [400, 400, 200], 'binary PLY emits requested Arrow batches');
+  t.end();
+});
+
+test('PLYLoader#parseInBatches(binary point cloud interleaved)', async t => {
+  const response = await fetchFile(GAUSSIAN_SPLAT_BINARY_URL);
+  const batches = await parseInBatches(makeIterator(response), PLYLoader, {
+    batchSize: 400,
+    ply: {shape: 'arrow-table', interleaved: true}
+  });
+  const batchRowCounts = [];
+
+  for await (const table of batches) {
+    t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
+    t.equal(table.batchType, 'data', 'batch has data batchType');
+    t.deepEqual(
+      table.data.schema.fields.map(field => field.name),
+      ['vertexData'],
+      'batch exposes one packed binary column'
+    );
+    batchRowCounts.push(table.data.numRows);
+  }
+
+  t.deepEqual(batchRowCounts, [400, 400, 200], 'packed binary PLY emits requested batches');
   t.end();
 });
 

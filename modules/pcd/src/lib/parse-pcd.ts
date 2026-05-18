@@ -10,8 +10,13 @@
 // @author Filipe Caixeta / http://filipecaixeta.com.br
 // @author Mugen87 / https://github.com/Mugen87
 
-import {MeshAttribute, MeshAttributes} from '@loaders.gl/schema';
-import {getMeshBoundingBox} from '@loaders.gl/schema-utils';
+import {
+  MeshAttribute,
+  MeshAttributes,
+  type MeshArrowTable,
+  type PackedMeshArrowLayout
+} from '@loaders.gl/schema';
+import {getMeshBoundingBox, makePackedMeshArrowTable} from '@loaders.gl/schema-utils';
 import {decompressLZF} from './decompress-lzf';
 import {getPCDSchema} from './get-pcd-schema';
 import type {PCDHeader, PCDMesh} from './pcd-types';
@@ -41,6 +46,7 @@ type HeaderAttributes = {
 };
 
 const LITTLE_ENDIAN: boolean = true;
+type PackedPCDBoundingBox = [[number, number, number], [number, number, number]];
 
 /**
  *
@@ -93,6 +99,402 @@ export function parsePCD(data: ArrayBufferLike): PCDMesh {
     mode: 0, // POINTS (deprecated)
     attributes
   };
+}
+
+/**
+ * Parse PCD bytes directly into packed interleaved Mesh Arrow records.
+ * @param data PCD file bytes.
+ * @returns Packed-only Mesh Arrow table without temporary attribute arrays.
+ */
+export function parsePCDPackedArrowTable(data: ArrayBufferLike): MeshArrowTable {
+  const textData = new TextDecoder().decode(data);
+  const pcdHeader = parsePCDHeader(textData);
+  const packedLayout = getPackedPCDLayout(pcdHeader);
+  const packedBytes = new Uint8Array(pcdHeader.points * packedLayout.byteStride);
+  const boundingBox = createPackedPCDBoundingBox();
+
+  let vertexCount = 0;
+  switch (pcdHeader.data) {
+    case 'ascii':
+      vertexCount = writePackedPCDASCIIRecords(
+        pcdHeader,
+        textData,
+        packedBytes,
+        packedLayout,
+        boundingBox
+      );
+      break;
+
+    case 'binary':
+      vertexCount = writePackedPCDBinaryRecords(
+        pcdHeader,
+        data,
+        packedBytes,
+        packedLayout,
+        boundingBox
+      );
+      break;
+
+    case 'binary_compressed':
+      vertexCount = writePackedPCDCompressedRecords(
+        pcdHeader,
+        data,
+        packedBytes,
+        packedLayout,
+        boundingBox
+      );
+      break;
+
+    default:
+      throw new Error(`PCD: ${pcdHeader.data} files are not supported`);
+  }
+
+  return makePackedMeshArrowTable({
+    bytes: packedBytes.subarray(0, vertexCount * packedLayout.byteStride),
+    vertexCount,
+    packedLayout,
+    topology: 'point-list',
+    mode: 0,
+    boundingBox: finalizePackedPCDBoundingBox(boundingBox, vertexCount)
+  });
+}
+
+/** Return packed PCD layout based on fields normalized by the existing loader. */
+function getPackedPCDLayout(pcdHeader: PCDHeader): PackedMeshArrowLayout {
+  const attributes: PackedMeshArrowLayout['attributes'] = [
+    {attribute: 'POSITION', format: 'float32x3', byteOffset: 0}
+  ];
+  let byteOffset = 12;
+
+  if (pcdHeader.offset.normal_x !== undefined) {
+    attributes.push({attribute: 'NORMAL', format: 'float32x3', byteOffset});
+    byteOffset += 12;
+  }
+  if (pcdHeader.offset.rgb !== undefined) {
+    attributes.push({attribute: 'COLOR_0', format: 'unorm8x4', byteOffset});
+    byteOffset += 4;
+  }
+
+  return {
+    columnName: 'vertexData',
+    bufferName: 'vertexData',
+    byteStride: alignPackedPCDByteStride(byteOffset),
+    attributes
+  };
+}
+
+/** Write ASCII PCD rows directly into packed vertex storage. */
+function writePackedPCDASCIIRecords(
+  pcdHeader: PCDHeader,
+  textData: string,
+  packedBytes: Uint8Array,
+  packedLayout: PackedMeshArrowLayout,
+  boundingBox: PackedPCDBoundingBox
+): number {
+  const dataView = new DataView(packedBytes.buffer, packedBytes.byteOffset, packedBytes.byteLength);
+  const positionByteOffset = getRequiredPackedPCDAttributeByteOffset(packedLayout, 'POSITION');
+  const normalByteOffset = getPackedPCDAttributeByteOffset(packedLayout, 'NORMAL');
+  const colorByteOffset = getPackedPCDAttributeByteOffset(packedLayout, 'COLOR_0');
+  const sourceLines = textData
+    .slice(pcdHeader.headerLen)
+    .split(/\r?\n/)
+    .filter(line => line.trim().length > 0);
+  let vertexIndex = 0;
+
+  for (const sourceLine of sourceLines) {
+    const values = sourceLine.trim().split(/\s+/);
+    const recordByteOffset = vertexIndex * packedLayout.byteStride;
+    const positionX = parseFloat(values[pcdHeader.offset.x]);
+    const positionY = parseFloat(values[pcdHeader.offset.y]);
+    const positionZ = parseFloat(values[pcdHeader.offset.z]);
+
+    writePackedPCDPosition(
+      dataView,
+      recordByteOffset + positionByteOffset,
+      positionX,
+      positionY,
+      positionZ,
+      boundingBox
+    );
+
+    if (normalByteOffset !== undefined) {
+      dataView.setFloat32(
+        recordByteOffset + normalByteOffset,
+        parseFloat(values[pcdHeader.offset.normal_x]),
+        true
+      );
+      dataView.setFloat32(
+        recordByteOffset + normalByteOffset + 4,
+        parseFloat(values[pcdHeader.offset.normal_y]),
+        true
+      );
+      dataView.setFloat32(
+        recordByteOffset + normalByteOffset + 8,
+        parseFloat(values[pcdHeader.offset.normal_z]),
+        true
+      );
+    }
+
+    if (colorByteOffset !== undefined) {
+      const floatValue = parseFloat(values[pcdHeader.offset.rgb]);
+      const binaryColor = new Float32Array([floatValue]);
+      const colorView = new DataView(binaryColor.buffer, 0);
+      const colorRecordByteOffset = recordByteOffset + colorByteOffset;
+      packedBytes[colorRecordByteOffset] = colorView.getUint8(0);
+      packedBytes[colorRecordByteOffset + 1] = colorView.getUint8(1);
+      packedBytes[colorRecordByteOffset + 2] = colorView.getUint8(2);
+      packedBytes[colorRecordByteOffset + 3] = 255;
+    }
+
+    vertexIndex++;
+  }
+
+  return vertexIndex;
+}
+
+/** Write binary PCD rows directly into packed vertex storage. */
+function writePackedPCDBinaryRecords(
+  pcdHeader: PCDHeader,
+  data: ArrayBufferLike,
+  packedBytes: Uint8Array,
+  packedLayout: PackedMeshArrowLayout,
+  boundingBox: PackedPCDBoundingBox
+): number {
+  const sourceView = new DataView(data, pcdHeader.headerLen);
+  const packedView = new DataView(
+    packedBytes.buffer,
+    packedBytes.byteOffset,
+    packedBytes.byteLength
+  );
+  const positionByteOffset = getRequiredPackedPCDAttributeByteOffset(packedLayout, 'POSITION');
+  const normalByteOffset = getPackedPCDAttributeByteOffset(packedLayout, 'NORMAL');
+  const colorByteOffset = getPackedPCDAttributeByteOffset(packedLayout, 'COLOR_0');
+
+  for (let vertexIndex = 0, rowByteOffset = 0; vertexIndex < pcdHeader.points; vertexIndex++) {
+    const recordByteOffset = vertexIndex * packedLayout.byteStride;
+    const positionX = sourceView.getFloat32(rowByteOffset + pcdHeader.offset.x, LITTLE_ENDIAN);
+    const positionY = sourceView.getFloat32(rowByteOffset + pcdHeader.offset.y, LITTLE_ENDIAN);
+    const positionZ = sourceView.getFloat32(rowByteOffset + pcdHeader.offset.z, LITTLE_ENDIAN);
+
+    writePackedPCDPosition(
+      packedView,
+      recordByteOffset + positionByteOffset,
+      positionX,
+      positionY,
+      positionZ,
+      boundingBox
+    );
+
+    if (normalByteOffset !== undefined) {
+      packedView.setFloat32(
+        recordByteOffset + normalByteOffset,
+        sourceView.getFloat32(rowByteOffset + pcdHeader.offset.normal_x, LITTLE_ENDIAN),
+        true
+      );
+      packedView.setFloat32(
+        recordByteOffset + normalByteOffset + 4,
+        sourceView.getFloat32(rowByteOffset + pcdHeader.offset.normal_y, LITTLE_ENDIAN),
+        true
+      );
+      packedView.setFloat32(
+        recordByteOffset + normalByteOffset + 8,
+        sourceView.getFloat32(rowByteOffset + pcdHeader.offset.normal_z, LITTLE_ENDIAN),
+        true
+      );
+    }
+
+    if (colorByteOffset !== undefined) {
+      const colorRecordByteOffset = recordByteOffset + colorByteOffset;
+      packedBytes[colorRecordByteOffset] = sourceView.getUint8(
+        rowByteOffset + pcdHeader.offset.rgb
+      );
+      packedBytes[colorRecordByteOffset + 1] = sourceView.getUint8(
+        rowByteOffset + pcdHeader.offset.rgb + 1
+      );
+      packedBytes[colorRecordByteOffset + 2] = sourceView.getUint8(
+        rowByteOffset + pcdHeader.offset.rgb + 2
+      );
+      packedBytes[colorRecordByteOffset + 3] = 255;
+    }
+
+    rowByteOffset += pcdHeader.rowSize;
+  }
+
+  return pcdHeader.points;
+}
+
+/** Write compressed-binary PCD rows directly into packed vertex storage. */
+function writePackedPCDCompressedRecords(
+  pcdHeader: PCDHeader,
+  data: ArrayBufferLike,
+  packedBytes: Uint8Array,
+  packedLayout: PackedMeshArrowLayout,
+  boundingBox: PackedPCDBoundingBox
+): number {
+  const sizes = new Uint32Array(data.slice(pcdHeader.headerLen, pcdHeader.headerLen + 8));
+  const compressedSize = sizes[0];
+  const decompressedSize = sizes[1];
+  const decompressed = decompressLZF(
+    new Uint8Array(data, pcdHeader.headerLen + 8, compressedSize),
+    decompressedSize
+  );
+  const sourceView = new DataView(decompressed.buffer);
+  const packedView = new DataView(
+    packedBytes.buffer,
+    packedBytes.byteOffset,
+    packedBytes.byteLength
+  );
+  const positionByteOffset = getRequiredPackedPCDAttributeByteOffset(packedLayout, 'POSITION');
+  const normalByteOffset = getPackedPCDAttributeByteOffset(packedLayout, 'NORMAL');
+  const colorByteOffset = getPackedPCDAttributeByteOffset(packedLayout, 'COLOR_0');
+
+  for (let vertexIndex = 0; vertexIndex < pcdHeader.points; vertexIndex++) {
+    const recordByteOffset = vertexIndex * packedLayout.byteStride;
+    const positionX = sourceView.getFloat32(
+      getCompressedPCDFieldByteOffset(pcdHeader, 'x', vertexIndex),
+      LITTLE_ENDIAN
+    );
+    const positionY = sourceView.getFloat32(
+      getCompressedPCDFieldByteOffset(pcdHeader, 'y', vertexIndex),
+      LITTLE_ENDIAN
+    );
+    const positionZ = sourceView.getFloat32(
+      getCompressedPCDFieldByteOffset(pcdHeader, 'z', vertexIndex),
+      LITTLE_ENDIAN
+    );
+
+    writePackedPCDPosition(
+      packedView,
+      recordByteOffset + positionByteOffset,
+      positionX,
+      positionY,
+      positionZ,
+      boundingBox
+    );
+
+    if (normalByteOffset !== undefined) {
+      packedView.setFloat32(
+        recordByteOffset + normalByteOffset,
+        sourceView.getFloat32(
+          getCompressedPCDFieldByteOffset(pcdHeader, 'normal_x', vertexIndex),
+          LITTLE_ENDIAN
+        ),
+        true
+      );
+      packedView.setFloat32(
+        recordByteOffset + normalByteOffset + 4,
+        sourceView.getFloat32(
+          getCompressedPCDFieldByteOffset(pcdHeader, 'normal_y', vertexIndex),
+          LITTLE_ENDIAN
+        ),
+        true
+      );
+      packedView.setFloat32(
+        recordByteOffset + normalByteOffset + 8,
+        sourceView.getFloat32(
+          getCompressedPCDFieldByteOffset(pcdHeader, 'normal_z', vertexIndex),
+          LITTLE_ENDIAN
+        ),
+        true
+      );
+    }
+
+    if (colorByteOffset !== undefined) {
+      const sourceColorByteOffset = getCompressedPCDFieldByteOffset(pcdHeader, 'rgb', vertexIndex);
+      const colorRecordByteOffset = recordByteOffset + colorByteOffset;
+      packedBytes[colorRecordByteOffset] = sourceView.getUint8(sourceColorByteOffset);
+      packedBytes[colorRecordByteOffset + 1] = sourceView.getUint8(sourceColorByteOffset + 1);
+      packedBytes[colorRecordByteOffset + 2] = sourceView.getUint8(sourceColorByteOffset + 2);
+      packedBytes[colorRecordByteOffset + 3] = 255;
+    }
+  }
+
+  return pcdHeader.points;
+}
+
+/** Write one packed PCD position and extend the bounding box accumulator. */
+function writePackedPCDPosition(
+  dataView: DataView,
+  byteOffset: number,
+  positionX: number,
+  positionY: number,
+  positionZ: number,
+  boundingBox: PackedPCDBoundingBox
+): void {
+  dataView.setFloat32(byteOffset, positionX, true);
+  dataView.setFloat32(byteOffset + 4, positionY, true);
+  dataView.setFloat32(byteOffset + 8, positionZ, true);
+  boundingBox[0][0] = Math.min(boundingBox[0][0], positionX);
+  boundingBox[0][1] = Math.min(boundingBox[0][1], positionY);
+  boundingBox[0][2] = Math.min(boundingBox[0][2], positionZ);
+  boundingBox[1][0] = Math.max(boundingBox[1][0], positionX);
+  boundingBox[1][1] = Math.max(boundingBox[1][1], positionY);
+  boundingBox[1][2] = Math.max(boundingBox[1][2], positionZ);
+}
+
+/** Return an initially empty PCD bounding box accumulator. */
+function createPackedPCDBoundingBox(): PackedPCDBoundingBox {
+  return [
+    [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY],
+    [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY]
+  ];
+}
+
+/** Return stable final PCD bounds, including an empty-table fallback. */
+function finalizePackedPCDBoundingBox(
+  boundingBox: PackedPCDBoundingBox,
+  vertexCount: number
+): [number[], number[]] {
+  if (vertexCount === 0) {
+    return [
+      [0, 0, 0],
+      [0, 0, 0]
+    ];
+  }
+  return boundingBox;
+}
+
+/** Resolve an optional packed PCD attribute byte offset. */
+function getPackedPCDAttributeByteOffset(
+  packedLayout: PackedMeshArrowLayout,
+  attribute: string
+): number | undefined {
+  return packedLayout.attributes.find(layout => layout.attribute === attribute)?.byteOffset;
+}
+
+/** Resolve a required packed PCD attribute byte offset. */
+function getRequiredPackedPCDAttributeByteOffset(
+  packedLayout: PackedMeshArrowLayout,
+  attribute: string
+): number {
+  const byteOffset = getPackedPCDAttributeByteOffset(packedLayout, attribute);
+  if (byteOffset === undefined) {
+    throw new Error(`PCDLoader: packed layout is missing attribute "${attribute}"`);
+  }
+  return byteOffset;
+}
+
+/** Round packed PCD record strides up to four-byte alignment. */
+function alignPackedPCDByteStride(byteOffset: number): number {
+  return Math.ceil(byteOffset / 4) * 4;
+}
+
+/** Return one compressed-binary PCD field byte offset for a point row. */
+function getCompressedPCDFieldByteOffset(
+  pcdHeader: PCDHeader,
+  fieldName: string,
+  vertexIndex: number
+): number {
+  return (
+    pcdHeader.points * pcdHeader.offset[fieldName] +
+    getPCDFieldSize(pcdHeader, fieldName) * vertexIndex
+  );
+}
+
+/** Return the source byte width for one named PCD field. */
+function getPCDFieldSize(pcdHeader: PCDHeader, fieldName: string): number {
+  const fieldIndex = pcdHeader.fields.indexOf(fieldName);
+  return fieldIndex >= 0 ? pcdHeader.size[fieldIndex] : 0;
 }
 
 // Create a header that contains common data for PointCloud category loaders
