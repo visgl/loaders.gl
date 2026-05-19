@@ -413,7 +413,7 @@ class VitestTape {
 }
 
 function wrapTest(vitestImplementation) {
-  return (name, callback) =>
+  return (name, callback, options) =>
     vitestImplementation(name, async () => {
       if (!callback) {
         return;
@@ -425,7 +425,7 @@ function wrapTest(vitestImplementation) {
       if (isPromiseLike(result)) {
         await result;
       }
-    });
+    }, options);
 }
 
 const test = wrapTest(vitestTest);

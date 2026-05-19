@@ -76,7 +76,7 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     );
   }
 
-  const mesh = convertTableToMesh(normalizeMeshArrowTable(data));
+  const mesh = normalizeMesh(data);
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
   const colorAttribute = mesh.attributes.COLOR_0;
   const intensityAttribute = mesh.attributes.intensity;
@@ -134,12 +134,19 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   return arrayBuffer;
 }
 
+/** Return mesh data as a Mesh, converting MeshArrowTable input first. */
+function normalizeMesh(data: Mesh | MeshArrowTable): Mesh {
+  if ('shape' in data && data.shape === 'arrow-table') {
+    return convertTableToMesh(data);
+  }
+  return data as Mesh;
+}
+
 /** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
 function normalizeMeshArrowTable(data: Mesh | MeshArrowTable): MeshArrowTable {
-  if ('shape' in data && data.shape === 'arrow-table') {
-    return data;
-  }
-  return convertMeshToTable(data as Mesh, 'arrow-table');
+  return 'shape' in data && data.shape === 'arrow-table'
+    ? data
+    : convertMeshToTable(data as Mesh, 'arrow-table');
 }
 
 /** Merge buffered mesh batches for `encodeInBatches`. */

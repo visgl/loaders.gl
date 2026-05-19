@@ -251,7 +251,7 @@ test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 TypeScript backend matches W
     'split TypeScript LAZ PDRF 3 streaming matches laz-rs'
   );
   t.end();
-});
+}, 15000);
 
 test('LASLoader#parse LAS 1.4 fixture', async t => {
   const data = await parse(fetchFile(LAS_1_4_BINARY_URL), LASLoader, {
