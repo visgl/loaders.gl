@@ -20,6 +20,8 @@
 SPZ version 4 uses ZSTD-compressed attribute streams. Inject `zstd-codec` through loader options so applications that only use `SPLATLoader` or `KSPLATLoader` do not pay the ZSTD dependency cost.
 
 ```typescript
+// npm install @loaders.gl/core @loaders.gl/splats zstd-codec
+
 import {load} from '@loaders.gl/core';
 import {SPZLoader} from '@loaders.gl/splats';
 import {ZstdCodec} from 'zstd-codec';

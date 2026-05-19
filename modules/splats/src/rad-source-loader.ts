@@ -189,7 +189,11 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
     chunkIndex: number,
     options: RADChunkRequestOptions = {}
   ): Promise<GaussianSplats> {
-    return parseRADChunkToGaussianSplats(await this.getChunk(chunkIndex, options), options);
+    const metadata = await this.getMetadata();
+    return parseRADChunkToGaussianSplats(
+      await this.getChunk(chunkIndex, options),
+      this._getChunkDecodeOptions(metadata, options)
+    );
   }
 
   /** Fetches and decodes one RADC chunk into a Mesh Arrow table. */
@@ -197,7 +201,11 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
     chunkIndex: number,
     options: RADChunkRequestOptions = {}
   ): Promise<MeshArrowTable> {
-    return parseRADChunk(await this.getChunk(chunkIndex, options), options);
+    const metadata = await this.getMetadata();
+    return parseRADChunk(
+      await this.getChunk(chunkIndex, options),
+      this._getChunkDecodeOptions(metadata, options)
+    );
   }
 
   /** Iterates decoded RADC chunks as Mesh Arrow tables. */
@@ -264,6 +272,20 @@ export class RADSource extends DataSource<string | Blob, RADSourceLoaderOptions>
     const workerCount = Math.min(maxConcurrentChunkRequests, chunkIndices.length);
     await Promise.all(Array.from({length: workerCount}, () => loadNextChunk(this)));
     return splatChunks;
+  }
+
+  /** Adds source-level RAD decode metadata to chunk decode options. */
+  private _getChunkDecodeOptions(
+    metadata: RADMetadata,
+    options: RADChunkRequestOptions
+  ): RADChunkRequestOptions {
+    return {
+      ...options,
+      radChunk: {
+        splatEncoding: metadata.splatEncoding,
+        ...options.radChunk
+      }
+    };
   }
 
   /** Loads and parses the top-level RAD metadata. */

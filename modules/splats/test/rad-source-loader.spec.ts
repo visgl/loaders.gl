@@ -5,16 +5,14 @@
 import test from 'tape-promise/tape';
 import {DeflateCompression} from '@loaders.gl/compression';
 import {load, parse, parseSync} from '@loaders.gl/core';
+import {RADLoader, RADSourceLoader, resolveRADChunkUrl} from '@loaders.gl/splats';
+import type {RADSource} from '@loaders.gl/splats';
+import type {MeshArrowTable} from '@loaders.gl/schema';
 import {
   parseRADChunkHeader,
   parseRADChunkToGaussianSplats,
-  RADLoader,
-  RADSourceLoader,
-  resolveRADChunkUrl
-} from '@loaders.gl/splats';
-import type {RADSource} from '@loaders.gl/splats';
-import type {MeshArrowTable} from '@loaders.gl/schema';
-import {RADLoaderWithParser} from '@loaders.gl/splats/rad-loader';
+  RADLoaderWithParser
+} from '@loaders.gl/splats/rad-loader';
 
 test('RADLoader parses Spark RAD metadata', async t => {
   const data = makeRADFixture();
@@ -84,6 +82,38 @@ test('parseRADChunkToGaussianSplats expands Spark LoD opacity bytes', t => {
 
   t.ok(Math.abs(splats.opacities[0] - (64 / 255) * 2) < 1e-6, 'decodes opacity below one');
   t.ok(Math.abs(splats.opacities[1] - (191 / 255) * 2) < 1e-6, 'decodes opacity above one');
+  t.end();
+});
+
+test('RADSourceLoader uses source-level splat encoding for chunk decoding', async t => {
+  const source = (await load(
+    new Blob([
+      makeRADFixture({
+        splatEncoding: {
+          rgbMin: 0,
+          rgbMax: 1,
+          lnScaleMin: -12,
+          lnScaleMax: 9,
+          lodOpacity: true
+        },
+        chunkOptions: {
+          alphaEncoding: 'r8',
+          omitPropertyRanges: true
+        }
+      })
+    ]),
+    RADSourceLoader
+  )) as RADSource;
+
+  const splats = await source.getChunkSplats(0);
+
+  t.ok(Math.abs(splats.scales[0] - 0.02) < 0.003, 'decodes top-level scale range');
+  t.deepEqual(
+    Array.from(splats.colors),
+    [64, 128, 191, 128, 191, 255],
+    'decodes top-level RGB range'
+  );
+  t.ok(Math.abs(splats.opacities[1] - (191 / 255) * 2) < 1e-6, 'uses top-level LoD opacity');
   t.end();
 });
 
@@ -189,11 +219,15 @@ type RADFixtureOptions = {
   chunkFilenames?: string[];
   /** Whether to append chunk bytes inline after the RAD header. */
   inlineChunk?: boolean;
+  /** Optional top-level RAD splat encoding metadata. */
+  splatEncoding?: Record<string, unknown>;
+  /** Optional deterministic RADC chunk fixture options. */
+  chunkOptions?: RADChunkFixtureOptions;
 };
 
 /** Builds a deterministic single-chunk Spark RAD fixture. */
 function makeRADFixture(options: RADFixtureOptions = {}): ArrayBuffer {
-  const chunk = makeRADChunkFixture();
+  const chunk = makeRADChunkFixture(options.chunkOptions);
   const inlineChunk = options.inlineChunk ?? true;
   const chunkFilenames =
     options.chunkFilenames || (options.chunkFilename ? [options.chunkFilename] : undefined);
@@ -210,7 +244,7 @@ function makeRADFixture(options: RADFixtureOptions = {}): ArrayBuffer {
       bytes: chunk.byteLength,
       filename: chunkFilenames?.[chunkIndex]
     })),
-    splatEncoding: {lodOpacity: true}
+    splatEncoding: options.splatEncoding ?? {lodOpacity: true}
   };
 
   const metadataBytes = new TextEncoder().encode(JSON.stringify(metadata));
@@ -236,6 +270,8 @@ type RADChunkFixtureOptions = {
   alphaEncoding?: 'f32' | 'r8';
   /** Optional chunk-local splat encoding metadata. */
   splatEncoding?: Record<string, unknown>;
+  /** Whether quantized property min/max values should be omitted from property metadata. */
+  omitPropertyRanges?: boolean;
 };
 
 /** Builds a deterministic Spark RADC chunk fixture. */
@@ -258,13 +294,13 @@ function makeRADChunkFixture(options: RADChunkFixtureOptions = {}): ArrayBuffer 
       'rgb',
       'r8_delta',
       encodeR8Delta(new Float32Array([0.25, 0.5, 0.75, 0.5, 0.75, 1]), 3, 2, 0, 1),
-      {min: 0, max: 1}
+      options.omitPropertyRanges ? {} : {min: 0, max: 1}
     ),
     makeRADChunkPayload(
       'scales',
       'ln_0r8',
       encodeScaleR8(new Float32Array([0.02, 0.03, 0.04, 0.05, 0.06, 0.07]), 3, 2, -12, 9),
-      {min: -12, max: 9}
+      options.omitPropertyRanges ? {} : {min: -12, max: 9}
     ),
     makeRADChunkPayload('orientation', 'oct88r8', new Uint8Array([128, 128, 0, 128, 128, 0])),
     makeRADChunkPayload('child_count', 'u16', new Uint8Array([0, 0, 2, 0])),

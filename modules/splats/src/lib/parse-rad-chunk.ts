@@ -9,7 +9,8 @@ import {
   parseRADChunkHeader,
   roundUpToEight,
   type RADChunkMetadata,
-  type RADChunkProperty
+  type RADChunkProperty,
+  type RADSplatEncoding
 } from './parse-rad';
 import {makeGaussianSplatsArrowTable} from './splats-arrow-table';
 import {decodeFloat16, normalizeQuaternion, SH_C0} from './splat-utils';
@@ -20,6 +21,8 @@ const RAD_PROPERTY_RAW_DEFLATE = new DeflateCompression({raw: true});
 /** Options for decoding one Spark RADC chunk payload. */
 export type RADChunkDecodeOptions = SplatsLoaderOptions & {
   radChunk?: {
+    /** Optional source-level splat encoding metadata used as a fallback for chunk-local metadata. */
+    splatEncoding?: RADSplatEncoding;
     /** Whether decoded LoD child metadata is retained in `loaderData`. */
     includeLoDTree?: boolean;
     /** Whether decoded SH rest coefficients are included in Arrow table columns. */
@@ -41,7 +44,7 @@ export function parseRADChunkToGaussianSplats(
   options?: RADChunkDecodeOptions
 ): GaussianSplats {
   const bytes = getUint8Array(data);
-  const metadata = parseRADChunkHeader(bytes);
+  const metadata = getRADChunkDecodeMetadata(parseRADChunkHeader(bytes), options);
   if (bytes.byteLength < metadata.chunkByteLength) {
     throw new Error('RADLoader: RADC chunk payload is incomplete.');
   }
@@ -249,28 +252,38 @@ function decodeRADFloatProperty(
         propertyBytes,
         dimensions,
         metadata.count,
-        getPropertyMin(property),
-        getPropertyMax(property)
+        getPropertyMin(metadata, property),
+        getPropertyMax(metadata, property)
       );
     case 'r8_delta':
       return decodeR8Delta(
         propertyBytes,
         dimensions,
         metadata.count,
-        getPropertyMin(property),
-        getPropertyMax(property)
+        getPropertyMin(metadata, property),
+        getPropertyMax(metadata, property)
       );
     case 's8':
-      return decodeS8(propertyBytes, dimensions, metadata.count, getPropertyMax(property));
+      return decodeS8(
+        propertyBytes,
+        dimensions,
+        metadata.count,
+        getPropertyMax(metadata, property)
+      );
     case 's8_delta':
-      return decodeS8Delta(propertyBytes, dimensions, metadata.count, getPropertyMax(property));
+      return decodeS8Delta(
+        propertyBytes,
+        dimensions,
+        metadata.count,
+        getPropertyMax(metadata, property)
+      );
     case 'ln_0r8':
       return decodeScaleR8(
         propertyBytes,
         dimensions,
         metadata.count,
-        getPropertyMin(property),
-        getPropertyMax(property)
+        getPropertyMin(metadata, property),
+        getPropertyMax(metadata, property)
       );
     case 'ln_f16':
       return decodeLogFloat16(propertyBytes, dimensions, metadata.count);
@@ -610,20 +623,82 @@ function findRADProperty(
   return metadata.properties.find(property => property.property === propertyName);
 }
 
+/** Merges source-level splat encoding with chunk-local encoding. */
+function getRADChunkDecodeMetadata(
+  metadata: RADChunkMetadata,
+  options?: RADChunkDecodeOptions
+): RADChunkMetadata {
+  const splatEncoding = options?.radChunk?.splatEncoding;
+  if (!splatEncoding) {
+    return metadata;
+  }
+  return {
+    ...metadata,
+    splatEncoding: {
+      ...splatEncoding,
+      ...metadata.splatEncoding
+    }
+  };
+}
+
 /** Returns a required quantization minimum. */
-function getPropertyMin(property: RADChunkProperty): number {
+function getPropertyMin(metadata: RADChunkMetadata, property: RADChunkProperty): number {
   if (property.min === undefined) {
+    const fallback = getSplatEncodingMinimum(metadata.splatEncoding, property.property);
+    if (fallback !== undefined) {
+      return fallback;
+    }
     throw new Error(`RADLoader: RADC property ${property.property} is missing min.`);
   }
   return property.min;
 }
 
 /** Returns a required quantization maximum. */
-function getPropertyMax(property: RADChunkProperty): number {
+function getPropertyMax(metadata: RADChunkMetadata, property: RADChunkProperty): number {
   if (property.max === undefined) {
+    const fallback = getSplatEncodingMaximum(metadata.splatEncoding, property.property);
+    if (fallback !== undefined) {
+      return fallback;
+    }
     throw new Error(`RADLoader: RADC property ${property.property} is missing max.`);
   }
   return property.max;
+}
+
+/** Returns a source-level minimum value for a quantized RAD property. */
+function getSplatEncodingMinimum(
+  splatEncoding: RADSplatEncoding | undefined,
+  propertyName: string
+): number | undefined {
+  switch (propertyName) {
+    case 'rgb':
+      return splatEncoding?.rgbMin;
+    case 'scales':
+      return splatEncoding?.lnScaleMin;
+    default:
+      return undefined;
+  }
+}
+
+/** Returns a source-level maximum value for a quantized RAD property. */
+function getSplatEncodingMaximum(
+  splatEncoding: RADSplatEncoding | undefined,
+  propertyName: string
+): number | undefined {
+  switch (propertyName) {
+    case 'rgb':
+      return splatEncoding?.rgbMax;
+    case 'scales':
+      return splatEncoding?.lnScaleMax;
+    case 'sh1':
+      return splatEncoding?.sh1Max;
+    case 'sh2':
+      return splatEncoding?.sh2Max;
+    case 'sh3':
+      return splatEncoding?.sh3Max;
+    default:
+      return undefined;
+  }
 }
 
 /** Clamps a normalized color component into an unorm8 byte. */

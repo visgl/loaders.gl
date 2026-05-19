@@ -13,12 +13,6 @@ export type {
   RADMetadata,
   RADSplatEncoding
 } from './lib/parse-rad';
-export {parseRADChunkHeader, parseRADHeader, tryParseRADHeader} from './lib/parse-rad';
-export {
-  parseRADChunk,
-  parseRADChunkToGaussianSplats,
-  type RADChunkDecodeOptions
-} from './lib/parse-rad-chunk';
 export {SPLATFormat, KSPLATFormat, SPZFormat, RADFormat} from './splats-format';
 export {SPLATLoader} from './splat-loader-types';
 export {KSPLATLoader} from './ksplat-loader-types';
