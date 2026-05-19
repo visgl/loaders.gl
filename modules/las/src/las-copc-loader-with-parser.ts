@@ -2,27 +2,26 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
+// LASER (LAS) FILE FORMAT
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
 import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {LASLoaderOptions} from './las-loader';
 import type {LASMesh} from './lib/las-types';
-import {parseLAS, parseLASInBatches} from './lib/typescript/parse-las';
-import {TypeScriptLASLoader as TypeScriptLASLoaderMetadata} from './typescript-loader';
+import {parseCOPCLAS, parseCOPCLASInBatches} from './lib/copc/parse-las';
+import {LASLoader as LASLoaderMetadata} from './las-loader';
 
-const {preload: _TypeScriptLASLoaderPreload, ...TypeScriptLASLoaderMetadataWithoutPreload} =
-  TypeScriptLASLoaderMetadata;
+const {preload: _LASLoaderPreload, ...LASLoaderMetadataWithoutPreload} = LASLoaderMetadata;
 
-/** Parser-bearing TypeScript-only LAS loader implementation. */
-export const TypeScriptLASLoaderWithParser = {
-  ...TypeScriptLASLoaderMetadataWithoutPreload,
+/**
+ * Loader for LAS/LAZ using the laz-perf backend from the COPC package.
+ */
+export const LASCOPCLoaderWithParser = {
+  ...LASLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    convertLASMesh(parseLAS(arrayBuffer, options), options),
-  parseSync: (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
-    convertLASMesh(parseLAS(arrayBuffer, options), options),
-  parseInBatches: async function* (arrayBufferIterator, options?: LASLoaderOptions) {
-    yield* convertLASMeshBatches(parseLASInBatches(arrayBufferIterator, options), options);
-  }
+    convertLASMesh(await parseCOPCLAS(arrayBuffer, options), options),
+  parseInBatches: (arrayBufferIterator, options?: LASLoaderOptions) =>
+    convertLASMeshBatches(parseCOPCLASInBatches(arrayBufferIterator, options), options)
 } as const satisfies LoaderWithParser<
   LASMesh | MeshArrowTable,
   LASMesh | MeshArrowTable,
@@ -42,6 +41,12 @@ function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | Me
   } as LASMesh & {progress?: number};
 }
 
+/**
+ * Convert LAS mesh batches to the requested output shape.
+ * @param meshBatches Decoded LAS mesh batches
+ * @param options LAS loader options
+ * @returns Converted LAS batches
+ */
 async function* convertLASMeshBatches(
   meshBatches: AsyncIterable<LASMesh>,
   options?: LASLoaderOptions

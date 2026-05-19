@@ -60,9 +60,9 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 | LASzip VLR parsing | Partial. Enough metadata is parsed for fixed-size TypeScript LAZ chunk decoding. |
 | Chunk table parsing | Partial. Fixed-size chunk streams are supported; variable-size chunk tables are not supported yet. |
 | Single compressed chunk decode | Supported when metadata is supplied by the caller. |
-| LAZ point formats 0 and 2 | Supported for legacy fixed-size LASzip chunks. Full-file streaming may still need the chunk table before output can start. |
+| LAZ point formats 0, 1, 2, and 3 | Supported for legacy fixed-size LASzip chunks, including GPS time and RGB item decoding. Full-file streaming may still need the chunk table before output can start. |
 | LAZ 1.4 point formats 6, 7, 8 | Supported for COPC-style chunks and fixed-size full-file LAZ chunks. |
-| LAZ point formats 1, 3, 4, 5, 9, 10 | Not supported. |
+| LAZ point formats 4, 5, 9, 10 | Not supported. These add waveform packet references. |
 | Extra bytes in LAZ 1.4 chunks | Supported at the raw byte level when metadata supplies the record length. |
 | Selective decompression | Not implemented. |
 | True streaming decode | Partial. Full-file LAZ `parseInBatches` can consume incoming bytes and emit raw point batches after complete compressed chunks are available. Point-level arithmetic decode inside a compressed chunk is not implemented yet. |
@@ -83,7 +83,7 @@ LAS is the uncompressed exchange format. LAZ is the losslessly compressed form d
 | Version | Point data record formats | Main additions | loaders.gl status |
 | --- | --- | --- | --- |
 | 1.5 | 6-10 in LAS 1.5 mode | Backward compatibility with LAS 1.1-1.4, stricter modern point record model, WKT CRS records. | Header/read compatibility in the TypeScript path; writing is not targeted. |
-| 1.4 | 0-10 | 64-bit point counts and offsets, EVLR refinements, WKT CRS support, Extra Bytes VLR, modern PDRFs 6-10. | Read support through existing backends; TypeScript path reads uncompressed LAS 1.4 and decodes LAZ chunks for PDRF 6-8, plus legacy PDRF 0 and 2. |
+| 1.4 | 0-10 | 64-bit point counts and offsets, EVLR refinements, WKT CRS support, Extra Bytes VLR, modern PDRFs 6-10. | Read support through existing backends; TypeScript path reads uncompressed LAS 1.4 and decodes LAZ chunks for PDRF 6-8, plus legacy PDRF 0-3. |
 | 1.3 | 0-5 | EVLRs and waveform packet support. | Read support for common LAS/LAZ attributes. |
 | 1.2 | 0-3 | RGB point formats and broader geospatial metadata conventions. | Read and write support for common uncompressed LAS attributes. |
 | 1.1 | 0-1 | GPS time point format and early classification/metadata updates. | Read support for common attributes. |
@@ -186,7 +186,7 @@ The TypeScript-only backend should be completed in stages, with parity tests aga
 | 2 | Complete LAS metadata parsing. | Public header, VLRs, EVLRs, WKT, GeoTIFF CRS records, Extra Bytes VLRs, and waveform metadata are parsed and exposed consistently. |
 | 3 | Complete raw LAS point readers and writers. | PDRF 0-10 fields round-trip where loaders.gl has an attribute representation, and unsupported fields are explicitly preserved or documented. |
 | 4 | Implement full LAZ file parsing. | LASzip VLRs, fixed and variable chunk tables, chunk sizes, and sequential point batches work without WASM. |
-| 5 | Expand LAZ decompression. | PDRF 1, 3, 4, 5, 9, and 10 decode byte-for-byte against the current laz-perf/laz-rs backends. |
+| 5 | Expand LAZ decompression. | PDRF 4, 5, 9, and 10 decode byte-for-byte against the current laz-perf/laz-rs backends. |
 | 6 | Implement LAZ encoding. | Raw point data compressed by the TypeScript encoder decodes byte-for-byte to the original records. |
 | 7 | Add true feedable LAZ streaming. | The decoder can pause on missing bytes without corrupting arithmetic decoder state and can emit complete point batches before the full file is buffered. |
 | 8 | Complete pure TypeScript COPC reading. | Header, COPC info VLR, hierarchy pages, range selection, and LAZ node decoding no longer depend on the existing COPC package internals. |

@@ -31,6 +31,62 @@ dataSourceManager.add({
 
 The manager stores the `DataSource` under `dataSourceId`. Consumers can later subscribe to that id instead of receiving the concrete `DataSource` object directly.
 
+### Deduplicate DataSources
+
+Use `getOrCreate()` when multiple callers may ask for the same source. The first call creates and retains the `DataSource`; later calls with the same key return the existing instance and increment the retain count.
+
+```ts
+const firstTiles = dataSourceManager.getOrCreate({
+  dataSourceId: 'world-tiles',
+  data: 'https://example.com/world.pmtiles',
+  createDataSource: data =>
+    createDataSource(data as string, [PMTilesSourceLoader], {
+      pmtiles: {
+        // PMTiles-specific options
+      }
+    })
+});
+
+const secondTiles = dataSourceManager.getOrCreate({
+  dataSourceId: 'world-tiles',
+  data: 'https://example.com/world.pmtiles',
+  createDataSource: data => createDataSource(data as string, [PMTilesSourceLoader])
+});
+
+// firstTiles and secondTiles reference the same DataSource.
+```
+
+`dataSourceId` is the preferred dedupe key because it is explicit and can later be passed to `release()`. If `dataSourceId` is omitted, string `data` values are used as the key.
+
+```ts
+const tiles = dataSourceManager.getOrCreate({
+  data: 'https://example.com/world.pmtiles',
+  createDataSource: data => createDataSource(data as string, [PMTilesSourceLoader])
+});
+```
+
+For `Blob` and object inputs, the manager deduplicates by object identity. Two different objects with the same contents create two different `DataSource` instances.
+
+```ts
+const blob = new Blob([arrayBuffer]);
+
+const firstSource = dataSourceManager.getOrCreate({
+  data: blob,
+  createDataSource: data => createDataSource(data as Blob, [GeoPackageSource])
+});
+
+const secondSource = dataSourceManager.getOrCreate({
+  data: blob,
+  createDataSource: data => createDataSource(data as Blob, [GeoPackageSource])
+});
+
+// firstSource and secondSource are deduplicated because they use the same Blob object.
+```
+
+When using object-identity dedupe, provide a `dataSourceId` if the caller will need to release the source later.
+
+`getOrCreate()` also deduplicates pending asynchronous creation. If a factory returns a `Promise<DataSource>`, concurrent callers receive the same pending promise and the factory is called once.
+
 ### Subscribe from a consumer
 
 `subscribe()` registers a callback and immediately returns the current `DataSource` if it is available.
@@ -126,6 +182,14 @@ dataSourceManager.unsubscribe({consumerId: 'preview-layer'});
 `unsubscribe()` schedules pruning with a short timeout so multiple subscription updates in the same event loop turn are batched.
 
 ### Clean up
+
+Use `release()` to release one retained reference created by `getOrCreate()`.
+
+```ts
+await dataSourceManager.release('world-tiles');
+```
+
+The manager closes and removes the `DataSource` when the retain count reaches zero and there are no active subscribers. If subscribers are still using the source, it stays registered until they unsubscribe and normal pruning can remove it.
 
 Use `remove()` when a specific source is no longer needed.
 
@@ -250,6 +314,24 @@ Adds or replaces a managed `DataSource`.
 - `forceUpdate`: Notify subscribers even when the object identity did not change.
 - `persistent`: Keep the source until explicit removal. Defaults to `true`.
 
+### getOrCreate()
+
+```ts
+getOrCreate<DataSourceT extends ManageableDataSource>({
+  dataSourceId,
+  data,
+  createDataSource,
+  persistent
+}: DataSourceManagerGetOrCreateParameters<DataSourceT>): DataSourceT | Promise<DataSourceT>;
+```
+
+Returns an existing managed `DataSource` for the same key, or creates and retains a new one.
+
+- `dataSourceId`: Explicit dedupe key. Preferred when the caller will later call `release()`.
+- `data`: Optional input passed to `createDataSource`. Used as the dedupe key when `dataSourceId` is omitted.
+- `createDataSource`: Factory called only when no matching source exists.
+- `persistent`: If false, the source may be pruned after all retains and subscribers are gone. Defaults to `true`.
+
 ### subscribe()
 
 ```ts
@@ -274,6 +356,14 @@ unsubscribe({consumerId}: {consumerId: string}): void;
 ```
 
 Removes all subscriptions for a consumer and schedules pruning of unused non-persistent sources.
+
+### release()
+
+```ts
+release(dataSourceId: string): Promise<void>;
+```
+
+Releases one retained reference created by `getOrCreate()`. When the retain count reaches zero and there are no active subscribers, the manager removes and closes the source.
 
 ### remove()
 

@@ -6,7 +6,35 @@ import test from 'tape-promise/tape';
 import draco3d from 'draco3d';
 import {isBrowser} from '@loaders.gl/worker-utils';
 
+import {DracoLoader} from '../src/draco-loader';
+import {Draco3DLoaderWithParser} from '../src/draco3d-loader-with-parser';
+import {DracoJavaScriptLoaderWithParser} from '../src/draco-javascript-loader-with-parser';
+import {DracoWASMLoaderWithParser} from '../src/draco-wasm-loader-with-parser';
 import {loadDracoDecoderModule, loadDracoEncoderModule} from '../src/lib/draco-module-loader';
+
+test('DracoLoader#preload selects backend loader', async t => {
+  t.equal(
+    await DracoLoader.preload?.('', {draco: {backend: 'wasm'}}),
+    DracoWASMLoaderWithParser,
+    'selects the WASM backend loader'
+  );
+  t.equal(
+    await DracoLoader.preload?.('', {draco: {backend: 'javascript'}}),
+    DracoJavaScriptLoaderWithParser,
+    'selects the JavaScript backend loader'
+  );
+  t.equal(
+    await DracoLoader.preload?.('', {draco: {backend: 'draco3d'}, modules: {draco3d}}),
+    Draco3DLoaderWithParser,
+    'selects the injected draco3d backend loader'
+  );
+  t.equal(
+    await DracoLoader.preload?.('', {draco: {decoderType: 'js'}}),
+    DracoJavaScriptLoaderWithParser,
+    'maps legacy decoderType to the JavaScript backend loader'
+  );
+  t.end();
+});
 
 test('draco-module-loader#uses injected decoder module', async t => {
   if (isBrowser) {

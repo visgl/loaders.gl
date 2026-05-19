@@ -164,6 +164,7 @@ export type {
 export {
   NeedsMoreData,
   createLAZChunkDecoder,
+  createLAZChunkDecoderCursor,
   decodeLAZChunkTable,
   decodeLAZChunk,
   decodeLAZChunkInBatches,
@@ -171,9 +172,11 @@ export {
 } from './lib/laz/laz-chunk-decoder';
 export type {
   FeedableLAZChunkDecoder,
+  LAZChunkDecoderCursor,
   LAZChunkDecoderOptions,
   LAZChunkMetadata,
-  LAZChunkTableEntry
+  LAZChunkTableEntry,
+  LAZPointDataTarget
 } from './lib/laz/laz-chunk-decoder';
 export {createLAZChunkEncoder, encodeLAZChunk} from './lib/laz/laz-chunk-encoder';
 export type {FeedableLAZChunkEncoder} from './lib/laz/laz-chunk-encoder';
@@ -231,6 +234,7 @@ export {DataSource} from './lib/sources/data-source';
 export type {
   ManageableDataSource,
   DataSourceManagerAddParameters,
+  DataSourceManagerGetOrCreateParameters,
   DataSourceManagerSubscribeParameters,
   DataSourceSubscriber
 } from './lib/sources/data-source-manager';

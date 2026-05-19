@@ -2,22 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-// LASER (LAS) FILE FORMAT
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
+import {convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {LASLoaderOptions} from './las-loader';
 import type {LASMesh} from './lib/las-types';
-import {parseLAS, parseLASInBatches} from './lib/laz-perf/parse-las';
+import {parseLAS, parseLASInBatches, type LASArrowTable} from './lib/typescript/parse-las';
 import {LASLoader as LASLoaderMetadata} from './las-loader';
 
 const {preload: _LASLoaderPreload, ...LASLoaderMetadataWithoutPreload} = LASLoaderMetadata;
 
-/**
- * Loader for the LAS (LASer) point cloud format
- * @note Does not support LAS v1.4
- */
-export const LAZPerfLoaderWithParser = {
+/** Parser-bearing TypeScript-only LAS loader implementation. */
+export const LASLoaderWithParser = {
   ...LASLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
     convertLASMesh(parseLAS(arrayBuffer, options), options),
@@ -32,30 +28,26 @@ export const LAZPerfLoaderWithParser = {
   LASLoaderOptions
 >;
 
-function convertLASMesh(mesh: LASMesh, options?: LASLoaderOptions): LASMesh | MeshArrowTable {
-  const table = convertMeshToTable(mesh, 'arrow-table');
+function convertLASMesh(
+  table: LASArrowTable,
+  options?: LASLoaderOptions
+): LASMesh | MeshArrowTable {
   if (options?.las?.shape === 'arrow-table') {
     return table;
   }
   return {
     ...(convertTableToMesh(table) as LASMesh),
-    loader: mesh.loader,
-    loaderData: mesh.loaderData,
-    progress: (mesh as LASMesh & {progress?: number}).progress
+    loader: table.loader,
+    loaderData: table.loaderData,
+    progress: table.progress
   } as LASMesh & {progress?: number};
 }
 
-/**
- * Convert LAS mesh batches to the requested output shape.
- * @param meshBatches Decoded LAS mesh batches
- * @param options LAS loader options
- * @returns Converted LAS batches
- */
 async function* convertLASMeshBatches(
-  meshBatches: AsyncIterable<LASMesh>,
+  tableBatches: AsyncIterable<LASArrowTable>,
   options?: LASLoaderOptions
 ): AsyncIterable<LASMesh | MeshArrowTable> {
-  for await (const mesh of meshBatches) {
-    yield convertLASMesh(mesh, options);
+  for await (const table of tableBatches) {
+    yield convertLASMesh(table, options);
   }
 }

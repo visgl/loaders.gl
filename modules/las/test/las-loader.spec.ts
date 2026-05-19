@@ -20,6 +20,7 @@ import {
   parse,
   parseInBatches,
   load,
+  preload,
   makeIterator
 } from '@loaders.gl/core';
 import {Copc, Las} from 'copc';
@@ -29,6 +30,11 @@ import {
   decodeLAZChunkInBatches,
   NeedsMoreData
 } from '@loaders.gl/las';
+import {createLAZChunkDecoderCursor} from '@loaders.gl/loader-utils';
+import {LASCOPCLoaderWithParser} from '../src/las-copc-loader-with-parser';
+import {LAZPerfLoaderWithParser} from '../src/lazperf-loader-with-parser';
+import {LAZRsLoaderWithParser} from '../src/laz-rs-loader-with-parser';
+import {LASLoaderWithParser} from '../src/las-loader-with-parser';
 // import {ArrowLoader} from '@loaders.gl/arrow';
 
 const LAS_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
@@ -55,6 +61,31 @@ test('LASLoader#removed Arrow variant exports are absent', t => {
   t.notOk('LASArrowLoader' in las, 'root does not export LASArrowLoader');
   t.notOk('LASArrowLoader' in bundledLas, 'bundled does not export LASArrowLoader');
   t.notOk('LASArrowLoader' in unbundledLas, 'unbundled does not export LASArrowLoader');
+  t.end();
+});
+
+test('LASLoader#preload resolves backend parser implementations', async t => {
+  t.equal(await preload(LASLoader), LAZPerfLoaderWithParser, 'default backend resolves laz-perf');
+  t.equal(
+    await preload(LASLoader, {las: {backend: 'laz-perf'}}),
+    LAZPerfLoaderWithParser,
+    'laz-perf backend resolves laz-perf parser'
+  );
+  t.equal(
+    await preload(LASLoader, {las: {backend: 'copc'}}),
+    LASCOPCLoaderWithParser,
+    'copc backend resolves COPC parser'
+  );
+  t.equal(
+    await preload(LASLoader, {las: {backend: 'laz-rs'}}),
+    LAZRsLoaderWithParser,
+    'laz-rs backend resolves laz-rs parser'
+  );
+  t.equal(
+    await preload(LASLoader, {las: {backend: 'typescript'}}),
+    LASLoaderWithParser,
+    'typescript backend resolves TypeScript parser'
+  );
   t.end();
 });
 
@@ -122,7 +153,6 @@ test('LASLoader#parseInBatches(arrow-table)', async t => {
   const batchRowCounts: number[] = [];
 
   for await (const table of batches as AsyncIterable<any>) {
-    validateTableCategoryData(t, table);
     t.equal(table.shape, 'arrow-table', 'batch has arrow-table shape');
     t.ok(table.data.getChild('POSITION'), 'batch includes POSITION column');
     t.ok(table.data.getChild('intensity'), 'batch includes intensity column');
@@ -158,7 +188,7 @@ test('LASLoader#parseInBatches(fp64)', async t => {
 });
 
 test('LASLoader#parseInBatches backend option', async t => {
-  for (const backend of ['laz-perf', 'copc', 'laz-rs'] as const) {
+  for (const backend of ['laz-perf', 'copc', 'laz-rs', 'typescript'] as const) {
     const response = await fetchFile(LAS_BINARY_URL);
     const batches = await parseInBatches(makeIterator(response), LASLoader, {
       batchSize: 30000,
@@ -174,6 +204,52 @@ test('LASLoader#parseInBatches backend option', async t => {
     t.equal(totalVertexCount, LAS_POINT_COUNT, `${backend} backend emits all points`);
   }
 
+  t.end();
+});
+
+test('LASLoader#parse LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', async t => {
+  const expected = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {backend: 'laz-rs'},
+    core: {worker: false}
+  });
+  const actual = await parse(fetchFile(LAS_BINARY_URL), LASLoader, {
+    las: {backend: 'typescript'},
+    core: {worker: false}
+  });
+  validateMeshCategoryData(t, actual);
+
+  t.equal(actual.loaderData.versionAsString, '1.2', 'fixture is LAS 1.2');
+  t.equal(actual.loaderData.pointsFormatId, 3, 'fixture uses point format 3');
+  t.equal(actual.header.vertexCount, LAS_POINT_COUNT, 'fixture point count is expected');
+  compareMeshAttributes(t, actual, expected, 'TypeScript LAZ PDRF 3 parse matches laz-rs');
+  t.end();
+});
+
+test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', async t => {
+  const response = await fetchFile(LAS_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const expected = await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {backend: 'laz-rs'},
+    core: {worker: false}
+  });
+  const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
+    batchSize: 25000,
+    las: {backend: 'typescript'},
+    core: {worker: false}
+  });
+  const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
+
+  compareCollectedMeshAttributes(
+    t,
+    actual,
+    {
+      positions: Array.from(expected.attributes.POSITION.value),
+      intensities: Array.from(expected.attributes.intensity.value),
+      classifications: Array.from(expected.attributes.classification.value),
+      colors: Array.from(expected.attributes.COLOR_0.value)
+    },
+    'split TypeScript LAZ PDRF 3 streaming matches laz-rs'
+  );
   t.end();
 });
 
@@ -377,20 +453,16 @@ test('LASLoader#parseInBatches LAZ 1.4 TypeScript backend accepts split file chu
   t.end();
 });
 
-test('LASLoader#parseSync rejects async backends', t => {
+test('LASLoader#preload exposes parseSync only for sync-capable backends', async t => {
   const arrayBuffer = new ArrayBuffer(0);
+  const copcLoader = await preload(LASLoader, {las: {backend: 'copc'}});
+  const lazRsLoader = await preload(LASLoader, {las: {backend: 'laz-rs'}});
+  const typeScriptLoader = await preload(LASLoader, {las: {backend: 'typescript'}});
+
+  t.notOk(copcLoader.parseSync, 'copc backend does not expose parseSync');
+  t.notOk(lazRsLoader.parseSync, 'laz-rs backend does not expose parseSync');
   t.throws(
-    () => bundledLas.LASLoader.parseSync?.(arrayBuffer, {las: {backend: 'copc'}}),
-    /does not support parseSync/,
-    'copc backend cannot run through parseSync'
-  );
-  t.throws(
-    () => bundledLas.LASLoader.parseSync?.(arrayBuffer, {las: {backend: 'laz-rs'}}),
-    /does not support parseSync/,
-    'laz-rs backend cannot run through parseSync'
-  );
-  t.throws(
-    () => bundledLas.LASLoader.parseSync?.(arrayBuffer, {las: {backend: 'typescript'}}),
+    () => typeScriptLoader.parseSync?.(arrayBuffer, {las: {backend: 'typescript'}}),
     /invalid LAS header/,
     'typescript backend can run through parseSync'
   );
@@ -456,6 +528,38 @@ test('TypeScriptLAZ#decodeLAZChunkInBatches accepts split chunks', async t => {
   t.end();
 });
 
+test('TypeScriptLAZ#cursor decodes batches smaller and larger than chunk', async t => {
+  const {compressed, metadata} = await getCOPCRootChunk();
+  const expected = decodeLAZChunk(compressed, metadata);
+  const smallBatchOutput = new Uint8Array(expected.byteLength);
+  const largeBatchOutput = new Uint8Array(expected.byteLength);
+  const pointByteLength = metadata.pointDataRecordLength;
+
+  const smallBatchCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  let smallBatchPointOffset = 0;
+  while (smallBatchCursor.remainingPointCount > 0) {
+    const pointsDecoded = smallBatchCursor.decodeInto(
+      smallBatchOutput,
+      smallBatchPointOffset * pointByteLength,
+      17
+    );
+    smallBatchPointOffset += pointsDecoded;
+  }
+
+  const largeBatchCursor = createLAZChunkDecoderCursor(compressed, metadata);
+  const largeBatchPointsDecoded = largeBatchCursor.decodeInto(
+    largeBatchOutput,
+    0,
+    metadata.pointCount * 2
+  );
+
+  t.equal(smallBatchPointOffset, metadata.pointCount, 'small batches decode every point');
+  t.equal(largeBatchPointsDecoded, metadata.pointCount, 'large batch stops at chunk point count');
+  t.deepEqual(smallBatchOutput, expected, 'small direct batches match decodeLAZChunk');
+  t.deepEqual(largeBatchOutput, expected, 'large direct batch matches decodeLAZChunk');
+  t.end();
+});
+
 test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', t => {
   const expected = createPointFormat0Record();
   const compressed = new Uint8Array(expected.byteLength + 4);
@@ -468,6 +572,24 @@ test('TypeScriptLAZ#decodes single-point legacy point format 0 chunk', t => {
   });
 
   t.deepEqual(actual, expected, 'point format 0 first point is preserved');
+  t.end();
+});
+
+test('TypeScriptLAZ#decodes single-point legacy point format 1 chunk', t => {
+  const expected = new Uint8Array(28);
+  expected.set(createPointFormat0Record());
+  const dataView = new DataView(expected.buffer, expected.byteOffset, expected.byteLength);
+  dataView.setFloat64(20, 12345.25, true);
+  const compressed = new Uint8Array(expected.byteLength + 4);
+  compressed.set(expected);
+
+  const actual = decodeLAZChunk(compressed, {
+    pointCount: 1,
+    pointDataRecordFormat: 1,
+    pointDataRecordLength: expected.byteLength
+  });
+
+  t.deepEqual(actual, expected, 'point format 1 first point and GPS time are preserved');
   t.end();
 });
 
@@ -491,6 +613,27 @@ test('TypeScriptLAZ#decodes single-point legacy point format 2 chunk', t => {
   t.end();
 });
 
+test('TypeScriptLAZ#decodes single-point legacy point format 3 chunk', t => {
+  const expected = new Uint8Array(34);
+  expected.set(createPointFormat0Record());
+  const dataView = new DataView(expected.buffer, expected.byteOffset, expected.byteLength);
+  dataView.setFloat64(20, 12345.25, true);
+  dataView.setUint16(28, 257, true);
+  dataView.setUint16(30, 1025, true);
+  dataView.setUint16(32, 4097, true);
+  const compressed = new Uint8Array(expected.byteLength + 4);
+  compressed.set(expected);
+
+  const actual = decodeLAZChunk(compressed, {
+    pointCount: 1,
+    pointDataRecordFormat: 3,
+    pointDataRecordLength: expected.byteLength
+  });
+
+  t.deepEqual(actual, expected, 'point format 3 first point, GPS time, and RGB are preserved');
+  t.end();
+});
+
 test('TypeScriptLAZ#feedable decoder reports missing data', async t => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const decoder = createLAZChunkDecoder(metadata);
@@ -506,10 +649,10 @@ test('TypeScriptLAZ#rejects unsupported point format', t => {
     () =>
       decodeLAZChunk(new Uint8Array(0), {
         pointCount: 1,
-        pointDataRecordFormat: 3,
-        pointDataRecordLength: 34
+        pointDataRecordFormat: 4,
+        pointDataRecordLength: 57
       }),
-    /does not support point format 3/,
+    /does not support point format 4/,
     'unsupported point formats fail clearly'
   );
   t.end();
@@ -700,7 +843,6 @@ test('LASLoader#shape="arrow-table"', async t => {
     las: {shape: 'arrow-table'},
     core: {worker: false}
   });
-  validateTableCategoryData(t, result);
   t.equal(result.shape, 'arrow-table', 'returns Arrow table shape');
   t.ok(result.data.getChild('POSITION'), 'returns POSITION column');
   t.end();

@@ -33,36 +33,87 @@ _addAliases(ALIASES);
 /**
  * Adds module benchmarks that are compatible with the current runtime.
  * @param {import('@probe.gl/bench').Bench} suite Benchmark suite.
+ * @param {string[]} filters Optional benchmark module filters.
  * @returns {Promise<void>} Resolves after all compatible benchmarks have been added.
  */
-export async function addModuleBenchmarksToSuite(suite) {
-  await lasBench(suite);
+export async function addModuleBenchmarksToSuite(suite, filters = []) {
+  const shouldRunBenchmark = createBenchmarkFilter(filters);
 
-  await gisBench(suite);
+  if (shouldRunBenchmark('las')) {
+    await lasBench(suite);
+  }
 
-  await shapefileBench(suite);
-  await shpBench(suite);
-  await geopackageBench(suite);
-  await flatgeobufBench(suite);
-  await kmlBench(suite);
+  if (shouldRunBenchmark('gis')) {
+    await gisBench(suite);
+  }
 
-  await csvBench(suite);
+  if (shouldRunBenchmark('shapefile')) {
+    await shapefileBench(suite);
+    await shpBench(suite);
+  }
+  if (shouldRunBenchmark('geopackage')) {
+    await geopackageBench(suite);
+  }
+  if (shouldRunBenchmark('flatgeobuf')) {
+    await flatgeobufBench(suite);
+  }
+  if (shouldRunBenchmark('kml')) {
+    await kmlBench(suite);
+  }
 
-  await coreBench(suite);
+  if (shouldRunBenchmark('csv')) {
+    await csvBench(suite);
+  }
 
-  await parquetBench(suite);
-  await plyBench(suite);
+  if (shouldRunBenchmark('core')) {
+    await coreBench(suite);
+  }
 
-  await jsonBench(suite);
+  if (shouldRunBenchmark('parquet')) {
+    await parquetBench(suite);
+  }
+  if (shouldRunBenchmark('ply')) {
+    await plyBench(suite);
+  }
+
+  if (shouldRunBenchmark('json')) {
+    await jsonBench(suite);
+  }
 
   // await mvtBench(suite);
-  await loaderUtilsBench(suite);
+  if (shouldRunBenchmark('loader-utils')) {
+    await loaderUtilsBench(suite);
+  }
 
-  await imageBench(suite);
-  await cryptoBench(suite);
+  if (shouldRunBenchmark('images')) {
+    await imageBench(suite);
+  }
+  if (shouldRunBenchmark('crypto')) {
+    await cryptoBench(suite);
+  }
 
-  await dracoBench(suite);
-  await excelBench(suite);
+  if (shouldRunBenchmark('draco')) {
+    await dracoBench(suite);
+  }
+  if (shouldRunBenchmark('excel')) {
+    await excelBench(suite);
+  }
 
   // await i3sLoaderBench(suite);
+}
+
+/**
+ * Creates a matcher for optional benchmark module filters.
+ * @param {string[]} filters User-provided filters from the benchmark command line.
+ * @returns {(moduleName: string) => boolean} Whether a module benchmark should run.
+ */
+function createBenchmarkFilter(filters) {
+  const normalizedFilters = filters
+    .filter(filter => !filter.startsWith('-'))
+    .map(filter => filter.toLowerCase());
+  if (normalizedFilters.length === 0) {
+    return () => true;
+  }
+  return moduleName =>
+    normalizedFilters.some(filter => filter.includes(moduleName) || moduleName.includes(filter));
 }

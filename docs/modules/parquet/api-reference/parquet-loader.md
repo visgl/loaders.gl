@@ -24,11 +24,16 @@ which [Parquet format features](/docs/modules/parquet/formats/parquet) are suppo
 Load a Parquet file as object rows.
 
 ```typescript
-import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
+import {ParquetLoader} from '@loaders.gl/parquet';
 import {load} from '@loaders.gl/core';
 
 const wasmRows = await load(url, ParquetLoader, {parquet: options});
-const jsRows = await load(url, ParquetJSLoader, {parquet: options});
+const typeScriptRows = await load(url, ParquetLoader, {
+  parquet: {
+    ...options,
+    backend: 'typescript'
+  }
+});
 ```
 
 Load a Parquet file as Arrow using the main loader.
@@ -134,6 +139,7 @@ Supports table category options such as `batchType` and `batchSize`.
 
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
+| `parquet.backend` | `'wasm' \| 'typescript'` | `'wasm'` | Selects the parser backend. The TypeScript backend returns object-row tables only. |
 | `parquet.shape` | `'object-row-table' \| 'arrow-table'` | `'object-row-table'` | Selects the returned table shape for `ParquetLoader`. <img src="https://img.shields.io/badge/From-v5.0-blue.svg?style=flat-square" alt="From-v5.0" /> |
 | `parquet.limit` | `number` | `undefined` | Maximum number of rows to return. |
 | `parquet.offset` | `number` | `0` | Number of rows to skip before returning data. |

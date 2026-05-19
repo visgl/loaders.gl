@@ -79,6 +79,168 @@ test('DataSourceManager#unsubscribe prunes unused non-persistent DataSources', a
   expect(dataSource.closeCount, 'pruned DataSource is closed').toBe(1);
 });
 
+test('DataSourceManager#getOrCreate deduplicates string data keys', async () => {
+  const dataSourceManager = new DataSourceManager();
+  const url = 'https://example.com/data';
+  let createCount = 0;
+
+  const firstDataSource = dataSourceManager.getOrCreate({
+    data: url,
+    createDataSource: () => {
+      createCount++;
+      return new TestDataSource(url, {});
+    }
+  }) as TestDataSource;
+  const secondDataSource = dataSourceManager.getOrCreate({
+    data: url,
+    createDataSource: () => {
+      createCount++;
+      return new TestDataSource(url, {});
+    }
+  }) as TestDataSource;
+
+  expect(firstDataSource, 'first getOrCreate returns a DataSource').toBeInstanceOf(TestDataSource);
+  expect(secondDataSource, 'second getOrCreate returns the existing DataSource').toBe(
+    firstDataSource
+  );
+  expect(createCount, 'matching string data only creates one DataSource').toBe(1);
+
+  await dataSourceManager.release(url);
+  expect(firstDataSource.closeCount, 'first release keeps the retained DataSource open').toBe(0);
+  await dataSourceManager.release(url);
+  expect(firstDataSource.closeCount, 'second release closes the DataSource').toBe(1);
+});
+
+test('DataSourceManager#getOrCreate deduplicates pending DataSource promises', async () => {
+  const dataSourceManager = new DataSourceManager();
+  const dataSource = new TestDataSource('https://example.com/data', {});
+  let createCount = 0;
+  let resolveDataSource: (dataSource: TestDataSource) => void = () => {};
+  const dataSourcePromise = new Promise<TestDataSource>(resolve => {
+    resolveDataSource = resolve;
+  });
+
+  const firstDataSourcePromise = dataSourceManager.getOrCreate({
+    dataSourceId: 'source-a',
+    createDataSource: () => {
+      createCount++;
+      return dataSourcePromise;
+    }
+  });
+  const secondDataSourcePromise = dataSourceManager.getOrCreate({
+    dataSourceId: 'source-a',
+    createDataSource: () => {
+      createCount++;
+      return new TestDataSource('https://example.com/duplicate', {});
+    }
+  });
+
+  expect(secondDataSourcePromise, 'concurrent getOrCreate returns the same pending promise').toBe(
+    firstDataSourcePromise
+  );
+  expect(createCount, 'pending DataSource is only created once').toBe(1);
+
+  resolveDataSource(dataSource);
+  expect(await firstDataSourcePromise, 'pending promise resolves to the created DataSource').toBe(
+    dataSource
+  );
+
+  await dataSourceManager.release('source-a');
+  await dataSourceManager.release('source-a');
+});
+
+test('DataSourceManager#release closes when retain count reaches zero', async () => {
+  const dataSourceManager = new DataSourceManager();
+  const dataSource = new TestDataSource('https://example.com/data', {});
+
+  dataSourceManager.getOrCreate({
+    dataSourceId: 'source-a',
+    createDataSource: () => dataSource
+  });
+  dataSourceManager.getOrCreate({
+    dataSourceId: 'source-a',
+    createDataSource: () => new TestDataSource('https://example.com/duplicate', {})
+  });
+
+  await dataSourceManager.release('datasource://source-a');
+  expect(dataSource.closeCount, 'first release keeps one retained DataSource open').toBe(0);
+  expect(dataSourceManager.contains('source-a'), 'DataSource remains registered').toBe(true);
+
+  await dataSourceManager.release('source-a');
+  expect(dataSource.closeCount, 'final release closes the DataSource').toBe(1);
+  expect(dataSourceManager.contains('source-a'), 'DataSource is removed after final release').toBe(
+    false
+  );
+});
+
+test('DataSourceManager#release waits for subscribers before pruning non-persistent sources', async () => {
+  const dataSourceManager = new DataSourceManager();
+  const dataSource = new TestDataSource('https://example.com/data', {});
+
+  dataSourceManager.getOrCreate({
+    dataSourceId: 'source-a',
+    createDataSource: () => dataSource,
+    persistent: false
+  });
+  dataSourceManager.subscribe({
+    dataSourceId: 'source-a',
+    consumerId: 'consumer-a',
+    onChange: () => {}
+  });
+
+  await dataSourceManager.release('source-a');
+  expect(dataSource.closeCount, 'release keeps subscribed DataSource open').toBe(0);
+  expect(dataSourceManager.contains('source-a'), 'subscribed DataSource remains registered').toBe(
+    true
+  );
+
+  dataSourceManager.unsubscribe({consumerId: 'consumer-a'});
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  expect(dataSource.closeCount, 'unsubscribed non-persistent DataSource is pruned').toBe(1);
+  expect(dataSourceManager.contains('source-a'), 'pruned DataSource is removed').toBe(false);
+});
+
+test('DataSourceManager#getOrCreate deduplicates object data by identity', async () => {
+  const dataSourceManager = new DataSourceManager();
+  const firstData = {url: 'https://example.com/data'};
+  const secondData = {url: 'https://example.com/data'};
+  let createCount = 0;
+
+  const firstDataSource = dataSourceManager.getOrCreate({
+    data: firstData,
+    createDataSource: () => {
+      createCount++;
+      return new TestDataSource(firstData.url, {});
+    }
+  });
+  const secondDataSource = dataSourceManager.getOrCreate({
+    data: firstData,
+    createDataSource: () => {
+      createCount++;
+      return new TestDataSource(firstData.url, {});
+    }
+  });
+  const thirdDataSource = dataSourceManager.getOrCreate({
+    data: secondData,
+    createDataSource: () => {
+      createCount++;
+      return new TestDataSource(secondData.url, {});
+    }
+  });
+
+  expect(secondDataSource, 'same object identity returns existing DataSource').toBe(
+    firstDataSource
+  );
+  expect(
+    thirdDataSource,
+    'matching object contents with different identity creates a new source'
+  ).not.toBe(firstDataSource);
+  expect(createCount, 'one DataSource is created per object identity').toBe(2);
+
+  await dataSourceManager.finalize();
+});
+
 test('DataSourceManager#remove and finalize close managed DataSources', async () => {
   const dataSourceManager = new DataSourceManager();
   const firstDataSource = new TestDataSource('https://example.com/first', {});

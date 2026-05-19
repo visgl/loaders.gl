@@ -184,6 +184,27 @@ export class BinaryChunkReader {
     this.disposeBuffers();
   }
 
+  /** Read bytes as a Uint8Array, copying only when the requested range spans chunks. */
+  readBytes(length: number): Uint8Array {
+    const bufferOffsets = this.findBufferOffsets(length);
+    if (!bufferOffsets) {
+      throw new Error('binary data exhausted');
+    }
+
+    let bytes: Uint8Array;
+    if (bufferOffsets.length === 1) {
+      const [chunkIndex, [start, end]] = bufferOffsets[0];
+      const chunk = this.chunks[chunkIndex];
+      bytes = chunk.subarray(start, end);
+    } else {
+      bytes = this.combineBufferOffsets(bufferOffsets);
+    }
+
+    this.offset += length;
+    this.disposeBuffers();
+    return bytes;
+  }
+
   /** Advance the current offset. */
   skip(bytes: number): void {
     this.offset += bytes;

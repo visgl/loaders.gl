@@ -52,6 +52,31 @@ test('BinaryChunkReader#readInto across chunks', () => {
   expect(target).toEqual(new Uint8Array([3, 4, 5, 6]));
 });
 
+test('BinaryChunkReader#readBytes returns contiguous views without copying', () => {
+  const source = new Uint8Array([0, 1, 2, 3, 4]);
+  const reader = new BinaryChunkReader();
+  reader.write(source.subarray(1, 5));
+
+  const bytes = reader.readBytes(3);
+
+  expect(bytes.buffer).toBe(source.buffer);
+  expect(bytes.byteOffset).toBe(source.byteOffset + 1);
+  expect(bytes).toEqual(new Uint8Array([1, 2, 3]));
+});
+
+test('BinaryChunkReader#readBytes copies only requested cross-chunk bytes', () => {
+  const reader = new BinaryChunkReader();
+  reader.write(CHUNK_1);
+  reader.write(CHUNK_2);
+  reader.skip(2);
+
+  const bytes = reader.readBytes(3);
+
+  expect(bytes.byteOffset).toBe(0);
+  expect(bytes.byteLength).toBe(3);
+  expect(bytes).toEqual(new Uint8Array([3, 4, 5]));
+});
+
 test('BinaryChunkReader#getDataView returns aligned contiguous views', () => {
   const source = new Uint8Array([0, 1, 2, 3, 4]);
   const reader = new BinaryChunkReader();

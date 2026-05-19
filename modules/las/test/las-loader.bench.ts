@@ -5,16 +5,26 @@
 import {encodeSync, fetchFile, parse, parseInBatches} from '@loaders.gl/core';
 import {LASLoader, LASWriter} from '@loaders.gl/las';
 import type {LASLoaderOptions} from '@loaders.gl/las';
-import type {Mesh} from '@loaders.gl/schema';
+import {
+  createLAZChunkDecoderCursor,
+  decodeLAZChunk,
+  getLAZChunkByteLength
+} from '@loaders.gl/loader-utils';
+import type {LAZPointDataTarget} from '@loaders.gl/loader-utils';
+import type {MeshArrowTable} from '@loaders.gl/schema';
+import {parseLASHeader} from '../src/lib/typescript/parse-las';
 
 const LAZ_1_2_BINARY_URL = '@loaders.gl/las/test/data/indoor.laz';
 const LAZ_1_4_BINARY_URL = '@loaders.gl/las/test/data/ellipsoid-1.4.laz';
+const LAZ_1_2_PDRF_3 = 3;
+const LAZ_1_4_PDRF_7 = 7;
 const BATCH_SIZE = 25_000;
 const STREAMING_LAZ_CHUNK_SIZE = 64 * 1024;
 const LAZ_1_2_BACKENDS: NonNullable<NonNullable<LASLoaderOptions['las']>['backend']>[] = [
   'laz-perf',
   'copc',
-  'laz-rs'
+  'laz-rs',
+  'typescript'
 ];
 const LAZ_1_4_BACKENDS: NonNullable<NonNullable<LASLoaderOptions['las']>['backend']>[] = [
   'copc',
@@ -33,23 +43,30 @@ const STREAMING_LAZ_1_4_BACKENDS: NonNullable<NonNullable<LASLoaderOptions['las'
 export default async function lasLoaderBench(bench) {
   const response = await fetchFile(LAZ_1_2_BINARY_URL);
   const lazArrayBuffer = await response.arrayBuffer();
+  assertLAZ12PDRF3BenchmarkFixture(lazArrayBuffer);
   const laz14Response = await fetchFile(LAZ_1_4_BINARY_URL);
   const laz14ArrayBuffer = await laz14Response.arrayBuffer();
+  assertLAZ14PDRF7BenchmarkFixture(laz14ArrayBuffer);
+  const laz14Header = parseLASHeader(laz14ArrayBuffer);
+  const lazChunks = createBenchmarkArrayBufferChunks(lazArrayBuffer, STREAMING_LAZ_CHUNK_SIZE);
   const laz14Chunks = createBenchmarkArrayBufferChunks(laz14ArrayBuffer, STREAMING_LAZ_CHUNK_SIZE);
-  const mesh = await createBenchmarkMesh(lazArrayBuffer);
-  const laz14Mesh = await createBenchmarkLAZ14Mesh(laz14ArrayBuffer);
-  const pointCount = mesh.header.vertexCount;
+  const laz14FirstChunk = getFirstLAZ14Chunk(laz14ArrayBuffer);
+  const lazStreamingStats = await collectTypeScriptLAZStreamingStats(lazChunks);
+  const laz14StreamingStats = await collectTypeScriptLAZStreamingStats(laz14Chunks);
+  const table = await createBenchmarkArrowTable(lazArrayBuffer);
+  const laz14Table = await createBenchmarkLAZ14ArrowTable(laz14ArrayBuffer);
+  const pointCount = table.data.numRows;
   const benchmarkOptions = {multiplier: pointCount, unit: 'output points', minIterations: 3};
   const laz14BenchmarkOptions = {
-    multiplier: laz14Mesh.header.vertexCount,
+    multiplier: laz14Table.data.numRows,
     unit: 'output points',
     minIterations: 3
   };
 
-  bench.groupSorted('LASLoader parse LAZ 1.2 (TypeScript LAZ unsupported)');
+  bench.groupSorted('LASLoader parse LAZ 1.2 PDRF 3');
 
   for (const backend of LAZ_1_2_BACKENDS) {
-    bench.addAsync(`parse LAZ 1.2 backend=${backend}`, benchmarkOptions, async () => {
+    bench.addAsync(`parse LAZ 1.2 PDRF 3 backend=${backend}`, benchmarkOptions, async () => {
       await parse(lazArrayBuffer, LASLoader, {
         core: {worker: false},
         las: {backend, shape: 'arrow-table'}
@@ -57,10 +74,27 @@ export default async function lasLoaderBench(bench) {
     });
   }
 
-  bench.groupSorted('LASLoader parse LAZ 1.4');
+  bench.groupSorted('LASLoader parseInBatches streaming LAZ 1.2 PDRF 3');
+
+  bench.addAsync(
+    `parseInBatches streaming LAZ 1.2 PDRF 3 backend=typescript ${formatStreamingStats(lazStreamingStats)}`,
+    benchmarkOptions,
+    async () => {
+      const batches = await parseInBatches(lazChunks, LASLoader, {
+        batchSize: BATCH_SIZE,
+        core: {worker: false},
+        las: {backend: 'typescript', shape: 'arrow-table'}
+      });
+      for await (const _batch of batches) {
+        _batch;
+      }
+    }
+  );
+
+  bench.groupSorted('LASLoader parse LAZ 1.4 PDRF 7');
 
   for (const backend of LAZ_1_4_BACKENDS) {
-    bench.addAsync(`parse LAZ 1.4 backend=${backend}`, laz14BenchmarkOptions, async () => {
+    bench.addAsync(`parse LAZ 1.4 PDRF 7 backend=${backend}`, laz14BenchmarkOptions, async () => {
       await parse(laz14ArrayBuffer, LASLoader, {
         core: {worker: false},
         las: {backend, shape: 'arrow-table'}
@@ -68,11 +102,11 @@ export default async function lasLoaderBench(bench) {
     });
   }
 
-  bench.groupSorted('LASLoader parseInBatches streaming LAZ 1.4');
+  bench.groupSorted('LASLoader parseInBatches streaming LAZ 1.4 PDRF 7');
 
   for (const backend of STREAMING_LAZ_1_4_BACKENDS) {
     bench.addAsync(
-      `parseInBatches streaming LAZ 1.4 backend=${backend}`,
+      `parseInBatches streaming LAZ 1.4 PDRF 7 backend=${backend} ${formatStreamingStats(laz14StreamingStats)}`,
       laz14BenchmarkOptions,
       async () => {
         const batches = await parseInBatches(laz14Chunks, LASLoader, {
@@ -87,40 +121,258 @@ export default async function lasLoaderBench(bench) {
     );
   }
 
+  bench.groupSorted('TypeScript LAZ raw chunk decode');
+
+  bench.add(
+    'decodeLAZChunk LAZ 1.4 PDRF 7 backend=typescript',
+    {
+      multiplier: laz14FirstChunk.metadata.pointCount,
+      unit: 'output points',
+      minIterations: 3
+    },
+    () => {
+      decodeLAZChunk(laz14FirstChunk.compressed, laz14FirstChunk.metadata);
+    }
+  );
+
+  bench.add(
+    'decodeLAZChunk cursor batches LAZ 1.4 PDRF 7 backend=typescript',
+    {
+      multiplier: laz14FirstChunk.metadata.pointCount,
+      unit: 'output points',
+      minIterations: 3
+    },
+    () => {
+      const pointByteLength = laz14FirstChunk.metadata.pointDataRecordLength;
+      const output = new Uint8Array(BATCH_SIZE * pointByteLength);
+      const cursor = createLAZChunkDecoderCursor(
+        laz14FirstChunk.compressed,
+        laz14FirstChunk.metadata
+      );
+      while (cursor.remainingPointCount > 0) {
+        cursor.decodeInto(output, 0, Math.min(BATCH_SIZE, cursor.remainingPointCount));
+      }
+    }
+  );
+
+  bench.add(
+    'decodeLAZChunk cursor point-data LAZ 1.4 PDRF 7 backend=typescript',
+    {
+      multiplier: laz14FirstChunk.metadata.pointCount,
+      unit: 'output points',
+      minIterations: 3
+    },
+    () => {
+      const target = createLAZPointDataBenchmarkTarget(
+        laz14FirstChunk.metadata.pointCount,
+        laz14Header
+      );
+      const cursor = createLAZChunkDecoderCursor(
+        laz14FirstChunk.compressed,
+        laz14FirstChunk.metadata
+      );
+      while (cursor.remainingPointCount > 0) {
+        const targetPointOffset = laz14FirstChunk.metadata.pointCount - cursor.remainingPointCount;
+        target.pointOffset = targetPointOffset;
+        cursor.decodeIntoPointData(target, Math.min(BATCH_SIZE, cursor.remainingPointCount));
+      }
+    }
+  );
+
   bench.groupSorted('LASWriter');
 
   bench.add('LASWriter LAS 1.2 backend=typescript', benchmarkOptions, () => {
-    encodeBenchmarkLASArrayBuffer(mesh, '1.2');
+    encodeBenchmarkLASArrayBuffer(table, '1.2');
   });
   bench.add('LASWriter LAS 1.4 backend=typescript', benchmarkOptions, () => {
-    encodeBenchmarkLASArrayBuffer(mesh, '1.4');
+    encodeBenchmarkLASArrayBuffer(table, '1.4');
   });
 
   return bench;
 }
 
 /**
- * Creates one mesh source used by all LAS benchmarks.
- * @param lazArrayBuffer Source LAZ fixture bytes
- * @returns Decoded benchmark mesh
+ * Collects one set of internal copy/allocation counters outside benchmark timing.
+ * @param chunks Pre-split LAZ file chunks
+ * @returns TypeScript LAZ streaming copy/allocation counters
  */
-async function createBenchmarkMesh(lazArrayBuffer: ArrayBuffer): Promise<Mesh> {
-  return (await parse(lazArrayBuffer, LASLoader, {
+async function collectTypeScriptLAZStreamingStats(chunks: ArrayBuffer[]): Promise<{
+  copiedBytes: number;
+  chunkConcatenations: number;
+  rawBatchAllocations: number;
+  decodedChunkAllocations: number;
+}> {
+  const lazStreamingStats = {
+    copiedBytes: 0,
+    chunkConcatenations: 0,
+    rawBatchAllocations: 0,
+    decodedChunkAllocations: 0
+  };
+  const batches = await parseInBatches(chunks, LASLoader, {
+    batchSize: BATCH_SIZE,
     core: {worker: false},
-    las: {backend: 'laz-rs'}
-  })) as Mesh;
+    las: {
+      backend: 'typescript',
+      shape: 'arrow-table',
+      lazStreamingStats
+    } as LASLoaderOptions['las'] & {
+      lazStreamingStats: typeof lazStreamingStats;
+    }
+  });
+  for await (const _batch of batches) {
+    _batch;
+  }
+  return lazStreamingStats;
 }
 
 /**
- * Creates one LAZ 1.4 mesh source used to size streaming LAZ benchmarks.
- * @param lazArrayBuffer Source LAZ 1.4 fixture bytes
- * @returns Decoded benchmark mesh
+ * Formats internal streaming counters for benchmark labels.
+ * @param stats TypeScript LAZ streaming counters
+ * @returns Compact benchmark label suffix
  */
-async function createBenchmarkLAZ14Mesh(lazArrayBuffer: ArrayBuffer): Promise<Mesh> {
+function formatStreamingStats(stats: {
+  copiedBytes: number;
+  chunkConcatenations: number;
+  rawBatchAllocations: number;
+  decodedChunkAllocations: number;
+}): string {
+  return `copied=${stats.copiedBytes}B concat=${stats.chunkConcatenations} rawBatches=${stats.rawBatchAllocations} decodedChunks=${stats.decodedChunkAllocations}`;
+}
+
+/**
+ * Confirms the LAS 1.2 benchmark fixture stays on the PDRF 3 path used by the demo data.
+ * @param arrayBuffer Complete LAS 1.2 LAZ fixture bytes
+ */
+function assertLAZ12PDRF3BenchmarkFixture(arrayBuffer: ArrayBuffer): void {
+  const header = parseLASHeader(arrayBuffer);
+  if (header.pointsFormatId !== LAZ_1_2_PDRF_3) {
+    throw new Error(
+      `LAS benchmark fixture ${LAZ_1_2_BINARY_URL} must use PDRF 3; received PDRF ${header.pointsFormatId}`
+    );
+  }
+}
+
+/**
+ * Confirms the LAS 1.4 benchmark fixture stays on the PDRF 7 path being optimized.
+ * @param arrayBuffer Complete LAS 1.4 LAZ fixture bytes
+ */
+function assertLAZ14PDRF7BenchmarkFixture(arrayBuffer: ArrayBuffer): void {
+  const header = parseLASHeader(arrayBuffer);
+  if (header.pointsFormatId !== LAZ_1_4_PDRF_7) {
+    throw new Error(
+      `LAS benchmark fixture ${LAZ_1_4_BINARY_URL} must use PDRF 7; received PDRF ${header.pointsFormatId}`
+    );
+  }
+}
+
+/**
+ * Extracts the first fixed-size LAS 1.4 LAZ chunk for raw decoder benchmarks.
+ * @param arrayBuffer Complete LAS 1.4 LAZ file bytes
+ * @returns Compressed chunk bytes and decoder metadata
+ */
+function getFirstLAZ14Chunk(arrayBuffer: ArrayBuffer): {
+  compressed: Uint8Array;
+  metadata: {pointDataRecordFormat: number; pointDataRecordLength: number; pointCount: number};
+} {
+  const bytes = new Uint8Array(arrayBuffer);
+  const header = parseLASHeader(arrayBuffer);
+  const chunkSize = getLASZipChunkSize(bytes, header.headerSize || 375, header.vlrCount || 0);
+  const metadata = {
+    pointDataRecordFormat: header.pointsFormatId,
+    pointDataRecordLength: header.pointsStructSize,
+    pointCount: Math.min(chunkSize, header.pointsCount)
+  };
+  const compressed = bytes.subarray(header.pointsOffset + 8);
+  const chunkByteLength = getLAZChunkByteLength(compressed, metadata);
+  return {compressed: compressed.subarray(0, chunkByteLength), metadata};
+}
+
+/**
+ * Creates typed-array output targets for direct LAZ point-data decode benchmarks.
+ * @param pointCount Number of points to decode.
+ * @param header LAS header with scale and offset metadata.
+ * @returns Direct decode point-data target.
+ */
+function createLAZPointDataBenchmarkTarget(
+  pointCount: number,
+  header: ReturnType<typeof parseLASHeader>
+): LAZPointDataTarget {
+  return {
+    positions: new Float32Array(pointCount * 3),
+    intensities: new Uint16Array(pointCount),
+    classifications: new Uint8Array(pointCount),
+    rawColors: new Uint16Array(pointCount * 3),
+    pointOffset: 0,
+    scale: header.scale,
+    offset: header.offset
+  };
+}
+
+/**
+ * Reads the fixed LASzip chunk size from the LASzip VLR.
+ * @param bytes Complete LAS/LAZ file bytes
+ * @param headerSize LAS public header size
+ * @param vlrCount Number of VLRs in the file
+ * @returns LASzip fixed chunk point count
+ */
+function getLASZipChunkSize(bytes: Uint8Array, headerSize: number, vlrCount: number): number {
+  const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let offset = headerSize;
+
+  for (let index = 0; index < vlrCount; index++) {
+    const userId = readNullTerminatedAscii(bytes, offset + 2, 16);
+    const recordId = dataView.getUint16(offset + 18, true);
+    const recordLength = dataView.getUint16(offset + 20, true);
+    const dataOffset = offset + 54;
+    if (userId === 'laszip encoded' && recordId === 22204) {
+      return dataView.getUint32(dataOffset + 12, true);
+    }
+    offset = dataOffset + recordLength;
+  }
+
+  throw new Error('LASzip VLR not found');
+}
+
+/**
+ * Reads an ASCII string that may be padded with null bytes.
+ * @param bytes Source bytes
+ * @param offset String offset
+ * @param length Fixed field length
+ * @returns String without trailing null bytes
+ */
+function readNullTerminatedAscii(bytes: Uint8Array, offset: number, length: number): string {
+  let end = offset;
+  const maxEnd = offset + length;
+  while (end < maxEnd && bytes[end] !== 0) {
+    end++;
+  }
+  return String.fromCharCode(...bytes.subarray(offset, end));
+}
+
+/**
+ * Creates one Arrow table source used by all LAS benchmarks.
+ * @param lazArrayBuffer Source LAZ fixture bytes
+ * @returns Decoded benchmark Arrow table
+ */
+async function createBenchmarkArrowTable(lazArrayBuffer: ArrayBuffer): Promise<MeshArrowTable> {
   return (await parse(lazArrayBuffer, LASLoader, {
     core: {worker: false},
-    las: {backend: 'laz-rs'}
-  })) as Mesh;
+    las: {backend: 'laz-rs', shape: 'arrow-table'}
+  })) as MeshArrowTable;
+}
+
+/**
+ * Creates one LAZ 1.4 Arrow table source used to size streaming LAZ benchmarks.
+ * @param lazArrayBuffer Source LAZ 1.4 fixture bytes
+ * @returns Decoded benchmark Arrow table
+ */
+async function createBenchmarkLAZ14ArrowTable(
+  lazArrayBuffer: ArrayBuffer
+): Promise<MeshArrowTable> {
+  return (await parse(lazArrayBuffer, LASLoader, {
+    core: {worker: false},
+    las: {backend: 'laz-rs', shape: 'arrow-table'}
+  })) as MeshArrowTable;
 }
 
 /**
@@ -142,17 +394,33 @@ function createBenchmarkArrayBufferChunks(
 }
 
 /**
- * Encodes the shared benchmark mesh as uncompressed LAS.
- * @param mesh Benchmark mesh
+ * Encodes the shared benchmark Arrow table as uncompressed LAS.
+ * @param table Benchmark Arrow table
  * @param version LAS output version
  * @returns LAS bytes
  */
-function encodeBenchmarkLASArrayBuffer(mesh: Mesh, version: '1.2' | '1.4'): ArrayBuffer {
-  return encodeSync(mesh, LASWriter, {
+function encodeBenchmarkLASArrayBuffer(table: MeshArrowTable, version: '1.2' | '1.4'): ArrayBuffer {
+  return encodeSync(table, LASWriter, {
     las: {
       version,
       pointDataRecordFormat:
-        version === '1.4' ? (mesh.attributes.COLOR_0 ? 7 : 6) : mesh.attributes.COLOR_0 ? 2 : 0
+        version === '1.4'
+          ? hasArrowColumn(table, 'COLOR_0')
+            ? 7
+            : 6
+          : hasArrowColumn(table, 'COLOR_0')
+            ? 2
+            : 0
     }
   });
+}
+
+/**
+ * Returns true when an Arrow table contains a named column.
+ * @param table Benchmark Arrow table
+ * @param name Column name
+ * @returns Whether the column is present
+ */
+function hasArrowColumn(table: MeshArrowTable, name: string): boolean {
+  return Boolean(table.data.getChild(name));
 }

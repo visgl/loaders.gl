@@ -22,6 +22,7 @@ import {normalizeLoaderOptions} from '../loader-utils/option-utils';
 import {fetchFile} from '../fetch/fetch-file';
 
 import {parse} from './parse';
+import {parseFile} from './parse-file';
 import {parseSync} from './parse-sync';
 import {parseInBatches} from './parse-in-batches';
 import {loadInBatches} from './load-in-batches';
@@ -96,6 +97,7 @@ export async function load(
     const runtimeCoreApi = {
       fetchFile,
       parse,
+      parseFile,
       parseSync,
       parseInBatches,
       load,
@@ -116,6 +118,7 @@ export async function load(
     const runtimeCoreApi = {
       fetchFile,
       parse,
+      parseFile,
       parseSync,
       parseInBatches,
       load,
@@ -141,6 +144,7 @@ export async function load(
         {
           fetchFile,
           parse,
+          parseFile,
           parseSync,
           parseInBatches,
           load,

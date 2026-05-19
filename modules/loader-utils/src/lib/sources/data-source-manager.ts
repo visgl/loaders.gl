@@ -49,6 +49,20 @@ export type DataSourceManagerSubscribeParameters<
   requestId?: string;
 };
 
+/** Parameters for deduplicated DataSource creation. */
+export type DataSourceManagerGetOrCreateParameters<
+  DataSourceT extends ManageableDataSource = ManageableDataSource
+> = {
+  /** Stable id used to deduplicate and later release the DataSource. */
+  dataSourceId?: string;
+  /** Input data used to derive a dedupe id when dataSourceId is not provided. */
+  data?: string | Blob | object;
+  /** Factory called only when the manager does not already have a matching DataSource. */
+  createDataSource: (data?: string | Blob | object) => DataSourceT | Promise<DataSourceT>;
+  /** If false, the DataSource may be pruned once it has no subscribers or retains. */
+  persistent?: boolean;
+};
+
 /** Subscription state for one consumer, keyed by request id. */
 type Consumer = Record<string, DataSourceSubscriber & {dataSourceId: string}>;
 
@@ -63,6 +77,10 @@ export class DataSourceManager {
   private dataSources: Record<string, ManagedDataSourceEntry> = {};
   /** Consumer subscriptions keyed by consumer id. */
   private consumers: Record<string, Consumer> = {};
+  /** Generated DataSource ids keyed by object identity for non-string inputs. */
+  private dataSourceIds = new WeakMap<object, string>();
+  /** Monotonic counter used to create stable object-identity DataSource ids. */
+  private nextDataSourceId: number = 0;
   /** Pending prune timer used to batch unsubscribe cleanup. */
   private pruneRequest: ReturnType<typeof setTimeout> | null = null;
 
@@ -99,6 +117,29 @@ export class DataSourceManager {
     dataSourceEntry.persistent = persistent;
   }
 
+  /** Returns an existing DataSource for the same key, or creates and retains a new one. */
+  getOrCreate<DataSourceT extends ManageableDataSource = ManageableDataSource>({
+    dataSourceId,
+    data,
+    createDataSource,
+    persistent = true
+  }: DataSourceManagerGetOrCreateParameters<DataSourceT>): DataSourceT | Promise<DataSourceT> {
+    const normalizedDataSourceId = this.resolveDataSourceId(dataSourceId, data);
+    let dataSourceEntry = this.dataSources[normalizedDataSourceId];
+
+    if (!dataSourceEntry) {
+      dataSourceEntry = new ManagedDataSourceEntry(normalizedDataSourceId, createDataSource(data));
+      dataSourceEntry.persistent = persistent;
+      this.dataSources[normalizedDataSourceId] = dataSourceEntry;
+    } else if (dataSourceEntry.isPlaceholder()) {
+      dataSourceEntry.setDataSource(createDataSource(data));
+      dataSourceEntry.persistent = persistent;
+    }
+
+    dataSourceEntry.retain();
+    return dataSourceEntry.getDataSource() as DataSourceT | Promise<DataSourceT>;
+  }
+
   /** Removes a managed DataSource and releases its lifecycle resources. */
   async remove(dataSourceId: string): Promise<void> {
     const normalizedDataSourceId = this.normalizeDataSourceId(dataSourceId);
@@ -107,6 +148,20 @@ export class DataSourceManager {
     if (dataSourceEntry) {
       delete this.dataSources[normalizedDataSourceId];
       await dataSourceEntry.delete();
+    }
+  }
+
+  /** Releases one retained DataSource reference created by getOrCreate(). */
+  async release(dataSourceId: string): Promise<void> {
+    const normalizedDataSourceId = this.normalizeDataSourceId(dataSourceId);
+    const dataSourceEntry = this.dataSources[normalizedDataSourceId];
+
+    if (dataSourceEntry) {
+      dataSourceEntry.release();
+      if (!dataSourceEntry.isRetained() && !dataSourceEntry.inUse()) {
+        delete this.dataSources[normalizedDataSourceId];
+        await dataSourceEntry.delete();
+      }
     }
   }
 
@@ -183,6 +238,25 @@ export class DataSourceManager {
       : dataSourceId;
   }
 
+  /** Resolves an explicit or data-derived DataSource id for deduplicated creation. */
+  private resolveDataSourceId(dataSourceId?: string, data?: string | Blob | object): string {
+    if (dataSourceId) {
+      return this.normalizeDataSourceId(dataSourceId);
+    }
+    if (typeof data === 'string') {
+      return this.normalizeDataSourceId(data);
+    }
+    if (data && typeof data === 'object') {
+      let objectDataSourceId = this.dataSourceIds.get(data);
+      if (!objectDataSourceId) {
+        objectDataSourceId = `object:${this.nextDataSourceId++}`;
+        this.dataSourceIds.set(data, objectDataSourceId);
+      }
+      return objectDataSourceId;
+    }
+    throw new Error('DataSourceManager.getOrCreate requires dataSourceId or data.');
+  }
+
   /** Tracks one consumer request against one managed DataSource entry. */
   private track(
     consumerId: string,
@@ -219,7 +293,11 @@ export class DataSourceManager {
     const deletedDataSources: Promise<void>[] = [];
     for (const dataSourceId of Object.keys(this.dataSources)) {
       const dataSourceEntry = this.dataSources[dataSourceId];
-      if (!dataSourceEntry.persistent && !dataSourceEntry.inUse()) {
+      if (
+        !dataSourceEntry.persistent &&
+        !dataSourceEntry.inUse() &&
+        !dataSourceEntry.isRetained()
+      ) {
         delete this.dataSources[dataSourceId];
         deletedDataSources.push(dataSourceEntry.delete());
       }
@@ -237,6 +315,8 @@ class ManagedDataSourceEntry {
   isLoaded: boolean = false;
   /** If false, the manager may prune the DataSource after all subscribers leave. */
   persistent?: boolean;
+  /** Number of retained callers currently using this DataSource. */
+  retainCount: number = 0;
 
   /** Monotonic counter used to ignore stale promise resolutions. */
   private loadCount: number = 0;
@@ -245,7 +325,7 @@ class ManagedDataSourceEntry {
   /** Last DataSource value provided to this entry. */
   private dataSource: ManageableDataSource | Promise<ManageableDataSource> | null | undefined;
   /** Promise that tracks the active asynchronous DataSource resolution. */
-  private loader?: Promise<void>;
+  private loader?: Promise<ManageableDataSource>;
   /** Error from the latest asynchronous DataSource resolution. */
   private error?: Error;
   /** Resolved DataSource instance, or null for an unresolved placeholder. */
@@ -272,6 +352,21 @@ class ManagedDataSourceEntry {
     return this.subscribers.size > 0;
   }
 
+  /** Increments the retained caller count. */
+  retain(): void {
+    this.retainCount++;
+  }
+
+  /** Decrements the retained caller count. */
+  release(): void {
+    this.retainCount = Math.max(this.retainCount - 1, 0);
+  }
+
+  /** Returns true when at least one caller retained this DataSource. */
+  isRetained(): boolean {
+    return this.retainCount > 0;
+  }
+
   /** Releases this DataSource and clears its subscribers. */
   async delete(): Promise<void> {
     this.loadCount++;
@@ -289,7 +384,12 @@ class ManagedDataSourceEntry {
     if (this.isLoaded) {
       return this.error ? Promise.reject(this.error) : this.content;
     }
-    return this.loader!.then(() => this.getDataSource() as ManageableDataSource);
+    return this.loader!;
+  }
+
+  /** Returns true when this entry is an unresolved placeholder. */
+  isPlaceholder(): boolean {
+    return this.isLoaded && this.content === null && this.dataSource === null && !this.error;
   }
 
   /** Replaces the underlying DataSource and notifies subscribers. */
@@ -321,16 +421,20 @@ class ManagedDataSourceEntry {
           } else {
             void closeDataSource(result);
           }
+          return result;
         })
         .catch(error => {
+          const normalizedError = normalizeError(error);
           if (this.loadCount === loadCount) {
             this.isLoaded = true;
-            this.error = normalizeError(error);
+            this.error = normalizedError;
           }
+          throw normalizedError;
         });
       this.notifySubscribers();
     } else {
       this.isLoaded = true;
+      this.loader = undefined;
       this.error = undefined;
       this.content = dataSource;
       this.notifySubscribers();

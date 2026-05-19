@@ -44,6 +44,7 @@ function createWorkerCoreApi(): CoreAPI {
       await fetch(urlOrData as RequestInfo | URL, fetchOptions),
     parseSync: unavailable('parseSync'),
     parse: unavailable('parse'),
+    parseFile: unavailable('parseFile'),
     parseInBatches: unavailable('parseInBatches'),
     load: unavailable('load'),
     loadInBatches: unavailable('loadInBatches')

@@ -85,22 +85,18 @@ test('ParquetLoader#parse applies reader options without passing wasmUrl upstrea
   t.end();
 });
 
-test('ParquetLoader#arrow-table ignores implementation option and stays on wasm', async (t) => {
+test('ParquetLoader#arrow-table rejects deprecated js implementation option', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  const table = (await load(url, ParquetLoader, {
-    parquet: {
-      shape: 'arrow-table',
-      implementation: 'js',
-      limit: 3
-    }
-  } as any)) as ArrowTable;
-
-  t.equal(table.shape, 'arrow-table');
-  t.equal(table.data.numRows, 3, 'applies limit');
-  t.deepEqual(
-    table.schema?.fields.map((field) => field.name),
-    ['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry'],
-    'keeps the wasm schema'
+  await t.rejects(
+    load(url, ParquetLoader, {
+      parquet: {
+        shape: 'arrow-table',
+        implementation: 'js',
+        limit: 3
+      }
+    } as any),
+    /does not support shape "arrow-table"/,
+    'deprecated js implementation maps to TypeScript backend and rejects Arrow output'
   );
   t.end();
 });
@@ -130,28 +126,20 @@ test('ParquetLoader#load supports arrow-table shape', async (t) => {
   t.end();
 });
 
-test('ParquetLoader#arrow-table loadInBatches ignores implementation option and stays on wasm', async (t) => {
+test('ParquetLoader#arrow-table loadInBatches rejects deprecated js implementation option', async (t) => {
   const url = `${PARQUET_DIR}/geoparquet/example.parquet`;
-  const iterator = await loadInBatches(url, ParquetLoader, {
-    parquet: {
-      shape: 'arrow-table',
-      implementation: 'js',
-      limit: 5,
-      batchSize: 2
-    }
-  } as any);
-
-  const batchLengths: number[] = [];
-  for await (const batch of iterator) {
-    batchLengths.push(batch.length);
-    t.equal(batch.shape, 'arrow-table');
-    t.deepEqual(
-      batch.schema.fields.map((field) => field.name),
-      ['pop_est', 'continent', 'name', 'iso_a3', 'gdp_md_est', 'geometry']
-    );
-  }
-
-  t.deepEqual(batchLengths, [2, 2, 1], 'chunks batches using batchSize');
+  await t.rejects(
+    loadInBatches(url, ParquetLoader, {
+      parquet: {
+        shape: 'arrow-table',
+        implementation: 'js',
+        limit: 5,
+        batchSize: 2
+      }
+    } as any),
+    /does not support shape "arrow-table"/,
+    'deprecated js implementation maps to TypeScript backend and rejects Arrow output'
+  );
   t.end();
 });
 
@@ -279,7 +267,6 @@ test('ParquetLoader#loadInBatches supports arrow-table shape', async (t) => {
   const iterator = await loadInBatches(url, ParquetLoader, {
     parquet: {
       shape: 'arrow-table',
-      implementation: 'js',
       batchSize: 2,
       limit: 5
     }
@@ -331,7 +318,7 @@ test('GeoParquetLoader#supports arrow-table shape', async (t) => {
   const table = await load(url, GeoParquetLoader, {
     parquet: {
       shape: 'arrow-table',
-      implementation: 'wasm'
+      backend: 'wasm'
     }
   });
 

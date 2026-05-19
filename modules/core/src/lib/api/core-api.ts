@@ -5,6 +5,7 @@
 import type {CoreAPI} from '@loaders.gl/loader-utils';
 import {fetchFile} from '../fetch/fetch-file';
 import {parse} from './parse';
+import {parseFile} from './parse-file';
 import {parseSync} from './parse-sync';
 import {parseInBatches} from './parse-in-batches';
 import {load} from './load';
@@ -16,6 +17,7 @@ import {loadInBatches} from './load-in-batches';
 export const coreApi: CoreAPI = Object.freeze({
   fetchFile,
   parse,
+  parseFile,
   parseSync,
   parseInBatches,
   load,
