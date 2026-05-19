@@ -1,4 +1,5 @@
 import {expect, test} from 'vitest';
+import {waitForCondition} from '@loaders.gl/test-utils/vitest';
 import type {DataSourceOptions} from '../../../src';
 import {DataSource, DataSourceManager} from '../../../src';
 
@@ -71,7 +72,7 @@ test('DataSourceManager#unsubscribe prunes unused non-persistent DataSources', a
   });
   dataSourceManager.unsubscribe({consumerId: 'consumer-a'});
 
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await waitForCondition(() => !dataSourceManager.contains('source-a'));
 
   expect(dataSourceManager.contains('source-a'), 'unused non-persistent DataSource is pruned').toBe(
     false
@@ -195,7 +196,7 @@ test('DataSourceManager#release waits for subscribers before pruning non-persist
   );
 
   dataSourceManager.unsubscribe({consumerId: 'consumer-a'});
-  await new Promise(resolve => setTimeout(resolve, 0));
+  await waitForCondition(() => !dataSourceManager.contains('source-a'));
 
   expect(dataSource.closeCount, 'unsubscribed non-persistent DataSource is pruned').toBe(1);
   expect(dataSourceManager.contains('source-a'), 'pruned DataSource is removed').toBe(false);
