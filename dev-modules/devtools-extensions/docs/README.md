@@ -4,7 +4,7 @@
 
 Current support:
 - Biome base config and root lint wrapper used by `yarn lint` / `yarn lint fix`
-- Benchmark resolver used by `yarn test bench`
+- Benchmark resolver used by `yarn test bench`, including source-first workspace resolution and TypeScript transpilation so Node benchmarks do not require prebuilt `dist`
 - Browser benchmark runner used by `yarn test bench-browser` / `yarn test bench-headless`
 
 Boundary:

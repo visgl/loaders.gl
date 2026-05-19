@@ -12,7 +12,7 @@ import {LasDocsTabs} from '@site/src/components/docs/las-docs-tabs';
 The default `laz-perf` backend only supports LAS/LAZ files up to LAS v1.3. Use `las.backend: 'copc'`, `las.backend: 'laz-rs'`, or `las.backend: 'typescript'` for LAS 1.4 point formats supported by those backends.
 :::
 
-`LASLoader` parses LAS/LAZ point clouds into the legacy [PointCloud](/docs/specifications/category-mesh) object by default. Set `las.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
+`LASLoader` parses point clouds in the LASER file format into the legacy [PointCloud](/docs/specifications/category-mesh) object by default. Set `las.shape: 'arrow-table'` to return a [Mesh Arrow table](/docs/specifications/category-mesh#mesh-arrow-tables).
 
 | Loader           | Output             | Use when                                  |
 | ---------------- | ------------------ | ----------------------------------------- |

@@ -4,11 +4,13 @@
 
 export type {JSONLoaderOptions} from './json-loader';
 export {JSONLoader} from './json-loader';
+export type {JSONTableLoaderOptions} from './json-table-loader';
+export {JSONTableLoader} from './json-table-loader';
 export type {NDJSONLoaderOptions} from './ndjson-loader';
 export {NDJSONLoader} from './ndjson-loader';
 
-export type {GeoJSONLoaderOptions as _GeoJSONLoaderOptions} from './geojson-loader';
+export type {GeoJSONLoaderOptions} from './geojson-loader';
 export {
-  GeoJSONLoader as _GeoJSONLoader,
-  GeoJSONWorkerLoader as _GeoJSONWorkerLoader
+  GeoJSONLoader,
+  GeoJSONWorkerLoader
 } from './geojson-loader';

@@ -121,6 +121,7 @@
           "modules/images/api-reference/image-bitmap-loader",
           "modules/images/api-reference/image-loader",
           "modules/json/api-reference/json-loader",
+          "modules/json/api-reference/json-table-loader",
           "modules/kml/api-reference/kml-loader",
           "modules/mvt/api-reference/map-style-loader",
           "modules/las/api-reference/las-loader",

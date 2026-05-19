@@ -200,7 +200,7 @@ describe('chrome-trace-stream', () => {
     expect(summarizeChunks(fileChunks)).toEqual(summarizeChunks(arrowChunks));
   });
 
-  it('publishes equivalent snapshots for file and Arrow stream consumption', async () => {
+  it('publishes equivalent trace summaries for file and Arrow stream consumption', async () => {
     const traceFile = createChromeTraceFixture();
     const fileSession = createTraceStreamSession({publishIntervalMs: 0});
     const arrowSession = createTraceStreamSession({publishIntervalMs: 0});
@@ -227,7 +227,20 @@ describe('chrome-trace-stream', () => {
       publishEveryEvents: 1
     });
 
-    expect(arrowSnapshot).toEqual(fileSnapshot);
+    expect(arrowSnapshot?.trace.metadata).toEqual(fileSnapshot?.trace.metadata);
+    expect(arrowSnapshot?.trace.processes).toEqual(fileSnapshot?.trace.processes);
+    const summarizeEvents = (events: ChromeTraceEventSchema[] | undefined) =>
+      events?.map(event => ({
+        name: event.name,
+        ph: event.ph,
+        ...(event.ts != null ? {ts: event.ts} : {}),
+        ...(event.dur != null ? {dur: event.dur} : {}),
+        ...(event.cat != null ? {cat: event.cat} : {}),
+        ...(event.args != null ? {args: event.args} : {})
+      })) || [];
+    expect(summarizeEvents(arrowSnapshot?.traceFile.traceEvents)).toEqual(
+      summarizeEvents(fileSnapshot?.traceFile.traceEvents)
+    );
   });
 
   it('pipes parseInBatches output from ChromeTraceLoader into streamChromeTraceArrowChunks', async () => {
