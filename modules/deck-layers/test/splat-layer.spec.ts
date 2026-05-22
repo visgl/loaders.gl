@@ -119,8 +119,10 @@ function createRADChunk(
 /** Creates a minimal RAD source with trackable chunk requests. */
 function createRADSource(chunks: ReturnType<typeof createRADChunk>[]) {
   const requestedChunkIndices: number[] = [];
+  const chunkRequestOptions: unknown[] = [];
   return {
     requestedChunkIndices,
+    chunkRequestOptions,
     async getMetadata() {
       return {
         count: chunks.reduce((total, chunk) => total + chunk.splats.splatCount, 0),
@@ -131,8 +133,9 @@ function createRADSource(chunks: ReturnType<typeof createRADChunk>[]) {
         }))
       };
     },
-    async getChunkSplats(chunkIndex: number) {
+    async getChunkSplats(chunkIndex: number, options?: unknown) {
       requestedChunkIndices.push(chunkIndex);
+      chunkRequestOptions.push(options);
       await Promise.resolve();
       return chunks[chunkIndex].splats;
     }
@@ -432,6 +435,12 @@ test('RADSplatLayer retains previous render pages while child chunks refine', as
   t.ok(
     source.requestedChunkIndices.includes(1),
     'requests child chunks without clearing the root page'
+  );
+  t.ok(
+    source.chunkRequestOptions.every(
+      (options: any) => options?.radChunk?.includeSphericalHarmonics === true
+    ),
+    'requests spherical harmonic coefficients for RAD render chunks'
   );
   (layer.state as any).runtime?.destroy();
   t.end();

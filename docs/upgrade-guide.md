@@ -131,6 +131,7 @@ This unifies top-level loading behavior:
 **@loaders.gl/ply, @loaders.gl/splats, and @loaders.gl/deck-layers**
 
 - Gaussian splat support is new and opt-in. Use `PLYLoader` with `ply.shape: 'arrow-table'`, or `SPLATLoader` / `KSPLATLoader` from `@loaders.gl/splats`, then pass the returned Mesh Arrow table to `SplatLayer`.
+- Spark RAD LoD support is new and opt-in. Use `RADSourceLoader` from `@loaders.gl/splats`, then pass the returned source to `RADSplatLayer` for paged deck.gl/luma.gl rendering.
 - `SplatLayer`'s WebGPU path is experimental. It supports GPU projection, culling, binning, tile sorting, and oriented covariance rendering, but WebGPU picking is disabled in this initial implementation.
 - The CPU/WebGL fallback remains circular-billboard based. Applications that need the oriented Gaussian renderer should request `renderMode: 'gpu'` and handle the clear error raised when the current deck.gl device is not WebGPU.
 

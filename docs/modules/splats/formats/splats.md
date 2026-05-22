@@ -55,6 +55,8 @@ demand.
 splat Mesh Arrow table shape used by the full-buffer loaders. RAD remains a paged
 LoD format, so large scenes should still be rendered with chunk paging, LoD tree
 traversal, and GPU residency management instead of eagerly decoding every chunk.
+`RADSplatLayer` from `@loaders.gl/deck-layers` provides the deck.gl/luma.gl RAD
+rendering path used by the website example.
 
 See the [RADSourceLoader](/docs/modules/splats/api-reference/rad-source-loader)
 API reference for usage.

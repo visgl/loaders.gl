@@ -1661,8 +1661,6 @@ class RADPageSplatEngine implements SplatRenderEngineLike {
       fallbackColor,
       gaussianSupportRadius
     );
-    splatData.sphericalHarmonics = undefined;
-    splatData.sphericalHarmonicsComponentCount = undefined;
     this.splatEngine.setSplatData(splatData);
   }
 
@@ -1994,7 +1992,7 @@ async function loadRADSplatChunkWithRetries(
         signal: abortController?.signal,
         radChunk: {
           includeLoDTree: true,
-          includeSphericalHarmonics: false
+          includeSphericalHarmonics: true
         }
       });
       return {chunkIndex, splats};

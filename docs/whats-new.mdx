@@ -12,7 +12,7 @@ Release Date: 2026
 - **Benchmarks** - Loaders have live benchmarks, some include external parser baselines such as uDSV, d3-dsv, csv-parser, and PapaParse for the CSVLoader allowing comparison of loaders.gl parsing performance against ecosystem SOTA (State-of-the-Art).
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF website examples.
-- **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
+- **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` / `RADSplatLayer` support add experimental rendering for 3D Gaussian splat scenes and Spark RAD LoD sources.
 
 **Features**
 
@@ -67,6 +67,7 @@ Release Date: 2026
 - `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.
 - `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
 - `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.
+- `RADSplatLayer` NEW - renders Spark RAD LoD sources from `RADSourceLoader` through deck.gl/luma.gl without a THREE.js bridge, using paged chunk loading, viewport-driven reselection, and RAD spherical harmonics when present.
 
 **@loaders.gl/loader-utils**
 

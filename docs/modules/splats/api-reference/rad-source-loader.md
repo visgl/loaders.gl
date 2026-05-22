@@ -64,7 +64,8 @@ const metadata = await parse(arrayBuffer, RADLoader);
 RAD is a paged LoD format, so exact Spark-style rendering still requires a
 renderer to drive page selection, LoD tree traversal, and GPU residency. The
 source exposes chunk decoding so renderers and examples can bridge RAD pages into
-the standard loaders.gl Gaussian splat Arrow table shape.
+the standard loaders.gl Gaussian splat Arrow table shape, or pass the source to
+`RADSplatLayer` from `@loaders.gl/deck-layers` for deck.gl/luma.gl rendering.
 
 ## Options
 
