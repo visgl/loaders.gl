@@ -964,7 +964,7 @@ export class SplatEngine {
       this.projectedData[projectedIndex + 2] = covariance.axis1[0];
       this.projectedData[projectedIndex + 3] = covariance.axis1[1];
       this.projectedData[projectedIndex + 4] = splatAlpha;
-      this.projectedData[projectedIndex + 5] = isVisible;
+      this.projectedData[projectedIndex + 5] = isVisible ? covariance.alphaScale : 0;
       this.projectedData[projectedIndex + 6] = covariance.maxAxisPixels;
       this.projectedData[projectedIndex + 7] = 0;
 

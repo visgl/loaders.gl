@@ -19,6 +19,7 @@ export const SPLAT_COMPUTE_SHADER = /* wgsl */ `\
 const WORKGROUP_SIZE: u32 = 256u;
 const TILE_SORT_MAX_SPLATS: u32 = 1024u;
 const INVALID_KEY: u32 = 4294967295u;
+const MIN_PROJECTION_DERIVATIVE_STEP: f32 = 0.001;
 
 @group(0) @binding(0) var<storage, read> positions: array<f32>;
 @group(0) @binding(1) var<storage, read> scales: array<f32>;
@@ -234,15 +235,28 @@ fn project(@builtin(global_invocation_id) globalId: vec3<u32>) {
   var covariance01 = 0.0;
   var covariance11 = 0.0;
   for (var axis = 0u; axis < 3u; axis = axis + 1u) {
-    let endpoint = projectToScreen(position + getScaledAxis(rotation, scale, axis));
+    let scaledAxis = getScaledAxis(rotation, scale, axis);
+    let axisLength = length(scaledAxis);
+    if (axisLength <= 0.000001) {
+      continue;
+    }
+    let derivativeStep = min(axisLength, MIN_PROJECTION_DERIVATIVE_STEP);
+    let derivativeScale = axisLength / derivativeStep;
+    let endpoint = projectToScreen(position + scaledAxis * (derivativeStep / axisLength));
     let delta = endpoint - center;
-    covariance00 = covariance00 + delta.x * delta.x;
-    covariance01 = covariance01 + delta.x * delta.y;
-    covariance11 = covariance11 + delta.y * delta.y;
+    let scaledDelta = delta * derivativeScale;
+    covariance00 = covariance00 + scaledDelta.x * scaledDelta.x;
+    covariance01 = covariance01 + scaledDelta.x * scaledDelta.y;
+    covariance11 = covariance11 + scaledDelta.y * scaledDelta.y;
   }
 
+  let detOrig = max(covariance00 * covariance11 - covariance01 * covariance01, 0.0);
   let kernelVariance = params.radius.z * params.radius.z;
-  let rawAxes = getCovarianceAxes(covariance00 + kernelVariance, covariance01, covariance11 + kernelVariance);
+  let blurredCovariance00 = covariance00 + kernelVariance;
+  let blurredCovariance11 = covariance11 + kernelVariance;
+  let det = max(blurredCovariance00 * blurredCovariance11 - covariance01 * covariance01, 0.0);
+  let blurAlphaScale = select(1.0, sqrt(max(detOrig / det, 0.0)), det > 0.000001);
+  let rawAxes = getCovarianceAxes(blurredCovariance00, covariance01, blurredCovariance11);
   let axes = clampAxes(rawAxes, params.radius.w);
   let maxAxisPixels = getMaxAxisPixels(axes);
   let opacity = opacities[index] * activeWeight;
@@ -255,7 +269,12 @@ fn project(@builtin(global_invocation_id) globalId: vec3<u32>) {
     isInsideFrustum(position, boundingRadius);
   let projectedBase = index * 2u;
   projected[projectedBase] = axes;
-  projected[projectedBase + 1u] = vec4<f32>(splatAlpha, select(0.0, 1.0, visible), maxAxisPixels, 0.0);
+  projected[projectedBase + 1u] = vec4<f32>(
+    splatAlpha,
+    select(0.0, blurAlphaScale, visible),
+    maxAxisPixels,
+    0.0
+  );
 
   let clip = transformPosition(position);
   let key = getDepthKey(clip, index);

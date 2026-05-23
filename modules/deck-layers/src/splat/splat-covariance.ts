@@ -10,9 +10,12 @@ export type ProjectedSplatCovariance = {
   axis1: readonly [number, number];
   /** Maximum one-sigma axis length in screen pixels. */
   maxAxisPixels: number;
+  /** Alpha multiplier that preserves energy after adding the screen-space kernel. */
+  alphaScale: number;
 };
 
 const MIN_AXIS_PIXELS = 1e-3;
+const MIN_PROJECTION_DERIVATIVE_STEP = 1e-3;
 
 /** Projects a 3D anisotropic Gaussian to a stable 2D screen-space covariance basis. */
 export function projectSplatCovarianceToScreen(options: {
@@ -43,18 +46,25 @@ export function projectSplatCovarianceToScreen(options: {
   let covariance11 = 0;
 
   for (const axis of axes) {
+    const axisLength = Math.hypot(axis[0], axis[1], axis[2]);
+    if (!Number.isFinite(axisLength) || axisLength <= Number.EPSILON) {
+      continue;
+    }
+    const derivativeStep = Math.min(axisLength, MIN_PROJECTION_DERIVATIVE_STEP);
+    const derivativeScale = axisLength / derivativeStep;
+    const stepScale = derivativeStep / axisLength;
     const endpoint: [number, number, number] = [
-      position[0] + axis[0],
-      position[1] + axis[1],
-      position[2] + axis[2]
+      position[0] + axis[0] * stepScale,
+      position[1] + axis[1] * stepScale,
+      position[2] + axis[2] * stepScale
     ];
     const projectedEndpoint = projectWorldPositionToScreen(
       options.modelViewProjectionMatrix,
       options.viewportSize,
       endpoint
     );
-    const deltaX = projectedEndpoint[0] - center[0];
-    const deltaY = projectedEndpoint[1] - center[1];
+    const deltaX = (projectedEndpoint[0] - center[0]) * derivativeScale;
+    const deltaY = (projectedEndpoint[1] - center[1]) * derivativeScale;
     if (!Number.isFinite(deltaX) || !Number.isFinite(deltaY)) {
       continue;
     }
@@ -63,16 +73,21 @@ export function projectSplatCovarianceToScreen(options: {
     covariance11 += deltaY * deltaY;
   }
 
+  const detOrig = Math.max(covariance00 * covariance11 - covariance01 * covariance01, 0);
   const kernel2DSize = Math.max(options.kernel2DSize ?? 0, 0);
   const kernelVariance = kernel2DSize * kernel2DSize;
-  return clampCovarianceAxes(
-    getCovarianceEllipseAxes(
-      covariance00 + kernelVariance,
-      covariance01,
-      covariance11 + kernelVariance
-    ),
+  const blurredCovariance00 = covariance00 + kernelVariance;
+  const blurredCovariance11 = covariance11 + kernelVariance;
+  const det = Math.max(blurredCovariance00 * blurredCovariance11 - covariance01 * covariance01, 0);
+  const alphaScale = det > Number.EPSILON ? Math.sqrt(Math.max(detOrig / det, 0)) : 1;
+  const covariance = clampCovarianceAxes(
+    getCovarianceEllipseAxes(blurredCovariance00, covariance01, blurredCovariance11),
     options.maxScreenSpaceSplatSize
   );
+  return {
+    ...covariance,
+    alphaScale
+  };
 }
 
 /** Returns three world-space Gaussian axes from a quaternion and scale vector. */
@@ -146,7 +161,8 @@ export function getCovarianceEllipseAxes(
   return {
     axis0: [vector0[0] * length0, vector0[1] * length0],
     axis1: [vector1[0] * length1, vector1[1] * length1],
-    maxAxisPixels: Math.max(length0, length1)
+    maxAxisPixels: Math.max(length0, length1),
+    alphaScale: 1
   };
 }
 
@@ -204,7 +220,8 @@ function getFallbackCovarianceAxes(): ProjectedSplatCovariance {
   return {
     axis0: [MIN_AXIS_PIXELS, 0],
     axis1: [0, MIN_AXIS_PIXELS],
-    maxAxisPixels: MIN_AXIS_PIXELS
+    maxAxisPixels: MIN_AXIS_PIXELS,
+    alphaScale: 1
   };
 }
 
@@ -225,6 +242,7 @@ function clampCovarianceAxes(
   return {
     axis0: [covariance.axis0[0] * scale, covariance.axis0[1] * scale],
     axis1: [covariance.axis1[0] * scale, covariance.axis1[1] * scale],
-    maxAxisPixels
+    maxAxisPixels,
+    alphaScale: covariance.alphaScale
   };
 }

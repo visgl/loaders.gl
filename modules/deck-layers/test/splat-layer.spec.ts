@@ -7,6 +7,8 @@ import test from 'tape-promise/tape';
 import {
   RADSplatLayer,
   SplatLayer,
+  _getRADCompactedRenderChunksForTesting,
+  _getRADLoadedRenderFrontierForTesting,
   _getRADRenderFrontierSplatChunksForTesting,
   _getRADViewportLoadSignatureForTesting,
   type RADSplatLayerProps,
@@ -152,6 +154,72 @@ function getFrontierPositionXs(frontierChunks: any[]): number[] {
     }
     return xs;
   });
+}
+
+/** Returns x positions from row-level render frontier chunks. */
+function getLoadedFrontierPositionXs(frontierChunks: any[]): number[] {
+  return frontierChunks.flatMap(frontierChunk => {
+    const positions = frontierChunk.chunk.splats.positions as Float32Array;
+    const rowCount = frontierChunk.chunk.splats.splatCount as number;
+    const rowWeights = frontierChunk.rowWeights as Float32Array | undefined;
+    const rows = rowWeights
+      ? Array.from({length: rowCount}, (_, rowIndex) => rowIndex).filter(
+          rowIndex => rowWeights[rowIndex] > 0
+        )
+      : frontierChunk.visibleRows
+        ? Array.from(frontierChunk.visibleRows as Uint32Array)
+        : Array.from({length: rowCount}, (_, rowIndex) => rowIndex);
+    return rows.map(rowIndex => positions[rowIndex * 3]);
+  });
+}
+
+/** Returns row-level opacity weights from render frontier chunks. */
+function getLoadedFrontierRowWeights(frontierChunks: any[]): number[] {
+  return frontierChunks.flatMap(frontierChunk => {
+    const rowCount = frontierChunk.chunk.splats.splatCount as number;
+    const rowWeights = frontierChunk.rowWeights as Float32Array | undefined;
+    if (rowWeights) {
+      return Array.from({length: rowCount}, (_, rowIndex) => rowWeights[rowIndex]).filter(
+        weight => weight > 0
+      );
+    }
+    const rowSelection = frontierChunk.visibleRows
+      ? Array.from(frontierChunk.visibleRows as Uint32Array)
+      : Array.from({length: rowCount}, (_, rowIndex) => rowIndex);
+    return rowSelection.map(() => 1);
+  });
+}
+
+/** Returns opacities from compacted RAD render chunks. */
+function getCompactedOpacities(compactedChunks: any[]): number[] {
+  return compactedChunks.flatMap(chunk => Array.from(chunk.opacities as Float32Array));
+}
+
+/** Creates RAD LoD frontier options for unit tests. */
+function createRADFrontierOptions(overrides: Record<string, unknown> = {}) {
+  return {
+    startChunkIndex: 0,
+    maxChunks: 8,
+    maxSplats: 8,
+    maxConcurrentChunkRequests: 4,
+    viewport: {
+      width: 800,
+      height: 600,
+      viewProjectionMatrix: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      fovy: 50
+    },
+    modelMatrix: null,
+    radiusScale: 1,
+    gaussianSupportRadius: 3,
+    lodSplatScale: 1,
+    lodRenderScale: 1,
+    coneFov0: 0.25,
+    coneFov: 1,
+    behindFoveate: 0.2,
+    coneFoveate: 0.4,
+    maxCachedChunks: 16,
+    ...overrides
+  } as any;
 }
 
 /** Normalizes a layer render result to an array. */
@@ -350,6 +418,88 @@ test('RADSplatLayer frontier descends into fully loaded children', t => {
     getFrontierPositionXs(frontierChunks),
     [1, 2, 3],
     'replaces covered parent rows with loaded child rows'
+  );
+  t.end();
+});
+
+test('RADSplatLayer loaded LoD frontier selects rows instead of whole chunks', t => {
+  const parentChunk = createRADChunk(0, 0, [3, 0, 0], [1, 0, 0]);
+  const childChunk = createRADChunk(1, 3, [0], [0]);
+  const metadata = {
+    count: 4,
+    chunkSize: 3,
+    chunks: [
+      {base: 0, count: 3},
+      {base: 3, count: 1}
+    ]
+  };
+
+  const frontierChunks = _getRADLoadedRenderFrontierForTesting(
+    [parentChunk, childChunk],
+    metadata,
+    createRADFrontierOptions({maxSplats: 3})
+  );
+
+  t.deepEqual(
+    getLoadedFrontierPositionXs(frontierChunks),
+    [1, 2, 3],
+    'replaces the loaded parent row with direct child rows without rendering unrelated chunk rows'
+  );
+  t.end();
+});
+
+test('RADSplatLayer loaded LoD frontier partially refines while missing child chunks load', t => {
+  const parentChunk = createRADChunk(0, 0, [3, 0, 0], [1, 0, 0]);
+  const metadata = {
+    count: 4,
+    chunkSize: 3,
+    chunks: [
+      {base: 0, count: 3},
+      {base: 3, count: 1}
+    ]
+  };
+
+  const frontierChunks = _getRADLoadedRenderFrontierForTesting(
+    [parentChunk],
+    metadata,
+    createRADFrontierOptions({maxSplats: 3})
+  );
+  const rowWeights = getLoadedFrontierRowWeights(frontierChunks);
+
+  t.deepEqual(
+    getLoadedFrontierPositionXs(frontierChunks),
+    [0, 1, 2],
+    'renders loaded children immediately while retaining their partially covered parent'
+  );
+  t.ok(rowWeights[0] > 0 && rowWeights[0] < 1, 'fades the retained parent row');
+  t.equal(rowWeights[1], 1, 'keeps loaded child rows fully opaque');
+  t.equal(rowWeights[2], 1, 'keeps loaded child rows fully opaque');
+  t.end();
+});
+
+test('RADSplatLayer compacts selected render frontier rows before upload', t => {
+  const sourceChunk = createRADChunk(0, 0, [0, 0, 0], [0, 0, 0]);
+  const rowWeights = new Float32Array(sourceChunk.splats.splatCount);
+  rowWeights[0] = 0.25;
+  rowWeights[2] = 1;
+
+  const compactedChunks = _getRADCompactedRenderChunksForTesting(
+    [
+      {
+        chunk: sourceChunk,
+        visibleSplatCount: 2,
+        visibleRows: new Uint32Array([0, 2]),
+        rowWeights
+      }
+    ],
+    4
+  );
+
+  t.deepEqual(getFrontierPositionXs(compactedChunks), [0, 2], 'uploads only selected rows');
+  t.deepEqual(
+    getCompactedOpacities(compactedChunks),
+    [0.25, 1],
+    'folds row-level parent fade weights into compacted opacities'
   );
   t.end();
 });
