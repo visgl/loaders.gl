@@ -41,7 +41,7 @@ const CONTROLLER_MODES = ['orbit', 'first-person'] as const;
 const FIRST_PERSON_INITIAL_PITCH = -20;
 const FIRST_PERSON_MIN_PITCH = -75;
 const FIRST_PERSON_MAX_PITCH = 75;
-const RAD_PREVIEW_MAX_PIXEL_RADIUS = 32;
+const RAD_PREVIEW_MAX_PIXEL_RADIUS = 64;
 const RAD_MIN_FOV = 25;
 const RAD_MAX_FOV = 90;
 const RAD_DEFAULT_FOV = 75;
@@ -52,29 +52,29 @@ const ORBIT_MAX_ZOOM = 8;
 const SPLAT_LAYER_OPACITY = 0.34;
 const RAD_SPLAT_LAYER_OPACITY = 1;
 const SPLAT_RADIUS_SCALE = 0.78;
-const RAD_SPLAT_RADIUS_SCALE = 0.5;
+const RAD_SPLAT_RADIUS_SCALE = 0.4;
 const SPLAT_RADIUS_MIN_PIXELS = 0.35;
 const SPLAT_RADIUS_MAX_PIXELS = 16;
 const RAD_SPLAT_RADIUS_MAX_PIXELS = RAD_PREVIEW_MAX_PIXEL_RADIUS;
 const SPLAT_ALPHA_SCALE = 0.38;
-const RAD_SPLAT_ALPHA_SCALE = 0.24;
+const RAD_SPLAT_ALPHA_SCALE = 0.55;
 const SPLAT_ALPHA_CUTOFF = 0.02;
 const RAD_SPLAT_ALPHA_CUTOFF = 0.5 / 255;
 const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
 const SPLAT_KERNEL_2D_SIZE = 0.3;
 const SPLAT_MAX_SCREEN_SPACE_SIZE = 256;
 const RAD_SPLAT_MAX_SCREEN_SPACE_SIZE = RAD_PREVIEW_MAX_PIXEL_RADIUS;
-const RAD_PREVIEW_INTERACTIVE_BASE_MAX_CHUNKS = 192;
-const RAD_PREVIEW_SETTLED_BASE_MAX_CHUNKS = 256;
-const RAD_PREVIEW_INTERACTIVE_BASE_MAX_SPLATS = 800000;
-const RAD_PREVIEW_SETTLED_BASE_MAX_SPLATS = 1250000;
-const RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS = 512;
-const RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS = 6;
+const RAD_PREVIEW_INTERACTIVE_BASE_MAX_CHUNKS = 384;
+const RAD_PREVIEW_SETTLED_BASE_MAX_CHUNKS = 768;
+const RAD_PREVIEW_INTERACTIVE_BASE_MAX_SPLATS = 1000000;
+const RAD_PREVIEW_SETTLED_BASE_MAX_SPLATS = 2000000;
+const RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS = 1024;
+const RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS = 16;
 const RAD_PREVIEW_SETTLE_DELAY_MS = 700;
 const RAD_DEFAULT_LEVEL_OF_DETAIL = 1.5;
 const RAD_DEFAULT_LOD_RENDER_SCALE = 1;
-const RAD_DEFAULT_BEHIND_FOVEATE = 0.15;
-const RAD_DEFAULT_CONE_FOVEATE = 0.35;
+const RAD_DEFAULT_BEHIND_FOVEATE = 0.2;
+const RAD_DEFAULT_CONE_FOVEATE = 0.4;
 const COIT_TOWER_RAD_MODEL_MATRIX = new Float32Array([
   10, 0, 0, 0,
   0, 0, -10, 0,
@@ -444,12 +444,12 @@ export default function GaussianSplatsApp() {
           radiusMaxPixels: RAD_SPLAT_RADIUS_MAX_PIXELS,
           alphaScale: RAD_SPLAT_ALPHA_SCALE,
           alphaCutoff: RAD_SPLAT_ALPHA_CUTOFF,
-          screenSizeCutoffPixels: 0.03,
+          screenSizeCutoffPixels: 0,
           kernel2DSize: SPLAT_KERNEL_2D_SIZE,
           maxScreenSpaceSplatSize: RAD_SPLAT_MAX_SCREEN_SPACE_SIZE,
           modelMatrix: getRADModelMatrix(state.selectedUrl),
           renderMode: 'gpu',
-          sortMode: 'tile',
+          sortMode: 'none',
           maxChunks: radMaxChunks,
           maxSplats: radMaxSplats,
           lodSplatCount: radMaxSplats,
@@ -656,10 +656,7 @@ function getRADInitialViewState(
   controllerMode: ControllerMode
 ): GaussianSplatViewState {
   if (hasRADInitialViewState(sourceUrl, controllerMode)) {
-    return {
-      ...COIT_TOWER_RAD_INITIAL_VIEW_STATE,
-      position: [-0.858, 1.128, 2.203]
-    } as FirstPersonViewState;
+    return COIT_TOWER_RAD_INITIAL_VIEW_STATE;
   }
   return getInitialViewState(controllerMode);
 }

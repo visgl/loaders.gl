@@ -8,8 +8,11 @@ import {
   RADSplatLayer,
   SplatLayer,
   _getRADCompactedRenderChunksForTesting,
+  _getRADChunkRequestIndicesForTesting,
   _getRADLoadedRenderFrontierForTesting,
+  _getRADRenderFrontierSignatureForTesting,
   _getRADRenderFrontierSplatChunksForTesting,
+  _getRADRenderPageSplatCountForTesting,
   _getRADViewportLoadSignatureForTesting,
   type RADSplatLayerProps,
   type SplatLayerProps
@@ -144,6 +147,25 @@ function createRADSource(chunks: ReturnType<typeof createRADChunk>[]) {
   };
 }
 
+/** Creates a minimal RAD source that fails every chunk request. */
+function createFailingRADSource(errorMessage: string) {
+  const requestedChunkIndices: number[] = [];
+  return {
+    requestedChunkIndices,
+    async getMetadata() {
+      return {
+        count: 1,
+        chunkSize: 1,
+        chunks: [{base: 0, count: 1}]
+      };
+    },
+    async getChunkSplats(chunkIndex: number) {
+      requestedChunkIndices.push(chunkIndex);
+      throw new Error(errorMessage);
+    }
+  };
+}
+
 /** Returns x positions from frontier chunks for compact assertions. */
 function getFrontierPositionXs(frontierChunks: any[]): number[] {
   return frontierChunks.flatMap(chunk => {
@@ -170,23 +192,6 @@ function getLoadedFrontierPositionXs(frontierChunks: any[]): number[] {
         ? Array.from(frontierChunk.visibleRows as Uint32Array)
         : Array.from({length: rowCount}, (_, rowIndex) => rowIndex);
     return rows.map(rowIndex => positions[rowIndex * 3]);
-  });
-}
-
-/** Returns row-level opacity weights from render frontier chunks. */
-function getLoadedFrontierRowWeights(frontierChunks: any[]): number[] {
-  return frontierChunks.flatMap(frontierChunk => {
-    const rowCount = frontierChunk.chunk.splats.splatCount as number;
-    const rowWeights = frontierChunk.rowWeights as Float32Array | undefined;
-    if (rowWeights) {
-      return Array.from({length: rowCount}, (_, rowIndex) => rowWeights[rowIndex]).filter(
-        weight => weight > 0
-      );
-    }
-    const rowSelection = frontierChunk.visibleRows
-      ? Array.from(frontierChunk.visibleRows as Uint32Array)
-      : Array.from({length: rowCount}, (_, rowIndex) => rowIndex);
-    return rowSelection.map(() => 1);
   });
 }
 
@@ -282,6 +287,12 @@ async function waitForRADRuntime(): Promise<void> {
     await Promise.resolve();
     await waitForFrame();
   }
+}
+
+/** Lets bounded RAD chunk retries exhaust. */
+async function waitForRADChunkRetries(): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, 450));
+  await waitForRADRuntime();
 }
 
 /** Lets queued animation-frame work settle in browser and Node test projects. */
@@ -448,7 +459,7 @@ test('RADSplatLayer loaded LoD frontier selects rows instead of whole chunks', t
   t.end();
 });
 
-test('RADSplatLayer loaded LoD frontier partially refines while missing child chunks load', t => {
+test('RADSplatLayer loaded LoD frontier keeps parent while child chunks load', t => {
   const parentChunk = createRADChunk(0, 0, [3, 0, 0], [1, 0, 0]);
   const metadata = {
     count: 4,
@@ -464,16 +475,12 @@ test('RADSplatLayer loaded LoD frontier partially refines while missing child ch
     metadata,
     createRADFrontierOptions({maxSplats: 3})
   );
-  const rowWeights = getLoadedFrontierRowWeights(frontierChunks);
 
   t.deepEqual(
     getLoadedFrontierPositionXs(frontierChunks),
-    [0, 1, 2],
-    'renders loaded children immediately while retaining their partially covered parent'
+    [0],
+    'keeps the coherent parent row until all direct child chunks are available'
   );
-  t.ok(rowWeights[0] > 0 && rowWeights[0] < 1, 'fades the retained parent row');
-  t.equal(rowWeights[1], 1, 'keeps loaded child rows fully opaque');
-  t.equal(rowWeights[2], 1, 'keeps loaded child rows fully opaque');
   t.end();
 });
 
@@ -501,6 +508,107 @@ test('RADSplatLayer compacts selected render frontier rows before upload', t => 
     [0.25, 1],
     'folds row-level parent fade weights into compacted opacities'
   );
+  t.end();
+});
+
+test('RADSplatLayer render cache signature tracks upload-time props', t => {
+  const sourceChunk = createRADChunk(0, 0, [0], [0]);
+  const frontierChunks = [{chunk: sourceChunk, visibleSplatCount: 1}];
+  const baseSignature = _getRADRenderFrontierSignatureForTesting(
+    frontierChunks,
+    [255, 255, 255, 255],
+    3
+  );
+
+  t.notEqual(
+    _getRADRenderFrontierSignatureForTesting(frontierChunks, [255, 0, 0, 255], 3),
+    baseSignature,
+    'changes when fallback color changes'
+  );
+  t.notEqual(
+    _getRADRenderFrontierSignatureForTesting(frontierChunks, [255, 255, 255, 255], 5),
+    baseSignature,
+    'changes when upload-time support radius changes'
+  );
+  t.end();
+});
+
+test('RADSplatLayer uses one render page only for global sorting', t => {
+  const sourceChunk = createRADChunk(0, 0, [0, 0, 0], [0, 0, 0]);
+  const frontierChunks = [{chunk: sourceChunk, visibleSplatCount: 3}];
+
+  t.equal(
+    _getRADRenderPageSplatCountForTesting(frontierChunks, 'global'),
+    3,
+    'uses the selected splat count for globally sorted render pages'
+  );
+  t.ok(
+    _getRADRenderPageSplatCountForTesting(frontierChunks, 'tile') > 3,
+    'keeps bounded pages when tile sorting can still sort inside each render page'
+  );
+  t.ok(
+    _getRADRenderPageSplatCountForTesting(frontierChunks, 'none') > 3,
+    'keeps bounded pages when sorting is disabled'
+  );
+  t.end();
+});
+
+test('RADSplatLayer request plan prefetches prioritized child chunks', t => {
+  const rootChunk = createRADChunk(0, 0, [4], [1]);
+  const childChunks = [
+    createRADChunk(1, 1, [0], [0]),
+    createRADChunk(2, 2, [0], [0]),
+    createRADChunk(3, 3, [0], [0]),
+    createRADChunk(4, 4, [0], [0])
+  ];
+  const metadata = {
+    count: 5,
+    chunkSize: 1,
+    chunks: [rootChunk, ...childChunks].map(chunk => ({
+      base: chunk.splats.loaderData.base,
+      count: chunk.splats.splatCount
+    }))
+  };
+
+  t.deepEqual(
+    _getRADChunkRequestIndicesForTesting([2], [rootChunk], [rootChunk], metadata, [3], {}, 3),
+    [2, 1, 4],
+    'keeps immediate misses first, skips unavailable chunks, and fills with child prefetches'
+  );
+  t.end();
+});
+
+test('RADSplatLayer reports chunk failures after retries exhaust', async t => {
+  const source = createFailingRADSource('network failed');
+  const progressEvents: any[] = [];
+  const layer = createRADLayer({
+    data: source,
+    maxChunks: 1,
+    maxSplats: 1,
+    onLoadProgress: progress => progressEvents.push(progress)
+  });
+  layer.state = {} as any;
+  layer.initializeState();
+  layer.updateState({
+    props: layer.props,
+    oldProps: {...layer.props, data: null},
+    changeFlags: {dataChanged: true, propsOrDataChanged: true}
+  } as any);
+  await waitForRADChunkRetries();
+
+  const errorProgress = progressEvents.find(progress => progress.error);
+  t.equal(source.requestedChunkIndices.length, 3, 'tries the initial request and two retries');
+  t.match(
+    errorProgress?.error,
+    /RADSplatLayer failed to load RAD chunk 0: network failed/,
+    'reports the failed chunk and underlying error'
+  );
+  t.throws(
+    () => layer.renderLayers(),
+    /RADSplatLayer failed to load RAD chunk 0: network failed/,
+    'surfaces chunk failure through the layer error path'
+  );
+  (layer.state as any).runtime?.destroy();
   t.end();
 });
 

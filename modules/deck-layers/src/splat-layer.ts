@@ -49,6 +49,7 @@ const DEFAULT_RAD_SPLAT_MAX_OUTSTANDING_CHUNK_WORK_MULTIPLIER = 1;
 const DEFAULT_RAD_SPLAT_CHUNK_RETRY_COUNT = 2;
 const DEFAULT_RAD_SPLAT_CHUNK_RETRY_DELAY_MS = 120;
 const DEFAULT_RAD_SPLAT_CHUNK_TIMEOUT_MS = 30000;
+const DEFAULT_RAD_SPLAT_PREFETCH_CHUNK_MULTIPLIER = 4;
 const DEFAULT_RAD_FRONTIER_MAX_SUPPRESSED_CHILD_SPLATS = 65536;
 const DEFAULT_RAD_CHILD_SUPPRESSION_COVERAGE = 0.02;
 const DEFAULT_RAD_PARENT_REPLACEMENT_COVERAGE = 0.85;
@@ -56,7 +57,7 @@ const DEFAULT_RAD_PARENT_MIN_PARTIAL_OPACITY_WEIGHT = 0.005;
 const DEFAULT_RAD_PARENT_COVERAGE_FADE_SCALE = 512;
 const DEFAULT_RAD_PRIORITY_MAX_SCORED_ROWS = 131072;
 const DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS = 262144;
-const DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS = 500;
+const DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS = 1000;
 const DEFAULT_RAD_LOD_MIN_PROJECTED_PIXELS = 1;
 const IDENTITY_MODEL_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
 
@@ -334,6 +335,19 @@ type RADChunkSelectionPlan = {
   frontierChunks?: RADRenderFrontierChunk[];
   /** Missing chunk indices requested to refine the current LoD set. */
   missingChunkIndices: number[];
+};
+
+type RADChunkRequestPlanOptions = {
+  /** Already-loaded RAD chunks keyed by source chunk index. */
+  loadedByChunkIndex: Map<number, RADSplatLoadedChunk>;
+  /** Source metadata for chunk range lookups. */
+  metadata: RADSplatMetadataLike;
+  /** Chunks that are already pending, queued, or permanently failed. */
+  unavailableChunkIndices: Set<number>;
+  /** Runtime selection and priority options. */
+  options: RADSplatChunkSelectionOptions;
+  /** Maximum chunk indices to include in the request plan. */
+  maxRequestChunkCount: number;
 };
 
 type RADRenderPage = {
@@ -1191,6 +1205,7 @@ class RADRuntime {
   private metadataPromise: Promise<RADSplatMetadataLike> | null = null;
   private options: RADRuntimeUpdateOptions | null = null;
   private pendingChunkPromises = new Map<number, Promise<void>>();
+  private failedChunkErrors = new Map<number, Error>();
   private queuedUploadChunks: RADSplatLoadedChunk[] = [];
   private queuedUploadChunkIndices = new Set<number>();
   private uploadScheduled = false;
@@ -1242,6 +1257,7 @@ class RADRuntime {
     this.destroyed = true;
     this.scheduleSerial++;
     this.pendingChunkPromises.clear();
+    this.failedChunkErrors.clear();
     this.queuedUploadChunks = [];
     this.queuedUploadChunkIndices.clear();
     if (this.pendingRenderCommitTimer) {
@@ -1280,19 +1296,20 @@ class RADRuntime {
     }
 
     const plan = this.selectChunks(metadata);
+    const requestChunkIndices = this.getRequestChunkIndices(plan, metadata);
     if (plan.selectedChunks.length > 0) {
       const hasPendingLoadingWork =
         this.pendingChunkPromises.size > 0 ||
         this.queuedUploadChunks.length > 0 ||
-        plan.missingChunkIndices.length > 0;
+        requestChunkIndices.length > 0;
       this.commitSelection(plan, hasPendingLoadingWork);
     } else if (this.visibleChunkIndices.length === 0) {
       this.emitProgress(true);
     }
 
-    this.requestMissingChunks(plan.missingChunkIndices);
+    this.requestMissingChunks(requestChunkIndices);
     this.evictUnusedPages();
-    this.emitProgress(this.pendingChunkPromises.size > 0 || plan.missingChunkIndices.length > 0);
+    this.emitProgress(this.pendingChunkPromises.size > 0 || requestChunkIndices.length > 0);
   }
 
   private async loadMetadata(): Promise<RADSplatMetadataLike> {
@@ -1321,6 +1338,7 @@ class RADRuntime {
     const missingChunkIndexSet = new Set<number>();
     const pendingChunkIndices = new Set([
       ...this.pendingChunkPromises.keys(),
+      ...this.failedChunkErrors.keys(),
       ...this.queuedUploadChunkIndices
     ]);
     const firstChunkIndex = Math.min(
@@ -1426,6 +1444,36 @@ class RADRuntime {
     return {selectedChunks, missingChunkIndices};
   }
 
+  /** Return immediate missing chunks plus speculative child chunks that fill request capacity. */
+  private getRequestChunkIndices(
+    plan: RADChunkSelectionPlan,
+    metadata: RADSplatMetadataLike
+  ): number[] {
+    const options = this.options;
+    if (!options || plan.selectedChunks.length === 0) {
+      return plan.missingChunkIndices;
+    }
+
+    return getRADChunkRequestIndices(plan.missingChunkIndices, plan.selectedChunks, {
+      loadedByChunkIndex: this.pageStore.getLoadedChunkMap(),
+      metadata,
+      unavailableChunkIndices: this.getUnavailableChunkIndices(),
+      options,
+      maxRequestChunkCount:
+        getRADMaxConcurrentChunkRequests(options.maxConcurrentChunkRequests) *
+        DEFAULT_RAD_SPLAT_PREFETCH_CHUNK_MULTIPLIER
+    });
+  }
+
+  /** Return chunk indices that should not be selected for a new request. */
+  private getUnavailableChunkIndices(): Set<number> {
+    return new Set([
+      ...this.pendingChunkPromises.keys(),
+      ...this.failedChunkErrors.keys(),
+      ...this.queuedUploadChunkIndices
+    ]);
+  }
+
   /** Commit or defer the selected LoD frontier depending on current chunk loading pressure. */
   private commitSelection(plan: RADChunkSelectionPlan, hasPendingLoadingWork: boolean): void {
     if (this.shouldDeferRenderCommit(hasPendingLoadingWork)) {
@@ -1517,6 +1565,7 @@ class RADRuntime {
       if (
         this.pageStore.hasPage(chunkIndex) ||
         this.pendingChunkPromises.has(chunkIndex) ||
+        this.failedChunkErrors.has(chunkIndex) ||
         this.queuedUploadChunkIndices.has(chunkIndex)
       ) {
         continue;
@@ -1524,18 +1573,25 @@ class RADRuntime {
 
       const requestPromise = loadRADSplatChunkWithRetries(this.source, chunkIndex)
         .then(chunk => {
-          if (!chunk || this.destroyed) {
+          if (this.destroyed) {
             return;
           }
           this.enqueueUpload(chunk);
         })
-        .catch(error => this.handleError(error))
+        .catch(error => {
+          const chunkError = error instanceof Error ? error : new Error(String(error));
+          this.failedChunkErrors.set(chunkIndex, chunkError);
+          this.handleError(chunkError);
+        })
         .finally(() => {
           this.pendingChunkPromises.delete(chunkIndex);
           if (this.destroyed || !this.options) {
             return;
           }
-          if (!this.queuedUploadChunkIndices.has(chunkIndex)) {
+          if (
+            !this.failedChunkErrors.has(chunkIndex) &&
+            !this.queuedUploadChunkIndices.has(chunkIndex)
+          ) {
             this.requestSelection();
           }
         });
@@ -1750,31 +1806,39 @@ class RADPageStore {
   }
 }
 
-/** Store of compacted WebGPU render pages built from the current RAD frontier. */
+/** Store of WebGPU render pages built from the current RAD frontier. */
 class RADRenderPageStore {
-  private pages: RADPageSplatEngine[] = [];
-  private signature = '';
+  /** Current render pages exposed to deck.gl sublayers. */
+  private activePages: RADPageSplatEngine[] = [];
+  /** Reusable render pages keyed by source chunk index for tile and unsorted rendering. */
+  private sourcePages = new Map<number, RADPageSplatEngine>();
+  /** Compacted render pages used when a single globally sorted page is requested. */
+  private compactedPages: RADPageSplatEngine[] = [];
+  /** Signature for the current compacted frontier. */
+  private compactedSignature = '';
+  /** Signature for props baked into uploaded splat attributes. */
+  private uploadSignature = '';
 
-  /** Upload duration for the latest compacted render frontier. */
+  /** Upload duration for the latest render frontier update. */
   lastUploadTimeMs: number | undefined;
 
   /** Update props on every resident render page engine. */
   setProps(props: Partial<SplatEngineProps>): void {
-    for (const page of this.pages) {
+    for (const page of this.activePages) {
       page.setProps(props);
     }
   }
 
-  /** Return current compacted render pages. */
+  /** Return current render pages. */
   getRenderPages(): RADRenderPage[] {
-    return this.pages.map(page => ({
+    return this.activePages.map(page => ({
       chunkIndex: page.chunkIndex,
       engine: page,
       bounds: page.bounds
     }));
   }
 
-  /** Rebuild compacted render pages when the row frontier changes. */
+  /** Update render pages when the row frontier changes. */
   updateFrontier(
     device: Device,
     frontier: RADRenderFrontierChunk[],
@@ -1782,19 +1846,47 @@ class RADRenderPageStore {
     fallbackColor: Color,
     gaussianSupportRadius: number
   ): void {
-    const signature = getRADRenderFrontierSignature(frontier);
-    if (signature === this.signature) {
+    const uploadSignature = getRADRenderUploadSignature(fallbackColor, gaussianSupportRadius);
+    if (uploadSignature !== this.uploadSignature) {
+      this.destroy();
+      this.uploadSignature = uploadSignature;
+    }
+
+    if (engineProps.sortMode === 'global') {
+      this.updateCompactedFrontier(
+        device,
+        frontier,
+        engineProps,
+        fallbackColor,
+        gaussianSupportRadius
+      );
+      return;
+    }
+
+    this.updateSourceFrontier(device, frontier, engineProps, fallbackColor, gaussianSupportRadius);
+  }
+
+  /** Rebuild compacted render pages for globally sorted rendering. */
+  private updateCompactedFrontier(
+    device: Device,
+    frontier: RADRenderFrontierChunk[],
+    engineProps: Partial<SplatEngineProps>,
+    fallbackColor: Color,
+    gaussianSupportRadius: number
+  ): void {
+    this.destroySourcePages();
+    const signature = getRADRenderFrontierSignature(frontier, fallbackColor, gaussianSupportRadius);
+    if (signature === this.compactedSignature) {
       this.setProps(engineProps);
+      this.activePages = this.compactedPages;
       return;
     }
 
     const startTimeMs = Date.now();
-    this.destroy();
-    const compactedChunks = createRADCompactedRenderChunks(
-      frontier,
-      DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS
-    );
-    this.pages = compactedChunks.map(
+    this.destroyCompactedPages();
+    const maxRenderPageSplatCount = getRADRenderPageSplatCount(frontier, engineProps.sortMode);
+    const compactedChunks = createRADCompactedRenderChunks(frontier, maxRenderPageSplatCount);
+    this.compactedPages = compactedChunks.map(
       (splats, pageIndex) =>
         new RADPageSplatEngine(
           device,
@@ -1804,25 +1896,86 @@ class RADRenderPageStore {
           gaussianSupportRadius
         )
     );
-    this.signature = signature;
+    this.activePages = this.compactedPages;
+    this.compactedSignature = signature;
     this.lastUploadTimeMs = Date.now() - startTimeMs;
   }
 
-  /** Release all compacted render page engines. */
+  /** Reuse source chunk pages while updating active rows for tile and unsorted rendering. */
+  private updateSourceFrontier(
+    device: Device,
+    frontier: RADRenderFrontierChunk[],
+    engineProps: Partial<SplatEngineProps>,
+    fallbackColor: Color,
+    gaussianSupportRadius: number
+  ): void {
+    const startTimeMs = Date.now();
+    this.destroyCompactedPages();
+
+    const activeChunkIndices = new Set<number>();
+    const activePages: RADPageSplatEngine[] = [];
+    for (const frontierChunk of frontier) {
+      const chunkIndex = frontierChunk.chunk.chunkIndex;
+      activeChunkIndices.add(chunkIndex);
+      let page = this.sourcePages.get(chunkIndex);
+      if (!page) {
+        page = new RADPageSplatEngine(
+          device,
+          frontierChunk.chunk,
+          engineProps,
+          fallbackColor,
+          gaussianSupportRadius
+        );
+        this.sourcePages.set(chunkIndex, page);
+      } else {
+        page.setProps(engineProps);
+      }
+      page.setActiveRows(frontierChunk.visibleRows, frontierChunk.rowWeights);
+      page.touch();
+      activePages.push(page);
+    }
+
+    for (const [chunkIndex, page] of this.sourcePages) {
+      if (!activeChunkIndices.has(chunkIndex)) {
+        page.destroy();
+        this.sourcePages.delete(chunkIndex);
+      }
+    }
+    this.activePages = activePages;
+    this.lastUploadTimeMs = Date.now() - startTimeMs;
+  }
+
+  /** Release all render page engines. */
   destroy(): void {
-    for (const page of this.pages) {
+    this.destroySourcePages();
+    this.destroyCompactedPages();
+    this.activePages = [];
+    this.uploadSignature = '';
+  }
+
+  /** Release source chunk page engines. */
+  private destroySourcePages(): void {
+    for (const page of this.sourcePages.values()) {
       page.destroy();
     }
-    this.pages = [];
-    this.signature = '';
+    this.sourcePages.clear();
+  }
+
+  /** Release compacted page engines. */
+  private destroyCompactedPages(): void {
+    for (const page of this.compactedPages) {
+      page.destroy();
+    }
+    this.compactedPages = [];
+    this.compactedSignature = '';
   }
 }
 
-/** Stable GPU page for one compacted RAD render batch. */
+/** Stable GPU page for one RAD source chunk or compacted render batch. */
 class RADPageSplatEngine implements SplatRenderEngineLike {
   /** Render page index represented by this engine. */
   readonly chunkIndex: number;
-  /** Decoded compacted chunk uploaded to this render page. */
+  /** Decoded source chunk or compacted batch uploaded to this render page. */
   readonly loadedChunk: RADSplatLoadedChunk;
   /** Page bounds in source coordinates. */
   readonly bounds?: RADSplatBounds;
@@ -2167,7 +2320,8 @@ function getRADEstimatedChunkSplatCount(
 async function loadRADSplatChunkWithRetries(
   source: RADSplatSourceLike,
   chunkIndex: number
-): Promise<RADSplatLoadedChunk | undefined> {
+): Promise<RADSplatLoadedChunk> {
+  let lastError: unknown;
   for (let attemptIndex = 0; attemptIndex <= DEFAULT_RAD_SPLAT_CHUNK_RETRY_COUNT; attemptIndex++) {
     const abortController =
       typeof AbortController !== 'undefined' ? new AbortController() : undefined;
@@ -2183,9 +2337,10 @@ async function loadRADSplatChunkWithRetries(
         }
       });
       return {chunkIndex, splats};
-    } catch {
+    } catch (error) {
+      lastError = error;
       if (attemptIndex >= DEFAULT_RAD_SPLAT_CHUNK_RETRY_COUNT) {
-        return undefined;
+        break;
       }
       await waitRADChunkRetryDelay(DEFAULT_RAD_SPLAT_CHUNK_RETRY_DELAY_MS * (attemptIndex + 1));
     } finally {
@@ -2194,7 +2349,8 @@ async function loadRADSplatChunkWithRetries(
       }
     }
   }
-  return undefined;
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`RADSplatLayer failed to load RAD chunk ${chunkIndex}: ${message}`);
 }
 
 /** Wait before retrying a failed RAD chunk request. */
@@ -2207,6 +2363,53 @@ function getRADMaxConcurrentChunkRequests(maxConcurrentChunkRequests: number): n
   return Number.isFinite(maxConcurrentChunkRequests) && maxConcurrentChunkRequests > 0
     ? Math.floor(maxConcurrentChunkRequests)
     : DEFAULT_RAD_SPLAT_MAX_CONCURRENT_CHUNK_REQUESTS;
+}
+
+/** Return immediate and speculative RAD chunk requests in priority order. */
+function getRADChunkRequestIndices(
+  immediateChunkIndices: number[],
+  selectedChunks: RADSplatLoadedChunk[],
+  requestOptions: RADChunkRequestPlanOptions
+): number[] {
+  const requestChunkIndices: number[] = [];
+  const requestedChunkIndices = new Set<number>();
+  const maxRequestChunkCount = Math.max(Math.floor(requestOptions.maxRequestChunkCount), 1);
+
+  const addRequestChunkIndex = (chunkIndex: number): void => {
+    if (
+      requestChunkIndices.length >= maxRequestChunkCount ||
+      requestedChunkIndices.has(chunkIndex) ||
+      requestOptions.loadedByChunkIndex.has(chunkIndex) ||
+      requestOptions.unavailableChunkIndices.has(chunkIndex)
+    ) {
+      return;
+    }
+    requestedChunkIndices.add(chunkIndex);
+    requestChunkIndices.push(chunkIndex);
+  };
+
+  for (const chunkIndex of immediateChunkIndices) {
+    addRequestChunkIndex(chunkIndex);
+  }
+
+  if (requestChunkIndices.length >= maxRequestChunkCount || selectedChunks.length === 0) {
+    return requestChunkIndices;
+  }
+
+  const prefetchChunkIndices = getRADCameraPrioritizedChildChunkIndices(
+    selectedChunks,
+    requestOptions.loadedByChunkIndex,
+    requestOptions.metadata,
+    requestOptions.options
+  );
+  for (const chunkIndex of prefetchChunkIndices) {
+    addRequestChunkIndex(chunkIndex);
+    if (requestChunkIndices.length >= maxRequestChunkCount) {
+      break;
+    }
+  }
+
+  return requestChunkIndices;
 }
 
 /** Return child chunks ordered by current camera importance. */
@@ -2415,21 +2618,12 @@ function getRADLoadedRenderFrontier(
         options
       );
 
-      const retainedParentWeight =
-        childFrontier.hasMissingChildren &&
-        childFrontier.childCoverage < DEFAULT_RAD_PARENT_REPLACEMENT_COVERAGE
-          ? getRADParentOpacityWeightForCoverage(childFrontier.childCoverage)
-          : 0;
-      const replacementRowCount =
-        childFrontier.childCandidates.length + (retainedParentWeight > 0 ? 1 : 0);
+      const replacementRowCount = childFrontier.childCandidates.length;
       if (
+        !childFrontier.hasMissingChildren &&
         childFrontier.childCandidates.length > 0 &&
         outputRowCount + candidateHeap.length + replacementRowCount <= maxSplatCount
       ) {
-        if (retainedParentWeight > 0) {
-          addRADFrontierRow(rowWeightsByChunkIndex, candidate, retainedParentWeight);
-          outputRowCount++;
-        }
         for (const childCandidate of childFrontier.childCandidates) {
           pushRADFrontierCandidate(candidateHeap, childCandidate);
         }
@@ -2682,8 +2876,12 @@ function createRADRenderFrontierChunks(
 }
 
 /** Return a stable signature for a compacted RAD render frontier. */
-function getRADRenderFrontierSignature(frontier: RADRenderFrontierChunk[]): string {
-  return frontier
+function getRADRenderFrontierSignature(
+  frontier: RADRenderFrontierChunk[],
+  fallbackColor: Color,
+  gaussianSupportRadius: number
+): string {
+  const frontierSignature = frontier
     .map(
       entry =>
         `${entry.chunk.chunkIndex}:${entry.visibleSplatCount}:` +
@@ -2691,6 +2889,32 @@ function getRADRenderFrontierSignature(frontier: RADRenderFrontierChunk[]): stri
         `${entry.rowWeights ? getRADActiveWeightsSignature(entry.rowWeights) : 'weights-all'}`
     )
     .join('|');
+  return [
+    frontierSignature,
+    getRADRenderUploadSignature(fallbackColor, gaussianSupportRadius)
+  ].join('|');
+}
+
+/** Return a signature for splat props baked into uploaded render page attributes. */
+function getRADRenderUploadSignature(fallbackColor: Color, gaussianSupportRadius: number): string {
+  return [
+    `fallback:${Array.from(fallbackColor).join(',')}`,
+    `support:${gaussianSupportRadius}`
+  ].join('|');
+}
+
+/** Return a render page size that preserves global per-splat sorting when requested. */
+function getRADRenderPageSplatCount(
+  frontier: RADRenderFrontierChunk[],
+  sortMode?: SplatSortMode
+): number {
+  const visibleSplatCount = frontier.reduce(
+    (total, entry) => total + Math.max(Math.floor(entry.visibleSplatCount), 0),
+    0
+  );
+  return sortMode === 'global'
+    ? Math.max(visibleSplatCount, 1)
+    : DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS;
 }
 
 /** Build compact render chunks containing only selected frontier rows. */
@@ -3356,6 +3580,63 @@ export function _getRADCompactedRenderChunksForTesting(
     frontierChunks as RADRenderFrontierChunk[],
     maxPageSplatCount
   );
+}
+
+/** @internal Test-only entry point for render frontier cache signatures. */
+export function _getRADRenderFrontierSignatureForTesting(
+  frontierChunks: any[],
+  fallbackColor: Color = DEFAULT_COLOR,
+  gaussianSupportRadius: number = 3
+): string {
+  return getRADRenderFrontierSignature(
+    frontierChunks as RADRenderFrontierChunk[],
+    fallbackColor,
+    gaussianSupportRadius
+  );
+}
+
+/** @internal Test-only entry point for RAD render page sizing. */
+export function _getRADRenderPageSplatCountForTesting(
+  frontierChunks: any[],
+  sortMode?: SplatSortMode
+): number {
+  return getRADRenderPageSplatCount(frontierChunks as RADRenderFrontierChunk[], sortMode);
+}
+
+/** @internal Test-only entry point for RAD chunk request prefetch planning. */
+export function _getRADChunkRequestIndicesForTesting(
+  immediateChunkIndices: number[],
+  selectedChunks: any[],
+  loadedChunks: any[],
+  metadata: any,
+  unavailableChunkIndices: number[] = [],
+  options: Partial<RADSplatChunkSelectionOptions> = {},
+  maxRequestChunkCount: number = 8
+): number[] {
+  const defaultOptions: RADSplatChunkSelectionOptions = {
+    startChunkIndex: 0,
+    maxChunks: 8,
+    maxSplats: 8,
+    maxConcurrentChunkRequests: 8,
+    radiusScale: 1,
+    gaussianSupportRadius: 3,
+    lodSplatScale: 1,
+    lodRenderScale: 1,
+    coneFov0: 0.25,
+    coneFov: 1,
+    behindFoveate: 0.2,
+    coneFoveate: 0.4,
+    maxCachedChunks: 16
+  };
+  return getRADChunkRequestIndices(immediateChunkIndices, selectedChunks as RADSplatLoadedChunk[], {
+    loadedByChunkIndex: new Map(
+      (loadedChunks as RADSplatLoadedChunk[]).map(chunk => [chunk.chunkIndex, chunk])
+    ),
+    metadata: metadata as RADSplatMetadataLike,
+    unavailableChunkIndices: new Set(unavailableChunkIndices),
+    options: {...defaultOptions, ...options},
+    maxRequestChunkCount
+  });
 }
 
 /** Build merged child ranges whose parents remain in the current loaded frontier. */
