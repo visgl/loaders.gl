@@ -52,26 +52,29 @@ const ORBIT_MAX_ZOOM = 8;
 const SPLAT_LAYER_OPACITY = 0.34;
 const RAD_SPLAT_LAYER_OPACITY = 1;
 const SPLAT_RADIUS_SCALE = 0.78;
-const RAD_SPLAT_RADIUS_SCALE = 0.42;
+const RAD_SPLAT_RADIUS_SCALE = 0.5;
 const SPLAT_RADIUS_MIN_PIXELS = 0.35;
 const SPLAT_RADIUS_MAX_PIXELS = 16;
 const RAD_SPLAT_RADIUS_MAX_PIXELS = RAD_PREVIEW_MAX_PIXEL_RADIUS;
 const SPLAT_ALPHA_SCALE = 0.38;
-const RAD_SPLAT_ALPHA_SCALE = 0.28;
+const RAD_SPLAT_ALPHA_SCALE = 0.24;
 const SPLAT_ALPHA_CUTOFF = 0.02;
 const RAD_SPLAT_ALPHA_CUTOFF = 0.5 / 255;
 const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
 const SPLAT_KERNEL_2D_SIZE = 0.3;
 const SPLAT_MAX_SCREEN_SPACE_SIZE = 256;
 const RAD_SPLAT_MAX_SCREEN_SPACE_SIZE = RAD_PREVIEW_MAX_PIXEL_RADIUS;
-const RAD_PREVIEW_BASE_MAX_CHUNKS = 192;
-const RAD_PREVIEW_BASE_MAX_SPLATS = 800000;
-const RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS = 384;
-const RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS = 4;
+const RAD_PREVIEW_INTERACTIVE_BASE_MAX_CHUNKS = 192;
+const RAD_PREVIEW_SETTLED_BASE_MAX_CHUNKS = 256;
+const RAD_PREVIEW_INTERACTIVE_BASE_MAX_SPLATS = 800000;
+const RAD_PREVIEW_SETTLED_BASE_MAX_SPLATS = 1250000;
+const RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS = 512;
+const RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS = 6;
+const RAD_PREVIEW_SETTLE_DELAY_MS = 700;
 const RAD_DEFAULT_LEVEL_OF_DETAIL = 1.5;
 const RAD_DEFAULT_LOD_RENDER_SCALE = 1;
-const RAD_DEFAULT_BEHIND_FOVEATE = 0.05;
-const RAD_DEFAULT_CONE_FOVEATE = 0.2;
+const RAD_DEFAULT_BEHIND_FOVEATE = 0.15;
+const RAD_DEFAULT_CONE_FOVEATE = 0.35;
 const COIT_TOWER_RAD_MODEL_MATRIX = new Float32Array([
   10, 0, 0, 0,
   0, 0, -10, 0,
@@ -160,6 +163,8 @@ type GaussianSplatsAppState = {
   radSettings: RADRenderSettings;
   /** RAD runtime page-store status. */
   radProgress?: RADRenderProgress;
+  /** Whether the RAD camera has been idle long enough to request the settled detail budget. */
+  isRADCameraSettled: boolean;
   /** Selected source URL shown in the URL picker. */
   selectedUrl: string;
   /** Whether source URLs are currently loading. */
@@ -181,16 +186,22 @@ function getDefaultRADRenderSettings(): RADRenderSettings {
   };
 }
 
-/** Return RAD chunk budget scaled by the selected LoD. */
-function getRADMaxChunks(levelOfDetail: number): number {
+/** Return RAD chunk budget scaled by the selected LoD and camera activity. */
+function getRADMaxChunks(levelOfDetail: number, isCameraSettled: boolean = true): number {
+  const baseMaxChunks = isCameraSettled
+    ? RAD_PREVIEW_SETTLED_BASE_MAX_CHUNKS
+    : RAD_PREVIEW_INTERACTIVE_BASE_MAX_CHUNKS;
   const scale = getRADLevelOfDetailBudgetScale(levelOfDetail);
-  return Math.max(Math.round(RAD_PREVIEW_BASE_MAX_CHUNKS * scale), 1);
+  return Math.max(Math.round(baseMaxChunks * scale), 1);
 }
 
-/** Return RAD splat budget scaled by the selected LoD. */
-function getRADMaxSplats(levelOfDetail: number): number {
+/** Return RAD splat budget scaled by the selected LoD and camera activity. */
+function getRADMaxSplats(levelOfDetail: number, isCameraSettled: boolean = true): number {
+  const baseMaxSplats = isCameraSettled
+    ? RAD_PREVIEW_SETTLED_BASE_MAX_SPLATS
+    : RAD_PREVIEW_INTERACTIVE_BASE_MAX_SPLATS;
   const scale = getRADLevelOfDetailBudgetScale(levelOfDetail);
-  return Math.max(Math.round(RAD_PREVIEW_BASE_MAX_SPLATS * scale), 1);
+  return Math.max(Math.round(baseMaxSplats * scale), 1);
 }
 
 /** Return decoded RAD cache budget for the current chunk budget. */
@@ -206,6 +217,7 @@ function getRADLevelOfDetailBudgetScale(levelOfDetail: number): number {
 /** Gaussian splats website example rendered through a WebGPU deck.gl canvas. */
 export default function GaussianSplatsApp() {
   const loadRequestIndexRef = useRef(0);
+  const radSettleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const defaultExample = GAUSSIAN_SPLAT_EXAMPLES[DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME];
   const initialSource = useMemo(
     () => getInitialGaussianSplatSource(defaultExample),
@@ -220,10 +232,37 @@ export default function GaussianSplatsApp() {
     controllerMode: 'orbit',
     radSettings: getDefaultRADRenderSettings(),
     radProgress: undefined,
+    isRADCameraSettled: false,
     selectedUrl: initialSource.selectedUrl,
     isLoading: false,
     error: null
   });
+
+  const scheduleRADSettledState = useCallback(() => {
+    if (radSettleTimeoutRef.current) {
+      clearTimeout(radSettleTimeoutRef.current);
+    }
+    radSettleTimeoutRef.current = setTimeout(() => {
+      radSettleTimeoutRef.current = null;
+      setState((currentState) =>
+        currentState.radSource
+          ? {
+              ...currentState,
+              isRADCameraSettled: true
+            }
+          : currentState
+      );
+    }, RAD_PREVIEW_SETTLE_DELAY_MS);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (radSettleTimeoutRef.current) {
+        clearTimeout(radSettleTimeoutRef.current);
+      }
+    },
+    []
+  );
 
   const loadGaussianSplats = useCallback(async (sourceUrls: string[]): Promise<void> => {
     const loadRequestIndex = ++loadRequestIndexRef.current;
@@ -236,6 +275,7 @@ export default function GaussianSplatsApp() {
       loadedSplatCount: 0,
       totalSplatCount: undefined,
       radProgress: undefined,
+      isRADCameraSettled: false,
       isLoading: true,
       loadTimeMs: undefined,
       error: null
@@ -273,16 +313,19 @@ export default function GaussianSplatsApp() {
               currentState.radSettings.fov
             ),
             controllerMode,
+            isRADCameraSettled: false,
             isLoading: true,
             error: null
           };
         });
+        scheduleRADSettledState();
         return;
       }
 
       setState((currentState) => ({
         ...currentState,
         radSource: null,
+        isRADCameraSettled: false,
         data: trackGaussianSplatBatches(sourceUrls, {
           onBatch: (arrowTableBatch, loadedSplatCount) => {
             if (loadRequestIndex !== loadRequestIndexRef.current) {
@@ -317,6 +360,7 @@ export default function GaussianSplatsApp() {
               ...currentState,
               data: null,
               radSource: null,
+              isRADCameraSettled: false,
               isLoading: false,
               error: error instanceof Error ? error.message : String(error)
             }));
@@ -331,12 +375,13 @@ export default function GaussianSplatsApp() {
           data: null,
           radSource: null,
           previewTable: null,
+          isRADCameraSettled: false,
           isLoading: false,
           error: error instanceof Error ? error.message : String(error)
         }));
       }
     }
-  }, []);
+  }, [scheduleRADSettledState]);
 
   useEffect(() => {
     void loadGaussianSplats(initialSource.sourceUrls);
@@ -379,8 +424,14 @@ export default function GaussianSplatsApp() {
 
   const layers = useMemo(() => {
     if (state.radSource) {
-      const radMaxChunks = getRADMaxChunks(state.radSettings.levelOfDetail);
-      const radMaxSplats = getRADMaxSplats(state.radSettings.levelOfDetail);
+      const radMaxChunks = getRADMaxChunks(
+        state.radSettings.levelOfDetail,
+        state.isRADCameraSettled
+      );
+      const radMaxSplats = getRADMaxSplats(
+        state.radSettings.levelOfDetail,
+        state.isRADCameraSettled
+      );
       return [
         new RADSplatLayer({
           id: 'gaussian-splats-rad-webgpu',
@@ -393,7 +444,7 @@ export default function GaussianSplatsApp() {
           radiusMaxPixels: RAD_SPLAT_RADIUS_MAX_PIXELS,
           alphaScale: RAD_SPLAT_ALPHA_SCALE,
           alphaCutoff: RAD_SPLAT_ALPHA_CUTOFF,
-          screenSizeCutoffPixels: 0.05,
+          screenSizeCutoffPixels: 0.03,
           kernel2DSize: SPLAT_KERNEL_2D_SIZE,
           maxScreenSpaceSplatSize: RAD_SPLAT_MAX_SCREEN_SPACE_SIZE,
           modelMatrix: getRADModelMatrix(state.selectedUrl),
@@ -437,7 +488,14 @@ export default function GaussianSplatsApp() {
           })
         ]
       : [];
-  }, [handleRADLoadProgress, state.data, state.radSettings, state.radSource, state.selectedUrl]);
+  }, [
+    handleRADLoadProgress,
+    state.data,
+    state.isRADCameraSettled,
+    state.radSettings,
+    state.radSource,
+    state.selectedUrl
+  ]);
 
   return (
     <div style={styles.page}>
@@ -473,12 +531,20 @@ export default function GaussianSplatsApp() {
               type: 'webgpu',
               adapters: [webgpuAdapter]
             }}
-            onViewStateChange={({viewState}) =>
-              setState((currentState) => ({
-                ...currentState,
-                viewState: viewState as GaussianSplatViewState
-              }))
-            }
+            onViewStateChange={({viewState}) => {
+              if (state.radSource) {
+                scheduleRADSettledState();
+              }
+              setState((currentState) => {
+                return {
+                  ...currentState,
+                  viewState: viewState as GaussianSplatViewState,
+                  isRADCameraSettled: currentState.radSource
+                    ? false
+                    : currentState.isRADCameraSettled
+                };
+              });
+            }}
             parameters={
               {
                 depthWriteEnabled: false,
@@ -488,10 +554,14 @@ export default function GaussianSplatsApp() {
           />
           <ControllerModeSwitch
             mode={state.controllerMode}
-            onChange={(controllerMode) =>
+            onChange={(controllerMode) => {
+              if (state.radSource) {
+                scheduleRADSettledState();
+              }
               setState((currentState) => ({
                 ...currentState,
                 controllerMode,
+                isRADCameraSettled: currentState.radSource ? false : currentState.isRADCameraSettled,
                 viewState: currentState.radSource
                   ? applyRADViewStateFov(
                       getRADInitialViewState(currentState.selectedUrl, controllerMode),
@@ -500,19 +570,21 @@ export default function GaussianSplatsApp() {
                   : currentState.previewTable
                     ? getGaussianSplatViewState(currentState.previewTable, controllerMode)
                     : getInitialViewState(controllerMode)
-              }))
-            }
+              }));
+            }}
           />
           {state.radSource && (
             <RADRenderControls
               settings={state.radSettings}
-              onChange={(radSettings) =>
+              onChange={(radSettings) => {
+                scheduleRADSettledState();
                 setState((currentState) => ({
                   ...currentState,
                   radSettings,
+                  isRADCameraSettled: false,
                   viewState: applyRADViewStateFov(currentState.viewState, radSettings.fov)
-                }))
-              }
+                }));
+              }}
             />
           )}
           <div style={styles.statusPanel}>

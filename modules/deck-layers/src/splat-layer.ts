@@ -56,6 +56,7 @@ const DEFAULT_RAD_PARENT_MIN_PARTIAL_OPACITY_WEIGHT = 0.005;
 const DEFAULT_RAD_PARENT_COVERAGE_FADE_SCALE = 512;
 const DEFAULT_RAD_PRIORITY_MAX_SCORED_ROWS = 131072;
 const DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS = 262144;
+const DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS = 500;
 const DEFAULT_RAD_LOD_MIN_PROJECTED_PIXELS = 1;
 const IDENTITY_MODEL_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
 
@@ -1200,6 +1201,12 @@ class RADRuntime {
   private visibleBounds: RADSplatBounds | undefined;
   private loadStartMs = Date.now();
   private lastCommitTimeMs: number | undefined;
+  /** Last wall-clock timestamp for a compacted render frontier commit. */
+  private lastRenderCommitMs = 0;
+  /** Latest selected frontier waiting for a throttled compact render commit. */
+  private pendingRenderPlan: RADChunkSelectionPlan | null = null;
+  /** Timer handle for the next throttled compact render commit. */
+  private pendingRenderCommitTimer: ReturnType<typeof setTimeout> | null = null;
   private selectionSignature = '';
   private scheduleSerial = 0;
   private destroyed = false;
@@ -1237,6 +1244,11 @@ class RADRuntime {
     this.pendingChunkPromises.clear();
     this.queuedUploadChunks = [];
     this.queuedUploadChunkIndices.clear();
+    if (this.pendingRenderCommitTimer) {
+      clearTimeout(this.pendingRenderCommitTimer);
+      this.pendingRenderCommitTimer = null;
+    }
+    this.pendingRenderPlan = null;
     this.pageStore.destroy();
     this.renderStore.destroy();
   }
@@ -1269,7 +1281,11 @@ class RADRuntime {
 
     const plan = this.selectChunks(metadata);
     if (plan.selectedChunks.length > 0) {
-      this.commitSelection(plan);
+      const hasPendingLoadingWork =
+        this.pendingChunkPromises.size > 0 ||
+        this.queuedUploadChunks.length > 0 ||
+        plan.missingChunkIndices.length > 0;
+      this.commitSelection(plan, hasPendingLoadingWork);
     } else if (this.visibleChunkIndices.length === 0) {
       this.emitProgress(true);
     }
@@ -1410,7 +1426,50 @@ class RADRuntime {
     return {selectedChunks, missingChunkIndices};
   }
 
-  private commitSelection(plan: RADChunkSelectionPlan): void {
+  /** Commit or defer the selected LoD frontier depending on current chunk loading pressure. */
+  private commitSelection(plan: RADChunkSelectionPlan, hasPendingLoadingWork: boolean): void {
+    if (this.shouldDeferRenderCommit(hasPendingLoadingWork)) {
+      this.pendingRenderPlan = plan;
+      this.scheduleDeferredRenderCommit();
+      return;
+    }
+    if (this.pendingRenderCommitTimer) {
+      clearTimeout(this.pendingRenderCommitTimer);
+      this.pendingRenderCommitTimer = null;
+    }
+    this.pendingRenderPlan = null;
+    this.applySelection(plan);
+  }
+
+  /** Return true when compact render page rebuilds should be batched during active loading. */
+  private shouldDeferRenderCommit(hasPendingLoadingWork: boolean): boolean {
+    if (!hasPendingLoadingWork || this.visibleChunkIndices.length === 0) {
+      return false;
+    }
+    return Date.now() - this.lastRenderCommitMs < DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS;
+  }
+
+  /** Schedule the latest pending LoD frontier for a batched compact render page rebuild. */
+  private scheduleDeferredRenderCommit(): void {
+    if (this.pendingRenderCommitTimer || this.destroyed) {
+      return;
+    }
+    const elapsedMs = Date.now() - this.lastRenderCommitMs;
+    const delayMs = Math.max(DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS - elapsedMs, 0);
+    this.pendingRenderCommitTimer = setTimeout(() => {
+      this.pendingRenderCommitTimer = null;
+      const pendingPlan = this.pendingRenderPlan;
+      this.pendingRenderPlan = null;
+      if (!pendingPlan || this.destroyed) {
+        return;
+      }
+      this.applySelection(pendingPlan);
+      this.emitProgress(this.pendingChunkPromises.size > 0 || this.queuedUploadChunks.length > 0);
+    }, delayMs);
+  }
+
+  /** Apply the selected LoD frontier to visible state and compact render pages. */
+  private applySelection(plan: RADChunkSelectionPlan): void {
     const options = this.options;
     const selectedChunks = plan.selectedChunks;
     const frontier: RADRenderFrontierChunk[] =
@@ -1433,6 +1492,7 @@ class RADRuntime {
     this.visibleSplatCount = frontier.reduce((total, entry) => total + entry.visibleSplatCount, 0);
     this.visibleBounds = getRADPageBounds(visibleChunkIndices, this.pageStore);
     this.lastCommitTimeMs = Date.now() - this.loadStartMs;
+    this.lastRenderCommitMs = Date.now();
     this.callbacks.onStateChange();
   }
 
@@ -2703,29 +2763,30 @@ function createRADCompactedRenderChunk(
         : segment.rowOffset + segmentRowIndex;
       const outputPositionOffset = outputRowIndex * 3;
       const inputPositionOffset = inputRowIndex * 3;
-      positions.set(
-        splats.positions.subarray(inputPositionOffset, inputPositionOffset + 3),
-        outputPositionOffset
-      );
-      scales.set(
-        splats.scales.subarray(inputPositionOffset, inputPositionOffset + 3),
-        outputPositionOffset
-      );
-      colors.set(
-        splats.colors.subarray(inputPositionOffset, inputPositionOffset + 3),
-        outputPositionOffset
-      );
-      sphericalHarmonicDcs?.set(
-        splats.sphericalHarmonicDcs!.subarray(inputPositionOffset, inputPositionOffset + 3),
-        outputPositionOffset
-      );
+      positions[outputPositionOffset] = splats.positions[inputPositionOffset];
+      positions[outputPositionOffset + 1] = splats.positions[inputPositionOffset + 1];
+      positions[outputPositionOffset + 2] = splats.positions[inputPositionOffset + 2];
+      scales[outputPositionOffset] = splats.scales[inputPositionOffset];
+      scales[outputPositionOffset + 1] = splats.scales[inputPositionOffset + 1];
+      scales[outputPositionOffset + 2] = splats.scales[inputPositionOffset + 2];
+      colors[outputPositionOffset] = splats.colors[inputPositionOffset];
+      colors[outputPositionOffset + 1] = splats.colors[inputPositionOffset + 1];
+      colors[outputPositionOffset + 2] = splats.colors[inputPositionOffset + 2];
+      if (sphericalHarmonicDcs && splats.sphericalHarmonicDcs) {
+        sphericalHarmonicDcs[outputPositionOffset] =
+          splats.sphericalHarmonicDcs[inputPositionOffset];
+        sphericalHarmonicDcs[outputPositionOffset + 1] =
+          splats.sphericalHarmonicDcs[inputPositionOffset + 1];
+        sphericalHarmonicDcs[outputPositionOffset + 2] =
+          splats.sphericalHarmonicDcs[inputPositionOffset + 2];
+      }
 
       const outputRotationOffset = outputRowIndex * 4;
       const inputRotationOffset = inputRowIndex * 4;
-      rotations.set(
-        splats.rotations.subarray(inputRotationOffset, inputRotationOffset + 4),
-        outputRotationOffset
-      );
+      rotations[outputRotationOffset] = splats.rotations[inputRotationOffset];
+      rotations[outputRotationOffset + 1] = splats.rotations[inputRotationOffset + 1];
+      rotations[outputRotationOffset + 2] = splats.rotations[inputRotationOffset + 2];
+      rotations[outputRotationOffset + 3] = splats.rotations[inputRotationOffset + 3];
 
       const rowWeight = rowWeights ? rowWeights[inputRowIndex] : 1;
       opacities[outputRowIndex] = splats.opacities[inputRowIndex] * (rowWeight || 0);
@@ -2733,13 +2794,14 @@ function createRADCompactedRenderChunk(
       if (sphericalHarmonics && splats.sphericalHarmonics) {
         const outputSphericalHarmonicOffset = outputRowIndex * sphericalHarmonicsComponentCount;
         const inputSphericalHarmonicOffset = inputRowIndex * sphericalHarmonicsComponentCount;
-        sphericalHarmonics.set(
-          splats.sphericalHarmonics.subarray(
-            inputSphericalHarmonicOffset,
-            inputSphericalHarmonicOffset + sphericalHarmonicsComponentCount
-          ),
-          outputSphericalHarmonicOffset
-        );
+        for (
+          let componentIndex = 0;
+          componentIndex < sphericalHarmonicsComponentCount;
+          componentIndex++
+        ) {
+          sphericalHarmonics[outputSphericalHarmonicOffset + componentIndex] =
+            splats.sphericalHarmonics[inputSphericalHarmonicOffset + componentIndex];
+        }
       }
 
       outputRowIndex++;
