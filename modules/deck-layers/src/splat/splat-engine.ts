@@ -490,6 +490,11 @@ export class SplatEngine {
     return this.renderSplatCount;
   }
 
+  /** Return the last tile overflow count reported by the compute sorter. */
+  getOverflowSplatCount(): number {
+    return this.overflowSplatCount;
+  }
+
   /** Return a copy of the current sorted indices for validation. */
   getSortedIndicesForTesting(): Uint32Array {
     return this.sortedIndices.slice();
@@ -524,7 +529,7 @@ export class SplatEngine {
 
   /** Return the last tile overflow count reported by the compute sorter. */
   getOverflowSplatCountForTesting(): number {
-    return this.overflowSplatCount;
+    return this.getOverflowSplatCount();
   }
 
   private createBuffers(data: GaussianSplatData): SplatEngineBuffers {

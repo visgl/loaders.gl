@@ -59,6 +59,8 @@ const DEFAULT_RAD_PRIORITY_MAX_SCORED_ROWS = 131072;
 const DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS = 262144;
 const DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS = 1000;
 const DEFAULT_RAD_LOD_MIN_PROJECTED_PIXELS = 1;
+const DEFAULT_RAD_CONE_FOV0_DEGREES = 90;
+const DEFAULT_RAD_CONE_FOV_DEGREES = 120;
 const IDENTITY_MODEL_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
 
 /** Public rendering modes supported by {@link SplatLayer}. */
@@ -133,6 +135,14 @@ export type RADSplatLoadProgress = {
   requestedChunkCount?: number;
   /** Number of resident chunks evicted since the current source was opened. */
   evictedChunkCount?: number;
+  /** Number of active render pages in the current RAD frontier. */
+  renderPageCount?: number;
+  /** Number of splats uploaded into active render pages. */
+  renderPageSplatCount?: number;
+  /** Number of splats in current render index buffers after engine culling. */
+  renderSplatCount?: number;
+  /** Number of splats that overflowed tile-local storage in the latest compute pass. */
+  tileOverflowSplatCount?: number;
   /** Milliseconds spent uploading the most recent chunk page. */
   lastUploadTimeMs?: number;
   /** Milliseconds since the current source started loading when the last coherent LoD set committed. */
@@ -172,9 +182,9 @@ export type RADSplatLayerProps = Omit<SplatLayerProps, 'data'> & {
   lodSplatScale?: number;
   /** Render-radius multiplier applied after RAD LoD selection. */
   lodRenderScale?: number;
-  /** Normalized inner foveation radius that keeps full chunk priority. */
+  /** Full-width foveation cone angle, in degrees, that keeps full chunk priority. */
   coneFov0?: number;
-  /** Normalized outer foveation radius where `coneFoveate` priority is reached. */
+  /** Full-width foveation cone angle, in degrees, where `coneFoveate` priority is reached. */
   coneFov?: number;
   /** Relative priority retained for pages behind the active view. */
   behindFoveate?: number;
@@ -258,9 +268,9 @@ type RADSplatChunkSelectionOptions = {
   lodSplatScale: number;
   /** Render-radius multiplier applied after RAD LoD selection. */
   lodRenderScale: number;
-  /** Normalized inner foveation radius that keeps full priority. */
+  /** Full-width foveation cone angle, in degrees, that keeps full priority. */
   coneFov0: number;
-  /** Normalized outer foveation radius where `coneFoveate` priority is reached. */
+  /** Full-width foveation cone angle, in degrees, where `coneFoveate` priority is reached. */
   coneFov: number;
   /** Relative priority retained for pages behind the active view. */
   behindFoveate: number;
@@ -303,9 +313,9 @@ type RADRuntimeUpdateOptions = {
   lodSplatScale: number;
   /** Render-radius multiplier applied after RAD LoD selection. */
   lodRenderScale: number;
-  /** Normalized inner foveation radius that keeps full priority. */
+  /** Full-width foveation cone angle, in degrees, that keeps full priority. */
   coneFov0: number;
-  /** Normalized outer foveation radius where `coneFoveate` priority is reached. */
+  /** Full-width foveation cone angle, in degrees, where `coneFoveate` priority is reached. */
   coneFov: number;
   /** Relative priority retained for pages behind the active view. */
   behindFoveate: number;
@@ -410,6 +420,13 @@ type RADChildFrontierCandidates = {
   hasMissingChildren: boolean;
 };
 
+type RADFoveationView = {
+  /** Camera position in RAD source coordinates. */
+  viewOrigin?: [number, number, number];
+  /** Unit forward direction in RAD source coordinates. */
+  viewDirection?: [number, number, number];
+};
+
 type RADStoredPage = {
   /** Source chunk index represented by this decoded page. */
   chunkIndex: number;
@@ -430,6 +447,17 @@ type RADRenderRowSegment = {
   rowCount: number;
 };
 
+type RADRenderMetrics = {
+  /** Number of active render pages in the current RAD frontier. */
+  renderPageCount: number;
+  /** Number of splats uploaded into active render pages. */
+  renderPageSplatCount: number;
+  /** Number of splats in current render index buffers after engine culling. */
+  renderSplatCount: number;
+  /** Number of splats that overflowed tile-local storage in the latest compute pass. */
+  tileOverflowSplatCount: number;
+};
+
 type SplatRenderEngineLike = {
   /** Release all GPU resources owned by this render engine. */
   destroy: () => void;
@@ -445,6 +473,8 @@ type SplatRenderEngineLike = {
   getSplatCount: () => number;
   /** Return the number of visible splats in the current render index buffer. */
   getRenderSplatCount: () => number;
+  /** Return the last tile overflow count reported by the compute sorter. */
+  getOverflowSplatCount: () => number;
 };
 
 type RADSplatChunkRangeLookup = {
@@ -531,8 +561,8 @@ const radSplatDefaultProps: DefaultProps<RADSplatLayerProps> = {
   pruneLoadedLoDParents: true,
   lodSplatScale: {type: 'number', min: 0, value: 1},
   lodRenderScale: {type: 'number', min: 0, value: 1},
-  coneFov0: {type: 'number', min: 0, value: 0.25},
-  coneFov: {type: 'number', min: 0, value: 1},
+  coneFov0: {type: 'number', min: 0, value: DEFAULT_RAD_CONE_FOV0_DEGREES},
+  coneFov: {type: 'number', min: 0, value: DEFAULT_RAD_CONE_FOV_DEGREES},
   behindFoveate: {type: 'number', min: 0, max: 1, value: 0.2},
   coneFoveate: {type: 'number', min: 0, max: 1, value: 0.4},
   reselectOnViewChange: true,
@@ -1167,8 +1197,8 @@ export class RADSplatLayer extends CompositeLayer<RADSplatLayerProps> {
       gaussianSupportRadius: this.props.gaussianSupportRadius ?? 3,
       lodSplatScale: this.props.lodSplatScale ?? 1,
       lodRenderScale: this.props.lodRenderScale ?? 1,
-      coneFov0: this.props.coneFov0 ?? 0.25,
-      coneFov: this.props.coneFov ?? 1,
+      coneFov0: this.props.coneFov0 ?? DEFAULT_RAD_CONE_FOV0_DEGREES,
+      coneFov: this.props.coneFov ?? DEFAULT_RAD_CONE_FOV_DEGREES,
       behindFoveate: this.props.behindFoveate ?? 0.2,
       coneFoveate: this.props.coneFoveate ?? 0.4,
       maxCachedChunks: this.props.maxCachedChunks ?? 256,
@@ -1664,6 +1694,7 @@ class RADRuntime {
 
   private emitProgress(isLoading: boolean): void {
     const metadata = this.metadata;
+    const renderMetrics = this.renderStore.getMetrics();
     this.callbacks.onProgress({
       isLoading,
       loadedChunkCount: this.pageStore.getPageCount(),
@@ -1678,6 +1709,10 @@ class RADRuntime {
       residentSplatCount: this.pageStore.getResidentSplatCount(),
       requestedChunkCount: this.pendingChunkPromises.size + this.queuedUploadChunks.length,
       evictedChunkCount: this.pageStore.evictedChunkCount,
+      renderPageCount: renderMetrics.renderPageCount,
+      renderPageSplatCount: renderMetrics.renderPageSplatCount,
+      renderSplatCount: renderMetrics.renderSplatCount,
+      tileOverflowSplatCount: renderMetrics.tileOverflowSplatCount,
       lastUploadTimeMs: this.renderStore.lastUploadTimeMs ?? this.pageStore.lastUploadTimeMs,
       lastCommitTimeMs: this.lastCommitTimeMs
     });
@@ -1836,6 +1871,24 @@ class RADRenderPageStore {
       engine: page,
       bounds: page.bounds
     }));
+  }
+
+  /** Return aggregate render-page counters for RAD runtime progress reporting. */
+  getMetrics(): RADRenderMetrics {
+    return this.activePages.reduce<RADRenderMetrics>(
+      (metrics, page) => {
+        metrics.renderPageSplatCount += page.getSplatCount();
+        metrics.renderSplatCount += page.getRenderSplatCount();
+        metrics.tileOverflowSplatCount += page.getOverflowSplatCount();
+        return metrics;
+      },
+      {
+        renderPageCount: this.activePages.length,
+        renderPageSplatCount: 0,
+        renderSplatCount: 0,
+        tileOverflowSplatCount: 0
+      }
+    );
   }
 
   /** Update render pages when the row frontier changes. */
@@ -2052,6 +2105,11 @@ class RADPageSplatEngine implements SplatRenderEngineLike {
 
   getRenderSplatCount(): number {
     return this.splatEngine.getRenderSplatCount();
+  }
+
+  /** Return the latest tile overflow count reported by the page engine. */
+  getOverflowSplatCount(): number {
+    return this.splatEngine.getOverflowSplatCount();
   }
 }
 
@@ -2425,6 +2483,7 @@ function getRADCameraPrioritizedChildChunkIndices(
     options.modelMatrix
   );
   const viewportSize = getRADViewportSize(options.viewport);
+  const foveationView = getRADFoveationView(options.viewport, options.modelMatrix);
   const chunkRangeLookup = getRADSplatChunkRangeLookup(metadata);
   const loadedSplatCount = loadedChunks.reduce(
     (total, loadedChunk) => total + loadedChunk.splats.splatCount,
@@ -2468,7 +2527,8 @@ function getRADCameraPrioritizedChildChunkIndices(
             options.coneFov0,
             options.coneFov,
             options.behindFoveate,
-            options.coneFoveate
+            options.coneFoveate,
+            foveationView
           )
         : childCount;
       score = score > 0 ? score : childCount;
@@ -2579,12 +2639,14 @@ function getRADLoadedRenderFrontier(
   }
 
   const viewportSize = getRADViewportSize(options.viewport);
+  const foveationView = getRADFoveationView(options.viewport, options.modelMatrix);
   const rootCandidate = getRADFrontierCandidate(
     loadedByChunkIndex,
     chunkRangeLookup,
     rootGlobalSplatIndex,
     modelViewProjectionMatrix,
     viewportSize,
+    foveationView,
     options
   );
   if (!rootCandidate) {
@@ -2615,6 +2677,7 @@ function getRADLoadedRenderFrontier(
         missingChunkIndexSet,
         modelViewProjectionMatrix,
         viewportSize,
+        foveationView,
         options
       );
 
@@ -2650,6 +2713,7 @@ function getRADLoadedChildFrontierCandidates(
   missingChunkIndexSet: Set<number>,
   modelViewProjectionMatrix: readonly number[],
   viewportSize: readonly [number, number],
+  foveationView: RADFoveationView,
   options: RADSplatChunkSelectionOptions
 ): RADChildFrontierCandidates {
   const childEnd = candidate.childStart + candidate.childCount;
@@ -2668,6 +2732,7 @@ function getRADLoadedChildFrontierCandidates(
       childGlobalSplatIndex,
       modelViewProjectionMatrix,
       viewportSize,
+      foveationView,
       options
     );
     if (!childCandidate) {
@@ -2699,6 +2764,7 @@ function getRADFrontierCandidate(
   globalSplatIndex: number,
   modelViewProjectionMatrix: readonly number[],
   viewportSize: readonly [number, number],
+  foveationView: RADFoveationView,
   options: RADSplatChunkSelectionOptions
 ): RADFrontierCandidate | null {
   const chunkIndex = getRADSplatChunkIndexForGlobalIndex(chunkRangeLookup, globalSplatIndex);
@@ -2725,7 +2791,8 @@ function getRADFrontierCandidate(
     options.coneFov0,
     options.coneFov,
     options.behindFoveate,
-    options.coneFoveate
+    options.coneFoveate,
+    foveationView
   );
 
   return {
@@ -3074,7 +3141,8 @@ function getRADProjectedSplatScore(
   coneFov0: number,
   coneFov: number,
   behindFoveate: number,
-  coneFoveate: number
+  coneFoveate: number,
+  foveationView: RADFoveationView = {}
 ): number {
   const pixelScale = getRADProjectedSplatPixelScale(
     splats,
@@ -3088,7 +3156,8 @@ function getRADProjectedSplatScore(
     coneFov0,
     coneFov,
     behindFoveate,
-    coneFoveate
+    coneFoveate,
+    foveationView
   );
   const childPopulationPriority = Math.max(Math.sqrt(childCount), 1);
   return pixelScale * childPopulationPriority;
@@ -3107,7 +3176,8 @@ function getRADProjectedSplatPixelScale(
   coneFov0: number,
   coneFov: number,
   behindFoveate: number,
-  coneFoveate: number
+  coneFoveate: number,
+  foveationView: RADFoveationView = {}
 ): number {
   const positionOffset = rowIndex * 3;
   const position: [number, number, number] = [
@@ -3141,21 +3211,13 @@ function getRADProjectedSplatPixelScale(
     modelViewProjectionMatrix,
     viewportSize
   );
-  const distanceFromCenter = Math.hypot(
-    projectedCenter[0] - viewportSize[0] * 0.5,
-    projectedCenter[1] - viewportSize[1] * 0.5
-  );
-  const normalizedDistance =
-    distanceFromCenter / Math.max(Math.min(viewportSize[0], viewportSize[1]) * 0.5, 1);
-  const innerCone = Math.max(Math.min(coneFov0, coneFov), 0);
-  const outerCone = Math.max(coneFov, innerCone + 0.0001);
-  const coneBlend = Math.min(
-    Math.max((normalizedDistance - innerCone) / (outerCone - innerCone), 0),
-    1
-  );
-  const conePriority = Math.max(
-    Math.min(coneFoveate, 1),
-    1 - coneBlend * (1 - Math.min(coneFoveate, 1))
+  const foveationPriority = getRADFoveationWeight(
+    position,
+    foveationView,
+    coneFov0,
+    coneFov,
+    behindFoveate,
+    coneFoveate
   );
   const insideViewport =
     projectedCenter[0] >= 0 &&
@@ -3170,10 +3232,74 @@ function getRADProjectedSplatPixelScale(
   const pixelScale =
     Math.max(projectedRadiusPixels, 0.0001) *
     Math.max(lodSplatScale, 0) *
-    conePriority *
+    foveationPriority *
     viewportVisibility *
     depthVisibility;
   return Number.isFinite(pixelScale) ? pixelScale : 0;
+}
+
+/** Return Spark-style angle foveation priority for one splat center. */
+function getRADFoveationWeight(
+  position: readonly [number, number, number],
+  foveationView: RADFoveationView,
+  coneFov0: number,
+  coneFov: number,
+  behindFoveate: number,
+  coneFoveate: number
+): number {
+  const {viewOrigin, viewDirection} = foveationView;
+  if (!viewOrigin || !viewDirection) {
+    return 1;
+  }
+
+  const toSplat: [number, number, number] = [
+    position[0] - viewOrigin[0],
+    position[1] - viewOrigin[1],
+    position[2] - viewOrigin[2]
+  ];
+  const toSplatLength = Math.hypot(toSplat[0], toSplat[1], toSplat[2]);
+  const viewDirectionLength = Math.hypot(viewDirection[0], viewDirection[1], viewDirection[2]);
+  if (
+    !Number.isFinite(toSplatLength) ||
+    !Number.isFinite(viewDirectionLength) ||
+    toSplatLength <= 0 ||
+    viewDirectionLength <= 0
+  ) {
+    return 1;
+  }
+
+  const dotProduct =
+    (toSplat[0] * viewDirection[0] +
+      toSplat[1] * viewDirection[1] +
+      toSplat[2] * viewDirection[2]) /
+    (toSplatLength * viewDirectionLength);
+  const angleDegrees = Math.acos(Math.min(Math.max(dotProduct, -1), 1)) * (180 / Math.PI);
+  const innerConeAngle = Math.max(Math.min(coneFov0, coneFov), 0) * 0.5;
+  const outerConeAngle = Math.min(Math.max(Math.max(coneFov0, coneFov), 0) * 0.5, 180);
+  const conePriority = clampRADPriority(coneFoveate);
+  const behindPriority = clampRADPriority(behindFoveate);
+
+  if (angleDegrees <= innerConeAngle) {
+    return 1;
+  }
+  if (angleDegrees <= outerConeAngle) {
+    const blend = (angleDegrees - innerConeAngle) / Math.max(outerConeAngle - innerConeAngle, 1e-6);
+    return mixRADPriority(1, conePriority, blend);
+  }
+
+  const behindBlend = (angleDegrees - outerConeAngle) / Math.max(180 - outerConeAngle, 1e-6);
+  return mixRADPriority(conePriority, behindPriority, behindBlend);
+}
+
+/** Clamp a relative LoD priority multiplier into the Spark foveation range. */
+function clampRADPriority(value: number): number {
+  return Math.min(Math.max(Number(value) || 0, 0), 1);
+}
+
+/** Linearly interpolate two clamped LoD priority multipliers. */
+function mixRADPriority(start: number, end: number, blend: number): number {
+  const clampedBlend = Math.min(Math.max(blend, 0), 1);
+  return start + (end - start) * clampedBlend;
 }
 
 /** Return an approximate projected screen radius for a local-space Gaussian radius. */
@@ -3279,9 +3405,41 @@ function getRADViewportFov(viewport: any): number {
   return Number.isFinite(fov) ? fov : 50;
 }
 
+/** Return camera foveation inputs in RAD source coordinates. */
+function getRADFoveationView(viewport: any, modelMatrix?: Matrix4Like | null): RADFoveationView {
+  return {
+    viewOrigin: getViewportCameraPosition(viewport, modelMatrix),
+    viewDirection: getViewportForwardDirection(viewport, modelMatrix)
+  };
+}
+
 /** @internal Test-only entry point for viewport RAD load signatures. */
 export function _getRADViewportLoadSignatureForTesting(viewport: any): string {
   return getRADViewportLoadSignature(viewport);
+}
+
+/** @internal Test-only entry point for Spark-style RAD foveation weights. */
+export function _getRADFoveationWeightForTesting(
+  position: readonly [number, number, number],
+  foveationView: {
+    viewOrigin?: [number, number, number];
+    viewDirection?: [number, number, number];
+  },
+  options: {
+    coneFov0?: number;
+    coneFov?: number;
+    behindFoveate?: number;
+    coneFoveate?: number;
+  } = {}
+): number {
+  return getRADFoveationWeight(
+    position,
+    foveationView,
+    options.coneFov0 ?? DEFAULT_RAD_CONE_FOV0_DEGREES,
+    options.coneFov ?? DEFAULT_RAD_CONE_FOV_DEGREES,
+    options.behindFoveate ?? 0.2,
+    options.coneFoveate ?? 0.4
+  );
 }
 
 /** Return a rounded integer bucket for a continuous scheduler signal. */
@@ -3622,8 +3780,8 @@ export function _getRADChunkRequestIndicesForTesting(
     gaussianSupportRadius: 3,
     lodSplatScale: 1,
     lodRenderScale: 1,
-    coneFov0: 0.25,
-    coneFov: 1,
+    coneFov0: DEFAULT_RAD_CONE_FOV0_DEGREES,
+    coneFov: DEFAULT_RAD_CONE_FOV_DEGREES,
     behindFoveate: 0.2,
     coneFoveate: 0.4,
     maxCachedChunks: 16
@@ -3875,6 +4033,9 @@ function getViewportCameraPosition(
   viewport: any,
   modelMatrix?: Matrix4Like | null
 ): [number, number, number] | undefined {
+  if (!viewport) {
+    return undefined;
+  }
   const cameraPosition = getViewportWorldCameraPosition(viewport);
   if (!cameraPosition || !hasNonIdentityModelMatrix(modelMatrix)) {
     return cameraPosition;
@@ -3895,6 +4056,9 @@ function getViewportCameraPosition(
 
 /** Return a viewport camera position in deck world coordinates. */
 function getViewportWorldCameraPosition(viewport: any): [number, number, number] | undefined {
+  if (!viewport) {
+    return undefined;
+  }
   const cameraPosition = viewport.cameraPosition;
   if (cameraPosition && cameraPosition.length >= 3) {
     return [Number(cameraPosition[0]), Number(cameraPosition[1]), Number(cameraPosition[2])];
@@ -3929,8 +4093,11 @@ function getViewportWorldCameraPosition(viewport: any): [number, number, number]
   return undefined;
 }
 
-/** Return the viewport forward direction in world coordinates. */
-function getViewportForwardDirection(viewport: any): [number, number, number] | undefined {
+/** Return the viewport forward direction in world or layer-local coordinates. */
+function getViewportForwardDirection(
+  viewport: any,
+  modelMatrix?: Matrix4Like | null
+): [number, number, number] | undefined {
   const viewMatrix = viewport?.viewMatrix;
   if (!viewMatrix || viewMatrix.length < 16) {
     return undefined;
@@ -3944,7 +4111,33 @@ function getViewportForwardDirection(viewport: any): [number, number, number] | 
   if (!Number.isFinite(length) || length <= 0) {
     return undefined;
   }
-  return [forwardDirection[0] / length, forwardDirection[1] / length, forwardDirection[2] / length];
+  const normalizedForwardDirection: [number, number, number] = [
+    forwardDirection[0] / length,
+    forwardDirection[1] / length,
+    forwardDirection[2] / length
+  ];
+  if (!hasNonIdentityModelMatrix(modelMatrix)) {
+    return normalizedForwardDirection;
+  }
+
+  try {
+    const modelMatrixInverse = new Matrix4(modelMatrix as any).invert();
+    const localDirection = modelMatrixInverse.transformAsVector(normalizedForwardDirection);
+    const localLength = Math.hypot(
+      Number(localDirection[0]),
+      Number(localDirection[1]),
+      Number(localDirection[2])
+    );
+    return Number.isFinite(localLength) && localLength > 0
+      ? [
+          Number(localDirection[0]) / localLength,
+          Number(localDirection[1]) / localLength,
+          Number(localDirection[2]) / localLength
+        ]
+      : normalizedForwardDirection;
+  } catch {
+    return normalizedForwardDirection;
+  }
 }
 
 /** Combine a viewport projection with a layer model transform when present. */

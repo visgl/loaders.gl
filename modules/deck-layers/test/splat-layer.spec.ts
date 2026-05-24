@@ -9,6 +9,7 @@ import {
   SplatLayer,
   _getRADCompactedRenderChunksForTesting,
   _getRADChunkRequestIndicesForTesting,
+  _getRADFoveationWeightForTesting,
   _getRADLoadedRenderFrontierForTesting,
   _getRADRenderFrontierSignatureForTesting,
   _getRADRenderFrontierSplatChunksForTesting,
@@ -218,8 +219,8 @@ function createRADFrontierOptions(overrides: Record<string, unknown> = {}) {
     gaussianSupportRadius: 3,
     lodSplatScale: 1,
     lodRenderScale: 1,
-    coneFov0: 0.25,
-    coneFov: 1,
+    coneFov0: 90,
+    coneFov: 120,
     behindFoveate: 0.2,
     coneFoveate: 0.4,
     maxCachedChunks: 16,
@@ -666,6 +667,12 @@ test('RADSplatLayer keeps resident progress across viewport reselection', async 
     latestProgress.loadedSplatCount >= firstLoadedSplatCount,
     'does not reset progress to zero on viewport change'
   );
+  t.ok(latestProgress.renderPageCount >= 1, 'reports active RAD render pages');
+  t.ok(
+    latestProgress.renderPageSplatCount >= latestProgress.visibleSplatCount,
+    'reports uploaded render-page splats'
+  );
+  t.equal(latestProgress.tileOverflowSplatCount, 0, 'reports tile overflow metrics');
   (layer.state as any).runtime?.destroy();
   t.end();
 });
@@ -731,6 +738,37 @@ test('RADSplatLayer viewport signature tracks FoV and camera buckets', t => {
     _getRADViewportLoadSignatureForTesting({...baseViewport, bearing: 25}),
     baseSignature,
     'changes when view orientation changes'
+  );
+  t.end();
+});
+
+test('RADSplatLayer foveation uses Spark-style full-width angle cones', t => {
+  const foveationView = {
+    viewOrigin: [0, 0, 0] as [number, number, number],
+    viewDirection: [0, 0, -1] as [number, number, number]
+  };
+  const getPositionAtAngle = (angleDegrees: number): [number, number, number] => {
+    const angleRadians = (angleDegrees * Math.PI) / 180;
+    return [Math.sin(angleRadians) * 10, 0, -Math.cos(angleRadians) * 10];
+  };
+  const getWeightAtAngle = (angleDegrees: number): number =>
+    _getRADFoveationWeightForTesting(getPositionAtAngle(angleDegrees), foveationView, {
+      coneFov0: 90,
+      coneFov: 120,
+      coneFoveate: 0.4,
+      behindFoveate: 0.2
+    });
+
+  t.equal(getWeightAtAngle(0), 1, 'keeps full priority on the view axis');
+  t.equal(getWeightAtAngle(45), 1, 'keeps full priority through half of coneFov0');
+  t.ok(
+    Math.abs(getWeightAtAngle(52.5) - 0.7) < 1e-6,
+    'interpolates from full priority to coneFoveate between cone angles'
+  );
+  t.ok(Math.abs(getWeightAtAngle(60) - 0.4) < 1e-6, 'reaches coneFoveate at half of coneFov');
+  t.ok(
+    Math.abs(_getRADFoveationWeightForTesting([0, 0, 10], foveationView) - 0.2) < 1e-6,
+    'reaches behindFoveate behind the camera'
   );
   t.end();
 });

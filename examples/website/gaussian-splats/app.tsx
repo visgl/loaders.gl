@@ -52,12 +52,12 @@ const ORBIT_MAX_ZOOM = 8;
 const SPLAT_LAYER_OPACITY = 0.34;
 const RAD_SPLAT_LAYER_OPACITY = 1;
 const SPLAT_RADIUS_SCALE = 0.78;
-const RAD_SPLAT_RADIUS_SCALE = 0.4;
+const RAD_SPLAT_RADIUS_SCALE = 0.65;
 const SPLAT_RADIUS_MIN_PIXELS = 0.35;
 const SPLAT_RADIUS_MAX_PIXELS = 16;
 const RAD_SPLAT_RADIUS_MAX_PIXELS = RAD_PREVIEW_MAX_PIXEL_RADIUS;
 const SPLAT_ALPHA_SCALE = 0.38;
-const RAD_SPLAT_ALPHA_SCALE = 0.55;
+const RAD_SPLAT_ALPHA_SCALE = 0.7;
 const SPLAT_ALPHA_CUTOFF = 0.02;
 const RAD_SPLAT_ALPHA_CUTOFF = 0.5 / 255;
 const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
@@ -71,7 +71,7 @@ const RAD_PREVIEW_SETTLED_BASE_MAX_SPLATS = 2000000;
 const RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS = 1024;
 const RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS = 16;
 const RAD_PREVIEW_SETTLE_DELAY_MS = 700;
-const RAD_DEFAULT_LEVEL_OF_DETAIL = 1.5;
+const RAD_DEFAULT_LEVEL_OF_DETAIL = 2;
 const RAD_DEFAULT_LOD_RENDER_SCALE = 1;
 const RAD_DEFAULT_BEHIND_FOVEATE = 0.2;
 const RAD_DEFAULT_CONE_FOVEATE = 0.4;
@@ -130,6 +130,14 @@ type RADRenderProgress = {
   requestedChunkCount?: number;
   /** Number of resident chunks evicted by the runtime page store. */
   evictedChunkCount?: number;
+  /** Number of active RAD render pages. */
+  renderPageCount?: number;
+  /** Number of splats uploaded into active RAD render pages. */
+  renderPageSplatCount?: number;
+  /** Number of splats in the latest render index buffers after engine culling. */
+  renderSplatCount?: number;
+  /** Number of splats that overflowed tile-local storage in the latest compute pass. */
+  tileOverflowSplatCount?: number;
   /** Upload duration for the most recent chunk page. */
   lastUploadTimeMs?: number;
   /** Time from source load to the latest coherent LoD commit. */
@@ -413,6 +421,10 @@ export default function GaussianSplatsApp() {
         residentSplatCount: progress.residentSplatCount,
         requestedChunkCount: progress.requestedChunkCount,
         evictedChunkCount: progress.evictedChunkCount,
+        renderPageCount: progress.renderPageCount,
+        renderPageSplatCount: progress.renderPageSplatCount,
+        renderSplatCount: progress.renderSplatCount,
+        tileOverflowSplatCount: progress.tileOverflowSplatCount,
         lastUploadTimeMs: progress.lastUploadTimeMs,
         lastCommitTimeMs: progress.lastCommitTimeMs
       },
@@ -449,7 +461,7 @@ export default function GaussianSplatsApp() {
           maxScreenSpaceSplatSize: RAD_SPLAT_MAX_SCREEN_SPACE_SIZE,
           modelMatrix: getRADModelMatrix(state.selectedUrl),
           renderMode: 'gpu',
-          sortMode: 'none',
+          sortMode: 'tile',
           maxChunks: radMaxChunks,
           maxSplats: radMaxSplats,
           lodSplatCount: radMaxSplats,
@@ -722,11 +734,14 @@ function formatSplatCount(loadedSplatCount: number, totalSplatCount?: number): s
 /** Format RAD runtime counters for the canvas status panel. */
 function formatRADRuntimeProgress(progress: RADRenderProgress): string {
   const chunks = progress.residentChunkCount ?? 0;
+  const pages = progress.renderPageCount ?? 0;
+  const renderSplats = progress.renderSplatCount ?? progress.renderPageSplatCount ?? 0;
   const requests = progress.requestedChunkCount ?? 0;
   const evictions = progress.evictedChunkCount ?? 0;
+  const overflow = progress.tileOverflowSplatCount ?? 0;
   const uploadMs =
     progress.lastUploadTimeMs === undefined ? '-' : `${Math.round(progress.lastUploadTimeMs)} ms`;
-  return `${chunks.toLocaleString()} chunks | ${requests} req | ${evictions} evict | ${uploadMs}`;
+  return `${chunks.toLocaleString()} chunks | ${pages} pages | ${renderSplats.toLocaleString()} draw | ${requests} req | ${evictions} evict | ${overflow.toLocaleString()} ovf | ${uploadMs}`;
 }
 
 /** Return POSITION column bounds for a Mesh Arrow table. */
@@ -1246,7 +1261,7 @@ const styles = {
     background: '#05070a'
   },
   radCanvasCard: {
-    background: '#cafefe'
+    background: '#d8eef2'
   },
   statusPanel: {
     position: 'absolute',
