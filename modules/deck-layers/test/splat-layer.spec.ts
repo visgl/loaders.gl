@@ -14,6 +14,7 @@ import {
   _getRADRenderFrontierSignatureForTesting,
   _getRADRenderFrontierSplatChunksForTesting,
   _getRADRenderPageSplatCountForTesting,
+  _getRADSourceRenderPagePlansForTesting,
   _getRADViewportLoadSignatureForTesting,
   type RADSplatLayerProps,
   type SplatLayerProps
@@ -434,7 +435,7 @@ test('RADSplatLayer frontier descends into fully loaded children', t => {
   t.end();
 });
 
-test('RADSplatLayer loaded LoD frontier selects rows instead of whole chunks', t => {
+test('RADSplatLayer loaded LoD frontier selects rows instead of whole chunks', async t => {
   const parentChunk = createRADChunk(0, 0, [3, 0, 0], [1, 0, 0]);
   const childChunk = createRADChunk(1, 3, [0], [0]);
   const metadata = {
@@ -446,7 +447,7 @@ test('RADSplatLayer loaded LoD frontier selects rows instead of whole chunks', t
     ]
   };
 
-  const frontierChunks = _getRADLoadedRenderFrontierForTesting(
+  const frontierChunks = await _getRADLoadedRenderFrontierForTesting(
     [parentChunk, childChunk],
     metadata,
     createRADFrontierOptions({maxSplats: 3})
@@ -460,7 +461,7 @@ test('RADSplatLayer loaded LoD frontier selects rows instead of whole chunks', t
   t.end();
 });
 
-test('RADSplatLayer loaded LoD frontier keeps parent while child chunks load', t => {
+test('RADSplatLayer loaded LoD frontier keeps parent while child chunks load', async t => {
   const parentChunk = createRADChunk(0, 0, [3, 0, 0], [1, 0, 0]);
   const metadata = {
     count: 4,
@@ -471,7 +472,7 @@ test('RADSplatLayer loaded LoD frontier keeps parent while child chunks load', t
     ]
   };
 
-  const frontierChunks = _getRADLoadedRenderFrontierForTesting(
+  const frontierChunks = await _getRADLoadedRenderFrontierForTesting(
     [parentChunk],
     metadata,
     createRADFrontierOptions({maxSplats: 3})
@@ -554,6 +555,67 @@ test('RADSplatLayer uses one render page only for global sorting', t => {
   t.end();
 });
 
+test('RADSplatLayer groups source render pages and preserves active rows', t => {
+  const firstChunk = createRADChunk(0, 0, [0, 0, 0], [0, 0, 0]);
+  const secondChunk = createRADChunk(1, 3, [0, 0], [0, 0]);
+  const firstChunkWeights = new Float32Array(firstChunk.splats.splatCount);
+  firstChunkWeights[0] = 0.25;
+  firstChunkWeights[2] = 1;
+  const frontierChunks = [
+    {
+      chunk: firstChunk,
+      visibleSplatCount: 2,
+      visibleRows: new Uint32Array([0, 2]),
+      rowWeights: firstChunkWeights
+    },
+    {
+      chunk: secondChunk,
+      visibleSplatCount: secondChunk.splats.splatCount
+    }
+  ];
+
+  const groupedPlans = _getRADSourceRenderPagePlansForTesting(frontierChunks, 8);
+  const splitPlans = _getRADSourceRenderPagePlansForTesting(frontierChunks, 3);
+
+  t.equal(groupedPlans.length, 1, 'packs small source chunks into one render page');
+  t.deepEqual(groupedPlans[0].chunkIndices, [0, 1], 'keeps deterministic chunk order');
+  t.deepEqual(
+    Array.from(groupedPlans[0].rowWeights!),
+    [0.25, 0, 1, 1, 1],
+    'maps partial row weights and full chunk rows into grouped page offsets'
+  );
+  t.equal(splitPlans.length, 2, 'splits grouped pages at the render page size cap');
+  t.equal(splitPlans[0].pageIndex, 0, 'anchors the first render page to source page 0');
+  t.equal(splitPlans[1].pageIndex, 1, 'anchors the second render page to source page 1');
+  t.end();
+});
+
+test('RADSplatLayer maps full-opacity source page rows to compact active indices', t => {
+  const firstChunk = createRADChunk(0, 0, [0, 0, 0], [0, 0, 0]);
+  const secondChunk = createRADChunk(1, 3, [0, 0], [0, 0]);
+  const frontierChunks = [
+    {
+      chunk: firstChunk,
+      visibleSplatCount: 2,
+      visibleRows: new Uint32Array([0, 2])
+    },
+    {
+      chunk: secondChunk,
+      visibleSplatCount: secondChunk.splats.splatCount
+    }
+  ];
+
+  const groupedPlans = _getRADSourceRenderPagePlansForTesting(frontierChunks, 8);
+
+  t.deepEqual(
+    Array.from(groupedPlans[0].activeRows!),
+    [0, 2, 3, 4],
+    'uses compact page-local active rows when no partial opacity weights are needed'
+  );
+  t.equal(groupedPlans[0].rowWeights, undefined, 'avoids full-page active weights');
+  t.end();
+});
+
 test('RADSplatLayer request plan prefetches prioritized child chunks', t => {
   const rootChunk = createRADChunk(0, 0, [4], [1]);
   const childChunks = [
@@ -575,6 +637,28 @@ test('RADSplatLayer request plan prefetches prioritized child chunks', t => {
     _getRADChunkRequestIndicesForTesting([2], [rootChunk], [rootChunk], metadata, [3], {}, 3),
     [2, 1, 4],
     'keeps immediate misses first, skips unavailable chunks, and fills with child prefetches'
+  );
+
+  const leafRootChunk = createRADChunk(0, 0, [0], [0]);
+  const leafMetadata = {
+    ...metadata,
+    chunks: [leafRootChunk, ...childChunks].map(chunk => ({
+      base: chunk.splats.loaderData.base,
+      count: chunk.splats.splatCount
+    }))
+  };
+  t.deepEqual(
+    _getRADChunkRequestIndicesForTesting(
+      [],
+      [leafRootChunk],
+      [leafRootChunk],
+      leafMetadata,
+      [],
+      {},
+      4
+    ),
+    [1, 2, 3, 4],
+    'fills idle request capacity with broad source-order prefetch when no scored children remain'
   );
   t.end();
 });
@@ -758,12 +842,16 @@ test('RADSplatLayer foveation uses Spark-style full-width angle cones', t => {
       coneFoveate: 0.4,
       behindFoveate: 0.2
     });
+  const dotSpaceBlend =
+    (Math.cos((52.5 * Math.PI) / 180) - Math.cos((60 * Math.PI) / 180)) /
+    (Math.cos((45 * Math.PI) / 180) - Math.cos((60 * Math.PI) / 180));
+  const expectedDotSpaceWeight = 0.4 + (1 - 0.4) * dotSpaceBlend;
 
   t.equal(getWeightAtAngle(0), 1, 'keeps full priority on the view axis');
   t.equal(getWeightAtAngle(45), 1, 'keeps full priority through half of coneFov0');
   t.ok(
-    Math.abs(getWeightAtAngle(52.5) - 0.7) < 1e-6,
-    'interpolates from full priority to coneFoveate between cone angles'
+    Math.abs(getWeightAtAngle(52.5) - expectedDotSpaceWeight) < 1e-6,
+    'interpolates in Spark dot space between cone cutoffs'
   );
   t.ok(Math.abs(getWeightAtAngle(60) - 0.4) < 1e-6, 'reaches coneFoveate at half of coneFov');
   t.ok(

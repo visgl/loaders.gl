@@ -157,6 +157,29 @@ test('splat-data converts decoded Gaussian splat values', t => {
   t.end();
 });
 
+test('splat-data preserves extended RAD color byte ranges', t => {
+  const data = getGaussianSplatDataFromValues({
+    splatCount: 1,
+    positions: new Float32Array([1, 2, 3]),
+    scales: new Float32Array([1, 2, 4]),
+    rotations: new Float32Array([1, 0, 0, 0]),
+    colors: new Uint8Array([0, 128, 255]),
+    colorMin: -0.5,
+    colorMax: 1.5,
+    opacities: new Float32Array([0.5])
+  });
+
+  t.deepEqual(Array.from(data.colors), [0, 128, 255, 128], 'preserves encoded color bytes');
+  t.deepEqual(
+    Array.from(data.baseRgb).map(value => Number(value.toFixed(3))),
+    [-0.5, 0.504, 1.5],
+    'decodes color bytes into the extended RGB range'
+  );
+  t.equal(data.colorMin, -0.5, 'preserves color minimum');
+  t.equal(data.colorMax, 1.5, 'preserves color maximum');
+  t.end();
+});
+
 test('splat-sort exposes radix constants and key packing', t => {
   const nearKey = packSplatDepthKey(0, {depthMin: 0, depthMax: 10});
   const farKey = packSplatDepthKey(10, {depthMin: 0, depthMax: 10});
@@ -327,14 +350,14 @@ test('splat-sort calculates tile grid and buffer sizes', t => {
   const tileGrid = getSplatTileGrid(1920, 1080);
   const byteLengths = getSplatTileBufferByteLengths(1000, tileGrid);
 
-  t.equal(SPLAT_TILE_SIZE_PIXELS, 16, 'uses 16 pixel default tiles');
-  t.equal(SPLAT_TILE_RADIX_MAX_SPLATS, 1024, 'reserves 1024 splats per tile workgroup');
+  t.equal(SPLAT_TILE_SIZE_PIXELS, 2, 'uses 2 pixel default tiles');
+  t.equal(SPLAT_TILE_RADIX_MAX_SPLATS, 2048, 'reserves 2048 splats per tile workgroup');
   t.equal(SPLAT_TILE_RADIX_WORKGROUP_SIZE, 256, 'uses 256 lane tile radix workgroups');
-  t.equal(tileGrid.columns, 120, 'calculates tile columns');
-  t.equal(tileGrid.rows, 68, 'calculates tile rows');
-  t.equal(tileGrid.tileCount, 8160, 'calculates tile count');
-  t.equal(byteLengths.tileCounts, 8160 * 4, 'allocates one count per tile');
-  t.equal(byteLengths.tileOffsets, 8161 * 4, 'allocates sentinel tile offset');
+  t.equal(tileGrid.columns, 960, 'calculates tile columns');
+  t.equal(tileGrid.rows, 540, 'calculates tile rows');
+  t.equal(tileGrid.tileCount, 518400, 'calculates tile count');
+  t.equal(byteLengths.tileCounts, 518400 * 4, 'allocates one count per tile');
+  t.equal(byteLengths.tileOffsets, 518401 * 4, 'allocates sentinel tile offset');
   t.equal(byteLengths.tileIndices, 1000 * 4, 'allocates compacted splat references');
   t.equal(byteLengths.overflowCount, 4, 'allocates overflow counter');
   t.equal(byteLengths.overflowIndices, 4, 'allocates at least one overflow slot');

@@ -103,6 +103,14 @@ export type SplatWebGLAttributes = {
   };
 };
 
+/** Decode range applied to packed RGB render bytes. */
+export type SplatColorRange = {
+  /** Minimum decoded RGB value represented by color byte 0. */
+  colorMin: number;
+  /** Maximum decoded RGB value represented by color byte 255. */
+  colorMax: number;
+};
+
 /** GPU buffers owned by {@link SplatEngine}. */
 export type SplatEngineBuffers = {
   /** Interleaved position storage buffer. */
@@ -117,6 +125,8 @@ export type SplatEngineBuffers = {
   colors: Buffer;
   /** Per-splat active opacity weights used by paged LoD renderers. */
   activeFlags: Buffer;
+  /** Compact active splat index list used by unsorted paged LoD renderers. */
+  activeIndices: Buffer;
   /** Current sortable key buffer. */
   keys: Buffer;
   /** Current sorted index buffer. */
@@ -161,10 +171,18 @@ type SplatComputePipelines = {
   clear: ComputePipeline;
   /** Projection and tile-count pass pipeline. */
   project: ComputePipeline;
+  /** Projection pass that walks compact active indices and counts visible tiles. */
+  projectActive: ComputePipeline;
+  /** Projection and direct visible-index compaction pass for unsorted rendering. */
+  projectUnsorted: ComputePipeline;
+  /** Projection pass that walks compact active indices for unsorted LoD rendering. */
+  projectActiveUnsorted: ComputePipeline;
   /** Serial tile prefix scan pipeline. */
   scanTiles: ComputePipeline;
   /** Visible splat scatter pipeline. */
   scatterTiles: ComputePipeline;
+  /** Visible active-index scatter pipeline. */
+  scatterActiveTiles: ComputePipeline;
   /** Tile-local sort pipeline. */
   tileSort: ComputePipeline;
   /** Sorted compact index copy pipeline. */
@@ -182,6 +200,7 @@ const DEFAULT_ENGINE_PROPS: SplatEngineProps = {
 
 const WEBGPU_BUFFER_DESTROY_DELAY_MS = 2000;
 const COUNT_BUFFER_BYTE_LENGTH = 2 * Uint32Array.BYTES_PER_ELEMENT;
+const MAX_COMPUTE_WORKGROUPS_PER_DIMENSION = 65535;
 
 const COMPUTE_BINDING_DECLARATIONS = {
   positions: {name: 'positions', type: 'read-only-storage', group: 0, location: 0},
@@ -200,7 +219,8 @@ const COMPUTE_BINDING_DECLARATIONS = {
   tempTileKeys: {name: 'tempTileKeys', type: 'storage', group: 0, location: 13},
   counts: {name: 'counts', type: 'storage', group: 0, location: 14},
   activeFlags: {name: 'activeFlags', type: 'read-only-storage', group: 0, location: 15},
-  params: {name: 'params', type: 'uniform', group: 0, location: 16}
+  params: {name: 'params', type: 'uniform', group: 0, location: 16},
+  activeIndices: {name: 'activeIndices', type: 'read-only-storage', group: 0, location: 17}
 } as const satisfies Record<string, BindingDeclaration>;
 
 const COMPUTE_PIPELINE_BINDING_NAMES: Record<string, readonly string[]> = {
@@ -216,9 +236,51 @@ const COMPUTE_PIPELINE_BINDING_NAMES: Record<string, readonly string[]> = {
     'tileCounts',
     'params'
   ],
+  projectActive: [
+    'positions',
+    'scales',
+    'rotations',
+    'opacities',
+    'indices',
+    'keys',
+    'projected',
+    'tileCounts',
+    'params'
+  ],
+  projectUnsorted: [
+    'positions',
+    'scales',
+    'rotations',
+    'opacities',
+    'activeFlags',
+    'indices',
+    'projected',
+    'counts',
+    'params'
+  ],
+  projectActiveUnsorted: [
+    'positions',
+    'scales',
+    'rotations',
+    'opacities',
+    'activeFlags',
+    'indices',
+    'projected',
+    'params'
+  ],
   scanTiles: ['tileCounts', 'tileOffsets', 'tileCursors', 'counts', 'params'],
   scatterTiles: [
     'positions',
+    'keys',
+    'projected',
+    'tileCursors',
+    'tileIndices',
+    'tileKeys',
+    'params'
+  ],
+  scatterActiveTiles: [
+    'positions',
+    'indices',
     'keys',
     'projected',
     'tileCursors',
@@ -245,6 +307,8 @@ export class SplatEngine {
   buffers: SplatEngineBuffers | null = null;
 
   private sortedIndices: Uint32Array = new Uint32Array(0);
+  private activeIndices: Uint32Array = new Uint32Array(0);
+  private activeIndexCount = 0;
   private activeWeights: Float32Array = new Float32Array(0);
   private dataStreamVersion = 0;
   private keys: Uint32Array = new Uint32Array(0);
@@ -284,8 +348,9 @@ export class SplatEngine {
   /** Update engine options and mark dependent state dirty when values change. */
   setProps(props: Partial<SplatEngineProps>): void {
     const nextProps = {...this.props, ...props};
+    const sortModeChanged = nextProps.sortMode !== this.props.sortMode;
     if (
-      nextProps.sortMode !== this.props.sortMode ||
+      sortModeChanged ||
       nextProps.alphaCutoff !== this.props.alphaCutoff ||
       nextProps.screenSizeCutoffPixels !== this.props.screenSizeCutoffPixels ||
       nextProps.gaussianSupportRadius !== this.props.gaussianSupportRadius ||
@@ -295,6 +360,9 @@ export class SplatEngine {
       this.propsChanged = true;
     }
     this.props = nextProps;
+    if (sortModeChanged && nextProps.sortMode !== 'none') {
+      this.buffers?.activeFlags.write(this.activeWeights);
+    }
   }
 
   /** Decode Arrow data and upload persistent/transient GPU buffers. */
@@ -359,6 +427,8 @@ export class SplatEngine {
     this.computeUpdateSerial++;
     this.sortedVersion = -1;
     this.sortedIndices = createSequentialIndices(data.length);
+    this.activeIndices = this.sortedIndices;
+    this.activeIndexCount = data.length;
     this.activeWeights = createActiveWeights(data.length);
     this.renderSplatCount = data.length;
     this.keys = new Uint32Array(data.length);
@@ -381,19 +451,20 @@ export class SplatEngine {
       return;
     }
 
-    const activeWeights = new Float32Array(data.length);
-    if (indices) {
-      for (let indexOffset = 0; indexOffset < indices.length; indexOffset++) {
-        const index = indices[indexOffset];
-        if (index < activeWeights.length) {
-          activeWeights[index] = 1;
-        }
-      }
-    } else {
-      activeWeights.fill(1);
+    const activeIndices = indices
+      ? copyValidSplatIndices(indices, data.length)
+      : createSequentialIndices(data.length);
+    this.activeIndices = activeIndices;
+    this.activeIndexCount = activeIndices.length;
+    this.renderSplatCount = activeIndices.length;
+    this.activeWeights = createActiveWeightsFromIndices(data.length, activeIndices);
+    this.buffers?.activeIndices.write(activeIndices);
+    if (this.props.sortMode !== 'none') {
+      this.buffers?.activeFlags.write(this.activeWeights);
     }
-
-    this.setActiveWeights(activeWeights);
+    this.sortedVersion = -1;
+    this.updateSignature = '';
+    this.countReadbackDirty = true;
   }
 
   /** Replace per-splat active opacity weights without reuploading immutable attributes. */
@@ -406,6 +477,13 @@ export class SplatEngine {
     const activeWeights =
       weights && weights.length === data.length ? weights : createActiveWeights(data.length);
     this.activeWeights = activeWeights;
+    this.activeIndices =
+      weights && weights.length === data.length
+        ? createActiveIndicesFromWeights(activeWeights)
+        : createSequentialIndices(data.length);
+    this.activeIndexCount = this.activeIndices.length;
+    this.renderSplatCount = this.activeIndexCount;
+    this.buffers?.activeIndices.write(this.activeIndices);
     this.buffers?.activeFlags.write(activeWeights);
     this.sortedVersion = -1;
     this.updateSignature = '';
@@ -490,6 +568,14 @@ export class SplatEngine {
     return this.renderSplatCount;
   }
 
+  /** Return the decoded RGB range represented by packed color bytes. */
+  getColorRange(): SplatColorRange {
+    return {
+      colorMin: this.data?.colorMin ?? 0,
+      colorMax: this.data?.colorMax ?? 1
+    };
+  }
+
   /** Return the last tile overflow count reported by the compute sorter. */
   getOverflowSplatCount(): number {
     return this.overflowSplatCount;
@@ -561,6 +647,10 @@ export class SplatEngine {
         usage: Buffer.STORAGE | Buffer.COPY_DST,
         data: this.activeWeights
       }),
+      activeIndices: this.device.createBuffer({
+        usage: Buffer.STORAGE | Buffer.COPY_DST,
+        data: this.activeIndices
+      }),
       keys: this.device.createBuffer({
         usage: Buffer.STORAGE | Buffer.COPY_DST | Buffer.COPY_SRC,
         byteLength: transientByteLengths.keys
@@ -594,6 +684,20 @@ export class SplatEngine {
     );
   }
 
+  /** Return true when unsorted LoD rendering can project only selected active rows. */
+  private shouldUseActiveIndexProjection(): boolean {
+    return Boolean(
+      this.data && this.props.sortMode === 'none' && this.activeIndexCount < this.data.length
+    );
+  }
+
+  /** Return true when tile sorting can project only selected active rows. */
+  private shouldUseActiveTileProjection(): boolean {
+    return Boolean(
+      this.data && this.props.sortMode === 'tile' && this.activeIndexCount < this.data.length
+    );
+  }
+
   /** Run WebGPU projection, tile binning, optional tile sort, and visible-count readback. */
   private updateComputeTileBuffers(props: SplatEngineUpdateProps): void {
     const data = this.data;
@@ -613,53 +717,94 @@ export class SplatEngine {
     const bindings = this.getComputeBindings();
     const commandEncoder = this.device.createCommandEncoder({id: 'splat-compute-command-encoder'});
     const computePass = commandEncoder.beginComputePass({id: 'splat-compute-pass'});
-    const splatWorkgroups = Math.ceil(Math.max(data.length, 1) / SPLAT_COMPUTE_WORKGROUP_SIZE);
+    const useActiveIndexProjection = this.shouldUseActiveIndexProjection();
+    const useActiveTileProjection = this.shouldUseActiveTileProjection();
+    const useActiveProjection = useActiveIndexProjection || useActiveTileProjection;
+    const projectSplatCount = useActiveProjection ? this.activeIndexCount : data.length;
+    if (useActiveProjection) {
+      buffers.indices.write(this.activeIndices);
+    }
+    const splatWorkgroups = Math.ceil(
+      Math.max(projectSplatCount, 1) / SPLAT_COMPUTE_WORKGROUP_SIZE
+    );
     const clearWorkgroups = Math.ceil(
       Math.max(this.computeTileGrid.tileCount + 1, 2) / SPLAT_COMPUTE_WORKGROUP_SIZE
     );
     const sortMode = this.props.sortMode;
 
-    dispatchComputePipeline(
-      computePass,
-      computePipelines.clear,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.clear),
-      clearWorkgroups
-    );
-    dispatchComputePipeline(
-      computePass,
-      computePipelines.project,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.project),
-      splatWorkgroups
-    );
-    dispatchComputePipeline(
-      computePass,
-      computePipelines.scanTiles,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.scanTiles),
-      1
-    );
-    dispatchComputePipeline(
-      computePass,
-      computePipelines.scatterTiles,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.scatterTiles),
-      splatWorkgroups
-    );
-    if (sortMode === 'tile') {
+    if (!useActiveIndexProjection) {
       dispatchComputePipeline(
         computePass,
-        computePipelines.tileSort,
-        filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.tileSort),
-        this.computeTileGrid.tileCount
+        computePipelines.clear,
+        filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.clear),
+        clearWorkgroups
       );
     }
     dispatchComputePipeline(
       computePass,
-      computePipelines.copySorted,
-      filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.copySorted),
+      useActiveIndexProjection
+        ? computePipelines.projectActiveUnsorted
+        : useActiveTileProjection
+          ? computePipelines.projectActive
+        : sortMode === 'none'
+          ? computePipelines.projectUnsorted
+          : computePipelines.project,
+      filterBindings(
+        bindings,
+        useActiveIndexProjection
+          ? COMPUTE_PIPELINE_BINDING_NAMES.projectActiveUnsorted
+          : useActiveTileProjection
+            ? COMPUTE_PIPELINE_BINDING_NAMES.projectActive
+          : sortMode === 'none'
+            ? COMPUTE_PIPELINE_BINDING_NAMES.projectUnsorted
+            : COMPUTE_PIPELINE_BINDING_NAMES.project
+      ),
       splatWorkgroups
     );
+    if (sortMode !== 'none') {
+      dispatchComputePipeline(
+        computePass,
+        computePipelines.scanTiles,
+        filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.scanTiles),
+        1
+      );
+      dispatchComputePipeline(
+        computePass,
+        useActiveTileProjection ? computePipelines.scatterActiveTiles : computePipelines.scatterTiles,
+        filterBindings(
+          bindings,
+          useActiveTileProjection
+            ? COMPUTE_PIPELINE_BINDING_NAMES.scatterActiveTiles
+            : COMPUTE_PIPELINE_BINDING_NAMES.scatterTiles
+        ),
+        splatWorkgroups
+      );
+      if (sortMode === 'tile') {
+        const tileSortWorkgroupsX = Math.min(
+          this.computeTileGrid.tileCount,
+          MAX_COMPUTE_WORKGROUPS_PER_DIMENSION
+        );
+        const tileSortWorkgroupsY = Math.ceil(
+          this.computeTileGrid.tileCount / MAX_COMPUTE_WORKGROUPS_PER_DIMENSION
+        );
+        dispatchComputePipeline(
+          computePass,
+          computePipelines.tileSort,
+          filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.tileSort),
+          tileSortWorkgroupsX,
+          tileSortWorkgroupsY
+        );
+      }
+      dispatchComputePipeline(
+        computePass,
+        computePipelines.copySorted,
+        filterBindings(bindings, COMPUTE_PIPELINE_BINDING_NAMES.copySorted),
+        splatWorkgroups
+      );
+    }
     computePass.end();
     const computeSerial = ++this.computeUpdateSerial;
-    const shouldReadCounts = !this.countReadbackPromise;
+    const shouldReadCounts = !useActiveIndexProjection && !this.countReadbackPromise;
     if (shouldReadCounts) {
       commandEncoder.copyBufferToBuffer({
         sourceBuffer: computeBuffers.counts,
@@ -670,6 +815,13 @@ export class SplatEngine {
       this.countReadbackDirty = true;
     }
     this.device.submit(commandEncoder.finish({id: 'splat-compute-command-buffer'}));
+
+    if (useActiveIndexProjection) {
+      this.renderSplatCount = this.activeIndexCount;
+      this.overflowSplatCount = 0;
+      this.countReadbackDirty = false;
+      return;
+    }
 
     if (shouldReadCounts) {
       this.updateCountReadback(computeSerial);
@@ -757,8 +909,12 @@ export class SplatEngine {
       shader,
       clear: this.createComputePipeline(shader, 'clear'),
       project: this.createComputePipeline(shader, 'project'),
+      projectActive: this.createComputePipeline(shader, 'projectActive'),
+      projectUnsorted: this.createComputePipeline(shader, 'projectUnsorted'),
+      projectActiveUnsorted: this.createComputePipeline(shader, 'projectActiveUnsorted'),
       scanTiles: this.createComputePipeline(shader, 'scanTiles'),
       scatterTiles: this.createComputePipeline(shader, 'scatterTiles'),
+      scatterActiveTiles: this.createComputePipeline(shader, 'scatterActiveTiles'),
       tileSort: this.createComputePipeline(shader, 'tileSort'),
       copySorted: this.createComputePipeline(shader, 'copySorted')
     };
@@ -805,6 +961,7 @@ export class SplatEngine {
     paramsU32[u32Offset + 4] = this.computeTileGrid.tileCount;
     paramsU32[u32Offset + 5] =
       this.props.sortMode === 'tile' ? 2 : this.props.sortMode === 'global' ? 1 : 0;
+    paramsU32[u32Offset + 6] = this.activeIndexCount;
 
     computeBuffers.params.write(new Uint8Array(paramsArrayBuffer));
   }
@@ -823,6 +980,7 @@ export class SplatEngine {
       rotations: buffers.rotations,
       opacities: buffers.opacities,
       activeFlags: buffers.activeFlags,
+      activeIndices: buffers.activeIndices,
       keys: buffers.keys,
       indices: buffers.indices,
       projected: buffers.projected,
@@ -1063,8 +1221,12 @@ export class SplatEngine {
 
     computePipelines.clear.destroy();
     computePipelines.project.destroy();
+    computePipelines.projectActive.destroy();
+    computePipelines.projectUnsorted.destroy();
+    computePipelines.projectActiveUnsorted.destroy();
     computePipelines.scanTiles.destroy();
     computePipelines.scatterTiles.destroy();
+    computePipelines.scatterActiveTiles.destroy();
     computePipelines.tileSort.destroy();
     computePipelines.copySorted.destroy();
     computePipelines.shader.destroy();
@@ -1076,14 +1238,21 @@ const IDENTITY_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
 /** Dispatch one compute pipeline with a shared binding map. */
 function dispatchComputePipeline(
-  computePass: {setPipeline: (pipeline: ComputePipeline) => void; dispatch: (x: number) => void},
+  computePass: {
+    setPipeline: (pipeline: ComputePipeline) => void;
+    dispatch: (x: number, y?: number) => void;
+  },
   pipeline: ComputePipeline,
   bindings: Record<string, Binding>,
-  workgroupCount: number
+  workgroupCountX: number,
+  workgroupCountY: number = 1
 ): void {
   pipeline.setBindings(bindings);
   computePass.setPipeline(pipeline);
-  computePass.dispatch(Math.max(Math.ceil(workgroupCount), 1));
+  computePass.dispatch(
+    Math.max(Math.ceil(workgroupCountX), 1),
+    Math.max(Math.ceil(workgroupCountY), 1)
+  );
 }
 
 /** Return a binding map containing only bindings used by one compute entry point. */
@@ -1305,11 +1474,45 @@ function createSequentialIndices(length: number): Uint32Array {
   return indices;
 }
 
+/** Copy valid active splat row indices into a compact GPU-uploadable list. */
+function copyValidSplatIndices(indices: Uint32Array, length: number): Uint32Array {
+  const validIndices = new Uint32Array(indices.length);
+  let validIndexCount = 0;
+  for (let indexOffset = 0; indexOffset < indices.length; indexOffset++) {
+    const index = indices[indexOffset];
+    if (index < length) {
+      validIndices[validIndexCount++] = index;
+    }
+  }
+  return validIndices.subarray(0, validIndexCount);
+}
+
 /** Create all-visible active opacity weights for newly uploaded splats. */
 function createActiveWeights(length: number): Float32Array {
   const activeWeights = new Float32Array(length);
   activeWeights.fill(1);
   return activeWeights;
+}
+
+/** Create active opacity weights from a compact active row list. */
+function createActiveWeightsFromIndices(length: number, indices: Uint32Array): Float32Array {
+  const activeWeights = new Float32Array(length);
+  for (let indexOffset = 0; indexOffset < indices.length; indexOffset++) {
+    activeWeights[indices[indexOffset]] = 1;
+  }
+  return activeWeights;
+}
+
+/** Build a compact active row list from non-zero active opacity weights. */
+function createActiveIndicesFromWeights(activeWeights: Float32Array): Uint32Array {
+  const activeIndices = new Uint32Array(activeWeights.length);
+  let activeIndexCount = 0;
+  for (let weightIndex = 0; weightIndex < activeWeights.length; weightIndex++) {
+    if (activeWeights[weightIndex] > 0) {
+      activeIndices[activeIndexCount++] = weightIndex;
+    }
+  }
+  return activeIndices.subarray(0, activeIndexCount);
 }
 
 /** Recomputes RGBA bytes by evaluating available spherical harmonic rest coefficients. */
@@ -1373,9 +1576,9 @@ export function writeSphericalHarmonicColors(
     }
 
     const colorIndex = splatIndex * 4;
-    data.colors[colorIndex + 0] = normalizeColorByte(red);
-    data.colors[colorIndex + 1] = normalizeColorByte(green);
-    data.colors[colorIndex + 2] = normalizeColorByte(blue);
+    data.colors[colorIndex + 0] = encodeColorByte(red, data.colorMin, data.colorMax);
+    data.colors[colorIndex + 1] = encodeColorByte(green, data.colorMin, data.colorMax);
+    data.colors[colorIndex + 2] = encodeColorByte(blue, data.colorMin, data.colorMax);
     data.colors[colorIndex + 3] = normalizeColorByte(data.opacities[splatIndex]);
   }
 }
@@ -1427,6 +1630,13 @@ function normalizeVector(
 /** Clamp a normalized color value and convert it to an unorm8 byte. */
 function normalizeColorByte(value: number): number {
   return Math.round(Math.min(Math.max(value, 0), 1) * 255);
+}
+
+/** Encode a decoded RGB component into the splat color byte range. */
+function encodeColorByte(value: number, colorMin: number, colorMax: number): number {
+  const colorRange = colorMax - colorMin;
+  const normalizedValue = colorRange > 0 ? (value - colorMin) / colorRange : value;
+  return normalizeColorByte(normalizedValue);
 }
 
 /** Pack RGBA bytes into little-endian unsigned integers for storage buffers. */

@@ -28,6 +28,7 @@ import {CullingVolume, Plane} from '@math.gl/culling';
 import {Matrix4, type Matrix4Like} from '@math.gl/core';
 import {
   SplatEngine,
+  type SplatColorRange,
   type SplatEngineProps,
   type SplatEngineUpdateProps,
   type SplatRenderBindings,
@@ -45,20 +46,26 @@ const DEFAULT_COLOR = [255, 255, 255, 255] as const;
 const DEFAULT_RAD_SPLAT_MAX_CHUNKS = 32;
 const DEFAULT_RAD_SPLAT_MAX_SPLATS = 2100000;
 const DEFAULT_RAD_SPLAT_MAX_CONCURRENT_CHUNK_REQUESTS = 4;
-const DEFAULT_RAD_SPLAT_MAX_OUTSTANDING_CHUNK_WORK_MULTIPLIER = 1;
+const DEFAULT_RAD_SPLAT_MAX_OUTSTANDING_CHUNK_WORK_MULTIPLIER = 4;
+const DEFAULT_RAD_SPLAT_MAX_CHUNK_UPLOADS_PER_FRAME = 8;
 const DEFAULT_RAD_SPLAT_CHUNK_RETRY_COUNT = 2;
 const DEFAULT_RAD_SPLAT_CHUNK_RETRY_DELAY_MS = 120;
 const DEFAULT_RAD_SPLAT_CHUNK_TIMEOUT_MS = 30000;
 const DEFAULT_RAD_SPLAT_PREFETCH_CHUNK_MULTIPLIER = 4;
+const DEFAULT_RAD_BREADTH_PREFETCH_INTERVAL = 4;
 const DEFAULT_RAD_FRONTIER_MAX_SUPPRESSED_CHILD_SPLATS = 65536;
 const DEFAULT_RAD_CHILD_SUPPRESSION_COVERAGE = 0.02;
 const DEFAULT_RAD_PARENT_REPLACEMENT_COVERAGE = 0.85;
 const DEFAULT_RAD_PARENT_MIN_PARTIAL_OPACITY_WEIGHT = 0.005;
 const DEFAULT_RAD_PARENT_COVERAGE_FADE_SCALE = 512;
 const DEFAULT_RAD_PRIORITY_MAX_SCORED_ROWS = 131072;
-const DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS = 262144;
-const DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS = 1000;
-const DEFAULT_RAD_LOD_MIN_PROJECTED_PIXELS = 1;
+const DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS = 65536;
+const DEFAULT_RAD_SOURCE_RENDER_PAGE_MAX_SPLATS = DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS * 4;
+const DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS = 2500;
+const DEFAULT_RAD_RENDER_LOADING_COMMIT_MIN_CHUNK_DELTA = 16;
+const DEFAULT_RAD_SELECTION_LOADING_INTERVAL_MS = 1000;
+const DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS = 8;
+const DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL = 2048;
 const DEFAULT_RAD_CONE_FOV0_DEGREES = 90;
 const DEFAULT_RAD_CONE_FOV_DEGREES = 120;
 const IDENTITY_MODEL_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
@@ -143,6 +150,16 @@ export type RADSplatLoadProgress = {
   renderSplatCount?: number;
   /** Number of splats that overflowed tile-local storage in the latest compute pass. */
   tileOverflowSplatCount?: number;
+  /** Number of selected visible LoD rows that still have children. */
+  frontierParentSplatCount?: number;
+  /** Number of selected visible LoD rows that are leaves. */
+  frontierLeafSplatCount?: number;
+  /** Largest selected LoD child count in the current frontier. */
+  frontierMaxChildCount?: number;
+  /** Largest Spark-expanded render opacity selected in the current frontier. */
+  frontierMaxOpacity?: number;
+  /** Largest decoded source-space scale selected in the current frontier. */
+  frontierMaxScale?: number;
   /** Milliseconds spent uploading the most recent chunk page. */
   lastUploadTimeMs?: number;
   /** Milliseconds since the current source started loading when the last coherent LoD set committed. */
@@ -380,6 +397,25 @@ type RADRenderFrontierChunk = {
   rowWeights?: Float32Array;
 };
 
+type RADSourceRenderPagePlan = {
+  /** Stable source-page index derived from the global RAD splat range. */
+  pageIndex: number;
+  /** Render page id, derived from the first source chunk in the group. */
+  chunkIndex: number;
+  /** Source chunks packed into this render page. */
+  chunkIndices: number[];
+  /** Frontier chunks that supply immutable splat data for this render page. */
+  frontierChunks: RADRenderFrontierChunk[];
+  /** Total decoded source rows packed into this render page. */
+  splatCount: number;
+  /** Active row indices in render-page row coordinates. */
+  activeRows?: Uint32Array;
+  /** Optional active row weights in render-page row coordinates. */
+  rowWeights?: Float32Array;
+  /** Signature for immutable splat data packed into this render page. */
+  signature: string;
+};
+
 type RADChildChunkGroup = {
   /** Combined priority for a single parent splat's unloaded child chunk range. */
   score: number;
@@ -398,9 +434,9 @@ type RADFrontierCandidate = {
   childStart: number;
   /** Number of direct child nodes in the LoD tree. */
   childCount: number;
-  /** Projected screen-space splat radius after foveation. */
+  /** Spark-style LoD scale after distance and foveation weighting. */
   pixelScale: number;
-  /** Projected screen-space priority for refinement. */
+  /** Heap priority for refinement. */
   score: number;
 };
 
@@ -458,6 +494,19 @@ type RADRenderMetrics = {
   tileOverflowSplatCount: number;
 };
 
+type RADFrontierStats = {
+  /** Number of selected visible LoD rows that still have children. */
+  parentSplatCount: number;
+  /** Number of selected visible LoD rows that are leaves. */
+  leafSplatCount: number;
+  /** Largest selected LoD child count in the current frontier. */
+  maxChildCount: number;
+  /** Largest Spark-expanded render opacity selected in the current frontier. */
+  maxOpacity: number;
+  /** Largest decoded source-space scale selected in the current frontier. */
+  maxScale: number;
+};
+
 type SplatRenderEngineLike = {
   /** Release all GPU resources owned by this render engine. */
   destroy: () => void;
@@ -473,6 +522,8 @@ type SplatRenderEngineLike = {
   getSplatCount: () => number;
   /** Return the number of visible splats in the current render index buffer. */
   getRenderSplatCount: () => number;
+  /** Return the decoded RGB range represented by packed color bytes. */
+  getColorRange: () => SplatColorRange;
   /** Return the last tile overflow count reported by the compute sorter. */
   getOverflowSplatCount: () => number;
 };
@@ -491,6 +542,8 @@ type SplatPrimitiveLayerProps = LayerProps & {
   radiusMinPixels?: number;
   radiusMaxPixels?: number;
   alphaScale?: number;
+  colorMin?: number;
+  colorMax?: number;
   alphaCutoff?: number;
   screenSizeCutoffPixels?: number;
   gaussianSupportRadius?: number;
@@ -505,6 +558,8 @@ type SplatUniformProps = {
   radiusMinPixels: number;
   radiusMaxPixels: number;
   alphaScale: number;
+  colorMin: number;
+  colorMax: number;
   alphaCutoff: number;
   screenSizeCutoffPixels: number;
   gaussianSupportRadius: number;
@@ -581,6 +636,8 @@ layout(std140) uniform splatUniforms {
   float radiusMinPixels;
   float radiusMaxPixels;
   float alphaScale;
+  float colorMin;
+  float colorMax;
   float alphaCutoff;
   float screenSizeCutoffPixels;
   float gaussianSupportRadius;
@@ -593,6 +650,8 @@ layout(std140) uniform splatUniforms {
     radiusMinPixels: 'f32',
     radiusMaxPixels: 'f32',
     alphaScale: 'f32',
+    colorMin: 'f32',
+    colorMax: 'f32',
     alphaCutoff: 'f32',
     screenSizeCutoffPixels: 'f32',
     gaussianSupportRadius: 'f32'
@@ -606,6 +665,8 @@ struct SplatUniforms {
   radiusMinPixels: f32,
   radiusMaxPixels: f32,
   alphaScale: f32,
+  colorMin: f32,
+  colorMax: f32,
   alphaCutoff: f32,
   screenSizeCutoffPixels: f32,
   gaussianSupportRadius: f32,
@@ -666,12 +727,14 @@ fn vertexMain(
     1.0,
     rawMaxAxisPixels >= splat.screenSizeCutoffPixels
   );
-  let visibleAlphaScale = layer.opacity * splat.alphaScale * projectedMetadata.y * sizeVisibility;
+  let visibleAlphaScale = layer.opacity * splat.alphaScale * sizeVisibility;
+  let fragmentSplatAlpha = adjustedSplatAlpha * projectedMetadata.y;
   let packedColor = splatColors[splatIndex];
+  let colorRange = splat.colorMax - splat.colorMin;
   let color = vec4<f32>(
-    f32(packedColor & 255u) / 255.0,
-    f32((packedColor >> 8u) & 255u) / 255.0,
-    f32((packedColor >> 16u) & 255u) / 255.0,
+    splat.colorMin + (f32(packedColor & 255u) / 255.0) * colorRange,
+    splat.colorMin + (f32((packedColor >> 8u) & 255u) / 255.0) * colorRange,
+    splat.colorMin + (f32((packedColor >> 16u) & 255u) / 255.0) * colorRange,
     visibleAlphaScale
   );
   var outputs: FragmentInputs;
@@ -696,7 +759,7 @@ fn vertexMain(
   outputs.position = clipPosition;
   outputs.gaussianCoord = gaussianCoord;
   outputs.color = color;
-  outputs.splatAlpha = adjustedSplatAlpha;
+  outputs.splatAlpha = fragmentSplatAlpha;
   outputs.supportRadius = adjustedSupportRadius;
   return outputs;
 }
@@ -797,6 +860,17 @@ void main(void) {
 
 /** WebGPU vertex buffer layout for the storage-buffer driven render path. */
 const WEBGPU_SPLAT_BUFFER_LAYOUT: BufferLayout[] = [];
+
+/** Blend state for shaders that return premultiplied RGBA, matching Spark's renderer. */
+const SPLAT_PREMULTIPLIED_ALPHA_PARAMETERS = {
+  blend: true,
+  blendColorOperation: 'add',
+  blendColorSrcFactor: 'one',
+  blendColorDstFactor: 'one-minus-src-alpha',
+  blendAlphaOperation: 'add',
+  blendAlphaSrcFactor: 'one',
+  blendAlphaDstFactor: 'one-minus-src-alpha'
+} as const;
 
 /**
  * Renders GraphDECO-style Gaussian splat PLY data parsed as an Arrow table.
@@ -937,6 +1011,7 @@ export class SplatLayer extends CompositeLayer<SplatLayerProps> {
 
     return new SplatPrimitiveLayer({
       ...this.getSubLayerProps({id}),
+      parameters: SPLAT_PREMULTIPLIED_ALPHA_PARAMETERS,
       data: splatData,
       sizeUnits: this.props.sizeUnits,
       radiusScale: this.props.radiusScale,
@@ -1126,6 +1201,7 @@ export class RADSplatLayer extends CompositeLayer<RADSplatLayerProps> {
 
     return new SplatPrimitiveLayer({
       ...this.getSubLayerProps({id}),
+      parameters: SPLAT_PREMULTIPLIED_ALPHA_PARAMETERS,
       data: splatData,
       sizeUnits: this.props.sizeUnits,
       radiusScale: this.getRADRenderRadiusScale(),
@@ -1240,18 +1316,29 @@ class RADRuntime {
   private queuedUploadChunkIndices = new Set<number>();
   private uploadScheduled = false;
   private selectionScheduled = false;
+  /** True while an async camera LoD selection pass is still traversing metadata. */
+  private selectionRunning = false;
+  /** True when camera, upload, or request state changed during the current selection pass. */
+  private selectionRerunRequested = false;
   private selectedChunkIndices: number[] = [];
   private visibleChunkIndices: number[] = [];
   private visibleSplatCount = 0;
   private visibleBounds: RADSplatBounds | undefined;
+  private frontierStats: RADFrontierStats | undefined;
   private loadStartMs = Date.now();
   private lastCommitTimeMs: number | undefined;
   /** Last wall-clock timestamp for a compacted render frontier commit. */
   private lastRenderCommitMs = 0;
+  /** Selected chunk count represented by the last visible render frontier commit. */
+  private lastRenderCommitSelectedChunkCount = 0;
   /** Latest selected frontier waiting for a throttled compact render commit. */
   private pendingRenderPlan: RADChunkSelectionPlan | null = null;
   /** Timer handle for the next throttled compact render commit. */
   private pendingRenderCommitTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Last wall-clock timestamp for a completed LoD selection pass. */
+  private lastSelectionMs = 0;
+  /** Timer handle for the next throttled loading-time selection pass. */
+  private pendingSelectionTimer: ReturnType<typeof setTimeout> | null = null;
   private selectionSignature = '';
   private scheduleSerial = 0;
   private destroyed = false;
@@ -1286,6 +1373,7 @@ class RADRuntime {
   destroy(): void {
     this.destroyed = true;
     this.scheduleSerial++;
+    this.selectionRerunRequested = false;
     this.pendingChunkPromises.clear();
     this.failedChunkErrors.clear();
     this.queuedUploadChunks = [];
@@ -1294,13 +1382,28 @@ class RADRuntime {
       clearTimeout(this.pendingRenderCommitTimer);
       this.pendingRenderCommitTimer = null;
     }
+    if (this.pendingSelectionTimer) {
+      clearTimeout(this.pendingSelectionTimer);
+      this.pendingSelectionTimer = null;
+    }
     this.pendingRenderPlan = null;
     this.pageStore.destroy();
     this.renderStore.destroy();
   }
 
   private requestSelection(): void {
-    if (this.selectionScheduled || this.destroyed) {
+    if (this.destroyed) {
+      return;
+    }
+    if (this.selectionRunning) {
+      this.selectionRerunRequested = true;
+      return;
+    }
+    if (this.selectionScheduled || this.pendingSelectionTimer) {
+      return;
+    }
+    if (this.shouldDeferLoadingSelection()) {
+      this.scheduleDeferredSelection();
       return;
     }
     this.selectionScheduled = true;
@@ -1309,13 +1412,43 @@ class RADRuntime {
       if (this.destroyed) {
         return;
       }
-      void this.scheduleSelection(this.selectionSignature).catch(error => this.handleError(error));
+      this.selectionRunning = true;
+      void this.scheduleSelection(this.selectionSignature)
+        .catch(error => this.handleError(error))
+        .finally(() => {
+          this.selectionRunning = false;
+          if (this.selectionRerunRequested && !this.destroyed) {
+            this.selectionRerunRequested = false;
+            this.requestSelection();
+          }
+        });
     };
     if (typeof requestAnimationFrame === 'function') {
       requestAnimationFrame(callback);
     } else {
       setTimeout(callback, 0);
     }
+  }
+
+  /** Return true when another heavy LoD traversal should be batched during active loading. */
+  private shouldDeferLoadingSelection(): boolean {
+    if (this.visibleChunkIndices.length === 0) {
+      return false;
+    }
+    if (this.pendingChunkPromises.size === 0 && this.queuedUploadChunks.length === 0) {
+      return false;
+    }
+    return Date.now() - this.lastSelectionMs < DEFAULT_RAD_SELECTION_LOADING_INTERVAL_MS;
+  }
+
+  /** Schedule a deferred selection pass while chunk requests and uploads are active. */
+  private scheduleDeferredSelection(): void {
+    const elapsedMs = Date.now() - this.lastSelectionMs;
+    const delayMs = Math.max(DEFAULT_RAD_SELECTION_LOADING_INTERVAL_MS - elapsedMs, 0);
+    this.pendingSelectionTimer = setTimeout(() => {
+      this.pendingSelectionTimer = null;
+      this.requestSelection();
+    }, delayMs);
   }
 
   private async scheduleSelection(selectionSignature: string): Promise<void> {
@@ -1325,8 +1458,15 @@ class RADRuntime {
       return;
     }
 
-    const plan = this.selectChunks(metadata);
-    const requestChunkIndices = this.getRequestChunkIndices(plan, metadata);
+    this.lastSelectionMs = Date.now();
+    const plan = await this.selectChunks(metadata);
+    if (!this.isActive(serial, selectionSignature)) {
+      return;
+    }
+    let requestChunkIndices = this.getRequestChunkIndices(plan, metadata);
+    if (requestChunkIndices.length === 0) {
+      requestChunkIndices = this.getIdleBreadthPrefetchChunkIndices(metadata);
+    }
     if (plan.selectedChunks.length > 0) {
       const hasPendingLoadingWork =
         this.pendingChunkPromises.size > 0 ||
@@ -1355,7 +1495,7 @@ class RADRuntime {
     return await this.metadataPromise;
   }
 
-  private selectChunks(metadata: RADSplatMetadataLike): RADChunkSelectionPlan {
+  private async selectChunks(metadata: RADSplatMetadataLike): Promise<RADChunkSelectionPlan> {
     const options = this.options;
     if (!options || metadata.chunks.length === 0) {
       return {selectedChunks: [], missingChunkIndices: []};
@@ -1375,7 +1515,7 @@ class RADRuntime {
       Math.max(Math.floor(options.startChunkIndex), 0),
       metadata.chunks.length - 1
     );
-    const loadedRenderFrontier = getRADLoadedRenderFrontier(
+    const loadedRenderFrontier = await getRADLoadedRenderFrontier(
       residentChunks,
       metadata,
       firstChunkIndex,
@@ -1495,6 +1635,30 @@ class RADRuntime {
     });
   }
 
+  /** Return broad source-order chunks when the active LoD frontier has no direct misses. */
+  private getIdleBreadthPrefetchChunkIndices(metadata: RADSplatMetadataLike): number[] {
+    const options = this.options;
+    if (!options || this.pendingChunkPromises.size > 0 || this.queuedUploadChunks.length > 0) {
+      return [];
+    }
+    if (
+      this.pageStore.getPageCount() >= options.maxCachedChunks ||
+      this.pageStore.getResidentSplatCount() >= options.maxResidentSplats
+    ) {
+      return [];
+    }
+    const maxRequestChunkCount =
+      getRADMaxConcurrentChunkRequests(options.maxConcurrentChunkRequests) *
+      DEFAULT_RAD_SPLAT_PREFETCH_CHUNK_MULTIPLIER;
+    return getRADBreadthPrefetchChunkIndices({
+      loadedByChunkIndex: this.pageStore.getLoadedChunkMap(),
+      metadata,
+      unavailableChunkIndices: this.getUnavailableChunkIndices(),
+      options,
+      maxRequestChunkCount
+    }).slice(0, maxRequestChunkCount);
+  }
+
   /** Return chunk indices that should not be selected for a new request. */
   private getUnavailableChunkIndices(): Set<number> {
     return new Set([
@@ -1506,7 +1670,7 @@ class RADRuntime {
 
   /** Commit or defer the selected LoD frontier depending on current chunk loading pressure. */
   private commitSelection(plan: RADChunkSelectionPlan, hasPendingLoadingWork: boolean): void {
-    if (this.shouldDeferRenderCommit(hasPendingLoadingWork)) {
+    if (this.shouldDeferRenderCommit(plan, hasPendingLoadingWork)) {
       this.pendingRenderPlan = plan;
       this.scheduleDeferredRenderCommit();
       return;
@@ -1520,11 +1684,23 @@ class RADRuntime {
   }
 
   /** Return true when compact render page rebuilds should be batched during active loading. */
-  private shouldDeferRenderCommit(hasPendingLoadingWork: boolean): boolean {
+  private shouldDeferRenderCommit(
+    plan: RADChunkSelectionPlan,
+    hasPendingLoadingWork: boolean
+  ): boolean {
     if (!hasPendingLoadingWork || this.visibleChunkIndices.length === 0) {
       return false;
     }
-    return Date.now() - this.lastRenderCommitMs < DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS;
+    const elapsedMs = Date.now() - this.lastRenderCommitMs;
+    const selectedChunkDelta =
+      plan.selectedChunks.length - this.lastRenderCommitSelectedChunkCount;
+    if (
+      selectedChunkDelta >= DEFAULT_RAD_RENDER_LOADING_COMMIT_MIN_CHUNK_DELTA &&
+      elapsedMs >= DEFAULT_RAD_SPLAT_CHUNK_RETRY_DELAY_MS
+    ) {
+      return false;
+    }
+    return elapsedMs < DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS;
   }
 
   /** Schedule the latest pending LoD frontier for a batched compact render page rebuild. */
@@ -1568,9 +1744,11 @@ class RADRuntime {
     this.selectedChunkIndices = selectedChunks.map(chunk => chunk.chunkIndex);
     this.visibleChunkIndices = visibleChunkIndices;
     this.visibleSplatCount = frontier.reduce((total, entry) => total + entry.visibleSplatCount, 0);
+    this.frontierStats = getRADFrontierStats(frontier);
     this.visibleBounds = getRADPageBounds(visibleChunkIndices, this.pageStore);
     this.lastCommitTimeMs = Date.now() - this.loadStartMs;
     this.lastRenderCommitMs = Date.now();
+    this.lastRenderCommitSelectedChunkCount = selectedChunks.length;
     this.callbacks.onStateChange();
   }
 
@@ -1639,6 +1817,7 @@ class RADRuntime {
     this.queuedUploadChunkIndices.add(chunk.chunkIndex);
     this.queuedUploadChunks.push(chunk);
     this.scheduleUpload();
+    this.requestSelection();
     this.emitProgress(true);
   }
 
@@ -1661,15 +1840,25 @@ class RADRuntime {
       return;
     }
 
-    const chunk = this.queuedUploadChunks.shift();
-    if (!chunk) {
-      return;
-    }
-    this.queuedUploadChunkIndices.delete(chunk.chunkIndex);
-
     const uploadOptions = this.options;
-    if (uploadOptions && !this.pageStore.hasPage(chunk.chunkIndex)) {
-      this.pageStore.storeChunk(chunk);
+    let uploadedChunkCount = 0;
+    while (
+      uploadOptions &&
+      uploadedChunkCount < DEFAULT_RAD_SPLAT_MAX_CHUNK_UPLOADS_PER_FRAME &&
+      this.queuedUploadChunks.length > 0
+    ) {
+      const chunk = this.queuedUploadChunks.shift();
+      if (!chunk) {
+        break;
+      }
+      this.queuedUploadChunkIndices.delete(chunk.chunkIndex);
+      if (!this.pageStore.hasPage(chunk.chunkIndex)) {
+        this.pageStore.storeChunk(chunk);
+        uploadedChunkCount++;
+      }
+    }
+
+    if (uploadedChunkCount > 0) {
       this.callbacks.onStateChange();
       this.requestSelection();
       this.emitProgress(this.pendingChunkPromises.size > 0 || this.queuedUploadChunks.length > 0);
@@ -1677,6 +1866,24 @@ class RADRuntime {
 
     if (this.queuedUploadChunks.length > 0) {
       this.scheduleUpload();
+    } else if (this.pendingChunkPromises.size === 0) {
+      void this.requestIdleBreadthPrefetch().catch(error => this.handleError(error));
+    }
+  }
+
+  /** Keep the resident RAD page pool filling after uploads drain and traversal is idle. */
+  private async requestIdleBreadthPrefetch(): Promise<void> {
+    if (this.destroyed || !this.options) {
+      return;
+    }
+    const metadata = await this.loadMetadata();
+    if (this.destroyed || !this.options) {
+      return;
+    }
+    const chunkIndices = this.getIdleBreadthPrefetchChunkIndices(metadata);
+    if (chunkIndices.length > 0) {
+      this.requestMissingChunks(chunkIndices);
+      this.emitProgress(true);
     }
   }
 
@@ -1685,11 +1892,9 @@ class RADRuntime {
     if (!options) {
       return;
     }
-    this.pageStore.evict(
-      options.maxCachedChunks,
-      options.maxResidentSplats,
-      new Set(this.visibleChunkIndices)
-    );
+    const protectedChunkIndices = new Set(this.visibleChunkIndices);
+    protectedChunkIndices.add(Math.max(Math.floor(options.startChunkIndex), 0));
+    this.pageStore.evict(options.maxCachedChunks, options.maxResidentSplats, protectedChunkIndices);
   }
 
   private emitProgress(isLoading: boolean): void {
@@ -1713,6 +1918,11 @@ class RADRuntime {
       renderPageSplatCount: renderMetrics.renderPageSplatCount,
       renderSplatCount: renderMetrics.renderSplatCount,
       tileOverflowSplatCount: renderMetrics.tileOverflowSplatCount,
+      frontierParentSplatCount: this.frontierStats?.parentSplatCount,
+      frontierLeafSplatCount: this.frontierStats?.leafSplatCount,
+      frontierMaxChildCount: this.frontierStats?.maxChildCount,
+      frontierMaxOpacity: this.frontierStats?.maxOpacity,
+      frontierMaxScale: this.frontierStats?.maxScale,
       lastUploadTimeMs: this.renderStore.lastUploadTimeMs ?? this.pageStore.lastUploadTimeMs,
       lastCommitTimeMs: this.lastCommitTimeMs
     });
@@ -1845,8 +2055,10 @@ class RADPageStore {
 class RADRenderPageStore {
   /** Current render pages exposed to deck.gl sublayers. */
   private activePages: RADPageSplatEngine[] = [];
-  /** Reusable render pages keyed by source chunk index for tile and unsorted rendering. */
+  /** Reusable source render pages keyed by grouped source page index. */
   private sourcePages = new Map<number, RADPageSplatEngine>();
+  /** Immutable source-page signatures keyed by source render page index. */
+  private sourcePageSignatures = new Map<number, string>();
   /** Compacted render pages used when a single globally sorted page is requested. */
   private compactedPages: RADPageSplatEngine[] = [];
   /** Signature for the current compacted frontier. */
@@ -1905,7 +2117,7 @@ class RADRenderPageStore {
       this.uploadSignature = uploadSignature;
     }
 
-    if (engineProps.sortMode === 'global') {
+    if (engineProps.sortMode === 'global' || engineProps.sortMode === 'tile') {
       this.updateCompactedFrontier(
         device,
         frontier,
@@ -1919,7 +2131,7 @@ class RADRenderPageStore {
     this.updateSourceFrontier(device, frontier, engineProps, fallbackColor, gaussianSupportRadius);
   }
 
-  /** Rebuild compacted render pages for globally sorted rendering. */
+  /** Rebuild compacted render pages for globally sorted frontier rendering. */
   private updateCompactedFrontier(
     device: Device,
     frontier: RADRenderFrontierChunk[],
@@ -1954,7 +2166,7 @@ class RADRenderPageStore {
     this.lastUploadTimeMs = Date.now() - startTimeMs;
   }
 
-  /** Reuse source chunk pages while updating active rows for tile and unsorted rendering. */
+  /** Reuse grouped source pages while updating active rows for tile and unsorted rendering. */
   private updateSourceFrontier(
     device: Device,
     frontier: RADRenderFrontierChunk[],
@@ -1965,33 +2177,40 @@ class RADRenderPageStore {
     const startTimeMs = Date.now();
     this.destroyCompactedPages();
 
-    const activeChunkIndices = new Set<number>();
+    const sourcePagePlans = createRADSourceRenderPagePlans(
+      frontier,
+      DEFAULT_RAD_SOURCE_RENDER_PAGE_MAX_SPLATS
+    );
+    const activePageIndices = new Set<number>();
     const activePages: RADPageSplatEngine[] = [];
-    for (const frontierChunk of frontier) {
-      const chunkIndex = frontierChunk.chunk.chunkIndex;
-      activeChunkIndices.add(chunkIndex);
-      let page = this.sourcePages.get(chunkIndex);
-      if (!page) {
+    for (const sourcePagePlan of sourcePagePlans) {
+      const pageIndex = sourcePagePlan.pageIndex;
+      activePageIndices.add(pageIndex);
+      let page = this.sourcePages.get(pageIndex);
+      if (!page || this.sourcePageSignatures.get(pageIndex) !== sourcePagePlan.signature) {
+        page?.destroy();
         page = new RADPageSplatEngine(
           device,
-          frontierChunk.chunk,
+          createRADSourceRenderPageChunk(sourcePagePlan),
           engineProps,
           fallbackColor,
           gaussianSupportRadius
         );
-        this.sourcePages.set(chunkIndex, page);
+        this.sourcePages.set(pageIndex, page);
+        this.sourcePageSignatures.set(pageIndex, sourcePagePlan.signature);
       } else {
         page.setProps(engineProps);
       }
-      page.setActiveRows(frontierChunk.visibleRows, frontierChunk.rowWeights);
+      page.setActiveRows(sourcePagePlan.activeRows, sourcePagePlan.rowWeights);
       page.touch();
       activePages.push(page);
     }
 
-    for (const [chunkIndex, page] of this.sourcePages) {
-      if (!activeChunkIndices.has(chunkIndex)) {
+    for (const [pageIndex, page] of this.sourcePages) {
+      if (!activePageIndices.has(pageIndex)) {
         page.destroy();
-        this.sourcePages.delete(chunkIndex);
+        this.sourcePages.delete(pageIndex);
+        this.sourcePageSignatures.delete(pageIndex);
       }
     }
     this.activePages = activePages;
@@ -2012,6 +2231,7 @@ class RADRenderPageStore {
       page.destroy();
     }
     this.sourcePages.clear();
+    this.sourcePageSignatures.clear();
   }
 
   /** Release compacted page engines. */
@@ -2107,6 +2327,11 @@ class RADPageSplatEngine implements SplatRenderEngineLike {
     return this.splatEngine.getRenderSplatCount();
   }
 
+  /** Return the decoded RGB range represented by packed color bytes. */
+  getColorRange(): SplatColorRange {
+    return this.splatEngine.getColorRange();
+  }
+
   /** Return the latest tile overflow count reported by the page engine. */
   getOverflowSplatCount(): number {
     return this.splatEngine.getOverflowSplatCount();
@@ -2125,6 +2350,8 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
     radiusMinPixels: {type: 'number', min: 0, value: 0},
     radiusMaxPixels: {type: 'number', min: 0, value: Number.MAX_SAFE_INTEGER},
     alphaScale: {type: 'number', min: 0, value: 1},
+    colorMin: {type: 'number', value: 0},
+    colorMax: {type: 'number', value: 1},
     alphaCutoff: {type: 'number', min: 0, max: 1, value: 1 / 255},
     screenSizeCutoffPixels: {type: 'number', min: 0, value: 0},
     gaussianSupportRadius: {type: 'number', min: 0, value: 3},
@@ -2207,12 +2434,18 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       screenSizeCutoffPixels,
       gaussianSupportRadius
     } = this.props;
+    const colorRange = this.props.splatEngine?.getColorRange() ?? {
+      colorMin: this.props.colorMin,
+      colorMax: this.props.colorMax
+    };
     const splatProps: SplatUniformProps = {
       sizeUnits: UNIT[sizeUnits],
       radiusScale,
       radiusMinPixels,
       radiusMaxPixels,
       alphaScale,
+      colorMin: colorRange.colorMin,
+      colorMax: colorRange.colorMax,
       alphaCutoff,
       screenSizeCutoffPixels,
       gaussianSupportRadius
@@ -2280,7 +2513,8 @@ class SplatPrimitiveLayer extends Layer<Required<SplatPrimitiveLayerProps>> {
       topology: 'triangle-strip',
       vertexCount: 4,
       instanceCount: this.props.splatEngine?.getRenderSplatCount() ?? 0,
-      isInstanced: true
+      isInstanced: true,
+      parameters: SPLAT_PREMULTIPLIED_ALPHA_PARAMETERS
     });
   }
 }
@@ -2416,6 +2650,16 @@ function waitRADChunkRetryDelay(delayMs: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, delayMs));
 }
 
+/** Return a high-resolution timestamp for cooperative RAD LoD traversal. */
+function getRADSelectionNow(): number {
+  return typeof performance !== 'undefined' ? performance.now() : Date.now();
+}
+
+/** Yield control so long RAD LoD frontier traversals do not monopolize the app thread. */
+function yieldRADSelectionTraversal(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 0));
+}
+
 /** Return a positive integer RAD chunk request concurrency limit. */
 function getRADMaxConcurrentChunkRequests(maxConcurrentChunkRequests: number): number {
   return Number.isFinite(maxConcurrentChunkRequests) && maxConcurrentChunkRequests > 0
@@ -2433,17 +2677,18 @@ function getRADChunkRequestIndices(
   const requestedChunkIndices = new Set<number>();
   const maxRequestChunkCount = Math.max(Math.floor(requestOptions.maxRequestChunkCount), 1);
 
-  const addRequestChunkIndex = (chunkIndex: number): void => {
+  const addRequestChunkIndex = (chunkIndex: number): boolean => {
     if (
       requestChunkIndices.length >= maxRequestChunkCount ||
       requestedChunkIndices.has(chunkIndex) ||
       requestOptions.loadedByChunkIndex.has(chunkIndex) ||
       requestOptions.unavailableChunkIndices.has(chunkIndex)
     ) {
-      return;
+      return false;
     }
     requestedChunkIndices.add(chunkIndex);
     requestChunkIndices.push(chunkIndex);
+    return true;
   };
 
   for (const chunkIndex of immediateChunkIndices) {
@@ -2460,14 +2705,58 @@ function getRADChunkRequestIndices(
     requestOptions.metadata,
     requestOptions.options
   );
-  for (const chunkIndex of prefetchChunkIndices) {
-    addRequestChunkIndex(chunkIndex);
+
+  const breadthChunkIndices = getRADBreadthPrefetchChunkIndices(requestOptions);
+  let prefetchIndex = 0;
+  let breadthIndex = 0;
+  while (requestChunkIndices.length < maxRequestChunkCount) {
+    let addedRequest = false;
+    for (
+      let priorityIndex = 0;
+      priorityIndex < DEFAULT_RAD_BREADTH_PREFETCH_INTERVAL - 1 &&
+      prefetchIndex < prefetchChunkIndices.length;
+      priorityIndex++
+    ) {
+      addedRequest = addRequestChunkIndex(prefetchChunkIndices[prefetchIndex++]) || addedRequest;
+      if (requestChunkIndices.length >= maxRequestChunkCount) {
+        break;
+      }
+    }
     if (requestChunkIndices.length >= maxRequestChunkCount) {
+      break;
+    }
+    if (breadthIndex < breadthChunkIndices.length) {
+      addedRequest = addRequestChunkIndex(breadthChunkIndices[breadthIndex++]) || addedRequest;
+    }
+    if (
+      !addedRequest &&
+      prefetchIndex >= prefetchChunkIndices.length &&
+      breadthIndex >= breadthChunkIndices.length
+    ) {
       break;
     }
   }
 
   return requestChunkIndices;
+}
+
+/** Return unloaded chunks in source order for broad settled-scene prefetch. */
+function getRADBreadthPrefetchChunkIndices(requestOptions: RADChunkRequestPlanOptions): number[] {
+  const chunkIndices: number[] = [];
+  const startChunkIndex = Math.max(Math.floor(requestOptions.options.startChunkIndex), 0);
+  for (
+    let chunkIndex = startChunkIndex;
+    chunkIndex < requestOptions.metadata.chunks.length;
+    chunkIndex++
+  ) {
+    if (
+      !requestOptions.loadedByChunkIndex.has(chunkIndex) &&
+      !requestOptions.unavailableChunkIndices.has(chunkIndex)
+    ) {
+      chunkIndices.push(chunkIndex);
+    }
+  }
+  return chunkIndices;
 }
 
 /** Return child chunks ordered by current camera importance. */
@@ -2478,11 +2767,6 @@ function getRADCameraPrioritizedChildChunkIndices(
   options: RADSplatChunkSelectionOptions
 ): number[] {
   const childChunkGroups: RADChildChunkGroup[] = [];
-  const modelViewProjectionMatrix = getModelViewProjectionMatrix(
-    options.viewport,
-    options.modelMatrix
-  );
-  const viewportSize = getRADViewportSize(options.viewport);
   const foveationView = getRADFoveationView(options.viewport, options.modelMatrix);
   const chunkRangeLookup = getRADSplatChunkRangeLookup(metadata);
   const loadedSplatCount = loadedChunks.reduce(
@@ -2513,25 +2797,17 @@ function getRADCameraPrioritizedChildChunkIndices(
         continue;
       }
 
-      let score = modelViewProjectionMatrix
-        ? getRADProjectedSplatScore(
-            loadedChunk.splats,
-            rowIndex,
-            modelViewProjectionMatrix,
-            viewportSize,
-            options.radiusScale,
-            options.gaussianSupportRadius,
-            childCount,
-            options.lodSplatScale,
-            options.lodRenderScale,
-            options.coneFov0,
-            options.coneFov,
-            options.behindFoveate,
-            options.coneFoveate,
-            foveationView
-          )
-        : childCount;
-      score = score > 0 ? score : childCount;
+      const pixelScale = getRADSparkLoDPixelScale(
+        loadedChunk.splats,
+        rowIndex,
+        foveationView,
+        options.lodSplatScale,
+        options.coneFov0,
+        options.coneFov,
+        options.behindFoveate,
+        options.coneFoveate
+      );
+      const score = Number.isFinite(pixelScale) && pixelScale > 0 ? pixelScale : childCount;
       childChunkGroups.push({score, chunkIndices: childChunkIndices});
     }
   }
@@ -2602,21 +2878,13 @@ function getRADSplatChunkRangeLookup(metadata: RADSplatMetadataLike): RADSplatCh
 }
 
 /** Select a Spark-style row frontier from already resident RAD LoD chunks. */
-function getRADLoadedRenderFrontier(
+async function getRADLoadedRenderFrontier(
   loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
   metadata: RADSplatMetadataLike,
   firstChunkIndex: number,
   pendingChunkIndices: Set<number>,
   options: RADSplatChunkSelectionOptions
-): RADLoadedRenderFrontierPlan | null {
-  const modelViewProjectionMatrix = getModelViewProjectionMatrix(
-    options.viewport,
-    options.modelMatrix
-  );
-  if (!modelViewProjectionMatrix) {
-    return null;
-  }
-
+): Promise<RADLoadedRenderFrontierPlan | null> {
   const chunkRangeLookup = getRADSplatChunkRangeLookup(metadata);
   const rootGlobalSplatIndex = chunkRangeLookup.starts[firstChunkIndex] ?? 0;
   const rootChunkIndex = getRADSplatChunkIndexForGlobalIndex(
@@ -2638,14 +2906,11 @@ function getRADLoadedRenderFrontier(
     return null;
   }
 
-  const viewportSize = getRADViewportSize(options.viewport);
   const foveationView = getRADFoveationView(options.viewport, options.modelMatrix);
   const rootCandidate = getRADFrontierCandidate(
     loadedByChunkIndex,
     chunkRangeLookup,
     rootGlobalSplatIndex,
-    modelViewProjectionMatrix,
-    viewportSize,
     foveationView,
     options
   );
@@ -2653,49 +2918,91 @@ function getRADLoadedRenderFrontier(
     return null;
   }
 
+  const pixelScaleLimit = getRADSparkLoDPixelScaleLimit(options.viewport, options.lodRenderScale);
   const candidateHeap: RADFrontierCandidate[] = [rootCandidate];
   const rowWeightsByChunkIndex = new Map<number, Map<number, number>>();
   const missingChunkIndexSet = new Set<number>();
-  let outputRowCount = 0;
+  let selectedRowCount = 1;
+  let processedCandidateCount = 0;
+  let lastYieldTimeMs = getRADSelectionNow();
   const maxSplatCount = Math.max(Math.floor(options.maxSplats), 1);
 
   while (candidateHeap.length > 0) {
-    const candidate = popRADFrontierCandidate(candidateHeap);
+    const candidate = candidateHeap[0];
     if (!candidate) {
       break;
     }
+    if (candidate.pixelScale <= pixelScaleLimit) {
+      break;
+    }
 
-    const canRefine =
-      candidate.childCount > 0 && candidate.pixelScale >= DEFAULT_RAD_LOD_MIN_PROJECTED_PIXELS;
-
-    if (canRefine) {
-      const childFrontier = getRADLoadedChildFrontierCandidates(
-        candidate,
-        loadedByChunkIndex,
-        chunkRangeLookup,
-        pendingChunkIndices,
-        missingChunkIndexSet,
-        modelViewProjectionMatrix,
-        viewportSize,
-        foveationView,
-        options
-      );
-
-      const replacementRowCount = childFrontier.childCandidates.length;
-      if (
-        !childFrontier.hasMissingChildren &&
-        childFrontier.childCandidates.length > 0 &&
-        outputRowCount + candidateHeap.length + replacementRowCount <= maxSplatCount
-      ) {
-        for (const childCandidate of childFrontier.childCandidates) {
-          pushRADFrontierCandidate(candidateHeap, childCandidate);
+    popRADFrontierCandidate(candidateHeap);
+    if (candidate.childCount <= 0) {
+      addRADFrontierRow(rowWeightsByChunkIndex, candidate);
+      processedCandidateCount++;
+      if (processedCandidateCount >= DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL) {
+        processedCandidateCount = 0;
+        const nowMs = getRADSelectionNow();
+        if (nowMs - lastYieldTimeMs >= DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS) {
+          await yieldRADSelectionTraversal();
+          lastYieldTimeMs = getRADSelectionNow();
         }
-        continue;
+      }
+      continue;
+    }
+
+    const replacementRowCount = candidate.childCount;
+    if (selectedRowCount - 1 + replacementRowCount > maxSplatCount) {
+      pushRADFrontierCandidate(candidateHeap, candidate);
+      break;
+    }
+
+    const childFrontier = await getRADLoadedChildFrontierCandidates(
+      candidate,
+      loadedByChunkIndex,
+      chunkRangeLookup,
+      pendingChunkIndices,
+      missingChunkIndexSet,
+      foveationView,
+      options
+    );
+
+    if (childFrontier.hasMissingChildren || childFrontier.childCandidates.length === 0) {
+      addRADFrontierRow(rowWeightsByChunkIndex, candidate);
+      processedCandidateCount++;
+      if (processedCandidateCount >= DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL) {
+        processedCandidateCount = 0;
+        const nowMs = getRADSelectionNow();
+        if (nowMs - lastYieldTimeMs >= DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS) {
+          await yieldRADSelectionTraversal();
+          lastYieldTimeMs = getRADSelectionNow();
+        }
+      }
+      continue;
+    }
+
+    selectedRowCount = selectedRowCount - 1 + childFrontier.childCandidates.length;
+    for (const childCandidate of childFrontier.childCandidates) {
+      if (childCandidate.pixelScale <= pixelScaleLimit) {
+        addRADFrontierRow(rowWeightsByChunkIndex, childCandidate);
+      } else {
+        pushRADFrontierCandidate(candidateHeap, childCandidate);
       }
     }
 
+    processedCandidateCount++;
+    if (processedCandidateCount >= DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL) {
+      processedCandidateCount = 0;
+      const nowMs = getRADSelectionNow();
+      if (nowMs - lastYieldTimeMs >= DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS) {
+        await yieldRADSelectionTraversal();
+        lastYieldTimeMs = getRADSelectionNow();
+      }
+    }
+  }
+
+  for (const candidate of candidateHeap) {
     addRADFrontierRow(rowWeightsByChunkIndex, candidate);
-    outputRowCount++;
   }
 
   return {
@@ -2705,33 +3012,65 @@ function getRADLoadedRenderFrontier(
 }
 
 /** Return the direct child node candidates currently loaded for one frontier parent. */
-function getRADLoadedChildFrontierCandidates(
+async function getRADLoadedChildFrontierCandidates(
   candidate: RADFrontierCandidate,
   loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
   chunkRangeLookup: RADSplatChunkRangeLookup,
   pendingChunkIndices: Set<number>,
   missingChunkIndexSet: Set<number>,
-  modelViewProjectionMatrix: readonly number[],
-  viewportSize: readonly [number, number],
   foveationView: RADFoveationView,
   options: RADSplatChunkSelectionOptions
-): RADChildFrontierCandidates {
+): Promise<RADChildFrontierCandidates> {
   const childEnd = candidate.childStart + candidate.childCount;
   const childCandidates: RADFrontierCandidate[] = [];
+  const endpointChildChunkIndices = [
+    getRADSplatChunkIndexForGlobalIndex(chunkRangeLookup, candidate.childStart),
+    getRADSplatChunkIndexForGlobalIndex(chunkRangeLookup, childEnd - 1)
+  ];
+  let hasMissingEndpointChunk = false;
+  for (const childChunkIndex of endpointChildChunkIndices) {
+    if (childChunkIndex < 0) {
+      hasMissingEndpointChunk = true;
+      continue;
+    }
+    if (!loadedByChunkIndex.has(childChunkIndex)) {
+      if (!pendingChunkIndices.has(childChunkIndex)) {
+        missingChunkIndexSet.add(childChunkIndex);
+      }
+      hasMissingEndpointChunk = true;
+    }
+  }
+  if (hasMissingEndpointChunk) {
+    return {
+      childCandidates,
+      childCoverage: 0,
+      hasMissingChildren: true
+    };
+  }
+
   let loadedChildCount = 0;
   let hasMissingChildren = false;
+  let checkedChildCount = 0;
+  let lastYieldTimeMs = getRADSelectionNow();
 
   for (
     let childGlobalSplatIndex = candidate.childStart;
     childGlobalSplatIndex < childEnd;
     childGlobalSplatIndex++
   ) {
+    checkedChildCount++;
+    if (checkedChildCount >= DEFAULT_RAD_SELECTION_YIELD_CHECK_INTERVAL) {
+      checkedChildCount = 0;
+      const nowMs = getRADSelectionNow();
+      if (nowMs - lastYieldTimeMs >= DEFAULT_RAD_SELECTION_YIELD_INTERVAL_MS) {
+        await yieldRADSelectionTraversal();
+        lastYieldTimeMs = getRADSelectionNow();
+      }
+    }
     const childCandidate = getRADFrontierCandidate(
       loadedByChunkIndex,
       chunkRangeLookup,
       childGlobalSplatIndex,
-      modelViewProjectionMatrix,
-      viewportSize,
       foveationView,
       options
     );
@@ -2762,8 +3101,6 @@ function getRADFrontierCandidate(
   loadedByChunkIndex: Map<number, RADSplatLoadedChunk>,
   chunkRangeLookup: RADSplatChunkRangeLookup,
   globalSplatIndex: number,
-  modelViewProjectionMatrix: readonly number[],
-  viewportSize: readonly [number, number],
   foveationView: RADFoveationView,
   options: RADSplatChunkSelectionOptions
 ): RADFrontierCandidate | null {
@@ -2779,20 +3116,15 @@ function getRADFrontierCandidate(
     return null;
   }
   const childCount = lodTree.childCounts[rowIndex];
-  const pixelScale = getRADProjectedSplatPixelScale(
+  const pixelScale = getRADSparkLoDPixelScale(
     chunk.splats,
     rowIndex,
-    modelViewProjectionMatrix,
-    viewportSize,
-    options.radiusScale,
-    options.gaussianSupportRadius,
+    foveationView,
     options.lodSplatScale,
-    options.lodRenderScale,
     options.coneFov0,
     options.coneFov,
     options.behindFoveate,
-    options.coneFoveate,
-    foveationView
+    options.coneFoveate
   );
 
   return {
@@ -2802,7 +3134,7 @@ function getRADFrontierCandidate(
     childStart: lodTree.childStarts[rowIndex],
     childCount,
     pixelScale,
-    score: pixelScale * Math.max(Math.sqrt(childCount), 1)
+    score: pixelScale
   };
 }
 
@@ -2942,6 +3274,47 @@ function createRADRenderFrontierChunks(
     .filter(Boolean) as RADRenderFrontierChunk[];
 }
 
+/** Return diagnostics for the selected RAD LoD frontier. */
+function getRADFrontierStats(frontier: RADRenderFrontierChunk[]): RADFrontierStats {
+  const stats: RADFrontierStats = {
+    parentSplatCount: 0,
+    leafSplatCount: 0,
+    maxChildCount: 0,
+    maxOpacity: 0,
+    maxScale: 0
+  };
+
+  for (const frontierChunk of frontier) {
+    const splats = frontierChunk.chunk.splats;
+    const lodTree = getRADLoDTreeArrays(splats);
+    const visibleRows = frontierChunk.visibleRows;
+    const rowCount = visibleRows?.length ?? splats.splatCount;
+    for (let visibleRowIndex = 0; visibleRowIndex < rowCount; visibleRowIndex++) {
+      const rowIndex = visibleRows ? visibleRows[visibleRowIndex] : visibleRowIndex;
+      const childCount = lodTree?.childCounts[rowIndex] ?? 0;
+      if (childCount > 0) {
+        stats.parentSplatCount++;
+      } else {
+        stats.leafSplatCount++;
+      }
+      stats.maxChildCount = Math.max(stats.maxChildCount, childCount);
+      stats.maxOpacity = Math.max(
+        stats.maxOpacity,
+        getRADExpandedLoDOpacity(splats.opacities[rowIndex] ?? 0)
+      );
+      const scaleOffset = rowIndex * 3;
+      stats.maxScale = Math.max(
+        stats.maxScale,
+        Math.abs(splats.scales[scaleOffset] ?? 0),
+        Math.abs(splats.scales[scaleOffset + 1] ?? 0),
+        Math.abs(splats.scales[scaleOffset + 2] ?? 0)
+      );
+    }
+  }
+
+  return stats;
+}
+
 /** Return a stable signature for a compacted RAD render frontier. */
 function getRADRenderFrontierSignature(
   frontier: RADRenderFrontierChunk[],
@@ -2982,6 +3355,242 @@ function getRADRenderPageSplatCount(
   return sortMode === 'global'
     ? Math.max(visibleSplatCount, 1)
     : DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS;
+}
+
+/** Build stable source-page render plans for non-global RAD rendering. */
+function createRADSourceRenderPagePlans(
+  frontier: RADRenderFrontierChunk[],
+  maxPageSplatCount: number
+): RADSourceRenderPagePlan[] {
+  const pageSplatCountLimit = Math.max(Math.floor(maxPageSplatCount), 1);
+  const frontierChunksBySourcePageIndex = new Map<
+    number,
+    {frontierChunks: RADRenderFrontierChunk[]; splatCount: number}
+  >();
+
+  for (const frontierChunk of frontier) {
+    const chunkSplatCount = Math.max(Math.floor(frontierChunk.chunk.splats.splatCount), 0);
+    if (chunkSplatCount <= 0) {
+      continue;
+    }
+    const sourcePageIndex = Math.floor(
+      Math.max(getRADSplatBase(frontierChunk.chunk.splats), 0) / pageSplatCountLimit
+    );
+    const sourcePage = frontierChunksBySourcePageIndex.get(sourcePageIndex) || {
+      frontierChunks: [],
+      splatCount: 0
+    };
+    sourcePage.frontierChunks.push(frontierChunk);
+    sourcePage.splatCount += chunkSplatCount;
+    if (!frontierChunksBySourcePageIndex.has(sourcePageIndex)) {
+      frontierChunksBySourcePageIndex.set(sourcePageIndex, sourcePage);
+    }
+  }
+
+  return Array.from(frontierChunksBySourcePageIndex.entries())
+    .sort((left, right) => left[0] - right[0])
+    .map(([sourcePageIndex, sourcePage]) =>
+      createRADSourceRenderPagePlan(
+        sourcePage.frontierChunks,
+        sourcePageIndex,
+        sourcePage.splatCount
+      )
+    );
+}
+
+/** Build one grouped source render page plan with page-local active weights. */
+function createRADSourceRenderPagePlan(
+  frontierChunks: RADRenderFrontierChunk[],
+  pageIndex: number,
+  splatCount: number
+): RADSourceRenderPagePlan {
+  const chunkIndices = frontierChunks.map(frontierChunk => frontierChunk.chunk.chunkIndex);
+  const rowWeights = createRADSourceRenderPageWeights(frontierChunks, splatCount);
+  return {
+    pageIndex,
+    chunkIndex: chunkIndices[0] ?? pageIndex,
+    chunkIndices,
+    frontierChunks: [...frontierChunks],
+    splatCount,
+    activeRows: rowWeights
+      ? undefined
+      : createRADSourceRenderPageActiveRows(frontierChunks, splatCount),
+    rowWeights,
+    signature: getRADSourceRenderPageSignature(frontierChunks)
+  };
+}
+
+/** Return a signature for immutable chunk data in one grouped source render page. */
+function getRADSourceRenderPageSignature(frontierChunks: RADRenderFrontierChunk[]): string {
+  return frontierChunks
+    .map(
+      frontierChunk =>
+        `${frontierChunk.chunk.chunkIndex}:${frontierChunk.chunk.splats.splatCount}:` +
+        `${frontierChunk.chunk.splats.sphericalHarmonicsComponentCount ?? 0}`
+    )
+    .join('|');
+}
+
+/** Build page-local active opacity weights for grouped source chunks. */
+function createRADSourceRenderPageWeights(
+  frontierChunks: RADRenderFrontierChunk[],
+  splatCount: number
+): Float32Array | undefined {
+  const rowWeights = new Float32Array(splatCount);
+  let outputRowOffset = 0;
+  let hasPartialWeights = false;
+
+  for (const frontierChunk of frontierChunks) {
+    const sourceSplatCount = Math.max(Math.floor(frontierChunk.chunk.splats.splatCount), 0);
+    if (frontierChunk.rowWeights) {
+      rowWeights.set(frontierChunk.rowWeights.subarray(0, sourceSplatCount), outputRowOffset);
+      hasPartialWeights = true;
+    } else if (frontierChunk.visibleRows) {
+      for (const rowIndex of frontierChunk.visibleRows) {
+        if (rowIndex < sourceSplatCount) {
+          rowWeights[outputRowOffset + rowIndex] = 1;
+        }
+      }
+    } else {
+      rowWeights.fill(1, outputRowOffset, outputRowOffset + sourceSplatCount);
+    }
+    outputRowOffset += sourceSplatCount;
+  }
+
+  return hasPartialWeights ? rowWeights : undefined;
+}
+
+/** Build page-local active row indices for grouped source chunks with full opacity. */
+function createRADSourceRenderPageActiveRows(
+  frontierChunks: RADRenderFrontierChunk[],
+  splatCount: number
+): Uint32Array | undefined {
+  const activeRows = new Uint32Array(splatCount);
+  let outputRowOffset = 0;
+  let activeRowCount = 0;
+  let hasPartialRows = false;
+
+  for (const frontierChunk of frontierChunks) {
+    const sourceSplatCount = Math.max(Math.floor(frontierChunk.chunk.splats.splatCount), 0);
+    if (frontierChunk.visibleRows) {
+      hasPartialRows = true;
+      for (const rowIndex of frontierChunk.visibleRows) {
+        if (rowIndex < sourceSplatCount) {
+          activeRows[activeRowCount++] = outputRowOffset + rowIndex;
+        }
+      }
+    } else {
+      for (let rowIndex = 0; rowIndex < sourceSplatCount; rowIndex++) {
+        activeRows[activeRowCount++] = outputRowOffset + rowIndex;
+      }
+    }
+    outputRowOffset += sourceSplatCount;
+  }
+
+  return hasPartialRows ? activeRows.subarray(0, activeRowCount) : undefined;
+}
+
+/** Build one reusable render page from full source chunks in a grouped page plan. */
+function createRADSourceRenderPageChunk(sourcePagePlan: RADSourceRenderPagePlan): RADSplatLoadedChunk {
+  return {
+    chunkIndex: sourcePagePlan.chunkIndex,
+    splats: createRADSourceRenderPageSplats(sourcePagePlan)
+  };
+}
+
+/** Concatenate immutable source chunk arrays into one grouped render page. */
+function createRADSourceRenderPageSplats(sourcePagePlan: RADSourceRenderPagePlan): RADSplatChunkValues {
+  const sphericalHarmonicsComponentCount = getRADSourceSphericalHarmonicsComponentCount(
+    sourcePagePlan.frontierChunks
+  );
+  const hasSphericalHarmonicDcs = sourcePagePlan.frontierChunks.every(frontierChunk =>
+    Boolean(frontierChunk.chunk.splats.sphericalHarmonicDcs)
+  );
+  const splatCount = sourcePagePlan.splatCount;
+  const positions = new Float32Array(splatCount * 3);
+  const scales = new Float32Array(splatCount * 3);
+  const rotations = new Float32Array(splatCount * 4);
+  const colors = new Uint8Array(splatCount * 3);
+  const {colorMin, colorMax} = getRADFrontierColorRange(sourcePagePlan.frontierChunks);
+  const sphericalHarmonicDcs = hasSphericalHarmonicDcs
+    ? new Float32Array(splatCount * 3)
+    : undefined;
+  const opacities = new Float32Array(splatCount);
+  const sphericalHarmonics = sphericalHarmonicsComponentCount
+    ? new Float32Array(splatCount * sphericalHarmonicsComponentCount)
+    : undefined;
+  let outputRowOffset = 0;
+
+  for (const frontierChunk of sourcePagePlan.frontierChunks) {
+    const splats = frontierChunk.chunk.splats;
+    const sourceSplatCount = Math.max(Math.floor(splats.splatCount), 0);
+    const sourcePositionLength = sourceSplatCount * 3;
+    const sourceRotationLength = sourceSplatCount * 4;
+    positions.set(splats.positions.subarray(0, sourcePositionLength), outputRowOffset * 3);
+    scales.set(splats.scales.subarray(0, sourcePositionLength), outputRowOffset * 3);
+    colors.set(splats.colors.subarray(0, sourcePositionLength), outputRowOffset * 3);
+    rotations.set(splats.rotations.subarray(0, sourceRotationLength), outputRowOffset * 4);
+    opacities.set(splats.opacities.subarray(0, sourceSplatCount), outputRowOffset);
+    if (sphericalHarmonicDcs && splats.sphericalHarmonicDcs) {
+      sphericalHarmonicDcs.set(
+        splats.sphericalHarmonicDcs.subarray(0, sourcePositionLength),
+        outputRowOffset * 3
+      );
+    }
+    if (sphericalHarmonics && splats.sphericalHarmonics) {
+      sphericalHarmonics.set(
+        splats.sphericalHarmonics.subarray(0, sourceSplatCount * sphericalHarmonicsComponentCount),
+        outputRowOffset * sphericalHarmonicsComponentCount
+      );
+    }
+    outputRowOffset += sourceSplatCount;
+  }
+
+  return {
+    splatCount,
+    positions,
+    scales,
+    rotations,
+    colors,
+    colorMin,
+    colorMax,
+    sphericalHarmonicDcs,
+    opacities,
+    sphericalHarmonics,
+    sphericalHarmonicsComponentCount: sphericalHarmonicsComponentCount || undefined,
+    loaderData: {count: splatCount}
+  };
+}
+
+/** Return the shared SH rest component count when all grouped chunks provide it. */
+function getRADSourceSphericalHarmonicsComponentCount(
+  frontierChunks: RADRenderFrontierChunk[]
+): number {
+  const firstCount = frontierChunks[0]?.chunk.splats.sphericalHarmonicsComponentCount ?? 0;
+  if (!firstCount) {
+    return 0;
+  }
+  return frontierChunks.every(frontierChunk => {
+    const splats = frontierChunk.chunk.splats;
+    return splats.sphericalHarmonics && splats.sphericalHarmonicsComponentCount === firstCount;
+  })
+    ? firstCount
+    : 0;
+}
+
+/** Return the RGB byte decode range shared by grouped RAD frontier chunks. */
+function getRADFrontierColorRange(frontierChunks: RADRenderFrontierChunk[]): SplatColorRange {
+  if (!frontierChunks.length) {
+    return {colorMin: 0, colorMax: 1};
+  }
+
+  let colorMin = frontierChunks[0].chunk.splats.colorMin ?? 0;
+  let colorMax = frontierChunks[0].chunk.splats.colorMax ?? 1;
+  for (const frontierChunk of frontierChunks) {
+    colorMin = Math.min(colorMin, frontierChunk.chunk.splats.colorMin ?? 0);
+    colorMax = Math.max(colorMax, frontierChunk.chunk.splats.colorMax ?? 1);
+  }
+  return {colorMin, colorMax};
 }
 
 /** Build compact render chunks containing only selected frontier rows. */
@@ -3035,6 +3644,7 @@ function createRADCompactedRenderChunk(
   const scales = new Float32Array(splatCount * 3);
   const rotations = new Float32Array(splatCount * 4);
   const colors = new Uint8Array(splatCount * 3);
+  const {colorMin, colorMax} = getRADSegmentColorRange(segments);
   const sphericalHarmonicDcs = hasSphericalHarmonicDcs
     ? new Float32Array(splatCount * 3)
     : undefined;
@@ -3105,6 +3715,8 @@ function createRADCompactedRenderChunk(
     scales,
     rotations,
     colors,
+    colorMin,
+    colorMax,
     sphericalHarmonicDcs,
     opacities,
     sphericalHarmonics,
@@ -3127,90 +3739,52 @@ function getRADCompactedSphericalHarmonicsComponentCount(segments: RADRenderRowS
     : 0;
 }
 
-/** Score one loaded parent row by projected radius and viewport centrality. */
-function getRADProjectedSplatScore(
-  splats: RADSplatChunkValues,
-  rowIndex: number,
-  modelViewProjectionMatrix: readonly number[],
-  viewportSize: readonly [number, number],
-  radiusScale: number,
-  gaussianSupportRadius: number,
-  childCount: number,
-  lodSplatScale: number,
-  lodRenderScale: number,
-  coneFov0: number,
-  coneFov: number,
-  behindFoveate: number,
-  coneFoveate: number,
-  foveationView: RADFoveationView = {}
-): number {
-  const pixelScale = getRADProjectedSplatPixelScale(
-    splats,
-    rowIndex,
-    modelViewProjectionMatrix,
-    viewportSize,
-    radiusScale,
-    gaussianSupportRadius,
-    lodSplatScale,
-    lodRenderScale,
-    coneFov0,
-    coneFov,
-    behindFoveate,
-    coneFoveate,
-    foveationView
-  );
-  const childPopulationPriority = Math.max(Math.sqrt(childCount), 1);
-  return pixelScale * childPopulationPriority;
+/** Return the RGB byte decode range shared by compacted RAD row segments. */
+function getRADSegmentColorRange(segments: RADRenderRowSegment[]): SplatColorRange {
+  return getRADFrontierColorRange(segments.map(segment => segment.frontierChunk));
 }
 
-/** Return one LoD node's projected screen-space scale after foveation weighting. */
-function getRADProjectedSplatPixelScale(
+/** Return the Spark LoD angular pixel threshold for the active viewport. */
+function getRADSparkLoDPixelScaleLimit(viewport: any, lodRenderScale: number): number {
+  const [, viewportHeight] = getRADViewportSize(viewport);
+  const fieldOfViewRadians = (getRADViewportFov(viewport) * Math.PI) / 180;
+  const verticalPixelScale =
+    (2 * Math.tan(0.5 * fieldOfViewRadians)) / Math.max(viewportHeight, 1);
+  const pixelScaleLimit = verticalPixelScale * Math.max(lodRenderScale, 0);
+  return Number.isFinite(pixelScaleLimit) ? pixelScaleLimit : 0;
+}
+
+/** Return one RAD LoD node's Spark traversal scale after distance and foveation weighting. */
+function getRADSparkLoDPixelScale(
   splats: RADSplatChunkValues,
   rowIndex: number,
-  modelViewProjectionMatrix: readonly number[],
-  viewportSize: readonly [number, number],
-  radiusScale: number,
-  gaussianSupportRadius: number,
+  foveationView: RADFoveationView,
   lodSplatScale: number,
-  lodRenderScale: number,
   coneFov0: number,
   coneFov: number,
   behindFoveate: number,
-  coneFoveate: number,
-  foveationView: RADFoveationView = {}
+  coneFoveate: number
 ): number {
+  const {viewOrigin, viewDirection} = foveationView;
+  if (!viewOrigin || !viewDirection) {
+    return Number.POSITIVE_INFINITY;
+  }
+
   const positionOffset = rowIndex * 3;
   const position: [number, number, number] = [
     splats.positions[positionOffset],
     splats.positions[positionOffset + 1],
     splats.positions[positionOffset + 2]
   ];
-  const projectedCenter = projectRADPoint(position, modelViewProjectionMatrix, viewportSize);
-  if (!projectedCenter) {
-    return 0;
-  }
-
-  const scaleOffset = rowIndex * 3;
-  const adjustedSupportRadius = getRADAdjustedGaussianSupportRadius(
-    splats.opacities[rowIndex],
-    gaussianSupportRadius
+  const distance = Math.max(
+    Math.hypot(
+      position[0] - viewOrigin[0],
+      position[1] - viewOrigin[1],
+      position[2] - viewOrigin[2]
+    ),
+    1e-6
   );
-  const sourceRadius =
-    Math.max(
-      Math.abs(splats.scales[scaleOffset]),
-      Math.abs(splats.scales[scaleOffset + 1]),
-      Math.abs(splats.scales[scaleOffset + 2]),
-      Number.EPSILON
-    ) *
-    radiusScale *
-    Math.max(lodRenderScale, 0) *
-    adjustedSupportRadius;
-  const projectedRadiusPixels = getRADProjectedRadiusPixels(
-    position,
-    sourceRadius,
-    modelViewProjectionMatrix,
-    viewportSize
-  );
+  const lodNodeSize = getRADSparkLoDNodeSize(splats, rowIndex);
   const foveationPriority = getRADFoveationWeight(
     position,
     foveationView,
@@ -3219,26 +3793,24 @@ function getRADProjectedSplatPixelScale(
     behindFoveate,
     coneFoveate
   );
-  const insideViewport =
-    projectedCenter[0] >= 0 &&
-    projectedCenter[0] <= viewportSize[0] &&
-    projectedCenter[1] >= 0 &&
-    projectedCenter[1] <= viewportSize[1];
-  const viewportVisibility = insideViewport ? 1 : 0.05;
-  const depthVisibility =
-    projectedCenter[2] >= -1 && projectedCenter[2] <= 1
-      ? 1
-      : Math.min(Math.max(behindFoveate, 0), 1);
-  const pixelScale =
-    Math.max(projectedRadiusPixels, 0.0001) *
-    Math.max(lodSplatScale, 0) *
-    foveationPriority *
-    viewportVisibility *
-    depthVisibility;
+  const pixelScale = (lodNodeSize / distance) * Math.max(lodSplatScale, 0) * foveationPriority;
   return Number.isFinite(pixelScale) ? pixelScale : 0;
 }
 
-/** Return Spark-style angle foveation priority for one splat center. */
+/** Return the encoded RAD LoD node size used by Spark traversal. */
+function getRADSparkLoDNodeSize(splats: RADSplatChunkValues, rowIndex: number): number {
+  const scaleOffset = rowIndex * 3;
+  const averageScale =
+    (Math.abs(splats.scales[scaleOffset]) +
+      Math.abs(splats.scales[scaleOffset + 1]) +
+      Math.abs(splats.scales[scaleOffset + 2])) /
+    3;
+  const opacity = getRADExpandedLoDOpacity(splats.opacities[rowIndex]);
+  const opacityExpansion = opacity > 1 ? 1 + 0.7 * (opacity - 1) : 1;
+  return Math.max(2 * opacityExpansion * averageScale, Number.EPSILON);
+}
+
+/** Return Spark-style dot-space foveation priority for one splat center. */
 function getRADFoveationWeight(
   position: readonly [number, number, number],
   foveationView: RADFoveationView,
@@ -3268,27 +3840,40 @@ function getRADFoveationWeight(
     return 1;
   }
 
-  const dotProduct =
-    (toSplat[0] * viewDirection[0] +
-      toSplat[1] * viewDirection[1] +
-      toSplat[2] * viewDirection[2]) /
-    (toSplatLength * viewDirectionLength);
-  const angleDegrees = Math.acos(Math.min(Math.max(dotProduct, -1), 1)) * (180 / Math.PI);
-  const innerConeAngle = Math.max(Math.min(coneFov0, coneFov), 0) * 0.5;
-  const outerConeAngle = Math.min(Math.max(Math.max(coneFov0, coneFov), 0) * 0.5, 180);
+  const forwardDot =
+    toSplat[0] * viewDirection[0] +
+    toSplat[1] * viewDirection[1] +
+    toSplat[2] * viewDirection[2];
   const conePriority = clampRADPriority(coneFoveate);
   const behindPriority = clampRADPriority(behindFoveate);
 
-  if (angleDegrees <= innerConeAngle) {
-    return 1;
-  }
-  if (angleDegrees <= outerConeAngle) {
-    const blend = (angleDegrees - innerConeAngle) / Math.max(outerConeAngle - innerConeAngle, 1e-6);
-    return mixRADPriority(1, conePriority, blend);
+  if (forwardDot <= 0) {
+    return behindPriority;
   }
 
-  const behindBlend = (angleDegrees - outerConeAngle) / Math.max(180 - outerConeAngle, 1e-6);
-  return mixRADPriority(conePriority, behindPriority, behindBlend);
+  const dotProduct =
+    forwardDot / Math.max(toSplatLength * viewDirectionLength, Number.EPSILON);
+  const innerConeDot = getRADFoveationConeDot(coneFov0);
+  const outerConeDot = Math.min(getRADFoveationConeDot(coneFov), innerConeDot);
+  if (dotProduct >= innerConeDot) {
+    return 1;
+  }
+  if (dotProduct >= outerConeDot) {
+    const blend = (dotProduct - outerConeDot) / Math.max(innerConeDot - outerConeDot, 1e-6);
+    return mixRADPriority(conePriority, 1, blend);
+  }
+
+  const behindBlend = outerConeDot > 1e-6 ? dotProduct / outerConeDot : 1;
+  return mixRADPriority(behindPriority, conePriority, behindBlend);
+}
+
+/** Return Spark's cosine-space cutoff for a full-width foveation cone. */
+function getRADFoveationConeDot(coneFov: number): number {
+  if (coneFov <= 0) {
+    return 1;
+  }
+  const halfConeRadians = (0.5 * Math.min(Math.max(coneFov, 0), 180) * Math.PI) / 180;
+  return Math.cos(halfConeRadians);
 }
 
 /** Clamp a relative LoD priority multiplier into the Spark foveation range. */
@@ -3300,36 +3885,6 @@ function clampRADPriority(value: number): number {
 function mixRADPriority(start: number, end: number, blend: number): number {
   const clampedBlend = Math.min(Math.max(blend, 0), 1);
   return start + (end - start) * clampedBlend;
-}
-
-/** Return an approximate projected screen radius for a local-space Gaussian radius. */
-function getRADProjectedRadiusPixels(
-  position: readonly [number, number, number],
-  radius: number,
-  modelViewProjectionMatrix: readonly number[],
-  viewportSize: readonly [number, number]
-): number {
-  const projectedCenter = projectRADPoint(position, modelViewProjectionMatrix, viewportSize);
-  if (!projectedCenter) {
-    return 0;
-  }
-
-  let projectedRadiusPixels = 0;
-  for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
-    const endpoint: [number, number, number] = [position[0], position[1], position[2]];
-    endpoint[axisIndex] += radius;
-    const projectedEndpoint = projectRADPoint(endpoint, modelViewProjectionMatrix, viewportSize);
-    if (projectedEndpoint) {
-      projectedRadiusPixels = Math.max(
-        projectedRadiusPixels,
-        Math.hypot(
-          projectedEndpoint[0] - projectedCenter[0],
-          projectedEndpoint[1] - projectedCenter[1]
-        )
-      );
-    }
-  }
-  return projectedRadiusPixels;
 }
 
 /** Project a local-space RAD point into viewport pixels and normalized depth. */
@@ -3445,15 +4000,6 @@ export function _getRADFoveationWeightForTesting(
 /** Return a rounded integer bucket for a continuous scheduler signal. */
 function getRADSignatureBucket(value: number, scale: number): number {
   return Math.round(value * scale);
-}
-
-/** Return the Spark-style support radius expanded for merged LoD opacity values above one. */
-function getRADAdjustedGaussianSupportRadius(
-  opacity: number,
-  gaussianSupportRadius: number
-): number {
-  const splatAlpha = getRADExpandedLoDOpacity(opacity);
-  return gaussianSupportRadius + Math.max(splatAlpha - 1, 0) * 0.7;
 }
 
 /** Return Spark's expanded alpha domain for RAD merged LoD opacity values above one. */
@@ -3714,18 +4260,19 @@ export function _getRADLoadedRenderFrontierForTesting(
   loadedChunks: any[],
   metadata: any,
   options: any
-): any[] {
+): Promise<any[]> {
   const loadedByChunkIndex = new Map<number, RADSplatLoadedChunk>(
     (loadedChunks as RADSplatLoadedChunk[]).map(chunk => [chunk.chunkIndex, chunk])
   );
-  return (
-    getRADLoadedRenderFrontier(
-      loadedByChunkIndex,
-      metadata,
-      options.startChunkIndex,
-      new Set(),
-      options
-    )?.frontierChunks || []
+  return getRADLoadedRenderFrontier(
+    loadedByChunkIndex,
+    metadata,
+    options.startChunkIndex,
+    new Set(),
+    options
+  ).then(
+    frontier =>
+      frontier?.frontierChunks || []
   );
 }
 
@@ -3759,6 +4306,17 @@ export function _getRADRenderPageSplatCountForTesting(
   sortMode?: SplatSortMode
 ): number {
   return getRADRenderPageSplatCount(frontierChunks as RADRenderFrontierChunk[], sortMode);
+}
+
+/** @internal Test-only entry point for grouped source render page planning. */
+export function _getRADSourceRenderPagePlansForTesting(
+  frontierChunks: any[],
+  maxPageSplatCount: number
+): any[] {
+  return createRADSourceRenderPagePlans(
+    frontierChunks as RADRenderFrontierChunk[],
+    maxPageSplatCount
+  );
 }
 
 /** @internal Test-only entry point for RAD chunk request prefetch planning. */

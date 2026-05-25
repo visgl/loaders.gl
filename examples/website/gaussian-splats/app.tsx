@@ -41,7 +41,7 @@ const CONTROLLER_MODES = ['orbit', 'first-person'] as const;
 const FIRST_PERSON_INITIAL_PITCH = -20;
 const FIRST_PERSON_MIN_PITCH = -75;
 const FIRST_PERSON_MAX_PITCH = 75;
-const RAD_PREVIEW_MAX_PIXEL_RADIUS = 64;
+const RAD_PREVIEW_MAX_PIXEL_RADIUS = 512;
 const RAD_MIN_FOV = 25;
 const RAD_MAX_FOV = 90;
 const RAD_DEFAULT_FOV = 75;
@@ -52,26 +52,30 @@ const ORBIT_MAX_ZOOM = 8;
 const SPLAT_LAYER_OPACITY = 0.34;
 const RAD_SPLAT_LAYER_OPACITY = 1;
 const SPLAT_RADIUS_SCALE = 0.78;
-const RAD_SPLAT_RADIUS_SCALE = 0.65;
+const RAD_SPLAT_RADIUS_SCALE = 1;
 const SPLAT_RADIUS_MIN_PIXELS = 0.35;
+const RAD_SPLAT_RADIUS_MIN_PIXELS = 0;
 const SPLAT_RADIUS_MAX_PIXELS = 16;
 const RAD_SPLAT_RADIUS_MAX_PIXELS = RAD_PREVIEW_MAX_PIXEL_RADIUS;
 const SPLAT_ALPHA_SCALE = 0.38;
-const RAD_SPLAT_ALPHA_SCALE = 0.7;
+const RAD_SPLAT_ALPHA_SCALE = 1;
 const SPLAT_ALPHA_CUTOFF = 0.02;
 const RAD_SPLAT_ALPHA_CUTOFF = 0.5 / 255;
 const SPLAT_SCREEN_SIZE_CUTOFF_PIXELS = 0.2;
-const SPLAT_KERNEL_2D_SIZE = 0.3;
+const RAD_GAUSSIAN_SUPPORT_RADIUS = Math.sqrt(8);
+const SPLAT_KERNEL_2D_SIZE = Math.sqrt(0.3);
 const SPLAT_MAX_SCREEN_SPACE_SIZE = 256;
 const RAD_SPLAT_MAX_SCREEN_SPACE_SIZE = RAD_PREVIEW_MAX_PIXEL_RADIUS;
 const RAD_PREVIEW_INTERACTIVE_BASE_MAX_CHUNKS = 384;
 const RAD_PREVIEW_SETTLED_BASE_MAX_CHUNKS = 768;
 const RAD_PREVIEW_INTERACTIVE_BASE_MAX_SPLATS = 1000000;
-const RAD_PREVIEW_SETTLED_BASE_MAX_SPLATS = 2000000;
+const RAD_PREVIEW_SETTLED_BASE_MAX_SPLATS = 2500000;
+const RAD_PREVIEW_BASE_MAX_RESIDENT_SPLATS = 16 * 1024 * 1024;
 const RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS = 1024;
-const RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS = 16;
+const RAD_PREVIEW_INTERACTIVE_MAX_CONCURRENT_CHUNK_REQUESTS = 4;
+const RAD_PREVIEW_SETTLED_MAX_CONCURRENT_CHUNK_REQUESTS = 8;
 const RAD_PREVIEW_SETTLE_DELAY_MS = 700;
-const RAD_DEFAULT_LEVEL_OF_DETAIL = 2;
+const RAD_DEFAULT_LEVEL_OF_DETAIL = 1.5;
 const RAD_DEFAULT_LOD_RENDER_SCALE = 1;
 const RAD_DEFAULT_BEHIND_FOVEATE = 0.2;
 const RAD_DEFAULT_CONE_FOVEATE = 0.4;
@@ -138,6 +142,16 @@ type RADRenderProgress = {
   renderSplatCount?: number;
   /** Number of splats that overflowed tile-local storage in the latest compute pass. */
   tileOverflowSplatCount?: number;
+  /** Number of selected visible LoD rows that still have children. */
+  frontierParentSplatCount?: number;
+  /** Number of selected visible LoD rows that are leaves. */
+  frontierLeafSplatCount?: number;
+  /** Largest selected LoD child count in the current frontier. */
+  frontierMaxChildCount?: number;
+  /** Largest Spark-expanded render opacity selected in the current frontier. */
+  frontierMaxOpacity?: number;
+  /** Largest decoded source-space scale selected in the current frontier. */
+  frontierMaxScale?: number;
   /** Upload duration for the most recent chunk page. */
   lastUploadTimeMs?: number;
   /** Time from source load to the latest coherent LoD commit. */
@@ -217,9 +231,16 @@ function getRADMaxCachedChunks(maxChunks: number): number {
   return Math.max(RAD_PREVIEW_BASE_MAX_CACHED_CHUNKS, maxChunks * 2);
 }
 
+/** Return RAD chunk request concurrency scaled by camera activity. */
+function getRADMaxConcurrentChunkRequests(isCameraSettled: boolean = true): number {
+  return isCameraSettled
+    ? RAD_PREVIEW_SETTLED_MAX_CONCURRENT_CHUNK_REQUESTS
+    : RAD_PREVIEW_INTERACTIVE_MAX_CONCURRENT_CHUNK_REQUESTS;
+}
+
 /** Return a normalized budget multiplier from a Spark-like LoD setting. */
 function getRADLevelOfDetailBudgetScale(levelOfDetail: number): number {
-  return Math.max(levelOfDetail, RAD_MIN_LEVEL_OF_DETAIL) / RAD_DEFAULT_LEVEL_OF_DETAIL;
+  return Math.max(levelOfDetail, RAD_MIN_LEVEL_OF_DETAIL);
 }
 
 /** Gaussian splats website example rendered through a WebGPU deck.gl canvas. */
@@ -404,13 +425,18 @@ export default function GaussianSplatsApp() {
     [state.previewTable, state.loadedSplatCount]
   );
   const urlOptions = useMemo(() => getGaussianSplatUrlOptions(), []);
-  const widgets = useMemo(
-    () => [
-      new FullscreenWidget({id: 'gaussian-splats-fullscreen', placement: 'top-right'}),
-      new StatsWidget({id: 'gaussian-splats-fps', placement: 'bottom-right', type: 'deck'})
-    ],
-    []
-  );
+  const widgets = useMemo(() => {
+    const fullscreenWidget = new FullscreenWidget({
+      id: 'gaussian-splats-fullscreen',
+      placement: 'top-right'
+    });
+    return state.radSource
+      ? [fullscreenWidget]
+      : [
+          fullscreenWidget,
+          new StatsWidget({id: 'gaussian-splats-fps', placement: 'bottom-right', type: 'deck'})
+        ];
+  }, [state.radSource]);
   const handleRADLoadProgress = useCallback((progress: RADSplatLoadProgress) => {
     setState((currentState) => ({
       ...currentState,
@@ -425,6 +451,11 @@ export default function GaussianSplatsApp() {
         renderPageSplatCount: progress.renderPageSplatCount,
         renderSplatCount: progress.renderSplatCount,
         tileOverflowSplatCount: progress.tileOverflowSplatCount,
+        frontierParentSplatCount: progress.frontierParentSplatCount,
+        frontierLeafSplatCount: progress.frontierLeafSplatCount,
+        frontierMaxChildCount: progress.frontierMaxChildCount,
+        frontierMaxOpacity: progress.frontierMaxOpacity,
+        frontierMaxScale: progress.frontierMaxScale,
         lastUploadTimeMs: progress.lastUploadTimeMs,
         lastCommitTimeMs: progress.lastCommitTimeMs
       },
@@ -444,6 +475,9 @@ export default function GaussianSplatsApp() {
         state.radSettings.levelOfDetail,
         state.isRADCameraSettled
       );
+      const radMaxConcurrentChunkRequests = getRADMaxConcurrentChunkRequests(
+        state.isRADCameraSettled
+      );
       return [
         new RADSplatLayer({
           id: 'gaussian-splats-rad-webgpu',
@@ -452,11 +486,12 @@ export default function GaussianSplatsApp() {
           pickable: false,
           opacity: RAD_SPLAT_LAYER_OPACITY,
           radiusScale: RAD_SPLAT_RADIUS_SCALE,
-          radiusMinPixels: SPLAT_RADIUS_MIN_PIXELS,
+          radiusMinPixels: RAD_SPLAT_RADIUS_MIN_PIXELS,
           radiusMaxPixels: RAD_SPLAT_RADIUS_MAX_PIXELS,
           alphaScale: RAD_SPLAT_ALPHA_SCALE,
           alphaCutoff: RAD_SPLAT_ALPHA_CUTOFF,
           screenSizeCutoffPixels: 0,
+          gaussianSupportRadius: RAD_GAUSSIAN_SUPPORT_RADIUS,
           kernel2DSize: SPLAT_KERNEL_2D_SIZE,
           maxScreenSpaceSplatSize: RAD_SPLAT_MAX_SCREEN_SPACE_SIZE,
           modelMatrix: getRADModelMatrix(state.selectedUrl),
@@ -465,12 +500,12 @@ export default function GaussianSplatsApp() {
           maxChunks: radMaxChunks,
           maxSplats: radMaxSplats,
           lodSplatCount: radMaxSplats,
-          maxResidentSplats: radMaxSplats * 2,
-          maxPagedSplats: radMaxSplats * 2,
+          maxResidentSplats: Math.max(radMaxSplats * 4, RAD_PREVIEW_BASE_MAX_RESIDENT_SPLATS),
+          maxPagedSplats: Math.max(radMaxSplats * 4, RAD_PREVIEW_BASE_MAX_RESIDENT_SPLATS),
           maxCachedChunks: getRADMaxCachedChunks(radMaxChunks),
-          maxConcurrentChunkRequests: RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS,
+          maxConcurrentChunkRequests: radMaxConcurrentChunkRequests,
           pruneLoadedLoDParents: true,
-          lodSplatScale: state.radSettings.levelOfDetail,
+          lodSplatScale: 1,
           lodRenderScale: state.radSettings.lodRenderScale,
           behindFoveate: state.radSettings.behindFoveate,
           coneFoveate: state.radSettings.coneFoveate,
@@ -739,9 +774,14 @@ function formatRADRuntimeProgress(progress: RADRenderProgress): string {
   const requests = progress.requestedChunkCount ?? 0;
   const evictions = progress.evictedChunkCount ?? 0;
   const overflow = progress.tileOverflowSplatCount ?? 0;
+  const parentSplats = progress.frontierParentSplatCount ?? 0;
+  const maxOpacity =
+    progress.frontierMaxOpacity === undefined ? '-' : progress.frontierMaxOpacity.toFixed(2);
+  const maxScale =
+    progress.frontierMaxScale === undefined ? '-' : progress.frontierMaxScale.toFixed(2);
   const uploadMs =
     progress.lastUploadTimeMs === undefined ? '-' : `${Math.round(progress.lastUploadTimeMs)} ms`;
-  return `${chunks.toLocaleString()} chunks | ${pages} pages | ${renderSplats.toLocaleString()} draw | ${requests} req | ${evictions} evict | ${overflow.toLocaleString()} ovf | ${uploadMs}`;
+  return `${chunks.toLocaleString()} chunks | ${pages} pages | ${renderSplats.toLocaleString()} draw | ${requests} req | ${evictions} evict | ${overflow.toLocaleString()} ovf | ${parentSplats.toLocaleString()} parents | a ${maxOpacity} | s ${maxScale} | ${uploadMs}`;
 }
 
 /** Return POSITION column bounds for a Mesh Arrow table. */
@@ -839,7 +879,7 @@ async function* trackGaussianSplatBatches(
         for await (const table of source.getChunkTables({
           maxChunks: getRADMaxChunks(RAD_DEFAULT_LEVEL_OF_DETAIL),
           maxSplats: getRADMaxSplats(RAD_DEFAULT_LEVEL_OF_DETAIL),
-          maxConcurrentChunkRequests: RAD_PREVIEW_MAX_CONCURRENT_CHUNK_REQUESTS,
+          maxConcurrentChunkRequests: getRADMaxConcurrentChunkRequests(true),
           pruneLoadedLoDParents: true,
           radChunk: {
             includeLoDTree: true,

@@ -14,11 +14,11 @@ export const SPLAT_RADIX_BUCKETS = 1 << SPLAT_RADIX_BITS_PER_PASS;
 /** Number of passes required to sort a 32-bit key with the v1 radix width. */
 export const SPLAT_RADIX_PASS_COUNT = 32 / SPLAT_RADIX_BITS_PER_PASS;
 
-/** Default screen tile side length reserved for future tile-local sorting. */
-export const SPLAT_TILE_SIZE_PIXELS = 16;
+/** Default screen tile side length used for tile-local splat sorting. */
+export const SPLAT_TILE_SIZE_PIXELS = 2;
 
 /** Default maximum splat references reserved for one tile-local radix workgroup. */
-export const SPLAT_TILE_RADIX_MAX_SPLATS = 1024;
+export const SPLAT_TILE_RADIX_MAX_SPLATS = 2048;
 
 /** Default workgroup size reserved for tile-local radix kernels. */
 export const SPLAT_TILE_RADIX_WORKGROUP_SIZE = 256;

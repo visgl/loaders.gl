@@ -72,7 +72,7 @@ test('parseRADChunkToGaussianSplats decodes Spark RADC chunk payloads', t => {
   t.end();
 });
 
-test('parseRADChunkToGaussianSplats expands Spark LoD opacity bytes', t => {
+test('parseRADChunkToGaussianSplats preserves Spark LoD opacity byte range', t => {
   const splats = parseRADChunkToGaussianSplats(
     makeRADChunkFixture({
       alphaEncoding: 'r8',
@@ -276,9 +276,10 @@ type RADChunkFixtureOptions = {
 
 /** Builds a deterministic Spark RADC chunk fixture. */
 function makeRADChunkFixture(options: RADChunkFixtureOptions = {}): ArrayBuffer {
+  const alphaMax = options.splatEncoding?.lodOpacity === false ? 1 : 2;
   const alphaPayload =
     options.alphaEncoding === 'r8'
-      ? makeRADChunkPayload('alpha', 'r8', new Uint8Array([64, 191]), {min: 0, max: 1})
+      ? makeRADChunkPayload('alpha', 'r8', new Uint8Array([64, 191]), {min: 0, max: alphaMax})
       : makeRADChunkPayload('alpha', 'f32', encodeF32(new Float32Array([0.25, 0.75]), 1, 2));
   const propertyPayloads = [
     makeRADChunkPayload(
