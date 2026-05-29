@@ -54,7 +54,7 @@ import {CSVLoader} from '@loaders.gl/csv/unbundled';
 const table = await parse(csvText, CSVLoader);
 ```
 
-The first parse call dynamically imports the parser-bearing implementation. Core caches that implementation, so later async calls with the same loader object do not repeat the dynamic import.
+The first parse call dynamically imports the parser-bearing implementation. Core caches that implementation, so later async calls with the same loader object and backend option do not repeat the dynamic import.
 
 ## `preload()`
 
@@ -67,7 +67,7 @@ import {CSVLoader} from '@loaders.gl/csv/unbundled';
 const parserLoader = await preload(CSVLoader);
 ```
 
-`preload(loader)` returns the parser-bearing loader implementation and caches it in core. Later async parsing calls with the same unbundled loader can reuse that implementation.
+`preload(loader)` returns the parser-bearing loader implementation and caches it in core. Later async parsing calls with the same unbundled loader and `options[loader.id].backend` value can reuse that implementation.
 
 This is useful when an application can predict that a format will be needed soon, for example after a user opens an import dialog but before they select a file. It can also make error handling more explicit because preload failures happen before the parsing call.
 

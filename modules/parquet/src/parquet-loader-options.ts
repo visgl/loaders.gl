@@ -23,19 +23,26 @@ type ParquetWasmLoaderOptions = ParquetCommonLoaderOptions & {
 /** Internal superset of Parquet loader options that retains backend selection. */
 type ParquetInternalLoaderOptions = ParquetWasmLoaderOptions & {
   shape?: 'object-row-table' | 'arrow-table';
+  backend?: 'wasm' | 'typescript';
+  /** @deprecated Use `backend` instead. */
   implementation?: 'wasm' | 'js';
 };
 
 /** Public options for the wasm-backed `ParquetLoader` and `GeoParquetLoader`. */
 export type ParquetLoaderOptions = LoaderOptions & {
-  parquet?: {shape?: 'object-row-table' | 'arrow-table'; implementation?: 'wasm' | 'js'} & {
+  parquet?: {
+    shape?: 'object-row-table' | 'arrow-table';
+    backend?: 'wasm' | 'typescript';
+    /** @deprecated Use `backend` instead. */
+    implementation?: 'wasm' | 'js';
+  } & {
     [Key in keyof ParquetWasmLoaderOptions]?: ParquetWasmLoaderOptions[Key];
   };
 };
 
 /** Public options for the experimental parquetjs-backed `ParquetJSLoader`. */
 export type ParquetJSLoaderOptions = LoaderOptions & {
-  parquet?: {
+  parquet?: {backend?: 'typescript'} & {
     [Key in keyof ParquetCommonLoaderOptions]?: ParquetCommonLoaderOptions[Key];
   };
 };
@@ -49,8 +56,8 @@ export type ParquetLoaderImplementationOptions = LoaderOptions & {
 
 /** Shared default option bag for the wasm-backed Parquet loaders. */
 export const PARQUET_LOADER_DEFAULT_OPTIONS = {
+  backend: 'wasm',
   columns: undefined,
-  implementation: 'wasm',
   preserveBinary: false,
   shape: 'object-row-table'
 } as const;

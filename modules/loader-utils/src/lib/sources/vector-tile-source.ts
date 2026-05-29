@@ -2,11 +2,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) vis.gl contributors
 
-import type {Schema, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {
+  Schema,
+  Feature,
+  GeoJSONTable,
+  BinaryFeatureCollection,
+  ArrowTable
+} from '@loaders.gl/schema';
 import {TileSource, TileSourceProps, GetTileParameters} from './tile-source';
 import type {GetTileDataParameters} from './tile-source';
 
-export type VectorTile = unknown;
+export type VectorTile = Feature[] | GeoJSONTable | BinaryFeatureCollection | ArrowTable;
 
 export type VectorTileSourceProps = TileSourceProps;
 
@@ -19,5 +25,5 @@ export interface VectorTileSource extends TileSource {
   getVectorTile(parameters: GetTileParameters): Promise<VectorTile | null>;
   getTileData(
     parameters: GetTileDataParameters
-  ): Promise<Feature[] | BinaryFeatureCollection | null>;
+  ): Promise<Feature[] | GeoJSONTable | BinaryFeatureCollection | ArrowTable | null>;
 }

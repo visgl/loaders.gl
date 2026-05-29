@@ -69,6 +69,20 @@ test('Point MVT to local coordinates JSON', async t => {
   t.end();
 });
 
+test('Point MVT to Arrow table', async t => {
+  const response = await fetchFile(MVT_POINTS_DATA_URL);
+  const mvtArrayBuffer = await response.arrayBuffer();
+
+  const geometryTable = await parse(mvtArrayBuffer, MVTLoader, {
+    mvt: {shape: 'arrow-table', coordinates: 'local', layerProperty: 'layerName'}
+  });
+
+  t.equal(geometryTable.shape, 'arrow-table');
+  t.equal(geometryTable.data.getChild('geometry')?.length, 1, 'preserves feature rows');
+  t.ok(geometryTable.schema?.metadata?.geo, 'adds GeoArrow metadata');
+  t.end();
+});
+
 test('Line MVT to local coordinates JSON', async t => {
   const response = await fetchFile(MVT_LINES_DATA_URL);
   const mvtArrayBuffer = await response.arrayBuffer();

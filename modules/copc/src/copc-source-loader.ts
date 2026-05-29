@@ -13,10 +13,14 @@ import type {
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
-import {DataSource} from '@loaders.gl/loader-utils';
+import {
+  DataSource,
+  concatenateArrayBuffersFromArray,
+  decodeLAZChunkInBatches
+} from '@loaders.gl/loader-utils';
 import {Proj4Projection} from '@math.gl/proj4';
 
-import {Copc, Hierarchy, Dimension, Getter, Bounds, Key} from 'copc';
+import {Copc, Las, Hierarchy, Dimension, Getter, Bounds, Key} from 'copc';
 
 const VERSION = '1.0.0';
 const COORDINATE_SYSTEM = {
@@ -50,6 +54,8 @@ import {COPCFormat} from './copc-format';
 
 export type COPCSourceLoaderOptions = DataSourceOptions & {
   copc?: {
+    /** Decoder backend for compressed COPC LAZ node chunks. */
+    decoder?: 'laz-perf' | 'typescript-laz';
     sourceCoordinateSystem?: string;
   };
 };
@@ -122,7 +128,7 @@ export class COPCTileSource
 
   async getSchema(): Promise<Schema> {
     const {copc, rootNode} = await this._initPromise;
-    const view = await Copc.loadPointDataView(this._urlOrGetter, copc, rootNode);
+    const view = await this.loadPointDataView(copc, rootNode);
 
     const fields: Field[] = [];
     for (const [name, dimension] of Object.entries(view.dimensions)) {
@@ -230,7 +236,7 @@ export class COPCTileSource
   async getPoints(parameters: GetNodeParameters) {
     const {copc} = await this._initPromise;
     const node = await this.getNode(parameters);
-    const view = node && (await Copc.loadPointDataView(this._urlOrGetter, copc, node));
+    const view = node && (await this.loadPointDataView(copc, node));
     if (!view) {
       return null;
     }
@@ -264,7 +270,7 @@ export class COPCTileSource
       return null;
     }
 
-    const view = await Copc.loadPointDataView(this._urlOrGetter, copc, node);
+    const view = await this.loadPointDataView(copc, node);
     const pointCount = view.pointCount;
     const positions = new Float32Array(pointCount * 3);
     const nativeOrigin = this.getNativeTileCenter(tile.id);
@@ -288,6 +294,27 @@ export class COPCTileSource
     this._projection = createProjection(copc.wkt || this.options.copc?.sourceCoordinateSystem);
     this.isReady = true;
     return {copc, hierarchy, rootNode};
+  }
+
+  protected async loadPointDataView(copc: Copc, node: Hierarchy.Node) {
+    if (this.options.copc?.decoder !== 'typescript-laz') {
+      return await Copc.loadPointDataView(this._urlOrGetter, copc, node);
+    }
+
+    const compressed = await Copc.loadCompressedPointDataBuffer(this._urlOrGetter, node);
+    const metadata = {
+      pointCount: node.pointCount,
+      pointDataRecordFormat: copc.header.pointDataRecordFormat,
+      pointDataRecordLength: copc.header.pointDataRecordLength
+    };
+    const batches: Uint8Array[] = [];
+    for await (const batch of decodeLAZChunkInBatches([compressed], metadata, {
+      batchSize: node.pointCount
+    })) {
+      batches.push(batch);
+    }
+    const pointData = new Uint8Array(concatenateArrayBuffersFromArray(batches));
+    return Las.View.create(pointData, copc.header, copc.eb);
   }
 
   protected async getNodeById(tileId: string): Promise<Hierarchy.Node | undefined> {

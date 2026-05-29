@@ -10,15 +10,15 @@ import type {LASLoaderOptions} from './las-loader';
 import type {LASMesh} from './lib/las-types';
 import {parseLAS, parseLASInBatches} from './lib/laz-rs-wasm/parse-las';
 import initLazRsWasm from './libs/laz-rs-wasm/laz_rs_wasm';
-import {LAZRsLoader as LAZRsLoaderMetadata} from './laz-rs-loader';
+import {LASLoader as LASLoaderMetadata} from './las-loader';
 
-const {preload: _LAZRsLoaderPreload, ...LAZRsLoaderMetadataWithoutPreload} = LAZRsLoaderMetadata;
+const {preload: _LASLoaderPreload, ...LASLoaderMetadataWithoutPreload} = LASLoaderMetadata;
 
 /**
  * Loader for the LAS (LASer) point cloud format
  */
 export const LAZRsLoaderWithParser = {
-  ...LAZRsLoaderMetadataWithoutPreload,
+  ...LASLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) => {
     await initLazRsWasm();
     return convertLASMesh(parseLAS(arrayBuffer, {...options}), options);

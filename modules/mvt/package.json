@@ -52,6 +52,7 @@
     "build-worker": "esbuild src/workers/mvt-worker.ts --bundle --outfile=dist/mvt-worker.js --define:__VERSION__=\\\"$npm_package_version\\\""
   },
   "dependencies": {
+    "@loaders.gl/arrow": "4.4.0",
     "@loaders.gl/gis": "4.4.0",
     "@loaders.gl/images": "4.4.0",
     "@loaders.gl/loader-utils": "4.4.0",

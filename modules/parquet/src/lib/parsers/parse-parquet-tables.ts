@@ -30,8 +30,8 @@ export function parseParquetArrowTable(
   file: ReadableFile,
   options: ParquetLoaderOptions
 ): Promise<ArrowTable> {
-  switch (options.parquet?.implementation) {
-    case 'js':
+  switch (getParquetBackend(options)) {
+    case 'typescript':
       return parseParquetFileToArrowWithJs(file, options);
 
     case 'wasm':
@@ -51,8 +51,8 @@ export function parseParquetArrowTableInBatches(
   file: ReadableFile,
   options: ParquetLoaderOptions
 ): AsyncIterable<ArrowTableBatch> {
-  switch (options.parquet?.implementation) {
-    case 'js':
+  switch (getParquetBackend(options)) {
+    case 'typescript':
       return parseParquetFileToArrowInBatchesWithJs(file, options);
 
     case 'wasm':
@@ -72,7 +72,7 @@ export async function parseParquetObjectRowTable(
   file: ReadableFile,
   options: ParquetLoaderOptions
 ): Promise<ObjectRowTable> {
-  if (options.parquet?.implementation === 'js') {
+  if (getParquetBackend(options) === 'typescript') {
     return await parseParquetFile(file, options);
   }
 
@@ -91,7 +91,7 @@ export async function* parseParquetObjectRowTableInBatches(
   file: ReadableFile,
   options: ParquetLoaderOptions
 ): AsyncIterable<ObjectRowTableBatch> {
-  if (options.parquet?.implementation === 'js') {
+  if (getParquetBackend(options) === 'typescript') {
     yield* parseParquetFileInBatches(file, options);
     return;
   }
@@ -99,6 +99,13 @@ export async function* parseParquetObjectRowTableInBatches(
   for await (const batch of parseParquetArrowTableInBatches(file, options)) {
     yield convertArrowBatchToObjectRows(batch);
   }
+}
+
+function getParquetBackend(options: ParquetLoaderOptions): 'wasm' | 'typescript' {
+  if (options.parquet?.backend) {
+    return options.parquet.backend;
+  }
+  return options.parquet?.implementation === 'js' ? 'typescript' : 'wasm';
 }
 
 /**

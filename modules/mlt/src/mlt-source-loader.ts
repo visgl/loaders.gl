@@ -9,7 +9,7 @@ import type {
   GetTileParameters,
   GetTileDataParameters
 } from '@loaders.gl/loader-utils';
-import type {BinaryFeatureCollection, Schema, Feature} from '@loaders.gl/schema';
+import type {ArrowTable, BinaryFeatureCollection, Feature, Schema} from '@loaders.gl/schema';
 import {TileSourceMetadata, DataSource, DataSourceOptions} from '@loaders.gl/loader-utils';
 import {MLTLoaderWithParser} from './mlt-loader-with-parser';
 import type {MLTLoaderOptions} from './mlt-loader';
@@ -24,7 +24,7 @@ export type MLTSourceLoaderOptions = DataSourceOptions & {
     /** Coordinates for parsed tile geometries. */
     coordinates?: 'wgs84' | 'local';
     /** Shape of returned data. */
-    shape?: 'geojson-table' | 'binary-geometry';
+    shape?: 'geojson-table' | 'binary-geometry' | 'arrow-table';
     /** Optional layer filter. */
     layers?: string[];
   };
@@ -158,14 +158,14 @@ export class MLTTileSource
 
   async getTileData(
     parameters: GetTileDataParameters
-  ): Promise<Feature[] | BinaryFeatureCollection | null> {
+  ): Promise<Feature[] | BinaryFeatureCollection | ArrowTable | null> {
     const {index} = parameters;
     return this.getVectorTile({x: index.x, y: index.y, z: index.z, layers: []});
   }
 
   async getVectorTile(
     tileParameters: GetTileParameters
-  ): Promise<Feature[] | BinaryFeatureCollection | null> {
+  ): Promise<Feature[] | BinaryFeatureCollection | ArrowTable | null> {
     const tileData = await this.getTile(tileParameters);
     return tileData ? this._parseTile(tileData, tileParameters) : null;
   }
@@ -173,7 +173,7 @@ export class MLTTileSource
   protected async _parseTile(
     arrayBuffer: ArrayBuffer,
     tileParameters: GetTileParameters
-  ): Promise<Feature[] | BinaryFeatureCollection | null> {
+  ): Promise<Feature[] | BinaryFeatureCollection | ArrowTable | null> {
     const options: MLTSourceLoaderOptions = this.options;
     const coordinates = options.mlt?.coordinates || 'wgs84';
     const shape = options.mlt?.shape || 'geojson-table';
@@ -197,8 +197,8 @@ export class MLTTileSource
       return (parsed as {features: Feature[]}).features || null;
     }
 
-    if (shape === 'binary-geometry') {
-      return parsed as BinaryFeatureCollection;
+    if (shape === 'binary-geometry' || shape === 'arrow-table') {
+      return parsed as BinaryFeatureCollection | ArrowTable;
     }
     return (parsed as {features: Feature[]}).features || null;
   }

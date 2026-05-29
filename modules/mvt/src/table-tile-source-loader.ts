@@ -13,7 +13,14 @@ import type {
   GetTileParameters
 } from '@loaders.gl/loader-utils';
 import {DataSource, getRequiredOptions, log} from '@loaders.gl/loader-utils';
-import type {Schema, GeoJSONTable, Feature, BinaryFeatureCollection} from '@loaders.gl/schema';
+import type {
+  Schema,
+  GeoJSONTable,
+  Feature,
+  BinaryFeatureCollection,
+  ArrowTable
+} from '@loaders.gl/schema';
+import {convertFeaturesToWKBArrowTable} from '@loaders.gl/gis';
 import {deduceTableSchema} from '@loaders.gl/schema-utils';
 import {Stats, Stat} from '@probe.gl/stats';
 
@@ -50,6 +57,8 @@ export type TableTileSourceLoaderOptions = DataSourceOptions & {
     debug?: number;
     /** whether to calculate line metrics */
     lineMetrics?: boolean;
+    /** Shape of returned vector tile data. */
+    shape?: 'geojson-table' | 'arrow-table';
   };
 };
 
@@ -77,7 +86,8 @@ export const TableTileSourceLoader = {
       tolerance: 3,
       extent: 4096,
       buffer: 64,
-      generateId: undefined
+      generateId: undefined,
+      shape: 'geojson-table'
     }
   },
 
@@ -91,7 +101,8 @@ export const TableTileSourceLoader = {
       tolerance: 3,
       extent: 4096,
       buffer: 64,
-      generateId: undefined
+      generateId: undefined,
+      shape: 'geojson-table'
     }
   },
 
@@ -184,11 +195,13 @@ export class TableVectorTileSource
    * @param tileIndex z, x, y of tile
    * @returns
    */
-  async getVectorTile(tileIndex: GetTileParameters): Promise<GeoJSONTable | null> {
+  async getVectorTile(tileIndex: GetTileParameters): Promise<GeoJSONTable | ArrowTable | null> {
     await this.ready;
     const table = this.getTileSync(tileIndex);
     log.info(2, 'getVectorTile', tileIndex, table)();
-    return table;
+    return this.tableOptions.shape === 'arrow-table' && table
+      ? convertFeaturesToWKBArrowTable(table.features)
+      : table;
   }
 
   async getTile(tileIndex: {z: number; x: number; y: number}): Promise<GeoJSONTable | null> {
@@ -200,7 +213,8 @@ export class TableVectorTileSource
     tileParams: GetTileDataParameters
   ): Promise<Feature[] | BinaryFeatureCollection> {
     const {x, y, z} = tileParams.index;
-    const tile = await this.getVectorTile({x, y, z});
+    await this.ready;
+    const tile = this.getTileSync({x, y, z});
     return tile?.features || [];
   }
 

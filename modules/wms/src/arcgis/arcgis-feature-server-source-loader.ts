@@ -3,12 +3,17 @@
 // Copyright (c) vis.gl contributors
 
 import type {DataType, Schema, GeoJSONTable} from '@loaders.gl/schema';
+import {
+  convertFeaturesToWKBArrowTable,
+  convertGeojsonToBinaryFeatureCollection
+} from '@loaders.gl/gis';
 import type {
   CoreAPI,
   DataSourceOptions,
   VectorSourceMetadata,
   GetFeaturesParameters,
-  VectorSource
+  VectorSource,
+  VectorSourceData
 } from '@loaders.gl/loader-utils';
 import type {SourceLoader} from '@loaders.gl/loader-utils';
 import {DataSource} from '@loaders.gl/loader-utils';
@@ -133,14 +138,25 @@ export class ArcGISVectorSource
   }
 
   /** Requests features from the ArcGIS FeatureServer query endpoint. */
-  async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
+  async getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData> {
     const url = this.getFeaturesURL(parameters);
     const response = await this.fetch(
       url,
       parameters.signal ? {signal: parameters.signal} : undefined
     );
     await this.checkResponse(response);
-    return parseGeoJSONTable(await response.json());
+    const geoJsonTable = parseGeoJSONTable(await response.json());
+    const format = parameters.format || 'arrow';
+
+    switch (format) {
+      case 'binary':
+        return convertGeojsonToBinaryFeatureCollection(geoJsonTable.features);
+      case 'geojson':
+        return geoJsonTable;
+      case 'arrow':
+      default:
+        return convertFeaturesToWKBArrowTable(geoJsonTable.features);
+    }
   }
 
   /** Requests the raw ArcGIS FeatureServer metadata document. */

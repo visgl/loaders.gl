@@ -4,6 +4,7 @@
 
 import type {Loader, LoaderContext, LoaderOptions, StrictLoaderOptions} from '../../loader-types';
 import type {BatchableDataType, DataType, SyncDataType} from '../../types';
+import type {ReadableFile} from '../files/file';
 import type {RequiredOptions} from '../option-utils/merge-options';
 import {mergeOptions} from '../option-utils/merge-options';
 import {resolvePath} from '../path-utils/file-aliases';
@@ -31,6 +32,12 @@ export type CoreAPI = Readonly<{
   fetchFile: (urlOrData: string | Blob, fetchOptions?: RequestInit) => Promise<Response>;
   parse: (
     data: DataType | Promise<DataType>,
+    loaders?: Loader | Loader[] | LoaderOptions,
+    options?: LoaderOptions,
+    context?: LoaderContext
+  ) => Promise<unknown>;
+  parseFile: (
+    file: ReadableFile,
     loaders?: Loader | Loader[] | LoaderOptions,
     options?: LoaderOptions,
     context?: LoaderContext
@@ -64,6 +71,7 @@ export type CoreAPI = Readonly<{
 const UNAVAILABLE_CORE_API: CoreAPI = {
   fetchFile: unavailableCoreApiMethod('fetchFile'),
   parse: unavailableCoreApiMethod('parse'),
+  parseFile: unavailableCoreApiMethod('parseFile'),
   parseSync: unavailableCoreApiMethod('parseSync'),
   parseInBatches: unavailableCoreApiMethod('parseInBatches'),
   load: unavailableCoreApiMethod('load'),

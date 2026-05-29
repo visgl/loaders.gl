@@ -63,11 +63,7 @@ export async function* parseLASInBatches(
   const arrayBuffer = await concatenateArrayBuffersAsync(arrayBufferIterator);
   const batchSize = getBatchSize(options);
 
-  for (const {decoder, header} of parseLASChunkedIterator(
-    arrayBuffer,
-    options.las?.skip,
-    batchSize
-  )) {
+  for (const {decoder, header} of parseLASChunkedIterator(arrayBuffer, batchSize)) {
     yield parseLASMeshBatch(decoder, header, options);
   }
 }
@@ -106,7 +102,7 @@ function parseLASMesh(arrayBuffer: ArrayBuffer, options: LASLoaderOptions = {}):
 
   /* eslint-disable max-statements */
   // @ts-ignore Possibly undefined
-  parseLASChunked(arrayBuffer, options.las?.skip, (decoder: any = {}, lasHeader: LASHeader) => {
+  parseLASChunked(arrayBuffer, (decoder: any = {}, lasHeader: LASHeader) => {
     if (!originalHeader) {
       originalHeader = lasHeader;
       const total = lasHeader.totalToRead;
@@ -299,18 +295,16 @@ function populateLASAttributes(
 /**
  * parse laz data
  * @param rawData
- * @param skip
  * @param onParseData
  * @return parsed point cloud
  */
 /* eslint-enable max-statements */
 export function parseLASChunked(
   rawData: ArrayBuffer,
-  skip: number | undefined,
   onParseData: any = {},
   batchSize: number = DEFAULT_BATCH_SIZE
 ): void {
-  for (const {decoder, header} of parseLASChunkedIterator(rawData, skip, batchSize)) {
+  for (const {decoder, header} of parseLASChunkedIterator(rawData, batchSize)) {
     onParseData(decoder, header);
   }
 }
@@ -318,17 +312,14 @@ export function parseLASChunked(
 /**
  * Decode LAS/LAZ data into point chunks.
  * @param rawData Complete LAS/LAZ file data
- * @param skip Point skip factor
  * @param batchSize Number of returned points per chunk
  * @returns Iterable of decoded point chunks
  */
 function* parseLASChunkedIterator(
   rawData: ArrayBuffer,
-  skip: number | undefined,
   batchSize: number = DEFAULT_BATCH_SIZE
 ): Iterable<LASDecodedChunk> {
   const dataHandler = new LASFile(rawData);
-  const pointSkip = skip ?? 1;
 
   try {
     // open data
@@ -338,13 +329,12 @@ function* parseLASChunkedIterator(
     // start loading
     const Unpacker = dataHandler.getUnpacker();
 
-    const totalToRead = Math.ceil(header.pointsCount / Math.max(1, pointSkip));
-    header.totalToRead = totalToRead;
+    header.totalToRead = header.pointsCount;
     let totalRead = 0;
 
     /* eslint-disable no-constant-condition */
     while (true) {
-      const chunk: LASChunk = dataHandler.readData(batchSize, pointSkip);
+      const chunk: LASChunk = dataHandler.readData(batchSize);
 
       totalRead += chunk.count;
 
@@ -356,7 +346,7 @@ function* parseLASChunkedIterator(
       // use unpacker.pointsCount and unpacker.getPoint(i) to handle data in app
       yield {decoder: unpacker, header};
 
-      if (!chunk.hasMoreData || totalRead >= totalToRead) {
+      if (!chunk.hasMoreData || totalRead >= header.totalToRead) {
         break;
       }
     }

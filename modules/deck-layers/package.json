@@ -40,6 +40,7 @@
     "@deck.gl/geo-layers": "^9.3.0",
     "@deck.gl/layers": "^9.3.0",
     "@deck.gl/mesh-layers": "^9.3.0",
+    "@loaders.gl/arrow": "4.4.0",
     "@loaders.gl/compression": "4.4.0",
     "@loaders.gl/core": "4.4.0",
     "@loaders.gl/crypto": "4.4.0",

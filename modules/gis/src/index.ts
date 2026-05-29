@@ -57,6 +57,10 @@ export {
   makeWKBGeometryDataFromArray,
   makeWKBGeometryDataFromWriters
 } from './lib/geoarrow/wkb-arrow-utils';
+export {
+  buildFeatureArrowSchema,
+  convertFeaturesToWKBArrowTable
+} from './lib/geoarrow/feature-collection-to-arrow';
 export type {
   GeoArrowBuilderEncoding,
   GeoArrowCoordinateTransform,

@@ -4,8 +4,8 @@
 
 import type {Loader, LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
 
-const loaderImplementationPromises = new Map<Loader, Promise<LoaderWithParser>>();
-const loaderImplementations = new Map<Loader, LoaderWithParser>();
+const loaderImplementationPromises = new Map<Loader, Map<string, Promise<LoaderWithParser>>>();
+const loaderImplementations = new Map<Loader, Map<string, LoaderWithParser>>();
 
 /** Gets a parser-bearing implementation for a loader, loading it if needed. */
 export async function getLoaderImplementation(
@@ -17,23 +17,39 @@ export async function getLoaderImplementation(
     return loader;
   }
 
-  const loaderImplementation = loaderImplementations.get(loader);
+  const implementationCacheKey = getLoaderImplementationCacheKey(loader, options);
+  const loaderImplementation = loaderImplementations.get(loader)?.get(implementationCacheKey);
   if (loaderImplementation) {
     return loaderImplementation;
   }
 
-  let loaderImplementationPromise = loaderImplementationPromises.get(loader);
+  let loaderImplementationPromisesForLoader = loaderImplementationPromises.get(loader);
+  if (!loaderImplementationPromisesForLoader) {
+    loaderImplementationPromisesForLoader = new Map();
+    loaderImplementationPromises.set(loader, loaderImplementationPromisesForLoader);
+  }
+
+  let loaderImplementationPromise =
+    loaderImplementationPromisesForLoader.get(implementationCacheKey);
   if (!loaderImplementationPromise) {
     loaderImplementationPromise = resolveLoaderImplementation(loader, options, url)
       .then(implementation => {
-        loaderImplementations.set(loader, implementation);
+        let loaderImplementationsForLoader = loaderImplementations.get(loader);
+        if (!loaderImplementationsForLoader) {
+          loaderImplementationsForLoader = new Map();
+          loaderImplementations.set(loader, loaderImplementationsForLoader);
+        }
+        loaderImplementationsForLoader.set(implementationCacheKey, implementation);
         return implementation;
       })
       .catch(error => {
-        loaderImplementationPromises.delete(loader);
+        loaderImplementationPromisesForLoader.delete(implementationCacheKey);
+        if (loaderImplementationPromisesForLoader.size === 0) {
+          loaderImplementationPromises.delete(loader);
+        }
         throw error;
       });
-    loaderImplementationPromises.set(loader, loaderImplementationPromise);
+    loaderImplementationPromisesForLoader.set(implementationCacheKey, loaderImplementationPromise);
   }
 
   return await loaderImplementationPromise;
@@ -45,7 +61,8 @@ export function getLoaderImplementationSync(loader: Loader): LoaderWithParser | 
     return loader;
   }
 
-  return loaderImplementations.get(loader) || null;
+  const implementationCacheKey = getLoaderImplementationCacheKey(loader);
+  return loaderImplementations.get(loader)?.get(implementationCacheKey) || null;
 }
 
 /** Returns true when a loader object already includes parser methods. */
@@ -100,6 +117,24 @@ function getLoaderImplementationSpecifier(loader: Loader, options?: LoaderOption
   throw new Error(
     `${loader.id} loader does not provide a parser implementation. Import a parser-bearing loader directly, or use preload() before parse/load.`
   );
+}
+
+/** Gets the cache key for option-selected parser implementations. */
+function getLoaderImplementationCacheKey(loader: Loader, options?: LoaderOptions): string {
+  const loaderOptions = options?.[loader.id] as
+    | {backend?: unknown; implementation?: unknown}
+    | undefined;
+  const defaultLoaderOptions = loader.options?.[loader.id] as {backend?: unknown} | undefined;
+  return String(
+    loaderOptions?.backend ||
+      getDeprecatedImplementationBackend(loaderOptions?.implementation) ||
+      defaultLoaderOptions?.backend ||
+      ''
+  );
+}
+
+function getDeprecatedImplementationBackend(implementation: unknown): unknown {
+  return implementation === 'js' ? 'typescript' : implementation;
 }
 
 /** Imports a module and finds the parser-bearing loader implementation with the requested id. */

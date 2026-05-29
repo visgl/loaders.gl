@@ -63,16 +63,15 @@ async function* parseCOPCLASBatches(
   batchSize: number
 ): AsyncIterable<LASMesh> {
   const header = Las.Header.parse(new Uint8Array(arrayBuffer));
-  const pointSkip = options.las?.skip ?? 1;
   const pointData = await getCOPCPointData(arrayBuffer, header);
   const view = Las.View.create(pointData, header);
-  const totalToRead = Math.ceil(view.pointCount / Math.max(1, pointSkip));
+  const totalToRead = view.pointCount;
   const lasHeader = getLASHeader(arrayBuffer, header, totalToRead);
 
   for (let pointIndex = 0; pointIndex < totalToRead; pointIndex += batchSize) {
     const batchPointCount = Math.min(batchSize, totalToRead - pointIndex);
     lasHeader.totalRead = pointIndex + batchPointCount;
-    yield getLASMeshBatch(view, lasHeader, options, pointIndex, batchPointCount, pointSkip);
+    yield getLASMeshBatch(view, lasHeader, options, pointIndex, batchPointCount);
   }
 }
 
@@ -96,7 +95,7 @@ async function getCOPCPointData(arrayBuffer: ArrayBuffer, header: any): Promise<
  * Convert a COPC package header into loaders.gl LAS header metadata.
  * @param arrayBuffer Complete LAS/LAZ file data
  * @param header COPC package LAS header
- * @param totalToRead Number of output points after applying skip
+ * @param totalToRead Number of output points
  * @returns loaders.gl LAS header
  */
 function getLASHeader(arrayBuffer: ArrayBuffer, header: any, totalToRead: number): LASHeader {
@@ -141,9 +140,8 @@ function hasCOPCColor(pointDataRecordFormat: number): boolean {
  * @param view COPC package point view
  * @param lasHeader LAS header metadata
  * @param options LAS loader options
- * @param pointOffset Output point offset after applying skip
+ * @param pointOffset Output point offset
  * @param batchPointCount Number of points in this batch
- * @param pointSkip Point skip factor
  * @returns LAS mesh batch
  */
 function getLASMeshBatch(
@@ -151,8 +149,7 @@ function getLASMeshBatch(
   lasHeader: LASHeader,
   options: LASLoaderOptions,
   pointOffset: number,
-  batchPointCount: number,
-  pointSkip: number
+  batchPointCount: number
 ): LASMesh {
   const PositionsType = options.las?.fp64 ? Float64Array : Float32Array;
   const positions = new PositionsType(batchPointCount * 3);
@@ -167,10 +164,10 @@ function getLASMeshBatch(
   const getRed = colors ? view.getter('Red') : null;
   const getGreen = colors ? view.getter('Green') : null;
   const getBlue = colors ? view.getter('Blue') : null;
-  const twoByteColor = detectTwoByteColors(view, pointOffset, batchPointCount, pointSkip, options);
+  const twoByteColor = detectTwoByteColors(view, pointOffset, batchPointCount, options);
 
   for (let i = 0; i < batchPointCount; i++) {
-    const sourcePointIndex = (pointOffset + i) * pointSkip;
+    const sourcePointIndex = pointOffset + i;
     positions[i * 3] = getX(sourcePointIndex);
     positions[i * 3 + 1] = getY(sourcePointIndex);
     positions[i * 3 + 2] = getZ(sourcePointIndex);
@@ -220,9 +217,8 @@ function getLASMeshBatch(
 /**
  * Detect whether color values use 16-bit LAS color range.
  * @param view COPC package point view
- * @param pointOffset Output point offset after applying skip
+ * @param pointOffset Output point offset
  * @param batchPointCount Number of points in this batch
- * @param pointSkip Point skip factor
  * @param options LAS loader options
  * @returns Whether color values should be downscaled from 16-bit to 8-bit
  */
@@ -230,7 +226,6 @@ function detectTwoByteColors(
   view: any,
   pointOffset: number,
   batchPointCount: number,
-  pointSkip: number,
   options: LASLoaderOptions
 ): boolean {
   switch (options.las?.colorDepth) {
@@ -243,7 +238,7 @@ function detectTwoByteColors(
       const getGreen = view.getter('Green');
       const getBlue = view.getter('Blue');
       for (let i = 0; i < batchPointCount; i++) {
-        const sourcePointIndex = (pointOffset + i) * pointSkip;
+        const sourcePointIndex = pointOffset + i;
         if (
           getRed(sourcePointIndex) > 255 ||
           getGreen(sourcePointIndex) > 255 ||

@@ -187,20 +187,19 @@ export default function App(props: AppProps = {}) {
     }
 
     if (example.type === 'arcgis-feature-server' || example.type === 'wfs') {
+      const vectorLayerProps = getVectorLayerProps(example.layerProps || {});
       return [
         new VectorSourceLayer({
           id: `${example.type}-${example.url}`,
           data: source,
           layers: example.layers || [],
+          pickable: true,
+          autoHighlight: true,
           onLoadingStateChange: isLoading =>
             setState((state) => ({...state, loading: isLoading})),
           onError: (error: Error) =>
             setState((state) => ({...state, loading: false, error: error.message})),
-          geoJsonLayerProps: {
-            pickable: true,
-            autoHighlight: true,
-            ...example.layerProps
-          }
+          ...vectorLayerProps
         })
       ];
     }
@@ -222,6 +221,45 @@ export default function App(props: AppProps = {}) {
       })
     ];
   }
+}
+
+function getVectorLayerProps(layerProps: Record<string, any>) {
+  return {
+    geoJsonLayerProps: {
+      pickable: true,
+      autoHighlight: true,
+      ...layerProps
+    },
+    geoArrowLayerProps: {
+      pointLayerProps: {
+        getRadius: layerProps.getPointRadius,
+        radiusScale: layerProps.pointRadiusScale,
+        radiusUnits: layerProps.pointRadiusUnits,
+        radiusMinPixels: layerProps.pointRadiusMinPixels,
+        radiusMaxPixels: layerProps.pointRadiusMaxPixels,
+        getFillColor: layerProps.getFillColor,
+        getLineColor: layerProps.getLineColor,
+        stroked: layerProps.stroked,
+        filled: layerProps.filled,
+        lineWidthMinPixels: layerProps.lineWidthMinPixels,
+        lineWidthMaxPixels: layerProps.lineWidthMaxPixels
+      },
+      pathLayerProps: {
+        getColor: layerProps.getLineColor,
+        getWidth: layerProps.getLineWidth,
+        widthMinPixels: layerProps.lineWidthMinPixels,
+        widthMaxPixels: layerProps.lineWidthMaxPixels
+      },
+      solidPolygonLayerProps: {
+        getFillColor: layerProps.getFillColor,
+        getLineColor: layerProps.getLineColor,
+        filled: layerProps.filled,
+        stroked: layerProps.stroked,
+        lineWidthMinPixels: layerProps.lineWidthMinPixels,
+        lineWidthMaxPixels: layerProps.lineWidthMaxPixels
+      }
+    }
+  };
 }
 
 function LngLatZoomView({viewState}) {

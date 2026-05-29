@@ -109,17 +109,18 @@ export default function App(props: AppProps = {}) {
                 tilejson: {maxValues: 10}
               }
             },
-            pmtiles: {},
+            pmtiles: {shape: 'arrow-table'},
             rangeRequests: {
               batchDelayMs: 50,
               stats: rangeStatsObjectRef.current,
               onEvent: onTileRangeRequest
             },
             table: {
-              generateId: true
+              generateId: true,
+              shape: 'geojson-table'
             },
-            mvt: {},
-            mlt: {}
+            mvt: {shape: 'arrow-table'},
+            mlt: {shape: 'arrow-table'}
           }
         : null,
     [currentExample]
@@ -532,17 +533,15 @@ function createTileSource(
           tilejson: {maxValues: 10}
         }
       },
-      pmtiles: {},
+      pmtiles: {shape: 'arrow-table'},
+      mvt: {shape: 'arrow-table'},
+      mlt: {shape: 'arrow-table'},
+      table: {generateId: true, shape: 'geojson-table'},
       rangeRequests: {
         batchDelayMs: 50,
         stats: rangeStatsObject,
         onEvent: onTileRangeRequest
-      },
-      table: {
-        generateId: true
-      },
-      mvt: {},
-      mlt: {}
+      }
     }
   ) as VectorTileSource | ImageTileSource;
 }

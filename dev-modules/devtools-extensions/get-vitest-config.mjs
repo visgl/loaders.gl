@@ -21,6 +21,7 @@ export async function getVitestConfig(options = {}) {
   const tsconfigProjects = vitestConfig.tsconfigProjects || ['./tsconfig.json'];
   const excludePatterns = vitestConfig.excludePatterns || [];
   const nodeExcludePatterns = vitestConfig.nodeExcludePatterns || [];
+  const browserExcludePatterns = vitestConfig.browserExcludePatterns || [];
   const sharedExcludePatterns = ['**/node_modules/**', ...excludePatterns];
   const setupFiles = vitestConfig.setupFiles || ['./test/vitest-setup.ts'];
   const browserName = vitestConfig.browserName || 'chromium';
@@ -91,7 +92,12 @@ export async function getVitestConfig(options = {}) {
             testTimeout,
             setupFiles,
             include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
-            exclude: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}', ...sharedExcludePatterns],
+            exclude: [
+              'modules/**/*.node.spec.{ts,js}',
+              'test/**/*.node.spec.{ts,js}',
+              ...browserExcludePatterns,
+              ...sharedExcludePatterns
+            ],
             browser: {
               enabled: true,
               provider: createPlaywrightProvider(),
@@ -109,7 +115,12 @@ export async function getVitestConfig(options = {}) {
             testTimeout,
             setupFiles,
             include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
-            exclude: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}', ...sharedExcludePatterns],
+            exclude: [
+              'modules/**/*.node.spec.{ts,js}',
+              'test/**/*.node.spec.{ts,js}',
+              ...browserExcludePatterns,
+              ...sharedExcludePatterns
+            ],
             browser: {
               enabled: true,
               provider: createPlaywrightProvider(),

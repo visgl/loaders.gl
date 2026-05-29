@@ -15,7 +15,16 @@ export {ImageSourceLayer} from './image-source-layer';
 export type {VectorSourceLayerProps} from './vector-source-layer';
 export {VectorSourceLayer} from './vector-source-layer';
 export type {GeoArrowLayerProps} from './geoarrow-layer';
-export {GeoArrowLayer} from './geoarrow-layer';
+export {createGeoJsonLayerProps, GeoArrowLayer} from './geoarrow-layer';
+export type {
+  GeoArrowBinaryFeatureCollectionOptions,
+  GeoArrowTableInput
+} from './geoarrow-table-adapter';
+export {
+  convertGeoArrowTableToBinaryFeatureCollection,
+  getApacheArrowTable,
+  getGeoArrowGeometryColumn
+} from './geoarrow-table-adapter';
 export type {MeshArrowPointCloudLayerProps} from './mesh-arrow-point-cloud-layer';
 export {MeshArrowPointCloudLayer} from './mesh-arrow-point-cloud-layer';
 export type {
