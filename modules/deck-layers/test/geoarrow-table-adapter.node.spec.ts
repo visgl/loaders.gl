@@ -15,7 +15,7 @@ import {
   convertGeoArrowTableToBinaryFeatureCollection,
   getApacheArrowTable,
   getGeoArrowGeometryColumn
-} from '@loaders.gl/deck-layers';
+} from '../src/geoarrow-table-adapter';
 
 /** Loads an Apache Arrow table from a GeoArrow fixture. */
 async function loadArrowTable(filePath: string): Promise<arrow.Table> {
