@@ -226,18 +226,26 @@ test('LASLoader#parse LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', a
 });
 
 test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', async t => {
-  const response = await fetchFile(LAS_BINARY_URL);
+  const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
   const arrayBuffer = await response.arrayBuffer();
   const expected = await parse(arrayBuffer.slice(0), LASLoader, {
     las: {backend: 'laz-rs'},
     core: {worker: false}
   });
   const batches = await parseInBatches(splitArrayBuffer(arrayBuffer, 257), LASLoader, {
-    batchSize: 25000,
+    batchSize: 250,
     las: {backend: 'typescript'},
     core: {worker: false}
   });
   const actual = await collectMeshAttributes(batches as AsyncIterable<any>);
+
+  t.equal(expected.loaderData.versionAsString, '1.2', 'fixture is LAS 1.2');
+  t.equal(expected.loaderData.pointsFormatId, 3, 'fixture uses point format 3');
+  t.equal(
+    expected.header.vertexCount,
+    LAS_EXTRABYTES_POINT_COUNT,
+    'fixture point count is expected'
+  );
 
   compareCollectedMeshAttributes(
     t,
