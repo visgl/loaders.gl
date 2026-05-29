@@ -25,3 +25,27 @@ export const KSPLATFormat = {
   mimeTypes: ['application/octet-stream'],
   binary: true
 } as const satisfies Format;
+
+/** SPZ - Niantic Spatial compressed Gaussian splat format. */
+export const SPZFormat = {
+  name: 'SPZ',
+  id: 'spz',
+  module: 'splats',
+  format: 'spz',
+  extensions: ['spz'],
+  mimeTypes: ['application/octet-stream'],
+  binary: true,
+  tests: [new Uint8Array([0x4e, 0x47, 0x53, 0x50]).buffer]
+} as const satisfies Format;
+
+/** RAD - Spark paged level-of-detail Gaussian splat container. */
+export const RADFormat = {
+  name: 'RAD',
+  id: 'rad',
+  module: 'splats',
+  format: 'rad',
+  extensions: ['rad'],
+  mimeTypes: ['application/octet-stream'],
+  binary: true,
+  tests: [new Uint8Array([0x52, 0x41, 0x44, 0x30]).buffer]
+} as const satisfies Format;

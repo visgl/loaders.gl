@@ -47,6 +47,8 @@ export class ZstdCompression extends Compression {
     // eslint-disable-next-line  @typescript-eslint/no-misused-promises
     if (!zstdPromise && ZstdCodec) {
       zstdPromise = new Promise(resolve => ZstdCodec.run(zstd => resolve(zstd)));
+    }
+    if (zstdPromise) {
       zstd = await zstdPromise;
     }
   }
