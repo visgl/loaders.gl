@@ -37,6 +37,7 @@ const config = {
   // Reusable logic lives under `dev-modules/devtools-extensions/`; repo-specific policy belongs here.
   devtools: {
     vitest: {
+      channel: process.env.CI ? 'chrome' : undefined,
       // Plain `*.spec.*` files run in both Node and browser projects unless explicitly excluded.
       // Use `.node.spec.*`, `.browser.spec.*`, or conditional runtime helpers for runtime-specific cases.
       excludePatterns: [
