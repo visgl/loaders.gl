@@ -25,9 +25,12 @@ import {
 } from '@loaders.gl/core';
 import {Copc, Las} from 'copc';
 import {
+  createLAZChunkEncoder,
   createLAZChunkDecoder,
+  decodeLAZFileInBatches,
   decodeLAZChunk,
   decodeLAZChunkInBatches,
+  encodeLAZChunk,
   NeedsMoreData
 } from '@loaders.gl/las';
 import {createLAZChunkDecoderCursor} from '@loaders.gl/loader-utils';
@@ -536,6 +539,44 @@ test('TypeScriptLAZ#decodeLAZChunkInBatches accepts split chunks', async t => {
   t.end();
 });
 
+test('TypeScriptLAZ#decodeLAZFileInBatches accepts split PDRF 3 files', async t => {
+  const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const batches: Uint8Array[] = [];
+
+  for await (const batch of decodeLAZFileInBatches(splitArrayBuffer(arrayBuffer, 257), {
+    batchSize: 250
+  })) {
+    batches.push(new Uint8Array(batch.arrayBuffer));
+    t.equal(batch.header.pointsFormatId, 3, 'batch header preserves point format 3');
+  }
+
+  t.equal(batches.length, 5, 'emits raw point batches');
+  t.equal(
+    concatenateUint8ArraysForTest(batches).byteLength,
+    LAS_EXTRABYTES_POINT_COUNT * 61,
+    'raw point byte length matches point record length'
+  );
+  t.end();
+});
+
+test('TypeScriptLAZ#decodeLAZFileInBatches rejects uncompressed LAS input', async t => {
+  const response = await fetchFile(LAS_1_4_BINARY_URL);
+  const arrayBuffer = await response.arrayBuffer();
+  const batches = decodeLAZFileInBatches(splitArrayBuffer(arrayBuffer, 257));
+
+  await t.rejects(
+    async () => {
+      for await (const _batch of batches) {
+        _batch;
+      }
+    },
+    /requires compressed LAZ input/,
+    'decodeLAZFileInBatches requires compressed input'
+  );
+  t.end();
+});
+
 test('TypeScriptLAZ#cursor decodes batches smaller and larger than chunk', async t => {
   const {compressed, metadata} = await getCOPCRootChunk();
   const expected = decodeLAZChunk(compressed, metadata);
@@ -662,6 +703,39 @@ test('TypeScriptLAZ#rejects unsupported point format', t => {
       }),
     /does not support point format 4/,
     'unsupported point formats fail clearly'
+  );
+  t.end();
+});
+
+test('TypeScriptLAZ#encoder API reports unimplemented LAZ encoding', t => {
+  const metadata = {
+    pointCount: 1,
+    pointDataRecordFormat: 0,
+    pointDataRecordLength: 20
+  };
+  t.throws(
+    () => encodeLAZChunk(new Uint8Array(20), metadata),
+    /not implemented yet/,
+    'complete-buffer encoder reports unimplemented LAZ encoding'
+  );
+
+  const encoder = createLAZChunkEncoder(metadata);
+  encoder.feed(new Uint8Array(10).subarray(2, 8));
+  t.throws(
+    () => encoder.encode(),
+    /input is not closed/,
+    'feedable encoder requires close before encode'
+  );
+  encoder.close();
+  t.throws(
+    () => encoder.feed(new Uint8Array(1)),
+    /closed LAZ chunk encoder/,
+    'closed feedable encoder rejects more input'
+  );
+  t.throws(
+    () => encoder.encode(),
+    /not implemented yet/,
+    'feedable encoder reports unimplemented LAZ encoding'
   );
   t.end();
 });

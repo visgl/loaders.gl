@@ -1,6 +1,6 @@
 import test from 'tape-promise/tape';
-import {createDataSource, fetchFile, isBrowser} from '@loaders.gl/core';
-import {COPCSourceLoader, COPCTileSource} from '@loaders.gl/copc';
+import {createDataSource, encodeSync, fetchFile, isBrowser} from '@loaders.gl/core';
+import {COPCSourceLoader, COPCTileSource, COPCWriter} from '@loaders.gl/copc';
 
 const ELLIPSOID_FILE_PATH = 'modules/copc/test/data/ellipsoid.copc.laz';
 const ELLIPSOID_BROWSER_URL = new URL('./data/ellipsoid.copc.laz', import.meta.url).href;
@@ -120,6 +120,15 @@ test('COPCSourceLoader#derives cartographic view metadata from the dataset', asy
     metadata.viewState.cartographicCenter,
     viewState.cartographicCenter,
     'metadata view state matches the source view state'
+  );
+  t.end();
+});
+
+test('COPCWriter#reports unimplemented TypeScript COPC encoding', t => {
+  t.throws(
+    () => encodeSync({} as any, COPCWriter),
+    /not implemented yet/,
+    'COPCWriter encodeSync reports unimplemented encoding'
   );
   t.end();
 });
