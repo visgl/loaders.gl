@@ -88,7 +88,7 @@ export const TriangulationWorker = {
   /** Loads the triangulation implementation as a bundler-resolved module worker. */
   loadWorker: () =>
     typeof Worker !== 'undefined'
-      ? new Worker(new URL('./workers/triangulation-worker.js', import.meta.url), {
+      ? new Worker(new URL('./workers/triangulation-worker-module.js', import.meta.url), {
           type: 'module'
         })
       : null,
