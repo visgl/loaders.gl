@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/xml",
-  "version": "5.0.0-alpha.0",
+  "version": "5.0.0-alpha.1",
   "description": "Framework-independent loaders for the XML (eXtensible Markup Language) format",
   "license": "MIT",
   "type": "module",
@@ -49,8 +49,8 @@
     "build-bundle-dev": "ocular-bundle ./bundle.ts --env=dev --output=dist/dist.dev.js"
   },
   "dependencies": {
-    "@loaders.gl/loader-utils": "5.0.0-alpha.0",
-    "@loaders.gl/schema": "5.0.0-alpha.0",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.1",
+    "@loaders.gl/schema": "5.0.0-alpha.1",
     "fast-xml-parser": "^5.3.6"
   },
   "peerDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/traces",
-  "version": "5.0.0-alpha.0",
+  "version": "5.0.0-alpha.1",
   "description": "Trace format parsers for Chrome Trace and Perfetto Trace",
   "license": "MIT",
   "type": "module",
@@ -36,8 +36,8 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/traces\""
   },
   "dependencies": {
-    "@loaders.gl/json": "5.0.0-alpha.0",
-    "@loaders.gl/loader-utils": "5.0.0-alpha.0",
+    "@loaders.gl/json": "5.0.0-alpha.1",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.1",
     "apache-arrow": ">= 17.0.0",
     "zod": "^4.1.12"
   },
