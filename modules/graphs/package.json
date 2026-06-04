@@ -1,6 +1,6 @@
 {
   "name": "@loaders.gl/graphs",
-  "version": "4.4.0",
+  "version": "5.0.0-alpha.0",
   "description": "Graph format parsers for DOT, GraphML, and related formats",
   "license": "MIT",
   "type": "module",
@@ -36,7 +36,7 @@
     "pre-build": "echo \"Nothing to build in @loaders.gl/graphs\""
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~4.4.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0"
   },
   "gitHead": "f1a6da2c65e4ea06b59c61d1884819b6be577fe3"
 }
