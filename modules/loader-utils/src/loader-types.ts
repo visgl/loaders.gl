@@ -3,6 +3,7 @@
 // Copyright (c) vis.gl contributors
 
 import type {Format} from './format-types';
+import type {LoadWorker} from '@loaders.gl/worker-utils';
 import {FetchLike, TransformBatches} from './types';
 import {ReadableFile} from './lib/files/file';
 import type {CoreAPI} from './lib/sources/data-source';
@@ -163,6 +164,8 @@ export type Loader<DataT = any, BatchT = any, LoaderOptionsT = StrictLoaderOptio
   version: string;
   /** A boolean, or a URL */
   worker?: string | boolean;
+  /** Loads a built-in Worker instance, typically a bundler-resolved module worker. */
+  loadWorker?: LoadWorker;
   /**
    * Optionally warm the loader before parse/load is invoked.
    * Can be used to avoid a later delay and may return a parser-bearing loader that also supports `parseSync`.

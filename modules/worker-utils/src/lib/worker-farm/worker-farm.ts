@@ -3,7 +3,9 @@
 // Copyright (c) vis.gl contributors
 
 import WorkerPool from './worker-pool';
+import type {WorkerPoolTarget} from './worker-pool';
 import WorkerThread from './worker-thread';
+import type {LoadWorker} from '../../types';
 
 /**
  * @param maxConcurrency - max count of workers
@@ -25,6 +27,11 @@ const DEFAULT_PROPS: Required<WorkerFarmProps> = {
   reuseWorkers: true,
   onDebug: () => {}
 };
+
+/** Stable identity map used to include loadWorker callbacks in worker pool keys. */
+const loadWorkerIds = new WeakMap<LoadWorker, number>();
+/** Monotonically increasing id assigned to each distinct loadWorker callback. */
+let nextLoadWorkerId = 1;
 
 /**
  * Process multiple jobs with a "farm" of different workers in worker pools.
@@ -80,28 +87,35 @@ export default class WorkerFarm {
 
   /**
    * Returns a worker pool for the specified worker
-   * @param options - only used first time for a specific worker name
-   * @param options.name - the name of the worker - used to identify worker pool
-   * @param options.url -
-   * @param options.source -
+   * @param options Worker pool target used to identify and initialize the pool.
+   * @param options.name Name of the worker, used as the base pool identity.
+   * @param options.url Worker script URL.
+   * @param options.source Inline worker source.
+   * @param options.urlKey Stable URL key for lazily resolved fallback URLs.
+   * @param options.loadWorker Built-in worker factory callback.
    * @example
    *   const job = WorkerFarm.getWorkerFarm().getWorkerPool({name, url}).startJob(...);
    */
-  getWorkerPool(options: {name: string; source?: string; url?: string}): WorkerPool {
-    const {name, source, url} = options;
-    let workerPool = this.workerPools.get(name);
+  getWorkerPool(options: WorkerPoolTarget): WorkerPool {
+    const {name, source, url, getUrl, loadWorker, loadWorkerOptions} = options;
+    const workerPoolKey = getWorkerPoolKey(options);
+    let workerPool = this.workerPools.get(workerPoolKey);
     if (!workerPool) {
       workerPool = new WorkerPool({
         name,
         source,
-        url
+        url,
+        getUrl,
+        loadWorker,
+        loadWorkerOptions
       });
       workerPool.setProps(this._getWorkerPoolProps());
-      this.workerPools.set(name, workerPool);
+      this.workerPools.set(workerPoolKey, workerPool);
     }
     return workerPool;
   }
 
+  /** Returns worker-pool configuration inherited from the farm. */
   _getWorkerPoolProps() {
     return {
       maxConcurrency: this.props.maxConcurrency,
@@ -110,4 +124,29 @@ export default class WorkerFarm {
       onDebug: this.props.onDebug
     };
   }
+}
+
+/**
+ * Builds the cache key for a worker pool target.
+ * @param options Worker pool options.
+ */
+function getWorkerPoolKey(options: WorkerPoolTarget): string {
+  const {name, source, url, urlKey, loadWorker} = options;
+  const sourceKey = source ? `source:${source}` : '';
+  const urlKeyPart = url || urlKey ? `url:${url || urlKey}` : '';
+  const loadWorkerKey = loadWorker ? `loadWorker:${getLoadWorkerId(loadWorker)}` : '';
+  return [name, sourceKey, urlKeyPart, loadWorkerKey].filter(Boolean).join('|');
+}
+
+/**
+ * Returns a stable numeric id for a loadWorker callback identity.
+ * @param loadWorker Worker factory callback.
+ */
+function getLoadWorkerId(loadWorker: LoadWorker): number {
+  let loadWorkerId = loadWorkerIds.get(loadWorker);
+  if (!loadWorkerId) {
+    loadWorkerId = nextLoadWorkerId++;
+    loadWorkerIds.set(loadWorker, loadWorkerId);
+  }
+  return loadWorkerId;
 }

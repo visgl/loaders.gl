@@ -13,6 +13,7 @@ Release Date: 2026
 - **Mesh category writers** - New experimental [`LASWriter`](/docs/modules/las/api-reference/las-writer), [`OBJWriter`](/docs/modules/obj/api-reference/obj-writer), [`PCDWriter`](/docs/modules/pcd/api-reference/pcd-writer), [`PLYWriter`](/docs/modules/ply/api-reference/ply-writer), and [`QuantizedMeshWriter`](/docs/modules/terrain/api-reference/quantized-mesh-writer) add export support for common mesh and point-cloud formats. Mesh writers accept both plain `Mesh` data and Mesh Arrow tables.
 - **Raster sources** - New experimental `RasterSource` APIs add viewport-driven typed raster loading, with [`GeoTIFFSourceLoader`](/docs/modules/geotiff/api-reference/geotiff-source-loader), [`OMETiffSourceLoader`](/docs/modules/geotiff/api-reference/ometiff-source-loader), [`RasterSet`](/docs/modules/tiles/api-reference/raster-set), and new GeoTIFF / OME-TIFF website examples.
 - **Gaussian splats** - New `@loaders.gl/splats` loaders, Gaussian PLY Arrow table support, and WebGPU `SplatLayer` support add experimental rendering for 3D Gaussian splat scenes.
+- **Built-in module workers** - Worker-enabled loaders can provide a synchronous `loadWorker()` hook so browser bundlers can load module workers directly from package source, starting with Arrow triangulation, while explicit `workerUrl` overrides and pre-built CDN workers remain supported.
 
 **Features**
 
@@ -72,6 +73,10 @@ Release Date: 2026
 
 - `RasterSource`, `RasterData`, `RasterViewport`, and `GetRasterParameters` NEW - shared typed raster contracts for viewport-driven sources.
 - `LoaderOptions.core.shape` is now documented as the shared shape default for compatible loaders, with consistent propagation during option normalization and batch parsing.
+
+**@loaders.gl/worker-utils**
+
+- `loadWorker` NEW - worker objects can provide a built-in synchronous worker factory for bundler-resolved module workers. Worker resolution still prioritizes explicit `workerUrl` options and `_workerType: 'test'` before trying `loadWorker`, then falls back to generated pre-built worker URLs.
 
 **@loaders.gl/parquet**
 

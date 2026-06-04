@@ -17,6 +17,14 @@ export type WorkerOptions = {
   [key: string]: any; // TODO
 };
 
+/**
+ * Creates a fresh built-in Worker instance for a worker object.
+ * @param options Worker options from the active worker job.
+ * @returns A new Worker, or `null` to fall back to URL-based worker loading.
+ * Returning `null` lets worker-utils fall back to the generated worker URL.
+ */
+export type LoadWorker = (options?: WorkerOptions) => Worker | null;
+
 export type WorkerContext = {
   process?: Process;
   processInBatches?: ProcessInBatches;
@@ -49,7 +57,10 @@ export type WorkerObject = {
   name: string;
   module: string;
   version: string;
+  /** Whether this worker can run in a separate thread, or a legacy worker URL string. */
   worker?: string | boolean;
+  /** Loads a built-in Worker instance, typically a bundler-resolved module worker. */
+  loadWorker?: LoadWorker;
   options: {[key: string]: any};
   deprecatedOptions?: object;
 

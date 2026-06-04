@@ -82,6 +82,24 @@ Most applications will not need to do further processing on the raw binary data 
 
 In JavaScript, worker threads are loaded from separate scripts files and are typically not part of the main application bundle. For ease-of-use, loaders.gl provides a default set of pre-built worker threads which are published on loaders.gl npm distribution from `unpkg.com` CDN (Content Delivery Network).
 
+Some loaders also provide a built-in `loadWorker()` hook that lets browser bundlers resolve a module worker directly from the package:
+
+```typescript
+new Worker(new URL('./workers/example-worker.js', import.meta.url), {type: 'module'});
+```
+
+This path does not use dynamic `import()` to execute worker code. The bundler sees the `new URL(..., import.meta.url)` expression and can include the worker module in the application build. Applications using compatible bundlers do not need to pre-build or host a separate worker bundle for those loaders.
+
+Worker targets are resolved in this order:
+
+1. `options.source`, primarily for tests and direct worker source injection.
+2. An explicit loader-scoped `workerUrl`, such as `options.mvt.workerUrl`.
+3. `_workerType: 'test'`, which points to local test worker bundles.
+4. A built-in browser `loadWorker()` hook when the loader provides one.
+5. The generated pre-built worker URL on the loaders.gl CDN.
+
+Explicit `workerUrl` options still take precedence and keep their existing classic-worker behavior. This remains the right option for applications that use raw script/CDN loading, need custom hosting, or want to pin a specific pre-built worker asset.
+
 As an advanced option, it is possible to for application to specify alternate URLs for loading a pre-built worker loader instance.
 
 This can be useful e.g. when building applications that cannot access CDNs or when creating highly customized application builds, or doing in-depth debugging.

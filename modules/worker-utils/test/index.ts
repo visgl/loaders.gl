@@ -11,6 +11,7 @@ import './lib/worker-utils/get-loadable-worker-url.spec';
 
 import './lib/worker-farm/worker-thread.spec';
 import './lib/worker-farm/worker-pool.spec';
+import './lib/worker-farm/worker-farm.spec';
 
 import './lib/worker-api/get-worker-url.spec';
 import './lib/worker-api/validate-worker-version.spec';

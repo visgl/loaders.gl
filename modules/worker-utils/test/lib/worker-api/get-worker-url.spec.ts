@@ -6,7 +6,7 @@ import test from 'tape-promise/tape';
 import {isBrowser} from '@loaders.gl/core';
 import {NullWorker} from '@loaders.gl/worker-utils';
 import type {WorkerObject} from '../../../src/types';
-import {getWorkerURL} from '../../../src/lib/worker-api/get-worker-url';
+import {getCustomWorkerURL, getWorkerURL} from '../../../src/lib/worker-api/get-worker-url';
 
 test('getWorkerURL', t => {
   // TODO(ib): version injection issue in babel register
@@ -21,6 +21,11 @@ test('getWorkerURL', t => {
     'custom-url',
     'worker url with options.null.worker-url'
   );
+  t.equals(
+    getCustomWorkerURL(NullWorker, {null: {workerUrl: 'custom-url'}}),
+    'custom-url',
+    'custom worker url with options.null.worker-url'
+  );
 
   t.equals(
     getWorkerURL(NullWorker, {_workerType: 'test'}),
@@ -28,6 +33,16 @@ test('getWorkerURL', t => {
       ? 'modules/worker-utils/dist/null-worker.js'
       : 'modules/worker-utils/src/workers/null-worker-node.ts',
     'worker url with _useLocalWorkers options'
+  );
+  t.equals(
+    getWorkerURL(NullWorker, {null: {workerUrl: 'custom-url'}, _workerType: 'test'}),
+    'custom-url',
+    'explicit worker url precedes _workerType test url'
+  );
+  t.equals(
+    getCustomWorkerURL(NullWorker, {}),
+    null,
+    'custom worker url is null when no custom or test option is present'
   );
 
   t.end();

@@ -83,6 +83,15 @@ export const TriangulationWorker = {
   name: 'Triangulate',
   module: 'arrow',
   version: VERSION,
+  /** Enables processing through worker-utils worker pools. */
+  worker: true,
+  /** Loads the triangulation implementation as a bundler-resolved module worker. */
+  loadWorker: () =>
+    typeof Worker !== 'undefined'
+      ? new Worker(new URL('./workers/triangulation-worker.js', import.meta.url), {
+          type: 'module'
+        })
+      : null,
   options: {}
 };
 
