@@ -23479,7 +23479,6 @@ __metadata:
     pre-commit: "npm:^1.2.2"
     pre-push: "npm:^0.1.1"
     tap-spec: "npm:^5.0.0"
-    vite: "npm:^8.0.0"
     vitest: "npm:^4.0.18"
   languageName: unknown
   linkType: soft
@@ -34314,8 +34313,8 @@ __metadata:
   linkType: hard
 
 "vite@npm:^7.2.7":
-  version: 7.3.2
-  resolution: "vite@npm:7.3.2"
+  version: 7.3.5
+  resolution: "vite@npm:7.3.5"
   dependencies:
     esbuild: "npm:^0.27.0"
     fdir: "npm:^6.5.0"
@@ -34364,7 +34363,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/74be36907e208916f18bfec81c8eba18b869f0a170f1ece0a4dcb14874d0f0e7c022fb6c2ad896e3ee6c973fe88f53ac23b4078879ada340d8b263260868b8d4
+  checksum: 10c0/4ad700649ed2ebd1e726d32f3f6e41eecbec4e29bcb5977805f3d43a5659280518aa431b0fc61adc1879df4fe1978d7cfc7dbbe54cdf014022385052967721e8
   languageName: node
   linkType: hard
 
