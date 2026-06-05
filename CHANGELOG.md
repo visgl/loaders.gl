@@ -1,5 +1,15 @@
 # CHANGELOG for loaders.gl
 
+## v5.0
+
+### v5.0.0-alpha.1
+
+- feat: Add data source APIs and backend-selected loaders (#3435)
+- feat: Add dynamic-import metadata loaders and parser subpaths (#3377, #3405)
+- feat: Add GeoArrow, Arrow, SQL, and source loader coverage across geospatial formats (#3373, #3375, #3388, #3389, #3391, #3399, #3409, #3413)
+- feat: Add SPZ, RAD, and Gaussian splat PLY support (#3408, #3430)
+- chore: Move tests to Vitest and browser coverage to Playwright (#3349, #3350, #3351)
+
 ## v4.4
 
 

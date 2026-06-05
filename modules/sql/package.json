@@ -1,7 +1,7 @@
 {
   "name": "@loaders.gl/sql",
   "description": "Framework-independent SQL data sources",
-  "version": "4.4.0",
+  "version": "5.0.0-alpha.1",
   "license": "MIT",
   "type": "module",
   "publishConfig": {
@@ -45,12 +45,12 @@
   "dependencies": {
     "@duckdb/duckdb-wasm": "^1.33.1-dev45.0",
     "@duckdb/node-api": "^1.5.2-r.1",
-    "@loaders.gl/loader-utils": "4.4.0",
-    "@loaders.gl/schema": "4.4.0",
-    "@loaders.gl/schema-utils": "4.4.0",
+    "@loaders.gl/loader-utils": "5.0.0-alpha.1",
+    "@loaders.gl/schema": "5.0.0-alpha.1",
+    "@loaders.gl/schema-utils": "5.0.0-alpha.1",
     "apache-arrow": ">= 17.0.0"
   },
   "peerDependencies": {
-    "@loaders.gl/core": "~4.4.0"
+    "@loaders.gl/core": "~5.0.0-alpha.0"
   }
 }
