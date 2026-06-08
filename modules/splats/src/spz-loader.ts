@@ -4,7 +4,7 @@
 
 import type {LoaderWithParser} from '@loaders.gl/loader-utils';
 import type {MeshArrowTable} from '@loaders.gl/schema';
-import type {SplatsLoaderOptions} from './types';
+import type {GaussianSplats, SplatsLoaderOptions} from './types';
 import {parseSPZ} from './lib/parse-spz';
 import {SPZLoader as SPZLoaderMetadata} from './spz-loader-types';
 
@@ -15,4 +15,4 @@ export const SPZLoaderWithParser = {
   ...SPZLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: SplatsLoaderOptions) =>
     parseSPZ(arrayBuffer, options)
-} as const satisfies LoaderWithParser<MeshArrowTable, never, SplatsLoaderOptions>;
+} as const satisfies LoaderWithParser<MeshArrowTable | GaussianSplats, never, SplatsLoaderOptions>;

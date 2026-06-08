@@ -7,8 +7,8 @@ import type {LoaderOptions} from '@loaders.gl/loader-utils';
 /** Options shared by Gaussian splat loaders. */
 export type SplatsLoaderOptions = LoaderOptions & {
   splats?: {
-    /** Output shape. V1 supports loaders.gl Mesh Arrow tables. */
-    shape?: 'arrow-table';
+    /** Output shape. V1 supports loaders.gl Mesh Arrow tables and decoded splat arrays. */
+    shape?: 'arrow-table' | 'gaussian-splats';
   };
 };
 

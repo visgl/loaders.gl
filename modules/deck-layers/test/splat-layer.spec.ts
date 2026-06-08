@@ -11,10 +11,11 @@ import {
   _getRADChunkRequestIndicesForTesting,
   _getRADFoveationWeightForTesting,
   _getRADLoadedRenderFrontierForTesting,
+  _getRADPooledActiveWeightsForTesting,
+  _getRADPooledRenderChunkForTesting,
   _getRADRenderFrontierSignatureForTesting,
   _getRADRenderFrontierSplatChunksForTesting,
   _getRADRenderPageSplatCountForTesting,
-  _getRADSourceRenderPagePlansForTesting,
   _getRADViewportLoadSignatureForTesting,
   type RADSplatLayerProps,
   type SplatLayerProps
@@ -513,6 +514,42 @@ test('RADSplatLayer compacts selected render frontier rows before upload', t => 
   t.end();
 });
 
+test('RADSplatLayer pools active RAD chunks behind one shared render engine', t => {
+  const firstChunk = createRADChunk(0, 0, [0, 0, 0], [0, 0, 0]);
+  const secondChunk = createRADChunk(1, 3, [0, 0], [0, 0]);
+  const rowWeights = new Float32Array(firstChunk.splats.splatCount);
+  rowWeights[0] = 0.25;
+  rowWeights[2] = 1;
+  const frontierChunks = [
+    {
+      chunk: firstChunk,
+      visibleSplatCount: 2,
+      visibleRows: new Uint32Array([0, 2]),
+      rowWeights
+    },
+    {
+      chunk: secondChunk,
+      visibleSplatCount: 1,
+      visibleRows: new Uint32Array([1])
+    }
+  ];
+
+  const pooledChunk = _getRADPooledRenderChunkForTesting(frontierChunks);
+  const activeWeights = _getRADPooledActiveWeightsForTesting(frontierChunks);
+
+  t.deepEqual(
+    getFrontierPositionXs([pooledChunk]),
+    [0, 1, 2, 3, 4],
+    'uploads full active chunks into one shared pool'
+  );
+  t.deepEqual(
+    Array.from(activeWeights),
+    [0.25, 0, 1, 0, 1],
+    'applies selected rows and parent fade weights through one active buffer'
+  );
+  t.end();
+});
+
 test('RADSplatLayer render cache signature tracks upload-time props', t => {
   const sourceChunk = createRADChunk(0, 0, [0], [0]);
   const frontierChunks = [{chunk: sourceChunk, visibleSplatCount: 1}];
@@ -535,7 +572,7 @@ test('RADSplatLayer render cache signature tracks upload-time props', t => {
   t.end();
 });
 
-test('RADSplatLayer uses one render page only for global sorting', t => {
+test('RADSplatLayer uses one shared render page for direct RAD modes', t => {
   const sourceChunk = createRADChunk(0, 0, [0, 0, 0], [0, 0, 0]);
   const frontierChunks = [{chunk: sourceChunk, visibleSplatCount: 3}];
 
@@ -544,75 +581,16 @@ test('RADSplatLayer uses one render page only for global sorting', t => {
     3,
     'uses the selected splat count for globally sorted render pages'
   );
-  t.ok(
-    _getRADRenderPageSplatCountForTesting(frontierChunks, 'tile') > 3,
-    'keeps bounded pages when tile sorting can still sort inside each render page'
+  t.equal(
+    _getRADRenderPageSplatCountForTesting(frontierChunks, 'tile'),
+    3,
+    'uses the selected splat count for shared tile-sorted render pages'
   );
-  t.ok(
-    _getRADRenderPageSplatCountForTesting(frontierChunks, 'none') > 3,
-    'keeps bounded pages when sorting is disabled'
+  t.equal(
+    _getRADRenderPageSplatCountForTesting(frontierChunks, 'none'),
+    3,
+    'uses the selected splat count when sorting is disabled'
   );
-  t.end();
-});
-
-test('RADSplatLayer groups source render pages and preserves active rows', t => {
-  const firstChunk = createRADChunk(0, 0, [0, 0, 0], [0, 0, 0]);
-  const secondChunk = createRADChunk(1, 3, [0, 0], [0, 0]);
-  const firstChunkWeights = new Float32Array(firstChunk.splats.splatCount);
-  firstChunkWeights[0] = 0.25;
-  firstChunkWeights[2] = 1;
-  const frontierChunks = [
-    {
-      chunk: firstChunk,
-      visibleSplatCount: 2,
-      visibleRows: new Uint32Array([0, 2]),
-      rowWeights: firstChunkWeights
-    },
-    {
-      chunk: secondChunk,
-      visibleSplatCount: secondChunk.splats.splatCount
-    }
-  ];
-
-  const groupedPlans = _getRADSourceRenderPagePlansForTesting(frontierChunks, 8);
-  const splitPlans = _getRADSourceRenderPagePlansForTesting(frontierChunks, 3);
-
-  t.equal(groupedPlans.length, 1, 'packs small source chunks into one render page');
-  t.deepEqual(groupedPlans[0].chunkIndices, [0, 1], 'keeps deterministic chunk order');
-  t.deepEqual(
-    Array.from(groupedPlans[0].rowWeights!),
-    [0.25, 0, 1, 1, 1],
-    'maps partial row weights and full chunk rows into grouped page offsets'
-  );
-  t.equal(splitPlans.length, 2, 'splits grouped pages at the render page size cap');
-  t.equal(splitPlans[0].pageIndex, 0, 'anchors the first render page to source page 0');
-  t.equal(splitPlans[1].pageIndex, 1, 'anchors the second render page to source page 1');
-  t.end();
-});
-
-test('RADSplatLayer maps full-opacity source page rows to compact active indices', t => {
-  const firstChunk = createRADChunk(0, 0, [0, 0, 0], [0, 0, 0]);
-  const secondChunk = createRADChunk(1, 3, [0, 0], [0, 0]);
-  const frontierChunks = [
-    {
-      chunk: firstChunk,
-      visibleSplatCount: 2,
-      visibleRows: new Uint32Array([0, 2])
-    },
-    {
-      chunk: secondChunk,
-      visibleSplatCount: secondChunk.splats.splatCount
-    }
-  ];
-
-  const groupedPlans = _getRADSourceRenderPagePlansForTesting(frontierChunks, 8);
-
-  t.deepEqual(
-    Array.from(groupedPlans[0].activeRows!),
-    [0, 2, 3, 4],
-    'uses compact page-local active rows when no partial opacity weights are needed'
-  );
-  t.equal(groupedPlans[0].rowWeights, undefined, 'avoids full-page active weights');
   t.end();
 });
 

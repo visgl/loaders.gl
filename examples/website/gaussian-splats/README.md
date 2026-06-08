@@ -9,4 +9,4 @@ yarn start
 
 ### Supported Sources
 
-The URL input accepts Gaussian splat `.ply`, `.splat`, `.ksplat`, and `.spz` sources. SPZ loading uses `SPZLoader` with the `zstd-codec` module injected for ZSTD decompression.
+The URL input accepts Gaussian splat `.ply`, `.splat`, `.ksplat`, and `.spz` sources. SPZ loading uses `SPZLoader` with the `zstd-codec` module injected for Niantic Spatial SPZ v4 ZSTD decompression. Spark legacy gzip SPZ sources are also accepted.

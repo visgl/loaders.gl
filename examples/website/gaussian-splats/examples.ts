@@ -83,4 +83,4 @@ export const GAUSSIAN_SPLAT_EXAMPLES: Record<string, GaussianSplatExample> = {
 };
 
 /** Default Gaussian splat example loaded when the app mounts. */
-export const DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME = 'HF Voxel51 Train 7K';
+export const DEFAULT_GAUSSIAN_SPLAT_EXAMPLE_NAME = 'Spark Coit Tower RAD LoD';

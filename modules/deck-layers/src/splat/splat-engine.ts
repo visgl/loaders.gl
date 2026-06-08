@@ -746,18 +746,18 @@ export class SplatEngine {
         ? computePipelines.projectActiveUnsorted
         : useActiveTileProjection
           ? computePipelines.projectActive
-        : sortMode === 'none'
-          ? computePipelines.projectUnsorted
-          : computePipelines.project,
+          : sortMode === 'none'
+            ? computePipelines.projectUnsorted
+            : computePipelines.project,
       filterBindings(
         bindings,
         useActiveIndexProjection
           ? COMPUTE_PIPELINE_BINDING_NAMES.projectActiveUnsorted
           : useActiveTileProjection
             ? COMPUTE_PIPELINE_BINDING_NAMES.projectActive
-          : sortMode === 'none'
-            ? COMPUTE_PIPELINE_BINDING_NAMES.projectUnsorted
-            : COMPUTE_PIPELINE_BINDING_NAMES.project
+            : sortMode === 'none'
+              ? COMPUTE_PIPELINE_BINDING_NAMES.projectUnsorted
+              : COMPUTE_PIPELINE_BINDING_NAMES.project
       ),
       splatWorkgroups
     );
@@ -770,7 +770,9 @@ export class SplatEngine {
       );
       dispatchComputePipeline(
         computePass,
-        useActiveTileProjection ? computePipelines.scatterActiveTiles : computePipelines.scatterTiles,
+        useActiveTileProjection
+          ? computePipelines.scatterActiveTiles
+          : computePipelines.scatterTiles,
         filterBindings(
           bindings,
           useActiveTileProjection

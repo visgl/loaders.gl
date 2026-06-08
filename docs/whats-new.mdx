@@ -67,7 +67,7 @@ Release Date: 2026
 - `SplatLayer` NEW - renders GraphDECO-style Gaussian splat Arrow tables from `PLYLoader` or `@loaders.gl/splats`.
 - `SplatLayer` adds an experimental WebGPU path with screen-space covariance rendering, frustum and alpha culling, GPU projection/binning, and tile-local sorting for large splat scenes.
 - `SplatLayer` also provides a CPU/WebGL fallback path for compatibility, while WebGPU picking remains disabled for the initial implementation.
-- `RADSplatLayer` NEW - renders Spark RAD LoD sources from `RADSourceLoader` through deck.gl/luma.gl without a THREE.js bridge, using paged chunk loading, viewport-driven reselection, and RAD spherical harmonics when present.
+- `RADSplatLayer` NEW - renders Spark RAD LoD sources from `RADSourceLoader` through deck.gl/luma.gl without a THREE.js bridge, using paged chunk loading, viewport-driven reselection, a shared GPU render pool for the active frontier, and RAD spherical harmonics when present.
 
 **@loaders.gl/loader-utils**
 

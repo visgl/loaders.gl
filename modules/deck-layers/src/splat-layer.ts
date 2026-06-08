@@ -59,8 +59,6 @@ const DEFAULT_RAD_PARENT_REPLACEMENT_COVERAGE = 0.85;
 const DEFAULT_RAD_PARENT_MIN_PARTIAL_OPACITY_WEIGHT = 0.005;
 const DEFAULT_RAD_PARENT_COVERAGE_FADE_SCALE = 512;
 const DEFAULT_RAD_PRIORITY_MAX_SCORED_ROWS = 131072;
-const DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS = 65536;
-const DEFAULT_RAD_SOURCE_RENDER_PAGE_MAX_SPLATS = DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS * 4;
 const DEFAULT_RAD_RENDER_LOADING_COMMIT_INTERVAL_MS = 2500;
 const DEFAULT_RAD_RENDER_LOADING_COMMIT_MIN_CHUNK_DELTA = 16;
 const DEFAULT_RAD_SELECTION_LOADING_INTERVAL_MS = 1000;
@@ -381,7 +379,7 @@ type RADRenderPage = {
   /** Source chunk index represented by this page. */
   chunkIndex: number;
   /** Engine that owns this page's GPU resources. */
-  engine: RADPageSplatEngine;
+  engine: SplatRenderEngineLike;
   /** Bounds for sorting page draw order. */
   bounds?: RADSplatBounds;
 };
@@ -395,25 +393,6 @@ type RADRenderFrontierChunk = {
   visibleRows?: Uint32Array;
   /** Optional per-row opacity weights for active rows in this page. */
   rowWeights?: Float32Array;
-};
-
-type RADSourceRenderPagePlan = {
-  /** Stable source-page index derived from the global RAD splat range. */
-  pageIndex: number;
-  /** Render page id, derived from the first source chunk in the group. */
-  chunkIndex: number;
-  /** Source chunks packed into this render page. */
-  chunkIndices: number[];
-  /** Frontier chunks that supply immutable splat data for this render page. */
-  frontierChunks: RADRenderFrontierChunk[];
-  /** Total decoded source rows packed into this render page. */
-  splatCount: number;
-  /** Active row indices in render-page row coordinates. */
-  activeRows?: Uint32Array;
-  /** Optional active row weights in render-page row coordinates. */
-  rowWeights?: Float32Array;
-  /** Signature for immutable splat data packed into this render page. */
-  signature: string;
 };
 
 type RADChildChunkGroup = {
@@ -481,6 +460,13 @@ type RADRenderRowSegment = {
   rowOffset: number;
   /** Number of source rows included in this segment. */
   rowCount: number;
+};
+
+type RADRenderPageEngine = SplatRenderEngineLike & {
+  /** Render page index represented by this engine. */
+  readonly chunkIndex: number;
+  /** Page bounds in source coordinates. */
+  readonly bounds?: RADSplatBounds;
 };
 
 type RADRenderMetrics = {
@@ -1692,8 +1678,7 @@ class RADRuntime {
       return false;
     }
     const elapsedMs = Date.now() - this.lastRenderCommitMs;
-    const selectedChunkDelta =
-      plan.selectedChunks.length - this.lastRenderCommitSelectedChunkCount;
+    const selectedChunkDelta = plan.selectedChunks.length - this.lastRenderCommitSelectedChunkCount;
     if (
       selectedChunkDelta >= DEFAULT_RAD_RENDER_LOADING_COMMIT_MIN_CHUNK_DELTA &&
       elapsedMs >= DEFAULT_RAD_SPLAT_CHUNK_RETRY_DELAY_MS
@@ -2054,11 +2039,11 @@ class RADPageStore {
 /** Store of WebGPU render pages built from the current RAD frontier. */
 class RADRenderPageStore {
   /** Current render pages exposed to deck.gl sublayers. */
-  private activePages: RADPageSplatEngine[] = [];
-  /** Reusable source render pages keyed by grouped source page index. */
-  private sourcePages = new Map<number, RADPageSplatEngine>();
-  /** Immutable source-page signatures keyed by source render page index. */
-  private sourcePageSignatures = new Map<number, string>();
+  private activePages: RADRenderPageEngine[] = [];
+  /** Shared render engine containing every active source chunk for tile and unsorted rendering. */
+  private pooledPage: RADPooledSplatEngine | null = null;
+  /** Signature for immutable chunks uploaded into the shared pooled page. */
+  private pooledSignature = '';
   /** Compacted render pages used when a single globally sorted page is requested. */
   private compactedPages: RADPageSplatEngine[] = [];
   /** Signature for the current compacted frontier. */
@@ -2117,7 +2102,7 @@ class RADRenderPageStore {
       this.uploadSignature = uploadSignature;
     }
 
-    if (engineProps.sortMode === 'global' || engineProps.sortMode === 'tile') {
+    if (engineProps.sortMode === 'global') {
       this.updateCompactedFrontier(
         device,
         frontier,
@@ -2128,7 +2113,7 @@ class RADRenderPageStore {
       return;
     }
 
-    this.updateSourceFrontier(device, frontier, engineProps, fallbackColor, gaussianSupportRadius);
+    this.updatePooledFrontier(device, frontier, engineProps, fallbackColor, gaussianSupportRadius);
   }
 
   /** Rebuild compacted render pages for globally sorted frontier rendering. */
@@ -2139,7 +2124,7 @@ class RADRenderPageStore {
     fallbackColor: Color,
     gaussianSupportRadius: number
   ): void {
-    this.destroySourcePages();
+    this.destroyPooledPage();
     const signature = getRADRenderFrontierSignature(frontier, fallbackColor, gaussianSupportRadius);
     if (signature === this.compactedSignature) {
       this.setProps(engineProps);
@@ -2166,8 +2151,8 @@ class RADRenderPageStore {
     this.lastUploadTimeMs = Date.now() - startTimeMs;
   }
 
-  /** Reuse grouped source pages while updating active rows for tile and unsorted rendering. */
-  private updateSourceFrontier(
+  /** Rebuild or reuse one shared page while updating active rows for tile and unsorted rendering. */
+  private updatePooledFrontier(
     device: Device,
     frontier: RADRenderFrontierChunk[],
     engineProps: Partial<SplatEngineProps>,
@@ -2177,61 +2162,51 @@ class RADRenderPageStore {
     const startTimeMs = Date.now();
     this.destroyCompactedPages();
 
-    const sourcePagePlans = createRADSourceRenderPagePlans(
-      frontier,
-      DEFAULT_RAD_SOURCE_RENDER_PAGE_MAX_SPLATS
-    );
-    const activePageIndices = new Set<number>();
-    const activePages: RADPageSplatEngine[] = [];
-    for (const sourcePagePlan of sourcePagePlans) {
-      const pageIndex = sourcePagePlan.pageIndex;
-      activePageIndices.add(pageIndex);
-      let page = this.sourcePages.get(pageIndex);
-      if (!page || this.sourcePageSignatures.get(pageIndex) !== sourcePagePlan.signature) {
-        page?.destroy();
-        page = new RADPageSplatEngine(
-          device,
-          createRADSourceRenderPageChunk(sourcePagePlan),
-          engineProps,
-          fallbackColor,
-          gaussianSupportRadius
-        );
-        this.sourcePages.set(pageIndex, page);
-        this.sourcePageSignatures.set(pageIndex, sourcePagePlan.signature);
-      } else {
-        page.setProps(engineProps);
-      }
-      page.setActiveRows(sourcePagePlan.activeRows, sourcePagePlan.rowWeights);
-      page.touch();
-      activePages.push(page);
+    if (frontier.length === 0) {
+      this.destroyPooledPage();
+      this.activePages = [];
+      this.lastUploadTimeMs = Date.now() - startTimeMs;
+      return;
     }
 
-    for (const [pageIndex, page] of this.sourcePages) {
-      if (!activePageIndices.has(pageIndex)) {
-        page.destroy();
-        this.sourcePages.delete(pageIndex);
-        this.sourcePageSignatures.delete(pageIndex);
-      }
+    const signature = getRADPooledRenderFrontierSignature(
+      frontier,
+      fallbackColor,
+      gaussianSupportRadius
+    );
+    if (signature !== this.pooledSignature || !this.pooledPage) {
+      this.destroyPooledPage();
+      this.pooledPage = new RADPooledSplatEngine(
+        device,
+        createRADPooledRenderChunk(frontier),
+        engineProps,
+        fallbackColor,
+        gaussianSupportRadius
+      );
+      this.pooledSignature = signature;
+    } else {
+      this.pooledPage.setProps(engineProps);
     }
-    this.activePages = activePages;
+
+    this.pooledPage.setActiveWeights(createRADPooledActiveWeights(frontier));
+    this.pooledPage.touch();
+    this.activePages = [this.pooledPage];
     this.lastUploadTimeMs = Date.now() - startTimeMs;
   }
 
   /** Release all render page engines. */
   destroy(): void {
-    this.destroySourcePages();
+    this.destroyPooledPage();
     this.destroyCompactedPages();
     this.activePages = [];
     this.uploadSignature = '';
   }
 
-  /** Release source chunk page engines. */
-  private destroySourcePages(): void {
-    for (const page of this.sourcePages.values()) {
-      page.destroy();
-    }
-    this.sourcePages.clear();
-    this.sourcePageSignatures.clear();
+  /** Release the shared pooled render page. */
+  private destroyPooledPage(): void {
+    this.pooledPage?.destroy();
+    this.pooledPage = null;
+    this.pooledSignature = '';
   }
 
   /** Release compacted page engines. */
@@ -2241,6 +2216,83 @@ class RADRenderPageStore {
     }
     this.compactedPages = [];
     this.compactedSignature = '';
+  }
+}
+
+/** Shared GPU render page containing all source chunks in the current RAD frontier. */
+class RADPooledSplatEngine implements RADRenderPageEngine {
+  /** Synthetic render page index used for the shared frontier page. */
+  readonly chunkIndex = -1;
+  /** Page bounds in source coordinates. */
+  readonly bounds?: RADSplatBounds;
+  /** Last time this page was selected or rendered. */
+  lastUsedMs = Date.now();
+
+  private splatEngine: SplatEngine;
+
+  /** Create a shared render page from all splats in the active RAD frontier. */
+  constructor(
+    device: Device,
+    splats: RADSplatChunkValues,
+    engineProps: Partial<SplatEngineProps>,
+    fallbackColor: Color,
+    gaussianSupportRadius: number
+  ) {
+    this.bounds = getRADSplatBounds(splats.positions);
+    this.splatEngine = new SplatEngine(device, engineProps);
+    const splatData = getGaussianSplatDataFromValues(splats, fallbackColor, gaussianSupportRadius);
+    this.splatEngine.setSplatData(splatData);
+  }
+
+  /** Mark this page as recently used. */
+  touch(): void {
+    this.lastUsedMs = Date.now();
+  }
+
+  /** Release GPU resources owned by the shared page. */
+  destroy(): void {
+    this.splatEngine.destroy();
+  }
+
+  /** Update render-time engine props without replacing uploaded splat attributes. */
+  setProps(props: Partial<SplatEngineProps>): void {
+    this.splatEngine.setProps(props);
+  }
+
+  /** Update active row weights without reuploading immutable source attributes. */
+  setActiveWeights(weights: Float32Array): void {
+    this.splatEngine.setActiveWeights(weights);
+  }
+
+  /** Run per-frame GPU culling, binning, sorting, and buffer updates for the shared page. */
+  update(props: SplatEngineUpdateProps = {}): void {
+    this.touch();
+    this.splatEngine.update(props);
+  }
+
+  /** Return WebGPU bindings used by the splat primitive layer. */
+  getRenderBindings(): SplatRenderBindings {
+    return this.splatEngine.getRenderBindings();
+  }
+
+  /** Return WebGL attributes used by fallback splat primitive rendering. */
+  getWebGLAttributes(): SplatWebGLAttributes {
+    return this.splatEngine.getWebGLAttributes();
+  }
+
+  /** Return the number of uploaded splats in the shared page. */
+  getSplatCount(): number {
+    return this.splatEngine.getSplatCount();
+  }
+
+  /** Return the number of splats selected into the latest render index buffer. */
+  getRenderSplatCount(): number {
+    return this.splatEngine.getRenderSplatCount();
+  }
+
+  /** Return the latest tile overflow count reported by the shared engine. */
+  getOverflowSplatCount(): number {
+    return this.splatEngine.getOverflowSplatCount();
   }
 }
 
@@ -3343,239 +3395,76 @@ function getRADRenderUploadSignature(fallbackColor: Color, gaussianSupportRadius
   ].join('|');
 }
 
+/** Return a stable signature for chunks uploaded into the shared RAD render pool. */
+function getRADPooledRenderFrontierSignature(
+  frontier: RADRenderFrontierChunk[],
+  fallbackColor: Color,
+  gaussianSupportRadius: number
+): string {
+  const chunkSignature = frontier
+    .map(entry => `${entry.chunk.chunkIndex}:${entry.chunk.splats.splatCount}`)
+    .join('|');
+  return [chunkSignature, getRADRenderUploadSignature(fallbackColor, gaussianSupportRadius)].join(
+    '|'
+  );
+}
+
 /** Return a render page size that preserves global per-splat sorting when requested. */
 function getRADRenderPageSplatCount(
   frontier: RADRenderFrontierChunk[],
-  sortMode?: SplatSortMode
+  _sortMode?: SplatSortMode
 ): number {
   const visibleSplatCount = frontier.reduce(
     (total, entry) => total + Math.max(Math.floor(entry.visibleSplatCount), 0),
     0
   );
-  return sortMode === 'global'
-    ? Math.max(visibleSplatCount, 1)
-    : DEFAULT_RAD_RENDER_PAGE_MAX_SPLATS;
+  return Math.max(visibleSplatCount, 1);
 }
 
-/** Build stable source-page render plans for non-global RAD rendering. */
-function createRADSourceRenderPagePlans(
-  frontier: RADRenderFrontierChunk[],
-  maxPageSplatCount: number
-): RADSourceRenderPagePlan[] {
-  const pageSplatCountLimit = Math.max(Math.floor(maxPageSplatCount), 1);
-  const frontierChunksBySourcePageIndex = new Map<
-    number,
-    {frontierChunks: RADRenderFrontierChunk[]; splatCount: number}
-  >();
+/** Build one shared render chunk containing every source row for the active RAD frontier chunks. */
+function createRADPooledRenderChunk(frontier: RADRenderFrontierChunk[]): RADSplatChunkValues {
+  const pooledSegments: RADRenderRowSegment[] = frontier.map(frontierChunk => ({
+    frontierChunk: {
+      chunk: frontierChunk.chunk,
+      visibleSplatCount: frontierChunk.chunk.splats.splatCount
+    },
+    rowOffset: 0,
+    rowCount: frontierChunk.chunk.splats.splatCount
+  }));
+  const pooledSplatCount = pooledSegments.reduce((total, segment) => total + segment.rowCount, 0);
+  return createRADCompactedRenderChunk(pooledSegments, pooledSplatCount);
+}
+
+/** Build one active-weight buffer for the shared RAD render pool. */
+function createRADPooledActiveWeights(frontier: RADRenderFrontierChunk[]): Float32Array {
+  const pooledSplatCount = frontier.reduce(
+    (total, frontierChunk) => total + frontierChunk.chunk.splats.splatCount,
+    0
+  );
+  const activeWeights = new Float32Array(pooledSplatCount);
+  let pooledRowOffset = 0;
 
   for (const frontierChunk of frontier) {
-    const chunkSplatCount = Math.max(Math.floor(frontierChunk.chunk.splats.splatCount), 0);
-    if (chunkSplatCount <= 0) {
-      continue;
-    }
-    const sourcePageIndex = Math.floor(
-      Math.max(getRADSplatBase(frontierChunk.chunk.splats), 0) / pageSplatCountLimit
-    );
-    const sourcePage = frontierChunksBySourcePageIndex.get(sourcePageIndex) || {
-      frontierChunks: [],
-      splatCount: 0
-    };
-    sourcePage.frontierChunks.push(frontierChunk);
-    sourcePage.splatCount += chunkSplatCount;
-    if (!frontierChunksBySourcePageIndex.has(sourcePageIndex)) {
-      frontierChunksBySourcePageIndex.set(sourcePageIndex, sourcePage);
-    }
-  }
-
-  return Array.from(frontierChunksBySourcePageIndex.entries())
-    .sort((left, right) => left[0] - right[0])
-    .map(([sourcePageIndex, sourcePage]) =>
-      createRADSourceRenderPagePlan(
-        sourcePage.frontierChunks,
-        sourcePageIndex,
-        sourcePage.splatCount
-      )
-    );
-}
-
-/** Build one grouped source render page plan with page-local active weights. */
-function createRADSourceRenderPagePlan(
-  frontierChunks: RADRenderFrontierChunk[],
-  pageIndex: number,
-  splatCount: number
-): RADSourceRenderPagePlan {
-  const chunkIndices = frontierChunks.map(frontierChunk => frontierChunk.chunk.chunkIndex);
-  const rowWeights = createRADSourceRenderPageWeights(frontierChunks, splatCount);
-  return {
-    pageIndex,
-    chunkIndex: chunkIndices[0] ?? pageIndex,
-    chunkIndices,
-    frontierChunks: [...frontierChunks],
-    splatCount,
-    activeRows: rowWeights
-      ? undefined
-      : createRADSourceRenderPageActiveRows(frontierChunks, splatCount),
-    rowWeights,
-    signature: getRADSourceRenderPageSignature(frontierChunks)
-  };
-}
-
-/** Return a signature for immutable chunk data in one grouped source render page. */
-function getRADSourceRenderPageSignature(frontierChunks: RADRenderFrontierChunk[]): string {
-  return frontierChunks
-    .map(
-      frontierChunk =>
-        `${frontierChunk.chunk.chunkIndex}:${frontierChunk.chunk.splats.splatCount}:` +
-        `${frontierChunk.chunk.splats.sphericalHarmonicsComponentCount ?? 0}`
-    )
-    .join('|');
-}
-
-/** Build page-local active opacity weights for grouped source chunks. */
-function createRADSourceRenderPageWeights(
-  frontierChunks: RADRenderFrontierChunk[],
-  splatCount: number
-): Float32Array | undefined {
-  const rowWeights = new Float32Array(splatCount);
-  let outputRowOffset = 0;
-  let hasPartialWeights = false;
-
-  for (const frontierChunk of frontierChunks) {
-    const sourceSplatCount = Math.max(Math.floor(frontierChunk.chunk.splats.splatCount), 0);
+    const splatCount = frontierChunk.chunk.splats.splatCount;
     if (frontierChunk.rowWeights) {
-      rowWeights.set(frontierChunk.rowWeights.subarray(0, sourceSplatCount), outputRowOffset);
-      hasPartialWeights = true;
+      const rowWeights = frontierChunk.rowWeights;
+      const rowCount = Math.min(rowWeights.length, splatCount);
+      for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+        activeWeights[pooledRowOffset + rowIndex] = rowWeights[rowIndex];
+      }
     } else if (frontierChunk.visibleRows) {
       for (const rowIndex of frontierChunk.visibleRows) {
-        if (rowIndex < sourceSplatCount) {
-          rowWeights[outputRowOffset + rowIndex] = 1;
+        if (rowIndex < splatCount) {
+          activeWeights[pooledRowOffset + rowIndex] = 1;
         }
       }
     } else {
-      rowWeights.fill(1, outputRowOffset, outputRowOffset + sourceSplatCount);
+      activeWeights.fill(1, pooledRowOffset, pooledRowOffset + splatCount);
     }
-    outputRowOffset += sourceSplatCount;
+    pooledRowOffset += splatCount;
   }
 
-  return hasPartialWeights ? rowWeights : undefined;
-}
-
-/** Build page-local active row indices for grouped source chunks with full opacity. */
-function createRADSourceRenderPageActiveRows(
-  frontierChunks: RADRenderFrontierChunk[],
-  splatCount: number
-): Uint32Array | undefined {
-  const activeRows = new Uint32Array(splatCount);
-  let outputRowOffset = 0;
-  let activeRowCount = 0;
-  let hasPartialRows = false;
-
-  for (const frontierChunk of frontierChunks) {
-    const sourceSplatCount = Math.max(Math.floor(frontierChunk.chunk.splats.splatCount), 0);
-    if (frontierChunk.visibleRows) {
-      hasPartialRows = true;
-      for (const rowIndex of frontierChunk.visibleRows) {
-        if (rowIndex < sourceSplatCount) {
-          activeRows[activeRowCount++] = outputRowOffset + rowIndex;
-        }
-      }
-    } else {
-      for (let rowIndex = 0; rowIndex < sourceSplatCount; rowIndex++) {
-        activeRows[activeRowCount++] = outputRowOffset + rowIndex;
-      }
-    }
-    outputRowOffset += sourceSplatCount;
-  }
-
-  return hasPartialRows ? activeRows.subarray(0, activeRowCount) : undefined;
-}
-
-/** Build one reusable render page from full source chunks in a grouped page plan. */
-function createRADSourceRenderPageChunk(sourcePagePlan: RADSourceRenderPagePlan): RADSplatLoadedChunk {
-  return {
-    chunkIndex: sourcePagePlan.chunkIndex,
-    splats: createRADSourceRenderPageSplats(sourcePagePlan)
-  };
-}
-
-/** Concatenate immutable source chunk arrays into one grouped render page. */
-function createRADSourceRenderPageSplats(sourcePagePlan: RADSourceRenderPagePlan): RADSplatChunkValues {
-  const sphericalHarmonicsComponentCount = getRADSourceSphericalHarmonicsComponentCount(
-    sourcePagePlan.frontierChunks
-  );
-  const hasSphericalHarmonicDcs = sourcePagePlan.frontierChunks.every(frontierChunk =>
-    Boolean(frontierChunk.chunk.splats.sphericalHarmonicDcs)
-  );
-  const splatCount = sourcePagePlan.splatCount;
-  const positions = new Float32Array(splatCount * 3);
-  const scales = new Float32Array(splatCount * 3);
-  const rotations = new Float32Array(splatCount * 4);
-  const colors = new Uint8Array(splatCount * 3);
-  const {colorMin, colorMax} = getRADFrontierColorRange(sourcePagePlan.frontierChunks);
-  const sphericalHarmonicDcs = hasSphericalHarmonicDcs
-    ? new Float32Array(splatCount * 3)
-    : undefined;
-  const opacities = new Float32Array(splatCount);
-  const sphericalHarmonics = sphericalHarmonicsComponentCount
-    ? new Float32Array(splatCount * sphericalHarmonicsComponentCount)
-    : undefined;
-  let outputRowOffset = 0;
-
-  for (const frontierChunk of sourcePagePlan.frontierChunks) {
-    const splats = frontierChunk.chunk.splats;
-    const sourceSplatCount = Math.max(Math.floor(splats.splatCount), 0);
-    const sourcePositionLength = sourceSplatCount * 3;
-    const sourceRotationLength = sourceSplatCount * 4;
-    positions.set(splats.positions.subarray(0, sourcePositionLength), outputRowOffset * 3);
-    scales.set(splats.scales.subarray(0, sourcePositionLength), outputRowOffset * 3);
-    colors.set(splats.colors.subarray(0, sourcePositionLength), outputRowOffset * 3);
-    rotations.set(splats.rotations.subarray(0, sourceRotationLength), outputRowOffset * 4);
-    opacities.set(splats.opacities.subarray(0, sourceSplatCount), outputRowOffset);
-    if (sphericalHarmonicDcs && splats.sphericalHarmonicDcs) {
-      sphericalHarmonicDcs.set(
-        splats.sphericalHarmonicDcs.subarray(0, sourcePositionLength),
-        outputRowOffset * 3
-      );
-    }
-    if (sphericalHarmonics && splats.sphericalHarmonics) {
-      sphericalHarmonics.set(
-        splats.sphericalHarmonics.subarray(0, sourceSplatCount * sphericalHarmonicsComponentCount),
-        outputRowOffset * sphericalHarmonicsComponentCount
-      );
-    }
-    outputRowOffset += sourceSplatCount;
-  }
-
-  return {
-    splatCount,
-    positions,
-    scales,
-    rotations,
-    colors,
-    colorMin,
-    colorMax,
-    sphericalHarmonicDcs,
-    opacities,
-    sphericalHarmonics,
-    sphericalHarmonicsComponentCount: sphericalHarmonicsComponentCount || undefined,
-    loaderData: {count: splatCount}
-  };
-}
-
-/** Return the shared SH rest component count when all grouped chunks provide it. */
-function getRADSourceSphericalHarmonicsComponentCount(
-  frontierChunks: RADRenderFrontierChunk[]
-): number {
-  const firstCount = frontierChunks[0]?.chunk.splats.sphericalHarmonicsComponentCount ?? 0;
-  if (!firstCount) {
-    return 0;
-  }
-  return frontierChunks.every(frontierChunk => {
-    const splats = frontierChunk.chunk.splats;
-    return splats.sphericalHarmonics && splats.sphericalHarmonicsComponentCount === firstCount;
-  })
-    ? firstCount
-    : 0;
+  return activeWeights;
 }
 
 /** Return the RGB byte decode range shared by grouped RAD frontier chunks. */
@@ -3748,8 +3637,7 @@ function getRADSegmentColorRange(segments: RADRenderRowSegment[]): SplatColorRan
 function getRADSparkLoDPixelScaleLimit(viewport: any, lodRenderScale: number): number {
   const [, viewportHeight] = getRADViewportSize(viewport);
   const fieldOfViewRadians = (getRADViewportFov(viewport) * Math.PI) / 180;
-  const verticalPixelScale =
-    (2 * Math.tan(0.5 * fieldOfViewRadians)) / Math.max(viewportHeight, 1);
+  const verticalPixelScale = (2 * Math.tan(0.5 * fieldOfViewRadians)) / Math.max(viewportHeight, 1);
   const pixelScaleLimit = verticalPixelScale * Math.max(lodRenderScale, 0);
   return Number.isFinite(pixelScaleLimit) ? pixelScaleLimit : 0;
 }
@@ -3841,9 +3729,7 @@ function getRADFoveationWeight(
   }
 
   const forwardDot =
-    toSplat[0] * viewDirection[0] +
-    toSplat[1] * viewDirection[1] +
-    toSplat[2] * viewDirection[2];
+    toSplat[0] * viewDirection[0] + toSplat[1] * viewDirection[1] + toSplat[2] * viewDirection[2];
   const conePriority = clampRADPriority(coneFoveate);
   const behindPriority = clampRADPriority(behindFoveate);
 
@@ -3851,8 +3737,7 @@ function getRADFoveationWeight(
     return behindPriority;
   }
 
-  const dotProduct =
-    forwardDot / Math.max(toSplatLength * viewDirectionLength, Number.EPSILON);
+  const dotProduct = forwardDot / Math.max(toSplatLength * viewDirectionLength, Number.EPSILON);
   const innerConeDot = getRADFoveationConeDot(coneFov0);
   const outerConeDot = Math.min(getRADFoveationConeDot(coneFov), innerConeDot);
   if (dotProduct >= innerConeDot) {
@@ -4270,10 +4155,7 @@ export function _getRADLoadedRenderFrontierForTesting(
     options.startChunkIndex,
     new Set(),
     options
-  ).then(
-    frontier =>
-      frontier?.frontierChunks || []
-  );
+  ).then(frontier => frontier?.frontierChunks || []);
 }
 
 /** @internal Test-only entry point for compacting selected RAD render frontier rows. */
@@ -4285,6 +4167,16 @@ export function _getRADCompactedRenderChunksForTesting(
     frontierChunks as RADRenderFrontierChunk[],
     maxPageSplatCount
   );
+}
+
+/** @internal Test-only entry point for building a pooled RAD render chunk. */
+export function _getRADPooledRenderChunkForTesting(frontierChunks: any[]): any {
+  return createRADPooledRenderChunk(frontierChunks as RADRenderFrontierChunk[]);
+}
+
+/** @internal Test-only entry point for building pooled RAD active weights. */
+export function _getRADPooledActiveWeightsForTesting(frontierChunks: any[]): Float32Array {
+  return createRADPooledActiveWeights(frontierChunks as RADRenderFrontierChunk[]);
 }
 
 /** @internal Test-only entry point for render frontier cache signatures. */
@@ -4306,17 +4198,6 @@ export function _getRADRenderPageSplatCountForTesting(
   sortMode?: SplatSortMode
 ): number {
   return getRADRenderPageSplatCount(frontierChunks as RADRenderFrontierChunk[], sortMode);
-}
-
-/** @internal Test-only entry point for grouped source render page planning. */
-export function _getRADSourceRenderPagePlansForTesting(
-  frontierChunks: any[],
-  maxPageSplatCount: number
-): any[] {
-  return createRADSourceRenderPagePlans(
-    frontierChunks as RADRenderFrontierChunk[],
-    maxPageSplatCount
-  );
 }
 
 /** @internal Test-only entry point for RAD chunk request prefetch planning. */
