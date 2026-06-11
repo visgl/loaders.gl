@@ -55,7 +55,7 @@ export async function parseI3STileContent(
     featureIds: [],
     vertexCount: 0,
     modelMatrix: new Matrix4(),
-    coordinateSystem: 0,
+    coordinateSystem: 'meter-offsets',
     byteLength: 0,
     texture: null
   };
@@ -195,15 +195,14 @@ async function parseI3SNodeGeometry(
 
   if (
     !options?.i3s?.coordinateSystem ||
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     options.i3s.coordinateSystem === COORDINATE_SYSTEM.METER_OFFSETS
   ) {
     const enuMatrix = parsePositions(attributes.position, tileOptions);
     content.modelMatrix = enuMatrix.invert();
-    content.coordinateSystem = COORDINATE_SYSTEM.METER_OFFSETS;
+    content.coordinateSystem = 'meter-offsets';
   } else {
     content.modelMatrix = getModelMatrix(attributes.position);
-    content.coordinateSystem = COORDINATE_SYSTEM.LNGLAT_OFFSETS;
+    content.coordinateSystem = 'lnglat-offsets';
   }
 
   content.attributes = {
