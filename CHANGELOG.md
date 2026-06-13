@@ -2,6 +2,10 @@
 
 ## v4.4
 
+### v4.4.3
+
+- fix(i3s): Use string coordinate system constants for deck.gl 9.3+ compatibility (#3450)
+
 ### v4.4.2
 
 - fix(geoparquet): restore GeoJSON output (#3422)
