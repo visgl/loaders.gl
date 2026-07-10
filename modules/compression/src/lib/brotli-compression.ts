@@ -48,7 +48,17 @@ export class BrotliCompression extends Compression {
   readonly isSupported = true;
   readonly options: BrotliCompressionOptions;
 
-  constructor(options: BrotliCompressionOptions) {
+  /** Native Brotli format used for default asynchronous decompression. */
+  protected get decompressionStreamFormat(): 'brotli' {
+    return 'brotli';
+  }
+
+  /** Only use native decompression when no codec-specific options would be ignored. */
+  protected get useNativeDecompressionStream(): boolean {
+    return !this.options.brotli || Object.keys(this.options.brotli).length === 0;
+  }
+
+  constructor(options: BrotliCompressionOptions = {}) {
     super(options);
     this.options = options;
     registerJSModules(options?.modules);
@@ -90,6 +100,11 @@ export class BrotliCompression extends Compression {
   }
 
   async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
+    const nativeOutput = await this.tryDecompressWithNativeDecompressionStream(input);
+    if (nativeOutput) {
+      return nativeOutput;
+    }
+
     // On Node.js we can use built-in zlib
     if (!isBrowser && this.options.brotli?.useZlib) {
       const buffer = await promisify1(zlib.brotliDecompress)(input);

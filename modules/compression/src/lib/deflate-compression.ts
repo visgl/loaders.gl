@@ -5,6 +5,10 @@
 // DEFLATE
 import type {CompressionOptions} from './compression';
 import {Compression} from './compression';
+import {
+  decompressBatchesWithNativeDecompressionStream,
+  type NativeDecompressionFormat
+} from './decompression-stream';
 import {isBrowser, toArrayBuffer, promisify1} from '@loaders.gl/loader-utils';
 import pako from 'pako'; // https://bundlephobia.com/package/pako
 import zlib from 'zlib';
@@ -26,6 +30,23 @@ export class DeflateCompression extends Compression {
 
   readonly options: DeflateCompressionOptions;
 
+  /** Native format matching the configured wrapper type. */
+  protected get decompressionStreamFormat(): NativeDecompressionFormat {
+    if (this.options.raw) {
+      return 'deflate-raw';
+    }
+    return this.options.deflate?.gzip ? 'gzip' : 'deflate';
+  }
+
+  /** Only use native decompression when no codec-specific options would be ignored. */
+  protected get useNativeDecompressionStream(): boolean {
+    const deflateOptions = this.options.deflate;
+    if (!deflateOptions) {
+      return true;
+    }
+    return Object.keys(deflateOptions).every(optionName => optionName === 'gzip');
+  }
+
   private _chunks: ArrayBuffer[] = [];
 
   constructor(options: DeflateCompressionOptions = {}) {
@@ -45,6 +66,11 @@ export class DeflateCompression extends Compression {
   }
 
   async decompress(input: ArrayBuffer): Promise<ArrayBuffer> {
+    const nativeOutput = await this.tryDecompressWithNativeDecompressionStream(input);
+    if (nativeOutput) {
+      return nativeOutput;
+    }
+
     // On Node.js we can use built-in zlib
     if (!isBrowser && this.options.deflate?.useZlib) {
       const buffer = this.options.deflate?.gzip
@@ -90,6 +116,17 @@ export class DeflateCompression extends Compression {
   async *decompressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
+    if (this.decompressionStreamFormat && this.useNativeDecompressionStream) {
+      const outputBatches = decompressBatchesWithNativeDecompressionStream(
+        asyncIterator,
+        this.decompressionStreamFormat
+      );
+      if (outputBatches) {
+        yield* outputBatches;
+        return;
+      }
+    }
+
     const pakoOptions: pako.InflateOptions = this.options?.deflate || {};
     const pakoProcessor = new pako.Inflate(pakoOptions);
     yield* this.transformBatches(pakoProcessor, asyncIterator);

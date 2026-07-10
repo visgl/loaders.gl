@@ -162,6 +162,155 @@ test('compression#batched', async t => {
   t.end();
 });
 
+test('gzip#native DecompressionStream atomic and batched', async t => {
+  if (typeof globalThis.DecompressionStream === 'undefined') {
+    t.comment('DecompressionStream is not available in this runtime');
+    t.end();
+    return;
+  }
+
+  try {
+    const probeStream = new globalThis.DecompressionStream('gzip');
+    await probeStream.writable.abort();
+  } catch {
+    t.comment('gzip DecompressionStream is not available in this runtime');
+    t.end();
+    return;
+  }
+
+  const inputData = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9]).buffer;
+  const compression = new GZipCompression();
+  const compressedData = compression.compressSync(inputData);
+
+  const decompressedData = await compression.decompress(compressedData);
+  t.ok(compareArrayBuffers(inputData, decompressedData), 'native atomic gzip decompression works');
+
+  const compressedBatches = [
+    compressedData.slice(0, 5),
+    compressedData.slice(5, compressedData.byteLength)
+  ];
+  const decompressedBatches = compression.decompressBatches(compressedBatches);
+  const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
+  t.ok(
+    compareArrayBuffers(inputData, decompressedBatchData),
+    'native batched gzip decompression works'
+  );
+  t.end();
+});
+
+test('zstd#native DecompressionStream works without zstd-codec', async t => {
+  const formats: string[] = [];
+  const restoreDecompressionStream = installMockDecompressionStream({
+    formats,
+    supportedFormats: ['zstd']
+  });
+  const restoreZstdCodec = removeRegisteredModule('zstd-codec');
+
+  try {
+    const inputBatches = [new Uint8Array([1, 2, 3]).buffer, new Uint8Array([4, 5, 6]).buffer];
+    const inputData = concatenateArrayBuffers(...inputBatches);
+    const compression = new ZstdCompression();
+
+    const decompressedData = await compression.decompress(inputData);
+    t.ok(compareArrayBuffers(inputData, decompressedData), 'native atomic zstd needs no codec');
+
+    const decompressedBatches = compression.decompressBatches(inputBatches);
+    const decompressedBatchData = await concatenateArrayBuffersAsync(decompressedBatches);
+    t.ok(
+      compareArrayBuffers(inputData, decompressedBatchData),
+      'native batched zstd needs no codec'
+    );
+    t.deepEqual(formats, ['zstd', 'zstd'], 'zstd maps to the native zstd format');
+  } finally {
+    restoreZstdCodec();
+    restoreDecompressionStream();
+  }
+
+  t.end();
+});
+
+test('zstd#unsupported native format falls back to zstd-codec', async t => {
+  const formats: string[] = [];
+  const restoreDecompressionStream = installMockDecompressionStream({
+    formats,
+    supportedFormats: []
+  });
+
+  try {
+    const inputData = new Uint8Array([1, 2, 3, 4, 5, 6]).buffer;
+    const compression = new ZstdCompression({modules});
+    const compressedData = await compression.compress(inputData);
+    const decompressedData = await compression.decompress(compressedData);
+
+    t.ok(compareArrayBuffers(inputData, decompressedData), 'zstd codec fallback decompresses data');
+    t.deepEqual(formats, ['zstd'], 'zstd native support is probed before falling back');
+  } finally {
+    restoreDecompressionStream();
+  }
+
+  t.end();
+});
+
+test('zstd#native stream failures do not fall back', async t => {
+  const restoreDecompressionStream = installMockDecompressionStream({
+    formats: [],
+    supportedFormats: ['zstd'],
+    failWith: new Error('mock native decompression failed')
+  });
+
+  try {
+    const inputData = new Uint8Array([1, 2, 3]).buffer;
+    const compression = new ZstdCompression({modules});
+    await t.rejects(
+      compression.decompress(inputData),
+      /mock native decompression failed/,
+      'native stream errors propagate'
+    );
+  } finally {
+    restoreDecompressionStream();
+  }
+
+  t.end();
+});
+
+test('deflate#native format mapping and explicit option fallback', async t => {
+  const formats: string[] = [];
+  const restoreDecompressionStream = installMockDecompressionStream({
+    formats,
+    supportedFormats: ['deflate-raw']
+  });
+
+  try {
+    const inputData = new Uint8Array([1, 2, 3, 4, 5, 6]).buffer;
+    const rawCompression = new DeflateCompression({raw: true});
+    const decompressedRawData = await rawCompression.decompress(inputData);
+
+    t.ok(compareArrayBuffers(inputData, decompressedRawData), 'raw deflate uses native stream');
+    t.deepEqual(formats, ['deflate-raw'], 'raw deflate maps to deflate-raw');
+
+    formats.length = 0;
+    const compressedData = new DeflateCompression().compressSync(inputData);
+    const configuredCompression = new DeflateCompression({deflate: {useZlib: true}});
+    const decompressedConfiguredData = await configuredCompression.decompress(compressedData);
+
+    t.ok(
+      compareArrayBuffers(inputData, decompressedConfiguredData),
+      'configured deflate uses the existing implementation'
+    );
+    t.deepEqual(formats, [], 'codec-specific options bypass the native stream');
+  } finally {
+    restoreDecompressionStream();
+  }
+
+  t.end();
+});
+
+test('compression#native constructors accept omitted options', t => {
+  t.ok(new BrotliCompression(), 'BrotliCompression options are optional');
+  t.ok(new ZstdCompression(), 'ZstdCompression options are optional');
+  t.end();
+});
+
 // WORKER TESTS
 test('gzip#worker', async t => {
   const {binaryData} = getData();
@@ -260,3 +409,99 @@ test.skip('zstd#worker', async t => {
   t.ok(compareArrayBuffers(decompressdData, binaryData), 'compress/decompress level 6');
   t.end();
 });
+
+type MockDecompressionStreamOptions = {
+  formats: string[];
+  supportedFormats: string[];
+  failWith?: Error;
+};
+
+/**
+ * Installs a deterministic DecompressionStream double and returns a restorer.
+ *
+ * @param options Mock formats and failure behavior.
+ * @returns Callback that restores the original global constructor.
+ */
+function installMockDecompressionStream(options: MockDecompressionStreamOptions): () => void {
+  const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'DecompressionStream');
+
+  class MockDecompressionStream {
+    readonly readable: ReadableStream<Uint8Array>;
+    readonly writable: WritableStream<BufferSource>;
+
+    /** Creates a mock native decompression stream for supported formats. */
+    constructor(format: string) {
+      options.formats.push(format);
+      if (!options.supportedFormats.includes(format)) {
+        throw new TypeError('mock compression format is unsupported');
+      }
+
+      const transformStream = new TransformStream<BufferSource, Uint8Array>({
+        transform(chunk, controller) {
+          if (options.failWith) {
+            throw options.failWith;
+          }
+          controller.enqueue(copyBufferSource(chunk));
+        }
+      });
+      this.readable = transformStream.readable;
+      this.writable = transformStream.writable;
+    }
+  }
+
+  Object.defineProperty(globalThis, 'DecompressionStream', {
+    configurable: true,
+    writable: true,
+    value: MockDecompressionStream
+  });
+
+  return () => {
+    if (originalDescriptor) {
+      Object.defineProperty(globalThis, 'DecompressionStream', originalDescriptor);
+    } else {
+      delete (globalThis as any).DecompressionStream;
+    }
+  };
+}
+
+/**
+ * Removes one registered injectable module and returns a restorer.
+ *
+ * @param moduleName Registered module name.
+ * @returns Callback that restores the original registration.
+ */
+function removeRegisteredModule(moduleName: string): () => void {
+  const globalWithLoaders = globalThis as any;
+  globalWithLoaders.loaders ||= {};
+  const loaders = globalWithLoaders.loaders;
+  loaders.modules ||= {};
+  const registeredModules = loaders.modules;
+  const hadModule = Object.prototype.hasOwnProperty.call(registeredModules, moduleName);
+  const originalModule = registeredModules[moduleName];
+  delete registeredModules[moduleName];
+
+  return () => {
+    if (hadModule) {
+      registeredModules[moduleName] = originalModule;
+    } else {
+      delete registeredModules[moduleName];
+    }
+  };
+}
+
+/**
+ * Copies a native stream input chunk into a Uint8Array.
+ *
+ * @param bufferSource Native stream input chunk.
+ * @returns Copied bytes for the mock stream output.
+ */
+function copyBufferSource(bufferSource: BufferSource): Uint8Array {
+  if (bufferSource instanceof ArrayBuffer) {
+    return new Uint8Array(bufferSource).slice();
+  }
+  return new Uint8Array(
+    bufferSource.buffer,
+    bufferSource.byteOffset,
+    bufferSource.byteLength
+  ).slice();
+}

@@ -4,6 +4,11 @@
 
 // Compression interface
 import {concatenateArrayBuffersAsync, registerJSModules} from '@loaders.gl/loader-utils';
+import {
+  decompressBatchesWithNativeDecompressionStream,
+  decompressWithNativeDecompressionStream,
+  type NativeDecompressionFormat
+} from './decompression-stream';
 
 /** Compression options */
 export type CompressionOptions = {
@@ -17,6 +22,16 @@ export abstract class Compression {
   abstract readonly extensions: string[];
   abstract readonly contentEncodings: string[];
   abstract readonly isSupported: boolean;
+
+  /** Native format used for default asynchronous decompression, when available. */
+  protected get decompressionStreamFormat(): NativeDecompressionFormat | undefined {
+    return undefined;
+  }
+
+  /** Whether default asynchronous decompression can use the native stream path. */
+  protected get useNativeDecompressionStream(): boolean {
+    return true;
+  }
 
   constructor(options?: CompressionOptions) {
     this.compressBatches = this.compressBatches.bind(this);
@@ -37,6 +52,10 @@ export abstract class Compression {
 
   /** Asynchronously decompress data */
   async decompress(input: ArrayBuffer, size?: number): Promise<ArrayBuffer> {
+    const nativeOutput = await this.tryDecompressWithNativeDecompressionStream(input);
+    if (nativeOutput) {
+      return nativeOutput;
+    }
     await this.preload();
     return this.decompressSync(input, size);
   }
@@ -64,6 +83,17 @@ export abstract class Compression {
   async *decompressBatches(
     asyncIterator: AsyncIterable<ArrayBuffer> | Iterable<ArrayBuffer>
   ): AsyncIterable<ArrayBuffer> {
+    if (this.decompressionStreamFormat && this.useNativeDecompressionStream) {
+      const outputBatches = decompressBatchesWithNativeDecompressionStream(
+        asyncIterator,
+        this.decompressionStreamFormat
+      );
+      if (outputBatches) {
+        yield* outputBatches;
+        return;
+      }
+    }
+
     // TODO - implement incremental compression
     const input = await this.concatenate(asyncIterator);
     yield this.decompress(input);
@@ -73,6 +103,21 @@ export abstract class Compression {
 
   protected concatenate(asyncIterator): Promise<ArrayBuffer> {
     return concatenateArrayBuffersAsync(asyncIterator);
+  }
+
+  /**
+   * Attempts native asynchronous decompression for classes that declare a stream format.
+   *
+   * @param input Compressed input data.
+   * @returns Decompressed data, or null when native decompression should not be used.
+   */
+  protected async tryDecompressWithNativeDecompressionStream(
+    input: ArrayBuffer
+  ): Promise<ArrayBuffer | null> {
+    if (!this.decompressionStreamFormat || !this.useNativeDecompressionStream) {
+      return null;
+    }
+    return await decompressWithNativeDecompressionStream(input, this.decompressionStreamFormat);
   }
 
   protected improveError(error) {

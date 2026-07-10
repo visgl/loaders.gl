@@ -17,9 +17,12 @@
 
 ## Usage
 
-SPZ version 4 uses ZSTD-compressed attribute streams. Inject `zstd-codec` through loader options so applications that only use `SPLATLoader` or `KSPLATLoader` do not pay the ZSTD dependency cost.
+SPZ version 4 uses ZSTD-compressed attribute streams. When the runtime supports
+`new DecompressionStream('zstd')`, async SPZ parsing does not require an external ZSTD module.
+Otherwise inject `zstd-codec` through loader options as the fallback.
 
 ```typescript
+// Install zstd-codec only when the runtime lacks native zstd decompression.
 // npm install @loaders.gl/core @loaders.gl/splats zstd-codec
 
 import {load} from '@loaders.gl/core';
@@ -72,4 +75,4 @@ Schema metadata includes `loaders_gl.semantic_type = gaussian-splats` and `loade
 | Option         | Type            | Default         | Description                              |
 | -------------- | --------------- | --------------- | ---------------------------------------- |
 | `splats.shape` | `'arrow-table'` | `'arrow-table'` | Selects Mesh Arrow table output. V1 only supports `arrow-table`. |
-| `modules`      | `object`        | `{}`            | Must include `{'zstd-codec': ZstdCodec}` to decode SPZ version 4 streams. |
+| `modules`      | `object`        | `{}`            | Include `{'zstd-codec': ZstdCodec}` to decode SPZ version 4 streams when native zstd decompression is unavailable. |
