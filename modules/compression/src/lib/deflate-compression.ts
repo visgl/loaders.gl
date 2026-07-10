@@ -31,27 +31,24 @@ export class DeflateCompression extends Compression {
   readonly options: DeflateCompressionOptions;
 
   /** Native format matching the configured wrapper type. */
-  protected get decompressionStreamFormat(): NativeDecompressionFormat {
-    if (this.options.raw) {
-      return 'deflate-raw';
-    }
-    return this.options.deflate?.gzip ? 'gzip' : 'deflate';
-  }
+  protected readonly decompressionStreamFormat: NativeDecompressionFormat;
 
   /** Only use native decompression when no codec-specific options would be ignored. */
-  protected get useNativeDecompressionStream(): boolean {
-    const deflateOptions = this.options.deflate;
-    if (!deflateOptions) {
-      return true;
-    }
-    return Object.keys(deflateOptions).every(optionName => optionName === 'gzip');
-  }
+  protected readonly useNativeDecompressionStream: boolean;
 
   private _chunks: ArrayBuffer[] = [];
 
   constructor(options: DeflateCompressionOptions = {}) {
     super(options);
     this.options = options;
+    this.decompressionStreamFormat = options.raw
+      ? 'deflate-raw'
+      : options.deflate?.gzip
+        ? 'gzip'
+        : 'deflate';
+    const deflateOptions = options.deflate;
+    this.useNativeDecompressionStream =
+      !deflateOptions || Object.keys(deflateOptions).every(optionName => optionName === 'gzip');
   }
 
   async compress(input: ArrayBuffer): Promise<ArrayBuffer> {

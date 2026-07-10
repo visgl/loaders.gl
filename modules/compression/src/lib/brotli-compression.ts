@@ -49,18 +49,15 @@ export class BrotliCompression extends Compression {
   readonly options: BrotliCompressionOptions;
 
   /** Native Brotli format used for default asynchronous decompression. */
-  protected get decompressionStreamFormat(): 'brotli' {
-    return 'brotli';
-  }
+  protected readonly decompressionStreamFormat = 'brotli';
 
   /** Only use native decompression when no codec-specific options would be ignored. */
-  protected get useNativeDecompressionStream(): boolean {
-    return !this.options.brotli || Object.keys(this.options.brotli).length === 0;
-  }
+  protected readonly useNativeDecompressionStream: boolean;
 
   constructor(options: BrotliCompressionOptions = {}) {
     super(options);
     this.options = options;
+    this.useNativeDecompressionStream = !options.brotli || Object.keys(options.brotli).length === 0;
     registerJSModules(options?.modules);
   }
 

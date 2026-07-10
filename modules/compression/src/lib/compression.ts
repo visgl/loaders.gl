@@ -24,14 +24,10 @@ export abstract class Compression {
   abstract readonly isSupported: boolean;
 
   /** Native format used for default asynchronous decompression, when available. */
-  protected get decompressionStreamFormat(): NativeDecompressionFormat | undefined {
-    return undefined;
-  }
+  protected readonly decompressionStreamFormat: NativeDecompressionFormat | undefined = undefined;
 
   /** Whether default asynchronous decompression can use the native stream path. */
-  protected get useNativeDecompressionStream(): boolean {
-    return true;
-  }
+  protected readonly useNativeDecompressionStream: boolean = true;
 
   constructor(options?: CompressionOptions) {
     this.compressBatches = this.compressBatches.bind(this);

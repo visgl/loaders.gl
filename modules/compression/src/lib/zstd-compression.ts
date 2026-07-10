@@ -30,9 +30,7 @@ export class ZstdCompression extends Compression {
   readonly options: CompressionOptions;
 
   /** Native Zstandard format used for default asynchronous decompression. */
-  protected get decompressionStreamFormat(): 'zstd' {
-    return 'zstd';
-  }
+  protected readonly decompressionStreamFormat = 'zstd';
 
   /**
    * zstd-codec is an injectable dependency due to big size
