@@ -75,7 +75,7 @@ Release Date: 2026
 
 **@loaders.gl/compression**
 
-- Async gzip, deflate, raw deflate, Brotli, and Zstandard decompression now probes and uses the runtime's native `DecompressionStream` before falling back to existing codecs. Runtimes with native Zstandard support no longer require `zstd-codec` for async decompression APIs, including Parquet and SPZ parsing.
+- Async gzip, deflate, raw deflate, and Brotli decompression now probes and uses the runtime's native `DecompressionStream` before falling back to existing codecs. Zstandard is also probed so future runtimes can use native support automatically; until native Zstandard support becomes widely available, most runtimes still need `zstd-codec` for Zstandard-backed Parquet and SPZ parsing.
 
 **@loaders.gl/deck-layers**
 
