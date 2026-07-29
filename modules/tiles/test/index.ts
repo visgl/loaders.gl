@@ -10,6 +10,7 @@ import './tileset/tileset-3d-source.spec';
 import './tileset/tileset-traverser.spec';
 
 import './tileset/helpers/get-frame-state.spec';
+import './tileset/helpers/ground-height-datum.spec';
 import './tileset/helpers/zoom.spec';
 import './tileset/helpers/bounding-volume.spec';
 import './tileset/tileset-2d.spec';

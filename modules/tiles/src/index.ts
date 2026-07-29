@@ -83,7 +83,8 @@ export {PointCloudTile} from './point-cloud/point-cloud-tile';
 export {createBoundingVolume} from './tileset-3d/helpers/bounding-volume';
 export {calculateTransformProps} from './tileset-3d/helpers/transform-utils';
 
-export {getFrameState} from './tileset-3d/helpers/frame-state';
+export {getFrameState, resolveGroundHeightDatum} from './tileset-3d/helpers/frame-state';
+export type {GetFrameStateOptions} from './tileset-3d/helpers/frame-state';
 export {getLodStatus} from './tileset-3d/helpers/i3s-lod';
 
 export {

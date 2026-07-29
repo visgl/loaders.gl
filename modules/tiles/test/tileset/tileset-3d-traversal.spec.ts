@@ -253,6 +253,36 @@ test('Tileset3D#viewportTraversersMap (one viewport shows tiles selected for ano
   t.equals(tileset.selectedTiles.filter(tile => tile.viewportIds.includes('view1')).length, 5);
 });
 
+test('Tileset3D#groundHeightDatum option reaches the culling frame', async t => {
+  const tilesetJson = await load(TILESET_URL, Tiles3DLoader);
+  const viewport = VIEWPORTS[0];
+
+  // An extreme datum lifts the culling frame ~1000 km above the tileset, so everything culls.
+  const lifted = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {
+    groundHeightDatum: 1_000_000
+  });
+  await lifted.selectTiles(viewport);
+  t.equals(
+    lifted.roots[viewport.id].isVisible,
+    false,
+    'root is culled under an extreme ground-height datum'
+  );
+  t.equals(
+    lifted.selectedTiles.length,
+    0,
+    'no tiles are selected under an extreme ground-height datum'
+  );
+
+  const control = new Tileset3D(new Tiles3DSource({...tilesetJson, coreApi}), {});
+  await control.selectTiles(viewport);
+  t.equals(
+    control.roots[viewport.id].isVisible,
+    true,
+    'root stays visible with default options (auto datum, sea-level fixture)'
+  );
+  t.end();
+});
+
 test('Tileset3D#loadTiles option', async t => {
   t.plan(2);
   const tilesetJson = await load(TILESET_URL, Tiles3DLoader);

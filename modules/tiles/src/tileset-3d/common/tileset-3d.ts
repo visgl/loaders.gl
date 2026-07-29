@@ -10,7 +10,12 @@ import {Stats} from '@probe.gl/stats';
 import {RequestScheduler, LoaderWithParser, LoaderOptions} from '@loaders.gl/loader-utils';
 import {TilesetCache} from './tileset-cache';
 import {calculateTransformProps} from '../helpers/transform-utils';
-import {FrameState, getFrameState, limitSelectedTiles} from '../helpers/frame-state';
+import {
+  FrameState,
+  getFrameState,
+  limitSelectedTiles,
+  resolveGroundHeightDatum
+} from '../helpers/frame-state';
 
 import type {GeospatialViewport, Viewport} from '../../types';
 import {Tile3D} from './tile-3d';
@@ -50,6 +55,15 @@ export type Tileset3DProps = {
   viewportTraversersMap?: any;
   updateTransforms?: boolean;
   viewDistanceScale?: number;
+  /**
+   * Elevation in meters of the viewport's ground plane (z = 0) above the WGS84 ellipsoid,
+   * used to align the culling frustum with content whose bounding volumes carry absolute
+   * heights (3D Tiles `region` volumes). `'auto'` (default) derives it from the minimum
+   * height of the deepest loaded `region` containing the viewport center (seeded by the
+   * root region); tilesets without region volumes resolve to 0. Set an explicit number
+   * to override, or 0 to disable.
+   */
+  groundHeightDatum?: number | 'auto';
 
   onTileLoad?: (tile: Tile3D) => any;
   onTileUnload?: (tile: Tile3D) => any;
@@ -83,6 +97,7 @@ type Props = {
   maximumScreenSpaceError: number;
   memoryAdjustedScreenSpaceError: boolean;
   viewportTraversersMap: Record<string, any> | null;
+  groundHeightDatum: number | 'auto';
   attributions: string[];
   loadTiles: boolean;
   loadOptions: LoaderOptions;
@@ -117,6 +132,7 @@ const DEFAULT_PROPS: Props = {
   loadTiles: true,
   updateTransforms: true,
   viewportTraversersMap: null,
+  groundHeightDatum: 'auto',
   loadOptions: {fetch: {}},
   attributions: [],
   basePath: '',
@@ -354,7 +370,13 @@ export class Tileset3D {
       if (!viewportsToTraverse.includes(id)) {
         continue;
       }
-      const frameState = getFrameState(viewport as GeospatialViewport, this._frameNumber);
+      const frameState = getFrameState(viewport as GeospatialViewport, this._frameNumber, {
+        groundHeightDatum: resolveGroundHeightDatum(
+          this.options.groundHeightDatum,
+          this.roots[id],
+          viewport as GeospatialViewport
+        )
+      });
       this._traverser.traverse(this.roots[id], frameState, this.options);
     }
   }

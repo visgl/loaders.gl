@@ -18,6 +18,18 @@ export type FrameState = {
   sseDenominator: number; // Assumes fovy = 60 degrees
 };
 
+/** Options for {@link getFrameState}. */
+export type GetFrameStateOptions = {
+  /**
+   * Elevation in meters of the viewport's ground plane (z = 0) above the WGS84 ellipsoid.
+   * The viewport's `unprojectPosition` returns heights above the ground plane, while
+   * `region` bounding volumes carry absolute ellipsoidal heights, so the culling camera and
+   * frustum planes are lifted by this amount to align the culling frame with the content.
+   * Defaults to 0 (ground plane on the ellipsoid).
+   */
+  groundHeightDatum?: number;
+};
+
 const scratchVector = new Vector3();
 const scratchPosition = new Vector3();
 const cullingVolume = new CullingVolume([
@@ -31,18 +43,24 @@ const cullingVolume = new CullingVolume([
 
 // Extracts a frame state appropriate for tile culling from a deck.gl viewport
 // TODO - this could likely be generalized and merged back into deck.gl for other culling scenarios
-export function getFrameState(viewport: GeospatialViewport, frameNumber: number): FrameState {
+export function getFrameState(
+  viewport: GeospatialViewport,
+  frameNumber: number,
+  options: GetFrameStateOptions = {}
+): FrameState {
   // Traverse and and request. Update _selectedTiles so that we know what to render.
   // Traverse and and request. Update _selectedTiles so that we know what to render.
   const {cameraDirection, cameraUp, height} = viewport;
   const {metersPerUnit} = viewport.distanceScales;
+  const groundHeightDatum = options.groundHeightDatum ?? 0;
 
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() breaks on raw array, create a Vector.
   // TODO - Ellipsoid.eastNorthUpToFixedFrame() takes a cartesian, is that intuitive?
-  const viewportCenterCartesian = worldToCartesian(viewport, viewport.center);
+  const viewportCenterCartesian = worldToCartesian(viewport, viewport.center, groundHeightDatum);
   const enuToFixedTransform = Ellipsoid.WGS84.eastNorthUpToFixedFrame(viewportCenterCartesian);
 
   const cameraPositionCartographic = viewport.unprojectPosition(viewport.cameraPosition);
+  cameraPositionCartographic[2] += groundHeightDatum;
   const cameraPositionCartesian = Ellipsoid.WGS84.cartographicToCartesian(
     cameraPositionCartographic,
     new Vector3()
@@ -58,7 +76,7 @@ export function getFrameState(viewport: GeospatialViewport, frameNumber: number)
     enuToFixedTransform.transformAsVector(new Vector3(cameraUp).scale(metersPerUnit))
   ).normalize();
 
-  commonSpacePlanesToWGS84(viewport);
+  commonSpacePlanesToWGS84(viewport, groundHeightDatum);
 
   const ViewportClass = viewport.constructor;
   const {longitude, latitude, width, bearing, zoom} = viewport;
@@ -129,14 +147,19 @@ export function limitSelectedTiles(
   return [selectedTiles, unselectedTiles];
 }
 
-function commonSpacePlanesToWGS84(viewport) {
+function commonSpacePlanesToWGS84(viewport, groundHeightDatum: number) {
   // Extract frustum planes based on current view.
   const frustumPlanes = viewport.getFrustumPlanes();
 
   // Get the near/far plane centers
   const nearCenterCommon = closestPointOnPlane(frustumPlanes.near, viewport.cameraPosition);
-  const nearCenterCartesian = worldToCartesian(viewport, nearCenterCommon);
-  const cameraCartesian = worldToCartesian(viewport, viewport.cameraPosition, scratchPosition);
+  const nearCenterCartesian = worldToCartesian(viewport, nearCenterCommon, groundHeightDatum);
+  const cameraCartesian = worldToCartesian(
+    viewport,
+    viewport.cameraPosition,
+    groundHeightDatum,
+    scratchPosition
+  );
 
   let i = 0;
   cullingVolume.planes[i++].fromPointNormal(
@@ -150,7 +173,7 @@ function commonSpacePlanesToWGS84(viewport) {
     }
     const plane = frustumPlanes[dir];
     const posCommon = closestPointOnPlane(plane, nearCenterCommon, scratchPosition);
-    const cartesianPos = worldToCartesian(viewport, posCommon, scratchPosition);
+    const cartesianPos = worldToCartesian(viewport, posCommon, groundHeightDatum, scratchPosition);
 
     cullingVolume.planes[i++].fromPointNormal(
       cartesianPos,
@@ -176,8 +199,89 @@ function closestPointOnPlane(
 function worldToCartesian(
   viewport: Viewport,
   point: number[] | Vector3,
+  groundHeightDatum: number,
   out: Vector3 = new Vector3()
 ): Vector3 {
   const cartographicPos = viewport.unprojectPosition(point);
+  // `unprojectPosition` heights are relative to the viewport's ground plane, but
+  // `cartographicToCartesian` expects heights above the ellipsoid.
+  cartographicPos[2] += groundHeightDatum;
   return Ellipsoid.WGS84.cartographicToCartesian(cartographicPos, out);
+}
+
+/** Minimal tile-tree shape needed for ground-height derivation (structural subset of Tile3D). */
+type RegionTileNode = {
+  header?: {boundingVolume?: {region?: number[]}} | null;
+  children?: RegionTileNode[] | null;
+};
+
+/**
+ * Resolves the `groundHeightDatum` tileset option to a concrete elevation in meters.
+ * @param groundHeightDatum Elevation in meters of the viewport's ground plane above the
+ *   WGS84 ellipsoid, or `'auto'` to derive it from `region` bounding volumes.
+ * @param rootTile Root of the (partially loaded) tile tree used for `'auto'` derivation:
+ *   the minimum height of the deepest loaded `region` containing the viewport center wins,
+ *   seeded by the root region's minimum height. Tilesets without region volumes
+ *   (`box`/`sphere`/I3S) resolve to 0.
+ * @param viewportCenter Viewport center in degrees, used to pick the containing regions.
+ * @returns The ground plane elevation in meters (0 when nothing can be derived).
+ */
+export function resolveGroundHeightDatum(
+  groundHeightDatum: number | 'auto',
+  rootTile?: RegionTileNode | null,
+  viewportCenter?: {longitude: number; latitude: number} | null
+): number {
+  if (typeof groundHeightDatum === 'number') {
+    return Number.isFinite(groundHeightDatum) ? groundHeightDatum : 0;
+  }
+  let datum = getRegionMinimumHeight(rootTile?.header?.boundingVolume?.region) ?? 0;
+  if (!rootTile || !viewportCenter) {
+    return datum;
+  }
+
+  // Descend to the deepest loaded region containing the viewport center. The tree deepens
+  // as external tilesets load, so successive frames converge on the local ground height.
+  const longitudeRadians = (viewportCenter.longitude * Math.PI) / 180;
+  const latitudeRadians = (viewportCenter.latitude * Math.PI) / 180;
+  let currentTile: RegionTileNode | null = rootTile;
+  const visitedTiles = new Set<RegionTileNode>();
+  while (currentTile && !visitedTiles.has(currentTile)) {
+    visitedTiles.add(currentTile);
+    let nextTile: RegionTileNode | null = null;
+    for (const childTile of currentTile.children || []) {
+      const region = childTile?.header?.boundingVolume?.region;
+      if (!regionContains(region, longitudeRadians, latitudeRadians)) {
+        continue; // eslint-disable-line no-continue
+      }
+      const minimumHeight = getRegionMinimumHeight(region);
+      if (minimumHeight !== null) {
+        datum = Math.max(datum, minimumHeight);
+      }
+      nextTile = nextTile || childTile;
+    }
+    currentTile = nextTile;
+  }
+  return datum;
+}
+
+function getRegionMinimumHeight(region: number[] | undefined | null): number | null {
+  const minimumHeight = region?.[4];
+  return typeof minimumHeight === 'number' && Number.isFinite(minimumHeight) ? minimumHeight : null;
+}
+
+function regionContains(
+  region: number[] | undefined | null,
+  longitudeRadians: number,
+  latitudeRadians: number
+): boolean {
+  if (!Array.isArray(region) || region.length < 6) {
+    return false;
+  }
+  const [west, south, east, north] = region;
+  return (
+    west <= longitudeRadians &&
+    longitudeRadians <= east &&
+    south <= latitudeRadians &&
+    latitudeRadians <= north
+  );
 }

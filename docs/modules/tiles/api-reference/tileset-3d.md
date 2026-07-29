@@ -78,6 +78,7 @@ Parameters:
   - `options.loadOptions` - _loaders.gl_ options used when loading tiles from the tiling server. Includes `fetch` options such as authentication `headers`, worker options such as `maxConcurrency`, and options to other loaders such as `3d-tiles`, `gltf`, and `draco`.
   - `options.contentLoader` = `null` (`Promise`) - An optional external async content loader for the tile. Once the promise resolves, a tile is regarded as _READY_ to be displayed on the viewport.
   - `options.loadTiles`=`true` (`Boolean`) - Whether the tileset traverse and update tiles. Set this options to `false` during the run time to freeze the scene.
+  - `options.groundHeightDatum`=`'auto'` (`Number | 'auto'`) - Elevation in meters of the viewport's ground plane (z = 0) above the WGS84 ellipsoid, used to align the culling frustum with content whose bounding volumes carry absolute heights (3D Tiles `region` volumes at high altitude, e.g. alpine cities). `'auto'` derives it from the minimum height of the deepest loaded `region` containing the viewport center. Set an explicit number to override (e.g. the terrain height at the camera target), or `0` to disable. With deck.gl's `Tile3DLayer`, override via `onTilesetLoad: (tileset) => tileset.setProps({groundHeightDatum: 408})`.
 
 Callbacks:
 
