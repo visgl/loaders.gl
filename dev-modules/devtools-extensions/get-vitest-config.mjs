@@ -130,6 +130,7 @@ export async function getVitestConfig(options = {}) {
             color: 'blue',
             environment: 'node',
             passWithNoTests: true,
+            testTimeout,
             setupFiles,
             include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
             exclude: [
