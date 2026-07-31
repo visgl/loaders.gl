@@ -218,7 +218,9 @@ test('MVTLoader#Parse Polygons MVT', async t => {
       t.ok(geometry.byteLength > 0);
       delete geometry.byteLength;
     }
-    t.deepEqual(geometry, expected, `Parsed Polygons MVT as ${outputFormat}`);
+    const comparableGeometry = binary ? geometry : normalizeGeoJSONCoordinates(geometry);
+    const comparableExpected = binary ? expected : normalizeGeoJSONCoordinates(expected);
+    t.deepEqual(comparableGeometry, comparableExpected, `Parsed Polygons MVT as ${outputFormat}`);
   }
   t.end();
 });
@@ -235,6 +237,30 @@ test('Should raise an error when coordinates param is wgs84 and tileIndex is mis
 
   t.end();
 });
+
+/**
+ * Normalizes projected coordinates for comparisons across JavaScript runtimes.
+ * WGS84 projection uses transcendental math whose least-significant digits can vary by platform.
+ */
+function normalizeGeoJSONCoordinates(table: any): any {
+  return {
+    ...table,
+    features: table.features.map((feature: any) => ({
+      ...feature,
+      geometry: feature.geometry
+        ? {...feature.geometry, coordinates: roundCoordinates(feature.geometry.coordinates)}
+        : feature.geometry
+    }))
+  };
+}
+
+/** Rounds nested coordinate arrays to sub-millimeter precision. */
+function roundCoordinates(coordinates: any): any {
+  if (Array.isArray(coordinates)) {
+    return coordinates.map(value => roundCoordinates(value));
+  }
+  return typeof coordinates === 'number' ? Number(coordinates.toFixed(10)) : coordinates;
+}
 
 test('Should add layer name to custom property', async t => {
   const response = await fetchFile(MVT_POINTS_DATA_URL);
