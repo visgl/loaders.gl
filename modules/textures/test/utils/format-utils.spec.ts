@@ -9,7 +9,7 @@ import {isBrowser} from '@loaders.gl/core';
 import {
   getSupportedBasisFormats,
   selectSupportedBasisFormat
-} from '../../src/lib/parsers/parse-basis';
+} from '../../src/lib/utils/basis-format-utils';
 import {
   detectSupportedGPUTextureFormats,
   detectSupportedTextureFormats

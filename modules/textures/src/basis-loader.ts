@@ -6,7 +6,7 @@ import type {Loader, LoaderOptions} from '@loaders.gl/loader-utils';
 import type {TextureFormat, TextureLevel} from '@loaders.gl/schema';
 import {BasisTextureFormat} from './texture-format';
 import {VERSION} from './lib/utils/version';
-import type {BasisFormat} from './lib/parsers/parse-basis';
+import type {BasisFormat} from './lib/utils/basis-format-utils';
 
 type BasisFormatOption = BasisFormat | Uppercase<BasisFormat>;
 type BasisTargetFormat =

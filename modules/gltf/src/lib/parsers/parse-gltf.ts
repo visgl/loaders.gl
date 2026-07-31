@@ -1,5 +1,5 @@
 /* eslint-disable camelcase, max-statements, no-restricted-globals */
-import type {LoaderContext, StrictLoaderOptions} from '@loaders.gl/loader-utils';
+import type {LoaderContext} from '@loaders.gl/loader-utils';
 import type {GLTFLoaderOptions} from '../../gltf-loader';
 import type {GLTFWithBuffers} from '../types/gltf-types';
 import type {GLB} from '../types/glb-types';
@@ -8,7 +8,7 @@ import type {ParseGLBOptions} from './parse-glb';
 import type {ImageType, TextureLevel} from '@loaders.gl/schema';
 import {parseJSON, sliceArrayBuffer, parseFromContext} from '@loaders.gl/loader-utils';
 import {ImageBitmapLoader} from '@loaders.gl/images';
-import {BasisLoader} from '@loaders.gl/textures';
+import {BasisLoader, selectSupportedBasisFormat} from '@loaders.gl/textures';
 
 import {assert} from '../utils/assert';
 import {isGLB, parseGLBSync} from './parse-glb';
@@ -27,6 +27,33 @@ export type ParseGLTFOptions = ParseGLBOptions & {
   /** @deprecated not supported in v4. `postProcessGLTF()` must be called by the application */
   postProcess?: never;
 };
+
+/**
+ * Creates options for parsing an image referenced by a glTF asset.
+ * Resolves automatic Basis format selection before the image is delegated to a worker.
+ * @param options - glTF loader options.
+ * @param mimeType - MIME type declared by the glTF image.
+ * @returns Loader options for the referenced image.
+ */
+export function getGLTFImageOptions(
+  options: GLTFLoaderOptions,
+  mimeType?: string
+): GLTFLoaderOptions {
+  const basisOptions = options.basis;
+  const basisFormat = basisOptions?.format;
+
+  return {
+    ...options,
+    core: {...options.core, mimeType},
+    basis: {
+      ...basisOptions,
+      format:
+        basisFormat && basisFormat !== 'auto'
+          ? basisFormat
+          : selectSupportedBasisFormat(basisOptions?.supportedTextureFormats)
+    }
+  };
+}
 
 /** Check if an array buffer appears to contain GLTF data */
 export function isGLTF(arrayBuffer: ArrayBuffer, options?: ParseGLTFOptions): boolean {
@@ -219,12 +246,7 @@ async function loadImage(
 
   assert(arrayBuffer, 'glTF image has no data');
 
-  const strictOptions = options;
-
-  const gltfOptions = {
-    ...strictOptions,
-    core: {...strictOptions?.core, mimeType: image.mimeType}
-  } satisfies StrictLoaderOptions;
+  const gltfOptions = getGLTFImageOptions(options, image.mimeType);
 
   // Call `parse`
   let parsedImage = (await parseFromContext(

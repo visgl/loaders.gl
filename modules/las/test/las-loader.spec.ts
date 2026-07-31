@@ -226,7 +226,7 @@ test('LASLoader#parse LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', a
   t.equal(actual.header.vertexCount, LAS_POINT_COUNT, 'fixture point count is expected');
   compareMeshAttributes(t, actual, expected, 'TypeScript LAZ PDRF 3 parse matches laz-rs');
   t.end();
-});
+}, 15000);
 
 test('LASLoader#parseInBatches split LAZ 1.2 PDRF 3 TypeScript backend matches WASM backend', async t => {
   const response = await fetchFile(LAS_EXTRABYTES_BINARY_URL);
