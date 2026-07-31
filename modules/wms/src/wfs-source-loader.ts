@@ -3,11 +3,16 @@
 // Copyright (c) vis.gl contributors
 
 import type {Schema, GeoJSONTable} from '@loaders.gl/schema';
+import {
+  convertFeaturesToWKBArrowTable,
+  convertGeojsonToBinaryFeatureCollection
+} from '@loaders.gl/gis';
 import type {
   CoreAPI,
   DataSourceOptions,
   VectorSourceMetadata,
-  GetFeaturesParameters
+  GetFeaturesParameters,
+  VectorSourceData
 } from '@loaders.gl/loader-utils';
 import {SourceLoader, DataSource, VectorSource, mergeOptions} from '@loaders.gl/loader-utils';
 
@@ -244,7 +249,7 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     return this.normalizeMetadata(capabilities);
   }
 
-  async getFeatures(parameters: GetFeaturesParameters): Promise<GeoJSONTable> {
+  async getFeatures(parameters: GetFeaturesParameters): Promise<VectorSourceData> {
     const url = this.getFeaturesURL(parameters);
     const response = await this.fetch(
       url,
@@ -253,7 +258,18 @@ export class WFSVectorSource extends DataSource<string, WFSourceOptions> impleme
     const arrayBuffer = await response.arrayBuffer();
     this._checkResponse(response, arrayBuffer);
     const text = new TextDecoder().decode(arrayBuffer);
-    return parseGeoJSONTable(JSON.parse(text));
+    const geoJsonTable = parseGeoJSONTable(JSON.parse(text));
+    const format = parameters.format || 'arrow';
+
+    switch (format) {
+      case 'binary':
+        return convertGeojsonToBinaryFeatureCollection(geoJsonTable.features);
+      case 'geojson':
+        return geoJsonTable;
+      case 'arrow':
+      default:
+        return convertFeaturesToWKBArrowTable(geoJsonTable.features);
+    }
   }
 
   normalizeMetadata(capabilities: WFSCapabilities): VectorSourceMetadata {

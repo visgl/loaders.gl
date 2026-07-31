@@ -12,17 +12,35 @@ import {LASFormat} from './las-format';
 const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 const LAS_HEADER_LENGTH = 227;
-const LAS_POINT_RECORD_LENGTH = 20;
-const LAS_COLOR_POINT_RECORD_LENGTH = 26;
+const LAS_1_4_HEADER_LENGTH = 375;
+const POINT_RECORD_LENGTHS: Record<number, number> = {
+  0: 20,
+  1: 28,
+  2: 26,
+  3: 34,
+  4: 57,
+  5: 63,
+  6: 30,
+  7: 36,
+  8: 38
+};
 
 /** Options for `LASWriter`. */
 export type LASWriterOptions = WriterOptions & {
   /** LAS-specific writer options. */
   las?: {
+    /** Output container format. Only uncompressed LAS is currently implemented. */
+    format?: 'las' | 'laz' | 'copc';
+    /** LAS file version to write. LAS 1.5 writing is intentionally not supported. */
+    version?: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
+    /** LAS point data record format to write. */
+    pointDataRecordFormat?: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
     /** Coordinate scale factors used to quantize positions into LAS integer coordinates. */
     scale?: [number, number, number];
     /** Coordinate offsets used to quantize positions into LAS integer coordinates. */
     offset?: [number, number, number];
+    /** Color component depth used by source color attributes. */
+    colorDepth?: number | string;
   };
 };
 
@@ -39,12 +57,26 @@ export const LASWriter = {
     las: {}
   },
   encode: async (data, options) => encodeLASSync(data, options),
-  encodeSync: encodeLASSync
+  encodeSync: encodeLASSync,
+  encodeInBatches: async function* (dataIterator, options) {
+    const batches: (Mesh | MeshArrowTable)[] = [];
+    for await (const batch of dataIterator as AsyncIterable<Mesh | MeshArrowTable>) {
+      batches.push(batch);
+    }
+    yield encodeLASSync(mergeMeshBatches(batches), options);
+  }
 } as const satisfies WriterWithEncoder<Mesh | MeshArrowTable, never, LASWriterOptions>;
 
 /** Encode mesh category data as uncompressed LAS bytes. */
 function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = {}): ArrayBuffer {
-  const mesh = convertTableToMesh(normalizeMeshArrowTable(data));
+  const format = options.las?.format || 'las';
+  if (format !== 'las') {
+    throw new Error(
+      `LASWriter: TypeScript ${format.toUpperCase()} encoding is not implemented yet`
+    );
+  }
+
+  const mesh = normalizeMesh(data);
   const positionAttribute = getRequiredAttribute(mesh, 'POSITION');
   const colorAttribute = mesh.attributes.COLOR_0;
   const intensityAttribute = mesh.attributes.intensity;
@@ -53,11 +85,15 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
   const boundingBox = getBoundingBox(positionAttribute, vertexCount);
   const scale = getScale(mesh, options);
   const offset = getOffset(mesh, options, boundingBox);
-  const pointDataRecordFormat = colorAttribute ? 2 : 0;
-  const pointDataRecordLength = colorAttribute
-    ? LAS_COLOR_POINT_RECORD_LENGTH
-    : LAS_POINT_RECORD_LENGTH;
-  const arrayBuffer = new ArrayBuffer(LAS_HEADER_LENGTH + vertexCount * pointDataRecordLength);
+  const pointDataRecordFormat =
+    options.las?.pointDataRecordFormat ?? getDefaultPointDataRecordFormat(options, colorAttribute);
+  const pointDataRecordLength = POINT_RECORD_LENGTHS[pointDataRecordFormat];
+  if (!pointDataRecordLength) {
+    throw new Error(`LASWriter: unsupported point data record format ${pointDataRecordFormat}`);
+  }
+  const version = options.las?.version || (pointDataRecordFormat >= 6 ? '1.4' : '1.2');
+  const headerLength = version === '1.4' ? LAS_1_4_HEADER_LENGTH : LAS_HEADER_LENGTH;
+  const arrayBuffer = new ArrayBuffer(headerLength + vertexCount * pointDataRecordLength);
   const dataView = new DataView(arrayBuffer);
 
   writeHeader(dataView, {
@@ -65,12 +101,14 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
     boundingBox,
     scale,
     offset,
+    version,
+    headerLength,
     pointDataRecordFormat,
     pointDataRecordLength
   });
 
   for (let vertexIndex = 0; vertexIndex < vertexCount; vertexIndex++) {
-    const pointOffset = LAS_HEADER_LENGTH + vertexIndex * pointDataRecordLength;
+    const pointOffset = headerLength + vertexIndex * pointDataRecordLength;
     dataView.setInt32(
       pointOffset,
       Math.round((getComponent(positionAttribute, vertexIndex, 0) - offset[0]) / scale[0]),
@@ -86,29 +124,73 @@ function encodeLASSync(data: Mesh | MeshArrowTable, options: LASWriterOptions = 
       Math.round((getComponent(positionAttribute, vertexIndex, 2) - offset[2]) / scale[2]),
       true
     );
-    dataView.setUint16(pointOffset + 12, getUInt16Attribute(intensityAttribute, vertexIndex), true);
-    dataView.setUint8(pointOffset + 14, 0);
-    dataView.setUint8(pointOffset + 15, getUInt8Attribute(classificationAttribute, vertexIndex));
-    dataView.setInt8(pointOffset + 16, 0);
-    dataView.setUint8(pointOffset + 17, 0);
-    dataView.setUint16(pointOffset + 18, 0, true);
-
-    if (colorAttribute) {
-      dataView.setUint16(pointOffset + 20, getLASColor(colorAttribute, vertexIndex, 0), true);
-      dataView.setUint16(pointOffset + 22, getLASColor(colorAttribute, vertexIndex, 1), true);
-      dataView.setUint16(pointOffset + 24, getLASColor(colorAttribute, vertexIndex, 2), true);
-    }
+    writePointRecord(dataView, pointOffset, vertexIndex, pointDataRecordFormat, {
+      intensityAttribute,
+      classificationAttribute,
+      colorAttribute
+    });
   }
 
   return arrayBuffer;
 }
 
+/** Return mesh data as a Mesh, converting MeshArrowTable input first. */
+function normalizeMesh(data: Mesh | MeshArrowTable): Mesh {
+  if ('shape' in data && data.shape === 'arrow-table') {
+    return convertTableToMesh(data);
+  }
+  return data as Mesh;
+}
+
 /** Return mesh data as a MeshArrowTable, converting plain Mesh data first. */
 function normalizeMeshArrowTable(data: Mesh | MeshArrowTable): MeshArrowTable {
-  if ('shape' in data && data.shape === 'arrow-table') {
-    return data;
+  return 'shape' in data && data.shape === 'arrow-table'
+    ? data
+    : convertMeshToTable(data as Mesh, 'arrow-table');
+}
+
+/** Merge buffered mesh batches for `encodeInBatches`. */
+function mergeMeshBatches(batches: (Mesh | MeshArrowTable)[]): Mesh | MeshArrowTable {
+  if (batches.length === 0) {
+    throw new Error('LASWriter: at least one input batch is required');
   }
-  return convertMeshToTable(data as Mesh, 'arrow-table');
+  if (batches.length === 1) {
+    return batches[0];
+  }
+
+  const meshes = batches.map(batch => convertTableToMesh(normalizeMeshArrowTable(batch)));
+  const firstMesh = meshes[0];
+  const mergedAttributes: Mesh['attributes'] = {};
+
+  for (const attributeName of Object.keys(firstMesh.attributes)) {
+    const firstAttribute = firstMesh.attributes[attributeName];
+    const values = meshes.map(mesh => mesh.attributes[attributeName]?.value);
+    if (values.some(value => !value)) {
+      continue;
+    }
+    const totalLength = values.reduce((length, value) => length + value!.length, 0);
+    const Constructor = firstAttribute.value.constructor as new (
+      length: number
+    ) => typeof firstAttribute.value;
+    const mergedValue = new Constructor(totalLength);
+    let offset = 0;
+    for (const value of values) {
+      mergedValue.set(value!, offset);
+      offset += value!.length;
+    }
+    mergedAttributes[attributeName] = {...firstAttribute, value: mergedValue};
+  }
+
+  return {
+    ...firstMesh,
+    attributes: mergedAttributes,
+    header: {
+      ...firstMesh.header,
+      vertexCount:
+        getRequiredAttribute({...firstMesh, attributes: mergedAttributes}, 'POSITION').value
+          .length / 3
+    }
+  };
 }
 
 /** Return a required mesh attribute or throw a format-specific error. */
@@ -128,21 +210,24 @@ function writeHeader(
     boundingBox: [[number, number, number], [number, number, number]];
     scale: [number, number, number];
     offset: [number, number, number];
+    version: '1.0' | '1.1' | '1.2' | '1.3' | '1.4';
+    headerLength: number;
     pointDataRecordFormat: number;
     pointDataRecordLength: number;
   }
 ): void {
+  const [versionMajor, versionMinor] = parameters.version.split('.').map(Number);
   writeString(dataView, 0, 'LASF', 4);
-  dataView.setUint8(24, 1);
-  dataView.setUint8(25, 2);
+  dataView.setUint8(24, versionMajor);
+  dataView.setUint8(25, versionMinor);
   writeString(dataView, 26, 'loaders.gl', 32);
   writeString(dataView, 58, 'loaders.gl', 32);
-  dataView.setUint16(94, LAS_HEADER_LENGTH, true);
-  dataView.setUint32(96, LAS_HEADER_LENGTH, true);
+  dataView.setUint16(94, parameters.headerLength, true);
+  dataView.setUint32(96, parameters.headerLength, true);
   dataView.setUint8(104, parameters.pointDataRecordFormat);
   dataView.setUint16(105, parameters.pointDataRecordLength, true);
-  dataView.setUint32(107, parameters.vertexCount, true);
-  dataView.setUint32(111, parameters.vertexCount, true);
+  dataView.setUint32(107, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
+  dataView.setUint32(111, parameters.version === '1.4' ? 0 : parameters.vertexCount, true);
 
   dataView.setFloat64(131, parameters.scale[0], true);
   dataView.setFloat64(139, parameters.scale[1], true);
@@ -156,6 +241,119 @@ function writeHeader(
   dataView.setFloat64(203, parameters.boundingBox[0][1], true);
   dataView.setFloat64(211, parameters.boundingBox[1][2], true);
   dataView.setFloat64(219, parameters.boundingBox[0][2], true);
+
+  if (parameters.version === '1.4') {
+    writeUint64Fallback(dataView, 247, parameters.vertexCount);
+    writeUint64Fallback(dataView, 255, parameters.vertexCount);
+  }
+}
+
+/** Write one LAS point record. */
+function writePointRecord(
+  dataView: DataView,
+  pointOffset: number,
+  vertexIndex: number,
+  pointDataRecordFormat: number,
+  attributes: {
+    intensityAttribute?: MeshAttribute;
+    classificationAttribute?: MeshAttribute;
+    colorAttribute?: MeshAttribute;
+  }
+): void {
+  dataView.setUint16(
+    pointOffset + 12,
+    getUInt16Attribute(attributes.intensityAttribute, vertexIndex),
+    true
+  );
+
+  if (pointDataRecordFormat <= 5) {
+    dataView.setUint8(pointOffset + 14, 0);
+    dataView.setUint8(
+      pointOffset + 15,
+      getUInt8Attribute(attributes.classificationAttribute, vertexIndex) & 0x1f
+    );
+    dataView.setInt8(pointOffset + 16, 0);
+    dataView.setUint8(pointOffset + 17, 0);
+    dataView.setUint16(pointOffset + 18, 0, true);
+    if (pointDataRecordFormat === 1 || pointDataRecordFormat === 3 || pointDataRecordFormat >= 4) {
+      dataView.setFloat64(pointOffset + 20, 0, true);
+    }
+  } else {
+    dataView.setUint8(pointOffset + 14, 0);
+    dataView.setUint8(pointOffset + 15, 0);
+    dataView.setUint8(
+      pointOffset + 16,
+      getUInt8Attribute(attributes.classificationAttribute, vertexIndex)
+    );
+    dataView.setUint8(pointOffset + 17, 0);
+    dataView.setInt16(pointOffset + 18, 0, true);
+    dataView.setUint16(pointOffset + 20, 0, true);
+    dataView.setFloat64(pointOffset + 22, 0, true);
+  }
+
+  writePointColor(
+    dataView,
+    pointOffset,
+    vertexIndex,
+    pointDataRecordFormat,
+    attributes.colorAttribute
+  );
+}
+
+/** Write RGB values for point formats that include color. */
+function writePointColor(
+  dataView: DataView,
+  pointOffset: number,
+  vertexIndex: number,
+  pointDataRecordFormat: number,
+  colorAttribute?: MeshAttribute
+): void {
+  const colorOffset = getColorOffset(pointDataRecordFormat);
+  if (colorOffset < 0 || !colorAttribute) {
+    return;
+  }
+  dataView.setUint16(pointOffset + colorOffset, getLASColor(colorAttribute, vertexIndex, 0), true);
+  dataView.setUint16(
+    pointOffset + colorOffset + 2,
+    getLASColor(colorAttribute, vertexIndex, 1),
+    true
+  );
+  dataView.setUint16(
+    pointOffset + colorOffset + 4,
+    getLASColor(colorAttribute, vertexIndex, 2),
+    true
+  );
+}
+
+function getColorOffset(pointDataRecordFormat: number): number {
+  switch (pointDataRecordFormat) {
+    case 2:
+      return 20;
+    case 3:
+      return 28;
+    case 5:
+      return 57;
+    case 7:
+    case 8:
+      return 30;
+    default:
+      return -1;
+  }
+}
+
+function getDefaultPointDataRecordFormat(
+  options: LASWriterOptions,
+  colorAttribute?: MeshAttribute
+): number {
+  if (options.las?.version === '1.4') {
+    return colorAttribute ? 7 : 6;
+  }
+  return colorAttribute ? 2 : 0;
+}
+
+function writeUint64Fallback(dataView: DataView, byteOffset: number, value: number): void {
+  dataView.setUint32(byteOffset, value >>> 0, true);
+  dataView.setUint32(byteOffset + 4, Math.floor(value / 2 ** 32), true);
 }
 
 /** Write a fixed-length ASCII string into a DataView. */

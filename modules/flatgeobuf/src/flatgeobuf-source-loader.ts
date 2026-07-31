@@ -64,13 +64,13 @@ export const FlatGeobufSourceLoader = {
 
   options: {
     flatgeobuf: {
-      format: 'geojson'
+      format: 'arrow'
     }
   },
 
   defaultOptions: {
     flatgeobuf: {
-      format: 'geojson'
+      format: 'arrow'
     }
   },
 
@@ -123,7 +123,7 @@ export class FlatGeobufVectorSource
     assertNotAborted(parameters.signal);
 
     const headerInfo = await this.getHeaderInfo();
-    const format = parameters.format || this.options.flatgeobuf?.format || 'geojson';
+    const format = parameters.format || this.options.flatgeobuf?.format || 'arrow';
     const sourceBoundingBox = projectBoundingBoxToSource(
       parameters.boundingBox,
       parameters.crs,

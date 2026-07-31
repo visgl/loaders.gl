@@ -6,7 +6,8 @@ import {parseChromeTraceArrowSchemaMetadata} from './chrome-trace-arrow-parser';
 
 import type {
   ChromeTraceEventArrowRecordBatch,
-  ChromeTraceEventArrowTable
+  ChromeTraceEventArrowTable,
+  ChromeTraceEventStreamArrowRecordBatch
 } from './chrome-trace-arrow-schema';
 import type {ChromeTraceEventPhase, ChromeTraceEventSchema} from './chrome-trace-schema';
 
@@ -15,6 +16,7 @@ import type {ChromeTraceEventPhase, ChromeTraceEventSchema} from './chrome-trace
  */
 export type ChromeTraceArrowSourceItem =
   | ChromeTraceEventArrowRecordBatch
+  | ChromeTraceEventStreamArrowRecordBatch
   | ChromeTraceEventArrowTable;
 
 /**
@@ -58,18 +60,30 @@ export function decodeChromeTraceArrowSource(
       event.bind_id = bindIdValue;
     }
 
+    const eventScopeValue = getOptionalChromeTraceString(row.s);
+    if (eventScopeValue) {
+      event.s = eventScopeValue as 'g' | 'p' | 't';
+    }
+
     const scopeValue = getOptionalChromeTraceString(row.scope);
-    if (scopeValue) {
+    if (scopeValue && !eventScopeValue) {
       if (phase === 'b' || phase === 'e' || phase === 'n') {
         event.s = scopeValue as 'g' | 'p' | 't';
       } else {
         event.scope = scopeValue as 'g' | 'p' | 't';
       }
+    } else if (scopeValue) {
+      event.scope = scopeValue as 'g' | 'p' | 't';
     }
 
     const argsValue = parseChromeTraceArrowJson(row.args);
     if (argsValue != null) {
       event.args = argsValue as Record<string, unknown>;
+    }
+
+    const id2Value = parseChromeTraceArrowJson(row.id2);
+    if (id2Value != null) {
+      event.id2 = id2Value as ChromeTraceEventSchema['id2'];
     }
 
     if (extra) {

@@ -115,6 +115,11 @@ export {
   concatenateTypedArrays,
   compareArrayBuffers
 } from './lib/binary-utils/array-buffer-utils';
+export {BinaryChunkReader} from './lib/binary-utils/binary-chunk-reader';
+export type {
+  BinaryChunkReaderCheckpoint,
+  BinaryChunkReaderOptions
+} from './lib/binary-utils/binary-chunk-reader';
 export {padToNBytes, copyToArray, copyArrayBuffer} from './lib/binary-utils/memory-copy-utils';
 export {
   padStringToByteAlignment,
@@ -154,6 +159,27 @@ export type {
   RangeRequestTransportResult,
   RangeStats
 } from './lib/request-utils/range-request-scheduler';
+
+// LAZ DECODER UTILS
+export {
+  NeedsMoreData,
+  createLAZChunkDecoder,
+  createLAZChunkDecoderCursor,
+  decodeLAZChunkTable,
+  decodeLAZChunk,
+  decodeLAZChunkInBatches,
+  getLAZChunkByteLength
+} from './lib/laz/laz-chunk-decoder';
+export type {
+  FeedableLAZChunkDecoder,
+  LAZChunkDecoderCursor,
+  LAZChunkDecoderOptions,
+  LAZChunkMetadata,
+  LAZChunkTableEntry,
+  LAZPointDataTarget
+} from './lib/laz/laz-chunk-decoder';
+export {createLAZChunkEncoder, encodeLAZChunk} from './lib/laz/laz-chunk-encoder';
+export type {FeedableLAZChunkEncoder} from './lib/laz/laz-chunk-encoder';
 
 // PATH HELPERS
 export {setPathPrefix, getPathPrefix, resolvePath} from './lib/path-utils/file-aliases';
@@ -205,6 +231,14 @@ export {isSourceLoader} from './source-types';
 
 export type {CoreAPI, DataSourceOptions} from './lib/sources/data-source';
 export {DataSource} from './lib/sources/data-source';
+export type {
+  ManageableDataSource,
+  DataSourceManagerAddParameters,
+  DataSourceManagerGetOrCreateParameters,
+  DataSourceManagerSubscribeParameters,
+  DataSourceSubscriber
+} from './lib/sources/data-source-manager';
+export {DataSourceManager} from './lib/sources/data-source-manager';
 
 export {ImageSource} from './lib/sources/image-source';
 export type {ImageType} from './lib/sources/utils/image-type';

@@ -9,16 +9,15 @@ import {convertMeshToTable, convertTableToMesh} from '@loaders.gl/schema-utils';
 import type {LASLoaderOptions} from './las-loader';
 import type {LASMesh} from './lib/las-types';
 import {parseCOPCLAS, parseCOPCLASInBatches} from './lib/copc/parse-las';
-import {LAZPerfLoader as LAZPerfLoaderMetadata} from './lazperf-loader';
+import {LASLoader as LASLoaderMetadata} from './las-loader';
 
-const {preload: _LAZPerfLoaderPreload, ...LAZPerfLoaderMetadataWithoutPreload} =
-  LAZPerfLoaderMetadata;
+const {preload: _LASLoaderPreload, ...LASLoaderMetadataWithoutPreload} = LASLoaderMetadata;
 
 /**
  * Loader for LAS/LAZ using the laz-perf backend from the COPC package.
  */
-export const COPCLoaderWithParser = {
-  ...LAZPerfLoaderMetadataWithoutPreload,
+export const LASCOPCLoaderWithParser = {
+  ...LASLoaderMetadataWithoutPreload,
   parse: async (arrayBuffer: ArrayBuffer, options?: LASLoaderOptions) =>
     convertLASMesh(await parseCOPCLAS(arrayBuffer, options), options),
   parseInBatches: (arrayBufferIterator, options?: LASLoaderOptions) =>

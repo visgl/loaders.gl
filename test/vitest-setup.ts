@@ -15,12 +15,14 @@ if (typeof process !== 'undefined' && typeof process.version === 'string') {
 
 await import('@loaders.gl/polyfills');
 
-const [{default: aliases}, {_addAliases}] = await Promise.all([
+const [{default: aliases}, {_addAliases}, {setLoaderOptions}] = await Promise.all([
   import('./aliases'),
-  import('@loaders.gl/loader-utils')
+  import('@loaders.gl/loader-utils'),
+  import('@loaders.gl/core')
 ]);
 
 _addAliases(aliases);
+setLoaderOptions({core: {_workerType: 'test', CDN: null, useLocalLibraries: true}});
 
 if (typeof window !== 'undefined') {
   Object.defineProperty(globalThis, 'global', {

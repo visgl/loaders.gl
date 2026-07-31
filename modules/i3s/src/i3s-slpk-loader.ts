@@ -22,7 +22,6 @@ export type SLPKLoaderOptions = LoaderOptions & {
 /**
  * Loader for SLPK - Scene Layer Package (Archive I3S format)
  * @todo - this reloads the entire archive for every tile, should be optimized
- * @todo - this should be updated to use `parseFile` and ReadableFile
  */
 export const SLPKLoader = {
   ...SLPKFormat,

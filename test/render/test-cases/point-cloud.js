@@ -39,7 +39,7 @@ export default [
     name: 'LAZ pointcloud',
     disabled: true, // Seems breaking on master
     onInitialize: async ({gl}) => {
-      const lazPointCloud = await load(LAS_BINARY_URL, LASLoader, {skip: 10});
+      const lazPointCloud = await load(LAS_BINARY_URL, LASLoader);
       const model = getModel(gl, lazPointCloud);
       return {model, lazPointCloud};
     },

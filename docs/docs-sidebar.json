@@ -121,6 +121,7 @@
           "modules/images/api-reference/image-bitmap-loader",
           "modules/images/api-reference/image-loader",
           "modules/json/api-reference/json-loader",
+          "modules/json/api-reference/json-table-loader",
           "modules/kml/api-reference/kml-loader",
           "modules/mvt/api-reference/map-style-loader",
           "modules/las/api-reference/las-loader",
@@ -245,6 +246,7 @@
         "label": "@loaders.gl/loader-utils",
         "items": [
           "modules/loader-utils/README",
+          "modules/loader-utils/api-reference/data-source-manager",
           "modules/loader-utils/api-reference/readable-file",
           "modules/loader-utils/api-reference/request-scheduler",
           "modules/loader-utils/api-reference/range-request-scheduler",

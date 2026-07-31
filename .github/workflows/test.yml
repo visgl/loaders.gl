@@ -82,9 +82,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install Playwright browsers
+      - name: Install Playwright browser dependencies
         if: matrix.playwright
-        run: yarn playwright install --with-deps chromium
+        run: |
+          google-chrome --version
+          yarn playwright install-deps chrome
 
       - name: Build workers
         run: yarn run build-workers

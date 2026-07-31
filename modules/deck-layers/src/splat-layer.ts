@@ -233,7 +233,13 @@ fn vertexMain(
     vec3<f32>(0.0, 0.0, 0.0)
   );
   let pixelOffset = corner.x * axis0 + corner.y * axis1;
-  clipPosition.xy += project_pixel_size_to_clipspace(pixelOffset);
+  let clipOffset = project_pixel_size_to_clipspace(pixelOffset);
+  clipPosition = vec4<f32>(
+    clipPosition.x + clipOffset.x,
+    clipPosition.y + clipOffset.y,
+    clipPosition.z,
+    clipPosition.w
+  );
 
   outputs.position = clipPosition;
   outputs.gaussianCoord = gaussianCoord;

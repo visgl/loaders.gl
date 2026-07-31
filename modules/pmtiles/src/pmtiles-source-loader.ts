@@ -6,6 +6,7 @@ import type {Schema} from '@loaders.gl/schema';
 import type {
   CoreAPI,
   SourceLoader,
+  VectorTile,
   VectorTileSource,
   GetTileParameters,
   GetTileDataParameters,
@@ -38,7 +39,10 @@ export type PMTilesSourceLoaderOptions = DataSourceOptions & {
   core?: DataSourceOptions['core'] & {
     loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
   };
-  pmtiles?: {};
+  pmtiles?: {
+    /** Shape of returned vector tile data. */
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
+  };
   rangeRequests?: PMTilesRangeRequestOptions;
   /** @deprecated Use `rangeRequests`. */
   tileRangeRequest?: PMTilesRangeRequestOptions;
@@ -179,11 +183,11 @@ export class PMTilesTileSource
 
   // VectorTileSource interface implementation
 
-  async getVectorTile(tileParams: GetTileParameters): Promise<unknown | null> {
+  async getVectorTile(tileParams: GetTileParameters): Promise<VectorTile | null> {
     const arrayBuffer = await this.getTile(tileParams);
     const loadOptions: MVTLoaderOptions = {
       mvt: {
-        shape: 'geojson-table',
+        shape: this.options.pmtiles?.shape || 'geojson-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         ...(this.loadOptions as MVTLoaderOptions)?.mvt
@@ -191,7 +195,9 @@ export class PMTilesTileSource
       ...this.loadOptions
     };
 
-    return arrayBuffer ? await this.coreApi.parse(arrayBuffer, MVTLoader, loadOptions) : null;
+    return arrayBuffer
+      ? ((await this.coreApi.parse(arrayBuffer, MVTLoader, loadOptions)) as VectorTile)
+      : null;
   }
 
   private getZxyBatched(

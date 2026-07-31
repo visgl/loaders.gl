@@ -21,6 +21,7 @@ export async function getVitestConfig(options = {}) {
   const tsconfigProjects = vitestConfig.tsconfigProjects || ['./tsconfig.json'];
   const excludePatterns = vitestConfig.excludePatterns || [];
   const nodeExcludePatterns = vitestConfig.nodeExcludePatterns || [];
+  const browserExcludePatterns = vitestConfig.browserExcludePatterns || [];
   const sharedExcludePatterns = ['**/node_modules/**', ...excludePatterns];
   const setupFiles = vitestConfig.setupFiles || ['./test/vitest-setup.ts'];
   const browserName = vitestConfig.browserName || 'chromium';
@@ -50,7 +51,68 @@ export async function getVitestConfig(options = {}) {
   return defineConfig({
     plugins: [serveRangeRequestsPlugin(repositoryRoot)],
     optimizeDeps: {
-      include: ['get-pixels', '@probe.gl/env']
+      noDiscovery: true,
+      entries: [],
+      include: [
+        '@deck.gl/core',
+        '@deck.gl/geo-layers',
+        '@deck.gl/layers',
+        '@duckdb/duckdb-wasm',
+        '@luma.gl/core',
+        '@luma.gl/engine',
+        '@mapbox/martini',
+        '@maplibre/mlt',
+        '@math.gl/core',
+        '@math.gl/culling',
+        '@math.gl/geospatial',
+        '@math.gl/polygon',
+        '@math.gl/proj4',
+        '@math.gl/types',
+        '@math.gl/web-mercator',
+        '@probe.gl/env',
+        '@probe.gl/log',
+        '@probe.gl/stats',
+        '@repeaterjs/repeater',
+        '@tmcw/togeojson',
+        '@turf/rewind',
+        '@xmldom/xmldom',
+        'apache-arrow',
+        'apache-arrow/type',
+        'brotli/decompress',
+        'bson',
+        'copc',
+        'crypto-js',
+        'd3-dsv',
+        'draco3d',
+        'fast-xml-parser',
+        'flatbuffers',
+        'fuzzer',
+        'geotiff',
+        'get-pixels',
+        'jszip',
+        'ktx-parse',
+        'lerc',
+        'long',
+        'lz4js',
+        'ndarray',
+        'node-int64',
+        'pako',
+        'parquet-wasm/esm/parquet_wasm.js',
+        'pbf',
+        'pmtiles',
+        'save-pixels',
+        'slice-source',
+        'snappyjs',
+        'sql.js',
+        'thrift',
+        'varint',
+        'vitest',
+        'web-streams-polyfill',
+        'xlsx',
+        'zarr',
+        'zod',
+        'zstd-codec'
+      ]
     },
     resolve: {
       alias: [
@@ -91,7 +153,12 @@ export async function getVitestConfig(options = {}) {
             testTimeout,
             setupFiles,
             include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
-            exclude: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}', ...sharedExcludePatterns],
+            exclude: [
+              'modules/**/*.node.spec.{ts,js}',
+              'test/**/*.node.spec.{ts,js}',
+              ...browserExcludePatterns,
+              ...sharedExcludePatterns
+            ],
             browser: {
               enabled: true,
               provider: createPlaywrightProvider(),
@@ -109,7 +176,12 @@ export async function getVitestConfig(options = {}) {
             testTimeout,
             setupFiles,
             include: ['modules/**/*.spec.{ts,js}', 'test/**/*.spec.{ts,js}'],
-            exclude: ['modules/**/*.node.spec.{ts,js}', 'test/**/*.node.spec.{ts,js}', ...sharedExcludePatterns],
+            exclude: [
+              'modules/**/*.node.spec.{ts,js}',
+              'test/**/*.node.spec.{ts,js}',
+              ...browserExcludePatterns,
+              ...sharedExcludePatterns
+            ],
             browser: {
               enabled: true,
               provider: createPlaywrightProvider(),

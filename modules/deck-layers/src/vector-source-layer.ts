@@ -12,9 +12,12 @@ import {
 } from '@deck.gl/core';
 import type {GeoJsonLayerProps} from '@deck.gl/layers';
 import {GeoJsonLayer} from '@deck.gl/layers';
+import {type GeometryColumnBinaryFeatureCollectionScratch} from '@loaders.gl/gis';
 import type {GeoJSONTable} from '@loaders.gl/schema';
 import type {VectorSource, VectorSourceData} from '@loaders.gl/loader-utils';
 import {VectorSet} from './vector-source-layer/vector-set';
+import {createGeoJsonLayerProps, type GeoArrowLayerProps} from './geoarrow-layer';
+import {convertGeoArrowTableToBinaryFeatureCollection} from './geoarrow-table-adapter';
 
 /** Props for {@link VectorSourceLayer}. */
 export type VectorSourceLayerProps = CompositeLayerProps & {
@@ -36,6 +39,8 @@ export type VectorSourceLayerProps = CompositeLayerProps & {
   onLoadingStateChange?: (isLoading: boolean) => void;
   /** Optional props forwarded into the default `GeoJsonLayer`. */
   geoJsonLayerProps?: Partial<GeoJsonLayerProps>;
+  /** Optional props forwarded into the default `GeoArrowLayer`. */
+  geoArrowLayerProps?: Partial<Omit<GeoArrowLayerProps, 'data'>>;
 };
 
 type VectorSourceLayerState = {
@@ -46,9 +51,10 @@ type VectorSourceLayerState = {
 const defaultProps: DefaultProps<VectorSourceLayerProps> = {
   id: 'vector-source-layer',
   crs: 'EPSG:4326',
-  format: 'geojson',
+  format: 'arrow',
   debounceTime: 200,
   geoJsonLayerProps: {type: 'object', compare: false, value: {}},
+  geoArrowLayerProps: {type: 'object', compare: false, value: {}},
   onDataLoad: {type: 'function', value: () => {}},
   onError: {
     type: 'function',
@@ -76,6 +82,9 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
 
   /** Typed deck.gl state for the owned vector runtime. */
   state = null as unknown as VectorSourceLayerState;
+
+  /** Reusable scratch buffers for WKB/WKT conversion. */
+  private geometryScratch: GeometryColumnBinaryFeatureCollectionScratch = {};
 
   /** Returns true when the current vector runtime has accepted data. */
   get isLoaded(): boolean {
@@ -145,9 +154,24 @@ export class VectorSourceLayer extends CompositeLayer<VectorSourceLayerProps> {
     }
 
     if (isArrowTable(table)) {
-      throw new Error(
-        'VectorSourceLayer does not render Arrow tables directly. Request geojson/binary output or convert Arrow results before rendering.'
-      );
+      const geoArrowLayerProps = this.props.geoArrowLayerProps;
+      const {
+        geometryColumn,
+        pointLayerProps,
+        pathLayerProps,
+        solidPolygonLayerProps,
+        ...forwardedGeoArrowLayerProps
+      } = geoArrowLayerProps || {};
+      return new GeoJsonLayer({
+        ...this.getSubLayerProps({id: 'geojson'}),
+        ...createGeoJsonLayerProps(pointLayerProps, pathLayerProps, solidPolygonLayerProps),
+        data: convertGeoArrowTableToBinaryFeatureCollection(table, {
+          geometryColumn,
+          scratch: this.geometryScratch
+        }),
+        ...forwardedGeoArrowLayerProps,
+        ...this.props.geoJsonLayerProps
+      }) as unknown as Layer;
     }
 
     const geoJsonData = isGeoJSONTable(table)
@@ -226,6 +250,8 @@ function isGeoJSONTable(data: VectorSourceData): data is GeoJSONTable {
   return (data as GeoJSONTable).shape === 'geojson-table';
 }
 
-function isArrowTable(data: VectorSourceData): boolean {
+function isArrowTable(
+  data: VectorSourceData
+): data is Extract<VectorSourceData, {shape: 'arrow-table'}> {
   return (data as {shape?: string}).shape === 'arrow-table';
 }

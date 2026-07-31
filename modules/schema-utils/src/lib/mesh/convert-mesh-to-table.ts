@@ -8,7 +8,9 @@ import type {
   MeshArrowTable,
   MeshTable,
   ArrowTable,
-  ColumnarTable
+  ColumnarTable,
+  MeshAttributes,
+  Schema
 } from '@loaders.gl/schema';
 import {indexedMeshArrowSchema, meshArrowSchema} from '@loaders.gl/schema';
 import * as arrow from 'apache-arrow';
@@ -20,6 +22,20 @@ import {
 } from '../schema/convert-arrow-schema';
 
 const MESH_ARROW_ATTRIBUTE_ORDER = ['POSITION'];
+
+/** Options for constructing a MeshArrowTable directly from typed mesh attribute arrays. */
+export type MeshArrowTableOptions = {
+  /** Schema describing the mesh attributes and metadata. */
+  schema?: Schema;
+  /** Mesh primitive topology represented by the table rows. */
+  topology?: 'point-list' | 'triangle-list' | 'triangle-strip';
+  /** Numeric draw mode associated with the mesh topology. */
+  mode?: number;
+  /** Optional mesh bounding box metadata. */
+  boundingBox?: [number[], number[]];
+  /** Optional top-level primitive indices accessor for indexed meshes. */
+  indices?: MeshAttribute;
+};
 
 /** Convert a mesh to a columnar table. */
 export function convertMeshToTable(mesh: Mesh, shape: 'columnar-table'): MeshTable;
@@ -75,27 +91,45 @@ export function convertMeshToColumnarTable(mesh: Mesh): MeshTable {
  * @returns Mesh data as an Apache Arrow table wrapper.
  */
 export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): MeshArrowTable {
+  return makeMeshArrowTable(mesh.attributes, {
+    schema: mesh.schema,
+    topology: mesh.topology,
+    mode: mesh.mode,
+    boundingBox: mesh.header?.boundingBox,
+    indices: hasMeshIndices(mesh) ? mesh.indices : undefined
+  });
+}
+
+/**
+ * Create a MeshArrowTable directly from mesh attribute typed arrays.
+ * @param attributes Mesh attributes to expose as Arrow columns.
+ * @param options Mesh table metadata and optional schema.
+ * @returns Mesh data as an Apache Arrow table wrapper.
+ */
+export function makeMeshArrowTable(
+  attributes: MeshAttributes,
+  options: MeshArrowTableOptions = {}
+): MeshArrowTable {
   const fields: arrow.Field[] = [];
   const columns: {[columnName: string]: arrow.Vector} = {};
-  const attributeNames = getOrderedAttributeNames(mesh);
-  const hasIndices = hasMeshIndices(mesh);
+  const attributeNames = getOrderedAttributeNames(attributes);
 
   for (const attributeName of attributeNames) {
-    const attribute = mesh.attributes[attributeName];
+    const attribute = attributes[attributeName];
     const {value, size = 1} = attribute;
     const column = getAttributeArrowVector(value, size);
 
     columns[attributeName] = column;
-    fields.push(getAttributeArrowField(mesh, attributeName, column));
+    fields.push(getAttributeArrowField(options.schema, attributeName, column));
 
-    if (attributeName === 'POSITION' && hasIndices) {
+    if (attributeName === 'POSITION' && options.indices?.value?.length) {
       const indicesField = indexedMeshArrowSchema.fields.find(field => field.name === 'indices')!;
-      columns.indices = getIndicesVector(mesh.indices.value, column.length, indicesField.type);
+      columns.indices = getIndicesVector(options.indices.value, column.length, indicesField.type);
       fields.push(indicesField);
     }
   }
 
-  const arrowSchema = new arrow.Schema(fields, getMeshArrowMetadata(mesh));
+  const arrowSchema = new arrow.Schema(fields, getMeshArrowMetadata(options));
   const table = new arrow.Table(arrowSchema, columns);
   const schema = serializeArrowSchema(table.schema);
 
@@ -103,8 +137,8 @@ export function convertMeshToArrowTable(mesh: Mesh, batchSize?: number): MeshArr
     shape: 'arrow-table',
     schema,
     data: table,
-    topology: mesh.topology,
-    indices: hasIndices ? mesh.indices : undefined
+    topology: options.topology || 'point-list',
+    indices: options.indices
   };
 }
 
@@ -114,10 +148,10 @@ function getAttributeArrowVector(value: MeshAttribute['value'], size: number): a
 }
 
 /** Return mesh attribute names with predefined Mesh Arrow fields first. */
-function getOrderedAttributeNames(mesh: Mesh): string[] {
-  const attributeNames = Object.keys(mesh.attributes);
+function getOrderedAttributeNames(attributes: MeshAttributes): string[] {
+  const attributeNames = Object.keys(attributes);
   const orderedAttributeNames = MESH_ARROW_ATTRIBUTE_ORDER.filter(
-    attributeName => attributeName in mesh.attributes
+    attributeName => attributeName in attributes
   );
   const remainingAttributeNames = attributeNames.filter(
     attributeName => !MESH_ARROW_ATTRIBUTE_ORDER.includes(attributeName)
@@ -133,7 +167,7 @@ function hasMeshIndices(mesh: Mesh): mesh is Mesh & {indices: MeshAttribute} {
 
 /** Return the Arrow field for a mesh attribute column. */
 function getAttributeArrowField(
-  mesh: Mesh,
+  schema: Schema | undefined,
   attributeName: string,
   column: arrow.Vector
 ): arrow.Field {
@@ -141,7 +175,7 @@ function getAttributeArrowField(
     return meshArrowSchema.fields[0];
   }
 
-  const field = mesh.schema.fields.find(schemaField => schemaField.name === attributeName);
+  const field = schema?.fields.find(schemaField => schemaField.name === attributeName);
   return field ? deserializeArrowField(field) : new arrow.Field(attributeName, column.type, false);
 }
 
@@ -195,16 +229,16 @@ function getIndicesVector(
 }
 
 /** Return Arrow schema metadata for mesh-level properties. */
-function getMeshArrowMetadata(mesh: Mesh): Map<string, string> {
-  const metadata = {...mesh.schema?.metadata};
-  if (mesh.topology) {
-    metadata.topology ||= mesh.topology;
+function getMeshArrowMetadata(options: MeshArrowTableOptions): Map<string, string> {
+  const metadata = {...options.schema?.metadata};
+  if (options.topology) {
+    metadata.topology ||= options.topology;
   }
-  if (Number.isFinite(mesh.mode)) {
-    metadata.mode ||= String(mesh.mode);
+  if (Number.isFinite(options.mode)) {
+    metadata.mode ||= String(options.mode);
   }
-  if (mesh.header?.boundingBox) {
-    metadata.boundingBox ||= JSON.stringify(mesh.header.boundingBox);
+  if (options.boundingBox) {
+    metadata.boundingBox ||= JSON.stringify(options.boundingBox);
   }
   return deserializeArrowMetadata(metadata);
 }

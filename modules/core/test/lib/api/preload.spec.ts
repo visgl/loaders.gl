@@ -128,6 +128,60 @@ describe('preload', () => {
     expect(secondLoader).toBe(SyncTextLoader);
   });
 
+  test('caches backend-selected preload implementations separately', async () => {
+    let firstBackendCalls = 0;
+    let secondBackendCalls = 0;
+    const FirstBackendLoader = {
+      ...SyncTextLoader,
+      id: 'backend-cache'
+    };
+    const SecondBackendLoader = {
+      ...SyncTextLoader,
+      id: 'backend-cache',
+      parseTextSync: text => text.toLowerCase()
+    };
+    const BackendCacheLoader = {
+      id: 'backend-cache',
+      name: 'BackendCache',
+      module: 'core',
+      version: 'latest',
+      extensions: ['txt'],
+      mimeTypes: ['text/plain'],
+      text: true,
+      options: {
+        'backend-cache': {
+          backend: 'first'
+        }
+      },
+      preload: async (_url: string, options?: Record<string, any>) => {
+        if (options?.['backend-cache']?.backend === 'second') {
+          secondBackendCalls++;
+          return SecondBackendLoader;
+        }
+        firstBackendCalls++;
+        return FirstBackendLoader;
+      }
+    };
+
+    const defaultBackendLoader = await preload(BackendCacheLoader);
+    const firstBackendLoader = await preload(BackendCacheLoader, {
+      'backend-cache': {backend: 'first'}
+    });
+    const secondBackendLoader = await preload(BackendCacheLoader, {
+      'backend-cache': {backend: 'second'}
+    });
+    const secondBackendLoaderAgain = await preload(BackendCacheLoader, {
+      'backend-cache': {backend: 'second'}
+    });
+
+    expect(defaultBackendLoader).toBe(FirstBackendLoader);
+    expect(firstBackendLoader).toBe(FirstBackendLoader);
+    expect(secondBackendLoader).toBe(SecondBackendLoader);
+    expect(secondBackendLoaderAgain).toBe(SecondBackendLoader);
+    expect(firstBackendCalls).toBe(1);
+    expect(secondBackendCalls).toBe(1);
+  });
+
   test('rejects loaders without parser implementations', async () => {
     await expect(preload(NoParserLoader)).rejects.toThrow(/parser implementation/);
     await expect(preload(InvalidPreloadLoader)).rejects.toThrow(/parser-bearing loader/);

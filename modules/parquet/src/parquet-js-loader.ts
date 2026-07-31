@@ -14,15 +14,15 @@ const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'latest';
 
 /** Default option bag for the experimental parquetjs plain-row loader. */
 const DEFAULT_PARQUET_JS_OPTIONS = {
+  backend: 'typescript' as const,
   columns: undefined,
-  implementation: 'js' as const,
   preserveBinary: false
 };
 
 /** Preloads the parser-bearing parquetjs loader implementation. */
 async function preload() {
-  const {ParquetJSLoaderWithParser} = await import('./parquet-js-loader-with-parser');
-  return ParquetJSLoaderWithParser;
+  const {ParquetLoaderWithParser} = await import('./parquet-loader-with-parser');
+  return ParquetLoaderWithParser;
 }
 
 /** Metadata-only plain-row Parquet loader backed by the experimental parquetjs implementation. */

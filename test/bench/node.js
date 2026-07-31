@@ -15,4 +15,4 @@ const suite = new Bench({
   minIterations: 1
 });
 
-addModuleBenchmarksToSuite(suite).then(_ => suite.run());
+addModuleBenchmarksToSuite(suite, process.argv.slice(2)).then(_ => suite.run());

@@ -59,7 +59,8 @@ Metadata Support:
 | Option | Type | Default | Description |
 | ------ | ---- | ------- | ----------- |
 | `draco.shape` | string | `'mesh'` | Output shape: `'mesh'` or `'arrow-table'`. |
-| `draco.decoderType` | string | `'wasm'` when WebAssembly is available | Draco decoder runtime: `'wasm'` or `'js'`. |
+| `draco.backend` | string | `'wasm'` when WebAssembly is available | Draco decoder backend: `'wasm'`, `'javascript'`, or `'draco3d'`. |
+| `draco.decoderType` | string | `'wasm'` when WebAssembly is available | Deprecated alias for selecting `'wasm'` or the JavaScript fallback. Use `draco.backend` instead. |
 | `draco.extraAttributes` | object | `{}` | Additional custom attributes to decode. |
 | `draco.attributeNameEntry` | string | N/A | Metadata entry used to map Draco attribute ids to output attribute names. |
 
@@ -72,6 +73,7 @@ Draco libraries by default are loaded from CDN, but can be bundled and injected.
 Use `options.modules` to override the Draco decoder runtime used by `DracoLoader`.
 
 - `modules.draco3d`: supply the bundled `draco3d` package. `DracoLoader` uses `createDecoderModule()` from this object.
+- Set `draco.backend: 'draco3d'` to select the injected `modules.draco3d` backend explicitly.
 - `'draco_wasm_wrapper.js'`: override the URL used for the Draco WASM decoder wrapper.
 - `'draco_decoder.wasm'`: override the URL used for the Draco WASM decoder binary.
 - `'draco_decoder.js'`: override the URL used for the Draco JavaScript fallback decoder.

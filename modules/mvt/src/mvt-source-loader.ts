@@ -8,6 +8,7 @@ import type {
   ImageType,
   DataSourceOptions,
   ImageTileSource,
+  VectorTile,
   VectorTileSource,
   TileSourceMetadata,
   GetTileParameters,
@@ -37,6 +38,8 @@ export type MVTSourceLoaderOptions = DataSourceOptions & {
     attributions?: string[];
     /** Specify load options for all sub loaders */
     loadOptions?: TileJSONLoaderOptions & MVTLoaderOptions & ImageBitmapLoaderOptions;
+    /** Shape of returned vector tile data. */
+    shape?: 'geojson-table' | 'columnar-table' | 'binary-geometry' | 'arrow-table';
   };
 };
 
@@ -210,7 +213,7 @@ export class MVTTileSource
 
   // VectorTileSource interface implementation
 
-  async getVectorTile(tileParams: GetTileParameters): Promise<unknown | null> {
+  async getVectorTile(tileParams: GetTileParameters): Promise<VectorTile | null> {
     const arrayBuffer = await this.getTile(tileParams);
     return arrayBuffer ? this._parseVectorTile(arrayBuffer, tileParams) : null;
   }
@@ -218,10 +221,10 @@ export class MVTTileSource
   protected async _parseVectorTile(
     arrayBuffer: ArrayBuffer,
     tileParams: GetTileParameters
-  ): Promise<unknown | null> {
+  ): Promise<VectorTile | null> {
     const loadOptions: MVTLoaderOptions = {
       mvt: {
-        shape: 'geojson-table',
+        shape: this.options.mvt?.shape || 'geojson-table',
         coordinates: 'wgs84',
         tileIndex: {x: tileParams.x, y: tileParams.y, z: tileParams.z},
         ...(this.loadOptions as MVTLoaderOptions)?.mvt
@@ -229,7 +232,7 @@ export class MVTTileSource
       ...this.loadOptions
     };
 
-    return await this.coreApi.parse(arrayBuffer, MVTLoader, loadOptions);
+    return (await this.coreApi.parse(arrayBuffer, MVTLoader, loadOptions)) as VectorTile;
   }
 
   getMetadataUrl(): string | null {

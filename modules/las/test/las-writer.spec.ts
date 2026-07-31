@@ -44,6 +44,55 @@ test('LASWriter#encode plain and Arrow mesh data', async t => {
   t.end();
 });
 
+test('LASWriter#encode LAS 1.4 point format 7', async t => {
+  const arrayBuffer = await encode(mesh, LASWriter, {
+    las: {version: '1.4', pointDataRecordFormat: 7}
+  });
+  const data = await parse(arrayBuffer, LASLoader, {
+    las: {backend: 'typescript'},
+    core: {worker: false}
+  });
+  const wasmData = await parse(arrayBuffer.slice(0), LASLoader, {
+    las: {backend: 'copc'},
+    core: {worker: false}
+  });
+
+  t.equal(data.loaderData.versionAsString, '1.4', 'writes LAS 1.4 header');
+  t.equal(data.loaderData.pointsFormatId, 7, 'writes point format 7');
+  t.equal(data.header.vertexCount, attributes.POSITION.value.length / 3, 'round trips point count');
+  t.ok(data.attributes.COLOR_0, 'round trips color attribute');
+  t.deepEqual(
+    Array.from(data.attributes.POSITION.value),
+    Array.from(wasmData.attributes.POSITION.value),
+    'TypeScript parser matches WASM parser for written positions'
+  );
+  t.deepEqual(
+    Array.from(data.attributes.intensity.value),
+    Array.from(wasmData.attributes.intensity.value),
+    'TypeScript parser matches WASM parser for written intensities'
+  );
+  t.deepEqual(
+    Array.from(data.attributes.classification.value),
+    Array.from(wasmData.attributes.classification.value),
+    'TypeScript parser matches WASM parser for written classifications'
+  );
+  t.end();
+});
+
+test('LASWriter#rejects compressed formats until TypeScript encoder is complete', t => {
+  t.throws(
+    () => LASWriter.encodeSync?.(mesh, {las: {format: 'laz'}}),
+    /LAZ encoding is not implemented/,
+    'LAZ writer fails clearly'
+  );
+  t.throws(
+    () => LASWriter.encodeSync?.(mesh, {las: {format: 'copc'}}),
+    /COPC encoding is not implemented/,
+    'COPC writer fails clearly'
+  );
+  t.end();
+});
+
 test('LASWriter#preserves normalized byte colors', async t => {
   const colorAttributes = {
     POSITION: attributes.POSITION,

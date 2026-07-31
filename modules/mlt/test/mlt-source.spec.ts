@@ -120,3 +120,29 @@ test('MLTTileSource#supports table shape by converting to Feature[]', async t =>
 
   t.end();
 });
+
+test('MLTTileSource#supports Arrow table shape', async t => {
+  const originalParse = MLTLoader.parse;
+  MLTLoader.parse = (async () => ({
+    shape: 'arrow-table',
+    schema: {fields: [], metadata: {geo: '{}'}},
+    data: {numRows: 1}
+  })) as unknown as typeof MLTLoader.parse;
+
+  const source = MLTSourceLoader.createDataSource('https://example.com/tiles', {
+    mlt: {shape: 'arrow-table'}
+  });
+  source.fetch = async () => new Response(new ArrayBuffer(8));
+  try {
+    const tile = await source.getTileData({
+      index: {x: 1, y: 2, z: 3},
+      id: '1/2/3',
+      bbox: {west: 0, north: 0, east: 0, south: 0}
+    });
+    t.equal((tile as {shape?: string})?.shape, 'arrow-table');
+  } finally {
+    MLTLoader.parse = originalParse;
+  }
+
+  t.end();
+});

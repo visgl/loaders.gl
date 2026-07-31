@@ -5,6 +5,8 @@
 export type {I3SLoaderOptions} from './i3s-loader';
 export {I3SLoaderWithParser as I3SLoader} from './i3s-loader-with-parser';
 export {SLPKLoaderWithParser as SLPKLoader} from './i3s-slpk-loader-with-parser';
+export type {SLPKSourceInput} from './i3s-slpk-source';
+export {SLPKSource} from './i3s-slpk-source';
 export {I3SContentLoaderWithParser as I3SContentLoader} from './i3s-content-loader-with-parser';
 export {
   I3SAttributeLoaderWithParser as I3SAttributeLoader,

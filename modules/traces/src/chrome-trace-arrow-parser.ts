@@ -258,7 +258,7 @@ function buildChromeTraceEventArrowSchema(
 /**
  * Builds Arrow schema metadata for one Chrome trace file.
  */
-function buildChromeTraceArrowSchemaMetadata(
+export function buildChromeTraceArrowSchemaMetadata(
   traceFile: Pick<ChromeTraceFileSchema, 'displayTimeUnit' | 'metadata'>
 ): Map<string, string> {
   const metadata = new Map<string, string>();

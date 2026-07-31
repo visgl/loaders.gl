@@ -282,6 +282,7 @@ test('VectorSourceLayer#fetches for initial and changed viewports and renders Ge
     id: 'vector-layer',
     data: source as any,
     layers: ['roads'],
+    format: 'geojson',
     debounceTime: 0,
     onDataLoad: table => loadedTables.push(table),
     geoJsonLayerProps: {pickable: true}
@@ -360,7 +361,7 @@ test('VectorSourceLayer#forwards request errors', async t => {
   t.end();
 });
 
-test('VectorSet accepts Arrow tables and VectorSourceLayer fails clearly for Arrow rendering', async t => {
+test('VectorSet accepts Arrow tables and VectorSourceLayer renders GeoJsonLayer binary data', async t => {
   const vectorSet = new VectorSet({
     vectorSource: {
       async getMetadata() {
@@ -397,7 +398,12 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer fails clearly for Arr
     } as any,
     layers: ['roads'],
     format: 'arrow',
-    debounceTime: 0
+    debounceTime: 0,
+    geoArrowLayerProps: {
+      pointLayerProps: {
+        getFillColor: [1, 2, 3, 4]
+      }
+    }
   });
 
   layer.initializeState();
@@ -409,10 +415,21 @@ test('VectorSet accepts Arrow tables and VectorSourceLayer fails clearly for Arr
   });
   await flushMicrotasks();
 
-  t.throws(
-    () => layer.renderLayers(),
-    /does not render Arrow tables directly/i,
-    'fails clearly instead of silently mis-rendering Arrow data'
+  const renderedLayer = layer.renderLayers();
+  t.equal(
+    renderedLayer.constructor.layerName,
+    'GeoJsonLayer',
+    'renders Arrow data through GeoJsonLayer'
+  );
+  t.equal(
+    renderedLayer.props.data.shape,
+    'binary-feature-collection',
+    'passes deck.gl binary feature data to GeoJsonLayer'
+  );
+  t.deepEqual(
+    renderedLayer.props.getFillColor,
+    [1, 2, 3, 4],
+    'maps GeoArrowLayer point styling props to GeoJsonLayer props'
   );
   t.end();
 });
@@ -421,7 +438,12 @@ function createArrowTable() {
   const schema = {
     fields: [
       {name: 'name', type: 'utf8', nullable: true, metadata: {}},
-      {name: 'geometry', type: 'binary', nullable: true, metadata: {}}
+      {
+        name: 'geometry',
+        type: 'binary',
+        nullable: true,
+        metadata: {'ARROW:extension:name': 'geoarrow.wkb'}
+      }
     ],
     metadata: {
       geo: JSON.stringify({

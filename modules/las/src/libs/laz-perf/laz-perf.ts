@@ -88,9 +88,6 @@ export default function getModule() {
       thisProgram = process['argv'][1].replace(/\\/g, '/');
     }
     arguments_ = process['argv'].slice(2);
-    if (typeof module !== 'undefined') {
-      module['exports'] = Module;
-    }
     process['on']('uncaughtException', function (ex) {
       if (!(ex instanceof ExitStatus)) {
         throw ex;

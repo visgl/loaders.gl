@@ -37,6 +37,7 @@ const config = {
   // Reusable logic lives under `dev-modules/devtools-extensions/`; repo-specific policy belongs here.
   devtools: {
     vitest: {
+      channel: process.env.CI ? 'chrome' : undefined,
       // Plain `*.spec.*` files run in both Node and browser projects unless explicitly excluded.
       // Use `.node.spec.*`, `.browser.spec.*`, or conditional runtime helpers for runtime-specific cases.
       excludePatterns: [
@@ -47,7 +48,6 @@ const config = {
         'modules/core/test/lib/api/create-data-source.spec.ts',
         'modules/csv/test/csv-writer-papaparse.spec.ts',
         'modules/i3s/test/i3s-content-loader.spec.ts',
-        'modules/las/test/**',
         'modules/loader-utils/test/categories/mesh/**',
         'modules/math/test/geometry/attributes/compute-vertex-normals.spec.js',
         'modules/mvt/test/lib/mapbox-vt-pbf/**',
@@ -90,6 +90,7 @@ const config = {
         'modules/tiles/test/tileset/tileset-3d-traversal.spec.ts',
         'modules/tiles/test/tileset/tileset-traverser.spec.ts'
       ],
+      browserExcludePatterns: ['modules/las/test/**'],
       softwareGpu: Boolean(process.env.CI)
     }
   },

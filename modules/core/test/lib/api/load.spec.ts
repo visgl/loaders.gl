@@ -112,6 +112,7 @@ test('load#ignores core.shape for loaders without shape support', async () => {
 function _typeTestsForCoreShape() {
   load(JSON_URL, JSONLoader, {core: {shape: 'array-row-table'}});
   load(JSON_URL, JSONLoader, {core: {shape: 'object-row-table'}});
+  load(JSON_URL, JSONLoader, {core: {shape: 'arrow-table'}});
   // @ts-expect-error JSONLoader core.shape should be limited to JSON row shapes
   load(JSON_URL, JSONLoader, {core: {shape: 'columnar-table'}});
 

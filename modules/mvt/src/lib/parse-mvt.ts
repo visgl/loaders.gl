@@ -2,8 +2,18 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {FlatFeature, Feature, GeoJSONTable, BinaryFeatureCollection} from '@loaders.gl/schema';
-import {flatGeojsonToBinary, GeojsonGeometryInfo} from '@loaders.gl/gis';
+import type {
+  ArrowTable,
+  FlatFeature,
+  Feature,
+  GeoJSONTable,
+  BinaryFeatureCollection
+} from '@loaders.gl/schema';
+import {
+  convertFeaturesToWKBArrowTable,
+  flatGeojsonToBinary,
+  GeojsonGeometryInfo
+} from '@loaders.gl/gis';
 import {log} from '@loaders.gl/loader-utils';
 import Protobuf from 'pbf';
 
@@ -36,6 +46,12 @@ export function parseMVT(arrayBuffer: ArrayBuffer, options?: MVTLoaderOptions) {
         type: 'FeatureCollection',
         features: parseToGeojsonFeatures(arrayBuffer, mvtOptions)
       };
+      return table;
+    }
+    case 'arrow-table': {
+      const table: ArrowTable = convertFeaturesToWKBArrowTable(
+        parseToGeojsonFeatures(arrayBuffer, mvtOptions)
+      );
       return table;
     }
     case 'binary-geometry':

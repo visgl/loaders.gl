@@ -8,7 +8,9 @@ import test from 'tape-promise/tape';
 import {validateLoader} from 'test/common/conformance';
 
 import {ParquetJSLoader, ParquetLoader} from '@loaders.gl/parquet';
-import {isBrowser, load, setLoaderOptions} from '@loaders.gl/core';
+import {isBrowser, load, preload, setLoaderOptions} from '@loaders.gl/core';
+import {ParquetLoaderWithParser} from '../src/parquet-loader-with-parser';
+import {ParquetWASMLoaderWithParser} from '../src/parquet-wasm-loader-with-parser';
 
 import {SUPPORTED_FILES, UNSUPPORTED_FILES, ENCRYPTED_FILES, BAD_FILES} from './data/files';
 import {
@@ -44,6 +46,31 @@ function getParquetLoaderOptions(_url: string) {
 
 test('ParquetJSLoader#loader objects', (t) => {
   validateLoader(t, ParquetJSLoader, 'ParquetJSLoader');
+  t.end();
+});
+
+test('ParquetLoader#preload resolves backend parser implementations', async (t) => {
+  t.equal(await preload(ParquetLoader), ParquetWASMLoaderWithParser, 'default backend resolves wasm');
+  t.equal(
+    await preload(ParquetLoader, {parquet: {backend: 'wasm'}}),
+    ParquetWASMLoaderWithParser,
+    'wasm backend resolves wasm parser'
+  );
+  t.equal(
+    await preload(ParquetLoader, {parquet: {backend: 'typescript'}}),
+    ParquetLoaderWithParser,
+    'typescript backend resolves TypeScript parser'
+  );
+  t.equal(
+    await preload(ParquetLoader, {parquet: {implementation: 'js'} as any}),
+    ParquetLoaderWithParser,
+    'deprecated js implementation resolves TypeScript parser'
+  );
+  await t.rejects(
+    preload(ParquetLoader, {parquet: {backend: 'typescript', shape: 'arrow-table'}}),
+    /does not support shape "arrow-table"/,
+    'typescript backend rejects arrow-table shape'
+  );
   t.end();
 });
 
@@ -319,7 +346,7 @@ test('ParquetJSLoader#load', async (t) => {
   t.end();
 });
 
-test('ParquetLoader#ignores implementation option and stays on wasm', async (t) => {
+test('ParquetLoader#maps deprecated implementation option to backend', async (t) => {
   const url = '@loaders.gl/parquet/test/data/geoparquet/example.parquet';
   const table = await load(url, ParquetLoader, {
     parquet: {

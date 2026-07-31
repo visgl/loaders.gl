@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright vis.gl contributors
 
-import type {LoaderOptions, LoaderWithParser} from '@loaders.gl/loader-utils';
+import type {LoaderOptions, LoaderWithParser, ReadableFile} from '@loaders.gl/loader-utils';
 import {DataViewReadableFile} from '@loaders.gl/zip';
 import {parse3DTilesArchive as parse3DTilesArchiveFromProvider} from './3d-tiles-archive/3d-tiles-archive-parser';
 import {Tiles3DArchiveFileLoader as Tiles3DArchiveFileLoaderMetadata} from './3d-tiles-archive-loader';
@@ -25,7 +25,8 @@ export type Tiles3DArchiveFileLoaderOptions = LoaderOptions & {
  */
 export const Tiles3DArchiveFileLoaderWithParser = {
   ...Tiles3DArchiveFileLoaderMetadataWithoutPreload,
-  parse: parse3DTilesArchive
+  parse: parse3DTilesArchive,
+  parseFile: parse3DTilesArchiveFile
 } satisfies LoaderWithParser<ArrayBuffer, never, Tiles3DArchiveFileLoaderOptions>;
 
 /**
@@ -38,8 +39,19 @@ async function parse3DTilesArchive(
   data: ArrayBuffer,
   options: Tiles3DArchiveFileLoaderOptions = {}
 ): Promise<ArrayBuffer> {
-  const archive = await parse3DTilesArchiveFromProvider(
-    new DataViewReadableFile(new DataView(data))
-  );
+  return parse3DTilesArchiveFile(new DataViewReadableFile(new DataView(data)), options);
+}
+
+/**
+ * returns a single file from a readable 3tz archive
+ * @param file 3tz archive readable file
+ * @param options options
+ * @returns requested file
+ */
+async function parse3DTilesArchiveFile(
+  file: ReadableFile,
+  options: Tiles3DArchiveFileLoaderOptions = {}
+): Promise<ArrayBuffer> {
+  const archive = await parse3DTilesArchiveFromProvider(file);
   return archive.getFile(options['3d-tiles-archive']?.path ?? '');
 }

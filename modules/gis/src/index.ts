@@ -57,6 +57,10 @@ export {
   makeWKBGeometryDataFromArray,
   makeWKBGeometryDataFromWriters
 } from './lib/geoarrow/wkb-arrow-utils';
+export {
+  buildFeatureArrowSchema,
+  convertFeaturesToWKBArrowTable
+} from './lib/geoarrow/feature-collection-to-arrow';
 export type {
   GeoArrowBuilderEncoding,
   GeoArrowCoordinateTransform,
@@ -104,6 +108,20 @@ export {
   convertArrowBinaryFeatureCollectionToBinaryFeatureCollection,
   convertBinaryFeatureCollectionToArrowBinaryFeatureCollection
 } from './lib/feature-collection-converters/convert-arrow-binary-feature-collection';
+export type {
+  LegacyGeoJSONCRS,
+  GeoJSONToGeoArrowEncoding,
+  GeoJSONToGeoArrowOptions
+} from './lib/table-converters/convert-geojson-to-geoarrow';
+export {
+  applyLegacyGeoJSONCRSToSchema,
+  convertFeatureCollectionToGeoArrowTable,
+  convertFeaturesToGeoArrowTable,
+  isGeoJSONFeatureArray,
+  isGeoJSONFeatureCollection,
+  makeGeoArrowFeatureRows,
+  makeGeoArrowFeatureSchema
+} from './lib/table-converters/convert-geojson-to-geoarrow';
 export {
   convertFlatGeojsonToBinaryFeatureCollection,
   flatGeojsonToBinary,
