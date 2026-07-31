@@ -124,6 +124,18 @@ export function getDynamicScreenSpaceError(tileset, distanceToCamera) {
   return 0;
 }
 
+/**
+ * Calculates 3D Tiles screen-space error (SSE) for the current projection.
+ *
+ * Perspective SSE projects the tile's world-space geometric error through the existing viewport
+ * height and frustum denominator. Orthographic projection has no perspective distance falloff, so
+ * its error is divided directly by the viewport's world-space meters per logical pixel.
+ *
+ * @param tile - Tile containing the transform-scaled geometric error and camera distance.
+ * @param frameState - Current camera and viewport measurements.
+ * @param useParentLodMetric - Whether request prioritization should use the parent's error.
+ * @returns Estimated error in logical/CSS pixels.
+ */
 export function getTiles3DScreenSpaceError(tile, frameState, useParentLodMetric) {
   const tileset = tile.tileset;
   const parentLodMetricValue = (tile.parent && tile.parent.lodMetricValue) || tile.lodMetricValue;
@@ -134,16 +146,46 @@ export function getTiles3DScreenSpaceError(tile, frameState, useParentLodMetric)
     return 0.0;
   }
 
-  // TODO: Orthographic Frustum needs special treatment?
-  // this._getOrthograhicScreenSpaceError();
+  const {viewDistanceScale} = tileset.options;
+  const lodScale = viewDistanceScale || 1.0;
+  const orthographicError = getOrthographicScreenSpaceError(lodMetricValue, frameState, lodScale);
+  if (orthographicError !== null) {
+    return orthographicError;
+  }
 
   // Avoid divide by zero when viewer is inside the tile
   const distance = Math.max(tile._distanceToCamera, 1e-7);
   const {height, sseDenominator} = frameState;
-  const {viewDistanceScale} = tileset.options;
-  let error = (lodMetricValue * height * (viewDistanceScale || 1.0)) / (distance * sseDenominator);
+  let error = (lodMetricValue * height * lodScale) / (distance * sseDenominator);
 
   error -= getDynamicScreenSpaceError(tileset, distance);
 
   return error;
+}
+
+/**
+ * Calculates orthographic SSE when the viewport provides a valid logical-pixel scale.
+ *
+ * deck.gl viewport dimensions and `metersPerPixel` use logical/CSS pixels. Applying the browser's
+ * device pixel ratio again would therefore double-correct the result and select different LODs on
+ * otherwise identical displays. If a structural third-party viewport does not expose a usable
+ * scale, `null` tells the caller to retain the established perspective-compatible fallback.
+ *
+ * @param lodMetricValue - Transform-scaled geometric error in world-space meters.
+ * @param frameState - Current frame state containing the viewport.
+ * @param lodScale - Application refinement scale from `viewDistanceScale`.
+ * @returns SSE in logical pixels, or `null` when orthographic SSE cannot be calculated.
+ */
+function getOrthographicScreenSpaceError(lodMetricValue, frameState, lodScale) {
+  const viewport = frameState.viewport;
+  if (!viewport?.orthographic) {
+    return null;
+  }
+
+  const metersPerPixel = viewport.metersPerPixel;
+  if (!Number.isFinite(metersPerPixel) || metersPerPixel <= 0) {
+    return null;
+  }
+
+  return (lodMetricValue * lodScale) / metersPerPixel;
 }

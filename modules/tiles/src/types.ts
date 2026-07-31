@@ -13,6 +13,13 @@ export type Viewport = {
   height: number;
   width: number;
   zoom: number;
+  /** Whether this viewport uses an orthographic projection. */
+  orthographic?: boolean;
+  /**
+   * World-space meters represented by one logical/CSS pixel at the viewport's current scale.
+   * Orthographic 3D Tiles traversal requires a positive, finite value to calculate SSE.
+   */
+  metersPerPixel?: number;
   distanceScales: {
     unitsPerMeter: number[];
     metersPerUnit: number[];
