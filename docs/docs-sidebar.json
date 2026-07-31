@@ -257,7 +257,8 @@
         "type": "category",
         "label": "@loaders.gl/3d-tiles",
         "items": [
-          "modules/3d-tiles/README"
+          "modules/3d-tiles/README",
+          "modules/3d-tiles/concepts/screen-space-error-and-lod"
         ]
       },
       {

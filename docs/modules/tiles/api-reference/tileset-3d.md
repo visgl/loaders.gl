@@ -73,7 +73,7 @@ Parameters:
   - `options.maxRequests`=`64` (`Number`) - When throttling tile fetching, the maximum number of simultaneous requests.
   - `options.modelMatrix`=`Matrix4.IDENTITY` (`Matrix4`) - A 4x4 transformation matrix this transforms the entire tileset.
   - `options.maximumMemoryUsage`=`512` (`Number`) - The maximum amount of memory in MB that can be used by the tileset.
-  - `options.viewDistanceScale`=`1.0` (`Number`) - A scaling factor for tile refinement. A lower value would cause lower level tiles to load. Useful for debugging and for restricting resource usage.
+  - `options.viewDistanceScale`=`1.0` (`Number`) - Multiplies calculated screen-space error. Lower values stop refinement earlier; higher values select more detail. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
   - `options.updateTransforms`=`true` (`Boolean`) - Always check if the tileset `modelMatrix` was updated. Set to `false` to improve performance when the tileset remains stationary in the scene.
   - `options.loadOptions` - _loaders.gl_ options used when loading tiles from the tiling server. Includes `fetch` options such as authentication `headers`, worker options such as `maxConcurrency`, and options to other loaders such as `3d-tiles`, `gltf`, and `draco`.
   - `options.contentLoader` = `null` (`Promise`) - An optional external async content loader for the tile. Once the promise resolves, a tile is regarded as _READY_ to be displayed on the viewport.
@@ -95,7 +95,7 @@ For format-specific source behavior, see:
 
 Cesium 3D tiles specific options:
 
-- `options.maximumScreenSpaceError`=`16`] (`Number`) - The maximum screen space error used to drive level of detail refinement.
+- `options.maximumScreenSpaceError`=`8` (`Number`) - The maximum screen-space error used to drive level-of-detail refinement. See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
 
 ## Properties
 
@@ -182,10 +182,12 @@ radius equal to the tile's <b>geometric error</b> were rendered at the tile's po
 
 Depending on the tileset, `maximumScreenSpaceError` may need to be tweaked to achieve the right balance between performance with visual quality. \*
 
-### maximumMemoryUsage : Number
+For formulas, projection-specific behavior, transform scaling, and tuning guidance, see [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod).
 
-^default 16 \*
+^default 8 \*
 ^exception `maximumScreenSpaceError` must be greater than or equal to zero.
+
+### maximumMemoryUsage : Number
 
 The maximum amount of GPU memory (in MB) that may be used to cache tiles. This value is estimated from
 geometry, textures, and batch table textures of loaded tiles. For point clouds, this value also

@@ -30,6 +30,8 @@ To handle the complex dynamic tile selection and loading required to performantl
 - [`Tileset3D`](/docs/modules/tiles/api-reference/tileset-3d) to work with the loaded tileset.
 - [`Tile3D`](/docs/modules/tiles/api-reference/tile-3d) to access data for a specific tile.
 
+See [Screen-space error and level of detail](/docs/modules/3d-tiles/concepts/screen-space-error-and-lod) for a detailed explanation of how `Tileset3D` selects tiles in perspective and orthographic views.
+
 ## Usage
 
 Basic API usage is illustrated in the following snippet. Create a `Tileset3D` instance, point it a valid tileset URL, set up callbacks, and keep feeding in new camera positions:
