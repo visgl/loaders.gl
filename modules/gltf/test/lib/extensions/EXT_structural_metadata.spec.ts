@@ -330,7 +330,7 @@ test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async t => {
   t.end();
 });
 
-test('gltf#EXT_structural_metadata - Should decode variable-length string arrays', async (t) => {
+test('gltf#EXT_structural_metadata - Should decode variable-length string arrays', async t => {
   // 3 features with variable-length string arrays
   // Feature 0: ["hello", "world"] (2 strings)
   // Feature 1: [] (0 strings)
