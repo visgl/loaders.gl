@@ -43,6 +43,9 @@ export {TextureCubeArrayLoader} from './texture-cube-array-loader';
 export {BASIS_EXTERNAL_LIBRARIES} from './lib/parsers/basis-module-loader';
 export {CRUNCH_EXTERNAL_LIBRARIES} from './lib/parsers/crunch-module-loader';
 
+// Basis format selection
+export {selectSupportedBasisFormat} from './lib/parsers/parse-basis';
+
 // Writers
 export {CompressedTextureWriter} from './compressed-texture-writer';
 export {KTX2BasisWriter} from './ktx2-basis-writer';
