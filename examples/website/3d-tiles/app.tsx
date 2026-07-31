@@ -121,17 +121,17 @@ export default class App extends PureComponent<AppProps> {
     }
 
     this._loadExampleIndex();
-
-    // Check if a tileset is specified in the query params
-    if (this._selectTilesetFromQueryParams()) {
-      return;
-    }
   }
 
   // load the index file that lists example tilesets
   async _loadExampleIndex() {
     const examplesByCategory = await loadExampleIndex();
     this.setState({examplesByCategory});
+
+    // Check if a tileset is specified in the query params
+    if (this._selectTilesetFromQueryParams()) {
+      return;
+    }
 
     // if not, select the default example tileset
     const {category, name} = this.state;
