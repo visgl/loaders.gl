@@ -370,7 +370,8 @@ function getPropertyDataFromBinarySource(
   const stringOffsets = getStringOffsetsForProperty(
     scenegraph,
     propertyTableProperty,
-    numberOfElements
+    numberOfElements,
+    arrayOffsets
   );
 
   switch (classProperty.type) {
@@ -448,23 +449,25 @@ function getArrayOffsetsForProperty(
  * @param scenegraph - Instance of the class for structured access to GLTF data.
  * @param propertyTableProperty - propertyTable's property metadata.
  * @param numberOfElements - The number of elements in each property array that propertyTableProperty contains. It's a number of rows in the table.
+ * @param arrayOffsets - Offsets for variable-length arrays. The final offset is the total number of string elements.
  * @returns Typed array with offset values.
  * @see https://github.com/CesiumGS/glTF/blob/2976f1183343a47a29e4059a70961371cd2fcee8/extensions/2.0/Vendor/EXT_structural_metadata/schema/propertyTable.property.schema.json#L29C10-L29C23
  */
 function getStringOffsetsForProperty(
   scenegraph: GLTFScenegraph,
   propertyTableProperty: GLTF_EXT_structural_metadata_PropertyTable_Property,
-  numberOfElements: number
+  numberOfElements: number,
+  arrayOffsets: TypedArray | null
 ): TypedArray | null {
   if (
     typeof propertyTableProperty.stringOffsets !== 'undefined' // `stringOffsets` is an index of the buffer view containing offsets for strings.
   ) {
-    // Data are in a FIXED-length array
+    const numberOfStrings = arrayOffsets ? arrayOffsets[numberOfElements] : numberOfElements;
     return getOffsetsForProperty(
       scenegraph,
       propertyTableProperty.stringOffsets,
       propertyTableProperty.stringOffsetType || 'UINT32',
-      numberOfElements
+      numberOfStrings
     );
   }
   return null;

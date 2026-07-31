@@ -421,9 +421,9 @@ export function getPropertyDataString(
       const endStringIndex = arrayOffsets[featureId + 1];
       const strings: string[] = [];
 
-      for (let i = startStringIndex; i < endStringIndex; i++) {
-        const startByte = stringOffsets[i];
-        const endByte = stringOffsets[i + 1];
+      for (let stringIndex = startStringIndex; stringIndex < endStringIndex; stringIndex++) {
+        const startByte = stringOffsets[stringIndex];
+        const endByte = stringOffsets[stringIndex + 1];
         const stringData = valuesDataBytes.subarray(startByte, endByte);
         strings.push(textDecoder.decode(stringData));
       }

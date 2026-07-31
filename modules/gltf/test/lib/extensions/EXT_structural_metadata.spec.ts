@@ -331,17 +331,18 @@ test('gltf#EXT_structural_metadata - Roundtrip encoding/decoding', async t => {
 });
 
 test('gltf#EXT_structural_metadata - Should decode variable-length string arrays', async (t) => {
-  // 2 features with variable-length string arrays
+  // 3 features with variable-length string arrays
   // Feature 0: ["hello", "world"] (2 strings)
-  // Feature 1: ["foo"] (1 string)
+  // Feature 1: [] (0 strings)
+  // Feature 2: ["foo", "bar"] (2 strings)
   //
   // Binary layout:
-  // - values: "helloworldfoo" (13 bytes)
-  // - stringOffsets (UINT8): [0, 5, 10, 13] (4 bytes)
-  // - arrayOffsets (UINT8): [0, 2, 3] (3 bytes)
+  // - values: "helloworldfoobar" (16 bytes)
+  // - stringOffsets (UINT8): [0, 5, 10, 13, 16] (5 bytes)
+  // - arrayOffsets (UINT8): [0, 2, 2, 4] (4 bytes)
 
   const binaryBufferData = [
-    // values: "helloworldfoo" (offset 0, length 13)
+    // values: "helloworldfoobar" (offset 0, length 16)
     104,
     101,
     108,
@@ -355,15 +356,20 @@ test('gltf#EXT_structural_metadata - Should decode variable-length string arrays
     102,
     111,
     111, // "foo"
-    // stringOffsets (offset 13, length 4): [0, 5, 10, 13]
+    98,
+    97,
+    114, // "bar"
+    // stringOffsets (offset 16, length 5): [0, 5, 10, 13, 16]
     0,
     5,
     10,
     13,
-    // arrayOffsets (offset 17, length 3): [0, 2, 3]
+    16,
+    // arrayOffsets (offset 21, length 4): [0, 2, 2, 4]
     0,
     2,
-    3
+    2,
+    4
   ];
 
   const GLTF_WITH_STRING_ARRAY = {
@@ -371,16 +377,16 @@ test('gltf#EXT_structural_metadata - Should decode variable-length string arrays
       {
         arrayBuffer: new Uint8Array(binaryBufferData).buffer,
         byteOffset: 0,
-        byteLength: 20
+        byteLength: 25
       }
     ],
     json: {
       extensionsUsed: ['EXT_structural_metadata'],
-      buffers: [{byteLength: 20}],
+      buffers: [{byteLength: 25}],
       bufferViews: [
-        {buffer: 0, byteOffset: 0, byteLength: 13}, // values
-        {buffer: 0, byteOffset: 13, byteLength: 4}, // stringOffsets
-        {buffer: 0, byteOffset: 17, byteLength: 3} // arrayOffsets
+        {buffer: 0, byteOffset: 0, byteLength: 16}, // values
+        {buffer: 0, byteOffset: 16, byteLength: 5}, // stringOffsets
+        {buffer: 0, byteOffset: 21, byteLength: 4} // arrayOffsets
       ],
       extensions: {
         EXT_structural_metadata: {
@@ -402,7 +408,7 @@ test('gltf#EXT_structural_metadata - Should decode variable-length string arrays
             {
               name: 'TestTable',
               class: 'TestClass',
-              count: 2,
+              count: 3,
               properties: {
                 tags: {
                   values: 0,
@@ -429,7 +435,7 @@ test('gltf#EXT_structural_metadata - Should decode variable-length string arrays
   // Verify variable-length string arrays are correctly decoded
   t.deepEqual(
     tagsData,
-    [['hello', 'world'], ['foo']],
+    [['hello', 'world'], [], ['foo', 'bar']],
     'Variable-length string arrays decoded correctly'
   );
   t.end();
