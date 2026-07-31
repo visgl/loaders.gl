@@ -1,5 +1,9 @@
 const DEFAULT_PLAYWRIGHT_CHANNEL = 'chromium';
-const DEFAULT_PLAYWRIGHT_ARGS = ['--enable-unsafe-webgpu', '--ignore-gpu-blocklist'];
+const DEFAULT_PLAYWRIGHT_ARGS = [
+  '--disable-dev-shm-usage',
+  '--enable-unsafe-webgpu',
+  '--ignore-gpu-blocklist'
+];
 const SOFTWARE_GPU_ARGS = ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
 
 export function getPlaywrightLaunchOptions(options = {}) {
